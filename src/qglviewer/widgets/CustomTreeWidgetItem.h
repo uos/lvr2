@@ -57,17 +57,17 @@ enum
 class CustomTreeWidgetItem : public QTreeWidgetItem
 {
 public:
-    CustomTreeWidgetItem(int type);
-    CustomTreeWidgetItem(QTreeWidgetItem* parent, int type);
+	CustomTreeWidgetItem(int type);
+	CustomTreeWidgetItem(QTreeWidgetItem* parent, int type);
 
-    virtual ~CustomTreeWidgetItem();
-    virtual void setRenderable(Renderable* renderable) {m_renderable = renderable;};
+	virtual ~CustomTreeWidgetItem();
+	virtual void setRenderable(Renderable* renderable) {m_renderable = renderable;};
 
-    bool toggled();
-    void setInitialState(Qt::CheckState state);
+	bool toggled();
+	void setInitialState(Qt::CheckState state);
 
-    Renderable* renderable() { return m_renderable;}
-    void setName(string name);
+	Renderable* renderable() { return m_renderable;}
+	void setName(string name);
 
     bool centerOnClick()                { return m_centerOnClick;}
     void setViewCentering(bool center)  { m_centerOnClick = center;}
@@ -79,11 +79,11 @@ public:
     bool supportsMode(int mode);
 protected:
 
-    Qt::CheckState      m_oldCheckState;
-    Renderable*         m_renderable;
-    string              m_name;
-    bool                m_centerOnClick;
-    int                 m_renderMode;
+	Qt::CheckState      m_oldCheckState;
+	Renderable*         m_renderable;
+	string              m_name;
+	bool                m_centerOnClick;
+	int                 m_renderMode;
 
 };
 

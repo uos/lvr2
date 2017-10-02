@@ -61,27 +61,27 @@ LVRPickingInteractor::~LVRPickingInteractor()
 
 void LVRPickingInteractor::Dolly()
 {
-    vtkInteractorStyleTrackballCamera::Dolly();
+	vtkInteractorStyleTrackballCamera::Dolly();
 }
 
 void LVRPickingInteractor::Pan()
 {
-    vtkInteractorStyleTrackballCamera::Pan();
+	vtkInteractorStyleTrackballCamera::Pan();
 }
 
 void LVRPickingInteractor::Spin()
 {
-    vtkInteractorStyleTrackballCamera::Spin();
+	vtkInteractorStyleTrackballCamera::Spin();
 }
 
 void LVRPickingInteractor::Zoom()
 {
-    vtkInteractorStyleTrackballCamera::Zoom();
+	vtkInteractorStyleTrackballCamera::Zoom();
 }
 
 void LVRPickingInteractor::Rotate()
 {
-    vtkInteractorStyleTrackballCamera::Rotate();
+	vtkInteractorStyleTrackballCamera::Rotate();
 }
 
 void LVRPickingInteractor::correspondenceSearchOn()

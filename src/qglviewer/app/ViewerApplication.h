@@ -70,74 +70,74 @@ class EventManager;
 
 class ViewerApplication : public QObject
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    ViewerApplication(int argc, char** argv);
-    virtual ~ViewerApplication();
+	ViewerApplication(int argc, char** argv);
+	virtual ~ViewerApplication();
 
 public Q_SLOTS:
-    void setViewerModePerspective();
-    void setViewerModeOrthoXY();
-    void setViewerModeOrthoXZ();
-    void setViewerModeOrthoYZ();
-    void toggleFog();
-    void displayFogSettingsDialog();
-    void fogDensityChanged(int i);
-    void fogLinear();
-    void fogExp2();
-    void fogExp();
+	void setViewerModePerspective();
+	void setViewerModeOrthoXY();
+	void setViewerModeOrthoXZ();
+	void setViewerModeOrthoYZ();
+	void toggleFog();
+	void displayFogSettingsDialog();
+	void fogDensityChanged(int i);
+	void fogLinear();
+	void fogExp2();
+	void fogExp();
 
-    void displayRenderingSettings();
+	void displayRenderingSettings();
 
-    void dataCollectorAdded(Visualizer* d);
-    void treeItemClicked(QTreeWidgetItem* item, int n);
-    void treeItemChanged(QTreeWidgetItem*, int);
-    void treeSelectionChanged();
-    void treeContextMenuRequested(const QPoint &);
+	void dataCollectorAdded(Visualizer* d);
+	void treeItemClicked(QTreeWidgetItem* item, int n);
+	void treeItemChanged(QTreeWidgetItem*, int);
+	void treeSelectionChanged();
+	void treeContextMenuRequested(const QPoint &);
 
-    void saveSelectedObject();
-    void changeSelectedName();
+	void saveSelectedObject();
+	void changeSelectedName();
 
-    void transformObject();
-    void createAnimation();
-    void deleteObject();
+	void transformObject();
+	void createAnimation();
+	void deleteObject();
 
-    void openFile();
+	void openFile();
 
-    void meshRenderModeChanged();
-    void pointRenderModeChanged();
-    void createMeshFromPointcloud();
-    void centerOnSelection();
+	void meshRenderModeChanged();
+	void pointRenderModeChanged();
+	void createMeshFromPointcloud();
+	void centerOnSelection();
 
-    void zoomChanged();
+	void zoomChanged();
 
 private:
 
-    void updateToolbarActions(CustomTreeWidgetItem* item);
-    void updateActionDock(CustomTreeWidgetItem* item);
-    void connectEvents();
-    void openFile(string filename);
+	void updateToolbarActions(CustomTreeWidgetItem* item);
+	void updateActionDock(CustomTreeWidgetItem* item);
+	void connectEvents();
+	void openFile(string filename);
 
-    MainWindow*                    m_mainWindowUi;
-    QMainWindow*                m_qMainWindow;
-    QDialog*                    m_fogSettingsDialog;
+	MainWindow*					m_mainWindowUi;
+	QMainWindow*				m_qMainWindow;
+	QDialog*					m_fogSettingsDialog;
 
-    SceneDockWidgetUI*            m_sceneDockWidgetUi;
-    ActionDockWidgetUI*         m_actionDockWidgetUi;
+	SceneDockWidgetUI*			m_sceneDockWidgetUi;
+	ActionDockWidgetUI*         m_actionDockWidgetUi;
 
-    QDockWidget*                m_sceneDockWidget;
-    QDockWidget*                m_actionDockWidget;
+	QDockWidget*				m_sceneDockWidget;
+	QDockWidget*                m_actionDockWidget;
 
-    QDoubleSpinBox*             m_zoomSpinBox;
-    QAction*                    m_zoomAction;
-    QAction*                    m_zoomBoxAction;
+	QDoubleSpinBox*             m_zoomSpinBox;
+	QAction*                    m_zoomAction;
+	QAction*                    m_zoomBoxAction;
 
-    Fogsettings*                m_fogSettingsUI;
-    ViewerManager*                m_viewerManager;
-    VisualizerFactory*           m_factory;
+	Fogsettings*				m_fogSettingsUI;
+	ViewerManager*				m_viewerManager;
+	VisualizerFactory*       	m_factory;
 
-    AnimationDialog*            m_playerDialog;
+	AnimationDialog*            m_playerDialog;
 
 
 public:

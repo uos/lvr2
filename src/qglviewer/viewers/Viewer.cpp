@@ -27,7 +27,7 @@
 #include "Viewer.h"
 
 Viewer::Viewer(QWidget* parent, const QGLWidget* shared)
-    : QGLViewer(parent, shared),  m_parent(parent), m_zoom(1.0)
+	: QGLViewer(parent, shared),  m_parent(parent), m_zoom(1.0)
 {
     m_kfi = new qglviewer::KeyFrameInterpolator(new qglviewer::Frame());
     m_saveToDisk = false;
@@ -40,13 +40,13 @@ Viewer::Viewer(QWidget* parent, const QGLWidget* shared)
 
 Viewer::~Viewer()
 {
-    // TODO Auto-generated destructor stub
+	// TODO Auto-generated destructor stub
 }
 
 void Viewer::draw()
 {
-    setTextIsEnabled(true);
-    float pos[3];
+	setTextIsEnabled(true);
+	float pos[3];
 
     if(m_kfi->interpolationIsStarted())
     {
@@ -66,28 +66,28 @@ void Viewer::draw()
 
 void Viewer::createSnapshot()
 {
-    if(m_saveToDisk)
+	if(m_saveToDisk)
     saveSnapshot(true);
 }
 
 void Viewer::resetCamera()
 {
-    qglviewer::Vec center(0, 0, 0);
-    setSceneCenter(center);
+	qglviewer::Vec center(0, 0, 0);
+	setSceneCenter(center);
 
-    Vertex<float> v_min = m_boundingBox.getMin();
-    Vertex<float> v_max = m_boundingBox.getMax();
+	Vertex<float> v_min = m_boundingBox.getMin();
+	Vertex<float> v_max = m_boundingBox.getMax();
 
-    qglviewer::Vec v1(v_min.x, v_min.y, v_min.z);
-    qglviewer::Vec v2(v_max.x, v_max.y, v_max.z);
+	qglviewer::Vec v1(v_min.x, v_min.y, v_min.z);
+	qglviewer::Vec v2(v_max.x, v_max.y, v_max.z);
 
-    cout << v_min;
-    cout << v_max;
+	cout << v_min;
+	cout << v_max;
 
-    setSceneBoundingBox(v1, v2);
-    m_zoom = 1.0;
+	setSceneBoundingBox(v1, v2);
+	m_zoom = 1.0;
 
-    showEntireScene();
+	showEntireScene();
 }
 
 void Viewer::centerViewOnObject(Renderable* renderable)
@@ -117,16 +117,16 @@ void Viewer::centerViewOnObject(Renderable* renderable)
 
 void Viewer::addDataObject(Visualizer* obj)
 {
-    if(obj->renderable())
-    {
-        BoundingBox<Vertex<float> >* bb = (obj->renderable()->boundingBox());
-        if(bb->isValid())
-        {
-            m_boundingBox.expand(*bb);
-            resetCamera();
-        }
-        m_dataObjects.push_back(obj);
-    }
+	if(obj->renderable())
+	{
+		BoundingBox<Vertex<float> >* bb = (obj->renderable()->boundingBox());
+		if(bb->isValid())
+		{
+			m_boundingBox.expand(*bb);
+			resetCamera();
+		}
+		m_dataObjects.push_back(obj);
+	}
 }
 
 void Viewer::removeDataObject(Visualizer* obj)
@@ -153,5 +153,5 @@ void Viewer::removeDataObject(CustomTreeWidgetItem* item)
 
 void Viewer::updateDataObject(Visualizer* obj)
 {
-    updateGL();
+	updateGL();
 }

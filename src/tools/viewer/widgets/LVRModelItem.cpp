@@ -57,18 +57,18 @@ LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
 
     if(bridge->m_meshBridge->getNumTriangles())
     {
-        if(bridge->m_meshBridge->hasTextures())
-        {
-            LVRTextureMeshItem* texItem = new LVRTextureMeshItem(bridge->m_meshBridge, this);
-            addChild(texItem);
-            texItem->setExpanded(true);
-        }
-        else
-        {
-            LVRMeshItem* meshItem = new LVRMeshItem(bridge->m_meshBridge, this);
-            addChild(meshItem);
-            meshItem->setExpanded(true);
-        }
+    	if(bridge->m_meshBridge->hasTextures())
+    	{
+    		LVRTextureMeshItem* texItem = new LVRTextureMeshItem(bridge->m_meshBridge, this);
+    		addChild(texItem);
+    		texItem->setExpanded(true);
+    	}
+    	else
+    	{
+    		LVRMeshItem* meshItem = new LVRMeshItem(bridge->m_meshBridge, this);
+    		addChild(meshItem);
+    		meshItem->setExpanded(true);
+    	}
     }
 
     // Setup Pose
@@ -110,7 +110,7 @@ void LVRModelItem::setName(QString name)
 
 ModelBridgePtr LVRModelItem::getModelBridge()
 {
-    return m_modelBridge;
+	return m_modelBridge;
 }
 
 bool LVRModelItem::isEnabled()
@@ -120,15 +120,15 @@ bool LVRModelItem::isEnabled()
 
 void LVRModelItem::setVisibility(bool visible)
 {
-    m_modelBridge->setVisibility(visible);
+	m_modelBridge->setVisibility(visible);
 }
 
 void LVRModelItem::setModelVisibility(int column, bool globalValue)
 {
-    if(checkState(column) == globalValue || globalValue == true)
-    {
-        setVisibility(checkState(column));
-    }
+	if(checkState(column) == globalValue || globalValue == true)
+	{
+	    setVisibility(checkState(column));
+	}
 }
 
 LVRModelItem::~LVRModelItem()

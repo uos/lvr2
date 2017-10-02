@@ -50,99 +50,99 @@ typedef Normal<float>                            fNormal;
  */
 int main(int argc, char** argv)
 {
-    MeshBufferPtr mesh_buffer1;
-    MeshBufferPtr mesh_buffer2;
-    // Create an empty mesh
-    Fusion<fVertex, fNormal> mesh;
-    // Parse command line arguments
-    fusion::Options options(argc, argv);
-    try
-    {
-    
-        // Exit if options had to generate a usage message
-        // (this means required parameters are missing)
+	MeshBufferPtr mesh_buffer1;
+	MeshBufferPtr mesh_buffer2;
+	// Create an empty mesh
+	Fusion<fVertex, fNormal> mesh;
+	// Parse command line arguments
+	fusion::Options options(argc, argv);
+	try
+	{
+	
+		// Exit if options had to generate a usage message
+		// (this means required parameters are missing)
 
-        if ( options.printUsage() )
-        {
-            return 0;
-        }
+		if ( options.printUsage() )
+		{
+			return 0;
+		}
 
-        // Create a mesh loader object
-        ModelFactory io_factory;
-        ModelPtr model1 = io_factory.readModel( options.getMesh1FileName() );
-        ModelPtr model2 = io_factory.readModel( options.getMesh2FileName() );
+		// Create a mesh loader object
+		ModelFactory io_factory;
+		ModelPtr model1 = io_factory.readModel( options.getMesh1FileName() );
+		ModelPtr model2 = io_factory.readModel( options.getMesh2FileName() );
 
 
-        // Parse loaded data
-        if ( !model1 )
-        {
-            cout << timestamp << "IO Error: Unable to parse " << options.getMesh1FileName() << endl;
-            exit(-1);
-        }
+		// Parse loaded data
+		if ( !model1 )
+		{
+			cout << timestamp << "IO Error: Unable to parse " << options.getMesh1FileName() << endl;
+			exit(-1);
+		}
 
-        mesh_buffer1 = model1->m_mesh;
+		mesh_buffer1 = model1->m_mesh;
 
-        if(!mesh_buffer1)
-        {
-            cout << timestamp << "Given file contains no supported mesh information" << endl;
-            exit(-1);
-        }    
+		if(!mesh_buffer1)
+		{
+			cout << timestamp << "Given file contains no supported mesh information" << endl;
+			exit(-1);
+		}	
 
-        if ( !model2 )
-        {
-            cout << timestamp << "IO Error: Unable to parse " << options.getMesh2FileName() << endl;
-            exit(-1);
-        }
+		if ( !model2 )
+		{
+			cout << timestamp << "IO Error: Unable to parse " << options.getMesh2FileName() << endl;
+			exit(-1);
+		}
 
-        mesh_buffer2= model2->m_mesh;
+		mesh_buffer2= model2->m_mesh;
 
-        if(!mesh_buffer2)
-        {
-            cout << timestamp << "Given file contains no supported mesh information" << endl;
-            exit(-1);
-        }
-        cout << timestamp << "Successfully loaded both meshes." << endl;
-        
-        mesh.setVerbosity(options.getVerbosity());
-        mesh.setDistanceThreshold(options.getDistanceTreshold());
-        
-    }catch(...)
-        {
-            std::cout << "Unable to parse options. Call 'fusion --help' for more information." << std::endl;
-        }
-    // Load and integrate meshes
-    mesh.addMeshAndRemoteIntegrateOnly(mesh_buffer1);
-    mesh.addMeshAndRemoteIntegrateOnly(mesh_buffer2);
-    
-    /*mesh.addMesh(mesh_buffer1);
-    mesh.lazyIntegrate();
+		if(!mesh_buffer2)
+		{
+			cout << timestamp << "Given file contains no supported mesh information" << endl;
+			exit(-1);
+		}
+		cout << timestamp << "Successfully loaded both meshes." << endl;
+		
+		mesh.setVerbosity(options.getVerbosity());
+		mesh.setDistanceThreshold(options.getDistanceTreshold());
+		
+	}catch(...)
+		{
+			std::cout << "Unable to parse options. Call 'fusion --help' for more information." << std::endl;
+		}
+	// Load and integrate meshes
+	mesh.addMeshAndRemoteIntegrateOnly(mesh_buffer1);
+	mesh.addMeshAndRemoteIntegrateOnly(mesh_buffer2);
+	
+	/*mesh.addMesh(mesh_buffer1);
+	mesh.lazyIntegrate();
 
-    mesh.addMesh(mesh_buffer2);
-    mesh.integrate();*/
+	mesh.addMesh(mesh_buffer2);
+	mesh.integrate();*/
 
-    mesh.finalize();
+	mesh.finalize();
 
-    // Write Result to .ply
-    // Create output model and save to file
-    ModelPtr m( new Model( mesh.meshBuffer() ) );
-    try{
-        if(options.outputFileNameSet())
-        {
-            ModelFactory::saveModel(m, options.getFusionMeshFileName());
-            cout << "Wrote resulting mesh to " << options.getFusionMeshFileName() << endl;
-        }
-        else
-        {
-            ModelFactory::saveModel(m, "fusion_mesh.ply");
-            cout << "Wrote resulting mesh to " <<  "fusion_mesh.ply" << endl;
-        }
-    }
-    catch(...)
-    {
-        std::cout << "Unable to parse options. Call 'fusion --help' for more information." << std::endl;
-    }
+	// Write Result to .ply
+	// Create output model and save to file
+	ModelPtr m( new Model( mesh.meshBuffer() ) );
+	try{
+		if(options.outputFileNameSet())
+		{
+			ModelFactory::saveModel(m, options.getFusionMeshFileName());
+			cout << "Wrote resulting mesh to " << options.getFusionMeshFileName() << endl;
+		}
+		else
+		{
+			ModelFactory::saveModel(m, "fusion_mesh.ply");
+			cout << "Wrote resulting mesh to " <<  "fusion_mesh.ply" << endl;
+		}
+	}
+	catch(...)
+	{
+		std::cout << "Unable to parse options. Call 'fusion --help' for more information." << std::endl;
+	}
 
-    cout << endl << timestamp << "Program end." << endl;
-    return 0;
+	cout << endl << timestamp << "Program end." << endl;
+	return 0;
 }
 

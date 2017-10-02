@@ -28,22 +28,22 @@
 
 Visualizer::Visualizer()
 {
-    m_renderable = 0;
-    m_name = "";
-    m_treeItem = 0;
+	m_renderable = 0;
+	m_name = "";
+	m_treeItem = 0;
 }
 
 Visualizer::~Visualizer()
 {
-    delete m_renderable;
+	delete m_renderable;
 }
 
 Renderable* Visualizer::renderable()
 {
-    return m_renderable;
+	return m_renderable;
 }
 
 string Visualizer::name()
 {
-    return m_name;
+	return m_name;
 }

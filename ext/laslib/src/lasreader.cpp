@@ -794,9 +794,9 @@ BOOL LASreadOpener::parse(int argc, char* argv[])
         return FALSE;
       }
       F64 offset[3];
-            offset[0] = atof(argv[i+1]);
-            offset[1] = atof(argv[i+2]);
-            offset[2] = atof(argv[i+3]);
+			offset[0] = atof(argv[i+1]);
+			offset[1] = atof(argv[i+2]);
+			offset[2] = atof(argv[i+3]);
       set_offset(offset);
       *argv[i]='\0'; *argv[i+1]='\0'; *argv[i+2]='\0'; *argv[i+3]='\0'; i+=3;
     }
@@ -1079,20 +1079,20 @@ void LASreadOpener::add_file_name_windows(const char* file_name, BOOL unique)
       len++;
       char full_file_name[512];
       strncpy(full_file_name, file_name, len);
-        do
-        {
+	    do
+	    {
         sprintf(&full_file_name[len], "%s", info.cFileName);
         add_file_name(full_file_name, unique);
-        } while (FindNextFile(h, &info));
+  	  } while (FindNextFile(h, &info));
     }
     else
     {
       do
       {
         add_file_name(info.cFileName, unique);
-        } while (FindNextFile(h, &info));
+  	  } while (FindNextFile(h, &info));
     }
-      FindClose(h);
+	  FindClose(h);
   }
 }
 #endif

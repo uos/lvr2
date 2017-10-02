@@ -36,23 +36,23 @@ using std::list;
 
 class ViewerManager : public QObject
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    ViewerManager(QWidget* parent, const QGLWidget* shared = 0);
-    virtual ~ViewerManager();
+	ViewerManager(QWidget* parent, const QGLWidget* shared = 0);
+	virtual ~ViewerManager();
 
-    Viewer* current();
+	Viewer* current();
 
 public Q_SLOTS:
-    void addDataCollector(Visualizer* c);
-    void updateDataObject(Visualizer* obj);
-    void removeDataCollector(Visualizer* obj);
+	void addDataCollector(Visualizer* c);
+	void updateDataObject(Visualizer* obj);
+	void removeDataCollector(Visualizer* obj);
 
 private:
-    Viewer*             m_currentViewer;
-    list<Viewer*>         m_allViewers;
-    QWidget*            m_parentWidget;
+	Viewer* 			m_currentViewer;
+	list<Viewer*> 		m_allViewers;
+	QWidget*			m_parentWidget;
 
 };
 

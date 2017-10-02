@@ -30,46 +30,46 @@ namespace slicer{
 Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
 
-    // Create option descriptions
+	// Create option descriptions
 
-    m_descr.add_options()
-                ("help", "Produce help message")
-                ("input", value< vector<string> >(), "Input file name. Supported formats are .ply")
-                ("dimension", value< vector<string> >(), "Dimension parameter for the AABB Search.")
-                ("value", value< vector<double> >(), "Dimension value for the AABB Search.")
+	m_descr.add_options()
+		        ("help", "Produce help message")
+		        ("input", value< vector<string> >(), "Input file name. Supported formats are .ply")
+		        ("dimension", value< vector<string> >(), "Dimension parameter for the AABB Search.")
+		        ("value", value< vector<double> >(), "Dimension value for the AABB Search.")
         ;
 
-    m_pdescr.add("input", -1);
-    m_pdescr.add("dimension", -1);
-    m_pdescr.add("value", -1);
+	m_pdescr.add("input", -1);
+	m_pdescr.add("dimension", -1);
+	m_pdescr.add("value", -1);
 
-    // Parse command line and generate variables map
-    store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
-    notify(m_variables);
+	// Parse command line and generate variables map
+	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
+	notify(m_variables);
 
   if(m_variables.count("help")) {
-      
+	  
     ::std::cout<< m_descr << ::std::endl;
   }
 }
 
 Options::~Options() {
-    // TODO Auto-generated destructor stub
+	// TODO Auto-generated destructor stub
 }
 
 string Options::getInputFileName() const
 {
-    return (m_variables["input"].as< vector<string> >())[0];
+	return (m_variables["input"].as< vector<string> >())[0];
 }
 
 string Options::getDimension() const
 {
-    return (m_variables["dimension"].as< vector<string> >())[0];
+	return (m_variables["dimension"].as< vector<string> >())[0];
 }
 
 double Options::getValue() const
 {
-    return (m_variables["value"].as< vector<double> >())[0];
+	return (m_variables["value"].as< vector<double> >())[0];
 }
 
 bool Options::printUsage() const

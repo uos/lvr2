@@ -36,18 +36,18 @@ CustomTreeWidgetItem::~CustomTreeWidgetItem() {}
 
 bool CustomTreeWidgetItem::toggled()
 {
-    if(checkState(0) != m_oldCheckState)
-    {
-        m_oldCheckState = checkState(0);
-        return true;
-    }
-    return false;
+	if(checkState(0) != m_oldCheckState)
+	{
+		m_oldCheckState = checkState(0);
+		return true;
+	}
+	return false;
 }
 
 void CustomTreeWidgetItem::setInitialState(Qt::CheckState state)
 {
-    m_oldCheckState = state;
-    setCheckState(0, state);
+	m_oldCheckState = state;
+	setCheckState(0, state);
 }
 
 void CustomTreeWidgetItem::setName(string name)

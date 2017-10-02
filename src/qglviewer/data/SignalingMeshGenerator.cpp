@@ -32,76 +32,76 @@ using std::endl;
 
 SignalingMeshGenerator::SignalingMeshGenerator()
 {
-    m_newData = false;
-    start();
+	m_newData = false;
+	start();
 }
 
 SignalingMeshGenerator::~SignalingMeshGenerator()
 {
-    // TODO Auto-generated destructor stub
+	// TODO Auto-generated destructor stub
 }
 
 void SignalingMeshGenerator::newPointCloud(PointBufferPtr* buffer)
 {
-    cout << "New Mesh" << endl;
-    m_mutex.lock();
-    m_pointBuffer = *buffer;
-    m_newData = true;
-    m_mutex.unlock();
+	cout << "New Mesh" << endl;
+	m_mutex.lock();
+	m_pointBuffer = *buffer;
+	m_newData = true;
+	m_mutex.unlock();
 
 }
 
 void SignalingMeshGenerator::run()
 {
 
-    if(m_newData)
-    {
-        akSurface* s = new akSurface(
-                m_pointBuffer, "FLANN",
-                10,
-                10,
-                10);
+	if(m_newData)
+	{
+		akSurface* s = new akSurface(
+				m_pointBuffer, "FLANN",
+				10,
+				10,
+				10);
 
-        psSurface::Ptr surface(s);
+		psSurface::Ptr surface(s);
 
-        surface->setKd(10);
-        surface->setKi(10);
-        surface->setKn(10);
-        surface->calculateSurfaceNormals();
+		surface->setKd(10);
+		surface->setKi(10);
+		surface->setKn(10);
+		surface->calculateSurfaceNormals();
 
-        // Create an empty mesh and set parameters
-        HalfEdgeMesh<cVertex, cNormal> mesh( surface );
-        mesh.setDepth(100);
+		// Create an empty mesh and set parameters
+		HalfEdgeMesh<cVertex, cNormal> mesh( surface );
+		mesh.setDepth(100);
 
 
-        // Create a new reconstruction object
-        FastReconstruction<cVertex, cNormal > reconstruction(
-                surface,
-                0.03,
-                true,
-                "PMC",
-                true);
+		// Create a new reconstruction object
+		FastReconstruction<cVertex, cNormal > reconstruction(
+				surface,
+				0.03,
+				true,
+				"PMC",
+				true);
 
-        reconstruction.getMesh(mesh);
-        mesh.setClassifier("Default");
-        mesh.removeDanglingArtifacts(100);
-        mesh.optimizePlanes(3,
-                0.73,
-                5,
-                3,
-                true);
+		reconstruction.getMesh(mesh);
+		mesh.setClassifier("Default");
+		mesh.removeDanglingArtifacts(100);
+		mesh.optimizePlanes(3,
+				0.73,
+				5,
+				3,
+				true);
 
-        mesh.fillHoles(50);
-        mesh.optimizePlaneIntersections();
-        mesh.restorePlanes(5);
-        mesh.finalize();
+		mesh.fillHoles(50);
+		mesh.optimizePlaneIntersections();
+		mesh.restorePlanes(5);
+		mesh.finalize();
 
-        m_newData = false;
-    }
-    else
-    {
-        usleep(10000);
-    }
+		m_newData = false;
+	}
+	else
+	{
+		usleep(10000);
+	}
 }
 
 

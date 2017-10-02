@@ -23,7 +23,7 @@ using std::vector;
 class ScanIO_oct : public ScanIO {
 public:
   virtual int readScans(int start, int end, string &dir, int maxDist, int mindist,
-                    double *euler, vector<Point> &ptss); 
+				    double *euler, vector<Point> &ptss); 
 };
 
 // Since this shared object file is  loaded on the fly, we

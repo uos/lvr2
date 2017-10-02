@@ -23,23 +23,23 @@ class Point {
 
 public:
   /**
-   *    Default constructor
+   *	Default constructor
    */
   inline Point() { x = y = z = 0.0;  point_id = 0;  type = 0; reflectance = 0.0; amplitude = 0.0; deviation = 0.0; rgb[0] = 255; rgb[1] = 255; rgb[2] = 255;};
   /**
-   *    Copy constructor
+   *	Copy constructor
    */
   inline Point(const Point& p) { x = p.x; y = p.y; z = p.z; type = p.type; point_id = p.point_id;
   reflectance = p.reflectance; amplitude = p.amplitude; deviation = p.deviation; rgb[0] = p.rgb[0]; rgb[1] = p.rgb[1]; rgb[2] = p.rgb[2];};
   /**
-   *    Constructor with an array, i.e., vecctor of coordinates
+   *	Constructor with an array, i.e., vecctor of coordinates
    */
   inline Point(const double *p) { x = p[0]; y = p[1]; z = p[2]; type = 0; reflectance = 0.0; amplitude = 0.0; deviation = 0.0;
-    rgb[0] = 255; rgb[1] = 255; rgb[2] = 255;};
+	rgb[0] = 255; rgb[1] = 255; rgb[2] = 255;};
   inline Point(const double *p, const char *c) { x = p[0]; y = p[1]; z = p[2]; rgb[0] = c[0]; rgb[1] = c[1]; rgb[2] = c[2];};
 
   /**
-   *    Constructor with three double values
+   *	Constructor with three double values
    */
   inline Point(const double _x, const double _y, const double _z) { x = _x; y = _y; z = _z; };
   inline Point(const double _x, const double _y, const double _z, const char _r, const char _g, const char _b) { x = _x; y = _y; z = _z; rgb[0] = _r; rgb[1] = _g; rgb[2] = _b;};

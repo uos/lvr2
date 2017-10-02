@@ -246,17 +246,17 @@ void transformAndReducePointCloud(ModelPtr model, int modulo, int sx, int sy, in
         {
             if(sx != 1)
             {
-                arr[i * 3]         *= sx;
+                arr[i * 3] 		*= sx;
             }
 
             if(sy != 1)
             {
-                arr[i * 3 + 1]     *= sy;
+                arr[i * 3 + 1] 	*= sy;
             }
 
             if(sz != 1)
             {
-                arr[i * 3 + 2]     *= sz;
+                arr[i * 3 + 2] 	*= sz;
             }
 
             if((cntr * 3) < targetSize)

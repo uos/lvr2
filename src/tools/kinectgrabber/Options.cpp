@@ -31,20 +31,20 @@ namespace kingrab{
 Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
 
-    // Create option descriptions
+	// Create option descriptions
 
-    m_descr.add_options()
-                ("help", "Produce help message")
-                ("t", value<int>(&m_t)->default_value(0), "Timeout before grabbing starts (s)")
-                ("d", value<int>(&m_d)->default_value(20), "Number of dumps.")
-                ("w", value<int>(&m_w)->default_value(100), "Wait time between dumps (ms)")
-            ;
+	m_descr.add_options()
+		        ("help", "Produce help message")
+		        ("t", value<int>(&m_t)->default_value(0), "Timeout before grabbing starts (s)")
+		        ("d", value<int>(&m_d)->default_value(20), "Number of dumps.")
+		        ("w", value<int>(&m_w)->default_value(100), "Wait time between dumps (ms)")
+	        ;
 
 
 
-    // Parse command line and generate variables map
-    store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
-    notify(m_variables);
+	// Parse command line and generate variables map
+	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
+	notify(m_variables);
 
   if(m_variables.count("help")) {
     ::std::cout<< m_descr << ::std::endl;
@@ -56,7 +56,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 
 Options::~Options() {
-    // TODO Auto-generated destructor stub
+	// TODO Auto-generated destructor stub
 }
 
 } // namespace reconstruct
