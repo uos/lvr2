@@ -79,189 +79,189 @@ namespace lvr
  
 class MeshSlicer
 {
-	
+    
 public:
-	
-	typedef CGAL::Simple_cartesian<double> K;
-	typedef K::FT FT;
-	typedef K::Vector_3 Vector;
-	typedef K::Plane_3 Plane;
-	typedef K::Ray_3 Ray;
-	typedef K::Line_3 Line;
-	typedef K::Point_3 Point;
-	typedef K::Triangle_3 Triangle;
-	typedef K::Segment_3 Segment; 
-	typedef std::list<Triangle>::iterator Iterator;
-	typedef CGAL::AABB_triangle_primitive<K,Iterator> Primitive;
-	typedef CGAL::AABB_traits<K, Primitive> AABB_triangle_traits;
-	typedef CGAL::AABB_tree<AABB_triangle_traits> Tree;
+    
+    typedef CGAL::Simple_cartesian<double> K;
+    typedef K::FT FT;
+    typedef K::Vector_3 Vector;
+    typedef K::Plane_3 Plane;
+    typedef K::Ray_3 Ray;
+    typedef K::Line_3 Line;
+    typedef K::Point_3 Point;
+    typedef K::Triangle_3 Triangle;
+    typedef K::Segment_3 Segment; 
+    typedef std::list<Triangle>::iterator Iterator;
+    typedef CGAL::AABB_triangle_primitive<K,Iterator> Primitive;
+    typedef CGAL::AABB_traits<K, Primitive> AABB_triangle_traits;
+    typedef CGAL::AABB_tree<AABB_triangle_traits> Tree;
 
-	/**
-	 * @brief   Creates an empty FusionMesh 
-	 */
-	MeshSlicer();
+    /**
+     * @brief   Creates an empty FusionMesh 
+     */
+    MeshSlicer();
 
-	/**
-	 * @brief   Destructor.
-	 */
-	virtual ~MeshSlicer()
-	{};
+    /**
+     * @brief   Destructor.
+     */
+    virtual ~MeshSlicer()
+    {};
 
-	/// Input Methods
+    /// Input Methods
 
-	/**
+    /**
      * @brief   Insert an entire mesh into the local fusion buffer. It is advised to call integrate() afterwards.
      *
      * @param   mesh      A pointer to the mesh to be inserted
      */
-	virtual void addMesh(MeshBufferPtr model);
-	
-	/// AABB Tree & Slice Computation
-	
-	/**
+    virtual void addMesh(MeshBufferPtr model);
+    
+    /// AABB Tree & Slice Computation
+    
+    /**
      * @brief   build CGAL-AABB-Tree from global mesh
-	 *
+     *
      */
-	virtual void buildTree();
+    virtual void buildTree();
 
-	/**
+    /**
      * @brief   Calculates the query plane
      *     
      */
-	virtual Plane getQueryPlane(string dimension, double value);
-	
-	/**
+    virtual Plane getQueryPlane(string dimension, double value);
+    
+    /**
      * @brief   Calculate all intersection with the desired plane 
      *     
-     * @param   segments 		A buffer for all intersection segments
+     * @param   segments         A buffer for all intersection segments
      */
-	virtual void computeIntersections(vector<Segment>& segments);
-	
-	/**
+    virtual void computeIntersections(vector<Segment>& segments);
+    
+    /**
      * @brief   Calculate all traingles within the desired bounding box and projects them onto a plane
      *     
-     * @param   segments 		A buffer for all intersection segments
+     * @param   segments         A buffer for all intersection segments
      */
-	virtual void computeProjections(vector<Segment>& segments);
-	
-	/**
+    virtual void computeProjections(vector<Segment>& segments);
+    
+    /**
      * @brief   Integrate the local buffer into the global fused mesh
-	 *
+     *
      */
-	virtual vector<float> compute2dSlice();
+    virtual vector<float> compute2dSlice();
 
-	/**
-	* @brief   Integrate the local buffer into the global fused mesh
-	 *
-	*/
-	virtual vector<float> compute2dProjection();
+    /**
+    * @brief   Integrate the local buffer into the global fused mesh
+     *
+    */
+    virtual vector<float> compute2dProjection();
 
-	/// Convenience Function
-	
-	/**
-	* @brief   Insert an entire mesh into the local fusion buffer and integrate it imediately.
-	*
-	* @param   mesh      A pointer to the mesh to be inserted
-	*/
-	virtual vector<float> addMeshAndCompute2dSlice(MeshBufferPtr model);
+    /// Convenience Function
+    
+    /**
+    * @brief   Insert an entire mesh into the local fusion buffer and integrate it imediately.
+    *
+    * @param   mesh      A pointer to the mesh to be inserted
+    */
+    virtual vector<float> addMeshAndCompute2dSlice(MeshBufferPtr model);
 
-	/**
+    /**
      * @brief   Insert an entire mesh into the local fusion buffer and integrate it imediately.
      *
      * @param   mesh      A pointer to the mesh to be inserted
      */
-	virtual vector<float> addMeshAndCompute2dProjection(MeshBufferPtr model);
+    virtual vector<float> addMeshAndCompute2dProjection(MeshBufferPtr model);
 
-	/// Parameter Methods
+    /// Parameter Methods
 
-	/**
-	 * Sets the dimension
-	 *
-	 * @param dim 	dimension to slice 
-	 *
-	 */
-	 
-	void setDimension(string dim) 
-	{ 
-		dimension = dim;
-	};
-	
-	/**
-	 * Sets the plane position 
-	 *
-	 * @param val 	value
-	 *
-	 */
-	 	 
-	void setValue(double val)
-	{ 
-		value = val;
-		
-	};
-	
-		void setMinValue(double min)
-	{ 
-		min_value = min;
-		
-	};
-	
-		void setMaxValue(double max)
-	{ 
-		max_value = max;
-		
-	};
-	
-	
-	/**
-	 * Sets the plane position 
-	 *
-	 * @param val 	value
-	 *
-	 */
-	 	 
-	void setResolution(double res)
-	{ 
-		resolution = res;
-		
-	};
-	
-	void setVerbosity(bool v)
-	{ 
-		verbose = v;
-		
-	};
-	
-	/**
+    /**
+     * Sets the dimension
+     *
+     * @param dim     dimension to slice 
+     *
+     */
+     
+    void setDimension(string dim) 
+    { 
+        dimension = dim;
+    };
+    
+    /**
+     * Sets the plane position 
+     *
+     * @param val     value
+     *
+     */
+          
+    void setValue(double val)
+    { 
+        value = val;
+        
+    };
+    
+        void setMinValue(double min)
+    { 
+        min_value = min;
+        
+    };
+    
+        void setMaxValue(double max)
+    { 
+        max_value = max;
+        
+    };
+    
+    
+    /**
+     * Sets the plane position 
+     *
+     * @param val     value
+     *
+     */
+          
+    void setResolution(double res)
+    { 
+        resolution = res;
+        
+    };
+    
+    void setVerbosity(bool v)
+    { 
+        verbose = v;
+        
+    };
+    
+    /**
      * @brief   Reset the Input Data Storage.
      */
-	virtual void clear();
+    virtual void clear();
 
 private:
 
-	bool verbose;
+    bool verbose;
 
-	/// Input Data
-	 size_t num_verts, num_faces;
-	 vector<float> vertices;
-	 vector<unsigned int>  faces;
-	
-	/// Intersection Buffer 
-	vector<Segment> segments;
-	vector<float> output;
+    /// Input Data
+     size_t num_verts, num_faces;
+     vector<float> vertices;
+     vector<unsigned int>  faces;
+    
+    /// Intersection Buffer 
+    vector<Segment> segments;
+    vector<float> output;
 
-	/// CGAL AABB Tree
-	Tree	tree;
+    /// CGAL AABB Tree
+    Tree    tree;
 
-	/// Parameter
-	string	dimension;
-	double	coord_x;
-	double	coord_y;
-	double	coord_z;
-	
-	double	value;
-	double min_value;
-	double max_value;
-	double resolution;
+    /// Parameter
+    string    dimension;
+    double    coord_x;
+    double    coord_y;
+    double    coord_z;
+    
+    double    value;
+    double min_value;
+    double max_value;
+    double resolution;
 };
 
 } // namespace lvr

@@ -39,13 +39,13 @@ namespace lvr
 class DatIO : public BaseIO
 {
 public:
-	DatIO();
-	virtual ~DatIO();
+    DatIO();
+    virtual ~DatIO();
 
-	virtual ModelPtr read(string filename, int n, int reduction = 0);
-	virtual ModelPtr read(string filename);
-	virtual void save(ModelPtr model, string filename);
-	virtual void save(string filename);
+    virtual ModelPtr read(string filename, int n, int reduction = 0);
+    virtual ModelPtr read(string filename);
+    virtual void save(ModelPtr model, string filename);
+    virtual void save(string filename);
 };
 
 } // namespace lvr

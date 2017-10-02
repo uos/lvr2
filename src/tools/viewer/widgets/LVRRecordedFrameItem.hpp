@@ -42,10 +42,10 @@ public:
     static LVRRecordedFrameItem* createFromStream(QTextStream &in);
 
 public Q_SLOTS:
-    vtkSmartPointer<vtkCamera>	getFrame();
+    vtkSmartPointer<vtkCamera>    getFrame();
 
 protected:
-	vtkSmartPointer<vtkCamera>  m_recordedFrame;
+    vtkSmartPointer<vtkCamera>  m_recordedFrame;
     QString                     m_name;
 };
 

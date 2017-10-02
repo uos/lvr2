@@ -46,52 +46,52 @@ using namespace boost::program_options;
 
 /**
  * @brief A class to parse the program options for the reconstruction
- * 		  executable.
+ *           executable.
  */
 class Options {
 public:
 
-	/**
-	 * @brief 	Ctor. Parses the command parameters given to the main
-	 * 		  	function of the program
-	 */
-	Options(int argc, char** argv);
-	virtual ~Options();
+    /**
+     * @brief     Ctor. Parses the command parameters given to the main
+     *               function of the program
+     */
+    Options(int argc, char** argv);
+    virtual ~Options();
 
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
-	int x() { return m_variables["xPos"].as<int>();}
+    /**
+     * @brief   Returns the position of the x coordinate in the data.
+     */
+    int x() { return m_variables["xPos"].as<int>();}
 
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
-	int y() { return m_variables["yPos"].as<int>();}
+    /**
+     * @brief   Returns the position of the x coordinate in the data.
+     */
+    int y() { return m_variables["yPos"].as<int>();}
 
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
-	int z() { return m_variables["zPos"].as<int>();}
+    /**
+     * @brief   Returns the position of the x coordinate in the data.
+     */
+    int z() { return m_variables["zPos"].as<int>();}
 
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
-	int r() { return m_variables["rPos"].as<int>() ;}
+    /**
+     * @brief   Returns the position of the x coordinate in the data.
+     */
+    int r() { return m_variables["rPos"].as<int>() ;}
 
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
-	int g() { return m_variables["gPos"].as<int>();}
+    /**
+     * @brief   Returns the position of the x coordinate in the data.
+     */
+    int g() { return m_variables["gPos"].as<int>();}
 
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
-	int b() { return m_variables["bPos"].as<int>();}
+    /**
+     * @brief   Returns the position of the x coordinate in the data.
+     */
+    int b() { return m_variables["bPos"].as<int>();}
 
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
-	int i() { return m_variables["iPos"].as<int>();}
+    /**
+     * @brief   Returns the position of the x coordinate in the data.
+     */
+    int i() { return m_variables["iPos"].as<int>();}
 
 
     /**
@@ -132,8 +132,8 @@ public:
 
 private:
 
-	/// Output file name
-	string m_outputFile;
+    /// Output file name
+    string m_outputFile;
 
     /// The internally used variable map
     variables_map                   m_variables;
@@ -150,10 +150,10 @@ private:
 /// Overlaoeded outpur operator
 inline ostream& operator<<(ostream& os, const Options &o)
 {
-	cout << "##### Program options: " 	<< endl;
-	cout << "##### Input file \t\t: "  << o.inputFile() << endl;
-	cout << "##### Output file \t\t: " 	<< o.outputFile() << endl;
-	return os;
+    cout << "##### Program options: "     << endl;
+    cout << "##### Input file \t\t: "  << o.inputFile() << endl;
+    cout << "##### Output file \t\t: "     << o.outputFile() << endl;
+    return os;
 }
 
 } // namespace reconstruct

@@ -45,45 +45,45 @@ using namespace boost::program_options;
 
 /**
  * @brief A class to parse the program options for the reconstruction
- * 		  executable.
+ *           executable.
  */
 class Options {
 public:
 
-	/**
-	 * @brief 	Ctor. Parses the command parameters given to the main
-	 * 		  	function of the program
-	 */
-	Options(int argc, char** argv);
-	virtual ~Options();
+    /**
+     * @brief     Ctor. Parses the command parameters given to the main
+     *               function of the program
+     */
+    Options(int argc, char** argv);
+    virtual ~Options();
 
-	int getWaitTime() const
-	{
-		return m_variables["m_w"].as<int>();
-	}
+    int getWaitTime() const
+    {
+        return m_variables["m_w"].as<int>();
+    }
 
-	int getStartDelay() const
-	{
-	    return m_variables["m_t"].as<int>();
-	}
+    int getStartDelay() const
+    {
+        return m_variables["m_t"].as<int>();
+    }
 
-	int getNumDumps() const
-	{
-	    return m_variables["m_d"].as<int>();
-	}
+    int getNumDumps() const
+    {
+        return m_variables["m_d"].as<int>();
+    }
 private:
-	int m_d;
-	int m_t;
-	int m_w;
-	
-	/// The internally used variable map
-	variables_map			        m_variables;
+    int m_d;
+    int m_t;
+    int m_w;
+    
+    /// The internally used variable map
+    variables_map                    m_variables;
 
-	/// The internally used option description
-	options_description 		    m_descr;
+    /// The internally used option description
+    options_description             m_descr;
 
-	/// The internally used positional option desription
-	positional_options_description 	m_pdescr;
+    /// The internally used positional option desription
+    positional_options_description     m_pdescr;
 
 };
 
@@ -92,7 +92,7 @@ private:
 inline ostream& operator<<(ostream& os, const Options &o)
 {
 
-	return os;
+    return os;
 }
 
 } // namespace reconstruct

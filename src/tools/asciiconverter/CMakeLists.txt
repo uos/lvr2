@@ -12,13 +12,13 @@ set(ASCII_SOURCES
 #####################################################################################
 
 set(LVR_ASCIICONVERT_DEPENDENCIES
-	lvr_static
-	lvrlas_static
-	lvrrply_static
-	lvrslam6d_static
-	${OPENGL_LIBRARIES}
-	${GLUT_LIBRARIES}
-	)
+    lvr_static
+    lvrlas_static
+    lvrrply_static
+    lvrslam6d_static
+    ${OPENGL_LIBRARIES}
+    ${GLUT_LIBRARIES}
+    )
 
 #####################################################################################
 # Add executable

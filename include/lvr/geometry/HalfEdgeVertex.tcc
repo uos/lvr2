@@ -30,134 +30,134 @@ namespace lvr
 template<typename VertexT, typename NormalT>
 void HalfEdgeVertex<VertexT, NormalT>::calcQuadric(Matrix4<float> &q, bool use_tri)
 {
-	// Get adjacent faces
-	list<FacePtr> adj_faces;
-	getAdjacentFaces(adj_faces);
+    // Get adjacent faces
+    list<FacePtr> adj_faces;
+    getAdjacentFaces(adj_faces);
 
-	// Init quadric data
-	float* data = q.getData();
-	for(int i = 0; i < 16; i++) data[i] = 0;
+    // Init quadric data
+    float* data = q.getData();
+    for(int i = 0; i < 16; i++) data[i] = 0;
 
-	// Calculate quadric entries
-	typename list<FacePtr>::iterator it;
-	for(it = adj_faces.begin(); it != adj_faces.end(); it++)
-	{
-		FacePtr f = *it;
+    // Calculate quadric entries
+    typename list<FacePtr>::iterator it;
+    for(it = adj_faces.begin(); it != adj_faces.end(); it++)
+    {
+        FacePtr f = *it;
 
-		float triangle_area = 1;
-		if(use_tri)
-		{
-			triangle_area = f->getArea();
-		}
+        float triangle_area = 1;
+        if(use_tri)
+        {
+            triangle_area = f->getArea();
+        }
 
-		NormalT n = f->getFaceNormal();
+        NormalT n = f->getFaceNormal();
 
-		float a = n[0];
-		float b = n[1];
-		float c = n[2];
-		float d = f->getD();
+        float a = n[0];
+        float b = n[1];
+        float c = n[2];
+        float d = f->getD();
 
-		data[0] += triangle_area * a * a;
-		data[1] += triangle_area * a * b;
-		data[2] += triangle_area * a * c;
-		data[3] += triangle_area * a * d;
+        data[0] += triangle_area * a * a;
+        data[1] += triangle_area * a * b;
+        data[2] += triangle_area * a * c;
+        data[3] += triangle_area * a * d;
 
-		data[4] += triangle_area * b * a;
-		data[5] += triangle_area * b * b;
-		data[6] += triangle_area * b * c;
-		data[7] += triangle_area * b * d;
+        data[4] += triangle_area * b * a;
+        data[5] += triangle_area * b * b;
+        data[6] += triangle_area * b * c;
+        data[7] += triangle_area * b * d;
 
-		data[8] += triangle_area * c * a;
-		data[9] += triangle_area * c * b;
-		data[10] += triangle_area * c * c;
-		data[11] += triangle_area * c * d;
+        data[8] += triangle_area * c * a;
+        data[9] += triangle_area * c * b;
+        data[10] += triangle_area * c * c;
+        data[11] += triangle_area * c * d;
 
-		data[12] += triangle_area * d * a;
-		data[13] += triangle_area * d * b;
-		data[14] += triangle_area * d * c;
-		data[15] += triangle_area * d * d;
+        data[12] += triangle_area * d * a;
+        data[13] += triangle_area * d * b;
+        data[14] += triangle_area * d * c;
+        data[15] += triangle_area * d * d;
 
-	}
+    }
 }
 
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeVertex<VertexT, NormalT>::getAdjacentFaces(list<FacePtr> &adj )
 {
-	set<FacePtr> adj_faces;
-	typename vector<EdgePtr>::iterator it;
+    set<FacePtr> adj_faces;
+    typename vector<EdgePtr>::iterator it;
 
-	// Iterate over incoming edges and get all surrounding faces.
-	// In a correctly linked  mesh it shouldn't be necessary to
-	// iterate over the outgoint edges as well.
+    // Iterate over incoming edges and get all surrounding faces.
+    // In a correctly linked  mesh it shouldn't be necessary to
+    // iterate over the outgoint edges as well.
 
-	for(it = out.begin(); it != out.end(); it++)
-	{
-		EdgePtr e = *it;
-		if(e)
-		{
-			if(e->face())
-			{
-				adj_faces.insert(e->face());
-			}
+    for(it = out.begin(); it != out.end(); it++)
+    {
+        EdgePtr e = *it;
+        if(e)
+        {
+            if(e->face())
+            {
+                adj_faces.insert(e->face());
+            }
 
-			if(e->pair())
-			{
-				if(e->pair()->face())
-				{
-					adj_faces.insert(e->pair()->face());
-				}
-			}
-		}
-	}
+            if(e->pair())
+            {
+                if(e->pair()->face())
+                {
+                    adj_faces.insert(e->pair()->face());
+                }
+            }
+        }
+    }
 
-	// Copy pointers to out list
-	typename set<FacePtr>::iterator sit;
-	for(sit = adj_faces.begin(); sit != adj_faces.end(); sit++)
-	{
-		adj.push_back(*sit);
-	}
+    // Copy pointers to out list
+    typename set<FacePtr>::iterator sit;
+    for(sit = adj_faces.begin(); sit != adj_faces.end(); sit++)
+    {
+        adj.push_back(*sit);
+    }
 }
 
 template<typename VertexT, typename NormalT>
 bool HalfEdgeVertex<VertexT, NormalT>::isBorderVertex()
 {
-	list<FacePtr> adj;
-	typename list<FacePtr>::iterator it;
-	getAdjacentFaces(adj);
+    list<FacePtr> adj;
+    typename list<FacePtr>::iterator it;
+    getAdjacentFaces(adj);
 
-	for(it = adj.begin(); it != adj.end(); it++)
-	{
-		FacePtr f = *it;
-		if(f->isBorderFace())
-		{
-			return false;
-		}
-	}
-	return true;
+    for(it = adj.begin(); it != adj.end(); it++)
+    {
+        FacePtr f = *it;
+        if(f->isBorderFace())
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 template<typename VertexT, typename NormalT>
 HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* HalfEdgeVertex<VertexT, NormalT>::getShortestEdge()
 {
-	HEdge* shortest = 0;
-	float s_length = numeric_limits<float>::max();
+    HEdge* shortest = 0;
+    float s_length = numeric_limits<float>::max();
 
-	typename vector<HEdge*>::iterator it;
-	for(it = in.begin(); it != in.end(); it++)
-	{
-		HEdge* e = *it;
-		VertexT v1 = e->start()->m_position;
-		VertexT v2 = e->end()->m_position;
-		float length = (v1 - v2).length();
+    typename vector<HEdge*>::iterator it;
+    for(it = in.begin(); it != in.end(); it++)
+    {
+        HEdge* e = *it;
+        VertexT v1 = e->start()->m_position;
+        VertexT v2 = e->end()->m_position;
+        float length = (v1 - v2).length();
 
-		if(shortest == 0 || length < s_length )
-		{
-			s_length = length;
-			shortest = e;
-		}
-	}
-	return shortest;
+        if(shortest == 0 || length < s_length )
+        {
+            s_length = length;
+            shortest = e;
+        }
+    }
+    return shortest;
 }
 
 } // namespace lvr

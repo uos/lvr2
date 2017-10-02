@@ -40,16 +40,16 @@ uint FastBox<VertexT, NormalT>::INVALID_INDEX = numeric_limits<uint>::max();
 template<typename VertexT, typename NormalT>
 FastBox<VertexT, NormalT>::FastBox(VertexT &center) : m_overlappBox(false), m_fusionBox(false), m_extruded(false)
 {
-	//m_intersections = new uint[12];
+    //m_intersections = new uint[12];
     // Init members
     for(int i = 0; i < 12; i++)
     {
-    	m_intersections[i] = INVALID_INDEX;
+        m_intersections[i] = INVALID_INDEX;
     }
 
     for(int i = 0; i < 8; i++)
     {
-    	m_vertices[i] = INVALID_INDEX;
+        m_vertices[i] = INVALID_INDEX;
     }
 
     for(int i = 0; i < 27; i++)
@@ -126,22 +126,22 @@ float FastBox<VertexT, NormalT>::calcIntersection(float x1, float x2, float d1, 
 {
 
     // Calculate the surface intersection using linear interpolation
-	// and check for different signs of the given distance values.
-	// If for some reason there was no sign change, return the
-	// middle point
-	if( (d1 < 0 && d2 >= 0) || (d2 < 0 && d1 >= 0) )
-	{
-	  float interpolation = x2 - d2 * (x1 - x2) / (d1 - d2);
-	  if(compareFloat(interpolation, x1))
-		interpolation += 0.01;
-	  else if(compareFloat(interpolation, x2))
-		interpolation -= 0.01;
-	  return  interpolation;
-	}
-	else
-	{
-	  return  (x2 + x1) / 2.0;
-	}
+    // and check for different signs of the given distance values.
+    // If for some reason there was no sign change, return the
+    // middle point
+    if( (d1 < 0 && d2 >= 0) || (d2 < 0 && d1 >= 0) )
+    {
+      float interpolation = x2 - d2 * (x1 - x2) / (d1 - d2);
+      if(compareFloat(interpolation, x1))
+        interpolation += 0.01;
+      else if(compareFloat(interpolation, x2))
+        interpolation -= 0.01;
+      return  interpolation;
+    }
+    else
+    {
+      return  (x2 + x1) / 2.0;
+    }
 }
 
 template<typename VertexT, typename NormalT>
@@ -151,7 +151,7 @@ void FastBox<VertexT, NormalT>::getIntersections(VertexT* corners,
 {
     float intersection;
 
-	VertexT v1 = corners[0];
+    VertexT v1 = corners[0];
 
     intersection = calcIntersection( (corners[0])[0], (corners[1])[0], distance[0], distance[1]);
     positions[0] = VertexT(intersection, corners[0][1], corners[0][2]);
@@ -205,69 +205,69 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
 //        cout << "overlapp box ignoring: " <<  m_center << endl;
 ////        return;
 //    }
-	VertexT corners[8];
-	VertexT vertex_positions[12];
+    VertexT corners[8];
+    VertexT vertex_positions[12];
 
-	float distances[8];
+    float distances[8];
 
-	getCorners(corners, qp);
-	getDistances(distances, qp);
-	getIntersections(corners, distances, vertex_positions);
+    getCorners(corners, qp);
+    getDistances(distances, qp);
+    getIntersections(corners, distances, vertex_positions);
 
-	int index = getIndex(qp);
+    int index = getIndex(qp);
 
-	// Do not create traingles for invalid boxes
-	for (int i = 0; i < 8; i++)
-	{
-//		if(m_fusionBox) 		cout << "reconstructing box: " <<  qp[m_vertices[i]].m_position << " - " << qp[m_vertices[i]].m_distance << endl;
-		if (qp[m_vertices[i]].m_invalid)
-		{
-			return;
-		}
-	}
+    // Do not create traingles for invalid boxes
+    for (int i = 0; i < 8; i++)
+    {
+//        if(m_fusionBox)         cout << "reconstructing box: " <<  qp[m_vertices[i]].m_position << " - " << qp[m_vertices[i]].m_distance << endl;
+        if (qp[m_vertices[i]].m_invalid)
+        {
+            return;
+        }
+    }
 
-	uint edge_index = 0;
+    uint edge_index = 0;
 
-	int triangle_indices[3];
-	// Generate the local approximation surface according to the marching
-	// cubes table for Paul Burke.
-	for(int a = 0; MCTable[index][a] != -1; a+= 3){
-		for(int b = 0; b < 3; b++){
-			edge_index = MCTable[index][a + b];
+    int triangle_indices[3];
+    // Generate the local approximation surface according to the marching
+    // cubes table for Paul Burke.
+    for(int a = 0; MCTable[index][a] != -1; a+= 3){
+        for(int b = 0; b < 3; b++){
+            edge_index = MCTable[index][a + b];
 
-			//If no index was found generate new index and vertex
-			//and update all neighbor boxes
-			if(m_intersections[edge_index] == INVALID_INDEX)
-			{
-				m_intersections[edge_index] = globalIndex;
-				VertexT v = vertex_positions[edge_index];
-				// Insert vertex and a new temp normal into mesh.
-				// The normal is inserted to assure that vertex
-				// and normal array always have the same size.
-				// The actual normal is interpolated later.
-				mesh.addVertex(v);
-				mesh.addNormal(NormalT());
-				for(int i = 0; i < 3; i++)
-				{
-					FastBox<VertexT, NormalT>* current_neighbor = m_neighbors[neighbor_table[edge_index][i]];
-					if(current_neighbor != 0)
-					{
-						current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = globalIndex;
-					}
-				}
+            //If no index was found generate new index and vertex
+            //and update all neighbor boxes
+            if(m_intersections[edge_index] == INVALID_INDEX)
+            {
+                m_intersections[edge_index] = globalIndex;
+                VertexT v = vertex_positions[edge_index];
+                // Insert vertex and a new temp normal into mesh.
+                // The normal is inserted to assure that vertex
+                // and normal array always have the same size.
+                // The actual normal is interpolated later.
+                mesh.addVertex(v);
+                mesh.addNormal(NormalT());
+                for(int i = 0; i < 3; i++)
+                {
+                    FastBox<VertexT, NormalT>* current_neighbor = m_neighbors[neighbor_table[edge_index][i]];
+                    if(current_neighbor != 0)
+                    {
+                        current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = globalIndex;
+                    }
+                }
 
-				// Increase the global vertex counter to save the buffer
-				// position were the next new vertex has to be inserted
-				globalIndex++;
-			}
+                // Increase the global vertex counter to save the buffer
+                // position were the next new vertex has to be inserted
+                globalIndex++;
+            }
 
-			//Save vertex index in mesh
-			triangle_indices[b] = m_intersections[edge_index];
-		}
+            //Save vertex index in mesh
+            triangle_indices[b] = m_intersections[edge_index];
+        }
 
-		// Add triangle actually does the normal interpolation for us.
-		mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
-	}
+        // Add triangle actually does the normal interpolation for us.
+        mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
+    }
 }
 
 } // namespace lvr

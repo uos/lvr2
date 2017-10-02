@@ -18,21 +18,21 @@ namespace lvr
 class KinectIO
 {
 protected:
-	KinectIO();
+    KinectIO();
 
 public:
-	static KinectIO* instance();
+    static KinectIO* instance();
 
-	virtual ~KinectIO();
+    virtual ~KinectIO();
 
-	PointBufferPtr getBuffer();
+    PointBufferPtr getBuffer();
 
 private:
-	KinectGrabber* 			m_grabber;
-	Freenect::Freenect*		m_freenect;
-	Eigen::Matrix4f			m_depthMatrix;
+    KinectGrabber*             m_grabber;
+    Freenect::Freenect*        m_freenect;
+    Eigen::Matrix4f            m_depthMatrix;
 
-	static KinectIO*		m_instance;
+    static KinectIO*        m_instance;
 };
 
 } // namespace lvr

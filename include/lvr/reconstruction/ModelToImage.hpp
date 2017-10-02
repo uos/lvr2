@@ -123,13 +123,13 @@ public:
     /// \param leftHandedInputData  Set this to true of the scan points are in a
     ///                             left handed coordinate system (like 3dtk)
     ///
-	ModelToImage(
-			PointBufferPtr buffer,
+    ModelToImage(
+            PointBufferPtr buffer,
             ProjectionType projection,
-			int width, int height,
+            int width, int height,
             float minZ, float maxZ,
-			int minHorizontenAngle, int maxHorizontalAngle,
-			int mainVerticalAngle, int maxVerticalAngle,
+            int minHorizontenAngle, int maxHorizontalAngle,
+            int mainVerticalAngle, int maxVerticalAngle,
             bool imageOptimization = true,
             CoordinateSystem system = NATIVE);
 
@@ -143,10 +143,10 @@ public:
     void writePGM(string filename, float cutoff);
 
     /// Destructor
-	virtual ~ModelToImage();
+    virtual ~ModelToImage();
 
     //// Returns an OpenCV image representation of the panarama
-	void getCVMatrix(cv::Mat& image);
+    void getCVMatrix(cv::Mat& image);
 
 
     ///
@@ -182,28 +182,28 @@ private:
     /// Pointer to projection
     Projection*         m_projection;
 
-	/// Pointer to the initial point cloud
+    /// Pointer to the initial point cloud
     PointBufferPtr      m_points;
 
-	/// Image width
+    /// Image width
     int                 m_width;
 
-	/// Image height
+    /// Image height
     int                 m_height;
 
-	/// Min horizontal opening angle
+    /// Min horizontal opening angle
     int                 m_minHAngle;
 
-	/// Max horizontal opening angle
+    /// Max horizontal opening angle
     int                 m_maxHAngle;
 
-	/// Min horizontal opening angle
+    /// Min horizontal opening angle
     int                 m_minVAngle;
 
-	/// Max horizontal opening angle
+    /// Max horizontal opening angle
     int                 m_maxVAngle;
 
-	/// Image optimization flag
+    /// Image optimization flag
     bool                m_optimize;
 
     /// Set this to true if you are using a left-handed coordinate system

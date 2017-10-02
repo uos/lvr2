@@ -33,72 +33,72 @@ namespace lvr
 {
 
 enum RegionLabel {
-		Wall,
-		Floor,
-		Ceiling,
-		Unknown
+        Wall,
+        Floor,
+        Ceiling,
+        Unknown
 };
 
 
 /**
- * @brief	Classifier for normal and area based cluster interpretation as
- * 			presented in @ref KI2011
+ * @brief    Classifier for normal and area based cluster interpretation as
+ *             presented in @ref KI2011
  */
 template<typename VertexT, typename NormalT>
 class IndoorNormalClassifier : public RegionClassifier<VertexT, NormalT>
 {
 public:
 
-	/**
-	 * @brief Ctor
-	 * @param region		A vector of planar clusters
-	 */
-	IndoorNormalClassifier(vector<Region<VertexT, NormalT>* >* region)
-		: RegionClassifier<VertexT, NormalT>(region) {};
+    /**
+     * @brief Ctor
+     * @param region        A vector of planar clusters
+     */
+    IndoorNormalClassifier(vector<Region<VertexT, NormalT>* >* region)
+        : RegionClassifier<VertexT, NormalT>(region) {};
 
-	/**
-	 * @brief Dtor.
-	 */
-	virtual ~IndoorNormalClassifier() {};
+    /**
+     * @brief Dtor.
+     */
+    virtual ~IndoorNormalClassifier() {};
 
-	/**
-	 * @brief Returns the r component for the given region
-	 */
-	virtual uchar r(int region);
+    /**
+     * @brief Returns the r component for the given region
+     */
+    virtual uchar r(int region);
 
-	/**
-	 * @brief Returns the g component for the given region
-	 */
-	virtual uchar g(int region);
-	/**
-	 * @brief Returns the b component for the given region
-	 */
-	virtual uchar b(int region);
+    /**
+     * @brief Returns the g component for the given region
+     */
+    virtual uchar g(int region);
+    /**
+     * @brief Returns the b component for the given region
+     */
+    virtual uchar b(int region);
 
-	virtual void writeMetaInfo();
+    virtual void writeMetaInfo();
 
 private:
 
-	RegionLabel _classifyRegion(int region);
+    RegionLabel _classifyRegion(int region);
 
-	uchar* getColor(int region);
+    uchar* getColor(int region);
 
-	void createRegionBuffer(
-					int region_id,
-					map<VertexT, int> &map,
-					vector<int> &indices,
-					vector<float> &vertices,
-					vector<float> &normals,
-					vector<uint> &colors
-					);
+    void createRegionBuffer(
+                    int region_id,
+                    map<VertexT, int> &map,
+                    vector<int> &indices,
+                    vector<float> &vertices,
+                    vector<float> &normals,
+                    vector<uint> &colors
+                    );
 
-	void writeBuffers(
-			ofstream &out,
-			RegionLabel label,
-			vector<int> &indices,
-			vector<float> &vertices,
-			vector<float> &normals,
-			vector<uint> &colors);
+    void writeBuffers(
+            ofstream &out,
+            RegionLabel label,
+            vector<int> &indices,
+            vector<float> &vertices,
+            vector<float> &normals,
+            vector<uint> &colors);
 
 };
 

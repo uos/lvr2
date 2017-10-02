@@ -64,21 +64,21 @@ class OptimizeStage : public AbstractStage
 {
 public:
 
-	// default constructor
-	OptimizeStage(Options* options);
+    // default constructor
+    OptimizeStage(Options* options);
 
-	virtual void firstStep();
-	virtual void step();
-	virtual void lastStep();
+    virtual void firstStep();
+    virtual void step();
+    virtual void lastStep();
 
 private:
 
-	size_t mesh_count_;
-	MeshPtr optiMesh_;
-	Options* options_;
+    size_t mesh_count_;
+    MeshPtr optiMesh_;
+    Options* options_;
 
-	MeshBufferPtr meshBufferPtr;
-	size_t bounding_counter,pic_count_,texture_counter;
+    MeshBufferPtr meshBufferPtr;
+    size_t bounding_counter,pic_count_,texture_counter;
 
 };
 #endif // STAGE

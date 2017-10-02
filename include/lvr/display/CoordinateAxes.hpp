@@ -34,17 +34,17 @@ namespace lvr
 
 class CoordinateAxes: public Renderable {
 public:
-	CoordinateAxes();
-	CoordinateAxes(float);
+    CoordinateAxes();
+    CoordinateAxes(float);
 
-	virtual ~CoordinateAxes();
+    virtual ~CoordinateAxes();
 
-	virtual void render();
-	virtual void transform(Matrix4<float> m);
+    virtual void render();
+    virtual void transform(Matrix4<float> m);
 
 private:
-	void drawArrow(float length, float radius, int nSubdivs = 12);
-	void drawAxes(float length);
+    void drawArrow(float length, float radius, int nSubdivs = 12);
+    void drawAxes(float length);
 };
 
 }

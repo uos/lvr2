@@ -38,13 +38,13 @@ class LVRMeshItem : public QTreeWidgetItem
 public:
     LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent = 0);
     virtual ~LVRMeshItem();
-    QColor	getColor();
+    QColor    getColor();
     void    setColor(QColor &c);
     void    setSelectionColor(QColor &c);
     void    resetColor();
-    float	getOpacity();
+    float    getOpacity();
     void    setOpacity(float &opacity);
-    bool	getVisibility();
+    bool    getVisibility();
     void    setVisibility(bool &visiblity);
     int     getShading();
     void    setShading(int &shader);
@@ -59,12 +59,12 @@ protected:
 private:
     QColor                  m_color;
 
-    float					m_opacity;
-    bool					m_visible;
+    float                    m_opacity;
+    bool                    m_visible;
     int                     m_shader;
 
 protected:
-    QTreeWidgetItem* 		m_parent;
+    QTreeWidgetItem*         m_parent;
 };
 
 } /* namespace lvr */

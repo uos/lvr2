@@ -88,28 +88,28 @@ include_directories(${LAS_VEGAS_SOURCE_DIR}/include/liblvr)
 
 set(KINFU_VIEWER_DEPENDENCIES
     kfusion
-	lvr_static
-	lvrrply_static
-	lvrlas_static
-	lvrslam6d_static
-	${OpenCV_LIBS}
-	${QT_QTCORE_LIBRARIES} 
-	${QT_QTGUI_LIBRARIES}  
-	${QT_QTOPENGL_LIBRARIES} 
-	${QT_QTXML_LIBRARY}  
-	${OPENGL_LIBRARY} 
-	${GLUT_LIBRARIES}  
-	${Boost_FILESYSTEM_LIBRARY}
+    lvr_static
+    lvrrply_static
+    lvrlas_static
+    lvrslam6d_static
+    ${OpenCV_LIBS}
+    ${QT_QTCORE_LIBRARIES} 
+    ${QT_QTGUI_LIBRARIES}  
+    ${QT_QTOPENGL_LIBRARIES} 
+    ${QT_QTXML_LIBRARY}  
+    ${OPENGL_LIBRARY} 
+    ${GLUT_LIBRARIES}  
+    ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} 
-	${Boost_THREAD_LIBRARY}
+    ${Boost_THREAD_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
-	${QVTK_LIBRARY}
-	${VTK_LIBRARIES}
-	${OPENNI2_LIBRARIES} 
+    ${QVTK_LIBRARY}
+    ${VTK_LIBRARIES}
+    ${OPENNI2_LIBRARIES} 
 )
 
 if( UNIX )
-	set(KINFU_VIEWER_DEPENDENCIES ${KINFU_VIEWER_DEPENDENCIES} pthread)
+    set(KINFU_VIEWER_DEPENDENCIES ${KINFU_VIEWER_DEPENDENCIES} pthread)
 endif( UNIX ) 
 
 #####################################################################################

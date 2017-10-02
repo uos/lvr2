@@ -39,9 +39,9 @@ namespace lvr
 template<typename VertexT, typename NormalT>
 class ClassifierFactory
 {
-	typedef HalfEdgeMesh<VertexT, NormalT> HMesh;
+    typedef HalfEdgeMesh<VertexT, NormalT> HMesh;
 public:
-	static RegionClassifier<VertexT, NormalT>*  get(string name, HMesh* mesh);
+    static RegionClassifier<VertexT, NormalT>*  get(string name, HMesh* mesh);
 };
 
 } /* namespace lvr */

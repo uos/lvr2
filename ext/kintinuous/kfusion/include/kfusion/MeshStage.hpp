@@ -74,22 +74,22 @@ class MeshStage : public AbstractStage
 {
 public:
 
-	// default constructor
-	MeshStage(double camera_target_distance, double voxel_size, Options* options);
+    // default constructor
+    MeshStage(double camera_target_distance, double voxel_size, Options* options);
 
-	virtual void firstStep();
-	virtual void step();
-	virtual void lastStep();
+    virtual void firstStep();
+    virtual void step();
+    virtual void lastStep();
 
 private:
-	void transformMeshBack(MeshPtr mesh);
+    void transformMeshBack(MeshPtr mesh);
 
-	queue<MeshPtr> last_mesh_queue_;
-	double camera_target_distance_;
-	double voxel_size_;
-	size_t mesh_count_, fusion_count_;
-	Options* options_;
-	bool slice_correction_;
-	lvr::Matrix4f global_correction_;
+    queue<MeshPtr> last_mesh_queue_;
+    double camera_target_distance_;
+    double voxel_size_;
+    size_t mesh_count_, fusion_count_;
+    Options* options_;
+    bool slice_correction_;
+    lvr::Matrix4f global_correction_;
 };
 #endif // STAGE

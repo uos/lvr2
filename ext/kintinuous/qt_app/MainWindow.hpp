@@ -35,33 +35,33 @@
  */
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	MainWindow(QMainWindow* parent = 0);
-	virtual ~MainWindow();
+    MainWindow(QMainWindow* parent = 0);
+    virtual ~MainWindow();
 
 public Q_SLOTS:
-	void pollGPUData();
-	void finalizeMesh();
-	void updateMesh(vtkActor*);
+    void pollGPUData();
+    void finalizeMesh();
+    void updateMesh(vtkActor*);
 
 private:
-	void setupVTK();
+    void setupVTK();
 
-	OpenNISource*								m_openNISource;
-	kfusion::KinFu::Ptr							m_kinfu;
-	QTimer*		 								m_timer;
-	cuda::Image 								m_viewImage;
-	cuda::Depth 								m_depth_device;
-	cv::Mat 									m_deviceImg;
+    OpenNISource*                                m_openNISource;
+    kfusion::KinFu::Ptr                            m_kinfu;
+    QTimer*                                         m_timer;
+    cuda::Image                                 m_viewImage;
+    cuda::Depth                                 m_depth_device;
+    cv::Mat                                     m_deviceImg;
 
     vtkSmartPointer<vtkRenderer>                m_renderer;
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
     vtkSmartPointer<vtkOrientationMarkerWidget> m_axesWidget;
-    vtkSmartPointer<vtkAxesActor> 				m_axes;
-    vtkActor*									m_meshActor;
+    vtkSmartPointer<vtkAxesActor>                 m_axes;
+    vtkActor*                                    m_meshActor;
 
-    MeshUpdateThread*							m_meshThread;
+    MeshUpdateThread*                            m_meshThread;
     vector<Affine3f> sample_poses_;
 };
 

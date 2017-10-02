@@ -47,15 +47,15 @@ namespace lvr {
 
 template<typename VertexT>
 SearchTreeStann< VertexT >::SearchTreeStann(
-		PointBufferPtr buffer,
-		size_t &n_points,
-		const int &kn,
-		const int &ki,
-		const int &kd,
-		const bool &useRansac )
+        PointBufferPtr buffer,
+        size_t &n_points,
+        const int &kn,
+        const int &ki,
+        const int &kd,
+        const bool &useRansac )
 
 {
-	this->initBuffers(buffer);
+    this->initBuffers(buffer);
 
     // Store parameters
     this->m_ki = ki;
@@ -77,33 +77,33 @@ SearchTreeStann< VertexT >::~SearchTreeStann() {
 template<typename VertexT>
 void SearchTreeStann< VertexT >::kSearch( coord< float > &qp, int neighbours, vector< int > &indices, vector< float > &distances )
 {
-	vector<double> dst;
+    vector<double> dst;
     m_pointTree.ksearch( qp, neighbours, indices, dst, 0);
     for(size_t i = 0; i < dst.size(); i++)
     {
-    	distances.push_back(static_cast<float>(dst[i]));
+        distances.push_back(static_cast<float>(dst[i]));
     }
 }
 
-	template<typename VertexT>
+    template<typename VertexT>
 void SearchTreeStann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &neighbors)
 {
-	vector<int> indices;
-	float f_qp[3] = {qp.x, qp.y, qp.z};
-	SearchTree<VertexT>::kSearch(f_qp, k, indices);
-	for(size_t i = 0; i < indices.size(); i++)
-	{
-		VertexT v(m_points[indices[i]][0], m_points[indices[i]][1], m_points[indices[i]][2]);
+    vector<int> indices;
+    float f_qp[3] = {qp.x, qp.y, qp.z};
+    SearchTree<VertexT>::kSearch(f_qp, k, indices);
+    for(size_t i = 0; i < indices.size(); i++)
+    {
+        VertexT v(m_points[indices[i]][0], m_points[indices[i]][1], m_points[indices[i]][2]);
         if(this->m_haveColors)
         {
-        	VertexTraits<VertexT>::setColor(
-        			v,
-					m_pointColorData[indices[i]][0],
-					m_pointColorData[indices[i]][1],
-					m_pointColorData[indices[i]][2])
+            VertexTraits<VertexT>::setColor(
+                    v,
+                    m_pointColorData[indices[i]][0],
+                    m_pointColorData[indices[i]][1],
+                    m_pointColorData[indices[i]][2])
         }
         neighbors.push_back(v);
-	}
+    }
 }
 
 

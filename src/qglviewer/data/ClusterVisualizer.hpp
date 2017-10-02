@@ -31,8 +31,8 @@
 class ClusterVisualizer: public Visualizer
 {
 public:
-	ClusterVisualizer(string filename);
-	virtual ~ClusterVisualizer() {};
+    ClusterVisualizer(string filename);
+    virtual ~ClusterVisualizer() {};
 
 private:
 

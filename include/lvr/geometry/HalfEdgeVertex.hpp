@@ -43,80 +43,80 @@ namespace lvr
 {
 
 /**
- * @brief	A vertex in a half edge mesh
+ * @brief    A vertex in a half edge mesh
  */
 template<typename VertexT, typename NormalT>
 class HalfEdgeVertex
 {
 public:
 
-	typedef HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> > HEdge;
-	typedef HalfEdgeFace<VertexT, NormalT> HFace;
+    typedef HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> > HEdge;
+    typedef HalfEdgeFace<VertexT, NormalT> HFace;
 
-	typedef HEdge* EdgePtr;
-	typedef HFace* FacePtr;
+    typedef HEdge* EdgePtr;
+    typedef HFace* FacePtr;
 
-	/**
-	 * @brief	Default ctor. Position is (0, 0, 0), normal is undefined
-	 */
-	HalfEdgeVertex() : m_index(-1), m_fused(false), m_oldFused(false), m_merged(false), m_actIndex(0){}
+    /**
+     * @brief    Default ctor. Position is (0, 0, 0), normal is undefined
+     */
+    HalfEdgeVertex() : m_index(-1), m_fused(false), m_oldFused(false), m_merged(false), m_actIndex(0){}
 
-	~HalfEdgeVertex()
-	{
+    ~HalfEdgeVertex()
+    {
         this->out.clear();
         this->in.clear();
 
-	}
+    }
 
-	/**
-	 * @brief	Constructs a vertex at given position with provided normal.
-	 */
-	HalfEdgeVertex(VertexT v, NormalT n) : m_position(v), m_normal(n), m_index(-1), m_fused(false), m_oldFused(false) {}
+    /**
+     * @brief    Constructs a vertex at given position with provided normal.
+     */
+    HalfEdgeVertex(VertexT v, NormalT n) : m_position(v), m_normal(n), m_index(-1), m_fused(false), m_oldFused(false) {}
 
-	/**
-	 * @brief	Constructs a vertex at given position
-	 */
-	HalfEdgeVertex(VertexT v) : m_position(v), m_index(-1), m_fused(false), m_oldFused(false), m_fusedNeighbor(false) {}
+    /**
+     * @brief    Constructs a vertex at given position
+     */
+    HalfEdgeVertex(VertexT v) : m_position(v), m_index(-1), m_fused(false), m_oldFused(false), m_fusedNeighbor(false) {}
 
-	/**
-	 * @brief	Copy Ctor.
-	 */
-	HalfEdgeVertex(const HalfEdgeVertex& o)
-	{
-		m_position = o.m_position;
-		m_normal = o.m_normal;
-		m_index = o.m_index;
-	}
+    /**
+     * @brief    Copy Ctor.
+     */
+    HalfEdgeVertex(const HalfEdgeVertex& o)
+    {
+        m_position = o.m_position;
+        m_normal = o.m_normal;
+        m_index = o.m_index;
+    }
 
-	void calcQuadric(Matrix4<float>& q, bool use_tri);
+    void calcQuadric(Matrix4<float>& q, bool use_tri);
 
-	/// The vertex's position
-	VertexT 			m_position;
+    /// The vertex's position
+    VertexT             m_position;
 
-	/// The vertex's normal
-	NormalT 			m_normal;
+    /// The vertex's normal
+    NormalT             m_normal;
 
-	/// The vertex index in the mesh
-	size_t 				m_index;
-	bool				m_merged;
-	bool                m_fused;
-	bool                m_oldFused;
-	bool				m_fusedNeighbor;
-	size_t              m_actIndex;
+    /// The vertex index in the mesh
+    size_t                 m_index;
+    bool                m_merged;
+    bool                m_fused;
+    bool                m_oldFused;
+    bool                m_fusedNeighbor;
+    size_t              m_actIndex;
 
-	/// The list incoming edges
-	vector<HEdge*> in;
+    /// The list incoming edges
+    vector<HEdge*> in;
 
-	/// The list of outgoing edges
-	vector<HEdge*> out;
+    /// The list of outgoing edges
+    vector<HEdge*> out;
 
-	void getAdjacentFaces(std::list<FacePtr> &adj);
+    void getAdjacentFaces(std::list<FacePtr> &adj);
 
-	bool isBorderVertex();
-	
-	bool isFusionVertex(){return m_fused;}
+    bool isBorderVertex();
+    
+    bool isFusionVertex(){return m_fused;}
 
-	HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* getShortestEdge();
+    HalfEdge< HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* getShortestEdge();
 };
 
 

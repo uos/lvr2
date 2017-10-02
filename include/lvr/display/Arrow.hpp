@@ -52,16 +52,16 @@ public:
     void setPosition(double x, double y, double z, double roll, double pitch, double yaw);
     
     inline void setColor(int color) {
-    	this->color = color;	
+        this->color = color;    
     };
     
 private:
-	double roll, pitch, yaw;
-	int color;
-	Matrix4 rotation;
+    double roll, pitch, yaw;
+    int color;
+    Matrix4 rotation;
 };
 
-	
+    
 
 
 inline void EulerToMatrix(const double *rPos, const double *rPosTheta, float *alignxf)

@@ -12,15 +12,15 @@ set(LVR_TRANSFORM_SOURCES
 #####################################################################################
 
 set(LVR_TRANSFORM_DEPENDENCIES
-	lvr_static
-	lvrlas_static
-	lvrrply_static
-	lvrslam6d_static
-	${OPENGL_LIBRARIES}
-	${GLUT_LIBRARIES}
-	${OpenCV_LIBS}
-	${PCL_LIBRARIES}
-	)
+    lvr_static
+    lvrlas_static
+    lvrrply_static
+    lvrslam6d_static
+    ${OPENGL_LIBRARIES}
+    ${GLUT_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${PCL_LIBRARIES}
+    )
 
 if( ${NABO_FOUND} )
   set(LVR_TRANSFORM_DEPENDENCIES ${LVR_TRANSFORM_DEPENDENCIES} ${NABO_LIBRARY})

@@ -34,24 +34,24 @@ namespace lvr
 template<typename VertexT>
 struct VertexTraits
 {
-	static const bool HasColor = false;
+    static const bool HasColor = false;
 
-	/// Wrapper function to set colors. Does nothing if colors are not supported.
-	static void setColor(VertexT& v, unsigned char r, unsigned char g, unsigned char b) {}
+    /// Wrapper function to set colors. Does nothing if colors are not supported.
+    static void setColor(VertexT& v, unsigned char r, unsigned char g, unsigned char b) {}
 };
 
 template<>
 struct VertexTraits<ColorVertex<float, unsigned char> >
 {
-	static const bool HasColor = true;
+    static const bool HasColor = true;
 
-	/// Wrapper function set the rgb fields of an vertex that supports colors
-	static void setColor(ColorVertex<float, unsigned char> & v, unsigned char r, unsigned char g, unsigned char b)
-	{
-		v.r = r;
-		v.g = g;
-		v.b = b;
-	}
+    /// Wrapper function set the rgb fields of an vertex that supports colors
+    static void setColor(ColorVertex<float, unsigned char> & v, unsigned char r, unsigned char g, unsigned char b)
+    {
+        v.r = r;
+        v.g = g;
+        v.b = b;
+    }
 };
 
 }

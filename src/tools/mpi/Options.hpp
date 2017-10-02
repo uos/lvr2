@@ -46,55 +46,55 @@ namespace Largescale{
 
 /**
  * @brief A class to parse the program options for the reconstruction
- * 		  executable.
+ *           executable.
  */
 class Options : public lvr::BaseOption{
 public:
 
-	/**
-	 * @brief 	Ctor. Parses the command parameters given to the main
-	 * 		  	function of the program
-	 */
-	Options(int argc, char** argv);
-	virtual ~Options();
+    /**
+     * @brief     Ctor. Parses the command parameters given to the main
+     *               function of the program
+     */
+    Options(int argc, char** argv);
+    virtual ~Options();
 
-	/**
-	 * @brief	Returns the given voxelsize
-	 */
-	float 	getVoxelsize()const;
+    /**
+     * @brief    Returns the given voxelsize
+     */
+    float     getVoxelsize()const;
 
-	/**
-	 * @brief	Returns the number of used threads
-	 */
-	int 	getNumThreads() const;
+    /**
+     * @brief    Returns the number of used threads
+     */
+    int     getNumThreads() const;
 
-	/**
-	 * @brief	Prints a usage message to stdout.
-	 */
-	bool	printUsage() const;
+    /**
+     * @brief    Prints a usage message to stdout.
+     */
+    bool    printUsage() const;
 
-	/**
-	 * @brief	Returns true if an output filen name was set
-	 */
-	bool	filenameSet() const;
+    /**
+     * @brief    Returns true if an output filen name was set
+     */
+    bool    filenameSet() const;
 
-	/**
-	 * @brief 	Returns true if the face normals of the
-	 * 			reconstructed mesh should be saved to an
-	 * 			extra file ("face_normals.nor")
-	 */
-	bool	saveFaceNormals() const;
+    /**
+     * @brief     Returns true if the face normals of the
+     *             reconstructed mesh should be saved to an
+     *             extra file ("face_normals.nor")
+     */
+    bool    saveFaceNormals() const;
 
-	/**
-	 *@brief    Returns true of region coloring is enabled.
-	 */
-	bool    colorRegions() const;
+    /**
+     *@brief    Returns true of region coloring is enabled.
+     */
+    bool    colorRegions() const;
 
-	/**
-	 * @brief	Returns true if the interpolated normals
-	 * 			should be saved in the putput file
-	 */
-	bool    saveNormals() const;
+    /**
+     * @brief    Returns true if the interpolated normals
+     *             should be saved in the putput file
+     */
+    bool    saveNormals() const;
 
     /**
      * @brief   Returns true if the Marching Cubes grid should be save
@@ -108,22 +108,22 @@ public:
     bool    saveOriginalData() const;
 
 
-	/**
-	 * @brief 	Returns true if cluster optimization is enabled
-	 */
-	bool 	optimizePlanes() const;
+    /**
+     * @brief     Returns true if cluster optimization is enabled
+     */
+    bool     optimizePlanes() const;
 
-	/**
-	 * @brief 	Indicates whether to save the used points
-	 * 			together with the interpolated normals.
-	 */
-	bool 	savePointNormals() const;
+    /**
+     * @brief     Indicates whether to save the used points
+     *             together with the interpolated normals.
+     */
+    bool     savePointNormals() const;
 
-	/**
-	 * @brief	If true, normals should be calculated even if
-	 * 			they are already given in the input file
-	 */
-	bool	recalcNormals() const;
+    /**
+     * @brief    If true, normals should be calculated even if
+     *             they are already given in the input file
+     */
+    bool    recalcNormals() const;
 
     /**
      * @brief   If true, RANSAC based normal estimation is used
@@ -135,77 +135,77 @@ public:
      */
     bool    doTextureAnalysis() const;
 
-	/**
-	 * @brief	If true, textures will be generated during
+    /**
+     * @brief    If true, textures will be generated during
      *          finalization of mesh.
-	 */
-	bool	generateTextures() const;
+     */
+    bool    generateTextures() const;
 
-	/**
-	 * @brief	Returns the number of neighbors
-	 * 			for normal interpolation
-	 */
-	int     getKi() const;
+    /**
+     * @brief    Returns the number of neighbors
+     *             for normal interpolation
+     */
+    int     getKi() const;
 
-	/**
-	 * @brief	Returns the number of neighbors used for
-	 * 			initial normal estimation
-	 */
-	int     getKn() const;
+    /**
+     * @brief    Returns the number of neighbors used for
+     *             initial normal estimation
+     */
+    int     getKn() const;
 
-	/**
-	 * @brief	Returns the number of neighbors used for distance
-	 * 			function evaluation
-	 */
-	int     getKd() const;
+    /**
+     * @brief    Returns the number of neighbors used for distance
+     *             function evaluation
+     */
+    int     getKd() const;
 
-	/**
-	  * @brief Return whether the mesh should be retesselated or not.
-	  */
-	bool	  retesselate() const;
+    /**
+      * @brief Return whether the mesh should be retesselated or not.
+      */
+    bool      retesselate() const;
 
-	/**
-	 * @brief  True if region clustering without plane optimization is required.
-	 */
-	bool 	clusterPlanes() const;
+    /**
+     * @brief  True if region clustering without plane optimization is required.
+     */
+    bool     clusterPlanes() const;
 
-	/**
-	 * @brief  True if region clustering without plane optimization is required.
-	 */
-	bool 	writeClassificationResult() const;
+    /**
+     * @brief  True if region clustering without plane optimization is required.
+     */
+    bool     writeClassificationResult() const;
 
-	/**
-	 * @brief	Returns the output file name
-	 */
-	string 	getInputFileName() const;
+    /**
+     * @brief    Returns the output file name
+     */
+    string     getInputFileName() const;
 
-	/**
-	 * @brief	Returns the name of the classifier used to color the mesh
-	 */
-	string 	getClassifier() const;
+    /**
+     * @brief    Returns the name of the classifier used to color the mesh
+     */
+    string     getClassifier() const;
 
-	/**
-	 * @brief	Returns the name of the given file with scan poses used for normal flipping.
-	 */
-	string 	getScanPoseFile() const;
+    /**
+     * @brief    Returns the name of the given file with scan poses used for normal flipping.
+     */
+    string     getScanPoseFile() const;
 
-	/**
-	 * @brief   Returns the number of intersections. If the return value
-	 *          is positive it will be used for reconstruction instead of
-	 *          absolute voxelsize.
-	 */
-	int     getIntersections() const;
+    /**
+     * @brief   Returns the number of intersections. If the return value
+     *          is positive it will be used for reconstruction instead of
+     *          absolute voxelsize.
+     */
+    int     getIntersections() const;
 
 
-	/**
-	 * @brief   Returns to number plane optimization iterations
-	 */
-	int getPlaneIterations() const;
+    /**
+     * @brief   Returns to number plane optimization iterations
+     */
+    int getPlaneIterations() const;
 
-	/**
-	 * @brief   Returns the name of the used point cloud handler.
-	 */
-	string getPCM() const;
+    /**
+     * @brief   Returns the name of the used point cloud handler.
+     */
+    string getPCM() const;
 
     /**
      * @brief   Returns the name of the used point cloud handler.
@@ -213,57 +213,57 @@ public:
     string getDecomposition() const;
 
 
-	/**
-	 * @brief   Returns the normal threshold for plane optimization.
-	 */
-	float getNormalThreshold() const;
+    /**
+     * @brief   Returns the normal threshold for plane optimization.
+     */
+    float getNormalThreshold() const;
 
-	/**
-	 * @brief   Returns the threshold for the size of small
-	 *          region deletion after plane optimization.
-	 */
-	int   getSmallRegionThreshold() const;
+    /**
+     * @brief   Returns the threshold for the size of small
+     *          region deletion after plane optimization.
+     */
+    int   getSmallRegionThreshold() const;
 
-	/**
-	 * @brief   Minimum value for plane optimzation
-	 */
-	int   getMinPlaneSize() const;
+    /**
+     * @brief   Minimum value for plane optimzation
+     */
+    int   getMinPlaneSize() const;
 
-	/**
-	 * @brief	Number of iterations for contour cleanup
-	 */
-	int   getCleanContourIterations() const;
+    /**
+     * @brief    Number of iterations for contour cleanup
+     */
+    int   getCleanContourIterations() const;
 
-	/**
-	 * @brief   Returns the number of dangling artifacts to remove from
-	 *          a created mesh.
-	 */
-	int   getDanglingArtifacts() const;
+    /**
+     * @brief   Returns the number of dangling artifacts to remove from
+     *          a created mesh.
+     */
+    int   getDanglingArtifacts() const;
 
-	/**
-	 * @brief   Returns the region threshold for hole filling
-	 */
-	int   getFillHoles() const;
+    /**
+     * @brief   Returns the region threshold for hole filling
+     */
+    int   getFillHoles() const;
 
-	/**
-	 * @brief 	Returns the maximum recursion depth for region growing
-	 */
-	int getDepth() const;
+    /**
+     * @brief     Returns the maximum recursion depth for region growing
+     */
+    int getDepth() const;
 
-	/**
-	 * @brief   Returns the texel size for texture resolution
-	 */
-	float getTexelSize() const;
+    /**
+     * @brief   Returns the texel size for texture resolution
+     */
+    float getTexelSize() const;
 
-	/**
-	 * @brief   Returns the sharp feature threshold when using sharp feature decomposition
-	 */
-	float getSharpFeatureThreshold() const;
+    /**
+     * @brief   Returns the sharp feature threshold when using sharp feature decomposition
+     */
+    float getSharpFeatureThreshold() const;
 
-	/**
-		 * @brief   Returns the sharp corner threshold when using sharp feature decomposition
-		 */
-	float getSharpCornerThreshold() const;
+    /**
+         * @brief   Returns the sharp corner threshold when using sharp feature decomposition
+         */
+    float getSharpCornerThreshold() const;
 
     /**
      * @brief   Returns the fusion threshold for tesselation
@@ -276,7 +276,7 @@ public:
     bool extrude() const;
 
     /**
-     * @brief 	Number of edge collapses
+     * @brief     Number of edge collapses
      */
     int getNumEdgeCollapses() const;
 
@@ -284,7 +284,7 @@ public:
 
 
     /**
-     * @brief	Edge collapse method
+     * @brief    Edge collapse method
      */
     string getEdgeCollapseMethod() const;
 
@@ -309,143 +309,143 @@ public:
     string getTexturePack() const;
 
     int getMinimumTransformationVotes() const;
-	unsigned int getOctreeNodeSize() const;
-	unsigned int getBufferSize() const;
+    unsigned int getOctreeNodeSize() const;
+    unsigned int getBufferSize() const;
 
-	bool interpolateBoxes() const;
+    bool interpolateBoxes() const;
 
-	string getOutputFolderPath() const;
+    string getOutputFolderPath() const;
 
-	bool getUseNormals() const;
+    bool getUseNormals() const;
 
 
 private:
 
-	/// The set voxelsize
-	float 				            m_voxelsize;
+    /// The set voxelsize
+    float                             m_voxelsize;
 
-	/// The number of uesed threads
-	int				                m_numThreads;
+    /// The number of uesed threads
+    int                                m_numThreads;
 
 
-	/// The putput file name for face normals
-	string 				            m_faceNormalFile;
+    /// The putput file name for face normals
+    string                             m_faceNormalFile;
 
-	/// The number of used default values
-	int                             m_numberOfDefaults;
+    /// The number of used default values
+    int                             m_numberOfDefaults;
 
-	/// The number of neighbors for distance function evaluation
-	int                             m_kd;
+    /// The number of neighbors for distance function evaluation
+    int                             m_kd;
 
-	/// The number of neighbors for normal estimation
-	int                             m_kn;
+    /// The number of neighbors for normal estimation
+    int                             m_kn;
 
-	/// The number of neighbors for normal interpolation
-	int                             m_ki;
+    /// The number of neighbors for normal interpolation
+    int                             m_ki;
 
-	/// The number of intersections used for reconstruction
-	int                             m_intersections;
+    /// The number of intersections used for reconstruction
+    int                             m_intersections;
 
-	/// Whether or not the mesh should be retesselated while being finalized
-	bool						  m_retesselate;
-	
     /// Whether or not the mesh should be retesselated while being finalized
-	bool						   m_generateTextures;
+    bool                          m_retesselate;
+    
+    /// Whether or not the mesh should be retesselated while being finalized
+    bool                           m_generateTextures;
 
     /// Whether or not the classifier shall dump meta data to a file 'clusters.clu'
-	bool						   m_writeClassificationResult;
+    bool                           m_writeClassificationResult;
 
-	/// The used point cloud manager
-	string                          m_pcm;
+    /// The used point cloud manager
+    string                          m_pcm;
 
-	/// Number of iterations for plane optimzation
-	int                             m_planeIterations;
+    /// Number of iterations for plane optimzation
+    int                             m_planeIterations;
 
-	/// Threshold for plane optimization
-	float                           m_planeNormalThreshold;
+    /// Threshold for plane optimization
+    float                           m_planeNormalThreshold;
 
-	/// Threshold for small ragions
-	int                             m_smallRegionThreshold;
+    /// Threshold for small ragions
+    int                             m_smallRegionThreshold;
 
-	/// Number of dangling artifacts to remove
-	int                             m_rda;
+    /// Number of dangling artifacts to remove
+    int                             m_rda;
 
-	/// Threshold for hole filling
-	int                             m_fillHoles;
+    /// Threshold for hole filling
+    int                             m_fillHoles;
 
-	/// Threshold for plane optimization
-	int                             m_minPlaneSize;
+    /// Threshold for plane optimization
+    int                             m_minPlaneSize;
 
-	/// Maximum recursion depth for region growing
-	int								m_depth;
+    /// Maximum recursion depth for region growing
+    int                                m_depth;
 
-	int								m_cleanContourIterations;
+    int                                m_cleanContourIterations;
 
-	/// Texel size
-	float                           m_texelSize;
+    /// Texel size
+    float                           m_texelSize;
 
-	/// Threshold for line fusing when tesselating
-	float                           m_lineFusionThreshold;
+    /// Threshold for line fusing when tesselating
+    float                           m_lineFusionThreshold;
 
-	/// Sharp feature threshold when using sharp feature decomposition
-	float 							m_sft;
+    /// Sharp feature threshold when using sharp feature decomposition
+    float                             m_sft;
 
-	/// Sharp corner threshold when using sharp feature decomposition
-	float 							m_sct;
+    /// Sharp corner threshold when using sharp feature decomposition
+    float                             m_sct;
 
-	/// Name of the classifier object to color the mesh
-	string							m_classifier;
+    /// Name of the classifier object to color the mesh
+    string                            m_classifier;
 
-	/// Edge collapse method
-	string							m_ecm;
+    /// Edge collapse method
+    string                            m_ecm;
 
-	/// Number of edge collapses
-	int								m_numEdgeCollapses;
+    /// Number of edge collapses
+    int                                m_numEdgeCollapses;
 
-	string                          m_outputFolderPath;
+    string                          m_outputFolderPath;
 
 
-	
-	///Path to texture pack
-	string m_texturePack;
+    
+    ///Path to texture pack
+    string m_texturePack;
 
-	///Coefficents file for texture matching based on statistics
-	string m_statsCoeffs;
+    ///Coefficents file for texture matching based on statistics
+    string m_statsCoeffs;
 
-	///Number of colors for texture statistics
-	unsigned int m_numStatsColors;
+    ///Number of colors for texture statistics
+    unsigned int m_numStatsColors;
 
-	///Number of colors for texture matching based on color information
-	unsigned int m_numCCVColors;
+    ///Number of colors for texture matching based on color information
+    unsigned int m_numCCVColors;
 
-	///Coherence threshold for texture matching based on color information
-	unsigned int m_coherenceThreshold;
+    ///Coherence threshold for texture matching based on color information
+    unsigned int m_coherenceThreshold;
 
-	///Threshold for texture matching based on colors
-	float m_colorThreshold;
-	
-	///Threshold for texture matching based on statistics
-	float m_statsThreshold;
+    ///Threshold for texture matching based on colors
+    float m_colorThreshold;
+    
+    ///Threshold for texture matching based on statistics
+    float m_statsThreshold;
 
-	///Threshold for texture matching based on features
-	float m_featuresThreshold;
-	
-	///Whether to use texture matching based on cross correlation
-	bool m_useCrossCorr;
+    ///Threshold for texture matching based on features
+    float m_featuresThreshold;
+    
+    ///Whether to use texture matching based on cross correlation
+    bool m_useCrossCorr;
 
-	///Threshold for pattern extraction from textures
-	float m_patternThreshold;
+    ///Threshold for pattern extraction from textures
+    float m_patternThreshold;
 
-	///Minimum number of vote to consider a texture transformation as "correct"
-	int m_minimumTransformationVotes;
+    ///Minimum number of vote to consider a texture transformation as "correct"
+    int m_minimumTransformationVotes;
 
-	unsigned int m_bufferSize;
+    unsigned int m_bufferSize;
 
-	unsigned int m_octreeNodeSize;
+    unsigned int m_octreeNodeSize;
 
-	bool m_interpolateBoxes;
+    bool m_interpolateBoxes;
 
-	bool m_use_normals;
+    bool m_use_normals;
 
 
 };
@@ -454,135 +454,135 @@ private:
 /// Overlaoeded outpur operator
 inline ostream& operator<<(ostream& os, const Options &o)
 {
-	o.printTransformation(os);
+    o.printTransformation(os);
 
 
-	if(o.getIntersections() > 0)
-	{
-	    cout << "##### Intersections \t\t: " << o.getIntersections() << endl;
-	}
-	else
-	{
-	    cout << "##### Voxelsize \t\t: " << o.getVoxelsize() << endl;
-	}
-	cout << "##### Number of threads \t: "    << o.getNumThreads()      << endl;
-	cout << "##### Point cloud manager \t: " << o.getPCM()             << endl;
-	if(o.useRansac())
-	{
-	    cout << "##### Use RANSAC\t\t: YES" << endl;
-	}
-	else
-	{
-	    cout << "##### Use RANSAC\t\t: NO" << endl;
-	}
+    if(o.getIntersections() > 0)
+    {
+        cout << "##### Intersections \t\t: " << o.getIntersections() << endl;
+    }
+    else
+    {
+        cout << "##### Voxelsize \t\t: " << o.getVoxelsize() << endl;
+    }
+    cout << "##### Number of threads \t: "    << o.getNumThreads()      << endl;
+    cout << "##### Point cloud manager \t: " << o.getPCM()             << endl;
+    if(o.useRansac())
+    {
+        cout << "##### Use RANSAC\t\t: YES" << endl;
+    }
+    else
+    {
+        cout << "##### Use RANSAC\t\t: NO" << endl;
+    }
 
-	cout << "##### Voxel decomposition: \t: " << o.getDecomposition()   << endl;
-	cout << "##### Classifier:\t\t: "         << o.getClassifier()      << endl;
-	if(o.writeClassificationResult())
-	{
-	    cout << "##### Dump classification\t: YES" << endl;
-	}
-	else
-	{
-	    cout << "##### Dump classification\t: NO" << endl;
-	}
-	cout << "##### k_n \t\t\t: "              << o.getKn()              << endl;
-	cout << "##### k_i \t\t\t: "              << o.getKi()              << endl;
-	cout << "##### k_d \t\t\t: "              << o.getKd()              << endl;
-	if(o.getDecomposition() == "SF")
-	{
-		cout << "##### Sharp feature threshold \t: " << o.getSharpFeatureThreshold() << endl;
-		cout << "##### Sharp corner threshold \t: " << o.getSharpCornerThreshold() << endl;
-	}
-	if(o.retesselate())
-	{
-		cout << "##### Retesselate \t\t: YES"     << endl;
-		cout << "##### Line fusion threshold \t: " << o.getLineFusionThreshold() << endl;
-	}
-	if(o.saveFaceNormals())
-	{
-		cout << "##### Write Face Normals \t: YES" << endl;
-	}
+    cout << "##### Voxel decomposition: \t: " << o.getDecomposition()   << endl;
+    cout << "##### Classifier:\t\t: "         << o.getClassifier()      << endl;
+    if(o.writeClassificationResult())
+    {
+        cout << "##### Dump classification\t: YES" << endl;
+    }
+    else
+    {
+        cout << "##### Dump classification\t: NO" << endl;
+    }
+    cout << "##### k_n \t\t\t: "              << o.getKn()              << endl;
+    cout << "##### k_i \t\t\t: "              << o.getKi()              << endl;
+    cout << "##### k_d \t\t\t: "              << o.getKd()              << endl;
+    if(o.getDecomposition() == "SF")
+    {
+        cout << "##### Sharp feature threshold \t: " << o.getSharpFeatureThreshold() << endl;
+        cout << "##### Sharp corner threshold \t: " << o.getSharpCornerThreshold() << endl;
+    }
+    if(o.retesselate())
+    {
+        cout << "##### Retesselate \t\t: YES"     << endl;
+        cout << "##### Line fusion threshold \t: " << o.getLineFusionThreshold() << endl;
+    }
+    if(o.saveFaceNormals())
+    {
+        cout << "##### Write Face Normals \t: YES" << endl;
+    }
 
-	if(o.getFillHoles())
-	{
-	    cout << "##### Fill holes \t\t: " << o.getFillHoles() << endl;
-	}
-	else
-	{
-	    cout << "##### Fill holes \t\t: NO" << endl;
-	}
+    if(o.getFillHoles())
+    {
+        cout << "##### Fill holes \t\t: " << o.getFillHoles() << endl;
+    }
+    else
+    {
+        cout << "##### Fill holes \t\t: NO" << endl;
+    }
 
-	if(o.getDanglingArtifacts())
-	{
-	    cout << "##### Remove DAs \t\t: " << o.getDanglingArtifacts() << endl;
-	}
-	else
-	{
-	    cout << "##### Remove DAs \t\t: NO" << endl;
-	}
+    if(o.getDanglingArtifacts())
+    {
+        cout << "##### Remove DAs \t\t: " << o.getDanglingArtifacts() << endl;
+    }
+    else
+    {
+        cout << "##### Remove DAs \t\t: NO" << endl;
+    }
 
-	if(o.optimizePlanes())
-	{
-		cout << "##### Optimize Planes \t\t: YES" << endl;
-		cout << "##### Plane iterations\t\t: " << o.getPlaneIterations() << endl;
-		cout << "##### Normal threshold \t\t: " << o.getNormalThreshold() << endl;
-		cout << "##### Region threshold\t\t: " << o.getSmallRegionThreshold() << endl;
-	}
-	if(o.saveNormals())
-	{
-		cout << "##### Save normals \t\t: YES" << endl;
-	}
-	if(o.saveOriginalData())
-	{
-	    cout << "##### Save input data \t\t: YES" << endl;
-	}
+    if(o.optimizePlanes())
+    {
+        cout << "##### Optimize Planes \t\t: YES" << endl;
+        cout << "##### Plane iterations\t\t: " << o.getPlaneIterations() << endl;
+        cout << "##### Normal threshold \t\t: " << o.getNormalThreshold() << endl;
+        cout << "##### Region threshold\t\t: " << o.getSmallRegionThreshold() << endl;
+    }
+    if(o.saveNormals())
+    {
+        cout << "##### Save normals \t\t: YES" << endl;
+    }
+    if(o.saveOriginalData())
+    {
+        cout << "##### Save input data \t\t: YES" << endl;
+    }
 
-	if(o.recalcNormals())
-	{
-		cout << "##### Recalc normals \t\t: YES" << endl;
-	}
-	if(o.savePointNormals())
-	{
-	    cout << "##### Save points normals \t: YES" << endl;
-	}
-	if(o.generateTextures())
-	{
-	    cout << "##### Generate Textures \t: YES" << endl;
-	    cout << "##### Texel size \t\t: " << o.getTexelSize() << endl;
-	    if(o.doTextureAnalysis())
-	    {
-	        cout << "##### Texture Analysis \t: OFF" << endl;
-	    }
-	    else
-	    {
-	        cout << "##### Texture Analysis \t\t: OFF" << endl;
-	    }
-	}
-	if(o.getDepth())
-	{
-	    cout << "##### Recursion depth \t\t: " << o.getDepth() << endl;
-	}
-	if(o.getNumEdgeCollapses())
-	{
-		cout << "##### Edge collapse method: \t\t: " << o.getEdgeCollapseMethod() << endl;
-		cout << "##### Number of edge collapses\t: " << o.getNumEdgeCollapses() << endl;
-	}
+    if(o.recalcNormals())
+    {
+        cout << "##### Recalc normals \t\t: YES" << endl;
+    }
+    if(o.savePointNormals())
+    {
+        cout << "##### Save points normals \t: YES" << endl;
+    }
+    if(o.generateTextures())
+    {
+        cout << "##### Generate Textures \t: YES" << endl;
+        cout << "##### Texel size \t\t: " << o.getTexelSize() << endl;
+        if(o.doTextureAnalysis())
+        {
+            cout << "##### Texture Analysis \t: OFF" << endl;
+        }
+        else
+        {
+            cout << "##### Texture Analysis \t\t: OFF" << endl;
+        }
+    }
+    if(o.getDepth())
+    {
+        cout << "##### Recursion depth \t\t: " << o.getDepth() << endl;
+    }
+    if(o.getNumEdgeCollapses())
+    {
+        cout << "##### Edge collapse method: \t\t: " << o.getEdgeCollapseMethod() << endl;
+        cout << "##### Number of edge collapses\t: " << o.getNumEdgeCollapses() << endl;
+    }
 
-	if(o.getOctreeNodeSize())
-	{
-		cout << "##### Octree Size: \t\t: " << o.getOctreeNodeSize() << endl;
-	}
-
-
-	cout << "##### Interpolating Boxes?: \t\t: " << o.interpolateBoxes() << endl;
+    if(o.getOctreeNodeSize())
+    {
+        cout << "##### Octree Size: \t\t: " << o.getOctreeNodeSize() << endl;
+    }
 
 
-	if(o.getBufferSize())
-	{
-		cout << "##### Buffer Size: \t\t: " << o.getBufferSize() << endl;
-	}
-	return os;
+    cout << "##### Interpolating Boxes?: \t\t: " << o.interpolateBoxes() << endl;
+
+
+    if(o.getBufferSize())
+    {
+        cout << "##### Buffer Size: \t\t: " << o.getBufferSize() << endl;
+    }
+    return os;
 }
 
 } // namespace reconstruct

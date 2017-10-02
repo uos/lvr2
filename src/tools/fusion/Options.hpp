@@ -41,94 +41,94 @@ namespace fusion{
 using namespace boost::program_options;
 /**
  * @brief A class to parse the program options for the fusion
- * 		  executable.
+ *           executable.
  */
 class Options {
 
 public:
 
-	/**
-	 * @brief 	Ctor. Parses the command parameters given to the main
-	 * 		  	function of the program
-	 */
-	Options(int argc, char** argv);
-	
-	virtual ~Options();
+    /**
+     * @brief     Ctor. Parses the command parameters given to the main
+     *               function of the program
+     */
+    Options(int argc, char** argv);
+    
+    virtual ~Options();
 
-	/**
-	 * @brief	Prints a usage message to stdout.
-	 */
-	bool	printUsage() const;
+    /**
+     * @brief    Prints a usage message to stdout.
+     */
+    bool    printUsage() const;
 
-	/**
-	 * @brief	Returns true if an output filen name was set
-	 */
-	bool	outputFileNameSet() const;
-	
-	/**
-	 * @brief	Returns the verbosity level
-	 */
-	bool 	getVerbosity() const;
+    /**
+     * @brief    Returns true if an output filen name was set
+     */
+    bool    outputFileNameSet() const;
+    
+    /**
+     * @brief    Returns the verbosity level
+     */
+    bool     getVerbosity() const;
 
-	/**
-	 * @brief	Returns the output file name
-	 */
-	string 	getMesh1FileName() const;
-	
-	/**
-	 * @brief	Returns the output file name
-	 */
-	string 	getMesh2FileName() const;
-	
-	/**
-	 * @brief	Returns the output file name
-	 */
-	string 	getFusionMeshFileName() const;
-	
-	
-	/**
-	 * @brief	Returns the distance treshold file name
-	 */
-	double getDistanceTreshold() const;
+    /**
+     * @brief    Returns the output file name
+     */
+    string     getMesh1FileName() const;
+    
+    /**
+     * @brief    Returns the output file name
+     */
+    string     getMesh2FileName() const;
+    
+    /**
+     * @brief    Returns the output file name
+     */
+    string     getFusionMeshFileName() const;
+    
+    
+    /**
+     * @brief    Returns the distance treshold file name
+     */
+    double getDistanceTreshold() const;
 
 private:
 
-	/// The internally used variable map
-	variables_map			        m_variables;
+    /// The internally used variable map
+    variables_map                    m_variables;
 
-	/// The internally used option description
-	options_description 		    m_descr;
+    /// The internally used option description
+    options_description             m_descr;
 
-	/// The internally used positional option desription
-	positional_options_description 	m_pdescr;
+    /// The internally used positional option desription
+    positional_options_description     m_pdescr;
 
 };
 
 /// Overlaoeded outpur operator
 inline ostream& operator<<(ostream& os, const Options &o)
 {
-	cout << "##### Program options: " << endl;
-	cout << endl;
-	cout << "##### Mesh1: " << o.getMesh1FileName() << endl;
-	cout << "##### Mesh2: " << o.getMesh2FileName() << endl;
-		
-	if(o.outputFileNameSet())
-	{
-	    cout << "##### FusionMesh: " << o.getFusionMeshFileName() << endl;
-	}	
+    cout << "##### Program options: " << endl;
+    cout << endl;
+    cout << "##### Mesh1: " << o.getMesh1FileName() << endl;
+    cout << "##### Mesh2: " << o.getMesh2FileName() << endl;
+        
+    if(o.outputFileNameSet())
+    {
+        cout << "##### FusionMesh: " << o.getFusionMeshFileName() << endl;
+    }    
 
 /*
-	if(o.getIntersections() > 0)
-	{
-	    cout << "##### Intersections \t\t: " << o.getIntersections() << endl;
-	}
-	else
-	{
-	    cout << "##### Voxelsize \t\t: " << o.getVoxelsize() << endl;
-	}
+    if(o.getIntersections() > 0)
+    {
+        cout << "##### Intersections \t\t: " << o.getIntersections() << endl;
+    }
+    else
+    {
+        cout << "##### Voxelsize \t\t: " << o.getVoxelsize() << endl;
+    }
 */
-	
-	return os;
+    
+    return os;
 }
 
 } // namespace fusion

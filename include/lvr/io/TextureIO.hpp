@@ -46,7 +46,7 @@ namespace lvr
 {
 
 /**
- *	TODO: Texture package format description
+ *    TODO: Texture package format description
  *
  *
  *
@@ -68,37 +68,37 @@ class TextureIO
          **/
         TextureIO(string filename);
         
-	virtual ~TextureIO() {/*TODO*/}
+    virtual ~TextureIO() {/*TODO*/}
 
-	/**
-	 * \brief Add the given texture to the texture package
-	 * \param 	t	The texture to add
-	 * \return 		The index of the texture in the texture package	
-	**/
-	virtual size_t add(Texture* t);
-		
-	/**
-	 * \brief 	Remove the texture with the given index from the texture package
-	 * \param	index	The index of the texture to remove
-	**/
-	virtual void remove (size_t index);
+    /**
+     * \brief Add the given texture to the texture package
+     * \param     t    The texture to add
+     * \return         The index of the texture in the texture package    
+    **/
+    virtual size_t add(Texture* t);
+        
+    /**
+     * \brief     Remove the texture with the given index from the texture package
+     * \param    index    The index of the texture to remove
+    **/
+    virtual void remove (size_t index);
 
-	/**
-	 * \brief 	Update the texture with the given index in the texture package
-	 * \param	index	The index of the texture to update
-	 * \param	t	The new texture to replace the old one with
-	**/
-	virtual void update (size_t index, Texture* t);
+    /**
+     * \brief     Update the texture with the given index in the texture package
+     * \param    index    The index of the texture to update
+     * \param    t    The new texture to replace the old one with
+    **/
+    virtual void update (size_t index, Texture* t);
 
-	/**
-	 * \brief (re-)write the file
-	 *
-	**/
-	virtual void write();
+    /**
+     * \brief (re-)write the file
+     *
+    **/
+    virtual void write();
 
 
-	std::vector<Texture*> 	m_textures;
-	string 			m_filename;
+    std::vector<Texture*>     m_textures;
+    string             m_filename;
 
 };
 

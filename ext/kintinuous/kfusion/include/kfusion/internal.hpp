@@ -141,14 +141,14 @@ namespace kfusion
 
         //exctraction functionality
         size_t extractSliceAsCloud (const TsdfVolume& volume, const kfusion::tsdf_buffer* buffer,
-								    const Vec3i minBounds, const Vec3i maxBounds, const Vec3i globalShift
-								    , const Aff3f& aff, PtrSz<Point> output);
+                                    const Vec3i minBounds, const Vec3i maxBounds, const Vec3i globalShift
+                                    , const Aff3f& aff, PtrSz<Point> output);
         size_t extractCloud(const TsdfVolume& volume, const tsdf_buffer& buffer, const Aff3f& aff, PtrSz<Point> output);
         void extractNormals(const TsdfVolume& volume, const tsdf_buffer& buffer, const PtrSz<Point>& points, const Aff3f& aff, const Mat3f& Rinv, float gradient_delta_factor, float4* output);
 
 
-		//push
-		//void pushCloudAsSliceGPU (const TsdfVolume& volume, DeviceArray<float3> cloud_gpu, const tsdf_buffer* buffer);
+        //push
+        //void pushCloudAsSliceGPU (const TsdfVolume& volume, DeviceArray<float3> cloud_gpu, const tsdf_buffer* buffer);
 
         struct float8  { float x, y, z, w, c1, c2, c3, c4; };
         struct float12 { float x, y, z, w, normal_x, normal_y, normal_z, n4, c1, c2, c3, c4; };

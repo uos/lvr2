@@ -41,16 +41,16 @@ namespace kfusion
         void performShift() { perform_shift_ = true;}
 
         bool hasShifted()
-			{return has_shifted_;}
+            {return has_shifted_;}
 
         void triggerCheckForShift()
-    			{checkForShift_ = !checkForShift_;}
+                {checkForShift_ = !checkForShift_;}
 
-		void triggerRecord()
-			{record_mode_ = !record_mode_;}
+        void triggerRecord()
+            {record_mode_ = !record_mode_;}
 
-		 bool isLastScan()
-			{return perform_last_scan_;};
+         bool isLastScan()
+            {return perform_last_scan_;};
 
         const cuda::TsdfVolume& tsdf() const;
         cuda::TsdfVolume& tsdf();
@@ -86,10 +86,10 @@ namespace kfusion
         cuda::Normals normals_;
         cuda::Depth depths_;
 
-		bool has_shifted_;
-		bool perform_last_scan_;
-		bool perform_shift_;
-		bool record_mode_;
+        bool has_shifted_;
+        bool perform_last_scan_;
+        bool perform_shift_;
+        bool record_mode_;
         bool checkForShift_;
         cv::Ptr<cuda::TsdfVolume> volume_;
         /** \brief Cyclical buffer object */

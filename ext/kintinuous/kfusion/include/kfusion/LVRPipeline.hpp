@@ -31,26 +31,26 @@ namespace kfusion
 {
     class LVRPipeline
     {
-		public:
+        public:
 
-			LVRPipeline(KinFuParams params);
+            LVRPipeline(KinFuParams params);
 
-			~LVRPipeline();
+            ~LVRPipeline();
 
-			void addTSDFSlice(TSDFSlice slice,  const bool last_shift);
+            void addTSDFSlice(TSDFSlice slice,  const bool last_shift);
 
-			void resetMesh();
+            void resetMesh();
 
-			MeshPtr getMesh() {return pl_.GetResult();}
+            MeshPtr getMesh() {return pl_.GetResult();}
 
-			double calcTimeStats();
+            double calcTimeStats();
 
-		private:
+        private:
 
-		    MeshPtr meshPtr_;
-		    size_t slice_count_;
-			std::vector<double> timeStats_;
-			LinearPipeline<pair<TSDFSlice, bool> , MeshPtr> pl_;
+            MeshPtr meshPtr_;
+            size_t slice_count_;
+            std::vector<double> timeStats_;
+            LinearPipeline<pair<TSDFSlice, bool> , MeshPtr> pl_;
 
     };
 }

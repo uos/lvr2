@@ -16,29 +16,29 @@
 
 class MeshUpdateThread : public QThread
 {
-	Q_OBJECT
+    Q_OBJECT
 Q_SIGNALS:
-	void meshUpdate(vtkActor* actor);
+    void meshUpdate(vtkActor* actor);
 
 public:
-	MeshUpdateThread(kfusion::KinFu::Ptr kinfu);
-	virtual ~MeshUpdateThread();
+    MeshUpdateThread(kfusion::KinFu::Ptr kinfu);
+    virtual ~MeshUpdateThread();
 
 
 
 //private:
-	typedef lvr::HalfEdgeVertex<cVertex, lvr::Normal<float> >* VertexPtr;
+    typedef lvr::HalfEdgeVertex<cVertex, lvr::Normal<float> >* VertexPtr;
 
-	void run();
-	void computeMeshActor(HMesh* meshbuffer);
+    void run();
+    void computeMeshActor(HMesh* meshbuffer);
 
-	kfusion::KinFu::Ptr 						m_kinfu;
-	unordered_map<VertexPtr, size_t> 			m_indexMap;
-    vtkActor*      								m_meshActor;
-    vtkSmartPointer<vtkActor>       			m_wireframeActor;
+    kfusion::KinFu::Ptr                         m_kinfu;
+    unordered_map<VertexPtr, size_t>             m_indexMap;
+    vtkActor*                                      m_meshActor;
+    vtkSmartPointer<vtkActor>                   m_wireframeActor;
 
-    vector<float>								m_vertices;
-    vector<int>									m_faces;
+    vector<float>                                m_vertices;
+    vector<int>                                    m_faces;
 };
 
 #endif /* EXT_KINTINUOUS_QT_APP_MESHUPDATETHREAD_HPP_ */

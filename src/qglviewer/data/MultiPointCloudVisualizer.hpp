@@ -37,8 +37,8 @@ using namespace lvr;
 class MultiPointCloudVisualizer : public Visualizer
 {
 public:
-	MultiPointCloudVisualizer(PointBufferPtr buffer, string name);
-	virtual ~MultiPointCloudVisualizer() {};
+    MultiPointCloudVisualizer(PointBufferPtr buffer, string name);
+    virtual ~MultiPointCloudVisualizer() {};
 };
 
 #endif /* MULTIPOINTCLOUDVISUALIZER_HPP_ */

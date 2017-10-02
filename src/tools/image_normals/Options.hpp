@@ -46,45 +46,45 @@ class Options
 {
 public:
 
-	/**
-	 * @brief Ctor. Parses the command parameters given to the main
-	 *     function of the program
-	 */
-	Options(int argc, char** argv);
-	virtual ~Options();
+    /**
+     * @brief Ctor. Parses the command parameters given to the main
+     *     function of the program
+     */
+    Options(int argc, char** argv);
+    virtual ~Options();
 
 
     string  inputFile() const
-	{
+    {
         return (m_variables["inputFile"].as< vector<string> >())[0];
-	}
+    }
 
 
     string  imageFile() const
-	{
+    {
         return m_variables["img"].as<string>();
-	}
+    }
 
     int     minH() const
-	{
+    {
         return m_variables["minH"].as<int>();
-	}
+    }
 
     int     maxH() const
-	{
+    {
         return m_variables["maxH"].as<int>();
-	}
+    }
 
 
     int     minV() const
-	{
+    {
         return m_variables["minV"].as<int>();
-	}
+    }
 
     int     maxV() const
-	{
+    {
         return m_variables["maxV"].as<int>();
-	}
+    }
 
     int     imageWidth() const
     {
@@ -139,14 +139,14 @@ public:
 
 private:
 
-	/// The internally used variable map
-	variables_map m_variables;
+    /// The internally used variable map
+    variables_map m_variables;
 
-	/// The internally used option description
-	options_description m_descr;
+    /// The internally used option description
+    options_description m_descr;
 
-	/// The internally used positional option desription
-	positional_options_description m_pdescr;
+    /// The internally used positional option desription
+    positional_options_description m_pdescr;
 
     int         m_minH;
     int         m_maxH;
