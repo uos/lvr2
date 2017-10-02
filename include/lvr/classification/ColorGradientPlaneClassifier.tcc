@@ -28,65 +28,65 @@ namespace lvr
 
 template<typename VertexT, typename NormalT>
 ColorGradientPlaneClassifier<VertexT, NormalT>::ColorGradientPlaneClassifier(vector<Region<VertexT, NormalT>* >* region, GradientType t)
-    : RegionClassifier<VertexT, NormalT>(region)
+	: RegionClassifier<VertexT, NormalT>(region)
 {
-    m_colorMap = new ColorMap(256);
-    m_gradientType = t;
+	m_colorMap = new ColorMap(256);
+	m_gradientType = t;
 }
 
 template<typename VertexT, typename NormalT>
 uchar ColorGradientPlaneClassifier<VertexT, NormalT>::r(int i)
 {
-    uchar* c = getColor(i);
-    uchar tmp = c[0];
-    delete[] c;
-    return tmp;
+	uchar* c = getColor(i);
+	uchar tmp = c[0];
+	delete[] c;
+	return tmp;
 }
 
 template<typename VertexT, typename NormalT>
 uchar ColorGradientPlaneClassifier<VertexT, NormalT>::g(int i)
 {
-    uchar* c = getColor(i);
-    uchar tmp = c[1];
-    delete[] c;
-    return tmp;
+	uchar* c = getColor(i);
+	uchar tmp = c[1];
+	delete[] c;
+	return tmp;
 }
 
 template<typename VertexT, typename NormalT>
 uchar ColorGradientPlaneClassifier<VertexT, NormalT>::b(int i)
 {
-    uchar* c = getColor(i);
-    uchar tmp = c[2];
-    delete[] c;
-    return tmp;
+	uchar* c = getColor(i);
+	uchar tmp = c[2];
+	delete[] c;
+	return tmp;
 }
 
 template<typename VertexT, typename NormalT>
 uchar* ColorGradientPlaneClassifier<VertexT, NormalT>::getColor(int i)
 {
-    uchar* c = new uchar[3];
-    c[0] = 0;
-    c[1] = 200;
-    c[2] = 0;
+	uchar* c = new uchar[3];
+	c[0] = 0;
+	c[1] = 200;
+	c[2] = 0;
 
-    Region<VertexT, NormalT>* r = 0;
-    if((unsigned int) i < this->m_regions->size())
-    {
-        r = this->m_regions->at(i);
-    }
+	Region<VertexT, NormalT>* r = 0;
+	if((unsigned int) i < this->m_regions->size())
+	{
+		r = this->m_regions->at(i);
+	}
 
-    if(r)
-    {
-        float fc[3];
-        m_colorMap->getColor(fc, i, m_gradientType);
-        for(int i = 0; i < 3; i++)
-        {
-            c[i] = (uchar)(fc[i] * 255);
-        }
-    }
+	if(r)
+	{
+		float fc[3];
+		m_colorMap->getColor(fc, i, m_gradientType);
+		for(int i = 0; i < 3; i++)
+		{
+			c[i] = (uchar)(fc[i] * 255);
+		}
+	}
 
 
-    return c;
+	return c;
 }
 
 } // namespace lvr

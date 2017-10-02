@@ -46,38 +46,38 @@ using namespace boost::program_options;
 
 /**
  * @brief A class to parse the program options for the reconstruction
- *           executable.
+ * 		  executable.
  */
 class Options {
 public:
 
-    /**
-     * @brief     Ctor. Parses the command parameters given to the main
-     *               function of the program
-     */
-    Options(int argc, char** argv);
-    virtual ~Options();
+	/**
+	 * @brief 	Ctor. Parses the command parameters given to the main
+	 * 		  	function of the program
+	 */
+	Options(int argc, char** argv);
+	virtual ~Options();
 
-    /**
-     * @brief    Returns the given voxelsize
-     */
-    int     firstScan() const;
-    int     lastScan() const;
-    int     reduction() const;
-    string  directory() const;
-    string  outputFile() const;
-    bool    convertRemission() const;
-    bool    saveRemission() const;
+	/**
+	 * @brief	Returns the given voxelsize
+	 */
+	int     firstScan() const;
+	int     lastScan() const;
+	int     reduction() const;
+	string  directory() const;
+	string  outputFile() const;
+	bool    convertRemission() const;
+	bool    saveRemission() const;
 
-    bool    printUsage() const;
+	bool    printUsage() const;
 
 private:
 
-    int m_first;
-    int m_last;
-    int m_reduction;
-    string m_outputFile;
-    bool m_convertRemission;
+	int m_first;
+	int m_last;
+	int m_reduction;
+	string m_outputFile;
+	bool m_convertRemission;
 
     /// The internally used variable map
     variables_map                   m_variables;
@@ -94,15 +94,15 @@ private:
 /// Overlaoeded outpur operator
 inline ostream& operator<<(ostream& os, const Options &o)
 {
-    cout << "##### Program options: "     << endl;
-    cout << "##### Input dir \t\t: "  << o.directory() << endl;
-    cout << "##### Output file \t\t: "     << o.outputFile() << endl;
-    cout << "##### First scan to read \t: " << o.firstScan() << endl;
-    cout << "##### Last scan to read \t: " << o.lastScan() << endl;
-    cout << "##### Reduction \t\t: " << o.reduction() << endl;
-    cout << "##### Save Remission:\t\t" << o.saveRemission() << endl;
-    cout << "##### Convert Remission: " << o.convertRemission() << endl;
-    return os;
+	cout << "##### Program options: " 	<< endl;
+	cout << "##### Input dir \t\t: "  << o.directory() << endl;
+	cout << "##### Output file \t\t: " 	<< o.outputFile() << endl;
+	cout << "##### First scan to read \t: " << o.firstScan() << endl;
+	cout << "##### Last scan to read \t: " << o.lastScan() << endl;
+	cout << "##### Reduction \t\t: " << o.reduction() << endl;
+	cout << "##### Save Remission:\t\t" << o.saveRemission() << endl;
+	cout << "##### Convert Remission: " << o.convertRemission() << endl;
+	return os;
 }
 
 } // namespace reconstruct

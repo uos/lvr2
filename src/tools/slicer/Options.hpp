@@ -40,63 +40,63 @@ namespace slicer{
 using namespace boost::program_options;
 /**
  * @brief A class to parse the program options for the fusion
- *           executable.
+ * 		  executable.
  */
 class Options {
 
 public:
 
-    /**
-     * @brief     Ctor. Parses the command parameters given to the main
-     *               function of the program
-     */
-    Options(int argc, char** argv);
-    
-    virtual ~Options();
+	/**
+	 * @brief 	Ctor. Parses the command parameters given to the main
+	 * 		  	function of the program
+	 */
+	Options(int argc, char** argv);
+	
+	virtual ~Options();
 
-    /**
-     * @brief    Prints a usage message to stdout.
-     */
-    bool    printUsage() const;
+	/**
+	 * @brief	Prints a usage message to stdout.
+	 */
+	bool	printUsage() const;
 
-    /**
-     * @brief    Returns the output file name
-     */
-    string     getInputFileName() const;
-    
-    /**
-     * @brief    Returns the upper bound
-     */
-    string getDimension() const;
-        
-    /**
-     * @brief    Returns the value
-     */
-    double getValue() const;
+	/**
+	 * @brief	Returns the output file name
+	 */
+	string 	getInputFileName() const;
+	
+	/**
+	 * @brief	Returns the upper bound
+	 */
+	string getDimension() const;
+		
+	/**
+	 * @brief	Returns the value
+	 */
+	double getValue() const;
 
 private:
 
-    /// The internally used variable map
-    variables_map                    m_variables;
+	/// The internally used variable map
+	variables_map			        m_variables;
 
-    /// The internally used option description
-    options_description             m_descr;
+	/// The internally used option description
+	options_description 		    m_descr;
 
-    /// The internally used positional option desription
-    positional_options_description     m_pdescr;
+	/// The internally used positional option desription
+	positional_options_description 	m_pdescr;
 
 };
 
 /// Overloaded output operator
 inline ostream& operator<<(ostream& os, const Options &o)
 {
-    cout << "##### Program options: " << endl;
-    cout << endl;
-    cout << "##### Input: " << o.getInputFileName() << endl;
+	cout << "##### Program options: " << endl;
+	cout << endl;
+	cout << "##### Input: " << o.getInputFileName() << endl;
     cout << "##### Dimension \t\t: " << o.getDimension().c_str() << endl;
     cout << "##### Value \t\t: " << o.getValue() << endl;
-    
-    return os;
+	
+	return os;
 }
 
 } // namespace slicer

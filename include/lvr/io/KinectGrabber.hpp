@@ -38,33 +38,33 @@ namespace lvr
 class KinectGrabber : public Freenect::FreenectDevice
 {
 public:
-    KinectGrabber(freenect_context *_ctx, int _index);
-    virtual ~KinectGrabber();
+	KinectGrabber(freenect_context *_ctx, int _index);
+	virtual ~KinectGrabber();
 
-    /// Returns the currently present point cloud data
-    void getDepthImage(std::vector<short> &img);
-    void getColorImage(std::vector<uint8_t> &img);
+	/// Returns the currently present point cloud data
+	void getDepthImage(std::vector<short> &img);
+	void getColorImage(std::vector<uint8_t> &img);
 
 protected:
-    virtual void VideoCallback(void* data, uint32_t timestamp);
-    virtual void DepthCallback(void* data, uint32_t timestamp);
+	virtual void VideoCallback(void* data, uint32_t timestamp);
+	virtual void DepthCallback(void* data, uint32_t timestamp);
 
-    /// PointBufferPtr with current data
-    PointBufferPtr            m_buffer;
+	/// PointBufferPtr with current data
+	PointBufferPtr			m_buffer;
 
-    /// Mutex for save depth buffer access
-    boost::mutex            m_depthMutex;
+	/// Mutex for save depth buffer access
+	boost::mutex			m_depthMutex;
 
-    /// Mutex for save color buffer access
-    boost::mutex            m_colorMutex;
+	/// Mutex for save color buffer access
+	boost::mutex			m_colorMutex;
 
-    /// The raw depth image
-    std::vector<short>        m_depthImage;
+	/// The raw depth image
+	std::vector<short>		m_depthImage;
 
-    /// The raw color image
-    std::vector<uint8_t>    m_colorImage;
+	/// The raw color image
+	std::vector<uint8_t>	m_colorImage;
 
-    bool                    m_haveData;
+	bool					m_haveData;
 
 };
 

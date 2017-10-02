@@ -36,10 +36,10 @@ namespace kfusion
 
             float getRaycastStepFactor() const;
             void setRaycastStepFactor(float factor);
-            
-            ushort2* getCoord(int x, int y, int z, int dim_x, int dim_y);
-            
-            
+			
+			ushort2* getCoord(int x, int y, int z, int dim_x, int dim_y);
+			
+			
             float getGradientDeltaFactor() const;
             void setGradientDeltaFactor(float factor);
 
@@ -55,17 +55,17 @@ namespace kfusion
             virtual void raycast(const Affine3f& camera_pose, tsdf_buffer& buffer, const Intr& intr, Depth& depth, Normals& normals);
             virtual void raycast(const Affine3f& camera_pose, tsdf_buffer& buffer, const Intr& intr, Cloud& points, Normals& normals);
 
-            /** \brief Generates cloud using GPU in connected6 mode only
-              * \param[out] cloud_buffer_xyz buffer to store point cloud
-              * \param cloud_buffer_intensity
-              * \param[in] buffer Pointer to the buffer struct that contains information about memory addresses of the tsdf volume memory block, which are used for the cyclic buffer.
-              * \param[in] shiftX Offset in indices.
-              * \param[in] shiftY Offset in indices.
-              * \param[in] shiftZ Offset in indices.
-              * \return DeviceArray with disabled reference counting that points to filled part of cloud_buffer.
-              */
-            DeviceArray<Point>
-            fetchSliceAsCloud (DeviceArray<Point>& cloud_buffer, const kfusion::tsdf_buffer* buffer, const Vec3i minBounds, const Vec3i maxBounds, const Vec3i globalShift ) const;
+			/** \brief Generates cloud using GPU in connected6 mode only
+			  * \param[out] cloud_buffer_xyz buffer to store point cloud
+			  * \param cloud_buffer_intensity
+			  * \param[in] buffer Pointer to the buffer struct that contains information about memory addresses of the tsdf volume memory block, which are used for the cyclic buffer.
+			  * \param[in] shiftX Offset in indices.
+			  * \param[in] shiftY Offset in indices.
+			  * \param[in] shiftZ Offset in indices.
+			  * \return DeviceArray with disabled reference counting that points to filled part of cloud_buffer.
+			  */
+			DeviceArray<Point>
+			fetchSliceAsCloud (DeviceArray<Point>& cloud_buffer, const kfusion::tsdf_buffer* buffer, const Vec3i minBounds, const Vec3i maxBounds, const Vec3i globalShift ) const;
 
             void swap(CudaData& data);
 

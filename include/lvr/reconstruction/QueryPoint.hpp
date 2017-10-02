@@ -43,44 +43,44 @@ public:
     /**
      * @brief Default constructor.
      */
-    QueryPoint();
+	QueryPoint();
 
-    /**
-     * @brief Constructor.
-     *
-     * @param v          The position of the query point. The distance
-     *                   value is set to 0
-     */
-    QueryPoint(VertexT v);
+	/**
+	 * @brief Constructor.
+	 *
+	 * @param v          The position of the query point. The distance
+	 *                   value is set to 0
+	 */
+	QueryPoint(VertexT v);
 
-    /**
-     * @brief Constructor.
-     *
-     * @param v         The position of the query point.
-     * @param f         The distance value for the query point.
-     */
-    QueryPoint(VertexT v, float f);
+	/**
+	 * @brief Constructor.
+	 *
+	 * @param v         The position of the query point.
+	 * @param f         The distance value for the query point.
+	 */
+	QueryPoint(VertexT v, float f);
 
-    /**
-     * @brief Copy constructor.
-     * @param o
-     * @return
-     */
-    QueryPoint(const QueryPoint &o);
+	/**
+	 * @brief Copy constructor.
+	 * @param o
+	 * @return
+	 */
+	QueryPoint(const QueryPoint &o);
 
-    /**
-     * @brief Destructor.
-     */
-    virtual ~QueryPoint() {};
+	/**
+	 * @brief Destructor.
+	 */
+	virtual ~QueryPoint() {};
 
-    /// The position of the query point
-    VertexT          m_position;
+	/// The position of the query point
+	VertexT      	m_position;
 
-    /// The associated distance value
-    float           m_distance;
+	/// The associated distance value
+	float           m_distance;
 
-    /// Indicates if the query point is valid
-    bool            m_invalid;
+	/// Indicates if the query point is valid
+	bool            m_invalid;
 };
 
 } // namespace lvr

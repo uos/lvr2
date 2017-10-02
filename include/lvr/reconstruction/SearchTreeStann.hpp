@@ -104,7 +104,7 @@ protected:
     coord3fArr                          m_points;
 
     /// The colors
-    color3bArr                            m_colors;
+    color3bArr							m_colors;
 }; // SearchTreeStann
 
 

@@ -171,11 +171,11 @@ class Vertex{
 
 
         /**
-         * @brief  Calculates the squared distance to another vertex.
+		 * @brief  Calculates the squared distance to another vertex.
          *
          * @param other  Another Vertex.
          */
-        virtual CoordType sqrDistance( const Vertex &other ) const;
+		virtual CoordType sqrDistance( const Vertex &other ) const;
 
         /**
          * @brief    Multiplication operator (dot product)

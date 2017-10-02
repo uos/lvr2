@@ -116,8 +116,8 @@ class PLYIO : public BaseIO
 
         void save(ModelPtr model, string filename)
         {
-            m_model = model;
-            save(filename);
+        	m_model = model;
+        	save(filename);
         }
 
 

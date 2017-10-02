@@ -46,43 +46,43 @@ using namespace boost::program_options;
 
 /**
  * @brief A class to parse the program options for the reconstruction
- *           executable.
+ * 		  executable.
  */
 class Options {
 public:
 
-    /**
-     * @brief     Ctor. Parses the command parameters given to the main
-     *               function of the program
-     */
-    Options(int argc, char** argv);
-    virtual ~Options();
+	/**
+	 * @brief 	Ctor. Parses the command parameters given to the main
+	 * 		  	function of the program
+	 */
+	Options(int argc, char** argv);
+	virtual ~Options();
 
-    /**
-     * @brief    Returns the used MLSDistance
-     */
-    float   mlsDistance()  const;
+	/**
+	 * @brief	Returns the used MLSDistance
+	 */
+	float   mlsDistance()  const;
 
-    /**
-     * @brief   Returns kMean value for outlier removal
-     */
-    int   sorMeanK() const;
+	/**
+	 * @brief   Returns kMean value for outlier removal
+	 */
+	int   sorMeanK() const;
 
-    /**
-     * @brief   Returns max size of neighbourhood for outlier removal
-     */
-    float   sorDevThreshold() const;
+	/**
+	 * @brief   Returns max size of neighbourhood for outlier removal
+	 */
+	float   sorDevThreshold() const;
 
 
-    /**
-     * @brief   True if outlier removel is turned on
-     */
-    bool    removeOutliers() const;
+	/**
+	 * @brief   True if outlier removel is turned on
+	 */
+	bool    removeOutliers() const;
 
-    /**
-     * @brief   Retuns the input file
-     */
-    string inputFile() const;
+	/**
+	 * @brief   Retuns the input file
+	 */
+	string inputFile() const;
 
     /**
      * @brief   Retuns the input file
@@ -90,18 +90,18 @@ public:
     string outputFile() const;
 
 
-    /**
-     * @brief   Prints a usage message
-     */
-    bool    printUsage() const;
+	/**
+	 * @brief   Prints a usage message
+	 */
+	bool    printUsage() const;
 
 private:
 
-    /// Max distance used for MLS projection
-    float m_mlsDistance;
+	/// Max distance used for MLS projection
+	float m_mlsDistance;
 
-    /// Output file name
-    string m_outputFile;
+	/// Output file name
+	string m_outputFile;
 
     /// The internally used variable map
     variables_map                   m_variables;
@@ -118,29 +118,29 @@ private:
 /// Overlaoeded outpur operator
 inline ostream& operator<<(ostream& os, const Options &o)
 {
-    cout << "##### Program options: "     << endl;
-    cout << "##### Input file \t\t: "  << o.inputFile() << endl;
-    cout << "##### Output file \t\t: "     << o.outputFile() << endl;
+	cout << "##### Program options: " 	<< endl;
+	cout << "##### Input file \t\t: "  << o.inputFile() << endl;
+	cout << "##### Output file \t\t: " 	<< o.outputFile() << endl;
 
-    if( o.mlsDistance() > 0)
-    {
-        cout << "##### MLS Distance \t\t: " << o.mlsDistance() << endl;
-    }
-    else
-    {
-        cout << "##### Using MLS Projection\t: NO" << endl;
-    }
-    if( o.removeOutliers())
-    {
-        cout << "##### Apply outlier removal\t: YES" << endl;
-        cout << "##### k-neighborhood\t\t: " << o.sorMeanK() << endl;
-        cout << "##### Deviation threshold\t: " << o.sorDevThreshold() << endl;
-    }
-    else
-    {
-        cout << "##### Apply outlier removal\t: NO" << endl;
-    }
-    return os;
+	if( o.mlsDistance() > 0)
+	{
+	    cout << "##### MLS Distance \t\t: " << o.mlsDistance() << endl;
+	}
+	else
+	{
+	    cout << "##### Using MLS Projection\t: NO" << endl;
+	}
+	if( o.removeOutliers())
+	{
+	    cout << "##### Apply outlier removal\t: YES" << endl;
+	    cout << "##### k-neighborhood\t\t: " << o.sorMeanK() << endl;
+	    cout << "##### Deviation threshold\t: " << o.sorDevThreshold() << endl;
+	}
+	else
+	{
+	    cout << "##### Apply outlier removal\t: NO" << endl;
+	}
+	return os;
 }
 
 } // namespace reconstruct

@@ -14,16 +14,16 @@ enum ColorTable {BASIC, LIGHT, HIGHLIGHT};
 
 class Colors{
 public:
-    static void getColor(float* c, Color name, ColorTable table = BASIC);
+	static void getColor(float* c, Color name, ColorTable table = BASIC);
 
-    static float PrimeColorTable[][3];
-    static float LightColorTable[][3];
-    static float HighlightColorTable[][3];
+	static float PrimeColorTable[][3];
+	static float LightColorTable[][3];
+	static float HighlightColorTable[][3];
 
-    static unsigned long getRGBIndex(unsigned char r, unsigned char g, unsigned char b)
-    {
-        return ((r & 0xff) << 16) + ((g & 0xff) << 8) + (b & 0xff);
-    }
+	static unsigned long getRGBIndex(unsigned char r, unsigned char g, unsigned char b)
+	{
+		return ((r & 0xff) << 16) + ((g & 0xff) << 8) + (b & 0xff);
+	}
 };
 
 

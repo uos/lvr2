@@ -47,32 +47,32 @@ namespace transform
 
   /**
    * @brief A class to parse the program options for the reconstruction
-   *           executable.
+   * 		  executable.
    */
   class Options {
     public:
 
       /**
-       * @brief     Ctor. Parses the command parameters given to the main
-       *               function of the program
+       * @brief 	Ctor. Parses the command parameters given to the main
+       * 		  	function of the program
        */
       Options(int argc, char** argv);
       virtual ~Options();
 
       /**
-       * @brief    Prints a usage message to stdout.
+       * @brief	Prints a usage message to stdout.
        */
-      bool    printUsage() const;
+      bool	printUsage() const;
 
       /**
-       * @brief    Returns the output file name
+       * @brief	Returns the output file name
        */
-      string     getInputFile() const;
+      string 	getInputFile() const;
 
       /**
-       * @brief    Returns the output file name
+       * @brief	Returns the output file name
        */
-      string     getOutputFile() const;
+      string 	getOutputFile() const;
 
       /**
        * @brief Returns the transform file name
@@ -192,13 +192,13 @@ namespace transform
     private:
 
       /// The internally used variable map
-      variables_map                    m_variables;
+      variables_map			        m_variables;
 
       /// The internally used option description
-      options_description             m_descr;
+      options_description 		    m_descr;
 
       /// The internally used positional option desription
-      positional_options_description     m_pdescr;
+      positional_options_description 	m_pdescr;
   };
 
 

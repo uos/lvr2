@@ -35,15 +35,15 @@ namespace lvr
 class GroundPlane : public Renderable{
 
 public:
-    GroundPlane();
-    GroundPlane(int increment, int count);
+	GroundPlane();
+	GroundPlane(int increment, int count);
 
-    virtual ~GroundPlane();
-    virtual void render();
-    virtual void transform(Matrix4<float> m);
+	virtual ~GroundPlane();
+	virtual void render();
+	virtual void transform(Matrix4<float> m);
 
 private:
-    void drawGrid(int increment, int count);
+	void drawGrid(int increment, int count);
 
 };
 

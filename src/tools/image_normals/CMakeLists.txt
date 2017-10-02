@@ -12,14 +12,14 @@ set(LVR_IMG_NORMAL_SRC
 #####################################################################################
 
 set(LVR_IMG_NORMAL_DEPS
-    lvr_static
-    lvrlas_static
-    lvrrply_static
-    lvrslam6d_static
-    ${OPENGL_LIBRARIES}
-    ${GLUT_LIBRARIES}
-    ${OpenCV_LIBS}
-    )
+	lvr_static
+	lvrlas_static
+	lvrrply_static
+	lvrslam6d_static
+	${OPENGL_LIBRARIES}
+	${GLUT_LIBRARIES}
+	${OpenCV_LIBS}
+	)
 
 if(PCL_FOUND)
   set(LVR_IMG_NORMAL_DEPS  ${LVR_IMG_NORMAL_DEPS} ${PCL_LIBRARIES} )

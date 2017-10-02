@@ -38,34 +38,34 @@ template<typename CoordType>
 CoordType Vertex<CoordType>::operator[](const int &index) const
 {
 
-    switch ( index )
-    {
-        case 0:
-            return x;
-        case 1:
-            return y;
-        case 2:
-            return z;
-        default:
-            throw std::overflow_error( "Access index out of range." );
-    }
+	switch ( index )
+	{
+		case 0:
+			return x;
+		case 1:
+			return y;
+		case 2:
+			return z;
+		default:
+			throw std::overflow_error( "Access index out of range." );
+	}
 }
 
 
 template<typename CoordType>
 CoordType& Vertex<CoordType>::operator[](const int &index)
 {
-    switch ( index )
-    {
-        case 0:
-            return x;
-        case 1:
-            return y;
-        case 2:
-            return z;
-        default:
-            throw std::overflow_error("Access index out of range.");
-    }
+	switch ( index )
+	{
+		case 0:
+			return x;
+		case 1:
+			return y;
+		case 2:
+			return z;
+		default:
+			throw std::overflow_error("Access index out of range.");
+	}
 }
 
 template<typename CoordType>
@@ -161,9 +161,9 @@ CoordType Vertex<CoordType>::distance( const Vertex &other ) const
 template<typename CoordType>
 CoordType Vertex<CoordType>::sqrDistance( const Vertex &other ) const
 {
-    return ( x - other.x ) * ( x - other.x )
-        +  ( y - other.y ) * ( y - other.y ) 
-        +  ( z - other.z ) * ( z - other.z );
+	return ( x - other.x ) * ( x - other.x )
+		+  ( y - other.y ) * ( y - other.y ) 
+    	+  ( z - other.z ) * ( z - other.z );
 }
 
 

@@ -38,39 +38,39 @@ namespace lvr {
 
 
 /**
- * @brief    This class holds a transformation matrix and some additional information
+ * @brief	This class holds a transformation matrix and some additional information
  */
 class Trans
 {
 public:
-    /**
-     * \brief Constructor.
-     *
-     * \param    p1    Three points in the first texture.
-     * \param    p2    Three corresponding points in the second texture.
-     * \param    w1    The width of the first texture.
-     * \param    h1    The height of the first texture.
-     * \param    w2    The width of the second texture.
-     * \param    h2    The height of the second texture.
-     *
-     */
-    Trans(cv::Point2f* p1, cv::Point2f* p2, int w1, int h1, int w2, int h2);
+	/**
+	 * \brief Constructor.
+	 *
+	 * \param	p1	Three points in the first texture.
+	 * \param	p2	Three corresponding points in the second texture.
+	 * \param	w1	The width of the first texture.
+	 * \param	h1	The height of the first texture.
+	 * \param	w2	The width of the second texture.
+	 * \param	h2	The height of the second texture.
+	 *
+	 */
+	Trans(cv::Point2f* p1, cv::Point2f* p2, int w1, int h1, int w2, int h2);
 
-    /**
-     * \brief == operator.
-     *
-     */    
-    bool operator==(Trans other);
-    
-    ///The number of votes this transformation has
-    int m_votes;
+	/**
+	 * \brief == operator.
+	 *
+	 */	
+	bool operator==(Trans other);
+	
+	///The number of votes this transformation has
+	int m_votes;
 
-    ///The transformation matrix    
-    cv::Mat m_trans;
+	///The transformation matrix	
+	cv::Mat m_trans;
 
-    ///0 = not mirrored, 1 = mirrored at horizontal axis, 2 = mirrored at vertical axis
-    unsigned char m_mirrored;
-    
+	///0 = not mirrored, 1 = mirrored at horizontal axis, 2 = mirrored at vertical axis
+	unsigned char m_mirrored;
+	
 };
 }
 

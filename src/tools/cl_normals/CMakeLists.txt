@@ -17,9 +17,9 @@ set(LVR_CL_NORMAL_SRC
 #####################################################################################
 
 set(LVR_CL_NORMAL_DEPS
-    lvr
-    ${OpenCL_LIBRARIES}
-    )
+	lvr
+	${OpenCL_LIBRARIES}
+	)
 
 
 

@@ -32,40 +32,40 @@ namespace lvr
 {
 
 /**
- * @brief    Implements Garland & Heckbert's quadric based vertex
- *             removal cost function. Implementation is based on Jeff
- *             Somers source code
+ * @brief	Implements Garland & Heckbert's quadric based vertex
+ * 			removal cost function. Implementation is based on Jeff
+ * 			Somers source code
  */
 template<typename VertexT, typename NormalT>
 class QuadricVertexCosts : public VertexCosts<VertexT, NormalT>
 {
-    typedef HalfEdgeVertex<VertexT, NormalT> HVertex;
-    typedef HalfEdge<HVertex, HalfEdgeFace<VertexT, NormalT> > HEdge;
+	typedef HalfEdgeVertex<VertexT, NormalT> HVertex;
+	typedef HalfEdge<HVertex, HalfEdgeFace<VertexT, NormalT> > HEdge;
 
 public:
 
-    /**
-     * Ctor.
-     *
-     * @param useTriangleArea     If true, the areas of the surrounding triangles
-     *                            will be taken into account for error calculation
-     */
-    QuadricVertexCosts(bool useTriangleArea) : m_useTri(useTriangleArea) {};
+	/**
+	 * Ctor.
+	 *
+	 * @param useTriangleArea 	If true, the areas of the surrounding triangles
+	 *    						will be taken into account for error calculation
+	 */
+	QuadricVertexCosts(bool useTriangleArea) : m_useTri(useTriangleArea) {};
 
-    virtual ~QuadricVertexCosts(){}
+	virtual ~QuadricVertexCosts(){}
 
-    /**
-     * @brief     Implementation of Garland and Heckberts cost function. If the object
-     *             was created with the useTriangleArea flag, the weighted costs function
-     *             will be used.
-     */
-    virtual float operator()(HalfEdgeVertex<VertexT, NormalT> &v);
+	/**
+	 * @brief 	Implementation of Garland and Heckberts cost function. If the object
+	 * 			was created with the useTriangleArea flag, the weighted costs function
+	 * 			will be used.
+	 */
+	virtual float operator()(HalfEdgeVertex<VertexT, NormalT> &v);
 
 private:
 
-    float calcQuadricError(Matrix4<float> &quadric, HVertex* v, float area);
+	float calcQuadricError(Matrix4<float> &quadric, HVertex* v, float area);
 
-    bool m_useTri;
+	bool m_useTri;
 
 };
 

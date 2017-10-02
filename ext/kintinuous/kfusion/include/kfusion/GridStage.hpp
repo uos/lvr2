@@ -71,18 +71,18 @@ class GridStage : public AbstractStage
 {
 public:
 
-    // default constructor
-    GridStage(double voxel_size = 3.0/512.0, Options* options = NULL);
+	// default constructor
+	GridStage(double voxel_size = 3.0/512.0, Options* options = NULL);
 
-    void firstStep();
-    void step();
-    void lastStep();
+	void firstStep();
+	void step();
+	void lastStep();
 
 private:
-    size_t grid_count_;
-    BoundingBox<cVertex> bbox_;
-    double voxel_size_;
-    queue<TGrid*> last_grid_queue_;
-    bool last_shift;
+	size_t grid_count_;
+	BoundingBox<cVertex> bbox_;
+	double voxel_size_;
+	queue<TGrid*> last_grid_queue_;
+	bool last_shift;
 };
 #endif // STAGE

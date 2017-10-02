@@ -31,44 +31,44 @@ namespace lvr
 template<typename VertexT, typename NormalT>
 RegionClassifier<VertexT, NormalT>*  ClassifierFactory<VertexT, NormalT>::get(string name, HMesh* mesh)
 {
-    if(name == "Default")
-    {
-        return new ColorGradientPlaneClassifier<VertexT, NormalT>(&mesh->m_regions, SIMPSONS);
-    }
-    else if(name == "PlaneJet")
-    {
-        return new ColorGradientPlaneClassifier<VertexT, NormalT>(&mesh->m_regions, JET);
-    }
-    else if(name == "PlaneHot")
-    {
-        return new ColorGradientPlaneClassifier<VertexT, NormalT>(&mesh->m_regions, HOT);
-    }
-    else if(name == "PlaneHSV")
-    {
-        return new ColorGradientPlaneClassifier<VertexT, NormalT>(&mesh->m_regions, HSV);
-    }
-    else if(name == "PlaneGrey")
-    {
-        return new ColorGradientPlaneClassifier<VertexT, NormalT>(&mesh->m_regions, GREY);
-    }
-    else if(name == "PlaneSimpsons")
-    {
-        return new ColorGradientPlaneClassifier<VertexT, NormalT>(&mesh->m_regions, SIMPSONS);
-    }
-    else if(name == "NormalClassifier")
-    {
-        return new NormalClassifier<VertexT, NormalT>(&mesh->m_regions);
-    }
-    else if(name == "IndoorNormals")
-    {
-        return new IndoorNormalClassifier<VertexT, NormalT>(&mesh->m_regions);
-    }
-    else if(name == "Furniture")
-    {
-        return new FurnitureFeatureClassifier<VertexT, NormalT>(&mesh->m_regions);
-    }
+	if(name == "Default")
+	{
+		return new ColorGradientPlaneClassifier<VertexT, NormalT>(&mesh->m_regions, SIMPSONS);
+	}
+	else if(name == "PlaneJet")
+	{
+		return new ColorGradientPlaneClassifier<VertexT, NormalT>(&mesh->m_regions, JET);
+	}
+	else if(name == "PlaneHot")
+	{
+		return new ColorGradientPlaneClassifier<VertexT, NormalT>(&mesh->m_regions, HOT);
+	}
+	else if(name == "PlaneHSV")
+	{
+		return new ColorGradientPlaneClassifier<VertexT, NormalT>(&mesh->m_regions, HSV);
+	}
+	else if(name == "PlaneGrey")
+	{
+		return new ColorGradientPlaneClassifier<VertexT, NormalT>(&mesh->m_regions, GREY);
+	}
+	else if(name == "PlaneSimpsons")
+	{
+		return new ColorGradientPlaneClassifier<VertexT, NormalT>(&mesh->m_regions, SIMPSONS);
+	}
+	else if(name == "NormalClassifier")
+	{
+		return new NormalClassifier<VertexT, NormalT>(&mesh->m_regions);
+	}
+	else if(name == "IndoorNormals")
+	{
+		return new IndoorNormalClassifier<VertexT, NormalT>(&mesh->m_regions);
+	}
+	else if(name == "Furniture")
+	{
+		return new FurnitureFeatureClassifier<VertexT, NormalT>(&mesh->m_regions);
+	}
 
-    return 0;
+	return 0;
 }
 
 } /* namespace lvr */

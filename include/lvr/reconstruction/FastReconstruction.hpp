@@ -78,7 +78,7 @@ public:
     /**
      * @brief Constructor.
      *
-     * @param grid    A HashGrid instance on which the reconstruction is performed.
+     * @param grid	A HashGrid instance on which the reconstruction is performed.
      */
     FastReconstruction(HashGrid<VertexT, BoxT>* grid);
 
@@ -97,7 +97,7 @@ public:
 
 private:
 
-    HashGrid<VertexT, BoxT>*        m_grid;
+    HashGrid<VertexT, BoxT>*		m_grid;
 };
 
 

@@ -12,15 +12,15 @@ set(LVR_CUDA_NORMAL_SRC
 #####################################################################################
 
 set(LVR_CUDA_NORMAL_DEPS
-    lvr
-    lvrlas
-    lvrrply
-    lvrslam6d
-    lvrcuda
-    ${OPENGL_LIBRARIES}
-    ${GLUT_LIBRARIES}
-    ${OpenCV_LIBS}
-    )
+	lvr
+	lvrlas
+	lvrrply
+	lvrslam6d
+	lvrcuda
+	${OPENGL_LIBRARIES}
+	${GLUT_LIBRARIES}
+	${OpenCV_LIBS}
+	)
 
 #####################################################################################
 # Add executable

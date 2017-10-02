@@ -35,21 +35,21 @@ namespace lvr
 {
 
 /**
- * @brief    An interface class for local approximation operations
- *             (e.g. in a Marching Cubes box)
+ * @brief	An interface class for local approximation operations
+ * 			(e.g. in a Marching Cubes box)
  */
 template<typename VertexT, typename NormalT>
 class LocalApproximation
 {
 public:
 
-    /**
-     * @brief    Adds the local reconstruction to the given mesh
-     *
-     * @param    mesh         The used mesh.
-     * @param    manager         A point cloud manager object
-     * @param    globalIndex     The index of the latest vertex in the mesh
-     */
+	/**
+	 * @brief	Adds the local reconstruction to the given mesh
+	 *
+	 * @param	mesh		 The used mesh.
+	 * @param	manager		 A point cloud manager object
+	 * @param	globalIndex	 The index of the latest vertex in the mesh
+	 */
     virtual void getSurface(BaseMesh<VertexT, NormalT> &mesh,
             AdaptiveKSearchSurface<VertexT, NormalT> &manager,
             uint &globalIndex);

@@ -149,9 +149,9 @@ private:
      * @Brief Callback function
      */
     static void tesselatorCombineVertices(GLdouble coords[3],
-                             GLdouble *vertex_data[4],
-                             GLdouble weight[4],
-                             GLdouble **dataOut,
+							 GLdouble *vertex_data[4],
+							 GLdouble weight[4],
+							 GLdouble **dataOut,
                              VertexT* userData);
     /* All Constructors shall be private since
        this class is just a collection of functions. */
