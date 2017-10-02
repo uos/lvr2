@@ -103,5 +103,3 @@ void SignalingMeshGenerator::run()
         usleep(10000);
     }
 }
-
-

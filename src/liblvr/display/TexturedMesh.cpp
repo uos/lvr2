@@ -208,6 +208,3 @@ void TexturedMesh::compileTexureDisplayList()
 
 
 }
-
-
-

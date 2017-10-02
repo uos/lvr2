@@ -572,4 +572,4 @@ inline void LASreadItemCompressed_BYTE_v1::read(U8* item)
     item[i] = (U8)(ic_byte->decompress(last_item[i], i));
   }
   memcpy(last_item, item, number);
-}
+}

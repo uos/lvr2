@@ -516,4 +516,4 @@ BOOL LASwriterTXT::check_parse_string(const char* parse_string)
     p++;
   }
   return TRUE;
-}
+}

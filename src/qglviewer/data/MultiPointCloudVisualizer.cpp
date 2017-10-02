@@ -53,4 +53,3 @@ MultiPointCloudVisualizer::MultiPointCloudVisualizer(PointBufferPtr buffer, stri
     item->setName(name);
     item->setRenderable(pc);
 }
-

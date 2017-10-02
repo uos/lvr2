@@ -343,5 +343,3 @@ void AnimationDialog::createVideo()
 
 
 }
-
-

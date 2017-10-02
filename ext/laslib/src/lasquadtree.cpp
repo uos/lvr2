@@ -1521,4 +1521,4 @@ LASquadtree::LASquadtree()
 LASquadtree::~LASquadtree()
 {
   if (current_cells) delete ((my_cell_vector*)current_cells);
-}
+}

@@ -1042,4 +1042,4 @@ BOOL LASreaderLASrescalereoffset::open(ByteStreamIn* stream)
     reoffset_z = TRUE;
   }
   return TRUE;
-}
+}

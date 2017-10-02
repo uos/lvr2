@@ -673,4 +673,4 @@ BOOL LASinterval::write(ByteStreamOut* stream) const
     hash_element++;
   }
   return TRUE;
-}
+}

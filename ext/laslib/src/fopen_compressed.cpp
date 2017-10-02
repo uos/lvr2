@@ -379,4 +379,4 @@ FILE* fopen_compressed(const char* filename, const char* mode, bool* piped)
   }
   return file;
 }
-}
+}

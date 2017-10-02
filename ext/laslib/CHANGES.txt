@@ -45,4 +45,4 @@
 21 February 2007 -- laswriter: created after eating Sarah's veggies with peanutsauce
 18 February 2007 -- lasreader: created after repairing 2 vacuum cleaners in the garden
 30 September 2005 -- integercompressor: now splitting the corrector into raw and compressed bits
-13 July 2005 -- integercompressor: created after returning with many mosquito bites from OBX
+13 July 2005 -- integercompressor: created after returning with many mosquito bites from OBX

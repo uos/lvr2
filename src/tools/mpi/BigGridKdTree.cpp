@@ -165,4 +165,3 @@ std::vector<BigGridKdTree*> BigGridKdTree::getLeafs()
     }
     return leafs;
 }
-

@@ -29,4 +29,3 @@ public:
 } // namespace lvr
 
 #endif // LVROPENMP
-

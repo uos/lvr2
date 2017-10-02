@@ -188,6 +188,3 @@ void  DatIO::save(string filename)
 }
 
 }
-
-
-

@@ -155,4 +155,3 @@ typedef std::map<std::string, std::vector<unsigned int> > labeledFacesMap;
 }
 
 #endif
-

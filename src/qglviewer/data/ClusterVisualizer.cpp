@@ -130,5 +130,3 @@ ClusterVisualizer::ClusterVisualizer(string filename)
 
 
 }
-
-

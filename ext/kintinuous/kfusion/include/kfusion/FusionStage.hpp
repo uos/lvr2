@@ -80,4 +80,4 @@ private:
     size_t mesh_count_;
     MeshPtr mesh_;
 };
-#endif // STAGE
+#endif // STAGE

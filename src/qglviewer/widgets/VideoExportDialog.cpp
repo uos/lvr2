@@ -35,4 +35,3 @@ VideoExportDialog::~VideoExportDialog()
 {
     // TODO Auto-generated destructor stub
 }
-
