@@ -110,19 +110,19 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 
         for(vtkIdType i = 0; i < n; i++)
         {
-        	int index = 3 * i;
+            int index = 3 * i;
             point[0] = points[index    ];
             point[1] = points[index + 1];
             point[2] = points[index + 2];
 
             if(n_c)
             {
-            	unsigned char color[3];
-            	color[0] = colors[index];
-            	color[1] = colors[index + 1];
-            	color[2] = colors[index + 2];
+                unsigned char color[3];
+                color[0] = colors[index];
+                color[1] = colors[index + 1];
+                color[2] = colors[index + 2];
 
-            	scalars->InsertNextTupleValue(color);
+                scalars->InsertNextTupleValue(color);
             }
 
             vtk_points->InsertNextPoint(point);
@@ -134,7 +134,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 
         if(n_c)
         {
-               	vtk_polyData->GetPointData()->SetScalars(scalars);
+                   vtk_polyData->GetPointData()->SetScalars(scalars);
         }
 
         // Create poly data mapper and generate actor
@@ -159,21 +159,21 @@ LVRPointBufferBridge::LVRPointBufferBridge(const LVRPointBufferBridge& b)
 
 void LVRPointBufferBridge::setBaseColor(float r, float g, float b)
 {
-	vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
+    vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
     p->SetColor(r, g, b);
     m_pointCloudActor->SetProperty(p);
 }
 
 void LVRPointBufferBridge::setPointSize(int pointSize)
 {
-	vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
+    vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
     p->SetPointSize(pointSize);
     m_pointCloudActor->SetProperty(p);
 }
 
 void LVRPointBufferBridge::setOpacity(float opacityValue)
 {
-	vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
+    vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
     p->SetOpacity(opacityValue);
     m_pointCloudActor->SetProperty(p);
 }

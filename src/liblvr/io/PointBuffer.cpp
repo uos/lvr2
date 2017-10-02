@@ -52,7 +52,7 @@ PointBuffer::PointBuffer() :
         m_pointConfidences.reset();
         m_pointIntensities.reset();
         m_pointNormals.reset();
-		m_pointColors.reset();
+        m_pointColors.reset();
     }
 
 

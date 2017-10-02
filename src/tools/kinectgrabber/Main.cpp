@@ -35,61 +35,61 @@ using namespace lvr;
 int main(int argc, char** argv)
 {
 
-	// Try to connect
+    // Try to connect
 
-	KinectIO* io;
-	try
-	{
-		cout << 1 << endl;
-		io = KinectIO::instance();
-	}
-	catch(...)
-	{
-		cout << "Kinect connection failed. Try again..." << endl;
-		return -1;
-	}
+    KinectIO* io;
+    try
+    {
+        cout << 1 << endl;
+        io = KinectIO::instance();
+    }
+    catch(...)
+    {
+        cout << "Kinect connection failed. Try again..." << endl;
+        return -1;
+    }
 
-	int c = 0;
+    int c = 0;
 
-	vector<PointBufferPtr> scans;
-	while(true && c < 20)
-	{
-		PointBufferPtr buffer = io->getBuffer();
-		if(buffer == 0)
-		{
-			cout << "No data yet..." << endl;
-			// Give it some time
-			usleep(100000);
-		}
-		else
-		{
+    vector<PointBufferPtr> scans;
+    while(true && c < 20)
+    {
+        PointBufferPtr buffer = io->getBuffer();
+        if(buffer == 0)
+        {
+            cout << "No data yet..." << endl;
+            // Give it some time
+            usleep(100000);
+        }
+        else
+        {
 
-			convert(OPENGL_METERS, SLAM6D, buffer);
-			usleep(100000);
+            convert(OPENGL_METERS, SLAM6D, buffer);
+            usleep(100000);
 
-		}
+        }
 
-		c++;
-		scans.push_back(buffer);
-	}
-
-
-
-	for(size_t i = 0; i < scans.size(); i++)
-	{
-		char fout[256];
-		sprintf(fout, "scan%03d.3d", (int)i);
-		ModelFactory::saveModel(ModelPtr(new Model(scans[i])), string(fout));
-
-		cout << "Saving " << string(fout) << " with " << scans[i]->getNumPoints() << " points." << endl;
-		char pout[256];
-
-		sprintf(pout, "scan%03d.pose", (int)i);
-		ofstream out(pout);
-		out << "0 0 0 0 0 0" << endl;
-		out.close();
-	}
+        c++;
+        scans.push_back(buffer);
+    }
 
 
-	return 0;
+
+    for(size_t i = 0; i < scans.size(); i++)
+    {
+        char fout[256];
+        sprintf(fout, "scan%03d.3d", (int)i);
+        ModelFactory::saveModel(ModelPtr(new Model(scans[i])), string(fout));
+
+        cout << "Saving " << string(fout) << " with " << scans[i]->getNumPoints() << " points." << endl;
+        char pout[256];
+
+        sprintf(pout, "scan%03d.pose", (int)i);
+        ofstream out(pout);
+        out << "0 0 0 0 0 0" << endl;
+        out.close();
+    }
+
+
+    return 0;
 }

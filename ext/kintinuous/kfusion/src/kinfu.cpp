@@ -40,7 +40,7 @@ kfusion::KinFuParams& kfusion::KinFu::params()
 
 void kfusion::KinFu::performLastScan()
 {
-	perform_last_scan_ = true;
+    perform_last_scan_ = true;
 }
 
 const kfusion::cuda::TsdfVolume& kfusion::KinFu::tsdf() const
@@ -180,7 +180,7 @@ bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Volume integration
     Affine3f local_pose = Affine3f().translate(poses_.back().translation() - volume_->getPose().translation());
-			 local_pose.rotate(poses_.back().rotation());
+             local_pose.rotate(poses_.back().rotation());
     // We do not integrate volume if camera does not move.
     float rnorm = (float)cv::norm(affine.rvec());
     float tnorm = (float)cv::norm(affine.translation());

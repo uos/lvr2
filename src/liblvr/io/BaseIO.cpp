@@ -37,7 +37,7 @@ namespace lvr
 
 void BaseIO::save( ModelPtr m, string filename)
 {
-	m_model = m;
+    m_model = m;
     save( filename);
 }
 

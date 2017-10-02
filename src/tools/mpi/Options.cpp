@@ -34,100 +34,100 @@ namespace Largescale{
 using namespace boost::program_options;
 
 Options::Options(int argc, char** argv)
-	: BaseOption(argc, argv)
+    : BaseOption(argc, argv)
 {
-	// Create option descriptions
+    // Create option descriptions
 
-	m_descr.add_options()
-			("help", "Produce help message")
-			("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
-			("voxelsize,v", value<float>(&m_voxelsize)->default_value(10), "Voxelsize of grid used for reconstruction.")
-			("noExtrusion", "Do not extend grid. Can be used  to avoid artefacts in dense data sets but. Disabling will possibly create additional holes in sparse data sets.")
-			("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
-			("pcm,p", value<string>(&m_pcm)->default_value("FLANN"), "Point cloud manager used for point handling and normal estimation. Choose from {STANN, PCL, NABO}.")
-			("ransac", "Set this flag for RANSAC based normal estimation.")
-			("decomposition,d", value<string>(&m_pcm)->default_value("PMC"), "Defines the type of decomposition that is used for the voxels (Standard Marching Cubes (MC), Planar Marching Cubes (PMC), Standard Marching Cubes with sharp feature detection (SF) or Tetraeder (MT) decomposition. Choose from {MC, PMC, MT, SF}")
-			("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
-			("clusterPlanes,c", "Cluster planar regions based on normal threshold, do not shift vertices into regression plane.")
-			("cleanContours", value<int>(&m_cleanContourIterations)->default_value(0), "Remove noise artifacts from contours. Same values are between 2 and 4")
-			("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
-			("fillHoles,f", value<int>(&m_fillHoles)->default_value(30), "Maximum size for hole filling")
-			("rda", value<int>(&m_rda)->default_value(0), "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")
-			("pnt", value<float>(&m_planeNormalThreshold)->default_value(0.85), "(Plane Normal Threshold) Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
-			("smallRegionThreshold", value<int>(&m_smallRegionThreshold)->default_value(0), "Threshold for small region removal. If 0 nothing will be deleted.")
-			("writeClassificationResult,w", "Write classification results to file 'clusters.clu'")
-			("exportPointNormals,e", "Exports original point cloud data together with normals into a single file called 'pointnormals.ply'")
-			("saveGrid,g", "Writes the generated grid to a file called 'fastgrid.grid. The result can be rendered with qviewer.")
-			("saveOriginalData,s", "Save the original points and the estimated normals together with the reconstruction into one file ('triangle_mesh.ply')")
-			("scanPoseFile", value<string>()->default_value(""), "ASCII file containing scan positions that can be used to flip normals")
-			("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
-			("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
-			("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
-			("mp", value<int>(&m_minPlaneSize)->default_value(7), "Minimum value for plane optimzation")
-			("retesselate,t", "Retesselate regions that are in a regression plane. Implies --optimizePlanes.")
-			("lft", value<float>(&m_lineFusionThreshold)->default_value(0.01), "(Line Fusion Threshold) Threshold for fusing line segments while tesselating.")
-			("generateTextures", "Generate textures during finalization.")
-			("textureAnalysis", "Enable texture analysis features for texture matchung.")
-			("texelSize", value<float>(&m_texelSize)->default_value(1), "Texel size that determines texture resolution.")
-			("classifier", value<string>(&m_classifier)->default_value("PlaneSimpsons"),"Classfier object used to color the mesh.")
-			("depth", value<int>(&m_depth)->default_value(100), "Maximum recursion depth for region growing.")
-			("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
-			("threads", value<int>(&m_numThreads)->default_value( lvr::OpenMPConfig::getNumThreads() ), "Number of threads")
-			("sft", value<float>(&m_sft)->default_value(0.9), "Sharp feature threshold when using sharp feature decomposition")
-			("sct", value<float>(&m_sct)->default_value(0.7), "Sharp corner threshold when using sharp feature decomposition")
-			("ecm", value<string>(&m_ecm)->default_value("QUADRIC"), "Edge collapse method for mesh reduction. Choose from QUADRIC, QUADRIC_TRI, MELAX, SHORTEST")
-			("ecc", value<int>(&m_numEdgeCollapses)->default_value(0), "Edge collapse count. Number of edges to collapse for mesh reduction.")
-			("tp", value<string>(&m_texturePack)->default_value(""), "Path to texture pack")
-			("co", value<string>(&m_statsCoeffs)->default_value(""), "Coefficents file for texture matching based on statistics")
-			("nsc", value<unsigned int>(&m_numStatsColors)->default_value(16), "Number of colors for texture statistics")
-			("nccv", value<unsigned int>(&m_numCCVColors)->default_value(64), "Number of colors for texture matching based on color information")
-			("ct", value<unsigned int>(&m_coherenceThreshold)->default_value(50), "Coherence threshold for texture matching based on color information")
-			("colt", value<float>(&m_colorThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on colors")
-			("stat", value<float>(&m_statsThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on statistics")
-			("feat", value<float>(&m_featuresThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on features")
-			("cro", "Use texture matching based on cross correlation.")
-			("patt", value<float>(&m_patternThreshold)->default_value(100), "Threshold for pattern extraction from textures")
-			("mtv", value<int>(&m_minimumTransformationVotes)->default_value(3), "Minimum number of votes to consider a texture transformation as correct")
-						("buff", value<unsigned int>(&m_bufferSize)->default_value(30000000), "Minimum number of votes to consider a texture transformation as correct")
-						("os", value<unsigned int>(&m_octreeNodeSize)->default_value(1000000), "Minimum number of votes to consider a texture transformation as correct")
-						("outputFolder", value<string>(&m_outputFolderPath)->default_value(""), "Output Folder Path")
-			("interpolateBoxes", "Interpolate Boxes in intersection BoundingBox of two Grids")
-			("useNormals", "the ply file contains normals")
+    m_descr.add_options()
+            ("help", "Produce help message")
+            ("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
+            ("voxelsize,v", value<float>(&m_voxelsize)->default_value(10), "Voxelsize of grid used for reconstruction.")
+            ("noExtrusion", "Do not extend grid. Can be used  to avoid artefacts in dense data sets but. Disabling will possibly create additional holes in sparse data sets.")
+            ("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
+            ("pcm,p", value<string>(&m_pcm)->default_value("FLANN"), "Point cloud manager used for point handling and normal estimation. Choose from {STANN, PCL, NABO}.")
+            ("ransac", "Set this flag for RANSAC based normal estimation.")
+            ("decomposition,d", value<string>(&m_pcm)->default_value("PMC"), "Defines the type of decomposition that is used for the voxels (Standard Marching Cubes (MC), Planar Marching Cubes (PMC), Standard Marching Cubes with sharp feature detection (SF) or Tetraeder (MT) decomposition. Choose from {MC, PMC, MT, SF}")
+            ("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
+            ("clusterPlanes,c", "Cluster planar regions based on normal threshold, do not shift vertices into regression plane.")
+            ("cleanContours", value<int>(&m_cleanContourIterations)->default_value(0), "Remove noise artifacts from contours. Same values are between 2 and 4")
+            ("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
+            ("fillHoles,f", value<int>(&m_fillHoles)->default_value(30), "Maximum size for hole filling")
+            ("rda", value<int>(&m_rda)->default_value(0), "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")
+            ("pnt", value<float>(&m_planeNormalThreshold)->default_value(0.85), "(Plane Normal Threshold) Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
+            ("smallRegionThreshold", value<int>(&m_smallRegionThreshold)->default_value(0), "Threshold for small region removal. If 0 nothing will be deleted.")
+            ("writeClassificationResult,w", "Write classification results to file 'clusters.clu'")
+            ("exportPointNormals,e", "Exports original point cloud data together with normals into a single file called 'pointnormals.ply'")
+            ("saveGrid,g", "Writes the generated grid to a file called 'fastgrid.grid. The result can be rendered with qviewer.")
+            ("saveOriginalData,s", "Save the original points and the estimated normals together with the reconstruction into one file ('triangle_mesh.ply')")
+            ("scanPoseFile", value<string>()->default_value(""), "ASCII file containing scan positions that can be used to flip normals")
+            ("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
+            ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
+            ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
+            ("mp", value<int>(&m_minPlaneSize)->default_value(7), "Minimum value for plane optimzation")
+            ("retesselate,t", "Retesselate regions that are in a regression plane. Implies --optimizePlanes.")
+            ("lft", value<float>(&m_lineFusionThreshold)->default_value(0.01), "(Line Fusion Threshold) Threshold for fusing line segments while tesselating.")
+            ("generateTextures", "Generate textures during finalization.")
+            ("textureAnalysis", "Enable texture analysis features for texture matchung.")
+            ("texelSize", value<float>(&m_texelSize)->default_value(1), "Texel size that determines texture resolution.")
+            ("classifier", value<string>(&m_classifier)->default_value("PlaneSimpsons"),"Classfier object used to color the mesh.")
+            ("depth", value<int>(&m_depth)->default_value(100), "Maximum recursion depth for region growing.")
+            ("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
+            ("threads", value<int>(&m_numThreads)->default_value( lvr::OpenMPConfig::getNumThreads() ), "Number of threads")
+            ("sft", value<float>(&m_sft)->default_value(0.9), "Sharp feature threshold when using sharp feature decomposition")
+            ("sct", value<float>(&m_sct)->default_value(0.7), "Sharp corner threshold when using sharp feature decomposition")
+            ("ecm", value<string>(&m_ecm)->default_value("QUADRIC"), "Edge collapse method for mesh reduction. Choose from QUADRIC, QUADRIC_TRI, MELAX, SHORTEST")
+            ("ecc", value<int>(&m_numEdgeCollapses)->default_value(0), "Edge collapse count. Number of edges to collapse for mesh reduction.")
+            ("tp", value<string>(&m_texturePack)->default_value(""), "Path to texture pack")
+            ("co", value<string>(&m_statsCoeffs)->default_value(""), "Coefficents file for texture matching based on statistics")
+            ("nsc", value<unsigned int>(&m_numStatsColors)->default_value(16), "Number of colors for texture statistics")
+            ("nccv", value<unsigned int>(&m_numCCVColors)->default_value(64), "Number of colors for texture matching based on color information")
+            ("ct", value<unsigned int>(&m_coherenceThreshold)->default_value(50), "Coherence threshold for texture matching based on color information")
+            ("colt", value<float>(&m_colorThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on colors")
+            ("stat", value<float>(&m_statsThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on statistics")
+            ("feat", value<float>(&m_featuresThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on features")
+            ("cro", "Use texture matching based on cross correlation.")
+            ("patt", value<float>(&m_patternThreshold)->default_value(100), "Threshold for pattern extraction from textures")
+            ("mtv", value<int>(&m_minimumTransformationVotes)->default_value(3), "Minimum number of votes to consider a texture transformation as correct")
+                        ("buff", value<unsigned int>(&m_bufferSize)->default_value(30000000), "Minimum number of votes to consider a texture transformation as correct")
+                        ("os", value<unsigned int>(&m_octreeNodeSize)->default_value(1000000), "Minimum number of votes to consider a texture transformation as correct")
+                        ("outputFolder", value<string>(&m_outputFolderPath)->default_value(""), "Output Folder Path")
+            ("interpolateBoxes", "Interpolate Boxes in intersection BoundingBox of two Grids")
+            ("useNormals", "the ply file contains normals")
 
-			;
+            ;
 
-	setup();
+    setup();
 
 }
 
 unsigned int Options::getOctreeNodeSize() const
 {
-	return m_variables["os"].as<unsigned int>();
+    return m_variables["os"].as<unsigned int>();
 }
 unsigned int Options::getBufferSize() const
 {
-	return m_variables["buff"].as<unsigned int>();
+    return m_variables["buff"].as<unsigned int>();
 }
 
 float Options::getVoxelsize() const
 {
-	return m_variables["voxelsize"].as<float>();
+    return m_variables["voxelsize"].as<float>();
 }
 
 float Options::getSharpFeatureThreshold() const
 {
-	return m_variables["sft"].as<float>();
+    return m_variables["sft"].as<float>();
 }
 
 float Options::getSharpCornerThreshold() const
 {
-	return m_variables["sct"].as<float>();
+    return m_variables["sct"].as<float>();
 }
 
 
 int Options::getNumThreads() const
 {
-	return m_variables["threads"].as<int>();
+    return m_variables["threads"].as<int>();
 }
 
 int Options::getKi() const
@@ -157,7 +157,7 @@ int Options::getPlaneIterations() const
 
 string Options::getInputFileName() const
 {
-	return (m_variables["inputFile"].as< vector<string> >())[0];
+    return (m_variables["inputFile"].as< vector<string> >())[0];
 }
 
 string Options::getPCM() const
@@ -172,7 +172,7 @@ string Options::getClassifier() const
 
 string Options::getEdgeCollapseMethod() const
 {
-	return (m_variables["ecm"].as<string>());
+    return (m_variables["ecm"].as<string>());
 }
 
 
@@ -183,12 +183,12 @@ string Options::getDecomposition() const
 
 string Options::getScanPoseFile() const
 {
-	return (m_variables["scanPoseFile"].as<string>());
+    return (m_variables["scanPoseFile"].as<string>());
 }
 
 int Options::getNumEdgeCollapses() const
 {
-	return (m_variables["ecc"].as<int>());
+    return (m_variables["ecc"].as<int>());
 }
 
 int    Options::getDanglingArtifacts() const
@@ -228,13 +228,13 @@ bool Options::printUsage() const
 
 bool Options::saveFaceNormals() const
 {
-	return m_variables.count("saveFaceNormals");
+    return m_variables.count("saveFaceNormals");
 }
 
 bool Options::writeClassificationResult() const
 {
-	return m_variables.count("writeClassificationResult")
-			|| m_variables.count("w");
+    return m_variables.count("writeClassificationResult")
+            || m_variables.count("w");
 }
 
 bool Options::doTextureAnalysis() const
@@ -244,7 +244,7 @@ bool Options::doTextureAnalysis() const
 
 bool Options::filenameSet() const
 {
-	return (m_variables["inputFile"].as< vector<string> >()).size() > 0;
+    return (m_variables["inputFile"].as< vector<string> >()).size() > 0;
 }
 
 string Options::getOutputFolderPath() const
@@ -254,12 +254,12 @@ string Options::getOutputFolderPath() const
 
 bool Options::recalcNormals() const
 {
-	return (m_variables.count("recalcNormals"));
+    return (m_variables.count("recalcNormals"));
 }
 
 bool Options::savePointNormals() const
 {
-	return (m_variables.count("exportPointNormals"));
+    return (m_variables.count("exportPointNormals"));
 }
 
 bool Options::saveNormals() const
@@ -284,13 +284,13 @@ bool Options::saveOriginalData() const
 
 bool Options::optimizePlanes() const
 {
-	return m_variables.count("optimizePlanes")
+    return m_variables.count("optimizePlanes")
         || m_variables.count("retesselate");
 }
 
 bool Options::clusterPlanes() const
 {
-	return m_variables.count("clusterPlanes");
+    return m_variables.count("clusterPlanes");
 }
 
 bool Options::extrude() const
@@ -332,18 +332,18 @@ int   Options::getSmallRegionThreshold() const
 
 int   Options::getCleanContourIterations() const
 {
-	return m_variables["cleanContours"].as<int>();
+    return m_variables["cleanContours"].as<int>();
 }
 
 
 int Options::getDepth() const
 {
-	return m_depth;
+    return m_depth;
 }
 
 float Options::getTexelSize() const
 {
-	return m_texelSize;
+    return m_texelSize;
 }
 
 float Options::getLineFusionThreshold() const
@@ -403,38 +403,38 @@ int Options::getMinimumTransformationVotes() const
 
 bool Options::interpolateBoxes() const
 {
-	return m_variables.count("interpolateBoxes");
+    return m_variables.count("interpolateBoxes");
 }
 
 bool Options::getUseNormals() const
 {
-	return m_variables.count("useNormals");
+    return m_variables.count("useNormals");
 }
 
 float* Options::getStatsCoeffs()const
 {
-	float* result = new float[14];
-    	std::ifstream in (m_variables["tp"].as<string>().c_str());
-	if (in.good())
-	{
-		for(int i = 0; i < 14; i++)
-		{
-			in >> result[i];
-		}
-		in.close();
-	}
-	else
-	{
-		for(int i = 0; i < 14; i++)
-		{
-			result[i] = 0.5;
-		}
-	}
-	return result;
+    float* result = new float[14];
+        std::ifstream in (m_variables["tp"].as<string>().c_str());
+    if (in.good())
+    {
+        for(int i = 0; i < 14; i++)
+        {
+            in >> result[i];
+        }
+        in.close();
+    }
+    else
+    {
+        for(int i = 0; i < 14; i++)
+        {
+            result[i] = 0.5;
+        }
+    }
+    return result;
 }
 
 Options::~Options() {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }
 
 } // namespace reconstruct

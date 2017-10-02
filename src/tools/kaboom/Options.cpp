@@ -32,38 +32,38 @@ namespace kaboom
 Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
 
-	// Create option descriptions
+    // Create option descriptions
 
-	m_descr.add_options()
-		("help", "Produce help message")
-		("inputDir", value<string>()->default_value("./"), "A directory containing several scan files for batch conversion.")
-		("inputFile", value<string>()->default_value(""), "A single file to convert.")
-		("outputFile", value<string>()->default_value(""), "The name of a single output file if scans are merged. If the format can be deduced frim the file extension, the specification of --outputFormat is optional.")
-		("outputDir", value<string>()->default_value("./"), "The target directory for converted data.")
-		("outputFormat", value<string>()->default_value(""), "Specify the output format. Possible values are ASCII, PLY, DAT, LAS. If left empty, the format is deduced from the extension of the input files.")
-	    ("filter", value<bool>()->default_value(false), "Filter input data.")
-	    ("k", value<int>()->default_value(1), "k neighborhood for filtering.")
-	    ("sigma", value<float>()->default_value(1.0), "Deviation for outlier filter.")
-	    ("targetSize", value<int>()->default_value(0), "Target size (reduction) for the input scans.")
-	    ("xPos,x", value<int>()->default_value(0), "Position of the x-coordinates in the input data lines.")
-	    ("yPos,y", value<int>()->default_value(1), "Position of the y-coordinates in the input data lines.")
-	    ("zPos,z", value<int>()->default_value(2), "Position of the z-coordinates in the input data lines.")
-	    ("sx", value<float>()->default_value(1.0), "Scaling factor for the x coordinates.")
-	    ("sy", value<float>()->default_value(1.0), "Scaling factor for the y coordinates.")
-	    ("sz", value<float>()->default_value(1.0), "Scaling factor for the z coordinates.")
+    m_descr.add_options()
+        ("help", "Produce help message")
+        ("inputDir", value<string>()->default_value("./"), "A directory containing several scan files for batch conversion.")
+        ("inputFile", value<string>()->default_value(""), "A single file to convert.")
+        ("outputFile", value<string>()->default_value(""), "The name of a single output file if scans are merged. If the format can be deduced frim the file extension, the specification of --outputFormat is optional.")
+        ("outputDir", value<string>()->default_value("./"), "The target directory for converted data.")
+        ("outputFormat", value<string>()->default_value(""), "Specify the output format. Possible values are ASCII, PLY, DAT, LAS. If left empty, the format is deduced from the extension of the input files.")
+        ("filter", value<bool>()->default_value(false), "Filter input data.")
+        ("k", value<int>()->default_value(1), "k neighborhood for filtering.")
+        ("sigma", value<float>()->default_value(1.0), "Deviation for outlier filter.")
+        ("targetSize", value<int>()->default_value(0), "Target size (reduction) for the input scans.")
+        ("xPos,x", value<int>()->default_value(0), "Position of the x-coordinates in the input data lines.")
+        ("yPos,y", value<int>()->default_value(1), "Position of the y-coordinates in the input data lines.")
+        ("zPos,z", value<int>()->default_value(2), "Position of the z-coordinates in the input data lines.")
+        ("sx", value<float>()->default_value(1.0), "Scaling factor for the x coordinates.")
+        ("sy", value<float>()->default_value(1.0), "Scaling factor for the y coordinates.")
+        ("sz", value<float>()->default_value(1.0), "Scaling factor for the z coordinates.")
         ("transformBefore", value<bool>()->default_value(false), "Transform the scans before frames/pose-transformation.")
-	    ("rPos,r", value<int>()->default_value(-1), "Position of the red color component in the input data lines. (-1) means no color information")
-	    ("gPos,g", value<int>()->default_value(-1), "Position of the green color component in the input data lines. (-1) means no color information")
-	    ("bPos,b", value<int>()->default_value(-1), "Position of the blue color component in the input data lines. (-1) means no color information")
+        ("rPos,r", value<int>()->default_value(-1), "Position of the red color component in the input data lines. (-1) means no color information")
+        ("gPos,g", value<int>()->default_value(-1), "Position of the green color component in the input data lines. (-1) means no color information")
+        ("bPos,b", value<int>()->default_value(-1), "Position of the blue color component in the input data lines. (-1) means no color information")
         ("start,s", value<int>()->default_value(0), "start at scan NR")
         ("end,e", value<int>()->default_value(0), "end at scan NR")
-	;
+    ;
 
-	m_pdescr.add("inputFile", -1);
+    m_pdescr.add("inputFile", -1);
 
-	// Parse command line and generate variables map
-	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
-	notify(m_variables);
+    // Parse command line and generate variables map
+    store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
+    notify(m_variables);
 
   if(m_variables.count("help")) {
     ::std::cout<< m_descr << ::std::endl;
@@ -75,32 +75,32 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 string Options::getOutputFile() const
 {
-	return m_variables["outputFile"].as<string>();
+    return m_variables["outputFile"].as<string>();
 }
 
 string Options::getInputFile() const
 {
-	return m_variables["inputFile"].as<string>();
+    return m_variables["inputFile"].as<string>();
 }
 
-string 	Options::getInputDir() const
+string     Options::getInputDir() const
 {
-	return m_variables["inputDir"].as<string>();
+    return m_variables["inputDir"].as<string>();
 }
 
-string 	Options::getOutputDir() const
+string     Options::getOutputDir() const
 {
-	return m_variables["outputDir"].as<string>();
+    return m_variables["outputDir"].as<string>();
 }
 
-string 	Options::getOutputFormat() const
+string     Options::getOutputFormat() const
 {
-	return m_variables["outputFormat"].as<string>();
+    return m_variables["outputFormat"].as<string>();
 }
 
-bool	Options::filter() const
+bool    Options::filter() const
 {
-	return m_variables["filter"].as<bool>();
+    return m_variables["filter"].as<bool>();
 }
 
 bool    Options::transformBefore() const
@@ -108,24 +108,24 @@ bool    Options::transformBefore() const
     return m_variables["transformBefore"].as<bool>();
 }
 
-int		Options::getK() const
+int        Options::getK() const
 {
-	return m_variables["k"].as<int>();
+    return m_variables["k"].as<int>();
 }
 
-float	Options::getSigma() const
+float    Options::getSigma() const
 {
-	return m_variables["sigma"].as<float>();
+    return m_variables["sigma"].as<float>();
 }
 
-int		Options::getTargetSize() const
+int        Options::getTargetSize() const
 {
-	return m_variables["targetSize"].as<int>();
+    return m_variables["targetSize"].as<int>();
 }
 
 
 Options::~Options() {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }
 
 } // namespace reconstruct

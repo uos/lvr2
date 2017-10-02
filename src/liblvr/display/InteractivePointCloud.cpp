@@ -30,22 +30,22 @@ namespace lvr
 
 InteractivePointCloud::InteractivePointCloud()
 {
-	m_boundingBox = new BoundingBox<Vertex<float> >(
-			Vertex<float>(-8, -8, -8),
-			Vertex<float>(8, 8, 8)
-			);
+    m_boundingBox = new BoundingBox<Vertex<float> >(
+            Vertex<float>(-8, -8, -8),
+            Vertex<float>(8, 8, 8)
+            );
 
-	updateBuffer(PointBufferPtr());
+    updateBuffer(PointBufferPtr());
 }
 
 InteractivePointCloud::InteractivePointCloud(PointBufferPtr buffer)
 {
-	m_boundingBox = new BoundingBox<Vertex<float> >(
-			Vertex<float>(-8, -8, -8),
-			Vertex<float>(8, 8, 8)
-			);
+    m_boundingBox = new BoundingBox<Vertex<float> >(
+            Vertex<float>(-8, -8, -8),
+            Vertex<float>(8, 8, 8)
+            );
 
-	updateBuffer(buffer);
+    updateBuffer(buffer);
 }
 
 
@@ -56,36 +56,36 @@ InteractivePointCloud::~InteractivePointCloud()
 
 void InteractivePointCloud::render()
 {
-	if(m_buffer)
-	{
-		glColor3f(1.0, 0.0, 0.0);
-		glDrawArrays(GL_POINTS, 0, m_buffer->getNumPoints());
-	}
+    if(m_buffer)
+    {
+        glColor3f(1.0, 0.0, 0.0);
+        glDrawArrays(GL_POINTS, 0, m_buffer->getNumPoints());
+    }
 }
 
 void InteractivePointCloud::updateBuffer(PointBufferPtr buffer)
 {
-	if(buffer)
-	{
-		if(!m_boundingBox)
-		{
-			m_boundingBox = new BoundingBox<Vertex<float> >;
-			m_boundingBox->expand(8000, 8000, 8000);
-		}
+    if(buffer)
+    {
+        if(!m_boundingBox)
+        {
+            m_boundingBox = new BoundingBox<Vertex<float> >;
+            m_boundingBox->expand(8000, 8000, 8000);
+        }
 
-		size_t num_vertices;
-		float* vertices = buffer->getPointArray(num_vertices).get();
+        size_t num_vertices;
+        float* vertices = buffer->getPointArray(num_vertices).get();
 
-//		m_boundingBox = new BoundingBox<Vertex<float> >;
-//		for (int i = 0; i < int(num_vertices); i++)
-//		{
-//			int index = 3 * i;
-//			m_boundingBox->expand(vertices[index], vertices[index + 1], vertices[index + 2]);
-//		}
+//        m_boundingBox = new BoundingBox<Vertex<float> >;
+//        for (int i = 0; i < int(num_vertices); i++)
+//        {
+//            int index = 3 * i;
+//            m_boundingBox->expand(vertices[index], vertices[index + 1], vertices[index + 2]);
+//        }
 
-		glVertexPointer(3, GL_FLOAT, 0, vertices);
-		m_buffer = buffer;
-	}
+        glVertexPointer(3, GL_FLOAT, 0, vertices);
+        m_buffer = buffer;
+    }
 }
 
 } /* namespace lvr */

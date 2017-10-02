@@ -89,9 +89,9 @@ PPMIO::PPMIO( string filename ) : m_width(0), m_height(0), m_pixels(0)
         {
             in.close();
             in.open(filename.c_str(), ios::binary);
-            //	    readLine(in, buffer);
-            //	    char tmp[3];
-            //	    sscanf(buffer, "%s %d %d 255", tmp, &m_width, &m_height);
+            //        readLine(in, buffer);
+            //        char tmp[3];
+            //        sscanf(buffer, "%s %d %d 255", tmp, &m_width, &m_height);
 
             string tag;
             in >> tag;
@@ -101,7 +101,7 @@ PPMIO::PPMIO( string filename ) : m_width(0), m_height(0), m_pixels(0)
             {
                 int n_colors;
                 in >> m_width >> m_height >> n_colors;
-		in.getline(0,0);
+        in.getline(0,0);
                 m_pixels = new unsigned char[m_width * m_height * 3];
                 in.read((char *)m_pixels, m_width * m_height * 3);
             }
@@ -123,8 +123,8 @@ void PPMIO::write( string filename )
 
     if(out.good())
     {
-    	out<<"P6"<<" "<<m_width<<" "<<m_height<<" "<<"255"<<endl;
-	out.write((char*) m_pixels, m_width * m_height * 3);
+        out<<"P6"<<" "<<m_width<<" "<<m_height<<" "<<"255"<<endl;
+    out.write((char*) m_pixels, m_width * m_height * 3);
     }
 
     out.close();

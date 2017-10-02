@@ -107,7 +107,7 @@ Matrix4f ICPPointAlign::match()
         // Check minimum distance
         if ((fabs(ret - prev_ret) < m_epsilon) && (fabs(ret - prev_prev_ret) < m_epsilon))
         {
-			cout << timestamp << " Error below m_epsilon " << endl;
+            cout << timestamp << " Error below m_epsilon " << endl;
             break;
         }
     }

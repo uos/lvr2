@@ -45,284 +45,284 @@ enum PIPES { READ_HANDLE, WRITE_HANDLE }; /* Constants 0 and 1 for READ and WRIT
 #ifdef _WIN32
 static FILE* fopen7zipped(const char* filename, const char* mode)
 {
-	// check mode
-	if (mode[0] == 'r')
-	{
-		// create the pipe
-		int hPipe[2];
-		if (_pipe(hPipe, 2048, ((mode[1] =='b') ? _O_BINARY : _O_TEXT) | _O_NOINHERIT) == -1)
-		{
-			fprintf(stderr, "could not create pipe\n");
-			return NULL;
-		}
+    // check mode
+    if (mode[0] == 'r')
+    {
+        // create the pipe
+        int hPipe[2];
+        if (_pipe(hPipe, 2048, ((mode[1] =='b') ? _O_BINARY : _O_TEXT) | _O_NOINHERIT) == -1)
+        {
+            fprintf(stderr, "could not create pipe\n");
+            return NULL;
+        }
 
-		// duplicate stdin/stdout handle so we can restore them later
-		int hStdOut = _dup(_fileno(stdout));
+        // duplicate stdin/stdout handle so we can restore them later
+        int hStdOut = _dup(_fileno(stdout));
 
-		// make the write end of pipe go to stdout
-		if (_dup2(hPipe[WRITE_HANDLE], _fileno(stdout)) != 0)
-		{
-			fprintf(stderr, "could not set pipe output\n");
-			return NULL;
-		}
+        // make the write end of pipe go to stdout
+        if (_dup2(hPipe[WRITE_HANDLE], _fileno(stdout)) != 0)
+        {
+            fprintf(stderr, "could not set pipe output\n");
+            return NULL;
+        }
 
-		// redirect read end of pipe to input file
-		if (_dup2(hPipe[READ_HANDLE], _fileno(stdin)) != 0)
-		{
-			fprintf(stderr, "could not redirect input file\n");
-			return NULL;
-		}
+        // redirect read end of pipe to input file
+        if (_dup2(hPipe[READ_HANDLE], _fileno(stdin)) != 0)
+        {
+            fprintf(stderr, "could not redirect input file\n");
+            return NULL;
+        }
 
     // close original write end of pipe
-		close(hPipe[WRITE_HANDLE]);
+        close(hPipe[WRITE_HANDLE]);
 
-		// Spawn process
-		HANDLE hProcess = (HANDLE) spawnlp(P_NOWAIT, "7z", "7z", "e", "-so", filename, NULL);
+        // Spawn process
+        HANDLE hProcess = (HANDLE) spawnlp(P_NOWAIT, "7z", "7z", "e", "-so", filename, NULL);
 
-		// redirect stdout back into stdout
-		if (_dup2(hStdOut, _fileno(stdout)) != 0)
-		{
-			fprintf(stderr, "could not reconstruct stdout\n");
-			return NULL;
-		}
+        // redirect stdout back into stdout
+        if (_dup2(hStdOut, _fileno(stdout)) != 0)
+        {
+            fprintf(stderr, "could not reconstruct stdout\n");
+            return NULL;
+        }
 
-		// return redirected stdin 
-		return stdin;
-	}
-	else
-	{
-		return NULL;
-	}
+        // return redirected stdin 
+        return stdin;
+    }
+    else
+    {
+        return NULL;
+    }
 }
 
 static FILE* fopenZIPped(const char* filename, const char* mode)
 {
-	// check mode
-	if (mode[0] == 'r')
-	{
-		// create the pipe
-		int hPipe[2];
-		if (_pipe(hPipe, 2048, ((mode[1] =='b') ? _O_BINARY : _O_TEXT) | _O_NOINHERIT) == -1)
-		{
-			fprintf(stderr, "could not create pipe\n");
-			return NULL;
-		}
+    // check mode
+    if (mode[0] == 'r')
+    {
+        // create the pipe
+        int hPipe[2];
+        if (_pipe(hPipe, 2048, ((mode[1] =='b') ? _O_BINARY : _O_TEXT) | _O_NOINHERIT) == -1)
+        {
+            fprintf(stderr, "could not create pipe\n");
+            return NULL;
+        }
 
-		// duplicate stdin/stdout handle so we can restore them later
-		int hStdOut = _dup(_fileno(stdout));
+        // duplicate stdin/stdout handle so we can restore them later
+        int hStdOut = _dup(_fileno(stdout));
 
-		// make the write end of pipe go to stdout
-		if (_dup2(hPipe[WRITE_HANDLE], _fileno(stdout)) != 0)
-		{
-			fprintf(stderr, "could not set pipe output\n");
-			return NULL;
-		}
+        // make the write end of pipe go to stdout
+        if (_dup2(hPipe[WRITE_HANDLE], _fileno(stdout)) != 0)
+        {
+            fprintf(stderr, "could not set pipe output\n");
+            return NULL;
+        }
 
-		// redirect read end of pipe to input file
-		if (_dup2(hPipe[READ_HANDLE], _fileno(stdin)) != 0)
-		{
-			fprintf(stderr, "could not redirect input file\n");
-			return NULL;
-		}
+        // redirect read end of pipe to input file
+        if (_dup2(hPipe[READ_HANDLE], _fileno(stdin)) != 0)
+        {
+            fprintf(stderr, "could not redirect input file\n");
+            return NULL;
+        }
 
     // close original write end of pipe
-		close(hPipe[WRITE_HANDLE]);
+        close(hPipe[WRITE_HANDLE]);
 
-		// Spawn process
-		HANDLE hProcess = (HANDLE) spawnlp(P_NOWAIT, "unzip", "unzip", "-p", filename, NULL);
+        // Spawn process
+        HANDLE hProcess = (HANDLE) spawnlp(P_NOWAIT, "unzip", "unzip", "-p", filename, NULL);
 
-		// redirect stdout back into stdout
-		if (_dup2(hStdOut, _fileno(stdout)) != 0)
-		{
-			fprintf(stderr, "could not reconstruct stdout\n");
-			return NULL;
-		}
+        // redirect stdout back into stdout
+        if (_dup2(hStdOut, _fileno(stdout)) != 0)
+        {
+            fprintf(stderr, "could not reconstruct stdout\n");
+            return NULL;
+        }
 
-		// return redirected stdin 
-		return stdin;
-	}
-	else
-	{
-		return NULL;
-	}
+        // return redirected stdin 
+        return stdin;
+    }
+    else
+    {
+        return NULL;
+    }
 }
 
 static FILE* fopenGzipped(const char* filename, const char* mode)
 {
-	// check mode
-	if (mode[0] == 'r')
-	{
-		// open input file
-		FILE* gzipInput = fopen(filename, mode);
-		if (!gzipInput) return NULL;
+    // check mode
+    if (mode[0] == 'r')
+    {
+        // open input file
+        FILE* gzipInput = fopen(filename, mode);
+        if (!gzipInput) return NULL;
 
-		// create the pipe
-		int hPipe[2];
-		if (_pipe(hPipe, 2048, ((mode[1] =='b') ? _O_BINARY : _O_TEXT) | _O_NOINHERIT) == -1)
-		{
-			fprintf(stderr, "could not create pipe\n");
-			return NULL;
-		}
+        // create the pipe
+        int hPipe[2];
+        if (_pipe(hPipe, 2048, ((mode[1] =='b') ? _O_BINARY : _O_TEXT) | _O_NOINHERIT) == -1)
+        {
+            fprintf(stderr, "could not create pipe\n");
+            return NULL;
+        }
 
-		// duplicate stdin handle
-		int hStdIn = _dup(_fileno(stdin));
-		// redirect stdin to input file
-		if (_dup2(_fileno(gzipInput), _fileno(stdin)) != 0)
-		{
-			fprintf(stderr, "could not redirect stdin\n");
-			return NULL;
-		}
+        // duplicate stdin handle
+        int hStdIn = _dup(_fileno(stdin));
+        // redirect stdin to input file
+        if (_dup2(_fileno(gzipInput), _fileno(stdin)) != 0)
+        {
+            fprintf(stderr, "could not redirect stdin\n");
+            return NULL;
+        }
 
-		// duplicate stdout handle
-		int hStdOut = _dup(_fileno(stdout));
-		// redirect stdout to write end of pipe
-		if (_dup2(hPipe[WRITE_HANDLE], _fileno(stdout)) != 0)
-		{
-			fprintf(stderr, "could not set pipe output\n");
-			return NULL;
-		}
+        // duplicate stdout handle
+        int hStdOut = _dup(_fileno(stdout));
+        // redirect stdout to write end of pipe
+        if (_dup2(hPipe[WRITE_HANDLE], _fileno(stdout)) != 0)
+        {
+            fprintf(stderr, "could not set pipe output\n");
+            return NULL;
+        }
 
-		// close original write end of pipe
-		close(hPipe[WRITE_HANDLE]);
+        // close original write end of pipe
+        close(hPipe[WRITE_HANDLE]);
 
-		// redirect read end of pipe to input file
-		if (_dup2(hPipe[READ_HANDLE], _fileno(gzipInput)) != 0)
-		{
-			fprintf(stderr, "could not redirect input file\n");
-			return NULL;
-		}
+        // redirect read end of pipe to input file
+        if (_dup2(hPipe[READ_HANDLE], _fileno(gzipInput)) != 0)
+        {
+            fprintf(stderr, "could not redirect input file\n");
+            return NULL;
+        }
 
-		// close original read end of pipe
-		close(hPipe[READ_HANDLE]);
+        // close original read end of pipe
+        close(hPipe[READ_HANDLE]);
 
-		// Spawn process
-		HANDLE hProcess = (HANDLE) spawnlp(P_NOWAIT, "gzip", "gzip", "-d", NULL);
+        // Spawn process
+        HANDLE hProcess = (HANDLE) spawnlp(P_NOWAIT, "gzip", "gzip", "-d", NULL);
 
-		// redirect stdin back into stdin
-		if (_dup2(hStdIn, _fileno(stdin)) != 0)
-		{
-			fprintf(stderr, "could not reconstruct stdin\n");
-			return NULL;
-		}
+        // redirect stdin back into stdin
+        if (_dup2(hStdIn, _fileno(stdin)) != 0)
+        {
+            fprintf(stderr, "could not reconstruct stdin\n");
+            return NULL;
+        }
 
-		// redirect stdout back into stdout
-		if (_dup2(hStdOut, _fileno(stdout)) != 0)
-		{
-			fprintf(stderr, "could not reconstruct stdout\n");
-			return NULL;
-		}
+        // redirect stdout back into stdout
+        if (_dup2(hStdOut, _fileno(stdout)) != 0)
+        {
+            fprintf(stderr, "could not reconstruct stdout\n");
+            return NULL;
+        }
 
-		// return input file
-		return gzipInput;
-	}
-	else
-	{
-		return NULL;
-	}
+        // return input file
+        return gzipInput;
+    }
+    else
+    {
+        return NULL;
+    }
 }
 
 static FILE* fopenGzippedNew(const char* filename, const char* mode)
 {
-	// check mode
-	if (mode[0] == 'r')
-	{
-		// create the pipe
-		int hPipe[2];
-		if (_pipe(hPipe, 2048, ((mode[1] =='b') ? _O_BINARY : _O_TEXT) | _O_NOINHERIT) == -1)
-		{
-			fprintf(stderr, "could not create pipe\n");
-			return NULL;
-		}
+    // check mode
+    if (mode[0] == 'r')
+    {
+        // create the pipe
+        int hPipe[2];
+        if (_pipe(hPipe, 2048, ((mode[1] =='b') ? _O_BINARY : _O_TEXT) | _O_NOINHERIT) == -1)
+        {
+            fprintf(stderr, "could not create pipe\n");
+            return NULL;
+        }
 
-		// duplicate stdin/stdout handle so we can restore them later
-		int hStdOut = _dup(_fileno(stdout));
+        // duplicate stdin/stdout handle so we can restore them later
+        int hStdOut = _dup(_fileno(stdout));
 
-		// make the write end of pipe go to stdout
-		if (_dup2(hPipe[WRITE_HANDLE], _fileno(stdout)) != 0)
-		{
-			fprintf(stderr, "could not set pipe output\n");
-			return NULL;
-		}
+        // make the write end of pipe go to stdout
+        if (_dup2(hPipe[WRITE_HANDLE], _fileno(stdout)) != 0)
+        {
+            fprintf(stderr, "could not set pipe output\n");
+            return NULL;
+        }
 
-		// redirect read end of pipe to input file
-		if (_dup2(hPipe[READ_HANDLE], _fileno(stdin)) != 0)
-		{
-			fprintf(stderr, "could not redirect input file\n");
-			return NULL;
-		}
+        // redirect read end of pipe to input file
+        if (_dup2(hPipe[READ_HANDLE], _fileno(stdin)) != 0)
+        {
+            fprintf(stderr, "could not redirect input file\n");
+            return NULL;
+        }
 
     // close original write end of pipe
-		close(hPipe[WRITE_HANDLE]);
+        close(hPipe[WRITE_HANDLE]);
 
-		// Spawn process
-		HANDLE hProcess = (HANDLE) spawnlp(P_NOWAIT, "gzip", "gzip", "-dc", filename, NULL);
+        // Spawn process
+        HANDLE hProcess = (HANDLE) spawnlp(P_NOWAIT, "gzip", "gzip", "-dc", filename, NULL);
 
-		// redirect stdout back into stdout
-		if (_dup2(hStdOut, _fileno(stdout)) != 0)
-		{
-			fprintf(stderr, "could not reconstruct stdout\n");
-			return NULL;
-		}
+        // redirect stdout back into stdout
+        if (_dup2(hStdOut, _fileno(stdout)) != 0)
+        {
+            fprintf(stderr, "could not reconstruct stdout\n");
+            return NULL;
+        }
 
-		// return redirected stdin 
-		return stdin;
-	}
-	else
-	{
-		return NULL;
-	}
+        // return redirected stdin 
+        return stdin;
+    }
+    else
+    {
+        return NULL;
+    }
 }
 
 static FILE* fopenRARed(const char* filename, const char* mode)
 {
-	// check mode
-	if (mode[0] == 'r')
-	{
-		// create the pipe
-		int hPipe[2];
-		if (_pipe(hPipe, 2048, ((mode[1] =='b') ? _O_BINARY : _O_TEXT) | _O_NOINHERIT) == -1)
-		{
-			fprintf(stderr, "could not create pipe\n");
-			return NULL;
-		}
+    // check mode
+    if (mode[0] == 'r')
+    {
+        // create the pipe
+        int hPipe[2];
+        if (_pipe(hPipe, 2048, ((mode[1] =='b') ? _O_BINARY : _O_TEXT) | _O_NOINHERIT) == -1)
+        {
+            fprintf(stderr, "could not create pipe\n");
+            return NULL;
+        }
 
-		// duplicate stdin/stdout handle so we can restore them later
-		int hStdOut = _dup(_fileno(stdout));
+        // duplicate stdin/stdout handle so we can restore them later
+        int hStdOut = _dup(_fileno(stdout));
 
-		// make the write end of pipe go to stdout
-		if (_dup2(hPipe[WRITE_HANDLE], _fileno(stdout)) != 0)
-		{
-			fprintf(stderr, "could not set pipe output\n");
-			return NULL;
-		}
+        // make the write end of pipe go to stdout
+        if (_dup2(hPipe[WRITE_HANDLE], _fileno(stdout)) != 0)
+        {
+            fprintf(stderr, "could not set pipe output\n");
+            return NULL;
+        }
 
-		// redirect read end of pipe to input file
-		if (_dup2(hPipe[READ_HANDLE], _fileno(stdin)) != 0)
-		{
-			fprintf(stderr, "could not redirect input file\n");
-			return NULL;
-		}
+        // redirect read end of pipe to input file
+        if (_dup2(hPipe[READ_HANDLE], _fileno(stdin)) != 0)
+        {
+            fprintf(stderr, "could not redirect input file\n");
+            return NULL;
+        }
 
     // close original write end of pipe
-		close(hPipe[WRITE_HANDLE]);
+        close(hPipe[WRITE_HANDLE]);
 
-		// Spawn process
-		HANDLE hProcess = (HANDLE) spawnlp(P_NOWAIT, "unrar", "unrar", "p", "-ierr", filename, NULL);
+        // Spawn process
+        HANDLE hProcess = (HANDLE) spawnlp(P_NOWAIT, "unrar", "unrar", "p", "-ierr", filename, NULL);
 
-		// redirect stdout back into stdout
-		if (_dup2(hStdOut, _fileno(stdout)) != 0)
-		{
-			fprintf(stderr, "could not reconstruct stdout\n");
-			return NULL;
-		}
+        // redirect stdout back into stdout
+        if (_dup2(hStdOut, _fileno(stdout)) != 0)
+        {
+            fprintf(stderr, "could not reconstruct stdout\n");
+            return NULL;
+        }
 
-		// return redirected stdin 
-		return stdin;
-	}
-	else
-	{
-		return NULL;
-	}
+        // return redirected stdin 
+        return stdin;
+    }
+    else
+    {
+        return NULL;
+    }
 }
 #endif
 

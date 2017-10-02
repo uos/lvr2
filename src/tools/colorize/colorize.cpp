@@ -100,7 +100,7 @@ void parseArgs( int argc, char ** argv ) {
                 break;
             case 'j':
                 if ( !strcmp( optarg, "auto" ) ) {
-                	OpenMPConfig::setMaxNumThreads();
+                    OpenMPConfig::setMaxNumThreads();
                 } else {
                     OpenMPConfig::setNumThreads(
                             atoi( optarg ) > 1 

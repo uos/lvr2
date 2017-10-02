@@ -51,140 +51,140 @@ DatIO::~DatIO()
 
 ModelPtr DatIO::read(string filename)
 {
-	return read(filename, 4);
+    return read(filename, 4);
 }
 
 ModelPtr DatIO::read(string filename, int n, int reduction)
 {
-	ModelPtr model( new Model);
-	PointBufferPtr pointBuffer(new PointBuffer);
+    ModelPtr model( new Model);
+    PointBufferPtr pointBuffer(new PointBuffer);
 
-	// Allocate point buffer and read data from file
-	int c = 0;
-	ifstream in(filename.c_str(), std::ios::binary);
-
-
-	int numPoints = 0;
-
-	in.read((char*)&numPoints, sizeof(int));
-
-	// Determine modulo value suitable for desired reduction
-	int mod_filter = 1;
-	if(reduction != 0 && numPoints > reduction)
-	{
-		mod_filter = (int)(numPoints / reduction);
-		cout << timestamp << "Reduction mode. Reading every " << mod_filter << "th point." << endl;
-		numPoints = reduction;
-	}
-	else
-	{
-		reduction = numPoints; // needed for progress estimation
-	}
+    // Allocate point buffer and read data from file
+    int c = 0;
+    ifstream in(filename.c_str(), std::ios::binary);
 
 
+    int numPoints = 0;
 
-	float* pointArray = new float[3 * numPoints];
-	unsigned char* colorArray = new unsigned char[3 * numPoints];
+    in.read((char*)&numPoints, sizeof(int));
 
-	float* buffer = new float[n-1];
-	int    reflect;
+    // Determine modulo value suitable for desired reduction
+    int mod_filter = 1;
+    if(reduction != 0 && numPoints > reduction)
+    {
+        mod_filter = (int)(numPoints / reduction);
+        cout << timestamp << "Reduction mode. Reading every " << mod_filter << "th point." << endl;
+        numPoints = reduction;
+    }
+    else
+    {
+        reduction = numPoints; // needed for progress estimation
+    }
 
-	string msg = timestamp.getElapsedTime() + "Loading points";
-	ProgressBar progress(numPoints, msg);
-	int d = 0;
-	while(in.good())
-	{
-		memset(buffer, 0, (n - 1) * sizeof(float));
 
-		in.read((char*)buffer, (n - 1) * sizeof(float));
-		in.read((char*)&reflect, sizeof(int));
 
-		if(c % mod_filter == 0 && d < numPoints)
-		{
-			// Copy point data to point array
-			int pos = 3 * d;
-			pointArray[pos] 	= buffer[0];
-			pointArray[pos + 1] = buffer[1];
-			pointArray[pos + 2] = buffer[2];
+    float* pointArray = new float[3 * numPoints];
+    unsigned char* colorArray = new unsigned char[3 * numPoints];
 
-			if(n > 3)
-			{
-				colorArray[pos] 	= (unsigned char)reflect;
-				colorArray[pos + 1] = (unsigned char)reflect;
-				colorArray[pos + 2] = (unsigned char)reflect;
-			}
-			else
-			{
-				colorArray[pos] 	= (unsigned char)0;
-				colorArray[pos + 1] = (unsigned char)0;
-				colorArray[pos + 2] = (unsigned char)0;
-			}
-			d++;
-			++progress;
-		}
-		c++;
-	}
-	delete[] buffer;
-	in.close();
+    float* buffer = new float[n-1];
+    int    reflect;
 
-	// Truncate arrays to actual size
-	pointArray = (float*)realloc(pointArray, 3 * d * sizeof(float));
-	colorArray = (unsigned char*)realloc(colorArray, 3 * d * sizeof(unsigned char));
+    string msg = timestamp.getElapsedTime() + "Loading points";
+    ProgressBar progress(numPoints, msg);
+    int d = 0;
+    while(in.good())
+    {
+        memset(buffer, 0, (n - 1) * sizeof(float));
 
-	cout << timestamp << "Creating point buffer with " << d << "points." << endl;
+        in.read((char*)buffer, (n - 1) * sizeof(float));
+        in.read((char*)&reflect, sizeof(int));
 
-	// Setup model pointer
-	floatArr parr(pointArray);
-	ucharArr carr(colorArray);
-	pointBuffer->setPointArray(parr, d);
-	pointBuffer->setPointColorArray(carr, d);
+        if(c % mod_filter == 0 && d < numPoints)
+        {
+            // Copy point data to point array
+            int pos = 3 * d;
+            pointArray[pos]     = buffer[0];
+            pointArray[pos + 1] = buffer[1];
+            pointArray[pos + 2] = buffer[2];
 
-	model->m_pointCloud = pointBuffer;
-	return model;
+            if(n > 3)
+            {
+                colorArray[pos]     = (unsigned char)reflect;
+                colorArray[pos + 1] = (unsigned char)reflect;
+                colorArray[pos + 2] = (unsigned char)reflect;
+            }
+            else
+            {
+                colorArray[pos]     = (unsigned char)0;
+                colorArray[pos + 1] = (unsigned char)0;
+                colorArray[pos + 2] = (unsigned char)0;
+            }
+            d++;
+            ++progress;
+        }
+        c++;
+    }
+    delete[] buffer;
+    in.close();
+
+    // Truncate arrays to actual size
+    pointArray = (float*)realloc(pointArray, 3 * d * sizeof(float));
+    colorArray = (unsigned char*)realloc(colorArray, 3 * d * sizeof(unsigned char));
+
+    cout << timestamp << "Creating point buffer with " << d << "points." << endl;
+
+    // Setup model pointer
+    floatArr parr(pointArray);
+    ucharArr carr(colorArray);
+    pointBuffer->setPointArray(parr, d);
+    pointBuffer->setPointColorArray(carr, d);
+
+    model->m_pointCloud = pointBuffer;
+    return model;
 
 }
 
 void DatIO::save(ModelPtr ptr, string filename)
 {
-	m_model = ptr;
-	save(filename);
+    m_model = ptr;
+    save(filename);
 }
 
 void  DatIO::save(string filename)
 {
-	PointBufferPtr pointBuffer = m_model->m_pointCloud;
-	float buffer[4];
-	if(pointBuffer)
-	{
-		ofstream out(filename.c_str(), std::ios::binary);
-		if(out.good())
-		{
-			size_t numPoints;
-			size_t numIntensities;
-			floatArr pointArray = pointBuffer->getPointArray(numPoints);
-			floatArr intensityArray = pointBuffer->getPointIntensityArray(numIntensities);
-			float buffer[4];
-			cout << timestamp << "Writing " << numPoints << " to " << filename << endl;
-			for(size_t i = 0; i < numPoints; i++)
-			{
-				memset(buffer, 0, 4 * sizeof(float));
-				size_t pos = i * 3;
-				buffer[0] = pointArray[pos];
-				buffer[1] = pointArray[pos + 1];
-				buffer[2] = pointArray[pos + 2];
-				if(intensityArray)
-				{
-					buffer[3] = intensityArray[i];
-				}
-				out.write((char*)buffer, 4 * sizeof(float));
-			}
-			out.close();
-		}
-		else
-		{
-			cout << timestamp << "DatIO: Unable to open file " << filename << " for writing." << endl;
-		}
-	}
+    PointBufferPtr pointBuffer = m_model->m_pointCloud;
+    float buffer[4];
+    if(pointBuffer)
+    {
+        ofstream out(filename.c_str(), std::ios::binary);
+        if(out.good())
+        {
+            size_t numPoints;
+            size_t numIntensities;
+            floatArr pointArray = pointBuffer->getPointArray(numPoints);
+            floatArr intensityArray = pointBuffer->getPointIntensityArray(numIntensities);
+            float buffer[4];
+            cout << timestamp << "Writing " << numPoints << " to " << filename << endl;
+            for(size_t i = 0; i < numPoints; i++)
+            {
+                memset(buffer, 0, 4 * sizeof(float));
+                size_t pos = i * 3;
+                buffer[0] = pointArray[pos];
+                buffer[1] = pointArray[pos + 1];
+                buffer[2] = pointArray[pos + 2];
+                if(intensityArray)
+                {
+                    buffer[3] = intensityArray[i];
+                }
+                out.write((char*)buffer, 4 * sizeof(float));
+            }
+            out.close();
+        }
+        else
+        {
+            cout << timestamp << "DatIO: Unable to open file " << filename << " for writing." << endl;
+        }
+    }
 }
 
 }

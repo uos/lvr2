@@ -14,23 +14,23 @@ LVRReconstructViaMarchingCubesDialog* LVRReconstructViaMarchingCubesDialog::m_ma
 
 void LVRReconstructViaMarchingCubesDialog::updateProgressbar(int p)
 {
-	m_master->setProgressValue(p);
+    m_master->setProgressValue(p);
 }
 
 void LVRReconstructViaMarchingCubesDialog::updateProgressbarTitle(string t)
 {
-	m_master->setProgressTitle(t);
+    m_master->setProgressTitle(t);
 }
 
 
 void LVRReconstructViaMarchingCubesDialog::setProgressValue(int v)
 {
-	Q_EMIT(progressValueChanged(v));
+    Q_EMIT(progressValueChanged(v));
 }
 
 void LVRReconstructViaMarchingCubesDialog::setProgressTitle(string t)
 {
-	Q_EMIT(progressTitleChanged(QString(t.c_str())));
+    Q_EMIT(progressTitleChanged(QString(t.c_str())));
 }
 
 LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
@@ -39,7 +39,7 @@ LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(strin
    m_treeWidget(treeWidget),
    m_renderWindow(window)
 {
-	m_master = this;
+    m_master = this;
 
     // Setup DialogUI and events
     QDialog* dialog = new QDialog(m_treeWidget);
@@ -48,7 +48,7 @@ LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(strin
 
     if(decomposition == "PMC")
     {
-    	dialog->setWindowTitle("Planar Marching Cubes");
+        dialog->setWindowTitle("Planar Marching Cubes");
     }
 
     connectSignalsAndSlots();
@@ -181,37 +181,37 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
 
     // Create a point set grid for reconstruction
     GridBase* grid;
-	FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
-	if(m_decomposition == "MC")
-	{
-		grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
-		grid->setExtrusion(extrusion);
-		PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-		ps_grid->calcDistanceValues();
+    FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
+    if(m_decomposition == "MC")
+    {
+        grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+        grid->setExtrusion(extrusion);
+        PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+        ps_grid->calcDistanceValues();
 
-		reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+        reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
 
-	}
-	else if(m_decomposition == "PMC")
-	{
-		grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
-		grid->setExtrusion(extrusion);
-		BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-		PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-		ps_grid->calcDistanceValues();
+    }
+    else if(m_decomposition == "PMC")
+    {
+        grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+        grid->setExtrusion(extrusion);
+        BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+        PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+        ps_grid->calcDistanceValues();
 
-		reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+        reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
 
-	}
-	else if(m_decomposition == "SF")
-	{
-		SharpBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-		grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
-		grid->setExtrusion(extrusion);
-		PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-		ps_grid->calcDistanceValues();
-		reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
-	}
+    }
+    else if(m_decomposition == "SF")
+    {
+        SharpBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+        grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+        grid->setExtrusion(extrusion);
+        PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+        ps_grid->calcDistanceValues();
+        reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+    }
     // Create mesh
     reconstruction->getMesh(mesh);
     mesh.setClassifier("PlaneSimpsons");
@@ -219,12 +219,12 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
     mesh.finalize();
 
     ModelPtr model(new Model(mesh.meshBuffer()));
-	ModelBridgePtr bridge(new LVRModelBridge(model));
-	
-	vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
-	bridge->addActors(renderer);
+    ModelBridgePtr bridge(new LVRModelBridge(model));
+    
+    vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
+    bridge->addActors(renderer);
    
-	QString base = m_parent->getName() + " (mesh)";
+    QString base = m_parent->getName() + " (mesh)";
     m_generatedModel = new LVRModelItem(bridge, base);
 
     m_treeWidget->addTopLevelItem(m_generatedModel);

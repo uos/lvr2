@@ -33,59 +33,59 @@ namespace classifier
 Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
 
-	// Create option descriptions
+    // Create option descriptions
 
-	m_descr.add_options()
-	("help", "Produce help message")
-	("threads", value<int>(&m_numThreads)->default_value( lvr::OpenMPConfig::getNumThreads() ), "Number of threads")
-	("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
-	;
+    m_descr.add_options()
+    ("help", "Produce help message")
+    ("threads", value<int>(&m_numThreads)->default_value( lvr::OpenMPConfig::getNumThreads() ), "Number of threads")
+    ("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
+    ;
 
-	m_pdescr.add("inputFile", -1);
+    m_pdescr.add("inputFile", -1);
 
-	// Parse command line and generate variables map
-	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
-	notify(m_variables);
+    // Parse command line and generate variables map
+    store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
+    notify(m_variables);
 
-	if(m_variables.count("help"))
-	{
-		::std::cout << m_descr << ::std::endl;
-	}
+    if(m_variables.count("help"))
+    {
+        ::std::cout << m_descr << ::std::endl;
+    }
 
 }
 
 string Options::getInputFileName() const
 {
-	return (m_variables["inputFile"].as< vector<string> >())[0];
+    return (m_variables["inputFile"].as< vector<string> >())[0];
 }
 
 int Options::getNumThreads() const
 {
-	return m_variables["threads"].as<int>();
+    return m_variables["threads"].as<int>();
 }
 
 bool Options::printUsage() const
 {
-	if(!m_variables.count("inputFile"))
-	{
-		cout << "Error: You must specify an input file." << endl;
-		cout << endl;
-		cout << m_descr << endl;
-		return true;
-	}
+    if(!m_variables.count("inputFile"))
+    {
+        cout << "Error: You must specify an input file." << endl;
+        cout << endl;
+        cout << m_descr << endl;
+        return true;
+    }
 
-	if(m_variables.count("help"))
-	{
-		cout << endl;
-		cout << m_descr << endl;
-		return true;
-	}
-	return false;
+    if(m_variables.count("help"))
+    {
+        cout << endl;
+        cout << m_descr << endl;
+        return true;
+    }
+    return false;
 }
 
 Options::~Options()
 {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }
 
 }

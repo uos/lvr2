@@ -56,7 +56,7 @@ void kfusion::cuda::TsdfVolume::setTruncDist(float distance)
 
 ushort2* kfusion::cuda::TsdfVolume::getCoord(int x, int y, int z, int dim_x, int dim_y)
 {
-	return data_.ptr<ushort2>() + x + y*dim_x + z*dim_y*dim_x;
+    return data_.ptr<ushort2>() + x + y*dim_x + z*dim_y*dim_x;
 }
 
 int kfusion::cuda::TsdfVolume::getMaxWeight() const { return max_weight_; }
@@ -84,10 +84,10 @@ void kfusion::cuda::TsdfVolume::clearSlice(const kfusion::tsdf_buffer* buffer, c
     device::Vec3i dims = device_cast<device::Vec3i>(dims_);
     device::Vec3f vsz  = device_cast<device::Vec3f>(getVoxelSize());
 
-	device::Vec3i offset_c;
-	offset_c.x = offset[0];
-	offset_c.y = offset[1];
-	offset_c.z = offset[2];
+    device::Vec3i offset_c;
+    offset_c.x = offset[0];
+    offset_c.y = offset[1];
+    offset_c.z = offset[2];
 
     device::TsdfVolume volume((ushort2*)data_.ptr<ushort2>(), dims, vsz, trunc_dist_, max_weight_);
     device::clearTSDFSlice(volume, buffer, offset_c);
@@ -188,23 +188,23 @@ kfusion::cuda::TsdfVolume::fetchSliceAsCloud (DeviceArray<Point>& cloud_buffer, 
     if (cloud_buffer.empty ())
       cloud_buffer.create (DEFAULT_CLOUD_BUFFER_SIZE);
 
-	DeviceArray<device::Point>& b = (DeviceArray<device::Point>&)cloud_buffer;
+    DeviceArray<device::Point>& b = (DeviceArray<device::Point>&)cloud_buffer;
 
-	device::Vec3i dims = device_cast<device::Vec3i>(dims_);
-	device::Vec3i deviceGlobalShift;
-	deviceGlobalShift.x = globalShift[0];
-	deviceGlobalShift.y = globalShift[1];
-	deviceGlobalShift.z = globalShift[2];
+    device::Vec3i dims = device_cast<device::Vec3i>(dims_);
+    device::Vec3i deviceGlobalShift;
+    deviceGlobalShift.x = globalShift[0];
+    deviceGlobalShift.y = globalShift[1];
+    deviceGlobalShift.z = globalShift[2];
 
-	device::Vec3i minBounds_c;
-	minBounds_c.x = minBounds[0];
-	minBounds_c.y = minBounds[1];
-	minBounds_c.z = minBounds[2];
+    device::Vec3i minBounds_c;
+    minBounds_c.x = minBounds[0];
+    minBounds_c.y = minBounds[1];
+    minBounds_c.z = minBounds[2];
 
-	device::Vec3i maxBounds_c;
-	maxBounds_c.x = maxBounds[0];
-	maxBounds_c.y = maxBounds[1];
-	maxBounds_c.z = maxBounds[2];
+    device::Vec3i maxBounds_c;
+    maxBounds_c.x = maxBounds[0];
+    maxBounds_c.y = maxBounds[1];
+    maxBounds_c.z = maxBounds[2];
 
     device::Vec3f vsz  = device_cast<device::Vec3f>(getVoxelSize());
     device::Aff3f aff  = device_cast<device::Aff3f>(pose_);

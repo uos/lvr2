@@ -25,19 +25,19 @@
 
 MeshUpdateThread::MeshUpdateThread(kfusion::KinFu::Ptr kinfu)
 {
-	moveToThread(QApplication::instance()->thread());
-	cout << "CREATE" << endl;
-	m_kinfu = kinfu;
+    moveToThread(QApplication::instance()->thread());
+    cout << "CREATE" << endl;
+    m_kinfu = kinfu;
 }
 
 void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
 {
-	static size_t verts_size = 0;
-	static size_t faces_size = 0;
-	cout << "0" << endl;
+    static size_t verts_size = 0;
+    static size_t faces_size = 0;
+    cout << "0" << endl;
 
-	m_vertices.clear();
-	m_faces.clear();
+    m_vertices.clear();
+    m_faces.clear();
 
     if(meshbuffer)
     {
@@ -58,21 +58,21 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
 
         for(size_t k = 0; k < slice_size; k++)
         {
-        	auto vertex = meshbuffer->getVertices()[k + verts_size];
-        	m_indexMap[vertex] = k + verts_size;
-        	points->InsertNextPoint(
-        			vertex->m_position[0],
-					vertex->m_position[1],
-					vertex->m_position[2]);
+            auto vertex = meshbuffer->getVertices()[k + verts_size];
+            m_indexMap[vertex] = k + verts_size;
+            points->InsertNextPoint(
+                    vertex->m_position[0],
+                    vertex->m_position[1],
+                    vertex->m_position[2]);
 
-        	//cout << vertex->m_position[0] << " " << vertex->m_position[1] << " " << vertex->m_position[2] << endl;
+            //cout << vertex->m_position[0] << " " << vertex->m_position[1] << " " << vertex->m_position[2] << endl;
 
-        	m_vertices.push_back(vertex->m_position[0]);
-        	m_vertices.push_back(vertex->m_position[1]);
-        	m_vertices.push_back(vertex->m_position[2]);
+            m_vertices.push_back(vertex->m_position[0]);
+            m_vertices.push_back(vertex->m_position[1]);
+            m_vertices.push_back(vertex->m_position[2]);
 
-        	unsigned char color[3] = {0, 255, 0};
-        	scalars->InsertNextTupleValue(color);
+            unsigned char color[3] = {0, 255, 0};
+            scalars->InsertNextTupleValue(color);
 
         }
 
@@ -83,32 +83,32 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
         cout << "2 " << slice_face_size << endl;
         for(size_t k = 0; k < slice_face_size; k++)
         {
-        	auto face = meshbuffer->getFaces()[k + faces_size];
+            auto face = meshbuffer->getFaces()[k + faces_size];
 
-        	vtkSmartPointer<vtkTriangle> t = vtkSmartPointer<vtkTriangle>::New();
-        	t->GetPointIds()->SetId(0, m_indexMap[face->m_edge->end()]);
-        	t->GetPointIds()->SetId(1, m_indexMap[face->m_edge->next()->end()]);
-        	t->GetPointIds()->SetId(2, m_indexMap[face->m_edge->next()->next()->end()]);
-        	triangles->InsertNextCell(t);
+            vtkSmartPointer<vtkTriangle> t = vtkSmartPointer<vtkTriangle>::New();
+            t->GetPointIds()->SetId(0, m_indexMap[face->m_edge->end()]);
+            t->GetPointIds()->SetId(1, m_indexMap[face->m_edge->next()->end()]);
+            t->GetPointIds()->SetId(2, m_indexMap[face->m_edge->next()->next()->end()]);
+            triangles->InsertNextCell(t);
 
-        	m_faces.push_back(m_indexMap[face->m_edge->end()]);
-        	m_faces.push_back(m_indexMap[face->m_edge->next()->end()]);
-        	m_faces.push_back(m_indexMap[face->m_edge->next()->next()->end()]);
+            m_faces.push_back(m_indexMap[face->m_edge->end()]);
+            m_faces.push_back(m_indexMap[face->m_edge->next()->end()]);
+            m_faces.push_back(m_indexMap[face->m_edge->next()->next()->end()]);
 
 
-        	int a = m_indexMap[face->m_edge->end()];
-        	int b = m_indexMap[face->m_edge->next()->end()];
-        	int c = m_indexMap[face->m_edge->next()->next()->end()];
+            int a = m_indexMap[face->m_edge->end()];
+            int b = m_indexMap[face->m_edge->next()->end()];
+            int c = m_indexMap[face->m_edge->next()->next()->end()];
 
-        	cout << a << " " << b << " " << c << " " << m_indexMap.size() << " " << m_vertices.size() / 3 << endl;
+            cout << a << " " << b << " " << c << " " << m_indexMap.size() << " " << m_vertices.size() / 3 << endl;
 //
-//        	if(a >= m_indexMap.size()) cout << "A: " << a << " / " << m_indexMap.size() << endl;
-//        	if(b >= m_indexMap.size()) cout << "B: " << b << " / " << m_indexMap.size() << endl;
-//        	if(c >= m_indexMap.size()) cout << "C: " << c << " / " << m_indexMap.size() << endl;
+//            if(a >= m_indexMap.size()) cout << "A: " << a << " / " << m_indexMap.size() << endl;
+//            if(b >= m_indexMap.size()) cout << "B: " << b << " / " << m_indexMap.size() << endl;
+//            if(c >= m_indexMap.size()) cout << "C: " << c << " / " << m_indexMap.size() << endl;
       }
 
-		verts_size = meshbuffer->getVertices().size();
-		faces_size = meshbuffer->getFaces().size();
+        verts_size = meshbuffer->getVertices().size();
+        faces_size = meshbuffer->getFaces().size();
 
         mesh->SetPoints(points);
         mesh->SetPolys(triangles);
@@ -164,17 +164,17 @@ void MeshUpdateThread::computeMeshActor(HMesh* meshbuffer)
 
 void MeshUpdateThread::run()
 {
-	while(true)
-	{
-	  //auto b = m_kinfu->cyclical().getMesh();
-		//computeMeshActor(b);
-		//Q_EMIT(meshUpdate(m_meshActor));
-	}
+    while(true)
+    {
+      //auto b = m_kinfu->cyclical().getMesh();
+        //computeMeshActor(b);
+        //Q_EMIT(meshUpdate(m_meshActor));
+    }
 }
 
 MeshUpdateThread::~MeshUpdateThread()
 {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }
 
 

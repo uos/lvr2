@@ -53,12 +53,12 @@ void GlTexture::upload()
     for(int i = 0; i < 3 * m_width * m_height; i++)
       {
         if(i % 3 == 0)
-	  {
-	    if((int)m_pixels[i] != 0 && (int)m_pixels[i] != 255)
-	      cout << endl;
-	  }
-	if((int)m_pixels[i] != 0 && (int)m_pixels[i] != 255)
-	  cout << "GlTexture::upload -- " << (int)m_pixels[i] << " ";
+      {
+        if((int)m_pixels[i] != 0 && (int)m_pixels[i] != 255)
+          cout << endl;
+      }
+    if((int)m_pixels[i] != 0 && (int)m_pixels[i] != 255)
+      cout << "GlTexture::upload -- " << (int)m_pixels[i] << " ";
       }
     */
     
@@ -74,14 +74,14 @@ void GlTexture::upload()
 
     // Upload texture
     glTexImage2D(
-		 GL_TEXTURE_2D,
-		 0,
-		 GL_RGB,
-		 m_width,
-		 m_height,
-		 0,
-		 GL_RGB,
-		 GL_UNSIGNED_BYTE,
-		 m_pixels
-		 );
+         GL_TEXTURE_2D,
+         0,
+         GL_RGB,
+         m_width,
+         m_height,
+         0,
+         GL_RGB,
+         GL_UNSIGNED_BYTE,
+         m_pixels
+         );
 }

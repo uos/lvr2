@@ -41,9 +41,9 @@
 using namespace lvr;
 
 
-typedef ColorVertex<float, unsigned char>						cVertex;
-typedef Normal<float>											cNormal;
-typedef PointsetSurface<ColorVertex<float, unsigned char> >							psSurface;
+typedef ColorVertex<float, unsigned char>                        cVertex;
+typedef Normal<float>                                            cNormal;
+typedef PointsetSurface<ColorVertex<float, unsigned char> >                            psSurface;
 typedef AdaptiveKSearchSurface<ColorVertex<float, unsigned char> , Normal<float>  > akSurface;
 
 #ifdef LVR_USE_PCL
@@ -55,108 +55,108 @@ typedef PCLKSurface<Vertex<float> , Normal<float> >                   pclSurface
  */
 int main(int argc, char** argv)
 {
-	try
-	{
-		// Parse command line arguments
-		meshopt::Options options(argc, argv);
+    try
+    {
+        // Parse command line arguments
+        meshopt::Options options(argc, argv);
 
-		// Exit if options had to generate a usage message
-		// (this means required parameters are missing)
-		if ( options.printUsage() )
-		{
-			return 0;
-		}
+        // Exit if options had to generate a usage message
+        // (this means required parameters are missing)
+        if ( options.printUsage() )
+        {
+            return 0;
+        }
 
-		::std::cout << options << ::std::endl;
-
-
-		// Create a point loader object
-		ModelPtr model = ModelFactory::readModel( options.getInputFileName() );
-
-		MeshBufferPtr mesh_buffer;
-
-		// Parse loaded data
-		if ( !model )
-		{
-			cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
-			exit(-1);
-		}
-		mesh_buffer = model->m_mesh;
-
-		if(!mesh_buffer)
-		{
-		    cout << timestamp << "Given file contains no supported mesh information" << endl;
-		}
-
-		// Create an empty mesh
-		HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh( mesh_buffer );
-
-		// Set recursion depth for region growing
-		if(options.getDepth())
-		{
-			mesh.setDepth(options.getDepth());
-		}
+        ::std::cout << options << ::std::endl;
 
 
+        // Create a point loader object
+        ModelPtr model = ModelFactory::readModel( options.getInputFileName() );
 
-		if(options.getDanglingArtifacts())
-		{
-			mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
-		}
-		// Optimize mesh
+        MeshBufferPtr mesh_buffer;
+
+        // Parse loaded data
+        if ( !model )
+        {
+            cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+            exit(-1);
+        }
+        mesh_buffer = model->m_mesh;
+
+        if(!mesh_buffer)
+        {
+            cout << timestamp << "Given file contains no supported mesh information" << endl;
+        }
+
+        // Create an empty mesh
+        HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh( mesh_buffer );
+
+        // Set recursion depth for region growing
+        if(options.getDepth())
+        {
+            mesh.setDepth(options.getDepth());
+        }
 
 
 
-
-		mesh.cleanContours(options.getCleanContourIterations());
-
-
-		mesh.setClassifier(options.getClassifier());
-
-
-		if(options.optimizePlanes())
-		{
-			mesh.optimizePlanes(options.getPlaneIterations(),
-					options.getNormalThreshold(),
-					options.getMinPlaneSize(),
-					options.getSmallRegionThreshold(),
-					true);
-
-			mesh.fillHoles(options.getFillHoles());
-			mesh.optimizePlaneIntersections();
-			mesh.restorePlanes(options.getMinPlaneSize());
-
-		}
-		else
-		{
-			mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
-			mesh.fillHoles(options.getFillHoles());
-		}
-
-		// Save triangle mesh
-		if ( options.retesselate() )
-		{
-			mesh.finalizeAndRetesselate(false, // Textures not yet supported in this tool
-					options.getLineFusionThreshold());
-		}
-		else
-		{
-			mesh.finalize();
-		}
-
-		// Create output model and save to file
-		ModelPtr m( new Model( mesh.meshBuffer() ) );
+        if(options.getDanglingArtifacts())
+        {
+            mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+        }
+        // Optimize mesh
 
 
-		ModelFactory::saveModel( m, "optimized_mesh.ply");
 
 
-		cout << timestamp << "Program end." << endl;
-	}
-	catch(...)
-	{
-		std::cout << "Unable to parse options. Call 'reconstruct --help' for more information." << std::endl;
-	}
-	return 0;
+        mesh.cleanContours(options.getCleanContourIterations());
+
+
+        mesh.setClassifier(options.getClassifier());
+
+
+        if(options.optimizePlanes())
+        {
+            mesh.optimizePlanes(options.getPlaneIterations(),
+                    options.getNormalThreshold(),
+                    options.getMinPlaneSize(),
+                    options.getSmallRegionThreshold(),
+                    true);
+
+            mesh.fillHoles(options.getFillHoles());
+            mesh.optimizePlaneIntersections();
+            mesh.restorePlanes(options.getMinPlaneSize());
+
+        }
+        else
+        {
+            mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
+            mesh.fillHoles(options.getFillHoles());
+        }
+
+        // Save triangle mesh
+        if ( options.retesselate() )
+        {
+            mesh.finalizeAndRetesselate(false, // Textures not yet supported in this tool
+                    options.getLineFusionThreshold());
+        }
+        else
+        {
+            mesh.finalize();
+        }
+
+        // Create output model and save to file
+        ModelPtr m( new Model( mesh.meshBuffer() ) );
+
+
+        ModelFactory::saveModel( m, "optimized_mesh.ply");
+
+
+        cout << timestamp << "Program end." << endl;
+    }
+    catch(...)
+    {
+        std::cout << "Unable to parse options. Call 'reconstruct --help' for more information." << std::endl;
+    }
+    return 0;
 }
 

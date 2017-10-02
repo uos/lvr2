@@ -103,8 +103,8 @@ void LVREstimateNormalsDialog::estimateNormals()
     if(interpolateNormals)
     {
         SearchTree<Vertex<float> >::Ptr       tree;
-	tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
-	    
+    tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
+        
 
         #pragma omp parallel for schedule(static)
         for(int i = 0; i < numPoints; i++)

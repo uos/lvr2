@@ -30,8 +30,8 @@
 
 ViewerManager::ViewerManager(QWidget* parent, const QGLWidget* shared)
 {
-	m_currentViewer = new PerspectiveViewer(parent, shared);
-	m_parentWidget = parent;
+    m_currentViewer = new PerspectiveViewer(parent, shared);
+    m_parentWidget = parent;
 }
 
 ViewerManager::~ViewerManager()
@@ -41,13 +41,13 @@ ViewerManager::~ViewerManager()
 
 Viewer* ViewerManager::current()
 {
-	return m_currentViewer;
+    return m_currentViewer;
 }
 
 void ViewerManager::addDataCollector(Visualizer* c)
 {
-	// Stub, currently support only one single viewer instance
-	m_currentViewer->addDataObject(c);
+    // Stub, currently support only one single viewer instance
+    m_currentViewer->addDataObject(c);
 }
 
 void ViewerManager::removeDataCollector(Visualizer* c)
@@ -58,5 +58,5 @@ void ViewerManager::removeDataCollector(Visualizer* c)
 
 void ViewerManager::updateDataObject(Visualizer* obj)
 {
-	m_currentViewer->updateDataObject(obj);
+    m_currentViewer->updateDataObject(obj);
 }

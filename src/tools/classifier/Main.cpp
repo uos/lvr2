@@ -56,39 +56,39 @@ typedef AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> 
  */
 int main(int argc, char** argv)
 {
-	try
-	{
-		// Parse command line arguments
-		classifier::Options options(argc, argv);
+    try
+    {
+        // Parse command line arguments
+        classifier::Options options(argc, argv);
 
-		// Exit if options had to generate a usage message
-		// (this means required parameters are missing)
-		if ( options.printUsage() )
-		{
-			return 0;
-		}
+        // Exit if options had to generate a usage message
+        // (this means required parameters are missing)
+        if ( options.printUsage() )
+        {
+            return 0;
+        }
 
-		OpenMPConfig::setNumThreads(options.getNumThreads());
+        OpenMPConfig::setNumThreads(options.getNumThreads());
 
-		::std::cout << options << ::std::endl;
+        ::std::cout << options << ::std::endl;
 
-		// Create a point loader object
-		ModelPtr model = ModelFactory::readModel( options.getInputFileName() );
-		PointBufferPtr p_loader;
+        // Create a point loader object
+        ModelPtr model = ModelFactory::readModel( options.getInputFileName() );
+        PointBufferPtr p_loader;
 
-		// Parse loaded data
-		if ( !model )
-		{
-			cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
-			exit(-1);
-		}
-		p_loader = model->m_pointCloud;
+        // Parse loaded data
+        if ( !model )
+        {
+            cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+            exit(-1);
+        }
+        p_loader = model->m_pointCloud;
 
-	}
-	catch(...)
-	{
-		std::cout << "Unable to parse options. Call 'classifier --help' for more information." << std::endl;
-	}
-	return 0;
+    }
+    catch(...)
+    {
+        std::cout << "Unable to parse options. Call 'classifier --help' for more information." << std::endl;
+    }
+    return 0;
 }
 

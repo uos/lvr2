@@ -32,30 +32,30 @@ namespace ascii_convert
 Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
 
-	// Create option descriptions
+    // Create option descriptions
 
-	m_descr.add_options()
-		("help", "Produce help message")
-		("inputFile", value< vector<string> >(), "An ASCII-File containing point cloud data.")
-		("outputFile,o", value<string>()->default_value("out.txt"), "Name of the generated output file.")
-	    ("xPos,x", value<int>()->default_value(0), "Position of the x-coordinates in the input data lines.")
-	    ("yPos,y", value<int>()->default_value(1), "Position of the y-coordinates in the input data lines.")
-	    ("zPos,z", value<int>()->default_value(2), "Position of the z-coordinates in the input data lines.")
-	    ("sx", value<float>()->default_value(1.0), "Scaling factor for the x coordinates.")
-	    ("sy", value<float>()->default_value(1.0), "Scaling factor for the y coordinates.")
-	    ("sz", value<float>()->default_value(1.0), "Scaling factor for the z coordinates.")
-	    ("rPos,r", value<int>()->default_value(-1), "Position of the red color component in the input data lines. (-1) means no color information")
-	    ("gPos,g", value<int>()->default_value(-1), "Position of the green color component in the input data lines. (-1) means no color information")
-	    ("bPos,b", value<int>()->default_value(-1), "Position of the blue color component in the input data lines. (-1) means no color information")
-	    ("iPos,i", value<int>()->default_value(-1), "Position of the intensity information input data lines. (-1) means no intensity information")
-	    ("convert,c", "Convert intensity into color")
-		;
+    m_descr.add_options()
+        ("help", "Produce help message")
+        ("inputFile", value< vector<string> >(), "An ASCII-File containing point cloud data.")
+        ("outputFile,o", value<string>()->default_value("out.txt"), "Name of the generated output file.")
+        ("xPos,x", value<int>()->default_value(0), "Position of the x-coordinates in the input data lines.")
+        ("yPos,y", value<int>()->default_value(1), "Position of the y-coordinates in the input data lines.")
+        ("zPos,z", value<int>()->default_value(2), "Position of the z-coordinates in the input data lines.")
+        ("sx", value<float>()->default_value(1.0), "Scaling factor for the x coordinates.")
+        ("sy", value<float>()->default_value(1.0), "Scaling factor for the y coordinates.")
+        ("sz", value<float>()->default_value(1.0), "Scaling factor for the z coordinates.")
+        ("rPos,r", value<int>()->default_value(-1), "Position of the red color component in the input data lines. (-1) means no color information")
+        ("gPos,g", value<int>()->default_value(-1), "Position of the green color component in the input data lines. (-1) means no color information")
+        ("bPos,b", value<int>()->default_value(-1), "Position of the blue color component in the input data lines. (-1) means no color information")
+        ("iPos,i", value<int>()->default_value(-1), "Position of the intensity information input data lines. (-1) means no intensity information")
+        ("convert,c", "Convert intensity into color")
+        ;
 
-	m_pdescr.add("inputFile", -1);
+    m_pdescr.add("inputFile", -1);
 
-	// Parse command line and generate variables map
-	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
-	notify(m_variables);
+    // Parse command line and generate variables map
+    store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
+    notify(m_variables);
 
   if(m_variables.count("help")) {
     ::std::cout<< m_descr << ::std::endl;
@@ -100,7 +100,7 @@ bool Options::printUsage() const
 }
 
 Options::~Options() {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }
 
 } // namespace reconstruct

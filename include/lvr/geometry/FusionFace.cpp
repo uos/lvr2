@@ -35,19 +35,19 @@ template<typename A, typename B> class FusionVertex;
 namespace lvr
 {
 
-	template<typename VertexT, typename NormalT> FusionFace<VertexT, NormalT>::FusionFace() 
-		: HalfEdgeFace<VertexT, NormalT>()
-	{
-		// color
-		r = 0;
-		g = 255;
-		b = 0;
+    template<typename VertexT, typename NormalT> FusionFace<VertexT, NormalT>::FusionFace() 
+        : HalfEdgeFace<VertexT, NormalT>()
+    {
+        // color
+        r = 0;
+        g = 255;
+        b = 0;
 
-		m_self_index = -1;
-		is_valid = false;
-	}
+        m_self_index = -1;
+        is_valid = false;
+    }
 
-	template<typename VertexT, typename NormalT> FusionFace<VertexT, NormalT>::~FusionFace() {}
+    template<typename VertexT, typename NormalT> FusionFace<VertexT, NormalT>::~FusionFace() {}
 
 
 } // namespace lvr
