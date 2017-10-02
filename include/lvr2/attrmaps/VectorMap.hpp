@@ -122,6 +122,7 @@ public:
     bool operator==(const AttributeMapHandleIterator<HandleT>& other) const final;
     bool operator!=(const AttributeMapHandleIterator<HandleT>& other) const final;
     HandleT operator*() const final;
+    std::unique_ptr<AttributeMapHandleIterator<HandleT>> clone() const final;
 
 private:
     StableVectorIterator<HandleT, ValueT> m_iter;
