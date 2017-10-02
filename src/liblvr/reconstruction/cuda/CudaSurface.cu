@@ -1420,11 +1420,11 @@ void CudaSurface::init(){
     this->m_reconstruction_mode = false;
 }
 
-CudaSurface::CudaSurface(LBPointArray<float>& points)
+CudaSurface::CudaSurface(LBPointArray<float>& points, int device)
 {
     this->init();
 
-    this->getCudaInformation();
+    this->getCudaInformation(device);
 
     this->V.dim = points.dim;
 
@@ -1443,13 +1443,14 @@ CudaSurface::CudaSurface(LBPointArray<float>& points)
 
 }
 
-CudaSurface::CudaSurface(floatArr& points, size_t num_points, size_t dim){
+CudaSurface::CudaSurface(floatArr& points, size_t num_points, int device)
+{
 
     this->init();
 
-    this->getCudaInformation();
+    this->getCudaInformation(device);
 
-    this->V.dim = static_cast<int>(dim);
+    this->V.dim = 3;
 
     this->V.width = static_cast<int>(num_points);
 
@@ -1457,14 +1458,13 @@ CudaSurface::CudaSurface(floatArr& points, size_t num_points, size_t dim){
 
     this->V.elements = points.get();
 
-
     this->initKdTree();
 
 }
 
-void CudaSurface::getCudaInformation()
+void CudaSurface::getCudaInformation(int device)
 {
-
+    m_device = device;
     m_mps = 0;
     m_threads_per_mp = 0;
     m_threads_per_block = 0;
@@ -1473,7 +1473,7 @@ void CudaSurface::getCudaInformation()
     m_device_global_memory = 0;
 
 
-    cudaSetDevice(0);
+    cudaSetDevice(m_device);
     cudaDeviceProp deviceProp;
     cudaGetDeviceProperties(&deviceProp, 0);
 

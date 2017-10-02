@@ -74,9 +74,9 @@ public:
      *
      * @param points Input Pointcloud for kd-tree construction
      */
-    CudaSurface(LBPointArray<float>& points);
+    CudaSurface(LBPointArray<float>& points, int device = 0);
 
-    CudaSurface(floatArr& points, size_t num_points, size_t dim = 3);
+    CudaSurface(floatArr& points, size_t num_points, int device=0 );
 
     ~CudaSurface();
 
@@ -162,7 +162,7 @@ private:
 
     void printSettings();
 
-    void getCudaInformation();
+    void getCudaInformation(int device);
 
     void calculateBlocksThreads(int n, int elements, int element_size, int max_mem_shared, int max_threads_per_block,
                                 int& out_blocks_per_grid, int& out_threads_per_block, int& needed_shared_memory);
@@ -217,6 +217,7 @@ private:
     bool m_reconstruction_mode;
 
     // Device Information
+    int m_device;
     int m_mps;
     int m_threads_per_mp;
     int m_threads_per_block;
