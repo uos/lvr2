@@ -72,7 +72,7 @@ private:
 template<typename VertexT, typename NormalT>
 struct BoxTraits<BilinearFastBox<VertexT, NormalT> >
 {
-	static const string type;
+    static const string type;
 };
 
 

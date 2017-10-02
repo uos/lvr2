@@ -46,12 +46,12 @@ class Options
 {
 public:
 
-	/**
-	 * @brief Ctor. Parses the command parameters given to the main
-	 *     function of the program
-	 */
-	Options(int argc, char** argv);
-	virtual ~Options();
+    /**
+     * @brief Ctor. Parses the command parameters given to the main
+     *     function of the program
+     */
+    Options(int argc, char** argv);
+    virtual ~Options();
 
     string  outputFile() const
     {
@@ -61,88 +61,88 @@ public:
 
 
     string  inputFile() const
-	{
+    {
         return (m_variables["inputFile"].as< vector<string> >())[0];
-	}
-	
-	bool    useRansac() const
-	{
-		return (m_variables.count("ransac"));
-	}
-	
-	bool	usePCA() const
-	{
-		return (m_variables.count("pca"));
-	}
-	
-	float 	flipx() const
-	{
-		return m_variables["flipx"].as<float>();
-	}
-	
-	float 	flipy() const
-	{
-		return m_variables["flipy"].as<float>();
-	}
-	
-	float 	flipz() const
-	{
-		return m_variables["flipz"].as<float>();
-	}
-	
-	int     kn() const
-	{
+    }
+    
+    bool    useRansac() const
+    {
+        return (m_variables.count("ransac"));
+    }
+    
+    bool    usePCA() const
+    {
+        return (m_variables.count("pca"));
+    }
+    
+    float     flipx() const
+    {
+        return m_variables["flipx"].as<float>();
+    }
+    
+    float     flipy() const
+    {
+        return m_variables["flipy"].as<float>();
+    }
+    
+    float     flipz() const
+    {
+        return m_variables["flipz"].as<float>();
+    }
+    
+    int     kn() const
+    {
         return m_variables["kn"].as<int>();
-	}
+    }
 
-	int 	ki() const
-	{
-		return m_variables["ki"].as<int>();
-	}
+    int     ki() const
+    {
+        return m_variables["ki"].as<int>();
+    }
 
-	int		kd() const
-	{
-		return m_variables["kd"].as<int>();
-	}
+    int        kd() const
+    {
+        return m_variables["kd"].as<int>();
+    }
 
-	float 	getVoxelsize() const
-	{
-		return m_variables["voxelsize"].as<float>();
-	}
+    float     getVoxelsize() const
+    {
+        return m_variables["voxelsize"].as<float>();
+    }
 
-	bool 	useVoxelSize() const
-	{
-		return m_variables.count("voxelsize");
-	}
+    bool     useVoxelSize() const
+    {
+        return m_variables.count("voxelsize");
+    }
 
-	bool 	reconstruct() const
-	{
-		return m_variables.count("reconstruct");
-	}	
+    bool     reconstruct() const
+    {
+        return m_variables.count("reconstruct");
+    }    
 
-	bool	exportPointNormals() const
-	{
-		return m_variables.count("exportPointNormals");
-	}
+    bool    exportPointNormals() const
+    {
+        return m_variables.count("exportPointNormals");
+    }
 
 private:
 
-	/// The internally used variable map
-	variables_map m_variables;
+    /// The internally used variable map
+    variables_map m_variables;
 
-	/// The internally used option description
-	options_description m_descr;
+    /// The internally used option description
+    options_description m_descr;
 
-	/// The internally used positional option desription
-	positional_options_description m_pdescr;
+    /// The internally used positional option desription
+    positional_options_description m_pdescr;
 
     float         m_flipx;
-    float		  m_flipy;
-    float 		  m_flipz;
-    int			  m_kn;
-	int 		  m_ki;
-	int			  m_kd;
-	float		  m_voxelsize;
+    float          m_flipy;
+    float           m_flipz;
+    int              m_kn;
+    int           m_ki;
+    int              m_kd;
+    float          m_voxelsize;
     string        m_outputFile;
 };
 
@@ -150,15 +150,15 @@ inline ostream& operator<<(ostream& os, const Options& o)
 {
     os << "##### OpenCl normal estimation settings #####" << endl;
     if(o.useRansac()){
-		os << "Normal Calculation with RANSAC" << endl;
-	}else if(o.usePCA()){
-		os << "Normal Calculation with PCA" << endl;
-	}else{
-		os << "Normal Calculation with PCA" << endl;
-	}
-	os << "Neighbors for normal estimation: "<< o.kn() << endl;
-	os << "Neighbors for normal interpolation: " << o.ki() << endl;
-	os << "Neighbors for distance function: " << o.kd() << endl;
+        os << "Normal Calculation with RANSAC" << endl;
+    }else if(o.usePCA()){
+        os << "Normal Calculation with PCA" << endl;
+    }else{
+        os << "Normal Calculation with PCA" << endl;
+    }
+    os << "Neighbors for normal estimation: "<< o.kn() << endl;
+    os << "Neighbors for normal interpolation: " << o.ki() << endl;
+    os << "Neighbors for distance function: " << o.kd() << endl;
     os << "Flippoint x: " << o.flipx() << endl;
     os << "Flippoint y: " << o.flipy() << endl;
     os << "Flippoint z: " << o.flipz() << endl;
@@ -169,4 +169,3 @@ inline ostream& operator<<(ostream& os, const Options& o)
 } // namespace normals
 
 #endif
-

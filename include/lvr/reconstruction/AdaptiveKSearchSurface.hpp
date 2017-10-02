@@ -106,15 +106,15 @@ public:
 
     typedef boost::shared_ptr< AdaptiveKSearchSurface<VertexT, NormalT> > Ptr;
 
-	/**
-	 * @brief Constructor.
-	 *
-	 * @param           The file to read from
+    /**
+     * @brief Constructor.
+     *
+     * @param           The file to read from
      * @param searchTN  The of the searchTree type that shall be used
-	 * @param kn        The number of neighbor points used for normal estimation
+     * @param kn        The number of neighbor points used for normal estimation
      * @param ki        The number of neighbor points used for normal interpolation
      * @param kd        The number of neighbor points used for distance value calculation
-	 */
+     */
     AdaptiveKSearchSurface( PointBufferPtr loader,
             std::string searchTreeName,
             const int &kn = 10,
@@ -127,40 +127,40 @@ public:
     /**
      * @brief standard Constructor
      *
-     * 		m_useRANSAC = true;
-     * 		m_ki = 10;
-     *		m_kn = 10;
-     *		m_kd = 10;
+     *         m_useRANSAC = true;
+     *         m_ki = 10;
+     *        m_kn = 10;
+     *        m_kd = 10;
      *
-     *		This Constructor can be used, if only the method "calcPlaneRANSACfromPoints"
-     *		is required
+     *        This Constructor can be used, if only the method "calcPlaneRANSACfromPoints"
+     *        is required
      */
     AdaptiveKSearchSurface();
 
-	/**
-	 * @brief   Destructor
-	 */
-	virtual ~AdaptiveKSearchSurface() {};
+    /**
+     * @brief   Destructor
+     */
+    virtual ~AdaptiveKSearchSurface() {};
     
     /**
      * @brief Returns the number of managed points
      */
     virtual size_t getNumPoints();
 
-	/**
-	 * @brief Calculates a tangent plane for the query point using the provided
-	 *        k-neighborhood
-	 *
-	 * @param queryPoint    The point for which the tangent plane is created
-	 * @param k             The size of the used k-neighborhood
-	 * @param points        The neighborhood points
-	 * @param ok            True, if RANSAC interpolation was succesfull
-	 *
-	 * @return the resulting plane
-	 */
-	Plane<VertexT, NormalT> calcPlaneRANSACfromPoints(const VertexT &queryPoint,
-	        const int &k,
-	        vector<VertexT> points, NormalT c_normal, bool &ok);
+    /**
+     * @brief Calculates a tangent plane for the query point using the provided
+     *        k-neighborhood
+     *
+     * @param queryPoint    The point for which the tangent plane is created
+     * @param k             The size of the used k-neighborhood
+     * @param points        The neighborhood points
+     * @param ok            True, if RANSAC interpolation was succesfull
+     *
+     * @return the resulting plane
+     */
+    Plane<VertexT, NormalT> calcPlaneRANSACfromPoints(const VertexT &queryPoint,
+            const int &k,
+            vector<VertexT> points, NormalT c_normal, bool &ok);
 
 
     /**
@@ -215,7 +215,7 @@ public:
     /// Color information for points public: TODO: This is not the best idea!
     color3bArr                  m_colors;
 
-	/**
+    /**
          * @brief Interpolate the initial normals with the \ref m_ki neighbors
          */
         void interpolateSurfaceNormals();
@@ -225,7 +225,7 @@ private:
 
     /**
      * @brief Parses the file with scan poses and creates a search tree to
-     * 		  search for the nearest pose when flipping normals
+     *           search for the nearest pose when flipping normals
      */
     void parseScanPoses(string posefile);
 
@@ -245,68 +245,68 @@ private:
      */
     void init();
 
-	/**
-	 * @brief Checks if the bounding box of a point set is "well formed",
-	 *        i.e. no dimension is significantly larger than the other.
-	 *
-	 * This method is needed to achieve a better quality of the initial normal
-	 * estimation in sparse scans. Details are described in the SRR2010 paper.
-	 *
-	 * @param dx, dy, dz The side lengths of the bounding box
-	 *
-	 * @return true if the given box has valid dimensions.
-	 */
-	bool boundingBoxOK(const float &dx, const float &dy, const float &dz);
+    /**
+     * @brief Checks if the bounding box of a point set is "well formed",
+     *        i.e. no dimension is significantly larger than the other.
+     *
+     * This method is needed to achieve a better quality of the initial normal
+     * estimation in sparse scans. Details are described in the SRR2010 paper.
+     *
+     * @param dx, dy, dz The side lengths of the bounding box
+     *
+     * @return true if the given box has valid dimensions.
+     */
+    bool boundingBoxOK(const float &dx, const float &dy, const float &dz);
 
-	/**
-	 * @brief Returns the mean distance of the given point set from
-	 *        the given plane
-	 *
-	 * @param p             The query plane
-	 * @param id            A list of point id's
-	 * @param k             The number of points in the list
-	 */
-	float meanDistance(const Plane<VertexT, NormalT> &p, const vector<unsigned long> &id, const int &k);
+    /**
+     * @brief Returns the mean distance of the given point set from
+     *        the given plane
+     *
+     * @param p             The query plane
+     * @param id            A list of point id's
+     * @param k             The number of points in the list
+     */
+    float meanDistance(const Plane<VertexT, NormalT> &p, const vector<unsigned long> &id, const int &k);
 
-	/**
-	 * @brief Returns a vertex representation of the given point in the
-	 *        point array
-	 *
-	 * @param i             A id of a point in the current point set
-	 * @return              A vertex representation of the given point
-	 */
-	VertexT fromID(int i);
+    /**
+     * @brief Returns a vertex representation of the given point in the
+     *        point array
+     *
+     * @param i             A id of a point in the current point set
+     * @return              A vertex representation of the given point
+     */
+    VertexT fromID(int i);
 
-	/**
-	 * @brief Returns the distance between vertex v and plane p
-	 */
-	float distance(VertexT v, Plane<VertexT, NormalT> p);
+    /**
+     * @brief Returns the distance between vertex v and plane p
+     */
+    float distance(VertexT v, Plane<VertexT, NormalT> p);
 
 
-	void radiusSearch(const VertexT &v, double r, vector<VertexT> &resV, vector<NormalT> &resN){};
+    void radiusSearch(const VertexT &v, double r, vector<VertexT> &resV, vector<NormalT> &resN){};
 
-	/**
-	 * @brief Calculates a tangent plane for the query point using the provided
-	 *        k-neighborhood
-	 *
-	 * @param queryPoint    The point for which the tangent plane is created
-	 * @param k             The size of the used k-neighborhood
-	 * @param id            The positions of the neighborhood points in \ref m_points
-	 * @param ok            True, if RANSAC interpolation was succesfull
-	 */
-	Plane<VertexT, NormalT> calcPlane(const VertexT &queryPoint,
-	        const int &k,
-	        const vector<int> &id);
+    /**
+     * @brief Calculates a tangent plane for the query point using the provided
+     *        k-neighborhood
+     *
+     * @param queryPoint    The point for which the tangent plane is created
+     * @param k             The size of the used k-neighborhood
+     * @param id            The positions of the neighborhood points in \ref m_points
+     * @param ok            True, if RANSAC interpolation was succesfull
+     */
+    Plane<VertexT, NormalT> calcPlane(const VertexT &queryPoint,
+            const int &k,
+            const vector<int> &id);
 
-	Plane<VertexT, NormalT> calcPlaneRANSAC(const VertexT &queryPoint,
-	        const int &k,
-	        const vector<int> &id, bool &ok );
+    Plane<VertexT, NormalT> calcPlaneRANSAC(const VertexT &queryPoint,
+            const int &k,
+            const vector<int> &id, bool &ok );
 
 
 
 
     /// Should a randomized algorithm be used to determine planes?
-	bool                        m_useRANSAC;
+    bool                        m_useRANSAC;
 
     /// The currently stored points
     coord3fArr                  m_points;
@@ -315,7 +315,7 @@ private:
     coord3fArr                  m_normals;
 
     /// A model of the current pointcloud
-	boost::shared_ptr<Model>    m_model;
+    boost::shared_ptr<Model>    m_model;
 
     size_t                      m_numPoints;
 
@@ -332,7 +332,7 @@ private:
     typename SearchTree<VertexT>::Ptr  m_poseTree;
 
     /// Type of used search tree
-    string						m_searchTreeName;
+    string                        m_searchTreeName;
 
 };
 

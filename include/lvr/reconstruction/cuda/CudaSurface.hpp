@@ -69,166 +69,166 @@ typedef lvr::QueryPoint<cVertex> QueryPointC;
 class CudaSurface {
 
 public:
-	/**
-	 * @brief Constructor.
-	 *
+    /**
+     * @brief Constructor.
+     *
      * @param points Input Pointcloud for kd-tree construction
-	 */
-	CudaSurface(LBPointArray<float>& points);
-	
-	CudaSurface(floatArr& points, size_t num_points, size_t dim = 3);
-	
-	~CudaSurface();
-	
-	/**
-	 * @brief Starts calculation the normals on GPU
-	 *
-	 */
-	void calculateNormals();
+     */
+    CudaSurface(LBPointArray<float>& points);
+    
+    CudaSurface(floatArr& points, size_t num_points, size_t dim = 3);
+    
+    ~CudaSurface();
+    
+    /**
+     * @brief Starts calculation the normals on GPU
+     *
+     */
+    void calculateNormals();
 
-	void interpolateNormals();
-	
-	/**
-	 * @brief Get the resulting normals of the normal calculation. After calling "start".
-	 * 
-	 * @param output_normals 	PointArray as return value
-	 */
-	void getNormals(LBPointArray<float>& output_normals);
-	
-	void getNormals(floatArr output_normals);
-	
-	/**
-	 * @brief Set the number of k nearest neighbors
-	 *        k-neighborhood
-	 *
-	 * @param k             The size of the used k-neighborhood
-	 *
-	 */
-	void setKn(int kn);
+    void interpolateNormals();
+    
+    /**
+     * @brief Get the resulting normals of the normal calculation. After calling "start".
+     * 
+     * @param output_normals     PointArray as return value
+     */
+    void getNormals(LBPointArray<float>& output_normals);
+    
+    void getNormals(floatArr output_normals);
+    
+    /**
+     * @brief Set the number of k nearest neighbors
+     *        k-neighborhood
+     *
+     * @param k             The size of the used k-neighborhood
+     *
+     */
+    void setKn(int kn);
 
-	/**
-	 * @brief Set the number of k nearest neighbors
-	 *        k-neighborhood for interpolation
-	 *
-	 * @param k             The size of the used k-neighborhood
-	 *
-	 */
-	void setKi(int ki);
+    /**
+     * @brief Set the number of k nearest neighbors
+     *        k-neighborhood for interpolation
+     *
+     * @param k             The size of the used k-neighborhood
+     *
+     */
+    void setKi(int ki);
 
-	/**
-	 * @brief Set the number of k nearest neighbors
-	 *        k-neighborhood for distance
-	 *
-	 * @param k             The size of the used k-neighborhood
-	 *
-	 */
-	void setKd(int kd);
-	
-	/**
-	 * @brief Set the viewpoint to orientate the normals
-	 *
-	 * @param v_x 	Coordinate X axis
-	 * @param v_y 	Coordinate Y axis
-	 * @param v_z 	Coordinate Z axis
-	 *
-	 */
-	void setFlippoint(float v_x, float v_y, float v_z);
-	
-	/**
-	 * @brief Set Method for normal calculation
-	 *
-	 * @param method   "PCA","RANSAC"
-	 *
-	 */
-	void setMethod(std::string method);
+    /**
+     * @brief Set the number of k nearest neighbors
+     *        k-neighborhood for distance
+     *
+     * @param k             The size of the used k-neighborhood
+     *
+     */
+    void setKd(int kd);
+    
+    /**
+     * @brief Set the viewpoint to orientate the normals
+     *
+     * @param v_x     Coordinate X axis
+     * @param v_y     Coordinate Y axis
+     * @param v_z     Coordinate Z axis
+     *
+     */
+    void setFlippoint(float v_x, float v_y, float v_z);
+    
+    /**
+     * @brief Set Method for normal calculation
+     *
+     * @param method   "PCA","RANSAC"
+     *
+     */
+    void setMethod(std::string method);
 
-	/**
-	* Reconstuction Mode: 
-	* Points stay in gpu until reconstruction is finished
-	*/
-	void setReconstructionMode(bool mode = true);
+    /**
+    * Reconstuction Mode: 
+    * Points stay in gpu until reconstruction is finished
+    */
+    void setReconstructionMode(bool mode = true);
 
-	/**
-	* TODO:
-	*	Implement
-	*/
-	void distances(std::vector<lvr::QueryPoint<cVertex> >& query_points, float voxel_size);
-	
-	void freeGPU();
+    /**
+    * TODO:
+    *    Implement
+    */
+    void distances(std::vector<lvr::QueryPoint<cVertex> >& query_points, float voxel_size);
+    
+    void freeGPU();
 
 private:
-	//~ Hostfunctions
-	void init();
-	
-	void printSettings();
-	
-	void getCudaInformation();
+    //~ Hostfunctions
+    void init();
+    
+    void printSettings();
+    
+    void getCudaInformation();
 
     void calculateBlocksThreads(int n, int elements, int element_size, int max_mem_shared, int max_threads_per_block,
                                 int& out_blocks_per_grid, int& out_threads_per_block, int& needed_shared_memory);
 
-	template <typename T>
-	void generateDevicePointArray(LBPointArray<T>& D_m, int width, int dim);
+    template <typename T>
+    void generateDevicePointArray(LBPointArray<T>& D_m, int width, int dim);
 
-	template <typename T>
-	void copyToDevicePointArray(LBPointArray<T>* m, LBPointArray<T>& D_m);
+    template <typename T>
+    void copyToDevicePointArray(LBPointArray<T>* m, LBPointArray<T>& D_m);
 
-	template <typename T>
-	void copyToDevicePointArray(LBPointArray<T>& m, LBPointArray<T>& D_m);
+    template <typename T>
+    void copyToDevicePointArray(LBPointArray<T>& m, LBPointArray<T>& D_m);
 
 
-	void copyToHostPointArray(LBPointArray<float>& D_m, LBPointArray<float>* m);
+    void copyToHostPointArray(LBPointArray<float>& D_m, LBPointArray<float>* m);
 
-	// Divice Function
-	void GPU_NN();
+    // Divice Function
+    void GPU_NN();
     
-	void initKdTree();
+    void initKdTree();
 
-	//debugging - testing
-	void debug(unsigned int query_index, int k);
-	void debug2(unsigned int query_index, int k);
+    //debugging - testing
+    void debug(unsigned int query_index, int k);
+    void debug2(unsigned int query_index, int k);
 
-	
-	void writeToPly(float* point, float* nn, int size, std::string filename);
-	void writeToPly(float* point, unsigned int* nn_i, int size, std::string filename);
-	void writeToPly(unsigned int point_i, unsigned int* nn_i, int size, std::string filename);
+    
+    void writeToPly(float* point, float* nn, int size, std::string filename);
+    void writeToPly(float* point, unsigned int* nn_i, int size, std::string filename);
+    void writeToPly(unsigned int point_i, unsigned int* nn_i, int size, std::string filename);
 
-	void nearestNeighborsHost(float* point, unsigned int* nn, int k, int mode=0);
+    void nearestNeighborsHost(float* point, unsigned int* nn, int k, int mode=0);
 
-	unsigned int getKdTreePosition(float x, float y, float z);
+    unsigned int getKdTreePosition(float x, float y, float z);
 
-	void getNNFromIndex(const unsigned int& kd_pos, unsigned int *nn, int k);
-	void getNNFromIndex2(const unsigned int& kd_pos, unsigned int *nn, int k);
-	
-	
-	// V->points and normals
-	LBPointArray<float> V;
-	LBPointArray<float>* kd_tree_values;
-	LBPointArray<unsigned char>* kd_tree_splits;
+    void getNNFromIndex(const unsigned int& kd_pos, unsigned int *nn, int k);
+    void getNNFromIndex2(const unsigned int& kd_pos, unsigned int *nn, int k);
+    
+    
+    // V->points and normals
+    LBPointArray<float> V;
+    LBPointArray<float>* kd_tree_values;
+    LBPointArray<unsigned char>* kd_tree_splits;
 
-	LBPointArray<float> Result_Normals;
+    LBPointArray<float> Result_Normals;
     boost::shared_ptr<LBKdTree> kd_tree_gen;
 
-	float m_vx, m_vy, m_vz;
-	int m_k, m_ki, m_kd;
-	
-	
-	int m_calc_method;
-	bool m_reconstruction_mode;
+    float m_vx, m_vy, m_vz;
+    int m_k, m_ki, m_kd;
+    
+    
+    int m_calc_method;
+    bool m_reconstruction_mode;
 
-	// Device Information
-	int m_mps;
-	int m_threads_per_mp;
-	int m_threads_per_block;
-	int* m_size_thread_block;
-	int* m_size_grid;
-	unsigned long long m_device_global_memory;
+    // Device Information
+    int m_mps;
+    int m_threads_per_mp;
+    int m_threads_per_block;
+    int* m_size_thread_block;
+    int* m_size_grid;
+    unsigned long long m_device_global_memory;
 
-	LBPointArray<float> D_V;
-	LBPointArray<float> D_kd_tree_values;
-	LBPointArray<unsigned char> D_kd_tree_splits;
-	LBPointArray<float> D_Normals;
-		
+    LBPointArray<float> D_V;
+    LBPointArray<float> D_kd_tree_values;
+    LBPointArray<unsigned char> D_kd_tree_splits;
+    LBPointArray<float> D_Normals;
+        
 };
 
 } /* namespace lvr */

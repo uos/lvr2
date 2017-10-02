@@ -204,7 +204,3 @@ install(TARGETS lvr_static lvr
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )
 endif( NOT MSVC)
-
-
-
-

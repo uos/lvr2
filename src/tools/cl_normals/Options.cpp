@@ -27,10 +27,10 @@ namespace cl_normals
 Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
 
-	// Create option descriptions
+    // Create option descriptions
 
-	m_descr.add_options()
-	("help", "Produce help message")
+    m_descr.add_options()
+    ("help", "Produce help message")
     ("inputFile", value< vector<string> >(), "Input file name. ")
     ("outputFile,o",    value<string>(&m_outputFile)->default_value("normals.ply"), "Output file name.")
     ("ransac", "Set this flag for RANSAC based normal estimation.")
@@ -48,15 +48,15 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
     m_pdescr.add("inputFile", -1);
 
-	// Parse command line and generate variables map
-	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
-	notify(m_variables);
+    // Parse command line and generate variables map
+    store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
+    notify(m_variables);
 
-	if(m_variables.count("help"))
-	{
-		::std::cout << m_descr << ::std::endl;
+    if(m_variables.count("help"))
+    {
+        ::std::cout << m_descr << ::std::endl;
         exit(-1);
-	}
+    }
 
 }
 
@@ -64,8 +64,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 Options::~Options()
 {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }
 
 }
-
