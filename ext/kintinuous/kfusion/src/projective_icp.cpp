@@ -211,4 +211,3 @@ bool kfusion::cuda::ProjectiveICP::estimateTransform(Affine3f& affine, const Int
     }
     return true;
 }
-

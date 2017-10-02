@@ -342,4 +342,4 @@ void LASwaveform13writer::close()
     fclose(file);
     file = 0;
   }
-}
+}

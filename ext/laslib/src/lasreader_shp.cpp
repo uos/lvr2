@@ -707,4 +707,4 @@ BOOL LASreaderSHPrescalereoffset::open(const char* file_name)
     header.z_offset = offset[2];
   }
   return TRUE;
-}
+}

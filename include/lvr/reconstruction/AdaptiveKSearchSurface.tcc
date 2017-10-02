@@ -933,5 +933,3 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::colorizePointCloud(
 
 
 } // namespace lvr
-
-

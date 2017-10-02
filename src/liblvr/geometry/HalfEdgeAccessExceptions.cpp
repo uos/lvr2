@@ -10,4 +10,3 @@ ostream& operator<<(ostream& os, const HalfEdgeAccessException e)
 }
 
 } // namespace lvr
-

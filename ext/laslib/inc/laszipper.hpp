@@ -73,4 +73,4 @@ private:
   char* error_string;
 };
 
-#endif
+#endif

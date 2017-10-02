@@ -328,5 +328,3 @@ void Quaternion<T>::printMatrix(){
 }
 
 } // namespace lvr
-
-

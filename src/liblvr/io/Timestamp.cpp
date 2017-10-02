@@ -142,6 +142,3 @@ string Timestamp::getElapsedTime() const
 }
 
 } // namespace lvr
-
-
-

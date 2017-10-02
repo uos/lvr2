@@ -102,4 +102,3 @@ inline ostream& operator<<(ostream& os, const Options &o)
 }
 
 #endif
-

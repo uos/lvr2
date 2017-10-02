@@ -489,4 +489,4 @@ BOOL LASindex::merge_intervals()
     }
   }
   return FALSE;
-}
+}

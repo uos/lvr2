@@ -85,4 +85,4 @@ private:
     queue<TGrid*> last_grid_queue_;
     bool last_shift;
 };
-#endif // STAGE
+#endif // STAGE

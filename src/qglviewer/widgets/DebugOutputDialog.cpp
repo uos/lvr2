@@ -43,4 +43,3 @@ DebugOutputDialog::~DebugOutputDialog()
 {
     delete m_stream;
 }
-

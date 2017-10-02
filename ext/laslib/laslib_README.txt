@@ -63,4 +63,4 @@ a license for commercial and government use.
 
 --------------------
 
-(c) 2007-2011 martin.isenburg@gmail.com
+(c) 2007-2011 martin.isenburg@gmail.com

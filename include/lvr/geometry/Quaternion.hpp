@@ -110,4 +110,3 @@ inline ostream& operator<<(ostream& os, const lvr::Quaternion<T> q){
 #include "Quaternion.tcc"
 
 #endif
-

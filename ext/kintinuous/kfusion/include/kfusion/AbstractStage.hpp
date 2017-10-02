@@ -98,4 +98,4 @@ protected:
 
     bool m_done;
 };
-#endif // ConvertStage_HPP
+#endif // ConvertStage_HPP

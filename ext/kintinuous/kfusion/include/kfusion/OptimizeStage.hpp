@@ -81,4 +81,4 @@ private:
     size_t bounding_counter,pic_count_,texture_counter;
 
 };
-#endif // STAGE
+#endif // STAGE

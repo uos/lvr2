@@ -97,4 +97,3 @@ void GroundPlane::transform(Matrix4<float> m){
 }
 
 } // namespace lvr
-

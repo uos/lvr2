@@ -79,4 +79,4 @@ void GridStage::step()
     if(last_shift)
         done(true);
 }
-void GridStage::lastStep()    { /* omit */ };
+void GridStage::lastStep()    { /* omit */ };
