@@ -215,5 +215,13 @@ HandleT ListMapIterator<HandleT, ValueT>::operator*() const
     return (*m_iter).first;
 }
 
+template<typename HandleT, typename ValueT>
+std::unique_ptr<AttributeMapHandleIterator<HandleT>> ListMapIterator<HandleT, ValueT>::clone() const
+{
+    return std::make_unique<ListMapIterator>(*this);
+}
+
+
+
 
 } // namespace lvr2

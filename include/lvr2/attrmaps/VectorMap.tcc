@@ -179,4 +179,10 @@ HandleT VectorMapIterator<HandleT, ValueT>::operator*() const
     return *m_iter;
 }
 
+template<typename HandleT, typename ValueT>
+std::unique_ptr<AttributeMapHandleIterator<HandleT>> VectorMapIterator<HandleT, ValueT>::clone() const
+{
+    return std::make_unique<VectorMapIterator>(*this);
+}
+
 } // namespace lvr2
