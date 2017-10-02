@@ -152,11 +152,11 @@ public:
      * @brief Returns the lower left coordinates
      */
     VertexT             getMin() const;
-    
+
     BoundingBox         getIntersectionBB(BoundingBox& rhs);
-    
+
     bool                contains(float x, float y, float z);
-    
+
 
 
 private:

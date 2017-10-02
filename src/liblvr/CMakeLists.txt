@@ -152,20 +152,20 @@ endforeach()
 foreach(d ${vtk_flags})
     remove_definitions(-D${d})
 endforeach()
-  
+
 message(STATUS "Building static LVR CUDA library")
 cuda_add_library(lvrcuda_static STATIC ${LVR_CUDA_SRC})
 target_link_libraries(lvrcuda_static lvr_static)
 
 # Add dependency to avoid that both targets
 # are build concurrently in parallel builds
-add_dependencies(lvrcuda_static lvr_static) 
+add_dependencies(lvrcuda_static lvr_static)
 message(STATUS "Building shared LVR CUDA library")
 cuda_add_library(lvrcuda SHARED ${LVR_CUDA_SRC})
 target_link_libraries(lvrcuda lvr)
 
 install(
-  TARGETS lvrcuda_static lvrcuda 
+  TARGETS lvrcuda_static lvrcuda
   EXPORT lvrTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

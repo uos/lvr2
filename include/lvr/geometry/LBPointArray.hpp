@@ -6,7 +6,7 @@
 #include <limits>
 #include <list>
 #include <unordered_set>
-#include <stdlib.h> 
+#include <stdlib.h>
 
 namespace lvr {
 

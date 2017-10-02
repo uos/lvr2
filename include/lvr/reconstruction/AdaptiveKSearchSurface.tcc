@@ -89,7 +89,7 @@ AdaptiveKSearchSurface<VertexT, NormalT>::AdaptiveKSearchSurface(
 
     init();
 
-    
+
 #ifdef LVR_USE_PCL
     if( searchTreeName == "pcl"  || searchTreeName == "PCL" )
     {
@@ -194,7 +194,7 @@ void AdaptiveKSearchSurface<VertexT, NormalT>::parseScanPoses(string posefile)
         {
             this->m_searchTree = search_tree::Ptr(new SearchTreeFlann<VertexT>(loader, n, 1, 1, 1));
         }
-    
+
         if( !this->m_poseTree )
         {
             cout << timestamp << "No Valid Searchtree class specified!" << endl;
@@ -729,7 +729,7 @@ size_t AdaptiveKSearchSurface<VertexT, NormalT>::getNumPoints()
                ids.insert(number());
                c++;
                if (c == 20) cout << "Deadlock" << endl;
-           } 
+           }
            while (ids.size() < 3 && c <= 20);
 
            vector<unsigned long> sample_ids(ids.size());

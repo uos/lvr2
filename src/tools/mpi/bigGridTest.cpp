@@ -102,21 +102,21 @@ int main(int argc, char** argv)
         cout << gridbb << endl;
         lvr::PointBufferPtr p_loader(new lvr::PointBuffer);
         p_loader->setPointArray(points, numPoints);
-        
+
         if(bg.hasNormals())
         {
-        
+
             size_t numNormals;
             lvr::floatArr normals = bg.normals(gridKd.getLeafs()[i]->getBB().getMin().x, gridKd.getLeafs()[i]->getBB().getMin().y, gridKd.getLeafs()[i]->getBB().getMin().z ,
                                               gridKd.getLeafs()[i]->getBB().getMax().x, gridKd.getLeafs()[i]->getBB().getMax().y, gridKd.getLeafs()[i]->getBB().getMax().z,numNormals);
-            
-            
+
+
             p_loader->setPointNormalArray(normals, numNormals);
         } else {
             #ifdef GPU_FOUND
             if( options.useGPU() )
             {
-                
+
                 floatArr normals = floatArr(new float[ numPoints * 3 ]);
                 cout << timestamp << "Constructing kd-tree..." << endl;
                 GpuSurface gpu_surface(points, numPoints);

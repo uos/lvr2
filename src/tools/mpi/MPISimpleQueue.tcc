@@ -2,15 +2,15 @@
 // Created by imitschke on 05.08.17.
 //
 
-MPISimpleQueue::MPISimpleQueue(boost::mpi::environment& env, boost::mpi::communicator& world) 
+MPISimpleQueue::MPISimpleQueue(boost::mpi::environment& env, boost::mpi::communicator& world)
 : MPIQueue(env, world)
 {
 
 }
 
-MPISimpleQueue::~MPISimpleQueue() 
+MPISimpleQueue::~MPISimpleQueue()
 {
-  
+
 }
 
 void MPISimpleQueue::finish()
@@ -18,8 +18,8 @@ void MPISimpleQueue::finish()
   for(int i=0; i< nodeSize(); i++)
   {
     m_world.send(i+1, 99);
-  }  
-  
+  }
+
 }
 
 template< typename MpiDataT >
@@ -27,7 +27,7 @@ int MPISimpleQueue::sendToFreeNode(int msg_id, const MpiDataT & data_in)
 {
   auto avail_it =  m_nodes_avail.begin();
   int mpi_node_id = *avail_it;
-  
+
    // mark rank/id as working
 
   markWorking(mpi_node_id);
@@ -40,9 +40,9 @@ int MPISimpleQueue::sendToFreeNode(int msg_id, const MpiDataT & data_in)
 
 bool MPISimpleQueue::receivedData(int i)
 {
-  
+
   return false;
-  
+
 }
 
 template<typename MpiDataT>
@@ -56,9 +56,9 @@ int MPISimpleQueue::receiveData(MpiDataT& data_out, int tag)
   }else{
     s = m_world.recv(boost::mpi::any_source, tag, data_out);
   }
-    
+
   int source = s.source();
-  
+
   auto response_itr = m_requests.find(source);
 
   if(response_itr != m_requests.end())
@@ -88,7 +88,7 @@ std::map<int, MpiDataT> MPISimpleQueue::receiveAll(int tag)
     }else{
       requests[idx] = m_world.irecv(*itr, tag, results[*itr] );
     }
-    
+
   }
 
   boost::mpi::wait_all(requests, requests + size());

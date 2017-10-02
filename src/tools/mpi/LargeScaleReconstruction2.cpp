@@ -95,7 +95,7 @@ int main(int argc, char** argv)
                 gridKd.getLeafs()[next_kd_node]->getBB().getMax().x, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z,numPoints);
 
             }
-                                            
+
                                              // SEND NumPoints
             MPI_Send(
                     &numPoints,
@@ -115,7 +115,7 @@ int main(int argc, char** argv)
                     MPI_INT,
                     i,
                     POINTSTATUS,
-                    MPI_COMM_WORLD);        
+                    MPI_COMM_WORLD);
             // Send PointArray
             MPI_Send(
                     points.get(),
@@ -184,14 +184,14 @@ int main(int argc, char** argv)
                 grid_files.push_back(workingNodes[status.MPI_SOURCE]);
             }
             workingNodes.erase(status.MPI_SOURCE);
-            
+
             working_nodes--;
             if(working_nodes < world_size-1 && next_kd_node < gridKd.getLeafs().size())
             {
                 size_t numPoints;
                 lvr::floatArr points = bg.points(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z ,
                                                  gridKd.getLeafs()[next_kd_node]->getBB().getMax().x, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z,numPoints);
-                
+
                 lvr::floatArr normals;
                 if(bg.hasNormals())
                 {
@@ -218,7 +218,7 @@ int main(int argc, char** argv)
                         MPI_INT,
                         status.MPI_SOURCE,
                         POINTSTATUS,
-                        MPI_COMM_WORLD); 
+                        MPI_COMM_WORLD);
                 // Send PointArray
                 MPI_Send(
                         points.get(),
@@ -314,7 +314,7 @@ int main(int argc, char** argv)
                     NUMPOINTS,
                     MPI_COMM_WORLD,
                     MPI_STATUS_IGNORE);
-            
+
             int normalStatus;
             MPI_Recv(
                 &normalStatus,
@@ -337,7 +337,7 @@ int main(int argc, char** argv)
                     POINTS,
                     MPI_COMM_WORLD,
                     MPI_STATUS_IGNORE);
-            lvr::floatArr normals;  
+            lvr::floatArr normals;
             if(normalStatus == XYZN)
             {
                 normals = lvr::floatArr(new float[data*3]);
@@ -402,7 +402,7 @@ int main(int argc, char** argv)
                 {
                         surface->calculateSurfaceNormals();
                 }
-                
+
                 lvr::GridBase* grid;
                 lvr::FastReconstructionBase<lvr::ColorVertex<float, unsigned char>, lvr::Normal<float> >* reconstruction;
 

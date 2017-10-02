@@ -31,7 +31,7 @@ void MPIQueue::markAvailable(int node_id)
     int value = *it;
     m_nodes_avail.insert(value);
 
-    it = m_nodes_working.erase(it); 
+    it = m_nodes_working.erase(it);
   } else {
     std::cout << "Error: Node " << node_id << " not working" << std::endl;
   }
@@ -47,5 +47,5 @@ void MPIQueue::markWorking(int node_id)
     it = m_nodes_avail.erase(it);
   }else{
       std::cout << "Error: Node " << node_id << " not available" << std::endl;
-  } 
+  }
 }

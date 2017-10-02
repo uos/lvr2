@@ -12,18 +12,18 @@ ClSurface::ClSurface(floatArr& points, size_t num_points, size_t dim)
     this->getDeviceInformation();
 
     this->initCl();
-    
+
     this->V.dim = static_cast<unsigned int>(dim);
-    
+
     this->V.width = static_cast<unsigned int>(num_points);
-    
+
     //mallocPointArray(V);
-    
+
     this->V.elements = points.get();
-    
+
     this->initKdTree();
 
-    
+
 }
 
 ClSurface::~ClSurface()
@@ -45,16 +45,16 @@ void ClSurface::calculateNormals()
 
     std::cout << "Allocate GPU Memory" << std::endl;
     // tree and points and result normals to GPU
-    D_V = clCreateBuffer(m_context, CL_MEM_READ_WRITE, this->V.width * this->V.dim * sizeof(float), NULL, &m_ret);        
-    D_kd_tree_values = clCreateBuffer(m_context, CL_MEM_READ_WRITE, this->kd_tree_values->width * this->kd_tree_values->dim * sizeof(float), NULL, &m_ret);        
-    D_kd_tree_splits = clCreateBuffer(m_context, CL_MEM_READ_WRITE, this->kd_tree_splits->width * this->kd_tree_splits->dim * sizeof(unsigned char), NULL, &m_ret);        
-    D_Normals = clCreateBuffer(m_context, CL_MEM_READ_WRITE, this->V.width * this->V.dim * sizeof(float), NULL, &m_ret);        
-    
+    D_V = clCreateBuffer(m_context, CL_MEM_READ_WRITE, this->V.width * this->V.dim * sizeof(float), NULL, &m_ret);
+    D_kd_tree_values = clCreateBuffer(m_context, CL_MEM_READ_WRITE, this->kd_tree_values->width * this->kd_tree_values->dim * sizeof(float), NULL, &m_ret);
+    D_kd_tree_splits = clCreateBuffer(m_context, CL_MEM_READ_WRITE, this->kd_tree_splits->width * this->kd_tree_splits->dim * sizeof(unsigned char), NULL, &m_ret);
+    D_Normals = clCreateBuffer(m_context, CL_MEM_READ_WRITE, this->V.width * this->V.dim * sizeof(float), NULL, &m_ret);
+
     std::cout << "Copy Points and Kd Tree to Gpu Memory" << std::endl;
-    /* Copy input data to memory buffer */        
-    m_ret = clEnqueueWriteBuffer(m_command_queue, D_V, CL_TRUE, 0, this->V.width * this->V.dim * sizeof(float), V.elements, 0, NULL, NULL);        
-    m_ret |= clEnqueueWriteBuffer(m_command_queue, D_kd_tree_values, CL_TRUE, 0, this->kd_tree_values->width * this->kd_tree_values->dim * sizeof(float), this->kd_tree_values->elements, 0, NULL, NULL);    
-    m_ret |= clEnqueueWriteBuffer(m_command_queue, D_kd_tree_splits, CL_TRUE, 0, this->kd_tree_splits->width * this->kd_tree_splits->dim * sizeof(unsigned char), this->kd_tree_splits->elements, 0, NULL, NULL);    
+    /* Copy input data to memory buffer */
+    m_ret = clEnqueueWriteBuffer(m_command_queue, D_V, CL_TRUE, 0, this->V.width * this->V.dim * sizeof(float), V.elements, 0, NULL, NULL);
+    m_ret |= clEnqueueWriteBuffer(m_command_queue, D_kd_tree_values, CL_TRUE, 0, this->kd_tree_values->width * this->kd_tree_values->dim * sizeof(float), this->kd_tree_values->elements, 0, NULL, NULL);
+    m_ret |= clEnqueueWriteBuffer(m_command_queue, D_kd_tree_splits, CL_TRUE, 0, this->kd_tree_splits->width * this->kd_tree_splits->dim * sizeof(unsigned char), this->kd_tree_splits->elements, 0, NULL, NULL);
 
     if(m_ret != CL_SUCCESS)
         std::cerr << getErrorString(m_ret) << std::endl;
@@ -86,10 +86,10 @@ void ClSurface::calculateNormals()
     m_ret |= clSetKernelArg(m_kernel_normal_estimation, 9, sizeof(float), &this->m_vx);
     m_ret |= clSetKernelArg(m_kernel_normal_estimation, 10, sizeof(float), &this->m_vy);
     m_ret |= clSetKernelArg(m_kernel_normal_estimation, 11, sizeof(float), &this->m_vz);
-    
+
 
     if(m_ret != CL_SUCCESS)
-        std::cerr << getErrorString(m_ret) << std::endl;    
+        std::cerr << getErrorString(m_ret) << std::endl;
 
     std::cout << "Start Normal Estimation Kernel" << std::endl;
     // std::cout << "local_item_size: "<< local_item_size << std::endl;
@@ -98,11 +98,11 @@ void ClSurface::calculateNormals()
     m_ret = clEnqueueNDRangeKernel(m_command_queue, m_kernel_normal_estimation, 1, NULL,
         &global_item_size, &local_item_size, 0, NULL, NULL);
 
-    
+
     if(m_ret != CL_SUCCESS)
         std::cerr << getErrorString(m_ret) << std::endl;
 
-    
+
     std::cout << "Kernel Successful" << std::endl;
 
     // TODO
@@ -116,14 +116,14 @@ void ClSurface::calculateNormals()
     m_ret |= clSetKernelArg(m_kernel_normal_interpolation, 4, sizeof(cl_mem), (void *)&D_Normals);
     m_ret |= clSetKernelArg(m_kernel_normal_interpolation, 5, sizeof(unsigned int), &V.width );
     m_ret |= clSetKernelArg(m_kernel_normal_interpolation, 6, sizeof(unsigned int), &this->m_ki);
-    
+
 
     if(m_ret != CL_SUCCESS)
-        std::cerr << getErrorString(m_ret) << std::endl;    
+        std::cerr << getErrorString(m_ret) << std::endl;
 
     m_ret = clEnqueueNDRangeKernel(m_command_queue, m_kernel_normal_interpolation, 1, NULL,
          &global_item_size, &local_item_size, 0, NULL, NULL);
-    
+
     std::cout << "Kernel Successful" << std::endl;
 
     // Normals back to host
@@ -136,7 +136,7 @@ void ClSurface::calculateNormals()
 void ClSurface::getNormals(floatArr output_normals)
 {
     for(int i = 0; i< this->Result_Normals.dim * this->Result_Normals.width; i++)
-    {    
+    {
         output_normals[i] = this->Result_Normals.elements[i];
     }
 }
@@ -198,25 +198,25 @@ void ClSurface::init(){
     // set default ki
     this->m_ki = 10;
     this->m_kd = 5;
-    
+
     // set default flippoint
     this->m_vx = 1000000.0;
     this->m_vy = 1000000.0;
     this->m_vz = 1000000.0;
-    
+
     this->m_calc_method = 0;
 
     this->m_reconstruction_mode = false;
 }
 
 void ClSurface::initKdTree() {
-    
+
     //~ struct Matrix test;
 
     kd_tree_gen = boost::shared_ptr<LBKdTree>(new LBKdTree(this->V) );
     this->kd_tree_values = kd_tree_gen->getKdTreeValues().get();
     this->kd_tree_splits = kd_tree_gen->getKdTreeSplits().get();
-    
+
     // generateDevicePointArray( D_kd_tree_values, this->kd_tree_values->width, this->kd_tree_values->dim);
     // copyToDevicePointArray( this->kd_tree_values, D_kd_tree_values);
 
@@ -243,7 +243,7 @@ void ClSurface::initCl()
 
 void ClSurface::finalizeCl()
 {
-    m_ret = clFlush(m_command_queue);    
+    m_ret = clFlush(m_command_queue);
     m_ret = clFinish(m_command_queue);
     m_ret = clReleaseKernel(m_kernel_normal_estimation);
     m_ret = clReleaseKernel(m_kernel_normal_interpolation);
@@ -258,7 +258,7 @@ void ClSurface::finalizeCl()
 
     m_ret = clReleaseCommandQueue(m_command_queue);
     m_ret = clReleaseContext(m_context);
-    
+
 }
 
 void ClSurface::loadEstimationKernel()
@@ -291,7 +291,7 @@ void ClSurface::loadEstimationKernel()
         printf("Error: Failed to create compute program!\n");
         exit(1);
     }
- 
+
     // Build the program executable
     //
     m_ret = clBuildProgram(m_program_es, 0, NULL, NULL, NULL, NULL);
@@ -299,7 +299,7 @@ void ClSurface::loadEstimationKernel()
     {
         size_t len;
         char buffer[2048];
- 
+
         printf("Error: Failed to build program executable!\n");
         clGetProgramBuildInfo(m_program_es, m_device_id, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
         printf("%s\n", buffer);
@@ -318,7 +318,7 @@ void ClSurface::loadEstimationKernel()
     // {
     //     free(kernel_source_str);
     // }
-    
+
 }
 
 
@@ -335,7 +335,7 @@ void ClSurface::loadInterpolationKernel()
     // if (!fp) {
     //     fprintf(stderr, "Failed to load kernel.\n");
     //     exit(1);
-    // }    
+    // }
     // kernel_source_str = (char *)malloc(MAX_SOURCE_SIZE);
     // kernel_source_size = fread(kernel_source_str, 1, MAX_SOURCE_SIZE, fp);
     // fclose(fp);
@@ -352,7 +352,7 @@ void ClSurface::loadInterpolationKernel()
         printf("Error: Failed to create compute program!\n");
         exit(1);
     }
- 
+
     // Build the program executable
     //
     m_ret = clBuildProgram(m_program_in, 0, NULL, NULL, NULL, NULL);
@@ -360,7 +360,7 @@ void ClSurface::loadInterpolationKernel()
     {
         size_t len;
         char buffer[2048];
- 
+
         printf("Error: Failed to build program executable!\n");
         clGetProgramBuildInfo(m_program_in, m_device_id, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
         printf("%s\n", buffer);
@@ -380,8 +380,8 @@ void ClSurface::loadInterpolationKernel()
     // {
     //     free(kernel_source_str);
     // }
-    
-    
+
+
 }
 
 const char *ClSurface::getErrorString(cl_int error)
@@ -464,7 +464,7 @@ const char *ClSurface::getErrorString(cl_int error)
 
 void ClSurface::getDeviceInformation()
 {
-    
+
     char buffer[1024];
 
     cl_uint num_platforms;
@@ -530,7 +530,7 @@ void ClSurface::getDeviceInformation()
             cl_uint max_compute_units;
             checkOclErrors(clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(max_compute_units), &max_compute_units, NULL));
             this->m_mps = max_compute_units;
-            
+
             // printf("CL_DEVICE_MAX_COMPUTE_UNITS: %u\n", max_compute_units);
             cl_uint max_work_item_dimensions;
             checkOclErrors(clGetDeviceInfo(device, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(max_work_item_dimensions), &max_work_item_dimensions, NULL));
@@ -546,7 +546,7 @@ void ClSurface::getDeviceInformation()
 
             // ?
             //this->m_threads_per_block = max_work_group_size;
-            
+
 
             cl_uint preferred_vector_width_char;
             checkOclErrors(clGetDeviceInfo(device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR, sizeof(preferred_vector_width_char), &preferred_vector_width_char, NULL));
@@ -620,7 +620,7 @@ void ClSurface::getDeviceInformation()
             checkOclErrors(clGetDeviceInfo(device, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(global_mem_size), &global_mem_size, NULL));
             // printf("CL_DEVICE_GLOBAL_MEM_SIZE: %lu B = %lu MB\n", global_mem_size, global_mem_size / 1048576);
             this->m_device_global_memory = global_mem_size;
-            
+
             cl_ulong max_constant_buffer_size;
             checkOclErrors(clGetDeviceInfo(device, CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE, sizeof(max_constant_buffer_size), &max_constant_buffer_size, NULL));
             // printf("CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE: %lu B = %lu KB\n", max_constant_buffer_size, max_constant_buffer_size / 1024);
@@ -682,7 +682,7 @@ void ClSurface::getDeviceInformation()
     }
     free(platforms);
 
-    
+
 }
 
 } /* namespace lvr */

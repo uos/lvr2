@@ -60,16 +60,16 @@ void BigGridKdTree::insert(size_t numPoints, lvr::Vertexf pos)
         //If the new size is larger then max. size, split tree
         if(m_numPoints + numPoints > s_maxNodePoints)
         {
-            
+
             // Split at X-Axis
             lvr::BoundingBox<lvr::Vertexf> leftbb;
             lvr::BoundingBox<lvr::Vertexf> rightbb;
-            
+
             if( m_bb.getXSize() >= m_bb.getYSize() && m_bb.getXSize() >= m_bb.getZSize() )
             {
                 float left_size =  m_bb.getXSize() / 2.0;
                 float split_value = m_bb.getMin().x + ceil(left_size / s_voxelsize) * s_voxelsize;
-                
+
                 leftbb = lvr::BoundingBox<lvr::Vertexf>(
                         m_bb.getMin().x, m_bb.getMin().y, m_bb.getMin().z,
                         split_value, m_bb.getMax().y, m_bb.getMax().z
@@ -92,7 +92,7 @@ void BigGridKdTree::insert(size_t numPoints, lvr::Vertexf pos)
 
                 float left_size =  m_bb.getYSize() / 2.0;
                 float split_value = m_bb.getMin().y + ceil(left_size / s_voxelsize) * s_voxelsize;
-                
+
                 leftbb = lvr::BoundingBox<lvr::Vertexf>(
                         m_bb.getMin().x, m_bb.getMin().y, m_bb.getMin().z,
                         m_bb.getMax().x, split_value, m_bb.getMax().z
@@ -114,7 +114,7 @@ void BigGridKdTree::insert(size_t numPoints, lvr::Vertexf pos)
             {
                 float left_size =  m_bb.getZSize() / 2.0;
                 float split_value = m_bb.getMin().z + ceil(left_size / s_voxelsize) * s_voxelsize;
-                
+
                 leftbb = lvr::BoundingBox<lvr::Vertexf>(
                         m_bb.getMin().x, m_bb.getMin().y, m_bb.getMin().z,
                         m_bb.getMax().x, m_bb.getMax().y, split_value

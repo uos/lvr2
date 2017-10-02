@@ -2,7 +2,7 @@
 
 using namespace std;
 using namespace lvr;
-namespace lvr 
+namespace lvr
 {
 
 MeshBufferPtr DuplicateRemover::removeDuplicates(MeshBufferPtr mBuffer)
@@ -14,10 +14,10 @@ MeshBufferPtr DuplicateRemover::removeDuplicates(MeshBufferPtr mBuffer)
     floatArr vArray = mBuffer->getVertexArray(vAmount);
     uintArr  fArray = mBuffer->getFaceArray(fAmount);
     std::vector<unsigned int> faceArray(fArray.get(), fArray.get() + (fAmount*3));
-    
+
     //vArray.reset();
     fArray.reset();
-    
+
     cout << lvr::timestamp << "god model" << endl;
     cout << lvr::timestamp << "inserting vertices to set" << endl;
     vector<sortPoint<float> > vertexSet;
@@ -25,7 +25,7 @@ MeshBufferPtr DuplicateRemover::removeDuplicates(MeshBufferPtr mBuffer)
     for(size_t i = 0 ; i<vAmount; i++)
     {
        vertexSet.push_back(sortPoint<float>(&vArray.get()[i*3], i));
-        
+
     }
     vertexSet.shrink_to_fit();
     std::sort(vertexSet.begin(), vertexSet.end());
@@ -34,11 +34,11 @@ MeshBufferPtr DuplicateRemover::removeDuplicates(MeshBufferPtr mBuffer)
     vertexSet.resize( std::distance(vertexSet.begin(),vend) );
     size_t new_vsize = vertexSet.size();
 
-    
+
     cout << lvr::timestamp << "mapping old to new indices" << endl;
     std::unordered_map<unsigned int, unsigned int> oldnew;
     oldnew.reserve(vAmount);
-    
+
     size_t vertexamount = vAmount;
 
     int pro = 0;
@@ -49,8 +49,8 @@ MeshBufferPtr DuplicateRemover::removeDuplicates(MeshBufferPtr mBuffer)
 
             ++pg1;
 
-        
-        
+
+
         sortPoint<float> tmp_point(&vArray.get()[i*3], i);
 
         // Todo: search only in removed vertices (make modified unique fuction)
@@ -61,8 +61,8 @@ MeshBufferPtr DuplicateRemover::removeDuplicates(MeshBufferPtr mBuffer)
            oldnew[i]= dist;
        }
 
-       
-       
+
+
     }
     cout << "checking face indices..." << endl;
     pro = 0;
@@ -93,7 +93,7 @@ MeshBufferPtr DuplicateRemover::removeDuplicates(MeshBufferPtr mBuffer)
         fi++;
     }
     faceArray.resize(std::distance(faceArray.begin(),faceArray.end() - swapped ));
-    
+
     cout << lvr::timestamp << "copying faces" << endl;
     vector<sortPoint<unsigned int> > newFaces;
     newFaces.reserve(faceArray.size()/3);
@@ -111,8 +111,8 @@ MeshBufferPtr DuplicateRemover::removeDuplicates(MeshBufferPtr mBuffer)
 
     newFaces.resize( std::distance(newFaces.begin(),fend) );
     size_t new_fsize = newFaces.size();
-    
-  
+
+
     cout << lvr::timestamp << "making new varray" << endl;
 
     std::vector<float> newVertexArray;
@@ -134,7 +134,7 @@ MeshBufferPtr DuplicateRemover::removeDuplicates(MeshBufferPtr mBuffer)
         newFaceArray.push_back(it->z());
     }
 
-    
+
     cout << lvr::timestamp << "saving model" << endl;
     MeshBufferPtr completeMesh(new MeshBuffer);
     completeMesh->setFaceArray(newFaceArray);

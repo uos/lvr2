@@ -14,7 +14,7 @@ using namespace std;
 int main(int argc, char* argv[])
 {
 
-    
+
     vector<string> files;
     for(int i = 1 ; i<argc ; i++)
     {
@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
                 double x,y,z;
                 ss >> x >> y >> z;
                 Eigen::Vector4d v(x,y,z,1);
-        
+
 
 
                 Eigen::Vector4d tv = transformation*v;

@@ -29,18 +29,18 @@ namespace po = boost::program_options;
 
 
 int main (int argc , char *argv[]) {
-      int count_serv = 0;  
+      int count_serv = 0;
       fstream f;
 
-    
+
       // for runtime tests
       //Timestamp start;
 
-      int kd, kn, ki; 
+      int kd, kn, ki;
       long int max_points, min_points;
       bool ransac;
       bool median;
-      
+
       // get all options
       po::options_description desc("Allowed options");
       desc.add_options()
@@ -53,29 +53,29 @@ int main (int argc , char *argv[]) {
     ("median"    , "Use the Median for segmenting the pointcloud")
     ("ransac"    , "Use RANSAC based normal estimation")
       ;
-      
+
       po::variables_map vm;
       po::store(po::parse_command_line(argc, argv, desc), vm);
-      po::notify(vm);    
-    
+      po::notify(vm);
+
       if (vm.count("help")) {
     cout << desc << "\n";
     return 1;
       }
-      
-      if(vm.count("ransac")) 
+
+      if(vm.count("ransac"))
       {
     ransac = true;
-      } 
+      }
       else
       {
     ransac = false;
       }
 
-      if(vm.count("median")) 
+      if(vm.count("median"))
       {
     median = true;
-      } 
+      }
       else
       {
     median = false;
@@ -152,7 +152,7 @@ int main (int argc , char *argv[]) {
     if (rank == 0){
         int * int_numpoint = new int[numprocs - 1];
         int * tmp_int = new int[1];
-      
+
         // read the point cloud
         if (  vm["file"].as<string>() != "noinput" ) m_model = io_factory.readModel( vm["file"].as<string>() );
 
@@ -165,21 +165,21 @@ int main (int argc , char *argv[]) {
           std::cout << timestamp << "Model can´t be loaded." << vm["file"].as<string>() << std::endl;
           MPI_Finalize();
           return 1;
-          
+
         }
-        
+
         //calc min_points
         if ( kd >= ki && kd >= kn) min_points = 50 + ( 32 * kd );
         else if ( ki >= kd && ki >= kn) min_points = 50 + ( 32 * ki );
         else min_points = 50 + ( 32 * kn );
-        
+
         if (max_points < (  min_points )  ) max_points = ( 2 * min_points );
         // Building the Kd tree with max max_points in every packete
         std::cout << timestamp << "Building the MPI kd-Tree..." << std::endl;
         MPITree<cVertex> MPITree(m_loader, max_points, min_points, median);
 
         // get the list with all Nodes with less than MAX_POINTS
-        m_nodelist = MPITree.GetList();    
+        m_nodelist = MPITree.GetList();
 
         // get global Bounding-Box
         BoundingBox<cVertex> tmp_BoundingBox = MPITree.GetBoundingBox();
@@ -192,7 +192,7 @@ int main (int argc , char *argv[]) {
         expansion_bounding[3] = tmp_max[0];
         expansion_bounding[4] = tmp_max[1];
         expansion_bounding[5] = tmp_max[2];
-        
+
         // Send an announcement to all other processes
         for (i = 1; i < numprocs; i++)
         {
@@ -207,13 +207,13 @@ int main (int argc , char *argv[]) {
             MPI::COMM_WORLD.Recv(con_msg, 128, MPI::CHAR, i, 0);
             printf("%s\n", con_msg);
         }
-        
+
         //send min and max of the Boundingbox to all other processes
         for ( i = 1; i < numprocs; i++)
         {
             MPI::COMM_WORLD.Send(expansion_bounding, 6, MPI::FLOAT, i, 5);
         }
-            
+
 
 /*************************************** Connection is successful *****************/
 
@@ -246,9 +246,9 @@ int main (int argc , char *argv[]) {
             // send the number of points that will follow
             int_numpoint[client_serv_data] = (*it)->getnumpoints();
             tmp_int[0] = int_numpoint[client_serv_data];
-            
+
             MPI::COMM_WORLD.Send(tmp_int, 1, MPI::INT, client_serv_data + 1, 2);
-            
+
             // allokiere normal array dynamically
             normals[client_serv_data] = new float [3 * int_numpoint[client_serv_data]];
 
@@ -336,13 +336,13 @@ int main (int argc , char *argv[]) {
             client_serv_data++;
         }
 
-        
+
 
         //Points put back into proper shape for PointBufferPtr
         boost::shared_array<float> norm (m_normal);
 
         long unsigned int tmp = static_cast<unsigned int>(m_loader->getNumPoints());
-        
+
         std::cout << timestamp << "Interpolating normals..." << std::endl;
 
         // set normals
@@ -351,9 +351,9 @@ int main (int argc , char *argv[]) {
 
         AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >* tmp_surface;
         tmp_surface = new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >(m_loader, "STANN", kn, ki, kd, ransac);
-    
+
         tmp_surface->interpolateSurfaceNormals();
-    
+
         m_loader = tmp_surface->pointBuffer();
 
 
@@ -361,9 +361,9 @@ int main (int argc , char *argv[]) {
 
         // save data
         io_factory.saveModel(m_model, "normals.ply");
-        
+
         std::cout << timestamp << "End of Programm." << std::endl;
-        
+
         // Complete connection
         int end[1] = {-1};
         int j = 1;
@@ -373,7 +373,7 @@ int main (int argc , char *argv[]) {
         }
 
 
-        
+
         for (int i = 0 ; i < (numprocs -1) ; i++)
         {
             delete [] normals[i];
@@ -385,7 +385,7 @@ int main (int argc , char *argv[]) {
 /**********************************************************************************************************/
     // Slave-Process
     else
-    {        
+    {
 
 
         // Wait for the first Message (INIT)
@@ -404,7 +404,7 @@ int main (int argc , char *argv[]) {
         // Loop for receiving the data, -1 cancels operation
         while(true)
         {
-          
+
           MPI::COMM_WORLD.Recv(&c_sizepackage, 1, MPI::INT, 0, 2);
             //termination condition
             if (c_sizepackage == -1)
@@ -413,10 +413,10 @@ int main (int argc , char *argv[]) {
             }
             else
             {
-    
+
                 count_serv++;
 
-            
+
                 // Recv the data
                 float * tmp = new float[3 * c_sizepackage];
                 MPI::Request client_req2 = MPI::COMM_WORLD.Irecv(tmp, 3 * c_sizepackage, MPI::FLOAT, 0, 1);
@@ -435,16 +435,16 @@ int main (int argc , char *argv[]) {
                 pointcloud->setPointArray(punkte, c_sizepackage);
 
                 PointsetSurface<ColorVertex<float, unsigned char> >* surface;
-                
+
                 // Set search options for normal estimation and distance evaluation
                 surface = new AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> >(pointcloud, "STANN", kn, ki, kd, ransac);
-            
+
                 // set global Bounding-Box
                 surface->expandBoundingBox(expansion_bounding[0], expansion_bounding[1], expansion_bounding[2],
                                   expansion_bounding[3], expansion_bounding[4], expansion_bounding[5]);
-                
-                
-                
+
+
+
                 // calculate the normals
                 std::cout << timestamp << "Client " << rank << " calculates surface normals with " << c_sizepackage << " points." <<  std::endl;
                 surface->calculateSurfaceNormals();
@@ -463,20 +463,20 @@ int main (int argc , char *argv[]) {
         }
 
     }// End else
-    
+
 // Some usefull Information for Debugging and tests
 /*
         char test_aufgabe_name[64];
     sprintf(test_aufgabe_name, "Ausgabe%00d.dat" , rank);
     f.open(test_aufgabe_name, ios::out);
         if (rank == 0)
-    {  
+    {
       std::cout << "time: " << start.getElapsedTimeInMs() << std::endl;
-      
+
       f << "finish Process: " << rank << ", he did it in" << start.getElapsedTimeInMs() << std::endl;
 
     }
-    else f << "finish Process: " << rank << ", he did " << count_serv << " packeges. kd: " << kd << " kn: " << kn << " ki: " << ki << endl; 
+    else f << "finish Process: " << rank << ", he did " << count_serv << " packeges. kd: " << kd << " kn: " << kn << " ki: " << ki << endl;
     f.close();
 */
     MPI_Finalize();
