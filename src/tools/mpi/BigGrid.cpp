@@ -110,7 +110,7 @@ BigGrid::BigGrid(std::string cloudPath, float voxelsize, float scale) :
     m_maxIndexY+=2;
     m_maxIndexZ+=3;
     m_maxIndexSquare = m_maxIndex * m_maxIndex;
-	std::cout << "BG: " << m_maxIndexSquare << "|" << m_maxIndexX << "|" << m_maxIndexY << "|" << m_maxIndexZ << std::endl;
+    std::cout << "BG: " << m_maxIndexSquare << "|" << m_maxIndexX << "|" << m_maxIndexY << "|" << m_maxIndexZ << std::endl;
     
 
     //

@@ -22,7 +22,7 @@ using std::vector;
 class Tree {
 public:  
   /**
-   *	Destructor - deletes the tree
+   *    Destructor - deletes the tree
    * pure virtual, i.e., must be implented by a derived class
    */
   virtual inline ~Tree() {};
@@ -45,15 +45,15 @@ public:
   inline SearchTree() {};
   
   /**
-   *	Constructor - Constructs a tree from the input.
+   *    Constructor - Constructs a tree from the input.
    * must be implented by a derived class
-   *	@param pts 3D array of points
-   *	@param n number of points
+   *    @param pts 3D array of points
+   *    @param n number of points
    */
   SearchTree(double **pts, int n);
 
   /**
-   *	Destructor - deletes the tree
+   *    Destructor - deletes the tree
    * virtual, i.e., must be implented by a derived class
    */
   virtual inline ~SearchTree() {};
@@ -81,18 +81,18 @@ public:
   virtual double *FindClosest(double *_p, double maxdist2, int threadNum = 0) const = 0 ;
 
   virtual void getPtPairs(vector <PtPair> *pairs, 
-				  double *source_alignxf, 
+                  double *source_alignxf, 
           double * const *q_points, unsigned int startindex, unsigned int endindex,
-				  int thread_num,
-				  int rnd, double max_dist_match2, double &sum,
-				  double *centroid_m, double *centroid_d);
+                  int thread_num,
+                  int rnd, double max_dist_match2, double &sum,
+                  double *centroid_m, double *centroid_d);
     
   virtual void getPtPairs(vector <PtPair> *pairs,
-				  double *source_alignxf,
+                  double *source_alignxf,
           const DataXYZ& xyz_r, unsigned int startindex, unsigned int endindex,
-				  int thread_num,
-				  int rnd, double max_dist_match2, double &sum,
-				  double *centroid_m, double *centroid_d);
+                  int thread_num,
+                  int rnd, double max_dist_match2, double &sum,
+                  double *centroid_m, double *centroid_d);
 };
 
 
@@ -110,15 +110,15 @@ public:
   inline CachedSearchTree() {};
 
   /**
-   *	Constructor - Constructs a tree from the input.
+   *    Constructor - Constructs a tree from the input.
    * pure virtual, i.e., must be implented by a derived class
-   *	@param pts 3D array of points
-   *	@param n number of points
+   *    @param pts 3D array of points
+   *    @param n number of points
    */
   CachedSearchTree(double **pts, int n, CachedSearchTree *_parent = 0);
 
   /**
-   *	Destructor - deletes the tree
+   *    Destructor - deletes the tree
    * pure virtual, i.e., must be implented by a derived class
    */
   virtual inline ~CachedSearchTree() {};

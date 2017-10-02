@@ -141,7 +141,7 @@ int main(int argc, char** argv)
             c++;
             ++progress;
         }
-		delete[] data;
+        delete[] data;
 
         // Create model and save data
         PointBufferPtr pointBuffer(new PointBuffer);
@@ -159,6 +159,6 @@ int main(int argc, char** argv)
 
     std::cout << std::endl;
 
-	return 0;
+    return 0;
 }
 

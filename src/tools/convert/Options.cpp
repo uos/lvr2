@@ -32,23 +32,23 @@ namespace convert
 Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
 
-	// Create option descriptions
+    // Create option descriptions
 
-	m_descr.add_options()
-		("help", "Produce help message")
-		("inputFile", value< vector<string> >(), "An input in a supported file formats")
-		("outputFile,o", value<string>()->default_value("out.3d"), "Name of the generated output file.")
-		("intensityToColor", "Convert intensity values to colors")
-		("intensityColorMap", value<string>()->default_value("NONE"), "Colormap for color generation from intensity (HSV, SHSV, JET, HOT)")
-		("maxIntensity", value<float>()->default_value(+1e10), "Max filter threshold for intensities.")
-		("minIntensity", value<float>()->default_value(-1e10), "Min filter threshold for intensities.")
-		;
+    m_descr.add_options()
+        ("help", "Produce help message")
+        ("inputFile", value< vector<string> >(), "An input in a supported file formats")
+        ("outputFile,o", value<string>()->default_value("out.3d"), "Name of the generated output file.")
+        ("intensityToColor", "Convert intensity values to colors")
+        ("intensityColorMap", value<string>()->default_value("NONE"), "Colormap for color generation from intensity (HSV, SHSV, JET, HOT)")
+        ("maxIntensity", value<float>()->default_value(+1e10), "Max filter threshold for intensities.")
+        ("minIntensity", value<float>()->default_value(-1e10), "Min filter threshold for intensities.")
+        ;
 
-	m_pdescr.add("inputFile", -1);
+    m_pdescr.add("inputFile", -1);
 
-	// Parse command line and generate variables map
-	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
-	notify(m_variables);
+    // Parse command line and generate variables map
+    store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
+    notify(m_variables);
 
   if(m_variables.count("help")) {
     ::std::cout<< m_descr << ::std::endl;
@@ -79,7 +79,7 @@ bool Options::printUsage() const
 }
 
 Options::~Options() {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }
 
 } // namespace reconstruct

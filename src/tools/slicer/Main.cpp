@@ -44,69 +44,69 @@ using namespace lvr;
  */
 int main(int argc, char** argv)
 {
-	try
-	{
-		// Parse command line arguments
-		slicer::Options options(argc, argv);
+    try
+    {
+        // Parse command line arguments
+        slicer::Options options(argc, argv);
 
-		// Exit if options had to generate a usage message
-		// (this means required parameters are missing)
+        // Exit if options had to generate a usage message
+        // (this means required parameters are missing)
 
-		if ( options.printUsage() )
-		{
-			return 0;
-		}
+        if ( options.printUsage() )
+        {
+            return 0;
+        }
 
-		::std::cout << options << ::std::endl;
+        ::std::cout << options << ::std::endl;
 
-		// Create a mesh loader object
-		ModelFactory io_factory;
-		ModelPtr model = io_factory.readModel( options.getInputFileName() );
-		
-		MeshBufferPtr input_mesh;
-		MeshBufferPtr output_mesh;
+        // Create a mesh loader object
+        ModelFactory io_factory;
+        ModelPtr model = io_factory.readModel( options.getInputFileName() );
+        
+        MeshBufferPtr input_mesh;
+        MeshBufferPtr output_mesh;
 
-		// Parse loaded data
-		if ( !model )
-		{
-			cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
-			exit(-1);
-		}
-		
-	    input_mesh = model->m_mesh;
-	
-		if(!input_mesh)
-		{
-		    cout << timestamp << "Given file contains no supported mesh information" << endl;
-		    exit(-1);
-		}	
-		
-		cout << timestamp << "Successfully loaded mesh." << endl;
+        // Parse loaded data
+        if ( !model )
+        {
+            cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+            exit(-1);
+        }
+        
+        input_mesh = model->m_mesh;
+    
+        if(!input_mesh)
+        {
+            cout << timestamp << "Given file contains no supported mesh information" << endl;
+            exit(-1);
+        }    
+        
+        cout << timestamp << "Successfully loaded mesh." << endl;
 
-		// Create an empty mesh
-		
-		MeshSlicer mesh;
-		cout << "come here" << endl;
-		mesh.setDimension(options.getDimension());
-		cout << "here" << endl;
-		mesh.setValue(options.getValue());
-				cout << "here2" << endl;
-		// Load and slice mesh
-		mesh.addMesh(input_mesh);
-		cout << "here3" << endl;
-		vector<float> segments = mesh.compute2dSlice();
-		 		cout << "here4" << endl;
-		cout << "Slice Segments:" << endl; 	
-		for(int i = 0; i < segments.size(); i+=6)
-		{
-			cout << "(" << segments.at(i) << ", " << segments.at(i+1) << ", " << segments.at(i+2) << ") to (" << segments.at(i+3) << ", " << segments.at(i+4) << ", " << segments.at(i+5) << ")" << endl;
-		}	
-		 	
-     	cout << endl << timestamp << "Program end." << endl;
-	}
-	catch(...)
-	{
-		std::cout << "Unable to parse options. Call 'slicer --help' for more information." << std::endl;
-	}
-	return 0;
+        // Create an empty mesh
+        
+        MeshSlicer mesh;
+        cout << "come here" << endl;
+        mesh.setDimension(options.getDimension());
+        cout << "here" << endl;
+        mesh.setValue(options.getValue());
+                cout << "here2" << endl;
+        // Load and slice mesh
+        mesh.addMesh(input_mesh);
+        cout << "here3" << endl;
+        vector<float> segments = mesh.compute2dSlice();
+                 cout << "here4" << endl;
+        cout << "Slice Segments:" << endl;     
+        for(int i = 0; i < segments.size(); i+=6)
+        {
+            cout << "(" << segments.at(i) << ", " << segments.at(i+1) << ", " << segments.at(i+2) << ") to (" << segments.at(i+3) << ", " << segments.at(i+4) << ", " << segments.at(i+5) << ")" << endl;
+        }    
+             
+         cout << endl << timestamp << "Program end." << endl;
+    }
+    catch(...)
+    {
+        std::cout << "Unable to parse options. Call 'slicer --help' for more information." << std::endl;
+    }
+    return 0;
 }

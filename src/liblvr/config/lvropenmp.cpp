@@ -39,32 +39,32 @@ namespace lvr
 bool OpenMPConfig::haveOpenMP()
 {
 #ifdef LVR_USE_OPEN_MP
-	return true;
+    return true;
 #else
-	return false;
+    return false;
 #endif
 }
 
 void OpenMPConfig::setNumThreads(int n)
 {
 #ifdef LVR_USE_OPEN_MP
-	omp_set_num_threads(n);
+    omp_set_num_threads(n);
 #endif
 }
 
 void OpenMPConfig::setMaxNumThreads()
 {
 #ifdef LVR_USE_OPEN_MP
-	omp_set_num_threads(omp_get_num_procs());
+    omp_set_num_threads(omp_get_num_procs());
 #endif
 }
 
 int OpenMPConfig::getNumThreads()
 {
 #ifdef LVR_USE_OPEN_MP
-	return omp_get_num_procs();
+    return omp_get_num_procs();
 #else
-	return 1;
+    return 1;
 #endif
 }
 

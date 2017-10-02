@@ -53,52 +53,52 @@ using qglviewer::KeyFrameInterpolator;
 
 class Viewer : public QGLViewer
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	Viewer(QWidget* parent, const QGLWidget* shared = 0);
-	virtual ~Viewer();
-	virtual void addDataObject(Visualizer* obj);
-	virtual void removeDataObject(Visualizer* obj);
-	void removeDataObject(CustomTreeWidgetItem* item);
-	virtual void updateDataObject(Visualizer* obj);
+    Viewer(QWidget* parent, const QGLWidget* shared = 0);
+    virtual ~Viewer();
+    virtual void addDataObject(Visualizer* obj);
+    virtual void removeDataObject(Visualizer* obj);
+    void removeDataObject(CustomTreeWidgetItem* item);
+    virtual void updateDataObject(Visualizer* obj);
 
-	virtual ViewerType type() = 0;
-	virtual void centerViewOnObject(Renderable* renderable);
+    virtual ViewerType type() = 0;
+    virtual void centerViewOnObject(Renderable* renderable);
 
 
-	KeyFrameInterpolator* kfi() { return m_kfi;}
+    KeyFrameInterpolator* kfi() { return m_kfi;}
 
-	void saveToDisk(bool b) {m_saveToDisk = b;}
+    void saveToDisk(bool b) {m_saveToDisk = b;}
 
 public Q_SLOTS:
-	virtual void resetCamera();
+    virtual void resetCamera();
 
-	void zoomChanged(double z)
-	{
-	    m_zoom = z;
-	    updateGL();
-	}
+    void zoomChanged(double z)
+    {
+        m_zoom = z;
+        updateGL();
+    }
 
-	void createSnapshot();
+    void createSnapshot();
 
 
 protected:
-	virtual void draw();
+    virtual void draw();
 
-	list<Visualizer*>	    m_dataObjects;
-	BoundingBox<Vertex<float> > m_boundingBox;
-	KeyFrameInterpolator*       m_kfi;
+    list<Visualizer*>        m_dataObjects;
+    BoundingBox<Vertex<float> > m_boundingBox;
+    KeyFrameInterpolator*       m_kfi;
 
-	double                      m_zoom;
+    double                      m_zoom;
 
-	double                      m_near;
-	double                      m_far;
+    double                      m_near;
+    double                      m_far;
 
-	bool 						m_saveToDisk;
+    bool                         m_saveToDisk;
 
 private:
-	QWidget*				    m_parent;
+    QWidget*                    m_parent;
 };
 
 #endif /* VIEWER_H_ */

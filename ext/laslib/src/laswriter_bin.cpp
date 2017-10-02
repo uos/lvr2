@@ -265,8 +265,8 @@ I64 LASwriterBIN::close(BOOL update_header)
       }
       else
       {
-	      stream->seek(16);
-	      stream->put32bitsLE((U8*)&p_count);
+          stream->seek(16);
+          stream->put32bitsLE((U8*)&p_count);
         stream->seekEnd();
       }
     }

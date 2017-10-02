@@ -43,18 +43,18 @@ ProgressTitleCallbackPtr ProgressBar::m_titleCallback = 0;
 
 ProgressBar::ProgressBar(size_t max_val, string prefix)
 {
-	m_prefix = prefix;
-	m_maxVal = max_val;
+    m_prefix = prefix;
+    m_maxVal = max_val;
     m_currentVal = 0;
-	m_percent = 0;
+    m_percent = 0;
 
-	if(m_titleCallback)
-	{
-		// Remove time brackets
-		unsigned index;
-		index = prefix.find_last_of("]");
-		m_titleCallback(prefix.substr(index+1));
-	}
+    if(m_titleCallback)
+    {
+        // Remove time brackets
+        unsigned index;
+        index = prefix.find_last_of("]");
+        m_titleCallback(prefix.substr(index+1));
+    }
 }
 
 ProgressBar::~ProgressBar()
@@ -64,12 +64,12 @@ ProgressBar::~ProgressBar()
 
 void ProgressBar::setProgressCallback(ProgressCallbackPtr ptr)
 {
-	m_progressCallback = ptr;
+    m_progressCallback = ptr;
 }
 
 void ProgressBar::setProgressTitleCallback(ProgressTitleCallbackPtr ptr)
 {
-	m_titleCallback = ptr;
+    m_titleCallback = ptr;
 }
 
 void ProgressBar::operator++()
@@ -91,7 +91,7 @@ void ProgressBar::operator++()
 
         if(m_progressCallback)
         {
-        	m_progressCallback(m_percent);
+            m_progressCallback(m_percent);
         }
     }
 
@@ -99,29 +99,29 @@ void ProgressBar::operator++()
 
 void ProgressBar::print_bar()
 {
-	cout <<  "\r" << m_prefix << " " << m_percent << "%" << flush;
+    cout <<  "\r" << m_prefix << " " << m_percent << "%" << flush;
 }
 
 ProgressCounter::ProgressCounter(int stepVal, string prefix)
 {
-	m_prefix = prefix;
-	m_stepVal = stepVal;
-	m_currentVal = 0;
+    m_prefix = prefix;
+    m_stepVal = stepVal;
+    m_currentVal = 0;
 }
 
 void ProgressCounter::operator++()
 {
-	boost::mutex::scoped_lock lock(m_mutex);
-	m_currentVal++;
-	if(m_currentVal % m_stepVal == 0)
-	{
-		print_progress();
-	}
+    boost::mutex::scoped_lock lock(m_mutex);
+    m_currentVal++;
+    if(m_currentVal % m_stepVal == 0)
+    {
+        print_progress();
+    }
 }
 
 void ProgressCounter::print_progress()
 {
-	cout << "\r" << m_prefix << " " << m_currentVal << flush;
+    cout << "\r" << m_prefix << " " << m_currentVal << flush;
 }
 
 

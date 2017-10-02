@@ -38,83 +38,83 @@ typedef std::pair<Point, Vector> PointVectorPair;
 int main(int argc, char** argv)
 {
 
-	// Read given file
-	ModelPtr model = ModelFactory::readModel(argv[1]);
+    // Read given file
+    ModelPtr model = ModelFactory::readModel(argv[1]);
 
-	std::list<PointVectorPair> points;
+    std::list<PointVectorPair> points;
 
-	std::cout << timestamp <<  "Creating model.." << std::endl;
+    std::cout << timestamp <<  "Creating model.." << std::endl;
 
-	// Get point buffer and convert to
-	size_t n;
-	floatArr b = model->m_pointCloud->getPointArray(n);
-	for(size_t i = 0; i < n; i++)
-	{
-		points.push_back(PointVectorPair(Point(b[3 * i], b[3 * i + 1], b[3 * i + 2]), Vector(0.0, 0.0, 0.0)));
-	}
+    // Get point buffer and convert to
+    size_t n;
+    floatArr b = model->m_pointCloud->getPointArray(n);
+    for(size_t i = 0; i < n; i++)
+    {
+        points.push_back(PointVectorPair(Point(b[3 * i], b[3 * i + 1], b[3 * i + 2]), Vector(0.0, 0.0, 0.0)));
+    }
 
-	std::cout << timestamp << "Estimating normals..." << std::endl;
+    std::cout << timestamp << "Estimating normals..." << std::endl;
 
-	// Estimates normals direction.
-	// Note: pca_estimate_normals() requires an iterator over points
-	// as well as property maps to access each point's position and normal.
-
-
-	const int nb_neighbors = atoi(argv[2]); // K-nearest neighbors = 3 rings
-	CGAL::pca_estimate_normals(points.begin(), points.end(),
-			CGAL::First_of_pair_property_map<PointVectorPair>(),
-			CGAL::Second_of_pair_property_map<PointVectorPair>(),
-			nb_neighbors);
-
-	std::cout << timestamp << "Orientating normals..." << std::endl;
-
-	// Orients normals.
-	// Note: mst_orient_normals() requires an iterator over points
-	// as well as property maps to access each point's position and normal.
-	std::list<PointVectorPair>::iterator unoriented_points_begin =
-			CGAL::mst_orient_normals(points.begin(), points.end(),
-					CGAL::First_of_pair_property_map<PointVectorPair>(),
-					CGAL::Second_of_pair_property_map<PointVectorPair>(),
-					nb_neighbors);
-
-	// Optional: delete points with an unoriented normal
-	// if you plan to call a reconstruction algorithm that expects oriented normals.
-	points.erase(unoriented_points_begin, points.end());
-
-	// Optional: after erase(), use Scott Meyer's "swap trick" to trim excess capacity
-	std::list<PointVectorPair>(points).swap(points);
-
-	std::cout << timestamp << "Creating output buffer" << std::endl;
-
-	PointBufferPtr buffer = PointBufferPtr(new PointBuffer);
-	std::list<PointVectorPair>::iterator it;
-	floatArr pts(new float[3 * points.size()]);
-	floatArr normals(new float[3 * points.size()]);
-	int c = 0;
-	for(it = points.begin(); it != points.end(); it++)
-	{
-		Point p = it->first;
-		Vector n = it->second;
-		pts[3 * c    ] = p[0];
-		pts[3 * c + 1] = p[1];
-		pts[3 * c + 2] = p[2];
-
-		normals[3 * c    ] = n[0];
-		normals[3 * c + 1] = n[1];
-		normals[3 * c + 2] = n[2];
-		//std::cout << p[0] << " " << p[1] << " " << p[2] << std::endl;
-		c++;
-	}
-	//std::cout << c << " & " << points.size() << std::endl;
-
-	std::cout << timestamp << "Creating model" << std::endl;
-	buffer->setPointArray(pts, points.size());
-	buffer->setPointNormalArray(normals, points.size());
-
-	ModelPtr outModel(new Model(buffer));
+    // Estimates normals direction.
+    // Note: pca_estimate_normals() requires an iterator over points
+    // as well as property maps to access each point's position and normal.
 
 
-	std::cout << timestamp << "Saving result" << std::endl;
-	ModelFactory::saveModel(outModel, "normals.ply");
+    const int nb_neighbors = atoi(argv[2]); // K-nearest neighbors = 3 rings
+    CGAL::pca_estimate_normals(points.begin(), points.end(),
+            CGAL::First_of_pair_property_map<PointVectorPair>(),
+            CGAL::Second_of_pair_property_map<PointVectorPair>(),
+            nb_neighbors);
+
+    std::cout << timestamp << "Orientating normals..." << std::endl;
+
+    // Orients normals.
+    // Note: mst_orient_normals() requires an iterator over points
+    // as well as property maps to access each point's position and normal.
+    std::list<PointVectorPair>::iterator unoriented_points_begin =
+            CGAL::mst_orient_normals(points.begin(), points.end(),
+                    CGAL::First_of_pair_property_map<PointVectorPair>(),
+                    CGAL::Second_of_pair_property_map<PointVectorPair>(),
+                    nb_neighbors);
+
+    // Optional: delete points with an unoriented normal
+    // if you plan to call a reconstruction algorithm that expects oriented normals.
+    points.erase(unoriented_points_begin, points.end());
+
+    // Optional: after erase(), use Scott Meyer's "swap trick" to trim excess capacity
+    std::list<PointVectorPair>(points).swap(points);
+
+    std::cout << timestamp << "Creating output buffer" << std::endl;
+
+    PointBufferPtr buffer = PointBufferPtr(new PointBuffer);
+    std::list<PointVectorPair>::iterator it;
+    floatArr pts(new float[3 * points.size()]);
+    floatArr normals(new float[3 * points.size()]);
+    int c = 0;
+    for(it = points.begin(); it != points.end(); it++)
+    {
+        Point p = it->first;
+        Vector n = it->second;
+        pts[3 * c    ] = p[0];
+        pts[3 * c + 1] = p[1];
+        pts[3 * c + 2] = p[2];
+
+        normals[3 * c    ] = n[0];
+        normals[3 * c + 1] = n[1];
+        normals[3 * c + 2] = n[2];
+        //std::cout << p[0] << " " << p[1] << " " << p[2] << std::endl;
+        c++;
+    }
+    //std::cout << c << " & " << points.size() << std::endl;
+
+    std::cout << timestamp << "Creating model" << std::endl;
+    buffer->setPointArray(pts, points.size());
+    buffer->setPointNormalArray(normals, points.size());
+
+    ModelPtr outModel(new Model(buffer));
+
+
+    std::cout << timestamp << "Saving result" << std::endl;
+    ModelFactory::saveModel(outModel, "normals.ply");
 
 }

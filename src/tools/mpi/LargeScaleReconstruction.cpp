@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
         vector<LargeScaleOctree*> leafs;
         vector<LargeScaleOctree*> originleafs;
         vector<string> cloudPahts;
-	    unordered_map<string, LargeScaleOctree*> nameToLeaf;
+        unordered_map<string, LargeScaleOctree*> nameToLeaf;
         string octreeFolder;
         size_t minSize = std::max(std::max(options.getKn(), options.getKd()), options.getKi());
         string folder_prefix = "";
@@ -164,7 +164,7 @@ int main(int argc, char* argv[])
                                     box.expand(a.get()[i].point.x,a.get()[i].point.y,a.get()[i].point.z);
                                 }
                             }
-				else if(lr.getFileType() == XYZRGB)
+                else if(lr.getFileType() == XYZRGB)
                             {
                                 boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc> (lr.getNextPoints(rsize));
                                 if (rsize <= 0 )
@@ -254,7 +254,7 @@ int main(int argc, char* argv[])
                                     octree.insert(v);
                                 }
                             }
-				else if(lr.getFileType() == XYZRGB)
+                else if(lr.getFileType() == XYZRGB)
                             {
                                 boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc> (lr.getNextPoints(rsize));
                                 if (rsize <= 0 )
@@ -867,7 +867,7 @@ int main(int argc, char* argv[])
          for(int i = 0 ; i < cloudPahts.size() ; i++)
         {
             string tmpp = cloudPahts[i];
-        	boost::algorithm::replace_last(tmpp, "xyz", "ply");
+            boost::algorithm::replace_last(tmpp, "xyz", "ply");
             ifstream plyifs(tmpp);
             size_t vAmount=0;
             size_t fAmount=0;
@@ -1183,7 +1183,7 @@ int main(int argc, char* argv[])
                     surface = psSurface::Ptr( new pclSurface(p_loader, options.getKn(), options.getKd()));
 #else
                     cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
-			exit(-1);
+            exit(-1);
 #endif
                 }
                 else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
@@ -1384,7 +1384,7 @@ int main(int argc, char* argv[])
                     surface = psSurface::Ptr( new pclSurface(p_loader));
 #else
                     cout << timestamp << "Can't create a PCL point set surface without PCL installed." << endl;
-			exit(-1);
+            exit(-1);
 #endif
                 }
                 else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")

@@ -34,7 +34,7 @@ OrthoCamera::OrthoCamera() : qglviewer::Camera()
 
 OrthoCamera::~OrthoCamera()
 {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }
 
 #if QGLVIEWER_VERSION >= 0x020600
@@ -43,5 +43,5 @@ qreal OrthoCamera::zNear() const
 float OrthoCamera::zNear() const
 #endif
 {
-	return  0.2 * sceneRadius();
+    return  0.2 * sceneRadius();
 }

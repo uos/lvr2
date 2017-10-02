@@ -66,26 +66,26 @@ IntegerCompressor::IntegerCompressor(EntropyEncoder* enc, U32 bits, U32 contexts
     {
       corr_bits--;
     }
-		// the corrector must fall into this interval
+        // the corrector must fall into this interval
     corr_min = -((I32)(corr_range/2));
-  	corr_max = corr_min + corr_range - 1;
+      corr_max = corr_min + corr_range - 1;
   }
   else if (bits && bits < 32)
   {
     corr_bits = bits;
     corr_range = 1u << bits;
-		// the corrector must fall into this interval
+        // the corrector must fall into this interval
     corr_min = -((I32)(corr_range/2));
-  	corr_max = corr_min + corr_range - 1;
+      corr_max = corr_min + corr_range - 1;
   }
-	else
-	{
+    else
+    {
     corr_bits = 32;
-		corr_range = 0;
-		// the corrector must fall into this interval
+        corr_range = 0;
+        // the corrector must fall into this interval
     corr_min = I32_MIN;
     corr_max = I32_MAX;
-	}
+    }
 
   k = 0;
 
@@ -128,26 +128,26 @@ IntegerCompressor::IntegerCompressor(EntropyDecoder* dec, U32 bits, U32 contexts
     {
       corr_bits--;
     }
-		// the corrector must fall into this interval
+        // the corrector must fall into this interval
     corr_min = -((I32)(corr_range/2));
-  	corr_max = corr_min + corr_range - 1;
+      corr_max = corr_min + corr_range - 1;
   }
   else if (bits && bits < 32)
   {
     corr_bits = bits;
     corr_range = 1u << bits;
-		// the corrector must fall into this interval
+        // the corrector must fall into this interval
     corr_min = -((I32)(corr_range/2));
-  	corr_max = corr_min + corr_range - 1;
+      corr_max = corr_min + corr_range - 1;
   }
-	else
-	{
+    else
+    {
     corr_bits = 32;
-		corr_range = 0;
-		// the corrector must fall into this interval
+        corr_range = 0;
+        // the corrector must fall into this interval
     corr_min = I32_MIN;
     corr_max = I32_MAX;
-	}
+    }
 
   k = 0;
 

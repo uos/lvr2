@@ -977,8 +977,8 @@ I64 LASwriterLAS::close(BOOL update_header)
       }
       else
       {
-	      stream->seek(header_start_position+107);
-	      stream->put32bitsLE((U8*)&p_count);
+          stream->seek(header_start_position+107);
+          stream->put32bitsLE((U8*)&p_count);
         stream->seekEnd();
       }
     }

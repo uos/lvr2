@@ -38,39 +38,39 @@ namespace lvr
 
 void convert(COORD_SYSTEM from, COORD_SYSTEM to, float* point)
 {
-	if(from == OPENGL_METERS)
-	{
-		if(to == SLAM6D)
-		{
-			float x = point[0];
-			float y = point[1];
-			float z = point[2];
+    if(from == OPENGL_METERS)
+    {
+        if(to == SLAM6D)
+        {
+            float x = point[0];
+            float y = point[1];
+            float z = point[2];
 
-			point[0] = 100 * x;
-			point[1] = 100 * y;
-			point[2] = -100 * z;
-		}
-		else
-		{
-			cout << timestamp << "Target coordinate system not supported." << endl;
-		}
-	}
-	else
-	{
-		cout << timestamp << "Source coordinate system not supported." << endl;
-	}
+            point[0] = 100 * x;
+            point[1] = 100 * y;
+            point[2] = -100 * z;
+        }
+        else
+        {
+            cout << timestamp << "Target coordinate system not supported." << endl;
+        }
+    }
+    else
+    {
+        cout << timestamp << "Source coordinate system not supported." << endl;
+    }
 }
 
 void convert(COORD_SYSTEM from, COORD_SYSTEM to, PointBufferPtr& buffer)
 {
-	size_t n;
-	floatArr p = buffer->getPointArray(n);
-	for(int i = 0; i < n; i++)
-	{
-		int pos = 3 * i;
-		float* point = &p[pos];
-		convert(OPENGL_METERS, SLAM6D, point);
-	}
+    size_t n;
+    floatArr p = buffer->getPointArray(n);
+    for(int i = 0; i < n; i++)
+    {
+        int pos = 3 * i;
+        float* point = &p[pos];
+        convert(OPENGL_METERS, SLAM6D, point);
+    }
 }
 
 } // namespace lvr

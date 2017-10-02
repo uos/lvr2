@@ -41,8 +41,8 @@ PointCloud::PointCloud()
 
 PointCloud::PointCloud( PointBufferPtr buffer, string name) : Renderable(name)
 {
-	m_model = ModelPtr(new Model(buffer));
-	init(buffer);
+    m_model = ModelPtr(new Model(buffer));
+    init(buffer);
 }
 
 PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
@@ -54,67 +54,67 @@ PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
 
 void PointCloud::updateBuffer(PointBufferPtr buffer)
 {
-	init(buffer);
+    init(buffer);
 
 }
 
 void PointCloud::init(PointBufferPtr buffer)
 {
-	int maxColors = 255;
-	m_numNormals = 0;
+    int maxColors = 255;
+    m_numNormals = 0;
 
-	m_boundingBox = new BoundingBox<Vertex<float> >;
-	m_renderMode = RenderPoints;
+    m_boundingBox = new BoundingBox<Vertex<float> >;
+    m_renderMode = RenderPoints;
 
-	if(buffer)
-	{
-		m_normals = buffer->getIndexedPointNormalArray(m_numNormals);
-		size_t n_points;
-		coord3fArr points     = buffer->getIndexedPointArray(n_points);
-		color3bArr colors     = buffer->getIndexedPointColorArray(n_points);
-		floatArr intensities  = buffer->getPointIntensityArray(n_points);
+    if(buffer)
+    {
+        m_normals = buffer->getIndexedPointNormalArray(m_numNormals);
+        size_t n_points;
+        coord3fArr points     = buffer->getIndexedPointArray(n_points);
+        color3bArr colors     = buffer->getIndexedPointColorArray(n_points);
+        floatArr intensities  = buffer->getPointIntensityArray(n_points);
 
-		ColorMap c_map(maxColors);
+        ColorMap c_map(maxColors);
 
-		for(size_t i = 0; i < buffer->getNumPoints(); i++)
-		{
-			float x = points[i][0];
-			float y = points[i][1];
-			float z = points[i][2];
+        for(size_t i = 0; i < buffer->getNumPoints(); i++)
+        {
+            float x = points[i][0];
+            float y = points[i][1];
+            float z = points[i][2];
 
-			m_boundingBox->expand(x,y,z);
+            m_boundingBox->expand(x,y,z);
 
-			unsigned char r, g, b;
+            unsigned char r, g, b;
 
-			if(colors)
-			{
-				r = colors[i][0];
-				g = colors[i][1];
-				b = colors[i][2];
-			}
-			else if (intensities)
-			{
-				// Get intensity
-				float color[3];
-				c_map.getColor(color, (size_t)intensities[i], SHSV);
+            if(colors)
+            {
+                r = colors[i][0];
+                g = colors[i][1];
+                b = colors[i][2];
+            }
+            else if (intensities)
+            {
+                // Get intensity
+                float color[3];
+                c_map.getColor(color, (size_t)intensities[i], SHSV);
 
-				r = (unsigned char)(color[0] * 255);
-				g = (unsigned char)(color[1] * 255);
-				b = (unsigned char)(color[2] * 255);
+                r = (unsigned char)(color[0] * 255);
+                g = (unsigned char)(color[1] * 255);
+                b = (unsigned char)(color[2] * 255);
 
-			}
-			else
-			{
-				r = 0;
-				g = 0;
-				b = 0;
-			}
+            }
+            else
+            {
+                r = 0;
+                g = 0;
+                b = 0;
+            }
 
 
-			m_points.push_back(uColorVertex(x, y, z, r, g, b));
-		}
-	}
-	updateDisplayLists();
+            m_points.push_back(uColorVertex(x, y, z, r, g, b));
+        }
+    }
+    updateDisplayLists();
 }
 
 void PointCloud::updateDisplayLists(){

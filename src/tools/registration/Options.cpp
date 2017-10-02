@@ -28,33 +28,33 @@ namespace registration
 Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
 
-	// Create option descriptions
+    // Create option descriptions
 
-	m_descr.add_options()
-	("help", "Produce help message")
-	("maxIterations", value<int>(&m_maxIterations)->default_value( 50 ), "Maximum number of ICP iterations")
-	("maxDistance", value<double>(&m_maxDistance)->default_value( 25.0 ), "Maximum squared distance in point pair generation")
-	("rx", value<double>(&m_rx)->default_value( 0.0 ), "Estimated rotation around the x axis")
-	("ry", value<double>(&m_ry)->default_value( 0.0 ), "Estimated rotation around the y axis")
-	("rz", value<double>(&m_rz)->default_value( 0.0 ), "Estimated rotation around the z axis")
+    m_descr.add_options()
+    ("help", "Produce help message")
+    ("maxIterations", value<int>(&m_maxIterations)->default_value( 50 ), "Maximum number of ICP iterations")
+    ("maxDistance", value<double>(&m_maxDistance)->default_value( 25.0 ), "Maximum squared distance in point pair generation")
+    ("rx", value<double>(&m_rx)->default_value( 0.0 ), "Estimated rotation around the x axis")
+    ("ry", value<double>(&m_ry)->default_value( 0.0 ), "Estimated rotation around the y axis")
+    ("rz", value<double>(&m_rz)->default_value( 0.0 ), "Estimated rotation around the z axis")
     ("tx", value<double>(&m_tx)->default_value( 0.0 ), "Estimated translation in x direction")
     ("ty", value<double>(&m_ty)->default_value( 0.0 ), "Estimated translation in y direction")
     ("tz", value<double>(&m_tz)->default_value( 0.0 ), "Estimated translation in z direction")
-	("epsilon", value<double>(&m_epsilon)->default_value( 0.00001 ), "Minimum change between two ICP steps that is needed to proceed (i.e. convergence criterion)")
+    ("epsilon", value<double>(&m_epsilon)->default_value( 0.00001 ), "Minimum change between two ICP steps that is needed to proceed (i.e. convergence criterion)")
     ("dataCloud", value<string>(&m_dataName)->default_value("data.ply"), "Reference point cloud")
     ("modelCloud", value<string>(&m_modelName)->default_value("model.ply"), "Model point cloud")
-	;
+    ;
 
-	m_pdescr.add("inputFile", -1);
+    m_pdescr.add("inputFile", -1);
 
-	// Parse command line and generate variables map
-	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
-	notify(m_variables);
+    // Parse command line and generate variables map
+    store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
+    notify(m_variables);
 
-	if(m_variables.count("help"))
-	{
-		::std::cout << m_descr << ::std::endl;
-	}
+    if(m_variables.count("help"))
+    {
+        ::std::cout << m_descr << ::std::endl;
+    }
 
 }
 
@@ -62,7 +62,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 Options::~Options()
 {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }
 
 }

@@ -35,13 +35,13 @@ using lvr::MeshCluster;
 class ClusterTreeWidgetItem: public CustomTreeWidgetItem
 {
 public:
-	ClusterTreeWidgetItem(int type) : CustomTreeWidgetItem(type) {};
-	ClusterTreeWidgetItem(QTreeWidgetItem* parent, int type) : CustomTreeWidgetItem(parent, type) {};
-	virtual ~ClusterTreeWidgetItem() {};
+    ClusterTreeWidgetItem(int type) : CustomTreeWidgetItem(type) {};
+    ClusterTreeWidgetItem(QTreeWidgetItem* parent, int type) : CustomTreeWidgetItem(parent, type) {};
+    virtual ~ClusterTreeWidgetItem() {};
 
-	virtual void setRenderable(MeshCluster* c);
+    virtual void setRenderable(MeshCluster* c);
 
-	void saveCluster(string filename);
+    void saveCluster(string filename);
 };
 
 #endif /* CLUSTERTREEWIDGETITEM_H_ */

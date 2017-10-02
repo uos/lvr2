@@ -31,12 +31,12 @@ int main(int argc, char* argv[])
     //#pragma omp parallel for
     for(int i = 0 ; i<numFiles ; i++)
     {
-	cout << "finished: " << ((float)i/(float)numFiles)*100.0f << "%" << endl;
+    cout << "finished: " << ((float)i/(float)numFiles)*100.0f << "%" << endl;
         string path = files[i];
         string matPath = path;
         boost::algorithm::replace_last(matPath, "txt", "dat");
         cout << "getting t mat from: " << matPath << endl;
-	ifstream matifs(matPath);
+    ifstream matifs(matPath);
         Eigen::Matrix4d transformation;
         double matvalues[16];
         string line_s;
@@ -58,17 +58,17 @@ int main(int argc, char* argv[])
 
 
 
-	cout << "Transformmatrix: " << transformation << endl;
+    cout << "Transformmatrix: " << transformation << endl;
         ifstream inputData(path);
         string s;
         int j = 0;
-	cout << "opening: " << path << endl;
+    cout << "opening: " << path << endl;
         unsigned long maxpp = 0;
-	while( getline( inputData, s ) )
+    while( getline( inputData, s ) )
         {
             if(j==0)
             {
-		j++;
+        j++;
             }
             else
             {
@@ -77,13 +77,13 @@ int main(int argc, char* argv[])
                 double x,y,z;
                 ss >> x >> y >> z;
                 Eigen::Vector4d v(x,y,z,1);
-		
+        
 
 
                 Eigen::Vector4d tv = transformation*v;
 
       //          omp_set_lock(&lock);
-		//cout << "######" << endl <<  tv << endl << "------"  << endl;
+        //cout << "######" << endl <<  tv << endl << "------"  << endl;
                 output << tv[0] << " " << tv[1] << " " << tv[2] << endl;
       //          omp_unset_lock(&lock);
             }

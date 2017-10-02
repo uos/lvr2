@@ -231,7 +231,7 @@ void AsciiIO::save( std::string filename )
     {
         pointColors.reset();
         std::cerr << "Amount of points and color information is"
-	  " not equal. Color information won't be written" << std::endl;
+      " not equal. Color information won't be written" << std::endl;
     }
 
     pointIntensities = m_model->m_pointCloud->getPointIntensityArray( buf );

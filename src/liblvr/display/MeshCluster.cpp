@@ -30,7 +30,7 @@ namespace lvr
 
 void MeshCluster::addMesh(MeshBufferPtr mesh, string name)
 {
-	m_meshes.push_back(new StaticMesh(mesh, name));
+    m_meshes.push_back(new StaticMesh(mesh, name));
 }
 
 }

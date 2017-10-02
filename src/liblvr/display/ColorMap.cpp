@@ -54,8 +54,8 @@ void ColorMap::getColor(float* color, size_t bucket, GradientType gradient )
         calcColorSHSV(color, bucket);
         break;
     case SIMPSONS:
-    	calcColorSimpsons(color, bucket);
-    	break;
+        calcColorSimpsons(color, bucket);
+        break;
     default:
         color[0] = 1.0;
         color[1] = 1.0;
@@ -67,9 +67,9 @@ void ColorMap::getColor(float* color, size_t bucket, GradientType gradient )
 
 void ColorMap::calcColorSimpsons(float* color, size_t bucket)
 {
-	color[0] = fabs( cos( bucket )  );
-	color[1] = fabs( sin( bucket * 30 ) );
-	color[2] = fabs( sin( bucket * 2 ) );
+    color[0] = fabs( cos( bucket )  );
+    color[1] = fabs( sin( bucket * 30 ) );
+    color[2] = fabs( sin( bucket * 2 ) );
 }
 
 void ColorMap::calcColorGrey(float *d, size_t i)
