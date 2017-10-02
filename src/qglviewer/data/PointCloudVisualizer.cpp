@@ -30,27 +30,27 @@
 
 PointCloudVisualizer::PointCloudVisualizer(PointBufferPtr buffer, string name)
 {
-    PointCloud* pc = new PointCloud( buffer );
-    pc->setActive(true);
-    m_renderable = pc;
+	PointCloud* pc = new PointCloud( buffer );
+	pc->setActive(true);
+	m_renderable = pc;
 
-    PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
-    m_treeItem = item;
+	PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
+	m_treeItem = item;
 
-    // Setup supported render modes
-    int modes = 0;
-    size_t n_pn;
-    modes |= Points;
-    if(buffer->getPointNormalArray(n_pn))
-    {
-        modes |= PointNormals;
-    }
+	// Setup supported render modes
+	int modes = 0;
+	size_t n_pn;
+	modes |= Points;
+	if(buffer->getPointNormalArray(n_pn))
+	{
+		modes |= PointNormals;
+	}
 
-    item->setSupportedRenderModes(modes);
-    item->setViewCentering(false);
-    item->setName(name);
-    item->setNumPoints(pc->m_points.size());
-    item->setRenderable(pc);
+	item->setSupportedRenderModes(modes);
+	item->setViewCentering(false);
+	item->setName(name);
+	item->setNumPoints(pc->m_points.size());
+	item->setRenderable(pc);
 
 }
 

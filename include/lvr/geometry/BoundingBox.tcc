@@ -31,11 +31,11 @@ namespace lvr
 template<typename VertexT>
 BoundingBox<VertexT>::BoundingBox()
 {
-    float max_val = numeric_limits<float>::max();
-    float min_val = numeric_limits<float>::max()*-1;
+	float max_val = numeric_limits<float>::max();
+	float min_val = numeric_limits<float>::max()*-1;
 
-    m_min = VertexT(max_val, max_val, max_val);
-    m_max = VertexT(min_val, min_val, min_val);
+	m_min = VertexT(max_val, max_val, max_val);
+	m_max = VertexT(min_val, min_val, min_val);
 }
 
 template<typename VertexT>
@@ -59,20 +59,20 @@ BoundingBox<VertexT>& BoundingBox<VertexT>::operator=(const BoundingBox<VertexT>
 template<typename VertexT>
 BoundingBox<VertexT>::BoundingBox(VertexT v1, VertexT v2)
 {
-    m_min = v1;
-    m_max = v2;
-    expand(v1);
-    expand(v2);
+	m_min = v1;
+	m_max = v2;
+	expand(v1);
+	expand(v2);
 }
 
 template<typename VertexT>
 BoundingBox<VertexT>::BoundingBox(float x_min, float y_min, float z_min,
-                                  float x_max, float y_max, float z_max)
+		                          float x_max, float y_max, float z_max)
 {
-    m_min = VertexT(x_min, y_min, z_min);
-    m_max = VertexT(x_max, y_max, z_max);
-    expand(m_min);
-    expand(m_max);
+	m_min = VertexT(x_min, y_min, z_min);
+	m_max = VertexT(x_max, y_max, z_max);
+	expand(m_min);
+	expand(m_max);
 }
 
 template<typename VertexT>
@@ -81,23 +81,23 @@ bool BoundingBox<VertexT>::isValid()
     float max_val = numeric_limits<float>::max();
     float min_val = numeric_limits<float>::min();
 
-    VertexT v_min(min_val, min_val, min_val);
-    VertexT v_max(max_val, max_val, max_val);
-    return (m_min != v_max && m_max != v_min);
+	VertexT v_min(min_val, min_val, min_val);
+	VertexT v_max(max_val, max_val, max_val);
+	return (m_min != v_max && m_max != v_min);
 }
 
 template<typename VertexT>
 float BoundingBox<VertexT>::getRadius()
 {
-    // Shift bounding box to (0,0,0)
-    VertexT m_min0 = m_min - m_centroid;
-    VertexT m_max0 = m_max - m_centroid;
+	// Shift bounding box to (0,0,0)
+	VertexT m_min0 = m_min - m_centroid;
+	VertexT m_max0 = m_max - m_centroid;
 
-    // Return radius
-    if(m_min0.length() > m_max0.length())
-        return m_min0.length();
-    else
-        return m_max0.length();
+	// Return radius
+	if(m_min0.length() > m_max0.length())
+		return m_min0.length();
+	else
+		return m_max0.length();
 }
 
 template<typename VertexT>

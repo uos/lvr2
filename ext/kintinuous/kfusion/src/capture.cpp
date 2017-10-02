@@ -50,7 +50,7 @@ void kfusion::OpenNISource::open (int device)
 // uri can be a device ID or filename
 void kfusion::OpenNISource::open(const std::string& filename)
 {
-    isOni_ = false;
+	isOni_ = false;
     impl_ = cv::Ptr<Impl>( new Impl () );
 
     openni::Status rc;
@@ -103,45 +103,45 @@ void kfusion::OpenNISource::open(const std::string& filename)
     }
 
     if(isOni_)
-    {
-        impl_->device.getPlaybackControl()->setRepeatEnabled(false);
-        maxFrameIndex_ = impl_->device.getPlaybackControl()->getNumberOfFrames(impl_->depthStream) - 10;
-    }
-    else
-    {
-        openni::VideoMode colorMode;
-        colorMode.setResolution (1280, 1024);
-        colorMode.setFps(30);
-        colorMode.setPixelFormat(openni::PIXEL_FORMAT_RGB888);
+	{
+		impl_->device.getPlaybackControl()->setRepeatEnabled(false);
+		maxFrameIndex_ = impl_->device.getPlaybackControl()->getNumberOfFrames(impl_->depthStream) - 10;
+	}
+	else
+	{
+		openni::VideoMode colorMode;
+		colorMode.setResolution (1280, 1024);
+		colorMode.setFps(30);
+		colorMode.setPixelFormat(openni::PIXEL_FORMAT_RGB888);
 
-        openni::VideoMode depthMode;
-        depthMode.setResolution (640, 480);
-        depthMode.setFps(30);
-        //depthMode.setPixelFormat(openni::PIXEL_FORMAT_RGB888);
-        depthMode.setPixelFormat(openni::PIXEL_FORMAT_DEPTH_1_MM);
+		openni::VideoMode depthMode;
+		depthMode.setResolution (640, 480);
+		depthMode.setFps(30);
+		//depthMode.setPixelFormat(openni::PIXEL_FORMAT_RGB888);
+		depthMode.setPixelFormat(openni::PIXEL_FORMAT_DEPTH_1_MM);
 
-        rc = impl_->colorStream.setVideoMode(colorMode);
-        if (rc != openni::STATUS_OK)
-        {
-          sprintf (impl_->strError, "Init failed: %s\n", openni::OpenNI::getExtendedError() );
-          REPORT_ERROR (impl_->strError);
-        }
+		rc = impl_->colorStream.setVideoMode(colorMode);
+		if (rc != openni::STATUS_OK)
+		{
+		  sprintf (impl_->strError, "Init failed: %s\n", openni::OpenNI::getExtendedError() );
+		  REPORT_ERROR (impl_->strError);
+		}
 
-        rc = impl_->depthStream.setVideoMode(depthMode);
-        if (rc != openni::STATUS_OK)
-        {
-          sprintf (impl_->strError, "Init failed: %s\n", openni::OpenNI::getExtendedError() );
-          REPORT_ERROR (impl_->strError);
-        }
-        Status rc = rec_.create(string("./Captured" + std::to_string(rec_count_++) + ".oni").c_str());
-        if(rc != STATUS_OK)
-        {
-            printf ("Error creating Record object.\n");
-            return;
-        }
-        rec_.attach(impl_->depthStream);
-        rec_.attach(impl_->colorStream);
-    }
+		rc = impl_->depthStream.setVideoMode(depthMode);
+		if (rc != openni::STATUS_OK)
+		{
+		  sprintf (impl_->strError, "Init failed: %s\n", openni::OpenNI::getExtendedError() );
+		  REPORT_ERROR (impl_->strError);
+		}
+		Status rc = rec_.create(string("./Captured" + std::to_string(rec_count_++) + ".oni").c_str());
+		if(rc != STATUS_OK)
+		{
+			printf ("Error creating Record object.\n");
+			return;
+		}
+		rec_.attach(impl_->depthStream);
+		rec_.attach(impl_->colorStream);
+	}
 
     getParams ();
 
@@ -163,41 +163,41 @@ void kfusion::OpenNISource::open(const std::string& filename)
 
 void kfusion::OpenNISource::triggerPause()
 {
-    double speed = impl_->device.getPlaybackControl()->getSpeed();
-    if(isOni_ && speed == 1.0)
-    {
-        impl_->device.getPlaybackControl()->setSpeed(-1.0);
-    }
-    else if (isOni_ && speed == -1.0)
-    {
-        impl_->device.getPlaybackControl()->setSpeed(1.0);
-    }
+	double speed = impl_->device.getPlaybackControl()->getSpeed();
+	if(isOni_ && speed == 1.0)
+	{
+		impl_->device.getPlaybackControl()->setSpeed(-1.0);
+	}
+	else if (isOni_ && speed == -1.0)
+	{
+		impl_->device.getPlaybackControl()->setSpeed(1.0);
+	}
 }
 
 
 void kfusion::OpenNISource::triggerRecord()
 {
-    if(!isOni_ && !recording_)
-    {
-        rec_.start();
-        recording_ = true;
-        printf ("Start recording.\n");
-    }
-    else if(!isOni_ && recording_)
-    {
-        rec_.stop();
-        rec_.destroy();
-        recording_ = false;
-        Status rc = rec_.create(string("./Captured" + std::to_string(rec_count_++) + ".oni").c_str());
-        if(rc != STATUS_OK)
-        {
-            printf ("Error creating Record object.\n");
-            return;
-        }
-        rec_.attach(impl_->depthStream);
-        rec_.attach(impl_->colorStream);
-        printf ("Stop recording.\n");
-    }
+	if(!isOni_ && !recording_)
+	{
+		rec_.start();
+		recording_ = true;
+		printf ("Start recording.\n");
+	}
+	else if(!isOni_ && recording_)
+	{
+		rec_.stop();
+		rec_.destroy();
+		recording_ = false;
+		Status rc = rec_.create(string("./Captured" + std::to_string(rec_count_++) + ".oni").c_str());
+		if(rc != STATUS_OK)
+		{
+			printf ("Error creating Record object.\n");
+			return;
+		}
+		rec_.attach(impl_->depthStream);
+		rec_.attach(impl_->colorStream);
+		printf ("Stop recording.\n");
+	}
 }
 
 void kfusion::OpenNISource::release ()
@@ -214,11 +214,11 @@ void kfusion::OpenNISource::release ()
     }
     if(recording_)
     {
-        rec_.stop();
-        rec_.destroy();
-        recording_ = false;
-        printf ("Stop recording.\n");
-    }
+		rec_.stop();
+		rec_.destroy();
+		recording_ = false;
+		printf ("Stop recording.\n");
+	}
 
     impl_.release();
     depth_focal_length_VGA = 0;

@@ -32,13 +32,13 @@
 class OrthoCamera : public qglviewer::Camera
 {
 public:
-    OrthoCamera();
-    virtual ~OrthoCamera();
+	OrthoCamera();
+	virtual ~OrthoCamera();
 
 #if QGLVIEWER_VERSION >= 0x020600
-    virtual qreal zNear() const;
+	virtual qreal zNear() const;
 #else
-    virtual float zNear() const;
+	virtual float zNear() const;
 #endif
 };
 

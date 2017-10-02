@@ -104,7 +104,7 @@ void LVRReconstructViaExtendedMarchingCubesDialog::generateMesh()
     float  sc = m_dialog->doubleSpinBox_sc->value();
 
     SharpBox<Vertex<float> , Normal<float> >::m_theta_sharp = sf;
-    SharpBox<Vertex<float> , Normal<float> >::m_phi_corner = sc;
+	SharpBox<Vertex<float> , Normal<float> >::m_phi_corner = sc;
 
     PointBufferPtr pc_buffer = m_pc->getPointBuffer();
     psSurface::Ptr surface;
@@ -132,28 +132,28 @@ void LVRReconstructViaExtendedMarchingCubesDialog::generateMesh()
 
     // Create a point set grid for reconstruction
     GridBase* grid;
-    FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
+	FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
 
-    SharpBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-    grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
-    grid->setExtrusion(extrusion);
-    PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-    ps_grid->calcDistanceValues();
-    reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+	SharpBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+	grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
+	grid->setExtrusion(extrusion);
+	PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+	ps_grid->calcDistanceValues();
+	reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
 
-    // Create mesh
+	// Create mesh
     reconstruction->getMesh(mesh);
     mesh.setClassifier("PlaneSimpsons");
     mesh.getClassifier().setMinRegionSize(10);
     mesh.finalize();
 
     ModelPtr model(new Model(mesh.meshBuffer()));
-    ModelBridgePtr bridge(new LVRModelBridge(model));
-    
-    vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
-    bridge->addActors(renderer);
+	ModelBridgePtr bridge(new LVRModelBridge(model));
+	
+	vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
+	bridge->addActors(renderer);
    
-    QString base = m_parent->getName() + " (mesh)";
+	QString base = m_parent->getName() + " (mesh)";
     m_generatedModel = new LVRModelItem(bridge, base);
 
     m_treeWidget->addTopLevelItem(m_generatedModel);

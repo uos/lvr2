@@ -36,59 +36,59 @@ using namespace lvr;
 int main(int argc, char** argv)
 {
     // Parse command line arguments
-    try
-    {
-        filter::Options options(argc, argv);
+	try
+	{
+		filter::Options options(argc, argv);
 
 
-        // Exit if options had to generate a usage message
-        // (this means required parameters are missing)
-        if (options.printUsage()) return 0;
+		// Exit if options had to generate a usage message
+		// (this means required parameters are missing)
+		if (options.printUsage()) return 0;
 
-        ::std::cout<< options<<::std::endl;
+		::std::cout<< options<<::std::endl;
 
-        ModelPtr m = ModelFactory::readModel(options.inputFile());
+		ModelPtr m = ModelFactory::readModel(options.inputFile());
 
-        // Check if Reading was successful
-        if(m)
-        {
-            if(m->m_pointCloud)
-            {
+		// Check if Reading was successful
+		if(m)
+		{
+			if(m->m_pointCloud)
+			{
 
 #ifdef LVR_USE_PCL
-                PCLFiltering filter(m->m_pointCloud);
+				PCLFiltering filter(m->m_pointCloud);
 
-                // Apply filters
-                if(options.removeOutliers())
-                {
-                    filter.applyOutlierRemoval(options. sorMeanK(), options.sorDevThreshold());
-                }
+				// Apply filters
+				if(options.removeOutliers())
+				{
+					filter.applyOutlierRemoval(options. sorMeanK(), options.sorDevThreshold());
+				}
 
 
-                if(options.mlsDistance() > 0)
-                {
-                    filter.applyMLSProjection(options.mlsDistance());
-                }
+				if(options.mlsDistance() > 0)
+				{
+					filter.applyMLSProjection(options.mlsDistance());
+				}
 
-                PointBufferPtr pb( filter.getPointBuffer() );
-                ModelPtr out_model( new Model( pb ) );
+				PointBufferPtr pb( filter.getPointBuffer() );
+				ModelPtr out_model( new Model( pb ) );
 
-                ModelFactory::saveModel(out_model, options.outputFile());
+				ModelFactory::saveModel(out_model, options.outputFile());
 #else 
-                cout << timestamp << "Can't create a PCL Filter without PCL installed." << endl;
-                exit(-1);
+				cout << timestamp << "Can't create a PCL Filter without PCL installed." << endl;
+				exit(-1);
 #endif
-            }
-        }
-        else
-        {
-            cout << timestamp << "Failed to read " << options.inputFile() << endl;
-        }
-    }
-    catch(...)
-    {
-        std::cout << "Unable to parse options. Call 'filter --help' for more information." << std::endl;
-    }
-    return 0;
+			}
+		}
+		else
+		{
+			cout << timestamp << "Failed to read " << options.inputFile() << endl;
+		}
+	}
+	catch(...)
+	{
+		std::cout << "Unable to parse options. Call 'filter --help' for more information." << std::endl;
+	}
+	return 0;
 }
 

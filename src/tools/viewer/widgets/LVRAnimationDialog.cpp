@@ -189,79 +189,79 @@ void LVRAnimationDialog::loadPath()
 void LVRAnimationDialog::saveVideo()
 {
 //#ifdef VTK_USE_FFMPEG_ENCODER
-    QString filename = QFileDialog::getSaveFileName(m_treeWidget, tr("Save Path"), "", tr("AVI files (*.avi)"));
+	QString filename = QFileDialog::getSaveFileName(m_treeWidget, tr("Save Path"), "", tr("AVI files (*.avi)"));
 
-    this->m_renderWindowInteractor->GetRenderWindow()->SetOffScreenRendering( 1 );
+	this->m_renderWindowInteractor->GetRenderWindow()->SetOffScreenRendering( 1 );
 
-    vtkCameraInterpolator* i =  m_pathCamera->GetInterpolator();
+	vtkCameraInterpolator* i =  m_pathCamera->GetInterpolator();
 
-    unsigned int frameCount = m_timeline->count();
-    // remove all cameras from the buffer and add every single one currently in the timeline
-    m_pathCamera->InitializePath();
-    for(int i = 0; i < frameCount; i++)
-    {
-        LVRRecordedFrameItem* recordedFrame = static_cast<LVRRecordedFrameItem*>(m_timeline->item(i));
-        m_pathCamera->SetCamera(recordedFrame->getFrame());
-        m_pathCamera->AddCameraToPath();
-    }
+	unsigned int frameCount = m_timeline->count();
+	// remove all cameras from the buffer and add every single one currently in the timeline
+	m_pathCamera->InitializePath();
+	for(int i = 0; i < frameCount; i++)
+	{
+		LVRRecordedFrameItem* recordedFrame = static_cast<LVRRecordedFrameItem*>(m_timeline->item(i));
+		m_pathCamera->SetCamera(recordedFrame->getFrame());
+		m_pathCamera->AddCameraToPath();
+	}
 
-    unsigned int frameMultiplier = m_dialog->frameMultiplier_box->value();
-    m_pathCamera->SetNumberOfFrames(frameCount * frameMultiplier);
+	unsigned int frameMultiplier = m_dialog->frameMultiplier_box->value();
+	m_pathCamera->SetNumberOfFrames(frameCount * frameMultiplier);
 
-    // reset camera to main camera to play animation
-    m_pathCamera->SetCamera(m_mainCamera);
+	// reset camera to main camera to play animation
+	m_pathCamera->SetCamera(m_mainCamera);
 
-    double minT = i->GetMinimumT();
-    double maxT = i->GetMaximumT();
-    int n = frameMultiplier;
-    double step = (maxT - minT) / (double)n;
-    vtkSmartPointer<vtkCamera> i_cam = vtkSmartPointer<vtkCamera>::New();
-
-
-
-
-    vtkRendererCollection* collection = m_renderWindowInteractor->GetRenderWindow()->GetRenderers();
-    vtkRenderer* renderer;
-    char buffer[256];
-    int c = 0;
-    double range[2];
-    for(double camT = 0; camT < maxT; camT += step)
-    {
-        i->InterpolateCamera(camT, i_cam);
-
-        collection->InitTraversal();
-        renderer = collection->GetNextItem();
-        while(renderer)
-        {
-            renderer->GetActiveCamera()->DeepCopy(i_cam);
-            m_renderWindowInteractor->GetRenderWindow()->Render();
-            renderer = collection->GetNextItem();
-        }
-
-        vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter =
-                vtkSmartPointer<vtkWindowToImageFilter>::New();
-
-            windowToImageFilter->SetInput(m_renderWindowInteractor->GetRenderWindow());
-        windowToImageFilter->Update();
-
-          vtkSmartPointer<vtkPNGWriter> writer =
-            vtkSmartPointer<vtkPNGWriter>::New();
-
-          sprintf(buffer, "frame%04d.png", c);
-
-          writer->SetFileName(buffer);
-          writer->SetInputConnection(windowToImageFilter->GetOutputPort());
-          writer->Write();
-
-        cout << c << endl;
-        c++;
-
-
-    }
+	double minT = i->GetMinimumT();
+	double maxT = i->GetMaximumT();
+	int n = frameMultiplier;
+	double step = (maxT - minT) / (double)n;
+	vtkSmartPointer<vtkCamera> i_cam = vtkSmartPointer<vtkCamera>::New();
 
 
 
-      this->m_renderWindowInteractor->GetRenderWindow()->SetOffScreenRendering( 0 );
+
+	vtkRendererCollection* collection = m_renderWindowInteractor->GetRenderWindow()->GetRenderers();
+	vtkRenderer* renderer;
+	char buffer[256];
+	int c = 0;
+	double range[2];
+	for(double camT = 0; camT < maxT; camT += step)
+	{
+		i->InterpolateCamera(camT, i_cam);
+
+		collection->InitTraversal();
+		renderer = collection->GetNextItem();
+		while(renderer)
+		{
+			renderer->GetActiveCamera()->DeepCopy(i_cam);
+			m_renderWindowInteractor->GetRenderWindow()->Render();
+			renderer = collection->GetNextItem();
+		}
+
+		vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter =
+			    vtkSmartPointer<vtkWindowToImageFilter>::New();
+
+			windowToImageFilter->SetInput(m_renderWindowInteractor->GetRenderWindow());
+		windowToImageFilter->Update();
+
+		  vtkSmartPointer<vtkPNGWriter> writer =
+		    vtkSmartPointer<vtkPNGWriter>::New();
+
+		  sprintf(buffer, "frame%04d.png", c);
+
+		  writer->SetFileName(buffer);
+		  writer->SetInputConnection(windowToImageFilter->GetOutputPort());
+		  writer->Write();
+
+		cout << c << endl;
+		c++;
+
+
+	}
+
+
+
+	  this->m_renderWindowInteractor->GetRenderWindow()->SetOffScreenRendering( 0 );
 
 
 

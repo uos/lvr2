@@ -31,59 +31,59 @@ namespace fusion{
 Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
 
-    // Create option descriptions
+	// Create option descriptions
 
-    m_descr.add_options()
-                ("help", "Produce help message")
-                ("mesh1", value< vector<string> >(), "Input file name for mesh1. Supported formats are .ply")
-                ("mesh2", value< vector<string> >(), "Input file name for mesh2. Supported formats are .ply")
-                ("fusion", value< vector<string> >(), "Input file name for mesh2. Supported formats are .ply")
-                ("t", value< vector<double> >(), "Distance treshold for AABB Search.")
-                ("v", "Verbosity On.")
+	m_descr.add_options()
+		        ("help", "Produce help message")
+		        ("mesh1", value< vector<string> >(), "Input file name for mesh1. Supported formats are .ply")
+		        ("mesh2", value< vector<string> >(), "Input file name for mesh2. Supported formats are .ply")
+		        ("fusion", value< vector<string> >(), "Input file name for mesh2. Supported formats are .ply")
+		        ("t", value< vector<double> >(), "Distance treshold for AABB Search.")
+				("v", "Verbosity On.")
         ;
-        ;
+		;
 
-    m_pdescr.add("mesh1", -1);
-    m_pdescr.add("mesh2", -1);
+	m_pdescr.add("mesh1", -1);
+	m_pdescr.add("mesh2", -1);
 
-    // Parse command line and generate variables map
-    store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
-    notify(m_variables);
+	// Parse command line and generate variables map
+	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
+	notify(m_variables);
 
   if(m_variables.count("help")) 
   {
-      
+	  
     ::std::cout<< m_descr << ::std::endl;
   }
 }
 
 Options::~Options() {
-    // TODO Auto-generated destructor stub
+	// TODO Auto-generated destructor stub
 }
 
 bool Options::getVerbosity() const
 {
-    return (m_variables.count("v"));
+	return (m_variables.count("v"));
 }
 
 string Options::getMesh1FileName() const
 {
-    return (m_variables["mesh1"].as< vector<string> >())[0];
+	return (m_variables["mesh1"].as< vector<string> >())[0];
 }
 
 string Options::getMesh2FileName() const
 {
-    return (m_variables["mesh2"].as< vector<string> >())[0];
+	return (m_variables["mesh2"].as< vector<string> >())[0];
 }
 
 string Options::getFusionMeshFileName() const
 {
-    return (m_variables["fusion"].as< vector<string> >())[0];
+	return (m_variables["fusion"].as< vector<string> >())[0];
 }
 
 double Options::getDistanceTreshold() const
 {
-    return (m_variables["t"].as< vector<double> >())[0];
+	return (m_variables["t"].as< vector<double> >())[0];
 }
 
 bool Options::printUsage() const
@@ -107,7 +107,7 @@ bool Options::printUsage() const
 
 bool Options::outputFileNameSet() const
 {
-    return (m_variables["fusion"].as< vector<string> >()).size() > 0;
+	return (m_variables["fusion"].as< vector<string> >()).size() > 0;
 }
 
 } // namespace fusion

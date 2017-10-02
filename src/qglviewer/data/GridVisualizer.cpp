@@ -32,23 +32,23 @@
 
 GridVisualizer::GridVisualizer(string filename)
 {
-    lvr::GridIO io;
-    io.read( filename );
-    size_t n_points, n_boxes;
-    lvr::floatArr points = io.getPoints( n_points );
-    lvr::uintArr  boxes  = io.getBoxes(  n_boxes );
-    if( points && boxes )
-    {
-        lvr::Grid* grid = new lvr::Grid( points, boxes, n_points, n_boxes );
-        m_renderable = grid;
+	lvr::GridIO io;
+	io.read( filename );
+	size_t n_points, n_boxes;
+	lvr::floatArr points = io.getPoints( n_points );
+	lvr::uintArr  boxes  = io.getBoxes(  n_boxes );
+	if( points && boxes )
+	{
+		lvr::Grid* grid = new lvr::Grid( points, boxes, n_points, n_boxes );
+		m_renderable = grid;
 
-        int modes = 0;
-        PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
-        item->setSupportedRenderModes(modes);
-        item->setViewCentering(false);
-        item->setName("Grid");
-        item->setRenderable(grid);
-        m_treeItem = item;
-    }
+		int modes = 0;
+		PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
+		item->setSupportedRenderModes(modes);
+		item->setViewCentering(false);
+		item->setName("Grid");
+		item->setRenderable(grid);
+		m_treeItem = item;
+	}
 }
 

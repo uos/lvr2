@@ -33,24 +33,24 @@ using namespace lvr;
 
 MultiPointCloudVisualizer::MultiPointCloudVisualizer(PointBufferPtr buffer, string name = "<unnamed poind cloud>")
 {
-    MultiPointCloud* pc = new MultiPointCloud(buffer, name);
-    m_renderable = pc;
+	MultiPointCloud* pc = new MultiPointCloud(buffer, name);
+	m_renderable = pc;
 
-    MultiPointCloudTreeWidgetItem* item = new MultiPointCloudTreeWidgetItem(MultiPointCloudItem);
-    m_treeItem = item;
+	MultiPointCloudTreeWidgetItem* item = new MultiPointCloudTreeWidgetItem(MultiPointCloudItem);
+	m_treeItem = item;
 
-    // Setup supported render modes
-    int modes = 0;
-    size_t n_pn;
-    modes |= Points;
-    if(buffer->getPointNormalArray(n_pn))
-    {
-        modes |= PointNormals;
-    }
+	// Setup supported render modes
+	int modes = 0;
+	size_t n_pn;
+	modes |= Points;
+	if(buffer->getPointNormalArray(n_pn))
+	{
+		modes |= PointNormals;
+	}
 
-    item->setSupportedRenderModes(modes);
-    item->setViewCentering(false);
-    item->setName(name);
-    item->setRenderable(pc);
+	item->setSupportedRenderModes(modes);
+	item->setViewCentering(false);
+	item->setName(name);
+	item->setRenderable(pc);
 }
 

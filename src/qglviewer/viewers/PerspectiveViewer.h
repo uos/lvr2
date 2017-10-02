@@ -34,32 +34,32 @@ enum FOGTYPE { FOG_LINEAR, FOG_EXP, FOG_EXP2};
 class PerspectiveViewer: public Viewer
 {
 public:
-    PerspectiveViewer(QWidget* parent, const QGLWidget* shared = 0);
-    virtual ~PerspectiveViewer();
+	PerspectiveViewer(QWidget* parent, const QGLWidget* shared = 0);
+	virtual ~PerspectiveViewer();
 
-    void setProjectionMode(ProjectionMode mode);
+	void setProjectionMode(ProjectionMode mode);
 
-    virtual void draw();
-    virtual void init();
-    virtual ViewerType type();
+	virtual void draw();
+	virtual void init();
+	virtual ViewerType type();
 
-    void toggleFog();
-    void setFogDensity(float density);
-    void setFogType(FOGTYPE f);
+	void toggleFog();
+	void setFogDensity(float density);
+	void setFogType(FOGTYPE f);
 
-    void changeFogSettings();
+	void changeFogSettings();
 
 private:
-    void createBackgroundDisplayList();
-    void showEntireScene();
+	void createBackgroundDisplayList();
+	void showEntireScene();
 
-    int     m_backgroundDisplayList;
+	int 	m_backgroundDisplayList;
 
-    qglviewer::Camera*     m_camera[4];
-    ProjectionMode        m_projectionMode;
+	qglviewer::Camera* 	m_camera[4];
+	ProjectionMode		m_projectionMode;
 
-    bool                m_showFog;
-    FOGTYPE                m_fogType;
+	bool				m_showFog;
+	FOGTYPE				m_fogType;
 };
 
 #endif /* PERSPECTIVEVIEWER_H_ */

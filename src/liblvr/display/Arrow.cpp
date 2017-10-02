@@ -53,12 +53,12 @@ void Arrow::setPosition(double x, double y, double z, double roll, double pitch,
     pos[1] =  m_position.y;
     pos[2] =  m_position.z;
 
-    //    Quat quat(rot, pos);
+    //	Quat quat(rot, pos);
 
     float alignxf[16];
     EulerToMatrix(pos, rot, alignxf);
 
-    //    quat.getMatrix(alignxf);
+    //	quat.getMatrix(alignxf);
     rotation = Matrix4(alignxf);
 }
 
@@ -67,9 +67,9 @@ Arrow::~Arrow() {
 }
 
 void Arrow::render() {
-    //    float radius = 30.0f;
-    //    float length = 150.0f;
-    //    int nbSubdivisions = 4;
+    //	float radius = 30.0f;
+    //	float length = 150.0f;
+    //	int nbSubdivisions = 4;
 
     glPushMatrix();
     glMultMatrixf(m_transformation.getData());
@@ -88,9 +88,9 @@ void Arrow::render() {
     glRotated(90.0, 0.0, 1.0, 0.0);
 
     GLUquadric* quadric = gluNewQuadric();
-    //    gluCylinder (quadric, radius, 0, length, nbSubdivisions, 1 );
+    //	gluCylinder (quadric, radius, 0, length, nbSubdivisions, 1 );
     //
-    //     glBindTexture(GL_TEXTURE_2D, theTexture);
+    // 	glBindTexture(GL_TEXTURE_2D, theTexture);
     //
     //  glEnable(GL_TEXTURE_2D);
     glBegin(GL_QUADS);
@@ -136,7 +136,7 @@ void Arrow::render() {
     glVertex3f( xLength,-yLength,-zLength);
 
     glEnd();
-    //     glDisable(GL_TEXTURE_2D);
+    // 	glDisable(GL_TEXTURE_2D);
 
 
     glDisable(GL_LIGHTING);

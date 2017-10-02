@@ -47,6 +47,6 @@ int main(int argc, char** argv)
     io.saveRemissionAsColor(options.convertRemission());
     io.reduce(options.directory(), options.outputFile(), options.reduction());
 
-    return 0;
+	return 0;
 }
 

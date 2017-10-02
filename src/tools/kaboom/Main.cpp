@@ -409,17 +409,17 @@ void transformFromOptions(ModelPtr& model, int modulo)
         {
             if(options->sx() != 1)
             {
-                arr[i * 3]         *= options->sx();
+                arr[i * 3] 		*= options->sx();
             }
 
             if(options->sy() != 1)
             {
-                arr[i * 3 + 1]     *= options->sy();
+                arr[i * 3 + 1] 	*= options->sy();
             }
 
             if(options->sz() != 1)
             {
-                arr[i * 3 + 2]     *= options->sz();
+                arr[i * 3 + 2] 	*= options->sz();
             }
 
             if((cntr * 3) < targetSize)
@@ -784,7 +784,7 @@ int main(int argc, char** argv) {
     vector<boost::filesystem::path> v;
     for(boost::filesystem::directory_iterator it(inputDir); it != end; ++it)
     {
-        std::string ext =    it->path().extension().string();
+        std::string ext =	it->path().extension().string();
         if(ext == ".3d" || ext == ".ply" || ext == ".dat" || ext == ".txt" )
         {
             v.push_back(it->path());
@@ -794,8 +794,8 @@ int main(int argc, char** argv) {
     // Sort entries
     sort(v.begin(), v.end(), sortScans);
 
-    vector<float>             merge_points;
-    vector<unsigned char>    merge_colors;
+    vector<float>	 		merge_points;
+    vector<unsigned char>	merge_colors;
 
     int j = -1;
     for(vector<boost::filesystem::path>::iterator it = v.begin(); it != v.end(); ++it)

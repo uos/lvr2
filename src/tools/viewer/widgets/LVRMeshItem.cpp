@@ -65,7 +65,7 @@ void LVRMeshItem::addSubItems()
 
 QColor LVRMeshItem::getColor()
 {
-    return m_color;
+	return m_color;
 }
 
 void LVRMeshItem::setColor(QColor &c)
@@ -86,7 +86,7 @@ void LVRMeshItem::resetColor()
 
 float LVRMeshItem::getOpacity()
 {
-    return m_opacity;
+	return m_opacity;
 }
 
 void LVRMeshItem::setOpacity(float &opacity)
@@ -97,13 +97,13 @@ void LVRMeshItem::setOpacity(float &opacity)
 
 bool LVRMeshItem::getVisibility()
 {
-    return m_visible;
+	return m_visible;
 }
 
 void LVRMeshItem::setVisibility(bool &visibility)
 {
-    m_meshBridge->setVisibility(visibility);
-    m_visible = visibility;
+	m_meshBridge->setVisibility(visibility);
+	m_visible = visibility;
 }
 
 int LVRMeshItem::getShading()
@@ -129,7 +129,7 @@ MeshBufferPtr LVRMeshItem::getMeshBuffer()
 
 vtkSmartPointer<vtkActor> LVRMeshItem::getActor()
 {
-    return m_meshBridge->getMeshActor();
+	return m_meshBridge->getMeshActor();
 }
 
 LVRMeshItem::~LVRMeshItem()

@@ -78,7 +78,7 @@ LVRPointCloudItem::LVRPointCloudItem(PointBufferBridgePtr& ptr, QTreeWidgetItem*
 
 QColor LVRPointCloudItem::getColor()
 {
-    return m_color;
+	return m_color;
 }
 
 void LVRPointCloudItem::setColor(QColor &c)
@@ -99,7 +99,7 @@ void LVRPointCloudItem::resetColor()
 
 int LVRPointCloudItem::getPointSize()
 {
-    return m_pointSize;
+	return m_pointSize;
 }
 
 void LVRPointCloudItem::setPointSize(int &pointSize)
@@ -110,7 +110,7 @@ void LVRPointCloudItem::setPointSize(int &pointSize)
 
 float LVRPointCloudItem::getOpacity()
 {
-    return m_opacity;
+	return m_opacity;
 }
 
 void LVRPointCloudItem::setOpacity(float &opacity)
@@ -121,13 +121,13 @@ void LVRPointCloudItem::setOpacity(float &opacity)
 
 bool LVRPointCloudItem::getVisibility()
 {
-    return m_visible;
+	return m_visible;
 }
 
 void LVRPointCloudItem::setVisibility(bool &visibility)
 {
-    m_pointBridge->setVisibility(visibility);
-    m_visible = visibility;
+	m_pointBridge->setVisibility(visibility);
+	m_visible = visibility;
 }
 
 size_t LVRPointCloudItem::getNumPoints()
@@ -142,7 +142,7 @@ PointBufferPtr LVRPointCloudItem::getPointBuffer()
 
 vtkSmartPointer<vtkActor> LVRPointCloudItem::getActor()
 {
-    return m_pointBridge->getPointCloudActor();
+	return m_pointBridge->getPointCloudActor();
 }
 
 LVRPointCloudItem::~LVRPointCloudItem()

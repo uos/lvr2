@@ -35,7 +35,7 @@ void LVRRemoveOutliersDialog::removeOutliers()
     float standardDeviation = (float)standardDeviation_box->value();
     QDoubleSpinBox* meanK_box = m_dialog->doubleSpinBox_st;
     float meanK = (float)meanK_box->value();
-    /*
+	/*
     PCLFiltering filter(m_pc->getPointBuffer());
     filter.applyOutlierRemoval(meanK, standardDeviation);
 
