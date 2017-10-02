@@ -141,7 +141,7 @@ public:
      * @brief   Destructor
      */
     virtual ~AdaptiveKSearchSurface() {};
-    
+
     /**
      * @brief Returns the number of managed points
      */
@@ -167,7 +167,7 @@ public:
      * @brief Returns the point at the given \ref{index}.
      */
     virtual const VertexT operator[]( const size_t &index ) const;
-    
+
 
     /**
      * @brief Returns the distance of vertex v from the nearest tangent plane
@@ -194,8 +194,8 @@ public:
      *        plane fitting
      */
     void useRansac(bool use_it) { m_useRANSAC = use_it;}
-    
-    
+
+
     void setKD( int kd )
     {
         m_kd = kd;
@@ -211,7 +211,7 @@ public:
         m_kn = kn;
     }
 
-    
+
     /// Color information for points public: TODO: This is not the best idea!
     color3bArr                  m_colors;
 

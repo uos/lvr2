@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
-#include <sstream> 
+#include <sstream>
 #include <vector>
 #include <math.h>
 #include <float.h>
@@ -75,11 +75,11 @@ public:
      * @param points Input Pointcloud for kd-tree construction
      */
     CudaSurface(LBPointArray<float>& points);
-    
+
     CudaSurface(floatArr& points, size_t num_points, size_t dim = 3);
-    
+
     ~CudaSurface();
-    
+
     /**
      * @brief Starts calculation the normals on GPU
      *
@@ -87,16 +87,16 @@ public:
     void calculateNormals();
 
     void interpolateNormals();
-    
+
     /**
      * @brief Get the resulting normals of the normal calculation. After calling "start".
-     * 
+     *
      * @param output_normals     PointArray as return value
      */
     void getNormals(LBPointArray<float>& output_normals);
-    
+
     void getNormals(floatArr output_normals);
-    
+
     /**
      * @brief Set the number of k nearest neighbors
      *        k-neighborhood
@@ -123,7 +123,7 @@ public:
      *
      */
     void setKd(int kd);
-    
+
     /**
      * @brief Set the viewpoint to orientate the normals
      *
@@ -133,7 +133,7 @@ public:
      *
      */
     void setFlippoint(float v_x, float v_y, float v_z);
-    
+
     /**
      * @brief Set Method for normal calculation
      *
@@ -143,7 +143,7 @@ public:
     void setMethod(std::string method);
 
     /**
-    * Reconstuction Mode: 
+    * Reconstuction Mode:
     * Points stay in gpu until reconstruction is finished
     */
     void setReconstructionMode(bool mode = true);
@@ -153,15 +153,15 @@ public:
     *    Implement
     */
     void distances(std::vector<lvr::QueryPoint<cVertex> >& query_points, float voxel_size);
-    
+
     void freeGPU();
 
 private:
     //~ Hostfunctions
     void init();
-    
+
     void printSettings();
-    
+
     void getCudaInformation();
 
     void calculateBlocksThreads(int n, int elements, int element_size, int max_mem_shared, int max_threads_per_block,
@@ -181,14 +181,14 @@ private:
 
     // Divice Function
     void GPU_NN();
-    
+
     void initKdTree();
 
     //debugging - testing
     void debug(unsigned int query_index, int k);
     void debug2(unsigned int query_index, int k);
 
-    
+
     void writeToPly(float* point, float* nn, int size, std::string filename);
     void writeToPly(float* point, unsigned int* nn_i, int size, std::string filename);
     void writeToPly(unsigned int point_i, unsigned int* nn_i, int size, std::string filename);
@@ -199,8 +199,8 @@ private:
 
     void getNNFromIndex(const unsigned int& kd_pos, unsigned int *nn, int k);
     void getNNFromIndex2(const unsigned int& kd_pos, unsigned int *nn, int k);
-    
-    
+
+
     // V->points and normals
     LBPointArray<float> V;
     LBPointArray<float>* kd_tree_values;
@@ -211,8 +211,8 @@ private:
 
     float m_vx, m_vy, m_vz;
     int m_k, m_ki, m_kd;
-    
-    
+
+
     int m_calc_method;
     bool m_reconstruction_mode;
 
@@ -228,7 +228,7 @@ private:
     LBPointArray<float> D_kd_tree_values;
     LBPointArray<unsigned char> D_kd_tree_splits;
     LBPointArray<float> D_Normals;
-        
+
 };
 
 } /* namespace lvr */

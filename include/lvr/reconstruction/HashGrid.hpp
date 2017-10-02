@@ -79,9 +79,9 @@ public:
 
     /// Typedef to alias box map
     typedef unordered_map<size_t, BoxT*> box_map;
-    
+
     typedef unordered_map<size_t, size_t > qp_map;
-    
+
     /// Typedef to alias iterators for box maps
     typedef typename unordered_map<size_t, BoxT*>::iterator  box_map_it;
 
@@ -190,11 +190,11 @@ public:
         m_boundingBox = bb;
         calcIndices();
     }
-    
+
     bool interpolateEdge(HashGrid& rhs);
 
     BoundingBox<VertexT> & getBoundingBox(){return m_boundingBox;}
-    
+
     Vertex<int> convertGlobalToGrid(Vertexf& globalCoord);
 
     /**
@@ -239,9 +239,9 @@ protected:
 
     /// Map to handle the boxes in the grid
     box_map            m_cells;
-    
+
     qp_map            m_qpIndices;
-    
+
     /// The voxelsize used for reconstruction
     float                          m_voxelsize;
 

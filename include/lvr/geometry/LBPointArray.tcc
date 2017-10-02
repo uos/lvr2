@@ -71,7 +71,7 @@ static void copyDimensionToPointArray(LBPointArray<T>& in, int dim, LBPointArray
 
 template<typename T>
 static void splitPointArray(LBPointArray<T>& I, LBPointArray<T>& I_L, LBPointArray<T>& I_R) {
-    
+
     unsigned int i=0;
     for(; i < I_L.width * I_L.dim; i++){
         I_L.elements[i] = I.elements[i];
@@ -81,7 +81,7 @@ static void splitPointArray(LBPointArray<T>& I, LBPointArray<T>& I_L, LBPointArr
         I_R.elements[j] = I.elements[i];
     }
 
-    
+
 
 }
 
@@ -140,7 +140,7 @@ static void splitPointArrayWithValue(const LBPointArray<T>& V, const LBPointArra
 
     T smallest_left = std::numeric_limits<T>::max();
     T biggest_left = std::numeric_limits<T>::lowest();
-    
+
     T biggest_right = std::numeric_limits<T>::lowest();
     T smallest_right = std::numeric_limits<T>::max();
 
@@ -177,7 +177,7 @@ static void splitPointArrayWithValue(const LBPointArray<T>& V, const LBPointArra
             I_R.elements[i_r] = I.elements[i];
             i_r++;
         } else {
-            
+
             bool found = false;
 
             for(auto it = critical_indices_left.begin();
@@ -217,10 +217,10 @@ static void splitPointArrayWithValue(const LBPointArray<T>& V, const LBPointArra
             {
                 std::cout << "KAPUTT" << std::endl;
                 std::cout << "cant find " << I.elements[i] << std::endl;
-                
+
                 exit (EXIT_FAILURE);
             }
-            
+
         }
 
     }
@@ -242,7 +242,7 @@ static void splitPointArrayWithValueSet(const LBPointArray<T>& V, const LBPointA
 
     T smallest_left = std::numeric_limits<T>::max();
     T biggest_left = std::numeric_limits<T>::lowest();
-    
+
     T biggest_right = std::numeric_limits<T>::lowest();
     T smallest_right = std::numeric_limits<T>::max();
 
@@ -290,7 +290,7 @@ static void splitPointArrayWithValueSet(const LBPointArray<T>& V, const LBPointA
             I_R.elements[i_r] = I.elements[i];
             i_r++;
         } else {
-            
+
             bool found = false;
 
             auto critical_it = critical_indices_left.find( I.elements[i] );
@@ -328,7 +328,7 @@ static void splitPointArrayWithValueSet(const LBPointArray<T>& V, const LBPointA
                     i_r++;
                 }
             }
-            
+
         }
 
     }
@@ -486,7 +486,7 @@ static void generateAndSort(int id, LBPointArray<T>& vertices, LBPointArray<U>* 
 {
     generatePointArray<U>( indices_sorted[dim], vertices.width, 1);
     generatePointArray<T>( values_sorted[dim], vertices.width, 1);
-    
+
     fillPointArrayWithSequence<U>( indices_sorted[dim] );
 
     sortByDim<T,U>( vertices, dim, indices_sorted[dim] , values_sorted[dim] );

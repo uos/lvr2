@@ -134,7 +134,7 @@ void reconstructAndSave(PointBufferPtr& buffer, cuda_normals::Options& opt)
 
 int main(int argc, char** argv){
 
-    
+
     cuda_normals::Options opt(argc, argv);
     cout << opt << endl;
 
@@ -172,14 +172,14 @@ int main(int argc, char** argv){
         {
             writePointsAndNormals(all_points, all_normals, opt.outputFile());
         }
-        
+
         if(opt.reconstruct() )
         {
             PointBufferPtr buffer(new PointBuffer);
 
             floatArr points = floatArr(&all_points[0]);
             size_t num_points = all_points.size() / 3;
-            
+
             floatArr normals = floatArr(&all_normals[0]);
             size_t num_normals = all_normals.size() / 3;
 
@@ -205,7 +205,7 @@ int main(int argc, char** argv){
         {
             reconstructAndSave(buffer, opt);
         }
-        
+
     }
 
 

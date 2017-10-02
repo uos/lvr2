@@ -31,14 +31,14 @@ void MPISlave::work()
   {
     // std::cout << "WORK!" << std::endl;
     int rec;
-    
+
     boost::mpi::status s = m_world.recv(0, boost::mpi::any_tag, rec);
 
     std::cout << "Tag " << s.tag() << std::endl;
 
     switch(s.tag())
     {
-      case 0: 
+      case 0:
         doSomething(rec);
         break;
       default:
@@ -49,9 +49,9 @@ void MPISlave::work()
     // std::cout << "I am process " << m_world.rank() << " of " << m_world.size() << "." << std::endl;
 
     // std::cout << "INCREMENT " << rec << " -> " << rec+3 << std::endl;
-    
+
 
   }
 
-  std::cout << "Node " << m_world.rank() << " finished." << std::endl; 
+  std::cout << "Node " << m_world.rank() << " finished." << std::endl;
 }

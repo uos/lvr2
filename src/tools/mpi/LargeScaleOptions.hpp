@@ -294,13 +294,13 @@ public:
     unsigned int getCoherenceThreshold() const;
 
     float getColorThreshold() const;
-    
+
     float getStatsThreshold() const;
-    
+
     float getFeatureThreshold() const;
-    
+
     bool getUseCrossCorr() const;
-    
+
     float getPatternThreshold() const;
 
     float* getStatsCoeffs()const;
@@ -352,7 +352,7 @@ private:
 
     /// Whether or not the mesh should be retesselated while being finalized
     bool                          m_retesselate;
-    
+
     /// Whether or not the mesh should be retesselated while being finalized
     bool                           m_generateTextures;
 
@@ -409,7 +409,7 @@ private:
     string                          m_outputFolderPath;
 
 
-    
+
     ///Path to texture pack
     string m_texturePack;
 
@@ -427,13 +427,13 @@ private:
 
     ///Threshold for texture matching based on colors
     float m_colorThreshold;
-    
+
     ///Threshold for texture matching based on statistics
     float m_statsThreshold;
 
     ///Threshold for texture matching based on features
     float m_featuresThreshold;
-    
+
     ///Whether to use texture matching based on cross correlation
     bool m_useCrossCorr;
 

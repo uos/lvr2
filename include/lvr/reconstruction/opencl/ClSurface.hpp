@@ -187,7 +187,7 @@ const char *NORMAL_INTERPOLATION_KERNEL_STRING = "\n"
 "        float border_val = 0.2; \n"
 "        float gaussian = 1.0 - pow((float)val/ki_2, (float)2.0) * (1.0-border_val); \n"
 "        return gaussian * norm; \n"
-"    } \n"    
+"    } \n"
 "} \n"
 " \n"
 "__kernel void NormalInterpolationKernel(__global float* D_kd_tree_values, const unsigned int num_values, __global float* D_kd_tree_splits, const unsigned int num_splits, __global float* D_Normals, const unsigned int num_pointnormals, const unsigned int ki) \n"
@@ -264,7 +264,7 @@ public:
 
     /**
      * @brief Get the resulting normals of the normal calculation. After calling "start".
-     * 
+     *
      * @param output_normals     PointArray as return value
      */
     void getNormals(floatArr output_normals);
@@ -295,7 +295,7 @@ public:
      *
      */
     void setKd(int kd);
-    
+
     /**
      * @brief Set the viewpoint to orientate the normals
      *
@@ -305,7 +305,7 @@ public:
      *
      */
     void setFlippoint(float v_x, float v_y, float v_z);
-    
+
     /**
      * @brief Set Method for normal calculation
      *
@@ -315,7 +315,7 @@ public:
     void setMethod(std::string method);
 
     /**
-    * Reconstuction Mode: 
+    * Reconstuction Mode:
     * Points stay in gpu until reconstruction is finished
     */
     void setReconstructionMode(bool mode = true);
@@ -325,7 +325,7 @@ public:
     *    Implement
     */
     void distances(std::vector<lvr::QueryPoint<cVertex> >& query_points, float voxel_size);
-    
+
     void freeGPU();
 
 private:
@@ -356,8 +356,8 @@ private:
 
     float m_vx, m_vy, m_vz;
     int m_k, m_ki, m_kd;
-    
-    
+
+
     int m_calc_method;
     bool m_reconstruction_mode;
 
@@ -379,7 +379,7 @@ private:
     cl_mem D_kd_tree_values;
     cl_mem D_kd_tree_splits;
     cl_mem D_Normals;
-    
+
 
 };
 

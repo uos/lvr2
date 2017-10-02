@@ -27,7 +27,7 @@ public:
 
     template< typename MpiDataT >
     int sendToFreeNode(int msg_id, const MpiDataT& data_in);
-    
+
     bool receivedData(int i);
 
     template<typename MpiDataT>

@@ -61,7 +61,7 @@ private:
     static void generateKdTreeRecursive(int id, LBPointArray<float>& V, LBPointArray<unsigned int>* sorted_indices, int current_dim, int max_dim, LBPointArray<float> *values, LBPointArray<unsigned char> *splits, int size, int max_tree_depth, int position, int current_depth);
 
     static void test(int id, LBPointArray<float>* sorted_indices);
-    
+
 
 };
 

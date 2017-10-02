@@ -216,7 +216,7 @@ bool Options::printUsage() const
       cout << m_descr << endl;
       return true;
     }
-  
+
   if(m_variables.count("help"))
     {
       cout << endl;

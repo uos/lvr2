@@ -64,32 +64,32 @@ public:
     {
         return (m_variables["inputFile"].as< vector<string> >())[0];
     }
-    
+
     bool    useRansac() const
     {
         return (m_variables.count("ransac"));
     }
-    
+
     bool    usePCA() const
     {
         return (m_variables.count("pca"));
     }
-    
+
     float     flipx() const
     {
         return m_variables["flipx"].as<float>();
     }
-    
+
     float     flipy() const
     {
         return m_variables["flipy"].as<float>();
     }
-    
+
     float     flipz() const
     {
         return m_variables["flipz"].as<float>();
     }
-    
+
     int     kn() const
     {
         return m_variables["kn"].as<int>();
@@ -118,7 +118,7 @@ public:
     bool     reconstruct() const
     {
         return m_variables.count("reconstruct");
-    }    
+    }
 
     bool    exportPointNormals() const
     {
@@ -162,7 +162,7 @@ inline ostream& operator<<(ostream& os, const Options& o)
     os << "Flippoint x: " << o.flipx() << endl;
     os << "Flippoint y: " << o.flipy() << endl;
     os << "Flippoint z: " << o.flipz() << endl;
-    
+
     return os;
 }
 

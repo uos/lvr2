@@ -103,7 +103,7 @@ public:
 
     inline VertexT getCenter(){ return m_center; }
 
-    
+
     /**
      * @brief Performs a local reconstruction according to the standard
      *           Marching Cubes table from Paul Bourke.

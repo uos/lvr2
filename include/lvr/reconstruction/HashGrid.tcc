@@ -81,9 +81,9 @@ m_globalIndex(0)
 }
 
 template<typename VertexT, typename BoxT>
-HashGrid<VertexT, BoxT>::HashGrid(std::vector<string>& files, BoundingBox<VertexT>& boundingBox, float voxelsize) 
-: 
-m_boundingBox(boundingBox), 
+HashGrid<VertexT, BoxT>::HashGrid(std::vector<string>& files, BoundingBox<VertexT>& boundingBox, float voxelsize)
+:
+m_boundingBox(boundingBox),
 m_voxelsize(voxelsize),
 m_globalIndex(0)
 {
@@ -97,11 +97,11 @@ m_globalIndex(0)
     {
         unsigned int current_index = 0;
         cout << "Loading grid: " << numFiles << "/" << files.size() << endl;
-        
+
         FILE * pFile = fopen(files[numFiles].c_str(),"rb");
         size_t numCells;
         size_t r = fread ( &numCells, sizeof(size_t), 1, pFile );
-        
+
         for(size_t cellCount = 0 ; cellCount<numCells ; cellCount++)
         {
             r = fread ( &(box_center[0]), sizeof(float), 1, pFile );
@@ -486,11 +486,11 @@ template<typename VertexT, typename BoxT>
 void HashGrid<VertexT, BoxT>::calcIndices()
 {
     float max_size = m_boundingBox.getLongestSide();
-    
+
         //Save needed grid parameters
         m_maxIndex = (int)ceil( (max_size + 5 * m_voxelsize) / m_voxelsize);
         m_maxIndexSquare = m_maxIndex * m_maxIndex;
-    
+
         m_maxIndexX = (int)ceil(m_boundingBox.getXSize() / m_voxelsize) + 1;
         m_maxIndexY = (int)ceil(m_boundingBox.getYSize() / m_voxelsize) + 2;
         m_maxIndexZ = (int)ceil(m_boundingBox.getZSize() / m_voxelsize) + 3;
@@ -867,8 +867,8 @@ void HashGrid<VertexT, BoxT>::saveCells(string file)
         fwrite(&m_queryPoints[it->second->getVertex(7)].m_distance, sizeof(float),1,pFile);
     }
     fclose(pFile);
-    
-    
+
+
 }
 
 template<typename VertexT, typename BoxT>
