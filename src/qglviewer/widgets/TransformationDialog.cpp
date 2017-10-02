@@ -247,3 +247,4 @@ void TransformationDialog::rotationZSlided(int value)
     // Update spin box
     m_dialog->spinBoxZRot->setValue(m_rotZ);
 }
+

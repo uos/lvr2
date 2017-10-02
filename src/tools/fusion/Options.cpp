@@ -111,3 +111,4 @@ bool Options::outputFileNameSet() const
 }
 
 } // namespace fusion
+

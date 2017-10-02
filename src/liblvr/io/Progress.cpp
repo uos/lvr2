@@ -127,3 +127,4 @@ void ProgressCounter::print_progress()
 
 
 } // namespace lvr
+

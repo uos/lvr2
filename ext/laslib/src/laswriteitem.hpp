@@ -70,4 +70,4 @@ public:
   virtual ~LASwriteItemCompressed(){};
 };
 
-#endif
+#endif

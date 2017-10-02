@@ -930,4 +930,4 @@ BOOL LASreaderMerged::open_next_file()
     return TRUE;
   }
   return FALSE;
-}
+}

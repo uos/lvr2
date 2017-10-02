@@ -92,4 +92,4 @@ private:
     bool slice_correction_;
     lvr::Matrix4f global_correction_;
 };
-#endif // STAGE
+#endif // STAGE

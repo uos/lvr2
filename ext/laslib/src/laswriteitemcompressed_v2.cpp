@@ -740,4 +740,4 @@ inline BOOL LASwriteItemCompressed_BYTE_v2::write(const U8* item)
   memcpy(last_item, item, number);
   return TRUE;
 }
-
+

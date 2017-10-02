@@ -69,3 +69,5 @@ int OpenMPConfig::getNumThreads()
 }
 
 } // namespace lvr
+
+

@@ -1248,4 +1248,4 @@ LASreadOpener::~LASreadOpener()
   if (inside_rectangle) delete [] inside_rectangle;
   if (filter) delete filter;
   if (transform) delete transform;
-}
+}

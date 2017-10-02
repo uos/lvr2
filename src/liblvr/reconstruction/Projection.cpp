@@ -394,3 +394,4 @@ AzimuthalProjection::AzimuthalProjection(int width, int height, int minH, int ma
 
 
 }
+

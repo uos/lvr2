@@ -69,3 +69,4 @@ int main(int argc, char** argv)
 
     ModelFactory::saveModel(out_model, "normals.ply");
 }
+

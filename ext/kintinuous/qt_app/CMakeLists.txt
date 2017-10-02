@@ -118,3 +118,5 @@ endif( UNIX )
 
 add_executable(kinfu_viewer ${KINFU_VIEWER_SOURCES} ${KINFU_VIEWER_RES} ${KINFU_VIEWER_MOC_SRC} ${KINFU_VIEWER_UI_HDRS})
 target_link_libraries(kinfu_viewer ${KINFU_VIEWER_DEPENDENCIES} )
+
+

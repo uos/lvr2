@@ -204,3 +204,4 @@ Options::~Options() {
 }
 
 } // namespace meshopt
+

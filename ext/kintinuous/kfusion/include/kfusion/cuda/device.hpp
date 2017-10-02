@@ -122,3 +122,9 @@ namespace kfusion
     template<> __kf_device__ ushort2 kfusion::device::gmem::LdCs(ushort2* ptr) { return *ptr; }
     template<> __kf_device__ void kfusion::device::gmem::StCs(const ushort2& val, ushort2* ptr) { *ptr = val; }
 #endif
+
+
+
+
+
+

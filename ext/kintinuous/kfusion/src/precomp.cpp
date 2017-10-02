@@ -72,3 +72,4 @@ kfusion::device::Reprojector::Reprojector(float fx, float fy, float cx, float cy
 //ushort2 kfusion::device::pack_tsdf(float tsdf, int weight) { throw "Not implemented"; return ushort2(); }
 //float kfusion::device::unpack_tsdf(ushort2 value, int& weight) { throw "Not implemented"; return 0; }
 //float kfusion::device::unpack_tsdf(ushort2 value) { throw "Not implemented"; return 0; }
+

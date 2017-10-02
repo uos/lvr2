@@ -482,3 +482,5 @@ QString LVRCorrespondanceDialog::getDataName()
 }
 
 } /* namespace lvr */
+
+

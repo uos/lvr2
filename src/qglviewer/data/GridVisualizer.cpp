@@ -51,3 +51,4 @@ GridVisualizer::GridVisualizer(string filename)
         m_treeItem = item;
     }
 }
+

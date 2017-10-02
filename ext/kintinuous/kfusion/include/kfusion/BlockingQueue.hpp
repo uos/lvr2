@@ -113,4 +113,4 @@ private:
     boost::uint64_t m_maxSize;
     boost::condition m_condSpaceAvailable;
 };
-#endif // BLOCKINGQUEUE_HPP__
+#endif // BLOCKINGQUEUE_HPP__

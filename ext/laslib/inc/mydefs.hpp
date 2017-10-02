@@ -218,4 +218,4 @@ inline void ENDIAN_SWAP_64(const U8* from, U8* to)
   to[7] = from[0];
 }
 
-#endif
+#endif

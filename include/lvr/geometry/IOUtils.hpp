@@ -150,3 +150,4 @@ void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::st
 } // namespace lvr
 
 #endif // IOUTILS_HPP
+

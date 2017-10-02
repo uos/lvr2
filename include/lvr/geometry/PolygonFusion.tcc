@@ -1001,3 +1001,4 @@ void PolygonFusion<VertexT, NormalT>::reset()
 }
 
 } // Ende of namespace lvr
+

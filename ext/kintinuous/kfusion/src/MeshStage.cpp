@@ -241,4 +241,4 @@ void MeshStage::transformMeshBack(MeshPtr mesh)
         vert->m_position.z     -= 150;
         vert->m_position.transform(global_correction_);
     }
-}
+}

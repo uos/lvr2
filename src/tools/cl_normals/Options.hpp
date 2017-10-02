@@ -169,3 +169,4 @@ inline ostream& operator<<(ostream& os, const Options& o)
 } // namespace normals
 
 #endif
+

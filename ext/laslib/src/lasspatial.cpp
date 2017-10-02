@@ -87,4 +87,4 @@ BOOL LASspatialReadWrite::write(const LASspatial* spatial, ByteStreamOut* stream
     return FALSE;
   }
   return spatial->write(stream);
-}
+}
