@@ -38,25 +38,25 @@ namespace lvr
 class MeshCluster: public lvr::Renderable
 {
 public:
-	MeshCluster() {};
+    MeshCluster() {};
 
-	void addMesh(MeshBufferPtr buffer, string name);
+    void addMesh(MeshBufferPtr buffer, string name);
 
-	virtual ~MeshCluster() {};
+    virtual ~MeshCluster() {};
 
-	virtual inline void render()
-	{
-		list<StaticMesh*>::iterator it;
-		for(it = m_meshes.begin(); it != m_meshes.end(); it++)
-		{
-			(*it)->render();
-		}
-	}
+    virtual inline void render()
+    {
+        list<StaticMesh*>::iterator it;
+        for(it = m_meshes.begin(); it != m_meshes.end(); it++)
+        {
+            (*it)->render();
+        }
+    }
 
-	list<StaticMesh*> getMeshes() { return m_meshes;}
+    list<StaticMesh*> getMeshes() { return m_meshes;}
 
 private:
-	list<StaticMesh*> m_meshes;
+    list<StaticMesh*> m_meshes;
 };
 
 } // namespace lvr

@@ -39,73 +39,73 @@ namespace lvr {
 
 
 /**
- * @brief	This class calculates transformations between images/textures.
+ * @brief    This class calculates transformations between images/textures.
  */
 class Transform {
 public:
 
 
-	/**
-	* \brief Constructor. Calculates the transformation between the given textures
-	*
-	* \param	t1		The first texture
-	* \param	t2		The second texture
-	*
-	*/
-	Transform(Texture* t1, Texture* t2);
+    /**
+    * \brief Constructor. Calculates the transformation between the given textures
+    *
+    * \param    t1        The first texture
+    * \param    t2        The second texture
+    *
+    */
+    Transform(Texture* t1, Texture* t2);
 
-	/**
-	* \brief Constructor. Calculates the transformation between the given textures
-	*
-	* \param	t1		The first texture
-	* \param	t2		The second texture
-	*
-	*/
-	Transform(const cv::Mat &t1, const cv::Mat &t2);
+    /**
+    * \brief Constructor. Calculates the transformation between the given textures
+    *
+    * \param    t1        The first texture
+    * \param    t2        The second texture
+    *
+    */
+    Transform(const cv::Mat &t1, const cv::Mat &t2);
 
-	/**
-	 * \brief Applies the transformation to the second texture/image
- 	 *
-	 * \return	The transformed texture/image
-	 */
-	cv::Mat apply();
+    /**
+     * \brief Applies the transformation to the second texture/image
+      *
+     * \return    The transformed texture/image
+     */
+    cv::Mat apply();
 
-	/**
-	 * \brief Returns the transformation matrix as a float array
-	 *
-	 * \return The transformation matrix
-	 */
-	double* getTransArr();
+    /**
+     * \brief Returns the transformation matrix as a float array
+     *
+     * \return The transformation matrix
+     */
+    double* getTransArr();
 
-	/**
-	 * Destructor.
-	 */
-	virtual ~Transform(){};
-	
-	///The mirroring state
-	unsigned char m_mirrored;
+    /**
+     * Destructor.
+     */
+    virtual ~Transform(){};
+    
+    ///The mirroring state
+    unsigned char m_mirrored;
 
-	///The minimum number of votes to consider a transformation as "correct"
-	static int m_minimumVotes;
+    ///The minimum number of votes to consider a transformation as "correct"
+    static int m_minimumVotes;
 
 private:
-	/**
-	 * \brief calculates the rotation, translation and scaling between the two given images
-	 *
-	 * \param	t1	The first image
-	 * \param	t2	The second image
-	 *
-	 */
-	void calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<cv::KeyPoint> kp1, std::vector<cv::KeyPoint> kp2, cv::Mat desc1, cv::Mat desc2);
-	
-	///The first image
-	cv::Mat m_img1;
-	
-	///The second image
-	cv::Mat m_img2;
+    /**
+     * \brief calculates the rotation, translation and scaling between the two given images
+     *
+     * \param    t1    The first image
+     * \param    t2    The second image
+     *
+     */
+    void calcTransform(const cv::Mat &t1, const cv::Mat &t2, std::vector<cv::KeyPoint> kp1, std::vector<cv::KeyPoint> kp2, cv::Mat desc1, cv::Mat desc2);
+    
+    ///The first image
+    cv::Mat m_img1;
+    
+    ///The second image
+    cv::Mat m_img2;
 
-	///The transformation
-	cv::Mat m_trans;
+    ///The transformation
+    cv::Mat m_trans;
 };
 
 }

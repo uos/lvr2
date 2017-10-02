@@ -84,49 +84,49 @@ public:
     typedef vector<HVertex* > VertexVector;
 
 
-	HalfEdgeKinFuMesh();
+    HalfEdgeKinFuMesh();
 
-	/**
-	 * @brief   Ctor.
-	 *
-	 * @param	pm	a pointer to the point cloud manager
-	 */
-	HalfEdgeKinFuMesh( typename PointsetSurface<VertexT>::Ptr pm );
+    /**
+     * @brief   Ctor.
+     *
+     * @param    pm    a pointer to the point cloud manager
+     */
+    HalfEdgeKinFuMesh( typename PointsetSurface<VertexT>::Ptr pm );
 
-	/**
-	 * @brief   Creates a HalfEdgeMesh from the given mesh buffer
-	 */
-	HalfEdgeKinFuMesh( MeshBufferPtr model);
+    /**
+     * @brief   Creates a HalfEdgeMesh from the given mesh buffer
+     */
+    HalfEdgeKinFuMesh( MeshBufferPtr model);
 
-	/**
-	 * @brief   Dtor.
-	 */
-	virtual ~HalfEdgeKinFuMesh();
+    /**
+     * @brief   Dtor.
+     */
+    virtual ~HalfEdgeKinFuMesh();
 
-	void addMesh(HalfEdgeKinFuMesh* slice, bool texture);
-
-
-
-	/**
-	 * @brief	Applies region growing and regression plane algorithms and deletes small
-	 * 			regions
-	 *
-	 * @param iterations        The number of iterations to use
-	 *
-	 * @param normalThreshold   The normal threshold
-	 *
-	 * @param minRegionSize		The minimum size of a region
-	 *
-	 * @param smallRegionSize	The size up to which a region is considered as small
-	 *
-	 * @param remove_flickering	Whether to remove flickering faces or not
-	 */
-	virtual void optimizePlanes(int iterations, float normalThreshold, int minRegionSize = 50, int smallRegionSize = 0, bool remove_flickering = true);
+    void addMesh(HalfEdgeKinFuMesh* slice, bool texture);
 
 
-	virtual HalfEdgeKinFuMesh<VertexT, NormalT>*  retesselateInHalfEdge(float fusionThreshold = 0.01, bool textured = false, int start_texture_index=0);
 
-	void mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert);
+    /**
+     * @brief    Applies region growing and regression plane algorithms and deletes small
+     *             regions
+     *
+     * @param iterations        The number of iterations to use
+     *
+     * @param normalThreshold   The normal threshold
+     *
+     * @param minRegionSize        The minimum size of a region
+     *
+     * @param smallRegionSize    The size up to which a region is considered as small
+     *
+     * @param remove_flickering    Whether to remove flickering faces or not
+     */
+    virtual void optimizePlanes(int iterations, float normalThreshold, int minRegionSize = 50, int smallRegionSize = 0, bool remove_flickering = true);
+
+
+    virtual HalfEdgeKinFuMesh<VertexT, NormalT>*  retesselateInHalfEdge(float fusionThreshold = 0.01, bool textured = false, int start_texture_index=0);
+
+    void mergeVertex(VertexPtr merge_vert, VertexPtr erase_vert);
 
     void setFusionVertex(uint v);
 
@@ -134,107 +134,107 @@ public:
 
     void setOldFusionVertex(uint v);
 
-	unordered_map<size_t, size_t> m_slice_verts;
-	unordered_map<size_t, size_t> m_fused_verts;
-	unordered_map<VertexPtr, VertexPtr> m_fusion_verts;
-	size_t m_fusionNeighbors;
-	//size_t m_fusionVertices;
-	size_t m_fusionOldNeighbors;
-	vector<FacePtr> m_fusionFaces;
-	VertexVector                                m_fusionVertices;
-	VertexVector                                m_oldFusionVertices;
+    unordered_map<size_t, size_t> m_slice_verts;
+    unordered_map<size_t, size_t> m_fused_verts;
+    unordered_map<VertexPtr, VertexPtr> m_fusion_verts;
+    size_t m_fusionNeighbors;
+    //size_t m_fusionVertices;
+    size_t m_fusionOldNeighbors;
+    vector<FacePtr> m_fusionFaces;
+    VertexVector                                m_fusionVertices;
+    VertexVector                                m_oldFusionVertices;
 
-	int projectAndMapNewImage(kfusion::ImgPose img_pose, const char* texture_output_dir="");
+    int projectAndMapNewImage(kfusion::ImgPose img_pose, const char* texture_output_dir="");
 
-	std::vector<std::vector<cv::Point3f> > getBoundingRectangles(int& size);
-	std::vector<std::pair<cv::Mat,float> > getTextures();
+    std::vector<std::vector<cv::Point3f> > getBoundingRectangles(int& size);
+    std::vector<std::pair<cv::Mat,float> > getTextures();
 
-	 std::vector<std::vector<cv::Point3f> > bounding_rectangles_3D;
-	 //first version with one texture each bounding box
-	 //texture + float saving best angle area was seen
-	std::vector<std::pair<cv::Mat,float> > textures;
+     std::vector<std::vector<cv::Point3f> > bounding_rectangles_3D;
+     //first version with one texture each bounding box
+     //texture + float saving best angle area was seen
+    std::vector<std::pair<cv::Mat,float> > textures;
 
-	//global bounding_rectangles
+    //global bounding_rectangles
 
     size_t num_cams,b_rect_size,end_texture_index,start_texture_index;
 
 
 protected:
 
-	/**
-	 * @brief	Starts a region growing wrt the angle between the faces and returns the
-	 * 			number of connected faces. Faces are connected means they share a common
-	 * 			edge - a point is not a connection in this context
-	 *
-	 * @param	start_face	The face from which the region growing is started
-	 *
-	 * @param	normal		The normal to refer to
-	 *
-	 * @param	angle		the maximum angle allowed between two faces
-	 *
-	 * @param	region		The region number to apply to the faces of the found region
-	 *
-	 * @param   leafs       A vector to store the faces from which the region growing needs to start again
-	 *
-	 * @param   depth       The maximum recursion depth
-	 *
-	 * @return	Returns the size of the region - 1 (the start face is not included)
-	 */
-	virtual int regionGrowing(FacePtr start_face, NormalT &normal, float &angle, RegionPtr region, vector<FacePtr> &leafs, unsigned int depth);
+    /**
+     * @brief    Starts a region growing wrt the angle between the faces and returns the
+     *             number of connected faces. Faces are connected means they share a common
+     *             edge - a point is not a connection in this context
+     *
+     * @param    start_face    The face from which the region growing is started
+     *
+     * @param    normal        The normal to refer to
+     *
+     * @param    angle        the maximum angle allowed between two faces
+     *
+     * @param    region        The region number to apply to the faces of the found region
+     *
+     * @param   leafs       A vector to store the faces from which the region growing needs to start again
+     *
+     * @param   depth       The maximum recursion depth
+     *
+     * @return    Returns the size of the region - 1 (the start face is not included)
+     */
+    virtual int regionGrowing(FacePtr start_face, NormalT &normal, float &angle, RegionPtr region, vector<FacePtr> &leafs, unsigned int depth);
 
-	/** TEXTURE STUFF
-	 * @brief getBoundingRectangles
-	 */
-	std::vector<cv::Point3f> getBoundingRectangle(std::vector<VertexT> act_contour, NormalT normale);
+    /** TEXTURE STUFF
+     * @brief getBoundingRectangles
+     */
+    std::vector<cv::Point3f> getBoundingRectangle(std::vector<VertexT> act_contour, NormalT normale);
 
-	void createInitialTexture(std::vector<cv::Point3f> b_rect, int texture_index, const char* output_dir="",float pic_size_factor=1000.0);
+    void createInitialTexture(std::vector<cv::Point3f> b_rect, int texture_index, const char* output_dir="",float pic_size_factor=1000.0);
 
-	void getInitialUV(float x,float y,float z,std::vector<cv::Point3f> b_rect,float& u, float& v);
-	void getInitialUV_b(float x,float y,float z,std::vector<std::vector<cv::Point3f> > b_rects,size_t b_rect_number,float& u, float& v);
+    void getInitialUV(float x,float y,float z,std::vector<cv::Point3f> b_rect,float& u, float& v);
+    void getInitialUV_b(float x,float y,float z,std::vector<std::vector<cv::Point3f> > b_rects,size_t b_rect_number,float& u, float& v);
 
-	void fillInitialTextures(std::vector<std::vector<cv::Point3f> > b_rects,
-		   kfusion::ImgPose img_pose, int image_number,
-		   const char* texture_output_dir="");
+    void fillInitialTextures(std::vector<std::vector<cv::Point3f> > b_rects,
+           kfusion::ImgPose img_pose, int image_number,
+           const char* texture_output_dir="");
 
-	void fillInitialTexture(std::vector<std::vector<cv::Point3f> > b_rects,
-		   kfusion::ImgPose img_pose, int image_number,
-		   const char* texture_output_dir="");
+    void fillInitialTexture(std::vector<std::vector<cv::Point3f> > b_rects,
+           kfusion::ImgPose img_pose, int image_number,
+           const char* texture_output_dir="");
 
-	int fillNonPlanarColors(kfusion::ImgPose img_pose);
+    int fillNonPlanarColors(kfusion::ImgPose img_pose);
 
-	void fillImageWithBlackPolygon( cv::Mat& img , cv::Point* pointarr, int size);
-	void firstBehindSecondImage(cv::Mat first, cv::Mat second, cv::Mat& dst);
-	void firstBehindSecondImage(cv::Mat first, cv::Mat second, cv::Mat& dst, cv::Mat mask);
+    void fillImageWithBlackPolygon( cv::Mat& img , cv::Point* pointarr, int size);
+    void firstBehindSecondImage(cv::Mat first, cv::Mat second, cv::Mat& dst);
+    void firstBehindSecondImage(cv::Mat first, cv::Mat second, cv::Mat& dst, cv::Mat mask);
 
-	cv::Rect calcCvRect(std::vector<cv::Point2f> rect);
+    cv::Rect calcCvRect(std::vector<cv::Point2f> rect);
 
-	std::pair<int, std::vector<int> > calcShadowTupel(std::vector<cv::Point3f> base_rect, std::vector<cv::Point3f> shadow_rect, int shadow_rect_index);
+    std::pair<int, std::vector<int> > calcShadowTupel(std::vector<cv::Point3f> base_rect, std::vector<cv::Point3f> shadow_rect, int shadow_rect_index);
 
-	bool calcShadowInliers(std::vector<cv::Point3f> base_rect, std::vector<cv::Point3f> shadow_rect, std::vector<int>& inliers);
+    bool calcShadowInliers(std::vector<cv::Point3f> base_rect, std::vector<cv::Point3f> shadow_rect, std::vector<int>& inliers);
 
-	//second version with one clipped texture
-	cv::Mat texture;
-	std::vector< pair<size_t, cv::Size > > texture_stats;
+    //second version with one clipped texture
+    cv::Mat texture;
+    std::vector< pair<size_t, cv::Size > > texture_stats;
 
-	class sort_indices
-	{
-		private:
-		std::vector<std::pair<cv::Mat,float> > textures;
-		public:
-		sort_indices(std::vector<std::pair<cv::Mat,float> > textures) : textures(textures) {}
-		bool operator()(int i, int j) { return (textures[i].first.cols*textures[i].first.rows)<(textures[j].first.cols*textures[j].first.rows); }
-	};
+    class sort_indices
+    {
+        private:
+        std::vector<std::pair<cv::Mat,float> > textures;
+        public:
+        sort_indices(std::vector<std::pair<cv::Mat,float> > textures) : textures(textures) {}
+        bool operator()(int i, int j) { return (textures[i].first.cols*textures[i].first.rows)<(textures[j].first.cols*textures[j].first.rows); }
+    };
 
     ///texturing end
 
 
-	friend class ClassifierFactory<VertexT, NormalT>;
+    friend class ClassifierFactory<VertexT, NormalT>;
 
 
 
-	set<EdgePtr>        m_garbageEdges;
-	set<HFace*>         m_garbageFaces;
-	set<RegionPtr>      m_garbageRegions;
+    set<EdgePtr>        m_garbageEdges;
+    set<HFace*>         m_garbageFaces;
+    set<RegionPtr>      m_garbageRegions;
 
 };
 

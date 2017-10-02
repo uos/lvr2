@@ -46,39 +46,39 @@ class ObjIO : public BaseIO
 {
 public:
 
-	/**
-	 * @brief Constructor.
-	 **/
-	ObjIO()
-	{
-		m_model.reset();
-	}
+    /**
+     * @brief Constructor.
+     **/
+    ObjIO()
+    {
+        m_model.reset();
+    }
 
-	~ObjIO() { };
+    ~ObjIO() { };
 
-	/**
-	 * \brief   Parse the given file and load supported elements.
-	 *
-	 * @param filename  The file to read.
-	 */
-	ModelPtr read( string filename );
+    /**
+     * \brief   Parse the given file and load supported elements.
+     *
+     * @param filename  The file to read.
+     */
+    ModelPtr read( string filename );
 
-	/**
-	 * @brief     Writes the mesh to an obj file.
-	 *
-	 * @param  model     The model containing all mesh data
-	 * @param  filename  The file name to use
-	 */
-	void save( string filename );
-	
+    /**
+     * @brief     Writes the mesh to an obj file.
+     *
+     * @param  model     The model containing all mesh data
+     * @param  filename  The file name to use
+     */
+    void save( string filename );
+    
 
 private:
 
-	void parseMtlFile(map<string, int>& matNames,
-			vector<Material*>& materials,
-			vector<GlTexture*>& textures,
-			string mtlname);
-	
+    void parseMtlFile(map<string, int>& matNames,
+            vector<Material*>& materials,
+            vector<GlTexture*>& textures,
+            string mtlname);
+    
 };
 
 }

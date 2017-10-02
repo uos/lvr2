@@ -34,10 +34,10 @@ namespace lvr
 
 enum NormalLabel
 {
-	VerticalFace,
-	HorizontallowerFace,
-	HorizontalupperFace,
-	UnknownFace
+    VerticalFace,
+    HorizontallowerFace,
+    HorizontalupperFace,
+    UnknownFace
 };
 
 /**
@@ -49,60 +49,60 @@ class NormalClassifier : public RegionClassifier<VertexT, NormalT>
 {
 public:
 
-	/**
-	 * @brief Ctor
-	 * @param region A vector of planar clusters
-	 */
-	NormalClassifier(vector<Region<VertexT, NormalT>* >* region)
-		: RegionClassifier<VertexT, NormalT>(region) {}
+    /**
+     * @brief Ctor
+     * @param region A vector of planar clusters
+     */
+    NormalClassifier(vector<Region<VertexT, NormalT>* >* region)
+        : RegionClassifier<VertexT, NormalT>(region) {}
 
-	/**
-	 * @brief Dtor.
-	 */
-	virtual ~NormalClassifier() {};
+    /**
+     * @brief Dtor.
+     */
+    virtual ~NormalClassifier() {};
 
-	/**
-	 * @brief Returns the r component for the given region
-	 */
-	virtual uchar r(int region);
-	/**
-	 * @brief Returns the g component for the given region
-	 */
-	virtual uchar g(int region);
-	/**
-	 * @brief Returns the b component for the given region
-	 */
-	virtual uchar b(int region);
+    /**
+     * @brief Returns the r component for the given region
+     */
+    virtual uchar r(int region);
+    /**
+     * @brief Returns the g component for the given region
+     */
+    virtual uchar g(int region);
+    /**
+     * @brief Returns the b component for the given region
+     */
+    virtual uchar b(int region);
 
-	/**
-	 * @brief Returns the label for the given region
-	 */
-	virtual string getLabel(int index);
+    /**
+     * @brief Returns the label for the given region
+     */
+    virtual string getLabel(int index);
 
-	/**
-	 * @brief Writes information about the clusters to a file
-	 */
-	virtual void writeMetaInfo();
+    /**
+     * @brief Writes information about the clusters to a file
+     */
+    virtual void writeMetaInfo();
 
-	/**
-	 * @brief True if classifier can generate pre-labels
-	 */
-	bool generatesLabel() { return true; }
+    /**
+     * @brief True if classifier can generate pre-labels
+     */
+    bool generatesLabel() { return true; }
 
 private:
 
-	NormalLabel _classifyRegion(int region);
+    NormalLabel _classifyRegion(int region);
 
-	uchar* getColor(int region);
+    uchar* getColor(int region);
 
-	void createRegionBuffer(
-					int region_id,
-					map<VertexT, int> &map,
-					vector<int> &indices,
-					vector<float> &vertices,
-					vector<float> &normals,
-					vector<uint> &colors
-					);
+    void createRegionBuffer(
+                    int region_id,
+                    map<VertexT, int> &map,
+                    vector<int> &indices,
+                    vector<float> &vertices,
+                    vector<float> &normals,
+                    vector<uint> &colors
+                    );
 
 };
 

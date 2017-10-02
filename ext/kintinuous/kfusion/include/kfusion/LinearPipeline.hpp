@@ -52,91 +52,91 @@ class LinearPipeline
 {
 public:
 
-	// Add a stage to the pipeline. The stages are inserted in order, such
-	// that the first added stage will be the first stage, and so on. The
-	// work queues for each stage will be updated automatically.
-	void AddStage(boost::shared_ptr<AbstractStage > stage)
-	{
-		// add a stage
-		m_stages.push_back(stage);
-		size_t numStage = m_stages.size();
+    // Add a stage to the pipeline. The stages are inserted in order, such
+    // that the first added stage will be the first stage, and so on. The
+    // work queues for each stage will be updated automatically.
+    void AddStage(boost::shared_ptr<AbstractStage > stage)
+    {
+        // add a stage
+        m_stages.push_back(stage);
+        size_t numStage = m_stages.size();
 
-		// resize the queue accordingly
-		m_queues.resize(numStage+1);
+        // resize the queue accordingly
+        m_queues.resize(numStage+1);
 
-		// special case for the first stage, where queue[0] needs to
-		// be allocated.
-		if(m_queues[numStage-1] == 0)
-		{
-			m_queues[numStage-1] =
-				boost::shared_ptr<BlockingQueue >(
-					new BlockingQueue()
-					);
-		}
-		// allocate a queue for the new stage
-		m_queues[numStage] =
-			boost::shared_ptr<BlockingQueue >(
-				new BlockingQueue()
-				);
+        // special case for the first stage, where queue[0] needs to
+        // be allocated.
+        if(m_queues[numStage-1] == 0)
+        {
+            m_queues[numStage-1] =
+                boost::shared_ptr<BlockingQueue >(
+                    new BlockingQueue()
+                    );
+        }
+        // allocate a queue for the new stage
+        m_queues[numStage] =
+            boost::shared_ptr<BlockingQueue >(
+                new BlockingQueue()
+                );
 
-		// initialize the stage with the in and out queue
-		m_stages[numStage-1]->InitQueues(
-			m_queues[numStage-1], m_queues[numStage]
-			);
-	}
+        // initialize the stage with the in and out queue
+        m_stages[numStage-1]->InitQueues(
+            m_queues[numStage-1], m_queues[numStage]
+            );
+    }
 
 
-	// Add work to the first queue, which is the in-queue for the first
-	// stage.
-	void AddWork(WorkTypeA work)
-	{
-		m_queues[0]->Add(work);
-	}
+    // Add work to the first queue, which is the in-queue for the first
+    // stage.
+    void AddWork(WorkTypeA work)
+    {
+        m_queues[0]->Add(work);
+    }
 
-	// Extract the result from the out-queue of the last stage
-	WorkTypeB GetResult()
-	{
-		return boost::any_cast<WorkTypeB>(m_queues[m_queues.size()-1]->Take());
-	}
+    // Extract the result from the out-queue of the last stage
+    WorkTypeB GetResult()
+    {
+        return boost::any_cast<WorkTypeB>(m_queues[m_queues.size()-1]->Take());
+    }
 
-	// Start all stages by spinning up one thread per stage.
-	void Start()
-	{
-		for(size_t i=0; i<m_stages.size(); ++i)
-		{
-			m_threads.push_back(
-				boost::shared_ptr<boost::thread>(new boost::thread(
-				boost::bind(&LinearPipeline<WorkTypeA, WorkTypeB>::StartStage, this, i)
-				)));
-		}
-	}
+    // Start all stages by spinning up one thread per stage.
+    void Start()
+    {
+        for(size_t i=0; i<m_stages.size(); ++i)
+        {
+            m_threads.push_back(
+                boost::shared_ptr<boost::thread>(new boost::thread(
+                boost::bind(&LinearPipeline<WorkTypeA, WorkTypeB>::StartStage, this, i)
+                )));
+        }
+    }
 
-	// join all stages
-	void join()
-	{
-		for(size_t i=0; i<m_stages.size(); ++i)
-		{
-			m_threads[i]->join();
-		}
-	}
+    // join all stages
+    void join()
+    {
+        for(size_t i=0; i<m_stages.size(); ++i)
+        {
+            m_threads[i]->join();
+        }
+    }
 
 private:
 
-	void StartStage(size_t index)
-	{
-		m_stages[index]->Run();
-	}
+    void StartStage(size_t index)
+    {
+        m_stages[index]->Run();
+    }
 
-	std::vector<
-		boost::shared_ptr<AbstractStage >
-	> m_stages;
+    std::vector<
+        boost::shared_ptr<AbstractStage >
+    > m_stages;
 
-	std::vector<
-		boost::shared_ptr<BlockingQueue >
-	> m_queues;
+    std::vector<
+        boost::shared_ptr<BlockingQueue >
+    > m_queues;
 
-	std::vector<
-		boost::shared_ptr<boost::thread>
-	> m_threads;
+    std::vector<
+        boost::shared_ptr<boost::thread>
+    > m_threads;
 };
 #endif // LinearPipeline_h__

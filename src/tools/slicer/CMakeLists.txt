@@ -12,14 +12,14 @@ set(SLICER_SOURCES
 #####################################################################################
 
 set(LVR_SLICER_DEPENDENCIES
-	lvr_static
-	lvrlas_static
-	lvrrply_static
-	lvrslam6d_static
-	${OPENGL_LIBRARIES}
-	${GLUT_LIBRARIES}
-	${OpenCV_LIBS}
-	)
+    lvr_static
+    lvrlas_static
+    lvrrply_static
+    lvrslam6d_static
+    ${OPENGL_LIBRARIES}
+    ${GLUT_LIBRARIES}
+    ${OpenCV_LIBS}
+    )
 
 if(PCL_FOUND)
   set(LVR_SLICER_DEPENDENCIES  ${LVR_SLICER_DEPENDENCIES} ${PCL_LIBRARIES} )

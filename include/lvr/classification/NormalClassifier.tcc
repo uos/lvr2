@@ -30,195 +30,195 @@ namespace lvr
 template<typename VertexT, typename NormalT>
 string NormalClassifier<VertexT, NormalT>::getLabel(int index)
 {
-	Region<VertexT, NormalT>* region = this->m_regions->at(index);
+    Region<VertexT, NormalT>* region = this->m_regions->at(index);
 
-	string label_str;
+    string label_str;
 
-	if (region->hasLabel())
-	{
-		return region->getLabel();
-	}
-	else
-	{
+    if (region->hasLabel())
+    {
+        return region->getLabel();
+    }
+    else
+    {
 
-		NormalLabel label_type = _classifyRegion(index);
+        NormalLabel label_type = _classifyRegion(index);
 
-		switch(label_type)
-		{
-			case VerticalFace:
-				label_str = "vertical";
-				break;
-			case HorizontalupperFace:
-				label_str = "horizontalupper";
-				break;
-			case HorizontallowerFace:
-				label_str = "horizontallower";
-				break;
-			default:
-				label_str = "unknown";
-				break;
-		}
+        switch(label_type)
+        {
+            case VerticalFace:
+                label_str = "vertical";
+                break;
+            case HorizontalupperFace:
+                label_str = "horizontalupper";
+                break;
+            case HorizontallowerFace:
+                label_str = "horizontallower";
+                break;
+            default:
+                label_str = "unknown";
+                break;
+        }
 
-		region->setLabel(label_str);
-		return label_str;
-	}
+        region->setLabel(label_str);
+        return label_str;
+    }
 }
 
 template<typename VertexT, typename NormalT>
 uchar* NormalClassifier<VertexT, NormalT>::getColor(int index)
 {
-	float fc[3];
-	uchar* c = new uchar[3];
+    float fc[3];
+    uchar* c = new uchar[3];
 
-	NormalLabel label_type = _classifyRegion(index);
-	switch(label_type)
-	{
-		case VerticalFace:
-			Colors::getColor(fc, GREEN);
-			break;
-		case HorizontalupperFace:
-			Colors::getColor(fc, BLUE);
-			break;
-		case HorizontallowerFace:
-			Colors::getColor(fc, RED);
-			break;
-		default:
-			Colors::getColor(fc, LIGHTGREY);
-			break;
-	}
+    NormalLabel label_type = _classifyRegion(index);
+    switch(label_type)
+    {
+        case VerticalFace:
+            Colors::getColor(fc, GREEN);
+            break;
+        case HorizontalupperFace:
+            Colors::getColor(fc, BLUE);
+            break;
+        case HorizontallowerFace:
+            Colors::getColor(fc, RED);
+            break;
+        default:
+            Colors::getColor(fc, LIGHTGREY);
+            break;
+    }
 
-	for(int i = 0; i < 3; i++)
-	{
-		c[i] = (uchar)(fc[i] * 255);
-	}
+    for(int i = 0; i < 3; i++)
+    {
+        c[i] = (uchar)(fc[i] * 255);
+    }
 
-	return c;
+    return c;
 }
 
 template<typename VertexT, typename NormalT>
 uchar NormalClassifier<VertexT, NormalT>::r(int i)
 {
-	uchar* c = getColor(i);
-	uchar ret = c[0];
-	delete c;
-	return ret;
+    uchar* c = getColor(i);
+    uchar ret = c[0];
+    delete c;
+    return ret;
 }
 
 template<typename VertexT, typename NormalT>
 uchar NormalClassifier<VertexT, NormalT>::g(int i)
 {
-	uchar* c = getColor(i);
-	uchar ret = c[1];
-	delete c;
-	return ret;
+    uchar* c = getColor(i);
+    uchar ret = c[1];
+    delete c;
+    return ret;
 }
 
 template<typename VertexT, typename NormalT>
 uchar NormalClassifier<VertexT, NormalT>::b(int i)
 {
-	uchar* c = getColor(i);
-	uchar ret = c[2];
-	delete c;
-	return ret;
+    uchar* c = getColor(i);
+    uchar ret = c[2];
+    delete c;
+    return ret;
 }
 
 template<typename VertexT, typename NormalT>
 NormalLabel NormalClassifier<VertexT, NormalT>::_classifyRegion(int index)
 {
 
-	if((unsigned int) index < this->m_regions->size())
-	{
-		NormalT n_ceil(0.0, 1.0, 0.0);
-		NormalT n_floor(0.0, -1.0, 0.0);
+    if((unsigned int) index < this->m_regions->size())
+    {
+        NormalT n_ceil(0.0, 1.0, 0.0);
+        NormalT n_floor(0.0, -1.0, 0.0);
 
-		// Get region and normal
-		Region<VertexT, NormalT>* region = this->m_regions->at(index);
-		NormalT normal = region->m_normal;
+        // Get region and normal
+        Region<VertexT, NormalT>* region = this->m_regions->at(index);
+        NormalT normal = region->m_normal;
 
-		if(region->size() >= this->m_minSize)
-		{
-			// Check if ceiling or floor
-			if(n_ceil 	* normal > 0.98) return HorizontalupperFace;
-			if(n_floor 	* normal > 0.98) return HorizontallowerFace;
+        if(region->size() >= this->m_minSize)
+        {
+            // Check if ceiling or floor
+            if(n_ceil     * normal > 0.98) return HorizontalupperFace;
+            if(n_floor     * normal > 0.98) return HorizontallowerFace;
 
-			// Check for walls
-			float radius = sqrt(normal.x * normal.x + normal.z * normal.z);
-			if(radius > 0.95) return VerticalFace;
-		}
-	}
+            // Check for walls
+            float radius = sqrt(normal.x * normal.x + normal.z * normal.z);
+            if(radius > 0.95) return VerticalFace;
+        }
+    }
 
-	return UnknownFace;
+    return UnknownFace;
 }
 
 template<typename VertexT, typename NormalT>
 void NormalClassifier<VertexT, NormalT>::createRegionBuffer(
-				int region_id,
-				map<VertexT, int> &vertex_map,
-				vector<int> &indices,
-				vector<float> &vertices,
-				vector<float> &normals,
-				vector<uint> &colors
-				)
+                int region_id,
+                map<VertexT, int> &vertex_map,
+                vector<int> &indices,
+                vector<float> &vertices,
+                vector<float> &normals,
+                vector<uint> &colors
+                )
 {
-	//int index_counter = 0;
-	int	vertex_position = 0;
+    //int index_counter = 0;
+    int    vertex_position = 0;
 
-	Region<VertexT, NormalT>* region = this->m_regions->at(region_id);
+    Region<VertexT, NormalT>* region = this->m_regions->at(region_id);
 
-	// get the color
-	uchar* color = getColor(region_id);
-	uchar red   = color[0];
-	uchar green = color[1];
-	uchar blue  = color[2];
+    // get the color
+    uchar* color = getColor(region_id);
+    uchar red   = color[0];
+    uchar green = color[1];
+    uchar blue  = color[2];
 
-	// Check if region is a planar cluster
-	VertexT current;
-	NormalT normal;
-	for(unsigned int a = 0; a < region->m_faces.size(); a++)
-	{
-		for(int d = 0; d < 3; d++)
-		{
-			HalfEdgeFace<VertexT, NormalT>* f = region->m_faces[a];
+    // Check if region is a planar cluster
+    VertexT current;
+    NormalT normal;
+    for(unsigned int a = 0; a < region->m_faces.size(); a++)
+    {
+        for(int d = 0; d < 3; d++)
+        {
+            HalfEdgeFace<VertexT, NormalT>* f = region->m_faces[a];
 
-			current = (*f)(d)->m_position;
-			normal =  (*f)(d)->m_normal;
+            current = (*f)(d)->m_position;
+            normal =  (*f)(d)->m_normal;
 
-			if(vertex_map.find(current) != vertex_map.end())
-			{
-				// Use already present vertex
-				vertex_position = vertex_map[current];
-			}
-			else
-			{
-				// Create new index
-				vertex_position = vertices.size() / 3;
+            if(vertex_map.find(current) != vertex_map.end())
+            {
+                // Use already present vertex
+                vertex_position = vertex_map[current];
+            }
+            else
+            {
+                // Create new index
+                vertex_position = vertices.size() / 3;
 
-				// Insert new vertex to vertex map and save relevant information
-				vertex_map.insert(pair<VertexT, int>(current, vertex_position));
+                // Insert new vertex to vertex map and save relevant information
+                vertex_map.insert(pair<VertexT, int>(current, vertex_position));
 
-				vertices.push_back(current.x);
-				vertices.push_back(current.y);
-				vertices.push_back(current.z);
+                vertices.push_back(current.x);
+                vertices.push_back(current.y);
+                vertices.push_back(current.z);
 
-				normals.push_back(normal.x);
-				normals.push_back(normal.y);
-				normals.push_back(normal.z);
+                normals.push_back(normal.x);
+                normals.push_back(normal.y);
+                normals.push_back(normal.z);
 
-				colors.push_back(red);
-				colors.push_back(green);
-				colors.push_back(blue);
-			}
+                colors.push_back(red);
+                colors.push_back(green);
+                colors.push_back(blue);
+            }
 
-			indices.push_back(vertex_position);
-		}
-	}
+            indices.push_back(vertex_position);
+        }
+    }
 }
 
 template<typename VertexT, typename NormalT>
 void NormalClassifier<VertexT, NormalT>::writeMetaInfo()
 {
-	std::cout << timestamp << "METHOD NormalClassifier::writeMetaInfo() NOT YET IMPLEMENTED" << std::endl;
-	return;
+    std::cout << timestamp << "METHOD NormalClassifier::writeMetaInfo() NOT YET IMPLEMENTED" << std::endl;
+    return;
 }
 
 

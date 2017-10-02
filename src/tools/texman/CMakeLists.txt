@@ -12,15 +12,15 @@ set(LVR_TEXMAN_SOURCES
 #####################################################################################
 
 set(LVR_TEXMAN_DEPENDENCIES
-	lvr_static
-	lvrlas_static
-	lvrrply_static
-	lvrslam6d_static
-	${OPENGL_LIBRARIES}
-	${GLUT_LIBRARIES}
-	${OpenCV_LIBS}
-	${PCL_LIBRARIES}
-	)
+    lvr_static
+    lvrlas_static
+    lvrrply_static
+    lvrslam6d_static
+    ${OPENGL_LIBRARIES}
+    ${GLUT_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${PCL_LIBRARIES}
+    )
 
 if( ${NABO_FOUND} )
 set(LVR_TEXMAN_DEPENDENCIES ${LVR_TEXMAN_DEPENDENCIES} ${NABO_LIBRARY})

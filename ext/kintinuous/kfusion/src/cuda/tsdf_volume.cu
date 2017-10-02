@@ -12,18 +12,18 @@ namespace kfusion
 {
     namespace device
     {
-		__kf_device__  void
-		shift_tsdf_pointer(ushort2 ** value, kfusion::tsdf_buffer buffer)
-		{
-		  ///Shift the pointer by (@origin - @start)
-		  *value += (buffer.tsdf_rolling_buff_origin - buffer.tsdf_memory_start);
+        __kf_device__  void
+        shift_tsdf_pointer(ushort2 ** value, kfusion::tsdf_buffer buffer)
+        {
+          ///Shift the pointer by (@origin - @start)
+          *value += (buffer.tsdf_rolling_buff_origin - buffer.tsdf_memory_start);
 
-		  ///If we land outside of the memory, make sure to "modulo" the new value
-		  if(*value > buffer.tsdf_memory_end)
-		  {
-			*value -= (buffer.tsdf_memory_end - buffer.tsdf_memory_start + 1); /// correction of bug found my qianyizh
-		  }
-	    }
+          ///If we land outside of the memory, make sure to "modulo" the new value
+          if(*value > buffer.tsdf_memory_end)
+          {
+            *value -= (buffer.tsdf_memory_end - buffer.tsdf_memory_start + 1); /// correction of bug found my qianyizh
+          }
+        }
 
         __global__ void clear_volume_kernel(TsdfVolume tsdf)
         {
@@ -44,18 +44,18 @@ namespace kfusion
       clearSliceKernel (TsdfVolume tsdf, const kfusion::tsdf_buffer buffer, int3 minBounds, int3 maxBounds)
       {
         int x = threadIdx.x + blockIdx.x * blockDim.x;
-		int y = threadIdx.y + blockIdx.y * blockDim.y;
+        int y = threadIdx.y + blockIdx.y * blockDim.y;
 
-		//compute relative indices
-		int idX, idY;
-		if(x <= minBounds.x)
-			idX = x + buffer.voxels_size.x;
-		else
-			idX = x;
-		if(y <= minBounds.y)
-			idY = y + buffer.voxels_size.y;
-		else
-			idY = y;
+        //compute relative indices
+        int idX, idY;
+        if(x <= minBounds.x)
+            idX = x + buffer.voxels_size.x;
+        else
+            idX = x;
+        if(y <= minBounds.y)
+            idY = y + buffer.voxels_size.y;
+        else
+            idY = y;
 
         if ( x < buffer.voxels_size.x && y < buffer.voxels_size.y)
         {
@@ -83,17 +83,17 @@ namespace kfusion
                 ///Move pointer to the Z origin
                 pos = tsdf.multzstep(minBounds.z, pos);
 
-				if(maxBounds.z < 0)
-				{
-					pos = tsdf.multzstep(maxBounds.z, pos);
-				}
+                if(maxBounds.z < 0)
+                {
+                    pos = tsdf.multzstep(maxBounds.z, pos);
+                }
                 ///We make sure that we are not already before the start of the memory
                 if(pos < buffer.tsdf_memory_start)
                     pos = pos + size;
 
                 int nbSteps = abs(maxBounds.z);
 
-				#pragma unroll
+                #pragma unroll
                 for(int z = 0; z < nbSteps; ++z, pos = tsdf.zstep(pos))
                 {
                   ///If we went outside of the memory, make sure we go back to the begining of it
@@ -176,9 +176,9 @@ namespace kfusion
                         //read and unpack
                         int weight_prev;
 
-           				ushort2* pos = const_cast<ushort2*> (vptr);
+                           ushort2* pos = const_cast<ushort2*> (vptr);
 
-						shift_tsdf_pointer (&pos, buffer);
+                        shift_tsdf_pointer (&pos, buffer);
 
                         float tsdf_prev = unpack_tsdf (gmem::LdCs(pos), weight_prev);
 
@@ -268,14 +268,14 @@ namespace kfusion
             ushort2* pos7 = const_cast<ushort2*> (volume(g.x + 1, g.y + 1, g.z + 0));
             ushort2* pos8 = const_cast<ushort2*> (volume(g.x + 1, g.y + 1, g.z + 1));
 
-			shift_tsdf_pointer (&pos1, buffer);
-			shift_tsdf_pointer (&pos2, buffer);
-			shift_tsdf_pointer (&pos3, buffer);
-			shift_tsdf_pointer (&pos4, buffer);
-			shift_tsdf_pointer (&pos5, buffer);
-			shift_tsdf_pointer (&pos6, buffer);
-			shift_tsdf_pointer (&pos7, buffer);
-			shift_tsdf_pointer (&pos8, buffer);
+            shift_tsdf_pointer (&pos1, buffer);
+            shift_tsdf_pointer (&pos2, buffer);
+            shift_tsdf_pointer (&pos3, buffer);
+            shift_tsdf_pointer (&pos4, buffer);
+            shift_tsdf_pointer (&pos5, buffer);
+            shift_tsdf_pointer (&pos6, buffer);
+            shift_tsdf_pointer (&pos7, buffer);
+            shift_tsdf_pointer (&pos8, buffer);
 
             tsdf += unpack_tsdf(*pos1) * (1 - a) * (1 - b) * (1 - c);
             tsdf += unpack_tsdf(*pos2) * (1 - a) * (1 - b) *      c;
@@ -311,8 +311,8 @@ namespace kfusion
                 int x = __float2int_rn (p.x * voxel_size_inv.x);
                 int y = __float2int_rn (p.y * voxel_size_inv.y);
                 int z = __float2int_rn (p.z * voxel_size_inv.z);
-				ushort2* pos = const_cast<ushort2*> (volume(x,y,z));
-				shift_tsdf_pointer (&pos, buffer);
+                ushort2* pos = const_cast<ushort2*> (volume(x,y,z));
+                shift_tsdf_pointer (&pos, buffer);
                 return unpack_tsdf(*pos);
             }
 
@@ -578,14 +578,14 @@ namespace kfusion
             }*/
 
             __kf_device__ float fetch (const kfusion::tsdf_buffer& buffer, int x, int y, int z, int& weight) const
-			{
-			  const ushort2* tmp_pos = volume(x, y, z);
-			  ushort2* pos = const_cast<ushort2*> (tmp_pos);
+            {
+              const ushort2* tmp_pos = volume(x, y, z);
+              ushort2* pos = const_cast<ushort2*> (tmp_pos);
 
-			  shift_tsdf_pointer (&pos, buffer);
+              shift_tsdf_pointer (&pos, buffer);
 
-			  return unpack_tsdf (*pos, weight);
-			}
+              return unpack_tsdf (*pos, weight);
+            }
 
             __kf_device__ void operator () (PtrSz<Point> output, const tsdf_buffer buffer) const
             {
@@ -762,54 +762,54 @@ namespace kfusion
                 }
             }
 
-			// OPERATOR USED BY EXTRACT_SLICE_AS_CLOUD.
-			// This operator extracts the cloud as TSDF values and X,Y,Z indices.
-			// The previous operator generates a regular point cloud in meters.
-			// This one generates a TSDF Point Cloud in grid indices.
-			//__kf_device__ void operator () (PtrSz<Point> output) const
-			// TODO fix operator for slice download
-			__kf_device__ void
-			operator () (kfusion::tsdf_buffer buffer, PtrSz<Point> output, int3 minBounds, int3 maxBounds, int3 bufferShifts) const
-			{
-				int x = threadIdx.x + blockIdx.x * CTA_SIZE_X;
-				int y = threadIdx.y + blockIdx.y * CTA_SIZE_Y;
+            // OPERATOR USED BY EXTRACT_SLICE_AS_CLOUD.
+            // This operator extracts the cloud as TSDF values and X,Y,Z indices.
+            // The previous operator generates a regular point cloud in meters.
+            // This one generates a TSDF Point Cloud in grid indices.
+            //__kf_device__ void operator () (PtrSz<Point> output) const
+            // TODO fix operator for slice download
+            __kf_device__ void
+            operator () (kfusion::tsdf_buffer buffer, PtrSz<Point> output, int3 minBounds, int3 maxBounds, int3 bufferShifts) const
+            {
+                int x = threadIdx.x + blockIdx.x * CTA_SIZE_X;
+                int y = threadIdx.y + blockIdx.y * CTA_SIZE_Y;
 
 #if __CUDA_ARCH__ < 200
-				__shared__ int cta_buffer[CTA_SIZE];
+                __shared__ int cta_buffer[CTA_SIZE];
 #endif
 
 #if __CUDA_ARCH__ >= 120
-				if (__all (x >= volume.dims.x) || __all (y >= volume.dims.y))
-				return;
+                if (__all (x >= volume.dims.x) || __all (y >= volume.dims.y))
+                return;
 #else
-				if (Emulation::All(x >= volume.dims.x, cta_buffer) || Emulation::All(y >= volume.dims.y, cta_buffer))
-				return;
+                if (Emulation::All(x >= volume.dims.x, cta_buffer) || Emulation::All(y >= volume.dims.y, cta_buffer))
+                return;
 #endif
-				int ftid = Block::flattenedThreadId ();
+                int ftid = Block::flattenedThreadId ();
 
-				for (int z = 0; z < volume.dims.z; ++z)
-				{
-					// The black zone is the name given to the subvolume within the TSDF Volume grid that is shifted out.
-					// In other words, the set of points in the TSDF grid that we want to extract in order to add it to the world model being built in CPU.
-					bool in_black_zone = ( (x >= minBounds.x && x <= maxBounds.x) || (y >= minBounds.y && y <= maxBounds.y) || ( z >= minBounds.z && z <= maxBounds.z) ) ;
-					//bool in_black_zone = ( (x >= minBounds.x && x <= maxBounds.x) && (y >= minBounds.y && y <= maxBounds.y) && ( z >= minBounds.z && z <= maxBounds.z) ) ;
-					float4 points[MAX_LOCAL_POINTS];
-					int local_count = 0;
-					if (x < volume.dims.x && y < volume.dims.y && in_black_zone)
-					{
-						int W;
-						float F = fetch (buffer, x, y, z, W);
-						if (W != 0 && F != 1.f && F < 0.98 && F != 0.0f && F > -0.98)
-						//if (W != 0 && F != 1.f && F < 0.8 && F != 0.0f && F > -0.8)
-						{
-							float4 pt;
-							pt.x = x + bufferShifts.x;
-						    pt.y = y + bufferShifts.y;//abs((y + bufferShifts.y) - 511);
-							pt.z = z + bufferShifts.z;
-							pt.w = F;
-							points[local_count++] = pt;
-						}
-					}/* if (x < VOLUME_X && y < VOLUME_Y) */
+                for (int z = 0; z < volume.dims.z; ++z)
+                {
+                    // The black zone is the name given to the subvolume within the TSDF Volume grid that is shifted out.
+                    // In other words, the set of points in the TSDF grid that we want to extract in order to add it to the world model being built in CPU.
+                    bool in_black_zone = ( (x >= minBounds.x && x <= maxBounds.x) || (y >= minBounds.y && y <= maxBounds.y) || ( z >= minBounds.z && z <= maxBounds.z) ) ;
+                    //bool in_black_zone = ( (x >= minBounds.x && x <= maxBounds.x) && (y >= minBounds.y && y <= maxBounds.y) && ( z >= minBounds.z && z <= maxBounds.z) ) ;
+                    float4 points[MAX_LOCAL_POINTS];
+                    int local_count = 0;
+                    if (x < volume.dims.x && y < volume.dims.y && in_black_zone)
+                    {
+                        int W;
+                        float F = fetch (buffer, x, y, z, W);
+                        if (W != 0 && F != 1.f && F < 0.98 && F != 0.0f && F > -0.98)
+                        //if (W != 0 && F != 1.f && F < 0.8 && F != 0.0f && F > -0.8)
+                        {
+                            float4 pt;
+                            pt.x = x + bufferShifts.x;
+                            pt.y = y + bufferShifts.y;//abs((y + bufferShifts.y) - 511);
+                            pt.z = z + bufferShifts.z;
+                            pt.w = F;
+                            points[local_count++] = pt;
+                        }
+                    }/* if (x < VOLUME_X && y < VOLUME_Y) */
 
 #if __CUDA_ARCH__ >= 200
                     ///not we fulfilled points array at current iteration
@@ -819,78 +819,78 @@ namespace kfusion
                     cta_buffer[tid] = local_count;
                     int total_warp = Emulation::warp_reduce(cta_buffer, tid);
 #endif
-					__shared__ float storage_X[CTA_SIZE * MAX_LOCAL_POINTS];
+                    __shared__ float storage_X[CTA_SIZE * MAX_LOCAL_POINTS];
                     __shared__ float storage_Y[CTA_SIZE * MAX_LOCAL_POINTS];
                     __shared__ float storage_Z[CTA_SIZE * MAX_LOCAL_POINTS];
                     __shared__ float storage_I[CTA_SIZE * MAX_LOCAL_POINTS];
 
-					// local_count counts the number of zero crossing for the current thread. Now we need to merge this knowledge with the other threads
-					// not we fulfilled points array at current iteration
-					if (total_warp > 0) ///more than 0 zero-crossings
-					{
-						int lane = Warp::laneId (); ///index of thread within warp [0-31]
-						int storage_index = (ftid >> Warp::LOG_WARP_SIZE) * Warp::WARP_SIZE * MAX_LOCAL_POINTS;
-						// Pointer to the beginning of the current warp buffer
-						volatile int* cta_buffer = (int*)(storage_X + storage_index);
-						// Compute offset of current warp
-						// Call in place scanning (see http://http.developer.nvidia.com/GPUGems3/gpugems3_ch39.html)
-						cta_buffer[lane] = local_count;
-						int offset = scan_warp<exclusive>(cta_buffer, lane); //How many crossings did we have before index "lane" ?
-						// We want to do only 1 operation per warp (not thread) -> because it is faster
-						if (lane == 0)
-						{
-							int old_global_count = atomicAdd (&global_count, total_warp); ///We use atomicAdd, so that threads do not collide
-							cta_buffer[0] = old_global_count;
-						}
-						int old_global_count = cta_buffer[0];
-						// Perform compaction (dump all current crossings)
-						for (int l = 0; l < local_count; ++l)
-						{
-							storage_X[storage_index + offset + l] = points[l].x;// x coordinates of the points we found in STORAGE_X
-							storage_Y[storage_index + offset + l] = points[l].y;// y coordinates of the points we found in STORAGE_Y
-							storage_Z[storage_index + offset + l] = points[l].z;// z coordinates of the points we found in STORAGE_Z
-							storage_I[storage_index + offset + l] = points[l].w;// Intensity values of the points we found in STORAGE_I
-						}
-						// Retrieve Zero-crossings as 3D points
-						//int offset_storage = old_global_count + lane;
-						Point *pos = output.data + old_global_count + lane;
-						for (int idx = lane; idx < total_warp; idx += Warp::STRIDE, pos += Warp::STRIDE)
-						{
-							float x = storage_X[storage_index + idx];
-							float y = storage_Y[storage_index + idx];
-							float z = storage_Z[storage_index + idx];
-							float i = storage_I[storage_index + idx];
-							//store_point_intensity (x, y, z, i, output.data, output_intensity.data, offset_storage);
-							*pos = make_float4(x, y, z, i);
-						}
-						// Sanity check to make sure our output_xyz buffer is not full already
-						bool full = (old_global_count + total_warp) >= output.size;
-						if (full)
-							break;
-					}
-				} /* for(int z = 0; z < VOLUME_Z - 1; ++z) */
-				///////////////////////////
-				// Prepare for future scans
-				if (ftid == 0)
-				{
-					unsigned int total_blocks = gridDim.x * gridDim.y * gridDim.z;
-					unsigned int value = atomicInc (&blocks_done, total_blocks);
-					// Last block
-					if (value == total_blocks - 1)
-					{
-						output_count = min ((int)output.size, global_count);
-						blocks_done = 0;
-						global_count = 0;
-					}
-				}
-			} /* operator() */
+                    // local_count counts the number of zero crossing for the current thread. Now we need to merge this knowledge with the other threads
+                    // not we fulfilled points array at current iteration
+                    if (total_warp > 0) ///more than 0 zero-crossings
+                    {
+                        int lane = Warp::laneId (); ///index of thread within warp [0-31]
+                        int storage_index = (ftid >> Warp::LOG_WARP_SIZE) * Warp::WARP_SIZE * MAX_LOCAL_POINTS;
+                        // Pointer to the beginning of the current warp buffer
+                        volatile int* cta_buffer = (int*)(storage_X + storage_index);
+                        // Compute offset of current warp
+                        // Call in place scanning (see http://http.developer.nvidia.com/GPUGems3/gpugems3_ch39.html)
+                        cta_buffer[lane] = local_count;
+                        int offset = scan_warp<exclusive>(cta_buffer, lane); //How many crossings did we have before index "lane" ?
+                        // We want to do only 1 operation per warp (not thread) -> because it is faster
+                        if (lane == 0)
+                        {
+                            int old_global_count = atomicAdd (&global_count, total_warp); ///We use atomicAdd, so that threads do not collide
+                            cta_buffer[0] = old_global_count;
+                        }
+                        int old_global_count = cta_buffer[0];
+                        // Perform compaction (dump all current crossings)
+                        for (int l = 0; l < local_count; ++l)
+                        {
+                            storage_X[storage_index + offset + l] = points[l].x;// x coordinates of the points we found in STORAGE_X
+                            storage_Y[storage_index + offset + l] = points[l].y;// y coordinates of the points we found in STORAGE_Y
+                            storage_Z[storage_index + offset + l] = points[l].z;// z coordinates of the points we found in STORAGE_Z
+                            storage_I[storage_index + offset + l] = points[l].w;// Intensity values of the points we found in STORAGE_I
+                        }
+                        // Retrieve Zero-crossings as 3D points
+                        //int offset_storage = old_global_count + lane;
+                        Point *pos = output.data + old_global_count + lane;
+                        for (int idx = lane; idx < total_warp; idx += Warp::STRIDE, pos += Warp::STRIDE)
+                        {
+                            float x = storage_X[storage_index + idx];
+                            float y = storage_Y[storage_index + idx];
+                            float z = storage_Z[storage_index + idx];
+                            float i = storage_I[storage_index + idx];
+                            //store_point_intensity (x, y, z, i, output.data, output_intensity.data, offset_storage);
+                            *pos = make_float4(x, y, z, i);
+                        }
+                        // Sanity check to make sure our output_xyz buffer is not full already
+                        bool full = (old_global_count + total_warp) >= output.size;
+                        if (full)
+                            break;
+                    }
+                } /* for(int z = 0; z < VOLUME_Z - 1; ++z) */
+                ///////////////////////////
+                // Prepare for future scans
+                if (ftid == 0)
+                {
+                    unsigned int total_blocks = gridDim.x * gridDim.y * gridDim.z;
+                    unsigned int value = atomicInc (&blocks_done, total_blocks);
+                    // Last block
+                    if (value == total_blocks - 1)
+                    {
+                        output_count = min ((int)output.size, global_count);
+                        blocks_done = 0;
+                        global_count = 0;
+                    }
+                }
+            } /* operator() */
         };
 
-		__global__ void
-		extractSliceKernel (const FullScan6 fs, PtrSz<Point> output, kfusion::tsdf_buffer buffer, int3 minBounds, int3 maxBounds, int3 bufferShifts)
-		{
-			fs (buffer, output, minBounds, maxBounds, bufferShifts);
-		}
+        __global__ void
+        extractSliceKernel (const FullScan6 fs, PtrSz<Point> output, kfusion::tsdf_buffer buffer, int3 minBounds, int3 maxBounds, int3 bufferShifts)
+        {
+            fs (buffer, output, minBounds, maxBounds, bufferShifts);
+        }
 
         __global__ void extract_kernel(const FullScan6 fs, const tsdf_buffer buffer, PtrSz<Point> output) { fs(output, buffer); }
 
@@ -1003,26 +1003,26 @@ size_t kfusion::device::extractCloud (const TsdfVolume& volume, const tsdf_buffe
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 size_t kfusion::device::extractSliceAsCloud (const TsdfVolume& volume, const kfusion::tsdf_buffer* buffer,
-								const Vec3i minBounds, const Vec3i maxBounds, const Vec3i globalShift, const Aff3f& aff,
-								PtrSz<Point> output)
+                                const Vec3i minBounds, const Vec3i maxBounds, const Vec3i globalShift, const Aff3f& aff,
+                                PtrSz<Point> output)
 {
-	typedef FullScan6 FS;
+    typedef FullScan6 FS;
     FS fs(volume);
     fs.aff = aff;
 
-	dim3 block (FS::CTA_SIZE_X, FS::CTA_SIZE_Y);
+    dim3 block (FS::CTA_SIZE_X, FS::CTA_SIZE_Y);
     dim3 grid (divUp (volume.dims.x, block.x), divUp (volume.dims.y, block.y));
 
-	//printf("buffer_origin: x: %d y: %d z: %d \n", buffer->origin_GRID.x, buffer->origin_GRID.y, buffer->origin_GRID.z);
-	// Extraction call
-	extractSliceKernel<<<grid, block>>>(fs, output, *buffer, minBounds, maxBounds, globalShift);
+    //printf("buffer_origin: x: %d y: %d z: %d \n", buffer->origin_GRID.x, buffer->origin_GRID.y, buffer->origin_GRID.z);
+    // Extraction call
+    extractSliceKernel<<<grid, block>>>(fs, output, *buffer, minBounds, maxBounds, globalShift);
 
-	cudaSafeCall ( cudaGetLastError () );
-	cudaSafeCall ( cudaDeviceSynchronize () );
+    cudaSafeCall ( cudaGetLastError () );
+    cudaSafeCall ( cudaDeviceSynchronize () );
 
-	int size;
-	cudaSafeCall ( cudaMemcpyFromSymbol (&size, output_count, sizeof(size)) );
-	return (size_t)size;
+    int size;
+    cudaSafeCall ( cudaMemcpyFromSymbol (&size, output_count, sizeof(size)) );
+    return (size_t)size;
 }
 
 void kfusion::device::extractNormals (const TsdfVolume& volume, const tsdf_buffer& buffer, const PtrSz<Point>& points, const Aff3f& aff, const Mat3f& Rinv, float gradient_delta_factor, float4* output)
@@ -1045,65 +1045,65 @@ void kfusion::device::extractNormals (const TsdfVolume& volume, const tsdf_buffe
 void
 kfusion::device::clearTSDFSlice (const TsdfVolume& volume, const kfusion::tsdf_buffer* buffer, const Vec3i offset)
 {
-	int newX = buffer->origin_GRID.x + offset.x;
-	int newY = buffer->origin_GRID.y + offset.y;
-	int3 minBounds, maxBounds;
-	//X
-	if(newX >= 0)
-	{
-		minBounds.x = buffer->origin_GRID.x;
-		maxBounds.x = newX;
-	}
-	else
-	{
-		minBounds.x = newX + buffer->voxels_size.x;
-		maxBounds.x = buffer->origin_GRID.x + buffer->voxels_size.x;
-	}
-	if(minBounds.x > maxBounds.x)
-		std::swap(minBounds.x, maxBounds.x);
-	//Y
-	if(newY >= 0)
-	{
-		minBounds.y = buffer->origin_GRID.y;
-		maxBounds.y = newY;
-	}
-	else
-	{
-		minBounds.y = newY + buffer->voxels_size.y;
-		maxBounds.y = buffer->origin_GRID.y + buffer->voxels_size.y;
-	}
-	if(minBounds.y > maxBounds.y)
-		std::swap(minBounds.y, maxBounds.y);
-	//Z
-	minBounds.z = buffer->origin_GRID.z;
-	maxBounds.z = offset.z + 1;
-	/*if(offset.x < 0)
-	{
-		minBounds.x += 1;
-		maxBounds.x += 1;
-	}
-	if(offset.y < 0)
-	{
-		minBounds.y += 1;
-		maxBounds.y += 1;
-	}
-	if(offset.z < 0)
-	{
-		minBounds.z += 1;
-		maxBounds.z += 1;
-	}*/
+    int newX = buffer->origin_GRID.x + offset.x;
+    int newY = buffer->origin_GRID.y + offset.y;
+    int3 minBounds, maxBounds;
+    //X
+    if(newX >= 0)
+    {
+        minBounds.x = buffer->origin_GRID.x;
+        maxBounds.x = newX;
+    }
+    else
+    {
+        minBounds.x = newX + buffer->voxels_size.x;
+        maxBounds.x = buffer->origin_GRID.x + buffer->voxels_size.x;
+    }
+    if(minBounds.x > maxBounds.x)
+        std::swap(minBounds.x, maxBounds.x);
+    //Y
+    if(newY >= 0)
+    {
+        minBounds.y = buffer->origin_GRID.y;
+        maxBounds.y = newY;
+    }
+    else
+    {
+        minBounds.y = newY + buffer->voxels_size.y;
+        maxBounds.y = buffer->origin_GRID.y + buffer->voxels_size.y;
+    }
+    if(minBounds.y > maxBounds.y)
+        std::swap(minBounds.y, maxBounds.y);
+    //Z
+    minBounds.z = buffer->origin_GRID.z;
+    maxBounds.z = offset.z + 1;
+    /*if(offset.x < 0)
+    {
+        minBounds.x += 1;
+        maxBounds.x += 1;
+    }
+    if(offset.y < 0)
+    {
+        minBounds.y += 1;
+        maxBounds.y += 1;
+    }
+    if(offset.z < 0)
+    {
+        minBounds.z += 1;
+        maxBounds.z += 1;
+    }*/
 
 
-	//printf("clear minBounds: %d, %d, %d \n", minBounds.x, minBounds.y, minBounds.z);
-	//printf("clear maxBounds: %d, %d, %d \n", maxBounds.x, maxBounds.y, maxBounds.z);
-	// call kernel
-	dim3 block (32, 16);
-	dim3 grid (1, 1, 1);
-	grid.x = divUp (buffer->voxels_size.x, block.x);
-	grid.y = divUp (buffer->voxels_size.y, block.y);
+    //printf("clear minBounds: %d, %d, %d \n", minBounds.x, minBounds.y, minBounds.z);
+    //printf("clear maxBounds: %d, %d, %d \n", maxBounds.x, maxBounds.y, maxBounds.z);
+    // call kernel
+    dim3 block (32, 16);
+    dim3 grid (1, 1, 1);
+    grid.x = divUp (buffer->voxels_size.x, block.x);
+    grid.y = divUp (buffer->voxels_size.y, block.y);
 
-	clearSliceKernel<<<grid, block>>>(volume, *buffer, minBounds, maxBounds);
+    clearSliceKernel<<<grid, block>>>(volume, *buffer, minBounds, maxBounds);
 
-	cudaSafeCall ( cudaGetLastError () );
-	cudaSafeCall (cudaDeviceSynchronize ());
+    cudaSafeCall ( cudaGetLastError () );
+    cudaSafeCall (cudaDeviceSynchronize ());
 }

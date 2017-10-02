@@ -48,11 +48,11 @@ public:
     QString         getName();
     void            setName(QString name);
     bool            isEnabled();
-    ModelBridgePtr	getModelBridge();
+    ModelBridgePtr    getModelBridge();
     void            setModelVisibility(int column, bool globalValue);
 
 public Q_SLOTS:
-	void			setVisibility(bool visible);
+    void            setVisibility(bool visible);
 
 protected:
     ModelBridgePtr  m_modelBridge;

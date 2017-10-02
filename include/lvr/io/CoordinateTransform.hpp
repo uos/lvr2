@@ -32,10 +32,10 @@
 namespace lvr
 {
 
-	enum COORD_SYSTEM {SLAM6D, OPENGL_METERS, OPENGL_MM};
+    enum COORD_SYSTEM {SLAM6D, OPENGL_METERS, OPENGL_MM};
 
-	void convert(COORD_SYSTEM from, COORD_SYSTEM to, float* point);
-	void convert(COORD_SYSTEM from, COORD_SYSTEM to, PointBufferPtr &buffer);
+    void convert(COORD_SYSTEM from, COORD_SYSTEM to, float* point);
+    void convert(COORD_SYSTEM from, COORD_SYSTEM to, PointBufferPtr &buffer);
 }
 
 #endif /* COORDINATETRANSFORM_HPP_ */

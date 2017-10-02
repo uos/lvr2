@@ -67,100 +67,100 @@ enum
 class StaticMesh : public Renderable
 {
 public:
-	StaticMesh();
-	StaticMesh( ModelPtr model, string name=""); // <unnamed static mesh>" );
-	StaticMesh( MeshBufferPtr buffer, string name=""); //<unnamed static mesh>" );
+    StaticMesh();
+    StaticMesh( ModelPtr model, string name=""); // <unnamed static mesh>" );
+    StaticMesh( MeshBufferPtr buffer, string name=""); //<unnamed static mesh>" );
 
-	StaticMesh(const StaticMesh &o);
-	~StaticMesh();
-	inline void render();
+    StaticMesh(const StaticMesh &o);
+    ~StaticMesh();
+    inline void render();
 
-	virtual void finalize();
-	virtual void savePLY(string filename);
-	virtual void setName(string name);
+    virtual void finalize();
+    virtual void savePLY(string filename);
+    virtual void setName(string name);
 
-	floatArr		getVertices();
-	uintArr 		getIndices();
-	float*          getNormals();
+    floatArr        getVertices();
+    uintArr         getIndices();
+    float*          getNormals();
 
-	size_t			getNumberOfVertices();
-	size_t			getNumberOfFaces();
+    size_t            getNumberOfVertices();
+    size_t            getNumberOfFaces();
 
-	void setRenderMode(int mode) { m_renderMode = mode;}
-	int  getRenderMode() { return m_renderMode;}
+    void setRenderMode(int mode) { m_renderMode = mode;}
+    int  getRenderMode() { return m_renderMode;}
 
 private:
 
-	void init( MeshBufferPtr mesh );
+    void init( MeshBufferPtr mesh );
 
-	void interpolateNormals();
-	void setDefaultColors();
-	void calcBoundingBox();
+    void interpolateNormals();
+    void setDefaultColors();
+    void calcBoundingBox();
 
 protected:
 
-	//void compileDisplayLists();
-	void compileColoredMeshList();
-	void compileWireframeList();
-	void compileNameList();
+    //void compileDisplayLists();
+    void compileColoredMeshList();
+    void compileWireframeList();
+    void compileNameList();
 
-	void setColorMaterial(float r, float g, float b);
-
-
-	void readPly(string filename);
-
-	floatArr        m_normals;
-	float*          m_faceNormals;
-	floatArr        m_vertices;
-	ucharArr        m_colors;
-	unsigned char*  m_blackColors;
-
-	uintArr         m_faces;
-
-	bool            m_finalized;
-	bool			m_haveMaterials;
-
-	size_t          m_numVertices;
-	size_t          m_numFaces;
-	size_t          m_numMaterials;
-
-	int             m_renderMode;
+    void setColorMaterial(float r, float g, float b);
 
 
-	int             m_coloredMeshList;
-	int             m_wireframeList;
-	int				m_nameList;
+    void readPly(string filename);
+
+    floatArr        m_normals;
+    float*          m_faceNormals;
+    floatArr        m_vertices;
+    ucharArr        m_colors;
+    unsigned char*  m_blackColors;
+
+    uintArr         m_faces;
+
+    bool            m_finalized;
+    bool            m_haveMaterials;
+
+    size_t          m_numVertices;
+    size_t          m_numFaces;
+    size_t          m_numMaterials;
+
+    int             m_renderMode;
+
+
+    int             m_coloredMeshList;
+    int             m_wireframeList;
+    int                m_nameList;
 
 };
 
 void StaticMesh::render(){
 
-	if(m_active)
-	{
-		if(m_finalized){
-		    glPushMatrix();
-		    glMultMatrixf(m_transformation.getData());
-		    if(m_renderMode & RenderSurfaces)
-		    {
-		        glEnable(GL_LIGHTING);
-		        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		        glCallList(m_coloredMeshList);
-		        glCallList(m_nameList);
-		    }
+    if(m_active)
+    {
+        if(m_finalized){
+            glPushMatrix();
+            glMultMatrixf(m_transformation.getData());
+            if(m_renderMode & RenderSurfaces)
+            {
+                glEnable(GL_LIGHTING);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                glCallList(m_coloredMeshList);
+                glCallList(m_nameList);
+            }
 
-		    if(m_renderMode & RenderTriangles)
-		    {
-		        glDisable(GL_LIGHTING);
-		        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		        glLineWidth(m_lineWidth);
-		        glColor3f(0.0, 0.0, 0.0);
-		        glCallList(m_wireframeList);
-		        glEnable(GL_LIGHTING);
-		    }
-		    glPopMatrix();
+            if(m_renderMode & RenderTriangles)
+            {
+                glDisable(GL_LIGHTING);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glLineWidth(m_lineWidth);
+                glColor3f(0.0, 0.0, 0.0);
+                glCallList(m_wireframeList);
+                glEnable(GL_LIGHTING);
+            }
+            glPopMatrix();
 
- 		}
-	}
+         }
+    }
 }
 
 } // namespace lvr

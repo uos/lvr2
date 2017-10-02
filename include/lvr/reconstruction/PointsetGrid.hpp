@@ -19,12 +19,12 @@ template<typename VertexT, typename BoxT>
 class PointsetGrid: public HashGrid<VertexT, BoxT>
 {
 public:
-	PointsetGrid(float cellSize, typename PointsetSurface<VertexT>::Ptr& surface, BoundingBox<VertexT> bb, bool isVoxelsize = true, bool extrude = true);
-	virtual ~PointsetGrid();
+    PointsetGrid(float cellSize, typename PointsetSurface<VertexT>::Ptr& surface, BoundingBox<VertexT> bb, bool isVoxelsize = true, bool extrude = true);
+    virtual ~PointsetGrid();
 
 
 
-	void calcDistanceValues();
+    void calcDistanceValues();
 
 private:
 
@@ -36,7 +36,7 @@ private:
         return f < 0 ? f-.5:f+.5;
     }
 
-	typename PointsetSurface<VertexT>::Ptr		m_surface;
+    typename PointsetSurface<VertexT>::Ptr        m_surface;
 };
 
 } /* namespace lvr */

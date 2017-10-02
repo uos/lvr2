@@ -11,16 +11,16 @@ set(CGNORMALS_SOURCES
 #####################################################################################
 
 set(CGAL_NORMAL_DEPENDENCIES
-	lvr_static
-	lvrlas_static
-	lvrrply_static
-	lvrslam6d_static
-	${OPENGL_LIBRARIES}
-	${GLUT_LIBRARIES}
-	${OpenCV_LIBS}
-	${PCL_LIBRARIES}
-	${CGAL_LIBRARY}
-	)
+    lvr_static
+    lvrlas_static
+    lvrrply_static
+    lvrslam6d_static
+    ${OPENGL_LIBRARIES}
+    ${GLUT_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${PCL_LIBRARIES}
+    ${CGAL_LIBRARY}
+    )
 
 #####################################################################################
 # Add executable

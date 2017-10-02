@@ -16,18 +16,18 @@ namespace lvr
 template<typename VertexT>
 SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, size_t &n_points, const int &kn, const int &ki, const int &kd )
 {
-	this->initBuffers(buffer);
+    this->initBuffers(buffer);
 
-	m_flannPoints = flann::Matrix<float> (new float[3 * n_points], n_points, 3);
-	for(size_t i = 0; i < n_points; i++)
-	{
-		m_flannPoints[i][0] = this->m_pointData[3 * i];
-		m_flannPoints[i][1] = this->m_pointData[3 * i + 1];
-		m_flannPoints[i][2] = this->m_pointData[3 * i + 2];
-	}
+    m_flannPoints = flann::Matrix<float> (new float[3 * n_points], n_points, 3);
+    for(size_t i = 0; i < n_points; i++)
+    {
+        m_flannPoints[i][0] = this->m_pointData[3 * i];
+        m_flannPoints[i][1] = this->m_pointData[3 * i + 1];
+        m_flannPoints[i][2] = this->m_pointData[3 * i + 2];
+    }
 
-	m_tree = boost::shared_ptr<flann::Index<flann::L2_Simple<float> > >(new flann::Index<flann::L2_Simple<float> >(m_flannPoints, ::flann::KDTreeSingleIndexParams (10, false)));
-	m_tree->buildIndex();
+    m_tree = boost::shared_ptr<flann::Index<flann::L2_Simple<float> > >(new flann::Index<flann::L2_Simple<float> >(m_flannPoints, ::flann::KDTreeSingleIndexParams (10, false)));
+    m_tree->buildIndex();
 
 }
 
@@ -40,55 +40,55 @@ SearchTreeFlann< VertexT >::~SearchTreeFlann() {
 template<typename VertexT>
 void SearchTreeFlann< VertexT >::kSearch( coord< float > &qp, int k, vector< int > &indices, vector< float > &distances )
 {
-	flann::Matrix<float> query_point(new float[3], 1, 3);
-	query_point[0][0] = qp.x;
-	query_point[0][1] = qp.y;
-	query_point[0][2] = qp.z;
+    flann::Matrix<float> query_point(new float[3], 1, 3);
+    query_point[0][0] = qp.x;
+    query_point[0][1] = qp.y;
+    query_point[0][2] = qp.z;
 
-	indices.resize(k);
-	distances.resize(k);
+    indices.resize(k);
+    distances.resize(k);
 
-	flann::Matrix<int> ind (&indices[0], 1, k);
-	flann::Matrix<float> dist (&distances[0], 1, k);
+    flann::Matrix<int> ind (&indices[0], 1, k);
+    flann::Matrix<float> dist (&distances[0], 1, k);
 
-	m_tree->knnSearch(query_point, ind, dist, k, flann::SearchParams());
+    m_tree->knnSearch(query_point, ind, dist, k, flann::SearchParams());
 }
 
 template<typename VertexT>
 void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &nb)
 {
-	flann::Matrix<float> query_point(new float[3], 1, 3);
-	query_point[0][0] = qp.x;
-	query_point[0][1] = qp.y;
-	query_point[0][2] = qp.z;
+    flann::Matrix<float> query_point(new float[3], 1, 3);
+    query_point[0][0] = qp.x;
+    query_point[0][1] = qp.y;
+    query_point[0][2] = qp.z;
 
-	m_dst.resize(k);
-	m_ind.resize(k);
+    m_dst.resize(k);
+    m_ind.resize(k);
 
-	flann::Matrix<int> ind (&m_ind[0], 1, k);
-	flann::Matrix<float> dist (&m_dst[0], 1, k);
+    flann::Matrix<int> ind (&m_ind[0], 1, k);
+    flann::Matrix<float> dist (&m_dst[0], 1, k);
 
-	m_tree->knnSearch(query_point, ind, dist, k, flann::SearchParams());
+    m_tree->knnSearch(query_point, ind, dist, k, flann::SearchParams());
 
-	for(size_t i = 0; i < k; i++)
-	{
-		int index = m_ind[i];
-		if(index < this->m_numPoints)
-		{
-			VertexT v(this->m_pointData[3 * index], this->m_pointData[3 * index + 1], this->m_pointData[3 * index + 2]);
+    for(size_t i = 0; i < k; i++)
+    {
+        int index = m_ind[i];
+        if(index < this->m_numPoints)
+        {
+            VertexT v(this->m_pointData[3 * index], this->m_pointData[3 * index + 1], this->m_pointData[3 * index + 2]);
 
-			if(this->m_haveColors)
-			{
-				VertexTraits<VertexT>::setColor(
-						v,
-						this->m_pointColorData[3 * index],
-						this->m_pointColorData[3 * index + 1],
-						this->m_pointColorData[3 * index + 2]);
-			}
+            if(this->m_haveColors)
+            {
+                VertexTraits<VertexT>::setColor(
+                        v,
+                        this->m_pointColorData[3 * index],
+                        this->m_pointColorData[3 * index + 1],
+                        this->m_pointColorData[3 * index + 2]);
+            }
 
-			nb.push_back(v);
-		}
-	}
+            nb.push_back(v);
+        }
+    }
 }
 
 /*
@@ -97,7 +97,7 @@ void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &n
 template<typename VertexT>
 void SearchTreeFlann< VertexT >::radiusSearch( float qp[3], float r, vector< int > &indices )
 {
-	cout << "Flann radius search not yet implemented" << endl;
+    cout << "Flann radius search not yet implemented" << endl;
 }
 
 

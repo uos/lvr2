@@ -55,36 +55,36 @@ public:
     /**
      * @brief   Constructs an empty face
      */
-	FusionFace();
+    FusionFace();
 
-	/**
-	 * @brief Destructor
-	 */
-	~FusionFace();
+    /**
+     * @brief Destructor
+     */
+    ~FusionFace();
 
-	/**
-	 * @brief   Copy constructor
-	 *
-	 * @param o The mesh to copy
-	 */
-	//FusionFace(const FusionFace<VertexT, NormalT> &o);
+    /**
+     * @brief   Copy constructor
+     *
+     * @param o The mesh to copy
+     */
+    //FusionFace(const FusionFace<VertexT, NormalT> &o);
 
-	FusionVertex <VertexT, NormalT>* 	vertices[3];
+    FusionVertex <VertexT, NormalT>*     vertices[3];
 
-	/// A three pointers to the face vertices
-	int 							m_index[3];
+    /// A three pointers to the face vertices
+    int                             m_index[3];
 
-	/// The faces index in global buffer
-	int								m_self_index;
-	
-	// all normal related functionality has been omitted for reasons of simplicity. if necessary see HalfEdeFace.hpp.
+    /// The faces index in global buffer
+    int                                m_self_index;
+    
+    // all normal related functionality has been omitted for reasons of simplicity. if necessary see HalfEdeFace.hpp.
 
-	/// Indicator if face is valid or supposed to be deleted
-	bool 							is_valid;
-	
-	int r;
-	int g;
-	int b;
+    /// Indicator if face is valid or supposed to be deleted
+    bool                             is_valid;
+    
+    int r;
+    int g;
+    int b;
 
 };
 

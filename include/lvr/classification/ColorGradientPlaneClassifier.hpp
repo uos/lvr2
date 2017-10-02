@@ -37,19 +37,19 @@ class ColorGradientPlaneClassifier : public RegionClassifier<VertexT, NormalT>
 {
 
 public:
-	ColorGradientPlaneClassifier(vector<Region<VertexT, NormalT>* >* region, GradientType t);
-	virtual ~ColorGradientPlaneClassifier() { delete m_colorMap;};
+    ColorGradientPlaneClassifier(vector<Region<VertexT, NormalT>* >* region, GradientType t);
+    virtual ~ColorGradientPlaneClassifier() { delete m_colorMap;};
 
-	virtual uchar r(int i);
-	virtual uchar g(int i);
-	virtual uchar b(int i);
+    virtual uchar r(int i);
+    virtual uchar g(int i);
+    virtual uchar b(int i);
 
 private:
 
-	uchar* getColor(int region);
+    uchar* getColor(int region);
 
-	GradientType			m_gradientType;
-	ColorMap*				m_colorMap;
+    GradientType            m_gradientType;
+    ColorMap*                m_colorMap;
 
 };
 

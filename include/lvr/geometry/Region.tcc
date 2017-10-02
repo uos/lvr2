@@ -36,19 +36,19 @@ namespace lvr
 template<typename VertexT, typename NormalT>
 Region<VertexT, NormalT>::Region(int regionNumber)
 {
-	this->m_inPlane      = false;
-	this->m_regionNumber = regionNumber;
-	this->m_toDelete     = false;
-	this->b_labeled      = false;
-	this->m_unfinished	 = false;
-	this->m_area           = 0;
+    this->m_inPlane      = false;
+    this->m_regionNumber = regionNumber;
+    this->m_toDelete     = false;
+    this->b_labeled      = false;
+    this->m_unfinished     = false;
+    this->m_area           = 0;
 }
 
 template<typename VertexT, typename NormalT>
 void Region<VertexT, NormalT>::addFace(FacePtr f)
 {
-	this->m_faces.push_back(f);
-	f->m_region = m_regionNumber;
+    this->m_faces.push_back(f);
+    f->m_region = m_regionNumber;
 }
 
 template<typename VertexT, typename NormalT>
@@ -69,18 +69,18 @@ void Region<VertexT, NormalT>::calcArea()
 template<typename VertexT, typename NormalT>
 BoundingBox<VertexT> Region<VertexT, NormalT>::getBoundingBox()
 {
-	BoundingBox<VertexT> bb;
-	for(size_t i = 0; i < m_faces.size(); i++)
-	{
-		std::vector<VertexT> v;
-		m_faces[i]->getVertices(v);
+    BoundingBox<VertexT> bb;
+    for(size_t i = 0; i < m_faces.size(); i++)
+    {
+        std::vector<VertexT> v;
+        m_faces[i]->getVertices(v);
 
-		for(typename std::vector<VertexT>::iterator it = v.begin(); it != v.end(); it++)
-		{
-			bb.expand(*it);
-		}
-	}
-	return bb;
+        for(typename std::vector<VertexT>::iterator it = v.begin(); it != v.end(); it++)
+        {
+            bb.expand(*it);
+        }
+    }
+    return bb;
 }
 
 
@@ -104,20 +104,20 @@ void Region<VertexT, NormalT>::deleteInvalidFaces()
 template<typename VertexT, typename NormalT>
 void Region<VertexT, NormalT>::setLabel(std::string label)
 {
-	this->m_label = label;
-	this->b_labeled = true;
+    this->m_label = label;
+    this->b_labeled = true;
 }
 
 template<typename VertexT, typename NormalT>
 bool Region<VertexT, NormalT>::hasLabel()
 {
-	return this->b_labeled;
+    return this->b_labeled;
 }
 
 template<typename VertexT, typename NormalT>
 std::string Region<VertexT, NormalT>::getLabel()
 {
-	return this->m_label;
+    return this->m_label;
 }
 
 template<typename VertexT, typename NormalT>
@@ -406,7 +406,7 @@ NormalT Region<VertexT, NormalT>::calcNormal()
 template<typename VertexT, typename NormalT>
 size_t Region<VertexT, NormalT>::size()
 {
-	return this->m_faces.size();
+    return this->m_faces.size();
 }
 
 template<typename VertexT, typename NormalT>
@@ -438,7 +438,7 @@ void Region<VertexT, NormalT>::regressionPlane()
 
     while((nonimproving_iterations < 30) && (iterations < 200))
     {
-    	NormalT n0;
+        NormalT n0;
         //randomly choose 3 disjoint points
         do{
             point1 = (*m_faces[rand() % m_faces.size()])(0)->m_position;
@@ -497,27 +497,27 @@ void Region<VertexT, NormalT>::regressionPlane()
 template<typename VertexT, typename NormalT>
 bool Region<VertexT, NormalT>::detectFlicker(FacePtr f)
 {
-	if(this->m_inPlane)
-	{
-		if ((VertexT(f->getFaceNormal()) + VertexT(this->m_normal)).length() < 1.0)
-		{
-			return true;
-		}
-	}
-	return false;
+    if(this->m_inPlane)
+    {
+        if ((VertexT(f->getFaceNormal()) + VertexT(this->m_normal)).length() < 1.0)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 template<typename VertexT, typename NormalT>
 Region<VertexT, NormalT>::~Region()
 {
-	for (size_t i = 0; i < m_faces.size(); i++)
-	{
-	    if(m_faces[i])
-	    {
-	        m_faces[i]->m_region = -1;
-	    }
-	}
-	//m_faces.clear();
+    for (size_t i = 0; i < m_faces.size(); i++)
+    {
+        if(m_faces[i])
+        {
+            m_faces[i]->m_region = -1;
+        }
+    }
+    //m_faces.clear();
 }
 
 }

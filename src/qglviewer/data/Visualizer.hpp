@@ -45,21 +45,21 @@ using lvr::BoundingBox;
 
 class Visualizer : public virtual QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	Visualizer();
-	virtual ~Visualizer();
-	virtual Renderable* renderable();
-	virtual string	name();
-	virtual BoundingBox<Vertex<float> >* boundingBox() { return m_renderable->boundingBox();}
-	virtual CustomTreeWidgetItem* treeItem() { return m_treeItem;}
-	virtual ViewerType supportedViewerType() {return PERSPECTIVE_VIEWER;}
+    Visualizer();
+    virtual ~Visualizer();
+    virtual Renderable* renderable();
+    virtual string    name();
+    virtual BoundingBox<Vertex<float> >* boundingBox() { return m_renderable->boundingBox();}
+    virtual CustomTreeWidgetItem* treeItem() { return m_treeItem;}
+    virtual ViewerType supportedViewerType() {return PERSPECTIVE_VIEWER;}
 
 protected:
 
-	CustomTreeWidgetItem*   m_treeItem;
-	Renderable*	            m_renderable;
-	string		            m_name;
+    CustomTreeWidgetItem*   m_treeItem;
+    Renderable*                m_renderable;
+    string                    m_name;
 
 
 };

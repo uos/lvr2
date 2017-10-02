@@ -12,14 +12,14 @@ set(MESH_OPT_SRC
 #####################################################################################
 
 set(LVR_OPT_DEPENDENCIES
-	lvr_static
-	lvrlas_static
-	lvrrply_static
-	lvrslam6d_static
-	${OPENGL_LIBRARIES}
-	${GLUT_LIBRARIES}
-	${OpenCV_LIBS}
-	)
+    lvr_static
+    lvrlas_static
+    lvrrply_static
+    lvrslam6d_static
+    ${OPENGL_LIBRARIES}
+    ${GLUT_LIBRARIES}
+    ${OpenCV_LIBS}
+    )
 
 if(PCL_FOUND)
   set(LVR_OPT_DEPENDENCIES ${LVR_OPT_DEPENDENCIES} ${PCL_LIBRARIES} )

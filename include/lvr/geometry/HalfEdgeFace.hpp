@@ -62,137 +62,137 @@ public:
      /**
      * @brief   Constructs an empty face
      */
-	HalfEdgeFace() :
-	    m_invalid(false), m_edge(0),
-	    m_used(false),m_fusion_face(false), m_region(-1),
-	    m_texture_index(-1),
-	    m_face_index(-1) {};
+    HalfEdgeFace() :
+        m_invalid(false), m_edge(0),
+        m_used(false),m_fusion_face(false), m_region(-1),
+        m_texture_index(-1),
+        m_face_index(-1) {};
 
-	/**
-	 * @brief Destructor
-	 */
-	virtual ~HalfEdgeFace();
+    /**
+     * @brief Destructor
+     */
+    virtual ~HalfEdgeFace();
 
-	/**
-	 * @brief   Copy constructor
-	 *
-	 * @param o The mesh to copy
-	 */
-	HalfEdgeFace(const HalfEdgeFace<VertexT, NormalT> &o);
+    /**
+     * @brief   Copy constructor
+     *
+     * @param o The mesh to copy
+     */
+    HalfEdgeFace(const HalfEdgeFace<VertexT, NormalT> &o);
 
-	/**
-	 * @brief   Calculates a face normal
-	 */
-	void calc_normal();
+    /**
+     * @brief   Calculates a face normal
+     */
+    void calc_normal();
 
-	/**
-	 * @brief   Calculates an interpolated normal (mean of three face normals)
-	 */
-	void interpolate_normal();
+    /**
+     * @brief   Calculates an interpolated normal (mean of three face normals)
+     */
+    void interpolate_normal();
 
-	/**
-	 * @brief   Delivers the three vertex normals of the face
-	 * @param n     A vector to store the vertex normals
-	 */
-	void getVertexNormals(vector<NormalT> &n);
+    /**
+     * @brief   Delivers the three vertex normals of the face
+     * @param n     A vector to store the vertex normals
+     */
+    void getVertexNormals(vector<NormalT> &n);
 
-	/**
-	 * @brief   Delivers the three vertices of the face.
-	 *
-	 * @param v     A vector to store the vertices
-	 */
-	void getVertices(vector<VertexT> &v);
+    /**
+     * @brief   Delivers the three vertices of the face.
+     *
+     * @param v     A vector to store the vertices
+     */
+    void getVertices(vector<VertexT> &v);
 
-	/**
-	 * @brief   Returns the adjacent face of this face
-	 *
-	 * @param adj   A vector to store the adjacent vertices
-	 */
-	void getAdjacentFaces(FaceVector &adj);
+    /**
+     * @brief   Returns the adjacent face of this face
+     *
+     * @param adj   A vector to store the adjacent vertices
+     */
+    void getAdjacentFaces(FaceVector &adj);
 
-	/**
-	 * @brief  Returns the face normal
-	 */
-	NormalT getFaceNormal();
+    /**
+     * @brief  Returns the face normal
+     */
+    NormalT getFaceNormal();
 
-	/**
-	 * @brief Returns an interpolated normal (mean of the three vertex normals)
-	 */
-	NormalT getInterpolatedNormal();
+    /**
+     * @brief Returns an interpolated normal (mean of the three vertex normals)
+     */
+    NormalT getInterpolatedNormal();
 
-	/**
-	 * @brief Returns the centroid of the face
-	 */
-	VertexT getCentroid();
+    /**
+     * @brief Returns the centroid of the face
+     */
+    VertexT getCentroid();
 
-	/**
-	 * @brief	Indexed edge access (reading)
-	 */
-	virtual HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* operator[](const int &index) const;
+    /**
+     * @brief    Indexed edge access (reading)
+     */
+    virtual HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* operator[](const int &index) const;
 
-	/**
-	 * @brief	Indexed vertex access (reading)
-	 */
-	virtual HalfEdgeVertex<VertexT, NormalT>* operator()(const int &index) const;
+    /**
+     * @brief    Indexed vertex access (reading)
+     */
+    virtual HalfEdgeVertex<VertexT, NormalT>* operator()(const int &index) const;
 
-	/**
-	 * @brief Returns the size of the face
-	 */
-	float getArea();
+    /**
+     * @brief Returns the size of the face
+     */
+    float getArea();
 
-	/**
-	 * @brief Returns the "d" from the pane equation "ax + by + cx + d = 0"
-	 */
-	float getD();
+    /**
+     * @brief Returns the "d" from the pane equation "ax + by + cx + d = 0"
+     */
+    float getD();
 
-	/**
-	 * @brief Returns true, if one of the face's edges has no adjacent face
-	 */
-	bool isBorderFace();
+    /**
+     * @brief Returns true, if one of the face's edges has no adjacent face
+     */
+    bool isBorderFace();
 
-	/**
-	 * @brief Returns the id of this face in MeshBuffer after finalize step.
-	 */
-	int getBufferID();
+    /**
+     * @brief Returns the id of this face in MeshBuffer after finalize step.
+     */
+    int getBufferID();
 
-	/**
-	 * @brief Sets the id of this face in MeshBuffer after finalize step.
-	 * @param id The id of this face in MeshBuffer after finalize step
-	 */
-	void setBufferID(unsigned int id);
+    /**
+     * @brief Sets the id of this face in MeshBuffer after finalize step.
+     * @param id The id of this face in MeshBuffer after finalize step
+     */
+    void setBufferID(unsigned int id);
 
-	/// A pointer to a surrounding half edge
-	EdgePtr m_edge;
+    /// A pointer to a surrounding half edge
+    EdgePtr m_edge;
 
-	/// A vector containing the indices of face vertices (currently redundant)
-	size_t					        m_indices[3];
+    /// A vector containing the indices of face vertices (currently redundant)
+    size_t                            m_indices[3];
 
-	/// A three pointers to the face vertices
-	//int 							m_index[3];
+    /// A three pointers to the face vertices
+    //int                             m_index[3];
 
-	/// The index of the face's texture
-	int 							m_texture_index;
+    /// The index of the face's texture
+    int                             m_texture_index;
 
-	/// The region of the face
-	long int		                m_region;
+    /// The region of the face
+    long int                        m_region;
 
-	/// used for region growing
-	bool							m_used;
-	
-	bool							m_region_used;
+    /// used for region growing
+    bool                            m_used;
+    
+    bool                            m_region_used;
 
-	/// The number of the face in the half edge mesh (convenience only, will be removed soon)
-	size_t							m_face_index;
+    /// The number of the face in the half edge mesh (convenience only, will be removed soon)
+    size_t                            m_face_index;
 
-	/// The face normal
-	NormalT							m_normal;
+    /// The face normal
+    NormalT                            m_normal;
 
-	bool                            m_invalid;
-	bool 							m_fusion_face;
+    bool                            m_invalid;
+    bool                             m_fusion_face;
 
 private:
 
-	unsigned int                    buffer_id;
+    unsigned int                    buffer_id;
 };
 
 }

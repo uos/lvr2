@@ -103,7 +103,7 @@ private:
 template<typename T>
 inline ostream& operator<<(ostream& os, const lvr::Quaternion<T> q){
 
-	return os << "Quaternion: " << q.W() << " " << q.X() << " " << q.Y() << " " << q.Z() << endl;
+    return os << "Quaternion: " << q.W() << " " << q.X() << " " << q.Y() << " " << q.Z() << endl;
 
 }
 

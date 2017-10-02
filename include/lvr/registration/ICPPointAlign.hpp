@@ -63,7 +63,7 @@ protected:
     PointBufferPtr                      m_dataCloud;
     Matrix4f                            m_transformation;
 
-    SearchTree<Vertexf>::Ptr			m_searchTree;
+    SearchTree<Vertexf>::Ptr            m_searchTree;
 };
 
 } /* namespace lvr */

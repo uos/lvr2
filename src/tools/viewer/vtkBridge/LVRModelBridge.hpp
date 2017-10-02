@@ -81,7 +81,7 @@ public:
     void        setPose(Pose& pose);
     Pose        getPose();
 
-    void		setVisibility(bool visible);
+    void        setVisibility(bool visible);
 
     // Declare model item classes as friends to have fast access to data chunks
     friend class LVRModelItem;

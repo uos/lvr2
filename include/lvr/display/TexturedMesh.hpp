@@ -33,71 +33,71 @@ namespace lvr
 
 struct MaterialGroup
 {
-	int	textureIndex;
-	int numFaces;
-	Vertex<float> color;
-	vector<size_t> faceBuffer;
+    int    textureIndex;
+    int numFaces;
+    Vertex<float> color;
+    vector<size_t> faceBuffer;
 };
 
 class TexturedMesh: public StaticMesh
 {
 public:
-	TexturedMesh(MeshBufferPtr mesh);
-	virtual ~TexturedMesh() {};
+    TexturedMesh(MeshBufferPtr mesh);
+    virtual ~TexturedMesh() {};
 
 
-	virtual void render()
-	{
-		if(m_active)
-		{
-			if(m_finalized){
-				glPushMatrix();
-				glMultMatrixf(m_transformation.getData());
-				if(m_renderMode & RenderSurfaces)
-				{
-					//glEnable(GL_LIGHTING);
-					//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-					glCallList(m_textureDisplayList);
-				}
+    virtual void render()
+    {
+        if(m_active)
+        {
+            if(m_finalized){
+                glPushMatrix();
+                glMultMatrixf(m_transformation.getData());
+                if(m_renderMode & RenderSurfaces)
+                {
+                    //glEnable(GL_LIGHTING);
+                    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                    glCallList(m_textureDisplayList);
+                }
 
-				if(m_renderMode & RenderTriangles)
-				{
-					glDisable(GL_LIGHTING);
-					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-					glLineWidth(m_lineWidth);
-					glColor3f(0.0, 0.0, 0.0);
-					glCallList(m_wireframeList);
-					glEnable(GL_LIGHTING);
-				}
-				glPopMatrix();
+                if(m_renderMode & RenderTriangles)
+                {
+                    glDisable(GL_LIGHTING);
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                    glLineWidth(m_lineWidth);
+                    glColor3f(0.0, 0.0, 0.0);
+                    glCallList(m_wireframeList);
+                    glEnable(GL_LIGHTING);
+                }
+                glPopMatrix();
 
-			}
+            }
 
-		}
-	}
+        }
+    }
 
 
 private:
 
-	void generateMaterialGroups();
-	void compileTexureDisplayList();
-	void getBufferArray(unsigned int*, MaterialGroup* g);
+    void generateMaterialGroups();
+    void compileTexureDisplayList();
+    void getBufferArray(unsigned int*, MaterialGroup* g);
 
-	uintArr					m_faceMaterials;
-	floatArr				m_texcoords;
-	materialArr				m_materials;
-	textureArr 				m_textures;
+    uintArr                    m_faceMaterials;
+    floatArr                m_texcoords;
+    materialArr                m_materials;
+    textureArr                 m_textures;
 
 
-	vector<MaterialGroup*> 	m_textureMaterials;
-	vector<MaterialGroup*> 	m_colorMaterials;
+    vector<MaterialGroup*>     m_textureMaterials;
+    vector<MaterialGroup*>     m_colorMaterials;
 
-	size_t					m_numFaces;
-	size_t					m_numMaterials;
-	size_t					m_numTextures;
-	size_t					m_numVertices;
+    size_t                    m_numFaces;
+    size_t                    m_numMaterials;
+    size_t                    m_numTextures;
+    size_t                    m_numVertices;
 
-	int						m_textureDisplayList;
+    int                        m_textureDisplayList;
 };
 
 } /* namespace lvr */

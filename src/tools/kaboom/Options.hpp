@@ -46,80 +46,80 @@ using namespace boost::program_options;
 
 /**
  * @brief A class to parse the program options for the reconstruction
- * 		  executable.
+ *           executable.
  */
 class Options {
 public:
 
-	/**
-	 * @brief 	Ctor. Parses the command parameters given to the main
-	 * 		  	function of the program
-	 */
-	Options(int argc, char** argv);
-	virtual ~Options();
+    /**
+     * @brief     Ctor. Parses the command parameters given to the main
+     *               function of the program
+     */
+    Options(int argc, char** argv);
+    virtual ~Options();
 
-	string	getInputDir() const;
-	string 	getOutputDir() const;
-	string 	getOutputFormat() const;
-    string 	getInputFile() const;
-    string 	getOutputFile() const;
+    string    getInputDir() const;
+    string     getOutputDir() const;
+    string     getOutputFormat() const;
+    string     getInputFile() const;
+    string     getOutputFile() const;
 
-	bool	filter() const;
+    bool    filter() const;
     bool    transformBefore() const;
-	int		getK() const;
-	float	getSigma() const;
-	int		getTargetSize() const;
+    int        getK() const;
+    float    getSigma() const;
+    int        getTargetSize() const;
 
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
-	int x() const { return m_variables["xPos"].as<int>();}
+    /**
+     * @brief   Returns the position of the x coordinate in the data.
+     */
+    int x() const { return m_variables["xPos"].as<int>();}
 
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
-	int y() const { return m_variables["yPos"].as<int>();}
+    /**
+     * @brief   Returns the position of the x coordinate in the data.
+     */
+    int y() const { return m_variables["yPos"].as<int>();}
 
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
-	int z() const { return m_variables["zPos"].as<int>();}
+    /**
+     * @brief   Returns the position of the x coordinate in the data.
+     */
+    int z() const { return m_variables["zPos"].as<int>();}
 
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
-	int r() const { return m_variables["rPos"].as<int>() ;}
+    /**
+     * @brief   Returns the position of the x coordinate in the data.
+     */
+    int r() const { return m_variables["rPos"].as<int>() ;}
 
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
-	int g() const { return m_variables["gPos"].as<int>();}
+    /**
+     * @brief   Returns the position of the x coordinate in the data.
+     */
+    int g() const { return m_variables["gPos"].as<int>();}
 
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
-	int b() const { return m_variables["bPos"].as<int>();}
+    /**
+     * @brief   Returns the position of the x coordinate in the data.
+     */
+    int b() const { return m_variables["bPos"].as<int>();}
 
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
-	int i() const { return m_variables["iPos"].as<int>();}
+    /**
+     * @brief   Returns the position of the x coordinate in the data.
+     */
+    int i() const { return m_variables["iPos"].as<int>();}
 
 
-	/**
-	 * @brief   Returns the scaling factor for the x coordinates
-	 */
-	float sx() const { return m_variables["sx"].as<float>();}
+    /**
+     * @brief   Returns the scaling factor for the x coordinates
+     */
+    float sx() const { return m_variables["sx"].as<float>();}
 
-	/**
-	 * @brief   Returns the scaling factor for the y coordinates
-	 */
-	float sy() const { return m_variables["sy"].as<float>();}
+    /**
+     * @brief   Returns the scaling factor for the y coordinates
+     */
+    float sy() const { return m_variables["sy"].as<float>();}
 
-	/**
-	 * @brief   Returns the scaling factor for the z coordinates
-	 */
-	float sz() const { return m_variables["sz"].as<float>();}
+    /**
+     * @brief   Returns the scaling factor for the z coordinates
+     */
+    float sz() const { return m_variables["sz"].as<float>();}
     
     int getStart() const { return m_variables["start"].as<int>(); }
 
@@ -127,8 +127,8 @@ public:
 
 private:
 
-	/// Output file name
-	string m_outputFile;
+    /// Output file name
+    string m_outputFile;
 
     /// The internally used variable map
     variables_map                   m_variables;
@@ -145,21 +145,21 @@ private:
 /// Overlaoeded outpur operator
 inline ostream& operator<<(ostream& os, const Options &o)
 {
-	cout << "##### Program options: " 	<< endl;
-	cout << "##### Input dir \t\t: "  << o.getInputDir() << endl;
-	cout << "##### Output dir \t\t: " 	<< o.getOutputDir() << endl;
-	if(o.filter())
-	{
-		cout << "##### Filter  \t\t\t: YES" << endl;
-		cout << "##### K  \t\t\t\t: " << o.getK() << endl;
-		cout << "##### Sigma \t\t\t: " << o.getSigma() << endl;
-	}
-	else
-	{
-		cout << "##### Filter  \t\t\t: NO" << endl;
-	}
-	cout << "##### Target Size \t: " << o.getTargetSize() << endl;
-	return os;
+    cout << "##### Program options: "     << endl;
+    cout << "##### Input dir \t\t: "  << o.getInputDir() << endl;
+    cout << "##### Output dir \t\t: "     << o.getOutputDir() << endl;
+    if(o.filter())
+    {
+        cout << "##### Filter  \t\t\t: YES" << endl;
+        cout << "##### K  \t\t\t\t: " << o.getK() << endl;
+        cout << "##### Sigma \t\t\t: " << o.getSigma() << endl;
+    }
+    else
+    {
+        cout << "##### Filter  \t\t\t: NO" << endl;
+    }
+    cout << "##### Target Size \t: " << o.getTargetSize() << endl;
+    return os;
 }
 
 } // namespace reconstruct
