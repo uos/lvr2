@@ -253,7 +253,7 @@ const char *NORMAL_INTERPOLATION_KERNEL_STRING = "\n"
 
 class ClSurface {
 public:
-    ClSurface(floatArr& points, size_t num_points, size_t dim = 3);
+    ClSurface(floatArr& points, size_t num_points, int device = 0);
     ~ClSurface();
 
     /**
@@ -336,7 +336,7 @@ private:
 
     void initKdTree();
 
-    void getDeviceInformation();
+    void getDeviceInformation(int platform_id=0, int device_id=0);
 
     void loadEstimationKernel();
 
