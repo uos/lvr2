@@ -36,60 +36,60 @@ namespace lvr
 {
 
 /**
- * @brief    A vertex in a fusion mesh
+ * @brief	A vertex in a fusion mesh
  */
 template<typename VertexT, typename NormalT>
 class FusionVertex : public HalfEdgeVertex<VertexT, NormalT>
 {
 public:
 
-    /**
-     * @brief    Default ctor. Position is (0, 0, 0), normal is undefined
-     */
-        
-    void init()
-    {
-        m_self_index = -1;
-        is_valid = false;
-    }
-    
-    /**
-     * @brief    Default ctor. Position is (0, 0, 0), normal is undefined
-     */
-    FusionVertex() 
-    : HalfEdgeVertex<VertexT, NormalT>::HalfEdgeVertex()
-    {
-        init();
-    }
+	/**
+	 * @brief	Default ctor. Position is (0, 0, 0), normal is undefined
+	 */
+		
+	void init()
+	{
+		m_self_index = -1;
+		is_valid = false;
+	}
+	
+	/**
+	 * @brief	Default ctor. Position is (0, 0, 0), normal is undefined
+	 */
+	FusionVertex() 
+	: HalfEdgeVertex<VertexT, NormalT>::HalfEdgeVertex()
+	{
+		init();
+	}
 
-    /**
-     * @brief    Constructs a vertex at given position
-     */
-    FusionVertex(VertexT vertex)
-        : HalfEdgeVertex<VertexT, NormalT>(vertex)
-    {
-        init();
-    }
+	/**
+	 * @brief	Constructs a vertex at given position
+	 */
+	FusionVertex(VertexT vertex)
+		: HalfEdgeVertex<VertexT, NormalT>(vertex)
+	{
+		init();
+	}
 
-    /**
-     * @brief    Copy Ctor.
-     */
-    FusionVertex(const FusionVertex& o)
-        : HalfEdgeVertex<VertexT, NormalT>::HalfEdgeVertex(o)
-    {
-        m_tree_dist = o.m_tree_dist;
-        is_valid = o.is_valid;
-        m_self_index = o.m_self_index;
-    }
+	/**
+	 * @brief	Copy Ctor.
+	 */
+	FusionVertex(const FusionVertex& o)
+		: HalfEdgeVertex<VertexT, NormalT>::HalfEdgeVertex(o)
+	{
+		m_tree_dist = o.m_tree_dist;
+		is_valid = o.is_valid;
+		m_self_index = o.m_self_index;
+	}
 
-    /// The vertex index in the global mesh
-    size_t                 m_self_index;
-    
-    /// The vertex distance to the tree representing the global buffer
-    double             m_tree_dist;
-    
-    /// Indicator if the vertex is valid or supposed to be deleted
-    bool                 is_valid;
+	/// The vertex index in the global mesh
+	size_t 				m_self_index;
+	
+	/// The vertex distance to the tree representing the global buffer
+	double 			m_tree_dist;
+	
+	/// Indicator if the vertex is valid or supposed to be deleted
+	bool 				is_valid;
 };
 
 } // namespace lvr

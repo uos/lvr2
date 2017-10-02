@@ -33,8 +33,8 @@ namespace lvr
 template<typename VertexT, typename IndexType>
 BaseMesh<VertexT, IndexType>::BaseMesh()
 {
-    m_finalized = false;
-    m_meshBuffer.reset();
+	m_finalized = false;
+	m_meshBuffer.reset();
 }
 
 

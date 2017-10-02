@@ -169,15 +169,15 @@ class MeshBuffer
 
         floatArr getVertexTextureCoordinateArray( size_t &n );
 
-        labeledFacesMap getLabeledFacesMap();
+		labeledFacesMap getLabeledFacesMap();
 
         materialArr getMaterialArray(size_t &n);
 
-        uintArr    getFaceMaterialIndexArray(size_t &n);
+        uintArr	getFaceMaterialIndexArray(size_t &n);
 
         textureArr getTextureArray(size_t &n);
 
-        size_t getNumLabels();
+		size_t getNumLabels();
 
 
 #define SECTION_INDEXED_GETTER
@@ -364,7 +364,7 @@ class MeshBuffer
         void setVertexTextureCoordinateArray( floatArr array, size_t n );
 
 
-        void setLabeledFacesMap( labeledFacesMap map );
+		void setLabeledFacesMap( labeledFacesMap map );
 
         void setMaterialArray( materialArr array, size_t n );
 
@@ -549,7 +549,7 @@ class MeshBuffer
          **/
         void setIndexedVertexNormalArray( std::vector< coord<float> >&array);
 
-        void setLabeledFacesMap( labeledFacesMap* &map );
+		void setLabeledFacesMap( labeledFacesMap* &map );
 
         void setMaterialArray( std::vector<Material*> &array);
 
@@ -621,17 +621,17 @@ class MeshBuffer
         /// Number of vertex texture coordinates
         size_t      m_numVertexTextureCoordinates;
 
-        size_t        m_numMaterials;
+        size_t		m_numMaterials;
 
-        size_t        m_numFaceMaterialIndices;
+        size_t		m_numFaceMaterialIndices;
 
-        size_t        m_numTextures;
+        size_t		m_numTextures;
 
         materialArr m_faceMaterials;
 
         labeledFacesMap m_labeledFacesMap;
 
-        textureArr    m_textures;
+        textureArr	m_textures;
 
 };
 

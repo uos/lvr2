@@ -58,12 +58,12 @@ struct KinFuApp
         }
         if(!event.symbol.compare("Escape"))
         {
-             kinfu.exit_ = true;
-        }
+			 kinfu.exit_ = true;
+		}
     }
     KinFuApp(OpenNISource& source, Options* options) :
-                exit_ (false),  iteractive_mode_(false), pause_(false), meshRender_(false), no_viz_(options->noVizualisation()),
-                capture_ (source), cube_count_(0), pic_count_(0), mesh_(NULL), garbageMesh_(NULL)
+				exit_ (false),  iteractive_mode_(false), pause_(false), meshRender_(false), no_viz_(options->noVizualisation()),
+				capture_ (source), cube_count_(0), pic_count_(0), mesh_(NULL), garbageMesh_(NULL)
     {
         KinFuParams params = KinFuParams::default_params();
         params.shifting_distance = options->getShiftingDistance();
@@ -75,14 +75,14 @@ struct KinFuApp
 
         capture_.setRegistration(true);
 
-        viz.showWidget("legend", cv::viz::WText("Controls", cv::Point(5, 205), 30, cv::viz::Color::red()));
-        viz.showWidget("r", cv::viz::WText("r Trigger record", cv::Point(5, 175), 20, cv::viz::Color::green()));
-        viz.showWidget("d", cv::viz::WText("d Trigger pause", cv::Point(5, 150), 20, cv::viz::Color::green()));
-        viz.showWidget("t", cv::viz::WText("t Finish scan", cv::Point(5, 125), 20, cv::viz::Color::green()));
-        viz.showWidget("g", cv::viz::WText("g Export image & pose", cv::Point(5, 100), 20, cv::viz::Color::green()));
-        viz.showWidget("i", cv::viz::WText("i Interactive mode", cv::Point(5, 75), 20, cv::viz::Color::green()));
-        viz.showWidget("+", cv::viz::WText("+/- Change cam distance", cv::Point(5, 50), 20, cv::viz::Color::green()));
-        viz.showWidget("esc", cv::viz::WText("ESC Quit", cv::Point(5, 25), 20, cv::viz::Color::green()));
+		viz.showWidget("legend", cv::viz::WText("Controls", cv::Point(5, 205), 30, cv::viz::Color::red()));
+		viz.showWidget("r", cv::viz::WText("r Trigger record", cv::Point(5, 175), 20, cv::viz::Color::green()));
+		viz.showWidget("d", cv::viz::WText("d Trigger pause", cv::Point(5, 150), 20, cv::viz::Color::green()));
+		viz.showWidget("t", cv::viz::WText("t Finish scan", cv::Point(5, 125), 20, cv::viz::Color::green()));
+		viz.showWidget("g", cv::viz::WText("g Export image & pose", cv::Point(5, 100), 20, cv::viz::Color::green()));
+		viz.showWidget("i", cv::viz::WText("i Interactive mode", cv::Point(5, 75), 20, cv::viz::Color::green()));
+		viz.showWidget("+", cv::viz::WText("+/- Change cam distance", cv::Point(5, 50), 20, cv::viz::Color::green()));
+		viz.showWidget("esc", cv::viz::WText("ESC Quit", cv::Point(5, 25), 20, cv::viz::Color::green()));
         cv::viz::WCube cube(cv::Vec3d::all(0), cv::Vec3d(params.volume_size), true, cv::viz::Color::red());
         //cv::viz::WArrow arrow(cv::Point3f(0, 0, 0), cv::Point3f(0, 0, options->getCameraOffset()), 0.03, cv::viz::Color::green());
         cv::Vec2d fov(0.64,0.48);
@@ -106,118 +106,118 @@ struct KinFuApp
         cv::moveWindow("Scene", 800, 500);
 
         cv::namedWindow("Image", 0 );
-        cv::resizeWindow("Image",800, 500);
-        cv::moveWindow("Image", 0, 500);
-        timer_start_ = (double)cv::getTickCount();
-        set_interactive();
-        sample_poses_.push_back(kinfu_->getCameraPose());
+		cv::resizeWindow("Image",800, 500);
+		cv::moveWindow("Image", 0, 500);
+		timer_start_ = (double)cv::getTickCount();
+		set_interactive();
+		sample_poses_.push_back(kinfu_->getCameraPose());
         viz.showWidget("path", cv::viz::WTrajectory(sample_poses_));
     }
 
     void show_mesh()
     {
-        unordered_map<VertexPtr, size_t> index_map;
-        size_t verts_size = 0;
-        size_t faces_size = 0;
-        while(true)
-        {
-            auto lvr_mesh = kinfu_->cyclical().getMesh();
-            size_t slice_size = lvr_mesh->getVertices().size() - verts_size;
-            size_t slice_face_size = lvr_mesh->getFaces().size() - faces_size;
-            cv::viz::Mesh* cv_mesh;
-            //fill cloud
-            cv::Mat verts;
-            cv::Vec3f *ddata;
-            if(mesh_ == NULL)
-            {
-                cv_mesh = new cv::viz::Mesh();
-                cv_mesh->cloud.create(1, slice_size, CV_32FC3);
-                ddata = cv_mesh->cloud.ptr<cv::Vec3f>();
-            }
-            else
-            {
-                verts.create(1, slice_size, CV_32FC3);
-                ddata = verts.ptr<cv::Vec3f>();
-            }
+		unordered_map<VertexPtr, size_t> index_map;
+		size_t verts_size = 0;
+		size_t faces_size = 0;
+		while(true)
+		{
+			auto lvr_mesh = kinfu_->cyclical().getMesh();
+			size_t slice_size = lvr_mesh->getVertices().size() - verts_size;
+			size_t slice_face_size = lvr_mesh->getFaces().size() - faces_size;
+			cv::viz::Mesh* cv_mesh;
+			//fill cloud
+			cv::Mat verts;
+			cv::Vec3f *ddata;
+			if(mesh_ == NULL)
+			{
+				cv_mesh = new cv::viz::Mesh();
+				cv_mesh->cloud.create(1, slice_size, CV_32FC3);
+				ddata = cv_mesh->cloud.ptr<cv::Vec3f>();
+			}
+			else
+			{
+				verts.create(1, slice_size, CV_32FC3);
+				ddata = verts.ptr<cv::Vec3f>();
+			}
 
-            for(size_t k = 0; k < slice_size; k++)
-            {
-                auto vertex = lvr_mesh->getVertices()[k + verts_size];
-                index_map[vertex] = k + verts_size;
-                *ddata++ = cv::Vec3f(vertex->m_position[0], vertex->m_position[1], vertex->m_position[2]);
-            }
-            if(mesh_ != NULL)
-                cv::hconcat(mesh_->cloud, verts, mesh_->cloud);
-            //fill polygons
-            cv::Mat faces;
-            int* poly_ptr;
-            if(mesh_ == NULL)
-            {
-                cv_mesh->polygons.create(1, lvr_mesh->getFaces().size() * 4, CV_32SC1);
-                poly_ptr = cv_mesh->polygons.ptr<int>();
-            }
-            else
-            {
-                faces.create(1, slice_face_size * 4, CV_32SC1);
-                poly_ptr = faces.ptr<int>();
-            }
-            for(size_t k = 0; k < slice_face_size; k++)
-            {
-                auto face = lvr_mesh->getFaces()[k + faces_size];
-                *poly_ptr++ = 3;
-                *poly_ptr++ = index_map[face->m_edge->end()];
-                *poly_ptr++ = index_map[face->m_edge->next()->end()];
-                *poly_ptr++ = index_map[face->m_edge->next()->next()->end()];
-            }
-            if(mesh_ != NULL)
-                cv::hconcat(mesh_->polygons, faces, mesh_->polygons);
+			for(size_t k = 0; k < slice_size; k++)
+			{
+				auto vertex = lvr_mesh->getVertices()[k + verts_size];
+				index_map[vertex] = k + verts_size;
+				*ddata++ = cv::Vec3f(vertex->m_position[0], vertex->m_position[1], vertex->m_position[2]);
+			}
+			if(mesh_ != NULL)
+				cv::hconcat(mesh_->cloud, verts, mesh_->cloud);
+			//fill polygons
+			cv::Mat faces;
+			int* poly_ptr;
+			if(mesh_ == NULL)
+			{
+				cv_mesh->polygons.create(1, lvr_mesh->getFaces().size() * 4, CV_32SC1);
+				poly_ptr = cv_mesh->polygons.ptr<int>();
+			}
+			else
+			{
+				faces.create(1, slice_face_size * 4, CV_32SC1);
+				poly_ptr = faces.ptr<int>();
+			}
+			for(size_t k = 0; k < slice_face_size; k++)
+			{
+				auto face = lvr_mesh->getFaces()[k + faces_size];
+				*poly_ptr++ = 3;
+				*poly_ptr++ = index_map[face->m_edge->end()];
+				*poly_ptr++ = index_map[face->m_edge->next()->end()];
+				*poly_ptr++ = index_map[face->m_edge->next()->next()->end()];
+			}
+			if(mesh_ != NULL)
+				cv::hconcat(mesh_->polygons, faces, mesh_->polygons);
 
-            //fill color
-            cv::Mat colors;
-            cv::Mat buffer;
-            cv::Vec3d *cptr;
-            size_t size;
-            //auto cBuffer = lvr_mesh->meshBuffer()->getVertexColorArray(size);
-            auto fused_map = lvr_mesh->m_fused_verts;
-            //cout << "slcie size " << slice_size << endl;
-            //cout << "color size " << size << endl;
-            if(mesh_ == NULL)
-            {
-                cv_mesh->colors.create(1, slice_size, CV_64FC(3));
-                cptr = cv_mesh->colors.ptr<cv::Vec3d>();
-            }
-            else
-            {
-                buffer.create(1, slice_size, CV_64FC(3));
-                cptr = buffer.ptr<cv::Vec3d>();
-                //buffer.convertTo(colors, CV_8U, 255.0);
+			//fill color
+			cv::Mat colors;
+			cv::Mat buffer;
+			cv::Vec3d *cptr;
+			size_t size;
+			//auto cBuffer = lvr_mesh->meshBuffer()->getVertexColorArray(size);
+			auto fused_map = lvr_mesh->m_fused_verts;
+			//cout << "slcie size " << slice_size << endl;
+			//cout << "color size " << size << endl;
+			if(mesh_ == NULL)
+			{
+				cv_mesh->colors.create(1, slice_size, CV_64FC(3));
+				cptr = cv_mesh->colors.ptr<cv::Vec3d>();
+			}
+			else
+			{
+				buffer.create(1, slice_size, CV_64FC(3));
+				cptr = buffer.ptr<cv::Vec3d>();
+				//buffer.convertTo(colors, CV_8U, 255.0);
 
-            }
-            for(size_t i = 0; i < slice_size; ++i)
-            {
-                if(lvr_mesh->getVertices()[i + verts_size]->m_fused && !lvr_mesh->getVertices()[i + verts_size]->m_fusedNeighbor)
-                    *cptr++ = cv::Vec3d(0.0, 0.0, 255.0);
-                else if(lvr_mesh->getVertices()[i + verts_size]->m_fusedNeighbor)
-                    *cptr++ = cv::Vec3d(255.0, 0.0, 0.0);
-                else
-                    *cptr++ = cv::Vec3d(0.0, 255.0, 0.0);
-            }
-            //*cptr++ = cv::Vec3d(3 * cBuffer[fused_map[i]], 3 * cBuffer[fused_map[i] + 1], 3 * cBuffer[fused_map[i] + 2]);
-            if(mesh_ != NULL)
-            {
-                buffer.convertTo(buffer, CV_8U, 255.0);
-                cv::hconcat(mesh_->colors, buffer, mesh_->colors);
-            }
-            else
-            {
-                cv_mesh->colors.convertTo(cv_mesh->colors, CV_8U, 255.0);
-                mesh_ = cv_mesh;
-            }
-            verts_size = lvr_mesh->getVertices().size();
-            faces_size = lvr_mesh->getFaces().size();
-            meshRender_ = true;
-        }
-    }
+			}
+			for(size_t i = 0; i < slice_size; ++i)
+			{
+				if(lvr_mesh->getVertices()[i + verts_size]->m_fused && !lvr_mesh->getVertices()[i + verts_size]->m_fusedNeighbor)
+					*cptr++ = cv::Vec3d(0.0, 0.0, 255.0);
+				else if(lvr_mesh->getVertices()[i + verts_size]->m_fusedNeighbor)
+					*cptr++ = cv::Vec3d(255.0, 0.0, 0.0);
+				else
+					*cptr++ = cv::Vec3d(0.0, 255.0, 0.0);
+			}
+			//*cptr++ = cv::Vec3d(3 * cBuffer[fused_map[i]], 3 * cBuffer[fused_map[i] + 1], 3 * cBuffer[fused_map[i] + 2]);
+			if(mesh_ != NULL)
+			{
+				buffer.convertTo(buffer, CV_8U, 255.0);
+				cv::hconcat(mesh_->colors, buffer, mesh_->colors);
+			}
+			else
+			{
+				cv_mesh->colors.convertTo(cv_mesh->colors, CV_8U, 255.0);
+				mesh_ = cv_mesh;
+			}
+			verts_size = lvr_mesh->getVertices().size();
+			faces_size = lvr_mesh->getFaces().size();
+			meshRender_ = true;
+		}
+	}
 
   void checkForShift()
   {
@@ -257,13 +257,13 @@ struct KinFuApp
     //viz.setWidgetPose("center", center);
   }
 
-    void set_interactive()
-    {
-        iteractive_mode_ = !iteractive_mode_;
-        Affine3f eagle_view = Affine3f::Identity();
-        eagle_view.translate(kinfu_->getCameraPose().translation());
-        viz.setViewerPose(eagle_view.translate(Vec3f(0,0,-1)));
-    }
+	void set_interactive()
+	{
+		iteractive_mode_ = !iteractive_mode_;
+		Affine3f eagle_view = Affine3f::Identity();
+		eagle_view.translate(kinfu_->getCameraPose().translation());
+		viz.setViewerPose(eagle_view.translate(Vec3f(0,0,-1)));
+	}
 
 
   void take_cloud(KinFu& kinfu)
@@ -272,20 +272,20 @@ struct KinFuApp
     kinfu.performLastScan();
   }
 
-    void storePicPose(KinFu& kinfu, Affine3f pose, cv::Mat image)
+	void storePicPose(KinFu& kinfu, Affine3f pose, cv::Mat image)
   {
-        ImgPose* imgpose = new ImgPose();
-        imgpose->pose = pose;
-        imgpose->image = image;//.clone();
-        //intrinsics wrong? changed rows and cols + /2
-        //kinfu.params().cols/2 - 0.5f
-        //kinfu.params().rows/2 - 0.5f
-        cv::Mat intrinsics = (cv::Mat_<float>(3,3) << kinfu.params().intr.fx*2, 0, 1280/2-0.5f + 3,
-                                                  0, kinfu.params().intr.fx*2, 1024/2-0.5f,
-                                                  0, 0, 1);
-        imgpose->intrinsics = intrinsics;
-        kinfu.cyclical().addImgPose(imgpose);
-    }
+		ImgPose* imgpose = new ImgPose();
+		imgpose->pose = pose;
+		imgpose->image = image;//.clone();
+		//intrinsics wrong? changed rows and cols + /2
+		//kinfu.params().cols/2 - 0.5f
+		//kinfu.params().rows/2 - 0.5f
+		cv::Mat intrinsics = (cv::Mat_<float>(3,3) << kinfu.params().intr.fx*2, 0, 1280/2-0.5f + 3,
+												  0, kinfu.params().intr.fx*2, 1024/2-0.5f,
+												  0, 0, 1);
+		imgpose->intrinsics = intrinsics;
+		kinfu.cyclical().addImgPose(imgpose);
+	}
 
   void extractImage(KinFu& kinfu, cv::Mat& image)
   {
@@ -320,137 +320,137 @@ struct KinFuApp
         std::thread mesh_viz;
 
         std::vector<Affine3f> posen;
-        std::vector<cv::Mat> rvecs;
+		std::vector<cv::Mat> rvecs;
 
-        Affine3f best_pose;
-        cv::Mat best_rvec,best_image;
-        float best_dist=0.0;
+		Affine3f best_pose;
+		cv::Mat best_rvec,best_image;
+		float best_dist=0.0;
 
         if(!no_viz_)
         {
-            mesh_viz = thread(&KinFuApp::show_mesh,this);
-        }
+			mesh_viz = thread(&KinFuApp::show_mesh,this);
+		}
         for (int i = 0; !exit_ && !viz.wasStopped(); ++i)
         {
-            if((!pause_ || !capture_.isRecord()) && !(kinfu.hasShifted() && kinfu.isLastScan()))
+			if((!pause_ || !capture_.isRecord()) && !(kinfu.hasShifted() && kinfu.isLastScan()))
             {
-                int has_frame = capture_.grab(depth, image);
-                cv::flip(depth, depth, 1);
-                cv::flip(image, image, 1);
-                image_ = &image;
-                if (has_frame == 0)
-                    return std::cout << "Can't grab" << std::endl, false;
-                // check if oni file ended
-                if (has_frame == 2)
-                    take_cloud(kinfu);
-                depth_device_.upload(depth.data, depth.step, depth.rows, depth.cols);
+				int has_frame = capture_.grab(depth, image);
+				cv::flip(depth, depth, 1);
+				cv::flip(image, image, 1);
+				image_ = &image;
+				if (has_frame == 0)
+					return std::cout << "Can't grab" << std::endl, false;
+				// check if oni file ended
+				if (has_frame == 2)
+					take_cloud(kinfu);
+				depth_device_.upload(depth.data, depth.step, depth.rows, depth.cols);
 
-                {
-                    SampledScopeTime fps(time_ms); (void)fps;
-                    has_image = kinfu(depth_device_);
-                }
-            }
+				{
+					SampledScopeTime fps(time_ms); (void)fps;
+					has_image = kinfu(depth_device_);
+				}
+			}
 
             if ((!pause_ || !capture_.isRecord()) && !(kinfu.hasShifted() && kinfu.isLastScan()) && has_image)
             {
-                //biggest rvec difference -> new pic
-                //
-                double ref_timer = cv::getTickCount();
-                double time = abs((timer_start_ - ref_timer))/ cv::getTickFrequency();
+				//biggest rvec difference -> new pic
+				//
+				double ref_timer = cv::getTickCount();
+				double time = abs((timer_start_ - ref_timer))/ cv::getTickFrequency();
 
-                if(rvecs.size()<1){
-                    image.copyTo(image_copy);
+				if(rvecs.size()<1){
+					image.copyTo(image_copy);
 
-                    //buffer of all imgposes
-                    rvecs.push_back(cv::Mat(kinfu.getCameraPose().rvec()));
-                    posen.push_back(kinfu.getCameraPose());
+					//buffer of all imgposes
+					rvecs.push_back(cv::Mat(kinfu.getCameraPose().rvec()));
+					posen.push_back(kinfu.getCameraPose());
 
-                    //storePicPose(kinfu, image_copy);
-                    //extractImage(kinfu, image_copy);
-                }
+					//storePicPose(kinfu, image_copy);
+					//extractImage(kinfu, image_copy);
+				}
                 else
                 {
-                    float dist = 0.0;
-                    cv::Mat mom_rvec(kinfu.getCameraPose().rvec());
-                    for(size_t z=0;z<rvecs.size();z++){
-                        dist += norm(mom_rvec-rvecs[z]);
-                    }
-                    if(dist > best_dist){
-                        best_dist = dist;
-                        //mom_rvec.copyTo(best_rvec);
-                        //image.copyTo(best_image);
-                        best_rvec = mom_rvec.clone();
-                        best_image = image.clone();
-                        best_pose = kinfu.getCameraPose();
-                        //std::cout << "better image found, sum rvec distances: " << best_dist << std::endl;
-                    }
-                    //if(time - 3.0 > 0)
-                    if(kinfu.params().cmd_options->textures() && frame_count==7)
-                    {
+					float dist = 0.0;
+					cv::Mat mom_rvec(kinfu.getCameraPose().rvec());
+					for(size_t z=0;z<rvecs.size();z++){
+						dist += norm(mom_rvec-rvecs[z]);
+					}
+					if(dist > best_dist){
+						best_dist = dist;
+						//mom_rvec.copyTo(best_rvec);
+						//image.copyTo(best_image);
+						best_rvec = mom_rvec.clone();
+						best_image = image.clone();
+						best_pose = kinfu.getCameraPose();
+						//std::cout << "better image found, sum rvec distances: " << best_dist << std::endl;
+					}
+					//if(time - 3.0 > 0)
+					if(kinfu.params().cmd_options->textures() && frame_count==7)
+					{
 
-                        rvecs.push_back(best_rvec);
-                        posen.push_back(best_pose);
+						rvecs.push_back(best_rvec);
+						posen.push_back(best_pose);
 
-                        storePicPose(kinfu, best_pose, best_image);
-                        //extractImage(kinfu, best_image);
-                        sample_poses_.push_back(kinfu_->getCameraPose());
-                        viz.showWidget("path", cv::viz::WTrajectory(sample_poses_));
-                        std::cout << "image taken "<< image_count++ << ", time: "<< time << std::endl;
-                        timer_start_ = ref_timer;
+						storePicPose(kinfu, best_pose, best_image);
+						//extractImage(kinfu, best_image);
+						sample_poses_.push_back(kinfu_->getCameraPose());
+						viz.showWidget("path", cv::viz::WTrajectory(sample_poses_));
+						std::cout << "image taken "<< image_count++ << ", time: "<< time << std::endl;
+						timer_start_ = ref_timer;
 
-                    }
-                }
+					}
+				}
                 show_raycasted(kinfu);
             }
 
-            if(meshRender_)
-            {
-                if(garbageMesh_ != NULL)
-                {
-                    viz.removeWidget("mesh");
-                    //delete garbageMesh_;
-                }
-                viz.showWidget("mesh", cv::viz::WMesh(*mesh_));
-                garbageMesh_ = mesh_;
-                meshRender_ = false;
-            }
+			if(meshRender_)
+			{
+				if(garbageMesh_ != NULL)
+				{
+					viz.removeWidget("mesh");
+					//delete garbageMesh_;
+				}
+				viz.showWidget("mesh", cv::viz::WMesh(*mesh_));
+				garbageMesh_ = mesh_;
+				meshRender_ = false;
+			}
 
-            if(kinfu.hasShifted())
-                show_cube(kinfu);
+			if(kinfu.hasShifted())
+				show_cube(kinfu);
 
-            cv::imshow("Image", image);
+			cv::imshow("Image", image);
 
             if (!iteractive_mode_)
             {
                 viz.setViewerPose(kinfu.getCameraPose());
-            }
+			}
 
             int key = cv::waitKey(3);
 
             switch(key)
             {
-                case 't': case 'T' : take_cloud(kinfu); break;
-                case 'i': case 'I' : set_interactive(); break;
-                case 'd': case 'D' : capture_.triggerPause();pause_  = !pause_; break;
-                case 'r': case 'R' : kinfu.triggerRecord(); capture_.triggerRecord(); break;
-                case 'g': case 'G' : extractImage(kinfu, image); break;
-                case 'c': case 'C' : checkForShift(); break;
-                case '+': kinfu.params().distance_camera_target += 0.1; kinfu.performShift(); break;
-                case '-': kinfu.params().distance_camera_target -= 0.1; kinfu.performShift(); break;
-                case 27: case 32: exit_ = true; break;
+				case 't': case 'T' : take_cloud(kinfu); break;
+				case 'i': case 'I' : set_interactive(); break;
+				case 'd': case 'D' : capture_.triggerPause();pause_  = !pause_; break;
+				case 'r': case 'R' : kinfu.triggerRecord(); capture_.triggerRecord(); break;
+				case 'g': case 'G' : extractImage(kinfu, image); break;
+				case 'c': case 'C' : checkForShift(); break;
+				case '+': kinfu.params().distance_camera_target += 0.1; kinfu.performShift(); break;
+				case '-': kinfu.params().distance_camera_target -= 0.1; kinfu.performShift(); break;
+				case 27: case 32: exit_ = true; break;
             }
-            frame_count++;
-            if(frame_count==20) frame_count=0;
+			frame_count++;
+			if(frame_count==20) frame_count=0;
             viz.spinOnce(2, true);
-            //exit_ = exit_ || ( kinfu.hasShifted() && kinfu.isLastScan() );
-            //if(kinfu.cyclical().getSliceCount() == 4 && !(kinfu.hasShifted() && kinfu.isLastScan()))
-                //take_cloud(kinfu);
+			//exit_ = exit_ || ( kinfu.hasShifted() && kinfu.isLastScan() );
+			//if(kinfu.cyclical().getSliceCount() == 4 && !(kinfu.hasShifted() && kinfu.isLastScan()))
+				//take_cloud(kinfu);
         }
         return true;
     }
 
-    unsigned int image_count=0;
-    unsigned int frame_count=0;
+	unsigned int image_count=0;
+	unsigned int frame_count=0;
     bool exit_, iteractive_mode_, pause_, meshRender_, no_viz_;
     OpenNISource& capture_;
     KinFu::Ptr kinfu_;
@@ -458,8 +458,8 @@ struct KinFuApp
     cv::viz::Viz3d viz;
     cv::viz::Mesh* mesh_;
     cv::viz::Mesh* garbageMesh_;
-    size_t cube_count_, pic_count_;
-    double timer_start_;
+	size_t cube_count_, pic_count_;
+	double timer_start_;
     cv::Mat view_host_;
     cv::Mat* image_;
     cuda::Image view_device_;

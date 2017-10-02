@@ -41,14 +41,14 @@ template<typename VertexT, typename NormalT>
 class VertexCosts
 {
 public:
-    VertexCosts() {};
+	VertexCosts() {};
 
-    /**
-     * @brief    Implementation of the vertex cost function. The default implementation
-     *             returns the maximum float number. Using this method, no vertices
-     *             should be removed from the mesh.
-     */
-    virtual float operator()(HalfEdgeVertex<VertexT, NormalT> &v) { return std::numeric_limits<float>::max(); }
+	/**
+	 * @brief	Implementation of the vertex cost function. The default implementation
+	 * 			returns the maximum float number. Using this method, no vertices
+	 * 			should be removed from the mesh.
+	 */
+	virtual float operator()(HalfEdgeVertex<VertexT, NormalT> &v) { return std::numeric_limits<float>::max(); }
 };
 
 
@@ -57,10 +57,10 @@ typedef std::pair<HalfEdgeVertex<ColorVertex<float, uchar>, Normal<float> >*, fl
 
 struct cVertexCost
 {
-    bool operator()(vertexCost_p &p1, vertexCost_p &p2)
-    {
-        return p1.second < p2.second;
-    }
+	bool operator()(vertexCost_p &p1, vertexCost_p &p2)
+	{
+		return p1.second < p2.second;
+	}
 };
 
 

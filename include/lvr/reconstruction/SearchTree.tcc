@@ -36,18 +36,18 @@ namespace lvr {
 template<typename VertexT>
 void SearchTree< VertexT >::initBuffers(PointBufferPtr buffer)
 {
-    this->m_pointData = buffer->getPointArray(this->m_numPoints);
-    this->m_haveColors = false;
-    if(VertexTraits<VertexT>::HasColor)
-    {
-        size_t numColors = 0;
-        this->m_pointColorData = buffer->getPointColorArray(numColors);
-        if(numColors == m_numPoints)
-        {
-            m_haveColors = true;
-            cout << timestamp << "SearchTree: Found point color data." << endl;
-        }
-    }
+	this->m_pointData = buffer->getPointArray(this->m_numPoints);
+	this->m_haveColors = false;
+	if(VertexTraits<VertexT>::HasColor)
+	{
+		size_t numColors = 0;
+		this->m_pointColorData = buffer->getPointColorArray(numColors);
+		if(numColors == m_numPoints)
+		{
+			m_haveColors = true;
+			cout << timestamp << "SearchTree: Found point color data." << endl;
+		}
+	}
 }
 
 template<typename VertexT>

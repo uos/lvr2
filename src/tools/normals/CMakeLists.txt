@@ -12,14 +12,14 @@ set(LVR_NORMAL_CONVERSION_SOURCES
 #####################################################################################
 
 set(LVR_NORMAL_CONVERSION_DEPENDENCIES
-    lvr_static
-    lvrlas_static
-    lvrrply_static
-    lvrslam6d_static
-    ${OPENGL_LIBRARIES}
-    ${GLUT_LIBRARIES}
-    ${OpenCV_LIBS}
-    )
+	lvr_static
+	lvrlas_static
+	lvrrply_static
+	lvrslam6d_static
+	${OPENGL_LIBRARIES}
+	${GLUT_LIBRARIES}
+	${OpenCV_LIBS}
+	)
 
 if(PCL_FOUND)
   set(LVR_NORMAL_CONVERSION_DEPENDENCIES  ${LVR_NORMAL_CONVERSION_DEPENDENCIES} ${PCL_LIBRARIES} )

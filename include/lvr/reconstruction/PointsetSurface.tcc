@@ -41,8 +41,8 @@ PointsetSurface<VertexT>::PointsetSurface(PointBufferPtr pointcloud)
 
 template<typename VertexT>
 void PointsetSurface<VertexT>::expandBoundingBox( 
-      float xmin, float ymin, float zmin,
-      float xmax, float ymax, float zmax)
+	  float xmin, float ymin, float zmin,
+	  float xmax, float ymax, float zmax)
 {
     this->m_boundingBox.expand(xmin, ymin, zmin);
     this->m_boundingBox.expand(xmax, ymax, zmax);
@@ -51,18 +51,18 @@ void PointsetSurface<VertexT>::expandBoundingBox(
 template<typename VertexT>
 VertexT PointsetSurface<VertexT>::getInterpolatedNormal(VertexT position)
 {
-    vector<int> indices;
-    VertexT result(0,0,0);
-    size_t n;
-    this->searchTree()->kSearch(position, this->m_kn, indices);
-    for (int i = 0; i < this->m_kn; i++)
-    {
-        result[0] += this->pointBuffer()->getIndexedPointNormalArray(n)[indices[i]][0];
-        result[1] += this->pointBuffer()->getIndexedPointNormalArray(n)[indices[i]][1];
-        result[2] += this->pointBuffer()->getIndexedPointNormalArray(n)[indices[i]][2];
-    }
-    result /= this->m_kn;
-    return result;
+	vector<int> indices;
+	VertexT result(0,0,0);
+	size_t n;
+	this->searchTree()->kSearch(position, this->m_kn, indices);
+	for (int i = 0; i < this->m_kn; i++)
+	{
+		result[0] += this->pointBuffer()->getIndexedPointNormalArray(n)[indices[i]][0];
+		result[1] += this->pointBuffer()->getIndexedPointNormalArray(n)[indices[i]][1];
+		result[2] += this->pointBuffer()->getIndexedPointNormalArray(n)[indices[i]][2];
+	}
+	result /= this->m_kn;
+	return result;
 }
 
 } // namespace lvr

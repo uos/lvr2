@@ -28,18 +28,18 @@ namespace kfusion
 
     struct KF_EXPORTS ImgPose
     {
-        cv::Mat image;
-        Affine3f pose;
-        cv::Mat intrinsics;
-        cv::Mat distortion;
+		cv::Mat image;
+		Affine3f pose;
+		cv::Mat intrinsics;
+		cv::Mat distortion;
     };
 
     struct KF_EXPORTS TSDFSlice
     {
-        cv::Mat tsdf_values_;
-        Vec3i offset_;
-        Vec3i back_offset_;
-        std::vector<ImgPose*> imgposes_;
+		cv::Mat tsdf_values_;
+		Vec3i offset_;
+		Vec3i back_offset_;
+		std::vector<ImgPose*> imgposes_;
     };
 
     KF_EXPORTS std::ostream& operator << (std::ostream& os, const Intr& intr);
@@ -53,12 +53,12 @@ namespace kfusion
         };
 
         Point& operator+(cv::Vec<float, 3> vec)
-        {
-            this->x += vec[0];
-            this->y += vec[1];
-            this->z += vec[2];
-            return *this;
-        }
+		{
+			this->x += vec[0];
+			this->y += vec[1];
+			this->z += vec[2];
+			return *this;
+		}
     };
 
     typedef Point Normal;
@@ -159,7 +159,7 @@ namespace kfusion
 
         Vec3f light_pose; //meters
 
-        Options* cmd_options; // cmd_options
+		Options* cmd_options; // cmd_options
 
     };
 

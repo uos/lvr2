@@ -36,18 +36,18 @@ namespace lvr
 class InteractivePointCloud: public lvr::Renderable
 {
 public:
-    InteractivePointCloud();
-    InteractivePointCloud(PointBufferPtr buffer);
-    virtual ~InteractivePointCloud();
+	InteractivePointCloud();
+	InteractivePointCloud(PointBufferPtr buffer);
+	virtual ~InteractivePointCloud();
 
-    virtual void render();
+	virtual void render();
 
-    void updateBuffer(PointBufferPtr buffer);
+	void updateBuffer(PointBufferPtr buffer);
 
 
 private:
 
-    PointBufferPtr            m_buffer;
+	PointBufferPtr			m_buffer;
 };
 
 } /* namespace lvr */

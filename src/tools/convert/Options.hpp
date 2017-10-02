@@ -46,32 +46,32 @@ using namespace boost::program_options;
 
 /**
  * @brief A class to parse the program options for the reconstruction
- *           executable.
+ * 		  executable.
  */
 class Options {
 public:
 
-    /**
-     * @brief     Ctor. Parses the command parameters given to the main
-     *               function of the program
-     */
-    Options(int argc, char** argv);
-    virtual ~Options();
+	/**
+	 * @brief 	Ctor. Parses the command parameters given to the main
+	 * 		  	function of the program
+	 */
+	Options(int argc, char** argv);
+	virtual ~Options();
 
-    string  getOutputFile()     const { return m_variables["outputFile"].as<string>();}
-    string  getColorMap()       const { return m_variables["intensityColorMap"].as<string>();}
-    string  getInputFile()      const { return (m_variables["inputFile"].as< vector<string> >())[0];}
+	string  getOutputFile()     const { return m_variables["outputFile"].as<string>();}
+	string  getColorMap()       const { return m_variables["intensityColorMap"].as<string>();}
+	string  getInputFile()      const { return (m_variables["inputFile"].as< vector<string> >())[0];}
 
-    float   getMaxIntensity()   const { return m_variables["maxIntensity"].as<float>();}
-    float   getMinIntensity()   const { return m_variables["minIntensity"].as<float>();}
+	float   getMaxIntensity()   const { return m_variables["maxIntensity"].as<float>();}
+	float   getMinIntensity()   const { return m_variables["minIntensity"].as<float>();}
 
-    bool    convertIntensity()  const { return (m_variables.count("intensityToColor"));}
-    bool    printUsage() const;
+	bool    convertIntensity()  const { return (m_variables.count("intensityToColor"));}
+	bool    printUsage() const;
 
 private:
 
-    /// Output file name
-    string m_outputFile;
+	/// Output file name
+	string m_outputFile;
 
     /// The internally used variable map
     variables_map                   m_variables;
@@ -88,11 +88,11 @@ private:
 /// Overlaoeded outpur operator
 inline ostream& operator<<(ostream& os, const Options &o)
 {
-    cout << "##### Program options: "     << endl;
-    cout << "##### Input file \t\t: "  << o.getInputFile() << endl;
-    cout << "##### Output file \t\t: "     << o.getOutputFile() << endl;
+	cout << "##### Program options: " 	<< endl;
+	cout << "##### Input file \t\t: "  << o.getInputFile() << endl;
+	cout << "##### Output file \t\t: " 	<< o.getOutputFile() << endl;
 
-    return os;
+	return os;
 }
 
 } // namespace reconstruct

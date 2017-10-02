@@ -46,12 +46,12 @@ class Options
 {
 public:
 
-    /**
-     * @brief Ctor. Parses the command parameters given to the main
-     *     function of the program
-     */
-    Options(int argc, char** argv);
-    virtual ~Options();
+	/**
+	 * @brief Ctor. Parses the command parameters given to the main
+	 *     function of the program
+	 */
+	Options(int argc, char** argv);
+	virtual ~Options();
 
     string getDataName() const
     {
@@ -110,26 +110,26 @@ public:
 
 private:
 
-    /// The internally used variable map
-    variables_map m_variables;
+	/// The internally used variable map
+	variables_map m_variables;
 
-    /// The internally used option description
-    options_description m_descr;
+	/// The internally used option description
+	options_description m_descr;
 
-    /// The internally used positional option desription
-    positional_options_description m_pdescr;
+	/// The internally used positional option desription
+	positional_options_description m_pdescr;
 
-    double      m_epsilon;
-    double      m_maxDistance;
-    double      m_rx;
-    double      m_ry;
-    double      m_rz;
-    double      m_tx;
-    double      m_ty;
-    double      m_tz;
-    int         m_maxIterations;
-    string      m_modelName;
-    string      m_dataName;
+	double      m_epsilon;
+	double      m_maxDistance;
+	double      m_rx;
+	double      m_ry;
+	double      m_rz;
+	double      m_tx;
+	double      m_ty;
+	double      m_tz;
+	int         m_maxIterations;
+	string      m_modelName;
+	string      m_dataName;
 
 };
 

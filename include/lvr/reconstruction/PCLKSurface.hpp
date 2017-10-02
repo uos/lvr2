@@ -69,10 +69,10 @@ public:
     virtual void distance(VertexT v, float &projectedDistance, float &euklideanDistance);
 
     /**
-     * @brief     Interpolates a surface normal at the given position
-     * @param    position the position to calculate a normal for
+     * @brief 	Interpolates a surface normal at the given position
+     * @param	position the position to calculate a normal for
      *
-     * @return     The normal
+     * @return 	The normal
      */
     virtual VertexT getInterpolatedNormal(VertexT position);
 

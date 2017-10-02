@@ -148,14 +148,14 @@ inline BOOL IS_LITTLE_ENDIAN()
 }
 
 #define ENDIANSWAP16(n) \
-    ( ((((U16) n) << 8) & 0xFF00) | \
-      ((((U16) n) >> 8) & 0x00FF) )
+	( ((((U16) n) << 8) & 0xFF00) | \
+	  ((((U16) n) >> 8) & 0x00FF) )
 
 #define ENDIANSWAP32(n) \
-    ( ((((U32) n) << 24) & 0xFF000000) |    \
-      ((((U32) n) <<  8) & 0x00FF0000) |    \
-      ((((U32) n) >>  8) & 0x0000FF00) |    \
-      ((((U32) n) >> 24) & 0x000000FF) )
+	( ((((U32) n) << 24) & 0xFF000000) |	\
+	  ((((U32) n) <<  8) & 0x00FF0000) |	\
+	  ((((U32) n) >>  8) & 0x0000FF00) |	\
+	  ((((U32) n) >> 24) & 0x000000FF) )
 
 inline void ENDIAN_SWAP_16(U8* field)
 {

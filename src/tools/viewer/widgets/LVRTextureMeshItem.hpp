@@ -16,11 +16,11 @@ namespace lvr
 class LVRTextureMeshItem : public LVRMeshItem
 {
 public:
-    LVRTextureMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent = 0);
-    virtual ~LVRTextureMeshItem();
+	LVRTextureMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent = 0);
+	virtual ~LVRTextureMeshItem();
 
 protected:
-    virtual void addSubItems();
+	virtual void addSubItems();
 };
 
 } /* namespace lvr */

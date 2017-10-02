@@ -34,8 +34,8 @@ using namespace lvr;
 class TriangleMeshVisualizer : public Visualizer
 {
 public:
-    TriangleMeshVisualizer(MeshBufferPtr buffer, string name);
-    virtual ~TriangleMeshVisualizer() {};
+	TriangleMeshVisualizer(MeshBufferPtr buffer, string name);
+	virtual ~TriangleMeshVisualizer() {};
 };
 
 #endif /* TRIANGLEMESHVISUALIZER_H_ */

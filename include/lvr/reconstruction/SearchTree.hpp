@@ -145,16 +145,16 @@ protected:
     int                         m_kd;
 
     /// A pointer to the original point cloud data
-    floatArr                    m_pointData;
+    floatArr					m_pointData;
 
     /// A pointer to color attributes for the point (or zero, if the point clouds contains no color values)
-    ucharArr                    m_pointColorData;
+    ucharArr					m_pointColorData;
 
     /// Indicator whether point color values are supported by the search tree instance
-    bool                        m_haveColors;
+    bool						m_haveColors;
 
     /// Number of points managed by this class
-    size_t                        m_numPoints;
+    size_t						m_numPoints;
 
 }; // SearchTreeClass.
 

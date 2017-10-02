@@ -35,11 +35,11 @@ using namespace lvr;
 class PointCloudVisualizer : public Visualizer
 {
 public:
-    PointCloudVisualizer(PointBufferPtr buffer, string name);
-    virtual ~PointCloudVisualizer() {};
+	PointCloudVisualizer(PointBufferPtr buffer, string name);
+	virtual ~PointCloudVisualizer() {};
 
 private:
-    PointCloud*                m_pointCloud;
+	PointCloud*				m_pointCloud;
 };
 
 #endif /* POINTCLOUDVISUALIZER_HPP_ */

@@ -31,8 +31,8 @@
 class GridVisualizer : public Visualizer
 {
 public:
-    GridVisualizer(string filename);
-    virtual ~GridVisualizer() {};
+	GridVisualizer(string filename);
+	virtual ~GridVisualizer() {};
 };
 
 #endif /* GRIDVISUALIZER_HPP_ */

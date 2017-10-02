@@ -8,11 +8,11 @@ mark_as_advanced(SLAM6D_INCLUDE_DIR SLAM6D_INSTALL_INCLUDE_DIR)
 include_directories(${SLAM6D_INCLUDE_DIR})
 
 set(SLAM_SOURCES
-    Boctree.cc
-    allocator.cc
-    point_type.cc
-    searchTree.cc
-    scan_io_oct.cc
+	Boctree.cc
+	allocator.cc
+	point_type.cc
+	searchTree.cc
+	scan_io_oct.cc
 )
 set_source_files_properties(${SLAM_SOURCES} PROPERTIES COMPILE_FLAGS "-std=gnu++0x")
 

@@ -46,91 +46,91 @@ class Options
 {
 public:
 
-    /**
-     * @brief Ctor. Parses the command parameters given to the main
-     *     function of the program
-     */
-    Options(int argc, char** argv);
-    virtual ~Options();
+	/**
+	 * @brief Ctor. Parses the command parameters given to the main
+	 *     function of the program
+	 */
+	Options(int argc, char** argv);
+	virtual ~Options();
 
-    /**
-     * @return  Returns the directory to convert
-     */
-    string  getInputDirectory() const
-    {
-        return m_variables["inputDirectory"].as<string>();
-    }
+	/**
+	 * @return  Returns the directory to convert
+	 */
+	string  getInputDirectory() const
+	{
+	    return m_variables["inputDirectory"].as<string>();
+	}
 
-    /**
-     * @return  Get output file name
-     */
-    string  getOutputFile() const
-    {
-        return m_variables["outputFile"].as<string>();
-    }
+	/**
+	 * @return  Get output file name
+	 */
+	string  getOutputFile() const
+	{
+	    return m_variables["outputFile"].as<string>();
+	}
 
-    /**
-     * @return  Get target number of points in the output file, i.e.,
-     *          the number of target points for reduction. A negative
-     *          value indicates no reduction.
-     */
-    int     getTargetSize() const
-    {
-        return m_variables["targetSize"].as<int>();
-    }
+	/**
+	 * @return  Get target number of points in the output file, i.e.,
+	 *          the number of target points for reduction. A negative
+	 *          value indicates no reduction.
+	 */
+	int     getTargetSize() const
+	{
+	    return m_variables["targetSize"].as<int>();
+	}
 
-    /**
-     * @return  Get start scan number
-     */
-    int     getStart() const
-    {
-        return m_variables["start"].as<int>();
-    }
+	/**
+	 * @return  Get start scan number
+	 */
+	int     getStart() const
+	{
+	    return m_variables["start"].as<int>();
+	}
 
-    /**
-     * @return  Get end scan number
-     */
-    int     getEnd() const
-    {
-        return m_variables["end"].as<int>();
-    }
+	/**
+	 * @return  Get end scan number
+	 */
+	int     getEnd() const
+	{
+	    return m_variables["end"].as<int>();
+	}
 
-    /**
-     * @return  Get end scan number
-     */
-    int     getInterpolation() const
-    {
-        return m_variables["ki"].as<int>();
-    }
+	/**
+	 * @return  Get end scan number
+	 */
+	int     getInterpolation() const
+	{
+	    return m_variables["ki"].as<int>();
+	}
 
 private:
 
-    /// The internally used variable map
-    variables_map m_variables;
+	/// The internally used variable map
+	variables_map m_variables;
 
-    /// The internally used option description
-    options_description m_descr;
+	/// The internally used option description
+	options_description m_descr;
 
-    /// The internally used positional option desription
-    positional_options_description m_pdescr;
+	/// The internally used positional option desription
+	positional_options_description m_pdescr;
 
-    /// First scan to read
-    int         m_start;
+	/// First scan to read
+	int         m_start;
 
-    /// Last scan to read
-    int         m_end;
+	/// Last scan to read
+	int         m_end;
 
-    /// Number of nearest neighbors for normal interpolation
-    int         m_ki;
+	/// Number of nearest neighbors for normal interpolation
+	int         m_ki;
 
-    /// Input directory
-    string      m_inputDirectory;
+	/// Input directory
+	string      m_inputDirectory;
 
-    /// Output file name
-    string      m_outputFile;
+	/// Output file name
+	string      m_outputFile;
 
-    /// Target size
-    int         m_targetSize;
+	/// Target size
+	int         m_targetSize;
 
 };
 

@@ -48,73 +48,73 @@ namespace lvr
 template<typename CoordT>
 struct coord
 {
-    CoordT x;
-    CoordT y;
-    CoordT z;
-    CoordT& operator[]( const size_t i )
-    {
-        switch ( i )
-        {
-        case 0:
-            return x;
-            break;
-        case 1:
-            return y;
-            break;
-        case 2:
-            return z;
-            break;
-        default:
-            return z;
-        }
-    }
+	CoordT x;
+	CoordT y;
+	CoordT z;
+	CoordT& operator[]( const size_t i )
+	{
+		switch ( i )
+		{
+		case 0:
+			return x;
+			break;
+		case 1:
+			return y;
+			break;
+		case 2:
+			return z;
+			break;
+		default:
+			return z;
+		}
+	}
 };
 
 
 template<typename ColorT>
 struct color
 {
-    ColorT r;
-    ColorT g;
-    ColorT b;
-    ColorT& operator[] ( const size_t i )
-    {
-        switch ( i )
-        {
-        case 0:
-            return r;
-            break;
-        case 1:
-            return g;
-            break;
-        case 2:
-            return b;
-            break;
-        default:
-            return b;
-        }
-    }
+	ColorT r;
+	ColorT g;
+	ColorT b;
+	ColorT& operator[] ( const size_t i )
+	{
+		switch ( i )
+		{
+		case 0:
+			return r;
+			break;
+		case 1:
+			return g;
+			break;
+		case 2:
+			return b;
+			break;
+		default:
+			return b;
+		}
+	}
 };
 
 
 template<typename T>
 struct idxVal
 {
-    T value;
-    T& operator[] ( const size_t i )
-    {
-        return value;
-    }
+	T value;
+	T& operator[] ( const size_t i )
+	{
+		return value;
+	}
 };
 
 
 
 struct Material
 {
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
-    int texture_index;
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
+	int texture_index;
 };
 
 

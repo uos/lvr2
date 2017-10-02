@@ -41,44 +41,44 @@ public:
     /**
      * @brief   Ctor.
      */
-    HalfEdge() : used(false), s(0), e(0), f(0), n(0), p(0) {};
+	HalfEdge() : used(false), s(0), e(0), f(0), n(0), p(0) {};
 
-    HalfEdge<HVertexT, FaceT>*  next();
-    HalfEdge<HVertexT, FaceT>*  pair();
-    HVertexT*                   start();
-    HVertexT*                   end();
-    FaceT*                      face();
+	HalfEdge<HVertexT, FaceT>*  next();
+	HalfEdge<HVertexT, FaceT>*  pair();
+	HVertexT*                   start();
+	HVertexT*                   end();
+	FaceT*                      face();
 
-    void setNext  (HalfEdge<HVertexT, FaceT>* next)    { n = next;};
-    void setPair  (HalfEdge<HVertexT, FaceT>* pair)    { p = pair;};
-    void setStart (HVertexT* start)   {s = start;};
-    void setEnd   (HVertexT* end)     {e = end;};
-    void setFace  (FaceT* face)       {f = face;};
+	void setNext  (HalfEdge<HVertexT, FaceT>* next)    { n = next;};
+	void setPair  (HalfEdge<HVertexT, FaceT>* pair)    { p = pair;};
+	void setStart (HVertexT* start)   {s = start;};
+	void setEnd   (HVertexT* end)     {e = end;};
+	void setFace  (FaceT* face)       {f = face;};
 
-    bool isBorderEdge();
-    bool hasNeighborFace();
-    bool hasFace();
-    bool hasPair();
+	bool isBorderEdge();
+	bool hasNeighborFace();
+	bool hasFace();
+	bool hasPair();
 
 private:
-    /// A pointer to the next edge in current contour
-    HalfEdge<HVertexT, FaceT>* n;
+	/// A pointer to the next edge in current contour
+	HalfEdge<HVertexT, FaceT>* n;
 
-    /// A pointer to the pair edge of this edge
-    HalfEdge<HVertexT, FaceT>* p;
+	/// A pointer to the pair edge of this edge
+	HalfEdge<HVertexT, FaceT>* p;
 
-    /// A pointer to the start vertex of this edge
-    HVertexT* s;
+	/// A pointer to the start vertex of this edge
+	HVertexT* s;
 
-    /// A pointer to the end vertex of this edge
-    HVertexT* e;
+	/// A pointer to the end vertex of this edge
+	HVertexT* e;
 
-    /// A pointer to the surrounded face
-    FaceT* f;
+	/// A pointer to the surrounded face
+	FaceT* f;
 
 public:
-    /// Used for clustering (may be removed soon)
-    bool used;
+	/// Used for clustering (may be removed soon)
+	bool used;
 };
 
 

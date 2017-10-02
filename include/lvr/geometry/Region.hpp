@@ -50,7 +50,7 @@ class HalfEdgeMesh;
 
 
 /**
- * @brief     This class represents a region.
+ * @brief 	This class represents a region.
  */
 template<typename VertexT, typename NormalT>
 class Region
@@ -58,127 +58,127 @@ class Region
 
 public:
 
-    typedef HalfEdgeFace<VertexT, NormalT> HFace;
-    typedef HalfEdgeVertex<VertexT, NormalT> HVertex;
-    typedef HalfEdge<HVertex, HFace> HEdge;
+	typedef HalfEdgeFace<VertexT, NormalT> HFace;
+	typedef HalfEdgeVertex<VertexT, NormalT> HVertex;
+	typedef HalfEdge<HVertex, HFace> HEdge;
 
-    typedef HVertex*  VertexPtr;
-    typedef HFace*    FacePtr;
-    typedef HEdge*    EdgePtr;
+	typedef HVertex*  VertexPtr;
+	typedef HFace*    FacePtr;
+	typedef HEdge*    EdgePtr;
 
-    /**
-     * @brief constructor.
-     *
-     * @param     region_number     the number of the region
-     */
-    Region(int regionNumber);
+	/**
+	 * @brief constructor.
+	 *
+	 * @param 	region_number 	the number of the region
+	 */
+	Region(int regionNumber);
 
-    /**
-     * @brief Adds a face to the region.
-     *
-     * @param    f    the face to add
-     */
-    virtual void addFace(FacePtr f);
+	/**
+	 * @brief Adds a face to the region.
+	 *
+	 * @param	f	the face to add
+	 */
+	virtual void addFace(FacePtr f);
 
-    /**
-     * @brief Removes a face from the region.
-     *
-     * @param    f    the face to remove
-     */
-    virtual void deleteInvalidFaces();
+	/**
+	 * @brief Removes a face from the region.
+	 *
+	 * @param	f	the face to remove
+	 */
+	virtual void deleteInvalidFaces();
 
-    float getArea();
+	float getArea();
 
-    /**
-     * @brief Sets this regions's label.
-     *
-     * @param label the label to set
-     */
-    virtual void setLabel(std::string label);
+	/**
+	 * @brief Sets this regions's label.
+	 *
+	 * @param label the label to set
+	 */
+	virtual void setLabel(std::string label);
 
-    /**
-     * @brief Returns the regions's label.
-     */
-    virtual std::string getLabel();
+	/**
+	 * @brief Returns the regions's label.
+	 */
+	virtual std::string getLabel();
 
-    /**
-     * @brief Returns true if region has a label.
-     */
-    virtual bool hasLabel();
+	/**
+	 * @brief Returns true if region has a label.
+	 */
+	virtual bool hasLabel();
 
-    /**
-     * @brief Finds all contours of the region (outer contour + holes)
-     *
-     * @param    epsilon    controls the number of points used for a contour
-     *
-     * @return     a list of all contours
-     */
-    virtual vector<vector<VertexT> > getContours(float epsilon);
+	/**
+	 * @brief Finds all contours of the region (outer contour + holes)
+	 *
+	 * @param	epsilon	controls the number of points used for a contour
+	 *
+	 * @return 	a list of all contours
+	 */
+	virtual vector<vector<VertexT> > getContours(float epsilon);
 
-    /**
-     * @brief caluclates a regression plane for the region and fits all faces into this plane
-     *
-     */
-    virtual void regressionPlane();
+	/**
+	 * @brief caluclates a regression plane for the region and fits all faces into this plane
+	 *
+	 */
+	virtual void regressionPlane();
 
-    /**
-     * @brief tells if the given face is flickering
-     *
-     * @param    f    the face to test
-     *
-     * @return    true if the given face is flickering, false otherwise
-     *
-     */
-    virtual bool detectFlicker(FacePtr f);
+	/**
+	 * @brief tells if the given face is flickering
+	 *
+	 * @param	f	the face to test
+	 *
+	 * @return	true if the given face is flickering, false otherwise
+	 *
+	 */
+	virtual bool detectFlicker(FacePtr f);
 
     /**
      * @brief the number of faces contained in this region
      */
     virtual size_t size();
 
-    /**
-     * @brief destructor.
-     */
-    virtual ~Region();
+	/**
+	 * @brief destructor.
+	 */
+	virtual ~Region();
 
-    /// Indicates if the region was dragged into a regression plane
-    bool m_inPlane;
+	/// Indicates if the region was dragged into a regression plane
+	bool m_inPlane;
 
-    bool m_unfinished;
-    /// The faces in the region
-    vector<FacePtr>    m_faces;
+	bool m_unfinished;
+	/// The faces in the region
+	vector<FacePtr>    m_faces;
 
-    /// The number of the region
-    int m_regionNumber;
+	/// The number of the region
+	int m_regionNumber;
 
-    /// The normal of the region (updated every time regressionPlane() is called)
-    NormalT m_normal;
-    
-    ///    The stuetzvektor of the plane
-    VertexT m_stuetzvektor;
+	/// The normal of the region (updated every time regressionPlane() is called)
+	NormalT m_normal;
+	
+	///	The stuetzvektor of the plane
+	VertexT m_stuetzvektor;
 
-    /// indicates if the region is to be deleted or not
-    bool m_toDelete;
+	/// indicates if the region is to be deleted or not
+	bool m_toDelete;
 
-    void calcArea();
+	void calcArea();
 
-    BoundingBox<VertexT> getBoundingBox();
+	BoundingBox<VertexT> getBoundingBox();
 private:
 
     /**
-     * @brief calculates a valid normal of the region
-     *
-     * @return a normal of the region
-     */
-    virtual NormalT calcNormal();
+	 * @brief calculates a valid normal of the region
+	 *
+	 * @return a normal of the region
+	 */
+	virtual NormalT calcNormal();
 
-    // The region's label
-    std::string m_label;
+	// The region's label
+	std::string m_label;
 
-    // Indicates whether the region has been labeled or not
-    bool b_labeled;
+	// Indicates whether the region has been labeled or not
+	bool b_labeled;
 
-    float m_area;
+	float m_area;
 
 };
 }
