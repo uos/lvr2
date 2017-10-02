@@ -443,4 +443,4 @@ void LASwaveform13reader::close()
     fclose(file);
     file = 0;
   }
-}
+}

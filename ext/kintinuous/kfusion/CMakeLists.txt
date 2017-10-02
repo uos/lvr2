@@ -81,3 +81,4 @@ set_target_properties(lvr_kinfu PROPERTIES
 install(TARGETS lvr_kinfu RUNTIME DESTINATION bin COMPONENT main)
 install(FILES ${srcs} DESTINATION app COMPONENT main)
 endif()
+

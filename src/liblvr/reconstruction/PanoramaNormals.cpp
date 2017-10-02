@@ -301,3 +301,4 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
 }
 
 } // namespace lvr
+

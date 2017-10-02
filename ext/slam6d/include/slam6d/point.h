@@ -133,4 +133,4 @@ inline Point operator*(const double &v, const Point &p) {
 
 #include "point.icc"
 
-#endif
+#endif

@@ -506,4 +506,4 @@ LASwriteOpener::~LASwriteOpener()
   if (file_name) free(file_name);
   if (parse_string) free(parse_string);
   if (separator) free(separator);
-}
+}

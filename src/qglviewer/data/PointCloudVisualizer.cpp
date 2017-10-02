@@ -53,3 +53,6 @@ PointCloudVisualizer::PointCloudVisualizer(PointBufferPtr buffer, string name)
     item->setRenderable(pc);
 
 }
+
+
+

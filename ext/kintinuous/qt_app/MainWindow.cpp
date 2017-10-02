@@ -326,3 +326,4 @@ MainWindow::~MainWindow()
     m_meshThread->wait();
     delete m_meshThread;
 }
+

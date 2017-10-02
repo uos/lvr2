@@ -1299,4 +1299,4 @@ namespace nanoflann
 } // end of NS
 
 
-#endif /* NANOFLANN_HPP_ */
+#endif /* NANOFLANN_HPP_ */

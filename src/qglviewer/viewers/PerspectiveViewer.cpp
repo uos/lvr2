@@ -206,3 +206,5 @@ void PerspectiveViewer::setProjectionMode(ProjectionMode mode)
     // Switch camera
     setCamera(m_camera[mode]);
 }
+
+

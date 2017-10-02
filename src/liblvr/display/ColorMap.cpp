@@ -171,3 +171,5 @@ void ColorMap::convertHSVToRGB(float hue, float s, float v, float &r, float &g, 
 }
 
 } // namespace lvr
+
+

@@ -511,4 +511,4 @@ BOOL LASreaderQFITrescalereoffset::open(ByteStreamIn* stream)
     header.z_offset = offset[2];
   }
   return TRUE;
-}
+}

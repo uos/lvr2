@@ -332,4 +332,4 @@ inline void ArithmeticEncoder::manage_outbuffer()
   endbyte = outbyte + AC_BUFFER_SIZE;
   assert(endbyte > outbyte);
   assert(outbyte < endbuffer);    
-}
+}

@@ -139,4 +139,4 @@ private:
         boost::shared_ptr<boost::thread>
     > m_threads;
 };
-#endif // LinearPipeline_h__
+#endif // LinearPipeline_h__

@@ -77,4 +77,4 @@ void FusionStage::lastStep()
     else
         ModelFactory::saveModel( m, string(options_->getOutput() + ".obj"));
     std::cout << "Finished saving" << std::endl;
-}
+}

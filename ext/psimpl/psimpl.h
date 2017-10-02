@@ -1887,4 +1887,4 @@ namespace psimpl
     }
 }
 
-#endif // PSIMPL_GENERIC
+#endif // PSIMPL_GENERIC

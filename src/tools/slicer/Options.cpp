@@ -108,3 +108,4 @@ bool Options::printUsage() const
 }
 
 } // namespace slicer
+

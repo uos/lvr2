@@ -588,4 +588,4 @@ inline void LASreadItemCompressed_BYTE_v2::read(U8* item)
     item[i] = U8_FOLD(value);
   }
   memcpy(last_item, item, number);
-}
+}

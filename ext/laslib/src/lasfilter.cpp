@@ -1589,4 +1589,4 @@ void LASfilter::add_criterion(LAScriterion* filter_criterion)
   criteria[num_criteria] = filter_criterion;
   counters[num_criteria] = 0;
   num_criteria++;
-}
+}
