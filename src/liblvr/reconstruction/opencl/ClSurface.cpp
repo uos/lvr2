@@ -692,9 +692,9 @@ void ClSurface::getDeviceInformation(int platform_id, int device_id)
     checkOclErrors(clGetDeviceInfo(device, CL_DEVICE_REFERENCE_COUNT, sizeof(reference_count), &reference_count, NULL));
     // printf("CL_DEVICE_REFERENCE_COUNT: %u\n", reference_count);
     // printf("\n");
-    
+
     free(devices);
-    
+
     free(platforms);
 
 }
