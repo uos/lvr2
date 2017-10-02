@@ -47,90 +47,90 @@ public:
     /**
      * @brief Default constructor
      */
-	BoundingBox();
+    BoundingBox();
 
-	/**
-	 * @brief Constructs a bounding box with from the given vertices
-	 *
-	 * @param v1        Lower left corner of the BoundingBox
-	 * @param v2        Upper right corner of the BoundingBox
-	 * @return
-	 */
-	BoundingBox(VertexT v1, VertexT v2);
+    /**
+     * @brief Constructs a bounding box with from the given vertices
+     *
+     * @param v1        Lower left corner of the BoundingBox
+     * @param v2        Upper right corner of the BoundingBox
+     * @return
+     */
+    BoundingBox(VertexT v1, VertexT v2);
 
-	BoundingBox(const BoundingBox& rhs);
+    BoundingBox(const BoundingBox& rhs);
 
     BoundingBox& operator=(const BoundingBox& rhs);
 
-	/**
-	 * @brief Constructs a bounding box from the given coordinates
-	 *
-	 * @param x_min     x value of the lower left corner
-	 * @param y_min     y value of the lower left corner
-	 * @param z_min     z value of the lower left corner
-	 * @param x_max     x value of the upper right corner
-	 * @param y_max     y value of the upper right corner
-	 * @param z_max     z value of the upper right corner
-	 * @return
-	 */
-	BoundingBox(float x_min, float y_min, float z_min,
-			    float x_max, float y_max, float z_max);
+    /**
+     * @brief Constructs a bounding box from the given coordinates
+     *
+     * @param x_min     x value of the lower left corner
+     * @param y_min     y value of the lower left corner
+     * @param z_min     z value of the lower left corner
+     * @param x_max     x value of the upper right corner
+     * @param y_max     y value of the upper right corner
+     * @param z_max     z value of the upper right corner
+     * @return
+     */
+    BoundingBox(float x_min, float y_min, float z_min,
+                float x_max, float y_max, float z_max);
 
-	virtual ~BoundingBox() {};
+    virtual ~BoundingBox() {};
 
-	/**
-	 * @brief Expands the bounding box if the given point \ref{v} is
-	 *        outside the current volume
-	 *
-	 * @param v         A 3d point
-	 */
-	inline void         expand(VertexT v);
+    /**
+     * @brief Expands the bounding box if the given point \ref{v} is
+     *        outside the current volume
+     *
+     * @param v         A 3d point
+     */
+    inline void         expand(VertexT v);
 
-	/**
-	 * @brief Expands the bounding box if the given point is outside
+    /**
+     * @brief Expands the bounding box if the given point is outside
      *        the current volume
      *
-	 * @param x         The x coordinate of the check point
-	 * @param y         The y coordinate of the check point
-	 * @param z         The z coordinate of the check point
-	 */
-	inline void         expand(float x, float y, float z);
+     * @param x         The x coordinate of the check point
+     * @param y         The y coordinate of the check point
+     * @param z         The z coordinate of the check point
+     */
+    inline void         expand(float x, float y, float z);
 
-	/**
-	 * @brief  Calculates the surrounding bounding box of the current
-	 *         volume and the other given bounding box
-	 *
-	 * @param bb        Another bounding box
-	 */
-	inline void         expand(BoundingBox<VertexT>& bb);
+    /**
+     * @brief  Calculates the surrounding bounding box of the current
+     *         volume and the other given bounding box
+     *
+     * @param bb        Another bounding box
+     */
+    inline void         expand(BoundingBox<VertexT>& bb);
 
-	/**
-	 * @brief Returns the radius of the current volume, i.e. the distance
-	 *        between the centroid and the most distance corner from this
-	 *        point.
-	 */
-	float 		        getRadius();
+    /**
+     * @brief Returns the radius of the current volume, i.e. the distance
+     *        between the centroid and the most distance corner from this
+     *        point.
+     */
+    float                 getRadius();
 
-	/**
-	 * @brief Returns true if the bounding box has been expanded before or
-	 *        was initialized with a preset size.
-	 */
-	bool                isValid();
+    /**
+     * @brief Returns true if the bounding box has been expanded before or
+     *        was initialized with a preset size.
+     */
+    bool                isValid();
 
-	/**
-	 * @brief Returns the center point of the bounding box.
-	 */
-	VertexT           	getCentroid(){return m_centroid;};
+    /**
+     * @brief Returns the center point of the bounding box.
+     */
+    VertexT               getCentroid(){return m_centroid;};
 
-	/**
-	 * @brief Returns the longest side of the bounding box
-	 */
-	float               getLongestSide();
+    /**
+     * @brief Returns the longest side of the bounding box
+     */
+    float               getLongestSide();
 
-	/**
-	 * @brief Returns the x-size of the bounding box
-	 */
-	float               getXSize();
+    /**
+     * @brief Returns the x-size of the bounding box
+     */
+    float               getXSize();
 
     /**
      * @brief Returns the y-size of the bounding box
@@ -146,7 +146,7 @@ public:
     /**
      * @brief Returns the upper right coordinates
      */
-    VertexT           	getMax() const;
+    VertexT               getMax() const;
 
     /**
      * @brief Returns the lower left coordinates
@@ -155,29 +155,29 @@ public:
     
     BoundingBox         getIntersectionBB(BoundingBox& rhs);
     
-	bool                contains(float x, float y, float z);
-	
+    bool                contains(float x, float y, float z);
+    
 
 
 private:
 
-	/// The lower right point of the bounding box
-	VertexT           	m_min;
+    /// The lower right point of the bounding box
+    VertexT               m_min;
 
-	/// The upper right point of the bounding box
-	VertexT           	m_max;
+    /// The upper right point of the bounding box
+    VertexT               m_max;
 
-	/// The center point of the bounding box
-	VertexT           	m_centroid;
+    /// The center point of the bounding box
+    VertexT               m_centroid;
 
-	/// The 'width' of the bounding box
-	float               m_xSize;
+    /// The 'width' of the bounding box
+    float               m_xSize;
 
-	/// The 'height' of the bounding box
-	float               m_ySize;
+    /// The 'height' of the bounding box
+    float               m_ySize;
 
-	/// The 'depth' of the bounding box
-	float               m_zSize;
+    /// The 'depth' of the bounding box
+    float               m_zSize;
 };
 
 template<typename T>
