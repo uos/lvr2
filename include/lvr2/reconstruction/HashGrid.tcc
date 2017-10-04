@@ -195,93 +195,89 @@ void HashGrid<BaseVecT, BoxT>::addLatticePoint(int index_x, int index_y, int ind
     // created query point will get
     unsigned int current_index = 0;
 
-    int dx, dy, dz;
-
     // Get min and max vertex of the point clouds bounding box
     auto v_min = this->m_boundingBox.getMin();
     auto v_max = this->m_boundingBox.getMax();
 
-    int e;
-    this->m_extrude ? e = 8 : e = 1;
-    for(int j = 0; j < e; j++)
+    int limit = this->m_extrude ? 1 : 0;
+    for(int dx = -limit; dx <= limit; dx++)
     {
-        // Get the grid offsets for the neighboring grid position
-        // for the given box corner
-        dx = HGCreateTable[j][0];
-        dy = HGCreateTable[j][1];
-        dz = HGCreateTable[j][2];
-
-        hash_value = this->hashValue(index_x + dx, index_y + dy, index_z +dz);
-
-        it = this->m_cells.find(hash_value);
-        if(it == this->m_cells.end())
+        for(int dy = -limit; dy <= limit; dy++)
         {
-            //Calculate box center
-            BaseVecT box_center(
-                    (index_x + dx) * this->m_voxelsize + v_min.x,
-                    (index_y + dy) * this->m_voxelsize + v_min.y,
-                    (index_z + dz) * this->m_voxelsize + v_min.z);
-
-            //Create new box
-            BoxT* box = new BoxT(box_center);
-
-            //Setup the box itself
-            for(int k = 0; k < 8; k++){
-
-                //Find point in Grid
-                current_index = this->findQueryPoint(k, index_x + dx, index_y + dy, index_z + dz);
-                //If point exist, save index in box
-                if(current_index != INVALID) box->setVertex(k, current_index);
-
-                    //Otherwise create new grid point and associate it with the current box
-                else
-                {
-                    Point<BaseVecT> position(box_center.x + box_creation_table[k][0] * vsh,
-                                     box_center.y + box_creation_table[k][1] * vsh,
-                                     box_center.z + box_creation_table[k][2] * vsh);
-
-                    this->m_queryPoints.push_back(QueryPoint<BaseVecT>(position, distance));
-                    box->setVertex(k, this->m_globalIndex);
-                    this->m_globalIndex++;
-
-                }
-            }
-
-            //Set pointers to the neighbors of the current box
-            int neighbor_index = 0;
-            size_t neighbor_hash = 0;
-
-            for(int a = -1; a < 2; a++)
+            for(int dz = -limit; dz <= limit; dz++)
             {
-                for(int b = -1; b < 2; b++)
+                hash_value = this->hashValue(index_x + dx, index_y + dy, index_z +dz);
+
+                it = this->m_cells.find(hash_value);
+                if(it == this->m_cells.end())
                 {
-                    for(int c = -1; c < 2; c++)
-                    {
+                    //Calculate box center
+                    BaseVecT box_center(
+                        (index_x + dx) * this->m_voxelsize + v_min.x,
+                        (index_y + dy) * this->m_voxelsize + v_min.y,
+                        (index_z + dz) * this->m_voxelsize + v_min.z);
 
-                        //Calculate hash value for current neighbor cell
-                        neighbor_hash = this->hashValue(index_x + dx + a,
-                                                        index_y + dy + b,
-                                                        index_z + dz + c);
+                    //Create new box
+                    BoxT* box = new BoxT(box_center);
 
-                        //Try to find this cell in the grid
-                        neighbor_it = this->m_cells.find(neighbor_hash);
+                    //Setup the box itself
+                    for(int k = 0; k < 8; k++){
 
-                        //If it exists, save pointer in box
-                        if(neighbor_it != this->m_cells.end())
+                        //Find point in Grid
+                        current_index = this->findQueryPoint(k, index_x + dx, index_y + dy, index_z + dz);
+                        //If point exist, save index in box
+                        if(current_index != INVALID) box->setVertex(k, current_index);
+
+                            //Otherwise create new grid point and associate it with the current box
+                        else
                         {
-                            box->setNeighbor(neighbor_index, (*neighbor_it).second);
-                            (*neighbor_it).second->setNeighbor(26 - neighbor_index, box);
-                        }
+                            Point<BaseVecT> position(box_center.x + box_creation_table[k][0] * vsh,
+                                                     box_center.y + box_creation_table[k][1] * vsh,
+                                                     box_center.z + box_creation_table[k][2] * vsh);
 
-                        neighbor_index++;
+                            this->m_queryPoints.push_back(QueryPoint<BaseVecT>(position, distance));
+                            box->setVertex(k, this->m_globalIndex);
+                            this->m_globalIndex++;
+
+                        }
                     }
+
+                    //Set pointers to the neighbors of the current box
+                    int neighbor_index = 0;
+                    size_t neighbor_hash = 0;
+
+                    for(int a = -1; a < 2; a++)
+                    {
+                        for(int b = -1; b < 2; b++)
+                        {
+                            for(int c = -1; c < 2; c++)
+                            {
+
+                                //Calculate hash value for current neighbor cell
+                                neighbor_hash = this->hashValue(index_x + dx + a,
+                                                                index_y + dy + b,
+                                                                index_z + dz + c);
+
+                                //Try to find this cell in the grid
+                                neighbor_it = this->m_cells.find(neighbor_hash);
+
+                                //If it exists, save pointer in box
+                                if(neighbor_it != this->m_cells.end())
+                                {
+                                    box->setNeighbor(neighbor_index, (*neighbor_it).second);
+                                    (*neighbor_it).second->setNeighbor(26 - neighbor_index, box);
+                                }
+
+                                neighbor_index++;
+                            }
+                        }
+                    }
+
+                    this->m_cells[hash_value] = box;
                 }
             }
-
-            this->m_cells[hash_value] = box;
         }
     }
-
 }
 
 template<typename BaseVecT, typename BoxT>
