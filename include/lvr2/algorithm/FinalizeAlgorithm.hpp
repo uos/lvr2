@@ -32,20 +32,24 @@
 
 using boost::optional;
 
-#include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/io/MeshBuffer.hpp>
+#include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/attrmaps/AttrMaps.hpp>
 #include <lvr2/algorithm/ColorAlgorithms.hpp>
 #include <lvr2/util/ClusterBiMap.hpp>
 #include <lvr2/texture/Texture.hpp>
 #include <lvr2/texture/Material.hpp>
-
-#include "ClusterPainter.hpp"
-#include "Materializer.hpp"
+#include <lvr2/algorithm/ClusterPainter.hpp>
 
 namespace lvr2
 {
+
+
+// Forward declaration
+template<typename BaseVecT>
+class MaterializerResult;
+
 
 /**
  * @brief

@@ -26,10 +26,10 @@
 #include <vector>
 #include <utility>
 #include <cmath>
+#include <lvr2/io/MeshBuffer.hpp>
+#include <lvr2/algorithm/Materializer.hpp>
 
 #include <lvr/io/Progress.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/attrmaps/AttrMaps.hpp>
 
 namespace lvr2
 {
@@ -97,7 +97,7 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> FinalizeAlgorithm<BaseVecT>::apply(const
         }
     }
 
-    auto buffer = boost::make_shared<MeshBuffer<BaseVecT>>();
+    auto buffer = boost::make_shared<lvr2::MeshBuffer<BaseVecT>>();
     buffer->setVertices(vertices);
     buffer->setFaceIndices(faces);
 

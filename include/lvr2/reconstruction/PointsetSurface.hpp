@@ -33,6 +33,8 @@
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/reconstruction/SearchTree.hpp>
 
+using std::pair;
+
 namespace lvr2
 {
 

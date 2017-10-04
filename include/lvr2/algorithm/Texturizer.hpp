@@ -32,7 +32,6 @@
 
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/geometry/Normal.hpp>
