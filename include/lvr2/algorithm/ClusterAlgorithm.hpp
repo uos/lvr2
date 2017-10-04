@@ -27,6 +27,7 @@
 #ifndef LVR2_ALGORITHM_CLUSTERALGORITHM_H_
 #define LVR2_ALGORITHM_CLUSTERALGORITHM_H_
 
+#include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/algorithm/Materializer.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/Handles.hpp>

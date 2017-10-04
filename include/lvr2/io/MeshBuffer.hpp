@@ -42,13 +42,17 @@
 #include <lvr/io/DataStruct.hpp>
 #include <lvr2/texture/Material.hpp>
 #include <lvr2/texture/Texture.hpp>
-#include <lvr2/algorithm/Materializer.hpp>
 
 namespace lvr2
 {
 
-
 using std::vector;
+
+
+// Forward declaration
+template<typename BaseVecT>
+class MaterializerResult;
+
 
 template<typename BaseVecT>
 class MeshBuffer
@@ -104,6 +108,10 @@ class MeshBuffer
         vector<vector<unsigned int>> m_clusterFaceIndices;
 
 };
+
+
+template <typename BaseVecT>
+using MeshBufferPtr = std::shared_ptr<MeshBuffer<BaseVecT>>;
 
 } // namespace
 

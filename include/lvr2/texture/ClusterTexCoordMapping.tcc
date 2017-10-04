@@ -36,7 +36,7 @@ void ClusterTexCoordMapping::push(ClusterHandle handle, TexCoords tex)
     }
     else
     {
-        m_mapping[m_len] = make_pair(handle, tex);
+        m_mapping[m_len] = std::make_pair(handle, tex);
         m_len++;
     }
 }

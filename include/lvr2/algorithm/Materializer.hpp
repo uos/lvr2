@@ -33,7 +33,6 @@
 
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/geometry/Normal.hpp>
@@ -46,7 +45,6 @@
 #include <lvr2/texture/Material.hpp>
 #include <lvr2/geometry/BoundingRectangle.hpp>
 #include <lvr2/algorithm/Texturizer.hpp>
-#include <lvr2/algorithm/ClusterAlgorithm.hpp>
 #include <lvr2/algorithm/ColorAlgorithms.hpp>
 
 

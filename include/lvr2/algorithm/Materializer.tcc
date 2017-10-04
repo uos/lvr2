@@ -24,6 +24,9 @@
 *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
 */
 
+#include <lvr2/algorithm/ClusterAlgorithm.hpp>
+
+
 namespace lvr2
 {
 
