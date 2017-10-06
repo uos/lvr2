@@ -118,6 +118,29 @@ void dragToRegressionPlanes(
 );
 
 /**
+ * Compares every plane with its presumabl neighours, calculates their intersection and drags all points
+ * in-between to this intersection.
+ */
+template<typename BaseVecT>
+void optimizePlaneIntersections(
+    BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    const ClusterMap<Plane<BaseVecT>>& planes,
+    FaceMap<Normal<BaseVecT>>& normals
+);
+
+/// Drags all points between two clusters (planes) into their intersection
+template<typename BaseVecT>
+void dragOntoIntersection(
+    BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    const ClusterHandle& clusterH,
+    const ClusterHandle& neighbourClusterH,
+    const Vector<BaseVecT>& direction,
+    const Vector<BaseVecT>& p
+);
+
+/**
  * @brief Creates a mesh containing the given regression planes (which match the given minimum cluster size)
  *        as planes and saves it to a file with the given filename
  * @param filename name for the file where the mesh containing the planes will be stored in
