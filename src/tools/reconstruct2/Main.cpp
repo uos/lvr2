@@ -927,6 +927,7 @@ int main(int argc, char** argv)
 
     if(options.getDanglingArtifacts())
     {
+        cout << timestamp << "Removing dangling artifacts" << endl;
         removeDanglingCluster(mesh, static_cast<size_t>(options.getDanglingArtifacts()));
     }
 
