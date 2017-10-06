@@ -43,4 +43,18 @@ Point<BaseVecT> Plane<BaseVecT>::project(const Point<BaseVecT>& other) const
     return other - (this->normal.asVector() * (this->normal.dot(other - this->pos)));
 }
 
+template<typename BaseVecT>
+Line<BaseVecT> Plane<BaseVecT>::intersection(const Plane<BaseVecT>& other) const {
+    float d1 = normal.dot(pos);
+    float d2 = other.normal.dot(other.pos);
+    auto direction = normal.cross(other.normal.asVector());
+
+    Line<BaseVecT> intersection;
+    intersection.normal = direction.normalized();
+    intersection.pos = (other.normal.asVector() * d1 - normal.asVector() * d2).cross(direction)
+                       * (1 / (direction.dot(direction)));
+
+    return intersection;
+}
+
 } // namespace lvr2

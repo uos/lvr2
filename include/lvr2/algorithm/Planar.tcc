@@ -329,16 +329,7 @@ void optimizePlaneIntersections(
             float normalDot = plane1.normal.dot(plane2.normal.asVector());
             if (fabs(normalDot) < 0.9)
             {
-                float d1 = plane1.normal.dot(plane1.pos);
-                float d2 = plane2.normal.dot(plane2.pos);
-
-                // TODO move intersection calculation into plane method
-                auto direction = plane1.normal.cross(plane2.normal.asVector());
-
-                Line<BaseVecT> intersection;
-                intersection.normal = direction.normalized();
-                intersection.pos = (plane2.normal.asVector() * d1 - plane1.normal.asVector() * d2).cross(direction)
-                                    * (1 / (direction.dot(direction)));
+                auto intersection = plane1.intersection(plane2);
 
                 dragOntoIntersection(mesh, clusters, clusterH, clusterInnerH, intersection);
                 dragOntoIntersection(mesh, clusters, clusterInnerH, clusterH, intersection);
