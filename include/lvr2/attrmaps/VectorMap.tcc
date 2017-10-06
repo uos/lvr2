@@ -75,7 +75,7 @@ optional<ValueT> VectorMap<HandleT, ValueT>::erase(HandleT key)
     auto val = m_vec.get(key);
     if (val)
     {
-        auto out = ValueT(move(*val));
+        auto out = ValueT(std::move(*val));
         m_vec.erase(key);
         return out;
     }
