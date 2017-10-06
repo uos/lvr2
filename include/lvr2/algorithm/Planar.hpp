@@ -33,6 +33,7 @@
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/geometry/Plane.hpp>
+#include <lvr2/geometry/Line.hpp>
 
 namespace lvr2
 {
@@ -136,8 +137,7 @@ void dragOntoIntersection(
     const ClusterBiMap<FaceHandle>& clusters,
     const ClusterHandle& clusterH,
     const ClusterHandle& neighbourClusterH,
-    const Vector<BaseVecT>& direction,
-    const Vector<BaseVecT>& p
+    const Line<BaseVecT>& intersection
 );
 
 /**

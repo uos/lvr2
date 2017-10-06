@@ -32,6 +32,7 @@
 
 #include <lvr2/util/Random.hpp>
 #include <lvr2/geometry/Normal.hpp>
+#include <lvr2/geometry/Line.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/util/Debug.hpp>
@@ -331,15 +332,16 @@ void optimizePlaneIntersections(
                 float d1 = plane1.normal.dot(plane1.pos);
                 float d2 = plane2.normal.dot(plane2.pos);
 
-                // TODO refactor intersection line into separate class
                 // TODO move intersection calculation into plane method
-                // direction of the intersection line
                 auto direction = plane1.normal.cross(plane2.normal.asVector());
-                // calculate the position of the intersection line
-                auto p = (plane2.normal.asVector() * d1 - plane1.normal.asVector() * d2).cross(direction) * (1 / (direction.dot(direction)));
 
-                dragOntoIntersection(mesh, clusters, clusterH, clusterInnerH, direction, p);
-                dragOntoIntersection(mesh, clusters, clusterInnerH, clusterH, direction, p);
+                Line<BaseVecT> intersection;
+                intersection.normal = direction.normalized();
+                intersection.pos = (plane2.normal.asVector() * d1 - plane1.normal.asVector() * d2).cross(direction)
+                                    * (1 / (direction.dot(direction)));
+
+                dragOntoIntersection(mesh, clusters, clusterH, clusterInnerH, intersection);
+                dragOntoIntersection(mesh, clusters, clusterInnerH, clusterH, intersection);
             }
         }
 
@@ -356,8 +358,7 @@ void dragOntoIntersection(
     const ClusterBiMap<FaceHandle>& clusters,
     const ClusterHandle& clusterH,
     const ClusterHandle& neighbourClusterH,
-    const Vector<BaseVecT>& direction,
-    const Vector<BaseVecT>& p
+    const Line<BaseVecT>& intersection
 )
 {
     for (auto faceH: clusters[clusterH].handles)
@@ -376,8 +377,8 @@ void dragOntoIntersection(
                 auto& v2 = mesh.getVertexPosition(vertices[1]);
 
                 // project both vertices of the edge into the intersection
-                v1 = p + direction * ((v1 - p).dot(direction) / direction.length2());
-                v2 = p + direction * ((v2 - p).dot(direction) / direction.length2());
+                v1 = intersection.project(v1);
+                v2 = intersection.project(v2);
             }
         }
 
