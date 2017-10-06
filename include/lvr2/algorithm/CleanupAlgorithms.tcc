@@ -21,6 +21,7 @@
  */
 
 #include <lvr2/algorithm/ContourAlgorithms.hpp>
+#include <lvr/io/Timestamp.hpp>
 
 namespace lvr2
 {
@@ -72,6 +73,9 @@ size_t naiveFillSmallHoles(BaseMesh<BaseVecT>& mesh, size_t maxSize, bool collap
     {
         return 0;
     }
+
+    cout << lvr::timestamp << "Trying to remove all holes with size ≤ " << maxSize << endl;
+
 
     // First, we need to have a ClusterBiMap where each cluster describes one
     // connected part of the mesh.
