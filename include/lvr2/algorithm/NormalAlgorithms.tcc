@@ -44,8 +44,11 @@ DenseFaceMap<Normal<BaseVecT>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh)
         auto v1 = vertexPositions[0];
         auto v2 = vertexPositions[1];
         auto v3 = vertexPositions[2];
-        auto normal = (v1 - v2).cross(v1 - v3);
-        out.insert(faceH, Normal<BaseVecT>(normal));
+        auto normalDir = (v1 - v2).cross(v1 - v3);
+        auto normal = normalDir.length2() == 0
+            ? Normal<BaseVecT>(0, 0, 1)
+            : Normal<BaseVecT>(normalDir);
+        out.insert(faceH, normal);
     }
     return out;
 }
@@ -72,7 +75,9 @@ optional<Normal<BaseVecT>> interpolatedVertexNormal(
         v += normals[face].asVector();
     }
 
-    return v.normalized();
+    // It is indeed possible that `v` is the zero vector here: if there are two
+    // faces with normals pointing into exactly different directions.
+    return v.length2() == 0 ? boost::none : boost::optional<Normal<BaseVecT>>(v.normalized());
 }
 
 template<typename BaseVecT>

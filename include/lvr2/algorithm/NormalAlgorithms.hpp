@@ -43,6 +43,8 @@ namespace lvr2
  * @brief Calculates a normal for each face in the mesh.
  *
  * A face's normal is calculated based on the position of its three vertices.
+ * If a face has zero area, the normal cannot be calculated correctly. In this
+ * case, a dummy normal (0, 0, 1) is inserted.
  */
 template<typename BaseVecT>
 DenseFaceMap<Normal<BaseVecT>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh);
