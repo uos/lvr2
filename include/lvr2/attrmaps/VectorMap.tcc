@@ -26,8 +26,6 @@
 
 #include <utility>
 
-using std::move;
-
 #include <lvr2/util/Panic.hpp>
 
 namespace lvr2
