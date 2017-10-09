@@ -24,6 +24,7 @@
  */
 
 #include <lvr2/algorithm/Planar.hpp>
+#include <lvr2/algorithm/ContourAlgorithms.hpp>
 
 namespace lvr2
 {
@@ -49,6 +50,72 @@ void removeDanglingCluster(BaseMesh<BaseVecT>& mesh, size_t sizeThreshold)
             }
         }
     }
+}
+
+template<typename BaseVecT>
+vector<vector<VertexHandle>> findContours(
+    BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    ClusterHandle clusterH
+)
+{
+    auto cluster = clusters[clusterH];
+
+    DenseVertexMap<bool> boundaryVertices(cluster.handles.size() * 3, false);
+    vector<vector<VertexHandle>> allContours;
+    // only used inside edge loop but initialized here to avoid heap allocations
+    vector<VertexHandle> contour;
+
+    for (auto faceH: cluster.handles)
+    {
+        for (auto edgeH: mesh.getEdgesOfFace(faceH))
+        {
+            auto faces = mesh.getFacesOfEdge(edgeH);
+            auto otherFace = faces[0].unwrap();
+
+            // switch face to get the other one of the edge if it exists
+            if (faces[1] && otherFace == faceH) {
+                otherFace = faces[1].unwrap();
+            }
+
+            // continue if other face is same cluster and is not an boundary edge
+            if (faces[1] &&
+                clusters.getClusterOf(otherFace) &&
+                clusters.getClusterOf(otherFace).unwrap() == clusterH
+                )
+            {
+                continue;
+            }
+
+            auto vertices = mesh.getVerticesOfEdge(edgeH);
+
+            // edge already in another boundary of this cluster
+            if (boundaryVertices[vertices[0]] || boundaryVertices[vertices[1]])
+            {
+                continue;
+            }
+
+            contour.clear();
+            calcContourVertices(mesh, edgeH, contour, [clusters, clusterH](auto fH)
+            {
+                auto c = clusters.getClusterOf(fH);
+
+                // return true if current face is in this cluster
+                return c && c.unwrap() == clusterH;
+            });
+
+            allContours.push_back(contour);
+
+            // mark all vertices we got back as visited
+            for (auto vertexH: contour)
+            {
+                boundaryVertices[vertexH] = true;
+            }
+        }
+
+    }
+
+    return allContours;
 }
 
 } // namespace lvr2

@@ -37,6 +37,22 @@ namespace lvr2
 template<typename BaseVecT>
 void removeDanglingCluster(BaseMesh<BaseVecT>& mesh, size_t sizeThreshold);
 
+/**
+ * Finds all contours of an given cluster. An contour can be an "real" boundary, so nothing is adjacent,
+ * or an boundary to another edge.
+ *
+ * @param mesh the mesh to operate on
+ * @param clusters map of all clusters
+ * @param clusterH the current cluster
+ * @return an vector which holds all contours which contains the vertices of the contour.
+ */
+template<typename BaseVecT>
+vector<vector<VertexHandle>> findContours(
+    BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    ClusterHandle clusterH
+);
+
 } // namespace lvr2
 
 #include <lvr2/algorithm/ClusterAlgorithms.tcc>
