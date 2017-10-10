@@ -45,7 +45,7 @@ void LineReader::open(std::string filePath)
         while(! readHeader)
         {
             std::getline(ifs,line);
-            if(boost::algorithm::contains(line,"element point") || boost::algorithm::contains(line,"element point"))
+            if(boost::algorithm::contains(line,"element vertex") || boost::algorithm::contains(line,"element point"))
             {
                 std::stringstream ss(line);
                 string tmp;
@@ -55,7 +55,11 @@ void LineReader::open(std::string filePath)
             }
             else if(boost::algorithm::contains(line,"property float x") ||
                     boost::algorithm::contains(line,"property float y") ||
-                    boost::algorithm::contains(line,"property float z"))
+                    boost::algorithm::contains(line,"property float z") ||
+                    boost::algorithm::contains(line,"property float32 x") ||
+                    boost::algorithm::contains(line,"property float32 y") ||
+                    boost::algorithm::contains(line,"property float32 z") 
+)
             {
                 gotxyz = true;
             }
@@ -84,6 +88,12 @@ void LineReader::open(std::string filePath)
                 m_binary = false;
             }
         }
+	std::cout << "FINISHED READING HEADER" << std::endl;
+	std::cout << "XYT: " << gotxyz << std::endl;
+	std::cout << "COLOR: " << gotcolor << std::endl;
+	std::cout << "NORMAL: " << gotnormal << std::endl;
+	std::cout << "BINARY: " << m_binary << std::endl;
+	std::cout << "Points: " << m_elementAmount << std::endl;
     }
     else
     {
@@ -96,7 +106,7 @@ void LineReader::open(std::string filePath)
         while(ss >> tmp)
         {
             number_of_line_elements++;
-            if(number_of_line_elements == 3) gotxyz = true;
+            if(number_of_line_elements >= 3) gotxyz = true;
             if(number_of_line_elements == 6)
             {
                 if(boost::algorithm::contains(tmp,"."))
@@ -118,6 +128,7 @@ void LineReader::open(std::string filePath)
                 throw std::range_error("Wrong file format, expecting file ascii or ply file format, ascii file format must have order:  x y z [nx ny nz] [cx cy cz] (points, normals, colors)");
             }
         }
+        m_line_element_amount = number_of_line_elements;
         ifs.seekg(0);
 
 
@@ -189,13 +200,34 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
         {
             fseek(pFile, m_filePos, SEEK_SET);
             size_t readCount = 0;
+            if(m_fileType == XYZ && m_line_element_amount != 3)
+            {
+                std::vector<float> input;
+                input.reserve(amount*3);
+                boost::shared_ptr<void> pArray(new char[amount*m_PointBlockSize], std::default_delete<char[]>());
+                float ax, ay, az;
+                char lineBuffer[1024];
+                while((fgets( lineBuffer, 1024, pFile ) != NULL)  && readCount < amount)
+                {
+                    sscanf(lineBuffer,"%f %f %f", &ax, &ay, &az);
+                    readCount++;
+                    input.push_back(ax);
+                    input.push_back(ay);
+                    input.push_back(az);
+                }
+
+                memcpy ( pArray.get(), input.data(), m_PointBlockSize*readCount );
+                return_amount = readCount;
+                m_filePos = ftell(pFile);
+                return pArray;
+            }
             if(m_fileType == XYZ)
             {
                 std::vector<float> input;
                 input.reserve(amount*3);
                 boost::shared_ptr<void> pArray(new char[amount*m_PointBlockSize], std::default_delete<char[]>());
                 float ax, ay, az;
-                while( (fscanf(pFile,"%f %f %f", &ax, &ay, &az) != EOF ) && readCount < amount)
+                while( (fscanf(pFile,"%f %f %f", &ax, &ay, &az) != EOF ) && readCount < amount )
                 {
                     readCount++;
                     input.push_back(ax);
