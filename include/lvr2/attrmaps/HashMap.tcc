@@ -188,6 +188,12 @@ HandleT HashMapIterator<HandleT, ValueT>::operator*() const
     return (*m_iter).first;
 }
 
+template<typename HandleT, typename ValueT>
+std::unique_ptr<AttributeMapHandleIterator<HandleT>> HashMapIterator<HandleT, ValueT>::clone() const
+{
+    return std::make_unique<HashMapIterator>(*this);
+}
+
 
 
 } // namespace lvr2

@@ -193,6 +193,7 @@ public:
 
     /// Returns the current handle.
     virtual HandleT operator*() const = 0;
+    virtual std::unique_ptr<AttributeMapHandleIterator> clone() const = 0;
 };
 
 /**
@@ -212,6 +213,8 @@ class AttributeMapHandleIteratorPtr
 public:
     AttributeMapHandleIteratorPtr(std::unique_ptr<AttributeMapHandleIterator<HandleT>> iter)
         : m_iter(std::move(iter)) {}
+    AttributeMapHandleIteratorPtr(const AttributeMapHandleIteratorPtr& iteratorPtr)
+        : m_iter(iteratorPtr.m_iter->clone()) {}
 
     AttributeMapHandleIteratorPtr& operator++();
     bool operator==(const AttributeMapHandleIteratorPtr& other) const;
