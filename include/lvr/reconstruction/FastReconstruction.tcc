@@ -38,6 +38,94 @@ FastReconstruction<VertexT, NormalT, BoxT>::FastReconstruction(HashGrid<VertexT,
 }
 
 template<typename VertexT, typename NormalT, typename BoxT>
+void FastReconstruction<VertexT, NormalT, BoxT>::getMesh(vector<float>& vBuffer, vector<unsigned int>& fBuffer, size_t& duplicate_face_index, size_t& duplicate_vertex_index)
+{
+// Status message for mesh generation
+	string comment = timestamp.getElapsedTime() + "Creating Mesh ";
+	ProgressBar progress(m_grid->getNumberOfCells(), comment);
+
+	// Some pointers
+	BoxT* b;
+	unsigned int global_index = vBuffer.size();
+
+	// Iterate through cells and calculate local approximations
+	typename HashGrid<VertexT, BoxT>::box_map_it it;
+    std::vector<BoxT*> intersection_boxes;
+	for(it = m_grid->firstCell(); it != m_grid->lastCell(); it++)
+	{
+		b = it->second;
+        if(b->m_extruded)
+        {
+            intersection_boxes.push_back(b);
+        }
+        else
+        {
+            b->getSurface(vBuffer, fBuffer, m_grid->getQueryPoints(), global_index);
+            if(!timestamp.isQuiet())
+                ++progress;
+        }
+
+	}
+    duplicate_face_index = fBuffer.size();
+    duplicate_vertex_index = vBuffer.size();
+
+    // get surface from boxes with possible duplicate vertices/faces last, so they are all ordered in vertex, face array
+    for(auto b : intersection_boxes)
+    {
+        b->getSurface(vBuffer, fBuffer, m_grid->getQueryPoints(), global_index);
+        if(!timestamp.isQuiet())
+            ++progress;
+    }
+
+	if(!timestamp.isQuiet())
+		cout << endl;
+
+	BoxTraits<BoxT> traits;
+
+//	if(traits.type == "SharpBox")  // Perform edge flipping for extended marching cubes
+//	{
+//		string SFComment = timestamp.getElapsedTime() + "Flipping edges  ";
+//		ProgressBar SFProgress(this->m_grid->getNumberOfCells(), SFComment);
+//		for(it = this->m_grid->firstCell(); it != this->m_grid->lastCell(); it++)
+//		{
+//
+//			SharpBox<VertexT, NormalT>* sb;
+//			sb = reinterpret_cast<SharpBox<VertexT, NormalT>* >(it->second);
+//			if(sb->m_containsSharpFeature)
+//			{
+//				if(sb->m_containsSharpCorner)
+//				{
+//					mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]]);
+//					mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][2]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][3]]);
+//					mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]]);
+//				}
+//				else
+//				{
+//					mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]]);
+//					mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]]);
+//				}
+//			}
+//			++SFProgress;
+//		}
+//		cout << endl;
+//	}
+//
+//	if(traits.type == "BilinearFastBox")
+//	{
+//		string comment = timestamp.getElapsedTime() + "Optimizing plane contours  ";
+//		ProgressBar progress(this->m_grid->getNumberOfCells(), comment);
+//		for(it = this->m_grid->firstCell(); it != this->m_grid->lastCell(); it++)
+//		{
+//			// F... type safety. According to traits object this is OK!
+//			BilinearFastBox<VertexT, NormalT>* box = reinterpret_cast<BilinearFastBox<VertexT, NormalT>*>(it->second);
+//			box->optimizePlanarFaces(5);
+//			++progress;
+//		}
+//		cout << endl;
+//	}
+}
+
+template<typename VertexT, typename NormalT, typename BoxT>
 void FastReconstruction<VertexT, NormalT, BoxT>::getMesh(BaseMesh<VertexT, NormalT> &mesh)
 {
 	// Status message for mesh generation

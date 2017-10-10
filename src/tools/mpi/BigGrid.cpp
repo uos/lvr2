@@ -488,6 +488,13 @@ lvr::floatArr BigGrid::points(int i, int j, int k, size_t& numPoints)
 }
 lvr::floatArr BigGrid::points(float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints)
 {
+    minx = (minx > m_bb.getMin()[0]) ? minx : m_bb.getMin()[0];
+    miny = (miny > m_bb.getMin()[1]) ? miny : m_bb.getMin()[1];
+    minz = (minz > m_bb.getMin()[2]) ? minz : m_bb.getMin()[2];
+    maxx = (maxx < m_bb.getMax()[0]) ? maxx : m_bb.getMax()[0];
+    maxy = (maxy < m_bb.getMax()[1]) ? maxy : m_bb.getMax()[1];
+    maxz = (maxz < m_bb.getMax()[2]) ? maxz : m_bb.getMax()[2];
+
     size_t idxmin = calcIndex((minx - m_bb.getMin()[0])/m_voxelSize);
     size_t idymin = calcIndex((miny - m_bb.getMin()[1])/m_voxelSize);
     size_t idzmin = calcIndex((minz - m_bb.getMin()[2])/m_voxelSize);

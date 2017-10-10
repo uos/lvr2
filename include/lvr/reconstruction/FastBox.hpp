@@ -120,6 +120,12 @@ public:
             vector<QueryPoint<VertexT> > &query_points,
             uint &globalIndex);
 
+    virtual void getSurface(
+            std::vector<float>& vBuffer,
+            std::vector<unsigned int>& fBuffer,
+            vector<QueryPoint<VertexT> > &query_points,
+            uint &globalIndex);
+
     /// The voxelsize of the reconstruction grid
     static float             m_voxelsize;
 
@@ -128,13 +134,8 @@ public:
 
     /// The twelve intersection between box and surface
     uint                       m_intersections[12];
-    bool                         m_fusionBox;
-    bool                         m_fusedBox;
-    bool                        m_oldfusionBox;
-    bool                        m_fusionNeighborBox;
-    bool                        m_overlappBox;
     bool                        m_extruded;
-    bool                        m_deleteExtruded;
+
      /// The box center
     VertexT                       m_center;
 
