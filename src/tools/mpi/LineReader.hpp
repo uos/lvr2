@@ -59,6 +59,7 @@ private:
     size_t m_PointBlockSize;
     bool m_ply;
     bool m_binary;
+    size_t m_line_element_amount;
 };
 
 
