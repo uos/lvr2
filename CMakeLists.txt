@@ -44,8 +44,9 @@ endif(MSVC)
 ## Searching for CUDA
 ##############################
 find_package( CUDA )
-include_directories(${CUDA_INCLUDE_DIRS})
-
+if(CUDA_FOUND)
+    include_directories(${CUDA_INCLUDE_DIRS})
+endif(CUDA_FOUND)
 ####
 ## Searching for OpenCV
 ##############################
