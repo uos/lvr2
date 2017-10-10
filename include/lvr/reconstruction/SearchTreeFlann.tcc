@@ -34,7 +34,7 @@ SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, size_t &n_po
 
 template<typename VertexT>
 SearchTreeFlann< VertexT >::~SearchTreeFlann() {
-
+	delete[] m_flannPoints.ptr();
 }
 
 template<typename VertexT>
@@ -52,6 +52,7 @@ void SearchTreeFlann< VertexT >::kSearch( coord< float > &qp, int k, vector< int
 	flann::Matrix<float> dist (&distances[0], 1, k);
 
 	m_tree->knnSearch(query_point, ind, dist, k, flann::SearchParams());
+	delete[] query_point.ptr();
 }
 
 template<typename VertexT>
