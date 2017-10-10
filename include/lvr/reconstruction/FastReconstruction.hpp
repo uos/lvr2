@@ -79,7 +79,7 @@ public:
     /**
      * @brief Constructor.
      *
-     * @param grid	A HashGrid instance on which the reconstruction is performed.
+     * @param grid    A HashGrid instance on which the reconstruction is performed.
      */
     FastReconstruction(HashGrid<VertexT, BoxT>* grid);
 
@@ -99,7 +99,7 @@ public:
     virtual void getMesh(vector<float>& vBuffer, vector<unsigned int>& fBuffer, size_t& duplicate_face_index, size_t& duplicate_vertex_index);
 private:
 
-    HashGrid<VertexT, BoxT>*		m_grid;
+    HashGrid<VertexT, BoxT>*        m_grid;
 };
 
 

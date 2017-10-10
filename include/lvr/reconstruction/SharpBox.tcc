@@ -123,7 +123,7 @@ void SharpBox<VertexT, NormalT>::detectSharpFeatures(VertexT vertex_positions[],
     }
 
     // Check for inconsistencies
-    if(        index == 1   || index == 2   || index == 4   || index == 8		//corners
+    if(        index == 1   || index == 2   || index == 4   || index == 8        //corners
             || index == 16  || index == 32  || index == 64  || index == 128
             || index == 254 || index == 253 || index == 251 || index == 247
             || index == 239 || index == 223 || index == 191 || index == 127 )

@@ -89,9 +89,9 @@ private:
     /**
      * @brief gets the normals for the given vertices
      *
-     * @param vertex_positions	The vertices
-     * @param vertex_normals	This array holds the normals of the given vertices
-     * 							after calling the method.
+     * @param vertex_positions    The vertices
+     * @param vertex_normals    This array holds the normals of the given vertices
+     *                             after calling the method.
      */
     void getNormals(VertexT vertex_positions[], NormalT vertex_normals[]);
 
