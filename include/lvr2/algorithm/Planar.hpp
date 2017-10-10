@@ -126,8 +126,7 @@ template<typename BaseVecT>
 void optimizePlaneIntersections(
     BaseMesh<BaseVecT>& mesh,
     const ClusterBiMap<FaceHandle>& clusters,
-    const ClusterMap<Plane<BaseVecT>>& planes,
-    FaceMap<Normal<BaseVecT>>& normals
+    const ClusterMap<Plane<BaseVecT>>& planes
 );
 
 /// Drags all points between two clusters (planes) into their intersection

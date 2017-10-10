@@ -59,7 +59,7 @@ struct Plane
     float distance(const Point<BaseVecT>& other) const;
 
     /// Calculates the intersection between this and other
-    Line<BaseVecT> intersection(const Plane<BaseVecT>& other) const;
+    Line<BaseVecT> intersect(const Plane<BaseVecT>& other) const;
 };
 
 template<typename BaseVecT>

@@ -44,7 +44,7 @@ Point<BaseVecT> Plane<BaseVecT>::project(const Point<BaseVecT>& other) const
 }
 
 template<typename BaseVecT>
-Line<BaseVecT> Plane<BaseVecT>::intersection(const Plane<BaseVecT>& other) const {
+Line<BaseVecT> Plane<BaseVecT>::intersect(const Plane <BaseVecT>& other) const {
     float d1 = normal.dot(pos);
     float d2 = other.normal.dot(other.pos);
     auto direction = normal.cross(other.normal.asVector());
