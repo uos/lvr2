@@ -32,9 +32,12 @@
 
 #include <lvr2/util/Random.hpp>
 #include <lvr2/geometry/Normal.hpp>
+#include <lvr2/geometry/Line.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/util/Debug.hpp>
+
+#include <lvr/io/Progress.hpp>
 
 using std::unordered_set;
 using std::vector;
@@ -119,6 +122,7 @@ ClusterBiMap<FaceHandle> iterativePlanarClusterGrowing(
 )
 {
     ClusterBiMap<FaceHandle> clusters;
+    DenseClusterMap<Plane<BaseVecT>> planes;
 
     // Iterate numIterations times
     for (int i = 0; i < numIterations; ++i)
@@ -127,7 +131,7 @@ ClusterBiMap<FaceHandle> iterativePlanarClusterGrowing(
         clusters = planarClusterGrowing(mesh, normals, minSinAngle);
 
         // Calc regression planes
-        auto planes = calcRegressionPlanes(mesh, clusters, normals, minClusterSize);
+        planes = calcRegressionPlanes(mesh, clusters, normals, minClusterSize);
 
         // Debug planes
         // std::stringstream ss;
@@ -140,6 +144,8 @@ ClusterBiMap<FaceHandle> iterativePlanarClusterGrowing(
         // Drag vertices into planes
         dragToRegressionPlanes(mesh, clusters, planes, normals);
     }
+
+    optimizePlaneIntersections(mesh, clusters, planes);
 
     return clusters;
 }
@@ -289,6 +295,83 @@ void dragToRegressionPlane(
             mesh.getVertexPosition(vertexH) -= plane.normal.asVector() * distance;
         }
         normals[faceH] = plane.normal;
+    }
+}
+
+template<typename BaseVecT>
+void optimizePlaneIntersections(
+    BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    const ClusterMap<Plane<BaseVecT>>& planes
+)
+{
+    // Status message for mesh generation
+    string comment = lvr::timestamp.getElapsedTime() + "Optimizing plane intersections ";
+    lvr::ProgressBar progress(planes.numValues(), comment);
+
+    // iterate over all planes
+    for (auto it = planes.begin(); it != planes.end(); ++it)
+    {
+        auto clusterH = *it;
+
+        // only iterate over distinct pairs of planes, e.g. the following planes of the current one
+        auto itInner = it;
+        ++itInner;
+        for (; itInner != planes.end(); ++itInner)
+        {
+            auto clusterInnerH = *itInner;
+
+            auto& plane1 = planes[clusterH];
+            auto& plane2 = planes[clusterInnerH];
+
+            // do not improve almost parallel cluster
+            float normalDot = plane1.normal.dot(plane2.normal.asVector());
+            if (fabs(normalDot) < 0.9)
+            {
+                auto intersection = plane1.intersect(plane2);
+
+                dragOntoIntersection(mesh, clusters, clusterH, clusterInnerH, intersection);
+                dragOntoIntersection(mesh, clusters, clusterInnerH, clusterH, intersection);
+            }
+        }
+
+        ++progress;
+    }
+
+    if(!lvr::timestamp.isQuiet())
+        cout << endl;
+}
+
+template<typename BaseVecT>
+void dragOntoIntersection(
+    BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    const ClusterHandle& clusterH,
+    const ClusterHandle& neighbourClusterH,
+    const Line<BaseVecT>& intersection
+)
+{
+    for (auto faceH: clusters[clusterH].handles)
+    {
+        for (auto edgeH: mesh.getEdgesOfFace(faceH))
+        {
+            auto facesOfEdge = mesh.getFacesOfEdge(edgeH);
+
+            // check if edge is real neighbour of second plane
+            if ((facesOfEdge[0] && clusters.getClusterOf(facesOfEdge[0].unwrap()) == neighbourClusterH)
+                || (facesOfEdge[1] && clusters.getClusterOf(facesOfEdge[1].unwrap()) == neighbourClusterH))
+            {
+                auto vertices = mesh.getVerticesOfEdge(edgeH);
+
+                auto& v1 = mesh.getVertexPosition(vertices[0]);
+                auto& v2 = mesh.getVertexPosition(vertices[1]);
+
+                // project both vertices of the edge into the intersection
+                v1 = intersection.project(v1);
+                v2 = intersection.project(v2);
+            }
+        }
+
     }
 }
 

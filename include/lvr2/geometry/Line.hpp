@@ -17,60 +17,47 @@
  */
 
 /*
- * Plane.hpp
+ * Line.hpp
  *
- *  @date 14.07.2017
- *  @author Johan M. von Behren <johan@vonbehren.eu>
+ *  @date 06.10.2017
+ *  @author Christian Swan cswan@uos.de
  */
 
-#ifndef LVR2_GEOMETRY_PLANE_H_
-#define LVR2_GEOMETRY_PLANE_H_
+#ifndef LVR2_GEOMETRY_LINE_H_
+#define LVR2_GEOMETRY_LINE_H_
 
 #include "Normal.hpp"
 #include "Point.hpp"
-#include "Line.hpp"
 
 namespace lvr2
 {
 
 /**
- * @brief A plane.
+ * @brief A Line.
  *
- * A plane represented by a normal and a position vector.
+ * A line represented by a normal and a position vector.
  */
 template <typename BaseVecT>
-struct Plane
+struct Line
 {
-    Plane() : normal(0, 0, 1) {}
+    Line() : normal(0, 0, 1) {}
 
     Normal<BaseVecT> normal;
     Point<BaseVecT> pos;
 
-    /// Projects the given point onto the plane and returns the projection point.
+    /// Projects the given point onto the line and returns the projection point.
     Point<BaseVecT> project(const Point<BaseVecT>& other) const;
-
-    /**
-     * @brief Calculates the distance between the plane and the given point.
-     * @return This can be < 0, == 0 or > 0 the cases mean:
-     *         < 0: The point lies between the plane and the origin
-     *         == 0: The point lies in the plane
-     *         > 0: The point lies behind the plane, oberserved from the origin
-     */
-    float distance(const Point<BaseVecT>& other) const;
-
-    /// Calculates the intersection between this and other
-    Line<BaseVecT> intersect(const Plane<BaseVecT>& other) const;
 };
 
 template<typename BaseVecT>
-inline std::ostream& operator<<(std::ostream& os, const Plane<BaseVecT>& p)
+inline std::ostream& operator<<(std::ostream& os, const Line<BaseVecT>& l)
 {
-    os << "Plane[" << p.normal << ", " << p.pos << "]";
+    os << "Line[" << l.normal << ", " << l.pos << "]";
     return os;
 }
 
 } // namespace lvr2
 
-#include <lvr2/geometry/Plane.tcc>
+#include <lvr2/geometry/Line.tcc>
 
-#endif /* LVR2_GEOMETRY_PLANE_H_ */
+#endif /* LVR2_GEOMETRY_LINE_H_ */
