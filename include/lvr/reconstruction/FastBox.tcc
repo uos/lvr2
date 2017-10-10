@@ -38,7 +38,7 @@ template<typename VertexT, typename NormalT>
 uint FastBox<VertexT, NormalT>::INVALID_INDEX = numeric_limits<uint>::max();
 
 template<typename VertexT, typename NormalT>
-FastBox<VertexT, NormalT>::FastBox(VertexT &center) : m_overlappBox(false), m_fusionBox(false), m_extruded(false)
+FastBox<VertexT, NormalT>::FastBox(VertexT &center) : m_extruded(false)
 {
     //m_intersections = new uint[12];
     // Init members
@@ -269,5 +269,86 @@ void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
         mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
     }
 }
+
+template<typename VertexT, typename NormalT>
+void FastBox<VertexT, NormalT>::getSurface(            std::vector<float>& vBuffer,
+                                                       std::vector<unsigned int>& fBuffer,
+                                                       vector<QueryPoint<VertexT> > &qp,
+uint &globalIndex)
+{
+//    if(m_extruded)
+//    {
+//        cout << "overlapp box ignoring: " <<  m_center << endl;
+////        return;
+//    }
+    VertexT corners[8];
+    VertexT vertex_positions[12];
+
+    float distances[8];
+
+    getCorners(corners, qp);
+    getDistances(distances, qp);
+    getIntersections(corners, distances, vertex_positions);
+
+    int index = getIndex(qp);
+
+    // Do not create traingles for invalid boxes
+    for (int i = 0; i < 8; i++)
+    {
+//        if(m_fusionBox)         cout << "reconstructing box: " <<  qp[m_vertices[i]].m_position << " - " << qp[m_vertices[i]].m_distance << endl;
+        if (qp[m_vertices[i]].m_invalid)
+        {
+            return;
+        }
+    }
+
+    uint edge_index = 0;
+
+    int triangle_indices[3];
+    // Generate the local approximation surface according to the marching
+    // cubes table for Paul Burke.
+    for(int a = 0; MCTable[index][a] != -1; a+= 3){
+        for(int b = 0; b < 3; b++){
+            edge_index = MCTable[index][a + b];
+
+            //If no index was found generate new index and vertex
+            //and update all neighbor boxes
+            if(m_intersections[edge_index] == INVALID_INDEX)
+            {
+                m_intersections[edge_index] = globalIndex;
+                VertexT v = vertex_positions[edge_index];
+                // Insert vertex and a new temp normal into mesh.
+                // The normal is inserted to assure that vertex
+                // and normal array always have the same size.
+                // The actual normal is interpolated later.
+                vBuffer.push_back(v[0]);
+                vBuffer.push_back(v[1]);
+                vBuffer.push_back(v[2]);
+                for(int i = 0; i < 3; i++)
+                {
+                    FastBox<VertexT, NormalT>* current_neighbor = m_neighbors[neighbor_table[edge_index][i]];
+                    if(current_neighbor != 0)
+                    {
+                        current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = globalIndex;
+                    }
+                }
+
+                // Increase the global vertex counter to save the buffer
+                // position were the next new vertex has to be inserted
+                globalIndex++;
+            }
+
+            //Save vertex index in mesh
+            triangle_indices[b] = m_intersections[edge_index];
+        }
+
+        // Add triangle actually does the normal interpolation for us.
+        fBuffer.push_back(triangle_indices[0]);
+        fBuffer.push_back(triangle_indices[1]);
+        fBuffer.push_back(triangle_indices[2]);
+//        mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
+    }
+}
+
 
 } // namespace lvr

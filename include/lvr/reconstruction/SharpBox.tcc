@@ -140,6 +140,7 @@ void SharpBox<VertexT, NormalT>::detectSharpFeatures(VertexT vertex_positions[],
 }
 
 
+
 template<typename VertexT, typename NormalT>
 void SharpBox<VertexT, NormalT>::getSurface(
         BaseMesh<VertexT, NormalT> &mesh,

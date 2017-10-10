@@ -391,11 +391,16 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 
             //Create new box
                 BoxT* box = new BoxT(box_center);
-            if( ((box_center[0] < v_min[0] ) || (box_center[1] < v_min[1] ) || (box_center[2] < v_min[2]) ||
-                (box_center[0] > v_max[0] ) || (box_center[1] > v_max[1] ) || (box_center[2] > v_max[2] ))     )
+            if(     (index_x + dx <= 1) ||
+                    (index_y + dy <= 1) ||
+                    (index_z + dz <= 1) ||
+                    (index_x + dx >= m_maxIndexX-1) ||
+                    (index_y + dy >= m_maxIndexY-1) ||
+                    (index_z + dz >= m_maxIndexZ-1))
             {
                 box->m_extruded=true;
             }
+
             //Setup the box itself
             for(int k = 0; k < 8; k++){
 

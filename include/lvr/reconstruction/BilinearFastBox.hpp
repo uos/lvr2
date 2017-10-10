@@ -56,6 +56,11 @@ public:
             BaseMesh<VertexT, NormalT> &mesh,
             vector<QueryPoint<VertexT> > &query_points,
             uint &globalIndex);
+    virtual void getSurface(
+            std::vector<float>& vBuffer,
+            std::vector<unsigned int>& fBuffer,
+            vector<QueryPoint<VertexT> > &query_points,
+            uint &globalIndex);
 
     void optimizePlanarFaces(size_t kc);
 

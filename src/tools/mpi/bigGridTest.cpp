@@ -86,8 +86,8 @@ int main(int argc, char** argv)
         size_t numPoints;
 
         //todo: okay?
-        lvr::floatArr points = bg.points(gridKd.getLeafs()[i]->getBB().getMin().x, gridKd.getLeafs()[i]->getBB().getMin().y, gridKd.getLeafs()[i]->getBB().getMin().z ,
-                                         gridKd.getLeafs()[i]->getBB().getMax().x, gridKd.getLeafs()[i]->getBB().getMax().y, gridKd.getLeafs()[i]->getBB().getMax().z,numPoints);
+        lvr::floatArr points = bg.points(gridKd.getLeafs()[i]->getBB().getMin().x - voxelsize*3, gridKd.getLeafs()[i]->getBB().getMin().y - voxelsize*3, gridKd.getLeafs()[i]->getBB().getMin().z - voxelsize*3 ,
+                                         gridKd.getLeafs()[i]->getBB().getMax().x + voxelsize*3, gridKd.getLeafs()[i]->getBB().getMax().y + voxelsize*3, gridKd.getLeafs()[i]->getBB().getMax().z + voxelsize*3,numPoints);
 
         //std::cout << "i: " << std::endl << bb << std::endl << "got : " << numPoints << std::endl;
         if(numPoints<=50) continue;
@@ -164,18 +164,30 @@ int main(int argc, char** argv)
         lvr::GridBase* grid;
         lvr::FastReconstructionBase<lvr::ColorVertex<float, unsigned char>, lvr::Normal<float> >* reconstruction;
 
-        grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(voxelsize, surface,gridbb , true, options.extrude());
-        //FastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-        PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+        grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(voxelsize, surface,gridbb , true, options.extrude());
+        BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+        PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
         ps_grid->setBB(gridbb);
         ps_grid->calcIndices();
         ps_grid->calcDistanceValues();
+
+        reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+        HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh;
+        reconstruction->getMesh(mesh);
+        mesh.finalize();
+
+        std::stringstream ss3;
+        ss3 << "testply-" << i << ".ply";
+        ModelPtr m( new Model( mesh.meshBuffer() ) );
+        ModelFactory::saveModel( m, ss3.str());
+        delete reconstruction;
 
         std::stringstream ss2;
         ss2 << "testgrid-" << i << ".ser";
         ps_grid->saveCells(ss2.str());
         grid_files.push_back(ss2.str());
         delete ps_grid;
+
 
 
 
@@ -207,53 +219,60 @@ int main(int argc, char** argv)
 
     lvr::FastReconstructionBase<lvr::ColorVertex<float, unsigned char>, lvr::Normal<float> >* reconstruction;
     reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(&hg);
-    HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh;
-    if(options.getDepth())
-    {
-        mesh.setDepth(options.getDepth());
-    }
-    reconstruction->getMesh(mesh);
-    if(options.getDanglingArtifacts())
-    {
-        mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
-    }
-    mesh.cleanContours(options.getCleanContourIterations());
-    mesh.setClassifier(options.getClassifier());
-    mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
-    if(options.optimizePlanes())
-    {
-        mesh.optimizePlanes(options.getPlaneIterations(),
-                            options.getNormalThreshold(),
-                            options.getMinPlaneSize(),
-                            options.getSmallRegionThreshold(),
-                            true);
-
-        mesh.fillHoles(options.getFillHoles());
-        mesh.optimizePlaneIntersections();
-        mesh.restorePlanes(options.getMinPlaneSize());
-
-        if(options.getNumEdgeCollapses())
-        {
-            QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
-            mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
-        }
-    }
-    else if(options.clusterPlanes())
-    {
-        mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
-        mesh.fillHoles(options.getFillHoles());
-    }
-
-
-    if ( options.retesselate() )
-    {
-        mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
-    }
-    else
-    {
-        mesh.finalize();
-    }
-    ModelPtr m( new Model( mesh.meshBuffer() ) );
+    std::vector<float> vBuffer;
+    std::vector<unsigned int> fBuffer;
+    size_t vi,fi;
+    reconstruction->getMesh(vBuffer, fBuffer,fi,vi);
+//    HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh;
+//    if(options.getDepth())
+//    {
+//        mesh.setDepth(options.getDepth());
+//    }
+//    reconstruction->getMesh(mesh);
+//    if(options.getDanglingArtifacts())
+//    {
+//        mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+//    }
+//    mesh.cleanContours(options.getCleanContourIterations());
+//    mesh.setClassifier(options.getClassifier());
+//    mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
+//    if(options.optimizePlanes())
+//    {
+//        mesh.optimizePlanes(options.getPlaneIterations(),
+//                            options.getNormalThreshold(),
+//                            options.getMinPlaneSize(),
+//                            options.getSmallRegionThreshold(),
+//                            true);
+//
+//        mesh.fillHoles(options.getFillHoles());
+//        mesh.optimizePlaneIntersections();
+//        mesh.restorePlanes(options.getMinPlaneSize());
+//
+//        if(options.getNumEdgeCollapses())
+//        {
+//            QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
+//            mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
+//        }
+//    }
+//    else if(options.clusterPlanes())
+//    {
+//        mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
+//        mesh.fillHoles(options.getFillHoles());
+//    }
+//
+//
+//    if ( options.retesselate() )
+//    {
+//        mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
+//    }
+//    else
+//    {
+//        mesh.finalize();
+//    }
+    lvr::MeshBufferPtr mb(new lvr::MeshBuffer);
+    mb->setFaceArray(fBuffer);
+    mb->setVertexArray(vBuffer);
+    ModelPtr m( new Model( mb ) );
     ModelFactory::saveModel( m, "largeScale.ply");
     delete reconstruction;
 //

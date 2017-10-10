@@ -63,6 +63,7 @@ public:
      * @param mesh
      */
     virtual void getMesh(BaseMesh<VertexT, NormalT> &mesh) = 0;
+    virtual void getMesh(vector<float>& vBuffer, vector<unsigned int>& fBuffer, size_t& duplicate_face_index, size_t& duplicate_vertex_index);
 };
 
 /**
@@ -95,6 +96,7 @@ public:
      */
     virtual void getMesh(BaseMesh<VertexT, NormalT> &mesh);
 
+    virtual void getMesh(vector<float>& vBuffer, vector<unsigned int>& fBuffer, size_t& duplicate_face_index, size_t& duplicate_vertex_index);
 private:
 
     HashGrid<VertexT, BoxT>*		m_grid;
