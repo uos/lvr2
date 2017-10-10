@@ -40,9 +40,20 @@ namespace lvr2
 {
 
 /**
+ * @brief Returns the normal of a face with the given three vertices.
+ *
+ * @param vertices The face's vertex-positions in counter-clockwise order.
+ * @return Either the normal or `none` if the face has a zero area.
+ */
+template <typename BaseVecT>
+boost::optional<Normal<BaseVecT>> getFaceNormal(array<Point<BaseVecT>, 3> vertices);
+
+/**
  * @brief Calculates a normal for each face in the mesh.
  *
  * A face's normal is calculated based on the position of its three vertices.
+ * If a face has zero area, the normal cannot be calculated correctly. In this
+ * case, a dummy normal (0, 0, 1) is inserted.
  */
 template<typename BaseVecT>
 DenseFaceMap<Normal<BaseVecT>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh);
