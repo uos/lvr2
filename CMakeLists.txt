@@ -32,7 +32,7 @@ if(MSVC)
 else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
   # with cmake 3.3
-  #add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++0x>)
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++11>)
   set(CMAKE_CXX_STANDARD 14)
 endif(MSVC)
 
@@ -43,8 +43,8 @@ endif(MSVC)
 ####
 ## Searching for CUDA
 ##############################
-find_package( CUDA 8.0)
-
+find_package( CUDA )
+include_directories(${CUDA_INCLUDE_DIRS})
 
 ####
 ## Searching for OpenCV
