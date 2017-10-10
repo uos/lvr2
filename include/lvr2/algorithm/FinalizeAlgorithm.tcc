@@ -320,6 +320,7 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> ClusterFlatteningFinalizer<BaseVecT>::ap
                 {
                     // No: create material with texture
                     materials.push_back(m);
+                    textures.push_back(texture);
                     textureMaterialMap[textureIndex] = globalMaterialIndex;
                     materialIndex = globalMaterialIndex;
                     globalMaterialIndex++;
@@ -394,7 +395,6 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> ClusterFlatteningFinalizer<BaseVecT>::ap
     }
 
     cout << endl;
-
 
     auto buffer = boost::make_shared<MeshBuffer<BaseVecT>>();
     buffer->setVertices(vertices);
