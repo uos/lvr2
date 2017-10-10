@@ -145,7 +145,7 @@ ClusterBiMap<FaceHandle> iterativePlanarClusterGrowing(
         dragToRegressionPlanes(mesh, clusters, planes, normals);
     }
 
-    optimizePlaneIntersections(mesh, clusters, planes, normals);
+    optimizePlaneIntersections(mesh, clusters, planes);
 
     return clusters;
 }
@@ -300,10 +300,9 @@ void dragToRegressionPlane(
 
 template<typename BaseVecT>
 void optimizePlaneIntersections(
-    BaseMesh<BaseVecT> &mesh,
-    const ClusterBiMap<FaceHandle> &clusters,
-    const ClusterMap<Plane<BaseVecT>> &planes,
-    FaceMap<Normal<BaseVecT>> &normals
+    BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    const ClusterMap<Plane<BaseVecT>>& planes
 )
 {
     // Status message for mesh generation
@@ -322,14 +321,14 @@ void optimizePlaneIntersections(
         {
             auto clusterInnerH = *itInner;
 
-            auto &plane1 = planes[clusterH];
-            auto &plane2 = planes[clusterInnerH];
+            auto& plane1 = planes[clusterH];
+            auto& plane2 = planes[clusterInnerH];
 
             // do not improve almost parallel cluster
             float normalDot = plane1.normal.dot(plane2.normal.asVector());
             if (fabs(normalDot) < 0.9)
             {
-                auto intersection = plane1.intersection(plane2);
+                auto intersection = plane1.intersect(plane2);
 
                 dragOntoIntersection(mesh, clusters, clusterH, clusterInnerH, intersection);
                 dragOntoIntersection(mesh, clusters, clusterInnerH, clusterH, intersection);
