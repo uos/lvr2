@@ -104,7 +104,7 @@ private:
 template<typename VertexT, typename NormalT>
 struct BoxTraits<SharpBox<VertexT, NormalT> >
 {
-	static const string type;
+    static const string type;
 };
 
 

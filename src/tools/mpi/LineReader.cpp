@@ -58,7 +58,7 @@ void LineReader::open(std::string filePath)
                     boost::algorithm::contains(line,"property float z") ||
                     boost::algorithm::contains(line,"property float32 x") ||
                     boost::algorithm::contains(line,"property float32 y") ||
-                    boost::algorithm::contains(line,"property float32 z") 
+                    boost::algorithm::contains(line,"property float32 z")
 )
             {
                 gotxyz = true;
@@ -88,12 +88,12 @@ void LineReader::open(std::string filePath)
                 m_binary = false;
             }
         }
-	std::cout << "FINISHED READING HEADER" << std::endl;
-	std::cout << "XYT: " << gotxyz << std::endl;
-	std::cout << "COLOR: " << gotcolor << std::endl;
-	std::cout << "NORMAL: " << gotnormal << std::endl;
-	std::cout << "BINARY: " << m_binary << std::endl;
-	std::cout << "Points: " << m_elementAmount << std::endl;
+    std::cout << "FINISHED READING HEADER" << std::endl;
+    std::cout << "XYT: " << gotxyz << std::endl;
+    std::cout << "COLOR: " << gotcolor << std::endl;
+    std::cout << "NORMAL: " << gotnormal << std::endl;
+    std::cout << "BINARY: " << m_binary << std::endl;
+    std::cout << "Points: " << m_elementAmount << std::endl;
     }
     else
     {
