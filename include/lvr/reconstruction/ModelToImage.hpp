@@ -31,7 +31,7 @@
 #include <opencv/cv.h>
 #include <algorithm>
 #include <vector>
-
+#include <tuple>
 using std::vector;
 using std::tuple;
 
