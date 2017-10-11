@@ -87,10 +87,14 @@ void LineReader::open(std::string filePath)
             {
                 m_binary = false;
             }
+            else if(boost::algorithm::contains(line,"property"))
+            {
+                throw readException((line + " is currently not supported \n supported properties: x y z [red green blue] [nx ny nz]").c_str());
+            }
         }
     std::cout << "FINISHED READING HEADER" << std::endl;
-    std::cout << "XYT: " << gotxyz << std::endl;
-    std::cout << "COLOR: " << gotcolor << std::endl;
+    std::cout << "XYT:    " << gotxyz << std::endl;
+    std::cout << "COLOR:  " << gotcolor << std::endl;
     std::cout << "NORMAL: " << gotnormal << std::endl;
     std::cout << "BINARY: " << m_binary << std::endl;
     std::cout << "Points: " << m_elementAmount << std::endl;
@@ -279,10 +283,10 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
                 input.reserve(amount*6);
                 boost::shared_ptr<void> pArray(new char[amount*m_PointBlockSize], std::default_delete<char[]>());
                 xyznc pc;
-                while( (fscanf(pFile,"%f %f %f %f %f %f %hhu %hhu %hhu",
+                while( (fscanf(pFile,"%f %f %f %hhu %hhu %hhu %f %f %f",
                                &pc.point.x, &pc.point.y, &pc.point.z,
-                               &pc.normal.x, &pc.normal.y, &pc.normal.z,
-                               &pc.color.r, &pc.color.g, &pc.color.b) != EOF ) && readCount < amount)
+                               &pc.color.r, &pc.color.g, &pc.color.b,
+                               &pc.normal.x, &pc.normal.y, &pc.normal.z) != EOF ) && readCount < amount)
                 {
                     readCount++;
                     input.push_back(pc);

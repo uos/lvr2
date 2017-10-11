@@ -51,6 +51,21 @@ public:
         boost::shared_ptr<void> getNextPoints(size_t &return_amount, size_t amount = 1000000);
     fileType getFileType();
     void rewind();
+
+
+    class readException: public exception
+    {
+    public:
+        readException(std::string what) : error_msg(what){}
+        virtual const char* what() const throw()
+        {
+               return error_msg.c_str();
+        }
+
+    private:
+        std::string error_msg;
+    };
+
 private:
     std::string m_filePath;
     size_t m_filePos;
