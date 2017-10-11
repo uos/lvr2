@@ -7,7 +7,7 @@
 
 #include <boost/shared_array.hpp>
 #include <lvr/io/DataStruct.hpp>
-
+#include <exception>
 
 
 enum fileType{
@@ -38,6 +38,9 @@ struct  __attribute__((packed)) xyzc : xyz
 
 #include <string>
 #include <lvr/io/DataStruct.hpp>
+
+
+
 class LineReader
 {
 public:
@@ -53,13 +56,13 @@ public:
     void rewind();
 
 
-    class readException: public exception
+    class readException : public std::exception
     {
     public:
         readException(std::string what) : error_msg(what){}
         virtual const char* what() const throw()
         {
-               return error_msg.c_str();
+            return error_msg.c_str();
         }
 
     private:
