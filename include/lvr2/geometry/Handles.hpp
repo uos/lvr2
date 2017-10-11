@@ -111,6 +111,12 @@ class ClusterHandle : public BaseHandle<Index>
     using BaseHandle<Index>::BaseHandle;
 };
 
+/// Handle to access textures of the mesh
+class TextureHandle : public BaseHandle<Index>
+{
+    using BaseHandle<Index>::BaseHandle;
+};
+
 /// Semantically equivalent to `boost::optional<EdgeHandle>`
 class OptionalEdgeHandle : public BaseOptionalHandle<Index, EdgeHandle>
 {
@@ -243,6 +249,14 @@ struct hash<lvr2::VertexHandle> {
 template<>
 struct hash<lvr2::ClusterHandle> {
     size_t operator()(const lvr2::ClusterHandle& h) const
+    {
+        return std::hash<lvr2::Index>()(h.idx());
+    }
+};
+
+template<>
+struct hash<lvr2::TextureHandle> {
+    size_t operator()(const lvr2::TextureHandle& h) const
     {
         return std::hash<lvr2::Index>()(h.idx());
     }

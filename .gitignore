@@ -1,3 +1,4 @@
+.configured
 # Compiled Object files
 *.slo
 *.lo
@@ -28,3 +29,4 @@ dat/
 doc/
 .idea/
 .codelite/
+cmake-build-debug/

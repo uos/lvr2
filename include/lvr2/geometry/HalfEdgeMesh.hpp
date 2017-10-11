@@ -36,6 +36,8 @@
 using std::pair;
 using std::array;
 using std::vector;
+using std::get;
+using std::min;
 
 #include "Point.hpp"
 #include "Vector.hpp"
