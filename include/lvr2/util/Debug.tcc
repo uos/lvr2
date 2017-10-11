@@ -27,9 +27,12 @@
 
 using std::unordered_map;
 
-#include <lvr2/algorithm/FinalizeAlgorithm.hpp>
 #include <lvr/io/Model.hpp>
 #include <lvr/io/ModelFactory.hpp>
+#include <lvr2/algorithm/Materializer.hpp>
+#include <lvr2/io/MeshBuffer.hpp>
+#include <lvr2/algorithm/FinalizeAlgorithm.hpp>
+
 
 namespace lvr2
 {

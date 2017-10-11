@@ -66,6 +66,8 @@ Options::Options(int argc, char** argv)
         ("retesselate,t", "Retesselate regions that are in a regression plane. Implies --optimizePlanes.")
         ("lft", value<float>(&m_lineFusionThreshold)->default_value(0.01), "(Line Fusion Threshold) Threshold for fusing line segments while tesselating.")
         ("generateTextures", "Generate textures during finalization.")
+        ("texMinClusterSize", value<int>(&m_texMinClusterSize)->default_value(100), "Minimum number of faces of a cluster to create a texture from")
+        ("texMaxClusterSize", value<int>(&m_texMaxClusterSize)->default_value(0), "Maximum number of faces of a cluster to create a texture from (0 = no limit)")
         ("textureAnalysis", "Enable texture analysis features for texture matchung.")
         ("texelSize", value<float>(&m_texelSize)->default_value(1), "Texel size that determines texture resolution.")
         ("classifier", value<string>(&m_classifier)->default_value("PlaneSimpsons"),"Classfier object used to color the mesh.")
@@ -85,6 +87,7 @@ Options::Options(int argc, char** argv)
         ("cro", "Use texture matching based on cross correlation.")
         ("patt", value<float>(&m_patternThreshold)->default_value(100), "Threshold for pattern extraction from textures")
         ("mtv", value<int>(&m_minimumTransformationVotes)->default_value(3), "Minimum number of votes to consider a texture transformation as correct")
+        ("vcfp", "Use color information from pointcloud to paint vertices")
     ;
 
     setup();
@@ -385,6 +388,22 @@ float* Options::getStatsCoeffs()const
     }
     return result;
 }
+
+int Options::getTexMinClusterSize() const
+{
+    return m_variables["texMinClusterSize"].as<int>();
+}
+
+int Options::getTexMaxClusterSize() const
+{
+    return m_variables["texMaxClusterSize"].as<int>();
+}
+
+bool Options::vertexColorsFromPointcloud() const
+{
+    return m_variables.count("vcfp");
+}
+
 
 Options::~Options() {
     // TODO Auto-generated destructor stub

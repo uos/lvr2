@@ -27,6 +27,12 @@ if(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_C_FLAGS_DEBUG "-O0")
 endif(CMAKE_COMPILER_IS_GNUCC)
 
+# Add -O0 to remove optimizations when using gcc
+if(CMAKE_COMPILER_IS_GNUCC)
+    set(CMAKE_CXX_FLAGS_DEBUG "-O0")
+    set(CMAKE_C_FLAGS_DEBUG "-O0")
+endif(CMAKE_COMPILER_IS_GNUCC)
+
 if(MSVC)
   list(APPEND LVR_DEFINITIONS -DNOMINMAX)
 else(MSVC)
