@@ -26,7 +26,7 @@
 
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 
-#include <boost/math/constants/constants.hpp>
+// #include <boost/math/constants/constants.hpp>
 #include <cmath>
 #include <limits>
 #include <unordered_set>
@@ -117,7 +117,8 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     Vector<BaseVecT> vec2 = vec1.cross(normal.asVector());
     vec2.normalize();
 
-    const float pi = boost::math::constants::pi<float>();
+    // const float pi = boost::math::constants::pi<float>(); // FIXME: doesnt seem to work with c++11
+    const float pi = std::atan(1) * 4; // reasonable approximation for pi
 
     // resolution of iterative improvement steps for a fourth rotation
     float delta = (pi / 2) / 90;
