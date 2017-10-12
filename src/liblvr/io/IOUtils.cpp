@@ -103,7 +103,8 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
 size_t countPointsInFile(boost::filesystem::path& inFile)
 {
     std::ifstream in(inFile.c_str());
-    std::cout << timestamp << "Counting points in " << inFile.filename().string() << "..." << std::endl;
+    std::cout << timestamp << "Counting points in "
+        << inFile.filename().string() << "..." << std::endl;
 
     // Count lines in file
     size_t n_points = 0;
@@ -115,7 +116,8 @@ size_t countPointsInFile(boost::filesystem::path& inFile)
     }
     in.close();
 
-    std::cout << timestamp << "File " << inFile.filename().string() << " contains " << n_points << " points." << std::endl;
+    std::cout << timestamp << "File " << inFile.filename().string()
+        << " contains " << n_points << " points." << std::endl;
 
     return n_points;
 }
@@ -125,9 +127,12 @@ void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& frame
     std::ofstream out(framesOut.c_str());
 
     // write the rotation matrix
-    out << transform.col(0)(0) << " " << transform.col(0)(1) << " " << transform.col(0)(2) << " " << 0 << " "
-        << transform.col(1)(0) << " " << transform.col(1)(1) << " " << transform.col(1)(2) << " " << 0 << " "
-        << transform.col(2)(0) << " " << transform.col(2)(1) << " " << transform.col(2)(2) << " " << 0 << " ";
+    out << transform.col(0)(0) << " " << transform.col(0)(1) << " " << transform.col(0)(2)
+        << " " << 0 << " "
+        << transform.col(1)(0) << " " << transform.col(1)(1) << " " << transform.col(1)(2)
+        << " " << 0 << " "
+        << transform.col(2)(0) << " " << transform.col(2)(1) << " " << transform.col(2)(2)
+        << " " << 0 << " ";
 
     // write the translation vector
     out << transform.col(3)(0) << " "
@@ -161,7 +166,8 @@ size_t writePointsToASCII(ModelPtr model, std::ofstream& out, bool nocolor)
 
         if(n_colors && !(nocolor))
         {
-            out << " " << (int)colors[a * 3] << " " << (int)colors[a * 3 + 1] << " " << (int)colors[a * 3 + 2];
+            out << " " << (int)colors[a * 3] << " " << (int)colors[a * 3 + 1]
+                << " " << (int)colors[a * 3 + 2];
         }
         out << std::endl;
 
@@ -220,7 +226,8 @@ size_t getReductionFactorASCII(boost::filesystem::path& inFile, size_t targetSiz
 
 }
 
-void transformAndReducePointCloud(ModelPtr model, int modulo, int sx, int sy, int sz, int xPos, int yPos, int zPos)
+void transformAndReducePointCloud(ModelPtr model, int modulo, int sx, int sy, int sz,
+        int xPos, int yPos, int zPos)
 {
     size_t n_ip, n_colors;
     size_t cntr = 0;
@@ -317,14 +324,18 @@ void transformPointCloud(ModelPtr model, Eigen::Matrix4d transformation)
     }
 }
 
-void transformPointCloudAndAppend(PointBufferPtr& buffer, boost::filesystem::path& transfromFile, std::vector<float>& pts, std::vector<float>& nrm)
+void transformPointCloudAndAppend(PointBufferPtr& buffer,
+        boost::filesystem::path& transfromFile,
+        std::vector<float>& pts,
+        std::vector<float>& nrm)
 {
      std::cout << timestamp << "Transforming normals " << std::endl;
 
      char frames[2048];
      char pose[2014];
 
-     sprintf(frames, "%s/%s.frames", transfromFile.parent_path().c_str(), transfromFile.stem().c_str());
+     sprintf(frames, "%s/%s.frames", transfromFile.parent_path().c_str(),
+             transfromFile.stem().c_str());
      sprintf(pose, "%s/%s.pose", transfromFile.parent_path().c_str(), transfromFile.stem().c_str());
 
      boost::filesystem::path framesPath(frames);
@@ -345,7 +356,8 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer, boost::filesystem::pat
      }
      else
      {
-        std::cout << timestamp << "Warning: found no transformation for " << transfromFile.filename() << std::endl;
+        std::cout << timestamp << "Warning: found no transformation for "
+            << transfromFile.filename() << std::endl;
      }
 
      size_t n_normals;
