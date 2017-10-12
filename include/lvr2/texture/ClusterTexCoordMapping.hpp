@@ -56,12 +56,34 @@ private:
 public:
     ClusterTexCoordMapping() : m_len(0) {}
 
-    void push(ClusterHandle handle, TexCoords tex);
-    TexCoords getTexCoords(ClusterHandle clusterH) const;
+    inline void push(ClusterHandle handle, TexCoords tex)
+    {
+        if (m_len == m_mapping.size())
+        {
+            cout << "Error: Overflow in ClusterTexCoordMapping" << endl;
+        }
+        else
+        {
+            m_mapping[m_len] = std::make_pair(handle, tex);
+            m_len++;
+        }
+    }
+
+    inline TexCoords getTexCoords(ClusterHandle clusterH) const
+    {
+        for (size_t i = 0; i < m_len; i++)
+        {
+            if (m_mapping[i]->first == clusterH)
+            {
+                return m_mapping[i]->second;
+            }
+        }
+    }
+
+
+
 };
 
 } // namespace lvr2
-
-#include "ClusterTexCoordMapping.tcc"
 
 #endif /* LVR2_TEXTURE_CLUSTER_TEXCOORD_MAPPING_H_ */
