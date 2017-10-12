@@ -71,10 +71,11 @@ vector<vector<VertexHandle>> findContours(
         for (auto edgeH: mesh.getEdgesOfFace(faceH))
         {
             auto faces = mesh.getFacesOfEdge(edgeH);
-            auto otherFace = faces[0].unwrap();
+            auto otherFace = faces[0] ? faces[0].unwrap() : faces[1].unwrap();
 
             // switch face to get the other one of the edge if it exists
-            if (faces[1] && otherFace == faceH) {
+            // only if first face is available otherwise second face is already used
+            if (faces[0] && faces[1] && otherFace == faceH) {
                 otherFace = faces[1].unwrap();
             }
 
