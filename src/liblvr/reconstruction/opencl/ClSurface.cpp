@@ -78,10 +78,14 @@ void ClSurface::calculateNormals()
 
     m_ret = clSetKernelArg(m_kernel_normal_estimation, 0, sizeof(cl_mem), (void *)&D_V);
     m_ret |= clSetKernelArg(m_kernel_normal_estimation, 1, sizeof(unsigned int), &V.width );
-    m_ret |= clSetKernelArg(m_kernel_normal_estimation, 2, sizeof(cl_mem), (void *)&D_kd_tree_values);
-    m_ret |= clSetKernelArg(m_kernel_normal_estimation, 3, sizeof(unsigned int), &kd_tree_values->width );
-    m_ret |= clSetKernelArg(m_kernel_normal_estimation, 4, sizeof(cl_mem), (void *)&D_kd_tree_splits);
-    m_ret |= clSetKernelArg(m_kernel_normal_estimation, 5, sizeof(unsigned int), &kd_tree_splits->width );
+    m_ret |= clSetKernelArg(m_kernel_normal_estimation, 2, sizeof(cl_mem),
+            (void *)&D_kd_tree_values);
+    m_ret |= clSetKernelArg(m_kernel_normal_estimation, 3, sizeof(unsigned int),
+            &kd_tree_values->width );
+    m_ret |= clSetKernelArg(m_kernel_normal_estimation, 4, sizeof(cl_mem),
+            (void *)&D_kd_tree_splits);
+    m_ret |= clSetKernelArg(m_kernel_normal_estimation, 5, sizeof(unsigned int),
+            &kd_tree_splits->width );
     m_ret |= clSetKernelArg(m_kernel_normal_estimation, 6, sizeof(cl_mem), (void *)&D_Normals);
     m_ret |= clSetKernelArg(m_kernel_normal_estimation, 7, sizeof(unsigned int), &V.width );
     m_ret |= clSetKernelArg(m_kernel_normal_estimation, 8, sizeof(unsigned int), &this->m_k);
@@ -111,10 +115,14 @@ void ClSurface::calculateNormals()
     // InterpolationKernel
     std::cout << "Start Normal Interpolation Kernel" << std::endl;
 
-    m_ret = clSetKernelArg(m_kernel_normal_interpolation, 0, sizeof(cl_mem), (void *)&D_kd_tree_values);
-    m_ret |= clSetKernelArg(m_kernel_normal_interpolation, 1, sizeof(unsigned int), &kd_tree_values->width );
-    m_ret |= clSetKernelArg(m_kernel_normal_interpolation, 2, sizeof(cl_mem), (void *)&D_kd_tree_splits);
-    m_ret |= clSetKernelArg(m_kernel_normal_interpolation, 3, sizeof(unsigned int), &kd_tree_splits->width );
+    m_ret = clSetKernelArg(m_kernel_normal_interpolation, 0, sizeof(cl_mem),
+            (void *)&D_kd_tree_values);
+    m_ret |= clSetKernelArg(m_kernel_normal_interpolation, 1, sizeof(unsigned int),
+            &kd_tree_values->width );
+    m_ret |= clSetKernelArg(m_kernel_normal_interpolation, 2, sizeof(cl_mem),
+            (void *)&D_kd_tree_splits);
+    m_ret |= clSetKernelArg(m_kernel_normal_interpolation, 3, sizeof(unsigned int),
+            &kd_tree_splits->width );
     m_ret |= clSetKernelArg(m_kernel_normal_interpolation, 4, sizeof(cl_mem), (void *)&D_Normals);
     m_ret |= clSetKernelArg(m_kernel_normal_interpolation, 5, sizeof(unsigned int), &V.width );
     m_ret |= clSetKernelArg(m_kernel_normal_interpolation, 6, sizeof(unsigned int), &this->m_ki);
@@ -498,7 +506,6 @@ void ClSurface::getDeviceInformation(int platform_id, int device_id)
     // printf("CL_DEVICE_PROFILE: %s\n", buffer);
     checkOclErrors(clGetDeviceInfo(device, CL_DEVICE_EXTENSIONS, sizeof(buffer), buffer, NULL));
     // printf("CL_DEVICE_EXTENSIONS: %s\n", buffer);
-    // printf("CL_DEVICE_BUILT_IN_KERNELS: %s\n", clGetDeviceInfo(device, CL_DEVICE_BUILT_IN_KERNELS, sizeof(buffer), buffer, NULL) == CL_SUCCESS ? buffer : "UNSUPPORTED");
     cl_uint max_compute_units;
     checkOclErrors(clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS,
                 sizeof(max_compute_units), &max_compute_units, NULL));
