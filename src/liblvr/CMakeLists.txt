@@ -137,7 +137,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(LVR_CUDA_SRC
     reconstruction/cuda/CudaSurface.cu
 )
- 
+
 # Fix broken VTK flags
 get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
 set(vtk_flags)
@@ -167,7 +167,7 @@ install(
     EXPORT lvrTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-) 
+)
 endif()
 
 #####################################################################################
