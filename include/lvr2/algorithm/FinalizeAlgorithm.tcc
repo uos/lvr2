@@ -294,8 +294,8 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> ClusterFlatteningFinalizer<BaseVecT>::ap
         if (m_materializerResult)
         {
             Material m = m_materializerResult.get().m_clusterMaterials.get(clusterH).get();
-            bool clusterHasTextures = m.m_texture; // optional
-            bool clusterHasColor = m.m_color; // optional
+            bool clusterHasTextures = static_cast<bool>(m.m_texture); // optional
+            bool clusterHasColor = static_cast<bool>(m.m_color); // optional
 
             unsigned int materialIndex;
 
@@ -363,9 +363,10 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> ClusterFlatteningFinalizer<BaseVecT>::ap
                 {
                     if (!vertexVisitedMap.containsKey(vertexH))
                     {
-                        bool vertexHasTexCoords = m_materializerResult.get()
-                                .m_vertexTexCoords.get()
-                                .get(vertexH);
+                        auto vertexTexCoords = m_materializerResult.get().m_vertexTexCoords;
+                        bool vertexHasTexCoords = vertexTexCoords.is_initialized()
+                                                  ? static_cast<bool>(vertexTexCoords.get().get(vertexH))
+                                                  : false;
 
                         if (useTextures && vertexHasTexCoords)
                         {
