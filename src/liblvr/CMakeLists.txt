@@ -146,15 +146,15 @@ foreach(it ${dir_defs})
     list(APPEND vtk_flags ${it})
     endif()
 endforeach()
- 
+
 foreach(d ${vtk_flags})
     remove_definitions(-D${d})
 endforeach()
- 
+
 message(STATUS "Building static LVR CUDA library")
 cuda_add_library(lvrcuda_static STATIC ${LVR_CUDA_SRC})
 target_link_libraries(lvrcuda_static lvr_static)
- 
+
 # Add dependency to avoid that both targets
 # are build concurrently in parallel builds
 add_dependencies(lvrcuda_static lvr_static)
@@ -200,7 +200,3 @@ install(TARGETS lvr_static lvr
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )
 endif( NOT MSVC)
-
-
-
-
