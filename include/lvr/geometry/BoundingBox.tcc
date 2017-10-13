@@ -197,11 +197,7 @@ BoundingBox<VertexT> BoundingBox<VertexT>::getIntersectionBB(BoundingBox& rhs)
                                         std::min(rhs.m_max[2], m_max[2]));
 }
 
-template<typename VertexT>
-bool BoundingBox<VertexT>::contains(float x, float y, float z)
-{
- return ( x >= m_min[0] && y >= m_min[1] && z >= m_min[2] && x <= m_max[0] && y <= m_max[1] && z <= m_max[2]);
-}
+
 
 
 } // namespace lvr
