@@ -30,10 +30,14 @@ PointsetGrid<VertexT, BoxT>::PointsetGrid(float cellSize, typename PointsetSurfa
 	// Iterator over all points, calc lattice indices and add lattice points to the grid
 	for(size_t i = 0; i < num_points; i++)
 	{
-		index_x = calcIndex((points[i][0] - v_min[0]) / this->m_voxelsize);
-		index_y = calcIndex((points[i][1] - v_min[1]) / this->m_voxelsize);
-		index_z = calcIndex((points[i][2] - v_min[2]) / this->m_voxelsize);
-		this->addLatticePoint(index_x, index_y, index_z);
+        if(this->m_boundingBox.contains(points[i][0], points[i][1],points[i][2]))
+        {
+            index_x = calcIndex((points[i][0] - v_min[0]) / this->m_voxelsize);
+            index_y = calcIndex((points[i][1] - v_min[1]) / this->m_voxelsize);
+            index_z = calcIndex((points[i][2] - v_min[2]) / this->m_voxelsize);
+            this->addLatticePoint(index_x, index_y, index_z);
+        }
+
 	}
 
 }
