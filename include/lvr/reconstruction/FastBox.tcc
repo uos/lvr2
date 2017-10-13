@@ -38,7 +38,7 @@ template<typename VertexT, typename NormalT>
 uint FastBox<VertexT, NormalT>::INVALID_INDEX = numeric_limits<uint>::max();
 
 template<typename VertexT, typename NormalT>
-FastBox<VertexT, NormalT>::FastBox(VertexT &center) : m_extruded(false)
+FastBox<VertexT, NormalT>::FastBox(VertexT &center) : m_extruded(false), m_duplicate(false)
 {
     //m_intersections = new uint[12];
     // Init members
@@ -194,12 +194,120 @@ void FastBox<VertexT, NormalT>::getIntersections(VertexT* corners,
 
 }
 
+template<typename VertexT, typename NormalT>
+void FastBox<VertexT, NormalT>::getSurface( BaseMesh<VertexT, NormalT> &mesh,
+                                            vector<QueryPoint<VertexT> > &qp,
+                                            uint &globalIndex,
+                                            BoundingBox<VertexT> &bb,
+                                            vector<unsigned int> duplicates,
+                                            float comparePrecision
+)
+{
+    if(this->m_extruded) return;
+//    if(m_extruded)
+//    {
+//        cout << "overlapp box ignoring: " <<  m_center << endl;
+////        return;
+//    }
+    VertexT corners[8];
+    VertexT vertex_positions[12];
+
+    float distances[8];
+
+    getCorners(corners, qp);
+    getDistances(distances, qp);
+    getIntersections(corners, distances, vertex_positions);
+
+    int index = getIndex(qp);
+
+    // Do not create traingles for invalid boxes
+    for (int i = 0; i < 8; i++)
+    {
+//        if(m_fusionBox)         cout << "reconstructing box: " <<  qp[m_vertices[i]].m_position << " - " << qp[m_vertices[i]].m_distance << endl;
+        if (qp[m_vertices[i]].m_invalid)
+        {
+            return;
+        }
+    }
+
+    uint edge_index = 0;
+
+    int triangle_indices[3];
+    // Generate the local approximation surface according to the marching
+    // cubes table for Paul Burke.
+    for(int a = 0; MCTable[index][a] != -1; a+= 3){
+
+            for(int b = 0; b < 3; b++)
+            {
+                bool add_duplicate = false;
+                edge_index = MCTable[index][a + b];
+
+                //If no index was found generate new index and vertex
+                //and update all neighbor boxes
+                if(m_intersections[edge_index] == INVALID_INDEX)
+                {
+                    m_intersections[edge_index] = globalIndex;
+                    VertexT v = vertex_positions[edge_index];
+                    // Insert vertex and a new temp normal into mesh.
+                    // The normal is inserted to assure that vertex
+                    // and normal array always have the same size.
+                    // The actual normal is interpolated later.
+                    mesh.addVertex(v);
+                    mesh.addNormal(NormalT());
+
+                    if(this->m_duplicate)
+                    {
+
+                        for(int i = 0 ; i <3 && !add_duplicate ; i++)
+                        {
+                            for(int j = 0 ; j < 3 && !add_duplicate ; j++)
+                            {
+                                if(std::abs(v[i] - bb.getMin()[j]) < comparePrecision)
+                                {
+                                    add_duplicate = true;
+                                }
+                            }
+                            for(int j = 0 ; j < 3 && !add_duplicate ; j++)
+                            {
+                                if(std::abs(v[i] - bb.getMax()[j]) < comparePrecision)
+                                {
+                                    add_duplicate = true;
+                                }
+                            }
+                        }
+                    }
+
+                    for(int i = 0; i < 3; i++)
+                    {
+                        FastBox<VertexT, NormalT>* current_neighbor = m_neighbors[neighbor_table[edge_index][i]];
+                        if(current_neighbor != 0)
+                        {
+                            current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = globalIndex;
+                        }
+                    }
+
+                    // Increase the global vertex counter to save the buffer
+                    // position were the next new vertex has to be inserted
+                    globalIndex++;
+                }
+
+                //Save vertex index in mesh
+
+                triangle_indices[b] = m_intersections[edge_index];
+                duplicates.push_back(triangle_indices[b]);
+            }
+
+        // Add triangle actually does the normal interpolation for us.
+        mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
+    }
+}
 
 template<typename VertexT, typename NormalT>
 void FastBox<VertexT, NormalT>::getSurface(BaseMesh<VertexT, NormalT> &mesh,
                                                vector<QueryPoint<VertexT> > &qp,
                                                uint &globalIndex)
 {
+    if(this->m_extruded) return;
 //    if(m_extruded)
 //    {
 //        cout << "overlapp box ignoring: " <<  m_center << endl;

@@ -29,6 +29,7 @@
 
 #include <lvr/geometry/Vertex.hpp>
 #include <lvr/geometry/Normal.hpp>
+#include <lvr/geometry/BoundingBox.hpp>
 
 #include "QueryPoint.hpp"
 #include "MCTable.hpp"
@@ -121,6 +122,16 @@ public:
             uint &globalIndex);
 
     virtual void getSurface(
+            BaseMesh<VertexT, NormalT> &mesh,
+            vector<QueryPoint<VertexT> > &query_points,
+            uint &globalIndex,
+            BoundingBox<VertexT> &bb,
+            vector<unsigned int> duplicates,
+            float comparePrecision
+    );
+
+
+    virtual void getSurface(
             std::vector<float>& vBuffer,
             std::vector<unsigned int>& fBuffer,
             vector<QueryPoint<VertexT> > &query_points,
@@ -135,6 +146,7 @@ public:
     /// The twelve intersection between box and surface
     uint                       m_intersections[12];
     bool                        m_extruded;
+    bool                        m_duplicate;
 
      /// The box center
     VertexT                       m_center;
