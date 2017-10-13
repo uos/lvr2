@@ -155,7 +155,10 @@ public:
 
     BoundingBox         getIntersectionBB(BoundingBox& rhs);
 
-    bool                contains(float x, float y, float z);
+    inline bool contains(float x, float y, float z)
+    {
+        return ( x >= m_min[0] && y >= m_min[1] && z >= m_min[2] && x <= m_max[0] && y <= m_max[1] && z <= m_max[2]);
+    }
 
 
 
