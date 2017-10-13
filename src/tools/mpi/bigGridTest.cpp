@@ -26,7 +26,8 @@
 #include <fstream>
 #include <sstream>
 #include "LargeScaleOptions.hpp"
-
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 using std::cout;
 using std::endl;
@@ -173,24 +174,39 @@ int main(int argc, char** argv)
 
         reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
         HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh;
-        reconstruction->getMesh(mesh);
+
+        vector<unsigned int> duplicates;
+        reconstruction->getMesh(mesh, gridbb, duplicates, voxelsize/10);
         mesh.finalize();
 
-        std::stringstream ss3;
-        ss3 << "testply-" << i << ".ply";
+        std::stringstream ss_mesh;
+        ss_mesh << "part-" << i << "-mesh.ply";
         ModelPtr m( new Model( mesh.meshBuffer() ) );
-        ModelFactory::saveModel( m, ss3.str());
+        ModelFactory::saveModel( m, ss_mesh.str());
         delete reconstruction;
 
-        std::stringstream ss2;
-        ss2 << "testgrid-" << i << ".ser";
-        ps_grid->saveCells(ss2.str());
-        grid_files.push_back(ss2.str());
+        std::stringstream ss_grid;
+        ss_grid << "part-" << i << "-grid.ser";
+        ps_grid->saveCells(ss_grid.str());
+        grid_files.push_back(ss_grid.str());
+
+        std::stringstream ss_duplicates;
+        ss_duplicates << "part-" << i << "-duplicates.ser";
+        std::ofstream ofs(ss_duplicates.str());
+        boost::archive::binary_oarchive oa(ofs);
+        oa & duplicates;
+
         delete ps_grid;
 
 
 
 
+    }
+
+
+    for(int i = 0 ; i <grid_files.size() ; i++)
+    {
+        
     }
 
     cout << lvr::timestamp << "finished" << endl;

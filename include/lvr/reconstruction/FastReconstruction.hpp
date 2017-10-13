@@ -63,7 +63,13 @@ public:
      * @param mesh
      */
     virtual void getMesh(BaseMesh<VertexT, NormalT> &mesh) = 0;
+    virtual void getMesh(BaseMesh<VertexT, NormalT> &mesh,
+                         BoundingBox<VertexT> &bb,
+                         vector<unsigned int> duplicates,
+                         float comparePrecision) = 0;
     virtual void getMesh(vector<float>& vBuffer, vector<unsigned int>& fBuffer, size_t& duplicate_face_index, size_t& duplicate_vertex_index);
+
+
 };
 
 /**
@@ -95,7 +101,10 @@ public:
      * @param mesh
      */
     virtual void getMesh(BaseMesh<VertexT, NormalT> &mesh);
-
+    virtual void getMesh(BaseMesh<VertexT, NormalT> &mesh,
+                         BoundingBox<VertexT> &bb,
+                         vector<unsigned int> duplicates,
+                         float comparePrecision);
     virtual void getMesh(vector<float>& vBuffer, vector<unsigned int>& fBuffer, size_t& duplicate_face_index, size_t& duplicate_vertex_index);
 private:
 
