@@ -50,7 +50,9 @@ endif(MSVC)
 ## Searching for CUDA
 ##############################
 find_package( CUDA )
-
+if(CUDA_FOUND)
+    include_directories(${CUDA_INCLUDE_DIRS})
+endif(CUDA_FOUND)
 
 ####
 ## Searching for OpenCV
@@ -96,6 +98,14 @@ find_package( MPI )
 if(MPI_FOUND)
   include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 endif(MPI_FOUND)
+
+####
+## Searching for OpenCl
+#############################
+find_package(OpenCL)
+if(OPENCL_FOUND)
+    include_directories(OPENCL_INCLUDE_DIR)
+endif()
 
 ####
 ## Searching for VTK
@@ -269,6 +279,11 @@ add_subdirectory(ext/slam6d)
 include_directories( ${SLAM6D_INCLUDE_DIR} )
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
 
+# CTPL
+add_subdirectory(ext/CTPL)
+include_directories(${CTPL_INCLUDE_DIR})
+list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CTPL_INSTALL_INCLUDE_DIR})
+
 ##############################################################
 # ADD LVR DEFINITIONS
 ##############################################################
@@ -358,13 +373,13 @@ if(Qt5_FOUND)
   if(QGLVIEWER_LIBRARY_RELEASE)
     message(STATUS "Found libqglviewer")
     message(STATUS "Building qglviewer application")
-    add_subdirectory(src/qglviewer)
+   add_subdirectory(src/qglviewer)
   endif(QGLVIEWER_LIBRARY_RELEASE)
 
   find_package(QVTK)
   if(QVTK_FOUND)
     include_directories(${QVTK_INCLUDE_DIR})
-    add_subdirectory(src/tools/viewer)
+   add_subdirectory(src/tools/viewer)
   endif(QVTK_FOUND)
 endif(Qt5_FOUND)
 
@@ -395,23 +410,31 @@ add_subdirectory(src/tools/kaboom)
 add_subdirectory(src/tools/image_normals)
 
 if(MPI_FOUND)
-  add_subdirectory(src/tools/mpi)
+    add_subdirectory(src/tools/mpi)
 endif(MPI_FOUND)
+
+if(CUDA_FOUND)
+    add_subdirectory(src/tools/cuda_normals)
+endif()
+
+if(OPENCL_FOUND)
+    add_subdirectory(src/tools/cl_normals)
+endif()
 
 if(CGAL_FOUND)
   # There is a name clash between CGAL and std::pair. Should
   # be fixed in the next CGAL release
   if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNU)
-    add_subdirectory(src/tools/cgal_reconstruction)
+#   add_subdirectory(src/tools/cgal_reconstruction)
   endif()
   #add_subdirectory(src/tools/fusion)
-  add_subdirectory(src/tools/slicer)
+# add_subdirectory(src/tools/slicer)
 endif(CGAL_FOUND)
 
 if(PCL_FOUND)
-  add_subdirectory(src/tools/scanfilter)
+# add_subdirectory(src/tools/scanfilter)
   if(LIBFREENECT_FOUND)
-    add_subdirectory(src/tools/kinectgrabber)
+#   add_subdirectory(src/tools/kinectgrabber)
   endif(LIBFREENECT_FOUND)
 endif(PCL_FOUND)
 
