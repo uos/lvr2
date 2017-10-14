@@ -44,16 +44,7 @@ PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
 
     if (oldBuffer.hasPointNormals())
     {
-        m_normals = vector<Normal<BaseVecT>>();
-        size_t normalsLen;
-        auto normalBuf = oldBuffer.getPointNormalArray(normalsLen);
-        m_normals->reserve(normalsLen);
-
-        for (int i = 0; i < normalsLen * 3; i += 3)
-        {
-            auto p = Normal<BaseVecT>(normalBuf[i], normalBuf[i + 1], normalBuf[i + 2]);
-            m_normals->push_back(p);
-        }
+        copyNormals(oldBuffer);
     }
 
     size_t intensitiesLen;
@@ -185,6 +176,21 @@ template <typename BaseVecT>
 void PointBuffer<BaseVecT>::addNormalChannel(Normal<BaseVecT> def)
 {
     m_normals = vector<Normal<BaseVecT>>(getNumPoints(), def);
+}
+
+template <typename BaseVecT>
+void PointBuffer<BaseVecT>::copyNormals(lvr::PointBuffer& oldBuffer)
+{
+    m_normals = vector<Normal<BaseVecT>>();
+    size_t normalsLen;
+    auto normalBuf = oldBuffer.getPointNormalArray(normalsLen);
+    m_normals->reserve(normalsLen);
+
+    for (int i = 0; i < normalsLen * 3; i += 3)
+    {
+        auto p = Normal<BaseVecT>(normalBuf[i], normalBuf[i + 1], normalBuf[i + 2]);
+        m_normals->push_back(p);
+    }
 }
 
 template <typename BaseVecT>
