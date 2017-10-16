@@ -20,6 +20,8 @@ LineReader::LineReader(std::string filePath)
     open(filePath);
 }
 
+size_t LineReader::getNumPoints() {return m_elementAmount;}
+
 void LineReader::open(std::string filePath)
 {
     m_filePath = filePath;
@@ -86,6 +88,10 @@ void LineReader::open(std::string filePath)
             else if(boost::algorithm::contains(line,"ascii"))
             {
                 m_binary = false;
+            }
+            else if(boost::algorithm::contains(line,"property list"))
+            {
+                //Todo...
             }
             else if(boost::algorithm::contains(line,"property"))
             {
