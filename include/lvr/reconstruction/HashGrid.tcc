@@ -389,23 +389,26 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
                     (index_y + dy) * this->m_voxelsize + v_min[1],
                     (index_z + dz) * this->m_voxelsize + v_min[2]);
 
-            //Create new box
+            // Don't use maxIndexX etc. because they arent the edge of bb
+            size_t imaxx = calcIndex((this->getBoundingBox().getMax()[0] - m_boundingBox.getMin()[0])/m_voxelsize);
+            size_t imaxy = calcIndex((this->getBoundingBox().getMax()[1] - m_boundingBox.getMin()[1])/m_voxelsize);
+            size_t imaxz = calcIndex((this->getBoundingBox().getMax()[2] - m_boundingBox.getMin()[2])/m_voxelsize);
                 BoxT* box = new BoxT(box_center);
             if(     (index_x + dx < 1) ||
                     (index_y + dy < 1) ||
                     (index_z + dz < 1) ||
-                    (index_x + dx > m_maxIndexX-1) ||
-                    (index_y + dy > m_maxIndexY-1) ||
-                    (index_z + dz > m_maxIndexZ-1))
+                    (index_x + dx > imaxx) ||
+                    (index_y + dy > imaxy) ||
+                    (index_z + dz > imaxz))
             {
                 box->m_extruded=true;
             }
             else if((index_x + dx == 1) ||
                     (index_y + dy == 1) ||
                     (index_z + dz == 1) ||
-                    (index_x + dx == m_maxIndexX-1) ||
-                    (index_y + dy == m_maxIndexY-1) ||
-                    (index_z + dz == m_maxIndexZ-1))
+                    (index_x + dx == imaxx) ||
+                    (index_y + dy == imaxy) ||
+                    (index_z + dz == imaxz))
             {
                 box->m_duplicate =true;
             }
