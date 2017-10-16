@@ -197,6 +197,7 @@ public:
 
     Vertex<int> convertGlobalToGrid(Vertexf& globalCoord);
 
+    inline BoundingBox<VertexT> & getDuplicatesBox(){return m_duplicateboundingBox;}
     /**
      * @brief Calculates the hash value for the given index triple
      */
@@ -268,7 +269,7 @@ protected:
 
     /// Bounding box of the covered volume
     BoundingBox<VertexT>        m_boundingBox;
-
+    BoundingBox<VertexT>        m_duplicateboundingBox;
     /// The maximum used cell index within the grid
     unsigned int                m_globalIndex;
 

@@ -126,7 +126,7 @@ public:
             vector<QueryPoint<VertexT> > &query_points,
             uint &globalIndex,
             BoundingBox<VertexT> &bb,
-            vector<unsigned int> duplicates,
+            vector<unsigned int>& duplicates,
             float comparePrecision
     );
 

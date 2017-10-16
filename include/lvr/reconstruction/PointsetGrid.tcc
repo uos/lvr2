@@ -11,13 +11,13 @@ namespace lvr
 {
 
 template<typename VertexT, typename BoxT>
-PointsetGrid<VertexT, BoxT>::PointsetGrid(float cellSize, typename PointsetSurface<VertexT>::Ptr& surface, BoundingBox<VertexT> bb, bool isVoxelsize, bool extrude)
+PointsetGrid<VertexT, BoxT>::PointsetGrid(float cellSize, typename PointsetSurface<VertexT>::Ptr& surface, BoundingBox<VertexT>& bb, bool isVoxelsize, bool extrude)
 	: HashGrid<VertexT, BoxT>(cellSize, bb, isVoxelsize, extrude), m_surface(surface)
 {
 	PointBufferPtr buffer = surface->pointBuffer();
 
-	VertexT v_min = this->m_boundingBox.getMin();
-	VertexT v_max = this->m_boundingBox.getMax();
+	VertexT v_min = bb.getMin();
+	VertexT v_max = bb.getMax();
 
 	// Get indexed point buffer pointer
 	size_t num_points;
@@ -26,11 +26,12 @@ PointsetGrid<VertexT, BoxT>::PointsetGrid(float cellSize, typename PointsetSurfa
 	size_t index_x, index_y, index_z;
 
 	cout << timestamp << "Creating Grid..." << endl;
-
+    cout << bb << endl;
+    cout << this->m_boundingBox << endl;
 	// Iterator over all points, calc lattice indices and add lattice points to the grid
 	for(size_t i = 0; i < num_points; i++)
 	{
-        if(this->m_boundingBox.contains(points[i][0], points[i][1],points[i][2]))
+        if(bb.contains(points[i][0], points[i][1],points[i][2]))
         {
             index_x = calcIndex((points[i][0] - v_min[0]) / this->m_voxelsize);
             index_y = calcIndex((points[i][1] - v_min[1]) / this->m_voxelsize);

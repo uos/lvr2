@@ -50,6 +50,11 @@ m_boundingBox(boundingBox),
 m_globalIndex(0)
 {
 
+    BoundingBox<VertexT> tmpbb( boundingBox.getMin()[0]+cellSize, boundingBox.getMin()[1]+cellSize, boundingBox.getMin()[2]+cellSize,
+                                boundingBox.getMax()[0]-cellSize, boundingBox.getMax()[1]-cellSize, boundingBox.getMax()[2]-cellSize
+    );
+    m_duplicateboundingBox = tmpbb;
+    cout << "DBB: " << m_duplicateboundingBox << endl;
     m_coordinateScales[0] = 1.0;
     m_coordinateScales[1] = 1.0;
     m_coordinateScales[2] = 1.0;
@@ -388,30 +393,57 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
                     (index_x + dx) * this->m_voxelsize + v_min[0],
                     (index_y + dy) * this->m_voxelsize + v_min[1],
                     (index_z + dz) * this->m_voxelsize + v_min[2]);
+            BoxT* box = new BoxT(box_center);
+            if(!(m_boundingBox.contains(box_center[0]-m_voxelsize, box_center[1]- m_voxelsize, box_center[2]- m_voxelsize)
+               && m_boundingBox.contains(box_center[0], box_center[1], box_center[2]))
+                    )
+            {
+                box->m_extruded = true;
+            }
+            else
+            {
+                for(int k = 0 ; k<3; k++)
+                {
+                    if(std::abs(box_center[k]-m_duplicateboundingBox.getMin()[k]) < m_voxelsize)
+                    {
+                        box->m_duplicate = true;
+                        break;
+                    }
+                }
+                for(int k = 0 ; k<3 && (!box->m_duplicate); k++)
+                {
+                    if(std::abs(box_center[k]-m_duplicateboundingBox.getMax()[k]) < m_voxelsize)
+                    {
+                        box->m_duplicate = true;
+                        break;
+                    }
+                }
 
-            // Don't use maxIndexX etc. because they arent the edge of bb
-            size_t imaxx = calcIndex((this->getBoundingBox().getMax()[0] - m_boundingBox.getMin()[0])/m_voxelsize);
-            size_t imaxy = calcIndex((this->getBoundingBox().getMax()[1] - m_boundingBox.getMin()[1])/m_voxelsize);
-            size_t imaxz = calcIndex((this->getBoundingBox().getMax()[2] - m_boundingBox.getMin()[2])/m_voxelsize);
-                BoxT* box = new BoxT(box_center);
-            if(     (index_x + dx < 1) ||
-                    (index_y + dy < 1) ||
-                    (index_z + dz < 1) ||
-                    (index_x + dx > imaxx) ||
-                    (index_y + dy > imaxy) ||
-                    (index_z + dz > imaxz))
-            {
-                box->m_extruded=true;
             }
-            else if((index_x + dx == 1) ||
-                    (index_y + dy == 1) ||
-                    (index_z + dz == 1) ||
-                    (index_x + dx == imaxx) ||
-                    (index_y + dy == imaxy) ||
-                    (index_z + dz == imaxz))
-            {
-                box->m_duplicate =true;
-            }
+
+//            // Don't use maxIndexX etc. because they arent the edge of bb
+//            size_t imaxx = (size_t)ceil(m_boundingBox.getXSize() / m_voxelsize);
+//            size_t imaxy = (size_t)ceil(m_boundingBox.getYSize() / m_voxelsize);
+//            size_t imaxz = (size_t)ceil(m_boundingBox.getZSize() / m_voxelsize);
+//
+//            if(     ((index_x + dx) < 1) ||
+//                    ((index_y + dy) < 1) ||
+//                    ((index_z + dz) < 1)) // ||
+////                    (index_x + dx > m_maxIndexX-2) ||
+////                    (index_y + dy > m_maxIndexY-2) ||
+////                    (index_z + dz > m_maxIndexZ-2))
+//            {
+//                box->m_extruded=true;
+//            }
+//            else if(((index_x + dx) < 8) ||
+//                    ((index_y + dy) < 8) ||
+//                    ((index_z + dz) < 8) ||
+//                    ((index_x + dx) > m_maxIndexX-8) ||
+//                    ((index_y + dy) > m_maxIndexY-8) ||
+//                    ((index_z + dz) > m_maxIndexZ-8))
+//            {
+//                box->m_duplicate =true;
+//            }
 
             //Setup the box itself
             for(int k = 0; k < 8; k++){
