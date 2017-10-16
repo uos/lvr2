@@ -28,7 +28,10 @@
 #include "LargeScaleOptions.hpp"
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-
+#include <boost/serialization/vector.hpp>
+#include <boost/algorithm/string/replace.hpp>
+#include "LineReader.hpp"
+#include <random>
 using std::cout;
 using std::endl;
 using namespace lvr;
@@ -52,6 +55,23 @@ typedef lvr::AdaptiveKSearchSurface<lvr::ColorVertex<float, unsigned char>, lvr:
 
 int main(int argc, char** argv)
 {
+//make sure to include the random number generators and such
+
+//    std::random_device seeder;
+//    std::mt19937 engine(seeder());
+//    std::uniform_real_distribution<float> dist(10, 10.05);
+//    std::random_device seeder2;
+//    std::mt19937 engine2(seeder());
+//    std::uniform_real_distribution<float> dist2(0, 10);
+//    ofstream testofs("plane.pts");
+//    for(float x = 0; x < 10; x+=0.05)
+//    {
+//        for(float y = 0 ; y < 10 ; y+=0.05)
+//        {
+//            testofs << dist2(engine2) << " " << dist2(engine2) << " " << dist(engine) << endl;
+//        }
+//    }
+
 
     LargeScaleOptions::Options options(argc, argv);
 
@@ -165,14 +185,14 @@ int main(int argc, char** argv)
         lvr::GridBase* grid;
         lvr::FastReconstructionBase<lvr::ColorVertex<float, unsigned char>, lvr::Normal<float> >* reconstruction;
 
-        grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(voxelsize, surface,gridbb , true, options.extrude());
-        BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-        PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+        grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(voxelsize, surface,gridbb , true, options.extrude());
+//        FastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+        PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
         ps_grid->setBB(gridbb);
         ps_grid->calcIndices();
         ps_grid->calcDistanceValues();
 
-        reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+        reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
         HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh;
 
         vector<unsigned int> duplicates;
@@ -193,7 +213,7 @@ int main(int argc, char** argv)
         std::stringstream ss_duplicates;
         ss_duplicates << "part-" << i << "-duplicates.ser";
         std::ofstream ofs(ss_duplicates.str());
-        boost::archive::binary_oarchive oa(ofs);
+        boost::archive::text_oarchive oa(ofs);
         oa & duplicates;
 
         delete ps_grid;
@@ -203,94 +223,234 @@ int main(int argc, char** argv)
 
     }
 
-
+    vector<size_t> offsets;
+    offsets.push_back(0);
+    vector<unsigned int> all_duplicates;
+    vector<float> duplicateVertices;
     for(int i = 0 ; i <grid_files.size() ; i++)
     {
-        
+        string duplicate_path = grid_files[i];
+        string ply_path = grid_files[i];
+        boost::algorithm::replace_last(duplicate_path, "-grid.ser", "-duplicates.ser");
+        boost::algorithm::replace_last(ply_path, "-grid.ser", "-mesh.ply");
+        std::ifstream ifs(duplicate_path);
+        boost::archive::text_iarchive ia(ifs);
+        std::vector<unsigned int> duplicates;
+        ia & duplicates;
+        LineReader lr(ply_path);
+        lvr::PLYIO io;
+        ModelPtr modelPtr = io.read(ply_path);
+        //ModelPtr modelPtr = ModelFactory::readModel(ply_path);
+        size_t numVertices;
+        floatArr modelVertices = modelPtr->m_mesh->getVertexArray(numVertices);
+        for(size_t j  = 0 ; j<duplicates.size() ; j++)
+        {
+            duplicateVertices.push_back(modelVertices[duplicates[j]*3]);
+            duplicateVertices.push_back(modelVertices[duplicates[j]*3+1]);
+            duplicateVertices.push_back(modelVertices[duplicates[j]*3+2]);
+        }
+        size_t numPoints = lr.getNumPoints();
+        offsets.push_back(numPoints+offsets[i]);
+        std::transform (duplicates.begin(), duplicates.end(), duplicates.begin(), [&](unsigned int x){return x+offsets[i];});
+        all_duplicates.insert(all_duplicates.end(),duplicates.begin(), duplicates.end());
+
     }
+    std::unordered_map<unsigned int, unsigned int> oldToNew;
+    float dist_epsilon_squared = (voxelsize/10)*(voxelsize/10);
+    for(size_t i = 0 ; i < duplicateVertices.size()/3 ; i+=3)
+    {
+        float ax = duplicateVertices[i];
+        float ay = duplicateVertices[i+1];
+        float az = duplicateVertices[i+2];
+        for(size_t j = 0 ; j < duplicateVertices.size()/3 ; j+=3)
+        {
+            if(i==j) continue;
+            float bx = duplicateVertices[j];
+            float by = duplicateVertices[j+1];
+            float bz = duplicateVertices[j+2];
+            float dist_squared = (ax-bx)*(ax-bx) + (ay-by)*(ay-by) + (az-bz)*(az-bz);
+            if(dist_squared < dist_epsilon_squared)
+            {
+                if(oldToNew.find(all_duplicates[i]) == oldToNew.end())
+                {
+                    oldToNew[all_duplicates[j]] = all_duplicates[i];
+                }
+            }
+        }
+    }
+
+    ofstream ofs_vertices("largeVertices.bin");
+    ofstream ofs_faces("largeFaces.bin");
+    size_t increment=0;
+
+    size_t newNumVertices = 0;
+    size_t newNumFaces = 0;
+    for(int i = 0 ; i <grid_files.size() ; i++)
+    {
+        vector<size_t> increments;
+        string ply_path = grid_files[i];
+        boost::algorithm::replace_last(ply_path, "-grid.ser", "-mesh.ply");
+        lvr::PLYIO io;
+        ModelPtr modelPtr = io.read(ply_path);
+        size_t numVertices;
+        size_t numFaces;
+        size_t offset = offsets[i];
+        floatArr modelVertices = modelPtr->m_mesh->getVertexArray(numVertices);
+        uintArr modelFaces = modelPtr->m_mesh->getFaceArray(numFaces);
+        newNumFaces+=numFaces;
+        for(int j = 0; j<numVertices ; j++)
+        {
+            float x = modelVertices[j*3];
+            float y = modelVertices[j*3+1];
+            float z = modelVertices[j*3+2];
+            if(oldToNew.find(j+offset)==oldToNew.end())
+            {
+                ofs_vertices << x << " " << y << " " << z << endl;
+                newNumVertices++;
+            }
+            else
+            {
+                increment++;
+            }
+            increments.push_back(increment);
+
+        }
+        for(int j = 0 ; j<numFaces; j++)
+        {
+            unsigned int f[3];
+            f[0] = modelFaces[j*3] + offset;
+            f[1] = modelFaces[j*3+1] + offset;
+            f[2] = modelFaces[j*3+2] + offset;
+            ofs_faces << "3 ";
+            for(int k = 0 ; k < 3; k++)
+            {
+                if(oldToNew.find(f[k]) == oldToNew.end())
+                {
+                    ofs_faces << f[k] - increments[f[k]-offset];
+                }
+                else
+                {
+                    ofs_faces << oldToNew[f[k]]; // todo old2new[f[k]] ??
+                }
+                if(k!=2) ofs_faces << " ";
+
+            }
+            ofs_faces << endl;
+
+        }
+
+
+
+
+    }
+
+    ofstream ofs_ply("bigMesh.ply");
+    ifstream ifs_faces("largeFaces.bin");
+    ifstream ifs_vertices("largeVertices.bin");
+    string line;
+    ofs_ply << "ply\n"
+            "format ascii 1.0\n"
+            "element vertex " << newNumVertices << "\n"
+            "property float x\n"
+            "property float y\n"
+            "property float z\n"
+            "element face " << newNumFaces << "\n"
+            "property list uchar int vertex_indices\n"
+            "end_header" << endl;
+    while(std::getline(ifs_vertices,line))
+    {
+        ofs_ply << line << endl;
+    }
+    while(std::getline(ifs_faces,line))
+    {
+        ofs_ply << line << endl;
+    }
+
+
+
 
     cout << lvr::timestamp << "finished" << endl;
 
-
-    auto vmax = cbb.getMax();
-    auto vmin = cbb.getMin();
-    vmin.x-=voxelsize*2;
-    vmin.y-=voxelsize*2;
-    vmin.z-=voxelsize*2;
-    vmax.x+=voxelsize*2;
-    vmax.y+=voxelsize*2;
-    vmax.z+=voxelsize*2;
-    cbb.expand(vmin);
-    cbb.expand(vmax);
-    HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >
-            hg(grid_files, cbb, voxelsize);
-
-
-
-    //hg.saveGrid("largeScale.grid");
-
-
-
-
-
-    lvr::FastReconstructionBase<lvr::ColorVertex<float, unsigned char>, lvr::Normal<float> >* reconstruction;
-    reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(&hg);
-    std::vector<float> vBuffer;
-    std::vector<unsigned int> fBuffer;
-    size_t vi,fi;
-    reconstruction->getMesh(vBuffer, fBuffer,fi,vi);
-//    HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh;
-//    if(options.getDepth())
-//    {
-//        mesh.setDepth(options.getDepth());
-//    }
-//    reconstruction->getMesh(mesh);
-//    if(options.getDanglingArtifacts())
-//    {
-//        mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
-//    }
-//    mesh.cleanContours(options.getCleanContourIterations());
-//    mesh.setClassifier(options.getClassifier());
-//    mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
-//    if(options.optimizePlanes())
-//    {
-//        mesh.optimizePlanes(options.getPlaneIterations(),
-//                            options.getNormalThreshold(),
-//                            options.getMinPlaneSize(),
-//                            options.getSmallRegionThreshold(),
-//                            true);
 //
-//        mesh.fillHoles(options.getFillHoles());
-//        mesh.optimizePlaneIntersections();
-//        mesh.restorePlanes(options.getMinPlaneSize());
-//
-//        if(options.getNumEdgeCollapses())
-//        {
-//            QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
-//            mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
-//        }
-//    }
-//    else if(options.clusterPlanes())
-//    {
-//        mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
-//        mesh.fillHoles(options.getFillHoles());
-//    }
+//    auto vmax = cbb.getMax();
+//    auto vmin = cbb.getMin();
+//    vmin.x-=voxelsize*2;
+//    vmin.y-=voxelsize*2;
+//    vmin.z-=voxelsize*2;
+//    vmax.x+=voxelsize*2;
+//    vmax.y+=voxelsize*2;
+//    vmax.z+=voxelsize*2;
+//    cbb.expand(vmin);
+//    cbb.expand(vmax);
+//    HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >
+//            hg(grid_files, cbb, voxelsize);
 //
 //
-//    if ( options.retesselate() )
-//    {
-//        mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
-//    }
-//    else
-//    {
-//        mesh.finalize();
-//    }
-    lvr::MeshBufferPtr mb(new lvr::MeshBuffer);
-    mb->setFaceArray(fBuffer);
-    mb->setVertexArray(vBuffer);
-    ModelPtr m( new Model( mb ) );
-    ModelFactory::saveModel( m, "largeScale.ply");
-    delete reconstruction;
+//
+//    //hg.saveGrid("largeScale.grid");
+//
+//
+//
+//
+//
+//    lvr::FastReconstructionBase<lvr::ColorVertex<float, unsigned char>, lvr::Normal<float> >* reconstruction;
+//    reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(&hg);
+//    std::vector<float> vBuffer;
+//    std::vector<unsigned int> fBuffer;
+//    size_t vi,fi;
+//    reconstruction->getMesh(vBuffer, fBuffer,fi,vi);
+////    HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh;
+////    if(options.getDepth())
+////    {
+////        mesh.setDepth(options.getDepth());
+////    }
+////    reconstruction->getMesh(mesh);
+////    if(options.getDanglingArtifacts())
+////    {
+////        mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+////    }
+////    mesh.cleanContours(options.getCleanContourIterations());
+////    mesh.setClassifier(options.getClassifier());
+////    mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
+////    if(options.optimizePlanes())
+////    {
+////        mesh.optimizePlanes(options.getPlaneIterations(),
+////                            options.getNormalThreshold(),
+////                            options.getMinPlaneSize(),
+////                            options.getSmallRegionThreshold(),
+////                            true);
+////
+////        mesh.fillHoles(options.getFillHoles());
+////        mesh.optimizePlaneIntersections();
+////        mesh.restorePlanes(options.getMinPlaneSize());
+////
+////        if(options.getNumEdgeCollapses())
+////        {
+////            QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
+////            mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
+////        }
+////    }
+////    else if(options.clusterPlanes())
+////    {
+////        mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
+////        mesh.fillHoles(options.getFillHoles());
+////    }
+////
+////
+////    if ( options.retesselate() )
+////    {
+////        mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
+////    }
+////    else
+////    {
+////        mesh.finalize();
+////    }
+//    lvr::MeshBufferPtr mb(new lvr::MeshBuffer);
+//    mb->setFaceArray(fBuffer);
+//    mb->setVertexArray(vBuffer);
+//    ModelPtr m( new Model( mb ) );
+//    ModelFactory::saveModel( m, "largeScale.ply");
+//    delete reconstruction;
 //
 //    lvr::PointBufferPtr pb2(new lvr::PointBuffer);
 //    pb2->setPointArray(points2, numPoints2);
