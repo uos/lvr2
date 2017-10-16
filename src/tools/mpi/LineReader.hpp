@@ -47,6 +47,7 @@ public:
     LineReader();
     LineReader(std::string filePath);
     void open(std::string filePath);
+    size_t getNumPoints();
     bool getNextPoint(xyznc& point);
 //        boost::shared_array<xyzn> getNextPoints(size_t &return_amount, size_t amount = 1000000);
 //        boost::shared_array<xyzc> getNextPoints(size_t &return_amount, size_t amount = 1000000);
