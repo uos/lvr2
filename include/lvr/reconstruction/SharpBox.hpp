@@ -64,6 +64,14 @@ public:
             std::vector<unsigned int>& fBuffer,
             vector<QueryPoint<VertexT> > &query_points,
             uint &globalIndex){}
+    virtual void getSurface(
+            BaseMesh<VertexT, NormalT> &mesh,
+            vector<QueryPoint<VertexT> > &query_points,
+            uint &globalIndex,
+            BoundingBox<VertexT> &bb,
+            vector<unsigned int>& duplicates,
+            float comparePrecision
+    ){}
     // Threshold angle for sharp feature detection
     static float m_theta_sharp;
 
