@@ -317,7 +317,7 @@ int main(int argc, char** argv)
 
     }
     std::unordered_map<unsigned int, unsigned int> oldToNew;
-    float dist_epsilon_squared = (voxelsize/100)*(voxelsize/100);
+    float dist_epsilon_squared = (voxelsize/1000)*(voxelsize/1000);
     for(size_t i = 0 ; i < duplicateVertices.size() ; i+=3)
     {
         float ax = duplicateVertices[i];
@@ -363,8 +363,11 @@ int main(int argc, char** argv)
     }
     ofstream ofs_vertices("largeVertices.bin", std::ofstream::out | std::ofstream::trunc);
     ofstream ofs_faces("largeFaces.bin", std::ofstream::out | std::ofstream::trunc);
+    
     size_t increment=0;
-    vector<size_t> increments;
+    std::map<size_t, size_t> decrements;
+    decrements[0] = 0;
+
     size_t newNumVertices = 0;
     size_t newNumFaces = 0;
     for(size_t i = 0 ; i <grid_files.size() ; i++)
@@ -396,9 +399,8 @@ int main(int argc, char** argv)
             else
             {
                 increment++;
+                decrements[j+offset] = increment;
             }
-            increments.push_back(increment);
-
         }
         for(int j = 0 ; j<numFaces; j++)
         {
@@ -412,19 +414,16 @@ int main(int argc, char** argv)
                 size_t face_idx = 0;
                 if(oldToNew.find(f[k]) == oldToNew.end())
                 {
-                    face_idx = f[k] - increments[f[k]];
-//                    if (face_idx > 18939) // debug number of faces of scan.pts
-//                    {
-//                        cout << "no old to new " << face_idx << endl;
-//                    }
+                    auto decr_itr = decrements.upper_bound(f[k]);
+                    decr_itr--;
+                    face_idx = f[k] - decr_itr->second;
                 }
                 else
                 {
-                    face_idx = oldToNew[f[k]]- increments[oldToNew[f[k]]];
-//                    if (face_idx > 18939) // debug number of faces of scan.pts
-//                    {
-//                        cout << "WTF!!!!! " << f[k] << " (key) mapped to " << face_idx << endl;
-//                    }
+                    auto decr_itr = decrements.upper_bound(oldToNew[f[k]]);
+                    decr_itr--;
+                    face_idx = oldToNew[f[k]]- decr_itr->second;
+//                    
                 }
                 ofs_faces << face_idx;
                 if(k!=2) ofs_faces << " ";
