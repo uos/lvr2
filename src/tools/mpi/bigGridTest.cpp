@@ -317,12 +317,13 @@ int main(int argc, char** argv)
 
     }
     std::unordered_map<unsigned int, unsigned int> oldToNew;
-    float dist_epsilon_squared = (voxelsize/10)*(voxelsize/10);
+    float dist_epsilon_squared = (voxelsize/100)*(voxelsize/100);
     for(size_t i = 0 ; i < duplicateVertices.size() ; i+=3)
     {
         float ax = duplicateVertices[i];
         float ay = duplicateVertices[i+1];
         float az = duplicateVertices[i+2];
+        vector<unsigned int> duplicates_of_i;
         for(size_t j = 0 ; j < duplicateVertices.size() ; j+=3)
         {
             if(i==j) continue;
@@ -332,24 +333,43 @@ int main(int argc, char** argv)
             float dist_squared = (ax-bx)*(ax-bx) + (ay-by)*(ay-by) + (az-bz)*(az-bz);
             if(dist_squared < dist_epsilon_squared)
             {
-                if(oldToNew.find(all_duplicates[i/3]) == oldToNew.end())
+                auto find_it = oldToNew.find(all_duplicates[i/3]);
+                if( find_it == oldToNew.end())
                 {
+
                     oldToNew[all_duplicates[j/3]] = all_duplicates[i/3];
                     cout << "dup found! mapping " << all_duplicates[j/3] << " -> " << all_duplicates[i/3] << endl;
-                }
+
+                } //else{
+
+//                    if(all_duplicates[j/3] != all_duplicates[i/3])
+//                    {
+//                        oldToNew[all_duplicates[j/3]] = oldToNew[all_duplicates[i/3]];
+//                        cout << "SHIT: " << all_duplicates[j/3] << " -> " << oldToNew[all_duplicates[i/3]] << endl;
+//                    }
+//                    else
+//                    {
+//                        cout << "SHIT SHIT SHIT" << endl;
+//                    }
+//
+//              }
             }
         }
-    }
 
+    }
+    for(auto testit = oldToNew.begin(); testit != oldToNew.end(); testit++)
+    {
+        if(oldToNew.find(testit->second) != oldToNew.end()) cout << "SHIT FUCK SHIT" << endl;
+    }
     ofstream ofs_vertices("largeVertices.bin", std::ofstream::out | std::ofstream::trunc);
     ofstream ofs_faces("largeFaces.bin", std::ofstream::out | std::ofstream::trunc);
     size_t increment=0;
-
+    vector<size_t> increments;
     size_t newNumVertices = 0;
     size_t newNumFaces = 0;
     for(size_t i = 0 ; i <grid_files.size() ; i++)
     {
-        vector<size_t> increments;
+
         string ply_path = grid_files[i];
         boost::algorithm::replace_last(ply_path, "-grid.ser", "-mesh.ply");
         LineReader lr(ply_path);
@@ -392,19 +412,19 @@ int main(int argc, char** argv)
                 size_t face_idx = 0;
                 if(oldToNew.find(f[k]) == oldToNew.end())
                 {
-                    face_idx = f[k] - increments[f[k]-offset];
-                    if (face_idx > 18939) // debug number of faces of scan.pts
-                    {
-                        cout << "no old to new " << face_idx << endl;
-                    }
+                    face_idx = f[k] - increments[f[k]];
+//                    if (face_idx > 18939) // debug number of faces of scan.pts
+//                    {
+//                        cout << "no old to new " << face_idx << endl;
+//                    }
                 }
                 else
                 {
-                    face_idx = oldToNew[f[k]];
-                    if (face_idx > 18939) // debug number of faces of scan.pts
-                    {
-                        cout << "WTF!!!!! " << f[k] << " (key) mapped to " << face_idx << endl;
-                    }
+                    face_idx = oldToNew[f[k]]- increments[oldToNew[f[k]]];
+//                    if (face_idx > 18939) // debug number of faces of scan.pts
+//                    {
+//                        cout << "WTF!!!!! " << f[k] << " (key) mapped to " << face_idx << endl;
+//                    }
                 }
                 ofs_faces << face_idx;
                 if(k!=2) ofs_faces << " ";
@@ -418,6 +438,7 @@ int main(int argc, char** argv)
 
 
     }
+
 
     ofstream ofs_ply("bigMesh.ply", std::ofstream::out | std::ofstream::trunc);
     ifstream ifs_faces("largeFaces.bin");
