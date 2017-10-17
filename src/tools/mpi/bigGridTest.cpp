@@ -212,7 +212,7 @@ int main(int argc, char** argv)
 
         std::stringstream ss_duplicates;
         ss_duplicates << "part-" << i << "-duplicates.ser";
-        std::ofstream ofs(ss_duplicates.str());
+        std::ofstream ofs(ss_duplicates.str(), std::ofstream::out | std::ofstream::trunc);
         boost::archive::text_oarchive oa(ofs);
         oa & duplicates;
 
@@ -236,13 +236,19 @@ int main(int argc, char** argv)
         std::ifstream ifs(duplicate_path);
         boost::archive::text_iarchive ia(ifs);
         std::vector<unsigned int> duplicates;
-        ia & duplicates;
+        //ia & duplicates;
         LineReader lr(ply_path);
         lvr::PLYIO io;
         ModelPtr modelPtr = io.read(ply_path);
         //ModelPtr modelPtr = ModelFactory::readModel(ply_path);
         size_t numVertices;
         floatArr modelVertices = modelPtr->m_mesh->getVertexArray(numVertices);
+
+        for (size_t j = 0; j < numVertices; j++)
+        {
+            duplicates.push_back(static_cast<unsigned int>(j));
+        }
+
         for(size_t j  = 0 ; j<duplicates.size() ; j++)
         {
             duplicateVertices.push_back(modelVertices[duplicates[j]*3]);
@@ -257,12 +263,12 @@ int main(int argc, char** argv)
     }
     std::unordered_map<unsigned int, unsigned int> oldToNew;
     float dist_epsilon_squared = (voxelsize/10)*(voxelsize/10);
-    for(size_t i = 0 ; i < duplicateVertices.size()/3 ; i+=3)
+    for(size_t i = 0 ; i < duplicateVertices.size() ; i+=3)
     {
         float ax = duplicateVertices[i];
         float ay = duplicateVertices[i+1];
         float az = duplicateVertices[i+2];
-        for(size_t j = 0 ; j < duplicateVertices.size()/3 ; j+=3)
+        for(size_t j = 0 ; j < duplicateVertices.size() ; j+=3)
         {
             if(i==j) continue;
             float bx = duplicateVertices[j];
@@ -271,21 +277,22 @@ int main(int argc, char** argv)
             float dist_squared = (ax-bx)*(ax-bx) + (ay-by)*(ay-by) + (az-bz)*(az-bz);
             if(dist_squared < dist_epsilon_squared)
             {
-                if(oldToNew.find(all_duplicates[i]) == oldToNew.end())
+                if(oldToNew.find(all_duplicates[i/3]) == oldToNew.end())
                 {
-                    oldToNew[all_duplicates[j]] = all_duplicates[i];
+                    oldToNew[all_duplicates[j/3]] = all_duplicates[i/3];
+                    cout << "dup found! mapping " << all_duplicates[j/3] << " -> " << all_duplicates[i/3] << endl;
                 }
             }
         }
     }
 
-    ofstream ofs_vertices("largeVertices.bin");
-    ofstream ofs_faces("largeFaces.bin");
+    ofstream ofs_vertices("largeVertices.bin", std::ofstream::out | std::ofstream::trunc);
+    ofstream ofs_faces("largeFaces.bin", std::ofstream::out | std::ofstream::trunc);
     size_t increment=0;
 
     size_t newNumVertices = 0;
     size_t newNumFaces = 0;
-    for(int i = 0 ; i <grid_files.size() ; i++)
+    for(size_t i = 0 ; i <grid_files.size() ; i++)
     {
         vector<size_t> increments;
         string ply_path = grid_files[i];
@@ -298,7 +305,7 @@ int main(int argc, char** argv)
         floatArr modelVertices = modelPtr->m_mesh->getVertexArray(numVertices);
         uintArr modelFaces = modelPtr->m_mesh->getFaceArray(numFaces);
         newNumFaces+=numFaces;
-        for(int j = 0; j<numVertices ; j++)
+        for(size_t j = 0; j<numVertices ; j++)
         {
             float x = modelVertices[j*3];
             float y = modelVertices[j*3+1];
@@ -324,14 +331,24 @@ int main(int argc, char** argv)
             ofs_faces << "3 ";
             for(int k = 0 ; k < 3; k++)
             {
+                size_t face_idx = 0;
                 if(oldToNew.find(f[k]) == oldToNew.end())
                 {
-                    ofs_faces << f[k] - increments[f[k]-offset];
+                    face_idx = f[k] - increments[f[k]-offset];
+                    if (face_idx > 18939) // debug number of faces of scan.pts
+                    {
+                        cout << "no old to new " << face_idx << endl;
+                    }
                 }
                 else
                 {
-                    ofs_faces << oldToNew[f[k]]; // todo old2new[f[k]] ??
+                    face_idx = oldToNew[f[k]];
+                    if (face_idx > 18939) // debug number of faces of scan.pts
+                    {
+                        cout << "WTF!!!!! " << f[k] << " (key) mapped to " << face_idx << endl;
+                    }
                 }
+                ofs_faces << face_idx;
                 if(k!=2) ofs_faces << " ";
 
             }
@@ -344,7 +361,7 @@ int main(int argc, char** argv)
 
     }
 
-    ofstream ofs_ply("bigMesh.ply");
+    ofstream ofs_ply("bigMesh.ply", std::ofstream::out | std::ofstream::trunc);
     ifstream ifs_faces("largeFaces.bin");
     ifstream ifs_vertices("largeVertices.bin");
     string line;
