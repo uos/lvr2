@@ -429,7 +429,21 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
                         box_center[1] <= m_boundingBox.getMin()[1]  ||
                         box_center[2] <= m_boundingBox.getMin()[2])
                     ) continue;
+
             BoxT* box = new BoxT(box_center);
+            if( box_center[0] <= m_boundingBox.getMin()[0] + m_voxelsize  ||
+                box_center[1] <= m_boundingBox.getMin()[1] + m_voxelsize  ||
+                box_center[2] <= m_boundingBox.getMin()[2] + m_voxelsize)
+            {
+                box->m_duplicate = true;
+            }
+            else if( box_center[0] >= m_boundingBox.getMax()[0] - m_voxelsize  ||
+                box_center[1] >= m_boundingBox.getMax()[1] - m_voxelsize  ||
+                box_center[2] >= m_boundingBox.getMax()[2] - m_voxelsize)
+            {
+                box->m_duplicate = true;
+            }
+
 
             //if(index_x + dx <=0 || index_y + dy <=0 || index_z + dz <=0) box->m_extruded =true;
 //            if(!m_duplicateboundingBox.contains(box_center[0],box_center[1],box_center[2])) box->m_extruded =true;
@@ -459,7 +473,7 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 //                        break;
 //                    }
 //                }
-              cout << "EX: " << box->m_extruded << endl;
+//              cout << "EX: " << box->m_extruded << endl;
 //            }
 
 //            // Don't use maxIndexX etc. because they arent the edge of bb

@@ -289,7 +289,7 @@ int main(int argc, char** argv)
         std::ifstream ifs(duplicate_path);
         boost::archive::text_iarchive ia(ifs);
         std::vector<unsigned int> duplicates;
-        //ia & duplicates;
+        ia & duplicates;
         LineReader lr(ply_path);
         size_t numPoints = lr.getNumPoints();
         offsets.push_back(numPoints+offsets[i]);
@@ -300,10 +300,10 @@ int main(int argc, char** argv)
         size_t numVertices;
         floatArr modelVertices = modelPtr->m_mesh->getVertexArray(numVertices);
 
-        for (size_t j = 0; j < numVertices; j++)
-        {
-            duplicates.push_back(static_cast<unsigned int>(j));
-        }
+//        for (size_t j = 0; j < numVertices; j++)
+//        {
+//            duplicates.push_back(static_cast<unsigned int>(j));
+//        }
 
         for(size_t j  = 0 ; j<duplicates.size() ; j++)
         {
@@ -430,6 +430,7 @@ int main(int argc, char** argv)
                 if(k!=2) ofs_faces << " ";
 
             }
+            // todo: sort
             ofs_faces << endl;
 
         }
@@ -438,7 +439,7 @@ int main(int argc, char** argv)
 
 
     }
-
+    cout << "Largest decrement: " << increment << endl;
 
     ofstream ofs_ply("bigMesh.ply", std::ofstream::out | std::ofstream::trunc);
     ifstream ifs_faces("largeFaces.bin");
