@@ -323,6 +323,8 @@ public:
 
     vector<float> getFlippoint() const;
 
+    size_t getVolumenSize() const;
+
 private:
 
     /// The set voxelsize
@@ -454,6 +456,8 @@ private:
     float m_scaling;
 
     vector<float> m_flippoint;
+
+    size_t m_volumenSize;
 
 };
 
@@ -589,6 +593,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
     {
         cout << "##### Buffer Size: \t\t: " << o.getBufferSize() << endl;
     }
+    cout << "##### Volumen Size: \t\t: " << o.getVolumenSize() << endl;
     return os;
 }
 

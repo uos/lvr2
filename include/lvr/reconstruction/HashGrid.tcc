@@ -427,7 +427,7 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
                     (
                         box_center[0] <= m_boundingBox.getMin()[0]  ||
                         box_center[1] <= m_boundingBox.getMin()[1]  ||
-                        box_center[2] <= m_boundingBox.getMin()[2]) 
+                        box_center[2] <= m_boundingBox.getMin()[2])
                     ) continue;
             BoxT* box = new BoxT(box_center);
 

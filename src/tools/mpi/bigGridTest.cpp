@@ -85,15 +85,68 @@ int main(int argc, char** argv)
     lvr::BoundingBox<lvr::Vertexf> bb = bg.getBB();
     cout << bb << endl;
 
-
+    vector<BoundingBox<Vertexf > > partitionBoxes;
     //lvr::floatArr points = bg.getPointCloud(numPoints);
 
     cout << lvr::timestamp << "making tree" << endl;
-    BigGridKdTree gridKd(bg.getBB(),options.getNodeSize(),&bg, voxelsize);
-    gridKd.insert(bg.pointSize(),bg.getBB().getCentroid());
+    float volumenSize = (float)(options.getVolumenSize()); // 10 x 10 x 10 voxel
+    if(volumenSize > 0)
+    {
+//        BoundingBox<Vertexf> volumenBB = bg.getBB();
+//        float xdiff = fabs(fmod(volumenBB.getXSize(), volumenSize*voxelsize ));
+//        float ydiff = fabs(fmod(volumenBB.getYSize(), volumenSize*voxelsize ));
+//        float zdiff = fabs(fmod(volumenBB.getZSize(), volumenSize*voxelsize ));
+//        Vertexf new_max = volumenBB.getMax();
+//        new_max[0]+=xdiff;
+//        new_max[1]+=ydiff;
+//        new_max[2]+=zdiff;
+//        volumenBB.expand(new_max);
+
+        float current_minx = bg.getBB().getMin()[0];
+
+
+        while(current_minx < bg.getBB().getMax()[0])
+        {
+            float current_miny = bg.getBB().getMin()[1];
+            while(current_miny < bg.getBB().getMax()[1])
+            {
+                float current_minz = bg.getBB().getMin()[2];
+                while(current_minz < bg.getBB().getMax()[2])
+                {
+                    BoundingBox<Vertexf > partBB(
+                            current_minx,
+                            current_miny,
+                            current_minz,
+                            current_minx+volumenSize*voxelsize,
+                            current_miny+volumenSize*voxelsize,
+                            current_minz+volumenSize*voxelsize
+
+                    );
+                    cout << "current\t\t " << current_minx << "\t" << current_miny << "\t" << current_minz << endl;
+                    cout << "max\t\t " <<  bg.getBB().getMax()[0] << "\t" <<  bg.getBB().getMax()[1] << "\t" <<  bg.getBB().getMax()[2] << endl;
+                    partitionBoxes.push_back(partBB);
+                    current_minz+=volumenSize*voxelsize;
+                }
+                current_miny+=volumenSize*voxelsize;
+            }
+            current_minx+=volumenSize*voxelsize;
+        }
+
+    }
+    else
+    {
+        BigGridKdTree gridKd(bg.getBB(),options.getNodeSize(),&bg, voxelsize);
+        gridKd.insert(bg.pointSize(),bg.getBB().getCentroid());
+        for(size_t i = 0 ; i <  gridKd.getLeafs().size(); i++)
+        {
+            BoundingBox<Vertexf > partBB = gridKd.getLeafs()[i]->getBB();
+            partitionBoxes.push_back(partBB);
+        }
+    }
+
     cout << lvr::timestamp << "finished tree" << endl;
 
-    std::cout << lvr::timestamp << "got: " << gridKd.getLeafs().size() << " leafs, saving leafs" << std::endl;
+    std::cout << lvr::timestamp << "got: " << partitionBoxes.size() << " leafs, saving leafs" << std::endl;
 
 
 
@@ -102,20 +155,20 @@ int main(int argc, char** argv)
 
     vector<string> grid_files;
 
-    for(int i = 0 ; i < gridKd.getLeafs().size() ; i++)
+    for(size_t i = 0 ; i < partitionBoxes.size() ; i++)
     {
         size_t numPoints;
 
         //todo: okay?
-        lvr::floatArr points = bg.points(gridKd.getLeafs()[i]->getBB().getMin().x - voxelsize*3, gridKd.getLeafs()[i]->getBB().getMin().y - voxelsize*3, gridKd.getLeafs()[i]->getBB().getMin().z - voxelsize*3 ,
-                                         gridKd.getLeafs()[i]->getBB().getMax().x + voxelsize*3, gridKd.getLeafs()[i]->getBB().getMax().y + voxelsize*3, gridKd.getLeafs()[i]->getBB().getMax().z + voxelsize*3,numPoints);
+        lvr::floatArr points = bg.points(partitionBoxes[i].getMin().x - voxelsize*3, partitionBoxes[i].getMin().y - voxelsize*3, partitionBoxes[i].getMin().z - voxelsize*3 ,
+                                         partitionBoxes[i].getMax().x + voxelsize*3, partitionBoxes[i].getMax().y + voxelsize*3, partitionBoxes[i].getMax().z + voxelsize*3,numPoints);
 
         //std::cout << "i: " << std::endl << bb << std::endl << "got : " << numPoints << std::endl;
         if(numPoints<=50) continue;
 
-        BoundingBox<ColorVertex<float,unsigned char> > gridbb(gridKd.getLeafs()[i]->getBB().getMin().x, gridKd.getLeafs()[i]->getBB().getMin().y, gridKd.getLeafs()[i]->getBB().getMin().z,
-                                                              gridKd.getLeafs()[i]->getBB().getMax().x, gridKd.getLeafs()[i]->getBB().getMax().y, gridKd.getLeafs()[i]->getBB().getMax().z);
-        cout << "grid: " << i << "/" << gridKd.getLeafs().size()-1 << endl;
+        BoundingBox<ColorVertex<float,unsigned char> > gridbb(partitionBoxes[i].getMin().x, partitionBoxes[i].getMin().y, partitionBoxes[i].getMin().z,
+                                                              partitionBoxes[i].getMax().x, partitionBoxes[i].getMax().y, partitionBoxes[i].getMax().z);
+        cout << "grid: " << i << "/" << partitionBoxes.size()-1 << endl;
         cout << "grid has " << numPoints << " points" << endl;
         cout << "kn=" << options.getKn() << endl;
         cout << "ki=" << options.getKi() << endl;
@@ -128,8 +181,8 @@ int main(int argc, char** argv)
         {
 
             size_t numNormals;
-            lvr::floatArr normals = bg.normals(gridKd.getLeafs()[i]->getBB().getMin().x, gridKd.getLeafs()[i]->getBB().getMin().y, gridKd.getLeafs()[i]->getBB().getMin().z ,
-                                              gridKd.getLeafs()[i]->getBB().getMax().x, gridKd.getLeafs()[i]->getBB().getMax().y, gridKd.getLeafs()[i]->getBB().getMax().z,numNormals);
+            lvr::floatArr normals = bg.normals(partitionBoxes[i].getMin().x, partitionBoxes[i].getMin().y, partitionBoxes[i].getMin().z ,
+                                              partitionBoxes[i].getMax().x, partitionBoxes[i].getMax().y, partitionBoxes[i].getMax().z,numNormals);
 
 
             p_loader->setPointNormalArray(normals, numNormals);
@@ -238,6 +291,9 @@ int main(int argc, char** argv)
         std::vector<unsigned int> duplicates;
         ia & duplicates;
         LineReader lr(ply_path);
+        size_t numPoints = lr.getNumPoints();
+        offsets.push_back(numPoints+offsets[i]);
+        if(numPoints==0) continue;
         lvr::PLYIO io;
         ModelPtr modelPtr = io.read(ply_path);
         //ModelPtr modelPtr = ModelFactory::readModel(ply_path);
@@ -249,8 +305,7 @@ int main(int argc, char** argv)
             duplicateVertices.push_back(modelVertices[duplicates[j]*3+1]);
             duplicateVertices.push_back(modelVertices[duplicates[j]*3+2]);
         }
-        size_t numPoints = lr.getNumPoints();
-        offsets.push_back(numPoints+offsets[i]);
+
         std::transform (duplicates.begin(), duplicates.end(), duplicates.begin(), [&](unsigned int x){return x+offsets[i];});
         all_duplicates.insert(all_duplicates.end(),duplicates.begin(), duplicates.end());
 
@@ -290,6 +345,9 @@ int main(int argc, char** argv)
         vector<size_t> increments;
         string ply_path = grid_files[i];
         boost::algorithm::replace_last(ply_path, "-grid.ser", "-mesh.ply");
+        LineReader lr(ply_path);
+        size_t numPoints = lr.getNumPoints();
+        if(numPoints==0) continue;
         lvr::PLYIO io;
         ModelPtr modelPtr = io.read(ply_path);
         size_t numVertices;
