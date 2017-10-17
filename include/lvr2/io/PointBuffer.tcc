@@ -44,7 +44,7 @@ PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
 
     if (oldBuffer.hasPointNormals())
     {
-        copyNormals(oldBuffer);
+        copyNormalsFrom(oldBuffer);
     }
 
     size_t intensitiesLen;
@@ -179,7 +179,7 @@ void PointBuffer<BaseVecT>::addNormalChannel(Normal<BaseVecT> def)
 }
 
 template <typename BaseVecT>
-void PointBuffer<BaseVecT>::copyNormals(lvr::PointBuffer& oldBuffer)
+void PointBuffer<BaseVecT>::copyNormalsFrom(lvr::PointBuffer& oldBuffer)
 {
     m_normals = vector<Normal<BaseVecT>>();
     size_t normalsLen;

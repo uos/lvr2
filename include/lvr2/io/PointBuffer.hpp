@@ -102,7 +102,7 @@ public:
     /**
      * @brief Copies normals from old buffer to this one.
      */
-    void copyNormals(lvr::PointBuffer& oldBuffer);
+    void copyNormalsFrom(lvr::PointBuffer& oldBuffer);
 
     /**
      * @brief Returns the normal with the given index.
