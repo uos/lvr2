@@ -99,7 +99,7 @@ Options::Options(int argc, char** argv)
             ("interpolateBoxes", "Interpolate Boxes in intersection BoundingBox of two Grids")
             ("useNormals", "the ply file contains normals")
             ("scale", value<float>(&m_scaling)->default_value(1), "Scaling factor, applied to all input points")
-
+            ("volumenSize", value<size_t>(&m_volumenSize)->default_value(0), "The volumen of the partitions. Volume = (voxelsize*volumenSize)^3 if not set kd-tree will be used")
             ;
 
     setup();
@@ -425,7 +425,10 @@ bool Options::getUseNormals() const
 {
     return m_variables.count("useNormals");
 }
-
+size_t Options::getVolumenSize() const
+{
+    return m_variables["volumenSize"].as<size_t>();
+}
 float* Options::getStatsCoeffs()const
 {
     float* result = new float[14];
