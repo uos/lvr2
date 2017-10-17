@@ -71,22 +71,24 @@ vector<vector<VertexHandle>> findContours(
         for (auto edgeH: mesh.getEdgesOfFace(faceH))
         {
             auto faces = mesh.getFacesOfEdge(edgeH);
-            auto otherFace = faces[0] ? faces[0].unwrap() : faces[1].unwrap();
-
-            // switch face to get the other one of the edge if it exists
-            // only if first face is available otherwise second face is already used
-            if (faces[0] && faces[1] && otherFace == faceH) {
-                otherFace = faces[1].unwrap();
-            }
-
-            // continue if other face is same cluster and is not an boundary edge
-            if (faces[1] &&
-                clusters.getClusterOf(otherFace) &&
-                clusters.getClusterOf(otherFace).unwrap() == clusterH
-                )
+            if (faces[0] && faces[1])
             {
-                continue;
+                auto otherFace = faces[0].unwrap();
+
+                if (otherFace == faceH)
+                {
+                    otherFace = faces[1].unwrap();
+                }
+
+                // continue if other face is in same cluster
+                if (clusters.getClusterOf(otherFace) &&
+                    clusters.getClusterOf(otherFace).unwrap() == clusterH
+                    )
+                {
+                    continue;
+                }
             }
+
 
             auto vertices = mesh.getVerticesOfEdge(edgeH);
 
