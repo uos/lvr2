@@ -59,6 +59,33 @@ m_globalIndex(0)
     m_coordinateScales[1] = 1.0;
     m_coordinateScales[2] = 1.0;
 
+    if(m_boundingBox.getXSize()<3*cellSize)
+    {
+        VertexT newmax(m_boundingBox.getMax());
+        VertexT newmin(m_boundingBox.getMin());
+        newmax[0]+=cellSize;
+        newmin[0]-=cellSize;
+        m_boundingBox.expand(newmax);
+        m_boundingBox.expand(newmin);
+    }
+    if(m_boundingBox.getYSize()<3*cellSize)
+    {
+        VertexT newmax(m_boundingBox.getMax());
+        VertexT newmin(m_boundingBox.getMin());
+        newmax[1]+=cellSize;
+        newmin[1]-=cellSize;
+        m_boundingBox.expand(newmax);
+        m_boundingBox.expand(newmin);
+    }
+    if(m_boundingBox.getZSize()<3*cellSize)
+    {
+        VertexT newmax(m_boundingBox.getMax());
+        VertexT newmin(m_boundingBox.getMin());
+        newmax[2]+=cellSize;
+        newmin[2]-=cellSize;
+        m_boundingBox.expand(newmax);
+        m_boundingBox.expand(newmin);
+    }
     if(!m_boundingBox.isValid())
     {
         cout << timestamp << "Warning: Malformed BoundingBox." << endl;
@@ -384,6 +411,9 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
 
 
         hash_value = this->hashValue(index_x + dx, index_y + dy, index_z +dz);
+//        size_t maxX =  (size_t)ceil(m_boundingBox.getXSize() / m_voxelsize);
+//        size_t maxY =  (size_t)ceil(m_boundingBox.getXSize() / m_voxelsize);
+//        size_t maxZ =  (size_t)ceil(m_boundingBox.getXSize() / m_voxelsize);
 
         it = this->m_cells.find(hash_value);
         if(it == this->m_cells.end())
@@ -393,33 +423,44 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
                     (index_x + dx) * this->m_voxelsize + v_min[0],
                     (index_y + dy) * this->m_voxelsize + v_min[1],
                     (index_z + dz) * this->m_voxelsize + v_min[2]);
+            if(
+                    (
+                        box_center[0] <= m_boundingBox.getMin()[0]  ||
+                        box_center[1] <= m_boundingBox.getMin()[1]  ||
+                        box_center[2] <= m_boundingBox.getMin()[2]) 
+                    ) continue;
             BoxT* box = new BoxT(box_center);
-            if(!(m_boundingBox.contains(box_center[0]-m_voxelsize, box_center[1]- m_voxelsize, box_center[2]- m_voxelsize)
-               && m_boundingBox.contains(box_center[0], box_center[1], box_center[2]))
-                    )
-            {
-                box->m_extruded = true;
-            }
-            else
-            {
-                for(int k = 0 ; k<3; k++)
-                {
-                    if(std::abs(box_center[k]-m_duplicateboundingBox.getMin()[k]) < m_voxelsize)
-                    {
-                        box->m_duplicate = true;
-                        break;
-                    }
-                }
-                for(int k = 0 ; k<3 && (!box->m_duplicate); k++)
-                {
-                    if(std::abs(box_center[k]-m_duplicateboundingBox.getMax()[k]) < m_voxelsize)
-                    {
-                        box->m_duplicate = true;
-                        break;
-                    }
-                }
 
-            }
+            //if(index_x + dx <=0 || index_y + dy <=0 || index_z + dz <=0) box->m_extruded =true;
+//            if(!m_duplicateboundingBox.contains(box_center[0],box_center[1],box_center[2])) box->m_extruded =true;
+//            if(!(m_boundingBox.contains(box_center[0]-m_voxelsize, box_center[1]- m_voxelsize, box_center[2]- m_voxelsize)
+//               && m_boundingBox.contains(box_center[0], box_center[1], box_center[2]))
+//                    )
+//            {
+//                box->m_extruded = true;
+//            }
+//            else
+//            {
+//                for(int k = 0 ; k<3; k++)
+//                {
+//                    float diff =std::abs(box_center[k]-m_duplicateboundingBox.getMin()[k]);
+//                    if(diff < m_voxelsize/5)
+//                    {
+//                        box->m_extruded = true;
+//                        break;
+//                    }
+//                }
+//                for(int k = 0 ; k<3 && (!box->m_duplicate); k++)
+//                {
+//                    float diff =std::abs(box_center[k]-m_duplicateboundingBox.getMax()[k]);
+//                    if(diff < m_voxelsize/5)
+//                    {
+//                        box->m_extruded = true;
+//                        break;
+//                    }
+//                }
+              cout << "EX: " << box->m_extruded << endl;
+//            }
 
 //            // Don't use maxIndexX etc. because they arent the edge of bb
 //            size_t imaxx = (size_t)ceil(m_boundingBox.getXSize() / m_voxelsize);
