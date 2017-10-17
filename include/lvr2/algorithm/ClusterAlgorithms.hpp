@@ -53,6 +53,20 @@ vector<vector<VertexHandle>> findContours(
     ClusterHandle clusterH
 );
 
+/**
+ * Simplifies the given contour with the Reumann-Witkam algorithm.
+ *
+ * @param mesh the mesh to operate on
+ * @param contour the contour to be simplified
+ * @param threshold perpendicular (point-to-line) distance tolerance
+ * @return simplified contour
+ */
+template<typename BaseVecT>
+vector<VertexHandle> simplifyContour(const BaseMesh<BaseVecT>& mesh,
+                                     const vector<VertexHandle>& contour,
+                                     float threshold
+);
+
 } // namespace lvr2
 
 #include <lvr2/algorithm/ClusterAlgorithms.tcc>

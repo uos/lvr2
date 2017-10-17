@@ -119,4 +119,54 @@ vector<vector<VertexHandle>> findContours(
     return allContours;
 }
 
+template<typename BaseVecT>
+vector<VertexHandle>
+simplifyContour(const BaseMesh<BaseVecT>& mesh, const vector<VertexHandle>& contour, float threshold) {
+    auto out = vector<VertexHandle>();
+
+    // first point is always part of the simplified contour
+    out.push_back(contour[0]);
+
+    // current point
+    auto p0 = mesh.getVertexPosition(contour[0]);
+    // next point after first point
+    auto p1 = mesh.getVertexPosition(contour[1]);
+
+    // previous test point handle
+    auto piH = contour[1];
+    // current test point handle
+    auto pjH = piH;
+
+    for (size_t i = 2 ; i < contour.size(); ++i)
+    {
+        piH = pjH;
+        pjH = contour[i];
+
+        // current key vector / line to check against
+        auto vec = p1 - p0;
+        vec.normalize();
+
+        // vector of next and after next point
+        auto vec2 = mesh.getVertexPosition(pjH) - mesh.getVertexPosition(piH);
+        vec2.normalize();
+
+        if (vec.dot(vec2) >= threshold)
+        {
+            continue;
+        }
+
+        // found next point in line
+        out.push_back(piH);
+
+        // define new line to check against
+        p0 = mesh.getVertexPosition(piH);
+        p1 = mesh.getVertexPosition(pjH);
+    }
+
+    // also add last last point to simplified contour
+    out.push_back(pjH);
+
+    return out;
+}
+
 } // namespace lvr2
