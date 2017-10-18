@@ -104,6 +104,7 @@ void LineReader::open(std::string filePath)
     std::cout << "NORMAL: " << gotnormal << std::endl;
     std::cout << "BINARY: " << m_binary << std::endl;
     std::cout << "Points: " << m_elementAmount << std::endl;
+
     }
     else
     {
@@ -307,6 +308,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
         }
 
     }
+    fclose(pFile);
 }
 
 void LineReader::rewind()
