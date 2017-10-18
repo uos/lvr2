@@ -515,6 +515,8 @@ void HashGrid<VertexT, BoxT>::addLatticePoint(int index_x, int index_y, int inde
                             box_center[1] + box_creation_table[k][1] * vsh,
                             box_center[2] + box_creation_table[k][2] * vsh);
 
+                    qp_bb.expand(position);
+
                     this->m_queryPoints.push_back(QueryPoint<VertexT>(position, distance));
                     box->setVertex(k, this->m_globalIndex);
                     this->m_globalIndex++;

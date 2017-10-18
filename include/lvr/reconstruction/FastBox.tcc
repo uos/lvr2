@@ -255,15 +255,17 @@ void FastBox<VertexT, NormalT>::getSurface( BaseMesh<VertexT, NormalT> &mesh,
                     mesh.addVertex(v);
                     mesh.addNormal(NormalT());
 
-                    float eps_sq = comparePrecision*comparePrecision;
-                    float d2_min = (v[0] - bb.getMin()[0])*(v[0] - bb.getMin()[0]) + (v[1] - bb.getMin()[1])*(v[1] - bb.getMin()[1]) + (v[2] - bb.getMin()[2])*(v[2] - bb.getMin()[2]);
-                    float d2_max = (v[0] - bb.getMax()[0])*(v[0] - bb.getMax()[0]) + (v[1] - bb.getMax()[1])*(v[1] - bb.getMax()[1]) + (v[2] - bb.getMax()[2])*(v[2] - bb.getMax()[2]);
-                    add_duplicate = true;
+                    float dist = fabs(distanceToBB(v,bb));
+                    if(dist < comparePrecision || dist < comparePrecision) add_duplicate = true;
+//                    if (this->m_duplicate){
+//                        add_duplicate = true;
+////                        std::cout << "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD" << std::endl;
+//                    }
                     ofstream ofs;
                     ofs.open("dist_test.txt", ios_base::app);
 
-                    ofs << sqrt(d2_min) << endl;
-                    ofs << sqrt(d2_max) << endl;
+                    ofs << dist << endl;
+                    ofs << dist << endl;
 
                     for(int i = 0; i < 3; i++)
                     {

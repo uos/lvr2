@@ -157,6 +157,33 @@ public:
 protected:
 
 
+    inline float distanceToBB(
+            const VertexT& v,
+            const BoundingBox<VertexT>& bb
+    )
+    {
+        float near_top, near_down;
+        float smallest_val = std::numeric_limits<float>::max();
+
+        for(size_t i=0; i<3; i++)
+        {
+            near_down = v[i] - bb.getMin()[i];
+            if(near_down <= 0.0)
+            {
+                return near_down;
+            }
+
+            near_top = bb.getMax()[i] - v[i];
+            if(near_top <= 0.0)
+            {
+                return near_top;
+            }
+            smallest_val = std::min(smallest_val, std::min(near_down, near_top) );
+        }
+        return smallest_val;
+    }
+
+
     inline bool compareFloat(double num1, double num2)
     {
         if(fabs(num1 - num2) < std::numeric_limits<double>::epsilon())
