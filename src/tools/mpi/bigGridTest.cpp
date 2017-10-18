@@ -14,6 +14,7 @@
 #include <lvr/reconstruction/PointsetSurface.hpp>
 #include <lvr/geometry/ColorVertex.hpp>
 #include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
+#include <lvr/reconstruction/SearchTreeFlann.hpp>
 #include <lvr/geometry/ColorVertex.hpp>
 #include <lvr/geometry/Normal.hpp>
 #include <lvr/reconstruction/HashGrid.hpp>
@@ -31,6 +32,7 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include "LineReader.hpp"
+#include <flann/flann.hpp>
 #include <random>
 using std::cout;
 using std::endl;
@@ -249,7 +251,7 @@ int main(int argc, char** argv)
         HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh;
 
         vector<unsigned int> duplicates;
-        reconstruction->getMesh(mesh, gridbb, duplicates, voxelsize/10);
+        reconstruction->getMesh(mesh, ps_grid->qp_bb, duplicates, voxelsize*5);
         mesh.finalize();
 
         std::stringstream ss_mesh;
@@ -317,51 +319,88 @@ int main(int argc, char** argv)
 
     }
     std::unordered_map<unsigned int, unsigned int> oldToNew;
-    float dist_epsilon_squared = (voxelsize/1000)*(voxelsize/1000);
+    double dist_epsilon_squared = (voxelsize/10000)*(voxelsize/10000);
+    ofstream ofsd;
+    ofsd.open("duplicate_colors.pts", ios_base::app);
+
+//    flann::Matrix<float> flannPoints = flann::Matrix<float> (new float[3 * duplicateVertices.size()], duplicateVertices.size(), 3);
+//    for(size_t i = 0; i < duplicateVertices.size(); i++)
+//    {
+//        flannPoints[i][0] = duplicateVertices[3 * i];
+//        flannPoints[i][1] = duplicateVertices[3 * i + 1];
+//        flannPoints[i][2] = duplicateVertices[3 * i + 2];
+//    }
+//    boost::shared_ptr<flann::Index<flann::L2_Simple<float> > > 	tree =
+//            boost::shared_ptr<flann::Index<flann::L2_Simple<float> > >(new flann::Index<flann::L2_Simple<float> >(flannPoints, ::flann::KDTreeSingleIndexParams (10, false)));
+//    tree->buildIndex();
+    cout << lvr::timestamp << "removing duplicate vertices" << endl;
+    SearchTreeFlann<Vertexf> searchTree(duplicateVertices);
+    float comp_dist = voxelsize/100;
     for(size_t i = 0 ; i < duplicateVertices.size() ; i+=3)
     {
-        float ax = duplicateVertices[i];
-        float ay = duplicateVertices[i+1];
-        float az = duplicateVertices[i+2];
-        vector<unsigned int> duplicates_of_i;
-        for(size_t j = 0 ; j < duplicateVertices.size() ; j+=3)
+        vector<size_t> indices;
+        vector<float> distances;
+        searchTree.kSearch(duplicateVertices[i], duplicateVertices[i*3+1], duplicateVertices[i*3+2],20, indices, distances);
+        for(int j = 0 ; j <distances.size();j++)
         {
-            if(i==j) continue;
-            float bx = duplicateVertices[j];
-            float by = duplicateVertices[j+1];
-            float bz = duplicateVertices[j+2];
-            float dist_squared = (ax-bx)*(ax-bx) + (ay-by)*(ay-by) + (az-bz)*(az-bz);
-            if(dist_squared < dist_epsilon_squared)
+            if(distances[j] < comp_dist && all_duplicates[i/3] != all_duplicates[indices[j]])
             {
                 auto find_it = oldToNew.find(all_duplicates[i/3]);
                 if( find_it == oldToNew.end())
                 {
+                    oldToNew[all_duplicates[indices[j]]] = all_duplicates[i/3];
+//                    cout << "dup found! mapping " << all_duplicates[j/3] << " -> " << all_duplicates[i/3] << " dist: " << sqrt(dist_squared)<< endl;
 
-                    oldToNew[all_duplicates[j/3]] = all_duplicates[i/3];
-                    cout << "dup found! mapping " << all_duplicates[j/3] << " -> " << all_duplicates[i/3] << endl;
-
-                } //else{
-
-//                    if(all_duplicates[j/3] != all_duplicates[i/3])
-//                    {
-//                        oldToNew[all_duplicates[j/3]] = oldToNew[all_duplicates[i/3]];
-//                        cout << "SHIT: " << all_duplicates[j/3] << " -> " << oldToNew[all_duplicates[i/3]] << endl;
-//                    }
-//                    else
-//                    {
-//                        cout << "SHIT SHIT SHIT" << endl;
-//                    }
-//
-//              }
+                }
             }
         }
+    }
 
-    }
-    for(auto testit = oldToNew.begin(); testit != oldToNew.end(); testit++)
-    {
-        if(oldToNew.find(testit->second) != oldToNew.end()) cout << "SHIT FUCK SHIT" << endl;
-    }
-    ofstream ofs_vertices("largeVertices.bin", std::ofstream::out | std::ofstream::trunc);
+//    for(size_t i = 0 ; i < duplicateVertices.size() ; i+=3)
+//    {
+//        float ax = duplicateVertices[i];
+//        float ay = duplicateVertices[i+1];
+//        float az = duplicateVertices[i+2];
+//        vector<unsigned int> duplicates_of_i;
+//
+//        for(size_t j = 0 ; j < duplicateVertices.size() ; j+=3)
+//        {
+//            if(i==j) continue;
+//            float bx = duplicateVertices[j];
+//            float by = duplicateVertices[j+1];
+//            float bz = duplicateVertices[j+2];
+//            double dist_squared = (ax-bx)*(ax-bx) + (ay-by)*(ay-by) + (az-bz)*(az-bz);
+//            if(dist_squared < dist_epsilon_squared)
+//            {
+//                auto find_it = oldToNew.find(all_duplicates[i/3]);
+//                if( find_it == oldToNew.end())
+//                {
+//                    ofsd << bx << " " << by << " " << bz << " " << 255 << " 0 0" << endl;
+//                    oldToNew[all_duplicates[j/3]] = all_duplicates[i/3];
+//                    cout << "dup found! mapping " << all_duplicates[j/3] << " -> " << all_duplicates[i/3] << " dist: " << sqrt(dist_squared)<< endl;
+//
+//                } //else{
+//
+////                    if(all_duplicates[j/3] != all_duplicates[i/3])
+////                    {
+////                        oldToNew[all_duplicates[j/3]] = oldToNew[all_duplicates[i/3]];
+////                        cout << "SHIT: " << all_duplicates[j/3] << " -> " << oldToNew[all_duplicates[i/3]] << endl;
+////                    }
+////                    else
+////                    {
+////                        cout << "SHIT SHIT SHIT" << endl;
+////                    }
+////
+////              }
+//            }
+//        }
+//
+//    }
+//    for(auto testit = oldToNew.begin(); testit != oldToNew.end(); testit++)
+//    {
+//        if(oldToNew.find(testit->second) != oldToNew.end()) cout << "SHIT FUCK SHIT" << endl;
+//    }
+    ofstream ofs_vertices("largeVertices.bin", std::ofstream::out | std::ofstream::trunc );
     ofstream ofs_faces("largeFaces.bin", std::ofstream::out | std::ofstream::trunc);
     
     size_t increment=0;
@@ -370,6 +409,7 @@ int main(int argc, char** argv)
 
     size_t newNumVertices = 0;
     size_t newNumFaces = 0;
+    cout << lvr::timestamp << "merging mesh..." << endl;
     for(size_t i = 0 ; i <grid_files.size() ; i++)
     {
 
@@ -388,12 +428,14 @@ int main(int argc, char** argv)
         newNumFaces+=numFaces;
         for(size_t j = 0; j<numVertices ; j++)
         {
-            float x = modelVertices[j*3];
-            float y = modelVertices[j*3+1];
-            float z = modelVertices[j*3+2];
+            float p[3];
+            p[0] = modelVertices[j*3];
+            p[1] = modelVertices[j*3+1];
+            p[2] = modelVertices[j*3+2];
             if(oldToNew.find(j+offset)==oldToNew.end())
             {
-                ofs_vertices << x << " " << y << " " << z << endl;
+//                ofs_vertices.write((char*)p,sizeof(float)*3);
+                ofs_vertices << std::setprecision(16) << p[0] << " " << p[1] << " " << p[2] << endl;
                 newNumVertices++;
             }
             else
@@ -402,6 +444,7 @@ int main(int argc, char** argv)
                 decrements[j+offset] = increment;
             }
         }
+        size_t new_face_num = 0;
         for(int j = 0 ; j<numFaces; j++)
         {
             unsigned int f[3];
@@ -409,6 +452,9 @@ int main(int argc, char** argv)
             f[1] = modelFaces[j*3+1] + offset;
             f[2] = modelFaces[j*3+2] + offset;
             ofs_faces << "3 ";
+            unsigned int newface[3];
+            unsigned char a = 3;
+//            ofs_faces.write((char*)&a, sizeof(unsigned char));
             for(int k = 0 ; k < 3; k++)
             {
                 size_t face_idx = 0;
@@ -429,8 +475,10 @@ int main(int argc, char** argv)
                 if(k!=2) ofs_faces << " ";
 
             }
-            // todo: sort
             ofs_faces << endl;
+//            ofs_faces.write( (char*) newface,sizeof(unsigned int)*3);
+            // todo: sort
+
 
         }
 
@@ -438,6 +486,7 @@ int main(int argc, char** argv)
 
 
     }
+    cout << lvr::timestamp << "saving ply" << endl;
     cout << "Largest decrement: " << increment << endl;
 
     ofstream ofs_ply("bigMesh.ply", std::ofstream::out | std::ofstream::trunc);
@@ -453,6 +502,24 @@ int main(int argc, char** argv)
             "element face " << newNumFaces << "\n"
             "property list uchar int vertex_indices\n"
             "end_header" << endl;
+//    ofs_ply.close();
+//    ofstream ofs_ply_binary("bigMesh.ply",std::ofstream::out | std::ofstream::app | std::ofstream::binary );
+//    char a1 = 10;
+//    char a2 = 32;
+//    char a3 = 180;
+//    char a4 = 174;
+//    ofs_ply_binary.write(&a1,1);
+//    ofs_ply_binary.write(&a2,1);
+//    ofs_ply_binary.write(&a3,1);
+//    ofs_ply_binary.write(&a4,1);
+//    istreambuf_iterator<char> begin_source(ifs_vertices);
+//    istreambuf_iterator<char> end_source;
+//    ostreambuf_iterator<char> begin_dest(ofs_ply_binary);
+//    copy(begin_source, end_source, begin_dest);
+//    istreambuf_iterator<char> begin_source2(ifs_faces);
+//    istreambuf_iterator<char> end_source2;
+//    ostreambuf_iterator<char> begin_dest2(ofs_ply_binary);
+//    copy(begin_source2, end_source2, begin_dest2);
     while(std::getline(ifs_vertices,line))
     {
         ofs_ply << line << endl;

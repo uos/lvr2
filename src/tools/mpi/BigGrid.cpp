@@ -280,17 +280,17 @@ BigGrid::BigGrid(std::string cloudPath, float voxelsize, float scale) :
 
     boost::iostreams::mapped_file_params mmfparam;
     mmfparam.path = "points.mmf";
-    mmfparam.mode = std::ios_base::in | std::ios_base::out;
+    mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
     mmfparam.new_file_size = sizeof(float)*m_numPoints*3;
 
     boost::iostreams::mapped_file_params mmfparam_normal;
     mmfparam_normal.path = "normals.mmf";
-    mmfparam_normal.mode = std::ios_base::in | std::ios_base::out;
+    mmfparam_normal.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
     mmfparam_normal.new_file_size = sizeof(float)*m_numPoints*3;
 
     boost::iostreams::mapped_file_params mmfparam_color;
     mmfparam_color.path = "colors.mmf";
-    mmfparam_color.mode = std::ios_base::in | std::ios_base::out;
+    mmfparam_color.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
     mmfparam_color.new_file_size = sizeof(unsigned char)*m_numPoints*3;
 
     m_PointFile.open(mmfparam);
@@ -474,7 +474,7 @@ lvr::floatArr BigGrid::points(int i, int j, int k, size_t& numPoints)
         points = lvr::floatArr(new float[3*cellSize]);
         boost::iostreams::mapped_file_params mmfparam;
         mmfparam.path = "points.mmf";
-        mmfparam.mode = std::ios_base::in | std::ios_base::out;
+        mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc ;
 
         m_PointFile.open(mmfparam);
         float * mmfdata = (float*)m_PointFile.data();
@@ -707,7 +707,7 @@ lvr::floatArr BigGrid::getPointCloud(size_t & numPoints)
     lvr::floatArr points(new float[3*pointSize()]);
     boost::iostreams::mapped_file_params mmfparam;
     mmfparam.path = "points.mmf";
-    mmfparam.mode = std::ios_base::in | std::ios_base::out;
+    mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
 
     m_PointFile.open(mmfparam);
     float * mmfdata = (float*)m_PointFile.data();

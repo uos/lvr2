@@ -77,6 +77,7 @@ class HashGrid : public GridBase
 
 public:
 
+    BoundingBox<VertexT> qp_bb;
     /// Typedef to alias box map
     typedef unordered_map<size_t, BoxT*> box_map;
 

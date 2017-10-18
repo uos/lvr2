@@ -50,6 +50,11 @@ public:
             const int &ki = 10,
             const int &kd = 10 );
 
+    SearchTreeFlann( std::vector<float> points,
+                     const int &kn = 10,
+                     const int &ki = 10,
+                     const int &kd = 10 );
+
 
     /**
      * @brief Destructor
@@ -67,7 +72,7 @@ public:
      * @param distances   A vector that stores the distances for the neighbours that are found.
      */
     virtual void kSearch( coord < float >& qp, int neighbours, vector< int > &indices, vector< float > &distances );
-
+    void kSearch( float qx,float qy,float qz, int neighbours, vector< size_t > &indices, vector< float > &distances );
     virtual void kSearch( VertexT qp, int k, vector< VertexT > &neighbors );
 
     virtual void radiusSearch( float              qp[3], float r, vector< int > &indices );
