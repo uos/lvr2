@@ -35,12 +35,12 @@ template<typename VertexT>
 SearchTreeFlann< VertexT >::SearchTreeFlann( std::vector<float> buffer, const int &kn, const int &ki, const int &kd )
 {
 
-    m_flannPoints = flann::Matrix<float> (new float[3 * buffer.size()], buffer.size(), 3);
-    for(size_t i = 0; i < buffer.size(); i++)
+    m_flannPoints = flann::Matrix<float> (new float[buffer.size()], buffer.size()/3, 3);
+    for(size_t i = 0; i < buffer.size()/3; i++)
     {
-        m_flannPoints[i][0] = buffer[3 * i];
-        m_flannPoints[i][1] = buffer[3 * i + 1];
-        m_flannPoints[i][2] = buffer[3 * i + 2];
+        m_flannPoints[i][0] = buffer[3*i];
+        m_flannPoints[i][1] = buffer[3*i + 1];
+        m_flannPoints[i][2] = buffer[3*i + 2];
     }
 
     m_tree = boost::shared_ptr<flann::Index<flann::L2_Simple<float> > >(new flann::Index<flann::L2_Simple<float> >(m_flannPoints, ::flann::KDTreeSingleIndexParams (10, false)));
@@ -87,7 +87,7 @@ void SearchTreeFlann< VertexT >::kSearch( coord< float > &qp, int k, vector< int
     flann::Matrix<float> dist (&distances[0], 1, k);
 
 
-    m_tree->knnSearch(query_point, ind, dist, k, flann::SearchParams(flann::FLANN_CHECKS_UNLIMITED));
+    m_tree->knnSearch(query_point, ind, dist, k, flann::SearchParams());
     delete[] query_point.ptr();
 }
 
