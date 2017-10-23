@@ -36,7 +36,8 @@ public:
     static void apply(
         BaseMesh<BaseVecT>& mesh,
         ClusterBiMap<FaceHandle>& clusters,
-        DenseFaceMap<Normal<BaseVecT>>& faceNormals
+        DenseFaceMap<Normal<BaseVecT>>& faceNormals,
+        float lineFusionThreshold
     );
 
 private:
