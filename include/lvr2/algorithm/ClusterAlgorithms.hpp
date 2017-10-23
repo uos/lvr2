@@ -58,7 +58,7 @@ vector<vector<VertexHandle>> findContours(
  *
  * @param mesh the mesh to operate on
  * @param contour the contour to be simplified
- * @param threshold perpendicular (point-to-line) distance tolerance
+ * @param threshold angle between edges / lines on one contour
  * @return simplified contour
  */
 template<typename BaseVecT>

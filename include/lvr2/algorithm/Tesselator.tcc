@@ -133,7 +133,8 @@ template<typename BaseVecT>
 void Tesselator<BaseVecT>::apply(
     BaseMesh<BaseVecT>& mesh,
     ClusterBiMap<FaceHandle>& clusters,
-    DenseFaceMap<Normal<BaseVecT>>& faceNormals
+    DenseFaceMap<Normal<BaseVecT>>& faceNormals,
+    float lineFusionThreshold
 )
 {
     // Status message for mesh generation
@@ -160,7 +161,8 @@ void Tesselator<BaseVecT>::apply(
                 continue;
             }
 
-            auto simpleContour = simplifyContour(mesh, contour, 0.89f);
+            // subtract lineFusionThreshold of lvr1 by one to avoid conflicts with new implementation
+            auto simpleContour = simplifyContour(mesh, contour, 1 - lineFusionThreshold);
 
             gluTessBeginContour(m_tesselator);
 

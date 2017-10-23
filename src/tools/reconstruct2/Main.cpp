@@ -940,7 +940,7 @@ int main(int argc, char** argv)
 
         if (options.retesselate())
         {
-            Tesselator<BaseVecT>::apply(mesh, clusterBiMap, faceNormals);
+            Tesselator<BaseVecT>::apply(mesh, clusterBiMap, faceNormals, options.getLineFusionThreshold());
         }
     }
     else
