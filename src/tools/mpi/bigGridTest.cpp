@@ -32,6 +32,8 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include "LineReader.hpp"
+#include "VolumenGrid.h"
+#include "sortPoint.hpp"
 #include <flann/flann.hpp>
 #include <random>
 using std::cout;
@@ -51,6 +53,13 @@ using namespace lvr;
     typedef ClSurface GpuSurface;
 #endif
 
+struct duplicateVertex{
+    float x;
+    float y;
+    float z;
+    unsigned int id;
+
+};
 
 typedef lvr::PointsetSurface<lvr::ColorVertex<float, unsigned char> > psSurface;
 typedef lvr::AdaptiveKSearchSurface<lvr::ColorVertex<float, unsigned char>, lvr::Normal<float> > akSurface;
@@ -74,7 +83,12 @@ int main(int argc, char** argv)
 //        }
 //    }
 
-
+    double datastruct_time = 0;
+    double normal_time = 0;
+    double dist_time = 0;
+    double mesh_time = 0;
+    double merge_time = 0;
+    double dup_time = 0;
     LargeScaleOptions::Options options(argc, argv);
     double seconds=0;
     string filePath = options.getInputFileName();
@@ -82,66 +96,45 @@ int main(int argc, char** argv)
     float scale = options.getScaling();
     std::vector<float> flipPoint = options.getFlippoint();
     cout << lvr::timestamp << "Starting grid" << endl;
-    double start_ss = lvr::timestamp.getElapsedTimeInS();
-    BigGrid bg(filePath, voxelsize, scale);
-    double end_ss = lvr::timestamp.getElapsedTimeInS();
-    seconds+=(end_ss - start_ss);
-    cout << lvr::timestamp << "grid finished in" << (end_ss - start_ss) << "sec." << endl;
-    lvr::BoundingBox<lvr::Vertexf> bb = bg.getBB();
-    cout << bb << endl;
+    float volumenSize = (float)(options.getVolumenSize()); // 10 x 10 x 10 voxel
+    BigGrid* bg;
+    lvr::BoundingBox<lvr::Vertexf> bb;
+    if(volumenSize <= 0)
+    {
+        double start_ss = lvr::timestamp.getElapsedTimeInS();
+        bg = new BigGrid(filePath, voxelsize, scale);
+        double end_ss = lvr::timestamp.getElapsedTimeInS();
+        seconds+=(end_ss - start_ss);
+        cout << lvr::timestamp << "grid finished in" << (end_ss - start_ss) << "sec." << endl;
+        bb = bg->getBB();
+        cout << bb << endl;
+        double end_ss2 = lvr::timestamp.getElapsedTimeInS();
+        datastruct_time = (end_ss2 - start_ss);
+    }
+    
+
 
     vector<BoundingBox<Vertexf > > partitionBoxes;
-    //lvr::floatArr points = bg.getPointCloud(numPoints);
-
+    //lvr::floatArr points = bg->getPointCloud(numPoints);
+    VolumenGrid* vg;
     cout << lvr::timestamp << "making tree" << endl;
-    float volumenSize = (float)(options.getVolumenSize()); // 10 x 10 x 10 voxel
+
     if(volumenSize > 0)
     {
-//        BoundingBox<Vertexf> volumenBB = bg.getBB();
-//        float xdiff = fabs(fmod(volumenBB.getXSize(), volumenSize*voxelsize ));
-//        float ydiff = fabs(fmod(volumenBB.getYSize(), volumenSize*voxelsize ));
-//        float zdiff = fabs(fmod(volumenBB.getZSize(), volumenSize*voxelsize ));
-//        Vertexf new_max = volumenBB.getMax();
-//        new_max[0]+=xdiff;
-//        new_max[1]+=ydiff;
-//        new_max[2]+=zdiff;
-//        volumenBB.expand(new_max);
-
-        float current_minx = bg.getBB().getMin()[0];
-
-
-        while(current_minx < bg.getBB().getMax()[0])
+        double start_ss = lvr::timestamp.getElapsedTimeInS();
+        vg = new VolumenGrid(filePath,volumenSize);
+        for(size_t i = 0; i < vg->getCellCount(); i++)
         {
-            float current_miny = bg.getBB().getMin()[1];
-            while(current_miny < bg.getBB().getMax()[1])
-            {
-                float current_minz = bg.getBB().getMin()[2];
-                while(current_minz < bg.getBB().getMax()[2])
-                {
-                    BoundingBox<Vertexf > partBB(
-                            current_minx,
-                            current_miny,
-                            current_minz,
-                            current_minx+volumenSize*voxelsize,
-                            current_miny+volumenSize*voxelsize,
-                            current_minz+volumenSize*voxelsize
-
-                    );
-                    cout << "current\t\t " << current_minx << "\t" << current_miny << "\t" << current_minz << endl;
-                    cout << "max\t\t " <<  bg.getBB().getMax()[0] << "\t" <<  bg.getBB().getMax()[1] << "\t" <<  bg.getBB().getMax()[2] << endl;
-                    partitionBoxes.push_back(partBB);
-                    current_minz+=volumenSize*voxelsize;
-                }
-                current_miny+=volumenSize*voxelsize;
-            }
-            current_minx+=volumenSize*voxelsize;
+            partitionBoxes.push_back(vg->getBB(i));
         }
-
+        double end_ss = lvr::timestamp.getElapsedTimeInS();
+        seconds+=(end_ss - start_ss);
+        bb = vg->getBB();
     }
     else
     {
-        BigGridKdTree gridKd(bg.getBB(),options.getNodeSize(),&bg, voxelsize);
-        gridKd.insert(bg.pointSize(),bg.getBB().getCentroid());
+        BigGridKdTree gridKd(bg->getBB(),options.getNodeSize(),bg, voxelsize);
+        gridKd.insert(bg->pointSize(),bg->getBB().getCentroid());
         for(size_t i = 0 ; i <  gridKd.getLeafs().size(); i++)
         {
             BoundingBox<Vertexf > partBB = gridKd.getLeafs()[i]->getBB();
@@ -167,8 +160,17 @@ int main(int argc, char** argv)
         //todo: okay?
         cout << lvr::timestamp << "loading data " << i  << endl;
         double start_s = lvr::timestamp.getElapsedTimeInS();
-        lvr::floatArr points = bg.points(partitionBoxes[i].getMin().x - voxelsize*3, partitionBoxes[i].getMin().y - voxelsize*3, partitionBoxes[i].getMin().z - voxelsize*3 ,
-                                         partitionBoxes[i].getMax().x + voxelsize*3, partitionBoxes[i].getMax().y + voxelsize*3, partitionBoxes[i].getMax().z + voxelsize*3,numPoints);
+        lvr::floatArr points;
+        if(volumenSize > 0)
+        {
+            points = vg->points(i, numPoints);
+        }
+        else
+        {
+            points =  bg->points(partitionBoxes[i].getMin().x - voxelsize*3, partitionBoxes[i].getMin().y - voxelsize*3, partitionBoxes[i].getMin().z - voxelsize*3 ,
+                                 partitionBoxes[i].getMax().x + voxelsize*3, partitionBoxes[i].getMax().y + voxelsize*3, partitionBoxes[i].getMax().z + voxelsize*3,numPoints);
+        }
+
         double end_s = lvr::timestamp.getElapsedTimeInS();
         seconds+=(end_s - start_s);
         cout << lvr::timestamp << "finished loading data " << i  << " in " << (end_s - start_s)<< endl;
@@ -185,21 +187,40 @@ int main(int argc, char** argv)
         cout << gridbb << endl;
         lvr::PointBufferPtr p_loader(new lvr::PointBuffer);
         p_loader->setPointArray(points, numPoints);
+        bool navail = false;
+        if(volumenSize <= 0)
+        {
+            if(bg->hasNormals())
+            {
 
-        if(bg.hasNormals())
+                size_t numNormals;
+                lvr::floatArr normals = bg->normals(partitionBoxes[i].getMin().x, partitionBoxes[i].getMin().y, partitionBoxes[i].getMin().z ,
+                                                   partitionBoxes[i].getMax().x, partitionBoxes[i].getMax().y, partitionBoxes[i].getMax().z,numNormals);
+
+
+                p_loader->setPointNormalArray(normals, numNormals);
+            }
+            else
+            {
+                if(bg->hasNormals()) navail = true;
+            }
+        }
+
+        if(navail)
         {
 
             size_t numNormals;
-            lvr::floatArr normals = bg.normals(partitionBoxes[i].getMin().x, partitionBoxes[i].getMin().y, partitionBoxes[i].getMin().z ,
+            lvr::floatArr normals = bg->normals(partitionBoxes[i].getMin().x, partitionBoxes[i].getMin().y, partitionBoxes[i].getMin().z ,
                                               partitionBoxes[i].getMax().x, partitionBoxes[i].getMax().y, partitionBoxes[i].getMax().z,numNormals);
 
 
             p_loader->setPointNormalArray(normals, numNormals);
         } else {
+
             #ifdef GPU_FOUND
             if( options.useGPU() )
             {
-
+                double normal_start = lvr::timestamp.getElapsedTimeInS();
                 floatArr normals = floatArr(new float[ numPoints * 3 ]);
                 cout << timestamp << "Constructing kd-tree..." << endl;
                 GpuSurface gpu_surface(points, numPoints);
@@ -213,10 +234,12 @@ int main(int argc, char** argv)
                 cout << timestamp << "Finished Normal Calculation. " << endl;
                 p_loader->setPointNormalArray(normals, numPoints);
                 gpu_surface.freeGPU();
+                double normal_end = lvr::timestamp.getElapsedTimeInS();
+                normal_time+=(normal_end-normal_start);
             }
             #else
                 cout << "ERROR: OpenCl not found" << endl;
-                exit(-1);
+//                exit(-1);
             #endif
         }
 
@@ -239,11 +262,18 @@ int main(int argc, char** argv)
         ));
 
 
+        if(navail)
+        {
 
-        if(! bg.hasNormals() && !options.useGPU()) {
+        }
+        else if(!options.useGPU()) {
+            double normal_start = lvr::timestamp.getElapsedTimeInS();
             surface->calculateSurfaceNormals();
+            double normal_end = lvr::timestamp.getElapsedTimeInS();
+            normal_time+=(normal_end-normal_start);
         }
 
+        double grid_start = lvr::timestamp.getElapsedTimeInS();
         lvr::GridBase* grid;
         lvr::FastReconstructionBase<lvr::ColorVertex<float, unsigned char>, lvr::Normal<float> >* reconstruction;
 
@@ -253,13 +283,20 @@ int main(int argc, char** argv)
         ps_grid->setBB(gridbb);
         ps_grid->calcIndices();
         ps_grid->calcDistanceValues();
+        double grid_end = lvr::timestamp.getElapsedTimeInS();
+        dist_time+=(grid_end-grid_start);
 
+        double mesh_start = lvr::timestamp.getElapsedTimeInS();
         reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
         HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh;
         cout << lvr::timestamp << " saving data " << i << endl;
         vector<unsigned int> duplicates;
         reconstruction->getMesh(mesh, ps_grid->qp_bb, duplicates, voxelsize*5);
+
+
         mesh.finalize();
+        double mesh_end = lvr::timestamp.getElapsedTimeInS();
+        mesh_time += mesh_end-mesh_start;
         start_s = lvr::timestamp.getElapsedTimeInS();
         std::stringstream ss_mesh;
         ss_mesh << "part-" << i << "-mesh.ply";
@@ -267,10 +304,10 @@ int main(int argc, char** argv)
         ModelFactory::saveModel( m, ss_mesh.str());
         delete reconstruction;
 
-//        std::stringstream ss_grid;
-//        ss_grid << "part-" << i << "-grid.ser";
+        std::stringstream ss_grid;
+        ss_grid << "part-" << i << "-grid.ser";
 //        ps_grid->saveCells(ss_grid.str());
-//        grid_files.push_back(ss_grid.str());
+        grid_files.push_back(ss_grid.str());
 
         std::stringstream ss_duplicates;
         ss_duplicates << "part-" << i << "-duplicates.ser";
@@ -290,7 +327,8 @@ int main(int argc, char** argv)
     vector<size_t> offsets;
     offsets.push_back(0);
     vector<unsigned int> all_duplicates;
-    vector<float> duplicateVertices;
+//    vector<float> duplicateVertices;
+    vector<duplicateVertex> duplicateVertices;
     for(int i = 0 ; i <grid_files.size() ; i++)
     {
         string duplicate_path = grid_files[i];
@@ -302,6 +340,7 @@ int main(int argc, char** argv)
         boost::archive::text_iarchive ia(ifs);
         std::vector<unsigned int> duplicates;
         ia & duplicates;
+        cout << "MESH " << i << " has " << duplicates.size() << " possible duplicates" << endl;
         LineReader lr(ply_path);
 
         size_t numPoints = lr.getNumPoints();
@@ -321,19 +360,26 @@ int main(int argc, char** argv)
 
         for(size_t j  = 0 ; j<duplicates.size() ; j++)
         {
-            duplicateVertices.push_back(modelVertices[duplicates[j]*3]);
-            duplicateVertices.push_back(modelVertices[duplicates[j]*3+1]);
-            duplicateVertices.push_back(modelVertices[duplicates[j]*3+2]);
+            duplicateVertex v;
+            v.x = modelVertices[duplicates[j]*3];
+            v.y = modelVertices[duplicates[j]*3+1];
+            v.z = modelVertices[duplicates[j]*3+2];
+            v.id = duplicates[j] + offsets[i];
+            duplicateVertices.push_back(v);
         }
 
-        std::transform (duplicates.begin(), duplicates.end(), duplicates.begin(), [&](unsigned int x){return x+offsets[i];});
-        all_duplicates.insert(all_duplicates.end(),duplicates.begin(), duplicates.end());
+//        std::transform (duplicates.begin(), duplicates.end(), duplicates.begin(), [&](unsigned int x){return x+offsets[i];});
+//        all_duplicates.insert(all_duplicates.end(),duplicates.begin(), duplicates.end());
 
     }
+    std::sort(duplicateVertices.begin(), duplicateVertices.end(), [](const duplicateVertex &left, const duplicateVertex &right) {
+        return left.id < right.id;
+    });
+//    std::sort(all_duplicates.begin(), all_duplicates.end());
     std::unordered_map<unsigned int, unsigned int> oldToNew;
-    double dist_epsilon_squared = (voxelsize/10000)*(voxelsize/10000);
-//    ofstream ofsd;
-//    ofsd.open("duplicate_colors.pts", ios_base::app);
+
+    ofstream ofsd;
+    ofsd.open("duplicate_colors.pts", ios_base::app);
 
 //    flann::Matrix<float> flannPoints = flann::Matrix<float> (new float[3 * duplicateVertices.size()], duplicateVertices.size(), 3);
 //    for(size_t i = 0; i < duplicateVertices.size(); i++)
@@ -345,78 +391,90 @@ int main(int argc, char** argv)
 //    boost::shared_ptr<flann::Index<flann::L2_Simple<float> > > 	tree =
 //            boost::shared_ptr<flann::Index<flann::L2_Simple<float> > >(new flann::Index<flann::L2_Simple<float> >(flannPoints, ::flann::KDTreeSingleIndexParams (10, false)));
 //    tree->buildIndex();
+    float comp_dist = std::max(voxelsize/1000, 0.0001f);
+    double dist_epsilon_squared = comp_dist*comp_dist;
     cout << lvr::timestamp << "removing duplicate vertices" << endl;
-    if(duplicateVertices.size()>0)
-    {
-        SearchTreeFlann<Vertexf> searchTree(duplicateVertices);
-        float comp_dist = std::max(voxelsize/10000, 0.00001f);
-        for(size_t i = 0 ; i < duplicateVertices.size() ; i+=3)
-        {
-            vector<size_t> indices;
-            vector<float> distances;
-            searchTree.kSearch(duplicateVertices[i], duplicateVertices[i+1], duplicateVertices[i+2],5, indices, distances);
-            for(int j = 0 ; j <distances.size();j++)
-            {
-                if(distances[j] < comp_dist && all_duplicates[i/3] != all_duplicates[indices[j]])
-                {
-                    if(all_duplicates[i/3] == all_duplicates[indices[j]]) continue;
-                    auto find_it = oldToNew.find(all_duplicates[i/3]);
-                    if( find_it == oldToNew.end())
-                    {
-                        oldToNew[all_duplicates[indices[j]]] = all_duplicates[i/3];
-//                    cout << "dup found! mapping " << all_duplicates[j/3] << " -> " << all_duplicates[i/3] << " dist: " << sqrt(dist_squared)<< endl;
-
-                    }
-                }
-            }
-        }
-    }
-
-
-//    for(size_t i = 0 ; i < duplicateVertices.size() ; i+=3)
+    double dup_start = lvr::timestamp.getElapsedTimeInS();
+//    vector<float> dupBuffer(duplicateVertices.size());
+//    for(duplicateVertex & v : duplicateVertices)
 //    {
-//        float ax = duplicateVertices[i];
-//        float ay = duplicateVertices[i+1];
-//        float az = duplicateVertices[i+2];
-//        vector<unsigned int> duplicates_of_i;
+//        dupBuffer.push_back(v.x);
+//        dupBuffer.push_back(v.y);
+//        dupBuffer.push_back(v.z);
+//    }
+//    if(duplicateVertices.size()>0)
+//    {
+//        SearchTreeFlann<Vertexf> searchTree(duplicateVertices);
 //
-//        for(size_t j = 0 ; j < duplicateVertices.size() ; j+=3)
+//        for(size_t i = 0 ; i < duplicateVertices.size() ; i++)
 //        {
-//            if(i==j) continue;
-//            float bx = duplicateVertices[j];
-//            float by = duplicateVertices[j+1];
-//            float bz = duplicateVertices[j+2];
-//            double dist_squared = (ax-bx)*(ax-bx) + (ay-by)*(ay-by) + (az-bz)*(az-bz);
-//            if(dist_squared < dist_epsilon_squared)
+//            vector<size_t> indices;
+//            vector<float> distances;
+//            searchTree.kSearch(duplicateVertices[i].x, duplicateVertices[i].y, duplicateVertices[i].z,5, indices, distances);
+//            for(int j = 0 ; j <distances.size();j++)
 //            {
-//                auto find_it = oldToNew.find(all_duplicates[i/3]);
-//                if( find_it == oldToNew.end())
+//                if(distances[j] < comp_dist && all_duplicates[i/3] != all_duplicates[indices[j]])
 //                {
-//                    ofsd << bx << " " << by << " " << bz << " " << 255 << " 0 0" << endl;
-//                    oldToNew[all_duplicates[j/3]] = all_duplicates[i/3];
-//                    cout << "dup found! mapping " << all_duplicates[j/3] << " -> " << all_duplicates[i/3] << " dist: " << sqrt(dist_squared)<< endl;
+//                    if(all_duplicates[i/3] == all_duplicates[indices[j]]) continue;
+//                    auto find_it = oldToNew.find(all_duplicates[i/3]);
+//                    if( find_it == oldToNew.end())
+//                    {
+//                        oldToNew[all_duplicates[indices[j]]] = all_duplicates[i/3];
+////                    cout << "dup found! mapping " << all_duplicates[j/3] << " -> " << all_duplicates[i/3] << " dist: " << sqrt(dist_squared)<< endl;
 //
-//                } //else{
-//
-////                    if(all_duplicates[j/3] != all_duplicates[i/3])
-////                    {
-////                        oldToNew[all_duplicates[j/3]] = oldToNew[all_duplicates[i/3]];
-////                        cout << "SHIT: " << all_duplicates[j/3] << " -> " << oldToNew[all_duplicates[i/3]] << endl;
-////                    }
-////                    else
-////                    {
-////                        cout << "SHIT SHIT SHIT" << endl;
-////                    }
-////
-////              }
+//                    }
+//                }
 //            }
 //        }
-//
 //    }
-//    for(auto testit = oldToNew.begin(); testit != oldToNew.end(); testit++)
-//    {
-//        if(oldToNew.find(testit->second) != oldToNew.end()) cout << "SHIT FUCK SHIT" << endl;
-//    }
+
+
+
+    omp_lock_t writelock;
+    omp_init_lock(&writelock);
+    #pragma omp parallel for
+    for(size_t i = 0 ; i < duplicateVertices.size() ; i++)
+    {
+        float ax = duplicateVertices[i].x;
+        float ay = duplicateVertices[i].y;
+        float az = duplicateVertices[i].z;
+//        vector<unsigned int> duplicates_of_i;
+        int found = 0;
+        for(size_t j = 0 ; j < duplicateVertices.size() && found <=5 ; j++)
+        {
+            if(i==j) continue;
+            float bx = duplicateVertices[j].x;
+            float by = duplicateVertices[j].y;
+            float bz = duplicateVertices[j].z;
+            double dist_squared = (ax-bx)*(ax-bx) + (ay-by)*(ay-by) + (az-bz)*(az-bz);
+            if(dist_squared < dist_epsilon_squared)
+            {
+//                omp_set_lock(&writelock);
+                auto find_it = oldToNew.find(duplicateVertices[i].id);
+                if( find_it == oldToNew.end())
+                {
+                    if(duplicateVertices[j].id < duplicateVertices[i].id)
+                    {
+                        cout << "FUCK THIS SHIT" << endl;
+                        continue;
+                    }
+                    oldToNew[duplicateVertices[j].id] = duplicateVertices[i].id;
+                    cout << "dup found! mapping " <<duplicateVertices[j].id << " -> " << duplicateVertices[i].id << " dist: " << sqrt(dist_squared)<< endl;
+                    found++;
+                    ofsd << duplicateVertices[j].x << " " << duplicateVertices[j].y << " " << duplicateVertices[j].z << endl;
+
+                }
+//                omp_unset_lock(&writelock);
+            }
+        }
+
+    }
+    double dup_end = lvr::timestamp.getElapsedTimeInS();
+    dup_time+=dup_end-dup_start;
+    for(auto testit = oldToNew.begin(); testit != oldToNew.end(); testit++)
+    {
+        if(oldToNew.find(testit->second) != oldToNew.end()) cout << "SHIT FUCK SHIT" << endl;
+    }
     ofstream ofs_vertices("largeVertices.bin", std::ofstream::out | std::ofstream::trunc );
     ofstream ofs_faces("largeFaces.bin", std::ofstream::out | std::ofstream::trunc);
     
@@ -579,6 +637,12 @@ int main(int argc, char** argv)
 
 
     cout << "IO-TIME: " << seconds << " seconds" << endl;
+    cout << "DATASTRUCT-Time " << datastruct_time << endl;
+    cout << "NORMAL-Time " << normal_time << endl;
+    cout << "DIST-Time " << dist_time << endl;
+    cout << "MESH-Time " << mesh_time << endl;
+    cout << "MERGETime " << merge_time << endl;
+    cout << "dup_time " << dup_time << endl;
     cout << lvr::timestamp << "finished" << endl;
 
 //
