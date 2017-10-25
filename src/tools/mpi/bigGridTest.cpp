@@ -440,41 +440,49 @@ int main(int argc, char** argv)
         float az = duplicateVertices[i].z;
 //        vector<unsigned int> duplicates_of_i;
         int found = 0;
-        for(size_t j = 0 ; j < duplicateVertices.size() && found <=5 ; j++)
+        auto find_it = oldToNew.find(duplicateVertices[i].id);
+        if( find_it == oldToNew.end())
         {
-            if(i==j) continue;
-            float bx = duplicateVertices[j].x;
-            float by = duplicateVertices[j].y;
-            float bz = duplicateVertices[j].z;
-            double dist_squared = (ax-bx)*(ax-bx) + (ay-by)*(ay-by) + (az-bz)*(az-bz);
-            if(dist_squared < dist_epsilon_squared)
+#pragma omp parallel for schedule(dynamic,1)
+            for(size_t j = 0 ; j < duplicateVertices.size()  ; j++)
             {
-//                omp_set_lock(&writelock);
-                auto find_it = oldToNew.find(duplicateVertices[i].id);
-                if( find_it == oldToNew.end())
+                if(i==j || found >5) continue;
+                float bx = duplicateVertices[j].x;
+                float by = duplicateVertices[j].y;
+                float bz = duplicateVertices[j].z;
+                double dist_squared = (ax-bx)*(ax-bx) + (ay-by)*(ay-by) + (az-bz)*(az-bz);
+                if(dist_squared < dist_epsilon_squared)
                 {
+//
+
                     if(duplicateVertices[j].id < duplicateVertices[i].id)
                     {
-                        cout << "FUCK THIS SHIT" << endl;
+//                        cout << "FUCK THIS SHIT" << endl;
                         continue;
                     }
+                    omp_set_lock(&writelock);
                     oldToNew[duplicateVertices[j].id] = duplicateVertices[i].id;
-                    cout << "dup found! mapping " <<duplicateVertices[j].id << " -> " << duplicateVertices[i].id << " dist: " << sqrt(dist_squared)<< endl;
                     found++;
-                    ofsd << duplicateVertices[j].x << " " << duplicateVertices[j].y << " " << duplicateVertices[j].z << endl;
+                    omp_unset_lock(&writelock);
+//                    cout << "dup found! mapping " <<duplicateVertices[j].id << " -> " << duplicateVertices[i].id << " dist: " << sqrt(dist_squared)<< endl;
 
-                }
+//                    ofsd << duplicateVertices[j].x << " " << duplicateVertices[j].y << " " << duplicateVertices[j].z << endl;
+
+
 //                omp_unset_lock(&writelock);
+                }
             }
         }
 
+
     }
+    cout << "FOUND: " << oldToNew.size() << " duplicates" << endl;
     double dup_end = lvr::timestamp.getElapsedTimeInS();
     dup_time+=dup_end-dup_start;
-    for(auto testit = oldToNew.begin(); testit != oldToNew.end(); testit++)
-    {
-        if(oldToNew.find(testit->second) != oldToNew.end()) cout << "SHIT FUCK SHIT" << endl;
-    }
+//    for(auto testit = oldToNew.begin(); testit != oldToNew.end(); testit++)
+//    {
+//        if(oldToNew.find(testit->second) != oldToNew.end()) cout << "SHIT FUCK SHIT" << endl;
+//    }
     ofstream ofs_vertices("largeVertices.bin", std::ofstream::out | std::ofstream::trunc );
     ofstream ofs_faces("largeFaces.bin", std::ofstream::out | std::ofstream::trunc);
     
@@ -532,6 +540,7 @@ int main(int argc, char** argv)
             f[0] = modelFaces[j*3] + offset;
             f[1] = modelFaces[j*3+1] + offset;
             f[2] = modelFaces[j*3+2] + offset;
+
             ofs_faces << "3 ";
             unsigned int newface[3];
             unsigned char a = 3;
