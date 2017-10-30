@@ -21,12 +21,12 @@ BigGrid::BigGrid(std::string cloudPath, float voxelsize, float scale) :
     size_t rsize = 0;
     LineReader lineReader(cloudPath);
     size_t lasti = 0;
-    while(true)
+    while(lineReader.ok())
     {
         if(lineReader.getFileType() == XYZNRGB)
         {
             boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc> (lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0 )
+            if (rsize <= 0  && !lineReader.ok())
             {
                 break;
             }
@@ -39,7 +39,7 @@ BigGrid::BigGrid(std::string cloudPath, float voxelsize, float scale) :
         else if(lineReader.getFileType() == XYZN)
         {
             boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn> (lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0 )
+            if (rsize <= 0  && !lineReader.ok())
             {
                 break;
             }
@@ -52,7 +52,7 @@ BigGrid::BigGrid(std::string cloudPath, float voxelsize, float scale) :
         else if(lineReader.getFileType() == XYZ)
         {
             boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz> (lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0 )
+            if (rsize <= 0  && !lineReader.ok())
             {
                 break;
             }
@@ -66,7 +66,7 @@ BigGrid::BigGrid(std::string cloudPath, float voxelsize, float scale) :
         else if(lineReader.getFileType() == XYZRGB)
         {
             boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc> (lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0 )
+            if (rsize <= 0  && !lineReader.ok())
             {
                 break;
             }
@@ -117,10 +117,11 @@ BigGrid::BigGrid(std::string cloudPath, float voxelsize, float scale) :
     lineReader.rewind();
 
     size_t idx, idy, idz;
-    while (true) {
+    while (lineReader.ok()) {
         if (lineReader.getFileType() == XYZNRGB) {
             boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0) {
+            if (rsize <= 0  && !lineReader.ok())
+            {
                 break;
             }
             int dx, dy, dz;
@@ -154,7 +155,7 @@ BigGrid::BigGrid(std::string cloudPath, float voxelsize, float scale) :
             }
         } else if (lineReader.getFileType() == XYZN) {
             boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0) {
+            if (rsize <= 0  && !lineReader.ok()){
                 break;
             }
             int dx, dy, dz;
@@ -192,7 +193,7 @@ BigGrid::BigGrid(std::string cloudPath, float voxelsize, float scale) :
             }
         } else if (lineReader.getFileType() == XYZ) {
             boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0) {
+            if (rsize <= 0  && !lineReader.ok()){
                 break;
             }
             int dx, dy, dz;
@@ -227,7 +228,7 @@ BigGrid::BigGrid(std::string cloudPath, float voxelsize, float scale) :
         }
         else if (lineReader.getFileType() == XYZRGB) {
             boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0) {
+            if (rsize <= 0  && !lineReader.ok()){
                 break;
             }
             int dx, dy, dz;
@@ -310,10 +311,10 @@ BigGrid::BigGrid(std::string cloudPath, float voxelsize, float scale) :
     }
     float * mmfdata = (float*)m_PointFile.data();
 
-    while (true) {
+    while (lineReader.ok()) {
         if (lineReader.getFileType() == XYZNRGB) {
             boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0) {
+            if (rsize <= 0  && !lineReader.ok()){
                 break;
             }
             for (int i = 0; i < rsize; i++) {
@@ -343,7 +344,7 @@ BigGrid::BigGrid(std::string cloudPath, float voxelsize, float scale) :
             }
         } else if (lineReader.getFileType() == XYZN) {
             boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0) {
+            if (rsize <= 0  && !lineReader.ok()){
                 break;
             }
             for (int i = 0; i < rsize; i++) {
@@ -369,7 +370,7 @@ BigGrid::BigGrid(std::string cloudPath, float voxelsize, float scale) :
             }
         } else if (lineReader.getFileType() == XYZ) {
             boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0) {
+            if (rsize <= 0  && !lineReader.ok()){
                 break;
             }
             for (int i = 0; i < rsize; i++) {
@@ -393,7 +394,7 @@ BigGrid::BigGrid(std::string cloudPath, float voxelsize, float scale) :
         }
         else if (lineReader.getFileType() == XYZRGB) {
             boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0) {
+            if (rsize <= 0  && !lineReader.ok()){
                 break;
             }
             for (int i = 0; i < rsize; i++) {
