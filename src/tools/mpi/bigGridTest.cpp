@@ -91,7 +91,7 @@ int main(int argc, char** argv)
     double dup_time = 0;
     LargeScaleOptions::Options options(argc, argv);
     double seconds=0;
-    string filePath = options.getInputFileName();
+    std::vector <string> inputFiles = options.getInputFileName();
     float voxelsize = options.getVoxelsize();
     float scale = options.getScaling();
     std::vector<float> flipPoint = options.getFlippoint();
@@ -102,7 +102,7 @@ int main(int argc, char** argv)
     if(volumenSize <= 0)
     {
         double start_ss = lvr::timestamp.getElapsedTimeInS();
-        bg = new BigGrid(filePath, voxelsize, scale);
+        bg = new BigGrid(inputFiles, voxelsize, scale);
         double end_ss = lvr::timestamp.getElapsedTimeInS();
         seconds+=(end_ss - start_ss);
         cout << lvr::timestamp << "grid finished in" << (end_ss - start_ss) << "sec." << endl;
@@ -121,15 +121,15 @@ int main(int argc, char** argv)
 
     if(volumenSize > 0)
     {
-        double start_ss = lvr::timestamp.getElapsedTimeInS();
-        vg = new VolumenGrid(filePath,volumenSize);
-        for(size_t i = 0; i < vg->getCellCount(); i++)
-        {
-            partitionBoxes.push_back(vg->getBB(i));
-        }
-        double end_ss = lvr::timestamp.getElapsedTimeInS();
-        seconds+=(end_ss - start_ss);
-        bb = vg->getBB();
+//        double start_ss = lvr::timestamp.getElapsedTimeInS();
+//        vg = new VolumenGrid(filePath,volumenSize);
+//        for(size_t i = 0; i < vg->getCellCount(); i++)
+//        {
+//            partitionBoxes.push_back(vg->getBB(i));
+//        }
+//        double end_ss = lvr::timestamp.getElapsedTimeInS();
+//        seconds+=(end_ss - start_ss);
+//        bb = vg->getBB();
     }
     else
     {
@@ -582,6 +582,8 @@ int main(int argc, char** argv)
 
 
     }
+    ofs_faces.close();
+    ofs_vertices.close();
     cout << lvr::timestamp << "saving ply" << endl;
     cout << "Largest decrement: " << increment << endl;
     double start_s = lvr::timestamp.getElapsedTimeInS();
@@ -641,6 +643,7 @@ int main(int argc, char** argv)
         }
         c++;
     }
+    ofs_ply << endl;
     double end_s = lvr::timestamp.getElapsedTimeInS();
     seconds+=(end_s - start_s);
 
@@ -654,95 +657,11 @@ int main(int argc, char** argv)
     cout << "dup_time " << dup_time << endl;
     cout << lvr::timestamp << "finished" << endl;
 
-//
-//    auto vmax = cbb.getMax();
-//    auto vmin = cbb.getMin();
-//    vmin.x-=voxelsize*2;
-//    vmin.y-=voxelsize*2;
-//    vmin.z-=voxelsize*2;
-//    vmax.x+=voxelsize*2;
-//    vmax.y+=voxelsize*2;
-//    vmax.z+=voxelsize*2;
-//    cbb.expand(vmin);
-//    cbb.expand(vmax);
-//    HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >
-//            hg(grid_files, cbb, voxelsize);
-//
-//
-//
-//    //hg.saveGrid("largeScale.grid");
-//
-//
-//
-//
-//
-//    lvr::FastReconstructionBase<lvr::ColorVertex<float, unsigned char>, lvr::Normal<float> >* reconstruction;
-//    reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(&hg);
-//    std::vector<float> vBuffer;
-//    std::vector<unsigned int> fBuffer;
-//    size_t vi,fi;
-//    reconstruction->getMesh(vBuffer, fBuffer,fi,vi);
-////    HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh;
-////    if(options.getDepth())
-////    {
-////        mesh.setDepth(options.getDepth());
-////    }
-////    reconstruction->getMesh(mesh);
-////    if(options.getDanglingArtifacts())
-////    {
-////        mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
-////    }
-////    mesh.cleanContours(options.getCleanContourIterations());
-////    mesh.setClassifier(options.getClassifier());
-////    mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
-////    if(options.optimizePlanes())
-////    {
-////        mesh.optimizePlanes(options.getPlaneIterations(),
-////                            options.getNormalThreshold(),
-////                            options.getMinPlaneSize(),
-////                            options.getSmallRegionThreshold(),
-////                            true);
-////
-////        mesh.fillHoles(options.getFillHoles());
-////        mesh.optimizePlaneIntersections();
-////        mesh.restorePlanes(options.getMinPlaneSize());
-////
-////        if(options.getNumEdgeCollapses())
-////        {
-////            QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
-////            mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
-////        }
-////    }
-////    else if(options.clusterPlanes())
-////    {
-////        mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
-////        mesh.fillHoles(options.getFillHoles());
-////    }
-////
-////
-////    if ( options.retesselate() )
-////    {
-////        mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
-////    }
-////    else
-////    {
-////        mesh.finalize();
-////    }
-//    lvr::MeshBufferPtr mb(new lvr::MeshBuffer);
-//    mb->setFaceArray(fBuffer);
-//    mb->setVertexArray(vBuffer);
-//    ModelPtr m( new Model( mb ) );
-//    ModelFactory::saveModel( m, "largeScale.ply");
-//    delete reconstruction;
-//
-//    lvr::PointBufferPtr pb2(new lvr::PointBuffer);
-//    pb2->setPointArray(points2, numPoints2);
-//    lvr::ModelPtr m2( new lvr::Model(pb2));
-//    lvr::PLYIO io2;
-//    io.save(m2,"testPoints2.ply");
 
 
 
-
+    ofs_ply.close();
+    ifs_faces.close();
+    ifs_vertices.close();
     return 0;
 }

@@ -176,7 +176,7 @@ public:
     /**
      * @brief    Returns the output file name
      */
-    string     getInputFileName() const;
+    std::vector<string>     getInputFileName() const;
 
     /**
      * @brief    Returns the name of the classifier used to color the mesh

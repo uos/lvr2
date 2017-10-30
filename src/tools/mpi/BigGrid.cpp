@@ -7,14 +7,13 @@
 #include <cstring>
 #include "LineReader.hpp"
 #include <lvr/reconstruction/FastReconstructionTables.hpp>
-BigGrid::BigGrid(std::string cloudPath, float voxelsize, float scale) :
+BigGrid::BigGrid(std::vector<std::string> cloudPath, float voxelsize, float scale) :
         m_maxIndex(0), m_maxIndexSquare(0), m_maxIndexX(0), m_maxIndexY(0), m_maxIndexZ(0), m_numPoints(0), m_extrude(true),m_scale(scale),
         m_has_normal(false), m_has_color(false)
 {
     omp_init_lock(&m_lock);
     m_voxelSize = voxelsize;
     //First, parse whole file to get BoundingBox and amount of points
-    std::cout << "opening: "  << cloudPath << endl;
     float ix,iy,iz;
     std::cout << lvr::timestamp << " Starting BB" << std::endl;
     m_numPoints = 0;

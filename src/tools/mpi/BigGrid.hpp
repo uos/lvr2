@@ -40,7 +40,7 @@ public:
      * @param cloudPath path to PointCloud in ASCII xyz Format // Todo: Add other file formats
      * @param voxelsize
      */
-    BigGrid(std::string cloudPath, float voxelsize, float scale = 0);
+    BigGrid(std::vector<std::string>, float voxelsize, float scale = 0);
 
     /**
      * @return Number of voxels
