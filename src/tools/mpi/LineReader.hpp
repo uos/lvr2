@@ -14,7 +14,16 @@ enum fileType{
     XYZ, XYZRGB, XYZN, XYZNRGB
 };
 
-
+struct fileAttribut{
+    std::string m_filePath;
+    size_t m_filePos;
+    size_t m_elementAmount;
+    fileType m_fileType;
+    size_t m_PointBlockSize;
+    bool m_ply;
+    bool m_binary;
+    size_t m_line_element_amount;
+};
 
 struct  __attribute__((packed)) xyz
 {
@@ -46,16 +55,20 @@ class LineReader
 public:
     LineReader();
     LineReader(std::string filePath);
+    LineReader(std::vector<std::string> filePaths);
     void open(std::string filePath);
+    void open(std::vector<std::string> filePaths);
     size_t getNumPoints();
     bool getNextPoint(xyznc& point);
 //        boost::shared_array<xyzn> getNextPoints(size_t &return_amount, size_t amount = 1000000);
 //        boost::shared_array<xyzc> getNextPoints(size_t &return_amount, size_t amount = 1000000);
 //        boost::shared_array<xyznc> getNextPoints(size_t &return_amount, size_t amount = 1000000);
         boost::shared_ptr<void> getNextPoints(size_t &return_amount, size_t amount = 1000000);
+    fileType getFileType(size_t i);
     fileType getFileType();
+    void rewind(size_t i);
     void rewind();
-
+    bool ok();
 
     class readException : public std::exception
     {
@@ -71,14 +84,18 @@ public:
     };
 
 private:
-    std::string m_filePath;
-    size_t m_filePos;
+    std::vector<std::string> m_filePaths;
+    std::vector<size_t> m_filePos;
     size_t m_elementAmount;
     fileType m_fileType;
     size_t m_PointBlockSize;
     bool m_ply;
     bool m_binary;
     size_t m_line_element_amount;
+    size_t m_numFiles;
+    size_t m_currentReadFile;
+    bool m_openNextFile;
+    std::vector<fileAttribut> m_fileAttributes;
 };
 
 
