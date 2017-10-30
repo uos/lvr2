@@ -165,9 +165,9 @@ int Options::getPlaneIterations() const
     return m_variables["planeIterations"].as<int>();
 }
 
-string Options::getInputFileName() const
+    vector<string> Options::getInputFileName() const
 {
-    return (m_variables["inputFile"].as< vector<string> >())[0];
+    return (m_variables["inputFile"].as< vector<string> >());
 }
 
 string Options::getPCM() const

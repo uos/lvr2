@@ -31,6 +31,7 @@ size_t LineReader::getNumPoints() {
     {
         amount +=m_fileAttributes[i].m_elementAmount;
     }
+    return amount;
 }
 
 void LineReader::open(std::vector<std::string> filePaths)
@@ -222,10 +223,18 @@ bool LineReader::ok()
 
 boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t amount)
 {
+    return_amount = 0;
     if(m_openNextFile)
     {
         m_openNextFile = false;
         m_currentReadFile++;
+        if(m_currentReadFile>=m_fileAttributes.size())
+        {
+            boost::shared_ptr<void> tmp;
+            return tmp;
+        }
+
+
     }
 
     std::string filePath = m_fileAttributes[m_currentReadFile].m_filePath;
