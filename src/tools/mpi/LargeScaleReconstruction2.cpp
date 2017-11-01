@@ -97,13 +97,13 @@ int main(int argc, char** argv)
         {
             // SEND NumPoints
             size_t numPoints;
-            lvr::floatArr points = bg.points(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x - voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y - voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z - voxelsize*3,
-                                             gridKd.getLeafs()[next_kd_node]->getBB().getMax().x, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z,numPoints);
+            lvr::floatArr points = bg.points(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x - voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y - voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z - voxelsize*5,
+                                             gridKd.getLeafs()[next_kd_node]->getBB().getMax().x + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z + voxelsize*5,numPoints);
             lvr::floatArr normals;
             if(bg.hasNormals())
             {
-                normals = bg.normals(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x+ voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y+ voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z+ voxelsize*3 ,
-                gridKd.getLeafs()[next_kd_node]->getBB().getMax().x+ voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y+ voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z+ voxelsize*3,numPoints);
+                normals = bg.normals(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x - voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y - voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z - voxelsize*5 ,
+                                     gridKd.getLeafs()[next_kd_node]->getBB().getMax().x + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z + voxelsize*5,numPoints);
 
             }
 
@@ -200,13 +200,13 @@ int main(int argc, char** argv)
             if(working_nodes < world_size-1 && next_kd_node < gridKd.getLeafs().size())
             {
                 size_t numPoints;
-                lvr::floatArr points = bg.points(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x - voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y - voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z - voxelsize*3,
-                                                 gridKd.getLeafs()[next_kd_node]->getBB().getMax().x, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z,numPoints);
+                lvr::floatArr points = bg.points(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x - voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y - voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z - voxelsize*5,
+                                                 gridKd.getLeafs()[next_kd_node]->getBB().getMax().x + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z + voxelsize*5,numPoints);
                 lvr::floatArr normals;
                 if(bg.hasNormals())
                 {
-                    normals = bg.normals(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x+ voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y+ voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z+ voxelsize*3 ,
-                                         gridKd.getLeafs()[next_kd_node]->getBB().getMax().x+ voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y+ voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z+ voxelsize*3,numPoints);
+                    normals = bg.normals(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x - voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y - voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z - voxelsize*5 ,
+                                         gridKd.getLeafs()[next_kd_node]->getBB().getMax().x + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z + voxelsize*5,numPoints);
 
                 }
                                                  // SEND NumPoints
@@ -280,17 +280,17 @@ int main(int argc, char** argv)
             }
         }
         // Tell all nodes to shutdown
-//        int stop_msg = 1;
-//        for(int i = 1 ; i<world_size && i<gridKd.getLeafs().size(); i++)
-//        {
-//            MPI_Send(
-//                    &stop_msg,
-//                    sizeof(int),
-//                    MPI_INT,
-//                    i,
-//                    STOP,
-//                    MPI_COMM_WORLD);
-//        }
+        int stop_msg = 1;
+        for(int i = 1 ; i<world_size && i<gridKd.getLeafs().size(); i++)
+        {
+            MPI_Send(
+                    &stop_msg,
+                    sizeof(int),
+                    MPI_INT,
+                    i,
+                    STOP,
+                    MPI_COMM_WORLD);
+        }
 
         vector<size_t> offsets;
         offsets.push_back(0);
@@ -301,9 +301,10 @@ int main(int argc, char** argv)
         {
             string duplicate_path = grid_files[i];
             string ply_path = grid_files[i];
-            boost::algorithm::replace_last(duplicate_path, "-grid.ser", "-duplicates.ser");
-            boost::algorithm::replace_last(ply_path, "-grid.ser", "-mesh.ply");
+            boost::algorithm::replace_last(duplicate_path, ".ser", "-duplicates.ser");
+            boost::algorithm::replace_last(ply_path, ".ser", "-mesh.ply");
             std::ifstream ifs(duplicate_path);
+            cout << "opening: " << duplicate_path << endl;
             boost::archive::text_iarchive ia(ifs);
             std::vector<unsigned int> duplicates;
             ia & duplicates;
@@ -341,7 +342,7 @@ int main(int argc, char** argv)
         ofsd.open("duplicate_colors.pts", ios_base::app);
 
 
-        float comp_dist = std::max(voxelsize/1000, 0.0001f);
+        float comp_dist = std::max(voxelsize/100, 0.0001f);
         double dist_epsilon_squared = comp_dist*comp_dist;
         cout << lvr::timestamp << "removing duplicate vertices" << endl;
 
@@ -411,7 +412,7 @@ int main(int argc, char** argv)
         {
 
             string ply_path = grid_files[i];
-            boost::algorithm::replace_last(ply_path, "-grid.ser", "-mesh.ply");
+            boost::algorithm::replace_last(ply_path, ".ser", "-mesh.ply");
             LineReader lr(ply_path);
             size_t numPoints = lr.getNumPoints();
             if(numPoints==0) continue;
@@ -561,71 +562,142 @@ int main(int argc, char** argv)
     }
     else
     {
-        while(true)
+        MPI_Request req_stop;
+        int stop_data;
+        MPI_Irecv(
+                &stop_data,
+                1,
+                MPI_INT,
+                MPI_ANY_SOURCE,
+                STOP,
+                MPI_COMM_WORLD,
+                &req_stop);
+
+        omp_set_num_threads(1);
+        int stop_work = 0;
+        while(stop_work == 0)
         {
+            int got_num_points = 0;
+            int got_use_normals = 0;
+            int got_points = 0;
+            int got_normals = 0;
+            int got_bb = 0;
+            int got_path = 0;
+
+            //Number of Points
+            MPI_Request req_num_points;
             size_t data;
-            MPI_Recv(
+            MPI_Irecv(
                     &data,
                     1,
                     MPI_UNSIGNED_LONG_LONG,
                     MPI_ANY_SOURCE,
                     NUMPOINTS,
                     MPI_COMM_WORLD,
-                    MPI_STATUS_IGNORE);
+                    &req_num_points);
+            while(!got_num_points )
+            {
 
+                MPI_Test(&req_num_points, &got_num_points, MPI_STATUS_IGNORE);
+                MPI_Test(&req_stop, &stop_work, MPI_STATUS_IGNORE);
+                if(stop_work == 1) break;
+                sleep(1);
+            }
+            // Use normals?
+            MPI_Request req_use_normals;
             int normalStatus;
-            MPI_Recv(
-                &normalStatus,
-                1,
-                MPI_INT,
-                MPI_ANY_SOURCE,
-                POINTSTATUS,
-                MPI_COMM_WORLD,
-                MPI_STATUS_IGNORE);
+            MPI_Irecv(
+                    &normalStatus,
+                    1,
+                    MPI_INT,
+                    MPI_ANY_SOURCE,
+                    POINTSTATUS,
+                    MPI_COMM_WORLD,
+                    &req_use_normals);
 
-
-            cout <<world_rank << " - will get " << data <<  "points" << endl;
-
+            // Points
+            MPI_Request req_got_points;
             lvr::floatArr points(new float[data*3]);
-            MPI_Recv(
+            MPI_Irecv(
                     points.get(),
                     data*3,
                     MPI_FLOAT,
                     MPI_ANY_SOURCE,
                     POINTS,
                     MPI_COMM_WORLD,
-                    MPI_STATUS_IGNORE);
+                    &req_got_points);
             lvr::floatArr normals;
+
+            //Normals
+            MPI_Request req_normals;
             if(normalStatus == MPIXYZN)
             {
                 normals = lvr::floatArr(new float[data*3]);
-                MPI_Recv(
+                MPI_Irecv(
                         normals.get(),
                         data*3,
                         MPI_FLOAT,
                         MPI_ANY_SOURCE,
                         NORMALS,
                         MPI_COMM_WORLD,
-                        MPI_STATUS_IGNORE);
+                        &req_normals);
             }
+
+            //Bounding Box
+            MPI_Request req_bb;
             float bb[6];
-            MPI_Recv(
+            MPI_Irecv(
                     &bb,
                     6,
                     MPI_UNSIGNED_LONG_LONG,
                     MPI_ANY_SOURCE,
                     BB,
                     MPI_COMM_WORLD,
-                    MPI_STATUS_IGNORE);
+                    &req_bb);
+
+            // Path
+            MPI_Request req_path;
             char outPath[1024];
-            MPI_Recv(
+            MPI_Irecv(
                     &outPath,
                     1024,
                     MPI_CHAR,
                     MPI_ANY_SOURCE,
                     PATH,
                     MPI_COMM_WORLD,
-                    MPI_STATUS_IGNORE);
+                    &req_path);
+
+
+            while(! ( got_use_normals && got_points && got_bb && got_path && got_normals ))
+            {
+                cout << 1 << endl;
+                MPI_Test(&req_num_points, &got_num_points, MPI_STATUS_IGNORE);
+                cout << 2 << endl;
+                MPI_Test(&req_use_normals, &got_use_normals, MPI_STATUS_IGNORE);
+                cout << 3 << endl;
+                MPI_Test(&req_got_points, &got_points, MPI_STATUS_IGNORE);
+                cout << 4 << endl;
+                MPI_Test(&req_bb, &got_bb, MPI_STATUS_IGNORE);
+                cout << 5 << endl;
+                MPI_Test(&req_path, &got_path, MPI_STATUS_IGNORE);
+                cout << 6 << endl;
+                MPI_Test(&req_stop, &stop_work, MPI_STATUS_IGNORE);
+                cout << 7 << endl;
+                if(normalStatus == MPIXYZN)
+                {
+                    MPI_Test(&req_normals, &got_normals, MPI_STATUS_IGNORE);
+                }
+                else
+                {
+                    got_normals = 1;
+                }
+                if(stop_work == 1) break;
+                sleep(1);
+
+
+            }
+
+            if(stop_work==1) break;
             string output(outPath);
             int fin = 0;
             if(data > options.getKn() && data > options.getKi() && data > options.getKd())
@@ -671,6 +743,8 @@ int main(int argc, char** argv)
                 ps_grid->calcIndices();
                 ps_grid->calcDistanceValues();
 
+
+
                 reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
                 HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh;
                 vector<unsigned int> duplicates;
@@ -684,8 +758,18 @@ int main(int argc, char** argv)
                 boost::algorithm::replace_first(output,"-mesh.ply","-duplicates.ser");
                 std::ofstream ofs_dup(output, std::ofstream::out | std::ofstream::trunc);
                 boost::archive::text_oarchive oa(ofs_dup);
+
+//                ModelPtr pn( new Model);
+//                pn->m_pointCloud = surface->pointBuffer();
+//                boost::algorithm::replace_first(output,"-duplicates.ser","-normals.ply");
+//                ModelFactory::saveModel(pn, output);
+
                 oa & duplicates;
+
+
+
                 delete reconstruction;
+
 
 //                ps_grid->saveCells(output);
                 delete ps_grid;
