@@ -25,24 +25,35 @@
 #include "lvr/reconstruction/QueryPoint.hpp"
 #include <fstream>
 #include <sstream>
+#include "LineReader.hpp"
+#include <boost/algorithm/string.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
 #include <mpi.h>
 #include "LargeScaleOptions.hpp"
 using std::cout;
 using std::endl;
 using namespace lvr;
+struct duplicateVertex{
+    float x;
+    float y;
+    float z;
+    unsigned int id;
 
+};
 typedef lvr::PointsetSurface<lvr::ColorVertex<float, unsigned char> > psSurface;
 typedef lvr::AdaptiveKSearchSurface<lvr::ColorVertex<float, unsigned char>, lvr::Normal<float> > akSurface;
 
-enum MPIMSG {NUMPOINTS, BB, POINTS,NORMALS, READY, PATH, POINTSTATUS};
-enum POINTTYPE {XYZ, XYZN};
+enum MPIMSG {NUMPOINTS, BB, POINTS,NORMALS, READY, PATH, POINTSTATUS, STOP};
+enum POINTTYPE {MPIXYZ, MPIXYZN};
 int main(int argc, char** argv)
 {
 
 
     LargeScaleOptions::Options options(argc, argv);
 
-    string filePath = options.getInputFileName();
+    vector<string> filePaths = options.getInputFileName();
     float voxelsize = options.getVoxelsize();
     float scale = options.getScaling();
 
@@ -60,7 +71,7 @@ int main(int argc, char** argv)
     if(world_rank == 0)
     {
         cout << lvr::timestamp << "Starting grid" << endl;
-        BigGrid bg(filePath, voxelsize, scale);
+        BigGrid bg(filePaths, voxelsize, scale);
         cout << lvr::timestamp << "grid finished " << endl;
         lvr::BoundingBox<lvr::Vertexf> bb = bg.getBB();
         cout << bb << endl;
@@ -86,13 +97,13 @@ int main(int argc, char** argv)
         {
             // SEND NumPoints
             size_t numPoints;
-            lvr::floatArr points = bg.points(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z ,
+            lvr::floatArr points = bg.points(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x - voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y - voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z - voxelsize*3,
                                              gridKd.getLeafs()[next_kd_node]->getBB().getMax().x, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z,numPoints);
             lvr::floatArr normals;
             if(bg.hasNormals())
             {
-                normals = bg.normals(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z ,
-                gridKd.getLeafs()[next_kd_node]->getBB().getMax().x, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z,numPoints);
+                normals = bg.normals(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x+ voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y+ voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z+ voxelsize*3 ,
+                gridKd.getLeafs()[next_kd_node]->getBB().getMax().x+ voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y+ voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z+ voxelsize*3,numPoints);
 
             }
 
@@ -104,10 +115,10 @@ int main(int argc, char** argv)
                     i,
                     NUMPOINTS,
                     MPI_COMM_WORLD);
-            int normalStatus = XYZ;
+            int normalStatus = MPIXYZ;
             if(bg.hasNormals())
             {
-                normalStatus = XYZN;
+                normalStatus = MPIXYZN;
             }
             MPI_Send(
                     &normalStatus,
@@ -151,13 +162,13 @@ int main(int argc, char** argv)
                     MPI_COMM_WORLD);
 
             std::stringstream ss2;
-            ss2 << "testgrid-" << next_kd_node << ".ser";
+            ss2 << "part-" << next_kd_node << ".ser";
             const char* opath = ss2.str().c_str();
             workingNodes[i] = ss2.str();
             //grid_files.push_back(ss2.str());
             MPI_Send(
                     opath,
-                    ss2.str().size(),
+                    ss2.str().size()+2,
                     MPI_CHAR,
                     i,
                     PATH,
@@ -189,14 +200,13 @@ int main(int argc, char** argv)
             if(working_nodes < world_size-1 && next_kd_node < gridKd.getLeafs().size())
             {
                 size_t numPoints;
-                lvr::floatArr points = bg.points(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z ,
+                lvr::floatArr points = bg.points(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x - voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y - voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z - voxelsize*3,
                                                  gridKd.getLeafs()[next_kd_node]->getBB().getMax().x, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z,numPoints);
-
                 lvr::floatArr normals;
                 if(bg.hasNormals())
                 {
-                normals = bg.normals(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z ,
-                gridKd.getLeafs()[next_kd_node]->getBB().getMax().x, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z,numPoints);
+                    normals = bg.normals(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x+ voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y+ voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z+ voxelsize*3 ,
+                                         gridKd.getLeafs()[next_kd_node]->getBB().getMax().x+ voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y+ voxelsize*3, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z+ voxelsize*3,numPoints);
 
                 }
                                                  // SEND NumPoints
@@ -207,10 +217,10 @@ int main(int argc, char** argv)
                         status.MPI_SOURCE,
                         NUMPOINTS,
                         MPI_COMM_WORLD);
-                int normalStatus2 = XYZ;
+                int normalStatus2 = MPIXYZ;
                 if(bg.hasNormals())
                 {
-                        normalStatus2 = XYZN;
+                        normalStatus2 = MPIXYZN;
                 }
                 MPI_Send(
                         &normalStatus2,
@@ -255,12 +265,12 @@ int main(int argc, char** argv)
 
 
                 std::stringstream ss2;
-                ss2 << "testgrid-" << next_kd_node << ".ser";
+                ss2 << "part-" << next_kd_node << ".ser";
                 const char* opath = ss2.str().c_str();
                 workingNodes[status.MPI_SOURCE] = ss2.str();
                 MPI_Send(
                         opath,
-                        ss2.str().size(),
+                        ss2.str().size()+2,
                         MPI_CHAR,
                         status.MPI_SOURCE,
                         PATH,
@@ -269,41 +279,289 @@ int main(int argc, char** argv)
                 working_nodes++;
             }
         }
-        auto vmax = cbb.getMax();
-        auto vmin = cbb.getMin();
-        vmin.x-=voxelsize*2;
-        vmin.y-=voxelsize*2;
-        vmin.z-=voxelsize*2;
-        vmax.x+=voxelsize*2;
-        vmax.y+=voxelsize*2;
-        vmax.z+=voxelsize*2;
-        cbb.expand(vmin);
-        cbb.expand(vmax);
-        HashGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >
-                hg(grid_files, cbb, voxelsize);
+        // Tell all nodes to shutdown
+//        int stop_msg = 1;
+//        for(int i = 1 ; i<world_size && i<gridKd.getLeafs().size(); i++)
+//        {
+//            MPI_Send(
+//                    &stop_msg,
+//                    sizeof(int),
+//                    MPI_INT,
+//                    i,
+//                    STOP,
+//                    MPI_COMM_WORLD);
+//        }
+
+        vector<size_t> offsets;
+        offsets.push_back(0);
+        vector<unsigned int> all_duplicates;
+//    vector<float> duplicateVertices;
+        vector<duplicateVertex> duplicateVertices;
+        for(int i = 0 ; i <grid_files.size() ; i++)
+        {
+            string duplicate_path = grid_files[i];
+            string ply_path = grid_files[i];
+            boost::algorithm::replace_last(duplicate_path, "-grid.ser", "-duplicates.ser");
+            boost::algorithm::replace_last(ply_path, "-grid.ser", "-mesh.ply");
+            std::ifstream ifs(duplicate_path);
+            boost::archive::text_iarchive ia(ifs);
+            std::vector<unsigned int> duplicates;
+            ia & duplicates;
+            cout << "MESH " << i << " has " << duplicates.size() << " possible duplicates" << endl;
+            LineReader lr(ply_path);
+
+            size_t numPoints = lr.getNumPoints();
+            offsets.push_back(numPoints+offsets[i]);
+            if(numPoints==0) continue;
+            lvr::PLYIO io;
+            ModelPtr modelPtr = io.read(ply_path);
+            //ModelPtr modelPtr = ModelFactory::readModel(ply_path);
+            size_t numVertices;
+            floatArr modelVertices = modelPtr->m_mesh->getVertexArray(numVertices);
+
+
+            for(size_t j  = 0 ; j<duplicates.size() ; j++)
+            {
+                duplicateVertex v;
+                v.x = modelVertices[duplicates[j]*3];
+                v.y = modelVertices[duplicates[j]*3+1];
+                v.z = modelVertices[duplicates[j]*3+2];
+                v.id = duplicates[j] + offsets[i];
+                duplicateVertices.push_back(v);
+            }
+
+
+        }
+        std::sort(duplicateVertices.begin(), duplicateVertices.end(), [](const duplicateVertex &left, const duplicateVertex &right) {
+            return left.id < right.id;
+        });
+        std::unordered_map<unsigned int, unsigned int> oldToNew;
+
+        ofstream ofsd;
+        ofsd.open("duplicate_colors.pts", ios_base::app);
+
+
+        float comp_dist = std::max(voxelsize/1000, 0.0001f);
+        double dist_epsilon_squared = comp_dist*comp_dist;
+        cout << lvr::timestamp << "removing duplicate vertices" << endl;
+
+
+        omp_lock_t writelock;
+        omp_init_lock(&writelock);
+#pragma omp parallel for
+        for(size_t i = 0 ; i < duplicateVertices.size() ; i++)
+        {
+            float ax = duplicateVertices[i].x;
+            float ay = duplicateVertices[i].y;
+            float az = duplicateVertices[i].z;
+//        vector<unsigned int> duplicates_of_i;
+            int found = 0;
+            auto find_it = oldToNew.find(duplicateVertices[i].id);
+            if( find_it == oldToNew.end())
+            {
+#pragma omp parallel for schedule(dynamic,1)
+                for(size_t j = 0 ; j < duplicateVertices.size()  ; j++)
+                {
+                    if(i==j || found >5) continue;
+                    float bx = duplicateVertices[j].x;
+                    float by = duplicateVertices[j].y;
+                    float bz = duplicateVertices[j].z;
+                    double dist_squared = (ax-bx)*(ax-bx) + (ay-by)*(ay-by) + (az-bz)*(az-bz);
+                    if(dist_squared < dist_epsilon_squared)
+                    {
+//
+
+                        if(duplicateVertices[j].id < duplicateVertices[i].id)
+                        {
+//                        cout << "FUCK THIS SHIT" << endl;
+                            continue;
+                        }
+                        omp_set_lock(&writelock);
+                        oldToNew[duplicateVertices[j].id] = duplicateVertices[i].id;
+                        found++;
+                        omp_unset_lock(&writelock);
+//                    cout << "dup found! mapping " <<duplicateVertices[j].id << " -> " << duplicateVertices[i].id << " dist: " << sqrt(dist_squared)<< endl;
+
+//                    ofsd << duplicateVertices[j].x << " " << duplicateVertices[j].y << " " << duplicateVertices[j].z << endl;
+
+
+//                omp_unset_lock(&writelock);
+                    }
+                }
+            }
+
+
+        }
+        cout << "FOUND: " << oldToNew.size() << " duplicates" << endl;
+//    for(auto testit = oldToNew.begin(); testit != oldToNew.end(); testit++)
+//    {
+//        if(oldToNew.find(testit->second) != oldToNew.end()) cout << "SHIT FUCK SHIT" << endl;
+//    }
+        ofstream ofs_vertices("largeVertices.bin", std::ofstream::out | std::ofstream::trunc );
+        ofstream ofs_faces("largeFaces.bin", std::ofstream::out | std::ofstream::trunc);
+
+        size_t increment=0;
+        std::map<size_t, size_t> decrements;
+        decrements[0] = 0;
+
+        size_t newNumVertices = 0;
+        size_t newNumFaces = 0;
+        cout << lvr::timestamp << "merging mesh..." << endl;
+        for(size_t i = 0 ; i <grid_files.size() ; i++)
+        {
+
+            string ply_path = grid_files[i];
+            boost::algorithm::replace_last(ply_path, "-grid.ser", "-mesh.ply");
+            LineReader lr(ply_path);
+            size_t numPoints = lr.getNumPoints();
+            if(numPoints==0) continue;
+            lvr::PLYIO io;
+            ModelPtr modelPtr = io.read(ply_path);
+            size_t numVertices;
+            size_t numFaces;
+            size_t offset = offsets[i];
+            floatArr modelVertices = modelPtr->m_mesh->getVertexArray(numVertices);
+            uintArr modelFaces = modelPtr->m_mesh->getFaceArray(numFaces);
+            newNumFaces+=numFaces;
+            for(size_t j = 0; j<numVertices ; j++)
+            {
+                float p[3];
+                p[0] = modelVertices[j*3];
+                p[1] = modelVertices[j*3+1];
+                p[2] = modelVertices[j*3+2];
+                if(oldToNew.find(j+offset)==oldToNew.end())
+                {
+//                ofs_vertices.write((char*)p,sizeof(float)*3);
+                    ofs_vertices << std::setprecision(16) << p[0] << " " << p[1] << " " << p[2] << endl;
+                    newNumVertices++;
+                }
+                else
+                {
+                    increment++;
+                    decrements[j+offset] = increment;
+                }
+            }
+            size_t new_face_num = 0;
+            for(int j = 0 ; j<numFaces; j++)
+            {
+                unsigned int f[3];
+                f[0] = modelFaces[j*3] + offset;
+                f[1] = modelFaces[j*3+1] + offset;
+                f[2] = modelFaces[j*3+2] + offset;
+
+                ofs_faces << "3 ";
+                unsigned int newface[3];
+                unsigned char a = 3;
+//            ofs_faces.write((char*)&a, sizeof(unsigned char));
+                for(int k = 0 ; k < 3; k++)
+                {
+                    size_t face_idx = 0;
+                    if(oldToNew.find(f[k]) == oldToNew.end())
+                    {
+                        auto decr_itr = decrements.upper_bound(f[k]);
+                        decr_itr--;
+                        face_idx = f[k] - decr_itr->second;
+                    }
+                    else
+                    {
+                        auto decr_itr = decrements.upper_bound(oldToNew[f[k]]);
+                        decr_itr--;
+                        face_idx = oldToNew[f[k]]- decr_itr->second;
+//
+                    }
+                    ofs_faces << face_idx;
+                    if(k!=2) ofs_faces << " ";
+
+                }
+                ofs_faces << endl;
+//            ofs_faces.write( (char*) newface,sizeof(unsigned int)*3);
+                // todo: sort
+
+
+            }
 
 
 
-        //hg.saveGrid("largeScale.grid");
+
+        }
+        ofs_faces.close();
+        ofs_vertices.close();
+        cout << lvr::timestamp << "saving ply" << endl;
+        cout << "Largest decrement: " << increment << endl;
+
+        ofstream ofs_ply("bigMesh.ply", std::ofstream::out | std::ofstream::trunc);
+        ifstream ifs_faces("largeFaces.bin");
+        ifstream ifs_vertices("largeVertices.bin");
+        string line;
+        ofs_ply << "ply\n"
+                "format ascii 1.0\n"
+                "element vertex " << newNumVertices << "\n"
+                        "property float x\n"
+                        "property float y\n"
+                        "property float z\n"
+                        "element face " << newNumFaces << "\n"
+                        "property list uchar int vertex_indices\n"
+                        "end_header" << endl;
+//    ofs_ply.close();
+//    ofstream ofs_ply_binary("bigMesh.ply",std::ofstream::out | std::ofstream::app | std::ofstream::binary );
+//    char a1 = 10;
+//    char a2 = 32;
+//    char a3 = 180;
+//    char a4 = 174;
+//    ofs_ply_binary.write(&a1,1);
+//    ofs_ply_binary.write(&a2,1);
+//    ofs_ply_binary.write(&a3,1);
+//    ofs_ply_binary.write(&a4,1);
+//    istreambuf_iterator<char> begin_source(ifs_vertices);
+//    istreambuf_iterator<char> end_source;
+//    ostreambuf_iterator<char> begin_dest(ofs_ply_binary);
+//    copy(begin_source, end_source, begin_dest);
+//    istreambuf_iterator<char> begin_source2(ifs_faces);
+//    istreambuf_iterator<char> end_source2;
+//    ostreambuf_iterator<char> begin_dest2(ofs_ply_binary);
+//    copy(begin_source2, end_source2, begin_dest2);
+        while(std::getline(ifs_vertices,line))
+        {
+            ofs_ply << line << endl;
+        }
+        size_t c = 0;
+        while(std::getline(ifs_faces,line))
+        {
+
+            ofs_ply << line << endl;
+            stringstream ss(line);
+            unsigned int v[3];
+            ss >> v[0];
+            ss >> v[1];
+            ss >> v[2];
+            for(int i = 0 ; i< 3; i++)
+            {
+                if(v[i]>=newNumVertices)
+                {
+                    cout << "WTF: FACE " << c << " has index " << v[i] << endl;
+                }
+
+            }
+            c++;
+        }
+        ofs_ply << endl;
+
+
+        cout << lvr::timestamp << "finished" << endl;
 
 
 
 
+        ofs_ply.close();
+        ifs_faces.close();
+        ifs_vertices.close();
 
-        lvr::FastReconstructionBase<lvr::ColorVertex<float, unsigned char>, lvr::Normal<float> >* reconstruction;
-        reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(&hg);
-        HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh;
-        reconstruction->getMesh(mesh);
-
-        mesh.finalize();
-        ModelPtr m( new Model( mesh.meshBuffer() ) );
-        ModelFactory::saveModel( m, "largeScale.ply");
         MPI_Abort(MPI_COMM_WORLD,1);
         MPI_Finalize();
     }
     else
     {
-        while(1)
+        while(true)
         {
             size_t data;
             MPI_Recv(
@@ -338,7 +596,7 @@ int main(int argc, char** argv)
                     MPI_COMM_WORLD,
                     MPI_STATUS_IGNORE);
             lvr::floatArr normals;
-            if(normalStatus == XYZN)
+            if(normalStatus == MPIXYZN)
             {
                 normals = lvr::floatArr(new float[data*3]);
                 MPI_Recv(
@@ -376,7 +634,7 @@ int main(int argc, char** argv)
                 cout << gridbb << endl;
                 lvr::PointBufferPtr p_loader(new lvr::PointBuffer);
                 p_loader->setPointArray(points, data);
-                if(normalStatus == XYZN)
+                if(normalStatus == MPIXYZN)
                 {
                         p_loader->setPointNormalArray(normals, data);
                 }
@@ -397,8 +655,8 @@ int main(int argc, char** argv)
 //                center
 
                 ));
-
-                if(normalStatus == XYZ)
+                // Todo: GPU
+                if(normalStatus == MPIXYZ)
                 {
                         surface->calculateSurfaceNormals();
                 }
@@ -406,14 +664,30 @@ int main(int argc, char** argv)
                 lvr::GridBase* grid;
                 lvr::FastReconstructionBase<lvr::ColorVertex<float, unsigned char>, lvr::Normal<float> >* reconstruction;
 
-                grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(voxelsize, surface,gridbb , true, true);
-                BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-                PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+                grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(voxelsize, surface,gridbb , true, true);
+//                FastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+                PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
                 ps_grid->setBB(gridbb);
                 ps_grid->calcIndices();
                 ps_grid->calcDistanceValues();
 
-                ps_grid->saveCells(output);
+                reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+                HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh;
+                vector<unsigned int> duplicates;
+                reconstruction->getMesh(mesh, ps_grid->qp_bb, duplicates, voxelsize*5);
+                mesh.finalize();
+                boost::algorithm::erase_all(output, " ");
+                boost::algorithm::replace_first(output,".ser","-mesh.ply");
+                cout << "######################### " << output << endl;
+                ModelPtr m( new Model( mesh.meshBuffer() ) );
+                ModelFactory::saveModel( m, output);
+                boost::algorithm::replace_first(output,"-mesh.ply","-duplicates.ser");
+                std::ofstream ofs_dup(output, std::ofstream::out | std::ofstream::trunc);
+                boost::archive::text_oarchive oa(ofs_dup);
+                oa & duplicates;
+                delete reconstruction;
+
+//                ps_grid->saveCells(output);
                 delete ps_grid;
                 fin = 1;
             }
