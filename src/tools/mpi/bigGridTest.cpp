@@ -61,6 +61,53 @@ struct duplicateVertex{
 
 };
 
+
+void getBoundingBoxNumPoints(LineReader & lr, lvr::BoundingBox<Vertexf> & bb, size_t & numPoints)
+{
+    while(lr.ok())
+    {
+        size_t rsize;
+        if(lr.getFileType() == XYZNRGB)
+        {
+            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc> (lr.getNextPoints(rsize,1024));
+            for(int i = 0 ; i< rsize ; i++)
+            {
+                bb.expand(a.get()[i].point.x,a.get()[i].point.y,a.get()[i].point.z);
+            }
+            numPoints+=rsize;
+        }
+        else if(lr.getFileType() == XYZN)
+        {
+            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn> (lr.getNextPoints(rsize,1024));
+            for(int i = 0 ; i< rsize ; i++)
+            {
+                bb.expand(a.get()[i].point.x,a.get()[i].point.y,a.get()[i].point.z);
+            }
+            numPoints+=rsize;
+        }
+        else if(lr.getFileType() == XYZ)
+        {
+            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz> (lr.getNextPoints(rsize,1024));
+            for(int i = 0 ; i< rsize ; i++)
+            {
+                bb.expand(a.get()[i].point.x,a.get()[i].point.y,a.get()[i].point.z);
+            }
+            numPoints+=rsize;
+        }
+        else if(lr.getFileType() == XYZRGB)
+        {
+            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc> (lr.getNextPoints(rsize,1024));
+            for(int i = 0 ; i< rsize ; i++)
+            {
+                bb.expand(a.get()[i].point.x,a.get()[i].point.y,a.get()[i].point.z);
+            }
+            numPoints+=rsize;
+        }
+
+    }
+
+}
+
 typedef lvr::PointsetSurface<lvr::ColorVertex<float, unsigned char> > psSurface;
 typedef lvr::AdaptiveKSearchSurface<lvr::ColorVertex<float, unsigned char>, lvr::Normal<float> > akSurface;
 
@@ -116,20 +163,18 @@ int main(int argc, char** argv)
 
     vector<BoundingBox<Vertexf > > partitionBoxes;
     //lvr::floatArr points = bg->getPointCloud(numPoints);
-    VolumenGrid* vg;
     cout << lvr::timestamp << "making tree" << endl;
 
     if(volumenSize > 0)
     {
-//        double start_ss = lvr::timestamp.getElapsedTimeInS();
-//        vg = new VolumenGrid(filePath,volumenSize);
-//        for(size_t i = 0; i < vg->getCellCount(); i++)
-//        {
-//            partitionBoxes.push_back(vg->getBB(i));
-//        }
-//        double end_ss = lvr::timestamp.getElapsedTimeInS();
-//        seconds+=(end_ss - start_ss);
-//        bb = vg->getBB();
+        cout << lvr::timestamp << " getting BoundingBox" << endl;
+        LineReader lr(inputFiles);
+        BoundingBox<Vertexf> bb;
+        size_t numPoints;
+        getBoundingBoxNumPoints(lr,bb,numPoints);
+        cout << lvr::timestamp << " got BoundingBox" << endl << bb <<endl;
+        cout << lvr::timestamp << " got " << numPoints << " points" <<endl;
+
     }
     else
     {
@@ -163,7 +208,7 @@ int main(int argc, char** argv)
         lvr::floatArr points;
         if(volumenSize > 0)
         {
-            points = vg->points(i, numPoints);
+//            points = vg->points(i, numPoints);
         }
         else
         {
@@ -293,6 +338,13 @@ int main(int argc, char** argv)
         vector<unsigned int> duplicates;
         reconstruction->getMesh(mesh, ps_grid->qp_bb, duplicates, voxelsize*5);
 
+        if(options.savePointNormals())
+        {
+            std::stringstream ss_normals;
+            ss_normals << "part-" << i << "-normals.ply";
+            ModelPtr m(new Model(p_loader));
+            ModelFactory::saveModel( m, ss_normals.str());
+        }
 
         mesh.finalize();
         double mesh_end = lvr::timestamp.getElapsedTimeInS();
