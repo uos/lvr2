@@ -93,21 +93,22 @@ int main(int argc, char** argv)
         size_t next_kd_node = 0;
         size_t working_nodes = 0;
         std::unordered_map<int, std::string> workingNodes;
-        for(int i = 1 ; i<world_size && i<gridKd.getLeafs().size(); i++)
+        for(int i = 1 ; i<world_size && (i-1) <gridKd.getLeafs().size(); i++)
         {
             // SEND NumPoints
             size_t numPoints;
+            size_t numPoints2;
             lvr::floatArr points = bg.points(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x - voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y - voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z - voxelsize*5,
                                              gridKd.getLeafs()[next_kd_node]->getBB().getMax().x + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z + voxelsize*5,numPoints);
             lvr::floatArr normals;
             if(bg.hasNormals())
             {
                 normals = bg.normals(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x - voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y - voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z - voxelsize*5 ,
-                                     gridKd.getLeafs()[next_kd_node]->getBB().getMax().x + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z + voxelsize*5,numPoints);
+                                     gridKd.getLeafs()[next_kd_node]->getBB().getMax().x + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z + voxelsize*5,numPoints2);
 
             }
 
-                                             // SEND NumPoints
+            cout << "Node " << i << " will work on Part-" << next_kd_node << "(" << numPoints << " points)" << endl;
             MPI_Send(
                     &numPoints,
                     1,
@@ -177,9 +178,14 @@ int main(int argc, char** argv)
             next_kd_node++;
             working_nodes++;
         }
-        while(working_nodes != 0)
+        while(workingNodes.size()>0)
         {
             // check if not all nodes are working
+            cout << "Currently nodes working" << endl;
+            for(auto it = workingNodes.begin(); it!=workingNodes.end(); it++)
+            {
+                cout << "### \t " << it->first << "\t" << it->second << endl;
+            }
             int data;
             MPI_Status status;
             MPI_Recv(
@@ -194,22 +200,24 @@ int main(int argc, char** argv)
             {
                 grid_files.push_back(workingNodes[status.MPI_SOURCE]);
             }
-            workingNodes.erase(status.MPI_SOURCE);
-
             working_nodes--;
+            workingNodes.erase(status.MPI_SOURCE);
+            cout << "Node " << status.MPI_SOURCE << " finished its job" << endl;
             if(working_nodes < world_size-1 && next_kd_node < gridKd.getLeafs().size())
             {
-                size_t numPoints;
+                size_t numPoints, numPoints2;
                 lvr::floatArr points = bg.points(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x - voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y - voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z - voxelsize*5,
                                                  gridKd.getLeafs()[next_kd_node]->getBB().getMax().x + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z + voxelsize*5,numPoints);
                 lvr::floatArr normals;
                 if(bg.hasNormals())
                 {
                     normals = bg.normals(gridKd.getLeafs()[next_kd_node]->getBB().getMin().x - voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMin().y - voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMin().z - voxelsize*5 ,
-                                         gridKd.getLeafs()[next_kd_node]->getBB().getMax().x + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z + voxelsize*5,numPoints);
+                                         gridKd.getLeafs()[next_kd_node]->getBB().getMax().x + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().y + voxelsize*5, gridKd.getLeafs()[next_kd_node]->getBB().getMax().z + voxelsize*5,numPoints2);
 
                 }
+                cout << "Node " << status.MPI_SOURCE << " will work on Part-" << next_kd_node << "(" << numPoints << " points)" << endl;
                                                  // SEND NumPoints
+                MPI_Request r1;
                 MPI_Send(
                         &numPoints,
                         1,
@@ -222,6 +230,7 @@ int main(int argc, char** argv)
                 {
                         normalStatus2 = MPIXYZN;
                 }
+                MPI_Request r2;
                 MPI_Send(
                         &normalStatus2,
                         1,
@@ -230,6 +239,7 @@ int main(int argc, char** argv)
                         POINTSTATUS,
                         MPI_COMM_WORLD);
                 // Send PointArray
+                MPI_Request r3;
                 MPI_Send(
                         points.get(),
                         numPoints*3,
@@ -239,7 +249,8 @@ int main(int argc, char** argv)
                         MPI_COMM_WORLD);
                 if(bg.hasNormals())
                 {
-                        MPI_Send(
+                    MPI_Request r4;
+                    MPI_Send(
                                 normals.get(),
                                 numPoints*3,
                                 MPI_FLOAT,
@@ -255,6 +266,7 @@ int main(int argc, char** argv)
                 bb[4] = gridKd.getLeafs()[next_kd_node]->getBB().getMax().y;
                 bb[5] = gridKd.getLeafs()[next_kd_node]->getBB().getMax().z;
                 // Send BoundingBox
+                MPI_Request r5;
                 MPI_Send(
                         bb,
                         6,
@@ -268,13 +280,15 @@ int main(int argc, char** argv)
                 ss2 << "part-" << next_kd_node << ".ser";
                 const char* opath = ss2.str().c_str();
                 workingNodes[status.MPI_SOURCE] = ss2.str();
+                MPI_Request r6;
                 MPI_Send(
                         opath,
                         ss2.str().size()+2,
                         MPI_CHAR,
                         status.MPI_SOURCE,
                         PATH,
-                        MPI_COMM_WORLD);
+                        MPI_COMM_WORLD
+                );
                 next_kd_node++;
                 working_nodes++;
             }
@@ -283,13 +297,15 @@ int main(int argc, char** argv)
         int stop_msg = 1;
         for(int i = 1 ; i<world_size && i<gridKd.getLeafs().size(); i++)
         {
+            MPI_Request r;
             MPI_Send(
                     &stop_msg,
-                    sizeof(int),
+                    1,
                     MPI_INT,
                     i,
                     STOP,
-                    MPI_COMM_WORLD);
+                    MPI_COMM_WORLD
+            );
         }
 
         vector<size_t> offsets;
@@ -557,7 +573,6 @@ int main(int argc, char** argv)
         ifs_faces.close();
         ifs_vertices.close();
 
-        MPI_Abort(MPI_COMM_WORLD,1);
         MPI_Finalize();
     }
     else
@@ -603,6 +618,7 @@ int main(int argc, char** argv)
                 if(stop_work == 1) break;
                 sleep(1);
             }
+
             // Use normals?
             MPI_Request req_use_normals;
             int normalStatus;
@@ -670,19 +686,19 @@ int main(int argc, char** argv)
 
             while(! ( got_use_normals && got_points && got_bb && got_path && got_normals ))
             {
-                cout << 1 << endl;
+//                cout << 1 << endl;
                 MPI_Test(&req_num_points, &got_num_points, MPI_STATUS_IGNORE);
-                cout << 2 << endl;
+//                cout << 2 << endl;
                 MPI_Test(&req_use_normals, &got_use_normals, MPI_STATUS_IGNORE);
-                cout << 3 << endl;
+//                cout << 3 << endl;
                 MPI_Test(&req_got_points, &got_points, MPI_STATUS_IGNORE);
-                cout << 4 << endl;
+//                cout << 4 << endl;
                 MPI_Test(&req_bb, &got_bb, MPI_STATUS_IGNORE);
-                cout << 5 << endl;
+//                cout << 5 << endl;
                 MPI_Test(&req_path, &got_path, MPI_STATUS_IGNORE);
-                cout << 6 << endl;
+//                cout << 6 << endl;
                 MPI_Test(&req_stop, &stop_work, MPI_STATUS_IGNORE);
-                cout << 7 << endl;
+//                cout << 7 << endl;
                 if(normalStatus == MPIXYZN)
                 {
                     MPI_Test(&req_normals, &got_normals, MPI_STATUS_IGNORE);
@@ -696,10 +712,13 @@ int main(int argc, char** argv)
 
 
             }
-
+            cout << "#########################################" << endl;
+            cout << world_rank << "will do: " << outPath << endl;
+            cout << "#########################################" << endl;
             if(stop_work==1) break;
             string output(outPath);
             int fin = 0;
+            cout << "Node-" << world_rank << " got" << data << "points" << endl;
             if(data > options.getKn() && data > options.getKi() && data > options.getKd())
             {
                 BoundingBox<ColorVertex<float,unsigned char> > gridbb(bb[0], bb[1], bb[2], bb[3], bb[4], bb[5]);
@@ -782,7 +801,10 @@ int main(int argc, char** argv)
                     0,
                     READY,
                     MPI_COMM_WORLD);
+
+
         }
+        MPI_Finalize();
 
     }
 
