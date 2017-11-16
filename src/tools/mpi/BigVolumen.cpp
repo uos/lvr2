@@ -17,10 +17,17 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
     float overlapp_size = overlapping_size;
     //First, parse whole file to get BoundingBox and amount of points
     float ix,iy,iz;
-    std::cout << lvr::timestamp << " Starting BB" << std::endl;
+    std::cout << lvr::timestamp << " Starting BV BB" << std::endl;
+
+
     m_numPoints = 0;
     size_t rsize = 0;
     LineReader lineReader(cloudPath);
+    cout << "INPUT FILE TYPE: ";
+    if(lineReader.getFileType()==XYZ) cout << "XYZ" << endl;
+    if(lineReader.getFileType()==XYZN) cout << "XYZN" << endl;
+    if(lineReader.getFileType()==XYZRGB) cout << "XYZRGB" << endl;
+    if(lineReader.getFileType()==XYZNRGB) cout << "XYZNRGB" << endl;
     size_t lasti = 0;
     while(lineReader.ok())
     {
@@ -60,6 +67,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
             for(size_t i = 0 ; i< rsize ; i++)
             {
                 m_bb.expand(a.get()[i].point.x*m_scale,a.get()[i].point.y*m_scale,a.get()[i].point.z*m_scale);
+
                 m_numPoints++;
                 lasti = i;
             }
@@ -111,25 +119,15 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
     m_maxIndexY+=2;
     m_maxIndexZ+=3;
     m_maxIndexSquare = m_maxIndex * m_maxIndex;
-    std::cout << "BG: " << m_maxIndexSquare << "|" << m_maxIndexX << "|" << m_maxIndexY << "|" << m_maxIndexZ << std::endl;
+    std::cout << "BV: \t size: " << m_numPoints << std::endl;
+    std::cout << "BB: " << endl << m_bb << endl;
+    std::cout << "BV: " << m_maxIndexSquare << "|" << m_maxIndexX << "|" << m_maxIndexY << "|" << m_maxIndexZ << std::endl;
 
 
     //
     lineReader.rewind();
 
-    for(auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end(); it++)
-    {
-        float maxx = m_bb.getMin().x + it->second.ix * m_voxelSize;
-        float maxy = m_bb.getMin().y + it->second.iy * m_voxelSize;
-        float maxz = m_bb.getMin().z + it->second.iz * m_voxelSize;
 
-        float minx = m_bb.getMin().x + it->second.ix * (m_voxelSize*2);
-        float miny = m_bb.getMin().y + it->second.iy * (m_voxelSize*2);
-        float minz = m_bb.getMin().z + it->second.iz * (m_voxelSize*2);
-
-        it->second.bb.expand(maxx, maxy, maxz);
-        it->second.bb.expand(minx, miny, minz);
-    }
 
     size_t idx, idy, idz;
 
@@ -151,48 +149,51 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
             {
                 break;
             }
-            for (int i = 0; i < rsize; i++)
-            {
-                ix = a.get()[i].point.x*m_scale;
-                iy = a.get()[i].point.y*m_scale;
-                iz = a.get()[i].point.z*m_scale;
-                size_t idx = calcIndex((ix - m_bb.getMin()[0])/voxelsize);
-                size_t idy = calcIndex((iy - m_bb.getMin()[1])/voxelsize);
-                size_t idz = calcIndex((iz - m_bb.getMin()[2])/voxelsize);
-                size_t h = hashValue(idx,idy,idz);
+            for (int i = 0; i < rsize; i++) {
+                ix = a.get()[i].point.x * m_scale;
+                iy = a.get()[i].point.y * m_scale;
+                iz = a.get()[i].point.z * m_scale;
+                size_t idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
+                size_t idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
+                size_t idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                size_t h = hashValue(idx, idy, idz);
                 m_gridNumPoints[h].ix = idx;
                 m_gridNumPoints[h].iy = idy;
                 m_gridNumPoints[h].iz = idz;
                 m_gridNumPoints[h].size++;
-                if(!m_gridNumPoints[h].ofs_points.is_open())
-                {
+                if (!m_gridNumPoints[h].ofs_points.is_open()) {
                     std::stringstream ss;
                     ss << "part-" << idx << "-" << idy << "-" << idz << "-points.binary";
-                    m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::binary);
+                    m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::out | std::ofstream::trunc);
                 }
-                m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
-                m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
-                m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
+                if (std::isnormal(ix) && std::isnormal(iy) && std::isnormal(iz)) {
+                    m_gridNumPoints[h].ofs_points << ix << " " << iy << " " << iz << endl;
+//                    m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
+//                    m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
+//                    m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
 
-                if(!m_gridNumPoints[h].ofs_normals.is_open())
-                {
-                    std::stringstream ss;
-                    ss << "part-" << idx << "-" << idy << "-" << idz << "-normals.binary";
-                    m_gridNumPoints[h].ofs_normals.open(ss.str(), std::ofstream::binary);
-                }
-                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.x,sizeof(float));
-                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.y,sizeof(float));
-                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.z,sizeof(float));
+                    if (!m_gridNumPoints[h].ofs_normals.is_open()) {
+                        std::stringstream ss;
+                        ss << "part-" << idx << "-" << idy << "-" << idz << "-normals.binary";
+                        m_gridNumPoints[h].ofs_normals.open(ss.str(), std::ofstream::out | std::ofstream::trunc);
+                    }
+                    m_gridNumPoints[h].ofs_normals << a.get()[i].normal.x << " " << a.get()[i].normal.y << " "
+                                                   << a.get()[i].normal.z << endl;
+//                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.x,sizeof(float));
+//                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.y,sizeof(float));
+//                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.z,sizeof(float));
 
-                if(!m_gridNumPoints[h].ofs_colors.is_open())
-                {
-                    std::stringstream ss;
-                    ss << "part-" << idx << "-" << idy << "-" << idz << "-colors.binary";
-                    m_gridNumPoints[h].ofs_colors.open(ss.str(), std::ofstream::binary);
+                    if (!m_gridNumPoints[h].ofs_colors.is_open()) {
+                        std::stringstream ss;
+                        ss << "part-" << idx << "-" << idy << "-" << idz << "-colors.binary";
+                        m_gridNumPoints[h].ofs_colors.open(ss.str(), std::ofstream::out | std::ofstream::trunc);
+                    }
+                    m_gridNumPoints[h].ofs_colors << a.get()[i].color.r << " " << a.get()[i].color.g << " "
+                                                  << a.get()[i].color.b << endl;
+//                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.r,sizeof(unsigned char));
+//                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.g,sizeof(unsigned char));
+//                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.b,sizeof(unsigned char));
                 }
-                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.r,sizeof(unsigned char));
-                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.g,sizeof(unsigned char));
-                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.b,sizeof(unsigned char));
             }
         } else if (lineReader.getFileType() == XYZN) {
             boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(lineReader.getNextPoints(rsize,1024));
@@ -200,38 +201,40 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
             {
                 break;
             }
-            for (int i = 0; i < rsize; i++)
-            {
-                ix = a.get()[i].point.x*m_scale;
-                iy = a.get()[i].point.y*m_scale;
-                iz = a.get()[i].point.z*m_scale;
-                size_t idx = calcIndex((ix - m_bb.getMin()[0])/voxelsize);
-                size_t idy = calcIndex((iy - m_bb.getMin()[1])/voxelsize);
-                size_t idz = calcIndex((iz - m_bb.getMin()[2])/voxelsize);
-                size_t h = hashValue(idx,idy,idz);
+            for (int i = 0; i < rsize; i++) {
+                ix = a.get()[i].point.x * m_scale;
+                iy = a.get()[i].point.y * m_scale;
+                iz = a.get()[i].point.z * m_scale;
+                size_t idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
+                size_t idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
+                size_t idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                size_t h = hashValue(idx, idy, idz);
                 m_gridNumPoints[h].ix = idx;
                 m_gridNumPoints[h].iy = idy;
                 m_gridNumPoints[h].iz = idz;
                 m_gridNumPoints[h].size++;
-                if(!m_gridNumPoints[h].ofs_points.is_open())
-                {
+                if (!m_gridNumPoints[h].ofs_points.is_open()) {
                     std::stringstream ss;
                     ss << "part-" << idx << "-" << idy << "-" << idz << "-points.binary";
-                    m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::binary);
+                    m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::out | std::ofstream::trunc);
                 }
-                m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
-                m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
-                m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
+                if (std::isnormal(ix) && std::isnormal(iy) && std::isnormal(iz)) {
+                    m_gridNumPoints[h].ofs_points << ix << " " << iy << " " << iz << endl;
+//                    m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
+//                    m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
+//                    m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
 
-                if(!m_gridNumPoints[h].ofs_normals.is_open())
-                {
-                    std::stringstream ss;
-                    ss << "part-" << idx << "-" << idy << "-" << idz << "-normals.binary";
-                    m_gridNumPoints[h].ofs_normals.open(ss.str(), std::ofstream::binary);
+                    if (!m_gridNumPoints[h].ofs_normals.is_open()) {
+                        std::stringstream ss;
+                        ss << "part-" << idx << "-" << idy << "-" << idz << "-normals.binary";
+                        m_gridNumPoints[h].ofs_normals.open(ss.str(), std::ofstream::out | std::ofstream::trunc);
+                    }
+                    m_gridNumPoints[h].ofs_normals << a.get()[i].normal.x << " " << a.get()[i].normal.y << " "
+                                                   << a.get()[i].normal.z << endl;
+//                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.x,sizeof(float));
+//                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.y,sizeof(float));
+//                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.z,sizeof(float));
                 }
-                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.x,sizeof(float));
-                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.y,sizeof(float));
-                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.z,sizeof(float));
             }
         } else if (lineReader.getFileType() == XYZ)
         {
@@ -240,28 +243,29 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
             {
                 break;
             }
-            for (int i = 0; i < rsize; i++)
-            {
-                ix = a.get()[i].point.x*m_scale;
-                iy = a.get()[i].point.y*m_scale;
-                iz = a.get()[i].point.z*m_scale;
-                size_t idx = calcIndex((ix - m_bb.getMin()[0])/voxelsize);
-                size_t idy = calcIndex((iy - m_bb.getMin()[1])/voxelsize);
-                size_t idz = calcIndex((iz - m_bb.getMin()[2])/voxelsize);
-                size_t h = hashValue(idx,idy,idz);
+            for (int i = 0; i < rsize; i++) {
+                ix = a.get()[i].point.x * m_scale;
+                iy = a.get()[i].point.y * m_scale;
+                iz = a.get()[i].point.z * m_scale;
+                size_t idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
+                size_t idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
+                size_t idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                size_t h = hashValue(idx, idy, idz);
                 m_gridNumPoints[h].ix = idx;
                 m_gridNumPoints[h].iy = idy;
                 m_gridNumPoints[h].iz = idz;
                 m_gridNumPoints[h].size++;
-                if(!m_gridNumPoints[h].ofs_points.is_open())
-                {
+                if (!m_gridNumPoints[h].ofs_points.is_open()) {
                     std::stringstream ss;
                     ss << "part-" << idx << "-" << idy << "-" << idz << "-points.binary";
-                    m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::binary);
+                    m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::out | std::ofstream::trunc);
                 }
-                m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
-                m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
-                m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
+                if (std::isnormal(ix) && std::isnormal(iy) && std::isnormal(iz)) {
+                    m_gridNumPoints[h].ofs_points << ix << " " << iy << " " << iz << endl;
+//                    m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
+//                    m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
+//                    m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
+                }
             }
         }
         else if (lineReader.getFileType() == XYZRGB)
@@ -283,31 +287,58 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                 m_gridNumPoints[h].ix = idx;
                 m_gridNumPoints[h].iy = idy;
                 m_gridNumPoints[h].iz = idz;
-                m_gridNumPoints[h].size++;
                 if(!m_gridNumPoints[h].ofs_points.is_open())
                 {
                     std::stringstream ss;
                     ss << "part-" << idx << "-" << idy << "-" << idz << "-points.binary";
-                    m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::binary);
+                    m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::out | std::ofstream::trunc);
                 }
-                m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
-                m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
-                m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
+                if(std::isnormal(ix) && std::isnormal(iy) && std::isnormal(iz))
+                {
+                    m_gridNumPoints[h].ofs_points << ix << " " << iy << " " << iz << endl;
+//                    m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
+//                    m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
+//                    m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
+
+                } else
+                {
+                    continue;
+                }
+
+                m_gridNumPoints[h].size++;
 
                 if(!m_gridNumPoints[h].ofs_colors.is_open())
                 {
                     std::stringstream ss;
                     ss << "part-" << idx << "-" << idy << "-" << idz << "-colors.binary";
-                    m_gridNumPoints[h].ofs_colors.open(ss.str(), std::ofstream::binary);
+                    m_gridNumPoints[h].ofs_colors.open(ss.str(), std::ofstream::out | std::ofstream::trunc);
                 }
-                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.r,sizeof(unsigned char));
-                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.g,sizeof(unsigned char));
-                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.b,sizeof(unsigned char));
+                m_gridNumPoints[h].ofs_colors << a.get()[i].color.r << " " << a.get()[i].color.g << " " << a.get()[i].color.b << endl;
+//                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.r,sizeof(unsigned char));
+//                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.g,sizeof(unsigned char));
+//                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.b,sizeof(unsigned char));
             }
         }
     }
 
+    for(auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end(); it++)
+    {
+        float cx  = m_bb.getMin().x + it->second.ix * m_voxelSize;
+        float cy = m_bb.getMin().y + it->second.iy * m_voxelSize;
+        float cz = m_bb.getMin().z + it->second.iz * m_voxelSize;
 
+        float minx = cx-m_voxelSize/2;
+        float miny = cy-m_voxelSize/2;
+        float minz = cz-m_voxelSize/2;
+
+        float maxx = cx+m_voxelSize/2;
+        float maxy = cy+m_voxelSize/2;
+        float maxz = cz+m_voxelSize/2;
+        it->second.bb = lvr::BoundingBox<lvr::Vertexf>(minx,miny,minz,maxx,maxy,maxz);
+//        it->second.bb.expand(maxx, maxy, maxz);
+//        it->second.bb.expand(minx, miny, minz);
+    }
+    lineReader.rewind();
 
     // Add overlapping points
     for(auto cell = m_gridNumPoints.begin() ; cell != m_gridNumPoints.end(); cell++)
@@ -331,9 +362,75 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                     if(neigbout_it != m_gridNumPoints.end())
                     {
                         neigbout_it->second.overlapping_size++;
-                        neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
-                        neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
-                        neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+                    }
+                }
+                if(x > cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix+1, cell->second.iy, cell->second.iz);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+                    }
+                }
+                if(y < cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix, cell->second.iy-1, cell->second.iz);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+                    }
+                }
+                if(y > cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix, cell->second.iy+1, cell->second.iz);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+                    }
+                }
+                if(z < cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix, cell->second.iy, cell->second.iz-1);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+                    }
+                }
+                if(z > cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix, cell->second.iy, cell->second.iz+1);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
                     }
                 }
             }
@@ -370,20 +467,145 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                     if(neigbout_it != m_gridNumPoints.end())
                     {
                         neigbout_it->second.overlapping_size++;
-                        neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
-                        neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
-                        neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
 
-                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3],sizeof(float));
-                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+1],sizeof(float));
-                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
+                        neigbout_it->second.ofs_points << normalBuffer[i*3] << " " << normalBuffer[i*3+1] << " " << normalBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+1],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
 
-                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3],sizeof(unsigned char));
-                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+1],sizeof(unsigned char));
-                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
+
+                        neigbout_it->second.ofs_points << colorBuffer[i*3] << " " << colorBuffer[i*3+1] << " " << colorBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+1],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
+                    }
+                }
+                if(x > cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix+1, cell->second.iy, cell->second.iz);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_points << normalBuffer[i*3] << " " << normalBuffer[i*3+1] << " " << normalBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+1],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
+
+
+                        neigbout_it->second.ofs_points << colorBuffer[i*3] << " " << colorBuffer[i*3+1] << " " << colorBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+1],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
+                    }
+                }
+                if(y < cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix, cell->second.iy-1, cell->second.iz);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_points << normalBuffer[i*3] << " " << normalBuffer[i*3+1] << " " << normalBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+1],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
+
+
+                        neigbout_it->second.ofs_points << colorBuffer[i*3] << " " << colorBuffer[i*3+1] << " " << colorBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+1],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
+                    }
+                }
+                if(y > cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix, cell->second.iy+1, cell->second.iz);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_points << normalBuffer[i*3] << " " << normalBuffer[i*3+1] << " " << normalBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+1],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
+
+
+                        neigbout_it->second.ofs_points << colorBuffer[i*3] << " " << colorBuffer[i*3+1] << " " << colorBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+1],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
+                    }
+                }
+                if(z < cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix, cell->second.iy, cell->second.iz-1);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_points << normalBuffer[i*3] << " " << normalBuffer[i*3+1] << " " << normalBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+1],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
+
+
+                        neigbout_it->second.ofs_points << colorBuffer[i*3] << " " << colorBuffer[i*3+1] << " " << colorBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+1],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
+                    }
+                }
+                if(z > cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix, cell->second.iy, cell->second.iz+1);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_points << normalBuffer[i*3] << " " << normalBuffer[i*3+1] << " " << normalBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+1],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
+
+
+                        neigbout_it->second.ofs_points << colorBuffer[i*3] << " " << colorBuffer[i*3+1] << " " << colorBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+1],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
                     }
                 }
             }
+
         }
         else if (lineReader.getFileType() == XYZN)
         {
@@ -413,13 +635,105 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                     if(neigbout_it != m_gridNumPoints.end())
                     {
                         neigbout_it->second.overlapping_size++;
-                        neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
-                        neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
-                        neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
 
-                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3],sizeof(float));
-                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+1],sizeof(float));
-                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
+                        neigbout_it->second.ofs_points << normalBuffer[i*3] << " " << normalBuffer[i*3+1] << " " << normalBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+1],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
+                    }
+                }
+                if(x > cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix+1, cell->second.iy, cell->second.iz);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_points << normalBuffer[i*3] << " " << normalBuffer[i*3+1] << " " << normalBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+1],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
+                    }
+                }
+                if(y < cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix, cell->second.iy-1, cell->second.iz);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_points << normalBuffer[i*3] << " " << normalBuffer[i*3+1] << " " << normalBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+1],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
+                    }
+                }
+                if(y > cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix+1, cell->second.iy, cell->second.iz);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_points << normalBuffer[i*3] << " " << normalBuffer[i*3+1] << " " << normalBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+1],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
+                    }
+                }
+                if(z < cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix, cell->second.iy, cell->second.iz-1);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_points << normalBuffer[i*3] << " " << normalBuffer[i*3+1] << " " << normalBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+1],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
+                    }
+                }
+                if(z > cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix, cell->second.iy, cell->second.iz+1);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_points << normalBuffer[i*3] << " " << normalBuffer[i*3+1] << " " << normalBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+1],sizeof(float));
+//                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
                     }
                 }
             }
@@ -443,6 +757,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                 float x = pointBuffer[i*3];
                 float y = pointBuffer[i*3+1];
                 float z = pointBuffer[i*3+2];
+                if((std::isnormal(x) && std::isnormal(y) && std::isnormal(z))) continue;
                 if(x < cell->second.bb.getMin().x + overlapp_size)
                 {
                     size_t neighbour_hash = hashValue(cell->second.ix-1, cell->second.iy, cell->second.iz);
@@ -450,13 +765,111 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                     if(neigbout_it != m_gridNumPoints.end())
                     {
                         neigbout_it->second.overlapping_size++;
-                        neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
-                        neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
-                        neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
 
-                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3],sizeof(unsigned char));
-                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+1],sizeof(unsigned char));
-                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_points << colorBuffer[i*3] << " " << colorBuffer[i*3+1] << " " << colorBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+1],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
+                    }
+                }
+                if(x > cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix+1, cell->second.iy, cell->second.iz);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_points << colorBuffer[i*3] << " " << colorBuffer[i*3+1] << " " << colorBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+1],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
+                    }
+                }
+                if(y < cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix, cell->second.iy-1, cell->second.iz);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_points << colorBuffer[i*3] << " " << colorBuffer[i*3+1] << " " << colorBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+1],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
+                    }
+                }
+                if(y > cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix, cell->second.iy+1, cell->second.iz);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_points << colorBuffer[i*3] << " " << colorBuffer[i*3+1] << " " << colorBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+1],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
+                    }
+                }
+                if(z < cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix, cell->second.iy, cell->second.iz-1);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_points << colorBuffer[i*3] << " " << colorBuffer[i*3+1] << " " << colorBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+1],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
+                    }
+                }
+                if(z > cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix, cell->second.iy, cell->second.iz+1);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+
+                        neigbout_it->second.ofs_points << x << " " << y << " " << z << endl;
+//                            neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+//                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_points << colorBuffer[i*3] << " " << colorBuffer[i*3+1] << " " << colorBuffer[i*3+2]<< endl;
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+1],sizeof(unsigned char));
+//                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
                     }
                 }
             }

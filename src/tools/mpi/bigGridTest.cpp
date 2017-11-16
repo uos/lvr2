@@ -114,6 +114,7 @@ typedef lvr::AdaptiveKSearchSurface<lvr::ColorVertex<float, unsigned char>, lvr:
 
 int main(int argc, char** argv)
 {
+
 //make sure to include the random number generators and such
 
 //    std::random_device seeder;
@@ -170,6 +171,11 @@ int main(int argc, char** argv)
     std::vector<BigVolumen::VolumeCellInfo*> cell_vec;
     if(volumenSize > 0)
     {
+        if(fmod(volumenSize, voxelsize) > 0.00001 )
+        {
+            cerr << "ERROR: Size of Volume must be multiple of voxelsize e.g. Volume 12 and voxelsize 2" << endl;
+            exit(-1);
+        }
         cout << lvr::timestamp << " getting BoundingBox" << endl;
         LineReader lr(inputFiles);
          bv = new BigVolumen(inputFiles, volumenSize, volumenSize/10);
@@ -177,7 +183,8 @@ int main(int argc, char** argv)
         for(auto cell_it = cells->begin(); cell_it != cells->end(); cell_it++)
         {
             cell_vec.push_back(&cell_it->second);
-            partitionBoxes.push_back(cell_it->second.bb);
+            BoundingBox<Vertexf > partBB = cell_it->second.bb;
+            partitionBoxes.push_back(partBB);
         }
     }
     else
@@ -210,19 +217,44 @@ int main(int argc, char** argv)
         cout << lvr::timestamp << "loading data " << i  << endl;
         double start_s = lvr::timestamp.getElapsedTimeInS();
         lvr::floatArr points;
+        lvr::PointBufferPtr p_loader(new lvr::PointBuffer);
+
         if(volumenSize > 0)
         {
+
             numPoints = cell_vec[i]->size+cell_vec[i]->overlapping_size;
-            points = lvr::floatArr(new float[numPoints*3]);
             stringstream ss_points;
             ss_points << "part-" <<  cell_vec[i]->ix << "-" <<  cell_vec[i]->iy << "-" <<  cell_vec[i]->iz << "-points.binary";
-            ifstream ifs_points(ss_points.str(), std::ifstream::binary);
-            ifs_points.read((char*)points.get(), sizeof(float)*3*numPoints);
+            cout << "file= " << ss_points.str() << endl;
+            std::ifstream size_in(ss_points.str(), std::ifstream::ate | std::ifstream::binary);
+            size_t file_bytes = size_in.tellg();
+            cout << "OLD NUM: " << numPoints << endl;
+//            numPoints = (file_bytes/ sizeof(float))/3;
+            points = lvr::floatArr(new float[numPoints*3]);
+            cout << "NEW NUM: " << numPoints  << endl;
+//            ifstream ifs_points(ss_points.str(), std::ifstream::binary);
+            ifstream ifs_points(ss_points.str());
+//            ifs_points.read((char*)points.get(), sizeof(float)*3*numPoints);
+
+            size_t readNum = 0;
+            while(ifs_points.good())
+            {
+                ifs_points >> points[readNum++];
+            }
+
+            std::stringstream ss_normals2;
+            ss_normals2 << "part-" <<  cell_vec[i]->ix << "-" <<  cell_vec[i]->iy << "-" <<  cell_vec[i]->iz << "-points.ply";
+            PointBufferPtr pt(new PointBuffer);
+            pt->setPointArray(points,numPoints);
+            ModelPtr m(new Model(pt));
+            ModelFactory::saveModel( m, ss_normals2.str());
+            p_loader->setPointArray(points, numPoints);
         }
         else
         {
             points =  bg->points(partitionBoxes[i].getMin().x - voxelsize*3, partitionBoxes[i].getMin().y - voxelsize*3, partitionBoxes[i].getMin().z - voxelsize*3 ,
                                  partitionBoxes[i].getMax().x + voxelsize*3, partitionBoxes[i].getMax().y + voxelsize*3, partitionBoxes[i].getMax().z + voxelsize*3,numPoints);
+            p_loader->setPointArray(points, numPoints);
         }
 
         double end_s = lvr::timestamp.getElapsedTimeInS();
@@ -239,8 +271,7 @@ int main(int argc, char** argv)
         cout << "ki=" << options.getKi() << endl;
         cout << "kd=" << options.getKd() << endl;
         cout << gridbb << endl;
-        lvr::PointBufferPtr p_loader(new lvr::PointBuffer);
-        p_loader->setPointArray(points, numPoints);
+
         bool navail = false;
         if(volumenSize <= 0)
         {
@@ -354,7 +385,10 @@ int main(int argc, char** argv)
         PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
         ps_grid->setBB(gridbb);
         ps_grid->calcIndices();
+        cout << "||||||||||||||||||||||||" << endl;
         ps_grid->calcDistanceValues();
+        cout << "||||||||||||||||||||||||" << endl;
+
         double grid_end = lvr::timestamp.getElapsedTimeInS();
         dist_time+=(grid_end-grid_start);
 

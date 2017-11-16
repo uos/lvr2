@@ -209,7 +209,7 @@ fileType LineReader::getFileType(size_t i)
     }
     else
     {
-        throw readException("There is no file with selected index");
+        throw readException("There is no file with selected index\n (maybe you forgot to rewind LineReader when reading file again?)");
     }
 }
 fileType LineReader::getFileType()
