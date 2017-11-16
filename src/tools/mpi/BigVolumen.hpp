@@ -54,7 +54,7 @@ public:
      * @param cloudPath path to PointCloud in ASCII xyz Format // Todo: Add other file formats
      * @param voxelsize
      */
-    BigVolumen(std::vector<std::string>, float voxelsize, float overlapping_size = 0, float scale = 0);
+    BigVolumen(std::vector<std::string>, float voxelsize, float overlapping_size = 0, float scale = 1);
 
     /**
      * @return Number of voxels
