@@ -162,6 +162,7 @@ void LineReader::open(std::vector<std::string> filePaths)
 
 
         }
+
         currentAttr.m_filePos = ifs.tellg();
         if(gotxyz && gotcolor && gotnormal)
         {
@@ -233,13 +234,12 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
             boost::shared_ptr<void> tmp;
             return tmp;
         }
-
-
     }
 
     std::string filePath = m_fileAttributes[m_currentReadFile].m_filePath;
+    
     FILE * pFile;
-    pFile = fopen (filePath.c_str(),"r");
+    pFile = fopen(filePath.c_str(), "r");
     if (pFile!=NULL)
     {
         if(m_fileAttributes[m_currentReadFile].m_ply && m_fileAttributes[m_currentReadFile].m_binary)
@@ -272,6 +272,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
             size_t readCount = 0;
             if(m_fileAttributes[m_currentReadFile].m_fileType == XYZ && m_fileAttributes[m_currentReadFile].m_line_element_amount != 3)
             {
+                
                 std::vector<float> input;
                 input.reserve(amount*3);
                 boost::shared_ptr<void> pArray(new char[amount*m_fileAttributes[m_currentReadFile].m_PointBlockSize], std::default_delete<char[]>());
@@ -290,6 +291,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
                 return_amount = readCount;
                 if(return_amount < amount) m_openNextFile = true;
                 m_fileAttributes[m_currentReadFile].m_filePos = ftell(pFile);
+                fclose(pFile);
                 return pArray;
             }
             if(m_fileAttributes[m_currentReadFile].m_fileType == XYZ)
@@ -305,10 +307,16 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
                     input.push_back(ay);
                     input.push_back(az);
                 }
+                
                 memcpy ( pArray.get(), input.data(), m_fileAttributes[m_currentReadFile].m_PointBlockSize*readCount );
                 return_amount = readCount;
-                if(return_amount < amount) m_openNextFile = true;
+                if(return_amount < amount){
+                    m_openNextFile = true;
+                } else{
+                    m_openNextFile = false;
+                }
                 m_fileAttributes[m_currentReadFile].m_filePos = ftell(pFile);
+                fclose(pFile);
                 return pArray;
             }
             else if(m_fileAttributes[m_currentReadFile].m_fileType == XYZN)
@@ -328,6 +336,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
                 return_amount = readCount;
                 if(return_amount < amount) m_openNextFile = true;
                 m_fileAttributes[m_currentReadFile].m_filePos = ftell(pFile);
+                fclose(pFile);
                 return pArray;
             }
             else if(m_fileAttributes[m_currentReadFile].m_fileType == XYZRGB)
@@ -345,6 +354,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
                 return_amount = readCount;
                 if(return_amount < amount) m_openNextFile = true;
                 m_fileAttributes[m_currentReadFile].m_filePos = ftell(pFile);
+                fclose(pFile);
                 return pArray;
             }
             else if(m_fileAttributes[m_currentReadFile].m_fileType == XYZNRGB)
@@ -368,6 +378,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
                 {
                     m_openNextFile = true;
                 }
+                fclose(pFile);
                 return pArray;
             }
 
@@ -375,6 +386,8 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
         }
         fclose(pFile);
     }
+    
+    
 
 }
 void LineReader::rewind()
