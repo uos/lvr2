@@ -33,6 +33,7 @@
 #include <boost/algorithm/string/replace.hpp>
 #include "LineReader.hpp"
 #include "VolumenGrid.h"
+#include "BigVolumen.hpp"
 #include "sortPoint.hpp"
 #include <flann/flann.hpp>
 #include <random>
@@ -145,6 +146,7 @@ int main(int argc, char** argv)
     cout << lvr::timestamp << "Starting grid" << endl;
     float volumenSize = (float)(options.getVolumenSize()); // 10 x 10 x 10 voxel
     BigGrid* bg;
+    BigVolumen* bv;
     lvr::BoundingBox<lvr::Vertexf> bb;
     if(volumenSize <= 0)
     {
@@ -158,23 +160,25 @@ int main(int argc, char** argv)
         double end_ss2 = lvr::timestamp.getElapsedTimeInS();
         datastruct_time = (end_ss2 - start_ss);
     }
-    
+
 
 
     vector<BoundingBox<Vertexf > > partitionBoxes;
     //lvr::floatArr points = bg->getPointCloud(numPoints);
     cout << lvr::timestamp << "making tree" << endl;
-
+    std::unordered_map<size_t, BigVolumen::VolumeCellInfo >* cells;
+    std::vector<BigVolumen::VolumeCellInfo*> cell_vec;
     if(volumenSize > 0)
     {
         cout << lvr::timestamp << " getting BoundingBox" << endl;
         LineReader lr(inputFiles);
-        BoundingBox<Vertexf> bb;
-        size_t numPoints;
-        getBoundingBoxNumPoints(lr,bb,numPoints);
-        cout << lvr::timestamp << " got BoundingBox" << endl << bb <<endl;
-        cout << lvr::timestamp << " got " << numPoints << " points" <<endl;
-
+         bv = new BigVolumen(inputFiles, volumenSize, volumenSize/10);
+        cells = bv->getCellinfo();
+        for(auto cell_it = cells->begin(); cell_it != cells->end(); cell_it++)
+        {
+            cell_vec.push_back(&cell_it->second);
+            partitionBoxes.push_back(cell_it->second.bb);
+        }
     }
     else
     {
@@ -208,7 +212,12 @@ int main(int argc, char** argv)
         lvr::floatArr points;
         if(volumenSize > 0)
         {
-//            points = vg->points(i, numPoints);
+            numPoints = cell_vec[i]->size+cell_vec[i]->overlapping_size;
+            points = lvr::floatArr(new float[numPoints*3]);
+            stringstream ss_points;
+            ss_points << "part-" <<  cell_vec[i]->ix << "-" <<  cell_vec[i]->iy << "-" <<  cell_vec[i]->iz << "-points.binary";
+            ifstream ifs_points(ss_points.str(), std::ifstream::binary);
+            ifs_points.read((char*)points.get(), sizeof(float)*3*numPoints);
         }
         else
         {
@@ -248,6 +257,24 @@ int main(int argc, char** argv)
             else
             {
                 if(bg->hasNormals()) navail = true;
+            }
+        }
+        else
+        {
+            if(bv->hasNormals())
+            {
+
+                size_t numNormals = numPoints;
+                stringstream ss_normals;
+                ss_normals << "part-" <<  cell_vec[i]->ix << "-" <<  cell_vec[i]->iy << "-" <<  cell_vec[i]->iz << "-normals.binary";
+                ifstream ifs_normals(ss_normals.str(), std::ifstream::binary);
+                lvr::floatArr normals(new float[numNormals*3]);
+                ifs_normals.read((char*)normals.get(), sizeof(float)*3*numNormals);
+                p_loader->setPointNormalArray(normals, numNormals);
+            }
+            else
+            {
+                if(bv->hasNormals()) navail = true;
             }
         }
 
@@ -709,7 +736,8 @@ int main(int argc, char** argv)
     cout << "dup_time " << dup_time << endl;
     cout << lvr::timestamp << "finished" << endl;
 
-
+    if(bg) delete bg;
+    if(bv) delete bv;
 
 
     ofs_ply.close();
