@@ -19,6 +19,9 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
+#include <fstream>
+#include <sstream>
+
 
 
 
@@ -26,28 +29,32 @@ class BigVolumen
 {
 
 
-struct CellInfo
-{
-    CellInfo() : size(0), offset(0), inserted(0), dist_offset(0) {}
-    size_t size;
-    size_t offset;
-    size_t inserted;
-    size_t dist_offset;
-    size_t ix;
-    size_t iy;
-    size_t iz;
-    lvr::BoundingBox<lvr::Vertexf> bb;
-};
 
 
 
 public:
+
+    struct VolumeCellInfo
+    {
+        VolumeCellInfo() : size(0), overlapping_size(0) {}
+        size_t size;
+        size_t overlapping_size;
+        size_t ix;
+        size_t iy;
+        size_t iz;
+        std::string path;
+        lvr::BoundingBox<lvr::Vertexf> bb;
+        std::ofstream ofs_points;
+        std::ofstream ofs_normals;
+        std::ofstream ofs_colors;
+    };
+
     /**
      * Constructor:
      * @param cloudPath path to PointCloud in ASCII xyz Format // Todo: Add other file formats
      * @param voxelsize
      */
-    BigVolumen(std::vector<std::string>, float voxelsize, float scale = 0);
+    BigVolumen(std::vector<std::string>, float voxelsize, float overlapping_size = 0, float scale = 0);
 
     /**
      * @return Number of voxels
@@ -59,45 +66,6 @@ public:
      */
     size_t pointSize();
 
-    /**
-     * Amount of Ponts in Voxel at position i,j,k
-     * @param i
-     * @param j
-     * @param k
-     * @return amount of points, 0 if voxel does not exsist
-     */
-    size_t pointSize(int i, int j, int k);
-
-    /**
-     * Points of  Voxel at position i,j,k
-     * @param i
-     * @param j
-     * @param k
-     * @param numPoints, amount of points in lvr::floatArr
-     * @return lvr::floatArr, containing points
-     */
-    lvr::floatArr points(int i, int j, int k, size_t& numPoints);
-
-    /**
-     *  Points that are within bounding box defined by a min and max point
-     * @param minx
-     * @param miny
-     * @param minz
-     * @param maxx
-     * @param maxy
-     * @param maxz
-     * @param numPoints
-     * @return lvr::floatArr, containing points
-     */
-    lvr::floatArr points(float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints);
-
-    lvr::floatArr normals(float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints);
-
-    lvr::ucharArr colors(float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints);
-
-    size_t getSizeofBox(float minx, float miny, float minz, float maxx, float maxy, float maxz);
-
-    lvr::floatArr getPointCloud(size_t & numPoints);
 
     lvr::BoundingBox<lvr::Vertexf>& getBB(){return m_bb;}
 
@@ -108,20 +76,6 @@ public:
         return i * m_maxIndexSquare + j * m_maxIndex + k;
     }
 
-    inline size_t getDistanceFileOffset(size_t hash)
-    {
-        if(exists(hash))
-        {
-            return m_gridNumPoints[hash].dist_offset;
-        }
-        else return 0;
-    }
-    inline bool exists(size_t hash)
-    {
-        auto it = m_gridNumPoints.find(hash);
-        return it!=m_gridNumPoints.end();
-    }
-
     inline bool hasColors()
     {
         return m_has_color;
@@ -130,15 +84,14 @@ public:
     {
         return m_has_normal;
     }
+
+    inline std::unordered_map<size_t, VolumeCellInfo >* getCellinfo(){return &m_gridNumPoints;};
 private:
 
     inline int calcIndex(float f)
     {
         return f < 0 ? f-.5:f+.5;
     }
-
-    bool exists(int i, int j, int k);
-    void insert(float x, float y, float z);
 
     size_t m_maxIndexSquare;
     size_t m_maxIndex;
@@ -157,7 +110,7 @@ private:
     boost::iostreams::mapped_file m_NomralFile;
     boost::iostreams::mapped_file m_ColorFile;
     lvr::BoundingBox<lvr::Vertexf> m_bb;
-    std::unordered_map<size_t, CellInfo > m_gridNumPoints;
+    std::unordered_map<size_t, VolumeCellInfo > m_gridNumPoints;
     float m_scale;
 
 

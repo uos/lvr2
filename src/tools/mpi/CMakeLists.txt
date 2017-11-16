@@ -11,7 +11,7 @@ add_executable(seg
         LineReader.cpp)
 add_executable(lvrSlamConverter SlamImporter.cpp)
 add_executable(lvr_removeDuplicates removeDuplicates.cpp DuplicateRemover.cpp)
-add_executable(lvr_largescale_reconstruct bigGridTest.cpp BigGrid.cpp BigGridKdTree.cpp LineReader.cpp  LargeScaleOptions.cpp VolumenGrid.cpp)
+add_executable(lvr_largescale_reconstruct bigGridTest.cpp BigGrid.cpp BigVolumen.cpp BigGridKdTree.cpp LineReader.cpp  LargeScaleOptions.cpp VolumenGrid.cpp)
 add_executable(lvr_mpi_largescale_reconstruct LargeScaleReconstruction2.cpp  LargeScaleOptions.cpp BigGrid.cpp BigGridKdTree.cpp LineReader.cpp )
 target_link_libraries(lvr_largescale_reconstruct ${Boost_LIBRARIES} lvr )
 target_link_libraries(lvr_removeDuplicates  lvr_static )

@@ -7,12 +7,14 @@
 #include <cstring>
 #include "LineReader.hpp"
 #include <lvr/reconstruction/FastReconstructionTables.hpp>
-BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, float scale) :
+BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, float overlapping_size, float scale) :
         m_maxIndex(0), m_maxIndexSquare(0), m_maxIndexX(0), m_maxIndexY(0), m_maxIndexZ(0), m_numPoints(0), m_extrude(true),m_scale(scale),
         m_has_normal(false), m_has_color(false)
 {
     omp_init_lock(&m_lock);
+    if(overlapping_size==0) overlapping_size = voxelsize/10;
     m_voxelSize = voxelsize;
+    float overlapp_size = overlapping_size;
     //First, parse whole file to get BoundingBox and amount of points
     float ix,iy,iz;
     std::cout << lvr::timestamp << " Starting BB" << std::endl;
@@ -130,138 +132,27 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
     }
 
     size_t idx, idy, idz;
-    while (lineReader.ok()) {
-        if (lineReader.getFileType() == XYZNRGB) {
-            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0  && !lineReader.ok()){
-                break;
-            }
-            int dx, dy, dz;
-            for (int i = 0; i < rsize; i++) {
-                ix = a.get()[i].point.x*m_scale;
-                iy = a.get()[i].point.y*m_scale;
-                iz = a.get()[i].point.z*m_scale;
-                idx = calcIndex((ix - m_bb.getMin()[0])/voxelsize);
-                idy = calcIndex((iy - m_bb.getMin()[1])/voxelsize);
-                idz = calcIndex((iz - m_bb.getMin()[2])/voxelsize);
-                size_t h = hashValue(idx,idy,idz);
-                m_gridNumPoints[h].size++;
 
-
-            }
-        } else if (lineReader.getFileType() == XYZN) {
-            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0  && !lineReader.ok()){
-                break;
-            }
-            int dx, dy, dz;
-            for (int i = 0; i < rsize; i++) {
-                ix = a.get()[i].point.x*m_scale;
-                iy = a.get()[i].point.y*m_scale;
-                iz = a.get()[i].point.z*m_scale;
-                idx = calcIndex((ix - m_bb.getMin()[0])/voxelsize);
-                idy = calcIndex((iy - m_bb.getMin()[1])/voxelsize);
-                idz = calcIndex((iz - m_bb.getMin()[2])/voxelsize);
-                size_t h = hashValue(idx,idy,idz);
-                m_gridNumPoints[h].size++;
-
-
-            }
-        } else if (lineReader.getFileType() == XYZ) {
-            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0  && !lineReader.ok()){
-                break;
-            }
-            int dx, dy, dz;
-            for (int i = 0; i < rsize; i++) {
-                ix = a.get()[i].point.x*m_scale;
-                iy = a.get()[i].point.y*m_scale;
-                iz = a.get()[i].point.z*m_scale;
-                idx = calcIndex((ix - m_bb.getMin()[0])/voxelsize);
-                idy = calcIndex((iy - m_bb.getMin()[1])/voxelsize);
-                idz = calcIndex((iz - m_bb.getMin()[2])/voxelsize);
-                size_t h = hashValue(idx,idy,idz);
-                m_gridNumPoints[h].size++;
-
-
-            }
-        }
-        else if (lineReader.getFileType() == XYZRGB) {
-            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0  && !lineReader.ok()){
-                break;
-            }
-            int dx, dy, dz;
-            for (int i = 0; i < rsize; i++) {
-                ix = a.get()[i].point.x*m_scale;
-                iy = a.get()[i].point.y*m_scale;
-                iz = a.get()[i].point.z*m_scale;
-                idx = calcIndex((ix - m_bb.getMin()[0])/voxelsize);
-                idy = calcIndex((iy - m_bb.getMin()[1])/voxelsize);
-                idz = calcIndex((iz - m_bb.getMin()[2])/voxelsize);
-                size_t h = hashValue(idx,idy,idz);
-                m_gridNumPoints[h].size++;
-
-
-            }
-        }
-        else
-        {
-            exit(-1);
-        }
-    }
-
-
-    size_t num_cells = 0;
-    size_t offset = 0;
-    for(auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end() ; ++it)
-    {
-        it->second.offset = offset;
-        offset+=it->second.size;
-        it->second.dist_offset = num_cells++;
-    }
-
-    lineReader.rewind();
-
-    boost::iostreams::mapped_file_params mmfparam;
-    mmfparam.path = "points.mmf";
-    mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
-    mmfparam.new_file_size = sizeof(float)*m_numPoints*3;
-
-    boost::iostreams::mapped_file_params mmfparam_normal;
-    mmfparam_normal.path = "normals.mmf";
-    mmfparam_normal.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
-    mmfparam_normal.new_file_size = sizeof(float)*m_numPoints*3;
-
-    boost::iostreams::mapped_file_params mmfparam_color;
-    mmfparam_color.path = "colors.mmf";
-    mmfparam_color.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
-    mmfparam_color.new_file_size = sizeof(unsigned char)*m_numPoints*3;
-
-    m_PointFile.open(mmfparam);
-    float *mmfdata_normal;
-    unsigned char *mmfdata_color;
     if(lineReader.getFileType() == XYZNRGB || lineReader.getFileType() == XYZN)
     {
-        m_NomralFile.open(mmfparam_normal);
-        mmfdata_normal = (float*)m_NomralFile.data();
         m_has_normal = true;
     }
     if(lineReader.getFileType() == XYZNRGB || lineReader.getFileType() == XYZRGB)
     {
-        m_ColorFile.open(mmfparam_color);
-        mmfdata_color =  (unsigned char*)m_ColorFile.data();
         m_has_color = true;
     }
-    float * mmfdata = (float*)m_PointFile.data();
 
-    while (lineReader.ok()) {
-        if (lineReader.getFileType() == XYZNRGB) {
+    while (lineReader.ok())
+    {
+        if (lineReader.getFileType() == XYZNRGB)
+        {
             boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0  && !lineReader.ok()){
+            if (rsize <= 0  && !lineReader.ok())
+            {
                 break;
             }
-            for (int i = 0; i < rsize; i++) {
+            for (int i = 0; i < rsize; i++)
+            {
                 ix = a.get()[i].point.x*m_scale;
                 iy = a.get()[i].point.y*m_scale;
                 iz = a.get()[i].point.z*m_scale;
@@ -269,91 +160,48 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                 size_t idy = calcIndex((iy - m_bb.getMin()[1])/voxelsize);
                 size_t idz = calcIndex((iz - m_bb.getMin()[2])/voxelsize);
                 size_t h = hashValue(idx,idy,idz);
-                size_t ins = (m_gridNumPoints[h].inserted);
                 m_gridNumPoints[h].ix = idx;
                 m_gridNumPoints[h].iy = idy;
                 m_gridNumPoints[h].iz = idz;
-                m_gridNumPoints[h].inserted++;
-                size_t index = m_gridNumPoints[h].offset + ins;
-                mmfdata[index*3] = ix;
-                mmfdata[index*3+1] = iy;
-                mmfdata[index*3+2] = iz;
-                mmfdata_normal[index*3] = a.get()[i].normal.x;
-                mmfdata_normal[index*3+1] = a.get()[i].normal.y;
-                mmfdata_normal[index*3+2] = a.get()[i].normal.z;
+                m_gridNumPoints[h].size++;
+                if(!m_gridNumPoints[h].ofs_points.is_open())
+                {
+                    std::stringstream ss;
+                    ss << "part-" << idx << "-" << idy << "-" << idz << "-points.binary";
+                    m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::binary);
+                }
+                m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
+                m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
+                m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
 
-                mmfdata_color[index*3] = a.get()[i].color.r;
-                mmfdata_color[index*3+1] = a.get()[i].color.g;
-                mmfdata_color[index*3+2] = a.get()[i].color.b;
+                if(!m_gridNumPoints[h].ofs_normals.is_open())
+                {
+                    std::stringstream ss;
+                    ss << "part-" << idx << "-" << idy << "-" << idz << "-normals.binary";
+                    m_gridNumPoints[h].ofs_normals.open(ss.str(), std::ofstream::binary);
+                }
+                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.x,sizeof(float));
+                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.y,sizeof(float));
+                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.z,sizeof(float));
 
-
-                if(fabs(ix - m_gridNumPoints[h].bb.getMin().x) < m_voxelSize/10)
+                if(!m_gridNumPoints[h].ofs_colors.is_open())
                 {
-                    size_t neighbout_h = hashValue(idx-1,idy,idz);
-                    if(m_gridNumPoints.find(neighbout_h) != m_gridNumPoints.end())
-                    {
-                        size_t ins = (m_gridNumPoints[neighbout_h].inserted);
-                        m_gridNumPoints[neighbout_h].inserted++;
-                        size_t index_n = m_gridNumPoints[neighbout_h].offset + ins;
-                        mmfdata[index_n*3] = ix;
-                        mmfdata[index_n*3+1] = iy;
-                        mmfdata[index_n*3+2] = iz;
-                        mmfdata_normal[index_n*3] = a.get()[i].normal.x;
-                        mmfdata_normal[index_n*3+1] = a.get()[i].normal.y;
-                        mmfdata_normal[index_n*3+2] = a.get()[i].normal.z;
-
-                        mmfdata_color[index_n*3] = a.get()[i].color.r;
-                        mmfdata_color[index_n*3+1] = a.get()[i].color.g;
-                        mmfdata_color[index_n*3+2] = a.get()[i].color.b;
-                    }
+                    std::stringstream ss;
+                    ss << "part-" << idx << "-" << idy << "-" << idz << "-colors.binary";
+                    m_gridNumPoints[h].ofs_colors.open(ss.str(), std::ofstream::binary);
                 }
-                if(fabs(iy - m_gridNumPoints[h].bb.getMin().y) < m_voxelSize/10)
-                {
-                    size_t neighbout_h = hashValue(idx,idy-1,idz);
-                    if(m_gridNumPoints.find(neighbout_h) != m_gridNumPoints.end())
-                    {
-                        m_gridNumPoints[neighbout_h].size++;
-                    }
-                }
-                if(fabs(iz - m_gridNumPoints[h].bb.getMin().z) < m_voxelSize/10)
-                {
-                    size_t neighbout_h = hashValue(idx,idy,idz-1);
-                    if(m_gridNumPoints.find(neighbout_h) != m_gridNumPoints.end())
-                    {
-                        m_gridNumPoints[neighbout_h].size++;
-                    }
-                }
-                if(fabs(ix - m_gridNumPoints[h].bb.getMax().x) < m_voxelSize/10)
-                {
-                    size_t neighbout_h = hashValue(idx+1,idy,idz);
-                    if(m_gridNumPoints.find(neighbout_h) != m_gridNumPoints.end())
-                    {
-                        m_gridNumPoints[neighbout_h].size++;
-                    }
-                }
-                if(fabs(iy - m_gridNumPoints[h].bb.getMax().y) < m_voxelSize/10)
-                {
-                    size_t neighbout_h = hashValue(idx,idy+1,idz);
-                    if(m_gridNumPoints.find(neighbout_h) != m_gridNumPoints.end())
-                    {
-                        m_gridNumPoints[neighbout_h].size++;
-                    }
-                }
-                if(fabs(iz - m_gridNumPoints[h].bb.getMax().z) < m_voxelSize/10)
-                {
-                    size_t neighbout_h = hashValue(idx,idy,idz+1);
-                    if(m_gridNumPoints.find(neighbout_h) != m_gridNumPoints.end())
-                    {
-                        m_gridNumPoints[neighbout_h].size++;
-                    }
-                }
+                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.r,sizeof(unsigned char));
+                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.g,sizeof(unsigned char));
+                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.b,sizeof(unsigned char));
             }
         } else if (lineReader.getFileType() == XYZN) {
             boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0  && !lineReader.ok()){
+            if (rsize <= 0  && !lineReader.ok())
+            {
                 break;
             }
-            for (int i = 0; i < rsize; i++) {
+            for (int i = 0; i < rsize; i++)
+            {
                 ix = a.get()[i].point.x*m_scale;
                 iy = a.get()[i].point.y*m_scale;
                 iz = a.get()[i].point.z*m_scale;
@@ -361,25 +209,39 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                 size_t idy = calcIndex((iy - m_bb.getMin()[1])/voxelsize);
                 size_t idz = calcIndex((iz - m_bb.getMin()[2])/voxelsize);
                 size_t h = hashValue(idx,idy,idz);
-                size_t ins = (m_gridNumPoints[h].inserted);
                 m_gridNumPoints[h].ix = idx;
                 m_gridNumPoints[h].iy = idy;
                 m_gridNumPoints[h].iz = idz;
-                m_gridNumPoints[h].inserted++;
-                size_t index = m_gridNumPoints[h].offset + ins;
-                mmfdata[index*3] = ix;
-                mmfdata[index*3+1] = iy;
-                mmfdata[index*3+2] = iz;
-                mmfdata_normal[index*3] = a.get()[i].normal.x;
-                mmfdata_normal[index*3+1] = a.get()[i].normal.y;
-                mmfdata_normal[index*3+2] = a.get()[i].normal.z;
+                m_gridNumPoints[h].size++;
+                if(!m_gridNumPoints[h].ofs_points.is_open())
+                {
+                    std::stringstream ss;
+                    ss << "part-" << idx << "-" << idy << "-" << idz << "-points.binary";
+                    m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::binary);
+                }
+                m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
+                m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
+                m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
+
+                if(!m_gridNumPoints[h].ofs_normals.is_open())
+                {
+                    std::stringstream ss;
+                    ss << "part-" << idx << "-" << idy << "-" << idz << "-normals.binary";
+                    m_gridNumPoints[h].ofs_normals.open(ss.str(), std::ofstream::binary);
+                }
+                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.x,sizeof(float));
+                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.y,sizeof(float));
+                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.z,sizeof(float));
             }
-        } else if (lineReader.getFileType() == XYZ) {
+        } else if (lineReader.getFileType() == XYZ)
+        {
             boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0  && !lineReader.ok()){
+            if (rsize <= 0  && !lineReader.ok())
+            {
                 break;
             }
-            for (int i = 0; i < rsize; i++) {
+            for (int i = 0; i < rsize; i++)
+            {
                 ix = a.get()[i].point.x*m_scale;
                 iy = a.get()[i].point.y*m_scale;
                 iz = a.get()[i].point.z*m_scale;
@@ -387,23 +249,30 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                 size_t idy = calcIndex((iy - m_bb.getMin()[1])/voxelsize);
                 size_t idz = calcIndex((iz - m_bb.getMin()[2])/voxelsize);
                 size_t h = hashValue(idx,idy,idz);
-                size_t ins = (m_gridNumPoints[h].inserted);
                 m_gridNumPoints[h].ix = idx;
                 m_gridNumPoints[h].iy = idy;
                 m_gridNumPoints[h].iz = idz;
-                m_gridNumPoints[h].inserted++;
-                size_t index = m_gridNumPoints[h].offset + ins;
-                mmfdata[index*3] = ix;
-                mmfdata[index*3+1] = iy;
-                mmfdata[index*3+2] = iz;
+                m_gridNumPoints[h].size++;
+                if(!m_gridNumPoints[h].ofs_points.is_open())
+                {
+                    std::stringstream ss;
+                    ss << "part-" << idx << "-" << idy << "-" << idz << "-points.binary";
+                    m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::binary);
+                }
+                m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
+                m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
+                m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
             }
         }
-        else if (lineReader.getFileType() == XYZRGB) {
+        else if (lineReader.getFileType() == XYZRGB)
+        {
             boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(lineReader.getNextPoints(rsize,1024));
-            if (rsize <= 0  && !lineReader.ok()){
+            if (rsize <= 0  && !lineReader.ok())
+            {
                 break;
             }
-            for (int i = 0; i < rsize; i++) {
+            for (int i = 0; i < rsize; i++)
+            {
                 ix = a.get()[i].point.x*m_scale;
                 iy = a.get()[i].point.y*m_scale;
                 iz = a.get()[i].point.z*m_scale;
@@ -411,35 +280,195 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                 size_t idy = calcIndex((iy - m_bb.getMin()[1])/voxelsize);
                 size_t idz = calcIndex((iz - m_bb.getMin()[2])/voxelsize);
                 size_t h = hashValue(idx,idy,idz);
-                size_t ins = (m_gridNumPoints[h].inserted);
                 m_gridNumPoints[h].ix = idx;
                 m_gridNumPoints[h].iy = idy;
                 m_gridNumPoints[h].iz = idz;
-                m_gridNumPoints[h].inserted++;
-                size_t index = m_gridNumPoints[h].offset + ins;
-                mmfdata[index*3] = ix;
-                mmfdata[index*3+1] = iy;
-                mmfdata[index*3+2] = iz;
-                mmfdata_color[index*3] = a.get()[i].color.r;
-                mmfdata_color[index*3+1] = a.get()[i].color.g;
-                mmfdata_color[index*3+2] = a.get()[i].color.b;
+                m_gridNumPoints[h].size++;
+                if(!m_gridNumPoints[h].ofs_points.is_open())
+                {
+                    std::stringstream ss;
+                    ss << "part-" << idx << "-" << idy << "-" << idz << "-points.binary";
+                    m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::binary);
+                }
+                m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
+                m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
+                m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
+
+                if(!m_gridNumPoints[h].ofs_colors.is_open())
+                {
+                    std::stringstream ss;
+                    ss << "part-" << idx << "-" << idy << "-" << idz << "-colors.binary";
+                    m_gridNumPoints[h].ofs_colors.open(ss.str(), std::ofstream::binary);
+                }
+                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.r,sizeof(unsigned char));
+                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.g,sizeof(unsigned char));
+                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.b,sizeof(unsigned char));
             }
         }
     }
 
 
-//    for(auto it = m_gridNumPoints.begin(); it!= m_gridNumPoints.end() ; it++)
-//    {
-//        std::cout << "h : " << it->first << std::endl;
-//    }
-    m_PointFile.close();
-    m_NomralFile.close();
-    mmfparam.path = "distances.mmf";
-    mmfparam.new_file_size = sizeof(float)*size()*8;
 
-    m_PointFile.open(mmfparam);
-    m_PointFile.close();
+    // Add overlapping points
+    for(auto cell = m_gridNumPoints.begin() ; cell != m_gridNumPoints.end(); cell++)
+    { 
+        if (lineReader.getFileType() == XYZ)
+        {
+            stringstream ss_points;
+            ss_points << "part-" << cell->second.ix << "-" << cell->second.iy << "-" << cell->second.iz << "-points.binary";
+            ifstream ifs_points(ss_points.str(), std::ifstream::binary);
+            lvr::floatArr pointBuffer(new float[cell->second.size*3]);
+            ifs_points.read((char*)pointBuffer.get(), sizeof(float)*3*cell->second.size);
+            for(size_t i = 0 ; i<cell->second.size; i++)
+            {
+                float x = pointBuffer[i*3];
+                float y = pointBuffer[i*3+1];
+                float z = pointBuffer[i*3+2];
+                if(x < cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix-1, cell->second.iy, cell->second.iz);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+                        neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+                        neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+                    }
+                }
+            }
+        }
+        else if (lineReader.getFileType() == XYZNRGB)
+        {
+            stringstream ss_points;
+            ss_points << "part-" << cell->second.ix << "-" << cell->second.iy << "-" << cell->second.iz << "-points.binary";
+            ifstream ifs_points(ss_points.str(), std::ifstream::binary);
+            lvr::floatArr pointBuffer(new float[cell->second.size*3]);
+            ifs_points.read((char*)pointBuffer.get(), sizeof(float)*3*cell->second.size);
 
+            stringstream ss_normals;
+            ss_normals << "part-" << cell->second.ix << "-" << cell->second.iy << "-" << cell->second.iz << "-normals.binary";
+            ifstream ifs_normals(ss_normals.str(), std::ifstream::binary);
+            lvr::floatArr normalBuffer(new float[cell->second.size*3]);
+            ifs_normals.read((char*)normalBuffer.get(), sizeof(float)*3*cell->second.size);
+
+            stringstream ss_colors;
+            ss_colors << "part-" << cell->second.ix << "-" << cell->second.iy << "-" << cell->second.iz << "-colors.binary";
+            ifstream ifs_colors(ss_colors.str(), std::ifstream::binary);
+            lvr::ucharArr colorBuffer(new unsigned char[cell->second.size*3]);
+            ifs_colors.read((char*)colorBuffer.get(), sizeof(unsigned char)*3*cell->second.size);
+            
+            for(size_t i = 0 ; i<cell->second.size; i++)
+            {
+                float x = pointBuffer[i*3];
+                float y = pointBuffer[i*3+1];
+                float z = pointBuffer[i*3+2];
+                if(x < cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix-1, cell->second.iy, cell->second.iz);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+                        neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+                        neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3],sizeof(float));
+                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+1],sizeof(float));
+                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
+
+                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3],sizeof(unsigned char));
+                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+1],sizeof(unsigned char));
+                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
+                    }
+                }
+            }
+        }
+        else if (lineReader.getFileType() == XYZN)
+        {
+            stringstream ss_points;
+            ss_points << "part-" << cell->second.ix << "-" << cell->second.iy << "-" << cell->second.iz << "-points.binary";
+            ifstream ifs_points(ss_points.str(), std::ifstream::binary);
+            lvr::floatArr pointBuffer(new float[cell->second.size*3]);
+            ifs_points.read((char*)pointBuffer.get(), sizeof(float)*3*cell->second.size);
+
+            stringstream ss_normals;
+            ss_normals << "part-" << cell->second.ix << "-" << cell->second.iy << "-" << cell->second.iz << "-normals.binary";
+            ifstream ifs_normals(ss_normals.str(), std::ifstream::binary);
+            lvr::floatArr normalBuffer(new float[cell->second.size*3]);
+            ifs_normals.read((char*)normalBuffer.get(), sizeof(float)*3*cell->second.size);
+
+
+
+            for(size_t i = 0 ; i<cell->second.size; i++)
+            {
+                float x = pointBuffer[i*3];
+                float y = pointBuffer[i*3+1];
+                float z = pointBuffer[i*3+2];
+                if(x < cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix-1, cell->second.iy, cell->second.iz);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+                        neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+                        neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3],sizeof(float));
+                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+1],sizeof(float));
+                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
+                    }
+                }
+            }
+        }
+        else if (lineReader.getFileType() == XYZRGB)
+        {
+            stringstream ss_points;
+            ss_points << "part-" << cell->second.ix << "-" << cell->second.iy << "-" << cell->second.iz << "-points.binary";
+            ifstream ifs_points(ss_points.str(), std::ifstream::binary);
+            lvr::floatArr pointBuffer(new float[cell->second.size*3]);
+            ifs_points.read((char*)pointBuffer.get(), sizeof(float)*3*cell->second.size);
+
+            stringstream ss_colors;
+            ss_colors << "part-" << cell->second.ix << "-" << cell->second.iy << "-" << cell->second.iz << "-colors.binary";
+            ifstream ifs_colors(ss_colors.str(), std::ifstream::binary);
+            lvr::ucharArr colorBuffer(new unsigned char[cell->second.size*3]);
+            ifs_colors.read((char*)colorBuffer.get(), sizeof(unsigned char)*3*cell->second.size);
+
+            for(size_t i = 0 ; i<cell->second.size; i++)
+            {
+                float x = pointBuffer[i*3];
+                float y = pointBuffer[i*3+1];
+                float z = pointBuffer[i*3+2];
+                if(x < cell->second.bb.getMin().x + overlapp_size)
+                {
+                    size_t neighbour_hash = hashValue(cell->second.ix-1, cell->second.iy, cell->second.iz);
+                    auto neigbout_it = m_gridNumPoints.find(neighbour_hash);
+                    if(neigbout_it != m_gridNumPoints.end())
+                    {
+                        neigbout_it->second.overlapping_size++;
+                        neigbout_it->second.ofs_points.write((char*)&x,sizeof(float));
+                        neigbout_it->second.ofs_points.write((char*)&y,sizeof(float));
+                        neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
+
+                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3],sizeof(unsigned char));
+                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+1],sizeof(unsigned char));
+                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
+                    }
+                }
+            }
+        }
+    }
+
+    for(auto cell = m_gridNumPoints.begin() ; cell != m_gridNumPoints.end(); cell++)
+    {
+        if(cell->second.ofs_points.is_open()) cell->second.ofs_points.close();
+        if(cell->second.ofs_normals.is_open()) cell->second.ofs_normals.close();
+        if(cell->second.ofs_colors.is_open()) cell->second.ofs_colors.close();
+    }
 
 }
 
@@ -455,323 +484,13 @@ size_t BigVolumen::pointSize()
 {
     return m_numPoints;
 }
-size_t BigVolumen::pointSize(int i, int j, int k)
-{
-    size_t h = hashValue(i,j,k);
-    auto it = m_gridNumPoints.find(h);
-    if(it == m_gridNumPoints.end())
-    {
-        return 0;
-    }
-    else
-    {
-        return m_gridNumPoints[h].size;
-    }
-
-}
-lvr::floatArr BigVolumen::points(int i, int j, int k, size_t& numPoints)
-{
-    lvr::floatArr points;
-    size_t h = hashValue(i,j,k);
-    auto it = m_gridNumPoints.find(h);
-    if(it != m_gridNumPoints.end())
-    {
-        size_t cellSize= m_gridNumPoints[h].size;
-
-        points = lvr::floatArr(new float[3*cellSize]);
-        boost::iostreams::mapped_file_params mmfparam;
-        mmfparam.path = "points.mmf";
-        mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc ;
-
-        m_PointFile.open(mmfparam);
-        float * mmfdata = (float*)m_PointFile.data();
-
-        memcpy ( points.get(), mmfdata, 3*pointSize()*sizeof(float));
-
-        numPoints = pointSize();
-    }
-    return points;
-
-}
-lvr::floatArr BigVolumen::points(float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints)
-{
-    minx = (minx > m_bb.getMin()[0]) ? minx : m_bb.getMin()[0];
-    miny = (miny > m_bb.getMin()[1]) ? miny : m_bb.getMin()[1];
-    minz = (minz > m_bb.getMin()[2]) ? minz : m_bb.getMin()[2];
-    maxx = (maxx < m_bb.getMax()[0]) ? maxx : m_bb.getMax()[0];
-    maxy = (maxy < m_bb.getMax()[1]) ? maxy : m_bb.getMax()[1];
-    maxz = (maxz < m_bb.getMax()[2]) ? maxz : m_bb.getMax()[2];
-
-    size_t idxmin = calcIndex((minx - m_bb.getMin()[0])/m_voxelSize);
-    size_t idymin = calcIndex((miny - m_bb.getMin()[1])/m_voxelSize);
-    size_t idzmin = calcIndex((minz - m_bb.getMin()[2])/m_voxelSize);
-    size_t idxmax = calcIndex((maxx - m_bb.getMin()[0])/m_voxelSize);
-    size_t idymax = calcIndex((maxy - m_bb.getMin()[1])/m_voxelSize);
-    size_t idzmax = calcIndex((maxz - m_bb.getMin()[2])/m_voxelSize);
-
-    numPoints = getSizeofBox( minx,  miny,  minz,  maxx,  maxy,  maxz);
-
-    lvr::floatArr points(new float[numPoints*3]);
-    size_t p_index = 0;
-
-
-    boost::iostreams::mapped_file_source mmfs("points.mmf");
-    float * mmfdata = (float*)mmfs.data();
 
 
 
 
 
-    for(auto it = m_gridNumPoints.begin() ; it!=m_gridNumPoints.end() ; it++)
-    {
-        if(
-                it->second.ix >= idxmin &&
-                it->second.iy >= idymin &&
-                it->second.iz >= idzmin &&
-                it->second.ix <= idxmax &&
-                it->second.iy <= idymax &&
-                it->second.iz <= idzmax
-                )
-        {
-            size_t cSize = it->second.size;
-            for(size_t x = 0 ; x <  cSize; x++)
-            {
-                points.get()[p_index] = mmfdata[(it->second.offset+x)*3];
-                points.get()[p_index+1] = mmfdata[(it->second.offset+x)*3+1];
-                points.get()[p_index+2] = mmfdata[(it->second.offset+x)*3+2];
-                p_index+=3;
-            }
-
-        }
-    }
-
-    //memcpy ( points.get(), mmfdata, 3*pointSize()*sizeof(float));
-
-//    for(size_t i = idxmin ; i<=idxmax ; i++)
-//    {
-//        for(size_t j = idymin ; j<=idymax ; j++)
-//        {
-//            for(size_t k = idzmin ; k<=idzmax ; k++)
-//            {
-//                size_t h = hashValue(i,j,k);
-//                auto it = m_gridNumPoints.find(h);
-//                if(it != m_gridNumPoints.end())
-//                {
-//                    //Found Cell
-//                     //std::cout << "grid " << h << " has " << it->second.size << "points at " << it->second.offset << std::endl;
-//                    size_t cSize = it->second.size;
-//                    for(size_t x = 0 ; x <  cSize; x++)
-//                    {
-//                        //std::cout << mmfdata[(it->second.offset+x)*3] << "|" << mmfdata[(it->second.offset+x)*3+1] << "|" << mmfdata[(it->second.offset+x)*3+2] << std::endl;
-//                        points.get()[p_index] = mmfdata[(it->second.offset+x)*3];
-//                        points.get()[p_index+1] = mmfdata[(it->second.offset+x)*3+1];
-//                        points.get()[p_index+2] = mmfdata[(it->second.offset+x)*3+2];
-//                        p_index+=3;
-//
-//                    }
-//
-//
-////                    memcpy ( points.get()+(p_index*3), mmfdata+((it->second.second)*3), it->second.first*3);
-////                    p_index+=it->second.first;
-//                }
-//            }
-//        }
-//    }
-    return points;
-}
-
-lvr::floatArr BigVolumen::normals(float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints)
-{
-    size_t idxmin = calcIndex((minx - m_bb.getMin()[0])/m_voxelSize);
-    size_t idymin = calcIndex((miny - m_bb.getMin()[1])/m_voxelSize);
-    size_t idzmin = calcIndex((minz - m_bb.getMin()[2])/m_voxelSize);
-    size_t idxmax = calcIndex((maxx - m_bb.getMin()[0])/m_voxelSize);
-    size_t idymax = calcIndex((maxy - m_bb.getMin()[1])/m_voxelSize);
-    size_t idzmax = calcIndex((maxz - m_bb.getMin()[2])/m_voxelSize);
-
-    numPoints = getSizeofBox( minx,  miny,  minz,  maxx,  maxy,  maxz);
-
-    lvr::floatArr points(new float[numPoints*3]);
-    size_t p_index = 0;
-
-
-    boost::iostreams::mapped_file_source mmfs("normals.mmf");
-    float * mmfdata = (float*)mmfs.data();
 
 
 
 
 
-    for(auto it = m_gridNumPoints.begin() ; it!=m_gridNumPoints.end() ; it++)
-    {
-        if(
-                it->second.ix >= idxmin &&
-                it->second.iy >= idymin &&
-                it->second.iz >= idzmin &&
-                it->second.ix <= idxmax &&
-                it->second.iy <= idymax &&
-                it->second.iz <= idzmax
-                )
-        {
-            size_t cSize = it->second.size;
-            for(size_t x = 0 ; x <  cSize; x++)
-            {
-                points.get()[p_index] = mmfdata[(it->second.offset+x)*3];
-                points.get()[p_index+1] = mmfdata[(it->second.offset+x)*3+1];
-                points.get()[p_index+2] = mmfdata[(it->second.offset+x)*3+2];
-                p_index+=3;
-            }
-
-        }
-    }
-    return points;
-}
-
-lvr::ucharArr BigVolumen::colors(float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints)
-{
-    size_t idxmin = calcIndex((minx - m_bb.getMin()[0])/m_voxelSize);
-    size_t idymin = calcIndex((miny - m_bb.getMin()[1])/m_voxelSize);
-    size_t idzmin = calcIndex((minz - m_bb.getMin()[2])/m_voxelSize);
-    size_t idxmax = calcIndex((maxx - m_bb.getMin()[0])/m_voxelSize);
-    size_t idymax = calcIndex((maxy - m_bb.getMin()[1])/m_voxelSize);
-    size_t idzmax = calcIndex((maxz - m_bb.getMin()[2])/m_voxelSize);
-
-    numPoints = 0;
-    size_t  cellsChecked = 0;
-    for(size_t i = idxmin ; i<=idxmax ; i++)
-    {
-        for(size_t j = idymin ; j<=idymax ; j++)
-        {
-            for(size_t k = idzmin ; k<=idzmax ; k++)
-            {
-                size_t h = hashValue(i,j,k);
-                auto it = m_gridNumPoints.find(h);
-                if(it != m_gridNumPoints.end())
-                {
-                    //Found Cell
-                    cellsChecked++;
-                    numPoints+=it->second.size;
-                }
-
-            }
-        }
-    }
-
-    lvr::ucharArr points(new unsigned char[numPoints*3]);
-    size_t p_index = 0;
-
-
-    boost::iostreams::mapped_file_source mmfs("colors.mmf");
-    unsigned  char * mmfdata = (unsigned  char*)mmfs.data();
-    //memcpy ( points.get(), mmfdata, 3*pointSize()*sizeof(float));
-
-    for(size_t i = idxmin ; i<=idxmax ; i++)
-    {
-        for(size_t j = idymin ; j<=idymax ; j++)
-        {
-            for(size_t k = idzmin ; k<=idzmax ; k++)
-            {
-                size_t h = hashValue(i,j,k);
-                auto it = m_gridNumPoints.find(h);
-                if(it != m_gridNumPoints.end())
-                {
-                    //Found Cell
-                    //std::cout << "grid " << h << " has " << it->second.size << "points at " << it->second.offset << std::endl;
-                    size_t cSize = it->second.size;
-                    for(size_t x = 0 ; x <  cSize; x++)
-                    {
-                        //std::cout << mmfdata[(it->second.offset+x)*3] << "|" << mmfdata[(it->second.offset+x)*3+1] << "|" << mmfdata[(it->second.offset+x)*3+2] << std::endl;
-                        points.get()[p_index] = mmfdata[(it->second.offset+x)*3];
-                        points.get()[p_index+1] = mmfdata[(it->second.offset+x)*3+1];
-                        points.get()[p_index+2] = mmfdata[(it->second.offset+x)*3+2];
-                        p_index+=3;
-
-                    }
-
-
-//                    memcpy ( points.get()+(p_index*3), mmfdata+((it->second.second)*3), it->second.first*3);
-//                    p_index+=it->second.first;
-                }
-            }
-        }
-    }
-    return points;
-}
-
-bool BigVolumen::exists(int i, int j, int k)
-{
-    size_t h = hashValue(i,j,k);
-    auto it = m_gridNumPoints.find(h);
-    return it != m_gridNumPoints.end();
-}
-void BigVolumen::insert(float x, float y, float z)
-{
-
-}
-
-lvr::floatArr BigVolumen::getPointCloud(size_t & numPoints)
-{
-    lvr::floatArr points(new float[3*pointSize()]);
-    boost::iostreams::mapped_file_params mmfparam;
-    mmfparam.path = "points.mmf";
-    mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
-
-    m_PointFile.open(mmfparam);
-    float * mmfdata = (float*)m_PointFile.data();
-    memcpy ( points.get(), mmfdata, 3*pointSize()*sizeof(float));
-
-    numPoints = pointSize();
-    return points;
-
-}
-
-size_t BigVolumen::getSizeofBox(float minx, float miny, float minz, float maxx, float maxy, float maxz)
-{
-    size_t idxmin = calcIndex((minx - m_bb.getMin()[0])/m_voxelSize);
-    size_t idymin = calcIndex((miny - m_bb.getMin()[1])/m_voxelSize);
-    size_t idzmin = calcIndex((minz - m_bb.getMin()[2])/m_voxelSize);
-    size_t idxmax = calcIndex((maxx - m_bb.getMin()[0])/m_voxelSize);
-    size_t idymax = calcIndex((maxy - m_bb.getMin()[1])/m_voxelSize);
-    size_t idzmax = calcIndex((maxz - m_bb.getMin()[2])/m_voxelSize);
-
-
-    size_t numPoints = 0;
-
-    // Overhead of saving indices needed to speedup size lookup
-    for(auto it = m_gridNumPoints.begin() ; it!=m_gridNumPoints.end() ; it++)
-    {
-        if(
-            it->second.ix >= idxmin &&
-            it->second.iy >= idymin &&
-            it->second.iz >= idzmin &&
-            it->second.ix <= idxmax &&
-            it->second.iy <= idymax &&
-            it->second.iz <= idzmax
-        )
-        {
-            numPoints+=it->second.size;
-        }
-    }
-
-//    #pragma omp parallel for schedule(dynamic,1) collapse(3)
-//    for(size_t i = idxmin ; i<=idxmax ; i++)
-//    {
-//        for(size_t j = idymin ; j<=idymax ; j++)
-//        {
-//            for(size_t k = idzmin ; k<=idzmax ; k++)
-//            {
-//
-//                size_t h = hashValue(i,j,k);
-//                auto it = m_gridNumPoints.find(h);
-//                if(it != m_gridNumPoints.end())
-//                {
-//                    omp_set_lock(&m_lock);
-//                    numPoints+=it->second.size;
-//                    omp_unset_lock(&m_lock);
-//                }
-//
-//            }
-//        }
-//    }
-    return numPoints;
-}
