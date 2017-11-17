@@ -74,6 +74,12 @@ public:
 	 */
 	void operator++();
 
+    /**
+     * @brief Increases the counter of performed by \ref n
+     */
+    void operator+=(size_t n);
+
+
 	/**
 	 * @brief 	Registers a callback that is called with the new value
 	 * 			when the percentage of the progress changed.
