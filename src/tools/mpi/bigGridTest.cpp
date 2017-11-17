@@ -501,7 +501,7 @@ int main(int argc, char** argv)
 //        flannPoints[i][1] = duplicateVertices[3 * i + 1];
 //        flannPoints[i][2] = duplicateVertices[3 * i + 2];
 //    }
-//    boost::shared_ptr<flann::Index<flann::L2_Simple<float> > > 	tree =
+//    boost::shared_ptr<flann::Index<flann::L2_Simple<float> > >     tree =
 //            boost::shared_ptr<flann::Index<flann::L2_Simple<float> > >(new flann::Index<flann::L2_Simple<float> >(flannPoints, ::flann::KDTreeSingleIndexParams (10, false)));
 //    tree->buildIndex();
     float comp_dist = std::max(voxelsize/1000, 0.0001f);
