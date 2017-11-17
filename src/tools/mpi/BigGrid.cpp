@@ -4,6 +4,7 @@
 
 #include "BigGrid.hpp"
 #include "lvr/io/Timestamp.hpp"
+#include "lvr/io/Progress.hpp"
 #include <cstring>
 #include "LineReader.hpp"
 #include <lvr/reconstruction/FastReconstructionTables.hpp>
@@ -17,7 +18,7 @@ BigGrid::BigGrid(std::vector<std::string> cloudPath, float voxelsize, float scal
     m_voxelSize = voxelsize;
     //First, parse whole file to get BoundingBox and amount of points
     float ix,iy,iz;
-    std::cout << lvr::timestamp << " Starting BB" << std::endl;
+    std::cout << lvr::timestamp << "Computing Bounding Box..." << std::endl;
     m_numPoints = 0;
     size_t rsize = 0;
     LineReader lineReader(cloudPath);
@@ -86,8 +87,6 @@ BigGrid::BigGrid(std::vector<std::string> cloudPath, float voxelsize, float scal
 
 
 
-
-
     //Make box side lenghts be divisible by voxel size
     float longestSide = m_bb.getLongestSide();
 
@@ -113,6 +112,9 @@ BigGrid::BigGrid(std::vector<std::string> cloudPath, float voxelsize, float scal
     m_maxIndexSquare = m_maxIndex * m_maxIndex;
     std::cout << "BG: " << m_maxIndexSquare << "|" << m_maxIndexX << "|" << m_maxIndexY << "|" << m_maxIndexZ << std::endl;
 
+
+    string comment = lvr::timestamp.getElapsedTime() + "Building grid... ";
+    lvr::ProgressBar progress(this->m_numPoints, comment);
 
     //
     lineReader.rewind();
@@ -266,6 +268,7 @@ BigGrid::BigGrid(std::vector<std::string> cloudPath, float voxelsize, float scal
         {
             exit(-1);
         }
+        progress+= rsize;
     }
 
 

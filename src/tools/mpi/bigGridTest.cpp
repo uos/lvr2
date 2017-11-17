@@ -169,7 +169,7 @@ int main(int argc, char** argv)
 
     vector<BoundingBox<Vertexf > > partitionBoxes;
     //lvr::floatArr points = bg->getPointCloud(numPoints);
-    cout << lvr::timestamp << "making tree" << endl;
+    cout << lvr::timestamp << "Making tree" << endl;
     std::unordered_map<size_t, BigVolumen::VolumeCellInfo >* cells;
     std::vector<BigVolumen::VolumeCellInfo*> cell_vec;
     if(volumenSize > 0)
