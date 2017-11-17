@@ -4,6 +4,7 @@
 
 #include "BigVolumen.hpp"
 #include "lvr/io/Timestamp.hpp"
+#include "lvr/io/Progress.hpp"
 #include <cstring>
 #include "LineReader.hpp"
 #include <lvr/reconstruction/FastReconstructionTables.hpp>
@@ -29,11 +30,14 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
     if(lineReader.getFileType()==XYZRGB) cout << "XYZRGB" << endl;
     if(lineReader.getFileType()==XYZNRGB) cout << "XYZNRGB" << endl;
     size_t lasti = 0;
+
+
+
     while(lineReader.ok())
     {
         if(lineReader.getFileType() == XYZNRGB)
         {
-            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc> (lineReader.getNextPoints(rsize,1024));
+            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc> (lineReader.getNextPoints(rsize,100000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -46,7 +50,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
         }
         else if(lineReader.getFileType() == XYZN)
         {
-            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn> (lineReader.getNextPoints(rsize,1024));
+            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn> (lineReader.getNextPoints(rsize,100000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -59,7 +63,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
         }
         else if(lineReader.getFileType() == XYZ)
         {
-            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz> (lineReader.getNextPoints(rsize,1024));
+            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz> (lineReader.getNextPoints(rsize,100000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -74,7 +78,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
         }
         else if(lineReader.getFileType() == XYZRGB)
         {
-            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc> (lineReader.getNextPoints(rsize,1024));
+            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc> (lineReader.getNextPoints(rsize,100000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -140,11 +144,16 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
         m_has_color = true;
     }
 
+    string comment = lvr::timestamp.getElapsedTime() + "Building grid... ";
+    lvr::ProgressBar progress(this->m_numPoints, comment);
+
+    std::cout << lvr::timestamp << "Starting grid generation..." << std::endl;
+
     while (lineReader.ok())
     {
         if (lineReader.getFileType() == XYZNRGB)
         {
-            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(lineReader.getNextPoints(rsize,1024));
+            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(lineReader.getNextPoints(rsize,100000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -196,7 +205,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                 }
             }
         } else if (lineReader.getFileType() == XYZN) {
-            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(lineReader.getNextPoints(rsize,1024));
+            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(lineReader.getNextPoints(rsize,100000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -238,7 +247,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
             }
         } else if (lineReader.getFileType() == XYZ)
         {
-            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(lineReader.getNextPoints(rsize,1024));
+            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(lineReader.getNextPoints(rsize,100000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -270,7 +279,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
         }
         else if (lineReader.getFileType() == XYZRGB)
         {
-            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(lineReader.getNextPoints(rsize,1024));
+            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(lineReader.getNextPoints(rsize,100000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -319,6 +328,8 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
 //                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.b,sizeof(unsigned char));
             }
         }
+
+        progress += rsize;
     }
 
     for(auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end(); it++)
