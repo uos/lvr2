@@ -598,7 +598,7 @@ int main(int argc, char** argv)
 //    }
     ofstream ofs_vertices("largeVertices.bin", std::ofstream::out | std::ofstream::trunc );
     ofstream ofs_faces("largeFaces.bin", std::ofstream::out | std::ofstream::trunc);
-    
+
     size_t increment=0;
     std::map<size_t, size_t> decrements;
     decrements[0] = 0;
@@ -672,7 +672,7 @@ int main(int argc, char** argv)
                     auto decr_itr = decrements.upper_bound(oldToNew[f[k]]);
                     decr_itr--;
                     face_idx = oldToNew[f[k]]- decr_itr->second;
-//                    
+//
                 }
                 start_s = lvr::timestamp.getElapsedTimeInS();
                 ofs_faces << face_idx;

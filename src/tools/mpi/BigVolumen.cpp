@@ -342,7 +342,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
 
     // Add overlapping points
     for(auto cell = m_gridNumPoints.begin() ; cell != m_gridNumPoints.end(); cell++)
-    { 
+    {
         if (lineReader.getFileType() == XYZ)
         {
             stringstream ss_points;
@@ -454,7 +454,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
             ifstream ifs_colors(ss_colors.str(), std::ifstream::binary);
             lvr::ucharArr colorBuffer(new unsigned char[cell->second.size*3]);
             ifs_colors.read((char*)colorBuffer.get(), sizeof(unsigned char)*3*cell->second.size);
-            
+
             for(size_t i = 0 ; i<cell->second.size; i++)
             {
                 float x = pointBuffer[i*3];

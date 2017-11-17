@@ -237,7 +237,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
     }
 
     std::string filePath = m_fileAttributes[m_currentReadFile].m_filePath;
-    
+
     FILE * pFile;
     pFile = fopen(filePath.c_str(), "r");
     if (pFile!=NULL)
@@ -272,7 +272,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
             size_t readCount = 0;
             if(m_fileAttributes[m_currentReadFile].m_fileType == XYZ && m_fileAttributes[m_currentReadFile].m_line_element_amount != 3)
             {
-                
+
                 std::vector<float> input;
                 input.reserve(amount*3);
                 boost::shared_ptr<void> pArray(new char[amount*m_fileAttributes[m_currentReadFile].m_PointBlockSize], std::default_delete<char[]>());
@@ -307,7 +307,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
                     input.push_back(ay);
                     input.push_back(az);
                 }
-                
+
                 memcpy ( pArray.get(), input.data(), m_fileAttributes[m_currentReadFile].m_PointBlockSize*readCount );
                 return_amount = readCount;
                 if(return_amount < amount){
@@ -386,8 +386,8 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
         }
         fclose(pFile);
     }
-    
-    
+
+
 
 }
 void LineReader::rewind()
