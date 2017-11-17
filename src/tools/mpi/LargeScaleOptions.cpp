@@ -96,6 +96,7 @@ Options::Options(int argc, char** argv)
                         ("outputFolder", value<string>(&m_outputFolderPath)->default_value(""), "Output Folder Path")
                         ("useGPU", "Use GPU for normal estimation")
                         ("flipPoint", value< vector<float> >()->multitoken(), "Flippoint" )
+            ("lineReaderBuffer", value<size_t>(&m_lineReaderBuffer)->default_value(1024), "Size of input stream buffer when parsing point cloud files")
             ("interpolateBoxes", "Interpolate Boxes in intersection BoundingBox of two Grids")
             ("useNormals", "the ply file contains normals")
             ("scale", value<float>(&m_scaling)->default_value(1), "Scaling factor, applied to all input points")
@@ -105,6 +106,12 @@ Options::Options(int argc, char** argv)
     setup();
 
 }
+
+size_t Options::getLineReaderBuffer() const
+{
+     return m_variables["lineReaderBuffer"].as<size_t>();
+}
+
 
 float Options::getScaling() const
 {

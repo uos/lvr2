@@ -138,8 +138,11 @@ int main(int argc, char** argv)
     double mesh_time = 0;
     double merge_time = 0;
     double dup_time = 0;
+
     LargeScaleOptions::Options options(argc, argv);
     double seconds=0;
+    size_t bufferSize = options.getLineReaderBuffer();
+
     std::vector <string> inputFiles = options.getInputFileName();
     float voxelsize = options.getVoxelsize();
     float scale = options.getScaling();
@@ -152,7 +155,7 @@ int main(int argc, char** argv)
     if(volumenSize <= 0)
     {
         double start_ss = lvr::timestamp.getElapsedTimeInS();
-        bg = new BigGrid(inputFiles, voxelsize, scale);
+        bg = new BigGrid(inputFiles, voxelsize, scale, bufferSize);
         double end_ss = lvr::timestamp.getElapsedTimeInS();
         seconds+=(end_ss - start_ss);
         cout << lvr::timestamp << "grid finished in" << (end_ss - start_ss) << "sec." << endl;

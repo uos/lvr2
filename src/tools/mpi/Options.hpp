@@ -318,7 +318,6 @@ public:
 
     bool getUseNormals() const;
 
-
 private:
 
     /// The set voxelsize
@@ -446,7 +445,6 @@ private:
     bool m_interpolateBoxes;
 
     bool m_use_normals;
-
 
 };
 
