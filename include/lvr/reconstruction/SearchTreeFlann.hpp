@@ -84,13 +84,13 @@ public:
 protected:
 
     /// Pointer to the FLANN search tree structure
-    boost::shared_ptr<flann::Index<flann::L2_Simple<float> > > 		m_tree;
+    boost::shared_ptr<flann::Index<flann::L2_Simple<float> > >         m_tree;
 
     /// FLANN matrix representation of the points
-    flann::Matrix<float>  	 										m_flannPoints;
+    flann::Matrix<float>                                               m_flannPoints;
 
-    vector<int>														m_ind;
-    vector<float>													m_dst;
+    vector<int>                                                        m_ind;
+    vector<float>                                                    m_dst;
 
 
 }; // SearchTreeFlann

@@ -36,7 +36,7 @@ private:
         return f < 0 ? f-.5:f+.5;
     }
 
-    typename PointsetSurface<VertexT>::Ptr		m_surface;
+    typename PointsetSurface<VertexT>::Ptr        m_surface;
 };
 
 } /* namespace lvr */
