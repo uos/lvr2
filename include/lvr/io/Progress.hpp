@@ -59,20 +59,20 @@ class ProgressBar
 
 public:
 
-	/**
-	 * @brief Ctor.
-	 *
-	 * @param max_val	The number of performed iterations
-	 * @param prefix	The prefix string for progress output
-	 */
-	ProgressBar(size_t max_val, string prefix = "");
+    /**
+     * @brief Ctor.
+     *
+     * @param max_val	The number of performed iterations
+     * @param prefix	The prefix string for progress output
+     */
+    ProgressBar(size_t max_val, string prefix = "");
 
-	virtual ~ProgressBar();
+    virtual ~ProgressBar();
 
-	/**
-	 * @brief Increases the counter of performed iterations
-	 */
-	void operator++();
+    /**
+     * @brief Increases the counter of performed iterations
+     */
+    void operator++();
 
     /**
      * @brief Increases the counter of performed by \ref n
@@ -80,49 +80,49 @@ public:
     void operator+=(size_t n);
 
 
-	/**
-	 * @brief 	Registers a callback that is called with the new value
-	 * 			when the percentage of the progress changed.
-	 *
-	 * @param
-	 */
-	static void setProgressCallback(ProgressCallbackPtr);
+    /**
+     * @brief 	Registers a callback that is called with the new value
+     * 			when the percentage of the progress changed.
+     *
+     * @param
+     */
+    static void setProgressCallback(ProgressCallbackPtr);
 
-	/**
-	 * @brief	Registers a callback that is called when a new progress
-	 * 			instance is created.
-	 * @param
-	 */
-	static void setProgressTitleCallback(ProgressTitleCallbackPtr);
+    /**
+     * @brief	Registers a callback that is called when a new progress
+     * 			instance is created.
+     * @param
+     */
+    static void setProgressTitleCallback(ProgressTitleCallbackPtr);
 
 protected:
 
-	/// Prints the output
-	void print_bar();
+    /// Prints the output
+    void print_bar();
 
-	/// The prefix string
-	string 			m_prefix;
+    /// The prefix string
+    string 			m_prefix;
 
-	/// The number of iterations
-	size_t			m_maxVal;
+    /// The number of iterations
+    size_t			m_maxVal;
 
         /// The current counter
     size_t	 		m_currentVal;
 
-	/// A mutex object for counter increment (for parallel executions)
-	boost::mutex 	m_mutex;
+    /// A mutex object for counter increment (for parallel executions)
+    boost::mutex 	m_mutex;
 
-	/// The current progress in percent
-	int			m_percent;
+    /// The current progress in percent
+    int			m_percent;
 
-	/// A string stream for output generation
-	stringstream	m_stream;
+    /// A string stream for output generation
+    stringstream	m_stream;
 
-	/// A fill string for correct output alignment
-	string 			m_fillstring;
+    /// A fill string for correct output alignment
+    string 			m_fillstring;
 
-	static ProgressCallbackPtr 			m_progressCallback;
-	static ProgressTitleCallbackPtr		m_titleCallback;
+    static ProgressCallbackPtr 			m_progressCallback;
+    static ProgressTitleCallbackPtr		m_titleCallback;
 };
 
 
@@ -137,41 +137,41 @@ class ProgressCounter
 {
 public:
 
-	/***
-	 * @brief CTor.
-	 *
-	 * @param	stepVal	After m_stepVal operations a new output is generated
-	 * @param	prefix	The prefix string for progress output
-	 */
-	ProgressCounter(int stepVal, string prefix = "");
+    /***
+     * @brief CTor.
+     *
+     * @param	stepVal	After m_stepVal operations a new output is generated
+     * @param	prefix	The prefix string for progress output
+     */
+    ProgressCounter(int stepVal, string prefix = "");
 
-	/***
-	 * @brief	Increase the progress counter
-	 */
-	void operator++();
+    /***
+     * @brief	Increase the progress counter
+     */
+    void operator++();
 
 protected:
 
-	/// Prints the current state
-	void print_progress();
+    /// Prints the current state
+    void print_progress();
 
-	/// The prefix string
-	string 			m_prefix;
+    /// The prefix string
+    string 			m_prefix;
 
-	/// The step value for output generation
-	size_t			m_stepVal;
+    /// The step value for output generation
+    size_t			m_stepVal;
 
-	/// The current counter value
-	size_t			m_currentVal;
+    /// The current counter value
+    size_t			m_currentVal;
 
-	/// A mutex object for counter increment (for parallel executions)
-	boost::mutex 	m_mutex;
+    /// A mutex object for counter increment (for parallel executions)
+    boost::mutex 	m_mutex;
 
-	/// A string stream for output generation
-	stringstream	m_stream;
+    /// A string stream for output generation
+    stringstream	m_stream;
 
-	/// A fill string for correct output alignment
-	string 			m_fillstring;
+    /// A fill string for correct output alignment
+    string 			m_fillstring;
 };
 
 } // namespace lvr
