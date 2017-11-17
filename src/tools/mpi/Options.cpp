@@ -88,9 +88,9 @@ Options::Options(int argc, char** argv)
             ("cro", "Use texture matching based on cross correlation.")
             ("patt", value<float>(&m_patternThreshold)->default_value(100), "Threshold for pattern extraction from textures")
             ("mtv", value<int>(&m_minimumTransformationVotes)->default_value(3), "Minimum number of votes to consider a texture transformation as correct")
-                        ("buff", value<unsigned int>(&m_bufferSize)->default_value(30000000), "Minimum number of votes to consider a texture transformation as correct")
-                        ("os", value<unsigned int>(&m_octreeNodeSize)->default_value(1000000), "Minimum number of votes to consider a texture transformation as correct")
-                        ("outputFolder", value<string>(&m_outputFolderPath)->default_value(""), "Output Folder Path")
+            ("buff", value<unsigned int>(&m_bufferSize)->default_value(30000000), "Minimum number of votes to consider a texture transformation as correct")
+            ("os", value<unsigned int>(&m_octreeNodeSize)->default_value(1000000), "Minimum number of votes to consider a texture transformation as correct")
+            ("outputFolder", value<string>(&m_outputFolderPath)->default_value(""), "Output Folder Path")
             ("interpolateBoxes", "Interpolate Boxes in intersection BoundingBox of two Grids")
             ("useNormals", "the ply file contains normals")
 
@@ -432,6 +432,7 @@ float* Options::getStatsCoeffs()const
     }
     return result;
 }
+
 
 Options::~Options() {
     // TODO Auto-generated destructor stub

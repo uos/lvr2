@@ -325,6 +325,8 @@ public:
 
     size_t getVolumenSize() const;
 
+    size_t getLineReaderBuffer() const;
+
 private:
 
     /// The set voxelsize
@@ -458,6 +460,9 @@ private:
     vector<float> m_flippoint;
 
     size_t m_volumenSize;
+
+    size_t m_lineReaderBuffer;
+
 
 };
 

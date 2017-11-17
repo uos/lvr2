@@ -40,7 +40,7 @@ public:
      * @param cloudPath path to PointCloud in ASCII xyz Format // Todo: Add other file formats
      * @param voxelsize
      */
-    BigGrid(std::vector<std::string>, float voxelsize, float scale = 0);
+    BigGrid(std::vector<std::string>, float voxelsize, float scale = 0, size_t bufferSize = 1024);
 
     /**
      * @return Number of voxels
@@ -139,6 +139,9 @@ private:
     size_t m_maxIndexY;
     size_t m_maxIndexZ;
     size_t m_numPoints;
+
+    size_t m_pointBufferSize;
+
     float m_voxelSize;
     bool m_extrude;
     omp_lock_t m_lock;
