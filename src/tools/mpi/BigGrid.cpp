@@ -7,6 +7,8 @@
 #include <cstring>
 #include "LineReader.hpp"
 #include <lvr/reconstruction/FastReconstructionTables.hpp>
+
+
 BigGrid::BigGrid(std::vector<std::string> cloudPath, float voxelsize, float scale) :
         m_maxIndex(0), m_maxIndexSquare(0), m_maxIndexX(0), m_maxIndexY(0), m_maxIndexZ(0), m_numPoints(0), m_extrude(true),m_scale(scale),
         m_has_normal(false), m_has_color(false)

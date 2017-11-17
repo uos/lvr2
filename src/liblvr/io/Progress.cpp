@@ -97,6 +97,31 @@ void ProgressBar::operator++()
 
 }
 
+void ProgressBar::operator+=(size_t n)
+{
+    boost::mutex::scoped_lock lock(m_mutex);
+
+    m_currentVal+= n;
+    short difference = (short)((float)m_currentVal/m_maxVal * 100 - m_percent);
+    if (difference < 1)
+    {
+        return;
+    }
+
+    while (difference >= 1)
+    {
+        m_percent++;
+        difference--;
+        print_bar();
+
+        if(m_progressCallback)
+        {
+            m_progressCallback(m_percent);
+        }
+    }
+
+}
+
 void ProgressBar::print_bar()
 {
 	cout <<  "\r" << m_prefix << " " << m_percent << "%" << flush;
