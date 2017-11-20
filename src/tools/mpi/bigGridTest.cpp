@@ -214,6 +214,7 @@ int main(int argc, char** argv)
 
     for(size_t i = 0 ; i < partitionBoxes.size() ; i++)
     {
+        string name_id = std::to_string(i);
         size_t numPoints;
 
         //todo: okay?
@@ -225,7 +226,11 @@ int main(int argc, char** argv)
         if(volumenSize > 0)
         {
 
+            stringstream ss_name;
+            ss_name << "part-" <<  cell_vec[i]->ix << "-" <<  cell_vec[i]->iy << "-" <<  cell_vec[i]->iz;
+            name_id = ss_name.str();
             numPoints = cell_vec[i]->size+cell_vec[i]->overlapping_size;
+            if(numPoints < 10) continue;
             stringstream ss_points;
             ss_points << "part-" <<  cell_vec[i]->ix << "-" <<  cell_vec[i]->iy << "-" <<  cell_vec[i]->iz << "-points.binary";
             cout << "file= " << ss_points.str() << endl;
@@ -405,7 +410,7 @@ int main(int argc, char** argv)
         if(options.savePointNormals())
         {
             std::stringstream ss_normals;
-            ss_normals << "part-" << i << "-normals.ply";
+            ss_normals << name_id << "-normals.ply";
             ModelPtr m(new Model(p_loader));
             ModelFactory::saveModel( m, ss_normals.str());
         }
@@ -415,18 +420,18 @@ int main(int argc, char** argv)
         mesh_time += mesh_end-mesh_start;
         start_s = lvr::timestamp.getElapsedTimeInS();
         std::stringstream ss_mesh;
-        ss_mesh << "part-" << i << "-mesh.ply";
+        ss_mesh << name_id << "-mesh.ply";
         ModelPtr m( new Model( mesh.meshBuffer() ) );
         ModelFactory::saveModel( m, ss_mesh.str());
         delete reconstruction;
 
         std::stringstream ss_grid;
-        ss_grid << "part-" << i << "-grid.ser";
+        ss_grid << name_id << "-grid.ser";
 //        ps_grid->saveCells(ss_grid.str());
         grid_files.push_back(ss_grid.str());
 
         std::stringstream ss_duplicates;
-        ss_duplicates << "part-" << i << "-duplicates.ser";
+        ss_duplicates << name_id << "-duplicates.ser";
         std::ofstream ofs(ss_duplicates.str(), std::ofstream::out | std::ofstream::trunc);
         boost::archive::text_oarchive oa(ofs);
         oa & duplicates;
@@ -434,9 +439,6 @@ int main(int argc, char** argv)
         seconds+=(end_s - start_s);
         cout << lvr::timestamp << "finished saving data " << i << " in " << (end_s - start_s) << endl;
         delete ps_grid;
-
-
-
 
     }
 
