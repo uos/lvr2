@@ -101,7 +101,6 @@ private:
     size_t m_numPoints;
     float m_voxelSize;
     bool m_extrude;
-    omp_lock_t m_lock;
 
     bool m_has_normal;
     bool m_has_color;
