@@ -7,6 +7,7 @@
 #include <cstring>
 #include "LineReader.hpp"
 #include <lvr/reconstruction/FastReconstructionTables.hpp>
+#include <lvr/io/Progress.hpp>
 BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, float overlapping_size, float scale) :
         m_maxIndex(0), m_maxIndexSquare(0), m_maxIndexX(0), m_maxIndexY(0), m_maxIndexZ(0), m_numPoints(0), m_extrude(true),m_scale(scale),
         m_has_normal(false), m_has_color(false)
@@ -93,7 +94,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
     }
 
 
-
+    cout << lvr::timestamp << "finished BoundingBox" << endl;
 
 
     //Make box side lenghts be divisible by voxel size
@@ -139,7 +140,10 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
     {
         m_has_color = true;
     }
-
+    string comment = lvr::timestamp.getElapsedTime() + "Splitting and Serializing ";
+    lvr::ProgressBar progress(m_numPoints, comment);
+    omp_lock_t writelock;
+    omp_init_lock(&writelock);
     while (lineReader.ok())
     {
         if (lineReader.getFileType() == XYZNRGB)
@@ -194,6 +198,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
 //                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.g,sizeof(unsigned char));
 //                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.b,sizeof(unsigned char));
                 }
+                ++progress;
             }
         } else if (lineReader.getFileType() == XYZN) {
             boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(lineReader.getNextPoints(rsize,1024));
@@ -235,6 +240,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
 //                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.y,sizeof(float));
 //                m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.z,sizeof(float));
                 }
+                ++progress;
             }
         } else if (lineReader.getFileType() == XYZ)
         {
@@ -266,7 +272,9 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
 //                    m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
 //                    m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
                 }
+                ++progress;
             }
+
         }
         else if (lineReader.getFileType() == XYZRGB)
         {
@@ -275,6 +283,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
             {
                 break;
             }
+#pragma omp parallel for schedule(dynamic,1)
             for (int i = 0; i < rsize; i++)
             {
                 ix = a.get()[i].point.x*m_scale;
@@ -287,15 +296,26 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                 m_gridNumPoints[h].ix = idx;
                 m_gridNumPoints[h].iy = idy;
                 m_gridNumPoints[h].iz = idz;
+
                 if(!m_gridNumPoints[h].ofs_points.is_open())
                 {
-                    std::stringstream ss;
-                    ss << "part-" << idx << "-" << idy << "-" << idz << "-points.binary";
-                    m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::out | std::ofstream::trunc);
+                    omp_set_lock(&writelock);
+                    if(!m_gridNumPoints[h].ofs_points.is_open())
+                    {
+                        std::stringstream ss;
+                        ss << "part-" << idx << "-" << idy << "-" << idz << "-points.binary";
+                        m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::out | std::ofstream::trunc);
+                    }
+
+                    omp_unset_lock(&writelock);
                 }
                 if(std::isnormal(ix) && std::isnormal(iy) && std::isnormal(iz))
                 {
-                    m_gridNumPoints[h].ofs_points << ix << " " << iy << " " << iz << endl;
+                    stringstream tmpss;
+                    tmpss << ix << " " << iy << " " << iz;
+                    omp_set_lock(&writelock);
+                    m_gridNumPoints[h].ofs_points << tmpss.str() << endl;
+                    omp_unset_lock(&writelock);
 //                    m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
 //                    m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
 //                    m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
@@ -309,18 +329,31 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
 
                 if(!m_gridNumPoints[h].ofs_colors.is_open())
                 {
-                    std::stringstream ss;
-                    ss << "part-" << idx << "-" << idy << "-" << idz << "-colors.binary";
-                    m_gridNumPoints[h].ofs_colors.open(ss.str(), std::ofstream::out | std::ofstream::trunc);
+                    omp_set_lock(&writelock);
+                    if(!m_gridNumPoints[h].ofs_colors.is_open())
+                    {
+                        std::stringstream ss;
+                        ss << "part-" << idx << "-" << idy << "-" << idz << "-colors.binary";
+                        m_gridNumPoints[h].ofs_colors.open(ss.str(), std::ofstream::out | std::ofstream::trunc);
+                    }
+                    omp_unset_lock(&writelock);
+
                 }
-                m_gridNumPoints[h].ofs_colors << a.get()[i].color.r << " " << a.get()[i].color.g << " " << a.get()[i].color.b << endl;
+
+                stringstream tmp_css;
+                tmp_css << a.get()[i].color.r << " " << a.get()[i].color.g << " " << a.get()[i].color.b;
+                omp_set_lock(&writelock);
+                m_gridNumPoints[h].ofs_colors << tmp_css.str() << endl;
+                omp_unset_lock(&writelock);
 //                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.r,sizeof(unsigned char));
 //                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.g,sizeof(unsigned char));
 //                m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.b,sizeof(unsigned char));
+                ++progress;
             }
         }
     }
 
+    cout << lvr::timestamp << " calculating boundingboxes of cells" << endl;
     for(auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end(); it++)
     {
         float cx  = m_bb.getMin().x + it->second.ix * m_voxelSize;
@@ -340,6 +373,8 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
     }
     lineReader.rewind();
 
+    string comment2 = lvr::timestamp.getElapsedTime() + "adding overlapping points";
+    lvr::ProgressBar progress2(m_numPoints, comment2);
     // Add overlapping points
     for(auto cell = m_gridNumPoints.begin() ; cell != m_gridNumPoints.end(); cell++)
     {
@@ -433,6 +468,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
 //                            neigbout_it->second.ofs_points.write((char*)&z,sizeof(float));
                     }
                 }
+                ++progress2;
             }
         }
         else if (lineReader.getFileType() == XYZNRGB)
@@ -604,6 +640,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
 //                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
                     }
                 }
+                ++progress2;
             }
 
         }
@@ -736,6 +773,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
 //                        neigbout_it->second.ofs_normals.write((char*)&normalBuffer[i*3+2],sizeof(float));
                     }
                 }
+                ++progress2;
             }
         }
         else if (lineReader.getFileType() == XYZRGB)
@@ -872,10 +910,11 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
 //                        neigbout_it->second.ofs_colors.write((char*)&colorBuffer[i*3+2],sizeof(unsigned char));
                     }
                 }
+                ++progress2;
             }
         }
     }
-
+    cout << lvr::timestamp << " finished serialization" << endl;
     for(auto cell = m_gridNumPoints.begin() ; cell != m_gridNumPoints.end(); cell++)
     {
         if(cell->second.ofs_points.is_open()) cell->second.ofs_points.close();

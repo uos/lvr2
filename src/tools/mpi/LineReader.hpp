@@ -69,6 +69,7 @@ public:
     void rewind(size_t i);
     void rewind();
     bool ok();
+    bool isPly(){ return m_ply;}
 
     class readException : public std::exception
     {
