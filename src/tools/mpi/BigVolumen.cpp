@@ -142,7 +142,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
     }
     string comment = lvr::timestamp.getElapsedTime() + "Splitting and Serializing ";
     lvr::ProgressBar progress(m_numPoints, comment);
-    
+
     while (lineReader.ok())
     {
         if (lineReader.getFileType() == XYZNRGB)
@@ -175,7 +175,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                     ss << "part-" << idx << "-" << idy << "-" << idz << "-points.binary";
                     m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::out | std::ofstream::binary | std::ofstream::trunc);
                 }
-                
+
                     // m_gridNumPoints[h].ofs_points << ix << " " << iy << " " << iz << endl;
                 m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
                 m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
@@ -202,7 +202,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                 m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.r,sizeof(unsigned char));
                 m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.g,sizeof(unsigned char));
                 m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.b,sizeof(unsigned char));
-            
+
             }
         } else if (lineReader.getFileType() == XYZN) {
             boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(lineReader.getNextPoints(rsize,1024));
@@ -233,7 +233,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                     ss << "part-" << idx << "-" << idy << "-" << idz << "-points.binary";
                     m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::out | std::ofstream::binary | std::ofstream::trunc);
                 }
-                
+
                 // m_gridNumPoints[h].ofs_points << ix << " " << iy << " " << iz << endl;
                 m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
                 m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
@@ -244,12 +244,12 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                     ss << "part-" << idx << "-" << idy << "-" << idz << "-normals.binary";
                     m_gridNumPoints[h].ofs_normals.open(ss.str(), std::ofstream::out | std::ofstream::binary | std::ofstream::trunc);
                 }
-                
-                  
+
+
                 m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.x,sizeof(float));
                 m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.y,sizeof(float));
                 m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.z,sizeof(float));
-                
+
             }
         } else if (lineReader.getFileType() == XYZ)
         {
@@ -281,12 +281,12 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                     ss << "part-" << idx << "-" << idy << "-" << idz << "-points.binary";
                     m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::out | std::ofstream::binary | std::ofstream::trunc);
                 }
-                
-                
+
+
                 m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
                 m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
                 m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
-            
+
             }
 
         }
@@ -297,7 +297,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
             {
                 break;
             }
-            
+
             for (int i = 0; i < rsize; i++, ++progress)
             {
                 ix = a.get()[i].point.x*m_scale;
@@ -323,12 +323,12 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                     ss << "part-" << idx << "-" << idy << "-" << idz << "-points.binary";
                     m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::out | std::ofstream::binary | std::ofstream::trunc);
                 }
-                
+
                 // stringstream tmpss;
                 // tmpss << ix << " " << iy << " " << iz;
-                
+
                 // m_gridNumPoints[h].ofs_points << tmpss.str() << endl;
-                
+
                 m_gridNumPoints[h].ofs_points.write((char*)&ix,sizeof(float));
                 m_gridNumPoints[h].ofs_points.write((char*)&iy,sizeof(float));
                 m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
@@ -345,7 +345,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                 m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.r,sizeof(unsigned char));
                 m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.g,sizeof(unsigned char));
                 m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.b,sizeof(unsigned char));
-               
+
             }
         }
     }
@@ -728,7 +728,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                 if( std::isnan(x) || std::isnan(y) && std::isnan(z) )
                 {
                     continue;
-                } 
+                }
 
                 if(x < cell->second.bb.getMin().x + overlapp_size)
                 {
