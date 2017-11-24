@@ -304,6 +304,10 @@ public:
 
     bool vertexColorsFromPointcloud() const;
 
+    bool useGPU() const;
+
+    vector<float> getFlippoint() const;
+
 private:
 
     /// The set voxelsize
@@ -422,6 +426,9 @@ private:
 
     ///Use pointcloud colors to paint vertices
     bool m_vertexColorsFromPointcloud;
+
+    // Flippoint for gpu normal calculation
+    vector<float> m_flippoint;
 
 };
 
