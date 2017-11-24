@@ -1,4 +1,4 @@
-/* Copyright (C) 2011 Uni Osnabrück
+ /* Copyright (C) 2011 Uni Osnabrück
  * This file is part of the LAS VEGAS Reconstruction Toolkit,
  *
  * LAS VEGAS is free software; you can redistribute it and/or modify
@@ -863,7 +863,10 @@ int main(int argc, char** argv)
     // Magic number from lvr1 `cleanContours`...
     cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
 
-    naiveFillSmallHoles(mesh, options.getFillHoles(), false);
+    if(options.getFillHoles())
+    {
+        naiveFillSmallHoles(mesh, options.getFillHoles(), false);
+    }
 
     auto faceNormals = calcFaceNormals(mesh);
 
