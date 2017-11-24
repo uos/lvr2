@@ -127,6 +127,7 @@ ClusterBiMap<FaceHandle> iterativePlanarClusterGrowing(
     // Iterate numIterations times
     for (int i = 0; i < numIterations; ++i)
     {
+
         // Generate clusters
         clusters = planarClusterGrowing(mesh, normals, minSinAngle);
 
