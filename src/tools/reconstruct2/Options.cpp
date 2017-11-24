@@ -88,6 +88,8 @@ Options::Options(int argc, char** argv)
         ("patt", value<float>(&m_patternThreshold)->default_value(100), "Threshold for pattern extraction from textures")
         ("mtv", value<int>(&m_minimumTransformationVotes)->default_value(3), "Minimum number of votes to consider a texture transformation as correct")
         ("vcfp", "Use color information from pointcloud to paint vertices")
+        ("useGPU", "Use GPU for normal estimation")
+        ("flipPoint", value< vector<float> >()->multitoken(), "Flippoint" )
     ;
 
     setup();
@@ -402,6 +404,32 @@ int Options::getTexMaxClusterSize() const
 bool Options::vertexColorsFromPointcloud() const
 {
     return m_variables.count("vcfp");
+}
+
+bool Options::useGPU() const
+{
+    return m_variables.count("useGPU");
+}
+
+vector<float> Options::getFlippoint() const
+{
+    vector<float> dest;
+    if(m_variables.count("flipPoint"))
+    {
+        dest = (m_variables["flipPoint"].as< vector<float> >());
+        if(dest.size() != 3)
+        {
+            dest.clear();
+            dest.push_back(10000000);
+            dest.push_back(10000000);
+            dest.push_back(10000000);
+        }
+    }else{
+        dest.push_back(10000000);
+        dest.push_back(10000000);
+        dest.push_back(10000000);
+    }
+    return dest;
 }
 
 
