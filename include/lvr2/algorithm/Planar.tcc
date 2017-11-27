@@ -38,11 +38,14 @@
 #include <lvr2/util/Debug.hpp>
 
 #include <lvr/io/Progress.hpp>
+#include <lvr/io/Timestamp.hpp>
 
 using std::unordered_set;
 using std::vector;
 using std::max;
 using std::log;
+
+using lvr::timestamp;
 
 namespace lvr2
 {
