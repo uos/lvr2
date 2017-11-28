@@ -89,7 +89,7 @@ Options::Options(int argc, char** argv)
         ("mtv", value<int>(&m_minimumTransformationVotes)->default_value(3), "Minimum number of votes to consider a texture transformation as correct")
         ("vcfp", "Use color information from pointcloud to paint vertices")
         ("useGPU", "Use GPU for normal estimation")
-        ("flipPoint", value< vector<float> >()->multitoken(), "Flippoint" )
+        ("flipPoint", value< vector<float> >()->multitoken(), "Flippoint --flipPoint x y z" )
     ;
 
     setup();
