@@ -60,6 +60,7 @@ class MeshBuffer
 
     public:
         MeshBuffer() {};
+
         MeshBuffer(lvr::MeshBuffer& oldBuffer);
 
         vector<float> getVertices();
