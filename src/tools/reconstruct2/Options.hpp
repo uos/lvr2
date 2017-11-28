@@ -555,14 +555,14 @@ inline ostream& operator<<(ostream& os, const Options &o)
 
     if(o.useGPU())
     {
-        cout << "##### Use GPU for normal estimation \t: ON" << endl;
+        cout << "##### GPU normal estimation \t: ON" << endl;
         std::vector<float> flipPoint = o.getFlippoint();
         cout << "##### Flippoint \t\t: ("
             << flipPoint[0] << ", "
             << flipPoint[1] << ", "
             << flipPoint[2] << ")" << endl;
     }else{
-        cout << "##### Use GPU for normal estimation \t\t: OFF" << endl;
+        cout << "##### GPU normal estimation \t: OFF" << endl;
     }
 
 
