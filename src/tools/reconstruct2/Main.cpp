@@ -208,6 +208,19 @@
 #include <lvr/reconstruction/PCLKSurface.hpp>
 #endif
 
+#if defined CUDA_FOUND
+    #define GPU_FOUND
+
+    #include <lvr/reconstruction/cuda/CudaSurface.hpp>
+
+    typedef lvr::CudaSurface GpuSurface;
+#elif defined OPENCL_FOUND
+    #define GPU_FOUND
+
+    #include <lvr/reconstruction/opencl/ClSurface.hpp>
+    typedef lvr::ClSurface GpuSurface;
+#endif
+
 
 
 using boost::optional;
@@ -643,7 +656,39 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     // Calculate normals if necessary
     if(!buffer->hasNormals() || options.recalcNormals())
     {
-        surface->calculateSurfaceNormals();
+
+        if(options.useGPU())
+        {
+            #ifdef GPU_FOUND
+                std::vector<float> flipPoint = options.getFlippoint();
+                size_t num_points;
+                lvr::floatArr points;
+                lvr::PointBuffer old_buffer = buffer->toOldBuffer();
+                points = old_buffer.getPointArray(num_points);
+                lvr::floatArr normals = lvr::floatArr(new float[ num_points * 3 ]);
+                std::cout << "Generate GPU kd-tree..." << std::endl;
+                GpuSurface gpu_surface(points, num_points);
+                std::cout << "finished." << std::endl;
+
+                gpu_surface.setKn(options.getKn());
+                gpu_surface.setKi(options.getKi());
+                gpu_surface.setFlippoint(flipPoint[0], flipPoint[1], flipPoint[2]);
+                std::cout << "Start Normal Calculation..." << std::endl;
+                gpu_surface.calculateNormals();
+                gpu_surface.getNormals(normals);
+                std::cout << "finished." << std::endl;
+                old_buffer.setPointNormalArray(normals, num_points);
+                buffer->copyNormalsFrom(old_buffer);
+                gpu_surface.freeGPU();
+            #else
+                std::cout << "ERROR: GPU Driver not installed" << std::endl;
+                surface->calculateSurfaceNormals();
+            #endif
+        }
+        else
+        {
+            surface->calculateSurfaceNormals();
+        }
     }
     else
     {
@@ -1018,7 +1063,6 @@ int main(int argc, char** argv)
 
     // Add material data to finalize algorithm
     finalize.setMaterializerResult(matResult);
-
     // Run finalize algorithm
     auto buffer = finalize.apply(mesh);
 
