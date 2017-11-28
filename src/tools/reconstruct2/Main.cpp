@@ -656,7 +656,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     // Calculate normals if necessary
     if(!buffer->hasNormals() || options.recalcNormals())
     {
-        
+
         if(options.useGPU())
         {
             #ifdef GPU_FOUND
