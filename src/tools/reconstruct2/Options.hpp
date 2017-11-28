@@ -554,6 +554,18 @@ inline ostream& operator<<(ostream& os, const Options &o)
         cout << "##### Edge collapse reduction ratio\t: " << o.getEdgeCollapseReductionRatio() << endl;
     }
 
+    if(o.useGPU())
+    {
+        cout << "##### Use GPU for normal estimation \t: ON" << endl;
+        std::vector<float> flipPoint = o.getFlippoint();
+        cout << "##### Flippoint \t\t: ("
+            << flipPoint[0] << ", "
+            << flipPoint[1] << ", "
+            << flipPoint[2] << ")" << endl;
+    }else{
+        cout << "##### Use GPU for normal estimation \t\t: OFF" << endl;
+    }
+
 
     return os;
 }

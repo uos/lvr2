@@ -1060,7 +1060,6 @@ int main(int argc, char** argv)
 
     // Add material data to finalize algorithm
     finalize.setMaterializerResult(matResult);
-
     // Run finalize algorithm
     auto buffer = finalize.apply(mesh);
 
