@@ -115,7 +115,7 @@ MeshBuffer<BaseVecT>::MeshBuffer(lvr::MeshBuffer& oldBuffer)
         // TODO old texture array to new
         for(size_t i=0; i<len; i++)
         {
-            m_textures[i] = Texture<BaseVecT>(texture_buf[i]);
+            m_textures[i] = Texture<BaseVecT>(i,texture_buf[i]);
         }
     }
 
