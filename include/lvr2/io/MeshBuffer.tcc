@@ -19,6 +19,112 @@
 namespace lvr2
 {
 
+template <typename BaseVecT>
+MeshBuffer<BaseVecT>::MeshBuffer(lvr::MeshBuffer& oldBuffer)
+{
+    size_t len;
+    auto vertex_buf = oldBuffer.getVertexArray(len);
+    if(len>0)
+    {
+        m_vertices.reserve(len * 3);
+        std::copy(  vertex_buf.get(),
+                    vertex_buf.get() + len*3,
+                    m_vertices.begin());
+    }
+
+    auto vertexC_buf = oldBuffer.getVertexColorArray(len);
+    if(len > 0)
+    {
+        m_vertexColors.reserve(len * 3);
+        std::copy(  vertexC_buf.get(),
+                    vertexC_buf.get() + len*3,
+                    m_vertexColors.begin());
+    }
+
+    auto vertexConf_buf = oldBuffer.getVertexConfidenceArray(len);
+    if(len > 0)
+    {
+        m_vertexConfidences.reserve(len);
+        std::copy(  vertexConf_buf.get(),
+                    vertexConf_buf.get() + len,
+                    m_vertexConfidences.begin());
+    }
+
+    auto vertexInt_buf = oldBuffer.getVertexIntensityArray(len);
+    if(len > 0)
+    {
+        m_vertexIntensities.reserve(len);
+        std::copy(  vertexInt_buf.get(),
+                    vertexInt_buf.get() + len,
+                    m_vertexIntensities.begin());
+    }
+
+    auto vertexNormal_buf = oldBuffer.getVertexNormalArray(len);
+    if(len > 0)
+    {
+        m_vertexNormals.reserve(len * 3);
+        std::copy(  vertexNormal_buf.get(),
+                    vertexNormal_buf.get() + len*3,
+                    m_vertexNormals.begin());
+    }
+
+    auto vertexTex_buf = oldBuffer.getVertexTextureCoordinateArray(len);
+    if(len > 0)
+    {
+        m_vertexTextureCoordinates.reserve(len * 3);
+        std::copy(  vertexTex_buf.get(),
+                    vertexTex_buf.get() + len*3,
+                    m_vertexTextureCoordinates.begin());
+    }
+
+    auto faceInd_buf = oldBuffer.getFaceArray(len);
+    if(len > 0)
+    {
+        m_faceIndices.reserve(len * 3);
+        std::copy(  faceInd_buf.get(),
+                    faceInd_buf.get() + len*3,
+                    m_faceIndices.begin());
+    }
+
+    auto faceMaterialInd_buf = oldBuffer.getFaceMaterialIndexArray(len);
+    if(len > 0)
+    {
+        m_faceMaterialIndices.reserve(len);
+        std::copy(  faceMaterialInd_buf.get(),
+                    faceMaterialInd_buf.get() + len,
+                    m_faceMaterialIndices.begin());
+    }
+
+    auto material_buf = oldBuffer.getMaterialArray(len);
+    if(len > 0)
+    {
+        m_materials.reserve(len);
+        // TODO old material to new material
+
+        for(size_t i=0; i<len; i++)
+        {
+
+        }
+
+    }
+
+    auto texture_buf = oldBuffer.getTextureArray(len);
+    if(len > 0)
+    {
+        m_textures.reserve(len);
+        // TODO old texture array to new
+        for(size_t i=0; i<len; i++)
+        {
+            m_textures[i] = Texture<BaseVecT>(texture_buf[i]);
+        }
+    }
+
+    // TODO: this vectors???
+    // m_clusterMaterialIndices
+    // m_clusterFaceIndices
+
+}
+
 template<typename BaseVecT>
 vector<float> MeshBuffer<BaseVecT>::getVertices()
 {
