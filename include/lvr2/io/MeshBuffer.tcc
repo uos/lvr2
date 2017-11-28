@@ -99,11 +99,13 @@ MeshBuffer<BaseVecT>::MeshBuffer(lvr::MeshBuffer& oldBuffer)
     if(len > 0)
     {
         m_materials.reserve(len);
-        // TODO old material to new material
 
         for(size_t i=0; i<len; i++)
         {
-
+            m_materials[i].m_texture = TextureHandle(material_buf[i]->texture_index);
+            m_materials[i].m_color.get()[0] = material_buf[i]->r;
+            m_materials[i].m_color.get()[1] = material_buf[i]->g;
+            m_materials[i].m_color.get()[2] = material_buf[i]->b;
         }
 
     }
