@@ -85,21 +85,41 @@ Texture<BaseVecT>::Texture(
 template<typename BaseVecT>
 Texture<BaseVecT>::Texture(
     int index,
-    lvr::Texture oldTexture
+    lvr::Texture* oldTexture
 ) :
     m_index(index),
-    m_width(oldTexture.m_width),
-    m_height(oldTexture.m_height),
-    m_numChannels(oldTexture.m_numChannels),
-    m_numBytesPerChan(oldTexture.m_numBytesPerChan),
+    m_width(oldTexture->m_width),
+    m_height(oldTexture->m_height),
+    m_numChannels(oldTexture->m_numChannels),
+    m_numBytesPerChan(oldTexture->m_numBytesPerChan),
     m_texelSize(1),
-    m_data(new unsigned char[oldTexture.m_width
-                    * oldTexture.m_height
-                    * oldTexture.m_numChannels
-                    * oldTexture.m_numBytesPerChan])
+    m_data(new unsigned char[oldTexture->m_width
+                    * oldTexture->m_height
+                    * oldTexture->m_numChannels
+                    * oldTexture->m_numBytesPerChan])
 {
     size_t copy_len = m_width * m_height * m_numChannels * m_numBytesPerChan;
-    std::copy(oldTexture.m_data, oldTexture.m_data + copy_len, m_data);
+    std::copy(oldTexture->m_data, oldTexture->m_data + copy_len, m_data);
+}
+
+template<typename BaseVecT>
+Texture<BaseVecT>::Texture(
+    int index,
+    GlTexture* oldTexture
+) :
+    m_index(index),
+    m_width(oldTexture->m_width),
+    m_height(oldTexture->m_height),
+    m_numChannels(3),
+    m_numBytesPerChan(sizeof(unsigned char)),
+    m_texelSize(1),
+    m_data(new unsigned char[oldTexture->m_width
+                    * oldTexture->m_height
+                    * 3
+                    * sizeof(unsigned char)])
+{
+    size_t copy_len = m_width * m_height * m_numChannels * m_numBytesPerChan;
+    std::copy(oldTexture->m_pixels, oldTexture->m_pixels + copy_len, m_data);
 }
 
 template<typename BaseVecT>

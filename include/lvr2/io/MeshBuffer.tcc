@@ -22,83 +22,115 @@ namespace lvr2
 template <typename BaseVecT>
 MeshBuffer<BaseVecT>::MeshBuffer(lvr::MeshBuffer& oldBuffer)
 {
-    size_t len;
-    auto vertex_buf = oldBuffer.getVertexArray(len);
-    if(len>0)
+
+    size_t len = 0;
+    size_t vertex_len = 0;
+    auto vertex_buf = oldBuffer.getVertexArray(vertex_len);
+    std::cout << "Vertex " << vertex_len << std::endl;
+    if(vertex_len>0)
     {
-        m_vertices.reserve(len * 3);
+        m_vertices.resize(vertex_len * 3);
         std::copy(  vertex_buf.get(),
-                    vertex_buf.get() + len*3,
+                    vertex_buf.get() + vertex_len*3,
                     m_vertices.begin());
     }
 
+    std::cout << m_vertices.size() << std::endl;
+
+
+    len = 0;
     auto vertexC_buf = oldBuffer.getVertexColorArray(len);
+    std::cout << "Color " << len << std::endl;
     if(len > 0)
     {
-        m_vertexColors.reserve(len * 3);
+        m_vertexColors.resize(len * 3);
         std::copy(  vertexC_buf.get(),
                     vertexC_buf.get() + len*3,
                     m_vertexColors.begin());
     }
 
+
+    len = 0;
     auto vertexConf_buf = oldBuffer.getVertexConfidenceArray(len);
+    std::cout << "Confidence " << len << std::endl;
     if(len > 0)
     {
-        m_vertexConfidences.reserve(len);
+        m_vertexConfidences.resize(len);
         std::copy(  vertexConf_buf.get(),
                     vertexConf_buf.get() + len,
                     m_vertexConfidences.begin());
     }
 
+
+    len = 0;
     auto vertexInt_buf = oldBuffer.getVertexIntensityArray(len);
+    std::cout << "Intensity " << len << std::endl;
     if(len > 0)
     {
-        m_vertexIntensities.reserve(len);
+        m_vertexIntensities.resize(len);
         std::copy(  vertexInt_buf.get(),
                     vertexInt_buf.get() + len,
                     m_vertexIntensities.begin());
     }
 
+
+    len = 0;
     auto vertexNormal_buf = oldBuffer.getVertexNormalArray(len);
+    std::cout << "Normal " << len << std::endl;
     if(len > 0)
     {
-        m_vertexNormals.reserve(len * 3);
+        m_vertexNormals.resize(len * 3);
         std::copy(  vertexNormal_buf.get(),
                     vertexNormal_buf.get() + len*3,
                     m_vertexNormals.begin());
     }
 
+
+    len = 0;
     auto vertexTex_buf = oldBuffer.getVertexTextureCoordinateArray(len);
-    if(len > 0)
+    std::cout << "Texture coordindate " << len << std::endl;
+    if(len > 0 && len <= 2 * vertex_len )
     {
-        m_vertexTextureCoordinates.reserve(len * 3);
+        std::cout << "len_tex_coords " << len << std::endl;
+        this->m_vertexTextureCoordinates.resize(len * 3);
+
         std::copy(  vertexTex_buf.get(),
                     vertexTex_buf.get() + len*3,
-                    m_vertexTextureCoordinates.begin());
+                    this->m_vertexTextureCoordinates.begin());
     }
 
+
+    len = 0;
     auto faceInd_buf = oldBuffer.getFaceArray(len);
+    std::cout << "Face index " << len << std::endl;
     if(len > 0)
     {
-        m_faceIndices.reserve(len * 3);
+
+        m_faceIndices.resize(len * 3);
         std::copy(  faceInd_buf.get(),
                     faceInd_buf.get() + len*3,
                     m_faceIndices.begin());
     }
 
+
+    len = 0;
     auto faceMaterialInd_buf = oldBuffer.getFaceMaterialIndexArray(len);
+    std::cout << "Material Index " << len << std::endl;
     if(len > 0)
     {
-        m_faceMaterialIndices.reserve(len);
+        m_faceMaterialIndices.resize(len);
         std::copy(  faceMaterialInd_buf.get(),
                     faceMaterialInd_buf.get() + len,
                     m_faceMaterialIndices.begin());
     }
 
+
+    len = 0;
     auto material_buf = oldBuffer.getMaterialArray(len);
+    std::cout << "Material " << len << std::endl;
     if(len > 0)
     {
-        m_materials.reserve(len);
+        m_materials.resize(len);
 
         for(size_t i=0; i<len; i++)
         {
@@ -110,10 +142,13 @@ MeshBuffer<BaseVecT>::MeshBuffer(lvr::MeshBuffer& oldBuffer)
 
     }
 
+
+    len = 0;
     auto texture_buf = oldBuffer.getTextureArray(len);
+    std::cout << "Texture " << len << std::endl;
     if(len > 0)
     {
-        m_textures.reserve(len);
+        m_textures.resize(len);
         // TODO old texture array to new
         for(size_t i=0; i<len; i++)
         {
