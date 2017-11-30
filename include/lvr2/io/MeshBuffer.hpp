@@ -35,6 +35,7 @@
 #define MESHBUFFER2_HPP_
 
 #include <boost/shared_ptr.hpp>
+#include <boost/optional.hpp>
 
 #include <vector>
 
@@ -60,6 +61,8 @@ class MeshBuffer
 
     public:
         MeshBuffer() {};
+
+        MeshBuffer(lvr::MeshBuffer& oldBuffer);
 
         vector<float> getVertices();
         vector<unsigned char> getVertexColors();

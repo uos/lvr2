@@ -33,6 +33,8 @@
 #include <cstdio>
 #include <lvr2/geometry/BoundingRectangle.hpp>
 #include <lvr/io/PPMIO.hpp>
+#include <lvr/texture/Texture.hpp>
+#include <lvr/display/GlTexture.hpp>
 
 namespace lvr2 {
 
@@ -61,6 +63,16 @@ public:
         unsigned char numChannels,
         unsigned char numBytesPerChan,
         float texelSize
+    );
+
+    Texture(
+        int index,
+        lvr::Texture* oldTexture
+    );
+
+    Texture(
+        int index,
+        GlTexture* oldTexture
     );
 
 
