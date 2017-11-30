@@ -35,6 +35,7 @@
 #define MESHBUFFER2_HPP_
 
 #include <boost/shared_ptr.hpp>
+#include <boost/optional.hpp>
 
 #include <vector>
 

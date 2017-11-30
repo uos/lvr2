@@ -70,7 +70,7 @@ public:
 	 * @param  filename  The file name to use
 	 */
 	void save( string filename );
-	
+
 
 private:
 
@@ -78,7 +78,7 @@ private:
 			vector<Material*>& materials,
 			vector<GlTexture*>& textures,
 			string mtlname);
-	
+
 };
 
 }
