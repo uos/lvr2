@@ -62,7 +62,7 @@ void writeDebugMesh(
     auto buffer = finalize.apply(mesh);
 
     // Save mesh
-    auto m = boost::make_shared<lvr::Model>(buffer);
+    auto m = boost::make_shared<lvr::Model>(buffer->toOldBuffer());
     lvr::ModelFactory::saveModel(m, filename);
 }
 
@@ -89,6 +89,46 @@ vector<vector<VertexHandle>> getDuplicateVertices(const BaseMesh<BaseVecT>& mesh
     }
 
     return duplicateVertices;
+}
+
+template<typename BaseVecT>
+void
+writeDebugContourMesh(
+    const BaseMesh<BaseVecT>& mesh,
+    string filename,
+    Rgb8Color connectedColor,
+    Rgb8Color contourColor,
+    Rgb8Color bugColor
+)
+{
+    DenseVertexMap<Rgb8Color> color_vertices(mesh.numVertices(), connectedColor);
+    for (auto eH: mesh.edges())
+    {
+        auto vertices = mesh.getVerticesOfEdge(eH);
+
+        // found a contour
+        auto numFaces = mesh.numAdjacentFaces(eH);
+        if (1 == numFaces)
+        {
+            color_vertices[vertices[0]] = contourColor;
+            color_vertices[vertices[1]] = contourColor;
+        }
+            // found something weird
+        else if (2 != numFaces)
+        {
+            color_vertices[vertices[0]] = bugColor;
+            color_vertices[vertices[1]] = bugColor;
+        }
+    }
+
+    // Finalize mesh (convert it to simple `MeshBuffer`)
+    FinalizeAlgorithm<BaseVecT> finalize;
+    finalize.setColorData(color_vertices);
+    auto buffer = finalize.apply(mesh);
+
+    // Save mesh
+    auto m = boost::make_shared<lvr::Model>(buffer->toOldBuffer());
+    lvr::ModelFactory::saveModel(m, filename);
 }
 
 } // namespace lvr2
