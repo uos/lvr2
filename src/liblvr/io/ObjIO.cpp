@@ -129,9 +129,9 @@ void ObjIO::parseMtlFile(
 			{
 				float r, g, b;
 				ss >> r >> g >> b;
-				m->r = (unsigned char)(r * 255);
-				m->g = (unsigned char)(g * 255);
-				m->b = (unsigned char)(b * 255);
+				m->r = (unsigned char)(r * 255.0);
+				m->g = (unsigned char)(g * 255.0);
+				m->b = (unsigned char)(b * 255.0);
 			}
 			else if(keyword == "map_Kd")
 			{
@@ -166,6 +166,7 @@ ModelPtr ObjIO::read(string filename)
 
 	vector<float> 		vertices;
 	vector<float> 		normals;
+	vector<unsigned char> 		colors;
 	vector<float> 		texcoords;
 	vector<uint>		faceMaterials;
 	vector<uint>  		faces;
@@ -190,12 +191,24 @@ ModelPtr ObjIO::read(string filename)
 			string keyword;
 			ss >> keyword;
 			float x, y, z;
+			unsigned char r, g, b;
 			if(keyword == "v")
 			{
 				ss >> x >> y >> z;
 				vertices.push_back(x);
 				vertices.push_back(y);
 				vertices.push_back(z);
+				// TODO: check if r is end of line
+				std::string s;
+				bool colors_exist = static_cast<bool>(ss >> r);
+				// r = s[0];
+				ss >> g >> b;
+				if(colors_exist)
+				{
+					colors.push_back(r);
+					colors.push_back(g);
+					colors.push_back(b);
+				}
 			}
 			else if(keyword == "vt")
 			{
@@ -301,6 +314,7 @@ ModelPtr ObjIO::read(string filename)
 	mesh->setVertexArray(vertices);
 	mesh->setVertexNormalArray(normals);
 	mesh->setFaceArray(faces);
+	mesh->setVertexColorArray(colors);
 
 	ModelPtr m(new Model(mesh));
 	m_model = m;
@@ -318,7 +332,7 @@ class sort_indices
 
 void ObjIO::save( string filename )
 {
-	
+
 	typedef Vertex<unsigned char> ObjColor;
 
 	size_t lenVertices;
@@ -358,7 +372,7 @@ void ObjIO::save( string filename )
 
 		for( size_t i=0; i < lenVertices; ++i )
 		{
-			
+
 			out << "v " << vertices[i][0] << " "
 					<< vertices[i][1] << " "
 					<< vertices[i][2] << " ";
@@ -421,11 +435,11 @@ void ObjIO::save( string filename )
 					//<< faceIndices[i * 3 + 2] + 1 << "/"
 					//<< faceIndices[i * 3 + 2] + 1 << endl;
 		//}
-		
+
 		// format of a face: f v/vt/vn
-		
+
 		std::vector<int> color_indices,texture_indices;
-		
+
 		//splitting materials in colors an textures
 		for(size_t i = 0; i< lenFaces; ++i)
 		{
@@ -437,18 +451,18 @@ void ObjIO::save( string filename )
 				color_indices.push_back(i);
 			}
 		}
-		
-		//sort faceMaterialsIndices: colors, textur_indices 
+
+		//sort faceMaterialsIndices: colors, textur_indices
 		//sort new index lists instead of the faceMaterialIndices
 		std::sort(color_indices.begin(),color_indices.end(),sort_indices(faceMaterialIndices));
 		std::sort(texture_indices.begin(),texture_indices.end(),sort_indices(faceMaterialIndices));
-		
+
 		//colors
 		for(size_t i = 0; i<color_indices.size() ; i++)
 		{
 			unsigned int first = faceMaterialIndices[color_indices[i]];
 			unsigned int face_index=color_indices[i];
-			
+
 			if( i == 0 || first != faceMaterialIndices[color_indices[i-1]] )
 			{
 				out << "usemtl color_" << faceMaterialIndices[color_indices[i]] << endl;
@@ -462,7 +476,7 @@ void ObjIO::save( string filename )
 					<< faceIndices[face_index * 3 + 2] + 1 << "/"
 					<< faceIndices[face_index * 3 + 2] + 1 << "/"
 					<< faceIndices[face_index * 3 + 2] + 1 << endl;
-				
+
 			}else if( first == faceMaterialIndices[color_indices[i-1]] )
 			{
 				out << "f "
@@ -477,15 +491,15 @@ void ObjIO::save( string filename )
 					<< faceIndices[face_index * 3 + 2] + 1 << endl;
 			}
 		}
-		
+
 		out<<endl;
-		
+
 		//textures
 		for(size_t i = 0; i<texture_indices.size() ; i++)
 		{
 			Material* first = materials[faceMaterialIndices[texture_indices[i]]];
 			size_t face_index=texture_indices[i];
-			
+
 			if(i==0 || first->texture_index != materials[faceMaterialIndices[texture_indices[i-1]]]->texture_index )
 			{
 				out << "usemtl texture_" << first->texture_index << endl;
@@ -501,7 +515,7 @@ void ObjIO::save( string filename )
 					<< faceIndices[face_index * 3 + 2] + 1 << "/"
 					<< faceIndices[face_index * 3 + 2] + 1 << endl;
 			}else if(first->texture_index == materials[faceMaterialIndices[texture_indices[i-1]]]->texture_index )
-			{ 
+			{
 				out << "f "
 					<< faceIndices[face_index * 3 + 0] + 1 << "/"
 					<< faceIndices[face_index * 3 + 0] + 1 << "/"

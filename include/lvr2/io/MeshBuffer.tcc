@@ -23,24 +23,22 @@ template <typename BaseVecT>
 MeshBuffer<BaseVecT>::MeshBuffer(lvr::MeshBuffer& oldBuffer)
 {
 
+    // TODO: Obj files
+
     size_t len = 0;
     size_t vertex_len = 0;
     auto vertex_buf = oldBuffer.getVertexArray(vertex_len);
-    std::cout << "Vertex " << vertex_len << std::endl;
     if(vertex_len>0)
     {
         m_vertices.resize(vertex_len * 3);
         std::copy(  vertex_buf.get(),
                     vertex_buf.get() + vertex_len*3,
-                    m_vertices.begin());
+                    m_vertices.begin() );
     }
-
-    std::cout << m_vertices.size() << std::endl;
 
 
     len = 0;
     auto vertexC_buf = oldBuffer.getVertexColorArray(len);
-    std::cout << "Color " << len << std::endl;
     if(len > 0)
     {
         m_vertexColors.resize(len * 3);
@@ -52,7 +50,6 @@ MeshBuffer<BaseVecT>::MeshBuffer(lvr::MeshBuffer& oldBuffer)
 
     len = 0;
     auto vertexConf_buf = oldBuffer.getVertexConfidenceArray(len);
-    std::cout << "Confidence " << len << std::endl;
     if(len > 0)
     {
         m_vertexConfidences.resize(len);
@@ -64,7 +61,6 @@ MeshBuffer<BaseVecT>::MeshBuffer(lvr::MeshBuffer& oldBuffer)
 
     len = 0;
     auto vertexInt_buf = oldBuffer.getVertexIntensityArray(len);
-    std::cout << "Intensity " << len << std::endl;
     if(len > 0)
     {
         m_vertexIntensities.resize(len);
@@ -76,7 +72,6 @@ MeshBuffer<BaseVecT>::MeshBuffer(lvr::MeshBuffer& oldBuffer)
 
     len = 0;
     auto vertexNormal_buf = oldBuffer.getVertexNormalArray(len);
-    std::cout << "Normal " << len << std::endl;
     if(len > 0)
     {
         m_vertexNormals.resize(len * 3);
@@ -88,10 +83,8 @@ MeshBuffer<BaseVecT>::MeshBuffer(lvr::MeshBuffer& oldBuffer)
 
     len = 0;
     auto vertexTex_buf = oldBuffer.getVertexTextureCoordinateArray(len);
-    std::cout << "Texture coordindate " << len << std::endl;
     if(len > 0 && len <= 2 * vertex_len )
     {
-        std::cout << "len_tex_coords " << len << std::endl;
         this->m_vertexTextureCoordinates.resize(len * 3);
 
         std::copy(  vertexTex_buf.get(),
@@ -102,7 +95,6 @@ MeshBuffer<BaseVecT>::MeshBuffer(lvr::MeshBuffer& oldBuffer)
 
     len = 0;
     auto faceInd_buf = oldBuffer.getFaceArray(len);
-    std::cout << "Face index " << len << std::endl;
     if(len > 0)
     {
 
@@ -115,7 +107,6 @@ MeshBuffer<BaseVecT>::MeshBuffer(lvr::MeshBuffer& oldBuffer)
 
     len = 0;
     auto faceMaterialInd_buf = oldBuffer.getFaceMaterialIndexArray(len);
-    std::cout << "Material Index " << len << std::endl;
     if(len > 0)
     {
         m_faceMaterialIndices.resize(len);
@@ -127,32 +118,40 @@ MeshBuffer<BaseVecT>::MeshBuffer(lvr::MeshBuffer& oldBuffer)
 
     len = 0;
     auto material_buf = oldBuffer.getMaterialArray(len);
-    std::cout << "Material " << len << std::endl;
     if(len > 0)
     {
         m_materials.resize(len);
 
         for(size_t i=0; i<len; i++)
         {
-            m_materials[i].m_texture = TextureHandle(material_buf[i]->texture_index);
-            m_materials[i].m_color.get()[0] = material_buf[i]->r;
-            m_materials[i].m_color.get()[1] = material_buf[i]->g;
-            m_materials[i].m_color.get()[2] = material_buf[i]->b;
+            Material m;
+            if(material_buf[i]->texture_index >= 0)
+            {
+                m.m_texture = TextureHandle(material_buf[i]->texture_index);
+            }else{
+                m.m_texture = boost::none;
+            }
+
+            m.m_color = Rgb8Color();
+            m.m_color.get()[0] = static_cast<uint8_t>(material_buf[i]->r);
+            m.m_color.get()[1] = static_cast<uint8_t>(material_buf[i]->g);
+            m.m_color.get()[2] = static_cast<uint8_t>(material_buf[i]->b);
+
+            m_materials[i] = m;
         }
 
     }
 
-
+    // TODO: test this
     len = 0;
     auto texture_buf = oldBuffer.getTextureArray(len);
-    std::cout << "Texture " << len << std::endl;
     if(len > 0)
     {
         m_textures.resize(len);
         // TODO old texture array to new
         for(size_t i=0; i<len; i++)
         {
-            m_textures[i] = Texture<BaseVecT>(i,texture_buf[i]);
+            m_textures[i] = Texture<BaseVecT>(i, texture_buf[i]);
         }
     }
 
@@ -328,6 +327,36 @@ boost::shared_ptr<lvr::MeshBuffer> MeshBuffer<BaseVecT>::toOldBuffer()
     buffer->setVertexTextureCoordinateArray(m_vertexTextureCoordinates);
     buffer->setFaceMaterialIndexArray(m_faceMaterialIndices);
     // TODO: für materials und texturen muss die untere methode benutzt werden. bessere lösung finden!
+    boost::shared_array<lvr::Material*> materials( new lvr::Material*[ m_materials.size() ] );
+
+    for (size_t i=0; i<m_materials.size(); i++)
+    {
+
+        lvr::Material* m = new lvr::Material;
+        if (m_materials[i].m_color)
+        {
+            m->r = static_cast<unsigned char>(m_materials[i].m_color.get()[0]);
+            m->g = static_cast<unsigned char>(m_materials[i].m_color.get()[1]);
+            m->b = static_cast<unsigned char>(m_materials[i].m_color.get()[2]);
+        }
+        else
+        {
+            m->r = 255;
+            m->g = 255;
+            m->b = 255;
+        }
+        if (m_materials[i].m_texture)
+        {
+            int textureIndex = m_materials[i].m_texture.get().idx();
+            m->texture_index = textureIndex;
+        }
+        else
+        {
+            m->texture_index = -1;
+        }
+        materials[i] = m;
+    }
+    buffer->setMaterialArray(materials, m_materials.size());
     return buffer;
 }
 
