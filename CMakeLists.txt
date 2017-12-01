@@ -276,7 +276,7 @@ set(HIGHFIVE_EXAMPLES FALSE)
 set(HIGHFIVE_UNIT_TESTS FALSE)
 add_subdirectory(ext/HighFive)
 include_directories("ext/HighFive/include")
-find_package(HDF5 QUIET REQUIRED)
+find_package(HDF5 REQUIRED)
 include_directories(${HDF5_INCLUDE_DIR})
 link_directories(${HDF5_LIBRARIES})
 
