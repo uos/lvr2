@@ -199,6 +199,7 @@
 #include <lvr2/reconstruction/PointsetGrid.hpp>
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/io/MeshBuffer.hpp>
+#include <lvr2/io/PlutoMapIO.hpp>
 #include <lvr2/util/Factories.hpp>
 #include <lvr2/algorithm/MeshNavAlgorithms.hpp>
 #include <lvr2/algorithm/UtilAlgorithms.hpp>
@@ -802,6 +803,11 @@ void testMeshnav(
 
 int main(int argc, char** argv)
 {
+    auto io = PlutoMapIO("testio.h5");
+    io.stuff();
+    return 0;
+
+
     // =======================================================================
     // Parse and print command line parameters
     // =======================================================================
