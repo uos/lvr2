@@ -3,6 +3,7 @@ set(LVR_SOURCES
     io/BaseIO.cpp
     io/ModelFactory.cpp
     io/PLYIO.cpp
+    io/Hdf5IO.cpp
     io/AsciiIO.cpp
     io/UosIO.cpp
     io/ObjIO.cpp

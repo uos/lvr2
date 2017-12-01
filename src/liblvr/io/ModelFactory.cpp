@@ -26,6 +26,7 @@
 
 #include <lvr/io/AsciiIO.hpp>
 #include <lvr/io/PLYIO.hpp>
+#include <lvr/io/Hdf5IO.hpp>
 #include <lvr/io/UosIO.hpp>
 #include <lvr/io/ObjIO.hpp>
 #include <lvr/io/LasIO.hpp>
@@ -78,6 +79,10 @@ ModelPtr ModelFactory::readModel( std::string filename )
     else if (extension ==".dat")
     {
     	io = new DatIO;
+    }
+    else if (extension == ".h5")
+    {
+        io = new Hdf5IO;
     }
 #ifdef LVR_USE_PCL
     else if (extension == ".pcd")
@@ -221,6 +226,10 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     else if (extension == ".stl")
     {
     	io = new STLIO;
+    }
+    else if (extension == ".h5")
+    {
+        io = new Hdf5IO;
     }
 #ifdef LVR_USE_PCL
     else if (extension == ".pcd")
