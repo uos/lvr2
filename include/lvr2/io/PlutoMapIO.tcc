@@ -26,13 +26,13 @@
 namespace lvr2
 {
 
-PlutoMapIO::PlutoMapIO(string filename)
+inline PlutoMapIO::PlutoMapIO(string filename)
     : m_file(filename, hf::File::ReadOnly | hf::File::Excl)
 {
 
 }
 
-PlutoMapIO::PlutoMapIO(
+inline PlutoMapIO::PlutoMapIO(
     string filename,
     const vector<float>& vertices,
     const vector<uint32_t>& face_ids
@@ -71,7 +71,7 @@ PlutoMapIO::PlutoMapIO(
 // geometry_group.createDataSet<PlutoMapVector>("vertices", hf::DataSpace(1));
 // geometry_group.createDataSet<PlutoMapFace>("faces", hf::DataSpace(0));
 
-void PlutoMapIO::stuff()
+inline void PlutoMapIO::stuff()
 {
 }
 
