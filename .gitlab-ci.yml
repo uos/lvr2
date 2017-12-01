@@ -13,6 +13,7 @@ optional_checks:
 
 build_lvr:
   script: |
+    git submodule init && \
     mkdir build && \
     cd build && \
     cmake .. && \
