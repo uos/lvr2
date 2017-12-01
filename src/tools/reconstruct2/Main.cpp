@@ -803,7 +803,11 @@ void testMeshnav(
 
 int main(int argc, char** argv)
 {
-    auto io = PlutoMapIO("testio.h5");
+    auto io = PlutoMapIO(
+        "testio.h5",
+        {1.0, 2.0, 5.0, 10.0, 11.0, 15.0, 20.0, 21.0, 25.0},
+        {0, 1, 2}
+    );
     io.stuff();
     return 0;
 
