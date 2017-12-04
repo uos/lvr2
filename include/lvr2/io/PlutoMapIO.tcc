@@ -71,6 +71,17 @@ inline PlutoMapIO::PlutoMapIO(
 // geometry_group.createDataSet<PlutoMapVector>("vertices", hf::DataSpace(1));
 // geometry_group.createDataSet<PlutoMapFace>("faces", hf::DataSpace(0));
 
+inline hf::DataSet PlutoMapIO::addNormals(vector<float>& normals)
+{
+    // TODO make more versatile to add and/or overwrite normals in file
+    auto attributes_group = m_file.getGroup("/attributes");
+    auto dataSet = attributes_group.createDataSet<float>("normals", hf::DataSpace::From(normals));
+
+    dataSet.write(normals);
+
+    return dataSet;
+}
+
 inline void PlutoMapIO::stuff()
 {
 }

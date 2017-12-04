@@ -58,6 +58,11 @@ public:
         const vector<uint32_t>& face_ids
     );
 
+    /**
+     * @brief Add normals to the attributes group.
+     */
+    hf::DataSet addNormals(vector<float>& normals);
+
     void stuff();
 
 private:
