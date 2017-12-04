@@ -61,7 +61,7 @@ public:
     /**
      * @brief Add normals to the attributes group.
      */
-    hf::DataSet addNormals(vector<float>& normals);
+    hf::DataSet addVertexNormals(vector<float>& normals);
 
     /**
      * @brief Add vertex colors to the attributes group.

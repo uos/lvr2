@@ -55,7 +55,7 @@ void Hdf5IO::save(string filename)
     cout << "verts size: " << verts.size() << endl;
 
     lvr2::PlutoMapIO pm(filename, verts, indis);
-    pm.addNormals(normalsVector);
+    pm.addVertexNormals(normalsVector);
     pm.addVertexColors(colorsVector);
 }
 
