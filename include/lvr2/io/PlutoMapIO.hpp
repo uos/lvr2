@@ -27,7 +27,7 @@
 
 
 #include <string>
-#include <HighFive/H5File.hpp>
+#include <highfive/H5File.hpp>
 
 #include <H5Tpublic.h>
 
