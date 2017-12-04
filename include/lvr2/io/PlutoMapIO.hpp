@@ -63,6 +63,11 @@ public:
      */
     hf::DataSet addNormals(vector<float>& normals);
 
+    /**
+     * @brief Add vertex colors to the attributes group.
+     */
+    hf::DataSet addVertexColors(vector<uint8_t>& colors);
+
     void stuff();
 
 private:

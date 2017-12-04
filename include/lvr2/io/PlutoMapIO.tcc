@@ -80,6 +80,14 @@ inline hf::DataSet PlutoMapIO::addNormals(vector<float>& normals)
     return dataSet;
 }
 
+inline hf::DataSet PlutoMapIO::addVertexColors(vector<uint8_t>& colors)
+{
+    auto dataSet = m_attributesGroup.createDataSet<uint8_t>("rgb_colors", hf::DataSpace::From(colors));
+    dataSet.write(colors);
+
+    return dataSet;
+}
+
 inline void PlutoMapIO::stuff()
 {
 }
