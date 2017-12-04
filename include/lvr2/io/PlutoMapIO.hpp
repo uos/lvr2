@@ -67,6 +67,12 @@ public:
 
 private:
     hf::File m_file;
+
+    // main groups for reference
+    hf::Group m_geometryGroup;
+    hf::Group m_attributesGroup;
+    hf::Group m_clusterSetsGroup;
+    hf::Group m_texturesGroup;
 };
 
 

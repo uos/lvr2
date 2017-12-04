@@ -40,16 +40,16 @@ inline PlutoMapIO::PlutoMapIO(
     : m_file(filename, hf::File::ReadWrite | hf::File::Create | hf::File::Truncate)
 {
     // Create top level groups
-    auto geometry_group = m_file.createGroup("/geometry");
-    m_file.createGroup("/attributes");
-    m_file.createGroup("/clustersets");
-    m_file.createGroup("/textures");
+    m_geometryGroup = m_file.createGroup("/geometry");
+    m_attributesGroup = m_file.createGroup("/attributes");
+    m_clusterSetsGroup = m_file.createGroup("/clustersets");
+    m_texturesGroup = m_file.createGroup("/textures");
 
     // Create geometry data sets
-    geometry_group
+    m_geometryGroup
         .createDataSet<float>("vertices", hf::DataSpace::From(vertices))
         .write(vertices);
-    geometry_group
+    m_geometryGroup
         .createDataSet<uint32_t>("faces", hf::DataSpace::From(face_ids))
         .write(face_ids);
 }
@@ -74,9 +74,7 @@ inline PlutoMapIO::PlutoMapIO(
 inline hf::DataSet PlutoMapIO::addNormals(vector<float>& normals)
 {
     // TODO make more versatile to add and/or overwrite normals in file
-    auto attributes_group = m_file.getGroup("/attributes");
-    auto dataSet = attributes_group.createDataSet<float>("normals", hf::DataSpace::From(normals));
-
+    auto dataSet = m_attributesGroup.createDataSet<float>("normals", hf::DataSpace::From(normals));
     dataSet.write(normals);
 
     return dataSet;
