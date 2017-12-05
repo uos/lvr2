@@ -64,16 +64,15 @@ int Texturizer<BaseVecT>::getTextureIndex(TextureHandle h)
 template<typename BaseVecT>
 void Texturizer<BaseVecT>::saveTextures()
 {
-    string comment = lvr::timestamp.getElapsedTime() + "Saving textures..";
+    string comment = lvr::timestamp.getElapsedTime() + "Saving textures ";
     lvr::ProgressBar progress(m_textures.numUsed(), comment);
     for (auto h : m_textures)
     {
         m_textures[h].save();
         ++progress;
     }
+    std::cout << std::endl;
 }
-
-
 
 template<typename BaseVecT>
 TexCoords Texturizer<BaseVecT>::calculateTexCoords(
@@ -109,7 +108,7 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
     // Create texture
     Texture<BaseVecT> texture(index, sizeX, sizeY, 3, 1, m_texelSize);
 
-    string comment = lvr::timestamp.getElapsedTime() + "Computing texture pixels...";
+    string comment = lvr::timestamp.getElapsedTime() + "Computing texture pixels ";
     lvr::ProgressBar progress(sizeX * sizeY, comment);
 
     if (surface.pointBuffer()->hasRgbColor())
