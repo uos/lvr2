@@ -53,7 +53,8 @@ endif(CUDA_FOUND)
 ####
 ## Searching for OpenCV
 ##############################
-find_package( OpenCV 2.4.8 REQUIRED )
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 option(WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
 if(WITH_CV_NONFREE)
