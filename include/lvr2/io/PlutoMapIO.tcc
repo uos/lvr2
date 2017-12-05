@@ -23,6 +23,8 @@
 
 
 
+#include <hdf5_hl.h>
+
 namespace lvr2
 {
 
@@ -96,6 +98,11 @@ inline hf::DataSet PlutoMapIO::addVertexColors(vector<uint8_t>& colors)
     dataSet.write(colors);
 
     return dataSet;
+}
+
+inline void PlutoMapIO::addImage(hf::Group group, string name, const uint32_t width, const uint32_t height, const uint8_t* pixelBuffer)
+{
+    H5IMmake_image_24bit(group.getId(), name.c_str(), width, height, "INTERLACE_PIXEL", pixelBuffer);
 }
 
 } // namespace lvr2
