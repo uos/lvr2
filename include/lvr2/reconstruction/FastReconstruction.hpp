@@ -27,7 +27,7 @@
 #ifndef _LVR2_RECONSTRUCTION_FASTRECONSTRUCTION_H_
 #define _LVR2_RECONSTRUCTION_FASTRECONSTRUCTION_H_
 
-// #include <lvr/geometry/Vertex.hpp>
+#include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 
 #include "PointsetMeshGenerator.hpp"
@@ -58,6 +58,13 @@ public:
      * @param mesh
      */
     virtual void getMesh(BaseMesh<BaseVecT> &mesh) = 0;
+
+    virtual void getMesh(
+        BaseMesh<BaseVecT>& mesh,
+        BoundingBox<BaseVecT>& bb,
+        vector<unsigned int>& duplicates,
+        float comparePrecision
+    ) = 0;
 };
 
 /**
@@ -89,6 +96,13 @@ public:
      * @param mesh
      */
     virtual void getMesh(BaseMesh<BaseVecT> &mesh);
+
+    virtual void getMesh(
+        BaseMesh<BaseVecT>& mesh,
+        BoundingBox<BaseVecT>& bb,
+        vector<unsigned int>& duplicates,
+        float comparePrecision
+    );
 
 private:
 

@@ -204,4 +204,17 @@ template<typename BaseVecT>
 BilinearFastBox<BaseVecT>::~BilinearFastBox()
 {}
 
+template<typename BaseVecT>
+void BilinearFastBox<BaseVecT>::getSurface(
+    BaseMesh<BaseVecT>& mesh,
+    vector<QueryPoint<BaseVecT>>& query_points,
+    uint& globalIndex,
+    BoundingBox<BaseVecT>& bb,
+    vector<unsigned int>& duplicates,
+    float comparePrecision
+)
+{
+    FastBox<BaseVecT>::getSurface(mesh, query_points, globalIndex, bb, duplicates, comparePrecision);
+}
+
 } // namespace lvr2
