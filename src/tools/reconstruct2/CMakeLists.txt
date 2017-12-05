@@ -45,7 +45,7 @@ target_link_libraries(lvr2_reconstruct ${LVR_RECONSTRUCT_DEPENDENCIES})
 
 find_package(HDF5 QUIET REQUIRED)
 include_directories(${HDF5_INCLUDE_DIR})
-target_link_libraries(lvr2_reconstruct ${HDF5_LIBRARIES})
+target_link_libraries(lvr2_reconstruct ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 
 if(CUDA_FOUND)
         target_link_libraries(lvr2_reconstruct lvrcuda)
