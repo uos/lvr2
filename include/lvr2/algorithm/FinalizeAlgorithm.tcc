@@ -361,7 +361,7 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> ClusterFlatteningFinalizer<BaseVecT>::ap
                 {
                     if (!vertexVisitedMap.containsKey(vertexH))
                     {
-                        auto vertexTexCoords = m_materializerResult.get().m_vertexTexCoords;
+                        auto& vertexTexCoords = m_materializerResult.get().m_vertexTexCoords;
                         bool vertexHasTexCoords = vertexTexCoords.is_initialized()
                                                   ? static_cast<bool>(vertexTexCoords.get().get(vertexH))
                                                   : false;
