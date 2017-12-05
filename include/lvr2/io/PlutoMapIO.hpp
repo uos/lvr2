@@ -68,8 +68,6 @@ public:
      */
     hf::DataSet addVertexColors(vector<uint8_t>& colors);
 
-    void stuff();
-
 private:
     hf::File m_file;
 

@@ -88,9 +88,4 @@ inline hf::DataSet PlutoMapIO::addVertexColors(vector<uint8_t>& colors)
     return dataSet;
 }
 
-inline void PlutoMapIO::stuff()
-{
-}
-
-
 } // namespace lvr2

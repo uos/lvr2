@@ -57,14 +57,10 @@ void Hdf5IO::save(string filename)
     normals = m_model->m_mesh->getVertexNormalArray(numNormals);
     colors = m_model->m_mesh->getVertexColorArray(numColors);
 
-    cout << "num vertices: " << numVertices << endl;
-
     auto verts = std::vector<float>(vertices.get(), vertices.get() + numVertices * 3);
     auto indis = std::vector<uint32_t>(faceIndices.get(), faceIndices.get() + numFaceIds * 3);
     auto normalsVector = std::vector<float>(normals.get(), normals.get() + numNormals * 3);
     auto colorsVector = std::vector<uint8_t>(colors.get(), colors.get() + numColors * 3);
-
-    cout << "verts size: " << verts.size() << endl;
 
     lvr2::PlutoMapIO pm(filename, verts, indis);
     pm.addVertexNormals(normalsVector);
