@@ -37,8 +37,8 @@
 #include <lvr2/geometry/Point.hpp>
 #include <lvr2/geometry/Vector.hpp>
 #include <lvr/reconstruction/FastReconstructionTables.hpp>
-// #include "SharpBox.hpp"
 #include <lvr/io/Progress.hpp>
+#include <lvr/io/Timestamp.hpp>
 
 namespace lvr2
 {
@@ -457,7 +457,7 @@ void HashGrid<BaseVecT, BoxT>::saveGrid(string filename)
 template<typename BaseVecT, typename BoxT>
 void HashGrid<BaseVecT, BoxT>::serialize(string file)
 {
-    cout << timestamp << "saving grid: " << file << endl;
+    cout << lvr::timestamp << "saving grid: " << file << endl;
     ofstream out(file.c_str());
 
     // Write data
@@ -505,7 +505,7 @@ void HashGrid<BaseVecT, BoxT>::serialize(string file)
         }
     }
     out.close();
-    cout << timestamp << "finished saving grid: " << file << endl;
+    cout << lvr::timestamp << "finished saving grid: " << file << endl;
 }
 
 template<typename BaseVecT, typename BoxT>
