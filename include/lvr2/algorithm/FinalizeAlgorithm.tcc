@@ -161,21 +161,20 @@ void ClusterFlatteningFinalizer<BaseVecT>::setMaterializerResult(const Materiali
 template<typename BaseVecT>
 boost::shared_ptr<MeshBuffer<BaseVecT>> ClusterFlatteningFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
 {
-
     // Create vertex buffer and all buffers holding vertex attributes
     vector<float> vertices;
-    vertices.reserve(mesh.numVertices() * 3);
+    vertices.reserve(mesh.numVertices() * 3 * 2);
 
     vector<float> normals;
     if (m_vertexNormals)
     {
-        normals.reserve(mesh.numVertices() * 3);
+        normals.reserve(mesh.numVertices() * 3 * 2);
     }
 
     vector<unsigned char> colors;
     if (m_clusterColors)
     {
-        colors.reserve(mesh.numVertices() * 3);
+        colors.reserve(mesh.numVertices() * 3 * 2);
     }
 
     // Create buffer and variables for texturizing
@@ -207,11 +206,6 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> ClusterFlatteningFinalizer<BaseVecT>::ap
 
     std::map<Rgb8Color, int> colorMaterialMap;
 
-    // This map remembers which vertices were already visited for materials and textures
-    // Each vertex must be visited exactly once
-    SparseVertexMap<size_t> vertexVisitedMap;
-    size_t vertexVisitCount = 0;
-
     // Create face buffer
     vector<unsigned int> faces;
     faces.reserve(mesh.numFaces() * 3);
@@ -219,19 +213,18 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> ClusterFlatteningFinalizer<BaseVecT>::ap
     // This counter is used to determine the index of a newly inserted vertex
     size_t vertexCount = 0;
 
-    // This map remembers which vertex we already inserted and at what
-    // position. This is important to create the face map.
-    SparseVertexMap<size_t> idxMap;
-
     string comment = lvr::timestamp.getElapsedTime() + "Finalizing mesh ";
     lvr::ProgressBar progress(m_cluster.numCluster(), comment);
 
     // Loop over all clusters
     for (auto clusterH: m_cluster)
     {
+        // This map remembers which vertex we already inserted and at what
+        // position. This is important to create the face map.
+        SparseVertexMap<size_t> idxMap;
+
+        // Vector for storing indices of created faces
         vector<unsigned int> faceIndices;
-        idxMap.clear();
-        vertexVisitedMap.clear();
 
         ++progress;
 
@@ -293,6 +286,11 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> ClusterFlatteningFinalizer<BaseVecT>::ap
         // For each cluster:
         if (m_materializerResult)
         {
+            // This map remembers which vertices were already visited for materials and textures
+            // Each vertex must be visited exactly once
+            SparseVertexMap<size_t> vertexVisitedMap;
+            size_t vertexVisitCount = 0;
+
             Material m = m_materializerResult.get().m_clusterMaterials.get(clusterH).get();
             bool clusterHasTextures = static_cast<bool>(m.m_texture); // optional
             bool clusterHasColor = static_cast<bool>(m.m_color); // optional
