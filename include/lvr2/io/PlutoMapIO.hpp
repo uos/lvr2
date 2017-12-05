@@ -59,6 +59,11 @@ public:
     );
 
     /**
+     * @brief Closes main groups and makes sure all buffers are flushed to the file on disc.
+     */
+    ~PlutoMapIO();
+
+    /**
      * @brief Add normals to the attributes group.
      */
     hf::DataSet addVertexNormals(vector<float>& normals);
