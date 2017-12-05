@@ -56,6 +56,14 @@ public:
         vector<QueryPoint<BaseVecT>>& query_points,
         uint &globalIndex
     );
+    virtual void getSurface(
+        BaseMesh<BaseVecT>& mesh,
+        vector<QueryPoint<BaseVecT>>& query_points,
+        uint& globalIndex,
+        BoundingBox<BaseVecT>& bb,
+        vector<unsigned int>& duplicates,
+        float comparePrecision
+    );
 
     void optimizePlanarFaces(size_t kc);
 
