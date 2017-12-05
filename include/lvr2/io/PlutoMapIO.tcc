@@ -54,6 +54,16 @@ inline PlutoMapIO::PlutoMapIO(
         .write(face_ids);
 }
 
+inline PlutoMapIO::~PlutoMapIO()
+{
+    H5Gclose(m_geometryGroup.getId());
+    H5Gclose(m_attributesGroup.getId());
+    H5Gclose(m_clusterSetsGroup.getId());
+    H5Gclose(m_texturesGroup.getId());
+
+    H5Fclose(m_file.getId());
+}
+
 
 // hsize_t zero[] = { 0 };
 // hsize_t unlimited[] = { H5S_UNLIMITED };
