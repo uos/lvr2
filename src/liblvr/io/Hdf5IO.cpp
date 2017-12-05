@@ -21,8 +21,7 @@
 #include <lvr/io/Timestamp.hpp>
 #include <lvr2/io/PlutoMapIO.hpp>
 
-#include <cstdint>
-#include <iostream>
+#include <iomanip>
 
 namespace lvr
 {
@@ -62,9 +61,37 @@ void Hdf5IO::save(string filename)
     auto normalsVector = std::vector<float>(normals.get(), normals.get() + numNormals * 3);
     auto colorsVector = std::vector<uint8_t>(colors.get(), colors.get() + numColors * 3);
 
-    lvr2::PlutoMapIO pm(filename, verts, indis);
-    pm.addVertexNormals(normalsVector);
-    pm.addVertexColors(colorsVector);
+    // Save old error handler
+    H5E_auto2_t  oldfunc;
+    void *old_client_data;
+    H5Eget_auto(NULL, &oldfunc, &old_client_data);
+
+    // Turn off error handling
+    H5Eset_auto(NULL, NULL, NULL);
+
+    auto pm = unique_ptr<lvr2::PlutoMapIO>{};
+    try {
+        pm = make_unique<lvr2::PlutoMapIO>(filename, verts, indis);
+    } catch(exception& e) {
+        // assume HDF5 could not open file and throws an exception
+        cerr << timestamp << "File writing error: " << e.what() << endl;
+
+        // prefix filename with current time (YearMonthDateHourMinuteSecond_) , which should be unique enough to save
+        auto t = std::time(nullptr);
+        auto tm = *std::localtime(&t);
+        ostringstream newFilename;
+        newFilename << std::put_time(&tm, "%Y%m%d%H%M%S") << "_" << filename;
+
+        cout << timestamp << "Saving now to '" << newFilename.str() << "'" << endl;
+
+        pm = make_unique<lvr2::PlutoMapIO>(newFilename.str(), verts, indis);
+    }
+
+    // Restore previous error handler
+    H5Eset_auto(NULL, oldfunc, old_client_data);
+
+    pm->addVertexNormals(normalsVector);
+    pm->addVertexColors(colorsVector);
 }
 
 
