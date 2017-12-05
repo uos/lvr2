@@ -18,6 +18,7 @@
 
 
 #include <lvr/io/Hdf5IO.hpp>
+#include <lvr/io/Timestamp.hpp>
 #include <lvr2/io/PlutoMapIO.hpp>
 
 #include <cstdint>
@@ -30,6 +31,18 @@ void Hdf5IO::save(string filename)
 {
     using namespace std;
 
+    if (!m_model)
+    {
+        cerr << timestamp << "No data to save." << endl;
+        return;
+    }
+
+    if (m_model->m_pointCloud || !m_model->m_mesh)
+    {
+        cerr << timestamp << "Only supporting saving mesh right now." << endl;
+        return;
+    }
+
     size_t numVertices = 0;
     size_t numFaceIds = 0;
     size_t numNormals = 0;
@@ -39,7 +52,6 @@ void Hdf5IO::save(string filename)
     floatArr normals;
     ucharArr colors;
 
-    // TODO: check whether or not we have a mesh...
     vertices = m_model->m_mesh->getVertexArray(numVertices);
     faceIndices = m_model->m_mesh->getFaceArray(numFaceIds);
     normals = m_model->m_mesh->getVertexNormalArray(numNormals);
@@ -62,7 +74,7 @@ void Hdf5IO::save(string filename)
 
 ModelPtr Hdf5IO::read(string filename)
 {
-    throw "yolo";
+    throw "Reading not yet implemented.";
 }
 
 
