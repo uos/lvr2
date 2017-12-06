@@ -53,3 +53,10 @@ include/lvr/mpi
 include/lvr2/texture
 include/lvr2/util
 include/lvr/classification
+src/tools/viewer/ui
+src/tools/viewer
+src/tools/viewer/res
+src/tools/cl_normals
+src/tools/cuda_normals
+src/liblvr/reconstruction/opencl
+src/liblvr/reconstruction/cuda
