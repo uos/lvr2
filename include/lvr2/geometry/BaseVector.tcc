@@ -25,6 +25,7 @@
  */
 
 #include <cmath>
+#include <lvr2/util/Panic.hpp>
 
 namespace lvr2
 {
@@ -153,6 +154,38 @@ template <typename CoordT>
 bool BaseVector<CoordT>::operator!=(const BaseVector &other) const
 {
     return !(this == other);
+}
+
+template<typename CoordT>
+CoordT BaseVector<CoordT>::operator[](const uint8_t& index) const
+{
+    switch (index)
+    {
+        case 0:
+            return x;
+        case 1:
+            return y;
+        case 2:
+            return z;
+        default:
+            panic("Access index out of range.");
+    }
+}
+
+template<typename CoordT>
+CoordT& BaseVector<CoordT>::operator[](const uint8_t& index)
+{
+    switch (index)
+    {
+        case 0:
+            return x;
+        case 1:
+            return y;
+        case 2:
+            return z;
+        default:
+            panic("Access index out of range.");
+    }
 }
 
 } // namespace lvr2

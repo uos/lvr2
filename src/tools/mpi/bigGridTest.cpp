@@ -149,13 +149,13 @@ int main(int argc, char** argv)
     std::vector<float> flipPoint = options.getFlippoint();
     cout << lvr::timestamp << "Starting grid" << endl;
     float volumenSize = (float)(options.getVolumenSize()); // 10 x 10 x 10 voxel
-    BigGrid* bg;
-    BigVolumen* bv;
+    boost::shared_ptr<BigGrid> bg;
+    boost::shared_ptr<BigVolumen> bv;
     lvr::BoundingBox<lvr::Vertexf> bb;
     if(volumenSize <= 0)
     {
         double start_ss = lvr::timestamp.getElapsedTimeInS();
-        bg = new BigGrid(inputFiles, voxelsize, scale, bufferSize);
+        bg = boost::shared_ptr<BigGrid>(new BigGrid(inputFiles, voxelsize, scale, bufferSize));
         double end_ss = lvr::timestamp.getElapsedTimeInS();
         seconds+=(end_ss - start_ss);
         cout << lvr::timestamp << "grid finished in" << (end_ss - start_ss) << "sec." << endl;
@@ -181,7 +181,7 @@ int main(int argc, char** argv)
         }
         cout << lvr::timestamp << " getting BoundingBox" << endl;
         LineReader lr(inputFiles);
-         bv = new BigVolumen(inputFiles, volumenSize, volumenSize/10);
+        bv = boost::shared_ptr<BigVolumen>(new BigVolumen(inputFiles, volumenSize, volumenSize/10) );
         cells = bv->getCellinfo();
         for(auto cell_it = cells->begin(); cell_it != cells->end(); cell_it++)
         {
@@ -192,7 +192,7 @@ int main(int argc, char** argv)
     }
     else
     {
-        BigGridKdTree gridKd(bg->getBB(),options.getNodeSize(),bg, voxelsize);
+        BigGridKdTree gridKd(bg->getBB(),options.getNodeSize(),bg.get(), voxelsize);
         gridKd.insert(bg->pointSize(),bg->getBB().getCentroid());
         for(size_t i = 0 ; i <  gridKd.getLeafs().size(); i++)
         {
@@ -214,6 +214,7 @@ int main(int argc, char** argv)
 
     for(size_t i = 0 ; i < partitionBoxes.size() ; i++)
     {
+        string name_id = std::to_string(i);
         size_t numPoints;
 
         //todo: okay?
@@ -225,7 +226,12 @@ int main(int argc, char** argv)
         if(volumenSize > 0)
         {
 
-            numPoints = cell_vec[i]->size+cell_vec[i]->overlapping_size;
+            stringstream ss_name;
+            ss_name << "part-" <<  cell_vec[i]->ix << "-" <<  cell_vec[i]->iy << "-" <<  cell_vec[i]->iz;
+            name_id = ss_name.str();
+            numPoints = cell_vec[i]->size + cell_vec[i]->overlapping_size;
+            std::cout << ss_name.str() << ": " << cell_vec[i]->size << " + " << cell_vec[i]->overlapping_size << " = " << numPoints << std::endl;
+            if(numPoints < 10) continue;
             stringstream ss_points;
             ss_points << "part-" <<  cell_vec[i]->ix << "-" <<  cell_vec[i]->iy << "-" <<  cell_vec[i]->iz << "-points.binary";
             cout << "file= " << ss_points.str() << endl;
@@ -235,15 +241,11 @@ int main(int argc, char** argv)
 //            numPoints = (file_bytes/ sizeof(float))/3;
             points = lvr::floatArr(new float[numPoints*3]);
             cout << "NEW NUM: " << numPoints  << endl;
-//            ifstream ifs_points(ss_points.str(), std::ifstream::binary);
-            ifstream ifs_points(ss_points.str());
-//            ifs_points.read((char*)points.get(), sizeof(float)*3*numPoints);
+            ifstream ifs_points(ss_points.str(), std::ifstream::binary);
+                // ifstream ifs_points(ss_points.str());
+            ifs_points.read((char*)points.get(), sizeof(float)*3*numPoints);
 
-            size_t readNum = 0;
-            while(ifs_points.good())
-            {
-                ifs_points >> points[readNum++];
-            }
+            size_t readNum = numPoints;
 
             std::stringstream ss_normals2;
             ss_normals2 << "part-" <<  cell_vec[i]->ix << "-" <<  cell_vec[i]->iy << "-" <<  cell_vec[i]->iz << "-points.ply";
@@ -297,7 +299,7 @@ int main(int argc, char** argv)
         {
             if(bv->hasNormals())
             {
-
+                std::cout << "reading normals" << std::endl;
                 size_t numNormals = numPoints;
                 stringstream ss_normals;
                 ss_normals << "part-" <<  cell_vec[i]->ix << "-" <<  cell_vec[i]->iy << "-" <<  cell_vec[i]->iz << "-normals.binary";
@@ -326,6 +328,7 @@ int main(int argc, char** argv)
             #ifdef GPU_FOUND
             if( options.useGPU() )
             {
+                std::cout << "calculating normals of " << numPoints << " points" << std::endl;
                 double normal_start = lvr::timestamp.getElapsedTimeInS();
                 floatArr normals = floatArr(new float[ numPoints * 3 ]);
                 cout << timestamp << "Constructing kd-tree..." << endl;
@@ -405,7 +408,7 @@ int main(int argc, char** argv)
         if(options.savePointNormals())
         {
             std::stringstream ss_normals;
-            ss_normals << "part-" << i << "-normals.ply";
+            ss_normals << name_id << "-normals.ply";
             ModelPtr m(new Model(p_loader));
             ModelFactory::saveModel( m, ss_normals.str());
         }
@@ -415,18 +418,18 @@ int main(int argc, char** argv)
         mesh_time += mesh_end-mesh_start;
         start_s = lvr::timestamp.getElapsedTimeInS();
         std::stringstream ss_mesh;
-        ss_mesh << "part-" << i << "-mesh.ply";
+        ss_mesh << name_id << "-mesh.ply";
         ModelPtr m( new Model( mesh.meshBuffer() ) );
         ModelFactory::saveModel( m, ss_mesh.str());
         delete reconstruction;
 
         std::stringstream ss_grid;
-        ss_grid << "part-" << i << "-grid.ser";
+        ss_grid << name_id << "-grid.ser";
 //        ps_grid->saveCells(ss_grid.str());
         grid_files.push_back(ss_grid.str());
 
         std::stringstream ss_duplicates;
-        ss_duplicates << "part-" << i << "-duplicates.ser";
+        ss_duplicates << name_id << "-duplicates.ser";
         std::ofstream ofs(ss_duplicates.str(), std::ofstream::out | std::ofstream::trunc);
         boost::archive::text_oarchive oa(ofs);
         oa & duplicates;
@@ -434,9 +437,6 @@ int main(int argc, char** argv)
         seconds+=(end_s - start_s);
         cout << lvr::timestamp << "finished saving data " << i << " in " << (end_s - start_s) << endl;
         delete ps_grid;
-
-
-
 
     }
 
@@ -509,8 +509,8 @@ int main(int argc, char** argv)
 //    tree->buildIndex();
     float comp_dist = std::max(voxelsize/1000, 0.0001f);
     double dist_epsilon_squared = comp_dist*comp_dist;
-    cout << lvr::timestamp << "removing duplicate vertices" << endl;
     double dup_start = lvr::timestamp.getElapsedTimeInS();
+
 //    vector<float> dupBuffer(duplicateVertices.size());
 //    for(duplicateVertex & v : duplicateVertices)
 //    {
@@ -545,6 +545,8 @@ int main(int argc, char** argv)
 //    }
 
 
+    string comment = lvr::timestamp.getElapsedTime() + "Removing duplicates ";
+    lvr::ProgressBar progress(duplicateVertices.size(), comment);
 
     omp_lock_t writelock;
     omp_init_lock(&writelock);
@@ -589,7 +591,7 @@ int main(int argc, char** argv)
                 }
             }
         }
-
+        ++progress;
 
     }
     cout << "FOUND: " << oldToNew.size() << " duplicates" << endl;
@@ -691,7 +693,6 @@ int main(int argc, char** argv)
 //            ofs_faces.write( (char*) newface,sizeof(unsigned int)*3);
             // todo: sort
 
-
         }
 
 
@@ -772,10 +773,6 @@ int main(int argc, char** argv)
     cout << "MERGETime " << merge_time << endl;
     cout << "dup_time " << dup_time << endl;
     cout << lvr::timestamp << "finished" << endl;
-
-    if(bg) delete bg;
-    if(bv) delete bv;
-
 
     ofs_ply.close();
     ifs_faces.close();
