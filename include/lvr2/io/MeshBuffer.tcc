@@ -392,7 +392,20 @@ boost::shared_ptr<lvr::MeshBuffer> MeshBuffer<BaseVecT>::toOldBuffer(Materialize
         materials.push_back(m);
     }
     buffer->setMaterialArray(materials);
-    // TODO: set textures (lvr2::Texture muss zu GlTexture* umgebaut werden)
+
+    vector<GlTexture*> textures;
+    for (auto texture : m_textures)
+    {
+        GlTexture* t = new GlTexture();
+        t->m_texIndex = texture.m_index;
+        t->m_height = texture.m_height;
+        t->m_width = texture.m_width;
+        t->m_pixels = texture.m_data;
+
+        textures.push_back(t);
+    }
+    buffer->setTextureArray(textures);
+
     return buffer;
 }
 
