@@ -135,6 +135,16 @@ public:
 
     bool operator==(const BaseVector &other) const;
     bool operator!=(const BaseVector &other) const;
+
+    /**
+     * @brief    Indexed coordinate access (reading)
+     */
+    CoordT operator[](const uint8_t& index) const;
+
+    /**
+     * @brief   Indexed coordinate access (writing)
+     */
+    CoordT& operator[](const uint8_t& index);
 };
 
 } // namespace lvr
