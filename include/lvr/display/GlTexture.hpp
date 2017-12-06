@@ -42,6 +42,11 @@ public:
     GlTexture(const GlTexture &other);
 
     /**
+     * @brief Empty ctor.
+     */
+    GlTexture() {};
+
+    /**
      * @brief   Dtor.
      */
     virtual ~GlTexture();
