@@ -38,6 +38,14 @@ using std::string;
 namespace lvr2
 {
 
+struct PlutoMapImage {
+    string name;
+    uint32_t width;
+    uint32_t height;
+    uint32_t channels;
+    uint8_t* data;
+};
+
 /**
  *
  */
@@ -82,6 +90,17 @@ public:
      * @brief Returns vertex colors vector
      */
     vector<uint8_t> getVertexColors();
+
+    /**
+     * @brief Returns textures vector
+     */
+    // TODO: replace PlutoMapImage with lvr2::Texture?
+    vector<PlutoMapImage> getTextures();
+
+    /**
+     * @brief Returns the image in the group, if it exists. If not an empty struct is returned
+     */
+    PlutoMapImage getImage(hf::Group group, string name);
 
     /**
      * @brief Add normals to the attributes group.
