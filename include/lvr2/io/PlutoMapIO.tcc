@@ -67,6 +67,42 @@ inline PlutoMapIO::~PlutoMapIO()
 }
 
 
+inline vector<float> PlutoMapIO::getVertices()
+{
+    vector<float> vertices;
+    m_geometryGroup.getDataSet("vertices")
+        .read(vertices);
+
+    return vertices;
+}
+
+inline vector<uint32_t> PlutoMapIO::getFaceIds()
+{
+    vector<uint32_t> faceIds;
+    m_geometryGroup.getDataSet("faces")
+        .read(faceIds);
+
+    return faceIds;
+}
+
+inline vector<float> PlutoMapIO::getVertexNormals()
+{
+    vector<float> normals;
+    m_attributesGroup.getDataSet("normals")
+        .read(normals);
+
+    return normals;
+}
+
+inline vector<uint8_t> PlutoMapIO::getVertexColors()
+{
+    vector<uint8_t> rgbColors;
+    m_attributesGroup.getDataSet("rgb_colors")
+        .read(rgbColors);
+
+    return rgbColors;
+}
+
 // hsize_t zero[] = { 0 };
 // hsize_t unlimited[] = { H5S_UNLIMITED };
 // auto vertices_ds = H5Screate_simple(1, zero, unlimited);
