@@ -103,6 +103,49 @@ inline vector<uint8_t> PlutoMapIO::getVertexColors()
     return rgbColors;
 }
 
+inline vector<PlutoMapImage> PlutoMapIO::getTextures()
+{
+    vector<PlutoMapImage> textures;
+
+    const hf::Group& imagesGroup = m_texturesGroup.getGroup("images");
+    for (auto setName: imagesGroup.listObjectNames())
+    {
+        textures.push_back(getImage(imagesGroup, setName));
+    }
+    
+    return textures;
+}
+
+inline PlutoMapImage PlutoMapIO::getImage(hf::Group group, string name)
+{
+    PlutoMapImage t;
+
+    if (!group.exist(name))
+    {
+        return t;
+    }
+
+    hsize_t width;
+    hsize_t height;
+    hsize_t pixel_size;
+    char interlace[20];
+    hssize_t npals;
+
+    H5IMget_image_info(group.getId(), name.c_str(), &width, &height, &pixel_size, interlace, &npals);
+
+    auto bufSize = width * height * pixel_size;
+    unsigned char buf[bufSize];
+    H5IMread_image(group.getId(), name.c_str(), buf);
+
+    t.name = name;
+    t.width = width;
+    t.height = height;
+    t.channels = pixel_size;
+    t.data = buf;
+
+    return t;
+}
+
 // hsize_t zero[] = { 0 };
 // hsize_t unlimited[] = { H5S_UNLIMITED };
 // auto vertices_ds = H5Screate_simple(1, zero, unlimited);
