@@ -64,6 +64,26 @@ public:
     ~PlutoMapIO();
 
     /**
+     * @brief Returns vertices vector
+     */
+    vector<float> getVertices();
+
+    /**
+     * @brief Returns face ids vector
+     */
+    vector<uint32_t> getFaceIds();
+
+    /**
+     * @brief Returns vertex normals vector
+     */
+    vector<float> getVertexNormals();
+
+    /**
+     * @brief Returns vertex colors vector
+     */
+    vector<uint8_t> getVertexColors();
+
+    /**
      * @brief Add normals to the attributes group.
      */
     hf::DataSet addVertexNormals(vector<float>& normals);
