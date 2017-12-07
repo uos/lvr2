@@ -136,6 +136,24 @@ inline hf::DataSet PlutoMapIO::addVertexColors(vector<uint8_t>& colors)
     return dataSet;
 }
 
+inline void PlutoMapIO::addTexture(int index, uint32_t width, uint32_t height, uint8_t* data)
+{
+    if (!m_texturesGroup.exist("images"))
+    {
+        m_texturesGroup.createGroup("images");
+    }
+
+    auto imagesGroup = m_texturesGroup.getGroup("images");
+    const string& name = std::to_string(index);
+
+    if (imagesGroup.exist(name))
+    {
+        return;
+    }
+
+    addImage(imagesGroup, name, width, height, data);
+}
+
 inline void PlutoMapIO::addImage(hf::Group group, string name, const uint32_t width, const uint32_t height, const uint8_t* pixelBuffer)
 {
     H5IMmake_image_24bit(group.getId(), name.c_str(), width, height, "INTERLACE_PIXEL", pixelBuffer);
