@@ -47,17 +47,20 @@ void Hdf5IO::save(string filename)
     size_t numNormals = 0;
     size_t numColors = 0;
     size_t numTextures = 0;
+    size_t numMaterials = 0;
     floatArr vertices;
     uintArr faceIndices;
     floatArr normals;
     ucharArr colors;
     textureArr textures;
+    materialArr materials;
 
     vertices = m_model->m_mesh->getVertexArray(numVertices);
     faceIndices = m_model->m_mesh->getFaceArray(numFaceIds);
     normals = m_model->m_mesh->getVertexNormalArray(numNormals);
     colors = m_model->m_mesh->getVertexColorArray(numColors);
     textures = m_model->m_mesh->getTextureArray(numTextures);
+    materials = m_model->m_mesh->getMaterialArray(numMaterials);
 
     auto verts = std::vector<float>(vertices.get(), vertices.get() + numVertices * 3);
     auto indis = std::vector<uint32_t>(faceIndices.get(), faceIndices.get() + numFaceIds * 3);
@@ -103,6 +106,23 @@ void Hdf5IO::save(string filename)
 
         pm->addTexture(t->m_texIndex, t->m_width, t->m_height, t->m_pixels);
     }
+
+    // add materials
+    std::vector<lvr2::PlutoMapMaterial> matVector;
+    for (size_t i = 0; i < numMaterials; i++)
+    {
+        auto m = materials[i];
+        lvr2::PlutoMapMaterial material{};
+
+        material.textureIndex = m->texture_index;
+        material.r = m->r;
+        material.g = m->g;
+        material.b = m->b;
+
+        matVector.push_back(material);
+    }
+
+    pm->addMaterials(matVector);
 }
 
 
