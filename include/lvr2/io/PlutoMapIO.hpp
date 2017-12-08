@@ -46,6 +46,13 @@ struct PlutoMapImage {
     uint8_t* data;
 };
 
+struct PlutoMapMaterial {
+    int32_t textureIndex;
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+};
+
 /**
  *
  */
@@ -118,6 +125,11 @@ public:
     void addTexture(int index, uint32_t width, uint32_t height, uint8_t* data);
 
     /**
+     * @brief Add materials as PlutoMapMaterial.
+     */
+    void addMaterials(vector<PlutoMapMaterial>& materials);
+
+    /**
      * @brief Adds an image with given data set name to the given group
      */
     void addImage(hf::Group group, string name, const uint32_t width, const uint32_t height, const uint8_t* pixelBuffer);
@@ -171,6 +183,18 @@ inline AtomicType<lvr2::PlutoMapFace>::AtomicType()
     H5Tinsert(face_hid, "c", sizeof(uint32_t) * 2 , H5T_NATIVE_UINT);
 
     _hid = H5Tcopy(face_hid);
+}
+template <>
+inline AtomicType<lvr2::PlutoMapMaterial>::AtomicType()
+{
+    hid_t materialHid = H5Tcreate(H5T_COMPOUND, sizeof(lvr2::PlutoMapMaterial));
+
+    H5Tinsert(materialHid, "textureIndex", offsetof(lvr2::PlutoMapMaterial, textureIndex), H5T_NATIVE_INT);
+    H5Tinsert(materialHid, "r", offsetof(lvr2::PlutoMapMaterial, r), H5T_NATIVE_UCHAR);
+    H5Tinsert(materialHid, "g", offsetof(lvr2::PlutoMapMaterial, g), H5T_NATIVE_UCHAR);
+    H5Tinsert(materialHid, "b", offsetof(lvr2::PlutoMapMaterial, b), H5T_NATIVE_UCHAR);
+
+    _hid = H5Tcopy(materialHid);
 }
 
 }
