@@ -17,9 +17,9 @@
  */
 
 
- /**
- * @file      PlutoMapIO.tcc
- **/
+/**
+* @file      PlutoMapIO.tcc
+**/
 
 
 
@@ -112,7 +112,7 @@ inline vector<PlutoMapImage> PlutoMapIO::getTextures()
     {
         textures.push_back(getImage(imagesGroup, setName));
     }
-    
+
     return textures;
 }
 
@@ -179,7 +179,7 @@ inline hf::DataSet PlutoMapIO::addVertexColors(vector<uint8_t>& colors)
     return dataSet;
 }
 
-inline void PlutoMapIO::addTexture(int index, uint32_t width, uint32_t height, uint8_t* data)
+inline void PlutoMapIO::addTexture(int index, uint32_t width, uint32_t height, uint8_t *data)
 {
     if (!m_texturesGroup.exist("images"))
     {
@@ -204,7 +204,8 @@ inline void PlutoMapIO::addMaterials(vector<PlutoMapMaterial>& materials)
         .write(materials);
 }
 
-inline void PlutoMapIO::addImage(hf::Group group, string name, const uint32_t width, const uint32_t height, const uint8_t* pixelBuffer)
+inline void PlutoMapIO::addImage(hf::Group group, string name, const uint32_t width, const uint32_t height,
+                                 const uint8_t *pixelBuffer)
 {
     H5IMmake_image_24bit(group.getId(), name.c_str(), width, height, "INTERLACE_PIXEL", pixelBuffer);
 }
