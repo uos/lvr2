@@ -197,6 +197,13 @@ inline void PlutoMapIO::addTexture(int index, uint32_t width, uint32_t height, u
     addImage(imagesGroup, name, width, height, data);
 }
 
+inline void PlutoMapIO::addMaterials(vector<PlutoMapMaterial>& materials)
+{
+    m_texturesGroup
+        .createDataSet<PlutoMapMaterial>("materials", hf::DataSpace::From(materials))
+        .write(materials);
+}
+
 inline void PlutoMapIO::addImage(hf::Group group, string name, const uint32_t width, const uint32_t height, const uint8_t* pixelBuffer)
 {
     H5IMmake_image_24bit(group.getId(), name.c_str(), width, height, "INTERLACE_PIXEL", pixelBuffer);
