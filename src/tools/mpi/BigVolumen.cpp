@@ -144,9 +144,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
     {
         m_has_color = true;
     }
-    string comment = lvr::timestamp.getElapsedTime() + "Splitting and Serializing ";
-    lvr::ProgressBar progress(m_numPoints, comment);
-
+   
     string comment = lvr::timestamp.getElapsedTime() + "Building grid... ";
     lvr::ProgressBar progress(this->m_numPoints, comment);
 
