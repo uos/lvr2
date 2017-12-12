@@ -316,7 +316,7 @@ void FastBox<BaseVecT>::getSurface(
                 m_intersections[edge_index] = mesh.addVertex(v);
 
                 float dist = fabs(distanceToBB(v, bb));
-                if (dist < comparePrecision || dist )
+                if (dist < comparePrecision)
                 {
                     add_duplicate = true;
                 }
