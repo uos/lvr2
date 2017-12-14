@@ -105,6 +105,21 @@ public:
     vector<PlutoMapImage> getTextures();
 
     /**
+     * @breif Returns materials as PlutoMapMaterial
+     */
+    vector<PlutoMapMaterial> getMaterials();
+
+    /**
+     * @brief Returns material <-> face indices
+     */
+    vector<uint32_t> getMaterialFaceIndices();
+
+    /**
+     * @brief Returns vertex texture coordinates
+     */
+    vector<float> getVertexTextureCoords();
+
+    /**
      * @brief Returns the image in the group, if it exists. If not an empty struct is returned
      */
     PlutoMapImage getImage(hf::Group group, string name);
