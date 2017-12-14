@@ -50,23 +50,15 @@ void Hdf5IO::save(string filename)
     size_t numMaterials = 0;
     size_t numCoords = 0;
     size_t numMatFaceIndices = 0;
-    floatArr vertices;
-    uintArr faceIndices;
-    floatArr normals;
-    ucharArr colors;
-    textureArr textures;
-    materialArr materials;
-    floatArr coords;
-    uintArr matFaceIndices;
 
-    vertices = m_model->m_mesh->getVertexArray(numVertices);
-    faceIndices = m_model->m_mesh->getFaceArray(numFaceIds);
-    normals = m_model->m_mesh->getVertexNormalArray(numNormals);
-    colors = m_model->m_mesh->getVertexColorArray(numColors);
-    textures = m_model->m_mesh->getTextureArray(numTextures);
-    materials = m_model->m_mesh->getMaterialArray(numMaterials);
-    coords = m_model->m_mesh->getVertexTextureCoordinateArray(numCoords);
-    matFaceIndices = m_model->m_mesh->getFaceMaterialIndexArray(numMatFaceIndices);
+    floatArr vertices = m_model->m_mesh->getVertexArray(numVertices);
+    uintArr faceIndices = m_model->m_mesh->getFaceArray(numFaceIds);
+    floatArr normals = m_model->m_mesh->getVertexNormalArray(numNormals);
+    ucharArr colors = m_model->m_mesh->getVertexColorArray(numColors);
+    textureArr textures = m_model->m_mesh->getTextureArray(numTextures);
+    materialArr materials = m_model->m_mesh->getMaterialArray(numMaterials);
+    floatArr coords = m_model->m_mesh->getVertexTextureCoordinateArray(numCoords);
+    uintArr matFaceIndices = m_model->m_mesh->getFaceMaterialIndexArray(numMatFaceIndices);
 
     auto verts = std::vector<float>(vertices.get(), vertices.get() + numVertices * 3);
     auto indis = std::vector<uint32_t>(faceIndices.get(), faceIndices.get() + numFaceIds * 3);
