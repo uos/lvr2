@@ -197,11 +197,15 @@ inline void PlutoMapIO::addTexture(int index, uint32_t width, uint32_t height, u
     addImage(imagesGroup, name, width, height, data);
 }
 
-inline void PlutoMapIO::addMaterials(vector<PlutoMapMaterial>& materials)
+inline void PlutoMapIO::addMaterials(vector<PlutoMapMaterial>& materials, vector<uint32_t>& matFaceIndices)
 {
     m_texturesGroup
         .createDataSet<PlutoMapMaterial>("materials", hf::DataSpace::From(materials))
         .write(materials);
+
+    m_texturesGroup
+        .createDataSet<uint32_t>("mat_face_indices", hf::DataSpace::From(matFaceIndices))
+        .write(matFaceIndices);
 }
 
 inline void PlutoMapIO::addVertexTextureCoords(vector<float>& coords)
