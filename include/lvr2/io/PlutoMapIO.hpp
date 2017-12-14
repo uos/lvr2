@@ -125,9 +125,9 @@ public:
     void addTexture(int index, uint32_t width, uint32_t height, uint8_t* data);
 
     /**
-     * @brief Add materials as PlutoMapMaterial.
+     * @brief Add materials as PlutoMapMaterial and the corresponding material <-> face indices
      */
-    void addMaterials(vector<PlutoMapMaterial>& materials);
+    void addMaterials(vector<PlutoMapMaterial>& materials, vector<uint32_t>& matFaceIndices);
 
     /**
      * @brief Add vertex texture coordinates to the textures group.

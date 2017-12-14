@@ -49,6 +49,7 @@ void Hdf5IO::save(string filename)
     size_t numTextures = 0;
     size_t numMaterials = 0;
     size_t numCoords = 0;
+    size_t numMatFaceIndices = 0;
     floatArr vertices;
     uintArr faceIndices;
     floatArr normals;
@@ -56,6 +57,7 @@ void Hdf5IO::save(string filename)
     textureArr textures;
     materialArr materials;
     floatArr coords;
+    uintArr matFaceIndices;
 
     vertices = m_model->m_mesh->getVertexArray(numVertices);
     faceIndices = m_model->m_mesh->getFaceArray(numFaceIds);
@@ -64,12 +66,14 @@ void Hdf5IO::save(string filename)
     textures = m_model->m_mesh->getTextureArray(numTextures);
     materials = m_model->m_mesh->getMaterialArray(numMaterials);
     coords = m_model->m_mesh->getVertexTextureCoordinateArray(numCoords);
+    matFaceIndices = m_model->m_mesh->getFaceMaterialIndexArray(numMatFaceIndices);
 
     auto verts = std::vector<float>(vertices.get(), vertices.get() + numVertices * 3);
     auto indis = std::vector<uint32_t>(faceIndices.get(), faceIndices.get() + numFaceIds * 3);
     auto normalsVector = std::vector<float>(normals.get(), normals.get() + numNormals * 3);
     auto colorsVector = std::vector<uint8_t>(colors.get(), colors.get() + numColors * 3);
     auto coordsVector = std::vector<float>(coords.get(), coords.get() + numCoords);
+    auto matFaceIndicesVector = std::vector<uint32_t>(matFaceIndices.get(), matFaceIndices.get() + numMatFaceIndices * 3);
 
     // Save old error handler
     H5E_auto2_t  oldfunc;
@@ -127,7 +131,7 @@ void Hdf5IO::save(string filename)
         matVector.push_back(material);
     }
 
-    pm->addMaterials(matVector);
+    pm->addMaterials(matVector, matFaceIndicesVector);
 }
 
 
