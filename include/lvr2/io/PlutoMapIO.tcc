@@ -116,6 +116,36 @@ inline vector<PlutoMapImage> PlutoMapIO::getTextures()
     return textures;
 }
 
+inline vector<PlutoMapMaterial> PlutoMapIO::getMaterials()
+{
+    vector<PlutoMapMaterial> materials;
+
+    m_texturesGroup.getDataSet("materials")
+        .read(materials);
+
+    return materials;
+}
+
+inline vector<uint32_t> PlutoMapIO::getMaterialFaceIndices()
+{
+    vector<uint32_t> matFaceIndices;
+
+    m_texturesGroup.getDataSet("mat_face_indices")
+        .read(matFaceIndices);
+
+    return matFaceIndices;
+}
+
+inline vector<float> PlutoMapIO::getVertexTextureCoords()
+{
+    vector<float> coords;
+
+    m_texturesGroup.getDataSet("coords")
+        .read(coords);
+
+    return coords;
+}
+
 inline PlutoMapImage PlutoMapIO::getImage(hf::Group group, string name)
 {
     PlutoMapImage t;
