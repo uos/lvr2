@@ -65,7 +65,7 @@ void Hdf5IO::save(string filename)
     auto normalsVector = std::vector<float>(normals.get(), normals.get() + numNormals * 3);
     auto colorsVector = std::vector<uint8_t>(colors.get(), colors.get() + numColors * 3);
     auto coordsVector = std::vector<float>(coords.get(), coords.get() + numCoords);
-    auto matFaceIndicesVector = std::vector<uint32_t>(matFaceIndices.get(), matFaceIndices.get() + numMatFaceIndices * 3);
+    auto matFaceIndicesVector = std::vector<uint32_t>(matFaceIndices.get(), matFaceIndices.get() + numMatFaceIndices);
 
     // Save old error handler
     H5E_auto2_t  oldfunc;
