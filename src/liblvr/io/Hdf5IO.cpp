@@ -48,12 +48,14 @@ void Hdf5IO::save(string filename)
     size_t numColors = 0;
     size_t numTextures = 0;
     size_t numMaterials = 0;
+    size_t numCoords = 0;
     floatArr vertices;
     uintArr faceIndices;
     floatArr normals;
     ucharArr colors;
     textureArr textures;
     materialArr materials;
+    floatArr coords;
 
     vertices = m_model->m_mesh->getVertexArray(numVertices);
     faceIndices = m_model->m_mesh->getFaceArray(numFaceIds);
@@ -61,11 +63,13 @@ void Hdf5IO::save(string filename)
     colors = m_model->m_mesh->getVertexColorArray(numColors);
     textures = m_model->m_mesh->getTextureArray(numTextures);
     materials = m_model->m_mesh->getMaterialArray(numMaterials);
+    coords = m_model->m_mesh->getVertexTextureCoordinateArray(numCoords);
 
     auto verts = std::vector<float>(vertices.get(), vertices.get() + numVertices * 3);
     auto indis = std::vector<uint32_t>(faceIndices.get(), faceIndices.get() + numFaceIds * 3);
     auto normalsVector = std::vector<float>(normals.get(), normals.get() + numNormals * 3);
     auto colorsVector = std::vector<uint8_t>(colors.get(), colors.get() + numColors * 3);
+    auto coordsVector = std::vector<float>(coords.get(), coords.get() + numCoords);
 
     // Save old error handler
     H5E_auto2_t  oldfunc;
@@ -98,6 +102,7 @@ void Hdf5IO::save(string filename)
 
     pm->addVertexNormals(normalsVector);
     pm->addVertexColors(colorsVector);
+    pm->addVertexTextureCoords(coordsVector);
 
     // add texture images
     for (size_t i = 0; i < numTextures; i++)
