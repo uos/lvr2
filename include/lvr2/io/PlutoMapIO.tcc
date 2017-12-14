@@ -204,6 +204,13 @@ inline void PlutoMapIO::addMaterials(vector<PlutoMapMaterial>& materials)
         .write(materials);
 }
 
+inline void PlutoMapIO::addVertexTextureCoords(vector<float>& coords)
+{
+    m_texturesGroup
+        .createDataSet<float>("coords", hf::DataSpace::From(coords))
+        .write(coords);
+}
+
 inline void PlutoMapIO::addImage(hf::Group group, string name, const uint32_t width, const uint32_t height,
                                  const uint8_t *pixelBuffer)
 {

@@ -130,6 +130,11 @@ public:
     void addMaterials(vector<PlutoMapMaterial>& materials);
 
     /**
+     * @brief Add vertex texture coordinates to the textures group.
+     */
+    void addVertexTextureCoords(vector<float>& coords);
+
+    /**
      * @brief Adds an image with given data set name to the given group
      */
     void addImage(hf::Group group, string name, const uint32_t width, const uint32_t height, const uint8_t* pixelBuffer);
