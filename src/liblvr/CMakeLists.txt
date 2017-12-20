@@ -132,14 +132,12 @@ endif()
 #####################################################################################
 
 if(CUDA_FOUND)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 
     # List of CUDA kernel code sources
     set(LVR_CUDA_SRC
         reconstruction/cuda/CudaSurface.cu
     )
-
-    # CUDA sources need to be compiled in C++11 mode
-    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11" )
 
     # Fix broken VTK flags
     get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)

@@ -27,7 +27,7 @@ endif()
 
 set(HAVE_CUDA 1)
 SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
-list(APPEND CUDA_NVCC_FLAGS "-gencode;arch=compute_20,code=sm_20;-gencode;arch=compute_20,code=sm_21;-gencode;arch=compute_30,code=sm_30;-gencode;arch=compute_35,code=sm_35;-gencode;arch=compute_50,code=sm_50;")
+list(APPEND CUDA_NVCC_FLAGS "-gencode;arch=compute_50,code=sm_50;")
 
 ##############################################################
 # CHECK FOR OPENCV VIZ MODULE
