@@ -150,6 +150,12 @@ public:
     void addVertexTextureCoords(vector<float>& coords);
 
     /**
+     * @brief Adds the label (labelName) to the label group with the given faces.
+     * E.g.: tree_1 -> groupName=tree; labelName=1; separated by the '_'
+     */
+    void addLabel(string groupName, string labelName, vector<uint32_t>& faceIds);
+
+    /**
      * @brief Adds an image with given data set name to the given group
      */
     void addImage(hf::Group group, string name, const uint32_t width, const uint32_t height, const uint8_t* pixelBuffer);
