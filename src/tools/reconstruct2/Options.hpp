@@ -41,7 +41,6 @@ using std::endl;
 using std::string;
 using std::vector;
 
-
 namespace reconstruct{
 
 /**
@@ -304,6 +303,10 @@ public:
 
     bool vertexColorsFromPointcloud() const;
 
+    bool useGPU() const;
+
+    vector<float> getFlippoint() const;
+
 private:
 
     /// The set voxelsize
@@ -422,6 +425,9 @@ private:
 
     ///Use pointcloud colors to paint vertices
     bool m_vertexColorsFromPointcloud;
+
+    // Flippoint for gpu normal calculation
+    vector<float> m_flippoint;
 
 };
 
@@ -545,6 +551,18 @@ inline ostream& operator<<(ostream& os, const Options &o)
     if(o.getEdgeCollapseReductionRatio() > 0.0)
     {
         cout << "##### Edge collapse reduction ratio\t: " << o.getEdgeCollapseReductionRatio() << endl;
+    }
+
+    if(o.useGPU())
+    {
+        cout << "##### GPU normal estimation \t: ON" << endl;
+        std::vector<float> flipPoint = o.getFlippoint();
+        cout << "##### Flippoint \t\t: ("
+            << flipPoint[0] << ", "
+            << flipPoint[1] << ", "
+            << flipPoint[2] << ")" << endl;
+    }else{
+        cout << "##### GPU normal estimation \t: OFF" << endl;
     }
 
 

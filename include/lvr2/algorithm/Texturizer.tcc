@@ -24,6 +24,8 @@
 *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
 */
 
+#include <lvr/io/Progress.hpp>
+
 namespace lvr2
 {
 
@@ -62,13 +64,15 @@ int Texturizer<BaseVecT>::getTextureIndex(TextureHandle h)
 template<typename BaseVecT>
 void Texturizer<BaseVecT>::saveTextures()
 {
+    string comment = lvr::timestamp.getElapsedTime() + "Saving textures ";
+    lvr::ProgressBar progress(m_textures.numUsed(), comment);
     for (auto h : m_textures)
     {
         m_textures[h].save();
+        ++progress;
     }
+    std::cout << std::endl;
 }
-
-
 
 template<typename BaseVecT>
 TexCoords Texturizer<BaseVecT>::calculateTexCoords(
@@ -104,8 +108,12 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
     // Create texture
     Texture<BaseVecT> texture(index, sizeX, sizeY, 3, 1, m_texelSize);
 
+    string comment = lvr::timestamp.getElapsedTime() + "Computing texture pixels ";
+    lvr::ProgressBar progress(sizeX * sizeY, comment);
+
     if (surface.pointBuffer()->hasRgbColor())
     {
+        #pragma omp parallel for schedule(dynamic,1) collapse(2)
         for (int y = 0; y < sizeY; y++)
         {
             for (int x = 0; x < sizeX; x++)
@@ -140,8 +148,11 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
                 texture.m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = r;
                 texture.m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = g;
                 texture.m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = b;
+
+                ++progress;
             }
         }
+        std::cout << std::endl;
     }
     else
     {

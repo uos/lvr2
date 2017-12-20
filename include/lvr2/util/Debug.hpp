@@ -79,6 +79,21 @@ void writeDebugMesh(
 template<typename BaseVecT>
 vector<vector<VertexHandle>> getDuplicateVertices(const BaseMesh<BaseVecT>& mesh);
 
+/**
+ * @brief Writes a mesh to the given filename and colors it with the following meaning:
+ *  - conntectedColor: connected mesh (vertices of edges with 2 connected faces)
+ *  - contourColor: contour edges (vertices of edges with 1 connected face)
+ *  - bugColor: edges with neither 1 or 2 conntected faces
+ */
+template<typename BaseVecT>
+void writeDebugContourMesh(
+    const BaseMesh<BaseVecT>& mesh,
+    string filename = "debug-contours.ply",
+    Rgb8Color connectedColor = {0, 255, 0},
+    Rgb8Color contourColor = {0, 0, 255},
+    Rgb8Color bugColor = {255, 0, 0}
+);
+
 #ifdef NDEBUG
 #define DOINDEBUG(...) ;
 #else
