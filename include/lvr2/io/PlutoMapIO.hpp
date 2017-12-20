@@ -162,6 +162,7 @@ private:
     hf::Group m_attributesGroup;
     hf::Group m_clusterSetsGroup;
     hf::Group m_texturesGroup;
+    hf::Group m_labelsGroup;
 };
 
 
