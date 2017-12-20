@@ -1,0 +1,9 @@
+ext/CTPL
+ext/kintinuous/kfusion/include/kfusion
+ext/psimpl
+ext/rply
+ext/slam6d/include/slam6d
+include/lvr/reconstruction/opencl
+src/qglviewer/app
+src/qglviewer/viewers
+src/qglviewer/widgets
