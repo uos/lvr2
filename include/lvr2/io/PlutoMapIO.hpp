@@ -120,6 +120,22 @@ public:
     vector<float> getVertexTextureCoords();
 
     /**
+     * @brief Returns all available label groups
+     */
+    vector<string> getLabelGroups();
+
+    /**
+     * @brief  Returns all labels inside the given group
+     */
+    vector<string> getAllLabelsOfGroup(string groupName);
+
+    /**
+     * @brief Returns face ids for the given label inside the group.
+     * E.g: label=tree_1 -> groupName=tree; labelName=1
+     */
+    vector<uint32_t> getFaceIdsOfLabel(string groupName, string labelName);
+
+    /**
      * @brief Returns the image in the group, if it exists. If not an empty struct is returned
      */
     PlutoMapImage getImage(hf::Group group, string name);
