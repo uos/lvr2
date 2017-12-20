@@ -46,6 +46,7 @@ inline PlutoMapIO::PlutoMapIO(
     m_attributesGroup = m_file.createGroup("/attributes");
     m_clusterSetsGroup = m_file.createGroup("/clustersets");
     m_texturesGroup = m_file.createGroup("/textures");
+    m_labelsGroup = m_file.createGroup("/labels");
 
     // Create geometry data sets
     m_geometryGroup
@@ -62,6 +63,7 @@ inline PlutoMapIO::~PlutoMapIO()
     H5Gclose(m_attributesGroup.getId());
     H5Gclose(m_clusterSetsGroup.getId());
     H5Gclose(m_texturesGroup.getId());
+    H5Gclose(m_labelsGroup.getId());
 
     H5Fclose(m_file.getId());
 }
