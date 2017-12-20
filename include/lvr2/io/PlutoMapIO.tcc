@@ -72,6 +72,12 @@ inline PlutoMapIO::~PlutoMapIO()
 inline vector<float> PlutoMapIO::getVertices()
 {
     vector<float> vertices;
+
+    if (!m_geometryGroup.exist("vertices"))
+    {
+        return vertices;
+    }
+
     m_geometryGroup.getDataSet("vertices")
         .read(vertices);
 
@@ -81,6 +87,12 @@ inline vector<float> PlutoMapIO::getVertices()
 inline vector<uint32_t> PlutoMapIO::getFaceIds()
 {
     vector<uint32_t> faceIds;
+
+    if (!m_geometryGroup.exist("faces"))
+    {
+        return faceIds;
+    }
+
     m_geometryGroup.getDataSet("faces")
         .read(faceIds);
 
@@ -90,6 +102,12 @@ inline vector<uint32_t> PlutoMapIO::getFaceIds()
 inline vector<float> PlutoMapIO::getVertexNormals()
 {
     vector<float> normals;
+
+    if (!m_geometryGroup.exist("normals"))
+    {
+        return normals;
+    }
+
     m_attributesGroup.getDataSet("normals")
         .read(normals);
 
@@ -99,6 +117,12 @@ inline vector<float> PlutoMapIO::getVertexNormals()
 inline vector<uint8_t> PlutoMapIO::getVertexColors()
 {
     vector<uint8_t> rgbColors;
+
+    if (!m_attributesGroup.exist("rgb_colors"))
+    {
+        return rgbColors;
+    }
+
     m_attributesGroup.getDataSet("rgb_colors")
         .read(rgbColors);
 
@@ -108,6 +132,11 @@ inline vector<uint8_t> PlutoMapIO::getVertexColors()
 inline vector<PlutoMapImage> PlutoMapIO::getTextures()
 {
     vector<PlutoMapImage> textures;
+
+    if (!m_texturesGroup.exist("images"))
+    {
+        return textures;
+    }
 
     const hf::Group& imagesGroup = m_texturesGroup.getGroup("images");
     for (auto setName: imagesGroup.listObjectNames())
@@ -122,6 +151,11 @@ inline vector<PlutoMapMaterial> PlutoMapIO::getMaterials()
 {
     vector<PlutoMapMaterial> materials;
 
+    if (!m_texturesGroup.exist("materials"))
+    {
+        return materials;
+    }
+
     m_texturesGroup.getDataSet("materials")
         .read(materials);
 
@@ -132,6 +166,11 @@ inline vector<uint32_t> PlutoMapIO::getMaterialFaceIndices()
 {
     vector<uint32_t> matFaceIndices;
 
+    if (!m_texturesGroup.exist("mat_face_indices"))
+    {
+        return matFaceIndices;
+    }
+
     m_texturesGroup.getDataSet("mat_face_indices")
         .read(matFaceIndices);
 
@@ -141,6 +180,11 @@ inline vector<uint32_t> PlutoMapIO::getMaterialFaceIndices()
 inline vector<float> PlutoMapIO::getVertexTextureCoords()
 {
     vector<float> coords;
+
+    if (!m_texturesGroup.exist("coords"))
+    {
+        return coords;
+    }
 
     m_texturesGroup.getDataSet("coords")
         .read(coords);
