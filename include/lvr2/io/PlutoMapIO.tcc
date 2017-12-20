@@ -247,6 +247,18 @@ inline void PlutoMapIO::addVertexTextureCoords(vector<float>& coords)
         .write(coords);
 }
 
+inline void PlutoMapIO::addLabel(string groupName, string labelName, vector<uint32_t>& faceIds)
+{
+    if (!m_labelsGroup.exist(groupName))
+    {
+        m_labelsGroup.createGroup(groupName);
+    }
+
+    m_labelsGroup.getGroup(groupName)
+        .createDataSet<uint32_t>(labelName, hf::DataSpace::From(faceIds))
+        .write(faceIds);
+}
+
 inline void PlutoMapIO::addImage(hf::Group group, string name, const uint32_t width, const uint32_t height,
                                  const uint8_t *pixelBuffer)
 {
