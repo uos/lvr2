@@ -148,6 +148,42 @@ inline vector<float> PlutoMapIO::getVertexTextureCoords()
     return coords;
 }
 
+inline vector<string> PlutoMapIO::getLabelGroups()
+{
+    return m_labelsGroup.listObjectNames();
+}
+
+inline vector<string> PlutoMapIO::getAllLabelsOfGroup(string groupName)
+{
+    if (!m_labelsGroup.exist(groupName))
+    {
+        return vector<string>();
+    }
+
+    return m_labelsGroup.getGroup(groupName).listObjectNames();
+}
+
+inline vector<uint32_t> PlutoMapIO::getFaceIdsOfLabel(string groupName, string labelName)
+{
+    vector<uint32_t> faceIds;
+
+    if (!m_labelsGroup.exist(groupName))
+    {
+        return faceIds;
+    }
+
+    auto lg = m_labelsGroup.getGroup(groupName);
+
+    if (!lg.exist(labelName))
+    {
+        return faceIds;
+    }
+
+    lg.getDataSet(labelName).read(faceIds);
+
+    return faceIds;
+}
+
 inline PlutoMapImage PlutoMapIO::getImage(hf::Group group, string name)
 {
     PlutoMapImage t;
