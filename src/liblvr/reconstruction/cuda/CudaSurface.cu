@@ -1613,13 +1613,19 @@ void CudaSurface::setFlippoint(float v_x, float v_y, float v_z) {
 
 }
 
-void CudaSurface::setMethod(std::string method) {
+void CudaSurface::setMethod(std::string& method)
+{
 
-    if( strcmp( method.c_str(), "PCA") == 0 ){
+    if( strcmp( method.c_str(), "PCA") == 0 )
+    {
         this->m_calc_method = 0;
-    } else if( strcmp( method.c_str(), "RANSAC") == 0){
+    }
+    else if( strcmp( method.c_str(), "RANSAC") == 0)
+    {
         this->m_calc_method = 1;
-    } else {
+    }
+    else
+    {
         printf("WARNING: Normal Calculation Method is not implemented\n");
     }
 
@@ -2032,7 +2038,7 @@ void CudaSurface::getNNFromIndex(const unsigned int& kd_pos, unsigned int *nn, i
                 }
             } else if( current_pos * 2 + 1 >= this->kd_tree_values->width )
             {
-                //first leaf reached
+                //first leaf reache
                 leaf_reached = true;
                 if( leaf_value != kd_pos && i_nn < k )
                 {

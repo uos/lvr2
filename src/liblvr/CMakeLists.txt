@@ -132,7 +132,7 @@ endif()
 #####################################################################################
 
 if(CUDA_FOUND)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 
 set(LVR_CUDA_SRC
     reconstruction/cuda/CudaSurface.cu
