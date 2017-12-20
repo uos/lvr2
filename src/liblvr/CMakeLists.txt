@@ -134,40 +134,42 @@ endif()
 if(CUDA_FOUND)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 
-set(LVR_CUDA_SRC
-    reconstruction/cuda/CudaSurface.cu
-)
+    # List of CUDA kernel code sources
+    set(LVR_CUDA_SRC
+        reconstruction/cuda/CudaSurface.cu
+    )
 
-# Fix broken VTK flags
-get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
-set(vtk_flags)
-foreach(it ${dir_defs})
-    if(it MATCHES "vtk*")
-    list(APPEND vtk_flags ${it})
-    endif()
-endforeach()
+    # Fix broken VTK flags
+    get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+    set(vtk_flags)
+    foreach(it ${dir_defs})
+        if(it MATCHES "vtk*")
+        list(APPEND vtk_flags ${it})
+        endif()
+    endforeach()
 
-foreach(d ${vtk_flags})
-    remove_definitions(-D${d})
-endforeach()
+    foreach(d ${vtk_flags})
+        remove_definitions(-D${d})
+    endforeach()
 
-message(STATUS "Building static LVR CUDA library")
-cuda_add_library(lvrcuda_static STATIC ${LVR_CUDA_SRC})
-target_link_libraries(lvrcuda_static lvr_static)
+    message(STATUS "Building static LVR CUDA library")
+    cuda_add_library(lvrcuda_static STATIC ${LVR_CUDA_SRC})
+    target_link_libraries(lvrcuda_static lvr_static)
 
-# Add dependency to avoid that both targets
-# are build concurrently in parallel builds
-add_dependencies(lvrcuda_static lvr_static)
-message(STATUS "Building shared LVR CUDA library")
-cuda_add_library(lvrcuda SHARED ${LVR_CUDA_SRC})
-target_link_libraries(lvrcuda lvr)
+    # Add dependency to avoid that both targets
+    # are build concurrently in parallel builds
+    add_dependencies(lvrcuda_static lvr_static)
+    message(STATUS "Building shared LVR CUDA library")
+    cuda_add_library(lvrcuda SHARED ${LVR_CUDA_CPP_SRC} ${LVR_CUDA_SRC})
+    target_link_libraries(lvrcuda lvr)
 
-install(
-    TARGETS lvrcuda_static lvrcuda
-    EXPORT lvrTargets
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
+    install(
+        TARGETS lvrcuda_static lvrcuda
+        EXPORT lvrTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+
 endif()
 
 #####################################################################################
