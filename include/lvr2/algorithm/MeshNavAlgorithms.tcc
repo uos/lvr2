@@ -153,6 +153,7 @@ DenseVertexMap<float> calcVertexRoughness(
 )
 {
     DenseVertexMap<float> roughness;
+
     // Get neighbored vertices
     vector<VertexHandle> neighbors;
     auto averageAngles = calcAverageVertexAngles(mesh, normals);
@@ -164,7 +165,6 @@ DenseVertexMap<float> calcVertexRoughness(
 
         neighbors.clear();
         calcVertexLocalNeighborhood(mesh, vH, radius, neighbors);
-
 
         // Adjust sum values, according to the neighborhood
         for (auto neighbor: neighbors)
@@ -179,5 +179,50 @@ DenseVertexMap<float> calcVertexRoughness(
     return roughness;
 
 }
+
+template<typename BaseVecT>
+void calcVertexRoughnessAndHeightDiff(const BaseMesh<BaseVecT>& mesh, double radius, const VertexMap<Normal<BaseVecT>>& normals, DenseVertexMap<float>& roughness, DenseVertexMap<float>& heightDiff)
+{
+    roughness.clear();
+    heightDiff.clear();
+
+    // Get neighbored vertices
+    vector<VertexHandle> neighbors;
+    auto averageAngles = calcAverageVertexAngles(mesh, normals);
+
+    // Calculate roughness and height difference for each vertex
+    for (auto vH: mesh.vertices())
+    {
+        double sum = 0.0;
+
+        neighbors.clear();
+        calcVertexLocalNeighborhood(mesh, vH, radius, neighbors);
+
+        // Adjust sum values, according to the neighborhood
+        for (auto neighbor: neighbors)
+        {
+            sum += averageAngles[neighbor];
+        }
+
+        // Calculate the final roughness
+        roughness.insert(vH, sum / neighbors.size());
+
+        // Store initial values for min and max height
+        float minHeight = std::numeric_limits<float>::max();
+        float maxHeight = -std::numeric_limits<float>::max();
+
+        // Adjust the min and max height values, according to the neighborhood
+        for (auto neighbor: neighbors)
+        {
+            auto cur_pos = mesh.getVertexPosition(neighbor);
+            minHeight = std::min(cur_pos.z, minHeight);
+            maxHeight = std::max(cur_pos.z, maxHeight);
+        }
+
+        // Calculate the final height difference
+        heightDiff.insert(vH, maxHeight - minHeight);
+    }
+}
+
 
 } // namespace lvr2
