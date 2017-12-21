@@ -117,6 +117,32 @@ DenseEdgeMap<float> calcVertexAngleEdges(
         const VertexMap<Normal<BaseVecT>>& normals
 );
 
+/**
+ * @brief Calculates the roughness and the height difference for each vertex.
+ *
+ * This function combines the logic of the calcVertexRoughness- and calcVertexHeightDiff-functions,
+ * allowing us to calculate the local neighborhood for each single vertex just once.
+ * By that, this function should always be used when the roughness and height difference values are
+ * both needed.
+ *
+ * @param mesh        The given mesh for the calculation.
+ * @param radius      The radius which defines the local neighborhood.
+ *                    A local neighborhood is defined by a circular-shaped radius, which includes all connected
+ *                    edges and vertices. Once an edge leaves this radius and reenters somehow, it isn't part of
+ *                    the neighborhood.
+ * @param normals     The vertex normals of the given mesh.
+ * @param roughness   The calculated roughness values for each vertex.
+ * @param heightDiff  The calculated height difference values for each vertex.
+ */
+template<typename BaseVecT>
+void calcVertexRoughnessAndHeightDiff(
+        const BaseMesh<BaseVecT>& mesh,
+        double radius,
+        const VertexMap<Normal<BaseVecT>>& normals,
+        DenseVertexMap<float>& roughness,
+        DenseVertexMap<float>& heightDiff
+);
+
 } // namespace lvr2
 
 #include <lvr2/algorithm/MeshNavAlgorithms.tcc>
