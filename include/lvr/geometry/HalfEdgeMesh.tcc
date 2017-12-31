@@ -485,7 +485,7 @@ void HalfEdgeMesh<VertexT, NormalT>::checkFaceIntegreties()
             c++;
         }
     }
-    cout << timestamp << "Checked face integreties. Found " << c << " degenerated faces from " << m_faces.size() << " checked." << endl;
+    cout << timestamp << "Checked face integrities. Found " << c << " degenerate faces from " << m_faces.size() << " checked." << endl;
 }
 
 template<typename VertexT, typename NormalT>
@@ -1505,7 +1505,7 @@ void HalfEdgeMesh<VertexT, NormalT>::restorePlanes(int min_region_size)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::finalize()
 {
-    std::cout << timestamp << "Checking face integreties." << std::endl;
+    std::cout << timestamp << "Checking face integrities." << std::endl;
     checkFaceIntegreties();
 
     std::cout << timestamp << "Finalizing mesh with classifier \"" << m_classifierType << "\"." << std::endl;
@@ -1952,7 +1952,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             {
                 /*if(indices[j] == indices[j+1] || indices[j+1] == indices[j+2] || indices[j+2] == indices[j])
                 {
-                    cout << "Detected degenerated face: " << indices[j] << " " << indices[j + 1] << " " << indices[j + 2] << endl;
+                    cout << "Detected degenerate face: " << indices[j] << " " << indices[j + 1] << " " << indices[j + 2] << endl;
                 }*/
 
                 // store the indices with the correct offset to the indices buffer.
