@@ -156,8 +156,8 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 m_cluster
             );
 
-            // Counding rectangle
-            BoundingRectangle<BaseVecT> boundintRect = calculateBoundingRectangle(
+            // Bounding rectangle
+            BoundingRectangle<BaseVecT> boundingRect = calculateBoundingRectangle(
                 contour,
                 m_mesh,
                 cluster,
@@ -170,8 +170,14 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             TextureHandle texH = m_texturizer.get().generateTexture(
                 textureCount,
                 m_surface,
-                boundintRect
+                boundingRect
             );
+
+            std::vector<cv::KeyPoint> keypoints;
+            cv::Mat descriptors;
+            m_texturizer.get().findKeyPointsInTexture(texH,
+                    boundingRect, keypoints, descriptors);
+            // cv::Ptr<cv::Feature2D> detector = cv::AKAZE::create();
 
             // Create material and insert in face map
             Material material;
@@ -197,7 +203,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 // Calculate tex coords
                 TexCoords texCoords = m_texturizer.get().calculateTexCoords(
                     texH,
-                    boundintRect,
+                    boundingRect,
                     m_mesh.getVertexPosition(vertexH)
                 );
 
@@ -213,6 +219,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                     vertexTexCoords.insert(vertexH, mapping);
                 }
             }
+
             textureCount++;
         }
     }

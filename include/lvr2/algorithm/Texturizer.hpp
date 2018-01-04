@@ -47,6 +47,8 @@
 #include <lvr/io/Progress.hpp>
 #include <lvr/io/Timestamp.hpp>
 
+#include <opencv2/features2d.hpp>
+
 namespace lvr2
 {
 
@@ -65,6 +67,18 @@ public:
     Texture<BaseVecT> getTexture(TextureHandle h);
     StableVector<TextureHandle, Texture<BaseVecT>> getTextures();
     int getTextureIndex(TextureHandle h);
+
+    /**
+     * @brief Discover keypoints in a texture
+     *
+     * @param[in] texH Texture handle
+     * @param[in] boundingRect Bounding rectangle computed for the texture
+     * @param[out] keypoints Vector of keypoints
+     * @param[out] descriptors Matrix of descriptors for the keypoint
+     */
+    void findKeyPointsInTexture(const TextureHandle texH, const
+            BoundingRectangle<BaseVecT>& boundingRect, std::vector<cv::KeyPoint>&
+            keypoints, cv::Mat& descriptors);
 
     TextureHandle generateTexture(
         int index,
