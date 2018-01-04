@@ -118,7 +118,7 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
         {
             for (int x = 0; x < sizeX; x++)
             {
-                std::vector<char> v;
+                // std::vector<char> v;
 
                 int k = 1; // k-nearest-neighbors
 
@@ -163,6 +163,13 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
     }
 
     return m_textures.push(texture);
+}
+
+template<typename BaseVecT>
+void Texturizer<BaseVecT>::findKeyPointsInTexture(const TextureHandle texH, const
+        BoundingRectangle<BaseVecT>& boundingRect, std::vector<cv::KeyPoint>&
+        keypoints, cv::Mat& descriptors)
+{
 }
 
 } // namespace lvr2
