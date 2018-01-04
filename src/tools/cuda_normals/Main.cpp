@@ -89,10 +89,8 @@ void computeNormals(string filename, cuda_normals::Options& opt, PointBufferPtr&
     cout << timestamp << "Finished Normal Calculation. " << endl;
 
     size_t nc;
-    buffer->setPointArray(points, num_points);
-    buffer->setPointNormalArray(normals, num_points);
-    buffer->setPointColorArray(model->m_pointCloud->getPointColorArray(nc), num_points);
-
+    model->m_pointCloud->setPointNormalArray(normals, num_points);
+    buffer = model->m_pointCloud;
 
     gpu_surface.freeGPU();
 }
