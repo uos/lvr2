@@ -25,6 +25,7 @@
 */
 
 #include <lvr/io/Progress.hpp>
+#include <opencv2/highgui.hpp>
 
 namespace lvr2
 {
@@ -166,10 +167,15 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
 }
 
 template<typename BaseVecT>
-void Texturizer<BaseVecT>::findKeyPointsInTexture(const TextureHandle texH, const
-        BoundingRectangle<BaseVecT>& boundingRect, std::vector<cv::KeyPoint>&
-        keypoints, cv::Mat& descriptors)
+void Texturizer<BaseVecT>::findKeyPointsInTexture(const TextureHandle texH,
+        const BoundingRectangle<BaseVecT>& boundingRect,
+        std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
 {
+    const Texture<BaseVecT> texture = m_textures[texH];
+    const unsigned char* img_data = texture.m_data;
+    cv::Mat image(texture.m_height, texture.m_width, CV_8UC3, (void*)img_data);
+    cv::imshow("", image);
+    cv::waitKey(0);
 }
 
 } // namespace lvr2
