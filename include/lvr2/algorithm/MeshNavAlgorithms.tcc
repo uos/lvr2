@@ -40,10 +40,15 @@ void calcVertexLocalNeighborhood(
     auto vPos = mesh.getVertexPosition(vH);
 
     radius *= radius;
-    //Store vertices to visit
+    // Store the vertices we want to visit. We reserve memory for 8 vertices
+    // already, since it's rather likely to have at least that many vertices
+    // in the stack. In the beginning, the stack only contains the original
+    // vertex we were given.
     vector<VertexHandle> stack;
+    stack.reserve(8);
     stack.push_back(vH);
-    //Save visited vertices
+
+    // Save visited vertices
     SparseVertexMap<bool> usedVertices(false);
     vector<VertexHandle> directNeighbors;
 
@@ -54,18 +59,31 @@ void calcVertexLocalNeighborhood(
         auto curVH = stack.back();
         stack.pop_back();
 
+        // The vertex might have already been processed while in the stack. If
+        // that was the case, we can skip it.
+        if (usedVertices[curVH]) {
+            continue;
+        }
+
         usedVertices.insert(curVH, true);
 
+        // Add current vertex to the list of neighbors (except for the original
+        // vertex).
+        if (curVH != vH) {
+            neighborsOut.push_back(curVH);
+        }
+
+        // Expand current vertex: add its direct neighbors to the stack.
         directNeighbors.clear();
         mesh.getNeighboursOfVertex(curVH, directNeighbors);
         for (auto newVH: directNeighbors)
         {
-            // Add vertices within the radius to the local neighborhood
+            // If this vertex is within the radius of the original vertex, we
+            // want to visit it later, thus pushing it onto the stack.
             auto dist = mesh.getVertexPosition(newVH).squaredDistanceFrom(vPos);
             if (!usedVertices[newVH] && dist < radius)
             {
                 stack.push_back(newVH);
-                neighborsOut.push_back(newVH);
             }
         }
     }
