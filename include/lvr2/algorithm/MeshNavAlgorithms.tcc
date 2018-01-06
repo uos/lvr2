@@ -65,6 +65,9 @@ void visitLocalNeighborhoodOfVertex(
     // In this map we store whether or not we have already visited a vertex,
     // where visiting means: calling the visitor with it and pushing it on
     // the stack of vertices we still need to expand.
+    //
+    // It would be more appropriate to use a set instead of a map, but there
+    // are no attribute-sets...
     // TODO: reserve memory once the API allows it
     SparseVertexMap<bool> visited(false);
     visited.insert(vH, true);
@@ -87,9 +90,10 @@ void visitLocalNeighborhoodOfVertex(
         {
             // If this vertex is within the radius of the original vertex, we
             // want to visit it later, thus pushing it onto the stack. But we
-            // only do that if we haven't visited the vertex before.
+            // only do that if we haven't visited the vertex before. We use
+            // `containsKey` here because we only insert `true` anyway.
             auto distSquared = mesh.getVertexPosition(newVH).squaredDistanceFrom(vPos);
-            if (!visited[newVH] && distSquared < radiusSquared)
+            if (!visited.containsKey(newVH) && distSquared < radiusSquared)
             {
                 visitor(newVH);
                 stack.push_back(newVH);
