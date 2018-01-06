@@ -71,11 +71,11 @@ optional<ValueT> HashMap<HandleT, ValueT>::insert(HandleT key, const ValueT& val
 template<typename HandleT, typename ValueT>
 optional<ValueT> HashMap<HandleT, ValueT>::erase(HandleT key)
 {
-    auto elem = get(key);
-    if (elem)
+    auto it = m_map.find(key);
+    if (it != m_map.end())
     {
-        auto out = *elem;
-        m_map.erase(key);
+        auto out = (*it).second;
+        m_map.erase(it);
         return out;
     }
     else
