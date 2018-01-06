@@ -37,36 +37,35 @@ void calcVertexLocalNeighborhood(
     vector<VertexHandle>& neighborsOut
 )
 {
+    auto vPos = mesh.getVertexPosition(vH);
+
     radius *= radius;
     //Store vertices to visit
     vector<VertexHandle> stack;
     stack.push_back(vH);
     //Save visited vertices
     SparseVertexMap<bool> usedVertices(false);
+    vector<VertexHandle> directNeighbors;
 
     //As long as there are vertices to visit
     while (!stack.empty())
     {
-        //Visit the next vertex
+        // Visit the next vertex
         auto curVH = stack.back();
         stack.pop_back();
+
         usedVertices.insert(curVH, true);
 
-        //Look at all vertices which are connected to the current one by an edge
-        vector<EdgeHandle> curEdges = mesh.getEdgesOfVertex(curVH);
-        for (auto eH: curEdges)
+        directNeighbors.clear();
+        mesh.getNeighboursOfVertex(curVH, directNeighbors);
+        for (auto newVH: directNeighbors)
         {
-            auto vertexVector = mesh.getVerticesOfEdge(eH);
-
-            for (auto tmpVH: vertexVector)
+            // Add vertices within the radius to the local neighborhood
+            auto dist = mesh.getVertexPosition(newVH).squaredDistanceFrom(vPos);
+            if (!usedVertices[newVH] && dist < radius)
             {
-                //Add vertices within the radius to the local neighborhood
-                if (!usedVertices[tmpVH] && \
-                     mesh.getVertexPosition(tmpVH).squaredDistanceFrom(mesh.getVertexPosition(vH)) < radius)
-                {
-                    stack.push_back(tmpVH);
-                    neighborsOut.push_back(tmpVH);
-                }
+                stack.push_back(newVH);
+                neighborsOut.push_back(newVH);
             }
         }
     }
