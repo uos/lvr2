@@ -65,6 +65,7 @@ void visitLocalNeighborhoodOfVertex(
     // In this map we store whether or not we have already visited a vertex,
     // where visiting means: calling the visitor with it and pushing it on
     // the stack of vertices we still need to expand.
+    // TODO: reserve memory once the API allows it
     SparseVertexMap<bool> visited(false);
     visited.insert(vH, true);
 
