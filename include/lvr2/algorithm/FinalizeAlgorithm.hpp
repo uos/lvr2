@@ -51,9 +51,6 @@ template<typename BaseVecT>
 class MaterializerResult;
 
 
-/**
- * @brief
- */
 template<typename BaseVecT>
 class FinalizeAlgorithm
 {
