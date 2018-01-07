@@ -221,6 +221,7 @@ int main(int argc, char** argv)
         cout << lvr::timestamp << "loading data " << i  << endl;
         double start_s = lvr::timestamp.getElapsedTimeInS();
         lvr::floatArr points;
+        lvr::ucharArr colors;
         lvr::PointBufferPtr p_loader(new lvr::PointBuffer);
 
         if(volumenSize > 0)
@@ -260,6 +261,16 @@ int main(int argc, char** argv)
             points =  bg->points(partitionBoxes[i].getMin().x - voxelsize*3, partitionBoxes[i].getMin().y - voxelsize*3, partitionBoxes[i].getMin().z - voxelsize*3 ,
                                  partitionBoxes[i].getMax().x + voxelsize*3, partitionBoxes[i].getMax().y + voxelsize*3, partitionBoxes[i].getMax().z + voxelsize*3,numPoints);
             p_loader->setPointArray(points, numPoints);
+            if(options.savePointNormals())
+            {
+                if(bg->hasColors())
+                {
+                    colors = bg->colors(partitionBoxes[i].getMin().x - voxelsize*3, partitionBoxes[i].getMin().y - voxelsize*3, partitionBoxes[i].getMin().z - voxelsize*3 ,
+                                        partitionBoxes[i].getMax().x + voxelsize*3, partitionBoxes[i].getMax().y + voxelsize*3, partitionBoxes[i].getMax().z + voxelsize*3,numPoints);
+                    p_loader->setPointColorArray(colors, numPoints);
+                }
+
+            }
         }
 
         double end_s = lvr::timestamp.getElapsedTimeInS();
@@ -284,16 +295,14 @@ int main(int argc, char** argv)
             {
 
                 size_t numNormals;
-                lvr::floatArr normals = bg->normals(partitionBoxes[i].getMin().x, partitionBoxes[i].getMin().y, partitionBoxes[i].getMin().z ,
-                                                   partitionBoxes[i].getMax().x, partitionBoxes[i].getMax().y, partitionBoxes[i].getMax().z,numNormals);
+                lvr::floatArr normals = bg->normals(partitionBoxes[i].getMin().x - voxelsize*3, partitionBoxes[i].getMin().y - voxelsize*3, partitionBoxes[i].getMin().z - voxelsize*3 ,
+                                                    partitionBoxes[i].getMax().x + voxelsize*3, partitionBoxes[i].getMax().y + voxelsize*3, partitionBoxes[i].getMax().z + voxelsize*3,numNormals);
 
 
                 p_loader->setPointNormalArray(normals, numNormals);
+                navail = true;
             }
-            else
-            {
-                if(bg->hasNormals()) navail = true;
-            }
+
         }
         else
         {
@@ -307,22 +316,15 @@ int main(int argc, char** argv)
                 lvr::floatArr normals(new float[numNormals*3]);
                 ifs_normals.read((char*)normals.get(), sizeof(float)*3*numNormals);
                 p_loader->setPointNormalArray(normals, numNormals);
-            }
-            else
-            {
                 if(bv->hasNormals()) navail = true;
             }
+
         }
 
         if(navail)
         {
 
-            size_t numNormals;
-            lvr::floatArr normals = bg->normals(partitionBoxes[i].getMin().x, partitionBoxes[i].getMin().y, partitionBoxes[i].getMin().z ,
-                                              partitionBoxes[i].getMax().x, partitionBoxes[i].getMax().y, partitionBoxes[i].getMax().z,numNormals);
 
-
-            p_loader->setPointNormalArray(normals, numNormals);
         } else {
 
             #ifdef GPU_FOUND
@@ -366,7 +368,7 @@ int main(int argc, char** argv)
 //                options.getKd(),
 //                options.useRansac(),
 //                options.getScanPoseFile(),
-//                center
+//                volumenSize <= 0center
 
         ));
 
@@ -382,6 +384,78 @@ int main(int argc, char** argv)
             normal_time+=(normal_end-normal_start);
         }
 
+        if(options.savePointNormals() || options.onlyNormals())
+        {
+            lvr::PointBufferPtr p_normal_loader(new lvr::PointBuffer);
+
+            vector<float> tmpPBuffer;
+            vector<unsigned char> tmpCBuffer;
+            vector<float> tmpNBuffer;
+
+            size_t p_np, c_np, n_np;
+            auto ppoints = p_loader->getPointArray(p_np);
+            auto pcolors = p_loader->getPointColorArray(c_np);
+            auto pnormals = p_loader->getPointNormalArray(n_np);
+
+            lvr::BoundingBox<Vertexf> nbb;
+            for(size_t p_count = 0 ; p_count < p_np ; p_count++ )
+            {
+                bool intersect;
+                intersect =  partitionBoxes[i].contains(ppoints.get()[p_count*3], ppoints.get()[p_count*3+1], ppoints.get()[p_count*3+2]  );
+                if(intersect)
+                {
+                    nbb.expand(ppoints.get()[p_count*3], ppoints.get()[p_count*3+1], ppoints.get()[p_count*3+2]);
+                    tmpPBuffer.push_back(ppoints.get()[p_count*3]);
+                    tmpPBuffer.push_back(ppoints.get()[p_count*3+1]);
+                    tmpPBuffer.push_back(ppoints.get()[p_count*3+2]);
+
+                    tmpNBuffer.push_back(pnormals.get()[p_count*3]);
+                    tmpNBuffer.push_back(pnormals.get()[p_count*3+1]);
+                    tmpNBuffer.push_back(pnormals.get()[p_count*3+2]);
+                    if(c_np == p_np)
+                    {
+                        tmpCBuffer.push_back(pcolors.get()[p_count*3]);
+                        tmpCBuffer.push_back(pcolors.get()[p_count*3+1]);
+                        tmpCBuffer.push_back(pcolors.get()[p_count*3+2]);
+                    }
+
+                }
+            }
+
+
+
+
+
+            floatArr tmpPointArray(new float[tmpPBuffer.size()]);
+            ucharArr tmpColorArray(new unsigned char[tmpCBuffer.size()]);
+            floatArr tmpNormalArray(new float[tmpNBuffer.size()]);
+
+            for(size_t ii = 0 ; ii < tmpPBuffer.size(); ii++)
+            {
+                tmpPointArray[ii] = tmpPBuffer[ii];
+            }
+            for(size_t ii = 0 ; ii < tmpNBuffer.size(); ii++)
+            {
+                tmpNormalArray[ii] = tmpNBuffer[ii];
+            }
+            for(size_t ii = 0 ; ii < tmpCBuffer.size(); ii++)
+            {
+                tmpColorArray[ii] = tmpCBuffer[ii];
+            }
+            cout << "NUMP: " << tmpPBuffer.size()/3 << "|" << tmpCBuffer.size()/3 << "|" << tmpNBuffer.size()/3 << endl;
+            p_normal_loader->setPointArray(tmpPointArray,tmpPBuffer.size()/3);
+            p_normal_loader->setPointColorArray(tmpColorArray,tmpCBuffer.size()/3);
+            p_normal_loader->setPointNormalArray(tmpNormalArray,tmpNBuffer.size()/3);
+
+            cout << "OLD NORMAL SIZE: " << p_np << " NEW NORMAL SIZE: " << tmpNBuffer.size()/3 << endl;
+
+            std::stringstream ss_normals;
+            ss_normals << name_id << "-normals.ply";
+            ModelPtr m(new Model(p_normal_loader));
+            ModelFactory::saveModel( m, ss_normals.str());
+        }
+
+        if(options.onlyNormals()) continue;
         double grid_start = lvr::timestamp.getElapsedTimeInS();
         lvr::GridBase* grid;
         lvr::FastReconstructionBase<lvr::ColorVertex<float, unsigned char>, lvr::Normal<float> >* reconstruction;
@@ -405,13 +479,7 @@ int main(int argc, char** argv)
         vector<unsigned int> duplicates;
         reconstruction->getMesh(mesh, ps_grid->qp_bb, duplicates, voxelsize*5);
 
-        if(options.savePointNormals())
-        {
-            std::stringstream ss_normals;
-            ss_normals << name_id << "-normals.ply";
-            ModelPtr m(new Model(p_loader));
-            ModelFactory::saveModel( m, ss_normals.str());
-        }
+
 
         mesh.finalize();
         double mesh_end = lvr::timestamp.getElapsedTimeInS();

@@ -101,6 +101,7 @@ Options::Options(int argc, char** argv)
             ("useNormals", "the ply file contains normals")
             ("scale", value<float>(&m_scaling)->default_value(1), "Scaling factor, applied to all input points")
             ("volumenSize", value<size_t>(&m_volumenSize)->default_value(0), "The volumen of the partitions. Volume = (voxelsize*volumenSize)^3 if not set kd-tree will be used")
+            ("onlyNormals", "If true, only normals will be generated")
             ;
 
     setup();
@@ -436,6 +437,11 @@ size_t Options::getVolumenSize() const
 {
     return m_variables["volumenSize"].as<size_t>();
 }
+
+    bool Options::onlyNormals() const
+    {
+        return m_variables.count("onlyNormals");
+    }
 float* Options::getStatsCoeffs()const
 {
     float* result = new float[14];
