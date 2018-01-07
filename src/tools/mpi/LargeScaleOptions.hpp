@@ -280,7 +280,7 @@ public:
     int getNumEdgeCollapses() const;
 
 
-
+    bool onlyNormals() const;
 
     /**
      * @brief    Edge collapse method
@@ -326,6 +326,8 @@ public:
     size_t getVolumenSize() const;
 
     size_t getLineReaderBuffer() const;
+
+
 
 private:
 
@@ -462,6 +464,8 @@ private:
     size_t m_volumenSize;
 
     size_t m_lineReaderBuffer;
+
+    bool m_onlyNormals;
 
 
 };
