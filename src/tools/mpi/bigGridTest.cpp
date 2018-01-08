@@ -211,7 +211,7 @@ int main(int argc, char** argv)
                                                        bb.getMax().x, bb.getMax().y, bb.getMax().z);
 
     vector<string> grid_files;
-
+    vector<string> normal_files;
     for(size_t i = 0 ; i < partitionBoxes.size() ; i++)
     {
         string name_id = std::to_string(i);
@@ -453,6 +453,7 @@ int main(int argc, char** argv)
             ss_normals << name_id << "-normals.ply";
             ModelPtr m(new Model(p_normal_loader));
             ModelFactory::saveModel( m, ss_normals.str());
+            normal_files.push_back(ss_normals.str());
         }
 
         if(options.onlyNormals()) continue;
@@ -874,10 +875,9 @@ int main(int argc, char** argv)
     {
         size_t numNormalPoints = 0;
         bool normalsWithColor = false;
-        for(size_t i = 0 ; i <grid_files.size() ; i++)
+        for(size_t i = 0 ; i <normal_files.size() ; i++)
         {
-            string ply_path = grid_files[i];
-            boost::algorithm::replace_last(ply_path, "-grid.ser", "-normals.ply");
+            string ply_path = normal_files[i];
             LineReader lr(ply_path);
             size_t numPoints = lr.getNumPoints();
             numNormalPoints += numPoints;
@@ -890,10 +890,9 @@ int main(int argc, char** argv)
         if(normalsWithColor) normalColors = lvr::ucharArr(new unsigned char[numNormalPoints*3]);
 
         size_t globalId = 0;
-        for(size_t i = 0 ; i <grid_files.size() ; i++)
+        for(size_t i = 0 ; i <normal_files.size() ; i++)
         {
-            string ply_path = grid_files[i];
-            boost::algorithm::replace_last(ply_path, "-grid.ser", "-normals.ply");
+            string ply_path = normal_files[i];
 
             auto m = ModelFactory::readModel(ply_path);
             size_t amount;
