@@ -43,6 +43,17 @@ namespace lvr2
 
 using Rgb8Color = array<uint8_t, 3>;
 
+/**
+ * @brief   Calculates the color of each vertex from the point cloud
+ *
+ * For each vertex, its color is calculated from the rgb color information in
+ * the meshes surface.
+ *
+ * @param   mesh    The mesh
+ * @param   surface The surface of the mesh
+ *
+ * @return  Optional of a DenseVertexMap with a Rgb8Color for each vertex
+ */
 template<typename BaseVecT>
 optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
     const BaseMesh<BaseVecT>& mesh,
@@ -75,6 +86,18 @@ static Rgb8Color floatToRainbowColor(float value);
  */
 static Rgb8Color floatToGrayScaleColor(float value);
 
+/**
+ * @brief    Calculate the color for the centroid of a given face
+ *
+ *           For a given mesh and it's surface the color of the faces centroid
+ *           is calculated. The face is identified by the given face handle.
+ *
+ * @param    mesh     The mesh
+ * @param    surface  The surface of the mesh
+ * @param    faceH    Face handle of the face
+ *
+ * @return   The Rgb8Color of the centroid
+ */
 template<typename BaseVecT>
 Rgb8Color calcColorForFaceCentroid(
     const BaseMesh<BaseVecT>& mesh,
