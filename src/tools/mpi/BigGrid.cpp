@@ -8,7 +8,7 @@
 #include <cstring>
 #include "LineReader.hpp"
 #include <lvr/reconstruction/FastReconstructionTables.hpp>
-
+#include <fstream>
 
 BigGrid::BigGrid(std::vector<std::string> cloudPath, float voxelsize, float scale, size_t bufferSize) :
         m_maxIndex(0), m_maxIndexSquare(0), m_maxIndexX(0), m_maxIndexY(0), m_maxIndexZ(0), m_numPoints(0), m_extrude(true),m_scale(scale),
@@ -543,43 +543,25 @@ lvr::floatArr BigGrid::points(float minx, float miny, float minz, float maxx, fl
         }
     }
 
-    //memcpy ( points.get(), mmfdata, 3*pointSize()*sizeof(float));
-
-//    for(size_t i = idxmin ; i<=idxmax ; i++)
-//    {
-//        for(size_t j = idymin ; j<=idymax ; j++)
-//        {
-//            for(size_t k = idzmin ; k<=idzmax ; k++)
-//            {
-//                size_t h = hashValue(i,j,k);
-//                auto it = m_gridNumPoints.find(h);
-//                if(it != m_gridNumPoints.end())
-//                {
-//                    //Found Cell
-//                     //std::cout << "grid " << h << " has " << it->second.size << "points at " << it->second.offset << std::endl;
-//                    size_t cSize = it->second.size;
-//                    for(size_t x = 0 ; x <  cSize; x++)
-//                    {
-//                        //std::cout << mmfdata[(it->second.offset+x)*3] << "|" << mmfdata[(it->second.offset+x)*3+1] << "|" << mmfdata[(it->second.offset+x)*3+2] << std::endl;
-//                        points.get()[p_index] = mmfdata[(it->second.offset+x)*3];
-//                        points.get()[p_index+1] = mmfdata[(it->second.offset+x)*3+1];
-//                        points.get()[p_index+2] = mmfdata[(it->second.offset+x)*3+2];
-//                        p_index+=3;
-//
-//                    }
-//
-//
-////                    memcpy ( points.get()+(p_index*3), mmfdata+((it->second.second)*3), it->second.first*3);
-////                    p_index+=it->second.first;
-//                }
-//            }
-//        }
-//    }
     return points;
 }
 
 lvr::floatArr BigGrid::normals(float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints)
 {
+    std::ifstream ifs("normals.mmf");
+    if(!ifs.good())
+    {
+        numPoints = 0;
+        lvr::floatArr  arr;
+        return arr;
+    }
+    minx = (minx > m_bb.getMin()[0]) ? minx : m_bb.getMin()[0];
+    miny = (miny > m_bb.getMin()[1]) ? miny : m_bb.getMin()[1];
+    minz = (minz > m_bb.getMin()[2]) ? minz : m_bb.getMin()[2];
+    maxx = (maxx < m_bb.getMax()[0]) ? maxx : m_bb.getMax()[0];
+    maxy = (maxy < m_bb.getMax()[1]) ? maxy : m_bb.getMax()[1];
+    maxz = (maxz < m_bb.getMax()[2]) ? maxz : m_bb.getMax()[2];
+
     size_t idxmin = calcIndex((minx - m_bb.getMin()[0])/m_voxelSize);
     size_t idymin = calcIndex((miny - m_bb.getMin()[1])/m_voxelSize);
     size_t idzmin = calcIndex((minz - m_bb.getMin()[2])/m_voxelSize);
@@ -622,11 +604,26 @@ lvr::floatArr BigGrid::normals(float minx, float miny, float minz, float maxx, f
 
         }
     }
+
     return points;
 }
 
 lvr::ucharArr BigGrid::colors(float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints)
 {
+    std::ifstream ifs("colors.mmf");
+    if(!ifs.good())
+    {
+        numPoints = 0;
+        lvr::ucharArr arr;
+        return arr;
+    }
+    minx = (minx > m_bb.getMin()[0]) ? minx : m_bb.getMin()[0];
+    miny = (miny > m_bb.getMin()[1]) ? miny : m_bb.getMin()[1];
+    minz = (minz > m_bb.getMin()[2]) ? minz : m_bb.getMin()[2];
+    maxx = (maxx < m_bb.getMax()[0]) ? maxx : m_bb.getMax()[0];
+    maxy = (maxy < m_bb.getMax()[1]) ? maxy : m_bb.getMax()[1];
+    maxz = (maxz < m_bb.getMax()[2]) ? maxz : m_bb.getMax()[2];
+
     size_t idxmin = calcIndex((minx - m_bb.getMin()[0])/m_voxelSize);
     size_t idymin = calcIndex((miny - m_bb.getMin()[1])/m_voxelSize);
     size_t idzmin = calcIndex((minz - m_bb.getMin()[2])/m_voxelSize);
@@ -634,65 +631,42 @@ lvr::ucharArr BigGrid::colors(float minx, float miny, float minz, float maxx, fl
     size_t idymax = calcIndex((maxy - m_bb.getMin()[1])/m_voxelSize);
     size_t idzmax = calcIndex((maxz - m_bb.getMin()[2])/m_voxelSize);
 
-    numPoints = 0;
-    size_t  cellsChecked = 0;
-    for(size_t i = idxmin ; i<=idxmax ; i++)
-    {
-        for(size_t j = idymin ; j<=idymax ; j++)
-        {
-            for(size_t k = idzmin ; k<=idzmax ; k++)
-            {
-                size_t h = hashValue(i,j,k);
-                auto it = m_gridNumPoints.find(h);
-                if(it != m_gridNumPoints.end())
-                {
-                    //Found Cell
-                    cellsChecked++;
-                    numPoints+=it->second.size;
-                }
-
-            }
-        }
-    }
+    numPoints = getSizeofBox( minx,  miny,  minz,  maxx,  maxy,  maxz);
 
     lvr::ucharArr points(new unsigned char[numPoints*3]);
     size_t p_index = 0;
 
 
     boost::iostreams::mapped_file_source mmfs("colors.mmf");
-    unsigned  char * mmfdata = (unsigned  char*)mmfs.data();
-    //memcpy ( points.get(), mmfdata, 3*pointSize()*sizeof(float));
+    unsigned char * mmfdata = (unsigned char*)mmfs.data();
 
-    for(size_t i = idxmin ; i<=idxmax ; i++)
+
+
+
+
+    for(auto it = m_gridNumPoints.begin() ; it!=m_gridNumPoints.end() ; it++)
     {
-        for(size_t j = idymin ; j<=idymax ; j++)
+        if(
+                it->second.ix >= idxmin &&
+                it->second.iy >= idymin &&
+                it->second.iz >= idzmin &&
+                it->second.ix <= idxmax &&
+                it->second.iy <= idymax &&
+                it->second.iz <= idzmax
+                )
         {
-            for(size_t k = idzmin ; k<=idzmax ; k++)
+            size_t cSize = it->second.size;
+            for(size_t x = 0 ; x <  cSize; x++)
             {
-                size_t h = hashValue(i,j,k);
-                auto it = m_gridNumPoints.find(h);
-                if(it != m_gridNumPoints.end())
-                {
-                    //Found Cell
-                    //std::cout << "grid " << h << " has " << it->second.size << "points at " << it->second.offset << std::endl;
-                    size_t cSize = it->second.size;
-                    for(size_t x = 0 ; x <  cSize; x++)
-                    {
-                        //std::cout << mmfdata[(it->second.offset+x)*3] << "|" << mmfdata[(it->second.offset+x)*3+1] << "|" << mmfdata[(it->second.offset+x)*3+2] << std::endl;
-                        points.get()[p_index] = mmfdata[(it->second.offset+x)*3];
-                        points.get()[p_index+1] = mmfdata[(it->second.offset+x)*3+1];
-                        points.get()[p_index+2] = mmfdata[(it->second.offset+x)*3+2];
-                        p_index+=3;
-
-                    }
-
-
-//                    memcpy ( points.get()+(p_index*3), mmfdata+((it->second.second)*3), it->second.first*3);
-//                    p_index+=it->second.first;
-                }
+                points.get()[p_index] = mmfdata[(it->second.offset+x)*3];
+                points.get()[p_index+1] = mmfdata[(it->second.offset+x)*3+1];
+                points.get()[p_index+2] = mmfdata[(it->second.offset+x)*3+2];
+                p_index+=3;
             }
+
         }
     }
+
     return points;
 }
 
