@@ -181,7 +181,13 @@ DenseVertexMap<float> calcVertexRoughness(
 }
 
 template<typename BaseVecT>
-void calcVertexRoughnessAndHeightDiff(const BaseMesh<BaseVecT>& mesh, double radius, const VertexMap<Normal<BaseVecT>>& normals, DenseVertexMap<float>& roughness, DenseVertexMap<float>& heightDiff)
+void calcVertexRoughnessAndHeightDiff(
+    const BaseMesh<BaseVecT>& mesh,
+    double radius,
+    const VertexMap<Normal<BaseVecT>>& normals,
+    DenseVertexMap<float>& roughness,
+    DenseVertexMap<float>& heightDiff
+)
 {
     roughness.clear();
     heightDiff.clear();

@@ -14,6 +14,9 @@
 * You should have received a copy of the GNU General Public License
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+*
+* @author Kristin Schmidt <kschmidt@uni-osnabrueck.de>
+* @author Jan Philipp Vogtherr <jvogtherr@uni-osnabrueck.de>
 */
 
 
@@ -25,6 +28,14 @@ namespace lvr2
 {
 
 
+/**
+ * A data class for representing a bounding rectangle that is used for
+ * texturizing. Each bounding rectangle is composed of a support vector and a
+ * normal that define the rectangles position in 3d space, as well as two
+ * vectors that describe the 2d coordinate system for the rectangle. Min dist A
+ * and B describe the min distance from the support vector in the 2d coordinate
+ * system. The same applies for max dist A and B.
+ */
 template<typename BaseVecT>
 struct BoundingRectangle
 {
