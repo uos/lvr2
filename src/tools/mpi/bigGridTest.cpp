@@ -478,7 +478,34 @@ int main(int argc, char** argv)
         cout << lvr::timestamp << " saving data " << i << endl;
         vector<unsigned int> duplicates;
         reconstruction->getMesh(mesh, ps_grid->qp_bb, duplicates, voxelsize*5);
+        if(options.getDanglingArtifacts())
+        {
+            mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
+        }
 
+        // Optimize mesh
+        mesh.cleanContours(options.getCleanContourIterations());
+        mesh.setClassifier(options.getClassifier());
+        mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
+
+        if(options.optimizePlanes())
+        {
+            mesh.optimizePlanes(options.getPlaneIterations(),
+                                options.getNormalThreshold(),
+                                options.getMinPlaneSize(),
+                                options.getSmallRegionThreshold(),
+                                true);
+
+            mesh.fillHoles(options.getFillHoles());
+            mesh.optimizePlaneIntersections();
+            mesh.restorePlanes(options.getMinPlaneSize());
+
+            if(options.getNumEdgeCollapses())
+            {
+                QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
+                mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
+            }
+        }
 
 
         mesh.finalize();
@@ -841,6 +868,71 @@ int main(int argc, char** argv)
     cout << "MERGETime " << merge_time << endl;
     cout << "dup_time " << dup_time << endl;
     cout << lvr::timestamp << "finished" << endl;
+    cout << "saving largeNormal.ply" << endl;
+
+    if(options.savePointNormals() || options.onlyNormals())
+    {
+        size_t numNormalPoints = 0;
+        bool normalsWithColor = false;
+        for(size_t i = 0 ; i <grid_files.size() ; i++)
+        {
+            string ply_path = grid_files[i];
+            boost::algorithm::replace_last(ply_path, "-grid.ser", "-normals.ply");
+            LineReader lr(ply_path);
+            size_t numPoints = lr.getNumPoints();
+            numNormalPoints += numPoints;
+            normalsWithColor = lr.getFileType() == XYZNRGB;
+        }
+
+        lvr::floatArr normalPoints(new float[numNormalPoints*3]);
+        lvr::floatArr normalNormals(new float[numNormalPoints*3]);
+        lvr::ucharArr normalColors;
+        if(normalsWithColor) normalColors = lvr::ucharArr(new unsigned char[numNormalPoints*3]);
+
+        size_t globalId = 0;
+        for(size_t i = 0 ; i <grid_files.size() ; i++)
+        {
+            string ply_path = grid_files[i];
+            boost::algorithm::replace_last(ply_path, "-grid.ser", "-normals.ply");
+
+            auto m = ModelFactory::readModel(ply_path);
+            size_t amount;
+            auto p = m->m_pointCloud->getPointArray(amount);
+            for(size_t j = 0 ; j < amount*3 ; j++)
+            {
+                normalPoints[globalId+j]=p[j];
+
+            }
+            size_t normalAmount;
+            auto n = m->m_pointCloud->getPointNormalArray(normalAmount);
+            for(size_t j = 0 ; j < normalAmount*3 ; j++)
+            {
+                normalNormals[globalId+j]=n[j];
+
+            }
+            size_t colorAmount;
+            auto c = m->m_pointCloud->getPointColorArray(colorAmount);
+            for(size_t j = 0 ; j < normalAmount*3 ; j++)
+            {
+                normalColors[globalId+j]=c[j];
+
+            }
+            globalId+=amount*3;
+        }
+
+        PointBufferPtr normalPB(new PointBuffer);
+        normalPB->setPointArray(normalPoints,globalId/3);
+        normalPB->setPointNormalArray(normalNormals,globalId/3);
+        if(normalsWithColor)
+        {
+            normalPB->setPointColorArray(normalColors,globalId/3);
+        }
+        ModelPtr nModel(new Model);
+        nModel->m_pointCloud = normalPB;
+        ModelFactory::saveModel(nModel,"bigNormals.ply");
+    }
+
+
 
     ofs_ply.close();
     ifs_faces.close();
