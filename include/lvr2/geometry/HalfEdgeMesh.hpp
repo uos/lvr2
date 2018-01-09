@@ -82,6 +82,10 @@ public:
     size_t numFaces() const final;
     size_t numEdges() const final;
 
+    bool containsVertex(VertexHandle vH) const;
+    bool containsFace(FaceHandle fH) const;
+    bool containsEdge(EdgeHandle eH) const;
+
     Point<BaseVecT> getVertexPosition(VertexHandle handle) const final;
     Point<BaseVecT>& getVertexPosition(VertexHandle handle) final;
 

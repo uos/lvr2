@@ -463,6 +463,24 @@ size_t HalfEdgeMesh<BaseVecT>::numEdges() const
 }
 
 template <typename BaseVecT>
+bool HalfEdgeMesh<BaseVecT>::containsVertex(VertexHandle vH) const
+{
+    return static_cast<bool>(m_vertices.get(vH));
+}
+
+template <typename BaseVecT>
+bool HalfEdgeMesh<BaseVecT>::containsFace(FaceHandle fH) const
+{
+    return static_cast<bool>(m_faces.get(fH));
+}
+
+template <typename BaseVecT>
+bool HalfEdgeMesh<BaseVecT>::containsEdge(EdgeHandle eH) const
+{
+    return static_cast<bool>(m_edges.get(HalfEdgeHandle::oneHalfOf(eH)));
+}
+
+template <typename BaseVecT>
 Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle) const
 {
     return getV(handle).pos;

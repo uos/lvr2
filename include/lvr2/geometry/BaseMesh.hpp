@@ -223,6 +223,21 @@ public:
     virtual size_t numEdges() const = 0;
 
     /**
+     * @brief Checks if the given vertex is part of this mesh.
+     */
+    virtual bool containsVertex(VertexHandle vH) const = 0;
+
+    /**
+     * @brief Checks if the given face is part of this mesh.
+     */
+    virtual bool containsFace(FaceHandle vH) const = 0;
+
+    /**
+     * @brief Checks if the given edge is part of this mesh.
+     */
+    virtual bool containsEdge(EdgeHandle vH) const = 0;
+
+    /**
      * @brief Get the position of the given vertex.
      */
     virtual Point<BaseVecT> getVertexPosition(VertexHandle handle) const = 0;
