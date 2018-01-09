@@ -238,6 +238,33 @@ public:
     virtual bool containsEdge(EdgeHandle vH) const = 0;
 
     /**
+     * @brief Returns the handle index which would be assigned to the next
+     *     vertex that is created. This method is mainly useful for manually
+     *     iterating over all possible handles. As handles are strictly
+     *     increasing, all vertices currently in this mesh have a handle index
+     *     smaller than what this method returns.
+     */
+    virtual Index nextVertexIndex() const = 0;
+
+    /**
+     * @brief Returns the handle index which would be assigned to the next face
+     *     that is created. This method is mainly useful for manually iterating
+     *     over all possible handles. As handles are strictly increasing, all
+     *     faces currently in this mesh have a handle index smaller than what
+     *     this method returns.
+     */
+    virtual Index nextFaceIndex() const = 0;
+
+    /**
+     * @brief Returns the handle index which would be assigned to the next edge
+     *     that is created. This method is mainly useful for manually iterating
+     *     over all possible handles. As handles are strictly increasing, all
+     *     edges currently in this mesh have a handle index smaller than what
+     *     this method returns.
+     */
+    virtual Index nextEdgeIndex() const = 0;
+
+    /**
      * @brief Get the position of the given vertex.
      */
     virtual Point<BaseVecT> getVertexPosition(VertexHandle handle) const = 0;

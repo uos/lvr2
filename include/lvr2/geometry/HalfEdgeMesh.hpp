@@ -86,6 +86,10 @@ public:
     bool containsFace(FaceHandle fH) const;
     bool containsEdge(EdgeHandle eH) const;
 
+    Index nextVertexIndex() const;
+    Index nextFaceIndex() const;
+    Index nextEdgeIndex() const;
+
     Point<BaseVecT> getVertexPosition(VertexHandle handle) const final;
     Point<BaseVecT>& getVertexPosition(VertexHandle handle) final;
 

@@ -481,6 +481,25 @@ bool HalfEdgeMesh<BaseVecT>::containsEdge(EdgeHandle eH) const
 }
 
 template <typename BaseVecT>
+Index HalfEdgeMesh<BaseVecT>::nextVertexIndex() const
+{
+    return m_vertices.nextHandle().idx();
+}
+
+template <typename BaseVecT>
+Index HalfEdgeMesh<BaseVecT>::nextFaceIndex() const
+{
+    return m_faces.nextHandle().idx();
+}
+
+template <typename BaseVecT>
+Index HalfEdgeMesh<BaseVecT>::nextEdgeIndex() const
+{
+    return m_edges.nextHandle().idx();
+}
+
+
+template <typename BaseVecT>
 Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle) const
 {
     return getV(handle).pos;
