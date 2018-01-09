@@ -55,7 +55,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
 {
     if (!BaseMesh<BaseVecT>::isFaceInsertionValid(v1H, v2H, v3H))
     {
-        panic("Attempting add a face which cannot be added!");
+        panic("Attempting to add a face which cannot be added!");
     }
 
     using std::make_tuple;
@@ -100,12 +100,12 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
 
 
     // =======================================================================
-    // = Fix next handles and set outgoing handles if net set yet
+    // = Fix next handles and set outgoing handles if not set yet
     // =======================================================================
     // Fixing the `next` handles is the most difficult part of this method. In
     // order to tackle it we deal with each corner of this face on its own.
     // For each corner we look at the corner-vertex and the in-going and
-    //  out-going edge (both edges are on the outside of this face!).
+    // out-going edge (both edges are on the outside of this face!).
     auto corners = {
         make_tuple(eOuter1H, v1H, eOuter3H),
         make_tuple(eOuter2H, v2H, eOuter1H),

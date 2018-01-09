@@ -185,7 +185,7 @@ private:
      *        `visitor` for each ingoing edge of the vertex.
      *
      * This works exactly as the other overload, but specifically starts at the
-     * edge `startEdgeH` instead of `vH.outgoing`.
+     * edge `startEdgeH` instead of `vH.outgoing.twin`.
      */
     template <typename Visitor>
     void circulateAroundVertex(HalfEdgeHandle startEdgeH, Visitor visitor) const;
