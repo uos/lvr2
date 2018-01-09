@@ -52,6 +52,25 @@ void calcVertexLocalNeighborhood(
         vector<VertexHandle>& neighborsOut
 );
 
+
+/**
+ * @brief Visits every vertex in the local neighborhood of `vH`.
+ *
+ * The local neighborhood is defined as all vertices that are connected to `vH`
+ * and where the "path" in between those vertices only contains vertices that
+ * are no further away from `vH` than `radius`.
+ *
+ * For every such vertex in the local neighborhood (not `vH` itself!) the
+ * given `visitor` is called exactly once.
+ */
+template <typename BaseVecT, typename VisitorF>
+void visitLocalNeighborhoodOfVertex(
+    const BaseMesh<BaseVecT>& mesh,
+    VertexHandle vH,
+    double radius,
+    VisitorF visitor
+);
+
 /**
  * @brief   Calculate the height difference value for each vertex of the given BaseMesh.
  *
