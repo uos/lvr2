@@ -199,6 +199,7 @@
 #include <lvr2/reconstruction/PointsetGrid.hpp>
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/io/MeshBuffer.hpp>
+#include <lvr2/io/PlutoMapIO.hpp>
 #include <lvr2/util/Factories.hpp>
 #include <lvr2/algorithm/MeshNavAlgorithms.hpp>
 #include <lvr2/algorithm/UtilAlgorithms.hpp>
@@ -802,6 +803,15 @@ void testMeshnav(
 
 int main(int argc, char** argv)
 {
+    // auto io = PlutoMapIO(
+    //     "testio.h5",
+    //     {1.0, 2.0, 5.0, 10.0, 11.0, 15.0, 20.0, 21.0, 25.0},
+    //     {0, 1, 2}
+    // );
+    // io.stuff();
+    // return 0;
+
+
     // =======================================================================
     // Parse and print command line parameters
     // =======================================================================
@@ -1086,6 +1096,7 @@ int main(int argc, char** argv)
         );
     }
     cout << timestamp << "Saving mesh." << endl;
+    lvr::ModelFactory::saveModel(m, "triangle_mesh.h5");
     lvr::ModelFactory::saveModel(m, "triangle_mesh.ply");
     lvr::ModelFactory::saveModel(m, "triangle_mesh.obj");
     cout << timestamp << "Program end." << endl;
