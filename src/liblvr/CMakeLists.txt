@@ -114,7 +114,7 @@ if(PCL_FOUND)
   set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} ${PCL_LIBRARIES})
 endif(PCL_FOUND)
 
-find_package(HDF5 REQUIRED)
+find_package(HDF5 REQUIRED C CXX Hl)
 include_directories(${HDF5_INCLUDE_DIR})
 
 if(WITH_FREENECT AND LIBFREENECT_FOUND)
@@ -198,7 +198,7 @@ target_link_libraries(lvr_static ${LVR_INTERNAL_DEPENDENCIES_STATIC} ${LVR_LIB_D
 if( NOT MSVC )
   message(STATUS "Building shared library")
   add_library(lvr SHARED $<TARGET_OBJECTS:lvrcore>)
-  target_link_libraries(lvr ${LVR_INTERNAL_DEPENDENCIES_SHARED} ${LVR_LIB_DEPENDENCIES})
+  target_link_libraries(lvr ${LVR_INTERNAL_DEPENDENCIES_SHARED} ${LVR_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 
 install(TARGETS lvr_static lvr
   EXPORT lvrTargets
