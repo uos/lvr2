@@ -106,11 +106,25 @@ void visitLocalNeighborhoodOfVertex(
 template <typename BaseVecT>
 DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, double radius)
 {
+    // We create a map to store a height-diff for each vertex. We preallocate
+    // memory for all vertices. This is not only an optimization, but more
+    // importantly to avoid multithreading crashes. The parallelized loop
+    // further down inserts into this data structure; if there is no free
+    // memory left, it will reallocate which will crash horribly when multiple
+    // threads are involved.
     DenseVertexMap<float> heightDiff;
+    heightDiff.reserve(mesh.nextVertexIndex());
 
     // Calculate height difference for each vertex
-    for (auto vH: mesh.vertices())
+    #pragma omp parallel for
+    for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
     {
+        auto vH = VertexHandle(i);
+        if (!mesh.containsVertex(vH))
+        {
+            continue;
+        }
+
         float minHeight = std::numeric_limits<float>::max();
         float maxHeight = std::numeric_limits<float>::lowest();
 
@@ -182,13 +196,27 @@ DenseVertexMap<float> calcVertexRoughness(
     const VertexMap<Normal<BaseVecT>>& normals
 )
 {
+    // We create a map to store the roughness for each vertex. We preallocate
+    // memory for all vertices. This is not only an optimization, but more
+    // importantly to avoid multithreading crashes. The parallelized loop
+    // further down inserts into this data structure; if there is no free
+    // memory left, it will reallocate which will crash horribly when multiple
+    // threads are involved.
     DenseVertexMap<float> roughness;
+    roughness.reserve(mesh.nextVertexIndex());
 
     auto averageAngles = calcAverageVertexAngles(mesh, normals);
 
     // Calculate roughness for each vertex
-    for (auto vH: mesh.vertices())
+    #pragma omp parallel for
+    for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
     {
+        auto vH = VertexHandle(i);
+        if (!mesh.containsVertex(vH))
+        {
+            continue;
+        }
+
         double sum = 0.0;
         uint32_t count = 0;
 
@@ -214,14 +242,25 @@ void calcVertexRoughnessAndHeightDiff(
     DenseVertexMap<float>& heightDiff
 )
 {
+    // Reserving memory in those maps is important to avoid multi threading
+    // related crashes.
     roughness.clear();
+    roughness.reserve(mesh.nextVertexIndex());
     heightDiff.clear();
+    heightDiff.reserve(mesh.nextVertexIndex());
 
     auto averageAngles = calcAverageVertexAngles(mesh, normals);
 
     // Calculate roughness and height difference for each vertex
-    for (auto vH: mesh.vertices())
+    #pragma omp parallel for
+    for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
     {
+        auto vH = VertexHandle(i);
+        if (!mesh.containsVertex(vH))
+        {
+            continue;
+        }
+
         double sum = 0.0;
         uint32_t count = 0;
         float minHeight = std::numeric_limits<float>::max();
