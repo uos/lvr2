@@ -186,17 +186,6 @@ private:
     hf::Group m_texturesGroup;
     hf::Group m_labelsGroup;
 };
-
-
-struct PlutoMapVector {
-    PlutoMapVector(float x, float y, float z) : x(x), y(y), z(z) {}
-
-    float x;
-    float y;
-    float z;
-};
-struct PlutoMapFace {};
-
 } // namespace lvr2
 
 
@@ -204,29 +193,6 @@ struct PlutoMapFace {};
 
 namespace HighFive {
 
-template <>
-inline AtomicType<lvr2::PlutoMapVector>::AtomicType()
-{
-    hid_t vector_hid = H5Tcreate(H5T_COMPOUND, sizeof(float) * 3);
-
-    H5Tinsert(vector_hid, "x", sizeof(float) * 0 , H5T_NATIVE_FLOAT);
-    H5Tinsert(vector_hid, "y", sizeof(float) * 1 , H5T_NATIVE_FLOAT);
-    H5Tinsert(vector_hid, "z", sizeof(float) * 2 , H5T_NATIVE_FLOAT);
-
-    _hid = H5Tcopy(vector_hid);
-}
-
-template <>
-inline AtomicType<lvr2::PlutoMapFace>::AtomicType()
-{
-    hid_t face_hid = H5Tcreate(H5T_COMPOUND, sizeof(uint32_t) * 3);
-
-    H5Tinsert(face_hid, "a", sizeof(uint32_t) * 0 , H5T_NATIVE_UINT);
-    H5Tinsert(face_hid, "b", sizeof(uint32_t) * 1 , H5T_NATIVE_UINT);
-    H5Tinsert(face_hid, "c", sizeof(uint32_t) * 2 , H5T_NATIVE_UINT);
-
-    _hid = H5Tcopy(face_hid);
-}
 template <>
 inline AtomicType<lvr2::PlutoMapMaterial>::AtomicType()
 {
