@@ -258,22 +258,6 @@ inline PlutoMapImage PlutoMapIO::getImage(hf::Group group, string name)
     return t;
 }
 
-// hsize_t zero[] = { 0 };
-// hsize_t unlimited[] = { H5S_UNLIMITED };
-// auto vertices_ds = H5Screate_simple(1, zero, unlimited);
-// auto hid = H5Dcreate2(
-//     geometry_group.getId(),
-//     "vertices",
-//     hf::AtomicType<PlutoMapVector>().getId(),
-//     vertices_ds,
-//     H5P_DEFAULT,
-//     H5P_DEFAULT,
-//     H5P_DEFAULT
-// );
-
-// geometry_group.createDataSet<PlutoMapVector>("vertices", hf::DataSpace(1));
-// geometry_group.createDataSet<PlutoMapFace>("faces", hf::DataSpace(0));
-
 inline hf::DataSet PlutoMapIO::addVertexNormals(vector<float>& normals)
 {
     // TODO make more versatile to add and/or overwrite normals in file
