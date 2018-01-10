@@ -26,6 +26,7 @@
 
 #include <lvr/io/AsciiIO.hpp>
 #include <lvr/io/PLYIO.hpp>
+#include <lvr/io/Hdf5IO.hpp>
 #include <lvr/io/UosIO.hpp>
 #include <lvr/io/ObjIO.hpp>
 #include <lvr/io/LasIO.hpp>
@@ -77,7 +78,11 @@ ModelPtr ModelFactory::readModel( std::string filename )
     }
     else if (extension ==".dat")
     {
-    	io = new DatIO;
+        io = new DatIO;
+    }
+    else if (extension == ".h5")
+    {
+        io = new Hdf5IO;
     }
 #ifdef LVR_USE_PCL
     else if (extension == ".pcd")
@@ -102,7 +107,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
             {
                 // Check for naming convention "scanxxx.3d"
                 int num = 0;
-				if(sscanf(p.filename().string().c_str(), "scan%3d", &num))
+                if(sscanf(p.filename().string().c_str(), "scan%3d", &num))
                 {
                     found_3d = true;
                 }
@@ -149,45 +154,45 @@ ModelPtr ModelFactory::readModel( std::string filename )
 
         if(m_transform.convert)
         {
-        	// Convert coordinates in model
-        	PointBufferPtr points = m->m_pointCloud;
-        	size_t n_points = 0;
-        	size_t n_normals = 0;
+            // Convert coordinates in model
+            PointBufferPtr points = m->m_pointCloud;
+            size_t n_points = 0;
+            size_t n_normals = 0;
 
-        	floatArr p = points->getPointArray(n_points);
-        	floatArr n = points->getPointNormalArray(n_normals);
+            floatArr p = points->getPointArray(n_points);
+            floatArr n = points->getPointNormalArray(n_normals);
 
-        	// If normals are present every point should habe one
-        	if(n_normals)
-        	{
-        		assert(n_normals == n_points);
-        	}
+            // If normals are present every point should habe one
+            if(n_normals)
+            {
+                assert(n_normals == n_points);
+            }
 
-        	// Convert coordinates
-        	float point[3];
-        	float normal[3];
+            // Convert coordinates
+            float point[3];
+            float normal[3];
 
-        	for(size_t i = 0; i < n_points; i++)
-        	{
-        		// Re-order and scale point coordinates
-        		point[0] = p[3 * i + m_transform.x] * m_transform.sx;
-        		point[1] = p[3 * i + m_transform.y] * m_transform.sy;
-        		point[2] = p[3 * i + m_transform.z] * m_transform.sz;
+            for(size_t i = 0; i < n_points; i++)
+            {
+                // Re-order and scale point coordinates
+                point[0] = p[3 * i + m_transform.x] * m_transform.sx;
+                point[1] = p[3 * i + m_transform.y] * m_transform.sy;
+                point[2] = p[3 * i + m_transform.z] * m_transform.sz;
 
-        		p[3 * i] 		= point[0];
-        		p[3 * i + 1]	= point[1];
-        		p[3 * i + 2]    = point[2];
-        		if(n_normals)
-        		{
-        			normal[0] = n[3 * i + m_transform.x] * m_transform.sx;
-        			normal[1] = n[3 * i + m_transform.y] * m_transform.sy;
-        			normal[2] = n[3 * i + m_transform.z] * m_transform.sz;
+                p[3 * i]         = point[0];
+                p[3 * i + 1]    = point[1];
+                p[3 * i + 2]    = point[2];
+                if(n_normals)
+                {
+                    normal[0] = n[3 * i + m_transform.x] * m_transform.sx;
+                    normal[1] = n[3 * i + m_transform.y] * m_transform.sy;
+                    normal[2] = n[3 * i + m_transform.z] * m_transform.sz;
 
-            		n[3 * i] 		= normal[0];
-            		n[3 * i + 1]	= normal[1];
-            		n[3 * i + 2]    = normal[2];
-        		}
-        	}
+                    n[3 * i]         = normal[0];
+                    n[3 * i + 1]    = normal[1];
+                    n[3 * i + 2]    = normal[2];
+                }
+            }
         }
 
         delete io;
@@ -220,7 +225,11 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     }
     else if (extension == ".stl")
     {
-    	io = new STLIO;
+        io = new STLIO;
+    }
+    else if (extension == ".h5")
+    {
+        io = new Hdf5IO;
     }
 #ifdef LVR_USE_PCL
     else if (extension == ".pcd")

@@ -271,6 +271,15 @@ list(APPEND LVR_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 # GSL
 include_directories("ext/gsl/include")
 
+# HighFive
+set(HIGHFIVE_EXAMPLES FALSE)
+set(HIGHFIVE_UNIT_TESTS FALSE)
+add_subdirectory(ext/HighFive)
+include_directories("ext/HighFive/include")
+find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+include_directories(${HDF5_INCLUDE_DIRS})
+link_directories(${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+
 # SLAM6D stuff
 add_subdirectory(ext/slam6d)
 include_directories( ${SLAM6D_INCLUDE_DIR} )
