@@ -79,7 +79,6 @@ std::vector<VertexHandle> calculateClusterContourVertices(
     return std::vector<VertexHandle>(contourVertices.begin(), contourVertices.end());
 }
 
-
 template<typename BaseVecT>
 BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     const std::vector<VertexHandle>& contour,

@@ -73,10 +73,12 @@ void computeNormals(string filename, cuda_normals::Options& opt, PointBufferPtr&
 
     if(opt.useRansac())
     {
-        gpu_surface.setMethod("RANSAC");
+        std::string method = "RANSAC";
+        gpu_surface.setMethod(method);
     } else
     {
-        gpu_surface.setMethod("PCA");
+        std::string method = "PCA";
+        gpu_surface.setMethod(method);
     }
     gpu_surface.setFlippoint(opt.flipx(), opt.flipy(), opt.flipz());
 
@@ -87,10 +89,8 @@ void computeNormals(string filename, cuda_normals::Options& opt, PointBufferPtr&
     cout << timestamp << "Finished Normal Calculation. " << endl;
 
     size_t nc;
-    buffer->setPointArray(points, num_points);
-    buffer->setPointNormalArray(normals, num_points);
-    buffer->setPointColorArray(model->m_pointCloud->getPointColorArray(nc), num_points);
-
+    model->m_pointCloud->setPointNormalArray(normals, num_points);
+    buffer = model->m_pointCloud;
 
     gpu_surface.freeGPU();
 }

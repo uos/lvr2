@@ -137,7 +137,7 @@ public:
      * @param method   "PCA","RANSAC"
      *
      */
-    void setMethod(std::string method);
+    void setMethod(std::string& method);
 
     /**
     * Reconstuction Mode:

@@ -377,7 +377,10 @@ void ObjIO::save( string filename )
                     << vertices[i][1] << " "
                     << vertices[i][2] << " ";
                     if(lenColors>0){
-                        unsigned int r=static_cast<unsigned int>(colors[i*3]),g=static_cast<unsigned int>(colors[i*3+1]),b=static_cast<unsigned int>(colors[i*3+2]);
+                        unsigned int r = static_cast<unsigned int>(colors[i*3]),
+                            g=static_cast<unsigned int>(colors[i*3+1]),
+                            b=static_cast<unsigned int>(colors[i*3+2]);
+
                         out << static_cast<float>(r)/255.0 << " "
                         << static_cast<float>(g)/255.0 << " "
                         << static_cast<float>(b)/255.0 ;
@@ -441,7 +444,7 @@ void ObjIO::save( string filename )
         std::vector<int> color_indices,texture_indices;
 
         //splitting materials in colors an textures
-        for(size_t i = 0; i< lenFaces; ++i)
+        for(size_t i = 0; i< lenFaceMaterialIndices; ++i)
         {
             Material* m = materials[faceMaterialIndices[i]];
             if(m->texture_index >=0 )

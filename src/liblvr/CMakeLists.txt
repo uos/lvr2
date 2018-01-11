@@ -114,7 +114,7 @@ if(PCL_FOUND)
   set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} ${PCL_LIBRARIES})
 endif(PCL_FOUND)
 
-find_package(HDF5 REQUIRED)
+find_package(HDF5 REQUIRED C CXX HL)
 include_directories(${HDF5_INCLUDE_DIR})
 
 if(WITH_FREENECT AND LIBFREENECT_FOUND)
@@ -136,14 +136,12 @@ endif()
 #####################################################################################
 
 if(CUDA_FOUND)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 
     # List of CUDA kernel code sources
     set(LVR_CUDA_SRC
         reconstruction/cuda/CudaSurface.cu
     )
-
-    # CUDA sources need to be compiled in C++11 mode
-    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11" )
 
     # Fix broken VTK flags
     get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
@@ -200,7 +198,7 @@ target_link_libraries(lvr_static ${LVR_INTERNAL_DEPENDENCIES_STATIC} ${LVR_LIB_D
 if( NOT MSVC )
   message(STATUS "Building shared library")
   add_library(lvr SHARED $<TARGET_OBJECTS:lvrcore>)
-  target_link_libraries(lvr ${LVR_INTERNAL_DEPENDENCIES_SHARED} ${LVR_LIB_DEPENDENCIES})
+  target_link_libraries(lvr ${LVR_INTERNAL_DEPENDENCIES_SHARED} ${LVR_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 
 install(TARGETS lvr_static lvr
   EXPORT lvrTargets
