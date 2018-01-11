@@ -16,12 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-
 #include <lvr/io/Hdf5IO.hpp>
-#include <lvr/io/Timestamp.hpp>
-#include <lvr2/io/PlutoMapIO.hpp>
-
-#include <iomanip>
 
 namespace lvr
 {

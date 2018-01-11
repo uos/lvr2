@@ -21,6 +21,10 @@
  * @file Hdf5IO.hpp
  */
 
+#include <lvr2/io/PlutoMapIO.hpp>
+#include <lvr/io/Timestamp.hpp>
+
+#include <iomanip>
 #include <string>
 #include <vector>
 
