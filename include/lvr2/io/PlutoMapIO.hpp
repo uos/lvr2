@@ -27,13 +27,16 @@
 
 
 #include <string>
-#include <highfive/H5File.hpp>
+#include <vector>
+#include <iostream>
 
 #include <H5Tpublic.h>
+#include <highfive/H5File.hpp>
 
 namespace hf = HighFive;
 
 using std::string;
+using std::vector;
 
 namespace lvr2
 {
