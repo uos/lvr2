@@ -29,9 +29,22 @@ namespace lvr2
 {
 
 inline PlutoMapIO::PlutoMapIO(string filename)
-    : m_file(filename, hf::File::ReadOnly | hf::File::Excl)
+    : m_file(filename, hf::File::ReadOnly)
 {
+    if (!m_file.exist("/geometry") ||
+        !m_file.exist("/attributes") ||
+        !m_file.exist("/clustersets") ||
+        !m_file.exist("/textures") ||
+        !m_file.exist("/labels"))
+    {
+        throw "No valid pluto map h5 file";
+    }
 
+    m_geometryGroup = m_file.getGroup("/geometry");
+    m_attributesGroup = m_file.getGroup("/attributes");
+    m_clusterSetsGroup = m_file.getGroup("/clustersets");
+    m_texturesGroup = m_file.getGroup("/textures");
+    m_labelsGroup = m_file.getGroup("/labels");
 }
 
 inline PlutoMapIO::PlutoMapIO(
