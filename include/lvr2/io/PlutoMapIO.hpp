@@ -192,6 +192,13 @@ public:
 private:
     hf::File m_file;
 
+    // group names
+    static const string GEOMETRY_GROUP;
+    static const string ATTRIBUTES_GROUP;
+    static const string CLUSTERSETS_GROUP;
+    static const string TEXTURES_GROUP;
+    static const string LABELS_GROUP;
+
     // main groups for reference
     hf::Group m_geometryGroup;
     hf::Group m_attributesGroup;
