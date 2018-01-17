@@ -179,6 +179,16 @@ public:
      */
     void addImage(hf::Group group, string name, const uint32_t width, const uint32_t height, const uint8_t* pixelBuffer);
 
+    /**
+     * Removes all labels from the file.
+     * <br>
+     * Be careful, this does not clear up the space of the labels. Use the cli tool h5repack manually to clear up
+     * all wasted space if this method was used multiple times.
+     *
+     * @return true if removing all labels successfully.
+     */
+    bool removeAllLabels();
+
 private:
     hf::File m_file;
 

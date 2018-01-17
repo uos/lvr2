@@ -342,4 +342,18 @@ inline void PlutoMapIO::addImage(hf::Group group, string name, const uint32_t wi
     H5IMmake_image_24bit(group.getId(), name.c_str(), width, height, "INTERLACE_PIXEL", pixelBuffer);
 }
 
+inline bool PlutoMapIO::removeAllLabels()
+{
+    bool result = true;
+    for (string name : m_labelsGroup.listObjectNames())
+    {
+        string fullPath = "/labels/" + name;
+        result = H5Ldelete(m_file.getId(), fullPath.data(), H5P_DEFAULT) > 0;
+    }
+
+    // TODO call cli 'h5repack' tool to clean up space
+
+    return result;
+}
+
 } // namespace lvr2
