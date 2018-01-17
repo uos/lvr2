@@ -28,12 +28,6 @@
 namespace lvr2
 {
 
-inline const string PlutoMapIO::GEOMETRY_GROUP = "/geometry";
-inline const string PlutoMapIO::ATTRIBUTES_GROUP = "/attributes";
-inline const string PlutoMapIO::CLUSTERSETS_GROUP = "/clustersets";
-inline const string PlutoMapIO::TEXTURES_GROUP = "/textures";
-inline const string PlutoMapIO::LABELS_GROUP = "/labels";
-
 inline PlutoMapIO::PlutoMapIO(string filename)
     : m_file(filename, hf::File::ReadWrite)
 {
@@ -353,7 +347,7 @@ inline bool PlutoMapIO::removeAllLabels()
     bool result = true;
     for (string name : m_labelsGroup.listObjectNames())
     {
-        string fullPath = LABELS_GROUP + "/" + name;
+        string fullPath = string(LABELS_GROUP) + "/" + name;
         result = H5Ldelete(m_file.getId(), fullPath.data(), H5P_DEFAULT) > 0;
     }
 
