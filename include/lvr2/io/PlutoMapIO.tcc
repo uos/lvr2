@@ -29,7 +29,7 @@ namespace lvr2
 {
 
 inline PlutoMapIO::PlutoMapIO(string filename)
-    : m_file(filename, hf::File::ReadOnly)
+    : m_file(filename, hf::File::ReadWrite)
 {
     if (!m_file.exist("/geometry") ||
         !m_file.exist("/attributes") ||
