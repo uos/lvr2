@@ -28,23 +28,29 @@
 namespace lvr2
 {
 
+inline const string PlutoMapIO::GEOMETRY_GROUP = "/geometry";
+inline const string PlutoMapIO::ATTRIBUTES_GROUP = "/attributes";
+inline const string PlutoMapIO::CLUSTERSETS_GROUP = "/clustersets";
+inline const string PlutoMapIO::TEXTURES_GROUP = "/textures";
+inline const string PlutoMapIO::LABELS_GROUP = "/labels";
+
 inline PlutoMapIO::PlutoMapIO(string filename)
     : m_file(filename, hf::File::ReadWrite)
 {
-    if (!m_file.exist("/geometry") ||
-        !m_file.exist("/attributes") ||
-        !m_file.exist("/clustersets") ||
-        !m_file.exist("/textures") ||
-        !m_file.exist("/labels"))
+    if (!m_file.exist(GEOMETRY_GROUP) ||
+        !m_file.exist(ATTRIBUTES_GROUP) ||
+        !m_file.exist(CLUSTERSETS_GROUP) ||
+        !m_file.exist(TEXTURES_GROUP) ||
+        !m_file.exist(LABELS_GROUP))
     {
         throw "No valid pluto map h5 file";
     }
 
-    m_geometryGroup = m_file.getGroup("/geometry");
-    m_attributesGroup = m_file.getGroup("/attributes");
-    m_clusterSetsGroup = m_file.getGroup("/clustersets");
-    m_texturesGroup = m_file.getGroup("/textures");
-    m_labelsGroup = m_file.getGroup("/labels");
+    m_geometryGroup = m_file.getGroup(GEOMETRY_GROUP);
+    m_attributesGroup = m_file.getGroup(ATTRIBUTES_GROUP);
+    m_clusterSetsGroup = m_file.getGroup(CLUSTERSETS_GROUP);
+    m_texturesGroup = m_file.getGroup(TEXTURES_GROUP);
+    m_labelsGroup = m_file.getGroup(LABELS_GROUP);
 }
 
 inline PlutoMapIO::PlutoMapIO(
@@ -55,11 +61,11 @@ inline PlutoMapIO::PlutoMapIO(
     : m_file(filename, hf::File::ReadWrite | hf::File::Create | hf::File::Truncate)
 {
     // Create top level groups
-    m_geometryGroup = m_file.createGroup("/geometry");
-    m_attributesGroup = m_file.createGroup("/attributes");
-    m_clusterSetsGroup = m_file.createGroup("/clustersets");
-    m_texturesGroup = m_file.createGroup("/textures");
-    m_labelsGroup = m_file.createGroup("/labels");
+    m_geometryGroup = m_file.createGroup(GEOMETRY_GROUP);
+    m_attributesGroup = m_file.createGroup(ATTRIBUTES_GROUP);
+    m_clusterSetsGroup = m_file.createGroup(CLUSTERSETS_GROUP);
+    m_texturesGroup = m_file.createGroup(TEXTURES_GROUP);
+    m_labelsGroup = m_file.createGroup(LABELS_GROUP);
 
     // Create geometry data sets
     m_geometryGroup
@@ -347,7 +353,7 @@ inline bool PlutoMapIO::removeAllLabels()
     bool result = true;
     for (string name : m_labelsGroup.listObjectNames())
     {
-        string fullPath = "/labels/" + name;
+        string fullPath = LABELS_GROUP + "/" + name;
         result = H5Ldelete(m_file.getId(), fullPath.data(), H5P_DEFAULT) > 0;
     }
 
