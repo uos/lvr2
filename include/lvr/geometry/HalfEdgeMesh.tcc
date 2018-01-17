@@ -86,7 +86,7 @@ HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh()
 
     this->m_meshBuffer.reset();
     if(this->m_pointCloudManager != NULL)
-		this->m_pointCloudManager.reset();
+        this->m_pointCloudManager.reset();
 
     typename set<EdgePtr>::iterator e_it = m_garbageEdges.begin();
     for(; e_it != m_garbageEdges.end(); e_it++)
@@ -130,49 +130,49 @@ HalfEdgeMesh<VertexT, NormalT>::~HalfEdgeMesh()
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::setClassifier(string name)
 {
-	// Delete old classifier if present
-	if(m_regionClassifier) delete m_regionClassifier;
+    // Delete old classifier if present
+    if(m_regionClassifier) delete m_regionClassifier;
 
-	// Create new one
-	m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get(name, this);
+    // Create new one
+    m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get(name, this);
 
-	// update name
-	m_classifierType = name;
+    // update name
+    m_classifierType = name;
 
-	// Check if successful
-	if(!m_regionClassifier)
-	{
-		cout << timestamp << "Warning: Unable to create classifier type '"
-			 << name << "'. Using default." << endl;
+    // Check if successful
+    if(!m_regionClassifier)
+    {
+        cout << timestamp << "Warning: Unable to create classifier type '"
+             << name << "'. Using default." << endl;
 
-		m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get( "PlaneSimpsons", this);
-		m_classifierType = "PlaneSimpsons";
-	}
+        m_regionClassifier = ClassifierFactory<VertexT, NormalT>::get( "PlaneSimpsons", this);
+        m_classifierType = "PlaneSimpsons";
+    }
 }
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::setClassifier(RegionClassifier<VertexT, NormalT>* c)
 {
-	if(c)
-	{
-	// Delete old classifier
-	if(m_regionClassifier)
-	{
-		delete m_regionClassifier;
-	}
+    if(c)
+    {
+    // Delete old classifier
+    if(m_regionClassifier)
+    {
+        delete m_regionClassifier;
+    }
 
-	// Usually the classifier would be defined be it's name that was used
-	// in ClassifierFactory. Here we have a user defined type and use that one.
-	// The name is actually used as a flag to prevent that an externally set
-	// classifier is freed.
-	m_classifierType = "USER_DEFINED";
+    // Usually the classifier would be defined be it's name that was used
+    // in ClassifierFactory. Here we have a user defined type and use that one.
+    // The name is actually used as a flag to prevent that an externally set
+    // classifier is freed.
+    m_classifierType = "USER_DEFINED";
 
-	m_regionClassifier = c;
-	}
-	else
-	{
-		cout << timestamp << "User defined classifier is 0" << endl;
-	}
+    m_regionClassifier = c;
+    }
+    else
+    {
+        cout << timestamp << "User defined classifier is 0" << endl;
+    }
 }
 
 
@@ -204,7 +204,8 @@ void HalfEdgeMesh<VertexT, NormalT>::addNormal(NormalT n)
 }
 
 template<typename VertexT, typename NormalT>
-HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* HalfEdgeMesh<VertexT, NormalT>::halfEdgeToVertex(VertexPtr v, VertexPtr next)
+HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >*
+HalfEdgeMesh<VertexT, NormalT>::halfEdgeToVertex(VertexPtr v, VertexPtr next)
 {
     EdgePtr edge = 0;
     EdgePtr cur;
@@ -349,56 +350,56 @@ void HalfEdgeMesh<VertexT, NormalT>::addTriangle(uint a, uint b, uint c)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::cleanContours(int iterations)
 {
-	for(int a = 0; a < iterations; a++)
-	{
-		FaceVector toDelete;
-		toDelete.clear();
-		for(int i = 0; i < m_faces.size(); i++)
-		{
+    for(int a = 0; a < iterations; a++)
+    {
+        FaceVector toDelete;
+        toDelete.clear();
+        for(int i = 0; i < m_faces.size(); i++)
+        {
 
 
-			// Get current face
-			FacePtr f = m_faces[i];
+            // Get current face
+            FacePtr f = m_faces[i];
 
-			// Count border edges
-			int bf = 0;
+            // Count border edges
+            int bf = 0;
 
-			EdgePtr e1 = f->m_edge;
-			EdgePtr e2 = e1->next();
-			EdgePtr e3 = e2->next();
+            EdgePtr e1 = f->m_edge;
+            EdgePtr e2 = e1->next();
+            EdgePtr e3 = e2->next();
 
-			EdgePtr s = f->m_edge;
-			EdgePtr e = s;
-			do
-			{
-				if(e->pair())
-				{
-					EdgePtr p = e->pair();
-					if(!(p->face())) bf++;
-				}
-				e = e->next();
-			}
-			while(s != e);
+            EdgePtr s = f->m_edge;
+            EdgePtr e = s;
+            do
+            {
+                if(e->pair())
+                {
+                    EdgePtr p = e->pair();
+                    if(!(p->face())) bf++;
+                }
+                e = e->next();
+            }
+            while(s != e);
 
-			// Mark face if is an artifact and store in removal list
-			if(bf >= 2)
-			{
-				toDelete.push_back(f);
-			}
+            // Mark face if is an artifact and store in removal list
+            if(bf >= 2)
+            {
+                toDelete.push_back(f);
+            }
 
-			if(bf == 1)
-			{
-				if(f->getArea() < 0.0001) toDelete.push_back(f);
-			}
+            if(bf == 1)
+            {
+                if(f->getArea() < 0.0001) toDelete.push_back(f);
+            }
 
-		}
+        }
 
-		// Delete all artifact faces
-		for(int i = 0; i < (int)toDelete.size(); i++)
-		{
-			deleteFace(toDelete[i]);
-		}
-	}
+        // Delete all artifact faces
+        for(int i = 0; i < (int)toDelete.size(); i++)
+        {
+            deleteFace(toDelete[i]);
+        }
+    }
 }
 
 template<typename VertexT, typename NormalT>
@@ -485,7 +486,8 @@ void HalfEdgeMesh<VertexT, NormalT>::checkFaceIntegreties()
             c++;
         }
     }
-    cout << timestamp << "Checked face integreties. Found " << c << " degenerated faces from " << m_faces.size() << " checked." << endl;
+    cout << timestamp << "Checked face integrities. Found " << c << " degenerate faces from " << m_faces.size()
+    << " checked." << endl;
 }
 
 template<typename VertexT, typename NormalT>
@@ -706,13 +708,13 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(uint v1, uint v2)
     EdgePtr edge = halfEdgeToVertex(m_vertices[v1], m_vertices[v2]);
     if(edge)
     {
-    	try
-    	{
-    		flipEdge(edge);
-    	}
+        try
+        {
+            flipEdge(edge);
+        }
         catch(...)
         {
-        	cout << "Warning: Could not flip edge: " << v1 << " " << v2 << endl;
+            cout << "Warning: Could not flip edge: " << v1 << " " << v2 << endl;
         }
     }
 }
@@ -802,7 +804,11 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(EdgePtr edge)
 }
 
 template<typename VertexT, typename NormalT>
-int HalfEdgeMesh<VertexT, NormalT>::stackSafeRegionGrowing(FacePtr start_face, NormalT &normal, float &angle, RegionPtr region)
+int HalfEdgeMesh<VertexT, NormalT>::stackSafeRegionGrowing(
+    FacePtr start_face,
+    NormalT &normal,
+    float &angle, RegionPtr region
+)
 {
     // stores the faces where we need to continue
     vector<FacePtr> leafs;
@@ -822,7 +828,14 @@ int HalfEdgeMesh<VertexT, NormalT>::stackSafeRegionGrowing(FacePtr start_face, N
 }
 
 template<typename VertexT, typename NormalT>
-int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(FacePtr start_face, NormalT &normal, float &angle, RegionPtr region, vector<FacePtr> &leafs, unsigned int depth)
+int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(
+    FacePtr start_face,
+    NormalT &normal,
+    float &angle,
+    RegionPtr region,
+    vector<FacePtr> &leafs,
+    unsigned int depth
+)
 {
     //Mark face as used
     start_face->m_used = true;
@@ -848,7 +861,9 @@ int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(FacePtr start_face, NormalT &n
                 else
                 {
                     // start the recursion
-                    ++neighbor_cnt += regionGrowing((*start_face)[k]->pair()->face(), normal, angle, region, leafs, depth - 1);
+                    ++neighbor_cnt += regionGrowing(
+                        (*start_face)[k]->pair()->face(), normal, angle, region, leafs, depth - 1
+                    );
                 }
             }
         }
@@ -866,30 +881,30 @@ int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(FacePtr start_face, NormalT &n
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::clusterRegions(float angle, int minRegionSize)
 {
-	// Reset all used variables
-	for(size_t i = 0; i < m_faces.size(); i++)
-	{
-		m_faces[i]->m_used = false;
-	}
-	m_regions.clear();
+    // Reset all used variables
+    for(size_t i = 0; i < m_faces.size(); i++)
+    {
+        m_faces[i]->m_used = false;
+    }
+    m_regions.clear();
 
-	int region_number = 0;
-	int region_size = 0;
-	// Find all regions by regionGrowing with normal criteria
-	for(size_t i = 0; i < m_faces.size(); i++)
-	{
-		if(m_faces[i]->m_used == false)
-		{
-			NormalT n = m_faces[i]->getFaceNormal();
+    int region_number = 0;
+    int region_size = 0;
+    // Find all regions by regionGrowing with normal criteria
+    for(size_t i = 0; i < m_faces.size(); i++)
+    {
+        if(m_faces[i]->m_used == false)
+        {
+            NormalT n = m_faces[i]->getFaceNormal();
 
-			RegionPtr region = new Region<VertexT, NormalT>(m_regions.size());
-			m_garbageRegions.insert(region);
-			stackSafeRegionGrowing(m_faces[i], n, angle, region);
+            RegionPtr region = new Region<VertexT, NormalT>(m_regions.size());
+            m_garbageRegions.insert(region);
+            stackSafeRegionGrowing(m_faces[i], n, angle, region);
 
-			// Save pointer to the region
-			m_regions.push_back(region);
-		}
-	}
+            // Save pointer to the region
+            m_regions.push_back(region);
+        }
+    }
 }
 
 template<typename VertexT, typename NormalT>
@@ -917,7 +932,7 @@ void HalfEdgeMesh<VertexT, NormalT>::optimizePlanes(
         for(size_t i = 0; i < m_faces.size(); i++)
         {
             FacePtr face = m_faces[i];
-			face->m_used = false;
+            face->m_used = false;
         }
 
         // Find all regions by regionGrowing with normal criteria
@@ -1023,9 +1038,9 @@ void HalfEdgeMesh<VertexT, NormalT>::deleteRegions()
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::removeDanglingArtifacts(int threshold)
 {
-	cout << timestamp << "Clustering for RDA detection..." << endl;
-	int c = 0;
-	int region_number = 0;
+    cout << timestamp << "Clustering for RDA detection..." << endl;
+    int c = 0;
+    int region_number = 0;
     for(size_t i = 0; i < m_faces.size(); i++)
     {
         if(m_faces[i]->m_used == false)
@@ -1120,7 +1135,9 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(EdgePtr edge)
     try
     {
         if( ( edge->face() != 0 && edge->next()->pair()->face() == 0 && edge->next()->next()->pair()->face() == 0 )
-                || ( edge->pair()->face() != 0 && edge->pair()->next()->pair()->face() == 0 && edge->pair()->next()->next()->pair()->face() == 0 ) )
+                || ( edge->pair()->face() != 0
+                    && edge->pair()->next()->pair()->face() == 0
+                    && edge->pair()->next()->next()->pair()->face() == 0 ))
         {
             return false;
         }
@@ -1138,7 +1155,9 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(EdgePtr edge)
         {
             for(size_t o2 = 0; o2 < edge->end()->out[o1]->end()->out.size(); o2++)
             {
-                if(edge->end()->out[o1]->face() == 0 && edge->end()->out[o1]->end()->out[o2]->face() == 0 && edge->end()->out[o1]->end()->out[o2]->end() == edge->start())
+                if(edge->end()->out[o1]->face() == 0
+                    && edge->end()->out[o1]->end()->out[o2]->face() == 0
+                    && edge->end()->out[o1]->end()->out[o2]->end() == edge->start())
                 {
                     return false;
                 }
@@ -1163,7 +1182,10 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(EdgePtr edge)
                 // Safety First!
                 if(edge->start()->out[o]->pair()->face()->m_region >= 0)
                 {
-                    if (edge->start()->out[o]->pair()->face() != 0 && m_regions[edge->start()->out[o]->pair()->face()->m_region]->detectFlicker(edge->start()->out[o]->pair()->face()))
+                    if (edge->start()->out[o]->pair()->face() != 0
+                        && m_regions[edge->start()->out[o]->pair()->face()->m_region]->detectFlicker(
+                            edge->start()->out[o]->pair()->face())
+                        )
                     {
                         edge->start()->m_position = origin;
                         return false;
@@ -1188,7 +1210,10 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(EdgePtr edge)
             {
                 if(edge->end()->out[o]->pair()->face()->m_region >= 0)
                 {
-                    if (edge->end()->out[o]->pair()->face() != 0 && m_regions[edge->end()->out[o]->pair()->face()->m_region]->detectFlicker(edge->end()->out[o]->pair()->face()))
+                    if (edge->end()->out[o]->pair()->face() != 0
+                        && m_regions[edge->end()->out[o]->pair()->face()->m_region]->detectFlicker(
+                            edge->end()->out[o]->pair()->face())
+                        )
                     {
                         edge->end()->m_position = origin;
                         return false;
@@ -1328,7 +1353,11 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(size_t max_size)
                                 for(int e = 0; e < 3; e++)
                                 {
                                     (*f)[e]->setFace(f);
-                                    typename vector<EdgePtr>::iterator ch_it = find(current_hole.begin(), current_hole.end(), (*f)[e]);
+                                    typename vector<EdgePtr>::iterator ch_it = find(
+                                        current_hole.begin(),
+                                        current_hole.end(),
+                                        (*f)[e]
+                                    );
                                     if(ch_it != current_hole.end())
                                     {
                                         current_hole.erase(ch_it);
@@ -1364,7 +1393,12 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(size_t max_size)
 
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(RegionPtr plane, RegionPtr neighbor_region, VertexT& x, VertexT& direction)
+void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(
+    RegionPtr plane,
+    RegionPtr neighbor_region,
+    VertexT& x,
+    VertexT& direction
+)
 {
     for (size_t i = 0; i < plane->m_faces.size(); i++)
     {
@@ -1374,10 +1408,16 @@ void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(RegionPtr plane, Regio
             {
                 if((*(plane->m_faces[i]))[k]->pair()->face()->m_region >= 0)
                 {
-                    if((*(plane->m_faces[i]))[k]->pair()->face() != 0 && m_regions[(*(plane->m_faces[i]))[k]->pair()->face()->m_region]->m_regionNumber == neighbor_region->m_regionNumber)
+                    if((*(plane->m_faces[i]))[k]->pair()->face() != 0
+                        && m_regions[(*(plane->m_faces[i]))[k]->pair()->face()->m_region]->m_regionNumber
+                        == neighbor_region->m_regionNumber)
                     {
-                        (*(plane->m_faces[i]))[k]->start()->m_position = x + direction * (((((*(plane->m_faces[i]))[k]->start()->m_position) - x) * direction) / (direction.length() * direction.length()));
-                        (*(plane->m_faces[i]))[k]->end()->m_position   = x + direction * (((((*(plane->m_faces[i]))[k]->end()->m_position  ) - x) * direction) / (direction.length() * direction.length()));
+                        (*(plane->m_faces[i]))[k]->start()->m_position = x + direction *
+                            (((((*(plane->m_faces[i]))[k]->start()->m_position) - x) * direction)
+                            / (direction.length() * direction.length()));
+                        (*(plane->m_faces[i]))[k]->end()->m_position   = x + direction *
+                            (((((*(plane->m_faces[i]))[k]->end()->m_position  ) - x) * direction)
+                            / (direction.length() * direction.length()));
                     }
                 }
             }
@@ -1448,10 +1488,13 @@ void HalfEdgeMesh<VertexT, NormalT>::restorePlanes(int min_region_size)
                 {
                     try
                     {
-                        float v = ((m_regions[r]->m_stuetzvektor - (*(m_regions[r]->m_faces[i]))(p)->m_position) * m_regions[r]->m_normal) / (m_regions[r]->m_normal * m_regions[r]->m_normal);
+                        float v = ((m_regions[r]->m_stuetzvektor -
+                            (*(m_regions[r]->m_faces[i]))(p)->m_position) * m_regions[r]->m_normal)
+                            / (m_regions[r]->m_normal * m_regions[r]->m_normal);
                         if(v != 0)
                         {
-                            (*(m_regions[r]->m_faces[i]))(p)->m_position = (*(m_regions[r]->m_faces[i]))(p)->m_position + (VertexT)m_regions[r]->m_normal * v;
+                            (*(m_regions[r]->m_faces[i]))(p)->m_position =
+                                (*(m_regions[r]->m_faces[i]))(p)->m_position + (VertexT)m_regions[r]->m_normal * v;
                         }
                     }
                     catch (HalfEdgeAccessException &e)
@@ -1505,7 +1548,7 @@ void HalfEdgeMesh<VertexT, NormalT>::restorePlanes(int min_region_size)
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::finalize()
 {
-	std::cout << timestamp << "Checking face integreties." << std::endl;
+    std::cout << timestamp << "Checking face integrities." << std::endl;
     checkFaceIntegreties();
 
     std::cout << timestamp << "Finalizing mesh with classifier \"" << m_classifierType << "\"." << std::endl;
@@ -1515,9 +1558,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     size_t numVertices = m_vertices.size();
     size_t numFaces    = m_faces.size();
     size_t numRegions  = m_regions.size();
-	float r = 255.0f;
-	float g = 255.0f;
-	float b = 255.0f;
+    float r = 255.0f;
+    float g = 255.0f;
+    float b = 255.0f;
     std::vector<uchar> faceColorBuffer;
 
     floatArr vertexBuffer( new float[3 * numVertices] );
@@ -1610,7 +1653,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     // Label regions with Classifier
     LabelRegions();
 
-	// jetzt alle regions labeln, falls der classifier das kann
+    // jetzt alle regions labeln, falls der classifier das kann
     assignLBI();
 
     // Hand the buffers over to the Model class for IO operations.
@@ -1622,7 +1665,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalize()
     //this->m_meshBuffer->setVertexColorArray( colorBuffer, numVertices );
     this->m_meshBuffer->setVertexNormalArray( normalBuffer, numVertices  );
     this->m_meshBuffer->setFaceArray( indexBuffer, numFaces );
-	this->m_meshBuffer->setLabeledFacesMap( labeledFaces );
+    this->m_meshBuffer->setLabeledFacesMap( labeledFaces );
     //this->m_meshBuffer->setFaceColorArray( faceColorBuffer );
     this->m_finalized = true;
 
@@ -1635,96 +1678,97 @@ template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::LabelRegions()
 {
 
-	typename vector<FacePtr>::iterator face_iter = m_faces.begin();
-	typename vector<FacePtr>::iterator face_end  = m_faces.end();
-	for(size_t i = 0; face_iter != face_end; i++, ++face_iter)
-	{
-		int surface_class = 1;
+    typename vector<FacePtr>::iterator face_iter = m_faces.begin();
+    typename vector<FacePtr>::iterator face_end  = m_faces.end();
+    for(size_t i = 0; face_iter != face_end; i++, ++face_iter)
+    {
+        int surface_class = 1;
 
-		if ((*face_iter)->m_region >= 0)
-		{
-			// get the faces surface class (region id)
-			surface_class = (*face_iter)->m_region;
+        if ((*face_iter)->m_region >= 0)
+        {
+            // get the faces surface class (region id)
+            surface_class = (*face_iter)->m_region;
 
-			// label the region if not already done
-			if (m_regionClassifier->generatesLabel())
-			{
-				Region<VertexT, NormalT>* region = m_regions.at(surface_class);
-				if (!region->hasLabel())
-				{
-					region->setLabel(m_regionClassifier->getLabel(surface_class));
-				}
-			}
-		}
-	}
+            // label the region if not already done
+            if (m_regionClassifier->generatesLabel())
+            {
+                Region<VertexT, NormalT>* region = m_regions.at(surface_class);
+                if (!region->hasLabel())
+                {
+                    region->setLabel(m_regionClassifier->getLabel(surface_class));
+                }
+            }
+        }
+    }
 }
 
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::assignLBI()
 {
-	// jetzt alle regions labeln, falls der classifier das kann
-	if (m_regionClassifier->generatesLabel())
-	{
-		std::cout << timestamp << "Generating pre-labels with classifier type " << m_classifierType << std::endl;
+    // jetzt alle regions labeln, falls der classifier das kann
+    if (m_regionClassifier->generatesLabel())
+    {
+        std::cout << timestamp << "Generating pre-labels with classifier type " << m_classifierType << std::endl;
 
-		string label;
-		typename vector<RegionPtr>::iterator region_iter = m_regions.begin();
-		typename vector<RegionPtr>::iterator region_end  = m_regions.end();
-		for(size_t i = 0; region_iter != region_end; ++i, ++region_iter)
-		{
-			// hier sind wir in den einzelnen regions und holen und die zugehörigen faces
-			// darauf berechnen wir ein einziges mal das label und schreiben dann alle face ids in die map
+        string label;
+        typename vector<RegionPtr>::iterator region_iter = m_regions.begin();
+        typename vector<RegionPtr>::iterator region_end  = m_regions.end();
+        for(size_t i = 0; region_iter != region_end; ++i, ++region_iter)
+        {
+            // hier sind wir in den einzelnen regions und holen und die zugehörigen faces
+            // darauf berechnen wir ein einziges mal das label und schreiben dann alle face ids in die map
 
-			label = (*region_iter)->getLabel();
+            label = (*region_iter)->getLabel();
 
-			vector<unsigned int> ids;
-			typename vector<FacePtr>::iterator region_face_iter = (*region_iter)->m_faces.begin();
-			typename vector<FacePtr>::iterator region_face_end  = (*region_iter)->m_faces.end();
+            vector<unsigned int> ids;
+            typename vector<FacePtr>::iterator region_face_iter = (*region_iter)->m_faces.begin();
+            typename vector<FacePtr>::iterator region_face_end  = (*region_iter)->m_faces.end();
 
-			for(size_t i = 0; region_face_iter != region_face_end; ++i, ++region_face_iter)
-			{
-				ids.push_back((*region_face_iter)->getBufferID());
-			}
+            for(size_t i = 0; region_face_iter != region_face_end; ++i, ++region_face_iter)
+            {
+                ids.push_back((*region_face_iter)->getBufferID());
+            }
 
-			// if prelabel already exists in map, insert face id, else create new entry
-			typename labeledFacesMap::iterator it = labeledFaces.find(label);
+            // if prelabel already exists in map, insert face id, else create new entry
+            typename labeledFacesMap::iterator it = labeledFaces.find(label);
 
-			if (it != labeledFaces.end())
-			{
-				it->second.insert(it->second.end(), ids.begin(), ids.end());
-			}
-			else
-			{
-				labeledFaces.insert(std::pair<std::string, std::vector<unsigned int> >(label, ids));
-			}
-		}
-	}
+            if (it != labeledFaces.end())
+            {
+                it->second.insert(it->second.end(), ids.begin(), ids.end());
+            }
+            else
+            {
+                labeledFaces.insert(std::pair<std::string, std::vector<unsigned int> >(label, ids));
+            }
+        }
+    }
 }
 
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::resetUsedFlags()
 {
-	for(size_t j=0; j<m_faces.size(); j++)
-	{
-		for(int k=0; k<3; k++)
-		{
-			(*m_faces[j])[k]->used=false;
-		}
-	}
+    for(size_t j=0; j<m_faces.size(); j++)
+    {
+        for(int k=0; k<3; k++)
+        {
+            (*m_faces[j])[k]->used=false;
+        }
+    }
 }
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::writeClassificationResult()
 {
-	m_regionClassifier->writeMetaInfo();
+    m_regionClassifier->writeMetaInfo();
 }
 
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, float fusionThreshold )
 {
-    std::cout << timestamp << "finalizeAndRetesselate mesh with classifier \"" << m_classifierType << "\"." << std::endl;
+    std::cout << timestamp << "finalizeAndRetesselate mesh with classifier \"" << m_classifierType << "\"."
+    << std::endl;
 
     // used Typedef's
     typedef std::vector<size_t>::iterator   intIterator;
@@ -1802,15 +1846,15 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
                     if((*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal.length() > 0.0001)
                     {
-                    	normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[0] );
-                    	normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[1] );
-                    	normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[2] );
+                        normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[0] );
+                        normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[1] );
+                        normalBuffer.push_back( (*m_regions[iRegion]->m_faces[iFace])(iVertex)->m_normal[2] );
                     }
                     else
                     {
-                    	normalBuffer.push_back((*m_regions[iRegion]->m_faces[iFace]).getFaceNormal()[0]);
-                    	normalBuffer.push_back((*m_regions[iRegion]->m_faces[iFace]).getFaceNormal()[1]);
-                    	normalBuffer.push_back((*m_regions[iRegion]->m_faces[iFace]).getFaceNormal()[2]);
+                        normalBuffer.push_back((*m_regions[iRegion]->m_faces[iFace]).getFaceNormal()[0]);
+                        normalBuffer.push_back((*m_regions[iRegion]->m_faces[iFace]).getFaceNormal()[1]);
+                        normalBuffer.push_back((*m_regions[iRegion]->m_faces[iFace]).getFaceNormal()[2]);
                     }
 
                     //TODO: Color Vertex Traits stuff?
@@ -1830,7 +1874,11 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             {
                 int one = 1;
                 vector<VertexT> cv;
-                this->m_pointCloudManager->searchTree()->kSearch((*m_regions[iRegion]->m_faces[iFace]).getCentroid(), one, cv);
+                this->m_pointCloudManager->searchTree()->kSearch(
+                    (*m_regions[iRegion]->m_faces[iFace]).getCentroid(),
+                    one,
+                    cv
+                );
                 r = *((uchar*) &(cv[0][3])); /* red */
                 g = *((uchar*) &(cv[0][4])); /* green */
                 b = *((uchar*) &(cv[0][5])); /* blue */
@@ -1842,9 +1890,9 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             map<unsigned long, unsigned int >::iterator it = materialMap.find(colorKey);
             if(it != materialMap.end())
             {
-            	// If found, put material index into buffer
-            	unsigned int position = it->second;
-            	materialIndexBuffer.push_back(position);
+                // If found, put material index into buffer
+                unsigned int position = it->second;
+                materialIndexBuffer.push_back(position);
             }
             else
             {
@@ -1952,7 +2000,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             {
                 /*if(indices[j] == indices[j+1] || indices[j+1] == indices[j+2] || indices[j+2] == indices[j])
                 {
-                    cout << "Detected degenerated face: " << indices[j] << " " << indices[j + 1] << " " << indices[j + 2] << endl;
+                    cout << "Detected degenerate face: " << indices[j] << " " << indices[j + 1] << " " << indices[j + 2]
+                     << endl;
                 }*/
 
                 // store the indices with the correct offset to the indices buffer.
@@ -2031,8 +2080,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
 
 
     // Label regions with Classifier
-    LabelRegions();
-    assignLBI();
+//    LabelRegions();
+//    assignLBI();
 
     if ( !this->m_meshBuffer )
     {
@@ -2045,7 +2094,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     this->m_meshBuffer->setVertexTextureCoordinateArray( textureCoordBuffer );
     this->m_meshBuffer->setMaterialArray( materialBuffer );
     this->m_meshBuffer->setFaceMaterialIndexArray( materialIndexBuffer );
-	this->m_meshBuffer->setLabeledFacesMap( labeledFaces );
+    this->m_meshBuffer->setLabeledFacesMap( labeledFaces );
     this->m_finalized = true;
     cout << endl << timestamp << "Done retesselating." << endl;
 
@@ -2074,65 +2123,65 @@ void HalfEdgeMesh<VertexT, NormalT>::reduceMeshByCollapse(int n_collapses, Verte
     //    for(int n = 0; n < n_collapses; n++)
     //    {
     //
-    //    	priority_queue<vertexCost_p, vector<vertexCost_p>, cVertexCost> q;
-    //    	for(size_t i = 0; i < this->m_vertices.size(); i++)
-    //    	{
-    //    		q.push(vertexCost_p(m_vertices[i], c(*m_vertices[i])));
-    //    	}
+    //        priority_queue<vertexCost_p, vector<vertexCost_p>, cVertexCost> q;
+    //        for(size_t i = 0; i < this->m_vertices.size(); i++)
+    //        {
+    //            q.push(vertexCost_p(m_vertices[i], c(*m_vertices[i])));
+    //        }
     //
-    //    	cout << q.size() << endl;
+    //        cout << q.size() << endl;
     //
-    //    	// Try to collapse until a non-border-edges is found. If there are only
-    //    	// borders left, collapse border edge with minimum cost
-    //    	if(!q.empty())
-    //    	{
-    //    		// Save vertex with lowest costs
-    //    		VertexPtr topVertex = q.top().first;
-    //    		VertexPtr toCollapse = topVertex;
+    //        // Try to collapse until a non-border-edges is found. If there are only
+    //        // borders left, collapse border edge with minimum cost
+    //        if(!q.empty())
+    //        {
+    //            // Save vertex with lowest costs
+    //            VertexPtr topVertex = q.top().first;
+    //            VertexPtr toCollapse = topVertex;
     //
-    //    		// Check for border vertices
-    //    		while(toCollapse->isBorderVertex() && !q.empty())
-//    		{
-//    			q.pop();
-//    			toCollapse = q.top().first;
-//    		}
+    //            // Check for border vertices
+    //            while(toCollapse->isBorderVertex() && !q.empty())
+//            {
+//                q.pop();
+//                toCollapse = q.top().first;
+//            }
 //
-//    		// If q is empty, no non-border vertex was found, collapse
-//    		// first border vertex
-//    		if(q.empty())
-//    		{
-//    			EdgePtr e = topVertex->getShortestEdge();
-//    			cout << "E: " << e << endl;
-//    			collapseEdge(e);
-//    		}
-//    		else
-//    		{
-//    			EdgePtr e = toCollapse->getShortestEdge();
-//    			cout << "F: " << e << endl;
-//    			collapseEdge(e);
-//    		}
-//    	}
+//            // If q is empty, no non-border vertex was found, collapse
+//            // first border vertex
+//            if(q.empty())
+//            {
+//                EdgePtr e = topVertex->getShortestEdge();
+//                cout << "E: " << e << endl;
+//                collapseEdge(e);
+//            }
+//            else
+//            {
+//                EdgePtr e = toCollapse->getShortestEdge();
+//                cout << "F: " << e << endl;
+//                collapseEdge(e);
+//            }
+//        }
 //
-//    	++progress;
+//        ++progress;
 //    }
 
 
   /*  priority_queue<vertexCost_p, vector<vertexCost_p>, cVertexCost> q;
     for(size_t i = 0; i < this->m_vertices.size(); i++)
     {
-    	q.push(vertexCost_p(m_vertices[i], c(*m_vertices[i])));
+        q.push(vertexCost_p(m_vertices[i], c(*m_vertices[i])));
     }
 
     for(int i = 0; i < n_collapses && !q.empty(); i++)
     {
-    	VertexPtr v = q.top().first;
-    	while(v->isBorderVertex() && !q.empty())
-    	{
-    		q.pop();
-    		v = q.top().first;
-    	}
-    	EdgePtr e = v->getShortestEdge();
-    	collapseEdge(e);
+        VertexPtr v = q.top().first;
+        while(v->isBorderVertex() && !q.empty())
+        {
+            q.pop();
+            v = q.top().first;
+        }
+        EdgePtr e = v->getShortestEdge();
+        collapseEdge(e);
     }*/
 
 }
@@ -2140,10 +2189,10 @@ void HalfEdgeMesh<VertexT, NormalT>::reduceMeshByCollapse(int n_collapses, Verte
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::getCostMap(std::map<VertexPtr, float> &costs, VertexCosts<VertexT, NormalT> &c)
 {
-	for(size_t i = 0; i < m_vertices.size(); i++)
-	{
-		costs[i] = c(*m_vertices[i]);
-	}
+    for(size_t i = 0; i < m_vertices.size(); i++)
+    {
+        costs[i] = c(*m_vertices[i]);
+    }
 }
 
 } // namespace lvr

@@ -25,15 +25,17 @@
 
 #include <vector>
 #include <utility>
+#include <cmath>
+#include <lvr2/io/MeshBuffer.hpp>
+#include <lvr2/algorithm/Materializer.hpp>
 
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/attrmaps/AttrMaps.hpp>
+#include <lvr/io/Progress.hpp>
 
 namespace lvr2
 {
 
 template<typename BaseVecT>
-boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
+boost::shared_ptr<MeshBuffer<BaseVecT>> FinalizeAlgorithm<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
 {
     // Create vertex and normal buffer
     DenseVertexMap<size_t> idxMap;
@@ -95,18 +97,18 @@ boost::shared_ptr<lvr::MeshBuffer> FinalizeAlgorithm<BaseVecT>::apply(const Base
         }
     }
 
-    auto buffer = boost::make_shared<lvr::MeshBuffer>();
-    buffer->setVertexArray(vertices);
-    buffer->setFaceArray(faces);
+    auto buffer = boost::make_shared<lvr2::MeshBuffer<BaseVecT>>();
+    buffer->setVertices(vertices);
+    buffer->setFaceIndices(faces);
 
     if (m_normalData)
     {
-        buffer->setVertexNormalArray(normals);
+        buffer->setVertexNormals(normals);
     }
 
     if (m_colorData)
     {
-        buffer->setVertexColorArray(colors);
+        buffer->setVertexColors(colors);
     }
 
     return buffer;
@@ -144,24 +146,65 @@ void ClusterFlatteningFinalizer<BaseVecT>::setClusterColors(const ClusterMap<Rgb
 }
 
 template<typename BaseVecT>
-boost::shared_ptr<lvr::MeshBuffer>
-    ClusterFlatteningFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
+void ClusterFlatteningFinalizer<BaseVecT>::setVertexColors(const VertexMap<Rgb8Color>& vertexColors)
+{
+    m_vertexColors = vertexColors;
+}
+
+template<typename BaseVecT>
+void ClusterFlatteningFinalizer<BaseVecT>::setMaterializerResult(const MaterializerResult<BaseVecT>& matResult)
+{
+    m_materializerResult = matResult;
+}
+
+
+template<typename BaseVecT>
+boost::shared_ptr<MeshBuffer<BaseVecT>> ClusterFlatteningFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
 {
     // Create vertex buffer and all buffers holding vertex attributes
     vector<float> vertices;
-    vertices.reserve(mesh.numVertices() * 3);
+    vertices.reserve(mesh.numVertices() * 3 * 2);
 
     vector<float> normals;
     if (m_vertexNormals)
     {
-        normals.reserve(mesh.numVertices() * 3);
+        normals.reserve(mesh.numVertices() * 3 * 2);
     }
 
     vector<unsigned char> colors;
     if (m_clusterColors)
     {
-        colors.reserve(mesh.numVertices() * 3);
+        colors.reserve(mesh.numVertices() * 3 * 2);
     }
+
+    // Create buffer and variables for texturizing
+    bool useTextures = false;
+    if (m_materializerResult && m_materializerResult.get().m_textures)
+    {
+        useTextures = true;
+    }
+    vector<float> texCoords;
+    vector<Material> materials;
+    vector<unsigned int> faceMaterials;
+    vector<unsigned int> clusterMaterials;
+    vector<Texture<BaseVecT>> textures;
+    vector<vector<unsigned int>> clusterFaceIndices;
+    size_t clusterCount = 0;
+    size_t faceCount = 0;
+
+    // Global material index will be used for indexing materials in the faceMaterialIndexBuffer
+    // The basic material will have the index 0
+    unsigned int globalMaterialIndex = 1;
+    // Create default material
+    unsigned char defaultR = 0, defaultG = 0, defaultB = 0;
+    Material m;
+    m.m_color = {defaultR, defaultG, defaultB};
+    materials.push_back(m);
+    // This map remembers which texture and material are associated with each other
+    std::map<int, unsigned int> textureMaterialMap; // Stores the ID of the material for each textureIndex
+    textureMaterialMap[-1] = 0; // texIndex -1 => no texture => default material with index 0
+
+    std::map<Rgb8Color, int> colorMaterialMap;
 
     // Create face buffer
     vector<unsigned int> faces;
@@ -170,14 +213,21 @@ boost::shared_ptr<lvr::MeshBuffer>
     // This counter is used to determine the index of a newly inserted vertex
     size_t vertexCount = 0;
 
-    // This map remembers which vertex we already inserted and at what
-    // position. This is important to create the face map.
-    SparseVertexMap<size_t> idxMap;
+    string comment = lvr::timestamp.getElapsedTime() + "Finalizing mesh ";
+    lvr::ProgressBar progress(m_cluster.numCluster(), comment);
 
     // Loop over all clusters
     for (auto clusterH: m_cluster)
     {
-        idxMap.clear();
+        // This map remembers which vertex we already inserted and at what
+        // position. This is important to create the face map.
+        SparseVertexMap<size_t> idxMap;
+
+        // Vector for storing indices of created faces
+        vector<unsigned int> faceIndices;
+
+        ++progress;
+
         auto& cluster = m_cluster.getCluster(clusterH);
 
         // Loop over all faces of the cluster
@@ -203,12 +253,20 @@ boost::shared_ptr<lvr::MeshBuffer>
                         normals.push_back(normal.getZ());
                     }
 
-                    if (m_clusterColors)
+                    // If individual vertex colors are present: use these
+                    if (m_vertexColors)
                     {
+                        colors.push_back(static_cast<unsigned char>((*m_vertexColors)[vertexH][0]));
+                        colors.push_back(static_cast<unsigned char>((*m_vertexColors)[vertexH][1]));
+                        colors.push_back(static_cast<unsigned char>((*m_vertexColors)[vertexH][2]));
+                    }
+                    else if (m_clusterColors)
+                    {
+                        // else: use cluster colors if present
                         colors.push_back(static_cast<unsigned char>((*m_clusterColors)[clusterH][0]));
                         colors.push_back(static_cast<unsigned char>((*m_clusterColors)[clusterH][1]));
                         colors.push_back(static_cast<unsigned char>((*m_clusterColors)[clusterH][2]));
-                    }
+                    } // else: no colors
 
                     // Save index of vertex for face mapping
                     idxMap.insert(vertexH, vertexCount);
@@ -219,26 +277,149 @@ boost::shared_ptr<lvr::MeshBuffer>
                 // map (and the buffers).
                 faces.push_back(idxMap[vertexH]);
             }
+            faceIndices.push_back(faceCount++);
+        }
+
+        clusterFaceIndices.push_back(faceIndices);
+
+        // When using textures,
+        // For each cluster:
+        if (m_materializerResult)
+        {
+            // This map remembers which vertices were already visited for materials and textures
+            // Each vertex must be visited exactly once
+            SparseVertexMap<size_t> vertexVisitedMap;
+            size_t vertexVisitCount = 0;
+
+            Material m = m_materializerResult.get().m_clusterMaterials.get(clusterH).get();
+            bool clusterHasTextures = static_cast<bool>(m.m_texture); // optional
+            bool clusterHasColor = static_cast<bool>(m.m_color); // optional
+
+            unsigned int materialIndex;
+
+            // Does this cluster use textures?
+            if (useTextures && clusterHasTextures)
+            {
+                // Yes: read texture info
+                TextureHandle texHandle = m.m_texture.get();
+                auto texOptional = m_materializerResult.get()
+                    .m_textures.get()
+                    .get(texHandle);
+                const Texture<BaseVecT>& texture = texOptional.get();
+                int textureIndex = texture.m_index;
+
+                // Material for this texture already created?
+                if (textureMaterialMap.find(textureIndex) != textureMaterialMap.end())
+                {
+                    // Yes: get index from map
+                    materialIndex = textureMaterialMap[textureIndex];
+                }
+                else
+                {
+                    // No: create material with texture
+                    materials.push_back(m);
+                    textures.push_back(texture);
+                    textureMaterialMap[textureIndex] = globalMaterialIndex;
+                    materialIndex = globalMaterialIndex;
+                    globalMaterialIndex++;
+                }
+            }
+            else if (clusterHasColor)
+            {
+                // Else: does this face have a color?
+                Rgb8Color c = m.m_color.get();
+                if (colorMaterialMap.count(c))
+                {
+                    materialIndex = colorMaterialMap[c];
+                }
+                else
+                {
+                    colorMaterialMap[c] = globalMaterialIndex;
+                    materials.push_back(m);
+                    materialIndex = globalMaterialIndex;
+                    globalMaterialIndex++;
+                }
+            }
+            else
+            {
+                materialIndex = 0;
+            }
+
+            clusterMaterials.push_back(materialIndex);
+
+
+
+            // For each face in cluster:
+            // Materials
+            for (auto faceH : cluster.handles)
+            {
+
+                faceMaterials.push_back(materialIndex);
+
+                // For each vertex in face:
+                for (auto vertexH : mesh.getVerticesOfFace(faceH))
+                {
+                    if (!vertexVisitedMap.containsKey(vertexH))
+                    {
+                        auto& vertexTexCoords = m_materializerResult.get().m_vertexTexCoords;
+                        bool vertexHasTexCoords = vertexTexCoords.is_initialized()
+                                                  ? static_cast<bool>(vertexTexCoords.get().get(vertexH))
+                                                  : false;
+
+                        if (useTextures && vertexHasTexCoords)
+                        {
+                            // Use tex coord vertex map to find texture coords
+                            const TexCoords coords = m_materializerResult.get()
+                                .m_vertexTexCoords.get()
+                                .get(vertexH).get()
+                                .getTexCoords(clusterH);
+
+                            texCoords.push_back(coords.u);
+                            texCoords.push_back(coords.v);
+                            texCoords.push_back(0.0);
+                        } else {
+                            // Cluster does not have a texture, use default coords
+                            // Every vertex needs an entry in this buffer,
+                            // This is why 0's are inserted
+                            texCoords.push_back(0.0);
+                            texCoords.push_back(0.0);
+                            texCoords.push_back(0.0);
+                        }
+                        vertexVisitedMap.insert(vertexH, vertexVisitCount);
+                        vertexVisitCount++;
+                    }
+                }
+            }
         }
     }
 
+    cout << endl;
 
-    auto buffer = boost::make_shared<lvr::MeshBuffer>();
-    buffer->setVertexArray(vertices);
-    buffer->setFaceArray(faces);
+    auto buffer = boost::make_shared<MeshBuffer<BaseVecT>>();
+    buffer->setVertices(vertices);
+    buffer->setFaceIndices(faces);
 
     if (m_vertexNormals)
     {
-        buffer->setVertexNormalArray(normals);
+        buffer->setVertexNormals(normals);
     }
 
-    if (m_clusterColors)
+    if (m_clusterColors || m_vertexColors)
     {
-        buffer->setVertexColorArray(colors);
+        buffer->setVertexColors(colors);
+    }
+
+    if (m_materializerResult)
+    {
+        buffer->setMaterials(materials);
+        buffer->setTextures(textures);
+        buffer->setFaceMaterialIndices(faceMaterials);
+        buffer->setClusterMaterialIndices(clusterMaterials);
+        buffer->setVertexTextureCoordinates(texCoords);
+        buffer->setClusterFaceIndices(clusterFaceIndices);
     }
 
     return buffer;
 }
-
 
 } // namespace lvr2

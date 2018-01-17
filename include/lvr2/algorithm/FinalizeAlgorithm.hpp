@@ -32,20 +32,25 @@
 
 using boost::optional;
 
+#include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr/io/MeshBuffer.hpp>
-#include "ClusterPainter.hpp"
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/attrmaps/AttrMaps.hpp>
 #include <lvr2/algorithm/ColorAlgorithms.hpp>
 #include <lvr2/util/ClusterBiMap.hpp>
+#include <lvr2/texture/Texture.hpp>
+#include <lvr2/texture/Material.hpp>
+#include <lvr2/algorithm/ClusterPainter.hpp>
 
 namespace lvr2
 {
 
-/**
- * @brief
- */
+
+// Forward declaration
+template<typename BaseVecT>
+class MaterializerResult;
+
+
 template<typename BaseVecT>
 class FinalizeAlgorithm
 {
@@ -56,7 +61,7 @@ private:
 public:
     FinalizeAlgorithm() {};
 
-    boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
+    boost::shared_ptr<MeshBuffer<BaseVecT>> apply(const BaseMesh<BaseVecT>& mesh);
     void setColorData(const VertexMap<Rgb8Color>& colorData);
     void setNormalData(const VertexMap<Normal<BaseVecT>>& normalData);
 };
@@ -69,13 +74,30 @@ public:
 
     void setVertexNormals(const VertexMap<Normal<BaseVecT>>& normals);
     void setClusterColors(const ClusterMap<Rgb8Color>& colors);
+    void setVertexColors(const VertexMap<Rgb8Color>& vertexColors);
+    void setMaterializerResult(const MaterializerResult<BaseVecT>& materializerResult);
 
-    boost::shared_ptr<lvr::MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
+    boost::shared_ptr<MeshBuffer<BaseVecT>> apply(const BaseMesh<BaseVecT>& mesh);
 
 private:
+
+    // Clusters of mesh (mandatory)
     const ClusterBiMap<FaceHandle>& m_cluster;
-    optional<const ClusterMap<Rgb8Color>&> m_clusterColors;
+
+    // Normals (optional)
     optional<const VertexMap<Normal<BaseVecT>>&> m_vertexNormals;
+
+    // Basic colors
+    // Cluster colors will color each vertex in the color of its corresponding cluster
+    // These have lower priority when cluster colors, as only one mode can be used
+    optional<const ClusterMap<Rgb8Color>&> m_clusterColors;
+
+    // Vertex colors will color each vertex individually
+    // These have a higher priority than cluster colors
+    optional<const VertexMap<Rgb8Color>&> m_vertexColors;
+
+    // Materials and textures
+    optional<const MaterializerResult<BaseVecT>&> m_materializerResult;
 };
 
 } // namespace lvr2

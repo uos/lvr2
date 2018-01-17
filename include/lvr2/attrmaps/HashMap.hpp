@@ -102,6 +102,7 @@ public:
     bool operator==(const AttributeMapHandleIterator<HandleT>& other) const final;
     bool operator!=(const AttributeMapHandleIterator<HandleT>& other) const final;
     HandleT operator*() const final;
+    std::unique_ptr<AttributeMapHandleIterator<HandleT>> clone() const final;
 
 private:
     typename unordered_map<HandleT, ValueT>::const_iterator m_iter;

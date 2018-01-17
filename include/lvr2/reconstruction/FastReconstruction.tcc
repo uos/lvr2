@@ -41,7 +41,7 @@ template<typename BaseVecT, typename BoxT>
 void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
 {
     // Status message for mesh generation
-    string comment = lvr::timestamp.getElapsedTime() + "Creating Mesh ";
+    string comment = lvr::timestamp.getElapsedTime() + "Creating mesh ";
     lvr::ProgressBar progress(m_grid->getNumberOfCells(), comment);
 
     // Some pointers
@@ -76,14 +76,19 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     //      {
     //          if(sb->m_containsSharpCorner)
     //          {
-    //              mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]]);
-    //              mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][2]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][3]]);
-    //              mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]]);
+    //              mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]],
+    // sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]]);
+    //              mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][2]],
+    // sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][3]]);
+    //              mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]],
+    // sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]]);
     //          }
     //          else
     //          {
-    //              mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]]);
-    //              mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]], sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]]);
+    //              mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]],
+    // sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]]);
+    //              mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]],
+    // sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]]);
     //          }
     //      }
     //      ++SFProgress;

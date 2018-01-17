@@ -19,6 +19,16 @@ message(STATUS ${CMAKE_MODULE_PATH})
 
 include_directories(include)
 
+##################################################################################
+# Some compiler specific settings
+##################################################################################
+
+# Add -O0 to remove optimizations when using gcc
+if(CMAKE_COMPILER_IS_GNUCC)
+    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+    set(CMAKE_C_FLAGS_DEBUG "-O0 -g")
+endif(CMAKE_COMPILER_IS_GNUCC)
+
 if(MSVC)
   list(APPEND LVR_DEFINITIONS -DNOMINMAX)
 else(MSVC)
@@ -35,14 +45,16 @@ endif(MSVC)
 ####
 ## Searching for CUDA
 ##############################
-find_package( CUDA )
+find_package( CUDA 8)
 if(CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
 endif(CUDA_FOUND)
+
 ####
 ## Searching for OpenCV
 ##############################
-find_package( OpenCV 2.4.8 REQUIRED )
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 option(WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
 if(WITH_CV_NONFREE)
@@ -87,6 +99,14 @@ endif(MPI_FOUND)
 ###
 ## Searching for OpenCl
 ##############################
+find_package(OpenCL)
+if(OPENCL_FOUND)
+    include_directories(OPENCL_INCLUDE_DIR)
+endif()
+
+####
+## Searching for OpenCl
+#############################
 find_package(OpenCL)
 if(OPENCL_FOUND)
     include_directories(OPENCL_INCLUDE_DIR)
@@ -263,6 +283,15 @@ list(APPEND LVR_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 # GSL
 include_directories("ext/gsl/include")
 
+# HighFive
+set(HIGHFIVE_EXAMPLES FALSE)
+set(HIGHFIVE_UNIT_TESTS FALSE)
+add_subdirectory(ext/HighFive)
+include_directories("ext/HighFive/include")
+find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+include_directories(${HDF5_INCLUDE_DIRS})
+link_directories(${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+
 # SLAM6D stuff
 add_subdirectory(ext/slam6d)
 include_directories( ${SLAM6D_INCLUDE_DIR} )
@@ -288,18 +317,16 @@ option(WITH_KINFU "Compile LVR Kinfu" OFF)
 # compatible to gcc4.8. Older CUDA versions require GCC lower
 # than 4.8
 
-if(WITH_KINFU AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VERSION_LESS 7)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.8 )
+if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VERSION_EQUAL 8)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6 )
         message(STATUS "******************************************************************")
-        message(STATUS "* Your gcc version needs to be lower than 4.9 to compile the LVR *")
-        message(STATUS "* KinectFusion library and apps with CUDA 6.5 or less. Please    *")
-        message(STATUS "* install gcc 4.8 and set the CUDA host compiler accordingly     *")
-        message(STATUS "* by setting the CUDA_HOST_COMPILER to gcc4.8. This can be done  *")
-        message(STATUS "* in your cmake gui program or by manually calling e.g.          *")
-        message(STATUS "* 'cmake <SOURCE_DIR> -DCUDA_HOST_COMPILER=/usr/bin/gcc-4.8'     *")
+        message(STATUS "* Your gcc version needs to be lower than 6 to compile the LVR   *")
+        message(STATUS "* CUDA library and apps with CUDA 8. Please install gcc 5.       *")
         message(STATUS "******************************************************************")
-        message(WARNING "Incompatible CUDA host compiler detected. Fix it manually.")
-    endif()
+        message(WARNING "Incompatible CUDA host compiler detected. Setting host compiler to gcc-5.
+          Please ensure that this version is installed on your system")
+        set(CUDA_HOST_COMPILER "gcc-5")
+        endif()
 endif()
 
 if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8" AND WITH_KINFU)
@@ -362,13 +389,13 @@ if(Qt5_FOUND)
   if(QGLVIEWER_LIBRARY_RELEASE)
     message(STATUS "Found libqglviewer")
     message(STATUS "Building qglviewer application")
-    add_subdirectory(src/qglviewer)
+   add_subdirectory(src/qglviewer)
   endif(QGLVIEWER_LIBRARY_RELEASE)
 
   find_package(QVTK)
   if(QVTK_FOUND)
     include_directories(${QVTK_INCLUDE_DIR})
-    add_subdirectory(src/tools/viewer)
+   add_subdirectory(src/tools/viewer)
   endif(QVTK_FOUND)
 endif(Qt5_FOUND)
 
@@ -408,23 +435,31 @@ if(OPENCL_FOUND)
 endif()
 
 if(MPI_FOUND)
-  add_subdirectory(src/tools/mpi)
+    add_subdirectory(src/tools/mpi)
 endif(MPI_FOUND)
+
+if(CUDA_FOUND)
+    add_subdirectory(src/tools/cuda_normals)
+endif()
+
+if(OPENCL_FOUND)
+    add_subdirectory(src/tools/cl_normals)
+endif()
 
 if(CGAL_FOUND)
   # There is a name clash between CGAL and std::pair. Should
   # be fixed in the next CGAL release
   if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNU)
-    add_subdirectory(src/tools/cgal_reconstruction)
+#   add_subdirectory(src/tools/cgal_reconstruction)
   endif()
   #add_subdirectory(src/tools/fusion)
-  add_subdirectory(src/tools/slicer)
+# add_subdirectory(src/tools/slicer)
 endif(CGAL_FOUND)
 
 if(PCL_FOUND)
-  add_subdirectory(src/tools/scanfilter)
+# add_subdirectory(src/tools/scanfilter)
   if(LIBFREENECT_FOUND)
-    add_subdirectory(src/tools/kinectgrabber)
+#   add_subdirectory(src/tools/kinectgrabber)
   endif(LIBFREENECT_FOUND)
 endif(PCL_FOUND)
 

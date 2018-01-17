@@ -35,7 +35,9 @@ public:
 
 private:
 
-    void generateKdTreeArray(LBPointArray<float>& V, LBPointArray<unsigned int>* sorted_indices, int max_dim);
+    void generateKdTreeArray(LBPointArray<float>& V,
+            LBPointArray<unsigned int>* sorted_indices,
+            int max_dim);
 
     boost::shared_ptr<LBPointArray<float> > m_values;
 
@@ -49,16 +51,25 @@ private:
 
     static ctpl::thread_pool *pool;
 
-    static void fillCriticalIndices(const LBPointArray<float>& V, LBPointArray<unsigned int>& sorted_indices, unsigned int current_dim,
-             float split_value, unsigned int split_index,
-             std::list<unsigned int>& critical_indices_left, std::list<unsigned int>& critical_indices_right);
+    static void fillCriticalIndices(const LBPointArray<float>& V,
+            LBPointArray<unsigned int>& sorted_indices,
+            unsigned int current_dim,
+            float split_value, unsigned int split_index,
+            std::list<unsigned int>& critical_indices_left,
+            std::list<unsigned int>& critical_indices_right);
 
-    static void fillCriticalIndicesSet(const LBPointArray<float>& V, LBPointArray<unsigned int>& sorted_indices, unsigned int current_dim,
-             float split_value, unsigned int split_index,
-             std::unordered_set<unsigned int>& critical_indices_left, std::unordered_set<unsigned int>& critical_indices_right);
+    static void fillCriticalIndicesSet(const LBPointArray<float>& V,
+            LBPointArray<unsigned int>& sorted_indices,
+            unsigned int current_dim,
+            float split_value, unsigned int split_index,
+            std::unordered_set<unsigned int>& critical_indices_left,
+            std::unordered_set<unsigned int>& critical_indices_right);
 
 
-    static void generateKdTreeRecursive(int id, LBPointArray<float>& V, LBPointArray<unsigned int>* sorted_indices, int current_dim, int max_dim, LBPointArray<float> *values, LBPointArray<unsigned char> *splits, int size, int max_tree_depth, int position, int current_depth);
+    static void generateKdTreeRecursive(int id, LBPointArray<float>& V,
+            LBPointArray<unsigned int>* sorted_indices, int current_dim, int max_dim,
+            LBPointArray<float> *values, LBPointArray<unsigned char> *splits,
+            int size, int max_tree_depth, int position, int current_depth);
 
     static void test(int id, LBPointArray<float>* sorted_indices);
 

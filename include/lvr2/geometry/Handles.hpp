@@ -67,7 +67,7 @@ namespace lvr2
  * - 32 bit handles: 16 + 2*16 + 3*16 = 96 bytes/vertex = 32 bytes/edge
  *   ==> 32 * 2^32 = 137 GiB RAM necessary to exhaust handle space
  *
- * - 16 bit handles: 20 + 2*20 + 3*32 = 156 bytes/vertex = 52 bytes/edge
+ * - 64 bit handles: 20 + 2*20 + 3*32 = 156 bytes/vertex = 52 bytes/edge
  *   ==> 52 * 2^64 = 1.1 ZiB RAM necessary to exhaust handle space
  *       (it's called zetta or zebi and is ≈ 1 million tera bytes)
  *   ==> Note: funnily enough, the estimated disk (not RAM!) capacity of
@@ -107,6 +107,12 @@ class VertexHandle : public BaseHandle<Index>
 
 /// Handle to access Cluster of the ClusterBiMap.
 class ClusterHandle : public BaseHandle<Index>
+{
+    using BaseHandle<Index>::BaseHandle;
+};
+
+/// Handle to access textures of the mesh
+class TextureHandle : public BaseHandle<Index>
 {
     using BaseHandle<Index>::BaseHandle;
 };
@@ -243,6 +249,14 @@ struct hash<lvr2::VertexHandle> {
 template<>
 struct hash<lvr2::ClusterHandle> {
     size_t operator()(const lvr2::ClusterHandle& h) const
+    {
+        return std::hash<lvr2::Index>()(h.idx());
+    }
+};
+
+template<>
+struct hash<lvr2::TextureHandle> {
+    size_t operator()(const lvr2::TextureHandle& h) const
     {
         return std::hash<lvr2::Index>()(h.idx());
     }

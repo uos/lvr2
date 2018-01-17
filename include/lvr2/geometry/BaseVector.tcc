@@ -153,7 +153,7 @@ bool BaseVector<CoordT>::operator==(const BaseVector &other) const
 template <typename CoordT>
 bool BaseVector<CoordT>::operator!=(const BaseVector &other) const
 {
-    return !(this == other);
+    return !((*this) == other);
 }
 
 template<typename CoordT>

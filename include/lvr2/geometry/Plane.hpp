@@ -28,6 +28,7 @@
 
 #include "Normal.hpp"
 #include "Point.hpp"
+#include "Line.hpp"
 
 namespace lvr2
 {
@@ -56,6 +57,9 @@ struct Plane
      *         > 0: The point lies behind the plane, oberserved from the origin
      */
     float distance(const Point<BaseVecT>& other) const;
+
+    /// Calculates the intersection between this and other
+    Line<BaseVecT> intersect(const Plane<BaseVecT>& other) const;
 };
 
 template<typename BaseVecT>

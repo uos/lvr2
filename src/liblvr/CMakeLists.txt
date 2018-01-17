@@ -3,6 +3,7 @@ set(LVR_SOURCES
     io/BaseIO.cpp
     io/ModelFactory.cpp
     io/PLYIO.cpp
+    io/Hdf5IO.cpp
     io/AsciiIO.cpp
     io/UosIO.cpp
     io/ObjIO.cpp
@@ -114,15 +115,17 @@ if(PCL_FOUND)
   set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} ${PCL_LIBRARIES})
 endif(PCL_FOUND)
 
+find_package(HDF5 REQUIRED C CXX HL)
+include_directories(${HDF5_INCLUDE_DIR})
+
 if(WITH_FREENECT AND LIBFREENECT_FOUND)
   set(LVR_SOURCES ${LVR_SOURCES} io/KinectGrabber.cpp io/KinectIO.cpp ../../include/lvr2/algorithm/UtilAlgorithms.hpp)
   set(LVR_LIB_DEPENDENCIES ${LVR_LIB_DEPENDENCIES} ${LIBFREENECT_LIBRARIES})
 endif()
 
 #####################################################################################
-# OpenCl stuff
+# OpenCL
 #####################################################################################
-
 
 if(OPENCL_FOUND)
     set(LVR_SOURCES ${LVR_SOURCES} reconstruction/opencl/ClSurface.cpp)
@@ -130,49 +133,49 @@ if(OPENCL_FOUND)
 endif()
 
 #####################################################################################
-# CUDA stuff
+# CUDA
 #####################################################################################
 
 if(CUDA_FOUND)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 
-set(LVR_CUDA_SRC
-  reconstruction/cuda/CudaSurface.cu
-)
+    # List of CUDA kernel code sources
+    set(LVR_CUDA_SRC
+        reconstruction/cuda/CudaSurface.cu
+    )
 
-# Fix broken VTK flags
-get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
-set(vtk_flags)
-foreach(it ${dir_defs})
-    if(it MATCHES "vtk*")
-    list(APPEND vtk_flags ${it})
-    endif()
-endforeach()
+    # Fix broken VTK flags
+    get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+    set(vtk_flags)
+    foreach(it ${dir_defs})
+        if(it MATCHES "vtk*")
+        list(APPEND vtk_flags ${it})
+        endif()
+    endforeach()
 
-foreach(d ${vtk_flags})
-    remove_definitions(-D${d})
-endforeach()
+    foreach(d ${vtk_flags})
+        remove_definitions(-D${d})
+    endforeach()
 
-message(STATUS "Building static LVR CUDA library")
-cuda_add_library(lvrcuda_static STATIC ${LVR_CUDA_SRC})
-target_link_libraries(lvrcuda_static lvr_static)
+    message(STATUS "Building static LVR CUDA library")
+    cuda_add_library(lvrcuda_static STATIC ${LVR_CUDA_SRC})
+    target_link_libraries(lvrcuda_static lvr_static)
 
-# Add dependency to avoid that both targets
-# are build concurrently in parallel builds
-add_dependencies(lvrcuda_static lvr_static)
-message(STATUS "Building shared LVR CUDA library")
-cuda_add_library(lvrcuda SHARED ${LVR_CUDA_SRC})
-target_link_libraries(lvrcuda lvr)
+    # Add dependency to avoid that both targets
+    # are build concurrently in parallel builds
+    add_dependencies(lvrcuda_static lvr_static)
+    message(STATUS "Building shared LVR CUDA library")
+    cuda_add_library(lvrcuda SHARED ${LVR_CUDA_CPP_SRC} ${LVR_CUDA_SRC})
+    target_link_libraries(lvrcuda lvr)
 
-install(
-  TARGETS lvrcuda_static lvrcuda
-  EXPORT lvrTargets
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
+    install(
+        TARGETS lvrcuda_static lvrcuda
+        EXPORT lvrTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
 
 endif()
-
 
 #####################################################################################
 # Compile object files for static and dynamic library
@@ -186,7 +189,7 @@ add_library(lvrcore OBJECT ${LVR_SOURCES})
 
 message(STATUS "Building static library")
 add_library(lvr_static STATIC $<TARGET_OBJECTS:lvrcore>)
-target_link_libraries(lvr_static ${LVR_INTERNAL_DEPENDENCIES_STATIC} ${LVR_LIB_DEPENDENCIES})
+target_link_libraries(lvr_static ${LVR_INTERNAL_DEPENDENCIES_STATIC} ${LVR_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 
 
 #####################################################################################
@@ -196,7 +199,7 @@ target_link_libraries(lvr_static ${LVR_INTERNAL_DEPENDENCIES_STATIC} ${LVR_LIB_D
 if( NOT MSVC )
   message(STATUS "Building shared library")
   add_library(lvr SHARED $<TARGET_OBJECTS:lvrcore>)
-  target_link_libraries(lvr ${LVR_INTERNAL_DEPENDENCIES_SHARED} ${LVR_LIB_DEPENDENCIES})
+  target_link_libraries(lvr ${LVR_INTERNAL_DEPENDENCIES_SHARED} ${LVR_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 
 install(TARGETS lvr_static lvr
   EXPORT lvrTargets

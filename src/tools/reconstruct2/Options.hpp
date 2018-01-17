@@ -41,7 +41,6 @@ using std::endl;
 using std::string;
 using std::vector;
 
-
 namespace reconstruct{
 
 /**
@@ -298,6 +297,16 @@ public:
 
     int getMinimumTransformationVotes() const;
 
+    int getTexMinClusterSize() const;
+
+    int getTexMaxClusterSize() const;
+
+    bool vertexColorsFromPointcloud() const;
+
+    bool useGPU() const;
+
+    vector<float> getFlippoint() const;
+
 private:
 
     /// The set voxelsize
@@ -409,6 +418,17 @@ private:
     ///Minimum number of vote to consider a texture transformation as "correct"
     int m_minimumTransformationVotes;
 
+    ///Minimum number of textures of a cluster needed for generating textures
+    int m_texMinClusterSize;
+
+    int m_texMaxClusterSize;
+
+    ///Use pointcloud colors to paint vertices
+    bool m_vertexColorsFromPointcloud;
+
+    // Flippoint for gpu normal calculation
+    vector<float> m_flippoint;
+
 };
 
 
@@ -508,13 +528,20 @@ inline ostream& operator<<(ostream& os, const Options &o)
     {
         cout << "##### Save points normals \t: YES" << endl;
     }
+    if(o.vertexColorsFromPointcloud())
+    {
+        cout << "##### Vertex colors: \t\t: YES" << endl;
+    }
     if(o.generateTextures())
     {
         cout << "##### Generate Textures \t: YES" << endl;
         cout << "##### Texel size \t\t: " << o.getTexelSize() << endl;
+        cout << "##### Texture Min#Cluster \t: " << o.getTexMinClusterSize() << endl;
+        cout << "##### Texture Max#Cluster \t: " << o.getTexMaxClusterSize() << endl;
+
         if(o.doTextureAnalysis())
         {
-            cout << "##### Texture Analysis \t: OFF" << endl;
+            cout << "##### Texture Analysis \t: ON" << endl;
         }
         else
         {
@@ -524,6 +551,18 @@ inline ostream& operator<<(ostream& os, const Options &o)
     if(o.getEdgeCollapseReductionRatio() > 0.0)
     {
         cout << "##### Edge collapse reduction ratio\t: " << o.getEdgeCollapseReductionRatio() << endl;
+    }
+
+    if(o.useGPU())
+    {
+        cout << "##### GPU normal estimation \t: ON" << endl;
+        std::vector<float> flipPoint = o.getFlippoint();
+        cout << "##### Flippoint \t\t: ("
+            << flipPoint[0] << ", "
+            << flipPoint[1] << ", "
+            << flipPoint[2] << ")" << endl;
+    }else{
+        cout << "##### GPU normal estimation \t: OFF" << endl;
     }
 
 

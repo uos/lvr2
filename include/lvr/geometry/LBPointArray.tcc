@@ -86,7 +86,8 @@ static void splitPointArray(LBPointArray<T>& I, LBPointArray<T>& I_L, LBPointArr
 }
 
 template<typename T, typename U>
-static bool checkSortedIndices(const LBPointArray<T>& V, const LBPointArray<U>& sorted_indices, unsigned int dim, int n)
+static bool checkSortedIndices(const LBPointArray<T>& V, const LBPointArray<U>& sorted_indices,
+        unsigned int dim, int n)
 {
     bool check = true;
     volatile U last_index = sorted_indices.elements[0];
@@ -117,8 +118,6 @@ static bool checkSortedIndices(const LBPointArray<T>& V, const LBPointArray<U>& 
 
         if( V.elements[V.dim * index + dim ] < V.elements[V.dim * last_index + dim ] )
         {
-            // std::cout << " Index " << index << " Wrong" << std::endl;
-            // std::cout << V.elements[V.dim * index + dim] << " < " << V.elements[V.dim * last_index + dim ] << std::endl;
             check = false;
         }
         last_index = index;
@@ -127,9 +126,12 @@ static bool checkSortedIndices(const LBPointArray<T>& V, const LBPointArray<U>& 
 }
 
 template<typename T, typename U>
-static void splitPointArrayWithValue(const LBPointArray<T>& V, const LBPointArray<U>& I, LBPointArray<U>& I_L, LBPointArray<U>& I_R, int current_dim, T value,
-                T& deviation_left, T& deviation_right, const unsigned int& orig_dim,
-                const std::list<U>& critical_indices_left_copy, const std::list<U>& critical_indices_right_copy)
+static void splitPointArrayWithValue(const LBPointArray<T>& V,
+        const LBPointArray<U>& I, LBPointArray<U>& I_L, LBPointArray<U>& I_R,
+        int current_dim, T value,
+        T& deviation_left, T& deviation_right, const unsigned int& orig_dim,
+        const std::list<U>& critical_indices_left_copy,
+        const std::list<U>& critical_indices_right_copy)
 {
 
     std::list<U> critical_indices_left(critical_indices_left_copy);
@@ -232,9 +234,12 @@ static void splitPointArrayWithValue(const LBPointArray<T>& V, const LBPointArra
 
 
 template<typename T, typename U>
-static void splitPointArrayWithValueSet(const LBPointArray<T>& V, const LBPointArray<U>& I, LBPointArray<U>& I_L, LBPointArray<U>& I_R, int current_dim, T value,
-                T& deviation_left, T& deviation_right, const unsigned int& orig_dim,
-                std::unordered_set<U>& critical_indices_left, std::unordered_set<U> critical_indices_right)
+static void splitPointArrayWithValueSet(const LBPointArray<T>& V,
+        const LBPointArray<U>& I, LBPointArray<U>& I_L, LBPointArray<U>& I_R,
+        int current_dim, T value,
+        T& deviation_left, T& deviation_right, const unsigned int& orig_dim,
+        std::unordered_set<U>& critical_indices_left,
+        std::unordered_set<U> critical_indices_right)
 {
 
     U i_l = 0;
@@ -368,7 +373,9 @@ static unsigned int checkNumberOfSmallerEqualValues(LBPointArray<float>& V, unsi
 
 // SORT FUNCTIONS THREADED
 template<typename T, typename U>
-static void mergeHostWithIndices(T* a, U* b, unsigned int i1, unsigned int j1, unsigned int i2, unsigned int j2, int limit) {
+static void mergeHostWithIndices(T* a, U* b, unsigned int i1, unsigned int j1,
+        unsigned int i2, unsigned int j2, int limit)
+{
 
     int limit_end = limit;
 
@@ -457,8 +464,13 @@ static void naturalMergeSort(LBPointArray<T>& in, int dim, LBPointArray<U>& indi
         unsigned int i;
         for(i=2;i<num_slides+1;i+=2)
         {
-            mergeHostWithIndices<T,U>(m.elements, indices.elements , slide_buffer[i-2], slide_buffer[i-1]-1, slide_buffer[i-1], slide_buffer[i]-1, current_limit);
-
+            mergeHostWithIndices<T,U>(m.elements,
+                    indices.elements,
+                    slide_buffer[i-2],
+                    slide_buffer[i-1]-1,
+                    slide_buffer[i-1],
+                    slide_buffer[i]-1,
+                    current_limit);
             slide_buffer[i/2] = slide_buffer[i];
         }
 
@@ -482,7 +494,10 @@ static void sortByDim(LBPointArray<T>& V, int dim, LBPointArray<U>& indices, LBP
 }
 
 template<typename T, typename U>
-static void generateAndSort(int id, LBPointArray<T>& vertices, LBPointArray<U>* indices_sorted, LBPointArray<T>* values_sorted, int dim)
+static void generateAndSort(int id, LBPointArray<T>& vertices,
+        LBPointArray<U>* indices_sorted,
+        LBPointArray<T>* values_sorted,
+        int dim)
 {
     generatePointArray<U>( indices_sorted[dim], vertices.width, 1);
     generatePointArray<T>( values_sorted[dim], vertices.width, 1);

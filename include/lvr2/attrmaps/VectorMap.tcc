@@ -26,8 +26,6 @@
 
 #include <utility>
 
-using std::move;
-
 #include <lvr2/util/Panic.hpp>
 
 namespace lvr2
@@ -75,7 +73,7 @@ optional<ValueT> VectorMap<HandleT, ValueT>::erase(HandleT key)
     auto val = m_vec.get(key);
     if (val)
     {
-        auto out = ValueT(move(*val));
+        auto out = ValueT(std::move(*val));
         m_vec.erase(key);
         return out;
     }
@@ -177,6 +175,12 @@ template<typename HandleT, typename ValueT>
 HandleT VectorMapIterator<HandleT, ValueT>::operator*() const
 {
     return *m_iter;
+}
+
+template<typename HandleT, typename ValueT>
+std::unique_ptr<AttributeMapHandleIterator<HandleT>> VectorMapIterator<HandleT, ValueT>::clone() const
+{
+    return std::make_unique<VectorMapIterator>(*this);
 }
 
 } // namespace lvr2
