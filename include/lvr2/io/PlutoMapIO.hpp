@@ -63,12 +63,12 @@ class PlutoMapIO
 {
 public:
     /**
-     * @brief Opens a Pluto map file for reading.
+     * @brief Opens a Pluto map file for reading and writing.
      */
     PlutoMapIO(string filename);
 
     /**
-     * @brief Creates a Pluto map file (or truncates if the file alrady exists).
+     * @brief Creates a Pluto map file (or truncates if the file already exists).
      */
     PlutoMapIO(
         string filename,
@@ -177,10 +177,33 @@ public:
     /**
      * @brief Adds an image with given data set name to the given group
      */
-    void addImage(hf::Group group, string name, const uint32_t width, const uint32_t height, const uint8_t* pixelBuffer);
+    void addImage(hf::Group group,
+                  string name,
+                  const uint32_t width,
+                  const uint32_t height,
+                  const uint8_t* pixelBuffer
+    );
+
+    /**
+     * Removes all labels from the file.
+     * <br>
+     * Be careful, this does not clear up the space of the labels. Use the cli tool h5repack manually to clear up
+     * all wasted space if this method was used multiple times.
+     *
+     * @return true if removing all labels successfully.
+     */
+    bool removeAllLabels();
 
 private:
     hf::File m_file;
+
+    // group names
+
+    static constexpr const char* GEOMETRY_GROUP = "/geometry";
+    static constexpr const char* ATTRIBUTES_GROUP = "/attributes";
+    static constexpr const char* CLUSTERSETS_GROUP = "/clustersets";
+    static constexpr const char* TEXTURES_GROUP = "/textures";
+    static constexpr const char* LABELS_GROUP = "/labels";
 
     // main groups for reference
     hf::Group m_geometryGroup;
