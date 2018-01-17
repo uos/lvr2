@@ -175,8 +175,8 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
 
             std::vector<cv::KeyPoint> keypoints;
             cv::Mat descriptors;
-            m_texturizer.get().findKeyPointsInTexture(texH,
-                    boundingRect, keypoints, descriptors);
+            // m_texturizer.get().findKeyPointsInTexture(texH,
+            //         boundingRect, keypoints, descriptors);
             // cv::Ptr<cv::Feature2D> detector = cv::AKAZE::create();
 
             // Create material and insert in face map

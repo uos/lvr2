@@ -441,7 +441,7 @@ void ObjIO::save( string filename )
         std::vector<int> color_indices,texture_indices;
 
         //splitting materials in colors an textures
-        for(size_t i = 0; i< lenFaces; ++i)
+        for(size_t i = 0; i< lenFaceMaterialIndices; ++i)
         {
             Material* m = materials[faceMaterialIndices[i]];
             if(m->texture_index >=0 )
