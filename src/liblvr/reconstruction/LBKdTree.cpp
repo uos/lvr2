@@ -28,8 +28,10 @@ LBKdTree::~LBKdTree() {
 
 void LBKdTree::generateKdTree(LBPointArray<float> &vertices) {
 
-    LBPointArray<unsigned int>* indices_sorted = (LBPointArray<unsigned int>*)malloc(vertices.dim * sizeof(LBPointArray<unsigned int>) );
-    LBPointArray<float>* values_sorted = (LBPointArray<float>*)malloc(vertices.dim * sizeof(LBPointArray<float>) );
+    LBPointArray<unsigned int>* indices_sorted =
+        (LBPointArray<unsigned int>*)malloc(vertices.dim * sizeof(LBPointArray<unsigned int>) );
+    LBPointArray<float>* values_sorted =
+        (LBPointArray<float>*)malloc(vertices.dim * sizeof(LBPointArray<float>) );
 
 
 
@@ -65,7 +67,8 @@ boost::shared_ptr<LBPointArray<unsigned char> > LBKdTree::getKdTreeSplits() {
 
 /// Private
 
-void LBKdTree::generateKdTreeArray(LBPointArray<float>& V, LBPointArray<unsigned int>* sorted_indices, int max_dim) {
+void LBKdTree::generateKdTreeArray(LBPointArray<float>& V,
+        LBPointArray<unsigned int>* sorted_indices, int max_dim) {
 
     // DEBUG CHECK
 
@@ -113,24 +116,26 @@ void LBKdTree::generateKdTreeArray(LBPointArray<float>& V, LBPointArray<unsigned
     LBPointArray<float>* value_ptr = this->m_values.get();
     LBPointArray<unsigned char>* splits_ptr = this->m_splits.get();
     //start real generate
-    generateKdTreeRecursive(0, V, sorted_indices, first_split_dim, max_dim, value_ptr, splits_ptr ,size, max_tree_depth, 0, 0);
-
-    //pool->push(generateKdTreeRecursive, V, sorted_indices, 0, max_dim, kd_tree, size, max_tree_depth, 0, 0);
+    generateKdTreeRecursive(0, V, sorted_indices, first_split_dim,
+            max_dim, value_ptr, splits_ptr ,size, max_tree_depth, 0, 0);
 
     pool->stop(true);
     pool = new ctpl::thread_pool(st_num_threads);
 }
 
-void LBKdTree::fillCriticalIndices(const LBPointArray<float>& V, LBPointArray<unsigned int>& sorted_indices, unsigned int current_dim,
-             float split_value, unsigned int split_index,
-             std::list<unsigned int>& critical_indices_left, std::list<unsigned int>& critical_indices_right)
+void LBKdTree::fillCriticalIndices(const LBPointArray<float>& V,
+        LBPointArray<unsigned int>& sorted_indices, unsigned int current_dim,
+        float split_value, unsigned int split_index,
+        std::list<unsigned int>& critical_indices_left,
+        std::list<unsigned int>& critical_indices_right)
 {
     critical_indices_left.push_back( sorted_indices.elements[split_index] );
 
     unsigned int iterator;
     // nach links
     for(iterator = split_index-1;
-        iterator < sorted_indices.width && V.elements[ sorted_indices.elements[iterator] * V.dim + current_dim] == split_value;
+        iterator < sorted_indices.width
+        && V.elements[ sorted_indices.elements[iterator] * V.dim + current_dim] == split_value;
         iterator--)
     {
         critical_indices_left.push_back( sorted_indices.elements[iterator] );
@@ -138,7 +143,8 @@ void LBKdTree::fillCriticalIndices(const LBPointArray<float>& V, LBPointArray<un
 
     // nach rechts
     for(iterator = split_index+1;
-        iterator < sorted_indices.width && V.elements[ sorted_indices.elements[iterator] * V.dim + current_dim] == split_value;
+        iterator < sorted_indices.width
+        && V.elements[ sorted_indices.elements[iterator] * V.dim + current_dim] == split_value;
         iterator++)
     {
         critical_indices_right.push_back( sorted_indices.elements[iterator] );
@@ -146,16 +152,19 @@ void LBKdTree::fillCriticalIndices(const LBPointArray<float>& V, LBPointArray<un
 
 }
 
-void LBKdTree::fillCriticalIndicesSet(const LBPointArray<float>& V, LBPointArray<unsigned int>& sorted_indices, unsigned int current_dim,
-             float split_value, unsigned int split_index,
-             std::unordered_set<unsigned int>& critical_indices_left, std::unordered_set<unsigned int>& critical_indices_right)
+void LBKdTree::fillCriticalIndicesSet(const LBPointArray<float>& V,
+        LBPointArray<unsigned int>& sorted_indices, unsigned int current_dim,
+        float split_value, unsigned int split_index,
+        std::unordered_set<unsigned int>& critical_indices_left,
+        std::unordered_set<unsigned int>& critical_indices_right)
 {
     //critical_indices_left.push_back( sorted_indices.elements[split_index] );
     critical_indices_left.insert(sorted_indices.elements[split_index]);
     unsigned int iterator;
     // nach links
     for(iterator = split_index-1;
-        iterator < sorted_indices.width && V.elements[ sorted_indices.elements[iterator] * V.dim + current_dim] == split_value;
+        iterator < sorted_indices.width
+        && V.elements[ sorted_indices.elements[iterator] * V.dim + current_dim] == split_value;
         iterator--)
     {
         critical_indices_left.insert( sorted_indices.elements[iterator] );
@@ -163,7 +172,8 @@ void LBKdTree::fillCriticalIndicesSet(const LBPointArray<float>& V, LBPointArray
 
     // nach rechts
     for(iterator = split_index+1;
-        iterator < sorted_indices.width && V.elements[ sorted_indices.elements[iterator] * V.dim + current_dim] == split_value;
+        iterator < sorted_indices.width
+        && V.elements[ sorted_indices.elements[iterator] * V.dim + current_dim] == split_value;
         iterator++)
     {
         critical_indices_right.insert( sorted_indices.elements[iterator] );
@@ -171,8 +181,11 @@ void LBKdTree::fillCriticalIndicesSet(const LBPointArray<float>& V, LBPointArray
 
 }
 
-void LBKdTree::generateKdTreeRecursive(int id, LBPointArray<float>& V, LBPointArray<unsigned int>* sorted_indices, int current_dim, int max_dim, LBPointArray<float> *values, LBPointArray<unsigned char> *splits , int size, int max_tree_depth, int position, int current_depth) {
-
+void LBKdTree::generateKdTreeRecursive(int id, LBPointArray<float>& V,
+        LBPointArray<unsigned int>* sorted_indices, int current_dim, int max_dim,
+        LBPointArray<float> *values, LBPointArray<unsigned char> *splits ,
+        int size, int max_tree_depth, int position, int current_depth)
+{
     int left = position*2+1;
     int right = position*2+2;
 
@@ -196,22 +209,26 @@ void LBKdTree::generateKdTreeRecursive(int id, LBPointArray<float>& V, LBPointAr
 
 
 
-        unsigned int split_index = static_cast<unsigned int>(sorted_indices[current_dim].elements[left_size-1] + 0.5);
+        unsigned int split_index = static_cast<unsigned int>(
+                sorted_indices[current_dim].elements[left_size-1] + 0.5
+            );
+
         float split_value = V.elements[split_index * V.dim + current_dim ];
 
         // critical indices
         // std::list<unsigned int> critical_indices_left;
         // std::list<unsigned int> critical_indices_right;
 
-        // fillCriticalIndices(V, sorted_indices[current_dim], current_dim, split_value, left_size-1,
+        // fillCriticalIndices(V, sorted_indices[current_dim], current_dim, split_value, left_size-1
         //      critical_indices_left, critical_indices_right);
 
 
         std::unordered_set<unsigned int> critical_indices_left;
         std::unordered_set<unsigned int> critical_indices_right;
 
-        fillCriticalIndicesSet(V, sorted_indices[current_dim], current_dim, split_value, left_size-1,
-             critical_indices_left, critical_indices_right);
+        fillCriticalIndicesSet(V, sorted_indices[current_dim],
+                current_dim, split_value, left_size-1, critical_indices_left,
+                critical_indices_right);
 
         // for(auto it = critical_indices_left.begin(); it != critical_indices_left.end(); it++)
         // {
@@ -230,8 +247,10 @@ void LBKdTree::generateKdTreeRecursive(int id, LBPointArray<float>& V, LBPointAr
         splits->elements[ position ] = static_cast<unsigned char>(current_dim);
 
 
-        LBPointArray<unsigned int> *sorted_indices_left = (LBPointArray<unsigned int>*)malloc( 3*sizeof(LBPointArray<unsigned int>) );
-        LBPointArray<unsigned int> *sorted_indices_right = (LBPointArray<unsigned int>*)malloc( 3*sizeof(LBPointArray<unsigned int>) );
+        LBPointArray<unsigned int> *sorted_indices_left =
+            (LBPointArray<unsigned int>*)malloc( 3*sizeof(LBPointArray<unsigned int>) );
+        LBPointArray<unsigned int> *sorted_indices_right =
+            (LBPointArray<unsigned int>*)malloc( 3*sizeof(LBPointArray<unsigned int>) );
 
         int next_dim_left = -1;
         int next_dim_right = -1;
@@ -254,7 +273,9 @@ void LBKdTree::generateKdTreeRecursive(int id, LBPointArray<float>& V, LBPointAr
 
 
             if( i == current_dim ){
-                 splitPointArray<unsigned int>( sorted_indices[i], sorted_indices_left[i], sorted_indices_right[i]);
+                 splitPointArray<unsigned int>( sorted_indices[i],
+                         sorted_indices_left[i],
+                         sorted_indices_right[i]);
 
 
                  deviation_left = fabs(V.elements[sorted_indices_left[i].elements[left_size - 1] * V.dim + i ]
@@ -263,12 +284,14 @@ void LBKdTree::generateKdTreeRecursive(int id, LBPointArray<float>& V, LBPointAr
                                     - V.elements[sorted_indices_right[i].elements[0]  * V.dim + i] );
 
             } else {
-                // splitPointArrayWithValue<float,unsigned int>(V, sorted_indices[i], sorted_indices_left[i], sorted_indices_right[i],
+                // splitPointArrayWithValue<float,unsigned int>(V, sorted_indices[i],
+                // sorted_indices_left[i], sorted_indices_right[i],
                 //         current_dim, split_value,
                 //         deviation_left, deviation_right, i,
                 //         critical_indices_left, critical_indices_right);
 
-                splitPointArrayWithValueSet<float,unsigned int>(V, sorted_indices[i], sorted_indices_left[i], sorted_indices_right[i],
+                splitPointArrayWithValueSet<float,unsigned int>(V, sorted_indices[i],
+                        sorted_indices_left[i], sorted_indices_right[i],
                         current_dim, split_value,
                         deviation_left, deviation_right, i,
                         critical_indices_left, critical_indices_right);
@@ -292,13 +315,20 @@ void LBKdTree::generateKdTreeRecursive(int id, LBPointArray<float>& V, LBPointAr
 
         if(current_depth == st_depth_threads )
         {
-            pool->push(generateKdTreeRecursive, V, sorted_indices_left, next_dim_left, max_dim, values, splits, size, max_tree_depth, left, current_depth + 1);
-            pool->push(generateKdTreeRecursive, V, sorted_indices_right, next_dim_right, max_dim, values, splits, size, max_tree_depth, right, current_depth +1);
+            pool->push(generateKdTreeRecursive, V, sorted_indices_left,
+                    next_dim_left, max_dim, values, splits, size, max_tree_depth,
+                    left, current_depth + 1);
+
+            pool->push(generateKdTreeRecursive, V, sorted_indices_right,
+                    next_dim_right, max_dim, values, splits, size, max_tree_depth,
+                    right, current_depth +1);
         } else {
             //std::cout<< "left " << current_dim << std::endl;
-            generateKdTreeRecursive(0, V, sorted_indices_left, next_dim_left, max_dim, values, splits, size, max_tree_depth, left, current_depth + 1);
+            generateKdTreeRecursive(0, V, sorted_indices_left, next_dim_left, max_dim,
+                    values, splits, size, max_tree_depth, left, current_depth + 1);
             //std::cout << "right " << current_dim << std::endl;
-            generateKdTreeRecursive(0, V, sorted_indices_right, next_dim_right, max_dim, values, splits, size, max_tree_depth, right, current_depth +1);
+            generateKdTreeRecursive(0, V, sorted_indices_right, next_dim_right, max_dim,
+                    values, splits, size, max_tree_depth, right, current_depth +1);
         }
 
     }

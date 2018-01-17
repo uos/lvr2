@@ -73,10 +73,12 @@ void computeNormals(string filename, cuda_normals::Options& opt, PointBufferPtr&
 
     if(opt.useRansac())
     {
-        gpu_surface.setMethod("RANSAC");
+        std::string method = "RANSAC";
+        gpu_surface.setMethod(method);
     } else
     {
-        gpu_surface.setMethod("PCA");
+        std::string method = "PCA";
+        gpu_surface.setMethod(method);
     }
     gpu_surface.setFlippoint(opt.flipx(), opt.flipy(), opt.flipz());
 
@@ -87,10 +89,8 @@ void computeNormals(string filename, cuda_normals::Options& opt, PointBufferPtr&
     cout << timestamp << "Finished Normal Calculation. " << endl;
 
     size_t nc;
-    buffer->setPointArray(points, num_points);
-    buffer->setPointNormalArray(normals, num_points);
-    buffer->setPointColorArray(model->m_pointCloud->getPointColorArray(nc), num_points);
-
+    model->m_pointCloud->setPointNormalArray(normals, num_points);
+    buffer = model->m_pointCloud;
 
     gpu_surface.freeGPU();
 }
@@ -118,10 +118,20 @@ void reconstructAndSave(PointBufferPtr& buffer, cuda_normals::Options& opt)
     FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
     BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
 
-    grid = new PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), true);
-    PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+    grid = new PointsetGrid<
+        ColorVertex<float, unsigned char>,
+        BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >
+        >(resolution, surface, surface->getBoundingBox(), true);
+
+    PointsetGrid<ColorVertex<float, unsigned char>,
+        BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >
+        >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>,
+                BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+
     ps_grid->calcDistanceValues();
-    reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+    reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> ,
+                   Normal<float>,
+                   BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
     reconstruction->getMesh(mesh);
 
     mesh.finalize();

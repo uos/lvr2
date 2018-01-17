@@ -1,4 +1,4 @@
-/* Copyright (C) 2011 Uni Osnabrück
+ /* Copyright (C) 2011 Uni Osnabrück
  * This file is part of the LAS VEGAS Reconstruction Toolkit,
  *
  * LAS VEGAS is free software; you can redistribute it and/or modify
@@ -186,6 +186,8 @@
 #include <lvr2/algorithm/ClusterAlgorithms.hpp>
 #include <lvr2/algorithm/CleanupAlgorithms.hpp>
 #include <lvr2/algorithm/ReductionAlgorithms.hpp>
+#include <lvr2/algorithm/Materializer.hpp>
+#include <lvr2/algorithm/Texturizer.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/BilinearFastBox.hpp>
@@ -196,6 +198,8 @@
 #include <lvr2/reconstruction/HashGrid.hpp>
 #include <lvr2/reconstruction/PointsetGrid.hpp>
 #include <lvr2/io/PointBuffer.hpp>
+#include <lvr2/io/MeshBuffer.hpp>
+#include <lvr2/io/PlutoMapIO.hpp>
 #include <lvr2/util/Factories.hpp>
 #include <lvr2/algorithm/MeshNavAlgorithms.hpp>
 #include <lvr2/algorithm/UtilAlgorithms.hpp>
@@ -203,6 +207,19 @@
 // PCL related includes
 #ifdef LVR_USE_PCL
 #include <lvr/reconstruction/PCLKSurface.hpp>
+#endif
+
+#if defined CUDA_FOUND
+    #define GPU_FOUND
+
+    #include <lvr/reconstruction/cuda/CudaSurface.hpp>
+
+    typedef lvr::CudaSurface GpuSurface;
+#elif defined OPENCL_FOUND
+    #define GPU_FOUND
+
+    #include <lvr/reconstruction/opencl/ClSurface.hpp>
+    typedef lvr::ClSurface GpuSurface;
 #endif
 
 
@@ -450,7 +467,7 @@ void testFinalize(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
     auto buffer = finalize.apply(mesh);
 
     // Create output model and save to file
-    auto model = new lvr::Model(buffer);
+    auto model = new lvr::Model(buffer->toOldBuffer());
     lvr::ModelPtr m(model);
     cout << timestamp << "Saving mesh." << endl;
     lvr::ModelFactory::saveModel( m, "triangle_mesh.ply");
@@ -483,7 +500,7 @@ void testCollapseEdge()
         auto buffer = finalize.apply(mesh);
 
         // Create output model and save to file
-        auto model = new lvr::Model(buffer);
+        auto model = new lvr::Model(buffer->toOldBuffer());
         lvr::ModelPtr m(model);
         cout << timestamp << "Saving mesh." << endl;
         std::stringstream ss;
@@ -501,7 +518,7 @@ void testCollapseEdge()
     auto buffer = finalize.apply(mesh);
 
     // Create output model and save to file
-    auto model = new lvr::Model(buffer);
+    auto model = new lvr::Model(buffer->toOldBuffer());
     lvr::ModelPtr m(model);
     cout << timestamp << "Saving mesh." << endl;
     lvr::ModelFactory::saveModel( m, "triangle_mesh.ply");
@@ -514,7 +531,7 @@ void testEdgeFlip()
 
     FinalizeAlgorithm<BaseVector<float>> finalize;
     auto buffer = finalize.apply(mesh);
-    auto model = new lvr::Model(buffer);
+    auto model = new lvr::Model(buffer->toOldBuffer());
     lvr::ModelPtr m(model);
     lvr::ModelFactory::saveModel(m, "flipped_nikolaus_original.ply");
 
@@ -532,7 +549,7 @@ void testEdgeFlip()
 
         FinalizeAlgorithm<BaseVector<float>> finalize;
         auto buffer = finalize.apply(mesh);
-        auto model = new lvr::Model(buffer);
+        auto model = new lvr::Model(buffer->toOldBuffer());
         lvr::ModelPtr m(model);
         std::stringstream ss;
         ss << "flipped_nikolaus_" << edgeH.idx() << ".ply";
@@ -640,7 +657,39 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     // Calculate normals if necessary
     if(!buffer->hasNormals() || options.recalcNormals())
     {
-        surface->calculateSurfaceNormals();
+
+        if(options.useGPU())
+        {
+            #ifdef GPU_FOUND
+                std::vector<float> flipPoint = options.getFlippoint();
+                size_t num_points;
+                lvr::floatArr points;
+                lvr::PointBuffer old_buffer = buffer->toOldBuffer();
+                points = old_buffer.getPointArray(num_points);
+                lvr::floatArr normals = lvr::floatArr(new float[ num_points * 3 ]);
+                std::cout << "Generate GPU kd-tree..." << std::endl;
+                GpuSurface gpu_surface(points, num_points);
+                std::cout << "finished." << std::endl;
+
+                gpu_surface.setKn(options.getKn());
+                gpu_surface.setKi(options.getKi());
+                gpu_surface.setFlippoint(flipPoint[0], flipPoint[1], flipPoint[2]);
+                std::cout << "Start Normal Calculation..." << std::endl;
+                gpu_surface.calculateNormals();
+                gpu_surface.getNormals(normals);
+                std::cout << "finished." << std::endl;
+                old_buffer.setPointNormalArray(normals, num_points);
+                buffer->copyNormalsFrom(old_buffer);
+                gpu_surface.freeGPU();
+            #else
+                std::cout << "ERROR: GPU Driver not installed" << std::endl;
+                surface->calculateSurfaceNormals();
+            #endif
+        }
+        else
+        {
+            surface->calculateSurfaceNormals();
+        }
     }
     else
     {
@@ -698,77 +747,6 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
     return make_pair(nullptr, nullptr);
 }
 
-void setTextureOptions(const reconstruct::Options& options)
-{
-    // if(options.getTexelSize())
-    // {
-    //     Texture::m_texelSize = options.getTexelSize();
-    // }
-
-    // if(options.getTexturePack() != "")
-    // {
-    //     Texturizer<Vertex<float> , Normal<float> >::m_filename = options.getTexturePack();
-    //     if(options.getStatsCoeffs())
-    //     {
-    //         float* sc = options.getStatsCoeffs();
-    //         for (int i = 0; i < 14; i++)
-    //         {
-    //             Statistics::m_coeffs[i] = sc[i];
-    //         }
-    //         delete sc;
-    //     }
-    //     if(options.getNumStatsColors())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_numStatsColors = options.getNumStatsColors();
-    //     }
-    //     if(options.getNumCCVColors())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_numCCVColors = options.getNumCCVColors();
-    //     }
-    //     if(options.getCoherenceThreshold())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_coherenceThreshold = options.getCoherenceThreshold();
-    //     }
-
-    //     if(options.getColorThreshold())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_colorThreshold = options.getColorThreshold();
-    //     }
-    //     if(options.getStatsThreshold())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_statsThreshold = options.getStatsThreshold();
-    //     }
-    //     if(options.getUseCrossCorr())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_useCrossCorr = options.getUseCrossCorr();
-    //     }
-    //     if(options.getFeatureThreshold())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_featureThreshold = options.getFeatureThreshold();
-    //     }
-    //     if(options.getPatternThreshold())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_patternThreshold = options.getPatternThreshold();
-    //     }
-    //     if(options.doTextureAnalysis())
-    //     {
-    //         Texturizer<Vertex<float> , Normal<float> >::m_doAnalysis = true;
-    //     }
-    //     if(options.getMinimumTransformationVotes())
-    //     {
-    //         Transform::m_minimumVotes = options.getMinimumTransformationVotes();
-    //     }
-    // }
-
-    // if(options.getSharpFeatureThreshold())
-    // {
-    //     SharpBox<Vertex<float> , Normal<float> >::m_theta_sharp = options.getSharpFeatureThreshold();
-    // }
-    // if(options.getSharpCornerThreshold())
-    // {
-    //     SharpBox<Vertex<float> , Normal<float> >::m_phi_corner = options.getSharpCornerThreshold();
-    // }
-}
 
 void testMeshnav(
     const BaseMesh<BaseVecT>& mesh,
@@ -825,6 +803,15 @@ void testMeshnav(
 
 int main(int argc, char** argv)
 {
+    // auto io = PlutoMapIO(
+    //     "testio.h5",
+    //     {1.0, 2.0, 5.0, 10.0, 11.0, 15.0, 20.0, 21.0, 25.0},
+    //     {0, 1, 2}
+    // );
+    // io.stuff();
+    // return 0;
+
+
     // =======================================================================
     // Parse and print command line parameters
     // =======================================================================
@@ -870,9 +857,6 @@ int main(int argc, char** argv)
     // =======================================================================
     // Create an empty mesh
     lvr2::HalfEdgeMesh<Vec> mesh;
-
-    // TODO2
-    setTextureOptions(options);
 
     shared_ptr<GridBase> grid;
     unique_ptr<FastReconstructionBase<Vec>> reconstruction;
@@ -927,13 +911,17 @@ int main(int argc, char** argv)
 
     if(options.getDanglingArtifacts())
     {
+        cout << timestamp << "Removing dangling artifacts" << endl;
         removeDanglingCluster(mesh, static_cast<size_t>(options.getDanglingArtifacts()));
     }
 
     // Magic number from lvr1 `cleanContours`...
     cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
 
-    naiveFillSmallHoles(mesh, options.getFillHoles(), false);
+    if(options.getFillHoles())
+    {
+        naiveFillSmallHoles(mesh, options.getFillHoles(), false);
+    }
 
     auto faceNormals = calcFaceNormals(mesh);
 
@@ -1012,9 +1000,10 @@ int main(int argc, char** argv)
         clusterBiMap = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
     }
 
+    // Prepare color data for finalizing
     ClusterPainter painter(clusterBiMap);
     auto clusterColors = optional<DenseClusterMap<Rgb8Color>>(painter.simpsons(mesh));
-    // auto colorMap = calcColorFromPointCloud(mesh, surface);
+    auto vertexColors = calcColorFromPointCloud(mesh, surface);
 
     // Calc normals for vertices
     auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
@@ -1032,12 +1021,59 @@ int main(int argc, char** argv)
     // }
     // auto buffer = finalize.apply(mesh);
 
+
+    // Prepare finalize algorithm
     ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
     finalize.setVertexNormals(vertexNormals);
-    if (clusterColors)
+
+    // TODO:
+    // Vielleicht sollten indv. vertex und cluster colors mit in den Materializer aufgenommen werden
+    // Dafür spricht: alles mit Farben findet dann an derselben Stelle statt
+    // dagegen spricht: Materializer macht aktuell nur face colors und keine vertex colors
+
+
+    // Vertex colors:
+    // If vertex colors should be generated from pointcloud:
+    if (options.vertexColorsFromPointcloud())
     {
-      finalize.setClusterColors(*clusterColors);
+        // set vertex color data from pointcloud
+        finalize.setVertexColors(*vertexColors);
     }
+    else if (clusterColors)
+    {
+        // else: use simpsons painter for vertex coloring
+        finalize.setClusterColors(*clusterColors);
+    }
+
+    // Materializer for face materials (colors and/or textures)
+    Materializer<Vec> materializer(
+        mesh,
+        clusterBiMap,
+        faceNormals,
+        *surface
+    );
+    // When using textures ...
+    if (options.generateTextures())
+    {
+        Texturizer<Vec> texturizer(
+            options.getTexelSize(),
+            options.getTexMinClusterSize(),
+            options.getTexMaxClusterSize()
+        );
+        materializer.setTexturizer(texturizer);
+    }
+    // Generate materials
+    MaterializerResult<Vec> matResult = materializer.generateMaterials();
+    // When using textures ...
+    if (options.generateTextures())
+    {
+        // Save them to disk
+        materializer.saveTextures();
+    }
+
+    // Add material data to finalize algorithm
+    finalize.setMaterializerResult(matResult);
+    // Run finalize algorithm
     auto buffer = finalize.apply(mesh);
 
     // =======================================================================
@@ -1051,7 +1087,7 @@ int main(int argc, char** argv)
     // }
 
     // Create output model and save to file
-    auto m = boost::make_shared<lvr::Model>(buffer);
+    auto m = boost::make_shared<lvr::Model>(buffer->toOldBuffer(matResult));
 
     if(options.saveOriginalData())
     {
@@ -1060,15 +1096,10 @@ int main(int argc, char** argv)
         );
     }
     cout << timestamp << "Saving mesh." << endl;
+    lvr::ModelFactory::saveModel(m, "triangle_mesh.h5");
     lvr::ModelFactory::saveModel(m, "triangle_mesh.ply");
-
-    // TODO2
-    // // Save obj model if textures were generated
-    // if(options.generateTextures())
-    // {
-    //     ModelFactory::saveModel( m, "triangle_mesh.obj");
-    // }
-    // cout << timestamp << "Program end." << endl;
+    lvr::ModelFactory::saveModel(m, "triangle_mesh.obj");
+    cout << timestamp << "Program end." << endl;
 
     return 0;
 }

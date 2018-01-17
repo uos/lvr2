@@ -31,6 +31,7 @@
 
 #include "Point.hpp"
 
+using std::endl;
 
 namespace lvr2
 {

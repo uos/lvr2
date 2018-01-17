@@ -50,7 +50,7 @@ Options::Options(int argc, char** argv)
         ("clusterPlanes,c", "Cluster planar regions based on normal threshold, do not shift vertices into regression plane.")
         ("cleanContours", value<int>(&m_cleanContourIterations)->default_value(0), "Remove noise artifacts from contours. Same values are between 2 and 4")
         ("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
-        ("fillHoles,f", value<int>(&m_fillHoles)->default_value(30), "Maximum size for hole filling")
+        ("fillHoles,f", value<int>(&m_fillHoles)->default_value(0), "Maximum size for hole filling")
         ("rda", value<int>(&m_rda)->default_value(0), "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")
         ("pnt", value<float>(&m_planeNormalThreshold)->default_value(0.85), "(Plane Normal Threshold) Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
         ("smallRegionThreshold", value<int>(&m_smallRegionThreshold)->default_value(10), "Threshold for small region removal. If 0 nothing will be deleted.")
@@ -66,6 +66,8 @@ Options::Options(int argc, char** argv)
         ("retesselate,t", "Retesselate regions that are in a regression plane. Implies --optimizePlanes.")
         ("lft", value<float>(&m_lineFusionThreshold)->default_value(0.01), "(Line Fusion Threshold) Threshold for fusing line segments while tesselating.")
         ("generateTextures", "Generate textures during finalization.")
+        ("texMinClusterSize", value<int>(&m_texMinClusterSize)->default_value(100), "Minimum number of faces of a cluster to create a texture from")
+        ("texMaxClusterSize", value<int>(&m_texMaxClusterSize)->default_value(0), "Maximum number of faces of a cluster to create a texture from (0 = no limit)")
         ("textureAnalysis", "Enable texture analysis features for texture matchung.")
         ("texelSize", value<float>(&m_texelSize)->default_value(1), "Texel size that determines texture resolution.")
         ("classifier", value<string>(&m_classifier)->default_value("PlaneSimpsons"),"Classfier object used to color the mesh.")
@@ -85,6 +87,9 @@ Options::Options(int argc, char** argv)
         ("cro", "Use texture matching based on cross correlation.")
         ("patt", value<float>(&m_patternThreshold)->default_value(100), "Threshold for pattern extraction from textures")
         ("mtv", value<int>(&m_minimumTransformationVotes)->default_value(3), "Minimum number of votes to consider a texture transformation as correct")
+        ("vcfp", "Use color information from pointcloud to paint vertices")
+        ("useGPU", "GPU normal estimation")
+        ("flipPoint", value< vector<float> >()->multitoken(), "Flippoint --flipPoint x y z" )
     ;
 
     setup();
@@ -385,6 +390,48 @@ float* Options::getStatsCoeffs()const
     }
     return result;
 }
+
+int Options::getTexMinClusterSize() const
+{
+    return m_variables["texMinClusterSize"].as<int>();
+}
+
+int Options::getTexMaxClusterSize() const
+{
+    return m_variables["texMaxClusterSize"].as<int>();
+}
+
+bool Options::vertexColorsFromPointcloud() const
+{
+    return m_variables.count("vcfp");
+}
+
+bool Options::useGPU() const
+{
+    return m_variables.count("useGPU");
+}
+
+vector<float> Options::getFlippoint() const
+{
+    vector<float> dest;
+    if(m_variables.count("flipPoint"))
+    {
+        dest = (m_variables["flipPoint"].as< vector<float> >());
+        if(dest.size() != 3)
+        {
+            dest.clear();
+            dest.push_back(10000000);
+            dest.push_back(10000000);
+            dest.push_back(10000000);
+        }
+    }else{
+        dest.push_back(10000000);
+        dest.push_back(10000000);
+        dest.push_back(10000000);
+    }
+    return dest;
+}
+
 
 Options::~Options() {
     // TODO Auto-generated destructor stub

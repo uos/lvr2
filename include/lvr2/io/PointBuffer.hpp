@@ -100,6 +100,11 @@ public:
     void addNormalChannel(Normal<BaseVecT> def = Normal<BaseVecT>(0, 0, 1));
 
     /**
+     * @brief Copies normals from old buffer to this one.
+     */
+    void copyNormalsFrom(lvr::PointBuffer& oldBuffer);
+
+    /**
      * @brief Returns the normal with the given index.
      */
     optional<const Normal<BaseVecT>&> getNormal(size_t idx) const;

@@ -58,9 +58,6 @@ static void HandleError( cudaError_t err,
 #define HANDLE_ERROR( err ) (HandleError( err, __FILE__, __LINE__ ))
 
 
-//~ Device Functions
-//~ __global__ void KNNKernel(const LBPointArray D_V, const LBPointArray D_kd_tree, LBPointArray D_Result_Normals, int k=50);
-
 typedef boost::shared_array<float> floatArr;
 typedef lvr::ColorVertex<float, unsigned char> cVertex ;
 typedef lvr::QueryPoint<cVertex> QueryPointC;
@@ -140,7 +137,7 @@ public:
      * @param method   "PCA","RANSAC"
      *
      */
-    void setMethod(std::string method);
+    void setMethod(std::string& method);
 
     /**
     * Reconstuction Mode:
@@ -164,8 +161,9 @@ private:
 
     void getCudaInformation(int device);
 
-    void calculateBlocksThreads(int n, int elements, int element_size, int max_mem_shared, int max_threads_per_block,
-                                int& out_blocks_per_grid, int& out_threads_per_block, int& needed_shared_memory);
+    void calculateBlocksThreads(int n, int elements, int element_size,
+            int max_mem_shared, int max_threads_per_block,
+            int& out_blocks_per_grid, int& out_threads_per_block, int& needed_shared_memory);
 
     template <typename T>
     void generateDevicePointArray(LBPointArray<T>& D_m, int width, int dim);

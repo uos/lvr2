@@ -52,6 +52,25 @@ void calcVertexLocalNeighborhood(
         vector<VertexHandle>& neighborsOut
 );
 
+
+/**
+ * @brief Visits every vertex in the local neighborhood of `vH`.
+ *
+ * The local neighborhood is defined as all vertices that are connected to `vH`
+ * and where the "path" in between those vertices only contains vertices that
+ * are no further away from `vH` than `radius`.
+ *
+ * For every such vertex in the local neighborhood (not `vH` itself!) the
+ * given `visitor` is called exactly once.
+ */
+template <typename BaseVecT, typename VisitorF>
+void visitLocalNeighborhoodOfVertex(
+    const BaseMesh<BaseVecT>& mesh,
+    VertexHandle vH,
+    double radius,
+    VisitorF visitor
+);
+
 /**
  * @brief   Calculate the height difference value for each vertex of the given BaseMesh.
  *
@@ -115,6 +134,32 @@ template<typename BaseVecT>
 DenseEdgeMap<float> calcVertexAngleEdges(
         const BaseMesh<BaseVecT>& mesh,
         const VertexMap<Normal<BaseVecT>>& normals
+);
+
+/**
+ * @brief Calculates the roughness and the height difference for each vertex.
+ *
+ * This function combines the logic of the calcVertexRoughness- and calcVertexHeightDiff-functions,
+ * allowing us to calculate the local neighborhood for each single vertex just once.
+ * By that, this function should always be used when the roughness and height difference values are
+ * both needed.
+ *
+ * @param mesh        The given mesh for the calculation.
+ * @param radius      The radius which defines the local neighborhood.
+ *                    A local neighborhood is defined by a circular-shaped radius, which includes all connected
+ *                    edges and vertices. Once an edge leaves this radius and reenters somehow, it isn't part of
+ *                    the neighborhood.
+ * @param normals     The vertex normals of the given mesh.
+ * @param roughness   The calculated roughness values for each vertex.
+ * @param heightDiff  The calculated height difference values for each vertex.
+ */
+template<typename BaseVecT>
+void calcVertexRoughnessAndHeightDiff(
+        const BaseMesh<BaseVecT>& mesh,
+        double radius,
+        const VertexMap<Normal<BaseVecT>>& normals,
+        DenseVertexMap<float>& roughness,
+        DenseVertexMap<float>& heightDiff
 );
 
 } // namespace lvr2

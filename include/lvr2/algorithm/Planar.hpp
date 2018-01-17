@@ -33,6 +33,7 @@
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/geometry/Plane.hpp>
+#include <lvr2/geometry/Line.hpp>
 
 namespace lvr2
 {
@@ -115,6 +116,27 @@ void dragToRegressionPlanes(
     const ClusterBiMap<FaceHandle>& clusters,
     const ClusterMap<Plane<BaseVecT>>& planes,
     FaceMap<Normal<BaseVecT>>& normals
+);
+
+/**
+ * Compares every plane with its presumabl neighours, calculates their intersection and drags all points
+ * in-between to this intersection.
+ */
+template<typename BaseVecT>
+void optimizePlaneIntersections(
+    BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    const ClusterMap<Plane<BaseVecT>>& planes
+);
+
+/// Drags all points between two clusters (planes) into their intersection
+template<typename BaseVecT>
+void dragOntoIntersection(
+    BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    const ClusterHandle& clusterH,
+    const ClusterHandle& neighbourClusterH,
+    const Line<BaseVecT>& intersection
 );
 
 /**
