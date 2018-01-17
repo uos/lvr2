@@ -38,7 +38,7 @@ template<typename BaseVecT>
 uint FastBox<BaseVecT>::INVALID_INDEX = numeric_limits<uint>::max();
 
 template<typename BaseVecT>
-FastBox<BaseVecT>::FastBox(Point<BaseVecT> center)
+FastBox<BaseVecT>::FastBox(Point<BaseVecT> center) : m_extruded(false), m_duplicate(false)
 {
     for(int i = 0; i < 8; i++)
     {
@@ -193,6 +193,11 @@ void FastBox<BaseVecT>::getSurface(
     uint &globalIndex
 )
 {
+    if (this->m_extruded)
+    {
+        return;
+    }
+
     Point<BaseVecT> corners[8];
     Point<BaseVecT> vertex_positions[12];
 
@@ -255,6 +260,120 @@ void FastBox<BaseVecT>::getSurface(
             vertex_indices[2].unwrap()
         );
     }
+}
+
+template<typename BaseVecT>
+void FastBox<BaseVecT>::getSurface(
+    BaseMesh<BaseVecT>& mesh,
+    vector<QueryPoint<BaseVecT>>& qp,
+    uint &globalIndex,
+    BoundingBox<BaseVecT>& bb,
+    vector<unsigned int>& duplicates,
+    float comparePrecision
+)
+{
+    if (this->m_extruded)
+    {
+        return;
+    }
+
+    Point<BaseVecT> corners[8];
+    Point<BaseVecT> vertex_positions[12];
+
+    float distances[8];
+
+    getCorners(corners, qp);
+    getDistances(distances, qp);
+    getIntersections(corners, distances, vertex_positions);
+
+    int index = getIndex(qp);
+
+    // Do not create traingles for invalid boxes
+    for (int i = 0; i < 8; i++)
+    {
+        if (qp[m_vertices[i]].m_invalid)
+        {
+            return;
+        }
+    }
+
+    // Generate the local approximation surface according to the marching
+    // cubes table for Paul Burke.
+    for(int a = 0; lvr::MCTable[index][a] != -1; a+= 3)
+    {
+        OptionalVertexHandle vertex_indices[3];
+
+        for(int b = 0; b < 3; b++)
+        {
+            bool add_duplicate = false;
+            auto edge_index = lvr::MCTable[index][a + b];
+
+            //If no index was found generate new index and vertex
+            //and update all neighbor boxes
+            if(!m_intersections[edge_index])
+            {
+                auto v = vertex_positions[edge_index];
+                m_intersections[edge_index] = mesh.addVertex(v);
+
+                float dist = fabs(distanceToBB(v, bb));
+                if (dist < comparePrecision)
+                {
+                    add_duplicate = true;
+                }
+
+                for(int i = 0; i < 3; i++)
+                {
+                    auto current_neighbor = m_neighbors[lvr::neighbor_table[edge_index][i]];
+                    if(current_neighbor != 0)
+                    {
+                        current_neighbor->m_intersections[lvr::neighbor_vertex_table[edge_index][i]] = m_intersections[edge_index];
+                    }
+                }
+
+                // Increase the global vertex counter to save the buffer
+                // position were the next new vertex has to be inserted
+                globalIndex++;
+            }
+
+            //Save vertex index in mesh
+            vertex_indices[b] = m_intersections[edge_index];
+            if (add_duplicate)
+            {
+                duplicates.push_back(vertex_indices[b].unwrap().idx());
+            }
+        }
+
+        // Add triangle actually does the normal interpolation for us.
+        mesh.addFace(
+            vertex_indices[0].unwrap(),
+            vertex_indices[1].unwrap(),
+            vertex_indices[2].unwrap()
+        );
+    }
+}
+
+template<typename BaseVecT>
+float FastBox<BaseVecT>::distanceToBB(const BaseVecT& v, const BoundingBox<BaseVecT>& bb) const
+{
+    float near_top, near_down;
+    float smallest_val = std::numeric_limits<float>::max();
+
+    for(size_t i=0; i<3; i++)
+    {
+        near_down = v[i] - bb.getMin()[i];
+        if(near_down <= 0.0)
+        {
+            return near_down;
+        }
+
+        near_top = bb.getMax()[i] - v[i];
+        if(near_top <= 0.0)
+        {
+            return near_top;
+        }
+        smallest_val = std::min(smallest_val, std::min(near_down, near_top) );
+    }
+    return smallest_val;
 }
 
 } // namespace lvr2

@@ -12,7 +12,7 @@
 #include <vector>
 #include <string>
 
-#include <lvr/geometry/BoundingBox.hpp>
+#include <lvr2/geometry/BoundingBox.hpp>
 
 #include <lvr2/reconstruction/QueryPoint.hpp>
 
@@ -66,6 +66,8 @@ template<typename BaseVecT, typename BoxT>
 class HashGrid : public GridBase
 {
 public:
+
+    BoundingBox<BaseVecT> qp_bb;
 
     /// Typedef to alias box map
     typedef unordered_map<size_t, BoxT*> box_map;
@@ -168,6 +170,8 @@ public:
     size_t getMaxIndexY() { return m_maxIndexY; }
 
     size_t getMaxIndexZ() { return m_maxIndexZ; }
+
+    void setBB(BoundingBox<BaseVecT>& bb);
 
     BoundingBox<BaseVecT> & getBoundingBox() { return m_boundingBox; }
 

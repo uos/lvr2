@@ -37,6 +37,20 @@
 #include "sortPoint.hpp"
 #include <flann/flann.hpp>
 #include <random>
+
+#include <lvr2/io/PointBuffer.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/reconstruction/PointsetSurface.hpp>
+#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
+#include <lvr2/geometry/HalfEdgeMesh.hpp>
+#include <lvr2/reconstruction/HashGrid.hpp>
+#include <lvr2/reconstruction/FastReconstruction.hpp>
+#include <lvr2/reconstruction/FastBox.hpp>
+#include <lvr2/reconstruction/PointsetGrid.hpp>
+#include <lvr2/geometry/BoundingBox.hpp>
+#include <lvr2/algorithm/NormalAlgorithms.hpp>
+#include <lvr2/algorithm/FinalizeAlgorithm.hpp>
+
 using std::cout;
 using std::endl;
 using namespace lvr;
@@ -108,6 +122,8 @@ void getBoundingBoxNumPoints(LineReader & lr, lvr::BoundingBox<Vertexf> & bb, si
     }
 
 }
+
+using Vec = lvr2::BaseVector<float>;
 
 typedef lvr::PointsetSurface<lvr::ColorVertex<float, unsigned char> > psSurface;
 typedef lvr::AdaptiveKSearchSurface<lvr::ColorVertex<float, unsigned char>, lvr::Normal<float> > akSurface;
@@ -279,8 +295,19 @@ int main(int argc, char** argv)
         //std::cout << "i: " << std::endl << bb << std::endl << "got : " << numPoints << std::endl;
         if(numPoints<=50) continue;
 
-        BoundingBox<ColorVertex<float,unsigned char> > gridbb(partitionBoxes[i].getMin().x, partitionBoxes[i].getMin().y, partitionBoxes[i].getMin().z,
-                                                              partitionBoxes[i].getMax().x, partitionBoxes[i].getMax().y, partitionBoxes[i].getMax().z);
+        lvr2::BoundingBox<Vec> gridbb(
+            Vec(
+                partitionBoxes[i].getMin().x,
+                partitionBoxes[i].getMin().y,
+                partitionBoxes[i].getMin().z
+            ),
+            Vec(
+                partitionBoxes[i].getMax().x,
+                partitionBoxes[i].getMax().y,
+                partitionBoxes[i].getMax().z
+            )
+        );
+
         cout << "grid: " << i << "/" << partitionBoxes.size()-1 << endl;
         cout << "grid has " << numPoints << " points" << endl;
         cout << "kn=" << options.getKn() << endl;
@@ -354,24 +381,16 @@ int main(int argc, char** argv)
             #endif
         }
 
-        psSurface::Ptr surface = psSurface::Ptr(new akSurface(
-            p_loader,
+        auto buffer = make_shared<lvr2::PointBuffer<Vec>>(*p_loader);
+        lvr2::PointsetSurfacePtr<Vec> surface;
+        surface = make_shared<lvr2::AdaptiveKSearchSurface<Vec>>(
+            buffer,
             "FLANN",
             options.getKn(),
             options.getKi(),
             options.getKd(),
             options.useRansac()
-
-//                p_loader, pcm_name,
-//                options.getKn(),
-//                options.getKi(),
-//                options.getKd(),
-//                options.useRansac(),
-//                options.getScanPoseFile(),
-//                volumenSize <= 0center
-
-        ));
-
+        );
 
         if(navail)
         {
@@ -458,66 +477,56 @@ int main(int argc, char** argv)
 
         if(options.onlyNormals()) continue;
         double grid_start = lvr::timestamp.getElapsedTimeInS();
-        lvr::GridBase* grid;
-        lvr::FastReconstructionBase<lvr::ColorVertex<float, unsigned char>, lvr::Normal<float> >* reconstruction;
 
-        grid = new PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >(voxelsize, surface,gridbb , true, options.extrude());
-//        FastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-        PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, FastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-        ps_grid->setBB(gridbb);
-        ps_grid->calcIndices();
-        cout << "||||||||||||||||||||||||" << endl;
-        ps_grid->calcDistanceValues();
-        cout << "||||||||||||||||||||||||" << endl;
+        auto grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(
+            voxelsize,
+            surface,
+            gridbb,
+            true,
+            options.extrude()
+        );
+        grid->setBB(gridbb);
+        grid->calcDistanceValues();
+        auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(grid);
 
         double grid_end = lvr::timestamp.getElapsedTimeInS();
         dist_time+=(grid_end-grid_start);
 
         double mesh_start = lvr::timestamp.getElapsedTimeInS();
-        reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, FastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
-        HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh;
+        lvr2::HalfEdgeMesh<Vec> mesh;
         cout << lvr::timestamp << " saving data " << i << endl;
         vector<unsigned int> duplicates;
-        reconstruction->getMesh(mesh, ps_grid->qp_bb, duplicates, voxelsize*5);
-        if(options.getDanglingArtifacts())
-        {
-            mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
-        }
-
-        // Optimize mesh
-        mesh.cleanContours(options.getCleanContourIterations());
-        mesh.setClassifier(options.getClassifier());
-        mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
+        reconstruction->getMesh(mesh, grid->qp_bb, duplicates, voxelsize * 5);
 
         if(options.optimizePlanes())
         {
-            mesh.optimizePlanes(options.getPlaneIterations(),
-                                options.getNormalThreshold(),
-                                options.getMinPlaneSize(),
-                                options.getSmallRegionThreshold(),
-                                true);
-
-            mesh.fillHoles(options.getFillHoles());
-            mesh.optimizePlaneIntersections();
-            mesh.restorePlanes(options.getMinPlaneSize());
-
-            if(options.getNumEdgeCollapses())
-            {
-                QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
-                mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
-            }
+            std::stringstream ss_normals;
+            ss_normals << name_id << "-normals.ply";
+            ModelPtr m(new Model);
+            auto oldBuffer = boost::make_shared<lvr::PointBuffer>(
+                surface->pointBuffer()->toOldBuffer()
+            );
+            m->m_pointCloud = oldBuffer;
+            ModelFactory::saveModel(m, ss_normals.str());
         }
 
+        // Calc normals for vertices
+        auto faceNormals = lvr2::calcFaceNormals(mesh);
+        auto vertexNormals = lvr2::calcVertexNormals(mesh, faceNormals, *surface);
 
-        mesh.finalize();
+        // Finalize mesh
+        lvr2::FinalizeAlgorithm<Vec> finalize;
+        finalize.setNormalData(vertexNormals);
+        auto meshBuffer = finalize.apply(mesh);
+
         double mesh_end = lvr::timestamp.getElapsedTimeInS();
         mesh_time += mesh_end-mesh_start;
         start_s = lvr::timestamp.getElapsedTimeInS();
+
         std::stringstream ss_mesh;
         ss_mesh << name_id << "-mesh.ply";
-        ModelPtr m( new Model( mesh.meshBuffer() ) );
-        ModelFactory::saveModel( m, ss_mesh.str());
-        delete reconstruction;
+        ModelPtr m(new Model(meshBuffer));
+        ModelFactory::saveModel(m, ss_mesh.str());
 
         std::stringstream ss_grid;
         ss_grid << name_id << "-grid.ser";
@@ -529,11 +538,10 @@ int main(int argc, char** argv)
         std::ofstream ofs(ss_duplicates.str(), std::ofstream::out | std::ofstream::trunc);
         boost::archive::text_oarchive oa(ofs);
         oa & duplicates;
+
         end_s = lvr::timestamp.getElapsedTimeInS();
         seconds+=(end_s - start_s);
         cout << lvr::timestamp << "finished saving data " << i << " in " << (end_s - start_s) << endl;
-        delete ps_grid;
-
     }
 
     vector<size_t> offsets;
