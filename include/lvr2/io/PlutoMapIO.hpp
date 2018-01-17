@@ -63,12 +63,12 @@ class PlutoMapIO
 {
 public:
     /**
-     * @brief Opens a Pluto map file for reading.
+     * @brief Opens a Pluto map file for reading and writing.
      */
     PlutoMapIO(string filename);
 
     /**
-     * @brief Creates a Pluto map file (or truncates if the file alrady exists).
+     * @brief Creates a Pluto map file (or truncates if the file already exists).
      */
     PlutoMapIO(
         string filename,
