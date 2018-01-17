@@ -23,7 +23,7 @@
  *  Created on: 16.02.2011
  *      Author: Thomas Wiemann
  */
-#include <lvr/geometry/BaseMesh.hpp>
+#include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr/reconstruction/FastReconstructionTables.hpp>
 // #include "SharpBox.hpp"
 #include <lvr/io/Progress.hpp>
@@ -105,6 +105,36 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     //     cout << endl;
     // }
 
+}
+
+template<typename BaseVecT, typename BoxT>
+void FastReconstruction<BaseVecT, BoxT>::getMesh(
+    BaseMesh<BaseVecT>& mesh,
+    BoundingBox<BaseVecT>& bb,
+    vector<unsigned int>& duplicates,
+    float comparePrecision
+)
+{
+    // Status message for mesh generation
+    string comment = lvr::timestamp.getElapsedTime() + "Creating Mesh ";
+    lvr::ProgressBar progress(m_grid->getNumberOfCells(), comment);
+
+    // Some pointers
+    BoxT* b;
+    unsigned int global_index = mesh.numVertices();
+
+    // Iterate through cells and calculate local approximations
+    typename HashGrid<BaseVecT, BoxT>::box_map_it it;
+    for(it = m_grid->firstCell(); it != m_grid->lastCell(); it++)
+    {
+        b = it->second;
+        b->getSurface(mesh, m_grid->getQueryPoints(), global_index, bb, duplicates, comparePrecision);
+        if(!lvr::timestamp.isQuiet())
+            ++progress;
+    }
+
+    if(!lvr::timestamp.isQuiet())
+        cout << endl;
 }
 
 } // namespace lvr2

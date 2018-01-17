@@ -80,8 +80,6 @@ public:
      */
     void setVertex(int index, uint value);
 
-    void setFusion(bool fusionBox);
-
     /**
      * @brief Adjacent cells in the grid should use common vertices.
      *        This functions assigns the value of corner[index] to
@@ -123,6 +121,15 @@ public:
         uint &globalIndex
     );
 
+    virtual void getSurface(
+        BaseMesh<BaseVecT>& mesh,
+        vector<QueryPoint<BaseVecT>>& query_points,
+        uint& globalIndex,
+        BoundingBox<BaseVecT>& bb,
+        vector<unsigned int>& duplicates,
+        float comparePrecision
+    );
+
     /// The voxelsize of the reconstruction grid
     static float             m_voxelsize;
 
@@ -131,10 +138,9 @@ public:
 
     /// The twelve intersection between box and surface
     OptionalVertexHandle        m_intersections[12];
-    bool                        m_fusionBox;
-    bool                        m_fusedBox;
-    bool                        m_oldfusionBox;
-    bool                        m_fusionNeighborBox;
+    bool                        m_extruded;
+    bool                        m_duplicate;
+
      /// The box center
     Point<BaseVecT> m_center;
 
@@ -194,6 +200,7 @@ protected:
      */
     float calcIntersection(float x1, float x2, float d1, float d2);
 
+    float distanceToBB(const BaseVecT& v, const BoundingBox<BaseVecT>& bb) const;
 
 
     /// The eight box corners
