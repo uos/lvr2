@@ -156,7 +156,7 @@ DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
             normalMap.insert(vH, *normal);
         }
         else
-	{
+        {
             normalMap.insert(vH, Normal<BaseVecT>(0, 0, 1));
         }
     }
