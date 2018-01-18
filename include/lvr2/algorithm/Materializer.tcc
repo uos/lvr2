@@ -25,6 +25,7 @@
 */
 
 #include <lvr2/algorithm/ClusterAlgorithm.hpp>
+#include <opencv2/features2d.hpp>
 
 
 namespace lvr2
@@ -175,9 +176,10 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
 
             std::vector<cv::KeyPoint> keypoints;
             cv::Mat descriptors;
-            // m_texturizer.get().findKeyPointsInTexture(texH,
-            //         boundingRect, keypoints, descriptors);
-            // cv::Ptr<cv::Feature2D> detector = cv::AKAZE::create();
+            cv::Ptr<cv::AKAZE> detector = cv::AKAZE::create();
+            m_texturizer.get().findKeyPointsInTexture(texH,
+                    boundingRect, detector, keypoints, descriptors);
+            std::vector<BaseVecT> features3d = Texturizer<BaseVecT>::keypoints23d(keypoints, boundingRect);
 
             // Create material and insert in face map
             Material material;
