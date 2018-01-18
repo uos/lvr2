@@ -1,4 +1,5 @@
 #include "DuplicateRemover.hpp"
+#include <unordered_map>
 
 using namespace std;
 using namespace lvr;
