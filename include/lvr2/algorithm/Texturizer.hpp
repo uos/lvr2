@@ -73,12 +73,26 @@ public:
      *
      * @param[in] texH Texture handle
      * @param[in] boundingRect Bounding rectangle computed for the texture
+     * @param[in] detector Feature detector to use (any of @c cv::Feature2D)
      * @param[out] keypoints Vector of keypoints
      * @param[out] descriptors Matrix of descriptors for the keypoint
      */
-    void findKeyPointsInTexture(const TextureHandle texH, const
-            BoundingRectangle<BaseVecT>& boundingRect, std::vector<cv::KeyPoint>&
+    void findKeyPointsInTexture(const TextureHandle texH,
+            const BoundingRectangle<BaseVecT>& boundingRect,
+            const cv::Ptr<cv::Feature2D>& detector,
+            std::vector<cv::KeyPoint>&
             keypoints, cv::Mat& descriptors);
+
+    /**
+     * @brief Compute 3D coordinates for texture-relative keypoints
+     *
+     * @param[in] keypoints Keypoints in image coordinates
+     * @param[in] boundingRect Bounding rectangle of the texture embedded in 3D
+     *
+     * @return
+     */
+    static std::vector<BaseVecT> keypoints23d(const std::vector<cv::KeyPoint>&
+            keypoints, const BoundingRectangle<BaseVecT>& boundingRect);
 
     TextureHandle generateTexture(
         int index,
