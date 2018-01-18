@@ -430,17 +430,9 @@ if(CUDA_FOUND)
     add_subdirectory(src/tools/cuda_normals)
 endif()
 
-if(OPENCL_FOUND)
-    add_subdirectory(src/tools/cl_normals)
-endif()
-
 if(MPI_FOUND)
     add_subdirectory(src/tools/mpi)
 endif(MPI_FOUND)
-
-if(CUDA_FOUND)
-    add_subdirectory(src/tools/cuda_normals)
-endif()
 
 if(OPENCL_FOUND)
     add_subdirectory(src/tools/cl_normals)
