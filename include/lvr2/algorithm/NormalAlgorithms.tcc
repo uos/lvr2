@@ -139,4 +139,29 @@ DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
     return normalMap;
 }
 
+template<typename BaseVecT>
+DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
+    const BaseMesh<BaseVecT>& mesh,
+    const FaceMap<Normal<BaseVecT>>& normals
+)
+{
+    DenseVertexMap<Normal<BaseVecT>> normalMap;
+    normalMap.reserve(mesh.numVertices());
+
+    for (auto vH: mesh.vertices())
+    {
+        // Use averaged normals from adjacent faces
+        if (auto normal = interpolatedVertexNormal(mesh, normals, vH))
+        {
+            normalMap.insert(vH, *normal);
+        }
+        else
+        {
+            normalMap.insert(vH, Normal<BaseVecT>(0, 0, 1));
+        }
+    }
+
+    return normalMap;
+}
+
 } // namespace lvr2
