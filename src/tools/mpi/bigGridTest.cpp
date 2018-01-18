@@ -525,7 +525,7 @@ int main(int argc, char** argv)
 
         std::stringstream ss_mesh;
         ss_mesh << name_id << "-mesh.ply";
-        ModelPtr m(new Model(meshBuffer));
+        auto m = boost::make_shared<lvr::Model>(meshBuffer->toOldBuffer());
         ModelFactory::saveModel(m, ss_mesh.str());
 
         std::stringstream ss_grid;
