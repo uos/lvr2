@@ -20,9 +20,9 @@
  /**
  *
  * @file      MeshIO.cpp
- * @brief     
- * @details   
- * 
+ * @brief
+ * @details
+ *
  * @author    Lars Kiesow (lkiesow), lkiesow@uos.de, Universität Osnabrück
  * @author	  Thomas Wiemann (twiemann), twiemann@uos.de
  *
@@ -32,7 +32,7 @@
 namespace lvr
 {
 
-MeshBuffer::MeshBuffer() : 
+MeshBuffer::MeshBuffer() :
     m_numVertices( 0 ),
     m_numVertexNormals( 0 ),
     m_numVertexColors( 0 ),
@@ -41,7 +41,8 @@ MeshBuffer::MeshBuffer() :
     m_numFaces( 0 ),
     m_numMaterials( 0 ),
     m_numFaceMaterialIndices( 0 ),
-    m_numTextures(0)
+    m_numTextures(0),
+    m_numVertexTextureCoordinates(0)
 {
 
     /* Make sure we can convert the indexed arrays into interlaced arrays and

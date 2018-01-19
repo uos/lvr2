@@ -82,6 +82,14 @@ public:
     size_t numFaces() const final;
     size_t numEdges() const final;
 
+    bool containsVertex(VertexHandle vH) const;
+    bool containsFace(FaceHandle fH) const;
+    bool containsEdge(EdgeHandle eH) const;
+
+    Index nextVertexIndex() const;
+    Index nextFaceIndex() const;
+    Index nextEdgeIndex() const;
+
     Point<BaseVecT> getVertexPosition(VertexHandle handle) const final;
     Point<BaseVecT>& getVertexPosition(VertexHandle handle) final;
 
@@ -185,7 +193,7 @@ private:
      *        `visitor` for each ingoing edge of the vertex.
      *
      * This works exactly as the other overload, but specifically starts at the
-     * edge `startEdgeH` instead of `vH.outgoing`.
+     * edge `startEdgeH` instead of `vH.outgoing.twin`.
      */
     template <typename Visitor>
     void circulateAroundVertex(HalfEdgeHandle startEdgeH, Visitor visitor) const;

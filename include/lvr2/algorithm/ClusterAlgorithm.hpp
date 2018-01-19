@@ -41,6 +41,18 @@ using std::vector;
 namespace lvr2
 {
 
+/**
+ * @brief Calculates contour vertices for a given cluster
+ *
+ * Calculates the contour vertices for a given cluster. To do so, the
+ * algorithm will inspect each edge and find edges that only have one adjacent
+ * face as part of the given cluster. These edges are contour edges, so each
+ * unique vertex of such an edge will be added to the list of results.
+ *
+ * @param clusterH cluster handle for given cluster
+ * @param mesh the mesh
+ * @param clusterBiMap map of clusters for given mesh
+ */
 template<typename BaseVecT>
 vector<VertexHandle> calculateClusterContourVertices(
     ClusterHandle clusterH,
@@ -48,6 +60,24 @@ vector<VertexHandle> calculateClusterContourVertices(
     const ClusterBiMap<FaceHandle>& clusterBiMap
 );
 
+/**
+ * @brief Calculates bounding rectangle for a given cluster
+ *
+ * Calculates a bounding rectangle for a given cluster. To do so, first
+ * a regression plane for the cluster must be calculated. It is assumed that the
+ * cluster is mostly planar for this to work. With the regression plane the
+ * algorithm creates an initial bounding rectangle that encloses all of the
+ * clusters vertices. Then, iterative improvement steps rotate the bounding
+ * rectangle and calculate the predicted number of texels for a bounding box
+ * of this size. The rotation with the least amount of texels will be used.
+ *
+ * @param contour contour of cluster
+ * @param mesh mesh
+ * @param cluster cluster
+ * @param normals normals
+ * @param texelSize texelSize
+ * @param clusterH cluster handle (TODO: is not used! remove)
+ */
 template<typename BaseVecT>
 BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     const vector<VertexHandle>& contour,

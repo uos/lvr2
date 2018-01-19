@@ -204,7 +204,8 @@ void HalfEdgeMesh<VertexT, NormalT>::addNormal(NormalT n)
 }
 
 template<typename VertexT, typename NormalT>
-HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >* HalfEdgeMesh<VertexT, NormalT>::halfEdgeToVertex(VertexPtr v, VertexPtr next)
+HalfEdge<HalfEdgeVertex<VertexT, NormalT>, HalfEdgeFace<VertexT, NormalT> >*
+HalfEdgeMesh<VertexT, NormalT>::halfEdgeToVertex(VertexPtr v, VertexPtr next)
 {
     EdgePtr edge = 0;
     EdgePtr cur;
@@ -485,7 +486,8 @@ void HalfEdgeMesh<VertexT, NormalT>::checkFaceIntegreties()
             c++;
         }
     }
-    cout << timestamp << "Checked face integrities. Found " << c << " degenerate faces from " << m_faces.size() << " checked." << endl;
+    cout << timestamp << "Checked face integrities. Found " << c << " degenerate faces from " << m_faces.size()
+    << " checked." << endl;
 }
 
 template<typename VertexT, typename NormalT>
@@ -802,7 +804,11 @@ void HalfEdgeMesh<VertexT, NormalT>::flipEdge(EdgePtr edge)
 }
 
 template<typename VertexT, typename NormalT>
-int HalfEdgeMesh<VertexT, NormalT>::stackSafeRegionGrowing(FacePtr start_face, NormalT &normal, float &angle, RegionPtr region)
+int HalfEdgeMesh<VertexT, NormalT>::stackSafeRegionGrowing(
+    FacePtr start_face,
+    NormalT &normal,
+    float &angle, RegionPtr region
+)
 {
     // stores the faces where we need to continue
     vector<FacePtr> leafs;
@@ -822,7 +828,14 @@ int HalfEdgeMesh<VertexT, NormalT>::stackSafeRegionGrowing(FacePtr start_face, N
 }
 
 template<typename VertexT, typename NormalT>
-int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(FacePtr start_face, NormalT &normal, float &angle, RegionPtr region, vector<FacePtr> &leafs, unsigned int depth)
+int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(
+    FacePtr start_face,
+    NormalT &normal,
+    float &angle,
+    RegionPtr region,
+    vector<FacePtr> &leafs,
+    unsigned int depth
+)
 {
     //Mark face as used
     start_face->m_used = true;
@@ -848,7 +861,9 @@ int HalfEdgeMesh<VertexT, NormalT>::regionGrowing(FacePtr start_face, NormalT &n
                 else
                 {
                     // start the recursion
-                    ++neighbor_cnt += regionGrowing((*start_face)[k]->pair()->face(), normal, angle, region, leafs, depth - 1);
+                    ++neighbor_cnt += regionGrowing(
+                        (*start_face)[k]->pair()->face(), normal, angle, region, leafs, depth - 1
+                    );
                 }
             }
         }
@@ -1120,7 +1135,9 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(EdgePtr edge)
     try
     {
         if( ( edge->face() != 0 && edge->next()->pair()->face() == 0 && edge->next()->next()->pair()->face() == 0 )
-                || ( edge->pair()->face() != 0 && edge->pair()->next()->pair()->face() == 0 && edge->pair()->next()->next()->pair()->face() == 0 ) )
+                || ( edge->pair()->face() != 0
+                    && edge->pair()->next()->pair()->face() == 0
+                    && edge->pair()->next()->next()->pair()->face() == 0 ))
         {
             return false;
         }
@@ -1138,7 +1155,9 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(EdgePtr edge)
         {
             for(size_t o2 = 0; o2 < edge->end()->out[o1]->end()->out.size(); o2++)
             {
-                if(edge->end()->out[o1]->face() == 0 && edge->end()->out[o1]->end()->out[o2]->face() == 0 && edge->end()->out[o1]->end()->out[o2]->end() == edge->start())
+                if(edge->end()->out[o1]->face() == 0
+                    && edge->end()->out[o1]->end()->out[o2]->face() == 0
+                    && edge->end()->out[o1]->end()->out[o2]->end() == edge->start())
                 {
                     return false;
                 }
@@ -1163,7 +1182,10 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(EdgePtr edge)
                 // Safety First!
                 if(edge->start()->out[o]->pair()->face()->m_region >= 0)
                 {
-                    if (edge->start()->out[o]->pair()->face() != 0 && m_regions[edge->start()->out[o]->pair()->face()->m_region]->detectFlicker(edge->start()->out[o]->pair()->face()))
+                    if (edge->start()->out[o]->pair()->face() != 0
+                        && m_regions[edge->start()->out[o]->pair()->face()->m_region]->detectFlicker(
+                            edge->start()->out[o]->pair()->face())
+                        )
                     {
                         edge->start()->m_position = origin;
                         return false;
@@ -1188,7 +1210,10 @@ bool HalfEdgeMesh<VertexT, NormalT>::safeCollapseEdge(EdgePtr edge)
             {
                 if(edge->end()->out[o]->pair()->face()->m_region >= 0)
                 {
-                    if (edge->end()->out[o]->pair()->face() != 0 && m_regions[edge->end()->out[o]->pair()->face()->m_region]->detectFlicker(edge->end()->out[o]->pair()->face()))
+                    if (edge->end()->out[o]->pair()->face() != 0
+                        && m_regions[edge->end()->out[o]->pair()->face()->m_region]->detectFlicker(
+                            edge->end()->out[o]->pair()->face())
+                        )
                     {
                         edge->end()->m_position = origin;
                         return false;
@@ -1328,7 +1353,11 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(size_t max_size)
                                 for(int e = 0; e < 3; e++)
                                 {
                                     (*f)[e]->setFace(f);
-                                    typename vector<EdgePtr>::iterator ch_it = find(current_hole.begin(), current_hole.end(), (*f)[e]);
+                                    typename vector<EdgePtr>::iterator ch_it = find(
+                                        current_hole.begin(),
+                                        current_hole.end(),
+                                        (*f)[e]
+                                    );
                                     if(ch_it != current_hole.end())
                                     {
                                         current_hole.erase(ch_it);
@@ -1364,7 +1393,12 @@ void HalfEdgeMesh<VertexT, NormalT>::fillHoles(size_t max_size)
 
 
 template<typename VertexT, typename NormalT>
-void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(RegionPtr plane, RegionPtr neighbor_region, VertexT& x, VertexT& direction)
+void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(
+    RegionPtr plane,
+    RegionPtr neighbor_region,
+    VertexT& x,
+    VertexT& direction
+)
 {
     for (size_t i = 0; i < plane->m_faces.size(); i++)
     {
@@ -1374,10 +1408,16 @@ void HalfEdgeMesh<VertexT, NormalT>::dragOntoIntersection(RegionPtr plane, Regio
             {
                 if((*(plane->m_faces[i]))[k]->pair()->face()->m_region >= 0)
                 {
-                    if((*(plane->m_faces[i]))[k]->pair()->face() != 0 && m_regions[(*(plane->m_faces[i]))[k]->pair()->face()->m_region]->m_regionNumber == neighbor_region->m_regionNumber)
+                    if((*(plane->m_faces[i]))[k]->pair()->face() != 0
+                        && m_regions[(*(plane->m_faces[i]))[k]->pair()->face()->m_region]->m_regionNumber
+                        == neighbor_region->m_regionNumber)
                     {
-                        (*(plane->m_faces[i]))[k]->start()->m_position = x + direction * (((((*(plane->m_faces[i]))[k]->start()->m_position) - x) * direction) / (direction.length() * direction.length()));
-                        (*(plane->m_faces[i]))[k]->end()->m_position   = x + direction * (((((*(plane->m_faces[i]))[k]->end()->m_position  ) - x) * direction) / (direction.length() * direction.length()));
+                        (*(plane->m_faces[i]))[k]->start()->m_position = x + direction *
+                            (((((*(plane->m_faces[i]))[k]->start()->m_position) - x) * direction)
+                            / (direction.length() * direction.length()));
+                        (*(plane->m_faces[i]))[k]->end()->m_position   = x + direction *
+                            (((((*(plane->m_faces[i]))[k]->end()->m_position  ) - x) * direction)
+                            / (direction.length() * direction.length()));
                     }
                 }
             }
@@ -1448,10 +1488,13 @@ void HalfEdgeMesh<VertexT, NormalT>::restorePlanes(int min_region_size)
                 {
                     try
                     {
-                        float v = ((m_regions[r]->m_stuetzvektor - (*(m_regions[r]->m_faces[i]))(p)->m_position) * m_regions[r]->m_normal) / (m_regions[r]->m_normal * m_regions[r]->m_normal);
+                        float v = ((m_regions[r]->m_stuetzvektor -
+                            (*(m_regions[r]->m_faces[i]))(p)->m_position) * m_regions[r]->m_normal)
+                            / (m_regions[r]->m_normal * m_regions[r]->m_normal);
                         if(v != 0)
                         {
-                            (*(m_regions[r]->m_faces[i]))(p)->m_position = (*(m_regions[r]->m_faces[i]))(p)->m_position + (VertexT)m_regions[r]->m_normal * v;
+                            (*(m_regions[r]->m_faces[i]))(p)->m_position =
+                                (*(m_regions[r]->m_faces[i]))(p)->m_position + (VertexT)m_regions[r]->m_normal * v;
                         }
                     }
                     catch (HalfEdgeAccessException &e)
@@ -1724,7 +1767,8 @@ void HalfEdgeMesh<VertexT, NormalT>::writeClassificationResult()
 template<typename VertexT, typename NormalT>
 void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, float fusionThreshold )
 {
-    std::cout << timestamp << "finalizeAndRetesselate mesh with classifier \"" << m_classifierType << "\"." << std::endl;
+    std::cout << timestamp << "finalizeAndRetesselate mesh with classifier \"" << m_classifierType << "\"."
+    << std::endl;
 
     // used Typedef's
     typedef std::vector<size_t>::iterator   intIterator;
@@ -1830,7 +1874,11 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             {
                 int one = 1;
                 vector<VertexT> cv;
-                this->m_pointCloudManager->searchTree()->kSearch((*m_regions[iRegion]->m_faces[iFace]).getCentroid(), one, cv);
+                this->m_pointCloudManager->searchTree()->kSearch(
+                    (*m_regions[iRegion]->m_faces[iFace]).getCentroid(),
+                    one,
+                    cv
+                );
                 r = *((uchar*) &(cv[0][3])); /* red */
                 g = *((uchar*) &(cv[0][4])); /* green */
                 b = *((uchar*) &(cv[0][5])); /* blue */
@@ -1952,7 +2000,8 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             {
                 /*if(indices[j] == indices[j+1] || indices[j+1] == indices[j+2] || indices[j+2] == indices[j])
                 {
-                    cout << "Detected degenerate face: " << indices[j] << " " << indices[j + 1] << " " << indices[j + 2] << endl;
+                    cout << "Detected degenerate face: " << indices[j] << " " << indices[j + 1] << " " << indices[j + 2]
+                     << endl;
                 }*/
 
                 // store the indices with the correct offset to the indices buffer.
@@ -2074,46 +2123,46 @@ void HalfEdgeMesh<VertexT, NormalT>::reduceMeshByCollapse(int n_collapses, Verte
     //    for(int n = 0; n < n_collapses; n++)
     //    {
     //
-    //    	priority_queue<vertexCost_p, vector<vertexCost_p>, cVertexCost> q;
-    //    	for(size_t i = 0; i < this->m_vertices.size(); i++)
-    //    	{
-    //    		q.push(vertexCost_p(m_vertices[i], c(*m_vertices[i])));
-    //    	}
+    //        priority_queue<vertexCost_p, vector<vertexCost_p>, cVertexCost> q;
+    //        for(size_t i = 0; i < this->m_vertices.size(); i++)
+    //        {
+    //            q.push(vertexCost_p(m_vertices[i], c(*m_vertices[i])));
+    //        }
     //
-    //    	cout << q.size() << endl;
+    //        cout << q.size() << endl;
     //
-    //    	// Try to collapse until a non-border-edges is found. If there are only
-    //    	// borders left, collapse border edge with minimum cost
-    //    	if(!q.empty())
-    //    	{
-    //    		// Save vertex with lowest costs
-    //    		VertexPtr topVertex = q.top().first;
-    //    		VertexPtr toCollapse = topVertex;
+    //        // Try to collapse until a non-border-edges is found. If there are only
+    //        // borders left, collapse border edge with minimum cost
+    //        if(!q.empty())
+    //        {
+    //            // Save vertex with lowest costs
+    //            VertexPtr topVertex = q.top().first;
+    //            VertexPtr toCollapse = topVertex;
     //
-    //    		// Check for border vertices
-    //    		while(toCollapse->isBorderVertex() && !q.empty())
-//    		{
-//    			q.pop();
-//    			toCollapse = q.top().first;
-//    		}
+    //            // Check for border vertices
+    //            while(toCollapse->isBorderVertex() && !q.empty())
+//            {
+//                q.pop();
+//                toCollapse = q.top().first;
+//            }
 //
-//    		// If q is empty, no non-border vertex was found, collapse
-//    		// first border vertex
-//    		if(q.empty())
-//    		{
-//    			EdgePtr e = topVertex->getShortestEdge();
-//    			cout << "E: " << e << endl;
-//    			collapseEdge(e);
-//    		}
-//    		else
-//    		{
-//    			EdgePtr e = toCollapse->getShortestEdge();
-//    			cout << "F: " << e << endl;
-//    			collapseEdge(e);
-//    		}
-//    	}
+//            // If q is empty, no non-border vertex was found, collapse
+//            // first border vertex
+//            if(q.empty())
+//            {
+//                EdgePtr e = topVertex->getShortestEdge();
+//                cout << "E: " << e << endl;
+//                collapseEdge(e);
+//            }
+//            else
+//            {
+//                EdgePtr e = toCollapse->getShortestEdge();
+//                cout << "F: " << e << endl;
+//                collapseEdge(e);
+//            }
+//        }
 //
-//    	++progress;
+//        ++progress;
 //    }
 
 
