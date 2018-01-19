@@ -414,6 +414,8 @@ add_subdirectory(src/tools/reconstruct2)
 add_subdirectory(src/tools/classifier)
 add_subdirectory(src/tools/colorize)
 add_subdirectory(src/tools/scanreduce)
+add_subdirectory(src/tools/scanreduce2)
+
 add_subdirectory(src/tools/convert)
 add_subdirectory(src/tools/asciiconverter)
 add_subdirectory(src/tools/texman)
