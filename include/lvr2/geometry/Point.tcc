@@ -37,7 +37,7 @@ Point<BaseVecT> Point<BaseVecT>::centroid(const CollectionT& points)
     for (auto p: points)
     {
         static_assert(
-            std::is_same<typeof(p), Point<BaseVecT>>::value,
+            std::is_same<decltype(p), Point<BaseVecT>>::value,
             "Collection has to contain Vectors"
         );
         acc += p.asVector();
