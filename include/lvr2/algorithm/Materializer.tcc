@@ -70,6 +70,8 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
     DenseClusterMap<Material> clusterMaterials;
     SparseVertexMap<ClusterTexCoordMapping> vertexTexCoords;
 
+    std::unordered_map<BaseVecT, std::vector<float>> keypoints_map;
+
     // Counters used for texturizing
     int numClustersTooSmall = 0;
     int numClustersTooLarge = 0;
@@ -180,6 +182,11 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             m_texturizer.get().findKeyPointsInTexture(texH,
                     boundingRect, detector, keypoints, descriptors);
             std::vector<BaseVecT> features3d = Texturizer<BaseVecT>::keypoints23d(keypoints, boundingRect);
+            for (unsigned int row = 0; row < features3d.size(); ++row)
+            {
+                keypoints_map[features3d[row]] =
+                    std::vector<float>(descriptors.ptr(row), descriptors.ptr(row) + descriptors.cols);
+            }
 
             // Create material and insert in face map
             Material material;
@@ -243,7 +250,8 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
         return MaterializerResult<BaseVecT>(
             clusterMaterials,
             m_texturizer.get().getTextures(),
-            vertexTexCoords
+            vertexTexCoords,
+            keypoints_map
         );
     }
     else
