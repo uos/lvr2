@@ -55,11 +55,17 @@
 namespace lvr2
 {
 
+/**
+ * Result struct for the materializer
+ */
 template<typename BaseVecT>
 struct MaterializerResult
 {
+    // materials for each cluster
     DenseClusterMap<Material> m_clusterMaterials;
+    // a stable vector of textures. each texture is identified by a tex.-handle
     optional<StableVector<TextureHandle, Texture<BaseVecT>>> m_textures;
+    // cluster texture coordinates for each vertex
     optional<SparseVertexMap<ClusterTexCoordMapping>> m_vertexTexCoords;
     optional<std::unordered_map<BaseVecT, std::vector<float>>> m_keypoints;
 
@@ -84,7 +90,6 @@ struct MaterializerResult
     }
 
 };
-
 
 template<typename BaseVecT>
 class Materializer

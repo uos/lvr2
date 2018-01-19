@@ -360,6 +360,7 @@ src/liblvr/io/ModelFactory.cpp
 src/liblvr/io/ObjIO.cpp
 src/liblvr/io/PCDIO.cpp
 src/liblvr/io/PLYIO.cpp
+src/liblvr/io/Hdf5IO.cpp
 src/liblvr/io/PointBuffer.cpp
 src/liblvr/io/PPMIO.cpp
 src/liblvr/io/Progress.cpp
@@ -821,6 +822,7 @@ include/lvr/io/Progress.hpp
 include/lvr/io/PPMIO.hpp
 include/lvr/io/PointBuffer.hpp
 include/lvr/io/PLYIO.hpp
+include/lvr/io/Hdf5IO.hpp
 include/lvr/io/PCDIO.hpp
 include/lvr/io/ObjIO.hpp
 include/lvr/io/ModelFactory.hpp
