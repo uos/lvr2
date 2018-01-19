@@ -336,6 +336,31 @@ inline void PlutoMapIO::addLabel(string groupName, string labelName, vector<uint
         .write(faceIds);
 }
 
+template<typename BaseVecT>
+void PlutoMapIO::addTextureKeypointsMap(unordered_map<BaseVecT, std::vector<float>>& keypoints_map)
+{
+    if (!m_attributesGroup.exist("texture_features"))
+    {
+        m_attributesGroup.createGroup("texture_features");
+    }
+
+    auto tf = m_attributesGroup.getGroup("texture_features");
+
+    size_t i = 0;
+    for (auto it : keypoints_map)
+    {
+        auto dataset = tf.createDataSet<float>(std::to_string(i), hf::DataSpace::From(it.second));
+        dataset.write(it.second);
+
+        // use float vector here to avoid declaring BaseVecT as an complex type for HDF5
+        vector<float> v = {it.first.x, it.first.y, it.first.z};
+        dataset.template createAttribute<float>("vector", hf::DataSpace::From(v))
+            .write(v);
+
+        i++;
+    }
+}
+
 inline void PlutoMapIO::addImage(hf::Group group, string name, const uint32_t width, const uint32_t height,
                                  const uint8_t *pixelBuffer)
 {
