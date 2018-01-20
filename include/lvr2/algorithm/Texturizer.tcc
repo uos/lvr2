@@ -167,20 +167,6 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
     return m_textures.push(texture);
 }
 
-void draw_keypoints(cv::Mat& img, const std::vector<cv::KeyPoint>& kpts) {
-
-    int x = 0, y = 0;
-    float radius = 0.0;
-
-    for (size_t i = 0; i < kpts.size(); i++) {
-        x = (int)(kpts[i].pt.x+.5);
-        y = (int)(kpts[i].pt.y+.5);
-        radius = kpts[i].size/2.0;
-        cv::circle(img, cv::Point(x,y), 2.5*radius, cv::Scalar(0,255,0), 1);
-        cv::circle(img, cv::Point(x,y), 1.0, cv::Scalar(0,0,255), -1);
-    }
-}
-
 template<typename BaseVecT>
 void Texturizer<BaseVecT>::findKeyPointsInTexture(const TextureHandle texH,
         const BoundingRectangle<BaseVecT>& boundingRect,
