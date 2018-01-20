@@ -69,7 +69,7 @@ Normal<BaseVecT> Normal<BaseVecT>::average(const CollectionT& normals)
     for (auto n: normals)
     {
         static_assert(
-            std::is_same<typeof(n), Normal<BaseVecT>>::value,
+            std::is_same<decltype(n), Normal<BaseVecT>>::value,
             "Collection has to contain Vectors"
         );
         acc += n.asVector();
