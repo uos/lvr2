@@ -159,6 +159,10 @@ bool BaseVector<CoordT>::operator!=(const BaseVector &other) const
 
 namespace std
 {
+    /**
+     * @class hash
+     * Hash specialisation for vector class
+     */
 template<typename CoordT>
 class hash<lvr2::BaseVector<CoordT>>
 {
@@ -172,12 +176,3 @@ public:
     }
 };
 }
-// template<typename CoordT>
-// class BaseVectorEqualTo<BaseVector<CoordT>>
-// {
-// public:
-//     bool operator()(const BaseVector<CoordT>& lhs, const BaseVector<CoordT>& rhs) const
-//     {
-//         return lhs.x == rhs.x and lhs.y == rhs.y and lhs.z == rhs.z;
-//     }
-// };
