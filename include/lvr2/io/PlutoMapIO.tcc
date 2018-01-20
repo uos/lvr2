@@ -159,6 +159,45 @@ inline vector<PlutoMapImage> PlutoMapIO::getTextures()
 
     return textures;
 }
+inline vector<vector<float>> PlutoMapIO::getFeatures()
+{
+    vector<vector<float>> features;
+
+    if (!m_attributesGroup.exist("textures"))
+    {
+        return features;
+    }
+
+    const auto& featuresGroup = m_attributesGroup.getGroup("textures");
+
+    const size_t num_vectors = featuresGroup.getNumberObjects();
+    features.resize(num_vectors);
+
+    #pragma omp parallel for
+    for (size_t idx = 0; idx < num_vectors; ++idx)
+    {
+        const string& name = std::to_string(idx);
+
+        // fill vector with descriptor
+        vector<float> descriptor;
+        HighFive::DataSet dataset = featuresGroup.getDataSet(name);
+        dataset.read(descriptor);
+
+        // place it in output vector starting at pos 3
+        features[idx].resize(descriptor.size() + 3);
+        std::move(descriptor.begin(), descriptor.end(), &features[idx][3]);
+
+        // read vector attribute with xyz coords
+        vector<float> xyz(3);
+        HighFive::Attribute vector_attr = dataset.getAttribute("vector");
+        vector_attr.read(xyz);
+        // move it into beginning of feature vector
+        std::move(xyz.begin(), xyz.end(), &features[idx][0]);
+    }
+
+    return features;
+
+}
 
 inline vector<PlutoMapMaterial> PlutoMapIO::getMaterials()
 {
@@ -347,13 +386,13 @@ void PlutoMapIO::addTextureKeypointsMap(unordered_map<BaseVecT, std::vector<floa
     auto tf = m_attributesGroup.getGroup("texture_features");
 
     size_t i = 0;
-    for (auto it : keypoints_map)
+    for (const auto& keypoint_features : keypoints_map)
     {
-        auto dataset = tf.createDataSet<float>(std::to_string(i), hf::DataSpace::From(it.second));
-        dataset.write(it.second);
+        auto dataset = tf.createDataSet<float>(std::to_string(i), hf::DataSpace::From(keypoint_features.second));
+        dataset.write(keypoint_features.second);
 
         // use float vector here to avoid declaring BaseVecT as an complex type for HDF5
-        vector<float> v = {it.first.x, it.first.y, it.first.z};
+        vector<float> v = {keypoint_features.first.x, keypoint_features.first.y, keypoint_features.first.z};
         dataset.template createAttribute<float>("vector", hf::DataSpace::From(v))
             .write(v);
 

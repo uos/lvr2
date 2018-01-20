@@ -79,7 +79,7 @@ public:
     );
 
     /**
-     * @brief Closes main groups and makes sure all buffers are flushed to the file on disc.
+     * @brief Closes main groups and makes sure all buffers are flushed to the file on disk.
      */
     ~PlutoMapIO();
 
@@ -110,7 +110,13 @@ public:
     vector<PlutoMapImage> getTextures();
 
     /**
-     * @breif Returns materials as PlutoMapMaterial
+     * @brief Obtain vector of vectors where each vector's first three entries
+     * are keypoint coordinates and the others are the descriptor values
+     */
+    vector<vector<float>> getFeatures();
+
+    /**
+     * @brief Returns materials as PlutoMapMaterial
      */
     vector<PlutoMapMaterial> getMaterials();
 
