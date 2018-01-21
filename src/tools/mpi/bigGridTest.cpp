@@ -412,9 +412,10 @@ int main(int argc, char** argv)
             vector<float> tmpNBuffer;
 
             size_t p_np, c_np, n_np;
-            auto ppoints = p_loader->getPointArray(p_np);
-            auto pcolors = p_loader->getPointColorArray(c_np);
-            auto pnormals = p_loader->getPointNormalArray(n_np);
+            auto p_loader_old = buffer->toOldBuffer();
+            auto ppoints = p_loader_old.getPointArray(p_np);
+            auto pcolors = p_loader_old.getPointColorArray(c_np);
+            auto pnormals = p_loader_old.getPointNormalArray(n_np);
 
             lvr::BoundingBox<Vertexf> nbb;
             for(size_t p_count = 0 ; p_count < p_np ; p_count++ )
@@ -919,7 +920,7 @@ int main(int argc, char** argv)
             }
             size_t colorAmount;
             auto c = m->m_pointCloud->getPointColorArray(colorAmount);
-            for(size_t j = 0 ; j < normalAmount*3 ; j++)
+            for(size_t j = 0 ; j < colorAmount*3 ; j++)
             {
                 normalColors[globalId+j]=c[j];
 
