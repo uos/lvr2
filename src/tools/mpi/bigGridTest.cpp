@@ -160,6 +160,9 @@ int main(int argc, char** argv)
     size_t bufferSize = options.getLineReaderBuffer();
 
     std::vector <string> inputFiles = options.getInputFileName();
+    std::string firstPath = options.getInputFileName()[0];
+    bool gotSerializedBG = false;
+
     float voxelsize = options.getVoxelsize();
     float scale = options.getScaling();
     std::vector<float> flipPoint = options.getFlippoint();
@@ -168,10 +171,25 @@ int main(int argc, char** argv)
     boost::shared_ptr<BigGrid> bg;
     boost::shared_ptr<BigVolumen> bv;
     lvr::BoundingBox<lvr::Vertexf> bb;
+    if(firstPath.find(".ls") != std::string::npos)
+    {
+        gotSerializedBG = true;
+        volumenSize = 0;
+    }
     if(volumenSize <= 0)
     {
         double start_ss = lvr::timestamp.getElapsedTimeInS();
-        bg = boost::shared_ptr<BigGrid>(new BigGrid(inputFiles, voxelsize, scale, bufferSize));
+        if(gotSerializedBG)
+        {
+            bg = boost::shared_ptr<BigGrid>(new BigGrid(firstPath));
+
+        }
+        else
+        {
+            bg = boost::shared_ptr<BigGrid>(new BigGrid(inputFiles, voxelsize, scale, bufferSize));
+            bg->serialize("serinfo.ls");
+
+        }
         double end_ss = lvr::timestamp.getElapsedTimeInS();
         seconds+=(end_ss - start_ss);
         cout << lvr::timestamp << "grid finished in" << (end_ss - start_ss) << "sec." << endl;
@@ -196,6 +214,8 @@ int main(int argc, char** argv)
             exit(-1);
         }
         cout << lvr::timestamp << " getting BoundingBox" << endl;
+
+
         LineReader lr(inputFiles);
         bv = boost::shared_ptr<BigVolumen>(new BigVolumen(inputFiles, volumenSize, volumenSize/10) );
         cells = bv->getCellinfo();
