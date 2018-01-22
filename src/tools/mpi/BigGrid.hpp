@@ -42,6 +42,7 @@ public:
      */
     BigGrid(std::vector<std::string>, float voxelsize, float scale = 0, size_t bufferSize = 1024);
 
+    BigGrid(std::string path);
     /**
      * @return Number of voxels
      */
@@ -89,6 +90,8 @@ public:
     lvr::ucharArr colors(float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints);
 
     size_t getSizeofBox(float minx, float miny, float minz, float maxx, float maxy, float maxz);
+
+    void serialize(std::string path = "serinfo.ls");
 
     lvr::floatArr getPointCloud(size_t & numPoints);
 

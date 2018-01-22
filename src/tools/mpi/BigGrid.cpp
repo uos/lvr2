@@ -445,6 +445,115 @@ BigGrid::~BigGrid() {
     omp_destroy_lock(&m_lock);
 }
 
+BigGrid::BigGrid(std::string path)
+{
+    ifstream ifs(path,ios::binary);
+
+    ifs.read((char*)&m_maxIndexSquare, sizeof(m_maxIndexSquare));
+    ifs.read((char*)&m_maxIndex, sizeof(m_maxIndex));
+    ifs.read((char*)&m_maxIndexX, sizeof(m_maxIndexX));
+    ifs.read((char*)&m_maxIndexY, sizeof(m_maxIndexY));
+    ifs.read((char*)&m_maxIndexZ, sizeof(m_maxIndexZ));
+    ifs.read((char*)&m_numPoints, sizeof(m_numPoints));
+    ifs.read((char*)&m_pointBufferSize, sizeof(m_pointBufferSize));
+    ifs.read((char*)&m_voxelSize, sizeof(m_voxelSize));
+    ifs.read((char*)&m_extrude, sizeof(m_extrude));
+    ifs.read((char*)&m_has_normal, sizeof(m_has_normal));
+    ifs.read((char*)&m_has_color, sizeof(m_has_color));
+    ifs.read((char*)&m_scale, sizeof(m_scale));
+    float mx,my,mz,n1,n2,n3;
+    ifs.read((char*)&mx, sizeof(float));
+    ifs.read((char*)&my, sizeof(float));
+    ifs.read((char*)&mz, sizeof(float));
+    ifs.read((char*)&n1, sizeof(float));
+    ifs.read((char*)&n2, sizeof(float));
+    ifs.read((char*)&n3, sizeof(float));
+    m_bb.expand(mx,my,mz);
+    m_bb.expand(n1,n2,n3);
+
+    size_t gridSize;
+    ifs.read((char*)&gridSize, sizeof(gridSize));
+
+    std::cout << "LOADING OLD GRID: " << std::endl;
+    std::cout << "m_maxIndexSquare: \t\t\t" << m_maxIndexSquare << std::endl;
+    std::cout << "m_maxIndex: \t\t\t" << m_maxIndex << std::endl;
+    std::cout << "m_maxIndexX: \t\t\t" << m_maxIndexX << std::endl;
+    std::cout << "m_maxIndexY: \t\t\t" << m_maxIndexY << std::endl;
+    std::cout << "m_maxIndexZ: \t\t\t" << m_maxIndexZ << std::endl;
+    std::cout << "m_numPoints: \t\t\t" << m_numPoints << std::endl;
+    std::cout << "m_pointBufferSize: \t\t\t" << m_pointBufferSize << std::endl;
+    std::cout << "m_voxelSize: \t\t\t" << m_voxelSize << std::endl;
+    std::cout << "m_extrude: \t\t\t" << m_extrude << std::endl;
+    std::cout << "m_has_normal: \t\t\t" << m_has_normal << std::endl;
+    std::cout << "m_scale: \t\t\t" << m_scale << std::endl;
+    std::cout << "m_bb: \t\t\t" << m_bb << std::endl;
+    std::cout << "gridSize: \t\t\t" << gridSize << std::endl;
+
+    for(size_t i = 0 ; i<gridSize;i++)
+    {
+        CellInfo c;
+        size_t hash;
+        ifs.read((char*)&hash, sizeof(size_t));
+        ifs.read((char*)&c.size, sizeof(size_t));
+        ifs.read((char*)&c.offset, sizeof(size_t));
+        ifs.read((char*)&c.inserted, sizeof(size_t));
+        ifs.read((char*)&c.dist_offset, sizeof(size_t));
+        ifs.read((char*)&c.ix, sizeof(size_t));
+        ifs.read((char*)&c.iy, sizeof(size_t));
+        ifs.read((char*)&c.iz, sizeof(size_t));
+        m_gridNumPoints[hash] = c;
+    }
+}
+
+void BigGrid::serialize(std::string path)
+{
+    ofstream ofs(path,ios::binary);
+//    size_t data_size =      sizeof(m_maxIndexSquare) + sizeof(m_maxIndex) + sizeof(m_maxIndexX) + sizeof(m_maxIndexY) +
+//                            sizeof(m_maxIndexZ) + sizeof(m_numPoints) +  sizeof(m_pointBufferSize) +
+//                            sizeof(m_voxelSize) + sizeof(m_extrude) + sizeof(m_has_normal) + sizeof(m_has_color) +
+//                            sizeof(m_scale) + (m_gridNumPoints.size() * (sizeof(size_t)*7)) +
+//                            (m_gridNumPoints.size() *(sizeof(size_t)));
+
+    ofs.write((char*)&m_maxIndexSquare, sizeof(m_maxIndexSquare));
+    ofs.write((char*)&m_maxIndex, sizeof(m_maxIndex));
+    ofs.write((char*)&m_maxIndexX, sizeof(m_maxIndexX));
+    ofs.write((char*)&m_maxIndexY, sizeof(m_maxIndexY));
+    ofs.write((char*)&m_maxIndexZ, sizeof(m_maxIndexZ));
+    ofs.write((char*)&m_numPoints, sizeof(m_numPoints));
+    ofs.write((char*)&m_pointBufferSize, sizeof(m_pointBufferSize));
+    ofs.write((char*)&m_voxelSize, sizeof(m_voxelSize));
+    ofs.write((char*)&m_extrude, sizeof(m_extrude));
+    ofs.write((char*)&m_has_normal, sizeof(m_has_normal));
+    ofs.write((char*)&m_has_color, sizeof(m_has_color));
+    ofs.write((char*)&m_scale, sizeof(m_scale));
+
+    ofs.write((char*)&m_bb.getMin()[0], sizeof(float));
+    ofs.write((char*)&m_bb.getMin()[1], sizeof(float));
+    ofs.write((char*)&m_bb.getMin()[2], sizeof(float));
+    ofs.write((char*)&m_bb.getMax()[0], sizeof(float));
+    ofs.write((char*)&m_bb.getMax()[1], sizeof(float));
+    ofs.write((char*)&m_bb.getMax()[2], sizeof(float));
+    size_t gridSize = m_gridNumPoints.size();
+    ofs.write((char*)&gridSize, sizeof(gridSize));
+    for(auto it = m_gridNumPoints.begin() ; it!= m_gridNumPoints.end(); ++it)
+    {
+        ofs.write((char*)&it->first, sizeof(size_t));
+        ofs.write((char*)&it->second.size, sizeof(size_t));
+        ofs.write((char*)&it->second.offset, sizeof(size_t));
+        ofs.write((char*)&it->second.inserted, sizeof(size_t));
+        ofs.write((char*)&it->second.dist_offset, sizeof(size_t));
+        ofs.write((char*)&it->second.ix, sizeof(size_t));
+        ofs.write((char*)&it->second.iy, sizeof(size_t));
+        ofs.write((char*)&it->second.iz, sizeof(size_t));
+    }
+    ofs.close();
+
+
+
+
+
+}
+
 size_t BigGrid::size()
 {
     return m_gridNumPoints.size();
