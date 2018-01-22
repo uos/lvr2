@@ -159,44 +159,41 @@ inline vector<PlutoMapImage> PlutoMapIO::getTextures()
 
     return textures;
 }
-inline vector<vector<float>> PlutoMapIO::getFeatures()
-{
-    vector<vector<float>> features;
 
-    if (!m_attributesGroup.exist("textures"))
+inline unordered_map<Vec, vector<float>> PlutoMapIO::getFeatures()
+{
+    unordered_map<Vec, vector<float>> features;
+
+    if (!m_attributesGroup.exist("texture_features"))
     {
         return features;
     }
 
-    const auto& featuresGroup = m_attributesGroup.getGroup("textures");
-
-    const size_t num_vectors = featuresGroup.getNumberObjects();
-    features.resize(num_vectors);
+    const auto& featuresGroup = m_attributesGroup.getGroup("texture_features");
+    features.reserve(featuresGroup.getNumberObjects());
 
     #pragma omp parallel for
-    for (size_t idx = 0; idx < num_vectors; ++idx)
+    for (auto name : featuresGroup.listObjectNames())
     {
-        const string& name = std::to_string(idx);
-
         // fill vector with descriptor
         vector<float> descriptor;
-        HighFive::DataSet dataset = featuresGroup.getDataSet(name);
+        auto dataset = featuresGroup.getDataSet(name);
         dataset.read(descriptor);
 
-        // place it in output vector starting at pos 3
-        features[idx].resize(descriptor.size() + 3);
-        std::move(descriptor.begin(), descriptor.end(), &features[idx][3]);
-
         // read vector attribute with xyz coords
+        Vec v;
         vector<float> xyz(3);
-        HighFive::Attribute vector_attr = dataset.getAttribute("vector");
+        auto vector_attr = dataset.getAttribute("vector");
         vector_attr.read(xyz);
-        // move it into beginning of feature vector
-        std::move(xyz.begin(), xyz.end(), &features[idx][0]);
+
+        v.x = xyz[0];
+        v.y = xyz[1];
+        v.z = xyz[2];
+
+        features.insert({v, descriptor});
     }
 
     return features;
-
 }
 
 inline vector<PlutoMapMaterial> PlutoMapIO::getMaterials()

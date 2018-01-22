@@ -34,6 +34,8 @@
 #include <H5Tpublic.h>
 #include <highfive/H5File.hpp>
 
+#include <lvr2/geometry/BaseVector.hpp>
+
 namespace hf = HighFive;
 
 using std::string;
@@ -42,6 +44,8 @@ using std::unordered_map;
 
 namespace lvr2
 {
+
+using Vec = BaseVector<float>;
 
 struct PlutoMapImage {
     string name;
@@ -110,10 +114,10 @@ public:
     vector<PlutoMapImage> getTextures();
 
     /**
-     * @brief Obtain vector of vectors where each vector's first three entries
-     * are keypoint coordinates and the others are the descriptor values
+     * @brief Returns an map which keys are representing the features point in space and the values
+     * are an vector of floats representing the keypoints.
      */
-    vector<vector<float>> getFeatures();
+    unordered_map<Vec, vector<float>> getFeatures();
 
     /**
      * @brief Returns materials as PlutoMapMaterial
