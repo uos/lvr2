@@ -50,12 +50,29 @@ int main(int argc, char** argv)
     coord3fArr points = pBuffer->getIndexedPointArray(numPoints);
     coord3fArr normals = pBuffer->getIndexedPointNormalArray(numNormals);
     color3bArr colors = pBuffer->getIndexedPointColorArray(numColors);
+    size_t newSize;
+    if(options.reduction() > 1)
+    {
+        newSize = numPoints/options.reduction();
+
+    }
+    else
+    {
+        newSize = options.points();
+    }
 
     vector<size_t> oldToNew(numPoints);
     std::iota(std::begin(oldToNew), std::end(oldToNew), 0);
-    std::random_shuffle(oldToNew.begin(), oldToNew.end());
+    if(options.reduction() > 1)
+    {
+        
+    }
+    else
+    {
+        std::random_shuffle(oldToNew.begin(), oldToNew.end());
+    }
 
-    size_t newSize = options.points();
+
 
 
     for(size_t i = 0 ; i< newSize; i++)
