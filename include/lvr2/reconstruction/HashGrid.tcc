@@ -247,7 +247,10 @@ void HashGrid<BaseVecT, BoxT>::addLatticePoint(int index_x, int index_y, int ind
                     if((
                             box_center[0] <= m_boundingBox.getMin().x  ||
                             box_center[1] <= m_boundingBox.getMin().y  ||
-                            box_center[2] <= m_boundingBox.getMin().z
+                            box_center[2] <= m_boundingBox.getMin().z ||
+                            box_center[0] >= m_boundingBox.getMax().x + m_voxelsize  ||
+                            box_center[1] >= m_boundingBox.getMax().y + m_voxelsize  ||
+                            box_center[2] >= m_boundingBox.getMax().z + m_voxelsize
                     ))
                     {
                         continue;
