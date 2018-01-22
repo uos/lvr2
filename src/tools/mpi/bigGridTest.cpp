@@ -228,13 +228,36 @@ int main(int argc, char** argv)
     }
     else
     {
-        BigGridKdTree gridKd(bg->getBB(),options.getNodeSize(),bg.get(), voxelsize);
-        gridKd.insert(bg->pointSize(),bg->getBB().getCentroid());
-        for(size_t i = 0 ; i <  gridKd.getLeafs().size(); i++)
+        if(gotSerializedBG)
         {
-            BoundingBox<Vertexf > partBB = gridKd.getLeafs()[i]->getBB();
-            partitionBoxes.push_back(partBB);
+            ifstream partBoxIFS("KdTree.ser");
+            while(partBoxIFS.good())
+            {
+                float minx,miny,minz,maxx,maxy,maxz;
+                partBoxIFS >> minx;
+                partBoxIFS >> miny;
+                partBoxIFS >> minz;
+                partBoxIFS >> maxx;
+                partBoxIFS >> maxy;
+                partBoxIFS >> maxz;
+                BoundingBox<Vertexf > partBB(minx,miny,minz,maxx,maxy,maxz);
+                partitionBoxes.push_back(partBB);
+            }
         }
+        else
+        {
+            BigGridKdTree gridKd(bg->getBB(),options.getNodeSize(),bg.get(), voxelsize);
+            gridKd.insert(bg->pointSize(),bg->getBB().getCentroid());
+            ofstream partBoxOfs("KdTree.ser");
+            for(size_t i = 0 ; i <  gridKd.getLeafs().size(); i++)
+            {
+                BoundingBox<Vertexf > partBB = gridKd.getLeafs()[i]->getBB();
+                partitionBoxes.push_back(partBB);
+                partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " " << partBB.getMin()[2] << " "
+                           << partBB.getMax()[0] << " " << partBB.getMax()[1] << " "<< partBB.getMax()[2] << std::endl;
+            }
+        }
+
     }
 
     cout << lvr::timestamp << "finished tree" << endl;
