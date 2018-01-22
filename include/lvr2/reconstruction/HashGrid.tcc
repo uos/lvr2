@@ -244,8 +244,30 @@ void HashGrid<BaseVecT, BoxT>::addLatticePoint(int index_x, int index_y, int ind
                         (index_y + dy) * this->m_voxelsize + v_min.y,
                         (index_z + dz) * this->m_voxelsize + v_min.z);
 
+                    if((
+                            box_center[0] <= m_boundingBox.getMin().x  ||
+                            box_center[1] <= m_boundingBox.getMin().y  ||
+                            box_center[2] <= m_boundingBox.getMin().z
+                    ))
+                    {
+                        continue;
+                    }
+
                     //Create new box
                     BoxT* box = new BoxT(box_center);
+                    if(
+                        box_center[0] <= m_boundingBox.getMin().x + m_voxelsize  ||
+                        box_center[1] <= m_boundingBox.getMin().y + m_voxelsize  ||
+                        box_center[2] <= m_boundingBox.getMin().z + m_voxelsize)
+                    {
+                        box->m_duplicate = true;
+                    }
+                    else if( box_center[0] >= m_boundingBox.getMax().x - m_voxelsize  ||
+                             box_center[1] >= m_boundingBox.getMax().y - m_voxelsize  ||
+                             box_center[2] >= m_boundingBox.getMax().z - m_voxelsize)
+                    {
+                        box->m_duplicate = true;
+                    }
 
                     //Setup the box itself
                     for(int k = 0; k < 8; k++){
@@ -261,6 +283,8 @@ void HashGrid<BaseVecT, BoxT>::addLatticePoint(int index_x, int index_y, int ind
                             Point<BaseVecT> position(box_center.x + box_creation_table[k][0] * vsh,
                                                      box_center.y + box_creation_table[k][1] * vsh,
                                                      box_center.z + box_creation_table[k][2] * vsh);
+
+                            qp_bb.expand(position);
 
                             this->m_queryPoints.push_back(QueryPoint<BaseVecT>(position, distance));
                             box->setVertex(k, this->m_globalIndex);
