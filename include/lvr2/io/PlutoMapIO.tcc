@@ -172,7 +172,6 @@ inline unordered_map<Vec, vector<float>> PlutoMapIO::getFeatures()
     const auto& featuresGroup = m_attributesGroup.getGroup("texture_features");
     features.reserve(featuresGroup.getNumberObjects());
 
-    #pragma omp parallel for
     for (auto name : featuresGroup.listObjectNames())
     {
         // fill vector with descriptor
