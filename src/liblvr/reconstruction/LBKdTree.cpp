@@ -7,7 +7,7 @@ namespace lvr {
 
 // Static variables
 
-ctpl::thread_pool* LBKdTree::pool = new ctpl::thread_pool(8);
+ctpl::thread_pool* LBKdTree::pool;// = new ctpl::thread_pool(8);
 int LBKdTree::st_num_threads = 8;
 int LBKdTree::st_depth_threads = 3;
 
@@ -23,7 +23,10 @@ LBKdTree::LBKdTree( LBPointArray<float>& vertices, int num_threads) {
 }
 
 LBKdTree::~LBKdTree() {
-
+    if(pool)
+    {
+        delete pool;
+    }
 }
 
 void LBKdTree::generateKdTree(LBPointArray<float> &vertices) {
@@ -43,6 +46,7 @@ void LBKdTree::generateKdTree(LBPointArray<float> &vertices) {
     }
 
     pool->stop(true);
+    delete pool;
     pool = new ctpl::thread_pool(st_num_threads);
 
     std::cout << "KDTREE" << std::endl;
@@ -120,6 +124,7 @@ void LBKdTree::generateKdTreeArray(LBPointArray<float>& V,
             max_dim, value_ptr, splits_ptr ,size, max_tree_depth, 0, 0);
 
     pool->stop(true);
+    delete pool;
     pool = new ctpl::thread_pool(st_num_threads);
 }
 
