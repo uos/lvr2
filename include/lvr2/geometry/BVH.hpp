@@ -55,6 +55,7 @@ struct Triangle {
     float d, d1, d2, d3;
     Normal<BaseVecT> e1, e2, e3;
 
+    // todo: not used?
     BoundingBox<BaseVecT> bb;
 };
 

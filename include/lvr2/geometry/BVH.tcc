@@ -83,7 +83,6 @@ BVHNodePtr<BaseVecT> BVHTree<BaseVecT>::buildTree(const vector<float>& vertices,
         point3.y = vertices[faces[i+2]+1];
         point3.z = vertices[faces[i+2]+2];
 
-        // todo: wrong?
         BoundingBox<BaseVecT> faceBb;
         faceBb.expand(point1);
         faceBb.expand(point2);
@@ -372,7 +371,7 @@ void BVHTree<BaseVecT>::createCFTreeRecursive(BVHNodePtr<BaseVecT> currentNode, 
         BVHLeafPtr<BaseVecT> leaf(dynamic_cast<BVHLeaf<BaseVecT>*>(currentNode.release()));
         uint32_t count = static_cast<uint32_t>(leaf->triangles.size());
 
-        // push real count (todo: wrong?)
+        // push real count
         m_indexesOrTrilists.push_back(0x80000000 | count);
 
         // push dummy bix indices
@@ -422,7 +421,7 @@ void BVHTree<BaseVecT>::convertTrianglesIntersectionData()
         m_trianglesIntersectionData.push_back(triangle.d3);
     }
 
-    // fix triangles indices todo: does this work?
+    // fix triangles indices
     transform(
         m_triIndexList.begin(),
         m_triIndexList.end(),
