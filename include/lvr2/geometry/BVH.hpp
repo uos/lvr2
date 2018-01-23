@@ -32,10 +32,12 @@
 
 using std::unique_ptr;
 using std::vector;
+using std::pair;
 
 namespace lvr2
 {
 
+// TODO: move into BVHTree -> private
 template<typename BaseVecT>
 struct Triangle {
 
@@ -59,7 +61,7 @@ struct Triangle {
 template<typename BaseVecT>
 struct AABB {
     BoundingBox<BaseVecT> bb;
-    vector<Triangle<BaseVecT>> triangles;
+    vector<size_t> triangles;
 };
 
 template<typename BaseVecT>
@@ -83,7 +85,7 @@ using BVHInnerPtr = unique_ptr<BVHInner<BaseVecT>>;
 
 template<typename BaseVecT>
 struct BVHLeaf: BVHNode<BaseVecT> {
-    vector<Triangle<BaseVecT>> triangles;
+    vector<size_t> triangles;
     virtual bool isLeaf() { return true; }
 };
 
@@ -95,12 +97,32 @@ class BVHTree
 {
 public:
     BVHTree(const vector<float>& vertices, const vector<uint32_t>& faces);
+
+    const vector<uint32_t>& getTriIndexList() const;
+    const vector<float>& getLimits() const;
+    const vector<uint32_t>& getIndexesOrTrilists() const;
+    const vector<float>& getTrianglesIntersectionData() const;
+
 private:
     using AABB_t = AABB<BaseVecT>;
 
+    // working variables for tree construction
     BVHNodePtr<BaseVecT> m_root;
+    vector<Triangle<BaseVecT>> m_triangles;
+
+    // cache friendly data for the SIMD device
+    vector<uint32_t> m_triIndexList;
+    vector<float> m_limits;
+    vector<uint32_t> m_indexesOrTrilists;
+    vector<float> m_trianglesIntersectionData;
+
     BVHNodePtr<BaseVecT> buildTree(const vector<float>& vertices, const vector<uint32_t>& faces);
     BVHNodePtr<BaseVecT> buildTreeRecursive(vector<AABB_t>& work, uint32_t depth = 0);
+
+    void createCFTree();
+    void createCFTreeRecursive(BVHNodePtr<BaseVecT> currentNode, uint32_t& idxBoxes);
+
+    void convertTrianglesIntersectionData();
 };
 
 } /* namespace lvr2 */

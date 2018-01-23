@@ -26,6 +26,8 @@
 #include <limits>
 
 using std::make_unique;
+using std::transform;
+using std::move;
 
 namespace lvr2
 {
@@ -53,6 +55,7 @@ template<typename BaseVecT>
 BVHTree<BaseVecT>::BVHTree(const vector<float>& vertices, const vector<uint32_t>& faces)
 {
     m_root = buildTree(vertices, faces);
+    createCFTree();
 }
 
 template<typename BaseVecT>
@@ -80,6 +83,7 @@ BVHNodePtr<BaseVecT> BVHTree<BaseVecT>::buildTree(const vector<float>& vertices,
         point3.y = vertices[faces[i+2]+1];
         point3.z = vertices[faces[i+2]+2];
 
+        // todo: wrong?
         BoundingBox<BaseVecT> faceBb;
         faceBb.expand(point1);
         faceBb.expand(point2);
@@ -125,7 +129,8 @@ BVHNodePtr<BaseVecT> BVHTree<BaseVecT>::buildTree(const vector<float>& vertices,
 
         AABB_t aabb;
         aabb.bb = faceBb;
-        aabb.triangles.push_back(triangle);
+        aabb.triangles.push_back(m_triangles.size());
+        m_triangles.push_back(triangle);
 
         outerBb.expand(faceBb);
         work.push_back(aabb);
@@ -148,9 +153,12 @@ BVHNodePtr<BaseVecT> BVHTree<BaseVecT>::buildTreeRecursive(vector<AABB_t>& work,
         auto leaf = make_unique<BVHLeaf<BaseVecT>>();
         for (auto aabb: work)
         {
-            leaf->triangles.push_back(aabb.triangles.front());
+            for (auto triangle: aabb.triangles)
+            {
+                leaf->triangles.push_back(triangle);
+            }
         }
-        return leaf;
+        return move(leaf);
     }
 
     // divide node into smaller nodes
@@ -261,9 +269,12 @@ BVHNodePtr<BaseVecT> BVHTree<BaseVecT>::buildTreeRecursive(vector<AABB_t>& work,
         auto leaf = make_unique<BVHLeaf<BaseVecT>>();
         for (auto aabb: work)
         {
-            leaf->triangles.push_back(aabb.triangles.front());
+            for (auto triangle: aabb.triangles)
+            {
+                leaf->triangles.push_back(triangle);
+            }
         }
-        return leaf;
+        return move(leaf);
     }
 
     vector<AABB_t> leftWork;
@@ -308,7 +319,140 @@ BVHNodePtr<BaseVecT> BVHTree<BaseVecT>::buildTreeRecursive(vector<AABB_t>& work,
     inner->right = buildTreeRecursive(rightWork, depth + 1);
     inner->right->bb = rBb;
 
-    return inner;
+    return move(inner);
+}
+
+template<typename BaseVecT>
+void BVHTree<BaseVecT>::createCFTree()
+{
+    uint32_t idxBoxes = 0;
+    createCFTreeRecursive(move(m_root), idxBoxes);
+    convertTrianglesIntersectionData();
+}
+
+template<typename BaseVecT>
+void BVHTree<BaseVecT>::createCFTreeRecursive(BVHNodePtr<BaseVecT> currentNode, uint32_t& idxBoxes)
+{
+    m_limits.push_back(currentNode->bb.getMin().x);
+    m_limits.push_back(currentNode->bb.getMax().x);
+
+    m_limits.push_back(currentNode->bb.getMin().y);
+    m_limits.push_back(currentNode->bb.getMax().y);
+
+    m_limits.push_back(currentNode->bb.getMin().z);
+    m_limits.push_back(currentNode->bb.getMax().z);
+
+    if (!currentNode->isLeaf())
+    {
+        BVHInnerPtr<BaseVecT> inner(dynamic_cast<BVHInner<BaseVecT>*>(currentNode.release()));
+
+        // push dummy count (0 -> inner node!)
+        m_indexesOrTrilists.push_back(0);
+
+        // push dummy box indices (they will be fixed later)
+        size_t indexesOrTrilistsPos = m_indexesOrTrilists.size();
+        m_indexesOrTrilists.push_back(0);
+        m_indexesOrTrilists.push_back(0);
+
+        // push dummy start index
+        m_indexesOrTrilists.push_back(0);
+
+        // now recurse
+        uint32_t idxLeft = ++idxBoxes;
+        createCFTreeRecursive(move(inner->left), idxBoxes);
+        uint32_t idxRight = ++idxBoxes;
+        createCFTreeRecursive(move(inner->right), idxBoxes);
+
+        // fix box indices
+        m_indexesOrTrilists[indexesOrTrilistsPos] = idxLeft;
+        m_indexesOrTrilists[indexesOrTrilistsPos + 1] = idxRight;
+    }
+    else
+    {
+        BVHLeafPtr<BaseVecT> leaf(dynamic_cast<BVHLeaf<BaseVecT>*>(currentNode.release()));
+        uint32_t count = static_cast<uint32_t>(leaf->triangles.size());
+
+        // push real count (todo: wrong?)
+        m_indexesOrTrilists.push_back(0x80000000 | count);
+
+        // push dummy bix indices
+        m_indexesOrTrilists.push_back(0);
+        m_indexesOrTrilists.push_back(0);
+
+        // push start index
+        m_indexesOrTrilists.push_back(static_cast<uint32_t>(m_triIndexList.size()));
+
+        // copy triangle indices
+        for (auto idx: leaf->triangles)
+        {
+            m_triIndexList.push_back(static_cast<uint32_t>(idx));
+        }
+    }
+}
+
+template<typename BaseVecT>
+void BVHTree<BaseVecT>::convertTrianglesIntersectionData()
+{
+    uint32_t sizePerTriangle = 3 + 4 + 4 + 4 + 4;
+    for (auto const& triangle: m_triangles)
+    {
+        // todo: not needed?
+        m_trianglesIntersectionData.push_back(triangle.center.x);
+        m_trianglesIntersectionData.push_back(triangle.center.y);
+        m_trianglesIntersectionData.push_back(triangle.center.z);
+
+        m_trianglesIntersectionData.push_back(triangle.normal.getX());
+        m_trianglesIntersectionData.push_back(triangle.normal.getY());
+        m_trianglesIntersectionData.push_back(triangle.normal.getZ());
+        m_trianglesIntersectionData.push_back(triangle.d);
+
+        m_trianglesIntersectionData.push_back(triangle.e1.getX());
+        m_trianglesIntersectionData.push_back(triangle.e1.getY());
+        m_trianglesIntersectionData.push_back(triangle.e1.getZ());
+        m_trianglesIntersectionData.push_back(triangle.d1);
+
+        m_trianglesIntersectionData.push_back(triangle.e2.getX());
+        m_trianglesIntersectionData.push_back(triangle.e2.getY());
+        m_trianglesIntersectionData.push_back(triangle.e2.getZ());
+        m_trianglesIntersectionData.push_back(triangle.d2);
+
+        m_trianglesIntersectionData.push_back(triangle.e3.getX());
+        m_trianglesIntersectionData.push_back(triangle.e3.getY());
+        m_trianglesIntersectionData.push_back(triangle.e3.getZ());
+        m_trianglesIntersectionData.push_back(triangle.d3);
+    }
+
+    // fix triangles indices todo: does this work?
+    transform(
+        m_triIndexList.begin(),
+        m_triIndexList.end(),
+        m_triIndexList.begin(),
+        std::bind1st(std::multiplies<uint32_t>(), sizePerTriangle)
+    );
+}
+
+template<typename BaseVecT>
+const vector<uint32_t>& BVHTree<BaseVecT>::getTriIndexList() const
+{
+    return m_triIndexList;
+}
+
+template<typename BaseVecT>
+const vector<float>& BVHTree<BaseVecT>::getLimits() const
+{
+    return m_limits;
+}
+
+template<typename BaseVecT>
+const vector<uint32_t>& BVHTree<BaseVecT>::getIndexesOrTrilists() const
+{
+    return m_indexesOrTrilists;
+}
+
+template<typename BaseVecT>
+const vector<float>& BVHTree<BaseVecT>::getTrianglesIntersectionData() const
+{
+    return m_trianglesIntersectionData;
 }
 
 
