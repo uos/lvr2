@@ -57,7 +57,10 @@ BVHTree<BaseVecT>::BVHTree(const vector<float>& vertices, const vector<uint32_t>
 }
 
 template<typename BaseVecT>
-typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(const vector<float>& vertices, const vector<uint32_t>& faces)
+typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
+    const vector<float>& vertices,
+    const vector<uint32_t>& faces
+)
 {
     vector<AABB> work;
     work.reserve(faces.size() / 3);
@@ -457,5 +460,4 @@ const vector<float>& BVHTree<BaseVecT>::getTrianglesIntersectionData() const
     return m_trianglesIntersectionData;
 }
 
-
-}
+} /* namespace lvr2 */
