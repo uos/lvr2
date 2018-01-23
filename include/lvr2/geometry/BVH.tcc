@@ -61,6 +61,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(const vector
 {
     vector<AABB> work;
     work.reserve(faces.size() / 3);
+    m_triangles.reserve(faces.size() / 3);
 
     BoundingBox<BaseVecT> outerBb;
 
@@ -150,6 +151,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vec
         auto leaf = make_unique<BVHLeaf>();
         for (auto aabb: work)
         {
+            leaf->triangles.reserve(aabb.triangles.size());
             for (auto triangle: aabb.triangles)
             {
                 leaf->triangles.push_back(triangle);
@@ -266,6 +268,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vec
         auto leaf = make_unique<BVHLeaf>();
         for (auto aabb: work)
         {
+            leaf->triangles.reserve(aabb.triangles.size());
             for (auto triangle: aabb.triangles)
             {
                 leaf->triangles.push_back(triangle);
@@ -322,6 +325,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vec
 template<typename BaseVecT>
 void BVHTree<BaseVecT>::createCFTree()
 {
+    m_triIndexList.reserve(m_triangles.size());
     uint32_t idxBoxes = 0;
     createCFTreeRecursive(move(m_root), idxBoxes);
     convertTrianglesIntersectionData();
@@ -391,6 +395,7 @@ template<typename BaseVecT>
 void BVHTree<BaseVecT>::convertTrianglesIntersectionData()
 {
     uint32_t sizePerTriangle = 3 + 4 + 4 + 4 + 4;
+    m_trianglesIntersectionData.reserve(m_triangles.size() * sizePerTriangle);
     for (auto const& triangle: m_triangles)
     {
         // todo: not needed?
