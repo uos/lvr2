@@ -37,10 +37,39 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
+struct Triangle {
+
+    Triangle();
+
+    // indices in vertex array
+    uint32_t idx1;
+    uint32_t idx2;
+    uint32_t idx3;
+
+    Point<BaseVecT> center;
+    Normal<BaseVecT> normal;
+
+    // intersection pre-computed cache
+    float d, d1, d2, d3;
+    Normal<BaseVecT> e1, e2, e3;
+
+    BoundingBox<BaseVecT> bb;
+};
+
+template<typename BaseVecT>
+struct AABB {
+    BoundingBox<BaseVecT> bb;
+    vector<Triangle<BaseVecT>> triangles;
+};
+
+template<typename BaseVecT>
 struct BVHNode {
     BoundingBox<BaseVecT> bb;
     virtual bool isLeaf() = 0;
 };
+
+template<typename BaseVecT>
+using BVHNodePtr = unique_ptr<BVHNode<BaseVecT>>;
 
 template<typename BaseVecT>
 struct BVHInner: BVHNode<BaseVecT> {
@@ -50,10 +79,16 @@ struct BVHInner: BVHNode<BaseVecT> {
 };
 
 template<typename BaseVecT>
+using BVHInnerPtr = unique_ptr<BVHInner<BaseVecT>>;
+
+template<typename BaseVecT>
 struct BVHLeaf: BVHNode<BaseVecT> {
-    vector<float> triangles;
+    vector<Triangle<BaseVecT>> triangles;
     virtual bool isLeaf() { return true; }
 };
+
+template<typename BaseVecT>
+using BVHLeafPtr = unique_ptr<BVHLeaf<BaseVecT>>;
 
 template<typename BaseVecT>
 class BVHTree
@@ -61,8 +96,11 @@ class BVHTree
 public:
     BVHTree(const vector<float>& vertices, const vector<uint32_t>& faces);
 private:
-    BVHInner<BaseVecT> m_root;
-    BVHInner<BaseVecT> buildTree(const vector<float>& vertices, const vector<uint32_t>& faces);
+    using AABB_t = AABB<BaseVecT>;
+
+    BVHNodePtr<BaseVecT> m_root;
+    BVHNodePtr<BaseVecT> buildTree(const vector<float>& vertices, const vector<uint32_t>& faces);
+    BVHNodePtr<BaseVecT> buildTreeRecursive(vector<AABB_t>& work, uint32_t depth = 0);
 };
 
 } /* namespace lvr2 */
