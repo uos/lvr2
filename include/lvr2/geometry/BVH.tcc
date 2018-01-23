@@ -33,7 +33,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-Triangle<BaseVecT>::Triangle()
+BVHTree<BaseVecT>::Triangle::Triangle()
     : idx1(0)
     , idx2(0)
     , idx3(0)
@@ -47,9 +47,7 @@ Triangle<BaseVecT>::Triangle()
     , e2(0, 1, 0)
     , e3(0, 1, 0)
     , bb()
-{
-
-}
+{}
 
 template<typename BaseVecT>
 BVHTree<BaseVecT>::BVHTree(const vector<float>& vertices, const vector<uint32_t>& faces)
@@ -59,9 +57,9 @@ BVHTree<BaseVecT>::BVHTree(const vector<float>& vertices, const vector<uint32_t>
 }
 
 template<typename BaseVecT>
-BVHNodePtr<BaseVecT> BVHTree<BaseVecT>::buildTree(const vector<float>& vertices, const vector<uint32_t>& faces)
+typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(const vector<float>& vertices, const vector<uint32_t>& faces)
 {
-    vector<AABB_t> work;
+    vector<AABB> work;
     work.reserve(faces.size() / 3);
 
     BoundingBox<BaseVecT> outerBb;
@@ -88,7 +86,7 @@ BVHNodePtr<BaseVecT> BVHTree<BaseVecT>::buildTree(const vector<float>& vertices,
         faceBb.expand(point2);
         faceBb.expand(point3);
 
-        Triangle<BaseVecT> triangle;
+        Triangle triangle;
         triangle.bb = faceBb;
         triangle.center = Point<BaseVecT>((point1.asVector() + point2.asVector() + point3.asVector()) / 3.0f);
         triangle.idx1 = faces[i];
@@ -126,7 +124,7 @@ BVHNodePtr<BaseVecT> BVHTree<BaseVecT>::buildTree(const vector<float>& vertices,
         triangle.e3 = Normal<BaseVecT>(triangle.normal.cross(vc3));
         triangle.d3 = triangle.e3.dot(point3);
 
-        AABB_t aabb;
+        AABB aabb;
         aabb.bb = faceBb;
         aabb.triangles.push_back(m_triangles.size());
         m_triangles.push_back(triangle);
@@ -144,12 +142,12 @@ BVHNodePtr<BaseVecT> BVHTree<BaseVecT>::buildTree(const vector<float>& vertices,
 }
 
 template<typename BaseVecT>
-BVHNodePtr<BaseVecT> BVHTree<BaseVecT>::buildTreeRecursive(vector<AABB_t>& work, uint32_t depth)
+typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vector<AABB>& work, uint32_t depth)
 {
     // terminate recursion, if work size is small enough
     if (work.size() < 4)
     {
-        auto leaf = make_unique<BVHLeaf<BaseVecT>>();
+        auto leaf = make_unique<BVHLeaf>();
         for (auto aabb: work)
         {
             for (auto triangle: aabb.triangles)
@@ -265,7 +263,7 @@ BVHNodePtr<BaseVecT> BVHTree<BaseVecT>::buildTreeRecursive(vector<AABB_t>& work,
 
     if (bestAxis == -1)
     {
-        auto leaf = make_unique<BVHLeaf<BaseVecT>>();
+        auto leaf = make_unique<BVHLeaf>();
         for (auto aabb: work)
         {
             for (auto triangle: aabb.triangles)
@@ -276,8 +274,8 @@ BVHNodePtr<BaseVecT> BVHTree<BaseVecT>::buildTreeRecursive(vector<AABB_t>& work,
         return move(leaf);
     }
 
-    vector<AABB_t> leftWork;
-    vector<AABB_t> rightWork;
+    vector<AABB> leftWork;
+    vector<AABB> rightWork;
     BoundingBox<BaseVecT> lBb;
     BoundingBox<BaseVecT> rBb;
 
@@ -311,7 +309,7 @@ BVHNodePtr<BaseVecT> BVHTree<BaseVecT>::buildTreeRecursive(vector<AABB_t>& work,
         }
     }
 
-    auto inner = make_unique<BVHInner<BaseVecT>>();
+    auto inner = make_unique<BVHInner>();
     inner->left = buildTreeRecursive(leftWork, depth + 1);
     inner->left->bb = lBb;
 
@@ -330,7 +328,7 @@ void BVHTree<BaseVecT>::createCFTree()
 }
 
 template<typename BaseVecT>
-void BVHTree<BaseVecT>::createCFTreeRecursive(BVHNodePtr<BaseVecT> currentNode, uint32_t& idxBoxes)
+void BVHTree<BaseVecT>::createCFTreeRecursive(BVHNodePtr currentNode, uint32_t& idxBoxes)
 {
     m_limits.push_back(currentNode->bb.getMin().x);
     m_limits.push_back(currentNode->bb.getMax().x);
@@ -343,7 +341,7 @@ void BVHTree<BaseVecT>::createCFTreeRecursive(BVHNodePtr<BaseVecT> currentNode, 
 
     if (!currentNode->isLeaf())
     {
-        BVHInnerPtr<BaseVecT> inner(dynamic_cast<BVHInner<BaseVecT>*>(currentNode.release()));
+        BVHInnerPtr inner(dynamic_cast<BVHInner*>(currentNode.release()));
 
         // push dummy count (0 -> inner node!)
         m_indexesOrTrilists.push_back(0);
@@ -368,7 +366,7 @@ void BVHTree<BaseVecT>::createCFTreeRecursive(BVHNodePtr<BaseVecT> currentNode, 
     }
     else
     {
-        BVHLeafPtr<BaseVecT> leaf(dynamic_cast<BVHLeaf<BaseVecT>*>(currentNode.release()));
+        BVHLeafPtr leaf(dynamic_cast<BVHLeaf*>(currentNode.release()));
         uint32_t count = static_cast<uint32_t>(leaf->triangles.size());
 
         // push real count
