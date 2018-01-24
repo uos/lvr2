@@ -204,6 +204,8 @@
 #include <lvr2/algorithm/MeshNavAlgorithms.hpp>
 #include <lvr2/algorithm/UtilAlgorithms.hpp>
 
+#include <lvr2/geometry/BVH.hpp>
+
 // PCL related includes
 #ifdef LVR_USE_PCL
 #include <lvr/reconstruction/PCLKSurface.hpp>
@@ -800,6 +802,36 @@ void testMeshnav(
     // create map of color vertices according to the calculated height differences
     colorVertices = lvr2::map<DenseAttrMap>(combCost, colorFunctionPointer);
 }
+
+ void testBVHTree()
+ {
+     vector<float> vs = {
+         //-0.5f, -0.5f, 1,
+         //0, 0.5f, 1,
+         //0.5f, -0.5f, 1
+
+         -50, -50, 370,
+         0,  50, 370,
+         50, -50, 370,
+
+         50, -50, 370,
+         100,  50, 370,
+         150, -50, 370
+     };
+     vector<uint32_t> fs = {
+         0, 1, 2,
+
+         3, 4, 5
+     };
+
+     BVHTree<lvr2::BaseVector<float>> bvh(vs, fs);
+
+     lvr2::MeshBuffer<BaseVecT> debugMeshBuffer;
+     debugMeshBuffer.setVertices(vs);
+     debugMeshBuffer.setFaceIndices(fs);
+     auto m = boost::make_shared<lvr::Model>(debugMeshBuffer.toOldBuffer());
+     lvr::ModelFactory::saveModel(m, "debug_sim_mesh.ply");
+ }
 
 int main(int argc, char** argv)
 {
