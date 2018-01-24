@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <limits>
 
+using std::numeric_limits;
 
 namespace lvr2
 {
