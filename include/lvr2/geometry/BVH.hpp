@@ -29,6 +29,9 @@
 #include <memory>
 
 #include <lvr2/geometry/BoundingBox.hpp>
+#include <lvr2/geometry/Normal.hpp>
+#include <lvr2/geometry/Point.hpp>
+#include <lvr2/geometry/Vector.hpp>
 
 using std::unique_ptr;
 using std::vector;
