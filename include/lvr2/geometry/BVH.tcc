@@ -71,19 +71,19 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
     for (size_t i = 0; i < faces.size(); i += 3)
     {
         Point<BaseVecT> point1;
-        point1.x = vertices[faces[i]];
-        point1.y = vertices[faces[i]+1];
-        point1.z = vertices[faces[i]+2];
+        point1.x = vertices[faces[i]*3];
+        point1.y = vertices[faces[i]*3+1];
+        point1.z = vertices[faces[i]*3+2];
 
         Point<BaseVecT> point2;
-        point2.x = vertices[faces[i+1]];
-        point2.y = vertices[faces[i+1]+1];
-        point2.z = vertices[faces[i+1]+2];
+        point2.x = vertices[faces[i+1]*3];
+        point2.y = vertices[faces[i+1]*3+1];
+        point2.z = vertices[faces[i+1]*3+2];
 
         Point<BaseVecT> point3;
-        point3.x = vertices[faces[i+2]];
-        point3.y = vertices[faces[i+2]+1];
-        point3.z = vertices[faces[i+2]+2];
+        point3.x = vertices[faces[i+2]*3];
+        point3.y = vertices[faces[i+2]*3+1];
+        point3.z = vertices[faces[i+2]*3+2];
 
         auto vc1 = point2 - point1;
         auto vc2 = point3 - point2;
