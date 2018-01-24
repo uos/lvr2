@@ -139,6 +139,16 @@ public:
     vector<uint32_t> getFaceIdsOfLabel(string groupName, string labelName);
 
     /**
+     * @brief Returns the roughness as float vector.
+     */
+    vector<float> getRoughness();
+
+    /**
+     * @brief Returns the height difference as float vector.
+     */
+    vector<float> getHeightDifference();
+
+    /**
      * @brief Returns the image in the group, if it exists. If not an empty struct is returned
      */
     PlutoMapImage getImage(hf::Group group, string name);
@@ -173,6 +183,16 @@ public:
      * E.g.: tree_1 -> groupName=tree; labelName=1; separated by the '_'
      */
     void addLabel(string groupName, string labelName, vector<uint32_t>& faceIds);
+
+    /**
+     * @brief Adds the roughness to the attributes group.
+     */
+    void addRoughness(vector<float>& roughness);
+
+    /**
+     * @brief Adds the height difference to the attributes group.
+     */
+    void addHeightDifference(vector<float>& diff);
 
     /**
      * @brief Adds an image with given data set name to the given group

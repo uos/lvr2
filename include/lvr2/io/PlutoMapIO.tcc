@@ -241,6 +241,36 @@ inline vector<uint32_t> PlutoMapIO::getFaceIdsOfLabel(string groupName, string l
     return faceIds;
 }
 
+inline vector<float> PlutoMapIO::getRoughness()
+{
+    vector<float> roughness;
+
+    if (!m_attributesGroup.exist("roughness"))
+    {
+        return roughness;
+    }
+
+    m_attributesGroup.getDataSet("roughness")
+        .read(roughness);
+
+    return roughness;
+}
+
+inline vector<float> PlutoMapIO::getHeightDifference()
+{
+    vector<float> diff;
+
+    if (!m_attributesGroup.exist("height_difference"))
+    {
+        return diff;
+    }
+
+    m_attributesGroup.getDataSet("height_difference")
+        .read(diff);
+
+    return diff;
+}
+
 inline PlutoMapImage PlutoMapIO::getImage(hf::Group group, string name)
 {
     PlutoMapImage t;
@@ -334,6 +364,18 @@ inline void PlutoMapIO::addLabel(string groupName, string labelName, vector<uint
     m_labelsGroup.getGroup(groupName)
         .createDataSet<uint32_t>(labelName, hf::DataSpace::From(faceIds))
         .write(faceIds);
+}
+
+inline void PlutoMapIO::addRoughness(vector<float>& roughness)
+{
+    m_attributesGroup.createDataSet<float>("roughness", hf::DataSpace::From(roughness))
+        .write(roughness);
+}
+
+inline void PlutoMapIO::addHeightDifference(vector<float>& diff)
+{
+    m_attributesGroup.createDataSet<float>("height_difference", hf::DataSpace::From(diff))
+        .write(diff);
 }
 
 inline void PlutoMapIO::addImage(hf::Group group, string name, const uint32_t width, const uint32_t height,
