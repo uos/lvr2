@@ -428,14 +428,6 @@ void BVHTree<BaseVecT>::convertTrianglesIntersectionData()
         m_trianglesIntersectionData.push_back(triangle.e3.getZ());
         m_trianglesIntersectionData.push_back(triangle.d3);
     }
-
-    // fix triangles indices
-    transform(
-        m_triIndexList.begin(),
-        m_triIndexList.end(),
-        m_triIndexList.begin(),
-        std::bind1st(std::multiplies<uint32_t>(), sizePerTriangle)
-    );
 }
 
 template<typename BaseVecT>
