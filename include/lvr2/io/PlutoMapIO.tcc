@@ -116,7 +116,7 @@ inline vector<float> PlutoMapIO::getVertexNormals()
 {
     vector<float> normals;
 
-    if (!m_geometryGroup.exist("normals"))
+    if (!m_attributesGroup.exist("normals"))
     {
         return normals;
     }
