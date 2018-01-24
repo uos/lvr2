@@ -3,6 +3,8 @@ project(LAS_VEGAS)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 include(GNUInstallDirs)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -53,7 +55,7 @@ endif(CUDA_FOUND)
 ####
 ## Searching for OpenCV
 ##############################
-find_package( OpenCV REQUIRED )
+find_package( OpenCV 3 REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 option(WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
