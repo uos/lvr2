@@ -85,6 +85,19 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
         point3.y = vertices[faces[i+2]+1];
         point3.z = vertices[faces[i+2]+2];
 
+        auto vc1 = point2 - point1;
+        auto vc2 = point3 - point2;
+        auto vc3 = point1 - point3;
+
+        // skip malformed faces
+        auto cross1 = vc1.cross(vc2);
+        auto cross2 = vc2.cross(vc3);
+        auto cross3 = vc3.cross(vc1);
+        if (cross1.length() == 0 || cross2.length() == 0 || cross3.length() == 0)
+        {
+            continue;
+        }
+
         BoundingBox<BaseVecT> faceBb;
         faceBb.expand(point1);
         faceBb.expand(point2);
@@ -97,15 +110,11 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
         triangle.idx2 = faces[i+1];
         triangle.idx3 = faces[i+2];
 
-        BaseVecT vc1 = point2 - point1;
-        BaseVecT vc2 = point3 - point2;
-        BaseVecT vc3 = point1 - point3;
-
         // pick best normal
-        BaseVecT normal1(vc1.cross(vc2));
-        BaseVecT normal2(vc2.cross(vc3));
-        BaseVecT normal3(vc3.cross(vc1));
-        BaseVecT bestNormal = normal1;
+        Normal<BaseVecT> normal1(cross1);
+        Normal<BaseVecT> normal2(cross2);
+        Normal<BaseVecT> normal3(cross3);
+        auto bestNormal = normal1;
         if (normal2.length() > bestNormal.length())
         {
             bestNormal = normal2;
@@ -118,7 +127,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
 
         triangle.d = triangle.normal.dot(point1);
 
-        // edge plains
+        // edge planes
         triangle.e1 = Normal<BaseVecT>(triangle.normal.cross(vc1));
         triangle.d1 = triangle.e1.dot(point1);
 
@@ -136,8 +145,6 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
         outerBb.expand(faceBb);
         work.push_back(aabb);
     }
-
-    std::cout << outerBb << " count: " << work.size() << std::endl;
 
     auto out = buildTreeRecursive(work);
     out->bb = outerBb;
@@ -397,15 +404,10 @@ void BVHTree<BaseVecT>::createCFTreeRecursive(BVHNodePtr currentNode, uint32_t& 
 template<typename BaseVecT>
 void BVHTree<BaseVecT>::convertTrianglesIntersectionData()
 {
-    uint32_t sizePerTriangle = 3 + 4 + 4 + 4 + 4;
+    uint32_t sizePerTriangle = 4 + 4 + 4 + 4;
     m_trianglesIntersectionData.reserve(m_triangles.size() * sizePerTriangle);
     for (auto const& triangle: m_triangles)
     {
-        // todo: not needed?
-        m_trianglesIntersectionData.push_back(triangle.center.x);
-        m_trianglesIntersectionData.push_back(triangle.center.y);
-        m_trianglesIntersectionData.push_back(triangle.center.z);
-
         m_trianglesIntersectionData.push_back(triangle.normal.getX());
         m_trianglesIntersectionData.push_back(triangle.normal.getY());
         m_trianglesIntersectionData.push_back(triangle.normal.getZ());
