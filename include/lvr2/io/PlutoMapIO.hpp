@@ -29,17 +29,23 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <unordered_map>
 
 #include <H5Tpublic.h>
 #include <highfive/H5File.hpp>
+
+#include <lvr2/geometry/BaseVector.hpp>
 
 namespace hf = HighFive;
 
 using std::string;
 using std::vector;
+using std::unordered_map;
 
 namespace lvr2
 {
+
+using Vec = BaseVector<float>;
 
 struct PlutoMapImage {
     string name;
@@ -108,7 +114,13 @@ public:
     vector<PlutoMapImage> getTextures();
 
     /**
-     * @breif Returns materials as PlutoMapMaterial
+     * @brief Returns an map which keys are representing the features point in space and the values
+     * are an vector of floats representing the keypoints.
+     */
+    unordered_map<Vec, vector<float>> getFeatures();
+
+    /**
+     * @brief Returns materials as PlutoMapMaterial
      */
     vector<PlutoMapMaterial> getMaterials();
 
@@ -183,6 +195,13 @@ public:
      * E.g.: tree_1 -> groupName=tree; labelName=1; separated by the '_'
      */
     void addLabel(string groupName, string labelName, vector<uint32_t>& faceIds);
+
+    /**
+     * @brief Adds the keypoints with their corresponding positions to the attributes_group. The position
+     * is saved to the entry via an attribute called 'vector'.
+     */
+    template<typename BaseVecT>
+    void addTextureKeypointsMap(unordered_map<BaseVecT, std::vector<float>>& keypoints_map);
 
     /**
      * @brief Adds the roughness to the attributes group.

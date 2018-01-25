@@ -160,6 +160,41 @@ inline vector<PlutoMapImage> PlutoMapIO::getTextures()
     return textures;
 }
 
+inline unordered_map<Vec, vector<float>> PlutoMapIO::getFeatures()
+{
+    unordered_map<Vec, vector<float>> features;
+
+    if (!m_attributesGroup.exist("texture_features"))
+    {
+        return features;
+    }
+
+    const auto& featuresGroup = m_attributesGroup.getGroup("texture_features");
+    features.reserve(featuresGroup.getNumberObjects());
+
+    for (auto name : featuresGroup.listObjectNames())
+    {
+        // fill vector with descriptor
+        vector<float> descriptor;
+        auto dataset = featuresGroup.getDataSet(name);
+        dataset.read(descriptor);
+
+        // read vector attribute with xyz coords
+        Vec v;
+        vector<float> xyz(3);
+        auto vector_attr = dataset.getAttribute("vector");
+        vector_attr.read(xyz);
+
+        v.x = xyz[0];
+        v.y = xyz[1];
+        v.z = xyz[2];
+
+        features.insert({v, descriptor});
+    }
+
+    return features;
+}
+
 inline vector<PlutoMapMaterial> PlutoMapIO::getMaterials()
 {
     vector<PlutoMapMaterial> materials;
@@ -364,6 +399,31 @@ inline void PlutoMapIO::addLabel(string groupName, string labelName, vector<uint
     m_labelsGroup.getGroup(groupName)
         .createDataSet<uint32_t>(labelName, hf::DataSpace::From(faceIds))
         .write(faceIds);
+}
+
+template<typename BaseVecT>
+void PlutoMapIO::addTextureKeypointsMap(unordered_map<BaseVecT, std::vector<float>>& keypoints_map)
+{
+    if (!m_attributesGroup.exist("texture_features"))
+    {
+        m_attributesGroup.createGroup("texture_features");
+    }
+
+    auto tf = m_attributesGroup.getGroup("texture_features");
+
+    size_t i = 0;
+    for (const auto& keypoint_features : keypoints_map)
+    {
+        auto dataset = tf.createDataSet<float>(std::to_string(i), hf::DataSpace::From(keypoint_features.second));
+        dataset.write(keypoint_features.second);
+
+        // use float vector here to avoid declaring BaseVecT as an complex type for HDF5
+        vector<float> v = {keypoint_features.first.x, keypoint_features.first.y, keypoint_features.first.z};
+        dataset.template createAttribute<float>("vector", hf::DataSpace::From(v))
+            .write(v);
+
+        i++;
+    }
 }
 
 inline void PlutoMapIO::addRoughness(vector<float>& roughness)
