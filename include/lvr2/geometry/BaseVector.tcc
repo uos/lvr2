@@ -156,3 +156,23 @@ bool BaseVector<CoordT>::operator!=(const BaseVector &other) const
 }
 
 } // namespace lvr2
+
+namespace std
+{
+    /**
+     * @class hash
+     * Hash specialisation for vector class
+     */
+template<typename CoordT>
+class hash<lvr2::BaseVector<CoordT>>
+{
+public:
+    size_t operator()(const lvr2::BaseVector<CoordT>& s) const
+    {
+        size_t h1 = std::hash<CoordT>()(s.x);
+        size_t h2 = std::hash<CoordT>()(s.y);
+        size_t h3 = std::hash<CoordT>()(s.z);
+        return h1 ^ (h2 << 1) ^ (h3 << 2);
+    }
+};
+}

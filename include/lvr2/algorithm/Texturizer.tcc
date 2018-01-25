@@ -25,6 +25,8 @@
 */
 
 #include <lvr/io/Progress.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
 
 namespace lvr2
 {
@@ -118,7 +120,7 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
         {
             for (int x = 0; x < sizeX; x++)
             {
-                std::vector<char> v;
+                // std::vector<char> v;
 
                 int k = 1; // k-nearest-neighbors
 
@@ -163,6 +165,45 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
     }
 
     return m_textures.push(texture);
+}
+
+template<typename BaseVecT>
+void Texturizer<BaseVecT>::findKeyPointsInTexture(const TextureHandle texH,
+        const BoundingRectangle<BaseVecT>& boundingRect,
+        const cv::Ptr<cv::Feature2D>& detector,
+        std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
+{
+    const Texture<BaseVecT> texture = m_textures[texH];
+    if (texture.m_height <= 32 && texture.m_width <= 32)
+    {
+        return;
+    }
+
+    const unsigned char* img_data = texture.m_data;
+    cv::Mat image(texture.m_height, texture.m_width, CV_8UC3, (void*)img_data);
+
+    detector->detectAndCompute(image, cv::noArray(), keypoints, descriptors);
+
+}
+
+template<typename BaseVecT>
+std::vector<BaseVecT> Texturizer<BaseVecT>::keypoints23d(const std::vector<cv::KeyPoint>&
+        keypoints, const BoundingRectangle<BaseVecT>& boundingRect)
+{
+    const size_t N = keypoints.size();
+    std::vector<BaseVecT> keypoints3d(N);
+
+    for (size_t p_idx = 0; p_idx < N; ++p_idx)
+    {
+        // for opencv image coordinatate invert y-coordinate
+        const cv::Point2f keypoint = keypoints[p_idx].pt;
+        const float s1 = keypoint.x  + boundingRect.m_minDistA;
+        const float s2 = -keypoint.y + boundingRect.m_minDistB;
+        keypoints3d[p_idx] = boundingRect.m_supportVector
+                             + boundingRect.m_vec1 * s1
+                             + boundingRect.m_vec2 * s2;
+    }
+    return keypoints3d;
 }
 
 } // namespace lvr2
