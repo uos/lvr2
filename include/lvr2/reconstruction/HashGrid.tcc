@@ -259,15 +259,15 @@ void HashGrid<BaseVecT, BoxT>::addLatticePoint(int index_x, int index_y, int ind
                     //Create new box
                     BoxT* box = new BoxT(box_center);
                     if(
-                        box_center[0] <= m_boundingBox.getMin().x + m_voxelsize  ||
-                        box_center[1] <= m_boundingBox.getMin().y + m_voxelsize  ||
-                        box_center[2] <= m_boundingBox.getMin().z + m_voxelsize)
+                        box_center[0] <= m_boundingBox.getMin().x + m_voxelsize*5  ||
+                        box_center[1] <= m_boundingBox.getMin().y + m_voxelsize*5  ||
+                        box_center[2] <= m_boundingBox.getMin().z + m_voxelsize*5)
                     {
                         box->m_duplicate = true;
                     }
-                    else if( box_center[0] >= m_boundingBox.getMax().x - m_voxelsize  ||
-                             box_center[1] >= m_boundingBox.getMax().y - m_voxelsize  ||
-                             box_center[2] >= m_boundingBox.getMax().z - m_voxelsize)
+                    else if( box_center[0] >= m_boundingBox.getMax().x - m_voxelsize*5  ||
+                             box_center[1] >= m_boundingBox.getMax().y - m_voxelsize*5  ||
+                             box_center[2] >= m_boundingBox.getMax().z - m_voxelsize*5)
                     {
                         box->m_duplicate = true;
                     }
