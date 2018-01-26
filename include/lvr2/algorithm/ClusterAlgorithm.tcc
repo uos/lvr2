@@ -22,6 +22,7 @@
  *  @date 20.07.2017
  *  @author Jan Philipp Vogtherr <jvogtherr@uni-osnabrueck.de>
  *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
+ *  @author Rasmus Diederichsen <rdiederichse@uni-osnabrueck.de>
  */
 
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
@@ -99,7 +100,7 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     int minArea = std::numeric_limits<int>::max();
 
     float bestMinA, bestMaxA, bestMinB, bestMaxB;
-    Vector<BaseVecT> bestVec1, bestVec2;
+    Vector<BaseVecT> bestBoundingAxisA, bestBoundingAxisB;
 
     // // calculate regression plane for the cluster
     Plane<BaseVecT> regressionPlane = calcRegressionPlane(mesh, cluster, normals);
@@ -110,99 +111,101 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     // calculate two orthogonal vectors in the plane
     auto normal = regressionPlane.normal;
     auto pointInPlane = regressionPlane.project(mesh.getVertexPosition(contour[1])).asVector();
-    auto vec1 = (pointInPlane - supportVector).cross(normal.asVector());
-    vec1.normalize();
+    auto boudningAxis1 = (pointInPlane - supportVector).cross(normal.asVector());
+    boudningAxis1.normalize();
 
-    Vector<BaseVecT> vec2 = vec1.cross(normal.asVector());
-    vec2.normalize();
+    Vector<BaseVecT> boundingAxis2 = boudningAxis1.cross(normal.asVector());
+    boundingAxis2.normalize();
 
     // const float pi = boost::math::constants::pi<float>(); // FIXME: doesnt seem to work with c++11
     const float pi = std::atan(1) * 4; // reasonable approximation for pi
 
     // resolution of iterative improvement steps for a fourth rotation
-    float delta = (pi / 2) / 90;
+    const float delta = (pi / 2) / 90;
 
     for(float theta = 0; theta < M_PI / 2; theta += delta)
     {
         // rotate the bounding box
-        vec1 = vec1 * cos(theta) + vec2 * sin(theta);
-        vec1.normalize();
-        vec2 = vec1.cross(normal.asVector());
-        vec2.normalize();
+        boudningAxis1 = boudningAxis1 * cos(theta) + boundingAxis2 * sin(theta);
+        boudningAxis1.normalize();
+        boundingAxis2 = boudningAxis1.cross(normal.asVector());
+        boundingAxis2.normalize();
 
         // FIXME
         // calculate hessian normal forms for both planes to which the distances will be calculated
-        // Normal<BaseVecT> planeNormal1 = (supportVector.dot(vec1) >= 0)? vec1.normalized() : vec1.normalized();
-        // Normal<BaseVecT> planeNormal2 = (supportVector.dot(vec2) >= 0)? vec2.normalized() : vec2.normalized();
-        auto planeNormal1 = vec1;
-        auto planeNormal2 = vec2;
-        float planeDist1 = planeNormal1.dot(supportVector);
-        float planeDist2 = planeNormal2.dot(supportVector);
+
+        // assume each bounding box axis is the normal of a plane, then the dot
+        // product with the support vector is the support vectors negative
+        // distance to the plane given by the axis (n * sv = -p)
+        // Note that in contrast to the usual plane equations, the plane
+        // distance is missing the negative sign
+        const float planeDist1 = boudningAxis1.dot(supportVector);
+        const float planeDist2 = boundingAxis2.dot(supportVector);
 
 
-        float minA = std::numeric_limits<float>::max();
-        float maxA = std::numeric_limits<float>::lowest();
-        float minB = std::numeric_limits<float>::max();
-        float maxB = std::numeric_limits<float>::lowest();
+        float minDistA = std::numeric_limits<float>::max();
+        float maxDistA = std::numeric_limits<float>::lowest();
+        float minDistB = std::numeric_limits<float>::max();
+        float maxDistB = std::numeric_limits<float>::lowest();
 
 
         // calculate the bounding box
 
-        for(auto contourVertexH: contour)
+        for(const auto contourVertexH : contour)
         {
             // TODO: Besser vorberechnen?
             //auto contourPoint = mesh.getVertexPosition(contourVertexH);
             // TODO: project nötig?
             auto contourPoint = regressionPlane.project(mesh.getVertexPosition(contourVertexH));
 
+            // use hessian plane form for distance calculation
+            // note the negative sign of planeDist*, since the calculation above
+            // actually computes the negative distance
             // calculate distance to plane1
-            float dist1 = planeNormal1.dot(contourPoint) - planeDist1;
+            float distA = boudningAxis1.dot(contourPoint) - planeDist1;
             // calculate distance to plane2
-            float dist2 = planeNormal2.dot(contourPoint) - planeDist2;
-
-            float a = dist1;
-            float b = dist2;
+            float distB = boundingAxis2.dot(contourPoint) - planeDist2;
 
             // memorize largest positive and negative distance to both planes
-            if (a > maxA)
+            if (distA > maxDistA)
             {
-                maxA = a;
+                maxDistA = distA;
             }
-            if (a < minA)
+            if (distA < minDistA)
             {
-                minA = a;
+                minDistA = distA;
             }
-            if (b > maxB)
+            if (distB > maxDistB)
             {
-                maxB = b;
+                maxDistB = distB;
             }
-            if (b < minB)
+            if (distB < minDistB)
             {
-                minB = b;
+                minDistB = distB;
             }
         }
 
         // calculate predicted number of texels for both dimesions
-        int texelsX = std::ceil((maxA - minA) / texelSize);
-        int texelsY = std::ceil((maxB - minB) / texelSize);
+        int texelsX = std::ceil((maxDistA - minDistA) / texelSize);
+        int texelsY = std::ceil((maxDistB - minDistB) / texelSize);
 
-        //iterative improvement of the area
+        // iterative improvement of the area
         if(texelsX * texelsY < minArea)
         {
-            minArea = texelsX * texelsY;
-            bestMinA = minA;
-            bestMaxA = maxA;
-            bestMinB = minB;
-            bestMaxB = maxB;
-            bestVec1 = vec1;
-            bestVec2 = vec2;
+            minArea           = texelsX * texelsY;
+            bestMinA          = minDistA;
+            bestMaxA          = maxDistA;
+            bestMinB          = minDistB;
+            bestMaxB          = maxDistB;
+            bestBoundingAxisA = boudningAxis1;
+            bestBoundingAxisB = boundingAxis2;
         }
     }
 
     return BoundingRectangle<BaseVecT>(
         supportVector,
-        bestVec1,
-        bestVec2,
+        bestBoundingAxisA,
+        bestBoundingAxisB,
         normal,
         bestMinA,
         bestMaxA,
