@@ -229,7 +229,7 @@ std::vector<BaseVecT> Texturizer<BaseVecT>::keypoints23d(const std::vector<cv::K
         // for opencv image coordinatate invert y-coordinate
         const cv::Point2f keypoint = keypoints[p_idx].pt;
         const float u = keypoint.x / width;
-        const float v = keypoint.y / height;
+        const float v = 1 - keypoint.y / height;
         BaseVecT location = calculateTexCoordsInv(h, boundingRect, TexCoords(u, v));
         keypoints3d[p_idx] = location;
     }
