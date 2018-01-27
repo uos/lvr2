@@ -181,7 +181,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 boundingRect.m_minDistA + boundingRect.m_vec2 * boundingRect.m_minDistB;
 
             p_top_right = boundingRect.m_supportVector + boundingRect.m_vec1 *
-                boundingRect.m_maxDistA  + boundingRect.m_vec2 * boundingRect.m_maxDistB;
+                boundingRect.m_maxDistA  + boundingRect.m_vec2 * boundingRect.m_minDistB;
 
             p_bottom_left = boundingRect.m_supportVector + boundingRect.m_vec1 *
                 boundingRect.m_minDistA + boundingRect.m_vec2 * boundingRect.m_maxDistB;
