@@ -13,6 +13,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
         m_maxIndex(0), m_maxIndexSquare(0), m_maxIndexX(0), m_maxIndexY(0), m_maxIndexZ(0), m_numPoints(0), m_extrude(true),m_scale(scale),
         m_has_normal(false), m_has_color(false)
 {
+//    exit(-1);
     if(overlapping_size==0) overlapping_size = voxelsize/10;
     m_voxelSize = voxelsize;
     float overlapp_size = overlapping_size;
@@ -37,7 +38,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
     {
         if(lineReader.getFileType() == XYZNRGB)
         {
-            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc> (lineReader.getNextPoints(rsize,100000));
+            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc> (lineReader.getNextPoints(rsize,10000000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -50,7 +51,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
         }
         else if(lineReader.getFileType() == XYZN)
         {
-            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn> (lineReader.getNextPoints(rsize,100000));
+            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn> (lineReader.getNextPoints(rsize,10000000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -63,7 +64,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
         }
         else if(lineReader.getFileType() == XYZ)
         {
-            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz> (lineReader.getNextPoints(rsize,100000));
+            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz> (lineReader.getNextPoints(rsize,10000000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -78,7 +79,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
         }
         else if(lineReader.getFileType() == XYZRGB)
         {
-            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc> (lineReader.getNextPoints(rsize,100000));
+            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc> (lineReader.getNextPoints(rsize,10000000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -118,10 +119,11 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
     m_maxIndexX = (size_t)(xsize/voxelsize);
     m_maxIndexY = (size_t)(ysize/voxelsize);
     m_maxIndexZ = (size_t)(zsize/voxelsize);
-    m_maxIndex = std::max(m_maxIndexX, std::max(m_maxIndexY,m_maxIndexZ)) + 5*voxelsize ;
     m_maxIndexX+=1;
     m_maxIndexY+=2;
     m_maxIndexZ+=3;
+    m_maxIndex = std::max(m_maxIndexX, std::max(m_maxIndexY,m_maxIndexZ)) ;
+
     m_maxIndexSquare = m_maxIndex * m_maxIndex;
     std::cout << "BV: \t size: " << m_numPoints << std::endl;
     std::cout << "BB: " << endl << m_bb << endl;
@@ -144,7 +146,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
     {
         m_has_color = true;
     }
-   
+
     string comment = lvr::timestamp.getElapsedTime() + "Building grid... ";
     lvr::ProgressBar progress(this->m_numPoints, comment);
 
@@ -154,7 +156,7 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
     {
         if (lineReader.getFileType() == XYZNRGB)
         {
-            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(lineReader.getNextPoints(rsize,100000));
+            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(lineReader.getNextPoints(rsize,10000000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -169,9 +171,9 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                     continue;
                 }
 
-                size_t idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
-                size_t idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
-                size_t idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                size_t idx = calcIndex(fabs(ix - m_bb.getMin()[0]) / voxelsize);
+                size_t idy = calcIndex(fabs(iy - m_bb.getMin()[1]) / voxelsize);
+                size_t idz = calcIndex(fabs(iz - m_bb.getMin()[2]) / voxelsize);
                 size_t h = hashValue(idx, idy, idz);
                 m_gridNumPoints[h].ix = idx;
                 m_gridNumPoints[h].iy = idy;
@@ -211,8 +213,15 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                 m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.b,sizeof(unsigned char));
 
             }
+            for(auto it = m_gridNumPoints.begin(); it!= m_gridNumPoints.end(); ++it)
+            {
+                if(it->second.ofs_points.is_open())
+                {
+                    it->second.ofs_points.close();
+                }
+            }
         } else if (lineReader.getFileType() == XYZN) {
-            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(lineReader.getNextPoints(rsize,100000));
+            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(lineReader.getNextPoints(rsize,10000000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -258,9 +267,19 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                 m_gridNumPoints[h].ofs_normals.write((char*)&a.get()[i].normal.z,sizeof(float));
 
             }
+            for(auto it = m_gridNumPoints.begin(); it!= m_gridNumPoints.end(); ++it)
+            {
+                if(it->second.ofs_points.is_open())
+                {
+                    it->second.ofs_points.close();
+                }
+            }
         } else if (lineReader.getFileType() == XYZ)
         {
-            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(lineReader.getNextPoints(rsize,100000));
+            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(lineReader.getNextPoints(rsize,10000000));
+            if(rsize>0) std::cout << "RSIZE: " << rsize << endl;
+            else std::cout << "rsize :0 " << " lr: " << lineReader.ok() << endl;
+//            std::cout << "RSIZE: " << rsize << endl;
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -278,15 +297,32 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                 size_t idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
                 size_t idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
                 size_t idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                if(idx > m_maxIndexX || idy > m_maxIndexY || idz > m_maxIndexZ)
+                {
+                    cout << "FUCK YOU " << idx << "|" << idy << "|" << idz << endl;
+                }
                 size_t h = hashValue(idx, idy, idz);
+                if(m_gridNumPoints[h].size > 0 && (m_gridNumPoints[h].ix != idx || m_gridNumPoints[h].iy != idy || m_gridNumPoints[h].iz != idz)   )
+                    cout << "FUCK 2000 " << m_gridNumPoints[h].ix << "|" << m_gridNumPoints[h].iy << "|" << m_gridNumPoints[h].iz << " - " << idx << "|" << idy << "|" <<idz << endl;
                 m_gridNumPoints[h].ix = idx;
                 m_gridNumPoints[h].iy = idy;
                 m_gridNumPoints[h].iz = idz;
+
                 m_gridNumPoints[h].size++;
                 if (!m_gridNumPoints[h].ofs_points.is_open()) {
                     std::stringstream ss;
                     ss << "part-" << idx << "-" << idy << "-" << idz << "-points.binary";
-                    m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::out | std::ofstream::binary | std::ofstream::trunc);
+//                    cout << ss.str()                    cout << ss.str()
+                    size_t streampos = 0;
+                    if(m_gridNumPoints[h].size > 0)
+                    {
+                        m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::out | std::ofstream::binary | std::ofstream::app);
+                    }
+                    else
+                    {
+                        m_gridNumPoints[h].ofs_points.open(ss.str(), std::ofstream::out | std::ofstream::binary | std::ofstream::trunc);
+                    }
+
                 }
 
 
@@ -295,11 +331,18 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                 m_gridNumPoints[h].ofs_points.write((char*)&iz,sizeof(float));
 
             }
+            for(auto it = m_gridNumPoints.begin(); it!= m_gridNumPoints.end(); ++it)
+            {
+                if(it->second.ofs_points.is_open())
+                {
+                    it->second.ofs_points.close();
+                }
+            }
 
         }
         else if (lineReader.getFileType() == XYZRGB)
         {
-            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(lineReader.getNextPoints(rsize,100000));
+            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(lineReader.getNextPoints(rsize,10000000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -353,6 +396,13 @@ BigVolumen::BigVolumen(std::vector<std::string> cloudPath, float voxelsize, floa
                 m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.g,sizeof(unsigned char));
                 m_gridNumPoints[h].ofs_colors.write((char*)&a.get()[i].color.b,sizeof(unsigned char));
 
+            }
+            for(auto it = m_gridNumPoints.begin(); it!= m_gridNumPoints.end(); ++it)
+            {
+                if(it->second.ofs_points.is_open())
+                {
+                    it->second.ofs_points.close();
+                }
             }
         }
 
