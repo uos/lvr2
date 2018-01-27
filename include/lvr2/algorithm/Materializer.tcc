@@ -176,12 +176,16 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             //                     Put rectangles in bounding_mesh                      //
             /////////////////////////////////////////////////////////////////////
             BaseVecT p_top_left, p_top_right, p_bottom_right, p_bottom_left;
+
             p_top_left = boundingRect.m_supportVector + boundingRect.m_vec1 *
-                boundingRect.m_minDistA;
-            p_top_right = boundingRect.m_supportVector + boundingRect.m_vec1 *
-                boundingRect.m_maxDistA;
-            p_bottom_left = boundingRect.m_supportVector + boundingRect.m_vec1 *
                 boundingRect.m_minDistA + boundingRect.m_vec2 * boundingRect.m_minDistB;
+
+            p_top_right = boundingRect.m_supportVector + boundingRect.m_vec1 *
+                boundingRect.m_maxDistA  + boundingRect.m_vec2 * boundingRect.m_maxDistB;
+
+            p_bottom_left = boundingRect.m_supportVector + boundingRect.m_vec1 *
+                boundingRect.m_minDistA + boundingRect.m_vec2 * boundingRect.m_maxDistB;
+
             p_bottom_right = boundingRect.m_supportVector + boundingRect.m_vec1 *
                 boundingRect.m_maxDistA + boundingRect.m_vec2 * boundingRect.m_maxDistB;
 
