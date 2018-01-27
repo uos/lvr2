@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <memory>
 #include <iostream>
+#include <cerrno>
+
 LineReader::LineReader()
 {
 
@@ -224,11 +226,13 @@ bool LineReader::ok()
 
 boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t amount)
 {
+    std::cout << "m_currentReadFile | m_fileAttributes.size(): " << m_currentReadFile << " | " <<  m_fileAttributes.size() << std::endl;
     return_amount = 0;
     if(m_openNextFile)
     {
         m_openNextFile = false;
         m_currentReadFile++;
+
         if(m_currentReadFile>=m_fileAttributes.size())
         {
             boost::shared_ptr<void> tmp;
@@ -262,7 +266,8 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
             bla = fread ( pArray.get(), m_fileAttributes[m_currentReadFile].m_PointBlockSize, readSize, pFile );
             fclose (pFile);
             m_fileAttributes[m_currentReadFile].m_filePos += readSize*m_fileAttributes[m_currentReadFile].m_PointBlockSize;
-            return_amount = readSize;
+            return_amount = bla;
+            std::cout << " return_amount < amount: " << return_amount << " < " <<   amount << std::endl;
             if(return_amount < amount) m_openNextFile = true;
             return pArray;
         }
@@ -385,6 +390,9 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
 
         }
         fclose(pFile);
+    } else
+    {
+        std::cout << "SHIT could not open file: " << std::strerror(errno) << std::endl;
     }
 
 

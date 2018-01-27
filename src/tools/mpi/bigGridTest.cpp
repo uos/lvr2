@@ -291,7 +291,7 @@ int main(int argc, char** argv)
             name_id = ss_name.str();
             numPoints = cell_vec[i]->size + cell_vec[i]->overlapping_size;
             std::cout << ss_name.str() << ": " << cell_vec[i]->size << " + " << cell_vec[i]->overlapping_size << " = " << numPoints << std::endl;
-            if(numPoints < 10) continue;
+            if(numPoints < options.getKd()*4 || numPoints < options.getKn()*4 || numPoints < options.getKi()*4) continue;
             stringstream ss_points;
             ss_points << "part-" <<  cell_vec[i]->ix << "-" <<  cell_vec[i]->iy << "-" <<  cell_vec[i]->iz << "-points.binary";
             cout << "file= " << ss_points.str() << endl;
@@ -309,6 +309,7 @@ int main(int argc, char** argv)
 
             std::stringstream ss_normals2;
             ss_normals2 << "part-" <<  cell_vec[i]->ix << "-" <<  cell_vec[i]->iy << "-" <<  cell_vec[i]->iz << "-points.ply";
+            cout << "PART123: " << ss_normals2.str() << endl;
             PointBufferPtr pt(new PointBuffer);
             pt->setPointArray(points,numPoints);
             ModelPtr m(new Model(pt));
@@ -320,13 +321,15 @@ int main(int argc, char** argv)
             points =  bg->points(partitionBoxes[i].getMin().x - voxelsize*3, partitionBoxes[i].getMin().y - voxelsize*3, partitionBoxes[i].getMin().z - voxelsize*3 ,
                                  partitionBoxes[i].getMax().x + voxelsize*3, partitionBoxes[i].getMax().y + voxelsize*3, partitionBoxes[i].getMax().z + voxelsize*3,numPoints);
             p_loader->setPointArray(points, numPoints);
-            if(options.savePointNormals())
+            if(options.savePointNormals()  || options.onlyNormals())
             {
                 if(bg->hasColors())
                 {
+                    size_t numColors;
                     colors = bg->colors(partitionBoxes[i].getMin().x - voxelsize*3, partitionBoxes[i].getMin().y - voxelsize*3, partitionBoxes[i].getMin().z - voxelsize*3 ,
-                                        partitionBoxes[i].getMax().x + voxelsize*3, partitionBoxes[i].getMax().y + voxelsize*3, partitionBoxes[i].getMax().z + voxelsize*3,numPoints);
-                    p_loader->setPointColorArray(colors, numPoints);
+                                        partitionBoxes[i].getMax().x + voxelsize*3, partitionBoxes[i].getMax().y + voxelsize*3, partitionBoxes[i].getMax().z + voxelsize*3,numColors);
+                    cout << "got ************* " << numColors << " colors" << endl;
+                    p_loader->setPointColorArray(colors, numColors);
                 }
 
             }
@@ -361,7 +364,7 @@ int main(int argc, char** argv)
         bool navail = false;
         if(volumenSize <= 0)
         {
-            if(bg->hasNormals())
+            if(bg->hasNormals() )
             {
 
                 size_t numNormals;
@@ -401,6 +404,7 @@ int main(int argc, char** argv)
             if( options.useGPU() )
             {
                 std::cout << "calculating normals of " << numPoints << " points" << std::endl;
+                if(numPoints>30000000) std::cout << "this is a lot of points, this might fail" << std::endl;
                 double normal_start = lvr::timestamp.getElapsedTimeInS();
                 floatArr normals = floatArr(new float[ numPoints * 3 ]);
                 cout << timestamp << "Constructing kd-tree..." << endl;
@@ -458,6 +462,7 @@ int main(int argc, char** argv)
             auto p_loader_old = buffer->toOldBuffer();
             auto ppoints = p_loader_old.getPointArray(p_np);
             auto pcolors = p_loader_old.getPointColorArray(c_np);
+            cout << "COLOR1 " << c_np << endl;
             auto pnormals = p_loader_old.getPointNormalArray(n_np);
 
             lvr::BoundingBox<Vertexf> nbb;
@@ -475,7 +480,7 @@ int main(int argc, char** argv)
                     tmpNBuffer.push_back(pnormals.get()[p_count*3]);
                     tmpNBuffer.push_back(pnormals.get()[p_count*3+1]);
                     tmpNBuffer.push_back(pnormals.get()[p_count*3+2]);
-                    if(c_np == p_np)
+                    if(c_np >0)
                     {
                         tmpCBuffer.push_back(pcolors.get()[p_count*3]);
                         tmpCBuffer.push_back(pcolors.get()[p_count*3+1]);
@@ -507,6 +512,7 @@ int main(int argc, char** argv)
             }
             cout << "NUMP: " << tmpPBuffer.size()/3 << "|" << tmpCBuffer.size()/3 << "|" << tmpNBuffer.size()/3 << endl;
             p_normal_loader->setPointArray(tmpPointArray,tmpPBuffer.size()/3);
+            cout << "COLOR2: " << tmpCBuffer.size()/3 << endl;
             p_normal_loader->setPointColorArray(tmpColorArray,tmpCBuffer.size()/3);
             p_normal_loader->setPointNormalArray(tmpNormalArray,tmpNBuffer.size()/3);
 
@@ -522,6 +528,7 @@ int main(int argc, char** argv)
         if(options.onlyNormals()) continue;
         double grid_start = lvr::timestamp.getElapsedTimeInS();
 
+        
         auto grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(
             voxelsize,
             surface,
@@ -947,28 +954,36 @@ int main(int argc, char** argv)
             string ply_path = normal_files[i];
 
             auto m = ModelFactory::readModel(ply_path);
-            size_t amount;
-            auto p = m->m_pointCloud->getPointArray(amount);
-            for(size_t j = 0 ; j < amount*3 ; j++)
+            if(m)
             {
-                normalPoints[globalId+j]=p[j];
+                size_t amount;
+                auto p = m->m_pointCloud->getPointArray(amount);
+                if(p)
+                {
+                    for(size_t j = 0 ; j < amount*3 ; j++)
+                    {
+                        normalPoints[globalId+j]=p[j];
 
-            }
-            size_t normalAmount;
-            auto n = m->m_pointCloud->getPointNormalArray(normalAmount);
-            for(size_t j = 0 ; j < normalAmount*3 ; j++)
-            {
-                normalNormals[globalId+j]=n[j];
+                    }
+                    size_t normalAmount;
+                    auto n = m->m_pointCloud->getPointNormalArray(normalAmount);
+                    for(size_t j = 0 ; j < normalAmount*3 ; j++)
+                    {
+                        normalNormals[globalId+j]=n[j];
 
-            }
-            size_t colorAmount;
-            auto c = m->m_pointCloud->getPointColorArray(colorAmount);
-            for(size_t j = 0 ; j < colorAmount*3 ; j++)
-            {
-                normalColors[globalId+j]=c[j];
+                    }
+                    size_t colorAmount;
+                    auto c = m->m_pointCloud->getPointColorArray(colorAmount);
+                    for(size_t j = 0 ; j < colorAmount*3 ; j++)
+                    {
+                        normalColors[globalId+j]=c[j];
 
+                    }
+                    globalId+=amount*3;
+                }
             }
-            globalId+=amount*3;
+
+
         }
 
         PointBufferPtr normalPB(new PointBuffer);
