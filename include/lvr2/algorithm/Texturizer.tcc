@@ -104,10 +104,10 @@ BaseVecT Texturizer<BaseVecT>::calculateTexCoordsInv(
     const TexCoords& coords
 )
 {
-    return br.m_supportVector + (br.m_vec2 * br.m_minDistA)
-                              + br.m_vec2 * coords.u * (br.m_maxDistA - br.m_minDistA)
-                              + (br.m_vec1 * br.m_minDistB)
-                              + br.m_vec1 * coords.v * (br.m_maxDistB - br.m_minDistB);
+    return br.m_supportVector + (br.m_vec1 * br.m_minDistA)
+                              + br.m_vec1 * coords.v * (br.m_maxDistA - br.m_minDistA)
+                              + (br.m_vec2 * br.m_minDistB)
+                              + br.m_vec2 * coords.u * (br.m_maxDistB - br.m_minDistB);
 }
 
 template<typename BaseVecT>
