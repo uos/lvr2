@@ -105,9 +105,9 @@ BaseVecT Texturizer<BaseVecT>::calculateTexCoordsInv(
 )
 {
     return br.m_supportVector + (br.m_vec1 * br.m_minDistA)
-                              + br.m_vec1 * coords.u * (br.m_maxDistA - br.m_minDistA)
+                              + br.m_vec1 * (coords.u + m_texelSize / 2.0) * (br.m_maxDistA - br.m_minDistA)
                               + (br.m_vec2 * br.m_minDistB)
-                              + br.m_vec2 * coords.v * (br.m_maxDistB - br.m_minDistB);
+                              + br.m_vec2 * (coords.v - m_texelSize / 2.0) * (br.m_maxDistB - br.m_minDistB);
 }
 
 template<typename BaseVecT>
@@ -210,17 +210,16 @@ std::vector<BaseVecT> Texturizer<BaseVecT>::keypoints23d(const std::vector<cv::K
     std::vector<BaseVecT> keypoints3d(N);
     const int width            = m_textures[h].m_width;
     const int height           = m_textures[h].m_height;
-    const float half_texelSize = m_texelSize / 2;
 
     for (size_t p_idx = 0; p_idx < N; ++p_idx)
     {
         const cv::Point2f keypoint = keypoints[p_idx].pt;
         // Calculate texture coordinates from pixel locations and then calculate backwards
         // to 3D coordinates
-        const float u = keypoint.x / width + half_texelSize;
+        const float u = keypoint.x / width;
         // I'm not sure why we need to mirror this coordinate, but it works like
         // this
-        const float v      = 1 - keypoint.y / height - half_texelSize;
+        const float v      = 1 - keypoint.y / height;
         BaseVecT location  = calculateTexCoordsInv(h, boundingRect, TexCoords(u, v));
         keypoints3d[p_idx] = location;
     }
