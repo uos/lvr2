@@ -182,19 +182,6 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
     return m_textures.push(texture);
 }
 
-void draw_keypoints(cv::Mat& img, const std::vector<cv::KeyPoint>& kpts) {
-
-    int x = 0, y = 0;
-    float radius = 0.0;
-
-    for (size_t i = 0; i < kpts.size(); i++) {
-        x = (int)(kpts[i].pt.x+.5);
-        y = (int)(kpts[i].pt.y+.5);
-        radius = kpts[i].size/2.0;
-        cv::circle(img, cv::Point(x,y), 2.5*radius, cv::Scalar(0,255,0), 1);
-        cv::circle(img, cv::Point(x,y), 1.0, cv::Scalar(0,0,255), -1);
-    }
-}
 
 template<typename BaseVecT>
 void Texturizer<BaseVecT>::findKeyPointsInTexture(const TextureHandle texH,
@@ -212,7 +199,7 @@ void Texturizer<BaseVecT>::findKeyPointsInTexture(const TextureHandle texH,
     cv::Mat image(texture.m_height, texture.m_width, CV_8UC3, (void*)img_data);
 
     detector->detectAndCompute(image, cv::noArray(), keypoints, descriptors);
-    draw_keypoints(image, keypoints);
+    cv::drawKeypoints(image, keypoints, image);
 }
 
 template<typename BaseVecT>
@@ -221,16 +208,20 @@ std::vector<BaseVecT> Texturizer<BaseVecT>::keypoints23d(const std::vector<cv::K
 {
     const size_t N = keypoints.size();
     std::vector<BaseVecT> keypoints3d(N);
-    const int width = m_textures[h].m_width;
-    const int height = m_textures[h].m_height;
+    const int width            = m_textures[h].m_width;
+    const int height           = m_textures[h].m_height;
+    const float half_texelSize = m_texelSize / 2;
 
     for (size_t p_idx = 0; p_idx < N; ++p_idx)
     {
-        // for opencv image coordinatate invert y-coordinate
         const cv::Point2f keypoint = keypoints[p_idx].pt;
-        const float u = keypoint.x / width;
-        const float v = 1 - keypoint.y / height;
-        BaseVecT location = calculateTexCoordsInv(h, boundingRect, TexCoords(u, v));
+        // Calculate texture coordinates from pixel locations and then calculate backwards
+        // to 3D coordinates
+        const float u = keypoint.x / width + half_texelSize;
+        // I'm not sure why we need to mirror this coordinate, but it works like
+        // this
+        const float v      = 1 - keypoint.y / height - half_texelSize;
+        BaseVecT location  = calculateTexCoordsInv(h, boundingRect, TexCoords(u, v));
         keypoints3d[p_idx] = location;
     }
     return keypoints3d;
