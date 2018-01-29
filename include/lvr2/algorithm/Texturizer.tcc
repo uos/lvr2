@@ -201,7 +201,6 @@ void Texturizer<BaseVecT>::findKeyPointsInTexture(const TextureHandle texH,
     cv::Mat image(texture.m_height, texture.m_width, CV_8UC3, (void*)img_data);
 
     detector->detectAndCompute(image, cv::noArray(), keypoints, descriptors);
-    cv::drawKeypoints(image, keypoints, image);
 }
 
 template<typename BaseVecT>

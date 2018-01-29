@@ -66,8 +66,6 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
 {
     string msg = lvr::timestamp.getElapsedTime() + "Generating materials ";
     lvr::ProgressBar progress(m_cluster.numCluster(), msg);
-    lvr2::HalfEdgeMesh<BaseVecT> bounding_mesh;
-    DenseVertexMap<Rgb8Color> bounding_vmap;
 
     // Prepare result
     DenseClusterMap<Material> clusterMaterials;
@@ -172,55 +170,6 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 clusterH
             );
 
-            /////////////////////////////////////////////////////////////////////
-            //                     Put rectangles in bounding_mesh                      //
-            /////////////////////////////////////////////////////////////////////
-            BaseVecT p_top_left, p_top_right, p_bottom_right, p_bottom_left;
-
-            p_top_left = boundingRect.m_supportVector + boundingRect.m_vec1 *
-                boundingRect.m_minDistA + boundingRect.m_vec2 * boundingRect.m_minDistB;
-
-            p_top_right = boundingRect.m_supportVector + boundingRect.m_vec1 *
-                boundingRect.m_maxDistA  + boundingRect.m_vec2 * boundingRect.m_minDistB;
-
-            p_bottom_left = boundingRect.m_supportVector + boundingRect.m_vec1 *
-                boundingRect.m_minDistA + boundingRect.m_vec2 * boundingRect.m_maxDistB;
-
-            p_bottom_right = boundingRect.m_supportVector + boundingRect.m_vec1 *
-                boundingRect.m_maxDistA + boundingRect.m_vec2 * boundingRect.m_maxDistB;
-
-            VertexHandle h1 = bounding_mesh.addVertex(p_top_left);
-            VertexHandle h2 = bounding_mesh.addVertex(p_top_right);
-            VertexHandle h3 = bounding_mesh.addVertex(p_bottom_right);
-            VertexHandle h4 = bounding_mesh.addVertex(p_bottom_left);
-
-            bounding_mesh.addFace(h1, h4, h3);
-            bounding_mesh.addFace(h3, h2, h1);
-
-            // Top left: RED
-            // Top right: GREEN
-            // Bottom right: BLUE
-            // Bottom left: YELLOW
-            bounding_vmap.insert(h1, {
-                static_cast<uint8_t>(255),
-                static_cast<uint8_t>(0),
-                static_cast<uint8_t>(0)
-            });
-            bounding_vmap.insert(h2, {
-                static_cast<uint8_t>(0),
-                static_cast<uint8_t>(255),
-                static_cast<uint8_t>(0)
-            });
-            bounding_vmap.insert(h3, {
-                static_cast<uint8_t>(0),
-                static_cast<uint8_t>(0),
-                static_cast<uint8_t>(255)
-            });
-            bounding_vmap.insert(h4, {
-                static_cast<uint8_t>(255),
-                static_cast<uint8_t>(255),
-                static_cast<uint8_t>(0)
-            });
 
             // Create texture
             TextureHandle texH = m_texturizer.get().generateTexture(
@@ -237,6 +186,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             std::vector<BaseVecT> features3d =
                 m_texturizer.get().keypoints23d(keypoints, boundingRect, texH);
 
+            // Transform descriptor from matrix row to float vector
             for (unsigned int row = 0; row < features3d.size(); ++row)
             {
                 keypoints_map[features3d[row]] =
@@ -287,12 +237,6 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             textureCount++;
         }
     }
-    // Save mesh
-    FinalizeAlgorithm<BaseVecT> finalize;
-    finalize.setColorData(bounding_vmap);
-    auto buffer = finalize.apply(bounding_mesh);
-    auto m = boost::make_shared<lvr::Model>(buffer->toOldBuffer());
-    lvr::ModelFactory::saveModel(m, "bounding_mesh.ply");
 
     cout << endl;
 
