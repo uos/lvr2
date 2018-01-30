@@ -83,7 +83,7 @@ public:
     );
 
     /**
-     * @brief Closes main groups and makes sure all buffers are flushed to the file on disk.
+     * @brief Closes main groups and makes sure all buffers are flushed to the file on disc.
      */
     ~PlutoMapIO();
 
@@ -151,6 +151,16 @@ public:
     vector<uint32_t> getFaceIdsOfLabel(string groupName, string labelName);
 
     /**
+     * @brief Returns the roughness as float vector.
+     */
+    vector<float> getRoughness();
+
+    /**
+     * @brief Returns the height difference as float vector.
+     */
+    vector<float> getHeightDifference();
+
+    /**
      * @brief Returns the image in the group, if it exists. If not an empty struct is returned
      */
     PlutoMapImage getImage(hf::Group group, string name);
@@ -192,6 +202,16 @@ public:
      */
     template<typename BaseVecT>
     void addTextureKeypointsMap(unordered_map<BaseVecT, std::vector<float>>& keypoints_map);
+
+    /**
+     * @brief Adds the roughness to the attributes group.
+     */
+    void addRoughness(vector<float>& roughness);
+
+    /**
+     * @brief Adds the height difference to the attributes group.
+     */
+    void addHeightDifference(vector<float>& diff);
 
     /**
      * @brief Adds an image with given data set name to the given group
