@@ -1136,22 +1136,6 @@ int main(int argc, char** argv)
     lvr2::PlutoMapIO map_io("triangle_mesh.h5");
     map_io.addTextureKeypointsMap(matResult.m_keypoints.get());
 
-
-    // save keypoints to .asc file for debugging purposes
-    // TODO remove or move to debug output or something like that...
-    std::ofstream keypoints_asc("keypoints.asc");
-
-    for (auto it : matResult.m_keypoints.get())
-    {
-        keypoints_asc << it.first.x << " "
-                      << it.first.y << " "
-                      << it.first.z;
-
-        keypoints_asc << endl;
-    }
-
-    keypoints_asc.close();
-
     cout << timestamp << "Program end." << endl;
 
     return 0;
