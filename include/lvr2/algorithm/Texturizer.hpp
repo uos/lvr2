@@ -91,8 +91,8 @@ public:
      *
      * @return
      */
-    static std::vector<BaseVecT> keypoints23d(const std::vector<cv::KeyPoint>&
-            keypoints, const BoundingRectangle<BaseVecT>& boundingRect);
+    std::vector<BaseVecT> keypoints23d(const std::vector<cv::KeyPoint>&
+        keypoints, const BoundingRectangle<BaseVecT>& boundingRect, const TextureHandle& h);
 
     TextureHandle generateTexture(
         int index,
@@ -104,6 +104,12 @@ public:
         TextureHandle texH,
         const BoundingRectangle<BaseVecT>& boundingRect,
         BaseVecT v
+    );
+
+    BaseVecT calculateTexCoordsInv(
+        TextureHandle texH,
+        const BoundingRectangle<BaseVecT>& boundingRect,
+        const TexCoords& coords
     );
 
     void saveTextures();

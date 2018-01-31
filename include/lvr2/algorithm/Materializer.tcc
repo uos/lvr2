@@ -25,6 +25,7 @@
 */
 
 #include <lvr2/algorithm/ClusterAlgorithm.hpp>
+#include <lvr2/algorithm/FinalizeAlgorithm.hpp>
 #include <opencv2/features2d.hpp>
 
 
@@ -169,6 +170,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 clusterH
             );
 
+
             // Create texture
             TextureHandle texH = m_texturizer.get().generateTexture(
                 textureCount,
@@ -181,7 +183,10 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             cv::Ptr<cv::AKAZE> detector = cv::AKAZE::create();
             m_texturizer.get().findKeyPointsInTexture(texH,
                     boundingRect, detector, keypoints, descriptors);
-            std::vector<BaseVecT> features3d = Texturizer<BaseVecT>::keypoints23d(keypoints, boundingRect);
+            std::vector<BaseVecT> features3d =
+                m_texturizer.get().keypoints23d(keypoints, boundingRect, texH);
+
+            // Transform descriptor from matrix row to float vector
             for (unsigned int row = 0; row < features3d.size(); ++row)
             {
                 keypoints_map[features3d[row]] =
