@@ -27,6 +27,7 @@
 #include <lvr/io/Progress.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <lvr2/algorithm/ColorAlgorithms.hpp>
 
 namespace lvr2
 {
@@ -80,7 +81,7 @@ template<typename BaseVecT>
 TexCoords Texturizer<BaseVecT>::calculateTexCoords(
     TextureHandle h,
     const BoundingRectangle<BaseVecT>& br,
-    BaseVecT v
+    BaseVecT point
 )
 {
     //return m_textures[h].calcTexCoords(boundingRect, v);
@@ -88,11 +89,27 @@ TexCoords Texturizer<BaseVecT>::calculateTexCoords(
     auto width = m_textures[h].m_width;
     auto height = m_textures[h].m_height;
 
-    BaseVecT w =  v - ((br.m_vec1 * br.m_minDistA) + (br.m_vec2 * br.m_minDistB) + br.m_supportVector);
-    float x = (br.m_vec1 * (w.dot(br.m_vec1))).length() / texelSize / width;
-    float y = (br.m_vec2 * (w.dot(br.m_vec2))).length() / texelSize / height;
+    BaseVecT w =  point - ((br.m_vec1 * br.m_minDistA) + (br.m_vec2 * br.m_minDistB)
+            + br.m_supportVector);
+    float u = (br.m_vec1 * (w.dot(br.m_vec1))).length() / texelSize / width;
+    float v = (br.m_vec2 * (w.dot(br.m_vec2))).length() / texelSize / height;
 
-    return TexCoords(x,y);
+    return TexCoords(u,v);
+}
+
+template<typename BaseVecT>
+BaseVecT Texturizer<BaseVecT>::calculateTexCoordsInv(
+    TextureHandle h,
+    const BoundingRectangle<BaseVecT>& br,
+    const TexCoords& coords
+)
+{
+    return br.m_supportVector + (br.m_vec1 * br.m_minDistA)
+                              + br.m_vec1 * coords.u
+                                          * (br.m_maxDistA - br.m_minDistA + m_texelSize / 2.0)
+                              + (br.m_vec2 * br.m_minDistB)
+                              + br.m_vec2 * coords.v
+                                          * (br.m_maxDistB - br.m_minDistB - m_texelSize / 2.0);
 }
 
 template<typename BaseVecT>
@@ -167,6 +184,7 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
     return m_textures.push(texture);
 }
 
+
 template<typename BaseVecT>
 void Texturizer<BaseVecT>::findKeyPointsInTexture(const TextureHandle texH,
         const BoundingRectangle<BaseVecT>& boundingRect,
@@ -183,25 +201,28 @@ void Texturizer<BaseVecT>::findKeyPointsInTexture(const TextureHandle texH,
     cv::Mat image(texture.m_height, texture.m_width, CV_8UC3, (void*)img_data);
 
     detector->detectAndCompute(image, cv::noArray(), keypoints, descriptors);
-
 }
 
 template<typename BaseVecT>
 std::vector<BaseVecT> Texturizer<BaseVecT>::keypoints23d(const std::vector<cv::KeyPoint>&
-        keypoints, const BoundingRectangle<BaseVecT>& boundingRect)
+        keypoints, const BoundingRectangle<BaseVecT>& boundingRect, const TextureHandle& h)
 {
     const size_t N = keypoints.size();
     std::vector<BaseVecT> keypoints3d(N);
+    const int width            = m_textures[h].m_width;
+    const int height           = m_textures[h].m_height;
 
     for (size_t p_idx = 0; p_idx < N; ++p_idx)
     {
-        // for opencv image coordinatate invert y-coordinate
         const cv::Point2f keypoint = keypoints[p_idx].pt;
-        const float s1 = keypoint.x  + boundingRect.m_minDistA;
-        const float s2 = -keypoint.y + boundingRect.m_minDistB;
-        keypoints3d[p_idx] = boundingRect.m_supportVector
-                             + boundingRect.m_vec1 * s1
-                             + boundingRect.m_vec2 * s2;
+        // Calculate texture coordinates from pixel locations and then calculate backwards
+        // to 3D coordinates
+        const float u = keypoint.x / width;
+        // I'm not sure why we need to mirror this coordinate, but it works like
+        // this
+        const float v      = 1 - keypoint.y / height;
+        BaseVecT location  = calculateTexCoordsInv(h, boundingRect, TexCoords(u, v));
+        keypoints3d[p_idx] = location;
     }
     return keypoints3d;
 }
