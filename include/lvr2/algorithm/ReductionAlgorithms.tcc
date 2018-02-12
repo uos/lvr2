@@ -209,6 +209,10 @@ optional<float> collapseCostSimpleNormalDiff(
     VertexHandle toH
 )
 {
+    // The minimal value of the dot product between two normals that is allowed.
+    const float MIN_NORMAL_DIFF = 0.5;
+
+
     // Get the edge handle and the 0--2 adjacent faces
     auto eH = mesh.getEdgeBetween(fromH, toH).unwrap();
     auto adjacentFaces = mesh.getFacesOfEdge(eH);
@@ -229,6 +233,45 @@ optional<float> collapseCostSimpleNormalDiff(
 
     for (auto fH: facesAroundFrom)
     {
+        // Get the two other vertices of this face.
+        auto verts = mesh.getVerticesOfFace(fH);
+        auto fromPos = verts[0] == fromH
+            ? 0
+            : (verts[1] == fromH ? 1 : 2);
+
+        auto v1H = verts[(fromPos + 1) % 3];
+        auto v2H = verts[(fromPos + 2) % 3];
+
+        // Check if we are looking at one face connected to both `to` and
+        // `from`. We can and need to ignore those faces.
+        if (v1H == toH || v2H == toH)
+        {
+            continue;
+        }
+
+        // We calculate the normal that the face would have if the edge in
+        // question would be collapsed.
+        auto newNormal = getFaceNormal<BaseVecT>({
+            mesh.getVertexPosition(toH),
+            mesh.getVertexPosition(v1H),
+            mesh.getVertexPosition(v2H)
+        });
+
+        // If the face will have 0 area, we don't want to collapse this edge
+        if (!newNormal)
+        {
+            return boost::none;
+        }
+
+        // If the new normal is too different from the old one, we don't want
+        // to collapse this edge.
+        auto oldNormal = normals[fH];
+        if (newNormal->dot(oldNormal.asVector()) < MIN_NORMAL_DIFF)
+        {
+            return boost::none;
+        }
+
+
         // The diff is between 0 and 1, so 2 is a valid start value to find
         // the minimum.
         double minDiff = 2.0;
