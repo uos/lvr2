@@ -28,27 +28,27 @@ using std::swap;
 namespace lvr2
 {
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-Meap<KeyT, ValueT, MapT>::Meap(size_t capacity)
+template<typename KeyT, typename ValueT>
+Meap<KeyT, ValueT>::Meap(size_t capacity)
 {
     m_heap.reserve(capacity);
     // TODO: maybe add `reserve()` to the attribute map interface and add this
     // m_indices.reserve();
 }
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-bool Meap<KeyT, ValueT, MapT>::containsKey(KeyT key) const
+template<typename KeyT, typename ValueT>
+bool Meap<KeyT, ValueT>::containsKey(KeyT key) const
 {
-    return static_cast<bool>(m_indices.get(key));
+    return m_indices.find(key) != m_indices.end();
 }
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-optional<ValueT> Meap<KeyT, ValueT, MapT>::insert(KeyT key, const ValueT& value)
+template<typename KeyT, typename ValueT>
+optional<ValueT> Meap<KeyT, ValueT>::insert(KeyT key, const ValueT& value)
 {
-    auto previous = m_indices.get(key);
-    if (previous)
+    auto previous = m_indices.find(key);
+    if (previous != m_indices.end())
     {
-        auto prevValue = m_heap[*previous].value;
+        auto prevValue = m_heap[previous->second].value;
         updateValue(key, value);
         return prevValue;
     }
@@ -57,7 +57,7 @@ optional<ValueT> Meap<KeyT, ValueT, MapT>::insert(KeyT key, const ValueT& value)
         // Insert to the back of the vector
         auto idx = m_heap.size();
         m_heap.push_back({ key, value });
-        m_indices.insert(key, idx);
+        m_indices.insert({key, idx});
 
         // Correct heap by bubbling up
         bubbleUp(idx);
@@ -65,21 +65,21 @@ optional<ValueT> Meap<KeyT, ValueT, MapT>::insert(KeyT key, const ValueT& value)
     }
 }
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-void Meap<KeyT, ValueT, MapT>::clear()
+template<typename KeyT, typename ValueT>
+void Meap<KeyT, ValueT>::clear()
 {
     m_heap.clear();
     m_indices.clear();
 }
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-size_t Meap<KeyT, ValueT, MapT>::numValues() const
+template<typename KeyT, typename ValueT>
+size_t Meap<KeyT, ValueT>::numValues() const
 {
-    return m_indices.numValues();
+    return m_indices.size();
 }
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-optional<const ValueT&> Meap<KeyT, ValueT, MapT>::get(KeyT key) const
+template<typename KeyT, typename ValueT>
+optional<const ValueT&> Meap<KeyT, ValueT>::get(KeyT key) const
 {
     auto maybeIndex = m_indices.get(key);
     if (maybeIndex)
@@ -92,8 +92,8 @@ optional<const ValueT&> Meap<KeyT, ValueT, MapT>::get(KeyT key) const
     }
 }
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-const MeapPair<KeyT, ValueT>& Meap<KeyT, ValueT, MapT>::peekMin() const
+template<typename KeyT, typename ValueT>
+const MeapPair<KeyT, ValueT>& Meap<KeyT, ValueT>::peekMin() const
 {
     if (m_heap.empty())
     {
@@ -103,8 +103,8 @@ const MeapPair<KeyT, ValueT>& Meap<KeyT, ValueT, MapT>::peekMin() const
     return m_heap[0];
 }
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-MeapPair<KeyT, ValueT> Meap<KeyT, ValueT, MapT>::popMin()
+template<typename KeyT, typename ValueT>
+MeapPair<KeyT, ValueT> Meap<KeyT, ValueT>::popMin()
 {
     if (m_heap.empty())
     {
@@ -133,8 +133,8 @@ MeapPair<KeyT, ValueT> Meap<KeyT, ValueT, MapT>::popMin()
     return out;
 }
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-void Meap<KeyT, ValueT, MapT>::updateValue(const KeyT& key, const ValueT& newValue)
+template<typename KeyT, typename ValueT>
+void Meap<KeyT, ValueT>::updateValue(const KeyT& key, const ValueT& newValue)
 {
     auto idx = m_indices[key];
     if (newValue > m_heap[idx].value)
@@ -149,16 +149,16 @@ void Meap<KeyT, ValueT, MapT>::updateValue(const KeyT& key, const ValueT& newVal
     }
 }
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-optional<ValueT> Meap<KeyT, ValueT, MapT>::erase(KeyT key)
+template<typename KeyT, typename ValueT>
+optional<ValueT> Meap<KeyT, ValueT>::erase(KeyT key)
 {
-    const auto maybeIndex = m_indices.get(key);
-    if (!maybeIndex)
+    const auto maybeIndex = m_indices.find(key);
+    if (maybeIndex == m_indices.end())
     {
         return boost::none;
     }
 
-    auto index = *maybeIndex;
+    auto index = maybeIndex->second;
 
     // Swap the element to remove with the last element in the vector
     auto swapKey = m_heap.back().key;
@@ -193,33 +193,33 @@ optional<ValueT> Meap<KeyT, ValueT, MapT>::erase(KeyT key)
 }
 
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-bool Meap<KeyT, ValueT, MapT>::isEmpty() const
+template<typename KeyT, typename ValueT>
+bool Meap<KeyT, ValueT>::isEmpty() const
 {
     return m_heap.empty();
 }
 
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-size_t Meap<KeyT, ValueT, MapT>::father(size_t child) const
+template<typename KeyT, typename ValueT>
+size_t Meap<KeyT, ValueT>::father(size_t child) const
 {
     return (child - 1) / 2;
 }
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-size_t Meap<KeyT, ValueT, MapT>::leftChild(size_t father) const
+template<typename KeyT, typename ValueT>
+size_t Meap<KeyT, ValueT>::leftChild(size_t father) const
 {
     return 2 * father + 1;
 }
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-size_t Meap<KeyT, ValueT, MapT>::rightChild(size_t father) const
+template<typename KeyT, typename ValueT>
+size_t Meap<KeyT, ValueT>::rightChild(size_t father) const
 {
     return 2 * father + 2;
 }
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-void Meap<KeyT, ValueT, MapT>::bubbleUp(size_t idx)
+template<typename KeyT, typename ValueT>
+void Meap<KeyT, ValueT>::bubbleUp(size_t idx)
 {
     // Bubble new element up until the order is correct
     while (idx != 0 && m_heap[idx].value < m_heap[father(idx)].value)
@@ -230,8 +230,8 @@ void Meap<KeyT, ValueT, MapT>::bubbleUp(size_t idx)
     }
 }
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-void Meap<KeyT, ValueT, MapT>::bubbleDown(size_t idx)
+template<typename KeyT, typename ValueT>
+void Meap<KeyT, ValueT>::bubbleDown(size_t idx)
 {
     // Checks if there exists a child of `father` which has a smaller value
     // than the value at `father`.
@@ -270,8 +270,8 @@ void Meap<KeyT, ValueT, MapT>::bubbleDown(size_t idx)
     }
 }
 
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
-void Meap<KeyT, ValueT, MapT>::debugOutput() const
+template<typename KeyT, typename ValueT>
+void Meap<KeyT, ValueT>::debugOutput() const
 {
     size_t levelWidth = 1;
     size_t levelCount = 0;
