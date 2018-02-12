@@ -1010,7 +1010,8 @@ int main(int argc, char** argv)
         // TODO: maybe we should calculate this differently...
         const auto count = static_cast<size_t>((mesh.numFaces() / 2) * reductionRatio);
         cout << timestamp << "Reducing mesh by collapsing up to " << count << " edges" << endl;
-        iterativeEdgeCollapse(mesh, count, faceNormals, costLambda);
+        auto collapsedCount = iterativeEdgeCollapse(mesh, count, faceNormals, costLambda);
+        cout << timestamp << "Collapsed " << collapsedCount << " edges..." << endl;
     }
 
     ClusterBiMap<FaceHandle> clusterBiMap;
