@@ -34,6 +34,43 @@ using std::vector;
 namespace lvr2
 {
 
+struct DirEdge
+{
+    VertexHandle first;
+    VertexHandle second;
+
+    DirEdge(VertexHandle first, VertexHandle second) : first(first), second(second) {}
+
+    bool operator==(const DirEdge& other) const {
+        return this->first == other.first && this->second == other.second;
+    }
+};
+
+} // namespace lvr2
+
+
+
+namespace std
+{
+
+template <>
+class hash<lvr2::DirEdge>
+{
+public:
+    size_t operator()(const lvr2::DirEdge& s) const
+    {
+        size_t h1 = std::hash<lvr2::VertexHandle>()(s.first);
+        size_t h2 = std::hash<lvr2::VertexHandle>()(s.second);
+        return h1 ^ h2;
+    }
+};
+}
+
+
+
+namespace lvr2
+{
+
 template<typename BaseVecT, typename CostF>
 size_t iterativeEdgeCollapse(
     BaseMesh<BaseVecT>& mesh,
@@ -42,23 +79,32 @@ size_t iterativeEdgeCollapse(
     CostF collapseCost
 )
 {
-    Meap<EdgeHandle, float, DenseAttrMap> queue(mesh.numEdges());
+    Meap<DirEdge, float> queue(mesh.numEdges() * 2);
     const auto& constFaceNormals = faceNormals;
 
-    // Calculate initial costs of all edges
-    for (const auto eH: mesh.edges())
-    {
-        auto maybeCost = collapseCost(eH, constFaceNormals);
-        if (maybeCost)
-        {
-            queue.insert(eH, *maybeCost);
-        }
-    }
 
     // These two variables are only used later, but are created here to avoid
     // unnecessary heap allocations.
     vector<FaceHandle> facesAroundVertex;
-    unordered_set<EdgeHandle> affectedEdges;
+    vector<VertexHandle> vertexNeighbors;
+    unordered_set<EdgeHandle> upsertEdges;
+
+
+    // Calculate initial costs of all edges
+    for (const auto eH: mesh.edges())
+    {
+        auto verts = mesh.getVerticesOfEdge(eH);
+
+        for (auto e: {DirEdge(verts[0], verts[1]), DirEdge(verts[1], verts[0])})
+        {
+            auto maybeCost = collapseCost(e.first, e.second, constFaceNormals);
+            if (maybeCost)
+            {
+                queue.insert(e, *maybeCost);
+            }
+        }
+    }
+
 
     size_t collapsedEdgeCount = 0;
 
@@ -67,17 +113,43 @@ size_t iterativeEdgeCollapse(
     {
         // Collapse the edge with minimal cost if it is collapsable.
         const auto min = queue.popMin();
-        if (!mesh.isCollapsable(min.key))
+        const auto edgeMin = mesh.getEdgeBetween(min.key.first, min.key.second).unwrap();
+
+        // We can already removed the edge in the opposite direction from the
+        // priority queue.
+        queue.erase({min.key.second, min.key.first});
+
+        if (!mesh.isCollapsable(edgeMin))
         {
             // If we can't collapse this edge, we will just ignore it.
             continue;
         }
 
-        auto result = mesh.collapseEdge(min.key);
+        // Before we can collapse the edge, we need to remove certain directed
+        // edges from the priority queue: the ones which share one endpoint
+        // with the edge we are about to collapse.
+        for (auto centerH: {min.key.first, min.key.second})
+        {
+            vertexNeighbors.clear();
+            mesh.getNeighboursOfVertex(centerH, vertexNeighbors);
+            for (auto vH: vertexNeighbors) {
+                if (vH != min.key.first && vH != min.key.second) {
+                    queue.erase({centerH, vH});
+                    queue.erase({vH, centerH});
+                }
+            }
+        }
+
+
+        auto toPos = mesh.getVertexPosition(min.key.second);
+        auto result = mesh.collapseEdge(edgeMin);
         collapsedEdgeCount += 1;
 
+        // Set correct position of the new vertex
+        mesh.getVertexPosition(result.midPoint) = toPos;
+
         facesAroundVertex.clear();
-        affectedEdges.clear();
+        upsertEdges.clear();
 
         // Remove all entries from that map that belong to now invalid handles
         // and add values for the handles that were created.
@@ -86,9 +158,6 @@ size_t iterativeEdgeCollapse(
             if (neighbor)
             {
                 faceNormals.erase(neighbor->removedFace);
-                queue.erase(neighbor->removedEdges[0]);
-                queue.erase(neighbor->removedEdges[1]);
-                affectedEdges.insert(neighbor->newEdge);
             }
         }
 
@@ -106,19 +175,24 @@ size_t iterativeEdgeCollapse(
             faceNormals[fH] = normal;
             for (auto eH: mesh.getEdgesOfFace(fH))
             {
-                affectedEdges.insert(eH);
+                upsertEdges.insert(eH);
             }
         }
 
         // Update the cost of affected edges
-        for (auto eH: affectedEdges)
+        for (auto eH: upsertEdges)
         {
-            if (queue.containsKey(eH))
+            auto verts = mesh.getVerticesOfEdge(eH);
+            for (auto e: {DirEdge(verts[0], verts[1]), DirEdge(verts[1], verts[0])})
             {
-                auto maybeCost = collapseCost(eH, constFaceNormals);
+                auto maybeCost = collapseCost(e.first, e.second, constFaceNormals);
                 if (maybeCost)
                 {
-                    queue.insert(eH, *maybeCost);
+                    queue.insert(e, *maybeCost);
+                }
+                else
+                {
+                    queue.erase(e);
                 }
             }
         }
@@ -131,50 +205,61 @@ template<typename BaseVecT>
 optional<float> collapseCostSimpleNormalDiff(
     const BaseMesh<BaseVecT>& mesh,
     const FaceMap<Normal<BaseVecT>>& normals,
-    EdgeHandle eH
+    VertexHandle fromH,
+    VertexHandle toH
 )
 {
-    const auto vertices = mesh.getVerticesOfEdge(eH);
+    // Get the edge handle and the 0--2 adjacent faces
+    auto eH = mesh.getEdgeBetween(fromH, toH).unwrap();
+    auto adjacentFaces = mesh.getFacesOfEdge(eH);
 
-    unordered_set<FaceHandle> faces;
-    for (auto vH: vertices)
-    {
-        for (auto fH: mesh.getFacesOfVertex(vH))
-        {
-            faces.insert(fH);
-        }
-    }
-
-    // In this case we are dealing with a super lonely edge: only two vertices,
-    // but no faces adjacent.
-    if (faces.empty())
+    // If the edge is lonely, we won't collapse it
+    if (!adjacentFaces[0] || !adjacentFaces[1])
     {
         return boost::none;
     }
 
-    vector<Normal<BaseVecT>> faceNormals;
-    for (auto fH: faces)
+    // Calculate the curvature term
+    float curvature = 0.0;
+    auto facesAroundFrom = mesh.getFacesOfVertex(fromH);
+    if (facesAroundFrom.size() != mesh.getEdgesOfVertex(fromH).size())
     {
-        faceNormals.push_back(normals[fH]);
+        return boost::none;
     }
 
-    auto avgNormal = Normal<BaseVecT>::average(faceNormals);
-
-    auto sumAngleCost = 0.0;
-    for (auto normal: faceNormals)
+    for (auto fH: facesAroundFrom)
     {
-        sumAngleCost += 1 - normal.dot(avgNormal.asVector());
+        // The diff is between 0 and 1, so 2 is a valid start value to find
+        // the minimum.
+        double minDiff = 2.0;
+        if (adjacentFaces[0])
+        {
+            auto dot = normals[adjacentFaces[0].unwrap()].dot(normals[fH].asVector());
+            // We are the first, so we know our value is smaller than the
+            // initial one
+            minDiff = (1.0 - dot) / 2.0;
+        }
+        if (adjacentFaces[1])
+        {
+            auto dot = normals[adjacentFaces[1].unwrap()].dot(normals[fH].asVector());
+            auto diff = (1.0 - dot) / 2.0;
+            if (diff < minDiff)
+            {
+                minDiff = diff;
+            }
+        }
+
+        // Find the maximum
+        if (minDiff > curvature)
+        {
+            curvature = minDiff;
+        }
     }
-    auto angleCost = sumAngleCost / faces.size();
 
-    // A long edge is worse than a short one...
-    auto lengthCost = mesh.getVertexPosition(vertices[0]).distanceFrom(mesh.getVertexPosition(vertices[1]));
+    // Calculate length
+    auto length = mesh.getVertexPosition(fromH).distanceFrom(mesh.getVertexPosition(toH));
 
-
-
-    // Return weighted costs
-    return 1.0 * angleCost
-        + 0.01 * lengthCost;
+    return length * curvature;
 }
 
 

@@ -957,40 +957,43 @@ int main(int argc, char** argv)
 
     auto faceNormals = calcFaceNormals(mesh);
 
-    auto costLambda = [&](auto edgeH, const auto& faceNormals)
+    auto costLambda = [&](auto fromH, auto toH, const auto& faceNormals)
     {
-        return collapseCostSimpleNormalDiff(mesh, faceNormals, edgeH);
+        return collapseCostSimpleNormalDiff(mesh, faceNormals, fromH, toH);
     };
 
     // This is for debugging purposes! You can save a mesh whose colors can
     // represent float values ... or sth like that. Coolio!
     // {
-    //     // Create vertex colors from other attributes
-    //     auto edgeCosts = attrMapFromFunc<DenseAttrMap>(mesh.edges(), [&](auto edgeH){
-    //         auto maybeCost = costLambda(edgeH);
-    //         return maybeCost ? *maybeCost : 100;
-    //     });
-    //     float min, max;
-    //     std::tie(min, max) = minMaxOfMap(edgeCosts);
     //     auto vertexCosts = attrMapFromFunc<DenseAttrMap>(mesh.vertices(), [&](VertexHandle vertexH)
     //     {
     //         float sum = 0.0;
     //         size_t count = 0;
-    //         for (auto edgeH: mesh.getEdgesOfVertex(vertexH))
+    //         for (auto toH: mesh.getNeighboursOfVertex(vertexH))
     //         {
-    //             sum += edgeCosts[edgeH];
+    //             auto maybeCost = costLambda(vertexH, toH, faceNormals);
+    //             sum += maybeCost ? *maybeCost : 50;
     //             count += 1;
     //         }
     //         const auto value = sum / count;
-    //         return (value + min) / (max - min);
+    //         return value;
     //     });
-    //     auto vertexColors = lvr2::map<DenseAttrMap>(vertexCosts, floatToGrayScaleColor);
+
+    //     float min, max;
+    //     std::tie(min, max) = minMaxOfMap(vertexCosts);
+    //     cout << "min: " << min << ", max: " << max << endl;
+    //     auto normVertexCosts = attrMapFromFunc<DenseAttrMap>(mesh.vertices(), [&](VertexHandle vertexH) {
+    //         const auto normalized = (vertexCosts[vertexH] - min) / (max - min);
+    //         return sqrt(normalized);
+    //     });
+
+    //     auto vertexColors = lvr2::map<DenseAttrMap>(normVertexCosts, floatToGrayScaleColor);
 
     //     // Save mesh
     //     FinalizeAlgorithm<Vec> finalize;
     //     finalize.setColorData(vertexColors);
     //     auto buffer = finalize.apply(mesh);
-    //     auto m = boost::make_shared<lvr::Model>(buffer);
+    //     auto m = boost::make_shared<lvr::Model>(buffer->toOldBuffer());
     //     lvr::ModelFactory::saveModel(m, "debug_attribute.ply");
     // }
 
