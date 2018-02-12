@@ -957,7 +957,7 @@ int main(int argc, char** argv)
 
     auto faceNormals = calcFaceNormals(mesh);
 
-    auto costLambda = [&](auto edgeH)
+    auto costLambda = [&](auto edgeH, const auto& faceNormals)
     {
         return collapseCostSimpleNormalDiff(mesh, faceNormals, edgeH);
     };
@@ -1007,8 +1007,7 @@ int main(int argc, char** argv)
         // TODO: maybe we should calculate this differently...
         const auto count = static_cast<size_t>((mesh.numFaces() / 2) * reductionRatio);
         cout << timestamp << "Reducing mesh by collapsing up to " << count << " edges" << endl;
-        iterativeEdgeCollapse(mesh, count, costLambda);
-        faceNormals = calcFaceNormals(mesh);
+        iterativeEdgeCollapse(mesh, count, faceNormals, costLambda);
     }
 
     ClusterBiMap<FaceHandle> clusterBiMap;

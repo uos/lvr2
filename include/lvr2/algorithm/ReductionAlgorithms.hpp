@@ -45,15 +45,24 @@ namespace lvr2
  * This algorithm stops when either `count` many edges have been collapsed or
  * if there are no collapsable edges left.
  *
- * @param count Number of edges to collapse
- * @param collapseCost Function which is called with an edge handle and returns
- *                     an optional float. `boost::none` means that this edge
- *                     cannot be collapsed.
+ * @param[in] count Number of edges to collapse
+ * @param[in, out] faceNormals A face map storing valid normals of all faces in
+ *                             the mesh. This map is altered by this algorithm
+ *                             according to the changes done in the mesh.
+ * @param[in] collapseCost Function which is called with an edge handle and a
+ *                         FaceMap containing normals; it is expected to return
+ *                         an optional float. `boost::none` means that this
+ *                         edge cannot be collapsed.
  *
  * @return The number of edges actually collapsed.
  */
 template<typename BaseVecT, typename CostF>
-size_t iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF collapseCost);
+size_t iterativeEdgeCollapse(
+    BaseMesh<BaseVecT>& mesh,
+    const size_t count,
+    FaceMap<Normal<BaseVecT>>& faceNormals,
+    CostF collapseCost
+);
 
 
 /**
