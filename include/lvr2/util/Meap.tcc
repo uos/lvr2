@@ -33,7 +33,7 @@ Meap<KeyT, ValueT>::Meap(size_t capacity)
 {
     m_heap.reserve(capacity);
     // TODO: maybe add `reserve()` to the attribute map interface and add this
-    // m_indices.reserve();
+    m_indices.reserve(capacity);
 }
 
 template<typename KeyT, typename ValueT>
