@@ -23,6 +23,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include <lvr2/algorithm/NormalAlgorithms.hpp>
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/util/Meap.hpp>
 
@@ -34,14 +35,20 @@ namespace lvr2
 {
 
 template<typename BaseVecT, typename CostF>
-size_t iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF collapseCost)
+size_t iterativeEdgeCollapse(
+    BaseMesh<BaseVecT>& mesh,
+    const size_t count,
+    FaceMap<Normal<BaseVecT>>& faceNormals,
+    CostF collapseCost
+)
 {
     Meap<EdgeHandle, float, DenseAttrMap> queue(mesh.numEdges());
+    const auto& constFaceNormals = faceNormals;
 
     // Calculate initial costs of all edges
     for (const auto eH: mesh.edges())
     {
-        auto maybeCost = collapseCost(eH);
+        auto maybeCost = collapseCost(eH, constFaceNormals);
         if (maybeCost)
         {
             queue.insert(eH, *maybeCost);
@@ -78,6 +85,7 @@ size_t iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF
         {
             if (neighbor)
             {
+                faceNormals.erase(neighbor->removedFace);
                 queue.erase(neighbor->removedEdges[0]);
                 queue.erase(neighbor->removedEdges[1]);
                 affectedEdges.insert(neighbor->newEdge);
@@ -86,10 +94,16 @@ size_t iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF
 
         // We collect all faces around the new vertex and insert all edges of
         // those faces into a set, to get a unique list of edges that need to
-        // be updated.
+        // be updated. We also update the normal of all those faces.
         mesh.getFacesOfVertex(result.midPoint, facesAroundVertex);
         for (auto fH: facesAroundVertex)
         {
+            auto maybeNormal = getFaceNormal(mesh.getVertexPositionsOfFace(fH));
+            auto normal = maybeNormal
+                ? *maybeNormal
+                : Normal<BaseVecT>(0, 0, 1);
+
+            faceNormals[fH] = normal;
             for (auto eH: mesh.getEdgesOfFace(fH))
             {
                 affectedEdges.insert(eH);
@@ -101,7 +115,7 @@ size_t iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF
         {
             if (queue.containsKey(eH))
             {
-                auto maybeCost = collapseCost(eH);
+                auto maybeCost = collapseCost(eH, constFaceNormals);
                 if (maybeCost)
                 {
                     queue.insert(eH, *maybeCost);
