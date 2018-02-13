@@ -222,108 +222,120 @@ size_t iterativeEdgeCollapse(
 }
 
 template<typename BaseVecT>
-optional<float> collapseCostSimpleNormalDiff(
-    const BaseMesh<BaseVecT>& mesh,
-    const FaceMap<Normal<BaseVecT>>& normals,
-    VertexHandle fromH,
-    VertexHandle toH
+size_t simpleMeshReduction(
+    BaseMesh<BaseVecT>& mesh,
+    const size_t count,
+    FaceMap<Normal<BaseVecT>>& faceNormals
 )
 {
-    // The minimal value of the dot product between two normals that is allowed.
-    const float MIN_NORMAL_DIFF = 0.5;
+    vector<EdgeHandle> edgesAroundFrom;
+    vector<FaceHandle> facesAroundFrom;
 
-
-    // Get the edge handle and the 0--2 adjacent faces
-    auto eH = mesh.getEdgeBetween(fromH, toH).unwrap();
-    auto adjacentFaces = mesh.getFacesOfEdge(eH);
-
-    // If the edge is lonely, we won't collapse it
-    if (!adjacentFaces[0] || !adjacentFaces[1])
+    return iterativeEdgeCollapse(mesh, count, faceNormals, [&](
+        VertexHandle fromH,
+        VertexHandle toH,
+        const FaceMap<Normal<BaseVecT>>& normals
+    ) -> boost::optional<float>
     {
-        return boost::none;
-    }
+        // The minimal value of the dot product between two normals that is allowed.
+        const float MIN_NORMAL_DIFF = 0.5;
 
-    // Calculate the curvature term
-    float curvature = 0.0;
-    auto facesAroundFrom = mesh.getFacesOfVertex(fromH);
-    if (facesAroundFrom.size() != mesh.getEdgesOfVertex(fromH).size())
-    {
-        return boost::none;
-    }
 
-    for (auto fH: facesAroundFrom)
-    {
-        // Get the two other vertices of this face.
-        auto verts = mesh.getVerticesOfFace(fH);
-        auto fromPos = verts[0] == fromH
-            ? 0
-            : (verts[1] == fromH ? 1 : 2);
+        // Get the edge handle and the 0--2 adjacent faces
+        auto eH = mesh.getEdgeBetween(fromH, toH).unwrap();
+        auto adjacentFaces = mesh.getFacesOfEdge(eH);
 
-        auto v1H = verts[(fromPos + 1) % 3];
-        auto v2H = verts[(fromPos + 2) % 3];
-
-        // Check if we are looking at one face connected to both `to` and
-        // `from`. We can and need to ignore those faces.
-        if (v1H == toH || v2H == toH)
-        {
-            continue;
-        }
-
-        // We calculate the normal that the face would have if the edge in
-        // question would be collapsed.
-        auto newNormal = getFaceNormal<BaseVecT>({
-            mesh.getVertexPosition(toH),
-            mesh.getVertexPosition(v1H),
-            mesh.getVertexPosition(v2H)
-        });
-
-        // If the face will have 0 area, we don't want to collapse this edge
-        if (!newNormal)
+        // If the edge is lonely, we won't collapse it
+        if (!adjacentFaces[0] || !adjacentFaces[1])
         {
             return boost::none;
         }
 
-        // If the new normal is too different from the old one, we don't want
-        // to collapse this edge.
-        auto oldNormal = normals[fH];
-        if (newNormal->dot(oldNormal.asVector()) < MIN_NORMAL_DIFF)
+        // Calculate the curvature term
+        float curvature = 0.0;
+
+        facesAroundFrom.clear();
+        edgesAroundFrom.clear();
+        mesh.getFacesOfVertex(fromH, facesAroundFrom);
+        mesh.getEdgesOfVertex(fromH, edgesAroundFrom);
+        if (facesAroundFrom.size() != edgesAroundFrom.size())
         {
             return boost::none;
         }
 
+        for (auto fH: facesAroundFrom)
+        {
+            // Get the two other vertices of this face.
+            auto verts = mesh.getVerticesOfFace(fH);
+            auto fromPos = verts[0] == fromH
+                ? 0
+                : (verts[1] == fromH ? 1 : 2);
 
-        // The diff is between 0 and 1, so 2 is a valid start value to find
-        // the minimum.
-        double minDiff = 2.0;
-        if (adjacentFaces[0])
-        {
-            auto dot = normals[adjacentFaces[0].unwrap()].dot(normals[fH].asVector());
-            // We are the first, so we know our value is smaller than the
-            // initial one
-            minDiff = (1.0 - dot) / 2.0;
-        }
-        if (adjacentFaces[1])
-        {
-            auto dot = normals[adjacentFaces[1].unwrap()].dot(normals[fH].asVector());
-            auto diff = (1.0 - dot) / 2.0;
-            if (diff < minDiff)
+            auto v1H = verts[(fromPos + 1) % 3];
+            auto v2H = verts[(fromPos + 2) % 3];
+
+            // Check if we are looking at one face connected to both `to` and
+            // `from`. We can and need to ignore those faces.
+            if (v1H == toH || v2H == toH)
             {
-                minDiff = diff;
+                continue;
+            }
+
+            // We calculate the normal that the face would have if the edge in
+            // question would be collapsed.
+            auto newNormal = getFaceNormal<BaseVecT>({
+                mesh.getVertexPosition(toH),
+                mesh.getVertexPosition(v1H),
+                mesh.getVertexPosition(v2H)
+            });
+
+            // If the face will have 0 area, we don't want to collapse this edge
+            if (!newNormal)
+            {
+                return boost::none;
+            }
+
+            // If the new normal is too different from the old one, we don't want
+            // to collapse this edge.
+            auto oldNormal = normals[fH];
+            if (newNormal->dot(oldNormal.asVector()) < MIN_NORMAL_DIFF)
+            {
+                return boost::none;
+            }
+
+
+            // The diff is between 0 and 1, so 2 is a valid start value to find
+            // the minimum.
+            double minDiff = 2.0;
+            if (adjacentFaces[0])
+            {
+                auto dot = normals[adjacentFaces[0].unwrap()].dot(normals[fH].asVector());
+                // We are the first, so we know our value is smaller than the
+                // initial one
+                minDiff = (1.0 - dot) / 2.0;
+            }
+            if (adjacentFaces[1])
+            {
+                auto dot = normals[adjacentFaces[1].unwrap()].dot(normals[fH].asVector());
+                auto diff = (1.0 - dot) / 2.0;
+                if (diff < minDiff)
+                {
+                    minDiff = diff;
+                }
+            }
+
+            // Find the maximum
+            if (minDiff > curvature)
+            {
+                curvature = minDiff;
             }
         }
 
-        // Find the maximum
-        if (minDiff > curvature)
-        {
-            curvature = minDiff;
-        }
-    }
+        // Calculate length
+        auto length = mesh.getVertexPosition(fromH).distanceFrom(mesh.getVertexPosition(toH));
 
-    // Calculate length
-    auto length = mesh.getVertexPosition(fromH).distanceFrom(mesh.getVertexPosition(toH));
-
-    return length * curvature;
+        return length * curvature;
+    });
 }
-
 
 } // namespace lvr2
