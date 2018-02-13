@@ -957,46 +957,6 @@ int main(int argc, char** argv)
 
     auto faceNormals = calcFaceNormals(mesh);
 
-    auto costLambda = [&](auto fromH, auto toH, const auto& faceNormals)
-    {
-        return collapseCostSimpleNormalDiff(mesh, faceNormals, fromH, toH);
-    };
-
-    // This is for debugging purposes! You can save a mesh whose colors can
-    // represent float values ... or sth like that. Coolio!
-    // {
-    //     auto vertexCosts = attrMapFromFunc<DenseAttrMap>(mesh.vertices(), [&](VertexHandle vertexH)
-    //     {
-    //         float sum = 0.0;
-    //         size_t count = 0;
-    //         for (auto toH: mesh.getNeighboursOfVertex(vertexH))
-    //         {
-    //             auto maybeCost = costLambda(vertexH, toH, faceNormals);
-    //             sum += maybeCost ? *maybeCost : 50;
-    //             count += 1;
-    //         }
-    //         const auto value = sum / count;
-    //         return value;
-    //     });
-
-    //     float min, max;
-    //     std::tie(min, max) = minMaxOfMap(vertexCosts);
-    //     cout << "min: " << min << ", max: " << max << endl;
-    //     auto normVertexCosts = attrMapFromFunc<DenseAttrMap>(mesh.vertices(), [&](VertexHandle vertexH) {
-    //         const auto normalized = (vertexCosts[vertexH] - min) / (max - min);
-    //         return sqrt(normalized);
-    //     });
-
-    //     auto vertexColors = lvr2::map<DenseAttrMap>(normVertexCosts, floatToGrayScaleColor);
-
-    //     // Save mesh
-    //     FinalizeAlgorithm<Vec> finalize;
-    //     finalize.setColorData(vertexColors);
-    //     auto buffer = finalize.apply(mesh);
-    //     auto m = boost::make_shared<lvr::Model>(buffer->toOldBuffer());
-    //     lvr::ModelFactory::saveModel(m, "debug_attribute.ply");
-    // }
-
     // Reduce mesh complexity
     const auto reductionRatio = options.getEdgeCollapseReductionRatio();
     if (reductionRatio > 0.0)
@@ -1009,7 +969,7 @@ int main(int argc, char** argv)
         // Each edge collapse removes two faces in the general case.
         // TODO: maybe we should calculate this differently...
         const auto count = static_cast<size_t>((mesh.numFaces() / 2) * reductionRatio);
-        auto collapsedCount = iterativeEdgeCollapse(mesh, count, faceNormals, costLambda);
+        auto collapsedCount = simpleMeshReduction(mesh, count, faceNormals);
     }
 
     ClusterBiMap<FaceHandle> clusterBiMap;

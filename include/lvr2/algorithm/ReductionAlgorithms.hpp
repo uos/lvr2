@@ -18,6 +18,11 @@
 
 /*
  * ReductionAlgorithms.hpp
+ *
+ * All these algorithms are based on/inspired by:
+ *
+ * Melax, Stan. "A simple, fast, and effective polygon reduction algorithm."
+ * Game Developer 11 (1998): 44-49.
  */
 
 #ifndef LVR2_ALGORITHM_REDUCTIONALGORITHMS_H_
@@ -64,17 +69,14 @@ size_t iterativeEdgeCollapse(
     CostF collapseCost
 );
 
-
 /**
- * @brief A simple, hacky cost function for `iterativeEdgeCollapse()`.
- *
- * Is likely to be removed or vastly improved in the future.
+ * @brief Like `iterativeEdgeCollapse` but with a fixed cost function.
  */
 template<typename BaseVecT>
-optional<float> collapseCostSimpleNormalDiff(
-    const BaseMesh<BaseVecT>& mesh,
-    const FaceMap<Normal<BaseVecT>>& normals,
-    EdgeHandle eH
+size_t simpleMeshReduction(
+    BaseMesh<BaseVecT>& mesh,
+    const size_t count,
+    FaceMap<Normal<BaseVecT>>& faceNormals
 );
 
 } // namespace lvr2
