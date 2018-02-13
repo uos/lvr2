@@ -23,6 +23,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include <lvr/io/Progress.hpp>
 #include <lvr2/algorithm/NormalAlgorithms.hpp>
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/util/Meap.hpp>
@@ -79,30 +80,70 @@ size_t iterativeEdgeCollapse(
     CostF collapseCost
 )
 {
-    Meap<DirEdge, float> queue(mesh.numEdges() * 2);
+    // Output
+    string msg = lvr::timestamp.getElapsedTime()
+        + "Reducing mesh by collapsing up to "
+        + std::to_string(count)
+        + " edges ";
+    lvr::ProgressBar progress(count + 1, msg);
+    ++progress;
+
+
+    Meap<VertexHandle, float> queue(mesh.nextVertexIndex());
+    DenseVertexMap<VertexHandle> bestEdge;
+    bestEdge.reserve(mesh.nextVertexIndex());
+
     const auto& constFaceNormals = faceNormals;
 
 
     // These two variables are only used later, but are created here to avoid
     // unnecessary heap allocations.
-    vector<FaceHandle> facesAroundVertex;
-    vector<VertexHandle> vertexNeighbors;
-    unordered_set<EdgeHandle> upsertEdges;
+    vector<FaceHandle> facesAroundMidpoint;
+    vector<VertexHandle> midpointNeighbors;
+
+    // We need to update the values of a given vertex at several points in
+    // this function, so we write a small lambda to do it for us.
+    vector<VertexHandle> vertexUpdateNeighbors;
+    auto updateVertex = [&](VertexHandle fromH)
+    {
+        vertexUpdateNeighbors.clear();
+        mesh.getNeighboursOfVertex(fromH, vertexUpdateNeighbors);
+
+        // We are trying to find the outgoing edge with the best score. The
+        // second vertex is the vertex itself if no outgoing edge is
+        // collapsable.
+        auto bestToH = fromH;
+        auto bestCost = std::numeric_limits<float>::max();
+
+        for (const auto toH: vertexUpdateNeighbors)
+        {
+            auto maybeCost = collapseCost(fromH, toH, constFaceNormals);
+            if (maybeCost)
+            {
+                if (*maybeCost < bestCost)
+                {
+                    bestCost = *maybeCost;
+                    bestToH = toH;
+                }
+            }
+        }
+
+        if (bestToH != fromH)
+        {
+            queue.insert(fromH, bestCost);
+            bestEdge.insert(fromH, bestToH);
+        }
+        else
+        {
+            queue.erase(fromH);
+        }
+    };
 
 
     // Calculate initial costs of all edges
-    for (const auto eH: mesh.edges())
+    for (const auto fromH: mesh.vertices())
     {
-        auto verts = mesh.getVerticesOfEdge(eH);
-
-        for (auto e: {DirEdge(verts[0], verts[1]), DirEdge(verts[1], verts[0])})
-        {
-            auto maybeCost = collapseCost(e.first, e.second, constFaceNormals);
-            if (maybeCost)
-            {
-                queue.insert(e, *maybeCost);
-            }
-        }
+        updateVertex(fromH);
     }
 
 
@@ -112,12 +153,9 @@ size_t iterativeEdgeCollapse(
     while (collapsedEdgeCount < count && !queue.isEmpty())
     {
         // Collapse the edge with minimal cost if it is collapsable.
-        const auto min = queue.popMin();
-        const auto edgeMin = mesh.getEdgeBetween(min.key.first, min.key.second).unwrap();
-
-        // We can already removed the edge in the opposite direction from the
-        // priority queue.
-        queue.erase({min.key.second, min.key.first});
+        const auto fromH = queue.popMin().key;
+        const auto toH = bestEdge[fromH];
+        const auto edgeMin = mesh.getEdgeBetween(fromH, toH).unwrap();
 
         if (!mesh.isCollapsable(edgeMin))
         {
@@ -125,31 +163,46 @@ size_t iterativeEdgeCollapse(
             continue;
         }
 
-        // Before we can collapse the edge, we need to remove certain directed
-        // edges from the priority queue: the ones which share one endpoint
-        // with the edge we are about to collapse.
-        for (auto centerH: {min.key.first, min.key.second})
-        {
-            vertexNeighbors.clear();
-            mesh.getNeighboursOfVertex(centerH, vertexNeighbors);
-            for (auto vH: vertexNeighbors) {
-                if (vH != min.key.first && vH != min.key.second) {
-                    queue.erase({centerH, vH});
-                    queue.erase({vH, centerH});
-                }
-            }
-        }
+        ++progress;
 
 
-        auto toPos = mesh.getVertexPosition(min.key.second);
+        auto toPos = mesh.getVertexPosition(toH);
         auto result = mesh.collapseEdge(edgeMin);
         collapsedEdgeCount += 1;
 
         // Set correct position of the new vertex
         mesh.getVertexPosition(result.midPoint) = toPos;
 
-        facesAroundVertex.clear();
-        upsertEdges.clear();
+        // If the `to` vertex was really removed, we have to remove it from
+        // the queue.
+        if (result.midPoint != toH)
+        {
+            queue.erase(toH);
+        }
+
+        facesAroundMidpoint.clear();
+        midpointNeighbors.clear();
+
+        // Now we just need to update the best edge for the midpoint and all
+        // its neighbors.
+        updateVertex(result.midPoint);
+        mesh.getNeighboursOfVertex(result.midPoint, midpointNeighbors);
+        for (const auto vH: midpointNeighbors)
+        {
+            updateVertex(vH);
+        }
+
+        // We update the normal of all faces touching the midpoint.
+        mesh.getFacesOfVertex(result.midPoint, facesAroundMidpoint);
+        for (auto fH: facesAroundMidpoint)
+        {
+            auto maybeNormal = getFaceNormal(mesh.getVertexPositionsOfFace(fH));
+            auto normal = maybeNormal
+                ? *maybeNormal
+                : Normal<BaseVecT>(0, 0, 1);
+
+            faceNormals[fH] = normal;
+        }
 
         // Remove all entries from that map that belong to now invalid handles
         // and add values for the handles that were created.
@@ -160,43 +213,10 @@ size_t iterativeEdgeCollapse(
                 faceNormals.erase(neighbor->removedFace);
             }
         }
-
-        // We collect all faces around the new vertex and insert all edges of
-        // those faces into a set, to get a unique list of edges that need to
-        // be updated. We also update the normal of all those faces.
-        mesh.getFacesOfVertex(result.midPoint, facesAroundVertex);
-        for (auto fH: facesAroundVertex)
-        {
-            auto maybeNormal = getFaceNormal(mesh.getVertexPositionsOfFace(fH));
-            auto normal = maybeNormal
-                ? *maybeNormal
-                : Normal<BaseVecT>(0, 0, 1);
-
-            faceNormals[fH] = normal;
-            for (auto eH: mesh.getEdgesOfFace(fH))
-            {
-                upsertEdges.insert(eH);
-            }
-        }
-
-        // Update the cost of affected edges
-        for (auto eH: upsertEdges)
-        {
-            auto verts = mesh.getVerticesOfEdge(eH);
-            for (auto e: {DirEdge(verts[0], verts[1]), DirEdge(verts[1], verts[0])})
-            {
-                auto maybeCost = collapseCost(e.first, e.second, constFaceNormals);
-                if (maybeCost)
-                {
-                    queue.insert(e, *maybeCost);
-                }
-                else
-                {
-                    queue.erase(e);
-                }
-            }
-        }
     }
+
+
+    cout << endl << timestamp << "Collapsed " << collapsedEdgeCount << " edges..." << endl;
 
     return collapsedEdgeCount;
 }
