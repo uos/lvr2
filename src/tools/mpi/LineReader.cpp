@@ -226,7 +226,7 @@ bool LineReader::ok()
 
 boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t amount)
 {
-    std::cout << "m_currentReadFile | m_fileAttributes.size(): " << m_currentReadFile << " | " <<  m_fileAttributes.size() << std::endl;
+    
     return_amount = 0;
     if(m_openNextFile)
     {
@@ -267,7 +267,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t &return_amount, size_t 
             fclose (pFile);
             m_fileAttributes[m_currentReadFile].m_filePos += readSize*m_fileAttributes[m_currentReadFile].m_PointBlockSize;
             return_amount = bla;
-            std::cout << " return_amount < amount: " << return_amount << " < " <<   amount << std::endl;
+            
             if(return_amount < amount) m_openNextFile = true;
             return pArray;
         }

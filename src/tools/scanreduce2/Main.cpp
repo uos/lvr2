@@ -23,6 +23,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <numeric>      
 #include <boost/shared_ptr.hpp>
 using namespace lvr;
 
