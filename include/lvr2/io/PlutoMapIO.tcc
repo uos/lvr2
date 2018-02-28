@@ -16,13 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-
-/**
-* @file      PlutoMapIO.tcc
-**/
-
-
-
 #include <hdf5_hl.h>
 
 namespace lvr2
@@ -458,8 +451,6 @@ inline bool PlutoMapIO::removeAllLabels()
         string fullPath = string(LABELS_GROUP) + "/" + name;
         result = H5Ldelete(m_file.getId(), fullPath.data(), H5P_DEFAULT) > 0;
     }
-
-    // TODO call cli 'h5repack' tool to clean up space
 
     return result;
 }
