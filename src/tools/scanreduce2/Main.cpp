@@ -23,7 +23,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
-#include <numeric>      
+#include <numeric>
 #include <boost/shared_ptr.hpp>
 using namespace lvr;
 
@@ -66,7 +66,7 @@ int main(int argc, char** argv)
     std::iota(std::begin(oldToNew), std::end(oldToNew), 0);
     if(options.reduction() > 1)
     {
-        
+
     }
     else
     {
@@ -104,6 +104,6 @@ int main(int argc, char** argv)
 
     ModelFactory::saveModel(newModel, options.outputFile());
 
-	return 0;
+    return 0;
 }
 

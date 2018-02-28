@@ -51,28 +51,28 @@ using namespace boost::program_options;
 class Options {
 public:
 
-	/**
-	 * @brief 	Ctor. Parses the command parameters given to the main
-	 * 		  	function of the program
-	 */
-	Options(int argc, char** argv);
-	virtual ~Options();
+    /**
+     * @brief 	Ctor. Parses the command parameters given to the main
+     * 		  	function of the program
+     */
+    Options(int argc, char** argv);
+    virtual ~Options();
 
-	/**
-	 * @brief	Returns the given voxelsize
-	 */
+    /**
+     * @brief	Returns the given voxelsize
+     */
 
-	int     reduction() const;
-	vector<string>  inputFile() const;
-	string  outputFile() const;
-	unsigned int points() const;
-	bool    printUsage() const;
+    int     reduction() const;
+    vector<string>  inputFile() const;
+    string  outputFile() const;
+    unsigned int points() const;
+    bool    printUsage() const;
 
 private:
-	unsigned int m_points;
-	int m_reduction;
-	string m_outputFile;
-	bool m_convertRemission;
+    unsigned int m_points;
+    int m_reduction;
+    string m_outputFile;
+    bool m_convertRemission;
 
     /// The internally used variable map
     variables_map                   m_variables;
@@ -89,16 +89,16 @@ private:
 /// Overlaoeded outpur operator
 inline ostream& operator<<(ostream& os, const Options &o)
 {
-	cout << "##### Program options: " 	<< endl;
-	cout << "##### Input Files \t\t: ";
-	for(int i = 0 ; i < o.inputFile().size() ; i++)
-	{
-		cout << "\t\t\t\t\t\t" << o.inputFile()[i] << endl;
-	}
-	cout << "##### Output file \t\t: " 	<< o.outputFile() << endl;
-	cout << "##### Reduction \t\t: " << o.reduction() << endl;
-	cout << "##### Points:\t\t" << o.points() << endl;
-	return os;
+    cout << "##### Program options: " 	<< endl;
+    cout << "##### Input Files \t\t: ";
+    for(int i = 0 ; i < o.inputFile().size() ; i++)
+    {
+        cout << "\t\t\t\t\t\t" << o.inputFile()[i] << endl;
+    }
+    cout << "##### Output file \t\t: " 	<< o.outputFile() << endl;
+    cout << "##### Reduction \t\t: " << o.reduction() << endl;
+    cout << "##### Points:\t\t" << o.points() << endl;
+    return os;
 }
 
 } // namespace reconstruct
