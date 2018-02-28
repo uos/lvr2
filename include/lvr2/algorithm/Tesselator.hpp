@@ -16,6 +16,7 @@
 #ifndef __APPLE__
 #include <GL/glu.h>
 #include <GL/glut.h>
+#define CALLBACK
 #else
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
