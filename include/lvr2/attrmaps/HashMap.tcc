@@ -52,19 +52,30 @@ bool HashMap<HandleT, ValueT>::containsKey(HandleT key) const
 template<typename HandleT, typename ValueT>
 optional<ValueT> HashMap<HandleT, ValueT>::insert(HandleT key, const ValueT& value)
 {
-    auto out = erase(key);
-    m_map.insert(make_pair(key, value));
-    return out;
+    auto res = m_map.insert(make_pair(key, value));
+    if (!res.second)
+    {
+        // TODO: this makes some copies that are not necessary. Dunno how
+        // to correctly code this right now. Maybe the compiler optimizes
+        // everything perfectly anyway.
+        auto old = (*res.first).second;
+        (*res.first).second = value;
+        return old;
+    }
+    else
+    {
+        return boost::none;
+    }
 }
 
 template<typename HandleT, typename ValueT>
 optional<ValueT> HashMap<HandleT, ValueT>::erase(HandleT key)
 {
-    auto elem = get(key);
-    if (elem)
+    auto it = m_map.find(key);
+    if (it != m_map.end())
     {
-        auto out = *elem;
-        m_map.erase(key);
+        auto out = (*it).second;
+        m_map.erase(it);
         return out;
     }
     else

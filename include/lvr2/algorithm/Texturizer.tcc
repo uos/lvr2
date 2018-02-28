@@ -24,6 +24,11 @@
 *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
 */
 
+#include <lvr/io/Progress.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <lvr2/algorithm/ColorAlgorithms.hpp>
+
 namespace lvr2
 {
 
@@ -62,19 +67,21 @@ int Texturizer<BaseVecT>::getTextureIndex(TextureHandle h)
 template<typename BaseVecT>
 void Texturizer<BaseVecT>::saveTextures()
 {
+    string comment = lvr::timestamp.getElapsedTime() + "Saving textures ";
+    lvr::ProgressBar progress(m_textures.numUsed(), comment);
     for (auto h : m_textures)
     {
         m_textures[h].save();
+        ++progress;
     }
+    std::cout << std::endl;
 }
-
-
 
 template<typename BaseVecT>
 TexCoords Texturizer<BaseVecT>::calculateTexCoords(
     TextureHandle h,
     const BoundingRectangle<BaseVecT>& br,
-    BaseVecT v
+    BaseVecT point
 )
 {
     //return m_textures[h].calcTexCoords(boundingRect, v);
@@ -82,11 +89,27 @@ TexCoords Texturizer<BaseVecT>::calculateTexCoords(
     auto width = m_textures[h].m_width;
     auto height = m_textures[h].m_height;
 
-    BaseVecT w =  v - ((br.m_vec1 * br.m_minDistA) + (br.m_vec2 * br.m_minDistB) + br.m_supportVector);
-    float x = (br.m_vec1 * (w.dot(br.m_vec1))).length() / texelSize / width;
-    float y = (br.m_vec2 * (w.dot(br.m_vec2))).length() / texelSize / height;
+    BaseVecT w =  point - ((br.m_vec1 * br.m_minDistA) + (br.m_vec2 * br.m_minDistB)
+            + br.m_supportVector);
+    float u = (br.m_vec1 * (w.dot(br.m_vec1))).length() / texelSize / width;
+    float v = (br.m_vec2 * (w.dot(br.m_vec2))).length() / texelSize / height;
 
-    return TexCoords(x,y);
+    return TexCoords(u,v);
+}
+
+template<typename BaseVecT>
+BaseVecT Texturizer<BaseVecT>::calculateTexCoordsInv(
+    TextureHandle h,
+    const BoundingRectangle<BaseVecT>& br,
+    const TexCoords& coords
+)
+{
+    return br.m_supportVector + (br.m_vec1 * br.m_minDistA)
+                              + br.m_vec1 * coords.u
+                                          * (br.m_maxDistA - br.m_minDistA + m_texelSize / 2.0)
+                              + (br.m_vec2 * br.m_minDistB)
+                              + br.m_vec2 * coords.v
+                                          * (br.m_maxDistB - br.m_minDistB - m_texelSize / 2.0);
 }
 
 template<typename BaseVecT>
@@ -104,13 +127,17 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
     // Create texture
     Texture<BaseVecT> texture(index, sizeX, sizeY, 3, 1, m_texelSize);
 
+    string comment = lvr::timestamp.getElapsedTime() + "Computing texture pixels ";
+    lvr::ProgressBar progress(sizeX * sizeY, comment);
+
     if (surface.pointBuffer()->hasRgbColor())
     {
+        #pragma omp parallel for schedule(dynamic,1) collapse(2)
         for (int y = 0; y < sizeY; y++)
         {
             for (int x = 0; x < sizeX; x++)
             {
-                std::vector<char> v;
+                // std::vector<char> v;
 
                 int k = 1; // k-nearest-neighbors
 
@@ -140,8 +167,11 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
                 texture.m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = r;
                 texture.m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = g;
                 texture.m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = b;
+
+                ++progress;
             }
         }
+        std::cout << std::endl;
     }
     else
     {
@@ -152,6 +182,49 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
     }
 
     return m_textures.push(texture);
+}
+
+
+template<typename BaseVecT>
+void Texturizer<BaseVecT>::findKeyPointsInTexture(const TextureHandle texH,
+        const BoundingRectangle<BaseVecT>& boundingRect,
+        const cv::Ptr<cv::Feature2D>& detector,
+        std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
+{
+    const Texture<BaseVecT> texture = m_textures[texH];
+    if (texture.m_height <= 32 && texture.m_width <= 32)
+    {
+        return;
+    }
+
+    const unsigned char* img_data = texture.m_data;
+    cv::Mat image(texture.m_height, texture.m_width, CV_8UC3, (void*)img_data);
+
+    detector->detectAndCompute(image, cv::noArray(), keypoints, descriptors);
+}
+
+template<typename BaseVecT>
+std::vector<BaseVecT> Texturizer<BaseVecT>::keypoints23d(const std::vector<cv::KeyPoint>&
+        keypoints, const BoundingRectangle<BaseVecT>& boundingRect, const TextureHandle& h)
+{
+    const size_t N = keypoints.size();
+    std::vector<BaseVecT> keypoints3d(N);
+    const int width            = m_textures[h].m_width;
+    const int height           = m_textures[h].m_height;
+
+    for (size_t p_idx = 0; p_idx < N; ++p_idx)
+    {
+        const cv::Point2f keypoint = keypoints[p_idx].pt;
+        // Calculate texture coordinates from pixel locations and then calculate backwards
+        // to 3D coordinates
+        const float u = keypoint.x / width;
+        // I'm not sure why we need to mirror this coordinate, but it works like
+        // this
+        const float v      = 1 - keypoint.y / height;
+        BaseVecT location  = calculateTexCoordsInv(h, boundingRect, TexCoords(u, v));
+        keypoints3d[p_idx] = location;
+    }
+    return keypoints3d;
 }
 
 } // namespace lvr2
