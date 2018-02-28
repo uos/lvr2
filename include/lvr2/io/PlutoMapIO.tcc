@@ -72,6 +72,12 @@ inline PlutoMapIO::PlutoMapIO(
 
 inline PlutoMapIO::~PlutoMapIO()
 {
+    if (!m_file.isValid())
+    {
+        // do nothing if file is not valid, i.e. already closed
+        return;
+    }
+
     H5Gclose(m_geometryGroup.getId());
     H5Gclose(m_attributesGroup.getId());
     H5Gclose(m_clusterSetsGroup.getId());
