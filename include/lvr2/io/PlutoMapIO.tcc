@@ -461,4 +461,9 @@ inline bool PlutoMapIO::removeAllLabels()
     return result;
 }
 
+inline void PlutoMapIO::flush()
+{
+    m_file.flush();
+}
+
 } // namespace lvr2
