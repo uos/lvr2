@@ -47,6 +47,12 @@ inline PlutoMapIO::PlutoMapIO(
 )
     : m_file(filename, hf::File::ReadWrite | hf::File::Create | hf::File::Truncate)
 {
+
+    if (!m_file.isValid())
+    {
+        throw "Could not open file.";
+    }
+
     // Create top level groups
     m_geometryGroup = m_file.createGroup(GEOMETRY_GROUP);
     m_attributesGroup = m_file.createGroup(ATTRIBUTES_GROUP);
