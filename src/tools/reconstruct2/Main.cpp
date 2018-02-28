@@ -1093,9 +1093,12 @@ int main(int argc, char** argv)
     lvr::ModelFactory::saveModel(m, "triangle_mesh.ply");
     lvr::ModelFactory::saveModel(m, "triangle_mesh.obj");
 
-    // save materializer keypoints to hdf5 which is not possible with lvr::ModelFactory
-    lvr2::PlutoMapIO map_io("triangle_mesh.h5");
-    map_io.addTextureKeypointsMap(matResult.m_keypoints.get());
+    if (matResult.m_keypoints)
+    {
+        // save materializer keypoints to hdf5 which is not possible with lvr::ModelFactory
+        lvr2::PlutoMapIO map_io("triangle_mesh.h5");
+        map_io.addTextureKeypointsMap(matResult.m_keypoints.get());
+    }
 
     cout << timestamp << "Program end." << endl;
 
