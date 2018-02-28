@@ -182,6 +182,7 @@
 #include <lvr2/algorithm/ColorAlgorithms.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/algorithm/Planar.hpp>
+#include <lvr2/algorithm/Tesselator.hpp>
 #include <lvr2/algorithm/ClusterPainter.hpp>
 #include <lvr2/algorithm/ClusterAlgorithms.hpp>
 #include <lvr2/algorithm/CleanupAlgorithms.hpp>
@@ -986,6 +987,11 @@ int main(int argc, char** argv)
         if (options.getSmallRegionThreshold() > 0)
         {
             deleteSmallPlanarCluster(mesh, clusterBiMap, static_cast<size_t>(options.getSmallRegionThreshold()));
+        }
+
+        if (options.retesselate())
+        {
+            Tesselator<BaseVecT>::apply(mesh, clusterBiMap, faceNormals, options.getLineFusionThreshold());
         }
     }
     else
