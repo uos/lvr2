@@ -31,20 +31,20 @@ namespace reduce{
 Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
 
-	// Create option descriptions
-	m_descr.add_options()
-		("help", "Produce help message")
-		("reduction,r", value<int>(&m_reduction)->default_value(1), "Reduction factor, i.e. only read every n-th point.")
-		("points,p", value<unsigned int>(&m_points)->default_value(1000000),"How much points should be left, pick random points, so that new pointcloud has n points")
-		("output,o", value<string>()->default_value("reduced.ply"), "Name of the generated output file.")
-	    ("inputFile", value< vector<string> >(), "inputFile")
-		;
+    // Create option descriptions
+    m_descr.add_options()
+        ("help", "Produce help message")
+        ("reduction,r", value<int>(&m_reduction)->default_value(1), "Reduction factor, i.e. only read every n-th point.")
+        ("points,p", value<unsigned int>(&m_points)->default_value(1000000),"How much points should be left, pick random points, so that new pointcloud has n points")
+        ("output,o", value<string>()->default_value("reduced.ply"), "Name of the generated output file.")
+        ("inputFile", value< vector<string> >(), "inputFile")
+        ;
 
-	m_pdescr.add("inputFile", -1);
+    m_pdescr.add("inputFile", -1);
 
-	// Parse command line and generate variables map
-	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
-	notify(m_variables);
+    // Parse command line and generate variables map
+    store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
+    notify(m_variables);
 
   if(m_variables.count("help")) {
     ::std::cout<< m_descr << ::std::endl;
@@ -95,7 +95,7 @@ bool Options::printUsage() const
 }
 
 Options::~Options() {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }
 
 } // namespace reconstruct

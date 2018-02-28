@@ -528,7 +528,7 @@ int main(int argc, char** argv)
         if(options.onlyNormals()) continue;
         double grid_start = lvr::timestamp.getElapsedTimeInS();
 
-        
+
         auto grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(
             voxelsize,
             surface,
