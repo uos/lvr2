@@ -47,6 +47,9 @@ namespace lvr2
 
 using Vec = BaseVector<float>;
 
+/**
+ * Helper struct to save textures / images to the map.
+ */
 struct PlutoMapImage {
     string name;
     uint32_t width;
@@ -55,6 +58,11 @@ struct PlutoMapImage {
     uint8_t* data;
 };
 
+/**
+ * Helper struct for saving material data to the map.
+ *
+ * This struct is defined as an HDF compound data type.
+ */
 struct PlutoMapMaterial {
     int32_t textureIndex;
     uint8_t r;
@@ -63,7 +71,13 @@ struct PlutoMapMaterial {
 };
 
 /**
+ * This class if responsible for the Pluto map format. It tries to abstract most if not all calls to the
+ * underlying HDF5 API and the HighFive wrapper. Furthermore it ensures the defined map format is always
+ * in place and not tinkered with.
  *
+ * NOTE: the map file is held open for the whole live time of this object. Thus it is possible that some data is
+ * only written to disc if the destructor is called or the program has ended. Also make sure the map file is not opened
+ * in any other way. (i.e. with the HDF5 Viewer). This will always lead to errors trying to access the file.
  */
 class PlutoMapIO
 {
@@ -226,12 +240,17 @@ public:
     /**
      * Removes all labels from the file.
      * <br>
-     * Be careful, this does not clear up the space of the labels. Use the cli tool h5repack manually to clear up
+     * Be careful, this does not clear up the space of the labels. Use the cli tool 'h5repack' manually to clear up
      * all wasted space if this method was used multiple times.
      *
      * @return true if removing all labels successfully.
      */
     bool removeAllLabels();
+
+    /**
+     * @brief Flushes the file. All opened buffers are saved to disc.
+     */
+    void flush();
 
 private:
     hf::File m_file;
@@ -254,10 +273,11 @@ private:
 } // namespace lvr2
 
 
-
-
 namespace HighFive {
 
+/**
+ * Define the PlutoMapMaterial as an HDF5 compound data type.
+ */
 template <>
 inline AtomicType<lvr2::PlutoMapMaterial>::AtomicType()
 {
