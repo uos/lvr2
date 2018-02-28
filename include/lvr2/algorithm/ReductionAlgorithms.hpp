@@ -18,6 +18,11 @@
 
 /*
  * ReductionAlgorithms.hpp
+ *
+ * All these algorithms are based on/inspired by:
+ *
+ * Melax, Stan. "A simple, fast, and effective polygon reduction algorithm."
+ * Game Developer 11 (1998): 44-49.
  */
 
 #ifndef LVR2_ALGORITHM_REDUCTIONALGORITHMS_H_
@@ -45,27 +50,33 @@ namespace lvr2
  * This algorithm stops when either `count` many edges have been collapsed or
  * if there are no collapsable edges left.
  *
- * @param count Number of edges to collapse
- * @param collapseCost Function which is called with an edge handle and returns
- *                     an optional float. `boost::none` means that this edge
- *                     cannot be collapsed.
+ * @param[in] count Number of edges to collapse
+ * @param[in, out] faceNormals A face map storing valid normals of all faces in
+ *                             the mesh. This map is altered by this algorithm
+ *                             according to the changes done in the mesh.
+ * @param[in] collapseCost Function which is called with an edge handle and a
+ *                         FaceMap containing normals; it is expected to return
+ *                         an optional float. `boost::none` means that this
+ *                         edge cannot be collapsed.
  *
  * @return The number of edges actually collapsed.
  */
 template<typename BaseVecT, typename CostF>
-size_t iterativeEdgeCollapse(BaseMesh<BaseVecT>& mesh, const size_t count, CostF collapseCost);
-
+size_t iterativeEdgeCollapse(
+    BaseMesh<BaseVecT>& mesh,
+    const size_t count,
+    FaceMap<Normal<BaseVecT>>& faceNormals,
+    CostF collapseCost
+);
 
 /**
- * @brief A simple, hacky cost function for `iterativeEdgeCollapse()`.
- *
- * Is likely to be removed or vastly improved in the future.
+ * @brief Like `iterativeEdgeCollapse` but with a fixed cost function.
  */
 template<typename BaseVecT>
-optional<float> collapseCostSimpleNormalDiff(
-    const BaseMesh<BaseVecT>& mesh,
-    const FaceMap<Normal<BaseVecT>>& normals,
-    EdgeHandle eH
+size_t simpleMeshReduction(
+    BaseMesh<BaseVecT>& mesh,
+    const size_t count,
+    FaceMap<Normal<BaseVecT>>& faceNormals
 );
 
 } // namespace lvr2

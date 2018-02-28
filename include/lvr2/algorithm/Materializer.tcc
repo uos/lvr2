@@ -25,6 +25,8 @@
 */
 
 #include <lvr2/algorithm/ClusterAlgorithm.hpp>
+#include <lvr2/algorithm/FinalizeAlgorithm.hpp>
+#include <opencv2/features2d.hpp>
 
 
 namespace lvr2
@@ -68,6 +70,8 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
     // Prepare result
     DenseClusterMap<Material> clusterMaterials;
     SparseVertexMap<ClusterTexCoordMapping> vertexTexCoords;
+
+    std::unordered_map<BaseVecT, std::vector<float>> keypoints_map;
 
     // Counters used for texturizing
     int numClustersTooSmall = 0;
@@ -156,8 +160,8 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 m_cluster
             );
 
-            // Counding rectangle
-            BoundingRectangle<BaseVecT> boundintRect = calculateBoundingRectangle(
+            // Bounding rectangle
+            BoundingRectangle<BaseVecT> boundingRect = calculateBoundingRectangle(
                 contour,
                 m_mesh,
                 cluster,
@@ -166,12 +170,28 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 clusterH
             );
 
+
             // Create texture
             TextureHandle texH = m_texturizer.get().generateTexture(
                 textureCount,
                 m_surface,
-                boundintRect
+                boundingRect
             );
+
+            std::vector<cv::KeyPoint> keypoints;
+            cv::Mat descriptors;
+            cv::Ptr<cv::AKAZE> detector = cv::AKAZE::create();
+            m_texturizer.get().findKeyPointsInTexture(texH,
+                    boundingRect, detector, keypoints, descriptors);
+            std::vector<BaseVecT> features3d =
+                m_texturizer.get().keypoints23d(keypoints, boundingRect, texH);
+
+            // Transform descriptor from matrix row to float vector
+            for (unsigned int row = 0; row < features3d.size(); ++row)
+            {
+                keypoints_map[features3d[row]] =
+                    std::vector<float>(descriptors.ptr(row), descriptors.ptr(row) + descriptors.cols);
+            }
 
             // Create material and insert in face map
             Material material;
@@ -197,7 +217,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 // Calculate tex coords
                 TexCoords texCoords = m_texturizer.get().calculateTexCoords(
                     texH,
-                    boundintRect,
+                    boundingRect,
                     m_mesh.getVertexPosition(vertexH)
                 );
 
@@ -213,6 +233,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                     vertexTexCoords.insert(vertexH, mapping);
                 }
             }
+
             textureCount++;
         }
     }
@@ -234,7 +255,8 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
         return MaterializerResult<BaseVecT>(
             clusterMaterials,
             m_texturizer.get().getTextures(),
-            vertexTexCoords
+            vertexTexCoords,
+            keypoints_map
         );
     }
     else
