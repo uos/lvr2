@@ -37,7 +37,7 @@ Vector<BaseVecT> Vector<BaseVecT>::average(const CollectionT& vecs)
     for (auto v: vecs)
     {
         static_assert(
-            std::is_same<typeof(v), Vector<BaseVecT>>::value,
+            std::is_same<decltype(v), Vector<BaseVecT>>::value,
             "Collection has to contain Vectors"
         );
         acc += v;

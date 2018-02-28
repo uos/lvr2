@@ -55,7 +55,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
 {
     if (!BaseMesh<BaseVecT>::isFaceInsertionValid(v1H, v2H, v3H))
     {
-        panic("Attempting add a face which cannot be added!");
+        panic("Attempting to add a face which cannot be added!");
     }
 
     using std::make_tuple;
@@ -100,12 +100,12 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
 
 
     // =======================================================================
-    // = Fix next handles and set outgoing handles if net set yet
+    // = Fix next handles and set outgoing handles if not set yet
     // =======================================================================
     // Fixing the `next` handles is the most difficult part of this method. In
     // order to tackle it we deal with each corner of this face on its own.
     // For each corner we look at the corner-vertex and the in-going and
-    //  out-going edge (both edges are on the outside of this face!).
+    // out-going edge (both edges are on the outside of this face!).
     auto corners = {
         make_tuple(eOuter1H, v1H, eOuter3H),
         make_tuple(eOuter2H, v2H, eOuter1H),
@@ -461,6 +461,43 @@ size_t HalfEdgeMesh<BaseVecT>::numEdges() const
 {
     return m_edges.numUsed() / 2;
 }
+
+template <typename BaseVecT>
+bool HalfEdgeMesh<BaseVecT>::containsVertex(VertexHandle vH) const
+{
+    return static_cast<bool>(m_vertices.get(vH));
+}
+
+template <typename BaseVecT>
+bool HalfEdgeMesh<BaseVecT>::containsFace(FaceHandle fH) const
+{
+    return static_cast<bool>(m_faces.get(fH));
+}
+
+template <typename BaseVecT>
+bool HalfEdgeMesh<BaseVecT>::containsEdge(EdgeHandle eH) const
+{
+    return static_cast<bool>(m_edges.get(HalfEdgeHandle::oneHalfOf(eH)));
+}
+
+template <typename BaseVecT>
+Index HalfEdgeMesh<BaseVecT>::nextVertexIndex() const
+{
+    return m_vertices.nextHandle().idx();
+}
+
+template <typename BaseVecT>
+Index HalfEdgeMesh<BaseVecT>::nextFaceIndex() const
+{
+    return m_faces.nextHandle().idx();
+}
+
+template <typename BaseVecT>
+Index HalfEdgeMesh<BaseVecT>::nextEdgeIndex() const
+{
+    return m_edges.nextHandle().idx();
+}
+
 
 template <typename BaseVecT>
 Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle) const

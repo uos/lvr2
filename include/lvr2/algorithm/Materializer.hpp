@@ -50,16 +50,24 @@
 
 #include <lvr/io/Progress.hpp>
 #include <lvr/io/Timestamp.hpp>
+#include <unordered_map>
 
 namespace lvr2
 {
 
+/**
+ * Result struct for the materializer
+ */
 template<typename BaseVecT>
 struct MaterializerResult
 {
+    // materials for each cluster
     DenseClusterMap<Material> m_clusterMaterials;
+    // a stable vector of textures. each texture is identified by a tex.-handle
     optional<StableVector<TextureHandle, Texture<BaseVecT>>> m_textures;
+    // cluster texture coordinates for each vertex
     optional<SparseVertexMap<ClusterTexCoordMapping>> m_vertexTexCoords;
+    optional<std::unordered_map<BaseVecT, std::vector<float>>> m_keypoints;
 
     MaterializerResult(
         DenseClusterMap<Material> clusterMaterials
@@ -71,16 +79,17 @@ struct MaterializerResult
     MaterializerResult(
         DenseClusterMap<Material> clusterMaterials,
         StableVector<TextureHandle, Texture<BaseVecT>> textures,
-        SparseVertexMap<ClusterTexCoordMapping> vertexTexCoords
+        SparseVertexMap<ClusterTexCoordMapping> vertexTexCoords,
+        std::unordered_map<BaseVecT, std::vector<float>> keypoints
     ) :
         m_clusterMaterials(clusterMaterials),
         m_textures(textures),
-        m_vertexTexCoords(vertexTexCoords)
+        m_vertexTexCoords(vertexTexCoords),
+        m_keypoints(keypoints)
     {
     }
 
 };
-
 
 template<typename BaseVecT>
 class Materializer

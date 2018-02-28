@@ -48,10 +48,12 @@ IdxT BaseHandle<IdxT>::idx() const
 template <typename IdxT>
 void BaseHandle<IdxT>::setIdx(IdxT idx)
 {
+    #ifndef NDEBUG
     if (idx == numeric_limits<IdxT>::max())
     {
         panic("Trying to create a Handle with MAX_INT as idx!");
     }
+    #endif
 
     m_idx = idx;
 }

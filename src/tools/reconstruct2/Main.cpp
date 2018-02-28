@@ -1,4 +1,4 @@
-/* Copyright (C) 2011 Uni Osnabrück
+ /* Copyright (C) 2011 Uni Osnabrück
  * This file is part of the LAS VEGAS Reconstruction Toolkit,
  *
  * LAS VEGAS is free software; you can redistribute it and/or modify
@@ -200,13 +200,29 @@
 #include <lvr2/reconstruction/PointsetGrid.hpp>
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/io/MeshBuffer.hpp>
+#include <lvr2/io/PlutoMapIO.hpp>
 #include <lvr2/util/Factories.hpp>
 #include <lvr2/algorithm/MeshNavAlgorithms.hpp>
 #include <lvr2/algorithm/UtilAlgorithms.hpp>
 
+#include <lvr2/geometry/BVH.hpp>
+
 // PCL related includes
 #ifdef LVR_USE_PCL
 #include <lvr/reconstruction/PCLKSurface.hpp>
+#endif
+
+#if defined CUDA_FOUND
+    #define GPU_FOUND
+
+    #include <lvr/reconstruction/cuda/CudaSurface.hpp>
+
+    typedef lvr::CudaSurface GpuSurface;
+#elif defined OPENCL_FOUND
+    #define GPU_FOUND
+
+    #include <lvr/reconstruction/opencl/ClSurface.hpp>
+    typedef lvr::ClSurface GpuSurface;
 #endif
 
 
@@ -644,7 +660,39 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     // Calculate normals if necessary
     if(!buffer->hasNormals() || options.recalcNormals())
     {
-        surface->calculateSurfaceNormals();
+
+        if(options.useGPU())
+        {
+            #ifdef GPU_FOUND
+                std::vector<float> flipPoint = options.getFlippoint();
+                size_t num_points;
+                lvr::floatArr points;
+                lvr::PointBuffer old_buffer = buffer->toOldBuffer();
+                points = old_buffer.getPointArray(num_points);
+                lvr::floatArr normals = lvr::floatArr(new float[ num_points * 3 ]);
+                std::cout << "Generate GPU kd-tree..." << std::endl;
+                GpuSurface gpu_surface(points, num_points);
+                std::cout << "finished." << std::endl;
+
+                gpu_surface.setKn(options.getKn());
+                gpu_surface.setKi(options.getKi());
+                gpu_surface.setFlippoint(flipPoint[0], flipPoint[1], flipPoint[2]);
+                std::cout << "Start Normal Calculation..." << std::endl;
+                gpu_surface.calculateNormals();
+                gpu_surface.getNormals(normals);
+                std::cout << "finished." << std::endl;
+                old_buffer.setPointNormalArray(normals, num_points);
+                buffer->copyNormalsFrom(old_buffer);
+                gpu_surface.freeGPU();
+            #else
+                std::cout << "ERROR: GPU Driver not installed" << std::endl;
+                surface->calculateSurfaceNormals();
+            #endif
+        }
+        else
+        {
+            surface->calculateSurfaceNormals();
+        }
     }
     else
     {
@@ -756,8 +804,47 @@ void testMeshnav(
     colorVertices = lvr2::map<DenseAttrMap>(combCost, colorFunctionPointer);
 }
 
+ void testBVHTree()
+ {
+     vector<float> vs = {
+         //-0.5f, -0.5f, 1,
+         //0, 0.5f, 1,
+         //0.5f, -0.5f, 1
+
+         -50, -50, 370,
+         0,  50, 370,
+         50, -50, 370,
+
+         50, -50, 370,
+         100,  50, 370,
+         150, -50, 370
+     };
+     vector<uint32_t> fs = {
+         0, 1, 2,
+
+         3, 4, 5
+     };
+
+     BVHTree<lvr2::BaseVector<float>> bvh(vs, fs);
+
+     lvr2::MeshBuffer<BaseVecT> debugMeshBuffer;
+     debugMeshBuffer.setVertices(vs);
+     debugMeshBuffer.setFaceIndices(fs);
+     auto m = boost::make_shared<lvr::Model>(debugMeshBuffer.toOldBuffer());
+     lvr::ModelFactory::saveModel(m, "debug_sim_mesh.ply");
+ }
+
 int main(int argc, char** argv)
 {
+    // auto io = PlutoMapIO(
+    //     "testio.h5",
+    //     {1.0, 2.0, 5.0, 10.0, 11.0, 15.0, 20.0, 21.0, 25.0},
+    //     {0, 1, 2}
+    // );
+    // io.stuff();
+    // return 0;
+
+
     // =======================================================================
     // Parse and print command line parameters
     // =======================================================================
@@ -864,46 +951,12 @@ int main(int argc, char** argv)
     // Magic number from lvr1 `cleanContours`...
     cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
 
-    naiveFillSmallHoles(mesh, options.getFillHoles(), false);
+    if(options.getFillHoles())
+    {
+        naiveFillSmallHoles(mesh, options.getFillHoles(), false);
+    }
 
     auto faceNormals = calcFaceNormals(mesh);
-
-    auto costLambda = [&](auto edgeH)
-    {
-        return collapseCostSimpleNormalDiff(mesh, faceNormals, edgeH);
-    };
-
-    // This is for debugging purposes! You can save a mesh whose colors can
-    // represent float values ... or sth like that. Coolio!
-    // {
-    //     // Create vertex colors from other attributes
-    //     auto edgeCosts = attrMapFromFunc<DenseAttrMap>(mesh.edges(), [&](auto edgeH){
-    //         auto maybeCost = costLambda(edgeH);
-    //         return maybeCost ? *maybeCost : 100;
-    //     });
-    //     float min, max;
-    //     std::tie(min, max) = minMaxOfMap(edgeCosts);
-    //     auto vertexCosts = attrMapFromFunc<DenseAttrMap>(mesh.vertices(), [&](VertexHandle vertexH)
-    //     {
-    //         float sum = 0.0;
-    //         size_t count = 0;
-    //         for (auto edgeH: mesh.getEdgesOfVertex(vertexH))
-    //         {
-    //             sum += edgeCosts[edgeH];
-    //             count += 1;
-    //         }
-    //         const auto value = sum / count;
-    //         return (value + min) / (max - min);
-    //     });
-    //     auto vertexColors = lvr2::map<DenseAttrMap>(vertexCosts, floatToGrayScaleColor);
-
-    //     // Save mesh
-    //     FinalizeAlgorithm<Vec> finalize;
-    //     finalize.setColorData(vertexColors);
-    //     auto buffer = finalize.apply(mesh);
-    //     auto m = boost::make_shared<lvr::Model>(buffer);
-    //     lvr::ModelFactory::saveModel(m, "debug_attribute.ply");
-    // }
 
     // Reduce mesh complexity
     const auto reductionRatio = options.getEdgeCollapseReductionRatio();
@@ -917,9 +970,7 @@ int main(int argc, char** argv)
         // Each edge collapse removes two faces in the general case.
         // TODO: maybe we should calculate this differently...
         const auto count = static_cast<size_t>((mesh.numFaces() / 2) * reductionRatio);
-        cout << timestamp << "Reducing mesh by collapsing up to " << count << " edges" << endl;
-        iterativeEdgeCollapse(mesh, count, costLambda);
-        faceNormals = calcFaceNormals(mesh);
+        auto collapsedCount = simpleMeshReduction(mesh, count, faceNormals);
     }
 
     ClusterBiMap<FaceHandle> clusterBiMap;
@@ -1021,7 +1072,6 @@ int main(int argc, char** argv)
 
     // Add material data to finalize algorithm
     finalize.setMaterializerResult(matResult);
-
     // Run finalize algorithm
     auto buffer = finalize.apply(mesh);
 
@@ -1045,8 +1095,17 @@ int main(int argc, char** argv)
         );
     }
     cout << timestamp << "Saving mesh." << endl;
+    lvr::ModelFactory::saveModel(m, "triangle_mesh.h5");
     lvr::ModelFactory::saveModel(m, "triangle_mesh.ply");
     lvr::ModelFactory::saveModel(m, "triangle_mesh.obj");
+
+    if (matResult.m_keypoints)
+    {
+        // save materializer keypoints to hdf5 which is not possible with lvr::ModelFactory
+        lvr2::PlutoMapIO map_io("triangle_mesh.h5");
+        map_io.addTextureKeypointsMap(matResult.m_keypoints.get());
+    }
+
     cout << timestamp << "Program end." << endl;
 
     return 0;
