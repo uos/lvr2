@@ -247,6 +247,11 @@ public:
      */
     bool removeAllLabels();
 
+    /**
+     * @brief Flushes the file. All opened buffers are saved to disc.
+     */
+    void flush();
+
 private:
     hf::File m_file;
 
