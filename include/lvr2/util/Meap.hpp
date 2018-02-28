@@ -25,12 +25,14 @@
 
 #include <vector>
 #include <utility>
+#include <unordered_map>
 
 #include <boost/optional.hpp>
 
 #include <lvr2/attrmaps/AttributeMap.hpp>
 
 using std::vector;
+using std::unordered_map;
 using std::pair;
 using boost::optional;
 
@@ -63,13 +65,9 @@ struct MeapPair
  * This implementation is a min heap: the smallest value sits "at the top" and
  * can be retrieved in O(1) via `popMin()` or `peekMin()`.
  */
-template<typename KeyT, typename ValueT, template<typename, typename> typename MapT>
+template<typename KeyT, typename ValueT>
 class Meap
 {
-    static_assert(
-        std::is_base_of<AttributeMap<KeyT, size_t>, MapT<KeyT, size_t>>::value,
-        "MapT must implement from AttributeMap!"
-    );
 public:
     /**
      * @brief Initializes an empty meap.
@@ -126,7 +124,7 @@ private:
 
     // This is a map to quickly look up the index within `m_heap` at which a
     // specific key lives.
-    MapT<KeyT, size_t> m_indices;
+    unordered_map<KeyT, size_t> m_indices;
 
     /**
      * @brief Returns the index of the father of the child at index `child`.

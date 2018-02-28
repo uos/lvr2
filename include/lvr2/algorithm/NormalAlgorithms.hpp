@@ -85,6 +85,21 @@ DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
     const PointsetSurface<BaseVecT>& surface
 );
 
+/**
+ * @brief Calculates a normal for each vertex in the mesh.
+ *
+ * The normal is calculated by first attempting to interpolate from the
+ * adjacent faces. If a vertex doesn't have adjacent faces, the default
+ * normal (0, 0, 1) is used.
+ *
+ * @param surface A point cloud with normal information
+ */
+template<typename BaseVecT>
+DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
+    const BaseMesh<BaseVecT>& mesh,
+    const FaceMap<Normal<BaseVecT>>& normals
+);
+
 } // namespace lvr2
 
 #include <lvr2/algorithm/NormalAlgorithms.tcc>

@@ -204,6 +204,8 @@
 #include <lvr2/algorithm/MeshNavAlgorithms.hpp>
 #include <lvr2/algorithm/UtilAlgorithms.hpp>
 
+#include <lvr2/geometry/BVH.hpp>
+
 // PCL related includes
 #ifdef LVR_USE_PCL
 #include <lvr/reconstruction/PCLKSurface.hpp>
@@ -801,6 +803,36 @@ void testMeshnav(
     colorVertices = lvr2::map<DenseAttrMap>(combCost, colorFunctionPointer);
 }
 
+ void testBVHTree()
+ {
+     vector<float> vs = {
+         //-0.5f, -0.5f, 1,
+         //0, 0.5f, 1,
+         //0.5f, -0.5f, 1
+
+         -50, -50, 370,
+         0,  50, 370,
+         50, -50, 370,
+
+         50, -50, 370,
+         100,  50, 370,
+         150, -50, 370
+     };
+     vector<uint32_t> fs = {
+         0, 1, 2,
+
+         3, 4, 5
+     };
+
+     BVHTree<lvr2::BaseVector<float>> bvh(vs, fs);
+
+     lvr2::MeshBuffer<BaseVecT> debugMeshBuffer;
+     debugMeshBuffer.setVertices(vs);
+     debugMeshBuffer.setFaceIndices(fs);
+     auto m = boost::make_shared<lvr::Model>(debugMeshBuffer.toOldBuffer());
+     lvr::ModelFactory::saveModel(m, "debug_sim_mesh.ply");
+ }
+
 int main(int argc, char** argv)
 {
     // auto io = PlutoMapIO(
@@ -925,43 +957,6 @@ int main(int argc, char** argv)
 
     auto faceNormals = calcFaceNormals(mesh);
 
-    auto costLambda = [&](auto edgeH)
-    {
-        return collapseCostSimpleNormalDiff(mesh, faceNormals, edgeH);
-    };
-
-    // This is for debugging purposes! You can save a mesh whose colors can
-    // represent float values ... or sth like that. Coolio!
-    // {
-    //     // Create vertex colors from other attributes
-    //     auto edgeCosts = attrMapFromFunc<DenseAttrMap>(mesh.edges(), [&](auto edgeH){
-    //         auto maybeCost = costLambda(edgeH);
-    //         return maybeCost ? *maybeCost : 100;
-    //     });
-    //     float min, max;
-    //     std::tie(min, max) = minMaxOfMap(edgeCosts);
-    //     auto vertexCosts = attrMapFromFunc<DenseAttrMap>(mesh.vertices(), [&](VertexHandle vertexH)
-    //     {
-    //         float sum = 0.0;
-    //         size_t count = 0;
-    //         for (auto edgeH: mesh.getEdgesOfVertex(vertexH))
-    //         {
-    //             sum += edgeCosts[edgeH];
-    //             count += 1;
-    //         }
-    //         const auto value = sum / count;
-    //         return (value + min) / (max - min);
-    //     });
-    //     auto vertexColors = lvr2::map<DenseAttrMap>(vertexCosts, floatToGrayScaleColor);
-
-    //     // Save mesh
-    //     FinalizeAlgorithm<Vec> finalize;
-    //     finalize.setColorData(vertexColors);
-    //     auto buffer = finalize.apply(mesh);
-    //     auto m = boost::make_shared<lvr::Model>(buffer);
-    //     lvr::ModelFactory::saveModel(m, "debug_attribute.ply");
-    // }
-
     // Reduce mesh complexity
     const auto reductionRatio = options.getEdgeCollapseReductionRatio();
     if (reductionRatio > 0.0)
@@ -974,9 +969,7 @@ int main(int argc, char** argv)
         // Each edge collapse removes two faces in the general case.
         // TODO: maybe we should calculate this differently...
         const auto count = static_cast<size_t>((mesh.numFaces() / 2) * reductionRatio);
-        cout << timestamp << "Reducing mesh by collapsing up to " << count << " edges" << endl;
-        iterativeEdgeCollapse(mesh, count, costLambda);
-        faceNormals = calcFaceNormals(mesh);
+        auto collapsedCount = simpleMeshReduction(mesh, count, faceNormals);
     }
 
     ClusterBiMap<FaceHandle> clusterBiMap;
@@ -1099,6 +1092,11 @@ int main(int argc, char** argv)
     lvr::ModelFactory::saveModel(m, "triangle_mesh.h5");
     lvr::ModelFactory::saveModel(m, "triangle_mesh.ply");
     lvr::ModelFactory::saveModel(m, "triangle_mesh.obj");
+
+    // save materializer keypoints to hdf5 which is not possible with lvr::ModelFactory
+    lvr2::PlutoMapIO map_io("triangle_mesh.h5");
+    map_io.addTextureKeypointsMap(matResult.m_keypoints.get());
+
     cout << timestamp << "Program end." << endl;
 
     return 0;
