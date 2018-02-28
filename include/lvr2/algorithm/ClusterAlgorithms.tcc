@@ -24,6 +24,7 @@
  */
 
 #include <lvr2/algorithm/Planar.hpp>
+#include <lvr2/algorithm/ContourAlgorithms.hpp>
 
 namespace lvr2
 {
@@ -49,6 +50,125 @@ void removeDanglingCluster(BaseMesh<BaseVecT>& mesh, size_t sizeThreshold)
             }
         }
     }
+}
+
+template<typename BaseVecT>
+vector<vector<VertexHandle>> findContours(
+    BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    ClusterHandle clusterH
+)
+{
+    auto cluster = clusters[clusterH];
+
+    DenseVertexMap<bool> boundaryVertices(cluster.handles.size() * 3, false);
+    vector<vector<VertexHandle>> allContours;
+    // only used inside edge loop but initialized here to avoid heap allocations
+    vector<VertexHandle> contour;
+
+    for (auto faceH: cluster.handles)
+    {
+        for (auto edgeH: mesh.getEdgesOfFace(faceH))
+        {
+            auto faces = mesh.getFacesOfEdge(edgeH);
+            if (faces[0] && faces[1])
+            {
+                auto otherFace = faces[0].unwrap();
+
+                if (otherFace == faceH)
+                {
+                    otherFace = faces[1].unwrap();
+                }
+
+                // continue if other face is in same cluster
+                if (clusters.getClusterOf(otherFace) &&
+                    clusters.getClusterOf(otherFace).unwrap() == clusterH
+                    )
+                {
+                    continue;
+                }
+            }
+
+
+            auto vertices = mesh.getVerticesOfEdge(edgeH);
+
+            // edge already in another boundary of this cluster
+            if (boundaryVertices[vertices[0]] || boundaryVertices[vertices[1]])
+            {
+                continue;
+            }
+
+            contour.clear();
+            calcContourVertices(mesh, edgeH, contour, [clusters, clusterH](auto fH)
+            {
+                auto c = clusters.getClusterOf(fH);
+
+                // return true if current face is in this cluster
+                return c && c.unwrap() == clusterH;
+            });
+
+            allContours.push_back(contour);
+
+            // mark all vertices we got back as visited
+            for (auto vertexH: contour)
+            {
+                boundaryVertices[vertexH] = true;
+            }
+        }
+
+    }
+
+    return allContours;
+}
+
+template<typename BaseVecT>
+vector<VertexHandle>
+simplifyContour(const BaseMesh<BaseVecT>& mesh, const vector<VertexHandle>& contour, float threshold) {
+    auto out = vector<VertexHandle>();
+
+    // first point is always part of the simplified contour
+    out.push_back(contour[0]);
+
+    // current point
+    auto p0 = mesh.getVertexPosition(contour[0]);
+    // next point after first point
+    auto p1 = mesh.getVertexPosition(contour[1]);
+
+    // previous test point handle
+    auto piH = contour[1];
+    // current test point handle
+    auto pjH = piH;
+
+    for (size_t i = 2 ; i < contour.size(); ++i)
+    {
+        piH = pjH;
+        pjH = contour[i];
+
+        // current key vector / line to check against
+        auto vec = p1 - p0;
+        vec.normalize();
+
+        // vector of next and after next point
+        auto vec2 = mesh.getVertexPosition(pjH) - mesh.getVertexPosition(piH);
+        vec2.normalize();
+
+        if (vec.dot(vec2) >= threshold)
+        {
+            continue;
+        }
+
+        // found next point in line
+        out.push_back(piH);
+
+        // define new line to check against
+        p0 = mesh.getVertexPosition(piH);
+        p1 = mesh.getVertexPosition(pjH);
+    }
+
+    // also add last last point to simplified contour
+    out.push_back(pjH);
+
+    return out;
 }
 
 } // namespace lvr2
