@@ -36,6 +36,8 @@ using std::cout;
 using std::endl;
 using std::flush;
 using std::string;
+using std::wstring;
+using std::wcout;
 
 #include <boost/thread/mutex.hpp>
 
@@ -166,6 +168,88 @@ protected:
 
 	/// A fill string for correct output alignment
 	string 			m_fillstring;
+};
+
+
+/**
+ * @brief  	A class to manage progress information output for
+ * 			process where the number of performed operations
+ * 			is known in advance, e.g. number of loop iterations
+ *
+ * 	After each iteration the ++-operator should be called. The
+ * 	progress information in '%' is automatically printed to stdout
+ * 	together with the given prefix string.
+ */
+
+typedef void(*PacmanProgressCallbackPtr)(int);
+typedef void(*PacmanProgressTitleCallbackPtr)(string);
+
+class PacmanProgressBar
+{
+
+public:
+
+	/**
+	 * @brief Ctor.
+	 *
+	 * @param max_val	The number of performed iterations
+	 * @param prefix	The prefix string for progress output
+	 */
+	PacmanProgressBar(size_t max_val, string prefix = "", size_t bar_length = 60 );
+
+	virtual ~PacmanProgressBar();
+
+	/**
+	 * @brief Increases the counter of performed iterations
+	 */
+	void operator++();
+
+	/**
+	 * @brief 	Registers a callback that is called with the new value
+	 * 			when the percentage of the progress changed.
+	 *
+	 * @param
+	 */
+	static void setProgressCallback(ProgressCallbackPtr);
+
+	/**
+	 * @brief	Registers a callback that is called when a new progress
+	 * 			instance is created.
+	 * @param
+	 */
+	static void setProgressTitleCallback(ProgressTitleCallbackPtr);
+
+protected:
+
+	/// Prints the output
+	void print_bar();
+
+	/// The prefix string
+	string 			m_prefix;
+
+	/// The number of iterations
+	size_t			m_maxVal;
+
+        /// The current counter
+    size_t	 		m_currentVal;
+
+	/// A mutex object for counter increment (for parallel executions)
+	boost::mutex 	m_mutex;
+
+	/// The current progress in percent
+	int				m_percent;
+
+	// bar length
+	int 			m_bar_length;
+
+	/// A string stream for output generation
+	stringstream	m_stream;
+
+	/// A fill string for correct output alignment
+	string 			m_fillstring;
+
+	static PacmanProgressCallbackPtr 			m_progressCallback;
+	static PacmanProgressTitleCallbackPtr		m_titleCallback;
 };
 
 } // namespace lvr
