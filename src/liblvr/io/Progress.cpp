@@ -124,7 +124,98 @@ void ProgressCounter::print_progress()
 	cout << "\r" << m_prefix << " " << m_currentVal << flush;
 }
 
+PacmanProgressCallbackPtr PacmanProgressBar::m_progressCallback = 0;
+PacmanProgressTitleCallbackPtr PacmanProgressBar::m_titleCallback = 0;
 
+PacmanProgressBar::PacmanProgressBar(size_t max_val, string prefix, size_t bar_length)
+:
+	m_prefix(prefix)
+	,m_bar_length(bar_length)
+{
+	m_maxVal = max_val;
+    m_currentVal = 0;
+	m_percent = 0;
+
+	if(m_titleCallback)
+	{
+		// Remove time brackets
+		unsigned index;
+		index = prefix.find_last_of("]");
+		m_titleCallback(prefix.substr(index+1));
+	}
+}
+
+PacmanProgressBar::~PacmanProgressBar()
+{
+
+}
+
+void PacmanProgressBar::setProgressCallback(ProgressCallbackPtr ptr)
+{
+	m_progressCallback = ptr;
+}
+
+void PacmanProgressBar::setProgressTitleCallback(ProgressTitleCallbackPtr ptr)
+{
+	m_titleCallback = ptr;
+}
+
+void PacmanProgressBar::operator++()
+{
+    boost::mutex::scoped_lock lock(m_mutex);
+
+    m_currentVal++;
+    short difference = (short)((float)m_currentVal/m_maxVal * 100 - m_percent);
+
+	if (difference < 1)
+    {
+        return;
+    }
+
+    while (difference >= 1)
+    {
+        m_percent++;
+        difference--;
+        print_bar();
+
+        if(m_progressCallback)
+        {
+        	m_progressCallback(m_percent);
+        }
+    }
+
+}
+
+void PacmanProgressBar::print_bar()
+{
+	int char_idx = static_cast<float>(m_percent)/100.0 * (m_bar_length);
+
+	cout <<  "\r" << m_prefix << " " << m_percent << "%" << " | ";
+
+	for(size_t i=0; i< char_idx; i++)
+	{
+		cout << " ";
+	}
+
+	if(char_idx % 2 == 0)
+	{
+		cout << "ᗧ";
+	}else{
+		cout << "O";
+	}
+
+	for(size_t i=char_idx; i < m_bar_length; i++)
+	{
+		if(i%2 == 0)
+		{
+			cout << " ";
+		} else {
+			cout << "•";
+		}
+	}
+
+    cout << " | " << flush;
+}
 
 } // namespace lvr
 
