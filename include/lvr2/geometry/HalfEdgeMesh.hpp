@@ -70,7 +70,7 @@ public:
     // = Implementing the `BaseMesh` interface (see BaseMesh for docs)
     // ========================================================================
 
-    // We declare all metods as `final` to make devirtualization optimizations
+    // We declare all methods as `final` to make devirtualization optimizations
     // more likely and effective.
     VertexHandle addVertex(Point<BaseVecT> pos) final;
     FaceHandle addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H) final;

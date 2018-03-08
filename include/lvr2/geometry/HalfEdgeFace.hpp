@@ -35,6 +35,9 @@ namespace lvr2
 // Forward declarations
 struct HalfEdgeHandle;
 
+/**
+ * @brief Represents a face in the HEM data structure.
+ */
 struct HalfEdgeFace
 {
     HalfEdgeFace(HalfEdgeHandle edge)
