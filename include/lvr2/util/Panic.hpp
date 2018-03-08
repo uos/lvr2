@@ -31,6 +31,9 @@
 namespace lvr2
 {
 
+/**
+ * @brief An exception denoting an internal bug.
+ */
 struct PanicException : public std::exception
 {
     PanicException(std::string msg) : m_msg(msg) {}
@@ -44,11 +47,18 @@ private:
     std::string m_msg;
 };
 
+/**
+ * @brief Throws a panic exception with the given error message.
+ */
 inline void panic(std::string msg)
 {
     throw PanicException("Program panicked: " + msg);
 }
 
+/**
+ * @brief Throws a panic exception with the given error message and denotes
+ *        that the exception was thrown due to a missing implementation.
+ */
 inline void panic_unimplemented(std::string msg)
 {
     throw PanicException("Program panicked due to missing implementation: " + msg);
