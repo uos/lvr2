@@ -42,7 +42,11 @@ OutMapT<typename InMapT::HandleType, std::result_of_t<MapF(typename InMapT::Valu
     MapF func
 );
 
-
+/**
+ * @brief Creates an attribute map by calling the given function for each
+ *        element in the given iterator. The iterator yields the keys, the
+ *        function gives us the corresponding value.
+ */
 template<
     template<typename, typename> typename OutMapT,
     typename IterProxyT,
