@@ -65,7 +65,7 @@ void Hdf5IO::save(string filename)
     // Save old error handler
     H5E_auto2_t  oldfunc;
     void *old_client_data;
-    H5Eget_auto(NULL, &oldfunc, &old_client_data);
+    H5Eget_auto(0, &oldfunc, &old_client_data);
 
     // Turn off error handling
     // We turn it of here, to avoid an error message from HDF5 because of already opened file.
@@ -73,7 +73,7 @@ void Hdf5IO::save(string filename)
     // and change it if it fails.
     // The error handler is turned on again later to make sure we have an proper error handler and message again
     // while using / opening an new file.
-    H5Eset_auto(NULL, NULL, NULL);
+    H5Eset_auto(0, NULL, NULL);
 
     auto pm = unique_ptr<lvr2::PlutoMapIO>{};
     try {
@@ -94,7 +94,7 @@ void Hdf5IO::save(string filename)
     }
 
     // Restore previous error handler
-    H5Eset_auto(NULL, oldfunc, old_client_data);
+    H5Eset_auto(0, oldfunc, old_client_data);
 
     pm->addVertexNormals(normalsVector);
     pm->addVertexColors(colorsVector);
