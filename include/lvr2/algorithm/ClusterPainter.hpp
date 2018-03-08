@@ -48,6 +48,11 @@ class ClusterPainter
 public:
     ClusterPainter(const ClusterBiMap<FaceHandle>& clusterBiMap) : m_clusterBiMap(clusterBiMap) {};
 
+    /**
+     * @brief Assign a pseudo-color to each cluster.
+     *
+     * The color is deterministically determined by the cluster id.
+     */
     template<typename BaseVecT>
     DenseClusterMap<Rgb8Color> simpsons(const BaseMesh<BaseVecT>& mesh) const;
 
