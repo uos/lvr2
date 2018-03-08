@@ -38,9 +38,7 @@ namespace lvr2
 // We need a specific handle for half edges. The `BaseMesh` interface talks
 // about simple (full) edges. To avoid confusion, this HalfEdgeHandle is used
 // internally in the HEM. The edge handles given out by the HEM implementation
-// are handle to the half edge with the lower index. Luckily a half edge pair
-// always sits next to each other in the vector of all half edges. The half
-// edge with lower index always has an even index.
+// are handles to the half edge with the lower index.
 
 /// Handle to access half edges of the HEM.
 class HalfEdgeHandle : public BaseHandle<Index>
