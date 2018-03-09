@@ -17,7 +17,7 @@
  */
 
 /*
- * FinalizeAlgorithm.hpp
+ * FinalizeAlgorithms.hpp
  *
  *  @date 13.06.2017
  *  @author Johan M. von Behren <johan@vonbehren.eu>
@@ -102,6 +102,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/FinalizeAlgorithm.tcc>
+#include <lvr2/algorithm/FinalizeAlgorithms.tcc>
 
 #endif /* LVR2_ALGORITHM_FINALIZEALGORITHM_H_ */
