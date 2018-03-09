@@ -24,7 +24,7 @@
 *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
 */
 
-#include <lvr2/algorithm/ClusterAlgorithm.hpp>
+#include <lvr2/algorithm/ClusterAlgorithms.hpp>
 #include <lvr2/algorithm/FinalizeAlgorithms.hpp>
 #include <opencv2/features2d.hpp>
 
