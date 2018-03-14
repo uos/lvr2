@@ -48,7 +48,7 @@ CorrespondenceVisualizer::CorrespondenceVisualizer(string filename)
     int modes = 0;
     PointCloudTreeWidgetItem* item = new PointCloudTreeWidgetItem(PointCloudItem);
     item->setSupportedRenderModes(modes);
-    item->setViewCentering(false);
+    item->setViewCentering(true);
     item->setName("Correspondences");
     item->setRenderable(corr);
     m_treeItem = item;
