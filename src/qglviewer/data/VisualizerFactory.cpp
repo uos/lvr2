@@ -30,6 +30,7 @@
 #include "MultiPointCloudVisualizer.hpp"
 #include "GridVisualizer.hpp"
 #include "ClusterVisualizer.hpp"
+#include "CorrespondenceVisualizer.hpp"
 
 #include <lvr/display/Grid.hpp>
 #include <lvr/display/StaticMesh.hpp>
@@ -118,6 +119,19 @@ void VisualizerFactory::create(string filename)
         if(extension == ".clu")
         {
             Visualizer* v = new ClusterVisualizer(filename);
+            if(v->renderable())
+            {
+                Q_EMIT visualizerCreated( v );
+            }
+            else
+            {
+                delete v;
+            }
+        }
+
+        if(extension == ".corr")
+        {
+            Visualizer* v = new CorrespondenceVisualizer(filename);
             if(v->renderable())
             {
                 Q_EMIT visualizerCreated( v );

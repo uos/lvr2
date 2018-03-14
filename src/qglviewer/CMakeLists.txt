@@ -42,6 +42,7 @@ set(QVIEWER_SOURCES
     data/Visualizer.cpp
     data/VisualizerFactory.cpp
     data/ClusterVisualizer.cpp
+    data/CorrespondenceVisualizer.cpp
     viewers/OrthoCamera.cpp
     viewers/PerspectiveViewer.cpp
     viewers/Viewer.cpp

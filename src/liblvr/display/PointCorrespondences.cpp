@@ -1,5 +1,8 @@
 #include <lvr/display/PointCorrespondences.hpp>
 
+namespace lvr
+{
+
 PointCorrespondences::PointCorrespondences(std::vector<float> points1, std::vector<float> points2)
 {
     m_displayList = glGenLists(1);
@@ -34,3 +37,5 @@ void PointCorrespondences::PointCorrespondences::render()
     glPointSize(1.0);
     glCallList(m_displayList);
 }
+
+} // namespace lvr
