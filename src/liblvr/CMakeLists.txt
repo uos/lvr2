@@ -35,6 +35,7 @@ set(LVR_SOURCES
     display/GlTexture.cpp
     display/TextureFactory.cpp
     display/TexturedMesh.cpp
+    display/PointCorrespondences.cpp
     registration/EigenSVDPointAlign.cpp
     registration/ICPPointAlign.cpp
     reconstruction/ModelToImage.cpp
