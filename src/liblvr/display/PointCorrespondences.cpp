@@ -34,7 +34,7 @@ PointCorrespondences::PointCorrespondences(std::vector<float> points1, std::vect
 void PointCorrespondences::PointCorrespondences::render()
 {
     glLineWidth(1.0);
-    glPointSize(1.0);
+    glPointSize(5.0);
     glCallList(m_displayList);
 }
 
