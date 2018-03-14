@@ -5,7 +5,10 @@
 
 #include <vector>
 
-class PointCorrespondences
+namespace lvr
+{
+
+class PointCorrespondences : public Renderable
 {
 public:
     PointCorrespondences(std::vector<float> points1, std::vector<float> points2);
@@ -13,5 +16,7 @@ public:
 private:
     GLuint m_displayList;
 };
+
+} // namespace lvr
 
 #endif // POINTCORRESPONDENCES_H
