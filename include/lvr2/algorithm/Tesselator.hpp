@@ -97,7 +97,7 @@ private:
     static void CALLBACK errorCallback(GLenum errno);
 
     /**
-    * Initalizes the tesselator object, deleting the old one if one is found and registering all 
+    * Initalizes the tesselator object, deleting the old one if one is found and registering all
     * necessary callbacks.
     */
     static void init();
