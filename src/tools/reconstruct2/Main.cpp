@@ -570,9 +570,9 @@ int main(int argc, char** argv)
         );
     }
     cout << timestamp << "Saving mesh." << endl;
-    lvr::ModelFactory::saveModel(m, "triangle_mesh.h5");
     lvr::ModelFactory::saveModel(m, "triangle_mesh.ply");
     lvr::ModelFactory::saveModel(m, "triangle_mesh.obj");
+    lvr::ModelFactory::saveModel(m, "triangle_mesh.h5");
 
     if (matResult.m_keypoints)
     {
