@@ -17,7 +17,7 @@
  */
 
 /*
- * MeshNavAlgorithms.tcc
+ * GeometryAlgorithms.tcc
  */
 
 #include <algorithm>

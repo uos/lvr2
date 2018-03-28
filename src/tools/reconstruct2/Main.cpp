@@ -187,7 +187,7 @@
 #include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/io/PlutoMapIO.hpp>
 #include <lvr2/util/Factories.hpp>
-#include <lvr2/algorithm/MeshNavAlgorithms.hpp>
+#include <lvr2/algorithm/GeometryAlgorithms.hpp>
 #include <lvr2/algorithm/UtilAlgorithms.hpp>
 
 #include <lvr2/geometry/BVH.hpp>
