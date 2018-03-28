@@ -28,9 +28,15 @@ using boost::optional;
 namespace lvr2
 {
 
+/**
+ * @struct Material
+ * @brief A material that stores information about color and texture of a cluster
+ */
 struct Material
 {
+    /// Optional texture handle
     optional<TextureHandle> m_texture;
+    /// Optional color
     optional<Rgb8Color> m_color;
 };
 

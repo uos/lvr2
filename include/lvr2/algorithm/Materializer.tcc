@@ -103,7 +103,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
 
             if (m_texturizer)
             {
-                // If using textures, count wether this cluster was too small or too large
+                // If using textures, count whether this cluster was too small or too large
                 if (numFacesInCluster < m_texturizer.get().m_texMinClusterSize)
                 {
                     numClustersTooSmall++;
@@ -193,10 +193,10 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                     std::vector<float>(descriptors.ptr(row), descriptors.ptr(row) + descriptors.cols);
             }
 
-            // Create material and insert in face map
+            // Create material with default color and insert into face map
             Material material;
             material.m_texture = texH;
-            material.m_color = {255, 255, 255}; // TODO macht das sinn?
+            material.m_color = {255, 255, 255};
             clusterMaterials.insert(clusterH, material);
 
             // Calculate tex coords

@@ -29,25 +29,62 @@ namespace lvr2
 
 
 /**
+ * @struct BoundingRectangle
+ * @brief A representation of a bounding rectangle
+ *
  * A data class for representing a bounding rectangle that is used for
  * texturizing. Each bounding rectangle is composed of a support vector and a
  * normal that define the rectangles position in 3d space, as well as two
  * vectors that describe the 2d coordinate system for the rectangle. Min dist A
  * and B describe the min distance from the support vector in the 2d coordinate
  * system. The same applies for max dist A and B.
+ *
+ *
+ *                         vec1
+ *                  ─────────────────>
+ *
+ *         minDistA
+ *     |----------------|           maxDistA
+ *                      |-------------------------------|
+ *
+ *     ┌────────────────────────────────────────────────┐  ┬
+ *     │                                                │  ¦
+ *     │                                                │  ¦             │
+ *     │                                                │  ¦ minDistB    │
+ *     │                                                │  ¦             │ vec2
+ *     │                  supportVector                 │  ¦             │
+ *     │                ×                               │  ┴ ┬           │
+ *     │                                                │    ¦           V
+ *     │                                                │    ¦ maxDistB
+ *     │                                                │    ¦
+ *     └────────────────────────────────────────────────┘    ┴
+ *
+ *
  */
 template<typename BaseVecT>
 struct BoundingRectangle
 {
+    /// A 3D point, that is the support vector of the rectangle
     Vector<BaseVecT> m_supportVector;
+    /// The first direction vector
     Vector<BaseVecT> m_vec1;
+    /// The second direction vector (that should be orthogonal to the first direction)
     Vector<BaseVecT> m_vec2;
+    /// The normal of the rectangle
     Normal<BaseVecT> m_normal;
+    /// Distance of the beginning border from the support vector in the first direction (if negative: reverse direction)
     float m_minDistA;
+    /// Distance of the end border from the support vector in the first direction (if negative: reverse direction)
     float m_maxDistA;
+    /// Distance of the beginning border from the support vector in the second direction (if negative: reverse
+    /// direction)
     float m_minDistB;
+    /// Distance of the end border from the support vector in the second direction (if negative: reverse direction)
     float m_maxDistB;
 
+    /**
+     * @brief Constructor
+     */
     BoundingRectangle(
         Vector<BaseVecT> supportVector,
         Vector<BaseVecT> vec1,
