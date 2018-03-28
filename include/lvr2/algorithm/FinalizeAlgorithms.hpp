@@ -50,7 +50,10 @@ namespace lvr2
 template<typename BaseVecT>
 class MaterializerResult;
 
-
+/**
+ * Algorithm that converts a BaseMesh into a MeshBuffer while maintaining the original graph structure. This means
+ * that no duplicate vertices will be created and therefor no textures can be generated.
+ */
 template<typename BaseVecT>
 class FinalizeAlgorithm
 {
@@ -61,22 +64,78 @@ private:
 public:
     FinalizeAlgorithm() {};
 
+    /**
+     * Converts the given BaseMesh into a MeshBuffer and adds normal and color data if set
+     *
+     * @param mesh the mesh to convert
+     * @return the generated buffer
+     */
     boost::shared_ptr<MeshBuffer<BaseVecT>> apply(const BaseMesh<BaseVecT>& mesh);
+
+    /**
+     * Sets vertex colors for the apply method. This has to be done before apply is called.
+     *
+     * @param colorData color values for all vertices in the mesh which will be passed to apply
+     */
     void setColorData(const VertexMap<Rgb8Color>& colorData);
+
+    /**
+     * Sets vertex normals for the apply method. This has to be done before apply is called.
+     *
+     * @param normalData normals for all vertices in the mesh which will be passed to apply
+     */
     void setNormalData(const VertexMap<Normal<BaseVecT>>& normalData);
 };
 
+/**
+ * Algorithm that converts a BaseMesh into a MeshBuffer while destroying the original graph structure. This means
+ * that duplicate vertices will be added to the mesh buffer so that textures can be generated.
+ */
 template<typename BaseVecT>
 class ClusterFlatteningFinalizer
 {
 public:
+    /**
+     * Constructor for the finalizer
+     *
+     * @param cluster a map which maps all faces to clusters and vice versa
+     */
     ClusterFlatteningFinalizer(const ClusterBiMap<FaceHandle>& cluster);
 
+    /**
+     * Sets vertex normals for the apply method. This has to be done before apply is called.
+     *
+     * @param normals normals for all vertices in the mesh which will be passed to apply
+     */
     void setVertexNormals(const VertexMap<Normal<BaseVecT>>& normals);
+
+    /**
+     * Sets color data for all clusters for the apply method. This has to be done before apply is called.
+     *
+     * @param colors color data for all clusters in the mesh which will be passed to apply
+     */
     void setClusterColors(const ClusterMap<Rgb8Color>& colors);
+
+    /**
+     * Sets vertex colors for the apply method. This has to be done before apply is called.
+     *
+     * @param vertexColors color values for all vertices in the mesh which will be passed to apply
+     */
     void setVertexColors(const VertexMap<Rgb8Color>& vertexColors);
+
+    /**
+     * Sets the materializer result for the apply method. This has to be done before apply is called.
+     *
+     * @param materializerResult the result of the materializer that was run on the mesh which will be passed to apply
+     */
     void setMaterializerResult(const MaterializerResult<BaseVecT>& materializerResult);
 
+    /**
+     * Converts the given BaseMesh into a MeshBuffer and adds further data (e.g. colors, normals) if set
+     *
+     * @param mesh the mesh to convert
+     * @return the resulting mesh buffer
+     */
     boost::shared_ptr<MeshBuffer<BaseVecT>> apply(const BaseMesh<BaseVecT>& mesh);
 
 private:
