@@ -47,6 +47,12 @@ using std::vector;
 namespace lvr2
 {
 
+/**
+ * Removes all faces in connected clusters which are smaller (have less faces) than sizeThreshold
+ *
+ * @param mesh the mesh to operate on
+ * @param sizeThreshold number of faces which a cluster has to contain to not be deleted
+ */
 template<typename BaseVecT>
 void removeDanglingCluster(BaseMesh<BaseVecT>& mesh, size_t sizeThreshold);
 

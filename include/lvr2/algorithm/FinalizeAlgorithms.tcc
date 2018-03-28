@@ -56,17 +56,20 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> FinalizeAlgorithm<BaseVecT>::apply(const
         colors.reserve(mesh.numVertices() * 3);
     }
 
+    // for all vertices
     size_t vertexCount = 0;
     for (auto vH : mesh.vertices())
     {
         auto point = mesh.getVertexPosition(vH);
 
+        // add vertex positions to buffer
         vertices.push_back(point.x);
         vertices.push_back(point.y);
         vertices.push_back(point.z);
 
         if (m_normalData)
         {
+            // add normal data to buffer if given
             auto normal = (*m_normalData)[vH];
             normals.push_back(normal.getX());
             normals.push_back(normal.getY());
@@ -75,6 +78,7 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> FinalizeAlgorithm<BaseVecT>::apply(const
 
         if (m_colorData)
         {
+            // add color data to buffer if given
             colors.push_back(static_cast<unsigned char>((*m_colorData)[vH][0]));
             colors.push_back(static_cast<unsigned char>((*m_colorData)[vH][1]));
             colors.push_back(static_cast<unsigned char>((*m_colorData)[vH][2]));
@@ -93,10 +97,12 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> FinalizeAlgorithm<BaseVecT>::apply(const
         auto handles = mesh.getVerticesOfFace(fH);
         for (auto handle : handles)
         {
+            // add faces to buffer
             faces.push_back(idxMap[handle]);
         }
     }
 
+    // create buffer object and pass values
     auto buffer = boost::make_shared<lvr2::MeshBuffer<BaseVecT>>();
     buffer->setVertices(vertices);
     buffer->setFaceIndices(faces);
