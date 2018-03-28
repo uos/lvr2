@@ -17,11 +17,11 @@
  */
 
 /*
- * MeshNavAlgorithms.hpp
+ * GeometryAlgorithms.hpp
  */
 
-#ifndef LVR2_ALGORITHM_MESHNAVALGORITHMS_H_
-#define LVR2_ALGORITHM_MESHNAVALGORITHMS_H_
+#ifndef LVR2_ALGORITHM_GEOMETRYALGORITHMS_H_
+#define LVR2_ALGORITHM_GEOMETRYALGORITHMS_H_
 
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/attrmaps/AttrMaps.hpp>
@@ -164,6 +164,6 @@ void calcVertexRoughnessAndHeightDiff(
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/MeshNavAlgorithms.tcc>
+#include "GeometryAlgorithms.tcc"
 
-#endif /* LVR2_ALGORITHM_MESHNAVALGORITHMS_H_ */
+#endif /* LVR2_ALGORITHM_GEOMETRYALGORITHMS_H_ */
