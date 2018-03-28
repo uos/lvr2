@@ -38,24 +38,52 @@ using std::pair;
 namespace lvr2
 {
 
+/**
+ * @struct TexCoords
+ * @brief Texture coordinates
+ */
 struct TexCoords
 {
-    float u, v;
+    /// u-coordinate
+    float u;
+    /// v-coordinate
+    float v;
 
+    /**
+     * @brief Constructor
+     */
     TexCoords(float u, float v) : u(u), v(v) {}
 
 };
 
+/**
+ * @class ClusterTexCoordMapping
+ * @brief Mapping of clusters to texture coordinates for a single vertex
+ *
+ * Each vertex can be contained in several clusters, for each cluster there will be one entry in the array. Each entry
+ * is a pair that consists of a cluster handle and texture coordinates.
+ * This implementation assumes that a vertex is not contained in more than 100 clusters.
+ */
 class ClusterTexCoordMapping
 {
 private:
-    // vector<pair<ClusterHandle, TexCoords>> mapping;
+    /// The mapping of cluster handles to texture coordinates
     array<optional<pair<ClusterHandle, TexCoords>>, 100> m_mapping;
+    /// The number of stored pairs
     size_t m_len;
 
 public:
+    /**
+     * @brief COnstructor
+     */
     ClusterTexCoordMapping() : m_len(0) {}
 
+    /**
+     * @brief Adds an entry to the mapping
+     *
+     * @param handle The cluster handle
+     * @param tex The texture coordinates
+     */
     inline void push(ClusterHandle handle, TexCoords tex)
     {
         if (m_len == m_mapping.size())
@@ -69,6 +97,13 @@ public:
         }
     }
 
+    /**
+     * @brief Returns the texture coordinates to a given cluster handle
+     *
+     * @param clusterH The cluster handle
+     *
+     * @return The texture coordinates
+     */
     inline TexCoords getTexCoords(ClusterHandle clusterH) const
     {
         for (size_t i = 0; i < m_len; i++)
