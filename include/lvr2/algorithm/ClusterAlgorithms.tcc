@@ -261,7 +261,7 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     float bestMinA, bestMaxA, bestMinB, bestMaxB;
     Vector<BaseVecT> bestBoundingAxisA, bestBoundingAxisB;
 
-    // // calculate regression plane for the cluster
+    // calculate regression plane for the cluster
     Plane<BaseVecT> regressionPlane = calcRegressionPlane(mesh, cluster, normals);
 
     // support vector for the plane
@@ -312,9 +312,7 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
 
         for(const auto contourVertexH : contour)
         {
-            // TODO: Besser vorberechnen?
-            //auto contourPoint = mesh.getVertexPosition(contourVertexH);
-            // TODO: project nötig?
+            // possible improvement: calculate the contourPoints only once before the for loop
             auto contourPoint = regressionPlane.project(mesh.getVertexPosition(contourVertexH));
 
             // use hessian plane form for distance calculation

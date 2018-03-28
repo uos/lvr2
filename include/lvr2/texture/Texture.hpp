@@ -40,21 +40,20 @@ namespace lvr2 {
 
 
 /**
- * @brief   This class represents a texture.
+ * @class Texture
+ * @brief This class represents a texture.
  */
 template<typename BaseVecT>
 class Texture {
 public:
 
     /**
-     * @brief   Constructor.
-     *
+     * @brief Constructor
      */
     Texture( );
 
     /**
-     * @brief   Constructor.
-     *
+     * @brief Constructor
      */
     Texture(
         int index,
@@ -65,11 +64,17 @@ public:
         float texelSize
     );
 
+    /**
+     * @brief Constructor
+     */
     Texture(
         int index,
         lvr::Texture* oldTexture
     );
 
+    /**
+     * @brief Constructor
+     */
     Texture(
         int index,
         GlTexture* oldTexture
@@ -77,30 +82,33 @@ public:
 
 
     /**
-     * Destructor.
+     * @brief Destructor
      */
     virtual ~Texture();
 
     /**
-     * @brief   write the texture to an image file
+     * @brief Writes the texture to an image file
+     *
+     * The file name will be texture_<INDEX>.ppm and the used file format is Portable Pixel Map (ppm).
      */
     void save();
 
-    ///Texture index
+    /// Texture index
     int m_index;
 
-    ///The dimensions of the texture
+    /// The dimensions of the texture
     unsigned short int m_width, m_height;
 
-    ///The texture data
+    /// The texture data
     unsigned char* m_data;
 
-    ///The number of color channels
+    /// The number of color channels
     unsigned char m_numChannels;
 
-    ///The number of bytes per channel
+    /// The number of bytes per channel
     unsigned char m_numBytesPerChan;
 
+    /// The size of a texture pixel
     float m_texelSize;
 
 };
