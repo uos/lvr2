@@ -55,14 +55,14 @@ class MaterializerResult;
  * that no duplicate vertices will be created and therefor no textures can be generated.
  */
 template<typename BaseVecT>
-class FinalizeAlgorithm
+class SimpleFinalizer
 {
 private:
     optional<const VertexMap<Rgb8Color>&> m_colorData;
     optional<const VertexMap<Normal<BaseVecT>>&> m_normalData;
 
 public:
-    FinalizeAlgorithm() {};
+    SimpleFinalizer() {};
 
     /**
      * Converts the given BaseMesh into a MeshBuffer and adds normal and color data if set
@@ -92,7 +92,7 @@ public:
  * that duplicate vertices will be added to the mesh buffer so that textures can be generated.
  */
 template<typename BaseVecT>
-class ClusterFlatteningFinalizer
+class TextureFinalizer
 {
 public:
     /**
@@ -100,7 +100,7 @@ public:
      *
      * @param cluster a map which maps all faces to clusters and vice versa
      */
-    ClusterFlatteningFinalizer(const ClusterBiMap<FaceHandle>& cluster);
+    TextureFinalizer(const ClusterBiMap<FaceHandle>& cluster);
 
     /**
      * Sets vertex normals for the apply method. This has to be done before apply is called.

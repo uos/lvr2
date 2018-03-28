@@ -503,7 +503,7 @@ int main(int argc, char** argv)
     auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
 
     // Prepare finalize algorithm
-    ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
+    TextureFinalizer<Vec> finalize(clusterBiMap);
     finalize.setVertexNormals(vertexNormals);
 
     // TODO:

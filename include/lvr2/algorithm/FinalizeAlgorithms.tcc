@@ -17,7 +17,7 @@
  */
 
 /*
- * FinalizeAlgorithm.tcc
+ * SimpleFinalizer.tcc
  *
  *  @date 13.06.2017
  *  @author Johan M. von Behren <johan@vonbehren.eu>
@@ -35,7 +35,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-boost::shared_ptr<MeshBuffer<BaseVecT>> FinalizeAlgorithm<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
+boost::shared_ptr<MeshBuffer<BaseVecT>> SimpleFinalizer<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
 {
     // Create vertex and normal buffer
     DenseVertexMap<size_t> idxMap;
@@ -121,51 +121,51 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> FinalizeAlgorithm<BaseVecT>::apply(const
 }
 
 template<typename BaseVecT>
-void FinalizeAlgorithm<BaseVecT>::setColorData(const VertexMap<Rgb8Color>& colorData)
+void SimpleFinalizer<BaseVecT>::setColorData(const VertexMap<Rgb8Color>& colorData)
 {
     m_colorData = colorData;
 }
 
 template<typename BaseVecT>
-void FinalizeAlgorithm<BaseVecT>::setNormalData(const VertexMap<Normal<BaseVecT>>& normalData)
+void SimpleFinalizer<BaseVecT>::setNormalData(const VertexMap<Normal<BaseVecT>>& normalData)
 {
     m_normalData = normalData;
 }
 
 template<typename BaseVecT>
-ClusterFlatteningFinalizer<BaseVecT>::ClusterFlatteningFinalizer(
+TextureFinalizer<BaseVecT>::TextureFinalizer(
     const ClusterBiMap<FaceHandle>& cluster
 )
     : m_cluster(cluster)
 {}
 
 template<typename BaseVecT>
-void ClusterFlatteningFinalizer<BaseVecT>::setVertexNormals(const VertexMap<Normal<BaseVecT>>& normals)
+void TextureFinalizer<BaseVecT>::setVertexNormals(const VertexMap<Normal<BaseVecT>>& normals)
 {
     m_vertexNormals = normals;
 }
 
 template<typename BaseVecT>
-void ClusterFlatteningFinalizer<BaseVecT>::setClusterColors(const ClusterMap<Rgb8Color>& colors)
+void TextureFinalizer<BaseVecT>::setClusterColors(const ClusterMap<Rgb8Color>& colors)
 {
     m_clusterColors = colors;
 }
 
 template<typename BaseVecT>
-void ClusterFlatteningFinalizer<BaseVecT>::setVertexColors(const VertexMap<Rgb8Color>& vertexColors)
+void TextureFinalizer<BaseVecT>::setVertexColors(const VertexMap<Rgb8Color>& vertexColors)
 {
     m_vertexColors = vertexColors;
 }
 
 template<typename BaseVecT>
-void ClusterFlatteningFinalizer<BaseVecT>::setMaterializerResult(const MaterializerResult<BaseVecT>& matResult)
+void TextureFinalizer<BaseVecT>::setMaterializerResult(const MaterializerResult<BaseVecT>& matResult)
 {
     m_materializerResult = matResult;
 }
 
 
 template<typename BaseVecT>
-boost::shared_ptr<MeshBuffer<BaseVecT>> ClusterFlatteningFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
+boost::shared_ptr<MeshBuffer<BaseVecT>> TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
 {
     // Create vertex buffer and all buffers holding vertex attributes
     vector<float> vertices;
