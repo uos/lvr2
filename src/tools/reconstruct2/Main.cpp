@@ -166,7 +166,6 @@
 #include <lvr2/algorithm/NormalAlgorithms.hpp>
 #include <lvr2/algorithm/ColorAlgorithms.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
-#include <lvr2/algorithm/Planar.hpp>
 #include <lvr2/algorithm/Tesselator.hpp>
 #include <lvr2/algorithm/ClusterPainter.hpp>
 #include <lvr2/algorithm/ClusterAlgorithms.hpp>
