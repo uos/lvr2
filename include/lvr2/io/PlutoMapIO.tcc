@@ -329,8 +329,9 @@ inline PlutoMapImage PlutoMapIO::getImage(hf::Group group, string name)
     H5IMget_image_info(group.getId(), name.c_str(), &width, &height, &pixel_size, interlace, &npals);
 
     auto bufSize = width * height * pixel_size;
-    unsigned char buf[bufSize];
-    H5IMread_image(group.getId(), name.c_str(), buf);
+    vector<unsigned char> buf;
+    buf.resize(bufSize);
+    H5IMread_image(group.getId(), name.c_str(), buf.data());
 
     t.name = name;
     t.width = width;
