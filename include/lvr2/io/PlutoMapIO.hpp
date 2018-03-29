@@ -55,7 +55,7 @@ struct PlutoMapImage {
     uint32_t width;
     uint32_t height;
     uint32_t channels;
-    uint8_t* data;
+    vector<uint8_t> data;
 };
 
 /**
