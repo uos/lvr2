@@ -122,7 +122,11 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
             	color[1] = colors[index + 1];
             	color[2] = colors[index + 2];
 
-            	scalars->InsertNextTupleValue(color);
+#if VTK_MAJOR_VERSION < 7
+                scalars->InsertNextTupleValue(color);
+#else
+	        scalars->InsertNextTypedTuple(color);
+#endif
             }
 
             vtk_points->InsertNextPoint(point);
