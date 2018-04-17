@@ -743,12 +743,13 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
             },
             halfToFullEdgeHandle(edgeToKeepALH)
         );
-
-        // We need to defer the actually removal...
-        edgesToDeleteAbove = {
+        
+        std::array<lvr2::HalfEdgeHandle, 2> arr = {
             edgeToRemoveARH,
             edgeToRemoveALH
-        };
+        }; 
+        // We need to defer the actually removal...
+        edgesToDeleteAbove = arr;
     }
     else
     {
@@ -827,12 +828,14 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
             },
             halfToFullEdgeHandle(edgeToKeepBLH)
         );
-
-        // We need to defer the actual removal...
-        edgesToDeleteBelow = {
+        
+        std::array<lvr2::HalfEdgeHandle, 2> arr = {
             edgeToRemoveBRH,
             edgeToRemoveBLH
         };
+
+        // We need to defer the actual removal...
+        edgesToDeleteBelow = arr;
     }
     else
     {

@@ -141,12 +141,14 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
 
             // Create material and save in map
             Material material;
-            material.m_color = {
+            std::array<unsigned char, 3> arr = {
                 static_cast<uint8_t>(mostUsedColor[0]),
                 static_cast<uint8_t>(mostUsedColor[1]),
                 static_cast<uint8_t>(mostUsedColor[2])
             };
-            clusterMaterials.insert(clusterH, material);
+
+            material.m_color =  std::move(arr);
+              clusterMaterials.insert(clusterH, material);
 
         }
         else
@@ -196,8 +198,10 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             // Create material with default color and insert into face map
             Material material;
             material.m_texture = texH;
-            material.m_color = {255, 255, 255};
-            clusterMaterials.insert(clusterH, material);
+            std::array<unsigned char, 3> arr = {255, 255, 255};
+
+            material.m_color = std::move(arr);            
+              clusterMaterials.insert(clusterH, material);
 
             // Calculate tex coords
             // Insert material into face map for each face
