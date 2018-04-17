@@ -204,7 +204,8 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> TextureFinalizer<BaseVecT>::apply(const 
     // Create default material
     unsigned char defaultR = 0, defaultG = 0, defaultB = 0;
     Material m;
-    m.m_color = {defaultR, defaultG, defaultB};
+    std::array<unsigned char, 3> arr = {defaultR, defaultG, defaultB};
+    m.m_color = std::move(arr);
     materials.push_back(m);
     // This map remembers which texture and material are associated with each other
     std::map<int, unsigned int> textureMaterialMap; // Stores the ID of the material for each textureIndex
