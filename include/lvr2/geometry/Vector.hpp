@@ -27,6 +27,8 @@
 #ifndef LVR2_GEOMETRY_VECTOR_H_
 #define LVR2_GEOMETRY_VECTOR_H_
 
+#include <ostream>
+
 
 namespace lvr2
 {
