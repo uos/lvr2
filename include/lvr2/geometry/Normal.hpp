@@ -27,6 +27,8 @@
 #ifndef LVR2_GEOMETRY_NORMAL_H_
 #define LVR2_GEOMETRY_NORMAL_H_
 
+#include <ostream>
+
 namespace lvr2
 {
 
