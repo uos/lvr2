@@ -57,17 +57,22 @@ namespace lvr2
     {
       insertPoint(pts->getPoint(i), m_root, m_bbox);
     }
+
+    for(int i = 0; i < pts->getNumPoints(); ++i)
+    {
+      buildLeaf(pts->getPoint(i), m_root, m_bbox);
+    }
+    
+    std::vector<Point<Vec > > serialPoints(pts->getNumPoints());
+    for(int i = 0; i < pts->getNumPoints(); ++i)
+    {
+        serializePointBuffer(pts->getPoint(i), m_root, m_bbox, serialPoints);
+    }
   }
   
-  int PointOctree::octantIndex(const Point<Vec >& point, const BoundingBox<Vec >& bbox)
+  int PointOctree::octant(const Point<Vec >& point, const BoundingBox<Vec >& bbox, BoundingBox<Vec >& subOctBbox)
   {
-  
-  }
-
-  inline void PointOctree::insertPoint(const Point<Vec >& point, BOct* oct, const BoundingBox<Vec >& bbox)
-  {   
     int index = 0;
-
     Point<Vec > centroid = bbox.getCentroid();
 
     Point<Vec > bboxLowerLeft = centroid;
@@ -104,9 +109,20 @@ namespace lvr2
     {
       bboxLowerLeft.z -= bbox.getZSize()/2;
     }
+    subOctBbox = BoundingBox<Vec>(bboxLowerLeft, bboxTopRight);
+    return index;
+  }
+
+  inline void PointOctree::insertPoint(const Point<Vec >& point, BOct* oct, const BoundingBox<Vec >& bbox)
+  {
+    BoundingBox<Vec > subOctBbox;
+    int index = octant(point, bbox, subOctBbox);
+
+    
 
     // next is leaf
-    if(bbox.getXSize()/2 <= m_voxelSize) //bbox is square
+    // bbox is square so no need for comparison.
+    if(subOctBbox.getXSize() <= m_voxelSize)
     {
       // simply set it, if it is already set nothing changes
       oct->m_leaf = oct->m_leaf | (1 << index);
@@ -157,9 +173,9 @@ namespace lvr2
     else
     {
       // find the position
-      for(int i = 0; i < position; ++i)
+      for(int i = 0; i < (index + 1); ++i)
       {
-        if((i>>oct->m_valid) & 1)
+        if((i >> oct->m_valid) & 1)
         {
           position++;
         }
@@ -168,8 +184,63 @@ namespace lvr2
    
     insertPoint(point,
         reinterpret_cast<BOct*> (oct->m_child + position),
-        BoundingBox<Vec>(bboxLowerLeft, bboxTopRight)); 
+        subOctBbox
+        ); 
   }
 
+  inline void PointOctree::buildLeaf(const Point<Vec >& point, BOct* oct, const BoundingBox<Vec >& bbox)
+  {
+    BoundingBox<Vec > subOctBbox;
+    int index = octant(point, bbox, subOctBbox);
+    
+    int position = 0;
+    
+    // find pointer position
+    for(int i = 0; i < index; ++i)
+    {
+      if((i >> oct->m_leaf) & 1)
+      {
+        position++;
+      }
+    }
+    
+    if(!oct->m_leaf)
+    {
+      return buildLeaf(point, reinterpret_cast<BOct* >(oct->m_child) + position, subOctBbox);
+    }
+
+    // no leaves created so far
+    if(!oct->m_child)
+    {
+      int numLeaves = 0;
+      // find number of leaves 
+      for(int i = 0; i < 8; ++i)
+      {
+        if((i >> oct->m_leaf) & 1)
+        {
+          numLeaves++;
+
+        }
+      }
+
+      oct->m_child = (unsigned long) new Leaf<short>[numLeaves];
+      for(int i = 0; i < numLeaves; ++i)
+      {
+        // set to a non valid start index
+        (reinterpret_cast<Leaf<short>* >(oct->m_child))[i].m_start = -1;
+      }
+    }
+    
+    // increment number of points in leaf
+    (reinterpret_cast<Leaf<short>* >(oct->m_child))[position].m_size++;
+
+    return;
+
+  }
+  
+  inline void PointOctree::serializePointBuffer(const Point<Vec >& point, BOct* oct, const BoundingBox<Vec >& bbox, std::vector<Point<Vec > >& serialBuffer)
+  {
+  
+  }
 }
 

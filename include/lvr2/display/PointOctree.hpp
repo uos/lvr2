@@ -1,10 +1,13 @@
 #ifndef POINT_OCTREE
 #define POINT_OCTREE
 
+#include <vector>
+
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Point.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
+
 
 
 namespace lvr2
@@ -21,8 +24,8 @@ namespace lvr2
   template <typename T>
   struct Leaf
   {
-    T start;
-    T size;
+    T m_start;
+    T m_size;
   };
 
   class PointOctree
@@ -36,11 +39,14 @@ namespace lvr2
       
       BoundingBox<BaseVector<float> > m_bbox;
       
-      int octant(const Point<BaseVector<float> >& point, const BoundingBox<BaseVector<float> >& bbox, BoundingBox<BaseVector<float> >& sub_bbox);
+      int octant(const Point<BaseVector<float> >& point, const BoundingBox<BaseVector<float> >& bbox, BoundingBox<BaseVector<float> >& subOctBbox);
 
       inline void insertPoint(const Point<BaseVector<float> >& point, BOct* oct, const BoundingBox<BaseVector<float> >& bbox);
 
-      inline void buildLeaf(const Point<BaseVector<float> >& point, BOct* oct, const )
+      inline void buildLeaf(const Point<BaseVector<float> >& point, BOct* oct, const BoundingBox<BaseVector<float> >& bbox);
+
+      inline void serializePointBuffer(const Point<BaseVector<float> >& point, BOct* oct, const BoundingBox<BaseVector<float> >& bbox, std::vector<Point<BaseVector<float> > >& serialBuffer);
+
   };
 }
 
