@@ -64,9 +64,11 @@ namespace lvr2
     }
     
     std::vector<Point<Vec > > serialPoints(pts->getNumPoints());
+
+    int pos = 0;
     for(int i = 0; i < pts->getNumPoints(); ++i)
     {
-        serializePointBuffer(pts->getPoint(i), m_root, m_bbox, serialPoints);
+      serializePointBuffer(pts->getPoint(i), m_root, m_bbox, serialPoints, pos);
     }
   }
   
@@ -125,6 +127,8 @@ namespace lvr2
     if(subOctBbox.getXSize() <= m_voxelSize)
     {
       // simply set it, if it is already set nothing changes
+      // set both bitmasks.
+      oct->m_valid = oct->m_valid | (1 << index);
       oct->m_leaf = oct->m_leaf | (1 << index);
       // recursion anchor
       // now we have build the tree structure without the leaves
@@ -198,12 +202,13 @@ namespace lvr2
     // find pointer position
     for(int i = 0; i < index; ++i)
     {
-      if((i >> oct->m_leaf) & 1)
+      if((i >> oct->m_valid) & 1)
       {
         position++;
       }
     }
     
+    // go deeper
     if(!oct->m_leaf)
     {
       return buildLeaf(point, reinterpret_cast<BOct* >(oct->m_child) + position, subOctBbox);
@@ -223,24 +228,48 @@ namespace lvr2
         }
       }
 
-      oct->m_child = (unsigned long) new Leaf<short>[numLeaves];
+      oct->m_child = (unsigned long) new Leaf[numLeaves];
       for(int i = 0; i < numLeaves; ++i)
       {
         // set to a non valid start index
-        (reinterpret_cast<Leaf<short>* >(oct->m_child))[i].m_start = -1;
+        (reinterpret_cast<Leaf* >(oct->m_child))[i].m_start = -1;
       }
     }
     
     // increment number of points in leaf
-    (reinterpret_cast<Leaf<short>* >(oct->m_child))[position].m_size++;
+    (reinterpret_cast<Leaf* >(oct->m_child))[position].m_size++;
 
     return;
 
   }
   
-  inline void PointOctree::serializePointBuffer(const Point<Vec >& point, BOct* oct, const BoundingBox<Vec >& bbox, std::vector<Point<Vec > >& serialBuffer)
+  inline void PointOctree::serializePointBuffer(const Point<Vec >& point, BOct* oct, const BoundingBox<Vec >& bbox, std::vector<Point<Vec > >& serialBuffer, int position)
   {
-  
+    BoundingBox<Vec > subOctBbox;
+
+    int index = octant(point, bbox, subOctBbox);
+
+    for(int i = 0; i < index; ++i)
+    {
+      if((i >> oct->m_valid) & 1)
+      {
+        position++;
+      }
+    }
+
+    if(!oct->m_leaf)
+    {
+      return serializePointBuffer(point, reinterpret_cast<BOct* >(oct->m_child) + position, subOctBbox, serialBuffer, position);
+    }
+
+    
+    (reinterpret_cast<Leaf* >(oct->m_child))[position].m_start = pos;
+    pos += (reinterpret_cast<Leaf* >(oct->m_child))[position].m_size;
+
+    // fucking shit how many do we already have in this fucking shit leaf... ahhhh
+    // ideas default NaN for Points in Vector
+    // 2 shorts for size and filled... overhead....
+
   }
 }
 

@@ -21,11 +21,10 @@ namespace lvr2
       unsigned char m_leaf : 8;
   };
   
-  template <typename T>
   struct Leaf
   {
-    T m_start;
-    T m_size;
+    int m_start;
+    int m_size;
   };
 
   class PointOctree
@@ -44,8 +43,9 @@ namespace lvr2
       inline void insertPoint(const Point<BaseVector<float> >& point, BOct* oct, const BoundingBox<BaseVector<float> >& bbox);
 
       inline void buildLeaf(const Point<BaseVector<float> >& point, BOct* oct, const BoundingBox<BaseVector<float> >& bbox);
-
-      inline void serializePointBuffer(const Point<BaseVector<float> >& point, BOct* oct, const BoundingBox<BaseVector<float> >& bbox, std::vector<Point<BaseVector<float> > >& serialBuffer);
+      
+      /* return is first free index in serial Buffer */
+      inline void serializePointBuffer(const Point<BaseVector<float> >& point, BOct* oct, const BoundingBox<BaseVector<float> >& bbox, std::vector<Point<BaseVector<float> > >& serialBuffer, int& position);
 
   };
 }
