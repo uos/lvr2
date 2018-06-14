@@ -1,4 +1,5 @@
 #include <lvr2/display/PointOctree.hpp>
+#include <vector>
 #include <algorithm>
 #include <cmath>
 
@@ -6,22 +7,22 @@ namespace lvr2
 {
   using Vec = BaseVector<float>;
 
-  PointOctree::PointOctree(PointBufferPtr<Vec >& pts, int voxelSize)
+  PointOctree::PointOctree(PointBufferPtr<Vec >& points, int voxelSize)
   {
     m_voxelSize = voxelSize;
 
     // initializ min max for bounding box
-    float minX = pts->getPoint(0).x;
-    float minY = pts->getPoint(0).y;
-    float minZ = pts->getPoint(0).z;
-    float maxX = pts->getPoint(0).x;
-    float maxY = pts->getPoint(0).y;
-    float maxZ = pts->getPoint(0).z;
+    float minX = points->getPoint(0).x;
+    float minY = points->getPoint(0).y;
+    float minZ = points->getPoint(0).z;
+    float maxX = points->getPoint(0).x;
+    float maxY = points->getPoint(0).y;
+    float maxZ = points->getPoint(0).z;
 
     //    BoundingBox<Vec> bb;
-    for(int i = 0; i < pts->getNumPoints(); ++i)
+    for(int i = 0; i < points->getNumPoints(); ++i)
     {
-      auto p = pts->getPoint(i);
+      auto p = points->getPoint(i);
       minX = std::min(minX, p.x);
       minY = std::min(minY, p.y);
       minZ = std::min(minZ, p.z);
@@ -53,26 +54,19 @@ namespace lvr2
 
     m_root = new BOct();
 
-    for(int i = 0; i < pts->getNumPoints(); ++i)
+    for(int i = 0; i < points->getNumPoints(); ++i)
     {
-      insertPoint(pts->getPoint(i), m_root, m_bbox);
+      insertPoint(points->getPoint(i), m_root, m_bbox);
     }
 
-    for(int i = 0; i < pts->getNumPoints(); ++i)
-    {
-      buildLeaf(pts->getPoint(i), m_root, m_bbox);
-    }
-    
-    std::vector<Point<Vec > > serialPoints(pts->getNumPoints());
+    std::vector<Point<Vec > > pts;
+    pts.reserve(points->getNumPoints());
 
-    int pos = 0;
-    for(int i = 0; i < pts->getNumPoints(); ++i)
-    {
-      serializePointBuffer(pts->getPoint(i), m_root, m_bbox, serialPoints, pos);
-    }
+    serializePointBuffer(m_root, pts);
+
   }
-  
-  int PointOctree::octant(const Point<Vec >& point, const BoundingBox<Vec >& bbox, BoundingBox<Vec >& subOctBbox)
+
+  int PointOctree::getBBoxIndex(const Point<Vec >& point, const BoundingBox<Vec >& bbox, BoundingBox<Vec >& subOctBbox)
   {
     int index = 0;
     Point<Vec > centroid = bbox.getCentroid();
@@ -115,161 +109,201 @@ namespace lvr2
     return index;
   }
 
+  template <typename T>
+    int getOctant(BOct* oct, int index)
+    {
+      int position = 0;
+      unsigned char mask = 0;
+      if(isLeaf<T>::val)
+      {
+        mask = oct->m_leaf;
+      }
+      else
+      {
+        mask = oct->m_valid;
+      }
+
+      // create new oct->m_childant n
+      if(!((index >> mask) & 1))
+      {
+        unsigned long tmp = oct->m_child;
+        int cntr = 0;
+
+        tmp = oct->m_child;
+        for(int i = 0; i < 8; ++i)
+        {
+          if((i >> mask) & 1)
+          {
+            cntr++;
+          }
+        }
+
+        oct->m_child = (unsigned long) new T[cntr + 1];
+
+        cntr = 0;
+        int j = 0;
+        for(int i = 0; i < 8; ++i)
+        {
+          if((i >> mask) & 1)
+          {
+            // copy pre-existing oct->m_childants
+            (reinterpret_cast<T*>(oct->m_child))[cntr++] = (reinterpret_cast<T*>(tmp))[j++];
+          }
+
+          if(i == index)
+          {
+            // The new octant should already be default constructed.
+            // set position for later
+            position = cntr++;
+            mask = mask | (1 << index);
+            oct->m_valid = 0;
+          }
+        }
+
+        if(isLeaf<T>::val)
+        {
+          oct->m_leaf = mask;
+        }
+        else
+        {
+          oct->m_valid = mask;
+        } 
+      }
+      else
+      {
+        // find the position
+        for(int i = 0; i < (index + 1); ++i)
+        {
+          if((i >> mask) & 1)
+          {
+            position++;
+          }
+        }
+      }
+
+      return position;
+    }
+
   inline void PointOctree::insertPoint(const Point<Vec >& point, BOct* oct, const BoundingBox<Vec >& bbox)
   {
     BoundingBox<Vec > subOctBbox;
-    int index = octant(point, bbox, subOctBbox);
+    int index = getBBoxIndex(point, bbox, subOctBbox);
 
-    
 
+    int position = 0;
     // next is leaf
     // bbox is square so no need for comparison.
     if(subOctBbox.getXSize() <= m_voxelSize)
     {
-      // simply set it, if it is already set nothing changes
-      // set both bitmasks.
-      oct->m_valid = oct->m_valid | (1 << index);
+      position = getOctant<TmpLeaf>(oct, index);
+
+      // adjust leaf bitmask as well
+
+
+      (reinterpret_cast<TmpLeaf* >(oct->m_child))[position].pts.push_back(point);
       oct->m_leaf = oct->m_leaf | (1 << index);
       // recursion anchor
       // now we have build the tree structure without the leaves
       return;
     }
 
-    int position = 0;
-    // create new octant and find position
-    if(!((index >> oct->m_valid) & 1))
-    {
-      unsigned long tmp = oct->m_child;
-      // adjust leaf bit mask
-      oct->m_leaf = oct->m_valid | (1 << index);
-      int cntr = 0;
+    position = getOctant<BOct>(oct, index);
 
-      tmp = oct->m_child;
-      for(int i = 0; i < 8; ++i)
-      {
-        if((i >> oct->m_valid) & 1)
-        {
-          cntr++;
-        }
-      }
 
-      oct->m_child = (unsigned long) new BOct[cntr + 1];
 
-      cntr = 0;
-      int j = 0;
-      for(int i = 0; i < 8; ++i)
-      {
-        if((i >> oct->m_valid) & 1)
-        {
-          // copy pre-existing octants
-          (reinterpret_cast<BOct*>(oct->m_child))[cntr++] = (reinterpret_cast<BOct*>(tmp))[j++];
-        }
-
-        if(i == index)
-        {
-          // The new octant should already be default constructed.
-          // set position for later
-          position = cntr++;
-          oct->m_valid = oct->m_valid | (1 << index);
-        }
-      }
-    }
-    else
-    {
-      // find the position
-      for(int i = 0; i < (index + 1); ++i)
-      {
-        if((i >> oct->m_valid) & 1)
-        {
-          position++;
-        }
-      }
-    }
-   
     insertPoint(point,
         reinterpret_cast<BOct*> (oct->m_child + position),
         subOctBbox
         ); 
   }
 
-  inline void PointOctree::buildLeaf(const Point<Vec >& point, BOct* oct, const BoundingBox<Vec >& bbox)
+  void PointOctree::serializePointBuffer(BOct* oct, std::vector< Point<Vec > >& pts)
   {
-    BoundingBox<Vec > subOctBbox;
-    int index = octant(point, bbox, subOctBbox);
-    
-    int position = 0;
-    
-    // find pointer position
-    for(int i = 0; i < index; ++i)
+    if(!oct->m_valid)
     {
-      if((i >> oct->m_valid) & 1)
+      if(!oct->m_leaf)
       {
-        position++;
+        // empty oct
+        return;
       }
-    }
-    
-    // go deeper
-    if(!oct->m_leaf)
-    {
-      return buildLeaf(point, reinterpret_cast<BOct* >(oct->m_child) + position, subOctBbox);
-    }
 
-    // no leaves created so far
-    if(!oct->m_child)
-    {
-      int numLeaves = 0;
-      // find number of leaves 
+      ssize_t cntr = 0;
+      //
       for(int i = 0; i < 8; ++i)
       {
         if((i >> oct->m_leaf) & 1)
         {
-          numLeaves++;
-
+          cntr++;
         }
       }
 
-      oct->m_child = (unsigned long) new Leaf[numLeaves];
-      for(int i = 0; i < numLeaves; ++i)
+      Leaf* newLeaves = new Leaf[cntr];
+
+      for(int i = 0; i < cntr; ++i)
       {
-        // set to a non valid start index
-        (reinterpret_cast<Leaf* >(oct->m_child))[i].m_start = -1;
+        TmpLeaf* old = (reinterpret_cast<TmpLeaf*>(oct->m_child)) + i;
+        auto it = pts.end();
+        newLeaves[i].m_start = it - pts.begin();
+        newLeaves[i].m_size = old->pts.size();
+        pts.insert(it, old->pts.begin(), old->pts.end());
       }
+
+      // delete temporary leaves.
+      delete [] (reinterpret_cast<TmpLeaf*>(oct->m_child));
+
+      // set the more efficient leaves
+      oct->m_child = (unsigned long) newLeaves;
+
+      return;
     }
-    
-    // increment number of points in leaf
-    (reinterpret_cast<Leaf* >(oct->m_child))[position].m_size++;
+
+    ssize_t size = 0;
+    for(int i = 0; i < 8; ++i)
+    {
+      if((i >> oct->m_valid) & 1)
+      {
+        serializePointBuffer((reinterpret_cast<BOct*>(oct->m_child)) + i, pts);
+        size++;
+      } 
+    }
 
     return;
 
   }
-  
-  inline void PointOctree::serializePointBuffer(const Point<Vec >& point, BOct* oct, const BoundingBox<Vec >& bbox, std::vector<Point<Vec > >& serialBuffer, int position)
+
+  void PointOctree::clear(BOct* oct)
   {
-    BoundingBox<Vec > subOctBbox;
+    ssize_t cntr;
 
-    int index = octant(point, bbox, subOctBbox);
+    if(oct->m_leaf)
+    {
+      delete [] (reinterpret_cast<Leaf*>(oct->m_child));
+      oct->m_leaf = 0;
+      return;
+    }
 
-    for(int i = 0; i < index; ++i)
+    for(int i = 0; i < 8; ++i)
     {
       if((i >> oct->m_valid) & 1)
       {
-        position++;
+        cntr++;
       }
     }
 
-    if(!oct->m_leaf)
+    for(int i = 0; i < cntr; ++i)
     {
-      return serializePointBuffer(point, reinterpret_cast<BOct* >(oct->m_child) + position, subOctBbox, serialBuffer, position);
+      clear(reinterpret_cast<BOct*>(oct->m_child) + i);
     }
 
-    
-    (reinterpret_cast<Leaf* >(oct->m_child))[position].m_start = pos;
-    pos += (reinterpret_cast<Leaf* >(oct->m_child))[position].m_size;
+    delete [] reinterpret_cast<BOct*>(oct->m_child);
 
-    // fucking shit how many do we already have in this fucking shit leaf... ahhhh
-    // ideas default NaN for Points in Vector
-    // 2 shorts for size and filled... overhead....
+    return;
+  }
+
+  PointOctree::~PointOctree()
+  {
+    clear(m_root);
+    delete m_root;
 
   }
 }
-
