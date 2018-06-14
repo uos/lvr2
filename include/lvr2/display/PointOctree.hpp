@@ -15,7 +15,6 @@ namespace lvr2
 
   struct BOct
   {
-    public:
       unsigned long m_child : 48;
       unsigned char m_valid : 8;
       unsigned char m_leaf : 8;
@@ -27,10 +26,29 @@ namespace lvr2
     int m_size;
   };
 
+  struct TmpLeaf
+  {
+    vector<Point<BaseVector<float> > > pts;
+  };
+
+  template <typename T>
+  struct isLeaf
+  {
+    static const bool val = false;
+  };
+
+  template <>
+  struct isLeaf<TmpLeaf>
+  {
+     static const bool val = true;
+  };
+
   class PointOctree
   {
     public:
       PointOctree(PointBufferPtr<BaseVector<float> >& points, int voxelSize);
+
+      virtual ~PointOctree();
 
     private:
       int m_voxelSize;
@@ -38,14 +56,17 @@ namespace lvr2
       
       BoundingBox<BaseVector<float> > m_bbox;
       
-      int octant(const Point<BaseVector<float> >& point, const BoundingBox<BaseVector<float> >& bbox, BoundingBox<BaseVector<float> >& subOctBbox);
+      int getBBoxIndex(const Point<BaseVector<float> >& point, const BoundingBox<BaseVector<float> >& bbox, BoundingBox<BaseVector<float> >& subOctBbox);
 
-      inline void insertPoint(const Point<BaseVector<float> >& point, BOct* oct, const BoundingBox<BaseVector<float> >& bbox);
+      void insertPoint(const Point<BaseVector<float> >& point, BOct* oct, const BoundingBox<BaseVector<float> >& bbox);
 
-      inline void buildLeaf(const Point<BaseVector<float> >& point, BOct* oct, const BoundingBox<BaseVector<float> >& bbox);
-      
+      template <typename T>
+      int getOctant(BOct* oct, int index);
+
       /* return is first free index in serial Buffer */
-      inline void serializePointBuffer(const Point<BaseVector<float> >& point, BOct* oct, const BoundingBox<BaseVector<float> >& bbox, std::vector<Point<BaseVector<float> > >& serialBuffer, int& position);
+      void serializePointBuffer(BOct* oct, std::vector<Point<BaseVector<float> > >& pts);
+      
+      void clear(BOct* oct);
 
   };
 }
