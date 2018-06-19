@@ -55,12 +55,38 @@ class AsciiIO : public BaseIO
 
 
         /**
-         * @brief Reads the given file and stores point and normal
+         * @brief Reads the given file and stores point and color
          *        information in the given parameters
          *
          * @param filename      The file to read
          */
         virtual ModelPtr read( string filename );
+
+        /**
+         * @brief read  Parses the given file and stores point and color attribute
+         *              information in the returned model pointer. It is assumed that
+         *              the each line in the file (except the first one which may be a
+         *              header line) contains point coordinates (x, y, z) and optional
+         *              color and intensity information. The position (columns) of the
+         *              supported attritbutes within each line are define by the
+         *              respective parameters given to this function. Each line may
+         *              consist of more attributes, but only the ones specified are
+         *              parsed. Not existing attributes are indicated by -1.
+         *
+         * @param filename  The file to parse
+         * @param x         The colum number containing the x-coordinate of a point
+         * @param y         The colum number containing the y-coordinate of a point
+         * @param z         The colum number containing the z-coordinate of a point
+         * @param r         The colum number containing the r color component (or -1)
+         * @param g         The colum number containing the g color component (or -1)
+         * @param b         The colum number containing the b color component (or -1)
+         * @param i         The colum number containing the intensity value (or -1)
+         * @return
+         */
+        virtual ModelPtr read(
+                string filename,
+                const int& x, const int& y, const int& z,
+                const int& r = -1, const int& g = -1, const int& b = -1, const int& i = -1);
 
 
         /**
