@@ -484,10 +484,10 @@ void processSingleFile(boost::filesystem::path& inFile)
 {
     cout << timestamp << "Processing " << inFile << endl;
 
-
-
     cout << timestamp << "Reading point cloud data from file " << inFile.filename().string() << "." << endl;
 
+    // TODO: Make explicit call to ASCII-IO of necessery to account for
+    // attribute column ordering!
     ModelPtr model = ModelFactory::readModel(inFile.string());
 
     if(0 == model)
@@ -693,7 +693,7 @@ void processSingleFile(boost::filesystem::path& inFile)
     }
 }
 
-    template <typename Iterator>
+template <typename Iterator>
 bool parse_filename(Iterator first, Iterator last, int& i)
 {
 
@@ -745,10 +745,31 @@ bool sortScans(boost::filesystem::path firstScan, boost::filesystem::path secSca
     }
 }
 
+
+
 int main(int argc, char** argv) {
+
     // Parse command line arguments
     options = new kaboom::Options(argc, argv);
 
+    // Check if a specific input file was given. If so, convert the single
+    // file according to .pose or .frame information
+    if(options->getInputFile() != "")
+    {
+        boost::filesystem::path inputFile(options->getInputFile());
+        if(boost::filesystem::exists((inputFile)))
+        {
+            processSingleFile(inputFile);
+            exit(0);
+        }
+        else
+        {
+            cout << timestamp << "File '" << options->getInputFile() << "' does not exist." << endl;
+            exit(-1);
+        }
+    }
+
+    // If an input directory is given, enter directory parsing mode
     boost::filesystem::path inputDir(options->getInputDir());
     boost::filesystem::path outputDir(options->getOutputDir());
 
