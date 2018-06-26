@@ -148,21 +148,6 @@
 #endif
 
 
-// Local includes
-// #include <lvr/reconstruction/FastReconstruction.hpp>
-// #include <lvr/reconstruction/PointsetGrid.hpp>
-// #include <lvr/reconstruction/FastBox.hpp>
-
-// #include <lvr/io/PLYIO.hpp>
-// #include <lvr/geometry/Matrix4.hpp>
-// #include <lvr/geometry/HalfEdgeMesh.hpp>
-// #include <lvr/texture/Texture.hpp>
-// #include <lvr/texture/Transform.hpp>
-// #include <lvr/texture/Texturizer.hpp>
-// #include <lvr/texture/Statistics.hpp>
-// #include <lvr/geometry/QuadricVertexCosts.hpp>
-// #include <lvr/reconstruction/SharpBox.hpp>
-
 #include <lvr/config/lvropenmp.hpp>
 #include <lvr/io/Timestamp.hpp>
 #include <lvr/io/Model.hpp>
@@ -177,11 +162,11 @@
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/attrmaps/StableVector.hpp>
 #include <lvr2/attrmaps/VectorMap.hpp>
-#include <lvr2/algorithm/FinalizeAlgorithm.hpp>
+#include <lvr2/algorithm/FinalizeAlgorithms.hpp>
 #include <lvr2/algorithm/NormalAlgorithms.hpp>
 #include <lvr2/algorithm/ColorAlgorithms.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
-#include <lvr2/algorithm/Planar.hpp>
+#include <lvr2/algorithm/Tesselator.hpp>
 #include <lvr2/algorithm/ClusterPainter.hpp>
 #include <lvr2/algorithm/ClusterAlgorithms.hpp>
 #include <lvr2/algorithm/CleanupAlgorithms.hpp>
@@ -201,7 +186,7 @@
 #include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/io/PlutoMapIO.hpp>
 #include <lvr2/util/Factories.hpp>
-#include <lvr2/algorithm/MeshNavAlgorithms.hpp>
+#include <lvr2/algorithm/GeometryAlgorithms.hpp>
 #include <lvr2/algorithm/UtilAlgorithms.hpp>
 
 #include <lvr2/geometry/BVH.hpp>
@@ -236,377 +221,8 @@ using namespace lvr2;
 
 using BaseVecT = BaseVector<float>;
 using PsSurface = lvr::PointsetSurface<BaseVecT>;
-// using AkSurface = lvr::AdaptiveKSearchSurface<BaseVecT, Normal<float>>;
-
-// #ifdef LVR_USE_PCL
-// using PclSurface = lvr::PCLKSurface<BaseVecT, Normal<float>>;
-// #endif
-
-/*
- * DUMMY TEST CODE STARTS HERE!!!
- */
 using Vec = BaseVector<float>;
 
-
-void lvr2Playground()
-{
-    auto buf = make_shared<PointBuffer<Vec>>();
-    SearchTreeFlann<Vec> flann(buf);
-
-    using Vec = lvr2::Vector<lvr2::BaseVector<float>>;
-    using Poi = lvr2::Point<lvr2::BaseVector<float>>;
-
-    Vec v1, v2;
-    Poi p1, p2;
-
-    v1 + p1;
-    v1 + v2;
-    // p1 + p2;
-
-    v1.length();
-    // v1.distance(v2);
-
-    // p1.length();
-    p1.distance(p2);
-
-    lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
-    auto v0H = mesh.addVertex(BaseVector<float>(0, 0, 0));
-    auto v1H = mesh.addVertex(BaseVector<float>(1, 0, 0));
-    auto v2H = mesh.addVertex(BaseVector<float>(1, 0, 1));
-    auto bottomFace1 = mesh.addFace(v0H, v1H, v2H);
-    mesh.getVertexPositionsOfFace(bottomFace1);
-
-    using StableVector = lvr2::StableVector<VertexHandle, Vec>;
-
-    // StableVector stuff
-    cout << "========= StableVector =========" << endl;
-    StableVector vec;
-    VertexHandle handle1(1);
-    VertexHandle handle2(0);
-    cout << vec.numUsed() << std::endl;
-    vec.push(v1);
-    cout << vec.numUsed() << std::endl;
-    vec.push(v2);
-    cout << vec.numUsed() << std::endl;
-    vec.erase(handle1);
-    cout << vec.numUsed() << std::endl;
-    auto vec1 = vec[handle2];
-
-    cout << vec.size() << std::endl;
-    cout << vec1.x << std::endl;
-
-    vec = StableVector();
-
-    for (int i = 0; i < 10; i++)
-    {
-        vec.push(Vec(i, 0, 0));
-    }
-
-    for (uint32_t i = 2; i < 12; i += 2)
-    {
-        vec.erase(VertexHandle(i));
-    }
-
-    for (auto handle : vec)
-    {
-        cout << handle << ": " << vec[handle] << endl;
-    }
-
-    // VectorMap stuff 2
-    cout << "========= VectorMap =========" << endl;
-    lvr2::VectorMap<VertexHandle, std::string> map;
-    cout << map.numValues() << endl;
-    map.insert(handle1, "test1");
-    cout << map[handle1] << std::endl;
-    cout << map.numValues() << endl;
-
-    lvr2::VectorMap<VertexHandle, std::string> map2(10, "test");
-    for (auto i = 0; i < 10; i++) {
-        VertexHandle handleLoop(i);
-        cout << map2[handleLoop] << endl;
-    }
-    cout << map2.numValues() << endl;
-
-    VertexHandle handleLoop(5);
-    map2[handleLoop] = "lalala";
-    for (auto i = 0; i < 10; i++) {
-        VertexHandle handleLoop(i);
-        cout << map2[handleLoop] << endl;
-    }
-    cout << map2.numValues() << endl;
-
-    handle1 = VertexHandle(42);
-    map2.insert(handle1, "42 !!");
-    cout << map2.numValues() << endl;
-    auto opt = map2.get(handle1);
-    if (opt) {
-        cout << "found value! " << *opt << endl;
-    }
-
-    handle1 = VertexHandle(39);
-    opt = map2.get(handle1);
-    if (!opt) {
-        cout << "found no value!" << endl;
-    }
-//    map2[handle1];
-
-    handle1 = VertexHandle(42);
-    map2.erase(handle1);
-    cout << map2.numValues() << endl;
-//    cout << map2[handle1] << endl;
-}
-
-/// Dummy type that prints stuff when important methods are called.
-struct Verbosi
-{
-    std::string s;
-    Verbosi() : s("default!") {}
-    Verbosi(std::string s) : s(s) {}
-    Verbosi(const Verbosi& other) : s(other.s) { cout << "Verbosi: Copy-Ctor - " << s << " from " << other.s << endl; }
-    Verbosi(Verbosi&& other) noexcept : s(move(other.s)) { cout << "Verbosi: Move-Ctor - " << s << endl; }
-
-    ~Verbosi() { cout << "Verbosi: Dtor - " << s << endl; }
-
-    Verbosi& operator=(const Verbosi& other)
-    {
-        this->s = other.s;
-        cout << "Verbosi: copy-assignment - " << s << "=" << other.s << endl;
-    }
-    Verbosi& operator=(Verbosi&& other)
-    {
-        this->s = move(other.s);
-        cout << "Verbosi: move-assignment - " << s << "=" << other.s << endl;
-    }
-};
-
-void testStableVector()
-{
-    {
-        StableVector<VertexHandle, Verbosi> sv1;
-        {
-            cout << "### pushing 'a'" << endl;
-            auto va = Verbosi("a");
-            sv1.push(va);
-
-            cout << "### reserve(2)" << endl;
-            sv1.reserve(2);
-
-            cout << "### pushing 'b' with copy" << endl;
-            auto vb = Verbosi("b");
-            sv1.push(vb);
-
-            cout << "### reserve(3)" << endl;
-            sv1.reserve(3);
-
-            cout << "### pushing 'c' with move" << endl;
-            sv1.push(Verbosi("c"));
-            cout << "### end of inner scope" << endl;
-        }
-        cout << "### end of outer scope" << endl;
-    }
-}
-
-void testTinyMap()
-{
-    TinyFaceMap<string> tm;
-    tm.insert(FaceHandle(1), "hi");
-    cout << tm[FaceHandle(1)] << endl;
-    tm.insert(FaceHandle(37), "huhu");
-    for (auto fH: tm)
-    {
-        cout << fH << endl;
-    }
-}
-
-void createHouseFromNikolaus(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
-{
-    // scale
-    float s = 5;
-
-    // create house from nikolaus
-    auto p0 = mesh.addVertex(BaseVector<float>(0, 0, 0));
-    auto p1 = mesh.addVertex(BaseVector<float>(s, 0, 0));
-    auto p2 = mesh.addVertex(BaseVector<float>(s, 0, s));
-    auto p3 = mesh.addVertex(BaseVector<float>(0, 0, s));
-    auto p4 = mesh.addVertex(BaseVector<float>(0, s, 0));
-    auto p5 = mesh.addVertex(BaseVector<float>(s, s, 0));
-    auto p6 = mesh.addVertex(BaseVector<float>(s, s, s));
-    auto p7 = mesh.addVertex(BaseVector<float>(0, s, s));
-    auto p8 = mesh.addVertex(BaseVector<float>(s/2, s+(s/2), s/2));
-
-    auto bottomFace1 = mesh.addFace(p0, p1, p2);
-    auto bottomFace2 = mesh.addFace(p0, p2, p3);
-
-    auto rightFace1 = mesh.addFace(p1, p5, p6);
-    auto rightFace2 = mesh.addFace(p1, p6, p2);
-
-    auto leftFace1 = mesh.addFace(p3, p7, p4);
-    auto leftFace2 = mesh.addFace(p4, p0, p3);
-
-    auto frontFace1 = mesh.addFace(p7, p3, p2);
-    auto frontFace2 = mesh.addFace(p2, p6, p7);
-
-    auto backFace1 = mesh.addFace(p0, p4, p5);
-    auto backFace2 = mesh.addFace(p5, p1, p0);
-
-    auto roofFaceFront  = mesh.addFace(p7, p6, p8);
-    auto roofFaceLeft   = mesh.addFace(p4, p7, p8);
-    auto roofFaceBack   = mesh.addFace(p5, p4, p8);
-    auto roofFaceRight  = mesh.addFace(p6, p5, p8);
-}
-
-void testFinalize(lvr2::HalfEdgeMesh<lvr2::BaseVector<float>>& mesh)
-{
-    createHouseFromNikolaus(mesh);
-    mesh.debugCheckMeshIntegrity();
-
-    // Check all for loops
-    for (auto h : mesh.faces()) {}
-    for (auto h : mesh.edges()) {}
-    for (auto h : mesh.vertices()) {}
-
-    FinalizeAlgorithm<BaseVector<float>> finalize;
-    auto buffer = finalize.apply(mesh);
-
-    // Create output model and save to file
-    auto model = new lvr::Model(buffer->toOldBuffer());
-    lvr::ModelPtr m(model);
-    cout << timestamp << "Saving mesh." << endl;
-    lvr::ModelFactory::saveModel( m, "triangle_mesh.ply");
-}
-
-void testClusterGrowing()
-{
-    lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
-    createHouseFromNikolaus(mesh);
-    auto normals = calcFaceNormals(mesh);
-    auto clusterSet = planarClusterGrowing(mesh, normals, 0.999);
-    cout << "Generated " << clusterSet.numCluster() << " clusters." << endl;
-}
-
-void testCollapseEdge()
-{
-    lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
-    createHouseFromNikolaus(mesh);
-    cout << "CheckMeshIntegrity: " << mesh.debugCheckMeshIntegrity() << endl;
-    for (auto edgeH: mesh.edges())
-    {
-        cout << "ITERATION " << edgeH << endl;
-        if (!mesh.isCollapsable(edgeH))
-        {
-            continue;
-        }
-        auto vertex = mesh.collapseEdge(edgeH);
-
-        FinalizeAlgorithm<BaseVector<float>> finalize;
-        auto buffer = finalize.apply(mesh);
-
-        // Create output model and save to file
-        auto model = new lvr::Model(buffer->toOldBuffer());
-        lvr::ModelPtr m(model);
-        cout << timestamp << "Saving mesh." << endl;
-        std::stringstream ss;
-        ss << "collapsed_nikolaus_" << edgeH.idx() << ".ply";
-        lvr::ModelFactory::saveModel(m, ss.str());
-
-        mesh.debugCheckMeshIntegrity();
-        // cout << "CheckMeshIntegrity: " << << endl;
-        // break;
-    }
-
-    cout << "done" << endl;
-
-    FinalizeAlgorithm<BaseVector<float>> finalize;
-    auto buffer = finalize.apply(mesh);
-
-    // Create output model and save to file
-    auto model = new lvr::Model(buffer->toOldBuffer());
-    lvr::ModelPtr m(model);
-    cout << timestamp << "Saving mesh." << endl;
-    lvr::ModelFactory::saveModel( m, "triangle_mesh.ply");
-}
-
-void testEdgeFlip()
-{
-    lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
-    createHouseFromNikolaus(mesh);
-
-    FinalizeAlgorithm<BaseVector<float>> finalize;
-    auto buffer = finalize.apply(mesh);
-    auto model = new lvr::Model(buffer->toOldBuffer());
-    lvr::ModelPtr m(model);
-    lvr::ModelFactory::saveModel(m, "flipped_nikolaus_original.ply");
-
-    for (auto edgeH: mesh.edges())
-    {
-        if (!mesh.isFlippable(edgeH))
-        {
-            continue;
-        }
-        cout << "ITERATION " << edgeH << endl;
-
-        mesh.flipEdge(edgeH);
-
-        // mesh.debugCheckMeshIntegrity();
-
-        FinalizeAlgorithm<BaseVector<float>> finalize;
-        auto buffer = finalize.apply(mesh);
-        auto model = new lvr::Model(buffer->toOldBuffer());
-        lvr::ModelPtr m(model);
-        std::stringstream ss;
-        ss << "flipped_nikolaus_" << edgeH.idx() << ".ply";
-        lvr::ModelFactory::saveModel(m, ss.str());
-    }
-}
-
-void testContourMethods()
-{
-    HalfEdgeMesh<Vec> mesh;
-    createHouseFromNikolaus(mesh);
-
-    // We want the contour of the "cluster" made up by face 0 and 1
-    walkContour(mesh, EdgeHandle(0), [](auto vH, auto eH)
-    {
-        cout << vH << " " << eH << endl;
-    }, [](auto faceH)
-    {
-        return faceH.idx() <= 1;
-    });
-
-    // Remove both bottom faces
-    mesh.removeFace(FaceHandle(0));
-    mesh.removeFace(FaceHandle(1));
-
-    // Remove one roof face
-    mesh.removeFace(FaceHandle(10));
-
-    mesh.debugCheckMeshIntegrity();
-    for (auto eH: mesh.edges())
-    {
-        if (mesh.numAdjacentFaces(eH) == 1)
-        {
-            vector<EdgeHandle> contourEdges;
-            calcContourEdges(mesh, eH, contourEdges);
-            for (auto contourEdgeH: contourEdges)
-            {
-                cout << contourEdgeH << " -> ";
-            }
-            cout << endl;
-
-            vector<VertexHandle> contourVertices;
-            calcContourVertices(mesh, eH, contourVertices);
-            for (auto contourEdgeH: contourVertices)
-            {
-                cout << contourEdgeH << " -> ";
-            }
-            cout << endl << "---------------" << endl;
-        }
-    }
-}
-
-/*
- * DUMMY TEST CODE ENDS HERE!!!
- */
 
 template <typename BaseVecT>
 PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
@@ -749,101 +365,8 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
     return make_pair(nullptr, nullptr);
 }
 
-
-void testMeshnav(
-    const BaseMesh<BaseVecT>& mesh,
-    DenseVertexMap<Rgb8Color>& colorVertices,
-    const VertexMap<Normal<BaseVecT>>& vertexNormals
-)
-{
-    // calculate height differences
-    DenseVertexMap<float> heightDifferences;
-    heightDifferences = calcVertexHeightDiff(mesh, 31);
-    float maxVal = -1;
-    float minVal = -1;
-
-    // search the max value of all height differences
-    for (auto f: heightDifferences)
-    {
-        if(heightDifferences[f] > maxVal) maxVal = heightDifferences[f];
-    }
-
-    // fix visual color scheme by norming the height difference values
-    for (auto f: heightDifferences)
-    {
-        heightDifferences[f] = heightDifferences[f] / maxVal;
-    }
-
-    auto roughness = calcVertexRoughness(mesh, 31, vertexNormals);
-
-    maxVal = -1;
-
-    for (auto f: roughness)
-    {
-        //cout << "Current height difference:" << height_differences[f] << endl;
-        if(roughness[f] > maxVal) maxVal = roughness[f];
-    }
-
-    for (auto f: roughness)
-    {
-        roughness[f] = roughness[f] / maxVal;
-    }
-
-    DenseVertexMap<float> combCost;
-    for(auto vH: mesh.vertices())
-    {
-        combCost.insert(vH, heightDifferences[vH] + roughness[vH]);
-    }
-
-    // create function pointer to the color conversion function
-    Rgb8Color (*colorFunctionPointer)(float);
-    colorFunctionPointer = &floatToGrayScaleColor;
-
-    // create map of color vertices according to the calculated height differences
-    colorVertices = lvr2::map<DenseAttrMap>(combCost, colorFunctionPointer);
-}
-
- void testBVHTree()
- {
-     vector<float> vs = {
-         //-0.5f, -0.5f, 1,
-         //0, 0.5f, 1,
-         //0.5f, -0.5f, 1
-
-         -50, -50, 370,
-         0,  50, 370,
-         50, -50, 370,
-
-         50, -50, 370,
-         100,  50, 370,
-         150, -50, 370
-     };
-     vector<uint32_t> fs = {
-         0, 1, 2,
-
-         3, 4, 5
-     };
-
-     BVHTree<lvr2::BaseVector<float>> bvh(vs, fs);
-
-     lvr2::MeshBuffer<BaseVecT> debugMeshBuffer;
-     debugMeshBuffer.setVertices(vs);
-     debugMeshBuffer.setFaceIndices(fs);
-     auto m = boost::make_shared<lvr::Model>(debugMeshBuffer.toOldBuffer());
-     lvr::ModelFactory::saveModel(m, "debug_sim_mesh.ply");
- }
-
 int main(int argc, char** argv)
 {
-    // auto io = PlutoMapIO(
-    //     "testio.h5",
-    //     {1.0, 2.0, 5.0, 10.0, 11.0, 15.0, 20.0, 21.0, 25.0},
-    //     {0, 1, 2}
-    // );
-    // io.stuff();
-    // return 0;
-
-
     // =======================================================================
     // Parse and print command line parameters
     // =======================================================================
@@ -903,44 +426,10 @@ int main(int argc, char** argv)
         grid->saveGrid("fastgrid.grid");
     }
 
+
     // =======================================================================
-    // Optimize and finalize mesh
+    // Optimize mesh
     // =======================================================================
-    // if(options.getDanglingArtifacts())
-    // {
-    //     mesh.removeDanglingArtifacts(options.getDanglingArtifacts());
-    // }
-
-    // // Optimize mesh
-    // mesh.cleanContours(options.getCleanContourIterations());
-    // mesh.setClassifier(options.getClassifier());
-    // mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
-
-    // if(options.optimizePlanes())
-    // {
-    //     mesh.optimizePlanes(options.getPlaneIterations(),
-    //             options.getNormalThreshold(),
-    //             options.getMinPlaneSize(),
-    //             options.getSmallRegionThreshold(),
-    //             true);
-
-    //     mesh.fillHoles(options.getFillHoles());
-    //     mesh.optimizePlaneIntersections();
-    //     mesh.restorePlanes(options.getMinPlaneSize());
-
-    //     if(options.getNumEdgeCollapses())
-    //     {
-    //         QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> > c
-    //             = QuadricVertexCosts<ColorVertex<float, unsigned char> , Normal<float> >(true);
-    //         mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
-    //     }
-    // }
-    // else if(options.clusterPlanes())
-    // {
-    //     mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
-    //     mesh.fillHoles(options.getFillHoles());
-    // }
-
     if(options.getDanglingArtifacts())
     {
         cout << timestamp << "Removing dangling artifacts" << endl;
@@ -950,11 +439,13 @@ int main(int argc, char** argv)
     // Magic number from lvr1 `cleanContours`...
     cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
 
+    // Fill small holes if requested
     if(options.getFillHoles())
     {
         naiveFillSmallHoles(mesh, options.getFillHoles(), false);
     }
 
+    // Calculate initial face normals
     auto faceNormals = calcFaceNormals(mesh);
 
     // Reduce mesh complexity
@@ -987,12 +478,21 @@ int main(int argc, char** argv)
         {
             deleteSmallPlanarCluster(mesh, clusterBiMap, static_cast<size_t>(options.getSmallRegionThreshold()));
         }
+
+        if (options.retesselate())
+        {
+            Tesselator<BaseVecT>::apply(mesh, clusterBiMap, faceNormals, options.getLineFusionThreshold());
+        }
     }
     else
     {
         clusterBiMap = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
     }
 
+
+    // =======================================================================
+    // Finalize mesh
+    // =======================================================================
     // Prepare color data for finalizing
     ClusterPainter painter(clusterBiMap);
     auto clusterColors = optional<DenseClusterMap<Rgb8Color>>(painter.simpsons(mesh));
@@ -1001,22 +501,8 @@ int main(int argc, char** argv)
     // Calc normals for vertices
     auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
 
-    // Debug mesh
-    //auto duplicateVertices = getDuplicateVertices(mesh);
-    //cout << "duplicate vertices: " << duplicateVertices.size() << endl;
-
-    // Finalize mesh (convert it to simple `MeshBuffer`)
-    // FinalizeAlgorithm<Vec> finalize;
-    // finalize.setNormalData(vertexNormals);
-    // if (color_vertices)
-    // {
-    //    finalize.setColorData(colorVertices);
-    // }
-    // auto buffer = finalize.apply(mesh);
-
-
     // Prepare finalize algorithm
-    ClusterFlatteningFinalizer<Vec> finalize(clusterBiMap);
+    TextureFinalizer<Vec> finalize(clusterBiMap);
     finalize.setVertexNormals(vertexNormals);
 
     // TODO:
@@ -1069,16 +555,10 @@ int main(int argc, char** argv)
     // Run finalize algorithm
     auto buffer = finalize.apply(mesh);
 
+
     // =======================================================================
     // Write all results (including the mesh) to file
     // =======================================================================
-    // TODO2
-    // // Write classification to file
-    // if ( options.writeClassificationResult() )
-    // {
-    //     mesh.writeClassificationResult();
-    // }
-
     // Create output model and save to file
     auto m = boost::make_shared<lvr::Model>(buffer->toOldBuffer(matResult));
 
@@ -1089,13 +569,16 @@ int main(int argc, char** argv)
         );
     }
     cout << timestamp << "Saving mesh." << endl;
-    lvr::ModelFactory::saveModel(m, "triangle_mesh.h5");
     lvr::ModelFactory::saveModel(m, "triangle_mesh.ply");
     lvr::ModelFactory::saveModel(m, "triangle_mesh.obj");
+    lvr::ModelFactory::saveModel(m, "triangle_mesh.h5");
 
-    // save materializer keypoints to hdf5 which is not possible with lvr::ModelFactory
-    lvr2::PlutoMapIO map_io("triangle_mesh.h5");
-    map_io.addTextureKeypointsMap(matResult.m_keypoints.get());
+    if (matResult.m_keypoints)
+    {
+        // save materializer keypoints to hdf5 which is not possible with lvr::ModelFactory
+        lvr2::PlutoMapIO map_io("triangle_mesh.h5");
+        map_io.addTextureKeypointsMap(matResult.m_keypoints.get());
+    }
 
     cout << timestamp << "Program end." << endl;
 

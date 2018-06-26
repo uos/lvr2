@@ -16,13 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-
-/**
-* @file      PlutoMapIO.tcc
-**/
-
-
-
 #include <hdf5_hl.h>
 
 namespace lvr2
@@ -54,6 +47,12 @@ inline PlutoMapIO::PlutoMapIO(
 )
     : m_file(filename, hf::File::ReadWrite | hf::File::Create | hf::File::Truncate)
 {
+
+    if (!m_file.isValid())
+    {
+        throw "Could not open file.";
+    }
+
     // Create top level groups
     m_geometryGroup = m_file.createGroup(GEOMETRY_GROUP);
     m_attributesGroup = m_file.createGroup(ATTRIBUTES_GROUP);
@@ -72,6 +71,12 @@ inline PlutoMapIO::PlutoMapIO(
 
 inline PlutoMapIO::~PlutoMapIO()
 {
+    if (!m_file.isValid())
+    {
+        // do nothing if file is not valid, i.e. already closed
+        return;
+    }
+
     H5Gclose(m_geometryGroup.getId());
     H5Gclose(m_attributesGroup.getId());
     H5Gclose(m_clusterSetsGroup.getId());
@@ -324,8 +329,9 @@ inline PlutoMapImage PlutoMapIO::getImage(hf::Group group, string name)
     H5IMget_image_info(group.getId(), name.c_str(), &width, &height, &pixel_size, interlace, &npals);
 
     auto bufSize = width * height * pixel_size;
-    unsigned char buf[bufSize];
-    H5IMread_image(group.getId(), name.c_str(), buf);
+    vector<unsigned char> buf;
+    buf.resize(bufSize);
+    H5IMread_image(group.getId(), name.c_str(), buf.data());
 
     t.name = name;
     t.width = width;
@@ -453,9 +459,12 @@ inline bool PlutoMapIO::removeAllLabels()
         result = H5Ldelete(m_file.getId(), fullPath.data(), H5P_DEFAULT) > 0;
     }
 
-    // TODO call cli 'h5repack' tool to clean up space
-
     return result;
+}
+
+inline void PlutoMapIO::flush()
+{
+    m_file.flush();
 }
 
 } // namespace lvr2

@@ -68,8 +68,10 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
 
     BoundingBox<BaseVecT> outerBb;
 
+    // Iterate over all faces and create an AABB for all of them
     for (size_t i = 0; i < faces.size(); i += 3)
     {
+        // Convert raw float data into objects
         Point<BaseVecT> point1;
         point1.x = vertices[faces[i]*3];
         point1.y = vertices[faces[i]*3+1];
@@ -85,6 +87,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
         point3.y = vertices[faces[i+2]*3+1];
         point3.z = vertices[faces[i+2]*3+2];
 
+        // Precalculate intersection test data for faces
         auto vc1 = point2 - point1;
         auto vc2 = point3 - point2;
         auto vc3 = point1 - point3;
@@ -103,6 +106,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
         faceBb.expand(point2);
         faceBb.expand(point3);
 
+        // Create triangles from faces for internal usage
         Triangle triangle;
         triangle.bb = faceBb;
         triangle.center = Point<BaseVecT>((point1.asVector() + point2.asVector() + point3.asVector()) / 3.0f);
@@ -127,7 +131,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
 
         triangle.d = triangle.normal.dot(point1);
 
-        // edge planes
+        // calc edge planes for intersection tests
         triangle.e1 = Normal<BaseVecT>(triangle.normal.cross(vc1));
         triangle.d1 = triangle.e1.dot(point1);
 
@@ -137,6 +141,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
         triangle.e3 = Normal<BaseVecT>(triangle.normal.cross(vc3));
         triangle.d3 = triangle.e3.dot(point3);
 
+        // Create AABB and add current triangle (face) to it
         AABB aabb;
         aabb.bb = faceBb;
         aabb.triangles.push_back(m_triangles.size());
@@ -146,6 +151,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
         work.push_back(aabb);
     }
 
+    // Create the tree recursively from the list of AABBs
     auto out = buildTreeRecursive(work);
     out->bb = outerBb;
 
@@ -158,6 +164,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vec
     // terminate recursion, if work size is small enough
     if (work.size() < 4)
     {
+        // Create a leaf node and add all remaining triangles into it
         auto leaf = make_unique<BVHLeaf>();
         for (auto aabb: work)
         {
@@ -252,18 +259,20 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vec
                 }
             }
 
+            // Skipt to small values
             if (countLeft <= 1 || countRight <= 1)
             {
                 continue;
             }
 
+            // Calc surface for left and right box
             float surfaceLeft =
                 lBb.getXSize() * lBb.getYSize() + lBb.getYSize() * lBb.getZSize() + lBb.getZSize() * lBb.getXSize();
             float surfaceRight =
                 lBb.getXSize() * rBb.getYSize() + rBb.getYSize() * rBb.getZSize() + rBb.getZSize() * rBb.getXSize();
 
+            // Check if new best split was found
             float totalCost = surfaceLeft * countLeft + surfaceRight * countRight;
-
             if (totalCost < minCost)
             {
                 minCost = totalCost;
@@ -273,6 +282,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vec
         }
     }
 
+    // If no good split was found, create a leaf node and copy all remaining triangles into it
     if (bestAxis == -1)
     {
         auto leaf = make_unique<BVHLeaf>();
@@ -292,10 +302,12 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vec
     BoundingBox<BaseVecT> lBb;
     BoundingBox<BaseVecT> rBb;
 
+    // Use the found split to split the current node into two new inner nodes
     for (size_t i = 0; i < work.size(); i++)
     {
         auto& v = work[i];
 
+        // Get the best axis centroid value
         float value;
         if (bestAxis == 0)
         {
@@ -310,6 +322,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vec
             value = v.bb.getCentroid().z;
         }
 
+        // Create queues for left and right sub trees
         if (value < bestSplit)
         {
             leftWork.push_back(v);
@@ -322,6 +335,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vec
         }
     }
 
+    // Recursively split new sub trees into further inner or leaf nodes
     auto inner = make_unique<BVHInner>();
     inner->left = buildTreeRecursive(leftWork, depth + 1);
     inner->left->bb = lBb;
@@ -344,6 +358,7 @@ void BVHTree<BaseVecT>::createCFTree()
 template<typename BaseVecT>
 void BVHTree<BaseVecT>::createCFTreeRecursive(BVHNodePtr currentNode, uint32_t& idxBoxes)
 {
+    // Convert bounding box limits to SIMD friendly format
     m_limits.push_back(currentNode->bb.getMin().x);
     m_limits.push_back(currentNode->bb.getMax().x);
 
@@ -353,6 +368,7 @@ void BVHTree<BaseVecT>::createCFTreeRecursive(BVHNodePtr currentNode, uint32_t& 
     m_limits.push_back(currentNode->bb.getMin().z);
     m_limits.push_back(currentNode->bb.getMax().z);
 
+    // If we have an inner node
     if (!currentNode->isLeaf())
     {
         BVHInnerPtr inner(dynamic_cast<BVHInner*>(currentNode.release()));
@@ -380,13 +396,14 @@ void BVHTree<BaseVecT>::createCFTreeRecursive(BVHNodePtr currentNode, uint32_t& 
     }
     else
     {
+        // If we have a leaf node
         BVHLeafPtr leaf(dynamic_cast<BVHLeaf*>(currentNode.release()));
         uint32_t count = static_cast<uint32_t>(leaf->triangles.size());
 
         // push real count
         m_indexesOrTrilists.push_back(0x80000000 | count);
 
-        // push dummy bix indices
+        // push dummy box indices
         m_indexesOrTrilists.push_back(0);
         m_indexesOrTrilists.push_back(0);
 

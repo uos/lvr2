@@ -42,7 +42,14 @@ namespace lvr
 {
 
 /**
+ * An basic implemntation for the integrated HDF5 format.
+ * This saves the mesh geomentry, normals, colors, materials and textures to an
+ * defined HDF5 file format.
  *
+ * This also tries to mitgate any erros while saving the file to disc, since
+ * the HDF5 implementation is very picky about saving anything to an already opened
+ * file or any other strange things on the file system. Thus if the first try of
+ * saving it the defined filename it tries to make up an new one and saves everything there.
  */
 class Hdf5IO : public BaseIO
 {

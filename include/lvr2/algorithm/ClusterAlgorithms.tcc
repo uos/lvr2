@@ -21,9 +21,33 @@
  *
  * @date 24.07.2017
  * @author Johan M. von Behren <johan@vonbehren.eu>
+ * @author Jan Philipp Vogtherr <jvogtherr@uni-osnabrueck.de>
+ * @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
+ * @author Rasmus Diederichsen <rdiederichse@uni-osnabrueck.de>
  */
 
-#include <lvr2/algorithm/Planar.hpp>
+#include <lvr2/algorithm/ContourAlgorithms.hpp>
+#include <lvr2/geometry/BoundingBox.hpp>
+#include <lvr2/geometry/HalfEdgeMesh.hpp>
+#include <lvr2/util/Random.hpp>
+#include <lvr2/geometry/Normal.hpp>
+#include <lvr2/util/Debug.hpp>
+
+#include <lvr/io/Progress.hpp>
+#include <lvr/io/Timestamp.hpp>
+
+#include <algorithm>
+#include <complex>
+#include <sstream>
+#include <cmath>
+#include <limits>
+#include <unordered_set>
+
+using std::unordered_set;
+using std::max;
+using std::log;
+
+using lvr::timestamp;
 
 namespace lvr2
 {
@@ -47,6 +71,717 @@ void removeDanglingCluster(BaseMesh<BaseVecT>& mesh, size_t sizeThreshold)
             {
                 mesh.removeFace(faceH);
             }
+        }
+    }
+}
+
+template<typename BaseVecT>
+vector<vector<VertexHandle>> findContours(
+    BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    ClusterHandle clusterH
+)
+{
+    auto cluster = clusters[clusterH];
+
+    DenseVertexMap<bool> boundaryVertices(cluster.handles.size() * 3, false);
+    vector<vector<VertexHandle>> allContours;
+    // only used inside edge loop but initialized here to avoid heap allocations
+    vector<VertexHandle> contour;
+
+    for (auto faceH: cluster.handles)
+    {
+        for (auto edgeH: mesh.getEdgesOfFace(faceH))
+        {
+            auto faces = mesh.getFacesOfEdge(edgeH);
+            if (faces[0] && faces[1])
+            {
+                auto otherFace = faces[0].unwrap();
+
+                if (otherFace == faceH)
+                {
+                    otherFace = faces[1].unwrap();
+                }
+
+                // continue if other face is in same cluster
+                if (clusters.getClusterOf(otherFace) &&
+                    clusters.getClusterOf(otherFace).unwrap() == clusterH
+                    )
+                {
+                    continue;
+                }
+            }
+
+
+            auto vertices = mesh.getVerticesOfEdge(edgeH);
+
+            // edge already in another boundary of this cluster
+            if (boundaryVertices[vertices[0]] || boundaryVertices[vertices[1]])
+            {
+                continue;
+            }
+
+            contour.clear();
+            calcContourVertices(mesh, edgeH, contour, [clusters, clusterH](auto fH)
+            {
+                auto c = clusters.getClusterOf(fH);
+
+                // return true if current face is in this cluster
+                return c && c.unwrap() == clusterH;
+            });
+
+            allContours.push_back(contour);
+
+            // mark all vertices we got back as visited
+            for (auto vertexH: contour)
+            {
+                boundaryVertices[vertexH] = true;
+            }
+        }
+
+    }
+
+    return allContours;
+}
+
+template<typename BaseVecT>
+vector<VertexHandle>
+simplifyContour(const BaseMesh<BaseVecT>& mesh, const vector<VertexHandle>& contour, float threshold) {
+    auto out = vector<VertexHandle>();
+
+    // first point is always part of the simplified contour
+    out.push_back(contour[0]);
+
+    // current point
+    auto p0 = mesh.getVertexPosition(contour[0]);
+    // next point after first point
+    auto p1 = mesh.getVertexPosition(contour[1]);
+
+    // previous test point handle
+    auto piH = contour[1];
+    // current test point handle
+    auto pjH = piH;
+
+    for (size_t i = 2 ; i < contour.size(); ++i)
+    {
+        piH = pjH;
+        pjH = contour[i];
+
+        // current key vector / line to check against
+        auto vec = p1 - p0;
+        vec.normalize();
+
+        // vector of next and after next point
+        auto vec2 = mesh.getVertexPosition(pjH) - mesh.getVertexPosition(piH);
+        vec2.normalize();
+
+        if (vec.dot(vec2) >= threshold)
+        {
+            continue;
+        }
+
+        // found next point in line
+        out.push_back(piH);
+
+        // define new line to check against
+        p0 = mesh.getVertexPosition(piH);
+        p1 = mesh.getVertexPosition(pjH);
+    }
+
+    // also add last last point to simplified contour
+    out.push_back(pjH);
+
+    return out;
+}
+
+
+template<typename BaseVecT>
+std::vector<VertexHandle> calculateClusterContourVertices(
+    ClusterHandle clusterH,
+    const BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusterBiMap
+)
+{
+    std::unordered_set<VertexHandle> contourVertices;
+
+    auto cluster = clusterBiMap.getCluster(clusterH);
+
+    // iterate over all faces in cluster
+    for (auto faceH : cluster.handles)
+    {
+        // get edges of each face
+        const auto edgesOfFace = mesh.getEdgesOfFace(faceH);
+
+
+        // check for each edge if it is a contour edge
+        for (auto edgeH : edgesOfFace)
+        {
+            const auto faces = mesh.getFacesOfEdge(edgeH);
+            int numFaces = 0;
+
+            // count how many faces the edge has that are in the same cluster
+            numFaces += faces[0] && clusterH == clusterBiMap.getClusterH(faces[0].unwrap()) ? 1 : 0;
+            numFaces += faces[1] && clusterH == clusterBiMap.getClusterH(faces[1].unwrap()) ? 1 : 0;
+
+            // if there is exactly one face, the edge is a contour edge
+            if (numFaces == 1)
+            {
+                // add the vertices of contour edges to an unordered set, which
+                // automatically doesn't add duplicates
+                for (auto vertexH : mesh.getVerticesOfEdge(edgeH))
+                {
+                    contourVertices.insert(vertexH);
+                }
+            }
+        }
+    }
+
+    return std::vector<VertexHandle>(contourVertices.begin(), contourVertices.end());
+}
+
+template<typename BaseVecT>
+BoundingRectangle<BaseVecT> calculateBoundingRectangle(
+    const std::vector<VertexHandle>& contour,
+    const BaseMesh<BaseVecT>& mesh,
+    const Cluster<FaceHandle>& cluster,
+    const FaceMap<Normal<BaseVecT>>& normals,
+    float texelSize,
+    ClusterHandle clusterH
+)
+{
+
+    // TODO error handling for texelSize = 0
+    // TODO reasonable error handling necessary for empty contour vector
+    if (contour.size() == 0)
+    {
+        cout << "Empty contour array." << endl;
+    }
+    int minArea = std::numeric_limits<int>::max();
+
+    float bestMinA, bestMaxA, bestMinB, bestMaxB;
+    Vector<BaseVecT> bestBoundingAxisA, bestBoundingAxisB;
+
+    // calculate regression plane for the cluster
+    Plane<BaseVecT> regressionPlane = calcRegressionPlane(mesh, cluster, normals);
+
+    // support vector for the plane
+    Vector<BaseVecT> supportVector = regressionPlane.project(mesh.getVertexPosition(contour[0]));
+
+    // calculate two orthogonal vectors in the plane
+    auto normal = regressionPlane.normal;
+    auto pointInPlane = regressionPlane.project(mesh.getVertexPosition(contour[1])).asVector();
+    auto boudningAxis1 = (pointInPlane - supportVector).cross(normal.asVector());
+    boudningAxis1.normalize();
+
+    Vector<BaseVecT> boundingAxis2 = boudningAxis1.cross(normal.asVector());
+    boundingAxis2.normalize();
+
+    // const float pi = boost::math::constants::pi<float>(); // FIXME: doesnt seem to work with c++11
+    const float pi = std::atan(1) * 4; // reasonable approximation for pi
+
+    // resolution of iterative improvement steps for a fourth rotation
+    const float delta = (pi / 2) / 90;
+
+    for(float theta = 0; theta < M_PI / 2; theta += delta)
+    {
+        // rotate the bounding box
+        boudningAxis1 = boudningAxis1 * cos(theta) + boundingAxis2 * sin(theta);
+        boudningAxis1.normalize();
+        boundingAxis2 = boudningAxis1.cross(normal.asVector());
+        boundingAxis2.normalize();
+
+        // FIXME
+        // calculate hessian normal forms for both planes to which the distances will be calculated
+
+        // assume each bounding box axis is the normal of a plane, then the dot
+        // product with the support vector is the support vectors negative
+        // distance to the plane given by the axis (n * sv = -p)
+        // Note that in contrast to the usual plane equations, the plane
+        // distance is missing the negative sign
+        const float planeDist1 = boudningAxis1.dot(supportVector);
+        const float planeDist2 = boundingAxis2.dot(supportVector);
+
+
+        float minDistA = std::numeric_limits<float>::max();
+        float maxDistA = std::numeric_limits<float>::lowest();
+        float minDistB = std::numeric_limits<float>::max();
+        float maxDistB = std::numeric_limits<float>::lowest();
+
+
+        // calculate the bounding box
+
+        for(const auto contourVertexH : contour)
+        {
+            // possible improvement: calculate the contourPoints only once before the for loop
+            auto contourPoint = regressionPlane.project(mesh.getVertexPosition(contourVertexH));
+
+            // use hessian plane form for distance calculation
+            // note the negative sign of planeDist*, since the calculation above
+            // actually computes the negative distance
+            // calculate distance to plane1
+            float distA = boudningAxis1.dot(contourPoint) - planeDist1;
+            // calculate distance to plane2
+            float distB = boundingAxis2.dot(contourPoint) - planeDist2;
+
+            // memorize largest positive and negative distance to both planes
+            if (distA > maxDistA)
+            {
+                maxDistA = distA;
+            }
+            if (distA < minDistA)
+            {
+                minDistA = distA;
+            }
+            if (distB > maxDistB)
+            {
+                maxDistB = distB;
+            }
+            if (distB < minDistB)
+            {
+                minDistB = distB;
+            }
+        }
+
+        // calculate predicted number of texels for both dimesions
+        int texelsX = std::ceil((maxDistA - minDistA) / texelSize);
+        int texelsY = std::ceil((maxDistB - minDistB) / texelSize);
+
+        // iterative improvement of the area
+        if(texelsX * texelsY < minArea)
+        {
+            minArea           = texelsX * texelsY;
+            bestMinA          = minDistA;
+            bestMaxA          = maxDistA;
+            bestMinB          = minDistB;
+            bestMaxB          = maxDistB;
+            bestBoundingAxisA = boudningAxis1;
+            bestBoundingAxisB = boundingAxis2;
+        }
+    }
+
+    return BoundingRectangle<BaseVecT>(
+        supportVector,
+        bestBoundingAxisA,
+        bestBoundingAxisB,
+        normal,
+        bestMinA,
+        bestMaxA,
+        bestMinB,
+        bestMaxB
+    );
+
+}
+
+
+template<typename BaseVecT, typename Pred>
+ClusterBiMap<FaceHandle> clusterGrowing(const BaseMesh<BaseVecT>& mesh, Pred pred)
+{
+    ClusterBiMap<FaceHandle> clusters;
+    DenseFaceMap<bool> visited(mesh.numFaces(), false);
+
+    // This vector is only used later, but in order to avoid heap allocations
+    // we will create this list here to retain the buffer.
+    vector<FaceHandle> faceNeighbours;
+
+    // Iterate over all faces
+    for (auto faceH: mesh.faces())
+    {
+        // Check if face is in a cluster (i.e. we have not visited it)
+        if (!visited[faceH])
+        {
+            // We found a face yet to be visited. Prepare things for growing.
+            vector<FaceHandle> stack;
+            stack.push_back(faceH);
+            auto cluster = clusters.createCluster();
+
+            // Grow my cluster, groOW!
+            while (!stack.empty())
+            {
+                auto currentFace = stack.back();
+                stack.pop_back();
+
+                // Check if the last faces from stack and starting face match the criteria to join the same cluster
+                if (!visited[currentFace] && pred(faceH, currentFace))
+                {
+                    // The face matched the criteria => add it to cluster and mark as visited.
+                    clusters.addToCluster(cluster, currentFace);
+                    visited[currentFace] = true;
+
+                    // Find all unvisited neighbours of the current face and them to the stack
+                    faceNeighbours.clear();
+                    mesh.getNeighboursOfFace(currentFace, faceNeighbours);
+                    for (auto neighbour: faceNeighbours)
+                    {
+                        if (!visited[neighbour])
+                        {
+                            stack.push_back(neighbour);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return clusters;
+}
+
+template<typename BaseVecT>
+ClusterBiMap<FaceHandle> planarClusterGrowing(
+    const BaseMesh<BaseVecT>& mesh,
+    const FaceMap<Normal<BaseVecT>>& normals,
+    float minSinAngle
+)
+{
+    return clusterGrowing(mesh, [&](auto referenceFaceH, auto currentFaceH)
+    {
+        return normals[currentFaceH].dot(normals[referenceFaceH].asVector()) > minSinAngle;
+    });
+}
+
+template<typename BaseVecT>
+ClusterBiMap<FaceHandle> iterativePlanarClusterGrowing(
+    BaseMesh<BaseVecT>& mesh,
+    FaceMap<Normal<BaseVecT>>& normals,
+    float minSinAngle,
+    int numIterations,
+    int minClusterSize
+)
+{
+    ClusterBiMap<FaceHandle> clusters;
+    DenseClusterMap<Plane<BaseVecT>> planes;
+
+    // Iterate numIterations times
+    for (int i = 0; i < numIterations; ++i)
+    {
+        std::cout << timestamp << "Optimizing planes. Iterations "
+                  << i << " / " << numIterations << std::endl;
+        // Generate clusters
+        clusters = planarClusterGrowing(mesh, normals, minSinAngle);
+
+        // Calc regression planes
+        planes = calcRegressionPlanes(mesh, clusters, normals, minClusterSize);
+
+        // Debug planes
+        // std::stringstream ss;
+        // ss << "debug" << i << ".ply";
+        // debugPlanes(mesh, clusters, planes, ss.str(), 10000);
+        // ss.str("");
+        // ss << "debug-mesh" << i << ".ply";
+        // writeDebugMesh(mesh, ss.str(), {0, 255, 0});
+
+        // Drag vertices into planes
+        dragToRegressionPlanes(mesh, clusters, planes, normals);
+    }
+
+    optimizePlaneIntersections(mesh, clusters, planes);
+
+    return clusters;
+}
+
+template<typename BaseVecT>
+DenseClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
+    const BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    const FaceMap<Normal<BaseVecT>>& normals,
+    int minClusterSize
+)
+{
+    DenseClusterMap<Plane<BaseVecT>> planes;
+    size_t defaultClusterThreshold = 10 * log(mesh.numFaces());
+    size_t minClusterThresholdSize = max(static_cast<size_t>(minClusterSize), defaultClusterThreshold);
+
+    // For all clusters in cluster map
+    for (auto clusterH: clusters)
+    {
+        // Get current cluster
+        auto cluster = clusters[clusterH];
+        if (cluster.handles.size() > minClusterThresholdSize)
+        {
+            // Calc regression plane for current cluster and add to cluster map: cluster -> plane
+            planes.insert(clusterH, calcRegressionPlane(mesh, cluster, normals));
+        }
+    }
+
+    return planes;
+}
+
+template<typename BaseVecT>
+Plane<BaseVecT> calcRegressionPlane(
+    const BaseMesh<BaseVecT>& mesh,
+    const Cluster<FaceHandle>& cluster,
+    const FaceMap<Normal<BaseVecT>>& normals
+)
+{
+    // Calc normal of plane
+    size_t countFirst = 0;
+    size_t countSecond = 0;
+
+    Vector<BaseVecT> vectorFirst;
+    Vector<BaseVecT> vectorSecond;
+
+    // Average Normals for both normal directions
+    for (auto faceH: cluster.handles)
+    {
+        auto normal = normals[faceH].asVector();
+
+        // If first iteration
+        if (countFirst == 0)
+        {
+            vectorFirst = normal;
+            ++countFirst;
+        }
+        else
+        {
+            // Split normals by orientation
+            auto scalar = normal.dot(vectorFirst);
+            if (scalar > 0)
+            {
+                vectorFirst += normal;
+                ++countFirst;
+            }
+            else
+            {
+                vectorSecond += normal;
+                ++countSecond;
+            }
+        }
+    }
+
+    // Flip normals to same direction
+    Vector<BaseVecT> vector;
+    if (countFirst > countSecond)
+    {
+        vector = vectorFirst;
+        vector -= vectorSecond;
+    }
+    else
+    {
+        vector = vectorSecond;
+        vector -= vectorFirst;
+    }
+
+    Normal<BaseVecT> normal(vector);
+    Plane<BaseVecT> plane;
+    plane.normal = normal;
+    plane.pos = mesh.getVertexPositionsOfFace(cluster.handles[0])[0];
+
+    // Calc average distance from plane to all points
+    float planeDistance = 0;
+    unordered_set<VertexHandle> vertices;
+
+    // Iterate over all faces in cluster to get all vertices in plane
+    for (auto faceH: cluster.handles)
+    {
+        // Iterate over all vertices of current face
+        for (auto vH: mesh.getVerticesOfFace(faceH))
+        {
+            // If current vertex is not visited, add distance
+            if (!vertices.count(vH))
+            {
+                vertices.insert(vH);
+                planeDistance += plane.distance(mesh.getVertexPosition(vH));
+            }
+        }
+    }
+    float avgDistance = planeDistance / vertices.size();
+
+    // Move pos of plane to best fit
+    plane.pos += (plane.normal.asVector() * avgDistance);
+    return plane;
+}
+
+template<typename BaseVecT>
+void dragToRegressionPlanes(
+    BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    const ClusterMap<Plane<BaseVecT>>& planes,
+    FaceMap<Normal<BaseVecT>>& normals
+)
+{
+    // For all clusters in cluster map
+    for (auto clusterH: planes)
+    {
+        // Drag all vertices of current cluster into regression plane
+        dragToRegressionPlane(mesh, clusters[clusterH], planes[clusterH], normals);
+    }
+}
+
+template<typename BaseVecT>
+void dragToRegressionPlane(
+    BaseMesh<BaseVecT>& mesh,
+    const Cluster<FaceHandle>& cluster,
+    const Plane<BaseVecT>& plane,
+    FaceMap<Normal<BaseVecT>>& normals
+)
+{
+    for (auto faceH: cluster.handles)
+    {
+        for (auto vertexH: mesh.getVerticesOfFace(faceH))
+        {
+            auto pos = mesh.getVertexPosition(vertexH);
+            auto distance = plane.distance(pos);
+            mesh.getVertexPosition(vertexH) -= plane.normal.asVector() * distance;
+        }
+        normals[faceH] = plane.normal;
+    }
+}
+
+template<typename BaseVecT>
+void optimizePlaneIntersections(
+    BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    const ClusterMap<Plane<BaseVecT>>& planes
+)
+{
+    // Status message for mesh generation
+    string comment = lvr::timestamp.getElapsedTime() + "Optimizing plane intersections ";
+    lvr::ProgressBar progress(planes.numValues(), comment);
+
+    // iterate over all planes
+    for (auto it = planes.begin(); it != planes.end(); ++it)
+    {
+        auto clusterH = *it;
+
+        // only iterate over distinct pairs of planes, e.g. the following planes of the current one
+        auto itInner = it;
+        ++itInner;
+        for (; itInner != planes.end(); ++itInner)
+        {
+            auto clusterInnerH = *itInner;
+
+            auto& plane1 = planes[clusterH];
+            auto& plane2 = planes[clusterInnerH];
+
+            // do not improve almost parallel cluster
+            float normalDot = plane1.normal.dot(plane2.normal.asVector());
+            if (fabs(normalDot) < 0.9)
+            {
+                auto intersection = plane1.intersect(plane2);
+
+                dragOntoIntersection(mesh, clusters, clusterH, clusterInnerH, intersection);
+                dragOntoIntersection(mesh, clusters, clusterInnerH, clusterH, intersection);
+            }
+        }
+
+        ++progress;
+    }
+
+    if(!lvr::timestamp.isQuiet())
+        cout << endl;
+}
+
+template<typename BaseVecT>
+void dragOntoIntersection(
+    BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    const ClusterHandle& clusterH,
+    const ClusterHandle& neighbourClusterH,
+    const Line<BaseVecT>& intersection
+)
+{
+    for (auto faceH: clusters[clusterH].handles)
+    {
+        for (auto edgeH: mesh.getEdgesOfFace(faceH))
+        {
+            auto facesOfEdge = mesh.getFacesOfEdge(edgeH);
+
+            // check if edge is real neighbour of second plane
+            if ((facesOfEdge[0] && clusters.getClusterOf(facesOfEdge[0].unwrap()) == neighbourClusterH)
+                || (facesOfEdge[1] && clusters.getClusterOf(facesOfEdge[1].unwrap()) == neighbourClusterH))
+            {
+                auto vertices = mesh.getVerticesOfEdge(edgeH);
+
+                auto& v1 = mesh.getVertexPosition(vertices[0]);
+                auto& v2 = mesh.getVertexPosition(vertices[1]);
+
+                // project both vertices of the edge into the intersection
+                v1 = intersection.project(v1);
+                v2 = intersection.project(v2);
+            }
+        }
+
+    }
+}
+
+template<typename BaseVecT>
+void debugPlanes(
+    const BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    const ClusterMap<Plane<BaseVecT>>& planes,
+    string filename,
+    size_t minClusterSize
+)
+{
+    HalfEdgeMesh<BaseVecT> debugMesh;
+
+    // For all clusters in cluster map
+    for (auto clusterH: planes)
+    {
+        auto cluster = clusters[clusterH];
+        auto plane = planes[clusterH];
+
+        if (cluster.handles.size() < minClusterSize)
+        {
+            continue;
+        }
+
+        // Get bounding box for cluster
+        BoundingBox<BaseVecT> bBox;
+        for (auto faceH: cluster.handles)
+        {
+            auto vertices = mesh.getVertexPositionsOfFace(faceH);
+            for (auto vertex: vertices)
+            {
+                bBox.expand(vertex);
+            }
+        }
+
+        // Get intersection with bounding box and plane
+        auto centroid = plane.project(bBox.getCentroid());
+        auto point = plane.project(bBox.getMin());
+        if (centroid == point)
+        {
+            point = plane.project(bBox.getMax());
+        }
+        auto tangent1 = Normal<BaseVecT>(point - centroid);
+        auto tangent2 = Normal<BaseVecT>(plane.normal.asVector().cross(tangent1.asVector()));
+
+        auto v1 = plane.pos + tangent1.asVector() * bBox.getLongestSide();
+        auto v2 = plane.pos - tangent1.asVector() * bBox.getLongestSide();
+        auto v3 = plane.pos + tangent2.asVector() * bBox.getLongestSide();
+        auto v4 = plane.pos - tangent2.asVector() * bBox.getLongestSide();
+
+        // Add intersection plane to mesh
+        auto vH1 = debugMesh.addVertex(v1);
+        auto vH2 = debugMesh.addVertex(v2);
+        auto vH3 = debugMesh.addVertex(v3);
+        auto vH4 = debugMesh.addVertex(v4);
+
+        debugMesh.addFace(vH1, vH3, vH2);
+        debugMesh.addFace(vH1, vH2, vH4);
+    }
+
+    // Save debug mesh
+    writeDebugMesh(debugMesh, filename);
+}
+
+template<typename BaseVecT>
+void deleteSmallPlanarCluster(
+    BaseMesh<BaseVecT>& mesh,
+    ClusterBiMap<FaceHandle>& clusters,
+    size_t smallClusterThreshold
+)
+{
+    for (auto cH: clusters)
+    {
+        auto cluster = clusters.getCluster(cH);
+        if (cluster.size() < smallClusterThreshold)
+        {
+            for (auto fH: cluster)
+            {
+                mesh.removeFace(fH);
+            }
+            clusters.removeCluster(cH);
         }
     }
 }

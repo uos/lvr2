@@ -43,6 +43,8 @@ struct Cluster
 {
 public:
     size_t size() { return handles.size(); }
+
+    // Methods for range-based for-loops
     decltype(auto) begin() const { return handles.begin(); }
     decltype(auto) end() const { return handles.end(); }
 

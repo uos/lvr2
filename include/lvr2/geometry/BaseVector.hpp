@@ -39,11 +39,11 @@ namespace lvr2
  * semantically. You're advised to use `Point` and `Vector` instead of
  * this type directly.
  *
- * This type is used as "backing type" meaning that it is the actual
+ * This type is used as "backing type", meaning that it is the actual
  * implementation of the vector type. `Vector` and `Point` are just wrappers
  * which delete and/or modify a few methods to make use of strong typing.
  *
- * Instead of this `BaseVector` implementations from other libraries could be
+ * Instead of this, `BaseVector` implementations from other libraries could be
  * used. However, they have to provide all the methods and fields that
  * `BaseVector` defines.
  */

@@ -47,6 +47,13 @@ BoundingBox<BaseVecT>::BoundingBox(Point<BaseVecT> v1, Point<BaseVecT> v2)
 {
     m_min = v1;
     m_max = v2;
+    
+    m_centroid = Point<BaseVecT>(
+        m_min.x + 0.5f * getXSize(),
+        m_min.y + 0.5f * getYSize(),
+        m_min.z + 0.5f * getZSize()
+    );
+
 }
 
 template<typename BaseVecT>

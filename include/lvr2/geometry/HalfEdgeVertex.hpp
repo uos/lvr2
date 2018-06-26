@@ -36,6 +36,9 @@ namespace lvr2
 // Forward declarations
 struct OptionalHalfEdgeHandle;
 
+/**
+ * @brief Represents a vertex in the HEM data structure.
+ */
 template <typename BaseVecT>
 struct HalfEdgeVertex
 {

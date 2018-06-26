@@ -30,6 +30,7 @@
 #include "MultiPointCloudVisualizer.hpp"
 #include "GridVisualizer.hpp"
 #include "ClusterVisualizer.hpp"
+#include "CorrespondenceVisualizer.hpp"
 
 #include <lvr/display/Grid.hpp>
 #include <lvr/display/StaticMesh.hpp>
@@ -55,79 +56,93 @@ VisualizerFactory::VisualizerFactory() {}
 
 void VisualizerFactory::create(string filename)
 {
-	// Get file extension
-	boost::filesystem::path selectedFile(filename);
+    // Get file extension
+    boost::filesystem::path selectedFile(filename);
 
-	string extension = selectedFile.extension().c_str();
-	string name = selectedFile.filename().c_str();
+    string extension = selectedFile.extension().c_str();
+    string name = selectedFile.filename().c_str();
 
-	// Create a factory rto parse given file and extract loaders
-	lvr::ModelFactory io;
+    // Create a factory rto parse given file and extract loaders
+    lvr::ModelFactory io;
     lvr::ModelPtr model = io.readModel( filename );
 
-	if(model)
-	{
+    if(model)
+    {
 
         lvr::MeshBufferPtr    mesh_buffer  = model->m_mesh;
-		lvr::PointBufferPtr   point_buffer = model->m_pointCloud;
+        lvr::PointBufferPtr   point_buffer = model->m_pointCloud;
 
-	    if(mesh_buffer)
-	    {
-	    	TriangleMeshVisualizer* tmv = new TriangleMeshVisualizer(mesh_buffer, filename + " <mesh>");
-	    	Q_EMIT visualizerCreated( tmv );
-	    }
+        if(mesh_buffer)
+        {
+            TriangleMeshVisualizer* tmv = new TriangleMeshVisualizer(mesh_buffer, filename + " <mesh>");
+            Q_EMIT visualizerCreated( tmv );
+        }
 
-	    if(point_buffer)
-	    {
-	        if(point_buffer->getNumPoints() > 0)
-	        {
-	            // Check for multi point object
-	            if(point_buffer->getSubClouds().size() > 1)
-	            {
-	                name = filename;
+        if(point_buffer)
+        {
+            if(point_buffer->getNumPoints() > 0)
+            {
+                // Check for multi point object
+                if(point_buffer->getSubClouds().size() > 1)
+                {
+                    name = filename;
 
 
-	                Visualizer* v = new MultiPointCloudVisualizer(point_buffer, name);
-	                Q_EMIT visualizerCreated( v );
-	            }
-	            else
-	            {
-	                Visualizer* v = new PointCloudVisualizer(point_buffer, name);
-	                Q_EMIT visualizerCreated( v );
-	            }
+                    Visualizer* v = new MultiPointCloudVisualizer(point_buffer, name);
+                    Q_EMIT visualizerCreated( v );
+                }
+                else
+                {
+                    Visualizer* v = new PointCloudVisualizer(point_buffer, name);
+                    Q_EMIT visualizerCreated( v );
+                }
 
-	        }
-	    }
-	}
-	else
-	{
-	    // Try to load other objects
-	    if(extension == ".grid")
-	    {
-	           	Visualizer* v = new GridVisualizer(filename);
-	           	if(v->renderable())
-	           	{
-	           		Q_EMIT visualizerCreated( v );
-	           	}
-	           	else
-	           	{
-	           		delete v;
-	           	}
-	    }
+            }
+        }
+    }
+    else
+    {
+        // Try to load other objects
+        if(extension == ".grid")
+        {
+                Visualizer* v = new GridVisualizer(filename);
+                if(v->renderable())
+                {
+                    Q_EMIT visualizerCreated( v );
+                }
+                else
+                {
+                    delete v;
+                }
+        }
 
-	    if(extension == ".clu")
-	    {
-	    	Visualizer* v = new ClusterVisualizer(filename);
-	    	if(v->renderable())
-	    	{
-	    		Q_EMIT visualizerCreated( v );
-	    	}
-	    	else
-	    	{
-	    		delete v;
-	    	}
-	    }
-	}
+        if(extension == ".clu")
+        {
+            Visualizer* v = new ClusterVisualizer(filename);
+            if(v->renderable())
+            {
+                Q_EMIT visualizerCreated( v );
+            }
+            else
+            {
+                delete v;
+            }
+        }
+
+        if(extension == ".corr")
+        {
+            Visualizer* v = new CorrespondenceVisualizer(filename);
+            if(v->renderable())
+            {
+                Q_EMIT visualizerCreated( v );
+            }
+            else
+            {
+                delete v;
+            }
+        }
+
+    }
 
 }
 
