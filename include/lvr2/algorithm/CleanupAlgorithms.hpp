@@ -29,7 +29,7 @@ namespace lvr2
 {
 
 /**
- * @brief Returns faces with a high number of boundary edges.
+ * @brief Removes faces with a high number of boundary edges.
  *
  * Faces which have 2 or 3 adjacent boundary edges, are removed. If the face
  * is adjacent to only one boundary edge, it is deleted if the face's area is

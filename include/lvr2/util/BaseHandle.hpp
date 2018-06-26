@@ -33,7 +33,14 @@ namespace lvr2
 {
 
 /**
- * @brief
+ * @brief Interface for all kinds of handles. Handles are basically a key to
+ *        refer to something.
+ *
+ * From this class, a few concrete handle types (such as FaceHandle) will be
+ * derived.
+ *
+ * Internally, the handle is just an index. How those indices are used is
+ * determined by the thing creating handles (e.g. the mesh implementation).
  */
 template<typename IdxT>
 class BaseHandle
@@ -51,6 +58,14 @@ protected:
     IdxT m_idx;
 };
 
+/**
+ * @brief Base class for optional handles (handles that can be "null" or
+ *        "None").
+ *
+ * This class is semantically equivalent to boost::optional<BaseHandle>. This
+ * class uses a special index value to store the "None" value. This saves
+ * memory.
+ */
 template <typename IdxT, typename NonOptionalT>
 class BaseOptionalHandle
 {
@@ -67,6 +82,10 @@ public:
     bool operator==(const BaseOptionalHandle& other) const;
     bool operator!=(const BaseOptionalHandle& other) const;
 
+    /**
+     * @brief Extracts the handle. If `this` doesn't hold a handle (is "None"),
+     *        this method panics.
+     */
     NonOptionalT unwrap() const;
     void setIdx(IdxT idx);
 

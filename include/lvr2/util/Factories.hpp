@@ -37,6 +37,12 @@ using std::string;
 namespace lvr2
 {
 
+/**
+ * @brief Returns the search tree implementation specified by `name`.
+ *
+ * If `name` doesn't contain a valid implementation, `nullptr` is returned.
+ * Currently, the only supported implementation is "flann".
+ */
 template <typename BaseVecT>
 SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr<BaseVecT> buffer);
 

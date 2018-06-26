@@ -49,7 +49,7 @@
 #include <lvr2/reconstruction/PointsetGrid.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/algorithm/NormalAlgorithms.hpp>
-#include <lvr2/algorithm/FinalizeAlgorithm.hpp>
+#include <lvr2/algorithm/FinalizeAlgorithms.hpp>
 
 using std::cout;
 using std::endl;
@@ -566,7 +566,7 @@ int main(int argc, char** argv)
         auto vertexNormals = lvr2::calcVertexNormals(mesh, faceNormals, *surface);
 
         // Finalize mesh
-        lvr2::FinalizeAlgorithm<Vec> finalize;
+        lvr2::SimpleFinalizer<Vec> finalize;
         finalize.setNormalData(vertexNormals);
         auto meshBuffer = finalize.apply(mesh);
 

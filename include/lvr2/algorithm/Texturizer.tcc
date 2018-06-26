@@ -132,13 +132,12 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
 
     if (surface.pointBuffer()->hasRgbColor())
     {
+        // For each texel find the color of the nearest point
         #pragma omp parallel for schedule(dynamic,1) collapse(2)
         for (int y = 0; y < sizeY; y++)
         {
             for (int x = 0; x < sizeX; x++)
             {
-                // std::vector<char> v;
-
                 int k = 1; // k-nearest-neighbors
 
                 vector<size_t> cv;

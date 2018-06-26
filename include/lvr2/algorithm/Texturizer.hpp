@@ -52,20 +52,52 @@
 namespace lvr2
 {
 
+/**
+ * @class Texturizer
+ * @brief Class that performs texture-related tasks
+ */
 template<typename BaseVecT>
 class Texturizer
 {
 
 public:
 
+    /**
+     * @brief Constructor
+     *
+     * @param texelSize The size of one texture pixel, relative to the coordinate system of the point cloud
+     * @param texMinClusterSize The minimum number of faces a cluster needs to be texturized
+     * @param texMaxClusterSize The maximum number of faces a cluster needs to be texturized
+     */
     Texturizer(
         float texelSize,
         int texMinClusterSize,
         int texMaxClusterSize
     );
 
+    /**
+     * @brief Get the texture to a given texture handle
+     *
+     * @param h The texture handle
+     *
+     * @return The texture
+     */
     Texture<BaseVecT> getTexture(TextureHandle h);
+
+    /**
+     * @brief Returns all textures
+     *
+     * @return A StableVector containing all textures
+     */
     StableVector<TextureHandle, Texture<BaseVecT>> getTextures();
+
+    /**
+     * @brief Get the texture index to a given texture handle
+     *
+     * @param h The texture handle
+     *
+     * @return The texture index
+     */
     int getTextureIndex(TextureHandle h);
 
     /**
@@ -89,37 +121,75 @@ public:
      * @param[in] keypoints Keypoints in image coordinates
      * @param[in] boundingRect Bounding rectangle of the texture embedded in 3D
      *
-     * @return
+     * @return Vector of 3D coordinates of all keypoints
      */
     std::vector<BaseVecT> keypoints23d(const std::vector<cv::KeyPoint>&
         keypoints, const BoundingRectangle<BaseVecT>& boundingRect, const TextureHandle& h);
 
+    /**
+     * @brief Generates a texture for a given bounding rectangle
+     *
+     * Create a grid, based on given information (texel size, bounding rectangle).
+     * For each cell in the grid (which represents a texel), let the `PointsetSurface` find the closest point in the
+     * point cloud and use that point's color as color for the texel.
+     *
+     * @param index The index the texture will get
+     * @param surface The point cloud
+     * @param boundingRect The bounding rectangle of the cluster
+     *
+     * @return Texture handle of the generated texture
+     */
     TextureHandle generateTexture(
         int index,
         const PointsetSurface<BaseVecT>& surface,
         const BoundingRectangle<BaseVecT>& boundingRect
     );
 
+    /**
+     * @brief Calculate texture coordinates for a given 3D point in a texture
+     *
+     * @param texH The texture handle
+     * @param boundingRect The bounding rectangle of the texture
+     * @param v The 3D point
+     *
+     * @return The texture coordinates
+     */
     TexCoords calculateTexCoords(
         TextureHandle texH,
         const BoundingRectangle<BaseVecT>& boundingRect,
         BaseVecT v
     );
 
+    /**
+     * @brief Calculate a global 3D position for given texture coordinates
+     *
+     * @param texH The texture handle
+     * @param boundingRect The bounding rectangle of the texture
+     * @param coords The texture coordinates
+     *
+     * @return The 3D point
+     */
     BaseVecT calculateTexCoordsInv(
         TextureHandle texH,
         const BoundingRectangle<BaseVecT>& boundingRect,
         const TexCoords& coords
     );
 
+    /**
+     * @brief Calls the save method for each texture
+     */
     void saveTextures();
 
+    /// The size of a texture pixel
     const float m_texelSize;
+    /// The minimum number of faces a cluster needs to be texturized
     const int m_texMinClusterSize;
+    /// The maximum number of faces a cluster needs to be texturized
     const int m_texMaxClusterSize;
 
 private:
 
+    /// StableVector, that contains all generated textures with texture handles
     StableVector<TextureHandle, Texture<BaseVecT>> m_textures;
 
 };

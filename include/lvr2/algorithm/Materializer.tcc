@@ -24,8 +24,8 @@
 *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
 */
 
-#include <lvr2/algorithm/ClusterAlgorithm.hpp>
-#include <lvr2/algorithm/FinalizeAlgorithm.hpp>
+#include <lvr2/algorithm/ClusterAlgorithms.hpp>
+#include <lvr2/algorithm/FinalizeAlgorithms.hpp>
 #include <opencv2/features2d.hpp>
 
 
@@ -103,7 +103,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
 
             if (m_texturizer)
             {
-                // If using textures, count wether this cluster was too small or too large
+                // If using textures, count whether this cluster was too small or too large
                 if (numFacesInCluster < m_texturizer.get().m_texMinClusterSize)
                 {
                     numClustersTooSmall++;
@@ -141,12 +141,14 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
 
             // Create material and save in map
             Material material;
-            material.m_color = {
+            std::array<unsigned char, 3> arr = {
                 static_cast<uint8_t>(mostUsedColor[0]),
                 static_cast<uint8_t>(mostUsedColor[1]),
                 static_cast<uint8_t>(mostUsedColor[2])
             };
-            clusterMaterials.insert(clusterH, material);
+
+            material.m_color =  std::move(arr);
+              clusterMaterials.insert(clusterH, material);
 
         }
         else
@@ -193,11 +195,13 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                     std::vector<float>(descriptors.ptr(row), descriptors.ptr(row) + descriptors.cols);
             }
 
-            // Create material and insert in face map
+            // Create material with default color and insert into face map
             Material material;
             material.m_texture = texH;
-            material.m_color = {255, 255, 255}; // TODO macht das sinn?
-            clusterMaterials.insert(clusterH, material);
+            std::array<unsigned char, 3> arr = {255, 255, 255};
+
+            material.m_color = std::move(arr);            
+              clusterMaterials.insert(clusterH, material);
 
             // Calculate tex coords
             // Insert material into face map for each face

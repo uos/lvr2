@@ -58,7 +58,7 @@ namespace qi = boost::spirit::qi;
 
 const kaboom::Options* options;
 
-// This is dirty
+// This is dirty 
 bool lastScan = false;
 
 ModelPtr filterModel(ModelPtr p, int k, float sigma)
@@ -156,7 +156,7 @@ size_t writeAscii(ModelPtr model, std::ofstream& out)
     return n_ip;
 }
 
-size_t writePly(ModelPtr model, std::fstream& out)
+size_t writePly(ModelPtr model, std::fstream& out) 
 {
     size_t n_ip, n_colors;
 
@@ -435,7 +435,7 @@ void transformFromOptions(ModelPtr& model, int modulo)
                 std::cout << "nip : " << n_ip << " modulo " << modulo << std::endl;
                 break;
             }
-
+            
             if(n_colors)
             {
                 newColorsArr[cntr * 3]     = colors[i * 3];
@@ -484,10 +484,10 @@ void processSingleFile(boost::filesystem::path& inFile)
 {
     cout << timestamp << "Processing " << inFile << endl;
 
-
-
     cout << timestamp << "Reading point cloud data from file " << inFile.filename().string() << "." << endl;
 
+    // TODO: Make explicit call to ASCII-IO of necessery to account for
+    // attribute column ordering!
     ModelPtr model = ModelFactory::readModel(inFile.string());
 
     if(0 == model)
@@ -496,7 +496,7 @@ void processSingleFile(boost::filesystem::path& inFile)
     }
 
     if(options->getOutputFile() != "")
-    {
+    { 
         char frames[1024];
         char pose[1024];
         sprintf(frames, "%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
@@ -569,7 +569,7 @@ void processSingleFile(boost::filesystem::path& inFile)
             {
                 tmp.open(tmp_file, std::fstream::in | std::fstream::out | std::fstream::trunc | std::fstream::binary);
             }
-
+            
             if(tmp.is_open())
             {
                 points_written += writePly(model, tmp);
@@ -578,12 +578,12 @@ void processSingleFile(boost::filesystem::path& inFile)
             {
                 std::cout << "could not open " << tmp_file << std::endl;
             }
-
+            
             if(true == lastScan)
             {
                 std::ofstream out;
 
-                // write the header -> open in text_mode
+                // write the header -> open in text_mode 
                 out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::trunc);
                 // check if we have color information
                 size_t n_colors;
@@ -606,13 +606,13 @@ void processSingleFile(boost::filesystem::path& inFile)
 
                 // open the actual output file for binary blob write
                 out.open(options->getOutputFile(), std::ofstream::out | std::ofstream::app | std::ofstream::binary);
-
+                
                 char buffer[BUF_SIZE];
-
+                
                 while(blob_size)
                 {
                     if(blob_size < BUF_SIZE)
-                    {
+                    { 
                         // read the rest from tmp file (binary blob)
                         tmp.read(buffer, blob_size);
                         // write the rest to actual ply file
@@ -693,7 +693,7 @@ void processSingleFile(boost::filesystem::path& inFile)
     }
 }
 
-    template <typename Iterator>
+template <typename Iterator>
 bool parse_filename(Iterator first, Iterator last, int& i)
 {
 
@@ -745,123 +745,132 @@ bool sortScans(boost::filesystem::path firstScan, boost::filesystem::path secSca
     }
 }
 
+
+
 int main(int argc, char** argv) {
+
     // Parse command line arguments
     options = new kaboom::Options(argc, argv);
 
-
-    if( (options->getInputFile() != "") && (options->getOutputFile() != "") )
+    // Check if a specific input file was given. If so, convert the single
+    // file according to .pose or .frame information
+    if(options->getInputFile() != "")
     {
-        cout << timestamp << "Processing in single file mode" << endl;
-
         boost::filesystem::path inputFile(options->getInputFile());
-        processSingleFile(inputFile);
+        if(boost::filesystem::exists((inputFile)))
+        {
+            processSingleFile(inputFile);
+            exit(0);
+        }
+        else
+        {
+            cout << timestamp << "File '" << options->getInputFile() << "' does not exist." << endl;
+            exit(-1);
+        }
     }
-    else
+
+    // If an input directory is given, enter directory parsing mode
+    boost::filesystem::path inputDir(options->getInputDir());
+    boost::filesystem::path outputDir(options->getOutputDir());
+
+    // Check input directory
+    if(!boost::filesystem::exists(inputDir))
     {
+        cout << timestamp << "Error: Directory " << options->getInputDir() << " does not exist" << endl;
+        exit(-1);
+    }
 
-        boost::filesystem::path inputDir(options->getInputDir());
-        boost::filesystem::path outputDir(options->getOutputDir());
-
-        // Check input directory
-        if(!boost::filesystem::exists(inputDir))
+    // Check if output dir exists
+    if(!boost::filesystem::exists(outputDir))
+    {
+        cout << timestamp << "Creating directory " << options->getOutputDir() << endl;
+        if(!boost::filesystem::create_directory(outputDir))
         {
-            cout << timestamp << "Error: Directory " << options->getInputDir() << " does not exist" << endl;
+            cout << timestamp << "Error: Unable to create " << options->getOutputDir() << endl;
             exit(-1);
         }
+    }
 
-        // Check if output dir exists
-        if(!boost::filesystem::exists(outputDir))
+    boost::filesystem::path abs_in = boost::filesystem::canonical(inputDir);
+    boost::filesystem::path abs_out = boost::filesystem::canonical(outputDir);
+
+    if(abs_in == abs_out)
+    {
+        cout << timestamp << "Error: We think it is not a good idea to write into the same directory. " << endl;
+        exit(-1);
+    }
+
+    // Create director iterator and parse supported file formats
+    boost::filesystem::directory_iterator end;
+    vector<boost::filesystem::path> v;
+    for(boost::filesystem::directory_iterator it(inputDir); it != end; ++it)
+    {
+        std::string ext =	it->path().extension().string();
+        if(ext == ".3d" || ext == ".ply" || ext == ".dat" || ext == ".txt" )
         {
-            cout << timestamp << "Creating directory " << options->getOutputDir() << endl;
-            if(!boost::filesystem::create_directory(outputDir))
-            {
-                cout << timestamp << "Error: Unable to create " << options->getOutputDir() << endl;
-                exit(-1);
-            }
+            v.push_back(it->path());
+        }
+    }
+
+    // Sort entries
+    sort(v.begin(), v.end(), sortScans);
+
+    vector<float>	 		merge_points;
+    vector<unsigned char>	merge_colors;
+
+    int j = -1;
+    for(vector<boost::filesystem::path>::iterator it = v.begin(); it != v.end(); ++it)
+    {
+        int i = 0;
+
+        std::string currFile = (it->stem()).string();
+        bool p = parse_filename(currFile.begin(), currFile.end(), i);
+
+        //if parsing failed terminate, this should never happen.
+        if(!p)
+        {
+            std::cerr << timestamp << "ERROR " << " " << *it << " does not match the naming convention" << std::endl;
+            break;
         }
 
-        boost::filesystem::path abs_in = boost::filesystem::canonical(inputDir);
-        boost::filesystem::path abs_out = boost::filesystem::canonical(outputDir);
-
-        if(abs_in == abs_out)
+        // check if the current scan has the same numbering like the previous, this should not happen.
+        if(i == j)
         {
-            cout << timestamp << "Error: We think it is not a good idea to write into the same directory. " << endl;
-            exit(-1);
+            std::cerr << timestamp << "ERROR " << *std::prev(it) << " & " << *it << " have identical numbering" << std::endl;
+            break;
         }
 
-        // Create director iterator and parse supported file formats
-        boost::filesystem::directory_iterator end;
-        vector<boost::filesystem::path> v;
-        for(boost::filesystem::directory_iterator it(inputDir); it != end; ++it)
-        {
-            std::string ext =	it->path().extension().string();
-            if(ext == ".3d" || ext == ".ply" || ext == ".dat" || ext == ".txt" )
+        // check if the scan is in the range which should be processed
+        if(i >= options->getStart()){
+            // when end is default(=0) process the complete vector
+            if(0 == options->getEnd() || i <= options->getEnd())
             {
-                v.push_back(it->path());
-            }
-        }
-
-        // Sort entries
-        sort(v.begin(), v.end(), sortScans);
-
-        vector<float>	 		merge_points;
-        vector<unsigned char>	merge_colors;
-
-        int j = -1;
-        for(vector<boost::filesystem::path>::iterator it = v.begin(); it != v.end(); ++it)
-        {
-            int i = 0;
-
-            std::string currFile = (it->stem()).string();
-            bool p = parse_filename(currFile.begin(), currFile.end(), i);
-
-            //if parsing failed terminate, this should never happen.
-            if(!p)
-            {
-                std::cerr << timestamp << "ERROR " << " " << *it << " does not match the naming convention" << std::endl;
-                break;
-            }
-
-            // check if the current scan has the same numbering like the previous, this should not happen.
-            if(i == j)
-            {
-                std::cerr << timestamp << "ERROR " << *std::prev(it) << " & " << *it << " have identical numbering" << std::endl;
-                break;
-            }
-
-            // check if the scan is in the range which should be processed
-            if(i >= options->getStart()){
-                // when end is default(=0) process the complete vector
-                if(0 == options->getEnd() || i <= options->getEnd())
+                try
                 {
-                    try
+                    // This is dirty and bad designed.
+                    // We need to know when we advanced to the last scan
+                    // for ply merging. Which originally was not planned.
+                    // Two cases end option set or not.
+                    if((i  == options->getEnd()) || std::next(it, 1) == v.end())
                     {
-                        // This is dirty and bad designed.
-                        // We need to know when we advanced to the last scan
-                        // for ply merging. Which originally was not planned.
-                        // Two cases end option set or not.
-                        if((i  == options->getEnd()) || std::next(it, 1) == v.end())
-                        {
-                            lastScan = true;
-                        }
-                        processSingleFile(*it);
-                        std::cout << " finished" << std::endl;
+                        lastScan = true;
                     }
-                    catch(const char* msg)
-                    {
-                        std::cerr << timestamp << msg << *it << std::endl;
-                        break;
-                    }
-                    j = i;
+                    processSingleFile(*it);
+                    std::cout << " finished" << std::endl;
                 }
-                else
+                catch(const char* msg)
                 {
+                    std::cerr << timestamp << msg << *it << std::endl;
                     break;
                 }
+                j = i;
             }
-
+            else
+            {
+                break;
+            }
         }
+
     }
 
     cout << timestamp << "Program end." << endl;

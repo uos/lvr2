@@ -31,7 +31,7 @@ using std::unordered_map;
 #include <lvr/io/ModelFactory.hpp>
 #include <lvr2/algorithm/Materializer.hpp>
 #include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/algorithm/FinalizeAlgorithm.hpp>
+#include <lvr2/algorithm/FinalizeAlgorithms.hpp>
 
 
 namespace lvr2
@@ -55,7 +55,7 @@ void writeDebugMesh(
     }
 
     // Set color to mesh
-    FinalizeAlgorithm<BaseVecT> finalize;
+    SimpleFinalizer<BaseVecT> finalize;
     finalize.setColorData(colorMap);
 
     // Get buffer
@@ -122,7 +122,7 @@ writeDebugContourMesh(
     }
 
     // Finalize mesh (convert it to simple `MeshBuffer`)
-    FinalizeAlgorithm<BaseVecT> finalize;
+    SimpleFinalizer<BaseVecT> finalize;
     finalize.setColorData(color_vertices);
     auto buffer = finalize.apply(mesh);
 
