@@ -18,13 +18,13 @@ SearchTreeFlann< VertexT >::SearchTreeFlann( PointBufferPtr buffer, size_t &n_po
 {
 	this->initBuffers(buffer);
 
-	m_flannPoints = flann::Matrix<float> (new float[3 * n_points], n_points, 3);
-	for(size_t i = 0; i < n_points; i++)
-	{
-		m_flannPoints[i][0] = this->m_pointData[3 * i];
-		m_flannPoints[i][1] = this->m_pointData[3 * i + 1];
-		m_flannPoints[i][2] = this->m_pointData[3 * i + 2];
-	}
+	m_flannPoints = flann::Matrix<float> (this->m_pointData.get(), n_points, 3);
+//	for(size_t i = 0; i < n_points; i++)
+//	{
+//		m_flannPoints[i][0] = this->m_pointData[3 * i];
+//		m_flannPoints[i][1] = this->m_pointData[3 * i + 1];
+//		m_flannPoints[i][2] = this->m_pointData[3 * i + 2];
+//	}
 
 	m_tree = boost::shared_ptr<flann::Index<flann::L2_Simple<float> > >(new flann::Index<flann::L2_Simple<float> >(m_flannPoints, ::flann::KDTreeSingleIndexParams (10, false)));
 	m_tree->buildIndex();
@@ -40,10 +40,11 @@ SearchTreeFlann< VertexT >::~SearchTreeFlann() {
 template<typename VertexT>
 void SearchTreeFlann< VertexT >::kSearch( coord< float > &qp, int k, vector< int > &indices, vector< float > &distances )
 {
-	flann::Matrix<float> query_point(new float[3], 1, 3);
-	query_point[0][0] = qp.x;
-	query_point[0][1] = qp.y;
-	query_point[0][2] = qp.z;
+  float qpArr[3];
+  qpArr[0] = qp.x;
+  qpArr[1] = qp.y;
+  qpArr[2] = qp.z;
+	flann::Matrix<float> query_point(&qpArr[0], 1, 3);
 
 	indices.resize(k);
 	distances.resize(k);
@@ -57,10 +58,11 @@ void SearchTreeFlann< VertexT >::kSearch( coord< float > &qp, int k, vector< int
 template<typename VertexT>
 void SearchTreeFlann< VertexT >::kSearch(VertexT qp, int k, vector< VertexT > &nb)
 {
-	flann::Matrix<float> query_point(new float[3], 1, 3);
-	query_point[0][0] = qp.x;
-	query_point[0][1] = qp.y;
-	query_point[0][2] = qp.z;
+  float qpArr[3];
+  qpArr[0] = qp.x;
+  qpArr[1] = qp.y;
+  qpArr[2] = qp.z;
+  flann::Matrix<float> query_point(&qpArr[0], 1, 3);
 
 	m_dst.resize(k);
 	m_ind.resize(k);

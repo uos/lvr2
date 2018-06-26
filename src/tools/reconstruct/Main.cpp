@@ -418,6 +418,8 @@ int main(int argc, char** argv)
 		
 		// Create mesh
 		reconstruction->getMesh(mesh);
+
+		delete grid;
 		
 		// Save grid to file
 		if(options.saveGrid())
