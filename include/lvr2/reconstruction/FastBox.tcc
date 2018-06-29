@@ -209,7 +209,7 @@ void FastBox<BaseVecT>::getSurface(
 
     int index = getIndex(qp);
 
-    // Do not create traingles for invalid boxes
+    // Do not create triangles for invalid boxes
     for (int i = 0; i < 8; i++)
     {
         if (qp[m_vertices[i]].m_invalid)
@@ -219,7 +219,7 @@ void FastBox<BaseVecT>::getSurface(
     }
 
     // Generate the local approximation surface according to the marching
-    // cubes table for Paul Burke.
+    // cubes table by Paul Burke.
     for(int a = 0; lvr::MCTable[index][a] != -1; a+= 3)
     {
         OptionalVertexHandle vertex_indices[3];
@@ -288,7 +288,7 @@ void FastBox<BaseVecT>::getSurface(
 
     int index = getIndex(qp);
 
-    // Do not create traingles for invalid boxes
+    // Do not create triangles for invalid boxes
     for (int i = 0; i < 8; i++)
     {
         if (qp[m_vertices[i]].m_invalid)
