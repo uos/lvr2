@@ -372,6 +372,13 @@ public:
     bool hasPointNormals() { return m_numPointNormals != 0;}
 
 
+    /**
+     * @brief   Returns true if the stored data contains point color
+     *          information
+     */
+    bool hasPointColors() { return m_numPointColors != 0;}
+
+
 protected:
 
     /// %Point buffer.
