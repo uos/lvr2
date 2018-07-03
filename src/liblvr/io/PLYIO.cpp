@@ -406,7 +406,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
        std::cerr << timestamp << "Could not read header." << std::endl;
         return ModelPtr();
     }
-    std::cout << timestamp << "Loading »" << filename << "«." << std::endl;
+    //std::cout << timestamp << "Loading »" << filename << "«." << std::endl;
 
     /* Check if there are vertices and get the amount of vertices. */
     char buf[256] = "";

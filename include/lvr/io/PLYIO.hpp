@@ -79,7 +79,7 @@ ELEMENT point
    PROPERTY            red (unsigned char)
    PROPERTY          green (unsigned char)
    PROPERTY           blue (unsigned char)
-   PROPERTY             nx (float)
+   PROPERTY             nx (std::cout << it << std::endl;float)
    PROPERTY             ny (float)
    PROPERTY             nz (float)
    PROPERTY      intensity (float)
