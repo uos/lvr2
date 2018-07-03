@@ -352,6 +352,9 @@ int main(int argc, char** argv)
 
     size_t maxChunkPoints = 1e7;
     auto it = ply_file_names.begin();
+
+    PacmanProgressBar progress(ply_file_names.size(), "Merging...");
+
     while(it != ply_file_names.end())
     {
         size_t pointsInChunk = 0;
@@ -367,8 +370,12 @@ int main(int argc, char** argv)
 
         for(auto chunkIt: filesInChunk)
         {
-            cout << "Adding " << chunkIt << endl;
             addToFile(out, chunkIt);
+        }
+
+        for(size_t c = 0; c < filesInChunk.size(); c++)
+        {
+            ++progress;
         }
     }
 
