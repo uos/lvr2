@@ -414,6 +414,7 @@ add_subdirectory(src/tools/registration)
 add_subdirectory(src/tools/normals)
 add_subdirectory(src/tools/kaboom)
 add_subdirectory(src/tools/image_normals)
+add_subdirectory(src/tools/plymerger)
 
 if(MPI_FOUND)
     add_subdirectory(src/tools/mpi)
