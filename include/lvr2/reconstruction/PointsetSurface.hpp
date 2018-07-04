@@ -92,7 +92,7 @@ public:
     /**
      * @brief   Returns a pointer to the search tree
      */
-    const SearchTree<BaseVecT>& searchTree() const;
+    std::shared_ptr<SearchTree<BaseVecT>> searchTree() const;
 
     /**
      * @brief   Returns the bounding box of the point set

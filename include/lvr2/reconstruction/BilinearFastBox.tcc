@@ -121,7 +121,7 @@ void BilinearFastBox<BaseVecT>::getSurface(
      if(this->m_surface)
      {
 
-//         auto tree = this->m_surface->searchTree();
+         auto tree = this->m_surface->searchTree();
 
 //         // Detect triangles that are on the border of the mesh
 //         vector<EdgeHandle> out_edges;

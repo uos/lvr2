@@ -118,7 +118,7 @@ DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
             // Get idx for nearest point to vertex from point cloud
             auto vertex = mesh.getVertexPosition(vH);
             vector<size_t> pointIdx;
-            surface.searchTree().kSearch(vertex, 1, pointIdx);
+            surface.searchTree()->kSearch(vertex, 1, pointIdx);
             if (pointIdx.empty())
             {
                 panic("no near point found!");
