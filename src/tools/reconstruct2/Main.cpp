@@ -339,13 +339,19 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
 
     if(decompositionType == "MC")
     {
-        cout << "Decomposition type 'MC' is not implemented yet!" << endl;
-        panic_unimplemented("decomposition type 'MC'");
+        auto grid = std::make_shared<PointsetGrid<Vec, FastBox<Vec>>>(
+            resolution,
+            surface,
+            surface->getBoundingBox(),
+            useVoxelsize,
+            options.extrude()
+        );
+        grid->calcDistanceValues();
+        auto reconstruction = make_unique<FastReconstruction<Vec, FastBox<Vec>>>(grid);
+        return make_pair(grid, std::move(reconstruction));
     }
     else if(decompositionType == "PMC")
     {
-        cout << options.extrude() << endl;
-
         BilinearFastBox<Vec>::m_surface = surface;
         auto grid = std::make_shared<PointsetGrid<Vec, BilinearFastBox<Vec>>>(
             resolution,
