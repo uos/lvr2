@@ -147,7 +147,7 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
                     + boundingRect.m_vec1 * (x * m_texelSize + boundingRect.m_minDistA - m_texelSize / 2.0)
                     + boundingRect.m_vec2 * (y * m_texelSize + boundingRect.m_minDistB - m_texelSize / 2.0);
 
-                surface.searchTree().kSearch(currentPos, k, cv);
+                surface.searchTree()->kSearch(currentPos, k, cv);
 
                 uint8_t r = 0, g = 0, b = 0;
 

@@ -57,7 +57,7 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
     {
         cv.clear();
         auto p = mesh.getVertexPosition(vertexH);
-        surface->searchTree().kSearch(p, k, cv);
+        surface->searchTree()->kSearch(p, k, cv);
 
         float r = 0.0f, g = 0.0f, b = 0.0f;
 
@@ -157,7 +157,7 @@ Rgb8Color calcColorForFaceCentroid(
 
         // Find color of face centroid
         int k = 1; // k-nearest-neighbors
-        surface.searchTree().kSearch(centroid, k, cv);
+        surface.searchTree()->kSearch(centroid, k, cv);
         uint8_t r = 0, g = 0, b = 0;
         for (size_t pointIdx : cv)
         {
