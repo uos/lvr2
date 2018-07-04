@@ -176,6 +176,7 @@
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/BilinearFastBox.hpp>
+#include <lvr2/reconstruction/TetraederBox.hpp>
 #include <lvr2/reconstruction/FastReconstruction.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/reconstruction/SearchTree.hpp>
@@ -331,7 +332,7 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
     string decompositionType = options.getDecomposition();
 
     // Fail safe check
-    if(decompositionType != "MC" && decompositionType != "PMC" && decompositionType != "SF" )
+    if(decompositionType != "MT" && decompositionType != "MC" && decompositionType != "PMC" && decompositionType != "SF" )
     {
         cout << "Unsupported decomposition type " << decompositionType << ". Defaulting to PMC." << endl;
         decompositionType = "PMC";
@@ -362,6 +363,19 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
         );
         grid->calcDistanceValues();
         auto reconstruction = make_unique<FastReconstruction<Vec, BilinearFastBox<Vec>>>(grid);
+        return make_pair(grid, std::move(reconstruction));
+    }
+    else if(decompositionType == "MT")
+    {
+        auto grid = std::make_shared<PointsetGrid<Vec, TetraederBox<Vec>>>(
+            resolution,
+            surface,
+            surface->getBoundingBox(),
+            useVoxelsize,
+            options.extrude()
+        );
+        grid->calcDistanceValues();
+        auto reconstruction = make_unique<FastReconstruction<Vec, TetraederBox<Vec>>>(grid);
         return make_pair(grid, std::move(reconstruction));
     }
     else if(decompositionType == "SF")
