@@ -96,19 +96,19 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     //  cout << endl;
     // }
 
-    // if(traits.type == "BilinearFastBox")
-    // {
-    //     string comment = lvr::timestamp.getElapsedTime() + "Optimizing plane contours  ";
-    //     lvr::ProgressBar progress(this->m_grid->getNumberOfCells(), comment);
-    //     for(it = this->m_grid->firstCell(); it != this->m_grid->lastCell(); it++)
-    //     {
-    //      // F... type safety. According to traits object this is OK!
-    //         BilinearFastBox<BaseVecT>* box = reinterpret_cast<BilinearFastBox<VertexT, NormalT>*>(it->second);
-    //         box->optimizePlanarFaces(5);
-    //         ++progress;
-    //     }
-    //     cout << endl;
-    // }
+     if(traits.type == "BilinearFastBox")
+     {
+         string comment = lvr::timestamp.getElapsedTime() + "Optimizing plane contours  ";
+         lvr::ProgressBar progress(this->m_grid->getNumberOfCells(), comment);
+         for(it = this->m_grid->firstCell(); it != this->m_grid->lastCell(); it++)
+         {
+          // F... type safety. According to traits object this is OK!
+             BilinearFastBox<BaseVecT>* box = reinterpret_cast<BilinearFastBox<BaseVecT>*>(it->second);
+             box->optimizePlanarFaces(5);
+             ++progress;
+         }
+         cout << endl;
+     }
 
 }
 
