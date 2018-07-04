@@ -128,7 +128,7 @@ void FastReconstruction<VertexT, NormalT, BoxT>::getMesh(BaseMesh<VertexT, Norma
     for(it = m_grid->firstCell(); it != m_grid->lastCell(); it++)
     {
         b = it->second;
-        b->getSurface(mesh, m_grid->getQueryPoints(), global_index, bb, duplicates, comparePrecision);
+        //b->getSurface(mesh, m_grid->getQueryPoints(), global_index, bb, duplicates, comparePrecision);
         if(!timestamp.isQuiet())
             ++progress;
     }
