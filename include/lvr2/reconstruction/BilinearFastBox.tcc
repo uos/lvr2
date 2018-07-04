@@ -49,77 +49,77 @@ void BilinearFastBox<BaseVecT>::getSurface(
         vector<QueryPoint<BaseVecT>> &qp,
         uint &globalIndex)
 {
-    FastBox<BaseVecT>::getSurface(mesh, qp, globalIndex);
-    // Point<BaseVecT> corners[8];
-    // Point<BaseVecT> vertex_positions[12];
+    //FastBox<BaseVecT>::getSurface(mesh, qp, globalIndex);
+     Point<BaseVecT> corners[8];
+     Point<BaseVecT> vertex_positions[12];
 
-    // float distances[8];
+     float distances[8];
 
-    // this->getCorners(corners, qp);
-    // this->getDistances(distances, qp);
-    // this->getIntersections(corners, distances, vertex_positions);
+     this->getCorners(corners, qp);
+     this->getDistances(distances, qp);
+     this->getIntersections(corners, distances, vertex_positions);
 
-    // int index = this->getIndex(qp);
+     int index = this->getIndex(qp);
 
-    // // Do not create triangles for invalid boxes
-    // for (int i = 0; i < 8; i++)
-    // {
-    //     if (qp[this->m_vertices[i]].m_invalid)
-    //     {
-    //         return;
-    //     }
-    // }
+     // Do not create triangles for invalid boxes
+     for (int i = 0; i < 8; i++)
+     {
+         if (qp[this->m_vertices[i]].m_invalid)
+         {
+             return;
+         }
+     }
 
-    // // Generate the local approximation surface according to the marching
-    // // cubes table for Paul Burke.
-    // for(int a = 0; lvr::MCTable[index][a] != -1; a+= 3)
-    // {
-    //     OptionalVertexHandle vertex_indices[3];
+     // Generate the local approximation surface according to the marching
+     // cubes table for Paul Burke.
+     for(int a = 0; lvr::MCTable[index][a] != -1; a+= 3)
+     {
+         OptionalVertexHandle vertex_indices[3];
 
-    //     for(int b = 0; b < 3; b++)
-    //     {
-    //         auto edge_index = lvr::MCTable[index][a + b];
+         for(int b = 0; b < 3; b++)
+         {
+             auto edge_index = lvr::MCTable[index][a + b];
 
-    //         //If no index was found generate new index and vertex
-    //         //and update all neighbor boxes
-    //         if(!this->m_intersections[edge_index])
-    //         {
-    //             auto p = vertex_positions[edge_index];
-    //             this->m_intersections[edge_index] = mesh->addVertex(p);
+             //If no index was found generate new index and vertex
+             //and update all neighbor boxes
+             if(!this->m_intersections[edge_index])
+             {
+                 auto p = vertex_positions[edge_index];
+                 this->m_intersections[edge_index] = mesh.addVertex(p);
 
-    //             for(int i = 0; i < 3; i++)
-    //             {
-    //                 auto current_neighbor = this->m_neighbors[lvr::neighbor_table[edge_index][i]];
-    //                 if(current_neighbor != 0)
-    //                 {
-    //                     current_neighbor->m_intersections[lvr::neighbor_vertex_table[edge_index][i]] = m_intersections[edge_index];
-    //                 }
-    //             }
+                 for(int i = 0; i < 3; i++)
+                 {
+                     auto current_neighbor = this->m_neighbors[lvr::neighbor_table[edge_index][i]];
+                     if(current_neighbor != 0)
+                     {
+                         current_neighbor->m_intersections[lvr::neighbor_vertex_table[edge_index][i]] = this->m_intersections[edge_index];
+                     }
+                 }
 
-    //             // Increase the global vertex counter to save the buffer
-    //             // position were the next new vertex has to be inserted
-    //             globalIndex++;
-    //         }
+                 // Increase the global vertex counter to save the buffer
+                 // position were the next new vertex has to be inserted
+                 globalIndex++;
+             }
 
-    //         //Save vertex index in mesh
-    //         vertex_indices[b] = this->m_intersections[edge_index];
-    //     }
+             //Save vertex index in mesh
+             vertex_indices[b] = this->m_intersections[edge_index];
+         }
 
-    //     // Add triangle actually does the normal interpolation for us.
-    //     auto f = mesh.addFace(
-    //         vertex_indices[0].unwrap(),
-    //         vertex_indices[1].unwrap(),
-    //         vertex_indices[2].unwrap()
-    //     );
-    //     m_faces.push_back(f); // THIS IS THE ONLY LINE DIFFERENT FROM BASE IMPL
-    // }
+         // Add triangle actually does the normal interpolation for us.
+         auto f = mesh.addFace(
+             vertex_indices[0].unwrap(),
+             vertex_indices[1].unwrap(),
+             vertex_indices[2].unwrap()
+         );
+         m_faces.push_back(f); // THIS IS THE ONLY LINE DIFFERENT FROM BASE IMPL
+     }
 }
 
-// template<typename BaseVecT>
-// void BilinearFastBox<BaseVecT>::optimizePlanarFaces(size_t kc)
-// {
-//     if(this->m_surface)
-//     {
+ template<typename BaseVecT>
+ void BilinearFastBox<BaseVecT>::optimizePlanarFaces(size_t kc)
+ {
+     if(this->m_surface)
+     {
 
 //         auto tree = this->m_surface->searchTree();
 
@@ -197,8 +197,8 @@ void BilinearFastBox<BaseVecT>::getSurface(
 
 //             }
 //         }
-//     }
-// }
+     }
+ }
 
 template<typename BaseVecT>
 BilinearFastBox<BaseVecT>::~BilinearFastBox()
