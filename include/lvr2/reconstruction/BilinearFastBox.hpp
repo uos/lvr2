@@ -65,7 +65,7 @@ public:
         float comparePrecision
     );
 
-    void optimizePlanarFaces(size_t kc);
+    void optimizePlanarFaces(BaseMesh<BaseVecT>& mesh, size_t kc);
 
     // the point set surface
     static PointsetSurfacePtr<BaseVecT> m_surface;

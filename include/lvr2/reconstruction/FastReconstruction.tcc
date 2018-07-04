@@ -104,7 +104,7 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
          {
           // F... type safety. According to traits object this is OK!
              BilinearFastBox<BaseVecT>* box = reinterpret_cast<BilinearFastBox<BaseVecT>*>(it->second);
-             box->optimizePlanarFaces(5);
+             box->optimizePlanarFaces(mesh, 5);
              ++progress;
          }
          cout << endl;
