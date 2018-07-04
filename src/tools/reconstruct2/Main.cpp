@@ -344,6 +344,8 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
     }
     else if(decompositionType == "PMC")
     {
+        cout << options.extrude() << endl;
+
         BilinearFastBox<Vec>::m_surface = surface;
         auto grid = std::make_shared<PointsetGrid<Vec, BilinearFastBox<Vec>>>(
             resolution,

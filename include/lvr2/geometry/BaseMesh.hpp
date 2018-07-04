@@ -463,6 +463,12 @@ public:
     virtual bool isFlippable(EdgeHandle handle) const;
 
     /**
+     * @brief Determines wheter the given edge is an border edge, i.e., if
+     *        it is connected to two faces or not
+     */
+    virtual bool isBorderEdge(EdgeHandle handle) const = 0;
+
+    /**
      * @brief Check whether or not inserting a face between the given vertices
      *        would be valid.
      *
