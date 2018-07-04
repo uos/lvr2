@@ -120,90 +120,70 @@ void BilinearFastBox<BaseVecT>::getSurface(
  {
      if(this->m_surface)
      {
-
          auto tree = this->m_surface->searchTree();
-
          vector<EdgeHandle> out_edges;
 
-         for(auto it : m_faces)
+         for(auto face_it : m_faces)
          {
-
+            auto edges = mesh.getEdgesOfFace(face_it);
+            for(auto edge_it : edges)
+            {
+                if(mesh.isBorderEdge(edge_it))
+                {
+                    out_edges.push_back(edge_it);
+                }
+            }
          }
 
-//         // Detect triangles that are on the border of the mesh
-//         vector<EdgeHandle> out_edges;
+        if(out_edges.size() == 1 || out_edges.size() == 2 )
+        {
+            for(size_t i = 0; i < out_edges.size(); i++)
+            {
+                vector<size_t> nearest1, nearest2;
 
-//         for(int i = 0; i < m_faces.size(); i++)
-//         {
-//             auto face = m_faces[i];
-//             HEdge* e = face->m_edge;
-//             for(int j = 0; j < 2; j++)
-//             {
-//                 // Catch null pointer from outer faces
-//                 try
-//                 {
-//                     e->pair()->face();
-//                 }
-//                 catch (HalfEdgeAccessException& ex)
-//                 {
-//                     out_edges.push_back(e);
-//                 }
+                auto vertices = mesh.getVerticesOfEdge(out_edges[i]);
+                Point<BaseVecT>& p1 = mesh.getVertexPosition(vertices[0]);
+                Point<BaseVecT>& p2 = mesh.getVertexPosition(vertices[1]);
 
-//                 // Check integrity
-//                 try
-//                 {
-//                     e = e->next();
-//                 }
-//                 catch (HalfEdgeAccessException& ex)
-//                 {
-//                     // Face corrupted, abort
-//                     cout << "Warning, corrupted face" << endl;
-//                     break;
-//                 }
-//             }
+                this->m_surface->searchTree()->kSearch(p1, kc, nearest1);
+                size_t nk = min(kc, nearest1.size());
 
-//         }
+                //Hmmm, sometimes the k-search seems to fail...
+                if(nk > 0)
+                {
+                    Vector<BaseVecT> centroid1;
+                    for(auto idx : nearest1)
+                    {
+                        Vector<BaseVecT> p = m_surface->pointBuffer()->getPoint(idx).asVector();
+                        centroid1 += p;
+                    }
+                    centroid1 /= nk;
 
-//         // Handle different cases
-//         if(out_edges.size() == 1 || out_edges.size() == 2 )
-//         {
-//             // Get nearest points
-//             for(int i = 0; i < out_edges.size(); i++)
-//             {
-//                 vector<VertexT> nearest1, nearest2;
-//                 this->m_surface->searchTree()->kSearch( out_edges[i]->start()->m_position, kc, nearest1);
+                    p1[0] = centroid1[0];
+                    p1[1] = centroid1[1];
+                    p1[2] = centroid1[2];
+                }
 
-//                 size_t nk = min(kc, nearest1.size());
+                this->m_surface->searchTree()->kSearch(p2, kc, nearest2);
+                nk = min(kc, nearest2.size());
 
+                //Hmmm, sometimes the k-search seems to fail...
+                if(nk > 0)
+                {
+                    Vector<BaseVecT> centroid2;
+                    for(auto idx : nearest2)
+                    {
+                        Vector<BaseVecT> p = m_surface->pointBuffer()->getPoint(idx).asVector();
+                        centroid2 += p;
+                    }
+                    centroid2 /= nk;
 
-//                 // Hmmm, sometimes the k-search seems to fail...
-//                 if(nk > 0)
-//                 {
-//                     VertexT centroid1;
-//                     for(int a = 0; a < nk; a++)
-//                     {
-//                         centroid1 += nearest1[a];
-//                     }
-//                     centroid1 /= nk;
-//                     out_edges[i]->start()->m_position = centroid1;
-//                 }
-
-//                 this->m_surface->searchTree()->kSearch( out_edges[i]->end()->m_position, kc, nearest2);
-//                 nk = min(kc, nearest2.size());
-
-//                 if(nk > 0)
-//                 {
-//                     VertexT centroid2;
-//                     for(int a = 0; a < nk; a++)
-//                     {
-//                         centroid2 += nearest2[a];
-//                     }
-//                     centroid2 /= nk;
-//                     out_edges[i]->end()->m_position = centroid2;
-//                 }
-
-//             }
-//         }
+                    p2[0] = centroid2[0];
+                    p2[1] = centroid2[1];
+                    p2[2] = centroid2[2];
+                }
+            }
+        }
      }
  }
 

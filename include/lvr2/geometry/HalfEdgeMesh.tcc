@@ -579,6 +579,24 @@ void HalfEdgeMesh<BaseVecT>::getNeighboursOfFace(
     }
 }
 
+template<typename BaseVecT>
+bool HalfEdgeMesh<BaseVecT>::isBorderEdge(EdgeHandle handle) const
+{
+    HalfEdgeHandle h = HalfEdgeHandle::oneHalfOf(handle);
+
+    auto edge = getE(h);
+    auto twin = getE(edge.twin);
+
+    // Only if both halfs have an adjacent face this is not a border edge
+    if(twin.face && edge.face)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+
 template <typename BaseVecT>
 array<VertexHandle, 2> HalfEdgeMesh<BaseVecT>::getVerticesOfEdge(EdgeHandle edgeH) const
 {

@@ -86,6 +86,8 @@ public:
     bool containsFace(FaceHandle fH) const;
     bool containsEdge(EdgeHandle eH) const;
 
+    bool isBorderEdge(EdgeHandle handle) const;
+
     Index nextVertexIndex() const;
     Index nextFaceIndex() const;
     Index nextEdgeIndex() const;

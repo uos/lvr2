@@ -94,7 +94,7 @@ ModelPtr AsciiIO::read(
     ModelPtr model( new Model( PointBufferPtr( new PointBuffer)));
 
     // (Some) sanity checks for given paramters
-    if(rPos >= num_columns || gPos >= num_columns || bPos >= num_columns || iPos >= num_columns)
+    if(rPos > num_columns || gPos > num_columns || bPos > num_columns || iPos > num_columns)
     {
         cout << timestamp << "Error: At least one attribute index is largen than the number of columns" << endl;
         // Retrun empty model
@@ -267,7 +267,14 @@ ModelPtr AsciiIO::read(string filename)
         }
         else if(has_intensity)
         {
-            return read(filename, 0, 1, 2, -1, -1, -1, 6);
+            if(num_attributes == 1)
+            {
+                return read(filename, 0, 1, 2, -1, -1, -1, 3);
+            }
+            else
+            {
+                return read(filename, 0, 1, 2, -1, -1, -1, 6);
+            }
         }
     }
     return read(filename, 1, 2, 3);
