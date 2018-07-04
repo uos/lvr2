@@ -116,12 +116,19 @@ void BilinearFastBox<BaseVecT>::getSurface(
 }
 
  template<typename BaseVecT>
- void BilinearFastBox<BaseVecT>::optimizePlanarFaces(size_t kc)
+ void BilinearFastBox<BaseVecT>::optimizePlanarFaces(BaseMesh<BaseVecT>& mesh, size_t kc)
  {
      if(this->m_surface)
      {
 
          auto tree = this->m_surface->searchTree();
+
+         vector<EdgeHandle> out_edges;
+
+         for(auto it : m_faces)
+         {
+
+         }
 
 //         // Detect triangles that are on the border of the mesh
 //         vector<EdgeHandle> out_edges;
