@@ -95,6 +95,7 @@ struct Point : public BaseVecT
     Point<BaseVecT> operator-(const Vector<BaseVecT> &other) const;
     Point<BaseVecT>& operator+=(const Vector<BaseVecT> &other);
     Point<BaseVecT>& operator-=(const Vector<BaseVecT> &other);
+
 };
 
 template<typename BaseVecT>
