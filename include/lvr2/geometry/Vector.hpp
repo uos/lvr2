@@ -117,6 +117,8 @@ struct Vector : public BaseVecT
     // Addition/subtraction between point and vector
     Point<BaseVecT> operator+(const Point<BaseVecT> &other) const;
     Point<BaseVecT> operator-(const Point<BaseVecT> &other) const;
+
+    typename BaseVecT::CoordType operator*(const Vector<BaseVecT> &other) const;
 };
 
 template<typename BaseVecT>

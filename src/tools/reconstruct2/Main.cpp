@@ -183,6 +183,7 @@
 #include <lvr2/reconstruction/SearchTreeFlann.hpp>
 #include <lvr2/reconstruction/HashGrid.hpp>
 #include <lvr2/reconstruction/PointsetGrid.hpp>
+#include <lvr2/reconstruction/SharpBox.hpp>
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/io/PlutoMapIO.hpp>
@@ -380,8 +381,15 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
     }
     else if(decompositionType == "SF")
     {
-        cout << "Decomposition type 'SF' is not implemented yet!" << endl;
-        panic_unimplemented("decomposition type 'SF'");
+        auto grid = std::make_shared<PointsetGrid<Vec, SharpBox<Vec>>>(
+            resolution,
+            surface,
+            surface->getBoundingBox(),
+            useVoxelsize,
+            options.extrude()
+        );
+        auto reconstruction = make_unique<FastReconstruction<Vec, SharpBox<Vec>>>(grid);
+        return make_pair(grid, std::move(reconstruction));
     }
 
     return make_pair(nullptr, nullptr);

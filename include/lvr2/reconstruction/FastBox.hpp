@@ -27,8 +27,8 @@
 #ifndef _LVR2_RECONSTRUCTION_FASTBOX_H_
 #define _LVR2_RECONSTRUCTION_FASTBOX_H_
 
-#include <lvr/reconstruction/MCTable.hpp>
-#include <lvr/reconstruction/FastBoxTables.hpp>
+#include <lvr2/reconstruction/MCTable.hpp>
+#include <lvr2/reconstruction/FastBoxTables.hpp>
 
 #include <lvr2/geometry/Point.hpp>
 #include <lvr2/geometry/Normal.hpp>
@@ -66,7 +66,7 @@ public:
     FastBox(Point<BaseVecT> center);
 
     /**
-     * @brief Destructor.
+     * @brief Destructor.NormalT
      */
     virtual ~FastBox() {};
 

@@ -220,13 +220,13 @@ void FastBox<BaseVecT>::getSurface(
 
     // Generate the local approximation surface according to the marching
     // cubes table by Paul Burke.
-    for(int a = 0; lvr::MCTable[index][a] != -1; a+= 3)
+    for(int a = 0; MCTable[index][a] != -1; a+= 3)
     {
         OptionalVertexHandle vertex_indices[3];
 
         for(int b = 0; b < 3; b++)
         {
-            auto edge_index = lvr::MCTable[index][a + b];
+            auto edge_index = MCTable[index][a + b];
 
             //If no index was found generate new index and vertex
             //and update all neighbor boxes
@@ -237,10 +237,10 @@ void FastBox<BaseVecT>::getSurface(
 
                 for(int i = 0; i < 3; i++)
                 {
-                    auto current_neighbor = m_neighbors[lvr::neighbor_table[edge_index][i]];
+                    auto current_neighbor = m_neighbors[neighbor_table[edge_index][i]];
                     if(current_neighbor != 0)
                     {
-                        current_neighbor->m_intersections[lvr::neighbor_vertex_table[edge_index][i]] = m_intersections[edge_index];
+                        current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = m_intersections[edge_index];
                     }
                 }
 
@@ -298,15 +298,15 @@ void FastBox<BaseVecT>::getSurface(
     }
 
     // Generate the local approximation surface according to the marching
-    // cubes table for Paul Burke.
-    for(int a = 0; lvr::MCTable[index][a] != -1; a+= 3)
+    // cubes table by Paul Burke.
+    for(int a = 0; MCTable[index][a] != -1; a+= 3)
     {
         OptionalVertexHandle vertex_indices[3];
 
         for(int b = 0; b < 3; b++)
         {
             bool add_duplicate = false;
-            auto edge_index = lvr::MCTable[index][a + b];
+            auto edge_index = MCTable[index][a + b];
 
             //If no index was found generate new index and vertex
             //and update all neighbor boxes
@@ -323,10 +323,10 @@ void FastBox<BaseVecT>::getSurface(
 
                 for(int i = 0; i < 3; i++)
                 {
-                    auto current_neighbor = m_neighbors[lvr::neighbor_table[edge_index][i]];
+                    auto current_neighbor = m_neighbors[neighbor_table[edge_index][i]];
                     if(current_neighbor != 0)
                     {
-                        current_neighbor->m_intersections[lvr::neighbor_vertex_table[edge_index][i]] = m_intersections[edge_index];
+                        current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = m_intersections[edge_index];
                     }
                 }
 

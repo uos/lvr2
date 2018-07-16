@@ -46,6 +46,9 @@ template <typename> struct Vector;
 template <typename BaseVecT>
 struct Normal : private Vector<BaseVecT>
 {
+    Normal() { this->x = 0; this->y = 1; this->z = 0;}
+
+
     // ^ Private inheritance to restrict modifying access to the vector's data
     // in order to prevent modifications that would result in a non-normalized
     // vector.
@@ -119,6 +122,7 @@ struct Normal : private Vector<BaseVecT>
     using Vector<BaseVecT>::operator!=;
     using Vector<BaseVecT>::operator+;
     using Vector<BaseVecT>::operator-;
+    using Vector<BaseVecT>::operator*;
 
     // While already private, we delete these functions as they don't make
     // sense.

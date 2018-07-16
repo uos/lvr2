@@ -136,6 +136,8 @@ public:
     bool operator==(const BaseVector &other) const;
     bool operator!=(const BaseVector &other) const;
 
+    CoordT operator*(const BaseVector<CoordType> &other) const;
+
     /**
      * @brief    Indexed coordinate access (reading)
      */

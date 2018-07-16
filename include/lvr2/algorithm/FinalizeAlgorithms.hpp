@@ -52,7 +52,7 @@ class MaterializerResult;
 
 /**
  * Algorithm that converts a BaseMesh into a MeshBuffer while maintaining the original graph structure. This means
- * that no duplicate vertices will be created and therefor no textures can be generated.
+ * that no duplicate vertices will be created and therefore no textures can be generated.
  */
 template<typename BaseVecT>
 class SimpleFinalizer
