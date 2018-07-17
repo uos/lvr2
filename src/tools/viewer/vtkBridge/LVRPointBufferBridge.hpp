@@ -53,6 +53,7 @@ public:
     void setPointSize(int pointSize);
     void setOpacity(float opacityValue);
     void setVisibility(bool visible);
+    void setSpectralChannels(size_t r, size_t g, size_t b);
 
     PointBufferPtr getPointBuffer();
 
@@ -65,6 +66,7 @@ protected:
     bool                            m_hasNormals;
     bool                            m_hasColors;
     PointBufferPtr                  m_pointBuffer;
+    size_t                          m_SpectralChannels[3];
 };
 
 typedef boost::shared_ptr<LVRPointBufferBridge> PointBufferBridgePtr;

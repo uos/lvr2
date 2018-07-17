@@ -62,6 +62,20 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
         m_hasNormals = false;
         m_hasColors = false;
     }
+
+    // default: visible light
+    m_SpectralChannels[0] = 650;
+    m_SpectralChannels[1] = 550;
+    m_SpectralChannels[2] = 450;
+}
+
+
+void LVRPointBufferBridge::setSpectralChannels(size_t r, size_t g, size_t b)
+{
+    m_SpectralChannels[0] = r;
+    m_SpectralChannels[1] = g;
+    m_SpectralChannels[2] = b;
+    computePointCloudActor(m_pointBuffer);
 }
 
 PointBufferPtr LVRPointBufferBridge::getPointBuffer()
@@ -104,9 +118,10 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         scalars->SetName("Colors");
 
         double point[3];
-        size_t n, n_c;
+        size_t n, n_c, n_s_p, n_s_channels;
         floatArr points = pc->getPointArray(n);
         ucharArr colors = pc->getPointColorArray(n_c);
+        ucharArr spec = pc->getPointSpectralChannelsArray(n_s_p, n_s_channels);
 
         for(vtkIdType i = 0; i < n; i++)
         {
@@ -115,7 +130,21 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
             point[1] = points[index + 1];
             point[2] = points[index + 2];
 
-            if(n_c)
+            if(n_s_p)
+            {
+                //TODO: use m_SpectralChannels
+                unsigned char speccolor[n_s_channels];
+            	speccolor[0] = spec[i * n_s_channels];
+            	speccolor[1] = spec[i * n_s_channels + 1];
+            	speccolor[2] = spec[i * n_s_channels + 2];  
+
+#if VTK_MAJOR_VERSION < 7
+                scalars->InsertNextTupleValue(speccolor);
+#else
+	            scalars->InsertNextTypedTuple(speccolor);
+#endif
+            }
+            else if(n_c)
             {
             	unsigned char color[3];
             	color[0] = colors[index];
@@ -136,7 +165,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         vtk_polyData->SetPoints(vtk_points);
         vtk_polyData->SetVerts(vtk_cells);
 
-        if(n_c)
+        if(n_c || n_s_p)
         {
                	vtk_polyData->GetPointData()->SetScalars(scalars);
         }
