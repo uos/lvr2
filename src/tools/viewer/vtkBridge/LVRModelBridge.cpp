@@ -28,9 +28,13 @@
 #include <lvr/geometry/Vertex.hpp>
 
 #include <vtkTransform.h>
+#include <vtkActor.h>
+#include <vtkProperty.h>
 
 namespace lvr
 {
+
+class LVRMeshBufferBridge;
 
 LVRModelBridge::LVRModelBridge(ModelPtr model) :
     m_pointBridge(new LVRPointBufferBridge(model->m_pointCloud)),
@@ -42,6 +46,7 @@ LVRModelBridge::LVRModelBridge(ModelPtr model) :
     m_pose.x = 0.0;
     m_pose.y = 0.0;
     m_pose.z = 0.0;
+    if(validMeshBridge()) m_meshBridge->getMeshActor()->GetProperty()->BackfaceCullingOn();
 }
 
 LVRModelBridge::LVRModelBridge(const LVRModelBridge& b)
