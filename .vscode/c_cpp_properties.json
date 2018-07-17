@@ -3,7 +3,8 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/usr/include/vtk-6.2"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

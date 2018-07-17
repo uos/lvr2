@@ -4,6 +4,7 @@
 		"*.tcc": "cpp",
 		"*.ipp": "cpp",
 		"typeindex": "cpp",
-		"typeinfo": "cpp"
+		"typeinfo": "cpp",
+		"*.txx": "cpp"
 	}
 }
