@@ -1,0 +1,9 @@
+{
+	"files.associations": {
+		"*.tmpl": "mustache",
+		"*.tcc": "cpp",
+		"*.ipp": "cpp",
+		"typeindex": "cpp",
+		"typeinfo": "cpp"
+	}
+}
