@@ -40,7 +40,8 @@ PointBuffer::PointBuffer() :
     m_numPointColors( 0 ),
     m_numPointNormals( 0 ),
     m_numPointIntensities( 0 ),
-    m_numPointConfidence( 0 )
+    m_numPointConfidence( 0 ),
+    m_numPointSpectralChannels( 0 )
     {
         /* coordf must be the exact size of three floats to cast the float
          * array to a coordf array. */
@@ -53,6 +54,7 @@ PointBuffer::PointBuffer() :
         m_pointIntensities.reset();
         m_pointNormals.reset();
 		m_pointColors.reset();
+        m_pointSpectralChannels.reset();
     }
 
 
@@ -97,6 +99,16 @@ floatArr PointBuffer::getPointConfidenceArray( size_t &n )
 
     n = m_numPointConfidence;
     return m_pointConfidences;
+
+}
+
+
+ucharArr PointBuffer::getPointSpectralChannelsArray( size_t &n, size_t &n_channels )
+{
+
+    n = m_numPointSpectralChannels;
+    n_channels = m_numSpectralChannels;
+    return m_pointSpectralChannels;
 
 }
 
@@ -228,6 +240,16 @@ void PointBuffer::setPointConfidenceArray( floatArr array, size_t n )
 }
 
 
+void PointBuffer::setPointSpectralChannelsArray( ucharArr array, size_t n, size_t n_channels )
+{
+
+    m_numPointSpectralChannels = n;
+    m_numSpectralChannels = n_channels;
+    m_pointSpectralChannels = array;
+
+}
+
+
 void PointBuffer::freeBuffer()
 {
     m_pointConfidences.reset();
@@ -235,8 +257,10 @@ void PointBuffer::freeBuffer()
     m_pointNormals.reset();
     m_points.reset();
     m_pointColors.reset();
+    m_pointSpectralChannels.reset();
     m_numPoints = m_numPointColors = m_numPointIntensities
-        = m_numPointConfidence = m_numPointNormals = 0;
+        = m_numPointConfidence = m_numPointNormals
+        = m_numPointSpectralChannels = m_numSpectralChannels = 0;
 
 }
 
