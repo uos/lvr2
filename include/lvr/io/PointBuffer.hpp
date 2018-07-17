@@ -139,6 +139,9 @@ public:
     void setPointConfidenceArray( floatArr array, size_t n );
 
 
+    void setPointSpectralChannelsArray( ucharArr array, size_t n, size_t n_channels );
+
+
     /************************* Indexed Set *************************/
 
 
@@ -254,6 +257,8 @@ public:
      **/
     floatArr getPointConfidenceArray( size_t &n );
 
+
+    ucharArr getPointSpectralChannelsArray( size_t &n, size_t &n_channels );
 
     /************************* Indexed Get *************************/
 
@@ -391,6 +396,8 @@ protected:
     floatArr        m_pointIntensities;
     /// %Point confidence buffer.
     floatArr        m_pointConfidences;
+    /// %Point spectral channel buffer.
+    ucharArr     m_pointSpectralChannels;
 
 
     /// Number of points in internal buffer.
@@ -403,6 +410,10 @@ protected:
     size_t          m_numPointIntensities;
     /// Number of point confidence values in internal buffer.
     size_t          m_numPointConfidence;
+    /// Number of spectral channel Datasets in internal buffer.
+    size_t          m_numPointSpectralChannels;
+    /// Number of spectral channels in each spectral channel Dataset.
+    size_t          m_numSpectralChannels;
 
     /// Vector to save the indices of the first and last points of single scans
     std::vector<indexPair> m_subClouds;
