@@ -397,7 +397,7 @@
       </size>
      </property>
     </widget>
-    <widget class="QCommandLinkButton" name="commandLinkButton">
+    <widget class="QCommandLinkButton" name="buttonSpectralsettings">
      <property name="geometry">
       <rect>
        <x>0</x>
