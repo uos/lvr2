@@ -54,6 +54,10 @@ LVRMainWindow::LVRMainWindow()
     Ui::AboutDialog aboutDialog;
     aboutDialog.setupUi(m_aboutDialog);
 
+    m_spectralSettingsDialog = new QDialog();
+    Ui::SpectralDialog spectralSettingsDialog;
+    spectralSettingsDialog.setupUi(m_spectralSettingsDialog);
+
     // Setup specific properties
     QHeaderView* v = this->treeWidget->header();
     v->resizeSection(0, 175);
@@ -216,6 +220,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_buttonCreateMesh, SIGNAL(pressed()), this, SLOT(reconstructUsingMarchingCubes()));
     QObject::connect(m_buttonExportData, SIGNAL(pressed()), this, SLOT(exportSelectedModel()));
     QObject::connect(m_buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
+    QObject::connect(this->buttonSpectralsettings, SIGNAL(pressed()), this, SLOT(showSpectralSettingsDialog()));
 
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
@@ -1119,5 +1124,10 @@ void LVRMainWindow::showAboutDialog(QAction*)
 {
     m_aboutDialog->show();
 }
+void LVRMainWindow::showSpectralSettingsDialog()
+{
+    m_spectralSettingsDialog->show();
+}
+
 
 } /* namespace lvr */
