@@ -39,7 +39,8 @@
 #include <sstream>
 #include <fstream>
 
-
+#include <boost/filesystem.hpp>
+#include <opencv2/opencv.hpp>
 
 namespace lvr
 {
@@ -389,7 +390,7 @@ ModelPtr PLYIO::read( string filename )
 
 
 ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
-        bool readIntensity, bool readNormals, bool readFaces )
+        bool readIntensity, bool readNormals, bool readFaces, bool readPanoramaCoords )
 {
 
     /* Start reading new PLY */
@@ -420,12 +421,14 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     size_t numVertexConfidences     = 0;
     size_t numVertexIntensities     = 0;
     size_t numVertexNormals         = 0;
+    size_t numVertexPanoramaCoords  = 0;
 
     size_t numPoints                = 0;
     size_t numPointColors           = 0;
     size_t numPointConfidence       = 0;
     size_t numPointIntensities      = 0;
     size_t numPointNormals          = 0;
+    size_t numPointPanoramaCoords   = 0;
     size_t numFaces                 = 0;
 
     while ( ( elem = ply_get_next_element( ply, elem ) ) )
@@ -458,6 +461,11 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
                     /* We have normals */
                     numVertexNormals = n;
                 }
+                else if ( !strcmp( name, "x_coords" ) && readPanoramaCoords )
+                {
+                    /* We have panorama coordinates */
+                    numVertexPanoramaCoords = n;
+                }
             }
         }
         else if ( !strcmp( name, "point" ) )
@@ -487,6 +495,11 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
                     /* We have normals */
                     numPointNormals = n;
                 }
+                else if ( !strcmp( name, "x_coords" ) && readPanoramaCoords )
+                {
+                    /* We have panorama coordinates */
+                    numPointPanoramaCoords = n;
+                }
             }
         }
         else if ( !strcmp( name, "face" ) && readFaces )
@@ -512,8 +525,11 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     floatArr pointIntensities;
     floatArr pointNormals;
 
-    ucharArr pointColors;
     ucharArr vertexColors;
+    ucharArr pointColors;
+
+    shortArr vertexPanoramaCoords;
+    shortArr pointPanoramaCoords;
 
     uintArr  faceIndices;
 
@@ -539,6 +555,10 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     {
         vertexNormals = floatArr( new float[ 3 * numVertices ] );
     }
+    if ( numVertexPanoramaCoords )
+    {
+        vertexPanoramaCoords = shortArr( new short[ 2 * numVertices ] );
+    }
     if ( numFaces )
     {
         faceIndices = uintArr( new unsigned int[ numFaces * 3 ] );
@@ -563,19 +583,25 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     {
         pointNormals = floatArr( new float[ 3 * numPoints ] );
     }
+    if ( numPointPanoramaCoords )
+    {
+        pointPanoramaCoords = shortArr( new short[ 2 * numPoints ] );
+    }
 
 
-    float*        vertex            = vertices.get();
-    uint8_t*      vertex_color      = vertexColors.get();
-    float*        vertex_confidence = vertexConfidence.get();
-    float*        vertex_intensity  = vertexIntensity.get();
-    float*        vertex_normal     = vertexNormals.get();
-    unsigned int* face              = faceIndices.get();
-    float*        point             = points.get();
-    uint8_t*      point_color       = pointColors.get();
-    float*        point_confidence  = pointConfidences.get();
-    float*        point_intensity   = pointIntensities.get();
-    float*        point_normal      = pointNormals.get();
+    float*          vertex                   = vertices.get();
+    uint8_t*        vertex_color             = vertexColors.get();
+    float*          vertex_confidence        = vertexConfidence.get();
+    float*          vertex_intensity         = vertexIntensity.get();
+    float*          vertex_normal            = vertexNormals.get();
+    short* vertex_panorama_coords   = vertexPanoramaCoords.get();
+    unsigned int*   face                     = faceIndices.get();
+    float*          point                    = points.get();
+    uint8_t*        point_color              = pointColors.get();
+    float*          point_confidence         = pointConfidences.get();
+    float*          point_intensity          = pointIntensities.get();
+    float*          point_normal             = pointNormals.get();
+    short* point_panorama_coords    = pointPanoramaCoords.get();
 
 
     /* Set callbacks. */
@@ -604,6 +630,11 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         ply_set_read_cb( ply, "vertex", "nx", readVertexCb, &vertex_normal, 0 );
         ply_set_read_cb( ply, "vertex", "ny", readVertexCb, &vertex_normal, 0 );
         ply_set_read_cb( ply, "vertex", "nz", readVertexCb, &vertex_normal, 1 );
+    }
+    if ( vertex_panorama_coords )
+    {
+        ply_set_read_cb( ply, "vertex", "x_coords", readPanoramaCoordCB, &vertex_panorama_coords, 0 );
+        ply_set_read_cb( ply, "vertex", "y_coords", readPanoramaCoordCB, &vertex_panorama_coords, 1 );
     }
 
     if ( face )
@@ -638,6 +669,11 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         ply_set_read_cb( ply, "point", "ny", readVertexCb, &point_normal, 0 );
         ply_set_read_cb( ply, "point", "nz", readVertexCb, &point_normal, 1 );
     }
+    if ( point_panorama_coords )
+    {
+        ply_set_read_cb( ply, "point", "x_coords", readPanoramaCoordCB, &point_panorama_coords, 0 );
+        ply_set_read_cb( ply, "point", "y_coords", readPanoramaCoordCB, &point_panorama_coords, 1 );
+    }
 
     /* Read ply file. */
     if ( !ply_read( ply ) )
@@ -652,29 +688,92 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     {
         std::cout << timestamp << "PLY contains neither faces nor points. "
             << "Assuming that vertices are meant to be points." << std::endl;
-        points               = vertices;
-        pointColors          = vertexColors;
-        pointConfidences     = vertexConfidence;
-        pointIntensities     = vertexIntensity;
-        pointNormals         = vertexNormals;
-        numPoints            = numVertices;
-        numPointColors       = numVertexColors;
-        numPointConfidence   = numVertexConfidences;
-        numPointIntensities  = numVertexIntensities;
-        numPointNormals      = numVertexNormals;
-        numVertices          = 0;
-        numVertexColors      = 0;
-        numVertexConfidences = 0;
-        numVertexIntensities = 0;
-        numVertexNormals     = 0;
+        points                  = vertices;
+        pointColors             = vertexColors;
+        pointConfidences        = vertexConfidence;
+        pointIntensities        = vertexIntensity;
+        pointNormals            = vertexNormals;
+        pointPanoramaCoords     = vertexPanoramaCoords;
+        numPoints               = numVertices;
+        numPointColors          = numVertexColors;
+        numPointConfidence      = numVertexConfidences;
+        numPointIntensities     = numVertexIntensities;
+        numPointNormals         = numVertexNormals;
+        numPointPanoramaCoords  = numVertexPanoramaCoords;
+        numVertices             = 0;
+        numVertexColors         = 0;
+        numVertexConfidences    = 0;
+        numVertexIntensities    = 0;
+        numVertexNormals        = 0;
+        numVertexPanoramaCoords = 0;
         vertices.reset();
         vertexColors.reset();
         vertexConfidence.reset();
         vertexIntensity.reset();
         vertexNormals.reset();
+        vertexPanoramaCoords.reset();
     }
 
     ply_close( ply );
+
+    if (numPointPanoramaCoords)
+    {
+        boost::filesystem::path dir(filename);
+        dir = dir.parent_path() / "panoramas_fixed";
+
+        string scanNr = filename.substr(filename.length() - 7, 3);
+        
+        string panorama_file = dir.string() + "/panorama_" + scanNr + ".png";
+
+        numPointColors = numPointPanoramaCoords;
+        pointColors = ucharArr( new unsigned char[ numPoints * 3 ] );
+        point_color = pointColors.get();
+        point_panorama_coords = pointPanoramaCoords.get();
+
+        cv::Mat img = cv::imread(panorama_file);
+        cv::Vec3b pix;
+        
+        size_t height = img.rows;
+        size_t width = img.cols;
+
+        for (int i = 0; i < 100; i++)
+        {
+            int index = i / 100.0 * numPoints;
+            std::cout << point_panorama_coords[2 * index] << ", " << point_panorama_coords[2 * index + 1] << std::endl;
+        }
+
+        int minY, maxY, sumY;
+        for (int i = 0; i < numPoints; i++)
+        {
+            short y = point_panorama_coords[2 * i];
+            if (y < minY)
+                minY = y;
+            if (y > maxY)
+                maxY = y;
+            sumY += y;
+        }
+
+        std::cout << "min: " << minY << std::endl;
+        std::cout << "max: " << maxY << std::endl;
+        std::cout << "avg: " << (sumY / (float)numPoints) << std::endl;
+
+        for (int i = 0; i < numPoints; i++)
+        {
+            short x = point_panorama_coords[2 * i];
+            short y = point_panorama_coords[2 * i + 1];
+            if (y < 0 || y >= height || x < 0 || x >= width) // Points to be ignored
+            {
+                point_color[3 * i    ] = 255;
+                point_color[3 * i + 1] = 255;
+                point_color[3 * i + 2] = 255;
+                continue;
+            }
+            pix = img.at<cv::Vec3b>(height - y, (x + width / 2) % width); // TODO: FIXME: Daten sind aktuell in y-Richtung gespiegelt und in x-Richtung um die Hälfte Verschoben 
+            point_color[3 * i    ] = pix[2]; // OpenCV has bgr, we use rgb
+            point_color[3 * i + 1] = pix[1];
+            point_color[3 * i + 2] = pix[0];
+        }
+    }
 
 
     // Save buffers in model
@@ -751,6 +850,17 @@ int PLYIO::readFaceCb( p_ply_argument argument )
     **face = ply_get_argument_value( argument );
     (*face)++;
 
+    return 1;
+
+}
+
+int PLYIO::readPanoramaCoordCB( p_ply_argument argument )
+{
+
+    short ** ptr;
+    ply_get_argument_user_data( argument, (void **) &ptr, NULL );
+    **ptr = ply_get_argument_value( argument );
+    (*ptr)++;
     return 1;
 
 }
