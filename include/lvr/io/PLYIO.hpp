@@ -136,7 +136,7 @@ class PLYIO : public BaseIO
          **/
         ModelPtr read( string filename, bool readColor, bool readConfidence = true,
                 bool readIntensity = true, bool readNormals = true, 
-                bool readFaces = true );
+                bool readFaces = true, bool readPanoramaCoords = true );
 
 
         /**
@@ -171,6 +171,13 @@ class PLYIO : public BaseIO
          * \param argument  Argument to pass the read data.
          **/
         static int readFaceCb( p_ply_argument argument );
+
+
+        /**
+         * \brief Callback for read panorama coords.
+         * \param argument  Argument to pass the read data.
+         **/
+        static int readPanoramaCoordCB( p_ply_argument argument );
 
 };
 
