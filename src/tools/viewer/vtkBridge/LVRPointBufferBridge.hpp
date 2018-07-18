@@ -53,7 +53,7 @@ public:
     void setPointSize(int pointSize);
     void setOpacity(float opacityValue);
     void setVisibility(bool visible);
-    void setSpectralChannels(size_t r, size_t g, size_t b);
+    void setSpectralChannels(size_t r_channel, size_t g_channel, size_t b_channel);
 
     PointBufferPtr getPointBuffer();
 
