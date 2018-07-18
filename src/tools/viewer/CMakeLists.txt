@@ -79,6 +79,7 @@ set(LVR_VIEWER_UIS
    ui/LVRFilteringRemoveOutliersDialogUI.ui
    ui/LVRFilteringMLSProjectionDialogUI.ui
    ui/LVRBackgroundDialogUI.ui
+   ui/LVRSpectralSettings.ui
 )
 
 #####################################################################################
