@@ -22,7 +22,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QVTKWidget" name="qvtkWidget"/>
+     <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
     </item>
    </layout>
   </widget>
@@ -102,13 +102,13 @@
    <property name="minimumSize">
     <size>
      <width>41</width>
-     <height>150</height>
+     <height>100</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
      <width>524287</width>
-     <height>230</height>
+     <height>234</height>
     </size>
    </property>
    <property name="features">
@@ -289,7 +289,7 @@
    <property name="maximumSize">
     <size>
      <width>524287</width>
-     <height>200</height>
+     <height>300</height>
     </size>
    </property>
    <property name="autoFillBackground">
@@ -311,7 +311,7 @@
        <x>0</x>
        <y>0</y>
        <width>251</width>
-       <height>51</height>
+       <height>45</height>
       </rect>
      </property>
      <property name="text">
@@ -332,9 +332,9 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>50</y>
+       <y>45</y>
        <width>251</width>
-       <height>51</height>
+       <height>45</height>
       </rect>
      </property>
      <property name="text">
@@ -355,9 +355,9 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>100</y>
+       <y>90</y>
        <width>251</width>
-       <height>51</height>
+       <height>45</height>
       </rect>
      </property>
      <property name="text">
@@ -378,9 +378,9 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>150</y>
+       <y>135</y>
        <width>251</width>
-       <height>51</height>
+       <height>45</height>
       </rect>
      </property>
      <property name="text">
@@ -395,6 +395,19 @@
        <width>30</width>
        <height>30</height>
       </size>
+     </property>
+    </widget>
+    <widget class="QCommandLinkButton" name="commandLinkButton">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>180</y>
+       <width>251</width>
+       <height>45</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Set Spectralsettings</string>
      </property>
     </widget>
    </widget>
@@ -434,7 +447,7 @@
      <x>0</x>
      <y>0</y>
      <width>1112</width>
-     <height>21</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
