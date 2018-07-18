@@ -64,18 +64,26 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
     }
 
     // default: visible light
-    m_SpectralChannels[0] = 650;
-    m_SpectralChannels[1] = 550;
-    m_SpectralChannels[2] = 450;
+    m_SpectralChannels[0] = 0;
+    m_SpectralChannels[1] = 0;
+    m_SpectralChannels[2] = 0;
 }
 
 
-void LVRPointBufferBridge::setSpectralChannels(size_t r, size_t g, size_t b)
+void LVRPointBufferBridge::setSpectralChannels(size_t r_channel, size_t g_channel, size_t b_channel)
 {
-    m_SpectralChannels[0] = r;
-    m_SpectralChannels[1] = g;
-    m_SpectralChannels[2] = b;
+    m_SpectralChannels[0] = r_channel;
+    m_SpectralChannels[1] = g_channel;
+    m_SpectralChannels[2] = b_channel;
     computePointCloudActor(m_pointBuffer);
+    
+    //TODO: only update colors
+    /*auto scalars = m_pointCloudActor->GetMapper()->GetInput()->GetPointData()->GetScalars();
+    int n = scalars->GetNumberOfTuples();
+    for(vtkIdType i = 0; i < n; i++)
+    {
+        ((vtkUnsignedCharArray*)scalars)->SetValue(i, newvalue);
+    }*/
 }
 
 PointBufferPtr LVRPointBufferBridge::getPointBuffer()
@@ -132,11 +140,11 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 
             if(n_s_p)
             {
-                //TODO: use m_SpectralChannels
-                unsigned char speccolor[n_s_channels];
-            	speccolor[0] = spec[i * n_s_channels];
-            	speccolor[1] = spec[i * n_s_channels + 1];
-            	speccolor[2] = spec[i * n_s_channels + 2];  
+                //TODO: check this
+                unsigned char speccolor[3];
+            	speccolor[0] = spec[m_SpectralChannels[0] * n_s_channels + index];
+            	speccolor[1] = spec[m_SpectralChannels[1] * n_s_channels + index + 1];
+            	speccolor[2] = spec[m_SpectralChannels[2] * n_s_channels + index + 2];  
 
 #if VTK_MAJOR_VERSION < 7
                 scalars->InsertNextTupleValue(speccolor);
