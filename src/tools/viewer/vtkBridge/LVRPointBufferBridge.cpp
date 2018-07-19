@@ -39,6 +39,11 @@ namespace lvr
 
 LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
 {
+    // default: visible light
+    m_SpectralChannels[0] = 40;
+    m_SpectralChannels[1] = 80;
+    m_SpectralChannels[2] = 130;
+
     if(pointCloud)
     {
         // Save pc data
@@ -62,11 +67,6 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
         m_hasNormals = false;
         m_hasColors = false;
     }
-
-    // default: visible light
-    m_SpectralChannels[0] = 0;
-    m_SpectralChannels[1] = 0;
-    m_SpectralChannels[2] = 0;
 }
 
 
@@ -131,7 +131,8 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         ucharArr colors = pc->getPointColorArray(n_c);
         ucharArr spec = pc->getPointSpectralChannelsArray(n_s_p, n_s_channels);
 
-        for(vtkIdType i = 0; i < n; i++)
+        vtkIdType used = 0;
+        for(size_t i = 0; i < n; i++)
         {
         	int index = 3 * i;
             point[0] = points[index    ];
@@ -140,11 +141,17 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 
             if(n_s_p)
             {
-                //TODO: check this
+                int specIndex = n_s_channels * i;
+
+                if (spec[specIndex + n_s_channels - 1] == 0) // Point set to ignore
+                {
+                    continue;
+                }
+
                 unsigned char speccolor[3];
-            	speccolor[0] = spec[m_SpectralChannels[0] * n_s_channels + index];
-            	speccolor[1] = spec[m_SpectralChannels[1] * n_s_channels + index + 1];
-            	speccolor[2] = spec[m_SpectralChannels[2] * n_s_channels + index + 2];  
+            	speccolor[0] = spec[specIndex + m_SpectralChannels[0]];
+            	speccolor[1] = spec[specIndex + m_SpectralChannels[1]];
+            	speccolor[2] = spec[specIndex + m_SpectralChannels[2]];  
 
 #if VTK_MAJOR_VERSION < 7
                 scalars->InsertNextTupleValue(speccolor);
@@ -166,8 +173,9 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 #endif
             }
 
+            used++;
             vtk_points->InsertNextPoint(point);
-            vtk_cells->InsertNextCell(1, &i);
+            vtk_cells->InsertNextCell(1, &used);
         }
 
         vtk_polyData->SetPoints(vtk_points);

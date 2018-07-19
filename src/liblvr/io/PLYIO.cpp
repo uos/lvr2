@@ -429,7 +429,11 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     size_t numPointIntensities      = 0;
     size_t numPointNormals          = 0;
     size_t numPointPanoramaCoords   = 0;
+    size_t numPointSpectralChannels = 0;
     size_t numFaces                 = 0;
+
+    size_t n_channels               = 0; // Number of spectral channels
+
 
     while ( ( elem = ply_get_next_element( ply, elem ) ) )
     {
@@ -527,6 +531,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
     ucharArr vertexColors;
     ucharArr pointColors;
+    ucharArr pointSpectralChannels;
 
     shortArr vertexPanoramaCoords;
     shortArr pointPanoramaCoords;
@@ -594,14 +599,14 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     float*          vertex_confidence        = vertexConfidence.get();
     float*          vertex_intensity         = vertexIntensity.get();
     float*          vertex_normal            = vertexNormals.get();
-    short* vertex_panorama_coords   = vertexPanoramaCoords.get();
+    short*          vertex_panorama_coords   = vertexPanoramaCoords.get();
     unsigned int*   face                     = faceIndices.get();
     float*          point                    = points.get();
     uint8_t*        point_color              = pointColors.get();
     float*          point_confidence         = pointConfidences.get();
     float*          point_intensity          = pointIntensities.get();
     float*          point_normal             = pointNormals.get();
-    short* point_panorama_coords    = pointPanoramaCoords.get();
+    short*          point_panorama_coords    = pointPanoramaCoords.get();
 
 
     /* Set callbacks. */
@@ -718,60 +723,72 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
     if (numPointPanoramaCoords)
     {
-        boost::filesystem::path dir(filename);
-        dir = dir.parent_path() / "panoramas_fixed";
-
+        // traverse to channel directory TODO: have a unified way of storing channel data that is not hardcoded
         string scanNr = filename.substr(filename.length() - 7, 3);
-        
-        string panorama_file = dir.string() + "/panorama_" + scanNr + ".png";
+        string channelDirName = string("panorama_channels_") + scanNr;
 
-        numPointColors = numPointPanoramaCoords;
-        pointColors = ucharArr( new unsigned char[ numPoints * 3 ] );
-        point_color = pointColors.get();
-        point_panorama_coords = pointPanoramaCoords.get();
+        boost::filesystem::path dir(filename);
+        dir = dir.parent_path() / "panoramas_fixed" / channelDirName;
 
-        cv::Mat img = cv::imread(panorama_file);
-        cv::Vec3b pix;
-        
-        size_t height = img.rows;
-        size_t width = img.cols;
-
-        for (int i = 0; i < 100; i++)
+        if (!boost::filesystem::exists(dir / "channel0.png"))
         {
-            int index = i / 100.0 * numPoints;
-            std::cout << point_panorama_coords[2 * index] << ", " << point_panorama_coords[2 * index + 1] << std::endl;
+            std::cerr << "Annotated Data given, but " + dir.string() + " does not contain channel files" << std::endl;
         }
-
-        int minY, maxY, sumY;
-        for (int i = 0; i < numPoints; i++)
+        else
         {
-            short y = point_panorama_coords[2 * i];
-            if (y < minY)
-                minY = y;
-            if (y > maxY)
-                maxY = y;
-            sumY += y;
-        }
+            std::cout << "Found Annotated Data. Loading spectral channel images from: " << dir.string() << "/" << std::endl;
+            std::cout << "This may take a while depending on data size" << std::endl;
 
-        std::cout << "min: " << minY << std::endl;
-        std::cout << "max: " << maxY << std::endl;
-        std::cout << "avg: " << (sumY / (float)numPoints) << std::endl;
+            std::vector<cv::Mat> imgs;
+            std::vector<cv::Vec3b*> pixels;
 
-        for (int i = 0; i < numPoints; i++)
-        {
-            short x = point_panorama_coords[2 * i];
-            short y = point_panorama_coords[2 * i + 1];
-            if (y < 0 || y >= height || x < 0 || x >= width) // Points to be ignored
+            cv::VideoCapture images(dir.string() + "/channel%d.png");
+            cv::Mat img, imgFlipped;
+            while (images.read(img))
             {
-                point_color[3 * i    ] = 255;
-                point_color[3 * i + 1] = 255;
-                point_color[3 * i + 2] = 255;
-                continue;
+                imgs.push_back(cv::Mat());
+                cv::flip(img, imgs.back(), 0); // TODO: FIXME: Data is currently stored mirrored and offset
+                pixels.push_back((cv::Vec3b*)imgs.back().data);
             }
-            pix = img.at<cv::Vec3b>(height - y, (x + width / 2) % width); // TODO: FIXME: Daten sind aktuell in y-Richtung gespiegelt und in x-Richtung um die Hälfte Verschoben 
-            point_color[3 * i    ] = pix[2]; // OpenCV has bgr, we use rgb
-            point_color[3 * i + 1] = pix[1];
-            point_color[3 * i + 2] = pix[0];
+
+            n_channels = imgs.size() + 1; // one additional channel for ignored Points
+            int width = imgs[0].cols;
+            int height = imgs[0].rows;
+
+            numPointSpectralChannels = numPointPanoramaCoords;
+            pointSpectralChannels = ucharArr(new unsigned char[numPoints * n_channels]);
+
+            unsigned char* point_spectral_channels = pointSpectralChannels.get();
+            point_panorama_coords = pointPanoramaCoords.get();
+
+            std::cout << "Finished loading " << (n_channels - 1) << " channel images" << std::endl;
+
+            #pragma omp parallel for
+            for (int i = 0; i < numPointPanoramaCoords; i++)
+            {
+                int pc_index = 2 * i; // x_coords, y_coords
+                short x = point_panorama_coords[pc_index];
+                short y = point_panorama_coords[pc_index + 1];
+                x = (x + width / 2) % width; // TODO: FIXME: Data is currently stored mirrored and offset
+
+                int panoramaPosition = y * width + x;
+                unsigned char* pixel = point_spectral_channels + n_channels * i;
+
+                if (y < 0 || y >= height || x < 0 || x >= width) // Points outside of Image are ignored
+                {
+                    std::memset(pixel, 255, n_channels - 1);
+                    pixel[n_channels - 1] = 0;
+                }
+                else
+                {
+                    for (int channel = 0; channel < n_channels - 1; channel++)
+                    {
+                        pixel[channel] = pixels[channel][panoramaPosition][0];
+                    }
+                    pixel[n_channels - 1] = 1;
+                }
+            }
+            std::cout << "Finished extracting channel information" << std::endl;
         }
     }
 
@@ -782,11 +799,12 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     if(points)
     {
         pc = PointBufferPtr( new PointBuffer );
-        pc->setPointArray(           points,           numPoints );
-        pc->setPointColorArray(      pointColors,      numPointColors );
-        pc->setPointIntensityArray(  pointIntensities, numPointIntensities );
-        pc->setPointConfidenceArray( pointConfidences, numPointConfidence );
-        pc->setPointNormalArray    ( pointNormals,     numPointNormals);
+        pc->setPointArray(                points,                numPoints );
+        pc->setPointColorArray(           pointColors,           numPointColors );
+        pc->setPointIntensityArray(       pointIntensities,      numPointIntensities );
+        pc->setPointConfidenceArray(      pointConfidences,      numPointConfidence );
+        pc->setPointNormalArray(          pointNormals,          numPointNormals );
+        pc->setPointSpectralChannelsArray(pointSpectralChannels, numPointSpectralChannels, n_channels );
     }
 
     if(vertices)
