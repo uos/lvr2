@@ -139,6 +139,17 @@ public:
     void setPointConfidenceArray( floatArr array, size_t n );
 
 
+    /**
+     * \brief Set the point spectral channel array.
+     *
+     * By using setPointSpectralChannelsArray the internal spectral channel
+     * buffer for points can be set. The array has to be a one dimensional
+     * unsigned char array.
+     *
+     * \param array      Pointer to point spectral channel data.
+     * \param n          Amount of data in the array.
+     * \param n_channels Number of channels per Point.
+     **/
     void setPointSpectralChannelsArray( ucharArr array, size_t n, size_t n_channels );
 
 
@@ -258,6 +269,20 @@ public:
     floatArr getPointConfidenceArray( size_t &n );
 
 
+    /**
+     * \brief Get the point spectral channels array.
+     *
+     * getPointSpectralChannelsArray returns the spectral channel informations.
+     * The returned array is a one dimensional unsigned char array.
+     * Additionally the passed reference of a size_t variable is set to the
+     * amount of spectral channel values stored in the array. Thus \c n is
+     * set to the array length. \c n_channels is set to the number of channels
+     * that each Point has.
+     *
+     * \param n          Amount of spectral channel values in array.
+     * \param n_channels Number of Channels per Point.
+     * \return           %Point spectral channel array.
+     **/
     ucharArr getPointSpectralChannelsArray( size_t &n, size_t &n_channels );
 
     /************************* Indexed Get *************************/
@@ -383,6 +408,12 @@ public:
      */
     bool hasPointColors() { return m_numPointColors != 0;}
 
+    /**
+     * @brief   Returns true if the stored data contains point spectral
+     *          channel information
+     */
+    bool hasPointSpectralChannels() { return m_numPointSpectralChannels != 0;}
+
 
 protected:
 
@@ -397,7 +428,7 @@ protected:
     /// %Point confidence buffer.
     floatArr        m_pointConfidences;
     /// %Point spectral channel buffer.
-    ucharArr     m_pointSpectralChannels;
+    ucharArr        m_pointSpectralChannels;
 
 
     /// Number of points in internal buffer.
