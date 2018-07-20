@@ -78,21 +78,38 @@ void LVRPointBufferBridge::getSpectralChannels(unsigned char &r_channel, unsigne
 
 void LVRPointBufferBridge::setSpectralChannels(unsigned char r_channel, unsigned char g_channel, unsigned char b_channel)
 {
-    m_SpectralChannels[0] = r_channel;
-    m_SpectralChannels[1] = g_channel;
-    m_SpectralChannels[2] = b_channel;
+    size_t n, n_channels;
+    ucharArr spec = m_pointBuffer->getPointSpectralChannelsArray(n, n_channels);
 
-    m_renderer->RemoveActor(m_pointCloudActor);
-    computePointCloudActor(m_pointBuffer);
-    m_renderer->AddActor(m_pointCloudActor);
-    
-    //TODO: only update colors
-    /*auto scalars = m_pointCloudActor->GetMapper()->GetInput()->GetPointData()->GetScalars();
-    int n = scalars->GetNumberOfTuples();
-    for(vtkIdType i = 0; i < n; i++)
+    if (!n)
     {
-        ((vtkUnsignedCharArray*)scalars)->SetValue(i, newvalue);
-    }*/
+        return;
+    }
+
+    m_SpectralChannels[0] = std::min((size_t)r_channel, n_channels - 1);
+    m_SpectralChannels[1] = std::min((size_t)g_channel, n_channels - 1);
+    m_SpectralChannels[2] = std::min((size_t)b_channel, n_channels - 1);
+
+    vtkSmartPointer<vtkUnsignedCharArray> scalars = vtkSmartPointer<vtkUnsignedCharArray>::New();
+    scalars->SetNumberOfComponents(3);
+    scalars->SetName("Colors");
+
+    for (int i = 0; i < n; i++)
+    {
+        int specIndex = n_channels * i;
+        unsigned char speccolor[3];
+        speccolor[0] = spec[specIndex + m_SpectralChannels[0]];
+        speccolor[1] = spec[specIndex + m_SpectralChannels[1]];
+        speccolor[2] = spec[specIndex + m_SpectralChannels[2]];
+
+#if VTK_MAJOR_VERSION < 7
+        scalars->InsertNextTupleValue(speccolor);
+#else
+        scalars->InsertNextTypedTuple(speccolor);
+#endif
+    }
+
+    m_pointCloudActor->GetMapper()->GetInput()->GetPointData()->SetScalars(scalars);
 }
 
 PointBufferPtr LVRPointBufferBridge::getPointBuffer()
@@ -123,15 +140,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 {
     if(pc)
     {
-        if (!m_pointCloudActor)
-        {
-            m_pointCloudActor = vtkSmartPointer<vtkActor>::New();
-        }
-        else
-        {
-            vtkMapper* mapper = m_pointCloudActor->GetMapper();
-            mapper->Delete();
-        }
+        m_pointCloudActor = vtkSmartPointer<vtkActor>::New();
 
         // Setup a poly data object
         vtkSmartPointer<vtkPolyData>    vtk_polyData = vtkSmartPointer<vtkPolyData>::New();
@@ -249,11 +258,6 @@ void LVRPointBufferBridge::setVisibility(bool visible)
 vtkSmartPointer<vtkActor> LVRPointBufferBridge::getPointCloudActor()
 {
     return m_pointCloudActor;
-}
-
-void LVRPointBufferBridge::setRenderer(vtkSmartPointer<vtkRenderer> renderer)
-{
-    m_renderer = renderer;
 }
 
 
