@@ -30,7 +30,7 @@ LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainW
     m_spectralDialog->horizontalSlider_Hyperspectral_red->setValue(m_r);
     m_spectralDialog->horizontalSlider_Hyperspectral_green->setValue(m_g);
     m_spectralDialog->horizontalSlider_Hyperspectral_blue->setValue(m_b);
-
+    
     connectSignalsAndSlots();
 
     m_dialog->show();
@@ -48,6 +48,11 @@ void LVRSpectralDialog::connectSignalsAndSlots()
     QObject::connect(m_spectralDialog->horizontalSlider_Hyperspectral_red, SIGNAL(valueChanged(int)), this, SLOT(valueChangeFinished()));
     QObject::connect(m_spectralDialog->horizontalSlider_Hyperspectral_green, SIGNAL(valueChanged(int)), this, SLOT(valueChangeFinished()));
     QObject::connect(m_spectralDialog->horizontalSlider_Hyperspectral_blue, SIGNAL(valueChanged(int)), this, SLOT(valueChangeFinished()));
+
+    QObject::connect(m_spectralDialog->label, SIGNAL(linkActivated(const QString & link)), this, SLOT(valueChangeFinished()));
+    QObject::connect(m_spectralDialog->label_2, SIGNAL(linkActivated(const QString & link)), this, SLOT(valueChangeFinished()));
+    QObject::connect(m_spectralDialog->label_3, SIGNAL(linkActivated(const QString & link)), this, SLOT(valueChangeFinished()));
+       
 }
 
 void LVRSpectralDialog::valueChangeFinished(){
@@ -57,8 +62,11 @@ void LVRSpectralDialog::valueChangeFinished(){
     m_points->setSpectralChannels(m_r, m_g, m_b);
     m_mainWindow->resize(m_mainWindow->width(), m_mainWindow->height() + 1); //TODO: find a better way to refresh the Window pls
     m_mainWindow->resize(m_mainWindow->width(), m_mainWindow->height() - 1); // I tried update, raise, focus, ... and nothing worked
+    
+    m_spectralDialog->label->setText("Hyperspectral red: " + QString("%1").arg((int)m_r));
+    m_spectralDialog->label_2->setText("Hyperspectral green: " + QString("%1").arg((int)m_g));
+    m_spectralDialog->label_3->setText("Hyperspectral blue: " + QString("%1").arg((int)m_b));
+     
 }
-
-
 
 }
