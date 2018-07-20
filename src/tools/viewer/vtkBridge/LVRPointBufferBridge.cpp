@@ -148,8 +148,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         ucharArr colors = pc->getPointColorArray(n_c);
         ucharArr spec = pc->getPointSpectralChannelsArray(n_s_p, n_s_channels);
 
-        vtkIdType used = 0;
-        for(size_t i = 0; i < n; i++)
+        for(vtkIdType i = 0; i < n; i++)
         {
         	int index = 3 * i;
             point[0] = points[index    ];
@@ -158,13 +157,11 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 
             if(n_s_p)
             {
-                int specIndex = n_s_channels * i;
-
-                if (spec[specIndex + n_s_channels - 1] == 0) // Point set to ignore
+                if (i >= n_s_p) // only take points with spectral information
                 {
-                    continue;
+                    break;
                 }
-
+                int specIndex = n_s_channels * i;
                 unsigned char speccolor[3];
             	speccolor[0] = spec[specIndex + m_SpectralChannels[0]];
             	speccolor[1] = spec[specIndex + m_SpectralChannels[1]];
@@ -190,9 +187,8 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 #endif
             }
 
-            used++;
             vtk_points->InsertNextPoint(point);
-            vtk_cells->InsertNextCell(1, &used);
+            vtk_cells->InsertNextCell(1, &i);
         }
 
         vtk_polyData->SetPoints(vtk_points);
