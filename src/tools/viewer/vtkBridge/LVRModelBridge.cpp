@@ -88,7 +88,6 @@ void LVRModelBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
 {
     if(validPointBridge())
     {
-        m_pointBridge->setRenderer(renderer);
     	renderer->AddActor(m_pointBridge->getPointCloudActor());
     }
 

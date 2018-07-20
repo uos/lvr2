@@ -30,7 +30,6 @@
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
-#include <vtkRenderer.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -57,7 +56,6 @@ public:
     void setVisibility(bool visible);
     void setSpectralChannels(unsigned char r_channel, unsigned char g_channel, unsigned char b_channel);
     void getSpectralChannels(unsigned char &r_channel, unsigned char &g_channel, unsigned char &b_channel);
-    void setRenderer(vtkSmartPointer<vtkRenderer> renderer);
 
     PointBufferPtr getPointBuffer();
 
@@ -66,7 +64,6 @@ protected:
     void computePointCloudActor(PointBufferPtr pc);
 
     vtkSmartPointer<vtkActor>       m_pointCloudActor;
-    vtkSmartPointer<vtkRenderer>    m_renderer;
     size_t                          m_numPoints;
     bool                            m_hasNormals;
     bool                            m_hasColors;
