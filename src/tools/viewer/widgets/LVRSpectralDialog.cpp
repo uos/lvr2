@@ -63,17 +63,17 @@ void LVRSpectralDialog::connectSignalsAndSlots()
 
 void LVRSpectralDialog::changeSliderRed(int channelRed){
     m_r = channelRed;
-    m_points->setSpectralChannels(m_r, m_g, m_b);
+    //m_points->setSpectralChannels(m_r, m_g, m_b);
 }
 
 void LVRSpectralDialog::changeSliderGreen(int channelGreen){
     m_g = channelGreen;
-    m_points->setSpectralChannels(m_r, m_g, m_b);
+    //m_points->setSpectralChannels(m_r, m_g, m_b);
 }
 
 void LVRSpectralDialog::changeSliderBlue(int channelBlue){
     m_b = channelBlue;
-    m_points->setSpectralChannels(m_r, m_g, m_b);
+    //m_points->setSpectralChannels(m_r, m_g, m_b);
 }
 
 
