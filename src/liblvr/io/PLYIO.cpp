@@ -388,6 +388,14 @@ ModelPtr PLYIO::read( string filename )
    return read( filename, true );
 }
 
+/**
+ * swaps n elements from index i1 in arr with n elements from index i2 in arr
+ */
+template <typename T>
+void swap(T*& arr, size_t i1, size_t i2, size_t n)
+{
+    std::swap_ranges(arr + i1, arr + i1 + n, arr + i2);
+}
 
 ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         bool readIntensity, bool readNormals, bool readFaces, bool readPanoramaCoords )
@@ -699,6 +707,12 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         pointIntensities        = vertexIntensity;
         pointNormals            = vertexNormals;
         pointPanoramaCoords     = vertexPanoramaCoords;
+        point                   = points.get();
+        point_color             = pointColors.get();
+        point_confidence        = pointConfidences.get();
+        point_intensity         = pointIntensities.get();
+        point_normal            = pointNormals.get();
+        point_panorama_coords   = pointPanoramaCoords.get();
         numPoints               = numVertices;
         numPointColors          = numVertexColors;
         numPointConfidence      = numVertexConfidences;
@@ -723,6 +737,28 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
     if (numPointPanoramaCoords)
     {
+        // move all the Points that don't have spectral information to the end
+        for (int i = 0; i < numPointPanoramaCoords; i++)
+        {
+            if (point_panorama_coords[2 * i] == -1)
+            {
+                // swap with last element
+                numPointPanoramaCoords--;
+
+                const int n = numPointPanoramaCoords;
+                swap(point_panorama_coords, 2 * i, 2 * numPointPanoramaCoords, 2);
+                swap(point, 3 * i, 3 * numPointPanoramaCoords, 3);
+                if (numPointColors)      swap(point_color,      3*i, 3*numPointPanoramaCoords, 3);
+                if (numPointConfidence)  swap(point_confidence,   i,   numPointPanoramaCoords, 1);
+                if (numPointIntensities) swap(point_intensity,    i,   numPointPanoramaCoords, 1);
+                if (numPointNormals)     swap(point_normal,     3*i, 3*numPointPanoramaCoords, 3);
+
+                i--;
+            }
+        }
+
+        std::cout << numPoints << " given, " << (numPoints - numPointPanoramaCoords) << " without spectral data" << std::endl;
+
         // traverse to channel directory TODO: have a unified way of storing channel data that is not hardcoded
         string scanNr = filename.substr(filename.length() - 7, 3);
         string channelDirName = string("panorama_channels_") + scanNr;
@@ -740,28 +776,28 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
             std::cout << "This may take a while depending on data size" << std::endl;
 
             std::vector<cv::Mat> imgs;
-            std::vector<cv::Vec3b*> pixels;
+            std::vector<unsigned char*> pixels;
 
             cv::VideoCapture images(dir.string() + "/channel%d.png");
             cv::Mat img, imgFlipped;
             while (images.read(img))
             {
                 imgs.push_back(cv::Mat());
-                cv::flip(img, imgs.back(), 0); // TODO: FIXME: Data is currently stored mirrored and offset
-                pixels.push_back((cv::Vec3b*)imgs.back().data);
+                cv::flip(img, imgFlipped, 0); // TODO: FIXME: Data is currently stored mirrored and offset
+                cv::cvtColor(imgFlipped, imgs.back(), cv::COLOR_RGB2GRAY);
+                pixels.push_back(imgs.back().data);
             }
 
-            n_channels = imgs.size() + 1; // one additional channel for ignored Points
+            n_channels = imgs.size();
             int width = imgs[0].cols;
             int height = imgs[0].rows;
 
             numPointSpectralChannels = numPointPanoramaCoords;
-            pointSpectralChannels = ucharArr(new unsigned char[numPoints * n_channels]);
+            pointSpectralChannels = ucharArr(new unsigned char[numPointPanoramaCoords * n_channels]);
 
             unsigned char* point_spectral_channels = pointSpectralChannels.get();
-            point_panorama_coords = pointPanoramaCoords.get();
 
-            std::cout << "Finished loading " << (n_channels - 1) << " channel images" << std::endl;
+            std::cout << "Finished loading " << n_channels << " channel images" << std::endl;
 
             #pragma omp parallel for
             for (int i = 0; i < numPointPanoramaCoords; i++)
@@ -774,18 +810,9 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
                 int panoramaPosition = y * width + x;
                 unsigned char* pixel = point_spectral_channels + n_channels * i;
 
-                if (y < 0 || y >= height || x < 0 || x >= width) // Points outside of Image are ignored
+                for (int channel = 0; channel < n_channels; channel++)
                 {
-                    std::memset(pixel, 255, n_channels - 1);
-                    pixel[n_channels - 1] = 0;
-                }
-                else
-                {
-                    for (int channel = 0; channel < n_channels - 1; channel++)
-                    {
-                        pixel[channel] = pixels[channel][panoramaPosition][0];
-                    }
-                    pixel[n_channels - 1] = 1;
+                    pixel[channel] = pixels[channel][panoramaPosition];
                 }
             }
             std::cout << "Finished extracting channel information" << std::endl;
