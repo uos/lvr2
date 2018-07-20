@@ -62,6 +62,7 @@
 #include "../widgets/LVRFilteringMLSProjectionDialog.hpp"
 #include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
 #include "../widgets/LVRBackgroundDialog.hpp"
+#include "../widgets/LVRSpectralDialog.hpp"
 
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
@@ -143,8 +144,8 @@ private:
     void connectSignalsAndSlots();
 
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
+    LVRSpectralDialog*                          m_spectralDialog;
     QDialog*                                    m_aboutDialog;
-    QDialog*                                    m_spectralSettingsDialog;
     QMessageBox*                                m_incompatibilityBox;
     vtkSmartPointer<vtkRenderer>                m_renderer;
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;

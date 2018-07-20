@@ -69,8 +69,14 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
     }
 }
 
+void LVRPointBufferBridge::getSpectralChannels(unsigned char &r_channel, unsigned char &g_channel, unsigned char &b_channel)
+{
+    r_channel = m_SpectralChannels[0];
+    g_channel = m_SpectralChannels[1];
+    b_channel = m_SpectralChannels[2];
+}
 
-void LVRPointBufferBridge::setSpectralChannels(size_t r_channel, size_t g_channel, size_t b_channel)
+void LVRPointBufferBridge::setSpectralChannels(unsigned char r_channel, unsigned char g_channel, unsigned char b_channel)
 {
     m_SpectralChannels[0] = r_channel;
     m_SpectralChannels[1] = g_channel;
