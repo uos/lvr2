@@ -17,25 +17,25 @@
 namespace lvr
 {
 
-LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, PointBufferBridgePtr points) :
-   m_points(points)
+LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainWindow, PointBufferBridgePtr points) :
+   m_points(points), m_mainWindow(mainWindow)
 {
     points->getSpectralChannels(m_r, m_g, m_b);
 
     // Setup DialogUI and events
-    QDialog* dialog = new QDialog(treeWidget);
-    m_dialog = new SpectralDialog;
-    m_dialog->setupUi(dialog);
+    m_dialog = new QDialog(treeWidget);
+    m_spectralDialog = new SpectralDialog;
+    m_spectralDialog->setupUi(m_dialog);
 
-    m_dialog->horizontalSlider_Hyperspectral_red->setValue(m_r);
-    m_dialog->horizontalSlider_Hyperspectral_green->setValue(m_g);
-    m_dialog->horizontalSlider_Hyperspectral_blue->setValue(m_b);
+    m_spectralDialog->horizontalSlider_Hyperspectral_red->setValue(m_r);
+    m_spectralDialog->horizontalSlider_Hyperspectral_green->setValue(m_g);
+    m_spectralDialog->horizontalSlider_Hyperspectral_blue->setValue(m_b);
 
     connectSignalsAndSlots();
 
-    dialog->show();
-    dialog->raise();
-    dialog->activateWindow();
+    m_dialog->show();
+    m_dialog->raise();
+    m_dialog->activateWindow();
 }
 
 LVRSpectralDialog::~LVRSpectralDialog()
@@ -45,37 +45,19 @@ LVRSpectralDialog::~LVRSpectralDialog()
 
 void LVRSpectralDialog::connectSignalsAndSlots()
 {
-    //QObject::connect(m_dialog->addFrame_button, SIGNAL(pressed()), this, SLOT(addFrame()));
-    //QObject::connect(m_dialog->removeFrame_button, SIGNAL(pressed()), this, SLOT(removeFrame()));
-    //QObject::connect(m_dialog->clearFrames_button, SIGNAL(pressed()), this, SLOT(clearFrames()));
-    //QObject::connect(m_dialog->interpolation_box, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(changeInterpolation(const QString&)));
-    //QObject::connect(m_dialog->savePath_button, SIGNAL(pressed()), this, SLOT(savePath()));
-    //QObject::connect(m_dialog->loadPath_button, SIGNAL(pressed()), this, SLOT(loadPath()));
-    //QObject::connect(m_dialog->saveVideo_button, SIGNAL(pressed()), this, SLOT(saveVideo()));
-    //QObject::connect(m_dialog->play_button, SIGNAL(pressed()), this, SLOT(play()));
-
-    QObject::connect(m_dialog->horizontalSlider_Hyperspectral_red, SIGNAL(valueChanged(int)), this, SLOT(changeSliderRed(int)));
-    QObject::connect(m_dialog->horizontalSlider_Hyperspectral_blue, SIGNAL(valueChanged(int)), this, SLOT(changeSliderBlue(int)));
-    QObject::connect(m_dialog->horizontalSlider_Hyperspectral_green, SIGNAL(valueChanged(int)), this, SLOT(changeSliderGreen(int)));
-
-
+    QObject::connect(m_spectralDialog->horizontalSlider_Hyperspectral_red, SIGNAL(valueChanged(int)), this, SLOT(valueChangeFinished()));
+    QObject::connect(m_spectralDialog->horizontalSlider_Hyperspectral_green, SIGNAL(valueChanged(int)), this, SLOT(valueChangeFinished()));
+    QObject::connect(m_spectralDialog->horizontalSlider_Hyperspectral_blue, SIGNAL(valueChanged(int)), this, SLOT(valueChangeFinished()));
 }
 
-void LVRSpectralDialog::changeSliderRed(int channelRed){
-    m_r = channelRed;
-    //m_points->setSpectralChannels(m_r, m_g, m_b);
+void LVRSpectralDialog::valueChangeFinished(){
+    m_r = m_spectralDialog->horizontalSlider_Hyperspectral_red->value();
+    m_g = m_spectralDialog->horizontalSlider_Hyperspectral_green->value();
+    m_b = m_spectralDialog->horizontalSlider_Hyperspectral_blue->value();
+    m_points->setSpectralChannels(m_r, m_g, m_b);
+    m_mainWindow->resize(m_mainWindow->width(), m_mainWindow->height() + 1); //TODO: find a better way to refresh the Window pls
+    m_mainWindow->resize(m_mainWindow->width(), m_mainWindow->height() - 1); // I tried update, raise, focus, ... and nothing worked
 }
-
-void LVRSpectralDialog::changeSliderGreen(int channelGreen){
-    m_g = channelGreen;
-    //m_points->setSpectralChannels(m_r, m_g, m_b);
-}
-
-void LVRSpectralDialog::changeSliderBlue(int channelBlue){
-    m_b = channelBlue;
-    //m_points->setSpectralChannels(m_r, m_g, m_b);
-}
-
 
 
 

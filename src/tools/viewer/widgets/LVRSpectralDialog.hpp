@@ -39,18 +39,18 @@ class LVRSpectralDialog : public QObject
     Q_OBJECT
 
 public:
-    LVRSpectralDialog(QTreeWidget* treeWidget, PointBufferBridgePtr points);
+    LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainWindow, PointBufferBridgePtr points);
     virtual ~LVRSpectralDialog();
 
 public Q_SLOTS:
-    void changeSliderRed(int channelRed);
-    void changeSliderGreen(int channelGreen);
-    void changeSliderBlue(int channelBlue);
+    void valueChangeFinished();
     
 private:
     void connectSignalsAndSlots();
 
-    SpectralDialog*      m_dialog;
+    QMainWindow*         m_mainWindow;
+    SpectralDialog*      m_spectralDialog;
+    QDialog*             m_dialog;
     PointBufferBridgePtr m_points;
     unsigned char        m_r, m_g, m_b;
 };
