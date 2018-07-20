@@ -54,9 +54,10 @@ LVRMainWindow::LVRMainWindow()
     Ui::AboutDialog aboutDialog;
     aboutDialog.setupUi(m_aboutDialog);
 
-    m_spectralSettingsDialog = new QDialog();
-    Ui::SpectralDialog spectralSettingsDialog;
-    spectralSettingsDialog.setupUi(m_spectralSettingsDialog);
+    m_spectralDialog = nullptr;
+    //m_spectralSettingsDialog = new QDialog();
+    //Ui::SpectralDialog spectralSettingsDialog;
+    //spectralSettingsDialog.setupUi(m_spectralSettingsDialog);
 
     // Setup specific properties
     QHeaderView* v = this->treeWidget->header();
@@ -158,6 +159,10 @@ LVRMainWindow::~LVRMainWindow()
     if(m_correspondanceDialog)
     {
         delete m_correspondanceDialog;
+    }
+    if (m_spectralDialog)
+    {
+        delete m_spectralDialog;
     }
     delete m_incompatibilityBox;
 }
@@ -1126,7 +1131,21 @@ void LVRMainWindow::showAboutDialog(QAction*)
 }
 void LVRMainWindow::showSpectralSettingsDialog()
 {
-    m_spectralSettingsDialog->show();
+    if (m_spectralDialog)
+    {
+        delete m_spectralDialog;
+    }
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+        LVRModelItem* model_item = getModelItem(item);
+        if(model_item != NULL)
+        {
+            PointBufferBridgePtr points = model_item->getModelBridge()->getPointBridge();
+            m_spectralDialog = new LVRSpectralDialog(treeWidget, points);
+        }
+    }
 }
 
 

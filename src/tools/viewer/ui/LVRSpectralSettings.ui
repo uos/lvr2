@@ -57,7 +57,7 @@
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
-  <widget class="QSlider" name="horizontalSlider_HyperSpectral_green">
+  <widget class="QSlider" name="horizontalSlider_Hyperspectral_green">
    <property name="geometry">
     <rect>
      <x>30</x>

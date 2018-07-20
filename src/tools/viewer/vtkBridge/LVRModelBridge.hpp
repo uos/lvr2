@@ -83,6 +83,15 @@ public:
 
     void		setVisibility(bool visible);
 
+    PointBufferBridgePtr getPointBridge()
+    {
+        return m_pointBridge;
+    }
+    MeshBufferBridgePtr getMeshBridge()
+    {
+        return m_meshBridge;
+    }
+
     // Declare model item classes as friends to have fast access to data chunks
     friend class LVRModelItem;
 
