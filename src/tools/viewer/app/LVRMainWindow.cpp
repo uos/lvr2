@@ -1143,7 +1143,7 @@ void LVRMainWindow::showSpectralSettingsDialog()
         if(model_item != NULL)
         {
             PointBufferBridgePtr points = model_item->getModelBridge()->getPointBridge();
-            m_spectralDialog = new LVRSpectralDialog(treeWidget, points);
+            m_spectralDialog = new LVRSpectralDialog(treeWidget, this, points);
         }
     }
 }
