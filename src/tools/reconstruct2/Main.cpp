@@ -387,6 +387,7 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
             useVoxelsize,
             options.extrude()
         );
+        grid->calcDistanceValues();
         auto reconstruction = make_unique<FastReconstruction<Vec, SharpBox<Vec>>>(grid);
         return make_pair(grid, std::move(reconstruction));
     }
