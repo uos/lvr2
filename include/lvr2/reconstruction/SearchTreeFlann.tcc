@@ -39,7 +39,7 @@ SearchTreeFlann<BaseVecT>::SearchTreeFlann(PointBufferPtr<BaseVecT> buffer)
 
 template<typename BaseVecT>
 void SearchTreeFlann<BaseVecT>::kSearch(
-    const Point<BaseVecT>& qp,
+    const Vector<BaseVecT>& qp,
     int k,
     vector<size_t>& indices,
     vector<CoordT>& distances
@@ -67,7 +67,7 @@ void SearchTreeFlann<BaseVecT>::kSearch(
 
 template<typename BaseVecT>
 void SearchTreeFlann<BaseVecT>::radiusSearch(
-    const Point<BaseVecT>& qp,
+    const Vector<BaseVecT>& qp,
     CoordT r,
     vector<size_t>& indices
 ) const

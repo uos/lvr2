@@ -58,7 +58,7 @@ Normal<BaseVecT>::Normal(
 
 template<typename BaseVecT>
 template<typename CollectionT>
-Normal<BaseVecT> Normal<BaseVecT>::average(const CollectionT& normals)
+Normal<BaseVecT>& Normal<BaseVecT>::average(const CollectionT& normals)
 {
     if (normals.empty())
     {
@@ -78,9 +78,16 @@ Normal<BaseVecT> Normal<BaseVecT>::average(const CollectionT& normals)
 }
 
 template <typename BaseVecT>
-Vector<BaseVecT> Normal<BaseVecT>::asVector() const
+Normal<BaseVecT>& Normal<BaseVecT>::operator=(const Vector<BaseVecT>& other)
 {
-    return static_cast<BaseVecT>(*this);
+    if(&other != this)
+    {
+        this->x = other.x;
+        this->y = other.y;
+        this->z = other.z;
+        this->normalize();
+    }
+    return *this;
 }
 
 template <typename BaseVecT>
@@ -88,5 +95,18 @@ Normal<BaseVecT> Normal<BaseVecT>::operator-() const
 {
     return Normal(-this->x, -this->y, -this->z);
 }
+
+template <typename BaseVecT>
+Normal<BaseVecT> Normal<BaseVecT>::operator+(const Vector<BaseVecT>& other) const
+{
+    return Normal(other.x + this->x, other.y + this->y, other.z + this->z);
+}
+
+template <typename BaseVecT>
+Normal<BaseVecT> Normal<BaseVecT>::operator-(const Vector<BaseVecT>& other) const
+{
+    return Normal(other.x - this->x, other.y - this->y, other.z - this->z);
+}
+
 
 } // namespace lvr2

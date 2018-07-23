@@ -38,7 +38,7 @@ template<typename BaseVecT>
 float SharpBox<BaseVecT>::m_phi_corner = 0.7f;
 
 template<typename BaseVecT>
-typename PointsetSurface<BaseVecT>::Ptr SharpBox<BaseVecT>::m_surface;
+PointsetSurfacePtr<BaseVecT> SharpBox<BaseVecT>::m_surface;
 
 template<typename BaseVecT>
 SharpBox<BaseVecT>::SharpBox(BaseVecT v) : FastBox<BaseVecT>(v)
@@ -150,8 +150,8 @@ void SharpBox<BaseVecT>::getSurface(
         vector<QueryPoint<BaseVecT> > &query_points,
         uint &globalIndex)
 {
-    Point<BaseVecT> corners[8];
-    Point<BaseVecT> vertex_positions[12];
+    Vector<BaseVecT> corners[8];
+    Vector<BaseVecT> vertex_positions[12];
     Normal<BaseVecT> vertex_normals[12];
 
     float distances[8];
@@ -175,7 +175,7 @@ void SharpBox<BaseVecT>::getSurface(
     this->detectSharpFeatures(vertex_positions, vertex_normals, index);
 
     uint edge_index = 0;
-    int triangle_indices[3];
+    OptionalVertexHandle triangle_indices[3];
 
     // Generate the local approximation surface according to the marching
     // cubes table for Paul Burke.
@@ -203,7 +203,7 @@ void SharpBox<BaseVecT>::getSurface(
                     FastBox<BaseVecT>* current_neighbor = this->m_neighbors[neighbor_table[edge_index][i]];
                     if(current_neighbor != 0)
                     {
-                        current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = globalIndex;
+                        current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = this->m_intersections[edge_index];
                     }
                 }
                 // Increase the global vertex counter to save the buffer
@@ -217,7 +217,9 @@ void SharpBox<BaseVecT>::getSurface(
         if (!m_containsSharpFeature) // No sharp features present -> use standard marching cubes
         {
             // Add triangle actually does the normal interpolation for us.
-            mesh.addTriangle(triangle_indices[0], triangle_indices[1], triangle_indices[2]);
+            mesh.addFace(triangle_indices[0].unwrap(),
+                         triangle_indices[1].unwrap(),
+                         triangle_indices[2].unwrap());
         }
     }
 
@@ -269,11 +271,12 @@ void SharpBox<BaseVecT>::getSurface(
         else
         {
             //First plane
-            Vector<BaseVecT> v1 = (vertex_positions[ExtendedMCTable[index][2]] + vertex_positions[ExtendedMCTable[index][3]]) * 0.5;
-            Normal<BaseVecT> n1 = (vertex_normals[ExtendedMCTable[index][2]] + vertex_normals[ExtendedMCTable[index][3]]) * 0.5;
+            Vector<BaseVecT> v1(vertex_positions[ExtendedMCTable[index][2]] + vertex_positions[ExtendedMCTable[index][3]] * 0.5);
+            Normal<BaseVecT> n1(vertex_normals[ExtendedMCTable[index][2]] + vertex_normals[ExtendedMCTable[index][3]] * 0.5);
+
             //Second plane
-            Vector<BaseVecT> v2 = (vertex_positions[ExtendedMCTable[index][6]] + vertex_positions[ExtendedMCTable[index][7]]) * 0.5;
-            Normal<BaseVecT> n2 = (vertex_normals[ExtendedMCTable[index][6]] + vertex_normals[ExtendedMCTable[index][7]]) * 0.5;
+            Vector<BaseVecT> v2(vertex_positions[ExtendedMCTable[index][6]] + vertex_positions[ExtendedMCTable[index][7]] * 0.5);
+            Normal<BaseVecT> n2(vertex_normals[ExtendedMCTable[index][6]] + vertex_normals[ExtendedMCTable[index][7]] * 0.5);
 
             //calculate intersection between plane 1 and 2
             if (fabs(n1 * n2) < 0.9)

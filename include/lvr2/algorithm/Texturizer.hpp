@@ -35,7 +35,6 @@
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/geometry/Normal.hpp>
-#include <lvr2/geometry/Point.hpp>
 #include <lvr2/geometry/Vector.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/texture/ClusterTexCoordMapping.hpp>

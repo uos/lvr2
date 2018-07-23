@@ -27,7 +27,6 @@
 #define LVR2_GEOMETRY_LINE_H_
 
 #include "Normal.hpp"
-#include "Point.hpp"
 
 namespace lvr2
 {
@@ -43,10 +42,10 @@ struct Line
     Line() : normal(0, 0, 1) {}
 
     Normal<BaseVecT> normal;
-    Point<BaseVecT> pos;
+    Vector<BaseVecT> pos;
 
     /// Projects the given point onto the line and returns the projection point.
-    Point<BaseVecT> project(const Point<BaseVecT>& other) const;
+    Vector<BaseVecT> project(const Vector<BaseVecT>& other) const;
 };
 
 template<typename BaseVecT>

@@ -29,16 +29,16 @@ namespace lvr2
 
 template<typename BaseVecT>
 QueryPoint<BaseVecT>::QueryPoint()
-    : QueryPoint(Point<BaseVecT>(0.0, 0.0, 0.0))
+    : QueryPoint(Vector<BaseVecT>(0.0, 0.0, 0.0))
 {}
 
 template<typename BaseVecT>
-QueryPoint<BaseVecT>::QueryPoint(Point<BaseVecT> p)
+QueryPoint<BaseVecT>::QueryPoint(Vector<BaseVecT> p)
     : QueryPoint(p, 0.0)
 {}
 
 template<typename BaseVecT>
-QueryPoint<BaseVecT>::QueryPoint(Point<BaseVecT> p, float d)
+QueryPoint<BaseVecT>::QueryPoint(Vector<BaseVecT> p, float d)
 {
     m_position = p;
     m_distance = d;

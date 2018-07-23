@@ -35,7 +35,7 @@ namespace lvr2 {
 
 template<typename BaseVecT>
 void SearchTree<BaseVecT>::kSearch(
-    const Point<BaseVecT> &qp,
+    const Vector<BaseVecT> &qp,
     int neighbours,
     vector<size_t>& indices
 ) const

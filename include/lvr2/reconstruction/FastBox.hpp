@@ -30,7 +30,6 @@
 #include <lvr2/reconstruction/MCTable.hpp>
 #include <lvr2/reconstruction/FastBoxTables.hpp>
 
-#include <lvr2/geometry/Point.hpp>
 #include <lvr2/geometry/Normal.hpp>
 
 #include "QueryPoint.hpp"
@@ -63,7 +62,7 @@ public:
      * @brief Constructs a new box at the given center point defined
      *        by the used \ref{m_voxelsize}.
      */
-    FastBox(Point<BaseVecT> center);
+    FastBox(Vector<BaseVecT> center);
 
     /**
      * @brief Destructor.NormalT
@@ -101,7 +100,7 @@ public:
 
     FastBox<BaseVecT>*     getNeighbor(int index);
 
-    inline Point<BaseVecT> getCenter() { return m_center; }
+    inline Vector<BaseVecT> getCenter() { return m_center; }
 
 
     /**
@@ -142,7 +141,7 @@ public:
     bool                        m_duplicate;
 
      /// The box center
-    Point<BaseVecT> m_center;
+    Vector<BaseVecT> m_center;
 
     /// Pointer to all adjacent cells
     FastBox<BaseVecT>*  m_neighbors[27];
@@ -171,7 +170,7 @@ protected:
      * @param distance      The corresponding distance value
      * @param positions     The interpolated intersections.
      */
-    void getIntersections(BaseVecT* corners, float* distance, Point<BaseVecT>* positions);
+    void getIntersections(BaseVecT* corners, float* distance, Vector<BaseVecT>* positions);
 
     /**
      * @brief Calculates the position of the eight cell corners
@@ -179,7 +178,7 @@ protected:
      * @param corners       The cell corners
      * @param query_points  The query points of the grid
      */
-    void getCorners(Point<BaseVecT> corners[], vector<QueryPoint<BaseVecT>>& query_points);
+    void getCorners(Vector<BaseVecT> corners[], vector<QueryPoint<BaseVecT>>& query_points);
 
     /**
      * @brief Calculates the distance value for the eight cell corners.

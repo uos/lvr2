@@ -34,7 +34,6 @@
  */
 #include "HashGrid.hpp"
 #include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/geometry/Point.hpp>
 #include <lvr2/geometry/Vector.hpp>
 #include <lvr/reconstruction/FastReconstructionTables.hpp>
 #include <lvr/io/Progress.hpp>
@@ -56,8 +55,8 @@ HashGrid<BaseVecT, BoxT>::HashGrid(
 {
     m_coordinateScales = Vector<BaseVecT>(1, 1, 1);
 
-    auto newMax = m_boundingBox.getMax().asVector();
-    auto newMin = m_boundingBox.getMin().asVector();
+    auto newMax = m_boundingBox.getMax();
+    auto newMin = m_boundingBox.getMin();
     if (m_boundingBox.getXSize() < 3 * cellSize)
     {
         newMax.x += cellSize;
@@ -113,7 +112,7 @@ HashGrid<BaseVecT, BoxT>::HashGrid(string file)
     m_extrude = false;
     ifs >> minx >> miny >> minz >> maxx >> maxy >> maxz >> qsize >> vsize >> csize;
 
-    m_boundingBox = BoundingBox<BaseVecT>(Point<BaseVecT>(minx, miny, minz), Point<BaseVecT>(maxx, maxy, maxz));
+    m_boundingBox = BoundingBox<BaseVecT>(Vector<BaseVecT>(minx, miny, minz), Vector<BaseVecT>(maxx, maxy, maxz));
     m_globalIndex = 0;
     m_coordinateScales.x = 1.0;
     m_coordinateScales.y = 1.0;
@@ -124,7 +123,7 @@ HashGrid<BaseVecT, BoxT>::HashGrid(string file)
 
 
     float  pdist;
-    Point<BaseVecT> v;
+    Vector<BaseVecT> v;
     //cout << lvr::timestamp << "Creating Grid..." << endl;
 
     // Iterator over all points, calc lattice indices and add lattice points to the grid
@@ -140,7 +139,7 @@ HashGrid<BaseVecT, BoxT>::HashGrid(string file)
     //cout << lvr::timestamp << "read qpoints.. csize: " << csize << endl;
     size_t h;
     unsigned int cell[8];
-    Point<BaseVecT> cell_center;
+    Vector<BaseVecT> cell_center;
     bool fusion = false;
     for(size_t k = 0 ; k< csize ; k++)
     {
@@ -283,7 +282,7 @@ void HashGrid<BaseVecT, BoxT>::addLatticePoint(int index_x, int index_y, int ind
                             //Otherwise create new grid point and associate it with the current box
                         else
                         {
-                            Point<BaseVecT> position(box_center.x + box_creation_table[k][0] * vsh,
+                            Vector<BaseVecT> position(box_center.x + box_creation_table[k][0] * vsh,
                                                      box_center.y + box_creation_table[k][1] * vsh,
                                                      box_center.z + box_creation_table[k][2] * vsh);
 

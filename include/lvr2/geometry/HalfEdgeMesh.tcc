@@ -43,7 +43,7 @@ namespace lvr2
 // ========================================================================
 
 template <typename BaseVecT>
-VertexHandle HalfEdgeMesh<BaseVecT>::addVertex(Point<BaseVecT> pos)
+VertexHandle HalfEdgeMesh<BaseVecT>::addVertex(Vector<BaseVecT> pos)
 {
     Vertex v;
     v.pos = pos;
@@ -500,13 +500,13 @@ Index HalfEdgeMesh<BaseVecT>::nextEdgeIndex() const
 
 
 template <typename BaseVecT>
-Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle) const
+Vector<BaseVecT> HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle) const
 {
     return getV(handle).pos;
 }
 
 template <typename BaseVecT>
-Point<BaseVecT>& HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle)
+Vector<BaseVecT>& HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle)
 {
     return getV(handle).pos;
 }

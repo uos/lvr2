@@ -38,7 +38,7 @@ PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
     m_points.reserve(len);
     for (int i = 0; i < len * 3; i += 3)
     {
-        auto p = Point<BaseVecT>(buf[i], buf[i + 1], buf[i + 2]);
+        auto p = Vector<BaseVecT>(buf[i], buf[i + 1], buf[i + 2]);
         m_points.push_back(p);
     }
 
@@ -162,7 +162,7 @@ lvr::PointBuffer PointBuffer<BaseVecT>::toOldBuffer() const
 
 
 template <typename BaseVecT>
-const Point<BaseVecT>& PointBuffer<BaseVecT>::getPoint(size_t idx) const
+const Vector<BaseVecT>& PointBuffer<BaseVecT>::getPoint(size_t idx) const
 {
     return m_points[idx];
 }

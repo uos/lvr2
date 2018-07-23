@@ -29,7 +29,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-TetraederBox<BaseVecT>::TetraederBox(Point<BaseVecT> v) : FastBox<BaseVecT>(v)
+TetraederBox<BaseVecT>::TetraederBox(Vector<BaseVecT> v) : FastBox<BaseVecT>(v)
 {
     //for(int i = 0; i < 19; i++) this->m_intersections[i] = this->INVALID_INDEX;
 }
@@ -37,7 +37,7 @@ TetraederBox<BaseVecT>::TetraederBox(Point<BaseVecT> v) : FastBox<BaseVecT>(v)
 template<typename BaseVecT>
 void TetraederBox<BaseVecT>::interpolateIntersections(
         int tetraNumber,
-        Point<BaseVecT> positions[4],
+        Vector<BaseVecT> positions[4],
         float distances[4]
         )
 {
@@ -54,42 +54,42 @@ void TetraederBox<BaseVecT>::interpolateIntersections(
     x = this->calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
     y = this->calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
     z = this->calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
-    m_intersectionPositionsTetraeder[0] = Point<BaseVecT>(x, y, z);
+    m_intersectionPositionsTetraeder[0] = Vector<BaseVecT>(x, y, z);
 
     v1 = 1;
     v2 = 3;
     x = this->calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
     y = this->calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
     z = this->calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
-    m_intersectionPositionsTetraeder[1] = Point<BaseVecT>(x, y, z);
+    m_intersectionPositionsTetraeder[1] = Vector<BaseVecT>(x, y, z);
 
     v1 = 3;
     v2 = 0;
     x = this->calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
     y = this->calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
     z = this->calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
-    m_intersectionPositionsTetraeder[2] = Point<BaseVecT>(x, y, z);
+    m_intersectionPositionsTetraeder[2] = Vector<BaseVecT>(x, y, z);
 
     v1 = 0;
     v2 = 2;
     x = this->calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
     y = this->calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
     z = this->calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
-    m_intersectionPositionsTetraeder[3] = Point<BaseVecT>(x, y, z);
+    m_intersectionPositionsTetraeder[3] = Vector<BaseVecT>(x, y, z);
 
     v1 = 1;
     v2 = 2;
     x = this->calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
     y = this->calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
     z = this->calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
-    m_intersectionPositionsTetraeder[4] = Point<BaseVecT>(x, y, z);
+    m_intersectionPositionsTetraeder[4] = Vector<BaseVecT>(x, y, z);
 
     v1 = 3;
     v2 = 2;
     x = this->calcIntersection(positions[v1].x, positions[v2].x, distances[v1], distances[v2]);
     y = this->calcIntersection(positions[v1].y, positions[v2].y, distances[v1], distances[v2]);
     z = this->calcIntersection(positions[v1].z, positions[v2].z, distances[v1], distances[v2]);
-    m_intersectionPositionsTetraeder[5] = Point<BaseVecT>(x, y, z);
+    m_intersectionPositionsTetraeder[5] = Vector<BaseVecT>(x, y, z);
 
 }
 
@@ -109,7 +109,7 @@ void TetraederBox<BaseVecT>::getSurface(
 
     // Calc the vertex positions for all possible edge intersection
     // of all tetraeders (up to 19 for a single box)
-    //Point<BaseVecT> intersection_positions[19];
+    //Vector<BaseVecT> intersection_positions[19];
 
     // Sub-divide the box into six tetraeders using the existing
     // box corners. The defintions of the six tetraeders can be
@@ -118,7 +118,7 @@ void TetraederBox<BaseVecT>::getSurface(
     {
         //cout << "NEW TETRA" << " " << t_number <<  endl;
         // Get the 4 vertices of the current tetraeder
-        Point<BaseVecT> t_vertices[4];
+        Vector<BaseVecT> t_vertices[4];
         for(int i = 0; i < 4; i++)
         {
             t_vertices[i] =
@@ -157,7 +157,7 @@ void TetraederBox<BaseVecT>::getSurface(
                 //and update all neighbor boxes
                 if(!m_intersections[edge_index])
                 {
-                    Point<BaseVecT> v = this->m_intersectionPositionsTetraeder[TetraederTable[index][a + b]];
+                    Vector<BaseVecT> v = this->m_intersectionPositionsTetraeder[TetraederTable[index][a + b]];
                     OptionalVertexHandle handle =  mesh.addVertex(v);
                     this->m_intersections[edge_index] = handle;
 
