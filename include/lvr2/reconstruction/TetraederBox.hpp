@@ -43,7 +43,7 @@ public:
 
     /// Creates a new tetraeder box with current grid voxel size
     /// around the given center point
-    TetraederBox(Point<BaseVecT> center);
+    TetraederBox(Vector<BaseVecT> center);
     virtual ~TetraederBox();
 
     /**
@@ -86,12 +86,12 @@ private:
 
     inline void interpolateIntersections(
             int tetraNumber,
-            Point<BaseVecT> positions[4],
+            Vector<BaseVecT> positions[4],
             float distances[4]
             );
 
     OptionalVertexHandle    m_intersections[19];
-    Point<BaseVecT>         m_intersectionPositionsTetraeder[6];
+    Vector<BaseVecT>         m_intersectionPositionsTetraeder[6];
 
 };
 

@@ -52,7 +52,7 @@
 #include <lvr/io/PointBuffer.hpp>
 
 #include <lvr2/geometry/Normal.hpp>
-#include <lvr2/geometry/Point.hpp>
+#include <lvr2/geometry/Vector.hpp>
 
 
 using boost::optional;
@@ -81,8 +81,8 @@ public:
 
     lvr::PointBuffer toOldBuffer() const;
 
-    const Point<BaseVecT>& getPoint(size_t idx) const;
-    // Point<BaseVecT>& getPoint(size_t idx);
+    const Vector<BaseVecT>& getPoint(size_t idx) const;
+    // Vector<BaseVecT>& getPoint(size_t idx);
 
 
 
@@ -172,7 +172,7 @@ public:
 
 private:
     /// Point buffer.
-    vector<Point<BaseVecT>> m_points;
+    vector<Vector<BaseVecT>> m_points;
 
     /// Point normal buffer.
     optional<vector<Normal<BaseVecT>>> m_normals;

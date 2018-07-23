@@ -57,7 +57,7 @@ public:
      *                    that are found.
      */
     virtual void kSearch(
-        const Point<BaseVecT>& qp,
+        const Vector<BaseVecT>& qp,
         int k,
         vector<size_t>& indices,
         vector<typename BaseVecT::CoordType>& distances
@@ -72,14 +72,14 @@ public:
      *                    the points that were found.
      */
     virtual void radiusSearch(
-        const Point<BaseVecT>& qp,
+        const Vector<BaseVecT>& qp,
         typename BaseVecT::CoordType r,
         vector<size_t>& indices
     ) const = 0;
 
     /// Like the other overload, but ignoring the `distances` vector.
     virtual void kSearch(
-        const Point<BaseVecT>& qp,
+        const Vector<BaseVecT>& qp,
         int k,
         vector<size_t>& indices
     ) const;

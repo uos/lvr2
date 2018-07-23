@@ -29,7 +29,7 @@
 
 #include <cmath>
 
-#include "Point.hpp"
+#include "Vector.hpp"
 
 using std::endl;
 
@@ -56,15 +56,15 @@ public:
      * @param v2        Upper right corner of the BoundingBox
      * @return
      */
-    BoundingBox(Point<BaseVecT> v1, Point<BaseVecT> v2);
+    BoundingBox(Vector<BaseVecT> v1, Vector<BaseVecT> v2);
 
     /**
-     * @brief Expands the bounding box if the given point \ref{v} is
+     * @brief Expands the bounding box if the given Vector \ref{v} is
      *        outside the current volume
      *
-     * @param v         A 3d point
+     * @param v         A 3d Vector
      */
-    inline void expand(Point<BaseVecT> v);
+    inline void expand(Vector<BaseVecT> v);
 
     /**
      * @brief  Calculates the surrounding bounding box of the current
@@ -77,7 +77,7 @@ public:
     /**
      * @brief Returns the radius of the current volume, i.e. the distance
      *        between the centroid and the most distant corner from this
-     *        point.
+     *        Vector.
      */
     typename BaseVecT::CoordType getRadius() const;
 
@@ -88,9 +88,9 @@ public:
     bool isValid() const;
 
     /**
-     * @brief Returns the center point of the bounding box.
+     * @brief Returns the center Vector of the bounding box.
      */
-    Point<BaseVecT> getCentroid() const;
+    Vector<BaseVecT> getCentroid() const;
 
     /**
      * @brief Returns the longest side of the bounding box
@@ -115,22 +115,22 @@ public:
     /**
      * @brief Returns the upper right coordinates
      */
-    Point<BaseVecT> getMax() const;
+    Vector<BaseVecT> getMax() const;
 
     /**
      * @brief Returns the lower left coordinates
      */
-    Point<BaseVecT> getMin() const;
+    Vector<BaseVecT> getMin() const;
 
 private:
-    /// The lower right point of the bounding box
-    Point<BaseVecT> m_min;
+    /// The lower right Vector of the bounding box
+    Vector<BaseVecT> m_min;
 
-    /// The upper right point of the bounding box
-    Point<BaseVecT> m_max;
+    /// The upper right Vector of the bounding box
+    Vector<BaseVecT> m_max;
 
-    /// The center point of the bounding box
-    Point<BaseVecT> m_centroid;
+    /// The center Vector of the bounding box
+    Vector<BaseVecT> m_centroid;
 };
 
 template<typename BaseVecT>

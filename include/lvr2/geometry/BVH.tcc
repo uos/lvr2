@@ -72,17 +72,17 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
     for (size_t i = 0; i < faces.size(); i += 3)
     {
         // Convert raw float data into objects
-        Point<BaseVecT> point1;
+        Vector<BaseVecT> point1;
         point1.x = vertices[faces[i]*3];
         point1.y = vertices[faces[i]*3+1];
         point1.z = vertices[faces[i]*3+2];
 
-        Point<BaseVecT> point2;
+        Vector<BaseVecT> point2;
         point2.x = vertices[faces[i+1]*3];
         point2.y = vertices[faces[i+1]*3+1];
         point2.z = vertices[faces[i+1]*3+2];
 
-        Point<BaseVecT> point3;
+        Vector<BaseVecT> point3;
         point3.x = vertices[faces[i+2]*3];
         point3.y = vertices[faces[i+2]*3+1];
         point3.z = vertices[faces[i+2]*3+2];
@@ -109,7 +109,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
         // Create triangles from faces for internal usage
         Triangle triangle;
         triangle.bb = faceBb;
-        triangle.center = Point<BaseVecT>((point1.asVector() + point2.asVector() + point3.asVector()) / 3.0f);
+        triangle.center = Vector<BaseVecT>((point1.asVector() + point2.asVector() + point3.asVector()) / 3.0f);
         triangle.idx1 = faces[i];
         triangle.idx2 = faces[i+1];
         triangle.idx3 = faces[i+2];

@@ -32,6 +32,8 @@
 #include "MCTable.hpp"
 #include <float.h>
 #include "ExtendedMCTable.hpp"
+#include "PointsetSurface.hpp"
+#include "../geometry/Vector.hpp"
 
 namespace lvr2
 {
@@ -95,7 +97,7 @@ public:
     uint m_extendedMCIndex;
 
     // the point set surface
-    static typename PointsetSurface<BaseVecT>::Ptr m_surface;
+    static PointsetSurfacePtr<BaseVecT> m_surface;
 
 private:
     /**

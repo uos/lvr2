@@ -64,7 +64,7 @@ public:
      *         the nearest data point.
      */
     virtual pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
-        distance(Point<BaseVecT> v) const = 0;
+        distance(Vector<BaseVecT> v) const = 0;
     /**
      * @brief   Calculates surface normals for each data point in the given
      *          PointBuffeer. If the buffer alreay contains normal information
@@ -80,7 +80,7 @@ public:
      *
      * @return  The normal
      */
-    virtual Normal<BaseVecT> getInterpolatedNormal(Point<BaseVecT> position) const;
+    virtual Normal<BaseVecT> getInterpolatedNormal(Vector<BaseVecT> position) const;
 
     /**
      * @brief   Returns the internal point buffer. After a call of

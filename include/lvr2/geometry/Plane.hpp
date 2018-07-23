@@ -27,7 +27,6 @@
 #define LVR2_GEOMETRY_PLANE_H_
 
 #include "Normal.hpp"
-#include "Point.hpp"
 #include "Line.hpp"
 
 namespace lvr2
@@ -44,10 +43,10 @@ struct Plane
     Plane() : normal(0, 0, 1) {}
 
     Normal<BaseVecT> normal;
-    Point<BaseVecT> pos;
+    Vector<BaseVecT> pos;
 
     /// Projects the given point onto the plane and returns the projection point.
-    Point<BaseVecT> project(const Point<BaseVecT>& other) const;
+    Vector<BaseVecT> project(const Vector<BaseVecT>& other) const;
 
     /**
      * @brief Calculates the distance between the plane and the given point.
@@ -56,7 +55,7 @@ struct Plane
      *         == 0: The point lies in the plane
      *         > 0: The point lies behind the plane, oberserved from the origin
      */
-    float distance(const Point<BaseVecT>& other) const;
+    float distance(const Vector<BaseVecT>& other) const;
 
     /// Calculates the intersection between this and other
     Line<BaseVecT> intersect(const Plane<BaseVecT>& other) const;

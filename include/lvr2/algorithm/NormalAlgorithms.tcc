@@ -32,7 +32,7 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-boost::optional<Normal<BaseVecT>> getFaceNormal(array<Point<BaseVecT>, 3> vertices)
+boost::optional<Normal<BaseVecT>> getFaceNormal(array<Vector<BaseVecT>, 3> vertices)
 {
     auto v1 = vertices[0];
     auto v2 = vertices[1];
@@ -79,7 +79,7 @@ optional<Normal<BaseVecT>> interpolatedVertexNormal(
     Vector<BaseVecT> v(0, 0, 0);
     for (auto face: faces)
     {
-        v += normals[face].asVector();
+        v += normals[face];
     }
 
     // It is indeed possible that `v` is the zero vector here: if there are two

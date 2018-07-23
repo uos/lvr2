@@ -70,7 +70,7 @@ template<typename BaseVecT>
 vector<vector<VertexHandle>> getDuplicateVertices(const BaseMesh<BaseVecT>& mesh)
 {
     // Save vertex handles "behind" equal points
-    unordered_map<Point<BaseVecT>, vector<VertexHandle>> uniquePoints;
+    unordered_map<Vector<BaseVecT>, vector<VertexHandle>> uniquePoints;
     for (auto vH: mesh.vertices())
     {
         auto point = mesh.getVertexPosition(vH);

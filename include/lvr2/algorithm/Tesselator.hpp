@@ -60,12 +60,12 @@ private:
     /**
     * List of vertices to keep track of until the end of the tesselation.
     */
-    static vector<Point<BaseVecT>> m_vertices;
+    static vector<Vector<BaseVecT>> m_vertices;
 
     /**
     * List of faces to keep track of until the end of the tesselation.
     */
-    static vector<Point<BaseVecT>> m_faces;
+    static vector<Vector<BaseVecT>> m_faces;
 
     /**
     * OpenGL callback, which is invoked by glBegin() to indicate the start of an primitiv.

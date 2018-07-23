@@ -38,7 +38,7 @@ template<typename BaseVecT>
 uint FastBox<BaseVecT>::INVALID_INDEX = numeric_limits<uint>::max();
 
 template<typename BaseVecT>
-FastBox<BaseVecT>::FastBox(Point<BaseVecT> center) : m_extruded(false), m_duplicate(false)
+FastBox<BaseVecT>::FastBox(Vector<BaseVecT> center) : m_extruded(false), m_duplicate(false)
 {
     for(int i = 0; i < 8; i++)
     {
@@ -80,7 +80,7 @@ uint FastBox<BaseVecT>::getVertex(int index)
 
 
 template<typename BaseVecT>
-void FastBox<BaseVecT>::getCorners(Point<BaseVecT> corners[],
+void FastBox<BaseVecT>::getCorners(Vector<BaseVecT> corners[],
                                            vector<QueryPoint<BaseVecT> > &qp)
 {
     // Get the box corner positions from the query point array
@@ -140,48 +140,48 @@ float FastBox<BaseVecT>::calcIntersection(float x1, float x2, float d1, float d2
 template<typename BaseVecT>
 void FastBox<BaseVecT>::getIntersections(BaseVecT* corners,
                                                  float* distance,
-                                                 Point<BaseVecT>* positions)
+                                                 Vector<BaseVecT>* positions)
 {
     float intersection;
 
     intersection = calcIntersection( (corners[0]).x, (corners[1]).x, distance[0], distance[1]);
-    positions[0] = Point<BaseVecT>(intersection, corners[0].y, corners[0].z);
+    positions[0] = Vector<BaseVecT>(intersection, corners[0].y, corners[0].z);
 
     intersection = calcIntersection(corners[1].y, corners[2].y, distance[1], distance[2]);
-    positions[1] = Point<BaseVecT>(corners[1].x, intersection, corners[1].z);
+    positions[1] = Vector<BaseVecT>(corners[1].x, intersection, corners[1].z);
 
     intersection = calcIntersection(corners[3].x, corners[2].x, distance[3], distance[2]);
-    positions[2] = Point<BaseVecT>(intersection, corners[2].y, corners[2].z);
+    positions[2] = Vector<BaseVecT>(intersection, corners[2].y, corners[2].z);
 
     intersection = calcIntersection(corners[0].y, corners[3].y, distance[0], distance[3]);
-    positions[3] = Point<BaseVecT>(corners[3].x, intersection, corners[3].z);
+    positions[3] = Vector<BaseVecT>(corners[3].x, intersection, corners[3].z);
 
     //Back Quad
     intersection = calcIntersection(corners[4].x, corners[5].x, distance[4], distance[5]);
-    positions[4] = Point<BaseVecT>(intersection, corners[4].y, corners[4].z);
+    positions[4] = Vector<BaseVecT>(intersection, corners[4].y, corners[4].z);
 
     intersection = calcIntersection(corners[5].y, corners[6].y, distance[5], distance[6]);
-    positions[5] = Point<BaseVecT>(corners[5].x, intersection, corners[5].z);
+    positions[5] = Vector<BaseVecT>(corners[5].x, intersection, corners[5].z);
 
 
     intersection = calcIntersection(corners[7].x, corners[6].x, distance[7], distance[6]);
-    positions[6] = Point<BaseVecT>(intersection, corners[6].y, corners[6].z);
+    positions[6] = Vector<BaseVecT>(intersection, corners[6].y, corners[6].z);
 
     intersection = calcIntersection(corners[4].y, corners[7].y, distance[4], distance[7]);
-    positions[7] = Point<BaseVecT>(corners[7].x, intersection, corners[7].z);
+    positions[7] = Vector<BaseVecT>(corners[7].x, intersection, corners[7].z);
 
     //Sides
     intersection = calcIntersection(corners[0].z, corners[4].z, distance[0], distance[4]);
-    positions[8] = Point<BaseVecT>(corners[0].x, corners[0].y, intersection);
+    positions[8] = Vector<BaseVecT>(corners[0].x, corners[0].y, intersection);
 
     intersection = calcIntersection(corners[1].z, corners[5].z, distance[1], distance[5]);
-    positions[9] = Point<BaseVecT>(corners[1].x, corners[1].y, intersection);
+    positions[9] = Vector<BaseVecT>(corners[1].x, corners[1].y, intersection);
 
     intersection = calcIntersection(corners[3].z, corners[7].z, distance[3], distance[7]);
-    positions[10] = Point<BaseVecT>(corners[3].x, corners[3].y, intersection);
+    positions[10] = Vector<BaseVecT>(corners[3].x, corners[3].y, intersection);
 
     intersection = calcIntersection(corners[2].z, corners[6].z, distance[2], distance[6]);
-    positions[11] = Point<BaseVecT>(corners[2].x, corners[2].y, intersection);
+    positions[11] = Vector<BaseVecT>(corners[2].x, corners[2].y, intersection);
 
 }
 
@@ -198,8 +198,8 @@ void FastBox<BaseVecT>::getSurface(
         return;
     }
 
-    Point<BaseVecT> corners[8];
-    Point<BaseVecT> vertex_positions[12];
+    Vector<BaseVecT> corners[8];
+    Vector<BaseVecT> vertex_positions[12];
 
     float distances[8];
 
@@ -277,8 +277,8 @@ void FastBox<BaseVecT>::getSurface(
         return;
     }
 
-    Point<BaseVecT> corners[8];
-    Point<BaseVecT> vertex_positions[12];
+    Vector<BaseVecT> corners[8];
+    Vector<BaseVecT> vertex_positions[12];
 
     float distances[8];
 

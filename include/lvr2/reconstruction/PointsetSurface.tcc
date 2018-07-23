@@ -38,14 +38,14 @@ PointsetSurface<BaseVecT>::PointsetSurface(PointBufferPtr<BaseVecT> pointBuffer)
 }
 
 template<typename BaseVecT>
-Normal<BaseVecT> PointsetSurface<BaseVecT>::getInterpolatedNormal(Point<BaseVecT> position) const
+Normal<BaseVecT> PointsetSurface<BaseVecT>::getInterpolatedNormal(Vector<BaseVecT> position) const
 {
     vector<size_t> indices;
-    Vector<BaseVecT> result;
+    Normal<BaseVecT> result;
     m_searchTree->kSearch(position, m_ki, indices);
     for (int i = 0; i < m_ki; i++)
     {
-        result += m_pointBuffer->getNormal(indices[i])->asVector();
+        result += *m_pointBuffer->getNormal(indices[i]);
     }
     result /= m_ki;
     return Normal<BaseVecT>(result);

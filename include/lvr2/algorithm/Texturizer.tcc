@@ -142,7 +142,7 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
 
                 vector<size_t> cv;
 
-                Point<BaseVecT> currentPos =
+                Vector<BaseVecT> currentPos =
                     boundingRect.m_supportVector
                     + boundingRect.m_vec1 * (x * m_texelSize + boundingRect.m_minDistA - m_texelSize / 2.0)
                     + boundingRect.m_vec2 * (y * m_texelSize + boundingRect.m_minDistB - m_texelSize / 2.0);
