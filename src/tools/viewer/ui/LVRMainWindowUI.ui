@@ -101,8 +101,8 @@
   <widget class="QDockWidget" name="dockWidgetRendering">
    <property name="minimumSize">
     <size>
-     <width>41</width>
-     <height>100</height>
+     <width>299</width>
+     <height>125</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -138,7 +138,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>20</y>
+       <y>17</y>
        <width>251</width>
        <height>16</height>
       </rect>
@@ -157,7 +157,7 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>40</y>
+       <y>35</y>
        <width>91</width>
        <height>16</height>
       </rect>
@@ -170,7 +170,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>60</y>
+       <y>52</y>
        <width>251</width>
        <height>16</height>
       </rect>
@@ -189,7 +189,7 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>80</y>
+       <y>70</y>
        <width>131</width>
        <height>20</height>
       </rect>
@@ -202,7 +202,7 @@
      <property name="geometry">
       <rect>
        <x>110</x>
-       <y>80</y>
+       <y>70</y>
        <width>151</width>
        <height>25</height>
       </rect>
@@ -237,7 +237,7 @@
      <property name="geometry">
       <rect>
        <x>110</x>
-       <y>110</y>
+       <y>100</y>
        <width>151</width>
        <height>25</height>
       </rect>
@@ -262,7 +262,7 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>110</y>
+       <y>100</y>
        <width>131</width>
        <height>16</height>
       </rect>
@@ -311,7 +311,7 @@
        <x>0</x>
        <y>0</y>
        <width>251</width>
-       <height>45</height>
+       <height>40</height>
       </rect>
      </property>
      <property name="text">
@@ -323,8 +323,8 @@
      </property>
      <property name="iconSize">
       <size>
-       <width>30</width>
-       <height>30</height>
+       <width>25</width>
+       <height>25</height>
       </size>
      </property>
     </widget>
@@ -332,9 +332,9 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>45</y>
+       <y>40</y>
        <width>251</width>
-       <height>45</height>
+       <height>40</height>
       </rect>
      </property>
      <property name="text">
@@ -346,8 +346,8 @@
      </property>
      <property name="iconSize">
       <size>
-       <width>30</width>
-       <height>30</height>
+       <width>25</width>
+       <height>25</height>
       </size>
      </property>
     </widget>
@@ -355,9 +355,9 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>90</y>
+       <y>80</y>
        <width>251</width>
-       <height>45</height>
+       <height>40</height>
       </rect>
      </property>
      <property name="text">
@@ -369,8 +369,8 @@
      </property>
      <property name="iconSize">
       <size>
-       <width>30</width>
-       <height>30</height>
+       <width>25</width>
+       <height>25</height>
       </size>
      </property>
     </widget>
@@ -378,9 +378,9 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>135</y>
+       <y>120</y>
        <width>251</width>
-       <height>45</height>
+       <height>40</height>
       </rect>
      </property>
      <property name="text">
@@ -392,8 +392,8 @@
      </property>
      <property name="iconSize">
       <size>
-       <width>30</width>
-       <height>30</height>
+       <width>25</width>
+       <height>25</height>
       </size>
      </property>
     </widget>
@@ -401,13 +401,23 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>180</y>
+       <y>160</y>
        <width>251</width>
-       <height>45</height>
+       <height>40</height>
       </rect>
      </property>
      <property name="text">
       <string>Set Spectralsettings</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../res/viewer.qrc">
+       <normaloff>:/qv_spectralsettings.png</normaloff>:/qv_spectralsettings.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>25</width>
+       <height>25</height>
+      </size>
      </property>
     </widget>
    </widget>
