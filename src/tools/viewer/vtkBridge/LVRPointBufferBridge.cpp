@@ -40,9 +40,9 @@ namespace lvr
 LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
 {
     // default: visible light
-    m_SpectralChannels[0] = 40;
-    m_SpectralChannels[1] = 80;
-    m_SpectralChannels[2] = 130;
+    m_SpectralChannels[0] = (612 - 400) / 4;
+    m_SpectralChannels[1] = (552 - 400) / 4;
+    m_SpectralChannels[2] = (462 - 400) / 4;
 
     if(pointCloud)
     {
@@ -69,14 +69,14 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
     }
 }
 
-void LVRPointBufferBridge::getSpectralChannels(unsigned char &r_channel, unsigned char &g_channel, unsigned char &b_channel)
+void LVRPointBufferBridge::getSpectralChannels(size_t &r_channel, size_t &g_channel, size_t &b_channel)
 {
     r_channel = m_SpectralChannels[0];
     g_channel = m_SpectralChannels[1];
     b_channel = m_SpectralChannels[2];
 }
 
-void LVRPointBufferBridge::setSpectralChannels(unsigned char r_channel, unsigned char g_channel, unsigned char b_channel)
+void LVRPointBufferBridge::setSpectralChannels(size_t r_channel, size_t g_channel, size_t b_channel)
 {
     size_t n, n_channels;
     ucharArr spec = m_pointBuffer->getPointSpectralChannelsArray(n, n_channels);
