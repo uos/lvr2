@@ -1,20 +1,19 @@
 # TODO
 
 - Dateien Laden
-  - Beispielscan
-	- Alles einlesen, in Datenstrukturen speichern
+  - hdf5 Support
 	- speicher sparenderes Verfahren überlegen? _(später, optional)_
   - Tatsächliche Repräsentation _(mit anderen Gruppen absprechen, folgt später)_
 
 - Daten verwenden
-  - Farbwerte aus Spektralinformationen berechnen
-  - Auswahl der r, g, b Werte aus Nutereingabe verwenden
+  - Farbwerte aus Spektralinformationen prüfen
   - Einfärbung aktuallisieren _(nicht in jedem Frame)_
+    - evlt. erst bei los lassen des Cursors aktualisieren und nicht bei jedem Step
 
 - Benutzerinterface
-  - 3 Farbkanäle auswählen _(-> 3 Slider)_
   - Bedeutung kenntlich machen _(Tooltips, Beschreibung, etc)_
   - Visuell anschaulich gestalten _(sichtbares Spektrum unterm Slider?)_
+  - Channel für Farbe deaktivierbar machen? _(z.B. g und b konstant auf 0 und rot auf channel x)_
 
 ## Erweiterungen
 - Punkt auswählen können
