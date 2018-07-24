@@ -52,7 +52,7 @@ private:
     SpectralDialog*      m_spectralDialog;
     QDialog*             m_dialog;
     PointBufferBridgePtr m_points;
-    unsigned char        m_r, m_g, m_b;
+    size_t               m_r, m_g, m_b;
 };
 
 } // namespace lvr
