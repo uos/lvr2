@@ -39,7 +39,7 @@ class LVRSpectralDialog : public QObject
     Q_OBJECT
 
 public:
-    LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainWindow, PointBufferBridgePtr points);
+    LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainWindow, PointBufferBridgePtr points, vtkRenderer* renderer);
     virtual ~LVRSpectralDialog();
 
 public Q_SLOTS:
@@ -53,6 +53,7 @@ private:
     QDialog*             m_dialog;
     PointBufferBridgePtr m_points;
     size_t               m_r, m_g, m_b;
+    vtkRenderer*         m_renderer;
 };
 
 } // namespace lvr

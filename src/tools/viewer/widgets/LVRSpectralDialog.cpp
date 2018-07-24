@@ -17,8 +17,8 @@
 namespace lvr
 {
 
-LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainWindow, PointBufferBridgePtr points) :
-   m_points(points), m_mainWindow(mainWindow)
+LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainWindow, PointBufferBridgePtr points, vtkRenderer* renderer):
+   m_points(points), m_mainWindow(mainWindow), m_renderer(renderer)
 {
     points->getSpectralChannels(m_r, m_g, m_b);
     size_t n, n_channels;
@@ -63,8 +63,8 @@ void LVRSpectralDialog::valueChangeFinished(){
     m_g = m_spectralDialog->horizontalSlider_Hyperspectral_green->value();
     m_b = m_spectralDialog->horizontalSlider_Hyperspectral_blue->value();
     m_points->setSpectralChannels(m_r, m_g, m_b);
-    m_mainWindow->resize(m_mainWindow->width(), m_mainWindow->height() + 1); //TODO: find a better way to refresh the Window pls
-    m_mainWindow->resize(m_mainWindow->width(), m_mainWindow->height() - 1); // I tried update, raise, focus, ... and nothing worked
+
+    m_renderer->GetRenderWindow()->Render();
     
     m_spectralDialog->label->setText("Hyperspectral red: " + QString("%1").arg(m_r * 4 + 400) + "nm");
     m_spectralDialog->label_2->setText("Hyperspectral green: " + QString("%1").arg(m_g * 4 + 400) + "nm");
