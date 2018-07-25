@@ -232,6 +232,7 @@ void SharpBox<BaseVecT>::getSurface(
         m_extendedMCIndex = index;
         //calculate intersection for the new vertex position
         BaseVecT v = this->m_center;
+
         if (m_containsSharpCorner)
         {
             //First plane
@@ -273,12 +274,12 @@ void SharpBox<BaseVecT>::getSurface(
         else
         {
             //First plane
-            Vector<BaseVecT> v1(vertex_positions[ExtendedMCTable[index][2]] + vertex_positions[ExtendedMCTable[index][3]] * 0.5);
-            Normal<BaseVecT> n1(vertex_normals[ExtendedMCTable[index][2]] + vertex_normals[ExtendedMCTable[index][3]] * 0.5);
+            Vector<BaseVecT> v1( (vertex_positions[ExtendedMCTable[index][2]] + vertex_positions[ExtendedMCTable[index][3]]) * 0.5);
+            Normal<BaseVecT> n1( (vertex_normals[ExtendedMCTable[index][2]] + vertex_normals[ExtendedMCTable[index][3]]) * 0.5);
 
             //Second plane
-            Vector<BaseVecT> v2(vertex_positions[ExtendedMCTable[index][6]] + vertex_positions[ExtendedMCTable[index][7]] * 0.5);
-            Normal<BaseVecT> n2(vertex_normals[ExtendedMCTable[index][6]] + vertex_normals[ExtendedMCTable[index][7]] * 0.5);
+            Vector<BaseVecT> v2( (vertex_positions[ExtendedMCTable[index][6]] + vertex_positions[ExtendedMCTable[index][7]]) * 0.5);
+            Normal<BaseVecT> n2( (vertex_normals[ExtendedMCTable[index][6]] + vertex_normals[ExtendedMCTable[index][7]]) * 0.5);
 
             //calculate intersection between plane 1 and 2
             if (fabs(n1 * n2) < 0.9)
@@ -289,14 +290,15 @@ void SharpBox<BaseVecT>::getSurface(
                 Vector<BaseVecT> direction = n1.cross(n2);
 
                 float denom = direction * direction;
-                Vector<BaseVecT> x = ((n2 * d1 - n1 * d2).cross(direction)) * (1 / denom);
+
+                Vector<BaseVecT> x = (( (n2 * d1) - (n1 * d2)).cross(direction)) * (1 / denom);
 
                 // project center of the box onto intersection line of the two planes
                 v = x + direction * (((v - x) * direction) / (direction.length() * direction.length()));
             }
 
         }
-        cout << v << endl;
+
         OptionalVertexHandle center = mesh.addVertex(v);
 
         uint index_center = globalIndex++;
