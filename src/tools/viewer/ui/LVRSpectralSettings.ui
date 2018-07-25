@@ -26,7 +26,7 @@
       <locale language="English" country="UnitedStates"/>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab_channel">
       <attribute name="title">
@@ -94,17 +94,18 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_channelbuttons">
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
          <item>
-          <widget class="QDialogButtonBox" name="buttonBox_channel_apply">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+          <widget class="QPushButton" name="pushButton_channel_close">
+           <property name="text">
+            <string>Close</string>
            </property>
-           <property name="standardButtons">
-            <set>QDialogButtonBox::Apply|QDialogButtonBox::Close</set>
-           </property>
-           <property name="centerButtons">
-            <bool>true</bool>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_channel_apply">
+           <property name="text">
+            <string>Apply</string>
            </property>
           </widget>
          </item>
@@ -146,10 +147,13 @@
        </property>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="leftMargin">
+          <number>7</number>
+         </property>
          <item>
           <widget class="QLabel" name="label_cg_channel">
            <property name="text">
-            <string>  Channel:</string>
+            <string>Channel:</string>
            </property>
           </widget>
          </item>
@@ -164,10 +168,13 @@
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="leftMargin">
+          <number>7</number>
+         </property>
          <item>
           <widget class="QLabel" name="label_cg_cg">
            <property name="text">
-            <string>  Colorgradient:</string>
+            <string>Colorgradient:</string>
            </property>
           </widget>
          </item>
@@ -212,34 +219,58 @@
          </item>
         </layout>
        </item>
-       <item alignment="Qt::AlignRight">
-        <widget class="QCheckBox" name="checkBox_normcolors">
-         <property name="layoutDirection">
-          <enum>Qt::RightToLeft</enum>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <property name="leftMargin">
+          <number>0</number>
          </property>
-         <property name="text">
-          <string>Normalize colors:</string>
-         </property>
-         <property name="tristate">
-          <bool>false</bool>
-         </property>
-        </widget>
+         <item alignment="Qt::AlignRight">
+          <widget class="QCheckBox" name="checkBox_normcolors">
+           <property name="sizeIncrement">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="toolTipDuration">
+            <number>-1</number>
+           </property>
+           <property name="layoutDirection">
+            <enum>Qt::RightToLeft</enum>
+           </property>
+           <property name="text">
+            <string>Normalize colors:</string>
+           </property>
+           <property name="tristate">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
-        <widget class="QDialogButtonBox" name="buttonBox_colorgradient_close">
-         <property name="enabled">
-          <bool>true</bool>
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <property name="leftMargin">
+          <number>10</number>
          </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+         <property name="rightMargin">
+          <number>10</number>
          </property>
-         <property name="standardButtons">
-          <set>QDialogButtonBox::Apply|QDialogButtonBox::Close</set>
-         </property>
-         <property name="centerButtons">
-          <bool>true</bool>
-         </property>
-        </widget>
+         <item>
+          <widget class="QPushButton" name="pushButton_cg_close">
+           <property name="text">
+            <string>Close</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_cg_apply">
+           <property name="text">
+            <string>Apply</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
