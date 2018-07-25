@@ -39,8 +39,8 @@ LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainW
     m_spectralDialog->horizontalSlider_Hyperspectral_green->setValue(m_g);
     m_spectralDialog->horizontalSlider_Hyperspectral_blue->setValue(m_b);
     m_spectralDialog->label_hred->setText("Hyperspectral red: " + QString("%1").arg(m_r * 4 + 400) + "nm");
-    m_spectralDialog->label_hblue->setText("Hyperspectral green: " + QString("%1").arg(m_g * 4 + 400) + "nm");
-    m_spectralDialog->label_hgreen->setText("Hyperspectral blue: " + QString("%1").arg(m_b * 4 + 400) + "nm");
+    m_spectralDialog->label_hgreen->setText("Hyperspectral green: " + QString("%1").arg(m_g * 4 + 400) + "nm");
+    m_spectralDialog->label_hblue->setText("Hyperspectral blue: " + QString("%1").arg(m_b * 4 + 400) + "nm");
     
     // Colorgradient - Tab //
     // get values
@@ -75,9 +75,15 @@ void LVRSpectralDialog::connectSignalsAndSlots()
     QObject::connect(m_spectralDialog->comboBox_colorgradient, SIGNAL(currentIndexChanged(int)), this, SLOT(updateGradientView()));    
     QObject::connect(m_spectralDialog->checkBox_normcolors, SIGNAL(stateChanged(int)), this, SLOT(updateGradientView()));
 
-    // These does not work somehow
-    //QObject::connect(m_spectralDialog->buttonBox_channel_apply, SIGNAL(clicked(QAbstractButton * button)), this, SLOT(setTypeChannel()));
-    //QObject::connect(m_spectralDialog->buttonBox_colorgradient_apply, SIGNAL(clicked(QAbstractButton * button)), this, SLOT(setTypeGradient()));
+    QObject::connect(m_spectralDialog->pushButton_channel_apply, SIGNAL(released()), this, SLOT(setTypeChannel()));
+    QObject::connect(m_spectralDialog->pushButton_cg_apply, SIGNAL(released()), this, SLOT(setTypeGradient()));
+    QObject::connect(m_spectralDialog->pushButton_channel_close, SIGNAL(released()), this, SLOT(exitDialog()));
+    QObject::connect(m_spectralDialog->pushButton_cg_close, SIGNAL(released()), this, SLOT(exitDialog()));
+}
+
+void LVRSpectralDialog::exitDialog()
+{
+    m_dialog->done(0);
 }
 
 void LVRSpectralDialog::setTypeChannel()
@@ -112,8 +118,8 @@ void LVRSpectralDialog::valueChangeFinished(){
     m_renderer->GetRenderWindow()->Render();
     
     m_spectralDialog->label_hred->setText("Hyperspectral red: " + QString("%1").arg(m_r * 4 + 400) + "nm");
-    m_spectralDialog->label_hblue->setText("Hyperspectral green: " + QString("%1").arg(m_g * 4 + 400) + "nm");
-    m_spectralDialog->label_hgreen->setText("Hyperspectral blue: " + QString("%1").arg(m_b * 4 + 400) + "nm");    
+    m_spectralDialog->label_hgreen->setText("Hyperspectral green: " + QString("%1").arg(m_g * 4 + 400) + "nm");
+    m_spectralDialog->label_hblue->setText("Hyperspectral blue: " + QString("%1").arg(m_b * 4 + 400) + "nm");    
 }
 
 }
