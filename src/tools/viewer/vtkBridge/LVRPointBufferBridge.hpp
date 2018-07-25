@@ -57,8 +57,8 @@ public:
     void setVisibility(bool visible);
     void setSpectralChannels(size_t r_channel, size_t g_channel, size_t b_channel);
     void getSpectralChannels(size_t &r_channel, size_t &g_channel, size_t &b_channel) const;
-    void setSpectralColorGradient(GradientType gradient, size_t bucket);
-    void getSpectralColorGradient(GradientType &gradient, size_t &bucket) const;
+    void setSpectralColorGradient(GradientType gradient, size_t channel);
+    void getSpectralColorGradient(GradientType &gradient, size_t &channel) const;
     void useGradient(bool useGradient);
 
     PointBufferPtr getPointBuffer();
@@ -75,7 +75,7 @@ protected:
     bool                            m_useGradient;
     size_t                          m_SpectralChannels[3];
     GradientType                    m_SpectralGradient;
-    size_t                          m_SpectralGradientBucket;
+    size_t                          m_SpectralGradientChannel;
     ColorMap                        m_colorMap;
 };
 
