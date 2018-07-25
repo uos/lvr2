@@ -22,6 +22,7 @@
 #include <lvr/registration/ICPPointAlign.hpp>
 //#include <lvr/io/boost/shared_ptr.hpp>
 
+#include <lvr/display/ColorMap.hpp>
 #include "../vtkBridge/LVRPointBufferBridge.hpp"
 
 #include <QtWidgets>
@@ -53,6 +54,9 @@ private:
     QDialog*             m_dialog;
     PointBufferBridgePtr m_points;
     size_t               m_r, m_g, m_b;
+    bool                 m_useGradient;
+    GradientType         m_gradient;
+    size_t               m_gradientBucket;
     vtkRenderer*         m_renderer;
 };
 
