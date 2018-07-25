@@ -25,6 +25,7 @@
 #ifndef LVRPOINTBUFFERBRIDGE_HPP_
 #define LVRPOINTBUFFERBRIDGE_HPP_
 
+#include <lvr/display/ColorMap.hpp>
 #include <lvr/io/PointBuffer.hpp>
 //#include <LVRPointBufferBridge.hpp>
 
@@ -55,7 +56,10 @@ public:
     void setOpacity(float opacityValue);
     void setVisibility(bool visible);
     void setSpectralChannels(size_t r_channel, size_t g_channel, size_t b_channel);
-    void getSpectralChannels(size_t &r_channel, size_t &g_channel, size_t &b_channel);
+    void getSpectralChannels(size_t &r_channel, size_t &g_channel, size_t &b_channel) const;
+    void setSpectralColorGradient(GradientType gradient, size_t bucket);
+    void getSpectralColorGradient(GradientType &gradient, size_t &bucket) const;
+    void useGradient(bool useGradient);
 
     PointBufferPtr getPointBuffer();
 
@@ -68,7 +72,11 @@ protected:
     bool                            m_hasNormals;
     bool                            m_hasColors;
     PointBufferPtr                  m_pointBuffer;
+    bool                            m_useGradient;
     size_t                          m_SpectralChannels[3];
+    GradientType                    m_SpectralGradient;
+    size_t                          m_SpectralGradientBucket;
+    ColorMap                        m_colorMap;
 };
 
 typedef boost::shared_ptr<LVRPointBufferBridge> PointBufferBridgePtr;
