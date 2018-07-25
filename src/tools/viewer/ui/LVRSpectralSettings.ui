@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>280</width>
-    <height>241</height>
+    <height>249</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,108 +19,222 @@
   <property name="locale">
    <locale language="English" country="UnitedStates"/>
   </property>
-  <widget class="QTabWidget" name="tabWidget">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>1</y>
-     <width>281</width>
-     <height>241</height>
-    </rect>
-   </property>
-   <property name="locale">
-    <locale language="English" country="UnitedStates"/>
-   </property>
-   <property name="currentIndex">
-    <number>1</number>
-   </property>
-   <widget class="QWidget" name="tab_channel">
-    <attribute name="title">
-     <string>Channel</string>
-    </attribute>
-    <layout class="QGridLayout" name="gridLayout">
-     <property name="horizontalSpacing">
-      <number>2</number>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="1">
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="locale">
+      <locale language="English" country="UnitedStates"/>
      </property>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_hgreen">
-       <property name="text">
-        <string>Hyperspectral green:</string>
+     <property name="currentIndex">
+      <number>1</number>
+     </property>
+     <widget class="QWidget" name="tab_channel">
+      <attribute name="title">
+       <string>Channel</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetDefaultConstraint</enum>
        </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_hblue">
-       <property name="text">
-        <string>Hyperspectral blue:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QSlider" name="horizontalSlider_Hyperspectral_red">
-       <property name="maximum">
-        <number>149</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="0">
-      <widget class="QSlider" name="horizontalSlider_Hyperspectral_blue">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximum">
-        <number>149</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QSlider" name="horizontalSlider_Hyperspectral_green">
-       <property name="maximum">
-        <number>149</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_hred">
-       <property name="text">
-        <string>Hyperspectral red:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="0">
-      <layout class="QHBoxLayout" name="horizontalLayout_channelbuttons">
        <item>
-        <widget class="QDialogButtonBox" name="buttonBox_channel_close">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="standardButtons">
-          <set>QDialogButtonBox::Close</set>
-         </property>
-         <property name="centerButtons">
-          <bool>true</bool>
+        <widget class="QLabel" name="label_hred">
+         <property name="text">
+          <string>Hyperspectral red:</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QDialogButtonBox" name="buttonBox_channel_apply">
+        <widget class="QSlider" name="horizontalSlider_Hyperspectral_red">
+         <property name="maximum">
+          <number>149</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_hgreen">
+         <property name="text">
+          <string>Hyperspectral green:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="horizontalSlider_Hyperspectral_green">
+         <property name="maximum">
+          <number>149</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_hblue">
+         <property name="text">
+          <string>Hyperspectral blue:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="horizontalSlider_Hyperspectral_blue">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximum">
+          <number>149</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_channelbuttons">
+         <item>
+          <widget class="QDialogButtonBox" name="buttonBox_channel_apply">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="standardButtons">
+            <set>QDialogButtonBox::Apply|QDialogButtonBox::Close</set>
+           </property>
+           <property name="centerButtons">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_colorgradient">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="sizeIncrement">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <attribute name="title">
+       <string>Colorgradient</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetDefaultConstraint</enum>
+       </property>
+       <property name="leftMargin">
+        <number>1</number>
+       </property>
+       <property name="topMargin">
+        <number>1</number>
+       </property>
+       <property name="rightMargin">
+        <number>1</number>
+       </property>
+       <property name="bottomMargin">
+        <number>1</number>
+       </property>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="label_cg_channel">
+           <property name="text">
+            <string>  Channel:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="horizontalSlider_channel">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QLabel" name="label_cg_cg">
+           <property name="text">
+            <string>  Colorgradient:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="comboBox_colorgradient">
+           <item>
+            <property name="text">
+             <string>Solid</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Grey</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Jet</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Hot</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>HSV</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>SHSV</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Simpsons</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item alignment="Qt::AlignRight">
+        <widget class="QCheckBox" name="checkBox_normcolors">
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="text">
+          <string>Normalize colors:</string>
+         </property>
+         <property name="tristate">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDialogButtonBox" name="buttonBox_colorgradient_close">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
          <property name="standardButtons">
-          <set>QDialogButtonBox::Apply</set>
+          <set>QDialogButtonBox::Apply|QDialogButtonBox::Close</set>
          </property>
          <property name="centerButtons">
           <bool>true</bool>
@@ -128,133 +242,10 @@
         </widget>
        </item>
       </layout>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="tab_colorgradient">
-    <attribute name="title">
-     <string>Colorgradient</string>
-    </attribute>
-    <layout class="QGridLayout" name="gridLayout_4" rowstretch="0,0,0,0,0,0">
-     <property name="leftMargin">
-      <number>1</number>
-     </property>
-     <property name="topMargin">
-      <number>1</number>
-     </property>
-     <property name="rightMargin">
-      <number>1</number>
-     </property>
-     <property name="bottomMargin">
-      <number>1</number>
-     </property>
-     <property name="horizontalSpacing">
-      <number>2</number>
-     </property>
-     <item row="5" column="1">
-      <widget class="QDialogButtonBox" name="buttonBox_colorgradient_apply">
-       <property name="sizeIncrement">
-        <size>
-         <width>5</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="contextMenuPolicy">
-        <enum>Qt::NoContextMenu</enum>
-       </property>
-       <property name="locale">
-        <locale language="English" country="UnitedStates"/>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="standardButtons">
-        <set>QDialogButtonBox::Apply</set>
-       </property>
-       <property name="centerButtons">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_cg_cg">
-       <property name="text">
-        <string>Colorgradient:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QSlider" name="horizontalSlider_channel">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QComboBox" name="comboBox_colorgradient">
-       <item>
-        <property name="text">
-         <string>Solid</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Grey</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Jet</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Hot</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>HSV</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>SHSV</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Simpsons</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_cg_channel">
-       <property name="text">
-        <string>Channel:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
-      <widget class="QDialogButtonBox" name="buttonBox_colorgradient_close">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="standardButtons">
-        <set>QDialogButtonBox::Close</set>
-       </property>
-       <property name="centerButtons">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-  </widget>
+     </widget>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>
