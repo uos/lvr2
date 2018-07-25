@@ -4,6 +4,7 @@
   - hdf5 Support
 	- speicher sparenderes Verfahren überlegen? _(später, optional)_
   - Tatsächliche Repräsentation _(mit anderen Gruppen absprechen, folgt später)_
+  - Geschwindigkeit verbessern _Parallelisieren_
 
 - Daten verwenden
   - Einfärbung aktuallisieren _(nicht in jedem Frame)_
@@ -13,11 +14,15 @@
   - Bedeutung kenntlich machen _(Tooltips, Beschreibung, etc)_
   - Visuell anschaulich gestalten _(sichtbares Spektrum unterm Slider?)_
   - Channel für Farbe deaktivierbar machen? _(z.B. g und b konstant auf 0 und rot auf channel x)_
+  - langsame Aktionen kenntlich machen _Ladebalken / Cursor_
 
 - Mesh support?
   - interpolierte Spektraldaten?
   - setSpectralData deaktivieren für Meshes
 
-## Erweiterung II: Punkte auswählen
-- Punkt auswählen mithilfe von Interactor->GetPicker()
-  - Komplettes Spektrum eines Punktes als Wellenlänge -> Intensität Graph separat darstellen
+- Channels als float Array im Bereich 0..1
+
+- Testen
+  - Support von Punktwolken ohne Spektraldaten
+  - Support von anderen Dateiformaten
+  - leere Punktwolken
