@@ -179,8 +179,10 @@ void SharpBox<BaseVecT>::getSurface(
 
     // Generate the local approximation surface according to the marching
     // cubes table for Paul Burke.
-    for(int a = 0; MCTable[index][a] != -1; a+= 3){
-        for(int b = 0; b < 3; b++){
+    for(int a = 0; MCTable[index][a] != -1; a+= 3)
+    {
+        for(int b = 0; b < 3; b++)
+        {
             edge_index = MCTable[index][a + b];
 
             //If no index was found generate new index and vertex
@@ -294,17 +296,18 @@ void SharpBox<BaseVecT>::getSurface(
             }
 
         }
-
-//        mesh.addVertex(v);
-//        mesh.addNormal(NormalT());
-
-
+        cout << v << endl;
+        OptionalVertexHandle center = mesh.addVertex(v);
 
         uint index_center = globalIndex++;
         // Add triangle actually does the normal interpolation for us.
         for(int a = 0; ExtendedMCTable[index][a] != -1; a+= 2)
         {
-            //mesh.addTriangle(this->m_intersections[ExtendedMCTable[index][a]], index_center, this->m_intersections[ExtendedMCTable[index][a+1]]);
+            mesh.addFace(
+                    this->m_intersections[ExtendedMCTable[index][a]].unwrap(),
+                    center.unwrap(),
+                    this->m_intersections[ExtendedMCTable[index][a+1]].unwrap());
+
         }
 
     }
