@@ -45,6 +45,9 @@ public:
 
 public Q_SLOTS:
     void valueChangeFinished();
+    void setTypeChannel();
+    void setTypeGradient();
+    void updateGradientView();
     
 private:
     void connectSignalsAndSlots();
@@ -54,9 +57,8 @@ private:
     QDialog*             m_dialog;
     PointBufferBridgePtr m_points;
     size_t               m_r, m_g, m_b;
-    bool                 m_useGradient;
     GradientType         m_gradient;
-    size_t               m_gradientBucket;
+    size_t               m_gradientChannel;
     vtkRenderer*         m_renderer;
 };
 

@@ -20,15 +20,18 @@ namespace lvr
 LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainWindow, PointBufferBridgePtr points, vtkRenderer* renderer):
    m_points(points), m_mainWindow(mainWindow), m_renderer(renderer)
 {
-    points->getSpectralChannels(m_r, m_g, m_b);
-    size_t n, n_channels;
-    points->getPointBuffer()->getPointSpectralChannelsArray(n, n_channels);
-
     // Setup DialogUI and events
     m_dialog = new QDialog(treeWidget);
     m_spectralDialog = new SpectralDialog;
     m_spectralDialog->setupUi(m_dialog);
 
+    // Channel - Tab //
+    // get values
+    points->getSpectralChannels(m_r, m_g, m_b);
+    size_t n, n_channels;
+    points->getPointBuffer()->getPointSpectralChannelsArray(n, n_channels);
+
+    // set values
     m_spectralDialog->horizontalSlider_Hyperspectral_red->setMaximum(n_channels - 1);
     m_spectralDialog->horizontalSlider_Hyperspectral_green->setMaximum(n_channels - 1);
     m_spectralDialog->horizontalSlider_Hyperspectral_blue->setMaximum(n_channels - 1);
@@ -38,6 +41,16 @@ LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainW
     m_spectralDialog->label_hred->setText("Hyperspectral red: " + QString("%1").arg(m_r * 4 + 400) + "nm");
     m_spectralDialog->label_hblue->setText("Hyperspectral green: " + QString("%1").arg(m_g * 4 + 400) + "nm");
     m_spectralDialog->label_hgreen->setText("Hyperspectral blue: " + QString("%1").arg(m_b * 4 + 400) + "nm");
+    
+    // Colorgradient - Tab //
+    // get values
+    points->getSpectralColorGradient(m_gradient, m_gradientChannel);
+
+    // set values
+    m_spectralDialog->horizontalSlider_channel->setMaximum(n_channels);
+    m_spectralDialog->horizontalSlider_channel->setValue(m_gradientChannel);
+    m_spectralDialog->label_cg_channel->setText("Channel: " + QString("%1").arg(m_gradientChannel));
+    m_spectralDialog->comboBox_colorgradient->setCurrentIndex(m_gradient);
     
     connectSignalsAndSlots();
 
@@ -56,6 +69,35 @@ void LVRSpectralDialog::connectSignalsAndSlots()
     QObject::connect(m_spectralDialog->horizontalSlider_Hyperspectral_red, SIGNAL(valueChanged(int)), this, SLOT(valueChangeFinished()));
     QObject::connect(m_spectralDialog->horizontalSlider_Hyperspectral_green, SIGNAL(valueChanged(int)), this, SLOT(valueChangeFinished()));
     QObject::connect(m_spectralDialog->horizontalSlider_Hyperspectral_blue, SIGNAL(valueChanged(int)), this, SLOT(valueChangeFinished()));
+
+    QObject::connect(m_spectralDialog->horizontalSlider_channel, SIGNAL(valueChanged(int)), this, SLOT(updateGradientView()));
+    QObject::connect(m_spectralDialog->comboBox_colorgradient, SIGNAL(currentIndexChanged(int)), this, SLOT(updateGradientView()));
+
+    // These does not work somehow
+    QObject::connect(m_spectralDialog->buttonBox_channel_apply, SIGNAL(clicked(QAbstractButton * button)), this, SLOT(setTypeChannel()));
+    QObject::connect(m_spectralDialog->buttonBox_colorgradient_apply, SIGNAL(clicked(QAbstractButton * button)), this, SLOT(setTypeGradient()));
+}
+
+void LVRSpectralDialog::setTypeChannel()
+{
+    m_points->useGradient(false);
+    m_renderer->GetRenderWindow()->Render();
+}
+
+void LVRSpectralDialog::setTypeGradient()
+{
+    m_points->useGradient(true);
+    m_renderer->GetRenderWindow()->Render();
+}
+
+void LVRSpectralDialog::updateGradientView()
+{
+    m_gradientChannel = m_spectralDialog->horizontalSlider_channel->value();
+    m_gradient = (GradientType)m_spectralDialog->comboBox_colorgradient->currentIndex();
+    m_points->setSpectralColorGradient(m_gradient, m_gradientChannel);
+    m_renderer->GetRenderWindow()->Render();
+
+    m_spectralDialog->label_cg_channel->setText("Channel: " + QString("%1").arg(m_gradientChannel));
 }
 
 void LVRSpectralDialog::valueChangeFinished(){
@@ -68,8 +110,7 @@ void LVRSpectralDialog::valueChangeFinished(){
     
     m_spectralDialog->label_hred->setText("Hyperspectral red: " + QString("%1").arg(m_r * 4 + 400) + "nm");
     m_spectralDialog->label_hblue->setText("Hyperspectral green: " + QString("%1").arg(m_g * 4 + 400) + "nm");
-    m_spectralDialog->label_hgreen->setText("Hyperspectral blue: " + QString("%1").arg(m_b * 4 + 400) + "nm");
-     
+    m_spectralDialog->label_hgreen->setText("Hyperspectral blue: " + QString("%1").arg(m_b * 4 + 400) + "nm");    
 }
 
 }
