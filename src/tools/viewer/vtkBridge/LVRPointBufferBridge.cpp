@@ -37,12 +37,18 @@
 namespace lvr
 {
 
-LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
+LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud) :
+    m_colorMap(255)
 {
     // default: visible light
     m_SpectralChannels[0] = (612 - 400) / 4;
     m_SpectralChannels[1] = (552 - 400) / 4;
     m_SpectralChannels[2] = (462 - 400) / 4;
+
+    // default: solid color gradient
+    m_useGradient = false;
+    m_SpectralGradientBucket = 0;
+    m_SpectralGradient = SOLID;
 
     if(pointCloud)
     {
@@ -67,13 +73,6 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
         m_hasNormals = false;
         m_hasColors = false;
     }
-}
-
-void LVRPointBufferBridge::getSpectralChannels(size_t &r_channel, size_t &g_channel, size_t &b_channel)
-{
-    r_channel = m_SpectralChannels[0];
-    g_channel = m_SpectralChannels[1];
-    b_channel = m_SpectralChannels[2];
 }
 
 void LVRPointBufferBridge::setSpectralChannels(size_t r_channel, size_t g_channel, size_t b_channel)
@@ -110,6 +109,73 @@ void LVRPointBufferBridge::setSpectralChannels(size_t r_channel, size_t g_channe
     }
 
     m_pointCloudActor->GetMapper()->GetInput()->GetPointData()->SetScalars(scalars);
+}
+
+void LVRPointBufferBridge::getSpectralChannels(size_t &r_channel, size_t &g_channel, size_t &b_channel) const
+{
+    r_channel = m_SpectralChannels[0];
+    g_channel = m_SpectralChannels[1];
+    b_channel = m_SpectralChannels[2];
+}
+
+void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_t bucket)
+{
+    size_t n, n_channels;
+    ucharArr spec = m_pointBuffer->getPointSpectralChannelsArray(n, n_channels);
+
+    if (!n)
+    {
+        return;
+    }
+
+    m_SpectralGradient = gradient;
+    m_SpectralGradientBucket = bucket;
+
+    vtkSmartPointer<vtkUnsignedCharArray> scalars = vtkSmartPointer<vtkUnsignedCharArray>::New();
+    scalars->SetNumberOfComponents(3);
+    scalars->SetName("Colors");
+
+    for (int i = 0; i < n; i++)
+    {
+        int specIndex = n_channels * i;
+        float color[3];
+
+        m_colorMap.getColor(color, spec[specIndex + m_SpectralGradientBucket], m_SpectralGradient);
+
+        unsigned char speccolor[3];
+        speccolor[0] = color[0] * 255;
+        speccolor[1] = color[1] * 255;
+        speccolor[2] = color[2] * 255;
+
+#if VTK_MAJOR_VERSION < 7
+        scalars->InsertNextTupleValue(speccolor);
+#else
+        scalars->InsertNextTypedTuple(speccolor);
+#endif
+    }
+
+    m_pointCloudActor->GetMapper()->GetInput()->GetPointData()->SetScalars(scalars);
+}
+
+void LVRPointBufferBridge::getSpectralColorGradient(GradientType &gradient, size_t &bucket) const
+{
+    gradient = m_SpectralGradient;
+    bucket = m_SpectralGradientBucket;
+}
+
+void LVRPointBufferBridge::useGradient(bool useGradient)
+{
+    m_useGradient = useGradient;
+
+    // update
+    if(useGradient)
+    {
+        setSpectralColorGradient(m_SpectralGradient, m_SpectralGradientBucket);
+    }
+    else
+    {
+        setSpectralChannels(m_SpectralChannels[0], m_SpectralChannels[1], m_SpectralChannels[2]);
+    }
 }
 
 PointBufferPtr LVRPointBufferBridge::getPointBuffer()
@@ -220,12 +286,16 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
     }
 }
 
-LVRPointBufferBridge::LVRPointBufferBridge(const LVRPointBufferBridge& b)
+LVRPointBufferBridge::LVRPointBufferBridge(const LVRPointBufferBridge& b) :
+    m_colorMap(255)
 {
     m_pointCloudActor   = b.m_pointCloudActor;
     m_hasColors         = b.m_hasColors;
     m_hasNormals        = b.m_hasNormals;
     m_numPoints         = b.m_numPoints;
+    memcpy(m_SpectralChannels, b.m_SpectralChannels, sizeof(b.m_SpectralChannels));
+    m_SpectralGradient = b.m_SpectralGradient;
+    m_SpectralGradientBucket = b.m_SpectralGradientBucket;
 }
 
 void LVRPointBufferBridge::setBaseColor(float r, float g, float b)
