@@ -95,12 +95,14 @@ void Vector<BaseVecT>::normalize()
     // Check for invalid vector. This check can be disabled in release mode,
     // which will probably lead to +inf and -inf values. In the documentation
     // for this function we require the vector to not be the null-vector.
-    assert(!(this->x == 0 && this->y == 0 && this->z == 0));
-
-    auto len = this->length();
-    this->x /= len;
-    this->y /= len;
-    this->z /= len;
+    // assert(!(this->x == 0 && this->y == 0 && this->z == 0));
+    if(!(this->x == 0 && this->y == 0 && this->z == 0))
+    {
+        auto len = this->length();
+        this->x /= len;
+        this->y /= len;
+        this->z /= len;
+    }
 }
 
 template <typename BaseVecT>

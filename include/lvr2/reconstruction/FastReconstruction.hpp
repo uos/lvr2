@@ -33,6 +33,7 @@
 #include "PointsetMeshGenerator.hpp"
 #include "LocalApproximation.hpp"
 #include "FastBox.hpp"
+#include "./SharpBox.hpp"
 #include "BilinearFastBox.hpp"
 #include "QueryPoint.hpp"
 #include "PointsetSurface.hpp"

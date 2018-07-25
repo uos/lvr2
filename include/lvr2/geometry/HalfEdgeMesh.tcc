@@ -937,7 +937,7 @@ void HalfEdgeMesh<BaseVecT>::flipEdge(EdgeHandle edgeH)
 {
     if (!BaseMesh<BaseVecT>::isFlippable(edgeH))
     {
-        panic("flipEdge() called for non-flippable edge!");
+        //panic("flipEdge() called for non-flippable edge!");
     }
 
     // A fancy drawing of the current and expected situation:
