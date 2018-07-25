@@ -1,0 +1,88 @@
+
+#include "LVRPlotter.hpp"
+#include <QPainter>
+
+namespace lvr
+{
+
+LVRPlotter::LVRPlotter(QWidget * parent)
+	: QWidget(parent), m_numPoints(0)
+{
+	m_points.reset();
+}
+
+LVRPlotter::~LVRPlotter()
+{
+
+}
+
+void LVRPlotter::setPoints(floatArr points, size_t numPoints)
+{
+	float max = points[0], min = points[0];
+	for (int i = 0; i < numPoints; i++)
+	{
+		if (points[i] > max)
+			max = points[i];
+		if (points[i] < min)
+			min = points[i];
+	}
+	setPoints(points, numPoints, min, max);
+}
+
+void LVRPlotter::setPoints(floatArr points, size_t numPoints, float min, float max)
+{
+	m_points = points;
+	m_numPoints = numPoints;
+	m_max = max;
+	m_min = min;
+	update();
+}
+
+void LVRPlotter::removePoints()
+{
+	m_points.reset();
+	m_numPoints = 0;
+	update();
+}
+
+void LVRPlotter::paintEvent(QPaintEvent *)
+{
+	if (!m_numPoints)
+	{
+		return;
+	}
+
+	QPainter painter(this);
+
+	painter.setPen(QColor(0, 0, 0));
+	painter.setBrush(QColor(0, 0, 0));
+
+	QRect rect;
+	painter.drawText(0, 0, width(), height(), Qt::AlignTop, QString("%1").arg(m_max), &rect);
+	int leftMargin = rect.width() + 1;
+
+	painter.drawText(0, 0, width(), height(), Qt::AlignBottom, QString("%1").arg(m_min), &rect);
+	leftMargin = rect.width() + 1 > leftMargin ? rect.width() + 1 : leftMargin;
+
+	painter.drawLine(leftMargin, 0, leftMargin, height());
+
+	painter.setPen(QColor(255, 0, 0));
+	painter.setBrush(QColor(255, 0, 0));
+
+	float drawWidth = width() - leftMargin;
+
+	float old_x = leftMargin;
+	float old_y = (m_points[0] - m_min) / (m_max - m_min) * height();
+
+	for (int i = 1; i < m_numPoints; i++)
+	{
+		float new_x = i * drawWidth / m_numPoints + leftMargin;
+		float new_y = (m_points[i] - m_min) / (m_max - m_min) * height();
+		painter.drawLine(old_x, height() - old_y, new_x, height() - new_y);
+		old_x = new_x;
+		old_y = new_y;
+	}
+
+}
+
+}
