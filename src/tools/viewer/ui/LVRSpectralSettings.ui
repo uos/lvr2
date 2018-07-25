@@ -34,7 +34,7 @@
    <property name="currentIndex">
     <number>1</number>
    </property>
-   <widget class="QWidget" name="Page1">
+   <widget class="QWidget" name="tab_channel">
     <attribute name="title">
      <string>Channel</string>
     </attribute>
@@ -43,14 +43,14 @@
       <number>2</number>
      </property>
      <item row="2" column="0">
-      <widget class="QLabel" name="label_2">
+      <widget class="QLabel" name="label_hgreen">
        <property name="text">
         <string>Hyperspectral green:</string>
        </property>
       </widget>
      </item>
      <item row="4" column="0">
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="label_hblue">
        <property name="text">
         <string>Hyperspectral blue:</string>
        </property>
@@ -93,16 +93,16 @@
       </widget>
      </item>
      <item row="0" column="0">
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="label_hred">
        <property name="text">
         <string>Hyperspectral red:</string>
        </property>
       </widget>
      </item>
      <item row="9" column="0">
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <layout class="QHBoxLayout" name="horizontalLayout_channelbuttons">
        <item>
-        <widget class="QDialogButtonBox" name="buttonBox_4">
+        <widget class="QDialogButtonBox" name="buttonBox_channel_close">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -115,7 +115,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QDialogButtonBox" name="buttonBox">
+        <widget class="QDialogButtonBox" name="buttonBox_channel_apply">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -131,7 +131,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="tab_5">
+   <widget class="QWidget" name="tab_colorgradient">
     <attribute name="title">
      <string>Colorgradient</string>
     </attribute>
@@ -152,7 +152,7 @@
       <number>2</number>
      </property>
      <item row="5" column="1">
-      <widget class="QDialogButtonBox" name="buttonBox_3">
+      <widget class="QDialogButtonBox" name="buttonBox_colorgradient_apply">
        <property name="sizeIncrement">
         <size>
          <width>5</width>
@@ -177,31 +177,31 @@
       </widget>
      </item>
      <item row="3" column="0">
-      <widget class="QLabel" name="label_4">
+      <widget class="QLabel" name="label_cg_cg">
        <property name="text">
         <string>Colorgradient:</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QSlider" name="horizontalSlider">
+      <widget class="QSlider" name="horizontalSlider_channel">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QComboBox" name="comboBox"/>
+      <widget class="QComboBox" name="comboBox_colorgradient"/>
      </item>
      <item row="1" column="0">
-      <widget class="QLabel" name="label_5">
+      <widget class="QLabel" name="label_cg_channel">
        <property name="text">
         <string>Channel:</string>
        </property>
       </widget>
      </item>
      <item row="5" column="0">
-      <widget class="QDialogButtonBox" name="buttonBox_2">
+      <widget class="QDialogButtonBox" name="buttonBox_colorgradient_close">
        <property name="enabled">
         <bool>true</bool>
        </property>
