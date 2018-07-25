@@ -35,9 +35,9 @@ LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainW
     m_spectralDialog->horizontalSlider_Hyperspectral_red->setValue(m_r);
     m_spectralDialog->horizontalSlider_Hyperspectral_green->setValue(m_g);
     m_spectralDialog->horizontalSlider_Hyperspectral_blue->setValue(m_b);
-    m_spectralDialog->label->setText("Hyperspectral red: " + QString("%1").arg(m_r * 4 + 400) + "nm");
-    m_spectralDialog->label_2->setText("Hyperspectral green: " + QString("%1").arg(m_g * 4 + 400) + "nm");
-    m_spectralDialog->label_3->setText("Hyperspectral blue: " + QString("%1").arg(m_b * 4 + 400) + "nm");
+    m_spectralDialog->label_hred->setText("Hyperspectral red: " + QString("%1").arg(m_r * 4 + 400) + "nm");
+    m_spectralDialog->label_hblue->setText("Hyperspectral green: " + QString("%1").arg(m_g * 4 + 400) + "nm");
+    m_spectralDialog->label_hgreen->setText("Hyperspectral blue: " + QString("%1").arg(m_b * 4 + 400) + "nm");
     
     connectSignalsAndSlots();
 
@@ -66,9 +66,9 @@ void LVRSpectralDialog::valueChangeFinished(){
 
     m_renderer->GetRenderWindow()->Render();
     
-    m_spectralDialog->label->setText("Hyperspectral red: " + QString("%1").arg(m_r * 4 + 400) + "nm");
-    m_spectralDialog->label_2->setText("Hyperspectral green: " + QString("%1").arg(m_g * 4 + 400) + "nm");
-    m_spectralDialog->label_3->setText("Hyperspectral blue: " + QString("%1").arg(m_b * 4 + 400) + "nm");
+    m_spectralDialog->label_hred->setText("Hyperspectral red: " + QString("%1").arg(m_r * 4 + 400) + "nm");
+    m_spectralDialog->label_hblue->setText("Hyperspectral green: " + QString("%1").arg(m_g * 4 + 400) + "nm");
+    m_spectralDialog->label_hgreen->setText("Hyperspectral blue: " + QString("%1").arg(m_b * 4 + 400) + "nm");
      
 }
 
