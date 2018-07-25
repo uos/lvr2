@@ -138,7 +138,8 @@ void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_
     unsigned char max_val = spec[m_SpectralGradientChannel], min_val = spec[m_SpectralGradientChannel];
 
     ColorMap colorMap(255);
-    if(normalized)
+    m_useNormalizedGradient = normalized;
+    if(m_useNormalizedGradient)
     {
         #pragma omp parallel for reduction(max : max_val), reduction(min : min_val)
         for (int i = 0; i < n; i++)
@@ -161,7 +162,7 @@ void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_
         int specIndex = n_channels * i;
         float color[3];
 
-        if(normalized)
+        if(m_useNormalizedGradient)
             colorMap.getColor(color, spec[specIndex + m_SpectralGradientChannel] - min_val, m_SpectralGradient);
         else
             colorMap.getColor(color, spec[specIndex + m_SpectralGradientChannel], m_SpectralGradient);
