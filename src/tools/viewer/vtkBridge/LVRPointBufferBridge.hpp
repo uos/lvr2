@@ -57,8 +57,8 @@ public:
     void setVisibility(bool visible);
     void setSpectralChannels(size_t r_channel, size_t g_channel, size_t b_channel);
     void getSpectralChannels(size_t &r_channel, size_t &g_channel, size_t &b_channel) const;
-    void setSpectralColorGradient(GradientType gradient, size_t channel);
-    void getSpectralColorGradient(GradientType &gradient, size_t &channel) const;
+    void setSpectralColorGradient(GradientType gradient, size_t channel, bool normalized);
+    void getSpectralColorGradient(GradientType &gradient, size_t &channel, bool &normalized) const;
     void useGradient(bool useGradient);
 
     PointBufferPtr getPointBuffer();
@@ -73,10 +73,10 @@ protected:
     bool                            m_hasColors;
     PointBufferPtr                  m_pointBuffer;
     bool                            m_useGradient;
+    bool                            m_useNormalizedGradient;
     size_t                          m_SpectralChannels[3];
     GradientType                    m_SpectralGradient;
     size_t                          m_SpectralGradientChannel;
-    ColorMap                        m_colorMap;
 };
 
 typedef boost::shared_ptr<LVRPointBufferBridge> PointBufferBridgePtr;
