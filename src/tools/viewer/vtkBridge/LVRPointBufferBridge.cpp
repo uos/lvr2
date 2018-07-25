@@ -37,8 +37,7 @@
 namespace lvr
 {
 
-LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud) :
-    m_colorMap(255)
+LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
 {
     // default: visible light
     m_SpectralChannels[0] = (612 - 400) / 4;
@@ -47,6 +46,7 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud) :
 
     // default: solid color gradient
     m_useGradient = false;
+    m_useNormalizedGradient = false;
     m_SpectralGradientChannel = 0;
     m_SpectralGradient = SOLID;
 
@@ -118,7 +118,7 @@ void LVRPointBufferBridge::getSpectralChannels(size_t &r_channel, size_t &g_chan
     b_channel = m_SpectralChannels[2];
 }
 
-void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_t channel)
+void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_t channel, bool normalized)
 {
     size_t n, n_channels;
     ucharArr spec = m_pointBuffer->getPointSpectralChannelsArray(n, n_channels);
@@ -135,12 +135,36 @@ void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_
     scalars->SetNumberOfComponents(3);
     scalars->SetName("Colors");
 
+    unsigned char max_val = spec[m_SpectralGradientChannel], min_val = spec[m_SpectralGradientChannel];
+
+    ColorMap colorMap(255);
+    if(normalized)
+    {
+        #pragma omp parallel for reduction(max : max_val), reduction(min : min_val)
+        for (int i = 0; i < n; i++)
+        {
+            int specIndex = n_channels * i + m_SpectralGradientChannel;
+            if(spec[specIndex] > max_val)
+            {
+                max_val = spec[specIndex];  
+            }
+            if(spec[specIndex] < min_val)
+            {
+                min_val = spec[specIndex];  
+            }
+        }
+        colorMap = ColorMap(max_val - min_val);
+    }
+
     for (int i = 0; i < n; i++)
     {
         int specIndex = n_channels * i;
         float color[3];
 
-        m_colorMap.getColor(color, spec[specIndex + m_SpectralGradientChannel], m_SpectralGradient);
+        if(normalized)
+            colorMap.getColor(color, spec[specIndex + m_SpectralGradientChannel] - min_val, m_SpectralGradient);
+        else
+            colorMap.getColor(color, spec[specIndex + m_SpectralGradientChannel], m_SpectralGradient);
 
         unsigned char speccolor[3];
         speccolor[0] = color[0] * 255;
@@ -157,10 +181,11 @@ void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_
     m_pointCloudActor->GetMapper()->GetInput()->GetPointData()->SetScalars(scalars);
 }
 
-void LVRPointBufferBridge::getSpectralColorGradient(GradientType &gradient, size_t &channel) const
+void LVRPointBufferBridge::getSpectralColorGradient(GradientType &gradient, size_t &channel, bool &normalized) const
 {
     gradient = m_SpectralGradient;
     channel = m_SpectralGradientChannel;
+    normalized = m_useNormalizedGradient;
 }
 
 void LVRPointBufferBridge::useGradient(bool useGradient)
@@ -170,7 +195,7 @@ void LVRPointBufferBridge::useGradient(bool useGradient)
     // update
     if(useGradient)
     {
-        setSpectralColorGradient(m_SpectralGradient, m_SpectralGradientChannel);
+        setSpectralColorGradient(m_SpectralGradient, m_SpectralGradientChannel, m_useNormalizedGradient);
     }
     else
     {
@@ -286,14 +311,15 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
     }
 }
 
-LVRPointBufferBridge::LVRPointBufferBridge(const LVRPointBufferBridge& b) :
-    m_colorMap(255)
+LVRPointBufferBridge::LVRPointBufferBridge(const LVRPointBufferBridge& b)
 {
     m_pointCloudActor   = b.m_pointCloudActor;
     m_hasColors         = b.m_hasColors;
     m_hasNormals        = b.m_hasNormals;
     m_numPoints         = b.m_numPoints;
     memcpy(m_SpectralChannels, b.m_SpectralChannels, sizeof(b.m_SpectralChannels));
+    m_useGradient       = b.m_useGradient;
+    m_useNormalizedGradient = b.m_useNormalizedGradient;
     m_SpectralGradient = b.m_SpectralGradient;
     m_SpectralGradientChannel = b.m_SpectralGradientChannel;
 }

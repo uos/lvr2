@@ -44,13 +44,14 @@ LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainW
     
     // Colorgradient - Tab //
     // get values
-    points->getSpectralColorGradient(m_gradient, m_gradientChannel);
+    points->getSpectralColorGradient(m_gradient, m_gradientChannel, m_useNormalizedGradient);
 
     // set values
     m_spectralDialog->horizontalSlider_channel->setMaximum(n_channels);
     m_spectralDialog->horizontalSlider_channel->setValue(m_gradientChannel);
     m_spectralDialog->label_cg_channel->setText("Channel: " + QString("%1").arg(m_gradientChannel));
     m_spectralDialog->comboBox_colorgradient->setCurrentIndex(m_gradient);
+    m_spectralDialog->checkBox_normcolors->setChecked(m_useNormalizedGradient);
     
     connectSignalsAndSlots();
 
@@ -71,7 +72,8 @@ void LVRSpectralDialog::connectSignalsAndSlots()
     QObject::connect(m_spectralDialog->horizontalSlider_Hyperspectral_blue, SIGNAL(valueChanged(int)), this, SLOT(valueChangeFinished()));
 
     QObject::connect(m_spectralDialog->horizontalSlider_channel, SIGNAL(valueChanged(int)), this, SLOT(updateGradientView()));
-    QObject::connect(m_spectralDialog->comboBox_colorgradient, SIGNAL(currentIndexChanged(int)), this, SLOT(updateGradientView()));
+    QObject::connect(m_spectralDialog->comboBox_colorgradient, SIGNAL(currentIndexChanged(int)), this, SLOT(updateGradientView()));    
+    QObject::connect(m_spectralDialog->checkBox_normcolors, SIGNAL(stateChanged(int)), this, SLOT(updateGradientView()));
 
     // These does not work somehow
     //QObject::connect(m_spectralDialog->buttonBox_channel_apply, SIGNAL(clicked(QAbstractButton * button)), this, SLOT(setTypeChannel()));
@@ -92,9 +94,10 @@ void LVRSpectralDialog::setTypeGradient()
 
 void LVRSpectralDialog::updateGradientView()
 {
+    m_useNormalizedGradient = m_spectralDialog->checkBox_normcolors->isChecked();
     m_gradientChannel = m_spectralDialog->horizontalSlider_channel->value();
     m_gradient = (GradientType)m_spectralDialog->comboBox_colorgradient->currentIndex();
-    m_points->setSpectralColorGradient(m_gradient, m_gradientChannel);
+    m_points->setSpectralColorGradient(m_gradient, m_gradientChannel, m_useNormalizedGradient);
     m_renderer->GetRenderWindow()->Render();
 
     m_spectralDialog->label_cg_channel->setText("Channel: " + QString("%1").arg(m_gradientChannel));

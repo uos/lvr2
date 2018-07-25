@@ -59,6 +59,7 @@ private:
     size_t               m_r, m_g, m_b;
     GradientType         m_gradient;
     size_t               m_gradientChannel;
+    bool                 m_useNormalizedGradient;
     vtkRenderer*         m_renderer;
 };
 
