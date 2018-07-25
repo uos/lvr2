@@ -63,6 +63,7 @@
 #include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
 #include "../widgets/LVRBackgroundDialog.hpp"
 #include "../widgets/LVRSpectralDialog.hpp"
+#include "../widgets/LVRPointInfo.hpp"
 
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
@@ -127,6 +128,7 @@ public Q_SLOTS:
     void exportSelectedModel();
     void buildIncompatibilityBox(string actionName, unsigned char allowedTypes);
     void showBackgroundDialog();
+    void showPointInfoDialog(size_t point);
 
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
@@ -145,6 +147,7 @@ private:
 
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
     LVRSpectralDialog*                          m_spectralDialog;
+    LVRPointInfo*                               m_pointInfoDialog;
     QDialog*                                    m_aboutDialog;
     QMessageBox*                                m_incompatibilityBox;
     vtkSmartPointer<vtkRenderer>                m_renderer;
