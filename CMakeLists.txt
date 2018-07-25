@@ -429,6 +429,7 @@ add_subdirectory(src/tools/normals)
 add_subdirectory(src/tools/kaboom)
 add_subdirectory(src/tools/image_normals)
 add_subdirectory(src/tools/plymerger)
+add_subdirectory(src/tools/hdf5_builder)
 
 if(CUDA_FOUND)
 #    cuda_include_directories(ext/CTPL)
