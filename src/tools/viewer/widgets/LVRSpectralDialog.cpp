@@ -74,8 +74,8 @@ void LVRSpectralDialog::connectSignalsAndSlots()
     QObject::connect(m_spectralDialog->comboBox_colorgradient, SIGNAL(currentIndexChanged(int)), this, SLOT(updateGradientView()));
 
     // These does not work somehow
-    QObject::connect(m_spectralDialog->buttonBox_channel_apply, SIGNAL(clicked(QAbstractButton * button)), this, SLOT(setTypeChannel()));
-    QObject::connect(m_spectralDialog->buttonBox_colorgradient_apply, SIGNAL(clicked(QAbstractButton * button)), this, SLOT(setTypeGradient()));
+    //QObject::connect(m_spectralDialog->buttonBox_channel_apply, SIGNAL(clicked(QAbstractButton * button)), this, SLOT(setTypeChannel()));
+    //QObject::connect(m_spectralDialog->buttonBox_colorgradient_apply, SIGNAL(clicked(QAbstractButton * button)), this, SLOT(setTypeGradient()));
 }
 
 void LVRSpectralDialog::setTypeChannel()
