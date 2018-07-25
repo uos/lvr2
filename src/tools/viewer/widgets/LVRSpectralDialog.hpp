@@ -48,6 +48,7 @@ public Q_SLOTS:
     void setTypeChannel();
     void setTypeGradient();
     void updateGradientView();
+    void exitDialog();
     
 private:
     void connectSignalsAndSlots();
