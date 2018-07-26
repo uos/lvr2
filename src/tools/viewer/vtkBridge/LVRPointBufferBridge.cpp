@@ -37,6 +37,11 @@
 namespace lvr
 {
 
+inline unsigned char floatToColor(float f)
+{
+    return f * 255;
+}
+
 LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
 {
     // default: visible light
@@ -78,7 +83,7 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
 void LVRPointBufferBridge::setSpectralChannels(size_t r_channel, size_t g_channel, size_t b_channel)
 {
     size_t n, n_channels;
-    ucharArr spec = m_pointBuffer->getPointSpectralChannelsArray(n, n_channels);
+    floatArr spec = m_pointBuffer->getPointSpectralChannelsArray(n, n_channels);
 
     if (!n)
     {
@@ -97,9 +102,9 @@ void LVRPointBufferBridge::setSpectralChannels(size_t r_channel, size_t g_channe
     {
         int specIndex = n_channels * i;
         unsigned char speccolor[3];
-        speccolor[0] = spec[specIndex + m_SpectralChannels[0]];
-        speccolor[1] = spec[specIndex + m_SpectralChannels[1]];
-        speccolor[2] = spec[specIndex + m_SpectralChannels[2]];
+        speccolor[0] = floatToColor(spec[specIndex + m_SpectralChannels[0]]);
+        speccolor[1] = floatToColor(spec[specIndex + m_SpectralChannels[1]]);
+        speccolor[2] = floatToColor(spec[specIndex + m_SpectralChannels[2]]);
 
 #if VTK_MAJOR_VERSION < 7
         scalars->InsertNextTupleValue(speccolor);
@@ -121,7 +126,7 @@ void LVRPointBufferBridge::getSpectralChannels(size_t &r_channel, size_t &g_chan
 void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_t channel, bool normalized)
 {
     size_t n, n_channels;
-    ucharArr spec = m_pointBuffer->getPointSpectralChannelsArray(n, n_channels);
+    floatArr spec = m_pointBuffer->getPointSpectralChannelsArray(n, n_channels);
 
     if (!n)
     {
@@ -135,12 +140,12 @@ void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_
     scalars->SetNumberOfComponents(3);
     scalars->SetName("Colors");
 
-    unsigned char max_val = spec[m_SpectralGradientChannel], min_val = spec[m_SpectralGradientChannel];
-
     ColorMap colorMap(255);
+    unsigned char min, max;
     m_useNormalizedGradient = normalized;
     if(m_useNormalizedGradient)
     {
+        float max_val = spec[m_SpectralGradientChannel], min_val = spec[m_SpectralGradientChannel];
         #pragma omp parallel for reduction(max : max_val), reduction(min : min_val)
         for (int i = 0; i < n; i++)
         {
@@ -154,7 +159,9 @@ void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_
                 min_val = spec[specIndex];  
             }
         }
-        colorMap = ColorMap(max_val - min_val);
+        min = floatToColor(min_val);
+        max = floatToColor(max_val);
+        colorMap = ColorMap(max - min);
     }
 
     for (int i = 0; i < n; i++)
@@ -163,9 +170,9 @@ void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_
         float color[3];
 
         if(m_useNormalizedGradient)
-            colorMap.getColor(color, spec[specIndex + m_SpectralGradientChannel] - min_val, m_SpectralGradient);
+            colorMap.getColor(color, floatToColor(spec[specIndex + m_SpectralGradientChannel]) - min, m_SpectralGradient);
         else
-            colorMap.getColor(color, spec[specIndex + m_SpectralGradientChannel], m_SpectralGradient);
+            colorMap.getColor(color, floatToColor(spec[specIndex + m_SpectralGradientChannel]), m_SpectralGradient);
 
         unsigned char speccolor[3];
         speccolor[0] = color[0] * 255;
@@ -247,7 +254,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         size_t n, n_c, n_s_p, n_s_channels;
         floatArr points = pc->getPointArray(n);
         ucharArr colors = pc->getPointColorArray(n_c);
-        ucharArr spec = pc->getPointSpectralChannelsArray(n_s_p, n_s_channels);
+        floatArr spec = pc->getPointSpectralChannelsArray(n_s_p, n_s_channels);
 
         for(vtkIdType i = 0; i < n; i++)
         {
@@ -264,9 +271,9 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
                 }
                 int specIndex = n_s_channels * i;
                 unsigned char speccolor[3];
-            	speccolor[0] = spec[specIndex + m_SpectralChannels[0]];
-            	speccolor[1] = spec[specIndex + m_SpectralChannels[1]];
-            	speccolor[2] = spec[specIndex + m_SpectralChannels[2]];  
+            	speccolor[0] = floatToColor(spec[specIndex + m_SpectralChannels[0]]);
+            	speccolor[1] = floatToColor(spec[specIndex + m_SpectralChannels[1]]);
+            	speccolor[2] = floatToColor(spec[specIndex + m_SpectralChannels[2]]);  
 
 #if VTK_MAJOR_VERSION < 7
                 scalars->InsertNextTupleValue(speccolor);
