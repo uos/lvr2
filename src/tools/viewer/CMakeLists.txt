@@ -87,6 +87,7 @@ set(LVR_VIEWER_UIS
    ui/LVRBackgroundDialogUI.ui
    ui/LVRSpectralSettings.ui
    ui/LVRPointInfo.ui
+   ui/LVRTooltipDialogUI.ui
 )
 
 #####################################################################################

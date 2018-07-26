@@ -26,7 +26,7 @@
       <locale language="English" country="UnitedStates"/>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab_channel">
       <attribute name="title">
@@ -271,6 +271,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="pushButton_cg_apply">
+           <property name="toolTip">
+            <string/>
+           </property>
            <property name="text">
             <string>Apply</string>
            </property>
