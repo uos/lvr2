@@ -1155,7 +1155,7 @@ void LVRMainWindow::showSpectralSettingsDialog()
         if(model_item != NULL)
         {
             PointBufferBridgePtr points = model_item->getModelBridge()->getPointBridge();
-            if(points->getPointBuffer()->hasPointSpectralChannels())
+            if(points->getNumPoints() && points->getPointBuffer()->hasPointSpectralChannels())
             {
                 m_spectralDialog = new LVRSpectralDialog(treeWidget, this, points, m_renderer);        
             }
