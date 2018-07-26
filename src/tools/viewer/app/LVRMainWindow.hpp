@@ -43,6 +43,7 @@
 #include <QtGui>
 #include "ui_LVRMainWindowUI.h"
 #include "ui_LVRAboutDialogUI.h"
+#include "ui_LVRTooltipDialogUI.h"
 #include "ui_LVRSpectralSettings.h"
 #include "LVRTreeWidgetHelper.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
@@ -97,6 +98,7 @@ public Q_SLOTS:
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();
     void showAboutDialog(QAction*);
+    void showTooltipDialog();
     void showSpectralSettingsDialog();
     void renameModelItem();
     void estimateNormals();
@@ -149,6 +151,7 @@ private:
     LVRSpectralDialog*                          m_spectralDialog;
     LVRPointInfo*                               m_pointInfoDialog;
     QDialog*                                    m_aboutDialog;
+    QDialog*                                    m_tooltipDialog;
     QMessageBox*                                m_incompatibilityBox;
     vtkSmartPointer<vtkRenderer>                m_renderer;
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;

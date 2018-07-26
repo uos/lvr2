@@ -54,6 +54,10 @@ LVRMainWindow::LVRMainWindow()
     Ui::AboutDialog aboutDialog;
     aboutDialog.setupUi(m_aboutDialog);
 
+    m_tooltipDialog = new QDialog();
+    Ui::TooltipDialog tooltipDialog;
+    tooltipDialog.setupUi(m_tooltipDialog);
+
     m_spectralDialog = nullptr;
     m_pointInfoDialog = nullptr;
 
@@ -1129,6 +1133,14 @@ void LVRMainWindow::showAboutDialog(QAction*)
 {
     m_aboutDialog->show();
 }
+
+void LVRMainWindow::showTooltipDialog()
+{
+    m_tooltipDialog->show();
+    m_tooltipDialog->raise();
+}
+
+
 void LVRMainWindow::showSpectralSettingsDialog()
 {
     if (m_spectralDialog)
@@ -1145,9 +1157,17 @@ void LVRMainWindow::showSpectralSettingsDialog()
             PointBufferBridgePtr points = model_item->getModelBridge()->getPointBridge();
             if(points->getPointBuffer()->hasPointSpectralChannels())
             {
-                m_spectralDialog = new LVRSpectralDialog(treeWidget, this, points, m_renderer);
+                m_spectralDialog = new LVRSpectralDialog(treeWidget, this, points, m_renderer);        
+            }
+            else
+            {
+                showTooltipDialog();
             }
         }
+    }
+    else
+    {
+       showTooltipDialog(); 
     }
 }
 
