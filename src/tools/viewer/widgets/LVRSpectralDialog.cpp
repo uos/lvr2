@@ -41,7 +41,10 @@ LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainW
     m_spectralDialog->label_hred->setText("Hyperspectral red: " + QString("%1").arg(m_r * 4 + 400) + "nm");
     m_spectralDialog->label_hgreen->setText("Hyperspectral green: " + QString("%1").arg(m_g * 4 + 400) + "nm");
     m_spectralDialog->label_hblue->setText("Hyperspectral blue: " + QString("%1").arg(m_b * 4 + 400) + "nm");
-    
+    m_spectralDialog->checkBox_hred->setChecked(m_use_r);
+    m_spectralDialog->checkBox_hgreen->setChecked(m_use_g);
+    m_spectralDialog->checkBox_hblue->setChecked(m_use_b);
+
     // Colorgradient - Tab //
     // get values
     points->getSpectralColorGradient(m_gradient, m_gradientChannel, m_useNormalizedGradient);
@@ -112,7 +115,12 @@ void LVRSpectralDialog::valueChangeFinished(){
     m_r = m_spectralDialog->horizontalSlider_Hyperspectral_red->value();
     m_g = m_spectralDialog->horizontalSlider_Hyperspectral_green->value();
     m_b = m_spectralDialog->horizontalSlider_Hyperspectral_blue->value();
-    m_points->setSpectralChannels(m_r, m_g, m_b);
+    
+    m_use_r = m_spectralDialog->checkBox_hred->isChecked();
+    m_use_g = m_spectralDialog->checkBox_hgreen->isChecked();
+    m_use_b = m_spectralDialog->checkBox_hblue->isChecked();
+    
+    m_points->setSpectralChannels(m_r, m_g, m_b, m_use_r, m_use_g, m_use_b);
 
     m_renderer->GetRenderWindow()->Render();
     
