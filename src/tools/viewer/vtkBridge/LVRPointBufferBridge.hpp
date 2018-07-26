@@ -55,8 +55,8 @@ public:
     void setPointSize(int pointSize);
     void setOpacity(float opacityValue);
     void setVisibility(bool visible);
-    void setSpectralChannels(size_t r_channel, size_t g_channel, size_t b_channel);
-    void getSpectralChannels(size_t &r_channel, size_t &g_channel, size_t &b_channel) const;
+    void setSpectralChannels(size_t r_channel, size_t g_channel, size_t b_channel, bool use_r = true, bool use_g = true, bool use_b = true);
+    void getSpectralChannels(size_t &r_channel, size_t &g_channel, size_t &b_channel, bool &use_r, bool &use_g, bool &use_b) const;
     void setSpectralColorGradient(GradientType gradient, size_t channel, bool normalized);
     void getSpectralColorGradient(GradientType &gradient, size_t &channel, bool &normalized) const;
     void useGradient(bool useGradient);
@@ -75,6 +75,7 @@ protected:
     bool                            m_useGradient;
     bool                            m_useNormalizedGradient;
     size_t                          m_SpectralChannels[3];
+    bool                            m_UseSpectralChannel[3];
     GradientType                    m_SpectralGradient;
     size_t                          m_SpectralGradientChannel;
 };

@@ -27,7 +27,7 @@ LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainW
 
     // Channel - Tab //
     // get values
-    points->getSpectralChannels(m_r, m_g, m_b);
+    points->getSpectralChannels(m_r, m_g, m_b, m_use_r, m_use_g, m_use_b);
     size_t n, n_channels;
     points->getPointBuffer()->getPointSpectralChannelsArray(n, n_channels);
 
