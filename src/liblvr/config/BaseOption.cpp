@@ -6,6 +6,7 @@
  */
 
 #include <lvr/config/BaseOption.hpp>
+#include <lvr/io/ModelFactory.hpp>
 
 namespace lvr
 {
@@ -21,13 +22,13 @@ BaseOption::BaseOption(int argc, char** argv)
 			("sy", value<float>()->default_value(1.0), "Scaling factor for the y coordinates.")
 			("sz", value<float>()->default_value(1.0), "Scaling factor for the z coordinates.")
 	;
-
+    m_coordinateTransform = new CoordinateTransform;
 }
 
 void BaseOption::printTransformation(std::ostream& out) const
 {
 	out << "##### Program options: " << std::endl;
-	if(m_coordinateTransform.convert)
+    if(m_coordinateTransform->convert)
 	{
 		out << "##### Transform input data\t: YES" << std::endl;
 		out << "##### Position of x coordinates\t: " << x() << std::endl;
@@ -62,21 +63,21 @@ void BaseOption::setup()
 
 	if(sx() != 1.0 || sy() != 1.0 || sz() != 0 || x() != 1 || y() != 1 || z() != 1)
 	{
-		m_coordinateTransform.convert = true;
-		m_coordinateTransform.x = x();
-		m_coordinateTransform.y = y();
-		m_coordinateTransform.z = z();
-		m_coordinateTransform.sx = sx();
-		m_coordinateTransform.sy = sy();
-		m_coordinateTransform.sz = sz();
+        m_coordinateTransform->convert = true;
+        m_coordinateTransform->x = x();
+        m_coordinateTransform->y = y();
+        m_coordinateTransform->z = z();
+        m_coordinateTransform->sx = sx();
+        m_coordinateTransform->sy = sy();
+        m_coordinateTransform->sz = sz();
 
-		ModelFactory::m_transform = m_coordinateTransform;
+        ModelFactory::m_transform = *m_coordinateTransform;
 	}
 }
 
 BaseOption::~BaseOption()
 {
-	// Nothing to do...
+
 }
 
 } /* namespace lvr */

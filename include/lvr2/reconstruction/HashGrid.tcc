@@ -39,6 +39,9 @@
 #include <lvr/io/Progress.hpp>
 #include <lvr/io/Timestamp.hpp>
 
+#include <fstream>
+#include <iostream>
+
 namespace lvr2
 {
 
@@ -411,10 +414,10 @@ unsigned int HashGrid<BaseVecT, BoxT>::findQueryPoint(
 template<typename BaseVecT, typename BoxT>
 void HashGrid<BaseVecT, BoxT>::saveGrid(string filename)
 {
-    cout << lvr::timestamp << "Writing grid..." << endl;
+    std::cout << lvr::timestamp << "Writing grid..." << std::endl;
 
     // Open file for writing
-    ofstream out(filename.c_str());
+    std::ofstream out(filename.c_str());
 
     // Write data
     if(out.good())
@@ -431,11 +434,11 @@ void HashGrid<BaseVecT, BoxT>::saveGrid(string filename)
 
             if(!isnan(m_queryPoints[i].m_distance))
             {
-                out << m_queryPoints[i].m_distance << endl;
+                out << m_queryPoints[i].m_distance << std::endl;
             }
             else
             {
-                out << 0 << endl;
+                out << 0 << std::endl;
             }
 
         }
@@ -450,7 +453,7 @@ void HashGrid<BaseVecT, BoxT>::saveGrid(string filename)
             {
                 out << box->getVertex(i) << " ";
             }
-            out << endl;
+            out << std::endl;
         }
     }
 }
@@ -459,16 +462,16 @@ void HashGrid<BaseVecT, BoxT>::saveGrid(string filename)
 template<typename BaseVecT, typename BoxT>
 void HashGrid<BaseVecT, BoxT>::serialize(string file)
 {
-    cout << lvr::timestamp << "saving grid: " << file << endl;
-    ofstream out(file.c_str());
+    std::cout << lvr::timestamp << "saving grid: " << file << std::endl;
+    std::ofstream out(file.c_str());
 
     // Write data
     if(out.good())
     {
-        out << m_extrude << endl;
+        out << m_extrude << std::endl;
         out <<    m_boundingBox.getMin().x << " " << m_boundingBox.getMin().y
         << " " << m_boundingBox.getMin().z << " " << m_boundingBox.getMax().x
-        << " " << m_boundingBox.getMax().y << " " << m_boundingBox.getMax().z << endl;
+        << " " << m_boundingBox.getMax().y << " " << m_boundingBox.getMax().z << std::endl;
 
 
         out << m_queryPoints.size() << " " << m_voxelsize << " " << m_cells.size() << endl;
@@ -482,7 +485,7 @@ void HashGrid<BaseVecT, BoxT>::serialize(string file)
 
             if(!isnan(m_queryPoints[i].m_distance))
             {
-                out << m_queryPoints[i].m_distance << endl;
+                out << m_queryPoints[i].m_distance << std::endl;
             }
             else
             {
@@ -507,7 +510,7 @@ void HashGrid<BaseVecT, BoxT>::serialize(string file)
         }
     }
     out.close();
-    cout << lvr::timestamp << "finished saving grid: " << file << endl;
+    std::cout << lvr::timestamp << "finished saving grid: " << file << std::endl;
 }
 
 template<typename BaseVecT, typename BoxT>

@@ -26,9 +26,8 @@
 #ifndef _LVR2_RECONSTRUCTION_BILINEARFASTBOX_H_
 #define _LVR2_RECONSTRUCTION_BILINEARFASTBOX_H_
 
-#include "FastBox.hpp"
-#include "PointsetSurface.hpp"
-#include <lvr/geometry/HalfEdgeMesh.hpp>
+#include <lvr2/reconstruction/FastBox.hpp>
+#include <lvr2/reconstruction/PointsetSurface.hpp>
 
 namespace lvr2
 {

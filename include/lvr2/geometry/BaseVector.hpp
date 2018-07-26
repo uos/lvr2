@@ -141,12 +141,12 @@ public:
     /**
      * @brief    Indexed coordinate access (reading)
      */
-    CoordT operator[](const uint8_t& index) const;
+    CoordT operator[](const unsigned& index) const;
 
     /**
      * @brief   Indexed coordinate access (writing)
      */
-    CoordT& operator[](const uint8_t& index);
+    CoordT& operator[](const unsigned& index);
 };
 
 } // namespace lvr

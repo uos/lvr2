@@ -41,12 +41,10 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
-#include "DataStruct.hpp"
+#include <lvr/io/DataStruct.hpp>
 
 namespace lvr
 {
-
-
 
 /**
  * \class MeshLoader MeshLoader.hpp "io/MeshLoader.hpp"
@@ -551,7 +549,7 @@ class MeshBuffer
 
 		void setLabeledFacesMap( labeledFacesMap* &map );
 
-        void setMaterialArray( std::vector<Material*> &array);
+        void setMaterialArray( std::vector<IOMaterial*> &array);
 
         void setFaceMaterialIndexArray(std::vector<unsigned int> &array);
 
