@@ -44,6 +44,9 @@ LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainW
     m_spectralDialog->checkBox_hred->setChecked(m_use_r);
     m_spectralDialog->checkBox_hgreen->setChecked(m_use_g);
     m_spectralDialog->checkBox_hblue->setChecked(m_use_b);
+    m_spectralDialog->horizontalSlider_Hyperspectral_red->setEnabled(m_use_r);
+    m_spectralDialog->horizontalSlider_Hyperspectral_green->setEnabled(m_use_g);
+    m_spectralDialog->horizontalSlider_Hyperspectral_blue->setEnabled(m_use_b);
 
     // Colorgradient - Tab //
     // get values
@@ -122,6 +125,10 @@ void LVRSpectralDialog::valueChangeFinished(){
     m_use_r = m_spectralDialog->checkBox_hred->isChecked();
     m_use_g = m_spectralDialog->checkBox_hgreen->isChecked();
     m_use_b = m_spectralDialog->checkBox_hblue->isChecked();
+
+    m_spectralDialog->horizontalSlider_Hyperspectral_red->setEnabled(m_use_r);
+    m_spectralDialog->horizontalSlider_Hyperspectral_green->setEnabled(m_use_g);
+    m_spectralDialog->horizontalSlider_Hyperspectral_blue->setEnabled(m_use_b);
     
     m_points->setSpectralChannels(m_r, m_g, m_b, m_use_r, m_use_g, m_use_b);
 
