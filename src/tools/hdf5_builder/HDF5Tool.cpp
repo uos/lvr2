@@ -126,7 +126,7 @@ int main( int argc, char ** argv )
         HighFive::Group channel_group = hdf5_file.createGroup(group_name);
 
         // Read png images and write them into the created group
-        cv::Mat image = cv::imread(it, CV_LOAD_IMAGE_GRAYSCALE);
+        cv::Mat image = cv::imread(it, cv::IMREAD_GRAYSCALE);
 
         int w = image.cols;
         int h = image.rows;
@@ -145,14 +145,33 @@ int main( int argc, char ** argv )
 
     // Convert float array to vector. TODO: Check if necessary. It should be
     // possible to write the array directly somehow.
-    vector<float> v_points;
-    for(size_t i = 0; i < 3 * n; i++)
-    {
-        v_points.push_back(points[i]);
-    }
+    vector<float> v_points(points.get(), points.get() + n * 3);
 
     // Write scan data to group
     scan_group.createDataSet<int>("numPoints", HighFive::DataSpace::From(n)).write(n);
     scan_group.createDataSet<float>("points", HighFive::DataSpace::From(v_points)).write(v_points);
+
+    size_t n_spec, n_channels;
+    floatArr spec = point_buffer->getPointSpectralChannelsArray(n_spec, n_channels);
+
+    if (n_spec)
+    {
+        HighFive::Group pointclouds_group = hdf5_file.createGroup("/pointclouds");
+        HighFive::Group cloud001_group = hdf5_file.createGroup("pointclouds/cloud001");
+        HighFive::Group cloud001_points_group = hdf5_file.createGroup("pointclouds/cloud001/points");
+        HighFive::Group cloud001_spectral_group = hdf5_file.createGroup("pointclouds/cloud001/spectral");
+
+        std::vector<float> pointVec(points.get(), points.get() + n_spec * 3);
+        std::vector<float> specVec(spec.get(), spec.get() + n_spec * n_channels);
+
+        cloud001_points_group.createDataSet<int>("numPoints", HighFive::DataSpace::From(n_spec)).write(n_spec);
+        cloud001_points_group.createDataSet<float>("points", HighFive::DataSpace::From(pointVec)).write(pointVec);
+
+        cloud001_spectral_group.createDataSet<int>("numPoints", HighFive::DataSpace::From(n_spec)).write(n_spec);
+        cloud001_spectral_group.createDataSet<int>("numChannels", HighFive::DataSpace::From(n_channels)).write(n_channels);
+        cloud001_spectral_group.createDataSet<float>("channels", HighFive::DataSpace::From(specVec)).write(specVec);
+    }
+
+    std::cout << "Done" << std::endl;
 
 }
