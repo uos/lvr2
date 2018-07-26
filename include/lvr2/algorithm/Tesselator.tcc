@@ -10,6 +10,8 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
+#include <iostream>
+
 namespace lvr2
 {
 
@@ -98,7 +100,9 @@ void Tesselator<BaseVecT>::endCallback(void)
 template<typename BaseVecT>
 void Tesselator<BaseVecT>::errorCallback(GLenum errno)
 {
-    cerr << "[Tesselator-Error:] " << __FILE__ << " (" << __LINE__ << "): " << gluErrorString(errno) << endl;
+    std::cerr << "[Tesselator-Error:] "
+              << __FILE__ << " (" << __LINE__ << "): "
+              << gluErrorString(errno) << std::endl;
 }
 
 template<typename BaseVecT>

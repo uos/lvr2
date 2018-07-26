@@ -1,3 +1,15 @@
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
+
+using namespace lvr2;
+
+//int main(int argv, char** argc)
+//{
+//    AdaptiveKSearchSurface<BaseVector<float>> pss;
+
+//    return 0;
+//}
+
  /* Copyright (C) 2011 Uni Osnabrück
  * This file is part of the LAS VEGAS Reconstruction Toolkit,
  *
@@ -147,13 +159,8 @@
   #include "Options.hpp"
 #endif
 
-
 #include <lvr/config/lvropenmp.hpp>
-#include <lvr/io/Timestamp.hpp>
-#include <lvr/io/Model.hpp>
-#include <lvr/io/ModelFactory.hpp>
-#include <lvr/io/PointBuffer.hpp>
-#include <lvr/reconstruction/PointsetSurface.hpp>
+#include <lvr/config/BaseOption.hpp>
 
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
@@ -221,7 +228,7 @@ using lvr::timestamp;
 using namespace lvr2;
 
 using BaseVecT = BaseVector<float>;
-using PsSurface = lvr::PointsetSurface<BaseVecT>;
+using PsSurface = lvr2::PointsetSurface<BaseVecT>;
 using Vec = BaseVector<float>;
 
 
@@ -229,15 +236,19 @@ template <typename BaseVecT>
 PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
 {
     // Create a point loader object
-    lvr::ModelPtr model = lvr::ModelFactory::readModel(options.getInputFileName());
+   // lvr::ModelPtr model = lvr::ModelFactory::readModel(options.getInputFileName());
 
     // Parse loaded data
-    if (!model)
-    {
-        cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
-        return nullptr;
-    }
-    auto buffer = make_shared<PointBuffer<Vec>>(*model->m_pointCloud);
+//    if (!model)
+//    {
+//        cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+//        return nullptr;
+//    }
+
+
+    //auto buffer = make_shared<PointBuffer<Vec>>(*model->m_pointCloud);
+
+    PointBufferPtr<Vec> buffer;
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();
@@ -283,8 +294,9 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 std::vector<float> flipPoint = options.getFlippoint();
                 size_t num_points;
                 lvr::floatArr points;
-                lvr::PointBuffer old_buffer = buffer->toOldBuffer();
-                points = old_buffer.getPointArray(num_points);
+                std::pair<floatArr, size_t> pArr = buffer->toFloatArr();
+                points = pArr.first;
+                num_points = pArr.second;
                 lvr::floatArr normals = lvr::floatArr(new float[ num_points * 3 ]);
                 std::cout << "Generate GPU kd-tree..." << std::endl;
                 GpuSurface gpu_surface(points, num_points);
@@ -297,8 +309,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 gpu_surface.calculateNormals();
                 gpu_surface.getNormals(normals);
                 std::cout << "finished." << std::endl;
-                old_buffer.setPointNormalArray(normals, num_points);
-                buffer->copyNormalsFrom(old_buffer);
+                buffer->addNormalChannel(normals, num_points);
                 gpu_surface.freeGPU();
             #else
                 std::cout << "ERROR: GPU Driver not installed" << std::endl;
@@ -429,12 +440,15 @@ int main(int argc, char** argv)
     // Save points and normals only
     if(options.savePointNormals())
     {
-        lvr::ModelPtr pn(new lvr::Model);
-        auto oldBuffer = boost::make_shared<lvr::PointBuffer>(
-            surface->pointBuffer()->toOldBuffer()
-        );
-        pn->m_pointCloud = oldBuffer;
-        lvr::ModelFactory::saveModel(pn, "pointnormals.ply");
+        cout << "Implement point normal export" << endl;
+
+
+//        lvr::ModelPtr pn(new lvr::Model);
+//        auto oldBuffer = boost::make_shared<lvr::PointBuffer>(
+//            surface->pointBuffer()->toOldBuffer()
+//        );
+//        pn->m_pointCloud = oldBuffer;
+//        lvr::ModelFactory::saveModel(pn, "pointnormals.ply");
     }
 
 
@@ -591,18 +605,20 @@ int main(int argc, char** argv)
     // Write all results (including the mesh) to file
     // =======================================================================
     // Create output model and save to file
-    auto m = boost::make_shared<lvr::Model>(buffer->toOldBuffer(matResult));
+  //  auto m = boost::make_shared<lvr::Model>(buffer->toOldBuffer(matResult));
 
     if(options.saveOriginalData())
     {
-        m->m_pointCloud = boost::make_shared<lvr::PointBuffer>(
-            surface->pointBuffer()->toOldBuffer()
-        );
+//        m->m_pointCloud = boost::make_shared<lvr::PointBuffer>(
+//            surface->pointBuffer()->toOldBuffer()
+//        );
+        cout << "REPAIR SAVING" << endl;
+
     }
     cout << timestamp << "Saving mesh." << endl;
-    lvr::ModelFactory::saveModel(m, "triangle_mesh.ply");
-    lvr::ModelFactory::saveModel(m, "triangle_mesh.obj");
-    lvr::ModelFactory::saveModel(m, "triangle_mesh.h5");
+//    lvr::ModelFactory::saveModel(m, "triangle_mesh.ply");
+//    lvr::ModelFactory::saveModel(m, "triangle_mesh.obj");
+//    lvr::ModelFactory::saveModel(m, "triangle_mesh.h5");
 
     if (matResult.m_keypoints)
     {

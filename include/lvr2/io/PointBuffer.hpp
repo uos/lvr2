@@ -49,7 +49,7 @@
 
 #include <boost/optional.hpp>
 
-#include <lvr/io/PointBuffer.hpp>
+#include <lvr2/io/DataStruct.hpp>
 
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/geometry/Vector.hpp>
@@ -72,19 +72,16 @@ class PointBuffer
 {
 public:
     PointBuffer() {}
-    PointBuffer(lvr::PointBuffer& oldBuffer);
 
     /**
      * \brief Get the number of points.
      **/
     size_t getNumPoints() const;
 
-    lvr::PointBuffer toOldBuffer() const;
+    //lvr::PointBuffer toOldBuffer() const;
 
     const Vector<BaseVecT>& getPoint(size_t idx) const;
     // Vector<BaseVecT>& getPoint(size_t idx);
-
-
 
     /**
      * @brief Returns true if the stored data contains normal information.
@@ -102,7 +99,7 @@ public:
     /**
      * @brief Copies normals from old buffer to this one.
      */
-    void copyNormalsFrom(lvr::PointBuffer& oldBuffer);
+    void addNormalChannel(floatArr normals, size_t n);
 
     /**
      * @brief Returns the normal with the given index.
@@ -169,6 +166,10 @@ public:
     optional<array<uint8_t,3>&> getRgbColor(size_t idx);
 
     bool empty() const;
+
+    void setPointArray(floatArr points, size_t);
+
+    std::pair<floatArr, size_t> toFloatArr();
 
 private:
     /// Point buffer.

@@ -39,8 +39,7 @@
 
 #include <vector>
 
-#include <lvr/io/MeshBuffer.hpp>
-#include <lvr/io/DataStruct.hpp>
+#include <lvr2/io/DataStruct.hpp>
 #include <lvr2/texture/Material.hpp>
 #include <lvr2/texture/Texture.hpp>
 
@@ -62,7 +61,7 @@ class MeshBuffer
     public:
         MeshBuffer() {};
 
-        MeshBuffer(lvr::MeshBuffer& oldBuffer);
+  //      MeshBuffer(lvr::MeshBuffer& oldBuffer);
 
         vector<float> getVertices();
         vector<unsigned char> getVertexColors();
@@ -90,10 +89,10 @@ class MeshBuffer
         void setTextures(vector<Texture<BaseVecT>> v);
         void setClusterFaceIndices(vector<vector<unsigned int>> v);
 
-        // Convert to lvr1 MeshBuffer
-        boost::shared_ptr<lvr::MeshBuffer> toOldBuffer();
-        // Overloaded method for conversion with textures
-        boost::shared_ptr<lvr::MeshBuffer> toOldBuffer(MaterializerResult<BaseVecT> materializerResult);
+//        // Convert to lvr1 MeshBuffer
+//        boost::shared_ptr<lvr::MeshBuffer> toOldBuffer();
+//        // Overloaded method for conversion with textures
+//        boost::shared_ptr<lvr::MeshBuffer> toOldBuffer(MaterializerResult<BaseVecT> materializerResult);
 
     protected:
 

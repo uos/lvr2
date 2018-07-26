@@ -22,6 +22,8 @@
  *  @date 25.01.2012
  *  @author Thomas Wiemann
  */
+
+
 namespace lvr2
 {
 

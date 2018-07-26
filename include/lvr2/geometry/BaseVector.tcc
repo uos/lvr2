@@ -163,7 +163,7 @@ CoordT BaseVector<CoordT>::operator*(const BaseVector<CoordType> &other) const
 }
 
 template<typename CoordT>
-CoordT BaseVector<CoordT>::operator[](const uint8_t& index) const
+CoordT BaseVector<CoordT>::operator[](const unsigned& index) const
 {
     switch (index)
     {
@@ -179,7 +179,7 @@ CoordT BaseVector<CoordT>::operator[](const uint8_t& index) const
 }
 
 template<typename CoordT>
-CoordT& BaseVector<CoordT>::operator[](const uint8_t& index)
+CoordT& BaseVector<CoordT>::operator[](const unsigned& index)
 {
     switch (index)
     {
