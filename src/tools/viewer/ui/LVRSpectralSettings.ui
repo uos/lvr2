@@ -37,11 +37,22 @@
         <enum>QLayout::SetDefaultConstraint</enum>
        </property>
        <item>
-        <widget class="QLabel" name="label_hred">
-         <property name="text">
-          <string>Hyperspectral red:</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QLabel" name="label_hred">
+           <property name="text">
+            <string>Hyperspectral red:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_hred">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QSlider" name="horizontalSlider_Hyperspectral_red">
@@ -54,11 +65,22 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_hgreen">
-         <property name="text">
-          <string>Hyperspectral green:</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QLabel" name="label_hgreen">
+           <property name="text">
+            <string>Hyperspectral green:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_hgreen">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QSlider" name="horizontalSlider_Hyperspectral_green">
@@ -71,11 +93,22 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_hblue">
-         <property name="text">
-          <string>Hyperspectral blue:</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <item>
+          <widget class="QLabel" name="label_hblue">
+           <property name="text">
+            <string>Hyperspectral blue:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_hblue">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QSlider" name="horizontalSlider_Hyperspectral_blue">
