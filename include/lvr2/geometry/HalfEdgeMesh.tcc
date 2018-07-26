@@ -995,53 +995,63 @@ void HalfEdgeMesh<BaseVecT>::flipEdge(EdgeHandle edgeH)
     auto centerTwinH = center.twin;
     auto& centerTwin = getE(centerTwinH);
 
-    auto faceAboveH = center.face.unwrap();
-    auto faceBelowH = centerTwin.face.unwrap();
+    if(center.face && centerTwin.face)
+    {
+        auto faceAboveH = center.face.unwrap();
+        auto faceBelowH = centerTwin.face.unwrap();
 
-    auto aboveRightH = center.next;
-    auto& aboveRight = getE(aboveRightH);
-    auto aboveLeftH = aboveRight.next;
-    auto& aboveLeft = getE(aboveLeftH);
-    auto belowLeftH = centerTwin.next;
-    auto& belowLeft = getE(belowLeftH);
-    auto belowRightH = belowLeft.next;
-    auto& belowRight = getE(belowRightH);
+        auto aboveRightH = center.next;
+        auto& aboveRight = getE(aboveRightH);
+        auto aboveLeftH = aboveRight.next;
+        auto& aboveLeft = getE(aboveLeftH);
+        auto belowLeftH = centerTwin.next;
+        auto& belowLeft = getE(belowLeftH);
+        auto belowRightH = belowLeft.next;
+        auto& belowRight = getE(belowRightH);
 
-    auto vLeftH = centerTwin.target;
-    auto vRightH = center.target;
-    auto vAboveH = aboveRight.target;
-    auto vBelowH = belowLeft.target;
+        auto vLeftH = centerTwin.target;
+        auto vRightH = center.target;
+        auto vAboveH = aboveRight.target;
+        auto vBelowH = belowLeft.target;
 
-    // And now we just change all the handles. It's fairly easy, since we don't
-    // have to deal with any special cases.
-    //
-    // First, fix outgoing handles, since those might be wrong now.
-    getV(vLeftH).outgoing = belowLeftH;
-    getV(vRightH).outgoing = aboveRightH;
+        // And now we just change all the handles. It's fairly easy, since we don't
+        // have to deal with any special cases.
+        //
+        // First, fix outgoing handles, since those might be wrong now.
+        getV(vLeftH).outgoing = belowLeftH;
+        getV(vRightH).outgoing = aboveRightH;
 
-    // Next, fix the `edge` pointer of the faces, since those might be broken
-    // as well.
-    getF(faceAboveH).edge = centerH;
-    getF(faceBelowH).edge = centerTwinH;
+        // Next, fix the `edge` pointer of the faces, since those might be broken
+        // as well.
+        getF(faceAboveH).edge = centerH;
+        getF(faceBelowH).edge = centerTwinH;
 
-    // Fix the all time favorite: the next handle. We basically change the next
-    // handle of all inner edges. First all edges around the left face (former
-    // "above" face), then the right (former "below") one.
-    center.next = aboveLeftH;
-    aboveLeft.next = belowLeftH;
-    belowLeft.next = centerH;
+        // Fix the all time favorite: the next handle. We basically change the next
+        // handle of all inner edges. First all edges around the left face (former
+        // "above" face), then the right (former "below") one.
+        center.next = aboveLeftH;
+        aboveLeft.next = belowLeftH;
+        belowLeft.next = centerH;
 
-    centerTwin.next = belowRightH;
-    belowRight.next = aboveRightH;
-    aboveRight.next = centerTwinH;
+        centerTwin.next = belowRightH;
+        belowRight.next = aboveRightH;
+        aboveRight.next = centerTwinH;
 
-    // The target handle of both center edges...
-    center.target = vAboveH;
-    centerTwin.target = vBelowH;
+        // The target handle of both center edges...
+        center.target = vAboveH;
+        centerTwin.target = vBelowH;
 
-    // And finally, two edges belong to a new face now.
-    aboveRight.face = faceBelowH;  // now right
-    belowLeft.face = faceAboveH;   // now left
+        // And finally, two edges belong to a new face now.
+        aboveRight.face = faceBelowH;  // now right
+        belowLeft.face = faceAboveH;   // now left
+    }
+    else
+    {
+        //cout << "Edge not flippable!" << endl;
+        return;
+    }
+
+
 }
 
 template <typename BaseVecT>
