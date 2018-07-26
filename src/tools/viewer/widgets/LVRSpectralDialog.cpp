@@ -49,7 +49,7 @@ LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainW
     // set values
     m_spectralDialog->horizontalSlider_channel->setMaximum(n_channels);
     m_spectralDialog->horizontalSlider_channel->setValue(m_gradientChannel);
-    m_spectralDialog->label_cg_channel->setText("Channel: " + QString("%1").arg(m_gradientChannel));
+    m_spectralDialog->label_cg_channel->setText("Wavelength: " + QString("%1").arg(m_gradientChannel * 4 + 400) + "nm");
     m_spectralDialog->comboBox_colorgradient->setCurrentIndex(m_gradient);
     m_spectralDialog->checkBox_normcolors->setChecked(m_useNormalizedGradient);
     
@@ -105,8 +105,7 @@ void LVRSpectralDialog::updateGradientView()
     m_gradient = (GradientType)m_spectralDialog->comboBox_colorgradient->currentIndex();
     m_points->setSpectralColorGradient(m_gradient, m_gradientChannel, m_useNormalizedGradient);
     m_renderer->GetRenderWindow()->Render();
-
-    m_spectralDialog->label_cg_channel->setText("Channel: " + QString("%1").arg(m_gradientChannel));
+    m_spectralDialog->label_cg_channel->setText("Wavelength: " + QString("%1").arg(m_gradientChannel * 4 + 400) + "nm");
 }
 
 void LVRSpectralDialog::valueChangeFinished(){
