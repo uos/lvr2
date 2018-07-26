@@ -97,6 +97,10 @@ void LVRPointBufferBridge::setSpectralChannels(size_t r_channel, size_t g_channe
     m_SpectralChannels[1] = std::min((size_t)g_channel, n_channels - 1);
     m_SpectralChannels[2] = std::min((size_t)b_channel, n_channels - 1);
 
+    m_UseSpectralChannel[0] = use_r;
+    m_UseSpectralChannel[1] = use_g;
+    m_UseSpectralChannel[2] = use_b;
+
     vtkSmartPointer<vtkUnsignedCharArray> scalars = vtkSmartPointer<vtkUnsignedCharArray>::New();
     scalars->SetNumberOfComponents(3);
     scalars->SetName("Colors");
