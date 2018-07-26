@@ -16,3 +16,13 @@
 
 - Testen
   - Support von anderen Dateiformaten
+
+- Tree
+  - Spektralinfos anzeigen
+
+## Erweiterung: NDVI
+  - NDVI Wert errechnen und als Colorgradient mappen
+
+## Erweiterung: Histogramme
+  - pro Punktewolke auf entsprechendem Channel die auftretenden Werte aufnehmen
+  - Histogramm in eigenem Fenster zeichenen
