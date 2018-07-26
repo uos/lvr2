@@ -17,9 +17,6 @@
 - Testen
   - Support von anderen Dateiformaten
 
-- Tree
-  - Spektralinfos anzeigen
-
 ## Erweiterung: NDVI
   - NDVI Wert errechnen und als Colorgradient mappen
 
