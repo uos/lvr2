@@ -64,98 +64,93 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
 
     if(traits.type == "SharpBox")  // Perform edge flipping for extended marching cubes
     {
-//        string SFComment = lvr::timestamp.getElapsedTime() + "Flipping edges  ";
-//        lvr::ProgressBar SFProgress(this->m_grid->getNumberOfCells(), SFComment);
-//        for(it = this->m_grid->firstCell(); it != this->m_grid->lastCell(); it++)
-//        {
+        string SFComment = lvr::timestamp.getElapsedTime() + "Flipping edges  ";
+        lvr::ProgressBar SFProgress(this->m_grid->getNumberOfCells(), SFComment);
+        for(it = this->m_grid->firstCell(); it != this->m_grid->lastCell(); it++)
+        {
 
-//            SharpBox<BaseVecT>* sb;
-//            sb = reinterpret_cast<SharpBox<BaseVecT>* >(it->second);
-//            if(sb->m_containsSharpFeature)
-//            {
-//                OptionalVertexHandle v1;
-//                OptionalVertexHandle v2;
-//                OptionalEdgeHandle e;
+            SharpBox<BaseVecT>* sb;
+            sb = reinterpret_cast<SharpBox<BaseVecT>* >(it->second);
+            if(sb->m_containsSharpFeature)
+            {
+                OptionalVertexHandle v1;
+                OptionalVertexHandle v2;
+                OptionalEdgeHandle e;
 
-//                if(sb->m_containsSharpCorner)
-//                {
-//                    // 1
-//                    v1 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]];
-//                    v2 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]];
+                if(sb->m_containsSharpCorner)
+                {
+                    // 1
+                    v1 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]];
+                    v2 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]];
 
-//                    if(v1 && v2)
-//                    {
-//                        e = mesh.getEdgeBetween(v1.unwrap(), v2.unwrap());
-//                        if(e)
-//                        {
-//                            mesh.flipEdge(e.unwrap());
-//                        }
-//                    }
+                    if(v1 && v2)
+                    {
+                        e = mesh.getEdgeBetween(v1.unwrap(), v2.unwrap());
+                        if(e)
+                        {
+                            mesh.flipEdge(e.unwrap());
+                        }
+                    }
 
-//                    // 2
-//                    v1 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][2]];
-//                    v2 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][3]];
+                    // 2
+                    v1 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][2]];
+                    v2 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][3]];
 
-//                    if(v1 && v2)
-//                    {
-//                        e = mesh.getEdgeBetween(v1.unwrap(), v2.unwrap());
-//                        if(e)
-//                        {
-//                            mesh.flipEdge(e.unwrap());
-//                        }
-//                    }
+                    if(v1 && v2)
+                    {
+                        e = mesh.getEdgeBetween(v1.unwrap(), v2.unwrap());
+                        if(e)
+                        {
+                            mesh.flipEdge(e.unwrap());
+                        }
+                    }
 
-//                    // 3
-//                    v1 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]];
-//                    v2 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]];
+                    // 3
+                    v1 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]];
+                    v2 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]];
 
-//                    if(v1 && v2)
-//                    {
-//                        e = mesh.getEdgeBetween(v1.unwrap(), v2.unwrap());
-//                        if(e)
-//                        {
-//                            mesh.flipEdge(e.unwrap());
-//                        }
-//                    }
+                    if(v1 && v2)
+                    {
+                        e = mesh.getEdgeBetween(v1.unwrap(), v2.unwrap());
+                        if(e)
+                        {
+                            mesh.flipEdge(e.unwrap());
+                        }
+                    }
 
-//                }
-//                else
-//                {
-//                    // 1
-//                    v1 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]];
-//                    v2 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]];
+                }
+                else
+                {
+                    // 1
+                    v1 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]];
+                    v2 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]];
 
-//                    if(v1 && v2)
-//                    {
-//                        e = mesh.getEdgeBetween(v1.unwrap(), v2.unwrap());
-//                        if(e)
-//                        {
-//                            mesh.flipEdge(e.unwrap());
-//                        }
-//                    }
+                    if(v1 && v2)
+                    {
+                        e = mesh.getEdgeBetween(v1.unwrap(), v2.unwrap());
+                        if(e)
+                        {
+                            mesh.flipEdge(e.unwrap());
+                        }
+                    }
 
-//                    // 2
-//                    v1 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]];
-//                    v2 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]];
+                    // 2
+                    v1 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]];
+                    v2 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]];
 
-//                    if(v1 && v2)
-//                    {
-//                        e = mesh.getEdgeBetween(v1.unwrap(), v2.unwrap());
-//                        if(e)
-//                        {
-//                            mesh.flipEdge(e.unwrap());
-//                        }
-//                    }
-
-////                    mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]],
-////                            sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]]);
-////                    mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]],
-////                            sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]]);
-//                }
-//            }
-//            ++SFProgress;
-//        }
-//        cout << endl;
+                    if(v1 && v2)
+                    {
+                        e = mesh.getEdgeBetween(v1.unwrap(), v2.unwrap());
+                        if(e)
+                        {
+                            mesh.flipEdge(e.unwrap());
+                        }
+                    }
+                }
+            }
+            ++SFProgress;
+        }
+        cout << endl;
     }
 
      if(traits.type == "BilinearFastBox")
