@@ -150,7 +150,7 @@ public:
      * \param n          Amount of data in the array.
      * \param n_channels Number of channels per Point.
      **/
-    void setPointSpectralChannelsArray( ucharArr array, size_t n, size_t n_channels );
+    void setPointSpectralChannelsArray( floatArr array, size_t n, size_t n_channels );
 
 
     /************************* Indexed Set *************************/
@@ -283,7 +283,7 @@ public:
      * \param n_channels Number of Channels per Point.
      * \return           %Point spectral channel array.
      **/
-    ucharArr getPointSpectralChannelsArray( size_t &n, size_t &n_channels );
+    floatArr getPointSpectralChannelsArray( size_t &n, size_t &n_channels );
 
     /************************* Indexed Get *************************/
 
@@ -428,7 +428,7 @@ protected:
     /// %Point confidence buffer.
     floatArr        m_pointConfidences;
     /// %Point spectral channel buffer.
-    ucharArr        m_pointSpectralChannels;
+    floatArr        m_pointSpectralChannels;
 
 
     /// Number of points in internal buffer.

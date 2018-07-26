@@ -54,7 +54,7 @@ void LVRPointInfo::setPoint(size_t pointId)
         .arg(points[pointId * 3 + 2], 10, 'g', 4));
     
     size_t n_spec, n_channels;
-    ucharArr spec = m_points->getPointSpectralChannelsArray(n_spec, n_channels);
+    floatArr spec = m_points->getPointSpectralChannelsArray(n_spec, n_channels);
     
     if (pointId >= n_spec)
     {
@@ -62,18 +62,13 @@ void LVRPointInfo::setPoint(size_t pointId)
     }
     else
     {
-        floatArr specFloats(new float[n_channels]);
-        for (int i = 0; i < n_channels; i++)
-        {
-            specFloats[i] = spec[pointId * n_channels + i];
-        }
         if (m_pointInfo->shouldScale->isChecked())
         {
-            m_plotter->setPoints(specFloats, n_channels);
+            m_plotter->setPoints((floatArr)(spec.get() + pointId * n_channels), n_channels);
         }
         else
         {
-            m_plotter->setPoints(specFloats, n_channels, 0, 255);
+            m_plotter->setPoints((floatArr)(spec.get() + pointId * n_channels), n_channels, 0, 255);
         }
     }
 
