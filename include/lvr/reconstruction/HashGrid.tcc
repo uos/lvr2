@@ -35,7 +35,7 @@
 #include "HashGrid.hpp"
 #include <lvr/geometry/BaseMesh.hpp>
 #include "FastReconstructionTables.hpp"
-#include "SharpBox.hpp"
+#include <lvr/reconstruction/SharpBox.hpp>
 #include <lvr/io/Progress.hpp>
 
 namespace lvr
