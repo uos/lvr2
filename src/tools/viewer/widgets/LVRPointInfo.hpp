@@ -39,10 +39,11 @@ class LVRPointInfo : public QObject
     Q_OBJECT
 
 public:
-    LVRPointInfo(QTreeWidget* treeWidget, PointBufferPtr points);
+    LVRPointInfo(QTreeWidget* treeWidget);
     virtual ~LVRPointInfo();
 
-    void setPoint(size_t pointId);
+    void setPoint(int pointId);
+    void setPointBuffer(PointBufferPtr points);
 
 public Q_SLOTS:
     void refresh(int);
@@ -52,7 +53,7 @@ private:
     QDialog*       m_dialog;
     LVRPlotter*    m_plotter;
     PointBufferPtr m_points;
-    size_t         m_pointId;
+    int            m_pointId;
 };
 
 } // namespace lvr

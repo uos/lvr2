@@ -79,7 +79,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void firstPointPicked(double*);
     void secondPointPicked(double*);
-    void pointSelected(size_t);
+    void pointSelected(vtkActor*, int);
 
 private:
     /// Indicates picking mode

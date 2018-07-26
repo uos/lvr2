@@ -16,8 +16,7 @@
 namespace lvr
 {
 
-LVRPointInfo::LVRPointInfo(QTreeWidget* treeWidget, PointBufferPtr points)
-    : m_points(points)
+LVRPointInfo::LVRPointInfo(QTreeWidget* treeWidget)
 {
     // Setup DialogUI and events
     m_dialog = new QDialog(treeWidget);
@@ -35,7 +34,12 @@ LVRPointInfo::~LVRPointInfo()
     // TODO Auto-generated destructor stub
 }
 
-void LVRPointInfo::setPoint(size_t pointId)
+void LVRPointInfo::setPointBuffer(PointBufferPtr points)
+{
+    m_points = points;
+}
+
+void LVRPointInfo::setPoint(int pointId)
 {
     m_pointId = pointId;
 
@@ -54,7 +58,7 @@ void LVRPointInfo::setPoint(size_t pointId)
         .arg(points[pointId * 3 + 2], 10, 'g', 4));
     
     size_t n_spec, n_channels;
-    ucharArr spec = m_points->getPointSpectralChannelsArray(n_spec, n_channels);
+    floatArr spec = m_points->getPointSpectralChannelsArray(n_spec, n_channels);
     
     if (pointId >= n_spec)
     {
@@ -62,18 +66,18 @@ void LVRPointInfo::setPoint(size_t pointId)
     }
     else
     {
-        floatArr specFloats(new float[n_channels]);
+        floatArr data = floatArr(new float[n_channels]);
         for (int i = 0; i < n_channels; i++)
         {
-            specFloats[i] = spec[pointId * n_channels + i];
+            data[i] = spec[pointId * n_channels + i];
         }
         if (m_pointInfo->shouldScale->isChecked())
         {
-            m_plotter->setPoints(specFloats, n_channels);
+            m_plotter->setPoints(data, n_channels);
         }
         else
         {
-            m_plotter->setPoints(specFloats, n_channels, 0, 255);
+            m_plotter->setPoints(data, n_channels, 0, 1);
         }
     }
 

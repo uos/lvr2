@@ -130,7 +130,7 @@ public Q_SLOTS:
     void exportSelectedModel();
     void buildIncompatibilityBox(string actionName, unsigned char allowedTypes);
     void showBackgroundDialog();
-    void showPointInfoDialog(size_t point);
+    void showPointInfoDialog(vtkActor* actor, int point);
 
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);

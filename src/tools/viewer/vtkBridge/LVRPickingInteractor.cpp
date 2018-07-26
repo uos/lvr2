@@ -106,6 +106,8 @@ void LVRPickingInteractor::correspondenceSearchOff()
 
 void LVRPickingInteractor::OnLeftButtonDown()
 {
+    vtkPointPicker* picker = (vtkPointPicker*)this->Interactor->GetPicker();
+
     if(m_pickMode == None)
     {
         this->m_numberOfClicks++;
@@ -131,23 +133,24 @@ void LVRPickingInteractor::OnLeftButtonDown()
         {
             this->m_numberOfClicks = 0;
             double* picked = new double[3];
-            this->Interactor->GetPicker()->Pick(pickPosition[0],
+            picker->Pick(pickPosition[0],
                                     pickPosition[1],
                                     0,  // always zero.
                                     this->Interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer());
-            size_t point = ((vtkPointPicker*)this->Interactor->GetPicker())->GetPointId();
-            Q_EMIT(pointSelected(point));
+            vtkActor* actor = picker->GetActor();
+            int point = picker->GetPointId();
+            Q_EMIT(pointSelected(actor, point));
         }
     }
     else
     {
         int* pickPos = this->Interactor->GetEventPosition();
         double* picked = new double[3];
-        this->Interactor->GetPicker()->Pick(this->Interactor->GetEventPosition()[0],
+        picker->Pick(this->Interactor->GetEventPosition()[0],
                                 this->Interactor->GetEventPosition()[1],
                                 0,  // always zero.
                                 this->Interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer());
-        this->Interactor->GetPicker()->GetPickPosition(picked);
+        picker->GetPickPosition(picked);
 
         if(m_pickMode == PickFirst)
         {
