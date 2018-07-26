@@ -103,7 +103,7 @@ floatArr PointBuffer::getPointConfidenceArray( size_t &n )
 }
 
 
-ucharArr PointBuffer::getPointSpectralChannelsArray( size_t &n, size_t &n_channels )
+floatArr PointBuffer::getPointSpectralChannelsArray( size_t &n, size_t &n_channels )
 {
 
     n = m_numPointSpectralChannels;
@@ -240,7 +240,7 @@ void PointBuffer::setPointConfidenceArray( floatArr array, size_t n )
 }
 
 
-void PointBuffer::setPointSpectralChannelsArray( ucharArr array, size_t n, size_t n_channels )
+void PointBuffer::setPointSpectralChannelsArray( floatArr array, size_t n, size_t n_channels )
 {
 
     m_numPointSpectralChannels = n;

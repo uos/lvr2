@@ -20,9 +20,5 @@
   - interpolierte Spektraldaten?
   - setSpectralData deaktivieren für Meshes
 
-- Channels als float Array im Bereich 0..1
-
 - Testen
-  - Support von Punktwolken ohne Spektraldaten
   - Support von anderen Dateiformaten
-  - leere Punktwolken
