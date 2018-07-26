@@ -228,7 +228,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
 
-    QObject::connect(m_pickingInteractor, SIGNAL(pointSelected(size_t)), this, SLOT(showPointInfoDialog(size_t)));
+    QObject::connect(m_pickingInteractor, SIGNAL(pointSelected(vtkActor*, int)), this, SLOT(showPointInfoDialog(vtkActor*, int)));
 
     QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
 }
@@ -1151,24 +1151,33 @@ void LVRMainWindow::showSpectralSettingsDialog()
     }
 }
 
-void LVRMainWindow::showPointInfoDialog(size_t point)
+void LVRMainWindow::showPointInfoDialog(vtkActor* actor, int point)
 {
+    if (actor == nullptr || point < 0)
+    {
+        return;
+    }
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    LVRPointBufferBridge* pointBridge = nullptr;
+    for(int i = 0; i < treeWidget->topLevelItemCount(); i++)
+    {
+        QTreeWidgetItem *item = treeWidget->topLevelItem(i);
+        LVRPointBufferBridge* bridge = getModelItem(item)->getModelBridge()->getPointBridge().get();
+        if (bridge->getPointCloudActor() == actor)
+        {
+            pointBridge = bridge;
+            break;
+        }
+    }
+    if (pointBridge == nullptr)
+    {
+        return;
+    }
     if (!m_pointInfoDialog)
     {
-        QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-        if(items.size() == 0)
-        {
-            return;
-        }
-        QTreeWidgetItem* item = items.first();
-        LVRModelItem* model_item = getModelItem(item);
-        if(model_item == NULL)
-        {
-            return;
-        }
-        PointBufferBridgePtr points = model_item->getModelBridge()->getPointBridge();
-        m_pointInfoDialog = new LVRPointInfo(treeWidget, model_item->getModelBridge()->getPointBridge()->getPointBuffer());
+        m_pointInfoDialog = new LVRPointInfo(treeWidget);
     }
+    m_pointInfoDialog->setPointBuffer(pointBridge->getPointBuffer());
     m_pointInfoDialog->setPoint(point);
 }
 
