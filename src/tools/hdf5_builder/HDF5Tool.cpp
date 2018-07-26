@@ -143,13 +143,9 @@ int main( int argc, char ** argv )
     size_t n;
     floatArr points = point_buffer->getPointArray(n);
 
-    // Convert float array to vector. TODO: Check if necessary. It should be
-    // possible to write the array directly somehow.
-    vector<float> v_points(points.get(), points.get() + n * 3);
-
     // Write scan data to group
     scan_group.createDataSet<int>("numPoints", HighFive::DataSpace::From(n)).write(n);
-    scan_group.createDataSet<float>("points", HighFive::DataSpace::From(v_points)).write(v_points);
+    scan_group.createDataSet<float>("points", HighFive::DataSpace(n * 3)).write(points.get());
 
     size_t n_spec, n_channels;
     floatArr spec = point_buffer->getPointSpectralChannelsArray(n_spec, n_channels);
@@ -161,15 +157,12 @@ int main( int argc, char ** argv )
         HighFive::Group cloud001_points_group = hdf5_file.createGroup("pointclouds/cloud001/points");
         HighFive::Group cloud001_spectral_group = hdf5_file.createGroup("pointclouds/cloud001/spectral");
 
-        std::vector<float> pointVec(points.get(), points.get() + n_spec * 3);
-        std::vector<float> specVec(spec.get(), spec.get() + n_spec * n_channels);
-
         cloud001_points_group.createDataSet<int>("numPoints", HighFive::DataSpace::From(n_spec)).write(n_spec);
-        cloud001_points_group.createDataSet<float>("points", HighFive::DataSpace::From(pointVec)).write(pointVec);
+        cloud001_points_group.createDataSet<float>("points", HighFive::DataSpace(n_spec * 3)).write(points.get());
 
         cloud001_spectral_group.createDataSet<int>("numPoints", HighFive::DataSpace::From(n_spec)).write(n_spec);
         cloud001_spectral_group.createDataSet<int>("numChannels", HighFive::DataSpace::From(n_channels)).write(n_channels);
-        cloud001_spectral_group.createDataSet<float>("channels", HighFive::DataSpace::From(specVec)).write(specVec);
+        cloud001_spectral_group.createDataSet<float>("channels", HighFive::DataSpace(n_spec * n_channels)).write(spec.get());
     }
 
     std::cout << "Done" << std::endl;
