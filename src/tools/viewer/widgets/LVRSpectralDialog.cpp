@@ -72,7 +72,10 @@ void LVRSpectralDialog::connectSignalsAndSlots()
 {
     QObject::connect(m_spectralDialog->horizontalSlider_Hyperspectral_red, SIGNAL(valueChanged(int)), this, SLOT(valueChangeFinished()));
     QObject::connect(m_spectralDialog->horizontalSlider_Hyperspectral_green, SIGNAL(valueChanged(int)), this, SLOT(valueChangeFinished()));
-    QObject::connect(m_spectralDialog->horizontalSlider_Hyperspectral_blue, SIGNAL(valueChanged(int)), this, SLOT(valueChangeFinished()));
+    QObject::connect(m_spectralDialog->horizontalSlider_Hyperspectral_blue, SIGNAL(valueChanged(int)), this, SLOT(valueChangeFinished()));  
+    QObject::connect(m_spectralDialog->checkBox_hred, SIGNAL(stateChanged(int)), this, SLOT(valueChangeFinished()));
+    QObject::connect(m_spectralDialog->checkBox_hgreen, SIGNAL(stateChanged(int)), this, SLOT(valueChangeFinished()));  
+    QObject::connect(m_spectralDialog->checkBox_hblue, SIGNAL(stateChanged(int)), this, SLOT(valueChangeFinished()));  
 
     QObject::connect(m_spectralDialog->horizontalSlider_channel, SIGNAL(valueChanged(int)), this, SLOT(updateGradientView()));
     QObject::connect(m_spectralDialog->comboBox_colorgradient, SIGNAL(currentIndexChanged(int)), this, SLOT(updateGradientView()));    
