@@ -58,6 +58,7 @@ private:
     QDialog*             m_dialog;
     PointBufferBridgePtr m_points;
     size_t               m_r, m_g, m_b;
+    bool                 m_use_r, m_use_g, m_use_b;
     GradientType         m_gradient;
     size_t               m_gradientChannel;
     bool                 m_useNormalizedGradient;

@@ -45,6 +45,9 @@ inline unsigned char floatToColor(float f)
 LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
 {
     // default: visible light
+    m_UseSpectralChannel[0] = true;
+    m_UseSpectralChannel[1] = true;
+    m_UseSpectralChannel[2] = true;
     m_SpectralChannels[0] = (612 - 400) / 4;
     m_SpectralChannels[1] = (552 - 400) / 4;
     m_SpectralChannels[2] = (462 - 400) / 4;
@@ -80,7 +83,7 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
     }
 }
 
-void LVRPointBufferBridge::setSpectralChannels(size_t r_channel, size_t g_channel, size_t b_channel)
+void LVRPointBufferBridge::setSpectralChannels(size_t r_channel, size_t g_channel, size_t b_channel, bool use_r, bool use_g, bool use_b)
 {
     size_t n, n_channels;
     floatArr spec = m_pointBuffer->getPointSpectralChannelsArray(n, n_channels);
@@ -102,9 +105,9 @@ void LVRPointBufferBridge::setSpectralChannels(size_t r_channel, size_t g_channe
     {
         int specIndex = n_channels * i;
         unsigned char speccolor[3];
-        speccolor[0] = floatToColor(spec[specIndex + m_SpectralChannels[0]]);
-        speccolor[1] = floatToColor(spec[specIndex + m_SpectralChannels[1]]);
-        speccolor[2] = floatToColor(spec[specIndex + m_SpectralChannels[2]]);
+        speccolor[0] = m_UseSpectralChannel[0] ? floatToColor(spec[specIndex + m_SpectralChannels[0]]) : 0;
+        speccolor[1] = m_UseSpectralChannel[1] ? floatToColor(spec[specIndex + m_SpectralChannels[1]]) : 0;
+        speccolor[2] = m_UseSpectralChannel[2] ? floatToColor(spec[specIndex + m_SpectralChannels[2]]) : 0;
 
 #if VTK_MAJOR_VERSION < 7
         scalars->InsertNextTupleValue(speccolor);
@@ -116,11 +119,14 @@ void LVRPointBufferBridge::setSpectralChannels(size_t r_channel, size_t g_channe
     m_pointCloudActor->GetMapper()->GetInput()->GetPointData()->SetScalars(scalars);
 }
 
-void LVRPointBufferBridge::getSpectralChannels(size_t &r_channel, size_t &g_channel, size_t &b_channel) const
+void LVRPointBufferBridge::getSpectralChannels(size_t &r_channel, size_t &g_channel, size_t &b_channel, bool &use_r, bool &use_g, bool &use_b) const
 {
     r_channel = m_SpectralChannels[0];
     g_channel = m_SpectralChannels[1];
     b_channel = m_SpectralChannels[2];
+    use_r = m_UseSpectralChannel[0];
+    use_g = m_UseSpectralChannel[1];
+    use_b = m_UseSpectralChannel[2];
 }
 
 void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_t channel, bool normalized)
@@ -207,7 +213,7 @@ void LVRPointBufferBridge::useGradient(bool useGradient)
     }
     else
     {
-        setSpectralChannels(m_SpectralChannels[0], m_SpectralChannels[1], m_SpectralChannels[2]);
+        setSpectralChannels(m_SpectralChannels[0], m_SpectralChannels[1], m_SpectralChannels[2], m_UseSpectralChannel[0], m_UseSpectralChannel[1], m_UseSpectralChannel[2]);
     }
 }
 
@@ -326,6 +332,7 @@ LVRPointBufferBridge::LVRPointBufferBridge(const LVRPointBufferBridge& b)
     m_hasNormals        = b.m_hasNormals;
     m_numPoints         = b.m_numPoints;
     memcpy(m_SpectralChannels, b.m_SpectralChannels, sizeof(b.m_SpectralChannels));
+    memcpy(m_UseSpectralChannel, b.m_UseSpectralChannel, sizeof(b.m_UseSpectralChannel));
     m_useGradient       = b.m_useGradient;
     m_useNormalizedGradient = b.m_useNormalizedGradient;
     m_SpectralGradient = b.m_SpectralGradient;
