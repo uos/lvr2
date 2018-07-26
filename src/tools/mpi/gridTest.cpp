@@ -25,11 +25,13 @@
 #include <boost/algorithm/string.hpp>
 #include <lvr/reconstruction/PCLKSurface.hpp>
 #include "BigGrid.hpp"
+
 using namespace std;
 using namespace lvr;
-typedef PointsetSurface<ColorVertex<float, unsigned char> > psSurface;
-typedef AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> > akSurface;
-typedef PCLKSurface<ColorVertex<float, unsigned char> , Normal<float> > pclSurface;
+
+typedef lvr::PointsetSurface<ColorVertex<float, unsigned char> > psSurface;
+typedef lvr::AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> > akSurface;
+typedef lvr::PCLKSurface<ColorVertex<float, unsigned char> , Normal<float> > pclSurface;
 
 int main(int argc, char* argv[])
 {
