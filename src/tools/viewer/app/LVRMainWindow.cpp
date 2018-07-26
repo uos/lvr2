@@ -1145,7 +1145,8 @@ void LVRMainWindow::showSpectralSettingsDialog()
 {
     if (m_spectralDialog)
     {
-        delete m_spectralDialog;
+        m_spectralDialog->exitDialog();
+        delete m_spectralDialog;     
     }
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
