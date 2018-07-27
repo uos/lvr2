@@ -14,9 +14,12 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Point</string>
+   <string>Histogram</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
+   <property name="topMargin">
+    <number>7</number>
+   </property>
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
      <property name="horizontalSpacing">
@@ -49,7 +52,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Wavelength histogram with all points</string>
+          <string>Average wavelength with all points</string>
          </property>
         </widget>
        </item>

@@ -98,6 +98,7 @@ void LVRPlotter::paintEvent(QPaintEvent *)
 		}
 		else
 		{
+			painter.setPen(QColor(0, 0, 255));
 			while(old_x <= new_x)
 			{
 				painter.drawLine(old_x, drawHeight - old_y, old_x, drawHeight);
