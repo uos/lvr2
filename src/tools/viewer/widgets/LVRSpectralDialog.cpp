@@ -83,6 +83,8 @@ void LVRSpectralDialog::connectSignalsAndSlots()
     QObject::connect(m_spectralDialog->pushButton_cg_apply, SIGNAL(released()), this, SLOT(setTypeGradient()));
     QObject::connect(m_spectralDialog->pushButton_channel_close, SIGNAL(released()), this, SLOT(exitDialog()));
     QObject::connect(m_spectralDialog->pushButton_cg_close, SIGNAL(released()), this, SLOT(exitDialog()));
+    QObject::connect(m_spectralDialog->pushButton_h_close, SIGNAL(released()), this, SLOT(exitDialog()));
+    QObject::connect(m_spectralDialog->pushButton_h_show, SIGNAL(released()), this, SLOT(showhistogram()));
 }
 
 void LVRSpectralDialog::exitDialog()
@@ -141,6 +143,14 @@ void LVRSpectralDialog::valueChangeFinished(){
 
     refreshDisplays();
     m_renderer->GetRenderWindow()->Render();
+}
+
+void LVRSpectralDialog::showhistogram()
+{
+    m_histogram=new LVRHistogram();
+    
+    m_histogram->setPointBuffer(m_points->getPointBuffer());
+    m_histogram->sethistogram();
 }
 
 }

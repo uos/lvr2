@@ -5,10 +5,11 @@
 namespace lvr
 {
 
-LVRPlotter::LVRPlotter(QWidget * parent)
+LVRPlotter::LVRPlotter(QWidget * parent, bool curve)
 	: QWidget(parent), m_numPoints(0)
 {
 	m_points.reset();
+	m_curve = curve;
 }
 
 LVRPlotter::~LVRPlotter()
@@ -78,7 +79,20 @@ void LVRPlotter::paintEvent(QPaintEvent *)
 	{
 		float new_x = i * drawWidth / m_numPoints + leftMargin;
 		float new_y = (m_points[i] - m_min) / (m_max - m_min) * height();
-		painter.drawLine(old_x, height() - old_y, new_x, height() - new_y);
+		
+		if(m_curve)
+		{
+			painter.drawLine(old_x, height() - old_y, new_x, height() - new_y);
+		}
+		else
+		{
+			while(old_x <= new_x)
+			{
+				painter.drawLine(old_x, height() - old_y, old_x, height());
+				old_x++;
+			}	
+		}
+
 		old_x = new_x;
 		old_y = new_y;
 	}
