@@ -29,6 +29,7 @@
 #include<QDialog>
 #include "ui_LVRSpectralSettings.h"
 #include "LVRRecordedFrameItem.hpp"
+#include "../widgets/LVRHistogram.hpp"
 
 using Ui::SpectralDialog;
 
@@ -49,6 +50,7 @@ public Q_SLOTS:
     void setTypeGradient();
     void updateGradientView();
     void exitDialog();
+    void showhistogram();
     
 private:
     void connectSignalsAndSlots();
@@ -56,6 +58,7 @@ private:
 
     QMainWindow*         m_mainWindow;
     SpectralDialog*      m_spectralDialog;
+    LVRHistogram*        m_histogram;                         
     QDialog*             m_dialog;
     PointBufferBridgePtr m_points;
     size_t               m_r, m_g, m_b;

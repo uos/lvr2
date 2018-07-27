@@ -40,6 +40,7 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRSpectralDialog.cpp
     widgets/LVRPointInfo.cpp
     widgets/LVRPlotter.cpp
+    widgets/LVRHistogram.cpp
 )
 
 #####################################################################################
@@ -64,6 +65,7 @@ set(LVR_VIEWER_MOCS
     widgets/LVRSpectralDialog.hpp
     widgets/LVRPointInfo.hpp
     widgets/LVRPlotter.hpp
+    widgets/LVRHistogram.hpp
 )
 
 #####################################################################################
@@ -88,6 +90,7 @@ set(LVR_VIEWER_UIS
    ui/LVRSpectralSettings.ui
    ui/LVRPointInfo.ui
    ui/LVRTooltipDialogUI.ui
+   ui/LVRHistogram.ui
 )
 
 #####################################################################################

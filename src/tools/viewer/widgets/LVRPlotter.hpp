@@ -32,7 +32,7 @@ class LVRPlotter : public QWidget
 
 public:
 
-    LVRPlotter(QWidget * parent = 0);
+    LVRPlotter(QWidget * parent = 0, bool curve = true);
     virtual ~LVRPlotter();
 
 	void setPoints(floatArr points, size_t numPoints);
@@ -47,6 +47,7 @@ private:
 	size_t m_numPoints;
 	float  m_min;
 	float  m_max;
+	bool   m_curve;
 };
 
 } /* namespace lvr */

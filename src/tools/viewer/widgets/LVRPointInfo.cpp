@@ -23,7 +23,7 @@ LVRPointInfo::LVRPointInfo(QTreeWidget* treeWidget)
     m_pointInfo = new PointInfo;
     m_pointInfo->setupUi(m_dialog);
 
-    m_plotter = new LVRPlotter(m_dialog);
+    m_plotter = new LVRPlotter(m_dialog, true);
     m_pointInfo->gridLayout->addWidget(m_plotter, 4, 0, 1, 1);
 
     QObject::connect(m_pointInfo->shouldScale, SIGNAL(stateChanged(int)), this, SLOT(refresh(int)));
