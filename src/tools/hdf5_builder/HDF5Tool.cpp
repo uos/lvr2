@@ -155,14 +155,14 @@ int main( int argc, char ** argv )
         HighFive::Group pointclouds_group = hdf5_file.createGroup("/pointclouds");
         HighFive::Group cloud001_group = hdf5_file.createGroup("pointclouds/cloud001");
         HighFive::Group cloud001_points_group = hdf5_file.createGroup("pointclouds/cloud001/points");
-        HighFive::Group cloud001_spectral_group = hdf5_file.createGroup("pointclouds/cloud001/spectral");
+        HighFive::Group cloud001_spectral_group = hdf5_file.createGroup("pointclouds/cloud001/spectralChannels");
 
         cloud001_points_group.createDataSet<int>("numPoints", HighFive::DataSpace::From(n_spec)).write(n_spec);
         cloud001_points_group.createDataSet<float>("points", HighFive::DataSpace(n_spec * 3)).write(points.get());
 
         cloud001_spectral_group.createDataSet<int>("numPoints", HighFive::DataSpace::From(n_spec)).write(n_spec);
         cloud001_spectral_group.createDataSet<int>("numChannels", HighFive::DataSpace::From(n_channels)).write(n_channels);
-        cloud001_spectral_group.createDataSet<float>("channels", HighFive::DataSpace(n_spec * n_channels)).write(spec.get());
+        cloud001_spectral_group.createDataSet<float>("spectralChannels", HighFive::DataSpace(n_spec * n_channels)).write(spec.get());
     }
 
     std::cout << "Done" << std::endl;
