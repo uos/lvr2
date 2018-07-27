@@ -539,7 +539,7 @@ void LVRMainWindow::renameModelItem()
 
 void LVRMainWindow::loadModel()
 {
-    QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open Model"), "", tr("Model Files (*.ply *.obj *.pts *.3d *.txt)"));
+    QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open Model"), "", tr("Model Files (*.ply *.obj *.pts *.3d *.txt *.h5)"));
 
     if(filenames.size() > 0)
     {
