@@ -67,28 +67,40 @@ void LVRPlotter::paintEvent(QPaintEvent *)
 
 	painter.drawLine(leftMargin, 0, leftMargin, height());
 
+	float drawWidth = width() - leftMargin;
+
+	int count = width() / 70;
+	for (int i = 0; i < count; i++)
+	{
+		float new_x = i * drawWidth / count + leftMargin;
+		painter.drawText(new_x, height() - 20, width(), height(), Qt::AlignTop, QString("%1").arg(i * (1000 - 400) / count + 400), &rect);
+	}
+	
+	int botMargin = rect.height() + 1;
+	float drawHeight = height() - botMargin;
+
+	painter.drawLine(0, drawHeight, width(), drawHeight);
+
 	painter.setPen(QColor(255, 0, 0));
 	painter.setBrush(QColor(255, 0, 0));
 
-	float drawWidth = width() - leftMargin;
-
 	float old_x = leftMargin;
-	float old_y = (m_points[0] - m_min) / (m_max - m_min) * height();
+	float old_y = (m_points[0] - m_min) / (m_max - m_min) * drawHeight;
 
 	for (int i = 1; i < m_numPoints; i++)
 	{
 		float new_x = i * drawWidth / m_numPoints + leftMargin;
-		float new_y = (m_points[i] - m_min) / (m_max - m_min) * height();
+		float new_y = (m_points[i] - m_min) / (m_max - m_min) * drawHeight;
 		
 		if(m_curve)
 		{
-			painter.drawLine(old_x, height() - old_y, new_x, height() - new_y);
+			painter.drawLine(old_x, drawHeight - old_y, new_x, drawHeight - new_y);
 		}
 		else
 		{
 			while(old_x <= new_x)
 			{
-				painter.drawLine(old_x, height() - old_y, old_x, height());
+				painter.drawLine(old_x, drawHeight - old_y, old_x, drawHeight);
 				old_x++;
 			}	
 		}
