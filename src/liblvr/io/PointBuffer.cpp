@@ -41,7 +41,10 @@ PointBuffer::PointBuffer() :
     m_numPointNormals( 0 ),
     m_numPointIntensities( 0 ),
     m_numPointConfidence( 0 ),
-    m_numPointSpectralChannels( 0 )
+    m_numPointSpectralChannels( 0 ),
+	m_numSpectralChannels(0),
+	m_minWavelength(0),
+	m_maxWavelength(0)
     {
         /* coordf must be the exact size of three floats to cast the float
          * array to a coordf array. */
@@ -240,14 +243,41 @@ void PointBuffer::setPointConfidenceArray( floatArr array, size_t n )
 }
 
 
-void PointBuffer::setPointSpectralChannelsArray( floatArr array, size_t n, size_t n_channels )
+void PointBuffer::setPointSpectralChannelsArray( floatArr array, size_t n, size_t n_channels, int minWavelength, int maxWavelength )
 {
 
     m_numPointSpectralChannels = n;
     m_numSpectralChannels = n_channels;
     m_pointSpectralChannels = array;
+    m_minWavelength = minWavelength;
+    m_maxWavelength = maxWavelength;
 
 }
+
+int PointBuffer::numWavelengthsPerChannel()
+{
+	return (m_maxWavelength - m_minWavelength) / m_numSpectralChannels;
+}
+
+int PointBuffer::getChannel(int wavelength)
+{
+	int channel = (wavelength - m_minWavelength) / numWavelengthsPerChannel();
+	if (channel < 0 || channel >= m_numSpectralChannels)
+	{
+		return -1;
+	}
+	return channel;
+}
+
+int PointBuffer::getWavelength(int channel)
+{
+	if (channel < 0 || channel >= m_numSpectralChannels)
+	{
+		return -1;
+	}
+	return channel * numWavelengthsPerChannel() + m_minWavelength;
+}
+
 
 
 void PointBuffer::freeBuffer()

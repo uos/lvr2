@@ -38,27 +38,22 @@ LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainW
     m_spectralDialog->horizontalSlider_Hyperspectral_red->setValue(m_r);
     m_spectralDialog->horizontalSlider_Hyperspectral_green->setValue(m_g);
     m_spectralDialog->horizontalSlider_Hyperspectral_blue->setValue(m_b);
-    m_spectralDialog->label_hred->setText("Hyperspectral red: " + QString("%1").arg(m_r * 4 + 400) + "nm");
-    m_spectralDialog->label_hgreen->setText("Hyperspectral green: " + QString("%1").arg(m_g * 4 + 400) + "nm");
-    m_spectralDialog->label_hblue->setText("Hyperspectral blue: " + QString("%1").arg(m_b * 4 + 400) + "nm");
     m_spectralDialog->checkBox_hred->setChecked(m_use_r);
     m_spectralDialog->checkBox_hgreen->setChecked(m_use_g);
     m_spectralDialog->checkBox_hblue->setChecked(m_use_b);
-    m_spectralDialog->horizontalSlider_Hyperspectral_red->setEnabled(m_use_r);
-    m_spectralDialog->horizontalSlider_Hyperspectral_green->setEnabled(m_use_g);
-    m_spectralDialog->horizontalSlider_Hyperspectral_blue->setEnabled(m_use_b);
 
     // Colorgradient - Tab //
     // get values
     points->getSpectralColorGradient(m_gradient, m_gradientChannel, m_useNormalizedGradient);
 
     // set values
-    m_spectralDialog->horizontalSlider_channel->setMaximum(n_channels);
+    m_spectralDialog->horizontalSlider_channel->setMaximum(n_channels - 1);
     m_spectralDialog->horizontalSlider_channel->setValue(m_gradientChannel);
-    m_spectralDialog->label_cg_channel->setText("Wavelength: " + QString("%1").arg(m_gradientChannel * 4 + 400) + "nm");
     m_spectralDialog->comboBox_colorgradient->setCurrentIndex(m_gradient);
     m_spectralDialog->checkBox_normcolors->setChecked(m_useNormalizedGradient);
     
+    refreshDisplays();
+
     connectSignalsAndSlots();
 
     m_dialog->show();
@@ -113,8 +108,24 @@ void LVRSpectralDialog::updateGradientView()
     m_gradientChannel = m_spectralDialog->horizontalSlider_channel->value();
     m_gradient = (GradientType)m_spectralDialog->comboBox_colorgradient->currentIndex();
     m_points->setSpectralColorGradient(m_gradient, m_gradientChannel, m_useNormalizedGradient);
+
+    refreshDisplays();
     m_renderer->GetRenderWindow()->Render();
-    m_spectralDialog->label_cg_channel->setText("Wavelength: " + QString("%1").arg(m_gradientChannel * 4 + 400) + "nm");
+}
+
+void LVRSpectralDialog::refreshDisplays()
+{
+    m_spectralDialog->horizontalSlider_Hyperspectral_red->setEnabled(m_use_r);
+    m_spectralDialog->horizontalSlider_Hyperspectral_green->setEnabled(m_use_g);
+    m_spectralDialog->horizontalSlider_Hyperspectral_blue->setEnabled(m_use_b);
+
+    PointBufferPtr p = m_points->getPointBuffer();
+
+    m_spectralDialog->label_hred->setText(QString("Hyperspectral red: %1nm").arg(p->getWavelength(m_r)));
+    m_spectralDialog->label_hgreen->setText(QString("Hyperspectral green: %1nm").arg(p->getWavelength(m_g)));
+    m_spectralDialog->label_hblue->setText(QString("Hyperspectral blue: %1nm").arg(p->getWavelength(m_b)));
+
+    m_spectralDialog->label_cg_channel->setText(QString("Wavelength: %1nm").arg(p->getWavelength(m_gradientChannel)));
 }
 
 void LVRSpectralDialog::valueChangeFinished(){
@@ -125,18 +136,11 @@ void LVRSpectralDialog::valueChangeFinished(){
     m_use_r = m_spectralDialog->checkBox_hred->isChecked();
     m_use_g = m_spectralDialog->checkBox_hgreen->isChecked();
     m_use_b = m_spectralDialog->checkBox_hblue->isChecked();
-
-    m_spectralDialog->horizontalSlider_Hyperspectral_red->setEnabled(m_use_r);
-    m_spectralDialog->horizontalSlider_Hyperspectral_green->setEnabled(m_use_g);
-    m_spectralDialog->horizontalSlider_Hyperspectral_blue->setEnabled(m_use_b);
     
     m_points->setSpectralChannels(m_r, m_g, m_b, m_use_r, m_use_g, m_use_b);
 
+    refreshDisplays();
     m_renderer->GetRenderWindow()->Render();
-    
-    m_spectralDialog->label_hred->setText("Hyperspectral red: " + QString("%1").arg(m_r * 4 + 400) + "nm");
-    m_spectralDialog->label_hgreen->setText("Hyperspectral green: " + QString("%1").arg(m_g * 4 + 400) + "nm");
-    m_spectralDialog->label_hblue->setText("Hyperspectral blue: " + QString("%1").arg(m_b * 4 + 400) + "nm");    
 }
 
 }

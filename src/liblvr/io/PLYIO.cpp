@@ -831,7 +831,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         pc->setPointIntensityArray(       pointIntensities,      numPointIntensities );
         pc->setPointConfidenceArray(      pointConfidences,      numPointConfidence );
         pc->setPointNormalArray(          pointNormals,          numPointNormals );
-        pc->setPointSpectralChannelsArray(pointSpectralChannels, numPointSpectralChannels, n_channels );
+        pc->setPointSpectralChannelsArray(pointSpectralChannels, numPointSpectralChannels, n_channels, 400, 1000 );
     }
 
     if(vertices)

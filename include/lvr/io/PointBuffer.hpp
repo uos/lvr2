@@ -144,13 +144,15 @@ public:
      *
      * By using setPointSpectralChannelsArray the internal spectral channel
      * buffer for points can be set. The array has to be a one dimensional
-     * unsigned char array.
+     * float array.
      *
-     * \param array      Pointer to point spectral channel data.
-     * \param n          Amount of data in the array.
-     * \param n_channels Number of channels per Point.
+     * \param array         Pointer to point spectral channel data.
+     * \param n             Amount of data in the array.
+     * \param n_channels    Number of channels per Point.
+     * \param minWavelength smallest Wavelength
+     * \param maxWavelength largest Wavelength
      **/
-    void setPointSpectralChannelsArray( floatArr array, size_t n, size_t n_channels );
+    void setPointSpectralChannelsArray( floatArr array, size_t n, size_t n_channels, int minWavelength, int maxWavelength );
 
 
     /************************* Indexed Set *************************/
@@ -414,6 +416,38 @@ public:
      */
     bool hasPointSpectralChannels() { return m_numPointSpectralChannels != 0;}
 
+    /**
+     * @brief   Returns the Wavelength of channel 0 in nm
+     */
+    int getMinWavelength() { return m_minWavelength; }
+
+    /**
+     * @brief   Returns the Wavelength that channel m_numSpectralChannels would have
+     *          in nm
+     */
+    int getMaxWavelength() { return m_maxWavelength; }
+
+    /**
+     * @brief   Returns the Wavelength difference in nm between two adjacent channels
+     */
+    int numWavelengthsPerChannel();
+
+    /**
+     * @brief   Returns the channel index of the given wavelength, or -1 if wavelength
+     *          is not in [minWavelength, maxWavelength)
+     *
+     * @param wavelength the wavelength in nm
+     */
+    int getChannel(int wavelength);
+
+    /**
+     * @brief   Returns the wavelength index of the given channel, or -1 if channel
+     *          is not in [0, n_channels)
+     *
+     * @param channel the channel
+     */
+    int getWavelength(int channel);
+
 
 protected:
 
@@ -445,6 +479,11 @@ protected:
     size_t          m_numPointSpectralChannels;
     /// Number of spectral channels in each spectral channel Dataset.
     size_t          m_numSpectralChannels;
+
+    /// Wavelength of channel 0 in nm
+    int m_minWavelength;
+    /// Wavelength of channel m_numSpectralChannels in nm
+    int m_maxWavelength;
 
     /// Vector to save the indices of the first and last points of single scans
     std::vector<indexPair> m_subClouds;

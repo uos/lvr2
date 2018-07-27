@@ -52,6 +52,7 @@ public Q_SLOTS:
     
 private:
     void connectSignalsAndSlots();
+    void refreshDisplays();
 
     QMainWindow*         m_mainWindow;
     SpectralDialog*      m_spectralDialog;

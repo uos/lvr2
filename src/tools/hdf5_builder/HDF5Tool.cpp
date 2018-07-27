@@ -162,6 +162,8 @@ int main( int argc, char ** argv )
 
         cloud001_spectral_group.createDataSet<int>("numPoints", HighFive::DataSpace::From(n_spec)).write(n_spec);
         cloud001_spectral_group.createDataSet<int>("numChannels", HighFive::DataSpace::From(n_channels)).write(n_channels);
+        cloud001_spectral_group.createDataSet<int>("minSpectral", HighFive::DataSpace::From(minSpectral)).write(minSpectral);
+        cloud001_spectral_group.createDataSet<int>("maxSpectral", HighFive::DataSpace::From(maxSpectral)).write(maxSpectral);
         cloud001_spectral_group.createDataSet<float>("spectralChannels", HighFive::DataSpace(n_spec * n_channels)).write(spec.get());
     }
 
