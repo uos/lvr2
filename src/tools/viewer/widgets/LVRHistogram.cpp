@@ -26,11 +26,7 @@ LVRHistogram::LVRHistogram()
     m_plotter = new LVRPlotter(m_dialog, false);
     m_histogram->gridLayout->addWidget(m_plotter, 4, 0, 1, 1);
 
-    m_dialog->show();
-    m_dialog->raise();
-    m_dialog->activateWindow();
-
-    //QObject::connect(m_histogram->shouldScale, SIGNAL(stateChanged(int)), this, SLOT(refresh(int)));
+    QObject::connect(m_histogram->shouldScale, SIGNAL(stateChanged(int)), this, SLOT(refresh(int)));
 }
 
 LVRHistogram::~LVRHistogram()
@@ -65,7 +61,25 @@ void LVRHistogram::sethistogram()
         data2[chan]=data2[chan]/n_spec;
         //cout<<"channel "<<chan<<" : "<< data2[chan]<<endl;
     }
-    m_plotter->setPoints(data2, n_channels);        
+  
+    if (m_histogram->shouldScale->isChecked())
+        {
+            m_plotter->setPoints(data2, n_channels);
+        }
+        else
+        {
+            m_plotter->setPoints(data2, n_channels, 0, 1);
+        }
+        
+    m_dialog->show();
+    m_dialog->raise();
+    m_dialog->activateWindow();
+
+}
+
+void LVRHistogram::refresh(int)
+{
+    sethistogram();
 }
 
 }

@@ -46,7 +46,7 @@ public:
     void setPointBuffer(PointBufferPtr points);
 
 public Q_SLOTS:
-    //void refresh(int);
+    void refresh(int);
     
 private:
     Histogram*     m_histogram;
