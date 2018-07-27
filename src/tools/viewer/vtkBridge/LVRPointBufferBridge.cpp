@@ -48,9 +48,9 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
     m_UseSpectralChannel[0] = true;
     m_UseSpectralChannel[1] = true;
     m_UseSpectralChannel[2] = true;
-    m_SpectralChannels[0] = (612 - 400) / 4;
-    m_SpectralChannels[1] = (552 - 400) / 4;
-    m_SpectralChannels[2] = (462 - 400) / 4;
+    m_SpectralChannels[0] = 0;
+    m_SpectralChannels[1] = 0;
+    m_SpectralChannels[2] = 0;
 
     // default: solid color gradient
     m_useGradient = false;
@@ -62,6 +62,10 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
     {
         // Save pc data
         m_pointBuffer = pointCloud;
+
+        m_SpectralChannels[0] = std::max(0, pointCloud->getChannel(612));
+        m_SpectralChannels[1] = std::max(0, pointCloud->getChannel(552));
+        m_SpectralChannels[2] = std::max(0, pointCloud->getChannel(462));
 
         // Generate vtk actor representation
         computePointCloudActor(pointCloud);

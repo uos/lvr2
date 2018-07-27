@@ -142,6 +142,8 @@ ModelPtr Hdf5IO::read(string filename)
     int numColors = 0;
     int numSpectralChannels = 0;
     int numChannels = 0;
+    int minSpectral = 0;
+    int maxSpectral = 0;
 
     floatArr points;
     floatArr normals;
@@ -225,6 +227,8 @@ ModelPtr Hdf5IO::read(string filename)
 
 		    spectralChannelGroup.getDataSet("numPoints").read(numSpectralChannels);
 		    spectralChannelGroup.getDataSet("numChannels").read(numChannels);
+		    spectralChannelGroup.getDataSet("minSpectral").read(minSpectral);
+		    spectralChannelGroup.getDataSet("maxSpectral").read(maxSpectral);
 
 		    if (numSpectralChannels)
 		    {
@@ -241,7 +245,7 @@ ModelPtr Hdf5IO::read(string filename)
 	        pc->setPointIntensityArray(intensities, numIntensities);
 	        pc->setPointConfidenceArray(confidences, numConfidences);
 	        pc->setPointNormalArray(normals, numNormals);
-	        pc->setPointSpectralChannelsArray(spectralChannels, numSpectralChannels, numChannels);
+	        pc->setPointSpectralChannelsArray(spectralChannels, numSpectralChannels, numChannels, minSpectral, maxSpectral);
 	    }
 	}
 	catch(HighFive::Exception& err)
