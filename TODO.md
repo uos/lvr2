@@ -8,7 +8,6 @@
 - Benutzerinterface
   - Bedeutung kenntlich machen _(Tooltips, Beschreibung, etc)_
   - aufräumen _(Treewidget größe halbieren)_
-  - Colorgradient als quadratischer butten oben in der taskbar
   - Itensity sachen evtl. als tab austauschen und umschalten zu PunktInfoDiagramm vorschau
     - bei click auf vorschau wird das Diagramm im großen fenster angezeigt
 
