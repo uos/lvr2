@@ -63,9 +63,12 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
         // Save pc data
         m_pointBuffer = pointCloud;
 
-        m_SpectralChannels[0] = std::max(0, pointCloud->getChannel(612));
-        m_SpectralChannels[1] = std::max(0, pointCloud->getChannel(552));
-        m_SpectralChannels[2] = std::max(0, pointCloud->getChannel(462));
+        if(m_pointBuffer->hasPointSpectralChannels())
+        {
+            m_SpectralChannels[0] = std::max(0, pointCloud->getChannel(612));
+            m_SpectralChannels[1] = std::max(0, pointCloud->getChannel(552));
+            m_SpectralChannels[2] = std::max(0, pointCloud->getChannel(462));
+        }
 
         // Generate vtk actor representation
         computePointCloudActor(pointCloud);
