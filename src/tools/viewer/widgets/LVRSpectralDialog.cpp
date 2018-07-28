@@ -25,7 +25,6 @@ LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainW
     m_spectralDialog = new SpectralDialog;
     m_spectralDialog->setupUi(m_dialog);
 
-    // Channel - Tab //
     // get values
     points->getSpectralChannels(m_r, m_g, m_b, m_use_r, m_use_g, m_use_b);
     size_t n, n_channels;
@@ -41,16 +40,6 @@ LVRSpectralDialog::LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainW
     m_spectralDialog->checkBox_hred->setChecked(m_use_r);
     m_spectralDialog->checkBox_hgreen->setChecked(m_use_g);
     m_spectralDialog->checkBox_hblue->setChecked(m_use_b);
-
-    // Colorgradient - Tab //
-    // get values
-    points->getSpectralColorGradient(m_gradient, m_gradientChannel, m_useNormalizedGradient);
-
-    // set values
-    m_spectralDialog->horizontalSlider_channel->setMaximum(n_channels - 1);
-    m_spectralDialog->horizontalSlider_channel->setValue(m_gradientChannel);
-    m_spectralDialog->comboBox_colorgradient->setCurrentIndex(m_gradient);
-    m_spectralDialog->checkBox_normcolors->setChecked(m_useNormalizedGradient);
     
     refreshDisplays();
 
@@ -75,14 +64,8 @@ void LVRSpectralDialog::connectSignalsAndSlots()
     QObject::connect(m_spectralDialog->checkBox_hgreen, SIGNAL(stateChanged(int)), this, SLOT(valueChangeFinished()));  
     QObject::connect(m_spectralDialog->checkBox_hblue, SIGNAL(stateChanged(int)), this, SLOT(valueChangeFinished()));  
 
-    QObject::connect(m_spectralDialog->horizontalSlider_channel, SIGNAL(valueChanged(int)), this, SLOT(updateGradientView()));
-    QObject::connect(m_spectralDialog->comboBox_colorgradient, SIGNAL(currentIndexChanged(int)), this, SLOT(updateGradientView()));    
-    QObject::connect(m_spectralDialog->checkBox_normcolors, SIGNAL(stateChanged(int)), this, SLOT(updateGradientView()));
-
     QObject::connect(m_spectralDialog->pushButton_channel_apply, SIGNAL(released()), this, SLOT(setTypeChannel()));
-    QObject::connect(m_spectralDialog->pushButton_cg_apply, SIGNAL(released()), this, SLOT(setTypeGradient()));
     QObject::connect(m_spectralDialog->pushButton_channel_close, SIGNAL(released()), this, SLOT(exitDialog()));
-    QObject::connect(m_spectralDialog->pushButton_cg_close, SIGNAL(released()), this, SLOT(exitDialog()));
     QObject::connect(m_spectralDialog->pushButton_h_close, SIGNAL(released()), this, SLOT(exitDialog()));
     QObject::connect(m_spectralDialog->pushButton_h_show, SIGNAL(released()), this, SLOT(showhistogram()));
 }
@@ -98,22 +81,6 @@ void LVRSpectralDialog::setTypeChannel()
     m_renderer->GetRenderWindow()->Render();
 }
 
-void LVRSpectralDialog::setTypeGradient()
-{
-    m_points->useGradient(true);
-    m_renderer->GetRenderWindow()->Render();
-}
-
-void LVRSpectralDialog::updateGradientView()
-{
-    m_useNormalizedGradient = m_spectralDialog->checkBox_normcolors->isChecked();
-    m_gradientChannel = m_spectralDialog->horizontalSlider_channel->value();
-    m_gradient = (GradientType)m_spectralDialog->comboBox_colorgradient->currentIndex();
-    m_points->setSpectralColorGradient(m_gradient, m_gradientChannel, m_useNormalizedGradient);
-
-    refreshDisplays();
-    m_renderer->GetRenderWindow()->Render();
-}
 
 void LVRSpectralDialog::refreshDisplays()
 {
@@ -126,8 +93,6 @@ void LVRSpectralDialog::refreshDisplays()
     m_spectralDialog->label_hred->setText(QString("Hyperspectral red: %1nm").arg(p->getWavelength(m_r)));
     m_spectralDialog->label_hgreen->setText(QString("Hyperspectral green: %1nm").arg(p->getWavelength(m_g)));
     m_spectralDialog->label_hblue->setText(QString("Hyperspectral blue: %1nm").arg(p->getWavelength(m_b)));
-
-    m_spectralDialog->label_cg_channel->setText(QString("Wavelength: %1nm").arg(p->getWavelength(m_gradientChannel)));
 }
 
 void LVRSpectralDialog::valueChangeFinished(){

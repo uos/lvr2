@@ -1,5 +1,5 @@
-#ifndef SPECTRALDIALOG_H_
-#define SPECTRALDIALOG_H_
+#ifndef SPECTRALCOLORGRADIENTDIALOG_H_
+#define SPECTRALCOLORGRADIENTDIALOG_H_
 
 #include <vtkRenderer.h>
 #include <vtkSmartPointer.h>
@@ -27,43 +27,42 @@
 
 #include <QtWidgets>
 #include<QDialog>
-#include "ui_LVRSpectralSettings.h"
+#include "ui_LVRSpectralColorGradient.h"
 #include "LVRRecordedFrameItem.hpp"
-#include "../widgets/LVRHistogram.hpp"
 
-using Ui::SpectralDialog;
+using Ui::SpectralColorGradient;
 
 namespace lvr
 {
 
-class LVRSpectralDialog : public QObject
+class LVRSpectralColorGradientDialog : public QObject
 {
     Q_OBJECT
 
 public:
-    LVRSpectralDialog(QTreeWidget* treeWidget, QMainWindow* mainWindow, PointBufferBridgePtr points, vtkRenderer* renderer);
-    virtual ~LVRSpectralDialog();
+    LVRSpectralColorGradientDialog(QTreeWidget* treeWidget, QMainWindow* mainWindow, PointBufferBridgePtr points, vtkRenderer* renderer);
+    virtual ~LVRSpectralColorGradientDialog();
 
 public Q_SLOTS:
-    void valueChangeFinished();
-    void setTypeChannel();
+    void setTypeGradient();
+    void updateGradientView();
     void exitDialog();
-    void showhistogram();
     
 private:
     void connectSignalsAndSlots();
     void refreshDisplays();
 
     QMainWindow*         m_mainWindow;
-    SpectralDialog*      m_spectralDialog;
-    LVRHistogram*        m_histogram;                         
+    SpectralColorGradient*      m_spectralDialog;                       
     QDialog*             m_dialog;
     PointBufferBridgePtr m_points;
-    size_t               m_r, m_g, m_b;
-    bool                 m_use_r, m_use_g, m_use_b;
+    GradientType         m_gradient;
+    size_t               m_gradientChannel;
+    bool                 m_useNormalizedGradient;
+    bool                 m_useNDVI;
     vtkRenderer*         m_renderer;
 };
 
 } // namespace lvr
 
-#endif /* SPECTRALDIALOG_H_ */
+#endif /* SPECTRALCOLORGRADIENTDIALOG_H_ */
