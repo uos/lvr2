@@ -64,6 +64,7 @@
 #include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
 #include "../widgets/LVRBackgroundDialog.hpp"
 #include "../widgets/LVRSpectralDialog.hpp"
+#include "../widgets/LVRSpectralColorGradientDialog.hpp"
 #include "../widgets/LVRPointInfo.hpp"
 
 #include "../vtkBridge/LVRPickingInteractor.hpp"
@@ -100,6 +101,7 @@ public Q_SLOTS:
     void showAboutDialog(QAction*);
     void showTooltipDialog();
     void showSpectralSettingsDialog();
+    void showSpectralColorGradientDialog();
     void renameModelItem();
     void estimateNormals();
     void reconstructUsingMarchingCubes();
@@ -149,6 +151,7 @@ private:
 
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
     LVRSpectralDialog*                          m_spectralDialog;
+    LVRSpectralColorGradientDialog*             m_spectralColorGradientDialog;
     LVRPointInfo*                               m_pointInfoDialog;
     QDialog*                                    m_aboutDialog;
     QDialog*                                    m_tooltipDialog;
@@ -201,6 +204,7 @@ private:
     QAction*                            m_actionShow_Mesh;
     QAction*                            m_actionShow_Wireframe;
     QAction*                            m_actionShowBackgroundSettings;
+    QAction*                            m_actionShowSpectralColorGradient;
     // Sliders below tree widget
     QSlider*                            m_horizontalSliderPointSize;
     QSlider*                            m_horizontalSliderTransparency;

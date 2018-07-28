@@ -450,6 +450,7 @@
    <addaction name="actionShow_Normals"/>
    <addaction name="actionShow_Mesh"/>
    <addaction name="actionShow_Wireframe"/>
+   <addaction name="actionShow_SpectralColorGradient"/>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -457,7 +458,7 @@
      <x>0</x>
      <y>0</y>
      <width>1112</width>
-     <height>27</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -742,6 +743,15 @@
    </property>
    <property name="text">
     <string>Show Wireframe</string>
+   </property>
+  </action>
+  <action name="actionShow_SpectralColorGradient">
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_spectralsettings.png</normaloff>:/qv_spectralsettings.png</iconset>
+   </property>
+   <property name="text">
+    <string>Set SpectralColorGradient</string>
    </property>
   </action>
   <action name="actionShow_Normals">

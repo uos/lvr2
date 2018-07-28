@@ -59,6 +59,7 @@ LVRMainWindow::LVRMainWindow()
     tooltipDialog.setupUi(m_tooltipDialog);
 
     m_spectralDialog = nullptr;
+    m_spectralColorGradientDialog = nullptr;
     m_pointInfoDialog = nullptr;
 
     // Setup specific properties
@@ -122,6 +123,7 @@ LVRMainWindow::LVRMainWindow()
     m_actionShow_Mesh = this->actionShow_Mesh;
     m_actionShow_Wireframe = this->actionShow_Wireframe;
     m_actionShowBackgroundSettings = this->actionShowBackgroundSettings;
+    m_actionShowSpectralColorGradient = this->actionShow_SpectralColorGradient;
 
     // Slider below tree widget
     m_horizontalSliderPointSize = this->horizontalSliderPointSize;
@@ -165,6 +167,10 @@ LVRMainWindow::~LVRMainWindow()
     if (m_spectralDialog)
     {
         delete m_spectralDialog;
+    }
+    if (m_spectralColorGradientDialog)
+    {
+        delete m_spectralColorGradientDialog;
     }
     delete m_incompatibilityBox;
 }
@@ -217,6 +223,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
     QObject::connect(m_actionShow_Wireframe, SIGNAL(toggled(bool)), this, SLOT(toggleWireframe(bool)));
     QObject::connect(m_actionShowBackgroundSettings, SIGNAL(triggered()), this, SLOT(showBackgroundDialog()));
+    QObject::connect(m_actionShowSpectralColorGradient, SIGNAL(triggered()), this, SLOT(showSpectralColorGradientDialog()));
 
     QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
     QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
@@ -1140,6 +1147,35 @@ void LVRMainWindow::showTooltipDialog()
     m_tooltipDialog->raise();
 }
 
+void LVRMainWindow::showSpectralColorGradientDialog()
+{
+    if (m_spectralColorGradientDialog)
+    {
+        m_spectralColorGradientDialog->exitDialog();    
+    }
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+        LVRModelItem* model_item = getModelItem(item);
+        if(model_item != NULL)
+        {
+            PointBufferBridgePtr points = model_item->getModelBridge()->getPointBridge();
+            if(points->getNumPoints() && points->getPointBuffer()->hasPointSpectralChannels())
+            {
+                m_spectralColorGradientDialog = new LVRSpectralColorGradientDialog(treeWidget, this, points, m_renderer);        
+            }
+            else
+            {
+                showTooltipDialog();
+            }
+        }
+    }
+    else
+    {
+       showTooltipDialog(); 
+    }
+}
 
 void LVRMainWindow::showSpectralSettingsDialog()
 {
