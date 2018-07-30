@@ -193,8 +193,6 @@ void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_
     	}
     }
 
-    std::cout << ndviMin << " - " << ndviMax << std::endl;
-
     vtkSmartPointer<vtkUnsignedCharArray> scalars = vtkSmartPointer<vtkUnsignedCharArray>::New();
     scalars->SetNumberOfComponents(3);
     scalars->SetName("Colors");
