@@ -567,6 +567,11 @@ void LVRMainWindow::loadModel()
             LVRModelItem* item = new LVRModelItem(bridge, base);
             this->treeWidget->addTopLevelItem(item);
             item->setExpanded(true);
+            for(QTreeWidgetItem* selected : treeWidget->selectedItems())
+            {
+                selected->setSelected(false);
+            }
+            item->setSelected(true);
             ++it;
         }
 
@@ -895,6 +900,11 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
         LVRModelItem* item = new LVRModelItem(bridge, base);
         this->treeWidget->addTopLevelItem(item);
         item->setExpanded(true);
+        for(QTreeWidgetItem* selected : treeWidget->selectedItems())
+        {
+            selected->setSelected(false);
+    }
+        item->setSelected(true);
     }
     updateView();
     assertToggles();
