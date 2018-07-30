@@ -34,5 +34,7 @@
         <file>tb_right.png</file>
         <file>tb_delete.png</file>
         <file>qv_spectralsettings.png</file>
+        <file>qv_histogram.png</file>
+        <file>qv_point.png</file>
     </qresource>
 </RCC>
