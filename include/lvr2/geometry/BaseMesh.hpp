@@ -39,6 +39,8 @@ using boost::optional;
 
 #include "Handles.hpp"
 
+#include <lvr2/geometry/Vector.hpp>
+
 namespace lvr2
 {
 

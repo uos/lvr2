@@ -36,7 +36,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-void BaseIO<BaseVecT>::save( ModelPtr m, string filename)
+void BaseIO<BaseVecT>::save( ModelPtr<BaseVecT> m, string filename)
 {
 	m_model = m;
     save( filename);
@@ -44,13 +44,13 @@ void BaseIO<BaseVecT>::save( ModelPtr m, string filename)
 
 
 template<typename BaseVecT>
-void BaseIO<BaseVecT>::setModel( ModelPtr m )
+void BaseIO<BaseVecT>::setModel( ModelPtr<BaseVecT> m )
 {
     m_model = m;
 }
 
 template<typename BaseVecT>
-ModelPtr BaseIO<BaseVecT>::getModel()
+ModelPtr<BaseVecT> BaseIO<BaseVecT>::getModel()
 {
     return m_model;
 }

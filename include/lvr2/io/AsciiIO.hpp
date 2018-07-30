@@ -34,7 +34,7 @@
 #ifndef ASCIIIO_H_
 #define ASCIIIO_H_
 
-#include "BaseIO.hpp"
+#include <lvr2/io/BaseIO.hpp>
 
 namespace lvr2
 {
@@ -42,9 +42,10 @@ namespace lvr2
 /**
  * @brief A import / export class for point cloud data in plain
  *        text formats. Currently the file extensions .xyz, .txt,
- *        .3d and .pts are supported.
+ *       .3d and .pts are supported.
  */
-class AsciiIO : public BaseIO
+template<typename BaseVecT>
+class AsciiIO : public BaseIO<BaseVecT>
 {
     public:
 
@@ -60,7 +61,7 @@ class AsciiIO : public BaseIO
          *
          * @param filename      The file to read
          */
-        virtual ModelPtr read( string filename );
+        virtual ModelPtr<BaseVecT> read( string filename );
 
         /**
          * @brief read  Parses the given file and stores point and color attribute
@@ -83,7 +84,7 @@ class AsciiIO : public BaseIO
          * @param i         The colum number containing the intensity value (or -1)
          * @return
          */
-        virtual ModelPtr read(
+        virtual ModelPtr<BaseVecT> read(
                 string filename,
                 const int& x, const int& y, const int& z,
                 const int& r = -1, const int& g = -1, const int& b = -1, const int& i = -1);
@@ -105,13 +106,11 @@ class AsciiIO : public BaseIO
          *        given file.
          */
         static int getEntriesInLine(string filename);
-
-
-
 };
 
 
 } // namespace lvr
 
+#include "AsciiIO.cpp"
 
 #endif /* ASCIIIO_H_ */

@@ -1,7 +1,44 @@
 #include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/AsciiIO.hpp>
+
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/geometry/Vector.hpp>
+
+#include <iostream>
+#include <fstream>
+
+using namespace lvr2;
+
+typedef BaseVector<float> BaseVec;
+typedef Vector<BaseVec>   VecT;
 
 int main(int argc, char** argv)
 {
+
+    lvr2::AsciiIO<VecT> io;
+    lvr2::ModelPtr<VecT> model = io.read("scan.pts");
+
+    size_t n;
+    unsigned w;
+    floatArr points = model->m_pointCloud->getFloatArray(n, w, "points");
+
+    std::ofstream out1("test.3d");
+    for(size_t i = 0; i < n; i++)
+    {
+        out1 << points[3 * i] << " " << points[3 * i + 1] << " " << points[3 * i + 2] << std::endl;
+    }
+
+    VecT offset(100, 100, 100);
+
+    std::ofstream out2("test1.3d");
+    PointBuffer2::FloatChannel chn = model->m_pointCloud->getFloatChannel("points");
+    for(size_t i = 0; i < n; i++)
+    {
+        chn[i] += VecT(100, 100, 100);
+        out2 << points[3 * i] << " " << points[3 * i + 1] << " " << points[3 * i + 2] << std::endl;
+    }
+
+
     return 0;
 }
 //#include <lvr2/geometry/BaseVector.hpp>

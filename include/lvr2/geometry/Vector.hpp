@@ -129,6 +129,7 @@ inline std::ostream& operator<<(std::ostream& os, const Vector<BaseVecT>& v)
     return os;
 }
 
+
 } // namespace lvr2
 
 #include <lvr2/geometry/Vector.tcc>

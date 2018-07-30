@@ -6,6 +6,11 @@
 namespace lvr2
 {
 
+PointBuffer2::PointBuffer2()
+{
+    m_numPoints = 0;
+}
+
 PointBuffer2::PointBuffer2(floatArr points, size_t n)
 {
     // Generate channel object pointer and add it
@@ -25,9 +30,28 @@ PointBuffer2::PointBuffer2(floatArr points, floatArr normals, size_t n) : PointB
     addFloatChannel(normal_data, "normals");
 }
 
-void PointBuffer2::createFloatChannel(FloatChannelPtr data, std::string name, size_t n, unsigned width)
+void PointBuffer2::addFloatChannel(floatArr data, std::string name, size_t n, unsigned width)
 {
-    floatArr array(new float(width * n));
+     FloatChannelPtr channel(new FloatChannel(n, width, data));
+     addFloatChannel(channel, name, n, width);
+}
+
+void PointBuffer2::addUCharChannel(ucharArr data, std::string name, size_t n, unsigned width)
+{
+     UCharChannelPtr channel(new UCharChannel(n, width, data));
+     addUCharChannel(channel, name, n, width);
+}
+
+void PointBuffer2::addFloatChannel(FloatChannelPtr data, std::string name, size_t n, unsigned width)
+{
+    // Check for point attribute -> Save pointer for faster accesss
+    if(name == "points")
+    {
+        m_points = data;
+        m_numPoints = n;
+    }
+
+    floatArr array(new float[width * n]);
     for(size_t i = 0; i < n * width; i++)
     {
         array[i] = 0;
@@ -36,9 +60,9 @@ void PointBuffer2::createFloatChannel(FloatChannelPtr data, std::string name, si
     addFloatChannel(ptr, name);
 }
 
-void PointBuffer2::createUCharChannel(UCharChannelPtr data, std::string name, size_t n, unsigned width)
+void PointBuffer2::addUCharChannel(UCharChannelPtr data, std::string name, size_t n, unsigned width)
 {
-    ucharArr array(new unsigned char(width * n));
+    ucharArr array(new unsigned char[width * n]);
     for(size_t i = 0; i < n * width; i++)
     {
         array[i] = 0;
@@ -49,6 +73,7 @@ void PointBuffer2::createUCharChannel(UCharChannelPtr data, std::string name, si
 
 void PointBuffer2::addFloatChannel(FloatChannelPtr data, std::string name)
 {
+    std::cout << "ADD: " << name << std::endl;
     auto ret = m_floatChannels.insert(std::pair<std::string, FloatChannelPtr>(name, data));
     if(!ret.second )
     {
@@ -141,6 +166,8 @@ PointBuffer2::FloatProxy PointBuffer2::getFloatHandle(int idx, const std::string
     }
 }
 
+
+
 PointBuffer2::UCharProxy PointBuffer2::getUCharHandle(int idx, const std::string& name)
 {
     auto it = m_ucharChannels.find(name);
@@ -175,11 +202,55 @@ PointBuffer2::UCharProxy PointBuffer2::getUCharHandle(int idx, const std::string
     }
 }
 
+floatArr PointBuffer2::getFloatArray(size_t& n, unsigned& w, const std::string name)
+{
+    if(name == "points")
+    {
+        w = 3;
+        n = m_numPoints;
+        return m_points->get();
+    }
+    else
+    {
+        auto it = m_floatChannels.find(name);
+        if(it != m_floatChannels.end())
+        {
+            n = it->second->n();
+            w = it->second->width();
+            return it->second->get();
+        }
+        else
+        {
+            n = 0;
+            w = 0;
+            return floatArr();
+        }
+    }
+}
+
+ucharArr PointBuffer2::getUcharArray(size_t& n, unsigned& w, const std::string name)
+{
+    auto it = m_ucharChannels.find(name);
+    if(it != m_ucharChannels.end())
+    {
+        n = it->second->n();
+        w = it->second->width();
+        return it->second->get();
+    }
+    else
+    {
+        n = 0;
+        w = 0;
+        return ucharArr();
+    }
+}
+
 PointBuffer2::FloatProxy PointBuffer2::point(int idx)
 {
     if(idx < m_numPoints)
     {
-        return FloatProxy(&(m_points->get())[idx], m_points->width());
+        float* f = m_points->get().get();
+        return FloatProxy(&f[3 * idx], m_points->width());
     }
     else
     {
@@ -189,9 +260,36 @@ PointBuffer2::FloatProxy PointBuffer2::point(int idx)
     }
 }
 
+
+
 PointBuffer2::FloatProxy PointBuffer2::normal(int idx)
 {
     return getFloatHandle(idx, "normals");
 }
 
+PointBuffer2::FloatChannel& PointBuffer2::getFloatChannel(std::string name)
+{
+    if(name == "points")
+    {
+        return *m_points;
+    }
+    auto it = m_floatChannels.find(name);
+    if(it != m_floatChannels.end())
+    {
+        return *(it->second);
+    }
 }
+
+
+PointBuffer2::UCharChannel& PointBuffer2::getUCharChannel(std::string name)
+{
+    auto it = m_ucharChannels.find(name);
+    if(it != m_ucharChannels.end())
+    {
+        return *(it->second);
+    }
+}
+
+}
+
+

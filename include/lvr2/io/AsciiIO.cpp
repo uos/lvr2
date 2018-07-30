@@ -32,14 +32,15 @@ using std::ifstream;
 
 #include <boost/filesystem.hpp>
 
-#include <lvr/io/AsciiIO.hpp>
-#include <lvr/io/Progress.hpp>
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/AsciiIO.hpp>
+#include <lvr2/io/Progress.hpp>
+#include <lvr2/io/Timestamp.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
-ModelPtr AsciiIO::read(
+template<typename BaseVecT>
+ModelPtr<BaseVecT> AsciiIO<BaseVecT>::read(
         string filename,
         const int &xPos, const int& yPos, const int& zPos,
         const int &rPos, const int& gPos, const int& bPos, const int &iPos)
@@ -51,7 +52,7 @@ ModelPtr AsciiIO::read(
     if ( extension != ".pts" && extension != ".3d" && extension != ".xyz" && extension != ".txt" )
     {
         cout << "»" << extension << "« is not a valid file extension." << endl;
-        return ModelPtr();
+        return ModelPtr<BaseVecT>();
     }
     // Count lines in file to estimate the number of present points
     int lines_in_file = countLines(filename);
@@ -59,7 +60,7 @@ ModelPtr AsciiIO::read(
     if ( lines_in_file < 2 )
     {
         cout << timestamp << "AsciiIO: Too few lines in file (has to be > 2)." << endl;
-        return ModelPtr();
+        return ModelPtr<BaseVecT>();
     }
 
     // Open file
@@ -91,7 +92,8 @@ ModelPtr AsciiIO::read(
     // Alloc memory for points
     numPoints = lines_in_file - 1;
     points = floatArr( new float[ numPoints * 3 ] );
-    ModelPtr model( new Model( PointBufferPtr( new PointBuffer)));
+    ModelPtr<BaseVecT> model(new Model<BaseVecT>);
+    model->m_pointCloud = PointBuffer2Ptr( new PointBuffer2);
 
     // (Some) sanity checks for given paramters
     if(rPos > num_columns || gPos > num_columns || bPos > num_columns || iPos > num_columns)
@@ -202,15 +204,16 @@ ModelPtr AsciiIO::read(
         numIntensities = numPoints;
     }
 
-    model->m_pointCloud->setPointArray(           points,           numPoints );
-    model->m_pointCloud->setPointColorArray(      pointColors,      numColors );
-    model->m_pointCloud->setPointIntensityArray(  pointIntensities, numIntensities );
-    m_model = model;
+    model->m_pointCloud->addFloatChannel(points, "points", numPoints, 3);
+    model->m_pointCloud->addUCharChannel(pointColors, "colors", numColors, 3);
+    model->m_pointCloud->addFloatChannel(pointIntensities, "intensities", numIntensities, 1);
 
+    this->m_model = model;
     return model;
 }
 
-ModelPtr AsciiIO::read(string filename)
+template<typename BaseVecT>
+ModelPtr<BaseVecT> AsciiIO<BaseVecT>::read(string filename)
 {
     // Check extension
     boost::filesystem::path selectedFile(filename);
@@ -219,7 +222,7 @@ ModelPtr AsciiIO::read(string filename)
     if ( extension != ".pts" && extension != ".3d" && extension != ".xyz" && extension != ".txt" )
     {
         cout << "»" << extension << "« is not a valid file extension." << endl;
-        return ModelPtr();
+        return ModelPtr<BaseVecT>();
     }
     // Count lines in file to estimate the number of present points
     int lines_in_file = countLines(filename);
@@ -227,7 +230,7 @@ ModelPtr AsciiIO::read(string filename)
     if ( lines_in_file < 2 )
     {
         cout << timestamp << "AsciiIO: Too few lines in file (has to be > 2)." << endl;
-        return ModelPtr();
+        return ModelPtr<BaseVecT>();
     }
     // Open the given file. Skip the first line (as it may
     // contain meta data in some formats). Then try to guess
@@ -282,23 +285,27 @@ ModelPtr AsciiIO::read(string filename)
 }
 
 
-void AsciiIO::save( std::string filename )
+template<typename BaseVecT>
+void AsciiIO<BaseVecT>::save( std::string filename )
 {
 
-    if ( !m_model->m_pointCloud ) {
+    if ( !this->m_model->m_pointCloud ) {
         std::cerr << "No point buffer available for output." << std::endl;
         return;
     }
 
     size_t   pointcount( 0 ), buf ( 0 );
 
-    coord3fArr points;
-    color3bArr pointColors;
+    floatArr   points;
+    ucharArr   pointColors;
     floatArr   pointIntensities;
 
-    points = m_model->m_pointCloud->getIndexedPointArray( pointcount );
+    unsigned w;
+    points = this->m_model->m_pointCloud->getFloatArray(pointcount, w, "points");
+//    points = this->m_model->m_pointCloud->getIndexedPointArray( pointcount );
 
-    pointColors = m_model->m_pointCloud->getIndexedPointColorArray( buf );
+
+//    pointColors = this->m_model->m_pointCloud->getIndexedPointColorArray( buf );
     /* We need the same amount of color information and points. */
     if ( pointcount != buf )
     {
@@ -307,7 +314,7 @@ void AsciiIO::save( std::string filename )
 	  " not equal. Color information won't be written" << std::endl;
     }
 
-    pointIntensities = m_model->m_pointCloud->getPointIntensityArray( buf );
+ //   pointIntensities = this->m_model->m_pointCloud->getPointIntensityArray( buf );
     /* We need the same amount of intensity values and points. */
     if ( pointcount != buf )
     {
@@ -328,9 +335,9 @@ void AsciiIO::save( std::string filename )
 
     for ( size_t i(0); i < pointcount; i++ )
     {
-        out << points[i].x << " " 
-            << points[i].y << " " 
-            << points[i].z;
+        out << points[i * 3] << " "
+            << points[i * 3 + 1] << " "
+            << points[i * 3 + 2];
         if ( pointIntensities )
         {
             out << " " << pointIntensities[i];
@@ -339,9 +346,9 @@ void AsciiIO::save( std::string filename )
         {
             /* Bad behaviour of C++ output streams: We have to cast the uchars
              * to unsigned integers. */
-            out << " " << (unsigned int) pointColors[i].r 
-                << " " << (unsigned int) pointColors[i].g 
-                << " " << (unsigned int) pointColors[i].b;
+            out << " " << (unsigned int) pointColors[i * 3]
+                << " " << (unsigned int) pointColors[i * 3 + 1]
+                << " " << (unsigned int) pointColors[i * 3 + 2];
         }
         out << std::endl;
     }
@@ -351,8 +358,8 @@ void AsciiIO::save( std::string filename )
 
 }
 
-
-size_t AsciiIO::countLines(string filename)
+template<typename BaseVecT>
+size_t AsciiIO<BaseVecT>::countLines(string filename)
 {
     // Open file for reading
     ifstream in(filename.c_str());
@@ -369,8 +376,8 @@ size_t AsciiIO::countLines(string filename)
     return c;
 }
 
-
-int AsciiIO::getEntriesInLine(string filename)
+template<typename BaseVecT>
+int AsciiIO<BaseVecT>::getEntriesInLine(string filename)
 {
 
     ifstream in(filename.c_str());
