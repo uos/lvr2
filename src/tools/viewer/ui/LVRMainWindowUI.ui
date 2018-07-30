@@ -452,6 +452,7 @@
    <addaction name="actionShow_Wireframe"/>
    <addaction name="separator"/>
    <addaction name="actionShow_SpectralColorGradient"/>
+   <addaction name="actionShow_SpectralHistogram"/>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -753,6 +754,15 @@
    </property>
    <property name="text">
     <string>Set SpectralColorGradient</string>
+   </property>
+  </action>
+  <action name="actionShow_SpectralHistogram">
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_spectralsettings.png</normaloff>:/qv_spectralsettings.png</iconset>
+   </property>
+   <property name="text">
+    <string>Set SpectralHistogram</string>
    </property>
   </action>
   <action name="actionShow_Normals">

@@ -61,6 +61,7 @@ LVRMainWindow::LVRMainWindow()
     m_spectralDialog = nullptr;
     m_spectralColorGradientDialog = nullptr;
     m_pointInfoDialog = nullptr;
+    m_histogram=nullptr;
 
     // Setup specific properties
     QHeaderView* v = this->treeWidget->header();
@@ -124,6 +125,7 @@ LVRMainWindow::LVRMainWindow()
     m_actionShow_Wireframe = this->actionShow_Wireframe;
     m_actionShowBackgroundSettings = this->actionShowBackgroundSettings;
     m_actionShowSpectralColorGradient = this->actionShow_SpectralColorGradient;
+    m_actionShowSpectralHistogram = this->actionShow_SpectralHistogram;
 
     // Slider below tree widget
     m_horizontalSliderPointSize = this->horizontalSliderPointSize;
@@ -224,6 +226,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShow_Wireframe, SIGNAL(toggled(bool)), this, SLOT(toggleWireframe(bool)));
     QObject::connect(m_actionShowBackgroundSettings, SIGNAL(triggered()), this, SLOT(showBackgroundDialog()));
     QObject::connect(m_actionShowSpectralColorGradient, SIGNAL(triggered()), this, SLOT(showSpectralColorGradientDialog()));
+    QObject::connect(m_actionShowSpectralHistogram, SIGNAL(triggered()), this, SLOT(showHistogram()));
 
     QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
     QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
@@ -1176,6 +1179,49 @@ void LVRMainWindow::showSpectralColorGradientDialog()
        showTooltipDialog(); 
     }
 }
+
+
+void LVRMainWindow::showHistogram()
+{
+  
+     if (m_spectralColorGradientDialog)
+    {
+        m_spectralColorGradientDialog->exitDialog();    
+    }
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+        LVRModelItem* model_item = getModelItem(item);
+        if(model_item != NULL)
+        {
+            PointBufferBridgePtr points = model_item->getModelBridge()->getPointBridge();
+            if(points->getNumPoints() && points->getPointBuffer()->hasPointSpectralChannels())
+            {
+                m_histogram=new LVRHistogram();
+                m_histogram->setPointBuffer(points->getPointBuffer());
+                m_histogram->sethistogram();   
+            }
+            else
+            {
+                showTooltipDialog();
+            }
+        }
+    }
+    else
+    {
+       showTooltipDialog(); 
+    }
+
+
+
+
+
+
+}
+
+
+
 
 void LVRMainWindow::showSpectralSettingsDialog()
 {
