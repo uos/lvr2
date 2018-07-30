@@ -124,7 +124,9 @@ LVRMainWindow::LVRMainWindow()
     m_actionShow_Mesh = this->actionShow_Mesh;
     m_actionShow_Wireframe = this->actionShow_Wireframe;
     m_actionShowBackgroundSettings = this->actionShowBackgroundSettings;
+    m_actionShowSpectralSlider = this->actionShow_SpectralSlider;
     m_actionShowSpectralColorGradient = this->actionShow_SpectralColorGradient;
+    m_actionShowSpectralPointPreview = this->actionShow_SpectralPointPreview;
     m_actionShowSpectralHistogram = this->actionShow_SpectralHistogram;
 
     // Slider below tree widget
@@ -225,7 +227,9 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
     QObject::connect(m_actionShow_Wireframe, SIGNAL(toggled(bool)), this, SLOT(toggleWireframe(bool)));
     QObject::connect(m_actionShowBackgroundSettings, SIGNAL(triggered()), this, SLOT(showBackgroundDialog()));
+    QObject::connect(m_actionShowSpectralSlider, SIGNAL(triggered()), this, SLOT(showSpectralSliderDialog()));
     QObject::connect(m_actionShowSpectralColorGradient, SIGNAL(triggered()), this, SLOT(showSpectralColorGradientDialog()));
+    QObject::connect(m_actionShowSpectralPointPreview, SIGNAL(triggered()), this, SLOT(showSpectralPointPreviewDialog()));
     QObject::connect(m_actionShowSpectralHistogram, SIGNAL(triggered()), this, SLOT(showHistogram()));
 
     QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
@@ -1157,6 +1161,21 @@ void LVRMainWindow::showTooltipDialog()
 {
     m_tooltipDialog->show();
     m_tooltipDialog->raise();
+}
+
+void LVRMainWindow::showSpectralSliderDialog()
+{
+    this->dockWidgetSpectralSliderSettings->show();
+}
+
+void LVRMainWindow::showSpectralColorGradientDialog()
+{
+    this->dockWidgetSpectralColorGradientSettings->show();
+}
+
+void LVRMainWindow::showSpectralPointPreviewDialog()
+{
+    this->dockWidgetPointPreview->show();
 }
 
 void LVRMainWindow::showHistogram()
