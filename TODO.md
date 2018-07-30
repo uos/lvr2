@@ -10,15 +10,8 @@
   - aufräumen _(Treewidget größe halbieren)_
   - Itensity sachen evtl. als tab austauschen und umschalten zu PunktInfoDiagramm vorschau
     - bei click auf vorschau wird das Diagramm im großen fenster angezeigt
-
-- Testen
-  - Support von anderen Dateiformaten
-
+    
 ## Erweiterung: NDVI
   - NDVI Wert errechnen und als Colorgradient mappen
   - Auswählbar als checkbox
   - Slider für wellenlängen deaktivieren
-
-## Erweiterung: Histogramme
-  - pro Punktewolke auf entsprechendem Channel die auftretenden Werte aufnehmen
-  - Histogramm in eigenem Fenster zeichenen
