@@ -536,10 +536,10 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     floatArr pointConfidences;
     floatArr pointIntensities;
     floatArr pointNormals;
+    floatArr pointSpectralChannels;
 
     ucharArr vertexColors;
     ucharArr pointColors;
-    floatArr pointSpectralChannels;
 
     shortArr vertexPanoramaCoords;
     shortArr pointPanoramaCoords;
@@ -566,11 +566,11 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( numVertexNormals )
     {
-        vertexNormals = floatArr( new float[ 3 * numVertices ] );
+        vertexNormals = floatArr( new float[ numVertices * 3 ] );
     }
     if ( numVertexPanoramaCoords )
     {
-        vertexPanoramaCoords = shortArr( new short[ 2 * numVertices ] );
+        vertexPanoramaCoords = shortArr( new short[ numVertices * 2 ] );
     }
     if ( numFaces )
     {
@@ -594,11 +594,11 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( numPointNormals )
     {
-        pointNormals = floatArr( new float[ 3 * numPoints ] );
+        pointNormals = floatArr( new float[ numPoints * 3 ] );
     }
     if ( numPointPanoramaCoords )
     {
-        pointPanoramaCoords = shortArr( new short[ 2 * numPoints ] );
+        pointPanoramaCoords = shortArr( new short[ numPoints * 2 ] );
     }
 
 
@@ -735,6 +735,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
     ply_close( ply );
 
+    // read Panorama Images if we have annotated data
     if (numPointPanoramaCoords)
     {
         // move all the Points that don't have spectral information to the end
@@ -759,7 +760,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
         std::cout << numPoints << " given, " << (numPoints - numPointPanoramaCoords) << " without spectral data" << std::endl;
 
-        // traverse to channel directory TODO: have a unified way of storing channel data that is not hardcoded
+        // traverse to channel directory
         string scanNr = filename.substr(filename.length() - 7, 3);
         string channelDirName = string("panorama_channels_") + scanNr;
 
@@ -831,7 +832,8 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         pc->setPointIntensityArray(       pointIntensities,      numPointIntensities );
         pc->setPointConfidenceArray(      pointConfidences,      numPointConfidence );
         pc->setPointNormalArray(          pointNormals,          numPointNormals );
-        pc->setPointSpectralChannelsArray(pointSpectralChannels, numPointSpectralChannels, n_channels, 400, 1000 );
+        pc->setPointSpectralChannelsArray(pointSpectralChannels, numPointSpectralChannels, n_channels, 400, 400 + 4 * n_channels );
+        // there is no way to read min-, maxchannel from ply file => assume default 400-1000nm
     }
 
     if(vertices)

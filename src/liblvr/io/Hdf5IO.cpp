@@ -152,106 +152,106 @@ ModelPtr Hdf5IO::read(string filename)
     ucharArr colors;
     floatArr spectralChannels;
 
-	try
-	{
-	    File file(filename);
+    try
+    {
+        File file(filename);
 
-		Group clouds = file.getGroup("/pointclouds");
-		std::vector<std::string> cloudNames = clouds.listObjectNames();
+        Group clouds = file.getGroup("/pointclouds");
+        std::vector<std::string> cloudNames = clouds.listObjectNames();
 
-		if (cloudNames.size() == 0)
-		{
-			throw Exception("pointclouds Group does not contain clouds");
-		}
+        if (cloudNames.size() == 0)
+        {
+            throw Exception("pointclouds Group does not contain clouds");
+        }
 
-		Group cloud = clouds.getGroup(cloudNames[0]);
+        Group cloud = clouds.getGroup(cloudNames[0]);
 
-		if (!cloud.exist("points"))
-		{
-			throw Exception("pointcloud does not contain points");
-		}
-		Group pointGroup = cloud.getGroup("points");
+        if (!cloud.exist("points"))
+        {
+            throw Exception("pointcloud does not contain points");
+        }
+        Group pointGroup = cloud.getGroup("points");
 
-		pointGroup.getDataSet("numPoints").read(numPoints);
+        pointGroup.getDataSet("numPoints").read(numPoints);
 
-		if (!numPoints)
-		{
-			throw Exception("pointcloud does not contain points");
-		}
+        if (!numPoints)
+        {
+            throw Exception("pointcloud does not contain points");
+        }
 
-		points = floatArr(new float[numPoints * 3]);
-		pointGroup.getDataSet("points").read(points.get());
+        points = floatArr(new float[numPoints * 3]);
+        pointGroup.getDataSet("points").read(points.get());
 
-		if (cloud.exist("colors"))
-		{
-			Group colorGroup = cloud.getGroup("colors");
+        if (cloud.exist("colors"))
+        {
+            Group colorGroup = cloud.getGroup("colors");
 
-		    colorGroup.getDataSet("numPoints").read(numColors);
+            colorGroup.getDataSet("numPoints").read(numColors);
 
-		    if (numColors)
-		    {
-		    	colors = ucharArr(new unsigned char[numColors * 3]);
-		    	colorGroup.getDataSet("colors").read(colors.get());
-		    }
-		}
+            if (numColors)
+            {
+                colors = ucharArr(new unsigned char[numColors * 3]);
+                colorGroup.getDataSet("colors").read(colors.get());
+            }
+        }
 
-		if (cloud.exist("confidences"))
-		{
-			Group confidenceGroup = cloud.getGroup("confidences");
+        if (cloud.exist("confidences"))
+        {
+            Group confidenceGroup = cloud.getGroup("confidences");
 
-		    confidenceGroup.getDataSet("numPoints").read(numConfidences);
+            confidenceGroup.getDataSet("numPoints").read(numConfidences);
 
-		    if (numConfidences)
-		    {
-		    	confidences = floatArr(new float[numConfidences]);
-		    	confidenceGroup.getDataSet("confidences").read(confidences.get());
-		    }
-		}
+            if (numConfidences)
+            {
+                confidences = floatArr(new float[numConfidences]);
+                confidenceGroup.getDataSet("confidences").read(confidences.get());
+            }
+        }
 
-		if (cloud.exist("intensities"))
-		{
-			Group intensityGroup = cloud.getGroup("intensities");
+        if (cloud.exist("intensities"))
+        {
+            Group intensityGroup = cloud.getGroup("intensities");
 
-		    intensityGroup.getDataSet("numPoints").read(numIntensities);
+            intensityGroup.getDataSet("numPoints").read(numIntensities);
 
-		    if (numIntensities)
-		    {
-		    	intensities = floatArr(new float[numIntensities]);
-		    	intensityGroup.getDataSet("intensities").read(intensities.get());
-		    }
-		}
+            if (numIntensities)
+            {
+                intensities = floatArr(new float[numIntensities]);
+                intensityGroup.getDataSet("intensities").read(intensities.get());
+            }
+        }
 
-		if (cloud.exist("spectralChannels"))
-		{
-			Group spectralChannelGroup = cloud.getGroup("spectralChannels");
+        if (cloud.exist("spectralChannels"))
+        {
+            Group spectralChannelGroup = cloud.getGroup("spectralChannels");
 
-		    spectralChannelGroup.getDataSet("numPoints").read(numSpectralChannels);
-		    spectralChannelGroup.getDataSet("numChannels").read(numChannels);
-		    spectralChannelGroup.getDataSet("minSpectral").read(minSpectral);
-		    spectralChannelGroup.getDataSet("maxSpectral").read(maxSpectral);
+            spectralChannelGroup.getDataSet("numPoints").read(numSpectralChannels);
+            spectralChannelGroup.getDataSet("numChannels").read(numChannels);
+            spectralChannelGroup.getDataSet("minSpectral").read(minSpectral);
+            spectralChannelGroup.getDataSet("maxSpectral").read(maxSpectral);
 
-		    if (numSpectralChannels)
-		    {
-		    	spectralChannels = floatArr(new float[numSpectralChannels * numChannels]);
-		    	spectralChannelGroup.getDataSet("spectralChannels").read(spectralChannels.get());
-		    }
-		}
+            if (numSpectralChannels)
+            {
+                spectralChannels = floatArr(new float[numSpectralChannels * numChannels]);
+                spectralChannelGroup.getDataSet("spectralChannels").read(spectralChannels.get());
+            }
+        }
 
-	    if(numPoints)
-	    {
-	        pc = PointBufferPtr(new PointBuffer);
-	        pc->setPointArray(points, numPoints);
-	        pc->setPointColorArray(colors, numColors);
-	        pc->setPointIntensityArray(intensities, numIntensities);
-	        pc->setPointConfidenceArray(confidences, numConfidences);
-	        pc->setPointNormalArray(normals, numNormals);
-	        pc->setPointSpectralChannelsArray(spectralChannels, numSpectralChannels, numChannels, minSpectral, maxSpectral);
-	    }
-	}
-	catch(HighFive::Exception& err)
-	{
-		std::cerr << "Unable to read File: " << err.what() << std::endl;
-	}
+        if(numPoints)
+        {
+            pc = PointBufferPtr(new PointBuffer);
+            pc->setPointArray(points, numPoints);
+            pc->setPointColorArray(colors, numColors);
+            pc->setPointIntensityArray(intensities, numIntensities);
+            pc->setPointConfidenceArray(confidences, numConfidences);
+            pc->setPointNormalArray(normals, numNormals);
+            pc->setPointSpectralChannelsArray(spectralChannels, numSpectralChannels, numChannels, minSpectral, maxSpectral);
+        }
+    }
+    catch(HighFive::Exception& err)
+    {
+        std::cerr << "Unable to read File: " << err.what() << std::endl;
+    }
 
     ModelPtr m(new Model(mesh, pc));
     m_model = m;
