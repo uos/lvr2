@@ -6,6 +6,8 @@ set(RECONSTRUCT_SOURCES
     Options.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/AsciiIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/PointBuffer2.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/Timestamp.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/Progress.cpp
     Main.cpp
 )
 
