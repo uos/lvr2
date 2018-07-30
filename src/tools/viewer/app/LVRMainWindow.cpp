@@ -85,6 +85,10 @@ LVRMainWindow::LVRMainWindow()
     m_treeChildItemContextMenu->addAction(m_actionShowColorDialog);
     m_treeChildItemContextMenu->addAction(m_actionDeleteModelItem);
 
+    this->dockWidgetSpectralSliderSettings->close();
+    this->dockWidgetSpectralColorGradientSettings->close();
+    this->dockWidgetPointPreview->close();
+
     // Toolbar item "File"
     m_actionOpen = this->actionOpen;
     m_actionExport = this->actionExport;
