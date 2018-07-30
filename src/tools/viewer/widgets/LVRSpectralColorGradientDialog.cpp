@@ -75,9 +75,12 @@ void LVRSpectralColorGradientDialog::setTypeGradient()
 void LVRSpectralColorGradientDialog::updateGradientView()
 {
     m_useNormalizedGradient = m_spectralDialog->checkBox_normcolors->isChecked();
+    m_useNDVI = m_spectralDialog->checkBox_NDVI->isChecked();
+    m_spectralDialog->horizontalSlider_channel->setEnabled(!m_useNDVI);
+
     m_gradientChannel = m_spectralDialog->horizontalSlider_channel->value();
     m_gradient = (GradientType)m_spectralDialog->comboBox_colorgradient->currentIndex();
-    m_points->setSpectralColorGradient(m_gradient, m_gradientChannel, m_useNormalizedGradient);
+    m_points->setSpectralColorGradient(m_gradient, m_gradientChannel, m_useNormalizedGradient, m_useNDVI);
 
     refreshDisplays();
     m_renderer->GetRenderWindow()->Render();
