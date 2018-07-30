@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1112</width>
-    <height>847</height>
+    <height>974</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -271,6 +271,288 @@
       <string>Shading:</string>
      </property>
     </widget>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidgetSpectralSliderSettings">
+   <property name="minimumSize">
+    <size>
+     <width>299</width>
+     <height>150</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>524287</width>
+     <height>234</height>
+    </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFeatureMask</set>
+   </property>
+   <property name="windowTitle">
+    <string>Spectral Settings</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetSpectralSliderSettingsContents">
+    <layout class="QVBoxLayout" name="verticalLayoutSpectralSliderSettings">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QLabel" name="label_hred">
+         <property name="text">
+          <string>Hyperspectral red:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_hred">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QSlider" name="horizontalSlider_Hyperspectral_red">
+       <property name="maximum">
+        <number>149</number>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_7">
+       <item>
+        <widget class="QLabel" name="label_hgreen">
+         <property name="text">
+          <string>Hyperspectral green:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_hgreen">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QSlider" name="horizontalSlider_Hyperspectral_green">
+       <property name="maximum">
+        <number>149</number>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_8">
+       <item>
+        <widget class="QLabel" name="label_hblue">
+         <property name="text">
+          <string>Hyperspectral blue:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_hblue">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QSlider" name="horizontalSlider_Hyperspectral_blue">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximum">
+        <number>149</number>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidgetSpectralColorGradientSettings">
+   <property name="minimumSize">
+    <size>
+     <width>299</width>
+     <height>150</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>524287</width>
+     <height>234</height>
+    </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFeatureMask</set>
+   </property>
+   <property name="windowTitle">
+    <string>Spectral Colorgradient</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetSpectralColorGradientSettingsContents">
+    <layout class="QVBoxLayout" name="verticalLayoutSpectralColorGradientSettings">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item alignment="Qt::AlignRight">
+        <widget class="QCheckBox" name="checkBox_NDVI">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="text">
+          <string>Use NDVI:</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="leftMargin">
+        <number>7</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="label_cg_cg">
+         <property name="text">
+          <string>Colorgradient:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox_colorgradient">
+         <item>
+          <property name="text">
+           <string>Solid</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Grey</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>HSV</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Jet</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Hot</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>SHSV</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Simpsons</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <item alignment="Qt::AlignRight">
+        <widget class="QCheckBox" name="checkBox_normcolors">
+         <property name="sizeIncrement">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="toolTipDuration">
+          <number>-1</number>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="text">
+          <string>Normalize colors:</string>
+         </property>
+         <property name="tristate">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidgetPointPreview">
+   <property name="minimumSize">
+    <size>
+     <width>299</width>
+     <height>150</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>524287</width>
+     <height>234</height>
+    </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFeatureMask</set>
+   </property>
+   <property name="windowTitle">
+    <string>Point Preview</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetPointPreviewContents">
+    <layout class="QVBoxLayout" name="verticalLayoutPointPreview">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+     <item row="4" column="0">
+      <widget class="QGraphicsView" name="graphicsView"/>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QDockWidget" name="dockWidgetActions">
