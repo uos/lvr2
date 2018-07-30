@@ -10,3 +10,17 @@
   - aufräumen _(Treewidget größe halbieren)_
   - Itensity sachen evtl. als tab austauschen und umschalten zu PunktInfoDiagramm vorschau
     - bei click auf vorschau wird das Diagramm im großen fenster angezeigt
+
+## Interface Update:
+  - 4 Buttons oben in Toolbaar
+    - Show SliderDock (on/off)
+    - Show ColorGradientDock (on/off)
+    - Show PointPreviewDock (on/off)
+    - Show Histogramwindow
+  - butten unten links entfernen
+  - dockfenster für:
+    - slider
+    - colorgradient
+    - pointpreview
+  - dockfenster standartmäßig geschlossen
+    - öffnen nur per buttens aus toolbar
