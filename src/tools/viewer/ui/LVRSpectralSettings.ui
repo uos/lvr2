@@ -146,37 +146,6 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_histogram">
-      <attribute name="title">
-       <string>Histogram</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_4">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_9">
-         <property name="topMargin">
-          <number>50</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QPushButton" name="pushButton_h_close">
-           <property name="text">
-            <string>close</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButton_h_show">
-           <property name="text">
-            <string>show</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
     </widget>
    </item>
   </layout>

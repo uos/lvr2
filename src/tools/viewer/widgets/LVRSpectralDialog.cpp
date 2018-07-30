@@ -66,8 +66,6 @@ void LVRSpectralDialog::connectSignalsAndSlots()
 
     QObject::connect(m_spectralDialog->pushButton_channel_apply, SIGNAL(released()), this, SLOT(setTypeChannel()));
     QObject::connect(m_spectralDialog->pushButton_channel_close, SIGNAL(released()), this, SLOT(exitDialog()));
-    QObject::connect(m_spectralDialog->pushButton_h_close, SIGNAL(released()), this, SLOT(exitDialog()));
-    QObject::connect(m_spectralDialog->pushButton_h_show, SIGNAL(released()), this, SLOT(showhistogram()));
 }
 
 void LVRSpectralDialog::exitDialog()
