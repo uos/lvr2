@@ -733,7 +733,9 @@
    <addaction name="actionShow_Mesh"/>
    <addaction name="actionShow_Wireframe"/>
    <addaction name="separator"/>
+   <addaction name="actionShow_SpectralSlider"/>
    <addaction name="actionShow_SpectralColorGradient"/>
+   <addaction name="actionShow_SpectralPointPreview"/>
    <addaction name="actionShow_SpectralHistogram"/>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -1029,13 +1031,31 @@
     <string>Show Wireframe</string>
    </property>
   </action>
+  <action name="actionShow_SpectralSlider">
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_spectralsettings.png</normaloff>:/qv_spectralsettings.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show SpectralSlider Editor</string>
+   </property>
+  </action>
   <action name="actionShow_SpectralColorGradient">
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_spectralsettings.png</normaloff>:/qv_spectralsettings.png</iconset>
    </property>
    <property name="text">
-    <string>Set SpectralColorGradient</string>
+    <string>Show SpectralColorGradient Editor</string>
+   </property>
+  </action>
+  <action name="actionShow_SpectralPointPreview">
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_spectralsettings.png</normaloff>:/qv_spectralsettings.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show PointPreview</string>
    </property>
   </action>
   <action name="actionShow_SpectralHistogram">
@@ -1044,7 +1064,7 @@
      <normaloff>:/qv_spectralsettings.png</normaloff>:/qv_spectralsettings.png</iconset>
    </property>
    <property name="text">
-    <string>Set SpectralHistogram</string>
+    <string>Show SpectralHistogram</string>
    </property>
   </action>
   <action name="actionShow_Normals">
