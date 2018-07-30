@@ -102,6 +102,9 @@ public Q_SLOTS:
     void showColorDialog();
     void showAboutDialog(QAction*);
     void showTooltipDialog();
+    void showSpectralSliderDialog();
+    void showSpectralColorGradientDialog();
+    void showSpectralPointPreviewDialog();
     void showHistogram();
     void renameModelItem();
     void estimateNormals();
@@ -206,7 +209,9 @@ private:
     QAction*                            m_actionShow_Mesh;
     QAction*                            m_actionShow_Wireframe;
     QAction*                            m_actionShowBackgroundSettings;
+    QAction*                            m_actionShowSpectralSlider;
     QAction*                            m_actionShowSpectralColorGradient;
+    QAction*                            m_actionShowSpectralPointPreview;
     QAction*                            m_actionShowSpectralHistogram;
     // Sliders below tree widget
     QSlider*                            m_horizontalSliderPointSize;
