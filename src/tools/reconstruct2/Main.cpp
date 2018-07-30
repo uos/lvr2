@@ -18,9 +18,10 @@ int main(int argc, char** argv)
     lvr2::AsciiIO<VecT> io;
     lvr2::ModelPtr<VecT> model = io.read("scan.pts");
 
-    size_t n;
+    size_t n = model->m_pointCloud->numPoints();
+    std::cout << n << std::endl;
     unsigned w;
-    floatArr points = model->m_pointCloud->getFloatArray(n, w, "points");
+    floatArr points = model->m_pointCloud->getPointArray();
 
     std::ofstream out1("test.3d");
     for(size_t i = 0; i < n; i++)
@@ -31,10 +32,10 @@ int main(int argc, char** argv)
     VecT offset(100, 100, 100);
 
     std::ofstream out2("test1.3d");
-    PointBuffer2::FloatChannel chn = model->m_pointCloud->getFloatChannel("points");
+    ChannelHandler::FloatChannel chn = model->m_pointCloud->getFloatChannel("points");
     for(size_t i = 0; i < n; i++)
     {
-        chn[i] += VecT(100, 100, 100);
+        chn[i] = VecT(100, 100, 100);
         out2 << points[3 * i] << " " << points[3 * i + 1] << " " << points[3 * i + 2] << std::endl;
     }
 

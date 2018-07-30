@@ -204,8 +204,8 @@ ModelPtr<BaseVecT> AsciiIO<BaseVecT>::read(
         numIntensities = numPoints;
     }
 
-    model->m_pointCloud->addFloatChannel(points, "points", numPoints, 3);
-    model->m_pointCloud->addUCharChannel(pointColors, "colors", numColors, 3);
+    model->m_pointCloud->setPointArray(points, numPoints);
+    model->m_pointCloud->setColorArray(pointColors, numColors);
     model->m_pointCloud->addFloatChannel(pointIntensities, "intensities", numIntensities, 1);
 
     this->m_model = model;
@@ -301,7 +301,7 @@ void AsciiIO<BaseVecT>::save( std::string filename )
     floatArr   pointIntensities;
 
     unsigned w;
-    points = this->m_model->m_pointCloud->getFloatArray(pointcount, w, "points");
+    points = this->m_model->m_pointCloud->getPointArray();
 //    points = this->m_model->m_pointCloud->getIndexedPointArray( pointcount );
 
 
