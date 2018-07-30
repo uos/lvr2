@@ -679,29 +679,6 @@
       </size>
      </property>
     </widget>
-    <widget class="QCommandLinkButton" name="buttonSpectralsettings">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>160</y>
-       <width>251</width>
-       <height>40</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Set Spectralsettings</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../res/viewer.qrc">
-       <normaloff>:/qv_spectralsettings.png</normaloff>:/qv_spectralsettings.png</iconset>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>25</width>
-       <height>25</height>
-      </size>
-     </property>
-    </widget>
    </widget>
   </widget>
   <widget class="QToolBar" name="toolBar">
