@@ -102,8 +102,6 @@ public Q_SLOTS:
     void showColorDialog();
     void showAboutDialog(QAction*);
     void showTooltipDialog();
-    void showSpectralSettingsDialog();
-    void showSpectralColorGradientDialog();
     void showHistogram();
     void renameModelItem();
     void estimateNormals();

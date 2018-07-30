@@ -237,7 +237,6 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_buttonCreateMesh, SIGNAL(pressed()), this, SLOT(reconstructUsingMarchingCubes()));
     QObject::connect(m_buttonExportData, SIGNAL(pressed()), this, SLOT(exportSelectedModel()));
     QObject::connect(m_buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
-    QObject::connect(this->buttonSpectralsettings, SIGNAL(pressed()), this, SLOT(showSpectralSettingsDialog()));
 
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
@@ -903,7 +902,7 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
         for(QTreeWidgetItem* selected : treeWidget->selectedItems())
         {
             selected->setSelected(false);
-    }
+        }
         item->setSelected(true);
     }
     updateView();
@@ -1160,37 +1159,6 @@ void LVRMainWindow::showTooltipDialog()
     m_tooltipDialog->raise();
 }
 
-void LVRMainWindow::showSpectralColorGradientDialog()
-{
-    if (m_spectralColorGradientDialog)
-    {
-        m_spectralColorGradientDialog->exitDialog();    
-    }
-    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-    if(items.size() > 0)
-    {
-        QTreeWidgetItem* item = items.first();
-        LVRModelItem* model_item = getModelItem(item);
-        if(model_item != NULL)
-        {
-            PointBufferBridgePtr points = model_item->getModelBridge()->getPointBridge();
-            if(points->getNumPoints() && points->getPointBuffer()->hasPointSpectralChannels())
-            {
-                m_spectralColorGradientDialog = new LVRSpectralColorGradientDialog(treeWidget, this, points, m_renderer);        
-            }
-            else
-            {
-                showTooltipDialog();
-            }
-        }
-    }
-    else
-    {
-       showTooltipDialog(); 
-    }
-}
-
-
 void LVRMainWindow::showHistogram()
 {
   
@@ -1211,45 +1179,6 @@ void LVRMainWindow::showHistogram()
                 m_histogram=new LVRHistogram();
                 m_histogram->setPointBuffer(points->getPointBuffer());
                 m_histogram->sethistogram();   
-            }
-            else
-            {
-                showTooltipDialog();
-            }
-        }
-    }
-    else
-    {
-       showTooltipDialog(); 
-    }
-
-
-
-
-
-
-}
-
-
-
-
-void LVRMainWindow::showSpectralSettingsDialog()
-{
-    if (m_spectralDialog)
-    {
-        m_spectralDialog->exitDialog();    
-    }
-    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-    if(items.size() > 0)
-    {
-        QTreeWidgetItem* item = items.first();
-        LVRModelItem* model_item = getModelItem(item);
-        if(model_item != NULL)
-        {
-            PointBufferBridgePtr points = model_item->getModelBridge()->getPointBridge();
-            if(points->getNumPoints() && points->getPointBuffer()->hasPointSpectralChannels())
-            {
-                m_spectralDialog = new LVRSpectralDialog(treeWidget, this, points, m_renderer);        
             }
             else
             {
