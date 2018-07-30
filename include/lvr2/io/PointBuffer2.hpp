@@ -18,8 +18,19 @@ class AttributeChannel
 public:
     using DataPtr = boost::shared_array<T>;
 
-    AttributeChannel(size_t n, unsigned width);
-    AttributeChannel(size_t n, unsigned width, DataPtr ptr);
+    AttributeChannel(size_t n, unsigned width)
+        : m_width(width), m_numAttributes(n)
+    {
+        m_data = DataPtr(new T[m_numAttributes * width]);
+    }
+
+    AttributeChannel(size_t n, unsigned width, DataPtr ptr)
+        : m_numAttributes(n),
+          m_width(width),
+          m_data(ptr)
+    {
+
+    }
 
     DataPtr     get() { return m_data;}
     unsigned    width() { return m_width;}
@@ -32,11 +43,11 @@ private:
 };
 
 template<typename T>
-class AttributeHandle
+class AttributeProxy
 {
 public:
     template<typename BaseVecT>
-    AttributeHandle operator=(const BaseVecT& v)
+    AttributeProxy operator=(const BaseVecT& v)
     {
         if( m_ptr && (m_w > 2) && (&v != this))
         {
@@ -47,9 +58,9 @@ public:
         return *this;
     }
 
-    AttributeHandle(T* pos = 0, unsigned w = 0) : m_ptr(pos), m_w(0) {}
+    AttributeProxy(T* pos = 0, unsigned w = 0) : m_ptr(pos), m_w(0) {}
 private:
-    AttributeHandle();
+    AttributeProxy();
     T*              m_ptr;
     unsigned        m_w;
 };
@@ -57,19 +68,30 @@ private:
 
 class PointBuffer2
 {
+public:
     using FloatChannel = AttributeChannel<float>;
     using UCharChannel = AttributeChannel<unsigned char>;
 
-    using FloatHandle = AttributeHandle<float>;
-    using UCharHandle = AttributeHandle<unsigned char>;
+    using FloatProxy = AttributeProxy<float>;
+    using UCharProxy = AttributeProxy<unsigned char>;
 
     using FloatChannelPtr = std::shared_ptr<FloatChannel>;
-    using ucharChannelPtr = std::shared_ptr<UCharChannel>;
+    using UCharChannelPtr = std::shared_ptr<UCharChannel>;
 
     PointBuffer2(floatArr points, size_t n);
+    PointBuffer2(floatArr points, floatArr normals, size_t n);
 
-    void addFloatChannel(std::string name, size_t n, unsigned width);
-    void addUCharChannel(std::string name, size_t n, unsigned width);
+    void createFloatChannel(
+            FloatChannelPtr data,
+            std::string name,
+            size_t n,
+            unsigned width);
+
+    void createUCharChannel(
+            UCharChannelPtr data,
+            std::string name,
+            size_t n,
+            unsigned width);
 
     bool hasUCharChannel(std::string name);
     bool hasFloatChannel(std::string name);
@@ -77,16 +99,28 @@ class PointBuffer2
     unsigned ucharChannelWidth(std::string name);
     unsigned floatChannelWidth(std::string name);
 
-    FloatHandle getFloatHandle(int idx, unsigned w);
-    UCharHandle getUCharHandle(int idx, unsigned w);
+    FloatProxy getFloatHandle(int idx, unsigned w);
+    UCharProxy getUCharHandle(int idx, unsigned w);
 
-    FloatHandle point(int idx);
-    FloatHandle normal(int idx);
+    FloatProxy point(int idx);
+    FloatProxy normal(int idx);
 
 private:
 
+    void addFloatChannel(FloatChannelPtr data, std::string name);
+    void addUCharChannel(UCharChannelPtr data, std::string name);
+
+    // Point channel, 'cached' to allow faster access
+    FloatChannelPtr     m_points;
+
+    // Number of points in buffer
+    size_t              m_numPoints;
+
     std::map<std::string, FloatChannelPtr>  m_floatChannels;
-    std::map<std::string, ucharChannelPtr>  m_ucharChannels;
+    std::map<std::string, UCharChannelPtr>  m_ucharChannels;
+
+    using FloatChannelMap = std::map<std::string, FloatChannelPtr>;
+    using UCharChannelMap = std::map<std::string, UCharChannelPtr>;
 
 };
 

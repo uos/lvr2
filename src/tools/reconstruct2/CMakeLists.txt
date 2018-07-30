@@ -5,6 +5,7 @@
 set(RECONSTRUCT_SOURCES
     Options.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/AsciiIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PointBuffer2.cpp
     Main.cpp
 )
 
