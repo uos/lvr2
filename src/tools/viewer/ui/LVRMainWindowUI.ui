@@ -1013,6 +1013,12 @@
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_spectralsettings.png</normaloff>:/qv_spectralsettings.png</iconset>
    </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Show SpectralSlider Editor</string>
    </property>
@@ -1022,6 +1028,12 @@
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_spectralsettings.png</normaloff>:/qv_spectralsettings.png</iconset>
    </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Show SpectralColorGradient Editor</string>
    </property>
@@ -1029,7 +1041,13 @@
   <action name="actionShow_SpectralPointPreview">
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
-     <normaloff>:/qv_spectralsettings.png</normaloff>:/qv_spectralsettings.png</iconset>
+     <normaloff>:/qv_point.png</normaloff>:/qv_point.png</iconset>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>Show PointPreview</string>
@@ -1038,7 +1056,7 @@
   <action name="actionShow_SpectralHistogram">
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
-     <normaloff>:/qv_spectralsettings.png</normaloff>:/qv_spectralsettings.png</iconset>
+     <normaloff>:/qv_histogram.png</normaloff>:/qv_histogram.png</iconset>
    </property>
    <property name="text">
     <string>Show SpectralHistogram</string>
