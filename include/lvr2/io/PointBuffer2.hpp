@@ -7,10 +7,58 @@
 #include <string>
 
 #include <boost/shared_array.hpp>
-
+#include <iostream>
 
 namespace lvr2
 {
+
+template<typename T>
+class AttributeProxy
+{
+public:
+    template<typename BaseVecT>
+    AttributeProxy operator=(const BaseVecT& v)
+    {
+        if( m_ptr && (m_w > 2))
+        {
+            m_ptr[0] = v.x;
+            m_ptr[1] = v.y;
+            m_ptr[2] = v.z;
+        }
+        return *this;
+    }
+
+    template<typename BaseVecT>
+    AttributeProxy operator+=(const BaseVecT& v)
+    {
+        if( m_ptr && (m_w > 2))
+        {
+            m_ptr[0] += v.x;
+            m_ptr[1] += v.y;
+            m_ptr[2] += v.z;
+        }
+        return *this;
+    }
+
+    AttributeProxy(T* pos = nullptr, unsigned w = 0) : m_ptr(pos), m_w(w) {}
+
+    T& operator[](int i)
+    {
+        if(m_ptr && (i < m_w))
+        {
+            return m_ptr[i];
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+private:
+
+    T*              m_ptr;
+    unsigned        m_w;
+};
 
 template<typename T>
 class AttributeChannel
@@ -32,7 +80,13 @@ public:
 
     }
 
-    DataPtr     get() { return m_data;}
+    AttributeProxy<T> operator[](const unsigned& idx)
+    {
+        T* ptr = m_data.get();
+        return AttributeProxy<T>(&ptr[idx * m_width], m_width);
+    }
+
+    DataPtr&     get() { return m_data;}
     unsigned    width() { return m_width;}
     size_t      n() { return m_numAttributes;}
 
@@ -42,28 +96,7 @@ private:
     DataPtr         m_data;
 };
 
-template<typename T>
-class AttributeProxy
-{
-public:
-    template<typename BaseVecT>
-    AttributeProxy operator=(const BaseVecT& v)
-    {
-        if( m_ptr && (m_w > 2) && (&v != this))
-        {
-            m_ptr[0] = v.x;
-            m_ptr[1] = v.y;
-            m_ptr[2] = v.z;
-        }
-        return *this;
-    }
 
-    AttributeProxy(T* pos = nullptr, unsigned w = 0) : m_ptr(pos), m_w(0) {}
-private:
-
-    T*              m_ptr;
-    unsigned        m_w;
-};
 
 
 class PointBuffer2
@@ -78,16 +111,30 @@ public:
     using FloatChannelPtr = std::shared_ptr<FloatChannel>;
     using UCharChannelPtr = std::shared_ptr<UCharChannel>;
 
+    PointBuffer2();
     PointBuffer2(floatArr points, size_t n);
     PointBuffer2(floatArr points, floatArr normals, size_t n);
 
-    void createFloatChannel(
+
+    void addFloatChannel(
+            floatArr array,
+            std::string name,
+            size_t n,
+            unsigned width);
+
+    void addUCharChannel(
+            ucharArr array,
+            std::string name,
+            size_t n,
+            unsigned width);
+
+    void addFloatChannel(
             FloatChannelPtr data,
             std::string name,
             size_t n,
             unsigned width);
 
-    void createUCharChannel(
+    void addUCharChannel(
             UCharChannelPtr data,
             std::string name,
             size_t n,
@@ -104,6 +151,14 @@ public:
 
     FloatProxy point(int idx);
     FloatProxy normal(int idx);
+
+    FloatProxy operator[](size_t idx);
+
+    floatArr getFloatArray(size_t& n, unsigned& w, const std::string name);
+    ucharArr getUcharArray(size_t& n, unsigned& w, const std::string name);
+
+    FloatChannel& getFloatChannel(std::string name);
+    UCharChannel& getUCharChannel(std::string name);
 
 private:
 
@@ -123,6 +178,8 @@ private:
     using UCharChannelMap = std::map<std::string, UCharChannelPtr>;
 
 };
+
+using PointBuffer2Ptr = std::shared_ptr<PointBuffer2>;
 
 } // namespace lvr2
 

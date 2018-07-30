@@ -27,7 +27,7 @@
 #define MODEL_H_
 
 #include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/io/PointBuffer.hpp>
+#include <lvr2/io/PointBuffer2.hpp>
 
 #include <boost/shared_ptr.hpp>
 
@@ -44,20 +44,20 @@ class Model
 {
 public:
 
-    Model( PointBufferPtr<BaseVecT> p = PointBufferPtrr<BaseVecT>(),
-           MeshBufferPtrr<BaseVecT> m = MeshBufferPtrr<BaseVecT>() )
+    Model( PointBuffer2Ptr p = PointBuffer2Ptr(),
+           MeshBufferPtr<BaseVecT> m = MeshBufferPtr<BaseVecT>() )
     {
         m_pointCloud = p;
         m_mesh = m;
     }
 
-    Model( MeshBufferPtrr<BaseVecT> m, PointBufferPtrr<BaseVecT>p )
+    Model( MeshBufferPtr<BaseVecT> m, PointBuffer2Ptr p )
     {
         m_pointCloud = p;
         m_mesh = m;
     }
 
-    Model( MeshBufferPtrr<BaseVecT> m )
+    Model( MeshBufferPtr<BaseVecT> m )
     {
         m_pointCloud.reset();
         m_mesh = m;
@@ -65,11 +65,12 @@ public:
 
     virtual ~Model() {}
 
-    PointBufferPtr<BaseVecT>      m_pointCloud;
-    MeshBufferPtr<BaseVecT>       m_mesh;
+    PointBuffer2Ptr             m_pointCloud;
+    MeshBufferPtr<BaseVecT>     m_mesh;
 };
 
-
+template<typename T>
+using ModelPtr = std::shared_ptr<Model<T>>;
 
 } // namespace lvr
 
