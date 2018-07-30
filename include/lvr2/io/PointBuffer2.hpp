@@ -58,9 +58,9 @@ public:
         return *this;
     }
 
-    AttributeProxy(T* pos = 0, unsigned w = 0) : m_ptr(pos), m_w(0) {}
+    AttributeProxy(T* pos = nullptr, unsigned w = 0) : m_ptr(pos), m_w(0) {}
 private:
-    AttributeProxy();
+
     T*              m_ptr;
     unsigned        m_w;
 };
@@ -99,8 +99,8 @@ public:
     unsigned ucharChannelWidth(std::string name);
     unsigned floatChannelWidth(std::string name);
 
-    FloatProxy getFloatHandle(int idx, unsigned w);
-    UCharProxy getUCharHandle(int idx, unsigned w);
+    FloatProxy getFloatHandle(int idx, const std::string& name);
+    UCharProxy getUCharHandle(int idx, const std::string& name);
 
     FloatProxy point(int idx);
     FloatProxy normal(int idx);

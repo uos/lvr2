@@ -27,12 +27,24 @@ PointBuffer2::PointBuffer2(floatArr points, floatArr normals, size_t n) : PointB
 
 void PointBuffer2::createFloatChannel(FloatChannelPtr data, std::string name, size_t n, unsigned width)
 {
-
+    floatArr array(new float(width * n));
+    for(size_t i = 0; i < n * width; i++)
+    {
+        array[i] = 0;
+    }
+    FloatChannelPtr ptr(new FloatChannel(n, width, array));
+    addFloatChannel(ptr, name);
 }
 
 void PointBuffer2::createUCharChannel(UCharChannelPtr data, std::string name, size_t n, unsigned width)
 {
-
+    ucharArr array(new unsigned char(width * n));
+    for(size_t i = 0; i < n * width; i++)
+    {
+        array[i] = 0;
+    }
+    UCharChannelPtr ptr(new UCharChannel(n, width, array));
+    addUCharChannel(ptr, name);
 }
 
 void PointBuffer2::addFloatChannel(FloatChannelPtr data, std::string name)
@@ -95,24 +107,91 @@ unsigned PointBuffer2::floatChannelWidth(std::string name)
     }
 }
 
-PointBuffer2::FloatProxy PointBuffer2::getFloatHandle(int idx, unsigned w)
+PointBuffer2::FloatProxy PointBuffer2::getFloatHandle(int idx, const std::string& name)
 {
-
+    auto it = m_floatChannels.find(name);
+    if(it != m_floatChannels.end())
+    {
+        FloatChannelPtr ptr = it->second;
+        if(ptr)
+        {
+            if(idx < ptr->n())
+            {
+                floatArr array = ptr->get();
+                return FloatProxy(&array[idx], ptr->width());
+            }
+            else
+            {
+                std::cout << timestamp << "getFloatHandle(): Index " << idx
+                          << " / " << ptr->n() << " out of bounds." << std::endl;
+                return FloatProxy();
+            }
+        }
+        else
+        {
+            std::cout << timestamp << "getFloatHandle(): Found nullptr." << std::endl;
+            return FloatProxy();
+        }
+    }
+    else
+    {
+        std::cout << timestamp << "getFloatHandle(): Could not find channel'"
+                  << name << "'." << std::endl;
+        return FloatProxy();
+    }
 }
 
-PointBuffer2::UCharProxy PointBuffer2::getUCharHandle(int idx, unsigned w)
+PointBuffer2::UCharProxy PointBuffer2::getUCharHandle(int idx, const std::string& name)
 {
-
+    auto it = m_ucharChannels.find(name);
+    if(it != m_ucharChannels.end())
+    {
+        UCharChannelPtr ptr = it->second;
+        if(ptr)
+        {
+            if(idx < ptr->n())
+            {
+                ucharArr array = ptr->get();
+                return UCharProxy(&array[idx], ptr->width());
+            }
+            else
+            {
+                std::cout << timestamp << "getUCharHandle(): Index " << idx
+                          << " / " << ptr->n() << " out of bounds." << std::endl;
+                return UCharProxy();
+            }
+        }
+        else
+        {
+            std::cout << timestamp << "getUCharHandle(): Found nullptr." << std::endl;
+            return UCharProxy();
+        }
+    }
+    else
+    {
+        std::cout << timestamp << "getUCharHandle(): Could not find channel'"
+                  << name << "'." << std::endl;
+        return UCharProxy();
+    }
 }
 
 PointBuffer2::FloatProxy PointBuffer2::point(int idx)
 {
-
+    if(idx < m_numPoints)
+    {
+        return FloatProxy(&(m_points->get())[idx], m_points->width());
+    }
+    else
+    {
+        std::cout << timestamp << "PointBuffer2::point(): Index " << idx
+                  << " / " << m_numPoints << " out of bounds." << std::endl;
+        return FloatProxy();
+    }
 }
 
 PointBuffer2::FloatProxy PointBuffer2::normal(int idx)
 {
-
+    return getFloatHandle(idx, "normals");
 }
 
 }
