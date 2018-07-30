@@ -450,6 +450,7 @@
    <addaction name="actionShow_Normals"/>
    <addaction name="actionShow_Mesh"/>
    <addaction name="actionShow_Wireframe"/>
+   <addaction name="separator"/>
    <addaction name="actionShow_SpectralColorGradient"/>
   </widget>
   <widget class="QMenuBar" name="menubar">
