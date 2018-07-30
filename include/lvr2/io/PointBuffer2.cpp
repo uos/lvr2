@@ -1,5 +1,5 @@
 #include <lvr2/io/PointBuffer2.hpp>
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/Timestamp.hpp>
 
 #include <iostream>
 
@@ -40,7 +40,7 @@ void PointBuffer2::addFloatChannel(FloatChannelPtr data, std::string name)
     auto ret = m_floatChannels.insert(std::pair<std::string, FloatChannelPtr>(name, data));
     if(!ret.second )
     {
-        std::cout << lvr::timestamp << "PointBuffer: Float channel '"
+        std::cout << timestamp << "PointBuffer: Float channel '"
                   << name << "' already exist. Will not add data."
                   << std::endl;
     }
@@ -51,7 +51,7 @@ void PointBuffer2::addUCharChannel(UCharChannelPtr data, std::string name)
     auto ret = m_ucharChannels.insert(std::pair<std::string, UCharChannelPtr>(name, data));
     if(!ret.second)
     {
-        std::cout << lvr::timestamp << "PointBuffer: UChar channel '"
+        std::cout << timestamp << "PointBuffer: UChar channel '"
                   << name << "' already exist. Will not add data."
                   << std::endl;
     }
