@@ -1011,7 +1011,7 @@
   <action name="actionShow_SpectralSlider">
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
-     <normaloff>:/qv_spectralsettings.png</normaloff>:/qv_spectralsettings.png</iconset>
+     <normaloff>:/qv_spectralchannel.png</normaloff>:/qv_spectralchannel.png</iconset>
    </property>
    <property name="checkable">
     <bool>true</bool>

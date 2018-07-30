@@ -36,5 +36,6 @@
         <file>qv_spectralsettings.png</file>
         <file>qv_histogram.png</file>
         <file>qv_point.png</file>
+        <file>qv_spectralchannel.png</file>
     </qresource>
 </RCC>
