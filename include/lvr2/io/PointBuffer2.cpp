@@ -59,22 +59,40 @@ void PointBuffer2::addUCharChannel(UCharChannelPtr data, std::string name)
 
 bool PointBuffer2::hasUCharChannel(std::string name)
 {
-
+    auto it = m_ucharChannels.find(name);
+    return !(it == m_ucharChannels.end());
 }
 
 bool PointBuffer2::hasFloatChannel(std::string name)
 {
-
+    auto it = m_floatChannels.find(name);
+    return !(it == m_floatChannels.end());
 }
 
 unsigned PointBuffer2::ucharChannelWidth(std::string name)
 {
-
+    auto it = m_ucharChannels.find(name);
+    if(it == m_ucharChannels.end())
+    {
+        return 0;
+    }
+    else
+    {
+        return it->second->width();
+    }
 }
 
 unsigned PointBuffer2::floatChannelWidth(std::string name)
 {
-
+    auto it = m_floatChannels.find(name);
+    if(it == m_floatChannels.end())
+    {
+        return 0;
+    }
+    else
+    {
+        return it->second->width();
+    }
 }
 
 PointBuffer2::FloatProxy PointBuffer2::getFloatHandle(int idx, unsigned w)
