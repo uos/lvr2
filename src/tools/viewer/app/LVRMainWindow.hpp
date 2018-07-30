@@ -119,6 +119,7 @@ public Q_SLOTS:
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
     void changeShading(int shader);
+    void changeSpectralColor();
     void assertToggles();
     void togglePoints(bool checkboxState);
     void toggleNormals(bool checkboxState);
@@ -154,8 +155,6 @@ private:
     void connectSignalsAndSlots();
 
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
-    LVRSpectralDialog*                          m_spectralDialog;
-    LVRSpectralColorGradientDialog*             m_spectralColorGradientDialog;
     LVRHistogram*                               m_histogram;
     LVRPointInfo*                               m_pointInfoDialog;
     QDialog*                                    m_aboutDialog;

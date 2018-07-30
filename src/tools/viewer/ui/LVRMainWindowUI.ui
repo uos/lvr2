@@ -1013,12 +1013,6 @@
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_spectralchannel.png</normaloff>:/qv_spectralchannel.png</iconset>
    </property>
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
    <property name="text">
     <string>Show SpectralSlider Editor</string>
    </property>
@@ -1028,12 +1022,6 @@
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_spectralsettings.png</normaloff>:/qv_spectralsettings.png</iconset>
    </property>
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
    <property name="text">
     <string>Show SpectralColorGradient Editor</string>
    </property>
@@ -1042,12 +1030,6 @@
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_point.png</normaloff>:/qv_point.png</iconset>
-   </property>
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
    </property>
    <property name="text">
     <string>Show PointPreview</string>

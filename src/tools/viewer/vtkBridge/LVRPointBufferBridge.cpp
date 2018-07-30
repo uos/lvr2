@@ -97,6 +97,11 @@ void LVRPointBufferBridge::setSpectralChannels(size_t r_channel, size_t g_channe
     {
         return;
     }
+    if (r_channel == m_spectralChannels[0] && g_channel == m_spectralChannels[1] && b_channel == m_spectralChannels[2]
+        && use_r == m_useSpectralChannel[0] && use_g == m_useSpectralChannel[1] && use_b == m_useSpectralChannel[2])
+    {
+        return;
+    }
 
     m_spectralChannels[0] = std::min((size_t)r_channel, n_channels - 1);
     m_spectralChannels[1] = std::min((size_t)g_channel, n_channels - 1);

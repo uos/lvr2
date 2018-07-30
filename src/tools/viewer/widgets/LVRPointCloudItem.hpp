@@ -51,6 +51,7 @@ public:
     void    setVisibility(bool &visiblity);
     size_t  getNumPoints();
     PointBufferPtr getPointBuffer();
+    PointBufferBridgePtr getPointBufferBridge();
     vtkSmartPointer<vtkActor> getActor();
 
 protected:
