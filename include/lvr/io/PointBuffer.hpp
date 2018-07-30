@@ -417,6 +417,11 @@ public:
     bool hasPointSpectralChannels() { return m_numPointSpectralChannels != 0;}
 
     /**
+     * @brief   Returns the number of spectral channels
+     */
+    size_t getNumSpectralChannels() { return m_numSpectralChannels; }
+
+    /**
      * @brief   Returns the Wavelength of channel 0 in nm
      */
     int getMinWavelength() { return m_minWavelength; }

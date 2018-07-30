@@ -18,6 +18,7 @@
     - Show PointPreviewDock (on/off)
     - Show Histogramwindow
   - dockfenster für:
-    - slider
     - colorgradient
     - pointpreview
+  - switchen zwischen slider und gradient
+  

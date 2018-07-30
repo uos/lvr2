@@ -152,6 +152,11 @@ PointBufferPtr LVRPointCloudItem::getPointBuffer()
     return m_pointBridge->getPointBuffer();
 }
 
+PointBufferBridgePtr LVRPointCloudItem::getPointBufferBridge()
+{
+    return m_pointBridge;
+}
+
 vtkSmartPointer<vtkActor> LVRPointCloudItem::getActor()
 {
 	return m_pointBridge->getPointCloudActor();

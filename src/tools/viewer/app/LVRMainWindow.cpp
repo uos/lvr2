@@ -58,8 +58,6 @@ LVRMainWindow::LVRMainWindow()
     Ui::TooltipDialog tooltipDialog;
     tooltipDialog.setupUi(m_tooltipDialog);
 
-    m_spectralDialog = nullptr;
-    m_spectralColorGradientDialog = nullptr;
     m_pointInfoDialog = nullptr;
     m_histogram=nullptr;
 
@@ -172,14 +170,6 @@ LVRMainWindow::~LVRMainWindow()
     {
         delete m_correspondanceDialog;
     }
-    if (m_spectralDialog)
-    {
-        delete m_spectralDialog;
-    }
-    if (m_spectralColorGradientDialog)
-    {
-        delete m_spectralColorGradientDialog;
-    }
     delete m_incompatibilityBox;
 }
 
@@ -245,6 +235,13 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_buttonCreateMesh, SIGNAL(pressed()), this, SLOT(reconstructUsingMarchingCubes()));
     QObject::connect(m_buttonExportData, SIGNAL(pressed()), this, SLOT(exportSelectedModel()));
     QObject::connect(m_buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
+
+    QObject::connect(horizontalSlider_Hyperspectral_red, SIGNAL(valueChanged(int)), this, SLOT(changeSpectralColor()));
+    QObject::connect(horizontalSlider_Hyperspectral_green, SIGNAL(valueChanged(int)), this, SLOT(changeSpectralColor()));
+    QObject::connect(horizontalSlider_Hyperspectral_blue, SIGNAL(valueChanged(int)), this, SLOT(changeSpectralColor()));  
+    QObject::connect(checkBox_hred, SIGNAL(stateChanged(int)), this, SLOT(changeSpectralColor()));
+    QObject::connect(checkBox_hgreen, SIGNAL(stateChanged(int)), this, SLOT(changeSpectralColor()));  
+    QObject::connect(checkBox_hblue, SIGNAL(stateChanged(int)), this, SLOT(changeSpectralColor()));  
 
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
@@ -362,6 +359,9 @@ void LVRMainWindow::removeArrow(LVRVtkArrow* a)
 
 void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem, int column)
 {
+    LVRPointCloudItem* point_item = nullptr;
+    LVRMeshItem* mesh_item = nullptr;
+    
     if(treeWidgetItem->type() == LVRModelItemType)
     {
         QTreeWidgetItemIterator it(treeWidgetItem);
@@ -372,21 +372,11 @@ void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem, int column)
 
             if(child_item->type() == LVRPointCloudItemType && child_item->parent()->isSelected())
             {
-                LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(child_item);
-                m_horizontalSliderPointSize->setEnabled(true);
-                m_horizontalSliderPointSize->setValue(model_item->getPointSize());
-                int transparency = ((float)1 - model_item->getOpacity()) * 100;
-                m_horizontalSliderTransparency->setEnabled(true);
-                m_horizontalSliderTransparency->setValue(transparency);
+                point_item = static_cast<LVRPointCloudItem*>(child_item);
             }
             else if(child_item->type() == LVRMeshItemType && child_item->parent()->isSelected())
             {
-                LVRMeshItem* model_item = static_cast<LVRMeshItem*>(child_item);
-                m_horizontalSliderPointSize->setEnabled(false);
-                m_horizontalSliderPointSize->setValue(1);
-                int transparency = ((float)1 - model_item->getOpacity()) * 100;
-                m_horizontalSliderTransparency->setEnabled(true);
-                m_horizontalSliderTransparency->setValue(transparency);
+                mesh_item = static_cast<LVRMeshItem*>(child_item);
             }
 
             ++it;
@@ -394,26 +384,58 @@ void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem, int column)
     }
     else if(treeWidgetItem->type() == LVRPointCloudItemType)
     {
-        LVRPointCloudItem* model_item = static_cast<LVRPointCloudItem*>(treeWidgetItem);
-        m_horizontalSliderPointSize->setEnabled(true);
-        m_horizontalSliderPointSize->setValue(model_item->getPointSize());
-        int transparency = ((float)1 - model_item->getOpacity()) * 100;
-        m_horizontalSliderTransparency->setEnabled(true);
-        m_horizontalSliderTransparency->setValue(transparency);
+        point_item = static_cast<LVRPointCloudItem*>(treeWidgetItem);
     }
     else if(treeWidgetItem->type() == LVRMeshItemType)
     {
-        LVRMeshItem* model_item = static_cast<LVRMeshItem*>(treeWidgetItem);
-        m_horizontalSliderPointSize->setEnabled(false);
-        m_horizontalSliderPointSize->setValue(1);
-        int transparency = ((float)1 - model_item->getOpacity()) * 100;
+        mesh_item = static_cast<LVRMeshItem*>(treeWidgetItem);
+    }
+
+    if (point_item)
+    {
+        m_horizontalSliderPointSize->setEnabled(true);
+        m_horizontalSliderPointSize->setValue(point_item->getPointSize());
+        int transparency = ((float)1 - point_item->getOpacity()) * 100;
         m_horizontalSliderTransparency->setEnabled(true);
         m_horizontalSliderTransparency->setValue(transparency);
+
+        size_t r, g, b, n_channels;
+        bool use_r, use_g, use_b;
+        point_item->getPointBufferBridge()->getSpectralChannels(r, g, b, use_r, use_g, use_b);
+        n_channels = point_item->getPointBuffer()->getNumSpectralChannels();
+
+        this->dockWidgetSpectralSliderSettingsContents->setEnabled(false); // disable to stop changeSpectralColor from re-rendering 6 times
+        this->horizontalSlider_Hyperspectral_red->setMaximum(n_channels - 1);
+        this->horizontalSlider_Hyperspectral_green->setMaximum(n_channels - 1);
+        this->horizontalSlider_Hyperspectral_blue->setMaximum(n_channels - 1);
+        this->horizontalSlider_Hyperspectral_red->setValue(r);
+        this->horizontalSlider_Hyperspectral_green->setValue(g);
+        this->horizontalSlider_Hyperspectral_blue->setValue(b);
+        this->horizontalSlider_Hyperspectral_red->setEnabled(use_r);
+        this->horizontalSlider_Hyperspectral_green->setEnabled(use_g);
+        this->horizontalSlider_Hyperspectral_blue->setEnabled(use_b);
+        this->checkBox_hred->setChecked(use_r);
+        this->checkBox_hgreen->setChecked(use_g);
+        this->checkBox_hblue->setChecked(use_b);
+        this->dockWidgetSpectralSliderSettingsContents->setEnabled(true);
     }
     else
     {
         m_horizontalSliderPointSize->setEnabled(false);
         m_horizontalSliderPointSize->setValue(1);
+
+        this->dockWidgetSpectralSliderSettingsContents->setEnabled(false);
+    }
+
+    if (mesh_item)
+    {
+        int transparency = ((float)1 - mesh_item->getOpacity()) * 100;
+        m_horizontalSliderTransparency->setEnabled(true);
+        m_horizontalSliderTransparency->setValue(transparency);
+    }
+
+    if (!point_item && !mesh_item)
+    {
         m_horizontalSliderTransparency->setEnabled(false);
         m_horizontalSliderTransparency->setValue(0);
     }
@@ -560,6 +582,8 @@ void LVRMainWindow::loadModel()
 
     if(filenames.size() > 0)
     {
+        QTreeWidgetItem* lastItem = nullptr;
+
         QStringList::Iterator it = filenames.begin();
         while(it != filenames.end())
         {
@@ -574,12 +598,18 @@ void LVRMainWindow::loadModel()
             LVRModelItem* item = new LVRModelItem(bridge, base);
             this->treeWidget->addTopLevelItem(item);
             item->setExpanded(true);
+            lastItem = item;
+            ++it;
+        }
+
+        if (lastItem != nullptr)
+        {
             for(QTreeWidgetItem* selected : treeWidget->selectedItems())
             {
                 selected->setSelected(false);
             }
-            item->setSelected(true);
-            ++it;
+            lastItem->setSelected(true);
+            restoreSliders(lastItem, 0);
         }
 
         assertToggles();
@@ -893,6 +923,8 @@ void LVRMainWindow::toggleWireframe(bool checkboxState)
 
 void LVRMainWindow::parseCommandLine(int argc, char** argv)
 {
+    QTreeWidgetItem* lastItem = nullptr;
+
     for(int i = 1; i < argc; i++)
     {
         // Load model and generate vtk representation
@@ -907,12 +939,19 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
         LVRModelItem* item = new LVRModelItem(bridge, base);
         this->treeWidget->addTopLevelItem(item);
         item->setExpanded(true);
+        lastItem = item;
+    }
+
+    if (lastItem != nullptr)
+    {
         for(QTreeWidgetItem* selected : treeWidget->selectedItems())
         {
             selected->setSelected(false);
         }
-        item->setSelected(true);
+        lastItem->setSelected(true);
+        restoreSliders(lastItem, 0);
     }
+
     updateView();
     assertToggles();
 
@@ -1184,11 +1223,6 @@ void LVRMainWindow::showSpectralPointPreviewDialog()
 
 void LVRMainWindow::showHistogram()
 {
-  
-     if (m_spectralColorGradientDialog)
-    {
-        m_spectralColorGradientDialog->exitDialog();    
-    }
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
     {
@@ -1243,6 +1277,38 @@ void LVRMainWindow::showPointInfoDialog(vtkActor* actor, int point)
     }
     m_pointInfoDialog->setPointBuffer(pointBridge->getPointBuffer());
     m_pointInfoDialog->setPoint(point);
+}
+
+void LVRMainWindow::changeSpectralColor()
+{
+    if (!this->dockWidgetSpectralSliderSettingsContents->isEnabled())
+    {
+        return;
+    }
+
+	QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+	if(items.size() > 0)
+	{
+		QTreeWidgetItem* item = items.first();
+		LVRModelItem* model_item = getModelItem(item);
+
+		size_t r = this->horizontalSlider_Hyperspectral_red->value();
+		size_t g = this->horizontalSlider_Hyperspectral_green->value();
+		size_t b = this->horizontalSlider_Hyperspectral_blue->value();
+
+		bool use_r = this->checkBox_hred->isChecked();
+		bool use_g = this->checkBox_hgreen->isChecked();
+		bool use_b = this->checkBox_hblue->isChecked();
+
+		model_item->getModelBridge()->getPointBridge()->setSpectralChannels(r, g, b, use_r, use_g, use_b);
+
+		m_renderer->GetRenderWindow()->Render();
+
+        this->horizontalSlider_Hyperspectral_red->setEnabled(use_r);
+        this->horizontalSlider_Hyperspectral_green->setEnabled(use_g);
+        this->horizontalSlider_Hyperspectral_blue->setEnabled(use_b);
+    }
+
 }
 
 
