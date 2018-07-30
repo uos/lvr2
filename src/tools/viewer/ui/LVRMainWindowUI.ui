@@ -112,7 +112,7 @@
     </size>
    </property>
    <property name="features">
-    <set>QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetVerticalTitleBar</set>
+    <set>QDockWidget::DockWidgetFeatureMask</set>
    </property>
    <property name="windowTitle">
     <string>Render Settings</string>
@@ -277,7 +277,7 @@
    <property name="minimumSize">
     <size>
      <width>299</width>
-     <height>150</height>
+     <height>180</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -397,7 +397,7 @@
    <property name="minimumSize">
     <size>
      <width>299</width>
-     <height>150</height>
+     <height>200</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -549,7 +549,7 @@
      <property name="sizeConstraint">
       <enum>QLayout::SetDefaultConstraint</enum>
      </property>
-     <item row="4" column="0">
+     <item>
       <widget class="QGraphicsView" name="graphicsView"/>
      </item>
     </layout>
