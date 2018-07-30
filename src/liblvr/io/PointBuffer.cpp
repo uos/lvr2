@@ -259,12 +259,16 @@ int PointBuffer::numWavelengthsPerChannel()
 	return (m_maxWavelength - m_minWavelength) / m_numSpectralChannels;
 }
 
-int PointBuffer::getChannel(int wavelength)
+int PointBuffer::getChannel(int wavelength, int fallback)
 {
+	if (!hasPointSpectralChannels())
+	{
+		return fallback;
+	}
 	int channel = (wavelength - m_minWavelength) / numWavelengthsPerChannel();
 	if (channel < 0 || channel >= m_numSpectralChannels)
 	{
-		return -1;
+		return fallback;
 	}
 	return channel;
 }

@@ -10,8 +10,3 @@
   - aufräumen _(Treewidget größe halbieren)_
   - Itensity sachen evtl. als tab austauschen und umschalten zu PunktInfoDiagramm vorschau
     - bei click auf vorschau wird das Diagramm im großen fenster angezeigt
-    
-## Erweiterung: NDVI
-  - NDVI Wert errechnen und als Colorgradient mappen
-  - Auswählbar als checkbox
-  - Slider für wellenlängen deaktivieren

@@ -433,12 +433,13 @@ public:
     int numWavelengthsPerChannel();
 
     /**
-     * @brief   Returns the channel index of the given wavelength, or -1 if wavelength
-     *          is not in [minWavelength, maxWavelength)
+     * @brief   Returns the channel index of the given wavelength, or fallback if
+     *          wavelength is not in [minWavelength, maxWavelength)
      *
      * @param wavelength the wavelength in nm
+     * @param fallback the channel that will be returned for unsupported wavelengths
      */
-    int getChannel(int wavelength);
+    int getChannel(int wavelength, int fallback = -1);
 
     /**
      * @brief   Returns the wavelength index of the given channel, or -1 if channel
