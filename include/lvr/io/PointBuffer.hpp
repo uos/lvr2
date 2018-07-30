@@ -244,7 +244,7 @@ public:
     /**
      * \brief Get the point intensity array.
      *
-     * getPointiIntensityArray returns the point intensity informations.
+     * getPointIntensityArray returns the point intensity informations.
      * The returned array is a one dimensional float array.  Additionally
      * the passed reference of a size_t variable is set to the amount of
      * intensity values stored in the array. Thus \c n is set to the array
@@ -275,7 +275,7 @@ public:
      * \brief Get the point spectral channels array.
      *
      * getPointSpectralChannelsArray returns the spectral channel informations.
-     * The returned array is a one dimensional unsigned char array.
+     * The returned array is a one dimensional float array.
      * Additionally the passed reference of a size_t variable is set to the
      * amount of spectral channel values stored in the array. Thus \c n is
      * set to the array length. \c n_channels is set to the number of channels
@@ -430,7 +430,7 @@ public:
     /**
      * @brief   Returns the Wavelength difference in nm between two adjacent channels
      */
-    int numWavelengthsPerChannel();
+    float numWavelengthsPerChannel();
 
     /**
      * @brief   Returns the channel index of the given wavelength, or fallback if
@@ -476,14 +476,14 @@ protected:
     size_t          m_numPointIntensities;
     /// Number of point confidence values in internal buffer.
     size_t          m_numPointConfidence;
-    /// Number of spectral channel Datasets in internal buffer.
+    /// Number of point spectral channel values in internal buffer.
     size_t          m_numPointSpectralChannels;
-    /// Number of spectral channels in each spectral channel Dataset.
+    /// Number of spectral channels per point.
     size_t          m_numSpectralChannels;
 
     /// Wavelength of channel 0 in nm
     int m_minWavelength;
-    /// Wavelength of channel m_numSpectralChannels in nm
+    /// Wavelength of channel m_numSpectralChannels in nm.
     int m_maxWavelength;
 
     /// Vector to save the indices of the first and last points of single scans

@@ -42,9 +42,9 @@ PointBuffer::PointBuffer() :
     m_numPointIntensities( 0 ),
     m_numPointConfidence( 0 ),
     m_numPointSpectralChannels( 0 ),
-	m_numSpectralChannels(0),
-	m_minWavelength(0),
-	m_maxWavelength(0)
+    m_numSpectralChannels(0),
+    m_minWavelength(0),
+    m_maxWavelength(0)
     {
         /* coordf must be the exact size of three floats to cast the float
          * array to a coordf array. */
@@ -56,7 +56,7 @@ PointBuffer::PointBuffer() :
         m_pointConfidences.reset();
         m_pointIntensities.reset();
         m_pointNormals.reset();
-		m_pointColors.reset();
+        m_pointColors.reset();
         m_pointSpectralChannels.reset();
     }
 
@@ -254,32 +254,32 @@ void PointBuffer::setPointSpectralChannelsArray( floatArr array, size_t n, size_
 
 }
 
-int PointBuffer::numWavelengthsPerChannel()
+float PointBuffer::numWavelengthsPerChannel()
 {
-	return (m_maxWavelength - m_minWavelength) / m_numSpectralChannels;
+    return (m_maxWavelength - m_minWavelength) / (float)m_numSpectralChannels;
 }
 
 int PointBuffer::getChannel(int wavelength, int fallback)
 {
-	if (!hasPointSpectralChannels())
-	{
-		return fallback;
-	}
-	int channel = (wavelength - m_minWavelength) / numWavelengthsPerChannel();
-	if (channel < 0 || channel >= m_numSpectralChannels)
-	{
-		return fallback;
-	}
-	return channel;
+    if (!hasPointSpectralChannels())
+    {
+        return fallback;
+    }
+    int channel = (wavelength - m_minWavelength) / numWavelengthsPerChannel();
+    if (channel < 0 || channel >= m_numSpectralChannels)
+    {
+        return fallback;
+    }
+    return channel;
 }
 
 int PointBuffer::getWavelength(int channel)
 {
-	if (channel < 0 || channel >= m_numSpectralChannels)
-	{
-		return -1;
-	}
-	return channel * numWavelengthsPerChannel() + m_minWavelength;
+    if (channel < 0 || channel >= m_numSpectralChannels)
+    {
+        return -1;
+    }
+    return channel * numWavelengthsPerChannel() + m_minWavelength;
 }
 
 
