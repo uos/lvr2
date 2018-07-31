@@ -50,11 +50,11 @@ LVRMainWindow::LVRMainWindow()
     // Init members
     m_correspondanceDialog = new LVRCorrespondanceDialog(treeWidget);
     m_incompatibilityBox = new QMessageBox();
-    m_aboutDialog = new QDialog();
+    m_aboutDialog = new QDialog(this);
     Ui::AboutDialog aboutDialog;
     aboutDialog.setupUi(m_aboutDialog);
 
-    m_tooltipDialog = new QDialog();
+    m_tooltipDialog = new QDialog(this);
     Ui::TooltipDialog tooltipDialog;
     tooltipDialog.setupUi(m_tooltipDialog);
 
@@ -1274,7 +1274,7 @@ void LVRMainWindow::showHistogram()
             PointBufferBridgePtr points = model_item->getModelBridge()->getPointBridge();
             if(points->getNumPoints() && points->getPointBuffer()->hasPointSpectralChannels())
             {
-                m_histogram=new LVRHistogram();
+                m_histogram = new LVRHistogram(this);
                 m_histogram->setPointBuffer(points->getPointBuffer());
                 m_histogram->sethistogram();   
             }

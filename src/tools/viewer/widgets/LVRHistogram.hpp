@@ -39,7 +39,7 @@ class LVRHistogram : public QObject
     Q_OBJECT
 
 public:
-    LVRHistogram();
+    LVRHistogram(QWidget* parent = (QWidget*)nullptr);
     virtual ~LVRHistogram();
 
     void sethistogram();
