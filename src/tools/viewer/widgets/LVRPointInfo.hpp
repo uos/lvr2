@@ -42,6 +42,8 @@ public:
     LVRPointInfo(QTreeWidget* treeWidget);
     virtual ~LVRPointInfo();
 
+    bool isVisible() const;
+    int getPoint() const;
     void setPoint(int pointId);
     void setPointBuffer(PointBufferPtr points);
 

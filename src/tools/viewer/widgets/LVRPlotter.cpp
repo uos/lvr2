@@ -1,6 +1,8 @@
 
 #include "LVRPlotter.hpp"
+#include "LVRPointInfo.hpp"
 #include <QPainter>
+#include "../app/LVRMainWindow.hpp"
 
 namespace lvr
 {
@@ -15,6 +17,11 @@ LVRPlotter::LVRPlotter(QWidget * parent, bool curve)
 LVRPlotter::~LVRPlotter()
 {
 
+}
+
+void LVRPlotter::mouseReleaseEvent(QMouseEvent* event)
+{
+	Q_EMIT(mouseRelease());
 }
 
 void LVRPlotter::setPoints(floatArr points, size_t numPoints)

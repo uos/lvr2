@@ -26,9 +26,14 @@
 namespace lvr
 {
 
+class LVRMainWindow;
+
 class LVRPlotter : public QWidget
 {
 	Q_OBJECT
+
+Q_SIGNALS:
+    void mouseRelease();
 
 public:
 
@@ -40,6 +45,7 @@ public:
 	void removePoints();
 
 protected:
+	virtual void mouseReleaseEvent(QMouseEvent* event); 
     void paintEvent(QPaintEvent *event);
 
 private:
