@@ -252,11 +252,15 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     for (int i = 0; i < 3; i++)
     {
-        QObject::connect(m_spectralSliders[i], SIGNAL(valueChanged(int)), this, SLOT(changeSpectralColor()));
+        QObject::connect(m_spectralSliders[i], SIGNAL(valueChanged(int)), this, SLOT(updateSpectralColorText()));
+        QObject::connect(m_spectralSliders[i], SIGNAL(actionTriggered(int)), this, SLOT(updateSpectralColorText(int)));
+        QObject::connect(m_spectralSliders[i], SIGNAL(sliderReleased()), this, SLOT(changeSpectralColor()));
         QObject::connect(m_spectralCheckboxes[i], SIGNAL(stateChanged(int)), this, SLOT(changeSpectralColor()));
     }
 
-    QObject::connect(horizontalSlider_channel, SIGNAL(valueChanged(int)), this, SLOT(changeGradientView()));
+    QObject::connect(horizontalSlider_channel, SIGNAL(valueChanged(int)), this, SLOT(updateSpectralGradientText()));
+    QObject::connect(horizontalSlider_channel, SIGNAL(actionTriggered(int)), this, SLOT(updateSpectralGradientText(int)));
+    QObject::connect(horizontalSlider_channel, SIGNAL(sliderReleased()), this, SLOT(changeGradientView()));
     QObject::connect(comboBox_colorgradient, SIGNAL(currentIndexChanged(int)), this, SLOT(changeGradientView()));
     QObject::connect(checkBox_normcolors, SIGNAL(stateChanged(int)), this, SLOT(changeGradientView()));
     QObject::connect(checkBox_NDVI, SIGNAL(stateChanged(int)), this, SLOT(changeGradientView()));
@@ -1332,6 +1336,42 @@ void LVRMainWindow::showPointInfoDialog()
     m_pointInfoDialog->setPoint(m_selectedPoint);
 }
 
+void LVRMainWindow::updateSpectralColorText(int action)
+{
+    switch(action)
+    {
+        case QAbstractSlider::SliderSingleStepAdd:
+        case QAbstractSlider::SliderSingleStepSub:
+        case QAbstractSlider::SliderPageStepAdd:
+        case QAbstractSlider::SliderPageStepSub:
+        {
+            changeSpectralColor();
+            break;
+        }
+        case -1: //valueChanged(int)
+        {
+            QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+            if(items.size() > 0)
+            {
+                QTreeWidgetItem* item = items.first();
+                LVRModelItem* model_item = getModelItem(item);
+                PointBufferPtr p = model_item->getModelBridge()->getPointBridge()->getPointBuffer();
+                color<size_t> channels;
+
+                for (int i = 0; i < 3; i++)
+                {
+                    channels[i] = m_spectralSliders[i]->value();
+                }
+                for (int i = 0; i < 3; i++)
+                {
+                    QString name = m_spectralLabels[i]->text().split(":")[0];
+                    m_spectralLabels[i]->setText(name + QString(": %1nm").arg(p->getWavelength(channels[i])));
+                }
+            }
+        }
+    }
+}
+
 void LVRMainWindow::changeSpectralColor()
 {
     if (!this->dockWidgetSpectralSliderSettingsContents->isEnabled())
@@ -1369,6 +1409,33 @@ void LVRMainWindow::changeSpectralColor()
         }
     }
 
+}
+
+void LVRMainWindow::updateSpectralGradientText(int action)
+{
+    switch(action)
+    {
+        case QAbstractSlider::SliderSingleStepAdd:
+        case QAbstractSlider::SliderSingleStepSub:
+        case QAbstractSlider::SliderPageStepAdd:
+        case QAbstractSlider::SliderPageStepSub:
+        {
+            changeGradientView();
+            break;
+        }
+        case -1: //valueChanged(int)
+        {
+            QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+            if(items.size() > 0)
+            {
+                QTreeWidgetItem* item = items.first();
+                LVRModelItem* model_item = getModelItem(item);
+                size_t channel = this->horizontalSlider_channel->value();
+                PointBufferPtr p = model_item->getModelBridge()->getPointBridge()->getPointBuffer();
+                this->label_cg_channel->setText(QString("Wavelength: %1nm").arg(p->getWavelength(channel)));
+            }
+        }
+    }  
 }
 
 void LVRMainWindow::changeGradientView()
