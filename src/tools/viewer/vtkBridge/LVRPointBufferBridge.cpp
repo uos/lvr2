@@ -57,7 +57,7 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
     m_useNDVI = false;
     m_useNormalizedGradient = false;
     m_spectralGradientChannel = 0;
-    m_spectralGradient = SOLID;
+    m_spectralGradient = HOT;
 
     if(pointCloud)
     {
@@ -262,11 +262,12 @@ void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_
     m_pointCloudActor->GetMapper()->GetInput()->GetPointData()->SetScalars(scalars);
 }
 
-void LVRPointBufferBridge::getSpectralColorGradient(GradientType &gradient, size_t &channel, bool &normalized) const
+void LVRPointBufferBridge::getSpectralColorGradient(GradientType &gradient, size_t &channel, bool &normalized, bool &useNDVI) const
 {
     gradient = m_spectralGradient;
     channel = m_spectralGradientChannel;
     normalized = m_useNormalizedGradient;
+    useNDVI = m_useNDVI;
 }
 
 void LVRPointBufferBridge::useGradient(bool useGradient)
@@ -401,8 +402,9 @@ LVRPointBufferBridge::LVRPointBufferBridge(const LVRPointBufferBridge& b)
     memcpy(m_spectralChannels, b.m_spectralChannels, sizeof(b.m_spectralChannels));
     memcpy(m_useSpectralChannel, b.m_useSpectralChannel, sizeof(b.m_useSpectralChannel));
     m_useGradient       = b.m_useGradient;
+    m_useNDVI           = b.m_useNDVI;
+    m_spectralGradient  = b.m_spectralGradient;
     m_useNormalizedGradient = b.m_useNormalizedGradient;
-    m_spectralGradient = b.m_spectralGradient;
     m_spectralGradientChannel = b.m_spectralGradientChannel;
 }
 

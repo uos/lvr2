@@ -37,7 +37,6 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRFilteringRemoveOutliersDialog.cpp
     widgets/LVRFilteringMLSProjectionDialog.cpp
     widgets/LVRBackgroundDialog.cpp
-    widgets/LVRSpectralColorGradientDialog.cpp
     widgets/LVRPointInfo.cpp
     widgets/LVRPlotter.cpp
     widgets/LVRHistogram.cpp
@@ -62,7 +61,6 @@ set(LVR_VIEWER_MOCS
     widgets/LVRFilteringMLSProjectionDialog.hpp
     widgets/LVRCorrespondanceDialog.hpp
     widgets/LVRBackgroundDialog.hpp
-    widgets/LVRSpectralColorGradientDialog.hpp
     widgets/LVRPointInfo.hpp
     widgets/LVRPlotter.hpp
     widgets/LVRHistogram.hpp
@@ -87,11 +85,9 @@ set(LVR_VIEWER_UIS
    ui/LVRFilteringRemoveOutliersDialogUI.ui
    ui/LVRFilteringMLSProjectionDialogUI.ui
    ui/LVRBackgroundDialogUI.ui
-   ui/LVRSpectralSettings.ui
    ui/LVRPointInfo.ui
    ui/LVRTooltipDialogUI.ui
    ui/LVRHistogram.ui
-   ui/LVRSpectralColorGradient.ui
 )
 
 #####################################################################################

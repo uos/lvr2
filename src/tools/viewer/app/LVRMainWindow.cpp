@@ -243,6 +243,11 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(checkBox_hgreen, SIGNAL(stateChanged(int)), this, SLOT(changeSpectralColor()));  
     QObject::connect(checkBox_hblue, SIGNAL(stateChanged(int)), this, SLOT(changeSpectralColor()));  
 
+    QObject::connect(horizontalSlider_channel, SIGNAL(valueChanged(int)), this, SLOT(changeGradientView()));
+    QObject::connect(comboBox_colorgradient, SIGNAL(currentIndexChanged(int)), this, SLOT(changeGradientView()));
+    QObject::connect(checkBox_normcolors, SIGNAL(stateChanged(int)), this, SLOT(changeGradientView()));
+    QObject::connect(checkBox_NDVI, SIGNAL(stateChanged(int)), this, SLOT(changeGradientView()));
+
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
 
@@ -399,10 +404,14 @@ void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem, int column)
         m_horizontalSliderTransparency->setEnabled(true);
         m_horizontalSliderTransparency->setValue(transparency);
 
-        size_t r, g, b, n_channels;
-        bool use_r, use_g, use_b;
+        size_t r, g, b, n_channels, gradient_channel;
+        bool use_r, use_g, use_b, use_ndvi, normalize_gradient;
+        GradientType gradient_type;
+
         point_item->getPointBufferBridge()->getSpectralChannels(r, g, b, use_r, use_g, use_b);
+        point_item->getPointBufferBridge()->getSpectralColorGradient(gradient_type, gradient_channel, normalize_gradient, use_ndvi);
         n_channels = point_item->getPointBuffer()->getNumSpectralChannels();
+        PointBufferPtr p = point_item->getPointBuffer();
 
         this->dockWidgetSpectralSliderSettingsContents->setEnabled(false); // disable to stop changeSpectralColor from re-rendering 6 times
         this->horizontalSlider_Hyperspectral_red->setMaximum(n_channels - 1);
@@ -417,7 +426,19 @@ void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem, int column)
         this->checkBox_hred->setChecked(use_r);
         this->checkBox_hgreen->setChecked(use_g);
         this->checkBox_hblue->setChecked(use_b);
+		this->label_hred->setText(QString("Hyperspectral red: %1nm").arg(p->getWavelength(r)));
+		this->label_hgreen->setText(QString("Hyperspectral green: %1nm").arg(p->getWavelength(g)));
+		this->label_hblue->setText(QString("Hyperspectral blue: %1nm").arg(p->getWavelength(b)));
         this->dockWidgetSpectralSliderSettingsContents->setEnabled(true);
+
+        this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(false);
+        this->horizontalSlider_channel->setMaximum(n_channels - 1);
+        this->horizontalSlider_channel->setValue(gradient_channel);
+        this->checkBox_NDVI->setChecked(use_ndvi);
+        this->checkBox_normcolors->setChecked(normalize_gradient);
+        this->comboBox_colorgradient->setCurrentIndex((int)gradient_type);
+	    this->label_cg_channel->setText(QString("Wavelength: %1nm").arg(p->getWavelength(gradient_channel)));
+        this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(true);
     }
     else
     {
@@ -425,6 +446,7 @@ void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem, int column)
         m_horizontalSliderPointSize->setValue(1);
 
         this->dockWidgetSpectralSliderSettingsContents->setEnabled(false);
+        this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(false);
     }
 
     if (mesh_item)
@@ -1304,9 +1326,45 @@ void LVRMainWindow::changeSpectralColor()
 
 		m_renderer->GetRenderWindow()->Render();
 
+		PointBufferPtr p = model_item->getModelBridge()->getPointBridge()->getPointBuffer();
+
+		this->label_hred->setText(QString("Hyperspectral red: %1nm").arg(p->getWavelength(r)));
+		this->label_hgreen->setText(QString("Hyperspectral green: %1nm").arg(p->getWavelength(g)));
+		this->label_hblue->setText(QString("Hyperspectral blue: %1nm").arg(p->getWavelength(b)));
+
         this->horizontalSlider_Hyperspectral_red->setEnabled(use_r);
         this->horizontalSlider_Hyperspectral_green->setEnabled(use_g);
         this->horizontalSlider_Hyperspectral_blue->setEnabled(use_b);
+    }
+
+}
+
+void LVRMainWindow::changeGradientView()
+{
+    if (!this->dockWidgetSpectralColorGradientSettingsContents->isEnabled())
+    {
+    	return;
+    }
+    
+	QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+	if(items.size() > 0)
+	{
+		QTreeWidgetItem* item = items.first();
+		LVRModelItem* model_item = getModelItem(item);
+
+		size_t channel = this->horizontalSlider_channel->value();
+		bool useNDVI = this->checkBox_NDVI->isChecked();
+		bool normalized = this->checkBox_normcolors->isChecked();
+		int type = this->comboBox_colorgradient->currentIndex();
+
+		model_item->getModelBridge()->getPointBridge()->setSpectralColorGradient((GradientType)type, channel, normalized, useNDVI);
+
+		m_renderer->GetRenderWindow()->Render();
+
+	    PointBufferPtr p = model_item->getModelBridge()->getPointBridge()->getPointBuffer();
+	    this->label_cg_channel->setText(QString("Wavelength: %1nm").arg(p->getWavelength(channel)));
+
+	    this->horizontalSlider_channel->setEnabled(!useNDVI);
     }
 
 }
