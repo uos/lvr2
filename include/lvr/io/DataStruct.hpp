@@ -94,6 +94,27 @@ struct color
 			return b;
 		}
 	}
+	ColorT operator[] ( const size_t i ) const
+	{
+		switch ( i )
+		{
+		case 0:
+			return r;
+			break;
+		case 1:
+			return g;
+			break;
+		case 2:
+			return b;
+			break;
+		default:
+			return b;
+		}
+	}
+	bool operator== (const color<ColorT>& rhs) const
+	{
+		return r == rhs.r && g == rhs.g && b == rhs.b;
+	}
 };
 
 
