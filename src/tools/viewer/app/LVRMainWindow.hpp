@@ -121,6 +121,9 @@ public Q_SLOTS:
     void changeSpectralColor();
     void updateSpectralGradientText(int action = -1);
     void changeGradientView();
+    void editSpectralRed();
+    void editSpectralGreen();
+    void editSpectralBlue();
     void assertToggles();
     void togglePoints(bool checkboxState);
     void toggleNormals(bool checkboxState);
@@ -233,6 +236,8 @@ private:
     QSlider*                            m_spectralSliders[3];
     QCheckBox*                          m_spectralCheckboxes[3];
     QLabel*                             m_spectralLabels[3];
+    QLineEdit*                          m_spectralLineEdit[3];
+
 
     QAction*                            m_actionShowColorDialog;
     QAction*                            m_actionRenameModelItem;
