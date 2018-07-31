@@ -59,7 +59,8 @@ LVRMainWindow::LVRMainWindow()
     tooltipDialog.setupUi(m_tooltipDialog);
 
     m_pointInfoDialog = nullptr;
-    m_histogram=nullptr;
+    m_histogram = nullptr;
+    m_selectedPointBufferPtr = nullptr;
 
     // Setup specific properties
     QHeaderView* v = this->treeWidget->header();
@@ -263,7 +264,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
 
-    QObject::connect(m_pickingInteractor, SIGNAL(pointSelected(vtkActor*, int)), this, SLOT(showPointInfoDialog(vtkActor*, int)));
+    QObject::connect(m_pickingInteractor, SIGNAL(pointSelected(vtkActor*, int)), this, SLOT(showPointPreview(vtkActor*, int)));
+    QObject::connect(plotter, SIGNAL(mouseRelease()), this, SLOT(showPointInfoDialog()));
 
     QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
 }
@@ -1281,7 +1283,7 @@ void LVRMainWindow::showHistogram()
     }
 }
 
-void LVRMainWindow::showPointInfoDialog(vtkActor* actor, int point)
+void LVRMainWindow::showPointPreview(vtkActor* actor, int point)
 {
     if (actor == nullptr || point < 0)
     {
@@ -1303,13 +1305,24 @@ void LVRMainWindow::showPointInfoDialog(vtkActor* actor, int point)
     {
         return;
     }
-    /*if (!m_pointInfoDialog)
-    {
-        m_pointInfoDialog = new LVRPointInfo(treeWidget);
-    }
-    m_pointInfoDialog->setPointBuffer(pointBridge->getPointBuffer());
-    m_pointInfoDialog->setPoint(point);*/
+    m_selectedPoint = point;
+    m_selectedPointBufferPtr = pointBridge->getPointBuffer();
     updatePointPreview(point, pointBridge->getPointBuffer());
+}
+
+void LVRMainWindow::showPointInfoDialog()
+{
+    if (!m_selectedPointBufferPtr)
+    {
+        return;
+    }
+    if (m_pointInfoDialog && m_pointInfoDialog->isVisible() && m_pointInfoDialog->getPoint() == m_selectedPoint)
+    {
+        return;
+    }
+    m_pointInfoDialog = new LVRPointInfo(treeWidget);
+    m_pointInfoDialog->setPointBuffer(m_selectedPointBufferPtr);
+    m_pointInfoDialog->setPoint(m_selectedPoint);
 }
 
 void LVRMainWindow::changeSpectralColor()

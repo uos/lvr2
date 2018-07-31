@@ -39,6 +39,16 @@ void LVRPointInfo::setPointBuffer(PointBufferPtr points)
     m_points = points;
 }
 
+int LVRPointInfo::getPoint() const
+{
+    return m_pointId;
+}
+
+bool LVRPointInfo::isVisible() const
+{
+    return m_dialog->isVisible();
+}
+
 void LVRPointInfo::setPoint(int pointId)
 {
     m_pointId = pointId;
