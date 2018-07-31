@@ -147,12 +147,15 @@ private:
 // Some type aliases
 using FloatChannel = AttributeChannel<float>;
 using UCharChannel = AttributeChannel<unsigned char>;
+using IntChannel = AttributeChannel<size_t>;
 
 using FloatProxy = ElementProxy<float>;
 using UCharProxy = ElementProxy<unsigned char>;
+using IntProxy = ElementProxy<size_t>;
 
 using FloatChannelPtr = std::shared_ptr<FloatChannel>;
 using UCharChannelPtr = std::shared_ptr<UCharChannel>;
+using IntChannelPtr = std::shared_ptr<IntChannel>;
 
 class AttributeManager
 {
@@ -205,6 +208,7 @@ private:
 
     std::map<std::string, FloatChannelPtr>  m_floatChannels;
     std::map<std::string, UCharChannelPtr>  m_ucharChannels;
+    std::map<std::string, IntChannelPtr>    m_intChannels;
 
     using FloatChannelMap = std::map<std::string, FloatChannelPtr>;
     using UCharChannelMap = std::map<std::string, UCharChannelPtr>;
