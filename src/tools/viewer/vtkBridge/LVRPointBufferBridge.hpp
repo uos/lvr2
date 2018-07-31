@@ -55,10 +55,12 @@ public:
     void setPointSize(int pointSize);
     void setOpacity(float opacityValue);
     void setVisibility(bool visible);
-    void setSpectralChannels(size_t r_channel, size_t g_channel, size_t b_channel, bool use_r = true, bool use_g = true, bool use_b = true);
-    void getSpectralChannels(size_t &r_channel, size_t &g_channel, size_t &b_channel, bool &use_r, bool &use_g, bool &use_b) const;
-    void setSpectralColorGradient(GradientType gradient, size_t channel, bool normalized, bool ndvi = false);
+    void setSpectralChannels(color<size_t> channels, color<bool> use_channel);
+    void getSpectralChannels(color<size_t> &channels, color<bool> &use_channel) const;
+    void setSpectralColorGradient(GradientType gradient, size_t channel, bool normalized = false, bool ndvi = false);
     void getSpectralColorGradient(GradientType &gradient, size_t &channel, bool &normalized, bool &useNDVI) const;
+    void refreshSpectralGradient();
+    void refreshSpectralChannel();
     void useGradient(bool useGradient);
 
     PointBufferPtr getPointBuffer();
@@ -74,8 +76,8 @@ protected:
     PointBufferPtr                  m_pointBuffer;
     bool                            m_useGradient;
     bool                            m_useNormalizedGradient;
-    size_t                          m_spectralChannels[3];
-    bool                            m_useSpectralChannel[3];
+    color<size_t>                   m_spectralChannels;
+    color<bool>                     m_useSpectralChannel;
     GradientType                    m_spectralGradient;
     size_t                          m_spectralGradientChannel;
     bool                            m_useNDVI;

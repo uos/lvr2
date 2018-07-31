@@ -144,6 +144,18 @@ LVRMainWindow::LVRMainWindow()
     m_buttonExportData = this->buttonExportData;
     m_buttonTransformModel = this->buttonTransformModel;
 
+    // Spectral Settings
+    m_spectralSliders[0] = this->horizontalSlider_Hyperspectral_red;
+    m_spectralSliders[1] = this->horizontalSlider_Hyperspectral_green;
+    m_spectralSliders[2] = this->horizontalSlider_Hyperspectral_blue;
+    m_spectralCheckboxes[0] = this->checkBox_hred;
+    m_spectralCheckboxes[1] = this->checkBox_hgreen;
+    m_spectralCheckboxes[2] = this->checkBox_hblue;
+    m_spectralLabels[0] = this->label_hred;
+    m_spectralLabels[1] = this->label_hgreen;
+    m_spectralLabels[2] = this->label_hblue;
+
+
     m_pickingInteractor = new LVRPickingInteractor(m_renderer);
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
     vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
@@ -237,12 +249,11 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_buttonExportData, SIGNAL(pressed()), this, SLOT(exportSelectedModel()));
     QObject::connect(m_buttonTransformModel, SIGNAL(pressed()), this, SLOT(showTransformationDialog()));
 
-    QObject::connect(horizontalSlider_Hyperspectral_red, SIGNAL(valueChanged(int)), this, SLOT(changeSpectralColor()));
-    QObject::connect(horizontalSlider_Hyperspectral_green, SIGNAL(valueChanged(int)), this, SLOT(changeSpectralColor()));
-    QObject::connect(horizontalSlider_Hyperspectral_blue, SIGNAL(valueChanged(int)), this, SLOT(changeSpectralColor()));  
-    QObject::connect(checkBox_hred, SIGNAL(stateChanged(int)), this, SLOT(changeSpectralColor()));
-    QObject::connect(checkBox_hgreen, SIGNAL(stateChanged(int)), this, SLOT(changeSpectralColor()));  
-    QObject::connect(checkBox_hblue, SIGNAL(stateChanged(int)), this, SLOT(changeSpectralColor()));  
+    for (int i = 0; i < 3; i++)
+    {
+        QObject::connect(m_spectralSliders[i], SIGNAL(valueChanged(int)), this, SLOT(changeSpectralColor()));
+        QObject::connect(m_spectralCheckboxes[i], SIGNAL(stateChanged(int)), this, SLOT(changeSpectralColor()));
+    }
 
     QObject::connect(horizontalSlider_channel, SIGNAL(valueChanged(int)), this, SLOT(changeGradientView()));
     QObject::connect(comboBox_colorgradient, SIGNAL(currentIndexChanged(int)), this, SLOT(changeGradientView()));
@@ -405,31 +416,29 @@ void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem, int column)
         m_horizontalSliderTransparency->setEnabled(true);
         m_horizontalSliderTransparency->setValue(transparency);
 
-        size_t r, g, b, n_channels, gradient_channel;
-        bool use_r, use_g, use_b, use_ndvi, normalize_gradient;
+        color<size_t> channels;
+        color<bool> use_channel;
+        size_t n_channels, gradient_channel;
+        bool use_ndvi, normalize_gradient;
         GradientType gradient_type;
 
-        point_item->getPointBufferBridge()->getSpectralChannels(r, g, b, use_r, use_g, use_b);
+        point_item->getPointBufferBridge()->getSpectralChannels(channels, use_channel);
         point_item->getPointBufferBridge()->getSpectralColorGradient(gradient_type, gradient_channel, normalize_gradient, use_ndvi);
         n_channels = point_item->getPointBuffer()->getNumSpectralChannels();
         PointBufferPtr p = point_item->getPointBuffer();
 
         this->dockWidgetSpectralSliderSettingsContents->setEnabled(false); // disable to stop changeSpectralColor from re-rendering 6 times
-        this->horizontalSlider_Hyperspectral_red->setMaximum(n_channels - 1);
-        this->horizontalSlider_Hyperspectral_green->setMaximum(n_channels - 1);
-        this->horizontalSlider_Hyperspectral_blue->setMaximum(n_channels - 1);
-        this->horizontalSlider_Hyperspectral_red->setValue(r);
-        this->horizontalSlider_Hyperspectral_green->setValue(g);
-        this->horizontalSlider_Hyperspectral_blue->setValue(b);
-        this->horizontalSlider_Hyperspectral_red->setEnabled(use_r);
-        this->horizontalSlider_Hyperspectral_green->setEnabled(use_g);
-        this->horizontalSlider_Hyperspectral_blue->setEnabled(use_b);
-        this->checkBox_hred->setChecked(use_r);
-        this->checkBox_hgreen->setChecked(use_g);
-        this->checkBox_hblue->setChecked(use_b);
-		this->label_hred->setText(QString("Hyperspectral red: %1nm").arg(p->getWavelength(r)));
-		this->label_hgreen->setText(QString("Hyperspectral green: %1nm").arg(p->getWavelength(g)));
-		this->label_hblue->setText(QString("Hyperspectral blue: %1nm").arg(p->getWavelength(b)));
+        for (int i = 0; i < 3; i++)
+        {
+            m_spectralSliders[i]->setMaximum(n_channels - 1);
+            m_spectralSliders[i]->setValue(channels[i]);
+            m_spectralSliders[i]->setEnabled(use_channel[i]);
+
+            m_spectralCheckboxes[i]->setChecked(use_channel[i]);
+
+            QString name = m_spectralLabels[i]->text().split(":")[0];
+            m_spectralLabels[i]->setText(name + QString(": %1nm").arg(p->getWavelength(channels[i])));
+        }
         this->dockWidgetSpectralSliderSettingsContents->setEnabled(true);
 
         this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(false);
@@ -1316,27 +1325,28 @@ void LVRMainWindow::changeSpectralColor()
 		QTreeWidgetItem* item = items.first();
 		LVRModelItem* model_item = getModelItem(item);
 
-		size_t r = this->horizontalSlider_Hyperspectral_red->value();
-		size_t g = this->horizontalSlider_Hyperspectral_green->value();
-		size_t b = this->horizontalSlider_Hyperspectral_blue->value();
+		color<size_t> channels;
+        color<bool> use_channel;
 
-		bool use_r = this->checkBox_hred->isChecked();
-		bool use_g = this->checkBox_hgreen->isChecked();
-		bool use_b = this->checkBox_hblue->isChecked();
+        for (int i = 0; i < 3; i++)
+        {
+            channels[i] = m_spectralSliders[i]->value();
+		    use_channel[i] = m_spectralCheckboxes[i]->isChecked();
+        }
 
-		model_item->getModelBridge()->getPointBridge()->setSpectralChannels(r, g, b, use_r, use_g, use_b);
+		model_item->getModelBridge()->getPointBridge()->setSpectralChannels(channels, use_channel);
 
 		m_renderer->GetRenderWindow()->Render();
 
 		PointBufferPtr p = model_item->getModelBridge()->getPointBridge()->getPointBuffer();
 
-		this->label_hred->setText(QString("Hyperspectral red: %1nm").arg(p->getWavelength(r)));
-		this->label_hgreen->setText(QString("Hyperspectral green: %1nm").arg(p->getWavelength(g)));
-		this->label_hblue->setText(QString("Hyperspectral blue: %1nm").arg(p->getWavelength(b)));
+        for (int i = 0; i < 3; i++)
+        {
+            m_spectralSliders[i]->setEnabled(use_channel[i]);
 
-        this->horizontalSlider_Hyperspectral_red->setEnabled(use_r);
-        this->horizontalSlider_Hyperspectral_green->setEnabled(use_g);
-        this->horizontalSlider_Hyperspectral_blue->setEnabled(use_b);
+            QString name = m_spectralLabels[i]->text().split(":")[0];
+            m_spectralLabels[i]->setText(name + QString(": %1nm").arg(p->getWavelength(channels[i])));
+        }
     }
 
 }

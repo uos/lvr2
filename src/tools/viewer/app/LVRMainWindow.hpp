@@ -224,6 +224,10 @@ private:
     QPushButton*                        m_buttonCreateMesh;
     QPushButton*                        m_buttonExportData;
     QPushButton*                        m_buttonTransformModel;
+    // Spectral Settings
+    QSlider*                            m_spectralSliders[3];
+    QCheckBox*                          m_spectralCheckboxes[3];
+    QLabel*                             m_spectralLabels[3];
 
     QAction*                            m_actionShowColorDialog;
     QAction*                            m_actionRenameModelItem;
