@@ -36,9 +36,50 @@ public:
         return *this;
     }
 
+    template<typename BaseVecT>
+    ElementProxy operator-=(const BaseVecT& v)
+    {
+        if( m_ptr && (m_w > 2))
+        {
+            m_ptr[0] += v.x;
+            m_ptr[1] += v.y;
+            m_ptr[2] += v.z;
+        }
+        return *this;
+    }
+
+
+    template<typename BaseVecT>
+    BaseVecT operator+(const BaseVecT& v)
+    {
+        if(m_w > 2)
+        {
+            *this += v;
+            return BaseVecT(m_ptr[0], m_ptr[1], m_ptr[2]);
+        }
+        else
+        {
+            return BaseVecT(0, 0, 0);
+        }
+    }
+
+    template<typename BaseVecT>
+    BaseVecT operator-(const BaseVecT& v)
+    {
+        if(m_w > 2)
+        {
+            *this += v;
+            return BaseVecT(m_ptr[0], m_ptr[1], m_ptr[2]);
+        }
+        else
+        {
+            return BaseVecT(0, 0, 0);
+        }
+    }
+
     ElementProxy(T* pos = nullptr, unsigned w = 0) : m_ptr(pos), m_w(w) {}
 
-    T operator[](int i)
+    T operator[](int i) const
     {
         if(m_ptr && (i < m_w))
         {
@@ -159,6 +200,7 @@ public:
 
     void addFloatChannel(FloatChannelPtr data, std::string name);
     void addUCharChannel(UCharChannelPtr data, std::string name);
+
 private:
 
     std::map<std::string, FloatChannelPtr>  m_floatChannels;
