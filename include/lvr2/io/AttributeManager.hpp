@@ -9,11 +9,11 @@ namespace lvr2
 {
 
 template<typename T>
-class AttributeProxy
+class ElementProxy
 {
 public:
     template<typename BaseVecT>
-    AttributeProxy operator=(const BaseVecT& v)
+    ElementProxy operator=(const BaseVecT& v)
     {
         if( m_ptr && (m_w > 2))
         {
@@ -25,7 +25,7 @@ public:
     }
 
     template<typename BaseVecT>
-    AttributeProxy operator+=(const BaseVecT& v)
+    ElementProxy operator+=(const BaseVecT& v)
     {
         if( m_ptr && (m_w > 2))
         {
@@ -36,7 +36,7 @@ public:
         return *this;
     }
 
-    AttributeProxy(T* pos = nullptr, unsigned w = 0) : m_ptr(pos), m_w(w) {}
+    ElementProxy(T* pos = nullptr, unsigned w = 0) : m_ptr(pos), m_w(w) {}
 
     T operator[](int i)
     {
@@ -87,10 +87,10 @@ public:
 
     }
 
-    AttributeProxy<T> operator[](const unsigned& idx)
+    ElementProxy<T> operator[](const unsigned& idx)
     {
         T* ptr = m_data.get();
-        return AttributeProxy<T>(&(ptr[idx * m_width]), m_width);
+        return ElementProxy<T>(&(ptr[idx * m_width]), m_width);
     }
 
     DataPtr&     dataPtr() { return m_data;}
@@ -104,16 +104,16 @@ private:
 };
 
 
-class ChannelHandler
+class AttributeManager
 {
 public:
-    ChannelHandler() {};
+    AttributeManager() {};
 
     using FloatChannel = AttributeChannel<float>;
     using UCharChannel = AttributeChannel<unsigned char>;
 
-    using FloatProxy = AttributeProxy<float>;
-    using UCharProxy = AttributeProxy<unsigned char>;
+    using FloatProxy = ElementProxy<float>;
+    using UCharProxy = ElementProxy<unsigned char>;
 
     using FloatChannelPtr = std::shared_ptr<FloatChannel>;
     using UCharChannelPtr = std::shared_ptr<UCharChannel>;

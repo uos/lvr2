@@ -2,7 +2,7 @@
 #define POINTBUFFER2_HPP
 
 #include <lvr2/io/DataStruct.hpp>
-#include <lvr2/io/ChannelHandler.hpp>
+#include <lvr2/io/AttributeManager.hpp>
 
 #include <map>
 #include <string>
@@ -33,8 +33,8 @@ public:
     ucharArr getColorArray();
     ucharArr getUcharArray(const std::string& name, unsigned& w);
 
-    ChannelHandler::FloatChannel getFloatChannel(const std::string& name);
-    ChannelHandler::UCharChannel getUcharChannel(const std::string& name);
+    AttributeManager::FloatChannel getFloatChannel(const std::string& name);
+    AttributeManager::UCharChannel getUcharChannel(const std::string& name);
 
     bool hasColors() const;
     bool hasNormals() const;
@@ -43,10 +43,10 @@ public:
 private:
 
     // Point channel, 'cached' to allow faster access
-    ChannelHandler                  m_channels;
-    ChannelHandler::FloatChannelPtr m_points;
-    ChannelHandler::FloatChannelPtr m_normals;
-    ChannelHandler::UCharChannelPtr m_colors;
+    AttributeManager                  m_channels;
+    AttributeManager::FloatChannelPtr m_points;
+    AttributeManager::FloatChannelPtr m_normals;
+    AttributeManager::UCharChannelPtr m_colors;
 
     // Number of points in buffer
     size_t              m_numPoints;

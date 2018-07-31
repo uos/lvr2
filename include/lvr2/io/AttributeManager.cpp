@@ -1,4 +1,4 @@
-#include <lvr2/io/ChannelHandler.hpp>
+#include <lvr2/io/AttributeManager.hpp>
 #include <lvr2/io/Timestamp.hpp>
 
 #include <iostream>
@@ -6,19 +6,19 @@
 namespace lvr2
 {
 
-void ChannelHandler::addFloatChannel(floatArr data, std::string name, size_t n, unsigned width)
+void AttributeManager::addFloatChannel(floatArr data, std::string name, size_t n, unsigned width)
 {
     FloatChannelPtr channel(new FloatChannel(n, width, data));
     addFloatChannel(channel, name);
 }
 
-void ChannelHandler::addUCharChannel(ucharArr data, std::string name, size_t n, unsigned width)
+void AttributeManager::addUCharChannel(ucharArr data, std::string name, size_t n, unsigned width)
 {
     UCharChannelPtr channel(new UCharChannel(n, width, data));
     addUCharChannel(channel, name);
 }
 
-void ChannelHandler::addEmptyFloatChannel(std::string name, size_t n, unsigned width)
+void AttributeManager::addEmptyFloatChannel(std::string name, size_t n, unsigned width)
 {
     floatArr array(new float[width * n]);
     for(size_t i = 0; i < n * width; i++)
@@ -29,7 +29,7 @@ void ChannelHandler::addEmptyFloatChannel(std::string name, size_t n, unsigned w
     addFloatChannel(ptr, name);
 }
 
-void ChannelHandler::addEmptyUCharChannel(std::string name, size_t n, unsigned width)
+void AttributeManager::addEmptyUCharChannel(std::string name, size_t n, unsigned width)
 {
     ucharArr array(new unsigned char[width * n]);
     for(size_t i = 0; i < n * width; i++)
@@ -40,41 +40,41 @@ void ChannelHandler::addEmptyUCharChannel(std::string name, size_t n, unsigned w
     addUCharChannel(ptr, name);
 }
 
-void ChannelHandler::addFloatChannel(FloatChannelPtr data, std::string name)
+void AttributeManager::addFloatChannel(FloatChannelPtr data, std::string name)
 {
     auto ret = m_floatChannels.insert(std::pair<std::string, FloatChannelPtr>(name, data));
     if(!ret.second )
     {
-        std::cout << timestamp << "ChannelHandler: Float channel '"
+        std::cout << timestamp << "AttributeManager: Float channel '"
                   << name << "' already exist. Will not add data."
                   << std::endl;
     }
 }
 
-void ChannelHandler::addUCharChannel(UCharChannelPtr data, std::string name)
+void AttributeManager::addUCharChannel(UCharChannelPtr data, std::string name)
 {
     auto ret = m_ucharChannels.insert(std::pair<std::string, UCharChannelPtr>(name, data));
     if(!ret.second)
     {
-        std::cout << timestamp << "ChannelHandler: UChar channel '"
+        std::cout << timestamp << "AttributeManager: UChar channel '"
                   << name << "' already exist. Will not add data."
                   << std::endl;
     }
 }
 
-bool ChannelHandler::hasUCharChannel(std::string name)
+bool AttributeManager::hasUCharChannel(std::string name)
 {
     auto it = m_ucharChannels.find(name);
     return !(it == m_ucharChannels.end());
 }
 
-bool ChannelHandler::hasFloatChannel(std::string name)
+bool AttributeManager::hasFloatChannel(std::string name)
 {
     auto it = m_floatChannels.find(name);
     return !(it == m_floatChannels.end());
 }
 
-unsigned ChannelHandler::ucharChannelWidth(std::string name)
+unsigned AttributeManager::ucharChannelWidth(std::string name)
 {
     auto it = m_ucharChannels.find(name);
     if(it == m_ucharChannels.end())
@@ -87,7 +87,7 @@ unsigned ChannelHandler::ucharChannelWidth(std::string name)
     }
 }
 
-unsigned ChannelHandler::floatChannelWidth(std::string name)
+unsigned AttributeManager::floatChannelWidth(std::string name)
 {
     auto it = m_floatChannels.find(name);
     if(it == m_floatChannels.end())
@@ -100,7 +100,7 @@ unsigned ChannelHandler::floatChannelWidth(std::string name)
     }
 }
 
-ChannelHandler::FloatProxy ChannelHandler::getFloatHandle(int idx, const std::string& name)
+AttributeManager::FloatProxy AttributeManager::getFloatHandle(int idx, const std::string& name)
 {
     auto it = m_floatChannels.find(name);
     if(it != m_floatChannels.end())
@@ -115,20 +115,20 @@ ChannelHandler::FloatProxy ChannelHandler::getFloatHandle(int idx, const std::st
             }
             else
             {
-                std::cout << timestamp << "ChannelHandler::getFloatHandle(): Index " << idx
+                std::cout << timestamp << "AttributeManager::getFloatHandle(): Index " << idx
                           << " / " << ptr->numAttributes() << " out of bounds." << std::endl;
                 return FloatProxy();
             }
         }
         else
         {
-            std::cout << timestamp << "ChannelHandler::getFloatHandle(): Found nullptr." << std::endl;
+            std::cout << timestamp << "AttributeManager::getFloatHandle(): Found nullptr." << std::endl;
             return FloatProxy();
         }
     }
     else
     {
-        std::cout << timestamp << "ChannelHandler::getFloatHandle(): Could not find channel'"
+        std::cout << timestamp << "AttributeManager::getFloatHandle(): Could not find channel'"
                   << name << "'." << std::endl;
         return FloatProxy();
     }
@@ -136,7 +136,7 @@ ChannelHandler::FloatProxy ChannelHandler::getFloatHandle(int idx, const std::st
 
 
 
-ChannelHandler::UCharProxy ChannelHandler::getUCharHandle(int idx, const std::string& name)
+AttributeManager::UCharProxy AttributeManager::getUCharHandle(int idx, const std::string& name)
 {
     auto it = m_ucharChannels.find(name);
     if(it != m_ucharChannels.end())
@@ -151,26 +151,26 @@ ChannelHandler::UCharProxy ChannelHandler::getUCharHandle(int idx, const std::st
             }
             else
             {
-                std::cout << timestamp << "ChannelHandler::getUCharHandle(): Index " << idx
+                std::cout << timestamp << "AttributeManager::getUCharHandle(): Index " << idx
                           << " / " << ptr->numAttributes() << " out of bounds." << std::endl;
                 return UCharProxy();
             }
         }
         else
         {
-            std::cout << timestamp << "ChannelHandler::getUCharHandle(): Found nullptr." << std::endl;
+            std::cout << timestamp << "AttributeManager::getUCharHandle(): Found nullptr." << std::endl;
             return UCharProxy();
         }
     }
     else
     {
-        std::cout << timestamp << "ChannelHandler::getUCharHandle(): Could not find channel'"
+        std::cout << timestamp << "AttributeManager::getUCharHandle(): Could not find channel'"
                   << name << "'." << std::endl;
         return UCharProxy();
     }
 }
 
-floatArr ChannelHandler::getFloatArray(size_t& n, unsigned& w, const std::string name)
+floatArr AttributeManager::getFloatArray(size_t& n, unsigned& w, const std::string name)
 {
     auto it = m_floatChannels.find(name);
     if(it != m_floatChannels.end())
@@ -188,7 +188,7 @@ floatArr ChannelHandler::getFloatArray(size_t& n, unsigned& w, const std::string
 
 }
 
-ucharArr ChannelHandler::getUCharArray(size_t& n, unsigned& w, const std::string name)
+ucharArr AttributeManager::getUCharArray(size_t& n, unsigned& w, const std::string name)
 {
     auto it = m_ucharChannels.find(name);
     if(it != m_ucharChannels.end())
@@ -205,7 +205,7 @@ ucharArr ChannelHandler::getUCharArray(size_t& n, unsigned& w, const std::string
     }
 }
 
-ChannelHandler::UCharChannel& ChannelHandler::getUCharChannel(std::string name)
+AttributeManager::UCharChannel& AttributeManager::getUCharChannel(std::string name)
 {
     auto it = m_ucharChannels.find(name);
     if(it != m_ucharChannels.end())
@@ -214,7 +214,7 @@ ChannelHandler::UCharChannel& ChannelHandler::getUCharChannel(std::string name)
     }
 }
 
-ChannelHandler::FloatChannel& ChannelHandler::getFloatChannel(std::string name)
+AttributeManager::FloatChannel& AttributeManager::getFloatChannel(std::string name)
 {
     auto it = m_floatChannels.find(name);
     if(it != m_floatChannels.end())
