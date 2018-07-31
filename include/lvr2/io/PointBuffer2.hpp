@@ -19,6 +19,10 @@ namespace lvr2
 ///        large number of attribute channels. Point definitions,
 ///        as well as normal and color buffers, are cached outside
 ///        the attribute maps to allow faster access.
+///        The added channels should always have the some length
+///        as the point array to keep the mapping
+///        between geometry (channel 'points') and the associated layers like RGB
+///        colors or point normals consistent.
 ///
 class PointBuffer2 : public BaseBuffer
 {
