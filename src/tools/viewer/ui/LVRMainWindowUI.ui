@@ -111,6 +111,9 @@
      <height>234</height>
     </size>
    </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
    <property name="features">
     <set>QDockWidget::DockWidgetFeatureMask</set>
    </property>
@@ -277,7 +280,7 @@
    <property name="minimumSize">
     <size>
      <width>299</width>
-     <height>150</height>
+     <height>177</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -559,6 +562,10 @@
      <height>234</height>
     </size>
    </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgb(255, 255, 255);
+</string>
+   </property>
    <property name="features">
     <set>QDockWidget::DockWidgetFeatureMask</set>
    </property>
@@ -574,8 +581,7 @@
       <enum>QLayout::SetDefaultConstraint</enum>
      </property>
      <item>
-      <widget class="lvr::LVRPlotter" name="plotter" native="true">
-      </widget>
+      <widget class="lvr::LVRPlotter" name="plotter" native="true"/>
      </item>
     </layout>
    </widget>
