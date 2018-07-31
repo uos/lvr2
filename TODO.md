@@ -10,5 +10,4 @@
     - fraglich, da man dann jedes mal loslassen und neu greifen muss
   
   - Textboxen für Wellenlängen mit gegenseitigem Aktuallisieren Textbox <-> Slider
-  - wenn man mehere Punktwolken hat für alle Punktwolken Einstellungen übernehmen???
-  - Parent bei Histogram, AboutDialog und Tooltip richtig setzen
+  - wenn man mehere Punktwolken hat für alle Punktwolken Einstellungen übernehmen?
