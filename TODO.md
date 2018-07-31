@@ -21,4 +21,8 @@
     - colorgradient
     - pointpreview
   - switchen zwischen slider und gradient
+      
+  - erst updaten wenn man die Slider loslässt
+  - wenn man mehere Punktwolken hat für alle Punktwolken einstellungen übernehmen
+  - Parent bei Histogram, AboutDialog und Tooltip richtig setzen
   
