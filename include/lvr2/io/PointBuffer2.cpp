@@ -15,13 +15,11 @@ PointBuffer2::PointBuffer2(floatArr points, size_t n)
 {
     // Generate channel object pointer and add it
     // to channel map
-
     ChannelHandler::FloatChannelPtr point_data(new ChannelHandler::FloatChannel(n, 3, points));
     m_channels.addFloatChannel(point_data, "points");
-    std::cout << "1 : " << point_data->get().get() << std::endl;
+
     // Save pointers
     m_points = point_data;
-    std::cout << "2 : " << m_points->get().get() << std::endl;
     m_numPoints = n;
 }
 
@@ -34,12 +32,9 @@ PointBuffer2::PointBuffer2(floatArr points, floatArr normals, size_t n) : PointB
 
 void PointBuffer2::setPointArray(floatArr points, size_t n)
 {
-    std::cout << "ADD: " << points.get() << std::endl;
     m_points = ChannelHandler::FloatChannelPtr(new ChannelHandler::FloatChannel(n, 3, points));
-    std::cout << "1: " << m_points->get().get() << std::endl;
     m_numPoints = n;
     m_channels.addFloatChannel(m_points, "points");
-    std::cout << "2: " << getPointArray().get() << std::endl;
 }
 
 void PointBuffer2::setNormalArray(floatArr normals, size_t n)
@@ -55,11 +50,11 @@ void PointBuffer2::setColorArray(ucharArr colors, size_t n)
 
 floatArr PointBuffer2::getPointArray()
 {
-    return m_points->get();
+    return m_points->dataPtr();
 }
 floatArr PointBuffer2::getNormalArray()
 {
-    return m_normals->get();
+    return m_normals->dataPtr();
 }
 
 floatArr PointBuffer2::getFloatArray(const std::string& name, unsigned& w)
@@ -77,7 +72,7 @@ floatArr PointBuffer2::getFloatArray(const std::string& name, unsigned& w)
 
 ucharArr PointBuffer2::getColorArray()
 {
-    return m_colors->get();
+    return m_colors->dataPtr();
 }
 
 ucharArr PointBuffer2::getUcharArray(const std::string& name, unsigned& w)
@@ -105,12 +100,12 @@ ChannelHandler::UCharChannel PointBuffer2::getUcharChannel(const std::string& na
 
 bool PointBuffer2::hasColors() const
 {
-    return (m_colors->n() > 0);
+    return (m_colors->numAttributes() > 0);
 }
 
 bool PointBuffer2::hasNormals() const
 {
-    return (m_normals->n() > 0);
+    return (m_normals->numAttributes() > 0);
 }
 
 size_t PointBuffer2::numPoints() const
