@@ -93,9 +93,9 @@ public:
         return AttributeProxy<T>(&(ptr[idx * m_width]), m_width);
     }
 
-    DataPtr&     get() { return m_data;}
-    unsigned    width() { return m_width;}
-    size_t      n() { return m_numAttributes;}
+    DataPtr&     dataPtr() { return m_data;}
+    unsigned     width() { return m_width;}
+    size_t       numAttributes() { return m_numAttributes;}
 
 private:
     size_t          m_numAttributes;

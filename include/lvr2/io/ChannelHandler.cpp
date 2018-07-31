@@ -108,15 +108,15 @@ ChannelHandler::FloatProxy ChannelHandler::getFloatHandle(int idx, const std::st
         FloatChannelPtr ptr = it->second;
         if(ptr)
         {
-            if(idx < ptr->n())
+            if(idx < ptr->numAttributes())
             {
-                floatArr array = ptr->get();
+                floatArr array = ptr->dataPtr();
                 return FloatProxy(&array[idx], ptr->width());
             }
             else
             {
                 std::cout << timestamp << "ChannelHandler::getFloatHandle(): Index " << idx
-                          << " / " << ptr->n() << " out of bounds." << std::endl;
+                          << " / " << ptr->numAttributes() << " out of bounds." << std::endl;
                 return FloatProxy();
             }
         }
@@ -144,15 +144,15 @@ ChannelHandler::UCharProxy ChannelHandler::getUCharHandle(int idx, const std::st
         UCharChannelPtr ptr = it->second;
         if(ptr)
         {
-            if(idx < ptr->n())
+            if(idx < ptr->numAttributes())
             {
-                ucharArr array = ptr->get();
+                ucharArr array = ptr->dataPtr();
                 return UCharProxy(&array[idx], ptr->width());
             }
             else
             {
                 std::cout << timestamp << "ChannelHandler::getUCharHandle(): Index " << idx
-                          << " / " << ptr->n() << " out of bounds." << std::endl;
+                          << " / " << ptr->numAttributes() << " out of bounds." << std::endl;
                 return UCharProxy();
             }
         }
@@ -175,9 +175,9 @@ floatArr ChannelHandler::getFloatArray(size_t& n, unsigned& w, const std::string
     auto it = m_floatChannels.find(name);
     if(it != m_floatChannels.end())
     {
-        n = it->second->n();
+        n = it->second->numAttributes();
         w = it->second->width();
-        return it->second->get();
+        return it->second->dataPtr();
     }
     else
     {
@@ -193,9 +193,9 @@ ucharArr ChannelHandler::getUCharArray(size_t& n, unsigned& w, const std::string
     auto it = m_ucharChannels.find(name);
     if(it != m_ucharChannels.end())
     {
-        n = it->second->n();
+        n = it->second->numAttributes();
         w = it->second->width();
-        return it->second->get();
+        return it->second->dataPtr();
     }
     else
     {
