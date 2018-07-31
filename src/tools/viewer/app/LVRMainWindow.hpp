@@ -63,7 +63,6 @@
 #include "../widgets/LVRFilteringMLSProjectionDialog.hpp"
 #include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
 #include "../widgets/LVRBackgroundDialog.hpp"
-#include "../widgets/LVRSpectralDialog.hpp"
 #include "../widgets/LVRSpectralColorGradientDialog.hpp"
 #include "../widgets/LVRHistogram.hpp"
 
