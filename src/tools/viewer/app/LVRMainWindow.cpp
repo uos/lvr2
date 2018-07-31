@@ -281,6 +281,9 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(pointSelected(vtkActor*, int)), this, SLOT(showPointPreview(vtkActor*, int)));
     QObject::connect(plotter, SIGNAL(mouseRelease()), this, SLOT(showPointInfoDialog()));
 
+    QObject::connect(radioButtonUseSpectralSlider, SIGNAL(toggled(bool)), this, SLOT(updateSpectralSlidersEnabled(bool)));
+    QObject::connect(radioButtonUseSpectralGradient, SIGNAL(toggled(bool)), this, SLOT(updateSpectralGradientEnabled(bool)));
+
     QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
 }
 
@@ -1367,16 +1370,11 @@ void LVRMainWindow::updateSpectralColorText(int action)
                 QTreeWidgetItem* item = items.first();
                 LVRModelItem* model_item = getModelItem(item);
                 PointBufferPtr p = model_item->getModelBridge()->getPointBridge()->getPointBuffer();
-                color<size_t> channels;
 
                 for (int i = 0; i < 3; i++)
                 {
-                    channels[i] = m_spectralSliders[i]->value();
-                }
-                for (int i = 0; i < 3; i++)
-                {
-                    QString name = m_spectralLabels[i]->text().split(":")[0];
-                    m_spectralLabels[i]->setText(name + QString(": %1nm").arg(p->getWavelength(channels[i])));
+                    int wavelength = m_spectralSliders[i]->value();
+                    m_spectralLineEdit[i]->setText(QString("%1").arg(wavelength));
                 }
             }
         }
@@ -1407,6 +1405,7 @@ void LVRMainWindow::editSpectralRed()
             wavelength = points->getMaxWavelength();
             
         m_spectralSliders[0]->setValue(wavelength);
+        changeSpectralColor();
     }
 }
 void LVRMainWindow::editSpectralGreen()
@@ -1433,6 +1432,7 @@ void LVRMainWindow::editSpectralGreen()
             wavelength = points->getMaxWavelength();
             
         m_spectralSliders[1]->setValue(wavelength);
+        changeSpectralColor();
     }
 }
 void LVRMainWindow::editSpectralBlue()
@@ -1459,6 +1459,7 @@ void LVRMainWindow::editSpectralBlue()
             wavelength = points->getMaxWavelength();
             
         m_spectralSliders[2]->setValue(wavelength);
+        changeSpectralColor();
     }
 }
 
@@ -1581,6 +1582,50 @@ void LVRMainWindow::updatePointPreview(int pointId, PointBufferPtr points)
         }
         m_PointPreviewPlotter->setPoints(data, n_channels, 0, 1);
     }
+}
+
+void LVRMainWindow::updateSpectralSlidersEnabled(bool checked)
+{
+    if (checked == this->frameSpectralSlidersArea->isEnabled())
+    {
+        return;
+    }
+
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+        LVRModelItem* model_item = getModelItem(item);
+
+        model_item->getModelBridge()->getPointBridge()->useGradient(!checked);
+        m_renderer->GetRenderWindow()->Render();
+    }
+
+    this->frameSpectralSlidersArea->setEnabled(checked);
+    this->frameSpectralGradientArea->setEnabled(!checked);
+    this->radioButtonUseSpectralGradient->setChecked(!checked);
+}
+
+void LVRMainWindow::updateSpectralGradientEnabled(bool checked)
+{
+    if (checked == this->frameSpectralGradientArea->isEnabled())
+    {
+        return;
+    }
+
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+        LVRModelItem* model_item = getModelItem(item);
+
+        model_item->getModelBridge()->getPointBridge()->useGradient(checked);
+        m_renderer->GetRenderWindow()->Render();
+    }
+
+    this->frameSpectralGradientArea->setEnabled(checked);
+    this->frameSpectralSlidersArea->setEnabled(!checked);
+    this->radioButtonUseSpectralSlider->setChecked(!checked);
 }
 
 

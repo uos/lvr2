@@ -144,6 +144,8 @@ public Q_SLOTS:
     void showPointInfoDialog();
     void showPointPreview(vtkActor* actor, int point);
     void updatePointPreview(int pointId, PointBufferPtr points);
+    void updateSpectralSlidersEnabled(bool checked);
+    void updateSpectralGradientEnabled(bool checked);
 
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
