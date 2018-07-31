@@ -3,7 +3,6 @@
 - Dateien Laden
 	- speicher sparenderes Verfahren überlegen? _(später, optional)_
   - Tatsächliche Repräsentation _(mit anderen Gruppen absprechen, folgt später)_
-  - Geschwindigkeit verbessern _Parallelisieren_
 
 - Benutzerinterface
   - Bedeutung kenntlich machen _(Tooltips, Beschreibung, etc)_
@@ -17,6 +16,8 @@
   - switchen zwischen slider und gradient
       
   - erst updaten wenn man die Slider loslässt
+    - fraglich, da man dann jedes mal loslassen und neu greifen muss
+  - Textboxen für Wellenlängen mit gegenseitigem Aktuallisieren Textbox <-> Slider
   - wenn man mehere Punktwolken hat für alle Punktwolken einstellungen übernehmen
   - Parent bei Histogram, AboutDialog und Tooltip richtig setzen
   
