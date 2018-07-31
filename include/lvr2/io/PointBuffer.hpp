@@ -65,7 +65,11 @@ namespace lvr2
 {
 
 /**
- * \brief Stores points with various additional data channels.
+ * \brief Stores points with various additional data channels. The added channels
+ *        should always have the some length as the point array to keep the mapping
+ *        between geometry (channel 'points') and the associated layers like RGB
+ *        colors or point normals consistent.
+ *
  **/
 template <typename BaseVecT>
 class PointBuffer

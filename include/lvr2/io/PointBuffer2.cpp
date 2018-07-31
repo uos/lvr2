@@ -57,8 +57,6 @@ floatArr PointBuffer2::getNormalArray()
     return m_normals->dataPtr();
 }
 
-
-
 ucharArr PointBuffer2::getColorArray()
 {
     return m_colors->dataPtr();
