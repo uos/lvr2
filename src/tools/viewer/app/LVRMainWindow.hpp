@@ -117,7 +117,9 @@ public Q_SLOTS:
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
     void changeShading(int shader);
+    void updateSpectralColorText(int action = -1);
     void changeSpectralColor();
+    void updateSpectralGradientText(int action = -1);
     void changeGradientView();
     void assertToggles();
     void togglePoints(bool checkboxState);
