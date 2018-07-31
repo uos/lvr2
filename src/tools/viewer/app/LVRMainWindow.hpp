@@ -137,6 +137,7 @@ public Q_SLOTS:
     void buildIncompatibilityBox(string actionName, unsigned char allowedTypes);
     void showBackgroundDialog();
     void showPointInfoDialog(vtkActor* actor, int point);
+    void updatePointPreview(int pointId, PointBufferPtr points);
 
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
@@ -155,6 +156,7 @@ private:
 
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
     LVRHistogram*                               m_histogram;
+    LVRPlotter*                                 m_PointPreviewPlotter;
     LVRPointInfo*                               m_pointInfoDialog;
     QDialog*                                    m_aboutDialog;
     QDialog*                                    m_tooltipDialog;

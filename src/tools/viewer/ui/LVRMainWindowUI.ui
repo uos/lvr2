@@ -574,7 +574,8 @@
       <enum>QLayout::SetDefaultConstraint</enum>
      </property>
      <item>
-      <widget class="QGraphicsView" name="graphicsView"/>
+      <widget class="lvr::LVRPlotter" name="plotter" native="true">
+      </widget>
      </item>
     </layout>
    </widget>
@@ -1114,6 +1115,11 @@
    <class>QVTKWidget</class>
    <extends>QWidget</extends>
    <header>QVTKWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>lvr::LVRPlotter</class>
+   <extends>QWidget</extends>
+   <header>../../../../src/tools/viewer/widgets/LVRPlotter.hpp</header>
   </customwidget>
  </customwidgets>
  <resources>

@@ -83,6 +83,7 @@ LVRMainWindow::LVRMainWindow()
     m_treeChildItemContextMenu->addAction(m_actionShowColorDialog);
     m_treeChildItemContextMenu->addAction(m_actionDeleteModelItem);
 
+    m_PointPreviewPlotter = this->plotter;
     this->dockWidgetSpectralSliderSettings->close();
     this->dockWidgetSpectralColorGradientSettings->close();
     this->dockWidgetPointPreview->close();
@@ -1293,12 +1294,13 @@ void LVRMainWindow::showPointInfoDialog(vtkActor* actor, int point)
     {
         return;
     }
-    if (!m_pointInfoDialog)
+    /*if (!m_pointInfoDialog)
     {
         m_pointInfoDialog = new LVRPointInfo(treeWidget);
     }
     m_pointInfoDialog->setPointBuffer(pointBridge->getPointBuffer());
-    m_pointInfoDialog->setPoint(point);
+    m_pointInfoDialog->setPoint(point);*/
+    updatePointPreview(point, pointBridge->getPointBuffer());
 }
 
 void LVRMainWindow::changeSpectralColor()
@@ -1367,6 +1369,33 @@ void LVRMainWindow::changeGradientView()
 	    this->horizontalSlider_channel->setEnabled(!useNDVI);
     }
 
+}
+
+void LVRMainWindow::updatePointPreview(int pointId, PointBufferPtr points)
+{
+    size_t n;
+    points->getPointArray(n);
+    if (pointId < 0 || pointId >= n)
+    {
+        return;
+    }
+    
+    size_t n_spec, n_channels;
+    floatArr spec = points->getPointSpectralChannelsArray(n_spec, n_channels);
+    
+    if (pointId >= n_spec)
+    {
+        m_PointPreviewPlotter->removePoints();
+    }
+    else
+    {
+        floatArr data = floatArr(new float[n_channels]);
+        for (int i = 0; i < n_channels; i++)
+        {
+            data[i] = spec[pointId * n_channels + i];
+        }
+        m_PointPreviewPlotter->setPoints(data, n_channels, 0, 1);
+    }
 }
 
 
