@@ -63,7 +63,6 @@
 #include "../widgets/LVRFilteringMLSProjectionDialog.hpp"
 #include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
 #include "../widgets/LVRBackgroundDialog.hpp"
-#include "../widgets/LVRSpectralColorGradientDialog.hpp"
 #include "../widgets/LVRHistogram.hpp"
 
 #include "../widgets/LVRPointInfo.hpp"
@@ -119,6 +118,7 @@ public Q_SLOTS:
     void changeTransparency(int transparencyValue);
     void changeShading(int shader);
     void changeSpectralColor();
+    void changeGradientView();
     void assertToggles();
     void togglePoints(bool checkboxState);
     void toggleNormals(bool checkboxState);

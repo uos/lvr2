@@ -12,13 +12,7 @@
     - bei click auf vorschau wird das Diagramm im großen fenster angezeigt
 
 ## Interface Update:
-  - 4 Buttons oben in Toolbaar
-    - Show SliderDock (on/off)
-    - Show ColorGradientDock (on/off)
-    - Show PointPreviewDock (on/off)
-    - Show Histogramwindow
   - dockfenster für:
-    - colorgradient
     - pointpreview
   - switchen zwischen slider und gradient
       

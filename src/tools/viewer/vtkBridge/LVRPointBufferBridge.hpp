@@ -58,7 +58,7 @@ public:
     void setSpectralChannels(size_t r_channel, size_t g_channel, size_t b_channel, bool use_r = true, bool use_g = true, bool use_b = true);
     void getSpectralChannels(size_t &r_channel, size_t &g_channel, size_t &b_channel, bool &use_r, bool &use_g, bool &use_b) const;
     void setSpectralColorGradient(GradientType gradient, size_t channel, bool normalized, bool ndvi = false);
-    void getSpectralColorGradient(GradientType &gradient, size_t &channel, bool &normalized) const;
+    void getSpectralColorGradient(GradientType &gradient, size_t &channel, bool &normalized, bool &useNDVI) const;
     void useGradient(bool useGradient);
 
     PointBufferPtr getPointBuffer();
