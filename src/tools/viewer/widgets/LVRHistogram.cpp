@@ -16,10 +16,10 @@
 namespace lvr
 {
 
-LVRHistogram::LVRHistogram()
+LVRHistogram::LVRHistogram(QWidget* parent)
 {
     //Setup DialogUI and events
-    m_dialog = new QDialog();
+    m_dialog = new QDialog(parent);
     m_histogram = new Histogram;
     m_histogram->setupUi(m_dialog);
 
