@@ -192,7 +192,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionOpen, SIGNAL(triggered()), this, SLOT(loadModel()));
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
-    QObject::connect(treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(restoreSliders(QTreeWidgetItem*, int)));
+    QObject::connect(treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(restoreSliders(QTreeWidgetItem*)));
     QObject::connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(setModelVisibility(QTreeWidgetItem*, int)));
 
     QObject::connect(m_actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
@@ -376,38 +376,41 @@ void LVRMainWindow::removeArrow(LVRVtkArrow* a)
     this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem, int column)
+void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem)
 {
     LVRPointCloudItem* point_item = nullptr;
     LVRMeshItem* mesh_item = nullptr;
     
-    if(treeWidgetItem->type() == LVRModelItemType)
+    if (treeWidgetItem)
     {
-        QTreeWidgetItemIterator it(treeWidgetItem);
-
-        while(*it)
+        if(treeWidgetItem->type() == LVRModelItemType)
         {
-            QTreeWidgetItem* child_item = *it;
+            QTreeWidgetItemIterator it(treeWidgetItem);
 
-            if(child_item->type() == LVRPointCloudItemType && child_item->parent()->isSelected())
+            while(*it)
             {
-                point_item = static_cast<LVRPointCloudItem*>(child_item);
-            }
-            else if(child_item->type() == LVRMeshItemType && child_item->parent()->isSelected())
-            {
-                mesh_item = static_cast<LVRMeshItem*>(child_item);
-            }
+                QTreeWidgetItem* child_item = *it;
 
-            ++it;
+                if(child_item->type() == LVRPointCloudItemType && child_item->parent()->isSelected())
+                {
+                    point_item = static_cast<LVRPointCloudItem*>(child_item);
+                }
+                else if(child_item->type() == LVRMeshItemType && child_item->parent()->isSelected())
+                {
+                    mesh_item = static_cast<LVRMeshItem*>(child_item);
+                }
+
+                ++it;
+            }
         }
-    }
-    else if(treeWidgetItem->type() == LVRPointCloudItemType)
-    {
-        point_item = static_cast<LVRPointCloudItem*>(treeWidgetItem);
-    }
-    else if(treeWidgetItem->type() == LVRMeshItemType)
-    {
-        mesh_item = static_cast<LVRMeshItem*>(treeWidgetItem);
+        else if(treeWidgetItem->type() == LVRPointCloudItemType)
+        {
+            point_item = static_cast<LVRPointCloudItem*>(treeWidgetItem);
+        }
+        else if(treeWidgetItem->type() == LVRMeshItemType)
+        {
+            mesh_item = static_cast<LVRMeshItem*>(treeWidgetItem);
+        }
     }
 
     if (point_item)
@@ -449,7 +452,7 @@ void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem, int column)
         this->checkBox_NDVI->setChecked(use_ndvi);
         this->checkBox_normcolors->setChecked(normalize_gradient);
         this->comboBox_colorgradient->setCurrentIndex((int)gradient_type);
-	    this->label_cg_channel->setText(QString("Wavelength: %1nm").arg(p->getWavelength(gradient_channel)));
+        this->label_cg_channel->setText(QString("Wavelength: %1nm").arg(p->getWavelength(gradient_channel)));
         this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(true);
     }
     else
@@ -643,9 +646,9 @@ void LVRMainWindow::loadModel()
                 selected->setSelected(false);
             }
             lastItem->setSelected(true);
-            restoreSliders(lastItem, 0);
         }
 
+        restoreSliders(lastItem);
         assertToggles();
         updateView();
     }
@@ -697,6 +700,10 @@ void LVRMainWindow::deleteModelItem()
         delete item;
 
         refreshView();
+        if (treeWidget->selectedItems().size() > 0)
+            restoreSliders(treeWidget->selectedItems().first());
+        else
+            restoreSliders(nullptr);
     }
 }
 
@@ -983,9 +990,9 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
             selected->setSelected(false);
         }
         lastItem->setSelected(true);
-        restoreSliders(lastItem, 0);
     }
 
+    restoreSliders(lastItem);
     updateView();
     assertToggles();
 
@@ -1332,26 +1339,26 @@ void LVRMainWindow::changeSpectralColor()
         return;
     }
 
-	QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-	if(items.size() > 0)
-	{
-		QTreeWidgetItem* item = items.first();
-		LVRModelItem* model_item = getModelItem(item);
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+        LVRModelItem* model_item = getModelItem(item);
 
-		color<size_t> channels;
+        color<size_t> channels;
         color<bool> use_channel;
 
         for (int i = 0; i < 3; i++)
         {
             channels[i] = m_spectralSliders[i]->value();
-		    use_channel[i] = m_spectralCheckboxes[i]->isChecked();
+            use_channel[i] = m_spectralCheckboxes[i]->isChecked();
         }
 
-		model_item->getModelBridge()->getPointBridge()->setSpectralChannels(channels, use_channel);
+        model_item->getModelBridge()->getPointBridge()->setSpectralChannels(channels, use_channel);
 
-		m_renderer->GetRenderWindow()->Render();
+        m_renderer->GetRenderWindow()->Render();
 
-		PointBufferPtr p = model_item->getModelBridge()->getPointBridge()->getPointBuffer();
+        PointBufferPtr p = model_item->getModelBridge()->getPointBridge()->getPointBuffer();
 
         for (int i = 0; i < 3; i++)
         {
@@ -1368,28 +1375,28 @@ void LVRMainWindow::changeGradientView()
 {
     if (!this->dockWidgetSpectralColorGradientSettingsContents->isEnabled())
     {
-    	return;
+        return;
     }
     
-	QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-	if(items.size() > 0)
-	{
-		QTreeWidgetItem* item = items.first();
-		LVRModelItem* model_item = getModelItem(item);
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+        LVRModelItem* model_item = getModelItem(item);
 
-		size_t channel = this->horizontalSlider_channel->value();
-		bool useNDVI = this->checkBox_NDVI->isChecked();
-		bool normalized = this->checkBox_normcolors->isChecked();
-		int type = this->comboBox_colorgradient->currentIndex();
+        size_t channel = this->horizontalSlider_channel->value();
+        bool useNDVI = this->checkBox_NDVI->isChecked();
+        bool normalized = this->checkBox_normcolors->isChecked();
+        int type = this->comboBox_colorgradient->currentIndex();
 
-		model_item->getModelBridge()->getPointBridge()->setSpectralColorGradient((GradientType)type, channel, normalized, useNDVI);
+        model_item->getModelBridge()->getPointBridge()->setSpectralColorGradient((GradientType)type, channel, normalized, useNDVI);
 
-		m_renderer->GetRenderWindow()->Render();
+        m_renderer->GetRenderWindow()->Render();
 
-	    PointBufferPtr p = model_item->getModelBridge()->getPointBridge()->getPointBuffer();
-	    this->label_cg_channel->setText(QString("Wavelength: %1nm").arg(p->getWavelength(channel)));
+        PointBufferPtr p = model_item->getModelBridge()->getPointBridge()->getPointBuffer();
+        this->label_cg_channel->setText(QString("Wavelength: %1nm").arg(p->getWavelength(channel)));
 
-	    this->horizontalSlider_channel->setEnabled(!useNDVI);
+        this->horizontalSlider_channel->setEnabled(!useNDVI);
     }
 
 }

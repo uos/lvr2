@@ -146,7 +146,7 @@ public Q_SLOTS:
 
 protected Q_SLOTS:
     void setModelVisibility(QTreeWidgetItem* treeWidgetItem, int column);
-    void restoreSliders(QTreeWidgetItem* treeWidgetItem, int column);
+    void restoreSliders(QTreeWidgetItem* treeWidgetItem);
 
 Q_SIGNALS:
     void correspondenceDialogOpened();
