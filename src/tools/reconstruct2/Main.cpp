@@ -32,7 +32,7 @@ int main(int argc, char** argv)
     VecT offset(100, 100, 100);
 
     std::ofstream out2("test1.3d");
-    ChannelHandler::FloatChannel chn = model->m_pointCloud->getFloatChannel("points");
+    AttributeManager::FloatChannel chn = model->m_pointCloud->getFloatChannel("points");
 
     for(size_t i = 0; i < n; i++)
     {
