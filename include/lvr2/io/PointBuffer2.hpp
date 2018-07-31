@@ -33,8 +33,8 @@ public:
     ucharArr getColorArray();
     ucharArr getUcharArray(const std::string& name, unsigned& w);
 
-    AttributeManager::FloatChannel getFloatChannel(const std::string& name);
-    AttributeManager::UCharChannel getUcharChannel(const std::string& name);
+    FloatChannel getFloatChannel(const std::string& name);
+    UCharChannel getUcharChannel(const std::string& name);
 
     bool hasColors() const;
     bool hasNormals() const;
@@ -43,10 +43,10 @@ public:
 private:
 
     // Point channel, 'cached' to allow faster access
-    AttributeManager                  m_channels;
-    AttributeManager::FloatChannelPtr m_points;
-    AttributeManager::FloatChannelPtr m_normals;
-    AttributeManager::UCharChannelPtr m_colors;
+    AttributeManager                    m_channels;
+    FloatChannelPtr                     m_points;
+    FloatChannelPtr                     m_normals;
+    UCharChannelPtr                     m_colors;
 
     // Number of points in buffer
     size_t              m_numPoints;

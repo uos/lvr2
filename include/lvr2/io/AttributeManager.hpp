@@ -103,20 +103,20 @@ private:
     DataPtr         m_data;
 };
 
+// Some type aliases
+using FloatChannel = AttributeChannel<float>;
+using UCharChannel = AttributeChannel<unsigned char>;
+
+using FloatProxy = ElementProxy<float>;
+using UCharProxy = ElementProxy<unsigned char>;
+
+using FloatChannelPtr = std::shared_ptr<FloatChannel>;
+using UCharChannelPtr = std::shared_ptr<UCharChannel>;
 
 class AttributeManager
 {
 public:
-    AttributeManager() {};
-
-    using FloatChannel = AttributeChannel<float>;
-    using UCharChannel = AttributeChannel<unsigned char>;
-
-    using FloatProxy = ElementProxy<float>;
-    using UCharProxy = ElementProxy<unsigned char>;
-
-    using FloatChannelPtr = std::shared_ptr<FloatChannel>;
-    using UCharChannelPtr = std::shared_ptr<UCharChannel>;
+    AttributeManager() {}
 
     void addFloatChannel(
             floatArr array,
@@ -167,6 +167,7 @@ private:
     using FloatChannelMap = std::map<std::string, FloatChannelPtr>;
     using UCharChannelMap = std::map<std::string, UCharChannelPtr>;
 };
+
 
 } // namespace lvr2
 
