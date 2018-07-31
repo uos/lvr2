@@ -15,11 +15,13 @@ PointBuffer2::PointBuffer2(floatArr points, size_t n)
 {
     // Generate channel object pointer and add it
     // to channel map
+
     ChannelHandler::FloatChannelPtr point_data(new ChannelHandler::FloatChannel(n, 3, points));
     m_channels.addFloatChannel(point_data, "points");
-
+    std::cout << "1 : " << point_data->get().get() << std::endl;
     // Save pointers
     m_points = point_data;
+    std::cout << "2 : " << m_points->get().get() << std::endl;
     m_numPoints = n;
 }
 
@@ -32,20 +34,23 @@ PointBuffer2::PointBuffer2(floatArr points, floatArr normals, size_t n) : PointB
 
 void PointBuffer2::setPointArray(floatArr points, size_t n)
 {
+    std::cout << "ADD: " << points.get() << std::endl;
     m_points = ChannelHandler::FloatChannelPtr(new ChannelHandler::FloatChannel(n, 3, points));
+    std::cout << "1: " << m_points->get().get() << std::endl;
     m_numPoints = n;
-    m_channels.addFloatChannel(m_points, "points", n, 3);
+    m_channels.addFloatChannel(m_points, "points");
+    std::cout << "2: " << getPointArray().get() << std::endl;
 }
 
 void PointBuffer2::setNormalArray(floatArr normals, size_t n)
 {
     m_normals = ChannelHandler::FloatChannelPtr(new ChannelHandler::FloatChannel(n, 3, normals));
-    m_channels.addFloatChannel(m_normals, "normals", n, 3);
+    m_channels.addFloatChannel(m_normals, "normals");
 }
 void PointBuffer2::setColorArray(ucharArr colors, size_t n)
 {
     m_colors = ChannelHandler::UCharChannelPtr(new ChannelHandler::UCharChannel(n, 3, colors));
-    m_channels.addUCharChannel(m_colors, "colors", n, 3);
+    m_channels.addUCharChannel(m_colors, "colors");
 }
 
 floatArr PointBuffer2::getPointArray()
@@ -117,6 +122,13 @@ void PointBuffer2::addFloatChannel(floatArr data, std::string name, size_t n, un
 {
     m_channels.addFloatChannel(data, name, n, w);
 }
+
+
+void PointBuffer2::addUCharChannel(ucharArr data, std::string name, size_t n, unsigned w)
+{
+    m_channels.addUCharChannel(data, name, n, w);
+}
+
 
 }
 

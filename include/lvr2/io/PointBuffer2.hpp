@@ -25,6 +25,7 @@ public:
     void setColorArray(ucharArr colors, size_t n);
 
     void addFloatChannel(floatArr data, std::string name, size_t n, unsigned w);
+    void addUCharChannel(ucharArr data, std::string name, size_t n, unsigned w);
 
     floatArr getPointArray();
     floatArr getNormalArray();

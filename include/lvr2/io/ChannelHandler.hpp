@@ -15,7 +15,6 @@ public:
     template<typename BaseVecT>
     AttributeProxy operator=(const BaseVecT& v)
     {
-        std::cout << m_ptr << std::endl;
         if( m_ptr && (m_w > 2))
         {
             m_ptr[0] = v.x;
@@ -28,7 +27,6 @@ public:
     template<typename BaseVecT>
     AttributeProxy operator+=(const BaseVecT& v)
     {
-        //std::cout << m_w << std::endl;
         if( m_ptr && (m_w > 2))
         {
             m_ptr[0] += v.x;
@@ -40,7 +38,7 @@ public:
 
     AttributeProxy(T* pos = nullptr, unsigned w = 0) : m_ptr(pos), m_w(w) {}
 
-    T& operator[](int i)
+    T operator[](int i)
     {
         if(m_ptr && (i < m_w))
         {
@@ -50,6 +48,17 @@ public:
         {
             return 0;
         }
+    }
+
+    /// User defined conversion operator
+    template<typename BaseVecT>
+    operator BaseVecT() const
+    {
+        if(m_w == 3)
+        {
+            return BaseVecT(m_ptr[0], m_ptr[1], m_ptr[2]);
+        }
+        return BaseVecT(0, 0, 0);
     }
 
 private:
@@ -81,7 +90,7 @@ public:
     AttributeProxy<T> operator[](const unsigned& idx)
     {
         T* ptr = m_data.get();
-        return AttributeProxy<T>(&ptr[idx * m_width], m_width);
+        return AttributeProxy<T>(&(ptr[idx * m_width]), m_width);
     }
 
     DataPtr&     get() { return m_data;}
@@ -121,14 +130,12 @@ public:
             size_t n,
             unsigned width);
 
-    void addFloatChannel(
-            FloatChannelPtr data,
+    void addEmptyFloatChannel(
             std::string name,
             size_t n,
             unsigned width);
 
-    void addUCharChannel(
-            UCharChannelPtr data,
+    void addEmptyUCharChannel(
             std::string name,
             size_t n,
             unsigned width);
