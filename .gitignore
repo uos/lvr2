@@ -36,3 +36,9 @@ cmake-build-debug/
 /*.creator
 /*.files
 /*.includes
+
+# IDE files
+.vscode/
+.settings
+.project
+.cproject

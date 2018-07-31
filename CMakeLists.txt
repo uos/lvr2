@@ -27,8 +27,9 @@ include_directories(include)
 
 # Add -O0 to remove optimizations when using gcc
 if(CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-    set(CMAKE_C_FLAGS_DEBUG "-O0 -g")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g")
+    add_compile_options(-O0 -g)
 endif(CMAKE_COMPILER_IS_GNUCC)
 
 if(MSVC)

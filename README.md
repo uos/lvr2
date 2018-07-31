@@ -9,7 +9,7 @@ robotic applications such as tele operation in unknown environments and
 localization.
 
 This software is under permanent development and runs under Linux and MacOS. A
-Windows version will be made avialable soon.
+Windows version will be made available soon.
 
 
 COMPILATION
@@ -50,7 +50,7 @@ REQUIRED LIBRARIES
   + OpenCV 3 or 4
 
 You need to compile libQGLViewer with CONFIG += no_keywords to be compatible 
-with Boost. If the version that comes with your Linux distrubution is not
+with Boost. If the version that comes with your Linux distribution is not
 build this way, you have to compile and install the library manually with these 
 flags. The sources can be found on the project website: http://www.libqglviewer.com/
 
@@ -83,14 +83,14 @@ reconstruction call:
 ```
 
 in the root directory of the project. This will create a file called
-“traingle_mesh.ply” which can be displayed using the viewer application:
+“triangle_mesh.ply” which can be displayed using the viewer application:
 
 ```bash
 ./bin/lvr_viewer
 ```
 
 If you want to use the example data, call for colorizing a point cloud without
-color informaion call:
+color information call:
 
 ```bash
 ./colorize -d 100 -c ff0000 example-data/scan-no-color.3d example-data/scan-with-color.pts colored-scan.pts
