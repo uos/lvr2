@@ -197,16 +197,18 @@ ModelPtr<BaseVecT> AsciiIO<BaseVecT>::read(
     if(has_color)
     {
         numColors = numPoints;
+        model->m_pointCloud->setColorArray(pointColors, numColors);
+
     }
 
     if(has_intensity)
     {
         numIntensities = numPoints;
+        model->m_pointCloud->addFloatChannel(pointIntensities, "intensities", numIntensities, 1);
+
     }
 
     model->m_pointCloud->setPointArray(points, numPoints);
-    model->m_pointCloud->setColorArray(pointColors, numColors);
-    model->m_pointCloud->addFloatChannel(pointIntensities, "intensities", numIntensities, 1);
 
     this->m_model = model;
     return model;

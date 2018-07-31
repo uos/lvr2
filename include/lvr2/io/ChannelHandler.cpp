@@ -9,16 +9,16 @@ namespace lvr2
 void ChannelHandler::addFloatChannel(floatArr data, std::string name, size_t n, unsigned width)
 {
     FloatChannelPtr channel(new FloatChannel(n, width, data));
-    addFloatChannel(channel, name, n, width);
+    addFloatChannel(channel, name);
 }
 
 void ChannelHandler::addUCharChannel(ucharArr data, std::string name, size_t n, unsigned width)
 {
     UCharChannelPtr channel(new UCharChannel(n, width, data));
-    addUCharChannel(channel, name, n, width);
+    addUCharChannel(channel, name);
 }
 
-void ChannelHandler::addFloatChannel(FloatChannelPtr data, std::string name, size_t n, unsigned width)
+void ChannelHandler::addEmptyFloatChannel(std::string name, size_t n, unsigned width)
 {
     floatArr array(new float[width * n]);
     for(size_t i = 0; i < n * width; i++)
@@ -29,7 +29,7 @@ void ChannelHandler::addFloatChannel(FloatChannelPtr data, std::string name, siz
     addFloatChannel(ptr, name);
 }
 
-void ChannelHandler::addUCharChannel(UCharChannelPtr data, std::string name, size_t n, unsigned width)
+void ChannelHandler::addEmptyUCharChannel(std::string name, size_t n, unsigned width)
 {
     ucharArr array(new unsigned char[width * n]);
     for(size_t i = 0; i < n * width; i++)
@@ -221,6 +221,7 @@ ChannelHandler::FloatChannel& ChannelHandler::getFloatChannel(std::string name)
     {
         return *(it->second);
     }
+
 }
 
 }
