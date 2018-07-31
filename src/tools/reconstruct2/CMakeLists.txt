@@ -8,6 +8,7 @@ set(RECONSTRUCT_SOURCES
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/AttributeManager.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/Timestamp.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/Progress.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseBuffer.cpp
     Main.cpp
 )
 
