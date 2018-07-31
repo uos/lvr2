@@ -15,7 +15,7 @@ PointBuffer2::PointBuffer2(floatArr points, size_t n)
 {
     // Generate channel object pointer and add it
     // to channel map
-    AttributeManager::FloatChannelPtr point_data(new AttributeManager::FloatChannel(n, 3, points));
+    FloatChannelPtr point_data(new FloatChannel(n, 3, points));
     m_channels.addFloatChannel(point_data, "points");
 
     // Save pointers
@@ -26,25 +26,25 @@ PointBuffer2::PointBuffer2(floatArr points, size_t n)
 PointBuffer2::PointBuffer2(floatArr points, floatArr normals, size_t n) : PointBuffer2(points, n)
 {
     // Add normal data
-    AttributeManager::FloatChannelPtr normal_data(new AttributeManager::FloatChannel(n, 3, points));
+    FloatChannelPtr normal_data(new FloatChannel(n, 3, points));
     m_channels.addFloatChannel(normal_data, "normals");
 }
 
 void PointBuffer2::setPointArray(floatArr points, size_t n)
 {
-    m_points = AttributeManager::FloatChannelPtr(new AttributeManager::FloatChannel(n, 3, points));
+    m_points = FloatChannelPtr(new FloatChannel(n, 3, points));
     m_numPoints = n;
     m_channels.addFloatChannel(m_points, "points");
 }
 
 void PointBuffer2::setNormalArray(floatArr normals, size_t n)
 {
-    m_normals = AttributeManager::FloatChannelPtr(new AttributeManager::FloatChannel(n, 3, normals));
+    m_normals = FloatChannelPtr(new FloatChannel(n, 3, normals));
     m_channels.addFloatChannel(m_normals, "normals");
 }
 void PointBuffer2::setColorArray(ucharArr colors, size_t n)
 {
-    m_colors = AttributeManager::UCharChannelPtr(new AttributeManager::UCharChannel(n, 3, colors));
+    m_colors = UCharChannelPtr(new UCharChannel(n, 3, colors));
     m_channels.addUCharChannel(m_colors, "colors");
 }
 
@@ -88,12 +88,12 @@ ucharArr PointBuffer2::getUcharArray(const std::string& name, unsigned& w)
     return arr;
 }
 
-AttributeManager::FloatChannel PointBuffer2::getFloatChannel(const std::string& name)
+FloatChannel PointBuffer2::getFloatChannel(const std::string& name)
 {
     return m_channels.getFloatChannel(name);
 }
 
-AttributeManager::UCharChannel PointBuffer2::getUcharChannel(const std::string& name)
+UCharChannel PointBuffer2::getUcharChannel(const std::string& name)
 {
     return m_channels.getUCharChannel(name);
 }

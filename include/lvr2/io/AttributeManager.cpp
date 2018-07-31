@@ -100,7 +100,7 @@ unsigned AttributeManager::floatChannelWidth(std::string name)
     }
 }
 
-AttributeManager::FloatProxy AttributeManager::getFloatHandle(int idx, const std::string& name)
+FloatProxy AttributeManager::getFloatHandle(int idx, const std::string& name)
 {
     auto it = m_floatChannels.find(name);
     if(it != m_floatChannels.end())
@@ -134,9 +134,7 @@ AttributeManager::FloatProxy AttributeManager::getFloatHandle(int idx, const std
     }
 }
 
-
-
-AttributeManager::UCharProxy AttributeManager::getUCharHandle(int idx, const std::string& name)
+UCharProxy AttributeManager::getUCharHandle(int idx, const std::string& name)
 {
     auto it = m_ucharChannels.find(name);
     if(it != m_ucharChannels.end())
@@ -205,7 +203,7 @@ ucharArr AttributeManager::getUCharArray(size_t& n, unsigned& w, const std::stri
     }
 }
 
-AttributeManager::UCharChannel& AttributeManager::getUCharChannel(std::string name)
+UCharChannel& AttributeManager::getUCharChannel(std::string name)
 {
     auto it = m_ucharChannels.find(name);
     if(it != m_ucharChannels.end())
@@ -214,7 +212,7 @@ AttributeManager::UCharChannel& AttributeManager::getUCharChannel(std::string na
     }
 }
 
-AttributeManager::FloatChannel& AttributeManager::getFloatChannel(std::string name)
+FloatChannel& AttributeManager::getFloatChannel(std::string name)
 {
     auto it = m_floatChannels.find(name);
     if(it != m_floatChannels.end())
