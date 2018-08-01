@@ -39,6 +39,16 @@ void LVRHistogram::setPointBuffer(PointBufferPtr points)
     m_points = points;
 }
 
+PointBufferPtr LVRHistogram::getPointBuffer() const
+{
+    return m_points;
+}
+
+bool LVRHistogram::isVisible() const
+{
+    return m_dialog->isVisible();
+}
+
 void LVRHistogram::sethistogram()
 {  
     size_t n;    

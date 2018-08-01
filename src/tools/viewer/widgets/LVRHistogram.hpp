@@ -44,6 +44,8 @@ public:
 
     void sethistogram();
     void setPointBuffer(PointBufferPtr points);
+    bool isVisible() const;
+    PointBufferPtr getPointBuffer() const;
 
 public Q_SLOTS:
     void refresh(int);
