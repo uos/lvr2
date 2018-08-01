@@ -196,7 +196,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionOpen, SIGNAL(triggered()), this, SLOT(loadModel()));
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
-    QObject::connect(treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(restoreSliders(QTreeWidgetItem*)));
+    QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(restoreSliders()));
     QObject::connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(setModelVisibility(QTreeWidgetItem*, int)));
 
     QObject::connect(m_actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
@@ -391,48 +391,18 @@ void LVRMainWindow::removeArrow(LVRVtkArrow* a)
     this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem)
+void LVRMainWindow::restoreSliders()
 {
-    LVRPointCloudItem* point_item = nullptr;
-    LVRMeshItem* mesh_item = nullptr;
+    std::set<LVRPointCloudItem*> pointCloudItems = getSelectedPointCloudItems();
+    std::set<LVRMeshItem*> meshItems = getSelectedMeshItems();
     
-    if (treeWidgetItem)
+    if (!pointCloudItems.empty())
     {
-        if(treeWidgetItem->type() == LVRModelItemType)
-        {
-            QTreeWidgetItemIterator it(treeWidgetItem);
+        LVRPointCloudItem* pointCloudItem = *pointCloudItems.begin();
 
-            while(*it)
-            {
-                QTreeWidgetItem* child_item = *it;
-
-                if(child_item->type() == LVRPointCloudItemType && child_item->parent()->isSelected())
-                {
-                    point_item = static_cast<LVRPointCloudItem*>(child_item);
-                }
-                else if(child_item->type() == LVRMeshItemType && child_item->parent()->isSelected())
-                {
-                    mesh_item = static_cast<LVRMeshItem*>(child_item);
-                }
-
-                ++it;
-            }
-        }
-        else if(treeWidgetItem->type() == LVRPointCloudItemType)
-        {
-            point_item = static_cast<LVRPointCloudItem*>(treeWidgetItem);
-        }
-        else if(treeWidgetItem->type() == LVRMeshItemType)
-        {
-            mesh_item = static_cast<LVRMeshItem*>(treeWidgetItem);
-        }
-    }
-
-    if (point_item)
-    {
         m_horizontalSliderPointSize->setEnabled(true);
-        m_horizontalSliderPointSize->setValue(point_item->getPointSize());
-        int transparency = ((float)1 - point_item->getOpacity()) * 100;
+        m_horizontalSliderPointSize->setValue(pointCloudItem->getPointSize());
+        int transparency = ((float)1 - pointCloudItem->getOpacity()) * 100;
         m_horizontalSliderTransparency->setEnabled(true);
         m_horizontalSliderTransparency->setValue(transparency);
 
@@ -442,15 +412,15 @@ void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem)
         bool use_ndvi, normalize_gradient;
         GradientType gradient_type;
 
-        point_item->getPointBufferBridge()->getSpectralChannels(channels, use_channel);
-        point_item->getPointBufferBridge()->getSpectralColorGradient(gradient_type, gradient_channel, normalize_gradient, use_ndvi);
-        n_channels = point_item->getPointBuffer()->getNumSpectralChannels();
-        PointBufferPtr p = point_item->getPointBuffer();
+        pointCloudItem->getPointBufferBridge()->getSpectralChannels(channels, use_channel);
+        pointCloudItem->getPointBufferBridge()->getSpectralColorGradient(gradient_type, gradient_channel, normalize_gradient, use_ndvi);
+        n_channels = pointCloudItem->getPointBuffer()->getNumSpectralChannels();
+        PointBufferPtr p = pointCloudItem->getPointBuffer();
 
         this->dockWidgetSpectralSliderSettingsContents->setEnabled(false); // disable to stop changeSpectralColor from re-rendering 6 times
         for (int i = 0; i < 3; i++)
         {
-            m_spectralSliders[i]->setMaximum(p->getMaxWavelength());
+            m_spectralSliders[i]->setMaximum(p->getMaxWavelength() - 1);
             m_spectralSliders[i]->setMinimum(p->getMinWavelength());
             m_spectralSliders[i]->setSingleStep(p->numWavelengthsPerChannel());
             m_spectralSliders[i]->setPageStep(10 * p->numWavelengthsPerChannel());
@@ -482,14 +452,16 @@ void LVRMainWindow::restoreSliders(QTreeWidgetItem* treeWidgetItem)
         this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(false);
     }
 
-    if (mesh_item)
+    if (!meshItems.empty())
     {
-        int transparency = ((float)1 - mesh_item->getOpacity()) * 100;
+        LVRMeshItem* meshItem = *meshItems.begin();
+
+        int transparency = ((float)1 - meshItem->getOpacity()) * 100;
         m_horizontalSliderTransparency->setEnabled(true);
         m_horizontalSliderTransparency->setValue(transparency);
     }
 
-    if (!point_item && !mesh_item)
+    if (pointCloudItems.empty() && meshItems.empty())
     {
         m_horizontalSliderTransparency->setEnabled(false);
         m_horizontalSliderTransparency->setValue(0);
@@ -666,7 +638,7 @@ void LVRMainWindow::loadModel()
             lastItem->setSelected(true);
         }
 
-        restoreSliders(lastItem);
+        restoreSliders();
         assertToggles();
         updateView();
     }
@@ -718,10 +690,7 @@ void LVRMainWindow::deleteModelItem()
         delete item;
 
         refreshView();
-        if (treeWidget->selectedItems().size() > 0)
-            restoreSliders(treeWidget->selectedItems().first());
-        else
-            restoreSliders(nullptr);
+        restoreSliders();
     }
 }
 
@@ -772,6 +741,46 @@ LVRMeshItem* LVRMainWindow::getMeshItem(QTreeWidgetItem* item)
     return NULL;
 }
 
+std::set<LVRModelItem*> LVRMainWindow::getSelectedModelItems()
+{
+    std::set<LVRModelItem*> items;
+    for (QTreeWidgetItem* item : treeWidget->selectedItems())
+    {
+        LVRModelItem* modelItem = getModelItem(item);
+        if (modelItem)
+        {
+            items.insert(modelItem);
+        }
+    }
+    return items;
+}
+std::set<LVRPointCloudItem*> LVRMainWindow::getSelectedPointCloudItems()
+{
+    std::set<LVRPointCloudItem*> items;
+    for (QTreeWidgetItem* item : treeWidget->selectedItems())
+    {
+        LVRPointCloudItem* pointCloudItem = getPointCloudItem(item);
+        if (pointCloudItem)
+        {
+            items.insert(pointCloudItem);
+        }
+    }
+    return items;
+}
+std::set<LVRMeshItem*> LVRMainWindow::getSelectedMeshItems()
+{
+    std::set<LVRMeshItem*> items;
+    for (QTreeWidgetItem* item : treeWidget->selectedItems())
+    {
+        LVRMeshItem* modelItem = getMeshItem(item);
+        if (modelItem)
+        {
+            items.insert(modelItem);
+        }
+    }
+    return items;
+}
+
 void LVRMainWindow::assertToggles()
 {
     togglePoints(m_actionShow_Points->isChecked());
@@ -808,11 +817,8 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
 
 void LVRMainWindow::changePointSize(int pointSize)
 {
-    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-    if(items.size() > 0)
+    for (QTreeWidgetItem* item : treeWidget->selectedItems())
     {
-        QTreeWidgetItem* item = items.first();
-
         if(item->type() == LVRModelItemType)
         {
             QTreeWidgetItemIterator it(item);
@@ -840,10 +846,8 @@ void LVRMainWindow::changePointSize(int pointSize)
 
 void LVRMainWindow::changeTransparency(int transparencyValue)
 {
-    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-    if(items.size() > 0)
+    for (QTreeWidgetItem* item : treeWidget->selectedItems())
     {
-        QTreeWidgetItem* item = items.first();
         float opacityValue = 1 - ((float)transparencyValue / (float)100);
 
         if(item->type() == LVRModelItemType)
@@ -883,11 +887,8 @@ void LVRMainWindow::changeTransparency(int transparencyValue)
 
 void LVRMainWindow::changeShading(int shader)
 {
-    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-    if(items.size() > 0)
+    for (QTreeWidgetItem* item : treeWidget->selectedItems())
     {
-        QTreeWidgetItem* item = items.first();
-
         if(item->type() == LVRMeshItemType)
         {
             LVRMeshItem* model_item = static_cast<LVRMeshItem*>(item);
@@ -1010,7 +1011,7 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
         lastItem->setSelected(true);
     }
 
-    restoreSliders(lastItem);
+    restoreSliders();
     updateView();
     assertToggles();
 
@@ -1028,10 +1029,8 @@ void LVRMainWindow::manualICP()
 void LVRMainWindow::showColorDialog()
 {
     QColor c = QColorDialog::getColor();
-    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-    if(items.size() > 0)
+    for (QTreeWidgetItem* item : treeWidget->selectedItems())
     {
-        QTreeWidgetItem* item = items.first();
         if(item->type() == LVRPointCloudItemType)
         {
             LVRPointCloudItem* pc_item = static_cast<LVRPointCloudItem*>(item);
@@ -1318,7 +1317,6 @@ void LVRMainWindow::showPointPreview(vtkActor* actor, int point)
     {
         return;
     }
-    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     LVRPointBufferBridge* pointBridge = nullptr;
     for(int i = 0; i < treeWidget->topLevelItemCount(); i++)
     {
@@ -1368,54 +1366,43 @@ void LVRMainWindow::updateSpectralColorText(int action)
         }
         case -1: //valueChanged(int)
         {
-            QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-            if(items.size() > 0)
+            for (int i = 0; i < 3; i++)
             {
-                QTreeWidgetItem* item = items.first();
-                LVRModelItem* model_item = getModelItem(item);
-                PointBufferPtr p = model_item->getModelBridge()->getPointBridge()->getPointBuffer();
-
-                for (int i = 0; i < 3; i++)
+                int wavelength = m_spectralSliders[i]->value();
+                if (!m_spectralLineEdit[i]->hasFocus())
                 {
-                    int wavelength = m_spectralSliders[i]->value();
-                    if (!m_spectralLineEdit[i]->hasFocus())
-                    {
                     m_spectralLineEdit[i]->setText(QString("%1").arg(wavelength));
                 }
             }
         }
     }
 }
-        }
-            
+
 void LVRMainWindow::textSpectralColorChangeFinished()
 {
     textSpectralColorChange();
-        changeSpectralColor();
-    }
+    changeSpectralColor();
+}
 
 void LVRMainWindow::textSpectralColorChange()
 {
-    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-    if(items.size() > 0)
+    std::set<LVRPointCloudItem*> items = getSelectedPointCloudItems();
+    if(!items.empty())
     {
-        QTreeWidgetItem* item = items.first();
-        LVRModelItem* model_item = getModelItem(item);
-
-        PointBufferPtr points = model_item->getModelBridge()->getPointBridge()->getPointBuffer();
+        PointBufferPtr points = (*items.begin())->getPointBuffer();
         int min = points->getMinWavelength();
         int max = points->getMaxWavelength();
-            
-        for (int i = 0; i < 3; i++)
-    {
-            QString test = m_spectralLineEdit[i]-> text();
-        bool ok;
-        int wavelength = test.toUInt(&ok);
 
-        if (!ok)
+        for (int i = 0; i < 3; i++)
         {
-            return;
-        }
+            QString test = m_spectralLineEdit[i]-> text();
+            bool ok;
+            int wavelength = test.toUInt(&ok);
+
+            if (!ok)
+            {
+                return;
+            }
             if (wavelength < min)
                 m_spectralSliders[i]->setValue(min);
             else if (wavelength >= max)
@@ -1433,33 +1420,35 @@ void LVRMainWindow::changeSpectralColor()
         return;
     }
 
-    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-    for(QTreeWidgetItem* item : items)
+    std::set<LVRPointCloudItem*> items = getSelectedPointCloudItems();
+
+    if (items.empty())
     {
-        LVRModelItem* model_item = getModelItem(item);
-
-        color<size_t> channels;
-        color<bool> use_channel;
-        
-        PointBufferPtr p = model_item->getModelBridge()->getPointBridge()->getPointBuffer();
-
-        for (int i = 0; i < 3; i++)
-        {
-            int wavelength = m_spectralSliders[i]->value();
-            m_spectralLineEdit[i]->setText(QString("%1").arg(wavelength));
-
-            channels[i] = p->getChannel(wavelength);
-
-            use_channel[i] = m_spectralCheckboxes[i]->isChecked();
-            m_spectralSliders[i]->setEnabled(use_channel[i]);
-            m_spectralLineEdit[i]->setEnabled(use_channel[i]);
-        }
-
-        model_item->getModelBridge()->getPointBridge()->setSpectralChannels(channels, use_channel);
-
-        m_renderer->GetRenderWindow()->Render();
+        return;
     }
 
+    color<size_t> channels;
+    color<bool> use_channel;
+
+    PointBufferPtr p = (*items.begin())->getPointBuffer();
+
+    for (int i = 0; i < 3; i++)
+    {
+        int wavelength = m_spectralSliders[i]->value();
+        m_spectralLineEdit[i]->setText(QString("%1").arg(wavelength));
+
+        channels[i] = p->getChannel(wavelength);
+
+        use_channel[i] = m_spectralCheckboxes[i]->isChecked();
+        m_spectralSliders[i]->setEnabled(use_channel[i]);
+        m_spectralLineEdit[i]->setEnabled(use_channel[i]);
+    }
+
+    for(LVRPointCloudItem* item : items)
+    {
+        item->getPointBufferBridge()->setSpectralChannels(channels, use_channel);
+    }
+    m_renderer->GetRenderWindow()->Render();
 }
 
 void LVRMainWindow::updateSpectralGradientText(int action)
@@ -1480,9 +1469,9 @@ void LVRMainWindow::updateSpectralGradientText(int action)
             if(items.size() > 0)
             {
                 QTreeWidgetItem* item = items.first();
-                LVRModelItem* model_item = getModelItem(item);
+                LVRPointCloudItem* pointCloudItem = getPointCloudItem(item);
                 size_t channel = this->horizontalSlider_channel->value();
-                PointBufferPtr p = model_item->getModelBridge()->getPointBridge()->getPointBuffer();
+                PointBufferPtr p = pointCloudItem->getPointBuffer();
                 this->label_cg_channel->setText(QString("Wavelength: %1nm").arg(p->getWavelength(channel)));
             }
         }
@@ -1496,26 +1485,29 @@ void LVRMainWindow::changeGradientView()
         return;
     }
     
-    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-    for(QTreeWidgetItem* item : items)
+    std::set<LVRPointCloudItem*> items = getSelectedPointCloudItems();
+
+    if (items.empty())
     {
-        LVRModelItem* model_item = getModelItem(item);
-
-        size_t channel = this->horizontalSlider_channel->value();
-        bool useNDVI = this->checkBox_NDVI->isChecked();
-        bool normalized = this->checkBox_normcolors->isChecked();
-        int type = this->comboBox_colorgradient->currentIndex();
-
-        model_item->getModelBridge()->getPointBridge()->setSpectralColorGradient((GradientType)type, channel, normalized, useNDVI);
-
-        m_renderer->GetRenderWindow()->Render();
-
-        PointBufferPtr p = model_item->getModelBridge()->getPointBridge()->getPointBuffer();
-        this->label_cg_channel->setText(QString("Wavelength: %1nm").arg(p->getWavelength(channel)));
-
-        this->horizontalSlider_channel->setEnabled(!useNDVI);
+        return;
     }
 
+    size_t channel = this->horizontalSlider_channel->value();
+    bool useNDVI = this->checkBox_NDVI->isChecked();
+    bool normalized = this->checkBox_normcolors->isChecked();
+    int type = this->comboBox_colorgradient->currentIndex();
+
+    for(LVRPointCloudItem* item : items)
+    {
+        item->getPointBufferBridge()->setSpectralColorGradient((GradientType)type, channel, normalized, useNDVI);
+    }
+
+    PointBufferPtr p = (*items.begin())->getPointBuffer();
+    this->label_cg_channel->setText(QString("Wavelength: %1nm").arg(p->getWavelength(channel)));
+
+    this->horizontalSlider_channel->setEnabled(!useNDVI);
+
+    m_renderer->GetRenderWindow()->Render();
 }
 
 void LVRMainWindow::updatePointPreview(int pointId, PointBufferPtr points)
@@ -1552,15 +1544,11 @@ void LVRMainWindow::updateSpectralSlidersEnabled(bool checked)
         return;
     }
 
-    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-    if(items.size() > 0)
+    for (LVRPointCloudItem* item : getSelectedPointCloudItems())
     {
-        QTreeWidgetItem* item = items.first();
-        LVRModelItem* model_item = getModelItem(item);
-
-        model_item->getModelBridge()->getPointBridge()->useGradient(!checked);
-        m_renderer->GetRenderWindow()->Render();
+        item->getPointBufferBridge()->useGradient(!checked);
     }
+    m_renderer->GetRenderWindow()->Render();
 
     this->frameSpectralSlidersArea->setEnabled(checked);
     this->frameSpectralGradientArea->setEnabled(!checked);
@@ -1574,15 +1562,11 @@ void LVRMainWindow::updateSpectralGradientEnabled(bool checked)
         return;
     }
 
-    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-    if(items.size() > 0)
+    for (LVRPointCloudItem* item : getSelectedPointCloudItems())
     {
-        QTreeWidgetItem* item = items.first();
-        LVRModelItem* model_item = getModelItem(item);
-
-        model_item->getModelBridge()->getPointBridge()->useGradient(checked);
-        m_renderer->GetRenderWindow()->Render();
+        item->getPointBufferBridge()->useGradient(checked);
     }
+    m_renderer->GetRenderWindow()->Render();
 
     this->frameSpectralGradientArea->setEnabled(checked);
     this->frameSpectralSlidersArea->setEnabled(!checked);
