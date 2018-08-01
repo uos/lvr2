@@ -1292,6 +1292,10 @@ void LVRMainWindow::showHistogram()
             PointBufferBridgePtr points = model_item->getModelBridge()->getPointBridge();
             if(points->getNumPoints() && points->getPointBuffer()->hasPointSpectralChannels())
             {
+                if (m_histogram && m_histogram->isVisible() && m_histogram->getPointBuffer() == points->getPointBuffer())
+                {
+                    return;
+                }  
                 m_histogram = new LVRHistogram(this);
                 m_histogram->setPointBuffer(points->getPointBuffer());
                 m_histogram->sethistogram();   
