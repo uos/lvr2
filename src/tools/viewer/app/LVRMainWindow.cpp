@@ -268,7 +268,6 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(horizontalSlider_channel, SIGNAL(actionTriggered(int)), this, SLOT(updateSpectralGradientText(int)));
     QObject::connect(horizontalSlider_channel, SIGNAL(sliderReleased()), this, SLOT(changeGradientView()));
 
-    QObject::connect(horizontalSlider_channel, SIGNAL(valueChanged(int)), this, SLOT(changeGradientView()));
     QObject::connect(comboBox_colorgradient, SIGNAL(currentIndexChanged(int)), this, SLOT(changeGradientView()));
     QObject::connect(checkBox_normcolors, SIGNAL(stateChanged(int)), this, SLOT(changeGradientView()));
     QObject::connect(checkBox_NDVI, SIGNAL(stateChanged(int)), this, SLOT(changeGradientView()));
