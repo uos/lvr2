@@ -8,7 +8,7 @@ namespace lvr
 {
 
 LVRPlotter::LVRPlotter(QWidget * parent)
-	: QWidget(parent), m_numPoints(0)
+	: QWidget(parent), m_mode(PlotMode::LINE), m_numPoints(0)
 {
 	m_points.reset();
 }
