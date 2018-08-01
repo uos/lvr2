@@ -277,9 +277,15 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="dockWidgetSpectralSliderSettings">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="minimumSize">
     <size>
-     <width>333</width>
+     <width>420</width>
      <height>200</height>
     </size>
    </property>
@@ -431,16 +437,22 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="dockWidgetSpectralColorGradientSettings">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="minimumSize">
     <size>
-     <width>299</width>
-     <height>170</height>
+     <width>420</width>
+     <height>200</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
-     <width>299</width>
-     <height>170</height>
+     <width>524287</width>
+     <height>200</height>
     </size>
    </property>
    <property name="features">
@@ -646,7 +658,7 @@
   </widget>
   <widget class="QDockWidget" name="dockWidgetActions">
    <property name="sizePolicy">
-    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
      <horstretch>0</horstretch>
      <verstretch>0</verstretch>
     </sizepolicy>
@@ -660,7 +672,7 @@
    <property name="maximumSize">
     <size>
      <width>524287</width>
-     <height>300</height>
+     <height>200</height>
     </size>
    </property>
    <property name="autoFillBackground">
