@@ -147,20 +147,27 @@ private:
 // Some type aliases
 using FloatChannel = AttributeChannel<float>;
 using UCharChannel = AttributeChannel<unsigned char>;
-using IntChannel = AttributeChannel<size_t>;
+using IndexChannel = AttributeChannel<size_t>;
 
 using FloatProxy = ElementProxy<float>;
 using UCharProxy = ElementProxy<unsigned char>;
-using IntProxy = ElementProxy<size_t>;
+using IndexProxy = ElementProxy<size_t>;
 
 using FloatChannelPtr = std::shared_ptr<FloatChannel>;
 using UCharChannelPtr = std::shared_ptr<UCharChannel>;
-using IntChannelPtr = std::shared_ptr<IntChannel>;
+using IndexChannelPtr = std::shared_ptr<IndexChannel>;
 
 class AttributeManager
 {
 public:
     AttributeManager() {}
+
+    void addIndexChannel(
+            indexArray array,
+            std::string name,
+            size_t n,
+            unsigned width);
+
 
     void addFloatChannel(
             floatArr array,
@@ -184,34 +191,46 @@ public:
             size_t n,
             unsigned width);
 
+    void addEmptyIndexChannel(
+            std::string name,
+            size_t n,
+            unsigned width);
+
     bool hasUCharChannel(std::string name);
     bool hasFloatChannel(std::string name);
+    bool hasIndexChannel(std::string name);
 
     unsigned ucharChannelWidth(std::string name);
     unsigned floatChannelWidth(std::string name);
+    unsigned indexChannelWidth(std::string name);
 
     FloatProxy getFloatHandle(int idx, const std::string& name);
     UCharProxy getUCharHandle(int idx, const std::string& name);
+    IndexProxy getIndexHandle(int idx, const std::string& name);
 
     FloatProxy operator[](size_t idx);
 
     floatArr getFloatArray(size_t& n, unsigned& w, const std::string name);
     ucharArr getUCharArray(size_t& n, unsigned& w, const std::string name);
+    indexArray getIndexArray(size_t& n, unsigned& w, const std::string name);
 
     FloatChannel& getFloatChannel(std::string name);
     UCharChannel& getUCharChannel(std::string name);
+    IndexChannel& getIndexChannel(std::string name);
 
     void addFloatChannel(FloatChannelPtr data, std::string name);
     void addUCharChannel(UCharChannelPtr data, std::string name);
+    void addIndexChannel(IndexChannelPtr data, std::string name);
 
 private:
 
-    std::map<std::string, FloatChannelPtr>  m_floatChannels;
-    std::map<std::string, UCharChannelPtr>  m_ucharChannels;
-    std::map<std::string, IntChannelPtr>    m_intChannels;
+    std::map<std::string, FloatChannelPtr>      m_floatChannels;
+    std::map<std::string, UCharChannelPtr>      m_ucharChannels;
+    std::map<std::string, IndexChannelPtr>      m_indexChannels;
 
     using FloatChannelMap = std::map<std::string, FloatChannelPtr>;
     using UCharChannelMap = std::map<std::string, UCharChannelPtr>;
+    using IndexChannelMap = std::map<std::string, IndexChannelPtr>;
 };
 
 

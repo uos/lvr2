@@ -38,18 +38,20 @@ public:
     ///
     /// \brief getFloatArray    Returns a float array representation of the given channel
     /// \param name             Name of the channel
+    /// \param n                Number of attributes in the channel
     /// \param w                Number of elements per attribute
     /// \return                 Array of attributes
     ///
-    floatArr getFloatArray(const std::string& name, unsigned& w);
+    floatArr getFloatArray(const std::string& name, size_t& n, unsigned& w);
 
     ///
     /// \brief getFloatArray    Returns a unsigned char arrey representation of the given channel
     /// \param name             Name of the channel
+    /// \param n                Number of attributes in the channel
     /// \param w                Number of elements per attribute
     /// \return                 Array of attributes
     ///
-    ucharArr getUcharArray(const std::string& name, unsigned& w);
+    ucharArr getUcharArray(const std::string& name, size_t& n, unsigned& w);
 
     ///
     /// \brief getFloatChannel  Returns a float channel representation of the

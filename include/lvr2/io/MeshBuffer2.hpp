@@ -5,6 +5,9 @@
 #include <lvr2/texture/Material.hpp>
 #include <lvr2/texture/Texture.hpp>
 
+namespace lvr2
+{
+
 ////
 /// \brief The MeshBuffer2 Mesh representation for I/O modules.
 ///
@@ -127,12 +130,6 @@ public:
 
 private:
 
-    /// Channel with attributes for vertices
-    AttributeChannel    m_vertexAttributes;
-
-    /// Channel with attributes for faces
-    AttributeChannel    m_faceAttributes;
-
     /// Vector containing all material definitions
     vector<Material>    m_materials;
 
@@ -148,4 +145,5 @@ private:
 
 };
 
+}
 #endif // MESHBUFFER2_HPP

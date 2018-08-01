@@ -8,18 +8,14 @@ BaseBuffer::BaseBuffer()
 
 }
 
-floatArr BaseBuffer::getFloatArray(const std::string& name, unsigned& w)
+floatArr BaseBuffer::getFloatArray(const std::string& name, size_t& n, unsigned& w)
 {
-    size_t n;
-    floatArr arr = m_channels.getFloatArray(n, w, name);
-    return arr;
+    return m_channels.getFloatArray(n, w, name);
 }
 
-ucharArr BaseBuffer::getUcharArray(const std::string& name, unsigned& w)
+ucharArr BaseBuffer::getUcharArray(const std::string& name, size_t& n, unsigned& w)
 {
-    size_t n;
-    ucharArr arr = m_channels.getUCharArray(n, w, name);
-    return arr;
+    return m_channels.getUCharArray(n, w, name);
 }
 
 FloatChannel BaseBuffer::getFloatChannel(const std::string& name)
