@@ -74,7 +74,7 @@ private:
 
 public:
     /**
-     * @brief COnstructor
+     * @brief Constructor
      */
     ClusterTexCoordMapping() : m_len(0) {}
 
