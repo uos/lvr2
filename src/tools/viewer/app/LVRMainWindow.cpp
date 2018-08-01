@@ -67,7 +67,7 @@ LVRMainWindow::LVRMainWindow()
     QHeaderView* v = this->treeWidget->header();
     v->resizeSection(0, 175);
 
-    treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+    treeWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
     treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
     m_treeWidgetHelper = new LVRTreeWidgetHelper(treeWidget);
@@ -1471,9 +1471,8 @@ void LVRMainWindow::changeSpectralColor()
     }
 
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-    if(items.size() > 0)
+    for(QTreeWidgetItem* item : items)
     {
-        QTreeWidgetItem* item = items.first();
         LVRModelItem* model_item = getModelItem(item);
 
         color<size_t> channels;
@@ -1535,9 +1534,8 @@ void LVRMainWindow::changeGradientView()
     }
     
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-    if(items.size() > 0)
+    for(QTreeWidgetItem* item : items)
     {
-        QTreeWidgetItem* item = items.first();
         LVRModelItem* model_item = getModelItem(item);
 
         size_t channel = this->horizontalSlider_channel->value();
