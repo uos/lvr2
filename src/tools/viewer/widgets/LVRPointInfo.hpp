@@ -34,26 +34,19 @@ using Ui::PointInfo;
 namespace lvr
 {
 
-class LVRPointInfo : public QObject
+class LVRPointInfo : public QDialog
 {
     Q_OBJECT
 
 public:
-    LVRPointInfo(QTreeWidget* treeWidget);
+    LVRPointInfo(QWidget* parent, PointBufferPtr points, int pointId);
     virtual ~LVRPointInfo();
 
-    bool isVisible() const;
-    int getPoint() const;
-    void setPoint(int pointId);
-    void setPointBuffer(PointBufferPtr points);
-
 public Q_SLOTS:
-    void refresh(int);
+    void refresh();
     
 private:
-    PointInfo*     m_pointInfo;
-    QDialog*       m_dialog;
-    LVRPlotter*    m_plotter;
+    PointInfo      m_pointInfo;
     PointBufferPtr m_points;
     int            m_pointId;
 };

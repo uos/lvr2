@@ -59,7 +59,6 @@ LVRMainWindow::LVRMainWindow()
     Ui::TooltipDialog tooltipDialog;
     tooltipDialog.setupUi(m_tooltipDialog);
 
-    m_pointInfoDialog = nullptr;
     m_histogram = nullptr;
     m_selectedPointBufferPtr = nullptr;
 
@@ -1342,13 +1341,7 @@ void LVRMainWindow::showPointInfoDialog()
     {
         return;
     }
-    if (m_pointInfoDialog && m_pointInfoDialog->isVisible() && m_pointInfoDialog->getPoint() == m_selectedPoint)
-    {
-        return;
-    }
-    m_pointInfoDialog = new LVRPointInfo(treeWidget);
-    m_pointInfoDialog->setPointBuffer(m_selectedPointBufferPtr);
-    m_pointInfoDialog->setPoint(m_selectedPoint);
+    new LVRPointInfo(this, m_selectedPointBufferPtr, m_selectedPoint);
 }
 
 void LVRMainWindow::updateSpectralColorText(int action)

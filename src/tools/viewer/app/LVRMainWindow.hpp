@@ -169,7 +169,6 @@ private:
     LVRPlotter*                                 m_PointPreviewPlotter;
     int                                         m_selectedPoint;
     PointBufferPtr                              m_selectedPointBufferPtr;
-    LVRPointInfo*                               m_pointInfoDialog;
     QDialog*                                    m_aboutDialog;
     QDialog*                                    m_tooltipDialog;
     QMessageBox*                                m_incompatibilityBox;
