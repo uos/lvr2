@@ -27,6 +27,7 @@
  *  @author Jan Philipp Vogtherr (jvogtherr@uos.de)
  */
 
+#include <lvr2/texture/Texture.hpp>
 
 namespace lvr2 {
 
