@@ -149,10 +149,13 @@ public Q_SLOTS:
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
     LVRMeshItem* getMeshItem(QTreeWidgetItem* item);
+    std::set<LVRModelItem*> getSelectedModelItems();
+    std::set<LVRPointCloudItem*> getSelectedPointCloudItems();
+    std::set<LVRMeshItem*> getSelectedMeshItems();
 
 protected Q_SLOTS:
     void setModelVisibility(QTreeWidgetItem* treeWidgetItem, int column);
-    void restoreSliders(QTreeWidgetItem* treeWidgetItem);
+    void restoreSliders();
 
 Q_SIGNALS:
     void correspondenceDialogOpened();
