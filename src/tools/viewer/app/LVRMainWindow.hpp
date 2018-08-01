@@ -121,9 +121,8 @@ public Q_SLOTS:
     void changeSpectralColor();
     void updateSpectralGradientText(int action = -1);
     void changeGradientView();
-    void editSpectralRed();
-    void editSpectralGreen();
-    void editSpectralBlue();
+    void textSpectralColorChangeFinished();
+    void textSpectralColorChange();
     void assertToggles();
     void togglePoints(bool checkboxState);
     void toggleNormals(bool checkboxState);
