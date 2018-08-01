@@ -341,9 +341,29 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_hred"/>
+           <widget class="QLineEdit" name="lineEdit_hred">
+            <property name="maximumSize">
+             <size>
+              <width>50</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
           </item>
           <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item alignment="Qt::AlignRight">
            <widget class="QCheckBox" name="checkBox_hred">
             <property name="text">
              <string/>
@@ -372,9 +392,29 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_hgreen"/>
+           <widget class="QLineEdit" name="lineEdit_hgreen">
+            <property name="maximumSize">
+             <size>
+              <width>50</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
           </item>
           <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item alignment="Qt::AlignRight">
            <widget class="QCheckBox" name="checkBox_hgreen">
             <property name="text">
              <string/>
@@ -403,9 +443,29 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_hblue"/>
+           <widget class="QLineEdit" name="lineEdit_hblue">
+            <property name="maximumSize">
+             <size>
+              <width>50</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
           </item>
           <item>
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item alignment="Qt::AlignRight">
            <widget class="QCheckBox" name="checkBox_hblue">
             <property name="text">
              <string/>
@@ -509,6 +569,33 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit_wavelength">
+            <property name="maximumSize">
+             <size>
+              <width>50</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_9">
           <item>
            <widget class="QSlider" name="horizontalSlider_channel">
             <property name="orientation">
@@ -822,7 +909,7 @@
      <x>0</x>
      <y>0</y>
      <width>1112</width>
-     <height>25</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
