@@ -15,8 +15,8 @@ typedef Vector<BaseVec>   VecT;
 int main(int argc, char** argv)
 {
 
-    lvr2::AsciiIO<VecT> io;
-    lvr2::ModelPtr<VecT> model = io.read("scan.pts");
+    lvr2::AsciiIO io;
+    lvr2::ModelPtr model = io.read("scan.pts");
 
     size_t n = model->m_pointCloud->numPoints();
 

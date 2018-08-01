@@ -38,8 +38,6 @@
 
 #include <lvr2/io/Model.hpp>
 
-using std::string;
-
 namespace lvr2
 {
 
@@ -47,7 +45,6 @@ namespace lvr2
  * @brief Interface specification for low-level io. All read
  *        elements are stored in linear arrays.
  */
-template<typename BaseVecT>
 class BaseIO
 {
     public:
@@ -59,7 +56,7 @@ class BaseIO
          *
          * @param filename  The file to read.
          */
-        virtual ModelPtr<BaseVecT> read(string filename ) = 0;
+        virtual ModelPtr read(std::string filename ) = 0;
 
 
         /**
@@ -67,7 +64,7 @@ class BaseIO
          *
          * @param filename Filename of the file to write.
          */
-        virtual void save( string filename ) = 0;
+        virtual void save(std::string filename) = 0;
 
 
         /**
@@ -76,7 +73,7 @@ class BaseIO
          *
          * @param filename Filename of the file to write.
          */
-        virtual void save( ModelPtr<BaseVecT> model, string filename );
+        virtual void save(ModelPtr model, std::string filename);
 
 
 
@@ -84,23 +81,22 @@ class BaseIO
          * \brief  Set the model for io operations to use.
          * \param m  Shared pointer to model.
          **/
-        virtual void setModel( ModelPtr<BaseVecT> m );
+        virtual void setModel(ModelPtr m);
 
 
         /**
          * \brief  Get the model for io operations.
          * \return  Shared pointer to model.
          **/
-        virtual ModelPtr<BaseVecT> getModel();
+        virtual ModelPtr getModel();
 
 
     protected:
-        ModelPtr<BaseVecT> m_model;
+        ModelPtr m_model;
 
 };
 
-}
+} // namespace lvr2
 
-#include "BaseIO.tcc"
 
 #endif /* BASEIO_HPP_ */

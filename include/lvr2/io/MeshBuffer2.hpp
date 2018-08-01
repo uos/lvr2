@@ -145,5 +145,7 @@ private:
 
 };
 
+using MeshBuffer2Ptr = std::shared_ptr<MeshBuffer2>;
+
 }
 #endif // MESHBUFFER2_HPP
