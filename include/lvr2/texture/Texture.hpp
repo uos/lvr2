@@ -43,7 +43,6 @@ namespace lvr2 {
  * @class Texture
  * @brief This class represents a texture.
  */
-template<typename BaseVecT>
 class Texture {
 public:
 

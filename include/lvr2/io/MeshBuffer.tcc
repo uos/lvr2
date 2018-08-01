@@ -20,7 +20,7 @@ namespace lvr2
 {
 
 //template <typename BaseVecT>
-//MeshBuffer<BaseVecT>::MeshBuffer(lvr::MeshBuffer& oldBuffer)
+//MeshBuffer::MeshBuffer(lvr::MeshBuffer& oldBuffer)
 //{
 
 //    // TODO: Obj files
@@ -161,155 +161,155 @@ namespace lvr2
 
 //}
 
-template<typename BaseVecT>
-vector<float> MeshBuffer<BaseVecT>::getVertices()
+
+vector<float> MeshBuffer::getVertices()
 {
     return m_vertices;
 }
 
-template<typename BaseVecT>
-vector<unsigned char> MeshBuffer<BaseVecT>::getVertexColors()
+
+vector<unsigned char> MeshBuffer::getVertexColors()
 {
     return m_vertexColors;
 }
 
-template<typename BaseVecT>
-vector<float> MeshBuffer<BaseVecT>::getVertexConfidences()
+
+vector<float> MeshBuffer::getVertexConfidences()
 {
     return m_vertexConfidences;
 }
 
-template<typename BaseVecT>
-vector<float> MeshBuffer<BaseVecT>::getVertexIntensities()
+
+vector<float> MeshBuffer::getVertexIntensities()
 {
     return m_vertexIntensities;
 }
 
-template<typename BaseVecT>
-vector<float> MeshBuffer<BaseVecT>::getVertexNormals()
+
+vector<float> MeshBuffer::getVertexNormals()
 {
     return m_vertexNormals;
 }
 
-template<typename BaseVecT>
-vector<float> MeshBuffer<BaseVecT>::getVertexTextureCoordinates()
+
+vector<float> MeshBuffer::getVertexTextureCoordinates()
 {
     return m_vertexTextureCoordinates;
 }
 
-template<typename BaseVecT>
-vector<unsigned int> MeshBuffer<BaseVecT>::getFaceIndices()
+
+vector<unsigned int> MeshBuffer::getFaceIndices()
 {
     return m_faceIndices;
 }
 
-template<typename BaseVecT>
-vector<unsigned int> MeshBuffer<BaseVecT>::getFaceMaterialIndices()
+
+vector<unsigned int> MeshBuffer::getFaceMaterialIndices()
 {
     return m_faceMaterialIndices;
 }
 
 
-template<typename BaseVecT>
-vector<unsigned int> MeshBuffer<BaseVecT>::getClusterMaterialIndices()
+
+vector<unsigned int> MeshBuffer::getClusterMaterialIndices()
 {
     return m_clusterMaterialIndices;
 }
 
-template<typename BaseVecT>
-vector<Material> MeshBuffer<BaseVecT>::getMaterials()
+
+vector<Material> MeshBuffer::getMaterials()
 {
     return m_materials;
 }
 
-template<typename BaseVecT>
-vector<Texture<BaseVecT>> MeshBuffer<BaseVecT>::getTextures()
+
+vector<Texture> MeshBuffer::getTextures()
 {
     return m_textures;
 }
 
-template<typename BaseVecT>
-vector<vector<unsigned int>> MeshBuffer<BaseVecT>::getClusterFaceIndices()
+
+vector<vector<unsigned int>> MeshBuffer::getClusterFaceIndices()
 {
     return m_clusterFaceIndices;
 }
 
-template<typename BaseVecT>
-void MeshBuffer<BaseVecT>::setVertices(vector<float> v)
+
+void MeshBuffer::setVertices(vector<float> v)
 {
     m_vertices = v;
 }
 
-template<typename BaseVecT>
-void MeshBuffer<BaseVecT>::setVertexColors(vector<unsigned char> v)
+
+void MeshBuffer::setVertexColors(vector<unsigned char> v)
 {
     m_vertexColors = v;
 }
 
-template<typename BaseVecT>
-void MeshBuffer<BaseVecT>::setVertexConfidences(vector<float> v)
+
+void MeshBuffer::setVertexConfidences(vector<float> v)
 {
     m_vertexConfidences = v;
 }
 
-template<typename BaseVecT>
-void MeshBuffer<BaseVecT>::setVertexIntensities(vector<float> v)
+
+void MeshBuffer::setVertexIntensities(vector<float> v)
 {
     m_vertexIntensities = v;
 }
 
-template<typename BaseVecT>
-void MeshBuffer<BaseVecT>::setVertexNormals(vector<float> v)
+
+void MeshBuffer::setVertexNormals(vector<float> v)
 {
     m_vertexNormals = v;
 }
 
-template<typename BaseVecT>
-void MeshBuffer<BaseVecT>::setVertexTextureCoordinates(vector<float> v)
+
+void MeshBuffer::setVertexTextureCoordinates(vector<float> v)
 {
     m_vertexTextureCoordinates = v;
 }
 
-template<typename BaseVecT>
-void MeshBuffer<BaseVecT>::setFaceIndices(vector<unsigned int> v)
+
+void MeshBuffer::setFaceIndices(vector<unsigned int> v)
 {
     m_faceIndices = v;
 }
 
 
-template<typename BaseVecT>
-void MeshBuffer<BaseVecT>::setFaceMaterialIndices(vector<unsigned int> v)
+
+void MeshBuffer::setFaceMaterialIndices(vector<unsigned int> v)
 {
     m_faceMaterialIndices = v;
 }
 
 
-template<typename BaseVecT>
-void MeshBuffer<BaseVecT>::setClusterMaterialIndices(vector<unsigned int> v)
+
+void MeshBuffer::setClusterMaterialIndices(vector<unsigned int> v)
 {
     m_clusterMaterialIndices = v;
 }
 
-template<typename BaseVecT>
-void MeshBuffer<BaseVecT>::setMaterials(vector<Material> v)
+
+void MeshBuffer::setMaterials(vector<Material> v)
 {
     m_materials = v;
 }
 
-template<typename BaseVecT>
-void MeshBuffer<BaseVecT>::setTextures(vector<Texture<BaseVecT>> v)
+
+void MeshBuffer::setTextures(vector<Texture> v)
 {
     m_textures = v;
 }
 
-template<typename BaseVecT>
-void MeshBuffer<BaseVecT>::setClusterFaceIndices(vector<vector<unsigned int>> v)
+
+void MeshBuffer::setClusterFaceIndices(vector<vector<unsigned int>> v)
 {
     m_clusterFaceIndices = v;
 }
 
-//template<typename BaseVecT>
-//boost::shared_ptr<lvr::MeshBuffer> MeshBuffer<BaseVecT>::toOldBuffer()
+//
+//boost::shared_ptr<lvr::MeshBuffer> MeshBuffer::toOldBuffer()
 //{
 //    auto buffer = boost::make_shared<lvr::MeshBuffer>();
 //    buffer->setVertexArray(m_vertices);
@@ -360,8 +360,8 @@ void MeshBuffer<BaseVecT>::setClusterFaceIndices(vector<vector<unsigned int>> v)
 //    return buffer;
 //}
 
-//template<typename BaseVecT>
-//boost::shared_ptr<lvr::MeshBuffer> MeshBuffer<BaseVecT>::toOldBuffer(MaterializerResult<BaseVecT> materializerResult)
+//
+//boost::shared_ptr<lvr::MeshBuffer> MeshBuffer::toOldBuffer(MaterializerResult<BaseVecT> materializerResult)
 //{
 //    auto buffer = toOldBuffer();
 //    vector<lvr::Material*> materials;

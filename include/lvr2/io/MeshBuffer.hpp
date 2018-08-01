@@ -53,8 +53,6 @@ using std::vector;
 template<typename BaseVecT>
 class MaterializerResult;
 
-
-template<typename BaseVecT>
 class MeshBuffer
 {
 
@@ -73,7 +71,7 @@ class MeshBuffer
         vector<unsigned int> getFaceMaterialIndices();
         vector<unsigned int> getClusterMaterialIndices();
         vector<Material> getMaterials();
-        vector<Texture<BaseVecT>> getTextures();
+        vector<Texture> getTextures();
         vector<vector<unsigned int>> getClusterFaceIndices();
 
         void setVertices(vector<float> v);
@@ -86,7 +84,7 @@ class MeshBuffer
         void setFaceMaterialIndices(vector<unsigned int> v);
         void setClusterMaterialIndices(vector<unsigned int> v);
         void setMaterials(vector<Material> v);
-        void setTextures(vector<Texture<BaseVecT>> v);
+        void setTextures(vector<Texture> v);
         void setClusterFaceIndices(vector<vector<unsigned int>> v);
 
 //        // Convert to lvr1 MeshBuffer
@@ -106,14 +104,14 @@ class MeshBuffer
         vector<unsigned int> m_faceMaterialIndices;
         vector<unsigned int> m_clusterMaterialIndices;
         vector<Material> m_materials;
-        vector<Texture<BaseVecT>> m_textures;
+        vector<Texture> m_textures;
         vector<vector<unsigned int>> m_clusterFaceIndices;
 
 };
 
 
 template <typename BaseVecT>
-using MeshBufferPtr = std::shared_ptr<MeshBuffer<BaseVecT>>;
+using MeshBufferPtr = std::shared_ptr<MeshBuffer>;
 
 } // namespace
 
