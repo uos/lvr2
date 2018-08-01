@@ -39,8 +39,8 @@ using std::ifstream;
 namespace lvr2
 {
 
-template<typename BaseVecT>
-ModelPtr<BaseVecT> AsciiIO<BaseVecT>::read(
+
+ModelPtr AsciiIO::read(
         string filename,
         const int &xPos, const int& yPos, const int& zPos,
         const int &rPos, const int& gPos, const int& bPos, const int &iPos)
@@ -52,7 +52,7 @@ ModelPtr<BaseVecT> AsciiIO<BaseVecT>::read(
     if ( extension != ".pts" && extension != ".3d" && extension != ".xyz" && extension != ".txt" )
     {
         cout << "»" << extension << "« is not a valid file extension." << endl;
-        return ModelPtr<BaseVecT>();
+        return ModelPtr();
     }
     // Count lines in file to estimate the number of present points
     int lines_in_file = countLines(filename);
@@ -60,7 +60,7 @@ ModelPtr<BaseVecT> AsciiIO<BaseVecT>::read(
     if ( lines_in_file < 2 )
     {
         cout << timestamp << "AsciiIO: Too few lines in file (has to be > 2)." << endl;
-        return ModelPtr<BaseVecT>();
+        return ModelPtr();
     }
 
     // Open file
@@ -92,7 +92,7 @@ ModelPtr<BaseVecT> AsciiIO<BaseVecT>::read(
     // Alloc memory for points
     numPoints = lines_in_file - 1;
     points = floatArr( new float[ numPoints * 3 ] );
-    ModelPtr<BaseVecT> model(new Model<BaseVecT>);
+    ModelPtr model(new Model);
     model->m_pointCloud = PointBuffer2Ptr( new PointBuffer2);
 
     // (Some) sanity checks for given paramters
@@ -214,8 +214,8 @@ ModelPtr<BaseVecT> AsciiIO<BaseVecT>::read(
     return model;
 }
 
-template<typename BaseVecT>
-ModelPtr<BaseVecT> AsciiIO<BaseVecT>::read(string filename)
+
+ModelPtr AsciiIO::read(string filename)
 {
     // Check extension
     boost::filesystem::path selectedFile(filename);
@@ -224,7 +224,7 @@ ModelPtr<BaseVecT> AsciiIO<BaseVecT>::read(string filename)
     if ( extension != ".pts" && extension != ".3d" && extension != ".xyz" && extension != ".txt" )
     {
         cout << "»" << extension << "« is not a valid file extension." << endl;
-        return ModelPtr<BaseVecT>();
+        return ModelPtr();
     }
     // Count lines in file to estimate the number of present points
     int lines_in_file = countLines(filename);
@@ -232,7 +232,7 @@ ModelPtr<BaseVecT> AsciiIO<BaseVecT>::read(string filename)
     if ( lines_in_file < 2 )
     {
         cout << timestamp << "AsciiIO: Too few lines in file (has to be > 2)." << endl;
-        return ModelPtr<BaseVecT>();
+        return ModelPtr();
     }
     // Open the given file. Skip the first line (as it may
     // contain meta data in some formats). Then try to guess
@@ -287,8 +287,8 @@ ModelPtr<BaseVecT> AsciiIO<BaseVecT>::read(string filename)
 }
 
 
-template<typename BaseVecT>
-void AsciiIO<BaseVecT>::save( std::string filename )
+
+void AsciiIO::save( std::string filename )
 {
 
     if ( !this->m_model->m_pointCloud ) {
@@ -360,8 +360,8 @@ void AsciiIO<BaseVecT>::save( std::string filename )
 
 }
 
-template<typename BaseVecT>
-size_t AsciiIO<BaseVecT>::countLines(string filename)
+
+size_t AsciiIO::countLines(string filename)
 {
     // Open file for reading
     ifstream in(filename.c_str());
@@ -378,8 +378,8 @@ size_t AsciiIO<BaseVecT>::countLines(string filename)
     return c;
 }
 
-template<typename BaseVecT>
-int AsciiIO<BaseVecT>::getEntriesInLine(string filename)
+
+int AsciiIO::getEntriesInLine(string filename)
 {
 
     ifstream in(filename.c_str());

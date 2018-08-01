@@ -4,6 +4,7 @@
 
 set(RECONSTRUCT_SOURCES
     Options.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/PointBuffer2.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/MeshBuffer2.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/AttributeManager.cpp

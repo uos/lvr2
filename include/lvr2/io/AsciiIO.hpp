@@ -44,8 +44,7 @@ namespace lvr2
  *        text formats. Currently the file extensions .xyz, .txt,
  *       .3d and .pts are supported.
  */
-template<typename BaseVecT>
-class AsciiIO : public BaseIO<BaseVecT>
+class AsciiIO : public BaseIO
 {
     public:
 
@@ -61,7 +60,7 @@ class AsciiIO : public BaseIO<BaseVecT>
          *
          * @param filename      The file to read
          */
-        virtual ModelPtr<BaseVecT> read( string filename );
+        virtual ModelPtr read( string filename );
 
         /**
          * @brief read  Parses the given file and stores point and color attribute
@@ -84,7 +83,7 @@ class AsciiIO : public BaseIO<BaseVecT>
          * @param i         The colum number containing the intensity value (or -1)
          * @return
          */
-        virtual ModelPtr<BaseVecT> read(
+        virtual ModelPtr read(
                 string filename,
                 const int& x, const int& y, const int& z,
                 const int& r = -1, const int& g = -1, const int& b = -1, const int& i = -1);

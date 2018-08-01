@@ -29,30 +29,28 @@
  * @date       Last modified: 2012-01-03 12:34:28
  */
 
-#include <lvr/io/BaseIO.hpp>
-
+#include <lvr2/io/BaseIO.hpp>
+#include <string>
 
 namespace lvr2
 {
 
-template<typename BaseVecT>
-void BaseIO<BaseVecT>::save( ModelPtr<BaseVecT> m, string filename)
+void BaseIO::save( ModelPtr m, std::string filename)
 {
 	m_model = m;
     save( filename);
 }
 
 
-template<typename BaseVecT>
-void BaseIO<BaseVecT>::setModel( ModelPtr<BaseVecT> m )
+void BaseIO::setModel( ModelPtr m )
 {
     m_model = m;
 }
 
-template<typename BaseVecT>
-ModelPtr<BaseVecT> BaseIO<BaseVecT>::getModel()
+
+ModelPtr BaseIO::getModel()
 {
     return m_model;
 }
 
-}
+} // namespace lvr2
