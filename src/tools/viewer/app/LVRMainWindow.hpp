@@ -167,7 +167,7 @@ private:
     void connectSignalsAndSlots();
 
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
-    LVRHistogram*                               m_histogram;
+    std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;
     LVRPlotter*                                 m_PointPreviewPlotter;
     int                                         m_selectedPoint;
     PointBufferPtr                              m_selectedPointBufferPtr;

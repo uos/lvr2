@@ -7,11 +7,10 @@
 namespace lvr
 {
 
-LVRPlotter::LVRPlotter(QWidget * parent, bool curve)
+LVRPlotter::LVRPlotter(QWidget * parent)
 	: QWidget(parent), m_numPoints(0)
 {
 	m_points.reset();
-	m_curve = curve;
 }
 
 LVRPlotter::~LVRPlotter()
@@ -22,6 +21,11 @@ LVRPlotter::~LVRPlotter()
 void LVRPlotter::mouseReleaseEvent(QMouseEvent* event)
 {
 	Q_EMIT(mouseRelease());
+}
+
+void LVRPlotter::setPlotMode(PlotMode mode)
+{
+	m_mode = mode;
 }
 
 void LVRPlotter::setPoints(floatArr points, size_t numPoints)
@@ -62,6 +66,11 @@ void LVRPlotter::paintEvent(QPaintEvent *)
 
 	QPainter painter(this);
 
+	painter.setPen(QColor(255, 255, 255));
+	painter.setBrush(QColor(255, 255, 255));
+
+	painter.drawRect(0, 0, width(), height());
+
 	painter.setPen(QColor(0, 0, 0));
 	painter.setBrush(QColor(0, 0, 0));
 
@@ -99,11 +108,11 @@ void LVRPlotter::paintEvent(QPaintEvent *)
 		float new_x = i * drawWidth / m_numPoints + leftMargin;
 		float new_y = (m_points[i] - m_min) / (m_max - m_min) * drawHeight;
 		
-		if(m_curve)
+		if(m_mode == PlotMode::LINE)
 		{
 			painter.drawLine(old_x, drawHeight - old_y, new_x, drawHeight - new_y);
 		}
-		else
+		else if (m_mode == PlotMode::BAR)
 		{
 			painter.setPen(QColor(0, 0, 255));
 			while(old_x <= new_x)

@@ -51,31 +51,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QWidget" name="dockWidgetPointPreviewContents" native="true">
-     <property name="styleSheet">
-      <string notr="true">background-color: rgb(255, 255, 255)</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayoutPointPreview">
-      <property name="sizeConstraint">
-       <enum>QLayout::SetDefaultConstraint</enum>
-      </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="lvr::LVRPlotter" name="plotter" native="true"/>
-      </item>
-     </layout>
-    </widget>
+    <widget class="lvr::LVRPlotter" name="plotter" native="true"/>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
