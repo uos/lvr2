@@ -16,80 +16,54 @@
 namespace lvr
 {
 
-LVRHistogram::LVRHistogram(QWidget* parent)
+LVRHistogram::LVRHistogram(QWidget* parent, PointBufferPtr points)
+    : QDialog(parent)
 {
-    //Setup DialogUI and events
-    m_dialog = new QDialog(parent);
-    m_histogram = new Histogram;
-    m_histogram->setupUi(m_dialog);
+    m_histogram.setupUi(this);
+    m_histogram.plotter->setPlotMode(PlotMode::BAR);
 
-    m_plotter = new LVRPlotter(m_dialog, false);
-    m_histogram->gridLayout->addWidget(m_plotter, 4, 0, 1, 1);
+    size_t n;
+    size_t n_spec;
 
-    QObject::connect(m_histogram->shouldScale, SIGNAL(stateChanged(int)), this, SLOT(refresh(int)));
+    floatArr spec = points->getPointSpectralChannelsArray(n_spec, m_numChannels);
+       
+    m_data = floatArr(new float[m_numChannels]);
+
+    #pragma omp parallel for
+    for (int channel = 0; channel < m_numChannels; channel++)
+    {
+        m_data[channel] = 0;
+       
+        for (int i = 0; i < n_spec; i++)
+        {
+            m_data[channel] += spec[m_numChannels * i + channel];           
+        }                                       
+        m_data[channel] /= n_spec;
+    }
+
+    refresh();
+
+    QObject::connect(m_histogram.shouldScale, SIGNAL(stateChanged(int)), this, SLOT(refresh()));
 }
 
 LVRHistogram::~LVRHistogram()
 {
-    // TODO Auto-generated destructor stub
 }
 
-void LVRHistogram::setPointBuffer(PointBufferPtr points)
+void LVRHistogram::refresh()
 {
-    m_points = points;
-}
-
-PointBufferPtr LVRHistogram::getPointBuffer() const
-{
-    return m_points;
-}
-
-bool LVRHistogram::isVisible() const
-{
-    return m_dialog->isVisible();
-}
-
-void LVRHistogram::sethistogram()
-{  
-    size_t n;    
-    size_t n_spec, n_channels;
-
-    floatArr spec = m_points->getPointSpectralChannelsArray(n_spec, n_channels);
-       
-    floatArr data2 =floatArr(new float[n_channels]);
-
-    #pragma omp parallel for
-    for (int chan=0;chan<n_channels;chan++)
+    if (m_histogram.shouldScale->isChecked())
     {
-        data2[chan]=0;
-       
-        for (int i = 0; i < n_spec; i++)
-        {
-            int specIndex = n_channels * i+chan;
-            data2[chan]+= spec[specIndex];           
-        }                                       
-        data2[chan]=data2[chan]/n_spec;
-        //cout<<"channel "<<chan<<" : "<< data2[chan]<<endl;
+        m_histogram.plotter->setPoints(m_data, m_numChannels);
     }
-  
-    if (m_histogram->shouldScale->isChecked())
-        {
-            m_plotter->setPoints(data2, n_channels);
-        }
-        else
-        {
-            m_plotter->setPoints(data2, n_channels, 0, 1);
-        }
-        
-    m_dialog->show();
-    m_dialog->raise();
-    m_dialog->activateWindow();
+    else
+    {
+        m_histogram.plotter->setPoints(m_data, m_numChannels, 0, 1);
+    }
 
-}
-
-void LVRHistogram::refresh(int)
-{
-    sethistogram();
+    show();
+    raise();
+    activateWindow();
 }
 
 }

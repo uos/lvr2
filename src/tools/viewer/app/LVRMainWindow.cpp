@@ -59,7 +59,6 @@ LVRMainWindow::LVRMainWindow()
     Ui::TooltipDialog tooltipDialog;
     tooltipDialog.setupUi(m_tooltipDialog);
 
-    m_histogram = nullptr;
     m_selectedPointBufferPtr = nullptr;
 
     // Setup specific properties
@@ -667,7 +666,14 @@ void LVRMainWindow::deleteModelItem()
                 if(child_item->type() == LVRPointCloudItemType && child_item->parent() == item)
                 {
                     LVRPointCloudItem* pc_item = getPointCloudItem(item);
-                    if(pc_item != NULL) m_renderer->RemoveActor(pc_item->getActor());
+                    if(pc_item != NULL)
+                    {
+                        m_renderer->RemoveActor(pc_item->getActor());
+                        if (m_histograms.count(pc_item))
+                        {
+                            m_histograms.erase(pc_item);
+                        }
+                    }
                 }
                 else if(child_item->type() == LVRMeshItemType && child_item->parent() == item)
                 {
@@ -686,7 +692,14 @@ void LVRMainWindow::deleteModelItem()
         {
             // Remove model from view
             LVRPointCloudItem* pc_item = getPointCloudItem(item);
-            if(pc_item != NULL) m_renderer->RemoveActor(pc_item->getActor());
+            if(pc_item != NULL)
+            {
+                m_renderer->RemoveActor(pc_item->getActor());
+                if (m_histograms.count(pc_item))
+                {
+                    m_histograms.erase(pc_item);
+                }
+            }
 
             LVRMeshItem* mesh_item = getMeshItem(item);
             if(mesh_item != NULL) m_renderer->RemoveActor(mesh_item->getActor());
@@ -1287,33 +1300,27 @@ void LVRMainWindow::showSpectralPointPreviewDialog()
 
 void LVRMainWindow::showHistogram()
 {
-    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-    if(items.size() > 0)
+    std::set<LVRPointCloudItem*> pointCloudItems = getSelectedPointCloudItems();
+    if(pointCloudItems.empty())
     {
-        QTreeWidgetItem* item = items.first();
-        LVRModelItem* model_item = getModelItem(item);
-        if(model_item != NULL)
-        {
-            PointBufferBridgePtr points = model_item->getModelBridge()->getPointBridge();
-            if(points->getNumPoints() && points->getPointBuffer()->hasPointSpectralChannels())
-            {
-                if (m_histogram && m_histogram->isVisible() && m_histogram->getPointBuffer() == points->getPointBuffer())
-                {
-                    return;
-                }  
-                m_histogram = new LVRHistogram(this);
-                m_histogram->setPointBuffer(points->getPointBuffer());
-                m_histogram->sethistogram();   
-            }
-            else
-            {
-                showTooltipDialog();
-            }
-        }
+        showTooltipDialog();
+        return;
     }
-    else
+
+    for (LVRPointCloudItem* item : pointCloudItems)
     {
-       showTooltipDialog(); 
+        PointBufferPtr points = item->getPointBuffer();
+        if (!points->hasPointSpectralChannels())
+        {
+            showTooltipDialog();
+            return;
+        }
+
+        if (!m_histograms.count(item))
+        {
+            m_histograms[item] = new LVRHistogram(this, points);
+        }
+        m_histograms[item]->show();
     }
 }
 

@@ -28,6 +28,12 @@ namespace lvr
 
 class LVRMainWindow;
 
+enum class PlotMode
+{
+	LINE,
+	BAR
+};
+
 class LVRPlotter : public QWidget
 {
 	Q_OBJECT
@@ -37,9 +43,10 @@ Q_SIGNALS:
 
 public:
 
-    LVRPlotter(QWidget * parent = 0, bool curve = true);
+    LVRPlotter(QWidget * parent = 0);
     virtual ~LVRPlotter();
 
+	void setPlotMode(PlotMode mode);
 	void setPoints(floatArr points, size_t numPoints);
 	void setPoints(floatArr points, size_t numPoints, float min, float max);
 	void removePoints();
@@ -50,10 +57,10 @@ protected:
 
 private:
 	floatArr m_points;
-	size_t m_numPoints;
-	float  m_min;
-	float  m_max;
-	bool   m_curve;
+	size_t   m_numPoints;
+	float    m_min;
+	float    m_max;
+	PlotMode m_mode;
 };
 
 } /* namespace lvr */

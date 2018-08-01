@@ -47,8 +47,8 @@ public Q_SLOTS:
     
 private:
     PointInfo      m_pointInfo;
-    PointBufferPtr m_points;
-    int            m_pointId;
+    floatArr       m_data;
+    size_t         m_numChannels;
 };
 
 } // namespace lvr

@@ -34,28 +34,21 @@ using Ui::Histogram;
 namespace lvr
 {
 
-class LVRHistogram : public QObject
+class LVRHistogram : public QDialog
 {
     Q_OBJECT
 
 public:
-    LVRHistogram(QWidget* parent = (QWidget*)nullptr);
+    LVRHistogram(QWidget* parent, PointBufferPtr points);
     virtual ~LVRHistogram();
 
-    void sethistogram();
-    void setPointBuffer(PointBufferPtr points);
-    bool isVisible() const;
-    PointBufferPtr getPointBuffer() const;
-
 public Q_SLOTS:
-    void refresh(int);
+    void refresh();
     
 private:
-    Histogram*     m_histogram;
-    QDialog*       m_dialog;
-    LVRPlotter*    m_plotter;
-    PointBufferPtr m_points;
-    int            m_pointId;
+    Histogram      m_histogram;
+    floatArr       m_data;
+    size_t         m_numChannels;
 };
 
 } // namespace lvr
