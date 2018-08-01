@@ -14,7 +14,7 @@ MeshBuffer2::MeshBuffer2()
     m_numVertices = 0;
 }
 
-void MeshBuffer2::addVertices(floatArr vertices, size_t n)
+void MeshBuffer2::setVertices(floatArr vertices, size_t n)
 {
     if(n)
     {
@@ -23,7 +23,7 @@ void MeshBuffer2::addVertices(floatArr vertices, size_t n)
     }
 }
 
-void MeshBuffer2::addVertexNormals(floatArr normals)
+void MeshBuffer2::setVertexNormals(floatArr normals)
 {
     if(m_numVertices)
     {
@@ -31,12 +31,12 @@ void MeshBuffer2::addVertexNormals(floatArr normals)
     }
     else
     {
-        cout << "MeshBuffer2::addVertexNormals(): "
+        cout << "MeshBuffer2::setVertexNormals(): "
              << "Cannot add vertex normals without vertex definitions" << endl;
     }
 }
 
-void MeshBuffer2::addVertexColors(ucharArr colors, unsigned w)
+void MeshBuffer2::setVertexColors(ucharArr colors, unsigned w)
 {
     if(m_numVertices)
     {
@@ -44,12 +44,12 @@ void MeshBuffer2::addVertexColors(ucharArr colors, unsigned w)
     }
     else
     {
-        cout << "MeshBuffer2::addVertexColors(): "
+        cout << "MeshBuffer2::setVertexColors(): "
              << "Cannot add vertex colors without vertex definitions" << endl;
     }
 }
 
-void MeshBuffer2::addTextureCoordinates(floatArr coordinates)
+void MeshBuffer2::setTextureCoordinates(floatArr coordinates)
 {
     if(m_numVertices)
     {
@@ -57,12 +57,12 @@ void MeshBuffer2::addTextureCoordinates(floatArr coordinates)
     }
     else
     {
-        cout << "MeshBuffer2::addTextureCoordinates(): "
+        cout << "MeshBuffer2::setTextureCoordinates(): "
              << "Cannot add vertex colors without vertex definitions" << endl;
     }
 }
 
-void MeshBuffer2::addFaceIndices(indexArray indices, size_t n)
+void MeshBuffer2::setFaceIndices(indexArray indices, size_t n)
 {
     if(n)
     {
@@ -71,7 +71,7 @@ void MeshBuffer2::addFaceIndices(indexArray indices, size_t n)
     }
 }
 
-void MeshBuffer2::addFaceMaterialIndices(indexArray indices)
+void MeshBuffer2::setFaceMaterialIndices(indexArray indices)
 {
     if(m_numFaces)
     {
@@ -79,12 +79,12 @@ void MeshBuffer2::addFaceMaterialIndices(indexArray indices)
     }
     else
     {
-        cout << "MeshBuffer2::addFaceMaterialIndices(): "
+        cout << "MeshBuffer2::setFaceMaterialIndices(): "
              << "Cannot add material indices without face definitions" << endl;
     }
 }
 
-void MeshBuffer2::addFaceNormals(floatArr normals)
+void MeshBuffer2::setFaceNormals(floatArr normals)
 {
     if(m_numFaces)
     {
@@ -92,12 +92,12 @@ void MeshBuffer2::addFaceNormals(floatArr normals)
     }
     else
     {
-        cout << "MeshBuffer2::addFaceMaterialIndices(): "
+        cout << "MeshBuffer2::setFaceMaterialIndices(): "
              << "Cannot add material indices without face definitions" << endl;
     }
 }
 
-void MeshBuffer2::addFaceColors(ucharArr colors, unsigned w)
+void MeshBuffer2::setFaceColors(ucharArr colors, unsigned w)
 {
     if(m_numFaces)
     {
@@ -105,7 +105,7 @@ void MeshBuffer2::addFaceColors(ucharArr colors, unsigned w)
     }
     else
     {
-        cout << "MeshBuffer2::addFaceColors(): "
+        cout << "MeshBuffer2::setFaceColors(): "
              << "Cannot add face colors without face definitions" << endl;
     }
 }
