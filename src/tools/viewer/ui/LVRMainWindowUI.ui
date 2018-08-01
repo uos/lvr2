@@ -565,7 +565,7 @@
              <enum>Qt::LeftToRight</enum>
             </property>
             <property name="text">
-             <string>Wavelength:</string>
+             <string>Wavelength (nm):</string>
             </property>
            </widget>
           </item>

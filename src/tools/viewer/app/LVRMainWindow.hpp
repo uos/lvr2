@@ -119,10 +119,12 @@ public Q_SLOTS:
     void changeShading(int shader);
     void updateSpectralColorText(int action = -1);
     void changeSpectralColor();
+    void textwavelengthChangeFinished();
     void updateSpectralGradientText(int action = -1);
     void changeGradientView();
     void textSpectralColorChangeFinished();
     void textSpectralColorChange();
+    void textSpectralwavelengthChange();
     void assertToggles();
     void togglePoints(bool checkboxState);
     void toggleNormals(bool checkboxState);
@@ -240,7 +242,7 @@ private:
     QCheckBox*                          m_spectralCheckboxes[3];
     QLabel*                             m_spectralLabels[3];
     QLineEdit*                          m_spectralLineEdit[3];
-
+    QLineEdit*                          m_LineEditwl;
 
     QAction*                            m_actionShowColorDialog;
     QAction*                            m_actionRenameModelItem;
