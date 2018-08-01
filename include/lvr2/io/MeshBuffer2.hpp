@@ -26,26 +26,26 @@ public:
     /// \param vertices         The vertex array
     /// \param n                Number of vertices
     ///
-    void addVertices(floatArr vertices, size_t n);
+    void setVertices(floatArr vertices, size_t n);
 
     ///
     /// \brief addVertexNormals Adds vertex normals.
     /// \param normals          Normal defintion. Three floats per vertex.
     ///
-    void addVertexNormals(floatArr normals);
+    void setVertexNormals(floatArr normals);
 
     ///
     /// \brief addVertexColors  Adds vertex color information.
     /// \param colors           Vertex color array
     /// \param w                Number of bytes per color. (3 for RGB, 4 for RGBA)
     ///
-    void addVertexColors(ucharArr colors, unsigned w = 3);
+    void setVertexColors(ucharArr colors, unsigned w = 3);
 
     ///
     /// \brief addTextureCoordinates    Adds texture coordinates for vertices
     /// \param coordinates      Texture coordinate definitions (2 floats per vertex)
     ///
-    void addTextureCoordinates(floatArr coordinates);
+    void setTextureCoordinates(floatArr coordinates);
 
     ///
     /// \brief addFaceIndices   Adds the face index array that references to the
@@ -53,7 +53,7 @@ public:
     /// \param indices          The index array (3 indices per face)
     /// \param n                Number of faces
     ///
-    void addFaceIndices(indexArray indices, size_t n);
+    void setFaceIndices(indexArray indices, size_t n);
 
     ///
     /// \brief addFaceMaterialIndices   Adds face material indices. The array references
@@ -61,7 +61,7 @@ public:
     ///
     /// \param indices          One material index per face
     ///
-    void addFaceMaterialIndices(indexArray indices);
+    void setFaceMaterialIndices(indexArray indices);
 
     ///
     /// \brief addFaceNormals   Adds face normal information. The number of normals
@@ -69,14 +69,14 @@ public:
     ///                         faces in the mesh
     /// \param                  Normal definitions for all faces
     ///
-    void addFaceNormals(floatArr normals);
+    void setFaceNormals(floatArr normals);
 
     ///
     /// \brief addFaceColors    Adds face colors the the buffer
     /// \param colors           An array containing color information
     /// \param w                Bytes per color attribute (3 for RGB, 4 for RGBA)
     ///
-    void addFaceColors(ucharArr colors, unsigned w = 3);
+    void setFaceColors(ucharArr colors, unsigned w = 3);
 
     ///
     /// \brief numVertices      Number of vertices in the mesh
@@ -127,6 +127,9 @@ public:
     ///                         no colors are present.
     ///
     ucharArr getFaceColors(unsigned& width);
+
+
+    /// TODO: CHANNEL BASED SETTER / GETTER!
 
 private:
 

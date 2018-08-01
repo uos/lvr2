@@ -86,7 +86,7 @@ public:
     /// If the buffer stores color information, the
     /// call we return an empty array, i.e., the shared pointer
     /// contains a nullptr.
-    ucharArr getColorArray();
+    ucharArr getColorArray(unsigned& w);
 
     /// True, if buffer contains colors
     bool hasColors() const;

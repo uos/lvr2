@@ -33,7 +33,7 @@
 #ifndef __PLY_IO_H__
 #define __PLY_IO_H__
 
-#include "BaseIO.hpp"
+#include <lvr2/io/BaseIO.hpp>
 
 #include <rply.h>
 #include <stdint.h>
@@ -42,7 +42,7 @@
 
 #include <locale.h>
 
-namespace lvr
+namespace lvr2
 {
 
 /**
@@ -71,7 +71,6 @@ ELEMENT vertex
    PROPERTY             ny (float)
    PROPERTY             nz (float)
    PROPERTY      intensity (float)
-   PROPERTY     confidence (float)
 ELEMENT point
    PROPERTY              x (float)
    PROPERTY              y (float)
@@ -83,7 +82,6 @@ ELEMENT point
    PROPERTY             ny (float)
    PROPERTY             nz (float)
    PROPERTY      intensity (float)
-   PROPERTY     confidence (float)
 ELEMENT face
    PROPERTY vertex_indices (LIST uchar int)
    PROPERTY   vertex_index (LIST uchar int)  <<  [only read]
