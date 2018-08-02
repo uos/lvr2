@@ -128,6 +128,13 @@ public:
     ///
     ucharArr getFaceColors(unsigned& width);
 
+    bool hasFaceColors();
+
+    bool hasVertexColors();
+
+    bool hasFaceNormals();
+
+    bool hasVertexNormals();
 
     /// TODO: CHANNEL BASED SETTER / GETTER!
 

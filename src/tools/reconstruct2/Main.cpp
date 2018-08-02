@@ -1,6 +1,6 @@
 #include <lvr2/io/PointBuffer2.hpp>
 #include <lvr2/io/AsciiIO.hpp>
-
+#include <lvr2/io/PLYIO.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Vector.hpp>
 
@@ -15,35 +15,58 @@ typedef Vector<BaseVec>   VecT;
 int main(int argc, char** argv)
 {
 
-    lvr2::AsciiIO io;
-    lvr2::ModelPtr model = io.read("scan.pts");
+    PLYIO io;
+    ModelPtr model = io.read(argv[1]);
 
-    size_t n = model->m_pointCloud->numPoints();
-
-    unsigned w;
-    floatArr points = model->m_pointCloud->getPointArray();
-
-    std::ofstream out1("test.3d");
-    for(size_t i = 0; i < n; i++)
+    if(model->m_pointCloud)
     {
-        out1 << points[3 * i] << " " << points[3 * i + 1] << " " << points[3 * i + 2] << std::endl;
+        std::cout << model->m_pointCloud->numPoints() << std::endl;
+        std::cout << model->m_pointCloud->hasNormals() << std::endl;
+        std::cout << model->m_pointCloud->hasColors() << std::endl;
     }
 
-    VecT offset(100, 100, 100);
-
-    std::ofstream out2("test1.3d");
-    FloatChannel chn = model->m_pointCloud->getFloatChannel("points");
-
-    for(size_t i = 0; i < n; i++)
+    if(model->m_mesh)
     {
-        chn[i] += VecT(100, 100, 100);
-        VecT d = chn[i];
-        std::cout << d << std::endl;
-        out2 << points[3 * i] << " " << points[3 * i + 1] << " " << points[3 * i + 2] << std::endl;
+        std::cout << model->m_mesh->numVertices() << std::endl;
+        std::cout << model->m_mesh->numFaces() << std::endl;
+        std::cout << model->m_mesh->hasFaceColors() << std::endl;
+        std::cout << model->m_mesh->hasVertexColors() << std::endl;
+        std::cout << model->m_mesh->hasFaceNormals() << std::endl;
+        std::cout << model->m_mesh->hasVertexNormals() << std::endl;
     }
 
 
-    return 0;
+//    lvr2::AsciiIO io;
+//    lvr2::ModelPtr model = io.read("scan.pts");
+
+//    size_t n = model->m_pointCloud->numPoints();
+
+//    unsigned w;
+//    floatArr points = model->m_pointCloud->getPointArray();
+
+//    std::ofstream out1("test.3d");
+//    for(size_t i = 0; i < n; i++)
+//    {
+//        out1 << points[3 * i] << " " << points[3 * i + 1] << " " << points[3 * i + 2] << std::endl;
+//    }
+
+//    VecT offset(100, 100, 100);
+
+//    std::ofstream out2("test1.3d");
+//    FloatChannel chn = model->m_pointCloud->getFloatChannel("points");
+
+//    for(size_t i = 0; i < n; i++)
+//    {
+//        chn[i] += VecT(100, 100, 100);
+//        VecT d = chn[i];
+//        std::cout << d << std::endl;
+//        out2 << points[3 * i] << " " << points[3 * i + 1] << " " << points[3 * i + 2] << std::endl;
+//    }
+
+
+//    return 0;
+
+
 }
 //#include <lvr2/geometry/BaseVector.hpp>
 //#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>

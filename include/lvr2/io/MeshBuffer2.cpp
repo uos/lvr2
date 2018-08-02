@@ -160,4 +160,28 @@ ucharArr MeshBuffer2::getFaceColors(unsigned& w)
     return arr;
 }
 
+bool MeshBuffer2::hasFaceColors()
+{
+    UCharChannel channel = m_channels.getUCharChannel("face_colors");
+    return (channel.numAttributes() > 0);
+}
+
+bool MeshBuffer2::hasVertexColors()
+{
+    UCharChannel channel = m_channels.getUCharChannel("vertex_colors");
+    return (channel.numAttributes() > 0);
+}
+
+bool MeshBuffer2::hasFaceNormals()
+{
+    FloatChannel channel = m_channels.getFloatChannel("vertex_colors");
+    return (channel.numAttributes() > 0);
+}
+
+bool MeshBuffer2::hasVertexNormals()
+{
+    FloatChannel channel = m_channels.getFloatChannel("vertex_colors");
+    return (channel.numAttributes() > 0);
+}
+
 }
