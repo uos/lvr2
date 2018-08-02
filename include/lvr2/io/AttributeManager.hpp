@@ -2,8 +2,8 @@
 #define CHANNELHANDLER_HPP
 
 #include <lvr2/io/DataStruct.hpp>
-
 #include <iostream>
+#include <boost/optional.hpp>
 
 namespace lvr2
 {
@@ -149,6 +149,10 @@ using FloatChannel = AttributeChannel<float>;
 using UCharChannel = AttributeChannel<unsigned char>;
 using IndexChannel = AttributeChannel<size_t>;
 
+using FloatChannelOptional = boost::optional<FloatChannel&>;
+using UCharChannelOptional= boost::optional<UCharChannel&>;
+using IndexChannelOptional = boost::optional<IndexChannel&>;
+
 using FloatProxy = ElementProxy<float>;
 using UCharProxy = ElementProxy<unsigned char>;
 using IndexProxy = ElementProxy<size_t>;
@@ -156,6 +160,8 @@ using IndexProxy = ElementProxy<size_t>;
 using FloatChannelPtr = std::shared_ptr<FloatChannel>;
 using UCharChannelPtr = std::shared_ptr<UCharChannel>;
 using IndexChannelPtr = std::shared_ptr<IndexChannel>;
+
+
 
 class AttributeManager
 {
@@ -214,9 +220,9 @@ public:
     ucharArr getUCharArray(size_t& n, unsigned& w, const std::string name);
     indexArray getIndexArray(size_t& n, unsigned& w, const std::string name);
 
-    FloatChannel& getFloatChannel(std::string name);
-    UCharChannel& getUCharChannel(std::string name);
-    IndexChannel& getIndexChannel(std::string name);
+    FloatChannelOptional getFloatChannel(std::string name);
+    UCharChannelOptional getUCharChannel(std::string name);
+    IndexChannelOptional getIndexChannel(std::string name);
 
     void addFloatChannel(FloatChannelPtr data, std::string name);
     void addUCharChannel(UCharChannelPtr data, std::string name);

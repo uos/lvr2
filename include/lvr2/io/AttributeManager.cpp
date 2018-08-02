@@ -302,44 +302,44 @@ indexArray AttributeManager::getIndexArray(size_t& n, unsigned& w, const std::st
     }
 }
 
-UCharChannel& AttributeManager::getUCharChannel(std::string name)
+UCharChannelOptional AttributeManager::getUCharChannel(std::string name)
 {
     auto it = m_ucharChannels.find(name);
     if(it != m_ucharChannels.end())
     {
-        return *(it->second);
+        return UCharChannelOptional(*(it->second));
     }
     else
     {
-        return UCharChannel();
+        return boost::none;
     }
 }
 
-FloatChannel& AttributeManager::getFloatChannel(std::string name)
+FloatChannelOptional AttributeManager::getFloatChannel(std::string name)
 {
     auto it = m_floatChannels.find(name);
     if(it != m_floatChannels.end())
     {
-        return *(it->second);
+        return FloatChannelOptional(*(it->second));
     }
     else
     {
-        return UCharChannel();
+        return boost::none;
     }
 
 }
 
 
-IndexChannel& AttributeManager::getIndexChannel(std::string name)
+IndexChannelOptional AttributeManager::getIndexChannel(std::string name)
 {
     auto it = m_indexChannels.find(name);
     if(it != m_indexChannels.end())
     {
-        return *(it->second);
+        return IndexChannelOptional(*(it->second));
     }
     else
     {
-        return IndexChannel();
+        return boost::none;
     }
 }
 
