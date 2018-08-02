@@ -151,10 +151,17 @@ public Q_SLOTS:
     void exportSelectedModel();
     void buildIncompatibilityBox(string actionName, unsigned char allowedTypes);
     void showBackgroundDialog();
+
+    /// Shows a Popup Dialog with Information about a Point
     void showPointInfoDialog();
+    /// Shows the DockerWidget with the preview of the PointInfoDialog
     void showPointPreview(vtkActor* actor, int point);
+    /// Changes the Point displayed by the PointPreview
     void updatePointPreview(int pointId, PointBufferPtr points);
+
+    /// Switches between Sliders and Gradients. checked == true => Slider DockWidget enabled
     void updateSpectralSlidersEnabled(bool checked);
+    /// Switches between Sliders and Gradients. checked == true => Gradient DockWidget enabled
     void updateSpectralGradientEnabled(bool checked);
 
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
@@ -166,6 +173,7 @@ public Q_SLOTS:
 
 protected Q_SLOTS:
     void setModelVisibility(QTreeWidgetItem* treeWidgetItem, int column);
+    /// Adjusts all the Sliders, LineEdits and CheckBoxes to the currently selected Items
     void restoreSliders();
 
 Q_SIGNALS:
@@ -178,10 +186,10 @@ private:
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;
     LVRPlotter*                                 m_PointPreviewPlotter;
-    int                                         m_selectedPoint;
-    PointBufferPtr                              m_selectedPointBufferPtr;
+    int                                         m_previewPoint;
+    PointBufferPtr                              m_previewPointBuffer;
     QDialog*                                    m_aboutDialog;
-    QDialog*                                    m_tooltipDialog;
+    QDialog*                                    m_errorDialog;
     QMessageBox*                                m_incompatibilityBox;
     vtkSmartPointer<vtkRenderer>                m_renderer;
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
@@ -251,10 +259,10 @@ private:
     QCheckBox*                          m_spectralCheckboxes[3];
     QLabel*                             m_spectralLabels[3];
     QLineEdit*                          m_spectralLineEdits[3];
-
+    // Gradient Settings
     QSlider*                            m_gradientSlider;
     QLineEdit*                          m_gradientLineEdit;
-
+    // ContextMenu Items
     QAction*                            m_actionShowColorDialog;
     QAction*                            m_actionRenameModelItem;
     QAction*                            m_actionDeleteModelItem;

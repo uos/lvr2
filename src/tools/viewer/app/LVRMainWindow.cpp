@@ -55,11 +55,11 @@ LVRMainWindow::LVRMainWindow()
     Ui::AboutDialog aboutDialog;
     aboutDialog.setupUi(m_aboutDialog);
 
-    m_tooltipDialog = new QDialog(this);
+    m_errorDialog = new QDialog(this);
     Ui::TooltipDialog tooltipDialog;
-    tooltipDialog.setupUi(m_tooltipDialog);
+    tooltipDialog.setupUi(m_errorDialog);
 
-    m_selectedPointBufferPtr = nullptr;
+    m_previewPointBuffer = nullptr;
 
     // Setup specific properties
     QHeaderView* v = this->treeWidget->header();
@@ -1274,8 +1274,8 @@ void LVRMainWindow::buildIncompatibilityBox(string actionName, unsigned char all
 
 void LVRMainWindow::showErrorDialog()
 {
-    m_tooltipDialog->show();
-    m_tooltipDialog->raise();
+    m_errorDialog->show();
+    m_errorDialog->raise();
 }
 
 void LVRMainWindow::showHistogramDialog()
@@ -1325,18 +1325,18 @@ void LVRMainWindow::showPointPreview(vtkActor* actor, int point)
     {
         return;
     }
-    m_selectedPoint = point;
-    m_selectedPointBufferPtr = pointBridge->getPointBuffer();
+    m_previewPoint = point;
+    m_previewPointBuffer = pointBridge->getPointBuffer();
     updatePointPreview(point, pointBridge->getPointBuffer());
 }
 
 void LVRMainWindow::showPointInfoDialog()
 {
-    if (!m_selectedPointBufferPtr)
+    if (!m_previewPointBuffer)
     {
         return;
     }
-    new LVRPointInfo(this, m_selectedPointBufferPtr, m_selectedPoint);
+    new LVRPointInfo(this, m_previewPointBuffer, m_previewPoint);
 }
 
 void LVRMainWindow::onSpectralSliderChanged(int action)
