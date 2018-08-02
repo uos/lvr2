@@ -560,7 +560,7 @@
            <number>7</number>
           </property>
           <item>
-           <widget class="QLabel" name="label_cg_channel">
+           <widget class="QLabel" name="labelGradientWavelength">
             <property name="layoutDirection">
              <enum>Qt::LeftToRight</enum>
             </property>
@@ -570,7 +570,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_wavelength">
+           <widget class="QLineEdit" name="lineEditGradientWavelength">
             <property name="maximumSize">
              <size>
               <width>50</width>
@@ -597,7 +597,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_9">
           <item>
-           <widget class="QSlider" name="horizontalSlider_channel">
+           <widget class="QSlider" name="sliderGradientWavelength">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>

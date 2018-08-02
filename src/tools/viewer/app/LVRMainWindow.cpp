@@ -154,12 +154,12 @@ LVRMainWindow::LVRMainWindow()
     m_spectralLabels[0] = this->label_hred;
     m_spectralLabels[1] = this->label_hgreen;
     m_spectralLabels[2] = this->label_hblue;
+    m_spectralLineEdits[0] = this->lineEdit_hred;
+    m_spectralLineEdits[1] = this->lineEdit_hgreen;
+    m_spectralLineEdits[2] = this->lineEdit_hblue;
 
-    m_spectralLineEdit[0] = this->lineEdit_hred;
-    m_spectralLineEdit[1] = this->lineEdit_hgreen;
-    m_spectralLineEdit[2] = this->lineEdit_hblue;
-
-    m_LineEditwl=this->lineEdit_wavelength;
+    m_gradientSlider = this->sliderGradientWavelength;
+    m_gradientLineEdit = this->lineEditGradientWavelength;
 
     m_pickingInteractor = new LVRPickingInteractor(m_renderer);
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
@@ -224,7 +224,7 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(m_actionICP_Using_Manual_Correspondance, SIGNAL(triggered()), this, SLOT(manualICP()));
 
-    QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), this, SLOT(showAboutDialog(QAction*)));
+    QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), m_aboutDialog, SLOT(show()));
 
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), this, SLOT(alignPointClouds()));
@@ -239,10 +239,10 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
     QObject::connect(m_actionShow_Wireframe, SIGNAL(toggled(bool)), this, SLOT(toggleWireframe(bool)));
     QObject::connect(m_actionShowBackgroundSettings, SIGNAL(triggered()), this, SLOT(showBackgroundDialog()));
-    QObject::connect(m_actionShowSpectralSlider, SIGNAL(triggered()), this, SLOT(showSpectralSliderDialog()));
-    QObject::connect(m_actionShowSpectralColorGradient, SIGNAL(triggered()), this, SLOT(showSpectralColorGradientDialog()));
-    QObject::connect(m_actionShowSpectralPointPreview, SIGNAL(triggered()), this, SLOT(showSpectralPointPreviewDialog()));
-    QObject::connect(m_actionShowSpectralHistogram, SIGNAL(triggered()), this, SLOT(showHistogram()));
+    QObject::connect(m_actionShowSpectralSlider, SIGNAL(triggered()), dockWidgetSpectralSliderSettings, SLOT(show()));
+    QObject::connect(m_actionShowSpectralColorGradient, SIGNAL(triggered()), dockWidgetSpectralColorGradientSettings, SLOT(show()));
+    QObject::connect(m_actionShowSpectralPointPreview, SIGNAL(triggered()), dockWidgetPointPreview, SLOT(show()));
+    QObject::connect(m_actionShowSpectralHistogram, SIGNAL(triggered()), this, SLOT(showHistogramDialog()));
 
     QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
     QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
@@ -256,23 +256,23 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     for (int i = 0; i < 3; i++)
     {
-        QObject::connect(m_spectralSliders[i], SIGNAL(valueChanged(int)), this, SLOT(updateSpectralColorText()));
-        QObject::connect(m_spectralSliders[i], SIGNAL(actionTriggered(int)), this, SLOT(updateSpectralColorText(int)));
+        QObject::connect(m_spectralSliders[i], SIGNAL(valueChanged(int)), this, SLOT(onSpectralSliderChanged()));
+        QObject::connect(m_spectralSliders[i], SIGNAL(actionTriggered(int)), this, SLOT(onSpectralSliderChanged(int)));
         QObject::connect(m_spectralSliders[i], SIGNAL(sliderReleased()), this, SLOT(changeSpectralColor()));
         QObject::connect(m_spectralCheckboxes[i], SIGNAL(stateChanged(int)), this, SLOT(changeSpectralColor()));
-        QObject::connect(m_spectralLineEdit[i], SIGNAL(editingFinished()), this, SLOT(textSpectralColorChangeFinished()));
-        QObject::connect(m_spectralLineEdit[i], SIGNAL(textChanged(QString)), this, SLOT(textSpectralColorChange()));    
+        QObject::connect(m_spectralLineEdits[i], SIGNAL(textChanged(QString)), this, SLOT(onSpectralLineEditChanged()));
+        QObject::connect(m_spectralLineEdits[i], SIGNAL(editingFinished()), this, SLOT(onSpectralLineEditSubmit()));
     }
 
-    QObject::connect(m_LineEditwl, SIGNAL(textChanged(QString)), this, SLOT(textSpectralwavelengthChange()));
-    QObject::connect(m_LineEditwl, SIGNAL(editingFinished()), this, SLOT(textwavelengthChangeFinished()));
-    QObject::connect(horizontalSlider_channel, SIGNAL(valueChanged(int)), this, SLOT(updateSpectralGradientText()));
-    QObject::connect(horizontalSlider_channel, SIGNAL(actionTriggered(int)), this, SLOT(updateSpectralGradientText(int)));
-    QObject::connect(horizontalSlider_channel, SIGNAL(sliderReleased()), this, SLOT(changeGradientView()));
+    QObject::connect(m_gradientLineEdit, SIGNAL(textChanged(QString)), this, SLOT(onGradientLineEditChanged()));
+    QObject::connect(m_gradientLineEdit, SIGNAL(editingFinished()), this, SLOT(onGradientLineEditSubmit()));
+    QObject::connect(m_gradientSlider, SIGNAL(valueChanged(int)), this, SLOT(onGradientSliderChanged()));
+    QObject::connect(m_gradientSlider, SIGNAL(actionTriggered(int)), this, SLOT(onGradientSliderChanged(int)));
+    QObject::connect(m_gradientSlider, SIGNAL(sliderReleased()), this, SLOT(changeGradientColor()));
 
-    QObject::connect(comboBox_colorgradient, SIGNAL(currentIndexChanged(int)), this, SLOT(changeGradientView()));
-    QObject::connect(checkBox_normcolors, SIGNAL(stateChanged(int)), this, SLOT(changeGradientView()));
-    QObject::connect(checkBox_NDVI, SIGNAL(stateChanged(int)), this, SLOT(changeGradientView()));
+    QObject::connect(comboBox_colorgradient, SIGNAL(currentIndexChanged(int)), this, SLOT(changeGradientColor()));
+    QObject::connect(checkBox_normcolors, SIGNAL(stateChanged(int)), this, SLOT(changeGradientColor()));
+    QObject::connect(checkBox_NDVI, SIGNAL(stateChanged(int)), this, SLOT(changeGradientColor()));
 
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
@@ -427,25 +427,25 @@ void LVRMainWindow::restoreSliders()
             m_spectralSliders[i]->setPageStep(10 * p->numWavelengthsPerChannel());
             m_spectralSliders[i]->setValue(p->getWavelength(channels[i]));
             m_spectralSliders[i]->setEnabled(use_channel[i]);
-            m_spectralLineEdit[i]->setEnabled(use_channel[i]);
+            m_spectralLineEdits[i]->setEnabled(use_channel[i]);
 
             m_spectralCheckboxes[i]->setChecked(use_channel[i]);
 
-            m_spectralLineEdit[i]->setText(QString("%1").arg(p->getWavelength(channels[i])));
+            m_spectralLineEdits[i]->setText(QString("%1").arg(p->getWavelength(channels[i])));
         }
         this->dockWidgetSpectralSliderSettingsContents->setEnabled(true);
 
         this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(false);
-        this->horizontalSlider_channel->setMaximum(p->getMaxWavelength() - 1);
-        this->horizontalSlider_channel->setMinimum(p->getMinWavelength());
-        this->horizontalSlider_channel->setValue(p->getWavelength(gradient_channel));
-        this->horizontalSlider_channel->setEnabled(!use_ndvi);
-        this->lineEdit_wavelength->setEnabled(!use_ndvi);
+        m_gradientSlider->setMaximum(p->getMaxWavelength() - 1);
+        m_gradientSlider->setMinimum(p->getMinWavelength());
+        m_gradientSlider->setValue(p->getWavelength(gradient_channel));
+        m_gradientSlider->setEnabled(!use_ndvi);
+        m_gradientLineEdit->setEnabled(!use_ndvi);
 
         this->checkBox_NDVI->setChecked(use_ndvi);
         this->checkBox_normcolors->setChecked(normalize_gradient);
         this->comboBox_colorgradient->setCurrentIndex((int)gradient_type);
-        this->lineEdit_wavelength->setText(QString("%1").arg(p->getWavelength(gradient_channel)));
+        m_gradientLineEdit->setText(QString("%1").arg(p->getWavelength(gradient_channel)));
         this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(true);
     }
     else
@@ -1272,38 +1272,18 @@ void LVRMainWindow::buildIncompatibilityBox(string actionName, unsigned char all
     m_incompatibilityBox->setStandardButtons(QMessageBox::Ok);
 }
 
-void LVRMainWindow::showAboutDialog(QAction*)
-{
-    m_aboutDialog->show();
-}
-
-void LVRMainWindow::showTooltipDialog()
+void LVRMainWindow::showErrorDialog()
 {
     m_tooltipDialog->show();
     m_tooltipDialog->raise();
 }
 
-void LVRMainWindow::showSpectralSliderDialog()
-{
-    this->dockWidgetSpectralSliderSettings->show();
-}
-
-void LVRMainWindow::showSpectralColorGradientDialog()
-{
-    this->dockWidgetSpectralColorGradientSettings->show();
-}
-
-void LVRMainWindow::showSpectralPointPreviewDialog()
-{
-    this->dockWidgetPointPreview->show();
-}
-
-void LVRMainWindow::showHistogram()
+void LVRMainWindow::showHistogramDialog()
 {
     std::set<LVRPointCloudItem*> pointCloudItems = getSelectedPointCloudItems();
     if(pointCloudItems.empty())
     {
-        showTooltipDialog();
+        showErrorDialog();
         return;
     }
 
@@ -1312,7 +1292,7 @@ void LVRMainWindow::showHistogram()
         PointBufferPtr points = item->getPointBuffer();
         if (!points->hasPointSpectralChannels())
         {
-            showTooltipDialog();
+            showErrorDialog();
             return;
         }
 
@@ -1359,7 +1339,7 @@ void LVRMainWindow::showPointInfoDialog()
     new LVRPointInfo(this, m_selectedPointBufferPtr, m_selectedPoint);
 }
 
-void LVRMainWindow::updateSpectralColorText(int action)
+void LVRMainWindow::onSpectralSliderChanged(int action)
 {
     switch(action)
     {
@@ -1376,29 +1356,29 @@ void LVRMainWindow::updateSpectralColorText(int action)
             for (int i = 0; i < 3; i++)
             {
                 int wavelength = m_spectralSliders[i]->value();
-                if (!m_spectralLineEdit[i]->hasFocus())
+                if (!m_spectralLineEdits[i]->hasFocus())
                 {
-                    m_spectralLineEdit[i]->setText(QString("%1").arg(wavelength));
+                    m_spectralLineEdits[i]->setText(QString("%1").arg(wavelength));
                 }
             }
         }
     }
 }
 
-void LVRMainWindow::textSpectralColorChangeFinished()
+void LVRMainWindow::onSpectralLineEditSubmit()
 {
-    textSpectralColorChange();
+    onSpectralLineEditChanged();
     changeSpectralColor();
 }
 
-void LVRMainWindow::textwavelengthChangeFinished()
+void LVRMainWindow::onGradientLineEditSubmit()
 {
-    textSpectralwavelengthChange();
-    changeGradientView();
+    onGradientLineEditChanged();
+    changeGradientColor();
 }
 
 
-void LVRMainWindow::textSpectralwavelengthChange()
+void LVRMainWindow::onGradientLineEditChanged()
 {
     std::set<LVRPointCloudItem*> items = getSelectedPointCloudItems();
     if(!items.empty())
@@ -1408,7 +1388,7 @@ void LVRMainWindow::textSpectralwavelengthChange()
         int max = points->getMaxWavelength();
 
        
-        QString test = m_LineEditwl-> text();
+        QString test = m_gradientLineEdit-> text();
         bool ok;
         int wavelength = test.toUInt(&ok);
 
@@ -1418,11 +1398,11 @@ void LVRMainWindow::textSpectralwavelengthChange()
         }
         
         if (wavelength < min)
-            this->horizontalSlider_channel->setValue(min);
+            m_gradientSlider->setValue(min);
         else if (wavelength >= max)
-            this->horizontalSlider_channel->setValue(max-1);
+            m_gradientSlider->setValue(max-1);
         else
-            this->horizontalSlider_channel->setValue(wavelength);
+            m_gradientSlider->setValue(wavelength);
         
     }
 }
@@ -1449,13 +1429,13 @@ void LVRMainWindow::changeSpectralColor()
     for (int i = 0; i < 3; i++)
     {
         int wavelength = m_spectralSliders[i]->value();
-        m_spectralLineEdit[i]->setText(QString("%1").arg(wavelength));
+        m_spectralLineEdits[i]->setText(QString("%1").arg(wavelength));
 
         channels[i] = p->getChannel(wavelength);
 
         use_channel[i] = m_spectralCheckboxes[i]->isChecked();
         m_spectralSliders[i]->setEnabled(use_channel[i]);
-        m_spectralLineEdit[i]->setEnabled(use_channel[i]);
+        m_spectralLineEdits[i]->setEnabled(use_channel[i]);
     }
 
     for(LVRPointCloudItem* item : items)
@@ -1466,7 +1446,7 @@ void LVRMainWindow::changeSpectralColor()
 }
 
 
-void LVRMainWindow::textSpectralColorChange()
+void LVRMainWindow::onSpectralLineEditChanged()
 {
     std::set<LVRPointCloudItem*> items = getSelectedPointCloudItems();
     if(!items.empty())
@@ -1477,7 +1457,7 @@ void LVRMainWindow::textSpectralColorChange()
 
         for (int i = 0; i < 3; i++)
         {
-            QString test = m_spectralLineEdit[i]-> text();
+            QString test = m_spectralLineEdits[i]-> text();
             bool ok;
             int wavelength = test.toUInt(&ok);
 
@@ -1495,7 +1475,7 @@ void LVRMainWindow::textSpectralColorChange()
     }
 }
 
-void LVRMainWindow::updateSpectralGradientText(int action)
+void LVRMainWindow::onGradientSliderChanged(int action)
 {
     switch(action)
     {
@@ -1504,21 +1484,21 @@ void LVRMainWindow::updateSpectralGradientText(int action)
         case QAbstractSlider::SliderPageStepAdd:
         case QAbstractSlider::SliderPageStepSub:
         {
-            changeGradientView();
+            changeGradientColor();
             break;
         }
         case -1: //valueChanged(int)
         {
-            int wavelength = this->horizontalSlider_channel->value();
-            if (!this->lineEdit_wavelength->hasFocus())
+            int wavelength = m_gradientSlider->value();
+            if (!m_gradientLineEdit->hasFocus())
             {
-                this->lineEdit_wavelength->setText(QString("%1").arg(wavelength));
+                m_gradientLineEdit->setText(QString("%1").arg(wavelength));
             }            
         }
     }  
 }
 
-void LVRMainWindow::changeGradientView()
+void LVRMainWindow::changeGradientColor()
 {
     if (!this->dockWidgetSpectralColorGradientSettingsContents->isEnabled())
     {
@@ -1532,7 +1512,7 @@ void LVRMainWindow::changeGradientView()
         return;
     }
 
-    size_t wavelength = this->horizontalSlider_channel->value();
+    size_t wavelength = m_gradientSlider->value();
 
     PointBufferPtr p = (*items.begin())->getPointBuffer();
     size_t channel = p->getChannel(wavelength);
@@ -1545,9 +1525,9 @@ void LVRMainWindow::changeGradientView()
     {
         item->getPointBufferBridge()->setSpectralColorGradient((GradientType)type, channel, normalized, useNDVI);
     }
-    this->lineEdit_wavelength->setText(QString("%1").arg(wavelength));
-    this->horizontalSlider_channel->setEnabled(!useNDVI);
-    this->lineEdit_wavelength->setEnabled(!useNDVI);
+    m_gradientLineEdit->setText(QString("%1").arg(wavelength));
+    m_gradientSlider->setEnabled(!useNDVI);
+    m_gradientLineEdit->setEnabled(!useNDVI);
     m_renderer->GetRenderWindow()->Render();
 }
 
