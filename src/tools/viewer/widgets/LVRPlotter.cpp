@@ -63,7 +63,7 @@ void LVRPlotter::paintEvent(QPaintEvent *)
 	{
 		return;
 	}
-
+	//Create axes and labeling for the plotter
 	QPainter painter(this);
 
 	painter.setPen(QColor(255, 255, 255));
@@ -85,6 +85,7 @@ void LVRPlotter::paintEvent(QPaintEvent *)
 
 	float drawWidth = width() - leftMargin;
 
+	//add wavelength to axes
 	int count = width() / 70;
 	for (int i = 0; i < count; i++)
 	{
@@ -103,15 +104,17 @@ void LVRPlotter::paintEvent(QPaintEvent *)
 	float old_x = leftMargin;
 	float old_y = (m_points[0] - m_min) / (m_max - m_min) * drawHeight;
 
+	//Plot information
 	for (int i = 1; i < m_numPoints; i++)
 	{
 		float new_x = i * drawWidth / m_numPoints + leftMargin;
 		float new_y = (m_points[i] - m_min) / (m_max - m_min) * drawHeight;
-		
+		//Mode to draw Line for Point Preview and Pointview
 		if(m_mode == PlotMode::LINE)
 		{
 			painter.drawLine(old_x, drawHeight - old_y, new_x, drawHeight - new_y);
 		}
+		//Mode to draw bar chart for histogram
 		else if (m_mode == PlotMode::BAR)
 		{
 			painter.setPen(QColor(0, 0, 255));
@@ -121,7 +124,6 @@ void LVRPlotter::paintEvent(QPaintEvent *)
 				old_x++;
 			}	
 		}
-
 		old_x = new_x;
 		old_y = new_y;
 	}

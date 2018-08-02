@@ -53,7 +53,8 @@ public:
 
 protected:
 	virtual void mouseReleaseEvent(QMouseEvent* event); 
-    void paintEvent(QPaintEvent *event);
+    ///Create axes, labeling and draw graph or bar chart
+	void paintEvent(QPaintEvent *event);
 
 private:
 	floatArr m_points;
