@@ -61,9 +61,11 @@ sudo apt install libflann-dev liblz4-dev libgsl-dev libxmu-dev libboost-dev libe
 ```bash
 git clone https://github.com/opencv/opencv.git
 git clone https://github.com/opencv/opencv_contrib.git
-cd opencv
-mkdir build
-cd build
+cd opencv_contrib
+git checkout 3.4
+cd ../opencv
+git checkout 3.4
+mkdir build && cd build
 cmake -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules ..
 make -j$(nproc)
 sudo make install
