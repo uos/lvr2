@@ -44,19 +44,18 @@ inline unsigned char floatToColor(float f)
 
 LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
 {
+    // use all silders with channel 0
     m_useSpectralChannel.r = true;
     m_useSpectralChannel.g = true;
     m_useSpectralChannel.b = true;
     m_spectralChannels.r = 0;
     m_spectralChannels.g = 0;
     m_spectralChannels.b = 0;
-
-    // default: solid color gradient
     m_useGradient = false;
     m_useNDVI = false;
     m_useNormalizedGradient = false;
     m_spectralGradientChannel = 0;
-    m_spectralGradient = HOT;
+    m_spectralGradient = HOT; // default gradientype: HOT
 
     if(pointCloud)
     {
@@ -90,14 +89,17 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
 
 void LVRPointBufferBridge::setSpectralChannels(color<size_t> channels, color<bool> use_channel)
 {
+    // do not update if nothing has changed
     if (channels == m_spectralChannels && use_channel == m_useSpectralChannel)
     {
         return;
     }
 
+    // set new values
     m_spectralChannels = channels;
     m_useSpectralChannel = use_channel;
 
+    // update the view
     refreshSpectralChannel();
 }
 
@@ -107,11 +109,13 @@ void LVRPointBufferBridge::refreshSpectralChannel()
     size_t n, n_channels;
     floatArr spec = m_pointBuffer->getPointSpectralChannelsArray(n, n_channels);
 
+    // check if we have spectral data
     if (!n)
     {
         return;
     }
 
+    // create colorbuffer
     vtkSmartPointer<vtkUnsignedCharArray> scalars = vtkSmartPointer<vtkUnsignedCharArray>::New();
     scalars->SetNumberOfComponents(3);
     scalars->SetName("Colors");
@@ -122,6 +126,7 @@ void LVRPointBufferBridge::refreshSpectralChannel()
     {
         int specIndex = n_channels * i;
         unsigned char speccolor[3];
+        // if the silder is not enabled the color get the value 0
         speccolor[0] = m_useSpectralChannel.r ? floatToColor(spec[specIndex + m_spectralChannels.r]) : 0;
         speccolor[1] = m_useSpectralChannel.g ? floatToColor(spec[specIndex + m_spectralChannels.g]) : 0;
         speccolor[2] = m_useSpectralChannel.b ? floatToColor(spec[specIndex + m_spectralChannels.b]) : 0;
@@ -133,6 +138,7 @@ void LVRPointBufferBridge::refreshSpectralChannel()
 #endif
     }
 
+    // set new colors
     m_pointCloudActor->GetMapper()->GetInput()->GetPointData()->SetScalars(scalars);
 }
 
@@ -144,17 +150,20 @@ void LVRPointBufferBridge::getSpectralChannels(color<size_t> &channels, color<bo
 
 void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_t channel, bool normalized, bool useNDVI)
 {
+    // do not update if nothing has changed
     if (m_spectralGradient == gradient && m_spectralGradientChannel == channel
         && m_useNormalizedGradient == normalized && m_useNDVI == useNDVI)
     {
         return;
     }
 
+    // set new values
     m_spectralGradient = gradient;
     m_spectralGradientChannel = channel;
     m_useNormalizedGradient = normalized;
     m_useNDVI = useNDVI;
 
+    // update the view
     refreshSpectralGradient();
 }
 
@@ -163,11 +172,13 @@ void LVRPointBufferBridge::refreshSpectralGradient()
     size_t n, n_channels;
     floatArr spec = m_pointBuffer->getPointSpectralChannelsArray(n, n_channels);
 
+    // check if we have spectral data
     if (!n)
     {
         return;
     }
 
+    // calculate the ndvi values
     float ndviMax = 0;
     float ndviMin = 1;
 
@@ -188,6 +199,7 @@ void LVRPointBufferBridge::refreshSpectralGradient()
             float nearRedTotal = 0;
             float* specPixel = spec.get() + n_channels * i;
 
+            // sum red and nir
             for (int channel = redStart; channel < redEnd; channel++)
             {
                 redTotal += specPixel[channel];
@@ -197,6 +209,7 @@ void LVRPointBufferBridge::refreshSpectralGradient()
                 nearRedTotal += specPixel[channel];
             }
 
+            // use NDVI formula:
             float red = redTotal / (redEnd - redStart);
             float nearRed = nearRedTotal / (nearRedEnd - nearRedStart);
 
@@ -204,20 +217,24 @@ void LVRPointBufferBridge::refreshSpectralGradient()
             val = (val + 1) / 2; // NDVI is in range [-1, 1] => transform to [0, 1]
             ndvi[i] = val;
 
+            // get min and max
             if (val < ndviMin) ndviMin = val;
             if (val > ndviMax) ndviMax = val;
         }
     }
 
+    // create colorbuffer
     vtkSmartPointer<vtkUnsignedCharArray> scalars = vtkSmartPointer<vtkUnsignedCharArray>::New();
     scalars->SetNumberOfComponents(3);
     scalars->SetName("Colors");
     scalars->SetNumberOfTuples(n);
 
+    // normalize data
     unsigned char min = 0;
     unsigned char max = 255;
     if(m_useNormalizedGradient && !m_useNDVI)
     {
+        // get min and max
         float max_val = spec[m_spectralGradientChannel], min_val = spec[m_spectralGradientChannel];
         #pragma omp parallel for reduction(max : max_val), reduction(min : min_val)
         for (int i = 0; i < n; i++)
@@ -242,14 +259,17 @@ void LVRPointBufferBridge::refreshSpectralGradient()
         max = floatToColor(ndviMax);
     }
 
+    // Colormap is used to calculate gradients
     ColorMap colorMap(max - min);
 
+    // update all colors
 	#pragma omp parallel for
     for (int i = 0; i < n; i++)
     {
         int specIndex = n_channels * i;
         float color[3];
 
+        // get gradient colors
         if (m_useNDVI)
         {
             colorMap.getColor(color, floatToColor(ndvi[i]) - min, m_spectralGradient);
@@ -271,6 +291,7 @@ void LVRPointBufferBridge::refreshSpectralGradient()
 #endif
     }
 
+    // set new colors
     m_pointCloudActor->GetMapper()->GetInput()->GetPointData()->SetScalars(scalars);
 }
 
@@ -286,7 +307,7 @@ void LVRPointBufferBridge::useGradient(bool useGradient)
 {
     m_useGradient = useGradient;
 
-    // update
+    // update the view
     if(useGradient)
     {
         refreshSpectralGradient();
@@ -352,6 +373,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
             point[1] = points[index + 1];
             point[2] = points[index + 2];
 
+            // show spectral colors if we have spectral data
             if(n_s_p)
             {
                 if (i >= n_s_p) // only take points with spectral information
