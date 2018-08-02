@@ -8,7 +8,7 @@ namespace lvr
 {
 
 LVRPlotter::LVRPlotter(QWidget * parent)
-	: QWidget(parent), m_mode(PlotMode::LINE), m_numPoints(0)
+	: QWidget(parent), m_mode(PlotMode::LINE), m_numPoints(0), m_minX(0), m_maxX(1000)
 {
 	m_points.reset();
 }
@@ -57,6 +57,12 @@ void LVRPlotter::removePoints()
 	update();
 }
 
+void LVRPlotter::setXRange(int min, int max)
+{
+	m_minX = min;
+	m_maxX = max;
+}
+
 void LVRPlotter::paintEvent(QPaintEvent *)
 {
 	if (!m_numPoints)
@@ -90,7 +96,7 @@ void LVRPlotter::paintEvent(QPaintEvent *)
 	for (int i = 0; i < count; i++)
 	{
 		float new_x = i * drawWidth / count + leftMargin;
-		painter.drawText(new_x, height() - 20, width(), height(), Qt::AlignTop, QString("%1").arg(i * (1000 - 400) / count + 400), &rect);
+		painter.drawText(new_x, height() - 20, width(), height(), Qt::AlignTop, QString("%1").arg(i * (m_maxX - m_minX) / count + m_minX), &rect);
 	}
 	
 	int botMargin = rect.height() + 1;

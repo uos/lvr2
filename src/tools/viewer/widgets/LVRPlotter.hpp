@@ -43,10 +43,11 @@ Q_SIGNALS:
 
 public:
 
-    LVRPlotter(QWidget * parent = 0);
+    LVRPlotter(QWidget* parent = (QWidget*)nullptr);
     virtual ~LVRPlotter();
 
 	void setPlotMode(PlotMode mode);
+	void setXRange(int min, int max);
 	void setPoints(floatArr points, size_t numPoints);
 	void setPoints(floatArr points, size_t numPoints, float min, float max);
 	void removePoints();
@@ -62,6 +63,8 @@ private:
 	float    m_min;
 	float    m_max;
 	PlotMode m_mode;
+	int		 m_minX;
+	int		 m_maxX;
 };
 
 } /* namespace lvr */
