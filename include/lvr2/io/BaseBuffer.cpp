@@ -18,12 +18,12 @@ ucharArr BaseBuffer::getUcharArray(const std::string& name, size_t& n, unsigned&
     return m_channels.getUCharArray(n, w, name);
 }
 
-FloatChannel BaseBuffer::getFloatChannel(const std::string& name)
+FloatChannelOptional BaseBuffer::getFloatChannel(const std::string& name)
 {
     return m_channels.getFloatChannel(name);
 }
 
-UCharChannel BaseBuffer::getUcharChannel(const std::string& name)
+UCharChannelOptional BaseBuffer::getUcharChannel(const std::string& name)
 {
     return m_channels.getUCharChannel(name);
 }

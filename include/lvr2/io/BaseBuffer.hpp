@@ -63,7 +63,7 @@ public:
     /// \param name             Name of the channel
     /// \return                 A FloatChannel representation of the attributes
     ///
-    FloatChannel getFloatChannel(const std::string& name);
+    FloatChannelOptional getFloatChannel(const std::string& name);
 
     ///
     /// \brief getUCharChannel  Returns a UCHarChannel representation of the
@@ -75,7 +75,7 @@ public:
     /// \param name             Name of the channel
     /// \return                 A FloatChannel representation of the attributes
     ///
-    UCharChannel getUcharChannel(const std::string& name);
+    UCharChannelOptional getUcharChannel(const std::string& name);
 
     /// Destructor
     virtual ~BaseBuffer() {}
