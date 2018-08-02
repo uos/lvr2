@@ -309,6 +309,10 @@ UCharChannel& AttributeManager::getUCharChannel(std::string name)
     {
         return *(it->second);
     }
+    else
+    {
+        return UCharChannel();
+    }
 }
 
 FloatChannel& AttributeManager::getFloatChannel(std::string name)
@@ -317,6 +321,10 @@ FloatChannel& AttributeManager::getFloatChannel(std::string name)
     if(it != m_floatChannels.end())
     {
         return *(it->second);
+    }
+    else
+    {
+        return UCharChannel();
     }
 
 }
@@ -329,7 +337,10 @@ IndexChannel& AttributeManager::getIndexChannel(std::string name)
     {
         return *(it->second);
     }
-
+    else
+    {
+        return IndexChannel();
+    }
 }
 
 }
