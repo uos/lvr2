@@ -9,6 +9,7 @@ LVRHistogram::LVRHistogram(QWidget* parent, PointBufferPtr points)
     m_histogram.setupUi(this);
     //Set Plotmode to create a bar chart
     m_histogram.plotter->setPlotMode(PlotMode::BAR);
+    m_histogram.plotter->setXRange(points->getMinWavelength(), points->getMaxWavelength());
 
     size_t n;
     size_t n_spec;

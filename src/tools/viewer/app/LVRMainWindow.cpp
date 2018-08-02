@@ -1575,6 +1575,7 @@ void LVRMainWindow::updatePointPreview(int pointId, PointBufferPtr points)
             data[i] = spec[pointId * n_channels + i];
         }
         m_PointPreviewPlotter->setPoints(data, n_channels, 0, 1);
+        m_PointPreviewPlotter->setXRange(points->getMinWavelength(), points->getMaxWavelength());
     }
 }
 
