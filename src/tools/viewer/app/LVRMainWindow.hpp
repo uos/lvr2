@@ -98,12 +98,10 @@ public Q_SLOTS:
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();
-    void showAboutDialog(QAction*);
-    void showTooltipDialog();
-    void showSpectralSliderDialog();
-    void showSpectralColorGradientDialog();
-    void showSpectralPointPreviewDialog();
-    void showHistogram();
+    /// Shows a Popup Dialog saying that no PointClouds with spectral data are selected
+    void showErrorDialog();
+    /// Shows a Popup Dialog with the average Intensity per Spectral Channel
+    void showHistogramDialog();
     void renameModelItem();
     void estimateNormals();
     void reconstructUsingMarchingCubes();
@@ -117,14 +115,25 @@ public Q_SLOTS:
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
     void changeShading(int shader);
-    void updateSpectralColorText(int action = -1);
+
+    /// Updates all selected LVRPointCloudItems to the desired Spectral. **can take seconds**
     void changeSpectralColor();
-    void textwavelengthChangeFinished();
-    void updateSpectralGradientText(int action = -1);
-    void changeGradientView();
-    void textSpectralColorChangeFinished();
-    void textSpectralColorChange();
-    void textSpectralwavelengthChange();
+    /// Determines if changeSpectralColor() should be called. Updates the m_spectralLineEdit to the value from m_spectralSlider
+    void onSpectralSliderChanged(int action = -1);
+    /// Updates the m_spectralSlider to the value from m_spectralLineEdit
+    void onSpectralLineEditChanged();
+    /// Same as onSpectralLineEditChanged(), but triggers changeSpectralView()
+    void onSpectralLineEditSubmit();
+
+    /// Updates all selected LVRPointCloudItems to the desired Gradient. **can take seconds**
+    void changeGradientColor();
+    /// Determines if changeGradientColor() should be called. Updates the m_gradientLineEdit to the value from m_gradientSlider
+    void onGradientSliderChanged(int action = -1);
+    /// Updates the m_gradientSlider to the value from m_gradientLineEdit
+    void onGradientLineEditChanged();
+    /// Same as onGradientLineEditChanged(), but triggers changeGradientView()
+    void onGradientLineEditSubmit();
+
     void assertToggles();
     void togglePoints(bool checkboxState);
     void toggleNormals(bool checkboxState);
@@ -241,8 +250,10 @@ private:
     QSlider*                            m_spectralSliders[3];
     QCheckBox*                          m_spectralCheckboxes[3];
     QLabel*                             m_spectralLabels[3];
-    QLineEdit*                          m_spectralLineEdit[3];
-    QLineEdit*                          m_LineEditwl;
+    QLineEdit*                          m_spectralLineEdits[3];
+
+    QSlider*                            m_gradientSlider;
+    QLineEdit*                          m_gradientLineEdit;
 
     QAction*                            m_actionShowColorDialog;
     QAction*                            m_actionRenameModelItem;
