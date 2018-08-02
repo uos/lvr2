@@ -1,17 +1,5 @@
 #include "LVRHistogram.hpp"
 
-#include <vtkWindowToImageFilter.h>
-#include <vtkPNGWriter.h>
-
-#include <lvr/io/PointBuffer.hpp>
-#include <lvr/io/ModelFactory.hpp>
-#include <lvr/io/Model.hpp>
-#include <lvr/io/DataStruct.hpp>
-#include <lvr/registration/ICPPointAlign.hpp>
-#include "lvr/io/PointBuffer.hpp"
-
-#include <cstring>
-
 namespace lvr
 {
 
