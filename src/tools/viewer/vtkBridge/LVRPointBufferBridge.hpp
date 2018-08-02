@@ -55,15 +55,24 @@ public:
     void setPointSize(int pointSize);
     void setOpacity(float opacityValue);
     void setVisibility(bool visible);
+    /// set the spectral channel for (r, g, b) and set if it is used
     void setSpectralChannels(color<size_t> channels, color<bool> use_channel);
+    /// get spectral channel mappings
     void getSpectralChannels(color<size_t> &channels, color<bool> &use_channel) const;
+    /// set the gradienttype, desired channel, if the outputcolor should be normalized and if the NDVI should be used instead of the channel
     void setSpectralColorGradient(GradientType gradient, size_t channel, bool normalized = false, bool ndvi = false);
+    /// get the gradienttype, channel, normalizend and ndvi flags
     void getSpectralColorGradient(GradientType &gradient, size_t &channel, bool &normalized, bool &useNDVI) const;
-    void refreshSpectralGradient();
-    void refreshSpectralChannel();
+    /// switch between spectral mapping and gradient
     void useGradient(bool useGradient);
-
+    /// get the point buffer
     PointBufferPtr getPointBuffer();
+
+private:
+    /// update the view with gradient information
+    void refreshSpectralGradient();
+    /// update the view with channel mappings
+    void refreshSpectralChannel();
 
 protected:
 
