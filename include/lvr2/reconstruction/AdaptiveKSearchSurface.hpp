@@ -39,6 +39,7 @@
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/geometry/Plane.hpp>
+#include <lvr2/io/Progress.hpp>
 
 
 #include "PointsetSurface.hpp"

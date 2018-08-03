@@ -78,9 +78,9 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
     if(!this->m_searchTree)
     {
        this->m_searchTree = getSearchTree("flann", buffer);
-       cout << lvr::timestamp << "No valid search tree specified (" << searchTreeName << ")." << endl;
-       cout << lvr::timestamp << "Maybe you did not install the required library." << endl;
-       cout << lvr::timestamp << "Defaulting to flann." << endl;
+       cout << timestamp.getElapsedTime() << "No valid search tree specified (" << searchTreeName << ")." << endl;
+       cout << timestamp.getElapsedTime() << "Maybe you did not install the required library." << endl;
+       cout << timestamp.getElapsedTime() << "Defaulting to flann." << endl;
     }
 
     if(posefile != "")
@@ -166,7 +166,7 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 template<typename BaseVecT>
 void AdaptiveKSearchSurface<BaseVecT>::init()
 {
-    cout << lvr::timestamp << "##### Dataset statatistics: ##### " << endl << endl;
+    cout << timestamp.getElapsedTime() << "##### Dataset statatistics: ##### " << endl << endl;
     cout << "Num points \t: " << this->m_pointBuffer->getNumPoints() << endl;
     cout <<  this->m_boundingBox << endl;
     cout << endl;
@@ -180,13 +180,13 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 {
     int k_0 = this->m_kn;
 
-    cout << lvr::timestamp << "Initializing normal array..." << endl;
+    cout << timestamp.getElapsedTime() << "Initializing normal array..." << endl;
 
     this->m_pointBuffer->addNormalChannel();
 
     // Create a progress counter
-    string comment = lvr::timestamp.getElapsedTime() + "Estimating normals ";
-    lvr::ProgressBar progress(this->m_pointBuffer->getNumPoints(), comment);
+    string comment = timestamp.getElapsedTime() + "Estimating normals ";
+    lvr2::ProgressBar progress(this->m_pointBuffer->getNumPoints(), comment);
 
     #pragma omp parallel for schedule(static)
     for(size_t i = 0; i < this->m_pointBuffer->getNumPoints(); i++) {
@@ -292,7 +292,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             }
             else
             {
-                cout << lvr::timestamp << "Could not get nearest scan pose. Defaulting to centroid." << endl;
+                cout << timestamp.getElapsedTime() << "Could not get nearest scan pose. Defaulting to centroid." << endl;
                 normal =  p.normal;
                 if(normal.dot(queryPoint - m_centroid) > 0)
                 {
@@ -332,8 +332,8 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
     );
 
     // Create progress output
-    string comment = lvr::timestamp.getElapsedTime() + "Interpolating normals ";
-    lvr::ProgressBar progress(this->m_pointBuffer->getNumPoints(), comment);
+    string comment = timestamp.getElapsedTime() + "Interpolating normals ";
+    lvr2::ProgressBar progress(this->m_pointBuffer->getNumPoints(), comment);
 
     // Interpolate normals
     #pragma omp parallel for schedule(static)
@@ -371,7 +371,7 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
         ++progress;
     }
     cout << endl;
-    cout << lvr::timestamp << "Copying normals..." << endl;
+    cout << timestamp.getElapsedTime() << "Copying normals..." << endl;
 
     for(size_t i = 0; i < this->m_pointBuffer->getNumPoints(); i++){
         *this->m_pointBuffer->getNormal(i) = tmp[i];
