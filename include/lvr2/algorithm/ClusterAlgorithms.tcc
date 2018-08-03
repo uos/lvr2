@@ -33,8 +33,8 @@
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/util/Debug.hpp>
 
-#include <lvr/io/Progress.hpp>
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/Progress.hpp>
+#include <lvr2/io/Timestamp.hpp>
 
 #include <algorithm>
 #include <complex>
@@ -46,8 +46,6 @@
 using std::unordered_set;
 using std::max;
 using std::log;
-
-using lvr::timestamp;
 
 namespace lvr2
 {
@@ -634,8 +632,8 @@ void optimizePlaneIntersections(
 )
 {
     // Status message for mesh generation
-    string comment = lvr::timestamp.getElapsedTime() + "Optimizing plane intersections ";
-    lvr::ProgressBar progress(planes.numValues(), comment);
+    string comment = timestamp.getElapsedTime() + "Optimizing plane intersections ";
+    ProgressBar progress(planes.numValues(), comment);
 
     // iterate over all planes
     for (auto it = planes.begin(); it != planes.end(); ++it)
@@ -666,7 +664,7 @@ void optimizePlaneIntersections(
         ++progress;
     }
 
-    if(!lvr::timestamp.isQuiet())
+    if(!timestamp.isQuiet())
         cout << endl;
 }
 

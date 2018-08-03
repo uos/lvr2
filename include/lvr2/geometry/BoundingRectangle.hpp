@@ -23,6 +23,7 @@
 #ifndef LVR2_GEOMETRY_BOUNDINGRECTANGLE_H_
 #define LVR2_GEOMETRY_BOUNDINGRECTANGLE_H_
 
+#include <lvr2/geometry/Vector.hpp>
 
 namespace lvr2
 {

@@ -109,7 +109,7 @@ struct idxVal
 
 
 
-struct Material
+struct IOMaterial
 {
 	unsigned char r;
 	unsigned char g;
@@ -142,7 +142,7 @@ typedef boost::shared_array< coord<unsigned int> > idx3uArr;
 typedef boost::shared_array< idxVal<unsigned int> > idx1uArr;
 
 
-typedef boost::shared_array< Material* > materialArr;
+typedef boost::shared_array< IOMaterial* > materialArr;
 
 
 typedef boost::shared_array< GlTexture* > textureArr;

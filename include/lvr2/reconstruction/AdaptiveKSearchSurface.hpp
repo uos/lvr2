@@ -36,17 +36,10 @@
 #include <string>
 #include <chrono>
 
-#include <lvr/io/Model.hpp>
-#include <lvr/io/Progress.hpp>
-#include <lvr/io/Timestamp.hpp>
-#include <lvr/io/PLYIO.hpp>
-#include <lvr/io/AsciiIO.hpp>
-#include <lvr/io/UosIO.hpp>
-
+#include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/geometry/Plane.hpp>
-// #include <lvr/geometry/ColorVertex.hpp>
-// #include <lvr/geometry/BoundingBox.hpp>
+
 
 #include "PointsetSurface.hpp"
 

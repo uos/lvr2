@@ -38,7 +38,7 @@ template<typename VertexT, typename NormalT>
 float SharpBox<VertexT, NormalT>::m_phi_corner = 0.7f;
 
 template<typename VertexT, typename NormalT>
-typename PointsetSurface<VertexT>::Ptr SharpBox<VertexT, NormalT>::m_surface;
+typename PointsetSurface<VertexT>::Ptr SharpBox<VertexT, NormalT>::m_surface = 0;
 
 template<typename VertexT, typename NormalT>
 SharpBox<VertexT, NormalT>::SharpBox(VertexT v) : FastBox<VertexT, NormalT>(v)

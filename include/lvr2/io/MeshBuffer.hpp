@@ -39,8 +39,7 @@
 
 #include <vector>
 
-#include <lvr/io/MeshBuffer.hpp>
-#include <lvr/io/DataStruct.hpp>
+#include <lvr2/io/DataStruct.hpp>
 #include <lvr2/texture/Material.hpp>
 #include <lvr2/texture/Texture.hpp>
 
@@ -54,15 +53,13 @@ using std::vector;
 template<typename BaseVecT>
 class MaterializerResult;
 
-
-template<typename BaseVecT>
 class MeshBuffer
 {
 
     public:
         MeshBuffer() {};
 
-        MeshBuffer(lvr::MeshBuffer& oldBuffer);
+  //      MeshBuffer(lvr::MeshBuffer& oldBuffer);
 
         vector<float> getVertices();
         vector<unsigned char> getVertexColors();
@@ -74,7 +71,7 @@ class MeshBuffer
         vector<unsigned int> getFaceMaterialIndices();
         vector<unsigned int> getClusterMaterialIndices();
         vector<Material> getMaterials();
-        vector<Texture<BaseVecT>> getTextures();
+        vector<Texture> getTextures();
         vector<vector<unsigned int>> getClusterFaceIndices();
 
         void setVertices(vector<float> v);
@@ -87,13 +84,13 @@ class MeshBuffer
         void setFaceMaterialIndices(vector<unsigned int> v);
         void setClusterMaterialIndices(vector<unsigned int> v);
         void setMaterials(vector<Material> v);
-        void setTextures(vector<Texture<BaseVecT>> v);
+        void setTextures(vector<Texture> v);
         void setClusterFaceIndices(vector<vector<unsigned int>> v);
 
-        // Convert to lvr1 MeshBuffer
-        boost::shared_ptr<lvr::MeshBuffer> toOldBuffer();
-        // Overloaded method for conversion with textures
-        boost::shared_ptr<lvr::MeshBuffer> toOldBuffer(MaterializerResult<BaseVecT> materializerResult);
+//        // Convert to lvr1 MeshBuffer
+//        boost::shared_ptr<lvr::MeshBuffer> toOldBuffer();
+//        // Overloaded method for conversion with textures
+//        boost::shared_ptr<lvr::MeshBuffer> toOldBuffer(MaterializerResult<BaseVecT> materializerResult);
 
     protected:
 
@@ -107,14 +104,14 @@ class MeshBuffer
         vector<unsigned int> m_faceMaterialIndices;
         vector<unsigned int> m_clusterMaterialIndices;
         vector<Material> m_materials;
-        vector<Texture<BaseVecT>> m_textures;
+        vector<Texture> m_textures;
         vector<vector<unsigned int>> m_clusterFaceIndices;
 
 };
 
 
 template <typename BaseVecT>
-using MeshBufferPtr = std::shared_ptr<MeshBuffer<BaseVecT>>;
+using MeshBufferPtr = std::shared_ptr<MeshBuffer>;
 
 } // namespace
 
