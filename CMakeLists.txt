@@ -56,9 +56,9 @@ endif(CUDA_FOUND)
 ####
 ## Searching for OpenCV
 ##############################
-find_package( OpenCV 4 )
+find_package( OpenCV 3 )
 if (!OpenCV_FOUND)
-  find_package( OpenCV 3 REQUIRED )
+  find_package( OpenCV 4 REQUIRED )
 endif()
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
