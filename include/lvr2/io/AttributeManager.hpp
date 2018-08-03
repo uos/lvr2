@@ -147,7 +147,7 @@ private:
 // Some type aliases
 using FloatChannel = AttributeChannel<float>;
 using UCharChannel = AttributeChannel<unsigned char>;
-using IndexChannel = AttributeChannel<size_t>;
+using IndexChannel = AttributeChannel<unsigned int>;
 
 using FloatChannelOptional = boost::optional<FloatChannel&>;
 using UCharChannelOptional= boost::optional<UCharChannel&>;
@@ -155,7 +155,7 @@ using IndexChannelOptional = boost::optional<IndexChannel&>;
 
 using FloatProxy = ElementProxy<float>;
 using UCharProxy = ElementProxy<unsigned char>;
-using IndexProxy = ElementProxy<size_t>;
+using IndexProxy = ElementProxy<unsigned int>;
 
 using FloatChannelPtr = std::shared_ptr<FloatChannel>;
 using UCharChannelPtr = std::shared_ptr<UCharChannel>;

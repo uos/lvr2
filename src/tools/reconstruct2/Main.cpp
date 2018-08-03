@@ -3,6 +3,10 @@
 #include <lvr2/io/PLYIO.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Vector.hpp>
+#include <lvr2/geometry/HalfEdgeMesh.hpp>
+
+#include <lvr2/algorithm/ReductionAlgorithms.hpp>
+#include <lvr2/algorithm/NormalAlgorithms.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -35,6 +39,13 @@ int main(int argc, char** argv)
         std::cout << model->m_mesh->hasVertexNormals() << std::endl;
     }
 
+    HalfEdgeMesh<VecT> mesh(model->m_mesh);
+
+   // mesh.debugCheckMeshIntegrity();
+
+    auto normalMap = calcFaceNormals(mesh);
+    int count = 50000000;
+    auto collapsedCount = simpleMeshReduction(mesh, count, normalMap);
 
 //    lvr2::AsciiIO io;
 //    lvr2::ModelPtr model = io.read("scan.pts");

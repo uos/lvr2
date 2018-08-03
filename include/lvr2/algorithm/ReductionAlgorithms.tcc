@@ -23,7 +23,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include <lvr/io/Progress.hpp>
+#include <lvr2/io/Progress.hpp>
 #include <lvr2/algorithm/NormalAlgorithms.hpp>
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/util/Meap.hpp>
@@ -81,11 +81,11 @@ size_t iterativeEdgeCollapse(
 )
 {
     // Output
-    string msg = lvr::timestamp.getElapsedTime()
+    string msg = timestamp.getElapsedTime()
         + "Reducing mesh by collapsing up to "
         + std::to_string(count)
         + " edges ";
-    lvr::ProgressBar progress(count + 1, msg);
+    ProgressBar progress(count + 1, msg);
     ++progress;
 
 

@@ -40,6 +40,7 @@ using boost::optional;
 #include "Handles.hpp"
 
 #include <lvr2/geometry/Vector.hpp>
+#include <lvr2/io/MeshBuffer2.hpp>
 
 namespace lvr2
 {
@@ -133,6 +134,7 @@ template<typename BaseVecT>
 class BaseMesh
 {
 public:
+
     virtual ~BaseMesh() {}
 
     // =======================================================================
@@ -568,6 +570,7 @@ public:
      * Returns a simple proxy object that uses `verticesBegin()` and `verticesEnd()`.
      */
     virtual VertexIteratorProxy<BaseVecT> vertices() const;
+
 };
 
 template <typename BaseVecT>

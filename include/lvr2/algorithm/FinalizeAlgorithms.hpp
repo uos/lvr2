@@ -70,7 +70,7 @@ public:
      * @param mesh the mesh to convert
      * @return the generated buffer
      */
-    boost::shared_ptr<MeshBuffer<BaseVecT>> apply(const BaseMesh<BaseVecT>& mesh);
+    boost::shared_ptr<MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
 
     /**
      * Sets vertex colors for the apply method. This has to be done before apply is called.
@@ -136,7 +136,7 @@ public:
      * @param mesh the mesh to convert
      * @return the resulting mesh buffer
      */
-    boost::shared_ptr<MeshBuffer<BaseVecT>> apply(const BaseMesh<BaseVecT>& mesh);
+    boost::shared_ptr<MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
 
 private:
 

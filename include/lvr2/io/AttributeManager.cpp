@@ -48,7 +48,7 @@ void AttributeManager::addEmptyUCharChannel(std::string name, size_t n, unsigned
 
 void AttributeManager::addEmptyIndexChannel(std::string name, size_t n, unsigned width)
 {
-    indexArray array(new size_t[width * n]);
+    indexArray array(new unsigned int[width * n]);
     for(size_t i = 0; i < n * width; i++)
     {
         array[i] = 0;

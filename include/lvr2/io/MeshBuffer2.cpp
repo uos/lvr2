@@ -101,7 +101,7 @@ void MeshBuffer2::setFaceColors(ucharArr colors, unsigned w)
 {
     if(m_numFaces)
     {
-        m_channels.addUCharChannel(colors, "face_normals", m_numFaces, w);
+        m_channels.addUCharChannel(colors, "face_colors", m_numFaces, w);
     }
     else
     {
@@ -138,7 +138,7 @@ floatArr MeshBuffer2::getVertexNormals()
 {
     size_t n;
     unsigned w;
-    return m_channels.getFloatArray(n, w, "vertex_colors");
+    return m_channels.getFloatArray(n, w, "vertex_normals");
 }
 
 floatArr MeshBuffer2::getTextureCoordinates()
@@ -150,7 +150,9 @@ floatArr MeshBuffer2::getTextureCoordinates()
 
 indexArray MeshBuffer2::getFaceIndices()
 {
-
+    size_t n;
+    unsigned w;
+    return m_channels.getIndexArray(n, w, "face_indices");
 }
 
 ucharArr MeshBuffer2::getFaceColors(unsigned& w)
@@ -182,7 +184,7 @@ bool MeshBuffer2::hasVertexColors()
 
 bool MeshBuffer2::hasFaceNormals()
 {
-    FloatChannelOptional channel = m_channels.getFloatChannel("vertex_colors");
+    FloatChannelOptional channel = m_channels.getFloatChannel("face_normals");
     if(channel)
     {
         return true;
@@ -192,7 +194,7 @@ bool MeshBuffer2::hasFaceNormals()
 
 bool MeshBuffer2::hasVertexNormals()
 {
-    FloatChannelOptional channel = m_channels.getFloatChannel("vertex_colors");
+    FloatChannelOptional channel = m_channels.getFloatChannel("vertex_normals");
     if(channel)
     {
         return true;
