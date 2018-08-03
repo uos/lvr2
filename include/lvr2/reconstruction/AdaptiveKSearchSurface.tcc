@@ -257,12 +257,16 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             // Fallback if RANSAC failed
             if(!ransac_ok)
             {
+                // compare speed
                 p = calcPlane(queryPoint, k, id);
             }
         }
         else
         {
             p = calcPlane(queryPoint, k, id);
+
+            // p = calcPlaneIterative(queryPoint, k, id);
+            
         }
         // Get the mean distance to the tangent plane
         //mean_distance = meanDistance(p, id, k);
@@ -545,6 +549,96 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
     // p.a = C(0);
     // p.b = C(1);
     // p.c = C(2);
+    p.normal = normal;
+    p.pos = queryPoint;
+
+    return p;
+}
+
+template<typename BaseVecT>
+Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneIterative(
+    const Vector<BaseVecT> &queryPoint,
+    int k,
+    const vector<size_t> &id
+)
+{
+
+    Plane<BaseVecT> p;
+    Vector<BaseVecT> normal;
+
+
+    //x
+    float xx = 0.0;
+    float xy = 0.0;
+    float xz = 0.0;
+
+    //y
+    float yy = 0.0;
+    float yz = 0.0;
+
+    //z
+    float zz = 0.0;
+
+    for(int j = 0; j < k; j++) {
+        auto p = this->m_pointBuffer->getPoint(id[j]);
+
+        auto r = p - queryPoint;
+
+        xx += r.x * r.x;
+        xy += r.x * r.y;
+        xz += r.x * r.z;
+        yy += r.y * r.y;
+        yz += r.y * r.z;
+        zz += r.z * r.z;
+
+    }
+
+    //determinante
+    float det_x = yy * zz - yz * yz;
+    float det_y = xx * zz - xz * xz;
+    float det_z = xx * yy - xy * xy;
+
+    float dir_x;
+    float dir_y;
+    float dir_z;
+    // det X biggest
+    if( det_x >= det_y && det_x >= det_z){
+
+        if(det_x <= 0.0){
+            //not a plane
+        }
+
+        dir_x = 1.0;
+        dir_y = (xz * yz - xy * zz) / det_x;
+        dir_z = (xy * yz - xz * yy) / det_x;
+    } //det Y biggest
+    else if( det_y >= det_x && det_y >= det_z){
+
+        if(det_y <= 0.0){
+            // not a plane
+        }
+
+        dir_x = (yz * xz - xy * zz) / det_y;
+        dir_y = 1.0;
+        dir_z = (xy * xz - yz * xx) / det_y;
+    } // det Z biggest
+    else{
+        if(det_z <= 0.0){
+            // not a plane
+        }
+
+        dir_x = (yz * xy - xz * yy ) / det_z;
+        dir_y = (xz * xy - yz * xx ) / det_z;
+        dir_z = 1.0;
+    }
+
+    float invnorm = 1/sqrtf( dir_x * dir_x + dir_y * dir_y + dir_z * dir_z );
+
+    normal.x = dir_x * invnorm;
+    normal.y = dir_y * invnorm;
+    normal.z = dir_z * invnorm;
+
+
     p.normal = normal;
     p.pos = queryPoint;
 
