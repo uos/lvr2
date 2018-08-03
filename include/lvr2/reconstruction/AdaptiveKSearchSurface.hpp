@@ -91,11 +91,12 @@ public:
     /**
      * @brief Constructor.
      *
-     * @param           The file to read from
-     * @param searchTN  The of the searchTree type that shall be used
-     * @param kn        The number of neighbor points used for normal estimation
-     * @param ki        The number of neighbor points used for normal interpolation
-     * @param kd        The number of neighbor points used for distance value calculation
+     * @param            The file to read from
+     * @param searchTN   The of the searchTree type that shall be used
+     * @param kn         The number of neighbor points used for normal estimation
+     * @param ki         The number of neighbor points used for normal interpolation
+     * @param kd         The number of neighbor points used for distance value calculation
+     * @param calcMethod Normal calculation method. 0: PCA(default), 1: RANSAC, 2: Iterative
      */
     AdaptiveKSearchSurface(
         PointBufferPtr<BaseVecT> loader,
@@ -103,7 +104,7 @@ public:
         int kn = 10,
         int ki = 10,
         int kd = 10,
-        bool useRansac = false,
+        int calcMethod = 0,
         string poseFile = ""
     );
 
@@ -288,8 +289,10 @@ private:
     /// The centroid of the point set
     Vector<BaseVecT> m_centroid;
 
-    /// Should a randomized algorithm be used to determine planes?
-    bool m_useRANSAC;
+    // 0: PCA
+    // 1: RANSAC
+    // 2: Iterative
+    int m_calcMethod;
 
     // /// The currently stored points
     // coord3fArr                  m_points;

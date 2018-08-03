@@ -45,7 +45,7 @@ namespace lvr2
 
 template<typename BaseVecT>
 AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface()
-    : m_useRANSAC(true)
+    : m_calcMethod(0)
 {
     this->setKi(10);
     this->setKn(10);
@@ -59,12 +59,12 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
     int kn,
     int ki,
     int kd,
-    bool useRansac,
+    int calcMethod,
     string posefile
 ) :
     PointsetSurface<BaseVecT>(buffer),
     m_searchTreeName(searchTreeName),
-    m_useRANSAC(useRansac)
+    m_calcMethod(calcMethod)
 {
     this->setKi(ki);
     this->setKn(kn);
@@ -253,7 +253,8 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         // Interpolate a plane based on the k-neighborhood
         Plane<BaseVecT> p;
         bool ransac_ok;
-        if(m_useRANSAC)
+        
+        if(m_calcMethod == 1)
         {
             p = calcPlaneRANSAC(queryPoint, k, id, ransac_ok);
             // Fallback if RANSAC failed
@@ -263,12 +264,13 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
                 p = calcPlane(queryPoint, k, id);
             }
         }
+        else if(m_calcMethod == 2)
+        {
+            p = calcPlaneIterative(queryPoint, k, id);
+        }
         else
         {
             p = calcPlane(queryPoint, k, id);
-
-            // p = calcPlaneIterative(queryPoint, k, id);
-            
         }
         // Get the mean distance to the tangent plane
         //mean_distance = meanDistance(p, id, k);
