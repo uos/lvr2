@@ -270,7 +270,7 @@ void LVRMeshBufferBridge::computeMaterialGroups(vector<MaterialGroup*>& textureM
 		// add face index to the corresponding group. Create a new
 		// group if none was found. For efficient rendering we have to
 		// create groups by color and texture index,
-		Material* m = materials[faceMaterials[i]];
+        IOMaterial* m = materials[faceMaterials[i]];
 
 		if(m->texture_index != -1)
 		{

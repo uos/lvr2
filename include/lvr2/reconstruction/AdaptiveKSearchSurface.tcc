@@ -35,8 +35,10 @@
 #include <fstream>
 #include <set>
 #include <random>
+#include <algorithm>
 
 #include <lvr2/util/Factories.hpp>
+#include <lvr/io/Progress.hpp>
 
 namespace lvr2
 {
@@ -226,13 +228,13 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
              *       library for bounding box calculation...
              */
             for(size_t j = 0; j < k; j++) {
-                min_x = min(min_x, this->m_pointBuffer->getPoint(id[j]).x);
-                min_y = min(min_y, this->m_pointBuffer->getPoint(id[j]).y);
-                min_z = min(min_z, this->m_pointBuffer->getPoint(id[j]).z);
+                min_x = std::min(min_x, this->m_pointBuffer->getPoint(id[j]).x);
+                min_y = std::min(min_y, this->m_pointBuffer->getPoint(id[j]).y);
+                min_z = std::min(min_z, this->m_pointBuffer->getPoint(id[j]).z);
 
-                max_x = max(max_x, this->m_pointBuffer->getPoint(id[j]).x);
-                max_y = max(max_y, this->m_pointBuffer->getPoint(id[j]).y);
-                max_z = max(max_z, this->m_pointBuffer->getPoint(id[j]).z);
+                max_x = std::max(max_x, this->m_pointBuffer->getPoint(id[j]).x);
+                max_y = std::max(max_y, this->m_pointBuffer->getPoint(id[j]).y);
+                max_z = std::max(max_z, this->m_pointBuffer->getPoint(id[j]).z);
 
                 dx = max_x - min_x;
                 dy = max_y - min_y;
@@ -306,7 +308,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         }
 
         // Save result in normal array
-        *this->m_pointBuffer->getNormal(i) = normal;
+        this->m_pointBuffer->getNormal(i) = normal;
         ++progress;
     }
     cout << endl;
@@ -476,10 +478,10 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
         auto vq = this->m_pointBuffer->getPoint(id[i]);
 
         //Get normal
-        auto n = *this->m_pointBuffer->getNormal(id[i]);
+        auto n = this->m_pointBuffer->getNormal(id[i]);
 
         nearest += vq;
-        avg_normal += n;
+        avg_normal += *n;
     }
 
     avg_normal /= k;
@@ -490,7 +492,7 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     auto projectedDistance = (p - Vector<BaseVecT>(nearest)).dot(normal);
     auto euklideanDistance = (p - Vector<BaseVecT>(nearest)).length();
 
-    return make_pair(projectedDistance, euklideanDistance);
+    return std::make_pair(projectedDistance, euklideanDistance);
     // return make_pair(euklideanDistance, projectedDistance);
 }
 
@@ -711,7 +713,7 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
 
        //compute error to at most 50 other randomly chosen points
        dist = 0;
-       int n = min(50, k);
+       int n = std::min(50, k);
        for(int i = 0; i < n; i++)
        {
            int index = id[rand() % k];

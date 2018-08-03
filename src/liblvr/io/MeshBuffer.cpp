@@ -338,9 +338,9 @@ void MeshBuffer::setLabeledFacesMap(labeledFacesMap map)
 	m_labeledFacesMap = map;
 }
 
-void MeshBuffer::setMaterialArray(std::vector<Material*>& array)
+void MeshBuffer::setMaterialArray(std::vector<IOMaterial*>& array)
 {
-	m_faceMaterials = materialArr(new Material*[array.size()]);
+    m_faceMaterials = materialArr(new IOMaterial*[array.size()]);
 	m_numMaterials = array.size();
 	for (size_t i = 0; i < array.size(); i++)
 	{

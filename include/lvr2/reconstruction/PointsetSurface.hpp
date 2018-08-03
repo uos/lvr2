@@ -29,6 +29,7 @@
 #include <memory>
 #include <utility>
 
+#include <lvr2/geometry/Normal.hpp>
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/reconstruction/SearchTree.hpp>
@@ -38,21 +39,19 @@ using std::pair;
 namespace lvr2
 {
 
+
 /**
  * @brief       An interface class to wrap all functionality that is needed
  *              to generate a surface approximation from point cloud data.
  *
  *              Classes that implement this interface can be used for Marching
- *              Cubes based mesh generation algorithms in this toolkit via
+ *              Cubes based mesh generation algorithms in via
  *              the @ref SurfaceReconstruction interface.
  */
 template<typename BaseVecT>
 class PointsetSurface
 {
 public:
-
-    // /// Shared pointer type declaration
-    // typedef std::shared_ptr<PointsetSurface<BaseVecT>> Ptr;
 
     /**
      * @brief Returns the distance of vertex v from the nearest tangent plane
@@ -118,7 +117,6 @@ public:
      *          data sets).
      */
     void setKd(int k) { m_kd = k; }
-
 
 protected:
 

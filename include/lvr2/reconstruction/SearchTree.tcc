@@ -24,7 +24,7 @@
  *
  */
 
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/Timestamp.hpp>
 
 #include <iostream>
 using std::cout;

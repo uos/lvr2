@@ -27,11 +27,11 @@
  *  @author Jan Philipp Vogtherr (jvogtherr@uos.de)
  */
 
+#include <lvr2/texture/Texture.hpp>
 
 namespace lvr2 {
 
-template<typename BaseVecT>
-Texture<BaseVecT>::Texture()
+Texture::Texture()
 {
     this->m_data                 = 0;
     this->m_width                = 0;
@@ -63,8 +63,7 @@ Texture<BaseVecT>::Texture()
 //     this->m_distance             = 0;
 // }
 
-template<typename BaseVecT>
-Texture<BaseVecT>::Texture(
+Texture::Texture(
     int index,
     unsigned short int width,
     unsigned short int height,
@@ -82,8 +81,7 @@ Texture<BaseVecT>::Texture(
 {
 }
 
-template<typename BaseVecT>
-Texture<BaseVecT>::Texture(
+Texture::Texture(
     int index,
     lvr::Texture* oldTexture
 ) :
@@ -102,8 +100,8 @@ Texture<BaseVecT>::Texture(
     std::copy(oldTexture->m_data, oldTexture->m_data + copy_len, m_data);
 }
 
-template<typename BaseVecT>
-Texture<BaseVecT>::Texture(
+
+Texture::Texture(
     int index,
     GlTexture* oldTexture
 ) :
@@ -122,8 +120,7 @@ Texture<BaseVecT>::Texture(
     std::copy(oldTexture->m_pixels, oldTexture->m_pixels + copy_len, m_data);
 }
 
-template<typename BaseVecT>
-void Texture<BaseVecT>::save()
+void Texture::save()
 {
     //write image file
     char fn[255];
@@ -134,8 +131,7 @@ void Texture<BaseVecT>::save()
     delete pio;
 }
 
-template<typename BaseVecT>
-Texture<BaseVecT>::~Texture() {
+Texture::~Texture() {
     // delete[] m_data;
     // delete[] m_featureDescriptors;
     // delete[] m_stats;

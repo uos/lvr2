@@ -99,7 +99,7 @@ void TexturedMesh::generateMaterialGroups()
 		// add face index to the corresponding group. Create a new
 		// group if none was found. For efficient rendering we have to
 		// create groups by color and texture index,
-		Material* m = m_materials[m_faceMaterials[i]];
+        IOMaterial* m = m_materials[m_faceMaterials[i]];
 
 		if(m->texture_index != -1)
 		{

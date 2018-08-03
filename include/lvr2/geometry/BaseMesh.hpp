@@ -39,6 +39,9 @@ using boost::optional;
 
 #include "Handles.hpp"
 
+#include <lvr2/geometry/Vector.hpp>
+#include <lvr2/io/MeshBuffer2.hpp>
+
 namespace lvr2
 {
 
@@ -131,6 +134,7 @@ template<typename BaseVecT>
 class BaseMesh
 {
 public:
+
     virtual ~BaseMesh() {}
 
     // =======================================================================
@@ -185,11 +189,10 @@ public:
     /**
      * @brief Performs the edge flip operation.
      *
-     * The operation is kind of hard to describe with words; try looking at
-     * some images on the web. But if you want to read: it basically turns an
-     * edge and the two adjacent faces within a four vertex region by 90°. The
+     * This operation turns an edge and the two adjacent faces within a four
+     * vertex region by 90°. The
      * edge is now connected to two new vertices; the new edge would cross the
-     * old one. Still not clear? Told you.
+     * old one.
      *
      * Important: the given edge needs to be flippable. You can check that
      * property with `isFlippable()`. If that property is not satisfied, this
@@ -567,6 +570,7 @@ public:
      * Returns a simple proxy object that uses `verticesBegin()` and `verticesEnd()`.
      */
     virtual VertexIteratorProxy<BaseVecT> vertices() const;
+
 };
 
 template <typename BaseVecT>

@@ -179,8 +179,10 @@ void SharpBox<BaseVecT>::getSurface(
 
     // Generate the local approximation surface according to the marching
     // cubes table for Paul Burke.
-    for(int a = 0; MCTable[index][a] != -1; a+= 3){
-        for(int b = 0; b < 3; b++){
+    for(int a = 0; MCTable[index][a] != -1; a+= 3)
+    {
+        for(int b = 0; b < 3; b++)
+        {
             edge_index = MCTable[index][a + b];
 
             //If no index was found generate new index and vertex
@@ -230,6 +232,7 @@ void SharpBox<BaseVecT>::getSurface(
         m_extendedMCIndex = index;
         //calculate intersection for the new vertex position
         BaseVecT v = this->m_center;
+
         if (m_containsSharpCorner)
         {
             //First plane
@@ -271,12 +274,12 @@ void SharpBox<BaseVecT>::getSurface(
         else
         {
             //First plane
-            Vector<BaseVecT> v1(vertex_positions[ExtendedMCTable[index][2]] + vertex_positions[ExtendedMCTable[index][3]] * 0.5);
-            Normal<BaseVecT> n1(vertex_normals[ExtendedMCTable[index][2]] + vertex_normals[ExtendedMCTable[index][3]] * 0.5);
+            Vector<BaseVecT> v1( (vertex_positions[ExtendedMCTable[index][2]] + vertex_positions[ExtendedMCTable[index][3]]) * 0.5);
+            Normal<BaseVecT> n1( (vertex_normals[ExtendedMCTable[index][2]] + vertex_normals[ExtendedMCTable[index][3]]) * 0.5);
 
             //Second plane
-            Vector<BaseVecT> v2(vertex_positions[ExtendedMCTable[index][6]] + vertex_positions[ExtendedMCTable[index][7]] * 0.5);
-            Normal<BaseVecT> n2(vertex_normals[ExtendedMCTable[index][6]] + vertex_normals[ExtendedMCTable[index][7]] * 0.5);
+            Vector<BaseVecT> v2( (vertex_positions[ExtendedMCTable[index][6]] + vertex_positions[ExtendedMCTable[index][7]]) * 0.5);
+            Normal<BaseVecT> n2( (vertex_normals[ExtendedMCTable[index][6]] + vertex_normals[ExtendedMCTable[index][7]]) * 0.5);
 
             //calculate intersection between plane 1 and 2
             if (fabs(n1 * n2) < 0.9)
@@ -287,7 +290,8 @@ void SharpBox<BaseVecT>::getSurface(
                 Vector<BaseVecT> direction = n1.cross(n2);
 
                 float denom = direction * direction;
-                Vector<BaseVecT> x = ((n2 * d1 - n1 * d2).cross(direction)) * (1 / denom);
+
+                Vector<BaseVecT> x = (( (n2 * d1) - (n1 * d2)).cross(direction)) * (1 / denom);
 
                 // project center of the box onto intersection line of the two planes
                 v = x + direction * (((v - x) * direction) / (direction.length() * direction.length()));
@@ -295,16 +299,17 @@ void SharpBox<BaseVecT>::getSurface(
 
         }
 
-//        mesh.addVertex(v);
-//        mesh.addNormal(NormalT());
-
-
+        OptionalVertexHandle center = mesh.addVertex(v);
 
         uint index_center = globalIndex++;
         // Add triangle actually does the normal interpolation for us.
         for(int a = 0; ExtendedMCTable[index][a] != -1; a+= 2)
         {
-            //mesh.addTriangle(this->m_intersections[ExtendedMCTable[index][a]], index_center, this->m_intersections[ExtendedMCTable[index][a+1]]);
+            mesh.addFace(
+                    this->m_intersections[ExtendedMCTable[index][a]].unwrap(),
+                    center.unwrap(),
+                    this->m_intersections[ExtendedMCTable[index][a+1]].unwrap());
+
         }
 
     }

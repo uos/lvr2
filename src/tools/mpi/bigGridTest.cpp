@@ -53,7 +53,6 @@
 
 using std::cout;
 using std::endl;
-using namespace lvr;
 
 #if defined CUDA_FOUND
     #define GPU_FOUND

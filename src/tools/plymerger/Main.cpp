@@ -98,7 +98,7 @@ void parsePLYHeader(
     if(found_faces && found_vertices && !found_points)
     {
         cout << timestamp << "Warning: While parsing '" << filename << "': Found mesh data without points." << endl;
-        return;
+        //return;
     }
 
 

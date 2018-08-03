@@ -24,10 +24,13 @@
 *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
 */
 
-#include <lvr/io/Progress.hpp>
+#include <lvr2/io/Progress.hpp>
+#include <lvr2/io/Timestamp.hpp>
+#include <lvr2/algorithm/ColorAlgorithms.hpp>
+
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include <lvr2/algorithm/ColorAlgorithms.hpp>
+
 
 namespace lvr2
 {
@@ -47,13 +50,13 @@ Texturizer<BaseVecT>::Texturizer(
 
 
 template<typename BaseVecT>
-Texture<BaseVecT> Texturizer<BaseVecT>::getTexture(TextureHandle h)
+Texture Texturizer<BaseVecT>::getTexture(TextureHandle h)
 {
     return m_textures[h];
 }
 
 template<typename BaseVecT>
-StableVector<TextureHandle, Texture<BaseVecT>> Texturizer<BaseVecT>::getTextures()
+StableVector<TextureHandle, Texture> Texturizer<BaseVecT>::getTextures()
 {
     return m_textures;
 }
@@ -67,8 +70,8 @@ int Texturizer<BaseVecT>::getTextureIndex(TextureHandle h)
 template<typename BaseVecT>
 void Texturizer<BaseVecT>::saveTextures()
 {
-    string comment = lvr::timestamp.getElapsedTime() + "Saving textures ";
-    lvr::ProgressBar progress(m_textures.numUsed(), comment);
+    string comment = timestamp.getElapsedTime() + "Saving textures ";
+    ProgressBar progress(m_textures.numUsed(), comment);
     for (auto h : m_textures)
     {
         m_textures[h].save();
@@ -125,10 +128,10 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
     unsigned short int sizeY = ceil((boundingRect.m_maxDistB - boundingRect.m_minDistB) / m_texelSize);
 
     // Create texture
-    Texture<BaseVecT> texture(index, sizeX, sizeY, 3, 1, m_texelSize);
+    Texture texture(index, sizeX, sizeY, 3, 1, m_texelSize);
 
-    string comment = lvr::timestamp.getElapsedTime() + "Computing texture pixels ";
-    lvr::ProgressBar progress(sizeX * sizeY, comment);
+    string comment = timestamp.getElapsedTime() + "Computing texture pixels ";
+    ProgressBar progress(sizeX * sizeY, comment);
 
     if (surface.pointBuffer()->hasRgbColor())
     {
@@ -190,7 +193,7 @@ void Texturizer<BaseVecT>::findKeyPointsInTexture(const TextureHandle texH,
         const cv::Ptr<cv::Feature2D>& detector,
         std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
 {
-    const Texture<BaseVecT> texture = m_textures[texH];
+    const Texture texture = m_textures[texH];
     if (texture.m_height <= 32 && texture.m_width <= 32)
     {
         return;
