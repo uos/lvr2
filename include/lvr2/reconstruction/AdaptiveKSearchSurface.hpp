@@ -35,11 +35,14 @@
 #include <memory>
 #include <string>
 #include <chrono>
+#include <cmath>
 
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/geometry/Plane.hpp>
 #include <lvr2/io/Progress.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
+
 
 
 #include "PointsetSurface.hpp"
@@ -71,6 +74,7 @@ using std::numeric_limits;
 // using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
+using std::isnan;
 
 
 namespace lvr2
