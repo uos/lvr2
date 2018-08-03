@@ -34,6 +34,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <chrono>
 
 #include <lvr/io/Model.hpp>
 #include <lvr/io/Progress.hpp>
@@ -281,6 +282,14 @@ private:
         const vector<size_t> &id,
         bool &ok
     );
+
+    Plane<BaseVecT> calcPlaneIterative(
+        const Vector<BaseVecT> &queryPoint,
+        int k,
+        const vector<size_t> &id
+    );
+
+
 
 
     /// The centroid of the point set
