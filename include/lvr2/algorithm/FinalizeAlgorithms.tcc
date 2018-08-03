@@ -35,7 +35,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-boost::shared_ptr<MeshBuffer<BaseVecT>> SimpleFinalizer<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
+boost::shared_ptr<MeshBuffer> SimpleFinalizer<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
 {
     // Create vertex and normal buffer
     DenseVertexMap<size_t> idxMap;
@@ -103,7 +103,7 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> SimpleFinalizer<BaseVecT>::apply(const B
     }
 
     // create buffer object and pass values
-    auto buffer = boost::make_shared<lvr2::MeshBuffer<BaseVecT>>();
+    auto buffer = boost::make_shared<lvr2::MeshBuffer>();
     buffer->setVertices(vertices);
     buffer->setFaceIndices(faces);
 
@@ -165,7 +165,7 @@ void TextureFinalizer<BaseVecT>::setMaterializerResult(const MaterializerResult<
 
 
 template<typename BaseVecT>
-boost::shared_ptr<MeshBuffer<BaseVecT>> TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
+boost::shared_ptr<MeshBuffer> TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
 {
     // Create vertex buffer and all buffers holding vertex attributes
     vector<float> vertices;
@@ -193,7 +193,7 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> TextureFinalizer<BaseVecT>::apply(const 
     vector<Material> materials;
     vector<unsigned int> faceMaterials;
     vector<unsigned int> clusterMaterials;
-    vector<Texture<BaseVecT>> textures;
+    vector<Texture> textures;
     vector<vector<unsigned int>> clusterFaceIndices;
     size_t clusterCount = 0;
     size_t faceCount = 0;
@@ -220,8 +220,8 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> TextureFinalizer<BaseVecT>::apply(const 
     // This counter is used to determine the index of a newly inserted vertex
     size_t vertexCount = 0;
 
-    string comment = lvr::timestamp.getElapsedTime() + "Finalizing mesh ";
-    lvr::ProgressBar progress(m_cluster.numCluster(), comment);
+    string comment = timestamp.getElapsedTime() + "Finalizing mesh ";
+    ProgressBar progress(m_cluster.numCluster(), comment);
 
     // Loop over all clusters
     for (auto clusterH: m_cluster)
@@ -312,7 +312,7 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> TextureFinalizer<BaseVecT>::apply(const 
                 auto texOptional = m_materializerResult.get()
                     .m_textures.get()
                     .get(texHandle);
-                const Texture<BaseVecT>& texture = texOptional.get();
+                const Texture& texture = texOptional.get();
                 int textureIndex = texture.m_index;
 
                 // Material for this texture already created?
@@ -402,7 +402,7 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> TextureFinalizer<BaseVecT>::apply(const 
 
     cout << endl;
 
-    auto buffer = boost::make_shared<MeshBuffer<BaseVecT>>();
+    auto buffer = boost::make_shared<MeshBuffer>();
     buffer->setVertices(vertices);
     buffer->setFaceIndices(faces);
 

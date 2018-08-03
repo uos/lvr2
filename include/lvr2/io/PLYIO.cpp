@@ -311,14 +311,10 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     // Buffer count variables
     size_t numVertices              = 0;
     size_t numVertexColors          = 0;
-    size_t numVertexConfidences     = 0;
-    size_t numVertexIntensities     = 0;
     size_t numVertexNormals         = 0;
 
     size_t numPoints                = 0;
     size_t numPointColors           = 0;
-    size_t numPointConfidence       = 0;
-    size_t numPointIntensities      = 0;
     size_t numPointNormals          = 0;
     size_t numFaces                 = 0;
 
@@ -336,16 +332,6 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
                 {
                     /* We have color information */
                     numVertexColors = n;
-                }
-                else if ( !strcmp( name, "confidence" ) && readConfidence )
-                {
-                    /* We have confidence information */
-                    numVertexConfidences = n;
-                }
-                else if ( !strcmp( name, "intensity" ) && readIntensity )
-                {
-                    /* We have intensity information */
-                    numVertexIntensities = n;
                 }
                 else if ( !strcmp( name, "nx" ) && readNormals )
                 {
@@ -365,16 +351,6 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
                 {
                     /* We have color information */
                     numPointColors = n;
-                }
-                else if ( !strcmp( name, "confidence" ) && readConfidence )
-                {
-                    /* We have confidence information */
-                    numPointConfidence = n;
-                }
-                else if ( !strcmp( name, "intensity" ) && readIntensity )
-                {
-                    /* We have intensity information */
-                    numPointIntensities = n;
                 }
                 else if ( !strcmp( name, "nx" ) && readNormals )
                 {
@@ -405,7 +381,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     ucharArr pointColors;
     ucharArr vertexColors;
 
-    indexArray faceIndices;
+    uintArr faceIndices;
 
 
     /* Allocate memory. */
@@ -423,7 +399,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( numFaces )
     {
-        faceIndices = indexArray( new size_t[ numFaces * 3 ] );
+        faceIndices = uintArr( new unsigned int[ numFaces * 3 ] );
     }
     if ( numPoints )
     {
@@ -442,11 +418,10 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     float*        vertex            = vertices.get();
     uint8_t*      vertex_color      = vertexColors.get();
     float*        vertex_normal     = vertexNormals.get();
-    size_t* face                    = faceIndices.get();
+    unsigned int* face              = faceIndices.get();
     float*        point             = points.get();
     uint8_t*      point_color       = pointColors.get();
     float*        point_normal      = pointNormals.get();
-
 
     /* Set callbacks. */
     if ( vertex )
@@ -575,7 +550,6 @@ int PLYIO::readColorCb( p_ply_argument argument )
 
 int PLYIO::readFaceCb( p_ply_argument argument )
 {
-
     unsigned int ** face;
     long int length, value_index;
     ply_get_argument_user_data( argument, (void **) &face, NULL );
@@ -590,9 +564,9 @@ int PLYIO::readFaceCb( p_ply_argument argument )
         std::cerr << timestamp << "Mesh is not a triangle mesh." << std::endl;
         return 0;
     }
+    //cout << ply_get_argument_value( argument ) << endl;
     **face = ply_get_argument_value( argument );
     (*face)++;
-
     return 1;
 
 }

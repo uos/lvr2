@@ -41,6 +41,7 @@
 namespace lvr2
 {
 
+
 /**
  * @brief Interface specification for low-level io. All read
  *        elements are stored in linear arrays.

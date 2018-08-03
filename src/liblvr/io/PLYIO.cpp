@@ -38,8 +38,10 @@
 #include <ctime>
 #include <sstream>
 #include <fstream>
+#include <iostream>
 
-
+using std::cout;
+using std::endl;
 
 namespace lvr
 {
@@ -699,6 +701,10 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         mesh->setVertexNormalArray(     vertexNormals,    numVertexNormals );
         mesh->setVertexConfidenceArray( vertexConfidence, numVertexConfidences );
         mesh->setFaceArray(             faceIndices,      numFaces );
+        for(size_t i = 0; i < numFaces; i++)
+        {
+            cout << faceIndices[3 * i] << " " << faceIndices[3 * i + 1] << " " << faceIndices[3 * i + 2] << endl;
+        }
     }
 
     ModelPtr m( new Model( mesh, pc ) );
@@ -733,7 +739,6 @@ int PLYIO::readColorCb( p_ply_argument argument )
 
 int PLYIO::readFaceCb( p_ply_argument argument )
 {
-
     unsigned int ** face;
     long int length, value_index;
     ply_get_argument_user_data( argument, (void **) &face, NULL );

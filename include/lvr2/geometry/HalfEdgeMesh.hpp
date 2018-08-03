@@ -45,6 +45,8 @@ using std::min;
 #include "HalfEdgeFace.hpp"
 #include "HalfEdgeVertex.hpp"
 
+#include <lvr2/io/MeshBuffer2.hpp>
+
 namespace lvr2
 {
 
@@ -64,6 +66,8 @@ public:
     using Edge = HalfEdge;
     using Face = HalfEdgeFace;
     using Vertex = HalfEdgeVertex<BaseVecT>;
+
+    HalfEdgeMesh(MeshBuffer2Ptr ptr);
 
     // ========================================================================
     // = Implementing the `BaseMesh` interface (see BaseMesh for docs)

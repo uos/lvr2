@@ -37,6 +37,34 @@
 namespace lvr2
 {
 
+template<typename BaseVecT>
+HalfEdgeMesh<BaseVecT>::HalfEdgeMesh(MeshBuffer2Ptr ptr)
+{
+    size_t numFaces = ptr->numFaces();
+    size_t numVertices = ptr->numVertices();
+
+    floatArr vertices = ptr->getVertices();
+    indexArray indices = ptr->getFaceIndices();
+
+    for(size_t i = 0; i < numVertices; i++)
+    {
+        size_t pos = 3 * i;
+        this->addVertex(BaseVecT(
+                            vertices[pos],
+                            vertices[pos + 1],
+                            vertices[pos + 2]));
+    }
+
+    for(size_t i = 0; i < numFaces; i++)
+    {
+        size_t pos = 3 * i;
+        VertexHandle v1(indices[pos]);
+        VertexHandle v2(indices[pos + 1]);
+        VertexHandle v3(indices[pos + 2]);
+        this->addFace(v1, v2, v3);
+    }
+}
+
 
 // ========================================================================
 // = Interface methods
