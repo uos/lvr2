@@ -44,7 +44,6 @@
 #include "ui_LVRMainWindowUI.h"
 #include "ui_LVRAboutDialogUI.h"
 #include "ui_LVRTooltipDialogUI.h"
-#include "ui_LVRSpectralSettings.h"
 #include "LVRTreeWidgetHelper.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../widgets/LVRModelItem.hpp"
