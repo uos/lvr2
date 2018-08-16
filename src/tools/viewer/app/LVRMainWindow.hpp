@@ -43,6 +43,7 @@
 #include <QtGui>
 #include "ui_LVRMainWindowUI.h"
 #include "ui_LVRAboutDialogUI.h"
+#include "ui_LVRTooltipDialogUI.h"
 #include "LVRTreeWidgetHelper.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../widgets/LVRModelItem.hpp"
@@ -61,6 +62,9 @@
 #include "../widgets/LVRFilteringMLSProjectionDialog.hpp"
 #include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
 #include "../widgets/LVRBackgroundDialog.hpp"
+#include "../widgets/LVRHistogram.hpp"
+
+#include "../widgets/LVRPointInfo.hpp"
 
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
@@ -93,7 +97,10 @@ public Q_SLOTS:
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();
-    void showAboutDialog(QAction*);
+    /// Shows a Popup Dialog saying that no PointClouds with spectral data are selected
+    void showErrorDialog();
+    /// Shows a Popup Dialog with the average Intensity per Spectral Channel
+    void showHistogramDialog();
     void renameModelItem();
     void estimateNormals();
     void reconstructUsingMarchingCubes();
@@ -107,6 +114,25 @@ public Q_SLOTS:
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
     void changeShading(int shader);
+
+    /// Updates all selected LVRPointCloudItems to the desired Spectral. **can take seconds**
+    void changeSpectralColor();
+    /// Determines if changeSpectralColor() should be called. Updates the m_spectralLineEdit to the value from m_spectralSlider
+    void onSpectralSliderChanged(int action = -1);
+    /// Updates the m_spectralSlider to the value from m_spectralLineEdit
+    void onSpectralLineEditChanged();
+    /// Same as onSpectralLineEditChanged(), but triggers changeSpectralView()
+    void onSpectralLineEditSubmit();
+
+    /// Updates all selected LVRPointCloudItems to the desired Gradient. **can take seconds**
+    void changeGradientColor();
+    /// Determines if changeGradientColor() should be called. Updates the m_gradientLineEdit to the value from m_gradientSlider
+    void onGradientSliderChanged(int action = -1);
+    /// Updates the m_gradientSlider to the value from m_gradientLineEdit
+    void onGradientLineEditChanged();
+    /// Same as onGradientLineEditChanged(), but triggers changeGradientView()
+    void onGradientLineEditSubmit();
+
     void assertToggles();
     void togglePoints(bool checkboxState);
     void toggleNormals(bool checkboxState);
@@ -125,13 +151,29 @@ public Q_SLOTS:
     void buildIncompatibilityBox(string actionName, unsigned char allowedTypes);
     void showBackgroundDialog();
 
+    /// Shows a Popup Dialog with Information about a Point
+    void showPointInfoDialog();
+    /// Shows the DockerWidget with the preview of the PointInfoDialog
+    void showPointPreview(vtkActor* actor, int point);
+    /// Changes the Point displayed by the PointPreview
+    void updatePointPreview(int pointId, PointBufferPtr points);
+
+    /// Switches between Sliders and Gradients. checked == true => Slider DockWidget enabled
+    void updateSpectralSlidersEnabled(bool checked);
+    /// Switches between Sliders and Gradients. checked == true => Gradient DockWidget enabled
+    void updateSpectralGradientEnabled(bool checked);
+
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
     LVRMeshItem* getMeshItem(QTreeWidgetItem* item);
+    std::set<LVRModelItem*> getSelectedModelItems();
+    std::set<LVRPointCloudItem*> getSelectedPointCloudItems();
+    std::set<LVRMeshItem*> getSelectedMeshItems();
 
 protected Q_SLOTS:
     void setModelVisibility(QTreeWidgetItem* treeWidgetItem, int column);
-    void restoreSliders(QTreeWidgetItem* treeWidgetItem, int column);
+    /// Adjusts all the Sliders, LineEdits and CheckBoxes to the currently selected Items
+    void restoreSliders();
 
 Q_SIGNALS:
     void correspondenceDialogOpened();
@@ -141,7 +183,12 @@ private:
     void connectSignalsAndSlots();
 
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
+    std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;
+    LVRPlotter*                                 m_PointPreviewPlotter;
+    int                                         m_previewPoint;
+    PointBufferPtr                              m_previewPointBuffer;
     QDialog*                                    m_aboutDialog;
+    QDialog*                                    m_errorDialog;
     QMessageBox*                                m_incompatibilityBox;
     vtkSmartPointer<vtkRenderer>                m_renderer;
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
@@ -191,6 +238,10 @@ private:
     QAction*                            m_actionShow_Mesh;
     QAction*                            m_actionShow_Wireframe;
     QAction*                            m_actionShowBackgroundSettings;
+    QAction*                            m_actionShowSpectralSlider;
+    QAction*                            m_actionShowSpectralColorGradient;
+    QAction*                            m_actionShowSpectralPointPreview;
+    QAction*                            m_actionShowSpectralHistogram;
     // Sliders below tree widget
     QSlider*                            m_horizontalSliderPointSize;
     QSlider*                            m_horizontalSliderTransparency;
@@ -202,7 +253,15 @@ private:
     QPushButton*                        m_buttonCreateMesh;
     QPushButton*                        m_buttonExportData;
     QPushButton*                        m_buttonTransformModel;
-
+    // Spectral Settings
+    QSlider*                            m_spectralSliders[3];
+    QCheckBox*                          m_spectralCheckboxes[3];
+    QLabel*                             m_spectralLabels[3];
+    QLineEdit*                          m_spectralLineEdits[3];
+    // Gradient Settings
+    QSlider*                            m_gradientSlider;
+    QLineEdit*                          m_gradientLineEdit;
+    // ContextMenu Items
     QAction*                            m_actionShowColorDialog;
     QAction*                            m_actionRenameModelItem;
     QAction*                            m_actionDeleteModelItem;

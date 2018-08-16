@@ -79,6 +79,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void firstPointPicked(double*);
     void secondPointPicked(double*);
+    void pointSelected(vtkActor*, int);
 
 private:
     /// Indicates picking mode
@@ -90,6 +91,9 @@ private:
     vtkSmartPointer<vtkRenderer>    m_renderer;
 
     bool                            m_correspondenceMode;
+
+    unsigned int                    m_numberOfClicks;
+    int                             m_previousPosition[2];
 
 };
 

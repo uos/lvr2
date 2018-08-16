@@ -30,6 +30,7 @@
 #include <vtkAbstractPicker.h>
 #include <vtkRenderWindow.h>
 #include <vtkRendererCollection.h>
+#include <vtkPointPicker.h>
 
 namespace lvr
 {
@@ -105,15 +106,51 @@ void LVRPickingInteractor::correspondenceSearchOff()
 
 void LVRPickingInteractor::OnLeftButtonDown()
 {
-    if(m_pickMode != None)
+    vtkPointPicker* picker = (vtkPointPicker*)this->Interactor->GetPicker();
+
+    if(m_pickMode == None)
+    {
+        this->m_numberOfClicks++;
+        //std::cout << "m_numberOfClicks = " << this->m_numberOfClicks << std::endl;
+        int pickPosition[2];
+        this->GetInteractor()->GetEventPosition(pickPosition);
+
+        int xdist = pickPosition[0] - this->m_previousPosition[0];
+        int ydist = pickPosition[1] - this->m_previousPosition[1];
+
+        this->m_previousPosition[0] = pickPosition[0];
+        this->m_previousPosition[1] = pickPosition[1];
+
+        int moveDistance = (int)sqrt((double)(xdist*xdist + ydist*ydist));
+
+        // Reset numClicks - If mouse moved further than resetPixelDistance
+        if(moveDistance > 5)
+        { 
+            this->m_numberOfClicks = 1;
+        }
+
+        if(this->m_numberOfClicks == 2)
+        {
+            this->m_numberOfClicks = 0;
+            double* picked = new double[3];
+            picker->Pick(pickPosition[0],
+                                    pickPosition[1],
+                                    0,  // always zero.
+                                    this->Interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer());
+            vtkActor* actor = picker->GetActor();
+            int point = picker->GetPointId();
+            Q_EMIT(pointSelected(actor, point));
+        }
+    }
+    else
     {
         int* pickPos = this->Interactor->GetEventPosition();
         double* picked = new double[3];
-        this->Interactor->GetPicker()->Pick(this->Interactor->GetEventPosition()[0],
+        picker->Pick(this->Interactor->GetEventPosition()[0],
                                 this->Interactor->GetEventPosition()[1],
                                 0,  // always zero.
                                 this->Interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer());
-        this->Interactor->GetPicker()->GetPickPosition(picked);
+        picker->GetPickPosition(picked);
 
         if(m_pickMode == PickFirst)
         {

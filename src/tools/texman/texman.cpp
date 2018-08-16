@@ -383,7 +383,11 @@ void v(lvr::TextureIO* tio, int sel)
 		cv::Mat img(cv::Size(tio->m_textures[sel]->m_width, tio->m_textures[sel]->m_height),
 			    CV_MAKETYPE(tio->m_textures[sel]->m_numBytesPerChan * 8,
 			    tio->m_textures[sel]->m_numChannels), tio->m_textures[sel]->m_data);
+#ifdef CV_WINDOW_AUTOSIZE
 		cv::namedWindow("MyWindow", CV_WINDOW_AUTOSIZE);
+#else
+		cv::namedWindow("MyWindow");
+#endif
 		cv::imshow("MyWindow", img);
 		cv::waitKey();
 		cv::destroyAllWindows();

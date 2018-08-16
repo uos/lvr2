@@ -69,6 +69,18 @@ LVRPointCloudItem::LVRPointCloudItem(PointBufferBridgePtr& ptr, QTreeWidgetItem*
     }
     addChild(colorItem);
 
+    QTreeWidgetItem* specItem = new QTreeWidgetItem(this);
+    specItem->setText(0, "Has Spectraldata:");
+    if(ptr->getPointBuffer()->hasPointSpectralChannels())
+    {
+        specItem->setText(1, "yes");
+    }
+    else
+    {
+        specItem->setText(1, "no");
+    }
+    addChild(specItem);
+
     // set initial values
     m_opacity = 1;
     m_pointSize = 1;
@@ -138,6 +150,11 @@ size_t LVRPointCloudItem::getNumPoints()
 PointBufferPtr LVRPointCloudItem::getPointBuffer()
 {
     return m_pointBridge->getPointBuffer();
+}
+
+PointBufferBridgePtr LVRPointCloudItem::getPointBufferBridge()
+{
+    return m_pointBridge;
 }
 
 vtkSmartPointer<vtkActor> LVRPointCloudItem::getActor()

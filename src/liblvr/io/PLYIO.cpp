@@ -38,10 +38,9 @@
 #include <ctime>
 #include <sstream>
 #include <fstream>
-#include <iostream>
 
-using std::cout;
-using std::endl;
+#include <boost/filesystem.hpp>
+#include <opencv2/opencv.hpp>
 
 namespace lvr
 {
@@ -389,9 +388,17 @@ ModelPtr PLYIO::read( string filename )
    return read( filename, true );
 }
 
+/**
+ * swaps n elements from index i1 in arr with n elements from index i2 in arr
+ */
+template <typename T>
+void swap(T*& arr, size_t i1, size_t i2, size_t n)
+{
+    std::swap_ranges(arr + i1, arr + i1 + n, arr + i2);
+}
 
 ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
-        bool readIntensity, bool readNormals, bool readFaces )
+        bool readIntensity, bool readNormals, bool readFaces, bool readPanoramaCoords )
 {
 
     /* Start reading new PLY */
@@ -422,13 +429,19 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     size_t numVertexConfidences     = 0;
     size_t numVertexIntensities     = 0;
     size_t numVertexNormals         = 0;
+    size_t numVertexPanoramaCoords  = 0;
 
     size_t numPoints                = 0;
     size_t numPointColors           = 0;
     size_t numPointConfidence       = 0;
     size_t numPointIntensities      = 0;
     size_t numPointNormals          = 0;
+    size_t numPointPanoramaCoords   = 0;
+    size_t numPointSpectralChannels = 0;
     size_t numFaces                 = 0;
+
+    size_t n_channels               = 0; // Number of spectral channels
+
 
     while ( ( elem = ply_get_next_element( ply, elem ) ) )
     {
@@ -460,6 +473,11 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
                     /* We have normals */
                     numVertexNormals = n;
                 }
+                else if ( !strcmp( name, "x_coords" ) && readPanoramaCoords )
+                {
+                    /* We have panorama coordinates */
+                    numVertexPanoramaCoords = n;
+                }
             }
         }
         else if ( !strcmp( name, "point" ) )
@@ -489,6 +507,11 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
                     /* We have normals */
                     numPointNormals = n;
                 }
+                else if ( !strcmp( name, "x_coords" ) && readPanoramaCoords )
+                {
+                    /* We have panorama coordinates */
+                    numPointPanoramaCoords = n;
+                }
             }
         }
         else if ( !strcmp( name, "face" ) && readFaces )
@@ -513,9 +536,13 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     floatArr pointConfidences;
     floatArr pointIntensities;
     floatArr pointNormals;
+    floatArr pointSpectralChannels;
 
-    ucharArr pointColors;
     ucharArr vertexColors;
+    ucharArr pointColors;
+
+    shortArr vertexPanoramaCoords;
+    shortArr pointPanoramaCoords;
 
     uintArr  faceIndices;
 
@@ -539,7 +566,11 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( numVertexNormals )
     {
-        vertexNormals = floatArr( new float[ 3 * numVertices ] );
+        vertexNormals = floatArr( new float[ numVertices * 3 ] );
+    }
+    if ( numVertexPanoramaCoords )
+    {
+        vertexPanoramaCoords = shortArr( new short[ numVertices * 2 ] );
     }
     if ( numFaces )
     {
@@ -563,21 +594,27 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     }
     if ( numPointNormals )
     {
-        pointNormals = floatArr( new float[ 3 * numPoints ] );
+        pointNormals = floatArr( new float[ numPoints * 3 ] );
+    }
+    if ( numPointPanoramaCoords )
+    {
+        pointPanoramaCoords = shortArr( new short[ numPoints * 2 ] );
     }
 
 
-    float*        vertex            = vertices.get();
-    uint8_t*      vertex_color      = vertexColors.get();
-    float*        vertex_confidence = vertexConfidence.get();
-    float*        vertex_intensity  = vertexIntensity.get();
-    float*        vertex_normal     = vertexNormals.get();
-    unsigned int* face              = faceIndices.get();
-    float*        point             = points.get();
-    uint8_t*      point_color       = pointColors.get();
-    float*        point_confidence  = pointConfidences.get();
-    float*        point_intensity   = pointIntensities.get();
-    float*        point_normal      = pointNormals.get();
+    float*          vertex                   = vertices.get();
+    uint8_t*        vertex_color             = vertexColors.get();
+    float*          vertex_confidence        = vertexConfidence.get();
+    float*          vertex_intensity         = vertexIntensity.get();
+    float*          vertex_normal            = vertexNormals.get();
+    short*          vertex_panorama_coords   = vertexPanoramaCoords.get();
+    unsigned int*   face                     = faceIndices.get();
+    float*          point                    = points.get();
+    uint8_t*        point_color              = pointColors.get();
+    float*          point_confidence         = pointConfidences.get();
+    float*          point_intensity          = pointIntensities.get();
+    float*          point_normal             = pointNormals.get();
+    short*          point_panorama_coords    = pointPanoramaCoords.get();
 
 
     /* Set callbacks. */
@@ -606,6 +643,11 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         ply_set_read_cb( ply, "vertex", "nx", readVertexCb, &vertex_normal, 0 );
         ply_set_read_cb( ply, "vertex", "ny", readVertexCb, &vertex_normal, 0 );
         ply_set_read_cb( ply, "vertex", "nz", readVertexCb, &vertex_normal, 1 );
+    }
+    if ( vertex_panorama_coords )
+    {
+        ply_set_read_cb( ply, "vertex", "x_coords", readPanoramaCoordCB, &vertex_panorama_coords, 0 );
+        ply_set_read_cb( ply, "vertex", "y_coords", readPanoramaCoordCB, &vertex_panorama_coords, 1 );
     }
 
     if ( face )
@@ -640,6 +682,11 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         ply_set_read_cb( ply, "point", "ny", readVertexCb, &point_normal, 0 );
         ply_set_read_cb( ply, "point", "nz", readVertexCb, &point_normal, 1 );
     }
+    if ( point_panorama_coords )
+    {
+        ply_set_read_cb( ply, "point", "x_coords", readPanoramaCoordCB, &point_panorama_coords, 0 );
+        ply_set_read_cb( ply, "point", "y_coords", readPanoramaCoordCB, &point_panorama_coords, 1 );
+    }
 
     /* Read ply file. */
     if ( !ply_read( ply ) )
@@ -654,29 +701,124 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     {
         std::cout << timestamp << "PLY contains neither faces nor points. "
             << "Assuming that vertices are meant to be points." << std::endl;
-        points               = vertices;
-        pointColors          = vertexColors;
-        pointConfidences     = vertexConfidence;
-        pointIntensities     = vertexIntensity;
-        pointNormals         = vertexNormals;
-        numPoints            = numVertices;
-        numPointColors       = numVertexColors;
-        numPointConfidence   = numVertexConfidences;
-        numPointIntensities  = numVertexIntensities;
-        numPointNormals      = numVertexNormals;
-        numVertices          = 0;
-        numVertexColors      = 0;
-        numVertexConfidences = 0;
-        numVertexIntensities = 0;
-        numVertexNormals     = 0;
+        points                  = vertices;
+        pointColors             = vertexColors;
+        pointConfidences        = vertexConfidence;
+        pointIntensities        = vertexIntensity;
+        pointNormals            = vertexNormals;
+        pointPanoramaCoords     = vertexPanoramaCoords;
+        point                   = points.get();
+        point_color             = pointColors.get();
+        point_confidence        = pointConfidences.get();
+        point_intensity         = pointIntensities.get();
+        point_normal            = pointNormals.get();
+        point_panorama_coords   = pointPanoramaCoords.get();
+        numPoints               = numVertices;
+        numPointColors          = numVertexColors;
+        numPointConfidence      = numVertexConfidences;
+        numPointIntensities     = numVertexIntensities;
+        numPointNormals         = numVertexNormals;
+        numPointPanoramaCoords  = numVertexPanoramaCoords;
+        numVertices             = 0;
+        numVertexColors         = 0;
+        numVertexConfidences    = 0;
+        numVertexIntensities    = 0;
+        numVertexNormals        = 0;
+        numVertexPanoramaCoords = 0;
         vertices.reset();
         vertexColors.reset();
         vertexConfidence.reset();
         vertexIntensity.reset();
         vertexNormals.reset();
+        vertexPanoramaCoords.reset();
     }
 
     ply_close( ply );
+
+    // read Panorama Images if we have annotated data
+    if (numPointPanoramaCoords)
+    {
+        // move all the Points that don't have spectral information to the end
+        for (int i = 0; i < numPointPanoramaCoords; i++)
+        {
+            if (point_panorama_coords[2 * i] == -1)
+            {
+                // swap with last element
+                numPointPanoramaCoords--;
+
+                const int n = numPointPanoramaCoords;
+                swap(point_panorama_coords, 2 * i, 2 * numPointPanoramaCoords, 2);
+                swap(point, 3 * i, 3 * numPointPanoramaCoords, 3);
+                if (numPointColors)      swap(point_color,      3*i, 3*numPointPanoramaCoords, 3);
+                if (numPointConfidence)  swap(point_confidence,   i,   numPointPanoramaCoords, 1);
+                if (numPointIntensities) swap(point_intensity,    i,   numPointPanoramaCoords, 1);
+                if (numPointNormals)     swap(point_normal,     3*i, 3*numPointPanoramaCoords, 3);
+
+                i--;
+            }
+        }
+
+        std::cout << numPoints << " given, " << (numPoints - numPointPanoramaCoords) << " without spectral data" << std::endl;
+
+        // traverse to channel directory
+        string scanNr = filename.substr(filename.length() - 7, 3);
+        string channelDirName = string("panorama_channels_") + scanNr;
+
+        boost::filesystem::path dir(filename);
+        dir = dir.parent_path() / "panoramas_fixed" / channelDirName;
+
+        if (!boost::filesystem::exists(dir / "channel0.png"))
+        {
+            std::cerr << "Annotated Data given, but " + dir.string() + " does not contain channel files" << std::endl;
+        }
+        else
+        {
+            std::cout << "Found Annotated Data. Loading spectral channel images from: " << dir.string() << "/" << std::endl;
+            std::cout << "This may take a while depending on data size" << std::endl;
+
+            std::vector<cv::Mat> imgs;
+            std::vector<unsigned char*> pixels;
+
+            cv::VideoCapture images(dir.string() + "/channel%d.png");
+            cv::Mat img, imgFlipped;
+            while (images.read(img))
+            {
+                imgs.push_back(cv::Mat());
+                cv::flip(img, imgFlipped, 0); // TODO: FIXME: Data is currently stored mirrored and offset
+                cv::cvtColor(imgFlipped, imgs.back(), cv::COLOR_RGB2GRAY);
+                pixels.push_back(imgs.back().data);
+            }
+
+            n_channels = imgs.size();
+            int width = imgs[0].cols;
+            int height = imgs[0].rows;
+
+            numPointSpectralChannels = numPointPanoramaCoords;
+            pointSpectralChannels = floatArr(new float[numPointPanoramaCoords * n_channels]);
+
+            float* point_spectral_channels = pointSpectralChannels.get();
+
+            std::cout << "Finished loading " << n_channels << " channel images" << std::endl;
+
+            #pragma omp parallel for
+            for (int i = 0; i < numPointPanoramaCoords; i++)
+            {
+                int pc_index = 2 * i; // x_coords, y_coords
+                short x = point_panorama_coords[pc_index];
+                short y = point_panorama_coords[pc_index + 1];
+                x = (x + width / 2) % width; // TODO: FIXME: Data is currently stored mirrored and offset
+
+                int panoramaPosition = y * width + x;
+                float* pixel = point_spectral_channels + n_channels * i;
+
+                for (int channel = 0; channel < n_channels; channel++)
+                {
+                    pixel[channel] = pixels[channel][panoramaPosition] / 255.0f;
+                }
+            }
+            std::cout << "Finished extracting channel information" << std::endl;
+        }
+    }
 
 
     // Save buffers in model
@@ -685,11 +827,13 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     if(points)
     {
         pc = PointBufferPtr( new PointBuffer );
-        pc->setPointArray(           points,           numPoints );
-        pc->setPointColorArray(      pointColors,      numPointColors );
-        pc->setPointIntensityArray(  pointIntensities, numPointIntensities );
-        pc->setPointConfidenceArray( pointConfidences, numPointConfidence );
-        pc->setPointNormalArray    ( pointNormals,     numPointNormals);
+        pc->setPointArray(                points,                numPoints );
+        pc->setPointColorArray(           pointColors,           numPointColors );
+        pc->setPointIntensityArray(       pointIntensities,      numPointIntensities );
+        pc->setPointConfidenceArray(      pointConfidences,      numPointConfidence );
+        pc->setPointNormalArray(          pointNormals,          numPointNormals );
+        pc->setPointSpectralChannelsArray(pointSpectralChannels, numPointSpectralChannels, n_channels, 400, 400 + 4 * n_channels );
+        // there is no way to read min-, maxchannel from ply file => assume default 400-1000nm
     }
 
     if(vertices)
@@ -701,10 +845,6 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         mesh->setVertexNormalArray(     vertexNormals,    numVertexNormals );
         mesh->setVertexConfidenceArray( vertexConfidence, numVertexConfidences );
         mesh->setFaceArray(             faceIndices,      numFaces );
-        for(size_t i = 0; i < numFaces; i++)
-        {
-            cout << faceIndices[3 * i] << " " << faceIndices[3 * i + 1] << " " << faceIndices[3 * i + 2] << endl;
-        }
     }
 
     ModelPtr m( new Model( mesh, pc ) );
@@ -739,6 +879,7 @@ int PLYIO::readColorCb( p_ply_argument argument )
 
 int PLYIO::readFaceCb( p_ply_argument argument )
 {
+
     unsigned int ** face;
     long int length, value_index;
     ply_get_argument_user_data( argument, (void **) &face, NULL );
@@ -756,6 +897,17 @@ int PLYIO::readFaceCb( p_ply_argument argument )
     **face = ply_get_argument_value( argument );
     (*face)++;
 
+    return 1;
+
+}
+
+int PLYIO::readPanoramaCoordCB( p_ply_argument argument )
+{
+
+    short ** ptr;
+    ply_get_argument_user_data( argument, (void **) &ptr, NULL );
+    **ptr = ply_get_argument_value( argument );
+    (*ptr)++;
     return 1;
 
 }

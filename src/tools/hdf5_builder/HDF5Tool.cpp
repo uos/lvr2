@@ -1,21 +1,3 @@
-/*******************************************************************************
- * Copyright © 2011 Universität Osnabrück
- * This file is part of the LAS VEGAS Reconstruction Toolkit,
- *
- * LAS VEGAS is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
- *
- * LAS VEGAS is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place - Suite 330, Boston, MA  02111-1307, USA
- ******************************************************************************/
 
 
 /**
@@ -126,7 +108,7 @@ int main( int argc, char ** argv )
         HighFive::Group channel_group = hdf5_file.createGroup(group_name);
 
         // Read png images and write them into the created group
-        cv::Mat image = cv::imread(it, CV_LOAD_IMAGE_GRAYSCALE);
+        cv::Mat image = cv::imread(it, cv::IMREAD_GRAYSCALE);
 
         int w = image.cols;
         int h = image.rows;
@@ -143,16 +125,30 @@ int main( int argc, char ** argv )
     size_t n;
     floatArr points = point_buffer->getPointArray(n);
 
-    // Convert float array to vector. TODO: Check if necessary. It should be
-    // possible to write the array directly somehow.
-    vector<float> v_points;
-    for(size_t i = 0; i < 3 * n; i++)
-    {
-        v_points.push_back(points[i]);
-    }
-
     // Write scan data to group
     scan_group.createDataSet<int>("numPoints", HighFive::DataSpace::From(n)).write(n);
-    scan_group.createDataSet<float>("points", HighFive::DataSpace::From(v_points)).write(v_points);
+    scan_group.createDataSet<float>("points", HighFive::DataSpace(n * 3)).write(points.get());
+
+    size_t n_spec, n_channels;
+    floatArr spec = point_buffer->getPointSpectralChannelsArray(n_spec, n_channels);
+
+    if (n_spec)
+    {
+        HighFive::Group pointclouds_group = hdf5_file.createGroup("/pointclouds");
+        HighFive::Group cloud001_group = hdf5_file.createGroup("pointclouds/cloud001");
+        HighFive::Group cloud001_points_group = hdf5_file.createGroup("pointclouds/cloud001/points");
+        HighFive::Group cloud001_spectral_group = hdf5_file.createGroup("pointclouds/cloud001/spectralChannels");
+
+        cloud001_points_group.createDataSet<int>("numPoints", HighFive::DataSpace::From(n_spec)).write(n_spec);
+        cloud001_points_group.createDataSet<float>("points", HighFive::DataSpace(n_spec * 3)).write(points.get());
+
+        cloud001_spectral_group.createDataSet<int>("numPoints", HighFive::DataSpace::From(n_spec)).write(n_spec);
+        cloud001_spectral_group.createDataSet<int>("numChannels", HighFive::DataSpace::From(n_channels)).write(n_channels);
+        cloud001_spectral_group.createDataSet<int>("minSpectral", HighFive::DataSpace::From(minSpectral)).write(minSpectral);
+        cloud001_spectral_group.createDataSet<int>("maxSpectral", HighFive::DataSpace::From(maxSpectral)).write(maxSpectral);
+        cloud001_spectral_group.createDataSet<float>("spectralChannels", HighFive::DataSpace(n_spec * n_channels)).write(spec.get());
+    }
+
+    std::cout << "Done" << std::endl;
 
 }

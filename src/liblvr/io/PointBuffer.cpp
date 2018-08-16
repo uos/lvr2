@@ -40,7 +40,11 @@ PointBuffer::PointBuffer() :
     m_numPointColors( 0 ),
     m_numPointNormals( 0 ),
     m_numPointIntensities( 0 ),
-    m_numPointConfidence( 0 )
+    m_numPointConfidence( 0 ),
+    m_numPointSpectralChannels( 0 ),
+    m_numSpectralChannels(0),
+    m_minWavelength(0),
+    m_maxWavelength(0)
     {
         /* coordf must be the exact size of three floats to cast the float
          * array to a coordf array. */
@@ -52,7 +56,8 @@ PointBuffer::PointBuffer() :
         m_pointConfidences.reset();
         m_pointIntensities.reset();
         m_pointNormals.reset();
-		m_pointColors.reset();
+        m_pointColors.reset();
+        m_pointSpectralChannels.reset();
     }
 
 
@@ -97,6 +102,16 @@ floatArr PointBuffer::getPointConfidenceArray( size_t &n )
 
     n = m_numPointConfidence;
     return m_pointConfidences;
+
+}
+
+
+floatArr PointBuffer::getPointSpectralChannelsArray( size_t &n, size_t &n_channels )
+{
+
+    n = m_numPointSpectralChannels;
+    n_channels = m_numSpectralChannels;
+    return m_pointSpectralChannels;
 
 }
 
@@ -228,6 +243,47 @@ void PointBuffer::setPointConfidenceArray( floatArr array, size_t n )
 }
 
 
+void PointBuffer::setPointSpectralChannelsArray( floatArr array, size_t n, size_t n_channels, int minWavelength, int maxWavelength )
+{
+
+    m_numPointSpectralChannels = n;
+    m_numSpectralChannels = n_channels;
+    m_pointSpectralChannels = array;
+    m_minWavelength = minWavelength;
+    m_maxWavelength = maxWavelength;
+
+}
+
+float PointBuffer::numWavelengthsPerChannel()
+{
+    return (m_maxWavelength - m_minWavelength) / (float)m_numSpectralChannels;
+}
+
+int PointBuffer::getChannel(int wavelength, int fallback)
+{
+    if (!hasPointSpectralChannels())
+    {
+        return fallback;
+    }
+    int channel = (wavelength - m_minWavelength) / numWavelengthsPerChannel();
+    if (channel < 0 || channel >= m_numSpectralChannels)
+    {
+        return fallback;
+    }
+    return channel;
+}
+
+int PointBuffer::getWavelength(int channel)
+{
+    if (channel < 0 || channel >= m_numSpectralChannels)
+    {
+        return -1;
+    }
+    return channel * numWavelengthsPerChannel() + m_minWavelength;
+}
+
+
+
 void PointBuffer::freeBuffer()
 {
     m_pointConfidences.reset();
@@ -235,8 +291,10 @@ void PointBuffer::freeBuffer()
     m_pointNormals.reset();
     m_points.reset();
     m_pointColors.reset();
+    m_pointSpectralChannels.reset();
     m_numPoints = m_numPointColors = m_numPointIntensities
-        = m_numPointConfidence = m_numPointNormals = 0;
+        = m_numPointConfidence = m_numPointNormals
+        = m_numPointSpectralChannels = m_numSpectralChannels = 0;
 
 }
 
