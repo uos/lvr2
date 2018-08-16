@@ -139,6 +139,22 @@ public:
     void setPointConfidenceArray( floatArr array, size_t n );
 
 
+    /**
+     * \brief Set the point spectral channel array.
+     *
+     * By using setPointSpectralChannelsArray the internal spectral channel
+     * buffer for points can be set. The array has to be a one dimensional
+     * float array.
+     *
+     * \param array         Pointer to point spectral channel data.
+     * \param n             Amount of data in the array.
+     * \param n_channels    Number of channels per Point.
+     * \param minWavelength smallest Wavelength
+     * \param maxWavelength largest Wavelength
+     **/
+    void setPointSpectralChannelsArray( floatArr array, size_t n, size_t n_channels, int minWavelength, int maxWavelength );
+
+
     /************************* Indexed Set *************************/
 
 
@@ -228,7 +244,7 @@ public:
     /**
      * \brief Get the point intensity array.
      *
-     * getPointiIntensityArray returns the point intensity informations.
+     * getPointIntensityArray returns the point intensity informations.
      * The returned array is a one dimensional float array.  Additionally
      * the passed reference of a size_t variable is set to the amount of
      * intensity values stored in the array. Thus \c n is set to the array
@@ -254,6 +270,22 @@ public:
      **/
     floatArr getPointConfidenceArray( size_t &n );
 
+
+    /**
+     * \brief Get the point spectral channels array.
+     *
+     * getPointSpectralChannelsArray returns the spectral channel informations.
+     * The returned array is a one dimensional float array.
+     * Additionally the passed reference of a size_t variable is set to the
+     * amount of spectral channel values stored in the array. Thus \c n is
+     * set to the array length. \c n_channels is set to the number of channels
+     * that each Point has.
+     *
+     * \param n          Amount of spectral channel values in array.
+     * \param n_channels Number of Channels per Point.
+     * \return           %Point spectral channel array.
+     **/
+    floatArr getPointSpectralChannelsArray( size_t &n, size_t &n_channels );
 
     /************************* Indexed Get *************************/
 
@@ -378,6 +410,50 @@ public:
      */
     bool hasPointColors() { return m_numPointColors != 0;}
 
+    /**
+     * @brief   Returns true if the stored data contains point spectral
+     *          channel information
+     */
+    bool hasPointSpectralChannels() { return m_numPointSpectralChannels != 0;}
+
+    /**
+     * @brief   Returns the number of spectral channels
+     */
+    size_t getNumSpectralChannels() { return m_numSpectralChannels; }
+
+    /**
+     * @brief   Returns the Wavelength of channel 0 in nm
+     */
+    int getMinWavelength() { return m_minWavelength; }
+
+    /**
+     * @brief   Returns the Wavelength that channel m_numSpectralChannels would have
+     *          in nm
+     */
+    int getMaxWavelength() { return m_maxWavelength; }
+
+    /**
+     * @brief   Returns the Wavelength difference in nm between two adjacent channels
+     */
+    float numWavelengthsPerChannel();
+
+    /**
+     * @brief   Returns the channel index of the given wavelength, or fallback if
+     *          wavelength is not in [minWavelength, maxWavelength)
+     *
+     * @param wavelength the wavelength in nm
+     * @param fallback the channel that will be returned for unsupported wavelengths
+     */
+    int getChannel(int wavelength, int fallback = -1);
+
+    /**
+     * @brief   Returns the wavelength index of the given channel, or -1 if channel
+     *          is not in [0, n_channels)
+     *
+     * @param channel the channel
+     */
+    int getWavelength(int channel);
+
 
 protected:
 
@@ -391,6 +467,8 @@ protected:
     floatArr        m_pointIntensities;
     /// %Point confidence buffer.
     floatArr        m_pointConfidences;
+    /// %Point spectral channel buffer.
+    floatArr        m_pointSpectralChannels;
 
 
     /// Number of points in internal buffer.
@@ -403,6 +481,15 @@ protected:
     size_t          m_numPointIntensities;
     /// Number of point confidence values in internal buffer.
     size_t          m_numPointConfidence;
+    /// Number of point spectral channel values in internal buffer.
+    size_t          m_numPointSpectralChannels;
+    /// Number of spectral channels per point.
+    size_t          m_numSpectralChannels;
+
+    /// Wavelength of channel 0 in nm
+    int m_minWavelength;
+    /// Wavelength of channel m_numSpectralChannels in nm.
+    int m_maxWavelength;
 
     /// Vector to save the indices of the first and last points of single scans
     std::vector<indexPair> m_subClouds;

@@ -27,8 +27,9 @@ include_directories(include)
 
 # Add -O0 to remove optimizations when using gcc
 if(CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-    set(CMAKE_C_FLAGS_DEBUG "-O0 -g")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g")
+    add_compile_options(-O0 -g)
 endif(CMAKE_COMPILER_IS_GNUCC)
 
 if(MSVC)
@@ -55,7 +56,10 @@ endif(CUDA_FOUND)
 ####
 ## Searching for OpenCV
 ##############################
-find_package( OpenCV 3 REQUIRED )
+find_package( OpenCV 3 )
+if (!OpenCV_FOUND)
+  find_package( OpenCV 4 REQUIRED )
+endif()
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 option(WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
