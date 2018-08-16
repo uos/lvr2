@@ -33,8 +33,8 @@
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/util/Debug.hpp>
 
-#include <lvr/io/Progress.hpp>
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/Progress.hpp>
+#include <lvr2/io/Timestamp.hpp>
 
 #include <algorithm>
 #include <complex>
@@ -46,8 +46,6 @@
 using std::unordered_set;
 using std::max;
 using std::log;
-
-using lvr::timestamp;
 
 namespace lvr2
 {
@@ -269,11 +267,11 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
 
     // calculate two orthogonal vectors in the plane
     auto normal = regressionPlane.normal;
-    auto pointInPlane = regressionPlane.project(mesh.getVertexPosition(contour[1])).asVector();
-    auto boudningAxis1 = (pointInPlane - supportVector).cross(normal.asVector());
+    auto pointInPlane = regressionPlane.project(mesh.getVertexPosition(contour[1]));
+    auto boudningAxis1 = (pointInPlane - supportVector).cross(normal);
     boudningAxis1.normalize();
 
-    Vector<BaseVecT> boundingAxis2 = boudningAxis1.cross(normal.asVector());
+    Vector<BaseVecT> boundingAxis2 = boudningAxis1.cross(normal);
     boundingAxis2.normalize();
 
     // const float pi = boost::math::constants::pi<float>(); // FIXME: doesnt seem to work with c++11
@@ -287,7 +285,7 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
         // rotate the bounding box
         boudningAxis1 = boudningAxis1 * cos(theta) + boundingAxis2 * sin(theta);
         boudningAxis1.normalize();
-        boundingAxis2 = boudningAxis1.cross(normal.asVector());
+        boundingAxis2 = boudningAxis1.cross(normal);
         boundingAxis2.normalize();
 
         // FIXME
@@ -434,7 +432,7 @@ ClusterBiMap<FaceHandle> planarClusterGrowing(
 {
     return clusterGrowing(mesh, [&](auto referenceFaceH, auto currentFaceH)
     {
-        return normals[currentFaceH].dot(normals[referenceFaceH].asVector()) > minSinAngle;
+        return normals[currentFaceH].dot(normals[referenceFaceH]) > minSinAngle;
     });
 }
 
@@ -522,7 +520,7 @@ Plane<BaseVecT> calcRegressionPlane(
     // Average Normals for both normal directions
     for (auto faceH: cluster.handles)
     {
-        auto normal = normals[faceH].asVector();
+        auto normal = normals[faceH];
 
         // If first iteration
         if (countFirst == 0)
@@ -586,7 +584,7 @@ Plane<BaseVecT> calcRegressionPlane(
     float avgDistance = planeDistance / vertices.size();
 
     // Move pos of plane to best fit
-    plane.pos += (plane.normal.asVector() * avgDistance);
+    plane.pos += (plane.normal * avgDistance);
     return plane;
 }
 
@@ -620,7 +618,7 @@ void dragToRegressionPlane(
         {
             auto pos = mesh.getVertexPosition(vertexH);
             auto distance = plane.distance(pos);
-            mesh.getVertexPosition(vertexH) -= plane.normal.asVector() * distance;
+            mesh.getVertexPosition(vertexH) -= plane.normal * distance;
         }
         normals[faceH] = plane.normal;
     }
@@ -634,8 +632,8 @@ void optimizePlaneIntersections(
 )
 {
     // Status message for mesh generation
-    string comment = lvr::timestamp.getElapsedTime() + "Optimizing plane intersections ";
-    lvr::ProgressBar progress(planes.numValues(), comment);
+    string comment = timestamp.getElapsedTime() + "Optimizing plane intersections ";
+    ProgressBar progress(planes.numValues(), comment);
 
     // iterate over all planes
     for (auto it = planes.begin(); it != planes.end(); ++it)
@@ -653,7 +651,7 @@ void optimizePlaneIntersections(
             auto& plane2 = planes[clusterInnerH];
 
             // do not improve almost parallel cluster
-            float normalDot = plane1.normal.dot(plane2.normal.asVector());
+            float normalDot = plane1.normal.dot(plane2.normal);
             if (fabs(normalDot) < 0.9)
             {
                 auto intersection = plane1.intersect(plane2);
@@ -666,7 +664,7 @@ void optimizePlaneIntersections(
         ++progress;
     }
 
-    if(!lvr::timestamp.isQuiet())
+    if(!timestamp.isQuiet())
         cout << endl;
 }
 
@@ -744,12 +742,12 @@ void debugPlanes(
             point = plane.project(bBox.getMax());
         }
         auto tangent1 = Normal<BaseVecT>(point - centroid);
-        auto tangent2 = Normal<BaseVecT>(plane.normal.asVector().cross(tangent1.asVector()));
+        auto tangent2 = Normal<BaseVecT>(plane.normal.cross(tangent1));
 
-        auto v1 = plane.pos + tangent1.asVector() * bBox.getLongestSide();
-        auto v2 = plane.pos - tangent1.asVector() * bBox.getLongestSide();
-        auto v3 = plane.pos + tangent2.asVector() * bBox.getLongestSide();
-        auto v4 = plane.pos - tangent2.asVector() * bBox.getLongestSide();
+        auto v1 = plane.pos + tangent1 * bBox.getLongestSide();
+        auto v2 = plane.pos - tangent1 * bBox.getLongestSide();
+        auto v3 = plane.pos + tangent2 * bBox.getLongestSide();
+        auto v4 = plane.pos - tangent2 * bBox.getLongestSide();
 
         // Add intersection plane to mesh
         auto vH1 = debugMesh.addVertex(v1);

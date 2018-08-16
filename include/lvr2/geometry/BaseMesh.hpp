@@ -38,7 +38,9 @@ using std::array;
 using boost::optional;
 
 #include "Handles.hpp"
-#include "Point.hpp"
+
+#include <lvr2/geometry/Vector.hpp>
+#include <lvr2/io/MeshBuffer2.hpp>
 
 namespace lvr2
 {
@@ -132,6 +134,7 @@ template<typename BaseVecT>
 class BaseMesh
 {
 public:
+
     virtual ~BaseMesh() {}
 
     // =======================================================================
@@ -146,7 +149,7 @@ public:
      *
      * @return A handle to access the inserted vertex later.
      */
-    virtual VertexHandle addVertex(Point<BaseVecT> pos) = 0;
+    virtual VertexHandle addVertex(Vector<BaseVecT> pos) = 0;
 
     /**
      * @brief Creates a face connecting the three given vertices.
@@ -186,11 +189,10 @@ public:
     /**
      * @brief Performs the edge flip operation.
      *
-     * The operation is kind of hard to describe with words; try looking at
-     * some images on the web. But if you want to read: it basically turns an
-     * edge and the two adjacent faces within a four vertex region by 90°. The
+     * This operation turns an edge and the two adjacent faces within a four
+     * vertex region by 90°. The
      * edge is now connected to two new vertices; the new edge would cross the
-     * old one. Still not clear? Told you.
+     * old one.
      *
      * Important: the given edge needs to be flippable. You can check that
      * property with `isFlippable()`. If that property is not satisfied, this
@@ -267,12 +269,12 @@ public:
     /**
      * @brief Get the position of the given vertex.
      */
-    virtual Point<BaseVecT> getVertexPosition(VertexHandle handle) const = 0;
+    virtual Vector<BaseVecT> getVertexPosition(VertexHandle handle) const = 0;
 
     /**
      * @brief Get a ref to the position of the given vertex.
      */
-    virtual Point<BaseVecT>& getVertexPosition(VertexHandle handle) = 0;
+    virtual Vector<BaseVecT>& getVertexPosition(VertexHandle handle) = 0;
 
     /**
      * @brief Get the three vertices surrounding the given face.
@@ -419,12 +421,12 @@ public:
      *
      * @return The points of the vertices in counter-clockwise order.
      */
-    virtual array<Point<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const;
+    virtual array<Vector<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const;
 
     /**
      * @brief Calc and return the centroid of the requested face.
      */
-    Point<BaseVecT> calcFaceCentroid(FaceHandle handle) const;
+    Vector<BaseVecT> calcFaceCentroid(FaceHandle handle) const;
 
     /**
      * @brief Calc and return the area of the requested face.
@@ -568,6 +570,7 @@ public:
      * Returns a simple proxy object that uses `verticesBegin()` and `verticesEnd()`.
      */
     virtual VertexIteratorProxy<BaseVecT> vertices() const;
+
 };
 
 template <typename BaseVecT>

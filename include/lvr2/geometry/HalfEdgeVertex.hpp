@@ -28,7 +28,7 @@
 #define LVR2_GEOMETRY_HALFEDGEVERTEX_H_
 
 #include "BaseMesh.hpp"
-#include "Point.hpp"
+#include "Vector.hpp"
 
 namespace lvr2
 {
@@ -46,7 +46,7 @@ struct HalfEdgeVertex
     OptionalHalfEdgeHandle outgoing;
 
     /// The 3D position of this vertex.
-    Point<BaseVecT> pos;
+    Vector<BaseVecT> pos;
 };
 
 } // namespace lvr2

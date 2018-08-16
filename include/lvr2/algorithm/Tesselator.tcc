@@ -10,15 +10,17 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
+#include <iostream>
+
 namespace lvr2
 {
 
 template<typename BaseVecT>
 GLUtesselator* Tesselator<BaseVecT>::m_tesselator;
 template<typename BaseVecT>
-vector<Point<BaseVecT>> Tesselator<BaseVecT>::m_vertices;
+vector<Vector<BaseVecT>> Tesselator<BaseVecT>::m_vertices;
 template<typename BaseVecT>
-vector<Point<BaseVecT>> Tesselator<BaseVecT>::m_faces;
+vector<Vector<BaseVecT>> Tesselator<BaseVecT>::m_faces;
 template<typename BaseVecT>
 GLenum Tesselator<BaseVecT>::m_type;
 
@@ -42,7 +44,7 @@ void Tesselator<BaseVecT>::combineDataCallback(GLdouble coords[3],
     vertex[1] = coords[1];
     vertex[2] = coords[2];
 
-    Point<BaseVecT> v(vertex[0], vertex[1], vertex[2]);
+    Vector<BaseVecT> v(vertex[0], vertex[1], vertex[2]);
     m_vertices.push_back(v);
 
     *outData = vertex;
@@ -98,7 +100,9 @@ void Tesselator<BaseVecT>::endCallback(void)
 template<typename BaseVecT>
 void Tesselator<BaseVecT>::errorCallback(GLenum errno)
 {
-    cerr << "[Tesselator-Error:] " << __FILE__ << " (" << __LINE__ << "): " << gluErrorString(errno) << endl;
+    std::cerr << "[Tesselator-Error:] "
+              << __FILE__ << " (" << __LINE__ << "): "
+              << gluErrorString(errno) << std::endl;
 }
 
 template<typename BaseVecT>
@@ -106,7 +110,7 @@ void Tesselator<BaseVecT>::vertexCallback(void* data)
 {
     const GLdouble *ptr = (const GLdouble*)data;
 
-    Point<BaseVecT> vertex(*ptr, *(ptr+1), *(ptr+2));
+    Vector<BaseVecT> vertex(*ptr, *(ptr+1), *(ptr+2));
     m_vertices.push_back(vertex);
 }
 

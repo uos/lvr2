@@ -52,7 +52,7 @@ class MaterializerResult;
 
 /**
  * Algorithm that converts a BaseMesh into a MeshBuffer while maintaining the original graph structure. This means
- * that no duplicate vertices will be created and therefor no textures can be generated.
+ * that no duplicate vertices will be created and therefore no textures can be generated.
  */
 template<typename BaseVecT>
 class SimpleFinalizer
@@ -70,7 +70,7 @@ public:
      * @param mesh the mesh to convert
      * @return the generated buffer
      */
-    boost::shared_ptr<MeshBuffer<BaseVecT>> apply(const BaseMesh<BaseVecT>& mesh);
+    boost::shared_ptr<MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
 
     /**
      * Sets vertex colors for the apply method. This has to be done before apply is called.
@@ -136,7 +136,7 @@ public:
      * @param mesh the mesh to convert
      * @return the resulting mesh buffer
      */
-    boost::shared_ptr<MeshBuffer<BaseVecT>> apply(const BaseMesh<BaseVecT>& mesh);
+    boost::shared_ptr<MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
 
 private:
 

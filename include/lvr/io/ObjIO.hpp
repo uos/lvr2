@@ -75,7 +75,7 @@ public:
 private:
 
     void parseMtlFile(map<string, int>& matNames,
-            vector<Material*>& materials,
+            vector<IOMaterial*>& materials,
             vector<GlTexture*>& textures,
             string mtlname);
 

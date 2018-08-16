@@ -46,6 +46,37 @@ Vector<BaseVecT> Vector<BaseVecT>::average(const CollectionT& vecs)
     return acc / count;
 }
 
+template<typename BaseVecT>
+template<typename CollectionT>
+Vector<BaseVecT> Vector<BaseVecT>::centroid(const CollectionT& points)
+{
+    Vector<BaseVecT> acc(0, 0, 0);
+    size_t count = 0;
+    for (auto p: points)
+    {
+        static_assert(
+            std::is_same<decltype(p), Vector<BaseVecT>>::value,
+            "Type mismatch in centroid calculation."
+        );
+        acc += p;
+        count += 1;
+    }
+    return Vector<BaseVecT>(0, 0, 0) + acc / count;
+}
+
+template <typename BaseVecT>
+typename BaseVecT::CoordType Vector<BaseVecT>::distanceFrom(const Vector<BaseVecT> &other) const
+{
+    return (*this - other).length();
+}
+
+template <typename BaseVecT>
+typename BaseVecT::CoordType Vector<BaseVecT>::squaredDistanceFrom(const Vector<BaseVecT> &other) const
+{
+    return (*this - other).length2();
+}
+
+
 template <typename BaseVecT>
 Vector<BaseVecT> Vector<BaseVecT>::cross(const Vector<BaseVecT> &other) const
 {
@@ -64,12 +95,14 @@ void Vector<BaseVecT>::normalize()
     // Check for invalid vector. This check can be disabled in release mode,
     // which will probably lead to +inf and -inf values. In the documentation
     // for this function we require the vector to not be the null-vector.
-    assert(!(this->x == 0 && this->y == 0 && this->z == 0));
-
-    auto len = this->length();
-    this->x /= len;
-    this->y /= len;
-    this->z /= len;
+    // assert(!(this->x == 0 && this->y == 0 && this->z == 0));
+    if(!(this->x == 0 && this->y == 0 && this->z == 0))
+    {
+        auto len = this->length();
+        this->x /= len;
+        this->y /= len;
+        this->z /= len;
+    }
 }
 
 template <typename BaseVecT>
@@ -94,18 +127,6 @@ template <typename BaseVecT>
 Vector<BaseVecT>& Vector<BaseVecT>::operator-=(const Vector<BaseVecT>& other)
 {
     return static_cast<Vector<BaseVecT>&>(BaseVecT::operator-=(other));
-}
-
-template <typename BaseVecT>
-Point<BaseVecT> Vector<BaseVecT>::operator+(const Point<BaseVecT>& other) const
-{
-    return BaseVecT::operator+(other);
-}
-
-template <typename BaseVecT>
-Point<BaseVecT> Vector<BaseVecT>::operator-(const Point<BaseVecT>& other) const
-{
-    return BaseVecT::operator-(other);
 }
 
 template <typename BaseVecT>

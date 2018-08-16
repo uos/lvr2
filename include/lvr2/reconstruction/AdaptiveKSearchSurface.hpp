@@ -35,18 +35,10 @@
 #include <memory>
 #include <string>
 
-#include <lvr/io/Model.hpp>
-#include <lvr/io/Progress.hpp>
-#include <lvr/io/Timestamp.hpp>
-#include <lvr/io/PLYIO.hpp>
-#include <lvr/io/AsciiIO.hpp>
-#include <lvr/io/UosIO.hpp>
-
-#include <lvr2/geometry/Point.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/geometry/Plane.hpp>
-// #include <lvr/geometry/ColorVertex.hpp>
-// #include <lvr/geometry/BoundingBox.hpp>
+
 
 #include "PointsetSurface.hpp"
 
@@ -135,7 +127,7 @@ public:
 
     /// See interface documentation.
     virtual pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
-        distance(Point<BaseVecT> v) const;
+        distance(Vector<BaseVecT> v) const;
 
     /**
      * @brief Calculates initial point normals using a least squares fit to
@@ -163,9 +155,9 @@ public:
     //  * @return the resulting plane
     //  */
     // Plane<BaseVecT> calcPlaneRANSACfromPoints(
-    //     const Point<BaseVecT>& queryPoint,
+    //     const Vector<BaseVecT>& queryPoint,
     //     int k,
-    //     vector<Point<BaseVecT>> points,
+    //     vector<Vector<BaseVecT>> points,
     //     NormalT c_normal,
     //     bool& ok
     // );
@@ -175,7 +167,7 @@ public:
     // /**
     //  * @brief Returns the point at the given \ref{index}.
     //  */
-    // virtual const Point<BaseVecT> operator[](size_t index) const;
+    // virtual const Vector<BaseVecT> operator[](size_t index) const;
 
 
     // virtual void colorizePointCloud( typename AdaptiveKSearchSurface<VertexT, NormalT>::Ptr pcm,
@@ -212,8 +204,8 @@ private:
     //  * @param k         The (max) number of returned closest points to v
     //  * @param nb        A vector containing the determined closest points
     //  */
-    // virtual void getkClosestVertices(const Point<BaseVecT> &v,
-    //         const size_t &k, vector<Point<BaseVecT>> &nb);
+    // virtual void getkClosestVertices(const Vector<BaseVecT> &v,
+    //         const size_t &k, vector<Vector<BaseVecT>> &nb);
 
 
     /**
@@ -271,13 +263,13 @@ private:
      * @param ok            True, if RANSAC interpolation was succesfull
      */
     Plane<BaseVecT> calcPlane(
-        const Point<BaseVecT> &queryPoint,
+        const Vector<BaseVecT> &queryPoint,
         int k,
         const vector<size_t> &id
     );
 
     Plane<BaseVecT> calcPlaneRANSAC(
-        const Point<BaseVecT> &queryPoint,
+        const Vector<BaseVecT> &queryPoint,
         int k,
         const vector<size_t> &id,
         bool &ok
@@ -285,7 +277,7 @@ private:
 
 
     /// The centroid of the point set
-    Point<BaseVecT> m_centroid;
+    Vector<BaseVecT> m_centroid;
 
     /// Should a randomized algorithm be used to determine planes?
     bool m_useRANSAC;

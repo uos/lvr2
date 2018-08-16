@@ -30,9 +30,10 @@
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 
-#include "PointsetMeshGenerator.hpp"
+//#include "PointsetMeshGenerator.hpp"
 #include "LocalApproximation.hpp"
 #include "FastBox.hpp"
+#include "./SharpBox.hpp"
 #include "BilinearFastBox.hpp"
 #include "QueryPoint.hpp"
 #include "PointsetSurface.hpp"

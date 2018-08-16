@@ -46,7 +46,7 @@ namespace lvr2
  * @return Either the normal or `none` if the face has a zero area.
  */
 template <typename BaseVecT>
-boost::optional<Normal<BaseVecT>> getFaceNormal(array<Point<BaseVecT>, 3> vertices);
+boost::optional<Normal<BaseVecT>> getFaceNormal(array<Vector<BaseVecT>, 3> vertices);
 
 /**
  * @brief Calculates a normal for each face in the mesh.

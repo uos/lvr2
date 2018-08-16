@@ -44,8 +44,11 @@ template <typename> struct Vector;
  * `Vector::normalized()`.
  */
 template <typename BaseVecT>
-struct Normal : private Vector<BaseVecT>
+struct Normal : public Vector<BaseVecT>
 {
+    Normal() { this->x = 0; this->y = 1; this->z = 0;}
+
+
     // ^ Private inheritance to restrict modifying access to the vector's data
     // in order to prevent modifications that would result in a non-normalized
     // vector.
@@ -104,27 +107,14 @@ struct Normal : private Vector<BaseVecT>
      * need to be `Normal<BaseVecT>`. It has to contain at least one element.
      */
     template<typename CollectionT>
-    static Normal<BaseVecT> average(const CollectionT& normals);
+    static Normal<BaseVecT>& average(const CollectionT& normals);
 
-    // Cast normal to vector
-    Vector<BaseVecT> asVector() const;
+    /// Allows to assign Vectors to normals. Vector data will be copied
+    /// and normalized.
+    Normal<BaseVecT>& operator=(const Vector<BaseVecT>& other);
 
-    // Publicly re-export methods that do not modify the vector and thus are
-    // safe to use.
-    using Vector<BaseVecT>::length;
-    using Vector<BaseVecT>::length2;
-    using Vector<BaseVecT>::cross;
-    using Vector<BaseVecT>::dot;
-    using Vector<BaseVecT>::operator==;
-    using Vector<BaseVecT>::operator!=;
-    using Vector<BaseVecT>::operator+;
-    using Vector<BaseVecT>::operator-;
-
-    // While already private, we delete these functions as they don't make
-    // sense.
-    BaseVecT& operator*=(const typename BaseVecT::CoordType &scale) = delete;
-    BaseVecT& operator/=(const typename BaseVecT::CoordType &scale) = delete;
-
+    Normal<BaseVecT> operator+(const Vector<BaseVecT>& other) const;
+    Normal<BaseVecT> operator-(const Vector<BaseVecT>& other) const;
     Normal<BaseVecT> operator-() const;
 };
 

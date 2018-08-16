@@ -37,7 +37,7 @@ const string BoxTraits<BilinearFastBox<BaseVecT>>::type = "BilinearFastBox";
 
 
 template<typename BaseVecT>
-BilinearFastBox<BaseVecT>::BilinearFastBox(Point<BaseVecT> center)
+BilinearFastBox<BaseVecT>::BilinearFastBox(Vector<BaseVecT> center)
     : FastBox<BaseVecT>(center), m_mcIndex(0)
 {
     //cout << m_surface << endl;
@@ -50,8 +50,8 @@ void BilinearFastBox<BaseVecT>::getSurface(
         uint &globalIndex)
 {
     //FastBox<BaseVecT>::getSurface(mesh, qp, globalIndex);
-     Point<BaseVecT> corners[8];
-     Point<BaseVecT> vertex_positions[12];
+     Vector<BaseVecT> corners[8];
+     Vector<BaseVecT> vertex_positions[12];
 
      float distances[8];
 
@@ -72,13 +72,13 @@ void BilinearFastBox<BaseVecT>::getSurface(
 
      // Generate the local approximation surface according to the marching
      // cubes table for Paul Burke.
-     for(int a = 0; lvr::MCTable[index][a] != -1; a+= 3)
+     for(int a = 0; MCTable[index][a] != -1; a+= 3)
      {
          OptionalVertexHandle vertex_indices[3];
 
          for(int b = 0; b < 3; b++)
          {
-             auto edge_index = lvr::MCTable[index][a + b];
+             auto edge_index = MCTable[index][a + b];
 
              //If no index was found generate new index and vertex
              //and update all neighbor boxes
@@ -89,10 +89,10 @@ void BilinearFastBox<BaseVecT>::getSurface(
 
                  for(int i = 0; i < 3; i++)
                  {
-                     auto current_neighbor = this->m_neighbors[lvr::neighbor_table[edge_index][i]];
+                     auto current_neighbor = this->m_neighbors[neighbor_table[edge_index][i]];
                      if(current_neighbor != 0)
                      {
-                         current_neighbor->m_intersections[lvr::neighbor_vertex_table[edge_index][i]] = this->m_intersections[edge_index];
+                         current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = this->m_intersections[edge_index];
                      }
                  }
 
@@ -142,8 +142,8 @@ void BilinearFastBox<BaseVecT>::getSurface(
                 vector<size_t> nearest1, nearest2;
 
                 auto vertices = mesh.getVerticesOfEdge(out_edges[i]);
-                Point<BaseVecT>& p1 = mesh.getVertexPosition(vertices[0]);
-                Point<BaseVecT>& p2 = mesh.getVertexPosition(vertices[1]);
+                Vector<BaseVecT>& p1 = mesh.getVertexPosition(vertices[0]);
+                Vector<BaseVecT>& p2 = mesh.getVertexPosition(vertices[1]);
 
                 this->m_surface->searchTree()->kSearch(p1, kc, nearest1);
                 size_t nk = min(kc, nearest1.size());
@@ -154,7 +154,7 @@ void BilinearFastBox<BaseVecT>::getSurface(
                     Vector<BaseVecT> centroid1;
                     for(auto idx : nearest1)
                     {
-                        Vector<BaseVecT> p = m_surface->pointBuffer()->getPoint(idx).asVector();
+                        Vector<BaseVecT> p = m_surface->pointBuffer()->getPoint(idx);
                         centroid1 += p;
                     }
                     centroid1 /= nk;
@@ -173,7 +173,7 @@ void BilinearFastBox<BaseVecT>::getSurface(
                     Vector<BaseVecT> centroid2;
                     for(auto idx : nearest2)
                     {
-                        Vector<BaseVecT> p = m_surface->pointBuffer()->getPoint(idx).asVector();
+                        Vector<BaseVecT> p = m_surface->pointBuffer()->getPoint(idx);
                         centroid2 += p;
                     }
                     centroid2 /= nk;

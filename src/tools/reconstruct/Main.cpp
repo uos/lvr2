@@ -146,6 +146,7 @@
 #include <lvr/reconstruction/FastReconstruction.hpp>
 #include <lvr/reconstruction/PointsetGrid.hpp>
 #include <lvr/reconstruction/FastBox.hpp>
+#include <lvr/reconstruction/TetraederBox.hpp>
 
 #include <lvr/io/PLYIO.hpp>
 #include <lvr/config/lvropenmp.hpp>
@@ -380,7 +381,7 @@ int main(int argc, char** argv)
 		string decomposition = options.getDecomposition();
 
 		// Fail safe check
-		if(decomposition != "MC" && decomposition != "PMC" && decomposition != "SF" )
+        if(decomposition != "MT" && decomposition != "MC" && decomposition != "PMC" && decomposition != "SF" )
 		{
 			cout << "Unsupported decomposition type " << decomposition << ". Defaulting to PMC." << endl;
 			decomposition = "PMC";
@@ -413,11 +414,20 @@ int main(int argc, char** argv)
 			ps_grid->calcDistanceValues();
 			reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
 		}
+        else if(decomposition == "MT")
+        {
+            grid = new PointsetGrid<ColorVertex<float, unsigned char>, TetraederBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize, options.extrude());
+            PointsetGrid<ColorVertex<float, unsigned char>, TetraederBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, TetraederBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
+            ps_grid->calcDistanceValues();
+            reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, TetraederBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+        }
 
 
 		
 		// Create mesh
 		reconstruction->getMesh(mesh);
+
+		delete grid;
 		
 		// Save grid to file
 		if(options.saveGrid())

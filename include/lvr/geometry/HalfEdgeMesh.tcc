@@ -28,6 +28,7 @@
  */
 
 #include "../display/Color.hpp"
+#include <lvr/io/DataStruct.hpp>
 
 namespace lvr
 {
@@ -1785,7 +1786,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
     std::vector<uchar> colorBuffer;
     std::vector<unsigned int> indexBuffer;
     std::vector<unsigned int> materialIndexBuffer;
-    std::vector<Material*> materialBuffer;
+    std::vector<IOMaterial*> materialBuffer;
     std::vector<float> textureCoordBuffer;
 
     // Reset used variables. Otherwise the getContours() function might not work quite as expected.
@@ -1896,7 +1897,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             }
             else
             {
-                Material* m = new Material;
+                IOMaterial* m = new IOMaterial;
                 m->r = r;
                 m->g = g;
                 m->b = b;
@@ -2025,7 +2026,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
                 if(it == textureMap.end())
                 {
                     //new texture -> create new material
-                    Material* m = new Material;
+                    IOMaterial* m = new IOMaterial;
                     m->r = r;
                     m->g = g;
                     m->b = b;
@@ -2049,7 +2050,7 @@ void HalfEdgeMesh<VertexT, NormalT>::finalizeAndRetesselate( bool genTextures, f
             }
             else
             {
-                Material* m = new Material;
+                IOMaterial* m = new IOMaterial;
                 m->r = r;
                 m->g = g;
                 m->b = b;

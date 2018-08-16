@@ -29,8 +29,6 @@
 
 using std::array;
 
-#include <lvr2/geometry/Point.hpp>
-
 namespace lvr2
 {
 

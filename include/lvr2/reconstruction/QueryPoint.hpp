@@ -24,17 +24,16 @@
  *      Author: Thomas Wiemann
  */
 
-#ifndef _LVR2_RECONSTRUCTION_QUERYPOINT_H_
-#define _LVR2_RECONSTRUCTION_QUERYPOINT_H_
+#ifndef _LVR2_RECONSTRUCTION_QueryPoint_H_
+#define _LVR2_RECONSTRUCTION_QueryPoint_H_
 
-#include <lvr2/geometry/Point.hpp>
 
 namespace lvr2
 {
 
 /**
- * @brief A query point for marching cubes reconstructions.
- *        It represents a point in space together with a
+ * @brief A query Vector for marching cubes reconstructions.
+ *        It represents a Vector in space together with a
  *        'distance' value that is used by the marching
  *        cubes algorithm
  */
@@ -51,18 +50,18 @@ public:
     /**
      * @brief Constructor.
      *
-     * @param p          The position of the query point. The distance
+     * @param p          The position of the query Vector. The distance
      *                   value is set to 0
      */
-    QueryPoint(Point<BaseVecT> p);
+    QueryPoint(Vector<BaseVecT> p);
 
     /**
      * @brief Constructor.
      *
-     * @param p         The position of the query point.
-     * @param f         The distance value for the query point.
+     * @param p         The position of the query Vector.
+     * @param f         The distance value for the query Vector.
      */
-    QueryPoint(Point<BaseVecT> p, float f);
+    QueryPoint(Vector<BaseVecT> p, float f);
 
     /**
      * @brief Copy constructor.
@@ -76,13 +75,13 @@ public:
      */
     virtual ~QueryPoint() {};
 
-    /// The position of the query point
-    Point<BaseVecT> m_position;
+    /// The position of the query Vector
+    Vector<BaseVecT> m_position;
 
     /// The associated distance value
     float           m_distance;
 
-    /// Indicates if the query point is valid
+    /// Indicates if the query Vector is valid
     bool            m_invalid;
 };
 
@@ -90,4 +89,4 @@ public:
 
 #include "QueryPoint.tcc"
 
-#endif /* _LVR2_RECONSTRUCTION_QUERYPOINT_H_ */
+#endif /* _LVR2_RECONSTRUCTION_QueryPoint_H_ */
