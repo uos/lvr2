@@ -75,7 +75,7 @@ void tokenize(const string& str,
 
 void ObjIO::parseMtlFile(
         map<string, int>& matNames,
-        vector<Material*>& materials,
+        vector<IOMaterial*>& materials,
         vector<GlTexture*>& textures,
         string mtlname)
 {
@@ -89,7 +89,7 @@ void ObjIO::parseMtlFile(
     if(in.good())
     {
         char buffer[1024];
-        Material* m = 0;
+        IOMaterial* m = 0;
         int matIndex = 0;
         while(in.good())
         {
@@ -109,7 +109,7 @@ void ObjIO::parseMtlFile(
                 map<string, int>::iterator it = matNames.find(matName);
                 if(it == matNames.end())
                 {
-                    m = new Material;
+                    m = new IOMaterial;
                     m->r = 128;
                     m->g = 128;
                     m->b = 128;
@@ -170,7 +170,7 @@ ModelPtr ObjIO::read(string filename)
     vector<float>         texcoords;
     vector<uint>        faceMaterials;
     vector<uint>          faces;
-    vector<Material*>     materials;
+    vector<IOMaterial*>     materials;
     vector<GlTexture*>    textures;
 
     map<string, int> matNames;
@@ -413,7 +413,7 @@ void ObjIO::save( string filename )
         //for( size_t i = 0; i < lenFaces; ++i )
         //{
             //cout << faceMaterialIndices[i] << " " << lenFaceMaterials << endl;
-            //Material* m = materials[faceMaterialIndices[i]];
+            //IOMaterial* m = materials[faceMaterialIndices[i]];
             //if(m->texture_index >= 0)
             //{
                 //out << "usemtl texture_" << m->texture_index << endl;
@@ -446,7 +446,7 @@ void ObjIO::save( string filename )
         //splitting materials in colors an textures
         for(size_t i = 0; i< lenFaceMaterialIndices; ++i)
         {
-            Material* m = materials[faceMaterialIndices[i]];
+            IOMaterial* m = materials[faceMaterialIndices[i]];
             if(m->texture_index >=0 )
             {
                 texture_indices.push_back(i);
@@ -500,7 +500,7 @@ void ObjIO::save( string filename )
         //textures
         for(size_t i = 0; i<texture_indices.size() ; i++)
         {
-            Material* first = materials[faceMaterialIndices[texture_indices[i]]];
+            IOMaterial* first = materials[faceMaterialIndices[texture_indices[i]]];
             size_t face_index=texture_indices[i];
 
             if(i==0 || first->texture_index != materials[faceMaterialIndices[texture_indices[i-1]]]->texture_index )
@@ -547,7 +547,7 @@ void ObjIO::save( string filename )
     {
         for(int i = 0; i < lenFaceMaterials; i++)
         {
-            Material* m = materials[i];
+            IOMaterial* m = materials[i];
             if(m->texture_index == -1)
             {
                 mtlFile << "newmtl color_" << i << endl;

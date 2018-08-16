@@ -27,8 +27,6 @@
 
 using std::unordered_map;
 
-#include <lvr/io/Model.hpp>
-#include <lvr/io/ModelFactory.hpp>
 #include <lvr2/algorithm/Materializer.hpp>
 #include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/algorithm/FinalizeAlgorithms.hpp>
@@ -62,15 +60,15 @@ void writeDebugMesh(
     auto buffer = finalize.apply(mesh);
 
     // Save mesh
-    auto m = boost::make_shared<lvr::Model>(buffer->toOldBuffer());
-    lvr::ModelFactory::saveModel(m, filename);
+//    auto m = boost::make_shared<lvr::Model>(buffer->toOldBuffer());
+//    lvr::ModelFactory::saveModel(m, filename);
 }
 
 template<typename BaseVecT>
 vector<vector<VertexHandle>> getDuplicateVertices(const BaseMesh<BaseVecT>& mesh)
 {
     // Save vertex handles "behind" equal points
-    unordered_map<Point<BaseVecT>, vector<VertexHandle>> uniquePoints;
+    unordered_map<Vector<BaseVecT>, vector<VertexHandle>> uniquePoints;
     for (auto vH: mesh.vertices())
     {
         auto point = mesh.getVertexPosition(vH);
@@ -127,8 +125,10 @@ writeDebugContourMesh(
     auto buffer = finalize.apply(mesh);
 
     // Save mesh
-    auto m = boost::make_shared<lvr::Model>(buffer->toOldBuffer());
-    lvr::ModelFactory::saveModel(m, filename);
+    cout << "IMPLEMENT ME " << endl;
+
+    //auto m = boost::make_shared<lvr::Model>(buffer->toOldBuffer());
+    //lvr::ModelFactory::saveModel(m, filename);
 }
 
 } // namespace lvr2

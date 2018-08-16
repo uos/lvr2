@@ -28,67 +28,67 @@
 namespace lvr2
 {
 
-template <typename BaseVecT>
-PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
-{
-    // This method is temporary only, until the old `PointBuffer` can be
-    // discarded.
-    size_t len;
-    auto buf = oldBuffer.getPointArray(len);
-    m_points.reserve(len);
-    for (int i = 0; i < len * 3; i += 3)
-    {
-        auto p = Point<BaseVecT>(buf[i], buf[i + 1], buf[i + 2]);
-        m_points.push_back(p);
-    }
+//template <typename BaseVecT>
+//PointBuffer<BaseVecT>::PointBuffer(lvr::PointBuffer& oldBuffer)
+//{
+//    // This method is temporary only, until the old `PointBuffer` can be
+//    // discarded.
+//    size_t len;
+//    auto buf = oldBuffer.getPointArray(len);
+//    m_points.reserve(len);
+//    for (int i = 0; i < len * 3; i += 3)
+//    {
+//        auto p = Vector<BaseVecT>(buf[i], buf[i + 1], buf[i + 2]);
+//        m_points.push_back(p);
+//    }
 
-    if (oldBuffer.hasPointNormals())
-    {
-        copyNormalsFrom(oldBuffer);
-    }
+//    if (oldBuffer.hasPointNormals())
+//    {
+//        copyNormalsFrom(oldBuffer);
+//    }
 
-    size_t intensitiesLen;
-    auto intensitiesBuf = oldBuffer.getPointIntensityArray(intensitiesLen);
-    if (intensitiesLen > 0)
-    {
-        m_intensities = vector<float>();
-        m_intensities->reserve(intensitiesLen);
-        std::copy(
-            intensitiesBuf.get(),
-            intensitiesBuf.get() + intensitiesLen,
-            std::back_inserter(*m_intensities)
-        );
-    }
+//    size_t intensitiesLen;
+//    auto intensitiesBuf = oldBuffer.getPointIntensityArray(intensitiesLen);
+//    if (intensitiesLen > 0)
+//    {
+//        m_intensities = vector<float>();
+//        m_intensities->reserve(intensitiesLen);
+//        std::copy(
+//            intensitiesBuf.get(),
+//            intensitiesBuf.get() + intensitiesLen,
+//            std::back_inserter(*m_intensities)
+//        );
+//    }
 
-    size_t confidencesLen;
-    auto confidencesBuf = oldBuffer.getPointConfidenceArray(confidencesLen);
-    if (confidencesLen > 0)
-    {
-        m_confidences = vector<float>();
-        m_confidences->reserve(confidencesLen);
-        std::copy(
-            confidencesBuf.get(),
-            confidencesBuf.get() + confidencesLen,
-            std::back_inserter(*m_confidences)
-        );
-    }
+//    size_t confidencesLen;
+//    auto confidencesBuf = oldBuffer.getPointConfidenceArray(confidencesLen);
+//    if (confidencesLen > 0)
+//    {
+//        m_confidences = vector<float>();
+//        m_confidences->reserve(confidencesLen);
+//        std::copy(
+//            confidencesBuf.get(),
+//            confidencesBuf.get() + confidencesLen,
+//            std::back_inserter(*m_confidences)
+//        );
+//    }
 
-    size_t rgbColorLen;
-    auto rgbColorBuf = oldBuffer.getPointColorArray(rgbColorLen);
-    if (rgbColorLen > 0)
-    {
-        m_rgbColors = vector<array<uint8_t, 3>>();
-        m_rgbColors->reserve(rgbColorLen);
-        for (int i = 0; i < rgbColorLen * 3; i += 3)
-        {
-            m_rgbColors->push_back({
-                rgbColorBuf[i],
-                rgbColorBuf[i + 1],
-                rgbColorBuf[i + 2]
-            });
-        }
-    }
-}
+//    size_t rgbColorLen;
+//    auto rgbColorBuf = oldBuffer.getPointColorArray(rgbColorLen);
+//    if (rgbColorLen > 0)
+//    {
+//        m_rgbColors = vector<array<uint8_t, 3>>();
+//        m_rgbColors->reserve(rgbColorLen);
+//        for (int i = 0; i < rgbColorLen * 3; i += 3)
+//        {
+//            m_rgbColors->push_back({
+//                rgbColorBuf[i],
+//                rgbColorBuf[i + 1],
+//                rgbColorBuf[i + 2]
+//            });
+//        }
+//    }
+//}
 
 
 template <typename BaseVecT>
@@ -97,72 +97,72 @@ size_t PointBuffer<BaseVecT>::getNumPoints() const
     return m_points.size();
 }
 
+//template <typename BaseVecT>
+//lvr::PointBuffer PointBuffer<BaseVecT>::toOldBuffer() const
+//{
+//    auto out = lvr::PointBuffer();
+
+//    auto pointData = boost::shared_array<float>(new float[m_points.size() * 3]);
+//    for (size_t i = 0; i < m_points.size(); i++) {
+//        auto p = m_points[i];
+//        pointData[3 * i + 0] = p.x;
+//        pointData[3 * i + 1] = p.y;
+//        pointData[3 * i + 2] = p.z;
+//    }
+//    out.setPointArray(pointData, m_points.size());
+
+//    if (m_normals)
+//    {
+//        auto normalData = boost::shared_array<float>(new float[m_normals->size() * 3]);
+//        for (size_t i = 0; i < m_normals->size(); i++) {
+//            auto p = (*m_normals)[i];
+//            normalData[3 * i + 0] = p.getX();
+//            normalData[3 * i + 1] = p.getY();
+//            normalData[3 * i + 2] = p.getZ();
+//        }
+//        out.setPointNormalArray(normalData, m_normals->size());
+//    }
+
+//    if (m_intensities)
+//    {
+//        auto intensityData = boost::shared_array<float>(new float[m_intensities->size()]);
+//        std::copy(
+//            m_intensities->begin(),
+//            m_intensities->end(),
+//            intensityData.get()
+//        );
+//        out.setPointIntensityArray(intensityData, m_intensities->size());
+//    }
+
+//    if (m_confidences)
+//    {
+//        auto confidenceData = boost::shared_array<float>(new float[m_confidences->size()]);
+//        std::copy(
+//            m_confidences->begin(),
+//            m_confidences->end(),
+//            confidenceData.get()
+//        );
+//        out.setPointConfidenceArray(confidenceData, m_confidences->size());
+//    }
+
+//    if (m_rgbColors)
+//    {
+//        auto colorData = boost::shared_array<uint8_t>(new uint8_t[m_rgbColors->size() * 3]);
+//        for (size_t i = 0; i < m_rgbColors->size(); i++) {
+//            auto c = (*m_rgbColors)[i];
+//            colorData[3 * i + 0] = c[0];
+//            colorData[3 * i + 1] = c[1];
+//            colorData[3 * i + 2] = c[2];
+//        }
+//        out.setPointColorArray(colorData, m_rgbColors->size());
+//    }
+
+//    return out;
+//}
+
+
 template <typename BaseVecT>
-lvr::PointBuffer PointBuffer<BaseVecT>::toOldBuffer() const
-{
-    auto out = lvr::PointBuffer();
-
-    auto pointData = boost::shared_array<float>(new float[m_points.size() * 3]);
-    for (size_t i = 0; i < m_points.size(); i++) {
-        auto p = m_points[i];
-        pointData[3 * i + 0] = p.x;
-        pointData[3 * i + 1] = p.y;
-        pointData[3 * i + 2] = p.z;
-    }
-    out.setPointArray(pointData, m_points.size());
-
-    if (m_normals)
-    {
-        auto normalData = boost::shared_array<float>(new float[m_normals->size() * 3]);
-        for (size_t i = 0; i < m_normals->size(); i++) {
-            auto p = (*m_normals)[i];
-            normalData[3 * i + 0] = p.getX();
-            normalData[3 * i + 1] = p.getY();
-            normalData[3 * i + 2] = p.getZ();
-        }
-        out.setPointNormalArray(normalData, m_normals->size());
-    }
-
-    if (m_intensities)
-    {
-        auto intensityData = boost::shared_array<float>(new float[m_intensities->size()]);
-        std::copy(
-            m_intensities->begin(),
-            m_intensities->end(),
-            intensityData.get()
-        );
-        out.setPointIntensityArray(intensityData, m_intensities->size());
-    }
-
-    if (m_confidences)
-    {
-        auto confidenceData = boost::shared_array<float>(new float[m_confidences->size()]);
-        std::copy(
-            m_confidences->begin(),
-            m_confidences->end(),
-            confidenceData.get()
-        );
-        out.setPointConfidenceArray(confidenceData, m_confidences->size());
-    }
-
-    if (m_rgbColors)
-    {
-        auto colorData = boost::shared_array<uint8_t>(new uint8_t[m_rgbColors->size() * 3]);
-        for (size_t i = 0; i < m_rgbColors->size(); i++) {
-            auto c = (*m_rgbColors)[i];
-            colorData[3 * i + 0] = c[0];
-            colorData[3 * i + 1] = c[1];
-            colorData[3 * i + 2] = c[2];
-        }
-        out.setPointColorArray(colorData, m_rgbColors->size());
-    }
-
-    return out;
-}
-
-
-template <typename BaseVecT>
-const Point<BaseVecT>& PointBuffer<BaseVecT>::getPoint(size_t idx) const
+const Vector<BaseVecT>& PointBuffer<BaseVecT>::getPoint(size_t idx) const
 {
     return m_points[idx];
 }
@@ -179,16 +179,14 @@ void PointBuffer<BaseVecT>::addNormalChannel(Normal<BaseVecT> def)
 }
 
 template <typename BaseVecT>
-void PointBuffer<BaseVecT>::copyNormalsFrom(lvr::PointBuffer& oldBuffer)
+void PointBuffer<BaseVecT>::addNormalChannel(floatArr normals, size_t n)
 {
     m_normals = vector<Normal<BaseVecT>>();
-    size_t normalsLen;
-    auto normalBuf = oldBuffer.getPointNormalArray(normalsLen);
-    m_normals->reserve(normalsLen);
+    m_normals->reserve(n);
 
-    for (int i = 0; i < normalsLen * 3; i += 3)
+    for (int i = 0; i < n * 3; i += 3)
     {
-        auto p = Normal<BaseVecT>(normalBuf[i], normalBuf[i + 1], normalBuf[i + 2]);
+        auto p = Normal<BaseVecT>(normals[i], normals[i + 1], normals[i + 2]);
         m_normals->push_back(p);
     }
 }
@@ -310,6 +308,36 @@ template <typename BaseVecT>
 bool PointBuffer<BaseVecT>::empty() const
 {
     return m_points.empty();
+}
+
+
+template <typename BaseVecT>
+void PointBuffer<BaseVecT>::setPointArray(floatArr points, size_t n)
+{
+    m_points.clear();
+    m_points.reserve();
+    for(size_t i = 0; i < n; i++)
+    {
+        float f = points[i];
+        std::cout << "IMPLEMENT ME" << std::endl;
+//        m_points.bush_back(
+//                    Vector<BaseVecT(
+//                        points[3 * i],
+//                        points[3 * i + 1],
+//                        points[3 * i + 2]));
+    }
+}
+
+template <typename BaseVecT>
+std::pair<floatArr, size_t> PointBuffer<BaseVecT>::toFloatArr()
+{
+    floatArr pts(new float[3 * m_points.size()]);
+    for(size_t i = 0; i < m_points.size(); i++)
+    {
+        pts[3 * i    ] = m_points[i][0];
+        pts[3 * i + 1] = m_points[i][1];
+        pts[3 * i + 2] = m_points[i][2];
+    }
 }
 
 } // namespace lvr2

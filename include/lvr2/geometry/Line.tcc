@@ -29,9 +29,9 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-Point<BaseVecT> Line<BaseVecT>::project(const Point<BaseVecT> &other) const {
+Vector<BaseVecT> Line<BaseVecT>::project(const Vector<BaseVecT> &other) const {
     // taken from lvr1
-    return pos + normal.asVector() * ((other - pos).dot(normal.asVector()) / normal.length2());
+    return pos + normal * ((other - pos).dot(normal) / normal.length2());
 }
 
 } // namespace lvr2

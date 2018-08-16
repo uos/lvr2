@@ -64,8 +64,8 @@ void Materializer<BaseVecT>::saveTextures()
 template<typename BaseVecT>
 MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
 {
-    string msg = lvr::timestamp.getElapsedTime() + "Generating materials ";
-    lvr::ProgressBar progress(m_cluster.numCluster(), msg);
+    string msg = timestamp.getElapsedTime() + "Generating materials ";
+    ProgressBar progress(m_cluster.numCluster(), msg);
 
     // Prepare result
     DenseClusterMap<Material> clusterMaterials;
@@ -248,13 +248,13 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
     if (m_texturizer)
     {
 
-        cout << lvr::timestamp << "Skipped " << (numClustersTooSmall+numClustersTooLarge)
+        cout << timestamp << "Skipped " << (numClustersTooSmall+numClustersTooLarge)
         << " clusters while generating textures" << endl;
 
-        cout << lvr::timestamp << "(" << numClustersTooSmall << " below threshold, "
+        cout << timestamp << "(" << numClustersTooSmall << " below threshold, "
         << numClustersTooLarge << " above limit, " << m_cluster.numCluster() << " total)" << endl;
 
-        cout << lvr::timestamp << "Generated " << textureCount << " textures" << endl;
+        cout << timestamp << "Generated " << textureCount << " textures" << endl;
 
         return MaterializerResult<BaseVecT>(
             clusterMaterials,

@@ -35,8 +35,10 @@
 #include <fstream>
 #include <set>
 #include <random>
+#include <algorithm>
 
 #include <lvr2/util/Factories.hpp>
+#include <lvr/io/Progress.hpp>
 
 namespace lvr2
 {
@@ -168,7 +170,7 @@ void AdaptiveKSearchSurface<BaseVecT>::init()
     cout << "Num points \t: " << this->m_pointBuffer->getNumPoints() << endl;
     cout <<  this->m_boundingBox << endl;
     cout << endl;
-    this->m_centroid = Point<BaseVecT>(0.0, 0.0, 0.0);
+    this->m_centroid = Vector<BaseVecT>(0.0, 0.0, 0.0);
 }
 
 
@@ -226,13 +228,13 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
              *       library for bounding box calculation...
              */
             for(size_t j = 0; j < k; j++) {
-                min_x = min(min_x, this->m_pointBuffer->getPoint(id[j]).x);
-                min_y = min(min_y, this->m_pointBuffer->getPoint(id[j]).y);
-                min_z = min(min_z, this->m_pointBuffer->getPoint(id[j]).z);
+                min_x = std::min(min_x, this->m_pointBuffer->getPoint(id[j]).x);
+                min_y = std::min(min_y, this->m_pointBuffer->getPoint(id[j]).y);
+                min_z = std::min(min_z, this->m_pointBuffer->getPoint(id[j]).z);
 
-                max_x = max(max_x, this->m_pointBuffer->getPoint(id[j]).x);
-                max_y = max(max_y, this->m_pointBuffer->getPoint(id[j]).y);
-                max_z = max(max_z, this->m_pointBuffer->getPoint(id[j]).z);
+                max_x = std::max(max_x, this->m_pointBuffer->getPoint(id[j]).x);
+                max_y = std::max(max_y, this->m_pointBuffer->getPoint(id[j]).y);
+                max_z = std::max(max_z, this->m_pointBuffer->getPoint(id[j]).z);
 
                 dx = max_x - min_x;
                 dy = max_y - min_y;
@@ -302,7 +304,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         }
 
         // Save result in normal array
-        *this->m_pointBuffer->getNormal(i) = normal;
+        this->m_pointBuffer->getNormal(i) = normal;
         ++progress;
     }
     cout << endl;
@@ -336,11 +338,11 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
 
         this->m_searchTree->kSearch(this->m_pointBuffer->getPoint(i), this->m_ki, id, di);
 
-        Vector<BaseVecT> mean;
+        Normal<BaseVecT> mean;
 
         for(int j = 0; j < this->m_ki; j++)
         {
-            mean += this->m_pointBuffer->getNormal(id[j])->asVector();
+            mean += *(this->m_pointBuffer->getNormal(id[j]));
         }
         auto mean_normal = mean.normalized();
 
@@ -355,7 +357,7 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
             // normals is significantly different from the initial
             // estimation. This helps to avoid a too smooth normal
             // field
-            if(fabs(n->dot(mean_normal.asVector())) > 0.2 )
+            if(fabs(n->dot(mean_normal)) > 0.2 )
             {
                 *this->m_pointBuffer->getNormal(id[j]) = mean_normal;
             }
@@ -450,7 +452,7 @@ bool AdaptiveKSearchSurface<BaseVecT>::boundingBoxOK(float dx, float dy, float d
 
 template<typename BaseVecT>
 pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
-    AdaptiveKSearchSurface<BaseVecT>::distance(Point<BaseVecT> p) const
+    AdaptiveKSearchSurface<BaseVecT>::distance(Vector<BaseVecT> p) const
 {
     int k = this->m_kd;
 
@@ -472,10 +474,10 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
         auto vq = this->m_pointBuffer->getPoint(id[i]);
 
         //Get normal
-        auto n = *this->m_pointBuffer->getNormal(id[i]);
+        auto n = this->m_pointBuffer->getNormal(id[i]);
 
         nearest += vq;
-        avg_normal += n.asVector();
+        avg_normal += *n;
     }
 
     avg_normal /= k;
@@ -483,10 +485,10 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     auto normal = avg_normal.normalized();
 
     //Calculate distance
-    auto projectedDistance = (p - Point<BaseVecT>(nearest)).dot(normal.asVector());
-    auto euklideanDistance = (p - Point<BaseVecT>(nearest)).length();
+    auto projectedDistance = (p - Vector<BaseVecT>(nearest)).dot(normal);
+    auto euklideanDistance = (p - Vector<BaseVecT>(nearest)).length();
 
-    return make_pair(projectedDistance, euklideanDistance);
+    return std::make_pair(projectedDistance, euklideanDistance);
     // return make_pair(euklideanDistance, projectedDistance);
 }
 
@@ -500,7 +502,7 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
 
 template<typename BaseVecT>
 Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
-    const Point<BaseVecT> &queryPoint,
+    const Vector<BaseVecT> &queryPoint,
     int k,
     const vector<size_t> &id
 )
@@ -530,8 +532,8 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
     auto z2 = C(0) + C(1) * queryPoint.x + C(2) * (queryPoint.z + epsilon);
 
     // Calculcate the plane's normal via the cross product
-    auto diff1 = Point<BaseVecT>(queryPoint.x + epsilon, z1, queryPoint.z) - queryPoint;
-    auto diff2 = Point<BaseVecT>(queryPoint.x, z2, queryPoint.z + epsilon) - queryPoint;
+    auto diff1 = Vector<BaseVecT>(queryPoint.x + epsilon, z1, queryPoint.z) - queryPoint;
+    auto diff2 = Vector<BaseVecT>(queryPoint.x, z2, queryPoint.z + epsilon) - queryPoint;
 
     auto normal = diff1.cross(diff2).normalized();
 
@@ -567,7 +569,7 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
 
 template<typename BaseVecT>
 Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
-    const Point<BaseVecT> &queryPoint,
+    const Vector<BaseVecT> &queryPoint,
     int k,
     const vector<size_t> &id,
     bool &ok
@@ -577,7 +579,7 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
    Plane<BaseVecT> p;
 
    //representation of best regression plane by point and normal
-   Point<BaseVecT> bestPoint;
+   Vector<BaseVecT> bestPoint;
    Normal<BaseVecT> bestNorm(0, 0, 1);
 
    float bestdist = numeric_limits<float>::max();
@@ -617,12 +619,12 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
 
        //compute error to at most 50 other randomly chosen points
        dist = 0;
-       int n = min(50, k);
+       int n = std::min(50, k);
        for(int i = 0; i < n; i++)
        {
            int index = id[rand() % k];
            auto refpoint = this->m_pointBuffer->getPoint(index);
-           dist += fabs(refpoint.dot(n0.asVector()) - point1.dot(n0.asVector()));
+           dist += fabs(refpoint.dot(n0) - point1.dot(n0));
        }
        if(n != 0) dist /= n;
 

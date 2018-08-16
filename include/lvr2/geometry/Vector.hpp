@@ -35,7 +35,6 @@ namespace lvr2
 
 // Forward declarations
 template <typename> struct Normal;
-template <typename> struct Point;
 
 /**
  * @brief A strongly-typed vector, representing a direction vector.
@@ -78,6 +77,15 @@ struct Vector : public BaseVecT
      */
     void normalize();
 
+    /**
+     * @brief Returns the centroid of all points in the given collection.
+     *
+     * The collection need to work with a range-based for-loop and its elements
+     * need to be `Point<BaseVecT>`. It has to contain at least one element.
+     */
+    template<typename CollectionT>
+    static Vector<BaseVecT> centroid(const CollectionT& points);
+
 
     /**
      * @brief Returns the average of all vectors in the given collection.
@@ -88,20 +96,13 @@ struct Vector : public BaseVecT
     template<typename CollectionT>
     static Vector<BaseVecT> average(const CollectionT& vecs);
 
-    // It doesn't make sense to talk about the distance between two direction
-    // vectors. It's the same as asking: "What is the distance between
-    // '3 meters north' and '10 cm east'.
-    typename BaseVecT::CoordType distance(const BaseVecT &other) const = delete;
-    typename BaseVecT::CoordType distance2(const BaseVecT &other) const = delete;
+
+    // Calculate the distance between this point and the given point.
+    typename BaseVecT::CoordType distanceFrom(const Vector<BaseVecT> &other) const;
+    typename BaseVecT::CoordType squaredDistanceFrom(const Vector<BaseVecT> &other) const;
 
     // More type safe overwrite
     Vector<BaseVecT> cross(const Vector<BaseVecT> &other) const;
-
-    // The standard operators are deleted and replaced by strongly typed ones.
-    BaseVecT operator+(const BaseVecT &other) const = delete;
-    BaseVecT operator-(const BaseVecT &other) const = delete;
-    BaseVecT& operator-=(const BaseVecT &other) = delete;
-    BaseVecT& operator+=(const BaseVecT &other) = delete;
 
     // Addition/subtraction between two vectors
     Vector<BaseVecT> operator+(const Vector<BaseVecT> &other) const;
@@ -111,12 +112,14 @@ struct Vector : public BaseVecT
 
     /// Scalar multiplication.
     Vector<BaseVecT> operator*(const typename BaseVecT::CoordType &scale) const;
+
     /// Scalar division.
     Vector<BaseVecT> operator/(const typename BaseVecT::CoordType &scale) const;
 
-    // Addition/subtraction between point and vector
-    Point<BaseVecT> operator+(const Point<BaseVecT> &other) const;
-    Point<BaseVecT> operator-(const Point<BaseVecT> &other) const;
+    typename BaseVecT::CoordType operator*(const Vector<BaseVecT> &other) const
+    {
+        return this->dot(other);
+    }
 };
 
 template<typename BaseVecT>
@@ -125,6 +128,7 @@ inline std::ostream& operator<<(std::ostream& os, const Vector<BaseVecT>& v)
     os << "Vector[" << v.x << ", " << v.y << ", " << v.z << "]";
     return os;
 }
+
 
 } // namespace lvr2
 

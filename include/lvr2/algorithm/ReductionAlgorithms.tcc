@@ -23,7 +23,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include <lvr/io/Progress.hpp>
+#include <lvr2/io/Progress.hpp>
 #include <lvr2/algorithm/NormalAlgorithms.hpp>
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/util/Meap.hpp>
@@ -81,11 +81,11 @@ size_t iterativeEdgeCollapse(
 )
 {
     // Output
-    string msg = lvr::timestamp.getElapsedTime()
+    string msg = timestamp.getElapsedTime()
         + "Reducing mesh by collapsing up to "
         + std::to_string(count)
         + " edges ";
-    lvr::ProgressBar progress(count + 1, msg);
+    ProgressBar progress(count + 1, msg);
     ++progress;
 
 
@@ -298,7 +298,7 @@ size_t simpleMeshReduction(
             // If the new normal is too different from the old one, we don't want
             // to collapse this edge.
             auto oldNormal = normals[fH];
-            if (newNormal->dot(oldNormal.asVector()) < MIN_NORMAL_DIFF)
+            if (newNormal->dot(oldNormal) < MIN_NORMAL_DIFF)
             {
                 return boost::none;
             }
@@ -309,14 +309,14 @@ size_t simpleMeshReduction(
             double minDiff = 2.0;
             if (adjacentFaces[0])
             {
-                auto dot = normals[adjacentFaces[0].unwrap()].dot(normals[fH].asVector());
+                auto dot = normals[adjacentFaces[0].unwrap()].dot(normals[fH]);
                 // We are the first, so we know our value is smaller than the
                 // initial one
                 minDiff = (1.0 - dot) / 2.0;
             }
             if (adjacentFaces[1])
             {
-                auto dot = normals[adjacentFaces[1].unwrap()].dot(normals[fH].asVector());
+                auto dot = normals[adjacentFaces[1].unwrap()].dot(normals[fH]);
                 auto diff = (1.0 - dot) / 2.0;
                 if (diff < minDiff)
                 {

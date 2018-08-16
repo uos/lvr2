@@ -36,7 +36,6 @@
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/geometry/Normal.hpp>
-#include <lvr2/geometry/Point.hpp>
 #include <lvr2/geometry/Vector.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/texture/ClusterTexCoordMapping.hpp>
@@ -48,8 +47,8 @@
 #include <lvr2/algorithm/ColorAlgorithms.hpp>
 
 
-#include <lvr/io/Progress.hpp>
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/Progress.hpp>
+#include <lvr2/io/Timestamp.hpp>
 #include <unordered_map>
 
 namespace lvr2
@@ -69,7 +68,7 @@ struct MaterializerResult
     DenseClusterMap<Material> m_clusterMaterials;
 
     /// A stable vector of textures. each texture is identified by a tex.-handle
-    optional<StableVector<TextureHandle, Texture<BaseVecT>>> m_textures;
+    optional<StableVector<TextureHandle, Texture>> m_textures;
 
     /// Cluster texture coordinates for each vertex
     optional<SparseVertexMap<ClusterTexCoordMapping>> m_vertexTexCoords;
@@ -99,7 +98,7 @@ struct MaterializerResult
      */
     MaterializerResult(
         DenseClusterMap<Material> clusterMaterials,
-        StableVector<TextureHandle, Texture<BaseVecT>> textures,
+        StableVector<TextureHandle, Texture> textures,
         SparseVertexMap<ClusterTexCoordMapping> vertexTexCoords,
         std::unordered_map<BaseVecT, std::vector<float>> keypoints
     ) :

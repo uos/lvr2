@@ -29,29 +29,29 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-float Plane<BaseVecT>::distance(const Point<BaseVecT>& other) const
+float Plane<BaseVecT>::distance(const Vector<BaseVecT>& other) const
 {
     // Distance betweeen plane and query point (calculated by hesse normal form)
     // Credits: https://oberprima.com/mathematik/abstand-berechnen/
-    return (other - this->pos).dot(this->normal.asVector());
+    return (other - this->pos).dot(this->normal);
 }
 
 template<typename BaseVecT>
-Point<BaseVecT> Plane<BaseVecT>::project(const Point<BaseVecT>& other) const
+Vector<BaseVecT> Plane<BaseVecT>::project(const Vector<BaseVecT>& other) const
 {
     // Credits to: https://stackoverflow.com/questions/9605556/#answer-41897378
-    return other - (this->normal.asVector() * (this->normal.dot(other - this->pos)));
+    return other - (this->normal * (this->normal.dot(other - this->pos)));
 }
 
 template<typename BaseVecT>
 Line<BaseVecT> Plane<BaseVecT>::intersect(const Plane <BaseVecT>& other) const {
     float d1 = normal.dot(pos);
     float d2 = other.normal.dot(other.pos);
-    auto direction = normal.cross(other.normal.asVector());
+    auto direction = normal.cross(other.normal);
 
     Line<BaseVecT> intersection;
     intersection.normal = direction.normalized();
-    intersection.pos = (other.normal.asVector() * d1 - normal.asVector() * d2).cross(direction)
+    intersection.pos = (other.normal * d1 - normal * d2).cross(direction)
                        * (1 / (direction.dot(direction)));
 
     return intersection;

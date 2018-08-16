@@ -11,10 +11,10 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 
-#include <lvr/io/ModelFactory.hpp>
-
 namespace lvr
 {
+
+class CoordinateTransform;
 
 using namespace boost::program_options;
 
@@ -24,10 +24,10 @@ public:
 	BaseOption(int argc, char** argv);
 	virtual ~BaseOption();
 
-	/**
-	 * @brief 	Prints transformation information to the given output stream
-	 */
-	void printTransformation(std::ostream& out) const;
+    /**
+     * @brief 	Prints transformation information to the given output stream
+     */
+    void printTransformation(std::ostream& out) const;
 
 	/**
 	 * @brief   Returns the scaling factor for the x coordinates
@@ -64,8 +64,8 @@ protected:
 	/// Setup internal data structures
 	virtual void setup();
 
-	/// Setup transformation info for ModelIO
-	void setupInputTransformation();
+    /// Setup transformation info for ModelIO
+    void setupInputTransformation();
 
 	/// The internally used variable map
 	variables_map			        m_variables;
@@ -76,8 +76,8 @@ protected:
 	/// The internally used positional option desription
 	positional_options_description 	m_pdescr;
 
-	/// Coordinate transform information
-	CoordinateTransform				m_coordinateTransform;
+    /// Coordinate transform information
+    CoordinateTransform*            m_coordinateTransform;
 
 	/// Argument count
 	int 							m_argc;

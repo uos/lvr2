@@ -39,12 +39,13 @@ using std::vector;
 using std::get;
 using std::min;
 
-#include "Point.hpp"
 #include "Vector.hpp"
 #include "BaseMesh.hpp"
 #include "HalfEdge.hpp"
 #include "HalfEdgeFace.hpp"
 #include "HalfEdgeVertex.hpp"
+
+#include <lvr2/io/MeshBuffer2.hpp>
 
 namespace lvr2
 {
@@ -66,13 +67,15 @@ public:
     using Face = HalfEdgeFace;
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
+    HalfEdgeMesh(MeshBuffer2Ptr ptr);
+
     // ========================================================================
     // = Implementing the `BaseMesh` interface (see BaseMesh for docs)
     // ========================================================================
 
     // We declare all methods as `final` to make devirtualization optimizations
     // more likely and effective.
-    VertexHandle addVertex(Point<BaseVecT> pos) final;
+    VertexHandle addVertex(Vector<BaseVecT> pos) final;
     FaceHandle addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H) final;
     void removeFace(FaceHandle handle) final;
     EdgeCollapseResult collapseEdge(EdgeHandle edgeH) final;
@@ -92,8 +95,8 @@ public:
     Index nextFaceIndex() const;
     Index nextEdgeIndex() const;
 
-    Point<BaseVecT> getVertexPosition(VertexHandle handle) const final;
-    Point<BaseVecT>& getVertexPosition(VertexHandle handle) final;
+    Vector<BaseVecT> getVertexPosition(VertexHandle handle) const final;
+    Vector<BaseVecT>& getVertexPosition(VertexHandle handle) final;
 
     array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const final;
     array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const final;

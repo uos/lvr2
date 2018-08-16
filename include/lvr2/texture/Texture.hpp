@@ -36,6 +36,8 @@
 #include <lvr/texture/Texture.hpp>
 #include <lvr/display/GlTexture.hpp>
 
+#include <lvr2/texture/Texture.hpp>
+
 namespace lvr2 {
 
 
@@ -43,7 +45,6 @@ namespace lvr2 {
  * @class Texture
  * @brief This class represents a texture.
  */
-template<typename BaseVecT>
 class Texture {
 public:
 
@@ -115,6 +116,5 @@ public:
 
 }
 
-#include <lvr2/texture/Texture.tcc>
 
 #endif /* LVR2_TEXTURE_TEXTURE_HPP_ */

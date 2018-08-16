@@ -35,7 +35,6 @@
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/geometry/Normal.hpp>
-#include <lvr2/geometry/Point.hpp>
 #include <lvr2/geometry/Vector.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/texture/ClusterTexCoordMapping.hpp>
@@ -82,14 +81,14 @@ public:
      *
      * @return The texture
      */
-    Texture<BaseVecT> getTexture(TextureHandle h);
+    Texture getTexture(TextureHandle h);
 
     /**
      * @brief Returns all textures
      *
      * @return A StableVector containing all textures
      */
-    StableVector<TextureHandle, Texture<BaseVecT>> getTextures();
+    StableVector<TextureHandle, Texture> getTextures();
 
     /**
      * @brief Get the texture index to a given texture handle
@@ -190,7 +189,7 @@ public:
 private:
 
     /// StableVector, that contains all generated textures with texture handles
-    StableVector<TextureHandle, Texture<BaseVecT>> m_textures;
+    StableVector<TextureHandle, Texture> m_textures;
 
 };
 

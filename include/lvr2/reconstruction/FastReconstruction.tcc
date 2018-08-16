@@ -25,7 +25,6 @@
  */
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr/reconstruction/FastReconstructionTables.hpp>
-// #include "SharpBox.hpp"
 #include <lvr/io/Progress.hpp>
 
 namespace lvr2
@@ -63,38 +62,96 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
 
     BoxTraits<BoxT> traits;
 
-    // if(traits.type == "SharpBox")  // Perform edge flipping for extended marching cubes
-    // {
-    //  string SFComment = lvr::timestamp.getElapsedTime() + "Flipping edges  ";
-    //  lvr::ProgressBar SFProgress(this->m_grid->getNumberOfCells(), SFComment);
-    //  for(it = this->m_grid->firstCell(); it != this->m_grid->lastCell(); it++)
-    //  {
+    if(traits.type == "SharpBox")  // Perform edge flipping for extended marching cubes
+    {
+        string SFComment = lvr::timestamp.getElapsedTime() + "Flipping edges  ";
+        lvr::ProgressBar SFProgress(this->m_grid->getNumberOfCells(), SFComment);
+        for(it = this->m_grid->firstCell(); it != this->m_grid->lastCell(); it++)
+        {
 
-    //      SharpBox<BaseVecT>* sb;
-    //      sb = reinterpret_cast<SharpBox<BaseVecT>* >(it->second);
-    //      if(sb->m_containsSharpFeature)
-    //      {
-    //          if(sb->m_containsSharpCorner)
-    //          {
-    //              mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]],
-    // sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]]);
-    //              mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][2]],
-    // sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][3]]);
-    //              mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]],
-    // sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]]);
-    //          }
-    //          else
-    //          {
-    //              mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]],
-    // sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]]);
-    //              mesh.flipEdge(sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]],
-    // sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]]);
-    //          }
-    //      }
-    //      ++SFProgress;
-    //  }
-    //  cout << endl;
-    // }
+            SharpBox<BaseVecT>* sb;
+            sb = reinterpret_cast<SharpBox<BaseVecT>* >(it->second);
+            if(sb->m_containsSharpFeature)
+            {
+                OptionalVertexHandle v1;
+                OptionalVertexHandle v2;
+                OptionalEdgeHandle e;
+
+                if(sb->m_containsSharpCorner)
+                {
+                    // 1
+                    v1 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]];
+                    v2 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]];
+
+                    if(v1 && v2)
+                    {
+                        e = mesh.getEdgeBetween(v1.unwrap(), v2.unwrap());
+                        if(e)
+                        {
+                            mesh.flipEdge(e.unwrap());
+                        }
+                    }
+
+                    // 2
+                    v1 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][2]];
+                    v2 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][3]];
+
+                    if(v1 && v2)
+                    {
+                        e = mesh.getEdgeBetween(v1.unwrap(), v2.unwrap());
+                        if(e)
+                        {
+                            mesh.flipEdge(e.unwrap());
+                        }
+                    }
+
+                    // 3
+                    v1 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]];
+                    v2 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]];
+
+                    if(v1 && v2)
+                    {
+                        e = mesh.getEdgeBetween(v1.unwrap(), v2.unwrap());
+                        if(e)
+                        {
+                            mesh.flipEdge(e.unwrap());
+                        }
+                    }
+
+                }
+                else
+                {
+                    // 1
+                    v1 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][0]];
+                    v2 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][1]];
+
+                    if(v1 && v2)
+                    {
+                        e = mesh.getEdgeBetween(v1.unwrap(), v2.unwrap());
+                        if(e)
+                        {
+                            mesh.flipEdge(e.unwrap());
+                        }
+                    }
+
+                    // 2
+                    v1 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][4]];
+                    v2 = sb->m_intersections[ExtendedMCTable[sb->m_extendedMCIndex][5]];
+
+                    if(v1 && v2)
+                    {
+                        e = mesh.getEdgeBetween(v1.unwrap(), v2.unwrap());
+                        if(e)
+                        {
+                            mesh.flipEdge(e.unwrap());
+                        }
+                    }
+                }
+            }
+            ++SFProgress;
+        }
+        cout << endl;
+    }
 
      if(traits.type == "BilinearFastBox")
      {
@@ -120,26 +177,26 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(
     float comparePrecision
 )
 {
-    // Status message for mesh generation
-    string comment = lvr::timestamp.getElapsedTime() + "Creating Mesh ";
-    lvr::ProgressBar progress(m_grid->getNumberOfCells(), comment);
+//    // Status message for mesh generation
+//    string comment = lvr::timestamp.getElapsedTime() + "Creating Mesh ";
+//    lvr::ProgressBar progress(m_grid->getNumberOfCells(), comment);
 
-    // Some pointers
-    BoxT* b;
-    unsigned int global_index = mesh.numVertices();
+//    // Some pointers
+//    BoxT* b;
+//    unsigned int global_index = mesh.numVertices();
 
-    // Iterate through cells and calculate local approximations
-    typename HashGrid<BaseVecT, BoxT>::box_map_it it;
-    for(it = m_grid->firstCell(); it != m_grid->lastCell(); it++)
-    {
-        b = it->second;
-        b->getSurface(mesh, m_grid->getQueryPoints(), global_index, bb, duplicates, comparePrecision);
-        if(!lvr::timestamp.isQuiet())
-            ++progress;
-    }
+//    // Iterate through cells and calculate local approximations
+//    typename HashGrid<BaseVecT, BoxT>::box_map_it it;
+//    for(it = m_grid->firstCell(); it != m_grid->lastCell(); it++)
+//    {
+//        b = it->second;
+//        b->getSurface(mesh, m_grid->getQueryPoints(), global_index, bb, duplicates, comparePrecision);
+//        if(!lvr::timestamp.isQuiet())
+//            ++progress;
+//    }
 
-    if(!lvr::timestamp.isQuiet())
-        cout << endl;
+//    if(!lvr::timestamp.isQuiet())
+//        cout << endl;
 }
 
 } // namespace lvr2

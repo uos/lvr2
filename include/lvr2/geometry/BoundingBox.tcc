@@ -38,17 +38,17 @@ BoundingBox<BaseVecT>::BoundingBox()
     auto max_val = numeric_limits<typename BaseVecT::CoordType>::max();
     auto min_val = numeric_limits<typename BaseVecT::CoordType>::min();
 
-    m_min = Point<BaseVecT>(max_val, max_val, max_val);
-    m_max = Point<BaseVecT>(min_val, min_val, min_val);
+    m_min = Vector<BaseVecT>(max_val, max_val, max_val);
+    m_max = Vector<BaseVecT>(min_val, min_val, min_val);
 }
 
 template<typename BaseVecT>
-BoundingBox<BaseVecT>::BoundingBox(Point<BaseVecT> v1, Point<BaseVecT> v2)
+BoundingBox<BaseVecT>::BoundingBox(Vector<BaseVecT> v1, Vector<BaseVecT> v2)
 {
     m_min = v1;
     m_max = v2;
     
-    m_centroid = Point<BaseVecT>(
+    m_centroid = Vector<BaseVecT>(
         m_min.x + 0.5f * getXSize(),
         m_min.y + 0.5f * getYSize(),
         m_min.z + 0.5f * getZSize()
@@ -65,7 +65,7 @@ bool BoundingBox<BaseVecT>::isValid() const
 }
 
 template<typename BaseVecT>
-Point<BaseVecT> BoundingBox<BaseVecT>::getCentroid() const
+Vector<BaseVecT> BoundingBox<BaseVecT>::getCentroid() const
 {
     return m_centroid;
 }
@@ -81,7 +81,7 @@ typename BaseVecT::CoordType BoundingBox<BaseVecT>::getRadius() const
 }
 
 template<typename BaseVecT>
-inline void BoundingBox<BaseVecT>::expand(Point<BaseVecT> v)
+inline void BoundingBox<BaseVecT>::expand(Vector<BaseVecT> v)
 {
     m_min.x = std::min(v.x, m_min.x);
     m_min.y = std::min(v.y, m_min.y);
@@ -91,7 +91,7 @@ inline void BoundingBox<BaseVecT>::expand(Point<BaseVecT> v)
     m_max.y = std::max(v.y, m_max.y);
     m_max.z = std::max(v.z, m_max.z);
 
-    m_centroid = Point<BaseVecT>(
+    m_centroid = Vector<BaseVecT>(
         m_min.x + 0.5f * getXSize(),
         m_min.y + 0.5f * getYSize(),
         m_min.z + 0.5f * getZSize()
@@ -131,14 +131,14 @@ typename BaseVecT::CoordType BoundingBox<BaseVecT>::getZSize() const
 }
 
 template<typename BaseVecT>
-Point<BaseVecT> BoundingBox<BaseVecT>::getMin() const
+Vector<BaseVecT> BoundingBox<BaseVecT>::getMin() const
 {
     return m_min;
 }
 
 
 template<typename BaseVecT>
-Point<BaseVecT> BoundingBox<BaseVecT>::getMax() const
+Vector<BaseVecT> BoundingBox<BaseVecT>::getMax() const
 {
     return m_max;
 }

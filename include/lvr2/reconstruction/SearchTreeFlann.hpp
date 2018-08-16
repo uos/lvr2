@@ -17,8 +17,6 @@
 
 #include <lvr2/reconstruction/SearchTree.hpp>
 #include <lvr2/io/PointBuffer.hpp>
-#include <lvr2/geometry/Point.hpp>
-
 
 using std::vector;
 using std::unique_ptr;
@@ -52,7 +50,7 @@ public:
 
     /// See interface documentation.
     virtual void kSearch(
-        const Point<BaseVecT>& qp,
+        const Vector<BaseVecT>& qp,
         int k,
         vector<size_t>& indices,
         vector<CoordT>& distances
@@ -60,7 +58,7 @@ public:
 
     /// See interface documentation.
     virtual void radiusSearch(
-        const Point<BaseVecT>& qp,
+        const Vector<BaseVecT>& qp,
         CoordT r,
         vector<size_t>& indices
     ) const;

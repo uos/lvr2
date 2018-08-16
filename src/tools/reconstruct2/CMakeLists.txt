@@ -4,6 +4,15 @@
 
 set(RECONSTRUCT_SOURCES
     Options.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PLYIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PointBuffer2.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/MeshBuffer2.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/AttributeManager.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/Timestamp.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/Progress.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseBuffer.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/texture/Texture.cpp
     Main.cpp
 )
 

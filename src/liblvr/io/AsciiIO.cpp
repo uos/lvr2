@@ -277,7 +277,7 @@ ModelPtr AsciiIO::read(string filename)
             }
         }
     }
-    return read(filename, 1, 2, 3);
+    return read(filename, 0, 1, 2);
 
 }
 
