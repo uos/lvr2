@@ -315,6 +315,9 @@ void LVRMainWindow::setupQVTK()
 {
     // Grab relevant entities from the qvtk widget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
+    m_renderer->TwoSidedLightingOn ();
+    m_renderer->UseHiddenLineRemovalOff();
+    m_renderer->RemoveAllLights();
     vtkSmartPointer<vtkRenderWindow> renderWindow = this->qvtkWidget->GetRenderWindow();
 
     m_renderWindowInteractor = this->qvtkWidget->GetInteractor();

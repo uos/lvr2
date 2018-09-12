@@ -185,7 +185,7 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
 #endif
         m_meshActor = vtkSmartPointer<vtkActor>::New();
         m_meshActor->SetMapper(mesh_mapper);
-
+        m_meshActor->GetProperty()->BackfaceCullingOff();
         vtkSmartPointer<vtkPolyDataMapper> wireframe_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 #ifdef LVR_USE_VTK5
         wireframe_mapper->SetInput(mesh);
