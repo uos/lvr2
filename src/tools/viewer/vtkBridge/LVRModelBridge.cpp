@@ -98,7 +98,9 @@ void LVRModelBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
     	// (one actor per texture).
     	if(!m_meshBridge->hasTextures())
     	{
-    		renderer->AddActor(m_meshBridge->getMeshActor());
+            vtkActor* actor = m_meshBridge->getMeshActor();
+            renderer->AddActor(actor);
+            actor->GetProperty()->BackfaceCullingOff();
     	}
     	else
     	{
