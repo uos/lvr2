@@ -24,16 +24,16 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr/io/CoordinateTransform.hpp>
+#include <lvr2/io/CoordinateTransform.hpp>
 
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/Timestamp.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <iostream>
 using std::cout;
 using std::endl;
 
-namespace lvr
+namespace lvr2
 {
 
 void convert(COORD_SYSTEM from, COORD_SYSTEM to, float* point)
@@ -61,11 +61,11 @@ void convert(COORD_SYSTEM from, COORD_SYSTEM to, float* point)
 	}
 }
 
-void convert(COORD_SYSTEM from, COORD_SYSTEM to, PointBufferPtr& buffer)
+void convert(COORD_SYSTEM from, COORD_SYSTEM to, PointBuffer2Ptr& buffer)
 {
-	size_t n;
-	floatArr p = buffer->getPointArray(n);
-	for(int i = 0; i < n; i++)
+	size_t n = buffer->numPoints();
+	floatArr p = buffer->getPointArray();
+	for(size_t i = 0; i < n; i++)
 	{
 		int pos = 3 * i;
 		float* point = &p[pos];
@@ -73,4 +73,4 @@ void convert(COORD_SYSTEM from, COORD_SYSTEM to, PointBufferPtr& buffer)
 	}
 }
 
-} // namespace lvr
+} // namespace lvr2
