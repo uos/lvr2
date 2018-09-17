@@ -9,10 +9,10 @@
 using std::cout;
 using std::endl;
 
-#include <lvr/io/KinectGrabber.hpp>
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/KinectGrabber.hpp>
+#include <lvr2/io/Timestamp.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 KinectGrabber::KinectGrabber(freenect_context *_ctx, int _index)
@@ -75,4 +75,4 @@ KinectGrabber::~KinectGrabber()
 
 }
 
-} // namespace lvr
+} // namespace lvr2
