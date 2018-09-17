@@ -8,9 +8,10 @@
 #ifndef INCLUDE_LVR_IO_STLIO_HPP_
 #define INCLUDE_LVR_IO_STLIO_HPP_
 
-#include "BaseIO.hpp"
+#include <lvr2/io/BaseIO.hpp>
 
-namespace lvr {
+namespace lvr2
+{
 
 /****
  * @brief 	Reader / Writer for STL file. Currently only binary STL files
@@ -35,6 +36,8 @@ public:
 
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
+
+#include "STLIO.cpp"
 
 #endif /* INCLUDE_LVR_IO_STLIO_HPP_ */
