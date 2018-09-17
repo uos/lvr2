@@ -1,9 +1,9 @@
 #ifndef IOUTILS_HPP
 #define IOUTILS_HPP
 
-#include <lvr/io/Timestamp.hpp>
-#include <lvr/io/Model.hpp>
-#include <lvr/io/ModelFactory.hpp>
+#include <lvr2/io/Timestamp.hpp>
+#include <lvr2/io/Model.hpp>
+#include <lvr2/io/ModelFactory.hpp>
 #include <boost/filesystem.hpp>
 
 #include <Eigen/Dense>
@@ -11,7 +11,7 @@
 #include <fstream>
 #include <vector>
 
-namespace lvr
+namespace lvr2
 {
 
 /**
@@ -52,7 +52,7 @@ void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& frame
  * @param   outfile     The target file.
  * @return  The number of points writen to the target file.
  */
-size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile);
+size_t writeModel( ModelPtr model, const  boost::filesystem::path& outfile);
 
 /**
  * @brief   Writes the points stored in the given model to the fiven output
@@ -132,7 +132,7 @@ void transformPointCloud(ModelPtr model, Eigen::Matrix4d transformation);
  * @param   pts             The transformed points are added to this vector
  * @param   nrm             The transformed normals are added to this vector
  */
-void transformPointCloudAndAppend(PointBufferPtr& buffer,
+void transformPointCloudAndAppend(PointBuffer2Ptr& buffer,
         boost::filesystem::path& transfromFile,
         std::vector<float>& pts,
         std::vector<float>& nrm);
@@ -150,6 +150,6 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
 void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::string outfile);
 
 
-} // namespace lvr
+} // namespace lvr2
 
 #endif // IOUTILS_HPP
