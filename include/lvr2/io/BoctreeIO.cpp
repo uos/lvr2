@@ -25,14 +25,14 @@
 
 #include <stdio.h>
 
-#include <lvr/io/BoctreeIO.hpp>
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/BoctreeIO.hpp>
+#include <lvr2/io/Timestamp.hpp>
 
 #include <lvr/geometry/Matrix4.hpp>
 
 #include "slam6d/Boctree.h"
 
-namespace lvr
+namespace lvr2
 {
 
 BoctreeIO::BoctreeIO()
@@ -86,7 +86,7 @@ ModelPtr BoctreeIO::read(string directory )
 
             cout << timestamp << "Reading " << scanfile << endl;
 
-            Matrix4<float> tf;
+            lvr::Matrix4<float> tf;
             vector<Point> points;
             BOctTree<float>::deserialize(scanfile, points);
 
@@ -110,14 +110,14 @@ ModelPtr BoctreeIO::read(string directory )
                 {
                     float euler[6];
                     for(int i = 0; i < 6; i++) pose_in >> euler[i];
-                    Vertex<float> position(euler[0], euler[1], euler[2]);
-                    Vertex<float> angle(euler[3], euler[4], euler[5]);
-                    tf = Matrix4<float>(position, angle);
+                    lvr::Vertex<float> position(euler[0], euler[1], euler[2]);
+                    lvr::Vertex<float> angle(euler[3], euler[4], euler[5]);
+                    tf = lvr::Matrix4<float>(position, angle);
                 }
                 else
                 {
                     cout << timestamp << "UOS Reader: Warning: No position information found." << endl;
-                    tf = Matrix4<float>();
+                    tf = lvr::Matrix4<float>();
                 }
 
             }
@@ -131,7 +131,7 @@ ModelPtr BoctreeIO::read(string directory )
             // Ugly hack to transform scan data
             for(int j = 0; j < points.size(); j++)
             {
-                Vertex<float> v(points[j].x, points[j].y, points[j].z);
+                lvr::Vertex<float> v(points[j].x, points[j].y, points[j].z);
                 v = tf * v;
                 if(v.length() < 10000)
                 {
@@ -201,10 +201,10 @@ ModelPtr BoctreeIO::read(string directory )
 //            }
 //        }
 
-        model->m_pointCloud = PointBufferPtr( new PointBuffer );
+        model->m_pointCloud = PointBuffer2Ptr( new PointBuffer2 );
         model->m_pointCloud->setPointArray(points, allPoints.size());
-        model->m_pointCloud->setPointColorArray(colors, allPoints.size());
-        model->m_pointCloud->setPointIntensityArray(intensities, allPoints.size());
+        model->m_pointCloud->setColorArray(colors, allPoints.size());
+        model->m_pointCloud->addFloatChannel(intensities, "intensities", allPoints.size(), 1);
     }
 
     return model;
@@ -215,7 +215,7 @@ void BoctreeIO::save( string filename )
 
 }
 
-Matrix4<float>  BoctreeIO::parseFrameFile(ifstream& frameFile)
+lvr::Matrix4<float>  BoctreeIO::parseFrameFile(ifstream& frameFile)
 {
     float m[16], color;
     while(frameFile.good())
@@ -224,7 +224,7 @@ Matrix4<float>  BoctreeIO::parseFrameFile(ifstream& frameFile)
         frameFile >> color;
     }
 
-    return Matrix4<float>(m);
+    return lvr::Matrix4<float>(m);
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */
