@@ -24,28 +24,28 @@
  *  @author Thomas Wiemann
  */
 
-#include <lvr/io/AsciiIO.hpp>
-#include <lvr/io/PLYIO.hpp>
-#include <lvr/io/Hdf5IO.hpp>
-#include <lvr/io/UosIO.hpp>
-#include <lvr/io/ObjIO.hpp>
-#include <lvr/io/LasIO.hpp>
-#include <lvr/io/BoctreeIO.hpp>
-#include <lvr/io/ModelFactory.hpp>
-#include <lvr/io/DatIO.hpp>
-#include <lvr/io/STLIO.hpp>
+#include <lvr2/io/AsciiIO.hpp>
+#include <lvr2/io/PLYIO.hpp>
+//#include <lvr2/io/Hdf5IO.hpp>
+#include <lvr2/io/UosIO.hpp>
+//#include <lvr2/io/ObjIO.hpp>
+#include <lvr2/io/LasIO.hpp>
+#include <lvr2/io/BoctreeIO.hpp>
+#include <lvr2/io/ModelFactory.hpp>
+#include <lvr2/io/DatIO.hpp>
+#include <lvr2/io/STLIO.hpp>
 
-#include <lvr/io/Timestamp.hpp>
-#include <lvr/io/Progress.hpp>
+#include <lvr2/io/Timestamp.hpp>
+#include <lvr2/io/Progress.hpp>
 
 // PCL related includes
 #ifdef LVR_USE_PCL
-#include <lvr/io/PCDIO.hpp>
+#include <lvr2/io/PCDIO.hpp>
 #endif
 
 #include <boost/filesystem.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 CoordinateTransform ModelFactory::m_transform;
@@ -70,7 +70,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
     }
     else if (extension == ".obj")
     {
-        io = new ObjIO;
+        //io = new ObjIO;
     }
     else if (extension == ".las")
     {
@@ -82,7 +82,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
     }
     else if (extension == ".h5")
     {
-        io = new Hdf5IO;
+        //io = new Hdf5IO;
     }
 #ifdef LVR_USE_PCL
     else if (extension == ".pcd")
@@ -155,12 +155,13 @@ ModelPtr ModelFactory::readModel( std::string filename )
         if(m_transform.convert)
         {
             // Convert coordinates in model
-            PointBufferPtr points = m->m_pointCloud;
-            size_t n_points = 0;
+            PointBuffer2Ptr points = m->m_pointCloud;
+            size_t n_points = points->numPoints();
             size_t n_normals = 0;
+            unsigned dummy;
 
-            floatArr p = points->getPointArray(n_points);
-            floatArr n = points->getPointNormalArray(n_normals);
+            floatArr p = points->getPointArray();
+            floatArr n = points->getFloatArray("normals", n_normals, dummy);
 
             // If normals are present every point should habe one
             if(n_normals)
@@ -221,7 +222,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     }
     else if ( extension == ".obj" )
     {
-        io = new ObjIO;
+        //io = new ObjIO;
     }
     else if (extension == ".stl")
     {
@@ -229,7 +230,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     }
     else if (extension == ".h5")
     {
-        io = new Hdf5IO;
+        //io = new Hdf5IO;
     }
 #ifdef LVR_USE_PCL
     else if (extension == ".pcd")
@@ -254,4 +255,4 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
 
 }
 
-}
+} // namespace lvr2
