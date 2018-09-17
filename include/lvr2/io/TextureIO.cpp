@@ -25,11 +25,11 @@
  */
 
 
-#include <lvr/io/TextureIO.hpp>
+#include <lvr2/io/TextureIO.hpp>
 
 
 
-namespace lvr
+namespace lvr2
 {
 
 
@@ -54,7 +54,7 @@ TextureIO::TextureIO(string filename)
         //read all textures from the file
         for (int i = 0; i < numTextures; i++)
         {
-            Texture* t = new Texture();
+            lvr::Texture* t = new lvr::Texture();
 
             //read texture class: 2 Bytes
             in.read((char*)&ui16buf, 2);
@@ -116,7 +116,7 @@ TextureIO::TextureIO(string filename)
     in.close();
 }
 
-size_t TextureIO::add(Texture* t)
+size_t TextureIO::add(lvr::Texture* t)
 {
     m_textures.push_back(t);
     return m_textures.size() - 1;
@@ -127,7 +127,7 @@ void TextureIO::remove (size_t index)
     m_textures.erase(m_textures.begin() + index);
 }
 
-void TextureIO::update (size_t index, Texture* t)
+void TextureIO::update (size_t index, lvr::Texture* t)
 {
     delete m_textures[index];
     m_textures[index] = t;
@@ -149,7 +149,7 @@ void TextureIO::write()
     for (int i = 0; i < m_textures.size(); i++)
     {
         //write texture class: 2 Bytes
-            ui16buf = m_textures[i]->m_textureClass;
+        ui16buf = m_textures[i]->m_textureClass;
         out.write((char*)&ui16buf, 2);
 
         //write texture width: 2 Bytes
@@ -199,4 +199,4 @@ void TextureIO::write()
 }
 
 
-}//namespace lvr
+}//namespace lvr2

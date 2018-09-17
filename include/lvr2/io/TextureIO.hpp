@@ -31,6 +31,7 @@
 #define __TEXTURE_IO_H__
 
 #include <lvr/texture/Texture.hpp>
+#include <lvr2/io/Timestamp.hpp>
 
 #include <stdint.h>
 #include <cstdio>
@@ -41,8 +42,8 @@
 #include <ctime>
 #include <sstream>
 #include <fstream>
-#include "Timestamp.hpp"
-namespace lvr
+
+namespace lvr2
 {
 
 /**
@@ -75,7 +76,7 @@ class TextureIO
 	 * \param 	t	The texture to add
 	 * \return 		The index of the texture in the texture package	
 	**/
-	virtual size_t add(Texture* t);
+	virtual size_t add(lvr::Texture* t);
 		
 	/**
 	 * \brief 	Remove the texture with the given index from the texture package
@@ -88,19 +89,22 @@ class TextureIO
 	 * \param	index	The index of the texture to update
 	 * \param	t	The new texture to replace the old one with
 	**/
-	virtual void update (size_t index, Texture* t);
+    virtual void update (size_t index, lvr::Texture* t);
 
 	/**
 	 * \brief (re-)write the file
 	 *
 	**/
-	virtual void write();
+    virtual void write();
 
 
-	std::vector<Texture*> 	m_textures;
-	string 			m_filename;
+    std::vector<lvr::Texture*>  m_textures;
+    string                      m_filename;
 
 };
 
-}
+} // namespace lvr2
+
+#include "TextureIO.cpp"
+
 #endif
