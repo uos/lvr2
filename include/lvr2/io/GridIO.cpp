@@ -23,13 +23,13 @@
  *  @author Thomas Wiemann
  */
 
-#include <lvr/io/GridIO.hpp>
-#include <lvr/io/DataStruct.hpp>
+#include <lvr2/io/GridIO.hpp>
+#include <lvr2/io/DataStruct.hpp>
 
 #include <fstream>
 using std::ifstream;
 
-namespace lvr
+namespace lvr2
 {
 
 GridIO::GridIO()
@@ -94,4 +94,4 @@ GridIO::~GridIO()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */
