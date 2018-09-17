@@ -26,13 +26,13 @@
 #ifndef KINECGRABBER_H_
 #define KINECGRABBER_H_
 
-#include "PointBuffer.hpp"
+#include <lvr2/io/PointBuffer2.hpp>
 #include "libfreenect.hpp"
 
 #include <boost/thread.hpp>
 #include <vector>
 
-namespace lvr
+namespace lvr2
 {
 
 class KinectGrabber : public Freenect::FreenectDevice
@@ -49,8 +49,8 @@ protected:
 	virtual void VideoCallback(void* data, uint32_t timestamp);
 	virtual void DepthCallback(void* data, uint32_t timestamp);
 
-	/// PointBufferPtr with current data
-	PointBufferPtr			m_buffer;
+	/// PointBuffer2Ptr with current data
+	PointBuffer2Ptr			m_buffer;
 
 	/// Mutex for save depth buffer access
 	boost::mutex			m_depthMutex;
@@ -68,6 +68,8 @@ protected:
 
 };
 
-}
+} // namespace lvr2
+
+#include "KinectGrabber.cpp"
 
 #endif /* KINECGRABBER_H_ */
