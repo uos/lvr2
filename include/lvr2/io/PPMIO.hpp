@@ -28,8 +28,8 @@
  *      Author:  Denis Meyer    ( denmeyer@uos.de )
  */
 
-#ifndef PPMIO_HPP_
-#define PPMIO_HPP_
+#ifndef LVR2_PPMIO_HPP_
+#define LVR2_PPMIO_HPP_
 
 #include <string>
 #include <fstream>
@@ -42,7 +42,7 @@ using std::stringstream;
 using std::cout;
 using std::endl;
 
-namespace lvr
+namespace lvr2
 {
 
 /**
@@ -75,6 +75,8 @@ private:
     void readLine( ifstream & in, char* buffer );
 };
 
-}
+} // namespace lvr2
+
+#include "PPMIO.cpp"
 
 #endif /* PPMIO_H_ */
