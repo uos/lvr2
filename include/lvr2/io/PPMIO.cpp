@@ -28,14 +28,14 @@
  *      Author:  Denis Meyer    ( denmeyer@uos.de )
  */
 
-#include <lvr/io/PPMIO.hpp>
+#include <lvr2/io/PPMIO.hpp>
 #include <iostream>
 #include <fstream>
 #include <string.h>
 
 using namespace std;
 
-namespace lvr
+namespace lvr2
 {
 
 PPMIO::PPMIO()
@@ -148,4 +148,4 @@ void PPMIO::readLine( ifstream & in, char* buffer )
     while(buffer[0] == '#' && in.good() );
 }
 
-}
+} // namespace lvr2
