@@ -27,13 +27,13 @@
 using std::cout;
 using std::endl;
 
-#include <lvr/io/LasIO.hpp>
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/LasIO.hpp>
+#include <lvr2/io/Timestamp.hpp>
 
 #include "lasreader.hpp"
 #include "laswriter.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 ModelPtr LasIO::read(string filename )
@@ -75,10 +75,10 @@ ModelPtr LasIO::read(string filename )
         }
 
         // Create point buffer and model
-        PointBufferPtr p_buffer( new PointBuffer);
+        PointBuffer2Ptr p_buffer( new PointBuffer2);
         p_buffer->setPointArray(points, num_points);
-        p_buffer->setPointIntensityArray(intensities, num_points);
-        p_buffer->setPointColorArray(colors, num_points);
+        p_buffer->addFloatChannel(intensities, "intensities", num_points, 1);
+        p_buffer->setColorArray(colors, num_points);
 
         ModelPtr m_ptr( new Model(p_buffer));
         m_model = m_ptr;
@@ -101,4 +101,4 @@ void LasIO::save( string filename )
     std::cerr << "LASIO: Saving not yet implemented." << endl;
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */
