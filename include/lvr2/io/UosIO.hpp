@@ -37,8 +37,8 @@
 #include <sstream>
 #include <vector>
 
-#include "BaseIO.hpp"
-#include "AsciiIO.hpp"
+#include <lvr2/io/BaseIO.hpp>
+#include <lvr2/io/AsciiIO.hpp>
 
 #include <lvr/geometry/Vertex.hpp>
 #include <lvr/geometry/Matrix4.hpp>
@@ -47,7 +47,7 @@ using std::string;
 using std::fstream;
 using std::stringstream;
 
-namespace lvr
+namespace lvr2
 {
 /**
  * @brief An input class for laser scans in UOS 3d format.
@@ -160,7 +160,7 @@ private:
      * @return          A matrix representing the final transformation
      *                  from a frame file
      */
-    Matrix4<float> parseFrameFile(ifstream& frameFile);
+    lvr::Matrix4<float> parseFrameFile(ifstream& frameFile);
 
 
     inline std::string to_string(const int& t, int width)
@@ -232,7 +232,8 @@ private:
 
 };
 
-} // namespace lvr
+} // namespace lvr2
 
+#include "UosIO.cpp"
 
 #endif /* UOSIO_H_ */
