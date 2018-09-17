@@ -27,14 +27,14 @@
 #ifndef IOFACTORY_H_
 #define IOFACTORY_H_
 
-#include "Model.hpp"
+#include <lvr2/io/Model.hpp>
 
 #include <string>
 #include <vector>
 #include "boost/shared_ptr.hpp"
 #include <map>
 
-namespace lvr
+namespace lvr2
 {
 
 /**
@@ -88,6 +88,8 @@ class ModelFactory
 
 typedef boost::shared_ptr<ModelFactory> ModelFactoryPtr;
 
-} // namespace lvr
+} // namespace lvr2
+
+#include "ModelFactory.cpp"
 
 #endif /* IOFACTORY_H_ */
