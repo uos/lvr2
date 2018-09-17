@@ -34,9 +34,9 @@
 #ifndef PCDIO_HPP_INCLUDED
 #define PCDIO_HPP_INCLUDED
 
-#include "BaseIO.hpp"
+#include <lvr2/io/BaseIO.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 /**
@@ -72,7 +72,8 @@ class PCDIO : public BaseIO
 };
 
 
-} // namespace lvr
+} // namespace lvr2
 
+#include "PCDIO.cpp"
 
 #endif /* PCDIO_HPP_INCLUDED */

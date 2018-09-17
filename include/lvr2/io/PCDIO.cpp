@@ -1,5 +1,5 @@
 
-#include <lvr/io/PCDIO.hpp>
+#include <lvr2/io/PCDIO.hpp>
 #include <fstream>
 #ifdef LVR_USE_PCL
 #include <pcl/io/pcd_io.h>
@@ -8,7 +8,7 @@
 
 #define isnan(x) ((x) != (x))
 
-namespace lvr
+namespace lvr2
 {
 
 #ifdef LVR_USE_PCL
@@ -20,66 +20,66 @@ ModelPtr PCDIO::read( string filename )
     if ( pcl::io::loadPCDFile<pcl::PointXYZRGBNormal>( filename, *cloud ) == -1)
     {
         std::cerr << "Couldn't read file “" << filename << "”." << std::endl;
-        lvr::ModelPtr m;
+        ModelPtr m;
         return m;
     }
 
     bool has_normals = false;
     bool has_colors = false;
 
-    coord3fArr points = coord3fArr( new coord<float>[ cloud->points.size() ] );
-    color3bArr colors = color3bArr( new color<unsigned char>[ cloud->points.size() ] );
-    coord3fArr normals =  coord3fArr( new coord<float>[ cloud->points.size() ] );
+    floatArr points = floatArr( new float[ cloud->points.size() * 3 ] );
+    ucharArr colors = ucharArr( new unsigned char[ cloud->points.size() * 3] );
+    floatArr normals =  floatArr( new float[ cloud->points.size() * 3] );
     /* model->m_pointCloud->setPointColorArray( pointColors, numPoints ); */
     for ( size_t i(0); i < cloud->points.size(); i++ )
     {
         if(!isnan(cloud->points[i].x) && !isnan(cloud->points[i].y) && !isnan(cloud->points[i].z)  )
         {
-            points[i].x = cloud->points[i].x;
-            points[i].y = cloud->points[i].y;
-            points[i].z = cloud->points[i].z;
+            points[i*3 + 0] = cloud->points[i].x;
+            points[i*3 + 1] = cloud->points[i].y;
+            points[i*3 + 2] = cloud->points[i].z;
         }
         else
         {
-            points[i].x = 0.0;
-            points[i].y = 0.0;
-            points[i].z = 0.0;
+            points[i*3 + 0] = 0.0;
+            points[i*3 + 1] = 0.0;
+            points[i*3 + 2] = 0.0;
         }
 
         if(!isnan(cloud->points[i].r) && !isnan(cloud->points[i].g) && !isnan(cloud->points[i].b)  )
         {
-            colors[i].r = cloud->points[i].r;
-            colors[i].g = cloud->points[i].g;
-            colors[i].b = cloud->points[i].b;
+            colors[i*3 + 0] = cloud->points[i].r;
+            colors[i*3 + 1] = cloud->points[i].g;
+            colors[i*3 + 2] = cloud->points[i].b;
             has_colors = true;
         }
         else
         {
-            colors[i].r = 0;
-            colors[i].g = 255;
-            colors[i].b = 0;
+            colors[i*3 + 0] = 0;
+            colors[i*3 + 1] = 255;
+            colors[i*3 + 2] = 0;
         }
 
         if(!isnan(cloud->points[i].normal_x) && !isnan(cloud->points[i].normal_y) && !isnan(cloud->points[i].normal_z) )
         {
-            normals[i].x = cloud->points[i].normal_x;
-            normals[i].y = cloud->points[i].normal_y;
-            normals[i].z = cloud->points[i].normal_z;
+            normals[i*3 + 0] = cloud->points[i].normal_x;
+            normals[i*3 + 1] = cloud->points[i].normal_y;
+            normals[i*3 + 2] = cloud->points[i].normal_z;
             has_normals = true;
         }
     }
 
-    ModelPtr model( new Model( PointBufferPtr( new PointBuffer )));
-    model->m_pointCloud->setIndexedPointArray( points, cloud->points.size() );
+    ModelPtr model( new Model( PointBuffer2Ptr( new PointBuffer2 )));
+    model->m_pointCloud->setPointArray( points, cloud->points.size() );
 
     if(has_colors)
     {
-        model->m_pointCloud->setIndexedPointColorArray( colors, cloud->points.size() );
+        model->m_pointCloud->setColorArray( colors, cloud->points.size() );
     }
 
     if(has_normals)
     {
-        model->m_pointCloud->setIndexedPointNormalArray( normals, cloud->points.size() );
+        model->m_pointCloud->setNormalArray( normals, cloud->points.size() );
     }
     m_model = model;
     return model;
@@ -90,7 +90,7 @@ ModelPtr PCDIO::read( string filename )
 ModelPtr PCDIO::read( string filename )
 {
     /* Without PCL we do not read pcd files. */
-    lvr::ModelPtr m( new Model );
+    ModelPtr m( new Model );
     return m;
 }
 #endif /* LVR_USE_PCL */
@@ -100,12 +100,14 @@ void PCDIO::save( string filename )
 {
 
     size_t pointcount(0), buf(0);
+    unsigned w_color(0);
 
-    lvr::coord3fArr points;
-    lvr::color3bArr pointColors;
+    floatArr points;
+    ucharArr pointColors;
 
-    points      = m_model->m_pointCloud->getIndexedPointArray( pointcount );
-    pointColors = m_model->m_pointCloud->getIndexedPointColorArray( buf );
+    pointcount  = m_model->m_pointCloud->numPoints();
+    points      = m_model->m_pointCloud->getPointArray();
+    pointColors = m_model->m_pointCloud->getUcharArray("colors", buf, w_color);
 
     /* We need the same amount of color information and points. */
     if ( pointcount != buf )
@@ -137,7 +139,7 @@ void PCDIO::save( string filename )
     for ( size_t i(0); i < pointcount; i++ )
     {
         /* Write coordinates. */
-        out << points[i].x << " " << points[i].y << " " << points[i].z;
+        out << points[i*3 + 0] << " " << points[i*3 + 1] << " " << points[i*3 + 2];
 
         /* Write color information if there are any. */
         if ( pointColors )
@@ -145,9 +147,9 @@ void PCDIO::save( string filename )
             /* Convert uchar array to float. */
             float rgbf(0);
             uint8_t* rgb = (uint8_t*) reinterpret_cast<uint8_t*>( &rgbf );
-            rgb[2] = pointColors[i].r;
-            rgb[1] = pointColors[i].g;
-            rgb[0] = pointColors[i].b;
+            rgb[2] = pointColors[i*w_color + 0];
+            rgb[1] = pointColors[i*w_color + 1];
+            rgb[0] = pointColors[i*w_color + 2];
 
             /* Write data. */
             out << " " << rgbf;
@@ -161,4 +163,4 @@ void PCDIO::save( string filename )
 
 }
 
-} // namespace lvr
+} // namespace lvr2
