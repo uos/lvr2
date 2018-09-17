@@ -26,11 +26,11 @@
 #ifndef GRIDIO_HPP_
 #define GRIDIO_HPP_
 
-#include "DataStruct.hpp"
+#include <lvr2/io/DataStruct.hpp>
 
 #include <string>
 
-namespace lvr
+namespace lvr2
 {
 
 class GridIO
@@ -50,7 +50,8 @@ private:
     size_t   m_numBoxes;
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
+#include "GridIO.cpp"
 
 #endif /* GRIDIO_HPP_ */
