@@ -24,7 +24,7 @@
  *  @author Thomas Wiemann
  */
 
-#include <lvr/io/UosIO.hpp>
+#include <lvr2/io/UosIO.hpp>
 
 
 #include <list>
@@ -45,10 +45,10 @@ using std::stringstream;
 //using namespace boost::filesystem;
 
 
-#include <lvr/io/Progress.hpp>
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/Progress.hpp>
+#include <lvr2/io/Timestamp.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 
@@ -196,8 +196,8 @@ void UosIO::reduce(string dir, string target, int reduction)
 
 void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size_t &n)
 {
-    list<Vertex<float> > allPoints;
-    list<Vertex<int> > allColors;
+    list<lvr::Vertex<float> > allPoints;
+    list<lvr::Vertex<int> > allColors;
 
     size_t point_counter = 0;
 
@@ -233,7 +233,7 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
     for(int fileCounter = first; fileCounter <= last; fileCounter++)
     {
         // New (unit) transformation matrix
-        Matrix4<float> tf;
+        lvr::Matrix4<float> tf;
 
         // Input file streams for scan data, poses and frames
         ifstream scan_in, pose_in, frame_in;
@@ -274,7 +274,7 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
         else
         {
             // Tmp list of read points
-            list<Vertex<float> > tmp_points;
+            list<lvr::Vertex<float> > tmp_points;
 
 
             // Try to get fransformation from .frames file
@@ -302,15 +302,15 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
                     euler[4] *= 0.017453293;
                     euler[5] *= 0.017453293;
 
-                    Vertex<float> position(euler[0], euler[1], euler[2]);
-                    Vertex<float> angle(euler[3], euler[4], euler[5]);
+                    lvr::Vertex<float> position(euler[0], euler[1], euler[2]);
+                    lvr::Vertex<float> angle(euler[3], euler[4], euler[5]);
 
-                    tf = Matrix4<float>(position, angle);
+                    tf = lvr::Matrix4<float>(position, angle);
                 }
                 else
                 {
                     cout << timestamp << "UOS Reader: Warning: No position information found." << endl;
-                    tf = Matrix4<float>();
+                    tf = lvr::Matrix4<float>();
                 }
 
             }
@@ -352,12 +352,12 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
                 else if(has_intensity && has_color)
                 {
                     scan_in >> x >> y >> z >> rem >> r >> g >> b;
-                    allColors.push_back(Vertex<int> (r, g, b));
+                    allColors.push_back(lvr::Vertex<int> (r, g, b));
                 }
                 else if(has_color && !has_intensity)
                 {
                     scan_in >> x >> y >> z >> r >> g >> b;
-                    allColors.push_back(Vertex<int> (r, g, b));
+                    allColors.push_back(lvr::Vertex<int> (r, g, b));
                 }
                 else
                 {
@@ -365,8 +365,8 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
                     for(int n_dummys = 0; n_dummys < num_attributes; n_dummys++) scan_in >> dummy;
                 }
 
-                Vertex<float> point(x, y, z);
-                Vertex<unsigned char> color;
+                lvr::Vertex<float> point(x, y, z);
+                lvr::Vertex<unsigned char> color;
 
                 // Code branching for point converter!
                 if(!m_saveToDisk)
@@ -417,10 +417,10 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
             }
 
             // Transform scan point with current matrix
-            list<Vertex<float> >::iterator it, it1;
+            list<lvr::Vertex<float> >::iterator it, it1;
             for(it = tmp_points.begin(); it != tmp_points.end(); it++)
             {
-                Vertex<float> v = *it;
+                lvr::Vertex<float> v = *it;
                 v.transform(tf);
                 allPoints.push_back(v);
             }
@@ -457,11 +457,11 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
 
         numPoints = allPoints.size();
         points = floatArr( new float[3 * allPoints.size()] );
-        list<Vertex<float> >::iterator p_it;
+        list<lvr::Vertex<float> >::iterator p_it;
         size_t i(0);
         for( p_it = allPoints.begin(); p_it != allPoints.end(); p_it++ )
         {
-            Vertex<float> v = *p_it;
+            lvr::Vertex<float> v = *p_it;
             points[i    ] = v[0];
             points[i + 1] = v[1];
             points[i + 2] = v[2];
@@ -473,10 +473,10 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
         {
             pointColors = ucharArr( new unsigned char[ 3 * numPoints ] );
             i = 0;
-            list<Vertex<int> >::iterator c_it;
+            list<lvr::Vertex<int> >::iterator c_it;
             for(c_it = allColors.begin(); c_it != allColors.end(); c_it++)
             {
-                Vertex<int> v = *c_it;
+                lvr::Vertex<int> v = *c_it;
                 pointColors[i    ] = (unsigned char) v[0];
                 pointColors[i + 1] = (unsigned char) v[1];
                 pointColors[i + 2] = (unsigned char) v[2];
@@ -486,14 +486,15 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
 
         // Create point cloud in model
         model = ModelPtr( new Model );
-        model->m_pointCloud = PointBufferPtr( new PointBuffer );
+        model->m_pointCloud = PointBuffer2Ptr( new PointBuffer2 );
         model->m_pointCloud->setPointArray( points, numPoints );
-        model->m_pointCloud->setPointColorArray(pointColors, numPoints);
+        model->m_pointCloud->setColorArray(pointColors, numPoints);
 
         // Add sub cloud information
         for(size_t i = 0; i < sub_clouds.size(); i++)
         {
-            model->m_pointCloud->defineSubCloud(sub_clouds[i]);
+            // @TODO: How to port this?
+            //model->m_pointCloud->defineSubCloud(sub_clouds[i]);
         }
     }
 
@@ -501,10 +502,10 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
 
 void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size_t &n)
 {
-    Matrix4<float> m_tf;
+    lvr::Matrix4<float> m_tf;
 
-    list<Vertex<float> > ptss;
-    list<Vertex<float> > allPoints;
+    list<lvr::Vertex<float> > ptss;
+    list<lvr::Vertex<float> > allPoints;
     for(int fileCounter = first; fileCounter <= last; fileCounter++)
     {
         float euler[6];
@@ -617,7 +618,7 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
                 }
 
                 // calculate 3D coordinates (local coordinates)
-                Vertex<float> p;
+                lvr::Vertex<float> p;
                 p[0] = X;
                 p[1] = Z * sin_currentAngle;
                 p[2] = Z * cos_currentAngle;
@@ -647,16 +648,16 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
         else
         {
             // Transform scan data using information from 'position.dat'
-            Vertex<float> position(euler[0], euler[1], euler[2]);
-            Vertex<float> angle(euler[3], euler[4], euler[5]);
-            m_tf = Matrix4<float>(position, angle);
+            lvr::Vertex<float> position(euler[0], euler[1], euler[2]);
+            lvr::Vertex<float> angle(euler[3], euler[4], euler[5]);
+            m_tf = lvr::Matrix4<float>(position, angle);
         }
 
         // Transform points and insert in to global vector
-        list<Vertex<float> >::iterator it;
+        list<lvr::Vertex<float> >::iterator it;
         for(it = ptss.begin(); it != ptss.end(); it++)
         {
-            Vertex<float> v = *it;
+            lvr::Vertex<float> v = *it;
             v.transformCM(m_tf);
             allPoints.push_back(v);
         }
@@ -671,12 +672,12 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
         cout << timestamp << "UOS Reader: Read " << allPoints.size() << " points." << endl;
         n = allPoints.size();
         floatArr points( new float[3 * allPoints.size()] );
-        list<Vertex<float> >::iterator p_it;
+        list<lvr::Vertex<float> >::iterator p_it;
         int i(0);
         for( p_it = allPoints.begin(); p_it != allPoints.end(); p_it++ )
         {
             int t_index = 3 * i;
-            Vertex<float> v = *p_it;
+            lvr::Vertex<float> v = *p_it;
             points[t_index    ] = v[0];
             points[t_index + 1] = v[1];
             points[t_index + 1] = v[2];
@@ -685,12 +686,12 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
 
         // Alloc model
         model = ModelPtr( new Model );
-        model->m_pointCloud = PointBufferPtr( new PointBuffer );
+        model->m_pointCloud = PointBuffer2Ptr( new PointBuffer2 );
         model->m_pointCloud->setPointArray( points, n );
     }
 }
 
-Matrix4<float> UosIO::parseFrameFile(ifstream& frameFile)
+lvr::Matrix4<float> UosIO::parseFrameFile(ifstream& frameFile)
 {
     float m[16], color;
     while(frameFile.good())
@@ -699,7 +700,7 @@ Matrix4<float> UosIO::parseFrameFile(ifstream& frameFile)
         frameFile >> color;
     }
 
-    return Matrix4<float>(m);
+    return lvr::Matrix4<float>(m);
 }
 
-} // namespace lvr
+} // namespace lvr2
