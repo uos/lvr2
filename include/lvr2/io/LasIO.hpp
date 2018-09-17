@@ -26,9 +26,9 @@
 #ifndef LASIO_H_
 #define LASIO_H_
 
-#include "BaseIO.hpp"
+#include <lvr2/io/BaseIO.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 /**
@@ -56,5 +56,8 @@ public:
 
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
+
+#include "LasIO.cpp"
+
 #endif /* LASIO_H_ */
