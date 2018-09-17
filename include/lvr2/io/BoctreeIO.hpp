@@ -26,13 +26,16 @@
 #ifndef BOCTREEIO_HPP_
 #define BOCTREEIO_HPP_
 
-#include <boost/filesystem.hpp>
-#include "slam6d/scan_io_oct.h"
-#include "BaseIO.hpp"
+#include <lvr2/io/BaseIO.hpp>
+
 #include <lvr/geometry/Matrix4.hpp>
 
+#include <boost/filesystem.hpp>
 
-namespace lvr
+#include "slam6d/scan_io_oct.h"
+
+
+namespace lvr2
 {
 
 /**
@@ -61,8 +64,11 @@ public:
     virtual void save( string filename );
 
 private:
-    Matrix4<float> parseFrameFile(ifstream& frameFile);
+    lvr::Matrix4<float> parseFrameFile(ifstream& frameFile);
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
+
+#include "BoctreeIO.cpp"
+
 #endif /* BOCTREEIO_HPP_ */
