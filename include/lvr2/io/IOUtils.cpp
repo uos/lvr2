@@ -1,6 +1,6 @@
-#include <lvr/io/IOUtils.hpp>
+#include <lvr2/io/IOUtils.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 Eigen::Matrix4d buildTransformation(double* alignxf)
@@ -145,8 +145,8 @@ void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& frame
 
 size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
 {
-    size_t n_ip;
-    floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+    size_t n_ip = model->m_pointCloud->numPoints();
+    floatArr arr = model->m_pointCloud->getPointArray();
 
     ModelFactory::saveModel(model, outfile.string());
 
@@ -156,18 +156,23 @@ size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
 size_t writePointsToASCII(ModelPtr model, std::ofstream& out, bool nocolor)
 {
     size_t n_ip, n_colors;
+    unsigned w_colors;
 
-    floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+    n_ip = model->m_pointCloud->numPoints();
+    floatArr arr = model->m_pointCloud->getPointArray();
 
-    ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
+    ucharArr colors = model->m_pointCloud->getUcharArray("colors", n_colors, w_colors);
+
     for(int a = 0; a < n_ip; a++)
     {
         out << arr[a * 3] << " " << arr[a * 3 + 1] << " " << arr[a * 3 + 2];
 
         if(n_colors && !(nocolor))
         {
-            out << " " << (int)colors[a * 3] << " " << (int)colors[a * 3 + 1]
-                << " " << (int)colors[a * 3 + 2];
+            for (unsigned i = 0; i < w_colors; i++)  
+            {
+                out << " " << (int)colors[a * w_colors + i];
+            }
         }
         out << std::endl;
 
@@ -178,8 +183,8 @@ size_t writePointsToASCII(ModelPtr model, std::ofstream& out, bool nocolor)
 
 size_t getReductionFactor(ModelPtr model, size_t reduction)
 {
-    size_t n_points;
-    floatArr arr = model->m_pointCloud->getPointArray(n_points);
+    size_t n_points = model->m_pointCloud->numPoints();
+    floatArr arr = model->m_pointCloud->getPointArray();
 
 
     std::cout << timestamp << "Point cloud contains " << n_points << " points." << std::endl;
@@ -231,20 +236,23 @@ void transformAndReducePointCloud(ModelPtr model, int modulo, int sx, int sy, in
 {
     size_t n_ip, n_colors;
     size_t cntr = 0;
+    unsigned w_colors;
 
-    floatArr arr = model->m_pointCloud->getPointArray(n_ip);
-    ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
+    n_ip = model->m_pointCloud->numPoints();
+    floatArr arr = model->m_pointCloud->getPointArray();
+    ucharArr colors = model->m_pointCloud->getUcharArray("colors", n_colors, w_colors);
 
     // Plus one because it might differ because of the 0-index
     // better waste memory for one float than having not enough space.
     // TO-DO think about exact calculation.
     size_t targetSize = (3 * ((n_ip)/modulo)) + modulo;
+    size_t targetSizeColors = (w_colors * ((n_ip)/modulo)) + modulo;
     floatArr points(new float[targetSize ]);
     ucharArr newColorsArr;
 
     if(n_colors)
     {
-        newColorsArr = ucharArr(new unsigned char[targetSize]);
+        newColorsArr = ucharArr(new unsigned char[targetSizeColors]);
     }
 
     for(int i = 0; i < n_ip; i++)
@@ -282,9 +290,10 @@ void transformAndReducePointCloud(ModelPtr model, int modulo, int sx, int sy, in
 
             if(n_colors)
             {
-                newColorsArr[cntr * 3]     = colors[i * 3];
-                newColorsArr[cntr * 3 + 1] = colors[i * 3 + 1];
-                newColorsArr[cntr * 3 + 2] = colors[i * 3 + 2];
+                for (unsigned j = 0; j < w_colors; j++)
+                {
+                    newColorsArr[cntr * w_colors + j] = colors[i * w_colors + j];
+                }
             }
 
             cntr++;
@@ -297,7 +306,7 @@ void transformAndReducePointCloud(ModelPtr model, int modulo, int sx, int sy, in
 
     if(n_colors)
     {
-        model->m_pointCloud->setPointColorArray(newColorsArr, cntr);
+        model->m_pointCloud->setColorArray(newColorsArr, cntr, w_colors);
     }
 }
 
@@ -305,9 +314,9 @@ void transformAndReducePointCloud(ModelPtr model, int modulo, int sx, int sy, in
 void transformPointCloud(ModelPtr model, Eigen::Matrix4d transformation)
 {
     std::cout << timestamp << "Transforming model." << std::endl;
-    size_t numPoints;
 
-    floatArr arr = model->m_pointCloud->getPointArray(numPoints);
+    size_t numPoints = model->m_pointCloud->numPoints();
+    floatArr arr = model->m_pointCloud->getPointArray();
 
     for(int i = 0; i < numPoints; i++)
     {
@@ -324,7 +333,7 @@ void transformPointCloud(ModelPtr model, Eigen::Matrix4d transformation)
     }
 }
 
-void transformPointCloudAndAppend(PointBufferPtr& buffer,
+void transformPointCloudAndAppend(PointBuffer2Ptr& buffer,
         boost::filesystem::path& transfromFile,
         std::vector<float>& pts,
         std::vector<float>& nrm)
@@ -361,11 +370,17 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
      }
 
      size_t n_normals;
-     size_t n_points;
+     unsigned w_normals;
+     size_t n_points = buffer->numPoints();
 
-     floatArr normals = buffer->getPointNormalArray(n_normals);
-     floatArr points = buffer->getPointArray(n_points);
+     floatArr normals = buffer->getFloatArray("normals", n_normals, n_points, w_normals); 
+     floatArr points = buffer->getPointArray();
 
+     if (w_normals != 3)
+     {
+        std::cout << timestamp << "Warning: width of normals is not 3" << std::endl;
+        return;
+     }
      if(n_normals != n_points)
      {
          std::cout << timestamp << "Warning: point and normal count mismatch" << std::endl;
@@ -414,7 +429,7 @@ void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::st
 {
 
     ModelPtr model(new Model);
-    PointBufferPtr buffer(new PointBuffer);
+    PointBuffer2Ptr buffer(new PointBuffer2);
 
     // Passing the raw data pointers from the vectors
     // to a shared array is a bad idea. Due to the PointBuffer
@@ -434,7 +449,7 @@ void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::st
     }
 
     buffer->setPointArray(points, p.size() / 3);
-    buffer->setPointNormalArray(normals, n.size() / 3);
+    buffer->setNormalArray(normals, n.size() / 3);
 
     model->m_pointCloud = buffer;
 
@@ -444,4 +459,4 @@ void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::st
 }
 
 
-} // namespace lvr
+} // namespace lvr2
