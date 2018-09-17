@@ -5,16 +5,16 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr/io/KinectIO.hpp>
-#include <lvr/io/PointBuffer.hpp>
-#include <lvr/io/DataStruct.hpp>
+#include <lvr2/io/KinectIO.hpp>
+#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/DataStruct.hpp>
 
 #include <Eigen/Dense>
 
 #include <vector>
 #include <set>
 
-namespace lvr
+namespace lvr2
 {
 
 KinectIO* KinectIO::m_instance = 0;
@@ -60,7 +60,7 @@ KinectIO::~KinectIO()
 	//delete m_freenect;
 }
 
-PointBufferPtr KinectIO::getBuffer()
+PointBuffer2Ptr KinectIO::getBuffer()
 {
 	// Get depth image from sensor
 	std::vector<short> depthImage(480 * 680, 0);
@@ -76,12 +76,12 @@ PointBufferPtr KinectIO::getBuffer()
 	}
 
 	// Return null pointer if no image was grabbed
-	if(depthImage.size() == 0) return PointBufferPtr();
+	if(depthImage.size() == 0) return PointBuffer2Ptr();
 
 	size_t numPoints = depthImage.size() - nans.size();
 
 	// Convert depth image into point cloud
-	PointBufferPtr buffer(new PointBuffer);
+	PointBuffer2Ptr buffer(new PointBuffer2);
 	floatArr points(new float[numPoints * 3]);
 	ucharArr colors(new unsigned char[numPoints * 3]);
 
@@ -111,8 +111,8 @@ PointBufferPtr KinectIO::getBuffer()
 	}
 
 	buffer->setPointArray(points, numPoints);
-	buffer->setPointColorArray(colors, numPoints);
+	buffer->setColorArray(colors, numPoints);
 	return buffer;
 }
 
-} // namespace lvr
+} // namespace lvr2

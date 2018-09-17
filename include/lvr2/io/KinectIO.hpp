@@ -8,11 +8,10 @@
 #ifndef KINECTIO_H_
 #define KINECTIO_H_
 
-#include "KinectGrabber.hpp"
-#include <lvr/geometry/Matrix4.hpp>
+#include <lvr2/io/KinectGrabber.hpp>
 #include <Eigen/Dense>
 
-namespace lvr
+namespace lvr2
 {
 
 class KinectIO
@@ -25,7 +24,7 @@ public:
 
 	virtual ~KinectIO();
 
-	PointBufferPtr getBuffer();
+	PointBuffer2Ptr getBuffer();
 
 private:
 	KinectGrabber* 			m_grabber;
@@ -35,6 +34,8 @@ private:
 	static KinectIO*		m_instance;
 };
 
-} // namespace lvr
+} // namespace lvr2
+
+#include "KinectIO.cpp"
 
 #endif /* KINECTIO_H_ */
