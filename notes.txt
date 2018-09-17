@@ -1,0 +1,44 @@
+Bugs:   
+
+    AttributManager:    Elementproxy -operator und -=operator verwenden noch + bzw. +=.
+    PointBuffer2:       hasNormals() / hasColors führen zum Speicherzugriffsfehler, wenn entsprechender AttributeChannel nicht vorhanden.
+    
+    DatIO:              In read(...) wird, wenn n > 3 ist, Farbinformationen in die PointCloud geschrieben. 
+                        Aber in save(...) wird für jeden Punkt der Wolke die Position 
+                        und die Intensität (falls vorhanden) rausgeschrieben. 
+                        Als Fix sollte in save(...) zusätzlich/exklusiv 
+                        der Intensitätschannel geschrieben werden. 
+
+    UosIO:              PointBuffer2 um Subcloud Funktionalität des lvr::PointBuffer's erweitern? 
+
+----------------------------------------------------------------------
+
+Fragen:
+
+    Warum hat GlTexture keinen Namespace?
+
+    PointBuffer2 um Funktionen für Intensities erweitern?
+
+----------------------------------------------------------------------
+
+Unvollständig:
+
+
+----------------------------------------------------------------------
+
+Zurückgestellt:
+
+    Hdf5IO: MeshBuffer2 müsste erst modifiziert werden. (getter für face_idx_materials; getter/setter für textures, materials; textureArr vs. vector<lvr2::Texture> (das selbe für Materials...).
+
+    ObjIO:  Material vs IOMaterial/RGBMaterial...
+
+----------------------------------------------------------------------
+
+Ungetestet portiert:
+
+    IOUtils.hpp
+    KinectGrabber.hpp - warum hat der KinectGrabber einen PointBuffer?
+    LasIO.hpp
+    PCDIO.hpp
+
+----------------------------------------------------------------------
