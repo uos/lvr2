@@ -6,8 +6,8 @@
  */
 
 
-#include <lvr/io/STLIO.hpp>
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/STLIO.hpp>
+#include <lvr2/io/Timestamp.hpp>
 #include <lvr/geometry/Normal.hpp>
 #include <lvr/geometry/Vertex.hpp>
 
@@ -20,7 +20,8 @@
 using std::cout;
 using std::endl;
 
-namespace lvr {
+namespace lvr2
+{
 
 STLIO::STLIO() {
 	// TODO Auto-generated constructor stub
@@ -44,11 +45,11 @@ void STLIO::save( string filename )
 void STLIO::save( ModelPtr model, string filename )
 {
 
-	MeshBufferPtr mesh = model->m_mesh;
-	size_t n_vert;
-	size_t n_faces;
-	floatArr vertices = mesh->getVertexArray(n_vert);
-	uintArr indices = mesh->getFaceArray(n_faces);
+	MeshBuffer2Ptr mesh = model->m_mesh;
+	size_t n_vert = mesh->numVertices();
+	size_t n_faces = mesh->numFaces();
+	floatArr vertices = mesh->getVertices();
+	indexArray indices = mesh->getFaceIndices();
 
 	std::string header_info = "Created by LVR";
 	char head[80];
@@ -68,9 +69,9 @@ void STLIO::save( ModelPtr model, string filename )
 			int b = (int)indices[3 * i + 1];
 			int c = (int)indices[3 * i + 2];
 
-			Vertexf v1;
-			Vertexf v2;
-			Vertexf v3;
+			lvr::Vertexf v1;
+			lvr::Vertexf v2;
+			lvr::Vertexf v3;
 
 			v1.x = vertices[3 * a];
 			v1.y = vertices[3 * a + 1];
@@ -84,7 +85,7 @@ void STLIO::save( ModelPtr model, string filename )
 			v3.y = vertices[3 * c + 1];
 			v3.z = vertices[3 * c + 2];
 
-			Normalf normal( (v1 - v2).cross(v1 - v3));
+			lvr::Normalf normal( (v1 - v2).cross(v1 - v3));
 
 			myfile.write( (char*)&normal.x, 4);
 			myfile.write( (char*)&normal.y, 4);
@@ -112,4 +113,4 @@ void STLIO::save( ModelPtr model, string filename )
  	}
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */
