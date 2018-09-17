@@ -21,9 +21,9 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr/io/DatIO.hpp>
-#include <lvr/io/Timestamp.hpp>
-#include <lvr/io/Progress.hpp>
+#include <lvr2/io/DatIO.hpp>
+#include <lvr2/io/Timestamp.hpp>
+#include <lvr2/io/Progress.hpp>
 
 #include <boost/filesystem.hpp>
 
@@ -36,7 +36,7 @@ using std::ofstream;
 using std::cout;
 using std::endl;
 
-namespace lvr
+namespace lvr2
 {
 
 DatIO::DatIO()
@@ -57,7 +57,7 @@ ModelPtr DatIO::read(string filename)
 ModelPtr DatIO::read(string filename, int n, int reduction)
 {
 	ModelPtr model( new Model);
-	PointBufferPtr pointBuffer(new PointBuffer);
+	PointBuffer2Ptr pointBuffer(new PointBuffer2);
 
 	// Allocate point buffer and read data from file
 	int c = 0;
@@ -97,7 +97,12 @@ ModelPtr DatIO::read(string filename, int n, int reduction)
 		memset(buffer, 0, (n - 1) * sizeof(float));
 
 		in.read((char*)buffer, (n - 1) * sizeof(float));
-		in.read((char*)&reflect, sizeof(int));
+
+        // should only be read if n > 3...
+        if (n > 3)
+        {
+            in.read((char*)&reflect, sizeof(int));
+        }
 
 		if(c % mod_filter == 0 && d < numPoints)
 		{
@@ -137,7 +142,7 @@ ModelPtr DatIO::read(string filename, int n, int reduction)
 	floatArr parr(pointArray);
 	ucharArr carr(colorArray);
 	pointBuffer->setPointArray(parr, d);
-	pointBuffer->setPointColorArray(carr, d);
+	pointBuffer->setColorArray(carr, d);
 
 	model->m_pointCloud = pointBuffer;
 	return model;
@@ -152,17 +157,18 @@ void DatIO::save(ModelPtr ptr, string filename)
 
 void  DatIO::save(string filename)
 {
-	PointBufferPtr pointBuffer = m_model->m_pointCloud;
+	PointBuffer2Ptr pointBuffer = m_model->m_pointCloud;
 	float buffer[4];
 	if(pointBuffer)
 	{
 		ofstream out(filename.c_str(), std::ios::binary);
 		if(out.good())
 		{
-			size_t numPoints;
+			size_t numPoints = pointBuffer->numPoints();
 			size_t numIntensities;
-			floatArr pointArray = pointBuffer->getPointArray(numPoints);
-			floatArr intensityArray = pointBuffer->getPointIntensityArray(numIntensities);
+            unsigned w_intensities;
+			floatArr pointArray = pointBuffer->getPointArray();
+			floatArr intensityArray = pointBuffer->getFloatArray("intensities", numIntensities, w_intensities);
 			float buffer[4];
 			cout << timestamp << "Writing " << numPoints << " to " << filename << endl;
 			for(size_t i = 0; i < numPoints; i++)
@@ -174,7 +180,7 @@ void  DatIO::save(string filename)
 				buffer[2] = pointArray[pos + 2];
 				if(intensityArray)
 				{
-					buffer[3] = intensityArray[i];
+					buffer[3] = intensityArray[i * w_intensities];
 				}
 				out.write((char*)buffer, 4 * sizeof(float));
 			}
@@ -187,7 +193,4 @@ void  DatIO::save(string filename)
 	}
 }
 
-}
-
-
-
+} // namespace lvr2

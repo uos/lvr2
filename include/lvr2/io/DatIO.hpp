@@ -24,13 +24,13 @@
 #ifndef DATIO_HPP_
 #define DATIO_HPP_
 
-#include "BaseIO.hpp"
-#include "Model.hpp"
+#include <lvr2/io/BaseIO.hpp>
+#include <lvr2/io/Model.hpp>
 
 #include <string>
 using std::string;
 
-namespace lvr
+namespace lvr2
 {
 
 /**
@@ -48,6 +48,8 @@ public:
 	virtual void save(string filename);
 };
 
-} // namespace lvr
+} // namespace lvr2
+
+#include "DatIO.cpp"
 
 #endif /* DATIO_HPP_ */
