@@ -1,7 +1,7 @@
 Bugs:   
 
+
     AttributManager:    Elementproxy -operator und -=operator verwenden noch + bzw. +=.
-    PointBuffer2:       hasNormals() / hasColors führen zum Speicherzugriffsfehler, wenn entsprechender AttributeChannel nicht vorhanden.
     
     DatIO:              In read(...) wird, wenn n > 3 ist, Farbinformationen in die PointCloud geschrieben. 
                         Aber in save(...) wird für jeden Punkt der Wolke die Position 
@@ -10,6 +10,17 @@ Bugs:
                         der Intensitätschannel geschrieben werden. 
 
     UosIO:              PointBuffer2 um Subcloud Funktionalität des lvr::PointBuffer's erweitern? 
+
+    Hdf5IO:             Materials werden nicht in .h5 Datei geschrieben.
+
+
+    Fixed:
+
+        PointBuffer2:       hasNormals() / hasColors führen zum Speicherzugriffsfehler, wenn entsprechender AttributeChannel nicht vorhanden.
+
+        MeshBuffer2:        falscher channelname bei setVertxNormals().
+
+        ObjIO:              diverse Bugs gefixt...
 
 ----------------------------------------------------------------------
 
@@ -25,12 +36,8 @@ Unvollständig:
 
     Hdf5IO:     Spectraldaten erstmal ausgeklammert, unklar wie geportet werden soll (minwavelength, maxwavelength...)
 
-
 ----------------------------------------------------------------------
 
 Zurückgestellt:
 
-
 ----------------------------------------------------------------------
-
-ObjIO und Hdf5IO noch nicht getestet
