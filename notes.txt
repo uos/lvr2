@@ -23,6 +23,8 @@ Fragen:
 
 Unvollständig:
 
+    Hdf5IO:     Spectraldaten erstmal ausgeklammert, unklar wie geportet werden soll (minwavelength, maxwavelength...)
+
 
 ----------------------------------------------------------------------
 
@@ -31,14 +33,5 @@ Zurückgestellt:
     Hdf5IO: MeshBuffer2 müsste erst modifiziert werden. (getter für face_idx_materials; getter/setter für textures, materials; textureArr vs. vector<lvr2::Texture> (das selbe für Materials...).
 
     ObjIO:  Material vs IOMaterial/RGBMaterial...
-
-----------------------------------------------------------------------
-
-Ungetestet portiert:
-
-    IOUtils.hpp
-    KinectGrabber.hpp - warum hat der KinectGrabber einen PointBuffer?
-    LasIO.hpp
-    PCDIO.hpp
 
 ----------------------------------------------------------------------
