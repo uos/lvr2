@@ -52,6 +52,7 @@ floatArr PointBuffer2::getPointArray()
 {
     return m_points->dataPtr();
 }
+
 floatArr PointBuffer2::getNormalArray()
 {
     return m_normals->dataPtr();
@@ -66,12 +67,22 @@ ucharArr PointBuffer2::getColorArray(unsigned& w)
 
 bool PointBuffer2::hasColors() const
 {
-    return (m_colors->numAttributes() > 0);
+    if (m_colors)
+    {
+        return (m_colors->numAttributes() > 0);
+    }
+
+    return false;
 }
 
 bool PointBuffer2::hasNormals() const
 {
-    return (m_normals->numAttributes() > 0);
+    if (m_normals)
+    {
+        return (m_normals->numAttributes() > 0);
+    }
+
+    return false;
 }
 
 size_t PointBuffer2::numPoints() const
