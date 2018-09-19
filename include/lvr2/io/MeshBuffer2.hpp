@@ -128,6 +128,21 @@ public:
     ///
     ucharArr getFaceColors(unsigned& width);
 
+    ///
+    /// \brief getFaceMaterialIndices   Returns an array with face material indices 
+    ///
+    indexArray getFaceMaterialIndices();
+
+    ///
+    /// \brief getTextures      Returns a vector with textures
+    ///
+    vector<Texture>& getTextures();
+
+    ///
+    /// \brief getTextures      Returns a vector with materials
+    ///
+    vector<Material>& getMaterials();
+
     bool hasFaceColors();
 
     bool hasVertexColors();

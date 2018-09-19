@@ -162,6 +162,23 @@ ucharArr MeshBuffer2::getFaceColors(unsigned& w)
     return arr;
 }
 
+indexArray MeshBuffer2::getFaceMaterialIndices()
+{
+    size_t n;
+    unsigned w;
+    return m_channels.getIndexArray(n, w, "face_material_indices");
+}
+
+vector<Texture>& MeshBuffer2::getTextures()
+{
+    return m_textures;
+}
+
+vector<Material>& MeshBuffer2::getMaterials()
+{
+    return m_materials;
+}
+
 bool MeshBuffer2::hasFaceColors()
 {
     UCharChannelOptional channel = m_channels.getUCharChannel("face_colors");
