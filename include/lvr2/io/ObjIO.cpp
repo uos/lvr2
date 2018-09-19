@@ -209,7 +209,7 @@ ModelPtr ObjIO::read(string filename)
             string keyword;
             ss >> keyword;
             float x, y, z;
-            unsigned char r, g, b;
+            float r, g, b;
             if(keyword == "v")
             {
                 ss >> x >> y >> z;
@@ -223,9 +223,9 @@ ModelPtr ObjIO::read(string filename)
                 ss >> g >> b;
                 if(colors_exist)
                 {
-                    colors.push_back(r);
-                    colors.push_back(g);
-                    colors.push_back(b);
+                    colors.push_back(static_cast<unsigned char>(r*255.0 + 0.5));
+                    colors.push_back(static_cast<unsigned char>(g*255.0 + 0.5));
+                    colors.push_back(static_cast<unsigned char>(b*255.0 + 0.5));
                 }
             }
             else if(keyword == "vt")
