@@ -27,7 +27,7 @@ void MeshBuffer2::setVertexNormals(floatArr normals)
 {
     if(m_numVertices)
     {
-        m_channels.addFloatChannel(normals, "normals", m_numVertices, 3);
+        m_channels.addFloatChannel(normals, "vertex_normals", m_numVertices, 3);
     }
     else
     {
