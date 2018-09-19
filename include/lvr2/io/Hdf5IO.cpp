@@ -16,9 +16,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-#include <lvr/io/Hdf5IO.hpp>
+#include <lvr2/io/Hdf5IO.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 void Hdf5IO::save(string filename)
@@ -37,28 +37,32 @@ void Hdf5IO::save(string filename)
         return;
     }
 
-    size_t numVertices = 0;
-    size_t numFaceIds = 0;
-    size_t numNormals = 0;
-    size_t numColors = 0;
-    size_t numTextures = 0;
-    size_t numMaterials = 0;
-    size_t numCoords = 0;
-    size_t numMatFaceIndices = 0;
+    size_t numVertices = m_model->m_mesh->numVertices();
+    size_t numFaceIds = m_model->m_mesh->numFaces();
+    
+    // Is this assumption ok?
+    size_t numNormals = numVertices;
+    size_t numColors = numVertices;
+    size_t numCoords = numVertices;
+    size_t numMatFaceIndices = numFaceIds;
 
-    floatArr vertices = m_model->m_mesh->getVertexArray(numVertices);
-    uintArr faceIndices = m_model->m_mesh->getFaceArray(numFaceIds);
-    floatArr normals = m_model->m_mesh->getVertexNormalArray(numNormals);
-    ucharArr colors = m_model->m_mesh->getVertexColorArray(numColors);
-    textureArr textures = m_model->m_mesh->getTextureArray(numTextures);
-    materialArr materials = m_model->m_mesh->getMaterialArray(numMaterials);
-    floatArr coords = m_model->m_mesh->getVertexTextureCoordinateArray(numCoords);
-    uintArr matFaceIndices = m_model->m_mesh->getFaceMaterialIndexArray(numMatFaceIndices);
+    unsigned widthColor = 0;
+    unsigned dummy;
+
+    floatArr vertices = m_model->m_mesh->getVertices();
+    indexArray faceIndices = m_model->m_mesh->getFaceIndices();
+    floatArr normals = m_model->m_mesh->getVertexNormals();
+    ucharArr colors = m_model->m_mesh->getVertexColors(widthColor);
+    vector<Texture>& textures = m_model->m_mesh->getTextures();
+    vector<Material>& materials = m_model->m_mesh->getMaterials();
+    floatArr coords = m_model->m_mesh->getTextureCoordinates();
+    indexArray matFaceIndices = m_model->m_mesh->getFaceMaterialIndices();
+
 
     auto verts = std::vector<float>(vertices.get(), vertices.get() + numVertices * 3);
     auto indis = std::vector<uint32_t>(faceIndices.get(), faceIndices.get() + numFaceIds * 3);
     auto normalsVector = std::vector<float>(normals.get(), normals.get() + numNormals * 3);
-    auto colorsVector = std::vector<uint8_t>(colors.get(), colors.get() + numColors * 3);
+    auto colorsVector = std::vector<uint8_t>(colors.get(), colors.get() + numColors * widthColor);
     auto coordsVector = std::vector<float>(coords.get(), coords.get() + numCoords * 3);
     auto matFaceIndicesVector = std::vector<uint32_t>(matFaceIndices.get(), matFaceIndices.get() + numMatFaceIndices);
 
@@ -101,26 +105,22 @@ void Hdf5IO::save(string filename)
     pm->addVertexTextureCoords(coordsVector);
 
     // add texture images
-    for (size_t i = 0; i < numTextures; i++)
-    {
-        auto t = textures[i];
 
-        pm->addTexture(t->m_texIndex, t->m_width, t->m_height, t->m_pixels);
+    for (const Texture& t : textures)
+    {
+        pm->addTexture(t.m_index, t.m_width, t.m_height, t.m_data);
     }
 
     // add materials
     std::vector<lvr2::PlutoMapMaterial> matVector;
-    for (size_t i = 0; i < numMaterials; i++)
+    for (const Material& m : materials)
     {
-        auto m = materials[i];
         lvr2::PlutoMapMaterial material{};
 
-        material.textureIndex = m->texture_index;
-        material.r = m->r;
-        material.g = m->g;
-        material.b = m->b;
-
-        matVector.push_back(material);
+        material.textureIndex = m.m_texture->idx();
+        material.r = m.m_color->at(0);
+        material.g = m.m_color->at(1);
+        material.b = m.m_color->at(2);
     }
 
     pm->addMaterials(matVector, matFaceIndicesVector);
@@ -132,8 +132,8 @@ using HighFive::Exception;
 
 ModelPtr Hdf5IO::read(string filename)
 {
-    PointBufferPtr pc;
-    MeshBufferPtr mesh;
+    PointBuffer2Ptr pc;
+    MeshBuffer2Ptr mesh;
 
     int numPoints = 0;
     int numNormals = 0;
@@ -239,13 +239,15 @@ ModelPtr Hdf5IO::read(string filename)
 
         if(numPoints)
         {
-            pc = PointBufferPtr(new PointBuffer);
+            pc = PointBuffer2Ptr(new PointBuffer2);
             pc->setPointArray(points, numPoints);
-            pc->setPointColorArray(colors, numColors);
-            pc->setPointIntensityArray(intensities, numIntensities);
-            pc->setPointConfidenceArray(confidences, numConfidences);
-            pc->setPointNormalArray(normals, numNormals);
-            pc->setPointSpectralChannelsArray(spectralChannels, numSpectralChannels, numChannels, minSpectral, maxSpectral);
+            pc->setColorArray(colors, numColors);
+            pc->addFloatChannel(intensities, "intensities", numIntensities, 1);
+            pc->addFloatChannel(confidences, "confidences", numConfidences, 1);
+            pc->setNormalArray(normals, numNormals);
+
+            // @MERGE   How should this be handled?
+            //pc->setPointSpectralChannelsArray(spectralChannels, numSpectralChannels, numChannels, minSpectral, maxSpectral);
         }
     }
     catch(HighFive::Exception& err)
@@ -260,4 +262,4 @@ ModelPtr Hdf5IO::read(string filename)
 
 
 
-} // namespace lvr
+} // namespace lvr2

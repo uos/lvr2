@@ -22,14 +22,14 @@
  */
 
 #include <lvr2/io/PlutoMapIO.hpp>
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/Timestamp.hpp>
 
 #include <iomanip>
 #include <string>
 #include <vector>
 
-#include "Model.hpp"
-#include "BaseIO.hpp"
+#include <lvr2/io/Model.hpp>
+#include <lvr2/io/BaseIO.hpp>
 
 #ifndef __HDF5_IO_HPP_
 #define __HDF5_IO_HPP_
@@ -38,7 +38,7 @@
 using std::string;
 using std::vector;
 
-namespace lvr
+namespace lvr2
 {
 
 /**
@@ -62,6 +62,8 @@ public:
     ModelPtr read(string filename);
 };
 
-}
+} // namespace lvr2
+
+#include "Hdf5IO.cpp"
 
 #endif // __HDF5_IO_HPP_
