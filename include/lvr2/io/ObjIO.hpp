@@ -27,16 +27,16 @@
  *  @author Denis Meyer (denmeyer@uos.de)
  */
 
-#ifndef OBJIO_HPP_
-#define OBJIO_HPP_
-#include "BaseIO.hpp"
+#ifndef LVR2_OBJIO_HPP_
+#define LVR2_OBJIO_HPP_
+#include <lvr2/io/BaseIO.hpp>
 #include <fstream>
 #include <set>
 #include <map>
 
 using namespace std;
 
-namespace lvr
+namespace lvr2
 {
 
 /**
@@ -75,12 +75,14 @@ public:
 private:
 
     void parseMtlFile(map<string, int>& matNames,
-            vector<IOMaterial*>& materials,
+            vector<RGBMaterial*>& materials,
             vector<GlTexture*>& textures,
             string mtlname);
 
 };
 
-}
+} // namespace lvr2
+
+#include "ObjIO.cpp"
 
 #endif /* OBJIO_H_ */
