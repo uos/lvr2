@@ -317,25 +317,12 @@ ModelPtr ObjIO::read(string filename)
         {
             Material tmp;
             tmp.m_color = {m->r, m->g, m->b};
-            //tmp.m_color->at(0) = m->r; 
-            //tmp.m_color->at(1) = m->g; 
-            //tmp.m_color->at(2) = m->b; 
             tmp.m_texture = boost::none; 
 
             if (m->texture_index >= 0)
             {
                 tmp.m_texture = TextureHandle(m->texture_index); 
             }
-
-            std::cout << (unsigned int) m->r << " ";
-            std::cout << (unsigned int) m->b << " ";
-            std::cout << (unsigned int) m->g << " "; 
-            std::cout << m->texture_index << std::endl;
-
-            std::cout << (unsigned int) tmp.m_color->at(0) << " ";
-            std::cout << (unsigned int) tmp.m_color->at(1) << " ";
-            std::cout << (unsigned int) tmp.m_color->at(2) << " ";
-            std::cout << (tmp.m_texture ? tmp.m_texture->idx() : -1) << std::endl;
             
             mesh_mats.push_back(tmp);
         }
@@ -374,8 +361,6 @@ ModelPtr ObjIO::read(string filename)
     }
 
     mesh->setTextureCoordinates(convert_vector_to_shared_array(texcoords));
-    std::cout << "Normals: " << normals.size() << std::endl;
-    std::cout << "faces: " << faces.size() << std::endl;
     mesh->setVertexNormals(convert_vector_to_shared_array(normals));
     mesh->setVertexColors(convert_vector_to_shared_array(colors));
 
