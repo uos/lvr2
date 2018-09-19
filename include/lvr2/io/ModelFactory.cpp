@@ -26,9 +26,9 @@
 
 #include <lvr2/io/AsciiIO.hpp>
 #include <lvr2/io/PLYIO.hpp>
-//#include <lvr2/io/Hdf5IO.hpp>
+#include <lvr2/io/Hdf5IO.hpp>
 #include <lvr2/io/UosIO.hpp>
-//#include <lvr2/io/ObjIO.hpp>
+#include <lvr2/io/ObjIO.hpp>
 #include <lvr2/io/LasIO.hpp>
 #include <lvr2/io/BoctreeIO.hpp>
 #include <lvr2/io/ModelFactory.hpp>
@@ -52,6 +52,7 @@ CoordinateTransform ModelFactory::m_transform;
 
 ModelPtr ModelFactory::readModel( std::string filename )
 {
+
     ModelPtr m;
 
     // Check extension
@@ -70,7 +71,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
     }
     else if (extension == ".obj")
     {
-        //io = new ObjIO;
+        io = new ObjIO;
     }
     else if (extension == ".las")
     {
@@ -82,7 +83,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
     }
     else if (extension == ".h5")
     {
-        //io = new Hdf5IO;
+        io = new Hdf5IO;
     }
 #ifdef LVR_USE_PCL
     else if (extension == ".pcd")
@@ -222,7 +223,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     }
     else if ( extension == ".obj" )
     {
-        //io = new ObjIO;
+        io = new ObjIO;
     }
     else if (extension == ".stl")
     {
@@ -230,7 +231,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     }
     else if (extension == ".h5")
     {
-        //io = new Hdf5IO;
+        io = new Hdf5IO;
     }
 #ifdef LVR_USE_PCL
     else if (extension == ".pcd")
