@@ -28,7 +28,7 @@
  *  @author Denis Meyer (denmeyer@uos.de)
  */
 
-#include <lvr/io/ObjIO.hpp>
+#include <lvr2/io/ObjIO.hpp>
 
 #include <climits>
 #include <iostream>
@@ -40,18 +40,34 @@
 #include <boost/filesystem.hpp>
 #include "boost/tuple/tuple.hpp"
 
-#include <lvr/io/PLYIO.hpp>
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/PLYIO.hpp>
+#include <lvr2/io/Timestamp.hpp>
 #include <lvr/geometry/Vertex.hpp>
 #include <lvr/display/GlTexture.hpp>
 #include <lvr/display/TextureFactory.hpp>
 
+#include <lvr2/texture/Texture.hpp>
+#include <lvr2/texture/Material.hpp>
 
-namespace lvr
+
+namespace lvr2
 {
+
 using namespace std; // Bitte vergebt mir....
 // Meinst du wirklich, dass ich dir so etwas durchgehen lassen kann?
 
+template<typename T, typename Dest>
+Dest convert_vector_to_array(vector<T> source)
+{
+
+    Dest ret = Dest( new T[source.size()] );
+    for (int i = 0; i < source.size(); i++)
+    {
+       ret[i] = source[i]; 
+    }
+
+    return ret;
+}
 
 void tokenize(const string& str,
                       vector<string>& tokens,
@@ -75,7 +91,7 @@ void tokenize(const string& str,
 
 void ObjIO::parseMtlFile(
         map<string, int>& matNames,
-        vector<IOMaterial*>& materials,
+        vector<RGBMaterial*>& materials,
         vector<GlTexture*>& textures,
         string mtlname)
 {
@@ -89,7 +105,7 @@ void ObjIO::parseMtlFile(
     if(in.good())
     {
         char buffer[1024];
-        IOMaterial* m = 0;
+        RGBMaterial* m = 0;
         int matIndex = 0;
         while(in.good())
         {
@@ -109,7 +125,7 @@ void ObjIO::parseMtlFile(
                 map<string, int>::iterator it = matNames.find(matName);
                 if(it == matNames.end())
                 {
-                    m = new IOMaterial;
+                    m = new RGBMaterial;
                     m->r = 128;
                     m->g = 128;
                     m->b = 128;
@@ -170,7 +186,7 @@ ModelPtr ObjIO::read(string filename)
     vector<float>         texcoords;
     vector<uint>        faceMaterials;
     vector<uint>          faces;
-    vector<IOMaterial*>     materials;
+    vector<RGBMaterial*>     materials;
     vector<GlTexture*>    textures;
 
     map<string, int> matNames;
@@ -289,16 +305,36 @@ ModelPtr ObjIO::read(string filename)
         cout << timestamp << "ObjIO::read(): Unable to open file'" << filename << "'." << endl;
     }
 
-    MeshBufferPtr mesh = MeshBufferPtr(new MeshBuffer);
+    MeshBuffer2Ptr mesh = MeshBuffer2Ptr(new MeshBuffer2);
 
     if(materials.size())
     {
-        mesh->setMaterialArray(materials);
+        vector<Material> &mesh_mats = mesh->getMaterials();
+
+        Material tmp;
+        for (RGBMaterial *m : materials)
+        {
+            tmp.m_color->at(0) = m->r; 
+            tmp.m_color->at(1) = m->g; 
+            tmp.m_color->at(2) = m->b; 
+
+            tmp.m_texture = TextureHandle(m->texture_index); 
+
+            mesh_mats.push_back(tmp);
+        }
     }
 
     if(faceMaterials.size() == faces.size() / 3)
     {
-        mesh->setFaceMaterialIndexArray(faceMaterials);
+
+        indexArray indices = indexArray( new unsigned int[faceMaterials.size()] );
+
+        for (unsigned int i = 0; i < faceMaterials.size(); i++)
+        {
+            indices[i] = faceMaterials[i]; 
+        }
+
+        mesh->setFaceMaterialIndices(indices);
     }
     else
     {
@@ -307,19 +343,37 @@ ModelPtr ObjIO::read(string filename)
 
     if(textures.size())
     {
-        mesh->setTextureArray(textures);
+        vector<Texture> &mesh_textures = mesh->getTextures();
+
+        for (GlTexture *oldTexture : textures)
+        {
+            Texture tex(0, oldTexture);
+
+            mesh_textures.push_back(std::move(tex));              
+        }
     }
 
-    mesh->setVertexTextureCoordinateArray(texcoords);
-    mesh->setVertexArray(vertices);
-    mesh->setVertexNormalArray(normals);
-    mesh->setFaceArray(faces);
-    mesh->setVertexColorArray(colors);
+    floatArr coords = convert_vector_to_array<float, floatArr>(texcoords);
+    mesh->setTextureCoordinates(coords);
+
+     
+    floatArr verts = convert_vector_to_array<float, floatArr>(vertices);
+    mesh->setVertices(verts, vertices.size() / 3);
+
+    floatArr norms = convert_vector_to_array<float, floatArr>(normals); 
+    mesh->setVertexNormals(norms);
+
+    indexArray faceids = convert_vector_to_array<unsigned int, indexArray>(faces); 
+    mesh->setFaceIndices(faceids, faces.size() / 3);
+
+    ucharArr vertColors = convert_vector_to_array<unsigned char, ucharArr>(colors); 
+    mesh->setVertexColors(vertColors);
 
     ModelPtr m(new Model(mesh));
     m_model = m;
     return m;
 }
+
 
 class sort_indices
 {
@@ -333,22 +387,22 @@ class sort_indices
 void ObjIO::save( string filename )
 {
 
-    typedef Vertex<unsigned char> ObjColor;
+    typedef lvr::Vertex<unsigned char> ObjColor;
 
-    size_t lenVertices;
-    size_t lenNormals;
-    size_t lenFaces;
-    size_t lenTextureCoordinates;
-    size_t lenFaceMaterials;
+    unsigned dummy;
+    size_t lenVertices = m_model->m_mesh->numVertices();
+    size_t lenNormals = lenVertices;
+    size_t lenFaces = m_model->m_mesh->numFaces();
+    size_t lenTextureCoordinates = lenVertices;
     size_t lenFaceMaterialIndices;
-    size_t lenColors;
-    coord3fArr vertices           = m_model->m_mesh->getIndexedVertexArray( lenVertices );
-    coord3fArr normals            = m_model->m_mesh->getIndexedVertexNormalArray( lenNormals );
-    coord3fArr textureCoordinates = m_model->m_mesh->getIndexedVertexTextureCoordinateArray( lenTextureCoordinates );
-    uintArr    faceIndices        = m_model->m_mesh->getFaceArray( lenFaces );
-    materialArr materials          = m_model->m_mesh->getMaterialArray(lenFaceMaterials);
-    uintArr    faceMaterialIndices   = m_model->m_mesh->getFaceMaterialIndexArray(lenFaceMaterialIndices);
-    ucharArr colors               = m_model->m_mesh->getVertexColorArray(lenColors);
+    size_t lenColors = lenVertices;
+    floatArr vertices           = m_model->m_mesh->getVertices();
+    floatArr normals            = m_model->m_mesh->getVertexNormals();
+    floatArr textureCoordinates = m_model->m_mesh->getTextureCoordinates();
+    indexArray   faceIndices        = m_model->m_mesh->getFaceIndices();
+    vector<Material> &materials     = m_model->m_mesh->getMaterials();
+    indexArray faceMaterialIndices   = m_model->m_mesh->getFaceMaterialIndices();
+    ucharArr colors               = m_model->m_mesh->getVertexColors(dummy);
 
     std::map<ObjColor, unsigned int> colorMap;
 
@@ -373,9 +427,9 @@ void ObjIO::save( string filename )
         for( size_t i=0; i < lenVertices; ++i )
         {
 
-            out << "v " << vertices[i][0] << " "
-                    << vertices[i][1] << " "
-                    << vertices[i][2] << " ";
+            out << "v " << vertices[i*3 + 0] << " "
+                    << vertices[i*3 + 1] << " "
+                    << vertices[i*3 + 2] << " ";
                     if(lenColors>0){
                         unsigned int r = static_cast<unsigned int>(colors[i*3]),
                             g=static_cast<unsigned int>(colors[i*3+1]),
@@ -393,18 +447,18 @@ void ObjIO::save( string filename )
         out << endl << endl << "##  Beginning of vertex normals.\n";
         for( size_t i=0; i < lenNormals; ++i )
         {
-            out << "vn " << normals[i][0] << " "
-                    << normals[i][1] << " "
-                    << normals[i][2] << endl;
+            out << "vn " << normals[i*3 + 0] << " "
+                    << normals[i*3 + 1] << " "
+                    << normals[i*3 + 2] << endl;
         }
 
         out << endl << endl << "##  Beginning of vertexTextureCoordinates.\n";
 
         for( size_t i=0; i < lenTextureCoordinates; ++i )
         {
-            out << "vt " << textureCoordinates[i][0] << " "
-                    << textureCoordinates[i][1] << " "
-                    << textureCoordinates[i][2] << endl;
+            out << "vt " << textureCoordinates[i*3 + 0] << " "
+                    << textureCoordinates[i*3 + 1] << " "
+                    << textureCoordinates[i*3 + 2] << endl;
         }
 
 
@@ -413,7 +467,7 @@ void ObjIO::save( string filename )
         //for( size_t i = 0; i < lenFaces; ++i )
         //{
             //cout << faceMaterialIndices[i] << " " << lenFaceMaterials << endl;
-            //IOMaterial* m = materials[faceMaterialIndices[i]];
+            //RGBMaterial* m = materials[faceMaterialIndices[i]];
             //if(m->texture_index >= 0)
             //{
                 //out << "usemtl texture_" << m->texture_index << endl;
@@ -446,8 +500,8 @@ void ObjIO::save( string filename )
         //splitting materials in colors an textures
         for(size_t i = 0; i< lenFaceMaterialIndices; ++i)
         {
-            IOMaterial* m = materials[faceMaterialIndices[i]];
-            if(m->texture_index >=0 )
+            Material &m = materials[faceMaterialIndices[i]];
+            if(m.m_texture->idx() >=0 )
             {
                 texture_indices.push_back(i);
             }else{
@@ -500,12 +554,12 @@ void ObjIO::save( string filename )
         //textures
         for(size_t i = 0; i<texture_indices.size() ; i++)
         {
-            IOMaterial* first = materials[faceMaterialIndices[texture_indices[i]]];
+            Material &first = materials[faceMaterialIndices[texture_indices[i]]];
             size_t face_index=texture_indices[i];
 
-            if(i==0 || first->texture_index != materials[faceMaterialIndices[texture_indices[i-1]]]->texture_index )
+            if(i==0 || first.m_texture != materials[faceMaterialIndices[texture_indices[i-1]]].m_texture )
             {
-                out << "usemtl texture_" << first->texture_index << endl;
+                out << "usemtl texture_" << first.m_texture->idx() << endl;
                 //std::cout << "usemtl texture_" << first->texture_index << std::endl;
                 out << "f "
                     << faceIndices[face_index * 3 + 0] + 1 << "/"
@@ -517,7 +571,7 @@ void ObjIO::save( string filename )
                     << faceIndices[face_index * 3 + 2] + 1 << "/"
                     << faceIndices[face_index * 3 + 2] + 1 << "/"
                     << faceIndices[face_index * 3 + 2] + 1 << endl;
-            }else if(first->texture_index == materials[faceMaterialIndices[texture_indices[i-1]]]->texture_index )
+            }else if(first.m_texture == materials[faceMaterialIndices[texture_indices[i-1]]].m_texture )
             {
                 out << "f "
                     << faceIndices[face_index * 3 + 0] + 1 << "/"
@@ -545,27 +599,27 @@ void ObjIO::save( string filename )
 
     if( mtlFile.good() )
     {
-        for(int i = 0; i < lenFaceMaterials; i++)
+        for(int i = 0; i < materials.size(); i++)
         {
-            IOMaterial* m = materials[i];
-            if(m->texture_index == -1)
+            const Material &m = materials[i];
+            if(m.m_texture->idx() == -1)
             {
                 mtlFile << "newmtl color_" << i << endl;
                 mtlFile << "Ka "
-                        << m->r / 255.0f << " "
-                        << m->g / 255.0f << " "
-                        << m->b / 255.0f << endl;
+                        << m.m_color->at(0) / 255.0f << " "
+                        << m.m_color->at(1) / 255.0f << " "
+                        << m.m_color->at(2) / 255.0f << endl;
                 mtlFile << "Kd "
-                        << m->r / 255.0f << " "
-                        << m->g / 255.0f << " "
-                        << m->b / 255.0f << endl << endl;
+                        << m.m_color->at(0) / 255.0f << " "
+                        << m.m_color->at(1) / 255.0f << " "
+                        << m.m_color->at(2) / 255.0f << endl << endl;
             }
             else
             {
-                mtlFile << "newmtl texture_"      << m->texture_index << endl;
+                mtlFile << "newmtl texture_"      << m.m_texture->idx() << endl;
                 mtlFile << "Ka 1.000 1.000 1.000" << endl;
                 mtlFile << "Kd 1.000 1.000 1.000" << endl;
-                mtlFile << "map_Kd texture_"      << m->texture_index << ".ppm" << endl << endl;
+                mtlFile << "map_Kd texture_"      << m.m_texture->idx() << ".ppm" << endl << endl;
             }
         }
     }
@@ -573,4 +627,4 @@ void ObjIO::save( string filename )
 }
 
 
-} // Namespace lvr
+} // Namespace lvr2
