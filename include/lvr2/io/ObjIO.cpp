@@ -56,11 +56,11 @@ namespace lvr2
 using namespace std; // Bitte vergebt mir....
 // Meinst du wirklich, dass ich dir so etwas durchgehen lassen kann?
 
-template<typename T, typename Dest>
-Dest convert_vector_to_array(vector<T> source)
+template<typename T>
+boost::shared_array<T> convert_vector_to_shared_array(vector<T> source)
 {
 
-    Dest ret = Dest( new T[source.size()] );
+    boost::shared_array<T> ret = boost::shared_array<T>( new T[source.size()] );
     for (int i = 0; i < source.size(); i++)
     {
        ret[i] = source[i]; 
@@ -145,9 +145,11 @@ void ObjIO::parseMtlFile(
             {
                 float r, g, b;
                 ss >> r >> g >> b;
+                
                 m->r = (unsigned char)(r * 255.0);
                 m->g = (unsigned char)(g * 255.0);
                 m->b = (unsigned char)(b * 255.0);
+
             }
             else if(keyword == "map_Kd")
             {
@@ -311,18 +313,36 @@ ModelPtr ObjIO::read(string filename)
     {
         vector<Material> &mesh_mats = mesh->getMaterials();
 
-        Material tmp;
         for (RGBMaterial *m : materials)
         {
-            tmp.m_color->at(0) = m->r; 
-            tmp.m_color->at(1) = m->g; 
-            tmp.m_color->at(2) = m->b; 
+            Material tmp;
+            tmp.m_color = {m->r, m->g, m->b};
+            //tmp.m_color->at(0) = m->r; 
+            //tmp.m_color->at(1) = m->g; 
+            //tmp.m_color->at(2) = m->b; 
+            tmp.m_texture = boost::none; 
 
-            tmp.m_texture = TextureHandle(m->texture_index); 
+            if (m->texture_index >= 0)
+            {
+                tmp.m_texture = TextureHandle(m->texture_index); 
+            }
 
+            std::cout << (unsigned int) m->r << " ";
+            std::cout << (unsigned int) m->b << " ";
+            std::cout << (unsigned int) m->g << " "; 
+            std::cout << m->texture_index << std::endl;
+
+            std::cout << (unsigned int) tmp.m_color->at(0) << " ";
+            std::cout << (unsigned int) tmp.m_color->at(1) << " ";
+            std::cout << (unsigned int) tmp.m_color->at(2) << " ";
+            std::cout << (tmp.m_texture ? tmp.m_texture->idx() : -1) << std::endl;
+            
             mesh_mats.push_back(tmp);
         }
     }
+
+    mesh->setVertices(convert_vector_to_shared_array(vertices), vertices.size() / 3);
+    mesh->setFaceIndices(convert_vector_to_shared_array(faces), faces.size() / 3);
 
     if(faceMaterials.size() == faces.size() / 3)
     {
@@ -353,24 +373,15 @@ ModelPtr ObjIO::read(string filename)
         }
     }
 
-    floatArr coords = convert_vector_to_array<float, floatArr>(texcoords);
-    mesh->setTextureCoordinates(coords);
-
-     
-    floatArr verts = convert_vector_to_array<float, floatArr>(vertices);
-    mesh->setVertices(verts, vertices.size() / 3);
-
-    floatArr norms = convert_vector_to_array<float, floatArr>(normals); 
-    mesh->setVertexNormals(norms);
-
-    indexArray faceids = convert_vector_to_array<unsigned int, indexArray>(faces); 
-    mesh->setFaceIndices(faceids, faces.size() / 3);
-
-    ucharArr vertColors = convert_vector_to_array<unsigned char, ucharArr>(colors); 
-    mesh->setVertexColors(vertColors);
+    mesh->setTextureCoordinates(convert_vector_to_shared_array(texcoords));
+    std::cout << "Normals: " << normals.size() << std::endl;
+    std::cout << "faces: " << faces.size() << std::endl;
+    mesh->setVertexNormals(convert_vector_to_shared_array(normals));
+    mesh->setVertexColors(convert_vector_to_shared_array(colors));
 
     ModelPtr m(new Model(mesh));
     m_model = m;
+
     return m;
 }
 
@@ -394,7 +405,7 @@ void ObjIO::save( string filename )
     size_t lenNormals = lenVertices;
     size_t lenFaces = m_model->m_mesh->numFaces();
     size_t lenTextureCoordinates = lenVertices;
-    size_t lenFaceMaterialIndices;
+    size_t lenFaceMaterialIndices = lenFaces;
     size_t lenColors = lenVertices;
     floatArr vertices           = m_model->m_mesh->getVertices();
     floatArr normals            = m_model->m_mesh->getVertexNormals();
@@ -444,12 +455,15 @@ void ObjIO::save( string filename )
 
         out<<endl;
 
-        out << endl << endl << "##  Beginning of vertex normals.\n";
-        for( size_t i=0; i < lenNormals; ++i )
+        if (m_model->m_mesh->hasVertexNormals())
         {
-            out << "vn " << normals[i*3 + 0] << " "
-                    << normals[i*3 + 1] << " "
-                    << normals[i*3 + 2] << endl;
+            out << endl << endl << "##  Beginning of vertex normals.\n";
+            for( size_t i=0; i < lenNormals; ++i )
+            {
+                out << "vn " << normals[i*3 + 0] << " "
+                        << normals[i*3 + 1] << " "
+                        << normals[i*3 + 2] << endl;
+            }
         }
 
         out << endl << endl << "##  Beginning of vertexTextureCoordinates.\n";
@@ -495,20 +509,19 @@ void ObjIO::save( string filename )
 
         // format of a face: f v/vt/vn
 
-        std::vector<int> color_indices,texture_indices;
+        std::vector<int> color_indices, texture_indices;
 
         //splitting materials in colors an textures
         for(size_t i = 0; i< lenFaceMaterialIndices; ++i)
         {
             Material &m = materials[faceMaterialIndices[i]];
-            if(m.m_texture->idx() >=0 )
+            if(m.m_texture)
             {
                 texture_indices.push_back(i);
             }else{
                 color_indices.push_back(i);
             }
         }
-
         //sort faceMaterialsIndices: colors, textur_indices
         //sort new index lists instead of the faceMaterialIndices
         std::sort(color_indices.begin(),color_indices.end(),sort_indices(faceMaterialIndices));
@@ -599,10 +612,11 @@ void ObjIO::save( string filename )
 
     if( mtlFile.good() )
     {
+
         for(int i = 0; i < materials.size(); i++)
         {
             const Material &m = materials[i];
-            if(m.m_texture->idx() == -1)
+            if(!m.m_texture)
             {
                 mtlFile << "newmtl color_" << i << endl;
                 mtlFile << "Ka "
