@@ -81,6 +81,15 @@ public:
         GlTexture* oldTexture
     );
 
+    /**
+     * @brief Constructor
+     */
+    Texture(Texture&& other);
+
+    /**
+     * @brief Constructor
+     */
+    Texture(const Texture& other);
 
     /**
      * @brief Destructor

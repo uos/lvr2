@@ -100,6 +100,38 @@ Texture::Texture(
     std::copy(oldTexture->m_data, oldTexture->m_data + copy_len, m_data);
 }
 
+Texture::Texture(Texture &&other) {
+    this->m_index = other.m_index;
+    this->m_width = other.m_width;
+    this->m_height = other.m_height;
+    this->m_data = other.m_data;
+    this->m_numChannels = other.m_numChannels;
+    this->m_numBytesPerChan = other.m_numBytesPerChan;
+    this->m_texelSize = other.m_texelSize;
+
+    other.m_data = nullptr;
+    other.m_width = 0;
+    other.m_height = 0;
+    other.m_numChannels = 0;
+    other.m_numBytesPerChan = 0;
+}
+
+Texture::Texture(const Texture& other)
+{
+    this->m_index = other.m_index;
+    this->m_width = other.m_width;
+    this->m_height = other.m_height;
+    //this->m_data = other.m_data;
+    this->m_numChannels = other.m_numChannels;
+    this->m_numBytesPerChan = other.m_numBytesPerChan;
+    this->m_texelSize = other.m_texelSize;
+
+    size_t data_size = m_width * m_height * m_numChannels * m_numBytesPerChan;
+    m_data = new unsigned char[data_size];
+    std::copy(other.m_data, other.m_data + data_size, m_data);
+    
+}
+
 
 Texture::Texture(
     int index,
@@ -132,7 +164,10 @@ void Texture::save()
 }
 
 Texture::~Texture() {
-    // delete[] m_data;
+    if (m_data)
+    {
+        delete[] m_data;
+    }
     // delete[] m_featureDescriptors;
     // delete[] m_stats;
     // delete[] m_CCV;
