@@ -107,7 +107,7 @@ void PCDIO::save( string filename )
 
     pointcount  = m_model->m_pointCloud->numPoints();
     points      = m_model->m_pointCloud->getPointArray();
-    pointColors = m_model->m_pointCloud->getUcharArray("colors", buf, w_color);
+    pointColors = m_model->m_pointCloud->getUCharArray("colors", buf, w_color);
 
     /* We need the same amount of color information and points. */
     if ( pointcount != buf )

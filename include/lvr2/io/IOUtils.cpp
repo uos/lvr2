@@ -161,7 +161,7 @@ size_t writePointsToASCII(ModelPtr model, std::ofstream& out, bool nocolor)
     n_ip = model->m_pointCloud->numPoints();
     floatArr arr = model->m_pointCloud->getPointArray();
 
-    ucharArr colors = model->m_pointCloud->getUcharArray("colors", n_colors, w_colors);
+    ucharArr colors = model->m_pointCloud->getUCharArray("colors", n_colors, w_colors);
 
     for(int a = 0; a < n_ip; a++)
     {
@@ -240,7 +240,7 @@ void transformAndReducePointCloud(ModelPtr model, int modulo, int sx, int sy, in
 
     n_ip = model->m_pointCloud->numPoints();
     floatArr arr = model->m_pointCloud->getPointArray();
-    ucharArr colors = model->m_pointCloud->getUcharArray("colors", n_colors, w_colors);
+    ucharArr colors = model->m_pointCloud->getUCharArray("colors", n_colors, w_colors);
 
     // Plus one because it might differ because of the 0-index
     // better waste memory for one float than having not enough space.

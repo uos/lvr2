@@ -228,7 +228,7 @@ public:
 
     floatOptional getFloatAttribute(std::string name);
     ucharOptional getUCharAttribute(std::string name);
-    intOptional getIndexAttribute(std::string name);
+    intOptional getIntAttribute(std::string name);
 
     void addFloatChannel(FloatChannelPtr data, std::string name);
     void addUCharChannel(UCharChannelPtr data, std::string name);
