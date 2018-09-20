@@ -88,7 +88,7 @@ ModelPtr filterModel(ModelPtr p, int k, float sigma)
 
 size_t countPointsInFile(boost::filesystem::path& inFile)
 {
-    ifstream in(inFile.c_str());
+    ifstream in(inFile.c_str());    
     cout << timestamp << "Counting points in " << inFile.filename().string() << "..." << endl;
 
     // Count lines in file

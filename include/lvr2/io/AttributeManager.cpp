@@ -6,6 +6,55 @@
 namespace lvr2
 {
 
+void AttributeManager::addFloatAttribute(float data, std::string name)
+{
+    auto ret = m_floatAttribtes.insert(std::pair<std::string, float>(name, data));
+    if(!ret.second )
+    {
+        std::cout << timestamp << "AttributeManager: Float attribute '"
+                  << name << "' already exists. Will not add data."
+                  << std::endl;
+    }
+}
+
+void AttributeManager::addUCharAttribute(unsigned char data, std::string name)
+{
+    auto ret = m_ucharAttribtes.insert(std::pair<std::string, unsigned char>(name, data));
+    if(!ret.second )
+    {
+        std::cout << timestamp << "AttributeManager: Uchar attribute '"
+                  << name << "' already exists. Will not add data."
+                  << std::endl;
+    }
+}
+
+
+void AttributeManager::addIntAttribute(int data, std::string name)
+{
+    auto ret = m_intAttribtes.insert(std::pair<std::string, int>(name, data));
+    if(!ret.second )
+    {
+        std::cout << timestamp << "AttributeManager: Int attribute '"
+                  << name << "' already exists. Will not add data."
+                  << std::endl;
+    }
+}
+
+floatOptional getFloatAttribute(std::string name)
+{
+    /// TODO
+}
+
+ucharOptional getUCharAttribute(std::string name)
+{
+    /// TODO
+}
+
+intOptional getIndexAttribute(std::string name)
+{
+    /// TODO
+}
+
 void AttributeManager::addFloatChannel(floatArr data, std::string name, size_t n, unsigned width)
 {
     FloatChannelPtr channel(new FloatChannel(n, width, data));
