@@ -431,9 +431,9 @@ void ObjIO::save( string filename )
                     << vertices[i*3 + 1] << " "
                     << vertices[i*3 + 2] << " ";
                     if(lenColors>0){
-                        unsigned int r = static_cast<unsigned int>(colors[i*3]),
-                            g=static_cast<unsigned int>(colors[i*3+1]),
-                            b=static_cast<unsigned int>(colors[i*3+2]);
+                        unsigned char r = colors[i*3 + 0],
+                                      g = colors[i*3 + 1],
+                                      b = colors[i*3 + 2];
 
                         out << static_cast<float>(r)/255.0 << " "
                         << static_cast<float>(g)/255.0 << " "
