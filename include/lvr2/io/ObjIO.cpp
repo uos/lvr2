@@ -325,6 +325,8 @@ ModelPtr ObjIO::read(string filename)
             }
             
             mesh_mats.push_back(tmp);
+
+            delete m;
         }
     }
 
@@ -352,9 +354,11 @@ ModelPtr ObjIO::read(string filename)
     {
         vector<Texture> &mesh_textures = mesh->getTextures();
 
-        for (GlTexture *oldTexture : textures)
+        for (int i = 0; i < textures.size(); i++)
         {
-            Texture tex(0, oldTexture);
+            GlTexture * oldTexture = textures[i];
+            Texture tex(i, oldTexture);
+            delete oldTexture;
 
             mesh_textures.push_back(std::move(tex));              
         }
