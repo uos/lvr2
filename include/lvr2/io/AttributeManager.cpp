@@ -8,7 +8,7 @@ namespace lvr2
 
 void AttributeManager::addFloatAttribute(float data, std::string name)
 {
-    auto ret = m_floatAttribtes.insert(std::pair<std::string, float>(name, data));
+    auto ret = m_floatAttributes.insert(std::pair<std::string, float>(name, data));
     if(!ret.second )
     {
         std::cout << timestamp << "AttributeManager: Float attribute '"
@@ -19,10 +19,10 @@ void AttributeManager::addFloatAttribute(float data, std::string name)
 
 void AttributeManager::addUCharAttribute(unsigned char data, std::string name)
 {
-    auto ret = m_ucharAttribtes.insert(std::pair<std::string, unsigned char>(name, data));
+    auto ret = m_ucharAttributes.insert(std::pair<std::string, unsigned char>(name, data));
     if(!ret.second )
     {
-        std::cout << timestamp << "AttributeManager: Uchar attribute '"
+        std::cout << timestamp << "AttributeManager: UChar attribute '"
                   << name << "' already exists. Will not add data."
                   << std::endl;
     }
@@ -31,7 +31,7 @@ void AttributeManager::addUCharAttribute(unsigned char data, std::string name)
 
 void AttributeManager::addIntAttribute(int data, std::string name)
 {
-    auto ret = m_intAttribtes.insert(std::pair<std::string, int>(name, data));
+    auto ret = m_intAttributes.insert(std::pair<std::string, int>(name, data));
     if(!ret.second )
     {
         std::cout << timestamp << "AttributeManager: Int attribute '"
@@ -40,19 +40,43 @@ void AttributeManager::addIntAttribute(int data, std::string name)
     }
 }
 
-floatOptional getFloatAttribute(std::string name)
+floatOptional AttributeManager::getFloatAttribute(std::string name)
 {
-    /// TODO
+    auto it = m_floatAttributes.find(name);
+    if(it != m_floatAttributes.end())
+    {
+        return floatOptional(it->second);
+    }
+    else
+    {
+        return boost::none;
+    }
 }
 
-ucharOptional getUCharAttribute(std::string name)
+ucharOptional AttributeManager::getUCharAttribute(std::string name)
 {
-    /// TODO
+    auto it = m_ucharAttributes.find(name);
+    if(it != m_ucharAttributes.end())
+    {
+        return ucharOptional(it->second);
+    }
+    else
+    {
+        return boost::none;
+    }
 }
 
-intOptional getIndexAttribute(std::string name)
+intOptional AttributeManager::getIntAttribute(std::string name)
 {
-    /// TODO
+    auto it = m_intAttributes.find(name);
+    if(it != m_intAttributes.end())
+    {
+        return intOptional(it->second);
+    }
+    else
+    {
+        return boost::none;
+    }
 }
 
 void AttributeManager::addFloatChannel(floatArr data, std::string name, size_t n, unsigned width)
