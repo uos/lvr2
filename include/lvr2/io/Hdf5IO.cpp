@@ -246,8 +246,10 @@ ModelPtr Hdf5IO::read(string filename)
             pc->addFloatChannel(confidences, "confidences", numConfidences, 1);
             pc->setNormalArray(normals, numNormals);
 
-            // @MERGE   How should this be handled?
-            //pc->setPointSpectralChannelsArray(spectralChannels, numSpectralChannels, numChannels, minSpectral, maxSpectral);
+            // add spectral channels to Pointbuffer 
+            pc->addIntAttribute(minSpectral, "spectral_wavelength_min");
+            pc->addIntAttribute(maxSpectral, "spectral_wavelength_max");
+            pc->addFloatChannel(spectralChannels, "spectral_channels", numSpectralChannels, numChannels);
         }
     }
     catch(HighFive::Exception& err)
