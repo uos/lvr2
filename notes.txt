@@ -1,43 +1,35 @@
 Bugs:   
 
-
-    AttributManager:    Elementproxy -operator und -=operator verwenden noch + bzw. +=.
-    
-    DatIO:              In read(...) wird, wenn n > 3 ist, Farbinformationen in die PointCloud geschrieben. 
-                        Aber in save(...) wird für jeden Punkt der Wolke die Position 
-                        und die Intensität (falls vorhanden) rausgeschrieben. 
-                        Als Fix sollte in save(...) zusätzlich/exklusiv 
-                        der Intensitätschannel geschrieben werden. 
-
-    UosIO:              PointBuffer2 um Subcloud Funktionalität des lvr::PointBuffer's erweitern? 
-
     Hdf5IO:             Materials werden nicht in .h5 Datei geschrieben.
 
-
-    Fixed:
-
-        PointBuffer2:       hasNormals() / hasColors führen zum Speicherzugriffsfehler, wenn entsprechender AttributeChannel nicht vorhanden.
-
-        MeshBuffer2:        falscher channelname bei setVertxNormals().
-
-        ObjIO:              diverse Bugs gefixt...
+Fixed:
 
 ----------------------------------------------------------------------
+
 
 Fragen:
 
-    Warum hat GlTexture keinen Namespace?
-
-    PointBuffer2 um Funktionen für Intensities erweitern?
-
 ----------------------------------------------------------------------
+
 
 Unvollständig:
 
-    Hdf5IO:     Spectraldaten erstmal ausgeklammert, unklar wie geportet werden soll (minwavelength, maxwavelength...)
+----------------------------------------------------------------------
+
+
+Zurückgestellt:
 
 ----------------------------------------------------------------------
 
-Zurückgestellt:
+
+Anmerkungen:
+
+                DataStruct.hpp: indexArray umbennen in indexArr?
+
+                Texture:    Memoryleak evtl. mit shared ptr lösen, es würde move constructor/copy consturctor sparen...
+
+                AttributeManager:  Attribute in AttributeOptionals sollten evtl. Referenzen sein.
+
+                                   deleteChannel/deleteAttribute?
 
 ----------------------------------------------------------------------
