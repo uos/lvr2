@@ -61,7 +61,7 @@ boost::shared_array<T> convert_vector_to_shared_array(vector<T> source)
 {
 
     boost::shared_array<T> ret = boost::shared_array<T>( new T[source.size()] );
-    for (int i = 0; i < source.size(); i++)
+    for (size_t i = 0; i < source.size(); i++)
     {
        ret[i] = source[i]; 
     }
@@ -338,7 +338,7 @@ ModelPtr ObjIO::read(string filename)
 
         indexArray indices = indexArray( new unsigned int[faceMaterials.size()] );
 
-        for (unsigned int i = 0; i < faceMaterials.size(); i++)
+        for (size_t i = 0; i < faceMaterials.size(); i++)
         {
             indices[i] = faceMaterials[i]; 
         }
@@ -354,7 +354,7 @@ ModelPtr ObjIO::read(string filename)
     {
         vector<Texture> &mesh_textures = mesh->getTextures();
 
-        for (int i = 0; i < textures.size(); i++)
+        for (size_t i = 0; i < textures.size(); i++)
         {
             GlTexture * oldTexture = textures[i];
             Texture tex(i, oldTexture);
