@@ -41,9 +41,9 @@ public:
     {
         if( m_ptr && (m_w > 2))
         {
-            m_ptr[0] += v.x;
-            m_ptr[1] += v.y;
-            m_ptr[2] += v.z;
+            m_ptr[0] -= v.x;
+            m_ptr[1] -= v.y;
+            m_ptr[2] -= v.z;
         }
         return *this;
     }
@@ -68,7 +68,7 @@ public:
     {
         if(m_w > 2)
         {
-            *this += v;
+            *this -= v;
             return BaseVecT(m_ptr[0], m_ptr[1], m_ptr[2]);
         }
         else
