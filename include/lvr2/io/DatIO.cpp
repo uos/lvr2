@@ -85,6 +85,12 @@ ModelPtr DatIO::read(string filename, int n, int reduction)
 
 	float* pointArray = new float[3 * numPoints];
 	unsigned char* colorArray = new unsigned char[3 * numPoints];
+    floatArr intensityArray;
+
+    if (n > 3)
+    {
+        intensityArray = floatArr( new float[numPoints] );
+    }
 
 	float* buffer = new float[n-1];
 	int    reflect;
@@ -114,6 +120,8 @@ ModelPtr DatIO::read(string filename, int n, int reduction)
 
 			if(n > 3)
 			{
+                intensityArray[d]   = (float) reflect;
+
 				colorArray[pos] 	= (unsigned char)reflect;
 				colorArray[pos + 1] = (unsigned char)reflect;
 				colorArray[pos + 2] = (unsigned char)reflect;
@@ -143,6 +151,7 @@ ModelPtr DatIO::read(string filename, int n, int reduction)
 	ucharArr carr(colorArray);
 	pointBuffer->setPointArray(parr, d);
 	pointBuffer->setColorArray(carr, d);
+    pointBuffer->addFloatChannel(intensityArray, "intensities", d, 1);
 
 	model->m_pointCloud = pointBuffer;
 	return model;
