@@ -29,10 +29,10 @@
 #include <list>
 using namespace std;
 
-#include "Renderable.hpp"
-#include "StaticMesh.hpp"
+#include <lvr2/display/Renderable.hpp>
+#include <lvr2/display/StaticMesh.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 class MeshCluster: public lvr::Renderable
@@ -40,7 +40,7 @@ class MeshCluster: public lvr::Renderable
 public:
 	MeshCluster() {};
 
-	void addMesh(MeshBufferPtr buffer, string name);
+	void addMesh(MeshBuffer2Ptr buffer, string name);
 
 	virtual ~MeshCluster() {};
 
@@ -59,6 +59,8 @@ private:
 	list<StaticMesh*> m_meshes;
 };
 
-} // namespace lvr
+} // namespace lvr2
+
+#include "MeshCluster.cpp"
 
 #endif /* MESHCLUSTER_HPP_ */

@@ -27,9 +27,9 @@
 #ifndef GROUNDPLANE_H_
 #define GROUNDPLANE_H_
 
-#include "Renderable.hpp"
+#include <lvr2/display/Renderable.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 class GroundPlane : public Renderable{
@@ -40,13 +40,15 @@ public:
 
 	virtual ~GroundPlane();
 	virtual void render();
-	virtual void transform(Matrix4<float> m);
+	virtual void transform(lvr::Matrix4<float> m);
 
 private:
 	void drawGrid(int increment, int count);
 
 };
 
-} // namespace lvr
+} // namespace lvr2
+
+#include "GroundPlane.cpp"
 
 #endif /* GROUNDPLANE_H_ */

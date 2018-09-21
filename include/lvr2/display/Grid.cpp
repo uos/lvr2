@@ -23,8 +23,9 @@
  *  @author Thomas Wiemann
  */
 
-#include <lvr/display/Grid.hpp>
-namespace lvr
+#include <lvr2/display/Grid.hpp>
+
+namespace lvr2
 {
 
 Grid::Grid(floatArr vertices, uintArr boxes, uint numPoints, uint numBoxes)
@@ -137,4 +138,4 @@ Grid::~Grid()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */

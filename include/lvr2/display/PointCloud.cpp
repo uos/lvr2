@@ -24,22 +24,22 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr/display/PointCloud.hpp>
-#include <lvr/display/ColorMap.hpp>
+#include <lvr2/display/PointCloud.hpp>
+#include <lvr2/display/ColorMap.hpp>
 
 #include <string.h>
 
-namespace lvr
+namespace lvr2
 {
 
 PointCloud::PointCloud()
 {
     m_numNormals = 0;
-    m_boundingBox = new BoundingBox<Vertex<float> >;
+    m_boundingBox = new lvr::BoundingBox<lvr::Vertex<float> >;
     m_renderMode = RenderPoints;
 }
 
-PointCloud::PointCloud( PointBufferPtr buffer, string name) : Renderable(name)
+PointCloud::PointCloud( PointBuffer2Ptr buffer, string name) : Renderable(name)
 {
 	m_model = ModelPtr(new Model(buffer));
 	init(buffer);
@@ -52,7 +52,7 @@ PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
     init(m_model->m_pointCloud);
 }
 
-void PointCloud::updateBuffer(PointBufferPtr buffer)
+void PointCloud::updateBuffer(PointBuffer2Ptr buffer)
 {
 	init(buffer);
 
@@ -63,24 +63,26 @@ void PointCloud::init(PointBufferPtr buffer)
 	int maxColors = 255;
 	m_numNormals = 0;
 
-	m_boundingBox = new BoundingBox<Vertex<float> >;
+	m_boundingBox = new lvr::BoundingBox<lvr::Vertex<float> >;
 	m_renderMode = RenderPoints;
 
 	if(buffer)
 	{
-		m_normals = buffer->getIndexedPointNormalArray(m_numNormals);
-		size_t n_points;
-		coord3fArr points     = buffer->getIndexedPointArray(n_points);
-		color3bArr colors     = buffer->getIndexedPointColorArray(n_points);
-		floatArr intensities  = buffer->getPointIntensityArray(n_points);
+		size_t n_points = buffer->numPoints();
+		floatArr points = buffer->getPointArray();
+        m_numNormals = n_points;
+		m_normals    = buffer->getNormalArray();
+        unsigned w_color, dummy;
+		ucharArr colors      = buffer->getColorArray(w_color);
+		floatArr intensities = buffer->getFloatArray("intensities", n_points, dummy);
 
 		ColorMap c_map(maxColors);
 
-		for(size_t i = 0; i < buffer->getNumPoints(); i++)
+		for(size_t i = 0; i < n_points; i++)
 		{
-			float x = points[i][0];
-			float y = points[i][1];
-			float z = points[i][2];
+			float x = points[i*3 + 0];
+			float y = points[i*3 + 1];
+			float z = points[i*3 + 2];
 
 			m_boundingBox->expand(x,y,z);
 
@@ -88,9 +90,9 @@ void PointCloud::init(PointBufferPtr buffer)
 
 			if(colors)
 			{
-				r = colors[i][0];
-				g = colors[i][1];
-				b = colors[i][2];
+				r = colors[i*w_color + 0];
+				g = colors[i*w_color + 1];
+				b = colors[i*w_color + 2];
 			}
 			else if (intensities)
 			{
@@ -111,7 +113,7 @@ void PointCloud::init(PointBufferPtr buffer)
 			}
 
 
-			m_points.push_back(uColorVertex(x, y, z, r, g, b));
+			m_points.push_back(lvr::uColorVertex(x, y, z, r, g, b));
 		}
 	}
 	updateDisplayLists();
@@ -176,9 +178,9 @@ void PointCloud::updateDisplayLists(){
         glColor3f(1.0, 0.0, 1.0);
         for(int i = 0; i < m_numNormals; i++)
         {
-            Vertex<float> start(m_points[i].x, m_points[i].y, m_points[i].z);
-            Normal<float> normal(m_normals[i].x, m_normals[i].y, m_normals[i].z);
-            Vertex<float> end = start + normal * length;
+            lvr::Vertex<float> start(m_points[i].x, m_points[i].y, m_points[i].z);
+            lvr::Normal<float> normal(m_normals[i].x, m_normals[i].y, m_normals[i].z);
+            lvr::Vertex<float> end = start + normal * length;
             glBegin(GL_LINES);
             glVertex3f(start[0], start[1], start[2]);
             glVertex3f(end[0], end[1], end[2]);
@@ -193,4 +195,4 @@ PointCloud::~PointCloud() {
     // TODO Auto-generated destructor stub
 }
 
-}
+} // namespace lvr2

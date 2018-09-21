@@ -1,11 +1,11 @@
 #ifndef POINTCORRESPONDENCES_H
 #define POINTCORRESPONDENCES_H
 
-#include "Renderable.hpp"
+#include <lvr2/display/Renderable.hpp>
 
 #include <vector>
 
-namespace lvr
+namespace lvr2
 {
 
 class PointCorrespondences : public Renderable
@@ -17,6 +17,8 @@ private:
     GLuint m_displayList;
 };
 
-} // namespace lvr
+} // namespace lvr2
+
+#include "PointCorrespondences.cpp"
 
 #endif // POINTCORRESPONDENCES_H

@@ -24,9 +24,9 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr/display/CoordinateAxes.hpp>
+#include <lvr2/display/CoordinateAxes.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 CoordinateAxes::CoordinateAxes() : Renderable("Coordinate System"){
@@ -135,8 +135,8 @@ void CoordinateAxes::render(){
 	}
 }
 
-void CoordinateAxes::transform(Matrix4<float> m){
+void CoordinateAxes::transform(lvr::Matrix4<float> m){
 
 }
 
-} // namespace lvr
+} // namespace lvr2

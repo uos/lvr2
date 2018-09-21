@@ -27,7 +27,7 @@
 #ifndef POINTCLOUD_H_
 #define POINTCLOUD_H_
 
-#include "Renderable.hpp"
+#include <lvr2/display/Renderable.hpp>
 
 #include <lvr/geometry/ColorVertex.hpp>
 
@@ -39,8 +39,7 @@
 using namespace std;
 
 
-
-namespace lvr
+namespace lvr2
 {
 
 enum
@@ -54,46 +53,46 @@ public:
 
     PointCloud();
     PointCloud(ModelPtr loader, string name = "<unamed cloud>");
-    PointCloud(PointBufferPtr buffer, string name = "<unamed cloud>");
+    PointCloud(PointBuffer2Ptr buffer, string name = "<unamed cloud>");
 
     virtual ~PointCloud();
     virtual inline void render();
 
-    vector<uColorVertex> getPoints(){return m_points;};
+    vector<lvr::uColorVertex> getPoints(){return m_points;};
     void setPoints(){};
 
     void addPoint(float x, float y, float z, unsigned char r, unsigned char g, unsigned char b){
-        m_boundingBox->expand(uColorVertex(x, y, z, r, g, b));
-        m_points.push_back(uColorVertex(x, y, z, r, g, b));
+        m_boundingBox->expand(lvr::uColorVertex(x, y, z, r, g, b));
+        m_points.push_back(lvr::uColorVertex(x, y, z, r, g, b));
     };
 
-    void addPoint(const uColorVertex v) {
+    void addPoint(const lvr::uColorVertex v) {
         m_boundingBox->expand(v);
         m_points.push_back(v);
     };
 
     void clear(){
         delete m_boundingBox;
-        m_boundingBox = new BoundingBox<Vertex<float> >;
+        m_boundingBox = new lvr::BoundingBox<lvr::Vertex<float> >;
         m_points.clear();
     };
 
-    void updateBuffer(PointBufferPtr buffer);
+    void updateBuffer(PointBuffer2Ptr buffer);
 
     void updateDisplayLists();
 //private:
-    vector<uColorVertex> m_points;
+    vector<lvr::uColorVertex> m_points;
 
     void setRenderMode(int mode) {m_renderMode = mode;}
 
 
 private:
     int getFieldsPerLine(string filename);
-    void init(PointBufferPtr buffer);
+    void init(PointBuffer2Ptr buffer);
 
     int                        m_renderMode;
     GLuint                     m_normalListIndex;
-    coord3fArr                 m_normals;
+    floatArr                   m_normals;
     size_t                     m_numNormals;
 
 };
@@ -137,6 +136,8 @@ inline void PointCloud::render()
     }
 }
 
-} // namespace lvr
+} // namespace lvr2
+
+#include "PointCloud.cpp"
 
 #endif /* POINTCLOUD_H_ */

@@ -26,10 +26,10 @@
 #ifndef GRID_HPP_
 #define GRID_HPP_
 
-#include "Renderable.hpp"
-#include <lvr/io/DataStruct.hpp>
+#include <lvr2/display/Renderable.hpp>
+#include <lvr2/io/DataStruct.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 class Grid : public Renderable
@@ -49,5 +49,8 @@ private:
     GLuint          m_gridDisplayList;
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
+
+#include "Grid.cpp"
+
 #endif /* GRID_HPP_ */

@@ -8,6 +8,9 @@
 #ifndef COLOR_H_
 #define COLOR_H_
 
+namespace lvr2
+{
+
 enum Color {RED, GREEN, BLUE, YELLOW, PINK, ORANGE, LIGHTBLUE, LIGHTGREY, BLACK, WHITE};
 
 enum ColorTable {BASIC, LIGHT, HIGHLIGHT};
@@ -26,5 +29,8 @@ public:
 	}
 };
 
+} // namespace lvr2
+
+#include "Color.cpp"
 
 #endif /* COLOR_H_ */
