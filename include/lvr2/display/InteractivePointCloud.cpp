@@ -23,26 +23,26 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr/display/InteractivePointCloud.hpp>
+#include <lvr2/display/InteractivePointCloud.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 InteractivePointCloud::InteractivePointCloud()
 {
-	m_boundingBox = new BoundingBox<Vertex<float> >(
-			Vertex<float>(-8, -8, -8),
-			Vertex<float>(8, 8, 8)
+	m_boundingBox = new lvr::BoundingBox<lvr::Vertex<float> >(
+			lvr::Vertex<float>(-8, -8, -8),
+			lvr::Vertex<float>(8, 8, 8)
 			);
 
-	updateBuffer(PointBufferPtr());
+	updateBuffer(PointBuffer2Ptr());
 }
 
-InteractivePointCloud::InteractivePointCloud(PointBufferPtr buffer)
+InteractivePointCloud::InteractivePointCloud(PointBuffer2Ptr buffer)
 {
-	m_boundingBox = new BoundingBox<Vertex<float> >(
-			Vertex<float>(-8, -8, -8),
-			Vertex<float>(8, 8, 8)
+	m_boundingBox = new lvr::BoundingBox<lvr::Vertex<float> >(
+			lvr::Vertex<float>(-8, -8, -8),
+			lvr::Vertex<float>(8, 8, 8)
 			);
 
 	updateBuffer(buffer);
@@ -59,22 +59,22 @@ void InteractivePointCloud::render()
 	if(m_buffer)
 	{
 		glColor3f(1.0, 0.0, 0.0);
-		glDrawArrays(GL_POINTS, 0, m_buffer->getNumPoints());
+		glDrawArrays(GL_POINTS, 0, m_buffer->numPoints());
 	}
 }
 
-void InteractivePointCloud::updateBuffer(PointBufferPtr buffer)
+void InteractivePointCloud::updateBuffer(PointBuffer2Ptr buffer)
 {
 	if(buffer)
 	{
 		if(!m_boundingBox)
 		{
-			m_boundingBox = new BoundingBox<Vertex<float> >;
+			m_boundingBox = new lvr::BoundingBox<lvr::Vertex<float> >;
 			m_boundingBox->expand(8000, 8000, 8000);
 		}
 
-		size_t num_vertices;
-		float* vertices = buffer->getPointArray(num_vertices).get();
+		size_t num_vertices buffer->numPoints();
+		float* vertices = buffer->getPointArray().get();
 
 //		m_boundingBox = new BoundingBox<Vertex<float> >;
 //		for (int i = 0; i < int(num_vertices); i++)
@@ -88,4 +88,4 @@ void InteractivePointCloud::updateBuffer(PointBufferPtr buffer)
 	}
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */

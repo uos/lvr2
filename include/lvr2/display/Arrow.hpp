@@ -28,7 +28,7 @@
 #define ARROW_H_
 
 #include <lvr/geometry/Vertex.hpp>
-#include "Renderable.hpp"
+#include <lvr2/display/Renderable.hpp>
 
 #include <vector>
 #include <string>
@@ -39,7 +39,7 @@
 
 using namespace std;
 
-namespace lvr
+namespace lvr2
 {
 
 class Arrow : public Renderable{
@@ -58,7 +58,7 @@ public:
 private:
 	double roll, pitch, yaw;
 	int color;
-	Matrix4 rotation;
+	lvr::Matrix4 rotation;
 };
 
 	
@@ -93,8 +93,11 @@ inline void EulerToMatrix(const double *rPos, const double *rPosTheta, float *al
   alignxf[15] = 1;
 };
 
-} // namespace lvr
+} // namespace lvr2
 
+// @TODO Why do we need this?
 void render();
+
+#include "Arrow.cpp"
 
 #endif /* Arrow_H_ */

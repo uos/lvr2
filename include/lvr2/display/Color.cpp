@@ -1,4 +1,7 @@
-#include <lvr/display/Color.hpp>
+#include <lvr2/display/Color.hpp>
+
+namespace lvr2
+{
 
 float Colors::PrimeColorTable[][3] = {
 	{ 0.80, 0.00, 0.00},	// Red 3
@@ -61,3 +64,5 @@ void Colors::getColor(float* c, Color name, ColorTable table)
 		break;
 	}
 }
+
+} // namespace lvr2

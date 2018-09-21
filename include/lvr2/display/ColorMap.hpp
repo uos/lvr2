@@ -35,7 +35,7 @@
  * @TODO: Integrated from show.
  */
 
-namespace lvr
+namespace lvr2
 {
 
 /// Identifies a color gradient
@@ -142,6 +142,8 @@ private:
     size_t      m_numBuckets;
 };
 
-} // namespace lvr
+} // namespace lvr2
+
+#include "ColorMap.cpp"
 
 #endif /* COLORMAP_H_ */

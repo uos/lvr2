@@ -24,44 +24,49 @@
  *  @author Thomas Wiemann
  */
 
-#include <fstream>
-#include <sstream>
-using std::ofstream;
-using std::stringstream;
+#include <lvr2/display/MultiPointCloud.hpp>
 
-#include <lvr/display/MultiPointCloud.hpp>
-#include <lvr/io/UosIO.hpp>
-
-#include <boost/filesystem.hpp>
-
-namespace lvr
+namespace lvr2
 {
 
 MultiPointCloud::MultiPointCloud(ModelPtr model, string name)
 {
 
-    PointBufferPtr buffer = model->m_pointCloud;
+    PointBuffer2Ptr buffer = model->m_pointCloud;
     init(buffer);
     m_model = model;
 }
 
-MultiPointCloud::MultiPointCloud(PointBufferPtr buffer, string name)
+MultiPointCloud::MultiPointCloud(PointBuffer2Ptr buffer, string name)
 {
 	m_model = ModelPtr(new Model(buffer));
 	init(buffer);
 }
 
-void MultiPointCloud::init(PointBufferPtr buffer)
+void MultiPointCloud::init(PointBuffer2Ptr buffer)
 {
 	if(buffer)
 	{
-		vector<indexPair> pairs = buffer->getSubClouds();
+        size_t numSubClouds;
+        unsigned dummy; 
+
+        indexArray subClouds = buffer->getIndexArray("sub_clouds", numSubClouds, dummy);
+
+        vector<indexPair> pairs;
+        pairs.reserve(numSubClouds);
+        for (size_t i = 0; i < numSubClouds; i++)
+        {
+            pairs[i].first  = subClouds[i*2 + 0];    
+            pairs[i].second = subClouds[i*2 + 1];    
+        }        
+
 		vector<indexPair>::iterator it;
 
 		int c(1);
-		size_t n;
-		coord3fArr points = buffer->getIndexedPointArray( n );
-		color3bArr colors = buffer->getIndexedPointColorArray( n );
+		size_t n = buffer->numPoints();
+        unsigned w_color;
+		floatArr points = buffer->getPointArray();
+		ucharArr colors = buffer->getColorArray(w_color);
 
 		for(it = pairs.begin(); it != pairs.end(); it ++)
 		{
@@ -73,11 +78,11 @@ void MultiPointCloud::init(PointBufferPtr buffer)
 			{
 				if(colors)
 				{
-					pc->addPoint(points[a][0], points[a][1], points[a][2], colors[a][0], colors[a][1], colors[a][2]);
+					pc->addPoint(points[a*3 + 0], points[a*3 + 1], points[a*3 + 2], colors[a*3 + 0], colors[a*3 + 1], colors[a*3 + 2]);
 				}
 				else
 				{
-					pc->addPoint(points[a][0], points[a][1], points[a][2], 255, 0, 0);
+					pc->addPoint(points[a*3 + 0], points[a*3 + 1], points[a*3 + 2], 255, 0, 0);
 				}
 			}
 			stringstream ss;
@@ -114,7 +119,7 @@ ModelPtr MultiPointCloud::model( )
         PointCloud* pc = it->second->cloud;
         if(pc->isActive())
         {
-            vector<uColorVertex>::iterator p_it;
+            vector<lvr::uColorVertex>::iterator p_it;
             for(p_it = pc->m_points.begin(); p_it != pc->m_points.end(); p_it++)
             {
                 c++;
@@ -124,7 +129,7 @@ ModelPtr MultiPointCloud::model( )
 
 
     // Create a new model and save points
-    PointBufferPtr pcBuffer( new PointBuffer);
+    PointBuffer2Ptr pcBuffer( new PointBuffer2);
     floatArr pointBuffer(new float[3 * c]);
     ucharArr colorBuffer(new unsigned char[3 * c]);
     c = 0;
@@ -134,12 +139,12 @@ ModelPtr MultiPointCloud::model( )
         PointCloud* pc = it->second->cloud;
         if(pc->isActive())
         {
-            vector<uColorVertex>::iterator p_it;
+            vector<lvr::uColorVertex>::iterator p_it;
             for(p_it = pc->m_points.begin(); p_it != pc->m_points.end(); p_it++)
             {
                 size_t bufferPos = 3 * c;
 
-                uColorVertex v = *p_it;
+                lvr::uColorVertex v = *p_it;
                 pointBuffer[bufferPos    ] = v.x;
                 pointBuffer[bufferPos + 1] = v.y;
                 pointBuffer[bufferPos + 2] = v.z;
@@ -155,14 +160,13 @@ ModelPtr MultiPointCloud::model( )
     }
 
     pcBuffer->setPointArray(pointBuffer, c);
-    pcBuffer->setPointColorArray(colorBuffer, c);
+    pcBuffer->setColorArray(colorBuffer, c);
 
     ModelPtr modelPtr(new Model);
     modelPtr->m_pointCloud = pcBuffer;
 
 
     return modelPtr;
-
 }
 
-} // namespace lvr
+} // namespace lvr2

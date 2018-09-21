@@ -24,9 +24,9 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr/display/GroundPlane.hpp>
+#include <lvr2/display/GroundPlane.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 GroundPlane::GroundPlane() : Renderable("Ground Plane"){
@@ -92,9 +92,8 @@ void GroundPlane::render(){
 
 }
 
-void GroundPlane::transform(Matrix4<float> m){
+void GroundPlane::transform(lvr::Matrix4<float> m){
 	//To Do: Write transformation code
 }
 
-} // namespace lvr
-
+} // namespace lvr2

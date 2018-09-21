@@ -27,9 +27,9 @@
 #ifndef COORDINATEAXES_H_
 #define COORDINATEAXES_H_
 
-#include "Renderable.hpp"
+#include <lvr2/display/Renderable.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 class CoordinateAxes: public Renderable {
@@ -47,6 +47,6 @@ private:
 	void drawAxes(float length);
 };
 
-}
+} // namespace lvr2
 
 #endif /* COORDINATEAXES_H_ */

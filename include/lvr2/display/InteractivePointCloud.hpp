@@ -26,29 +26,32 @@
 #ifndef INTERACTIVEPOINTCLOUD_HPP_
 #define INTERACTIVEPOINTCLOUD_HPP_
 
-#include "Renderable.hpp"
+#include <lvr2/display/Renderable.hpp>
 
-#include <lvr/io/Model.hpp>
+#include <lvr2/io/Model.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
-class InteractivePointCloud: public lvr::Renderable
+class InteractivePointCloud : public Renderable
 {
 public:
 	InteractivePointCloud();
-	InteractivePointCloud(PointBufferPtr buffer);
+	InteractivePointCloud(PointBuffer2Ptr buffer);
 	virtual ~InteractivePointCloud();
 
 	virtual void render();
 
-	void updateBuffer(PointBufferPtr buffer);
+	void updateBuffer(PointBuffer2Ptr buffer);
 
 
 private:
 
-	PointBufferPtr			m_buffer;
+	PointBuffer2Ptr			m_buffer;
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
+
+#include "InteractivePointCloud.cpp"
+
 #endif /* INTERACTIVEPOINTCLOUD_HPP_ */

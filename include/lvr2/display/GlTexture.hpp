@@ -21,6 +21,9 @@ using std::string;
 #include <OpenGL/gl.h>
 #endif
 
+namespace lvr2
+{
+
 class GlTexture
 {
 public:
@@ -74,5 +77,9 @@ public:
     /// The texture index of the texture
     GLuint              m_texIndex;
 };
+
+} // namespace lvr2
+
+#include "GlTexture.cpp"
 
 #endif /* TEXTURE_HPP_ */

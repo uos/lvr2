@@ -27,7 +27,7 @@
 #ifndef MULTIPOINTCLOUD_H_
 #define MULTIPOINTCLOUD_H_
 
-#include "PointCloud.hpp"
+#include <lvr2/display/PointCloud.hpp>
 
 #include <map>
 #include <string>
@@ -37,7 +37,7 @@ using std::stringstream;
 using std::map;
 using std::string;
 
-namespace lvr
+namespace lvr2
 {
 
 struct PointCloudAttribute
@@ -55,7 +55,7 @@ class MultiPointCloud : public Renderable
 {
 public:
     MultiPointCloud(ModelPtr model, string name = "<unnamed point cloud>");
-    MultiPointCloud(PointBufferPtr buffer, string name = "<unnamed point cloud>");
+    MultiPointCloud(PointBuffer2Ptr buffer, string name = "<unnamed point cloud>");
 
     virtual ~MultiPointCloud() {};
     virtual inline void render();
@@ -71,7 +71,7 @@ public:
     virtual ModelPtr model();
 private:
 
-    void init(PointBufferPtr buffer);
+    void init(PointBuffer2Ptr buffer);
 
     map<PointCloud*, PointCloudAttribute*>    m_clouds;
 };
@@ -86,6 +86,8 @@ void MultiPointCloud::render()
     }
 }
 
-}
+} // namespace lvr2
+
+#include "MultiPointCloud.cpp"
 
 #endif /* MULTIPOINTCLOUD_H_ */

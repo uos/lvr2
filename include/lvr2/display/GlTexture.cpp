@@ -5,10 +5,13 @@
  *  @author Thomas Wiemann
  */
 
-#include <lvr/display/GlTexture.hpp>
+#include <lvr2/display/GlTexture.hpp>
 #include <iostream>
 
 using namespace std;
+
+namespace lvr2
+{
 
 GlTexture::GlTexture(unsigned char* pixels, int width, int height)
     : m_width(width), m_height(height),  m_pixels(pixels)
@@ -85,3 +88,5 @@ void GlTexture::upload()
 		 m_pixels
 		 );
 }
+
+} // namespace lvr2

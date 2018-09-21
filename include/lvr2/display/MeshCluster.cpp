@@ -23,14 +23,14 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr/display/MeshCluster.hpp>
+#include <lvr2/display/MeshCluster.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
-void MeshCluster::addMesh(MeshBufferPtr mesh, string name)
+void MeshCluster::addMesh(MeshBuffer2Ptr mesh, string name)
 {
 	m_meshes.push_back(new StaticMesh(mesh, name));
 }
 
-}
+} // namespace lvr2

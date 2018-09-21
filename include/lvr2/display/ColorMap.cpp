@@ -24,12 +24,12 @@
  *  @author Thomas Wiemann
  */
 
-#include <lvr/display/ColorMap.hpp>
+#include <lvr2/display/ColorMap.hpp>
 
 #include <cassert>
 #include <cmath>
 
-namespace lvr
+namespace lvr2
 {
 
 void ColorMap::getColor(float* color, size_t bucket, GradientType gradient )
@@ -170,6 +170,4 @@ void ColorMap::convertHSVToRGB(float hue, float s, float v, float &r, float &g, 
     }
 }
 
-} // namespace lvr
-
-
+} // namespace lvr2
