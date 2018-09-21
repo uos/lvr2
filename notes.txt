@@ -1,6 +1,6 @@
 Bugs:   
 
-    Hdf5IO:             Materials werden nicht in .h5 Datei geschrieben.
+    Hdf5IO:             Texturen/Materials werden nicht in .h5 Datei geschrieben.
 
 Fixed:
 
@@ -24,9 +24,15 @@ Zurückgestellt:
 
 Anmerkungen:
 
+                PPMIO:  Sollte evtl. Texture anstatt GlTexture zurückgeben, da GlTexture direkt
+                        die Daten auf die Grafikkarte lädt.
+
+                Texture: sollte m_index ein size_t, unsigned int oder TextureHandle sein?
+
                 DataStruct.hpp: indexArray umbennen in indexArr?
 
-                Texture:    Memoryleak evtl. mit shared ptr lösen, es würde move constructor/copy consturctor sparen...
+                Texture:    Memoryleak evtl. mit shared ptr lösen, es würde move 
+                            constructor/copy consturctor sparen...
 
                 AttributeManager:  Attribute in AttributeOptionals sollten evtl. Referenzen sein.
 
