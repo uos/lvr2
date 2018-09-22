@@ -7,13 +7,15 @@
  *  @author Denis Meyer
  */
 
-#include <lvr/display/TextureFactory.hpp>
-#include <lvr/io/PPMIO.hpp>
+#include <lvr2/display/TextureFactory.hpp>
+#include <lvr2/io/PPMIO.hpp>
 
 #include <iostream>
 using std::cout;
 using std::endl;
 
+namespace lvr2
+{
 
 TextureFactory::TextureFactory()
 {
@@ -45,7 +47,7 @@ GlTexture* TextureFactory::getTexture(string filename) const
 	// Get file extension
 	if(filename.substr(filename.find_last_of(".") + 1, 3) == "ppm")
 	{
-		lvr::PPMIO reader(filename.substr(0, filename.find_last_of(".") + 4));
+		PPMIO reader(filename.substr(0, filename.find_last_of(".") + 4));
 		data    = reader.getPixels();
 
 //		cv::Mat mat = cv::imread(filename.substr(0, filename.find_last_of(".") + 4));
@@ -66,3 +68,5 @@ GlTexture* TextureFactory::getTexture(string filename) const
 
     return tex;
 }
+
+} // namespace lvr2

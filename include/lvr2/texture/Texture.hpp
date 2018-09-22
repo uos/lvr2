@@ -32,14 +32,13 @@
 #include <math.h>
 #include <cstdio>
 #include <lvr2/geometry/BoundingRectangle.hpp>
-#include <lvr/io/PPMIO.hpp>
+#include <lvr2/io/PPMIO.hpp>
 #include <lvr/texture/Texture.hpp>
-#include <lvr/display/GlTexture.hpp>
 
-#include <lvr2/texture/Texture.hpp>
+namespace lvr2 
+{
 
-namespace lvr2 {
-
+class GlTexture;
 
 /**
  * @class Texture
@@ -91,6 +90,8 @@ public:
      */
     Texture(const Texture& other);
 
+    Texture & operator=(const Texture &other);
+
     /**
      * @brief Destructor
      */
@@ -123,7 +124,6 @@ public:
 
 };
 
-}
-
+} // namespace lvr2
 
 #endif /* LVR2_TEXTURE_TEXTURE_HPP_ */

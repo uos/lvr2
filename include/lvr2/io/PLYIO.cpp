@@ -572,4 +572,4 @@ int PLYIO::readFaceCb( p_ply_argument argument )
 }
 
 
-} // namespace lvr
+} // namespace lvr2

@@ -21,6 +21,8 @@ using std::string;
 #include <OpenGL/gl.h>
 #endif
 
+#include <lvr2/texture/Texture.hpp>
+
 namespace lvr2
 {
 
@@ -43,6 +45,11 @@ public:
      * @brief   Copy ctor.
      */
     GlTexture(const GlTexture &other);
+
+    /**
+     * @brief   Copy ctor.
+     */
+    GlTexture(const Texture &other);
 
     /**
      * @brief Empty ctor.
@@ -79,7 +86,5 @@ public:
 };
 
 } // namespace lvr2
-
-#include "GlTexture.cpp"
 
 #endif /* TEXTURE_HPP_ */

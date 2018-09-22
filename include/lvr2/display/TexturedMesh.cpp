@@ -23,13 +23,13 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr/display/TexturedMesh.hpp>
+#include <lvr2/display/TexturedMesh.hpp>
 
 #include <map>
 using std::multimap;
 using std::map;
 
-namespace lvr
+namespace lvr2
 {
 
 void TexturedMesh::getBufferArray(unsigned int* buffer, MaterialGroup* g)
@@ -46,17 +46,26 @@ void TexturedMesh::getBufferArray(unsigned int* buffer, MaterialGroup* g)
 
 }
 
-TexturedMesh::TexturedMesh(MeshBufferPtr mesh)
+TexturedMesh::TexturedMesh(MeshBuffer2Ptr mesh) : m_materials(mesh->getMaterials())
 {
 	// Store internal buffers
-	size_t	dummy;
-	m_faces 		= mesh->getFaceArray(m_numFaces);
-	m_faceMaterials = mesh->getFaceMaterialIndexArray(dummy);
-	m_vertices 		= mesh->getVertexArray(m_numVertices);
-	m_normals		= mesh->getVertexNormalArray(dummy);
-	m_texcoords		= mesh->getVertexTextureCoordinateArray(dummy);
-	m_textures		= mesh->getTextureArray(m_numTextures);
-	m_materials		= mesh->getMaterialArray(m_numMaterials);
+    m_numFaces = mesh->numFaces();
+    m_numVertices = mesh->numVertices();
+    m_numTextures = mesh->getTextures().size();
+    m_numMaterials = mesh->getMaterials().size();
+
+	m_faces 		= mesh->getFaceIndices();
+	m_faceMaterials = mesh->getFaceMaterialIndices();
+	m_vertices 		= mesh->getVertices();
+	m_normals		= mesh->getVertexNormals();
+	m_texcoords		= mesh->getTextureCoordinates();
+
+    // convert to GlTexture*
+    m_textures      = textureArr( new GlTexture* [mesh->getTextures().size()] );
+    for (size_t i = 0; i < mesh->getTextures().size(); i++)
+    {
+        m_textures[i] = new GlTexture(mesh->getTextures()[i]);
+    }
 
 	// Calc bounding box
 	for(size_t i = 0; i < m_numVertices; i++)
@@ -86,33 +95,33 @@ void TexturedMesh::generateMaterialGroups()
 {
 
 	map<int, MaterialGroup* > texMatMap;
-	map<Vertex<unsigned char>, MaterialGroup* > colorMatMap;
+	map<lvr::Vertex<unsigned char>, MaterialGroup* > colorMatMap;
 
 	// Iterate over face material buffer and
 	// sort faces by their material
 	for(size_t i = 0; i < m_numFaces; i++)
 	{
 		map<int, MaterialGroup*>::iterator texIt;
-		map<Vertex<unsigned char>, MaterialGroup* >::iterator colIt;
+		map<lvr::Vertex<unsigned char>, MaterialGroup* >::iterator colIt;
 
 		// Get material by index and lookup in map. If present
 		// add face index to the corresponding group. Create a new
 		// group if none was found. For efficient rendering we have to
 		// create groups by color and texture index,
-        IOMaterial* m = m_materials[m_faceMaterials[i]];
+        Material& m = m_materials[m_faceMaterials[i]];
 
-		if(m->texture_index != -1)
+		if(m.m_texture)
 		{
 
-			texIt = texMatMap.find(m->texture_index);
+			texIt = texMatMap.find(m.m_texture->idx());
 			if(texIt == texMatMap.end())
 			{
 				MaterialGroup* g = new MaterialGroup;
-				g->textureIndex = m->texture_index;
-				g->color = Vertex<float>(1.0, 1.0, 1.0);
+				g->textureIndex = m.m_texture->idx();
+				g->color = lvr::Vertex<float>(1.0, 1.0, 1.0);
 				g->faceBuffer.push_back(i);
 				m_textureMaterials.push_back(g);
-				texMatMap[m->texture_index] = g;
+				texMatMap[m.m_texture->idx()] = g;
 			}
 			else
 			{
@@ -121,13 +130,13 @@ void TexturedMesh::generateMaterialGroups()
 		}
 		else
 		{
-			colIt = colorMatMap.find(Vertex<unsigned char>(m->r, m->g, m->b));
+			colIt = colorMatMap.find(lvr::Vertex<unsigned char>(m.m_color->at(0), m.m_color->at(1), m.m_color->at(2)));
 			if(colIt == colorMatMap.end())
 			{
 				MaterialGroup* g = new MaterialGroup;
-				g->textureIndex = m->texture_index;
+				g->textureIndex = -1;
 				g->faceBuffer.push_back(i);
-				g->color = Vertex<float>(m->r / 255.0f, m->g / 255.0f, m->b / 255.0f);
+				g->color = lvr::Vertex<float>(m.m_color->at(0) / 255.0f, m.m_color->at(0) / 255.0f, m.m_color->at(0) / 255.0f);
 				m_colorMaterials.push_back(g);
 			}
 			else
@@ -207,7 +216,4 @@ void TexturedMesh::compileTexureDisplayList()
 
 
 
-}
-
-
-
+} // namespace lvr2

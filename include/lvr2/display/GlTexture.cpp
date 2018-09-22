@@ -37,6 +37,35 @@ GlTexture::GlTexture(const GlTexture &other)
     upload();
 }
 
+GlTexture::GlTexture(const Texture &other)
+{
+    m_texIndex = 0;
+    m_width = other.m_width;
+    m_height = other.m_height;
+    m_pixels = new unsigned char[3 * m_width * m_height];
+    std::fill(m_pixels, m_pixels + 3 * m_width * m_height, 0);
+
+    for (size_t i = 0; i < m_width * m_height; i++)
+    {
+            size_t current_idx = i * other.m_numChannels * other.m_numBytesPerChan;
+            if (other.m_numChannels > 0)
+            {
+                m_pixels[i*3 + 0] = other.m_data[current_idx + other.m_numBytesPerChan * 0];
+            }
+            if (other.m_numChannels > 1)
+            {
+                m_pixels[i*3 + 1] = other.m_data[current_idx + other.m_numBytesPerChan * 1];
+            }
+            if (other.m_numChannels > 2)
+            {
+                m_pixels[i*3 + 2] = other.m_data[current_idx + other.m_numBytesPerChan * 2];
+            }
+    }
+
+    // Upload texture
+    upload();
+}
+
 GlTexture::~GlTexture()
 {
     if(m_pixels)

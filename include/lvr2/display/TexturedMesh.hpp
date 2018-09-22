@@ -26,23 +26,23 @@
 #ifndef TEXTUREDMESH_HPP_
 #define TEXTUREDMESH_HPP_
 
-#include "StaticMesh.hpp"
+#include <lvr2/display/StaticMesh.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 struct MaterialGroup
 {
 	int	textureIndex;
 	int numFaces;
-	Vertex<float> color;
+	lvr::Vertex<float> color;
 	vector<size_t> faceBuffer;
 };
 
 class TexturedMesh: public StaticMesh
 {
 public:
-	TexturedMesh(MeshBufferPtr mesh);
+	TexturedMesh(MeshBuffer2Ptr mesh);
 	virtual ~TexturedMesh() {};
 
 
@@ -83,10 +83,10 @@ private:
 	void compileTexureDisplayList();
 	void getBufferArray(unsigned int*, MaterialGroup* g);
 
-	uintArr					m_faceMaterials;
+	indexArray				m_faceMaterials;
 	floatArr				m_texcoords;
-	materialArr				m_materials;
 	textureArr 				m_textures;
+	vector<Material>&		m_materials;
 
 
 	vector<MaterialGroup*> 	m_textureMaterials;
@@ -100,5 +100,8 @@ private:
 	int						m_textureDisplayList;
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
+
+#include "TexturedMesh.cpp"
+
 #endif /* TEXTUREDMESH_HPP_ */

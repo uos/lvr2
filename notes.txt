@@ -1,6 +1,14 @@
 Bugs:   
 
-    Hdf5IO:             Texturen/Materials werden nicht in .h5 Datei geschrieben.
+    Hdf5IO:     Texturen/Materials werden nicht in .h5 Datei geschrieben.
+
+    AsciiIO:    Beim Einlesen wird die erste Zeile geskippt weil es evtl.
+                Metadaten beinhalten könnte.
+
+                Colordaten und Intensitydaten werden z.Z. ignoriert.
+
+    DatIO:      Beim Einlesen wurde das Einlesen der Punktanzahl vergessen.
+                Und save/write sind aus irgendeinen Grund nicht konsistent.
 
 Fixed:
 
@@ -14,6 +22,8 @@ Fragen:
 
 Unvollständig:
 
+                lvr2/display/*:     Zwar vollständig portiert, aber grötenteils ungetestet, 
+                                    nur TexturedMesh auf Kompilierung und Objekterstellung getestet.
 ----------------------------------------------------------------------
 
 

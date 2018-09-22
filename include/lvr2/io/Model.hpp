@@ -70,6 +70,6 @@ public:
 
 using ModelPtr = std::shared_ptr<Model>;
 
-} // namespace lvr
+} // namespace lvr2
 
 #endif /* MODEL_H_ */

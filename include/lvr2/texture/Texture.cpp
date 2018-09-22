@@ -28,6 +28,7 @@
  */
 
 #include <lvr2/texture/Texture.hpp>
+#include <lvr2/display/GlTexture.hpp>
 
 namespace lvr2 {
 
@@ -130,6 +131,31 @@ Texture::Texture(const Texture& other)
     m_data = new unsigned char[data_size];
     std::copy(other.m_data, other.m_data + data_size, m_data);
     
+}
+
+Texture & Texture::operator=(const Texture &other)
+{
+    if (this != &other)
+    {
+
+        if (m_data)
+        {
+            delete[] m_data;
+        }
+        this->m_index = other.m_index;
+        this->m_width = other.m_width;
+        this->m_height = other.m_height;
+        //this->m_data = other.m_data;
+        this->m_numChannels = other.m_numChannels;
+        this->m_numBytesPerChan = other.m_numBytesPerChan;
+        this->m_texelSize = other.m_texelSize;
+
+        size_t data_size = m_width * m_height * m_numChannels * m_numBytesPerChan;
+        m_data = new unsigned char[data_size];
+        std::copy(other.m_data, other.m_data + data_size, m_data);
+    }
+
+    return *this;
 }
 
 
