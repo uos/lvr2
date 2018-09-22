@@ -172,6 +172,6 @@ class PLYIO : public BaseIO
 
 };
 
-}
+} // namespace lvr2
 
 #endif

@@ -77,6 +77,4 @@ private:
 
 } // namespace lvr2
 
-#include "PPMIO.cpp"
-
 #endif /* PPMIO_H_ */

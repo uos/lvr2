@@ -46,13 +46,13 @@
 #include <OpenGL/gl.h>
 #endif
 
-#include "Renderable.hpp"
+#include <lvr2/display/Renderable.hpp>
 #include <lvr/geometry/BoundingBox.hpp>
 
 using namespace std;
 
 
-namespace lvr
+namespace lvr2
 {
 
 enum
@@ -69,7 +69,7 @@ class StaticMesh : public Renderable
 public:
 	StaticMesh();
 	StaticMesh( ModelPtr model, string name=""); // <unnamed static mesh>" );
-	StaticMesh( MeshBufferPtr buffer, string name=""); //<unnamed static mesh>" );
+	StaticMesh( MeshBuffer2Ptr buffer, string name=""); //<unnamed static mesh>" );
 
 	StaticMesh(const StaticMesh &o);
 	~StaticMesh();
@@ -91,7 +91,7 @@ public:
 
 private:
 
-	void init( MeshBufferPtr mesh );
+	void init( MeshBuffer2Ptr mesh );
 
 	void interpolateNormals();
 	void setDefaultColors();
@@ -115,7 +115,7 @@ protected:
 	ucharArr        m_colors;
 	unsigned char*  m_blackColors;
 
-	uintArr         m_faces;
+	indexArray      m_faces;
 
 	bool            m_finalized;
 	bool			m_haveMaterials;
@@ -163,6 +163,8 @@ void StaticMesh::render(){
 	}
 }
 
-} // namespace lvr
+} // namespace lvr2
+
+#include "StaticMesh.cpp"
 
 #endif /* STATICMESH_H_ */

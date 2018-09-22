@@ -7,22 +7,24 @@ namespace lvr2
 {
   using Vec = BaseVector<float>;
 
-  PointOctree::PointOctree(PointBufferPtr<Vec >& points, int voxelSize)
+  PointOctree::PointOctree(PointBuffer2Ptr& points, int voxelSize)
   {
     m_voxelSize = voxelSize;
 
+    FloatChannelOptional pts_data = points->getFloat("points");
+
     // initializ min max for bounding box
-    float minX = points->getPoint(0).x;
-    float minY = points->getPoint(0).y;
-    float minZ = points->getPoint(0).z;
-    float maxX = points->getPoint(0).x;
-    float maxY = points->getPoint(0).y;
-    float maxZ = points->getPoint(0).z;
+    float minX = pts_data[0][0];
+    float minY = pts_data[0][1];
+    float minZ = pts_data[0][2];
+    float maxX = pts_data[0][0];
+    float maxY = pts_data[0][1];
+    float maxZ = pts_data[0][2];
 
     //    BoundingBox<Vec> bb;
-    for(int i = 0; i < points->getNumPoints(); ++i)
+    for(int i = 0; i < points->numPoints(); ++i)
     {
-      auto p = points->getPoint(i);
+      Vec p = pts_data[i];
       minX = std::min(minX, p.x);
       minY = std::min(minY, p.y);
       minZ = std::min(minZ, p.z);
@@ -54,13 +56,13 @@ namespace lvr2
 
     m_root = new BOct();
 
-    for(int i = 0; i < points->getNumPoints(); ++i)
+    for(int i = 0; i < points->numPoints(); ++i)
     {
-      insertPoint(points->getPoint(i), m_root, m_bbox);
+      insertPoint(pts[i], m_root, m_bbox);
     }
 
     std::vector<Point<Vec > > pts;
-    pts.reserve(points->getNumPoints());
+    pts.reserve(points->numPoints());
 
     serializePointBuffer(m_root, pts);
 

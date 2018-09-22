@@ -43,8 +43,8 @@
 #include <lvr2/io/PLYIO.hpp>
 #include <lvr2/io/Timestamp.hpp>
 #include <lvr/geometry/Vertex.hpp>
-#include <lvr/display/GlTexture.hpp>
-#include <lvr/display/TextureFactory.hpp>
+#include <lvr2/display/GlTexture.hpp>
+#include <lvr2/display/TextureFactory.hpp>
 
 #include <lvr2/texture/Texture.hpp>
 #include <lvr2/texture/Material.hpp>
@@ -121,7 +121,7 @@ void ObjIO::parseMtlFile(
                 if(it == matNames.end())
                 {
                     Material m;
-                    m.m_color = {128, 128, 128};
+                    *(m.m_color) = {128, 128, 128};
                     m.m_texture = boost::none;
                     materials.push_back(m);
                     matNames[matName] = matIndex;
@@ -154,7 +154,7 @@ void ObjIO::parseMtlFile(
 
                 GlTexture* texture = TextureFactory::instance().getTexture(tex_file.string());
                 unsigned int tex_idx = textures.size();
-                textures.push_back(Texture(tex_idx, texture));
+                textures.push_back(std::move(Texture(tex_idx, texture)));
                 materials.back().m_texture = TextureHandle(tex_idx);
 
                 delete texture;

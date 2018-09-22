@@ -10,7 +10,10 @@
 #ifndef TEXTUREFACTORY_H_
 #define TEXTUREFACTORY_H_
 
-#include "GlTexture.hpp"
+#include <lvr2/display/GlTexture.hpp>
+
+namespace lvr2
+{
 
 class TextureFactory
 {
@@ -39,5 +42,9 @@ public:
      */
     static TextureFactory& instance();
 };
+
+} // namespace lvr2
+
+#include "TextureFactory.cpp"
 
 #endif /* TEXTUREFACTORY_H_ */

@@ -24,11 +24,11 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr/display/StaticMesh.hpp>
+#include <lvr2/display/StaticMesh.hpp>
 
 #include <cassert>
 
-namespace lvr
+namespace lvr2
 {
 
 StaticMesh::StaticMesh(){
@@ -67,7 +67,7 @@ StaticMesh::StaticMesh( ModelPtr model, string name )
 
 }
 
-StaticMesh::StaticMesh( MeshBufferPtr mesh, string name )
+StaticMesh::StaticMesh( MeshBuffer2Ptr mesh, string name )
     : Renderable( name )
 {
 
@@ -82,19 +82,24 @@ StaticMesh::StaticMesh( MeshBufferPtr mesh, string name )
 
 }
 
-void StaticMesh::init( MeshBufferPtr mesh )
+void StaticMesh::init( MeshBuffer2Ptr mesh )
 {
-	size_t n_colors;
-	size_t n_normals;
 	m_lineWidth = 2.0;
 	if(mesh)
 	{
 		m_faceNormals = 0;
+        m_numVertices = mesh->numVertices();
+        m_numFaces = mesh->numFaces();
+        unsigned w_color;
 
-		m_normals 			= mesh->getVertexNormalArray(n_normals);
-		m_colors        	= mesh->getVertexColorArray(n_colors);
-		m_vertices      	= mesh->getVertexArray(m_numVertices);
-		m_faces       		= mesh->getFaceArray(m_numFaces);
+		m_normals 			= mesh->getVertexNormals();
+		m_colors        	= mesh->getVertexColors(w_color);
+
+        // does only support RGB vertex colors
+        assert(w_color == 3);
+
+		m_vertices      	= mesh->getVertices();
+		m_faces       		= mesh->getFaceIndices();
 		m_blackColors		= new unsigned char[ 3 * m_numVertices ];
 
 		for ( size_t i = 0; i < 3 * m_numVertices; i++ ) 
@@ -110,7 +115,7 @@ void StaticMesh::init( MeshBufferPtr mesh )
 		m_renderMode    |= RenderSurfaces;
 		m_renderMode    |= RenderTriangles;
 
-		m_boundingBox = new BoundingBox<Vertex<float> >;
+		m_boundingBox = new lvr::BoundingBox<lvr::Vertex<float> >;
 
 		if(!m_faceNormals)
 		{
@@ -124,18 +129,6 @@ void StaticMesh::init( MeshBufferPtr mesh )
 		{
 			setDefaultColors();
 		}
-
-		if(n_colors == 0)
-		{
-			m_colors = ucharArr( new unsigned char[3 * m_numVertices] );
-			for( int i = 0; i < m_numVertices; ++i )
-			{
-				m_colors[3 * i] = 0;
-				m_colors[3 * i + 1] = 255;
-				m_colors[3 * i + 2] = 0;
-			}
-		}
-
 	}
 }
 
@@ -150,7 +143,7 @@ StaticMesh::StaticMesh(const StaticMesh &o)
 	m_faceNormals = new float[3 * o.m_numVertices];
 	m_vertices    = floatArr( new float[3 * o.m_numVertices] );
 	m_colors      = ucharArr( new unsigned char[3 * o.m_numVertices] );
-	m_faces     = uintArr(  new unsigned int[3 * o.m_numFaces] );
+	m_faces     = indexArray(  new unsigned int[3 * o.m_numFaces] );
 
 	for ( size_t i(0); i < 3 * o.m_numVertices; i++ )
 	{
@@ -279,7 +272,7 @@ void StaticMesh::compileNameList()
 	// Compile a new one
 	m_nameList = glGenLists(1);
 	glNewList(m_nameList, GL_COMPILE);
-	Vertex<float> v = m_boundingBox->getCentroid();
+	lvr::Vertex<float> v = m_boundingBox->getCentroid();
 	glDisable(GL_LIGHTING);
 	glColor3f(1.0, 1.0, 0.0);
 	glRasterPos3f(v.x, v.y, v.z);
@@ -323,14 +316,14 @@ void StaticMesh::interpolateNormals()
 		b = m_faces[buffer_pos + 1] * 3;
 		c = m_faces[buffer_pos + 2] * 3;
 
-		Vertex<float> v0(m_vertices[a], m_vertices[a + 1], m_vertices[a + 2]);
-		Vertex<float> v1(m_vertices[b], m_vertices[b + 1], m_vertices[b + 2]);
-		Vertex<float> v2(m_vertices[c], m_vertices[c + 1], m_vertices[c + 2]);
+		lvr::Vertex<float> v0(m_vertices[a], m_vertices[a + 1], m_vertices[a + 2]);
+		lvr::Vertex<float> v1(m_vertices[b], m_vertices[b + 1], m_vertices[b + 2]);
+		lvr::Vertex<float> v2(m_vertices[c], m_vertices[c + 1], m_vertices[c + 2]);
 
-		Vertex<float> d1 = v0 - v1;
-		Vertex<float> d2 = v2 - v1;
+		lvr::Vertex<float> d1 = v0 - v1;
+		lvr::Vertex<float> d2 = v2 - v1;
 
-		Normal<float> p(d1.cross(d2));
+		lvr::Normal<float> p(d1.cross(d2));
 		p = p * -1;
 
 		// Sum up coordinate values in normal array
@@ -351,7 +344,7 @@ void StaticMesh::interpolateNormals()
 	// Normalize
 	for(size_t i = 0; i < m_numVertices; i++)
 	{
-		Normal<float> n(m_faceNormals[i * 3], m_faceNormals[i * 3 + 1], m_faceNormals[i * 3 + 2]);
+		lvr::Normal<float> n(m_faceNormals[i * 3], m_faceNormals[i * 3 + 1], m_faceNormals[i * 3 + 2]);
 		m_faceNormals[i * 3]     = n.x;
 		m_faceNormals[i * 3 + 1] = n.y;
 		m_faceNormals[i * 3 + 2] = n.z;
@@ -364,9 +357,9 @@ void StaticMesh::setDefaultColors()
     m_colors = ucharArr( new unsigned char[3 * m_numVertices] );
     for(size_t i = 0; i < m_numVertices; i++)
     {
-        m_colors[i]		= 0;
-        m_colors[i + 1] = 255;
-        m_colors[i + 2] = 0;
+        m_colors[i*3 + 0] = 0;
+        m_colors[i*3 + 1] = 255;
+        m_colors[i*3 + 2] = 0;
     }
 }
 
@@ -418,5 +411,4 @@ void StaticMesh::savePLY(string filename)
 }
 
 
-}
- // namespace lvr
+} // namespace lvr2
