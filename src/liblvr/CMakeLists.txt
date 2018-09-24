@@ -75,8 +75,8 @@ set(LVR_LIB_DEPENDENCIES
     ${Boost_FILESYSTEM_LIBRARY}
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARIES}
-    ${OpenCV_LIBS})
-
+    ${OpenCV_LIBS}
+    ${LZ4_LIBRARY})
 #####################################################################################
 # On Unix/Linux we need to link against pthreads
 #####################################################################################
