@@ -26,7 +26,7 @@
 
 #include <lvr/texture/AutoCorr.hpp>
 //#include <opencv2/highgui/highgui.hpp>
-#include <opencv/cv.h>
+#include <opencv2/imgproc/imgproc.hpp>
 
 namespace lvr {
 AutoCorr::AutoCorr(Texture *t)
