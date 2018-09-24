@@ -41,7 +41,7 @@ find_package( CUDA )
 ####
 ## Searching for OpenCV
 ##############################
-find_package( OpenCV 2.4.8 REQUIRED )
+find_package( OpenCV 3 REQUIRED )
 
 option(WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
 if(WITH_CV_NONFREE)
