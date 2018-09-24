@@ -56,6 +56,9 @@ endif(WITH_CV_NONFREE)
 find_package(  FLANN REQUIRED )
 if(FLANN_FOUND)
   include_directories(${FLANN_DIR})
+  # Flann has external dependency to LZ4
+  find_package(LZ4 REQUIRED)
+  include_directories(LZ4_INCLUDE_DIR)
 endif(FLANN_FOUND)
 
 ####
