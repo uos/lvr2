@@ -25,7 +25,7 @@
  */
 
 #include <lvr2/display/Arrow.hpp>
-#include <glut.h>
+#include <GL/glut.h>
 
 namespace lvr2
 {
@@ -61,7 +61,7 @@ void Arrow::setPosition(double x, double y, double z, double roll, double pitch,
     EulerToMatrix(pos, rot, alignxf);
 
     //	quat.getMatrix(alignxf);
-    rotation = lvr::Matrix4(alignxf);
+    rotation = lvr::Matrix4f(alignxf);
 }
 
 Arrow::~Arrow() {
@@ -76,7 +76,7 @@ void Arrow::render() {
     glPushMatrix();
     glMultMatrixf(m_transformation.getData());
     glMultMatrixf(rotation.getData());
-    if(m_showAxes) glCallList(axesListIndex);
+    if(m_showAxes) glCallList(m_axesListIndex);
 
     glDisable(GL_LIGHTING);
     glDisable(GL_BLEND);

@@ -72,6 +72,11 @@ GlTexture::~GlTexture()
     {
         delete[] m_pixels;
     }
+
+    if (m_texIndex)
+    {
+        glDeleteTextures(1, &m_texIndex);
+    }
 }
 
 void GlTexture::upload()

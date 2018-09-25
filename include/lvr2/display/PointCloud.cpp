@@ -58,7 +58,7 @@ void PointCloud::updateBuffer(PointBuffer2Ptr buffer)
 
 }
 
-void PointCloud::init(PointBufferPtr buffer)
+void PointCloud::init(PointBuffer2Ptr buffer)
 {
 	int maxColors = 255;
 	m_numNormals = 0;
@@ -70,8 +70,12 @@ void PointCloud::init(PointBufferPtr buffer)
 	{
 		size_t n_points = buffer->numPoints();
 		floatArr points = buffer->getPointArray();
-        m_numNormals = n_points;
+        m_numNormals = 0;
 		m_normals    = buffer->getNormalArray();
+
+        if (m_normals)
+            m_numNormals = n_points;
+
         unsigned w_color, dummy;
 		ucharArr colors      = buffer->getColorArray(w_color);
 		floatArr intensities = buffer->getFloatArray("intensities", n_points, dummy);
@@ -179,7 +183,7 @@ void PointCloud::updateDisplayLists(){
         for(int i = 0; i < m_numNormals; i++)
         {
             lvr::Vertex<float> start(m_points[i].x, m_points[i].y, m_points[i].z);
-            lvr::Normal<float> normal(m_normals[i].x, m_normals[i].y, m_normals[i].z);
+            lvr::Normal<float> normal(m_normals[i*3 + 0], m_normals[i*3 + 1], m_normals[i*3 + 2]);
             lvr::Vertex<float> end = start + normal * length;
             glBegin(GL_LINES);
             glVertex3f(start[0], start[1], start[2]);

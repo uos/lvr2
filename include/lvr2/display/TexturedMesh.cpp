@@ -59,6 +59,7 @@ TexturedMesh::TexturedMesh(MeshBuffer2Ptr mesh) : m_materials(mesh->getMaterials
 	m_vertices 		= mesh->getVertices();
 	m_normals		= mesh->getVertexNormals();
 	m_texcoords		= mesh->getTextureCoordinates();
+    m_boundingBox   = new lvr::BoundingBox<lvr::Vertex<float> >;
 
     // convert to GlTexture*
     m_textures      = textureArr( new GlTexture* [mesh->getTextures().size()] );
@@ -179,6 +180,7 @@ void TexturedMesh::compileTexureDisplayList()
 		glColor3f(1.0, 1.0, 1.0);
 		setColorMaterial(g->color[0], g->color[1], g->color[2]);
 		glDrawElements(GL_TRIANGLES, 3 * g->faceBuffer.size(), GL_UNSIGNED_INT, buf);
+        delete[] buf;
 	}
 
 	// Draw colored materials
