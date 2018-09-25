@@ -22,7 +22,7 @@
  *  @date Feb 21, 2014
  *  @author Thomas Wiemann
  */
-#include <lvr/registration/EigenSVDPointAlign.hpp>
+#include <lvr2/registration/EigenSVDPointAlign.hpp>
 
 #include <limits>
 #include <cmath>
@@ -32,12 +32,12 @@
 using namespace Eigen;
 using std::numeric_limits;
 
-namespace lvr
+namespace lvr2
 {
 
-
-double EigenSVDPointAlign::alignPoints(const PointPairVector& pairs,
-        const Vertexf centroid_m, const Vertexf centroid_d, Matrix4f& alignfx)
+template <typename BaseVecT>
+double EigenSVDPointAlign<BaseVecT>::alignPoints(const PointPairVector<BaseVecT>& pairs,
+        const Vector<BaseVecT> centroid_m, const Vector<BaseVecT> centroid_d, Matrix4<BaseVecT>& alignfx)
 {
     double error = 0;
     double sum = 0.0;
@@ -137,4 +137,4 @@ double EigenSVDPointAlign::alignPoints(const PointPairVector& pairs,
     return error;
 }
 
-}
+} // namespace lvr2

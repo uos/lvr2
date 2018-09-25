@@ -22,19 +22,20 @@
  *  @date Mar 18, 2014
  *  @author Thomas Wiemann
  */
-#include <lvr/registration/ICPPointAlign.hpp>
-#include <lvr/registration/EigenSVDPointAlign.hpp>
-#include <lvr/io/Timestamp.hpp>
-#include <lvr/reconstruction/SearchTreeFlann.hpp>
+#include <lvr2/registration/ICPPointAlign.hpp>
+#include <lvr2/registration/EigenSVDPointAlign.hpp>
+#include <lvr2/io/Timestamp.hpp>
+#include <lvr2/reconstruction/SearchTreeFlann.hpp>
 
 
 #include <fstream>
 using std::ofstream;
 
-namespace lvr
+namespace lvr2
 {
 
-ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4f transform) :
+template <typename BaseVecT>
+ICPPointAlign<BaseVecT>::ICPPointAlign(PointBuffer2Ptr model, PointBuffer2Ptr data, Matrix4<BaseVecT> transform) :
     m_modelCloud(model), m_transformation(transform)
 {
     // Init default values
@@ -42,18 +43,18 @@ ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4f
     m_maxDistanceMatch      = 25;
     m_maxIterations         = 50;
 
-    size_t numPoints = data->getNumPoints();
+    size_t numPoints = data->numPoints();
 
     // Transform data points according to initial pose estimation
-    m_dataCloud = PointBufferPtr(new PointBuffer);
-    size_t n;
-    floatArr o_points = data->getPointArray(n);
+    m_dataCloud = PointBuffer2Ptr(new PointBuffer2);
+    size_t n = numPoints;
+    floatArr o_points = data->getPointArray();
     floatArr t_points(new float[3 * n]);
 
     for(size_t i = 0; i < numPoints; i++)
     {
-        Vertexf v(o_points[3 * i], o_points[3 * i + 1], o_points[3 * i + 2]);
-        Vertexf t = transform * v;
+        Vector<BaseVecT> v(o_points[3 * i], o_points[3 * i + 1], o_points[3 * i + 2]);
+        Vector<BaseVecT> t  = transform * v;
         t_points[3 * i    ] = t[0];
         t_points[3 * i + 1] = t[1];
         t_points[3 * i + 2] = t[2];
@@ -61,19 +62,20 @@ ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4f
     m_dataCloud->setPointArray(t_points, n);
 
     // Create search tree
-    m_searchTree = SearchTreeFlann<Vertexf>::Ptr(new SearchTreeFlann<Vertexf>(model, numPoints));
+    m_searchTree = SearchTreePtr<BaseVecT>(new SearchTreeFlann<BaseVecT>(model));
 
 }
 
-Matrix4f ICPPointAlign::match()
+template <typename BaseVecT>
+Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
 {
     if(m_maxIterations == 0)
     {
-        return Matrix4f();
+        return Matrix4<BaseVecT>();
     }
 
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
-    EigenSVDPointAlign align;
+    EigenSVDPointAlign<BaseVecT> align;
     for(int i = 0; i < m_maxIterations; i++)
     {
         // Update break variables
@@ -81,13 +83,13 @@ Matrix4f ICPPointAlign::match()
         prev_ret = ret;
 
         // Get point pairs
-        Vertexf         centroid_m;
-        Vertexf         centroid_d;
-        Matrix4f        transform;
-        double          sum;
+        Vector<BaseVecT>  centroid_m;
+        Vector<BaseVecT>  centroid_d;
+        Matrix4<BaseVecT> transform;
+        double            sum;
 
 
-        PointPairVector pairs;
+        PointPairVector<BaseVecT> pairs;
         getPointPairs(pairs, centroid_m, centroid_d, sum);
 
         // Get transformation (if possible)
@@ -114,31 +116,32 @@ Matrix4f ICPPointAlign::match()
     return m_transformation;
 }
 
-void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vertexf& centroid_m, Vertexf& centroid_d, double& sum)
+template <typename BaseVecT>
+void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector<BaseVecT>& pairs, Vector<BaseVecT>& centroid_m, Vector<BaseVecT>& centroid_d, double& sum)
 {
-    size_t n;
+    size_t n = m_dataCloud->numPoints();
     bool ok;
-    Matrix4f transformInv = m_transformation.inv(ok);
-    floatArr dataPoints = m_dataCloud->getPointArray(n);
+    Matrix4<BaseVecT> transformInv = m_transformation.inv(ok);
+    floatArr dataPoints = m_dataCloud->getPointArray();
     sum = 0;
 
     #pragma omp parallel
     {
-        PointPairVector privatePairs;
-        Vertexf centroid_mP;
-        Vertexf centroid_dP;
-        vector<Vertexf> neighbors;
+        PointPairVector<BaseVecT> privatePairs;
+        Vector<BaseVecT> centroid_mP;
+        Vector<BaseVecT> centroid_dP;
+        vector<size_t> neighbors;
 
         #pragma omp for nowait //fill vec_private in parallel
-        for(int i = 0; i < m_dataCloud->getNumPoints(); i++)
+        for(size_t i = 0; i < m_dataCloud->numPoints(); i++)
         {
             // Get vertex representation of current data point
-            Vertexf t(dataPoints[i * 3], dataPoints[i * 3 + 1], dataPoints[i * 3 + 2]);
+            Vector<BaseVecT> t(dataPoints[i * 3], dataPoints[i * 3 + 1], dataPoints[i * 3 + 2]);
 
 
             // Perform inverse transformation on query point to
             // it's position relative to the model point data
-            Vertexf s = transformInv * t;
+            Vector<BaseVecT> s = transformInv * t;
 
             // Get closest point to "inverse query point"
             neighbors.clear();
@@ -148,7 +151,10 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vertexf& centroid_m, V
             // position in the data reference frame
             if(neighbors.size())
             {
-                Vertexf closest = m_transformation * neighbors[0];
+                FloatChannelOptional pts_channel = m_modelCloud->getFloatChannel("points");
+                FloatChannel pts = *pts_channel;
+                Vector<BaseVecT> nb_pt = pts[neighbors[0]];
+                Vector<BaseVecT> closest = m_transformation * nb_pt;
                 if( (closest - t).length() < m_maxDistanceMatch)
                 {
                     centroid_dP += closest;
@@ -156,7 +162,7 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vertexf& centroid_m, V
 
                     sum += (closest - t).length2();
 
-                    std::pair<Vertexf, Vertexf> ptPair(t, closest);
+                    std::pair<Vector<BaseVecT>, Vector<BaseVecT>> ptPair(t, closest);
                     privatePairs.push_back(ptPair);
                 }
             }
@@ -178,40 +184,47 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vertexf& centroid_m, V
     centroid_d /= pairs.size();
 }
 
-ICPPointAlign::~ICPPointAlign()
+template <typename BaseVecT>
+ICPPointAlign<BaseVecT>::~ICPPointAlign()
 {
     // TODO Auto-generated destructor stub
 }
 
-void ICPPointAlign::setMaxMatchDistance(double d)
+template <typename BaseVecT>
+void ICPPointAlign<BaseVecT>::setMaxMatchDistance(double d)
 {
     m_maxDistanceMatch = d;
 }
 
-void ICPPointAlign::setMaxIterations(int i)
+template <typename BaseVecT>
+void ICPPointAlign<BaseVecT>::setMaxIterations(int i)
 {
     m_maxIterations = i;
 }
 
-void ICPPointAlign::setEpsilon(double e)
+template <typename BaseVecT>
+void ICPPointAlign<BaseVecT>::setEpsilon(double e)
 {
     m_epsilon = e;
 }
 
-double ICPPointAlign::getEpsilon()
+template <typename BaseVecT>
+double ICPPointAlign<BaseVecT>::getEpsilon()
 {
     return m_epsilon;
 }
 
-double ICPPointAlign::getMaxMatchDistance()
+template <typename BaseVecT>
+double ICPPointAlign<BaseVecT>::getMaxMatchDistance()
 {
     return m_maxDistanceMatch;
 }
 
 
-int ICPPointAlign::getMaxIterations()
+template <typename BaseVecT>
+int ICPPointAlign<BaseVecT>::getMaxIterations()
 {
     return m_maxIterations;
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */
