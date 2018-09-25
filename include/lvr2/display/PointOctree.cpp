@@ -11,7 +11,8 @@ namespace lvr2
   {
     m_voxelSize = voxelSize;
 
-    FloatChannelOptional pts_data = points->getFloat("points");
+    FloatChannelOptional pts_channel = points->getFloatChannel("points");
+    FloatChannel pts_data = *pts_channel;
 
     // initializ min max for bounding box
     float minX = pts_data[0][0];
@@ -46,8 +47,8 @@ namespace lvr2
     float min = std::min(minX, std::min(minY, minZ));
     float max = std::max(maxX, std::max(maxY, maxZ));
 
-    Point<Vec> v1(min, min, min);
-    Point<Vec> v2(max, max, max);
+    Vector<Vec> v1(min, min, min);
+    Vector<Vec> v2(max, max, max);
 
     m_bbox = BoundingBox<Vec>(v1, v2);
 
@@ -58,23 +59,23 @@ namespace lvr2
 
     for(int i = 0; i < points->numPoints(); ++i)
     {
-      insertPoint(pts[i], m_root, m_bbox);
+      insertPoint(pts_data[i], m_root, m_bbox);
     }
 
-    std::vector<Point<Vec > > pts;
+    std::vector<Vector<Vec > > pts;
     pts.reserve(points->numPoints());
 
     serializePointBuffer(m_root, pts);
 
   }
 
-  int PointOctree::getBBoxIndex(const Point<Vec >& point, const BoundingBox<Vec >& bbox, BoundingBox<Vec >& subOctBbox)
+  int PointOctree::getBBoxIndex(const Vector<Vec >& point, const BoundingBox<Vec >& bbox, BoundingBox<Vec >& subOctBbox)
   {
     int index = 0;
-    Point<Vec > centroid = bbox.getCentroid();
+    Vector<Vec > centroid = bbox.getCentroid();
 
-    Point<Vec > bboxLowerLeft = centroid;
-    Point<Vec > bboxTopRight = centroid;
+    Vector<Vec > bboxLowerLeft = centroid;
+    Vector<Vec > bboxTopRight = centroid;
 
     // calculate "indices" of subtree and boundingbox 
     // "back"
@@ -112,7 +113,7 @@ namespace lvr2
   }
 
   template <typename T>
-    int getOctant(BOct* oct, int index)
+    int PointOctree::getOctant(BOct* oct, int index)
     {
       int position = 0;
       unsigned char mask = 0;
@@ -186,7 +187,7 @@ namespace lvr2
       return position;
     }
 
-  inline void PointOctree::insertPoint(const Point<Vec >& point, BOct* oct, const BoundingBox<Vec >& bbox)
+  inline void PointOctree::insertPoint(const Vector<Vec >& point, BOct* oct, const BoundingBox<Vec >& bbox)
   {
     BoundingBox<Vec > subOctBbox;
     int index = getBBoxIndex(point, bbox, subOctBbox);
@@ -219,7 +220,7 @@ namespace lvr2
         ); 
   }
 
-  void PointOctree::serializePointBuffer(BOct* oct, std::vector< Point<Vec > >& pts)
+  void PointOctree::serializePointBuffer(BOct* oct, std::vector< Vector<Vec > >& pts)
   {
     if(!oct->m_valid)
     {
@@ -308,4 +309,4 @@ namespace lvr2
     delete m_root;
 
   }
-}
+} // namespace lvr2

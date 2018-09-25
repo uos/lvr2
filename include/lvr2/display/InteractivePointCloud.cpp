@@ -73,7 +73,7 @@ void InteractivePointCloud::updateBuffer(PointBuffer2Ptr buffer)
 			m_boundingBox->expand(8000, 8000, 8000);
 		}
 
-		size_t num_vertices buffer->numPoints();
+		size_t num_vertices = buffer->numPoints();
 		float* vertices = buffer->getPointArray().get();
 
 //		m_boundingBox = new BoundingBox<Vertex<float> >;

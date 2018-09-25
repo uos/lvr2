@@ -52,7 +52,7 @@ Renderable::Renderable()
 	m_yAxis     = lvr::Vertex<float>(0.0f, 1.0f, 0.0f);
 	m_z_Axis    = lvr::Vertex<float>(0.0f, 0.0f, 1.0f);
 
-	m_boundingBox = new lvr::BoundingBox<lvr::Vertex<float> >;
+	m_boundingBox = 0;
 
 	m_model.reset();
 
@@ -78,6 +78,7 @@ Renderable::Renderable(lvr::Matrix4<float> m, string n)
     m_pointSize         = 1.0;
 
     m_model.reset();
+	m_boundingBox = 0;
 
 	m_showAxes          = false;
 	m_active            = false;
@@ -106,7 +107,7 @@ Renderable::Renderable(const Renderable& other)
 
 	m_scaleFactor           = other.m_scaleFactor;
 
-	m_boundingBox           = other.m_boundingBox;
+	m_boundingBox           = new lvr::BoundingBox<lvr::Vertex<float> >(*other.m_boundingBox);
 
     m_lineWidth         = 1.0;
     m_pointSize         = 1.0;
@@ -123,6 +124,7 @@ Renderable::Renderable(string n)
 	m_visible               = true;
 	m_listIndex             = -1;
 	m_axesListIndex         = -1;
+	m_activeListIndex       = -1;
 	m_visible               = true;
 	m_rotationSpeed         = 0.02f;
 	m_translationSpeed      = 10.0f;
@@ -280,7 +282,8 @@ void Renderable::strafe(bool invert)
 }
 
 Renderable::~Renderable() {
-
+    if (m_boundingBox)
+        delete m_boundingBox;
 }
 
 void Renderable::computeMatrix(){

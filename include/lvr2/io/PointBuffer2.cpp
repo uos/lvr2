@@ -50,18 +50,33 @@ void PointBuffer2::setColorArray(ucharArr colors, size_t n, unsigned width)
 
 floatArr PointBuffer2::getPointArray()
 {
-    return m_points->dataPtr();
+    if (m_points)
+    {
+        return m_points->dataPtr();
+    }
+
+    return floatArr();
 }
 
 floatArr PointBuffer2::getNormalArray()
 {
-    return m_normals->dataPtr();
+    if (m_normals)
+    {
+        return m_normals->dataPtr();
+    }
+
+    return floatArr();
 }
 
 ucharArr PointBuffer2::getColorArray(unsigned& w)
 {
-    w = m_colors->width();
-    return m_colors->dataPtr();
+    if (m_colors)
+    {
+        w = m_colors->width();
+        return m_colors->dataPtr();
+    }
+
+    return ucharArr();
 }
 
 

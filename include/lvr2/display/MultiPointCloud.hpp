@@ -57,7 +57,15 @@ public:
     MultiPointCloud(ModelPtr model, string name = "<unnamed point cloud>");
     MultiPointCloud(PointBuffer2Ptr buffer, string name = "<unnamed point cloud>");
 
-    virtual ~MultiPointCloud() {};
+    virtual ~MultiPointCloud()
+    {
+        for (auto p : m_clouds)
+        {
+            delete p.second->cloud;
+            delete p.second;
+        }
+    }
+
     virtual inline void render();
 
     void addCloud(PointCloud* pc);

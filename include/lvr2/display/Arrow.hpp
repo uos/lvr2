@@ -58,7 +58,7 @@ public:
 private:
 	double roll, pitch, yaw;
 	int color;
-	lvr::Matrix4 rotation;
+	lvr::Matrix4f rotation;
 };
 
 	

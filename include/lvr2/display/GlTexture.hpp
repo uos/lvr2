@@ -54,7 +54,7 @@ public:
     /**
      * @brief Empty ctor.
      */
-    GlTexture() {};
+    GlTexture() : m_pixels(0), m_texIndex(0) {};
 
     /**
      * @brief   Dtor.

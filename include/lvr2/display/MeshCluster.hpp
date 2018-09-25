@@ -35,14 +35,14 @@ using namespace std;
 namespace lvr2
 {
 
-class MeshCluster: public lvr::Renderable
+class MeshCluster : public Renderable
 {
 public:
 	MeshCluster() {};
 
 	void addMesh(MeshBuffer2Ptr buffer, string name);
 
-	virtual ~MeshCluster() {};
+	virtual ~MeshCluster() { for (StaticMesh* sm : m_meshes) delete sm;};
 
 	virtual inline void render()
 	{

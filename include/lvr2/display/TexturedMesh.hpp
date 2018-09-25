@@ -43,8 +43,24 @@ class TexturedMesh: public StaticMesh
 {
 public:
 	TexturedMesh(MeshBuffer2Ptr mesh);
-	virtual ~TexturedMesh() {};
 
+	virtual ~TexturedMesh()
+    {
+        if (m_textures)
+        {
+            for (size_t i = 0; i < m_numTextures; i++)
+            {
+                delete m_textures[i];
+            }
+
+        }
+
+        for (MaterialGroup *ptr : m_textureMaterials)
+            delete ptr;
+
+        for (MaterialGroup *ptr : m_colorMaterials)
+            delete ptr;
+    }
 
 	virtual void render()
 	{

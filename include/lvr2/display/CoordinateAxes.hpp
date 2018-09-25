@@ -40,7 +40,7 @@ public:
 	virtual ~CoordinateAxes();
 
 	virtual void render();
-	virtual void transform(Matrix4<float> m);
+	virtual void transform(lvr::Matrix4<float> m);
 
 private:
 	void drawArrow(float length, float radius, int nSubdivs = 12);
@@ -48,5 +48,7 @@ private:
 };
 
 } // namespace lvr2
+
+#include "CoordinateAxes.cpp"
 
 #endif /* COORDINATEAXES_H_ */

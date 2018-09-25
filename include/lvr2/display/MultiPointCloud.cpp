@@ -47,6 +47,7 @@ void MultiPointCloud::init(PointBuffer2Ptr buffer)
 {
 	if(buffer)
 	{
+        m_boundingBox = new lvr::BoundingBox<lvr::Vertex<float> >;
         size_t numSubClouds;
         unsigned dummy; 
 

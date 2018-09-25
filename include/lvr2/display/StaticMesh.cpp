@@ -35,6 +35,7 @@ StaticMesh::StaticMesh(){
 
 	m_normals.reset();
 	m_faceNormals   = 0;
+    m_blackColors   = 0;
 	m_vertices.reset();
 	m_colors.reset();
 	m_faces.reset();
@@ -58,6 +59,7 @@ StaticMesh::StaticMesh( ModelPtr model, string name )
 
     m_model = model;
     m_nameList = -1;
+    m_blackColors   = 0;
 
     init( model->m_mesh );
 	calcBoundingBox();
@@ -73,6 +75,7 @@ StaticMesh::StaticMesh( MeshBuffer2Ptr mesh, string name )
 
     m_model = ModelPtr( new Model( mesh ) );
     m_nameList = -1;
+    m_blackColors   = 0;
     init( mesh );
 
     calcBoundingBox();
@@ -178,7 +181,11 @@ void StaticMesh::setColorMaterial(float r, float g, float b)
 
 
 StaticMesh::~StaticMesh(){
+    if (m_blackColors)
+        delete[] m_blackColors;
 
+    if (m_faceNormals)
+        delete[] m_faceNormals;
 }
 
 void StaticMesh::finalize(){
