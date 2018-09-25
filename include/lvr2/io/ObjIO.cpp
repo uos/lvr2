@@ -341,6 +341,12 @@ void ObjIO::save( string filename )
 {
     typedef lvr::Vertex<unsigned char> ObjColor;
 
+    if (!m_model->m_mesh)
+    {
+        std::cout << "ObjIO: Unable to save to file " << filename << ". No mesh to save present." << std::endl;
+        return;
+    }
+
     unsigned w_color;
     size_t lenVertices = m_model->m_mesh->numVertices();
     size_t lenNormals = lenVertices;

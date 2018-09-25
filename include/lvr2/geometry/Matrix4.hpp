@@ -24,15 +24,15 @@
  *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
-#ifndef MATRIX_H_
-#define MATRIX_H_
+#ifndef LVR2_MATRIX_H_
+#define LVR2_MATRIX_H_
 
 #include <iostream>
 #include <fstream>
 #include <iomanip>
 
-#include "Vertex.hpp"
-#include "Normal.hpp"
+#include <lvr2/geometry/Vector.hpp>
+#include <lvr2/geometry/Normal.hpp>
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -42,15 +42,18 @@
 #endif
 using namespace std;
 
-namespace lvr{
+namespace lvr2
+{
 
 /**
  * @brief	A 4x4 matrix class implementation for use with the provided
  * 			vertex types.
  */
-template<typename ValueType>
+template<typename BaseVecT>
 class Matrix4 {
 public:
+
+    using ValueType = typename BaseVecT::CoordType;
 
 	/**
 	 * @brief 	Default constructor. Initializes a identity matrix.
@@ -85,7 +88,7 @@ public:
 	 * 			avoid a gimbal lock.
 	 */
 	template<typename T>
-	Matrix4(Vertex<T> axis, ValueType angle)
+	Matrix4(Vector<T> axis, ValueType angle)
 	{
 		// Check for gimbal lock
 		if(fabs(angle) < 0.0001){
@@ -106,19 +109,19 @@ public:
 			float yaw = atan2(axis.y, axis.z);
 			if(yaw < 0) yaw += 2 * M_PI;
 
-			Matrix4 m1, m2, m3;
+			Matrix4<BaseVecT> m1, m2, m3;
 
 			if(invert_z) yaw = -yaw;
 
 			cout << "YAW: " << yaw << " PITCH: " << pitch << endl;
 
 			if(fabs(yaw)   > 0.0001){
-				m2 = Matrix4(Vertex<T>(1.0, 0.0, 0.0), yaw);
+				m2 = Matrix4(Vector<T>(1.0, 0.0, 0.0), yaw);
 				m3 = m3 * m2;
 			}
 
 			if(fabs(pitch) > 0.0001){
-				m1 = Matrix4(Vertex<T>(0.0, 1.0, 0.0), pitch);
+				m1 = Matrix4(Vector<T>(0.0, 1.0, 0.0), pitch);
 				m3 = m3 * m1;
 			}
 
@@ -159,7 +162,7 @@ public:
 	}
 
 	template<typename T>
-	Matrix4(const Vertex<T> &position, const Vertex<T> &angles)
+	Matrix4(const Vector<T> &position, const Vector<T> &angles)
 	{
 		float sx = sin(angles[0]);
 		float cx = cos(angles[0]);
@@ -199,13 +202,13 @@ public:
 	 * @brief	Scales the matrix elemnts by the given factor
 	 */
 	template<typename T>
-	Matrix4 operator*(const T &scale) const
+	Matrix4<BaseVecT> operator*(const T &scale) const
 	{
 		ValueType new_matrix[16];
 		for(int i = 0; i < 16; i++){
 			new_matrix[i] = m[i] * scale;
 		}
-		return Matrix4<ValueType>(new_matrix);
+		return Matrix4<BaseVecT>(new_matrix);
 	}
 
 	/**
@@ -213,7 +216,7 @@ public:
 	 * 			matrix
 	 */
 	template<typename T>
-	Matrix4 operator*(const Matrix4<T> &other) const
+	Matrix4<BaseVecT> operator*(const Matrix4<T> &other) const
 	{
 		ValueType new_matrix[16];
 		new_matrix[ 0] = m[ 0] * other[ 0] + m[ 4] * other[ 1] + m[ 8] * other[ 2] + m[12] * other[ 3];
@@ -232,7 +235,7 @@ public:
 		new_matrix[13] = m[ 1] * other[12] + m[ 5] * other[13] + m[ 9] * other[14] + m[13] * other[15];
 		new_matrix[14] = m[ 2] * other[12] + m[ 6] * other[13] + m[10] * other[14] + m[14] * other[15];
 		new_matrix[15] = m[ 3] * other[12] + m[ 7] * other[13] + m[11] * other[14] + m[15] * other[15];
-		return Matrix4<ValueType>(new_matrix);
+		return Matrix4<BaseVecT>(new_matrix);
 	}
 
 	/**
@@ -240,21 +243,21 @@ public:
 	 *
 	 */
 	template<typename T>
-	Matrix4 operator+(const Matrix4<T> &other) const
+	Matrix4<BaseVecT> operator+(const Matrix4<T> &other) const
 	{
 		ValueType new_matrix[16];
 		for(int i = 0; i < 16; i++)
 		{
 			new_matrix[i] = m[i] + other[i];
 		}
-		return Matrix4<ValueType>(new_matrix);
+		return Matrix4<BaseVecT>(new_matrix);
 	}
 
 	/**
 	 * @brief 	Matrix addition operator
 	 */
 	template<typename T>
-	Matrix4 operator+=(const Matrix4<T> &other)
+	Matrix4<BaseVecT> operator+=(const Matrix4<T> &other)
 	{
 		//if(other != *this)
 		//{
@@ -273,7 +276,7 @@ public:
 	 * 			to avoid memory access violations.
 	 */
 	template<typename T>
-	Matrix4 operator*(const T* &other) const
+	Matrix4<BaseVecT> operator*(const T* &other) const
 	{
 		ValueType new_matrix[16];
 		new_matrix[ 0] = m[ 0] * other[ 0] + m[ 4] * other[ 1] + m[ 8] * other[ 2] + m[12] * other[ 3];
@@ -292,24 +295,25 @@ public:
 		new_matrix[13] = m[ 1] * other[12] + m[ 5] * other[13] + m[ 9] * other[14] + m[13] * other[15];
 		new_matrix[14] = m[ 2] * other[12] + m[ 6] * other[13] + m[10] * other[14] + m[14] * other[15];
 		new_matrix[15] = m[ 3] * other[12] + m[ 7] * other[13] + m[11] * other[14] + m[15] * other[15];
-		return Matrix4<ValueType>(new_matrix);
+		return Matrix4<BaseVecT>(new_matrix);
 	}
 
 	/**
 	 * @brief	Multiplication of Matrix and Vertex types
 	 */
 	template<typename T>
-	Vertex<T> operator*(const Vertex<T> &v) const
+	Vector<T> operator*(const Vector<T> &v) const
 	{
-		T x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
-		T y = m[ 1] * v.x + m[ 5] * v.y + m[9 ] * v.z;
-		T z = m[ 2] * v.x + m[ 6] * v.y + m[10] * v.z;
+        using ValType = typename T::CoordType;
+		ValType x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
+		ValType y = m[ 1] * v.x + m[ 5] * v.y + m[9 ] * v.z;
+		ValType z = m[ 2] * v.x + m[ 6] * v.y + m[10] * v.z;
 
 		x = x + m[12];
 		y = y + m[13];
 		z = z + m[14];
 
-		return Vertex<T>(x, y, z);
+		return Vector<T>(x, y, z);
 	}
 
     /**
@@ -318,9 +322,10 @@ public:
     template<typename T>
     Normal<T> operator*(const Normal<T> &v) const
     {
-        T x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
-        T y = m[ 1] * v.x + m[ 5] * v.y + m[9 ] * v.z;
-        T z = m[ 2] * v.x + m[ 6] * v.y + m[10] * v.z;
+        using ValType = typename T::CoordType;
+        ValType x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
+        ValType y = m[ 1] * v.x + m[ 5] * v.y + m[9 ] * v.z;
+        ValType z = m[ 2] * v.x + m[ 6] * v.y + m[10] * v.z;
 
         return Normal<T>(x, y, z);
     }
@@ -485,9 +490,9 @@ public:
 	    return( result );
 	}
 
-	Matrix4 inv(bool& success)
+	Matrix4<BaseVecT> inv(bool& success)
 	{
-	    Matrix4 Mout;
+	    Matrix4<BaseVecT> Mout;
 	    ValueType  mdet = det();
 	    if ( fabs( mdet ) < 0.00000000000005 ) {
 	        cout << "Error matrix inverting! " << mdet << endl;
@@ -531,7 +536,7 @@ private:
 	 * @param    M  input 3x3 matrix
 	 * @return   determinant of input matrix
 	 */
-	ValueType det3( const ValueType *M )
+	ValueType det3(const ValueType *M )
 	{
 	  ValueType det;
 	  det = (double)(  M[0] * ( M[4]*M[8] - M[7]*M[5] )
@@ -558,7 +563,8 @@ inline ostream& operator<<(ostream& os, const Matrix4<T> matrix){
 	return os;
 }
 
-typedef Matrix4<float> Matrix4f;
+typedef Matrix4<BaseVector<float>> Matrix4f;
 
-} // namespace lvr
+} // namespace lvr2
+
 #endif /* MATRIX_H_ */

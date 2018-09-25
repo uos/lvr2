@@ -1,12 +1,35 @@
+#include <lvr2/display/Arrow.hpp>
+#include <lvr2/display/Color.hpp>
+#include <lvr2/display/ColorMap.hpp>
+#include <lvr2/display/CoordinateAxes.hpp>
+#include <lvr2/display/GlTexture.hpp>
+#include <lvr2/display/Grid.hpp>
+#include <lvr2/display/GroundPlane.hpp>
+#include <lvr2/display/InteractivePointCloud.hpp>
+#include <lvr2/display/MeshCluster.hpp>
+#include <lvr2/display/MultiPointCloud.hpp>
+#include <lvr2/display/PointCloud.hpp>
+#include <lvr2/display/PointCorrespondences.hpp>
+#include <lvr2/display/PointOctree.hpp>
+#include <lvr2/display/Renderable.hpp>
+#include <lvr2/display/StaticMesh.hpp>
+#include <lvr2/display/TexturedMesh.hpp>
+#include <lvr2/display/TextureFactory.hpp>
+
+#include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/io/PointBuffer2.hpp>
-#include <lvr2/io/AsciiIO.hpp>
-#include <lvr2/io/PLYIO.hpp>
+
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
+#include <lvr2/geometry/Matrix4.hpp>
+#include <lvr2/geometry/Vector.hpp>
 
 #include <lvr2/algorithm/ReductionAlgorithms.hpp>
 #include <lvr2/algorithm/NormalAlgorithms.hpp>
+
+#include <lvr2/registration/ICPPointAlign.hpp>
+#include <lvr2/registration/EigenSVDPointAlign.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -18,15 +41,83 @@ typedef Vector<BaseVec>   VecT;
 
 int main(int argc, char** argv)
 {
+    using Vec = BaseVector<float>;
+    EigenSVDPointAlign<Vec> esvdpa;
+    Arrow a1(1);
+    Arrow a2("test");
 
-    PLYIO io;
-    ModelPtr model = io.read(argv[1]);
+    float c[3] = {0.0f, 0.0f, 0.0f };
+    std::cout << "Color: " << c[0] << " " <<  c[1] << " " << c[2] << std::endl;
+    Colors::getColor(c, Color::GREEN, ColorTable::LIGHT);
+    std::cout << "Color: " << c[0] << " " <<  c[1] << " " << c[2] << std::endl;
+    ModelPtr model = ModelFactory::readModel(argv[1]);
+
+    ColorMap cm(200);
+
+    CoordinateAxes ca1;
+    CoordinateAxes ca2(3.0f);
+
+    GlTexture glt;
+
+    GroundPlane gp;
+    GroundPlane(3, 6);
+
+    InteractivePointCloud ipc;
+
+    MeshCluster mc;
+
+    std::vector<float> a;
+    std::vector<float> b;
+    
+    a.push_back(3.0);
+    a.push_back(2.0);
+    a.push_back(1.0);
+    b.push_back(6.0);
+    b.push_back(4.0);
+    b.push_back(4.0);
+
+    PointCorrespondences pcorr(a, b);
+
+    StaticMesh sm();
+
+    TextureFactory &tf = TextureFactory::instance();
+    GlTexture *gltex = tf.getTexture("../../bachelor/build/texture_17.ppm");
+
+    if (gltex)
+    {
+        std::cout << "deleting texture" << std::endl;
+        delete gltex;
+    } 
 
     if(model->m_pointCloud)
     {
-        std::cout << model->m_pointCloud->numPoints() << std::endl;
-        std::cout << model->m_pointCloud->hasNormals() << std::endl;
-        std::cout << model->m_pointCloud->hasColors() << std::endl;
+        std::cout << "Points: " << model->m_pointCloud->numPoints() << std::endl;
+        std::cout << "Has Normals" << model->m_pointCloud->hasNormals() << std::endl;
+        std::cout << "Has Colors" << model->m_pointCloud->hasColors() << std::endl;
+
+        std::cout << "IPC test" << std::endl;
+        ipc.updateBuffer(model->m_pointCloud);
+        InteractivePointCloud ipc2(model->m_pointCloud);
+        std::cout << "IPC test end" << std::endl;
+
+        std::cout << "MPC test" << std::endl;
+        PointCloud *pc = new PointCloud(model->m_pointCloud);
+        MultiPointCloud mpc(model);
+        mpc.addCloud(pc);
+        std::cout << "MPC test end" << std::endl;
+
+        std::cout << "POT test" << std::endl;
+        //PointOctree(model->m_pointCloud, 2);
+        std::cout << "POT test end" << std::endl;
+
+        std::cout << "ICPPA test" << std::endl;
+        Matrix4<Vec> tf;
+        //tf[3] = 100.5;
+        //tf[7] = 100.5;
+        //tf[11] = -100.5;
+        ICPPointAlign<Vec> icppa(model->m_pointCloud, model->m_pointCloud, tf);
+        std::cout << icppa.match() << std::endl;
+        std::cout << "ICPPA test end" << std::endl;
     }
 
     if(model->m_mesh)
@@ -37,8 +128,54 @@ int main(int argc, char** argv)
         std::cout << model->m_mesh->hasVertexColors() << std::endl;
         std::cout << model->m_mesh->hasFaceNormals() << std::endl;
         std::cout << model->m_mesh->hasVertexNormals() << std::endl;
+
+        std::cout << "TM test" << std::endl;
+        TexturedMesh tex_mesh(model->m_mesh);
+        std::cout << "TM test end" << std::endl;
+
+        std::cout << "MC addMesh test" << std::endl;
+        mc.addMesh(model->m_mesh, "test");
+        std::cout << "MC addMesh test end" << std::endl;
+
+        
+        std::cout << "SM test" << std::endl;
+        StaticMesh sm2(model);
+        std::cout << "SM test end" << std::endl;
+
+        auto textures = model->m_mesh->getTextures();
+ 
+        for (auto t : textures)
+        {
+            t.save();
+        }
     }
 
+    std::cout << "writing model to disk" << std::endl;
+    ModelFactory::saveModel(model, "mesh.obj");
+
+    std::cout << "Matrix test" << std::endl;
+
+    using Vec = BaseVector<float>;
+    Normal<Vec> n1(1, 4, 7);
+    std::cout << n1 << std::endl;
+    Vector<Vec> v1(1, 2, 3);
+    Matrix4<Vec> m1, m2;
+    Matrix4<Vec> m3;
+    m3[0] = 3;
+    m3[5] = 2;
+    m3[10] = 7;
+    m3[15] = 9;
+    std::cout << (m1 * 3) * m3 << std::endl;
+    std::cout << m1 + m2 << std::endl;
+    std::cout << m1 * 3 << std::endl;
+    std::cout << (m1 * 3) * v1 << std::endl;
+    std::cout << (m3 * 3) * n1 << std::endl;
+
+    std::cout << "Matrix test end" << std::endl;
+
+    return 0;
+
+    std::cout << "creating mesh" << std::endl;
     HalfEdgeMesh<VecT> mesh(model->m_mesh);
 
    // mesh.debugCheckMeshIntegrity();

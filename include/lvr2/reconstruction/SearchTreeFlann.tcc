@@ -5,9 +5,9 @@
  *      Author: twiemann
  */
 
-#include "SearchTreeFlann.hpp"
+#include <lvr2/reconstruction/SearchTreeFlann.hpp>
 
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/Timestamp.hpp>
 
 #include <lvr2/util/Panic.hpp>
 
@@ -17,13 +17,15 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-SearchTreeFlann<BaseVecT>::SearchTreeFlann(PointBufferPtr<BaseVecT> buffer)
+SearchTreeFlann<BaseVecT>::SearchTreeFlann(PointBuffer2Ptr buffer)
 {
-    auto n = buffer->getNumPoints();
+    auto n = buffer->numPoints();
+    FloatChannelOptional pts_optional = buffer->getFloatChannel("points");
+    FloatChannel pts_channel = *pts_optional;
     auto flannPoints = flann::Matrix<CoordT>(new CoordT[3 * n], n, 3);
     for(size_t i = 0; i < n; i++)
     {
-        auto p = buffer->getPoint(i);
+        Vector<BaseVecT> p = pts_channel[i];
         flannPoints[i][0] = p.x;
         flannPoints[i][1] = p.y;
         flannPoints[i][2] = p.z;

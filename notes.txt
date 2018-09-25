@@ -58,5 +58,8 @@ Anmerkungen:
                                 Ob dies nun mit new geschieht, oder aber m_boundingBox kein Ptr mehr sein wird 
                                 weiss ich noch nicht.
 
+                Matrix4:        Mit dem Port nicht ganz zufrieden, glaube es sollte einen 
+                                ValueType anstatt eines BaseVecT nehmen. Aber fürs erste sollte es ausreichen.
+
 
 ----------------------------------------------------------------------

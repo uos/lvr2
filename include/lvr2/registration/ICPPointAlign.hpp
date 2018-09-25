@@ -25,19 +25,21 @@
 #ifndef ICPPOINTALIGN_HPP_
 #define ICPPOINTALIGN_HPP_
 
-#include "EigenSVDPointAlign.hpp"
-#include <lvr/reconstruction/SearchTree.hpp>
-#include <lvr/geometry/Matrix4.hpp>
+#include <lvr2/registration/EigenSVDPointAlign.hpp>
+#include <lvr2/reconstruction/SearchTree.hpp>
+#include <lvr2/geometry/Matrix4.hpp>
+#include <lvr2/geometry/Vector.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
+template <typename BaseVecT>
 class ICPPointAlign
 {
 public:
-    ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4f transformation);
+    ICPPointAlign(PointBuffer2Ptr model, PointBuffer2Ptr data, Matrix4<BaseVecT> transformation);
 
-    Matrix4f match();
+    Matrix4<BaseVecT> match();
 
     virtual ~ICPPointAlign();
 
@@ -48,8 +50,8 @@ public:
     double  getEpsilon();
     double  getMaxMatchDistance();
     int     getMaxIterations();
-
-    void getPointPairs(PointPairVector& pairs, Vertexf& centroid_m, Vertexf& centroid_d, double& sum);
+    
+    void getPointPairs(PointPairVector<BaseVecT>& pairs, Vector<BaseVecT>& centroid_m, Vector<BaseVecT>& centroid_d, double& sum);
 
 protected:
 
@@ -59,13 +61,15 @@ protected:
     double                              m_maxDistanceMatch;
     int                                 m_maxIterations;
 
-    PointBufferPtr                      m_modelCloud;
-    PointBufferPtr                      m_dataCloud;
-    Matrix4f                            m_transformation;
+    PointBuffer2Ptr                     m_modelCloud;
+    PointBuffer2Ptr                     m_dataCloud;
+    Matrix4<BaseVecT>                   m_transformation;
 
-    SearchTree<Vertexf>::Ptr			m_searchTree;
+    SearchTreePtr<BaseVecT> 			m_searchTree;
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
+
+#include "ICPPointAlign.cpp"
 
 #endif /* ICPPOINTALIGN_HPP_ */
