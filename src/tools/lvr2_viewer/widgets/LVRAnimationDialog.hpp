@@ -18,7 +18,7 @@
 
 using Ui::AnimationDialog;
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRAnimationDialog : public QObject
@@ -42,15 +42,15 @@ public Q_SLOTS:
 private:
     void connectSignalsAndSlots();
 
-    AnimationDialog*                           m_dialog;
+    AnimationDialog*                            m_dialog;
     QListWidget*                                m_timeline;
     vtkSmartPointer<vtkRenderWindowInteractor>  m_renderWindowInteractor;
     vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
     vtkSmartPointer<vtkCamera>                  m_mainCamera;
     QTreeWidget*                                m_treeWidget;
-    unsigned int                               m_frameCounter;
+    unsigned int                                m_frameCounter;
 };
 
-} // namespace lvr
+} // namespace lvr2
 
 #endif /* ANIMATIONDIALOG_H_ */

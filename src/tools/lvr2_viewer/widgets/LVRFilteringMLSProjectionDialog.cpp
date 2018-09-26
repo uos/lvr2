@@ -1,7 +1,7 @@
 #include <QFileDialog>
 #include "LVRFilteringMLSProjectionDialog.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 LVRMLSProjectionDialog::LVRMLSProjectionDialog(LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
@@ -37,7 +37,7 @@ void LVRMLSProjectionDialog::applyMLSProjection()
    /* PCLFiltering filter(m_pc->getPointBuffer());
     filter.applyMLSProjection(maximumDistance);
 
-    PointBufferPtr pb( filter.getPointBuffer() );
+    PointBuffer2Ptr pb( filter.getPointBuffer() );
     ModelPtr model( new Model( pb ) );
 
     ModelBridgePtr bridge(new LVRModelBridge(model));
@@ -51,4 +51,4 @@ void LVRMLSProjectionDialog::applyMLSProjection()
     m_optimizedPointCloud->setExpanded(true); */
 }
 
-}
+} // namespace lvr2

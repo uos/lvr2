@@ -32,8 +32,7 @@
 
 using boost::optional;
 
-#include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/geometry/BaseMesh.hpp>
+#include <lvr2/io/MeshBuffer2.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/attrmaps/AttrMaps.hpp>
 #include <lvr2/algorithm/ColorAlgorithms.hpp>
@@ -70,7 +69,7 @@ public:
      * @param mesh the mesh to convert
      * @return the generated buffer
      */
-    boost::shared_ptr<MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
+    Meshbuffer2Ptr apply(const BaseMesh<BaseVecT>& mesh);
 
     /**
      * Sets vertex colors for the apply method. This has to be done before apply is called.
@@ -136,7 +135,7 @@ public:
      * @param mesh the mesh to convert
      * @return the resulting mesh buffer
      */
-    boost::shared_ptr<MeshBuffer> apply(const BaseMesh<BaseVecT>& mesh);
+    MeshBuffer2Ptr apply(const BaseMesh<BaseVecT>& mesh);
 
 private:
 

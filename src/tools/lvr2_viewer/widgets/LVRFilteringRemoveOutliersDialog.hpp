@@ -6,8 +6,10 @@
 #include <vtkRendererCollection.h>
 #include <vtkSmartPointer.h>
 
-#include <lvr/io/ModelFactory.hpp>
-#include <lvr/reconstruction/PCLFiltering.hpp>
+#include <lvr2/io/ModelFactory.hpp>
+
+// @TODO should this be ported, in .cpp this is commented out...
+//#include <lvr2/reconstruction/PCLFiltering.hpp>
 
 #include "ui_LVRFilteringRemoveOutliersDialogUI.h"
 #include "LVRPointCloudItem.hpp"
@@ -15,7 +17,7 @@
 
 using Ui::RemoveOutliersDialog;
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRRemoveOutliersDialog : public QObject
@@ -40,6 +42,6 @@ private:
     vtkRenderWindow*                        m_renderWindow;
 };
 
-} // namespace lvr
+} // namespace lvr2
 
 #endif /* FILTERINGREMOVEOUTLIERSDIALOG_H_ */

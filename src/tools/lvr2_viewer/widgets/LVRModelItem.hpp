@@ -25,7 +25,8 @@
 #ifndef LVRMODELITEM_H_
 #define LVRMODELITEM_H_
 
-#include <lvr/io/Model.hpp>
+// TODO pretty sure this include is not needed
+//#include <lvr2/io/Model.hpp>
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "LVRPoseItem.hpp"
 
@@ -33,7 +34,7 @@
 #include <QColor>
 #include <QTreeWidgetItem>
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRModelItem : public QTreeWidgetItem
@@ -43,8 +44,8 @@ public:
     LVRModelItem(const LVRModelItem& item);
     virtual ~LVRModelItem();
 
-    Pose    getPose();
-    void    setPose( Pose& pose);
+    Pose            getPose();
+    void            setPose( Pose& pose);
     QString         getName();
     void            setName(QString name);
     bool            isEnabled();
@@ -60,6 +61,6 @@ protected:
     LVRPoseItem*    m_poseItem;
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif /* LVRMODELITEM_H_ */

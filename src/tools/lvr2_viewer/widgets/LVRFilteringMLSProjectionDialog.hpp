@@ -6,8 +6,9 @@
 #include <vtkRendererCollection.h>
 #include <vtkSmartPointer.h>
 
-#include <lvr/io/ModelFactory.hpp>
-#include <lvr/reconstruction/PCLFiltering.hpp>
+#include <lvr2/io/ModelFactory.hpp>
+// @TODO should this be ported? In .cpp the use of this include is commented out...
+//#include <lvr2/reconstruction/PCLFiltering.hpp>
 
 #include "ui_LVRFilteringMLSProjectionDialogUI.h"
 #include "LVRPointCloudItem.hpp"
@@ -15,7 +16,7 @@
 
 using Ui::MLSProjectionDialog;
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRMLSProjectionDialog : public QObject
@@ -40,6 +41,6 @@ private:
     vtkRenderWindow*                        m_renderWindow;
 };
 
-} // namespace lvr
+} // namespace lvr2
 
 #endif /* FILTERINGMLSPROJECTIONDIALOG_H_ */

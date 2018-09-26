@@ -35,7 +35,7 @@
 
 using Ui::BackgroundDialogUI;
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRBackgroundDialog : public QDialog
@@ -63,6 +63,6 @@ private:
     QColor                              m_color2;
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif /* LVRBACKGROUNDDIALOG_HPP_ */

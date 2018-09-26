@@ -7,7 +7,7 @@
 
 #include <cstring>
 
-namespace lvr
+namespace lvr2
 {
 
 LVRAnimationDialog::LVRAnimationDialog(vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor, vtkSmartPointer<vtkCameraRepresentation> pathCamera, QTreeWidget* treeWidget) :
@@ -279,4 +279,4 @@ void LVRAnimationDialog::saveVideo()
     videoWriter->End(); */
 }
 
-}
+} // namespace lvr2

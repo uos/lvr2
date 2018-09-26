@@ -30,7 +30,7 @@
 
 #include "../vtkBridge/LVRMeshBufferBridge.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRMeshItem : public QTreeWidgetItem
@@ -49,7 +49,7 @@ public:
     int     getShading();
     void    setShading(int &shader);
     vtkSmartPointer<vtkActor>    getWireframeActor();
-    MeshBufferPtr   getMeshBuffer();
+    MeshBuffer2Ptr   getMeshBuffer();
     vtkSmartPointer<vtkActor> getActor();
 
 protected:
@@ -67,6 +67,6 @@ protected:
     QTreeWidgetItem* 		m_parent;
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif /* LVRMESHITEM_H_ */
