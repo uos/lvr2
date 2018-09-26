@@ -29,10 +29,10 @@
 #include "../widgets/LVRItemTypes.hpp"
 #include "../widgets/LVRModelItem.hpp"
 
-#include <lvr/io/MeshBuffer.hpp>
-#include <lvr/io/PointBuffer.hpp>
+#include <lvr2/io/MeshBuffer2.hpp>
+#include <lvr2/io/PointBuffer2.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRTreeWidgetHelper
@@ -41,8 +41,8 @@ public:
     LVRTreeWidgetHelper(QTreeWidget* widget);
     virtual ~LVRTreeWidgetHelper() {};
 
-    PointBufferPtr      getPointBuffer(QString name);
-    MeshBufferPtr       getMeshBuffer(QString name);
+    PointBuffer2Ptr     getPointBuffer(QString name);
+    MeshBuffer2Ptr      getMeshBuffer(QString name);
     LVRModelItem*       getModelItem(QString name);
 
 
@@ -51,6 +51,6 @@ private:
 
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif /* LVRTREEWIDGETHELPER_HPP_ */

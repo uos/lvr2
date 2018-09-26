@@ -29,7 +29,7 @@
 
 #include <QTreeWidgetItemIterator>
 
-namespace lvr
+namespace lvr2
 {
 
 LVRTreeWidgetHelper::LVRTreeWidgetHelper(QTreeWidget* tree)
@@ -37,9 +37,9 @@ LVRTreeWidgetHelper::LVRTreeWidgetHelper(QTreeWidget* tree)
    m_treeWidget = tree;
 }
 
-PointBufferPtr LVRTreeWidgetHelper::getPointBuffer(QString name)
+PointBuffer2Ptr LVRTreeWidgetHelper::getPointBuffer(QString name)
 {
-    PointBufferPtr ptr;
+    PointBuffer2Ptr ptr;
     QTreeWidgetItemIterator m_it(m_treeWidget);
     while(*m_it)
     {
@@ -69,7 +69,7 @@ PointBufferPtr LVRTreeWidgetHelper::getPointBuffer(QString name)
 
 MeshBufferPtr LVRTreeWidgetHelper::getMeshBuffer(QString name)
 {
-    MeshBufferPtr ptr;
+    MeshBuffer2Ptr ptr;
     QTreeWidgetItemIterator m_it(m_treeWidget);
     while(*m_it)
     {
@@ -115,4 +115,4 @@ LVRModelItem* LVRTreeWidgetHelper::getModelItem(QString name)
     return ptr;
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */

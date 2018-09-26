@@ -1,15 +1,13 @@
 #include <QtGui>
 #include "LVRMainWindow.hpp"
 
-#include <lvr/io/Progress.hpp>
-
-using namespace lvr;
+#include <lvr2/io/Progress.hpp>
 
 int main(int argc, char** argv)
 {
     QApplication app(argc, argv);
 
-    LVRMainWindow mainWindow;
+    lvr2::LVRMainWindow mainWindow;
     mainWindow.parseCommandLine(argc, argv);
     mainWindow.show();
 

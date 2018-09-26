@@ -29,10 +29,10 @@
 
 #include "LVRMainWindow.hpp"
 
-#include <lvr/io/ModelFactory.hpp>
-#include <lvr/io/DataStruct.hpp>
+#include <lvr2/io/ModelFactory.hpp>
+#include <lvr2/io/DataStruct.hpp>
 
-#include <lvr/registration/ICPPointAlign.hpp>
+#include <lvr2/registration/ICPPointAlign.hpp>
 
 #include <vtkActor.h>
 #include <vtkProperty.h>
@@ -40,8 +40,10 @@
 #include <vtkCamera.h>
 #include <QString>
 
-namespace lvr
+namespace lvr2
 {
+
+using Vec = BaseVector<float>;
 
 LVRMainWindow::LVRMainWindow()
 {
@@ -416,7 +418,7 @@ void LVRMainWindow::restoreSliders()
         pointCloudItem->getPointBufferBridge()->getSpectralChannels(channels, use_channel);
         pointCloudItem->getPointBufferBridge()->getSpectralColorGradient(gradient_type, gradient_channel, normalize_gradient, use_ndvi);
         n_channels = pointCloudItem->getPointBuffer()->getNumSpectralChannels();
-        PointBufferPtr p = pointCloudItem->getPointBuffer();
+        PointBuffer2Ptr p = pointCloudItem->getPointBuffer();
 
         this->dockWidgetSpectralSliderSettingsContents->setEnabled(false); // disable to stop changeSpectralColor from re-rendering 6 times
         for (int i = 0; i < 3; i++)
@@ -488,20 +490,20 @@ void LVRMainWindow::exportSelectedModel()
 
                 LVRModelItem* model_item = static_cast<LVRModelItem*>(item->parent());
                 LVRPointCloudItem* pc_item = static_cast<LVRPointCloudItem*>(item);
-                PointBufferPtr points = pc_item->getPointBuffer();
+                PointBuffer2Ptr points = pc_item->getPointBuffer();
 
                 // Get transformation matrix
                 Pose p = model_item->getPose();
-                Matrix4f mat(Vertexf(p.x, p.y, p.z), Vertexf(p.r, p.t, p.p));
+                Matrix4<Vec> mat(Vector<Vec>(p.x, p.y, p.z), Vector<Vec>(p.r, p.t, p.p));
 
                 // Allocate target buffer and insert transformed points
-                size_t n;
-                floatArr transformedPoints(new float[3 * points->getNumPoints()]);
-                floatArr pointArray = points->getPointArray(n);
-                for(size_t i = 0; i < points->getNumPoints(); i++)
+                size_t n = points->numPoints();
+                floatArr transformedPoints(new float[3 * n]);
+                floatArr pointArray = points->getPointArray();
+                for(size_t i = 0; i < n; i++)
                 {
-                    Vertexf v(pointArray[3 * i], pointArray[3 * i + 1], pointArray[3 * i + 2]);
-                    Vertexf vt = mat * v;
+                    Vector<Vec> v(pointArray[3 * i], pointArray[3 * i + 1], pointArray[3 * i + 2]);
+                    Vector<Vec> vt = mat * v;
 
                     transformedPoints[3 * i    ] = vt[0];
                     transformedPoints[3 * i + 1] = vt[1];
@@ -509,7 +511,7 @@ void LVRMainWindow::exportSelectedModel()
                 }
 
                 // Save transformed points
-                PointBufferPtr trans(new PointBuffer);
+                PointBuffer2Ptr trans(new PointBuffer2);
                 trans->setPointArray(transformedPoints, n);
                 ModelPtr model(new Model(trans));
                 ModelFactory::saveModel(model, qFileName.toStdString());
@@ -520,12 +522,12 @@ void LVRMainWindow::exportSelectedModel()
 
 void LVRMainWindow::alignPointClouds()
 {
-    Matrix4f mat = m_correspondanceDialog->getTransformation();
+    Matrix4<Vec> mat = m_correspondanceDialog->getTransformation();
     QString name = m_correspondanceDialog->getDataName();
     QString modelName = m_correspondanceDialog->getModelName();
 
-    PointBufferPtr modelBuffer = m_treeWidgetHelper->getPointBuffer(modelName);
-    PointBufferPtr dataBuffer  = m_treeWidgetHelper->getPointBuffer(name);
+    PointBuffer2Ptr modelBuffer = m_treeWidgetHelper->getPointBuffer(modelName);
+    PointBuffer2Ptr dataBuffer  = m_treeWidgetHelper->getPointBuffer(name);
 
     float pose[6];
     LVRModelItem* item = m_treeWidgetHelper->getModelItem(name);
@@ -554,7 +556,7 @@ void LVRMainWindow::alignPointClouds()
         icp.setEpsilon(m_correspondanceDialog->getEpsilon());
         icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
         icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
-        Matrix4f refinedTransform = icp.match();
+        Matrix4<Vec> refinedTransform = icp.match();
 
         cout << "Initial: " << mat << endl;
 
@@ -1289,8 +1291,8 @@ void LVRMainWindow::showHistogramDialog()
 
     for (LVRPointCloudItem* item : pointCloudItems)
     {
-        PointBufferPtr points = item->getPointBuffer();
-        if (!points->hasPointSpectralChannels())
+        PointBuffer2Ptr points = item->getPointBuffer();
+        if (!points->getFloatChannel("spectral_channels"))
         {
             showErrorDialog();
             return;
@@ -1377,15 +1379,14 @@ void LVRMainWindow::onGradientLineEditSubmit()
     changeGradientColor();
 }
 
-
 void LVRMainWindow::onGradientLineEditChanged()
 {
     std::set<LVRPointCloudItem*> items = getSelectedPointCloudItems();
     if(!items.empty())
     {
-        PointBufferPtr points = (*items.begin())->getPointBuffer();
-        int min = points->getMinWavelength();
-        int max = points->getMaxWavelength();
+        PointBuffer2Ptr points = (*items.begin())->getPointBuffer();
+        int min = points->getIntAttribute("spectral_wavelength_min");
+        int max = points->getIntAttribute("spectral_wavelength_max");
 
        
         QString test = m_gradientLineEdit-> text();
@@ -1407,6 +1408,31 @@ void LVRMainWindow::onGradientLineEditChanged()
     }
 }
 
+int LVRMainWindow::getSpectralChannel(int wavelength, PointBuffer2Ptr pbuff)
+{
+        spectral_channels = p->getFloatChannel("spectral_channels"); 
+        if (spectral_Channels)
+        {
+            unsigned numSpectraChannels = spectral_channels->width();
+            int minWavelength = p->getFloatAttribute("spectral_wavelength_min");
+            int maxWavelength = p->getFloatAttribute("spectral_wavelength_max");
+            float wavelengthPerChannel = (maxWavelength - minWavelength) / static_cast<float>(numSpectraChannels);
+
+            int channel = (wavelength - minWavelength) /  wavelengthPerChannel;
+
+            if (channel < 0 || channel >= numSpectraChannels)
+            {
+                return -1;
+            }
+
+            return channel;
+        }
+        else
+        {
+            return -1;
+        }
+}
+
 void LVRMainWindow::changeSpectralColor()
 {
     if (!this->dockWidgetSpectralSliderSettingsContents->isEnabled())
@@ -1424,14 +1450,14 @@ void LVRMainWindow::changeSpectralColor()
     color<size_t> channels;
     color<bool> use_channel;
 
-    PointBufferPtr p = (*items.begin())->getPointBuffer();
+    PointBuffer2Ptr p = (*items.begin())->getPointBuffer();
 
     for (int i = 0; i < 3; i++)
     {
         int wavelength = m_spectralSliders[i]->value();
         m_spectralLineEdits[i]->setText(QString("%1").arg(wavelength));
-
-        channels[i] = p->getChannel(wavelength);
+       
+        channels[i] = getSpectralChannel(wavelength, p);     
 
         use_channel[i] = m_spectralCheckboxes[i]->isChecked();
         m_spectralSliders[i]->setEnabled(use_channel[i]);
@@ -1445,15 +1471,14 @@ void LVRMainWindow::changeSpectralColor()
     m_renderer->GetRenderWindow()->Render();
 }
 
-
 void LVRMainWindow::onSpectralLineEditChanged()
 {
     std::set<LVRPointCloudItem*> items = getSelectedPointCloudItems();
     if(!items.empty())
     {
-        PointBufferPtr points = (*items.begin())->getPointBuffer();
-        int min = points->getMinWavelength();
-        int max = points->getMaxWavelength();
+        PointBuffer2Ptr points = (*items.begin())->getPointBuffer();
+        int min = points->getFloatAttribute("spectral_wavelength_min");
+        int max = points->getFloatAttribute("spectral_wavelength_max");
 
         for (int i = 0; i < 3; i++)
         {
@@ -1514,8 +1539,10 @@ void LVRMainWindow::changeGradientColor()
 
     size_t wavelength = m_gradientSlider->value();
 
-    PointBufferPtr p = (*items.begin())->getPointBuffer();
-    size_t channel = p->getChannel(wavelength);
+    PointBuffer2Ptr p = (*items.begin())->getPointBuffer();
+
+    // @TODO returnvalue could be negative
+    size_t channel = getSpectralChannel(wavelength, p);
 
     bool useNDVI = this->checkBox_NDVI->isChecked();
     bool normalized = this->checkBox_normcolors->isChecked();
@@ -1531,18 +1558,20 @@ void LVRMainWindow::changeGradientColor()
     m_renderer->GetRenderWindow()->Render();
 }
 
-void LVRMainWindow::updatePointPreview(int pointId, PointBufferPtr points)
+void LVRMainWindow::updatePointPreview(int pointId, PointBuffer2Ptr points)
 {
-    size_t n;
-    points->getPointArray(n);
+    size_t n = points->numPoints();
+    points->getPointArray();
     if (pointId < 0 || pointId >= n)
     {
         return;
     }
     
     size_t n_spec, n_channels;
-    floatArr spec = points->getPointSpectralChannelsArray(n_spec, n_channels);
-    
+    FloatChannelOptional spectral_channels = points->getFloatChannel("spectral_channels");
+    n_spec = spectral_channels->numAttribute();
+    n_channels = spectral_channels->width();
+
     if (pointId >= n_spec)
     {
         m_PointPreviewPlotter->removePoints();
@@ -1552,10 +1581,10 @@ void LVRMainWindow::updatePointPreview(int pointId, PointBufferPtr points)
         floatArr data = floatArr(new float[n_channels]);
         for (int i = 0; i < n_channels; i++)
         {
-            data[i] = spec[pointId * n_channels + i];
+            data[i] = (*spectral_channels)[n_spec][i];
         }
         m_PointPreviewPlotter->setPoints(data, n_channels, 0, 1);
-        m_PointPreviewPlotter->setXRange(points->getMinWavelength(), points->getMaxWavelength());
+        m_PointPreviewPlotter->setXRange(points->getFloatAttribute("spectral_wavelength_min"), points->getFloatAttribute("spectral_wavelength_max"));
     }
 }
 
@@ -1596,4 +1625,4 @@ void LVRMainWindow::updateSpectralGradientEnabled(bool checked)
 }
 
 
-} /* namespace lvr */
+} /* namespace lvr2 */
