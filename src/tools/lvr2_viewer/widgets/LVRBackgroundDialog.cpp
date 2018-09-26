@@ -24,7 +24,7 @@
  */
 #include "LVRBackgroundDialog.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 LVRBackgroundDialog::LVRBackgroundDialog(vtkSmartPointer<vtkRenderWindow> renderWindow)
@@ -89,4 +89,4 @@ LVRBackgroundDialog::~LVRBackgroundDialog()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */

@@ -35,7 +35,7 @@
 using std::ifstream;
 using std::ofstream;
 
-namespace lvr
+namespace lvr2
 {
 
 LVRCorrespondanceDialog::LVRCorrespondanceDialog(QTreeWidget* treeWidget) :
@@ -424,12 +424,12 @@ void LVRCorrespondanceDialog::treeItemSelected(QTreeWidgetItem* current, QTreeWi
 }
 
 
-Matrix4f LVRCorrespondanceDialog::getTransformation()
+Matrix4<Vec> LVRCorrespondanceDialog::getTransformation()
 {
-    PointPairVector pairs;
-    Vertexf centroid1;
-    Vertexf centroid2;
-    Matrix4f matrix;
+    PointPairVector<Vec> pairs;
+    Vector<Vec> centroid1;
+    Vector<Vec> centroid2;
+    Matrix4<Vec> matrix;
 
     QTreeWidgetItemIterator it(m_ui->treeWidget);
     while (*it)
@@ -443,13 +443,13 @@ Matrix4f LVRCorrespondanceDialog::getTransformation()
                 double* e = item->getEnd();
 
                 // Convert to left handed coordinates!
-                Vertexf start(s[0], s[1], s[2]);
-                Vertexf end(e[0], e[1], e[2]);
+                Vector<Vec> start(s[0], s[1], s[2]);
+                Vector<Vec> end(e[0], e[1], e[2]);
 
                 centroid1 += start;
                 centroid2 += end;
 
-                pairs.push_back(std::pair<Vertexf, Vertexf>(start, end));
+                pairs.push_back(std::pair<Vector<Vec>, Vector<Vec>>(start, end));
             }
         }
         ++it;
@@ -481,6 +481,6 @@ QString LVRCorrespondanceDialog::getDataName()
     return m_ui->comboBoxData->currentText();
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 

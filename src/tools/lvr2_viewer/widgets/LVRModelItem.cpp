@@ -32,7 +32,7 @@
 #include <vtkActor.h>
 #include <vtkPolyDataMapper.h>
 
-namespace lvr
+namespace lvr2
 {
 
 LVRModelItem::LVRModelItem(ModelBridgePtr bridge, QString name) :
@@ -136,4 +136,4 @@ LVRModelItem::~LVRModelItem()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */

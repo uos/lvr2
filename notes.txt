@@ -62,4 +62,10 @@ Anmerkungen:
                                 ValueType anstatt eines BaseVecT nehmen. Aber fürs erste sollte es ausreichen.
 
 
+                FinalizeAlgorithms:     Wie sollten wir ClusterFaceIndices in MeshBuffer2 realisiert werden...
+
+                lvr2_viewer:    
+                    widgets/LVRFilteringRemoeOutliersDialog:    PCLFiltering ist ausgeklammert, aber include noch vorhanden. 
+
+
 ----------------------------------------------------------------------

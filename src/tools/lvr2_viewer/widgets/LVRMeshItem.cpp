@@ -25,7 +25,7 @@
 #include "LVRMeshItem.hpp"
 #include "LVRItemTypes.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 LVRMeshItem::LVRMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent) :
@@ -122,7 +122,7 @@ vtkSmartPointer<vtkActor> LVRMeshItem::getWireframeActor()
     return m_meshBridge->getWireframeActor();
 }
 
-MeshBufferPtr LVRMeshItem::getMeshBuffer()
+MeshBuffer2Ptr LVRMeshItem::getMeshBuffer()
 {
     return m_meshBridge->getMeshBuffer();
 }
@@ -137,4 +137,4 @@ LVRMeshItem::~LVRMeshItem()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */

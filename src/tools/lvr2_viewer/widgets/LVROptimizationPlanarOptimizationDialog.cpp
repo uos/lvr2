@@ -1,7 +1,20 @@
 #include <QFileDialog>
 #include "LVROptimizationPlanarOptimizationDialog.hpp"
 
-namespace lvr
+#include <lvr2/algorithm/CleanupAlgorithms.hpp>
+#include <lvr2/algorithm/ClusterAlgorithms.hpp>
+#include <lvr2/algorithm/FinalizeAlgorithms.hpp>
+#include <lvr2/algorithm/NormalAlgorithms.hpp>
+#include <lvr2/algorithm/Tesselator.hpp>
+
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/geometry/HalfEdgeMesh.hpp>
+
+#include <lvr2/io/Model.hpp>
+
+#include <lvr2/util/ClusterBiMap.hpp>
+
+namespace lvr2
 {
 
 LVRPlanarOptimizationDialog::LVRPlanarOptimizationDialog(LVRMeshItem* mesh, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
@@ -81,29 +94,55 @@ void LVRPlanarOptimizationDialog::optimizeMesh()
     QDoubleSpinBox* lineSegmentThreshold_box = m_dialog->doubleSpinBox_ls;
     float lineSegmentThreshold = (float)lineSegmentThreshold_box->value();
 
-    HalfEdgeMesh<cVertex, cNormal> mesh(m_mesh->getMeshBuffer());
+    using Vec = BaseVector<float>;
 
-    mesh.optimizePlanes(planeIterations,
-            normalThreshold,
-            minimalPlaneSize,
-            removeSmallRegionThreshold,
-            true);
+    HalfEdgeMesh<Vec> mesh(m_mesh->getMeshBuffer());
 
-    mesh.fillHoles(fillHoles);
-    mesh.optimizePlaneIntersections();
-    mesh.restorePlanes(minimalPlaneSize);
+    if (fillHoles)
+    {
+        // variable for max_size?
+        // TODO happended in old code right after deletesmallPlanarCluster.
+        int res = naiveFillSmallHoles(mesh, 1);
+    }
+
+    auto faceNormals = calcFaceNormals(mesh);
+    ClusterBiMap<FaceHandle> clusterBiMap = interativePlanarClusterGrowing(
+        mesh, 
+        faceNormals,
+        normalThreshold, 
+        planeIterations,
+        minimalPlaneSize
+    );
+
+    if (removeSmallRegions && removeSmallRegionThreshold > 0)
+    {
+       deleteSmallPlanarCluster(mesh, clusterBiMap, faceNormals, removeSmallRegionThreshold); 
+    }
+
+     
+    // TODO idk what the lvr2 equivalent to this is?
+    //mesh.restorePlanes(minimalPlaneSize);
 
     // Save triangle mesh
     if(retesselate)
     {
-        mesh.finalizeAndRetesselate(generateTextures, lineSegmentThreshold);
+        Tesselator<Vec>::apply(mesh, clusterBiMap, faceNormals, lineSegmentThreshold);
+    }
+    
+    MeshBuffer2Ptr res; 
+    if (generateTextures)
+    {
+        // TODO Use TextureFinalizer... 
+        SimpleFinalizer fin;
+        res = fin.apply(mesh);
     }
     else
     {
-        mesh.finalize();
+        SimpleFinalizer fin;
+        res = fin.apply(mesh);
     }
 
-    ModelPtr model(new Model(mesh.meshBuffer()));
+    ModelPtr model(new Model(res));
     ModelBridgePtr bridge(new LVRModelBridge(model));
     vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
     bridge->addActors(renderer);
@@ -115,4 +154,4 @@ void LVRPlanarOptimizationDialog::optimizeMesh()
     m_optimizedModel->setExpanded(true);
 }
 
-}
+} // namespace lvr2

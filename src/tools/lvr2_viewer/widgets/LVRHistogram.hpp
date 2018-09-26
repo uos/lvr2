@@ -19,7 +19,7 @@
 #ifndef HISTOGRAM_H_
 #define HISTOGRAM_H_
 
-#include <lvr/io/PointBuffer.hpp>
+#include <lvr2/io/PointBuffer2.hpp>
 #include <QtWidgets>
 #include <QDialog>
 #include "ui_LVRHistogram.h"
@@ -27,7 +27,7 @@
 
 using Ui::Histogram;
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRHistogram : public QDialog
@@ -35,7 +35,7 @@ class LVRHistogram : public QDialog
     Q_OBJECT
 
 public:
-    LVRHistogram(QWidget* parent, PointBufferPtr points);
+    LVRHistogram(QWidget* parent, PointBuffer2Ptr points);
     virtual ~LVRHistogram();
 
 public Q_SLOTS:
@@ -47,6 +47,6 @@ private:
     size_t         m_numChannels;
 };
 
-} // namespace lvr
+} // namespace lvr2
 
 #endif /* HISTOGRAM_H_ */

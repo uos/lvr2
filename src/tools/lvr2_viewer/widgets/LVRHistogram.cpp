@@ -1,34 +1,38 @@
 #include "LVRHistogram.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
-LVRHistogram::LVRHistogram(QWidget* parent, PointBufferPtr points)
+LVRHistogram::LVRHistogram(QWidget* parent, PointBuffer2Ptr points)
     : QDialog(parent)
 {
     m_histogram.setupUi(this);
     //Set Plotmode to create a bar chart
     m_histogram.plotter->setPlotMode(PlotMode::BAR);
-    m_histogram.plotter->setXRange(points->getMinWavelength(), points->getMaxWavelength());
+    m_histogram.plotter->setXRange(points->getFloatAttribute("spectral_wavelength_min"), points->getFloatAttribute("spectral_wavelength_max"));
 
     size_t n;
     size_t n_spec;
 
     //Get Array with Spectraldata
-    floatArr spec = points->getPointSpectralChannelsArray(n_spec, m_numChannels);
+    //floatArr spec = points->getPointSpectralChannelsArray(n_spec, m_numChannels);
+    FloatChannelOptional spec = points->getFloatChannel("spectral_channels");
+    m_numChannels = spec->width();
+    n_spec = spec->numAttributes();
 
     //New Array for Average channelintensity   
     m_data = floatArr(new float[m_numChannels]);
 
     #pragma omp parallel for
     //calculate average intensity of all Points for all channels
-    for (int channel = 0; channel < m_numChannels; channel++)
+    for (size_t channel = 0; channel < m_numChannels; channel++)
     {
         m_data[channel] = 0;
        
-        for (int i = 0; i < n_spec; i++)
+        for (size_t i = 0; i < n_spec; i++)
         {
             m_data[channel] += spec[m_numChannels * i + channel];           
+            m_data[channel] += spec[channel][i];           
         }                                       
         m_data[channel] /= n_spec;
     }
@@ -59,4 +63,4 @@ void LVRHistogram::refresh()
     activateWindow();
 }
 
-}
+} // namespace lvr2

@@ -28,23 +28,27 @@
 #include "ui_LVRRegistrationPickCorrespondancesDialogUI.h"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
-#include <lvr/geometry/Matrix4.hpp>
-#include <lvr/registration/EigenSVDPointAlign.hpp>
+#include <lvr2/geometry/Matrix4.hpp>
+#include <lvr2/registration/EigenSVDPointAlign.hpp>
 
 #include <iostream>
 using namespace std;
 
-namespace lvr
+namespace lvr2
 {
+
 
 class LVRCorrespondanceDialog : public QObject
 {
     Q_OBJECT
 public:
+
+    using Vec = BaseVector<float>;
+
     LVRCorrespondanceDialog(QTreeWidget* parent);
     virtual ~LVRCorrespondanceDialog();
     void fillComboBoxes();
-    Matrix4f getTransformation();
+    Matrix4<Vec> getTransformation();
     QString  getModelName();
     QString  getDataName();
 
@@ -87,6 +91,6 @@ private:
     QString                     m_modelSelection;
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif /* LVRCORRESPONDANCEDIALOG_HPP_ */

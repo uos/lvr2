@@ -1,7 +1,7 @@
 #include <QFileDialog>
 #include "LVRFilteringRemoveOutliersDialog.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 LVRRemoveOutliersDialog::LVRRemoveOutliersDialog(LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
@@ -39,7 +39,7 @@ void LVRRemoveOutliersDialog::removeOutliers()
     PCLFiltering filter(m_pc->getPointBuffer());
     filter.applyOutlierRemoval(meanK, standardDeviation);
 
-    PointBufferPtr pb( filter.getPointBuffer() );
+    PointBuffer2Ptr pb( filter.getPointBuffer() );
     ModelPtr model( new Model( pb ) );
 
     ModelBridgePtr bridge(new LVRModelBridge(model));
@@ -53,4 +53,4 @@ void LVRRemoveOutliersDialog::removeOutliers()
     m_optimizedPointCloud->setExpanded(true); */
 }
 
-}
+} // namespace lvr2
