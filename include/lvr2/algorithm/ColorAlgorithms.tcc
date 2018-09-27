@@ -64,9 +64,9 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
         for (size_t pointIdx : cv)
         {
             auto color = colors[pointIdx];
-            r += colors[0];
-            g += colors[1];
-            b += colors[2];
+            r += color[0];
+            g += color[1];
+            b += color[2];
         }
 
         r /= k;
