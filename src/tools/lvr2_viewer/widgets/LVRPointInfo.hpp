@@ -19,7 +19,7 @@
 #ifndef POINTINFO_H_
 #define POINTINFO_H_
 
-#include <lvr/io/PointBuffer.hpp>
+#include <lvr2/io/PointBuffer2.hpp>
 #include <QtWidgets>
 #include <QDialog>
 #include "ui_LVRPointInfo.h"
@@ -27,7 +27,7 @@
 
 using Ui::PointInfo;
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRPointInfo : public QDialog
@@ -35,7 +35,7 @@ class LVRPointInfo : public QDialog
     Q_OBJECT
 
 public:
-    LVRPointInfo(QWidget* parent, PointBufferPtr points, int pointId);
+    LVRPointInfo(QWidget* parent, PointBuffer2Ptr points, int pointId);
     virtual ~LVRPointInfo();
 
 public Q_SLOTS:
@@ -47,6 +47,6 @@ private:
     size_t         m_numChannels;
 };
 
-} // namespace lvr
+} // namespace lvr2
 
 #endif /* POINTINFO_H_ */

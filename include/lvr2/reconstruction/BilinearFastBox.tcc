@@ -147,6 +147,7 @@ void BilinearFastBox<BaseVecT>::getSurface(
 
                 this->m_surface->searchTree()->kSearch(p1, kc, nearest1);
                 size_t nk = min(kc, nearest1.size());
+                FloatChannel pts = *(m_surface->pointBuffer()->getFloatChannel("points"));
 
                 //Hmmm, sometimes the k-search seems to fail...
                 if(nk > 0)
@@ -154,7 +155,8 @@ void BilinearFastBox<BaseVecT>::getSurface(
                     Vector<BaseVecT> centroid1;
                     for(auto idx : nearest1)
                     {
-                        Vector<BaseVecT> p = m_surface->pointBuffer()->getPoint(idx);
+                        
+                        Vector<BaseVecT> p = pts[idx];
                         centroid1 += p;
                     }
                     centroid1 /= nk;
@@ -173,7 +175,7 @@ void BilinearFastBox<BaseVecT>::getSurface(
                     Vector<BaseVecT> centroid2;
                     for(auto idx : nearest2)
                     {
-                        Vector<BaseVecT> p = m_surface->pointBuffer()->getPoint(idx);
+                        Vector<BaseVecT> p = pts[idx];
                         centroid2 += p;
                     }
                     centroid2 /= nk;

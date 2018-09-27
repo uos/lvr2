@@ -21,9 +21,9 @@
 
 #include <QWidget>
 
-#include "lvr/io/DataStruct.hpp"
+#include "lvr2/io/DataStruct.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRMainWindow;
@@ -67,6 +67,6 @@ private:
 	int		 m_maxX;
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif /* LVRPLOTTER_HPP_ */

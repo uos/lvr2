@@ -6,17 +6,17 @@
 #include <vtkRendererCollection.h>
 #include <vtkSmartPointer.h>
 
-#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
-#include <lvr/reconstruction/FastReconstruction.hpp>
-#include <lvr/io/PLYIO.hpp>
-#include <lvr/geometry/Matrix4.hpp>
-#include <lvr/geometry/HalfEdgeMesh.hpp>
-#include <lvr/texture/Texture.hpp>
-#include <lvr/texture/Transform.hpp>
-#include <lvr/texture/Texturizer.hpp>
-#include <lvr/texture/Statistics.hpp>
-#include <lvr/geometry/QuadricVertexCosts.hpp>
-#include <lvr/reconstruction/SharpBox.hpp>
+//#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
+//#include <lvr/reconstruction/FastReconstruction.hpp>
+//#include <lvr/io/PLYIO.hpp>
+//#include <lvr/geometry/Matrix4.hpp>
+//#include <lvr/geometry/HalfEdgeMesh.hpp>
+//#include <lvr/texture/Texture.hpp>
+//#include <lvr/texture/Transform.hpp>
+//#include <lvr/texture/Texturizer.hpp>
+//#include <lvr/texture/Statistics.hpp>
+//#include <lvr/geometry/QuadricVertexCosts.hpp>
+//#include <lvr/reconstruction/SharpBox.hpp>
 
 #include "../vtkBridge/LVRModelBridge.hpp"
 
@@ -26,7 +26,7 @@
 
 using Ui::ReconstructViaExtendedMarchingCubesDialog;
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRReconstructViaExtendedMarchingCubesDialog  : public QObject
@@ -36,10 +36,10 @@ class LVRReconstructViaExtendedMarchingCubesDialog  : public QObject
 public:
     LVRReconstructViaExtendedMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
     virtual ~LVRReconstructViaExtendedMarchingCubesDialog();
-    typedef ColorVertex<float, unsigned char>         cVertex;
-    typedef Normal<float>                               cNormal;
-    typedef PointsetSurface<cVertex>                    psSurface;
-    typedef AdaptiveKSearchSurface<cVertex, cNormal>    akSurface;
+    //typedef ColorVertex<float, unsigned char>         cVertex;
+    //typedef Normal<float>                               cNormal;
+    //typedef PointsetSurface<cVertex>                    psSurface;
+    //typedef AdaptiveKSearchSurface<cVertex, cNormal>    akSurface;
 
 public Q_SLOTS:
     void generateMesh();
@@ -59,6 +59,6 @@ private:
 
 };
 
-} // namespace lvr
+} // namespace lvr2
 
 #endif /* RECONSTRUCTIONMARCHINGCUBESDIALOG_H_ */

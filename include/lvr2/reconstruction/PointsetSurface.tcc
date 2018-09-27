@@ -28,26 +28,30 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-PointsetSurface<BaseVecT>::PointsetSurface(PointBufferPtr<BaseVecT> pointBuffer)
+PointsetSurface<BaseVecT>::PointsetSurface(PointBuffer2Ptr pointBuffer)
     : m_pointBuffer(pointBuffer)
 {
     // Calculate bounding box
-    auto numPoints = m_pointBuffer->getNumPoints();
+    auto numPoints = m_pointBuffer->numPoints();
+    floatArr pts = m_pointBuffer->getPointArray();
+
     for(size_t i = 0; i < numPoints; i++)
     {
-        this->m_boundingBox.expand(m_pointBuffer->getPoint(i));
+        this->m_boundingBox.expand(Vector<BaseVecT>(pts[i*3 + 0], pts[i*3 + 1], pts[i*3 + 2]));
     }
 }
 
 template<typename BaseVecT>
 Normal<BaseVecT> PointsetSurface<BaseVecT>::getInterpolatedNormal(Vector<BaseVecT> position) const
 {
+    FloatChannelOptional normals = m_pointBuffer->getFloatChannel("normals"); 
     vector<size_t> indices;
     Normal<BaseVecT> result;
     m_searchTree->kSearch(position, m_ki, indices);
     for (int i = 0; i < m_ki; i++)
     {
-        result += *m_pointBuffer->getNormal(indices[i]);
+        Normal<BaseVecT> n = (*normals)[i];
+        result += n;
     }
     result /= m_ki;
     return Normal<BaseVecT>(result);
@@ -66,7 +70,7 @@ const BoundingBox<BaseVecT>& PointsetSurface<BaseVecT>::getBoundingBox() const
 }
 
 template<typename BaseVecT>
-PointBufferPtr<BaseVecT> PointsetSurface<BaseVecT>::pointBuffer() const
+PointBuffer2Ptr PointsetSurface<BaseVecT>::pointBuffer() const
 {
     return m_pointBuffer;
 }

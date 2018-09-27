@@ -1,17 +1,17 @@
 #include "LVRPointInfo.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
-LVRPointInfo::LVRPointInfo(QWidget* parent, PointBufferPtr pointBuffer, int pointId) :
+LVRPointInfo::LVRPointInfo(QWidget* parent, PointBuffer2Ptr pointBuffer, int pointId) :
     QDialog(parent)
 {
     setAttribute(Qt::WA_DeleteOnClose);
 
     m_pointInfo.setupUi(this);
 
-    size_t n;
-    floatArr points = pointBuffer->getPointArray(n);
+    size_t n = pointBuffer->numPoints();
+    floatArr points = pointBuffer->getPointArray();
 
     if (pointId < 0 || pointId >= n)
     {
@@ -24,8 +24,9 @@ LVRPointInfo::LVRPointInfo(QWidget* parent, PointBufferPtr pointBuffer, int poin
         .arg(points[pointId * 3 + 1], 10, 'g', 4)
         .arg(points[pointId * 3 + 2], 10, 'g', 4));
     
-    size_t n_spec;
-    floatArr spec = pointBuffer->getPointSpectralChannelsArray(n_spec, m_numChannels);
+    FloatChannelOptional spec_channels = pointBuffer->getFloatChannel("spectral_channels"); 
+    size_t n_spec = spec_channels->numPoints();
+    m_numChannels = spec_channels->width();
     
     if (pointId >= n_spec)
     {
@@ -35,9 +36,9 @@ LVRPointInfo::LVRPointInfo(QWidget* parent, PointBufferPtr pointBuffer, int poin
     else
     {
         m_data = floatArr(new float[m_numChannels]);
-        for (int i = 0; i < m_numChannels; i++)
+        for (size_t = 0; i < m_numChannels; i++)
         {
-            m_data[i] = spec[pointId * m_numChannels + i];
+            m_data[i] = spec_channel[i][pointId];
         }
     }
 
@@ -67,4 +68,4 @@ void LVRPointInfo::refresh()
     activateWindow();
 }
 
-}
+} // namespace lvr2

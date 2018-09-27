@@ -25,7 +25,7 @@
 #include "LVRPoseItem.hpp"
 #include "LVRItemTypes.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 LVRPoseItem::LVRPoseItem(ModelBridgePtr bridge, QTreeWidgetItem* parent):
@@ -92,4 +92,4 @@ LVRPoseItem::~LVRPoseItem()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */

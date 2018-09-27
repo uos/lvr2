@@ -31,7 +31,6 @@ LVRHistogram::LVRHistogram(QWidget* parent, PointBuffer2Ptr points)
        
         for (size_t i = 0; i < n_spec; i++)
         {
-            m_data[channel] += spec[m_numChannels * i + channel];           
             m_data[channel] += spec[channel][i];           
         }                                       
         m_data[channel] /= n_spec;

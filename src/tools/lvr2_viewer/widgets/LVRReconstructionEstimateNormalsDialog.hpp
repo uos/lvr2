@@ -6,26 +6,13 @@
 #include <vtkRendererCollection.h>
 #include <vtkSmartPointer.h>
 
-#ifdef LVR_USE_PCL
-#include <lvr/reconstruction/SearchTreeFlannPCL.hpp>
-#endif
-
-#include <lvr/io/AsciiIO.hpp>
-#include <lvr/io/Timestamp.hpp>
-#include <lvr/io/Progress.hpp>
-#include <lvr/io/DataStruct.hpp>
-#include <lvr/io/ModelFactory.hpp>
-#include <lvr/geometry/Matrix4.hpp>
-#include <lvr/geometry/Normal.hpp>
-#include <lvr/reconstruction/SearchTree.hpp>
-
 #include "ui_LVRReconstructionEstimateNormalsDialogUI.h"
 #include "LVRPointCloudItem.hpp"
 #include "LVRModelItem.hpp"
 
 using Ui::EstimateNormalsDialog;
 
-namespace lvr
+namespace lvr2
 {
 
 class LVREstimateNormalsDialog : public QObject
@@ -51,6 +38,6 @@ private:
     vtkRenderWindow*                        m_renderWindow;
 };
 
-} // namespace lvr
+} // namespace lvr2
 
 #endif /* RECONSTRUCTIONESTIMATENORMALSDIALOG_H_ */

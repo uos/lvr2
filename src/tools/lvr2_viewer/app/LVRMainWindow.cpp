@@ -1581,7 +1581,7 @@ void LVRMainWindow::updatePointPreview(int pointId, PointBuffer2Ptr points)
         floatArr data = floatArr(new float[n_channels]);
         for (int i = 0; i < n_channels; i++)
         {
-            data[i] = (*spectral_channels)[n_spec][i];
+            data[i] = (*spectral_channels)[i][pointId];
         }
         m_PointPreviewPlotter->setPoints(data, n_channels, 0, 1);
         m_PointPreviewPlotter->setXRange(points->getFloatAttribute("spectral_wavelength_min"), points->getFloatAttribute("spectral_wavelength_max"));

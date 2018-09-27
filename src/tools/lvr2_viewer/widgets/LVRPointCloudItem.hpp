@@ -30,7 +30,7 @@
 #include <QTreeWidgetItem>
 #include <QColor>
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRPointCloudItem : public QTreeWidgetItem
@@ -50,7 +50,7 @@ public:
     bool	getVisibility();
     void    setVisibility(bool &visiblity);
     size_t  getNumPoints();
-    PointBufferPtr getPointBuffer();
+    PointBuffer2Ptr getPointBuffer();
     PointBufferBridgePtr getPointBufferBridge();
     vtkSmartPointer<vtkActor> getActor();
 
@@ -63,6 +63,6 @@ protected:
     bool					m_visible;
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif /* LVRPOINTCLOUDITEM_HPP_ */

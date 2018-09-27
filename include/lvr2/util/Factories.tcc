@@ -23,7 +23,7 @@
 #include <algorithm>
 
 #include <lvr2/reconstruction/SearchTree.hpp>
-#include <lvr2/io/PointBuffer.hpp>
+#include <lvr2/io/PointBuffer2.hpp>
 #include <lvr2/util/Panic.hpp>
 
 namespace lvr2
@@ -31,7 +31,7 @@ namespace lvr2
 
 
 template <typename BaseVecT>
-SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr<BaseVecT> buffer)
+SearchTreePtr<BaseVecT> getSearchTree(string name, PointBuffer2Ptr buffer)
 {
     // Transform name to lowercase (only works for ASCII, but this is not a
     // problem in our case).

@@ -1,7 +1,14 @@
 #include <QFileDialog>
 #include "LVROptimizationRemoveArtifactsDialog.hpp"
 
-namespace lvr
+#include <lvr2/algorithm/ClusterAlgorithms.hpp>
+
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/geometry/HalfEdgeMesh.hpp>
+
+#include <lvr2/io/Model.hpp>
+
+namespace lvr2
 {
 
 LVRRemoveArtifactsDialog::LVRRemoveArtifactsDialog(LVRMeshItem* mesh, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
@@ -31,15 +38,18 @@ void LVRRemoveArtifactsDialog::connectSignalsAndSlots()
 
 void LVRRemoveArtifactsDialog::removeArtifacts()
 {
+    using Vec = BaseVector<float>;
+
     QSpinBox* removeDanglingArtifacts_box = m_dialog->spinBox_rda;
     int removeDanglingArtifacts = removeDanglingArtifacts_box->value();
 
-    HalfEdgeMesh<cVertex, cNormal> mesh(m_mesh->getMeshBuffer());
+    HalfEdgeMesh<Vec> mesh(m_mesh->getMeshBuffer());
+    removeDanglingCluster(mesh, removeDanglingArtifacts);
 
-    mesh.removeDanglingArtifacts(removeDanglingArtifacts);
-    mesh.finalize();
+    // create normals and/or colors?
+    SimpleFinalizer fin;
 
-    ModelPtr model(new Model(mesh.meshBuffer()));
+    ModelPtr model(new Model(fin.apply(mesh)));
     ModelBridgePtr bridge(new LVRModelBridge(model));
     vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
     bridge->addActors(renderer);
@@ -51,4 +61,4 @@ void LVRRemoveArtifactsDialog::removeArtifacts()
     m_optimizedModel->setExpanded(true);
 }
 
-}
+} // namespace lvr2

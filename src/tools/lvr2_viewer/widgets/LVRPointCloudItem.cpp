@@ -25,7 +25,7 @@
 #include "LVRPointCloudItem.hpp"
 #include "LVRItemTypes.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 LVRPointCloudItem::LVRPointCloudItem(PointBufferBridgePtr& ptr, QTreeWidgetItem* item) :
@@ -71,7 +71,7 @@ LVRPointCloudItem::LVRPointCloudItem(PointBufferBridgePtr& ptr, QTreeWidgetItem*
 
     QTreeWidgetItem* specItem = new QTreeWidgetItem(this);
     specItem->setText(0, "Has Spectraldata:");
-    if(ptr->getPointBuffer()->hasPointSpectralChannels())
+    if(ptr->getPointBuffer()->getFloatChannel("spectral_channels"))
     {
         specItem->setText(1, "yes");
     }
@@ -147,7 +147,7 @@ size_t LVRPointCloudItem::getNumPoints()
     return m_pointBridge->getNumPoints();
 }
 
-PointBufferPtr LVRPointCloudItem::getPointBuffer()
+PointBuffer2Ptr LVRPointCloudItem::getPointBuffer()
 {
     return m_pointBridge->getPointBuffer();
 }
@@ -167,4 +167,4 @@ LVRPointCloudItem::~LVRPointCloudItem()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */
