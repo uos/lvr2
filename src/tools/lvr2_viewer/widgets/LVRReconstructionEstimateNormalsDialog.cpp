@@ -1,10 +1,13 @@
 #include <QFileDialog>
 #include "LVRReconstructionEstimateNormalsDialog.hpp"
 
-#include <lvr/reconstruction/SearchTree.hpp>
-#include <lvr/reconstruction/SearchTreeFlann.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
 
-namespace lvr
+#include <lvr2/io/DataStruct.hpp>
+
+#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
+
+namespace lvr2
 {
 
 LVREstimateNormalsDialog::LVREstimateNormalsDialog(LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
@@ -48,19 +51,23 @@ void LVREstimateNormalsDialog::toggleNormalInterpolation(int state)
 
 void LVREstimateNormalsDialog::estimateNormals()
 {
+    using Vec = BaseVector<float>;
+
     QCheckBox* checkBox_in = m_dialog->checkBox_in;
     bool interpolateNormals = checkBox_in->isChecked();
     QSpinBox* spinBox_ki = m_dialog->spinBox_ki;
     int ki = spinBox_ki->value();
 
-    PointBufferPtr pc = m_pc->getPointBuffer();
+    PointBuffer2Ptr pc = m_pc->getPointBuffer();
+    floatArr old_pts = pc->getPointArray();
     size_t numPoints = m_pc->getNumPoints();
 
     // Create buffer arrays
     floatArr points(new float[3 * numPoints]);
-    floatArr normals(new float[3 * numPoints]);
 
+    // old code tried to transform the point, I don't see a reason why 
     // Get transformation from frames or pose files if possible
+    /*
     Matrix4<float> transform;
     // Matrix4 does not support lvr::Pose, convert to float-Array
     // TODO: fix transformation
@@ -73,64 +80,25 @@ void LVREstimateNormalsDialog::estimateNormals()
     float_pose[4] = pose.t;
     float_pose[5] = pose.p;
     transform.toPostionAngle(float_pose);
+    */
 
-    float x, y, z, nx, ny, nz;
-    size_t pointsRead = 0;
-
-    do
+    // copy pts for new cp
+    for (size_t i = 0; i < numPoints*3; i++)
     {
-        // Transform normal according to pose
-        Normal<float> normal(nx, ny, nz);
-        Vertex<float> point(x, y, z);
-        normal = transform * normal;
-        point = transform * point;
-
-        // Write data into buffer
-        points[pointsRead * 3]     = point.x;
-        points[pointsRead * 3 + 1] = point.y;
-        points[pointsRead * 3 + 2] = point.z;
-
-        normals[pointsRead * 3]     = normal.x;
-        normals[pointsRead * 3 + 1] = normal.y;
-        normals[pointsRead * 3 + 2] = normal.z;
-        pointsRead++;
-    } while(pointsRead < numPoints);
-
-    PointBufferPtr new_pc = PointBufferPtr( new PointBuffer );
-    new_pc->setPointArray(points, numPoints);
-    new_pc->setPointNormalArray(normals, numPoints);
-
-    if(interpolateNormals)
-    {
-        SearchTree<Vertex<float> >::Ptr       tree;
-	tree = SearchTree<Vertex<float> >::Ptr( new SearchTreeFlann<Vertex<float> >(new_pc, numPoints, ki, ki, ki) );
-	    
-
-        #pragma omp parallel for schedule(static)
-        for(int i = 0; i < numPoints; i++)
-        {
-            // Create search tree
-            vector< int > indices;
-            vector< float > distances;
-
-            Vertex<float> vertex(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
-            tree->kSearch(vertex, ki, indices, distances);
-
-            // Do interpolation
-            Normal<float> normal(normals[3 * i], normals[3 * i + 1], normals[3 * i + 2]);
-            for(int j = 0; j < indices.size(); j++)
-            {
-                normal += Normal<float>(normals[3 * indices[j]], normals[3 * indices[j] + 1], normals[3 * indices[j] + 2]);
-            }
-            normal.normalize();
-
-            // Save results in buffer (I know i should use a seperate buffer, but for testing it
-            // should be OK to save the interpolated values directly into the input buffer)
-            normals[3 * i]      = normal.x;
-            normals[3 * i + 1]  = normal.y;
-            normals[3 * i + 2]  = normal.z;
-        }
+        points[i] = old_pts[i]; 
     }
+
+    PointBuffer2Ptr new_pc = PointBuffer2Ptr( new PointBuffer2 );
+    new_pc->setPointArray(points, numPoints);
+
+    int k = 0;
+    if (interpolateNormals)
+    {
+        k = 10;     
+    }
+
+    AdaptiveKSearchSurface<Vec> surface(new_pc, "FLANN", ki, k, k);
+    surface.calculateSurfaceNormals();
 
     ModelPtr model(new Model(new_pc));
 
@@ -140,9 +108,10 @@ void LVREstimateNormalsDialog::estimateNormals()
 
     QString base = m_parent->getName() + " (w. normals)";
     m_pointCloudWithNormals = new LVRModelItem(bridge, base);
+    m_pointCloudWithNormals.setPose(m_parent->getPose());
 
     m_treeWidget->addTopLevelItem(m_pointCloudWithNormals);
     m_pointCloudWithNormals->setExpanded(true);
 }
 
-}
+} // namespace lvr2

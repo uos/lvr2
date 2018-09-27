@@ -41,6 +41,8 @@ using boost::optional;
 #include <lvr2/texture/Material.hpp>
 #include <lvr2/algorithm/ClusterPainter.hpp>
 
+#include <lvr2/io/ObjIO.hpp>
+
 namespace lvr2
 {
 
@@ -69,7 +71,7 @@ public:
      * @param mesh the mesh to convert
      * @return the generated buffer
      */
-    Meshbuffer2Ptr apply(const BaseMesh<BaseVecT>& mesh);
+    MeshBuffer2Ptr apply(const BaseMesh<BaseVecT>& mesh);
 
     /**
      * Sets vertex colors for the apply method. This has to be done before apply is called.

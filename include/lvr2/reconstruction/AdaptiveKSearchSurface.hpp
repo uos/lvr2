@@ -37,7 +37,7 @@
 #include <chrono>
 #include <cmath>
 
-#include <lvr2/io/PointBuffer.hpp>
+#include <lvr2/io/PointBuffer2.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/geometry/Plane.hpp>
 #include <lvr2/io/Progress.hpp>
@@ -104,7 +104,7 @@ public:
      * @param calcMethod Normal calculation method. 0: PCA(default), 1: RANSAC, 2: Iterative
      */
     AdaptiveKSearchSurface(
-        PointBufferPtr<BaseVecT> loader,
+        PointBuffer2Ptr loader,
         std::string searchTreeName,
         int kn = 10,
         int ki = 10,

@@ -36,8 +36,8 @@
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/geometry/Vector.hpp>
 #include <lvr/reconstruction/FastReconstructionTables.hpp>
-#include <lvr/io/Progress.hpp>
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/Progress.hpp>
+#include <lvr2/io/Timestamp.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -80,7 +80,7 @@ HashGrid<BaseVecT, BoxT>::HashGrid(
 
     if(!m_boundingBox.isValid())
     {
-        cout << lvr::timestamp << "Warning: Malformed BoundingBox." << endl;
+        cout << timestamp << "Warning: Malformed BoundingBox." << endl;
     }
 
     if(!isVoxelsize)
@@ -92,11 +92,11 @@ HashGrid<BaseVecT, BoxT>::HashGrid(
         m_voxelsize = cellSize;
     }
 
-    cout << lvr::timestamp << "Used voxelsize is " << m_voxelsize << endl;
+    cout << timestamp << "Used voxelsize is " << m_voxelsize << endl;
 
     if(!m_extrude)
     {
-        cout << lvr::timestamp << "Grid is not extruded." << endl;
+        cout << timestamp << "Grid is not extruded." << endl;
     }
 
 
@@ -127,7 +127,7 @@ HashGrid<BaseVecT, BoxT>::HashGrid(string file)
 
     float  pdist;
     Vector<BaseVecT> v;
-    //cout << lvr::timestamp << "Creating Grid..." << endl;
+    //cout << timestamp << "Creating Grid..." << endl;
 
     // Iterator over all points, calc lattice indices and add lattice points to the grid
     for(size_t i = 0; i < qsize; i++)
@@ -139,7 +139,7 @@ HashGrid<BaseVecT, BoxT>::HashGrid(string file)
         m_queryPoints.push_back(qp);
 
     }
-    //cout << lvr::timestamp << "read qpoints.. csize: " << csize << endl;
+    //cout << timestamp << "read qpoints.. csize: " << csize << endl;
     size_t h;
     unsigned int cell[8];
     Vector<BaseVecT> cell_center;
@@ -158,7 +158,7 @@ HashGrid<BaseVecT, BoxT>::HashGrid(string file)
 
         m_cells[h] = box;
     }
-    cout << lvr::timestamp << "Reading cells.." << endl;
+    cout << timestamp << "Reading cells.." << endl;
     typename HashGrid<BaseVecT, BoxT>::box_map_it it;
     typename HashGrid<BaseVecT, BoxT>::box_map_it neighbor_it;
 
@@ -414,7 +414,7 @@ unsigned int HashGrid<BaseVecT, BoxT>::findQueryPoint(
 template<typename BaseVecT, typename BoxT>
 void HashGrid<BaseVecT, BoxT>::saveGrid(string filename)
 {
-    std::cout << lvr::timestamp << "Writing grid..." << std::endl;
+    std::cout << timestamp << "Writing grid..." << std::endl;
 
     // Open file for writing
     std::ofstream out(filename.c_str());
@@ -462,7 +462,7 @@ void HashGrid<BaseVecT, BoxT>::saveGrid(string filename)
 template<typename BaseVecT, typename BoxT>
 void HashGrid<BaseVecT, BoxT>::serialize(string file)
 {
-    std::cout << lvr::timestamp << "saving grid: " << file << std::endl;
+    std::cout << timestamp << "saving grid: " << file << std::endl;
     std::ofstream out(file.c_str());
 
     // Write data
@@ -510,7 +510,7 @@ void HashGrid<BaseVecT, BoxT>::serialize(string file)
         }
     }
     out.close();
-    std::cout << lvr::timestamp << "finished saving grid: " << file << std::endl;
+    std::cout << timestamp << "finished saving grid: " << file << std::endl;
 }
 
 template<typename BaseVecT, typename BoxT>

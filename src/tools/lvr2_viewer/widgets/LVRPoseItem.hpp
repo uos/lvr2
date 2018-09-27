@@ -29,7 +29,7 @@
 
 #include "../vtkBridge/LVRModelBridge.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRPoseItem: public QTreeWidgetItem
@@ -51,6 +51,6 @@ protected:
     QTreeWidgetItem* m_pItem;
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif /* LVRPOSEITEM_HPP_ */

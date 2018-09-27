@@ -125,9 +125,11 @@ DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
             }
 
             // Get normal for nearest vertex neighbour from point cloud
-            if(auto normal = surface.pointBuffer()->getNormal(pointIdx[0]))
+            FloatChannelOptional normals = surface.pointBuffer()->getFloatChannel("normals");
+            if(normals)
             {
-                normalMap.insert(vH, *normal);
+                Normal<BaseVecT> normal = (*normals)[pointIdx[0]];
+                normalMap.insert(vH, normal);
             }
             else
             {

@@ -30,7 +30,7 @@
 #include "LVRItemTypes.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRPickItem: public QTreeWidgetItem
@@ -52,6 +52,6 @@ private:
     LVRVtkArrow*    m_arrow;
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif /* LVRPICKITEM_HPP_ */

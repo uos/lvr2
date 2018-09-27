@@ -50,6 +50,8 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
     // k-nearest-neighbors
     const int k = 1;
 
+    UCharChannel colors = *(surface->pointBuffer()->getUCharChannel("colors"));
+
     vector<size_t> cv;
     for (auto vertexH: mesh.vertices())
     {
@@ -61,7 +63,7 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
 
         for (size_t pointIdx : cv)
         {
-            auto colors = *(surface->pointBuffer()->getRgbColor(pointIdx));
+            auto color = colors[pointIdx];
             r += colors[0];
             g += colors[1];
             b += colors[2];
@@ -148,10 +150,11 @@ Rgb8Color calcColorForFaceCentroid(
     FaceHandle faceH
 )
 {
-    if (surface.pointBuffer()->hasRgbColor())
+    if (surface.pointBuffer()->hasColors())
     {
         vector<size_t> cv;
         auto centroid = mesh.calcFaceCentroid(faceH);
+        UCharChannel colors = *(surface.pointBuffer()->getUCharChannel("colors"));
 
         // Find color of face centroid
         int k = 1; // k-nearest-neighbors
@@ -159,13 +162,10 @@ Rgb8Color calcColorForFaceCentroid(
         uint8_t r = 0, g = 0, b = 0;
         for (size_t pointIdx : cv)
         {
-            optional<array<uint8_t,3>&> colorsOptional = surface.pointBuffer()->getRgbColor(pointIdx);
-            if (colorsOptional)
-            {
-                r += (*colorsOptional)[0];
-                g += (*colorsOptional)[1];
-                b += (*colorsOptional)[2];
-            }
+            auto cur_color = colors[pointIdx];
+            r += cur_color[0];
+            g += cur_color[1];
+            b += cur_color[2];
         }
         r /= k;
         g /= k;
@@ -187,7 +187,5 @@ Rgb8Color calcColorForFaceCentroid(
         return color;
     }
 }
-
-
 
 } // namespace lvr2

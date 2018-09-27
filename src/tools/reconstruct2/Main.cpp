@@ -25,6 +25,11 @@
 #include <lvr2/geometry/Matrix4.hpp>
 #include <lvr2/geometry/Vector.hpp>
 
+#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
+#include <lvr2/reconstruction/FastReconstruction.hpp>
+#include <lvr2/reconstruction/PointsetGrid.hpp>
+#include <lvr2/reconstruction/SharpBox.hpp>
+
 #include <lvr2/algorithm/ReductionAlgorithms.hpp>
 #include <lvr2/algorithm/NormalAlgorithms.hpp>
 
@@ -39,8 +44,59 @@ using namespace lvr2;
 typedef BaseVector<float> BaseVec;
 typedef Vector<BaseVec>   VecT;
 
+void test(PointBuffer2Ptr pc_buffer)
+{
+    PointsetSurfacePtr<Vec> surface;
+
+    surface  = PointsetSurfacePtr<Vec>( new AdaptiveKSearchSurface<Vec>(pc_buffer, "FLANN", 10, 10, 10, 1));
+
+    
+    if(!surface->pointBuffer()->hasNormals())
+    {
+        surface->calculateSurfaceNormals();
+    }
+
+    SharpBox<Vec>::m_surface     = surface;
+
+    auto grid = std::make_shared<PointsetGrid<Vec, SharpBox<Vec>>>(
+        10,
+        surface,
+        surface->getBoundingBox(),
+        true,
+        true 
+    );
+
+    grid->calcDistanceValues();
+    auto reconstruction = make_unique<FastReconstruction<Vec, SharpBox<Vec>>>(grid);
+
+    // Create an empty mesh
+    MeshBuffer2Ptr m_buff = MeshBuffer2Ptr( new MeshBuffer2 );
+    HalfEdgeMesh<Vec> mesh(m_buff);
+    reconstruction->getMesh(mesh);
+
+    auto faceNormals = calcFaceNormals(mesh);
+
+    ClusterBiMap<FaceHandle> clusterBiMap = planarClusterGrowing(mesh, faceNormals, 0.85);
+    deleteSmallPlanarCluster(mesh, clusterBiMap, 10);
+
+    ClusterPainter painter(clusterBiMap);
+    auto clusterColors = DenseClusterMap<Rgb8Color>(painter.simpsons(mesh));
+    auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
+
+    TextureFinalizer<Vec> finalize(clusterBiMap);
+    finalize.setVertexNormals(vertexNormals);
+    finalize.setClusterColors(clusterColors);
+    Materializer<Vec> materializer(mesh, clusterBiMap, faceNormals, *surface);  
+    MaterializerResult<Vec> matResult = materializer.generateMaterials();
+    finalize.setMaterializerResult(matResult);
+    MeshBuffer2Ptr buffer = finalize.apply(mesh);
+
+    ModelFactory::saveModel(ModelPtr( new Model(buffer)), "test.obj");
+}
+
 int main(int argc, char** argv)
 {
+
     using Vec = BaseVector<float>;
     EigenSVDPointAlign<Vec> esvdpa;
     Arrow a1(1);
@@ -91,6 +147,13 @@ int main(int argc, char** argv)
 
     if(model->m_pointCloud)
     {
+
+        test(model->m_pointCloud);
+        AdaptiveKSearchSurface<Vec> surf(model->m_pointCloud, "FLANN", 10, 10);
+        //surf.calculateSurfaceNormals();
+
+        ModelFactory::saveModel(model, "test.ply");
+          
         std::cout << "Points: " << model->m_pointCloud->numPoints() << std::endl;
         std::cout << "Has Normals" << model->m_pointCloud->hasNormals() << std::endl;
         std::cout << "Has Colors" << model->m_pointCloud->hasColors() << std::endl;

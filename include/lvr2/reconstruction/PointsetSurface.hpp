@@ -30,7 +30,7 @@
 #include <utility>
 
 #include <lvr2/geometry/Normal.hpp>
-#include <lvr2/io/PointBuffer.hpp>
+#include <lvr2/io/PointBuffer2.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/reconstruction/SearchTree.hpp>
 
@@ -86,7 +86,7 @@ public:
      *          @ref calculateSurfaceNormals the buffer will contain
      *          normal information.
      */
-    virtual PointBufferPtr<BaseVecT> pointBuffer() const;
+    virtual PointBuffer2Ptr pointBuffer() const;
 
     /**
      * @brief   Returns a pointer to the search tree
@@ -125,12 +125,12 @@ protected:
      *          buffer does not contain surface normals, you will have to call
      *          @ref calculateSurfaceNormals before the first call @distance.
      */
-    PointsetSurface(PointBufferPtr<BaseVecT> pointcloud);
+    PointsetSurface(PointBuffer2Ptr pointcloud);
 
     PointsetSurface() {};
 
     /// The point cloud used for surface approximation
-    PointBufferPtr<BaseVecT> m_pointBuffer;
+    PointBuffer2Ptr m_pointBuffer;
 
     /// The search tree that is built from the point cloud data
     std::shared_ptr<SearchTree<BaseVecT>> m_searchTree;

@@ -1,9 +1,19 @@
 #include <QFileDialog>
 #include "LVRReconstructionExtendedMarchingCubesDialog.hpp"
 
-#include <lvr/reconstruction/PointsetGrid.hpp>
+//#include <lvr/reconstruction/PointsetGrid.hpp>
 
-namespace lvr
+#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
+#include <lvr2/reconstruction/FastReconstruction.hpp>
+#include <lvr2/reconstruction/PointsetGrid.hpp>
+#include <lvr2/reconstruction/SharpBox.hpp>
+
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/geometry/HalfEdgeMesh.hpp>
+
+#include <lvr2/io/PointBuffer2.hpp>
+
+namespace lvr2
 {
 
 LVRReconstructViaExtendedMarchingCubesDialog::LVRReconstructViaExtendedMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
@@ -81,6 +91,8 @@ void LVRReconstructViaExtendedMarchingCubesDialog::switchGridSizeDetermination(i
 
 void LVRReconstructViaExtendedMarchingCubesDialog::generateMesh()
 {
+    using Vec = BaseVector<Vec>;
+
     QComboBox* pcm_box = m_dialog->comboBox_pcm;
     string pcm = pcm_box->currentText().toStdString();
     QCheckBox* extrusion_box = m_dialog->checkBox_Extrusion;
@@ -103,51 +115,59 @@ void LVRReconstructViaExtendedMarchingCubesDialog::generateMesh()
     float  sf = m_dialog->doubleSpinBox_sf->value();
     float  sc = m_dialog->doubleSpinBox_sc->value();
 
-    SharpBox<Vertex<float> , Normal<float> >::m_theta_sharp = sf;
-	SharpBox<Vertex<float> , Normal<float> >::m_phi_corner = sc;
 
-    PointBufferPtr pc_buffer = m_pc->getPointBuffer();
-    psSurface::Ptr surface;
+    PointBuffer2Ptr pc_buffer = m_pc->getPointBuffer();
+    
+    PointsetSurfacePtr<Vec> surface;
 
-    if(pcm == "STANN" || pcm == "FLANN" || pcm == "NABO")
+    if(pcm == "STANN" || pcm == "FLANN" || pcm == "NABO" || pcm = "NANOFLANN")
     {
-        akSurface* aks = new akSurface(pc_buffer, pcm, kn, kd, ki);
-        surface = psSurface::Ptr(aks);
-
-        if(ransac) aks->useRansac(true);
+        surface = PointsetSurfacePtr<Vec>( new AdaptiveKSearchSurface<Vec>(pc_buffer, pcm, kn, ki, kd, ransac ? 1 : 0);
     }
 
-    surface->setKd(kd);
-    surface->setKi(ki);
-    surface->setKn(kn);
-
-    if(!surface->pointBuffer()->hasPointNormals()
-                    || (surface->pointBuffer()->hasPointNormals() && reestimateNormals))
+    if(!surface->pointBuffer()->hasNormals() || reestimateNormals))
     {
         surface->calculateSurfaceNormals();
     }
 
+    SharpBox<Vec>::m_surface     = surface;
+    SharpBox<Vec>::m_theta_sharp = sf;
+	SharpBox<Vec>::m_phi_corner  = sc;
+
+    auto grid = std::make_shared<PointsetGrid<Vec, SharpBox<Vec>>>(
+        resolution,
+        surface,
+        surface->getBoundingBox(),
+        useVoxelsize,
+        extrusion 
+    );
+
+    grid->calcDistanceValues();
+    auto reconstruction = make_unique<FastReconstruction<Vec, SharpBox<Vec>>>(grid);
+
     // Create an empty mesh
-    HalfEdgeMesh<cVertex, cNormal> mesh( surface );
-
-    // Create a point set grid for reconstruction
-    GridBase* grid;
-	FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
-
-	SharpBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
-	grid = new PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >(resolution, surface, surface->getBoundingBox(), useVoxelsize);
-	grid->setExtrusion(extrusion);
-	PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-	ps_grid->calcDistanceValues();
-	reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> , Normal<float>, SharpBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
-
-	// Create mesh
+    HalfEdgeMesh<Vec> mesh;
     reconstruction->getMesh(mesh);
-    mesh.setClassifier("PlaneSimpsons");
-    mesh.getClassifier().setMinRegionSize(10);
-    mesh.finalize();
 
-    ModelPtr model(new Model(mesh.meshBuffer()));
+    auto faceNormals = calcFaceNormals(mesh);
+
+    ClusterBiMap<FaceHandle> clusterBiMap = planarClusterGrowing(mesh, faceNormals, 0.85);
+    deleteSmallPlanarCluster(mesh, clusterBiMap, 10);
+
+    ClusterPainter painter(clusterBiMap);
+    auto clusterColors = DenseClusterMap<Rgb8Color>(painter.simpsons(mesh));
+    auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
+
+    TextureFinalizer<Vec> finalize(clusterBiMap);
+    finalize.setvertexNormals(vertexNormals);
+    finalize.setClusterColors(clusterColors);
+    Materializer<Vec> materializer(mesh, clusterBiMap, faceNormals, surface);  
+    MaterializerResult<Vec> matResult = materializer.generateMaterials();
+    finalizer.setMaterializerresult(matResult);
+    MeshBuffer2Ptr buffer finalize.apply(mesh);
+
+
+    ModelPtr model(new Model(buffer));
 	ModelBridgePtr bridge(new LVRModelBridge(model));
 	
 	vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
@@ -160,4 +180,4 @@ void LVRReconstructViaExtendedMarchingCubesDialog::generateMesh()
     m_generatedModel->setExpanded(true);
 }
 
-}
+} // namespace lvr2

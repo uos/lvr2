@@ -29,7 +29,7 @@
 #include <string>
 
 #include <lvr2/reconstruction/SearchTree.hpp>
-#include <lvr2/io/PointBuffer.hpp>
+#include <lvr2/io/PointBuffer2.hpp>
 
 using std::string;
 
@@ -44,7 +44,7 @@ namespace lvr2
  * Currently, the only supported implementation is "flann".
  */
 template <typename BaseVecT>
-SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr<BaseVecT> buffer);
+SearchTreePtr<BaseVecT> getSearchTree(string name, PointBuffer2Ptr buffer);
 
 } // namespace lvr2
 

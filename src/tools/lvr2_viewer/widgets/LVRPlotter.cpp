@@ -4,7 +4,7 @@
 #include <QPainter>
 #include "../app/LVRMainWindow.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 LVRPlotter::LVRPlotter(QWidget * parent)
@@ -136,4 +136,4 @@ void LVRPlotter::paintEvent(QPaintEvent *)
 
 }
 
-}
+} // namespace lvr2

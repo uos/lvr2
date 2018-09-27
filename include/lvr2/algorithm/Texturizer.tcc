@@ -133,8 +133,10 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
     string comment = timestamp.getElapsedTime() + "Computing texture pixels ";
     ProgressBar progress(sizeX * sizeY, comment);
 
-    if (surface.pointBuffer()->hasRgbColor())
+    if (surface.pointBuffer()->hasColors())
     {
+        UCharChannel colors = *(surface.pointBuffer()->getUCharChannel("colors"));
+
         // For each texel find the color of the nearest point
         #pragma omp parallel for schedule(dynamic,1) collapse(2)
         for (int y = 0; y < sizeY; y++)
@@ -156,10 +158,10 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
 
                 for (size_t pointIdx : cv)
                 {
-                    array<uint8_t,3> colors = *(surface.pointBuffer()->getRgbColor(pointIdx));
-                    r += colors[0];
-                    g += colors[1];
-                    b += colors[2];
+                    auto cur_color = colors[pointIdx];
+                    r += cur_color[0];
+                    g += cur_color[1];
+                    b += cur_color[2];
                 }
 
                 r /= k;
