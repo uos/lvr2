@@ -610,6 +610,16 @@ vtkSmartPointer<vtkActorCollection> LVRMeshBufferBridge::getTexturedActors()
 	vtkSmartPointer<vtkActor> a = getColorMeshActor(colorGroups);
 	collection->AddItem(a);
 
+    for (auto m : textureGroups)
+    {
+        delete m;
+    }
+
+    for (auto m : colorGroups)
+    {
+        delete m;
+    }
+
 	return collection;
 }
 
