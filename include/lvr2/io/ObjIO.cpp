@@ -222,7 +222,8 @@ ModelPtr ObjIO::read(string filename)
                 ss >> x >> y >> z;
                 texcoords.push_back(x);
                 texcoords.push_back(1.0 - y);
-                texcoords.push_back(z);
+                // z is ignored because texcoords only have 2 coords...
+                //texcoords.push_back(z);
             }
             else if(keyword == "vn")
             {
@@ -407,9 +408,9 @@ void ObjIO::save( string filename )
 
         for( size_t i=0; i < lenTextureCoordinates; ++i )
         {
-            out << "vt " << textureCoordinates[i*3 + 0] << " "
-                    << 1.0 - textureCoordinates[i*3 + 1] << " "
-                    << textureCoordinates[i*3 + 2] << endl;
+            out << "vt " << textureCoordinates[i*2 + 0] << " "
+                    << 1.0 - textureCoordinates[i*2 + 1] << " "
+                    << 0.0 << endl;
         }
 
 

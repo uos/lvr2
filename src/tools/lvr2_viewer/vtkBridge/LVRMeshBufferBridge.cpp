@@ -128,7 +128,7 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBuffer2Ptr meshbuffer)
         n_v = meshbuffer->numVertices();
         floatArr vertices = meshbuffer->getVertices();
         n_i = meshbuffer->numFaces();
-        uintArr indices = meshbuffer->getFaceIndices();
+        indexArray indices = meshbuffer->getFaceIndices();
         n_c = n_v;
         ucharArr colors = meshbuffer->getVertexColors(w_color);
 
@@ -270,13 +270,13 @@ void LVRMeshBufferBridge::computeMaterialGroups(vector<MaterialGroup*>& textureM
 	for(size_t i = 0; i < m_numFaces; i++)
 	{
 		map<int, MaterialGroup*>::iterator texIt;
-		map<Vector<VecUChar>, MaterialGroup* >::iterator colIt;
+		map<Vector<VecUChar>, MaterialGroup*, compColorsT>::iterator colIt;
 
 		// Get material by index and lookup in map. If present
 		// add face index to the corresponding group. Create a new
 		// group if none was found. For efficient rendering we have to
 		// create groups by color and texture index,
-        Material &m = materials[faceMaterials[i]];
+        const Material &m = materials[faceMaterials[i]];
 
 		if(m.m_texture)
 		{
