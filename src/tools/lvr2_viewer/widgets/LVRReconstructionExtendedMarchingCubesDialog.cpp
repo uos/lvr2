@@ -1,7 +1,7 @@
 #include <QFileDialog>
 #include "LVRReconstructionExtendedMarchingCubesDialog.hpp"
 
-//#include <lvr/reconstruction/PointsetGrid.hpp>
+#include <lvr2/algorithm/NormalAlgorithms.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/FastReconstruction.hpp>
@@ -91,7 +91,7 @@ void LVRReconstructViaExtendedMarchingCubesDialog::switchGridSizeDetermination(i
 
 void LVRReconstructViaExtendedMarchingCubesDialog::generateMesh()
 {
-    using Vec = BaseVector<Vec>;
+    using Vec = BaseVector<float>;
 
     QComboBox* pcm_box = m_dialog->comboBox_pcm;
     string pcm = pcm_box->currentText().toStdString();
@@ -120,12 +120,12 @@ void LVRReconstructViaExtendedMarchingCubesDialog::generateMesh()
     
     PointsetSurfacePtr<Vec> surface;
 
-    if(pcm == "STANN" || pcm == "FLANN" || pcm == "NABO" || pcm = "NANOFLANN")
+    if(pcm == "STANN" || pcm == "FLANN" || pcm == "NABO" || pcm == "NANOFLANN")
     {
-        surface = PointsetSurfacePtr<Vec>( new AdaptiveKSearchSurface<Vec>(pc_buffer, pcm, kn, ki, kd, ransac ? 1 : 0);
+        surface = PointsetSurfacePtr<Vec>( new AdaptiveKSearchSurface<Vec>(pc_buffer, pcm, kn, ki, kd, ransac ? 1 : 0) );
     }
 
-    if(!surface->pointBuffer()->hasNormals() || reestimateNormals))
+    if(!surface->pointBuffer()->hasNormals() || reestimateNormals)
     {
         surface->calculateSurfaceNormals();
     }
@@ -159,12 +159,12 @@ void LVRReconstructViaExtendedMarchingCubesDialog::generateMesh()
     auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
 
     TextureFinalizer<Vec> finalize(clusterBiMap);
-    finalize.setvertexNormals(vertexNormals);
+    finalize.setVertexNormals(vertexNormals);
     finalize.setClusterColors(clusterColors);
-    Materializer<Vec> materializer(mesh, clusterBiMap, faceNormals, surface);  
+    Materializer<Vec> materializer(mesh, clusterBiMap, faceNormals, *surface);
     MaterializerResult<Vec> matResult = materializer.generateMaterials();
-    finalizer.setMaterializerresult(matResult);
-    MeshBuffer2Ptr buffer finalize.apply(mesh);
+    finalize.setMaterializerResult(matResult);
+    MeshBuffer2Ptr buffer = finalize.apply(mesh);
 
 
     ModelPtr model(new Model(buffer));

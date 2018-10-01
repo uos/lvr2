@@ -25,9 +25,10 @@
 #ifndef LVRMESHBUFFERBRIDGE_H_
 #define LVRMESHBUFFERBRIDGE_H_
 
-#include <lvr/io/MeshBuffer.hpp>
-#include <lvr/display/TexturedMesh.hpp>
-#include <lvr/display/GlTexture.hpp>
+#include <lvr2/io/MeshBuffer2.hpp>
+#include <lvr2/display/TexturedMesh.hpp>
+#include <lvr2/display/GlTexture.hpp>
+#include <lvr/geometry/Vertex.hpp>
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
@@ -35,13 +36,16 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRMeshBufferBridge
 {
+
+    using Vec      = BaseVector<float>;
+
 public:
-    LVRMeshBufferBridge(MeshBufferPtr meshbuffer);
+    LVRMeshBufferBridge(MeshBuffer2Ptr meshbuffer);
     LVRMeshBufferBridge(const LVRMeshBufferBridge& b);
 
     virtual ~LVRMeshBufferBridge();
@@ -55,7 +59,7 @@ public:
 
     void setBaseColor(float r, float g, float b);
     void setOpacity(float opacityValue);
-    MeshBufferPtr getMeshBuffer();
+    MeshBuffer2Ptr getMeshBuffer();
     void setVisibility(bool visible);
     void setShading(int shader);
 
@@ -64,20 +68,20 @@ public:
     size_t									getNumTextures();
 
 protected:
-    void computeMeshActor(MeshBufferPtr meshbuffer);
+    void computeMeshActor(MeshBuffer2Ptr meshbuffer);
     size_t                          m_numVertices;
     size_t                          m_numFaces;
     vtkSmartPointer<vtkActor>       m_meshActor;
     vtkSmartPointer<vtkActor>       m_wireframeActor;
-    MeshBufferPtr                   m_meshBuffer;
+    MeshBuffer2Ptr                  m_meshBuffer;
 
     size_t							m_numColoredFaces;
     size_t							m_numTexturedFaces;
     size_t							m_numTextures;
 
     void computeMaterialGroups(vector<MaterialGroup*>& matGroups, vector<MaterialGroup*>& colorMatGroups);
-    void remapTexturedIndices(MaterialGroup* g, vector<Vertex<float> >& vertices, vector<Vertex<float> >& texCoords, vector<int>& indices);
-    void remapIndices(vector<MaterialGroup*> g, vector<Vertex<float> >& vertices, vector<Vertex<unsigned char> >& colors, vector<int>& indices);
+    void remapTexturedIndices(MaterialGroup* g, vector<Vector<Vec> >& vertices, vector<Vector<Vec> >& texCoords, vector<int>& indices);
+    void remapIndices(vector<MaterialGroup*> g, vector<Vector<Vec> >& vertices, vector<lvr::Vertex<unsigned char> >& colors, vector<int>& indices);
 
 
     vtkSmartPointer<vtkActor>		getTexturedActor(MaterialGroup* g);
@@ -91,6 +95,6 @@ private:
 
 typedef boost::shared_ptr<LVRMeshBufferBridge> MeshBufferBridgePtr;
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif /* LVRMESHBUFFERBRIDGE_H_ */

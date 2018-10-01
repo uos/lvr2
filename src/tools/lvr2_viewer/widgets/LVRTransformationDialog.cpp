@@ -27,7 +27,7 @@
 #include <QFileDialog>
 #include "LVRTransformationDialog.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 LVRTransformationDialog::LVRTransformationDialog(LVRModelItem* parent, vtkRenderWindow* window) :
@@ -256,4 +256,4 @@ void LVRTransformationDialog::rotationZSlided(int value)
 }
 
 
-} // namespace lvr
+} // namespace lvr2

@@ -165,6 +165,4 @@ void StaticMesh::render(){
 
 } // namespace lvr2
 
-#include "StaticMesh.cpp"
-
 #endif /* STATICMESH_H_ */

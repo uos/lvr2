@@ -28,9 +28,10 @@
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
 
-#include <lvr/geometry/Vertex.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/geometry/Vector.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 /**
@@ -39,9 +40,11 @@ namespace lvr
  */
 class LVRVtkArrow
 {
+    using Vec = BaseVector<float>;
+
 public:
 
-    LVRVtkArrow(Vertexf start, Vertexf end);
+    LVRVtkArrow(Vector<Vec> start, Vector<Vec> end);
 
     vtkSmartPointer<vtkActor>   getArrowActor();
     vtkSmartPointer<vtkActor>   getStartActor();
@@ -56,14 +59,14 @@ private:
     vtkSmartPointer<vtkActor>   m_arrowActor;
     vtkSmartPointer<vtkActor>   m_startActor;
     vtkSmartPointer<vtkActor>   m_endActor;
-    Vertexf                     m_start;
-    Vertexf                     m_end;
+    Vector<Vec>                 m_start;
+    Vector<Vec>                 m_end;
     double                      m_r;
     double                      m_g;
     double                      m_b;
 
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif /* LVRVTKARROW_HPP_ */

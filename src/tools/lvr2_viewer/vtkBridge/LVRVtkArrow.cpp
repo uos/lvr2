@@ -24,7 +24,7 @@
  */
 #include "LVRVtkArrow.hpp"
 
-#include <lvr/geometry/Normal.hpp>
+#include <lvr2/geometry/Normal.hpp>
 
 #include <vtkArrowSource.h>
 #include <vtkPolyData.h>
@@ -40,20 +40,18 @@
 #include <vtkTransform.h>
 #include <vtkTransformPolyDataFilter.h>
 
-namespace lvr
+namespace lvr2
 {
 
-
-
-LVRVtkArrow::LVRVtkArrow(Vertexf start, Vertexf end):
+LVRVtkArrow::LVRVtkArrow(Vector<Vec> start, Vector<Vec> end):
     m_start(start), m_end(end)
 {
     //Create an arrow.
     vtkSmartPointer<vtkArrowSource> arrowSource = vtkSmartPointer<vtkArrowSource>::New();
 
     // The x-axis is a vector from start to end
-    Vertexf diff = end - start;
-    Normalf x_axis(diff);
+    Vector<Vec> diff = end - start;
+    Normal<Vec> x_axis(diff);
     double length = diff.length();
 
     // The Z axis is an arbitrary vecotr cross X
@@ -62,11 +60,11 @@ LVRVtkArrow::LVRVtkArrow(Vertexf start, Vertexf end):
     arbitrary[0] = vtkMath::Random(-10,10);
     arbitrary[1] = vtkMath::Random(-10,10);
     arbitrary[2] = vtkMath::Random(-10,10);
-    Vertexf dummy(arbitrary[0], arbitrary[1], arbitrary[2]);
+    Vector<Vec> dummy(arbitrary[0], arbitrary[1], arbitrary[2]);
 
     // Compute other two local base vectors
-    Normalf z_axis(x_axis.cross(dummy));
-    Normalf y_axis(z_axis.cross(x_axis));
+    Normal<Vec> z_axis(x_axis.cross(dummy));
+    Normal<Vec> y_axis(z_axis.cross(x_axis));
 
     vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
     matrix->Identity();
@@ -147,4 +145,4 @@ LVRVtkArrow::~LVRVtkArrow()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */

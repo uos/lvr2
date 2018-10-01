@@ -158,6 +158,4 @@ protected:
 
 } // namespace lvr2
 
-#include "Renderable.cpp"
-
 #endif /* RENDERABLE_H_ */

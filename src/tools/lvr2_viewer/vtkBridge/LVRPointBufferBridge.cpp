@@ -34,15 +34,38 @@
 #include <vtkProperty.h>
 #include <vtkPointData.h>
 
-namespace lvr
+namespace lvr2
 {
+
+int getSpectralChannel(int wavelength, PointBuffer2Ptr pcloud, int fallback = -1)
+{
+    int minWavelength = *pcloud->getIntAttribute("spectral_wavelength_min");
+    int maxWavelength = *pcloud->getIntAttribute("spectral_wavelength_max");
+
+    FloatChannelOptional spectral_channels = pcloud->getFloatChannel("spectral_channels");
+
+    if (!spectral_channels)
+    {
+        return fallback;
+    }
+
+    float wavelengthPerChannel = (maxWavelength - minWavelength) / (float) spectral_channels->width();
+    int channel = (wavelength - minWavelength) / wavelengthPerChannel;
+
+    if (channel < 0 || channel >= spectral_channels->width())
+    {
+        return fallback;
+    }
+
+    return channel;
+}
 
 inline unsigned char floatToColor(float f)
 {
     return f * 255;
 }
 
-LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
+LVRPointBufferBridge::LVRPointBufferBridge(PointBuffer2Ptr pointCloud)
 {
     // use all silders with channel 0
     m_useSpectralChannel.r = true;
@@ -57,40 +80,41 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
     m_spectralGradientChannel = 0;
     m_spectralGradient = HOT; // default gradientype: HOT
 
+    m_numPoints = 0;
+    m_hasNormals = false;
+    m_hasColors = false;
+
     if(pointCloud)
     {
         // Save pc data
         m_pointBuffer = pointCloud;
 
         // default: visible light
-        m_spectralChannels.r = pointCloud->getChannel(612, 0);
-        m_spectralChannels.g = pointCloud->getChannel(552, 0);
-        m_spectralChannels.b = pointCloud->getChannel(462, 0);
+        m_spectralChannels.r = getSpectralChannel(612, pointCloud);
+        m_spectralChannels.g = getSpectralChannel(552, pointCloud);
+        m_spectralChannels.b = getSpectralChannel(462, pointCloud);
 
         // Generate vtk actor representation
         computePointCloudActor(pointCloud);
 
         // Save meta information
-        size_t numColors(0), numNormals(0);
-        m_numPoints = pointCloud->getNumPoints();
-        pointCloud->getPointNormalArray(numNormals);
-        pointCloud->getPointColorArray(numColors);
+        m_numPoints = pointCloud->numPoints();
 
-        if(numColors > 0) m_hasColors = true;
-        if(numNormals > 0) m_hasNormals = true;
+        if(pointCloud->hasColors()) m_hasColors = true;
+        if(pointCloud->hasNormals()) m_hasNormals = true;
     }
-    else
-    {
-        m_numPoints = 0;
-        m_hasNormals = false;
-        m_hasColors = false;
-    }
+}
+
+template <typename T>
+bool color_equal(const color<T> &col1, const color<T> &col2)
+{
+    return col1.r == col2.r && col1.g == col2.g && col1.b == col2.b;
 }
 
 void LVRPointBufferBridge::setSpectralChannels(color<size_t> channels, color<bool> use_channel)
 {
     // do not update if nothing has changed
-    if (channels == m_spectralChannels && use_channel == m_useSpectralChannel)
+    if (color_equal(channels, m_spectralChannels) && color_equal(use_channel, m_useSpectralChannel))
     {
         return;
     }
@@ -106,11 +130,12 @@ void LVRPointBufferBridge::setSpectralChannels(color<size_t> channels, color<boo
 
 void LVRPointBufferBridge::refreshSpectralChannel()
 {
-    size_t n, n_channels;
-    floatArr spec = m_pointBuffer->getPointSpectralChannelsArray(n, n_channels);
+    size_t n;
+    unsigned n_channels;
+    floatArr spec = m_pointBuffer->getFloatArray("spectral_channels", n, n_channels);
 
     // check if we have spectral data
-    if (!n)
+    if (!spec)
     {
         return;
     }
@@ -169,11 +194,12 @@ void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_
 
 void LVRPointBufferBridge::refreshSpectralGradient()
 {
-    size_t n, n_channels;
-    floatArr spec = m_pointBuffer->getPointSpectralChannelsArray(n, n_channels);
+    size_t n;
+    unsigned n_channels;
+    floatArr spec = m_pointBuffer->getFloatArray("spectral_channels", n, n_channels);
 
     // check if we have spectral data
-    if (!n)
+    if (!spec)
     {
         return;
     }
@@ -187,10 +213,10 @@ void LVRPointBufferBridge::refreshSpectralGradient()
     {
         ndvi = floatArr(new float[n]);
 
-        size_t redStart = m_pointBuffer->getChannel(400, 0);
-        size_t redEnd = m_pointBuffer->getChannel(700, 1);
-        size_t nearRedStart = m_pointBuffer->getChannel(700, n_channels - 2);
-        size_t nearRedEnd = m_pointBuffer->getChannel(1100, n_channels - 1);
+        size_t redStart     = getSpectralChannel(400, m_pointBuffer, 0);
+        size_t redEnd       = getSpectralChannel(700, m_pointBuffer, 1);
+        size_t nearRedStart = getSpectralChannel(700, m_pointBuffer, n_channels - 2);
+        size_t nearRedEnd   = getSpectralChannel(1100, m_pointBuffer, n_channels - 1);
 
         #pragma omp parallel for reduction(max : ndviMax), reduction(min : ndviMin)
         for (int i = 0; i < n; i++)
@@ -318,7 +344,7 @@ void LVRPointBufferBridge::useGradient(bool useGradient)
     }
 }
 
-PointBufferPtr LVRPointBufferBridge::getPointBuffer()
+PointBuffer2Ptr LVRPointBufferBridge::getPointBuffer()
 {
     return m_pointBuffer;
 }
@@ -342,7 +368,7 @@ LVRPointBufferBridge::~LVRPointBufferBridge()
 {
 }
 
-void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
+void LVRPointBufferBridge::computePointCloudActor(PointBuffer2Ptr pc)
 {
     if(pc)
     {
@@ -358,10 +384,14 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         scalars->SetName("Colors");
 
         double point[3];
-        size_t n, n_c, n_s_p, n_s_channels;
-        floatArr points = pc->getPointArray(n);
-        ucharArr colors = pc->getPointColorArray(n_c);
-        floatArr spec = pc->getPointSpectralChannelsArray(n_s_p, n_s_channels);
+        size_t n, n_c, n_s_p;
+        unsigned n_s_channels, w_color;
+        n = pc->numPoints();
+        n_c = n;
+
+        floatArr points = pc->getPointArray();
+        ucharArr colors = pc->getColorArray(w_color);
+        floatArr spec = pc->getFloatArray("spectral_channels", n_s_p, n_s_channels);
 
         scalars->SetNumberOfTuples(n_s_p ? n_s_p : n);
         vtk_points->SetNumberOfPoints(n_s_p ? n_s_p : n);
@@ -374,7 +404,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
             point[2] = points[index + 2];
 
             // show spectral colors if we have spectral data
-            if(n_s_p)
+            if(spec)
             {
                 if (i >= n_s_p) // only take points with spectral information
                 {
@@ -392,12 +422,26 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
                 scalars->SetTypedTuple(i, speccolor); // no idea how the new method is called
 #endif
             }
-            else if(n_c)
+            else if(colors)
+            {
+                size_t colorIndex = w_color * i;
+                unsigned char color[3];
+                color[0] = colors[colorIndex];
+                color[1] = colors[colorIndex + 1];
+                color[2] = colors[colorIndex + 2];
+
+#if VTK_MAJOR_VERSION < 7
+                scalars->SetTupleValue(i, color);
+#else
+                scalars->SetTypedTuple(i, color); // no idea how the new method is called
+#endif
+            }
+            else
             {
                 unsigned char color[3];
-                color[0] = colors[index];
-                color[1] = colors[index + 1];
-                color[2] = colors[index + 2];
+                color[0] = 255;
+                color[1] = 255;
+                color[2] = 255;
 
 #if VTK_MAJOR_VERSION < 7
                 scalars->SetTupleValue(i, color);
@@ -478,4 +522,4 @@ vtkSmartPointer<vtkActor> LVRPointBufferBridge::getPointCloudActor()
 }
 
 
-} /* namespace lvr */
+} /* namespace lvr2 */

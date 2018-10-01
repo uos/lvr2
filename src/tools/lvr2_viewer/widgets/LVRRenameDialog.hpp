@@ -11,7 +11,7 @@
 
 using Ui::RenameDialog;
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRRenameDialog : public QObject
@@ -33,6 +33,6 @@ private:
     QTreeWidget*                            m_treeWidget;
 };
 
-} // namespace lvr
+} // namespace lvr2
 
 #endif /* RENAMEDIALOG_H_ */

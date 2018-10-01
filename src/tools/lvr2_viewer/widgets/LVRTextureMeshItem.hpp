@@ -10,7 +10,7 @@
 
 #include "LVRMeshItem.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRTextureMeshItem : public LVRMeshItem
@@ -23,6 +23,6 @@ protected:
 	virtual void addSubItems();
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif /* SRC_TOOLS_VIEWER_WIDGETS_LVRTEXTUREMESHITEM_HPP_ */

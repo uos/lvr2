@@ -144,6 +144,4 @@ private:
 
 } // namespace lvr2
 
-#include "ColorMap.cpp"
-
 #endif /* COLORMAP_H_ */

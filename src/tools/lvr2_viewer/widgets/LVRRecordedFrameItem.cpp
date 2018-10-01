@@ -19,7 +19,7 @@
 #include "LVRRecordedFrameItem.hpp"
 #include "LVRItemTypes.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 // Create a camera from the current frame
@@ -94,4 +94,4 @@ LVRRecordedFrameItem* LVRRecordedFrameItem::createFromStream(QTextStream &in)
     return recordedFrameItem;
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */

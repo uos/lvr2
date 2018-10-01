@@ -32,7 +32,7 @@
 #include <vtkRendererCollection.h>
 #include <vtkPointPicker.h>
 
-namespace lvr
+namespace lvr2
 {
 
 LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer) :
@@ -204,4 +204,4 @@ void LVRPickingInteractor::OnKeyRelease()
 
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */

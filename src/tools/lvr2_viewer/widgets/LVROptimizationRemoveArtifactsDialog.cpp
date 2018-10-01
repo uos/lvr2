@@ -47,7 +47,7 @@ void LVRRemoveArtifactsDialog::removeArtifacts()
     removeDanglingCluster(mesh, removeDanglingArtifacts);
 
     // create normals and/or colors?
-    SimpleFinalizer fin;
+    SimpleFinalizer<Vec> fin;
 
     ModelPtr model(new Model(fin.apply(mesh)));
     ModelBridgePtr bridge(new LVRModelBridge(model));

@@ -1,7 +1,7 @@
 #include <QFileDialog>
 #include "LVRRenameDialog.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 LVRRenameDialog::LVRRenameDialog(LVRModelItem* item, QTreeWidget* treeWidget) :
@@ -40,4 +40,4 @@ void LVRRenameDialog::renameItem()
     m_item->setName(newName);
 }
 
-}
+} // namespace lvr2

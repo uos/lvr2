@@ -6,17 +6,6 @@
 #include <vtkRendererCollection.h>
 #include <vtkSmartPointer.h>
 
-//#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
-//#include <lvr/reconstruction/FastReconstruction.hpp>
-//#include <lvr2/geometry/Matrix4.hpp>
-//#include <lvr2/io/PLYIO.hpp>
-//#include <lvr2/texture/Texture.hpp>
-//#include <lvr/texture/Transform.hpp>
-//#include <lvr/texture/Texturizer.hpp>
-//#include <lvr/texture/Statistics.hpp>
-//#include <lvr/geometry/QuadricVertexCosts.hpp>
-//#include <lvr/reconstruction/SharpBox.hpp>
-
 #include "../vtkBridge/LVRModelBridge.hpp"
 
 #include "ui_LVROptimizationPlanarOptimizationDialogUI.h"
@@ -35,8 +24,6 @@ class LVRPlanarOptimizationDialog : public QObject
 public:
     LVRPlanarOptimizationDialog(LVRMeshItem* mesh, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
     virtual ~LVRPlanarOptimizationDialog();
-    //typedef ColorVertex<float, unsigned char>         cVertex;
-    //typedef Normal<float>                               cNormal;
 
 public Q_SLOTS:
     void optimizeMesh();

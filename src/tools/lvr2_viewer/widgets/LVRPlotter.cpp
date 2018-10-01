@@ -2,7 +2,7 @@
 #include "LVRPlotter.hpp"
 #include "LVRPointInfo.hpp"
 #include <QPainter>
-#include "../app/LVRMainWindow.hpp"
+//#include "../app/LVRMainWindow.hpp"
 
 namespace lvr2
 {

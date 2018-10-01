@@ -26,8 +26,8 @@ PointBuffer2::PointBuffer2(floatArr points, size_t n)
 PointBuffer2::PointBuffer2(floatArr points, floatArr normals, size_t n) : PointBuffer2(points, n)
 {
     // Add normal data
-    FloatChannelPtr normal_data(new FloatChannel(n, 3, points));
-    m_channels.addFloatChannel(normal_data, "normals");
+    m_normals = FloatChannelPtr(new FloatChannel(n, 3, points));
+    m_channels.addFloatChannel(m_normals, "normals");
 }
 
 void PointBuffer2::setPointArray(floatArr points, size_t n)

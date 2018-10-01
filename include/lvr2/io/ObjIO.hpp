@@ -81,8 +81,15 @@ private:
 
 };
 
-} // namespace lvr2
+template<typename T>
+boost::shared_array<T> convert_vector_to_shared_array(vector<T> source)
+{
+    boost::shared_array<T> ret = boost::shared_array<T>( new T[source.size()] );
+    std::copy(source.begin(), source.end(), ret.get());
 
-#include "ObjIO.cpp"
+    return ret;
+}
+
+} // namespace lvr2
 
 #endif /* OBJIO_H_ */

@@ -50,6 +50,7 @@
 #include <lvr2/io/Progress.hpp>
 #include <lvr2/io/Timestamp.hpp>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace lvr2
 {

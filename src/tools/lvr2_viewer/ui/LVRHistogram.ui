@@ -51,7 +51,7 @@
                 </layout>
             </item>
             <item>
-                <widget class="lvr::LVRPlotter" name="plotter" native="true"/>
+                <widget class="lvr2::LVRPlotter" name="plotter" native="true"/>
             </item>
             <item>
                 <widget class="QDialogButtonBox" name="buttonBox">
@@ -105,7 +105,7 @@
     </connections>
     <customwidgets>
         <customwidget>
-            <class>lvr::LVRPlotter</class>
+            <class>lvr2::LVRPlotter</class>
             <extends>QWidget</extends>
             <header>../../../../src/tools/viewer/widgets/LVRPlotter.hpp</header>
         </customwidget>

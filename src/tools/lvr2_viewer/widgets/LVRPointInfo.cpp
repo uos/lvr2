@@ -25,7 +25,7 @@ LVRPointInfo::LVRPointInfo(QWidget* parent, PointBuffer2Ptr pointBuffer, int poi
         .arg(points[pointId * 3 + 2], 10, 'g', 4));
     
     FloatChannelOptional spec_channels = pointBuffer->getFloatChannel("spectral_channels"); 
-    size_t n_spec = spec_channels->numPoints();
+    size_t n_spec = spec_channels->numAttributes();
     m_numChannels = spec_channels->width();
     
     if (pointId >= n_spec)
@@ -36,9 +36,9 @@ LVRPointInfo::LVRPointInfo(QWidget* parent, PointBuffer2Ptr pointBuffer, int poi
     else
     {
         m_data = floatArr(new float[m_numChannels]);
-        for (size_t = 0; i < m_numChannels; i++)
+        for (size_t i = 0; i < m_numChannels; i++)
         {
-            m_data[i] = spec_channel[i][pointId];
+            m_data[i] = (*spec_channels)[i][pointId];
         }
     }
 

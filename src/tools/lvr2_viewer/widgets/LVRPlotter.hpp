@@ -26,8 +26,6 @@
 namespace lvr2
 {
 
-class LVRMainWindow;
-
 enum class PlotMode
 {
 	LINE,

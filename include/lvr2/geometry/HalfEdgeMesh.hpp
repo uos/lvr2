@@ -67,6 +67,7 @@ public:
     using Face = HalfEdgeFace;
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
+    HalfEdgeMesh();
     HalfEdgeMesh(MeshBuffer2Ptr ptr);
 
     // ========================================================================

@@ -108,7 +108,7 @@ void LVREstimateNormalsDialog::estimateNormals()
 
     QString base = m_parent->getName() + " (w. normals)";
     m_pointCloudWithNormals = new LVRModelItem(bridge, base);
-    m_pointCloudWithNormals.setPose(m_parent->getPose());
+    //m_pointCloudWithNormals->setPose(m_parent->getPose());
 
     m_treeWidget->addTopLevelItem(m_pointCloudWithNormals);
     m_pointCloudWithNormals->setExpanded(true);

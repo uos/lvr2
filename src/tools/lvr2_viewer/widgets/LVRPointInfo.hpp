@@ -22,8 +22,8 @@
 #include <lvr2/io/PointBuffer2.hpp>
 #include <QtWidgets>
 #include <QDialog>
-#include "ui_LVRPointInfo.h"
 #include "LVRPlotter.hpp"
+#include "ui_LVRPointInfo.h"
 
 using Ui::PointInfo;
 

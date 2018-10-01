@@ -90,6 +90,4 @@ typedef boost::shared_ptr<ModelFactory> ModelFactoryPtr;
 
 } // namespace lvr2
 
-#include "ModelFactory.cpp"
-
 #endif /* IOFACTORY_H_ */

@@ -38,17 +38,17 @@
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 
-namespace lvr
+namespace lvr2
 {
 
-LVRMeshBufferBridge::LVRMeshBufferBridge(MeshBufferPtr meshBuffer) :
+LVRMeshBufferBridge::LVRMeshBufferBridge(MeshBuffer2Ptr meshBuffer) :
         m_meshBuffer(meshBuffer)
 {
     if(meshBuffer)
     {
         computeMeshActor(meshBuffer);
-        meshBuffer->getVertexArray(m_numVertices);
-        meshBuffer->getFaceArray(m_numFaces);
+        m_numVertices = meshBuffer->numVertices();
+        m_numFaces = meshBuffer->numFaces();
     }
     else
     {
@@ -106,7 +106,7 @@ size_t LVRMeshBufferBridge::getNumVertices()
     return m_numVertices;
 }
 
-MeshBufferPtr  LVRMeshBufferBridge::getMeshBuffer()
+MeshBuffer2Ptr  LVRMeshBufferBridge::getMeshBuffer()
 {
     return m_meshBuffer;
 }
@@ -116,7 +116,7 @@ LVRMeshBufferBridge::~LVRMeshBufferBridge()
     // TODO Auto-generated destructor stub
 }
 
-void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
+void LVRMeshBufferBridge::computeMeshActor(MeshBuffer2Ptr meshbuffer)
 {
     if(meshbuffer)
     {
@@ -124,9 +124,13 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
 
         // Parse vertex and index buffer
         size_t n_v, n_i, n_c;
-        floatArr vertices = meshbuffer->getVertexArray(n_v);
-        uintArr indices = meshbuffer->getFaceArray(n_i);
-        ucharArr colors = meshbuffer->getVertexColorArray(n_c);
+        unsigned w_color;
+        n_v = meshbuffer->numVertices();
+        floatArr vertices = meshbuffer->getVertices();
+        n_i = meshbuffer->numFaces();
+        uintArr indices = meshbuffer->getFaceIndices();
+        n_c = n_v;
+        ucharArr colors = meshbuffer->getVertexColors(w_color);
 
         vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
         vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();
@@ -142,12 +146,13 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
                     vertices[index + 1],
                     vertices[index + 2]);
 
-        	if(n_c)
+            if(colors)
         	{
+                size_t color_index = w_color * i;
         		unsigned char color[3];
-        		color[0] = colors[index];
-        		color[1] = colors[index + 1];
-        		color[2] = colors[index + 2];
+                color[0] = colors[color_index    ];
+                color[1] = colors[color_index + 1];
+                color[2] = colors[color_index + 2];
 #if VTK_MAJOR_VERSION < 7      
         		scalars->InsertNextTupleValue(color);
 #else
@@ -172,7 +177,7 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
         mesh->SetPoints(points);
         mesh->SetPolys(triangles);
 
-        if(n_c)
+        if(colors)
         {
         	mesh->GetPointData()->SetScalars(scalars);
         }
@@ -245,45 +250,44 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getMeshActor()
 void LVRMeshBufferBridge::computeMaterialGroups(vector<MaterialGroup*>& textureMaterials, vector<MaterialGroup*>& colorMaterials)
 {
 	map<int, MaterialGroup* > texMatMap;
-	map<Vertex<unsigned char>, MaterialGroup* > colorMatMap;
+	map<lvr::Vertex<unsigned char>, MaterialGroup* > colorMatMap;
 
 	// Get buffers
-	materialArr	materials;
-	floatArr	textureCoords;
-	textureArr	textures;
-	uintArr		faceMaterials;
+	vector<Material>  &materials = m_meshBuffer->getMaterials();
+	vector<Texture>   &textures = m_meshBuffer->getTextures();
+	floatArr	      textureCoords;
+	indexArray	      faceMaterials;
 
-	size_t numMaterials;
-	materials = m_meshBuffer->getMaterialArray(numMaterials);
+	size_t numMaterials = materials.size();
 
-	size_t numFaceMaterials;
-	faceMaterials = m_meshBuffer->getFaceMaterialIndexArray(numFaceMaterials);
+	size_t numFaceMaterials = m_meshBuffer->numFaces();
+	faceMaterials = m_meshBuffer->getFaceMaterialIndices();
 
 	// Iterate over face material buffer and
 	// sort faces by their material
 	for(size_t i = 0; i < m_numFaces; i++)
 	{
 		map<int, MaterialGroup*>::iterator texIt;
-		map<Vertex<unsigned char>, MaterialGroup* >::iterator colIt;
+		map<lvr::Vertex<unsigned char>, MaterialGroup* >::iterator colIt;
 
 		// Get material by index and lookup in map. If present
 		// add face index to the corresponding group. Create a new
 		// group if none was found. For efficient rendering we have to
 		// create groups by color and texture index,
-        IOMaterial* m = materials[faceMaterials[i]];
+        Material &m = materials[faceMaterials[i]];
 
-		if(m->texture_index != -1)
+		if(m.m_texture)
 		{
 
-			texIt = texMatMap.find(m->texture_index);
+			texIt = texMatMap.find(m.m_texture->idx());
 			if(texIt == texMatMap.end())
 			{
 				MaterialGroup* g = new MaterialGroup;
-				g->textureIndex = m->texture_index;
-				g->color = Vertex<float>(1.0, 1.0, 1.0);
+				g->textureIndex = m.m_texture->idx();
+				g->color = Vector<Vec>(1.0, 1.0, 1.0);
 				g->faceBuffer.push_back(i);
 				textureMaterials.push_back(g);
-				texMatMap[m->texture_index] = g;
+				texMatMap[m.m_texture->idx()] = g;
 			}
 			else
 			{
@@ -292,13 +296,13 @@ void LVRMeshBufferBridge::computeMaterialGroups(vector<MaterialGroup*>& textureM
 		}
 		else
 		{
-			colIt = colorMatMap.find(Vertex<unsigned char>(m->r, m->g, m->b));
+			colIt = colorMatMap.find(lvr::Vertex<unsigned char>(m.m_color->at(0),m.m_color->at(1), m.m_color->at(2)));
 			if(colIt == colorMatMap.end())
 			{
 				MaterialGroup* g = new MaterialGroup;
-				g->textureIndex = m->texture_index;
+				g->textureIndex = -1;
 				g->faceBuffer.push_back(i);
-				g->color = Vertex<float>(m->r / 255.0f, m->g / 255.0f, m->b / 255.0f);
+				g->color = Vector<Vec>(m.m_color->at(0) / 255.0f, m.m_color->at(1) / 255.0f, m.m_color->at(2) / 255.0f);
 				colorMaterials.push_back(g);
 			}
 			else
@@ -313,8 +317,8 @@ void LVRMeshBufferBridge::computeMaterialGroups(vector<MaterialGroup*>& textureM
 
 void LVRMeshBufferBridge::remapTexturedIndices(
 		MaterialGroup* g,
-		vector<Vertex<float> >& vertices,
-		vector<Vertex<float> >& texCoords,
+		vector<Vector<Vec> >& vertices,
+		vector<Vector<Vec> >& texCoords,
 		vector<int>& indices)
 {
 	// Mapping stuff
@@ -323,11 +327,12 @@ void LVRMeshBufferBridge::remapTexturedIndices(
 	int globalIndex = 0;
 
 	// Get vertex buffer
-	size_t n;
-	size_t nc;
-	floatArr vertexBuffer = m_meshBuffer->getVertexArray(n);
-	uintArr	 faceBuffer = m_meshBuffer->getFaceArray(n);
-	floatArr textures = m_meshBuffer->getVertexTextureCoordinateArray(nc);
+	size_t n = m_meshBuffer->numVertices();
+    size_t n_i = m_meshBuffer->numFaces();
+	size_t nc = n;
+	floatArr vertexBuffer = m_meshBuffer->getVertices();
+	indexArray faceBuffer = m_meshBuffer->getFaceIndices();
+	floatArr textures     = m_meshBuffer->getTextureCoordinates();
 
 	// Iterate through the index buffer that references global indices
 	// and create new vertex and index buffer using local indices
@@ -344,8 +349,8 @@ void LVRMeshBufferBridge::remapTexturedIndices(
 		{
 			indexMap[a] = globalIndex;
 			indices.push_back(globalIndex);
-			Vertex<float> v(vertexBuffer[3 * a], vertexBuffer[3 * a + 1], vertexBuffer[3 * a + 2]);
-			Vertex<float> t(textures[3 * a], textures[3 * a + 1], textures[3 * a + 2]);
+			Vector<Vec> v(vertexBuffer[3 * a], vertexBuffer[3 * a + 1], vertexBuffer[3 * a + 2]);
+			Vector<Vec> t(textures[2 * a], textures[2 * a + 1], 0.0);
 			texCoords.push_back(t);
 			vertices.push_back(v);
 			globalIndex++;
@@ -361,8 +366,8 @@ void LVRMeshBufferBridge::remapTexturedIndices(
 		{
 			indexMap[b] = globalIndex;
 			indices.push_back(globalIndex);
-			Vertex<float> v(vertexBuffer[3 * b], vertexBuffer[3 * b + 1], vertexBuffer[3 * b + 2]);
-			Vertex<float> t(textures[3 * b], textures[3 * b + 1], textures[3 * b + 2]);
+			Vector<Vec> v(vertexBuffer[3 * b], vertexBuffer[3 * b + 1], vertexBuffer[3 * b + 2]);
+			Vector<Vec> t(textures[2 * b], textures[2 * b + 1], 0.0);
 			texCoords.push_back(t);
 			vertices.push_back(v);
 			globalIndex++;
@@ -378,8 +383,8 @@ void LVRMeshBufferBridge::remapTexturedIndices(
 		{
 			indexMap[c] = globalIndex;
 			indices.push_back(globalIndex);
-			Vertex<float> v(vertexBuffer[3 * c], vertexBuffer[3 * c + 1], vertexBuffer[3 * c + 2]);
-			Vertex<float> t(textures[3 * c], textures[3 * c + 1], textures[3 * c + 2]);
+			Vector<Vec> v(vertexBuffer[3 * c], vertexBuffer[3 * c + 1], vertexBuffer[3 * c + 2]);
+			Vector<Vec> t(textures[2 * c], textures[2 * c + 1], 0.0);
 			texCoords.push_back(t);
 			vertices.push_back(v);
 			globalIndex++;
@@ -394,17 +399,18 @@ void LVRMeshBufferBridge::remapTexturedIndices(
 
 void LVRMeshBufferBridge::remapIndices(
 		vector<MaterialGroup*> groups,
-		vector<Vertex<float> >& vertices,
-		vector<Vertex<unsigned char> >& colors,
+		vector<Vector<Vec> >& vertices,
+		vector<lvr::Vertex<unsigned char> >& colors,
 		vector<int>& indices)
 {
 	int globalIndex = 0;
 	map<int, int> indexMap;
 	map<int, int>::iterator it;
 
-	size_t n;
-	floatArr vertexBuffer = m_meshBuffer->getVertexArray(n);
-	uintArr	 faceBuffer = m_meshBuffer->getFaceArray(n);
+	size_t n   = m_meshBuffer->numVertices();
+    size_t n_i = m_meshBuffer->numFaces();
+	floatArr vertexBuffer = m_meshBuffer->getVertices();
+	uintArr	 faceBuffer   = m_meshBuffer->getFaceIndices();
 
 	for(size_t a = 0; a < groups.size(); a++)
 	{
@@ -417,7 +423,7 @@ void LVRMeshBufferBridge::remapIndices(
 			int c = faceBuffer[g->faceBuffer[i] * 3 + 2];
 
 			colors.push_back(
-					Vertex<unsigned char>(
+					lvr::Vertex<unsigned char>(
 							(unsigned char) (255*g->color[0]),
 							(unsigned char) (255*g->color[1]),
 							(unsigned char) (255*g->color[2])
@@ -429,7 +435,7 @@ void LVRMeshBufferBridge::remapIndices(
 			{
 				indexMap[a] = globalIndex;
 				indices.push_back(globalIndex);
-				Vertex<float> v(vertexBuffer[3 * a], vertexBuffer[3 * a + 1], vertexBuffer[3 * a + 2]);
+				Vector<Vec> v(vertexBuffer[3 * a], vertexBuffer[3 * a + 1], vertexBuffer[3 * a + 2]);
 				vertices.push_back(v);
 				globalIndex++;
 			}
@@ -444,14 +450,13 @@ void LVRMeshBufferBridge::remapIndices(
 			{
 				indexMap[b] = globalIndex;
 				indices.push_back(globalIndex);
-				Vertex<float> v(vertexBuffer[3 * b], vertexBuffer[3 * b + 1], vertexBuffer[3 * b + 2]);
+				Vector<Vec> v(vertexBuffer[3 * b], vertexBuffer[3 * b + 1], vertexBuffer[3 * b + 2]);
 				vertices.push_back(v);
 				globalIndex++;
 			}
 			else
 			{
-				indices.push_back(indexMap[b]);
-			}
+				indices.push_back(indexMap[b]); }
 
 			// Lookup c *******************************************************************************
 			it = indexMap.find(c);
@@ -459,7 +464,7 @@ void LVRMeshBufferBridge::remapIndices(
 			{
 				indexMap[c] = globalIndex;
 				indices.push_back(globalIndex);
-				Vertex<float> v(vertexBuffer[3 * c], vertexBuffer[3 * c + 1], vertexBuffer[3 * c + 2]);
+				Vector<Vec> v(vertexBuffer[3 * c], vertexBuffer[3 * c + 1], vertexBuffer[3 * c + 2]);
 				vertices.push_back(v);
 				globalIndex++;
 			}
@@ -480,8 +485,8 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getTexturedActor(MaterialGroup* g
 	vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
 
 	// Remap global indices for new actor
-	vector<Vertex<float> > vertices;
-	vector<Vertex<float> > texCoords;
+	vector<Vector<Vec> > vertices;
+	vector<Vector<Vec> > texCoords;
 	vector<int> indices;
 	remapTexturedIndices(g, vertices, texCoords, indices);
 
@@ -540,12 +545,14 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getTexturedActor(MaterialGroup* g
 
 vtkSmartPointer<vtkTexture> LVRMeshBufferBridge::getTexture(int index)
 {
-	size_t n;
-	textureArr textures = m_meshBuffer->getTextureArray(n);
-	GlTexture* tex = textures[index];
-	int w = tex->m_width;
-	int h = tex->m_height;
-	unsigned char* texData = tex->m_pixels;
+	vector<Texture> &textures = m_meshBuffer->getTextures();
+	size_t n = textures.size();
+	Texture &tex = textures[index];
+	int w = tex.m_width;
+	int h = tex.m_height;
+    unsigned char numChannels = tex.m_numChannels;
+    unsigned char numBytesPerChan = tex.m_numBytesPerChan;
+	unsigned char* texData = tex.m_data;
 
 	vtkSmartPointer<vtkImageData> data = vtkSmartPointer<vtkImageData>::New();
 	data->SetDimensions(h, w, 1);
@@ -562,9 +569,10 @@ vtkSmartPointer<vtkTexture> LVRMeshBufferBridge::getTexture(int index)
 		for(int j = 0; j < w; j++)
 		{
 			unsigned char* pixel = static_cast<unsigned char*>(data->GetScalarPointer(i,j,0));
-			pixel[0] = texData[3 * c];
-			pixel[1] = texData[3 * c + 1];
-			pixel[2] = texData[3 * c + 2];
+            size_t index = numChannels * numBytesPerChan * c;
+			pixel[0] = texData[index                      ];
+			pixel[1] = texData[index + 1 * numBytesPerChan];
+			pixel[2] = texData[index + 2 * numBytesPerChan];
 			c++;
 		}
 	}
@@ -583,9 +591,6 @@ vtkSmartPointer<vtkTexture> LVRMeshBufferBridge::getTexture(int index)
 
 vtkSmartPointer<vtkActorCollection> LVRMeshBufferBridge::getTexturedActors()
 {
-	size_t numTextures;
-	size_t numFaceMaterials;
-
 	vector<MaterialGroup*> textureGroups;
 	vector<MaterialGroup*> colorGroups;
 	computeMaterialGroups(textureGroups, colorGroups);
@@ -608,9 +613,9 @@ vtkSmartPointer<vtkActorCollection> LVRMeshBufferBridge::getTexturedActors()
 
 vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getColorMeshActor(vector<MaterialGroup*> groups)
 {
-	vector<Vertex<float> > vertices;
+	vector<Vector<Vec> > vertices;
 	vector<int> indices;
-	vector<Vertex<unsigned char> > colors;
+	vector<lvr::Vertex<unsigned char> > colors;
 
 	vtkSmartPointer<vtkPolyData> mesh = vtkSmartPointer<vtkPolyData>::New();
 	vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
@@ -676,10 +681,7 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getColorMeshActor(vector<Material
 
 bool LVRMeshBufferBridge::hasTextures()
 {
-	size_t num;
-	m_meshBuffer->getTextureArray(num);
-	return (num > 0);
+	return m_meshBuffer->getTextures().size() > 0;
 }
 
-
-} /* namespace lvr */
+} /* namespace lvr2 */

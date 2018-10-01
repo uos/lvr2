@@ -208,6 +208,7 @@ ModelPtr AsciiIO::read(
 
     }
 
+
     model->m_pointCloud->setPointArray(points, numPoints);
 
     this->m_model = model;
