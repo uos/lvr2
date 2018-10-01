@@ -971,7 +971,9 @@ void LVRMainWindow::toggleNormals(bool checkboxState)
         if(item->type() == LVRPointCloudItemType)
         {
             LVRModelItem* model_item = static_cast<LVRModelItem*>(item->parent());
-            if(model_item->isEnabled()) return; // TODO: functions to show/hide normals
+            if(model_item->isEnabled()){
+                model_item->getModelBridge()->setNormalsVisibility(checkboxState);
+            } 
         }
         ++it;
     }
