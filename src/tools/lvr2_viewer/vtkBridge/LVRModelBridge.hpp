@@ -78,7 +78,7 @@ public:
      */
     void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
 
-    void        setPose(Pose& pose);
+    void        setPose(const Pose& pose);
     Pose        getPose();
 
     void		setVisibility(bool visible);

@@ -66,7 +66,7 @@ bool LVRModelBridge::validMeshBridge()
     return (m_meshBridge->getNumTriangles() > 0) ? true : false;
 }
 
-void LVRModelBridge::setPose(Pose& pose)
+void LVRModelBridge::setPose(const Pose& pose)
 {
     m_pose = pose;
     vtkSmartPointer<vtkTransform> transform =  vtkSmartPointer<vtkTransform>::New();

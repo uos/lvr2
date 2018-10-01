@@ -28,7 +28,6 @@
 #include <lvr2/io/MeshBuffer2.hpp>
 #include <lvr2/display/TexturedMesh.hpp>
 #include <lvr2/display/GlTexture.hpp>
-#include <lvr/geometry/Vertex.hpp>
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
@@ -43,6 +42,7 @@ class LVRMeshBufferBridge
 {
 
     using Vec      = BaseVector<float>;
+    using VecUChar = BaseVector<unsigned char>;
 
 public:
     LVRMeshBufferBridge(MeshBuffer2Ptr meshbuffer);
@@ -81,7 +81,7 @@ protected:
 
     void computeMaterialGroups(vector<MaterialGroup*>& matGroups, vector<MaterialGroup*>& colorMatGroups);
     void remapTexturedIndices(MaterialGroup* g, vector<Vector<Vec> >& vertices, vector<Vector<Vec> >& texCoords, vector<int>& indices);
-    void remapIndices(vector<MaterialGroup*> g, vector<Vector<Vec> >& vertices, vector<lvr::Vertex<unsigned char> >& colors, vector<int>& indices);
+    void remapIndices(vector<MaterialGroup*> g, vector<Vector<Vec> >& vertices, vector<Vector<VecUChar> >& colors, vector<int>& indices);
 
 
     vtkSmartPointer<vtkActor>		getTexturedActor(MaterialGroup* g);

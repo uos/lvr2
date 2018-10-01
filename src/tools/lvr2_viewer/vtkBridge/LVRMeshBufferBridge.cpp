@@ -249,8 +249,10 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getMeshActor()
 
 void LVRMeshBufferBridge::computeMaterialGroups(vector<MaterialGroup*>& textureMaterials, vector<MaterialGroup*>& colorMaterials)
 {
-	map<int, MaterialGroup* > texMatMap;
-	map<lvr::Vertex<unsigned char>, MaterialGroup* > colorMatMap;
+    using compColorsT = std::function<bool (const Vector<VecUChar> &, const Vector<VecUChar> &)>;
+    compColorsT colorsCompare = [] (const Vector<VecUChar> &a, const Vector<VecUChar> &b) { return (a.x < b.x) || ( (a.x - b.x <= 0.00001) && a.y < b.y) || ( (a.y - b.y <= 0.00001) && a.z < b.z); };
+	map<int, MaterialGroup*> texMatMap;
+	map<Vector<VecUChar>, MaterialGroup*, compColorsT> colorMatMap(colorsCompare);
 
 	// Get buffers
 	vector<Material>  &materials = m_meshBuffer->getMaterials();
@@ -268,7 +270,7 @@ void LVRMeshBufferBridge::computeMaterialGroups(vector<MaterialGroup*>& textureM
 	for(size_t i = 0; i < m_numFaces; i++)
 	{
 		map<int, MaterialGroup*>::iterator texIt;
-		map<lvr::Vertex<unsigned char>, MaterialGroup* >::iterator colIt;
+		map<Vector<VecUChar>, MaterialGroup* >::iterator colIt;
 
 		// Get material by index and lookup in map. If present
 		// add face index to the corresponding group. Create a new
@@ -296,7 +298,7 @@ void LVRMeshBufferBridge::computeMaterialGroups(vector<MaterialGroup*>& textureM
 		}
 		else
 		{
-			colIt = colorMatMap.find(lvr::Vertex<unsigned char>(m.m_color->at(0),m.m_color->at(1), m.m_color->at(2)));
+			colIt = colorMatMap.find(Vector<VecUChar>(m.m_color->at(0),m.m_color->at(1), m.m_color->at(2)));
 			if(colIt == colorMatMap.end())
 			{
 				MaterialGroup* g = new MaterialGroup;
@@ -400,7 +402,7 @@ void LVRMeshBufferBridge::remapTexturedIndices(
 void LVRMeshBufferBridge::remapIndices(
 		vector<MaterialGroup*> groups,
 		vector<Vector<Vec> >& vertices,
-		vector<lvr::Vertex<unsigned char> >& colors,
+		vector<Vector<VecUChar> >& colors,
 		vector<int>& indices)
 {
 	int globalIndex = 0;
@@ -423,7 +425,7 @@ void LVRMeshBufferBridge::remapIndices(
 			int c = faceBuffer[g->faceBuffer[i] * 3 + 2];
 
 			colors.push_back(
-					lvr::Vertex<unsigned char>(
+					Vector<VecUChar>(
 							(unsigned char) (255*g->color[0]),
 							(unsigned char) (255*g->color[1]),
 							(unsigned char) (255*g->color[2])
@@ -615,7 +617,7 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getColorMeshActor(vector<Material
 {
 	vector<Vector<Vec> > vertices;
 	vector<int> indices;
-	vector<lvr::Vertex<unsigned char> > colors;
+	vector<Vector<VecUChar> > colors;
 
 	vtkSmartPointer<vtkPolyData> mesh = vtkSmartPointer<vtkPolyData>::New();
 	vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();

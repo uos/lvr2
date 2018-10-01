@@ -25,8 +25,6 @@
 #ifndef LVRMODELITEM_H_
 #define LVRMODELITEM_H_
 
-// TODO pretty sure this include is not needed
-//#include <lvr2/io/Model.hpp>
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "LVRPoseItem.hpp"
 
@@ -45,7 +43,7 @@ public:
     virtual ~LVRModelItem();
 
     Pose            getPose();
-    void            setPose( Pose& pose);
+    void            setPose(const Pose& pose);
     QString         getName();
     void            setName(QString name);
     bool            isEnabled();
