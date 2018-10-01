@@ -65,37 +65,14 @@ void LVREstimateNormalsDialog::estimateNormals()
     // Create buffer arrays
     floatArr points(new float[3 * numPoints]);
 
-    // old code tried to transform the point, I don't see a reason why 
-    // Get transformation from frames or pose files if possible
-    /*
-    Matrix4<float> transform;
-    // Matrix4 does not support lvr::Pose, convert to float-Array
-    // TODO: fix transformation
-    Pose pose = m_parent->getPose();
-    float* float_pose = new float[6];
-    float_pose[0] = pose.x;
-    float_pose[1] = pose.y;
-    float_pose[2] = pose.z;
-    float_pose[3] = pose.r;
-    float_pose[4] = pose.t;
-    float_pose[5] = pose.p;
-    transform.toPostionAngle(float_pose);
-    */
-
-    // copy pts for new cp
-    for (size_t i = 0; i < numPoints*3; i++)
-    {
-        points[i] = old_pts[i]; 
-    }
+    // copy pts to new pointbuffer 
+    std::copy(old_pts.get(), old_pts.get() + numPoints*3, points.get());
 
     PointBuffer2Ptr new_pc = PointBuffer2Ptr( new PointBuffer2 );
     new_pc->setPointArray(points, numPoints);
 
-    int k = 0;
-    if (interpolateNormals)
-    {
-        k = 10;     
-    }
+    // with k == 0 no normal interpolation
+    int k = interpolateNormals ? 10 : 0;
 
     AdaptiveKSearchSurface<Vec> surface(new_pc, "FLANN", ki, k, k);
     surface.calculateSurfaceNormals();
@@ -108,7 +85,7 @@ void LVREstimateNormalsDialog::estimateNormals()
 
     QString base = m_parent->getName() + " (w. normals)";
     m_pointCloudWithNormals = new LVRModelItem(bridge, base);
-    //m_pointCloudWithNormals->setPose(m_parent->getPose());
+    m_pointCloudWithNormals->setPose(m_parent->getPose());
 
     m_treeWidget->addTopLevelItem(m_pointCloudWithNormals);
     m_pointCloudWithNormals->setExpanded(true);

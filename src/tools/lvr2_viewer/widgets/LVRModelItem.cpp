@@ -88,7 +88,7 @@ Pose LVRModelItem::getPose()
     return m_poseItem->getPose();
 }
 
-void LVRModelItem::setPose( Pose& pose)
+void LVRModelItem::setPose(const Pose& pose)
 {
     // Update vtk representation
     m_modelBridge->setPose(pose);
