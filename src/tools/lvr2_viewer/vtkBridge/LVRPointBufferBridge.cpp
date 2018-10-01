@@ -403,7 +403,6 @@ void LVRPointBufferBridge::computePointCloudActor(PointBuffer2Ptr pc)
 
         if(normals)
         {
-            std::cout << "setting normals..." << std::endl;
             m_vtk_normals->SetNumberOfTuples(n);
         }
         
