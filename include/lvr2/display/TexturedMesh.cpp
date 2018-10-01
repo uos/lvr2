@@ -23,6 +23,7 @@
  *      Author: Thomas Wiemann
  */
 
+
 #include <lvr2/display/TexturedMesh.hpp>
 
 #include <map>
@@ -119,7 +120,7 @@ void TexturedMesh::generateMaterialGroups()
 			{
 				MaterialGroup* g = new MaterialGroup;
 				g->textureIndex = m.m_texture->idx();
-				g->color = lvr::Vertex<float>(1.0, 1.0, 1.0);
+				g->color = Vector<Vec>(1.0, 1.0, 1.0);
 				g->faceBuffer.push_back(i);
 				m_textureMaterials.push_back(g);
 				texMatMap[m.m_texture->idx()] = g;
@@ -137,7 +138,7 @@ void TexturedMesh::generateMaterialGroups()
 				MaterialGroup* g = new MaterialGroup;
 				g->textureIndex = -1;
 				g->faceBuffer.push_back(i);
-				g->color = lvr::Vertex<float>(m.m_color->at(0) / 255.0f, m.m_color->at(0) / 255.0f, m.m_color->at(0) / 255.0f);
+				g->color = Vector<Vec>(m.m_color->at(0) / 255.0f, m.m_color->at(0) / 255.0f, m.m_color->at(0) / 255.0f);
 				m_colorMaterials.push_back(g);
 			}
 			else

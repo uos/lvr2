@@ -67,7 +67,7 @@ PointBuffer2Ptr LVRTreeWidgetHelper::getPointBuffer(QString name)
     return ptr;
 }
 
-MeshBufferPtr LVRTreeWidgetHelper::getMeshBuffer(QString name)
+MeshBuffer2Ptr LVRTreeWidgetHelper::getMeshBuffer(QString name)
 {
     MeshBuffer2Ptr ptr;
     QTreeWidgetItemIterator m_it(m_treeWidget);

@@ -102,11 +102,11 @@ void LVRPlanarOptimizationDialog::optimizeMesh()
     {
         // variable for max_size?
         // TODO happended in old code right after deletesmallPlanarCluster.
-        int res = naiveFillSmallHoles(mesh, 1);
+        //int res = naiveFillSmallHoles(mesh, 1);
     }
 
     auto faceNormals = calcFaceNormals(mesh);
-    ClusterBiMap<FaceHandle> clusterBiMap = interativePlanarClusterGrowing(
+    ClusterBiMap<FaceHandle> clusterBiMap = iterativePlanarClusterGrowing(
         mesh, 
         faceNormals,
         normalThreshold, 
@@ -116,7 +116,7 @@ void LVRPlanarOptimizationDialog::optimizeMesh()
 
     if (removeSmallRegions && removeSmallRegionThreshold > 0)
     {
-       deleteSmallPlanarCluster(mesh, clusterBiMap, faceNormals, removeSmallRegionThreshold); 
+       deleteSmallPlanarCluster(mesh, clusterBiMap, removeSmallRegionThreshold);
     }
 
      
@@ -133,12 +133,12 @@ void LVRPlanarOptimizationDialog::optimizeMesh()
     if (generateTextures)
     {
         // TODO Use TextureFinalizer... 
-        SimpleFinalizer fin;
+        SimpleFinalizer<Vec> fin;
         res = fin.apply(mesh);
     }
     else
     {
-        SimpleFinalizer fin;
+        SimpleFinalizer<Vec> fin;
         res = fin.apply(mesh);
     }
 

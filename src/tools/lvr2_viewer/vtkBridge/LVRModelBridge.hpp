@@ -25,7 +25,7 @@
 #ifndef LVRMODEL_HPP_
 #define LVRMODEL_HPP_
 
-#include <lvr/io/Model.hpp>
+#include <lvr2/io/Model.hpp>
 
 #include "LVRPointBufferBridge.hpp"
 #include "LVRMeshBufferBridge.hpp"
@@ -35,7 +35,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 struct Pose
@@ -104,6 +104,6 @@ private:
 
 typedef boost::shared_ptr<LVRModelBridge> ModelBridgePtr;
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif /* LVRMODEL_HPP_ */

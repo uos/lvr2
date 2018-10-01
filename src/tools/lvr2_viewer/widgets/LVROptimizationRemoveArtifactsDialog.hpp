@@ -6,17 +6,6 @@
 #include <vtkRendererCollection.h>
 #include <vtkSmartPointer.h>
 
-//#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
-//#include <lvr/reconstruction/FastReconstruction.hpp>
-//#include <lvr/io/PLYIO.hpp>
-//#include <lvr/geometry/Matrix4.hpp>
-//#include <lvr/texture/Texture.hpp>
-//#include <lvr/texture/Transform.hpp>
-//#include <lvr/texture/Texturizer.hpp>
-//#include <lvr/texture/Statistics.hpp>
-//#include <lvr/geometry/QuadricVertexCosts.hpp>
-//#include <lvr/reconstruction/SharpBox.hpp>
-
 #include "../vtkBridge/LVRModelBridge.hpp"
 
 #include "ui_LVROptimizationRemoveArtifactsDialogUI.h"
@@ -35,8 +24,6 @@ class LVRRemoveArtifactsDialog : public QObject
 public:
     LVRRemoveArtifactsDialog(LVRMeshItem* mesh, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
     virtual ~LVRRemoveArtifactsDialog();
-    //typedef ColorVertex<float, unsigned char>         cVertex;
-    //typedef Normal<float>                               cNormal;
 
 public Q_SLOTS:
     void removeArtifacts();

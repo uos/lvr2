@@ -40,6 +40,7 @@
 #include <vtkOrientationMarkerWidget.h>
 #include <vtkAxesActor.h>
 
+#include "../widgets/LVRPlotter.hpp"
 #include <QtGui>
 #include "ui_LVRMainWindowUI.h"
 #include "ui_LVRAboutDialogUI.h"
@@ -72,6 +73,7 @@
 #include <iostream>
 #include <iterator>
 #include <vector>
+#include <set>
 #include "boost/format.hpp"
 using std::vector;
 using std::cout;
@@ -181,6 +183,7 @@ Q_SIGNALS:
 private:
     void setupQVTK();
     void connectSignalsAndSlots();
+    int getSpectralChannel(int wavelength, PointBuffer2Ptr pbuff);
 
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;

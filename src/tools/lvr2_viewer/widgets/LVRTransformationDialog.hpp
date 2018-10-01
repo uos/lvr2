@@ -34,7 +34,7 @@
 
 using Ui::TransformationDialogUI;
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRTransformationDialog : public QObject
@@ -80,6 +80,6 @@ private:
 
 };
 
-} // namespace lvr
+} // namespace lvr2
 
 #endif /* TRANSFORMATIONDIALOG_H_ */

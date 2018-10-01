@@ -28,7 +28,7 @@
 #include <vtkCamera.h>
 #include <vtkCameraRepresentation.h>
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRRecordedFrameItem : public QListWidgetItem
@@ -49,6 +49,6 @@ protected:
     QString                     m_name;
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif /* LVRRECORDEDFRAMEITEM_H_ */

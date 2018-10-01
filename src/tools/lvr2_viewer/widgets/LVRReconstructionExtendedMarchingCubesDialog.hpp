@@ -6,18 +6,6 @@
 #include <vtkRendererCollection.h>
 #include <vtkSmartPointer.h>
 
-//#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
-//#include <lvr/reconstruction/FastReconstruction.hpp>
-//#include <lvr/io/PLYIO.hpp>
-//#include <lvr/geometry/Matrix4.hpp>
-//#include <lvr/geometry/HalfEdgeMesh.hpp>
-//#include <lvr/texture/Texture.hpp>
-//#include <lvr/texture/Transform.hpp>
-//#include <lvr/texture/Texturizer.hpp>
-//#include <lvr/texture/Statistics.hpp>
-//#include <lvr/geometry/QuadricVertexCosts.hpp>
-//#include <lvr/reconstruction/SharpBox.hpp>
-
 #include "../vtkBridge/LVRModelBridge.hpp"
 
 #include "ui_LVRReconstructionExtendedMarchingCubesDialogUI.h"
@@ -36,10 +24,6 @@ class LVRReconstructViaExtendedMarchingCubesDialog  : public QObject
 public:
     LVRReconstructViaExtendedMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
     virtual ~LVRReconstructViaExtendedMarchingCubesDialog();
-    //typedef ColorVertex<float, unsigned char>         cVertex;
-    //typedef Normal<float>                               cNormal;
-    //typedef PointsetSurface<cVertex>                    psSurface;
-    //typedef AdaptiveKSearchSurface<cVertex, cNormal>    akSurface;
 
 public Q_SLOTS:
     void generateMesh();

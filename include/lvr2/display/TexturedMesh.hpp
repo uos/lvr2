@@ -27,15 +27,18 @@
 #define TEXTUREDMESH_HPP_
 
 #include <lvr2/display/StaticMesh.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
 
 namespace lvr2
 {
+
+using Vec = BaseVector<float>;
 
 struct MaterialGroup
 {
 	int	textureIndex;
 	int numFaces;
-	lvr::Vertex<float> color;
+	Vector<Vec> color;
 	vector<size_t> faceBuffer;
 };
 
@@ -117,7 +120,5 @@ private:
 };
 
 } /* namespace lvr2 */
-
-#include "TexturedMesh.cpp"
 
 #endif /* TEXTUREDMESH_HPP_ */

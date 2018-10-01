@@ -384,7 +384,6 @@ include(${VTK_USE_FILE})
 ##############################################################
 # VIEWERS
 ##############################################################
-
 find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
 if(Qt5_FOUND)
   # Try to find libQGLViewer
@@ -402,7 +401,7 @@ if(Qt5_FOUND)
   if(QVTK_FOUND)
     include_directories(${QVTK_INCLUDE_DIR})
    add_subdirectory(src/tools/viewer)
-   #add_subdirectory(src/tools/lvr2_viewer)
+   add_subdirectory(src/tools/lvr2_viewer)
   endif(QVTK_FOUND)
 endif(Qt5_FOUND)
 

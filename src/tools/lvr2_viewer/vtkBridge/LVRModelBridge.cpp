@@ -24,14 +24,14 @@
  */
 #include "LVRModelBridge.hpp"
 
-#include <lvr/geometry/Matrix4.hpp>
-#include <lvr/geometry/Vertex.hpp>
+#include <lvr2/geometry/Matrix4.hpp>
+#include <lvr2/geometry/Vector.hpp>
 
 #include <vtkTransform.h>
 #include <vtkActor.h>
 #include <vtkProperty.h>
 
-namespace lvr
+namespace lvr2
 {
 
 class LVRMeshBufferBridge;
@@ -130,4 +130,4 @@ LVRModelBridge::~LVRModelBridge()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace asteroids */
+} /* namespace lvr2 */

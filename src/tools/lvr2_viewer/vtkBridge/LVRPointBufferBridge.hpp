@@ -25,16 +25,15 @@
 #ifndef LVRPOINTBUFFERBRIDGE_HPP_
 #define LVRPOINTBUFFERBRIDGE_HPP_
 
-#include <lvr/display/ColorMap.hpp>
-#include <lvr/io/PointBuffer.hpp>
-//#include <LVRPointBufferBridge.hpp>
+#include <lvr2/display/ColorMap.hpp>
+#include <lvr2/io/PointBuffer2.hpp>
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
 
 #include <boost/shared_ptr.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 struct Pose;
@@ -42,7 +41,7 @@ struct Pose;
 class LVRPointBufferBridge
 {
 public:
-    LVRPointBufferBridge(PointBufferPtr pointcloud);
+    LVRPointBufferBridge(PointBuffer2Ptr pointcloud);
     LVRPointBufferBridge(const LVRPointBufferBridge& b);
     virtual ~LVRPointBufferBridge();
 
@@ -66,7 +65,7 @@ public:
     /// switch between spectral mapping and gradient
     void useGradient(bool useGradient);
     /// get the point buffer
-    PointBufferPtr getPointBuffer();
+    PointBuffer2Ptr getPointBuffer();
 
 private:
     /// update the view with gradient information
@@ -76,13 +75,13 @@ private:
 
 protected:
 
-    void computePointCloudActor(PointBufferPtr pc);
+    void computePointCloudActor(PointBuffer2Ptr pc);
 
     vtkSmartPointer<vtkActor>       m_pointCloudActor;
     size_t                          m_numPoints;
     bool                            m_hasNormals;
     bool                            m_hasColors;
-    PointBufferPtr                  m_pointBuffer;
+    PointBuffer2Ptr                 m_pointBuffer;
     bool                            m_useGradient;
     bool                            m_useNormalizedGradient;
     color<size_t>                   m_spectralChannels;
@@ -94,6 +93,6 @@ protected:
 
 typedef boost::shared_ptr<LVRPointBufferBridge> PointBufferBridgePtr;
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif /* LVRPOINTBUFFERBRIDGE_HPP_ */

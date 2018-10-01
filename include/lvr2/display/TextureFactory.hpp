@@ -45,6 +45,4 @@ public:
 
 } // namespace lvr2
 
-#include "TextureFactory.cpp"
-
 #endif /* TEXTUREFACTORY_H_ */

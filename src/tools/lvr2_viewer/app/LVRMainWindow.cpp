@@ -394,6 +394,22 @@ void LVRMainWindow::removeArrow(LVRVtkArrow* a)
     this->qvtkWidget->GetRenderWindow()->Render();
 }
 
+int getSpectralWavelength(int channel, PointBuffer2Ptr p)
+{
+    int wavelength_min = *p->getFloatAttribute("spectral_wavelength_min");
+    int wavelength_max = *p->getFloatAttribute("spectral_wavelength_max");
+    unsigned n_channels = p->getFloatChannel("spectral_channels")->width();
+
+    if (channel < 0 || channel >= n_channels)
+    {
+        return -1;
+    }
+
+    float wavelengthPerChannel = (wavelength_max - wavelength_min) / (float) n_channels;
+
+    return channel * wavelengthPerChannel + wavelength_min;
+}
+
 void LVRMainWindow::restoreSliders()
 {
     std::set<LVRPointCloudItem*> pointCloudItems = getSelectedPointCloudItems();
@@ -417,38 +433,46 @@ void LVRMainWindow::restoreSliders()
 
         pointCloudItem->getPointBufferBridge()->getSpectralChannels(channels, use_channel);
         pointCloudItem->getPointBufferBridge()->getSpectralColorGradient(gradient_type, gradient_channel, normalize_gradient, use_ndvi);
-        n_channels = pointCloudItem->getPointBuffer()->getNumSpectralChannels();
         PointBuffer2Ptr p = pointCloudItem->getPointBuffer();
-
-        this->dockWidgetSpectralSliderSettingsContents->setEnabled(false); // disable to stop changeSpectralColor from re-rendering 6 times
-        for (int i = 0; i < 3; i++)
+        FloatChannelOptional spec_channels = p->getFloatChannel("spectral_channels");
+        if (spec_channels)
         {
-            m_spectralSliders[i]->setMaximum(p->getMaxWavelength() - 1);
-            m_spectralSliders[i]->setMinimum(p->getMinWavelength());
-            m_spectralSliders[i]->setSingleStep(p->numWavelengthsPerChannel());
-            m_spectralSliders[i]->setPageStep(10 * p->numWavelengthsPerChannel());
-            m_spectralSliders[i]->setValue(p->getWavelength(channels[i]));
-            m_spectralSliders[i]->setEnabled(use_channel[i]);
-            m_spectralLineEdits[i]->setEnabled(use_channel[i]);
+            n_channels =  spec_channels->width();
+            int wavelength_min = *p->getFloatAttribute("spectral_wavelength_min");
+            int wavelength_max = *p->getFloatAttribute("spectral_wavelength_max");
 
-            m_spectralCheckboxes[i]->setChecked(use_channel[i]);
+            this->dockWidgetSpectralSliderSettingsContents->setEnabled(false); // disable to stop changeSpectralColor from re-rendering 6 times
+            for (int i = 0; i < 3; i++)
+            {
+                float wavelengthPerChannel = (wavelength_max - wavelength_min) / (float) n_channels;
 
-            m_spectralLineEdits[i]->setText(QString("%1").arg(p->getWavelength(channels[i])));
+                m_spectralSliders[i]->setMaximum(wavelength_min - 1);
+                m_spectralSliders[i]->setMinimum(wavelength_max);
+                m_spectralSliders[i]->setSingleStep(wavelengthPerChannel);
+                m_spectralSliders[i]->setPageStep(10 * wavelengthPerChannel);
+                m_spectralSliders[i]->setValue(getSpectralWavelength(channels[i], p));
+                m_spectralSliders[i]->setEnabled(use_channel[i]);
+                m_spectralLineEdits[i]->setEnabled(use_channel[i]);
+
+                m_spectralCheckboxes[i]->setChecked(use_channel[i]);
+
+                m_spectralLineEdits[i]->setText(QString("%1").arg(getSpectralWavelength(channels[i], p)));
+            }
+            this->dockWidgetSpectralSliderSettingsContents->setEnabled(true);
+
+            this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(false);
+            m_gradientSlider->setMaximum(wavelength_max - 1);
+            m_gradientSlider->setMinimum(wavelength_min);
+            m_gradientSlider->setValue(getSpectralWavelength(gradient_channel, p));
+            m_gradientSlider->setEnabled(!use_ndvi);
+            m_gradientLineEdit->setEnabled(!use_ndvi);
+
+            this->checkBox_NDVI->setChecked(use_ndvi);
+            this->checkBox_normcolors->setChecked(normalize_gradient);
+            this->comboBox_colorgradient->setCurrentIndex((int)gradient_type);
+            m_gradientLineEdit->setText(QString("%1").arg(getSpectralWavelength(gradient_channel, p)));
+            this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(true);
         }
-        this->dockWidgetSpectralSliderSettingsContents->setEnabled(true);
-
-        this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(false);
-        m_gradientSlider->setMaximum(p->getMaxWavelength() - 1);
-        m_gradientSlider->setMinimum(p->getMinWavelength());
-        m_gradientSlider->setValue(p->getWavelength(gradient_channel));
-        m_gradientSlider->setEnabled(!use_ndvi);
-        m_gradientLineEdit->setEnabled(!use_ndvi);
-
-        this->checkBox_NDVI->setChecked(use_ndvi);
-        this->checkBox_normcolors->setChecked(normalize_gradient);
-        this->comboBox_colorgradient->setCurrentIndex((int)gradient_type);
-        m_gradientLineEdit->setText(QString("%1").arg(p->getWavelength(gradient_channel)));
-        this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(true);
     }
     else
     {
@@ -552,7 +576,7 @@ void LVRMainWindow::alignPointClouds()
     // Refine pose via ICP
     if(m_correspondanceDialog->doICP() && modelBuffer && dataBuffer)
     {
-        ICPPointAlign icp(modelBuffer, dataBuffer, mat);
+        ICPPointAlign<BaseVector<float>> icp(modelBuffer, dataBuffer, mat);
         icp.setEpsilon(m_correspondanceDialog->getEpsilon());
         icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
         icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
@@ -1385,8 +1409,8 @@ void LVRMainWindow::onGradientLineEditChanged()
     if(!items.empty())
     {
         PointBuffer2Ptr points = (*items.begin())->getPointBuffer();
-        int min = points->getIntAttribute("spectral_wavelength_min");
-        int max = points->getIntAttribute("spectral_wavelength_max");
+        int min = *points->getIntAttribute("spectral_wavelength_min");
+        int max = *points->getIntAttribute("spectral_wavelength_max");
 
        
         QString test = m_gradientLineEdit-> text();
@@ -1410,12 +1434,13 @@ void LVRMainWindow::onGradientLineEditChanged()
 
 int LVRMainWindow::getSpectralChannel(int wavelength, PointBuffer2Ptr pbuff)
 {
-        spectral_channels = p->getFloatChannel("spectral_channels"); 
-        if (spectral_Channels)
+        FloatChannelOptional spectral_channels = pbuff->getFloatChannel("spectral_channels");
+
+        if (spectral_channels)
         {
             unsigned numSpectraChannels = spectral_channels->width();
-            int minWavelength = p->getFloatAttribute("spectral_wavelength_min");
-            int maxWavelength = p->getFloatAttribute("spectral_wavelength_max");
+            int minWavelength = *pbuff->getFloatAttribute("spectral_wavelength_min");
+            int maxWavelength = *pbuff->getFloatAttribute("spectral_wavelength_max");
             float wavelengthPerChannel = (maxWavelength - minWavelength) / static_cast<float>(numSpectraChannels);
 
             int channel = (wavelength - minWavelength) /  wavelengthPerChannel;
@@ -1477,8 +1502,8 @@ void LVRMainWindow::onSpectralLineEditChanged()
     if(!items.empty())
     {
         PointBuffer2Ptr points = (*items.begin())->getPointBuffer();
-        int min = points->getFloatAttribute("spectral_wavelength_min");
-        int max = points->getFloatAttribute("spectral_wavelength_max");
+        int min = *points->getFloatAttribute("spectral_wavelength_min");
+        int max = *points->getFloatAttribute("spectral_wavelength_max");
 
         for (int i = 0; i < 3; i++)
         {
@@ -1569,22 +1594,26 @@ void LVRMainWindow::updatePointPreview(int pointId, PointBuffer2Ptr points)
     
     size_t n_spec, n_channels;
     FloatChannelOptional spectral_channels = points->getFloatChannel("spectral_channels");
-    n_spec = spectral_channels->numAttribute();
-    n_channels = spectral_channels->width();
 
-    if (pointId >= n_spec)
+    if (spectral_channels)
     {
-        m_PointPreviewPlotter->removePoints();
-    }
-    else
-    {
-        floatArr data = floatArr(new float[n_channels]);
-        for (int i = 0; i < n_channels; i++)
+        size_t n_spec = spectral_channels->numAttributes();
+        unsigned n_channels = spectral_channels->width();
+
+        if (pointId >= n_spec)
         {
-            data[i] = (*spectral_channels)[i][pointId];
+            m_PointPreviewPlotter->removePoints();
         }
-        m_PointPreviewPlotter->setPoints(data, n_channels, 0, 1);
-        m_PointPreviewPlotter->setXRange(points->getFloatAttribute("spectral_wavelength_min"), points->getFloatAttribute("spectral_wavelength_max"));
+        else
+        {
+            floatArr data = floatArr(new float[n_channels]);
+            for (int i = 0; i < n_channels; i++)
+            {
+                data[i] = (*spectral_channels)[i][pointId];
+            }
+            m_PointPreviewPlotter->setPoints(data, n_channels, 0, 1);
+            m_PointPreviewPlotter->setXRange(*points->getFloatAttribute("spectral_wavelength_min"), *points->getFloatAttribute("spectral_wavelength_max"));
+        }
     }
 }
 
@@ -1623,6 +1652,5 @@ void LVRMainWindow::updateSpectralGradientEnabled(bool checked)
     this->frameSpectralSlidersArea->setEnabled(!checked);
     this->radioButtonUseSpectralSlider->setChecked(!checked);
 }
-
 
 } /* namespace lvr2 */

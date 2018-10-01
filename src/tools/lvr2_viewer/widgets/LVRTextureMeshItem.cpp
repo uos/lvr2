@@ -7,7 +7,7 @@
 
 #include "LVRTextureMeshItem.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 LVRTextureMeshItem::LVRTextureMeshItem(MeshBufferBridgePtr& ptr, QTreeWidgetItem* parent)
@@ -56,4 +56,4 @@ LVRTextureMeshItem::~LVRTextureMeshItem()
 	// TODO Auto-generated destructor stub
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */

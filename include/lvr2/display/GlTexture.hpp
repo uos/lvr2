@@ -5,8 +5,8 @@
  *  @author Thomas Wiemann
  */
 
-#ifndef GLTEXTURE_HPP_
-#define GLTEXTURE_HPP_
+#ifndef LVR2_GLTEXTURE_HPP_
+#define LVR2_GLTEXTURE_HPP_
 
 #include <string>
 using std::string;

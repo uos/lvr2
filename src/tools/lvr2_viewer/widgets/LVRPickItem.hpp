@@ -50,6 +50,8 @@ private:
     double*         m_start;
     double*         m_end;
     LVRVtkArrow*    m_arrow;
+
+    using Vec = BaseVector<float>;
 };
 
 } /* namespace lvr2 */

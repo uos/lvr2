@@ -26,7 +26,7 @@
 #include <vector>
 #include <utility>
 #include <cmath>
-#include <lvr2/io/MeshBuffer.hpp>
+#include <lvr2/io/MeshBuffer2.hpp>
 #include <lvr2/algorithm/Materializer.hpp>
 
 #include <lvr2/io/Progress.hpp>

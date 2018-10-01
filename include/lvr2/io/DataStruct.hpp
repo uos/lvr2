@@ -30,8 +30,8 @@
 *
 **/
 
-#ifndef DATASTRUCT_HPP_INCLUDED
-#define DATASTRUCT_HPP_INCLUDED
+#ifndef LVR2_DATASTRUCT_HPP_INCLUDED
+#define LVR2_DATASTRUCT_HPP_INCLUDED
 
 
 #include "boost/shared_array.hpp"

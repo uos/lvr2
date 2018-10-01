@@ -22,8 +22,8 @@
 #include <lvr2/io/PointBuffer2.hpp>
 #include <QtWidgets>
 #include <QDialog>
-#include "ui_LVRHistogram.h"
 #include "LVRPlotter.hpp"
+#include "ui_LVRHistogram.h"
 
 using Ui::Histogram;
 

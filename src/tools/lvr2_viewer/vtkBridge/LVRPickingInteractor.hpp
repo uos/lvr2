@@ -32,7 +32,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
 
-namespace lvr
+namespace lvr2
 {
 
 enum PickMode {None, PickPoint, PickFirst, PickSecond};
@@ -97,6 +97,6 @@ private:
 
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif /* LVRPICKINGINTERACTOR_HPP_ */

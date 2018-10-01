@@ -10,6 +10,24 @@ set(CMAKE_AUTOMOC ON)
 #####################################################################################
 
 set(LVR_VIEWER_SOURCES
+    ${PROJECT_SOURCE_DIR}/include/lvr2/display/GlTexture.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/display/ColorMap.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/display/Renderable.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/display/StaticMesh.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/display/TexturedMesh.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PLYIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/ObjIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PPMIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PointBuffer2.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/MeshBuffer2.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/AttributeManager.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/Timestamp.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/Progress.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseBuffer.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/texture/Texture.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/ModelFactory.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/display/TextureFactory.cpp
     app/LVRMain.cpp
     app/LVRMainWindow.cpp
     app/LVRTreeWidgetHelper.cpp
