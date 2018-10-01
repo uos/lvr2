@@ -38,13 +38,12 @@ LVRTransformationDialog::LVRTransformationDialog(LVRModelItem* parent, vtkRender
     m_dialogUI = new TransformationDialogUI;
     m_dialogUI->setupUi(dialog);
 
-    Pose m_pose, m_pose_original;
     m_pose = m_pose_original = parent->getPose();
 
     // Set slider to correct positions
-    m_dialogUI->sliderXRot->setValue(m_pose.r);
-    m_dialogUI->sliderYRot->setValue(m_pose.t);
-    m_dialogUI->sliderZRot->setValue(m_pose.p);
+    m_dialogUI->sliderXRot->setValue(m_pose.r * 100000.0);
+    m_dialogUI->sliderYRot->setValue(m_pose.t * 100000.0);
+    m_dialogUI->sliderZRot->setValue(m_pose.p * 100000.0);
     m_dialogUI->spinBoxXRot->setValue(m_pose.r);
     m_dialogUI->spinBoxYRot->setValue(m_pose.t);
     m_dialogUI->spinBoxZRot->setValue(m_pose.p);
