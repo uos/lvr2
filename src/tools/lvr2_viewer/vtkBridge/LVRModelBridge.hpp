@@ -82,6 +82,7 @@ public:
     Pose        getPose();
 
     void		setVisibility(bool visible);
+    void setNormalsVisibility(bool visible);
 
     PointBufferBridgePtr getPointBridge()
     {

@@ -378,12 +378,16 @@ void LVRPointBufferBridge::computePointCloudActor(PointBuffer2Ptr pc)
         vtkSmartPointer<vtkPolyData>    vtk_polyData = vtkSmartPointer<vtkPolyData>::New();
         vtkSmartPointer<vtkPoints>      vtk_points = vtkSmartPointer<vtkPoints>::New();
         vtkSmartPointer<vtkCellArray>   vtk_cells = vtkSmartPointer<vtkCellArray>::New();
+        m_vtk_normals = vtkSmartPointer<vtkDoubleArray>::New();
+        m_vtk_normals->SetNumberOfComponents(3);
+        m_vtk_normals->SetName("Normals");
 
         vtkSmartPointer<vtkUnsignedCharArray> scalars = vtkSmartPointer<vtkUnsignedCharArray>::New();
         scalars->SetNumberOfComponents(3);
         scalars->SetName("Colors");
 
         double point[3];
+        double normal[3];
         size_t n, n_c, n_s_p;
         unsigned n_s_channels, w_color;
         n = pc->numPoints();
@@ -392,9 +396,17 @@ void LVRPointBufferBridge::computePointCloudActor(PointBuffer2Ptr pc)
         floatArr points = pc->getPointArray();
         ucharArr colors = pc->getColorArray(w_color);
         floatArr spec = pc->getFloatArray("spectral_channels", n_s_p, n_s_channels);
+        floatArr normals = pc->getNormalArray();
 
         scalars->SetNumberOfTuples(n_s_p ? n_s_p : n);
         vtk_points->SetNumberOfPoints(n_s_p ? n_s_p : n);
+
+        if(normals)
+        {
+            std::cout << "setting normals..." << std::endl;
+            m_vtk_normals->SetNumberOfTuples(n);
+        }
+        
 
         for(vtkIdType i = 0; i < n; i++)
         {
@@ -402,6 +414,16 @@ void LVRPointBufferBridge::computePointCloudActor(PointBuffer2Ptr pc)
             point[0] = points[index    ];
             point[1] = points[index + 1];
             point[2] = points[index + 2];
+
+            if(normals)
+            {
+                normal[0] = normals[index    ];
+                normal[1] = normals[index + 1];
+                normal[2] = normals[index + 2];
+
+                m_vtk_normals->SetTuple(i, normal);
+            }
+
 
             // show spectral colors if we have spectral data
             if(spec)
@@ -462,6 +484,8 @@ void LVRPointBufferBridge::computePointCloudActor(PointBuffer2Ptr pc)
             vtk_polyData->GetPointData()->SetScalars(scalars);
         }
 
+        
+
         // Create poly data mapper and generate actor
         //vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
         vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
@@ -514,6 +538,25 @@ void LVRPointBufferBridge::setVisibility(bool visible)
 {
     if(visible) m_pointCloudActor->VisibilityOn();
     else m_pointCloudActor->VisibilityOff();
+}
+
+void LVRPointBufferBridge::setNormalsVisibility(bool visible)
+{
+    if(m_hasNormals)
+    {
+        if(visible)
+        {
+            m_pointCloudActor->GetMapper()->GetInput()->GetPointData()->SetNormals(
+                m_vtk_normals
+            );
+        } else {
+            m_pointCloudActor->GetMapper()->GetInput()->GetPointData()->SetNormals(
+                NULL
+            );
+        }
+    }
+    
+    
 }
 
 vtkSmartPointer<vtkActor> LVRPointBufferBridge::getPointCloudActor()

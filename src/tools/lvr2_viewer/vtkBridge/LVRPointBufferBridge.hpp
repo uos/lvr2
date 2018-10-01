@@ -30,6 +30,7 @@
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
+#include <vtkDoubleArray.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -54,6 +55,7 @@ public:
     void setPointSize(int pointSize);
     void setOpacity(float opacityValue);
     void setVisibility(bool visible);
+    void setNormalsVisibility(bool visible);
     /// set the spectral channel for (r, g, b) and set if it is used
     void setSpectralChannels(color<size_t> channels, color<bool> use_channel);
     /// get spectral channel mappings
@@ -89,6 +91,7 @@ protected:
     GradientType                    m_spectralGradient;
     size_t                          m_spectralGradientChannel;
     bool                            m_useNDVI;
+    vtkSmartPointer<vtkDoubleArray> m_vtk_normals;
 };
 
 typedef boost::shared_ptr<LVRPointBufferBridge> PointBufferBridgePtr;

@@ -125,6 +125,11 @@ void LVRModelBridge::setVisibility(bool visible)
     if(validMeshBridge()) m_meshBridge->setVisibility(visible);
 }
 
+void LVRModelBridge::setNormalsVisibility(bool visible)
+{
+    if(validPointBridge()) m_pointBridge->setNormalsVisibility(visible);
+}
+
 LVRModelBridge::~LVRModelBridge()
 {
     // TODO Auto-generated destructor stub
