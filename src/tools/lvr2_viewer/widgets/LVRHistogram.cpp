@@ -9,7 +9,7 @@ LVRHistogram::LVRHistogram(QWidget* parent, PointBuffer2Ptr points)
     m_histogram.setupUi(this);
     //Set Plotmode to create a bar chart
     m_histogram.plotter->setPlotMode(PlotMode::BAR);
-    m_histogram.plotter->setXRange(*points->getFloatAttribute("spectral_wavelength_min"), *points->getFloatAttribute("spectral_wavelength_max"));
+    m_histogram.plotter->setXRange(*points->getIntAttribute("spectral_wavelength_min"), *points->getIntAttribute("spectral_wavelength_max"));
 
     size_t n;
     size_t n_spec;
@@ -31,7 +31,7 @@ LVRHistogram::LVRHistogram(QWidget* parent, PointBuffer2Ptr points)
        
         for (size_t i = 0; i < n_spec; i++)
         {
-            m_data[channel] += (*spec)[channel][i];
+            m_data[channel] += (*spec)[i][channel];
         }                                       
         m_data[channel] /= n_spec;
     }

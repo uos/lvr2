@@ -39,7 +39,8 @@
 #include <sstream>
 #include <fstream>
 
-
+#include <boost/filesystem.hpp>
+#include <opencv2/opencv.hpp>
 
 namespace lvr2
 {
@@ -58,44 +59,62 @@ void PLYIO::save( string filename )
 
     // Local buffer shortcuts
     floatArr m_vertices;
+    floatArr m_vertexConfidence;
+    floatArr m_vertexIntensity;
     floatArr m_vertexNormals;
-    ucharArr m_pointColors;
-
     floatArr m_points;
+    floatArr m_pointConfidences;
+    floatArr m_pointIntensities;
     floatArr m_pointNormals;
 
-    size_t m_numPoints                = 0;
+    unsigned dummy                    = 0;
+    unsigned w_point_color            = 0;
+    unsigned w_vertex_color            = 0;
     size_t m_numVertices              = 0;
+    size_t m_numVertexColors          = 0;
+    size_t m_numVertexConfidences     = 0;
+    size_t m_numVertexIntensities     = 0;
+    size_t m_numVertexNormals         = 0;
+
+    size_t m_numPoints                = 0;
+    size_t m_numPointColors           = 0;
+    size_t m_numPointConfidence       = 0;
+    size_t m_numPointIntensities      = 0;
+    size_t m_numPointNormals          = 0;
     size_t m_numFaces                 = 0;
 
-    unsigned vertexColorWidth;
-    unsigned pointColorWidth;
-
-    ucharArr    m_faceColors;
-    ucharArr    m_vertexColors;
-    indexArray  m_faceIndices;
+    ucharArr m_vertexColors;
+    ucharArr m_pointColors;
+    uintArr  m_faceIndices;
 
     // Get buffers
     if ( m_model->m_pointCloud )
     {
         PointBuffer2Ptr pc( m_model->m_pointCloud );
+
         m_numPoints = pc->numPoints();
+        m_numPointNormals = m_numPoints;
+        m_numPointColors = m_numPoints;
 
         m_points                = pc->getPointArray();
-        m_pointColors           = pc->getColorArray(pointColorWidth);
+        m_pointConfidences      = pc->getFloatArray("confidences", m_numPointConfidence, dummy);
+        m_pointColors           = pc->getColorArray(w_point_color);
+        m_pointIntensities      = pc->getFloatArray("intensities", m_numPointIntensities, dummy);
         m_pointNormals          = pc->getNormalArray();
     }
 
     if ( m_model->m_mesh )
     {
-
-
         MeshBuffer2Ptr mesh( m_model->m_mesh );
-        m_numFaces = mesh->numFaces();
         m_numVertices = mesh->numVertices();
+        m_numFaces = mesh->numFaces();
+        m_numVertexColors = m_numVertices;
+        m_numVertexNormals = m_numVertices;
 
         m_vertices         = mesh->getVertices();
-        m_vertexColors     = mesh->getVertexColors(vertexColorWidth);
+        m_vertexColors     = mesh->getVertexColors(w_vertex_color);
+        m_vertexConfidence = mesh->getFloatArray("vertex_confidences", m_numVertexConfidences, dummy);
+        m_vertexIntensity  = mesh->getFloatArray("vertex_intensities", m_numVertexIntensities, dummy);
         m_vertexNormals    = mesh->getVertexNormals();
         m_faceIndices      = mesh->getFaceIndices();
     }
@@ -122,8 +141,12 @@ void PLYIO::save( string filename )
     /* First: Write Header information according to data. */
 
     bool vertex_color      = false;
+    bool vertex_intensity  = false;
+    bool vertex_confidence = false;
     bool vertex_normal     = false;
     bool point_color       = false;
+    bool point_intensity   = false;
+    bool point_confidence  = false;
     bool point_normal      = false;
 
 
@@ -140,27 +163,71 @@ void PLYIO::save( string filename )
         /* Add color information if there is any. */
         if ( m_vertexColors )
         {
-            ply_add_scalar_property( oply, "red",   PLY_UCHAR );
-            ply_add_scalar_property( oply, "green", PLY_UCHAR );
-            ply_add_scalar_property( oply, "blue",  PLY_UCHAR );
-            if(vertexColorWidth == 4)
+            if ( m_numVertexColors != m_numVertices )
             {
-                ply_add_scalar_property( oply, "alpha",  PLY_UCHAR );
+                std::cerr << timestamp << "Amount of vertices and color information is"
+                    << " not equal. Color information won't be written." << std::endl;
             }
-            vertex_color = true;
+            else
+            {
+                ply_add_scalar_property( oply, "red",   PLY_UCHAR );
+                ply_add_scalar_property( oply, "green", PLY_UCHAR );
+                ply_add_scalar_property( oply, "blue",  PLY_UCHAR );
+                vertex_color = true;
+            }
+        }
+
+        /* Add intensity. */
+        if ( m_vertexIntensity )
+        {
+            if ( m_numVertexIntensities != m_numVertices )
+            {
+                std::cout << timestamp << "Amount of vertices and intensity"
+                    << " information is not equal. Intensity information won't be"
+                    << " written." << std::endl;
+            }
+            else
+            {
+                ply_add_scalar_property( oply, "intensity",  PLY_FLOAT );
+                vertex_intensity = true;
+            }
+        }
+
+        /* Add confidence. */
+        if ( m_vertexConfidence )
+        {
+            if ( m_numVertexConfidences != m_numVertices )
+            {
+                std::cout << timestamp << "Amount of vertices and confidence"
+                    << " information is not equal. Confidence information won't be"
+                    << " written." << std::endl;
+            }
+            else
+            {
+                ply_add_scalar_property( oply, "confidence",  PLY_FLOAT );
+                vertex_confidence = true;
+            }
         }
 
         /* Add normals if there are any. */
         if ( m_vertexNormals )
         {
-            ply_add_scalar_property( oply, "nx", PLY_FLOAT );
-            ply_add_scalar_property( oply, "ny", PLY_FLOAT );
-            ply_add_scalar_property( oply, "nz", PLY_FLOAT );
-            vertex_normal = true;
+            if ( m_numVertexNormals != m_numVertices )
+            {
+                std::cout << timestamp << "Amount of vertices and normals"
+                    << " does not match. Normals won't be written." << std::endl;
+            }
+            else
+            {
+                ply_add_scalar_property( oply, "nx", PLY_FLOAT );
+                ply_add_scalar_property( oply, "ny", PLY_FLOAT );
+                ply_add_scalar_property( oply, "nz", PLY_FLOAT );
+                vertex_normal = true;
+            }
         }
 
         /* Add faces. */
-        if ( m_numFaces )
+        if ( m_faceIndices )
         {
             ply_add_element( oply, "face", m_numFaces );
             ply_add_list_property( oply, "vertex_indices", PLY_UCHAR, PLY_INT );
@@ -179,24 +246,68 @@ void PLYIO::save( string filename )
 
         /* Add color information if there is any. */
         if ( m_pointColors )
-        {            
-            ply_add_scalar_property( oply, "red",   PLY_UCHAR );
-            ply_add_scalar_property( oply, "green", PLY_UCHAR );
-            ply_add_scalar_property( oply, "blue",  PLY_UCHAR );
-            if(pointColorWidth == 4)
+        {
+            if ( m_numPointColors != m_numPoints )
             {
-                ply_add_scalar_property( oply, "alpha",  PLY_UCHAR );
+                std::cout << timestamp << "Amount of points and color information is"
+                    << " not equal. Color information won't be written." << std::endl;
             }
-            point_color = true;
+            else
+            {
+                ply_add_scalar_property( oply, "red",   PLY_UCHAR );
+                ply_add_scalar_property( oply, "green", PLY_UCHAR );
+                ply_add_scalar_property( oply, "blue",  PLY_UCHAR );
+                point_color = true;
+            }
+        }
+
+        /* Add intensity. */
+        if ( m_pointIntensities )
+        {
+            if ( m_numPointIntensities != m_numPoints )
+            {
+                std::cout << timestamp << "Amount of points and intensity"
+                    << " information is not equal. Intensity information won't be"
+                    << " written." << std::endl;
+            }
+            else
+            {
+                ply_add_scalar_property( oply, "intensity",  PLY_FLOAT );
+                point_intensity = true;
+            }
+        }
+
+        /* Add confidence. */
+        if ( m_pointConfidences )
+        {
+            if ( m_numPointConfidence != m_numPoints )
+            {
+                std::cout << timestamp << "Amount of point and confidence"
+                    << " information is not equal. Confidence information won't be"
+                    << " written." << std::endl;
+            }
+            else
+            {
+                ply_add_scalar_property( oply, "confidence",  PLY_FLOAT );
+                point_confidence = true;
+            }
         }
 
         /* Add normals if there are any. */
         if ( m_pointNormals )
         {
-            ply_add_scalar_property( oply, "nx", PLY_FLOAT );
-            ply_add_scalar_property( oply, "ny", PLY_FLOAT );
-            ply_add_scalar_property( oply, "nz", PLY_FLOAT );
-            point_normal = true;
+            if ( m_numPointNormals != m_numPoints )
+            {
+                std::cout << timestamp << "Amount of point and normals does"
+                    << " not match. Normals won't be written." << std::endl;
+            }
+            else
+            {
+                ply_add_scalar_property( oply, "nx", PLY_FLOAT );
+                ply_add_scalar_property( oply, "ny", PLY_FLOAT );
+                ply_add_scalar_property( oply, "nz", PLY_FLOAT );
+                point_normal = true;
+            }
         }
     }
 
@@ -208,7 +319,7 @@ void PLYIO::save( string filename )
     }
 
     /* Second: Write data. */
-    bool vertex_color_alpha = (vertexColorWidth == 4);
+
     for (size_t i = 0; i < m_numVertices; i++ )
     {
         ply_write( oply, (double) m_vertices[ i * 3     ] ); /* x */
@@ -216,13 +327,17 @@ void PLYIO::save( string filename )
         ply_write( oply, (double) m_vertices[ i * 3 + 2 ] ); /* z */
         if ( vertex_color )
         {
-            ply_write( oply, m_vertexColors[ i * 3     ] ); /* red */
-            ply_write( oply, m_vertexColors[ i * 3 + 1 ] ); /* green */
-            ply_write( oply, m_vertexColors[ i * 3 + 2 ] ); /* blue */
-            if(vertex_color_alpha)
-            {
-                ply_write( oply, m_vertexColors[ i * 3 + 3 ] ); // alpha
-            }
+            ply_write( oply, m_vertexColors[ i * w_vertex_color     ] ); /* red */
+            ply_write( oply, m_vertexColors[ i * w_vertex_color + 1 ] ); /* green */
+            ply_write( oply, m_vertexColors[ i * w_vertex_color + 2 ] ); /* blue */
+        }
+        if ( vertex_intensity )
+        {
+            ply_write( oply, m_vertexIntensity[ i ] );
+        }
+        if ( vertex_confidence )
+        {
+            ply_write( oply, m_vertexConfidence[ i ] );
         }
         if ( vertex_normal )
         {
@@ -244,7 +359,6 @@ void PLYIO::save( string filename )
         }
     }
 
-    bool point_color_alpha = (pointColorWidth == 4);
     for ( size_t i = 0; i < m_numPoints; i++ )
     {
         ply_write( oply, (double) m_points[ i * 3     ] ); /* x */
@@ -252,13 +366,17 @@ void PLYIO::save( string filename )
         ply_write( oply, (double) m_points[ i * 3 + 2 ] ); /* z */
         if ( point_color )
         {
-            ply_write( oply, m_pointColors[ i * 3     ] ); /* red */
-            ply_write( oply, m_pointColors[ i * 3 + 1 ] ); /* green */
-            ply_write( oply, m_pointColors[ i * 3 + 2 ] ); /* blue */
-            if(point_color_alpha)
-            {
-                ply_write( oply, m_pointColors[ i * 3 + 3 ] ); /* alpha */
-            }
+            ply_write( oply, m_pointColors[ i * w_point_color     ] ); /* red */
+            ply_write( oply, m_pointColors[ i * w_point_color + 1 ] ); /* green */
+            ply_write( oply, m_pointColors[ i * w_point_color + 2 ] ); /* blue */
+        }
+        if ( point_intensity )
+        {
+            ply_write( oply, m_pointIntensities[ i ] );
+        }
+        if ( point_confidence )
+        {
+            ply_write( oply, m_pointConfidences[ i ] );
         }
         if ( point_normal )
         {
@@ -281,9 +399,17 @@ ModelPtr PLYIO::read( string filename )
    return read( filename, true );
 }
 
+/**
+ * swaps n elements from index i1 in arr with n elements from index i2 in arr
+ */
+template <typename T>
+void swap(T*& arr, size_t i1, size_t i2, size_t n)
+{
+    std::swap_ranges(arr + i1, arr + i1 + n, arr + i2);
+}
 
 ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
-        bool readIntensity, bool readNormals, bool readFaces )
+        bool readIntensity, bool readNormals, bool readFaces, bool readPanoramaCoords )
 {
 
     /* Start reading new PLY */
@@ -291,13 +417,13 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
     if ( !ply )
     {
-       std::cerr << timestamp << "Could not open »" << filename << "«."
+        std::cerr << timestamp << "Could not open »" << filename << "«."
            << std::endl;
         return ModelPtr();
     }
     if ( !ply_read_header( ply ) )
     {
-       std::cerr << timestamp << "Could not read header." << std::endl;
+        std::cerr << timestamp << "Could not read header." << std::endl;
         return ModelPtr();
     }
     //std::cout << timestamp << "Loading »" << filename << "«." << std::endl;
@@ -311,12 +437,22 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     // Buffer count variables
     size_t numVertices              = 0;
     size_t numVertexColors          = 0;
+    size_t numVertexConfidences     = 0;
+    size_t numVertexIntensities     = 0;
     size_t numVertexNormals         = 0;
+    size_t numVertexPanoramaCoords  = 0;
 
     size_t numPoints                = 0;
     size_t numPointColors           = 0;
+    size_t numPointConfidence       = 0;
+    size_t numPointIntensities      = 0;
     size_t numPointNormals          = 0;
+    size_t numPointPanoramaCoords   = 0;
+    size_t numPointSpectralChannels = 0;
     size_t numFaces                 = 0;
+
+    size_t n_channels               = 0; // Number of spectral channels
+
 
     while ( ( elem = ply_get_next_element( ply, elem ) ) )
     {
@@ -333,10 +469,25 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
                     /* We have color information */
                     numVertexColors = n;
                 }
+                else if ( !strcmp( name, "confidence" ) && readConfidence )
+                {
+                    /* We have confidence information */
+                    numVertexConfidences = n;
+                }
+                else if ( !strcmp( name, "intensity" ) && readIntensity )
+                {
+                    /* We have intensity information */
+                    numVertexIntensities = n;
+                }
                 else if ( !strcmp( name, "nx" ) && readNormals )
                 {
                     /* We have normals */
                     numVertexNormals = n;
+                }
+                else if ( !strcmp( name, "x_coords" ) && readPanoramaCoords )
+                {
+                    /* We have panorama coordinates */
+                    numVertexPanoramaCoords = n;
                 }
             }
         }
@@ -352,10 +503,25 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
                     /* We have color information */
                     numPointColors = n;
                 }
+                else if ( !strcmp( name, "confidence" ) && readConfidence )
+                {
+                    /* We have confidence information */
+                    numPointConfidence = n;
+                }
+                else if ( !strcmp( name, "intensity" ) && readIntensity )
+                {
+                    /* We have intensity information */
+                    numPointIntensities = n;
+                }
                 else if ( !strcmp( name, "nx" ) && readNormals )
                 {
                     /* We have normals */
                     numPointNormals = n;
+                }
+                else if ( !strcmp( name, "x_coords" ) && readPanoramaCoords )
+                {
+                    /* We have panorama coordinates */
+                    numPointPanoramaCoords = n;
                 }
             }
         }
@@ -374,14 +540,22 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
     // Buffers
     floatArr vertices;
+    floatArr vertexConfidence;
+    floatArr vertexIntensity;
     floatArr vertexNormals;
     floatArr points;
+    floatArr pointConfidences;
+    floatArr pointIntensities;
     floatArr pointNormals;
+    floatArr pointSpectralChannels;
 
-    ucharArr pointColors;
     ucharArr vertexColors;
+    ucharArr pointColors;
 
-    uintArr faceIndices;
+    shortArr vertexPanoramaCoords;
+    shortArr pointPanoramaCoords;
+
+    uintArr  faceIndices;
 
 
     /* Allocate memory. */
@@ -393,13 +567,25 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     {
         vertexColors = ucharArr( new unsigned char[ numVertices * 3 ] );
     }
+    if ( numVertexConfidences )
+    {
+        vertexConfidence = floatArr( new float[ numVertices ] );
+    }
+    if ( numVertexIntensities )
+    {
+        vertexIntensity = floatArr( new float[ numVertices ] );
+    }
     if ( numVertexNormals )
     {
-        vertexNormals = floatArr( new float[ 3 * numVertices ] );
+        vertexNormals = floatArr( new float[ numVertices * 3 ] );
+    }
+    if ( numVertexPanoramaCoords )
+    {
+        vertexPanoramaCoords = shortArr( new short[ numVertices * 2 ] );
     }
     if ( numFaces )
     {
-        faceIndices = uintArr( new unsigned int[ numFaces * 3 ] );
+        faceIndices = indexArray( new unsigned int[ numFaces * 3 ] );
     }
     if ( numPoints )
     {
@@ -409,19 +595,38 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     {
         pointColors = ucharArr( new unsigned char[ numPoints * 3 ] );
     }
+    if ( numPointConfidence )
+    {
+        pointConfidences = floatArr( new float[numPoints] );
+    }
+    if ( numPointIntensities )
+    {
+        pointIntensities = floatArr( new float[numPoints] );
+    }
     if ( numPointNormals )
     {
-        pointNormals = floatArr( new float[ 3 * numPoints ] );
+        pointNormals = floatArr( new float[ numPoints * 3 ] );
+    }
+    if ( numPointPanoramaCoords )
+    {
+        pointPanoramaCoords = shortArr( new short[ numPoints * 2 ] );
     }
 
 
-    float*        vertex            = vertices.get();
-    uint8_t*      vertex_color      = vertexColors.get();
-    float*        vertex_normal     = vertexNormals.get();
-    unsigned int* face              = faceIndices.get();
-    float*        point             = points.get();
-    uint8_t*      point_color       = pointColors.get();
-    float*        point_normal      = pointNormals.get();
+    float*          vertex                   = vertices.get();
+    uint8_t*        vertex_color             = vertexColors.get();
+    float*          vertex_confidence        = vertexConfidence.get();
+    float*          vertex_intensity         = vertexIntensity.get();
+    float*          vertex_normal            = vertexNormals.get();
+    short*          vertex_panorama_coords   = vertexPanoramaCoords.get();
+    unsigned int*   face                     = faceIndices.get();
+    float*          point                    = points.get();
+    uint8_t*        point_color              = pointColors.get();
+    float*          point_confidence         = pointConfidences.get();
+    float*          point_intensity          = pointIntensities.get();
+    float*          point_normal             = pointNormals.get();
+    short*          point_panorama_coords    = pointPanoramaCoords.get();
+
 
     /* Set callbacks. */
     if ( vertex )
@@ -436,11 +641,24 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         ply_set_read_cb( ply, "vertex", "green", readColorCb,  &vertex_color,  0 );
         ply_set_read_cb( ply, "vertex", "blue",  readColorCb,  &vertex_color,  1 );
     }
+    if ( vertex_confidence )
+    {
+        ply_set_read_cb( ply, "vertex", "confidence", readVertexCb, &vertex_confidence, 1 );
+    }
+    if ( vertex_intensity )
+    {
+        ply_set_read_cb( ply, "vertex", "intensity", readVertexCb, &vertex_intensity, 1 );
+    }
     if ( vertex_normal )
     {
         ply_set_read_cb( ply, "vertex", "nx", readVertexCb, &vertex_normal, 0 );
         ply_set_read_cb( ply, "vertex", "ny", readVertexCb, &vertex_normal, 0 );
         ply_set_read_cb( ply, "vertex", "nz", readVertexCb, &vertex_normal, 1 );
+    }
+    if ( vertex_panorama_coords )
+    {
+        ply_set_read_cb( ply, "vertex", "x_coords", readPanoramaCoordCB, &vertex_panorama_coords, 0 );
+        ply_set_read_cb( ply, "vertex", "y_coords", readPanoramaCoordCB, &vertex_panorama_coords, 1 );
     }
 
     if ( face )
@@ -461,11 +679,24 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         ply_set_read_cb( ply, "point", "green", readColorCb,  &point_color,  0 );
         ply_set_read_cb( ply, "point", "blue",  readColorCb,  &point_color,  1 );
     }
+    if ( point_confidence )
+    {
+        ply_set_read_cb( ply, "point", "confidence", readVertexCb, &point_confidence, 1 );
+    }
+    if ( point_intensity )
+    {
+        ply_set_read_cb( ply, "point", "intensity", readVertexCb, &point_intensity, 1 );
+    }
     if ( point_normal )
     {
         ply_set_read_cb( ply, "point", "nx", readVertexCb, &point_normal, 0 );
         ply_set_read_cb( ply, "point", "ny", readVertexCb, &point_normal, 0 );
         ply_set_read_cb( ply, "point", "nz", readVertexCb, &point_normal, 1 );
+    }
+    if ( point_panorama_coords )
+    {
+        ply_set_read_cb( ply, "point", "x_coords", readPanoramaCoordCB, &point_panorama_coords, 0 );
+        ply_set_read_cb( ply, "point", "y_coords", readPanoramaCoordCB, &point_panorama_coords, 1 );
     }
 
     /* Read ply file. */
@@ -481,21 +712,124 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     {
         std::cout << timestamp << "PLY contains neither faces nor points. "
             << "Assuming that vertices are meant to be points." << std::endl;
-        points               = vertices;
-        pointColors          = vertexColors;
-        pointNormals         = vertexNormals;
-        numPoints            = numVertices;
-        numPointColors       = numVertexColors;
-        numPointNormals      = numVertexNormals;
-        numVertices          = 0;
-        numVertexColors      = 0;
-        numVertexNormals     = 0;
+        points                  = vertices;
+        pointColors             = vertexColors;
+        pointConfidences        = vertexConfidence;
+        pointIntensities        = vertexIntensity;
+        pointNormals            = vertexNormals;
+        pointPanoramaCoords     = vertexPanoramaCoords;
+        point                   = points.get();
+        point_color             = pointColors.get();
+        point_confidence        = pointConfidences.get();
+        point_intensity         = pointIntensities.get();
+        point_normal            = pointNormals.get();
+        point_panorama_coords   = pointPanoramaCoords.get();
+        numPoints               = numVertices;
+        numPointColors          = numVertexColors;
+        numPointConfidence      = numVertexConfidences;
+        numPointIntensities     = numVertexIntensities;
+        numPointNormals         = numVertexNormals;
+        numPointPanoramaCoords  = numVertexPanoramaCoords;
+        numVertices             = 0;
+        numVertexColors         = 0;
+        numVertexConfidences    = 0;
+        numVertexIntensities    = 0;
+        numVertexNormals        = 0;
+        numVertexPanoramaCoords = 0;
         vertices.reset();
         vertexColors.reset();
+        vertexConfidence.reset();
+        vertexIntensity.reset();
         vertexNormals.reset();
+        vertexPanoramaCoords.reset();
     }
 
     ply_close( ply );
+
+    // read Panorama Images if we have annotated data
+    if (numPointPanoramaCoords)
+    {
+        // move all the Points that don't have spectral information to the end
+        for (int i = 0; i < numPointPanoramaCoords; i++)
+        {
+            if (point_panorama_coords[2 * i] == -1)
+            {
+                // swap with last element
+                numPointPanoramaCoords--;
+
+                const int n = numPointPanoramaCoords;
+                swap(point_panorama_coords, 2 * i, 2 * numPointPanoramaCoords, 2);
+                swap(point, 3 * i, 3 * numPointPanoramaCoords, 3);
+                if (numPointColors)      swap(point_color,      3*i, 3*numPointPanoramaCoords, 3);
+                if (numPointConfidence)  swap(point_confidence,   i,   numPointPanoramaCoords, 1);
+                if (numPointIntensities) swap(point_intensity,    i,   numPointPanoramaCoords, 1);
+                if (numPointNormals)     swap(point_normal,     3*i, 3*numPointPanoramaCoords, 3);
+
+                i--;
+            }
+        }
+
+        std::cout << numPoints << " given, " << (numPoints - numPointPanoramaCoords) << " without spectral data" << std::endl;
+
+        // traverse to channel directory
+        string scanNr = filename.substr(filename.length() - 7, 3);
+        string channelDirName = string("panorama_channels_") + scanNr;
+
+        boost::filesystem::path dir(filename);
+        dir = dir.parent_path() / "panoramas_fixed" / channelDirName;
+
+        if (!boost::filesystem::exists(dir / "channel0.png"))
+        {
+            std::cerr << "Annotated Data given, but " + dir.string() + " does not contain channel files" << std::endl;
+        }
+        else
+        {
+            std::cout << "Found Annotated Data. Loading spectral channel images from: " << dir.string() << "/" << std::endl;
+            std::cout << "This may take a while depending on data size" << std::endl;
+
+            std::vector<cv::Mat> imgs;
+            std::vector<unsigned char*> pixels;
+
+            cv::VideoCapture images(dir.string() + "/channel%d.png");
+            cv::Mat img, imgFlipped;
+            while (images.read(img))
+            {
+                imgs.push_back(cv::Mat());
+                cv::flip(img, imgFlipped, 0); // TODO: FIXME: Data is currently stored mirrored and offset
+                cv::cvtColor(imgFlipped, imgs.back(), cv::COLOR_RGB2GRAY);
+                pixels.push_back(imgs.back().data);
+            }
+
+            n_channels = imgs.size();
+            int width = imgs[0].cols;
+            int height = imgs[0].rows;
+
+            numPointSpectralChannels = numPointPanoramaCoords;
+            pointSpectralChannels = floatArr(new float[numPointPanoramaCoords * n_channels]);
+
+            float* point_spectral_channels = pointSpectralChannels.get();
+
+            std::cout << "Finished loading " << n_channels << " channel images" << std::endl;
+
+            #pragma omp parallel for
+            for (int i = 0; i < numPointPanoramaCoords; i++)
+            {
+                int pc_index = 2 * i; // x_coords, y_coords
+                short x = point_panorama_coords[pc_index];
+                short y = point_panorama_coords[pc_index + 1];
+                x = (x + width / 2) % width; // TODO: FIXME: Data is currently stored mirrored and offset
+
+                int panoramaPosition = y * width + x;
+                float* pixel = point_spectral_channels + n_channels * i;
+
+                for (int channel = 0; channel < n_channels; channel++)
+                {
+                    pixel[channel] = pixels[channel][panoramaPosition] / 255.0f;
+                }
+            }
+            std::cout << "Finished extracting channel information" << std::endl;
+        }
+    }
 
 
     // Save buffers in model
@@ -503,19 +837,27 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     MeshBuffer2Ptr mesh;
     if(points)
     {
-        pc = PointBuffer2Ptr(new PointBuffer2);
+        pc = PointBuffer2Ptr( new PointBuffer2 );
         pc->setPointArray(points, numPoints);
-        pc->setColorArray(pointColors, numPointColors, 3);
+        pc->setColorArray(pointColors, numPointColors);
+        pc->addFloatChannel(pointIntensities, "intensities", numPointIntensities, 1);
+        pc->addFloatChannel(pointConfidences, "confidences", numPointConfidence, 1);
         pc->setNormalArray(pointNormals, numPointNormals);
+        pc->addFloatChannel(pointSpectralChannels, "spectral_channels", numPointSpectralChannels, n_channels);
+        pc->addIntAttribute(400, "spectral_wavelength_min");
+        pc->addIntAttribute(400 + 4 * n_channels, "spectral_wavelength_max");
+        // there is no way to read min-, maxchannel from ply file => assume default 400-1000nm
     }
 
     if(vertices)
     {
-        mesh = MeshBuffer2Ptr(new MeshBuffer2);
-        mesh->setVertices(vertices, numVertices);
-        mesh->setVertexColors(vertexColors, 3);
-        mesh->setVertexNormals(vertexNormals);
+        mesh = MeshBuffer2Ptr( new MeshBuffer2 );
+        mesh->setVertices(vertices, numVertices );
         mesh->setFaceIndices(faceIndices, numFaces);
+        mesh->setVertexNormals(vertexNormals);
+        mesh->setVertexColors(vertexColors);
+        mesh->addFloatChannel(vertexIntensity, "vertex_intensities", numVertexIntensities, 1);
+        mesh->addFloatChannel(vertexConfidence, "vertex_confidences",  numVertexConfidences, 1);
     }
 
     ModelPtr m( new Model( mesh, pc ) );
@@ -550,6 +892,7 @@ int PLYIO::readColorCb( p_ply_argument argument )
 
 int PLYIO::readFaceCb( p_ply_argument argument )
 {
+
     unsigned int ** face;
     long int length, value_index;
     ply_get_argument_user_data( argument, (void **) &face, NULL );
@@ -564,12 +907,22 @@ int PLYIO::readFaceCb( p_ply_argument argument )
         std::cerr << timestamp << "Mesh is not a triangle mesh." << std::endl;
         return 0;
     }
-    //cout << ply_get_argument_value( argument ) << endl;
     **face = ply_get_argument_value( argument );
     (*face)++;
+
     return 1;
 
 }
 
+int PLYIO::readPanoramaCoordCB( p_ply_argument argument )
+{
+
+    short ** ptr;
+    ply_get_argument_user_data( argument, (void **) &ptr, NULL );
+    **ptr = ply_get_argument_value( argument );
+    (*ptr)++;
+    return 1;
+
+}
 
 } // namespace lvr2

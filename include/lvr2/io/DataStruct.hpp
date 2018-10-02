@@ -127,6 +127,7 @@ typedef boost::shared_array<float> floatArr;
 
 typedef boost::shared_array<unsigned char> ucharArr;
 
+typedef boost::shared_array<short> shortArr;
 
 typedef boost::shared_array< color<unsigned char> > color3bArr;
 
