@@ -396,8 +396,8 @@ void LVRMainWindow::removeArrow(LVRVtkArrow* a)
 
 int getSpectralWavelength(int channel, PointBuffer2Ptr p)
 {
-    int wavelength_min = *p->getFloatAttribute("spectral_wavelength_min");
-    int wavelength_max = *p->getFloatAttribute("spectral_wavelength_max");
+    int wavelength_min = *p->getIntAttribute("spectral_wavelength_min");
+    int wavelength_max = *p->getIntAttribute("spectral_wavelength_max");
     unsigned n_channels = p->getFloatChannel("spectral_channels")->width();
 
     if (channel < 0 || channel >= n_channels)
@@ -435,19 +435,19 @@ void LVRMainWindow::restoreSliders()
         pointCloudItem->getPointBufferBridge()->getSpectralColorGradient(gradient_type, gradient_channel, normalize_gradient, use_ndvi);
         PointBuffer2Ptr p = pointCloudItem->getPointBuffer();
         FloatChannelOptional spec_channels = p->getFloatChannel("spectral_channels");
+
         if (spec_channels)
         {
-            n_channels =  spec_channels->width();
-            int wavelength_min = *p->getFloatAttribute("spectral_wavelength_min");
-            int wavelength_max = *p->getFloatAttribute("spectral_wavelength_max");
+            n_channels = spec_channels->width();
+            int wavelength_min = *p->getIntAttribute("spectral_wavelength_min");
+            int wavelength_max = *p->getIntAttribute("spectral_wavelength_max");
 
             this->dockWidgetSpectralSliderSettingsContents->setEnabled(false); // disable to stop changeSpectralColor from re-rendering 6 times
             for (int i = 0; i < 3; i++)
             {
                 float wavelengthPerChannel = (wavelength_max - wavelength_min) / (float) n_channels;
-
-                m_spectralSliders[i]->setMaximum(wavelength_min - 1);
-                m_spectralSliders[i]->setMinimum(wavelength_max);
+                m_spectralSliders[i]->setMaximum(wavelength_max - 1);
+                m_spectralSliders[i]->setMinimum(wavelength_min);
                 m_spectralSliders[i]->setSingleStep(wavelengthPerChannel);
                 m_spectralSliders[i]->setPageStep(10 * wavelengthPerChannel);
                 m_spectralSliders[i]->setValue(getSpectralWavelength(channels[i], p));
@@ -1441,8 +1441,8 @@ int LVRMainWindow::getSpectralChannel(int wavelength, PointBuffer2Ptr pbuff)
         if (spectral_channels)
         {
             unsigned numSpectraChannels = spectral_channels->width();
-            int minWavelength = *pbuff->getFloatAttribute("spectral_wavelength_min");
-            int maxWavelength = *pbuff->getFloatAttribute("spectral_wavelength_max");
+            int minWavelength = *pbuff->getIntAttribute("spectral_wavelength_min");
+            int maxWavelength = *pbuff->getIntAttribute("spectral_wavelength_max");
             float wavelengthPerChannel = (maxWavelength - minWavelength) / static_cast<float>(numSpectraChannels);
 
             int channel = (wavelength - minWavelength) /  wavelengthPerChannel;
@@ -1504,8 +1504,8 @@ void LVRMainWindow::onSpectralLineEditChanged()
     if(!items.empty())
     {
         PointBuffer2Ptr points = (*items.begin())->getPointBuffer();
-        int min = *points->getFloatAttribute("spectral_wavelength_min");
-        int max = *points->getFloatAttribute("spectral_wavelength_max");
+        int min = *points->getIntAttribute("spectral_wavelength_min");
+        int max = *points->getIntAttribute("spectral_wavelength_max");
 
         for (int i = 0; i < 3; i++)
         {
@@ -1611,10 +1611,10 @@ void LVRMainWindow::updatePointPreview(int pointId, PointBuffer2Ptr points)
             floatArr data = floatArr(new float[n_channels]);
             for (int i = 0; i < n_channels; i++)
             {
-                data[i] = (*spectral_channels)[i][pointId];
+                data[i] = (*spectral_channels)[pointId][i];
             }
             m_PointPreviewPlotter->setPoints(data, n_channels, 0, 1);
-            m_PointPreviewPlotter->setXRange(*points->getFloatAttribute("spectral_wavelength_min"), *points->getFloatAttribute("spectral_wavelength_max"));
+            m_PointPreviewPlotter->setXRange(*points->getIntAttribute("spectral_wavelength_min"), *points->getIntAttribute("spectral_wavelength_max"));
         }
     }
 }

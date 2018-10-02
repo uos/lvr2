@@ -38,7 +38,7 @@ LVRPointInfo::LVRPointInfo(QWidget* parent, PointBuffer2Ptr pointBuffer, int poi
         m_data = floatArr(new float[m_numChannels]);
         for (size_t i = 0; i < m_numChannels; i++)
         {
-            m_data[i] = (*spec_channels)[i][pointId];
+            m_data[i] = (*spec_channels)[pointId][i];
         }
     }
 
