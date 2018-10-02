@@ -104,6 +104,7 @@ void ObjIO::parseMtlFile(
             string keyword;
             ss >> keyword;
 
+
             if(keyword == "newmtl")
             {
                 string matName;
@@ -112,7 +113,7 @@ void ObjIO::parseMtlFile(
                 if(it == matNames.end())
                 {
                     Material m;
-                    *(m.m_color) = {128, 128, 128};
+                    m.m_color = boost::optional<Rgb8Color>({128, 128, 128});
                     m.m_texture = boost::none;
                     materials.push_back(m);
                     matNames[matName] = matIndex;
@@ -130,10 +131,7 @@ void ObjIO::parseMtlFile(
                 float r, g, b;
                 ss >> r >> g >> b;
                 Material& current = materials.back();
-                current.m_color->at(0) = (unsigned char)(r * 255.0);
-                current.m_color->at(1) = (unsigned char)(g * 255.0);
-                current.m_color->at(2) = (unsigned char)(b * 255.0);
-
+                current = materials.back();
             }
             else if(keyword == "map_Kd")
             {
