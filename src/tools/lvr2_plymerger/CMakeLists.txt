@@ -11,6 +11,7 @@ set(PLY_MERGE_SRC
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/Progress.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/Timestamp.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/AsciiIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/PLYIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/ObjIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/PPMIO.cpp

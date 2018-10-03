@@ -108,8 +108,6 @@ class AsciiIO : public BaseIO
 };
 
 
-} // namespace lvr
-
-#include "AsciiIO.cpp"
+} // namespace lvr2
 
 #endif /* ASCIIIO_H_ */

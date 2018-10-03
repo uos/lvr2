@@ -9,6 +9,7 @@ set(RECONSTRUCT_SOURCES
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/PLYIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/ObjIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/AsciiIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/ModelFactory.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/PPMIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/PointBuffer2.cpp
