@@ -2,9 +2,9 @@
 #define PROJECTION_H
 #include <cmath>
 
-#include <lvr/reconstruction/ModelToImage.hpp>
+#include <lvr2/reconstruction/ModelToImage.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 class Projection
@@ -198,8 +198,8 @@ protected:
 };
 
 
-} // namespace lvr
+} // namespace lvr2
 
-#include "Projection.tcc"
+#include "Projection.cpp"
 
 #endif // PROJECTION_H

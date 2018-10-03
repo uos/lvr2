@@ -3,6 +3,20 @@
 #####################################################################################
 
 set(LVR_IMG_NORMAL_SRC
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/ModelFactory.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/AttributeManager.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseBuffer.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PointBuffer2.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/MeshBuffer2.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/Progress.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/Timestamp.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PLYIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/ObjIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PPMIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/texture/Texture.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/display/TextureFactory.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/display/GlTexture.cpp
     Main.cpp
     Options.cpp
 )
@@ -33,8 +47,8 @@ endif( ${NABO_FOUND} )
 # Add executable
 #####################################################################################
 
-add_executable(lvr_image_normals ${LVR_IMG_NORMAL_SRC})
-target_link_libraries(lvr_image_normals ${LVR_IMG_NORMAL_DEPS})
+add_executable(lvr2_image_normals ${LVR_IMG_NORMAL_SRC})
+target_link_libraries(lvr2_image_normals ${LVR_IMG_NORMAL_DEPS})
 
-install(TARGETS lvr_image_normals
+install(TARGETS lvr2_image_normals
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

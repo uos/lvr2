@@ -23,11 +23,12 @@
  *      Author: Thomas Wiemann (twiemann@uos.de)
  */
 
-#include <lvr/reconstruction/ModelToImage.hpp>
-#include <lvr/reconstruction/Projection.hpp>
-#include <lvr/io/Progress.hpp>
-#include <lvr/io/Timestamp.hpp>
-#include <lvr/geometry/Vertex.hpp>
+#include <lvr2/reconstruction/ModelToImage.hpp>
+#include <lvr2/reconstruction/Projection.hpp>
+#include <lvr2/io/Progress.hpp>
+#include <lvr2/io/Timestamp.hpp>
+#include <lvr2/geometry/Vector.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -35,11 +36,13 @@
 #include <list>
 using namespace std;
 
-namespace lvr {
+namespace lvr2
+{
 
+using Vec = BaseVector<float>;
 
 ModelToImage::ModelToImage(
-        PointBufferPtr buffer,
+        PointBuffer2Ptr buffer,
         ModelToImage::ProjectionType projection,
         int width, int height,
         float minZ, float maxZ,
@@ -91,8 +94,8 @@ void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
     }
 
     // Get point array and size from buffer
-    size_t n_points;
-    floatArr points = m_points->getPointArray(n_points);
+    size_t n_points = m_points->numPoints();
+    floatArr points = m_points->getPointArray();
 
     // Create progress output
     string comment = timestamp.getElapsedTime() + "Projecting points ";
@@ -102,7 +105,7 @@ void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
     int img_x, img_y;
     for(int i = 0; i < n_points; i++)
     {        
-        Vertex<float> ppt(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
+        Vector<Vec> ppt(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
 
         m_projection->project(
                     img_x, img_y, range,
@@ -129,7 +132,7 @@ void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
     cout << endl;
 }
 
-void ModelToImage::computeDepthImage(lvr::ModelToImage::DepthImage& img, lvr::ModelToImage::ProjectionPolicy policy)
+void ModelToImage::computeDepthImage(ModelToImage::DepthImage& img, ModelToImage::ProjectionPolicy policy)
 {
     cout << timestamp << "Computing depth image. Image dimensions: " << m_width << " x " << m_height << endl;
 
@@ -145,8 +148,8 @@ void ModelToImage::computeDepthImage(lvr::ModelToImage::DepthImage& img, lvr::Mo
 
 
     // Get point array and size from buffer
-    size_t n_points;
-    floatArr points = m_points->getPointArray(n_points);
+    size_t n_points = m_points->numPoints();
+    floatArr points = m_points->getPointArray();
 
     // Create progress output
     string comment = timestamp.getElapsedTime() + "Projecting points ";
