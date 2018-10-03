@@ -21,11 +21,11 @@
 
 #include <rply.h>
 
-#include <lvr/io/Timestamp.hpp>
-#include <lvr/io/PLYIO.hpp>
-#include <lvr/io/DataStruct.hpp>
-#include <lvr/io/ModelFactory.hpp>
-#include <lvr/io/Progress.hpp>
+#include <lvr2/io/Timestamp.hpp>
+#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/DataStruct.hpp>
+#include <lvr2/io/ModelFactory.hpp>
+#include <lvr2/io/Progress.hpp>
 
 #include <boost/filesystem.hpp>
 
@@ -38,7 +38,7 @@ using std::cout;
 using std::endl;
 using std::pair;
 
-using namespace lvr;
+using namespace lvr2;
 
 void parsePLYHeader(
         string filename,
@@ -203,22 +203,26 @@ void writePLYHeader(ofstream& outfile, size_t numPoints, bool writeColors, bool 
 void addToFile(ofstream& out, string filename)
 {
     ModelPtr model = ModelFactory::readModel(filename);
-    PointBufferPtr pointBuffer = model->m_pointCloud;
+    PointBuffer2Ptr pointBuffer = model->m_pointCloud;
 
     size_t np, nn, nc;
-    floatArr points = pointBuffer->getPointArray(np);
-    ucharArr colors = pointBuffer->getPointColorArray(nc);
-    floatArr normals = pointBuffer->getPointNormalArray(nn);
+    unsigned w_color;
+    np = pointBuffer->numPoints();
+    nc = nn = np;
+
+    floatArr points = pointBuffer->getPointArray();
+    ucharArr colors = pointBuffer->getColorArray(w_color);
+    floatArr normals = pointBuffer->getNormalArray();
 
     // Determine size of single point
     size_t buffer_size = 3 * sizeof(float);
 
-    if(nc)
+    if(colors)
     {
-        buffer_size += 3 * sizeof(unsigned char);
+        buffer_size += w_color * sizeof(unsigned char);
     }
 
-    if(nn)
+    if(normals)
     {
         buffer_size += 3 * sizeof(float);
     }
@@ -237,7 +241,7 @@ void addToFile(ofstream& out, string filename)
         *((float*)ptr) = points[3*i+2];
 
         // Write colors to buffer
-        if(nc)
+        if(colors)
         {
             ptr += sizeof(float);
             *((unsigned char*)ptr) = colors[3 * i];
@@ -247,7 +251,7 @@ void addToFile(ofstream& out, string filename)
             *((unsigned char*)ptr) = colors[3 * i + 2];
         }
 
-        if(nn)
+        if(normals)
         {
             ptr += sizeof(unsigned char);
             *((float*)ptr) = normals[3*i];
