@@ -21,11 +21,11 @@
 // Program options for this tool
 
 
-#include <lvr/io/ModelFactory.hpp>
-#include <lvr/reconstruction/ModelToImage.hpp>
-#include <lvr/reconstruction/PanoramaNormals.hpp>
+#include <lvr2/io/ModelFactory.hpp>
+#include <lvr2/reconstruction/ModelToImage.hpp>
+#include <lvr2/reconstruction/PanoramaNormals.hpp>
 #include "Options.hpp"
-using namespace lvr;
+using namespace lvr2;
 
 
 /**
@@ -35,7 +35,6 @@ int main(int argc, char** argv)
 {
     image_normals::Options opt(argc, argv);
     cout << opt << endl;
-
 
     ModelPtr model = ModelFactory::readModel(opt.inputFile());
 
@@ -63,7 +62,7 @@ int main(int argc, char** argv)
     mti.writePGM(opt.imageFile(), 3000);
 
     PanoramaNormals normals(&mti);
-    PointBufferPtr buffer = normals.computeNormals(opt.regionWidth(), opt.regionHeight(), false);
+    PointBuffer2Ptr buffer = normals.computeNormals(opt.regionWidth(), opt.regionHeight(), false);
 
     ModelPtr out_model(new Model(buffer));
 

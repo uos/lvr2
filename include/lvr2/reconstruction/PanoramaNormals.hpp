@@ -1,11 +1,11 @@
 #ifndef PANORAMANORMALS_H
 #define PANORAMANORMALS_H
 
-#include <lvr/reconstruction/ModelToImage.hpp>
-#include <lvr/io/Model.hpp>
-#include <lvr/io/Progress.hpp>
+#include <lvr2/reconstruction/ModelToImage.hpp>
+#include <lvr2/io/Model.hpp>
+#include <lvr2/io/Progress.hpp>
 
-namespace lvr
+namespace lvr2
 {
 
 ////
@@ -17,13 +17,15 @@ public:
 
     PanoramaNormals(ModelToImage* mti);
 
-    PointBufferPtr computeNormals(int with, int height, bool interpolate);
+    PointBuffer2Ptr computeNormals(int with, int height, bool interpolate);
 
 private:
     ModelToImage*       m_mti;
-    PointBufferPtr      m_buffer;
+    PointBuffer2Ptr      m_buffer;
 };
 
-} // namespace lvr
+} // namespace lvr2
+
+#include "PanoramaNormals.cpp"
 
 #endif // PANORAMANORMALS_H
