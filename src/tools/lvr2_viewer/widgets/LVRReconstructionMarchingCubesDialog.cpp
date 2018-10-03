@@ -35,11 +35,13 @@ void LVRReconstructViaMarchingCubesDialog::updateProgressbarTitle(string t)
 void LVRReconstructViaMarchingCubesDialog::setProgressValue(int v)
 {
 	Q_EMIT(progressValueChanged(v));
+    QApplication::processEvents();
 }
 
 void LVRReconstructViaMarchingCubesDialog::setProgressTitle(string t)
 {
 	Q_EMIT(progressTitleChanged(QString(t.c_str())));
+    QApplication::processEvents();
 }
 
 LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
@@ -67,6 +69,7 @@ LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(strin
     m_progressDialog->setMaximum(100);
     m_progressDialog->setMinimumDuration(100);
     m_progressDialog->setWindowTitle("Processing...");
+    m_progressDialog->setAutoClose(false);
 
     // Register LVR progress callbacks
     ProgressBar::setProgressCallback(&updateProgressbar);
