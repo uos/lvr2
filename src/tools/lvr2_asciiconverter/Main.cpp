@@ -19,16 +19,16 @@
 
 #include "Options.hpp"
 
-#include <lvr/io/Timestamp.hpp>
-#include <lvr/io/AsciiIO.hpp>
-#include <lvr/io/DataStruct.hpp>
-#include <lvr/io/ModelFactory.hpp>
-#include <lvr/io/Progress.hpp>
+#include <lvr2/io/Timestamp.hpp>
+#include <lvr2/io/AsciiIO.hpp>
+#include <lvr2/io/DataStruct.hpp>
+#include <lvr2/io/ModelFactory.hpp>
+#include <lvr2/io/Progress.hpp>
 
 #include <iostream>
 #include <fstream>
 
-using namespace lvr;
+using namespace lvr2;
 
 
 /**
@@ -144,10 +144,10 @@ int main(int argc, char** argv)
 		delete[] data;
 
         // Create model and save data
-        PointBufferPtr pointBuffer(new PointBuffer);
+        PointBuffer2Ptr pointBuffer(new PointBuffer2 );
         pointBuffer->setPointArray(points, numPoints);
-        pointBuffer->setPointColorArray(colors, numPoints);
-        pointBuffer->setPointIntensityArray(intensities, numPoints);
+        pointBuffer->setColorArray(colors, numPoints);
+        pointBuffer->addFloatChannel(intensities, "intensities", numPoints, 1);
 
         ModelPtr model( new Model(pointBuffer));
         ModelFactory::saveModel(model, outputFile);

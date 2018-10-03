@@ -424,6 +424,7 @@ add_subdirectory(src/tools/scanreduce2)
 
 add_subdirectory(src/tools/convert)
 add_subdirectory(src/tools/asciiconverter)
+add_subdirectory(src/tools/lvr2_asciiconverter)
 add_subdirectory(src/tools/texman)
 add_subdirectory(src/tools/tiogen)
 add_subdirectory(src/tools/meshoptimizer)
