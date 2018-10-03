@@ -44,6 +44,41 @@ using namespace lvr2;
 typedef BaseVector<float> BaseVec;
 typedef Vector<BaseVec>   VecT;
 
+void split_pc(PointBuffer2Ptr pc)
+{
+    size_t n = pc->numPoints();
+    floatArr pts = pc->getPointArray();
+
+    PointBuffer2Ptr tmp1 = PointBuffer2Ptr( new PointBuffer2 );
+    PointBuffer2Ptr tmp2 = PointBuffer2Ptr( new PointBuffer2 );
+
+    floatArr pts1 = floatArr( new float[3* (n/2)] );
+    floatArr pts2 = floatArr( new float[3* (n - (n/2))] );
+    tmp1->setPointArray(pts1, n/2);
+    tmp2->setPointArray(pts2, n - (n/2));
+
+    size_t n_2 = n / 2;
+
+    for (size_t i = 0; i < n; i++)
+    {
+        if (i < n/2)
+        {
+            pts1[3*i + 0] = pts[i*3 + 0];
+            pts1[3*i + 1] = pts[i*3 + 1];
+            pts1[3*i + 2] = pts[i*3 + 2];
+        }
+        else
+        {
+            pts2[3* (i - n/2) + 0] = pts[i*3 + 0];
+            pts2[3* (i - n/2) + 1] = pts[i*3 + 1];
+            pts2[3* (i - n/2) + 2] = pts[i*3 + 2];
+        }
+    }
+
+    ModelFactory::saveModel(ModelPtr( new Model(tmp1) ), "half1.ply");
+    ModelFactory::saveModel(ModelPtr( new Model(tmp2) ), "half2.ply");
+}
+
 void test(PointBuffer2Ptr pc_buffer)
 {
     PointsetSurfacePtr<Vec> surface;
@@ -153,7 +188,9 @@ int main(int argc, char** argv)
         //surf.calculateSurfaceNormals();
 
         ModelFactory::saveModel(model, "test.ply");
-          
+
+        //split_pc(model->m_pointCloud);
+
         std::cout << "Points: " << model->m_pointCloud->numPoints() << std::endl;
         std::cout << "Has Normals" << model->m_pointCloud->hasNormals() << std::endl;
         std::cout << "Has Colors" << model->m_pointCloud->hasColors() << std::endl;
