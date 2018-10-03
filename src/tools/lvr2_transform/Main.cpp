@@ -25,27 +25,28 @@
  */
 
 #include "Options.hpp"
-#include <lvr/geometry/Matrix4.hpp>
-#include <lvr/geometry/Vertex.hpp>
-#include <lvr/io/Model.hpp>
-#include <lvr/io/ModelFactory.hpp>
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/geometry/Matrix4.hpp>
+#include <lvr2/geometry/Vector.hpp>
+#include <lvr2/io/Model.hpp>
+#include <lvr2/io/ModelFactory.hpp>
+#include <lvr2/io/Timestamp.hpp>
 #include <iostream>
 #include <cmath>
 
-using namespace lvr;
+using namespace lvr2;
 using std::cout;
 using std::endl;
 
-typedef Matrix4<float> Matrix4f;
-typedef Vertex<float> Vertex3f;
+using Vec = BaseVector<float>;
+using Vectorf = Vector<Vec>;
 
 int main(int argc, char **argv)
 {
   try {
     bool did_anything = false;
     float x, y, z, r1, r2, r3;
-    Matrix4<float> mat;
+    Matrix4<Vec> mat;
     size_t num;
 
     // get options
@@ -83,7 +84,7 @@ int main(int argc, char **argv)
         r2 = r2 * 0.0174532925f;
         r3 = r3 * 0.0174532925f;
 
-        mat = Matrix4<float>(Vertex3f(x, y, z), Vertex3f(r1, r2, r3));
+        mat = Matrix4<Vec>(Vectorf(x, y, z), Vectorf(r1, r2, r3));
       }
       else //expect frames file instead
       {
@@ -136,47 +137,48 @@ int main(int argc, char **argv)
       r2 = r2 * 0.0174532925f;
       r3 = r3 * 0.0174532925f;
 
-      mat = Matrix4<float>(Vertex3f(x, y, z), Vertex3f(r1, r2, r3));
+      mat = Matrix4<Vec>(Vectorf(x, y, z), Vectorf(r1, r2, r3));
     }
 
     // Get point buffer
     if(model->m_pointCloud)
     {
-      PointBufferPtr p_buffer = model->m_pointCloud;
+      PointBuffer2Ptr p_buffer = model->m_pointCloud;
 
       cout << timestamp << "Using points" << endl;
       did_anything = true;
-      coord3fArr points = p_buffer->getIndexedPointArray(num);
+      FloatChannelOptional points = p_buffer->getFloatChannel("points");
+       
       cout << mat;
-      for(size_t i = 0; i < num; i++)
+      for(size_t i = 0; i < points->numAttributes(); i++)
       {
-        Vertex<float> v(points[i][0], points[i][1], points[i][2]);
+        Vectorf v((*points)[i][0], (*points)[i][1], (*points)[i][2]);
         v = mat * v;
-        points[i][0] = options.anyScaleX() ? v[0] * options.getScaleX() : v[0];
-        points[i][1] = options.anyScaleY() ? v[1] * options.getScaleY() : v[1];
-        points[i][2] = options.anyScaleZ() ? v[2] * options.getScaleZ() : v[2];
+        v.x = options.anyScaleX() ? v[0] * options.getScaleX() : v[0];
+        v.y = options.anyScaleX() ? v[1] * options.getScaleX() : v[1];
+        v.z = options.anyScaleX() ? v[2] * options.getScaleX() : v[2];
+        (*points)[i] = v;
       }
-      p_buffer->setIndexedPointArray(points, num);
     }
 
     // Get mesh buffer
     if(model->m_mesh)
     {
-      MeshBufferPtr m_buffer = model->m_mesh;
+      MeshBuffer2Ptr m_buffer = model->m_mesh;
 
       cout << timestamp << "Using meshes" << endl;
       did_anything = true;
-      coord3fArr points = m_buffer->getIndexedVertexArray(num);
+      FloatChannelOptional points = m_buffer->getFloatChannel("vertices");
 
-      for(size_t i = 0; i < num; i++)
+      for(size_t i = 0; i < points->numAttributes(); i++)
       {
-        Vertex<float> v(points[i][0], points[i][1], points[i][2]);
+        Vectorf v((*points)[i][0], (*points)[i][1], (*points)[i][2]);
         v = mat * v;
-        points[i][0] = options.anyScaleX() ? v[0] * options.getScaleX() : v[0];
-        points[i][1] = options.anyScaleY() ? v[1] * options.getScaleY() : v[1];
-        points[i][2] = options.anyScaleZ() ? v[2] * options.getScaleZ() : v[2];
+        v.x = options.anyScaleX() ? v[0] * options.getScaleX() : v[0];
+        v.y = options.anyScaleX() ? v[1] * options.getScaleX() : v[1];
+        v.z = options.anyScaleX() ? v[2] * options.getScaleX() : v[2];
+        (*points)[i] = v;
       }
-      m_buffer->setIndexedVertexArray(points, num);
     }
 
     if(!did_anything)
@@ -194,5 +196,3 @@ int main(int argc, char **argv)
     cout << "something went wrong..." << endl;
   }
 }
-
-

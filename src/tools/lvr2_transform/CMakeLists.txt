@@ -3,6 +3,20 @@
 #####################################################################################
 
 set(LVR_TRANSFORM_SOURCES
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/ModelFactory.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/AttributeManager.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseBuffer.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PointBuffer2.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/MeshBuffer2.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/Progress.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/Timestamp.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PLYIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/ObjIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PPMIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/texture/Texture.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/display/TextureFactory.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/display/GlTexture.cpp
     Options.cpp
     Main.cpp
 )
@@ -31,8 +45,8 @@ endif( ${NABO_FOUND} )
 # Add executable
 #####################################################################################
 
-add_executable(lvr_transform_model ${LVR_TRANSFORM_SOURCES})
-target_link_libraries(lvr_transform_model ${LVR_TRANSFORM_DEPENDENCIES})
+add_executable(lvr2_transform_model ${LVR_TRANSFORM_SOURCES})
+target_link_libraries(lvr2_transform_model ${LVR_TRANSFORM_DEPENDENCIES})
 
-install(TARGETS lvr_transform_model
+install(TARGETS lvr2_transform_model
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
