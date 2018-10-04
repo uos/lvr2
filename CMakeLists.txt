@@ -438,6 +438,7 @@ add_subdirectory(src/tools/lvr2_image_normals)
 add_subdirectory(src/tools/plymerger)
 add_subdirectory(src/tools/lvr2_plymerger)
 add_subdirectory(src/tools/hdf5_builder)
+add_subdirectory(src/tools/lvr2_hdf5_builder)
 
 if(CUDA_FOUND)
 #    cuda_include_directories(ext/CTPL)
