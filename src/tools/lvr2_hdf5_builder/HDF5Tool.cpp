@@ -14,9 +14,9 @@
 
 #include <string.h>
 
-#include <lvr/io/ModelFactory.hpp>
-#include <lvr/io/Timestamp.hpp>
-#include <lvr/display/ColorMap.hpp>
+#include <lvr2/io/ModelFactory.hpp>
+#include <lvr2/io/Timestamp.hpp>
+#include <lvr2/display/ColorMap.hpp>
 #include "Options.hpp"
 
 #include <boost/filesystem.hpp>
@@ -28,7 +28,7 @@
 #include <hdf5_hl.h>
 #include <highfive/H5File.hpp>
 
-using namespace lvr;
+using namespace lvr2;
 using namespace std;
 
 
@@ -38,7 +38,7 @@ int main( int argc, char ** argv )
     // Parse command line arguments
     hdf5tool::Options options(argc, argv);
 
-    ::std::cout << options << ::std::endl;
+    std::cout << options << ::std::endl;
 
     // Get directory with hyperspectral PNG files
     boost::filesystem::path pngPath(options.getPNGDir());
@@ -121,16 +121,17 @@ int main( int argc, char ** argv )
 
     // Read .ply file with scan data
     ModelPtr model = ModelFactory::readModel(options.getPLYFile());
-    PointBufferPtr point_buffer = model->m_pointCloud;
-    size_t n;
-    floatArr points = point_buffer->getPointArray(n);
+    PointBuffer2Ptr point_buffer = model->m_pointCloud;
+    size_t n = point_buffer->numPoints();
+    floatArr points = point_buffer->getPointArray();
 
     // Write scan data to group
     scan_group.createDataSet<int>("numPoints", HighFive::DataSpace::From(n)).write(n);
     scan_group.createDataSet<float>("points", HighFive::DataSpace(n * 3)).write(points.get());
 
-    size_t n_spec, n_channels;
-    floatArr spec = point_buffer->getPointSpectralChannelsArray(n_spec, n_channels);
+    size_t n_spec;
+    unsigned n_channels;
+    floatArr spec = point_buffer->getFloatArray("spectral_channels", n_spec, n_channels);
 
     if (n_spec)
     {
@@ -150,5 +151,4 @@ int main( int argc, char ** argv )
     }
 
     std::cout << "Done" << std::endl;
-
 }

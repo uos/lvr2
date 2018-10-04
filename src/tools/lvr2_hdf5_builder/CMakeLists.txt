@@ -3,6 +3,21 @@
 #####################################################################################
 
 set(LVR_HDF5_SOURCES
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/ModelFactory.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/AttributeManager.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseBuffer.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PointBuffer2.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/MeshBuffer2.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/Progress.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/Timestamp.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/AsciiIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PLYIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/ObjIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PPMIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/texture/Texture.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/display/TextureFactory.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/display/GlTexture.cpp
     HDF5Tool.cpp Options.cpp
 )
 
@@ -24,8 +39,8 @@ set(LVR_HDF5_DEPENDENCIES
 # Add executable
 #####################################################################################
 
-add_executable( lvr_hdf5tool ${LVR_HDF5_SOURCES} )
-target_link_libraries( lvr_hdf5tool ${LVR_HDF5_DEPENDENCIES} )
+add_executable( lvr2_hdf5tool ${LVR_HDF5_SOURCES} )
+target_link_libraries( lvr2_hdf5tool ${LVR_HDF5_DEPENDENCIES} )
 
-install(TARGETS lvr_hdf5tool
+install(TARGETS lvr2_hdf5tool
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
