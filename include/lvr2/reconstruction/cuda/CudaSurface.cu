@@ -21,9 +21,10 @@
  * @author Alexander Mock
  */
 
-#include "lvr/reconstruction/cuda/CudaSurface.hpp"
+#include <lvr/reconstruction/cuda/CudaSurface.hpp>
 
-namespace lvr {
+namespace lvr2
+{
 /// Define Kernels
 
 __global__ void FlipNormalsKernel(const LBPointArray<float> D_V, LBPointArray<float> D_Normals, float x, float y, float z);
@@ -1694,7 +1695,7 @@ void CudaSurface::setReconstructionMode(bool mode)
 
 
 
-void CudaSurface::distances(std::vector<lvr::QueryPoint<cVertex> >& query_points, float voxel_size)
+void CudaSurface::distances(std::vector<QueryPoint<cVertex> >& query_points, float voxel_size)
 {
     std::cout << "Calculate Distances..." << std::endl;
     std::cout << "Size of entry" << int(sizeof(query_points[0]) ) << std::endl;
@@ -2050,4 +2051,4 @@ void CudaSurface::getNNFromIndex(const unsigned int& kd_pos, unsigned int *nn, i
 
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */

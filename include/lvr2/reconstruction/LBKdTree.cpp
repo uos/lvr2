@@ -1,9 +1,10 @@
 #include <stdio.h>
 
 #include <iostream>
-#include "lvr/reconstruction/LBKdTree.hpp"
+#include <lvr2/reconstruction/LBKdTree.hpp>
 
-namespace lvr {
+namespace lvr2
+{
 
 // Static variables
 
@@ -345,4 +346,4 @@ void LBKdTree::generateKdTreeRecursive(int id, LBPointArray<float>& V,
 
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */

@@ -24,26 +24,30 @@
 
 #include <boost/filesystem.hpp>
 
-#include <lvr/reconstruction/cuda/CudaSurface.hpp>
+#include <lvr2/reconstruction/cuda/CudaSurface.hpp>
 
-#include <lvr/reconstruction/AdaptiveKSearchSurface.hpp>
-#include <lvr/reconstruction/FastReconstruction.hpp>
-#include <lvr/reconstruction/PointsetSurface.hpp>
-#include <lvr/reconstruction/PointsetGrid.hpp>
-#include <lvr/reconstruction/BilinearFastBox.hpp>
-#include <lvr/geometry/HalfEdgeMesh.hpp>
+#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
+#include <lvr2/reconstruction/FastReconstruction.hpp>
+#include <lvr2/reconstruction/PointsetSurface.hpp>
+#include <lvr2/reconstruction/PointsetGrid.hpp>
+#include <lvr2/reconstruction/BilinearFastBox.hpp>
 
-#include <lvr/io/ModelFactory.hpp>
-#include <lvr/io/Timestamp.hpp>
-#include <lvr/io/IOUtils.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/geometry/HalfEdgeMesh.hpp>
+
+#include <lvr2/io/ModelFactory.hpp>
+#include <lvr2/io/Timestamp.hpp>
+#include <lvr2/io/IOUtils.hpp>
 #include "Options.hpp"
 
 
-using namespace lvr;
+using namespace lvr2;
 
-typedef CudaSurface GpuSurface;
-typedef PointsetSurface<ColorVertex<float, unsigned char> > psSurface;
-typedef AdaptiveKSearchSurface<ColorVertex<float, unsigned char>, Normal<float> > akSurface;
+using Vec = BaseVector<float>;
+using akSurface = AdaptiveKSearchSurface<Vec>;
+using psSurface = PointsetSurface<Vec>;
+using GpuSurface = CudaSurface;
+
 
 void computeNormals(string filename, cuda_normals::Options& opt, PointBufferPtr& buffer)
 {
@@ -53,7 +57,8 @@ void computeNormals(string filename, cuda_normals::Options& opt, PointBufferPtr&
     floatArr points;
     if (model && model->m_pointCloud )
     {
-        points = model->m_pointCloud->getPointArray(num_points);
+        num_points = m_pointCloud->numPoints();
+        points = model->m_pointCloud->getPointArray();
         cout << timestamp << "Read " << num_points << " points from " << filename << endl;
     }
     else
@@ -95,46 +100,41 @@ void computeNormals(string filename, cuda_normals::Options& opt, PointBufferPtr&
     gpu_surface.freeGPU();
 }
 
-void reconstructAndSave(PointBufferPtr& buffer, cuda_normals::Options& opt)
+void reconstructAndSave(PointBuffer2Ptr& buffer, cuda_normals::Options& opt)
 {
     // RECONSTRUCTION
     // PointsetSurface
-    akSurface* aks = new akSurface(
-                buffer, "FLANN",
-                opt.kn(),
-                opt.ki(),
-                opt.kd(),
-                true
-        );
+    PointsetSurfacePtr<Vec> surface;
+    surface = PointsetSurfacePtr<Vec>( new AdaptiveKSearchSurface<Vec>(buffer, 
+        "FLANN", 
+        opt.kn(), 
+        opt.ki(),
+        opt.kd(),
+        1
+    );
 
-    psSurface::Ptr surface = psSurface::Ptr(aks);
-
+        
     // // Create an empty mesh
-    HalfEdgeMesh<ColorVertex<float, unsigned char> , Normal<float> > mesh( surface );
+    HalfEdgeMesh<Vec> mesh();
 
     float resolution = opt.getVoxelsize();
 
-    GridBase* grid;
-    FastReconstructionBase<ColorVertex<float, unsigned char>, Normal<float> >* reconstruction;
-    BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >::m_surface = surface;
+    auto grid = std::make_shared<PointsetGrid<Vec, BilinearFastBox<Vec>>>(
+        resolution,
+        surface,
+        surface->getBoundingBox(),
+        true,
+        true 
+    );
 
-    grid = new PointsetGrid<
-        ColorVertex<float, unsigned char>,
-        BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >
-        >(resolution, surface, surface->getBoundingBox(), true);
+    grid->calcDistanceValues();
 
-    PointsetGrid<ColorVertex<float, unsigned char>,
-        BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >
-        >* ps_grid = static_cast<PointsetGrid<ColorVertex<float, unsigned char>,
-                BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> > > *>(grid);
-
-    ps_grid->calcDistanceValues();
-    reconstruction = new FastReconstruction<ColorVertex<float, unsigned char> ,
-                   Normal<float>,
-                   BilinearFastBox<ColorVertex<float, unsigned char>, Normal<float> >  >(ps_grid);
+    auto reconstruction = make_unique<FastReconstruction<Vec, BilinearFastBox<Vec>>>(grid);
     reconstruction->getMesh(mesh);
 
-    mesh.finalize();
+
+    SimpleFinalizer<Vec> fin;
+    res = fin.apply(mesh);
 
     ModelPtr m( new Model( mesh.meshBuffer() ) );
 
@@ -169,7 +169,7 @@ int main(int argc, char** argv){
                 if(sscanf(currentFile.c_str(), "scan%3d", &num))
                 {
                     cout << timestamp << "Processing " << p.string() << endl;
-                    PointBufferPtr buffer(new PointBuffer);
+                    PointBuffer2Ptr buffer(new PointBuffer2 );
 
                     computeNormals(p.string(), opt, buffer);
                     transformPointCloudAndAppend(buffer, p, all_points, all_normals);
@@ -185,7 +185,7 @@ int main(int argc, char** argv){
 
         if(opt.reconstruct() )
         {
-            PointBufferPtr buffer(new PointBuffer);
+            PointBuffer2Ptr buffer(new PointBuffer2);
 
             floatArr points = floatArr(&all_points[0]);
             size_t num_points = all_points.size() / 3;
@@ -194,7 +194,7 @@ int main(int argc, char** argv){
             size_t num_normals = all_normals.size() / 3;
 
             buffer->setPointArray(points, num_points);
-            buffer->setPointNormalArray(normals, num_normals);
+            buffer->setNormalArray(normals);
 
             reconstructAndSave(buffer, opt);
         }
@@ -202,7 +202,7 @@ int main(int argc, char** argv){
     }
     else
     {
-        PointBufferPtr buffer(new PointBuffer);
+        PointBuffer2Ptr buffer(new PointBuffer2);
         computeNormals(opt.inputFile(), opt, buffer);
 
         if(!opt.reconstruct() || opt.exportPointNormals() )

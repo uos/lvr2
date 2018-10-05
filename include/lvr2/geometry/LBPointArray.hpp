@@ -8,7 +8,8 @@
 #include <unordered_set>
 #include <stdlib.h>
 
-namespace lvr {
+namespace lvr2
+{
 
 template<typename T>
 struct LBPointArray {
@@ -88,7 +89,7 @@ template<typename T, typename U>
 static void generateAndSort(int id, LBPointArray<T>& vertices, LBPointArray<U>* indices_sorted,
         LBPointArray<T>* values_sorted, int dim);
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #include "LBPointArray.tcc"
 
