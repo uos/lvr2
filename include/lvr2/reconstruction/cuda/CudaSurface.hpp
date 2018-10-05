@@ -28,6 +28,7 @@
 #include <lvr2/reconstruction/LBKdTree.hpp>
 #include <lvr2/geometry/LBPointArray.hpp>
 #include <lvr2/geometry/ColorVertex.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,10 +59,10 @@ static void HandleError( cudaError_t err,
 }
 #define HANDLE_ERROR( err ) (HandleError( err, __FILE__, __LINE__ ))
 
-
+using Vec = BaseVector<float>;
 typedef boost::shared_array<float> floatArr;
 typedef ColorVertex<float, unsigned char> cVertex ;
-typedef QueryPoint<cVertex> QueryPointC;
+typedef QueryPoint<Vec> QueryPointC;
 
 
 class CudaSurface {
@@ -150,7 +151,7 @@ public:
     * TODO:
     *    Implement
     */
-    void distances(std::vector<QueryPoint<cVertex> >& query_points, float voxel_size);
+    void distances(std::vector<QueryPoint<Vec> >& query_points, float voxel_size);
 
     void freeGPU();
 

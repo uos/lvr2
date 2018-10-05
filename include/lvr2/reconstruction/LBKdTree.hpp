@@ -78,6 +78,4 @@ private:
 
 }  /* namespace lvr2 */
 
-#include "LBKdTree.cpp"
-
 #endif // !__LBKDTREE_HPP
