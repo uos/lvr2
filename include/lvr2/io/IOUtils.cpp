@@ -373,7 +373,7 @@ void transformPointCloudAndAppend(PointBuffer2Ptr& buffer,
      unsigned w_normals;
      size_t n_points = buffer->numPoints();
 
-     floatArr normals = buffer->getFloatArray("normals", n_normals, n_points, w_normals); 
+     floatArr normals = buffer->getFloatArray("normals", n_normals, w_normals); 
      floatArr points = buffer->getPointArray();
 
      if (w_normals != 3)

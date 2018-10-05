@@ -21,10 +21,11 @@
  * @author Alexander Mock
  */
 
-#include <lvr/reconstruction/cuda/CudaSurface.hpp>
+#include <lvr2/reconstruction/cuda/CudaSurface.hpp>
 
 namespace lvr2
 {
+
 /// Define Kernels
 
 __global__ void FlipNormalsKernel(const LBPointArray<float> D_V, LBPointArray<float> D_Normals, float x, float y, float z);
@@ -1695,7 +1696,7 @@ void CudaSurface::setReconstructionMode(bool mode)
 
 
 
-void CudaSurface::distances(std::vector<QueryPoint<cVertex> >& query_points, float voxel_size)
+void CudaSurface::distances(std::vector<QueryPoint<Vec> >& query_points, float voxel_size)
 {
     std::cout << "Calculate Distances..." << std::endl;
     std::cout << "Size of entry" << int(sizeof(query_points[0]) ) << std::endl;
@@ -1809,7 +1810,7 @@ void CudaSurface::debug2(unsigned int query_index, int k)
 // size*3 = real length of nn array
 void CudaSurface::writeToPly(float* point, float* nn, int size, std::string filename)
 {
-    ofstream ply_file;
+    std::ofstream ply_file;
       ply_file.open( filename.c_str() );
       ply_file << "ply" << std::endl;
     ply_file << "format ascii 1.0" << std::endl;

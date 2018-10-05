@@ -27,10 +27,13 @@
 #ifndef COLORVERTEX_H_
 #define COLORVERTEX_H_
 
-#include <lvr2/geometry/Vector.hpp>"Vertex.hpp"
+#include <lvr2/geometry/Vector.hpp>
+
+#include <ostream>
 
 namespace lvr2
 {
+
 
 /**
  * @brief	A color vertex
@@ -40,6 +43,7 @@ class ColorVertex : public Vector<BaseVecT>
 {
 public:
 
+    using CoordType = typename BaseVecT::CoordType;
 	/**
 	 * @brief	Default constructor. All coordinates and the color are initialized
 	 * 			with zeros.
@@ -97,7 +101,7 @@ public:
 	/**
 	 * @brief	Copy Ctor.
 	 */
-	ColorVertex(const Vertex<CoordType> &o)
+	ColorVertex(const Vector<BaseVecT> &o)
 	{
 		this->x = o.x;
 		this->y = o.y;
@@ -155,8 +159,8 @@ using uColorVertex = ColorVertex<float, unsigned char>;
  * @brief	Output operator for color vertex types
  */
 template<typename CoordType, typename ColorT>
-inline ostream& operator<<(ostream& os, const ColorVertex<CoordType, ColorT> v){
-	os << "ColorVertex: " << v.x << " " << v.y << " " << v.z << " " << (int)v.r << " " << (int)v.g << " " << (int)v.b << endl;
+inline std::ostream& operator<<(std::ostream& os, const ColorVertex<CoordType, ColorT> v){
+	os << "ColorVertex: " << v.x << " " << v.y << " " << v.z << " " << (int)v.r << " " << (int)v.g << " " << (int)v.b << std::endl;
 	return os;
 }
 

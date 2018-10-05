@@ -40,7 +40,6 @@ using boost::optional;
 #include "Handles.hpp"
 
 #include <lvr2/geometry/Vector.hpp>
-#include <lvr2/io/MeshBuffer2.hpp>
 
 namespace lvr2
 {

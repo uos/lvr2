@@ -18,7 +18,7 @@ LBKdTree::LBKdTree( LBPointArray<float>& vertices, int num_threads) {
     this->m_values = boost::shared_ptr<LBPointArray<float> >(new LBPointArray<float>);
     this->m_splits = boost::shared_ptr<LBPointArray<unsigned char> >(new LBPointArray<unsigned char>);
     st_num_threads = num_threads;
-    st_depth_threads = static_cast<int>(log2(st_num_threads));
+    st_depth_threads = static_cast<int>(log2(static_cast<double>(st_num_threads)));
     pool = new ctpl::thread_pool(st_num_threads);
     this->generateKdTree(vertices);
 }
@@ -203,7 +203,7 @@ void LBKdTree::generateKdTreeRecursive(int id, LBPointArray<float>& V,
         /// split sorted_indices
         unsigned int indices_size = sorted_indices[current_dim].width;
 
-        unsigned int v = pow( 2, static_cast<int>(log2(indices_size-1) ) );
+        unsigned int v = pow( 2, static_cast<int>(log2(static_cast<double>(indices_size-1)) ) );
         unsigned int left_size = indices_size - v/2;
 
         if( left_size > v )

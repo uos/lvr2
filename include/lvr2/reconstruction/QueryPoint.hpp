@@ -27,6 +27,7 @@
 #ifndef _LVR2_RECONSTRUCTION_QueryPoint_H_
 #define _LVR2_RECONSTRUCTION_QueryPoint_H_
 
+#include <lvr2/geometry/Vector.hpp>
 
 namespace lvr2
 {

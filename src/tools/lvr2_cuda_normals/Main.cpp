@@ -26,14 +26,14 @@
 
 #include <lvr2/reconstruction/cuda/CudaSurface.hpp>
 
-#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
-#include <lvr2/reconstruction/FastReconstruction.hpp>
-#include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/reconstruction/PointsetGrid.hpp>
-#include <lvr2/reconstruction/BilinearFastBox.hpp>
-
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
+
+#include <lvr2/reconstruction/PointsetSurface.hpp>
+#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
+#include <lvr2/reconstruction/FastReconstruction.hpp>
+#include <lvr2/reconstruction/PointsetGrid.hpp>
+#include <lvr2/reconstruction/BilinearFastBox.hpp>
 
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/io/Timestamp.hpp>
@@ -49,7 +49,7 @@ using psSurface = PointsetSurface<Vec>;
 using GpuSurface = CudaSurface;
 
 
-void computeNormals(string filename, cuda_normals::Options& opt, PointBufferPtr& buffer)
+void computeNormals(string filename, cuda_normals::Options& opt, PointBuffer2Ptr& buffer)
 {
     ModelPtr model = ModelFactory::readModel(filename);
     size_t num_points;
@@ -57,7 +57,7 @@ void computeNormals(string filename, cuda_normals::Options& opt, PointBufferPtr&
     floatArr points;
     if (model && model->m_pointCloud )
     {
-        num_points = m_pointCloud->numPoints();
+        num_points = model->m_pointCloud->numPoints();
         points = model->m_pointCloud->getPointArray();
         cout << timestamp << "Read " << num_points << " points from " << filename << endl;
     }
@@ -94,7 +94,7 @@ void computeNormals(string filename, cuda_normals::Options& opt, PointBufferPtr&
     cout << timestamp << "Finished Normal Calculation. " << endl;
 
     size_t nc;
-    model->m_pointCloud->setPointNormalArray(normals, num_points);
+    model->m_pointCloud->setNormalArray(normals, num_points);
     buffer = model->m_pointCloud;
 
     gpu_surface.freeGPU();
@@ -111,11 +111,11 @@ void reconstructAndSave(PointBuffer2Ptr& buffer, cuda_normals::Options& opt)
         opt.ki(),
         opt.kd(),
         1
-    );
+    ) );
 
         
     // // Create an empty mesh
-    HalfEdgeMesh<Vec> mesh();
+    HalfEdgeMesh<Vec> mesh;
 
     float resolution = opt.getVoxelsize();
 
@@ -134,9 +134,9 @@ void reconstructAndSave(PointBuffer2Ptr& buffer, cuda_normals::Options& opt)
 
 
     SimpleFinalizer<Vec> fin;
-    res = fin.apply(mesh);
+    MeshBuffer2Ptr res = fin.apply(mesh);
 
-    ModelPtr m( new Model( mesh.meshBuffer() ) );
+    ModelPtr m( new Model( res ) );
 
     cout << timestamp << "Saving mesh." << endl;
     ModelFactory::saveModel( m, "triangle_mesh.ply");
@@ -194,7 +194,7 @@ int main(int argc, char** argv){
             size_t num_normals = all_normals.size() / 3;
 
             buffer->setPointArray(points, num_points);
-            buffer->setNormalArray(normals);
+            buffer->setNormalArray(normals, num_points);
 
             reconstructAndSave(buffer, opt);
         }
