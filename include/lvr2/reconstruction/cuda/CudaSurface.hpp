@@ -24,10 +24,10 @@
 #ifndef __CudaSurface_H
 #define __CudaSurface_H
 
-#include "lvr/reconstruction/QueryPoint.hpp"
-#include "lvr/reconstruction/LBKdTree.hpp"
-#include "lvr/geometry/LBPointArray.hpp"
-#include "lvr/geometry/ColorVertex.hpp"
+#include <lvr2/reconstruction/QueryPoint.hpp>
+#include <lvr2/reconstruction/LBKdTree.hpp>
+#include <lvr2/geometry/LBPointArray.hpp>
+#include <lvr2/geometry/ColorVertex.hpp>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,7 +44,8 @@
 
 #include <boost/shared_array.hpp>
 
-namespace lvr {
+namespace lvr2
+{
 
 static void HandleError( cudaError_t err,
                          const char *file,
@@ -59,8 +60,8 @@ static void HandleError( cudaError_t err,
 
 
 typedef boost::shared_array<float> floatArr;
-typedef lvr::ColorVertex<float, unsigned char> cVertex ;
-typedef lvr::QueryPoint<cVertex> QueryPointC;
+typedef ColorVertex<float, unsigned char> cVertex ;
+typedef QueryPoint<cVertex> QueryPointC;
 
 
 class CudaSurface {
@@ -149,7 +150,7 @@ public:
     * TODO:
     *    Implement
     */
-    void distances(std::vector<lvr::QueryPoint<cVertex> >& query_points, float voxel_size);
+    void distances(std::vector<QueryPoint<cVertex> >& query_points, float voxel_size);
 
     void freeGPU();
 
@@ -230,6 +231,6 @@ private:
 
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif // !__CudaSurface_H

@@ -2,7 +2,7 @@
 #define __LBKDTREE_HPP
 
 
-#include "lvr/geometry/LBPointArray.hpp"
+#include <lvr2/geometry/LBPointArray.hpp>
 
 #include <ctpl.h>
 
@@ -12,7 +12,7 @@
 #include <list>
 #include <unordered_set>
 
-namespace lvr
+namespace lvr2
 {
 
 /**
@@ -76,7 +76,8 @@ private:
 
 };
 
+}  /* namespace lvr2 */
 
-}  /* namespace lvr */
+#include "LBKdTree.cpp"
 
 #endif // !__LBKDTREE_HPP

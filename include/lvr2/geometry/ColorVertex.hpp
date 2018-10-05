@@ -27,16 +27,16 @@
 #ifndef COLORVERTEX_H_
 #define COLORVERTEX_H_
 
-#include "Vertex.hpp"
+#include <lvr2/geometry/Vector.hpp>"Vertex.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 /**
  * @brief	A color vertex
  */
-template<typename CoordType, typename ColorT>
-class ColorVertex : public Vertex<CoordType>
+template<typename BaseVecT, typename ColorT>
+class ColorVertex : public Vector<BaseVecT>
 {
 public:
 
@@ -148,7 +148,7 @@ public:
 
 };
 
-typedef ColorVertex<float, unsigned char> uColorVertex;
+using uColorVertex = ColorVertex<float, unsigned char>;
 
 
 /**
@@ -160,7 +160,6 @@ inline ostream& operator<<(ostream& os, const ColorVertex<CoordType, ColorT> v){
 	return os;
 }
 
-
-} // namespace lvr
+} // namespace lvr22
 
 #endif /* COLORVERTEX_H_ */

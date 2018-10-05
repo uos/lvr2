@@ -1,5 +1,6 @@
 
-namespace lvr {
+namespace lvr2
+{
 
 // static helper methods
 
@@ -508,4 +509,4 @@ static void generateAndSort(int id, LBPointArray<T>& vertices,
 
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */
