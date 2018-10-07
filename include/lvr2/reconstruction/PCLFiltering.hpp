@@ -28,8 +28,8 @@
 
 #ifdef LVR_USE_PCL
 
-#include <lvr/io/Timestamp.hpp>
-#include <lvr/io/PointBuffer.hpp>
+#include <lvr2/io/Timestamp.hpp>
+#include <lvr2/io/PointBuffer2.hpp>
 
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
@@ -39,7 +39,7 @@
 #include <pcl/surface/mls.h>
 #include <pcl/filters/statistical_outlier_removal.h>
 
-namespace lvr
+namespace lvr2
 {
 
 class PCLFiltering
@@ -51,7 +51,7 @@ public:
     void applyMLSProjection(float searchRadius);
     void applyOutlierRemoval(int meank, float thresh);
 
-    PointBufferPtr getPointBuffer();
+    PointBuffer2Ptr getPointBuffer();
 
 private:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr       m_pointCloud;
@@ -64,8 +64,10 @@ private:
 
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif
+
+#include "PCLFiltering.cpp"
 
 #endif /* PCLFILTERING_H_ */

@@ -41,24 +41,22 @@ using namespace std;
 #include <Eigen/Dense>
 
 #include "Options.hpp"
-#include <lvr/io/BaseIO.hpp>
-#include <lvr/io/DatIO.hpp>
-#include <lvr/io/Timestamp.hpp>
-#include <lvr/io/ModelFactory.hpp>
-#include <lvr/io/AsciiIO.hpp>
+#include <lvr2/io/Timestamp.hpp>
+#include <lvr2/io/ModelFactory.hpp>
+
 #ifdef LVR_USE_PCL
-#include <lvr/reconstruction/PCLFiltering.hpp>
+#include <lvr2/reconstruction/PCLFiltering.hpp>
 #endif
 
 #define BUF_SIZE 1024
 
-using namespace lvr;
+using namespace lvr2;
 
 namespace qi = boost::spirit::qi;
 
 const kaboom::Options* options;
 
-// This is dirty 
+// This is dirty
 bool lastScan = false;
 
 ModelPtr filterModel(ModelPtr p, int k, float sigma)
@@ -72,7 +70,7 @@ ModelPtr filterModel(ModelPtr p, int k, float sigma)
             cout << timestamp << "Filtering outliers with k=" << k << " and sigma=" << sigma << "." << endl;
             size_t original_size = p->m_pointCloud->getNumPoints();
             filter.applyOutlierRemoval(k, sigma);
-            PointBufferPtr pb( filter.getPointBuffer() );
+            PointBuffer2Ptr pb( filter.getPointBuffer() );
             ModelPtr out_model( new Model( pb ) );
             cout << timestamp << "Filtered out " << original_size - out_model->m_pointCloud->getNumPoints() << " points." << endl;
             return out_model;
@@ -88,7 +86,7 @@ ModelPtr filterModel(ModelPtr p, int k, float sigma)
 
 size_t countPointsInFile(boost::filesystem::path& inFile)
 {
-    ifstream in(inFile.c_str());    
+    ifstream in(inFile.c_str());
     cout << timestamp << "Counting points in " << inFile.filename().string() << "..." << endl;
 
     // Count lines in file
@@ -126,8 +124,8 @@ void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& frame
 
 size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
 {
-    size_t n_ip;
-    floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+    size_t n_ip = model->m_pointCloud->numPoints();
+    floatArr arr = model->m_pointCloud->getPointArray();
 
     // ModelFactory::saveModel(model, outfile.string());
 
@@ -136,18 +134,20 @@ size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
 
 size_t writeAscii(ModelPtr model, std::ofstream& out)
 {
-    size_t n_ip, n_colors;
+    size_t n_ip = model->m_pointCloud->numPoints();
+    size_t n_colors = n_ip;
+    unsigned w_color;
 
-    floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+    floatArr arr = model->m_pointCloud->getPointArray();
 
-    ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
+    ucharArr colors = model->m_pointCloud->getColorArray(w_color);
     for(int a = 0; a < n_ip; a++)
     {
         out << arr[a * 3] << " " << arr[a * 3 + 1] << " " << arr[a * 3 + 2];
 
-        if(n_colors)
+        if(colors)
         {
-            out << " " << (int)colors[a * 3] << " " << (int)colors[a * 3 + 1] << " " << (int)colors[a * 3 + 2];
+            out << " " << (int)colors[a * w_color] << " " << (int)colors[a * w_color + 1] << " " << (int)colors[a * w_color + 2];
         }
         out << endl;
 
@@ -156,15 +156,17 @@ size_t writeAscii(ModelPtr model, std::ofstream& out)
     return n_ip;
 }
 
-size_t writePly(ModelPtr model, std::fstream& out) 
+size_t writePly(ModelPtr model, std::fstream& out)
 {
-    size_t n_ip, n_colors;
+    size_t n_ip = model->m_pointCloud->numPoints();
+    size_t n_colors = n_ip;
+    unsigned w_color;
 
-    floatArr arr = model->m_pointCloud->getPointArray(n_ip);
+    floatArr arr = model->m_pointCloud->getPointArray();
 
-    ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
+    ucharArr colors = model->m_pointCloud->getColorArray(w_color);
 
-    if(n_colors)
+    if(colors)
     {
         if(n_colors != n_ip)
         {
@@ -178,7 +180,7 @@ size_t writePly(ModelPtr model, std::fstream& out)
             out.write((char*) (arr.get() + (3 * a)), sizeof(float) * 3);
 
             // r g b
-            out.write((char*) (colors.get() + (3 * a)), sizeof(unsigned char) * 3);
+            out.write((char*) (colors.get() + (w_color * a)), sizeof(unsigned char) * 3);
         }
     }
     else
@@ -385,11 +387,13 @@ Eigen::Matrix4d transformFrames(Eigen::Matrix4d frames)
 
 void transformFromOptions(ModelPtr& model, int modulo)
 {
-    size_t n_ip, n_colors;
+    size_t n_ip = model->m_pointCloud->numPoints();
+    size_t n_colors = n_ip;
+    unsigned w_color;
     size_t cntr = 0;
 
-    floatArr arr = model->m_pointCloud->getPointArray(n_ip);
-    ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
+    floatArr arr = model->m_pointCloud->getPointArray();
+    ucharArr colors = model->m_pointCloud->getColorArray(w_color);
 
     // Plus one because it might differ because of the 0-index
     // better waste memory for one float than having not enough space.
@@ -398,7 +402,7 @@ void transformFromOptions(ModelPtr& model, int modulo)
     floatArr points(new float[targetSize ]);
     ucharArr newColorsArr;
 
-    if(n_colors)
+    if(colors)
     {
         newColorsArr = ucharArr(new unsigned char[targetSize]);
     }
@@ -435,12 +439,12 @@ void transformFromOptions(ModelPtr& model, int modulo)
                 std::cout << "nip : " << n_ip << " modulo " << modulo << std::endl;
                 break;
             }
-            
-            if(n_colors)
+
+            if(colors)
             {
-                newColorsArr[cntr * 3]     = colors[i * 3];
-                newColorsArr[cntr * 3 + 1] = colors[i * 3 + 1];
-                newColorsArr[cntr * 3 + 2] = colors[i * 3 + 2];
+                newColorsArr[cntr * 3]     = colors[i * w_color];
+                newColorsArr[cntr * 3 + 1] = colors[i * w_color + 1];
+                newColorsArr[cntr * 3 + 2] = colors[i * w_color + 2];
             }
 
             cntr++;
@@ -451,9 +455,9 @@ void transformFromOptions(ModelPtr& model, int modulo)
     // it might be 1 less than the size
     model->m_pointCloud->setPointArray(points, cntr);
 
-    if(n_colors)
+    if(newColorsArr)
     {
-        model->m_pointCloud->setPointColorArray(newColorsArr, cntr);
+        model->m_pointCloud->setColorArray(newColorsArr, cntr);
     }
 }
 
@@ -461,9 +465,9 @@ void transformFromOptions(ModelPtr& model, int modulo)
 void transformModel(ModelPtr model, Eigen::Matrix4d transformation)
 {
     cout << timestamp << "Transforming model." << endl;
-    size_t numPoints;
+    size_t numPoints = model->m_pointCloud->numPoints();
 
-    floatArr arr = model->m_pointCloud->getPointArray(numPoints);
+    floatArr arr = model->m_pointCloud->getPointArray();
 
     for(int i = 0; i < numPoints; i++)
     {
@@ -496,7 +500,7 @@ void processSingleFile(boost::filesystem::path& inFile)
     }
 
     if(options->getOutputFile() != "")
-    { 
+    {
         char frames[1024];
         char pose[1024];
         sprintf(frames, "%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
@@ -569,7 +573,7 @@ void processSingleFile(boost::filesystem::path& inFile)
             {
                 tmp.open(tmp_file, std::fstream::in | std::fstream::out | std::fstream::trunc | std::fstream::binary);
             }
-            
+
             if(tmp.is_open())
             {
                 points_written += writePly(model, tmp);
@@ -578,17 +582,15 @@ void processSingleFile(boost::filesystem::path& inFile)
             {
                 std::cout << "could not open " << tmp_file << std::endl;
             }
-            
+
             if(true == lastScan)
             {
                 std::ofstream out;
 
-                // write the header -> open in text_mode 
+                // write the header -> open in text_mode
                 out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::trunc);
                 // check if we have color information
-                size_t n_colors;
-                ucharArr colors = model->m_pointCloud->getPointColorArray(n_colors);
-                if(n_colors)
+                if(model->m_pointCloud->hasColors())
                 {
                     writePlyHeader(out, points_written, true);
                 }
@@ -606,13 +608,13 @@ void processSingleFile(boost::filesystem::path& inFile)
 
                 // open the actual output file for binary blob write
                 out.open(options->getOutputFile(), std::ofstream::out | std::ofstream::app | std::ofstream::binary);
-                
+
                 char buffer[BUF_SIZE];
-                
+
                 while(blob_size)
                 {
                     if(blob_size < BUF_SIZE)
-                    { 
+                    {
                         // read the rest from tmp file (binary blob)
                         tmp.read(buffer, blob_size);
                         // write the rest to actual ply file
