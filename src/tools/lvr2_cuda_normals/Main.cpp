@@ -105,15 +105,15 @@ void reconstructAndSave(PointBuffer2Ptr& buffer, cuda_normals::Options& opt)
     // RECONSTRUCTION
     // PointsetSurface
     PointsetSurfacePtr<Vec> surface;
-    surface = PointsetSurfacePtr<Vec>( new AdaptiveKSearchSurface<Vec>(buffer, 
-        "FLANN", 
-        opt.kn(), 
+    surface = PointsetSurfacePtr<Vec>( new AdaptiveKSearchSurface<Vec>(buffer,
+        "FLANN",
+        opt.kn(),
         opt.ki(),
         opt.kd(),
         1
     ) );
 
-        
+
     // // Create an empty mesh
     HalfEdgeMesh<Vec> mesh;
 
@@ -124,7 +124,7 @@ void reconstructAndSave(PointBuffer2Ptr& buffer, cuda_normals::Options& opt)
         surface,
         surface->getBoundingBox(),
         true,
-        true 
+        true
     );
 
     grid->calcDistanceValues();

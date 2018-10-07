@@ -8,6 +8,23 @@ message(STATUS "Loaded OpenCL version ${OpenCL_VERSION_STRING}")
 message(STATUS "OpenCL Libraries: ${OpenCL_LIBRARIES}")
 
 set(LVR_CL_NORMAL_SRC
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/ModelFactory.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/AttributeManager.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseBuffer.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PointBuffer2.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/MeshBuffer2.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/Progress.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/Timestamp.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/AsciiIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PLYIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/ObjIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PPMIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/texture/Texture.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/display/TextureFactory.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/display/GlTexture.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/reconstruction/LBKdTree.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/io/IOUtils.cpp
     Main.cpp
     Options.cpp
 )
@@ -19,13 +36,13 @@ set(LVR_CL_NORMAL_SRC
 set(LVR_CL_NORMAL_DEPS
     lvr
     ${OpenCL_LIBRARIES}
-    )
+)
 
 
 
 #####################################################################################
 # Add executable
 #####################################################################################
-add_executable(lvr_cl_normals ${LVR_CL_NORMAL_SRC})
+add_executable(lvr2_cl_normals ${LVR_CL_NORMAL_SRC})
 
-target_link_libraries(lvr_cl_normals ${LVR_CL_NORMAL_DEPS})
+target_link_libraries(lvr2_cl_normals ${LVR_CL_NORMAL_DEPS})
