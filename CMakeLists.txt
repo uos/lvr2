@@ -453,6 +453,7 @@ endif(MPI_FOUND)
 
 if(OPENCL_FOUND)
     add_subdirectory(src/tools/cl_normals)
+    add_subdirectory(src/tools/lvr2_cl_normals)
 endif()
 
 if(CGAL_FOUND)

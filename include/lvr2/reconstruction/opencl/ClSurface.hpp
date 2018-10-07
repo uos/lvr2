@@ -1,10 +1,10 @@
 #ifndef __ClSurface_H
 #define __ClSurface_H
 
-#include "lvr/reconstruction/QueryPoint.hpp"
-#include "lvr/reconstruction/LBKdTree.hpp"
-#include "lvr/geometry/LBPointArray.hpp"
-#include "lvr/geometry/ColorVertex.hpp"
+#include <lvr2/reconstruction/QueryPoint.hpp>
+#include <lvr2/reconstruction/LBKdTree.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/geometry/LBPointArray.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/shared_array.hpp>
@@ -21,15 +21,17 @@
 #else
     #include <CL/cl.h>
 #endif
-#include "lvr/reconstruction/opencl/cl_helper.h"
+#include <lvr2/reconstruction/opencl/cl_helper.h>
 
 #define MAX_SOURCE_SIZE (0x1024)
 
-namespace lvr {
+namespace lvr2
+{
 
 typedef boost::shared_array<float> floatArr;
-typedef lvr::ColorVertex<float, unsigned char> cVertex ;
-typedef lvr::QueryPoint<cVertex> QueryPointC;
+
+using Vec = BaseVector<float>;
+typedef QueryPoint<Vec> QueryPointC;
 
 class ClSurface {
 public:
@@ -104,7 +106,7 @@ public:
     * TODO:
     *    Implement
     */
-    void distances(std::vector<lvr::QueryPoint<cVertex> >& query_points, float voxel_size);
+    void distances(std::vector<QueryPoint<Vec> >& query_points, float voxel_size);
 
     void freeGPU();
 
@@ -394,6 +396,8 @@ const char *NORMAL_INTERPOLATION_KERNEL_STRING = "\n"
 
 };
 
-} /* namespace lvr */
+} /* namespace lvr2 */
+
+#include "ClSurface.cpp"
 
 #endif // !__ClSurface_H

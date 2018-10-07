@@ -1,6 +1,7 @@
-#include "lvr/reconstruction/opencl/ClSurface.hpp"
+#include <lvr/reconstruction/opencl/ClSurface.hpp>
 
-namespace lvr {
+namespace lvr2
+{
 
 ClSurface::ClSurface(floatArr& points, size_t num_points, int device)
 {
@@ -191,7 +192,7 @@ void ClSurface::setReconstructionMode(bool mode)
     this->m_reconstruction_mode = mode;
 }
 
-void ClSurface::distances(std::vector<lvr::QueryPoint<cVertex> >& query_points, float voxel_size)
+void ClSurface::distances(std::vector<QueryPoint<Vec> >& query_points, float voxel_size)
 {
 
 }
@@ -690,4 +691,4 @@ void ClSurface::getDeviceInformation(int platform_id, int device_id)
 
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */

@@ -1,6 +1,8 @@
-#pragma once
 #ifndef CL_HELPER_H
 #define CL_HELPER_H
+
+namespace lvr2
+{
 
 static const char* errorString[] = {
     "CL_SUCCESS",
@@ -81,5 +83,7 @@ static void __checkOclErrors(const cl_int err, const char* const func, const cha
         fprintf(stderr, "OpenCL error at %s:%d code=%d(%s) \"%s\" \n", file, line, err, -68 <= err && err < 0 ? errorString[-err] : "Unspecified Error", func);
     }
 }
+
+} // namespace lvr2
 
 #endif
