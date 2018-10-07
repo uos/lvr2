@@ -25,32 +25,31 @@
 
 #ifdef LVR_USE_PCL
 
-#include <lvr/reconstruction/PCLFiltering.hpp>
+#include <lvr2/reconstruction/PCLFiltering.hpp>
 #include <pcl/pcl_config.h>
 
-namespace lvr
+namespace lvr2
 {
 
 
-PCLFiltering::PCLFiltering( PointBufferPtr loader )
+PCLFiltering::PCLFiltering( PointBuffer2Ptr loader )
 {
 
     // Check if we have RGB data
-    size_t numColors;
-    m_useColors = bool(loader->getPointColorArray(numColors));
+    size_t numColors = loader->numPoints();
+    m_useColors = loader->hasColors();
 
     m_pointCloud  = pcl::PointCloud<pcl::PointXYZRGB>::Ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
 
 
     // Get data from loader object
-    size_t numPoints;
-    coord3fArr points = loader->getIndexedPointArray(numPoints);
-    color3bArr colors;
+    size_t numPoints numColors;
+    FloatChannelOptional points = loader->getPointArray();
+    FloatChannelOptional colors = loader->getColorArray();
 
     if(m_useColors)
     {
         assert(numColors == numPoints);
-        colors = loader->getIndexedPointColorArray(numColors);
     }
 
 
@@ -61,16 +60,16 @@ PCLFiltering::PCLFiltering( PointBufferPtr loader )
     float x, y, z;
     for(size_t i = 0; i < numPoints; i++)
     {
-        x = points[i][0];
-        y = points[i][1];
-        z = points[i][2];
+        x = (*points)[i][0];
+        y = (*points)[i][1];
+        z = (*points)[i][2];
 
         if(m_useColors)
         {
 //            // Pack color information
-            uint8_t r = colors[i][0];
-            uint8_t g = colors[i][1];
-            uint8_t b = colors[i][2];
+            uint8_t r = (*colors)[i][0];
+            uint8_t g = (*colors)[i][1];
+            uint8_t b = (*colors)[i][2];
 
 //            uint32_t rgb = ((uint32_t)r << 16 | (uint32_t)g << 8 | (uint32_t)b);
 //            m_pointCloud->points[i].rgb = *reinterpret_cast<float*>(&rgb);
@@ -148,9 +147,9 @@ void PCLFiltering::applyOutlierRemoval(int meank, float thresh)
     m_pointCloud->points.swap (cloud_filtered->points);
 }
 
-PointBufferPtr PCLFiltering::getPointBuffer()
+PointBuffer2Ptr PCLFiltering::getPointBuffer()
 {
-    PointBufferPtr p( new PointBuffer );
+    PointBuffer2Ptr p( new PointBuffer2 );
 
     floatArr points(new float[3 * m_pointCloud->size()]);
     ucharArr colors;
@@ -182,7 +181,7 @@ PointBufferPtr PCLFiltering::getPointBuffer()
 
     if(m_useColors)
     {
-        p->setPointColorArray(colors, m_pointCloud->size());
+        p->setColorArray(colors, m_pointCloud->size());
     }
 
     return p;
@@ -193,6 +192,6 @@ PCLFiltering::~PCLFiltering()
     // TODO Auto-generated destructor stub
 }
 
-} /* namespace lvr */
+} /* namespace lvr2 */
 
 #endif

@@ -42,7 +42,6 @@
 
 #include <lvr2/io/PLYIO.hpp>
 #include <lvr2/io/Timestamp.hpp>
-#include <lvr/geometry/Vertex.hpp>
 #include <lvr2/display/GlTexture.hpp>
 #include <lvr2/display/TextureFactory.hpp>
 
@@ -333,8 +332,6 @@ class sort_indices
 
 void ObjIO::save( string filename )
 {
-    typedef lvr::Vertex<unsigned char> ObjColor;
-
     if (!m_model->m_mesh)
     {
         std::cout << "ObjIO: Unable to save to file " << filename << ". No mesh to save present." << std::endl;
@@ -355,8 +352,6 @@ void ObjIO::save( string filename )
     vector<Material> &materials    = m_model->m_mesh->getMaterials();
     indexArray faceMaterialIndices = m_model->m_mesh->getFaceMaterialIndices();
     ucharArr colors                = m_model->m_mesh->getVertexColors(w_color);
-
-    std::map<ObjColor, unsigned int> colorMap;
 
     std::set<unsigned int> materialIndexSet;
     std::set<unsigned int> colorIndexSet;
