@@ -839,25 +839,67 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     {
         pc = PointBuffer2Ptr( new PointBuffer2 );
         pc->setPointArray(points, numPoints);
-        pc->setColorArray(pointColors, numPointColors);
-        pc->addFloatChannel(pointIntensities, "intensities", numPointIntensities, 1);
-        pc->addFloatChannel(pointConfidences, "confidences", numPointConfidence, 1);
-        pc->setNormalArray(pointNormals, numPointNormals);
-        pc->addFloatChannel(pointSpectralChannels, "spectral_channels", numPointSpectralChannels, n_channels);
-        pc->addIntAttribute(400, "spectral_wavelength_min");
-        pc->addIntAttribute(400 + 4 * n_channels, "spectral_wavelength_max");
-        // there is no way to read min-, maxchannel from ply file => assume default 400-1000nm
+
+        if (pointColors)
+        {
+            pc->setColorArray(pointColors, numPointColors);
+        }
+
+        if (pointIntensities)
+        {
+            pc->addFloatChannel(pointIntensities, "intensities", numPointIntensities, 1);
+        }
+
+        if (pointConfidences)
+        {
+            pc->addFloatChannel(pointConfidences, "confidences", numPointConfidence, 1);
+        }
+
+        if (pointNormals)
+        {
+            pc->setNormalArray(pointNormals, numPointNormals);
+        }
+
+        // only add spectral data if we really have some...
+        if (pointSpectralChannels)
+        {
+            pc->addFloatChannel(pointSpectralChannels, "spectral_channels", numPointSpectralChannels, n_channels);
+
+            // there is no way to read min-, maxchannel from ply file => assume default 400-1000nm
+            pc->addIntAttribute(400, "spectral_wavelength_min");
+            pc->addIntAttribute(400 + 4 * n_channels, "spectral_wavelength_max");
+        }
     }
 
     if(vertices)
     {
         mesh = MeshBuffer2Ptr( new MeshBuffer2 );
         mesh->setVertices(vertices, numVertices );
-        mesh->setFaceIndices(faceIndices, numFaces);
-        mesh->setVertexNormals(vertexNormals);
-        mesh->setVertexColors(vertexColors);
-        mesh->addFloatChannel(vertexIntensity, "vertex_intensities", numVertexIntensities, 1);
-        mesh->addFloatChannel(vertexConfidence, "vertex_confidences",  numVertexConfidences, 1);
+
+        if (faceIndices)
+        {
+            mesh->setFaceIndices(faceIndices, numFaces);
+        }
+
+        if (vertexNormals)
+        {
+            mesh->setVertexNormals(vertexNormals);
+        }
+
+        if (vertexColors)
+        {
+            mesh->setVertexColors(vertexColors);
+        }
+
+        if (vertexIntensity)
+        {
+            mesh->addFloatChannel(vertexIntensity, "vertex_intensities", numVertexIntensities, 1);
+        }
+
+        if (vertexConfidence)
+        {
+            mesh->addFloatChannel(vertexConfidence, "vertex_confidences",  numVertexConfidences, 1);
+        }
     }
 
     ModelPtr m( new Model( mesh, pc ) );
