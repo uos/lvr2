@@ -131,7 +131,11 @@ void ObjIO::parseMtlFile(
                 float r, g, b;
                 ss >> r >> g >> b;
                 Material& current = materials.back();
-                current = materials.back();
+                current.m_color = boost::optional<Rgb8Color>({
+                    static_cast<unsigned char>(r * 255 + 0.5),
+                    static_cast<unsigned char>(g * 255 + 0.5),
+                    static_cast<unsigned char>(b * 255 + 0.5)
+                });
             }
             else if(keyword == "map_Kd")
             {
