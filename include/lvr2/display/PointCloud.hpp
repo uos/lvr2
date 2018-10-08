@@ -29,7 +29,7 @@
 
 #include <lvr2/display/Renderable.hpp>
 
-#include <lvr/geometry/ColorVertex.hpp>
+#include <lvr2/geometry/ColorVertex.hpp>
 
 #include <vector>
 #include <string>
@@ -49,6 +49,8 @@ enum
 };
 
 class PointCloud : public Renderable{
+
+    using uColorVertex = ColorVertex<Vec, unsigned char>;
 public:
 
     PointCloud();
@@ -58,22 +60,22 @@ public:
     virtual ~PointCloud();
     virtual inline void render();
 
-    vector<lvr::uColorVertex> getPoints(){return m_points;};
+    vector<uColorVertex> getPoints(){return m_points;};
     void setPoints(){};
 
     void addPoint(float x, float y, float z, unsigned char r, unsigned char g, unsigned char b){
-        m_boundingBox->expand(lvr::uColorVertex(x, y, z, r, g, b));
-        m_points.push_back(lvr::uColorVertex(x, y, z, r, g, b));
+        m_boundingBox->expand(uColorVertex(x, y, z, r, g, b));
+        m_points.push_back(uColorVertex(x, y, z, r, g, b));
     };
 
-    void addPoint(const lvr::uColorVertex v) {
-        m_boundingBox->expand(v);
+    void addPoint(const uColorVertex v) {
+        m_boundingBox->expand(Vector<Vec>(v.x, v.y, v.z));
         m_points.push_back(v);
     };
 
     void clear(){
         delete m_boundingBox;
-        m_boundingBox = new lvr::BoundingBox<lvr::Vertex<float> >;
+        m_boundingBox = new BoundingBox<Vec>;
         m_points.clear();
     };
 
@@ -81,7 +83,7 @@ public:
 
     void updateDisplayLists();
 //private:
-    vector<lvr::uColorVertex> m_points;
+    vector<uColorVertex> m_points;
 
     void setRenderMode(int mode) {m_renderMode = mode;}
 

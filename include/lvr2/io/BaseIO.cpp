@@ -18,7 +18,7 @@
 
 
  /**
- * @file       lvr::BaseIO.cpp
+ * @file       lvr2::BaseIO.cpp
  * @brief      Base interface for all I/O related classes.
  * @details    This file introduces a pure virtual class specifying some basic
  *             methods which must be implemented by all I/O classes in the lvr

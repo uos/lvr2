@@ -60,7 +60,7 @@ TexturedMesh::TexturedMesh(MeshBuffer2Ptr mesh) : m_materials(mesh->getMaterials
 	m_vertices 		= mesh->getVertices();
 	m_normals		= mesh->getVertexNormals();
 	m_texcoords		= mesh->getTextureCoordinates();
-    m_boundingBox   = new lvr::BoundingBox<lvr::Vertex<float> >;
+    m_boundingBox   = new BoundingBox<Vec>;
 
     // convert to GlTexture*
     m_textures      = textureArr( new GlTexture* [mesh->getTextures().size()] );
@@ -75,7 +75,7 @@ TexturedMesh::TexturedMesh(MeshBuffer2Ptr mesh) : m_materials(mesh->getMaterials
 		float x = m_vertices[3 * i];
 		float y = m_vertices[3 * i + 1];
 		float z = m_vertices[3 * i + 2];
-		m_boundingBox->expand(x, y, z);
+		m_boundingBox->expand(Vector<Vec>(x, y, z));
 	}
 
 	// Create material groups for optimized rendering
@@ -95,16 +95,19 @@ TexturedMesh::TexturedMesh(MeshBuffer2Ptr mesh) : m_materials(mesh->getMaterials
 
 void TexturedMesh::generateMaterialGroups()
 {
+    using VecUChar = BaseVector<unsigned char>;
+    using compColorsT = std::function<bool (const Vector<VecUChar> &, const Vector<VecUChar> &)>;
+    compColorsT colorsCompare = [] (const Vector<VecUChar> &a, const Vector<VecUChar> &b) { return (a.x < b.x) || (a.x == b.x && a.y < b.y) || (a.x == b.x && a.y == b.y && a.z < b.z); };
 
 	map<int, MaterialGroup* > texMatMap;
-	map<lvr::Vertex<unsigned char>, MaterialGroup* > colorMatMap;
+	map<Vector<VecUChar>, MaterialGroup*, compColorsT> colorMatMap;
 
 	// Iterate over face material buffer and
 	// sort faces by their material
 	for(size_t i = 0; i < m_numFaces; i++)
 	{
 		map<int, MaterialGroup*>::iterator texIt;
-		map<lvr::Vertex<unsigned char>, MaterialGroup* >::iterator colIt;
+		map<Vector<VecUChar>, MaterialGroup*, compColorsT>::iterator colIt;
 
 		// Get material by index and lookup in map. If present
 		// add face index to the corresponding group. Create a new
@@ -132,7 +135,7 @@ void TexturedMesh::generateMaterialGroups()
 		}
 		else
 		{
-			colIt = colorMatMap.find(lvr::Vertex<unsigned char>(m.m_color->at(0), m.m_color->at(1), m.m_color->at(2)));
+			colIt = colorMatMap.find(Vector<VecUChar>(m.m_color->at(0), m.m_color->at(1), m.m_color->at(2)));
 			if(colIt == colorMatMap.end())
 			{
 				MaterialGroup* g = new MaterialGroup;

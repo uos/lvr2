@@ -250,7 +250,7 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getMeshActor()
 void LVRMeshBufferBridge::computeMaterialGroups(vector<MaterialGroup*>& textureMaterials, vector<MaterialGroup*>& colorMaterials)
 {
     using compColorsT = std::function<bool (const Vector<VecUChar> &, const Vector<VecUChar> &)>;
-    compColorsT colorsCompare = [] (const Vector<VecUChar> &a, const Vector<VecUChar> &b) { return (a.x < b.x) || ( (a.x - b.x <= 0.00001) && a.y < b.y) || ( (a.y - b.y <= 0.00001) && a.z < b.z); };
+    compColorsT colorsCompare = [] (const Vector<VecUChar> &a, const Vector<VecUChar> &b) { return (a.x < b.x) || (a.x == b.x && a.y < b.y) || (a.x == b.x && a.y == b.y && a.z < b.z); };
 	map<int, MaterialGroup*> texMatMap;
 	map<Vector<VecUChar>, MaterialGroup*, compColorsT> colorMatMap(colorsCompare);
 

@@ -28,8 +28,6 @@
 #include <lvr2/io/BoctreeIO.hpp>
 #include <lvr2/io/Timestamp.hpp>
 
-#include <lvr/geometry/Matrix4.hpp>
-
 #include "slam6d/Boctree.h"
 
 namespace lvr2
@@ -86,7 +84,7 @@ ModelPtr BoctreeIO::read(string directory )
 
             cout << timestamp << "Reading " << scanfile << endl;
 
-            lvr::Matrix4<float> tf;
+            Matrix4<Vec> tf;
             vector<Point> points;
             BOctTree<float>::deserialize(scanfile, points);
 
@@ -110,14 +108,14 @@ ModelPtr BoctreeIO::read(string directory )
                 {
                     float euler[6];
                     for(int i = 0; i < 6; i++) pose_in >> euler[i];
-                    lvr::Vertex<float> position(euler[0], euler[1], euler[2]);
-                    lvr::Vertex<float> angle(euler[3], euler[4], euler[5]);
-                    tf = lvr::Matrix4<float>(position, angle);
+                    Vector<Vec> position(euler[0], euler[1], euler[2]);
+                    Vector<Vec> angle(euler[3], euler[4], euler[5]);
+                    tf = Matrix4<Vec>(position, angle);
                 }
                 else
                 {
                     cout << timestamp << "UOS Reader: Warning: No position information found." << endl;
-                    tf = lvr::Matrix4<float>();
+                    tf = Matrix4<Vec>();
                 }
 
             }
@@ -131,7 +129,7 @@ ModelPtr BoctreeIO::read(string directory )
             // Ugly hack to transform scan data
             for(int j = 0; j < points.size(); j++)
             {
-                lvr::Vertex<float> v(points[j].x, points[j].y, points[j].z);
+                Vector<Vec> v(points[j].x, points[j].y, points[j].z);
                 v = tf * v;
                 if(v.length() < 10000)
                 {
@@ -215,7 +213,7 @@ void BoctreeIO::save( string filename )
 
 }
 
-lvr::Matrix4<float>  BoctreeIO::parseFrameFile(ifstream& frameFile)
+Matrix4<Vec>  BoctreeIO::parseFrameFile(ifstream& frameFile)
 {
     float m[16], color;
     while(frameFile.good())
@@ -224,7 +222,7 @@ lvr::Matrix4<float>  BoctreeIO::parseFrameFile(ifstream& frameFile)
         frameFile >> color;
     }
 
-    return lvr::Matrix4<float>(m);
+    return Matrix4<Vec>(m);
 }
 
 } /* namespace lvr2 */

@@ -35,7 +35,7 @@ namespace lvr2
 PointCloud::PointCloud()
 {
     m_numNormals = 0;
-    m_boundingBox = new lvr::BoundingBox<lvr::Vertex<float> >;
+    m_boundingBox = new BoundingBox<Vec>;
     m_renderMode = RenderPoints;
 }
 
@@ -63,7 +63,7 @@ void PointCloud::init(PointBuffer2Ptr buffer)
 	int maxColors = 255;
 	m_numNormals = 0;
 
-	m_boundingBox = new lvr::BoundingBox<lvr::Vertex<float> >;
+	m_boundingBox = new BoundingBox<Vec>;
 	m_renderMode = RenderPoints;
 
 	if(buffer)
@@ -88,7 +88,7 @@ void PointCloud::init(PointBuffer2Ptr buffer)
 			float y = points[i*3 + 1];
 			float z = points[i*3 + 2];
 
-			m_boundingBox->expand(x,y,z);
+			m_boundingBox->expand(Vector<Vec>(x,y,z));
 
 			unsigned char r, g, b;
 
@@ -117,7 +117,7 @@ void PointCloud::init(PointBuffer2Ptr buffer)
 			}
 
 
-			m_points.push_back(lvr::uColorVertex(x, y, z, r, g, b));
+			m_points.push_back(uColorVertex(x, y, z, r, g, b));
 		}
 	}
 	updateDisplayLists();
@@ -182,9 +182,9 @@ void PointCloud::updateDisplayLists(){
         glColor3f(1.0, 0.0, 1.0);
         for(int i = 0; i < m_numNormals; i++)
         {
-            lvr::Vertex<float> start(m_points[i].x, m_points[i].y, m_points[i].z);
-            lvr::Normal<float> normal(m_normals[i*3 + 0], m_normals[i*3 + 1], m_normals[i*3 + 2]);
-            lvr::Vertex<float> end = start + normal * length;
+            Vector<Vec> start(m_points[i].x, m_points[i].y, m_points[i].z);
+            Normal<Vec> normal(m_normals[i*3 + 0], m_normals[i*3 + 1], m_normals[i*3 + 2]);
+            Vector<Vec> end = start + normal * length;
             glBegin(GL_LINES);
             glVertex3f(start[0], start[1], start[2]);
             glVertex3f(end[0], end[1], end[2]);

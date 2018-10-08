@@ -24,7 +24,7 @@
  *      Author: Thomas Wiemann
  */
 #include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr/reconstruction/FastReconstructionTables.hpp>
+#include <lvr2/reconstruction/FastReconstructionTables.hpp>
 #include <lvr2/io/Progress.hpp>
 
 namespace lvr2

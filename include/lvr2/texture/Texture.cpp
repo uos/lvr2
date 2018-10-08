@@ -183,7 +183,7 @@ void Texture::save()
     //write image file
     char fn[255];
     sprintf(fn, "texture_%d.ppm", m_index);
-    lvr::PPMIO* pio = new lvr::PPMIO;
+    PPMIO* pio = new PPMIO;
     pio->setDataArray(this->m_data, m_width, m_height);
     pio->write(string(fn));
     delete pio;

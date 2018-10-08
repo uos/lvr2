@@ -27,8 +27,10 @@
 #ifndef ARROW_H_
 #define ARROW_H_
 
-#include <lvr/geometry/Vertex.hpp>
 #include <lvr2/display/Renderable.hpp>
+
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/geometry/Vector.hpp>
 
 #include <vector>
 #include <string>
@@ -58,7 +60,7 @@ public:
 private:
 	double roll, pitch, yaw;
 	int color;
-	lvr::Matrix4f rotation;
+    Matrix4<BaseVector<float>> rotation;
 };
 
 	

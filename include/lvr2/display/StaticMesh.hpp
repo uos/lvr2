@@ -47,7 +47,7 @@
 #endif
 
 #include <lvr2/display/Renderable.hpp>
-#include <lvr/geometry/BoundingBox.hpp>
+#include <lvr2/geometry/BoundingBox.hpp>
 
 using namespace std;
 

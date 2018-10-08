@@ -28,7 +28,8 @@
 
 #include <lvr2/io/BaseIO.hpp>
 
-#include <lvr/geometry/Matrix4.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/geometry/Matrix4.hpp>
 
 #include <boost/filesystem.hpp>
 
@@ -43,6 +44,9 @@ namespace lvr2
  */
 class BoctreeIO : public BaseIO
 {
+
+    using Vec = BaseVector<float>;
+
 public:
 
     BoctreeIO();
@@ -64,7 +68,7 @@ public:
     virtual void save( string filename );
 
 private:
-    lvr::Matrix4<float> parseFrameFile(ifstream& frameFile);
+    Matrix4<Vec> parseFrameFile(ifstream& frameFile);
 };
 
 } /* namespace lvr2 */
