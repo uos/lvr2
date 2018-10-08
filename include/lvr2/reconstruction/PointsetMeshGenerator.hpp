@@ -27,9 +27,9 @@
 #ifndef _LVR2_RECONSTRUCTION_POINTSETMESHGENERATOR_H_
 #define _LVR2_RECONSTRUCTION_POINTSETMESHGENERATOR_H_
 
-#include <lvr/geometry/BaseMesh.hpp>
-#include "MeshGenerator.hpp"
-#include "PointsetSurface.hpp"
+#include <lvr2/geometry/BaseMesh.hpp>
+#include <lvr2/reconstruction/MeshGenerator.hpp>
+#include <lvr2/reconstruction/PointsetSurface.hpp>
 
 namespace lvr2
 {
@@ -64,6 +64,6 @@ protected:
     PointsetSurfacePtr<BaseVecT> m_surface;
 };
 
-} //namespace lvr
+} //namespace lvr2
 
 #endif /* _LVR2_RECONSTRUCTION_POINTSETMESHGENERATOR_H_ */

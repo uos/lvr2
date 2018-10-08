@@ -48,9 +48,9 @@ Renderable::Renderable()
 	m_active    = true;
 	m_selected  = false;
 
-	m_xAxis     = lvr::Vertex<float>(1.0f, 0.0f, 0.0f);
-	m_yAxis     = lvr::Vertex<float>(0.0f, 1.0f, 0.0f);
-	m_z_Axis    = lvr::Vertex<float>(0.0f, 0.0f, 1.0f);
+	m_xAxis     = Vector<Vec>(1.0f, 0.0f, 0.0f);
+	m_yAxis     = Vector<Vec>(0.0f, 1.0f, 0.0f);
+	m_z_Axis    = Vector<Vec>(0.0f, 0.0f, 1.0f);
 
 	m_boundingBox = 0;
 
@@ -61,7 +61,7 @@ Renderable::Renderable()
 
 }
 
-Renderable::Renderable(lvr::Matrix4<float> m, string n)
+Renderable::Renderable(Matrix4<Vec> m, string n)
 {
 	m_transformation    = m;
 	m_name              = n;
@@ -107,7 +107,7 @@ Renderable::Renderable(const Renderable& other)
 
 	m_scaleFactor           = other.m_scaleFactor;
 
-	m_boundingBox           = new lvr::BoundingBox<lvr::Vertex<float> >(*other.m_boundingBox);
+	m_boundingBox           = new BoundingBox<Vec>(*other.m_boundingBox);
 
     m_lineWidth         = 1.0;
     m_pointSize         = 1.0;
@@ -135,9 +135,9 @@ Renderable::Renderable(string n)
     m_lineWidth         = 1.0;
     m_pointSize         = 1.0;
 
-	m_xAxis     = lvr::Vertex<float>(1.0f, 0.0f, 0.0f);
-	m_yAxis     = lvr::Vertex<float>(0.0f, 1.0f, 0.0f);
-	m_z_Axis    = lvr::Vertex<float>(0.0f, 0.0f, 1.0f);
+	m_xAxis     = Vector<Vec>(1.0f, 0.0f, 0.0f);
+	m_yAxis     = Vector<Vec>(0.0f, 1.0f, 0.0f);
+	m_z_Axis    = Vector<Vec>(0.0f, 0.0f, 1.0f);
 
 	m_scaleFactor           = 1.0f;
 
@@ -169,7 +169,7 @@ void Renderable::yaw(bool invert)
 	float speed;
 	invert ? speed = m_rotationSpeed : speed = -m_rotationSpeed;
 
-	lvr::Quaternion<float> q;
+	Quaternion<Vec> q;
 	q.fromAxis(m_xAxis, speed);
 	m_yAxis = q * m_yAxis;
 	m_z_Axis = q * m_z_Axis;
@@ -181,7 +181,7 @@ void Renderable::pitch(bool invert)
 	float speed;
 	invert ? speed = m_rotationSpeed : speed = -m_rotationSpeed;
 
-	lvr::Quaternion<float> q;
+	Quaternion<Vec> q;
 	q.fromAxis(m_yAxis, speed);
 	m_xAxis = q * m_xAxis;
 	m_z_Axis = q * m_z_Axis;
@@ -194,7 +194,7 @@ void Renderable::roll(bool invert)
 	float speed;
 	invert ? speed = m_rotationSpeed : speed = -m_rotationSpeed;
 
-	lvr::Quaternion<float> q;
+	Quaternion<Vec> q;
 	q.fromAxis(m_z_Axis, speed);
 	m_xAxis = q * m_xAxis;
 	m_yAxis = q * m_yAxis;
@@ -208,8 +208,8 @@ void Renderable::rotX(bool invert)
 	float speed;
 	invert ? speed = m_rotationSpeed : speed = -m_rotationSpeed;
 
-	lvr::Quaternion<float> q;
-	q.fromAxis(lvr::Vertex<float>(1.0, 0.0, 0.0), speed);
+	Quaternion<Vec> q;
+	q.fromAxis(Vector<Vec>(1.0, 0.0, 0.0), speed);
 
 	m_xAxis = q * m_xAxis;
 	m_yAxis = q * m_yAxis;
@@ -224,8 +224,8 @@ void Renderable::rotY(bool invert)
 	float speed;
 	invert ? speed = m_rotationSpeed : speed = -m_rotationSpeed;
 
-	lvr::Quaternion<float> q;
-	q.fromAxis(lvr::Vertex<float>(0.0, 1.0, 0.0), speed);
+	Quaternion<Vec> q;
+	q.fromAxis(Vector<Vec>(0.0, 1.0, 0.0), speed);
 
 	m_xAxis = q * m_xAxis;
 	m_yAxis = q * m_yAxis;
@@ -240,8 +240,8 @@ void Renderable::rotZ(bool invert)
 	float speed;
 	invert ? speed = m_rotationSpeed : speed = -m_rotationSpeed;
 
-	lvr::Quaternion<float> q;
-	q.fromAxis(lvr::Vertex<float>(0.0, 0.0, 1.0), speed);
+	Quaternion<Vec> q;
+	q.fromAxis(Vector<Vec>(0.0, 0.0, 1.0), speed);
 
 	m_xAxis = q * m_xAxis;
 	m_yAxis = q * m_yAxis;
@@ -254,7 +254,7 @@ void Renderable::rotZ(bool invert)
 void Renderable::accel(bool invert)
 {
 
-	lvr::Normal<float> direction(m_z_Axis);
+	Normal<Vec> direction(m_z_Axis);
 	if(invert) direction = direction * -1;
 	m_position = m_position + direction * m_translationSpeed;
 
@@ -263,7 +263,7 @@ void Renderable::accel(bool invert)
 
 void Renderable::lift(bool invert)
 {
-	lvr::Normal<float> direction(m_yAxis);
+	Normal<Vec> direction(m_yAxis);
 	if(invert) direction = direction * -1;
 	m_position = m_position + direction * m_translationSpeed;
 
@@ -273,7 +273,7 @@ void Renderable::lift(bool invert)
 void Renderable::strafe(bool invert)
 {
 
-	lvr::Normal<float> direction(m_xAxis);
+	Normal<Vec> direction(m_xAxis);
 	if(invert) direction = direction * -1;
 	m_position = m_position + direction * m_translationSpeed;
 	cout << m_position;
@@ -288,7 +288,7 @@ Renderable::~Renderable() {
 
 void Renderable::computeMatrix(){
 
-	lvr::Matrix4<float> m;
+	Matrix4<Vec> m;
 
 	m.set(1 , m_xAxis.y);
 	m.set(2 , m_xAxis.z);
@@ -349,13 +349,13 @@ void Renderable::compileAxesList(){
 
 }
 
-void Renderable::setTransformationMatrix(lvr::Matrix4<float> m)
+void Renderable::setTransformationMatrix(Matrix4<Vec> m)
 {
 
 	m_transformation = m;
-	m_xAxis = lvr::Normal<float>(m[0 ], m[1 ], m[2 ]);
-	m_yAxis = lvr::Normal<float>(m[4 ], m[5 ], m[6 ]);
-	m_z_Axis = lvr::Normal<float>(m[8 ], m[9 ], m[10]);
+	m_xAxis = Normal<Vec>(m[0 ], m[1 ], m[2 ]);
+	m_yAxis = Normal<Vec>(m[4 ], m[5 ], m[6 ]);
+	m_z_Axis = Normal<Vec>(m[8 ], m[9 ], m[10]);
 
 	m_position.x = m[12];
 	m_position.y = m[13];

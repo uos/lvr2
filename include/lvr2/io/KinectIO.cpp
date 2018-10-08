@@ -49,7 +49,7 @@ KinectIO::KinectIO()
 	// Init freenect stuff
 	m_freenect = new Freenect::Freenect;
 
-	m_grabber = &m_freenect->createDevice<lvr::KinectGrabber>(0);
+	m_grabber = &m_freenect->createDevice<KinectGrabber>(0);
 	m_grabber->setDepthFormat(FREENECT_DEPTH_11BIT);
 	m_grabber->startVideo();
 	m_grabber->startDepth();

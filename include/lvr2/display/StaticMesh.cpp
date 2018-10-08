@@ -118,7 +118,7 @@ void StaticMesh::init( MeshBuffer2Ptr mesh )
 		m_renderMode    |= RenderSurfaces;
 		m_renderMode    |= RenderTriangles;
 
-		m_boundingBox = new lvr::BoundingBox<lvr::Vertex<float> >;
+		m_boundingBox = new BoundingBox<Vec>;
 
 		if(!m_faceNormals)
 		{
@@ -279,7 +279,7 @@ void StaticMesh::compileNameList()
 	// Compile a new one
 	m_nameList = glGenLists(1);
 	glNewList(m_nameList, GL_COMPILE);
-	lvr::Vertex<float> v = m_boundingBox->getCentroid();
+	Vector<Vec> v = m_boundingBox->getCentroid();
 	glDisable(GL_LIGHTING);
 	glColor3f(1.0, 1.0, 0.0);
 	glRasterPos3f(v.x, v.y, v.z);
@@ -323,14 +323,14 @@ void StaticMesh::interpolateNormals()
 		b = m_faces[buffer_pos + 1] * 3;
 		c = m_faces[buffer_pos + 2] * 3;
 
-		lvr::Vertex<float> v0(m_vertices[a], m_vertices[a + 1], m_vertices[a + 2]);
-		lvr::Vertex<float> v1(m_vertices[b], m_vertices[b + 1], m_vertices[b + 2]);
-		lvr::Vertex<float> v2(m_vertices[c], m_vertices[c + 1], m_vertices[c + 2]);
+		Vector<Vec> v0(m_vertices[a], m_vertices[a + 1], m_vertices[a + 2]);
+		Vector<Vec> v1(m_vertices[b], m_vertices[b + 1], m_vertices[b + 2]);
+		Vector<Vec> v2(m_vertices[c], m_vertices[c + 1], m_vertices[c + 2]);
 
-		lvr::Vertex<float> d1 = v0 - v1;
-		lvr::Vertex<float> d2 = v2 - v1;
+		Vector<Vec> d1 = v0 - v1;
+		Vector<Vec> d2 = v2 - v1;
 
-		lvr::Normal<float> p(d1.cross(d2));
+		Normal<Vec> p(d1.cross(d2));
 		p = p * -1;
 
 		// Sum up coordinate values in normal array
@@ -351,7 +351,7 @@ void StaticMesh::interpolateNormals()
 	// Normalize
 	for(size_t i = 0; i < m_numVertices; i++)
 	{
-		lvr::Normal<float> n(m_faceNormals[i * 3], m_faceNormals[i * 3 + 1], m_faceNormals[i * 3 + 2]);
+		Normal<Vec> n(m_faceNormals[i * 3], m_faceNormals[i * 3 + 1], m_faceNormals[i * 3 + 2]);
 		m_faceNormals[i * 3]     = n.x;
 		m_faceNormals[i * 3 + 1] = n.y;
 		m_faceNormals[i * 3 + 2] = n.z;
@@ -374,10 +374,10 @@ void StaticMesh::calcBoundingBox()
 {
     for(size_t i = 0; i < m_numVertices; i++)
     {
-        m_boundingBox->expand(
+        m_boundingBox->expand(Vector<Vec>(
                 m_vertices[3 * i],
                 m_vertices[3 * i + 1],
-                m_vertices[3 * i + 2] );
+                m_vertices[3 * i + 2] ));
 
     }
 }

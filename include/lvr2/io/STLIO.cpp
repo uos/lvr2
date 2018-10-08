@@ -8,8 +8,9 @@
 
 #include <lvr2/io/STLIO.hpp>
 #include <lvr2/io/Timestamp.hpp>
-#include <lvr/geometry/Normal.hpp>
-#include <lvr/geometry/Vertex.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/geometry/Vector.hpp>
+#include <lvr2/geometry/Normal.hpp>
 
 #include <iostream>
 #include <cstdio>
@@ -69,9 +70,10 @@ void STLIO::save( ModelPtr model, string filename )
 			int b = (int)indices[3 * i + 1];
 			int c = (int)indices[3 * i + 2];
 
-			lvr::Vertexf v1;
-			lvr::Vertexf v2;
-			lvr::Vertexf v3;
+            using Vec = BaseVector<float>;
+			Vector<Vec> v1;
+			Vector<Vec> v2;
+			Vector<Vec> v3;
 
 			v1.x = vertices[3 * a];
 			v1.y = vertices[3 * a + 1];
@@ -85,7 +87,7 @@ void STLIO::save( ModelPtr model, string filename )
 			v3.y = vertices[3 * c + 1];
 			v3.z = vertices[3 * c + 2];
 
-			lvr::Normalf normal( (v1 - v2).cross(v1 - v3));
+			Normal<Vec> normal( (v1 - v2).cross(v1 - v3));
 
 			myfile.write( (char*)&normal.x, 4);
 			myfile.write( (char*)&normal.y, 4);

@@ -32,10 +32,10 @@
  *  Created on: 16.02.2011
  *      Author: Thomas Wiemann
  */
-#include "HashGrid.hpp"
+#include <lvr2/reconstruction/HashGrid.hpp>
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/geometry/Vector.hpp>
-#include <lvr/reconstruction/FastReconstructionTables.hpp>
+#include <lvr2/reconstruction/FastReconstructionTables.hpp>
 #include <lvr2/io/Progress.hpp>
 #include <lvr2/io/Timestamp.hpp>
 

@@ -47,7 +47,7 @@ void MultiPointCloud::init(PointBuffer2Ptr buffer)
 {
 	if(buffer)
 	{
-        m_boundingBox = new lvr::BoundingBox<lvr::Vertex<float> >;
+        m_boundingBox = new BoundingBox<Vec>;
         size_t numSubClouds;
         unsigned dummy; 
 
@@ -120,7 +120,7 @@ ModelPtr MultiPointCloud::model( )
         PointCloud* pc = it->second->cloud;
         if(pc->isActive())
         {
-            vector<lvr::uColorVertex>::iterator p_it;
+            vector<uColorVertex>::iterator p_it;
             for(p_it = pc->m_points.begin(); p_it != pc->m_points.end(); p_it++)
             {
                 c++;
@@ -130,7 +130,7 @@ ModelPtr MultiPointCloud::model( )
 
 
     // Create a new model and save points
-    PointBuffer2Ptr pcBuffer( new PointBuffer2);
+    PointBuffer2Ptr pcBuffer(new PointBuffer2);
     floatArr pointBuffer(new float[3 * c]);
     ucharArr colorBuffer(new unsigned char[3 * c]);
     c = 0;
@@ -140,12 +140,12 @@ ModelPtr MultiPointCloud::model( )
         PointCloud* pc = it->second->cloud;
         if(pc->isActive())
         {
-            vector<lvr::uColorVertex>::iterator p_it;
+            vector<uColorVertex>::iterator p_it;
             for(p_it = pc->m_points.begin(); p_it != pc->m_points.end(); p_it++)
             {
                 size_t bufferPos = 3 * c;
 
-                lvr::uColorVertex v = *p_it;
+                uColorVertex v = *p_it;
                 pointBuffer[bufferPos    ] = v.x;
                 pointBuffer[bufferPos + 1] = v.y;
                 pointBuffer[bufferPos + 2] = v.z;

@@ -433,6 +433,7 @@ void LVRMainWindow::restoreSliders()
 
         pointCloudItem->getPointBufferBridge()->getSpectralChannels(channels, use_channel);
         pointCloudItem->getPointBufferBridge()->getSpectralColorGradient(gradient_type, gradient_channel, normalize_gradient, use_ndvi);
+
         PointBuffer2Ptr p = pointCloudItem->getPointBuffer();
         FloatChannelOptional spec_channels = p->getFloatChannel("spectral_channels");
 
@@ -472,6 +473,11 @@ void LVRMainWindow::restoreSliders()
             this->comboBox_colorgradient->setCurrentIndex((int)gradient_type);
             m_gradientLineEdit->setText(QString("%1").arg(getSpectralWavelength(gradient_channel, p)));
             this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(true);
+        }
+        else
+        {
+            this->dockWidgetSpectralSliderSettingsContents->setEnabled(false);
+            this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(false);
         }
     }
     else

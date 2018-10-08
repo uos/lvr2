@@ -94,11 +94,11 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 // template<typename BaseVecT>
 // void AdaptiveKSearchSurface<BaseVecT>::parseScanPoses(string posefile)
 // {
-//     cout << lvr::timestamp << "Parsing scan poses." << endl;
+//     cout << timestamp << "Parsing scan poses." << endl;
 //     std::ifstream in(posefile.c_str());
 //     if(!in.good())
 //     {
-//         cout << lvr::timestamp << "Unable to open scan pose file " << posefile << endl;
+//         cout << timestamp << "Unable to open scan pose file " << posefile << endl;
 //         return;
 //     }
 
@@ -125,7 +125,7 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 //         loader->setPointArray(points, v.size());
 //         size_t n = v.size();
 
-//         cout << lvr::timestamp << "Creating pose search tree(" << m_searchTreeName << ") with "
+//         cout << timestamp << "Creating pose search tree(" << m_searchTreeName << ") with "
 //             << n << " poses." << endl;
 
 // #ifdef LVR_USE_PCL
@@ -157,8 +157,8 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 
 //         if( !this->m_poseTree )
 //         {
-//             cout << lvr::timestamp << "No Valid Searchtree class specified!" << endl;
-//             cout << lvr::timestamp << "Class: " << m_searchTreeName << endl;
+//             cout << timestamp << "No Valid Searchtree class specified!" << endl;
+//             cout << timestamp << "Class: " << m_searchTreeName << endl;
 //         }
 //     }
 // }

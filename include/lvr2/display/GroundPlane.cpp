@@ -92,7 +92,7 @@ void GroundPlane::render(){
 
 }
 
-void GroundPlane::transform(lvr::Matrix4<float> m){
+void GroundPlane::transform(Matrix4<Vec> m){
 	//To Do: Write transformation code
 }
 

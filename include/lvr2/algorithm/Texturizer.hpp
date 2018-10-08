@@ -43,9 +43,6 @@
 #include <lvr2/texture/Material.hpp>
 #include <lvr2/geometry/BoundingRectangle.hpp>
 
-#include <lvr/io/Progress.hpp>
-#include <lvr/io/Timestamp.hpp>
-
 #include <opencv2/features2d.hpp>
 
 namespace lvr2

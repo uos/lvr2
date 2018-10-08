@@ -40,7 +40,7 @@ public:
 
 	virtual ~GroundPlane();
 	virtual void render();
-	virtual void transform(lvr::Matrix4<float> m);
+	virtual void transform(Matrix4<Vec> m);
 
 private:
 	void drawGrid(int increment, int count);

@@ -40,7 +40,7 @@ public:
 	virtual ~CoordinateAxes();
 
 	virtual void render();
-	virtual void transform(lvr::Matrix4<float> m);
+	virtual void transform(Matrix4<Vec> m);
 
 private:
 	void drawArrow(float length, float radius, int nSubdivs = 12);

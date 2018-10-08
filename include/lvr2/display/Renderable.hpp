@@ -44,9 +44,10 @@
 #include <string>
 using namespace std;
 
-#include <lvr/geometry/Matrix4.hpp>
-#include <lvr/geometry/Quaternion.hpp>
-#include <lvr/geometry/BoundingBox.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/geometry/Matrix4.hpp>
+#include <lvr2/geometry/Quaternion.hpp>
+#include <lvr2/geometry/BoundingBox.hpp>
 
 #include <lvr2/io/Model.hpp>
 
@@ -54,16 +55,21 @@ namespace lvr2
 {
 
 class Renderable {
+
 public:
+
+    using Vec = BaseVector<float>;
+
 	Renderable();
 	Renderable(const Renderable &other);
 	Renderable(string name);
-	Renderable(lvr::Matrix4<float> m, string name);
+	Renderable(Matrix4<Vec> m, string name);
+
 
 	virtual ~Renderable();
 	virtual void render() = 0;
 
-	void setTransformationMatrix(lvr::Matrix4<float> m);
+	void setTransformationMatrix(Matrix4<Vec> m);
 
 	virtual void setName(string s){m_name = s;};
 	void setVisible(bool s){m_visible = s;};
@@ -105,9 +111,9 @@ public:
 	void compileAxesList();
 
 	string Name() {return m_name;};
-	lvr::Matrix4<float> getTransformation(){return m_transformation;};
+	Matrix4<Vec> getTransformation(){return m_transformation;};
 
-	lvr::BoundingBox<lvr::Vertex<float> >* boundingBox() { return m_boundingBox;};
+	BoundingBox<Vec>* boundingBox() { return m_boundingBox;};
 
 	virtual ModelPtr model()
     {
@@ -141,14 +147,14 @@ protected:
 
     string                       m_name;
 
-	lvr::Normal<float>                m_xAxis;
-	lvr::Normal<float>                m_yAxis;
-	lvr::Normal<float>                m_z_Axis;
+	Normal<Vec>                  m_xAxis;
+	Normal<Vec>                  m_yAxis;
+	Normal<Vec>                  m_z_Axis;
 
-	lvr::Vertex<float>                m_position;
+	Vector<Vec>                  m_position;
 
-    lvr::Matrix4<float>               m_transformation;
-    lvr::BoundingBox<lvr::Vertex<float> >* m_boundingBox;
+    Matrix4<Vec>                 m_transformation;
+    BoundingBox<Vec>*            m_boundingBox;
 
     ModelPtr                     m_model;
 

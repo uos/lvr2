@@ -1,4 +1,4 @@
-#include <lvr/reconstruction/opencl/ClSurface.hpp>
+#include <lvr2/reconstruction/opencl/ClSurface.hpp>
 
 namespace lvr2
 {

@@ -135,7 +135,7 @@ void CoordinateAxes::render(){
 	}
 }
 
-void CoordinateAxes::transform(lvr::Matrix4<float> m){
+void CoordinateAxes::transform(Matrix4<Vec> m){
 
 }
 

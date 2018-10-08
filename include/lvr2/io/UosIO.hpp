@@ -40,8 +40,8 @@
 #include <lvr2/io/BaseIO.hpp>
 #include <lvr2/io/AsciiIO.hpp>
 
-#include <lvr/geometry/Vertex.hpp>
-#include <lvr/geometry/Matrix4.hpp>
+#include <lvr2/geometry/Vector.hpp>
+#include <lvr2/geometry/Matrix4.hpp>
 
 using std::string;
 using std::fstream;
@@ -63,6 +63,9 @@ namespace lvr2
 
 class UosIO : public BaseIO
 {
+
+    using Vec = BaseVector<float>;
+
 public:
 
     /**
@@ -160,7 +163,7 @@ private:
      * @return          A matrix representing the final transformation
      *                  from a frame file
      */
-    lvr::Matrix4<float> parseFrameFile(ifstream& frameFile);
+    Matrix4<Vec> parseFrameFile(ifstream& frameFile);
 
 
     inline std::string to_string(const int& t, int width)
