@@ -26,6 +26,8 @@
 
 #include <lvr2/display/TexturedMesh.hpp>
 
+#include <lvr2/util/Util.hpp>
+
 #include <map>
 using std::multimap;
 using std::map;
@@ -95,19 +97,15 @@ TexturedMesh::TexturedMesh(MeshBuffer2Ptr mesh) : m_materials(mesh->getMaterials
 
 void TexturedMesh::generateMaterialGroups()
 {
-    using VecUChar = BaseVector<unsigned char>;
-    using compColorsT = std::function<bool (const Vector<VecUChar> &, const Vector<VecUChar> &)>;
-    compColorsT colorsCompare = [] (const Vector<VecUChar> &a, const Vector<VecUChar> &b) { return (a.x < b.x) || (a.x == b.x && a.y < b.y) || (a.x == b.x && a.y == b.y && a.z < b.z); };
-
 	map<int, MaterialGroup* > texMatMap;
-	map<Vector<VecUChar>, MaterialGroup*, compColorsT> colorMatMap;
+	map<Vector<VecUChar>, MaterialGroup*, Util::ColorVecCompare> colorMatMap;
 
 	// Iterate over face material buffer and
 	// sort faces by their material
 	for(size_t i = 0; i < m_numFaces; i++)
 	{
 		map<int, MaterialGroup*>::iterator texIt;
-		map<Vector<VecUChar>, MaterialGroup*, compColorsT>::iterator colIt;
+		map<Vector<VecUChar>, MaterialGroup*, Util::ColorVecCompare>::iterator colIt;
 
 		// Get material by index and lookup in map. If present
 		// add face index to the corresponding group. Create a new

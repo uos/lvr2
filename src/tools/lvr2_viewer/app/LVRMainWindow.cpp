@@ -34,6 +34,8 @@
 
 #include <lvr2/registration/ICPPointAlign.hpp>
 
+#include <lvr2/util/Util.hpp>
+
 #include <vtkActor.h>
 #include <vtkProperty.h>
 #include <vtkPointPicker.h>
@@ -1440,32 +1442,6 @@ void LVRMainWindow::onGradientLineEditChanged()
     }
 }
 
-int LVRMainWindow::getSpectralChannel(int wavelength, PointBuffer2Ptr pbuff)
-{
-        FloatChannelOptional spectral_channels = pbuff->getFloatChannel("spectral_channels");
-
-        if (spectral_channels)
-        {
-            unsigned numSpectraChannels = spectral_channels->width();
-            int minWavelength = *pbuff->getIntAttribute("spectral_wavelength_min");
-            int maxWavelength = *pbuff->getIntAttribute("spectral_wavelength_max");
-            float wavelengthPerChannel = (maxWavelength - minWavelength) / static_cast<float>(numSpectraChannels);
-
-            int channel = (wavelength - minWavelength) /  wavelengthPerChannel;
-
-            if (channel < 0 || channel >= numSpectraChannels)
-            {
-                return -1;
-            }
-
-            return channel;
-        }
-        else
-        {
-            return -1;
-        }
-}
-
 void LVRMainWindow::changeSpectralColor()
 {
     if (!this->dockWidgetSpectralSliderSettingsContents->isEnabled())
@@ -1489,8 +1465,8 @@ void LVRMainWindow::changeSpectralColor()
     {
         int wavelength = m_spectralSliders[i]->value();
         m_spectralLineEdits[i]->setText(QString("%1").arg(wavelength));
-       
-        channels[i] = getSpectralChannel(wavelength, p);     
+
+        channels[i] = Util::getSpectralChannel(wavelength, p);
 
         use_channel[i] = m_spectralCheckboxes[i]->isChecked();
         m_spectralSliders[i]->setEnabled(use_channel[i]);
@@ -1575,7 +1551,7 @@ void LVRMainWindow::changeGradientColor()
     PointBuffer2Ptr p = (*items.begin())->getPointBuffer();
 
     // @TODO returnvalue could be negative
-    size_t channel = getSpectralChannel(wavelength, p);
+    size_t channel = Util::getSpectralChannel(wavelength, p);
 
     bool useNDVI = this->checkBox_NDVI->isChecked();
     bool normalized = this->checkBox_normcolors->isChecked();

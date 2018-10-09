@@ -30,6 +30,8 @@
 
 #include <lvr2/io/ObjIO.hpp>
 
+#include <lvr2/util/Util.hpp>
+
 #include <climits>
 #include <iostream>
 #include <fstream>
@@ -298,21 +300,21 @@ ModelPtr ObjIO::read(string filename)
         cout << timestamp << "ObjIO::read(): Unable to open file'" << filename << "'." << endl;
     }
 
-    mesh->setVertices(convert_vector_to_shared_array(vertices), vertices.size() / 3);
-    mesh->setFaceIndices(convert_vector_to_shared_array(faces), faces.size() / 3);
+    mesh->setVertices(Util::convert_vector_to_shared_array(vertices), vertices.size() / 3);
+    mesh->setFaceIndices(Util::convert_vector_to_shared_array(faces), faces.size() / 3);
 
     if(faceMaterials.size() == faces.size() / 3)
     {
-        mesh->setFaceMaterialIndices(convert_vector_to_shared_array(faceMaterials));
+        mesh->setFaceMaterialIndices(Util::convert_vector_to_shared_array(faceMaterials));
     }
     else
     {
         cout << "ObjIO::read(): Warning: Face material index buffer does not match face number." << endl;
     }
 
-    mesh->setTextureCoordinates(convert_vector_to_shared_array(texcoords));
-    mesh->setVertexNormals(convert_vector_to_shared_array(normals));
-    mesh->setVertexColors(convert_vector_to_shared_array(colors));
+    mesh->setTextureCoordinates(Util::convert_vector_to_shared_array(texcoords));
+    mesh->setVertexNormals(Util::convert_vector_to_shared_array(normals));
+    mesh->setVertexColors(Util::convert_vector_to_shared_array(colors));
 
     ModelPtr m(new Model(mesh));
     m_model = m;

@@ -183,7 +183,6 @@ Q_SIGNALS:
 private:
     void setupQVTK();
     void connectSignalsAndSlots();
-    int getSpectralChannel(int wavelength, PointBuffer2Ptr pbuff);
 
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;

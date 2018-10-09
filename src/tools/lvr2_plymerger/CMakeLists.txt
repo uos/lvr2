@@ -18,6 +18,7 @@ set(PLY_MERGE_SRC
     ${PROJECT_SOURCE_DIR}/include/lvr2/texture/Texture.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/display/TextureFactory.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/display/GlTexture.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/util/Util.cpp
     Options.cpp
     Main.cpp
 )

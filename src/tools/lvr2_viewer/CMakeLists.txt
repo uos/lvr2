@@ -29,6 +29,7 @@ set(LVR_VIEWER_SOURCES
     ${PROJECT_SOURCE_DIR}/include/lvr2/texture/Texture.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/ModelFactory.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/display/TextureFactory.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/util/Util.cpp
     app/LVRMain.cpp
     app/LVRMainWindow.cpp
     app/LVRTreeWidgetHelper.cpp

@@ -34,31 +34,10 @@
 #include <vtkProperty.h>
 #include <vtkPointData.h>
 
+#include <lvr2/util/Util.hpp>
+
 namespace lvr2
 {
-
-int getSpectralChannel(int wavelength, PointBuffer2Ptr pcloud, int fallback = -1)
-{
-    int minWavelength = *pcloud->getIntAttribute("spectral_wavelength_min");
-    int maxWavelength = *pcloud->getIntAttribute("spectral_wavelength_max");
-
-    FloatChannelOptional spectral_channels = pcloud->getFloatChannel("spectral_channels");
-
-    if (!spectral_channels)
-    {
-        return fallback;
-    }
-
-    float wavelengthPerChannel = (maxWavelength - minWavelength) / (float) spectral_channels->width();
-    int channel = (wavelength - minWavelength) / wavelengthPerChannel;
-
-    if (channel < 0 || channel >= spectral_channels->width())
-    {
-        return fallback;
-    }
-
-    return channel;
-}
 
 inline unsigned char floatToColor(float f)
 {
@@ -90,9 +69,9 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBuffer2Ptr pointCloud)
         m_pointBuffer = pointCloud;
 
         // default: visible light
-        m_spectralChannels.r = getSpectralChannel(612, pointCloud);
-        m_spectralChannels.g = getSpectralChannel(552, pointCloud);
-        m_spectralChannels.b = getSpectralChannel(462, pointCloud);
+        m_spectralChannels.r = Util::getSpectralChannel(612, pointCloud);
+        m_spectralChannels.g = Util::getSpectralChannel(552, pointCloud);
+        m_spectralChannels.b = Util::getSpectralChannel(462, pointCloud);
 
         // Generate vtk actor representation
         computePointCloudActor(pointCloud);
@@ -213,10 +192,10 @@ void LVRPointBufferBridge::refreshSpectralGradient()
     {
         ndvi = floatArr(new float[n]);
 
-        size_t redStart     = getSpectralChannel(400, m_pointBuffer, 0);
-        size_t redEnd       = getSpectralChannel(700, m_pointBuffer, 1);
-        size_t nearRedStart = getSpectralChannel(700, m_pointBuffer, n_channels - 2);
-        size_t nearRedEnd   = getSpectralChannel(1100, m_pointBuffer, n_channels - 1);
+        size_t redStart     = Util::getSpectralChannel(400, m_pointBuffer, 0);
+        size_t redEnd       = Util::getSpectralChannel(700, m_pointBuffer, 1);
+        size_t nearRedStart = Util::getSpectralChannel(700, m_pointBuffer, n_channels - 2);
+        size_t nearRedEnd   = Util::getSpectralChannel(1100, m_pointBuffer, n_channels - 1);
 
         #pragma omp parallel for reduction(max : ndviMax), reduction(min : ndviMin)
         for (int i = 0; i < n; i++)
