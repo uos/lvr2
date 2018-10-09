@@ -219,7 +219,7 @@ void LVRMeshBufferBridge::setOpacity(float opacityValue)
     m_meshActor->SetProperty(p);
     if (hasTextures())
     {
-        vtkSmartPointer<vtkProperty> prop = vtkProperty::New();
+        vtkSmartPointer<vtkProperty> prop = getTexturedActors()->GetLastActor()->GetProperty();
         prop->SetOpacity(opacityValue);
         getTexturedActors()->ApplyProperties(prop);
     }
@@ -231,11 +231,30 @@ void LVRMeshBufferBridge::setVisibility(bool visible)
     {
         m_meshActor->VisibilityOn();
         m_wireframeActor->VisibilityOn();
+
+        if (m_texturedActors)
+        {
+            m_texturedActors->InitTraversal();
+            for(vtkIdType i = 0; i < m_texturedActors->GetNumberOfItems(); i++)
+            {
+                m_texturedActors->GetNextActor()->VisibilityOn();
+            }
+
+        }
     }
     else
     {
         m_meshActor->VisibilityOff();
         m_wireframeActor->VisibilityOff();
+        if (m_texturedActors)
+        {
+            m_texturedActors->InitTraversal();
+            for(vtkIdType i = 0; i < m_texturedActors->GetNumberOfItems(); i++)
+            {
+                m_texturedActors->GetNextActor()->VisibilityOff();
+            }
+
+        }
     }
 }
 
