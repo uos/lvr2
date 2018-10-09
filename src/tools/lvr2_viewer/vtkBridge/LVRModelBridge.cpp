@@ -46,7 +46,18 @@ LVRModelBridge::LVRModelBridge(ModelPtr model) :
     m_pose.x = 0.0;
     m_pose.y = 0.0;
     m_pose.z = 0.0;
-    if(validMeshBridge()) m_meshBridge->getMeshActor()->GetProperty()->BackfaceCullingOn();
+    if(validMeshBridge()) {
+        if (!m_meshBridge->hasTextures())
+        {
+            m_meshBridge->getMeshActor()->GetProperty()->BackfaceCullingOn();
+        }
+        else
+        {
+            vtkSmartPointer<vtkProperty> prop = vtkProperty::New();
+            prop->BackfaceCullingOn();
+            m_meshBridge->getTexturedActors()->ApplyProperties(prop);
+        }
+    }
 }
 
 LVRModelBridge::LVRModelBridge(const LVRModelBridge& b)
@@ -76,7 +87,22 @@ void LVRModelBridge::setPose(const Pose& pose)
     transform->RotateZ(pose.p);
     transform->Translate(pose.x, pose.y, pose.z);
     if(validPointBridge()) m_pointBridge->getPointCloudActor()->SetUserTransform(transform);
-    if(validMeshBridge()) m_meshBridge->getMeshActor()->SetUserTransform(transform);
+    if(validMeshBridge())
+    {
+        if (!m_meshBridge->hasTextures())
+        {
+            m_meshBridge->getMeshActor()->SetUserTransform(transform);
+        }
+        else
+        {
+            vtkSmartPointer<vtkActorCollection> col = m_meshBridge->getTexturedActors();
+            col->InitTraversal();
+            for (int i = 0; i < col->GetNumberOfItems(); i++)
+            {
+                col->GetNextActor()->SetUserTransform(transform);
+            }
+        }
+    }
 }
 
 Pose LVRModelBridge::getPose()
