@@ -23,6 +23,7 @@ set(RECONSTRUCT_SOURCES
     ${PROJECT_SOURCE_DIR}/include/lvr2/display/StaticMesh.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/display/TexturedMesh.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/display/TextureFactory.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/reconstruction/LBKdTree.cpp
     Main.cpp
 )
 
@@ -67,7 +68,7 @@ include_directories(${HDF5_INCLUDE_DIR})
 target_link_libraries(lvr2_reconstruct ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 
 if(CUDA_FOUND)
-        target_link_libraries(lvr2_reconstruct lvrcuda)
+        target_link_libraries(lvr2_reconstruct lvrcuda cuda_normals)
         target_compile_definitions(lvr2_reconstruct PRIVATE CUDA_FOUND=1)
 endif()
 if(OPENCL_FOUND)
