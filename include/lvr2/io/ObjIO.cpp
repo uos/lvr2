@@ -146,12 +146,11 @@ void ObjIO::parseMtlFile(
                 // Add full path to texture file name
                 boost::filesystem::path tex_file = p / texname;
 
-                GlTexture* texture = TextureFactory::instance().getTexture(tex_file.string());
+                Texture texture = TextureFactory::instance().getTexture(tex_file.string());
                 unsigned int tex_idx = textures.size();
-                textures.push_back(std::move(Texture(tex_idx, texture)));
+                texture.m_index = tex_idx;
+                textures.push_back(std::move(texture));
                 materials.back().m_texture = TextureHandle(tex_idx);
-
-                delete texture;
             }
             else
             {
