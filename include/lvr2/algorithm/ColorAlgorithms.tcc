@@ -38,7 +38,7 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
     const PointsetSurfacePtr<BaseVecT> surface
 )
 {
-    if (!surface->pointBuffer()->hasRgbColor())
+    if (!surface->pointBuffer()->hasColors())
     {
         // cout << "none" << endl;
         return boost::none;
