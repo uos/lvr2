@@ -35,10 +35,10 @@ TextureFactory& TextureFactory::instance()
     return instance;
 }
 
-GlTexture* TextureFactory::getTexture(string filename) const
+Texture TextureFactory::getTexture(string filename) const
 {
     // A texture object
-	GlTexture* tex = 0;
+	Texture tex;
 
 	// Texture data
 	int width = 0;
@@ -59,7 +59,11 @@ GlTexture* TextureFactory::getTexture(string filename) const
 	// Check data and create new texture if possible
 	if(data != 0 && width != 0 && height != 0)
 	{
-		tex = new GlTexture(data, width, height);
+        tex.m_data = data;
+        tex.m_width = width;
+        tex.m_height = height;
+        tex.m_numChannels = 3;
+        tex.m_numBytesPerChan = 1;
 	}
 	else
 	{
