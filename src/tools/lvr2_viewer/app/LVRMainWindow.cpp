@@ -396,22 +396,6 @@ void LVRMainWindow::removeArrow(LVRVtkArrow* a)
     this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-int getSpectralWavelength(int channel, PointBuffer2Ptr p)
-{
-    int wavelength_min = *p->getIntAttribute("spectral_wavelength_min");
-    int wavelength_max = *p->getIntAttribute("spectral_wavelength_max");
-    unsigned n_channels = p->getFloatChannel("spectral_channels")->width();
-
-    if (channel < 0 || channel >= n_channels)
-    {
-        return -1;
-    }
-
-    float wavelengthPerChannel = (wavelength_max - wavelength_min) / (float) n_channels;
-
-    return channel * wavelengthPerChannel + wavelength_min;
-}
-
 void LVRMainWindow::restoreSliders()
 {
     std::set<LVRPointCloudItem*> pointCloudItems = getSelectedPointCloudItems();
@@ -448,32 +432,31 @@ void LVRMainWindow::restoreSliders()
             this->dockWidgetSpectralSliderSettingsContents->setEnabled(false); // disable to stop changeSpectralColor from re-rendering 6 times
             for (int i = 0; i < 3; i++)
             {
-                float wavelengthPerChannel = (wavelength_max - wavelength_min) / (float) n_channels;
                 m_spectralSliders[i]->setMaximum(wavelength_max - 1);
                 m_spectralSliders[i]->setMinimum(wavelength_min);
-                m_spectralSliders[i]->setSingleStep(wavelengthPerChannel);
-                m_spectralSliders[i]->setPageStep(10 * wavelengthPerChannel);
-                m_spectralSliders[i]->setValue(getSpectralWavelength(channels[i], p));
+                m_spectralSliders[i]->setSingleStep(Util::wavelengthPerChannel(p));
+                m_spectralSliders[i]->setPageStep(10 * Util::wavelengthPerChannel(p));
+                m_spectralSliders[i]->setValue(Util::getSpectralWavelength(channels[i], p));
                 m_spectralSliders[i]->setEnabled(use_channel[i]);
                 m_spectralLineEdits[i]->setEnabled(use_channel[i]);
 
                 m_spectralCheckboxes[i]->setChecked(use_channel[i]);
 
-                m_spectralLineEdits[i]->setText(QString("%1").arg(getSpectralWavelength(channels[i], p)));
+                m_spectralLineEdits[i]->setText(QString("%1").arg(Util::getSpectralWavelength(channels[i], p)));
             }
             this->dockWidgetSpectralSliderSettingsContents->setEnabled(true);
 
             this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(false);
             m_gradientSlider->setMaximum(wavelength_max - 1);
             m_gradientSlider->setMinimum(wavelength_min);
-            m_gradientSlider->setValue(getSpectralWavelength(gradient_channel, p));
+            m_gradientSlider->setValue(Util::getSpectralWavelength(gradient_channel, p));
             m_gradientSlider->setEnabled(!use_ndvi);
             m_gradientLineEdit->setEnabled(!use_ndvi);
 
             this->checkBox_NDVI->setChecked(use_ndvi);
             this->checkBox_normcolors->setChecked(normalize_gradient);
             this->comboBox_colorgradient->setCurrentIndex((int)gradient_type);
-            m_gradientLineEdit->setText(QString("%1").arg(getSpectralWavelength(gradient_channel, p)));
+            m_gradientLineEdit->setText(QString("%1").arg(Util::getSpectralWavelength(gradient_channel, p)));
             this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(true);
         }
         else

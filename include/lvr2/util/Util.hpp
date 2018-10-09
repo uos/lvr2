@@ -18,6 +18,12 @@ class Util
 {
 public:
 
+    // helper methods for getting spectralchannels/wavelengths of channel
+    static int getSpectralChannel(int wavelength, PointBuffer2Ptr pcloud, int fallback = -1);
+    static int getSpectralWavelength(int channel, PointBuffer2Ptr p, int fallback = -1);
+    static float wavelengthPerChannel(PointBuffer2Ptr pcloud);
+
+    // copies a vector into a shared array
     template<typename T>
     static boost::shared_array<T> convert_vector_to_shared_array(std::vector<T> source)
     {
@@ -27,8 +33,7 @@ public:
         return ret;
     }
 
-    static int getSpectralChannel(int wavelength, PointBuffer2Ptr pcloud, int fallback = -1);
-
+    // Functionobject to compare Vector<BaseVector<unsigned char>>
     struct ColorVecCompare
     {
         bool operator() (const Vector<VecUChar>& lhs, const Vector<VecUChar>& rhs) const
