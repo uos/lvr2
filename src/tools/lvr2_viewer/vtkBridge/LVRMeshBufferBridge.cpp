@@ -38,6 +38,8 @@
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 
+#include <lvr2/util/Util.hpp>
+
 namespace lvr2
 {
 
@@ -249,10 +251,8 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getMeshActor()
 
 void LVRMeshBufferBridge::computeMaterialGroups(vector<MaterialGroup*>& textureMaterials, vector<MaterialGroup*>& colorMaterials)
 {
-    using compColorsT = std::function<bool (const Vector<VecUChar> &, const Vector<VecUChar> &)>;
-    compColorsT colorsCompare = [] (const Vector<VecUChar> &a, const Vector<VecUChar> &b) { return (a.x < b.x) || (a.x == b.x && a.y < b.y) || (a.x == b.x && a.y == b.y && a.z < b.z); };
 	map<int, MaterialGroup*> texMatMap;
-	map<Vector<VecUChar>, MaterialGroup*, compColorsT> colorMatMap(colorsCompare);
+	map<Vector<VecUChar>, MaterialGroup*, Util::ColorVecCompare> colorMatMap;
 
 	// Get buffers
 	vector<Material>  &materials = m_meshBuffer->getMaterials();
@@ -270,7 +270,7 @@ void LVRMeshBufferBridge::computeMaterialGroups(vector<MaterialGroup*>& textureM
 	for(size_t i = 0; i < m_numFaces; i++)
 	{
 		map<int, MaterialGroup*>::iterator texIt;
-		map<Vector<VecUChar>, MaterialGroup*, compColorsT>::iterator colIt;
+		map<Vector<VecUChar>, MaterialGroup*, Util::ColorVecCompare>::iterator colIt;
 
 		// Get material by index and lookup in map. If present
 		// add face index to the corresponding group. Create a new

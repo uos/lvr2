@@ -26,10 +26,13 @@
 #include <vector>
 #include <utility>
 #include <cmath>
-#include <lvr2/io/MeshBuffer2.hpp>
+
 #include <lvr2/algorithm/Materializer.hpp>
 
+#include <lvr2/io/MeshBuffer2.hpp>
 #include <lvr2/io/Progress.hpp>
+
+#include <lvr2/util/Util.hpp>
 
 namespace lvr2
 {
@@ -105,17 +108,17 @@ MeshBuffer2Ptr SimpleFinalizer<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
     // create buffer object and pass values
     MeshBuffer2Ptr buffer( new MeshBuffer2 );
 
-    buffer->setVertices(convert_vector_to_shared_array(vertices), vertices.size() / 3);
-    buffer->setFaceIndices(convert_vector_to_shared_array(faces), faces.size() / 3);
+    buffer->setVertices(Util::convert_vector_to_shared_array(vertices), vertices.size() / 3);
+    buffer->setFaceIndices(Util::convert_vector_to_shared_array(faces), faces.size() / 3);
 
     if (m_normalData)
     {
-        buffer->setVertexNormals(convert_vector_to_shared_array(normals));
+        buffer->setVertexNormals(Util::convert_vector_to_shared_array(normals));
     }
 
     if (m_colorData)
     {
-        buffer->setVertexColors(convert_vector_to_shared_array(colors));
+        buffer->setVertexColors(Util::convert_vector_to_shared_array(colors));
     }
 
     return buffer;
@@ -404,17 +407,17 @@ MeshBuffer2Ptr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
     cout << endl;
 
     MeshBuffer2Ptr buffer = MeshBuffer2Ptr( new MeshBuffer2 );
-    buffer->setVertices(convert_vector_to_shared_array(vertices), vertices.size() / 3);
-    buffer->setFaceIndices(convert_vector_to_shared_array(faces), faces.size() / 3);
+    buffer->setVertices(Util::convert_vector_to_shared_array(vertices), vertices.size() / 3);
+    buffer->setFaceIndices(Util::convert_vector_to_shared_array(faces), faces.size() / 3);
 
     if (m_vertexNormals)
     {
-        buffer->setVertexNormals(convert_vector_to_shared_array(normals));
+        buffer->setVertexNormals(Util::convert_vector_to_shared_array(normals));
     }
 
     if (m_clusterColors || m_vertexColors)
     {
-        buffer->setVertexColors(convert_vector_to_shared_array(colors));
+        buffer->setVertexColors(Util::convert_vector_to_shared_array(colors));
     }
 
     if (m_materializerResult)
@@ -424,8 +427,8 @@ MeshBuffer2Ptr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
         mats.insert(mats.end(), materials.begin(), materials.end());
         texts.insert(texts.end(), textures.begin(), textures.end());
 
-        buffer->setFaceMaterialIndices(convert_vector_to_shared_array(faceMaterials));
-        buffer->addIndexChannel(convert_vector_to_shared_array(clusterMaterials), "cluster_material_indices", clusterMaterials.size(), 1);
+        buffer->setFaceMaterialIndices(Util::convert_vector_to_shared_array(faceMaterials));
+        buffer->addIndexChannel(Util::convert_vector_to_shared_array(clusterMaterials), "cluster_material_indices", clusterMaterials.size(), 1);
 
         // convert from 3 floats per vertex to 2...
         floatArr texCoordsArr = floatArr( new float[(texCoords.size() / 3) * 2] );
@@ -441,7 +444,7 @@ MeshBuffer2Ptr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
         for (size_t i = 0; i < clusterFaceIndices.size(); i++)
         {
             std::string cluster_name = "cluster" + std::to_string(i) + "_face_indices";
-            buffer->addIndexChannel(convert_vector_to_shared_array(clusterFaceIndices[i]), cluster_name, clusterFaceIndices[i].size(), 1);
+            buffer->addIndexChannel(Util::convert_vector_to_shared_array(clusterFaceIndices[i]), cluster_name, clusterFaceIndices[i].size(), 1);
         }
     }
 

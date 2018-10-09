@@ -13,6 +13,7 @@ set(ASCII_SOURCES
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/Timestamp.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/AsciiIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/PLYIO.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/util/Util.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/ObjIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/PPMIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/texture/Texture.cpp
