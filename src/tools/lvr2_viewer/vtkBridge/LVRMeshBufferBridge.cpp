@@ -82,6 +82,7 @@ LVRMeshBufferBridge::LVRMeshBufferBridge(const LVRMeshBufferBridge& b)
     m_numVertices   = b.m_numVertices;
     m_numFaces      = b.m_numFaces;
     m_meshActor     = b.m_meshActor;
+    m_texturedActors = b.m_texturedActors;
 }
 
 size_t	LVRMeshBufferBridge::getNumColoredFaces()
@@ -216,6 +217,12 @@ void LVRMeshBufferBridge::setOpacity(float opacityValue)
 	vtkSmartPointer<vtkProperty> p = m_meshActor->GetProperty();
     p->SetOpacity(opacityValue);
     m_meshActor->SetProperty(p);
+    if (hasTextures())
+    {
+        vtkSmartPointer<vtkProperty> prop = vtkProperty::New();
+        prop->SetOpacity(opacityValue);
+        getTexturedActors()->ApplyProperties(prop);
+    }
 }
 
 void LVRMeshBufferBridge::setVisibility(bool visible)
@@ -593,34 +600,37 @@ vtkSmartPointer<vtkTexture> LVRMeshBufferBridge::getTexture(int index)
 
 vtkSmartPointer<vtkActorCollection> LVRMeshBufferBridge::getTexturedActors()
 {
-	vector<MaterialGroup*> textureGroups;
-	vector<MaterialGroup*> colorGroups;
-	computeMaterialGroups(textureGroups, colorGroups);
-
-	m_numTextures = textureGroups.size();
-
-	vtkSmartPointer<vtkActorCollection> collection = vtkSmartPointer<vtkActorCollection>::New();
-	for(size_t i = 0; i < textureGroups.size(); i++)
-	{
-		//cout << i <<  " / " << textureGroups.size() << endl;
-		vtkSmartPointer<vtkActor> a = getTexturedActor(textureGroups[i]);
-		collection->AddItem(a);
-	}
-
-	vtkSmartPointer<vtkActor> a = getColorMeshActor(colorGroups);
-	collection->AddItem(a);
-
-    for (auto m : textureGroups)
+    if (!m_texturedActors)
     {
-        delete m;
+        vector<MaterialGroup*> textureGroups;
+        vector<MaterialGroup*> colorGroups;
+        computeMaterialGroups(textureGroups, colorGroups);
+
+        m_numTextures = textureGroups.size();
+
+        m_texturedActors = vtkSmartPointer<vtkActorCollection>::New();
+        for(size_t i = 0; i < textureGroups.size(); i++)
+        {
+            //cout << i <<  " / " << textureGroups.size() << endl;
+            vtkSmartPointer<vtkActor> a = getTexturedActor(textureGroups[i]);
+            m_texturedActors->AddItem(a);
+        }
+
+        vtkSmartPointer<vtkActor> a = getColorMeshActor(colorGroups);
+        m_texturedActors->AddItem(a);
+
+        for (auto m : textureGroups)
+        {
+            delete m;
+        }
+        for (auto m : colorGroups)
+        {
+            delete m;
+        }
+
     }
 
-    for (auto m : colorGroups)
-    {
-        delete m;
-    }
-
-	return collection;
+    return m_texturedActors;
 }
 
 vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getColorMeshActor(vector<MaterialGroup*> groups)

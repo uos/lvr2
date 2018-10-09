@@ -73,6 +73,7 @@ protected:
     size_t                          m_numFaces;
     vtkSmartPointer<vtkActor>       m_meshActor;
     vtkSmartPointer<vtkActor>       m_wireframeActor;
+    vtkSmartPointer<vtkActorCollection> m_texturedActors;
     MeshBuffer2Ptr                  m_meshBuffer;
 
     size_t							m_numColoredFaces;
