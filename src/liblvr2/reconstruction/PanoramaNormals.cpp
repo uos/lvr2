@@ -1,4 +1,7 @@
 #include <lvr2/reconstruction/PanoramaNormals.hpp>
+
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/io/Progress.hpp>
 #include <lvr2/io/Timestamp.hpp>
@@ -17,6 +20,8 @@ using std::endl;
 
 namespace lvr2
 {
+
+using Vec = BaseVector<float>;
 
 PanoramaNormals::PanoramaNormals(ModelToImage* mti)
     : m_mti(mti)

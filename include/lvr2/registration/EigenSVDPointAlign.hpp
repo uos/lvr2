@@ -49,6 +49,6 @@ public:
 
 } /* namespace lvr2 */
 
-#include "EigenSVDPointAlign.cpp"
+#include <lvr2/registration/EigenSVDPointAlign.tcc>
 
 #endif /* EIGENSVDPOINTALIGN_HPP_ */

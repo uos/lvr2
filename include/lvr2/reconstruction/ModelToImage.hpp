@@ -221,6 +221,4 @@ private:
 
 } /* namespace lvr2 */
 
-#include "ModelToImage.cpp"
-
 #endif /* SRC_LIBLVR_RECONSTRUCTION_MODELTOIMAGE_HPP_ */

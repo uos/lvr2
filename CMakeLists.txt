@@ -410,6 +410,7 @@ endif(Qt5_FOUND)
 ##############################################################
 
 add_subdirectory(src/liblvr)
+add_subdirectory(src/liblvr2)
 
 ##############################################################
 # BINARIES
@@ -477,6 +478,11 @@ endif(PCL_FOUND)
 # CMAKE FILES
 ################################################################
 
+install(EXPORT lvr2Targets
+    FILE lvr2Targets.cmake
+    NAMESPACE lvr2::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2)
+#-----------------------------------------------------------------
 install(EXPORT lvrTargets
     FILE lvrTargets.cmake
     NAMESPACE lvr::

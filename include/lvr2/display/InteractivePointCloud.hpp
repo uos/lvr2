@@ -52,6 +52,4 @@ private:
 
 } /* namespace lvr2 */
 
-#include "InteractivePointCloud.cpp"
-
 #endif /* INTERACTIVEPOINTCLOUD_HPP_ */

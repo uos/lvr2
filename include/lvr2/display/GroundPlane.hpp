@@ -49,6 +49,4 @@ private:
 
 } // namespace lvr2
 
-#include "GroundPlane.cpp"
-
 #endif /* GROUNDPLANE_H_ */

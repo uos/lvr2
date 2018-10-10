@@ -140,6 +140,4 @@ inline void PointCloud::render()
 
 } // namespace lvr2
 
-#include "PointCloud.cpp"
-
 #endif /* POINTCLOUD_H_ */

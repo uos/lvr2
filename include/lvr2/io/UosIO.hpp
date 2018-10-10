@@ -40,6 +40,7 @@
 #include <lvr2/io/BaseIO.hpp>
 #include <lvr2/io/AsciiIO.hpp>
 
+#include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/Matrix4.hpp>
 
@@ -61,10 +62,10 @@ namespace lvr2
  * .pose files will be sued to transform the scans.
  */
 
+using Vec = BaseVector<float>;
+
 class UosIO : public BaseIO
 {
-
-    using Vec = BaseVector<float>;
 
 public:
 
@@ -236,7 +237,5 @@ private:
 };
 
 } // namespace lvr2
-
-#include "UosIO.cpp"
 
 #endif /* UOSIO_H_ */
