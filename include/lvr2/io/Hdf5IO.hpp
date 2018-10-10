@@ -64,6 +64,4 @@ public:
 
 } // namespace lvr2
 
-#include "Hdf5IO.cpp"
-
 #endif // __HDF5_IO_HPP_

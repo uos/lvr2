@@ -28,7 +28,7 @@ namespace lvr2
 
   struct TmpLeaf
   {
-    vector<Vector<BaseVector<float> > > pts;
+    std::vector<Vector<BaseVector<float> > > pts;
   };
 
   template <typename T>
@@ -71,7 +71,5 @@ namespace lvr2
   };
 
 } // namespace lvr2
-
-#include "PointOctree.cpp"
 
 #endif

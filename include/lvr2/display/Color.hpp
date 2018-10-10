@@ -31,6 +31,4 @@ public:
 
 } // namespace lvr2
 
-#include "Color.cpp"
-
 #endif /* COLOR_H_ */

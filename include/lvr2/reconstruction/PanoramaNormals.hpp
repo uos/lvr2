@@ -26,6 +26,4 @@ private:
 
 } // namespace lvr2
 
-#include "PanoramaNormals.cpp"
-
 #endif // PANORAMANORMALS_H

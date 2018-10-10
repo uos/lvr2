@@ -70,6 +70,6 @@ protected:
 
 } /* namespace lvr2 */
 
-#include "ICPPointAlign.cpp"
+#include <lvr2/registration/ICPPointAlign.tcc>
 
 #endif /* ICPPOINTALIGN_HPP_ */

@@ -98,6 +98,4 @@ void MultiPointCloud::render()
 
 } // namespace lvr2
 
-#include "MultiPointCloud.cpp"
-
 #endif /* MULTIPOINTCLOUD_H_ */

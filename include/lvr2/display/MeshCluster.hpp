@@ -61,6 +61,4 @@ private:
 
 } // namespace lvr2
 
-#include "MeshCluster.cpp"
-
 #endif /* MESHCLUSTER_HPP_ */

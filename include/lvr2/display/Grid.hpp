@@ -51,6 +51,4 @@ private:
 
 } /* namespace lvr2 */
 
-#include "Grid.cpp"
-
 #endif /* GRID_HPP_ */

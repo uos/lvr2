@@ -38,6 +38,4 @@ namespace lvr2
 	void convert(COORD_SYSTEM from, COORD_SYSTEM to, PointBuffer2Ptr &buffer);
 } // namespace lvr2
 
-#include "CoordinateTransform.cpp"
-
 #endif /* COORDINATETRANSFORM_HPP_ */

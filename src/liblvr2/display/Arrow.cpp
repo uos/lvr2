@@ -61,7 +61,7 @@ void Arrow::setPosition(double x, double y, double z, double roll, double pitch,
     EulerToMatrix(pos, rot, alignxf);
 
     //	quat.getMatrix(alignxf);
-    rotation = Matrix4f(alignxf);
+    rotation = Matrix4<BaseVector<float>>(alignxf);
 }
 
 Arrow::~Arrow() {

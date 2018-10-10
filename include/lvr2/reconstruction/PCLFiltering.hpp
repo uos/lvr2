@@ -68,6 +68,4 @@ private:
 
 #endif
 
-#include "PCLFiltering.cpp"
-
 #endif /* PCLFILTERING_H_ */

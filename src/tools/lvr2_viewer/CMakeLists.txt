@@ -10,26 +10,6 @@ set(CMAKE_AUTOMOC ON)
 #####################################################################################
 
 set(LVR_VIEWER_SOURCES
-    ${PROJECT_SOURCE_DIR}/include/lvr2/display/GlTexture.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/display/ColorMap.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/display/Renderable.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/display/StaticMesh.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/display/TexturedMesh.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseIO.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PLYIO.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/io/ObjIO.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PPMIO.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/io/AsciiIO.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/io/PointBuffer2.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/io/MeshBuffer2.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/io/AttributeManager.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/io/Timestamp.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/io/Progress.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/io/BaseBuffer.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/texture/Texture.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/io/ModelFactory.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/texture/TextureFactory.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/util/Util.cpp
     app/LVRMain.cpp
     app/LVRMainWindow.cpp
     app/LVRTreeWidgetHelper.cpp
@@ -146,7 +126,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 #####################################################################################
 
 set(LVR_VIEWER_DEPENDENCIES
-  lvr_static
+  lvr2_static
   lvrrply_static
   lvrlas_static
   lvrslam6d_static
@@ -155,9 +135,9 @@ set(LVR_VIEWER_DEPENDENCIES
   ${OPENGL_LIBRARIES}
   ${GLUT_LIBRARIES}
   ${Boost_FILESYSTEM_LIBRARY}
-        ${Boost_SYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}
   ${Boost_THREAD_LIBRARY}
-        ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${QVTK_LIBRARY}
   ${VTK_LIBRARIES}
   ${PCL_LIBRARIES}

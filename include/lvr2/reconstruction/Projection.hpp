@@ -200,6 +200,4 @@ protected:
 
 } // namespace lvr2
 
-#include "Projection.cpp"
-
 #endif // PROJECTION_H
