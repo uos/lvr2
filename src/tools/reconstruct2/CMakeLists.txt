@@ -48,7 +48,7 @@ include_directories(${HDF5_INCLUDE_DIR})
 target_link_libraries(lvr2_reconstruct ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 
 if(CUDA_FOUND)
-        target_link_libraries(lvr2_reconstruct lvr2cuda cuda_normals)
+        target_link_libraries(lvr2_reconstruct lvr2cuda)
         target_compile_definitions(lvr2_reconstruct PRIVATE CUDA_FOUND=1)
 endif()
 if(OPENCL_FOUND)

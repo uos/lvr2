@@ -70,6 +70,4 @@ protected:
 
 } // namespace lvr2
 
-#include "KinectGrabber.cpp"
-
 #endif /* KINECGRABBER_H_ */
