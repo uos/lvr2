@@ -55,7 +55,7 @@ void cleanContours(BaseMesh<BaseVecT>& mesh, int iterations, float areaThreshold
  * @return The number of holes that this algorithm wasn't able to fill.
  */
 template<typename BaseVecT>
-size_t naiveFillSmallHoles(BaseMesh<BaseVecT>& mesh, size_t maxSize);
+size_t naiveFillSmallHoles(BaseMesh<BaseVecT>& mesh, size_t maxSize, bool collapseOnly);
 
 } // namespace lvr2
 
