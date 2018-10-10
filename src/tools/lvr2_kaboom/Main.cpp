@@ -70,7 +70,7 @@ ModelPtr filterModel(ModelPtr p, int k, float sigma)
             cout << timestamp << "Filtering outliers with k=" << k << " and sigma=" << sigma << "." << endl;
             size_t original_size = p->m_pointCloud->getNumPoints();
             filter.applyOutlierRemoval(k, sigma);
-            PointBuffer2Ptr pb( filter.getPointBuffer() );
+            PointBufferPtr pb( filter.getPointBuffer() );
             ModelPtr out_model( new Model( pb ) );
             cout << timestamp << "Filtered out " << original_size - out_model->m_pointCloud->getNumPoints() << " points." << endl;
             return out_model;

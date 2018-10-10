@@ -32,7 +32,7 @@ set(LVR2_SOURCES
     io/UosIO.cpp
     io/PCDIO.cpp
     io/Progress.cpp
-    io/MeshBuffer2.cpp
+    io/MeshBuffer.cpp
 #    io/KinectGrabber.cpp
     io/DatIO.cpp
     io/LasIO.cpp
@@ -42,7 +42,7 @@ set(LVR2_SOURCES
     io/GridIO.cpp
     io/Hdf5IO.cpp
     io/BaseBuffer.cpp
-    io/PointBuffer2.cpp
+    io/PointBuffer.cpp
     io/ModelFactory.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp

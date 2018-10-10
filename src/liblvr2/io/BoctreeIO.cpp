@@ -199,7 +199,7 @@ ModelPtr BoctreeIO::read(string directory )
 //            }
 //        }
 
-        model->m_pointCloud = PointBuffer2Ptr( new PointBuffer2 );
+        model->m_pointCloud = PointBufferPtr( new PointBuffer );
         model->m_pointCloud->setPointArray(points, allPoints.size());
         model->m_pointCloud->setColorArray(colors, allPoints.size());
         model->m_pointCloud->addFloatChannel(intensities, "intensities", allPoints.size(), 1);

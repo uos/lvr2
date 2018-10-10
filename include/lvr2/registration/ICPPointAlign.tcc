@@ -35,7 +35,7 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-ICPPointAlign<BaseVecT>::ICPPointAlign(PointBuffer2Ptr model, PointBuffer2Ptr data, Matrix4<BaseVecT> transform) :
+ICPPointAlign<BaseVecT>::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4<BaseVecT> transform) :
     m_modelCloud(model), m_transformation(transform)
 {
     // Init default values
@@ -46,7 +46,7 @@ ICPPointAlign<BaseVecT>::ICPPointAlign(PointBuffer2Ptr model, PointBuffer2Ptr da
     size_t numPoints = data->numPoints();
 
     // Transform data points according to initial pose estimation
-    m_dataCloud = PointBuffer2Ptr(new PointBuffer2);
+    m_dataCloud = PointBufferPtr(new PointBuffer);
     size_t n = numPoints;
     floatArr o_points = data->getPointArray();
     floatArr t_points(new float[3 * n]);

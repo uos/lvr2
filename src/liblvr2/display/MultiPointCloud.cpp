@@ -32,18 +32,18 @@ namespace lvr2
 MultiPointCloud::MultiPointCloud(ModelPtr model, string name)
 {
 
-    PointBuffer2Ptr buffer = model->m_pointCloud;
+    PointBufferPtr buffer = model->m_pointCloud;
     init(buffer);
     m_model = model;
 }
 
-MultiPointCloud::MultiPointCloud(PointBuffer2Ptr buffer, string name)
+MultiPointCloud::MultiPointCloud(PointBufferPtr buffer, string name)
 {
 	m_model = ModelPtr(new Model(buffer));
 	init(buffer);
 }
 
-void MultiPointCloud::init(PointBuffer2Ptr buffer)
+void MultiPointCloud::init(PointBufferPtr buffer)
 {
 	if(buffer)
 	{
@@ -130,7 +130,7 @@ ModelPtr MultiPointCloud::model( )
 
 
     // Create a new model and save points
-    PointBuffer2Ptr pcBuffer(new PointBuffer2);
+    PointBufferPtr pcBuffer(new PointBuffer);
     floatArr pointBuffer(new float[3 * c]);
     ucharArr colorBuffer(new unsigned char[3 * c]);
     c = 0;

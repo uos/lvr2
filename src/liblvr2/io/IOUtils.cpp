@@ -333,7 +333,7 @@ void transformPointCloud(ModelPtr model, Eigen::Matrix4d transformation)
     }
 }
 
-void transformPointCloudAndAppend(PointBuffer2Ptr& buffer,
+void transformPointCloudAndAppend(PointBufferPtr& buffer,
         boost::filesystem::path& transfromFile,
         std::vector<float>& pts,
         std::vector<float>& nrm)
@@ -429,7 +429,7 @@ void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::st
 {
 
     ModelPtr model(new Model);
-    PointBuffer2Ptr buffer(new PointBuffer2);
+    PointBufferPtr buffer(new PointBuffer);
 
     // Passing the raw data pointers from the vectors
     // to a shared array is a bad idea. Due to the PointBuffer

@@ -11,7 +11,7 @@
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 
 namespace lvr2
 {
@@ -116,7 +116,7 @@ void LVRReconstructViaExtendedMarchingCubesDialog::generateMesh()
     float  sc = m_dialog->doubleSpinBox_sc->value();
 
 
-    PointBuffer2Ptr pc_buffer = m_pc->getPointBuffer();
+    PointBufferPtr pc_buffer = m_pc->getPointBuffer();
     
     PointsetSurfacePtr<Vec> surface;
 
@@ -164,7 +164,7 @@ void LVRReconstructViaExtendedMarchingCubesDialog::generateMesh()
     Materializer<Vec> materializer(mesh, clusterBiMap, faceNormals, *surface);
     MaterializerResult<Vec> matResult = materializer.generateMaterials();
     finalize.setMaterializerResult(matResult);
-    MeshBuffer2Ptr buffer = finalize.apply(mesh);
+    MeshBufferPtr buffer = finalize.apply(mesh);
 
 
     ModelPtr model(new Model(buffer));

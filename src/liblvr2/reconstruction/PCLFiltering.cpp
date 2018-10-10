@@ -32,7 +32,7 @@ namespace lvr2
 {
 
 
-PCLFiltering::PCLFiltering( PointBuffer2Ptr loader )
+PCLFiltering::PCLFiltering( PointBufferPtr loader )
 {
 
     // Check if we have RGB data
@@ -147,9 +147,9 @@ void PCLFiltering::applyOutlierRemoval(int meank, float thresh)
     m_pointCloud->points.swap (cloud_filtered->points);
 }
 
-PointBuffer2Ptr PCLFiltering::getPointBuffer()
+PointBufferPtr PCLFiltering::getPointBuffer()
 {
-    PointBuffer2Ptr p( new PointBuffer2 );
+    PointBufferPtr p( new PointBuffer );
 
     floatArr points(new float[3 * m_pointCloud->size()]);
     ucharArr colors;

@@ -49,7 +49,7 @@ public:
     int     getShading();
     void    setShading(int &shader);
     vtkSmartPointer<vtkActor>    getWireframeActor();
-    MeshBuffer2Ptr   getMeshBuffer();
+    MeshBufferPtr   getMeshBuffer();
     vtkSmartPointer<vtkActor> getActor();
 
 protected:

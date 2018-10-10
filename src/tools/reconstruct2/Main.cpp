@@ -18,7 +18,7 @@
 #include <lvr2/display/TextureFactory.hpp>
 
 #include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Vector.hpp>
@@ -44,8 +44,8 @@ using namespace lvr2;
 
     floatArr pts = pc->getPointArray();
 
-    PointBuffer2Ptr tmp1 = PointBuffer2Ptr( new PointBuffer2 );
-    PointBuffer2Ptr tmp2 = PointBuffer2Ptr( new PointBuffer2 );
+    PointBufferPtr tmp1 = PointBufferPtr( new PointBuffer );
+    PointBufferPtr tmp2 = PointBufferPtr( new PointBuffer );
 
     floatArr pts1 = floatArr( new float[3* (n/2)] );
     floatArr pts2 = floatArr( new float[3* (n - (n/2))] );
@@ -74,7 +74,7 @@ using namespace lvr2;
     ModelFactory::saveModel(ModelPtr( new Model(tmp2) ), "half2.ply");
 }
 
-void test(PointBuffer2Ptr pc_buffer)
+void test(PointBufferPtr pc_buffer)
 {
     PointsetSurfacePtr<Vec> surface;
 
@@ -100,7 +100,7 @@ void test(PointBuffer2Ptr pc_buffer)
     auto reconstruction = make_unique<FastReconstruction<Vec, SharpBox<Vec>>>(grid);
 
     // Create an empty mesh
-    MeshBuffer2Ptr m_buff = MeshBuffer2Ptr( new MeshBuffer2 );
+    MeshBufferPtr m_buff = MeshBufferPtr( new MeshBuffer );
     HalfEdgeMesh<Vec> mesh(m_buff);
     reconstruction->getMesh(mesh);
 
@@ -119,7 +119,7 @@ void test(PointBuffer2Ptr pc_buffer)
     Materializer<Vec> materializer(mesh, clusterBiMap, faceNormals, *surface);
     MaterializerResult<Vec> matResult = materializer.generateMaterials();
     finalize.setMaterializerResult(matResult);
-    MeshBuffer2Ptr buffer = finalize.apply(mesh);
+    MeshBufferPtr buffer = finalize.apply(mesh);
 
     ModelFactory::saveModel(ModelPtr( new Model(buffer)), "test.obj");
 }
@@ -491,8 +491,8 @@ int main(int argc, char** argv)
 #include <lvr2/reconstruction/HashGrid.hpp>
 #include <lvr2/reconstruction/PointsetGrid.hpp>
 #include <lvr2/reconstruction/SharpBox.hpp>
-#include <lvr2/io/PointBuffer2.hpp>
-#include <lvr2/io/MeshBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
+#include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/io/PlutoMapIO.hpp>
 #include <lvr2/util/Factories.hpp>
@@ -541,7 +541,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         return nullptr;
     }
 
-    PointBuffer2Ptr buffer = model->m_pointCloud;
+    PointBufferPtr buffer = model->m_pointCloud;
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();

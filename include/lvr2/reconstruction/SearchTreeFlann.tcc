@@ -17,7 +17,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-SearchTreeFlann<BaseVecT>::SearchTreeFlann(PointBuffer2Ptr buffer)
+SearchTreeFlann<BaseVecT>::SearchTreeFlann(PointBufferPtr buffer)
 {
     auto n = buffer->numPoints();
     FloatChannelOptional pts_optional = buffer->getFloatChannel("points");

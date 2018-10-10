@@ -39,7 +39,7 @@ PointCloud::PointCloud()
     m_renderMode = RenderPoints;
 }
 
-PointCloud::PointCloud( PointBuffer2Ptr buffer, string name) : Renderable(name)
+PointCloud::PointCloud( PointBufferPtr buffer, string name) : Renderable(name)
 {
 	m_model = ModelPtr(new Model(buffer));
 	init(buffer);
@@ -52,13 +52,13 @@ PointCloud::PointCloud( ModelPtr model, string name) : Renderable(name)
     init(m_model->m_pointCloud);
 }
 
-void PointCloud::updateBuffer(PointBuffer2Ptr buffer)
+void PointCloud::updateBuffer(PointBufferPtr buffer)
 {
 	init(buffer);
 
 }
 
-void PointCloud::init(PointBuffer2Ptr buffer)
+void PointCloud::init(PointBufferPtr buffer)
 {
 	int maxColors = 255;
 	m_numNormals = 0;

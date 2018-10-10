@@ -158,7 +158,7 @@ public Q_SLOTS:
     /// Shows the DockerWidget with the preview of the PointInfoDialog
     void showPointPreview(vtkActor* actor, int point);
     /// Changes the Point displayed by the PointPreview
-    void updatePointPreview(int pointId, PointBuffer2Ptr points);
+    void updatePointPreview(int pointId, PointBufferPtr points);
 
     /// Switches between Sliders and Gradients. checked == true => Slider DockWidget enabled
     void updateSpectralSlidersEnabled(bool checked);
@@ -188,7 +188,7 @@ private:
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;
     LVRPlotter*                                 m_PointPreviewPlotter;
     int                                         m_previewPoint;
-    PointBuffer2Ptr                             m_previewPointBuffer;
+    PointBufferPtr                             m_previewPointBuffer;
     QDialog*                                    m_aboutDialog;
     QDialog*                                    m_errorDialog;
     QMessageBox*                                m_incompatibilityBox;

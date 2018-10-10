@@ -69,7 +69,7 @@ ModelPtr PCDIO::read( string filename )
         }
     }
 
-    ModelPtr model( new Model( PointBuffer2Ptr( new PointBuffer2 )));
+    ModelPtr model( new Model( PointBufferPtr( new PointBuffer )));
     model->m_pointCloud->setPointArray( points, cloud->points.size() );
 
     if(has_colors)

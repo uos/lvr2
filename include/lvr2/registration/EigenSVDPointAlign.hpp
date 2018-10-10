@@ -25,7 +25,7 @@
 #ifndef EIGENSVDPOINTALIGN_HPP_
 #define EIGENSVDPOINTALIGN_HPP_
 
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/geometry/Matrix4.hpp>
 #include <lvr2/geometry/Vector.hpp>
 

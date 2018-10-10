@@ -69,7 +69,7 @@ StaticMesh::StaticMesh( ModelPtr model, string name )
 
 }
 
-StaticMesh::StaticMesh( MeshBuffer2Ptr mesh, string name )
+StaticMesh::StaticMesh( MeshBufferPtr mesh, string name )
     : Renderable( name )
 {
 
@@ -85,7 +85,7 @@ StaticMesh::StaticMesh( MeshBuffer2Ptr mesh, string name )
 
 }
 
-void StaticMesh::init( MeshBuffer2Ptr mesh )
+void StaticMesh::init( MeshBufferPtr mesh )
 {
 	m_lineWidth = 2.0;
 	if(mesh)

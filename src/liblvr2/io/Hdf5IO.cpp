@@ -132,8 +132,8 @@ using HighFive::Exception;
 
 ModelPtr Hdf5IO::read(string filename)
 {
-    PointBuffer2Ptr pc;
-    MeshBuffer2Ptr mesh;
+    PointBufferPtr pc;
+    MeshBufferPtr mesh;
 
     int numPoints = 0;
     int numNormals = 0;
@@ -239,7 +239,7 @@ ModelPtr Hdf5IO::read(string filename)
 
         if(numPoints)
         {
-            pc = PointBuffer2Ptr(new PointBuffer2);
+            pc = PointBufferPtr(new PointBuffer);
             pc->setPointArray(points, numPoints);
             pc->setColorArray(colors, numColors);
             pc->addFloatChannel(intensities, "intensities", numIntensities, 1);

@@ -49,7 +49,7 @@ using psSurface = PointsetSurface<Vec>;
 using GpuSurface = CudaSurface;
 
 
-void computeNormals(string filename, cuda_normals::Options& opt, PointBuffer2Ptr& buffer)
+void computeNormals(string filename, cuda_normals::Options& opt, PointBufferPtr& buffer)
 {
     ModelPtr model = ModelFactory::readModel(filename);
     size_t num_points;
@@ -100,7 +100,7 @@ void computeNormals(string filename, cuda_normals::Options& opt, PointBuffer2Ptr
     gpu_surface.freeGPU();
 }
 
-void reconstructAndSave(PointBuffer2Ptr& buffer, cuda_normals::Options& opt)
+void reconstructAndSave(PointBufferPtr& buffer, cuda_normals::Options& opt)
 {
     // RECONSTRUCTION
     // PointsetSurface
@@ -134,7 +134,7 @@ void reconstructAndSave(PointBuffer2Ptr& buffer, cuda_normals::Options& opt)
 
 
     SimpleFinalizer<Vec> fin;
-    MeshBuffer2Ptr res = fin.apply(mesh);
+    MeshBufferPtr res = fin.apply(mesh);
 
     ModelPtr m( new Model( res ) );
 
@@ -169,7 +169,7 @@ int main(int argc, char** argv){
                 if(sscanf(currentFile.c_str(), "scan%3d", &num))
                 {
                     cout << timestamp << "Processing " << p.string() << endl;
-                    PointBuffer2Ptr buffer(new PointBuffer2 );
+                    PointBufferPtr buffer(new PointBuffer );
 
                     computeNormals(p.string(), opt, buffer);
                     transformPointCloudAndAppend(buffer, p, all_points, all_normals);
@@ -185,7 +185,7 @@ int main(int argc, char** argv){
 
         if(opt.reconstruct() )
         {
-            PointBuffer2Ptr buffer(new PointBuffer2);
+            PointBufferPtr buffer(new PointBuffer);
 
             floatArr points = floatArr(&all_points[0]);
             size_t num_points = all_points.size() / 3;
@@ -202,7 +202,7 @@ int main(int argc, char** argv){
     }
     else
     {
-        PointBuffer2Ptr buffer(new PointBuffer2);
+        PointBufferPtr buffer(new PointBuffer);
         computeNormals(opt.inputFile(), opt, buffer);
 
         if(!opt.reconstruct() || opt.exportPointNormals() )

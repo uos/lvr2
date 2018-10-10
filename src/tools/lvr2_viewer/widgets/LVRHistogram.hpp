@@ -19,7 +19,7 @@
 #ifndef HISTOGRAM_H_
 #define HISTOGRAM_H_
 
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 #include <QtWidgets>
 #include <QDialog>
 #include "LVRPlotter.hpp"
@@ -35,7 +35,7 @@ class LVRHistogram : public QDialog
     Q_OBJECT
 
 public:
-    LVRHistogram(QWidget* parent, PointBuffer2Ptr points);
+    LVRHistogram(QWidget* parent, PointBufferPtr points);
     virtual ~LVRHistogram();
 
 public Q_SLOTS:

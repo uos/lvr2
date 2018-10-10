@@ -19,7 +19,7 @@
 #ifndef POINTINFO_H_
 #define POINTINFO_H_
 
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 #include <QtWidgets>
 #include <QDialog>
 #include "LVRPlotter.hpp"
@@ -35,7 +35,7 @@ class LVRPointInfo : public QDialog
     Q_OBJECT
 
 public:
-    LVRPointInfo(QWidget* parent, PointBuffer2Ptr points, int pointId);
+    LVRPointInfo(QWidget* parent, PointBufferPtr points, int pointId);
     virtual ~LVRPointInfo();
 
 public Q_SLOTS:

@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
@@ -46,7 +46,7 @@ namespace lvr2
   class PointOctree
   {
     public:
-      PointOctree(PointBuffer2Ptr& points, int voxelSize);
+      PointOctree(PointBufferPtr& points, int voxelSize);
 
       virtual ~PointOctree();
 

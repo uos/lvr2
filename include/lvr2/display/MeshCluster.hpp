@@ -40,7 +40,7 @@ class MeshCluster : public Renderable
 public:
 	MeshCluster() {};
 
-	void addMesh(MeshBuffer2Ptr buffer, string name);
+	void addMesh(MeshBufferPtr buffer, string name);
 
 	virtual ~MeshCluster() { for (StaticMesh* sm : m_meshes) delete sm;};
 

@@ -37,9 +37,9 @@ LVRTreeWidgetHelper::LVRTreeWidgetHelper(QTreeWidget* tree)
    m_treeWidget = tree;
 }
 
-PointBuffer2Ptr LVRTreeWidgetHelper::getPointBuffer(QString name)
+PointBufferPtr LVRTreeWidgetHelper::getPointBuffer(QString name)
 {
-    PointBuffer2Ptr ptr;
+    PointBufferPtr ptr;
     QTreeWidgetItemIterator m_it(m_treeWidget);
     while(*m_it)
     {
@@ -67,9 +67,9 @@ PointBuffer2Ptr LVRTreeWidgetHelper::getPointBuffer(QString name)
     return ptr;
 }
 
-MeshBuffer2Ptr LVRTreeWidgetHelper::getMeshBuffer(QString name)
+MeshBufferPtr LVRTreeWidgetHelper::getMeshBuffer(QString name)
 {
-    MeshBuffer2Ptr ptr;
+    MeshBufferPtr ptr;
     QTreeWidgetItemIterator m_it(m_treeWidget);
     while(*m_it)
     {

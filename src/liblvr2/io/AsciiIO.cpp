@@ -93,7 +93,7 @@ ModelPtr AsciiIO::read(
     numPoints = lines_in_file - 1;
     points = floatArr( new float[ numPoints * 3 ] );
     ModelPtr model(new Model);
-    model->m_pointCloud = PointBuffer2Ptr( new PointBuffer2);
+    model->m_pointCloud = PointBufferPtr( new PointBuffer);
 
     // (Some) sanity checks for given paramters
     if(rPos > num_columns || gPos > num_columns || bPos > num_columns || iPos > num_columns)

@@ -43,7 +43,7 @@ HalfEdgeMesh<BaseVecT>::HalfEdgeMesh()
 }
 
 template<typename BaseVecT>
-HalfEdgeMesh<BaseVecT>::HalfEdgeMesh(MeshBuffer2Ptr ptr)
+HalfEdgeMesh<BaseVecT>::HalfEdgeMesh(MeshBufferPtr ptr)
 {
     size_t numFaces = ptr->numFaces();
     size_t numVertices = ptr->numVertices();

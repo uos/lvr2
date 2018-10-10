@@ -29,15 +29,15 @@ PanoramaNormals::PanoramaNormals(ModelToImage* mti)
     m_buffer = mti->pointBuffer();
 }
 
-PointBuffer2Ptr PanoramaNormals::computeNormals(int width, int height, bool interpolate)
+PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool interpolate)
 {
     // Create new point buffer and tmp storages
-    PointBuffer2Ptr out_buffer(new PointBuffer2);
+    PointBufferPtr out_buffer(new PointBuffer);
     vector<float> pts;
     vector<float> normals;
 
     // Get input buffer's points
-    PointBuffer2Ptr in_buffer = m_mti->pointBuffer();
+    PointBufferPtr in_buffer = m_mti->pointBuffer();
     unsigned w_color;
     size_t n_inPoints = in_buffer->numPoints();
     floatArr in_points = in_buffer->getPointArray();

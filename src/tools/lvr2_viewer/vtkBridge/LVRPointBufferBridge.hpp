@@ -26,7 +26,7 @@
 #define LVRPOINTBUFFERBRIDGE_HPP_
 
 #include <lvr2/display/ColorMap.hpp>
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
@@ -42,7 +42,7 @@ struct Pose;
 class LVRPointBufferBridge
 {
 public:
-    LVRPointBufferBridge(PointBuffer2Ptr pointcloud);
+    LVRPointBufferBridge(PointBufferPtr pointcloud);
     LVRPointBufferBridge(const LVRPointBufferBridge& b);
     virtual ~LVRPointBufferBridge();
 
@@ -67,7 +67,7 @@ public:
     /// switch between spectral mapping and gradient
     void useGradient(bool useGradient);
     /// get the point buffer
-    PointBuffer2Ptr getPointBuffer();
+    PointBufferPtr getPointBuffer();
 
 private:
     /// update the view with gradient information
@@ -77,13 +77,13 @@ private:
 
 protected:
 
-    void computePointCloudActor(PointBuffer2Ptr pc);
+    void computePointCloudActor(PointBufferPtr pc);
 
     vtkSmartPointer<vtkActor>       m_pointCloudActor;
     size_t                          m_numPoints;
     bool                            m_hasNormals;
     bool                            m_hasColors;
-    PointBuffer2Ptr                 m_pointBuffer;
+    PointBufferPtr                 m_pointBuffer;
     bool                            m_useGradient;
     bool                            m_useNormalizedGradient;
     color<size_t>                   m_spectralChannels;

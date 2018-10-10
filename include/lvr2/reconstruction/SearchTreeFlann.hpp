@@ -16,7 +16,7 @@
 #include <lvr2/io/Timestamp.hpp>
 
 #include <lvr2/reconstruction/SearchTree.hpp>
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 
 using std::vector;
 using std::unique_ptr;
@@ -46,7 +46,7 @@ public:
      *
      *  @param buffer  A PointBuffer point that holds the data.
      */
-    SearchTreeFlann(PointBuffer2Ptr buffer);
+    SearchTreeFlann(PointBufferPtr buffer);
 
     /// See interface documentation.
     virtual void kSearch(
