@@ -82,25 +82,6 @@ Texture::Texture(
 {
 }
 
-Texture::Texture(
-    int index,
-    lvr::Texture* oldTexture
-) :
-    m_index(index),
-    m_width(oldTexture->m_width),
-    m_height(oldTexture->m_height),
-    m_numChannels(oldTexture->m_numChannels),
-    m_numBytesPerChan(oldTexture->m_numBytesPerChan),
-    m_texelSize(1),
-    m_data(new unsigned char[oldTexture->m_width
-                    * oldTexture->m_height
-                    * oldTexture->m_numChannels
-                    * oldTexture->m_numBytesPerChan])
-{
-    size_t copy_len = m_width * m_height * m_numChannels * m_numBytesPerChan;
-    std::copy(oldTexture->m_data, oldTexture->m_data + copy_len, m_data);
-}
-
 Texture::Texture(Texture &&other) {
     this->m_index = other.m_index;
     this->m_width = other.m_width;

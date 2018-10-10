@@ -90,6 +90,4 @@ protected:
 
 } /* namespace lvr2 */
 
-#include "BaseOption.cpp"
-
 #endif /* INCLUDE_LIBLVR_CONFIG_BASEOPTION_HPP_ */
