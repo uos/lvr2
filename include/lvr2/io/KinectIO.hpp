@@ -36,6 +36,4 @@ private:
 
 } // namespace lvr2
 
-#include "KinectIO.cpp"
-
 #endif /* KINECTIO_H_ */
