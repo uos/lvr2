@@ -22,7 +22,7 @@ set(RECONSTRUCT_SOURCES
     ${PROJECT_SOURCE_DIR}/include/lvr2/display/Renderable.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/display/StaticMesh.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/display/TexturedMesh.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/display/TextureFactory.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/texture/TextureFactory.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/reconstruction/LBKdTree.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/config/lvropenmp.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/config/BaseOption.cpp

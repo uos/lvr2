@@ -7,7 +7,7 @@
  *  @author Denis Meyer
  */
 
-#include <lvr2/display/TextureFactory.hpp>
+#include <lvr2/texture/TextureFactory.hpp>
 #include <lvr2/io/PPMIO.hpp>
 
 #include <iostream>

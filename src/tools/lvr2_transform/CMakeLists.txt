@@ -16,7 +16,7 @@ set(LVR_TRANSFORM_SOURCES
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/PPMIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/AsciiIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/texture/Texture.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/display/TextureFactory.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/texture/TextureFactory.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/display/GlTexture.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/util/Util.cpp
     Options.cpp

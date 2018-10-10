@@ -16,7 +16,7 @@ set(LVR_CUDA_NORMAL_SRC
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/ObjIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/PPMIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/texture/Texture.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/display/TextureFactory.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/texture/TextureFactory.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/display/GlTexture.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/reconstruction/LBKdTree.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/IOUtils.cpp
