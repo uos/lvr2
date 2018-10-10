@@ -24,10 +24,10 @@ namespace lvr2
 ///        between geometry (channel 'points') and the associated layers like RGB
 ///        colors or point normals consistent.
 ///
-class PointBuffer2 : public BaseBuffer
+class PointBuffer : public BaseBuffer
 {
 public:    
-    PointBuffer2();
+    PointBuffer();
 
     /***
      * @brief Constructs a point buffer with point the given number
@@ -36,7 +36,7 @@ public:
      * @param points    An array containing point data (x,y,z).
      * @param n         Number of points
      */
-    PointBuffer2(floatArr points, size_t n);
+    PointBuffer(floatArr points, size_t n);
 
     /***
      * @brief Constructs a point buffer with point and normal
@@ -47,7 +47,7 @@ public:
      * @param normals   An array containing normal information (nx, ny, nz)
      * @param n         Number of points
      */
-    PointBuffer2(floatArr points, floatArr normals, size_t n);
+    PointBuffer(floatArr points, floatArr normals, size_t n);
 
     /***
      * @brief Adds points to the buffer. If the buffer already
@@ -114,7 +114,7 @@ private:
 
 };
 
-using PointBuffer2Ptr = std::shared_ptr<PointBuffer2>;
+using PointBufferPtr = std::shared_ptr<PointBuffer>;
 
 } // namespace lvr2
 

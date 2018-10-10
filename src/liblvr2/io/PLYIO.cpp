@@ -90,7 +90,7 @@ void PLYIO::save( string filename )
     // Get buffers
     if ( m_model->m_pointCloud )
     {
-        PointBuffer2Ptr pc( m_model->m_pointCloud );
+        PointBufferPtr pc( m_model->m_pointCloud );
 
         m_numPoints = pc->numPoints();
         m_numPointNormals = m_numPoints;
@@ -105,7 +105,7 @@ void PLYIO::save( string filename )
 
     if ( m_model->m_mesh )
     {
-        MeshBuffer2Ptr mesh( m_model->m_mesh );
+        MeshBufferPtr mesh( m_model->m_mesh );
         m_numVertices = mesh->numVertices();
         m_numFaces = mesh->numFaces();
         m_numVertexColors = m_numVertices;
@@ -833,11 +833,11 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
 
     // Save buffers in model
-    PointBuffer2Ptr pc;
-    MeshBuffer2Ptr mesh;
+    PointBufferPtr pc;
+    MeshBufferPtr mesh;
     if(points)
     {
-        pc = PointBuffer2Ptr( new PointBuffer2 );
+        pc = PointBufferPtr( new PointBuffer );
         pc->setPointArray(points, numPoints);
 
         if (pointColors)
@@ -873,7 +873,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
     if(vertices)
     {
-        mesh = MeshBuffer2Ptr( new MeshBuffer2 );
+        mesh = MeshBufferPtr( new MeshBuffer );
         mesh->setVertices(vertices, numVertices );
 
         if (faceIndices)

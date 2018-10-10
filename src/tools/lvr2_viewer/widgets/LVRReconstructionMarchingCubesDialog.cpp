@@ -13,7 +13,7 @@
 
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/io/Progress.hpp>
 
 namespace lvr2
@@ -165,7 +165,7 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
 
     using Vec = BaseVector<float>;
 
-    PointBuffer2Ptr pc_buffer = m_pc->getPointBuffer();
+    PointBufferPtr pc_buffer = m_pc->getPointBuffer();
 
     PointsetSurfacePtr<Vec> surface;
 
@@ -251,7 +251,7 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
     Materializer<Vec> materializer(mesh, clusterBiMap, faceNormals, *surface);
     MaterializerResult<Vec> matResult = materializer.generateMaterials();
     finalize.setMaterializerResult(matResult);
-    MeshBuffer2Ptr buffer = finalize.apply(mesh);
+    MeshBufferPtr buffer = finalize.apply(mesh);
 
     ModelPtr model(new Model(buffer));
 	ModelBridgePtr bridge(new LVRModelBridge(model));

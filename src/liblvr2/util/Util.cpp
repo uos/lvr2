@@ -5,7 +5,7 @@
 namespace lvr2
 {
 
-int Util::getSpectralChannel(int wavelength, PointBuffer2Ptr pcloud, int fallback)
+int Util::getSpectralChannel(int wavelength, PointBufferPtr pcloud, int fallback)
 {
     FloatChannelOptional spectral_channels = pcloud->getFloatChannel("spectral_channels");
     if (!spectral_channels)
@@ -25,7 +25,7 @@ int Util::getSpectralChannel(int wavelength, PointBuffer2Ptr pcloud, int fallbac
     return channel;
 }
 
-int Util::getSpectralWavelength(int channel, PointBuffer2Ptr pcloud, int fallback)
+int Util::getSpectralWavelength(int channel, PointBufferPtr pcloud, int fallback)
 {
     FloatChannelOptional spectral_channels = pcloud->getFloatChannel("spectral_channels");
     if (!spectral_channels)
@@ -43,7 +43,7 @@ int Util::getSpectralWavelength(int channel, PointBuffer2Ptr pcloud, int fallbac
     return channel * wavelengthPerChannel(pcloud) + minWavelength;
 }
 
-float Util::wavelengthPerChannel(PointBuffer2Ptr pcloud)
+float Util::wavelengthPerChannel(PointBufferPtr pcloud)
 {
     FloatChannelOptional spectral_channels = pcloud->getFloatChannel("spectral_channels");
     if (!spectral_channels)

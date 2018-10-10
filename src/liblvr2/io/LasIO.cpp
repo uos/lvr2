@@ -75,7 +75,7 @@ ModelPtr LasIO::read(string filename )
         }
 
         // Create point buffer and model
-        PointBuffer2Ptr p_buffer( new PointBuffer2);
+        PointBufferPtr p_buffer( new PointBuffer);
         p_buffer->setPointArray(points, num_points);
         p_buffer->addFloatChannel(intensities, "intensities", num_points, 1);
         p_buffer->setColorArray(colors, num_points);

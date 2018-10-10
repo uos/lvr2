@@ -54,7 +54,7 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface()
 
 template<typename BaseVecT>
 AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
-    PointBuffer2Ptr buffer,
+    PointBufferPtr buffer,
     std::string searchTreeName,
     int kn,
     int ki,

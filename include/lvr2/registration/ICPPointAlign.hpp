@@ -37,7 +37,7 @@ template <typename BaseVecT>
 class ICPPointAlign
 {
 public:
-    ICPPointAlign(PointBuffer2Ptr model, PointBuffer2Ptr data, Matrix4<BaseVecT> transformation);
+    ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4<BaseVecT> transformation);
 
     Matrix4<BaseVecT> match();
 
@@ -61,8 +61,8 @@ protected:
     double                              m_maxDistanceMatch;
     int                                 m_maxIterations;
 
-    PointBuffer2Ptr                     m_modelCloud;
-    PointBuffer2Ptr                     m_dataCloud;
+    PointBufferPtr                     m_modelCloud;
+    PointBufferPtr                     m_dataCloud;
     Matrix4<BaseVecT>                   m_transformation;
 
     SearchTreePtr<BaseVecT> 			m_searchTree;

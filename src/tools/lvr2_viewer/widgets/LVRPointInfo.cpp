@@ -3,7 +3,7 @@
 namespace lvr2
 {
 
-LVRPointInfo::LVRPointInfo(QWidget* parent, PointBuffer2Ptr pointBuffer, int pointId) :
+LVRPointInfo::LVRPointInfo(QWidget* parent, PointBufferPtr pointBuffer, int pointId) :
     QDialog(parent)
 {
     setAttribute(Qt::WA_DeleteOnClose);

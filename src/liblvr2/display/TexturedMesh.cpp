@@ -49,7 +49,7 @@ void TexturedMesh::getBufferArray(unsigned int* buffer, MaterialGroup* g)
 
 }
 
-TexturedMesh::TexturedMesh(MeshBuffer2Ptr mesh) : m_materials(mesh->getMaterials())
+TexturedMesh::TexturedMesh(MeshBufferPtr mesh) : m_materials(mesh->getMaterials())
 {
 	// Store internal buffers
     m_numFaces = mesh->numFaces();

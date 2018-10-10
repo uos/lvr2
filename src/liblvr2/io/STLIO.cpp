@@ -46,7 +46,7 @@ void STLIO::save( string filename )
 void STLIO::save( ModelPtr model, string filename )
 {
 
-	MeshBuffer2Ptr mesh = model->m_mesh;
+	MeshBufferPtr mesh = model->m_mesh;
 	size_t n_vert = mesh->numVertices();
 	size_t n_faces = mesh->numFaces();
 	floatArr vertices = mesh->getVertices();

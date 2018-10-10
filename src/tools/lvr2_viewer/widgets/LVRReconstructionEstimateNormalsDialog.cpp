@@ -58,7 +58,7 @@ void LVREstimateNormalsDialog::estimateNormals()
     QSpinBox* spinBox_ki = m_dialog->spinBox_ki;
     int ki = spinBox_ki->value();
 
-    PointBuffer2Ptr pc = m_pc->getPointBuffer();
+    PointBufferPtr pc = m_pc->getPointBuffer();
     floatArr old_pts = pc->getPointArray();
     size_t numPoints = m_pc->getNumPoints();
 
@@ -68,7 +68,7 @@ void LVREstimateNormalsDialog::estimateNormals()
     // copy pts to new pointbuffer 
     std::copy(old_pts.get(), old_pts.get() + numPoints*3, points.get());
 
-    PointBuffer2Ptr new_pc = PointBuffer2Ptr( new PointBuffer2 );
+    PointBufferPtr new_pc = PointBufferPtr( new PointBuffer );
     new_pc->setPointArray(points, numPoints);
 
     // with k == 0 no normal interpolation

@@ -129,7 +129,7 @@ void LVRPlanarOptimizationDialog::optimizeMesh()
         Tesselator<Vec>::apply(mesh, clusterBiMap, faceNormals, lineSegmentThreshold);
     }
     
-    MeshBuffer2Ptr res; 
+    MeshBufferPtr res; 
     if (generateTextures)
     {
         // TODO Use TextureFinalizer... 

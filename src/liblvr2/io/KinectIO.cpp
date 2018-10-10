@@ -6,7 +6,7 @@
  */
 
 #include <lvr2/io/KinectIO.hpp>
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/io/DataStruct.hpp>
 
 #include <Eigen/Dense>
@@ -60,7 +60,7 @@ KinectIO::~KinectIO()
 	//delete m_freenect;
 }
 
-PointBuffer2Ptr KinectIO::getBuffer()
+PointBufferPtr KinectIO::getBuffer()
 {
 	// Get depth image from sensor
 	std::vector<short> depthImage(480 * 680, 0);
@@ -76,12 +76,12 @@ PointBuffer2Ptr KinectIO::getBuffer()
 	}
 
 	// Return null pointer if no image was grabbed
-	if(depthImage.size() == 0) return PointBuffer2Ptr();
+	if(depthImage.size() == 0) return PointBufferPtr();
 
 	size_t numPoints = depthImage.size() - nans.size();
 
 	// Convert depth image into point cloud
-	PointBuffer2Ptr buffer(new PointBuffer2);
+	PointBufferPtr buffer(new PointBuffer);
 	floatArr points(new float[numPoints * 3]);
 	ucharArr colors(new unsigned char[numPoints * 3]);
 

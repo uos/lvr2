@@ -9,17 +9,17 @@ namespace lvr2
 {
 
 ////
-/// \brief The MeshBuffer2 Mesh representation for I/O modules.
+/// \brief The MeshBuffer Mesh representation for I/O modules.
 ///
-class MeshBuffer2 : public BaseBuffer
+class MeshBuffer : public BaseBuffer
 {
 public:
 
     ///
-    /// \brief MeshBuffer2      Contructor. Builds an empty buffer. Fill elements
+    /// \brief MeshBuffer      Contructor. Builds an empty buffer. Fill elements
     ///                         with add-Methods.
     ///
-    MeshBuffer2();
+    MeshBuffer();
 
     ///
     /// \brief addVertices      Adds the vertex array. Three floats per vertex
@@ -170,7 +170,7 @@ private:
 
 };
 
-using MeshBuffer2Ptr = std::shared_ptr<MeshBuffer2>;
+using MeshBufferPtr = std::shared_ptr<MeshBuffer>;
 
 }
 #endif // MESHBUFFER2_HPP

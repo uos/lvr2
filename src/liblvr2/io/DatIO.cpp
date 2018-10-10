@@ -57,7 +57,7 @@ ModelPtr DatIO::read(string filename)
 ModelPtr DatIO::read(string filename, int n, int reduction)
 {
 	ModelPtr model( new Model);
-	PointBuffer2Ptr pointBuffer(new PointBuffer2);
+	PointBufferPtr pointBuffer(new PointBuffer);
 
 	// Allocate point buffer and read data from file
 	int c = 0;
@@ -166,7 +166,7 @@ void DatIO::save(ModelPtr ptr, string filename)
 
 void  DatIO::save(string filename)
 {
-	PointBuffer2Ptr pointBuffer = m_model->m_pointCloud;
+	PointBufferPtr pointBuffer = m_model->m_pointCloud;
 	float buffer[4];
 	if(pointBuffer)
 	{

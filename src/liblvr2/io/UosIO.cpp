@@ -486,7 +486,7 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
 
         // Create point cloud in model
         model = ModelPtr( new Model );
-        model->m_pointCloud = PointBuffer2Ptr( new PointBuffer2 );
+        model->m_pointCloud = PointBufferPtr( new PointBuffer );
         model->m_pointCloud->setPointArray( points, numPoints );
         model->m_pointCloud->setColorArray(pointColors, numPoints);
 
@@ -689,7 +689,7 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
 
         // Alloc model
         model = ModelPtr( new Model );
-        model->m_pointCloud = PointBuffer2Ptr( new PointBuffer2 );
+        model->m_pointCloud = PointBufferPtr( new PointBuffer );
         model->m_pointCloud->setPointArray( points, n );
     }
 }

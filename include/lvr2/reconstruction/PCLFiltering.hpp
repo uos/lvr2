@@ -29,7 +29,7 @@
 #ifdef LVR_USE_PCL
 
 #include <lvr2/io/Timestamp.hpp>
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
@@ -51,7 +51,7 @@ public:
     void applyMLSProjection(float searchRadius);
     void applyOutlierRemoval(int meank, float thresh);
 
-    PointBuffer2Ptr getPointBuffer();
+    PointBufferPtr getPointBuffer();
 
 private:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr       m_pointCloud;

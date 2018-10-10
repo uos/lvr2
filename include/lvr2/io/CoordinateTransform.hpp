@@ -27,7 +27,7 @@
 #ifndef COORDINATETRANSFORM_HPP_
 #define COORDINATETRANSFORM_HPP_
 
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 
 namespace lvr2
 {
@@ -35,7 +35,7 @@ namespace lvr2
 	enum COORD_SYSTEM {SLAM6D, OPENGL_METERS, OPENGL_MM};
 
 	void convert(COORD_SYSTEM from, COORD_SYSTEM to, float* point);
-	void convert(COORD_SYSTEM from, COORD_SYSTEM to, PointBuffer2Ptr &buffer);
+	void convert(COORD_SYSTEM from, COORD_SYSTEM to, PointBufferPtr &buffer);
 } // namespace lvr2
 
 #endif /* COORDINATETRANSFORM_HPP_ */

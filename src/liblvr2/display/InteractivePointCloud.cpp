@@ -35,10 +35,10 @@ InteractivePointCloud::InteractivePointCloud()
 			Vector<Vec>(8, 8, 8)
 			);
 
-	updateBuffer(PointBuffer2Ptr());
+	updateBuffer(PointBufferPtr());
 }
 
-InteractivePointCloud::InteractivePointCloud(PointBuffer2Ptr buffer)
+InteractivePointCloud::InteractivePointCloud(PointBufferPtr buffer)
 {
 	m_boundingBox = new BoundingBox<Vec>(
 			Vector<Vec>(-8, -8, -8),
@@ -63,7 +63,7 @@ void InteractivePointCloud::render()
 	}
 }
 
-void InteractivePointCloud::updateBuffer(PointBuffer2Ptr buffer)
+void InteractivePointCloud::updateBuffer(PointBufferPtr buffer)
 {
 	if(buffer)
 	{

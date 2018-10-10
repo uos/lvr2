@@ -61,7 +61,7 @@ void convert(COORD_SYSTEM from, COORD_SYSTEM to, float* point)
 	}
 }
 
-void convert(COORD_SYSTEM from, COORD_SYSTEM to, PointBuffer2Ptr& buffer)
+void convert(COORD_SYSTEM from, COORD_SYSTEM to, PointBufferPtr& buffer)
 {
 	size_t n = buffer->numPoints();
 	floatArr p = buffer->getPointArray();

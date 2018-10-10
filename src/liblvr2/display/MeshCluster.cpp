@@ -28,7 +28,7 @@
 namespace lvr2
 {
 
-void MeshCluster::addMesh(MeshBuffer2Ptr mesh, string name)
+void MeshCluster::addMesh(MeshBufferPtr mesh, string name)
 {
 	m_meshes.push_back(new StaticMesh(mesh, name));
 }

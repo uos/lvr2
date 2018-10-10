@@ -169,7 +169,7 @@ ModelPtr ObjIO::read(string filename)
 
     ifstream in(filename.c_str());
 
-    MeshBuffer2Ptr mesh = MeshBuffer2Ptr(new MeshBuffer2);
+    MeshBufferPtr mesh = MeshBufferPtr(new MeshBuffer);
 
     vector<float>         vertices;
     vector<float>         normals;

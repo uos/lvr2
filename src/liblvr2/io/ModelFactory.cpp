@@ -156,7 +156,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
         if(m_transform.convert)
         {
             // Convert coordinates in model
-            PointBuffer2Ptr points = m->m_pointCloud;
+            PointBufferPtr points = m->m_pointCloud;
             size_t n_points = points->numPoints();
             size_t n_normals = 0;
             unsigned dummy;

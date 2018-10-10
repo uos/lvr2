@@ -35,7 +35,7 @@
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/Plane.hpp>
-#include <lvr2/io/MeshBuffer2.hpp>
+#include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/util/Cluster.hpp>
 #include <lvr2/util/ClusterBiMap.hpp>
 #include <lvr2/attrmaps/AttrMaps.hpp>

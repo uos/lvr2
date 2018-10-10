@@ -42,7 +42,7 @@ namespace lvr2
 using Vec = BaseVector<float>;
 
 ModelToImage::ModelToImage(
-        PointBuffer2Ptr buffer,
+        PointBufferPtr buffer,
         ModelToImage::ProjectionType projection,
         int width, int height,
         float minZ, float maxZ,

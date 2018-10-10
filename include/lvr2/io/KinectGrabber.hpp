@@ -26,7 +26,7 @@
 #ifndef KINECGRABBER_H_
 #define KINECGRABBER_H_
 
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 #include "libfreenect.hpp"
 
 #include <boost/thread.hpp>
@@ -49,8 +49,8 @@ protected:
 	virtual void VideoCallback(void* data, uint32_t timestamp);
 	virtual void DepthCallback(void* data, uint32_t timestamp);
 
-	/// PointBuffer2Ptr with current data
-	PointBuffer2Ptr			m_buffer;
+	/// PointBufferPtr with current data
+	PointBufferPtr			m_buffer;
 
 	/// Mutex for save depth buffer access
 	boost::mutex			m_depthMutex;

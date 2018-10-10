@@ -7,7 +7,7 @@ namespace lvr2
 {
   using Vec = BaseVector<float>;
 
-  PointOctree::PointOctree(PointBuffer2Ptr& points, int voxelSize)
+  PointOctree::PointOctree(PointBufferPtr& points, int voxelSize)
   {
     m_voxelSize = voxelSize;
 

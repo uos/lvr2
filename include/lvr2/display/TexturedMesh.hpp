@@ -45,7 +45,7 @@ struct MaterialGroup
 class TexturedMesh: public StaticMesh
 {
 public:
-	TexturedMesh(MeshBuffer2Ptr mesh);
+	TexturedMesh(MeshBufferPtr mesh);
 
 	virtual ~TexturedMesh()
     {
