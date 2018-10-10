@@ -462,7 +462,6 @@ int main(int argc, char** argv)
 #include <boost/optional.hpp>
 
 #include <lvr2/config/lvropenmp.hpp>
-//#include <lvr2/config/BaseOption.hpp>
 
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
@@ -503,11 +502,6 @@ int main(int argc, char** argv)
 #include <lvr2/geometry/BVH.hpp>
 
 #include "Options.hpp"
-
-// PCL related includes
-#ifdef LVR_USE_PCL
-#include <lvr/reconstruction/PCLKSurface.hpp>
-#endif
 
 #if defined CUDA_FOUND
     #define GPU_FOUND
@@ -914,7 +908,7 @@ int main(int argc, char** argv)
 
     if (matResult.m_keypoints)
     {
-        // save materializer keypoints to hdf5 which is not possible with lvr::ModelFactory
+        // save materializer keypoints to hdf5 which is not possible with ModelFactory
         PlutoMapIO map_io("triangle_mesh.h5");
         map_io.addTextureKeypointsMap(matResult.m_keypoints.get());
     }

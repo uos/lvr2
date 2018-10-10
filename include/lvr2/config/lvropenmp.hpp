@@ -28,7 +28,4 @@ public:
 
 } // namespace lvr2
 
-#include "lvropenmp.cpp"
-
 #endif // LVROPENMP
-

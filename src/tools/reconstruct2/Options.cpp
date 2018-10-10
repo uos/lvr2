@@ -25,7 +25,7 @@
  */
 
 #include "Options.hpp"
-#include <lvr/config/lvropenmp.hpp>
+#include <lvr2/config/lvropenmp.hpp>
 
 #include <fstream>
 
@@ -72,7 +72,7 @@ Options::Options(int argc, char** argv)
         ("texelSize", value<float>(&m_texelSize)->default_value(1), "Texel size that determines texture resolution.")
         ("classifier", value<string>(&m_classifier)->default_value("PlaneSimpsons"),"Classfier object used to color the mesh.")
         ("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
-        ("threads", value<int>(&m_numThreads)->default_value( lvr::OpenMPConfig::getNumThreads() ), "Number of threads")
+        ("threads", value<int>(&m_numThreads)->default_value( lvr2::OpenMPConfig::getNumThreads() ), "Number of threads")
         ("sft", value<float>(&m_sft)->default_value(0.9), "Sharp feature threshold when using sharp feature decomposition")
         ("sct", value<float>(&m_sct)->default_value(0.7), "Sharp corner threshold when using sharp feature decomposition")
         ("reductionRatio", value<float>(&m_edgeCollapseReductionRatio)->default_value(0.0), "Percentage of faces to remove via edge-collapse (0.0 means no reduction, 1.0 means to remove all faces which can be removed)")
