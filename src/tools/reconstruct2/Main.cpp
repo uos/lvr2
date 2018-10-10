@@ -491,8 +491,8 @@ int main(int argc, char** argv)
 #include <lvr2/reconstruction/HashGrid.hpp>
 #include <lvr2/reconstruction/PointsetGrid.hpp>
 #include <lvr2/reconstruction/SharpBox.hpp>
-#include <lvr2/io/PointBuffer.hpp>
-#include <lvr2/io/MeshBuffer.hpp>
+#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/MeshBuffer2.hpp>
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/io/PlutoMapIO.hpp>
 #include <lvr2/util/Factories.hpp>
@@ -524,9 +524,8 @@ using std::make_unique;
 
 using namespace lvr2;
 
-using BaseVecT = BaseVector<float>;
-using PsSurface = lvr2::PointsetSurface<BaseVecT>;
 using Vec = BaseVector<float>;
+using PsSurface = lvr2::PointsetSurface<Vec>;
 
 
 template <typename BaseVecT>
@@ -541,9 +540,6 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
         return nullptr;
     }
-
-
-    //auto buffer = make_shared<PointBuffer<Vec>>(*model->m_pointCloud);
 
     PointBuffer2Ptr buffer = model->m_pointCloud;
 
@@ -626,7 +622,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
 std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
     createGridAndReconstruction(
         const reconstruct::Options& options,
-        PointsetSurfacePtr<BaseVecT> surface
+        PointsetSurfacePtr<Vec> surface
     )
 {
     // Determine whether to use intersections or voxelsize
@@ -813,7 +809,7 @@ int main(int argc, char** argv)
 
         if (options.retesselate())
         {
-            Tesselator<BaseVecT>::apply(mesh, clusterBiMap, faceNormals, options.getLineFusionThreshold());
+            Tesselator<Vec>::apply(mesh, clusterBiMap, faceNormals, options.getLineFusionThreshold());
         }
     }
     else

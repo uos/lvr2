@@ -42,11 +42,9 @@
 #include <boost/filesystem.hpp>
 #include "boost/tuple/tuple.hpp"
 
-#include <lvr2/io/PLYIO.hpp>
 #include <lvr2/io/Timestamp.hpp>
-#include <lvr2/display/GlTexture.hpp>
-#include <lvr2/display/TextureFactory.hpp>
 
+#include <lvr2/texture/TextureFactory.hpp>
 #include <lvr2/texture/Texture.hpp>
 #include <lvr2/texture/Material.hpp>
 

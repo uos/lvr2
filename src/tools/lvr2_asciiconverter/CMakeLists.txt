@@ -17,7 +17,7 @@ set(ASCII_SOURCES
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/ObjIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/io/PPMIO.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/texture/Texture.cpp
-    ${PROJECT_SOURCE_DIR}/include/lvr2/display/TextureFactory.cpp
+    ${PROJECT_SOURCE_DIR}/include/lvr2/texture/TextureFactory.cpp
     ${PROJECT_SOURCE_DIR}/include/lvr2/display/GlTexture.cpp
     Options.cpp
     Main.cpp
