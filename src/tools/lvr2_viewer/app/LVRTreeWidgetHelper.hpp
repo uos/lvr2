@@ -29,8 +29,8 @@
 #include "../widgets/LVRItemTypes.hpp"
 #include "../widgets/LVRModelItem.hpp"
 
-#include <lvr2/io/MeshBuffer2.hpp>
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/MeshBuffer.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 
 namespace lvr2
 {
@@ -41,8 +41,8 @@ public:
     LVRTreeWidgetHelper(QTreeWidget* widget);
     virtual ~LVRTreeWidgetHelper() {};
 
-    PointBuffer2Ptr     getPointBuffer(QString name);
-    MeshBuffer2Ptr      getMeshBuffer(QString name);
+    PointBufferPtr     getPointBuffer(QString name);
+    MeshBufferPtr      getMeshBuffer(QString name);
     LVRModelItem*       getModelItem(QString name);
 
 

@@ -44,7 +44,7 @@ inline unsigned char floatToColor(float f)
     return f * 255;
 }
 
-LVRPointBufferBridge::LVRPointBufferBridge(PointBuffer2Ptr pointCloud)
+LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
 {
     // use all silders with channel 0
     m_useSpectralChannel.r = true;
@@ -323,7 +323,7 @@ void LVRPointBufferBridge::useGradient(bool useGradient)
     }
 }
 
-PointBuffer2Ptr LVRPointBufferBridge::getPointBuffer()
+PointBufferPtr LVRPointBufferBridge::getPointBuffer()
 {
     return m_pointBuffer;
 }
@@ -347,7 +347,7 @@ LVRPointBufferBridge::~LVRPointBufferBridge()
 {
 }
 
-void LVRPointBufferBridge::computePointCloudActor(PointBuffer2Ptr pc)
+void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 {
     if(pc)
     {

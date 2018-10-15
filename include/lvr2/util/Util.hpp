@@ -4,7 +4,7 @@
 #include <vector>
 #include <boost/shared_array.hpp>
 
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Vector.hpp>
@@ -19,9 +19,9 @@ class Util
 public:
 
     // helper methods for getting spectralchannels/wavelengths of channel
-    static int getSpectralChannel(int wavelength, PointBuffer2Ptr pcloud, int fallback = -1);
-    static int getSpectralWavelength(int channel, PointBuffer2Ptr p, int fallback = -1);
-    static float wavelengthPerChannel(PointBuffer2Ptr pcloud);
+    static int getSpectralChannel(int wavelength, PointBufferPtr pcloud, int fallback = -1);
+    static int getSpectralWavelength(int channel, PointBufferPtr p, int fallback = -1);
+    static float wavelengthPerChannel(PointBufferPtr pcloud);
 
     // copies a vector into a shared array
     template<typename T>

@@ -122,7 +122,7 @@ vtkSmartPointer<vtkActor> LVRMeshItem::getWireframeActor()
     return m_meshBridge->getWireframeActor();
 }
 
-MeshBuffer2Ptr LVRMeshItem::getMeshBuffer()
+MeshBufferPtr LVRMeshItem::getMeshBuffer()
 {
     return m_meshBridge->getMeshBuffer();
 }

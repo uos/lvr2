@@ -69,7 +69,7 @@ class StaticMesh : public Renderable
 public:
 	StaticMesh();
 	StaticMesh( ModelPtr model, string name=""); // <unnamed static mesh>" );
-	StaticMesh( MeshBuffer2Ptr buffer, string name=""); //<unnamed static mesh>" );
+	StaticMesh( MeshBufferPtr buffer, string name=""); //<unnamed static mesh>" );
 
 	StaticMesh(const StaticMesh &o);
 	~StaticMesh();
@@ -91,7 +91,7 @@ public:
 
 private:
 
-	void init( MeshBuffer2Ptr mesh );
+	void init( MeshBufferPtr mesh );
 
 	void interpolateNormals();
 	void setDefaultColors();

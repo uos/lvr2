@@ -29,7 +29,7 @@
 
 #include <lvr2/algorithm/Materializer.hpp>
 
-#include <lvr2/io/MeshBuffer2.hpp>
+#include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/io/Progress.hpp>
 
 #include <lvr2/util/Util.hpp>
@@ -38,7 +38,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-MeshBuffer2Ptr SimpleFinalizer<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
+MeshBufferPtr SimpleFinalizer<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
 {
     // Create vertex and normal buffer
     DenseVertexMap<size_t> idxMap;
@@ -106,7 +106,7 @@ MeshBuffer2Ptr SimpleFinalizer<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
     }
 
     // create buffer object and pass values
-    MeshBuffer2Ptr buffer( new MeshBuffer2 );
+    MeshBufferPtr buffer( new MeshBuffer );
 
     buffer->setVertices(Util::convert_vector_to_shared_array(vertices), vertices.size() / 3);
     buffer->setFaceIndices(Util::convert_vector_to_shared_array(faces), faces.size() / 3);
@@ -169,7 +169,7 @@ void TextureFinalizer<BaseVecT>::setMaterializerResult(const MaterializerResult<
 
 
 template<typename BaseVecT>
-MeshBuffer2Ptr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
+MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
 {
     // Create vertex buffer and all buffers holding vertex attributes
     vector<float> vertices;
@@ -406,7 +406,7 @@ MeshBuffer2Ptr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
 
     cout << endl;
 
-    MeshBuffer2Ptr buffer = MeshBuffer2Ptr( new MeshBuffer2 );
+    MeshBufferPtr buffer = MeshBufferPtr( new MeshBuffer );
     buffer->setVertices(Util::convert_vector_to_shared_array(vertices), vertices.size() / 3);
     buffer->setFaceIndices(Util::convert_vector_to_shared_array(faces), faces.size() / 3);
 

@@ -37,7 +37,7 @@ void LVRMLSProjectionDialog::applyMLSProjection()
    /* PCLFiltering filter(m_pc->getPointBuffer());
     filter.applyMLSProjection(maximumDistance);
 
-    PointBuffer2Ptr pb( filter.getPointBuffer() );
+    PointBufferPtr pb( filter.getPointBuffer() );
     ModelPtr model( new Model( pb ) );
 
     ModelBridgePtr bridge(new LVRModelBridge(model));

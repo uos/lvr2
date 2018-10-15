@@ -17,15 +17,13 @@ public:
 
     PanoramaNormals(ModelToImage* mti);
 
-    PointBuffer2Ptr computeNormals(int with, int height, bool interpolate);
+    PointBufferPtr computeNormals(int with, int height, bool interpolate);
 
 private:
     ModelToImage*       m_mti;
-    PointBuffer2Ptr      m_buffer;
+    PointBufferPtr      m_buffer;
 };
 
 } // namespace lvr2
-
-#include "PanoramaNormals.cpp"
 
 #endif // PANORAMANORMALS_H

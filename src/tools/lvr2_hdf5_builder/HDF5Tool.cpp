@@ -121,7 +121,7 @@ int main( int argc, char ** argv )
 
     // Read .ply file with scan data
     ModelPtr model = ModelFactory::readModel(options.getPLYFile());
-    PointBuffer2Ptr point_buffer = model->m_pointCloud;
+    PointBufferPtr point_buffer = model->m_pointCloud;
     size_t n = point_buffer->numPoints();
     floatArr points = point_buffer->getPointArray();
 

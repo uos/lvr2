@@ -18,7 +18,7 @@
 #include <lvr2/display/TextureFactory.hpp>
 
 #include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Vector.hpp>
@@ -44,8 +44,8 @@ using namespace lvr2;
 
     floatArr pts = pc->getPointArray();
 
-    PointBuffer2Ptr tmp1 = PointBuffer2Ptr( new PointBuffer2 );
-    PointBuffer2Ptr tmp2 = PointBuffer2Ptr( new PointBuffer2 );
+    PointBufferPtr tmp1 = PointBufferPtr( new PointBuffer );
+    PointBufferPtr tmp2 = PointBufferPtr( new PointBuffer );
 
     floatArr pts1 = floatArr( new float[3* (n/2)] );
     floatArr pts2 = floatArr( new float[3* (n - (n/2))] );
@@ -74,7 +74,7 @@ using namespace lvr2;
     ModelFactory::saveModel(ModelPtr( new Model(tmp2) ), "half2.ply");
 }
 
-void test(PointBuffer2Ptr pc_buffer)
+void test(PointBufferPtr pc_buffer)
 {
     PointsetSurfacePtr<Vec> surface;
 
@@ -100,7 +100,7 @@ void test(PointBuffer2Ptr pc_buffer)
     auto reconstruction = make_unique<FastReconstruction<Vec, SharpBox<Vec>>>(grid);
 
     // Create an empty mesh
-    MeshBuffer2Ptr m_buff = MeshBuffer2Ptr( new MeshBuffer2 );
+    MeshBufferPtr m_buff = MeshBufferPtr( new MeshBuffer );
     HalfEdgeMesh<Vec> mesh(m_buff);
     reconstruction->getMesh(mesh);
 
@@ -119,7 +119,7 @@ void test(PointBuffer2Ptr pc_buffer)
     Materializer<Vec> materializer(mesh, clusterBiMap, faceNormals, *surface);
     MaterializerResult<Vec> matResult = materializer.generateMaterials();
     finalize.setMaterializerResult(matResult);
-    MeshBuffer2Ptr buffer = finalize.apply(mesh);
+    MeshBufferPtr buffer = finalize.apply(mesh);
 
     ModelFactory::saveModel(ModelPtr( new Model(buffer)), "test.obj");
 }
@@ -462,7 +462,6 @@ int main(int argc, char** argv)
 #include <boost/optional.hpp>
 
 #include <lvr2/config/lvropenmp.hpp>
-//#include <lvr2/config/BaseOption.hpp>
 
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
@@ -504,11 +503,6 @@ int main(int argc, char** argv)
 
 #include "Options.hpp"
 
-// PCL related includes
-#ifdef LVR_USE_PCL
-#include <lvr/reconstruction/PCLKSurface.hpp>
-#endif
-
 #if defined CUDA_FOUND
     #define GPU_FOUND
 
@@ -530,9 +524,8 @@ using std::make_unique;
 
 using namespace lvr2;
 
-using BaseVecT = BaseVector<float>;
-using PsSurface = lvr2::PointsetSurface<BaseVecT>;
 using Vec = BaseVector<float>;
+using PsSurface = lvr2::PointsetSurface<Vec>;
 
 
 template <typename BaseVecT>
@@ -548,10 +541,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         return nullptr;
     }
 
-
-    //auto buffer = make_shared<PointBuffer<Vec>>(*model->m_pointCloud);
-
-    PointBuffer2Ptr buffer = model->m_pointCloud;
+    PointBufferPtr buffer = model->m_pointCloud;
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();
@@ -632,7 +622,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
 std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
     createGridAndReconstruction(
         const reconstruct::Options& options,
-        PointsetSurfacePtr<BaseVecT> surface
+        PointsetSurfacePtr<Vec> surface
     )
 {
     // Determine whether to use intersections or voxelsize
@@ -819,7 +809,7 @@ int main(int argc, char** argv)
 
         if (options.retesselate())
         {
-            Tesselator<BaseVecT>::apply(mesh, clusterBiMap, faceNormals, options.getLineFusionThreshold());
+            Tesselator<Vec>::apply(mesh, clusterBiMap, faceNormals, options.getLineFusionThreshold());
         }
     }
     else
@@ -916,7 +906,7 @@ int main(int argc, char** argv)
 
     if (matResult.m_keypoints)
     {
-        // save materializer keypoints to hdf5 which is not possible with lvr::ModelFactory
+        // save materializer keypoints to hdf5 which is not possible with ModelFactory
         PlutoMapIO map_io("triangle_mesh.h5");
         map_io.addTextureKeypointsMap(matResult.m_keypoints.get());
     }

@@ -33,7 +33,7 @@
 #include <boost/program_options.hpp>
 #include <float.h>
 
-#include <lvr/config/BaseOption.hpp>
+#include <lvr2/config/BaseOption.hpp>
 
 using std::ostream;
 using std::cout;
@@ -41,13 +41,14 @@ using std::endl;
 using std::string;
 using std::vector;
 
-namespace reconstruct{
+namespace reconstruct
+{
 
 /**
  * @brief A class to parse the program options for the reconstruction
  *        executable.
  */
-class Options : public lvr::BaseOption{
+class Options : public lvr2::BaseOption{
 public:
 
     /**

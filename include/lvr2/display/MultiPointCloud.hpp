@@ -57,7 +57,7 @@ class MultiPointCloud : public Renderable
     using uColorVertex = ColorVertex<Vec, unsigned char>;
 public:
     MultiPointCloud(ModelPtr model, string name = "<unnamed point cloud>");
-    MultiPointCloud(PointBuffer2Ptr buffer, string name = "<unnamed point cloud>");
+    MultiPointCloud(PointBufferPtr buffer, string name = "<unnamed point cloud>");
 
     virtual ~MultiPointCloud()
     {
@@ -81,7 +81,7 @@ public:
     virtual ModelPtr model();
 private:
 
-    void init(PointBuffer2Ptr buffer);
+    void init(PointBufferPtr buffer);
 
     map<PointCloud*, PointCloudAttribute*>    m_clouds;
 };
@@ -97,7 +97,5 @@ void MultiPointCloud::render()
 }
 
 } // namespace lvr2
-
-#include "MultiPointCloud.cpp"
 
 #endif /* MULTIPOINTCLOUD_H_ */

@@ -3,7 +3,7 @@
 namespace lvr2
 {
 
-LVRHistogram::LVRHistogram(QWidget* parent, PointBuffer2Ptr points)
+LVRHistogram::LVRHistogram(QWidget* parent, PointBufferPtr points)
     : QDialog(parent)
 {
     m_histogram.setupUi(this);

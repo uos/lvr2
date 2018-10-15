@@ -28,7 +28,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-PointsetSurface<BaseVecT>::PointsetSurface(PointBuffer2Ptr pointBuffer)
+PointsetSurface<BaseVecT>::PointsetSurface(PointBufferPtr pointBuffer)
     : m_pointBuffer(pointBuffer)
 {
     // Calculate bounding box
@@ -70,7 +70,7 @@ const BoundingBox<BaseVecT>& PointsetSurface<BaseVecT>::getBoundingBox() const
 }
 
 template<typename BaseVecT>
-PointBuffer2Ptr PointsetSurface<BaseVecT>::pointBuffer() const
+PointBufferPtr PointsetSurface<BaseVecT>::pointBuffer() const
 {
     return m_pointBuffer;
 }

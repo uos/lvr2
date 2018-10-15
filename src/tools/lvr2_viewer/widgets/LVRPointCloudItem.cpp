@@ -147,7 +147,7 @@ size_t LVRPointCloudItem::getNumPoints()
     return m_pointBridge->getNumPoints();
 }
 
-PointBuffer2Ptr LVRPointCloudItem::getPointBuffer()
+PointBufferPtr LVRPointCloudItem::getPointBuffer()
 {
     return m_pointBridge->getPointBuffer();
 }

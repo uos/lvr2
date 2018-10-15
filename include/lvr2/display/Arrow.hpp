@@ -100,6 +100,4 @@ inline void EulerToMatrix(const double *rPos, const double *rPosTheta, float *al
 // @TODO Why do we need this?
 void render();
 
-#include "Arrow.cpp"
-
 #endif /* Arrow_H_ */

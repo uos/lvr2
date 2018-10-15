@@ -50,6 +50,4 @@ public:
 
 } // namespace lvr2
 
-#include "DatIO.cpp"
-
 #endif /* DATIO_HPP_ */
