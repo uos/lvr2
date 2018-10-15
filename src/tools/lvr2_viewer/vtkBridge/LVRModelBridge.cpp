@@ -49,12 +49,12 @@ LVRModelBridge::LVRModelBridge(ModelPtr model) :
     if(validMeshBridge()) {
         if (!m_meshBridge->hasTextures())
         {
-            m_meshBridge->getMeshActor()->GetProperty()->BackfaceCullingOn();
+            m_meshBridge->getMeshActor()->GetProperty()->BackfaceCullingOff();
         }
         else
         {
             vtkSmartPointer<vtkProperty> prop = vtkProperty::New();
-            prop->BackfaceCullingOn();
+            prop->BackfaceCullingOff();
             m_meshBridge->getTexturedActors()->ApplyProperties(prop);
         }
     }

@@ -22,7 +22,7 @@
 #include <rply.h>
 
 #include <lvr2/io/Timestamp.hpp>
-#include <lvr2/io/PointBuffer2.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/io/DataStruct.hpp>
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/io/Progress.hpp>
@@ -203,7 +203,7 @@ void writePLYHeader(ofstream& outfile, size_t numPoints, bool writeColors, bool 
 void addToFile(ofstream& out, string filename)
 {
     ModelPtr model = ModelFactory::readModel(filename);
-    PointBuffer2Ptr pointBuffer = model->m_pointCloud;
+    PointBufferPtr pointBuffer = model->m_pointCloud;
 
     size_t np, nn, nc;
     unsigned w_color;

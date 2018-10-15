@@ -74,6 +74,4 @@ class PCDIO : public BaseIO
 
 } // namespace lvr2
 
-#include "PCDIO.cpp"
-
 #endif /* PCDIO_HPP_INCLUDED */

@@ -38,6 +38,4 @@ public:
 
 } /* namespace lvr2 */
 
-#include "STLIO.cpp"
-
 #endif /* INCLUDE_LVR_IO_STLIO_HPP_ */

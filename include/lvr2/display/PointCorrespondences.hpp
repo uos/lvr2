@@ -19,6 +19,4 @@ private:
 
 } // namespace lvr2
 
-#include "PointCorrespondences.cpp"
-
 #endif // POINTCORRESPONDENCES_H

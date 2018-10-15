@@ -58,6 +58,4 @@ public:
 
 } /* namespace lvr2 */
 
-#include "LasIO.cpp"
-
 #endif /* LASIO_H_ */

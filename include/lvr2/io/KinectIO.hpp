@@ -24,7 +24,7 @@ public:
 
 	virtual ~KinectIO();
 
-	PointBuffer2Ptr getBuffer();
+	PointBufferPtr getBuffer();
 
 private:
 	KinectGrabber* 			m_grabber;
@@ -35,7 +35,5 @@ private:
 };
 
 } // namespace lvr2
-
-#include "KinectIO.cpp"
 
 #endif /* KINECTIO_H_ */

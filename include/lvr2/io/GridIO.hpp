@@ -52,6 +52,4 @@ private:
 
 } /* namespace lvr2 */
 
-#include "GridIO.cpp"
-
 #endif /* GRIDIO_HPP_ */

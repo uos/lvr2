@@ -125,7 +125,7 @@ public:
     ///                             left handed coordinate system (like 3dtk)
     ///
     ModelToImage(
-            PointBuffer2Ptr buffer,
+            PointBufferPtr buffer,
             ProjectionType projection,
             int width, int height,
             float minZ, float maxZ,
@@ -175,7 +175,7 @@ public:
     ///
     /// \brief  Retruns the point buffer
     ///
-    PointBuffer2Ptr pointBuffer() { return m_points;}
+    PointBufferPtr pointBuffer() { return m_points;}
 
 private:
 
@@ -184,7 +184,7 @@ private:
     Projection*         m_projection;
 
     /// Pointer to the initial point cloud
-    PointBuffer2Ptr      m_points;
+    PointBufferPtr      m_points;
 
     /// Image width
     int                 m_width;
@@ -220,7 +220,5 @@ private:
 };
 
 } /* namespace lvr2 */
-
-#include "ModelToImage.cpp"
 
 #endif /* SRC_LIBLVR_RECONSTRUCTION_MODELTOIMAGE_HPP_ */

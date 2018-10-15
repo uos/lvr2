@@ -43,7 +43,7 @@
 namespace lvr2
 {
 
-LVRMeshBufferBridge::LVRMeshBufferBridge(MeshBuffer2Ptr meshBuffer) :
+LVRMeshBufferBridge::LVRMeshBufferBridge(MeshBufferPtr meshBuffer) :
         m_meshBuffer(meshBuffer)
 {
     if(meshBuffer)
@@ -109,7 +109,7 @@ size_t LVRMeshBufferBridge::getNumVertices()
     return m_numVertices;
 }
 
-MeshBuffer2Ptr  LVRMeshBufferBridge::getMeshBuffer()
+MeshBufferPtr  LVRMeshBufferBridge::getMeshBuffer()
 {
     return m_meshBuffer;
 }
@@ -119,7 +119,7 @@ LVRMeshBufferBridge::~LVRMeshBufferBridge()
     // TODO Auto-generated destructor stub
 }
 
-void LVRMeshBufferBridge::computeMeshActor(MeshBuffer2Ptr meshbuffer)
+void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
 {
     if(meshbuffer)
     {

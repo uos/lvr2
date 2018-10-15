@@ -563,8 +563,6 @@ inline ostream& operator<<(ostream& os, const Matrix4<T> matrix){
 	return os;
 }
 
-typedef Matrix4<BaseVector<float>> Matrix4f;
-
 } // namespace lvr2
 
 #endif /* MATRIX_H_ */

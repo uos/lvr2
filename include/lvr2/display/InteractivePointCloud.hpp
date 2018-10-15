@@ -37,21 +37,19 @@ class InteractivePointCloud : public Renderable
 {
 public:
 	InteractivePointCloud();
-	InteractivePointCloud(PointBuffer2Ptr buffer);
+	InteractivePointCloud(PointBufferPtr buffer);
 	virtual ~InteractivePointCloud();
 
 	virtual void render();
 
-	void updateBuffer(PointBuffer2Ptr buffer);
+	void updateBuffer(PointBufferPtr buffer);
 
 
 private:
 
-	PointBuffer2Ptr			m_buffer;
+	PointBufferPtr			m_buffer;
 };
 
 } /* namespace lvr2 */
-
-#include "InteractivePointCloud.cpp"
 
 #endif /* INTERACTIVEPOINTCLOUD_HPP_ */

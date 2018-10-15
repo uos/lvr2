@@ -144,7 +144,7 @@ int main(int argc, char** argv)
 		delete[] data;
 
         // Create model and save data
-        PointBuffer2Ptr pointBuffer(new PointBuffer2 );
+        PointBufferPtr pointBuffer(new PointBuffer );
         pointBuffer->setPointArray(points, numPoints);
         pointBuffer->setColorArray(colors, numPoints);
         pointBuffer->addFloatChannel(intensities, "intensities", numPoints, 1);

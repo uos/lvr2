@@ -39,13 +39,14 @@
 namespace lvr2
 {
 
+using Vec = BaseVector<float>;
+
 /**
  * @brief IO-Class to import compressed octrees from slam6d
  */
 class BoctreeIO : public BaseIO
 {
 
-    using Vec = BaseVector<float>;
 
 public:
 
@@ -72,7 +73,5 @@ private:
 };
 
 } /* namespace lvr2 */
-
-#include "BoctreeIO.cpp"
 
 #endif /* BOCTREEIO_HPP_ */

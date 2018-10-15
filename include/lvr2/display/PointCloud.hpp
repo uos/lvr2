@@ -55,7 +55,7 @@ public:
 
     PointCloud();
     PointCloud(ModelPtr loader, string name = "<unamed cloud>");
-    PointCloud(PointBuffer2Ptr buffer, string name = "<unamed cloud>");
+    PointCloud(PointBufferPtr buffer, string name = "<unamed cloud>");
 
     virtual ~PointCloud();
     virtual inline void render();
@@ -79,7 +79,7 @@ public:
         m_points.clear();
     };
 
-    void updateBuffer(PointBuffer2Ptr buffer);
+    void updateBuffer(PointBufferPtr buffer);
 
     void updateDisplayLists();
 //private:
@@ -90,7 +90,7 @@ public:
 
 private:
     int getFieldsPerLine(string filename);
-    void init(PointBuffer2Ptr buffer);
+    void init(PointBufferPtr buffer);
 
     int                        m_renderMode;
     GLuint                     m_normalListIndex;
@@ -139,7 +139,5 @@ inline void PointCloud::render()
 }
 
 } // namespace lvr2
-
-#include "PointCloud.cpp"
 
 #endif /* POINTCLOUD_H_ */

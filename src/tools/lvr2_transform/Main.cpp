@@ -143,7 +143,7 @@ int main(int argc, char **argv)
     // Get point buffer
     if(model->m_pointCloud)
     {
-      PointBuffer2Ptr p_buffer = model->m_pointCloud;
+      PointBufferPtr p_buffer = model->m_pointCloud;
 
       cout << timestamp << "Using points" << endl;
       did_anything = true;
@@ -164,7 +164,7 @@ int main(int argc, char **argv)
     // Get mesh buffer
     if(model->m_mesh)
     {
-      MeshBuffer2Ptr m_buffer = model->m_mesh;
+      MeshBufferPtr m_buffer = model->m_mesh;
 
       cout << timestamp << "Using meshes" << endl;
       did_anything = true;

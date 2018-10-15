@@ -49,6 +49,4 @@ private:
 
 } // namespace lvr2
 
-#include "CoordinateAxes.cpp"
-
 #endif /* COORDINATEAXES_H_ */

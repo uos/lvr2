@@ -132,7 +132,7 @@ void transformPointCloud(ModelPtr model, Eigen::Matrix4d transformation);
  * @param   pts             The transformed points are added to this vector
  * @param   nrm             The transformed normals are added to this vector
  */
-void transformPointCloudAndAppend(PointBuffer2Ptr& buffer,
+void transformPointCloudAndAppend(PointBufferPtr& buffer,
         boost::filesystem::path& transfromFile,
         std::vector<float>& pts,
         std::vector<float>& nrm);

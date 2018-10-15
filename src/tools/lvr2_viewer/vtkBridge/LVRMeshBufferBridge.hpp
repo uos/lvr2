@@ -25,7 +25,7 @@
 #ifndef LVRMESHBUFFERBRIDGE_H_
 #define LVRMESHBUFFERBRIDGE_H_
 
-#include <lvr2/io/MeshBuffer2.hpp>
+#include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/display/TexturedMesh.hpp>
 #include <lvr2/display/GlTexture.hpp>
 
@@ -45,7 +45,7 @@ class LVRMeshBufferBridge
     using VecUChar = BaseVector<unsigned char>;
 
 public:
-    LVRMeshBufferBridge(MeshBuffer2Ptr meshbuffer);
+    LVRMeshBufferBridge(MeshBufferPtr meshbuffer);
     LVRMeshBufferBridge(const LVRMeshBufferBridge& b);
 
     virtual ~LVRMeshBufferBridge();
@@ -59,7 +59,7 @@ public:
 
     void setBaseColor(float r, float g, float b);
     void setOpacity(float opacityValue);
-    MeshBuffer2Ptr getMeshBuffer();
+    MeshBufferPtr getMeshBuffer();
     void setVisibility(bool visible);
     void setShading(int shader);
 
@@ -68,13 +68,13 @@ public:
     size_t									getNumTextures();
 
 protected:
-    void computeMeshActor(MeshBuffer2Ptr meshbuffer);
+    void computeMeshActor(MeshBufferPtr meshbuffer);
     size_t                          m_numVertices;
     size_t                          m_numFaces;
     vtkSmartPointer<vtkActor>       m_meshActor;
     vtkSmartPointer<vtkActor>       m_wireframeActor;
     vtkSmartPointer<vtkActorCollection> m_texturedActors;
-    MeshBuffer2Ptr                  m_meshBuffer;
+    MeshBufferPtr                  m_meshBuffer;
 
     size_t							m_numColoredFaces;
     size_t							m_numTexturedFaces;

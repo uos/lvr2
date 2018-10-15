@@ -398,6 +398,4 @@ const char *NORMAL_INTERPOLATION_KERNEL_STRING = "\n"
 
 } /* namespace lvr2 */
 
-#include "ClSurface.cpp"
-
 #endif // !__ClSurface_H
