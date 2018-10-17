@@ -308,6 +308,14 @@ add_subdirectory(ext/CTPL)
 include_directories(${CTPL_INCLUDE_DIR})
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CTPL_INSTALL_INCLUDE_DIR})
 
+# RiVLib
+set(RiVLib_DIR ext/rivlib/cmake)
+find_package(RiVLib COMPONENTS scanifc)
+if(RiVLib_FOUND)
+    include_directories(${RiVLib_INCLUDE_DIRS})
+    list(APPEND LVR_DEFINITIONS -DLVR_USE_RIVLIB)
+endif()
+
 ##############################################################
 # ADD LVR DEFINITIONS
 ##############################################################
