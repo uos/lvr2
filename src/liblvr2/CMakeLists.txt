@@ -44,6 +44,7 @@ set(LVR2_SOURCES
     io/BaseBuffer.cpp
     io/PointBuffer.cpp
     io/ModelFactory.cpp
+    io/ScanprojectIO.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp

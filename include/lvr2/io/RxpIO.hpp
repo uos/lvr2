@@ -18,7 +18,7 @@ class RxpIO : public BaseIO {
         ModelPtr read(std::string filename);
         ModelPtr read(std::string filename, int reduction_factor, Matrix4<Vec> transform);
         void save(std::string filename);
-    
+
     private:
         bool check_error(int error_code);
 };
