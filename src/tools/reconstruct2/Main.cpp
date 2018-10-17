@@ -871,18 +871,20 @@ int main(int argc, char** argv)
     }
     // Generate materials
     MaterializerResult<Vec> matResult = materializer.generateMaterials();
-    // When using textures ...
-    if (options.generateTextures())
-    {
-        // Save them to disk
-        materializer.saveTextures();
-    }
 
     // Add material data to finalize algorithm
     finalize.setMaterializerResult(matResult);
     // Run finalize algorithm
     auto buffer = finalize.apply(mesh);
 
+    // When using textures ...
+    if (options.generateTextures())
+    {
+        // Set optioins to save them to disk
+        //materializer.saveTextures();
+        buffer->addIntAttribute(1, "mesh_save_textures");
+        buffer->addIntAttribute(1, "mesh_texture_image_extension");
+    }
 
     // =======================================================================
     // Write all results (including the mesh) to file
