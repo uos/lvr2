@@ -171,7 +171,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 
     install(
         TARGETS lvr2cuda_static lvr2cuda
-        EXPORT lvr2Targets
+        EXPORT lvrTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )

@@ -290,8 +290,8 @@ list(APPEND LVR_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 include_directories("ext/gsl/include")
 
 # HighFive
-set(HIGHFIVE_EXAMPLES FALSE)
-set(HIGHFIVE_UNIT_TESTS FALSE)
+set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
+set(HIGHFIVE_UNIT_TESTS FALSE CACHE INTERNAL "")
 add_subdirectory(ext/HighFive)
 include_directories("ext/HighFive/include")
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
@@ -394,13 +394,13 @@ if(Qt5_FOUND)
   if(QGLVIEWER_LIBRARY_RELEASE)
     message(STATUS "Found libqglviewer")
     message(STATUS "Building qglviewer application")
-   add_subdirectory(src/qglviewer)
+#   add_subdirectory(src/qglviewer)
   endif(QGLVIEWER_LIBRARY_RELEASE)
 
   find_package(QVTK)
   if(QVTK_FOUND)
     include_directories(${QVTK_INCLUDE_DIR})
-   add_subdirectory(src/tools/viewer)
+#   add_subdirectory(src/tools/viewer)
    add_subdirectory(src/tools/lvr2_viewer)
   endif(QVTK_FOUND)
 endif(Qt5_FOUND)
@@ -409,51 +409,51 @@ endif(Qt5_FOUND)
 # LIBRARIES
 ##############################################################
 
-add_subdirectory(src/liblvr)
+#add_subdirectory(src/liblvr)
 add_subdirectory(src/liblvr2)
 
 ##############################################################
 # BINARIES
 ##############################################################
 
-add_subdirectory(src/tools/reconstruct)
+#add_subdirectory(src/tools/reconstruct)
 add_subdirectory(src/tools/reconstruct2)
-add_subdirectory(src/tools/classifier)
-add_subdirectory(src/tools/colorize)
-add_subdirectory(src/tools/scanreduce)
-add_subdirectory(src/tools/scanreduce2)
+#add_subdirectory(src/tools/classifier)
+#add_subdirectory(src/tools/colorize)
+#add_subdirectory(src/tools/scanreduce)
+#add_subdirectory(src/tools/scanreduce2)
 
-add_subdirectory(src/tools/convert)
-add_subdirectory(src/tools/asciiconverter)
+#add_subdirectory(src/tools/convert)
+#add_subdirectory(src/tools/asciiconverter)
 add_subdirectory(src/tools/lvr2_asciiconverter)
-add_subdirectory(src/tools/texman)
-add_subdirectory(src/tools/tiogen)
-add_subdirectory(src/tools/meshoptimizer)
-add_subdirectory(src/tools/transform)
+#add_subdirectory(src/tools/texman)
+#add_subdirectory(src/tools/tiogen)
+#add_subdirectory(src/tools/meshoptimizer)
+#add_subdirectory(src/tools/transform)
 add_subdirectory(src/tools/lvr2_transform)
-add_subdirectory(src/tools/registration)
-add_subdirectory(src/tools/normals)
-add_subdirectory(src/tools/kaboom)
+#add_subdirectory(src/tools/registration)
+#add_subdirectory(src/tools/normals)
+#add_subdirectory(src/tools/kaboom)
 add_subdirectory(src/tools/lvr2_kaboom)
-add_subdirectory(src/tools/image_normals)
+#add_subdirectory(src/tools/image_normals)
 add_subdirectory(src/tools/lvr2_image_normals)
-add_subdirectory(src/tools/plymerger)
+#add_subdirectory(src/tools/plymerger)
 add_subdirectory(src/tools/lvr2_plymerger)
-add_subdirectory(src/tools/hdf5_builder)
+#add_subdirectory(src/tools/hdf5_builder)
 add_subdirectory(src/tools/lvr2_hdf5_builder)
 
 if(CUDA_FOUND)
 #    cuda_include_directories(ext/CTPL)
-    add_subdirectory(src/tools/cuda_normals)
+#    add_subdirectory(src/tools/cuda_normals)
     add_subdirectory(src/tools/lvr2_cuda_normals)
 endif()
 
 if(MPI_FOUND)
-    add_subdirectory(src/tools/mpi)
+#    add_subdirectory(src/tools/mpi)
 endif(MPI_FOUND)
 
 if(OPENCL_FOUND)
-    add_subdirectory(src/tools/cl_normals)
+#    add_subdirectory(src/tools/cl_normals)
     add_subdirectory(src/tools/lvr2_cl_normals)
 endif()
 
@@ -478,11 +478,6 @@ endif(PCL_FOUND)
 # CMAKE FILES
 ################################################################
 
-install(EXPORT lvr2Targets
-    FILE lvr2Targets.cmake
-    NAMESPACE lvr2::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2)
-#-----------------------------------------------------------------
 install(EXPORT lvrTargets
     FILE lvrTargets.cmake
     NAMESPACE lvr::
