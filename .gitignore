@@ -42,3 +42,6 @@ cmake-build-debug/
 .settings
 .project
 .cproject
+
+# RiVLib lib path
+ext/rivlib/
