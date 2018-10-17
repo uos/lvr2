@@ -450,6 +450,10 @@ add_subdirectory(src/tools/lvr2_plymerger)
 #add_subdirectory(src/tools/hdf5_builder)
 add_subdirectory(src/tools/lvr2_hdf5_builder)
 
+if (RiVLib_FOUND)
+    add_subdirectory(src/tools/lvr2_riegl_project_converter)
+endif()
+
 if(CUDA_FOUND)
 #    cuda_include_directories(ext/CTPL)
 #    add_subdirectory(src/tools/cuda_normals)
