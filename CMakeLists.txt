@@ -395,22 +395,10 @@ include(${VTK_USE_FILE})
 ##############################################################
 find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
 if(Qt5_FOUND)
-  # Try to find libQGLViewer
-  find_library(QGLVIEWER_LIBRARY_RELEASE
-      NAMES qglviewer-qt5 qglviewer QGLViewer QGLViewer2 QGLViewer-qt5
-      PATHS /usr/lib /usr/local/lib ENV QGLVIEWERROOT ENV LD_LIBRARY_PATH ENV LIBRARY_PATH
-      PATH_SUFFIXES QGLViewer QGLViewer/release)
-  if(QGLVIEWER_LIBRARY_RELEASE)
-    message(STATUS "Found libqglviewer")
-    message(STATUS "Building qglviewer application")
-#   add_subdirectory(src/qglviewer)
-  endif(QGLVIEWER_LIBRARY_RELEASE)
-
   find_package(QVTK)
   if(QVTK_FOUND)
     include_directories(${QVTK_INCLUDE_DIR})
-#   add_subdirectory(src/tools/viewer)
-   add_subdirectory(src/tools/lvr2_viewer)
+    add_subdirectory(src/tools/lvr2_viewer)
   endif(QVTK_FOUND)
 endif(Qt5_FOUND)
 
@@ -418,37 +406,18 @@ endif(Qt5_FOUND)
 # LIBRARIES
 ##############################################################
 
-#add_subdirectory(src/liblvr)
 add_subdirectory(src/liblvr2)
 
 ##############################################################
 # BINARIES
 ##############################################################
 
-#add_subdirectory(src/tools/reconstruct)
 add_subdirectory(src/tools/reconstruct2)
-#add_subdirectory(src/tools/classifier)
-#add_subdirectory(src/tools/colorize)
-#add_subdirectory(src/tools/scanreduce)
-#add_subdirectory(src/tools/scanreduce2)
-
-#add_subdirectory(src/tools/convert)
-#add_subdirectory(src/tools/asciiconverter)
 add_subdirectory(src/tools/lvr2_asciiconverter)
-#add_subdirectory(src/tools/texman)
-#add_subdirectory(src/tools/tiogen)
-#add_subdirectory(src/tools/meshoptimizer)
-#add_subdirectory(src/tools/transform)
 add_subdirectory(src/tools/lvr2_transform)
-#add_subdirectory(src/tools/registration)
-#add_subdirectory(src/tools/normals)
-#add_subdirectory(src/tools/kaboom)
 add_subdirectory(src/tools/lvr2_kaboom)
-#add_subdirectory(src/tools/image_normals)
 add_subdirectory(src/tools/lvr2_image_normals)
-#add_subdirectory(src/tools/plymerger)
 add_subdirectory(src/tools/lvr2_plymerger)
-#add_subdirectory(src/tools/hdf5_builder)
 add_subdirectory(src/tools/lvr2_hdf5_builder)
 
 if (RiVLib_FOUND)
@@ -457,35 +426,12 @@ endif()
 
 if(CUDA_FOUND)
 #    cuda_include_directories(ext/CTPL)
-#    add_subdirectory(src/tools/cuda_normals)
     add_subdirectory(src/tools/lvr2_cuda_normals)
 endif()
 
-if(MPI_FOUND)
-#    add_subdirectory(src/tools/mpi)
-endif(MPI_FOUND)
-
 if(OPENCL_FOUND)
-#    add_subdirectory(src/tools/cl_normals)
     add_subdirectory(src/tools/lvr2_cl_normals)
 endif()
-
-if(CGAL_FOUND)
-  # There is a name clash between CGAL and std::pair. Should
-  # be fixed in the next CGAL release
-  if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNU)
-#   add_subdirectory(src/tools/cgal_reconstruction)
-  endif()
-  #add_subdirectory(src/tools/fusion)
-# add_subdirectory(src/tools/slicer)
-endif(CGAL_FOUND)
-
-if(PCL_FOUND)
-# add_subdirectory(src/tools/scanfilter)
-  if(LIBFREENECT_FOUND)
-#   add_subdirectory(src/tools/kinectgrabber)
-  endif(LIBFREENECT_FOUND)
-endif(PCL_FOUND)
 
 ################################################################
 # CMAKE FILES
