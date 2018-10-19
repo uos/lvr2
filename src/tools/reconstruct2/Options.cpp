@@ -90,6 +90,8 @@ Options::Options(int argc, char** argv)
         ("vcfp", "Use color information from pointcloud to paint vertices")
         ("useGPU", "GPU normal estimation")
         ("flipPoint", value< vector<float> >()->multitoken(), "Flippoint --flipPoint x y z" )
+        ("texFromImages,q", "Foo Bar ............")
+        ("projectDir,a", value<string>()->default_value(""), "Foo Bar ............")
     ;
 
     setup();
@@ -430,6 +432,16 @@ vector<float> Options::getFlippoint() const
         dest.push_back(10000000);
     }
     return dest;
+}
+
+bool Options::texturesFromImages() const
+{
+    return m_variables.count("texFromImages");
+}
+
+string Options::getProjectDir() const
+{
+    return m_variables["projectDir"].as<string>();
 }
 
 

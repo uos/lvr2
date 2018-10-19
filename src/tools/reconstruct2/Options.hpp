@@ -308,6 +308,10 @@ public:
 
     vector<float> getFlippoint() const;
 
+    bool texturesFromImages() const;
+
+    string getProjectDir() const;
+
 private:
 
     /// The set voxelsize

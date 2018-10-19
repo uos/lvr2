@@ -310,6 +310,7 @@ list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CTPL_INSTALL_INCLUDE_DIR})
 
 # RiVLib
 set(RiVLib_DIR ext/rivlib/cmake)
+set(RiVLib_USE_STATIC_RUNTIME ON)
 find_package(RiVLib COMPONENTS scanifc)
 if(RiVLib_FOUND)
     include_directories(${RiVLib_INCLUDE_DIRS})

@@ -145,7 +145,7 @@ public:
      * @brief Sets the texturizer
      * @param texturizer The texturizer
      */
-    void setTexturizer(Texturizer<BaseVecT> texturizer);
+    void setTexturizer(Texturizer<BaseVecT>& texturizer);
 
     /**
      * @brief Generates materials
