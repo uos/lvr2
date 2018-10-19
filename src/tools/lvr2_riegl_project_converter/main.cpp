@@ -172,9 +172,6 @@ void convert_rxp_to_3d_per_thread(std::vector<lvr2::ScanPosition> *work, int *re
         riegl_to_slam_transform[10] =  0.0;
 
         lvr2::ModelPtr tmp = io.read(pos.scan_file.string(), reduction, riegl_to_slam_transform);
-
-        std::cout << "TEST:" << tmp->m_pointCloud->numPoints() << std::endl;
-
         lvr2::ModelFactory::saveModel(tmp, out_file.string());
 
         mtx->lock();

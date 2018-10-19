@@ -480,6 +480,7 @@ int main(int argc, char** argv)
 #include <lvr2/algorithm/ReductionAlgorithms.hpp>
 #include <lvr2/algorithm/Materializer.hpp>
 #include <lvr2/algorithm/Texturizer.hpp>
+#include <lvr2/algorithm/ImageTexturizer.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/BilinearFastBox.hpp>
@@ -859,16 +860,46 @@ int main(int argc, char** argv)
         faceNormals,
         *surface
     );
+
+    ImageTexturizer<Vec> img_texter(
+        options.getTexelSize(),
+        options.getTexMinClusterSize(),
+        options.getTexMaxClusterSize()
+    );
+
+    ScanprojectIO project;
+
+    if (options.getProjectDir().empty())
+    {
+        project.parse_project(options.getInputFileName());
+    }
+    else
+    {
+        project.parse_project(options.getProjectDir());
+    }
+
+    img_texter.set_project(project.get_project());
+
+    Texturizer<Vec> texturizer(
+        options.getTexelSize(),
+        options.getTexMinClusterSize(),
+        options.getTexMaxClusterSize()
+    );
+
     // When using textures ...
     if (options.generateTextures())
     {
-        Texturizer<Vec> texturizer(
-            options.getTexelSize(),
-            options.getTexMinClusterSize(),
-            options.getTexMaxClusterSize()
-        );
-        materializer.setTexturizer(texturizer);
+        if (!options.texturesFromImages())
+        {
+            materializer.setTexturizer(texturizer);
+        }
+        else
+        {
+            materializer.setTexturizer(img_texter);
+        }
+
     }
+
     // Generate materials
     MaterializerResult<Vec> matResult = materializer.generateMaterials();
 
