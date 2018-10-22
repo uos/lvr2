@@ -936,8 +936,6 @@ void CudaSurface::GPU_NN()
                                                  this->m_k, this->m_calc_method, this->m_vx, this->m_vy, this->m_vz);
     cudaDeviceSynchronize();
 
-    //TODO: Interpolate
-    std::cout << "Start Interpolation..." << std::endl;
     InterpolationKernel<<<blocksPerGrid, threadsPerBlock >>>(this->D_kd_tree_values, this->D_kd_tree_splits,
                                                         this->D_Normals, this->m_ki );
 
@@ -1042,7 +1040,6 @@ void CudaSurface::calculateNormals() {
 
     //COPY STUFF
     copyToDevicePointArray( V, D_V );
-
 
     //Cuda Kernels
     GPU_NN();
