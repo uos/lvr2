@@ -184,23 +184,6 @@ private:
 
     void initKdTree();
 
-    //debugging - testing
-    void debug(unsigned int query_index, int k);
-    void debug2(unsigned int query_index, int k);
-
-
-    void writeToPly(float* point, float* nn, int size, std::string filename);
-    void writeToPly(float* point, unsigned int* nn_i, int size, std::string filename);
-    void writeToPly(unsigned int point_i, unsigned int* nn_i, int size, std::string filename);
-
-    void nearestNeighborsHost(float* point, unsigned int* nn, int k, int mode=0);
-
-    unsigned int getKdTreePosition(float x, float y, float z);
-
-    void getNNFromIndex(const unsigned int& kd_pos, unsigned int *nn, int k);
-    void getNNFromIndex2(const unsigned int& kd_pos, unsigned int *nn, int k);
-
-
     // V->points and normals
     LBPointArray<float> V;
     LBPointArray<float>* kd_tree_values;
