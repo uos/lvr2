@@ -107,7 +107,7 @@
         <customwidget>
             <class>lvr2::LVRPlotter</class>
             <extends>QWidget</extends>
-            <header>../../../../src/tools/viewer/widgets/LVRPlotter.hpp</header>
+            <header>../../../../src/tools/lvr2_viewer/widgets/LVRPlotter.hpp</header>
         </customwidget>
     </customwidgets>
 </ui>

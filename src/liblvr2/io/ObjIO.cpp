@@ -144,7 +144,7 @@ void ObjIO::parseMtlFile(
                 // Add full path to texture file name
                 boost::filesystem::path tex_file = p / texname;
 
-                Texture texture = TextureFactory::instance().getTexture(tex_file.string());
+                Texture texture = TextureFactory::readTexture(tex_file.string());
                 unsigned int tex_idx = textures.size();
                 texture.m_index = tex_idx;
                 textures.push_back(std::move(texture));
@@ -351,6 +351,28 @@ void ObjIO::save( string filename )
     vector<Material> &materials    = m_model->m_mesh->getMaterials();
     indexArray faceMaterialIndices = m_model->m_mesh->getFaceMaterialIndices();
     ucharArr colors                = m_model->m_mesh->getVertexColors(w_color);
+
+    bool saveTextures = false;
+    std::string textureImageExtension = ".ppm";
+
+    // should we write textures to disk?
+    intOptional saveTexturesOpt = m_model->m_mesh->getIntAttribute("mesh_save_textures");
+    if (saveTexturesOpt && (*saveTexturesOpt) != 0)
+    {
+        saveTextures = true;
+    }
+
+    intOptional textureImageExtensionOpt = m_model->m_mesh->getIntAttribute("mesh_texture_image_extension");
+
+    // 0 = .ppm (default); 1 = .jpg; 2 = .png
+    if (textureImageExtensionOpt)
+    {
+        switch (*textureImageExtensionOpt) {
+            case 1: textureImageExtension = ".jpg"; break;
+            case 2: textureImageExtension = ".png"; break;
+        }
+    }
+
 
     std::set<unsigned int> materialIndexSet;
     std::set<unsigned int> colorIndexSet;
@@ -567,11 +589,23 @@ void ObjIO::save( string filename )
                 mtlFile << "newmtl texture_"      << m.m_texture->idx() << endl;
                 mtlFile << "Ka 1.000 1.000 1.000" << endl;
                 mtlFile << "Kd 1.000 1.000 1.000" << endl;
-                mtlFile << "map_Kd texture_"      << m.m_texture->idx() << ".ppm" << endl << endl;
+                mtlFile << "map_Kd texture_"      << m.m_texture->idx()
+                        << textureImageExtension << endl << endl;
             }
         }
     }
     mtlFile.close();
+
+    // save textures
+    if (saveTextures)
+    {
+        std::vector<Texture>& texts = m_model->m_mesh->getTextures();
+
+        for (size_t i = 0; i < texts.size(); i++)
+        {
+            TextureFactory::saveTexture(texts[i], "texture_" + std::to_string(i) + textureImageExtension);
+        }
+    }
 }
 
 

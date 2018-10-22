@@ -41,7 +41,6 @@ void LBKdTree::generateKdTree(LBPointArray<float> &vertices) {
 
     for(unsigned int i=0; i< vertices.dim; i++)
     {
-        std::cout << "PRESORT " << i+1 << "/"<< vertices.dim << std::endl;
         pool->push(generateAndSort<float, unsigned int>, vertices, indices_sorted, values_sorted, i);
         //generateAndSort<float, unsigned int>(0, vertices, indices_sorted, values_sorted, i);
     }
@@ -50,7 +49,6 @@ void LBKdTree::generateKdTree(LBPointArray<float> &vertices) {
     delete pool;
     pool = new ctpl::thread_pool(st_num_threads);
 
-    std::cout << "KDTREE" << std::endl;
     this->generateKdTreeArray(vertices, indices_sorted, vertices.dim);
 
     for(unsigned int i=0; i<vertices.dim;i++)

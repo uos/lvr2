@@ -304,6 +304,7 @@ void AsciiIO::save( std::string filename )
     floatArr   pointIntensities;
 
     unsigned w;
+    pointcount = this->m_model->m_pointCloud->numPoints();
     points = this->m_model->m_pointCloud->getPointArray();
 //    points = this->m_model->m_pointCloud->getIndexedPointArray( pointcount );
 
@@ -357,7 +358,6 @@ void AsciiIO::save( std::string filename )
     }
 
     out.close();
-
 
 }
 

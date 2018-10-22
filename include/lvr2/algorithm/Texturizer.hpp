@@ -135,7 +135,7 @@ public:
      *
      * @return Texture handle of the generated texture
      */
-    TextureHandle generateTexture(
+    virtual TextureHandle generateTexture(
         int index,
         const PointsetSurface<BaseVecT>& surface,
         const BoundingRectangle<BaseVecT>& boundingRect
@@ -183,7 +183,7 @@ public:
     /// The maximum number of faces a cluster needs to be texturized
     const int m_texMaxClusterSize;
 
-private:
+protected:
 
     /// StableVector, that contains all generated textures with texture handles
     StableVector<TextureHandle, Texture> m_textures;
