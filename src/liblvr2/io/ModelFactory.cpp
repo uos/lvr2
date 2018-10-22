@@ -34,6 +34,7 @@
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/io/DatIO.hpp>
 #include <lvr2/io/STLIO.hpp>
+#include <lvr2/io/ScanprojectIO.hpp>
 
 #include <lvr2/io/Timestamp.hpp>
 #include <lvr2/io/Progress.hpp>
@@ -41,6 +42,11 @@
 // PCL related includes
 #ifdef LVR_USE_PCL
 #include <lvr2/io/PCDIO.hpp>
+#endif
+
+// RiVLib
+#ifdef LVR_USE_RIVLIB
+#include <lvr2/io/RxpIO.hpp>
 #endif
 
 #include <boost/filesystem.hpp>
@@ -69,6 +75,12 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         io = new AsciiIO;
     }
+#ifdef LVR_USE_RIVLIB
+    else if(extension == ".rxp")
+    {
+        io = new RxpIO;
+    }
+#endif
     else if (extension == ".obj")
     {
         io = new ObjIO;
@@ -91,6 +103,10 @@ ModelPtr ModelFactory::readModel( std::string filename )
         io = new PCDIO;
     }
 #endif /* LVR_USE_PCL */
+    else if (extension == "" && ScanprojectIO().parse_project(selectedFile.string()))
+    {
+        io = new ScanprojectIO;
+    }
     else if (extension == "")
     {
         bool found_3d = false;

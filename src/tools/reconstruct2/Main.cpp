@@ -480,6 +480,7 @@ int main(int argc, char** argv)
 #include <lvr2/algorithm/ReductionAlgorithms.hpp>
 #include <lvr2/algorithm/Materializer.hpp>
 #include <lvr2/algorithm/Texturizer.hpp>
+#include <lvr2/algorithm/ImageTexturizer.hpp>
 
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/BilinearFastBox.hpp>
@@ -590,15 +591,14 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 floatArr normals = floatArr(new float[ num_points * 3 ]);
                 std::cout << "Generate GPU kd-tree..." << std::endl;
                 GpuSurface gpu_surface(points, num_points);
-                std::cout << "finished." << std::endl;
-
+         
                 gpu_surface.setKn(options.getKn());
                 gpu_surface.setKi(options.getKi());
                 gpu_surface.setFlippoint(flipPoint[0], flipPoint[1], flipPoint[2]);
-                std::cout << "Start Normal Calculation..." << std::endl;
+  
                 gpu_surface.calculateNormals();
                 gpu_surface.getNormals(normals);
-                std::cout << "finished." << std::endl;
+   
                 buffer->setNormalArray(normals, num_points);
                 gpu_surface.freeGPU();
             #else
@@ -860,31 +860,61 @@ int main(int argc, char** argv)
         *surface
     );
 
+    ImageTexturizer<Vec> img_texter(
+        options.getTexelSize(),
+        options.getTexMinClusterSize(),
+        options.getTexMaxClusterSize()
+    );
+
+    ScanprojectIO project;
+
+    if (options.getProjectDir().empty())
+    {
+        project.parse_project(options.getInputFileName());
+    }
+    else
+    {
+        project.parse_project(options.getProjectDir());
+    }
+
+    img_texter.set_project(project.get_project());
+
+    Texturizer<Vec> texturizer(
+        options.getTexelSize(),
+        options.getTexMinClusterSize(),
+        options.getTexMaxClusterSize()
+    );
+
     // When using textures ...
     if (options.generateTextures())
     {
-        Texturizer<Vec> texturizer(
-            options.getTexelSize(),
-            options.getTexMinClusterSize(),
-            options.getTexMaxClusterSize()
-        );
-        materializer.setTexturizer(texturizer);
+        if (!options.texturesFromImages())
+        {
+            materializer.setTexturizer(texturizer);
+        }
+        else
+        {
+            materializer.setTexturizer(img_texter);
+        }
+
     }
+
     // Generate materials
     MaterializerResult<Vec> matResult = materializer.generateMaterials();
-    // When using textures ...
-    if (options.generateTextures())
-    {
-        // Save them to disk
-        materializer.saveTextures();
-    }
 
     // Add material data to finalize algorithm
     finalize.setMaterializerResult(matResult);
-
     // Run finalize algorithm
     auto buffer = finalize.apply(mesh);
 
+    // When using textures ...
+    if (options.generateTextures())
+    {
+        // Set optioins to save them to disk
+        //materializer.saveTextures();
+        buffer->addIntAttribute(1, "mesh_save_textures");
+        buffer->addIntAttribute(1, "mesh_texture_image_extension");
+    }
 
     // =======================================================================
     // Write all results (including the mesh) to file

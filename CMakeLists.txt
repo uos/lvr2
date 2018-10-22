@@ -290,8 +290,8 @@ list(APPEND LVR_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 include_directories("ext/gsl/include")
 
 # HighFive
-set(HIGHFIVE_EXAMPLES FALSE)
-set(HIGHFIVE_UNIT_TESTS FALSE)
+set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
+set(HIGHFIVE_UNIT_TESTS FALSE CACHE INTERNAL "")
 add_subdirectory(ext/HighFive)
 include_directories("ext/HighFive/include")
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
@@ -307,6 +307,15 @@ list(APPEND LVR_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
 add_subdirectory(ext/CTPL)
 include_directories(${CTPL_INCLUDE_DIR})
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CTPL_INSTALL_INCLUDE_DIR})
+
+# RiVLib
+set(RiVLib_DIR ext/rivlib/cmake)
+set(RiVLib_USE_STATIC_RUNTIME ON)
+find_package(RiVLib COMPONENTS scanifc)
+if(RiVLib_FOUND)
+    include_directories(${RiVLib_INCLUDE_DIRS})
+    list(APPEND LVR_DEFINITIONS -DLVR_USE_RIVLIB)
+endif()
 
 ##############################################################
 # ADD LVR DEFINITIONS
@@ -386,22 +395,10 @@ include(${VTK_USE_FILE})
 ##############################################################
 find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
 if(Qt5_FOUND)
-  # Try to find libQGLViewer
-  find_library(QGLVIEWER_LIBRARY_RELEASE
-      NAMES qglviewer-qt5 qglviewer QGLViewer QGLViewer2 QGLViewer-qt5
-      PATHS /usr/lib /usr/local/lib ENV QGLVIEWERROOT ENV LD_LIBRARY_PATH ENV LIBRARY_PATH
-      PATH_SUFFIXES QGLViewer QGLViewer/release)
-  if(QGLVIEWER_LIBRARY_RELEASE)
-    message(STATUS "Found libqglviewer")
-    message(STATUS "Building qglviewer application")
-   add_subdirectory(src/qglviewer)
-  endif(QGLVIEWER_LIBRARY_RELEASE)
-
   find_package(QVTK)
   if(QVTK_FOUND)
     include_directories(${QVTK_INCLUDE_DIR})
-   add_subdirectory(src/tools/viewer)
-   add_subdirectory(src/tools/lvr2_viewer)
+    add_subdirectory(src/tools/lvr2_viewer)
   endif(QVTK_FOUND)
 endif(Qt5_FOUND)
 
@@ -409,80 +406,37 @@ endif(Qt5_FOUND)
 # LIBRARIES
 ##############################################################
 
-add_subdirectory(src/liblvr)
 add_subdirectory(src/liblvr2)
 
 ##############################################################
 # BINARIES
 ##############################################################
 
-add_subdirectory(src/tools/reconstruct)
 add_subdirectory(src/tools/reconstruct2)
-add_subdirectory(src/tools/classifier)
-add_subdirectory(src/tools/colorize)
-add_subdirectory(src/tools/scanreduce)
-add_subdirectory(src/tools/scanreduce2)
-
-add_subdirectory(src/tools/convert)
-add_subdirectory(src/tools/asciiconverter)
 add_subdirectory(src/tools/lvr2_asciiconverter)
-add_subdirectory(src/tools/texman)
-add_subdirectory(src/tools/tiogen)
-add_subdirectory(src/tools/meshoptimizer)
-add_subdirectory(src/tools/transform)
 add_subdirectory(src/tools/lvr2_transform)
-add_subdirectory(src/tools/registration)
-add_subdirectory(src/tools/normals)
-add_subdirectory(src/tools/kaboom)
 add_subdirectory(src/tools/lvr2_kaboom)
-add_subdirectory(src/tools/image_normals)
 add_subdirectory(src/tools/lvr2_image_normals)
-add_subdirectory(src/tools/plymerger)
 add_subdirectory(src/tools/lvr2_plymerger)
-add_subdirectory(src/tools/hdf5_builder)
 add_subdirectory(src/tools/lvr2_hdf5_builder)
+
+if (RiVLib_FOUND)
+    add_subdirectory(src/tools/lvr2_riegl_project_converter)
+endif()
 
 if(CUDA_FOUND)
 #    cuda_include_directories(ext/CTPL)
-    add_subdirectory(src/tools/cuda_normals)
     add_subdirectory(src/tools/lvr2_cuda_normals)
 endif()
 
-if(MPI_FOUND)
-    add_subdirectory(src/tools/mpi)
-endif(MPI_FOUND)
-
 if(OPENCL_FOUND)
-    add_subdirectory(src/tools/cl_normals)
     add_subdirectory(src/tools/lvr2_cl_normals)
 endif()
-
-if(CGAL_FOUND)
-  # There is a name clash between CGAL and std::pair. Should
-  # be fixed in the next CGAL release
-  if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNU)
-#   add_subdirectory(src/tools/cgal_reconstruction)
-  endif()
-  #add_subdirectory(src/tools/fusion)
-# add_subdirectory(src/tools/slicer)
-endif(CGAL_FOUND)
-
-if(PCL_FOUND)
-# add_subdirectory(src/tools/scanfilter)
-  if(LIBFREENECT_FOUND)
-#   add_subdirectory(src/tools/kinectgrabber)
-  endif(LIBFREENECT_FOUND)
-endif(PCL_FOUND)
 
 ################################################################
 # CMAKE FILES
 ################################################################
 
-install(EXPORT lvr2Targets
-    FILE lvr2Targets.cmake
-    NAMESPACE lvr2::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2)
-#-----------------------------------------------------------------
 install(EXPORT lvrTargets
     FILE lvrTargets.cmake
     NAMESPACE lvr::

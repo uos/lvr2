@@ -44,6 +44,7 @@ set(LVR2_SOURCES
     io/BaseBuffer.cpp
     io/PointBuffer.cpp
     io/ModelFactory.cpp
+    io/ScanprojectIO.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
@@ -125,6 +126,15 @@ if(WITH_FREENECT AND LIBFREENECT_FOUND)
 endif()
 
 #####################################################################################
+# RiVLib
+#####################################################################################
+
+if(RiVLib_FOUND)
+    set(LVR2_SOURCES ${LVR2_SOURCES} io/RxpIO.cpp)
+    set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${RiVLib_SCANIFC_LIBRARY})
+endif()
+
+#####################################################################################
 # OpenCL
 #####################################################################################
 
@@ -171,7 +181,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 
     install(
         TARGETS lvr2cuda_static lvr2cuda
-        EXPORT lvr2Targets
+        EXPORT lvrTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
@@ -203,7 +213,7 @@ if( NOT MSVC )
   target_link_libraries(lvr2 ${LVR2_INTERNAL_DEPENDENCIES_SHARED} ${LVR2_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 
 install(TARGETS lvr2_static lvr2
-  EXPORT lvr2Targets
+  EXPORT lvrTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )

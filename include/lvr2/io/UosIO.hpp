@@ -135,6 +135,16 @@ public:
      */
     void saveRemission(bool yes) { m_saveRemission= yes;}
 
+
+    /**
+     * @brief Creates a transformation matrix from given frame file
+     *
+     * @param frameFile
+     * @return          A matrix representing the final transformation
+     *                  from a frame file
+     */
+    Matrix4<Vec> parseFrameFile(ifstream& frameFile);
+
 private:
 
     /**
@@ -155,16 +165,6 @@ private:
      * @return          All read data points
      */
     void readOldFormat(ModelPtr &m, string dir, int first, int last, size_t &n);
-
-
-    /**
-     * @brief Creates a transformation matrix from given frame file
-     *
-     * @param frameFile
-     * @return          A matrix representing the final transformation
-     *                  from a frame file
-     */
-    Matrix4<Vec> parseFrameFile(ifstream& frameFile);
 
 
     inline std::string to_string(const int& t, int width)

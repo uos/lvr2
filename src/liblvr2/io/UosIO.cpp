@@ -488,17 +488,24 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
         model = ModelPtr( new Model );
         model->m_pointCloud = PointBufferPtr( new PointBuffer );
         model->m_pointCloud->setPointArray( points, numPoints );
-        model->m_pointCloud->setColorArray(pointColors, numPoints);
 
-        // Add sub cloud information
-        indexArray sub_clouds_array = indexArray( new unsigned int[sub_clouds.size() * 2] );
-        for(size_t i = 0; i < sub_clouds.size(); i++)
+        if (allColors.size())
         {
-            sub_clouds_array[i*2 + 0] = sub_clouds[i].first;
-            sub_clouds_array[i*2 + 1] = sub_clouds[i].second;
+            model->m_pointCloud->setColorArray(pointColors, numPoints);
         }
 
+        // Add sub cloud information
+        if (sub_clouds.size())
+        {
+            indexArray sub_clouds_array = indexArray( new unsigned int[sub_clouds.size() * 2] );
+            for(size_t i = 0; i < sub_clouds.size(); i++)
+            {
+                sub_clouds_array[i*2 + 0] = sub_clouds[i].first;
+                sub_clouds_array[i*2 + 1] = sub_clouds[i].second;
+            }
+
             model->m_pointCloud->addIndexChannel(sub_clouds_array, "sub_clouds", numPoints, 2);
+        }
     }
 
 }
