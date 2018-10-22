@@ -591,7 +591,6 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 floatArr normals = floatArr(new float[ num_points * 3 ]);
                 std::cout << "Generate GPU kd-tree..." << std::endl;
                 GpuSurface gpu_surface(points, num_points);
-                std::cout << "finished." << std::endl;
 
                 gpu_surface.setKn(options.getKn());
                 gpu_surface.setKi(options.getKi());
@@ -599,7 +598,6 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 std::cout << "Start Normal Calculation..." << std::endl;
                 gpu_surface.calculateNormals();
                 gpu_surface.getNormals(normals);
-                std::cout << "finished." << std::endl;
                 buffer->setNormalArray(normals, num_points);
                 gpu_surface.freeGPU();
             #else
