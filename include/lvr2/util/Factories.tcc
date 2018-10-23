@@ -31,7 +31,7 @@ namespace lvr2
 
 
 template <typename BaseVecT>
-SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr<BaseVecT> buffer)
+SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr buffer)
 {
     // Transform name to lowercase (only works for ASCII, but this is not a
     // problem in our case).

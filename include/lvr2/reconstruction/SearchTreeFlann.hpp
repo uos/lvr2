@@ -13,7 +13,7 @@
 
 #include <flann/flann.hpp>
 
-#include <lvr/io/Timestamp.hpp>
+#include <lvr2/io/Timestamp.hpp>
 
 #include <lvr2/reconstruction/SearchTree.hpp>
 #include <lvr2/io/PointBuffer.hpp>
@@ -46,7 +46,7 @@ public:
      *
      *  @param buffer  A PointBuffer point that holds the data.
      */
-    SearchTreeFlann(PointBufferPtr<BaseVecT> buffer);
+    SearchTreeFlann(PointBufferPtr buffer);
 
     /// See interface documentation.
     virtual void kSearch(

@@ -1,0 +1,71 @@
+Bugs:   
+
+    Hdf5IO:     Texturen/Materials werden nicht in .h5 Datei geschrieben.
+
+    AsciiIO:    Beim Einlesen wird die erste Zeile geskippt weil es evtl.
+                Metadaten beinhalten könnte.
+
+                Colordaten und Intensitydaten werden z.Z. ignoriert.
+
+    DatIO:      Beim Einlesen wurde das Einlesen der Punktanzahl vergessen.
+                Und save/write sind aus irgendeinen Grund nicht konsistent.
+
+    PointOctree:    kompiliert, aber führt zum Speicherzugriffsfehler in Zeile 153 von PointOctree.cpp... 
+                    Hatte noch nicht die Zeit mir das genauer anzuschauen. 
+
+----------------------------------------------------------------------
+
+
+Fragen:
+
+        Funktionalitäten aus lvr::BoundingBox, lvr::Texture in lvr2::* übernehmen?
+        (Wie in der E-Mail schon beschrieben)
+
+----------------------------------------------------------------------
+
+
+Unvollständig:
+
+----------------------------------------------------------------------
+
+
+Zurückgestellt:
+
+----------------------------------------------------------------------
+
+
+Anmerkungen:
+
+                PPMIO:  Sollte evtl. Texture anstatt GlTexture zurückgeben, da GlTexture direkt
+                        die Daten auf die Grafikkarte lädt.
+
+                Texture: sollte m_index ein size_t, unsigned int oder TextureHandle sein?
+
+                DataStruct.hpp: indexArray umbennen in indexArr?
+
+                Texture:    Memoryleak evtl. mit shared ptr lösen, es würde move 
+                            constructor/copy consturctor sparen...
+
+                AttributeManager:  Attribute in AttributeOptionals sollten evtl. Referenzen sein.
+
+                                   deleteChannel/deleteAttribute?
+
+                lvr2/display/*:     kompiliert alles und außer PointOctree führt bei meinen Tests erstmal nichts zu Speicherzugriffsfehlern.
+                                    Habe auch viele MemoryLeaks gefixt.
+
+                Renderable:     Im moment wird m_boundingbox = 0 gesetzt, wenn constructor es nicht brauch, 
+                                ich denke aber es sollte in jeden Constructor m_boundingBox gesetzt werden.
+                                Ob dies nun mit new geschieht, oder aber m_boundingBox kein Ptr mehr sein wird 
+                                weiss ich noch nicht.
+
+                Matrix4:        Mit dem Port nicht ganz zufrieden, glaube es sollte einen 
+                                ValueType anstatt eines BaseVecT nehmen. Aber fürs erste sollte es ausreichen.
+
+
+                FinalizeAlgorithms:     Wie sollten wir ClusterFaceIndices in MeshBuffer2 realisiert werden...
+
+                lvr2_viewer:    
+                    widgets/LVRFilteringRemoeOutliersDialog:    PCLFiltering ist ausgeklammert, aber include noch vorhanden. 
+
+
+----------------------------------------------------------------------

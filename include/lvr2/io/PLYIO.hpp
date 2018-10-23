@@ -71,6 +71,9 @@ ELEMENT vertex
    PROPERTY             ny (float)
    PROPERTY             nz (float)
    PROPERTY      intensity (float)
+   PROPERTY     confidence (float)
+   PROPERTY       x_coords (short)  <<  [only read]
+   PROPERTY       y_coords (short)  <<  [only read]
 ELEMENT point
    PROPERTY              x (float)
    PROPERTY              y (float)
@@ -78,10 +81,13 @@ ELEMENT point
    PROPERTY            red (unsigned char)
    PROPERTY          green (unsigned char)
    PROPERTY           blue (unsigned char)
-   PROPERTY             nx (std::cout << it << std::endl;float)
+   PROPERTY             nx (float)
    PROPERTY             ny (float)
    PROPERTY             nz (float)
    PROPERTY      intensity (float)
+   PROPERTY     confidence (float)
+   PROPERTY       x_coords (short)  <<  [only read]
+   PROPERTY       y_coords (short)  <<  [only read]
 ELEMENT face
    PROPERTY vertex_indices (LIST uchar int)
    PROPERTY   vertex_index (LIST uchar int)  <<  [only read]
@@ -125,16 +131,17 @@ class PLYIO : public BaseIO
          * Read a specified PLY file. The additional parameters specify the
          * data to be read. The default is to read all available data.
          *
-         * \param filename        Filename of file to read.
-         * \param readColor       Specifies if color should be read.
-         * \param readConfidence  Specifies if confidence should be read.
-         * \param readIntensity   Specifies if intensity should be read.
-         * \param readNormals     Specifies if normals should be read.
-         * \param readFaces       Specifies if faces should be read.
+         * \param filename           Filename of file to read.
+         * \param readColor          Specifies if color should be read.
+         * \param readConfidence     Specifies if confidence should be read.
+         * \param readIntensity      Specifies if intensity should be read.
+         * \param readNormals        Specifies if normals should be read.
+         * \param readFaces          Specifies if faces should be read.
+         * \param readPanoramaCoords Specifies if panorama coordinates should be read.
          **/
         ModelPtr read( string filename, bool readColor, bool readConfidence = true,
                 bool readIntensity = true, bool readNormals = true, 
-                bool readFaces = true );
+                bool readFaces = true, bool readPanoramaCoords = true );
 
 
         /**
@@ -170,8 +177,15 @@ class PLYIO : public BaseIO
          **/
         static int readFaceCb( p_ply_argument argument );
 
+
+        /**
+         * \brief Callback for read panorama coords.
+         * \param argument  Argument to pass the read data.
+         **/
+        static int readPanoramaCoordCB( p_ply_argument argument );
+
 };
 
-}
+} // namespace lvr2
 
 #endif

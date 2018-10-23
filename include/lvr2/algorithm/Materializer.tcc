@@ -47,7 +47,7 @@ Materializer<BaseVecT>::Materializer(
 }
 
 template<typename BaseVecT>
-void Materializer<BaseVecT>::setTexturizer(Texturizer<BaseVecT> texturizer)
+void Materializer<BaseVecT>::setTexturizer(Texturizer<BaseVecT>& texturizer)
 {
     m_texturizer = texturizer;
 }

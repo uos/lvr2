@@ -44,7 +44,7 @@ namespace lvr2
  * Currently, the only supported implementation is "flann".
  */
 template <typename BaseVecT>
-SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr<BaseVecT> buffer);
+SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr buffer);
 
 } // namespace lvr2
 

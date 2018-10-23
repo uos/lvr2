@@ -24,8 +24,8 @@
  *      Author: Thomas Wiemann
  */
 #include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr/reconstruction/FastReconstructionTables.hpp>
-#include <lvr/io/Progress.hpp>
+#include <lvr2/reconstruction/FastReconstructionTables.hpp>
+#include <lvr2/io/Progress.hpp>
 
 namespace lvr2
 {
@@ -40,8 +40,8 @@ template<typename BaseVecT, typename BoxT>
 void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
 {
     // Status message for mesh generation
-    string comment = lvr::timestamp.getElapsedTime() + "Creating mesh ";
-    lvr::ProgressBar progress(m_grid->getNumberOfCells(), comment);
+    string comment = timestamp.getElapsedTime() + "Creating mesh ";
+    ProgressBar progress(m_grid->getNumberOfCells(), comment);
 
     // Some pointers
     BoxT* b;
@@ -53,19 +53,19 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     {
         b = it->second;
         b->getSurface(mesh, m_grid->getQueryPoints(), global_index);
-        if(!lvr::timestamp.isQuiet())
+        if(!timestamp.isQuiet())
             ++progress;
     }
 
-    if(!lvr::timestamp.isQuiet())
+    if(!timestamp.isQuiet())
         cout << endl;
 
     BoxTraits<BoxT> traits;
 
     if(traits.type == "SharpBox")  // Perform edge flipping for extended marching cubes
     {
-        string SFComment = lvr::timestamp.getElapsedTime() + "Flipping edges  ";
-        lvr::ProgressBar SFProgress(this->m_grid->getNumberOfCells(), SFComment);
+        string SFComment = timestamp.getElapsedTime() + "Flipping edges  ";
+        ProgressBar SFProgress(this->m_grid->getNumberOfCells(), SFComment);
         for(it = this->m_grid->firstCell(); it != this->m_grid->lastCell(); it++)
         {
 
@@ -155,8 +155,8 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
 
      if(traits.type == "BilinearFastBox")
      {
-         string comment = lvr::timestamp.getElapsedTime() + "Optimizing plane contours  ";
-         lvr::ProgressBar progress(this->m_grid->getNumberOfCells(), comment);
+         string comment = timestamp.getElapsedTime() + "Optimizing plane contours  ";
+         ProgressBar progress(this->m_grid->getNumberOfCells(), comment);
          for(it = this->m_grid->firstCell(); it != this->m_grid->lastCell(); it++)
          {
           // F... type safety. According to traits object this is OK!
@@ -178,8 +178,8 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(
 )
 {
 //    // Status message for mesh generation
-//    string comment = lvr::timestamp.getElapsedTime() + "Creating Mesh ";
-//    lvr::ProgressBar progress(m_grid->getNumberOfCells(), comment);
+//    string comment = timestamp.getElapsedTime() + "Creating Mesh ";
+//    ProgressBar progress(m_grid->getNumberOfCells(), comment);
 
 //    // Some pointers
 //    BoxT* b;
@@ -191,11 +191,11 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(
 //    {
 //        b = it->second;
 //        b->getSurface(mesh, m_grid->getQueryPoints(), global_index, bb, duplicates, comparePrecision);
-//        if(!lvr::timestamp.isQuiet())
+//        if(!timestamp.isQuiet())
 //            ++progress;
 //    }
 
-//    if(!lvr::timestamp.isQuiet())
+//    if(!timestamp.isQuiet())
 //        cout << endl;
 }
 

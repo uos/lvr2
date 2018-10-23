@@ -24,8 +24,8 @@
  *      Author: Thomas Wiemann
  */
 
-#ifndef PROGRESSBARQT_H_
-#define PROGRESSBARQT_H_
+#ifndef LVR2_PROGRESSBARQT_H_
+#define LVR2_PROGRESSBARQT_H_
 
 #include <string>
 #include <sstream>
@@ -41,7 +41,8 @@ using std::wcout;
 
 #include <boost/thread/mutex.hpp>
 
-namespace lvr2{
+namespace lvr2
+{
 
 /**
  * @brief  	A class to manage progress information output for
@@ -258,6 +259,6 @@ protected:
 	static PacmanProgressTitleCallbackPtr		m_titleCallback;
 };
 
-} // namespace lvr
+} // namespace lvr2
 
 #endif /* PROGRESSBAR_H_ */
