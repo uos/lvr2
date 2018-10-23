@@ -589,20 +589,20 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 size_t num_points = buffer->numPoints();
                 floatArr points = buffer->getPointArray();
                 floatArr normals = floatArr(new float[ num_points * 3 ]);
-                std::cout << "Generate GPU kd-tree..." << std::endl;
+                std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
                 GpuSurface gpu_surface(points, num_points);
-         
+
                 gpu_surface.setKn(options.getKn());
                 gpu_surface.setKi(options.getKi());
                 gpu_surface.setFlippoint(flipPoint[0], flipPoint[1], flipPoint[2]);
-  
+
                 gpu_surface.calculateNormals();
                 gpu_surface.getNormals(normals);
-   
+
                 buffer->setNormalArray(normals, num_points);
                 gpu_surface.freeGPU();
             #else
-                std::cout << "ERROR: GPU Driver not installed" << std::endl;
+                std::cout << timestamp << "ERROR: GPU Driver not installed" << std::endl;
                 surface->calculateSurfaceNormals();
             #endif
         }
@@ -866,19 +866,6 @@ int main(int argc, char** argv)
         options.getTexMaxClusterSize()
     );
 
-    ScanprojectIO project;
-
-    if (options.getProjectDir().empty())
-    {
-        project.parse_project(options.getInputFileName());
-    }
-    else
-    {
-        project.parse_project(options.getProjectDir());
-    }
-
-    img_texter.set_project(project.get_project());
-
     Texturizer<Vec> texturizer(
         options.getTexelSize(),
         options.getTexMinClusterSize(),
@@ -894,9 +881,21 @@ int main(int argc, char** argv)
         }
         else
         {
+            ScanprojectIO project;
+
+            if (options.getProjectDir().empty())
+            {
+                project.parse_project(options.getInputFileName());
+            }
+            else
+            {
+                project.parse_project(options.getProjectDir());
+            }
+
+            img_texter.set_project(project.get_project());
+
             materializer.setTexturizer(img_texter);
         }
-
     }
 
     // Generate materials
@@ -932,13 +931,13 @@ int main(int argc, char** argv)
     cout << timestamp << "Saving mesh." << endl;
     ModelFactory::saveModel(m, "triangle_mesh.ply");
     ModelFactory::saveModel(m, "triangle_mesh.obj");
-    ModelFactory::saveModel(m, "triangle_mesh.h5");
+    //ModelFactory::saveModel(m, "triangle_mesh.h5");
 
     if (matResult.m_keypoints)
     {
         // save materializer keypoints to hdf5 which is not possible with ModelFactory
-        PlutoMapIO map_io("triangle_mesh.h5");
-        map_io.addTextureKeypointsMap(matResult.m_keypoints.get());
+        //PlutoMapIO map_io("triangle_mesh.h5");
+        //map_io.addTextureKeypointsMap(matResult.m_keypoints.get());
     }
 
     cout << timestamp << "Program end." << endl;

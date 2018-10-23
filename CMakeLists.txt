@@ -315,6 +315,7 @@ find_package(RiVLib COMPONENTS scanifc)
 if(RiVLib_FOUND)
     include_directories(${RiVLib_INCLUDE_DIRS})
     list(APPEND LVR_DEFINITIONS -DLVR_USE_RIVLIB)
+    message(STATUS "found RiVLib")
 endif()
 
 ##############################################################
@@ -412,7 +413,7 @@ add_subdirectory(src/liblvr2)
 # BINARIES
 ##############################################################
 
-add_subdirectory(src/tools/reconstruct2)
+add_subdirectory(src/tools/lvr2_reconstruct)
 add_subdirectory(src/tools/lvr2_asciiconverter)
 add_subdirectory(src/tools/lvr2_transform)
 add_subdirectory(src/tools/lvr2_kaboom)
