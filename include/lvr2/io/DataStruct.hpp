@@ -30,13 +30,13 @@
 *
 **/
 
-#ifndef DATASTRUCT_HPP_INCLUDED
-#define DATASTRUCT_HPP_INCLUDED
+#ifndef LVR2_DATASTRUCT_HPP_INCLUDED
+#define LVR2_DATASTRUCT_HPP_INCLUDED
 
 
 #include "boost/shared_array.hpp"
 
-#include <lvr/display/GlTexture.hpp>
+#include <lvr2/display/GlTexture.hpp>
 
 #include <map>
 #include <vector>
@@ -127,6 +127,7 @@ typedef boost::shared_array<float> floatArr;
 
 typedef boost::shared_array<unsigned char> ucharArr;
 
+typedef boost::shared_array<short> shortArr;
 
 typedef boost::shared_array< color<unsigned char> > color3bArr;
 

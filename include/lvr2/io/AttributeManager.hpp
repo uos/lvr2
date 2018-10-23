@@ -41,9 +41,9 @@ public:
     {
         if( m_ptr && (m_w > 2))
         {
-            m_ptr[0] += v.x;
-            m_ptr[1] += v.y;
-            m_ptr[2] += v.z;
+            m_ptr[0] -= v.x;
+            m_ptr[1] -= v.y;
+            m_ptr[2] -= v.z;
         }
         return *this;
     }
@@ -68,7 +68,7 @@ public:
     {
         if(m_w > 2)
         {
-            *this += v;
+            *this -= v;
             return BaseVecT(m_ptr[0], m_ptr[1], m_ptr[2]);
         }
         else
@@ -161,7 +161,9 @@ using FloatChannelPtr = std::shared_ptr<FloatChannel>;
 using UCharChannelPtr = std::shared_ptr<UCharChannel>;
 using IndexChannelPtr = std::shared_ptr<IndexChannel>;
 
-
+using intOptional = boost::optional<int>;
+using floatOptional = boost::optional<float>;
+using ucharOptional = boost::optional<unsigned char>;
 
 class AttributeManager
 {
@@ -224,15 +226,28 @@ public:
     UCharChannelOptional getUCharChannel(std::string name);
     IndexChannelOptional getIndexChannel(std::string name);
 
+    floatOptional getFloatAttribute(std::string name);
+    ucharOptional getUCharAttribute(std::string name);
+    intOptional getIntAttribute(std::string name);
+
     void addFloatChannel(FloatChannelPtr data, std::string name);
     void addUCharChannel(UCharChannelPtr data, std::string name);
     void addIndexChannel(IndexChannelPtr data, std::string name);
+
+    void addFloatAttribute(float data, std::string name);
+    void addUCharAttribute(unsigned char data, std::string name);
+    void addIntAttribute(int data, std::string name);
 
 private:
 
     std::map<std::string, FloatChannelPtr>      m_floatChannels;
     std::map<std::string, UCharChannelPtr>      m_ucharChannels;
     std::map<std::string, IndexChannelPtr>      m_indexChannels;
+
+    std::map<std::string, float>                m_floatAttributes;
+    std::map<std::string, unsigned char>        m_ucharAttributes;
+    std::map<std::string, int>                  m_intAttributes;
+
 
     using FloatChannelMap = std::map<std::string, FloatChannelPtr>;
     using UCharChannelMap = std::map<std::string, UCharChannelPtr>;

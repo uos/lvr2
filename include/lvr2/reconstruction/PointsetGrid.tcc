@@ -23,14 +23,17 @@ PointsetGrid<BaseVecT, BoxT>::PointsetGrid(
     auto v_max = this->m_boundingBox.getMax();
 
     // Get indexed point buffer pointer
-    auto numPoint = m_surface->pointBuffer()->getNumPoints();
+    auto numPoint = m_surface->pointBuffer()->numPoints();
 
-    cout << lvr::timestamp << "Creating grid" << endl;
+    cout << timestamp << "Creating grid" << endl;
+
+    FloatChannel pts = *(m_surface->pointBuffer()->getFloatChannel("points"));
 
     // Iterator over all points, calc lattice indices and add lattice points to the grid
     for(size_t i = 0; i < numPoint; i++)
     {
-        auto index = (m_surface->pointBuffer()->getPoint(i) - v_min) / this->m_voxelsize;
+        Vector<BaseVecT> pt = pts[i];
+        auto index = (pt - v_min) / this->m_voxelsize;
         this->addLatticePoint(calcIndex(index.x), calcIndex(index.y), calcIndex(index.z));
     }
 }
@@ -40,10 +43,10 @@ template<typename BaseVecT, typename BoxT>
 void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
 {
     // Status message output
-    string comment = lvr::timestamp.getElapsedTime() + "Calculating distance values ";
-    lvr::ProgressBar progress(this->m_queryPoints.size(), comment);
+    string comment = timestamp.getElapsedTime() + "Calculating distance values ";
+    ProgressBar progress(this->m_queryPoints.size(), comment);
 
-    lvr::Timestamp ts;
+    Timestamp ts;
 
     // Calculate a distance value for each query point
     #pragma omp parallel for
@@ -63,7 +66,7 @@ void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
         ++progress;
     }
     cout << endl;
-    cout << lvr::timestamp << "Elapsed time: " << ts << endl;
+    cout << timestamp << "Elapsed time: " << ts << endl;
 }
 
 } // namespace lvr2

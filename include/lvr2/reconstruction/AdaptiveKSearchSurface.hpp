@@ -104,7 +104,7 @@ public:
      * @param calcMethod Normal calculation method. 0: PCA(default), 1: RANSAC, 2: Iterative
      */
     AdaptiveKSearchSurface(
-        PointBufferPtr<BaseVecT> loader,
+        PointBufferPtr loader,
         std::string searchTreeName,
         int kn = 10,
         int ki = 10,

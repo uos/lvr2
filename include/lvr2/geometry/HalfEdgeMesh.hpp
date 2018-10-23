@@ -39,13 +39,13 @@ using std::vector;
 using std::get;
 using std::min;
 
-#include "Vector.hpp"
-#include "BaseMesh.hpp"
-#include "HalfEdge.hpp"
-#include "HalfEdgeFace.hpp"
-#include "HalfEdgeVertex.hpp"
+#include <lvr2/geometry/Vector.hpp>
+#include <lvr2/geometry/BaseMesh.hpp>
+#include <lvr2/geometry/HalfEdge.hpp>
+#include <lvr2/geometry/HalfEdgeFace.hpp>
+#include <lvr2/geometry/HalfEdgeVertex.hpp>
 
-#include <lvr2/io/MeshBuffer2.hpp>
+#include <lvr2/io/MeshBuffer.hpp>
 
 namespace lvr2
 {
@@ -67,7 +67,8 @@ public:
     using Face = HalfEdgeFace;
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
-    HalfEdgeMesh(MeshBuffer2Ptr ptr);
+    HalfEdgeMesh();
+    HalfEdgeMesh(MeshBufferPtr ptr);
 
     // ========================================================================
     // = Implementing the `BaseMesh` interface (see BaseMesh for docs)

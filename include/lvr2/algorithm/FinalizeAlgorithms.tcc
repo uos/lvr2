@@ -26,16 +26,19 @@
 #include <vector>
 #include <utility>
 #include <cmath>
-#include <lvr2/io/MeshBuffer.hpp>
+
 #include <lvr2/algorithm/Materializer.hpp>
 
-#include <lvr/io/Progress.hpp>
+#include <lvr2/io/MeshBuffer.hpp>
+#include <lvr2/io/Progress.hpp>
+
+#include <lvr2/util/Util.hpp>
 
 namespace lvr2
 {
 
 template<typename BaseVecT>
-boost::shared_ptr<MeshBuffer> SimpleFinalizer<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
+MeshBufferPtr SimpleFinalizer<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
 {
     // Create vertex and normal buffer
     DenseVertexMap<size_t> idxMap;
@@ -103,18 +106,19 @@ boost::shared_ptr<MeshBuffer> SimpleFinalizer<BaseVecT>::apply(const BaseMesh <B
     }
 
     // create buffer object and pass values
-    auto buffer = boost::make_shared<lvr2::MeshBuffer>();
-    buffer->setVertices(vertices);
-    buffer->setFaceIndices(faces);
+    MeshBufferPtr buffer( new MeshBuffer );
+
+    buffer->setVertices(Util::convert_vector_to_shared_array(vertices), vertices.size() / 3);
+    buffer->setFaceIndices(Util::convert_vector_to_shared_array(faces), faces.size() / 3);
 
     if (m_normalData)
     {
-        buffer->setVertexNormals(normals);
+        buffer->setVertexNormals(Util::convert_vector_to_shared_array(normals));
     }
 
     if (m_colorData)
     {
-        buffer->setVertexColors(colors);
+        buffer->setVertexColors(Util::convert_vector_to_shared_array(colors));
     }
 
     return buffer;
@@ -165,7 +169,7 @@ void TextureFinalizer<BaseVecT>::setMaterializerResult(const MaterializerResult<
 
 
 template<typename BaseVecT>
-boost::shared_ptr<MeshBuffer> TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
+MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
 {
     // Create vertex buffer and all buffers holding vertex attributes
     vector<float> vertices;
@@ -402,28 +406,46 @@ boost::shared_ptr<MeshBuffer> TextureFinalizer<BaseVecT>::apply(const BaseMesh<B
 
     cout << endl;
 
-    auto buffer = boost::make_shared<MeshBuffer>();
-    buffer->setVertices(vertices);
-    buffer->setFaceIndices(faces);
+    MeshBufferPtr buffer = MeshBufferPtr( new MeshBuffer );
+    buffer->setVertices(Util::convert_vector_to_shared_array(vertices), vertices.size() / 3);
+    buffer->setFaceIndices(Util::convert_vector_to_shared_array(faces), faces.size() / 3);
 
     if (m_vertexNormals)
     {
-        buffer->setVertexNormals(normals);
+        buffer->setVertexNormals(Util::convert_vector_to_shared_array(normals));
     }
 
     if (m_clusterColors || m_vertexColors)
     {
-        buffer->setVertexColors(colors);
+        buffer->setVertexColors(Util::convert_vector_to_shared_array(colors));
     }
 
     if (m_materializerResult)
     {
-        buffer->setMaterials(materials);
-        buffer->setTextures(textures);
-        buffer->setFaceMaterialIndices(faceMaterials);
-        buffer->setClusterMaterialIndices(clusterMaterials);
-        buffer->setVertexTextureCoordinates(texCoords);
-        buffer->setClusterFaceIndices(clusterFaceIndices);
+        vector<Material> &mats = buffer->getMaterials();
+        vector<Texture> &texts = buffer->getTextures();
+        mats.insert(mats.end(), materials.begin(), materials.end());
+        texts.insert(texts.end(), textures.begin(), textures.end());
+
+        buffer->setFaceMaterialIndices(Util::convert_vector_to_shared_array(faceMaterials));
+        buffer->addIndexChannel(Util::convert_vector_to_shared_array(clusterMaterials), "cluster_material_indices", clusterMaterials.size(), 1);
+
+        // convert from 3 floats per vertex to 2...
+        floatArr texCoordsArr = floatArr( new float[(texCoords.size() / 3) * 2] );
+
+        for (size_t i = 0; i < texCoords.size() / 3; i++)
+        {
+            texCoordsArr[i*2 + 0] = texCoords[i*3 + 0];
+            texCoordsArr[i*2 + 1] = texCoords[i*3 + 1];
+        }
+        buffer->setTextureCoordinates(texCoordsArr);
+
+        // TODO TALK TO THOMAS
+        for (size_t i = 0; i < clusterFaceIndices.size(); i++)
+        {
+            std::string cluster_name = "cluster" + std::to_string(i) + "_face_indices";
+            buffer->addIndexChannel(Util::convert_vector_to_shared_array(clusterFaceIndices[i]), cluster_name, clusterFaceIndices[i].size(), 1);
+        }
     }
 
     return buffer;

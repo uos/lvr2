@@ -86,7 +86,7 @@ public:
      *          @ref calculateSurfaceNormals the buffer will contain
      *          normal information.
      */
-    virtual PointBufferPtr<BaseVecT> pointBuffer() const;
+    virtual PointBufferPtr pointBuffer() const;
 
     /**
      * @brief   Returns a pointer to the search tree
@@ -125,12 +125,12 @@ protected:
      *          buffer does not contain surface normals, you will have to call
      *          @ref calculateSurfaceNormals before the first call @distance.
      */
-    PointsetSurface(PointBufferPtr<BaseVecT> pointcloud);
+    PointsetSurface(PointBufferPtr pointcloud);
 
     PointsetSurface() {};
 
     /// The point cloud used for surface approximation
-    PointBufferPtr<BaseVecT> m_pointBuffer;
+    PointBufferPtr m_pointBuffer;
 
     /// The search tree that is built from the point cloud data
     std::shared_ptr<SearchTree<BaseVecT>> m_searchTree;

@@ -142,8 +142,8 @@ void Tesselator<BaseVecT>::apply(
 )
 {
     // Status message for mesh generation
-    string comment = lvr::timestamp.getElapsedTime() + "Tesselating clusters ";
-    lvr::ProgressBar progress(clusters.numCluster(), comment);
+    string comment = timestamp.getElapsedTime() + "Tesselating clusters ";
+    ProgressBar progress(clusters.numCluster(), comment);
 
     init();
 
@@ -201,7 +201,7 @@ void Tesselator<BaseVecT>::apply(
     gluDeleteTess(m_tesselator);
     m_tesselator = 0;
 
-    if(!lvr::timestamp.isQuiet())
+    if(!timestamp.isQuiet())
         cout << endl;
 }
 
