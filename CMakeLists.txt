@@ -127,6 +127,15 @@ if(VTK_MAJOR_VERSION VERSION_LESS "6")
   list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK5)
 endif()
 
+if(VTK_MAJOR_VERSION VERSION_LESS "7")
+    list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
+endif()
+if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
+    if(VTK_MINOR_VERSION VERSION_LESS "1")
+        list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
+    endif()
+endif()
+
 ####
 ## Searching for NABO
 ##############################
