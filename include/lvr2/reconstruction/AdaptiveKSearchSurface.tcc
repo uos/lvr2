@@ -167,8 +167,8 @@ template<typename BaseVecT>
 void AdaptiveKSearchSurface<BaseVecT>::init()
 {
     cout << timestamp.getElapsedTime() << "##### Dataset statatistics: ##### " << endl << endl;
-    cout << "Num points \t: " << this->m_pointBuffer->numPoints() << endl;
-    cout <<  this->m_boundingBox << endl;
+    cout << timestamp << "Num points \t: " << this->m_pointBuffer->numPoints() << endl;
+    cout << timestamp << this->m_boundingBox << endl;
     cout << endl;
     this->m_centroid = Vector<BaseVecT>(0.0, 0.0, 0.0);
 }

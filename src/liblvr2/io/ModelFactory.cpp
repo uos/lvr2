@@ -103,7 +103,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
         io = new PCDIO;
     }
 #endif /* LVR_USE_PCL */
-    else if (extension == "" && ScanprojectIO().parse_project(selectedFile.string()))
+    else if (extension == "" && ScanprojectIO().parse_project(selectedFile.string(), true))
     {
         io = new ScanprojectIO;
     }

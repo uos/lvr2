@@ -15,6 +15,8 @@
 #include <lvr2/io/RxpIO.hpp>
 #include <lvr2/io/ScanprojectIO.hpp>
 
+#include <lvr2/util/Util.hpp>
+
 #include "Options.hpp"
 #include "RieglProject.hpp"
 
@@ -111,12 +113,12 @@ bool write_mat4_to_pose_file(const fs::path file, const lvr2::Matrix4<Vec> trans
 
         float pose_data[6];
 
-        lvr2::ScanprojectIO::riegl_to_slam6d_transform(transform).toPostionAngle(pose_data);
+        lvr2::Util::riegl_to_slam6d_transform(transform).toPostionAngle(pose_data);
 
         // .pose expects angles in degree and not radian
-        pose_data[3] = lvr2::ScanprojectIO::rad_to_deg(pose_data[3]);
-        pose_data[4] = lvr2::ScanprojectIO::rad_to_deg(pose_data[4]);
-        pose_data[5] = lvr2::ScanprojectIO::rad_to_deg(pose_data[5]);
+        pose_data[3] = lvr2::Util::rad_to_deg(pose_data[3]);
+        pose_data[4] = lvr2::Util::rad_to_deg(pose_data[4]);
+        pose_data[5] = lvr2::Util::rad_to_deg(pose_data[5]);
 
         fs::ofstream pose(file);
         if (!pose.is_open() || !pose.good()) {

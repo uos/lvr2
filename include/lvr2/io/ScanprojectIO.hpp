@@ -1,4 +1,31 @@
-#pragma once
+/* Copyright (C) 2011 Uni Osnabrück
+ * This file is part of the LAS VEGAS Reconstruction Toolkit,
+ *
+ * LAS VEGAS is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * LAS VEGAS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ */
+
+
+/*
+ * ScanprojectIO.hpp
+ *
+ *  @date 01.11.2018
+ *  @author Alexander Loehr (aloehr@uos.de)
+ */
+
+#ifndef LVR2_IO_SCANPROJECTIO_HPP
+#define LVR2_IO_SCANPROJECTIO_HPP
 
 #include <lvr2/io/BaseIO.hpp>
 #include <lvr2/geometry/Matrix4.hpp>
@@ -12,109 +39,111 @@ namespace lvr2
 
 using Vec = BaseVector<float>;
 
-struct ImageFile {
-    Matrix4<Vec>     orientation_transform;
-    Matrix4<Vec>     extrinsic_transform;
+/**
+ * @brief A struct that holds information for an image
+ */
+struct ImageFile
+{
+    /// transformation matrix
+    Matrix4<Vec> orientation_transform;
+    /// transformation matrix
+    Matrix4<Vec> extrinsic_transform;
 
-    fs::path     image_file;
+    /// path to image
+    fs::path image_file;
 
-    // fx, fy, Cx, Cy
+    /// intrinsic parameters in this order: fx, fy, Cx, Cy
     float intrinsic_params[4];
 
-    // params in this order: k1, k2, k3, k4, p1, p2
+    /// distortion params in this order: k1, k2, k3, k4, p1, p2
     float distortion_params[6];
 };
 
-struct ScanPosition {
+/**
+ * @brief A struct that holds information for a scan position.
+ */
+struct ScanPosition
+{
+    /// file path for pointcloud data
     fs::path               scan_file;
+    /// transformation  matrix from scan position space to scan project space
     Matrix4<Vec>           transform;
+    /// a vector with image informations for this scanposition
     std::vector<ImageFile> images;
 };
 
-struct Scanproject {
+/**
+ * @brief A struct that holds information for an UOS Scanproject
+ */
+struct Scanproject
+{
+    /// directory with calibration information
     fs::path calib_dir;
+    /// directory with image data
     fs::path img_dir;
+    /// directory with scan data
     fs::path scans_dir;
+    /// A vector with ScanPositions that are part of this scan project
     std::vector<ScanPosition> scans;
 };
 
 
 
-class ScanprojectIO : public BaseIO {
+/**
+ * @brief Class for reading/writing and parsing a UOS Scanproject directory.
+ */
+class ScanprojectIO : public BaseIO
+{
+    public:
 
-public:
-    ModelPtr read(std::string dir);
-    void save(std::string dir);
+        /**
+         * @brief Reads the giving directory as an UOS Scanproject directory and
+         * return a ModelPtr with the read data.
+         *
+         * @param dir the path to the UOS Scanproject directory
+         *
+         * @return a ModelPtr with the data read from dir
+         */
+        ModelPtr read(std::string dir);
 
-    bool parse_project(const std::string &dir);
+        /**
+         * @brief Saving UOS Scanprojects is currently not supported.
+         */
+        void save(std::string dir);
 
-    Scanproject &get_project();
+        /**
+         * @brief Parses a directory as an UOS Scanproject
+         *
+         * @param dir The directory path
+         *
+         * @param silent Suppresses any error messages while parsing the directory. This is usefull
+         *               if you only want to figure out if the directory is a valid UOS Scanproject
+         *               directory and aren't interested in any warnings if it isn't one.
+         *
+         * @return Returns true if it successfully parsed an UOS Scanproject and elsewise false.
+         */
+        bool parse_project(const std::string& dir, bool silent = false);
 
-    // TODO maybe find a better place for these static methods
-    template <typename BaseVecT>
-    static Matrix4<BaseVecT> riegl_to_slam6d_transform(const Matrix4<BaseVecT> &in) {
-        Matrix4<BaseVecT> ret;
+        /**
+         * @brief Returns the parsed UOS Scanproject
+         *
+         * @return Returns the parsed UOS Scanproject in an Scanproject struct
+         *         if parse_project(...) was executed before and returned true
+         *         else it will return an empty Scanproject struct.
+         */
+        Scanproject& get_project();
 
-        ret[0] = in[5];
-        ret[1] = -in[9];
-        ret[2] = -in[1];
-        ret[3] = -in[13];
-        ret[4] = -in[6];
-        ret[5] = in[10];
-        ret[6] = in[2];
-        ret[7] = in[14];
-        ret[8] = -in[4];
-        ret[9] = in[8];
-        ret[10] = in[0];
-        ret[11] = in[12];
-        ret[12] = -100*in[7];
-        ret[13] = 100*in[11];
-        ret[14] = 100*in[3];
-        ret[15] = in[15];
+    private:
 
-        return ret;
-    }
-
-    template <typename BaseVecT>
-    static Matrix4<BaseVecT> slam6d_to_riegl_transform(const Matrix4<BaseVecT> &in) {
-        Matrix4<BaseVecT> ret;
-
-        ret[0] = in[10];
-        ret[1] = -in[2];
-        ret[2] = in[6];
-        ret[3] = in[14]/100.0;
-        ret[4] = -in[8];
-        ret[5] = in[0];
-        ret[6] = -in[4];
-        ret[7] = -in[12]/100.0;
-        ret[8] = in[9];
-        ret[9] = -in[1];
-        ret[10] = in[5];
-        ret[11] = in[13]/100.0;
-        ret[12] = in[11];
-        ret[13] = -in[3];
-        ret[14] = in[7];
-        ret[15] = in[15];
-
-        return ret;
-    }
-
-    template <typename ValueType>
-    static ValueType deg_to_rad(ValueType deg) {
-        return M_PI / 180.0 * deg;
-    }
-
-    template <typename ValueType>
-    static ValueType rad_to_deg(ValueType rad) {
-        return rad * 180 / M_PI;
-    }
-
-private:
-    template<typename ValueType>
-    bool load_params_from_file(ValueType *buf, const fs::path &src, unsigned int count);
-    bool exists_and_is_dir(const fs::path &dir);
-    fs::path project_dir;
-    Scanproject project;
+        /// @cond internal
+        template<typename ValueType>
+        bool load_params_from_file(ValueType *buf, const fs::path &src, unsigned int count);
+        bool exists_and_is_dir(const fs::path &dir, bool silent);
+        fs::path project_dir;
+        Scanproject project;
+        /// @endcond internal
 };
 
 } // namespace lvr2
+
+#endif
