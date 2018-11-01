@@ -10,28 +10,47 @@
 namespace lvr2
 {
 
-Scanproject& ScanprojectIO::get_project() {
+Scanproject& ScanprojectIO::get_project()
+{
     return project;
 }
 
-bool ScanprojectIO::exists_and_is_dir(const fs::path &dir) {
-    try {
-        if (fs::exists(dir) && fs::is_directory(dir)) {
+bool ScanprojectIO::exists_and_is_dir(const fs::path &dir, bool silent)
+{
+    try
+    {
+        if (fs::exists(dir) && fs::is_directory(dir))
+        {
             return true;
-        } else {
+        }
+        else
+        {
             return false;
         }
-    } catch (fs::filesystem_error &e) {
-        std::cout << "[ScanprojectIO] Error: " << e.what() << std::endl;
+    }
+    catch (fs::filesystem_error &e)
+    {
+        if (!silent)
+        {
+            std::cout << "[ScanprojectIO] Error: " << e.what() << std::endl;
+        }
+
         return false;
     }
 }
 
-bool ScanprojectIO::parse_project(const std::string &dir) {
+bool ScanprojectIO::parse_project(const std::string &dir, bool silent)
+{
     project_dir = fs::path(dir);
 
-    if (!exists_and_is_dir(project_dir)) {
-        std::cout << "[ScanprojectIO] Error: " << project_dir << " doesn't exist or isn't a directory." << std::endl;
+    if (!exists_and_is_dir(project_dir, silent))
+    {
+        if (!silent)
+        {
+            std::cout << "[ScanprojectIO] Error: " << project_dir
+                << " doesn't exist or isn't a directory." << std::endl;
+        }
+
         return false;
     }
 
@@ -39,23 +58,38 @@ bool ScanprojectIO::parse_project(const std::string &dir) {
     project.scans_dir = project_dir / "scans";
 
     // check if subdirs exists
-    if (!exists_and_is_dir(project.img_dir)) {
-        std::cout << "[ScanprojectIO] Error: " << project.img_dir << " doesn't exist or isn't a directory." << std::endl;
+    if (!exists_and_is_dir(project.img_dir, silent))
+    {
+        if (!silent)
+        {
+            std::cout << "[ScanprojectIO] Error: " << project.img_dir
+                << " doesn't exist or isn't a directory." << std::endl;
+        }
+
         return false;
     }
-    if (!exists_and_is_dir(project.scans_dir)) {
-        std::cout << "[ScanprojectIO] Error: " << project.scans_dir << " doesn't exist or isn't a directory." << std::endl;
+
+    if (!exists_and_is_dir(project.scans_dir, silent))
+    {
+        if (!silent)
+        {
+            std::cout << "[ScanprojectIO] Error: " << project.scans_dir 
+                << " doesn't exist or isn't a directory." << std::endl;
+        }
+
         return false;
     }
 
     char buffer[1024];
     unsigned int cur_scan_nr = 1;
-    while (true) {
+    while (true)
+    {
         ScanPosition pos;
         std::snprintf(buffer, 1024, "scan%.3u", cur_scan_nr);
         pos.scan_file = project.scans_dir / (buffer + std::string(".3d"));
 
-        if (!fs::exists(pos.scan_file)) {
+        if (!fs::exists(pos.scan_file))
+        {
             break;
         }
 
@@ -63,15 +97,32 @@ bool ScanprojectIO::parse_project(const std::string &dir) {
         pos.transform = Matrix4<Vec>();
 
         fs::path frames_file(project.scans_dir / (buffer + std::string(".frames")));
-        if (!fs::exists(frames_file) || fs::is_empty(frames_file)) {
-            std::cout << "no frames file" << std::endl;
+        if (!fs::exists(frames_file) || fs::is_empty(frames_file))
+        {
+            if (!silent)
+            {
+                std::cout << "[ScanprojectIO] Warning: Frames file " << frames_file
+                    << " doesn't exists or is empty. Therefore no transformation is set \
+                    for scan position " << cur_scan_nr << "." << std::endl;
+            }
+
             cur_scan_nr++;
             continue;
-        } else {
+        }
+        else
+        {
             std::ifstream frames_fstream(frames_file.string());
-            if (!frames_fstream.is_open() || !frames_fstream.good()) {
+            if (!frames_fstream.is_open() || !frames_fstream.good())
+            {
                 frames_fstream.close();
-                std::cout << "unable to parse frames file" << std::endl;
+
+                if (!silent)
+                {
+                std::cout << "[ScanprojectIO] Warning: Unable to read frames file "
+                    << frames_file << ". Therefore no transformation is set for \
+                    scan position " << cur_scan_nr << "." << std::endl;
+                }
+
                 cur_scan_nr++;
                 continue;
             }
@@ -82,18 +133,21 @@ bool ScanprojectIO::parse_project(const std::string &dir) {
         }
 
         unsigned int cur_img_nr = 1;
-        while (true) {
+        while (true)
+        {
             std::snprintf(buffer, 1024, "scan%.3u_%.2u", cur_scan_nr, cur_img_nr++);
             ImageFile img;
             fs::path img_file = project.img_dir / (std::string(buffer) + ".jpg");
-            if (!exists(img_file)) {
+            if (!exists(img_file))
+            {
                 break;
             }
 
             img.image_file = img_file;
 
             fs::path extrinsic_file(project.img_dir / (std::string(buffer) + "_extrinsic.dat"));
-            if (!fs::exists(extrinsic_file)) {
+            if (!fs::exists(extrinsic_file))
+            {
                 // TODO inform over that skipping image...
                 std::cout << extrinsic_file << std::endl;
                 continue;
@@ -101,7 +155,8 @@ bool ScanprojectIO::parse_project(const std::string &dir) {
             img.extrinsic_transform.loadFromFile(extrinsic_file.string());
 
             fs::path orientation_file(project.img_dir / (std::string(buffer) + "_orientation.dat"));
-            if (!fs::exists(orientation_file)) {
+            if (!fs::exists(orientation_file))
+            {
                 // TODO inform over that skipping image...
                 std::cout << orientation_file << std::endl;
                 continue;
@@ -109,7 +164,8 @@ bool ScanprojectIO::parse_project(const std::string &dir) {
             img.orientation_transform.loadFromFile(orientation_file.string());
 
             fs::path intrinsic_file(project.img_dir / (std::string(buffer) + "_intrinsic.txt"));
-            if (!fs::exists(intrinsic_file)) {
+            if (!fs::exists(intrinsic_file))
+            {
                 // TODO inform over that skipping image...
                 std::cout << intrinsic_file << std::endl;
                 continue;
@@ -117,11 +173,13 @@ bool ScanprojectIO::parse_project(const std::string &dir) {
             load_params_from_file(img.intrinsic_params, intrinsic_file, 4);
 
             fs::path distortion_file(project.img_dir / (std::string(buffer) + "_distortion.txt"));
-            if (!fs::exists(distortion_file)) {
+            if (!fs::exists(distortion_file))
+            {
                 // TODO inform over that skipping image...
                 std::cout << distortion_file << std::endl;
                 continue;
             }
+
             load_params_from_file(img.distortion_params, distortion_file, 6);
 
             pos.images.push_back(img);
@@ -143,39 +201,50 @@ bool ScanprojectIO::parse_project(const std::string &dir) {
 }
 
 template<typename ValueType>
-bool ScanprojectIO::load_params_from_file(ValueType *buf, const fs::path &src, unsigned int count) {
+bool ScanprojectIO::load_params_from_file(ValueType *buf, const fs::path &src, unsigned int count)
+{
 
     fs::fstream in_stream(src);
-    if (!in_stream.is_open()) {
+    if (!in_stream.is_open())
+    {
         in_stream.close();
         return false;
     }
 
     unsigned int i;
-    for (i = 0; i < count && in_stream.good(); i++) {
+    for (i = 0; i < count && in_stream.good(); i++)
+    {
         in_stream >> buf[i];
     }
 
-    if (i < count) {
+    if (i < count)
+    {
         return false;
     }
 
     in_stream.close();
+
     return true;
 }
 
-ModelPtr ScanprojectIO::read(std::string dir) {
+ModelPtr ScanprojectIO::read(std::string dir)
+{
 
-    if (!parse_project(dir)) {
-        std::cout << "[ScanprojectIO] Error: The path " << dir << " isn't a proper Scanproject. returning an empty model." << std::endl;
+    if (!parse_project(dir))
+    {
+        std::cout << "[ScanprojectIO] Error: The path " << dir
+            << " isn't a proper Scanproject. returning an empty model." << std::endl;
+
         return ModelPtr();
     }
 
     return UosIO().read(project.scans_dir.string());
 }
 
-void ScanprojectIO::save(std::string dir) {
-    std::cout << "[ScanprojectIO]: Error: Saving from ScanProjects currently not supported." << std::endl;
+void ScanprojectIO::save(std::string dir)
+{
+    std::cout << "[ScanprojectIO]: Error: Saving from ScanProjects \
+        currently not supported." << std::endl;
 }
 
 } // namespace lvr2 

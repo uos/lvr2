@@ -5,17 +5,17 @@
 namespace lvr2
 {
 
-int Util::getSpectralChannel(int wavelength, PointBufferPtr pcloud, int fallback)
+int Util::getSpectralChannel(int wavelength, PointBufferPtr p, int fallback)
 {
-    FloatChannelOptional spectral_channels = pcloud->getFloatChannel("spectral_channels");
+    FloatChannelOptional spectral_channels = p->getFloatChannel("spectral_channels");
     if (!spectral_channels)
     {
         return fallback;
     }
 
-    int minWavelength = *pcloud->getIntAttribute("spectral_wavelength_min");
+    int minWavelength = *p->getIntAttribute("spectral_wavelength_min");
 
-    int channel = (wavelength - minWavelength) / wavelengthPerChannel(pcloud);
+    int channel = (wavelength - minWavelength) / wavelengthPerChannel(p);
 
     if (channel < 0 || channel >= spectral_channels->width())
     {
@@ -25,34 +25,34 @@ int Util::getSpectralChannel(int wavelength, PointBufferPtr pcloud, int fallback
     return channel;
 }
 
-int Util::getSpectralWavelength(int channel, PointBufferPtr pcloud, int fallback)
+int Util::getSpectralWavelength(int channel, PointBufferPtr p, int fallback)
 {
-    FloatChannelOptional spectral_channels = pcloud->getFloatChannel("spectral_channels");
+    FloatChannelOptional spectral_channels = p->getFloatChannel("spectral_channels");
     if (!spectral_channels)
     {
         return fallback;
     }
     
-    int minWavelength = *pcloud->getIntAttribute("spectral_wavelength_min");
+    int minWavelength = *p->getIntAttribute("spectral_wavelength_min");
 
     if (channel < 0 || channel >= spectral_channels->width())
     {
         return fallback;
     }
 
-    return channel * wavelengthPerChannel(pcloud) + minWavelength;
+    return channel * wavelengthPerChannel(p) + minWavelength;
 }
 
-float Util::wavelengthPerChannel(PointBufferPtr pcloud)
+float Util::wavelengthPerChannel(PointBufferPtr p)
 {
-    FloatChannelOptional spectral_channels = pcloud->getFloatChannel("spectral_channels");
+    FloatChannelOptional spectral_channels = p->getFloatChannel("spectral_channels");
     if (!spectral_channels)
     {
         return -1.0f;
     }
 
-    int minWavelength = *pcloud->getIntAttribute("spectral_wavelength_min");
-    int maxWavelength = *pcloud->getIntAttribute("spectral_wavelength_max");
+    int minWavelength = *p->getIntAttribute("spectral_wavelength_min");
+    int maxWavelength = *p->getIntAttribute("spectral_wavelength_max");
 
     return (maxWavelength - minWavelength) / static_cast<float>(spectral_channels->width());
 }

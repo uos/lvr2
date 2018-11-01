@@ -50,6 +50,9 @@ using std::stringstream;
 
 namespace lvr2
 {
+
+using Vec = BaseVector<float>;
+
 /**
  * @brief An input class for laser scans in UOS 3d format.
  *
@@ -61,9 +64,6 @@ namespace lvr2
  * transformation in the file. If no .frame file are present, the
  * .pose files will be sued to transform the scans.
  */
-
-using Vec = BaseVector<float>;
-
 class UosIO : public BaseIO
 {
 

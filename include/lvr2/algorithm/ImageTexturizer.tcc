@@ -160,7 +160,7 @@ void ImageTexturizer<BaseVecT>::init_image_data()
             Matrix4<BaseVecT> orientation = img.orientation_transform;
 
             // because matrix multipl. is CM and our matrices are RM we have to do it this way
-            transform = ScanprojectIO::slam6d_to_riegl_transform(pos.transform).inv(dummy);
+            transform = Util::slam6d_to_riegl_transform(pos.transform).inv(dummy);
             transform = transform * orientation.inv(dummy);
             transform = transform * img.extrinsic_transform;
             Matrix4<BaseVecT> transform_inverse = transform.inv(dummy);
