@@ -183,10 +183,10 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     FloatChannel pts = *(this->m_pointBuffer->getFloatChannel("points"));
 
     cout << timestamp.getElapsedTime() << "Initializing normal array..." << endl;
-    
+
     floatArr normals = floatArr( new float[numPoints * 3] );
     this->m_pointBuffer->setNormalArray(normals, numPoints);
-    
+
     // Create a progress counter
     string comment = timestamp.getElapsedTime() + "Estimating normals ";
     lvr2::ProgressBar progress(numPoints, comment);
@@ -213,6 +213,10 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             k = k * 2;
 
             //T* point = this->m_points[i];
+
+            id.clear();
+            di.clear();
+
             this->m_searchTree->kSearch(pts[i], k, id, di);
 
             float min_x = 1e15f;
@@ -256,7 +260,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         // Interpolate a plane based on the k-neighborhood
         Plane<BaseVecT> p;
         bool ransac_ok;
-        
+
         if(m_calcMethod == 1)
         {
             p = calcPlaneRANSAC(queryPoint, k, id, ransac_ok);
@@ -353,7 +357,7 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
 
         this->m_searchTree->kSearch(pts[i], this->m_ki, id, di);
 
-        Normal<BaseVecT> mean;
+        Vector<BaseVecT> mean;
 
         for(int j = 0; j < this->m_ki; j++)
         {
