@@ -242,7 +242,7 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
         boost::filesystem::path scan_path(
                 boost::filesystem::path(dir) /
                 boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".3d" ) );
-        string scanFileName = "/" + scan_path.relative_path().string();
+        string scanFileName = scan_path.string();
 
         // Count lines in scan
         size_t points_in_file = AsciiIO::countLines(scanFileName);
@@ -281,7 +281,7 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
             boost::filesystem::path frame_path(
                     boost::filesystem::path(dir) /
                     boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".frames" ) );
-            string frameFileName = "/" + frame_path.relative_path().string();
+            string frameFileName = frame_path.string();
 
             frame_in.open(frameFileName.c_str());
             if(!frame_in.good())
@@ -290,7 +290,7 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
                 boost::filesystem::path pose_path(
                         boost::filesystem::path(dir) /
                         boost::filesystem::path( "scan" + to_string( fileCounter, 3 ) + ".pose" ) );
-                string poseFileName = "/" + pose_path.relative_path().string();
+                string poseFileName = pose_path.string();
 
                 pose_in.open(poseFileName.c_str());
                 if(pose_in.good())
