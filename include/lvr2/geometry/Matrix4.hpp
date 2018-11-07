@@ -30,6 +30,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <vector>
 
 #include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/Normal.hpp>
@@ -450,6 +451,15 @@ public:
 	 * 			removed in one of the next versions.
 	 */
 	ValueType* getData(){ return m;};
+
+    std::vector<ValueType> getVector()
+    {
+        std::vector<ValueType> tmp;
+        for(int i = 0; i < 16; i++)
+        {
+            tmp.push_back(m[i]);
+        }
+    }
 
 	/**
 	 * @brief	Returns the element at the given index.

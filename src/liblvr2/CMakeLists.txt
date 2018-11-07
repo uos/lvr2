@@ -37,6 +37,7 @@ set(LVR2_SOURCES
     io/DatIO.cpp
     io/LasIO.cpp
     io/BaseIO.cpp
+    io/HDF5IO.cpp
     io/Timestamp.cpp
     io/BoctreeIO.cpp
     io/GridIO.cpp
