@@ -7,6 +7,7 @@
 #include "lvr2/geometry/Matrix4.hpp"
 
 #include <string>
+#include <iostream>
 
 namespace lvr2
 {
