@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
     for(size_t i = 0; i < scans.size(); i++)
     {
-       // hdf5.addRawScanData((int)i, scans[i]);
+       hdf5.addRawScanData((int)i, scans[i]);
     }
 
 	return 0;

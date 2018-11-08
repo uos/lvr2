@@ -34,6 +34,7 @@
 
 #include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/Normal.hpp>
+#include <lvr2/io/DataStruct.hpp>
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -478,6 +479,16 @@ public:
 	 * 			removed in one of the next versions.
 	 */
 	ValueType* getData(){ return m;};
+
+    floatArr toFloatArray()
+    {
+        floatArr a(new float[16]);
+        for(int i = 0; i < 16; i++)
+        {
+            a[i] = m[i];
+        }
+        return a;
+    }
 
     std::vector<ValueType> getVector()
     {
