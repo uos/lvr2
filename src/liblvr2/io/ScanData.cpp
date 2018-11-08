@@ -68,7 +68,7 @@ void parseSLAMDirectory(std::string dir, vector<ScanData>& scans)
 
                 if(boost::filesystem::exists(frame_path))
                 {
-                    std::cout << timestamp << "Loading pose extimation from " << frame_path << std::endl;
+                    std::cout << timestamp << "Loading pose estimation from " << pose_path << std::endl;
                     pose_estimate = getTransformationFromPose(pose_path);
                 }
                 else
