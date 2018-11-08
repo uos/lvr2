@@ -76,7 +76,10 @@ void parseSLAMDirectory(std::string dir, vector<ScanData>& scans)
                     std::cout << timestamp << "Did not find a pose file for " << filename << std::endl;
                 }
 
+                scan_data.m_registration = registration;
+                scan_data.m_poseEstimation = pose_estimate;
 
+                scans.push_back(scan_data);
             }
         }
         else
