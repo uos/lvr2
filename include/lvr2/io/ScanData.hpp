@@ -6,6 +6,8 @@
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/geometry/Matrix4.hpp"
 
+#include <string>
+
 namespace lvr2
 {
 
@@ -30,6 +32,10 @@ struct ScanData
     float                               m_hResolution;
     float                               m_vResolution;
 };
+
+
+void parseSLAMDirectory(std::string dir, vector<ScanData>& scans);
+
 
 } // namespace lvr2
 #endif /* !SCANDATA_HPP_ */
