@@ -11,7 +11,7 @@ namespace lvr2
 
 struct ScanData 
 {
-	ScanData() :
+    ScanData() :
         m_points(nullptr),
         m_hFieldOfView(0),
         m_vFieldOfView(0),
