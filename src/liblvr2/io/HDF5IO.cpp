@@ -91,7 +91,7 @@ void HDF5IO::addFloatArray(
     if(m_hdf5_file)
     {
         std::vector<size_t> dim = {size, 1};
-        HighFive::Group g = m_hdf5_file->createGroup(group);
+        HighFive::Group g = getGroup(group);
         addFloatArray(g, name, dim, data);
     }
 }
@@ -113,7 +113,7 @@ void HDF5IO::addFloatArray(
 {
     if(m_hdf5_file)
     {
-        HighFive::Group g = m_hdf5_file->createGroup(groupName);
+        HighFive::Group g = getGroup(groupName);
         addFloatArray(g, datasetName, dimensions, data);
     }
 }
@@ -123,7 +123,7 @@ void HDF5IO::addUcharArray(std::string group, std::string name, unsigned int siz
     if(m_hdf5_file)
     {
         vector<size_t> dim = {size, 1};
-        HighFive::Group g = m_hdf5_file->createGroup(group);
+        HighFive::Group g = getGroup(group);
         addUcharArray(g, name, dim, data);
     }
 }
@@ -132,7 +132,7 @@ void HDF5IO::addUcharArray(std::string group, std::string name, std::vector<size
 {
     if(m_hdf5_file)
     {
-        HighFive::Group g = m_hdf5_file->createGroup(group);
+        HighFive::Group g = getGroup(group);
         addUcharArray(g, name, dim, data);
     }
 }
@@ -147,7 +147,8 @@ void HDF5IO::addImage(std::string group, std::string name, cv::Mat& img)
 {
     if(m_hdf5_file)
     {
-        HighFive::Group g = m_hdf5_file->createGroup(group);
+
+        HighFive::Group g = getGroup(group);
         addImage(g, name, img);
     }
 }
@@ -226,5 +227,17 @@ void HDF5IO::addRawDataHeader(std::string description, Matrix4<BaseVector<float>
 {
 
 }
+
+
+HighFive::Group HDF5IO::getGroup(const std::string &groupName) {
+    if(m_hdf5_file->exist(groupName)) {
+        // return the existing group
+        return m_hdf5_file->getGroup(groupName);
+    } else {
+        return m_hdf5_file->createGroup(groupName);
+    }
+
+}
+
 
 } // namespace lvr2
