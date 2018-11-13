@@ -65,6 +65,8 @@ class HDF5IO : public BaseIO
 
     void addRawScanData(int nr, ScanData &scan);
 
+    void addFloatChannelToRawScanData(std::string name, int nr, size_t n, unsigned w, floatArr data);
+
     void addRawDataHeader(std::string description, Matrix4<BaseVector<float>> &referenceFrame);
 
 

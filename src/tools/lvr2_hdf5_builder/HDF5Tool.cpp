@@ -99,6 +99,11 @@ int main( int argc, char ** argv )
 
         // Compute bounding box
         PointBufferPtr pointCloud = model->m_pointCloud;
+
+        size_t an;
+        unsigned  aw;
+        floatArr spectral = pointCloud->getFloatArray("spectral_channels", an, aw);
+
         BoundingBox<BaseVector<float> > bBox;
         floatArr points = pointCloud->getPointArray();
         for(int i = 0; i < pointCloud->numPoints(); i++)
@@ -116,8 +121,10 @@ int main( int argc, char ** argv )
         data.m_boundingBox = bBox;
         data.m_registration = transformation;
 
-        // Add object to hdf5 file
+        // Add objects to hdf5 file
         hdf5.addRawScanData(scanNr, data);
+        hdf5.addFloatChannelToRawScanData("spectrals", scanNr, an, aw, spectral);
+
         scanNr++;
     }
 

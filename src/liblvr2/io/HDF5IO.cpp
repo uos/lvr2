@@ -103,7 +103,8 @@ void HDF5IO::addFloatArray(
     if(m_hdf5_file)
     {
         HighFive::DataSet dataset = g.createDataSet<float>(datasetName, HighFive::DataSpace(dim));
-        dataset.write(data.get());
+        const float* ptr = data.get();
+        dataset.write(ptr);
     }
 }
 
@@ -140,7 +141,8 @@ void HDF5IO::addUcharArray(std::string group, std::string name, std::vector<size
 void HDF5IO::addUcharArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim, ucharArr data)
 {
     HighFive::DataSet dataset = g.createDataSet<unsigned char>(datasetName, HighFive::DataSpace(dim));
-    dataset.write(data.get());
+    const unsigned char* ptr = data.get();
+    dataset.write(ptr);
 }
 
 void HDF5IO::addImage(std::string group, std::string name, cv::Mat& img)
@@ -160,11 +162,42 @@ void HDF5IO::addImage(HighFive::Group& g, std::string datasetName, cv::Mat& img)
     H5IMmake_image_8bit(g.getId(), datasetName.c_str(), w, h, img.data);
 }
 
+void HDF5IO::addFloatChannelToRawScanData(
+        std::string name, int nr, size_t n, unsigned w, floatArr data)
+{
+    try
+    {
+        HighFive::Group g = getGroup("/raw_data");
+        std::cout << "Creating scans group..." << std::endl;
+    }
+    catch(HighFive::Exception& e)
+    {
+        std::cout << "Error adding raw scan data: " << e.what() << std::endl;
+        throw e;
+    }
+
+    if(data != nullptr && n > 0 && w > 0 && m_hdf5_file)
+    {
+        // Setup group for scan data
+        char buffer[128];
+        sprintf(buffer, "pose%05d", nr);
+        string nr_str(buffer);
+        std::string groupName = "/raw_data/" + nr_str;
+        std::vector<size_t> dim = {n, w};
+        addFloatArray(groupName, name, dim, data);
+    }
+    else
+    {
+        std::cout << timestamp << "Error adding float channel '" << name
+                               << "'to raw data" << std::endl;
+    }
+}
+
 void HDF5IO::addRawScanData(int nr, ScanData &scan)
 {
     try
     {
-        HighFive::Group g = getGroup("/raw_data/scans");
+        HighFive::Group g = getGroup("/raw_data");
         std::cout << "Creating scans group..." << std::endl;
     }
     catch(HighFive::Exception& e)
@@ -184,8 +217,7 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             string nr_str(buffer);
 
 
-            std::string groupName = "/raw_data/scans/" + nr_str;
-            std::cout << "Creating group " <<  groupName << std::endl;
+            std::string groupName = "/raw_data/" + nr_str;
 
             // Generate tuples for field of view and resolution parameters
             floatArr fov(new float[2]);
@@ -214,7 +246,6 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             bb[5] = bb_max.z;
 
             // Add data to group
-            std::cout << "Adding float arrays..." << std::endl;
             addFloatArray(groupName, "fov", 2, fov);
             addFloatArray(groupName, "resolution", 2, res);
             addFloatArray(groupName, "pose_estimation", 16, pose_estimate);

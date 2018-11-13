@@ -868,6 +868,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
             // there is no way to read min-, maxchannel from ply file => assume default 400-1000nm
             pc->addIntAttribute(400, "spectral_wavelength_min");
             pc->addIntAttribute(400 + 4 * n_channels, "spectral_wavelength_max");
+            pc->addIntAttribute(n_channels, "num_spectral_channels");
         }
     }
 
