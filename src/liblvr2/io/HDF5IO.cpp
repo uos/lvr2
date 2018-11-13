@@ -164,12 +164,13 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
 {
     try
     {
-        HighFive::Group s_g = m_hdf5_file->createGroup("/raw_data/scans");
+        HighFive::Group g = getGroup("/raw_data/scans");
         std::cout << "Creating scans group..." << std::endl;
     }
-    catch(...)
+    catch(HighFive::Exception& e)
     {
-
+        std::cout << "Error adding raw scan data: " << e.what() << std::endl;
+        throw e;
     }
 
     if(m_hdf5_file)
@@ -213,6 +214,7 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             bb[5] = bb_max.z;
 
             // Add data to group
+            std::cout << "Adding float arrays..." << std::endl;
             addFloatArray(groupName, "fov", 2, fov);
             addFloatArray(groupName, "resolution", 2, res);
             addFloatArray(groupName, "pose_estimation", 16, pose_estimate);
@@ -229,14 +231,17 @@ void HDF5IO::addRawDataHeader(std::string description, Matrix4<BaseVector<float>
 }
 
 
-HighFive::Group HDF5IO::getGroup(const std::string &groupName) {
-    if(m_hdf5_file->exist(groupName)) {
+HighFive::Group HDF5IO::getGroup(const std::string &groupName)
+{
+    if(m_hdf5_file->exist(groupName))
+    {
         // return the existing group
         return m_hdf5_file->getGroup(groupName);
-    } else {
+    }
+    else
+    {
         return m_hdf5_file->createGroup(groupName);
     }
-
 }
 
 
