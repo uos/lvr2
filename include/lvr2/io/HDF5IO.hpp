@@ -74,6 +74,9 @@ class HDF5IO : public BaseIO
     void addUcharArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim, ucharArr data);
     void addImage(HighFive::Group& g, std::string datasetName, cv::Mat& img);
 
+    HighFive::Group getGroup(const std::string& groupName);
+
+
     void write_base_structure();
     
     HighFive::File*         m_hdf5_file;
