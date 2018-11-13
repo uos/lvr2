@@ -58,9 +58,7 @@ public:
 	Options(int argc, char** argv);
 	virtual ~Options();
 
-    string  getPNGDir()        const { return m_variables["PNGDir"].as<string>();}
-    string  getPLYFile()       const { return m_variables["PLYFile"].as<string>();}
-
+    string  getDataDir()        const { return m_variables["DataDir"].as<string>();}
 
 private:
     /// The internally used variable map
@@ -79,8 +77,7 @@ private:
 inline ostream& operator<<(ostream& os, const Options &o)
 {
 	cout << "##### Program options: " 	<< endl;
-    cout << "##### PLY file file \t\t: "  << o.getPLYFile() << endl;
-    cout << "##### Output file \t\t: " 	<< o.getPNGDir() << endl;
+    cout << "##### Data directory \t\t: "  << o.getDataDir() << endl;
 
 	return os;
 }
