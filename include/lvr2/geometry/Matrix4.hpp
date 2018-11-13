@@ -440,7 +440,7 @@ public:
 		ifstream in(filename.c_str());
 		for(int i = 0; i < 16; i++){
 			if(!in.good()){
-				cout << "Warning: Matrix::loadFromFile: File not found or corrupted." << endl;
+                cout << "Warning: Matrix::loadFromFile: File not found or corrupted: " << filename << endl;
 				return;
 			}
 			in >> m[i];

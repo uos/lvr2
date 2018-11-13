@@ -40,7 +40,7 @@ bool HDF5IO::open(std::string filename)
 
     // Try to open the given HDF5 file
     m_hdf5_file = new HighFive::File(
-                "out.h5",
+                filename,
                 HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
 
     if (!m_hdf5_file->isValid())

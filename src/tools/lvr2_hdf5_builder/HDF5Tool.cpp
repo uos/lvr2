@@ -17,6 +17,11 @@
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/io/Timestamp.hpp>
 #include <lvr2/display/ColorMap.hpp>
+
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/BoundingBox.hpp"
+#include "lvr2/geometry/Matrix4.hpp"
+
 #include "Options.hpp"
 
 #include <boost/filesystem.hpp>
@@ -25,9 +30,33 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include <lvr2/io/HDF5IO.hpp>
-using namespace lvr2;
-using namespace std;
 
+#include <string>
+#include <sstream>
+#include <algorithm>
+using namespace lvr2;
+
+bool compare_path(boost::filesystem::path p1, boost::filesystem::path p2)
+{
+    std::string ply_file_name1 = p1.stem().string();
+    std::string number1 = ply_file_name1.substr(15);
+
+    std::string ply_file_name2 = p2.stem().string();
+    std::string number2 = ply_file_name2.substr(15);
+
+    std::stringstream ss1(number1);
+    std::stringstream ss2(number2);
+    int first1 = 0;
+    int second1 = 0;
+
+    int first2 = 0;
+    int second2 = 0;
+    char dummy;
+    ss1 >> first1 >> dummy >> second1;
+    ss2 >> first2 >> dummy >> second2;
+
+    return ((first1 << 16) + second1) < ((first2 << 16) + second2);
+}
 
 int main( int argc, char ** argv )
 {
@@ -37,16 +66,62 @@ int main( int argc, char ** argv )
 
     HDF5IO hdf5("hyper.h5");
 
-    int numScans = 0;
 
+    // Find all annotated scans and sort them
+    vector<boost::filesystem::path> annotated_scans;
+    boost::filesystem::directory_iterator end;
     for(boost::filesystem::directory_iterator it(dataDir); it != end; ++it)
     {
         std::string ext = it->path().extension().string();
-        if(ext == ".png")
+        std::string stem = it->path().stem().string();
+        if(ext == ".ply" && stem.find("scan_annotated_") != string::npos)
         {
-            numPNGs++;
+            annotated_scans.push_back(it->path());
         }
     }
+    std::sort(annotated_scans.begin(), annotated_scans.end(), compare_path);
+
+    // Create scan data objects and add them to hdf5 file
+    int scanNr = 0;
+    for(auto it : annotated_scans)
+    {
+        std::string ply_file_name = it.stem().string();
+        std::string number = ply_file_name.substr(15);
+
+        // Read transformation
+        boost::filesystem::path matrix_file = dataDir/boost::filesystem::path("scan_" + number + "_transformation.txt");
+        Matrix4<BaseVector<float> > transformation;
+        transformation.loadFromFile(matrix_file.string());
+
+        // Read scan data
+        std::cout << timestamp << "Reading scan data: " << it << std::endl;
+        ModelPtr model = ModelFactory::readModel(it.string());
+
+        // Compute bounding box
+        PointBufferPtr pointCloud = model->m_pointCloud;
+        BoundingBox<BaseVector<float> > bBox;
+        floatArr points = pointCloud->getPointArray();
+        for(int i = 0; i < pointCloud->numPoints(); i++)
+        {
+            bBox.expand(BaseVector<float>(
+                            points[3 * i],
+                            points[3 * i + 1],
+                            points[3 * i + 2]));
+        }
+        std::cout << timestamp << bBox << std::endl;
+
+        // Setup scan data object
+        ScanData data;
+        data.m_points = pointCloud;
+        data.m_boundingBox = bBox;
+        data.m_registration = transformation;
+
+        // Add object to hdf5 file
+        hdf5.addRawScanData(scanNr, data);
+        scanNr++;
+    }
+
+
 
     return 0;
 
