@@ -28,6 +28,8 @@ class HDF5IO : public BaseIO
          */
     virtual ModelPtr read(std::string filename);
 
+    ModelPtr read(std::string filename, size_t scanNr);
+
     /**
          * \brief Save the loaded elements to the given file.
          *
@@ -40,18 +42,36 @@ class HDF5IO : public BaseIO
 
     bool open(std::string filename);
 
-    void addFloatArray(std::string groupName, std::string datasetName, unsigned int size, floatArr data);
-    void addUcharArray(std::string groupName, std::string datasetName, unsigned int size, ucharArr data);
+    void addFloatArray(
+            std::string groupName, std::string datasetName,
+            unsigned int size, floatArr data);
 
-    void addImage(std::string groupName, std::string name, cv::Mat& img);
+    void addFloatArray(
+            std::string groupName, std::string datasetName,
+            std::vector<size_t>& dimensions, floatArr data);
+
+    void addUcharArray(
+            std::string groupName,
+            std::string datasetName,
+            unsigned int size, ucharArr data);
+
+    void addUcharArray(
+            std::string groupName,
+            std::string datasetName,
+            std::vector<size_t> dimensions, ucharArr data);
+
+    void addImage(
+            std::string groupName, std::string name, cv::Mat& img);
 
     void addRawScanData(int nr, ScanData &scan);
+
     void addRawDataHeader(std::string description, Matrix4<BaseVector<float>> &referenceFrame);
 
 
+
   private:
-    void addFloatArray(HighFive::Group& g, std::string datasetName, unsigned int size, floatArr data);
-    void addUcharArray(HighFive::Group& g, std::string datasetName, unsigned int size, ucharArr data);
+    void addFloatArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim, floatArr data);
+    void addUcharArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim, ucharArr data);
     void addImage(HighFive::Group& g, std::string datasetName, cv::Mat& img);
 
     void write_base_structure();
