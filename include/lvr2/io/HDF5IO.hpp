@@ -65,11 +65,10 @@ class HDF5IO : public BaseIO
 
     void addRawScanData(int nr, ScanData &scan);
 
-    void addFloatChannelToRawScanData(std::string name, int nr, size_t n, unsigned w, floatArr data);
-
-    void addRawDataHeader(std::string description, Matrix4<BaseVector<float>> &referenceFrame);
-
-
+    void addFloatChannelToRawScanData(
+            std::string name,
+            int nr, size_t n, unsigned w,
+            floatArr data);
 
   private:
     void addFloatArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim, floatArr data);
@@ -77,7 +76,6 @@ class HDF5IO : public BaseIO
     void addImage(HighFive::Group& g, std::string datasetName, cv::Mat& img);
 
     HighFive::Group getGroup(const std::string& groupName);
-
 
     void write_base_structure();
     

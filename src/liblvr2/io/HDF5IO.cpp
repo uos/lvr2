@@ -62,7 +62,7 @@ void HDF5IO::write_base_structure()
 {
     int version = 1;
     m_hdf5_file->createDataSet<int>("version", HighFive::DataSpace::From(version)).write(version);
-    HighFive::Group raw_data_group = m_hdf5_file->createGroup("/raw_data");
+    HighFive::Group raw_data_group = m_hdf5_file->createGroup("/raw");
 
     // Create string with current time
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
@@ -75,7 +75,7 @@ void HDF5IO::write_base_structure()
 
     // Create empty reference frame
     vector<float> frame = Matrix4<BaseVector<float>>().getVector();
-    raw_data_group.createDataSet<float>("reference_frame", HighFive::DataSpace::From(frame)).write(frame);
+    raw_data_group.createDataSet<float>("position", HighFive::DataSpace::From(frame)).write(frame);
 
 }
 
@@ -167,12 +167,12 @@ void HDF5IO::addFloatChannelToRawScanData(
 {
     try
     {
-        HighFive::Group g = getGroup("/raw_data");
-        std::cout << "Creating scans group..." << std::endl;
+        HighFive::Group g = getGroup("raw/scans");
     }
     catch(HighFive::Exception& e)
     {
-        std::cout << "Error adding raw scan data: " << e.what() << std::endl;
+        std::cout << timestamp << "Error adding raw scan data: "
+                  << e.what() << std::endl;
         throw e;
     }
 
@@ -180,16 +180,16 @@ void HDF5IO::addFloatChannelToRawScanData(
     {
         // Setup group for scan data
         char buffer[128];
-        sprintf(buffer, "pose%05d", nr);
+        sprintf(buffer, "position_%05d", nr);
         string nr_str(buffer);
-        std::string groupName = "/raw_data/" + nr_str;
+        std::string groupName = "/raw/scans/" + nr_str;
         std::vector<size_t> dim = {n, w};
         addFloatArray(groupName, name, dim, data);
     }
     else
     {
         std::cout << timestamp << "Error adding float channel '" << name
-                               << "'to raw data" << std::endl;
+                               << "'to raw scan data" << std::endl;
     }
 }
 
@@ -197,12 +197,12 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
 {
     try
     {
-        HighFive::Group g = getGroup("/raw_data");
-        std::cout << "Creating scans group..." << std::endl;
+        HighFive::Group g = getGroup("raw/scans");
     }
     catch(HighFive::Exception& e)
     {
-        std::cout << "Error adding raw scan data: " << e.what() << std::endl;
+        std::cout << timestamp << "Error adding raw scan data: "
+                  << e.what() << std::endl;
         throw e;
     }
 
@@ -213,11 +213,11 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
         {
             // Setup group for scan data
             char buffer[128];
-            sprintf(buffer, "pose%05d", nr);
+            sprintf(buffer, "position_%05d", nr);
             string nr_str(buffer);
 
 
-            std::string groupName = "/raw_data/" + nr_str;
+            std::string groupName = "/raw/scans/" + nr_str;
 
             // Generate tuples for field of view and resolution parameters
             floatArr fov(new float[2]);
@@ -246,21 +246,16 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             bb[5] = bb_max.z;
 
             // Add data to group
+            std::vector<size_t> dim = {4,4};
             addFloatArray(groupName, "fov", 2, fov);
             addFloatArray(groupName, "resolution", 2, res);
-            addFloatArray(groupName, "pose_estimation", 16, pose_estimate);
-            addFloatArray(groupName, "registration", 16, registration);
-            addFloatArray(groupName, "bounding_box", 6, bb);
+            addFloatArray(groupName, "initialPose", dim, pose_estimate);
+            addFloatArray(groupName, "finalPose", dim, registration);
+            addFloatArray(groupName, "boundingbox", 6, bb);
             addFloatArray(groupName, "points", 3 * scan.m_points->numPoints(), scan.m_points->getPointArray());
         }
     }
 }
-
-void HDF5IO::addRawDataHeader(std::string description, Matrix4<BaseVector<float>> &referenceFrame)
-{
-
-}
-
 
 HighFive::Group HDF5IO::getGroup(const std::string &groupName)
 {
