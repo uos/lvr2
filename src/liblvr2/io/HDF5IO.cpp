@@ -167,7 +167,7 @@ void HDF5IO::addFloatChannelToRawScanData(
 {
     try
     {
-        HighFive::Group g = getGroup("raw/scans");
+        HighFive::Group g = getGroup("/raw/scans");
     }
     catch(HighFive::Exception& e)
     {
@@ -197,7 +197,7 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
 {
     try
     {
-        HighFive::Group g = getGroup("raw/scans");
+        HighFive::Group g = getGroup("/raw/scans");
     }
     catch(HighFive::Exception& e)
     {
@@ -259,15 +259,27 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
 
 HighFive::Group HDF5IO::getGroup(const std::string &groupName)
 {
-    if(m_hdf5_file->exist(groupName))
+    try
     {
-        // return the existing group
-        return m_hdf5_file->getGroup(groupName);
+        if(m_hdf5_file->exist(groupName))
+        {
+            // return the existing group
+            return m_hdf5_file->getGroup(groupName);
+        }
+        else
+        {
+            return m_hdf5_file->createGroup(groupName);
+        }
     }
-    else
+    catch(HighFive::Exception& e)
     {
-        return m_hdf5_file->createGroup(groupName);
+        std::cout << timestamp
+                  << "Error in getGroup (with group name '"
+                  << groupName << "': " << std::endl;
+        std::cout << e.what() << std::endl;
+        throw e;
     }
+
 }
 
 
