@@ -153,9 +153,9 @@ int main( int argc, char ** argv )
             data.m_boundingBox = bBox;
             data.m_registration = transformation;
 
-           // Add objects to hdf5 file
-           hdf5.addRawScanData(scanNr, data);
-        //    hdf5.addFloatChannelToRawScanData("spectrals", scanNr, an, aw, spectral);
+            // Add objects to hdf5 file
+            hdf5.addRawScanData(scanNr, data);
+            //    hdf5.addFloatChannelToRawScanData("spectrals", scanNr, an, aw, spectral);
 
             // Create "hyperspectral cube"
             path imgFile = dataDir/"panoramas_fixed"/("panorama_channels_"+number)/"channel0.png";
@@ -176,11 +176,10 @@ int main( int argc, char ** argv )
 
             char groupName[256];
             std::vector<size_t> dim = {numExspectedPNGs, img_y, img_x};
-            sprintf(groupName, "/raw/scans/position_%05d", scanNr);
+            sprintf(groupName, "/raw/annotations/position_%05d", scanNr);
             hdf5.addUcharArray(groupName, "spectral", dim, ucharArr(cube));
 
             scanNr++;
-            delete[] cube;
         }
         else
         {

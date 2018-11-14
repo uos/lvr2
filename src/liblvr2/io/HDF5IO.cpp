@@ -259,27 +259,56 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
 
 HighFive::Group HDF5IO::getGroup(const std::string &groupName)
 {
-    try
+    HighFive::Group cur_grp = m_hdf5_file->getGroup("/");
+
+    size_t start_pos = 0;
+    size_t end_pos;
+
+    if (groupName[0] == '/')
     {
-        if(m_hdf5_file->exist(groupName))
-        {
-            // return the existing group
-            return m_hdf5_file->getGroup(groupName);
-        }
-        else
-        {
-            return m_hdf5_file->createGroup(groupName);
-        }
-    }
-    catch(HighFive::Exception& e)
-    {
-        std::cout << timestamp
-                  << "Error in getGroup (with group name '"
-                  << groupName << "': " << std::endl;
-        std::cout << e.what() << std::endl;
-        throw e;
+        start_pos = 1;
     }
 
+    do
+    {
+        end_pos = groupName.find('/', start_pos);
+
+        size_t num_chars = end_pos - start_pos;
+        if (end_pos == std::string::npos)
+        {
+            num_chars = std::string::npos;
+        }
+        std::string cur_grp_name = groupName.substr(start_pos, num_chars);
+        start_pos = end_pos + 1;
+
+        if (cur_grp_name.empty())
+        {
+            break;
+        }
+
+        try
+        {
+            if(cur_grp.exist(cur_grp_name))
+            {
+                // return the existing group
+                cur_grp = cur_grp.getGroup(cur_grp_name);
+            }
+            else
+            {
+                cur_grp = cur_grp.createGroup(cur_grp_name);
+            }
+        }
+        catch(HighFive::Exception& e)
+        {
+            std::cout << timestamp
+                      << "Error in getGroup (with group name '"
+                      << groupName << "': " << std::endl;
+            std::cout << e.what() << std::endl;
+            throw e;
+        }
+    } while ( end_pos != std::string::npos);
+
+    return cur_grp;
 }
 
 
