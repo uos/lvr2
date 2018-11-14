@@ -36,7 +36,8 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 	m_descr.add_options()
 		("help", "Produce help message")
-        ("DataDir", value<string>()->default_value("./"), "Directory with hyperspectral data")
+        ("dataDir", value<string>()->default_value("./"), "Directory with hyperspectral data.")
+        ("nch, n", value<int>()->default_value(150), "Number of spectral PNGs in image folder.")
     ;
 
 	// Parse command line and generate variables map
