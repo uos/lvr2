@@ -42,6 +42,29 @@ class HDF5IO : public BaseIO
 
     bool open(std::string filename);
 
+    floatArr getFloatArray(
+            std::string groupName, std::string datasetName,
+            unsigned int& size);
+
+    floatArr getFloatArray(
+            std::string groupName, std::string datasetName,
+            std::vector<size_t>& dim);
+
+    ucharArr getUcharArray(
+            std::string groupName, std::string datasetName,
+            unsigned int& size);
+
+    ucharArr getUcharArray(
+            std::string groupName, std::string datasetName,
+            std::vector<size_t>& dim);
+
+    Texture getImage(std::string groupName, std::string datasetName);
+
+    ScanData getRawScanData(int nr);
+
+    floatArr getFloatChannelFromRawScanData(std::string name,
+            int nr, unsigned int& n, unsigned& w);
+
     void addFloatArray(
             std::string groupName, std::string datasetName,
             unsigned int size, floatArr data);
@@ -71,16 +94,23 @@ class HDF5IO : public BaseIO
 
 
 
+
   private:
+    floatArr getFloatArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim);
+    ucharArr getUcharArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim);
+    Texture getImage(HighFive::Group& g, std::string datasetName);
     void addFloatArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim, floatArr data);
     void addUcharArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim, ucharArr data);
     void addImage(HighFive::Group& g, std::string datasetName, cv::Mat& img);
 
-    HighFive::Group getGroup(const std::string& groupName);
+    HighFive::Group getGroup(const std::string& groupName, bool create = true);
 
+    std::vector<std::string> splitGroupNames(const std::string &groupName);
+
+    bool exist(const std::string &groupName);
 
     void write_base_structure();
-    
+
     HighFive::File*         m_hdf5_file;
 };
 
