@@ -41,7 +41,7 @@ bool HDF5IO::open(std::string filename)
     // Try to open the given HDF5 file
     m_hdf5_file = new HighFive::File(
                 filename,
-                HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
+                HighFive::File::ReadWrite | (have_to_init ? HighFive::File::Create : 0));
 
     if (!m_hdf5_file->isValid())
     {
@@ -82,6 +82,271 @@ void HDF5IO::write_base_structure()
 void HDF5IO::save(std::string filename)
 {
 
+}
+
+floatArr HDF5IO::getFloatArray(
+        std::string groupName, std::string datasetName,
+        unsigned int& size)
+{
+    floatArr ret;
+
+    if(m_hdf5_file)
+    {
+        if (exist(groupName))
+        {
+            HighFive::Group g = getGroup(groupName, false);
+            std::vector<size_t> dim;
+            ret = getFloatArray(g, datasetName, dim);
+
+            size = 1;
+
+            // if you use this function, you expect a one dimensional array
+            // and therefore we calculate the toal amount of elements
+            for (auto cur : dim)
+                size *= cur;
+        }
+    }
+
+    return ret;
+}
+
+floatArr HDF5IO::getFloatArray(
+        std::string groupName, std::string datasetName,
+        std::vector<size_t>& dim)
+{
+    floatArr ret;
+
+    if(m_hdf5_file)
+    {
+        if (exist(groupName))
+        {
+            HighFive::Group g = getGroup(groupName, false);
+            ret = getFloatArray(g, datasetName, dim);
+        }
+    }
+
+    return ret;
+}
+
+floatArr HDF5IO::getFloatArray(
+        HighFive::Group& g, std::string datasetName,
+        std::vector<size_t>& dim)
+{
+    floatArr ret;
+
+    if(m_hdf5_file)
+    {
+        if (g.exist(datasetName))
+        {
+            HighFive::DataSet dataset = g.getDataSet(datasetName);
+            dim = dataset.getSpace().getDimensions();
+
+            size_t elementCount = 1;
+            for (auto e : dim)
+                elementCount *= e;
+
+            if(elementCount)
+            {
+                ret = floatArr(new float[elementCount]);
+
+                dataset.read(ret.get());
+            }
+        }
+    }
+
+    return ret;
+}
+
+ucharArr HDF5IO::getUcharArray(
+        std::string groupName, std::string datasetName,
+        unsigned int& size)
+{
+    ucharArr ret;
+
+    if(m_hdf5_file)
+    {
+        if (exist(groupName))
+        {
+            HighFive::Group g = getGroup(groupName, false);
+            std::vector<size_t> dim;
+            ret = getUcharArray(g, datasetName, dim);
+
+            size = 1;
+
+            // if you use this function, you expect a one dimensional array
+            // and therefore we calculate the toal amount of elements
+            for (auto cur : dim)
+                size *= cur;
+        }
+    }
+
+    return ret;
+}
+
+ucharArr HDF5IO::getUcharArray(
+        std::string groupName, std::string datasetName,
+        std::vector<size_t>& dim)
+{
+    ucharArr ret;
+
+    if(m_hdf5_file)
+    {
+        if (exist(groupName))
+        {
+            HighFive::Group g = getGroup(groupName, false);
+            ret = getUcharArray(g, datasetName, dim);
+        }
+    }
+
+    return ret;
+}
+
+ucharArr HDF5IO::getUcharArray(
+        HighFive::Group& g, std::string datasetName,
+        std::vector<size_t>& dim)
+{
+    ucharArr ret;
+
+    if(m_hdf5_file)
+    {
+        if (g.exist(datasetName))
+        {
+            HighFive::DataSet dataset = g.getDataSet(datasetName);
+            dim = dataset.getSpace().getDimensions();
+
+            size_t elementCount = 1;
+            for (auto e : dim)
+                elementCount *= e;
+
+            if(elementCount)
+            {
+                ret = ucharArr(new unsigned char[elementCount]);
+
+                dataset.read(ret.get());
+            }
+        }
+    }
+
+    return ret;
+}
+
+Texture HDF5IO::getImage(std::string groupName, std::string datasetName)
+{
+
+    Texture ret;
+
+    if (m_hdf5_file)
+    {
+        if (exist(groupName))
+        {
+            HighFive::Group g = getGroup(groupName, false);
+            ret = getImage(g, datasetName);
+        }
+    }
+
+    return ret;
+}
+
+Texture HDF5IO::getImage(HighFive::Group& g, std::string datasetName)
+{
+    Texture ret;
+
+    if (m_hdf5_file)
+    {
+        if (g.exist(datasetName))
+        {
+            long long unsigned int width, height, planes;
+            long long int npals;
+            char interlace[256];
+
+            if (H5IMget_image_info(
+                        g.getId(), datasetName.c_str(), &width, &height,
+                        &planes, interlace, &npals) >= 0)
+            {
+                if (width && height && planes && npals == 0)
+                {
+                    ret = Texture(0, width, height, planes, 1, 1.0);
+
+                    if (H5IMread_image(g.getId(), datasetName.c_str(), ret.m_data) < 0)
+                    {
+                        ret = Texture();
+                    }
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
+ScanData HDF5IO::getRawScanData(int nr)
+{
+    ScanData ret;
+
+    if (m_hdf5_file)
+    {
+        char buffer[128];
+        sprintf(buffer, "pose%05d", nr);
+        string nr_str(buffer);
+
+        std::string groupName = "/raw_data/" + nr_str;
+
+        HighFive::Group g = getGroup(groupName);
+
+        unsigned int dummy;
+        floatArr fov           = getFloatArray(groupName, "fov", dummy);
+        floatArr res           = getFloatArray(groupName, "resolution", dummy);
+        floatArr pose_estimate = getFloatArray(groupName, "pose_estimation", dummy);
+        floatArr registration  = getFloatArray(groupName, "registration", dummy);
+        floatArr bb            = getFloatArray(groupName, "bounding_box", dummy);
+        floatArr points        = getFloatArray(groupName, "points", dummy);
+
+        ret.m_hFieldOfView = fov[0];
+        ret.m_vFieldOfView = fov[1];
+
+        ret.m_hResolution = res[0];
+        ret.m_vResolution = res[1];
+
+        ret.m_registration   = Matrix4<BaseVector<float> >(registration.get());
+        ret.m_poseEstimation = Matrix4<BaseVector<float> >(pose_estimate.get());
+
+        ret.m_boundingBox = BoundingBox<BaseVector<float> >(
+                {bb[0], bb[1], bb[2]}, {bb[3], bb[4], bb[5]});
+
+        ret.m_points = PointBufferPtr(new PointBuffer(points, dummy/3));
+    }
+
+    return ret;
+}
+
+floatArr HDF5IO::getFloatChannelFromRawScanData(std::string name, int nr, unsigned int& n, unsigned& w)
+{
+    floatArr ret;
+
+    if (m_hdf5_file)
+    {
+        char buffer[128];
+        sprintf(buffer, "pose%05d", nr);
+        string nr_str(buffer);
+
+        std::string groupName = "/raw_data/" + nr_str;
+
+        HighFive::Group g = getGroup(groupName);
+
+        std::vector<size_t> dim;
+        ret = getFloatArray(g, name, dim);
+
+        if (dim.size() != 2)
+        {
+            throw std::runtime_error(
+                "HDF5IO - getFloatchannelFromRawScanData() Error: dim.size() != 2");
+        }
+
+        n = dim[0];
+        w = dim[1];
+    }
+
+    return ret;
 }
 
 void HDF5IO::addFloatArray(
@@ -257,17 +522,111 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
     }
 }
 
-HighFive::Group HDF5IO::getGroup(const std::string &groupName)
+void HDF5IO::addRawDataHeader(std::string description, Matrix4<BaseVector<float>> &referenceFrame)
 {
-    if(m_hdf5_file->exist(groupName))
+
+}
+
+std::vector<std::string> HDF5IO::splitGroupNames(const std::string &groupName)
+{
+    std::vector<std::string> ret;
+
+    std::string remainder = groupName;
+    size_t delimiter_pos = 0;
+
+    while ( (delimiter_pos = remainder.find('/', delimiter_pos)) != std::string::npos)
     {
-        // return the existing group
-        return m_hdf5_file->getGroup(groupName);
+        if (delimiter_pos > 0)
+        {
+            ret.push_back(remainder.substr(0, delimiter_pos));
+        }
+
+        remainder = remainder.substr(delimiter_pos + 1);
+
+        delimiter_pos = 0;
     }
-    else
+
+    if (remainder.size() > 0)
     {
-        return m_hdf5_file->createGroup(groupName);
+        ret.push_back(remainder);
     }
+
+    return ret;
+}
+
+
+HighFive::Group HDF5IO::getGroup(const std::string &groupName, bool create)
+{
+    std::vector<std::string> groupNames = splitGroupNames(groupName);
+    HighFive::Group cur_grp;
+
+    try
+    {
+        cur_grp = m_hdf5_file->getGroup("/");
+
+        for (size_t i = 0; i < groupNames.size(); i++)
+        {
+            if (cur_grp.exist(groupNames[i]))
+            {
+                cur_grp = cur_grp.getGroup(groupNames[i]);
+            }
+            else if (create)
+            {
+                cur_grp = cur_grp.createGroup(groupNames[i]);
+            }
+            else
+            {
+                // Throw exception because a group we searched
+                // for doesn't exist and create flag was false
+                throw std::runtime_error("HDF5IO - getGroup(): Groupname '"
+                    + groupNames[i] + "' doesn't exist and create flag is false");
+            }
+        }
+    }
+    catch(HighFive::Exception& e)
+    {
+        std::cout << timestamp
+                  << "Error in getGroup (with group name '"
+                  << groupName << "': " << std::endl;
+        std::cout << e.what() << std::endl;
+        throw e;
+    }
+
+    return cur_grp;
+}
+
+bool HDF5IO::exist(const std::string &groupName)
+{
+    std::vector<std::string> groupNames = splitGroupNames(groupName);
+    HighFive::Group cur_grp;
+
+    try
+    {
+        cur_grp = m_hdf5_file->getGroup("/");
+
+        for (size_t i = 0; i < groupNames.size(); i++)
+        {
+            if (cur_grp.exist(groupNames[i]))
+            {
+                cur_grp = cur_grp.getGroup(groupNames[i]);
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+    catch (HighFive::Exception& e)
+    {
+        std::cout << timestamp
+                  << "Error in exist (with group name '"
+                  << groupName << "': " << std::endl;
+        std::cout << e.what() << std::endl;
+        throw e;
+
+    }
+
+    return true;
 }
 
 
