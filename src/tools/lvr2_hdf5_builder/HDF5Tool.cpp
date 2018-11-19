@@ -176,7 +176,7 @@ int main( int argc, char ** argv )
 
             char groupName[256];
             std::vector<size_t> dim = {numExspectedPNGs, img_y, img_x};
-            sprintf(groupName, "/raw/annotations/position_%05d", scanNr);
+            sprintf(groupName, "/raw/spectral/position_%05d", scanNr);
             hdf5.addUcharArray(groupName, "spectral", dim, ucharArr(cube));
 
             scanNr++;
