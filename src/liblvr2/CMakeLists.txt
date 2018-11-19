@@ -37,6 +37,7 @@ set(LVR2_SOURCES
     io/DatIO.cpp
     io/LasIO.cpp
     io/BaseIO.cpp
+    io/HDF5IO.cpp
     io/Timestamp.cpp
     io/BoctreeIO.cpp
     io/GridIO.cpp
@@ -45,6 +46,7 @@ set(LVR2_SOURCES
     io/PointBuffer.cpp
     io/ModelFactory.cpp
     io/ScanprojectIO.cpp
+    io/ScanData.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
