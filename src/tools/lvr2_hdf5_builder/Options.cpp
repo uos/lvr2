@@ -44,8 +44,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 	m_descr.add_options()
 		("help", "Produce help message")
-        ("PNGDir", value<string>()->default_value("./"), "Directory woth hyperspectral PNGs")
-        ("PLYFile", value<string>()->default_value("cloud.ply"), "Corresponding point cloud.")
+        ("DataDir", value<string>()->default_value("./"), "Directory with hyperspectral data")
     ;
 
 	// Parse command line and generate variables map
