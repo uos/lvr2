@@ -59,7 +59,11 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <cstring>
+
 using namespace lvr2;
+using boost::filesystem::path;
+using boost::filesystem::directory_iterator;
 
 bool compare_path(boost::filesystem::path p1, boost::filesystem::path p2)
 {
@@ -83,19 +87,42 @@ bool compare_path(boost::filesystem::path p1, boost::filesystem::path p2)
     return ((first1 << 16) + second1) < ((first2 << 16) + second2);
 }
 
+bool checkPNGDir(path& dataDir, std::string number, int numExspected)
+{
+    bool consistency = true;
+    path png_dir = dataDir/"panoramas_fixed"/("panorama_channels_"+number);
+    try
+    {
+        int numPNGs = std::count_if(
+            directory_iterator(png_dir),
+            directory_iterator(),
+            static_cast<bool(*)(const path&)>(boost::filesystem::is_regular_file) );
+
+        if(numPNGs != numExspected)
+        {
+            consistency = false;
+        }
+    }
+    catch(boost::filesystem::filesystem_error)
+    {
+        consistency = false;
+    }
+    return consistency;
+}
+
 int main( int argc, char ** argv )
 {
     hdf5tool::Options options(argc, argv);
 
-    boost::filesystem::path dataDir(options.getDataDir());
+    path dataDir(options.getDataDir());
 
     HDF5IO hdf5("hyper.h5");
 
 
     // Find all annotated scans and sort them
     vector<boost::filesystem::path> annotated_scans;
-    boost::filesystem::directory_iterator end;
-    for(boost::filesystem::directory_iterator it(dataDir); it != end; ++it)
+    directory_iterator end;
+    for(directory_iterator it(dataDir); it != end; ++it)
     {
         std::string ext = it->path().extension().string();
         std::string stem = it->path().stem().string();
@@ -112,51 +139,82 @@ int main( int argc, char ** argv )
     {
         std::string ply_file_name = it.stem().string();
         std::string number = ply_file_name.substr(15);
-
-        // Read transformation
-        boost::filesystem::path matrix_file = dataDir/boost::filesystem::path("scan_" + number + "_transformation.txt");
-        Matrix4<BaseVector<float> > transformation;
-        transformation.loadFromFile(matrix_file.string());
-
-        // Read scan data
-        std::cout << timestamp << "Reading scan data: " << it << std::endl;
-        ModelPtr model = ModelFactory::readModel(it.string());
-
-        // Compute bounding box
-        PointBufferPtr pointCloud = model->m_pointCloud;
-
-        size_t an;
-        unsigned  aw;
-        floatArr spectral = pointCloud->getFloatArray("spectral_channels", an, aw);
-
-        BoundingBox<BaseVector<float> > bBox;
-        floatArr points = pointCloud->getPointArray();
-        for(int i = 0; i < pointCloud->numPoints(); i++)
+        size_t numExspectedPNGs = (size_t)options.numPanoramaImages();
+        // Check panoram dir for correct number of scans
+        if(checkPNGDir(dataDir, number, numExspectedPNGs))
         {
-            bBox.expand(BaseVector<float>(
-                            points[3 * i],
-                            points[3 * i + 1],
-                            points[3 * i + 2]));
+
+
+            // Read transformation
+            path matrix_file = dataDir/path("scan_" + number + "_transformation.txt");
+            Matrix4<BaseVector<float> > transformation;
+            transformation.loadFromFile(matrix_file.string());
+
+            // Read scan data
+            std::cout << timestamp << "Reading scan data: " << it << std::endl;
+            ModelPtr model = ModelFactory::readModel(it.string());
+
+            // Compute bounding box
+            PointBufferPtr pointCloud = model->m_pointCloud;
+
+            size_t an;
+            unsigned  aw;
+            floatArr spectral = pointCloud->getFloatArray("spectral_channels", an, aw);
+
+            std::cout << timestamp << "Calculating bounding box..." << std::endl;
+            BoundingBox<BaseVector<float> > bBox;
+            floatArr points = pointCloud->getPointArray();
+            for(int i = 0; i < pointCloud->numPoints(); i++)
+            {
+                bBox.expand(BaseVector<float>(
+                                points[3 * i],
+                                points[3 * i + 1],
+                                points[3 * i + 2]));
+            }
+
+            // Setup scan data object
+            ScanData data;
+            data.m_points = pointCloud;
+            data.m_boundingBox = bBox;
+            data.m_registration = transformation;
+
+            // Add objects to hdf5 file
+            hdf5.addRawScanData(scanNr, data);
+            //    hdf5.addFloatChannelToRawScanData("spectrals", scanNr, an, aw, spectral);
+
+            // Create "hyperspectral cube"
+            path imgFile = dataDir/"panoramas_fixed"/("panorama_channels_"+number)/"channel0.png";
+            cv::Mat img = cv::imread(imgFile.string(), CV_LOAD_IMAGE_GRAYSCALE);
+
+            size_t img_x = img.cols;
+            size_t img_y = img.rows;
+
+            unsigned char* cube = new unsigned char[numExspectedPNGs * img.rows * img.cols];
+            for(int i = 0; i < numExspectedPNGs; i++)
+            {
+                char buffer[256];
+                sprintf(buffer, "channel%d.png", i);
+                path imgFile = dataDir/"panoramas_fixed"/("panorama_channels_"+number)/buffer;
+                cv::Mat img = cv::imread(imgFile.string(),  CV_LOAD_IMAGE_GRAYSCALE);
+                memcpy(cube + i * (img_y * img_x), img.data, img_y * img_x * sizeof(unsigned char));
+            }
+
+            char groupName[256];
+            std::vector<size_t> dim = {numExspectedPNGs, img_y, img_x};
+            sprintf(groupName, "/raw/spectral/position_%05d", scanNr);
+            hdf5.addUcharArray(groupName, "spectral", dim, ucharArr(cube));
+
+            scanNr++;
         }
-        std::cout << timestamp << bBox << std::endl;
-
-        // Setup scan data object
-        ScanData data;
-        data.m_points = pointCloud;
-        data.m_boundingBox = bBox;
-        data.m_registration = transformation;
-
-        // Add objects to hdf5 file
-        hdf5.addRawScanData(scanNr, data);
-        hdf5.addFloatChannelToRawScanData("spectrals", scanNr, an, aw, spectral);
-
-        scanNr++;
+        else
+        {
+            std::cout << timestamp << "Will not add data from "
+                      << ply_file_name <<". Spectral data is not consistent." << std::endl;
+        }
     }
 
-
-
     return 0;
-
+}
 //    // Parse command line arguments
 //    hdf5tool::Options options(argc, argv);
 
@@ -273,4 +331,4 @@ int main( int argc, char ** argv )
 //    }
 
 //    std::cout << "Done" << std::endl;
-}
+

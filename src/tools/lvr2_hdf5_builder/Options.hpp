@@ -66,7 +66,8 @@ public:
 	Options(int argc, char** argv);
 	virtual ~Options();
 
-    string  getDataDir()        const { return m_variables["DataDir"].as<string>();}
+    string  getDataDir()        const { return m_variables["dataDir"].as<string>();}
+    int     numPanoramaImages() const { return m_variables["nch"].as<int>();}
 
 private:
     /// The internally used variable map

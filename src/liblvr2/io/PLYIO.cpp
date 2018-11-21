@@ -788,12 +788,12 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
         if (!boost::filesystem::exists(dir / "channel0.png"))
         {
-            std::cerr << "Annotated Data given, but " + dir.string() + " does not contain channel files" << std::endl;
+            std::cerr << timestamp << "Annotated Data given, but " + dir.string() + " does not contain channel files" << std::endl;
         }
         else
         {
-            std::cout << "Found Annotated Data. Loading spectral channel images from: " << dir.string() << "/" << std::endl;
-            std::cout << "This may take a while depending on data size" << std::endl;
+            std::cout << timestamp << "Found Annotated Data. Loading spectral channel images from: " << dir.string() << "/" << std::endl;
+            std::cout << timestamp << "This may take a while depending on data size" << std::endl;
 
             std::vector<cv::Mat> imgs;
             std::vector<unsigned char*> pixels;
@@ -817,7 +817,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
             float* point_spectral_channels = pointSpectralChannels.get();
 
-            std::cout << "Finished loading " << n_channels << " channel images" << std::endl;
+            std::cout << timestamp << "Finished loading " << n_channels << " channel images" << std::endl;
 
             #pragma omp parallel for
             for (int i = 0; i < numPointPanoramaCoords; i++)
@@ -835,7 +835,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
                     pixel[channel] = pixels[channel][panoramaPosition] / 255.0f;
                 }
             }
-            std::cout << "Finished extracting channel information" << std::endl;
+            std::cout << timestamp << "Finished extracting channel information" << std::endl;
         }
     }
 
