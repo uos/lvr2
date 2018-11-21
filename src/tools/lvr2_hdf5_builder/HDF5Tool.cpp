@@ -118,7 +118,6 @@ int main( int argc, char ** argv )
 
     HDF5IO hdf5("hyper.h5");
 
-
     // Find all annotated scans and sort them
     vector<boost::filesystem::path> annotated_scans;
     directory_iterator end;

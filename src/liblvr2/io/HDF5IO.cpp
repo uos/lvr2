@@ -112,7 +112,7 @@ void HDF5IO::write_base_structure()
 {
     int version = 1;
     m_hdf5_file->createDataSet<int>("version", HighFive::DataSpace::From(version)).write(version);
-    HighFive::Group raw_data_group = m_hdf5_file->createGroup("/raw");
+    HighFive::Group raw_data_group = m_hdf5_file->createGroup("raw");
 
     // Create string with current time
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
@@ -125,6 +125,7 @@ void HDF5IO::write_base_structure()
 
     // Create empty reference frame
     vector<float> frame = Matrix4<BaseVector<float>>().getVector();
+    std::cout << frame.size() << std::endl;
     raw_data_group.createDataSet<float>("position", HighFive::DataSpace::From(frame)).write(frame);
 
 }
@@ -419,7 +420,14 @@ void HDF5IO::addFloatArray(
     {
         HighFive::DataSpace dataSpace(dim);
         HighFive::DataSetCreateProps properties;
-        properties.add(HighFive::Chunking(std::vector<hsize_t>{m_chunkSize}));
+        if(m_chunkSize)
+        {
+            properties.add(HighFive::Chunking(std::vector<hsize_t>{m_chunkSize}));
+        }
+        if(m_compress)
+        {
+            properties.add(HighFive::Deflate(9));
+        }
         HighFive::DataSet dataset = g.createDataSet<float>(datasetName, dataSpace, properties);
         const float* ptr = data.get();
         dataset.write(ptr);
@@ -458,7 +466,17 @@ void HDF5IO::addUcharArray(std::string group, std::string name, std::vector<size
 
 void HDF5IO::addUcharArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim, ucharArr data)
 {
-    HighFive::DataSet dataset = g.createDataSet<unsigned char>(datasetName, HighFive::DataSpace(dim));
+    HighFive::DataSetCreateProps properties;
+    if(m_chunkSize)
+    {
+        properties.add(HighFive::Chunking(std::vector<hsize_t>{m_chunkSize}));
+    }
+    if(m_compress)
+    {
+        properties.add(HighFive::Deflate(9));
+    }
+
+    HighFive::DataSet dataset = g.createDataSet<unsigned char>(datasetName, HighFive::DataSpace(dim), properties);
     const unsigned char* ptr = data.get();
     dataset.write(ptr);
 }
