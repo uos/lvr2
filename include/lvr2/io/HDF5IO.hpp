@@ -38,8 +38,11 @@
 
 #include <H5Tpublic.h>
 #include <hdf5_hl.h>
-#include <highfive/H5File.hpp>
 
+
+#include <highfive/H5DataSet.hpp>
+#include <highfive/H5DataSpace.hpp>
+#include <highfive/H5File.hpp>
 #include <string>
 
 namespace lvr2
@@ -50,7 +53,9 @@ class HDF5IO : public BaseIO
   public:
     /**
          * \brief Parse the given file and load supported elements.
-         *
+         *#include <highfive/H5DataSet.hpp>
+#include <highfive/H5DataSpace.hpp>
+#include <highfive/H5File.hpp>
          * @param filename  The file to read.
          */
     virtual ModelPtr read(std::string filename);
@@ -119,7 +124,12 @@ class HDF5IO : public BaseIO
 
     void addRawDataHeader(std::string description, Matrix4<BaseVector<float>> &referenceFrame);
 
+    void setCompress(bool compress);
+    void setChunkSize(const size_t& size);
 
+    bool compress();
+
+    size_t chunkSize();
 
 
   private:
@@ -139,6 +149,9 @@ class HDF5IO : public BaseIO
     void write_base_structure();
 
     HighFive::File*         m_hdf5_file;
+
+    bool                    m_compress;
+    size_t                  m_chunkSize;
 };
 
 } // namespace lvr2

@@ -36,7 +36,10 @@
 namespace lvr2
 {
 
-HDF5IO::HDF5IO(std::string filename) : m_hdf5_file(nullptr)
+HDF5IO::HDF5IO(std::string filename) :
+    m_hdf5_file(nullptr),
+    m_compress(true),
+    m_chunkSize(1e7)
 {
     open(filename);
 }
@@ -47,6 +50,26 @@ HDF5IO::~HDF5IO()
     {
         delete m_hdf5_file;
     }
+}
+
+void HDF5IO::setCompress(bool compress)
+{
+    m_compress = compress;
+}
+
+void HDF5IO::setChunkSize(const size_t& size)
+{
+    m_chunkSize = size;
+}
+
+bool HDF5IO::compress()
+{
+    return m_compress;
+}
+
+size_t HDF5IO::chunkSize()
+{
+    return m_chunkSize;
 }
 
 ModelPtr HDF5IO::read(std::string filename)
@@ -394,7 +417,10 @@ void HDF5IO::addFloatArray(
 {
     if(m_hdf5_file)
     {
-        HighFive::DataSet dataset = g.createDataSet<float>(datasetName, HighFive::DataSpace(dim));
+        HighFive::DataSpace dataSpace(dim);
+        HighFive::DataSetCreateProps properties;
+        properties.add(HighFive::Chunking(std::vector<size_t>{m_chinkSize}));
+        HighFive::DataSet dataset = g.createDataSet<float>(datasetName, dataSpace, properties);
         const float* ptr = data.get();
         dataset.write(ptr);
     }
