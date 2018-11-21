@@ -419,7 +419,7 @@ void HDF5IO::addFloatArray(
     {
         HighFive::DataSpace dataSpace(dim);
         HighFive::DataSetCreateProps properties;
-        properties.add(HighFive::Chunking(std::vector<size_t>{m_chinkSize}));
+        properties.add(HighFive::Chunking(std::vector<hsize_t>{m_chunkSize}));
         HighFive::DataSet dataset = g.createDataSet<float>(datasetName, dataSpace, properties);
         const float* ptr = data.get();
         dataset.write(ptr);
