@@ -98,22 +98,43 @@ class HDF5IO : public BaseIO
             int nr, unsigned int& n, unsigned& w);
 
     void addFloatArray(
-            std::string groupName, std::string datasetName,
-            unsigned int size, floatArr data);
+            std::string groupName,
+            std::string datasetName,
+            unsigned int size,
+            floatArr data);
 
     void addFloatArray(
-            std::string groupName, std::string datasetName,
-            std::vector<size_t>& dimensions, floatArr data);
+            std::string groupName,
+            std::string datasetName,
+            std::vector<size_t>& dimensions,
+            floatArr data);
+
+    void addFloatArray(
+            std::string groupName,
+            std::string datasetName,
+            std::vector<size_t>& dimensions,
+            std::vector<hsize_t>& chunkSize,
+            floatArr data);
 
     void addUcharArray(
             std::string groupName,
             std::string datasetName,
-            unsigned int size, ucharArr data);
+            unsigned int size,
+            ucharArr data);
 
     void addUcharArray(
             std::string groupName,
             std::string datasetName,
-            std::vector<size_t> dimensions, ucharArr data);
+            std::vector<size_t>& dimensions,
+            ucharArr data);
+
+    void addUcharArray(
+            std::string group,
+            std::string name,
+            std::vector<size_t>& dim,
+            std::vector<hsize_t>& chunks,
+            ucharArr data);
+
 
     void addImage(
             std::string groupName, std::string name, cv::Mat& img);
@@ -136,8 +157,21 @@ class HDF5IO : public BaseIO
     floatArr getFloatArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim);
     ucharArr getUcharArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim);
     Texture getImage(HighFive::Group& g, std::string datasetName);
-    void addFloatArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim, floatArr data);
-    void addUcharArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim, ucharArr data);
+
+    void addFloatArray(
+            HighFive::Group& g,
+            std::string datasetName,
+            std::vector<size_t>& dim,
+            std::vector<hsize_t>& chunkSize,
+            floatArr data);
+
+    void addUcharArray(
+            HighFive::Group& g,
+            std::string datasetName,
+            std::vector<size_t>& dim,
+            std::vector<hsize_t>& chunkSize,
+            ucharArr data);
+
     void addImage(HighFive::Group& g, std::string datasetName, cv::Mat& img);
 
     HighFive::Group getGroup(const std::string& groupName, bool create = true);

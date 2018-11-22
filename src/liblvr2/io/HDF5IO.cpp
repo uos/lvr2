@@ -407,22 +407,45 @@ void HDF5IO::addFloatArray(
     if(m_hdf5_file)
     {
         std::vector<size_t> dim = {size, 1};
+        std::vector<hsize_t> chunks {m_chunkSize, 1};
         HighFive::Group g = getGroup(group);
-        addFloatArray(g, name, dim, data);
+        addFloatArray(g, name, dim, chunks, data);
     }
 }
 
 void HDF5IO::addFloatArray(
         HighFive::Group& g,
-        std::string datasetName, std::vector<size_t>& dim, floatArr data)
+        std::string datasetName,
+        std::vector<size_t>& dim, std::vector<hsize_t>& chunkSizes,
+        floatArr data)
 {
     if(m_hdf5_file)
     {
         HighFive::DataSpace dataSpace(dim);
         HighFive::DataSetCreateProps properties;
+
         if(m_chunkSize)
         {
-            properties.add(HighFive::Chunking(std::vector<hsize_t>{m_chunkSize}));
+            // We habe to check explicitly if chunk size
+            // is < dimensionality to avoid errors from
+            // the HDF5 lib
+            for(size_t i = 0; i < chunkSizes.size(); i++)
+            {
+                if(chunkSizes[i] > dim[i])
+                {
+
+                    chunkSizes[i] = dim[i];
+                }
+            }
+
+//            std::cout << datasetName << std::endl;
+//            for(auto i : chunkSizes)
+//            {
+//                std::cout << i << std::endl;
+//            }
+//            std::cout << std::endl;
+
+            properties.add(HighFive::Chunking(chunkSizes));
         }
         if(m_compress)
         {
@@ -435,50 +458,107 @@ void HDF5IO::addFloatArray(
 }
 
 void HDF5IO::addFloatArray(
+        std::string groupName,
+        std::string datasetName,
+        std::vector<size_t>& dimensions,
+        std::vector<hsize_t>& chunkSize, floatArr data)
+{
+    HighFive::Group g = getGroup(groupName);
+    addFloatArray(g, datasetName, dimensions, chunkSize, data);
+}
+
+void HDF5IO::addFloatArray(
         std::string groupName, std::string datasetName,
         std::vector<size_t>& dimensions, floatArr data)
 {
-    if(m_hdf5_file)
+    HighFive::Group g = getGroup(groupName);
+
+    // Compute chunk size vector, i.e., set the chunk size in
+    // each dimension to default size. Add float array will
+    // trim this values if chunkSize > dim.
+    std::vector<hsize_t> chunks;
+    for(auto i: dimensions)
     {
-        HighFive::Group g = getGroup(groupName);
-        addFloatArray(g, datasetName, dimensions, data);
+            chunks.push_back(i);
     }
+    addFloatArray(g, datasetName, dimensions, chunks, data);
 }
 
-void HDF5IO::addUcharArray(std::string group, std::string name, unsigned int size, ucharArr data)
+void HDF5IO::addUcharArray(
+        std::string group,
+        std::string name,
+        unsigned int size,
+        ucharArr data)
+{
+    vector<size_t> dim = {size, 1};
+    addUcharArray(group, name, dim, data);
+}
+
+void HDF5IO::addUcharArray(
+        std::string group,
+        std::string name,
+        std::vector<size_t>& dim,
+        ucharArr data)
+{
+    HighFive::Group g = getGroup(group);
+
+    // Compute chunk size vector, i.e., set the chunk size in
+    // each dimension to default size. Add float array will
+    // trim this values if chunkSize > dim.
+    std::vector<hsize_t> chunks;
+    for(auto i: dim)
+    {
+        chunks.push_back(i);
+    }
+    addUcharArray(g, name, dim, chunks, data);
+}
+
+void HDF5IO::addUcharArray(
+        std::string group,
+        std::string name,
+        std::vector<size_t>& dim,
+        std::vector<hsize_t>& chunks,
+        ucharArr data)
+{
+    HighFive::Group g = getGroup(group);
+    addUcharArray(g, name, dim, chunks, data);
+}
+
+void HDF5IO::addUcharArray(
+        HighFive::Group& g,
+        std::string datasetName,
+        std::vector<size_t>& dim,
+        std::vector<hsize_t>& chunkSizes,
+        ucharArr data)
 {
     if(m_hdf5_file)
     {
-        vector<size_t> dim = {size, 1};
-        HighFive::Group g = getGroup(group);
-        addUcharArray(g, name, dim, data);
-    }
-}
+        HighFive::DataSpace dataSpace(dim);
+        HighFive::DataSetCreateProps properties;
 
-void HDF5IO::addUcharArray(std::string group, std::string name, std::vector<size_t> dim, ucharArr data)
-{
-    if(m_hdf5_file)
-    {
-        HighFive::Group g = getGroup(group);
-        addUcharArray(g, name, dim, data);
-    }
-}
+        if(m_chunkSize)
+        {
+            // We habe to check explicitly if chunk size
+            // is < dimensionality to avoid errors from
+            // the HDF5 lib
+            for(size_t i = 0; i < chunkSizes.size(); i++)
+            {
+                if(chunkSizes[i] > dim[i])
+                {
 
-void HDF5IO::addUcharArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim, ucharArr data)
-{
-    HighFive::DataSetCreateProps properties;
-    if(m_chunkSize)
-    {
-        properties.add(HighFive::Chunking(std::vector<hsize_t>{m_chunkSize}));
+                    chunkSizes[i] = dim[i];
+                }
+            }
+            properties.add(HighFive::Chunking(chunkSizes));
+        }
+        if(m_compress)
+        {
+            properties.add(HighFive::Deflate(9));
+        }
+        HighFive::DataSet dataset = g.createDataSet<unsigned char>(datasetName, dataSpace, properties);
+        const unsigned char* ptr = data.get();
+        dataset.write(ptr);
     }
-    if(m_compress)
-    {
-        properties.add(HighFive::Deflate(9));
-    }
-
-    HighFive::DataSet dataset = g.createDataSet<unsigned char>(datasetName, HighFive::DataSpace(dim), properties);
-    const unsigned char* ptr = data.get();
-    dataset.write(ptr);
 }
 
 void HDF5IO::addImage(std::string group, std::string name, cv::Mat& img)
