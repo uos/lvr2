@@ -179,7 +179,6 @@ int main( int argc, char ** argv )
 
             // Add objects to hdf5 file
             hdf5.addRawScanData(scanNr, data);
-            //    hdf5.addFloatChannelToRawScanData("spectrals", scanNr, an, aw, spectral);
 
             // Create "hyperspectral cube"
             path imgFile = dataDir/"panoramas_fixed"/("panorama_channels_"+number)/"channel0.png";
@@ -187,7 +186,7 @@ int main( int argc, char ** argv )
 
             size_t img_x = img.cols;
             size_t img_y = img.rows;
-
+            std::cout << "1" << std::endl;
             unsigned char* cube = new unsigned char[numExspectedPNGs * img.rows * img.cols];
             for(int i = 0; i < numExspectedPNGs; i++)
             {
@@ -199,6 +198,7 @@ int main( int argc, char ** argv )
             }
 
             char groupName[256];
+
             std::vector<size_t> dim = {numExspectedPNGs, img_y, img_x};
             sprintf(groupName, "/raw/spectral/position_%05d", scanNr);
             hdf5.addUcharArray(groupName, "spectral", dim, ucharArr(cube));
