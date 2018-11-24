@@ -279,7 +279,35 @@ Texture HDF5IO::getImage(HighFive::Group& g, std::string datasetName)
     return ret;
 }
 
-ScanData HDF5IO::getRawScanData(int nr)
+std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
+{
+    std::vector<ScanData> ret;
+
+    if (!exist("/raw_data/"))
+    {
+        return ret;
+    }
+
+    HighFive::Group raw_group = getGroup("/raw_data/");
+    size_t num_objects = raw_group.getNumberObjects();
+
+    for (size_t i = 0; i < num_objects; i++)
+    {
+        int pos_num;
+
+        if (std::sscanf(raw_group.getObjectName(i).c_str(), "pose%5d", &pos_num))
+        {
+            HighFive::Group pos_grp = raw_group.getGroup(raw_group.getObjectName(i));
+
+            ScanData cur_pos = getRawScanData(pos_num, load_points);
+            ret.push_back(cur_pos);
+        }
+    }
+
+    return ret;
+}
+
+ScanData HDF5IO::getRawScanData(int nr, bool load_points)
 {
     ScanData ret;
 
@@ -299,7 +327,12 @@ ScanData HDF5IO::getRawScanData(int nr)
         floatArr pose_estimate = getFloatArray(groupName, "pose_estimation", dummy);
         floatArr registration  = getFloatArray(groupName, "registration", dummy);
         floatArr bb            = getFloatArray(groupName, "bounding_box", dummy);
-        floatArr points        = getFloatArray(groupName, "points", dummy);
+
+        if (load_points)
+        {
+            floatArr points        = getFloatArray(groupName, "points", dummy);
+            ret.m_points = PointBufferPtr(new PointBuffer(points, dummy/3));
+        }
 
         ret.m_hFieldOfView = fov[0];
         ret.m_vFieldOfView = fov[1];
@@ -313,7 +346,8 @@ ScanData HDF5IO::getRawScanData(int nr)
         ret.m_boundingBox = BoundingBox<BaseVector<float> >(
                 {bb[0], bb[1], bb[2]}, {bb[3], bb[4], bb[5]});
 
-        ret.m_points = PointBufferPtr(new PointBuffer(points, dummy/3));
+        ret.m_pointsLoaded = load_points;
+        ret.m_positionNumber = nr;
     }
 
     return ret;

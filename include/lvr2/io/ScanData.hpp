@@ -12,14 +12,16 @@
 namespace lvr2
 {
 
-struct ScanData 
+struct ScanData
 {
     ScanData() :
         m_points(nullptr),
         m_hFieldOfView(0),
         m_vFieldOfView(0),
         m_hResolution(0),
-        m_vResolution(0) {}
+        m_vResolution(0),
+        m_pointsLoaded(false),
+        m_positionNumber(-1) {}
 
 	~ScanData() {};
 
@@ -32,6 +34,9 @@ struct ScanData
     float                               m_vFieldOfView;
     float                               m_hResolution;
     float                               m_vResolution;
+
+    bool                                m_pointsLoaded;
+    int                                 m_positionNumber;
 };
 
 

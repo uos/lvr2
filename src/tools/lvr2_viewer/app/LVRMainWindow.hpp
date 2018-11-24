@@ -64,6 +64,7 @@
 #include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
 #include "../widgets/LVRBackgroundDialog.hpp"
 #include "../widgets/LVRHistogram.hpp"
+#include "../widgets/LVRScanDataItem.hpp"
 
 #include "../widgets/LVRPointInfo.hpp"
 
@@ -113,6 +114,8 @@ public Q_SLOTS:
     void applyMLSProjection();
     void removeOutliers();
     void deleteModelItem();
+    void loadPointCloudData();
+    void unloadPointCloudData();
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
     void changeShading(int shader);
@@ -268,6 +271,8 @@ private:
     QAction*                            m_actionRenameModelItem;
     QAction*                            m_actionDeleteModelItem;
     QAction*                            m_actionExportModelTransformed;
+    QAction*                            m_actionLoadPointCloudData;
+    QAction*                            m_actionUnloadPointCloudData;
 
     LVRPickingInteractor*               m_pickingInteractor;
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
