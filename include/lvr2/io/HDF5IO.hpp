@@ -164,19 +164,12 @@ class HDF5IO : public BaseIO
     ucharArr getUcharArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim);
     Texture getImage(HighFive::Group& g, std::string datasetName);
 
-    void addFloatArray(
-            HighFive::Group& g,
+    template<typename T>
+    void addArray(HighFive::Group& g,
             std::string datasetName,
             std::vector<size_t>& dim,
             std::vector<hsize_t>& chunkSize,
-            floatArr data);
-
-    void addUcharArray(
-            HighFive::Group& g,
-            std::string datasetName,
-            std::vector<size_t>& dim,
-            std::vector<hsize_t>& chunkSize,
-            ucharArr data);
+            boost::shared_array<T>& data);
 
     void addImage(HighFive::Group& g, std::string datasetName, cv::Mat& img);
 
@@ -193,6 +186,43 @@ class HDF5IO : public BaseIO
     bool                    m_compress;
     size_t                  m_chunkSize;
 };
+
+template<typename T>
+void HDF5IO::addArray(HighFive::Group& g,
+        std::string datasetName,
+        std::vector<size_t>& dim,
+        std::vector<hsize_t>& chunkSizes,
+        boost::shared_array<T>& data)
+{
+    if(m_hdf5_file)
+    {
+        HighFive::DataSpace dataSpace(dim);
+        HighFive::DataSetCreateProps properties;
+
+        if(m_chunkSize)
+        {
+            // We habe to check explicitly if chunk size
+            // is < dimensionality to avoid errors from
+            // the HDF5 lib
+            for(size_t i = 0; i < chunkSizes.size(); i++)
+            {
+                if(chunkSizes[i] > dim[i])
+                {
+
+                    chunkSizes[i] = dim[i];
+                }
+            }
+            properties.add(HighFive::Chunking(chunkSizes));
+        }
+        if(m_compress)
+        {
+            properties.add(HighFive::Deflate(9));
+        }
+        HighFive::DataSet dataset = g.createDataSet<T>(datasetName, dataSpace, properties);
+        const T* ptr = data.get();
+        dataset.write(ptr);
+    }
+}
 
 } // namespace lvr2
 
