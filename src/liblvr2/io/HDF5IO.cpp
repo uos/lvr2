@@ -549,12 +549,14 @@ void HDF5IO::addUcharArray(
                     chunkSizes[i] = dim[i];
                 }
             }
+
             properties.add(HighFive::Chunking(chunkSizes));
         }
         if(m_compress)
         {
             properties.add(HighFive::Deflate(9));
         }
+
         HighFive::DataSet dataset = g.createDataSet<unsigned char>(datasetName, dataSpace, properties);
         const unsigned char* ptr = data.get();
         dataset.write(ptr);
@@ -606,6 +608,54 @@ void HDF5IO::addFloatChannelToRawScanData(
     {
         std::cout << timestamp << "Error adding float channel '" << name
                                << "'to raw scan data" << std::endl;
+    }
+}
+
+void HDF5IO::addHyperspectralCalibration(int position, const HyperspectralCalibration& calibration)
+{
+    try
+    {
+        HighFive::Group g = getGroup("raw/spectral");
+    }
+    catch(HighFive::Exception& e)
+    {
+        std::cout << timestamp << "Error adding hyperspectral calibration data: "
+                  << e.what() << std::endl;
+        throw e;
+    }
+
+    // Add calibration values
+    if(m_hdf5_file)
+    {
+        // Setup group for scan data
+        char buffer[128];
+        sprintf(buffer, "position_%05d", position);
+        string nr_str(buffer);
+        std::string groupName = "/raw/spectral/" + nr_str;
+
+        floatArr a(new float[3]);
+        a[0] = calibration.a0;
+        a[1] = calibration.a1;
+        a[2] = calibration.a2;
+
+        floatArr rotation(new float[3]);
+        a[0] = calibration.angle_x;
+        a[1] = calibration.angle_y;
+        a[2] = calibration.angle_z;
+
+        floatArr origin(new float[3]);
+        origin[0] = calibration.origin_x;
+        origin[1] = calibration.origin_y;
+        origin[2] = calibration.origin_z;
+
+        floatArr principal(new float[2]);
+        principal[0] = calibration.principal_x;
+        principal[1] = calibration.principal_y;
+
+        addFloatArray(groupName, "distortion", 3, a);
+        addFloatArray(groupName, "rotation", 3, rotation);
+        addFloatArray(groupName, "origin", 3, origin);
+        addFloatArray(groupName, "prinzipal", 2, principal);
     }
 }
 
@@ -668,7 +718,8 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             addFloatArray(groupName, "initialPose", dim, pose_estimate);
             addFloatArray(groupName, "finalPose", dim, registration);
             addFloatArray(groupName, "boundingbox", 6, bb);
-            addFloatArray(groupName, "points", 3 * scan.m_points->numPoints(), scan.m_points->getPointArray());
+            std::vector<size_t> scan_dim = {scan.m_points->numPoints(), 3};
+            addFloatArray(groupName, "points", scan_dim, scan.m_points->getPointArray());
         }
     }
 }
