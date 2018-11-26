@@ -135,151 +135,6 @@ void HDF5IO::save(std::string filename)
 
 }
 
-floatArr HDF5IO::getFloatArray(
-        std::string groupName, std::string datasetName,
-        unsigned int& size)
-{
-    floatArr ret;
-
-    if(m_hdf5_file)
-    {
-        if (exist(groupName))
-        {
-            HighFive::Group g = getGroup(groupName, false);
-            std::vector<size_t> dim;
-            ret = getFloatArray(g, datasetName, dim);
-
-            size = 1;
-
-            // if you use this function, you expect a one dimensional array
-            // and therefore we calculate the toal amount of elements
-            for (auto cur : dim)
-                size *= cur;
-        }
-    }
-
-    return ret;
-}
-
-floatArr HDF5IO::getFloatArray(
-        std::string groupName, std::string datasetName,
-        std::vector<size_t>& dim)
-{
-    floatArr ret;
-
-    if(m_hdf5_file)
-    {
-        if (exist(groupName))
-        {
-            HighFive::Group g = getGroup(groupName, false);
-            ret = getFloatArray(g, datasetName, dim);
-        }
-    }
-
-    return ret;
-}
-
-floatArr HDF5IO::getFloatArray(
-        HighFive::Group& g, std::string datasetName,
-        std::vector<size_t>& dim)
-{
-    floatArr ret;
-
-    if(m_hdf5_file)
-    {
-        if (g.exist(datasetName))
-        {
-            HighFive::DataSet dataset = g.getDataSet(datasetName);
-            dim = dataset.getSpace().getDimensions();
-
-            size_t elementCount = 1;
-            for (auto e : dim)
-                elementCount *= e;
-
-            if(elementCount)
-            {
-                ret = floatArr(new float[elementCount]);
-
-                dataset.read(ret.get());
-            }
-        }
-    }
-
-    return ret;
-}
-
-ucharArr HDF5IO::getUcharArray(
-        std::string groupName, std::string datasetName,
-        unsigned int& size)
-{
-    ucharArr ret;
-
-    if(m_hdf5_file)
-    {
-        if (exist(groupName))
-        {
-            HighFive::Group g = getGroup(groupName, false);
-            std::vector<size_t> dim;
-            ret = getUcharArray(g, datasetName, dim);
-
-            size = 1;
-
-            // if you use this function, you expect a one dimensional array
-            // and therefore we calculate the toal amount of elements
-            for (auto cur : dim)
-                size *= cur;
-        }
-    }
-
-    return ret;
-}
-
-ucharArr HDF5IO::getUcharArray(
-        std::string groupName, std::string datasetName,
-        std::vector<size_t>& dim)
-{
-    ucharArr ret;
-
-    if(m_hdf5_file)
-    {
-        if (exist(groupName))
-        {
-            HighFive::Group g = getGroup(groupName, false);
-            ret = getUcharArray(g, datasetName, dim);
-        }
-    }
-
-    return ret;
-}
-
-ucharArr HDF5IO::getUcharArray(
-        HighFive::Group& g, std::string datasetName,
-        std::vector<size_t>& dim)
-{
-    ucharArr ret;
-
-    if(m_hdf5_file)
-    {
-        if (g.exist(datasetName))
-        {
-            HighFive::DataSet dataset = g.getDataSet(datasetName);
-            dim = dataset.getSpace().getDimensions();
-
-            size_t elementCount = 1;
-            for (auto e : dim)
-                elementCount *= e;
-
-            if(elementCount)
-            {
-                ret = ucharArr(new unsigned char[elementCount]);
-
-                dataset.read(ret.get());
-            }
-        }
-    }
-
-    return ret;
-}
 
 Texture HDF5IO::getImage(std::string groupName, std::string datasetName)
 {
@@ -373,15 +228,15 @@ ScanData HDF5IO::getRawScanData(int nr, bool load_points)
         HighFive::Group g = getGroup(groupName);
 
         unsigned int dummy;
-        floatArr fov           = getFloatArray(groupName, "fov", dummy);
-        floatArr res           = getFloatArray(groupName, "resolution", dummy);
-        floatArr pose_estimate = getFloatArray(groupName, "pose_estimation", dummy);
-        floatArr registration  = getFloatArray(groupName, "registration", dummy);
-        floatArr bb            = getFloatArray(groupName, "bounding_box", dummy);
+        floatArr fov           = getArray<float>(groupName, "fov", dummy);
+        floatArr res           = getArray<float>(groupName, "resolution", dummy);
+        floatArr pose_estimate = getArray<float>(groupName, "pose_estimation", dummy);
+        floatArr registration  = getArray<float>(groupName, "registration", dummy);
+        floatArr bb            = getArray<float>(groupName, "bounding_box", dummy);
 
         if (load_points)
         {
-            floatArr points        = getFloatArray(groupName, "points", dummy);
+            floatArr points        = getArray<float>(groupName, "points", dummy);
             ret.m_points = PointBufferPtr(new PointBuffer(points, dummy/3));
         }
 
@@ -419,7 +274,7 @@ floatArr HDF5IO::getFloatChannelFromRawScanData(std::string name, int nr, unsign
         HighFive::Group g = getGroup(groupName);
 
         std::vector<size_t> dim;
-        ret = getFloatArray(g, name, dim);
+        ret = getArray<float>(g, name, dim);
 
         if (dim.size() != 2)
         {
@@ -584,12 +439,11 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
 
             // Add data to group
             std::vector<size_t> dim = {4,4};
+            std::vector<size_t> scan_dim = {scan.m_points->numPoints(), 3};
             addArray(groupName, "fov", 2, fov);
             addArray(groupName, "resolution", 2, res);
             addArray(groupName, "initialPose", dim, pose_estimate);
             addArray(groupName, "finalPose", dim, registration);
-            addArray(groupName, "boundingbox", 6, bb);
-            std::vector<size_t> scan_dim = {scan.m_points->numPoints(), 3};
             addArray(groupName, "points", scan_dim, scan.m_points->getPointArray());
         }
     }
