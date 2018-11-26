@@ -7,6 +7,9 @@
 #include <lvr2/io/ScanDataManager.hpp>
 
 #include "../vtkBridge/LVRModelBridge.hpp"
+#include "../vtkBridge/LVRBoundingBoxBridge.hpp"
+
+#include "LVRBoundingBoxItem.hpp"
 
 namespace lvr2
 {
@@ -22,6 +25,9 @@ class LVRScanDataItem : public QTreeWidgetItem
         Pose getPose() { return getModelBridgePtr()->getPose(); }
 
         ModelBridgePtr getModelBridgePtr();
+        BoundingBoxBridgePtr getBoundingBoxBridge() { return m_bb; }
+
+        void setVisibility(bool visible, bool pc_visible);
 
 
 
@@ -32,6 +38,8 @@ class LVRScanDataItem : public QTreeWidgetItem
         size_t                                  m_idx;
         ScanData                                m_data;
         ModelBridgePtr                          m_model;
+        BoundingBoxBridgePtr                    m_bb;
+        LVRBoundingBoxItem                     *m_bbItem;
 };
 
 } // namespace lvr2

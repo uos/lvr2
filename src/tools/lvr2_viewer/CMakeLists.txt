@@ -13,6 +13,7 @@ set(LVR_VIEWER_SOURCES
     app/LVRMain.cpp
     app/LVRMainWindow.cpp
     app/LVRTreeWidgetHelper.cpp
+    vtkBridge/LVRBoundingBoxBridge.cpp
     vtkBridge/LVRModelBridge.cpp
     vtkBridge/LVRPointBufferBridge.cpp
     vtkBridge/LVRMeshBufferBridge.cpp
@@ -41,6 +42,7 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRPlotter.cpp
     widgets/LVRHistogram.cpp
     widgets/LVRScanDataItem.cpp
+    widgets/LVRBoundingBoxItem.cpp
 )
 
 #####################################################################################

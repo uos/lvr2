@@ -11,19 +11,34 @@ namespace lvr2
 
 LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, QString name, QTreeWidget *parent) : QTreeWidgetItem(parent, LVRScanDataItemType)
 {
+    m_bbItem = NULL;
     m_data = data;
     m_name = name;
     m_sdm = sdm;
     m_idx = idx;
 
     setText(0, m_name);
-
     setCheckState(0, Qt::Checked);
+
+    m_bb = BoundingBoxBridgePtr(new LVRBoundingBoxBridge(m_data.m_boundingBox));
+    m_bbItem = new LVRBoundingBoxItem(m_bb, "Bounding Box", this);
+
+    float pose[6];
+    m_data.m_registration.transpose();
+    m_data.m_registration.toPostionAngle(pose);
+
+    Pose p;
+    p.x = pose[0];
+    p.y = pose[1];
+    p.z = pose[2];
+    p.r = pose[3]  * 57.295779513;
+    p.t = pose[4]  * 57.295779513;
+    p.p = pose[5]  * 57.295779513;
+    m_bb->setPose(p);
 
     QIcon icon;
     icon.addFile(QString::fromUtf8(":/qv_scandata_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
     setIcon(0, icon);
-
 }
 
 void LVRScanDataItem::loadPointCloudData()
@@ -80,6 +95,19 @@ void LVRScanDataItem::unloadPointCloudData()
 ModelBridgePtr LVRScanDataItem::getModelBridgePtr()
 {
     return m_model;
+}
+
+void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
+{
+    if (m_model)
+    {
+        m_model->setVisibility(pc_visible && checkState(0) && visible);
+    }
+
+    if (m_bbItem)
+    {
+        m_bbItem->setVisibility(checkState(0) && visible);
+    }
 }
 
 } // namespace lvr2

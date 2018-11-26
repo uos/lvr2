@@ -65,6 +65,7 @@
 #include "../widgets/LVRBackgroundDialog.hpp"
 #include "../widgets/LVRHistogram.hpp"
 #include "../widgets/LVRScanDataItem.hpp"
+#include "../widgets/LVRBoundingBoxItem.hpp"
 
 #include "../widgets/LVRPointInfo.hpp"
 
