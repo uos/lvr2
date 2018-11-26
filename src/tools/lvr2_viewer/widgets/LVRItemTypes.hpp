@@ -27,7 +27,7 @@
 
 namespace lvr2
 {
-    enum {LVRModelItemType = 1001, LVRPointCloudItemType, LVRMeshItemType, LVRPoseItemType, LVRPickItemType, LVRRecordedFrameItemType, LVRScanDataItemType};
+    enum {LVRModelItemType = 1001, LVRPointCloudItemType, LVRMeshItemType, LVRPoseItemType, LVRPickItemType, LVRRecordedFrameItemType, LVRScanDataItemType, LVRBoundingBoxItemType};
 } // namespace lvr2
 
 #endif /* LVRITEMTYPES_HPP_ */

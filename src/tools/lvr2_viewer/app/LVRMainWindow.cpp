@@ -941,10 +941,14 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
     else if (treeWidgetItem->type() == LVRScanDataItemType)
     {
         LVRScanDataItem *item = static_cast<LVRScanDataItem *>(treeWidgetItem);
-        bool val = m_actionShow_Points->isChecked();
-        val = item->checkState(column) == val || val == true;
-        if (val && item->getModelBridgePtr())
-            item->getModelBridgePtr()->setVisibility(item->checkState(column));
+        item->setVisibility(true, m_actionShow_Points->isChecked());
+
+        refreshView();
+    }
+    else if (treeWidgetItem->type() == LVRBoundingBoxItemType)
+    {
+        LVRBoundingBoxItem *item = static_cast<LVRBoundingBoxItem *>(treeWidgetItem);
+        item->setVisibility(true);
 
         refreshView();
     }
@@ -1050,7 +1054,7 @@ void LVRMainWindow::togglePoints(bool checkboxState)
             if (item->parent()->type() == LVRScanDataItemType)
             {
                 LVRScanDataItem* sd_item = static_cast<LVRScanDataItem*>(item->parent());
-                if(sd_item->checkState(0)) sd_item->getModelBridgePtr()->setVisibility(checkboxState);
+                sd_item->setVisibility(true, checkboxState);
             }
         }
         ++it;
@@ -1148,8 +1152,11 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
             {
                 LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, base + "_Pos_" + std::to_string(i).c_str(), this->treeWidget);
                 this->treeWidget->addTopLevelItem(item);
+
+                m_renderer->AddActor(item->getBoundingBoxBridge()->getActor());
                 lastItem = item;
             }
+            //refreshView();
         }
         else
         {
