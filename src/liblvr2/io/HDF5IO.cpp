@@ -434,87 +434,6 @@ floatArr HDF5IO::getFloatChannelFromRawScanData(std::string name, int nr, unsign
     return ret;
 }
 
-void HDF5IO::addFloatArray(
-        std::string group, std::string name,
-        unsigned int size, floatArr data)
-{
-    if(m_hdf5_file)
-    {
-        std::vector<size_t> dim = {size, 1};
-        std::vector<hsize_t> chunks {m_chunkSize, 1};
-        HighFive::Group g = getGroup(group);
-        addArray(g, name, dim, chunks, data);
-    }
-}
-
-void HDF5IO::addFloatArray(
-        std::string groupName,
-        std::string datasetName,
-        std::vector<size_t>& dimensions,
-        std::vector<hsize_t>& chunkSize, floatArr data)
-{
-    HighFive::Group g = getGroup(groupName);
-    addArray(g, datasetName, dimensions, chunkSize, data);
-}
-
-void HDF5IO::addFloatArray(
-        std::string groupName, std::string datasetName,
-        std::vector<size_t>& dimensions, floatArr data)
-{
-    HighFive::Group g = getGroup(groupName);
-
-    // Compute chunk size vector, i.e., set the chunk size in
-    // each dimension to default size. Add float array will
-    // trim this values if chunkSize > dim.
-    std::vector<hsize_t> chunks;
-    for(auto i: dimensions)
-    {
-            chunks.push_back(i);
-    }
-    addArray(g, datasetName, dimensions, chunks, data);
-}
-
-void HDF5IO::addUcharArray(
-        std::string group,
-        std::string name,
-        unsigned int size,
-        ucharArr data)
-{
-    vector<size_t> dim = {size, 1};
-    addUcharArray(group, name, dim, data);
-}
-
-void HDF5IO::addUcharArray(
-        std::string group,
-        std::string name,
-        std::vector<size_t>& dim,
-        ucharArr data)
-{
-    HighFive::Group g = getGroup(group);
-
-    // Compute chunk size vector, i.e., set the chunk size in
-    // each dimension to default size. Add float array will
-    // trim this values if chunkSize > dim.
-    std::vector<hsize_t> chunks;
-    for(auto i: dim)
-    {
-        chunks.push_back(i);
-    }
-    addArray(g, name, dim, chunks, data);
-}
-
-void HDF5IO::addUcharArray(
-        std::string group,
-        std::string name,
-        std::vector<size_t>& dim,
-        std::vector<hsize_t>& chunks,
-        ucharArr data)
-{
-    HighFive::Group g = getGroup(group);
-    addArray(g, name, dim, chunks, data);
-}
-
-
 void HDF5IO::addImage(std::string group, std::string name, cv::Mat& img)
 {
     if(m_hdf5_file)
@@ -554,7 +473,7 @@ void HDF5IO::addFloatChannelToRawScanData(
         string nr_str(buffer);
         std::string groupName = "/raw/scans/" + nr_str;
         std::vector<size_t> dim = {n, w};
-        addFloatArray(groupName, name, dim, data);
+        addArray(groupName, name, dim, data);
     }
     else
     {
@@ -604,10 +523,10 @@ void HDF5IO::addHyperspectralCalibration(int position, const HyperspectralCalibr
         principal[0] = calibration.principal_x;
         principal[1] = calibration.principal_y;
 
-        addFloatArray(groupName, "distortion", 3, a);
-        addFloatArray(groupName, "rotation", 3, rotation);
-        addFloatArray(groupName, "origin", 3, origin);
-        addFloatArray(groupName, "prinzipal", 2, principal);
+        addArray(groupName, "distortion", 3, a);
+        addArray(groupName, "rotation", 3, rotation);
+        addArray(groupName, "origin", 3, origin);
+        addArray(groupName, "prinzipal", 2, principal);
     }
 }
 
@@ -665,13 +584,13 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
 
             // Add data to group
             std::vector<size_t> dim = {4,4};
-            addFloatArray(groupName, "fov", 2, fov);
-            addFloatArray(groupName, "resolution", 2, res);
-            addFloatArray(groupName, "initialPose", dim, pose_estimate);
-            addFloatArray(groupName, "finalPose", dim, registration);
-            addFloatArray(groupName, "boundingbox", 6, bb);
+            addArray(groupName, "fov", 2, fov);
+            addArray(groupName, "resolution", 2, res);
+            addArray(groupName, "initialPose", dim, pose_estimate);
+            addArray(groupName, "finalPose", dim, registration);
+            addArray(groupName, "boundingbox", 6, bb);
             std::vector<size_t> scan_dim = {scan.m_points->numPoints(), 3};
-            addFloatArray(groupName, "points", scan_dim, scan.m_points->getPointArray());
+            addArray(groupName, "points", scan_dim, scan.m_points->getPointArray());
         }
     }
 }
