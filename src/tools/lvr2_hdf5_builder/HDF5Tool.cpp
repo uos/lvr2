@@ -47,6 +47,8 @@
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/geometry/Matrix4.hpp"
 
+#include "lvr2/io/CalibrationParameters.hpp"
+
 #include "Options.hpp"
 
 #include <boost/filesystem.hpp>
@@ -110,6 +112,26 @@ bool checkPNGDir(path& dataDir, std::string number, int numExspected)
     return consistency;
 }
 
+HyperspectralCalibration getSpectralCalibration(path& dataDir, std::string number)
+{
+    HyperspectralCalibration cal;
+    path calibrationFile = dataDir/("calibration_"+number+".txt");
+    std::ifstream in(calibrationFile.string());
+    if(in.good())
+    {
+        in >> cal.a0 >> cal.a1 >> cal.a2;
+        in >> cal.angle_x >> cal.angle_y >> cal.angle_z;
+        in >> cal.origin_x >> cal.origin_y >> cal.origin_z;
+        in >> cal.principal_y;
+    }
+    else
+    {
+        std::cout << timestamp << "Could not open calibration file "
+                  << calibrationFile.string() << std::endl;
+    }
+    return cal;
+}
+
 int main( int argc, char ** argv )
 {
     hdf5tool::Options options(argc, argv);
@@ -142,8 +164,6 @@ int main( int argc, char ** argv )
         // Check panoram dir for correct number of scans
         if(checkPNGDir(dataDir, number, numExspectedPNGs))
         {
-
-
             // Read transformation
             path matrix_file = dataDir/path("scan_" + number + "_transformation.txt");
             Matrix4<BaseVector<float> > transformation;
@@ -156,6 +176,7 @@ int main( int argc, char ** argv )
             // Compute bounding box
             PointBufferPtr pointCloud = model->m_pointCloud;
 
+            // Load annotations
             size_t an;
             unsigned  aw;
             floatArr spectral = pointCloud->getFloatArray("spectral_channels", an, aw);
@@ -180,13 +201,16 @@ int main( int argc, char ** argv )
             // Add objects to hdf5 file
             hdf5.addRawScanData(scanNr, data);
 
+            // Get hyperspectral calibration parameters
+            HyperspectralCalibration cal = getSpectralCalibration(dataDir, number);
+            hdf5.addHyperspectralCalibration(scanNr, cal);
+
             // Create "hyperspectral cube"
             path imgFile = dataDir/"panoramas_fixed"/("panorama_channels_"+number)/"channel0.png";
             cv::Mat img = cv::imread(imgFile.string(), CV_LOAD_IMAGE_GRAYSCALE);
 
             size_t img_x = img.cols;
             size_t img_y = img.rows;
-            std::cout << "1" << std::endl;
             unsigned char* cube = new unsigned char[numExspectedPNGs * img.rows * img.cols];
             for(int i = 0; i < numExspectedPNGs; i++)
             {
@@ -198,12 +222,20 @@ int main( int argc, char ** argv )
             }
 
             char groupName[256];
-
             std::vector<size_t> dim = {numExspectedPNGs, img_y, img_x};
-            sprintf(groupName, "/raw/spectral/position_%05d", scanNr);
-            hdf5.addUcharArray(groupName, "spectral", dim, ucharArr(cube));
 
+            // Priliminary experiments showed that this chunking delived
+            // best compression of hyperspectral image data
+            std::vector<hsize_t> chunks = {50, 50, 50};
+            sprintf(groupName, "/raw/spectral/position_%05d", scanNr);
+
+            hdf5.addUcharArray(groupName, "spectral", dim, chunks, ucharArr(cube));
             scanNr++;
+
+            // Add spectral annotation channel
+            std::vector<size_t> dim_sannotation = {an, aw};
+            sprintf(groupName, "/annotation/position_%05d", scanNr);
+            hdf5.addFloatArray(groupName, "spectral", dim_sannotation, spectral);
         }
         else
         {

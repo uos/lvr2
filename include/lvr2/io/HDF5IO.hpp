@@ -31,6 +31,8 @@
 #include "BaseIO.hpp"
 #include "DataStruct.hpp"
 #include "ScanData.hpp"
+#include "CalibrationParameters.hpp"
+
 #include "lvr2/geometry/Matrix4.hpp"
 
 #include <opencv2/core/core.hpp>
@@ -144,6 +146,8 @@ class HDF5IO : public BaseIO
     void addFloatChannelToRawScanData(std::string name, int nr, size_t n, unsigned w, floatArr data);
 
     void addRawDataHeader(std::string description, Matrix4<BaseVector<float>> &referenceFrame);
+
+    void addHyperspectralCalibration(int position, const HyperspectralCalibration& calibration);
 
     void setCompress(bool compress);
     void setChunkSize(const size_t& size);
