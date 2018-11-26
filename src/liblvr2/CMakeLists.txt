@@ -47,6 +47,7 @@ set(LVR2_SOURCES
     io/ModelFactory.cpp
     io/ScanprojectIO.cpp
     io/ScanData.cpp
+    io/ScanDataManager.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp

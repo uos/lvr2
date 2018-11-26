@@ -94,7 +94,9 @@ class HDF5IO : public BaseIO
 
     Texture getImage(std::string groupName, std::string datasetName);
 
-    ScanData getRawScanData(int nr);
+    ScanData getRawScanData(int nr, bool load_points = true);
+
+    std::vector<ScanData> getRawScanData(bool load_points = true);
 
     floatArr getFloatChannelFromRawScanData(std::string name,
             int nr, unsigned int& n, unsigned& w);

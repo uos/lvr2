@@ -40,6 +40,7 @@ set(LVR_VIEWER_SOURCES
     widgets/LVRPointInfo.cpp
     widgets/LVRPlotter.cpp
     widgets/LVRHistogram.cpp
+    widgets/LVRScanDataItem.cpp
 )
 
 #####################################################################################
