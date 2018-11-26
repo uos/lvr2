@@ -229,13 +229,13 @@ int main( int argc, char ** argv )
             std::vector<hsize_t> chunks = {50, 50, 50};
             sprintf(groupName, "/raw/spectral/position_%05d", scanNr);
 
-            hdf5.addUcharArray(groupName, "spectral", dim, chunks, ucharArr(cube));
+            hdf5.addArray(groupName, "spectral", dim, chunks, ucharArr(cube));
             scanNr++;
 
             // Add spectral annotation channel
             std::vector<size_t> dim_sannotation = {an, aw};
             sprintf(groupName, "/annotation/position_%05d", scanNr);
-            hdf5.addFloatArray(groupName, "spectral", dim_sannotation, spectral);
+            hdf5.addArray(groupName, "spectral", dim_sannotation, spectral);
         }
         else
         {
