@@ -372,11 +372,13 @@ void LVRMainWindow::updateView()
 {
     m_renderer->ResetCamera();
     m_renderer->ResetCameraClippingRange();
+    //highlightBoundingBoxes();
     this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 void LVRMainWindow::refreshView()
 {
+    //highlightBoundingBoxes();
     this->qvtkWidget->GetRenderWindow()->Render();
 }
 
@@ -534,7 +536,7 @@ void LVRMainWindow::highlightBoundingBoxes()
         if ((*it)->type() == LVRBoundingBoxItemType)
         {
             LVRBoundingBoxItem *item = static_cast<LVRBoundingBoxItem *>(*it);
-            item->getBoundingBoxBridge()->setColor(0.0, 1.0, 0.0);
+            item->getBoundingBoxBridge()->setColor(1.0, 1.0, 1.0);
 
             if (item->parent() && item->parent()->type() == LVRScanDataItemType)
             {
@@ -542,8 +544,27 @@ void LVRMainWindow::highlightBoundingBoxes()
 
                 if (isSelfOrChildSelected(parent))
                 {
-                    item->getBoundingBoxBridge()->setColor(1.0, 1.0, 1.0);
+                    item->getBoundingBoxBridge()->setColor(1.0, 1.0, 0.0);
                 }
+            }
+        }
+
+        if ((*it)->type() == LVRPointCloudItemType)
+        {
+            LVRPointCloudItem *item = static_cast<LVRPointCloudItem *>(*it);
+            item->resetColor();
+
+            QTreeWidgetItem *parent = item->parent();
+            if (!parent || (parent->type() != LVRScanDataItemType && parent->type() != LVRModelItemType))
+            {
+                parent = *it;
+            }
+
+            if (isSelfOrChildSelected(parent))
+            {
+                QColor color;
+                color.setRgbF(1.0, 1.0, 0.0);
+                item->setSelectionColor(color);
             }
         }
 
@@ -768,8 +789,9 @@ void LVRMainWindow::loadPointCloudData()
                 mbp = sd->getModelBridgePtr();
                 mbp->addActors(m_renderer);
 
-                restoreSliders();
+                highlightBoundingBoxes();
                 assertToggles();
+                restoreSliders();
                 refreshView();
             }
         }
@@ -1251,23 +1273,27 @@ void LVRMainWindow::manualICP()
 void LVRMainWindow::showColorDialog()
 {
     QColor c = QColorDialog::getColor();
-    for (QTreeWidgetItem* item : treeWidget->selectedItems())
+    if (c.isValid())
     {
-        if(item->type() == LVRPointCloudItemType)
+        for (QTreeWidgetItem* item : treeWidget->selectedItems())
         {
-            LVRPointCloudItem* pc_item = static_cast<LVRPointCloudItem*>(item);
-            pc_item->setColor(c);
-        }
-        else if(item->type() == LVRMeshItemType)
-        {
-            LVRMeshItem* mesh_item = static_cast<LVRMeshItem*>(item);
-            mesh_item->setColor(c);
-        }
-        else {
-            return;
-        }
+            if(item->type() == LVRPointCloudItemType)
+            {
+                LVRPointCloudItem* pc_item = static_cast<LVRPointCloudItem*>(item);
+                pc_item->setColor(c);
+            }
+            else if(item->type() == LVRMeshItemType)
+            {
+                LVRMeshItem* mesh_item = static_cast<LVRMeshItem*>(item);
+                mesh_item->setColor(c);
+            }
+            else {
+                return;
+            }
 
-        refreshView();
+            highlightBoundingBoxes();
+            refreshView();
+        }
     }
 }
 

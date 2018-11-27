@@ -447,16 +447,6 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
             }
             else
             {
-                unsigned char color[3];
-                color[0] = 255;
-                color[1] = 255;
-                color[2] = 255;
-
-#if VTK_MAJOR_VERSION < 7
-                scalars->SetTupleValue(i, color);
-#else
-                scalars->SetTypedTuple(i, color); // no idea how the new method is called
-#endif
             }
 
             vtk_points->SetPoint(i, point);
@@ -466,7 +456,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         vtk_polyData->SetPoints(vtk_points);
         vtk_polyData->SetVerts(vtk_cells);
 
-        if(n_c || n_s_p)
+        if(hasColors() || n_s_p)
         {
             vtk_polyData->GetPointData()->SetScalars(scalars);
         }
@@ -482,6 +472,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         mapper->SetInputData(vtk_polyData);
 #endif
         m_pointCloudActor->SetMapper(mapper);
+        m_pointCloudActor->GetProperty()->SetColor(1.0, 1.0, 1.0);
     }
 }
 
@@ -502,23 +493,21 @@ LVRPointBufferBridge::LVRPointBufferBridge(const LVRPointBufferBridge& b)
 
 void LVRPointBufferBridge::setBaseColor(float r, float g, float b)
 {
-    vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
-    p->SetColor(r, g, b);
-    m_pointCloudActor->SetProperty(p);
+    m_pointCloudActor->GetProperty()->SetColor(r, g, b);
 }
 
 void LVRPointBufferBridge::setPointSize(int pointSize)
 {
     vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
     p->SetPointSize(pointSize);
-    m_pointCloudActor->SetProperty(p);
+    //m_pointCloudActor->SetProperty(p);
 }
 
 void LVRPointBufferBridge::setOpacity(float opacityValue)
 {
     vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
     p->SetOpacity(opacityValue);
-    m_pointCloudActor->SetProperty(p);
+    //m_pointCloudActor->SetProperty(p);
 }
 
 void LVRPointBufferBridge::setVisibility(bool visible)
