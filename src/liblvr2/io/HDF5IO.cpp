@@ -189,19 +189,19 @@ std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
 {
     std::vector<ScanData> ret;
 
-    if (!exist("/raw_data/"))
+    if (!exist("/raw/scans/"))
     {
         return ret;
     }
 
-    HighFive::Group raw_group = getGroup("/raw_data/");
+    HighFive::Group raw_group = getGroup("/raw/scans/");
     size_t num_objects = raw_group.getNumberObjects();
 
     for (size_t i = 0; i < num_objects; i++)
     {
         int pos_num;
 
-        if (std::sscanf(raw_group.getObjectName(i).c_str(), "pose%5d", &pos_num))
+        if (std::sscanf(raw_group.getObjectName(i).c_str(), "position_%5d", &pos_num))
         {
             HighFive::Group pos_grp = raw_group.getGroup(raw_group.getObjectName(i));
 
@@ -220,19 +220,19 @@ ScanData HDF5IO::getRawScanData(int nr, bool load_points)
     if (m_hdf5_file)
     {
         char buffer[128];
-        sprintf(buffer, "pose%05d", nr);
+        sprintf(buffer, "position_%05d", nr);
         string nr_str(buffer);
 
-        std::string groupName = "/raw_data/" + nr_str;
+        std::string groupName = "/raw/scans/" + nr_str;
 
         HighFive::Group g = getGroup(groupName);
 
         unsigned int dummy;
         floatArr fov           = getArray<float>(groupName, "fov", dummy);
         floatArr res           = getArray<float>(groupName, "resolution", dummy);
-        floatArr pose_estimate = getArray<float>(groupName, "pose_estimation", dummy);
-        floatArr registration  = getArray<float>(groupName, "registration", dummy);
-        floatArr bb            = getArray<float>(groupName, "bounding_box", dummy);
+        floatArr pose_estimate = getArray<float>(groupName, "initialPose", dummy);
+        floatArr registration  = getArray<float>(groupName, "finalPose", dummy);
+        floatArr bb            = getArray<float>(groupName, "boundingBox", dummy);
 
         if (load_points)
         {
@@ -444,6 +444,7 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             addArray(groupName, "resolution", 2, res);
             addArray(groupName, "initialPose", dim, pose_estimate);
             addArray(groupName, "finalPose", dim, registration);
+            addArray(groupName, "boundingBox", 6, bb);
             addArray(groupName, "points", scan_dim, scan.m_points->getPointArray());
         }
     }
