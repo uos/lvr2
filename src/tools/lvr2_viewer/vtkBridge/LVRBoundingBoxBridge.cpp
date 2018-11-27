@@ -123,23 +123,19 @@ LVRBoundingBoxBridge::LVRBoundingBoxBridge(BoundingBox<Vec> bb) : m_boundingBox(
 
     polyData->SetLines(lines);
 
-    //unsigned char green[3] {0, 255, 0};
-    //vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
-    //colors->SetNumberOfComponents(3);
-    //for (int i = 0; i < 12; i++)
-    //    colors->InsertNextTupleValue(green);
-
-    //polyData->GetCellData()->SetScalars(colors);
-
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputData(polyData);
 
     m_actor = vtkSmartPointer<vtkActor>::New();
     m_actor->SetMapper(mapper);
 
-    double color[] = {0.0, 1.0, 1.0};
+    setColor(0.0, 1.0, 0.0);
+}
+
+void LVRBoundingBoxBridge::setColor(double r, double g, double b)
+{
+    double color[] = {r, g, b};
     m_actor->GetProperty()->SetColor(color);
-    //m_actor->GetProperty()->SetLineWidth(4);
 }
 
 void LVRBoundingBoxBridge::setPose(const Pose &pose)

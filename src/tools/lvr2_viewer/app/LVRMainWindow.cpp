@@ -213,6 +213,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(restoreSliders()));
+    QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(highlightBoundingBoxes()));
     QObject::connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(setModelVisibility(QTreeWidgetItem*, int)));
 
     QObject::connect(m_actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
@@ -509,6 +510,47 @@ void LVRMainWindow::restoreSliders()
         m_horizontalSliderTransparency->setEnabled(false);
         m_horizontalSliderTransparency->setValue(0);
     }
+}
+
+bool isSelfOrChildSelected(QTreeWidgetItem *item)
+{
+
+    bool selected = item->isSelected();
+
+    for (int i = 0; i < item->childCount() && !selected; i++)
+    {
+        selected = isSelfOrChildSelected(item->child(i));
+    }
+
+    return selected;
+}
+
+void LVRMainWindow::highlightBoundingBoxes()
+{
+    QTreeWidgetItemIterator it(treeWidget);
+
+    while (*it)
+    {
+        if ((*it)->type() == LVRBoundingBoxItemType)
+        {
+            LVRBoundingBoxItem *item = static_cast<LVRBoundingBoxItem *>(*it);
+            item->getBoundingBoxBridge()->setColor(0.0, 1.0, 0.0);
+
+            if (item->parent() && item->parent()->type() == LVRScanDataItemType)
+            {
+                QTreeWidgetItem *parent = item->parent();
+
+                if (isSelfOrChildSelected(parent))
+                {
+                    item->getBoundingBoxBridge()->setColor(1.0, 1.0, 1.0);
+                }
+            }
+        }
+
+        it++;
+    }
+
+    refreshView();
 }
 
 void LVRMainWindow::exportSelectedModel()

@@ -189,6 +189,7 @@ protected Q_SLOTS:
     void setModelVisibility(QTreeWidgetItem* treeWidgetItem, int column);
     /// Adjusts all the Sliders, LineEdits and CheckBoxes to the currently selected Items
     void restoreSliders();
+    void highlightBoundingBoxes();
 
 Q_SIGNALS:
     void correspondenceDialogOpened();

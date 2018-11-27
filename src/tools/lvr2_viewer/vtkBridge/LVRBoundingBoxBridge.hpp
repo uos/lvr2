@@ -24,6 +24,7 @@ class LVRBoundingBoxBridge
         vtkSmartPointer<vtkActor> getActor() { return m_actor; }
         void setPose(const Pose& pose);
         void setVisibility(bool visible);
+        void setColor(double r, double g, double b);
 
     private:
         BoundingBox<Vec>            m_boundingBox;
