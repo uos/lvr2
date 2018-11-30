@@ -1,123 +1,203 @@
-/* Copyright (C) 2011 Uni Osnabrück
- * This file is part of the LAS VEGAS Reconstruction Toolkit,
+/**
+ * Copyright (c) 2018, University Osnabrück
+ * All rights reserved.
  *
- * LAS VEGAS is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the University Osnabrück nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
  *
- * LAS VEGAS is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place - Suite 330, Boston, MA  02111-1307, USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef MESHBUFFER2_HPP
+#define MESHBUFFER2_HPP
 
- /**
- *
- * @file      MeshLoader.hpp
- * @brief     Interface for all mesh loading classes.
- * @details   The MeshLoader class specifies the storage and access to all
- *            available mesh data by implementing the get and set methods for
- *            these data.
- *
- * @author    Lars Kiesow (lkiesow), lkiesow@uos.de, Universität Osnabrück
- * @author    Thomas Wiemann, twiemann@uos.de, Universität Osnabrück
- * @author    Jan Philipp Vogtherr (jvogtherr@uni-osnabrueck.de)
- *
- **/
-
-#ifndef MESHBUFFER2_HPP_
-#define MESHBUFFER2_HPP_
-
-#include <boost/shared_ptr.hpp>
-#include <boost/optional.hpp>
-
-#include <vector>
-
-#include <lvr/io/MeshBuffer.hpp>
-#include <lvr/io/DataStruct.hpp>
+#include <lvr2/io/BaseBuffer.hpp>
 #include <lvr2/texture/Material.hpp>
 #include <lvr2/texture/Texture.hpp>
 
 namespace lvr2
 {
 
-using std::vector;
-
-
-// Forward declaration
-template<typename BaseVecT>
-class MaterializerResult;
-
-
-template<typename BaseVecT>
-class MeshBuffer
+////
+/// \brief The MeshBuffer Mesh representation for I/O modules.
+///
+class MeshBuffer : public BaseBuffer
 {
+public:
 
-    public:
-        MeshBuffer() {};
+    ///
+    /// \brief MeshBuffer      Contructor. Builds an empty buffer. Fill elements
+    ///                         with add-Methods.
+    ///
+    MeshBuffer();
 
-        MeshBuffer(lvr::MeshBuffer& oldBuffer);
+    ///
+    /// \brief addVertices      Adds the vertex array. Three floats per vertex
+    /// \param vertices         The vertex array
+    /// \param n                Number of vertices
+    ///
+    void setVertices(floatArr vertices, size_t n);
 
-        vector<float> getVertices();
-        vector<unsigned char> getVertexColors();
-        vector<float> getVertexConfidences();
-        vector<float> getVertexIntensities();
-        vector<float> getVertexNormals();
-        vector<float> getVertexTextureCoordinates();
-        vector<unsigned int> getFaceIndices();
-        vector<unsigned int> getFaceMaterialIndices();
-        vector<unsigned int> getClusterMaterialIndices();
-        vector<Material> getMaterials();
-        vector<Texture<BaseVecT>> getTextures();
-        vector<vector<unsigned int>> getClusterFaceIndices();
+    ///
+    /// \brief addVertexNormals Adds vertex normals.
+    /// \param normals          Normal defintion. Three floats per vertex.
+    ///
+    void setVertexNormals(floatArr normals);
 
-        void setVertices(vector<float> v);
-        void setVertexColors(vector<unsigned char> v);
-        void setVertexConfidences(vector<float> v);
-        void setVertexIntensities(vector<float> v);
-        void setVertexNormals(vector<float> v);
-        void setVertexTextureCoordinates(vector<float> v);
-        void setFaceIndices(vector<unsigned int> v);
-        void setFaceMaterialIndices(vector<unsigned int> v);
-        void setClusterMaterialIndices(vector<unsigned int> v);
-        void setMaterials(vector<Material> v);
-        void setTextures(vector<Texture<BaseVecT>> v);
-        void setClusterFaceIndices(vector<vector<unsigned int>> v);
+    ///
+    /// \brief addVertexColors  Adds vertex color information.
+    /// \param colors           Vertex color array
+    /// \param w                Number of bytes per color. (3 for RGB, 4 for RGBA)
+    ///
+    void setVertexColors(ucharArr colors, unsigned w = 3);
 
-        // Convert to lvr1 MeshBuffer
-        boost::shared_ptr<lvr::MeshBuffer> toOldBuffer();
-        // Overloaded method for conversion with textures
-        boost::shared_ptr<lvr::MeshBuffer> toOldBuffer(MaterializerResult<BaseVecT> materializerResult);
+    ///
+    /// \brief addTextureCoordinates    Adds texture coordinates for vertices
+    /// \param coordinates      Texture coordinate definitions (2 floats per vertex)
+    ///
+    void setTextureCoordinates(floatArr coordinates);
 
-    protected:
+    ///
+    /// \brief addFaceIndices   Adds the face index array that references to the
+    ///                         vertex array
+    /// \param indices          The index array (3 indices per face)
+    /// \param n                Number of faces
+    ///
+    void setFaceIndices(indexArray indices, size_t n);
 
-        vector<float> m_vertices;
-        vector<unsigned char> m_vertexColors;
-        vector<float> m_vertexConfidences;
-        vector<float> m_vertexIntensities;
-        vector<float> m_vertexNormals;
-        vector<float> m_vertexTextureCoordinates;
-        vector<unsigned int> m_faceIndices;
-        vector<unsigned int> m_faceMaterialIndices;
-        vector<unsigned int> m_clusterMaterialIndices;
-        vector<Material> m_materials;
-        vector<Texture<BaseVecT>> m_textures;
-        vector<vector<unsigned int>> m_clusterFaceIndices;
+    ///
+    /// \brief addFaceMaterialIndices   Adds face material indices. The array references
+    ///                         to material definitions in \ref m_materials.
+    ///
+    /// \param indices          One material index per face
+    ///
+    void setFaceMaterialIndices(indexArray indices);
+
+    ///
+    /// \brief addFaceNormals   Adds face normal information. The number of normals
+    ///                         in the array are exspected to match the number of
+    ///                         faces in the mesh
+    /// \param                  Normal definitions for all faces
+    ///
+    void setFaceNormals(floatArr normals);
+
+    ///
+    /// \brief addFaceColors    Adds face colors the the buffer
+    /// \param colors           An array containing color information
+    /// \param w                Bytes per color attribute (3 for RGB, 4 for RGBA)
+    ///
+    void setFaceColors(ucharArr colors, unsigned w = 3);
+
+    ///
+    /// \brief numVertices      Number of vertices in the mesh
+    ///
+    size_t numVertices();
+
+    ///
+    /// \brief numFaces         Number of faces in the mesh
+    ///
+    size_t numFaces();
+
+
+    ///
+    /// \brief getVertices      Return the vertex array.
+    ///
+    floatArr getVertices();
+
+    ///
+    /// \brief getVertexColors  Returns vertex color information or an empty array if
+    ///                         vertex colors are not available
+    /// \param width            Number of bytes per color (3 for RGB, 4 for RGBA)
+    /// \return
+    ///
+    ucharArr getVertexColors(unsigned& width);
+
+    ///
+    /// \brief getVertexNormals Returns an array with vertex normals or an empty array
+    ///                         if no normals are present.
+    ///
+    floatArr getVertexNormals();
+
+    ///
+    /// \brief getTextureCoordinates Returns an array with texture coordinates. Two
+    ///                         normalized floats per vertex. Returns an empty array
+    ///                         if no texture coordinates were loaded.
+    ///
+    floatArr getTextureCoordinates();
+
+    ///
+    /// \brief getFaceIndices   Returns an array with face definitions, i.e., three
+    ///                         vertex indices per face.
+    indexArray getFaceIndices();
+
+    ///
+    /// \brief getFaceColors    Returns an array with wrgb colors
+    /// \param width            Number of bytes per color (3 for RGB and 4 for RGBA)
+    /// \return                 An array containing point data or an nullptr if
+    ///                         no colors are present.
+    ///
+    ucharArr getFaceColors(unsigned& width);
+
+    ///
+    /// \brief getFaceMaterialIndices   Returns an array with face material indices 
+    ///
+    indexArray getFaceMaterialIndices();
+
+    ///
+    /// \brief getTextures      Returns a vector with textures
+    ///
+    vector<Texture>& getTextures();
+
+    ///
+    /// \brief getTextures      Returns a vector with materials
+    ///
+    vector<Material>& getMaterials();
+
+    bool hasFaceColors();
+
+    bool hasVertexColors();
+
+    bool hasFaceNormals();
+
+    bool hasVertexNormals();
+
+    /// TODO: CHANNEL BASED SETTER / GETTER!
+
+private:
+
+    /// Vector containing all material definitions
+    vector<Material>    m_materials;
+
+    /// Vector containing all textures
+    vector<Texture>     m_textures;
+
+    /// Number of faces in the mesh
+    size_t              m_numFaces;
+
+    /// Number of vertices in the mesh
+    size_t              m_numVertices;
+
 
 };
 
+using MeshBufferPtr = std::shared_ptr<MeshBuffer>;
 
-template <typename BaseVecT>
-using MeshBufferPtr = std::shared_ptr<MeshBuffer<BaseVecT>>;
-
-} // namespace
-
-#include <lvr2/io/MeshBuffer.tcc>
-
-#endif /* MESHBUFFER2_HPP_ */
+}
+#endif // MESHBUFFER2_HPP

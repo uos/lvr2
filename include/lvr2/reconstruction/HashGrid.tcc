@@ -1,30 +1,29 @@
-/*
- * HashGrid.cpp
+/**
+ * Copyright (c) 2018, University Osnabrück
+ * All rights reserved.
  *
- *  Created on: Nov 27, 2014
- *      Author: twiemann
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the University Osnabrück nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-
-
-/* Copyright (C) 2011 Uni Osnabrück
- * This file is part of the LAS VEGAS Reconstruction Toolkit,
- *
- * LAS VEGAS is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
- */
-
 
 /*
  * HashGrid.cpp
@@ -32,11 +31,16 @@
  *  Created on: 16.02.2011
  *      Author: Thomas Wiemann
  */
-#include "HashGrid.hpp"
-#include <lvr/geometry/BaseMesh.hpp>
-#include <lvr/reconstruction/FastReconstructionTables.hpp>
-// #include "SharpBox.hpp"
-#include <lvr/io/Progress.hpp>
+
+#include <lvr2/reconstruction/HashGrid.hpp>
+#include <lvr2/geometry/BaseMesh.hpp>
+#include <lvr2/geometry/Vector.hpp>
+#include <lvr2/reconstruction/FastReconstructionTables.hpp>
+#include <lvr2/io/Progress.hpp>
+#include <lvr2/io/Timestamp.hpp>
+
+#include <fstream>
+#include <iostream>
 
 namespace lvr2
 {
@@ -54,9 +58,29 @@ HashGrid<BaseVecT, BoxT>::HashGrid(
 {
     m_coordinateScales = Vector<BaseVecT>(1, 1, 1);
 
+    auto newMax = m_boundingBox.getMax();
+    auto newMin = m_boundingBox.getMin();
+    if (m_boundingBox.getXSize() < 3 * cellSize)
+    {
+        newMax.x += cellSize;
+        newMin.x -= cellSize;
+    }
+    if (m_boundingBox.getYSize() < 3 * cellSize)
+    {
+        newMax.y += cellSize;
+        newMin.y -= cellSize;
+    }
+    if (m_boundingBox.getZSize() < 3 * cellSize)
+    {
+        newMax.z += cellSize;
+        newMin.z -= cellSize;
+    }
+    m_boundingBox.expand(newMax);
+    m_boundingBox.expand(newMin);
+
     if(!m_boundingBox.isValid())
     {
-        cout << lvr::timestamp << "Warning: Malformed BoundingBox." << endl;
+        cout << timestamp << "Warning: Malformed BoundingBox." << endl;
     }
 
     if(!isVoxelsize)
@@ -68,11 +92,11 @@ HashGrid<BaseVecT, BoxT>::HashGrid(
         m_voxelsize = cellSize;
     }
 
-    cout << lvr::timestamp << "Used voxelsize is " << m_voxelsize << endl;
+    cout << timestamp << "Used voxelsize is " << m_voxelsize << endl;
 
     if(!m_extrude)
     {
-        cout << lvr::timestamp << "Grid is not extruded." << endl;
+        cout << timestamp << "Grid is not extruded." << endl;
     }
 
 
@@ -86,22 +110,24 @@ HashGrid<BaseVecT, BoxT>::HashGrid(string file)
     ifstream ifs(file.c_str());
     float minx, miny, minz, maxx, maxy, maxz, vsize;
     size_t qsize, csize;
+
+    ifs >> m_extrude;
+    m_extrude = false;
     ifs >> minx >> miny >> minz >> maxx >> maxy >> maxz >> qsize >> vsize >> csize;
 
-    m_boundingBox = BoundingBox<BaseVecT>(minx, miny, minz, maxx, maxy, maxz);
+    m_boundingBox = BoundingBox<BaseVecT>(Vector<BaseVecT>(minx, miny, minz), Vector<BaseVecT>(maxx, maxy, maxz));
     m_globalIndex = 0;
-    m_extrude = false; // TODO: ADD TO SERIALIZATION
-    m_coordinateScales[0] = 1.0;
-    m_coordinateScales[1] = 1.0;
-    m_coordinateScales[2] = 1.0;
+    m_coordinateScales.x = 1.0;
+    m_coordinateScales.y = 1.0;
+    m_coordinateScales.z = 1.0;
     m_voxelsize = vsize;
     BoxT::m_voxelsize = m_voxelsize;
     calcIndices();
 
 
     float  pdist;
-    Point<BaseVecT> v;
-    //cout << lvr::timestamp << "Creating Grid..." << endl;
+    Vector<BaseVecT> v;
+    //cout << timestamp << "Creating Grid..." << endl;
 
     // Iterator over all points, calc lattice indices and add lattice points to the grid
     for(size_t i = 0; i < qsize; i++)
@@ -113,16 +139,18 @@ HashGrid<BaseVecT, BoxT>::HashGrid(string file)
         m_queryPoints.push_back(qp);
 
     }
-    //cout << lvr::timestamp << "read qpoints.. csize: " << csize << endl;
+    //cout << timestamp << "read qpoints.. csize: " << csize << endl;
     size_t h;
     unsigned int cell[8];
-    Point<BaseVecT> cell_center;
+    Vector<BaseVecT> cell_center;
+    bool fusion = false;
     for(size_t k = 0 ; k< csize ; k++)
     {
         //cout << "i: " << k << endl;
         ifs >> h >> cell[0] >> cell[1] >> cell[2] >> cell[3] >> cell[4] >> cell[5] >> cell[6] >> cell[7]
-                 >> cell_center.x >> cell_center.y >> cell_center.z ;
+                 >> cell_center.x >> cell_center.y >> cell_center.z >> fusion;
         BoxT* box = new BoxT(cell_center);
+        box->m_extruded = fusion;
         for(int j=0 ; j<8 ; j++)
         {
             box->setVertex(j,  cell[j]);
@@ -130,7 +158,7 @@ HashGrid<BaseVecT, BoxT>::HashGrid(string file)
 
         m_cells[h] = box;
     }
-    cout << lvr::timestamp << "Reading cells.." << endl;
+    cout << timestamp << "Reading cells.." << endl;
     typename HashGrid<BaseVecT, BoxT>::box_map_it it;
     typename HashGrid<BaseVecT, BoxT>::box_map_it neighbor_it;
 
@@ -151,9 +179,10 @@ HashGrid<BaseVecT, BoxT>::HashGrid(string file)
 
 
                     //Calculate hash value for current neighbor cell
-                    neighbor_hash = this->hashValue(it->first + a,
-                                                    it->first + b,
-                                                    it->first + c);
+                    int idx = calcIndex((it->second->getCenter()[0] - m_boundingBox.getMin()[0])/m_voxelsize);
+                    int idy = calcIndex((it->second->getCenter()[1] - m_boundingBox.getMin()[1])/m_voxelsize);
+                    int idz = calcIndex((it->second->getCenter()[2] - m_boundingBox.getMin()[2])/m_voxelsize);
+                    neighbor_hash = this->hashValue(idx + a, idy + b, idz + c);
                     //cout << "n hash: " << neighbor_hash  << endl;
                     //cout << " id: " << neighbor_index << endl;
 
@@ -217,8 +246,33 @@ void HashGrid<BaseVecT, BoxT>::addLatticePoint(int index_x, int index_y, int ind
                         (index_y + dy) * this->m_voxelsize + v_min.y,
                         (index_z + dz) * this->m_voxelsize + v_min.z);
 
+                    if((
+                            box_center[0] <= m_boundingBox.getMin().x  ||
+                            box_center[1] <= m_boundingBox.getMin().y  ||
+                            box_center[2] <= m_boundingBox.getMin().z ||
+                            box_center[0] >= m_boundingBox.getMax().x + m_voxelsize  ||
+                            box_center[1] >= m_boundingBox.getMax().y + m_voxelsize  ||
+                            box_center[2] >= m_boundingBox.getMax().z + m_voxelsize
+                    ))
+                    {
+                        continue;
+                    }
+
                     //Create new box
                     BoxT* box = new BoxT(box_center);
+                    if(
+                        box_center[0] <= m_boundingBox.getMin().x + m_voxelsize*5  ||
+                        box_center[1] <= m_boundingBox.getMin().y + m_voxelsize*5  ||
+                        box_center[2] <= m_boundingBox.getMin().z + m_voxelsize*5)
+                    {
+                        box->m_duplicate = true;
+                    }
+                    else if( box_center[0] >= m_boundingBox.getMax().x - m_voxelsize*5  ||
+                             box_center[1] >= m_boundingBox.getMax().y - m_voxelsize*5  ||
+                             box_center[2] >= m_boundingBox.getMax().z - m_voxelsize*5)
+                    {
+                        box->m_duplicate = true;
+                    }
 
                     //Setup the box itself
                     for(int k = 0; k < 8; k++){
@@ -231,9 +285,11 @@ void HashGrid<BaseVecT, BoxT>::addLatticePoint(int index_x, int index_y, int ind
                             //Otherwise create new grid point and associate it with the current box
                         else
                         {
-                            Point<BaseVecT> position(box_center.x + box_creation_table[k][0] * vsh,
+                            Vector<BaseVecT> position(box_center.x + box_creation_table[k][0] * vsh,
                                                      box_center.y + box_creation_table[k][1] * vsh,
                                                      box_center.z + box_creation_table[k][2] * vsh);
+
+                            qp_bb.expand(position);
 
                             this->m_queryPoints.push_back(QueryPoint<BaseVecT>(position, distance));
                             box->setVertex(k, this->m_globalIndex);
@@ -283,14 +339,26 @@ void HashGrid<BaseVecT, BoxT>::addLatticePoint(int index_x, int index_y, int ind
 template<typename BaseVecT, typename BoxT>
 void HashGrid<BaseVecT, BoxT>::setCoordinateScaling(float x, float y, float z)
 {
-    m_coordinateScales[0] = x;
-    m_coordinateScales[1] = y;
-    m_coordinateScales[2] = z;
+    m_coordinateScales.x = x;
+    m_coordinateScales.y = y;
+    m_coordinateScales.z = z;
 }
 
 template<typename BaseVecT, typename BoxT>
 HashGrid<BaseVecT, BoxT>::~HashGrid()
-{}
+{
+    box_map_it iter;
+    for(iter = m_cells.begin(); iter != m_cells.end(); iter++)
+    {
+        if(iter->second != NULL)
+        {
+            delete (iter->second);
+            iter->second = NULL;
+        }
+    }
+
+    m_cells.clear();
+}
 
 
 
@@ -346,10 +414,10 @@ unsigned int HashGrid<BaseVecT, BoxT>::findQueryPoint(
 template<typename BaseVecT, typename BoxT>
 void HashGrid<BaseVecT, BoxT>::saveGrid(string filename)
 {
-    cout << lvr::timestamp << "Writing grid..." << endl;
+    std::cout << timestamp << "Writing grid..." << std::endl;
 
     // Open file for writing
-    ofstream out(filename.c_str());
+    std::ofstream out(filename.c_str());
 
     // Write data
     if(out.good())
@@ -366,11 +434,11 @@ void HashGrid<BaseVecT, BoxT>::saveGrid(string filename)
 
             if(!isnan(m_queryPoints[i].m_distance))
             {
-                out << m_queryPoints[i].m_distance << endl;
+                out << m_queryPoints[i].m_distance << std::endl;
             }
             else
             {
-                out << 0 << endl;
+                out << 0 << std::endl;
             }
 
         }
@@ -385,7 +453,7 @@ void HashGrid<BaseVecT, BoxT>::saveGrid(string filename)
             {
                 out << box->getVertex(i) << " ";
             }
-            out << endl;
+            out << std::endl;
         }
     }
 }
@@ -394,14 +462,16 @@ void HashGrid<BaseVecT, BoxT>::saveGrid(string filename)
 template<typename BaseVecT, typename BoxT>
 void HashGrid<BaseVecT, BoxT>::serialize(string file)
 {
-    ofstream out(file.c_str());
+    std::cout << timestamp << "saving grid: " << file << std::endl;
+    std::ofstream out(file.c_str());
 
     // Write data
     if(out.good())
     {
+        out << m_extrude << std::endl;
         out <<    m_boundingBox.getMin().x << " " << m_boundingBox.getMin().y
         << " " << m_boundingBox.getMin().z << " " << m_boundingBox.getMax().x
-        << " " << m_boundingBox.getMax().y << " " << m_boundingBox.getMax().z << endl;
+        << " " << m_boundingBox.getMax().y << " " << m_boundingBox.getMax().z << std::endl;
 
 
         out << m_queryPoints.size() << " " << m_voxelsize << " " << m_cells.size() << endl;
@@ -415,7 +485,7 @@ void HashGrid<BaseVecT, BoxT>::serialize(string file)
 
             if(!isnan(m_queryPoints[i].m_distance))
             {
-                out << m_queryPoints[i].m_distance << endl;
+                out << m_queryPoints[i].m_distance << std::endl;
             }
             else
             {
@@ -435,10 +505,19 @@ void HashGrid<BaseVecT, BoxT>::serialize(string file)
             {
                 out << box->getVertex(i) << " ";
             }
-            out << box->getCenter().x << " " << box->getCenter().y << " " << box->getCenter().z << endl;
+            out << box->getCenter().x << " " << box->getCenter().y << " " << box->getCenter().z
+                << " " << box->m_extruded << endl;
         }
     }
     out.close();
+    std::cout << timestamp << "finished saving grid: " << file << std::endl;
+}
+
+template<typename BaseVecT, typename BoxT>
+void HashGrid<BaseVecT, BoxT>::setBB(BoundingBox<BaseVecT>& bb)
+{
+    m_boundingBox = bb;
+    calcIndices();
 }
 
 } //namespace lvr2

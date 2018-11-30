@@ -1,19 +1,28 @@
-/* Copyright (C) 2011 Uni Osnabrück
- * This file is part of the LAS VEGAS Reconstruction Toolkit,
+/**
+ * Copyright (c) 2018, University Osnabrück
+ * All rights reserved.
  *
- * LAS VEGAS is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the University Osnabrück nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
  *
- * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -29,8 +38,6 @@
 
 using std::array;
 
-#include <lvr2/geometry/Point.hpp>
-
 namespace lvr2
 {
 
@@ -40,7 +47,7 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
     const PointsetSurfacePtr<BaseVecT> surface
 )
 {
-    if (!surface->pointBuffer()->hasRgbColor())
+    if (!surface->pointBuffer()->hasColors())
     {
         // cout << "none" << endl;
         return boost::none;
@@ -52,21 +59,23 @@ optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
     // k-nearest-neighbors
     const int k = 1;
 
+    UCharChannel colors = *(surface->pointBuffer()->getUCharChannel("colors"));
+
     vector<size_t> cv;
     for (auto vertexH: mesh.vertices())
     {
         cv.clear();
         auto p = mesh.getVertexPosition(vertexH);
-        surface->searchTree().kSearch(p, k, cv);
+        surface->searchTree()->kSearch(p, k, cv);
 
         float r = 0.0f, g = 0.0f, b = 0.0f;
 
         for (size_t pointIdx : cv)
         {
-            auto colors = *(surface->pointBuffer()->getRgbColor(pointIdx));
-            r += colors[0];
-            g += colors[1];
-            b += colors[2];
+            auto color = colors[pointIdx];
+            r += color[0];
+            g += color[1];
+            b += color[2];
         }
 
         r /= k;
@@ -150,24 +159,22 @@ Rgb8Color calcColorForFaceCentroid(
     FaceHandle faceH
 )
 {
-    if (surface.pointBuffer()->hasRgbColor())
+    if (surface.pointBuffer()->hasColors())
     {
         vector<size_t> cv;
         auto centroid = mesh.calcFaceCentroid(faceH);
+        UCharChannel colors = *(surface.pointBuffer()->getUCharChannel("colors"));
 
         // Find color of face centroid
         int k = 1; // k-nearest-neighbors
-        surface.searchTree().kSearch(centroid, k, cv);
+        surface.searchTree()->kSearch(centroid, k, cv);
         uint8_t r = 0, g = 0, b = 0;
         for (size_t pointIdx : cv)
         {
-            optional<array<uint8_t,3>&> colorsOptional = surface.pointBuffer()->getRgbColor(pointIdx);
-            if (colorsOptional)
-            {
-                r += (*colorsOptional)[0];
-                g += (*colorsOptional)[1];
-                b += (*colorsOptional)[2];
-            }
+            auto cur_color = colors[pointIdx];
+            r += cur_color[0];
+            g += cur_color[1];
+            b += cur_color[2];
         }
         r /= k;
         g /= k;
@@ -189,7 +196,5 @@ Rgb8Color calcColorForFaceCentroid(
         return color;
     }
 }
-
-
 
 } // namespace lvr2

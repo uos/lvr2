@@ -1,21 +1,29 @@
-/* Copyright (C) 2011 Uni Osnabrück
- * This file is part of the LAS VEGAS Reconstruction Toolkit,
+/**
+ * Copyright (c) 2018, University Osnabrück
+ * All rights reserved.
  *
- * LAS VEGAS is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the University Osnabrück nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
  *
- * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 
 /*
  * HalfEdgeMesh.tcc
@@ -37,13 +45,46 @@
 namespace lvr2
 {
 
+template<typename BaseVecT>
+HalfEdgeMesh<BaseVecT>::HalfEdgeMesh()
+{
+}
+
+template<typename BaseVecT>
+HalfEdgeMesh<BaseVecT>::HalfEdgeMesh(MeshBufferPtr ptr)
+{
+    size_t numFaces = ptr->numFaces();
+    size_t numVertices = ptr->numVertices();
+
+    floatArr vertices = ptr->getVertices();
+    indexArray indices = ptr->getFaceIndices();
+
+    for(size_t i = 0; i < numVertices; i++)
+    {
+        size_t pos = 3 * i;
+        this->addVertex(BaseVecT(
+                            vertices[pos],
+                            vertices[pos + 1],
+                            vertices[pos + 2]));
+    }
+
+    for(size_t i = 0; i < numFaces; i++)
+    {
+        size_t pos = 3 * i;
+        VertexHandle v1(indices[pos]);
+        VertexHandle v2(indices[pos + 1]);
+        VertexHandle v3(indices[pos + 2]);
+        this->addFace(v1, v2, v3);
+    }
+}
+
 
 // ========================================================================
 // = Interface methods
 // ========================================================================
 
 template <typename BaseVecT>
-VertexHandle HalfEdgeMesh<BaseVecT>::addVertex(Point<BaseVecT> pos)
+VertexHandle HalfEdgeMesh<BaseVecT>::addVertex(Vector<BaseVecT> pos)
 {
     Vertex v;
     v.pos = pos;
@@ -500,13 +541,13 @@ Index HalfEdgeMesh<BaseVecT>::nextEdgeIndex() const
 
 
 template <typename BaseVecT>
-Point<BaseVecT> HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle) const
+Vector<BaseVecT> HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle) const
 {
     return getV(handle).pos;
 }
 
 template <typename BaseVecT>
-Point<BaseVecT>& HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle)
+Vector<BaseVecT>& HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle)
 {
     return getV(handle).pos;
 }
@@ -578,6 +619,24 @@ void HalfEdgeMesh<BaseVecT>::getNeighboursOfFace(
         facesOut.push_back(e3t.face.unwrap());
     }
 }
+
+template<typename BaseVecT>
+bool HalfEdgeMesh<BaseVecT>::isBorderEdge(EdgeHandle handle) const
+{
+    HalfEdgeHandle h = HalfEdgeHandle::oneHalfOf(handle);
+
+    auto edge = getE(h);
+    auto twin = getE(edge.twin);
+
+    // Only if both halfs have an adjacent face this is not a border edge
+    if(twin.face && edge.face)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 
 template <typename BaseVecT>
 array<VertexHandle, 2> HalfEdgeMesh<BaseVecT>::getVerticesOfEdge(EdgeHandle edgeH) const
@@ -919,7 +978,7 @@ void HalfEdgeMesh<BaseVecT>::flipEdge(EdgeHandle edgeH)
 {
     if (!BaseMesh<BaseVecT>::isFlippable(edgeH))
     {
-        panic("flipEdge() called for non-flippable edge!");
+        //panic("flipEdge() called for non-flippable edge!");
     }
 
     // A fancy drawing of the current and expected situation:
@@ -977,53 +1036,63 @@ void HalfEdgeMesh<BaseVecT>::flipEdge(EdgeHandle edgeH)
     auto centerTwinH = center.twin;
     auto& centerTwin = getE(centerTwinH);
 
-    auto faceAboveH = center.face.unwrap();
-    auto faceBelowH = centerTwin.face.unwrap();
+    if(center.face && centerTwin.face)
+    {
+        auto faceAboveH = center.face.unwrap();
+        auto faceBelowH = centerTwin.face.unwrap();
 
-    auto aboveRightH = center.next;
-    auto& aboveRight = getE(aboveRightH);
-    auto aboveLeftH = aboveRight.next;
-    auto& aboveLeft = getE(aboveLeftH);
-    auto belowLeftH = centerTwin.next;
-    auto& belowLeft = getE(belowLeftH);
-    auto belowRightH = belowLeft.next;
-    auto& belowRight = getE(belowRightH);
+        auto aboveRightH = center.next;
+        auto& aboveRight = getE(aboveRightH);
+        auto aboveLeftH = aboveRight.next;
+        auto& aboveLeft = getE(aboveLeftH);
+        auto belowLeftH = centerTwin.next;
+        auto& belowLeft = getE(belowLeftH);
+        auto belowRightH = belowLeft.next;
+        auto& belowRight = getE(belowRightH);
 
-    auto vLeftH = centerTwin.target;
-    auto vRightH = center.target;
-    auto vAboveH = aboveRight.target;
-    auto vBelowH = belowLeft.target;
+        auto vLeftH = centerTwin.target;
+        auto vRightH = center.target;
+        auto vAboveH = aboveRight.target;
+        auto vBelowH = belowLeft.target;
 
-    // And now we just change all the handles. It's fairly easy, since we don't
-    // have to deal with any special cases.
-    //
-    // First, fix outgoing handles, since those might be wrong now.
-    getV(vLeftH).outgoing = belowLeftH;
-    getV(vRightH).outgoing = aboveRightH;
+        // And now we just change all the handles. It's fairly easy, since we don't
+        // have to deal with any special cases.
+        //
+        // First, fix outgoing handles, since those might be wrong now.
+        getV(vLeftH).outgoing = belowLeftH;
+        getV(vRightH).outgoing = aboveRightH;
 
-    // Next, fix the `edge` pointer of the faces, since those might be broken
-    // as well.
-    getF(faceAboveH).edge = centerH;
-    getF(faceBelowH).edge = centerTwinH;
+        // Next, fix the `edge` pointer of the faces, since those might be broken
+        // as well.
+        getF(faceAboveH).edge = centerH;
+        getF(faceBelowH).edge = centerTwinH;
 
-    // Fix the all time favorite: the next handle. We basically change the next
-    // handle of all inner edges. First all edges around the left face (former
-    // "above" face), then the right (former "below") one.
-    center.next = aboveLeftH;
-    aboveLeft.next = belowLeftH;
-    belowLeft.next = centerH;
+        // Fix the all time favorite: the next handle. We basically change the next
+        // handle of all inner edges. First all edges around the left face (former
+        // "above" face), then the right (former "below") one.
+        center.next = aboveLeftH;
+        aboveLeft.next = belowLeftH;
+        belowLeft.next = centerH;
 
-    centerTwin.next = belowRightH;
-    belowRight.next = aboveRightH;
-    aboveRight.next = centerTwinH;
+        centerTwin.next = belowRightH;
+        belowRight.next = aboveRightH;
+        aboveRight.next = centerTwinH;
 
-    // The target handle of both center edges...
-    center.target = vAboveH;
-    centerTwin.target = vBelowH;
+        // The target handle of both center edges...
+        center.target = vAboveH;
+        centerTwin.target = vBelowH;
 
-    // And finally, two edges belong to a new face now.
-    aboveRight.face = faceBelowH;  // now right
-    belowLeft.face = faceAboveH;   // now left
+        // And finally, two edges belong to a new face now.
+        aboveRight.face = faceBelowH;  // now right
+        belowLeft.face = faceAboveH;   // now left
+    }
+    else
+    {
+        //cout << "Edge not flippable!" << endl;
+        return;
+    }
+
+
 }
 
 template <typename BaseVecT>

@@ -27,8 +27,9 @@ include_directories(include)
 
 # Add -O0 to remove optimizations when using gcc
 if(CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-    set(CMAKE_C_FLAGS_DEBUG "-O0 -g")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g")
+    #add_compile_options(-O0 -g)
 endif(CMAKE_COMPILER_IS_GNUCC)
 
 if(MSVC)
@@ -36,7 +37,7 @@ if(MSVC)
 else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
   # with cmake 3.3
-  #add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++0x>)
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++11>)
   set(CMAKE_CXX_STANDARD 14)
 endif(MSVC)
 
@@ -55,7 +56,10 @@ endif(CUDA_FOUND)
 ####
 ## Searching for OpenCV
 ##############################
-find_package( OpenCV 3 REQUIRED )
+find_package( OpenCV 3 )
+if (!OpenCV_FOUND)
+  find_package( OpenCV 4 REQUIRED )
+endif()
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 option(WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
@@ -98,6 +102,14 @@ if(MPI_FOUND)
   include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 endif(MPI_FOUND)
 
+###
+## Searching for OpenCl
+##############################
+find_package(OpenCL)
+if(OPENCL_FOUND)
+    include_directories(OPENCL_INCLUDE_DIR)
+endif()
+
 ####
 ## Searching for OpenCl
 #############################
@@ -113,6 +125,15 @@ set(VTK_QT_VERSION 5)
 find_package(VTK REQUIRED)
 if(VTK_MAJOR_VERSION VERSION_LESS "6")
   list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK5)
+endif()
+
+if(VTK_MAJOR_VERSION VERSION_GREATER "7")
+    list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
+endif()
+if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
+    if(VTK_MINOR_VERSION VERSION_GREATER "0")
+        list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
+    endif()
 endif()
 
 ####
@@ -169,18 +190,22 @@ find_package( Boost 1.54
     filesystem
     system
     thread
-    serialization
     mpi
+    serialization
+    timer
+    iostreams
     REQUIRED )
 else()
-
 find_package( Boost 1.54
     COMPONENTS
     program_options
     filesystem
     system
     thread
+    mpi
     serialization
+    timer
+    iostreams
     REQUIRED )
 endif()
 
@@ -274,8 +299,8 @@ list(APPEND LVR_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 include_directories("ext/gsl/include")
 
 # HighFive
-set(HIGHFIVE_EXAMPLES FALSE)
-set(HIGHFIVE_UNIT_TESTS FALSE)
+set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
+set(HIGHFIVE_UNIT_TESTS FALSE CACHE INTERNAL "")
 add_subdirectory(ext/HighFive)
 include_directories("ext/HighFive/include")
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
@@ -291,6 +316,18 @@ list(APPEND LVR_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
 add_subdirectory(ext/CTPL)
 include_directories(${CTPL_INCLUDE_DIR})
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CTPL_INSTALL_INCLUDE_DIR})
+
+# RiVLib
+set(RiVLib_DIR ext/rivlib/cmake)
+if(EXISTS ${PROJECT_SOURCE_DIR}/${RiVLib_DIR})
+    set(RiVLib_USE_STATIC_RUNTIME ON)
+    find_package(RiVLib COMPONENTS scanifc)
+    if(RiVLib_FOUND)
+        include_directories(${RiVLib_INCLUDE_DIRS})
+        list(APPEND LVR_DEFINITIONS -DLVR_USE_RIVLIB)
+        message(STATUS "Found RiVLib")
+    endif()
+endif()
 
 ##############################################################
 # ADD LVR DEFINITIONS
@@ -368,24 +405,12 @@ include(${VTK_USE_FILE})
 ##############################################################
 # VIEWERS
 ##############################################################
-
 find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
 if(Qt5_FOUND)
-  # Try to find libQGLViewer
-  find_library(QGLVIEWER_LIBRARY_RELEASE
-      NAMES qglviewer-qt5 qglviewer QGLViewer QGLViewer2 QGLViewer-qt5
-      PATHS /usr/lib /usr/local/lib ENV QGLVIEWERROOT ENV LD_LIBRARY_PATH ENV LIBRARY_PATH
-      PATH_SUFFIXES QGLViewer QGLViewer/release)
-  if(QGLVIEWER_LIBRARY_RELEASE)
-    message(STATUS "Found libqglviewer")
-    message(STATUS "Building qglviewer application")
-   add_subdirectory(src/qglviewer)
-  endif(QGLVIEWER_LIBRARY_RELEASE)
-
   find_package(QVTK)
   if(QVTK_FOUND)
     include_directories(${QVTK_INCLUDE_DIR})
-   add_subdirectory(src/tools/viewer)
+    add_subdirectory(src/tools/lvr2_viewer)
   endif(QVTK_FOUND)
 endif(Qt5_FOUND)
 
@@ -393,56 +418,33 @@ endif(Qt5_FOUND)
 # LIBRARIES
 ##############################################################
 
-add_subdirectory(src/liblvr)
+add_subdirectory(src/liblvr2)
 
 ##############################################################
 # BINARIES
 ##############################################################
 
-add_subdirectory(src/tools/reconstruct)
-add_subdirectory(src/tools/reconstruct2)
-add_subdirectory(src/tools/classifier)
-add_subdirectory(src/tools/colorize)
-add_subdirectory(src/tools/scanreduce)
-add_subdirectory(src/tools/convert)
-add_subdirectory(src/tools/asciiconverter)
-add_subdirectory(src/tools/texman)
-add_subdirectory(src/tools/tiogen)
-add_subdirectory(src/tools/meshoptimizer)
-add_subdirectory(src/tools/transform)
-add_subdirectory(src/tools/registration)
-add_subdirectory(src/tools/normals)
-add_subdirectory(src/tools/kaboom)
-add_subdirectory(src/tools/image_normals)
+add_subdirectory(src/tools/lvr2_reconstruct)
+add_subdirectory(src/tools/lvr2_asciiconverter)
+add_subdirectory(src/tools/lvr2_transform)
+add_subdirectory(src/tools/lvr2_kaboom)
+add_subdirectory(src/tools/lvr2_image_normals)
+add_subdirectory(src/tools/lvr2_plymerger)
+add_subdirectory(src/tools/lvr2_hdf5_builder)
+add_subdirectory(src/tools/lvr2_slam2hdf5)
 
-if(MPI_FOUND)
-    add_subdirectory(src/tools/mpi)
-endif(MPI_FOUND)
+if (RiVLib_FOUND)
+    add_subdirectory(src/tools/lvr2_riegl_project_converter)
+endif()
 
 if(CUDA_FOUND)
-    add_subdirectory(src/tools/cuda_normals)
+#    cuda_include_directories(ext/CTPL)
+    add_subdirectory(src/tools/lvr2_cuda_normals)
 endif()
 
 if(OPENCL_FOUND)
-    add_subdirectory(src/tools/cl_normals)
+    add_subdirectory(src/tools/lvr2_cl_normals)
 endif()
-
-if(CGAL_FOUND)
-  # There is a name clash between CGAL and std::pair. Should
-  # be fixed in the next CGAL release
-  if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_COMPILER_IS_GNU)
-#   add_subdirectory(src/tools/cgal_reconstruction)
-  endif()
-  #add_subdirectory(src/tools/fusion)
-# add_subdirectory(src/tools/slicer)
-endif(CGAL_FOUND)
-
-if(PCL_FOUND)
-# add_subdirectory(src/tools/scanfilter)
-  if(LIBFREENECT_FOUND)
-#   add_subdirectory(src/tools/kinectgrabber)
-  endif(LIBFREENECT_FOUND)
-endif(PCL_FOUND)
 
 ################################################################
 # CMAKE FILES

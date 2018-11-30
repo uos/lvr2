@@ -1,19 +1,28 @@
-/* Copyright (C) 2011 Uni Osnabrück
- * This file is part of the LAS VEGAS Reconstruction Toolkit,
+/**
+ * Copyright (c) 2018, University Osnabrück
+ * All rights reserved.
  *
- * LAS VEGAS is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the University Osnabrück nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
  *
- * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -26,16 +35,19 @@
 #include <vector>
 #include <utility>
 #include <cmath>
-#include <lvr2/io/MeshBuffer.hpp>
+
 #include <lvr2/algorithm/Materializer.hpp>
 
-#include <lvr/io/Progress.hpp>
+#include <lvr2/io/MeshBuffer.hpp>
+#include <lvr2/io/Progress.hpp>
+
+#include <lvr2/util/Util.hpp>
 
 namespace lvr2
 {
 
 template<typename BaseVecT>
-boost::shared_ptr<MeshBuffer<BaseVecT>> SimpleFinalizer<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
+MeshBufferPtr SimpleFinalizer<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
 {
     // Create vertex and normal buffer
     DenseVertexMap<size_t> idxMap;
@@ -103,18 +115,19 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> SimpleFinalizer<BaseVecT>::apply(const B
     }
 
     // create buffer object and pass values
-    auto buffer = boost::make_shared<lvr2::MeshBuffer<BaseVecT>>();
-    buffer->setVertices(vertices);
-    buffer->setFaceIndices(faces);
+    MeshBufferPtr buffer( new MeshBuffer );
+
+    buffer->setVertices(Util::convert_vector_to_shared_array(vertices), vertices.size() / 3);
+    buffer->setFaceIndices(Util::convert_vector_to_shared_array(faces), faces.size() / 3);
 
     if (m_normalData)
     {
-        buffer->setVertexNormals(normals);
+        buffer->setVertexNormals(Util::convert_vector_to_shared_array(normals));
     }
 
     if (m_colorData)
     {
-        buffer->setVertexColors(colors);
+        buffer->setVertexColors(Util::convert_vector_to_shared_array(colors));
     }
 
     return buffer;
@@ -165,7 +178,7 @@ void TextureFinalizer<BaseVecT>::setMaterializerResult(const MaterializerResult<
 
 
 template<typename BaseVecT>
-boost::shared_ptr<MeshBuffer<BaseVecT>> TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
+MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
 {
     // Create vertex buffer and all buffers holding vertex attributes
     vector<float> vertices;
@@ -193,7 +206,7 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> TextureFinalizer<BaseVecT>::apply(const 
     vector<Material> materials;
     vector<unsigned int> faceMaterials;
     vector<unsigned int> clusterMaterials;
-    vector<Texture<BaseVecT>> textures;
+    vector<Texture> textures;
     vector<vector<unsigned int>> clusterFaceIndices;
     size_t clusterCount = 0;
     size_t faceCount = 0;
@@ -220,8 +233,8 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> TextureFinalizer<BaseVecT>::apply(const 
     // This counter is used to determine the index of a newly inserted vertex
     size_t vertexCount = 0;
 
-    string comment = lvr::timestamp.getElapsedTime() + "Finalizing mesh ";
-    lvr::ProgressBar progress(m_cluster.numCluster(), comment);
+    string comment = timestamp.getElapsedTime() + "Finalizing mesh ";
+    ProgressBar progress(m_cluster.numCluster(), comment);
 
     // Loop over all clusters
     for (auto clusterH: m_cluster)
@@ -312,7 +325,7 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> TextureFinalizer<BaseVecT>::apply(const 
                 auto texOptional = m_materializerResult.get()
                     .m_textures.get()
                     .get(texHandle);
-                const Texture<BaseVecT>& texture = texOptional.get();
+                const Texture& texture = texOptional.get();
                 int textureIndex = texture.m_index;
 
                 // Material for this texture already created?
@@ -402,28 +415,46 @@ boost::shared_ptr<MeshBuffer<BaseVecT>> TextureFinalizer<BaseVecT>::apply(const 
 
     cout << endl;
 
-    auto buffer = boost::make_shared<MeshBuffer<BaseVecT>>();
-    buffer->setVertices(vertices);
-    buffer->setFaceIndices(faces);
+    MeshBufferPtr buffer = MeshBufferPtr( new MeshBuffer );
+    buffer->setVertices(Util::convert_vector_to_shared_array(vertices), vertices.size() / 3);
+    buffer->setFaceIndices(Util::convert_vector_to_shared_array(faces), faces.size() / 3);
 
     if (m_vertexNormals)
     {
-        buffer->setVertexNormals(normals);
+        buffer->setVertexNormals(Util::convert_vector_to_shared_array(normals));
     }
 
     if (m_clusterColors || m_vertexColors)
     {
-        buffer->setVertexColors(colors);
+        buffer->setVertexColors(Util::convert_vector_to_shared_array(colors));
     }
 
     if (m_materializerResult)
     {
-        buffer->setMaterials(materials);
-        buffer->setTextures(textures);
-        buffer->setFaceMaterialIndices(faceMaterials);
-        buffer->setClusterMaterialIndices(clusterMaterials);
-        buffer->setVertexTextureCoordinates(texCoords);
-        buffer->setClusterFaceIndices(clusterFaceIndices);
+        vector<Material> &mats = buffer->getMaterials();
+        vector<Texture> &texts = buffer->getTextures();
+        mats.insert(mats.end(), materials.begin(), materials.end());
+        texts.insert(texts.end(), textures.begin(), textures.end());
+
+        buffer->setFaceMaterialIndices(Util::convert_vector_to_shared_array(faceMaterials));
+        buffer->addIndexChannel(Util::convert_vector_to_shared_array(clusterMaterials), "cluster_material_indices", clusterMaterials.size(), 1);
+
+        // convert from 3 floats per vertex to 2...
+        floatArr texCoordsArr = floatArr( new float[(texCoords.size() / 3) * 2] );
+
+        for (size_t i = 0; i < texCoords.size() / 3; i++)
+        {
+            texCoordsArr[i*2 + 0] = texCoords[i*3 + 0];
+            texCoordsArr[i*2 + 1] = texCoords[i*3 + 1];
+        }
+        buffer->setTextureCoordinates(texCoordsArr);
+
+        // TODO TALK TO THOMAS
+        for (size_t i = 0; i < clusterFaceIndices.size(); i++)
+        {
+            std::string cluster_name = "cluster" + std::to_string(i) + "_face_indices";
+            buffer->addIndexChannel(Util::convert_vector_to_shared_array(clusterFaceIndices[i]), cluster_name, clusterFaceIndices[i].size(), 1);
+        }
     }
 
     return buffer;

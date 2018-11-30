@@ -1,21 +1,29 @@
-/* Copyright (C) 2011 Uni Osnabrück
- * This file is part of the LAS VEGAS Reconstruction Toolkit,
+/**
+ * Copyright (c) 2018, University Osnabrück
+ * All rights reserved.
  *
- * LAS VEGAS is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the University Osnabrück nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
  *
- * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 
  /*
  * AdaptiveKSearchSurface.cpp
@@ -35,15 +43,17 @@
 #include <fstream>
 #include <set>
 #include <random>
+#include <algorithm>
 
 #include <lvr2/util/Factories.hpp>
+#include <lvr2/io/Progress.hpp>
 
 namespace lvr2
 {
 
 template<typename BaseVecT>
 AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface()
-    : m_useRANSAC(true)
+    : m_calcMethod(0)
 {
     this->setKi(10);
     this->setKn(10);
@@ -52,17 +62,17 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface()
 
 template<typename BaseVecT>
 AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
-    PointBufferPtr<BaseVecT> buffer,
+    PointBufferPtr buffer,
     std::string searchTreeName,
     int kn,
     int ki,
     int kd,
-    bool useRansac,
+    int calcMethod,
     string posefile
 ) :
     PointsetSurface<BaseVecT>(buffer),
     m_searchTreeName(searchTreeName),
-    m_useRANSAC(useRansac)
+    m_calcMethod(calcMethod)
 {
     this->setKi(ki);
     this->setKn(kn);
@@ -71,14 +81,14 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
     init();
 
 
-    this->m_searchTree = getSearchTree(m_searchTreeName, buffer);
+    this->m_searchTree = getSearchTree<BaseVecT>(m_searchTreeName, buffer);
 
     if(!this->m_searchTree)
     {
-       this->m_searchTree = getSearchTree("flann", buffer);
-       cout << lvr::timestamp << "No valid search tree specified (" << searchTreeName << ")." << endl;
-       cout << lvr::timestamp << "Maybe you did not install the required library." << endl;
-       cout << lvr::timestamp << "Defaulting to flann." << endl;
+       this->m_searchTree = getSearchTree<BaseVecT>("flann", buffer);
+       cout << timestamp.getElapsedTime() << "No valid search tree specified (" << searchTreeName << ")." << endl;
+       cout << timestamp.getElapsedTime() << "Maybe you did not install the required library." << endl;
+       cout << timestamp.getElapsedTime() << "Defaulting to flann." << endl;
     }
 
     if(posefile != "")
@@ -92,11 +102,11 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 // template<typename BaseVecT>
 // void AdaptiveKSearchSurface<BaseVecT>::parseScanPoses(string posefile)
 // {
-//     cout << lvr::timestamp << "Parsing scan poses." << endl;
+//     cout << timestamp << "Parsing scan poses." << endl;
 //     std::ifstream in(posefile.c_str());
 //     if(!in.good())
 //     {
-//         cout << lvr::timestamp << "Unable to open scan pose file " << posefile << endl;
+//         cout << timestamp << "Unable to open scan pose file " << posefile << endl;
 //         return;
 //     }
 
@@ -123,7 +133,7 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 //         loader->setPointArray(points, v.size());
 //         size_t n = v.size();
 
-//         cout << lvr::timestamp << "Creating pose search tree(" << m_searchTreeName << ") with "
+//         cout << timestamp << "Creating pose search tree(" << m_searchTreeName << ") with "
 //             << n << " poses." << endl;
 
 // #ifdef LVR_USE_PCL
@@ -155,8 +165,8 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 
 //         if( !this->m_poseTree )
 //         {
-//             cout << lvr::timestamp << "No Valid Searchtree class specified!" << endl;
-//             cout << lvr::timestamp << "Class: " << m_searchTreeName << endl;
+//             cout << timestamp << "No Valid Searchtree class specified!" << endl;
+//             cout << timestamp << "Class: " << m_searchTreeName << endl;
 //         }
 //     }
 // }
@@ -164,11 +174,11 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 template<typename BaseVecT>
 void AdaptiveKSearchSurface<BaseVecT>::init()
 {
-    cout << lvr::timestamp << "##### Dataset statatistics: ##### " << endl << endl;
-    cout << "Num points \t: " << this->m_pointBuffer->getNumPoints() << endl;
-    cout <<  this->m_boundingBox << endl;
+    cout << timestamp.getElapsedTime() << "##### Dataset statatistics: ##### " << endl << endl;
+    cout << timestamp << "Num points \t: " << this->m_pointBuffer->numPoints() << endl;
+    cout << timestamp << this->m_boundingBox << endl;
     cout << endl;
-    this->m_centroid = Point<BaseVecT>(0.0, 0.0, 0.0);
+    this->m_centroid = Vector<BaseVecT>(0.0, 0.0, 0.0);
 }
 
 
@@ -177,17 +187,20 @@ template<typename BaseVecT>
 void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 {
     int k_0 = this->m_kn;
+    size_t numPoints = this->m_pointBuffer->numPoints();
+    FloatChannel pts = *(this->m_pointBuffer->getFloatChannel("points"));
 
-    cout << lvr::timestamp << "Initializing normal array..." << endl;
+    cout << timestamp.getElapsedTime() << "Initializing normal array..." << endl;
 
-    this->m_pointBuffer->addNormalChannel();
+    floatArr normals = floatArr( new float[numPoints * 3] );
+    this->m_pointBuffer->setNormalArray(normals, numPoints);
 
     // Create a progress counter
-    string comment = lvr::timestamp.getElapsedTime() + "Estimating normals ";
-    lvr::ProgressBar progress(this->m_pointBuffer->getNumPoints(), comment);
+    string comment = timestamp.getElapsedTime() + "Estimating normals ";
+    lvr2::ProgressBar progress(numPoints, comment);
 
     #pragma omp parallel for schedule(static)
-    for(size_t i = 0; i < this->m_pointBuffer->getNumPoints(); i++) {
+    for(size_t i = 0; i < numPoints; i++) {
         // We have to fit these vector to have the
         // correct return values when performing the
         // search on the stann kd tree. So we don't use
@@ -208,7 +221,11 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             k = k * 2;
 
             //T* point = this->m_points[i];
-            this->m_searchTree->kSearch(this->m_pointBuffer->getPoint(i), k, id, di);
+
+            id.clear();
+            di.clear();
+
+            this->m_searchTree->kSearch(pts[i], k, id, di);
 
             float min_x = 1e15f;
             float min_y = 1e15f;
@@ -226,13 +243,13 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
              *       library for bounding box calculation...
              */
             for(size_t j = 0; j < k; j++) {
-                min_x = min(min_x, this->m_pointBuffer->getPoint(id[j]).x);
-                min_y = min(min_y, this->m_pointBuffer->getPoint(id[j]).y);
-                min_z = min(min_z, this->m_pointBuffer->getPoint(id[j]).z);
+                min_x = std::min(min_x, pts[id[j]][0]);
+                min_y = std::min(min_y, pts[id[j]][1]);
+                min_z = std::min(min_z, pts[id[j]][2]);
 
-                max_x = max(max_x, this->m_pointBuffer->getPoint(id[j]).x);
-                max_y = max(max_y, this->m_pointBuffer->getPoint(id[j]).y);
-                max_z = max(max_z, this->m_pointBuffer->getPoint(id[j]).z);
+                max_x = std::max(max_x, pts[id[j]][0]);
+                max_y = std::max(max_y, pts[id[j]][1]);
+                max_z = std::max(max_z, pts[id[j]][2]);
 
                 dx = max_x - min_x;
                 dy = max_y - min_y;
@@ -246,19 +263,25 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         }
 
         // Create a query point for the current point
-        auto queryPoint = this->m_pointBuffer->getPoint(i);
+        auto queryPoint = pts[i];
 
         // Interpolate a plane based on the k-neighborhood
         Plane<BaseVecT> p;
         bool ransac_ok;
-        if(m_useRANSAC)
+
+        if(m_calcMethod == 1)
         {
             p = calcPlaneRANSAC(queryPoint, k, id, ransac_ok);
             // Fallback if RANSAC failed
             if(!ransac_ok)
             {
+                // compare speed
                 p = calcPlane(queryPoint, k, id);
             }
+        }
+        else if(m_calcMethod == 2)
+        {
+            p = calcPlaneIterative(queryPoint, k, id);
         }
         else
         {
@@ -275,7 +298,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             m_poseTree->kSearch(queryPoint, 1, nearestPoseIds);
             if(nearestPoseIds.size() == 1)
             {
-                auto nearest = this->m_pointBuffer->getPoint(nearestPoseIds[0]);
+                Vector<BaseVecT> nearest = pts[nearestPoseIds[0]];
                 normal = p.normal;
                 if(normal.dot(queryPoint - nearest) > 0)
                 {
@@ -284,7 +307,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             }
             else
             {
-                cout << lvr::timestamp << "Could not get nearest scan pose. Defaulting to centroid." << endl;
+                cout << timestamp.getElapsedTime() << "Could not get nearest scan pose. Defaulting to centroid." << endl;
                 normal =  p.normal;
                 if(normal.dot(queryPoint - m_centroid) > 0)
                 {
@@ -302,7 +325,10 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         }
 
         // Save result in normal array
-        *this->m_pointBuffer->getNormal(i) = normal;
+        normals[i*3 + 0] = normal.x;
+        normals[i*3 + 1] = normal.y;
+        normals[i*3 + 2] = normal.z;
+
         ++progress;
     }
     cout << endl;
@@ -317,30 +343,33 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 template<typename BaseVecT>
 void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
 {
+    size_t numPoints     = this->m_pointBuffer->numPoints();
+    FloatChannel pts     = *(this->m_pointBuffer->getFloatChannel("points"));
+    FloatChannel normals = *(this->m_pointBuffer->getFloatChannel("normals"));
     // Create a temporal normal array for the
     vector<Normal<BaseVecT>> tmp(
-        this->m_pointBuffer->getNumPoints(),
+        numPoints,
         Normal<BaseVecT>(0, 0, 1)
     );
 
     // Create progress output
-    string comment = lvr::timestamp.getElapsedTime() + "Interpolating normals ";
-    lvr::ProgressBar progress(this->m_pointBuffer->getNumPoints(), comment);
+    string comment = timestamp.getElapsedTime() + "Interpolating normals ";
+    lvr2::ProgressBar progress(numPoints, comment);
 
     // Interpolate normals
     #pragma omp parallel for schedule(static)
-    for( int i = 0; i < (int)this->m_pointBuffer->getNumPoints(); i++){
+    for( int i = 0; i < (int)numPoints; i++){
 
         vector<size_t> id;
         vector<float> di;
 
-        this->m_searchTree->kSearch(this->m_pointBuffer->getPoint(i), this->m_ki, id, di);
+        this->m_searchTree->kSearch(pts[i], this->m_ki, id, di);
 
         Vector<BaseVecT> mean;
 
         for(int j = 0; j < this->m_ki; j++)
         {
-            mean += this->m_pointBuffer->getNormal(id[j])->asVector();
+            mean += normals[id[j]];
         }
         auto mean_normal = mean.normalized();
 
@@ -349,24 +378,24 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
         ///todo Try to remove this code. Should improve the results at all.
         for(int j = 0; j < this->m_ki; j++)
         {
-            auto n = this->m_pointBuffer->getNormal(id[j]);
+            Normal<BaseVecT> n = normals[id[j]];
 
             // Only override existing normals if the interpolated
             // normals is significantly different from the initial
             // estimation. This helps to avoid a too smooth normal
             // field
-            if(fabs(n->dot(mean_normal.asVector())) > 0.2 )
+            if(fabs(n.dot(mean_normal)) > 0.2 )
             {
-                *this->m_pointBuffer->getNormal(id[j]) = mean_normal;
+                normals[id[j]] = mean_normal;
             }
         }
         ++progress;
     }
     cout << endl;
-    cout << lvr::timestamp << "Copying normals..." << endl;
+    cout << timestamp.getElapsedTime() << "Copying normals..." << endl;
 
-    for(size_t i = 0; i < this->m_pointBuffer->getNumPoints(); i++){
-        *this->m_pointBuffer->getNormal(i) = tmp[i];
+    for(size_t i = 0; i < numPoints; i++){
+        normals[i] = tmp[i];
     }
 }
 
@@ -450,8 +479,12 @@ bool AdaptiveKSearchSurface<BaseVecT>::boundingBoxOK(float dx, float dy, float d
 
 template<typename BaseVecT>
 pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
-    AdaptiveKSearchSurface<BaseVecT>::distance(Point<BaseVecT> p) const
+    AdaptiveKSearchSurface<BaseVecT>::distance(Vector<BaseVecT> p) const
 {
+
+    FloatChannel pts     = *(this->m_pointBuffer->getFloatChannel("points"));
+    FloatChannel normals = *(this->m_pointBuffer->getFloatChannel("normals"));
+    size_t numPoints     = pts.numAttributes();
     int k = this->m_kd;
 
     vector<size_t> id;
@@ -469,13 +502,13 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     for ( int i = 0; i < k; i++ )
     {
         //Get nearest tangent plane
-        auto vq = this->m_pointBuffer->getPoint(id[i]);
+        auto vq = pts[id[i]];
 
         //Get normal
-        auto n = *this->m_pointBuffer->getNormal(id[i]);
+        auto n = normals[id[i]];
 
         nearest += vq;
-        avg_normal += n.asVector();
+        avg_normal += n;
     }
 
     avg_normal /= k;
@@ -483,10 +516,10 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     auto normal = avg_normal.normalized();
 
     //Calculate distance
-    auto projectedDistance = (p - Point<BaseVecT>(nearest)).dot(normal.asVector());
-    auto euklideanDistance = (p - Point<BaseVecT>(nearest)).length();
+    auto projectedDistance = (p - Vector<BaseVecT>(nearest)).dot(normal);
+    auto euklideanDistance = (p - Vector<BaseVecT>(nearest)).length();
 
-    return make_pair(projectedDistance, euklideanDistance);
+    return std::make_pair(projectedDistance, euklideanDistance);
     // return make_pair(euklideanDistance, projectedDistance);
 }
 
@@ -500,11 +533,14 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
 
 template<typename BaseVecT>
 Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
-    const Point<BaseVecT> &queryPoint,
+    const Vector<BaseVecT> &queryPoint,
     int k,
     const vector<size_t> &id
 )
 {
+    FloatChannel pts     = *(this->m_pointBuffer->getFloatChannel("points"));
+    size_t numPoints     = pts.numAttributes();
+
     /**
      * @todo Think of a better way to code this magic number.
      */
@@ -516,7 +552,7 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
     Eigen::MatrixXf B(k, 3);
 
     for(int j = 0; j < k; j++) {
-        auto p = this->m_pointBuffer->getPoint(id[j]);
+        Vector<BaseVecT> p = pts[id[j]];
         F(j)    = p.y;
         B(j, 0) = 1.0f;
         B(j, 1) = p.x;
@@ -530,8 +566,8 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
     auto z2 = C(0) + C(1) * queryPoint.x + C(2) * (queryPoint.z + epsilon);
 
     // Calculcate the plane's normal via the cross product
-    auto diff1 = Point<BaseVecT>(queryPoint.x + epsilon, z1, queryPoint.z) - queryPoint;
-    auto diff2 = Point<BaseVecT>(queryPoint.x, z2, queryPoint.z + epsilon) - queryPoint;
+    auto diff1 = Vector<BaseVecT>(queryPoint.x + epsilon, z1, queryPoint.z) - queryPoint;
+    auto diff2 = Vector<BaseVecT>(queryPoint.x, z2, queryPoint.z + epsilon) - queryPoint;
 
     auto normal = diff1.cross(diff2).normalized();
 
@@ -545,6 +581,100 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
     // p.a = C(0);
     // p.b = C(1);
     // p.c = C(2);
+    p.normal = normal;
+    p.pos = queryPoint;
+
+    return p;
+}
+
+template<typename BaseVecT>
+Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneIterative(
+    const Vector<BaseVecT> &queryPoint,
+    int k,
+    const vector<size_t> &id
+)
+{
+
+    FloatChannel pts     = *(this->m_pointBuffer->getFloatChannel("points"));
+    FloatChannel normals = *(this->m_pointBuffer->getFloatChannel("normals"));
+    size_t numPoints     = pts.numAttributes();
+
+    Plane<BaseVecT> p;
+    Vector<BaseVecT> normal;
+
+
+    //x
+    float xx = 0.0;
+    float xy = 0.0;
+    float xz = 0.0;
+
+    //y
+    float yy = 0.0;
+    float yz = 0.0;
+
+    //z
+    float zz = 0.0;
+
+    for(int j = 0; j < k; j++) {
+        auto p = pts[id[j]];
+
+        auto r = p - queryPoint;
+
+        xx += r.x * r.x;
+        xy += r.x * r.y;
+        xz += r.x * r.z;
+        yy += r.y * r.y;
+        yz += r.y * r.z;
+        zz += r.z * r.z;
+
+    }
+
+    //determinante
+    float det_x = yy * zz - yz * yz;
+    float det_y = xx * zz - xz * xz;
+    float det_z = xx * yy - xy * xy;
+
+    float dir_x;
+    float dir_y;
+    float dir_z;
+    // det X biggest
+    if( det_x >= det_y && det_x >= det_z){
+
+        if(det_x <= 0.0){
+            //not a plane
+        }
+
+        dir_x = 1.0;
+        dir_y = (xz * yz - xy * zz) / det_x;
+        dir_z = (xy * yz - xz * yy) / det_x;
+    } //det Y biggest
+    else if( det_y >= det_x && det_y >= det_z){
+
+        if(det_y <= 0.0){
+            // not a plane
+        }
+
+        dir_x = (yz * xz - xy * zz) / det_y;
+        dir_y = 1.0;
+        dir_z = (xy * xz - yz * xx) / det_y;
+    } // det Z biggest
+    else{
+        if(det_z <= 0.0){
+            // not a plane
+        }
+
+        dir_x = (yz * xy - xz * yy ) / det_z;
+        dir_y = (xz * xy - yz * xx ) / det_z;
+        dir_z = 1.0;
+    }
+
+    float invnorm = 1/sqrtf( dir_x * dir_x + dir_y * dir_y + dir_z * dir_z );
+
+    normal.x = dir_x * invnorm;
+    normal.y = dir_y * invnorm;
+    normal.z = dir_z * invnorm;
+
+
     p.normal = normal;
     p.pos = queryPoint;
 
@@ -567,17 +697,20 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
 
 template<typename BaseVecT>
 Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
-    const Point<BaseVecT> &queryPoint,
+    const Vector<BaseVecT> &queryPoint,
     int k,
     const vector<size_t> &id,
     bool &ok
 )
 {
+    FloatChannel pts     = *(this->m_pointBuffer->getFloatChannel("points"));
+    FloatChannel normals = *(this->m_pointBuffer->getFloatChannel("normals"));
+    size_t numPoints     = pts.numAttributes();
 
    Plane<BaseVecT> p;
 
    //representation of best regression plane by point and normal
-   Point<BaseVecT> bestPoint;
+   Vector<BaseVecT> bestPoint;
    Normal<BaseVecT> bestNorm(0, 0, 1);
 
    float bestdist = numeric_limits<float>::max();
@@ -609,20 +742,20 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
        vector<unsigned long> sample_ids(ids.size());
        std::copy(ids.begin(), ids.end(), sample_ids.begin());
 
-       auto point1 = this->m_pointBuffer->getPoint(sample_ids[0]);
-       auto point2 = this->m_pointBuffer->getPoint(sample_ids[1]);
-       auto point3 = this->m_pointBuffer->getPoint(sample_ids[2]);
+       Vector<BaseVecT> point1 = pts[sample_ids[0]];
+       Vector<BaseVecT> point2 = pts[sample_ids[1]];
+       Vector<BaseVecT> point3 = pts[sample_ids[2]];
 
        auto n0 = (point1 - point2).cross(point1 - point3).normalized();
 
        //compute error to at most 50 other randomly chosen points
        dist = 0;
-       int n = min(50, k);
+       int n = std::min(50, k);
        for(int i = 0; i < n; i++)
        {
            int index = id[rand() % k];
-           auto refpoint = this->m_pointBuffer->getPoint(index);
-           dist += fabs(refpoint.dot(n0.asVector()) - point1.dot(n0.asVector()));
+           Vector<BaseVecT> refpoint = pts[index];
+           dist += fabs(refpoint.dot(n0) - point1.dot(n0));
        }
        if(n != 0) dist /= n;
 
@@ -806,4 +939,4 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
 
 
 
-} // namespace lvr
+} // namespace lvr2
