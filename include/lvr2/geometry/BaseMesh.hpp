@@ -345,7 +345,7 @@ public:
      * to reduce the number of heap allocations if this method is called in
      * a loop. If you are not calling it in a loop or can't, for some reason,
      * take advantages of this method's signature, you can call the other
-     * overload of this method which just returns the vector. Such convinient.
+     * overload of this method which just returns the vector. Such convenient.
      *
      * Note: you probably should remember to `clear()` the vector before
      * passing it into this method.
@@ -363,7 +363,7 @@ public:
      * in a loop. If you are not calling it in a loop or can't, for some
      * reason, take advantages of this method's signature, you can call the
      * other overload of this method which just returns the vector. Such
-     * convinient.
+     * convenient.
      *
      * Note: you probably should remember to `clear()` the vector before
      * passing it into this method.
