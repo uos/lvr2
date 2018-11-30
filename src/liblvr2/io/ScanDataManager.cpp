@@ -5,22 +5,24 @@ namespace lvr2
 
 ScanDataManager::ScanDataManager(std::string filename) : m_io(filename)
 {
-    m_scanData = m_io.getRawScanData(false);
 }
 
-ScanData ScanDataManager::loadPointCloudData(size_t idx)
+void ScanDataManager::loadPointCloudData(ScanData& sd)
 {
-    if (!m_scanData[idx].m_pointsLoaded)
+    if (!sd.m_pointsLoaded)
     {
-        m_scanData[idx] = m_io.getRawScanData(m_scanData[idx].m_positionNumber, true);
+        sd = m_io.getSingleScanData(sd.m_scanDataRoot, sd.m_positionNumber, true);
     }
-
-    return m_scanData[idx];
 }
 
-std::vector<ScanData>& ScanDataManager::getScanData()
+std::vector<std::string> ScanDataManager::getScanDataGroups()
 {
-    return m_scanData;
+    return m_io.getScanDataGroups();
+}
+
+std::vector<ScanData> ScanDataManager::getScanData(std::string scanDataGroup)
+{
+    return m_io.getScanData(scanDataGroup, false);
 }
 
 } // namespace lvr2

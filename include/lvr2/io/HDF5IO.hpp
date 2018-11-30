@@ -88,7 +88,11 @@ class HDF5IO : public BaseIO
 
     Texture getImage(std::string groupName, std::string datasetName);
 
-    ScanData getRawScanData(int nr, bool load_points = true);
+    ScanData getSingleScanData(std::string scanDataRoot, int nr, bool load_points = true);
+
+    std::vector<std::string> getScanDataGroups();
+
+    std::vector<ScanData> getScanData(std::string scanDataRoot, bool load_points = true);
 
     std::vector<ScanData> getRawScanData(bool load_points = true);
 
@@ -160,6 +164,12 @@ class HDF5IO : public BaseIO
     bool exist(const std::string &groupName);
 
     void write_base_structure();
+
+    bool isScansGroup(std::string groupName);
+
+    std::vector<std::string> getScanDataGroups(std::string root);
+
+    bool isGroup(HighFive::Group grp, std::string objName);
 
     HighFive::File*         m_hdf5_file;
 

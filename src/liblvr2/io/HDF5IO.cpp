@@ -185,36 +185,118 @@ Texture HDF5IO::getImage(HighFive::Group& g, std::string datasetName)
     return ret;
 }
 
-std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
+bool HDF5IO::isScansGroup(std::string groupName)
 {
-    std::vector<ScanData> ret;
+    if (!exist(groupName))
+    {
+        return false;
+    }
 
-    if (!exist("/raw/scans/"))
+    HighFive::Group grp = getGroup(groupName);
+
+    // very simple condition to be a scansgroup atm
+    if (exist(groupName + "/position_00000") || exist(groupName + "/position_00001"))
+    {
+        return true;
+    }
+
+    return false;
+}
+
+std::vector<std::string> HDF5IO::getScanDataGroups()
+{
+    return getScanDataGroups("");
+}
+
+std::vector<std::string> HDF5IO::getScanDataGroups(std::string root)
+{
+    std::vector<std::string> ret;
+
+    if (!exist(root))
     {
         return ret;
     }
 
-    HighFive::Group raw_group = getGroup("/raw/scans/");
-    size_t num_objects = raw_group.getNumberObjects();
+    HighFive::Group grp;
+
+    try
+    {
+        grp = getGroup(root);
+    }
+    catch (HighFive::Exception &e)
+    {
+        return ret;
+    }
+
+    // if it is a scansgroup we don't search in its leafs
+    if (isScansGroup(root))
+    {
+        ret.push_back(root);
+        return ret;
+    }
+
+    std::vector<std::string> leaf_objects = grp.listObjectNames();
+
+    for (std::string leaf : leaf_objects)
+    {
+        if (isGroup(grp, leaf))
+        {
+            std::vector<std::string> leaf_ret = getScanDataGroups(root + "/" + leaf);
+
+            for (std::string tmp : leaf_ret)
+            {
+                ret.push_back(tmp);
+            }
+        }
+    }
+}
+
+std::vector<ScanData> HDF5IO::getScanData(std::string scanDataRoot, bool load_points)
+{
+
+    std::vector<ScanData> ret;
+
+    if (!exist(scanDataRoot))
+    {
+        return ret;
+    }
+
+    HighFive::Group root_group = getGroup(scanDataRoot);
+    size_t num_objects = root_group.getNumberObjects();
 
     for (size_t i = 0; i < num_objects; i++)
     {
         int pos_num;
+        std::string cur_scan_pos = root_group.getObjectName(i);
 
-        if (std::sscanf(raw_group.getObjectName(i).c_str(), "position_%5d", &pos_num))
+        if (std::sscanf(cur_scan_pos.c_str(), "position_%5d", &pos_num))
         {
-            HighFive::Group pos_grp = raw_group.getGroup(raw_group.getObjectName(i));
-
-            ScanData cur_pos = getRawScanData(pos_num, load_points);
+            ScanData cur_pos = getSingleScanData(scanDataRoot, pos_num, load_points);
             ret.push_back(cur_pos);
         }
     }
 
     return ret;
+
 }
 
-ScanData HDF5IO::getRawScanData(int nr, bool load_points)
+std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
 {
+    return getScanData("/raw/scans/", load_points);
+}
+
+ScanData HDF5IO::getSingleScanData(std::string scanDataRoot, int nr, bool load_points)
+{
+
+    // annotation hack
+    bool is_annotation = false;
+    if (scanDataRoot == "/annotation")
+    {
+        is_annotation = true;
+
+        nr -= 1;
+    }
+
     ScanData ret;
 
     if (m_hdf5_file)
@@ -222,10 +304,13 @@ ScanData HDF5IO::getRawScanData(int nr, bool load_points)
         char buffer[128];
         sprintf(buffer, "position_%05d", nr);
         string nr_str(buffer);
+        std::string groupName = scanDataRoot + "/" + nr_str;
 
-        std::string groupName = "/raw/scans/" + nr_str;
-
-        HighFive::Group g = getGroup(groupName);
+        // annotation hack
+        if (is_annotation)
+        {
+            groupName = "/raw/scans/" + nr_str;
+        }
 
         unsigned int dummy;
         floatArr fov           = getArray<float>(groupName, "fov", dummy);
@@ -236,24 +321,56 @@ ScanData HDF5IO::getRawScanData(int nr, bool load_points)
 
         if (load_points)
         {
-            floatArr points        = getArray<float>(groupName, "points", dummy);
-            ret.m_points = PointBufferPtr(new PointBuffer(points, dummy/3));
+            floatArr points    = getArray<float>(groupName, "points", dummy);
+
+            if (points)
+            {
+                ret.m_points = PointBufferPtr(new PointBuffer(points, dummy/3));
+            }
+
+            // annotation hack
+            if (is_annotation)
+            {
+                std::vector<size_t> dim;
+                sprintf(buffer, "position_%05d", nr + 1);
+                floatArr spectral = getArray<float>(scanDataRoot + "/" + buffer, "spectral", dim);
+
+                ret.m_points->addFloatChannel(spectral, "spectral_channels", dim[0], dim[1]);
+            }
         }
 
-        ret.m_hFieldOfView = fov[0];
-        ret.m_vFieldOfView = fov[1];
+        if (fov)
+        {
+            ret.m_hFieldOfView = fov[0];
+            ret.m_vFieldOfView = fov[1];
+        }
 
-        ret.m_hResolution = res[0];
-        ret.m_vResolution = res[1];
+        if (res)
+        {
+            ret.m_hResolution = res[0];
+            ret.m_vResolution = res[1];
+        }
 
-        ret.m_registration   = Matrix4<BaseVector<float> >(registration.get());
-        ret.m_poseEstimation = Matrix4<BaseVector<float> >(pose_estimate.get());
+        if (registration)
+        {
+            ret.m_registration   = Matrix4<BaseVector<float> >(registration.get());
+        }
 
-        ret.m_boundingBox = BoundingBox<BaseVector<float> >(
-                {bb[0], bb[1], bb[2]}, {bb[3], bb[4], bb[5]});
+        if (pose_estimate)
+        {
+            ret.m_poseEstimation = Matrix4<BaseVector<float> >(pose_estimate.get());
+        }
+
+        if (bb)
+        {
+            ret.m_boundingBox = BoundingBox<BaseVector<float> >(
+                    {bb[0], bb[1], bb[2]}, {bb[3], bb[4], bb[5]});
+        }
 
         ret.m_pointsLoaded = load_points;
         ret.m_positionNumber = nr;
+
+        ret.m_scanDataRoot = scanDataRoot;
     }
 
     return ret;
@@ -536,7 +653,10 @@ bool HDF5IO::exist(const std::string &groupName)
         {
             if (cur_grp.exist(groupNames[i]))
             {
-                cur_grp = cur_grp.getGroup(groupNames[i]);
+                if (i < groupNames.size() -1)
+                {
+                    cur_grp = cur_grp.getGroup(groupNames[i]);
+                }
             }
             else
             {
@@ -555,6 +675,23 @@ bool HDF5IO::exist(const std::string &groupName)
     }
 
     return true;
+}
+
+bool HDF5IO::isGroup(HighFive::Group grp, std::string objName)
+{
+    H5G_stat_t stats;
+
+    if (H5Gget_objinfo(grp.getId(), objName.c_str(), true, &stats) < 0)
+    {
+        return false;
+    }
+
+    if (stats.type == H5G_GROUP)
+    {
+        return true;
+    }
+
+    return false;
 }
 
 

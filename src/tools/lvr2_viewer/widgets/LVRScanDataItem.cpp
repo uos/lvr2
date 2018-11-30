@@ -1,5 +1,4 @@
 #include "LVRScanDataItem.hpp"
-
 #include "LVRModelItem.hpp"
 #include "LVRPointCloudItem.hpp"
 #include "LVRPoseItem.hpp"
@@ -43,7 +42,7 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
 
 void LVRScanDataItem::loadPointCloudData()
 {
-    m_data = m_sdm->loadPointCloudData(m_idx);
+    m_sdm->loadPointCloudData(m_data);
 
     m_model = ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model(m_data.m_points))));
 

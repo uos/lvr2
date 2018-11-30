@@ -1219,7 +1219,12 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
         if (info.suffix() == "h5")
         {
             std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(argv[i]));
-            std::vector<ScanData> &scanData = sdm->getScanData();
+            std::cout << "test" << std::endl;
+            auto x = sdm->getScanDataGroups();
+            for (auto y : x)
+                std::cout << y << std::endl;
+            std::cout << "test end" << std::endl;
+            std::vector<ScanData> scanData = sdm->getScanData("/annotation");
 
             for (size_t i = 0; i < scanData.size(); i++)
             {
@@ -1229,7 +1234,6 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
                 m_renderer->AddActor(item->getBoundingBoxBridge()->getActor());
                 lastItem = item;
             }
-            //refreshView();
         }
         else
         {
