@@ -1,21 +1,29 @@
-/* Copyright (C) 2011 Uni Osnabrück
- * This file is part of the LAS VEGAS Reconstruction Toolkit,
+/**
+ * Copyright (c) 2018, University Osnabrück
+ * All rights reserved.
  *
- * LAS VEGAS is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the University Osnabrück nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
  *
- * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 
 /*
  * Normal.hpp
@@ -44,8 +52,11 @@ template <typename> struct Vector;
  * `Vector::normalized()`.
  */
 template <typename BaseVecT>
-struct Normal : private Vector<BaseVecT>
+struct Normal : public Vector<BaseVecT>
 {
+    Normal() { this->x = 0; this->y = 1; this->z = 0;}
+
+
     // ^ Private inheritance to restrict modifying access to the vector's data
     // in order to prevent modifications that would result in a non-normalized
     // vector.
@@ -104,27 +115,14 @@ struct Normal : private Vector<BaseVecT>
      * need to be `Normal<BaseVecT>`. It has to contain at least one element.
      */
     template<typename CollectionT>
-    static Normal<BaseVecT> average(const CollectionT& normals);
+    static Normal<BaseVecT>& average(const CollectionT& normals);
 
-    // Cast normal to vector
-    Vector<BaseVecT> asVector() const;
+    /// Allows to assign Vectors to normals. Vector data will be copied
+    /// and normalized.
+    Normal<BaseVecT>& operator=(const Vector<BaseVecT>& other);
 
-    // Publicly re-export methods that do not modify the vector and thus are
-    // safe to use.
-    using Vector<BaseVecT>::length;
-    using Vector<BaseVecT>::length2;
-    using Vector<BaseVecT>::cross;
-    using Vector<BaseVecT>::dot;
-    using Vector<BaseVecT>::operator==;
-    using Vector<BaseVecT>::operator!=;
-    using Vector<BaseVecT>::operator+;
-    using Vector<BaseVecT>::operator-;
-
-    // While already private, we delete these functions as they don't make
-    // sense.
-    BaseVecT& operator*=(const typename BaseVecT::CoordType &scale) = delete;
-    BaseVecT& operator/=(const typename BaseVecT::CoordType &scale) = delete;
-
+    Normal<BaseVecT> operator+(const Vector<BaseVecT>& other) const;
+    Normal<BaseVecT> operator-(const Vector<BaseVecT>& other) const;
     Normal<BaseVecT> operator-() const;
 };
 

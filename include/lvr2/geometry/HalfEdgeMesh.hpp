@@ -1,21 +1,29 @@
-/* Copyright (C) 2011 Uni Osnabrück
- * This file is part of the LAS VEGAS Reconstruction Toolkit,
+/**
+ * Copyright (c) 2018, University Osnabrück
+ * All rights reserved.
  *
- * LAS VEGAS is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the University Osnabrück nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
  *
- * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 
 /*
  * HalfEdgeMesh.hpp
@@ -39,12 +47,13 @@ using std::vector;
 using std::get;
 using std::min;
 
-#include "Point.hpp"
-#include "Vector.hpp"
-#include "BaseMesh.hpp"
-#include "HalfEdge.hpp"
-#include "HalfEdgeFace.hpp"
-#include "HalfEdgeVertex.hpp"
+#include <lvr2/geometry/Vector.hpp>
+#include <lvr2/geometry/BaseMesh.hpp>
+#include <lvr2/geometry/HalfEdge.hpp>
+#include <lvr2/geometry/HalfEdgeFace.hpp>
+#include <lvr2/geometry/HalfEdgeVertex.hpp>
+
+#include <lvr2/io/MeshBuffer.hpp>
 
 namespace lvr2
 {
@@ -66,13 +75,16 @@ public:
     using Face = HalfEdgeFace;
     using Vertex = HalfEdgeVertex<BaseVecT>;
 
+    HalfEdgeMesh();
+    HalfEdgeMesh(MeshBufferPtr ptr);
+
     // ========================================================================
     // = Implementing the `BaseMesh` interface (see BaseMesh for docs)
     // ========================================================================
 
     // We declare all methods as `final` to make devirtualization optimizations
     // more likely and effective.
-    VertexHandle addVertex(Point<BaseVecT> pos) final;
+    VertexHandle addVertex(Vector<BaseVecT> pos) final;
     FaceHandle addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H) final;
     void removeFace(FaceHandle handle) final;
     EdgeCollapseResult collapseEdge(EdgeHandle edgeH) final;
@@ -86,12 +98,14 @@ public:
     bool containsFace(FaceHandle fH) const;
     bool containsEdge(EdgeHandle eH) const;
 
+    bool isBorderEdge(EdgeHandle handle) const;
+
     Index nextVertexIndex() const;
     Index nextFaceIndex() const;
     Index nextEdgeIndex() const;
 
-    Point<BaseVecT> getVertexPosition(VertexHandle handle) const final;
-    Point<BaseVecT>& getVertexPosition(VertexHandle handle) final;
+    Vector<BaseVecT> getVertexPosition(VertexHandle handle) const final;
+    Vector<BaseVecT>& getVertexPosition(VertexHandle handle) final;
 
     array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const final;
     array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const final;

@@ -1,21 +1,29 @@
-/* Copyright (C) 2011 Uni Osnabrück
- * This file is part of the LAS VEGAS Reconstruction Toolkit,
+/**
+ * Copyright (c) 2018, University Osnabrück
+ * All rights reserved.
  *
- * LAS VEGAS is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the University Osnabrück nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
  *
- * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 
 /*
  * Vector.hpp
@@ -35,7 +43,6 @@ namespace lvr2
 
 // Forward declarations
 template <typename> struct Normal;
-template <typename> struct Point;
 
 /**
  * @brief A strongly-typed vector, representing a direction vector.
@@ -78,6 +85,15 @@ struct Vector : public BaseVecT
      */
     void normalize();
 
+    /**
+     * @brief Returns the centroid of all points in the given collection.
+     *
+     * The collection need to work with a range-based for-loop and its elements
+     * need to be `Point<BaseVecT>`. It has to contain at least one element.
+     */
+    template<typename CollectionT>
+    static Vector<BaseVecT> centroid(const CollectionT& points);
+
 
     /**
      * @brief Returns the average of all vectors in the given collection.
@@ -88,20 +104,13 @@ struct Vector : public BaseVecT
     template<typename CollectionT>
     static Vector<BaseVecT> average(const CollectionT& vecs);
 
-    // It doesn't make sense to talk about the distance between two direction
-    // vectors. It's the same as asking: "What is the distance between
-    // '3 meters north' and '10 cm east'.
-    typename BaseVecT::CoordType distance(const BaseVecT &other) const = delete;
-    typename BaseVecT::CoordType distance2(const BaseVecT &other) const = delete;
+
+    // Calculate the distance between this point and the given point.
+    typename BaseVecT::CoordType distanceFrom(const Vector<BaseVecT> &other) const;
+    typename BaseVecT::CoordType squaredDistanceFrom(const Vector<BaseVecT> &other) const;
 
     // More type safe overwrite
     Vector<BaseVecT> cross(const Vector<BaseVecT> &other) const;
-
-    // The standard operators are deleted and replaced by strongly typed ones.
-    BaseVecT operator+(const BaseVecT &other) const = delete;
-    BaseVecT operator-(const BaseVecT &other) const = delete;
-    BaseVecT& operator-=(const BaseVecT &other) = delete;
-    BaseVecT& operator+=(const BaseVecT &other) = delete;
 
     // Addition/subtraction between two vectors
     Vector<BaseVecT> operator+(const Vector<BaseVecT> &other) const;
@@ -111,12 +120,14 @@ struct Vector : public BaseVecT
 
     /// Scalar multiplication.
     Vector<BaseVecT> operator*(const typename BaseVecT::CoordType &scale) const;
+
     /// Scalar division.
     Vector<BaseVecT> operator/(const typename BaseVecT::CoordType &scale) const;
 
-    // Addition/subtraction between point and vector
-    Point<BaseVecT> operator+(const Point<BaseVecT> &other) const;
-    Point<BaseVecT> operator-(const Point<BaseVecT> &other) const;
+    typename BaseVecT::CoordType operator*(const Vector<BaseVecT> &other) const
+    {
+        return this->dot(other);
+    }
 };
 
 template<typename BaseVecT>
@@ -125,6 +136,7 @@ inline std::ostream& operator<<(std::ostream& os, const Vector<BaseVecT>& v)
     os << "Vector[" << v.x << ", " << v.y << ", " << v.z << "]";
     return os;
 }
+
 
 } // namespace lvr2
 

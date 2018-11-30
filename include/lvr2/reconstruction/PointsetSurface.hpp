@@ -1,19 +1,28 @@
-/* Copyright (C) 2011 Uni Osnabrück
- * This file is part of the LAS VEGAS Reconstruction Toolkit,
+/**
+ * Copyright (c) 2018, University Osnabrück
+ * All rights reserved.
  *
- * LAS VEGAS is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the University Osnabrück nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
  *
- * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -29,6 +38,7 @@
 #include <memory>
 #include <utility>
 
+#include <lvr2/geometry/Normal.hpp>
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/reconstruction/SearchTree.hpp>
@@ -38,21 +48,19 @@ using std::pair;
 namespace lvr2
 {
 
+
 /**
  * @brief       An interface class to wrap all functionality that is needed
  *              to generate a surface approximation from point cloud data.
  *
  *              Classes that implement this interface can be used for Marching
- *              Cubes based mesh generation algorithms in this toolkit via
+ *              Cubes based mesh generation algorithms in via
  *              the @ref SurfaceReconstruction interface.
  */
 template<typename BaseVecT>
 class PointsetSurface
 {
 public:
-
-    // /// Shared pointer type declaration
-    // typedef std::shared_ptr<PointsetSurface<BaseVecT>> Ptr;
 
     /**
      * @brief Returns the distance of vertex v from the nearest tangent plane
@@ -64,7 +72,7 @@ public:
      *         the nearest data point.
      */
     virtual pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
-        distance(Point<BaseVecT> v) const = 0;
+        distance(Vector<BaseVecT> v) const = 0;
     /**
      * @brief   Calculates surface normals for each data point in the given
      *          PointBuffeer. If the buffer alreay contains normal information
@@ -80,19 +88,19 @@ public:
      *
      * @return  The normal
      */
-    virtual Normal<BaseVecT> getInterpolatedNormal(Point<BaseVecT> position) const;
+    virtual Normal<BaseVecT> getInterpolatedNormal(Vector<BaseVecT> position) const;
 
     /**
      * @brief   Returns the internal point buffer. After a call of
      *          @ref calculateSurfaceNormals the buffer will contain
      *          normal information.
      */
-    virtual PointBufferPtr<BaseVecT> pointBuffer() const;
+    virtual PointBufferPtr pointBuffer() const;
 
     /**
      * @brief   Returns a pointer to the search tree
      */
-    const SearchTree<BaseVecT>& searchTree() const;
+    std::shared_ptr<SearchTree<BaseVecT>> searchTree() const;
 
     /**
      * @brief   Returns the bounding box of the point set
@@ -119,7 +127,6 @@ public:
      */
     void setKd(int k) { m_kd = k; }
 
-
 protected:
 
     /**
@@ -127,12 +134,12 @@ protected:
      *          buffer does not contain surface normals, you will have to call
      *          @ref calculateSurfaceNormals before the first call @distance.
      */
-    PointsetSurface(PointBufferPtr<BaseVecT> pointcloud);
+    PointsetSurface(PointBufferPtr pointcloud);
 
     PointsetSurface() {};
 
     /// The point cloud used for surface approximation
-    PointBufferPtr<BaseVecT> m_pointBuffer;
+    PointBufferPtr m_pointBuffer;
 
     /// The search tree that is built from the point cloud data
     std::shared_ptr<SearchTree<BaseVecT>> m_searchTree;

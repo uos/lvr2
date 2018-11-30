@@ -1,3 +1,30 @@
+/**
+ * Copyright (c) 2018, University Osnabrück
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the University Osnabrück nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 //
 // Created by Christian Swan on 09.10.17.
 //
@@ -10,15 +37,17 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
+#include <iostream>
+
 namespace lvr2
 {
 
 template<typename BaseVecT>
 GLUtesselator* Tesselator<BaseVecT>::m_tesselator;
 template<typename BaseVecT>
-vector<Point<BaseVecT>> Tesselator<BaseVecT>::m_vertices;
+vector<Vector<BaseVecT>> Tesselator<BaseVecT>::m_vertices;
 template<typename BaseVecT>
-vector<Point<BaseVecT>> Tesselator<BaseVecT>::m_faces;
+vector<Vector<BaseVecT>> Tesselator<BaseVecT>::m_faces;
 template<typename BaseVecT>
 GLenum Tesselator<BaseVecT>::m_type;
 
@@ -42,7 +71,7 @@ void Tesselator<BaseVecT>::combineDataCallback(GLdouble coords[3],
     vertex[1] = coords[1];
     vertex[2] = coords[2];
 
-    Point<BaseVecT> v(vertex[0], vertex[1], vertex[2]);
+    Vector<BaseVecT> v(vertex[0], vertex[1], vertex[2]);
     m_vertices.push_back(v);
 
     *outData = vertex;
@@ -98,7 +127,9 @@ void Tesselator<BaseVecT>::endCallback(void)
 template<typename BaseVecT>
 void Tesselator<BaseVecT>::errorCallback(GLenum errno)
 {
-    cerr << "[Tesselator-Error:] " << __FILE__ << " (" << __LINE__ << "): " << gluErrorString(errno) << endl;
+    std::cerr << "[Tesselator-Error:] "
+              << __FILE__ << " (" << __LINE__ << "): "
+              << gluErrorString(errno) << std::endl;
 }
 
 template<typename BaseVecT>
@@ -106,7 +137,7 @@ void Tesselator<BaseVecT>::vertexCallback(void* data)
 {
     const GLdouble *ptr = (const GLdouble*)data;
 
-    Point<BaseVecT> vertex(*ptr, *(ptr+1), *(ptr+2));
+    Vector<BaseVecT> vertex(*ptr, *(ptr+1), *(ptr+2));
     m_vertices.push_back(vertex);
 }
 
@@ -138,8 +169,8 @@ void Tesselator<BaseVecT>::apply(
 )
 {
     // Status message for mesh generation
-    string comment = lvr::timestamp.getElapsedTime() + "Tesselating clusters ";
-    lvr::ProgressBar progress(clusters.numCluster(), comment);
+    string comment = timestamp.getElapsedTime() + "Tesselating clusters ";
+    ProgressBar progress(clusters.numCluster(), comment);
 
     init();
 
@@ -197,7 +228,7 @@ void Tesselator<BaseVecT>::apply(
     gluDeleteTess(m_tesselator);
     m_tesselator = 0;
 
-    if(!lvr::timestamp.isQuiet())
+    if(!timestamp.isQuiet())
         cout << endl;
 }
 

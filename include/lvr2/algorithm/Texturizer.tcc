@@ -1,20 +1,29 @@
-/* Copyright (C) 2011 Uni Osnabrück
-* This file is part of the LAS VEGAS Reconstruction Toolkit,
-*
-* LAS VEGAS is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*
-* LAS VEGAS is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
-*/
+/**
+ * Copyright (c) 2018, University Osnabrück
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the University Osnabrück nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /*
 * Texturizer.tcc
@@ -24,10 +33,13 @@
 *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
 */
 
-#include <lvr/io/Progress.hpp>
+#include <lvr2/io/Progress.hpp>
+#include <lvr2/io/Timestamp.hpp>
+#include <lvr2/algorithm/ColorAlgorithms.hpp>
+
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include <lvr2/algorithm/ColorAlgorithms.hpp>
+
 
 namespace lvr2
 {
@@ -47,13 +59,13 @@ Texturizer<BaseVecT>::Texturizer(
 
 
 template<typename BaseVecT>
-Texture<BaseVecT> Texturizer<BaseVecT>::getTexture(TextureHandle h)
+Texture Texturizer<BaseVecT>::getTexture(TextureHandle h)
 {
     return m_textures[h];
 }
 
 template<typename BaseVecT>
-StableVector<TextureHandle, Texture<BaseVecT>> Texturizer<BaseVecT>::getTextures()
+StableVector<TextureHandle, Texture> Texturizer<BaseVecT>::getTextures()
 {
     return m_textures;
 }
@@ -67,8 +79,8 @@ int Texturizer<BaseVecT>::getTextureIndex(TextureHandle h)
 template<typename BaseVecT>
 void Texturizer<BaseVecT>::saveTextures()
 {
-    string comment = lvr::timestamp.getElapsedTime() + "Saving textures ";
-    lvr::ProgressBar progress(m_textures.numUsed(), comment);
+    string comment = timestamp.getElapsedTime() + "Saving textures ";
+    ProgressBar progress(m_textures.numUsed(), comment);
     for (auto h : m_textures)
     {
         m_textures[h].save();
@@ -125,13 +137,15 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
     unsigned short int sizeY = ceil((boundingRect.m_maxDistB - boundingRect.m_minDistB) / m_texelSize);
 
     // Create texture
-    Texture<BaseVecT> texture(index, sizeX, sizeY, 3, 1, m_texelSize);
+    Texture texture(index, sizeX, sizeY, 3, 1, m_texelSize);
 
-    string comment = lvr::timestamp.getElapsedTime() + "Computing texture pixels ";
-    lvr::ProgressBar progress(sizeX * sizeY, comment);
+    string comment = timestamp.getElapsedTime() + "Computing texture pixels ";
+    ProgressBar progress(sizeX * sizeY, comment);
 
-    if (surface.pointBuffer()->hasRgbColor())
+    if (surface.pointBuffer()->hasColors())
     {
+        UCharChannel colors = *(surface.pointBuffer()->getUCharChannel("colors"));
+
         // For each texel find the color of the nearest point
         #pragma omp parallel for schedule(dynamic,1) collapse(2)
         for (int y = 0; y < sizeY; y++)
@@ -142,21 +156,21 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
 
                 vector<size_t> cv;
 
-                Point<BaseVecT> currentPos =
+                Vector<BaseVecT> currentPos =
                     boundingRect.m_supportVector
                     + boundingRect.m_vec1 * (x * m_texelSize + boundingRect.m_minDistA - m_texelSize / 2.0)
                     + boundingRect.m_vec2 * (y * m_texelSize + boundingRect.m_minDistB - m_texelSize / 2.0);
 
-                surface.searchTree().kSearch(currentPos, k, cv);
+                surface.searchTree()->kSearch(currentPos, k, cv);
 
                 uint8_t r = 0, g = 0, b = 0;
 
                 for (size_t pointIdx : cv)
                 {
-                    array<uint8_t,3> colors = *(surface.pointBuffer()->getRgbColor(pointIdx));
-                    r += colors[0];
-                    g += colors[1];
-                    b += colors[2];
+                    auto cur_color = colors[pointIdx];
+                    r += cur_color[0];
+                    g += cur_color[1];
+                    b += cur_color[2];
                 }
 
                 r /= k;
@@ -190,7 +204,7 @@ void Texturizer<BaseVecT>::findKeyPointsInTexture(const TextureHandle texH,
         const cv::Ptr<cv::Feature2D>& detector,
         std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
 {
-    const Texture<BaseVecT> texture = m_textures[texH];
+    const Texture texture = m_textures[texH];
     if (texture.m_height <= 32 && texture.m_width <= 32)
     {
         return;

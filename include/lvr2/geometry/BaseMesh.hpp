@@ -1,21 +1,29 @@
-/* Copyright (C) 2011 Uni Osnabrück
- * This file is part of the LAS VEGAS Reconstruction Toolkit,
+/**
+ * Copyright (c) 2018, University Osnabrück
+ * All rights reserved.
  *
- * LAS VEGAS is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the University Osnabrück nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
  *
- * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 
 /*
  * BaseMesh.hpp
@@ -38,7 +46,8 @@ using std::array;
 using boost::optional;
 
 #include "Handles.hpp"
-#include "Point.hpp"
+
+#include <lvr2/geometry/Vector.hpp>
 
 namespace lvr2
 {
@@ -132,6 +141,7 @@ template<typename BaseVecT>
 class BaseMesh
 {
 public:
+
     virtual ~BaseMesh() {}
 
     // =======================================================================
@@ -146,7 +156,7 @@ public:
      *
      * @return A handle to access the inserted vertex later.
      */
-    virtual VertexHandle addVertex(Point<BaseVecT> pos) = 0;
+    virtual VertexHandle addVertex(Vector<BaseVecT> pos) = 0;
 
     /**
      * @brief Creates a face connecting the three given vertices.
@@ -186,11 +196,10 @@ public:
     /**
      * @brief Performs the edge flip operation.
      *
-     * The operation is kind of hard to describe with words; try looking at
-     * some images on the web. But if you want to read: it basically turns an
-     * edge and the two adjacent faces within a four vertex region by 90°. The
+     * This operation turns an edge and the two adjacent faces within a four
+     * vertex region by 90°. The
      * edge is now connected to two new vertices; the new edge would cross the
-     * old one. Still not clear? Told you.
+     * old one.
      *
      * Important: the given edge needs to be flippable. You can check that
      * property with `isFlippable()`. If that property is not satisfied, this
@@ -267,12 +276,12 @@ public:
     /**
      * @brief Get the position of the given vertex.
      */
-    virtual Point<BaseVecT> getVertexPosition(VertexHandle handle) const = 0;
+    virtual Vector<BaseVecT> getVertexPosition(VertexHandle handle) const = 0;
 
     /**
      * @brief Get a ref to the position of the given vertex.
      */
-    virtual Point<BaseVecT>& getVertexPosition(VertexHandle handle) = 0;
+    virtual Vector<BaseVecT>& getVertexPosition(VertexHandle handle) = 0;
 
     /**
      * @brief Get the three vertices surrounding the given face.
@@ -419,12 +428,12 @@ public:
      *
      * @return The points of the vertices in counter-clockwise order.
      */
-    virtual array<Point<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const;
+    virtual array<Vector<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const;
 
     /**
      * @brief Calc and return the centroid of the requested face.
      */
-    Point<BaseVecT> calcFaceCentroid(FaceHandle handle) const;
+    Vector<BaseVecT> calcFaceCentroid(FaceHandle handle) const;
 
     /**
      * @brief Calc and return the area of the requested face.
@@ -461,6 +470,12 @@ public:
      * information or by making it non-manifold.
      */
     virtual bool isFlippable(EdgeHandle handle) const;
+
+    /**
+     * @brief Determines wheter the given edge is an border edge, i.e., if
+     *        it is connected to two faces or not
+     */
+    virtual bool isBorderEdge(EdgeHandle handle) const = 0;
 
     /**
      * @brief Check whether or not inserting a face between the given vertices
@@ -562,6 +577,7 @@ public:
      * Returns a simple proxy object that uses `verticesBegin()` and `verticesEnd()`.
      */
     virtual VertexIteratorProxy<BaseVecT> vertices() const;
+
 };
 
 template <typename BaseVecT>

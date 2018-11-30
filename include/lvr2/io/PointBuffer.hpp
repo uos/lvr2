@@ -1,197 +1,148 @@
-/* Copyright (C) 2011 Uni Osnabrück
- * This file is part of the LAS VEGAS Reconstruction Toolkit,
+/**
+ * Copyright (c) 2018, University Osnabrück
+ * All rights reserved.
  *
- * LAS VEGAS is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the University Osnabrück nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
  *
- * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef POINTBUFFER2_HPP
+#define POINTBUFFER2_HPP
 
- /**
- *
- * @file      PointLoader.hpp
- * @brief     Interface for all point loading classes.
- * @details   The PointLoader class specifies storage and access to all
- *            available point data by implementing the appropriate  get and set
- *            methods for these data.
- *
- * @author    Lars Kiesow (lkiesow), lkiesow@uos.de, Universität Osnabrück
- * @author    Thomas Wiemann, twiemann@uos.de, Universität Osnabrück
- * @version   111001
- * @date      Recreated:     2011-09-22 23:23:57
- * @date      Last modified: 2011-10-01 15:22:49
- *
- **/
+#include <lvr2/io/DataStruct.hpp>
+#include <lvr2/io/BaseBuffer.hpp>
+#include <lvr2/io/AttributeManager.hpp>
 
-#ifndef LVR2_IO_POINTBUFFER_H_
-#define LVR2_IO_POINTBUFFER_H_
+#include <map>
+#include <string>
 
-// #include <stdint.h>
-// #include <cstddef>
-// #include <cstdlib>
-
-// #include <gsl/gsl>
-
-#include <array>
-#include <cstdio>
-#include <memory>
-#include <vector>
-
-#include <boost/optional.hpp>
-
-#include <lvr/io/PointBuffer.hpp>
-
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/geometry/Point.hpp>
-
-
-using boost::optional;
-using std::size_t;
-using std::vector;
-using std::array;
-
+#include <boost/shared_array.hpp>
+#include <iostream>
 
 namespace lvr2
 {
 
-/**
- * \brief Stores points with various additional data channels.
- **/
-template <typename BaseVecT>
-class PointBuffer
+///
+/// \brief A class to handle point information with an arbitrarily
+///        large number of attribute channels. Point definitions,
+///        as well as normal and color buffers, are cached outside
+///        the attribute maps to allow faster access.
+///        The added channels should always have the some length
+///        as the point array to keep the mapping
+///        between geometry (channel 'points') and the associated layers like RGB
+///        colors or point normals consistent.
+///
+class PointBuffer : public BaseBuffer
 {
-public:
-    PointBuffer() {}
-    PointBuffer(lvr::PointBuffer& oldBuffer);
+public:    
+    PointBuffer();
 
-    /**
-     * \brief Get the number of points.
-     **/
-    size_t getNumPoints() const;
-
-    lvr::PointBuffer toOldBuffer() const;
-
-    const Point<BaseVecT>& getPoint(size_t idx) const;
-    // Point<BaseVecT>& getPoint(size_t idx);
-
-
-
-    /**
-     * @brief Returns true if the stored data contains normal information.
+    /***
+     * @brief Constructs a point buffer with point the given number
+     *        of point.
+     *
+     * @param points    An array containing point data (x,y,z).
+     * @param n         Number of points
      */
+    PointBuffer(floatArr points, size_t n);
+
+    /***
+     * @brief Constructs a point buffer with point and normal
+     *        information. Both arrays are exspected to have the same
+     *        length.
+     *
+     * @param points    An array containing point data (x,y,z).
+     * @param normals   An array containing normal information (nx, ny, nz)
+     * @param n         Number of points
+     */
+    PointBuffer(floatArr points, floatArr normals, size_t n);
+
+    /***
+     * @brief Adds points to the buffer. If the buffer already
+     *        contains point cloud data, the interal buffer will
+     *        be freed als well as all other attribute channels.
+     */
+    void setPointArray(floatArr points, size_t n);
+
+    /***
+     * @brief Adds an channel containing point normal data to the
+     *        buffer.
+     *
+     * @param   normals A float array containing the normal data.
+     *                  expected to be tuples (nx, ny, nz).
+     */
+    void setNormalArray(floatArr normals, size_t n);
+
+    /***
+     * @brief Generates and adds a channel for point color data
+     *
+     * @param   colors  Am array containing point cloud data
+     * @param   n       Number of colors in the buffer
+     * @param   width   Number of attributes per element. Normally
+     *                  3 for RGB and 4 for RGBA buffers.
+     */
+    void setColorArray(ucharArr colors, size_t n, unsigned width = 3);
+
+    /// Returns the internal point array
+    floatArr getPointArray();
+
+    /// If the buffer stores normals, the
+    /// call we return an empty array, i.e., the shared pointer
+    /// contains a nullptr.
+    floatArr getNormalArray();
+
+    /// If the buffer stores color information, the
+    /// call we return an empty array, i.e., the shared pointer
+    /// contains a nullptr.
+    ucharArr getColorArray(unsigned& w);
+
+    /// True, if buffer contains colors
+    bool hasColors() const;
+
+    /// True, if buffer has normals
     bool hasNormals() const;
 
-    /**
-     * @brief Adds (or overwrites) normal information for all points.
-     *
-     * All normals are initialized with the given value or with a dummy
-     * value. Correct normals can later be set via `getNormal()`.
-     */
-    void addNormalChannel(Normal<BaseVecT> def = Normal<BaseVecT>(0, 0, 1));
-
-    /**
-     * @brief Copies normals from old buffer to this one.
-     */
-    void copyNormalsFrom(lvr::PointBuffer& oldBuffer);
-
-    /**
-     * @brief Returns the normal with the given index.
-     */
-    optional<const Normal<BaseVecT>&> getNormal(size_t idx) const;
-    optional<Normal<BaseVecT>&> getNormal(size_t idx);
-
-    /**
-     * @brief Returns true if the stored data contains intensity information.
-     */
-    bool hasIntensities() const;
-
-    /**
-     * @brief Adds (or overwrites) intensity information for all points.
-     *
-     * All intensities are initialized with the given value or with 0. Correct
-     * values can later be set via `getIntensity()`.
-     */
-    void addIntensityChannel(typename BaseVecT::CoordType def = 0);
-
-    /**
-     * @brief Returns the intensity with the given index.
-     */
-    optional<const typename BaseVecT::CoordType&> getIntensity(size_t idx) const;
-    optional<typename BaseVecT::CoordType&> getIntensity(size_t idx);
-
-
-    /**
-     * @brief Returns true if the stored data contains confidence information.
-     */
-    bool hasConfidences() const;
-
-    /**
-     * @brief Adds (or overwrites) confidence information for all points.
-     *
-     * All confidences are initialized with the given value or with 0. Correct
-     * values can later be set via `getConfidence()`.
-     */
-    void addConfidenceChannel(typename BaseVecT::CoordType def = 0);
-
-    /**
-     * @brief Returns the confidence with the given index.
-     */
-    optional<const typename BaseVecT::CoordType&> getConfidence(size_t idx) const;
-    optional<typename BaseVecT::CoordType&> getConfidence(size_t idx);
-
-    /**
-     * @brief Returns true if the stored data contains RGB color information.
-     */
-    bool hasRgbColor() const;
-
-    /**
-     * @brief Adds (or overwrites) RGB color information for all points.
-     *
-     * All colors are initialized with the given value or with (0, 0, 0).
-     * Correct values can later be set via `getRgbColor()`.
-     */
-    void addRgbColorChannel(array<uint8_t, 3> init = {0, 0, 0});
-
-    /**
-     * @brief Returns the RGB color with the given index.
-     */
-    optional<const array<uint8_t,3>&> getRgbColor(size_t idx) const;
-    optional<array<uint8_t,3>&> getRgbColor(size_t idx);
-
-    bool empty() const;
-
+    /// Returns the number of points in the buffer
+    size_t numPoints() const;
 private:
-    /// Point buffer.
-    vector<Point<BaseVecT>> m_points;
 
-    /// Point normal buffer.
-    optional<vector<Normal<BaseVecT>>> m_normals;
+    /// Point channel, 'cached' to allow faster access
+    FloatChannelPtr                     m_points;
 
-    /// Point intensity buffer.
-    optional<vector<typename BaseVecT::CoordType>> m_intensities;
+    /// Normal channel, 'cached' to allow faster access
+    FloatChannelPtr                     m_normals;
 
-    /// Point confidence buffer.
-    optional<vector<typename BaseVecT::CoordType>> m_confidences;
+    /// Color channel, 'chached' to allow faster access
+    UCharChannelPtr                     m_colors;
 
-    /// Point RGB colors.
-    optional<vector<array<uint8_t, 3>>> m_rgbColors;
+    // Number of points in buffer
+    size_t              m_numPoints;
+
+
+
 };
 
-template <typename BaseVecT>
-using PointBufferPtr = std::shared_ptr<PointBuffer<BaseVecT>>;
+using PointBufferPtr = std::shared_ptr<PointBuffer>;
 
 } // namespace lvr2
 
-#include <lvr2/io/PointBuffer.tcc>
-
-#endif // LVR2_IO_POINTBUFFER_H_
+#endif // POINTBUFFER2_HPP
