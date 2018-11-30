@@ -10,6 +10,8 @@
 #include "../vtkBridge/LVRBoundingBoxBridge.hpp"
 
 #include "LVRBoundingBoxItem.hpp"
+#include "LVRPointCloudItem.hpp"
+#include "LVRPoseItem.hpp"
 
 namespace lvr2
 {
@@ -19,6 +21,8 @@ class LVRScanDataItem : public QTreeWidgetItem
     public:
 
         LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, QString name = "", QTreeWidget* parent = NULL);
+
+        ~LVRScanDataItem();
 
         void loadPointCloudData();
 
@@ -45,6 +49,8 @@ class LVRScanDataItem : public QTreeWidgetItem
         ModelBridgePtr                          m_model;
         BoundingBoxBridgePtr                    m_bb;
         LVRBoundingBoxItem                     *m_bbItem;
+        LVRPointCloudItem                      *m_pcItem;
+        LVRPoseItem                            *m_pItem;
 };
 
 } // namespace lvr2

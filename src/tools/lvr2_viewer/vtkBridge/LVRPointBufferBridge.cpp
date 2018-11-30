@@ -386,14 +386,17 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         floatArr spec = pc->getFloatArray("spectral_channels", n_s_p, n_s_channels);
         floatArr normals = pc->getNormalArray();
 
-        scalars->SetNumberOfTuples(n_s_p ? n_s_p : n);
+        if (spec || colors)
+        {
+            scalars->SetNumberOfTuples(n_s_p ? n_s_p : n);
+        }
+
         vtk_points->SetNumberOfPoints(n_s_p ? n_s_p : n);
 
         if(normals)
         {
             m_vtk_normals->SetNumberOfTuples(n);
         }
-        
 
         for(vtkIdType i = 0; i < n; i++)
         {
@@ -445,9 +448,6 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
                 scalars->SetTypedTuple(i, color); // no idea how the new method is called
 #endif
             }
-            else
-            {
-            }
 
             vtk_points->SetPoint(i, point);
             vtk_cells->InsertNextCell(1, &i);
@@ -461,11 +461,8 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
             vtk_polyData->GetPointData()->SetScalars(scalars);
         }
 
-        
-
         // Create poly data mapper and generate actor
-        //vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-        vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
+        vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 #ifdef LVR_USE_VTK5
         mapper->SetInput(vtk_polyData);
 #else
@@ -531,8 +528,6 @@ void LVRPointBufferBridge::setNormalsVisibility(bool visible)
             );
         }
     }
-    
-    
 }
 
 vtkSmartPointer<vtkActor> LVRPointBufferBridge::getPointCloudActor()

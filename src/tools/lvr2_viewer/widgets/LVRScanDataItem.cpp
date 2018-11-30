@@ -1,7 +1,5 @@
 #include "LVRScanDataItem.hpp"
 #include "LVRModelItem.hpp"
-#include "LVRPointCloudItem.hpp"
-#include "LVRPoseItem.hpp"
 
 #include "LVRItemTypes.hpp"
 
@@ -11,16 +9,20 @@ namespace lvr2
 LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, QString name, QTreeWidget *parent) : QTreeWidgetItem(parent, LVRScanDataItemType)
 {
     m_bbItem = NULL;
-    m_data = data;
-    m_name = name;
-    m_sdm = sdm;
-    m_idx = idx;
+    m_pcItem = NULL;
+    m_pItem  = NULL;
+    m_data   = data;
+    m_name   = name;
+    m_sdm    = sdm;
+    m_idx    = idx;
 
     setText(0, m_name);
     setCheckState(0, Qt::Checked);
 
     m_bb = BoundingBoxBridgePtr(new LVRBoundingBoxBridge(m_data.m_boundingBox));
-    m_bbItem = new LVRBoundingBoxItem(m_bb, "Bounding Box", this);
+
+    if (!m_bbItem)
+        m_bbItem = new LVRBoundingBoxItem(m_bb, "Bounding Box", this);
 
     float pose[6];
     m_data.m_registration.transpose();
@@ -47,14 +49,20 @@ void LVRScanDataItem::loadPointCloudData()
     m_model = ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model(m_data.m_points))));
 
     auto pcBridge = m_model->getPointBridge();
-    LVRPointCloudItem *item = new LVRPointCloudItem(pcBridge);
-    addChild(item);
+
+    if (!m_pcItem)
+    {
+        m_pcItem = new LVRPointCloudItem(pcBridge, this);
+    }
 
     float pose[6];
     m_data.m_registration.transpose();
     m_data.m_registration.toPostionAngle(pose);
 
-    LVRPoseItem *pitem = new LVRPoseItem(m_model, this);
+    if (!m_pItem)
+    {
+        m_pItem = new LVRPoseItem(m_model, this);
+    }
 
     Pose p;
     p.x = pose[0];
@@ -63,7 +71,7 @@ void LVRScanDataItem::loadPointCloudData()
     p.r = pose[3]  * 57.295779513;
     p.t = pose[4]  * 57.295779513;
     p.p = pose[5]  * 57.295779513;
-    pitem->setPose(p);
+    m_pItem->setPose(p);
     m_model->setPose(p);
 }
 
@@ -72,21 +80,16 @@ void LVRScanDataItem::unloadPointCloudData()
     m_data.m_points.reset();
     m_data.m_pointsLoaded = false;
 
-    QTreeWidgetItemIterator it(this);
-
-    while (*it)
+    if (m_pcItem)
     {
-        if ((*it)->type() == LVRPointCloudItemType)
-        {
-            removeChild(*it);
-            delete *it;
-        }
-        else if ((*it)->type() == LVRPoseItemType)
-        {
-            removeChild(*it);
-            delete *it;
-        }
-        it++;
+        delete m_pcItem;
+        m_pcItem = nullptr;
+    }
+
+    if (m_pItem)
+    {
+        delete m_pItem;
+        m_pItem = nullptr;
     }
 
     m_model.reset();
@@ -107,6 +110,25 @@ void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
     if (m_bbItem)
     {
         m_bbItem->setVisibility(checkState(0) && visible);
+    }
+}
+
+LVRScanDataItem::~LVRScanDataItem()
+{
+    m_model.reset();
+    m_data.m_points.reset();
+    if (m_bbItem)
+    {
+        delete m_bbItem;
+    }
+    if (m_pcItem)
+    {
+        delete m_pcItem;
+    }
+
+    if (m_pItem)
+    {
+        delete m_pItem;
     }
 }
 
