@@ -55,7 +55,6 @@ void LVRScanDataItem::loadPointCloudData()
     m_data.m_registration.toPostionAngle(pose);
 
     LVRPoseItem *pitem = new LVRPoseItem(m_model, this);
-    addChild(item);
 
     Pose p;
     p.x = pose[0];
@@ -70,7 +69,7 @@ void LVRScanDataItem::loadPointCloudData()
 
 void LVRScanDataItem::unloadPointCloudData()
 {
-    m_data.m_points = nullptr;
+    m_data.m_points.reset();
     m_data.m_pointsLoaded = false;
 
     QTreeWidgetItemIterator it(this);
@@ -80,15 +79,17 @@ void LVRScanDataItem::unloadPointCloudData()
         if ((*it)->type() == LVRPointCloudItemType)
         {
             removeChild(*it);
+            delete *it;
         }
-        if ((*it)->type() == LVRPoseItemType)
+        else if ((*it)->type() == LVRPoseItemType)
         {
             removeChild(*it);
+            delete *it;
         }
         it++;
     }
 
-    m_model = nullptr;
+    m_model.reset();
 }
 
 ModelBridgePtr LVRScanDataItem::getModelBridgePtr()
