@@ -14,12 +14,13 @@ class ScanDataManager
     public:
         ScanDataManager(std::string filename);
 
-        ScanData loadPointCloudData(size_t idx);
+        void loadPointCloudData(ScanData &sd);
 
-        std::vector<ScanData>& getScanData();
+        std::vector<std::string> getScanDataGroups();
+
+        std::vector<ScanData> getScanData(std::string scanDataGroup);
 
     private:
-        std::vector<ScanData> m_scanData;
         HDF5IO m_io;
 };
 

@@ -21,7 +21,8 @@ struct ScanData
         m_hResolution(0),
         m_vResolution(0),
         m_pointsLoaded(false),
-        m_positionNumber(-1) {}
+        m_positionNumber(-1),
+        m_scanDataRoot("") {}
 
 	~ScanData() {};
 
@@ -37,6 +38,7 @@ struct ScanData
 
     bool                                m_pointsLoaded;
     int                                 m_positionNumber;
+    std::string                         m_scanDataRoot;
 };
 
 

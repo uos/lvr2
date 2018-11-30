@@ -19,12 +19,17 @@ class LVRScanDataItem : public QTreeWidgetItem
     public:
 
         LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, QString name = "", QTreeWidget* parent = NULL);
+
         void loadPointCloudData();
+
         void unloadPointCloudData();
+
         QString getName() { return m_name; }
+
         Pose getPose() { return getModelBridgePtr()->getPose(); }
 
         ModelBridgePtr getModelBridgePtr();
+
         BoundingBoxBridgePtr getBoundingBoxBridge() { return m_bb; }
 
         void setVisibility(bool visible, bool pc_visible);
