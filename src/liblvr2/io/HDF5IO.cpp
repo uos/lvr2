@@ -293,8 +293,6 @@ ScanData HDF5IO::getSingleScanData(std::string scanDataRoot, int nr, bool load_p
     if (scanDataRoot == "/annotation")
     {
         is_annotation = true;
-
-        nr -= 1;
     }
 
     ScanData ret;
@@ -303,6 +301,13 @@ ScanData HDF5IO::getSingleScanData(std::string scanDataRoot, int nr, bool load_p
     {
         char buffer[128];
         sprintf(buffer, "position_%05d", nr);
+
+        // annotation hack
+        if (is_annotation)
+        {
+            sprintf(buffer, "position_%05d", nr-1);
+        }
+
         string nr_str(buffer);
         std::string groupName = scanDataRoot + "/" + nr_str;
 
@@ -326,16 +331,21 @@ ScanData HDF5IO::getSingleScanData(std::string scanDataRoot, int nr, bool load_p
             if (points)
             {
                 ret.m_points = PointBufferPtr(new PointBuffer(points, dummy/3));
-            }
 
-            // annotation hack
-            if (is_annotation)
-            {
-                std::vector<size_t> dim;
-                sprintf(buffer, "position_%05d", nr + 1);
-                floatArr spectral = getArray<float>(scanDataRoot + "/" + buffer, "spectral", dim);
+                // annotation hack
+                if (is_annotation)
+                {
+                    std::vector<size_t> dim;
+                    sprintf(buffer, "position_%05d", nr);
+                    floatArr spectral = getArray<float>(scanDataRoot + "/" + buffer, "spectral", dim);
 
-                ret.m_points->addFloatChannel(spectral, "spectral_channels", dim[0], dim[1]);
+                    if (spectral)
+                    {
+                        ret.m_points->addFloatChannel(spectral, "spectral_channels", dim[0], dim[1]);
+                        ret.m_points->addIntAttribute(400, "spectral_wavelength_min");
+                        ret.m_points->addIntAttribute(400 + 4 * dim[1], "spectral_wavelength_max");
+                    }
+                }
             }
         }
 

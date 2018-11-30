@@ -781,12 +781,11 @@ void LVRMainWindow::loadPointCloudData()
         {
             LVRScanDataItem *sd = static_cast<LVRScanDataItem *>(item);
 
-            ModelBridgePtr mbp = sd->getModelBridgePtr();
 
-            if (!mbp)
+            if (!sd->getModelBridgePtr())
             {
                 sd->loadPointCloudData();
-                mbp = sd->getModelBridgePtr();
+                ModelBridgePtr mbp = sd->getModelBridgePtr();
                 mbp->addActors(m_renderer);
 
                 highlightBoundingBoxes();
@@ -1206,6 +1205,23 @@ void LVRMainWindow::toggleWireframe(bool checkboxState)
     }
 }
 
+QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm, std::string scanDataGroup, QString filename)
+{
+    QTreeWidgetItem *lastItem = nullptr;
+    std::vector<ScanData> scanData = sdm->getScanData(scanDataGroup);
+
+    for (size_t i = 0; i < scanData.size(); i++)
+    {
+        LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, filename + scanDataGroup.c_str() + "_" + std::to_string(i).c_str(), this->treeWidget);
+        this->treeWidget->addTopLevelItem(item);
+
+        m_renderer->AddActor(item->getBoundingBoxBridge()->getActor());
+        lastItem = item;
+    }
+
+    return lastItem;
+}
+
 void LVRMainWindow::parseCommandLine(int argc, char** argv)
 {
     QTreeWidgetItem* lastItem = nullptr;
@@ -1219,21 +1235,13 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
         if (info.suffix() == "h5")
         {
             std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(argv[i]));
-            std::cout << "test" << std::endl;
-            auto x = sdm->getScanDataGroups();
-            for (auto y : x)
-                std::cout << y << std::endl;
-            std::cout << "test end" << std::endl;
-            std::vector<ScanData> scanData = sdm->getScanData("/annotation");
 
-            for (size_t i = 0; i < scanData.size(); i++)
-            {
-                LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, base + "_Pos_" + std::to_string(i).c_str(), this->treeWidget);
-                this->treeWidget->addTopLevelItem(item);
+            std::vector<std::string> scanDataGroups = sdm->getScanDataGroups();
 
-                m_renderer->AddActor(item->getBoundingBoxBridge()->getActor());
-                lastItem = item;
-            }
+            if (std::find(scanDataGroups.begin(), scanDataGroups.end(), "/raw/scans") != scanDataGroups.end())
+                lastItem = addScanData(sdm, "/raw/scans", base);
+            if (std::find(scanDataGroups.begin(), scanDataGroups.end(), "/annotation") != scanDataGroups.end())
+                lastItem = addScanData(sdm, "/annotation", base);
         }
         else
         {
