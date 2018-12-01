@@ -79,9 +79,9 @@ cmake_policy(POP)
 
 option(LVR_USE_STATIC_LIBS OFF)
 if(LVR_USE_STATIC_LIBS)
-  set(LVR_LIBRARIES lvr::LVR_static)
+  set(LVR_LIBRARIES lvr2_static)
 else()
-  set(LVR_LIBRARIES lvr::lvr)
+  set(LVR_LIBRARIES lvr2)
 endif()
 
 set(LVR_FOUND TRUE)
