@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 2.8)
-project(LAS_VEGAS)
+cmake_minimum_required(VERSION 3.4)
+project(LAS_VEGAS VERSION 2)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
@@ -454,9 +454,23 @@ install(EXPORT lvrTargets
     NAMESPACE lvr::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr)
 
-configure_file(LVRConfig.cmake.in ${CMAKE_BINARY_DIR}/LVRConfig.cmake @ONLY)
-install(FILES ${CMAKE_BINARY_DIR}/LVRConfig.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr)
+include(CMakePackageConfigHelpers)
+set(INCLUDE_INSTALL_DIR include/)
+set(LIB_INSTALL_DIR lib/)
+set(SYSCONFIG_INSTALL_DIR etc/lvr/)
+
+configure_package_config_file(LVRConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/LVRConfig.cmake
+  INSTALL_DESTINATION ${LIB_INSTALL_DIR}/lvr/cmake
+  PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/LVRConfigVersion.cmake
+  COMPATIBILITY SameMajorVersion
+)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LVRConfig.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/LVRConfigVersion.cmake
+        DESTINATION ${LIB_INSTALL_DIR}/lvr/cmake )
 
 install(FILES
     CMakeModules/FindEigen3.cmake
