@@ -177,8 +177,6 @@ LVRMainWindow::LVRMainWindow()
     m_gradientSlider = this->sliderGradientWavelength;
     m_gradientLineEdit = this->lineEditGradientWavelength;
 
-    m_pickingInteractor = new LVRPickingInteractor(m_renderer);
-    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
     vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
 
@@ -200,11 +198,49 @@ LVRMainWindow::LVRMainWindow()
 
 LVRMainWindow::~LVRMainWindow()
 {
+    this->qvtkWidget->GetRenderWindow()->RemoveRenderer(m_renderer);
+
     if(m_correspondanceDialog)
     {
         delete m_correspondanceDialog;
     }
+
+    if (m_pickingInteractor)
+    {
+        qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(nullptr);
+        m_pickingInteractor->Delete();
+    }
+
+    if (m_treeParentItemContextMenu)
+    {
+        delete m_treeParentItemContextMenu;
+    }
+
+    if (m_treeChildItemContextMenu)
+    {
+        delete m_treeChildItemContextMenu;
+    }
+    if (m_treeWidgetHelper)
+    {
+        delete m_treeWidgetHelper;
+    }
+
+    if (m_aboutDialog)
+    {
+        delete m_aboutDialog;
+    }
+    if (m_errorDialog)
+    {
+        delete m_errorDialog;
+    }
     delete m_incompatibilityBox;
+
+    delete m_actionRenameModelItem;
+    delete m_actionDeleteModelItem;
+    delete m_actionExportModelTransformed;
+    delete m_actionShowColorDialog;
+    delete m_actionLoadPointCloudData;
+    delete m_actionUnloadPointCloudData;
 }
 
 void LVRMainWindow::connectSignalsAndSlots()
@@ -372,13 +408,11 @@ void LVRMainWindow::updateView()
 {
     m_renderer->ResetCamera();
     m_renderer->ResetCameraClippingRange();
-    //highlightBoundingBoxes();
     this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 void LVRMainWindow::refreshView()
 {
-    //highlightBoundingBoxes();
     this->qvtkWidget->GetRenderWindow()->Render();
 }
 
@@ -785,6 +819,7 @@ void LVRMainWindow::loadPointCloudData()
             if (!sd->getModelBridgePtr())
             {
                 sd->loadPointCloudData();
+                sd->setVisibility(true, m_actionShow_Points->isChecked());
                 ModelBridgePtr mbp = sd->getModelBridgePtr();
                 mbp->addActors(m_renderer);
 
@@ -892,7 +927,7 @@ LVRModelItem* LVRMainWindow::getModelItem(QTreeWidgetItem* item)
     if(item->type() == LVRModelItemType)
         return static_cast<LVRModelItem*>(item);
 
-    if(item->parent()->type() == LVRModelItemType)
+    if(item->parent() && item->parent()->type() == LVRModelItemType)
         return static_cast<LVRModelItem*>(item->parent());
 
     return NULL;
@@ -1023,6 +1058,13 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
         item->setVisibility(true);
 
         refreshView();
+    }
+    else
+    {
+        for (int i = 0; i < treeWidgetItem->childCount(); i++)
+        {
+            setModelVisibility(treeWidgetItem->child(i), 0);
+        }
     }
 }
 
@@ -1205,15 +1247,16 @@ void LVRMainWindow::toggleWireframe(bool checkboxState)
     }
 }
 
-QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm, std::string scanDataGroup, QString filename)
+QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm, std::string scanDataGroup, QTreeWidgetItem *parent)
 {
     QTreeWidgetItem *lastItem = nullptr;
     std::vector<ScanData> scanData = sdm->getScanData(scanDataGroup);
 
     for (size_t i = 0; i < scanData.size(); i++)
     {
-        LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, filename + scanDataGroup.c_str() + "_" + std::to_string(i).c_str(), this->treeWidget);
-        this->treeWidget->addTopLevelItem(item);
+        char buf[128];
+        std::sprintf(buf, "%05d", scanData[i].m_positionNumber);
+        LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, QString("pos_") + buf, parent);
 
         m_renderer->AddActor(item->getBoundingBoxBridge()->getActor());
         lastItem = item;
@@ -1234,14 +1277,39 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
 
         if (info.suffix() == "h5")
         {
-            std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(argv[i]));
 
+            QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
+            root->setText(0, base);
+
+            QIcon icon;
+            icon.addFile(QString::fromUtf8(":/qv_scandata_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
+            root->setIcon(0, icon);
+
+            std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(argv[i]));
             std::vector<std::string> scanDataGroups = sdm->getScanDataGroups();
 
             if (std::find(scanDataGroups.begin(), scanDataGroups.end(), "/raw/scans") != scanDataGroups.end())
-                lastItem = addScanData(sdm, "/raw/scans", base);
+            {
+                QTreeWidgetItem *item = new QTreeWidgetItem(root);
+                item->setText(0, "/raw/scans");
+                item->setCheckState(0, Qt::Unchecked);
+                lastItem = addScanData(sdm, "/raw/scans", item);
+            }
+
             if (std::find(scanDataGroups.begin(), scanDataGroups.end(), "/annotation") != scanDataGroups.end())
-                lastItem = addScanData(sdm, "/annotation", base);
+            {
+                QTreeWidgetItem *item = new QTreeWidgetItem(root);
+                item->setText(0, "/annotation");
+                item->setCheckState(0, Qt::Unchecked);
+                lastItem = addScanData(sdm, "/annotation", item);
+            }
+
+
+            root->setCheckState(0, Qt::Checked);
+            root->setExpanded(true);
+
+            lastItem->parent()->setCheckState(0, Qt::Checked);
+            lastItem->parent()->setExpanded(true);
         }
         else
         {
@@ -1552,16 +1620,23 @@ void LVRMainWindow::showPointPreview(vtkActor* actor, int point)
         return;
     }
     LVRPointBufferBridge* pointBridge = nullptr;
-    for(int i = 0; i < treeWidget->topLevelItemCount(); i++)
+
+    QTreeWidgetItemIterator it(treeWidget);
+
+    while(*it)
     {
-        QTreeWidgetItem *item = treeWidget->topLevelItem(i);
-        LVRPointBufferBridge* bridge = getModelItem(item)->getModelBridge()->getPointBridge().get();
-        if (bridge->getPointCloudActor() == actor)
+        if ((*it)->type() == LVRPointCloudItemType)
         {
-            pointBridge = bridge;
-            break;
+            PointBufferBridgePtr pbuf = static_cast<LVRPointCloudItem *>(*it)->getPointBufferBridge();
+            if (pbuf->getPointCloudActor() == actor)
+            {
+                pointBridge = pbuf.get();
+                break;
+            }
         }
+        it++;
     }
+
     if (pointBridge == nullptr)
     {
         return;

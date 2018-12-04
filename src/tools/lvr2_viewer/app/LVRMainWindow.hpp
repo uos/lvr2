@@ -177,7 +177,7 @@ public Q_SLOTS:
     void updateSpectralSlidersEnabled(bool checked);
     /// Switches between Sliders and Gradients. checked == true => Gradient DockWidget enabled
     void updateSpectralGradientEnabled(bool checked);
-    QTreeWidgetItem* addScanData(std::shared_ptr<ScanDataManager> sdm, std::string scanDataGroup, QString filename);
+    QTreeWidgetItem* addScanData(std::shared_ptr<ScanDataManager> sdm, std::string scanDataGroup, QTreeWidgetItem *parent);
 
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
@@ -203,7 +203,7 @@ private:
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;
     LVRPlotter*                                 m_PointPreviewPlotter;
     int                                         m_previewPoint;
-    PointBufferPtr                             m_previewPointBuffer;
+    PointBufferPtr                              m_previewPointBuffer;
     QDialog*                                    m_aboutDialog;
     QDialog*                                    m_errorDialog;
     QMessageBox*                                m_incompatibilityBox;

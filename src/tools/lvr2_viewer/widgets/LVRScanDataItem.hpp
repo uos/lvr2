@@ -20,7 +20,7 @@ class LVRScanDataItem : public QTreeWidgetItem
 {
     public:
 
-        LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, QString name = "", QTreeWidget* parent = NULL);
+        LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, QString name = "", QTreeWidgetItem *parent = NULL);
 
         ~LVRScanDataItem();
 
