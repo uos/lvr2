@@ -6,7 +6,7 @@
 namespace lvr2
 {
 
-LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, QString name, QTreeWidget *parent) : QTreeWidgetItem(parent, LVRScanDataItemType)
+LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, QString name, QTreeWidgetItem *parent) : QTreeWidgetItem(parent, LVRScanDataItemType)
 {
     m_bbItem = NULL;
     m_pcItem = NULL;
@@ -36,10 +36,6 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
     p.t = pose[4]  * 57.295779513;
     p.p = pose[5]  * 57.295779513;
     m_bb->setPose(p);
-
-    QIcon icon;
-    icon.addFile(QString::fromUtf8(":/qv_scandata_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
-    setIcon(0, icon);
 }
 
 void LVRScanDataItem::loadPointCloudData()
@@ -102,14 +98,30 @@ ModelBridgePtr LVRScanDataItem::getModelBridgePtr()
 
 void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
 {
+    bool parents_checked = true;
+    QTreeWidgetItem *parent = this;
+
+    while (parent)
+    {
+        if (!parent->checkState(0))
+        {
+            parents_checked = false;
+            break;
+        }
+
+        parent = parent->parent();
+    }
+
+    visible = visible && parents_checked;
+
     if (m_model)
     {
-        m_model->setVisibility(pc_visible && checkState(0) && visible);
+        m_model->setVisibility(pc_visible && visible);
     }
 
     if (m_bbItem)
     {
-        m_bbItem->setVisibility(checkState(0) && visible);
+        m_bbItem->setVisibility(visible);
     }
 }
 
