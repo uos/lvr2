@@ -45,6 +45,14 @@ endif(MSVC)
 # EXTERNAL LIBRARIES
 ###############################################################
 
+###
+## Searching for TIFF Searching for TIFF
+##############################
+find_package(TIFF REQUIRED)
+    if(TIFF_FOUND)
+    include_directories(${TIFF_INCLUDE_DIRS} ${TIFF_LIBRARIES})
+endif(TIFF_FOUND)
+
 ####
 ## Searching for CUDA
 ##############################

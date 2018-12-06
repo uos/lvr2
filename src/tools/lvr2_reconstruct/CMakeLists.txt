@@ -16,6 +16,7 @@ set(LVR_RECONSTRUCT_DEPENDENCIES
     lvrlas_static
     lvrrply_static
     lvrslam6d_static
+    ${TIFF_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARIES}
     ${OpenCV_LIBS}
