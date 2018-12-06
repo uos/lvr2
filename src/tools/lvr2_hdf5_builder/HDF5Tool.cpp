@@ -233,9 +233,10 @@ int main( int argc, char ** argv )
             scanNr++;
 
             // Add spectral annotation channel
-            std::vector<size_t> dim_sannotation = {an, aw};
-            sprintf(groupName, "/annotation/position_%05d", scanNr);
-            hdf5.addArray(groupName, "spectral", dim_sannotation, spectral);
+//            size_t an_d = std::min<size_t>(an, 10);    // Limit chunk size
+//            std::vector<size_t> dim_sannotation = {1000, aw};
+//            sprintf(groupName, "/annotation/position_%05d", scanNr);
+//            hdf5.addArray(groupName, "spectral", dim_sannotation, spectral);
         }
         else
         {
