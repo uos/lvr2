@@ -30,6 +30,7 @@ doc/
 .idea/
 .codelite/
 cmake-build-debug/
+cmake-build-release/
 
 # QT Creator files
 /*.config
