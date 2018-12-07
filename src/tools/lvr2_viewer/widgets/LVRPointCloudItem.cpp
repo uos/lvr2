@@ -80,7 +80,7 @@ LVRPointCloudItem::LVRPointCloudItem(PointBufferBridgePtr ptr, QTreeWidgetItem* 
 
     QTreeWidgetItem* specItem = new QTreeWidgetItem(this);
     specItem->setText(0, "Has Spectraldata:");
-    if(ptr->getPointBuffer()->getFloatChannel("spectral_channels"))
+    if(ptr->getPointBuffer()->getUCharChannel("spectral_channels"))
     {
         specItem->setText(1, "yes");
     }

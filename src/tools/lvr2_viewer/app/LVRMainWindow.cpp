@@ -479,7 +479,7 @@ void LVRMainWindow::restoreSliders()
         pointCloudItem->getPointBufferBridge()->getSpectralColorGradient(gradient_type, gradient_channel, normalize_gradient, use_ndvi);
 
         PointBufferPtr p = pointCloudItem->getPointBuffer();
-        FloatChannelOptional spec_channels = p->getFloatChannel("spectral_channels");
+        UCharChannelOptional spec_channels = p->getUCharChannel("spectral_channels");
 
         if (spec_channels)
         {
@@ -1599,7 +1599,7 @@ void LVRMainWindow::showHistogramDialog()
     for (LVRPointCloudItem* item : pointCloudItems)
     {
         PointBufferPtr points = item->getPointBuffer();
-        if (!points->getFloatChannel("spectral_channels"))
+        if (!points->getUCharChannel("spectral_channels"))
         {
             showErrorDialog();
             return;
@@ -1857,7 +1857,7 @@ void LVRMainWindow::updatePointPreview(int pointId, PointBufferPtr points)
     }
     
     size_t n_spec, n_channels;
-    FloatChannelOptional spectral_channels = points->getFloatChannel("spectral_channels");
+    UCharChannelOptional spectral_channels = points->getUCharChannel("spectral_channels");
 
     if (spectral_channels)
     {
@@ -1870,7 +1870,7 @@ void LVRMainWindow::updatePointPreview(int pointId, PointBufferPtr points)
         }
         else
         {
-            floatArr data = floatArr(new float[n_channels]);
+            floatArr data(new float[n_channels]);
             for (int i = 0; i < n_channels; i++)
             {
                 data[i] = (*spectral_channels)[pointId][i];

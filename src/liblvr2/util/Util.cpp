@@ -34,7 +34,7 @@ namespace lvr2
 
 int Util::getSpectralChannel(int wavelength, PointBufferPtr p, int fallback)
 {
-    FloatChannelOptional spectral_channels = p->getFloatChannel("spectral_channels");
+    UCharChannelOptional spectral_channels = p->getUCharChannel("spectral_channels");
     if (!spectral_channels)
     {
         return fallback;
@@ -54,7 +54,7 @@ int Util::getSpectralChannel(int wavelength, PointBufferPtr p, int fallback)
 
 int Util::getSpectralWavelength(int channel, PointBufferPtr p, int fallback)
 {
-    FloatChannelOptional spectral_channels = p->getFloatChannel("spectral_channels");
+    UCharChannelOptional spectral_channels = p->getUCharChannel("spectral_channels");
     if (!spectral_channels)
     {
         return fallback;
@@ -72,7 +72,7 @@ int Util::getSpectralWavelength(int channel, PointBufferPtr p, int fallback)
 
 float Util::wavelengthPerChannel(PointBufferPtr p)
 {
-    FloatChannelOptional spectral_channels = p->getFloatChannel("spectral_channels");
+    UCharChannelOptional spectral_channels = p->getUCharChannel("spectral_channels");
     if (!spectral_channels)
     {
         return -1.0f;
