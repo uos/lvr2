@@ -92,7 +92,7 @@ protected:
     size_t                          m_numPoints;
     bool                            m_hasNormals;
     bool                            m_hasColors;
-    PointBufferPtr                 m_pointBuffer;
+    PointBufferPtr                  m_pointBuffer;
     bool                            m_useGradient;
     bool                            m_useNormalizedGradient;
     color<size_t>                   m_spectralChannels;

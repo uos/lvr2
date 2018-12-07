@@ -109,7 +109,6 @@ private:
     PointBufferBridgePtr            m_pointBridge;
     MeshBufferBridgePtr             m_meshBridge;
     Pose                            m_pose;
-
 };
 
 typedef boost::shared_ptr<LVRModelBridge> ModelBridgePtr;

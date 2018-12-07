@@ -37,7 +37,7 @@
 namespace lvr2
 {
 
-LVRPointCloudItem::LVRPointCloudItem(PointBufferBridgePtr& ptr, QTreeWidgetItem* item) :
+LVRPointCloudItem::LVRPointCloudItem(PointBufferBridgePtr ptr, QTreeWidgetItem* item) :
        QTreeWidgetItem(item, LVRPointCloudItemType), m_parent(item), m_pointBridge(ptr)
 {
     // Setup tree widget icon

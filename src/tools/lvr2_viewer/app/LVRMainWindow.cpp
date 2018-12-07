@@ -83,15 +83,18 @@ LVRMainWindow::LVRMainWindow()
 
     m_treeWidgetHelper = new LVRTreeWidgetHelper(treeWidget);
 
-    m_treeParentItemContextMenu = new QMenu;
-    m_treeChildItemContextMenu = new QMenu;
     m_actionRenameModelItem = new QAction("Rename item", this);
     m_actionDeleteModelItem = new QAction("Delete item", this);
     m_actionExportModelTransformed = new QAction("Export item with transformation", this);
     m_actionShowColorDialog = new QAction("Select base color...", this);
+    m_actionLoadPointCloudData = new QAction("load PointCloud", this);
+    m_actionUnloadPointCloudData = new QAction("unload PointCloud", this);
 
+    m_treeParentItemContextMenu = new QMenu;
     m_treeParentItemContextMenu->addAction(m_actionRenameModelItem);
     m_treeParentItemContextMenu->addAction(m_actionDeleteModelItem);
+
+    m_treeChildItemContextMenu = new QMenu;
     m_treeChildItemContextMenu->addAction(m_actionExportModelTransformed);
     m_treeChildItemContextMenu->addAction(m_actionShowColorDialog);
     m_treeChildItemContextMenu->addAction(m_actionDeleteModelItem);
@@ -174,8 +177,6 @@ LVRMainWindow::LVRMainWindow()
     m_gradientSlider = this->sliderGradientWavelength;
     m_gradientLineEdit = this->lineEditGradientWavelength;
 
-    m_pickingInteractor = new LVRPickingInteractor(m_renderer);
-    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
     vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
 
@@ -197,11 +198,49 @@ LVRMainWindow::LVRMainWindow()
 
 LVRMainWindow::~LVRMainWindow()
 {
+    this->qvtkWidget->GetRenderWindow()->RemoveRenderer(m_renderer);
+
     if(m_correspondanceDialog)
     {
         delete m_correspondanceDialog;
     }
+
+    if (m_pickingInteractor)
+    {
+        qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(nullptr);
+        m_pickingInteractor->Delete();
+    }
+
+    if (m_treeParentItemContextMenu)
+    {
+        delete m_treeParentItemContextMenu;
+    }
+
+    if (m_treeChildItemContextMenu)
+    {
+        delete m_treeChildItemContextMenu;
+    }
+    if (m_treeWidgetHelper)
+    {
+        delete m_treeWidgetHelper;
+    }
+
+    if (m_aboutDialog)
+    {
+        delete m_aboutDialog;
+    }
+    if (m_errorDialog)
+    {
+        delete m_errorDialog;
+    }
     delete m_incompatibilityBox;
+
+    delete m_actionRenameModelItem;
+    delete m_actionDeleteModelItem;
+    delete m_actionExportModelTransformed;
+    delete m_actionShowColorDialog;
+    delete m_actionLoadPointCloudData;
+    delete m_actionUnloadPointCloudData;
 }
 
 void LVRMainWindow::connectSignalsAndSlots()
@@ -210,6 +249,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(restoreSliders()));
+    QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(highlightBoundingBoxes()));
     QObject::connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(setModelVisibility(QTreeWidgetItem*, int)));
 
     QObject::connect(m_actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
@@ -217,6 +257,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShowColorDialog, SIGNAL(triggered()), this, SLOT(showColorDialog()));
     QObject::connect(m_actionRenameModelItem, SIGNAL(triggered()), this, SLOT(renameModelItem()));
     QObject::connect(m_actionDeleteModelItem, SIGNAL(triggered()), this, SLOT(deleteModelItem()));
+    QObject::connect(m_actionLoadPointCloudData, SIGNAL(triggered()), this, SLOT(loadPointCloudData()));
+    QObject::connect(m_actionUnloadPointCloudData, SIGNAL(triggered()), this, SLOT(unloadPointCloudData()));
     QObject::connect(m_actionExportModelTransformed, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
 
     QObject::connect(m_actionReset_Camera, SIGNAL(triggered()), this, SLOT(updateView()));
@@ -416,7 +458,7 @@ void LVRMainWindow::restoreSliders()
 {
     std::set<LVRPointCloudItem*> pointCloudItems = getSelectedPointCloudItems();
     std::set<LVRMeshItem*> meshItems = getSelectedMeshItems();
-    
+
     if (!pointCloudItems.empty())
     {
         LVRPointCloudItem* pointCloudItem = *pointCloudItems.begin();
@@ -504,6 +546,66 @@ void LVRMainWindow::restoreSliders()
         m_horizontalSliderTransparency->setEnabled(false);
         m_horizontalSliderTransparency->setValue(0);
     }
+}
+
+bool isSelfOrChildSelected(QTreeWidgetItem *item)
+{
+
+    bool selected = item->isSelected();
+
+    for (int i = 0; i < item->childCount() && !selected; i++)
+    {
+        selected = isSelfOrChildSelected(item->child(i));
+    }
+
+    return selected;
+}
+
+void LVRMainWindow::highlightBoundingBoxes()
+{
+    QTreeWidgetItemIterator it(treeWidget);
+
+    while (*it)
+    {
+        if ((*it)->type() == LVRBoundingBoxItemType)
+        {
+            LVRBoundingBoxItem *item = static_cast<LVRBoundingBoxItem *>(*it);
+            item->getBoundingBoxBridge()->setColor(1.0, 1.0, 1.0);
+
+            if (item->parent() && item->parent()->type() == LVRScanDataItemType)
+            {
+                QTreeWidgetItem *parent = item->parent();
+
+                if (isSelfOrChildSelected(parent))
+                {
+                    item->getBoundingBoxBridge()->setColor(1.0, 1.0, 0.0);
+                }
+            }
+        }
+
+        if ((*it)->type() == LVRPointCloudItemType)
+        {
+            LVRPointCloudItem *item = static_cast<LVRPointCloudItem *>(*it);
+            item->resetColor();
+
+            QTreeWidgetItem *parent = item->parent();
+            if (!parent || (parent->type() != LVRScanDataItemType && parent->type() != LVRModelItemType))
+            {
+                parent = *it;
+            }
+
+            if (isSelfOrChildSelected(parent))
+            {
+                QColor color;
+                color.setRgbF(1.0, 1.0, 0.0);
+                item->setSelectionColor(color);
+            }
+        }
+
+        it++;
+    }
+
+    refreshView();
 }
 
 void LVRMainWindow::exportSelectedModel()
@@ -627,6 +729,26 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
             QPoint globalPos = treeWidget->mapToGlobal(p);
             m_treeChildItemContextMenu->exec(globalPos);
         }
+        if (item->type() == LVRScanDataItemType)
+        {
+            QPoint globalPos = treeWidget->mapToGlobal(p);
+
+            LVRScanDataItem *sdi = static_cast<LVRScanDataItem *>(item);
+            QMenu *con_menu = new QMenu;
+
+            if (sdi->getModelBridgePtr())
+            {
+                con_menu->addAction(m_actionUnloadPointCloudData);
+            }
+            else
+            {
+                con_menu->addAction(m_actionLoadPointCloudData);
+            }
+            con_menu->addAction(m_actionDeleteModelItem);
+            con_menu->exec(globalPos);
+
+            delete con_menu;
+        }
     }
 }
 
@@ -680,6 +802,60 @@ void LVRMainWindow::loadModel()
         assertToggles();
         updateView();
     }
+}
+
+void LVRMainWindow::loadPointCloudData()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+
+        if(item->type() == LVRScanDataItemType)
+        {
+            LVRScanDataItem *sd = static_cast<LVRScanDataItem *>(item);
+
+
+            if (!sd->getModelBridgePtr())
+            {
+                sd->loadPointCloudData();
+                sd->setVisibility(true, m_actionShow_Points->isChecked());
+                ModelBridgePtr mbp = sd->getModelBridgePtr();
+                mbp->addActors(m_renderer);
+
+                highlightBoundingBoxes();
+                assertToggles();
+                restoreSliders();
+                refreshView();
+            }
+        }
+    }
+
+}
+
+void LVRMainWindow::unloadPointCloudData()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+
+        if(item->type() == LVRScanDataItemType)
+        {
+            LVRScanDataItem *sd = static_cast<LVRScanDataItem *>(item);
+
+            if (sd->getModelBridgePtr())
+            {
+                sd->getModelBridgePtr()->removeActors(m_renderer);
+                sd->unloadPointCloudData();
+
+                refreshView();
+                restoreSliders();
+                assertToggles();
+            }
+        }
+    }
+
 }
 
 void LVRMainWindow::deleteModelItem()
@@ -748,8 +924,12 @@ void LVRMainWindow::deleteModelItem()
 
 LVRModelItem* LVRMainWindow::getModelItem(QTreeWidgetItem* item)
 {
-    if(item->type() == LVRModelItemType) return static_cast<LVRModelItem*>(item);
-    if(item->parent()->type() == LVRModelItemType) return static_cast<LVRModelItem*>(item->parent());
+    if(item->type() == LVRModelItemType)
+        return static_cast<LVRModelItem*>(item);
+
+    if(item->parent() && item->parent()->type() == LVRModelItemType)
+        return static_cast<LVRModelItem*>(item->parent());
+
     return NULL;
 }
 
@@ -865,6 +1045,27 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
 
         refreshView();
     }
+    else if (treeWidgetItem->type() == LVRScanDataItemType)
+    {
+        LVRScanDataItem *item = static_cast<LVRScanDataItem *>(treeWidgetItem);
+        item->setVisibility(true, m_actionShow_Points->isChecked());
+
+        refreshView();
+    }
+    else if (treeWidgetItem->type() == LVRBoundingBoxItemType)
+    {
+        LVRBoundingBoxItem *item = static_cast<LVRBoundingBoxItem *>(treeWidgetItem);
+        item->setVisibility(true);
+
+        refreshView();
+    }
+    else
+    {
+        for (int i = 0; i < treeWidgetItem->childCount(); i++)
+        {
+            setModelVisibility(treeWidgetItem->child(i), 0);
+        }
+    }
 }
 
 void LVRMainWindow::changePointSize(int pointSize)
@@ -959,8 +1160,16 @@ void LVRMainWindow::togglePoints(bool checkboxState)
         QTreeWidgetItem* item = *it;
         if(item->type() == LVRPointCloudItemType)
         {
-            LVRModelItem* model_item = static_cast<LVRModelItem*>(item->parent());
-            if(model_item->isEnabled()) model_item->setVisibility(checkboxState);
+            if (item->parent()->type() == LVRModelItemType)
+            {
+                LVRModelItem* model_item = static_cast<LVRModelItem*>(item->parent());
+                if(model_item->isEnabled()) model_item->setVisibility(checkboxState);
+            }
+            if (item->parent()->type() == LVRScanDataItemType)
+            {
+                LVRScanDataItem* sd_item = static_cast<LVRScanDataItem*>(item->parent());
+                sd_item->setVisibility(true, checkboxState);
+            }
         }
         ++it;
     }
@@ -977,10 +1186,13 @@ void LVRMainWindow::toggleNormals(bool checkboxState)
         QTreeWidgetItem* item = *it;
         if(item->type() == LVRPointCloudItemType)
         {
-            LVRModelItem* model_item = static_cast<LVRModelItem*>(item->parent());
-            if(model_item->isEnabled()){
-                model_item->getModelBridge()->setNormalsVisibility(checkboxState);
-            } 
+            if (item->parent()->type() == LVRModelItemType)
+            {
+                LVRModelItem* model_item = static_cast<LVRModelItem*>(item->parent());
+                if(model_item->isEnabled()){
+                    model_item->getModelBridge()->setNormalsVisibility(checkboxState);
+                }
+            }
         }
         ++it;
     }
@@ -1035,25 +1247,83 @@ void LVRMainWindow::toggleWireframe(bool checkboxState)
     }
 }
 
+QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm, std::string scanDataGroup, QTreeWidgetItem *parent)
+{
+    QTreeWidgetItem *lastItem = nullptr;
+    std::vector<ScanData> scanData = sdm->getScanData(scanDataGroup);
+
+    for (size_t i = 0; i < scanData.size(); i++)
+    {
+        char buf[128];
+        std::sprintf(buf, "%05d", scanData[i].m_positionNumber);
+        LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, QString("pos_") + buf, parent);
+
+        m_renderer->AddActor(item->getBoundingBoxBridge()->getActor());
+        lastItem = item;
+    }
+
+    return lastItem;
+}
+
 void LVRMainWindow::parseCommandLine(int argc, char** argv)
 {
     QTreeWidgetItem* lastItem = nullptr;
 
     for(int i = 1; i < argc; i++)
     {
-        // Load model and generate vtk representation
-        ModelPtr model = ModelFactory::readModel(string(argv[i]));
-        ModelBridgePtr bridge(new LVRModelBridge(model));
-        bridge->addActors(m_renderer);
-
-        // Add item for this model to tree widget
         QString s(argv[i]);
         QFileInfo info(s);
         QString base = info.fileName();
-        LVRModelItem* item = new LVRModelItem(bridge, base);
-        this->treeWidget->addTopLevelItem(item);
-        item->setExpanded(true);
-        lastItem = item;
+
+        if (info.suffix() == "h5")
+        {
+
+            QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
+            root->setText(0, base);
+
+            QIcon icon;
+            icon.addFile(QString::fromUtf8(":/qv_scandata_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
+            root->setIcon(0, icon);
+
+            std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(argv[i]));
+            std::vector<std::string> scanDataGroups = sdm->getScanDataGroups();
+
+            if (std::find(scanDataGroups.begin(), scanDataGroups.end(), "/raw/scans") != scanDataGroups.end())
+            {
+                QTreeWidgetItem *item = new QTreeWidgetItem(root);
+                item->setText(0, "/raw/scans");
+                item->setCheckState(0, Qt::Unchecked);
+                lastItem = addScanData(sdm, "/raw/scans", item);
+            }
+
+            if (std::find(scanDataGroups.begin(), scanDataGroups.end(), "/annotation") != scanDataGroups.end())
+            {
+                QTreeWidgetItem *item = new QTreeWidgetItem(root);
+                item->setText(0, "/annotation");
+                item->setCheckState(0, Qt::Unchecked);
+                lastItem = addScanData(sdm, "/annotation", item);
+            }
+
+
+            root->setCheckState(0, Qt::Checked);
+            root->setExpanded(true);
+
+            lastItem->parent()->setCheckState(0, Qt::Checked);
+            lastItem->parent()->setExpanded(true);
+        }
+        else
+        {
+            // Load model and generate vtk representation
+            ModelPtr model = ModelFactory::readModel(string(argv[i]));
+            ModelBridgePtr bridge(new LVRModelBridge(model));
+            bridge->addActors(m_renderer);
+
+            // Add item for this model to tree widget
+            LVRModelItem* item = new LVRModelItem(bridge, base);
+            this->treeWidget->addTopLevelItem(item);
+            item->setExpanded(true);
+            lastItem = item;
+        }
     }
 
     if (lastItem != nullptr)
@@ -1083,23 +1353,27 @@ void LVRMainWindow::manualICP()
 void LVRMainWindow::showColorDialog()
 {
     QColor c = QColorDialog::getColor();
-    for (QTreeWidgetItem* item : treeWidget->selectedItems())
+    if (c.isValid())
     {
-        if(item->type() == LVRPointCloudItemType)
+        for (QTreeWidgetItem* item : treeWidget->selectedItems())
         {
-            LVRPointCloudItem* pc_item = static_cast<LVRPointCloudItem*>(item);
-            pc_item->setColor(c);
-        }
-        else if(item->type() == LVRMeshItemType)
-        {
-            LVRMeshItem* mesh_item = static_cast<LVRMeshItem*>(item);
-            mesh_item->setColor(c);
-        }
-        else {
-            return;
-        }
+            if(item->type() == LVRPointCloudItemType)
+            {
+                LVRPointCloudItem* pc_item = static_cast<LVRPointCloudItem*>(item);
+                pc_item->setColor(c);
+            }
+            else if(item->type() == LVRMeshItemType)
+            {
+                LVRMeshItem* mesh_item = static_cast<LVRMeshItem*>(item);
+                mesh_item->setColor(c);
+            }
+            else {
+                return;
+            }
 
-        refreshView();
+            highlightBoundingBoxes();
+            refreshView();
+        }
     }
 }
 
@@ -1143,7 +1417,7 @@ void LVRMainWindow::estimateNormals()
     if(items.size() > 0)
     {
         LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
-        LVRModelItem* parent_item = getModelItem(items.first());
+        QTreeWidgetItem* parent_item = items.first()->parent();
         if(pc_item != NULL)
         {
             LVREstimateNormalsDialog* dialog = new LVREstimateNormalsDialog(pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
@@ -1346,16 +1620,23 @@ void LVRMainWindow::showPointPreview(vtkActor* actor, int point)
         return;
     }
     LVRPointBufferBridge* pointBridge = nullptr;
-    for(int i = 0; i < treeWidget->topLevelItemCount(); i++)
+
+    QTreeWidgetItemIterator it(treeWidget);
+
+    while(*it)
     {
-        QTreeWidgetItem *item = treeWidget->topLevelItem(i);
-        LVRPointBufferBridge* bridge = getModelItem(item)->getModelBridge()->getPointBridge().get();
-        if (bridge->getPointCloudActor() == actor)
+        if ((*it)->type() == LVRPointCloudItemType)
         {
-            pointBridge = bridge;
-            break;
+            PointBufferBridgePtr pbuf = static_cast<LVRPointCloudItem *>(*it)->getPointBufferBridge();
+            if (pbuf->getPointCloudActor() == actor)
+            {
+                pointBridge = pbuf.get();
+                break;
+            }
         }
+        it++;
     }
+
     if (pointBridge == nullptr)
     {
         return;
