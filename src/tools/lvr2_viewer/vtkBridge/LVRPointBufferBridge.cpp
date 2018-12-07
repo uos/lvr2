@@ -386,14 +386,17 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         floatArr spec = pc->getFloatArray("spectral_channels", n_s_p, n_s_channels);
         floatArr normals = pc->getNormalArray();
 
-        scalars->SetNumberOfTuples(n_s_p ? n_s_p : n);
+        if (spec || colors)
+        {
+            scalars->SetNumberOfTuples(n_s_p ? n_s_p : n);
+        }
+
         vtk_points->SetNumberOfPoints(n_s_p ? n_s_p : n);
 
         if(normals)
         {
             m_vtk_normals->SetNumberOfTuples(n);
         }
-        
 
         for(vtkIdType i = 0; i < n; i++)
         {
@@ -445,19 +448,6 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
                 scalars->SetTypedTuple(i, color); // no idea how the new method is called
 #endif
             }
-            else
-            {
-                unsigned char color[3];
-                color[0] = 255;
-                color[1] = 255;
-                color[2] = 255;
-
-#if VTK_MAJOR_VERSION < 7
-                scalars->SetTupleValue(i, color);
-#else
-                scalars->SetTypedTuple(i, color); // no idea how the new method is called
-#endif
-            }
 
             vtk_points->SetPoint(i, point);
             vtk_cells->InsertNextCell(1, &i);
@@ -466,22 +456,20 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         vtk_polyData->SetPoints(vtk_points);
         vtk_polyData->SetVerts(vtk_cells);
 
-        if(n_c || n_s_p)
+        if(hasColors() || n_s_p)
         {
             vtk_polyData->GetPointData()->SetScalars(scalars);
         }
 
-        
-
         // Create poly data mapper and generate actor
-        //vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-        vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
+        vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 #ifdef LVR_USE_VTK5
         mapper->SetInput(vtk_polyData);
 #else
         mapper->SetInputData(vtk_polyData);
 #endif
         m_pointCloudActor->SetMapper(mapper);
+        m_pointCloudActor->GetProperty()->SetColor(1.0, 1.0, 1.0);
     }
 }
 
@@ -502,23 +490,21 @@ LVRPointBufferBridge::LVRPointBufferBridge(const LVRPointBufferBridge& b)
 
 void LVRPointBufferBridge::setBaseColor(float r, float g, float b)
 {
-    vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
-    p->SetColor(r, g, b);
-    m_pointCloudActor->SetProperty(p);
+    m_pointCloudActor->GetProperty()->SetColor(r, g, b);
 }
 
 void LVRPointBufferBridge::setPointSize(int pointSize)
 {
     vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
     p->SetPointSize(pointSize);
-    m_pointCloudActor->SetProperty(p);
+    //m_pointCloudActor->SetProperty(p);
 }
 
 void LVRPointBufferBridge::setOpacity(float opacityValue)
 {
     vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
     p->SetOpacity(opacityValue);
-    m_pointCloudActor->SetProperty(p);
+    //m_pointCloudActor->SetProperty(p);
 }
 
 void LVRPointBufferBridge::setVisibility(bool visible)
@@ -542,8 +528,6 @@ void LVRPointBufferBridge::setNormalsVisibility(bool visible)
             );
         }
     }
-    
-    
 }
 
 vtkSmartPointer<vtkActor> LVRPointBufferBridge::getPointCloudActor()

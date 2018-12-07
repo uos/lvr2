@@ -27,6 +27,7 @@
 
 #include <QFileDialog>
 #include "LVRReconstructionEstimateNormalsDialog.hpp"
+#include "LVRItemTypes.hpp"
 
 #include <lvr2/geometry/BaseVector.hpp>
 
@@ -37,7 +38,7 @@
 namespace lvr2
 {
 
-LVREstimateNormalsDialog::LVREstimateNormalsDialog(LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
+LVREstimateNormalsDialog::LVREstimateNormalsDialog(LVRPointCloudItem* pc, QTreeWidgetItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
    m_pc(pc), m_parent(parent), m_treeWidget(treeWidget), m_renderWindow(window)
 {
     // Setup DialogUI and events
@@ -110,9 +111,22 @@ void LVREstimateNormalsDialog::estimateNormals()
     vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
     bridge->addActors(renderer);
 
-    QString base = m_parent->getName() + " (w. normals)";
-    m_pointCloudWithNormals = new LVRModelItem(bridge, base);
-    m_pointCloudWithNormals->setPose(m_parent->getPose());
+    QString base;
+    if (m_parent->type() == LVRModelItemType)
+    {
+        LVRModelItem *model_item = static_cast<LVRModelItem *>(m_parent);
+        base = model_item->getName() + " (w. normals)";
+        m_pointCloudWithNormals = new LVRModelItem(bridge, base);
+        m_pointCloudWithNormals->setPose(model_item->getPose());
+    }
+    else if (m_parent->type() == LVRScanDataItemType)
+    {
+        LVRScanDataItem *sd_item = static_cast<LVRScanDataItem *>(m_parent);
+        base = sd_item->getName() + " (w. normals)";
+        m_pointCloudWithNormals = new LVRModelItem(bridge, base);
+        m_pointCloudWithNormals->setPose(sd_item->getPose());
+    }
+
 
     m_treeWidget->addTopLevelItem(m_pointCloudWithNormals);
     m_pointCloudWithNormals->setExpanded(true);

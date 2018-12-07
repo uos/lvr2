@@ -36,6 +36,7 @@
 #include "ui_LVRReconstructionEstimateNormalsDialogUI.h"
 #include "LVRPointCloudItem.hpp"
 #include "LVRModelItem.hpp"
+#include "LVRScanDataItem.hpp"
 
 using Ui::EstimateNormalsDialog;
 
@@ -47,7 +48,7 @@ class LVREstimateNormalsDialog : public QObject
     Q_OBJECT
 
 public:
-    LVREstimateNormalsDialog(LVRPointCloudItem* pc_item, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
+    LVREstimateNormalsDialog(LVRPointCloudItem* pc_item, QTreeWidgetItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
     virtual ~LVREstimateNormalsDialog();
 
 private Q_SLOTS:
@@ -60,7 +61,7 @@ private:
     EstimateNormalsDialog*                  m_dialog;
     LVRPointCloudItem*                      m_pc;
     LVRModelItem*                           m_pointCloudWithNormals;
-    LVRModelItem*                           m_parent;
+    QTreeWidgetItem*                        m_parent;
     QTreeWidget*                            m_treeWidget;
     vtkRenderWindow*                        m_renderWindow;
 };
