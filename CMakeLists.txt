@@ -64,7 +64,7 @@ endif(CUDA_FOUND)
 ####
 ## Searching for OpenCV
 ##############################
-find_package( OpenCV 3 )
+find_package( OpenCV 3 REQUIRED )
 if (!OpenCV_FOUND)
   find_package( OpenCV 4 REQUIRED )
 endif()
@@ -83,6 +83,9 @@ endif(WITH_CV_NONFREE)
 find_package(  FLANN REQUIRED )
 if(FLANN_FOUND)
   include_directories(${FLANN_DIR})
+  # Flann has external dependency to LZ4
+  find_package(LZ4 REQUIRED)
+  include_directories(LZ4_INCLUDE_DIR)
 endif(FLANN_FOUND)
 
 find_package(  Lz4 REQUIRED )
