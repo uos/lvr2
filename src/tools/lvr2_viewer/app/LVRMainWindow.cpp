@@ -1818,7 +1818,7 @@ void LVRMainWindow::changeGradientColor()
     {
         return;
     }
-    
+
     std::set<LVRPointCloudItem*> items = getSelectedPointCloudItems();
 
     if (items.empty())
@@ -1836,7 +1836,7 @@ void LVRMainWindow::changeGradientColor()
     bool useNDVI = this->checkBox_NDVI->isChecked();
     bool normalized = this->checkBox_normcolors->isChecked();
     int type = this->comboBox_colorgradient->currentIndex();
-    
+
     for(LVRPointCloudItem* item : items)
     {
         item->getPointBufferBridge()->setSpectralColorGradient((GradientType)type, channel, normalized, useNDVI);
@@ -1855,7 +1855,7 @@ void LVRMainWindow::updatePointPreview(int pointId, PointBufferPtr points)
     {
         return;
     }
-    
+
     size_t n_spec, n_channels;
     UCharChannelOptional spectral_channels = points->getUCharChannel("spectral_channels");
 
@@ -1873,7 +1873,7 @@ void LVRMainWindow::updatePointPreview(int pointId, PointBufferPtr points)
             floatArr data(new float[n_channels]);
             for (int i = 0; i < n_channels; i++)
             {
-                data[i] = (*spectral_channels)[pointId][i];
+                data[i] = (*spectral_channels)[pointId][i] / 255.0;
             }
             m_PointPreviewPlotter->setPoints(data, n_channels, 0, 1);
             m_PointPreviewPlotter->setXRange(*points->getIntAttribute("spectral_wavelength_min"), *points->getIntAttribute("spectral_wavelength_max"));
