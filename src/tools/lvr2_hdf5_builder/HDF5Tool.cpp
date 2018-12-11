@@ -179,7 +179,7 @@ int main( int argc, char ** argv )
             // Load annotations
             size_t an;
             unsigned  aw;
-            floatArr spectral = pointCloud->getFloatArray("spectral_channels", an, aw);
+            ucharArr spectral = pointCloud->getUCharArray("spectral_channels", an, aw);
 
             std::cout << timestamp << "Calculating bounding box..." << std::endl;
             BoundingBox<BaseVector<float> > bBox;
@@ -224,7 +224,7 @@ int main( int argc, char ** argv )
             char groupName[256];
             std::vector<size_t> dim = {numExspectedPNGs, img_y, img_x};
 
-            // Priliminary experiments showed that this chunking delived
+            // Priliminary experiments showed that this chunking delivered
             // best compression of hyperspectral image data
             std::vector<hsize_t> chunks = {50, 50, 50};
             sprintf(groupName, "/raw/spectral/position_%05d", scanNr);
@@ -233,9 +233,11 @@ int main( int argc, char ** argv )
             scanNr++;
 
             // Add spectral annotation channel
-            std::vector<size_t> dim_sannotation = {an, aw};
+            size_t chunk_w = std::min<size_t>(an, 1000000);    // Limit chunk size
+            std::vector<hsize_t> chunk_annotation = {chunk_w, aw};
+            std::vector<size_t> dim_annotation = {an, aw};
             sprintf(groupName, "/annotation/position_%05d", scanNr);
-            hdf5.addArray(groupName, "spectral", dim_sannotation, spectral);
+            hdf5.addArray(groupName, "spectral", dim_annotation, chunk_annotation, spectral);
         }
         else
         {
