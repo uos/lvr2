@@ -264,8 +264,8 @@ void LVRPointBufferBridge::refreshSpectralGradient()
 
     if(m_useNormalizedGradient && m_useNDVI)
     {
-        min = ndviMin;
-        max = ndviMax;
+        min = ndviMin * 255;
+        max = ndviMax * 255;
     }
 
     // Colormap is used to calculate gradients
@@ -281,7 +281,7 @@ void LVRPointBufferBridge::refreshSpectralGradient()
         // get gradient colors
         if (m_useNDVI)
         {
-            colorMap.getColor(color, (unsigned char)( (ndvi[i] - min) * 255) , m_spectralGradient);
+            colorMap.getColor(color, (unsigned char) ((ndvi[i] * 255) - min) , m_spectralGradient);
         }
         else
         {
