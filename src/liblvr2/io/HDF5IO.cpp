@@ -36,12 +36,12 @@
 namespace lvr2
 {
 
-HDF5IO::HDF5IO(std::string filename) :
+HDF5IO::HDF5IO(std::string filename, bool truncate) :
     m_hdf5_file(nullptr),
     m_compress(true),
     m_chunkSize(1e7)
 {
-    open(filename);
+    open(filename, truncate);
 }
 
 HDF5IO::~HDF5IO()
@@ -77,7 +77,7 @@ ModelPtr HDF5IO::read(std::string filename)
     return ModelPtr(new Model);
 }
 
-bool HDF5IO::open(std::string filename)
+bool HDF5IO::open(std::string filename, bool truncate)
 {
     // If file alredy exists, don't rewrite base structurec++11 init vector
     bool have_to_init = false;
@@ -91,7 +91,7 @@ bool HDF5IO::open(std::string filename)
     // Try to open the given HDF5 file
     m_hdf5_file = new HighFive::File(
                 filename,
-                HighFive::File::ReadWrite | (have_to_init ? HighFive::File::Create : 0));
+                HighFive::File::OpenOrCreate | (truncate ? HighFive::File::Truncate : 0));
 
     if (!m_hdf5_file->isValid())
     {

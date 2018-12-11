@@ -71,10 +71,10 @@ class HDF5IO : public BaseIO
          */
     virtual void save(std::string filename);
 
-    HDF5IO(std::string filename);
+    HDF5IO(std::string filename, bool truncate = false);
     virtual ~HDF5IO();
 
-    bool open(std::string filename);
+    bool open(std::string filename, bool truncate);
 
     template<typename T>
     boost::shared_array<T> getArray(
