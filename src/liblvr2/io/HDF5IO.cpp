@@ -83,7 +83,7 @@ bool HDF5IO::open(std::string filename, bool truncate)
     bool have_to_init = false;
 
     boost::filesystem::path path(filename);
-    if(!boost::filesystem::exists(path))
+    if(!boost::filesystem::exists(path) | truncate)
     {
         have_to_init = true;
     }
