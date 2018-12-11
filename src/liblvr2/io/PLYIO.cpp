@@ -555,7 +555,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     floatArr pointConfidences;
     floatArr pointIntensities;
     floatArr pointNormals;
-    floatArr pointSpectralChannels;
+    ucharArr pointSpectralChannels;
 
     ucharArr vertexColors;
     ucharArr pointColors;
@@ -813,9 +813,9 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
             int height = imgs[0].rows;
 
             numPointSpectralChannels = numPointPanoramaCoords;
-            pointSpectralChannels = floatArr(new float[numPointPanoramaCoords * n_channels]);
+            pointSpectralChannels = ucharArr(new unsigned char[numPointPanoramaCoords * n_channels]);
 
-            float* point_spectral_channels = pointSpectralChannels.get();
+            unsigned char* point_spectral_channels = pointSpectralChannels.get();
 
             std::cout << timestamp << "Finished loading " << n_channels << " channel images" << std::endl;
 
@@ -828,11 +828,11 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
                 x = (x + width / 2) % width; // TODO: FIXME: Data is currently stored mirrored and offset
 
                 int panoramaPosition = y * width + x;
-                float* pixel = point_spectral_channels + n_channels * i;
+                unsigned char* pixel = point_spectral_channels + n_channels * i;
 
                 for (int channel = 0; channel < n_channels; channel++)
                 {
-                    pixel[channel] = pixels[channel][panoramaPosition] / 255.0f;
+                    pixel[channel] = pixels[channel][panoramaPosition];
                 }
             }
             std::cout << timestamp << "Finished extracting channel information" << std::endl;
@@ -871,7 +871,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
         // only add spectral data if we really have some...
         if (pointSpectralChannels)
         {
-            pc->addFloatChannel(pointSpectralChannels, "spectral_channels", numPointSpectralChannels, n_channels);
+            pc->addUCharChannel(pointSpectralChannels, "spectral_channels", numPointSpectralChannels, n_channels);
 
             // there is no way to read min-, maxchannel from ply file => assume default 400-1000nm
             pc->addIntAttribute(400, "spectral_wavelength_min");

@@ -55,8 +55,8 @@ public:
 
 	void setPlotMode(PlotMode mode);
 	void setXRange(int min, int max);
-	void setPoints(floatArr points, size_t numPoints);
-	void setPoints(floatArr points, size_t numPoints, float min, float max);
+    void setPoints(floatArr points, size_t numPoints);
+    void setPoints(floatArr points, size_t numPoints, float min, float max);
 	void removePoints();
 
 protected:
@@ -65,7 +65,7 @@ protected:
 	void paintEvent(QPaintEvent *event);
 
 private:
-	floatArr m_points;
+    floatArr m_points;
 	size_t   m_numPoints;
 	float    m_min;
 	float    m_max;

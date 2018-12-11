@@ -337,11 +337,11 @@ ScanData HDF5IO::getSingleScanData(std::string scanDataRoot, int nr, bool load_p
                 {
                     std::vector<size_t> dim;
                     sprintf(buffer, "position_%05d", nr);
-                    floatArr spectral = getArray<float>(scanDataRoot + "/" + buffer, "spectral", dim);
+                    ucharArr spectral = getArray<unsigned char>(scanDataRoot + "/" + buffer, "spectral", dim);
 
                     if (spectral)
                     {
-                        ret.m_points->addFloatChannel(spectral, "spectral_channels", dim[0], dim[1]);
+                        ret.m_points->addUCharChannel(spectral, "spectral_channels", dim[0], dim[1]);
                         ret.m_points->addIntAttribute(400, "spectral_wavelength_min");
                         ret.m_points->addIntAttribute(400 + 4 * dim[1], "spectral_wavelength_max");
                     }
