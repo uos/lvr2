@@ -198,8 +198,29 @@ int main( int argc, char ** argv )
             data.m_boundingBox = bBox;
             data.m_registration = transformation;
 
+            // Add point previews
+            int reduction_factor = 20;
+            int num_pts_preview = pointCloud->numPoints() / reduction_factor;
+
+            floatArr pts_preview = floatArr( new float[3 * num_pts_preview + 3] );
+
+            size_t preview_idx = 0;
+            for (size_t i = 0; i < pointCloud->numPoints(); i++)
+            {
+                if (i % reduction_factor == 0)
+                {
+                    pts_preview[preview_idx*3 + 0] = points[i*3 + 0];
+                    pts_preview[preview_idx*3 + 1] = points[i*3 + 1];
+                    pts_preview[preview_idx*3 + 2] = points[i*3 + 2];
+                    preview_idx++;
+                }
+            }
+
+            data.m_preview = PointBufferPtr( new PointBuffer(pts_preview, num_pts_preview) );
+
             // Add objects to hdf5 file
             hdf5.addRawScanData(scanNr, data);
+
 
             // Get hyperspectral calibration parameters
             HyperspectralCalibration cal = getSpectralCalibration(dataDir, number);

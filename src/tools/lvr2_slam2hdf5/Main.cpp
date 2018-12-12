@@ -35,7 +35,23 @@ int main(int argc, char** argv)
 
     for(size_t i = 0; i < scans.size(); i++)
     {
-       hdf5.addRawScanData((int)i, scans[i]);
+        size_t reduction_factor = 20;
+        size_t num_pts_preview = scans[i].m_points->numPoints() / reduction_factor;
+        floatArr pts_preview = floatArr( new float[num_pts_preview * 3 + 3] );
+        floatArr points = scans[i].m_points->getPointArray();
+        size_t preview_idx = 0;
+        for (size_t j = 0; j < scans[i].m_points->numPoints(); j++)
+        {
+            if (j % reduction_factor == 0)
+            {
+                pts_preview[preview_idx*3 + 0] = points[j*3 + 0];
+                pts_preview[preview_idx*3 + 1] = points[j*3 + 1];
+                pts_preview[preview_idx*3 + 2] = points[j*3 + 2];
+                preview_idx++;
+            }
+        }
+        scans[i].m_preview = PointBufferPtr( new PointBuffer(pts_preview, num_pts_preview) );
+        hdf5.addRawScanData((int)i, scans[i]);
     }
 
 	return 0;
