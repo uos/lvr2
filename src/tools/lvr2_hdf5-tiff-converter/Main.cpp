@@ -27,14 +27,12 @@ int main()
     string filename = res_path + file;
 
     vector<ScanData> scandatas;
-    vector<cv::Mat2d> channels;
+/*    vector<cv::Mat2d> channels;*/
 
     ScanDataManager scanman(filename);
     HDF5IO hdf5(filename);
 
     scandatas = scanman.getScanData("/raw/scans");
-
-    hdf5.get
 
     // for each scan
     for (ScanData scand: scandatas)
