@@ -349,6 +349,13 @@ ScanData HDF5IO::getSingleScanData(std::string scanDataRoot, int nr, bool load_p
             }
         }
 
+        floatArr preview = getArray<float>(groupName, "preview", dummy);
+
+        if (preview)
+        {
+            ret.m_preview = PointBufferPtr( new PointBuffer(preview, dummy/3) );
+        }
+
         if (fov)
         {
             ret.m_hFieldOfView = fov[0];
@@ -573,6 +580,12 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             addArray(groupName, "finalPose", dim, registration);
             addArray(groupName, "boundingBox", 6, bb);
             addArray(groupName, "points", scan_dim, scan.m_points->getPointArray());
+
+            if (scan.m_preview)
+            {
+                std::vector<size_t> preview_dim = {scan.m_preview->numPoints(), 3};
+                addArray(groupName, "preview", preview_dim, scan.m_preview->getPointArray());
+            }
         }
     }
 }

@@ -20,13 +20,18 @@ class LVRScanDataItem : public QTreeWidgetItem
 {
     public:
 
-        LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, QString name = "", QTreeWidgetItem *parent = NULL);
+        LVRScanDataItem(ScanData data,
+                        std::shared_ptr<ScanDataManager> sdm,
+                        size_t idx,
+                        vtkSmartPointer<vtkRenderer> renderer,
+                        QString name = "",
+                        QTreeWidgetItem *parent = NULL);
 
         ~LVRScanDataItem();
 
-        void loadPointCloudData();
+        void loadPointCloudData(vtkSmartPointer<vtkRenderer> renderer);
 
-        void unloadPointCloudData();
+        void unloadPointCloudData(vtkSmartPointer<vtkRenderer> renderer);
 
         QString getName() { return m_name; }
 
@@ -38,9 +43,12 @@ class LVRScanDataItem : public QTreeWidgetItem
 
         void setVisibility(bool visible, bool pc_visible);
 
+        bool isPointCloudLoaded();
 
 
     private:
+
+        void loadPreview(vtkSmartPointer<vtkRenderer> renderer);
 
         QString                                 m_name;
         std::shared_ptr<ScanDataManager>        m_sdm;
@@ -48,6 +56,7 @@ class LVRScanDataItem : public QTreeWidgetItem
         ScanData                                m_data;
         ModelBridgePtr                          m_model;
         BoundingBoxBridgePtr                    m_bb;
+        Pose                                    m_pose;
         LVRBoundingBoxItem                     *m_bbItem;
         LVRPointCloudItem                      *m_pcItem;
         LVRPoseItem                            *m_pItem;

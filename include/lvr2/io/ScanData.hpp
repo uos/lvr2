@@ -16,6 +16,7 @@ struct ScanData
 {
     ScanData() :
         m_points(nullptr),
+        m_preview(nullptr),
         m_hFieldOfView(0),
         m_vFieldOfView(0),
         m_hResolution(0),
@@ -27,6 +28,7 @@ struct ScanData
 	~ScanData() {};
 
     PointBufferPtr                      m_points;
+    PointBufferPtr                      m_preview;
     Matrix4<BaseVector<float> >         m_registration;
     Matrix4<BaseVector<float> >         m_poseEstimation;
     BoundingBox<BaseVector<float> >     m_boundingBox;
