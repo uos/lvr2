@@ -2,10 +2,14 @@
 // Created by ndettmer on 11.12.18.
 //
 
-#include <lvr2/io/HDF5IO.hpp>
+/*#include <lvr2/io/HDF5IO.hpp>*/
+#include <lvr2/io/ScanDataManager.hpp>
+
+#include <boost/range/iterator_range.hpp>
 
 #include <string>
 #include <fstream>
+
 
 using namespace lvr2;
 using std::string;
@@ -25,21 +29,25 @@ int main()
     vector<ScanData> scandatas;
     vector<cv::Mat2d> channels;
 
+    ScanDataManager scanman(filename);
     HDF5IO hdf5(filename);
 
-    scandatas = hdf5.getScanData("/raw/scans", true);
+    scandatas = scanman.getScanData("/raw/scans");
+
+    hdf5.get
 
     // for each scan
     for (ScanData scand: scandatas)
     {
         // build a CVMat for each Channel
-        // TODO: find out how to iterate through m_points
-/*        unsigned w_color;
-        PointBufferPtr points = scand.m_points;
-        for (auto point: points)
-        {
+        // -> Model
+        unsigned w_color;
+        scanman.loadPointCloudData(scand);
+        // TODO: ScanData Object does not contain spectral table! Where is it??
 
-        }*/
+
+
+        break;
     }
 
     return 0;
