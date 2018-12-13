@@ -165,6 +165,11 @@ Texture HDF5IO::getImage(HighFive::Group& g, std::string datasetName)
             long long int npals;
             char interlace[256];
 
+            if (!H5IMis_image(g.getId(), datasetName.c_str()))
+            {
+                return ret;
+            }
+
             if (H5IMget_image_info(
                         g.getId(), datasetName.c_str(), &width, &height,
                         &planes, interlace, &npals) >= 0)
