@@ -290,16 +290,8 @@ std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
     return getScanData("/raw/scans/", load_points);
 }
 
-ScanData HDF5IO::getSingleScanData(std::string scanDataRoot, int nr, bool load_points)
+ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
 {
-
-    // annotation hack
-    bool is_annotation = false;
-    if (scanDataRoot == "/annotation")
-    {
-        is_annotation = true;
-    }
-
     ScanData ret;
 
     if (m_hdf5_file)
@@ -307,20 +299,8 @@ ScanData HDF5IO::getSingleScanData(std::string scanDataRoot, int nr, bool load_p
         char buffer[128];
         sprintf(buffer, "position_%05d", nr);
 
-        // annotation hack
-        if (is_annotation)
-        {
-            sprintf(buffer, "position_%05d", nr-1);
-        }
-
         string nr_str(buffer);
-        std::string groupName = scanDataRoot + "/" + nr_str;
-
-        // annotation hack
-        if (is_annotation)
-        {
-            groupName = "/raw/scans/" + nr_str;
-        }
+        std::string groupName = "/raw/scans/" + nr_str;
 
         unsigned int dummy;
         floatArr fov           = getArray<float>(groupName, "fov", dummy);
@@ -341,7 +321,6 @@ ScanData HDF5IO::getSingleScanData(std::string scanDataRoot, int nr, bool load_p
                 if (is_annotation)
                 {
                     std::vector<size_t> dim;
-                    sprintf(buffer, "position_%05d", nr);
                     ucharArr spectral = getArray<unsigned char>(scanDataRoot + "/" + buffer, "spectral", dim);
 
                     if (spectral)
@@ -586,10 +565,67 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             addArray(groupName, "boundingBox", 6, bb);
             addArray(groupName, "points", scan_dim, scan.m_points->getPointArray());
 
-            if (scan.m_preview)
+
+            // Add spectral annotation channel
+            size_t an;
+            unsigned aw;
+            ucharArr spectral = scan.m_points->getUCharArray("spectral_channels", an, aw);
+
+            if (spectral)
             {
-                std::vector<size_t> preview_dim = {scan.m_preview->numPoints(), 3};
-                addArray(groupName, "preview", preview_dim, scan.m_preview->getPointArray());
+                size_t chunk_w = std::min<size_t>(an, 1000000);    // Limit chunk size
+                std::vector<hsize_t> chunk_annotation = {chunk_w, aw};
+                std::vector<size_t> dim_annotation = {an, aw};
+                addArray("/annotation/" + nr_str, "spectral", dim_annotation, chunk_annotation, spectral);
+            }
+
+            int reduction_factor = 20;
+
+            // Add point preview
+            floatArr points = scan.m_points->getPointArray();
+            if (points)
+            {
+                unsigned int num_preview = scan.m_points->numPoints() / reduction_factor;
+                floatArr preview_data = floatArr( new float[3 * num_preview + 3] );
+
+                size_t preview_idx = 0;
+                for (size_t i = 0; i < scan.m_points->numPoints(); i++)
+                {
+                    if (i % reduction_factor == 0)
+                    {
+                        preview_data[preview_idx*3 + 0] = points[i*3 + 0];
+                        preview_data[preview_idx*3 + 1] = points[i*3 + 1];
+                        preview_data[preview_idx*3 + 2] = points[i*3 + 2];
+                        preview_idx++;
+                    }
+                }
+
+                std::vector<size_t> preview_dim = {num_preview, 3};
+                addArray("/preview/" + nr_str, "points", preview_dim, preview_data);
+            }
+
+
+            // Add spectral preview
+            if (spectral)
+            {
+                unsigned int num_preview = an / reduction_factor;
+                ucharArr preview_data = ucharArr( new unsigned char[(num_preview + 1) * aw] );
+
+                size_t preview_idx = 0;
+                for (size_t i = 0; i < an; i++)
+                {
+                    if (i % reduction_factor == 0)
+                    {
+                        for (size_t j = 0; j < aw; j++)
+                        {
+                            preview_data[preview_idx*aw + j] = spectral[i*aw + j];
+                        }
+                        preview_idx++;
+                    }
+                }
+
+                std::vector<size_t> preview_dim = {num_preview, aw};
+                addArray("/preview/" + nr_str, "spectral", preview_dim, preview_data);
             }
         }
     }
