@@ -176,11 +176,6 @@ int main( int argc, char ** argv )
             // Compute bounding box
             PointBufferPtr pointCloud = model->m_pointCloud;
 
-            // Load annotations
-            size_t an;
-            unsigned  aw;
-            ucharArr spectral = pointCloud->getUCharArray("spectral_channels", an, aw);
-
             std::cout << timestamp << "Calculating bounding box..." << std::endl;
             BoundingBox<BaseVector<float> > bBox;
             floatArr points = pointCloud->getPointArray();
@@ -198,25 +193,6 @@ int main( int argc, char ** argv )
             data.m_boundingBox = bBox;
             data.m_registration = transformation;
 
-            // Add point previews
-            int reduction_factor = 20;
-            int num_pts_preview = pointCloud->numPoints() / reduction_factor;
-
-            floatArr pts_preview = floatArr( new float[3 * num_pts_preview + 3] );
-
-            size_t preview_idx = 0;
-            for (size_t i = 0; i < pointCloud->numPoints(); i++)
-            {
-                if (i % reduction_factor == 0)
-                {
-                    pts_preview[preview_idx*3 + 0] = points[i*3 + 0];
-                    pts_preview[preview_idx*3 + 1] = points[i*3 + 1];
-                    pts_preview[preview_idx*3 + 2] = points[i*3 + 2];
-                    preview_idx++;
-                }
-            }
-
-            data.m_preview = PointBufferPtr( new PointBuffer(pts_preview, num_pts_preview) );
 
             // Add objects to hdf5 file
             hdf5.addRawScanData(scanNr, data);
@@ -251,14 +227,9 @@ int main( int argc, char ** argv )
             sprintf(groupName, "/raw/spectral/position_%05d", scanNr);
 
             hdf5.addArray(groupName, "spectral", dim, chunks, ucharArr(cube));
-            scanNr++;
 
-            // Add spectral annotation channel
-            size_t chunk_w = std::min<size_t>(an, 1000000);    // Limit chunk size
-            std::vector<hsize_t> chunk_annotation = {chunk_w, aw};
-            std::vector<size_t> dim_annotation = {an, aw};
-            sprintf(groupName, "/annotation/position_%05d", scanNr);
-            hdf5.addArray(groupName, "spectral", dim_annotation, chunk_annotation, spectral);
+
+            scanNr++;
         }
         else
         {
