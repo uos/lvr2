@@ -36,12 +36,12 @@
 namespace lvr2
 {
 
-HDF5IO::HDF5IO(std::string filename) :
+HDF5IO::HDF5IO(std::string filename, bool truncate) :
     m_hdf5_file(nullptr),
     m_compress(true),
     m_chunkSize(1e7)
 {
-    open(filename);
+    open(filename, truncate);
 }
 
 HDF5IO::~HDF5IO()
@@ -77,13 +77,13 @@ ModelPtr HDF5IO::read(std::string filename)
     return ModelPtr(new Model);
 }
 
-bool HDF5IO::open(std::string filename)
+bool HDF5IO::open(std::string filename, bool truncate)
 {
     // If file alredy exists, don't rewrite base structurec++11 init vector
     bool have_to_init = false;
 
     boost::filesystem::path path(filename);
-    if(!boost::filesystem::exists(path))
+    if(!boost::filesystem::exists(path) | truncate)
     {
         have_to_init = true;
     }
@@ -91,7 +91,7 @@ bool HDF5IO::open(std::string filename)
     // Try to open the given HDF5 file
     m_hdf5_file = new HighFive::File(
                 filename,
-                HighFive::File::ReadWrite | (have_to_init ? HighFive::File::Create : 0));
+                HighFive::File::OpenOrCreate | (truncate ? HighFive::File::Truncate : 0));
 
     if (!m_hdf5_file->isValid())
     {
@@ -349,6 +349,13 @@ ScanData HDF5IO::getSingleScanData(std::string scanDataRoot, int nr, bool load_p
             }
         }
 
+        floatArr preview = getArray<float>(groupName, "preview", dummy);
+
+        if (preview)
+        {
+            ret.m_preview = PointBufferPtr( new PointBuffer(preview, dummy/3) );
+        }
+
         if (fov)
         {
             ret.m_hFieldOfView = fov[0];
@@ -573,6 +580,12 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             addArray(groupName, "finalPose", dim, registration);
             addArray(groupName, "boundingBox", 6, bb);
             addArray(groupName, "points", scan_dim, scan.m_points->getPointArray());
+
+            if (scan.m_preview)
+            {
+                std::vector<size_t> preview_dim = {scan.m_preview->numPoints(), 3};
+                addArray(groupName, "preview", preview_dim, scan.m_preview->getPointArray());
+            }
         }
     }
 }

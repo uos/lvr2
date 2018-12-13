@@ -6,73 +6,112 @@
 namespace lvr2
 {
 
-LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, QString name, QTreeWidgetItem *parent) : QTreeWidgetItem(parent, LVRScanDataItemType)
+LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, vtkSmartPointer<vtkRenderer> renderer, QString name, QTreeWidgetItem *parent) : QTreeWidgetItem(parent, LVRScanDataItemType)
 {
-    m_bbItem = NULL;
-    m_pcItem = NULL;
-    m_pItem  = NULL;
+    m_pcItem = nullptr;
+    m_pItem  = nullptr;
+    m_bbItem = nullptr;
     m_data   = data;
     m_name   = name;
     m_sdm    = sdm;
     m_idx    = idx;
+    //m_model.reset();
+
+
+    // init pose
+    float pose[6];
+    m_data.m_registration.transpose();
+    m_data.m_registration.toPostionAngle(pose);
+    m_data.m_registration.transpose();
+
+    m_pose.x = pose[0];
+    m_pose.y = pose[1];
+    m_pose.z = pose[2];
+    m_pose.r = pose[3]  * 57.295779513;
+    m_pose.t = pose[4]  * 57.295779513;
+    m_pose.p = pose[5]  * 57.295779513;
+
+
+    // init bb
+    m_bb = BoundingBoxBridgePtr(new LVRBoundingBoxBridge(m_data.m_boundingBox));
+    m_bbItem = new LVRBoundingBoxItem(m_bb, "Bounding Box", this);
+    renderer->AddActor(m_bb->getActor());
+    m_bb->setPose(m_pose);
+
+
+    //init preview
+    if (m_data.m_preview)
+    {
+        loadPreview(renderer);
+    }
+
 
     setText(0, m_name);
     setCheckState(0, Qt::Checked);
-
-    m_bb = BoundingBoxBridgePtr(new LVRBoundingBoxBridge(m_data.m_boundingBox));
-
-    if (!m_bbItem)
-        m_bbItem = new LVRBoundingBoxItem(m_bb, "Bounding Box", this);
-
-    float pose[6];
-    m_data.m_registration.transpose();
-    m_data.m_registration.toPostionAngle(pose);
-
-    Pose p;
-    p.x = pose[0];
-    p.y = pose[1];
-    p.z = pose[2];
-    p.r = pose[3]  * 57.295779513;
-    p.t = pose[4]  * 57.295779513;
-    p.p = pose[5]  * 57.295779513;
-    m_bb->setPose(p);
 }
 
-void LVRScanDataItem::loadPointCloudData()
+void LVRScanDataItem::loadPreview(vtkSmartPointer<vtkRenderer> renderer)
+{
+        if (m_model)
+        {
+            m_model->removeActors(renderer);
+        }
+
+        if (m_pcItem)
+        {
+            delete m_pcItem;
+        }
+
+        m_model = ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model(m_data.m_preview))));
+        m_pcItem = new LVRPointCloudItem(m_model->getPointBridge(), this);
+
+        m_model->addActors(renderer);
+        m_model->setPose(m_pose);
+
+        setText(1, "Preview");
+}
+
+bool LVRScanDataItem::isPointCloudLoaded()
+{
+    return m_data.m_pointsLoaded;
+}
+
+void LVRScanDataItem::loadPointCloudData(vtkSmartPointer<vtkRenderer> renderer)
 {
     m_sdm->loadPointCloudData(m_data);
 
-    m_model = ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model(m_data.m_points))));
-
-    auto pcBridge = m_model->getPointBridge();
-
-    if (!m_pcItem)
+    if (m_data.m_pointsLoaded)
     {
-        m_pcItem = new LVRPointCloudItem(pcBridge, this);
+        if (m_model)
+        {
+            m_model->removeActors(renderer);
+        }
+
+        if (m_pcItem)
+        {
+            delete m_pcItem;
+        }
+
+        m_model = ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model(m_data.m_points))));
+        m_pcItem = new LVRPointCloudItem(m_model->getPointBridge(), this);
+        m_model->addActors(renderer);
+
+        if (!m_pItem)
+        {
+            m_pItem = new LVRPoseItem(m_model, this);
+        }
+
+        m_pItem->setPose(m_pose);
+        m_model->setPose(m_pose);
+
+        setText(1, "");
     }
-
-    float pose[6];
-    m_data.m_registration.transpose();
-    m_data.m_registration.toPostionAngle(pose);
-
-    if (!m_pItem)
-    {
-        m_pItem = new LVRPoseItem(m_model, this);
-    }
-
-    Pose p;
-    p.x = pose[0];
-    p.y = pose[1];
-    p.z = pose[2];
-    p.r = pose[3]  * 57.295779513;
-    p.t = pose[4]  * 57.295779513;
-    p.p = pose[5]  * 57.295779513;
-    m_pItem->setPose(p);
-    m_model->setPose(p);
 }
 
-void LVRScanDataItem::unloadPointCloudData()
+void LVRScanDataItem::unloadPointCloudData(vtkSmartPointer<vtkRenderer> renderer)
 {
+    m_model->removeActors(renderer);
+    m_model.reset();
     m_data.m_points.reset();
     m_data.m_pointsLoaded = false;
 
@@ -88,7 +127,10 @@ void LVRScanDataItem::unloadPointCloudData()
         m_pItem = nullptr;
     }
 
-    m_model.reset();
+    if (m_data.m_preview)
+    {
+        loadPreview(renderer);
+    }
 }
 
 ModelBridgePtr LVRScanDataItem::getModelBridgePtr()

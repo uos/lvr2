@@ -736,7 +736,7 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
             LVRScanDataItem *sdi = static_cast<LVRScanDataItem *>(item);
             QMenu *con_menu = new QMenu;
 
-            if (sdi->getModelBridgePtr())
+            if (sdi->isPointCloudLoaded())
             {
                 con_menu->addAction(m_actionUnloadPointCloudData);
             }
@@ -798,6 +798,7 @@ void LVRMainWindow::loadModel()
             lastItem->setSelected(true);
         }
 
+        highlightBoundingBoxes();
         restoreSliders();
         assertToggles();
         updateView();
@@ -816,12 +817,10 @@ void LVRMainWindow::loadPointCloudData()
             LVRScanDataItem *sd = static_cast<LVRScanDataItem *>(item);
 
 
-            if (!sd->getModelBridgePtr())
+            if (!sd->isPointCloudLoaded())
             {
-                sd->loadPointCloudData();
+                sd->loadPointCloudData(m_renderer);
                 sd->setVisibility(true, m_actionShow_Points->isChecked());
-                ModelBridgePtr mbp = sd->getModelBridgePtr();
-                mbp->addActors(m_renderer);
 
                 highlightBoundingBoxes();
                 assertToggles();
@@ -844,11 +843,11 @@ void LVRMainWindow::unloadPointCloudData()
         {
             LVRScanDataItem *sd = static_cast<LVRScanDataItem *>(item);
 
-            if (sd->getModelBridgePtr())
+            if (sd->isPointCloudLoaded())
             {
-                sd->getModelBridgePtr()->removeActors(m_renderer);
-                sd->unloadPointCloudData();
+                sd->unloadPointCloudData(m_renderer);
 
+                highlightBoundingBoxes();
                 refreshView();
                 restoreSliders();
                 assertToggles();
@@ -1256,9 +1255,8 @@ QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm
     {
         char buf[128];
         std::sprintf(buf, "%05d", scanData[i].m_positionNumber);
-        LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, QString("pos_") + buf, parent);
+        LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
 
-        m_renderer->AddActor(item->getBoundingBoxBridge()->getActor());
         lastItem = item;
     }
 
@@ -1818,7 +1816,7 @@ void LVRMainWindow::changeGradientColor()
     {
         return;
     }
-    
+
     std::set<LVRPointCloudItem*> items = getSelectedPointCloudItems();
 
     if (items.empty())
@@ -1836,7 +1834,7 @@ void LVRMainWindow::changeGradientColor()
     bool useNDVI = this->checkBox_NDVI->isChecked();
     bool normalized = this->checkBox_normcolors->isChecked();
     int type = this->comboBox_colorgradient->currentIndex();
-    
+
     for(LVRPointCloudItem* item : items)
     {
         item->getPointBufferBridge()->setSpectralColorGradient((GradientType)type, channel, normalized, useNDVI);
@@ -1855,7 +1853,7 @@ void LVRMainWindow::updatePointPreview(int pointId, PointBufferPtr points)
     {
         return;
     }
-    
+
     size_t n_spec, n_channels;
     UCharChannelOptional spectral_channels = points->getUCharChannel("spectral_channels");
 
@@ -1873,7 +1871,7 @@ void LVRMainWindow::updatePointPreview(int pointId, PointBufferPtr points)
             floatArr data(new float[n_channels]);
             for (int i = 0; i < n_channels; i++)
             {
-                data[i] = (*spectral_channels)[pointId][i];
+                data[i] = (*spectral_channels)[pointId][i] / 255.0;
             }
             m_PointPreviewPlotter->setPoints(data, n_channels, 0, 1);
             m_PointPreviewPlotter->setXRange(*points->getIntAttribute("spectral_wavelength_min"), *points->getIntAttribute("spectral_wavelength_max"));
