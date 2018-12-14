@@ -285,6 +285,13 @@ std::vector<ScanData> HDF5IO::getScanData(std::string scanDataRoot, bool load_po
 
 }
 
+ScanData HDF5IO::getSingleScanData(std::string root, int nr, bool load_points)
+{
+    /// --->> TODO: QUICK FIX TO ALLOW LINKING !!!! @aloehr: Check getter signatures!!!!
+    ///
+    return getSingleRawScanData( nr,  load_points);
+}
+
 std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
 {
     return getScanData("/raw/scans/", load_points);
@@ -318,10 +325,10 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
                 ret.m_points = PointBufferPtr(new PointBuffer(points, dummy/3));
 
                 // annotation hack
-                if (is_annotation)
+                // if (is_annotation)
                 {
                     std::vector<size_t> dim;
-                    ucharArr spectral = getArray<unsigned char>(scanDataRoot + "/" + buffer, "spectral", dim);
+                    ucharArr spectral = getArray<unsigned char>(groupName + "/" + buffer, "spectral", dim);
 
                     if (spectral)
                     {
@@ -371,7 +378,7 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
         ret.m_pointsLoaded = load_points;
         ret.m_positionNumber = nr;
 
-        ret.m_scanDataRoot = scanDataRoot;
+        ret.m_scanDataRoot = groupName;
     }
 
     return ret;

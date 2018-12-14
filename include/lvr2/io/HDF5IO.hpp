@@ -90,6 +90,8 @@ class HDF5IO : public BaseIO
 
     ScanData getSingleScanData(std::string scanDataRoot, int nr, bool load_points = true);
 
+    ScanData    getSingleRawScanData(int nr, bool load_points);
+
     std::vector<std::string> getScanDataGroups();
 
     std::vector<ScanData> getScanData(std::string scanDataRoot, bool load_points = true);
