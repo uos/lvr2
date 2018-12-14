@@ -39,7 +39,9 @@ namespace lvr2
 HDF5IO::HDF5IO(std::string filename, bool truncate) :
     m_hdf5_file(nullptr),
     m_compress(true),
-    m_chunkSize(1e7)
+    m_chunkSize(1e7),
+    m_usePreviews(true),
+    m_previewReductionFactor(20)
 {
     open(filename, truncate);
 }
@@ -60,6 +62,23 @@ void HDF5IO::setCompress(bool compress)
 void HDF5IO::setChunkSize(const size_t& size)
 {
     m_chunkSize = size;
+}
+
+void HDF5IO::setPreviewReductionFactor(const unsigned int factor)
+{
+    if (factor >= 1)
+    {
+        m_previewReductionFactor = factor;
+    }
+    else
+    {
+        m_previewReductionFactor = 20;
+    }
+}
+
+void HDF5IO::setUsePreviews(bool use)
+{
+    m_usePreviews = use;
 }
 
 bool HDF5IO::compress()
@@ -190,83 +209,17 @@ Texture HDF5IO::getImage(HighFive::Group& g, std::string datasetName)
     return ret;
 }
 
-bool HDF5IO::isScansGroup(std::string groupName)
+std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
 {
-    if (!exist(groupName))
-    {
-        return false;
-    }
-
-    HighFive::Group grp = getGroup(groupName);
-
-    // very simple condition to be a scansgroup atm
-    if (exist(groupName + "/position_00000") || exist(groupName + "/position_00001"))
-    {
-        return true;
-    }
-
-    return false;
-}
-
-std::vector<std::string> HDF5IO::getScanDataGroups()
-{
-    return getScanDataGroups("");
-}
-
-std::vector<std::string> HDF5IO::getScanDataGroups(std::string root)
-{
-    std::vector<std::string> ret;
-
-    if (!exist(root))
-    {
-        return ret;
-    }
-
-    HighFive::Group grp;
-
-    try
-    {
-        grp = getGroup(root);
-    }
-    catch (HighFive::Exception &e)
-    {
-        return ret;
-    }
-
-    // if it is a scansgroup we don't search in its leafs
-    if (isScansGroup(root))
-    {
-        ret.push_back(root);
-        return ret;
-    }
-
-    std::vector<std::string> leaf_objects = grp.listObjectNames();
-
-    for (std::string leaf : leaf_objects)
-    {
-        if (isGroup(grp, leaf))
-        {
-            std::vector<std::string> leaf_ret = getScanDataGroups(root + "/" + leaf);
-
-            for (std::string tmp : leaf_ret)
-            {
-                ret.push_back(tmp);
-            }
-        }
-    }
-}
-
-std::vector<ScanData> HDF5IO::getScanData(std::string scanDataRoot, bool load_points)
-{
-
+    std::string groupName = "/raw/scans/";
     std::vector<ScanData> ret;
 
-    if (!exist(scanDataRoot))
+    if (!exist(groupName))
     {
         return ret;
     }
 
-    HighFive::Group root_group = getGroup(scanDataRoot);
+    HighFive::Group root_group = getGroup(groupName);
     size_t num_objects = root_group.getNumberObjects();
 
     for (size_t i = 0; i < num_objects; i++)
@@ -276,25 +229,13 @@ std::vector<ScanData> HDF5IO::getScanData(std::string scanDataRoot, bool load_po
 
         if (std::sscanf(cur_scan_pos.c_str(), "position_%5d", &pos_num))
         {
-            ScanData cur_pos = getSingleScanData(scanDataRoot, pos_num, load_points);
+            ScanData cur_pos = getSingleRawScanData(pos_num, load_points);
             ret.push_back(cur_pos);
         }
     }
 
     return ret;
 
-}
-
-ScanData HDF5IO::getSingleScanData(std::string root, int nr, bool load_points)
-{
-    /// --->> TODO: QUICK FIX TO ALLOW LINKING !!!! @aloehr: Check getter signatures!!!!
-    ///
-    return getSingleRawScanData( nr,  load_points);
-}
-
-std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
-{
-    return getScanData("/raw/scans/", load_points);
 }
 
 ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
@@ -307,7 +248,8 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
         sprintf(buffer, "position_%05d", nr);
 
         string nr_str(buffer);
-        std::string groupName = "/raw/scans/" + nr_str;
+        std::string groupName         = "/raw/scans/"  + nr_str;
+        std::string spectralGroupName = "/annotation/" + nr_str;
 
         unsigned int dummy;
         floatArr fov           = getArray<float>(groupName, "fov", dummy);
@@ -316,35 +258,28 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
         floatArr registration  = getArray<float>(groupName, "finalPose", dummy);
         floatArr bb            = getArray<float>(groupName, "boundingBox", dummy);
 
-        if (load_points)
+
+        if (!load_points && m_usePreviews)
         {
-            floatArr points    = getArray<float>(groupName, "points", dummy);
-
-            if (points)
-            {
-                ret.m_points = PointBufferPtr(new PointBuffer(points, dummy/3));
-
-                // annotation hack
-                // if (is_annotation)
-                {
-                    std::vector<size_t> dim;
-                    ucharArr spectral = getArray<unsigned char>(groupName + "/" + buffer, "spectral", dim);
-
-                    if (spectral)
-                    {
-                        ret.m_points->addUCharChannel(spectral, "spectral_channels", dim[0], dim[1]);
-                        ret.m_points->addIntAttribute(400, "spectral_wavelength_min");
-                        ret.m_points->addIntAttribute(400 + 4 * dim[1], "spectral_wavelength_max");
-                    }
-                }
-            }
+            groupName         = "/preview/" + nr_str;
+            spectralGroupName = groupName;
         }
 
-        floatArr preview = getArray<float>(groupName, "preview", dummy);
+        floatArr points    = getArray<float>(groupName, "points", dummy);
 
-        if (preview)
+        if (points)
         {
-            ret.m_preview = PointBufferPtr( new PointBuffer(preview, dummy/3) );
+            ret.m_points = PointBufferPtr(new PointBuffer(points, dummy/3));
+
+            std::vector<size_t> dim;
+            ucharArr spectral = getArray<unsigned char>(spectralGroupName, "spectral", dim);
+
+            if (spectral)
+            {
+                ret.m_points->addUCharChannel(spectral, "spectral_channels", dim[0], dim[1]);
+                ret.m_points->addIntAttribute(400, "spectral_wavelength_min");
+                ret.m_points->addIntAttribute(400 + 4 * dim[1], "spectral_wavelength_max");
+            }
         }
 
         if (fov)
@@ -586,53 +521,54 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
                 addArray("/annotation/" + nr_str, "spectral", dim_annotation, chunk_annotation, spectral);
             }
 
-            int reduction_factor = 20;
-
-            // Add point preview
-            floatArr points = scan.m_points->getPointArray();
-            if (points)
+            if (m_usePreviews)
             {
-                unsigned int num_preview = scan.m_points->numPoints() / reduction_factor;
-                floatArr preview_data = floatArr( new float[3 * num_preview + 3] );
-
-                size_t preview_idx = 0;
-                for (size_t i = 0; i < scan.m_points->numPoints(); i++)
+                // Add point preview
+                floatArr points = scan.m_points->getPointArray();
+                if (points)
                 {
-                    if (i % reduction_factor == 0)
+                    unsigned int num_preview = scan.m_points->numPoints() / m_previewReductionFactor;
+                    floatArr preview_data = floatArr( new float[3 * num_preview + 3] );
+
+                    size_t preview_idx = 0;
+                    for (size_t i = 0; i < scan.m_points->numPoints(); i++)
                     {
-                        preview_data[preview_idx*3 + 0] = points[i*3 + 0];
-                        preview_data[preview_idx*3 + 1] = points[i*3 + 1];
-                        preview_data[preview_idx*3 + 2] = points[i*3 + 2];
-                        preview_idx++;
-                    }
-                }
-
-                std::vector<size_t> preview_dim = {num_preview, 3};
-                addArray("/preview/" + nr_str, "points", preview_dim, preview_data);
-            }
-
-
-            // Add spectral preview
-            if (spectral)
-            {
-                unsigned int num_preview = an / reduction_factor;
-                ucharArr preview_data = ucharArr( new unsigned char[(num_preview + 1) * aw] );
-
-                size_t preview_idx = 0;
-                for (size_t i = 0; i < an; i++)
-                {
-                    if (i % reduction_factor == 0)
-                    {
-                        for (size_t j = 0; j < aw; j++)
+                        if (i % m_previewReductionFactor == 0)
                         {
-                            preview_data[preview_idx*aw + j] = spectral[i*aw + j];
+                            preview_data[preview_idx*3 + 0] = points[i*3 + 0];
+                            preview_data[preview_idx*3 + 1] = points[i*3 + 1];
+                            preview_data[preview_idx*3 + 2] = points[i*3 + 2];
+                            preview_idx++;
                         }
-                        preview_idx++;
                     }
+
+                    std::vector<size_t> preview_dim = {num_preview, 3};
+                    addArray("/preview/" + nr_str, "points", preview_dim, preview_data);
                 }
 
-                std::vector<size_t> preview_dim = {num_preview, aw};
-                addArray("/preview/" + nr_str, "spectral", preview_dim, preview_data);
+
+                // Add spectral preview
+                if (spectral)
+                {
+                    unsigned int num_preview = an / m_previewReductionFactor;
+                    ucharArr preview_data = ucharArr( new unsigned char[(num_preview + 1) * aw] );
+
+                    size_t preview_idx = 0;
+                    for (size_t i = 0; i < an; i++)
+                    {
+                        if (i % m_previewReductionFactor == 0)
+                        {
+                            for (size_t j = 0; j < aw; j++)
+                            {
+                                preview_data[preview_idx*aw + j] = spectral[i*aw + j];
+                            }
+                            preview_idx++;
+                        }
+                    }
+
+                    std::vector<size_t> preview_dim = {num_preview, aw};
+                    addArray("/preview/" + nr_str, "spectral", preview_dim, preview_data);
+                }
             }
         }
     }

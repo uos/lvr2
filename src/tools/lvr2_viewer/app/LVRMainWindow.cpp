@@ -1246,10 +1246,10 @@ void LVRMainWindow::toggleWireframe(bool checkboxState)
     }
 }
 
-QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm, std::string scanDataGroup, QTreeWidgetItem *parent)
+QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent)
 {
     QTreeWidgetItem *lastItem = nullptr;
-    std::vector<ScanData> scanData = sdm->getScanData(scanDataGroup);
+    std::vector<ScanData> scanData = sdm->getScanData();
 
     for (size_t i = 0; i < scanData.size(); i++)
     {
@@ -1284,30 +1284,12 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
             root->setIcon(0, icon);
 
             std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(argv[i]));
-            std::vector<std::string> scanDataGroups = sdm->getScanDataGroups();
 
-            if (std::find(scanDataGroups.begin(), scanDataGroups.end(), "/raw/scans") != scanDataGroups.end())
-            {
-                QTreeWidgetItem *item = new QTreeWidgetItem(root);
-                item->setText(0, "/raw/scans");
-                item->setCheckState(0, Qt::Unchecked);
-                lastItem = addScanData(sdm, "/raw/scans", item);
-            }
-
-            if (std::find(scanDataGroups.begin(), scanDataGroups.end(), "/annotation") != scanDataGroups.end())
-            {
-                QTreeWidgetItem *item = new QTreeWidgetItem(root);
-                item->setText(0, "/annotation");
-                item->setCheckState(0, Qt::Unchecked);
-                lastItem = addScanData(sdm, "/annotation", item);
-            }
-
+            lastItem = addScanData(sdm, root);
 
             root->setCheckState(0, Qt::Checked);
             root->setExpanded(true);
 
-            lastItem->parent()->setCheckState(0, Qt::Checked);
-            lastItem->parent()->setExpanded(true);
         }
         else
         {

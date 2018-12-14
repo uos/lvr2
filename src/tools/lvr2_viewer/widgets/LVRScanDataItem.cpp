@@ -40,7 +40,7 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
 
 
     //init preview
-    if (m_data.m_preview)
+    if (m_data.m_points)
     {
         loadPreview(renderer);
     }
@@ -62,7 +62,7 @@ void LVRScanDataItem::loadPreview(vtkSmartPointer<vtkRenderer> renderer)
             delete m_pcItem;
         }
 
-        m_model = ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model(m_data.m_preview))));
+        m_model = ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model(m_data.m_points))));
         m_pcItem = new LVRPointCloudItem(m_model->getPointBridge(), this);
 
         m_model->addActors(renderer);
@@ -110,10 +110,9 @@ void LVRScanDataItem::loadPointCloudData(vtkSmartPointer<vtkRenderer> renderer)
 
 void LVRScanDataItem::unloadPointCloudData(vtkSmartPointer<vtkRenderer> renderer)
 {
+    m_sdm->loadPointCloudData(m_data, true);
     m_model->removeActors(renderer);
     m_model.reset();
-    m_data.m_points.reset();
-    m_data.m_pointsLoaded = false;
 
     if (m_pcItem)
     {
@@ -127,7 +126,7 @@ void LVRScanDataItem::unloadPointCloudData(vtkSmartPointer<vtkRenderer> renderer
         m_pItem = nullptr;
     }
 
-    if (m_data.m_preview)
+    if (m_data.m_points)
     {
         loadPreview(renderer);
     }
