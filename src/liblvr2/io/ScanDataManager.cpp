@@ -7,22 +7,17 @@ ScanDataManager::ScanDataManager(std::string filename) : m_io(filename)
 {
 }
 
-void ScanDataManager::loadPointCloudData(ScanData& sd)
+void ScanDataManager::loadPointCloudData(ScanData& sd, bool preview)
 {
-    if (!sd.m_pointsLoaded)
+    if ((!sd.m_pointsLoaded && !preview) || ( sd.m_pointsLoaded && preview))
     {
-        sd = m_io.getSingleScanData(sd.m_scanDataRoot, sd.m_positionNumber, true);
+        sd = m_io.getSingleRawScanData(sd.m_positionNumber, !preview);
     }
 }
 
-std::vector<std::string> ScanDataManager::getScanDataGroups()
+std::vector<ScanData> ScanDataManager::getScanData()
 {
-    return m_io.getScanDataGroups();
-}
-
-std::vector<ScanData> ScanDataManager::getScanData(std::string scanDataGroup)
-{
-    return m_io.getScanData(scanDataGroup, false);
+    return m_io.getRawScanData(false);
 }
 
 } // namespace lvr2
