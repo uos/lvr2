@@ -124,6 +124,8 @@ struct RGBMaterial
 	int texture_index;
 };
 
+typedef boost::shared_array<int> intArray;
+
 typedef boost::shared_array<unsigned int> indexArray;
 
 typedef boost::shared_array<unsigned int> uintArr;

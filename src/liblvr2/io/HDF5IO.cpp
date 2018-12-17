@@ -562,6 +562,14 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             bb[4] = bb_max.y;
             bb[5] = bb_max.z;
 
+            cout << "Copy float to int..." << endl;
+            intArray ints(new int[scan.m_points->numPoints() * 3]);
+            floatArr tmp_pts = scan.m_points->getPointArray();
+            for(size_t i = 0; i < scan.m_points->numPoints() * 3; i++)
+            {
+                ints[i] = (int)tmp_pts[i] * 10000;
+            }
+            cout << "Done" << endl;
             // Add data to group
             std::vector<size_t> dim = {4,4};
             std::vector<size_t> scan_dim = {scan.m_points->numPoints(), 3};
@@ -570,7 +578,7 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             addArray(groupName, "initialPose", dim, pose_estimate);
             addArray(groupName, "finalPose", dim, registration);
             addArray(groupName, "boundingBox", 6, bb);
-            addArray(groupName, "points", scan_dim, scan.m_points->getPointArray());
+            addArray(groupName, "points", scan_dim, ints);
 
 
             // Add spectral annotation channel
