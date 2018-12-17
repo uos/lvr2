@@ -49,7 +49,8 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
             ("hsp_chunk_0", value<size_t>()->default_value(50), "Dim 0 of HSP image chunks.")
             ("hsp_chunk_1", value<size_t>()->default_value(50), "Dim 1 of HSP image chunks.")
             ("hsp_chunk_2", value<size_t>()->default_value(50), "Dim 2 of HSP image chunks.")
-    ;
+            ("addAnnotations", value<int>()->default_value(1), "Add spectral annotation channels");
+
 
 	// Parse command line and generate variables map
 	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
