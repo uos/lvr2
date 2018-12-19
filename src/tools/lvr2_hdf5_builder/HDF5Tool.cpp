@@ -168,6 +168,7 @@ int main( int argc, char ** argv )
             path matrix_file = dataDir/path("scan_" + number + "_transformation.txt");
             Matrix4<BaseVector<float> > transformation;
             transformation.loadFromFile(matrix_file.string());
+            transformation.transpose();
 
             // Read scan data
             std::cout << timestamp << "Reading scan data: " << it << std::endl;
