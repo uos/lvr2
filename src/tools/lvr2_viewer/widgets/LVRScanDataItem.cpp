@@ -107,6 +107,19 @@ void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
     if (!this->checkState(0))
     {
         visible = false;
+
+        for (int i = 0; i < childCount(); i++)
+        {
+            child(i)->setHidden(true);
+        }
+    }
+    else
+    {
+        for (int i = 0; i < childCount(); i++)
+        {
+            child(i)->setHidden(false);
+        }
+
     }
 
     if (m_model)
@@ -122,19 +135,8 @@ void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
 
 LVRScanDataItem::~LVRScanDataItem()
 {
-    if (m_bbItem)
-    {
-        delete m_bbItem;
-    }
-    if (m_pcItem)
-    {
-        delete m_pcItem;
-    }
-
-    if (m_pItem)
-    {
-        delete m_pItem;
-    }
+    // we don't want to do delete m_bbItem, m_pItem and m_pcItem here
+    // because QTreeWidgetItem deletes its childs automatically in its destructor. 
 }
 
 } // namespace lvr2
