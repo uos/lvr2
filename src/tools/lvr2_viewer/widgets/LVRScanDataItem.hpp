@@ -51,7 +51,7 @@ class LVRScanDataItem : public QTreeWidgetItem
 
     private:
 
-        void loadPreview(vtkSmartPointer<vtkRenderer> renderer);
+        void reload(vtkSmartPointer<vtkRenderer> renderer);
 
         QString                                 m_name;
         std::shared_ptr<ScanDataManager>        m_sdm;
