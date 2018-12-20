@@ -562,14 +562,14 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             bb[4] = bb_max.y;
             bb[5] = bb_max.z;
 
-//            cout << "Copy float to int..." << endl;
-//            intArray ints(new int[scan.m_points->numPoints() * 3]);
-//            floatArr tmp_pts = scan.m_points->getPointArray();
-//            for(size_t i = 0; i < scan.m_points->numPoints() * 3; i++)
-//            {
-//                ints[i] = (int)tmp_pts[i] * 10000;
-//            }
-//            cout << "Done" << endl;
+            cout << "Copy float to int..." << endl;
+            intArray ints(new int[scan.m_points->numPoints() * 3]);
+            floatArr tmp_pts = scan.m_points->getPointArray();
+            for(size_t i = 0; i < scan.m_points->numPoints() * 3; i++)
+            {
+                ints[i] = (int)tmp_pts[i] * 10000;
+            }
+            cout << "Done" << endl;
             // Add data to group
             std::vector<size_t> dim = {4,4};
             std::vector<size_t> scan_dim = {scan.m_points->numPoints(), 3};
@@ -578,7 +578,8 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             addArray(groupName, "initialPose", dim, pose_estimate);
             addArray(groupName, "finalPose", dim, registration);
             addArray(groupName, "boundingBox", 6, bb);
-            addArray(groupName, "points", scan_dim, scan.m_points->getPointArray());
+           // addArray(groupName, "points", scan_dim, scan.m_points->getPointArray());
+            addArray(groupName, "points", scan_dim, ints);
 
 
             // Add spectral annotation channel
@@ -586,38 +587,38 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             unsigned aw;
             ucharArr spectral = scan.m_points->getUCharArray("spectral_channels", an, aw);
 
-//            if (spectral)
-//            {
-//                size_t chunk_w = std::min<size_t>(an, 1000000);    // Limit chunk size
-//                std::vector<hsize_t> chunk_annotation = {chunk_w, aw};
-//                std::vector<size_t> dim_annotation = {an, aw};
-//                addArray("/annotation/" + nr_str, "spectral", dim_annotation, chunk_annotation, spectral);
-//            }
+            if (spectral)
+            {
+                size_t chunk_w = std::min<size_t>(an, 1000000);    // Limit chunk size
+                std::vector<hsize_t> chunk_annotation = {chunk_w, aw};
+                std::vector<size_t> dim_annotation = {an, aw};
+                addArray("/annotation/" + nr_str, "spectral", dim_annotation, chunk_annotation, spectral);
+            }
 
             int reduction_factor = 20;
 
             // Add point preview
             floatArr points = scan.m_points->getPointArray();
-//            if (points)
-//            {
-//                unsigned int num_preview = scan.m_points->numPoints() / reduction_factor;
-//                floatArr preview_data = floatArr( new float[3 * num_preview + 3] );
+            if (points)
+            {
+                unsigned int num_preview = scan.m_points->numPoints() / reduction_factor;
+                floatArr preview_data = floatArr( new float[3 * num_preview + 3] );
 
-//                size_t preview_idx = 0;
-//                for (size_t i = 0; i < scan.m_points->numPoints(); i++)
-//                {
-//                    if (i % reduction_factor == 0)
-//                    {
-//                        preview_data[preview_idx*3 + 0] = points[i*3 + 0];
-//                        preview_data[preview_idx*3 + 1] = points[i*3 + 1];
-//                        preview_data[preview_idx*3 + 2] = points[i*3 + 2];
-//                        preview_idx++;
-//                    }
-//                }
+                size_t preview_idx = 0;
+                for (size_t i = 0; i < scan.m_points->numPoints(); i++)
+                {
+                    if (i % reduction_factor == 0)
+                    {
+                        preview_data[preview_idx*3 + 0] = points[i*3 + 0];
+                        preview_data[preview_idx*3 + 1] = points[i*3 + 1];
+                        preview_data[preview_idx*3 + 2] = points[i*3 + 2];
+                        preview_idx++;
+                    }
+                }
 
-//                std::vector<size_t> preview_dim = {num_preview, 3};
-//                addArray("/preview/" + nr_str, "points", preview_dim, preview_data);
-//            }
+                std::vector<size_t> preview_dim = {num_preview, 3};
+                addArray("/preview/" + nr_str, "points", preview_dim, preview_data);
+            }
 
 
             // Add spectral preview
