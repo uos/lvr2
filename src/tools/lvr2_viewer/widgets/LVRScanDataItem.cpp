@@ -8,6 +8,7 @@ namespace lvr2
 
 LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, vtkSmartPointer<vtkRenderer> renderer, QString name, QTreeWidgetItem *parent) : QTreeWidgetItem(parent, LVRScanDataItemType)
 {
+    m_showSpectralsItem = nullptr;
     m_pcItem = nullptr;
     m_pItem  = nullptr;
     m_bbItem = nullptr;
@@ -58,6 +59,12 @@ void LVRScanDataItem::reload(vtkSmartPointer<vtkRenderer> renderer)
             delete m_pcItem;
         }
 
+        if (m_showSpectralsItem)
+        {
+            delete m_showSpectralsItem;
+            m_showSpectralsItem = nullptr;
+        }
+
         if (m_data.m_points)
         {
             m_model = ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model(m_data.m_points))));
@@ -66,9 +73,16 @@ void LVRScanDataItem::reload(vtkSmartPointer<vtkRenderer> renderer)
             m_model->addActors(renderer);
             m_model->setTransform(m_matrix);
 
-            if (isPointCloudLoaded())
+            if (!isPointCloudLoaded())
             {
                 setText(1, "(Preview)");
+            }
+
+            if (m_data.m_points->getUCharChannel("spectral_channels"))
+            {
+                m_showSpectralsItem = new QTreeWidgetItem(this);
+                m_showSpectralsItem->setText(0, "Spectrals");
+                m_showSpectralsItem->setCheckState(0, Qt::Checked);
             }
         }
 }
@@ -82,7 +96,7 @@ void LVRScanDataItem::loadPointCloudData(vtkSmartPointer<vtkRenderer> renderer)
 {
     m_sdm->loadPointCloudData(m_data);
 
-    if (m_data.m_pointsLoaded)
+    if (isPointCloudLoaded())
     {
         reload(renderer);
 
@@ -107,24 +121,21 @@ void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
     if (!this->checkState(0))
     {
         visible = false;
-
-        for (int i = 0; i < childCount(); i++)
-        {
-            child(i)->setHidden(true);
-        }
     }
-    else
-    {
-        for (int i = 0; i < childCount(); i++)
-        {
-            child(i)->setHidden(false);
-        }
 
+    for (int i = 0; i < childCount(); i++)
+    {
+            child(i)->setHidden(!visible);
     }
 
     if (m_model)
     {
         m_model->setVisibility(pc_visible && visible);
+    }
+
+    if (m_showSpectralsItem)
+    {
+        m_model->getPointBridge()->setColorsVisibility(m_showSpectralsItem->checkState(0));
     }
 
     if (m_bbItem)
@@ -136,7 +147,7 @@ void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
 LVRScanDataItem::~LVRScanDataItem()
 {
     // we don't want to do delete m_bbItem, m_pItem and m_pcItem here
-    // because QTreeWidgetItem deletes its childs automatically in its destructor. 
+    // because QTreeWidgetItem deletes its childs automatically in its destructor.
 }
 
 } // namespace lvr2

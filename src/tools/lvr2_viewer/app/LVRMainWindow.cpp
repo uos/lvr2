@@ -1058,6 +1058,10 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
 
         refreshView();
     }
+    else if (treeWidgetItem->parent() && treeWidgetItem->parent()->type() == LVRScanDataItemType)
+    {
+        setModelVisibility(treeWidgetItem->parent(), column);
+    }
 }
 
 void LVRMainWindow::changePointSize(int pointSize)

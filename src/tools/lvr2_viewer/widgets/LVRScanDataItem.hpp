@@ -63,6 +63,7 @@ class LVRScanDataItem : public QTreeWidgetItem
         LVRBoundingBoxItem                     *m_bbItem;
         LVRPointCloudItem                      *m_pcItem;
         LVRPoseItem                            *m_pItem;
+        QTreeWidgetItem                     *m_showSpectralsItem;
         Matrix4<BaseVector<float> >             m_matrix;
 };
 
