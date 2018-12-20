@@ -22,6 +22,8 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
     float pose[6];
     m_data.m_registration.transpose();
     m_data.m_registration.toPostionAngle(pose);
+    m_matrix = m_data.m_registration;
+    m_matrix.transpose();
     m_data.m_registration.transpose();
 
     m_pose.x = pose[0];
@@ -30,7 +32,6 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
     m_pose.r = pose[3]  * 57.295779513;
     m_pose.t = pose[4]  * 57.295779513;
     m_pose.p = pose[5]  * 57.295779513;
-
 
     // init bb
     m_bb = BoundingBoxBridgePtr(new LVRBoundingBoxBridge(m_data.m_boundingBox));
@@ -66,8 +67,8 @@ void LVRScanDataItem::loadPreview(vtkSmartPointer<vtkRenderer> renderer)
         m_pcItem = new LVRPointCloudItem(m_model->getPointBridge(), this);
 
         m_model->addActors(renderer);
-        m_model->setPose(m_pose);
-
+        //m_model->setPose(m_pose);
+        m_model->setTransform(m_matrix);
         setText(1, "Preview");
 }
 
@@ -102,7 +103,8 @@ void LVRScanDataItem::loadPointCloudData(vtkSmartPointer<vtkRenderer> renderer)
         }
 
         m_pItem->setPose(m_pose);
-        m_model->setPose(m_pose);
+        //m_model->setPose(m_pose);
+        m_model->setTransform(m_matrix);
 
         setText(1, "");
     }
