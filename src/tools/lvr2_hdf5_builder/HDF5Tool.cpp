@@ -158,6 +158,8 @@ int main( int argc, char ** argv )
     int scanNr = 0;
     for(auto it : annotated_scans)
     {
+
+
         std::string ply_file_name = it.stem().string();
         std::string number = ply_file_name.substr(15);
         size_t numExspectedPNGs = (size_t)options.numPanoramaImages();
