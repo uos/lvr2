@@ -1287,7 +1287,6 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
 
             lastItem = addScanData(sdm, root);
 
-            root->setCheckState(0, Qt::Checked);
             root->setExpanded(true);
 
         }

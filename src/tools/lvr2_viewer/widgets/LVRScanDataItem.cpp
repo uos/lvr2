@@ -15,16 +15,14 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
     m_name   = name;
     m_sdm    = sdm;
     m_idx    = idx;
-    //m_model.reset();
 
 
     // init pose
     float pose[6];
     m_data.m_registration.transpose();
     m_data.m_registration.toPostionAngle(pose);
-    m_matrix = m_data.m_registration;
-    m_matrix.transpose();
     m_data.m_registration.transpose();
+    m_matrix = m_data.m_registration;
 
     m_pose.x = pose[0];
     m_pose.y = pose[1];
@@ -33,25 +31,22 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
     m_pose.t = pose[4]  * 57.295779513;
     m_pose.p = pose[5]  * 57.295779513;
 
+    m_pItem = new LVRPoseItem(ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model))), this);
+
     // init bb
     m_bb = BoundingBoxBridgePtr(new LVRBoundingBoxBridge(m_data.m_boundingBox));
     m_bbItem = new LVRBoundingBoxItem(m_bb, "Bounding Box", this);
     renderer->AddActor(m_bb->getActor());
     m_bb->setPose(m_pose);
 
-
-    //init preview
-    if (m_data.m_points)
-    {
-        loadPreview(renderer);
-    }
-
+    // load data
+    reload(renderer);
 
     setText(0, m_name);
     setCheckState(0, Qt::Checked);
 }
 
-void LVRScanDataItem::loadPreview(vtkSmartPointer<vtkRenderer> renderer)
+void LVRScanDataItem::reload(vtkSmartPointer<vtkRenderer> renderer)
 {
         if (m_model)
         {
@@ -63,13 +58,19 @@ void LVRScanDataItem::loadPreview(vtkSmartPointer<vtkRenderer> renderer)
             delete m_pcItem;
         }
 
-        m_model = ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model(m_data.m_points))));
-        m_pcItem = new LVRPointCloudItem(m_model->getPointBridge(), this);
+        if (m_data.m_points)
+        {
+            m_model = ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model(m_data.m_points))));
+            m_pcItem = new LVRPointCloudItem(m_model->getPointBridge(), this);
 
-        m_model->addActors(renderer);
-        //m_model->setPose(m_pose);
-        m_model->setTransform(m_matrix);
-        setText(1, "Preview");
+            m_model->addActors(renderer);
+            m_model->setTransform(m_matrix);
+
+            if (isPointCloudLoaded())
+            {
+                setText(1, "(Preview)");
+            }
+        }
 }
 
 bool LVRScanDataItem::isPointCloudLoaded()
@@ -83,28 +84,7 @@ void LVRScanDataItem::loadPointCloudData(vtkSmartPointer<vtkRenderer> renderer)
 
     if (m_data.m_pointsLoaded)
     {
-        if (m_model)
-        {
-            m_model->removeActors(renderer);
-        }
-
-        if (m_pcItem)
-        {
-            delete m_pcItem;
-        }
-
-        m_model = ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model(m_data.m_points))));
-        m_pcItem = new LVRPointCloudItem(m_model->getPointBridge(), this);
-        m_model->addActors(renderer);
-
-        if (!m_pItem)
-        {
-            m_pItem = new LVRPoseItem(m_model, this);
-        }
-
-        m_pItem->setPose(m_pose);
-        //m_model->setPose(m_pose);
-        m_model->setTransform(m_matrix);
+        reload(renderer);
 
         setText(1, "");
     }
@@ -113,25 +93,8 @@ void LVRScanDataItem::loadPointCloudData(vtkSmartPointer<vtkRenderer> renderer)
 void LVRScanDataItem::unloadPointCloudData(vtkSmartPointer<vtkRenderer> renderer)
 {
     m_sdm->loadPointCloudData(m_data, true);
-    m_model->removeActors(renderer);
-    m_model.reset();
 
-    if (m_pcItem)
-    {
-        delete m_pcItem;
-        m_pcItem = nullptr;
-    }
-
-    if (m_pItem)
-    {
-        delete m_pItem;
-        m_pItem = nullptr;
-    }
-
-    if (m_data.m_points)
-    {
-        loadPreview(renderer);
-    }
+    reload(renderer);
 }
 
 ModelBridgePtr LVRScanDataItem::getModelBridgePtr()
@@ -141,21 +104,10 @@ ModelBridgePtr LVRScanDataItem::getModelBridgePtr()
 
 void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
 {
-    bool parents_checked = true;
-    QTreeWidgetItem *parent = this;
-
-    while (parent)
+    if (!this->checkState(0))
     {
-        if (!parent->checkState(0))
-        {
-            parents_checked = false;
-            break;
-        }
-
-        parent = parent->parent();
+        visible = false;
     }
-
-    visible = visible && parents_checked;
 
     if (m_model)
     {
@@ -170,8 +122,6 @@ void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
 
 LVRScanDataItem::~LVRScanDataItem()
 {
-    m_model.reset();
-    m_data.m_points.reset();
     if (m_bbItem)
     {
         delete m_bbItem;
