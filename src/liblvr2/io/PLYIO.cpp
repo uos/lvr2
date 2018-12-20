@@ -777,10 +777,13 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
             }
         }
 
-        std::cout << numPoints << " given, " << (numPoints - numPointPanoramaCoords) << " without spectral data" << std::endl;
+        std::cout << timestamp << numPoints << "Found " << (numPoints - numPointPanoramaCoords) << " without spectral data. Reodering..." << std::endl;
 
-        // traverse to channel directory
-        string scanNr = filename.substr(filename.length() - 7, 3);
+
+        size_t pos_underscore = filename.find_last_of("_");
+        size_t pos_extension = filename.find_last_of(".");
+        string scanNr = filename.substr(pos_underscore + 1, pos_extension - pos_underscore - 1);
+
         string channelDirName = string("panorama_channels_") + scanNr;
 
         boost::filesystem::path dir(filename);
