@@ -1058,13 +1058,6 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
 
         refreshView();
     }
-    else
-    {
-        for (int i = 0; i < treeWidgetItem->childCount(); i++)
-        {
-            setModelVisibility(treeWidgetItem->child(i), 0);
-        }
-    }
 }
 
 void LVRMainWindow::changePointSize(int pointSize)
