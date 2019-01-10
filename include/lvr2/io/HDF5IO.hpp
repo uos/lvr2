@@ -165,6 +165,13 @@ class HDF5IO : public BaseIO
 
     bool isGroup(HighFive::Group grp, std::string objName);
 
+    template <typename T>
+    boost::shared_array<T> reduceData(boost::shared_array<T> data,
+            size_t dataCount,
+            size_t dataWidth,
+            unsigned int reductionFactor,
+            size_t *reducedDataCount);
+
     HighFive::File*         m_hdf5_file;
 
     bool                    m_compress;

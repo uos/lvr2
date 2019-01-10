@@ -492,20 +492,22 @@ void LVRPointBufferBridge::setPointSize(int pointSize)
 {
     vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
     p->SetPointSize(pointSize);
-    //m_pointCloudActor->SetProperty(p);
 }
 
 void LVRPointBufferBridge::setOpacity(float opacityValue)
 {
     vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
     p->SetOpacity(opacityValue);
-    //m_pointCloudActor->SetProperty(p);
+}
+
+void LVRPointBufferBridge::setColorsVisibility(bool visible)
+{
+    m_pointCloudActor->GetMapper()->SetScalarVisibility(visible);
 }
 
 void LVRPointBufferBridge::setVisibility(bool visible)
 {
-    if(visible) m_pointCloudActor->VisibilityOn();
-    else m_pointCloudActor->VisibilityOff();
+    m_pointCloudActor->SetVisibility(visible);
 }
 
 void LVRPointBufferBridge::setNormalsVisibility(bool visible)

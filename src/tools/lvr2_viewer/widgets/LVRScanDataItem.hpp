@@ -51,7 +51,7 @@ class LVRScanDataItem : public QTreeWidgetItem
 
     private:
 
-        void loadPreview(vtkSmartPointer<vtkRenderer> renderer);
+        void reload(vtkSmartPointer<vtkRenderer> renderer);
 
         QString                                 m_name;
         std::shared_ptr<ScanDataManager>        m_sdm;
@@ -63,6 +63,7 @@ class LVRScanDataItem : public QTreeWidgetItem
         LVRBoundingBoxItem                     *m_bbItem;
         LVRPointCloudItem                      *m_pcItem;
         LVRPoseItem                            *m_pItem;
+        QTreeWidgetItem                     *m_showSpectralsItem;
         Matrix4<BaseVector<float> >             m_matrix;
 };
 

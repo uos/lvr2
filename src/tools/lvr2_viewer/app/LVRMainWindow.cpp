@@ -1058,12 +1058,9 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
 
         refreshView();
     }
-    else
+    else if (treeWidgetItem->parent() && treeWidgetItem->parent()->type() == LVRScanDataItemType)
     {
-        for (int i = 0; i < treeWidgetItem->childCount(); i++)
-        {
-            setModelVisibility(treeWidgetItem->child(i), 0);
-        }
+        setModelVisibility(treeWidgetItem->parent(), column);
     }
 }
 
@@ -1287,7 +1284,6 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
 
             lastItem = addScanData(sdm, root);
 
-            root->setCheckState(0, Qt::Checked);
             root->setExpanded(true);
 
         }
