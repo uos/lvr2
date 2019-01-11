@@ -232,15 +232,153 @@ Eigen::Matrix4d transformFrames(Eigen::Matrix4d frames)
     return frames;
 }
 
-} // namespace slam6dmerger
+boost::filesystem::path getFramesPath(const boost::filesystem::path& scan)
+{
+    std::stringstream ss;
+    ss << scan.stem().string() << ".frames";
+    return boost::filesystem::path(ss.str());
+}
 
+} // namespace slam6dmerger
 
 
 int main(int argc, char** argv)
 {
     using namespace slam6dmerger;
+    using boost::filesystem::path;
+    using boost::filesystem::directory_iterator;
 
     Options options(argc, argv);
+
+    std::cout << options << std::endl;
+
+    /// CHECK PARAMETERS ---------------------------------------------------------------------------------
+
+    path transformPath(options.getTransformFile());
+    if(!exists(transformPath))
+    {
+        std::cout << timestamp << "Could not open frame file " << options.getTransformFile() << std::endl;
+        exit(-1);
+    }
+
+    path inputDir(options.getInputDir());
+    if(!is_directory(inputDir))
+    {
+        std::cout << timestamp << "Input directory is not valid: " << options.getInputDir() << std::endl;
+        exit(-1);
+    }
+
+    path outputDir(options.getOutputDir());
+    if(!is_directory(inputDir))
+    {
+        std::cout << timestamp << "Output directory is not valid: " << options.getOutputDir() << std::endl;
+        exit(-1);
+    }
+
+    if(inputDir == outputDir)
+    {
+        std::cout << timestamp << "Input directory and output directory should not be equal." << std::endl;
+        exit(-1);
+    }
+
+    path mergeDir(options.getMergeDir());
+    if(!is_directory(mergeDir))
+    {
+        std::cout << timestamp << "Merge directory is not valid: " << options.getMergeDir() << std::endl;
+        exit(-1);
+    }
+
+    if(mergeDir == outputDir)
+    {
+        std::cout << timestamp << "Merge directory and output directory should not be equal." << std::endl;
+        exit(-1);
+    }
+
+
+    /// PARSE DIRECTORIES  ---------------------------------------------------------------------------------
+
+    vector<path>    input_scans;
+    vector<path>    merge_scans;
+
+    directory_iterator end;
+    for(directory_iterator it(inputDir); it != end; ++it)
+    {
+        string extension = it->path().extension().string();
+        if(extension == ".3d")
+        {
+            input_scans.push_back(it->path());
+        }
+    }
+
+    for(directory_iterator it(mergeDir); it != end; ++it)
+    {
+        string extension = it->path().extension().string();
+        if(extension == ".3d")
+        {
+            merge_scans.push_back(it->path());
+        }
+    }
+
+    std::sort(input_scans.begin(), input_scans.end());
+    std::sort(merge_scans.begin(),  merge_scans.end());
+
+    // Copy files from input directory and merge directory
+    // and assure consistent numbering
+    int scan_counter = 0;
+    char name_buffer[256];
+    for(auto current_path : input_scans)
+    {
+        // Copy scan file
+        sprintf(name_buffer, "scan%03d.3d", scan_counter);
+        path target_path = outputDir / path(name_buffer);
+        std::cout << timestamp << "Copying " << current_path.string() << " to " << target_path.string() << "." << std::endl;
+
+        // Try to find frames file for current scan
+        path frames_in = inputDir / getFramesPath(current_path);
+
+        // Generate target path for frames file
+        sprintf(name_buffer, "scan%03d.frames", scan_counter);
+        path frames_out = outputDir / path(name_buffer);
+
+        // Check for exisiting frames file
+        if(!exists(frames_in))
+        {
+            std::cout << timestamp << "Warning: Could not find " << frames_in.string() << std::endl;
+        }
+        else
+        {
+            std::cout << timestamp << "Copying " << frames_in.string() << " to " << frames_out.string() << "." << std::endl;
+        }
+
+        scan_counter++;
+    }
+
+    for(auto current_path : merge_scans)
+    {
+        // Copy scan file
+        sprintf(name_buffer, "scan%03d.3d", scan_counter);
+        path target_path = outputDir / path(name_buffer);
+        std::cout << timestamp << "Copying " << current_path.string() << " to " << target_path.string() << "." << std::endl;
+
+        // Try to find frames file for current scan
+        path frames_in = mergeDir / getFramesPath(current_path);
+
+        // Generate target path for frames file
+        sprintf(name_buffer, "scan%03d.frames", scan_counter);
+        path frames_out = outputDir / path(name_buffer);
+
+        // Check for exisiting frames file
+        if(!exists(frames_in))
+        {
+            std::cout << timestamp << "Warning: Could not find " << frames_in.string() << std::endl;
+        }
+        else
+        {
+            std::cout << timestamp << "Copying " << frames_in.string() << " to " << frames_out.string() << "." << std::endl;
+        }
+
+        scan_counter++;
+    }
 
     return 0;
 }
