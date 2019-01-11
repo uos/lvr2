@@ -82,24 +82,6 @@ size_t countPointsInFile(boost::filesystem::path& inFile)
     return n_points;
 }
 
-void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut)
-{
-    std::ofstream out(framesOut.c_str());
-
-    // write the rotation matrix
-    out << transform.col(0)(0) << " " << transform.col(0)(1) << " " << transform.col(0)(2) << " " << 0 << " "
-        << transform.col(1)(0) << " " << transform.col(1)(1) << " " << transform.col(1)(2) << " " << 0 << " "
-        << transform.col(2)(0) << " " << transform.col(2)(1) << " " << transform.col(2)(2) << " " << 0 << " ";
-
-    // write the translation vector
-    out << transform.col(3)(0) << " "
-        << transform.col(3)(1) << " "
-        << transform.col(3)(2) << " "
-        << transform.col(3)(3);
-
-    out.close();
-}
-
 Eigen::Matrix4d buildTransformation(double* alignxf)
 {
     Eigen::Matrix3d rotation;
@@ -239,6 +221,24 @@ boost::filesystem::path getFramesPath(const boost::filesystem::path& scan)
     return boost::filesystem::path(ss.str());
 }
 
+void writeFrame(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut)
+{
+    std::ofstream out(framesOut.c_str());
+
+    // write the rotation matrix
+    out << transform.col(0)(0) << " " << transform.col(0)(1) << " " << transform.col(0)(2) << " " << 0 << " "
+        << transform.col(1)(0) << " " << transform.col(1)(1) << " " << transform.col(1)(2) << " " << 0 << " "
+        << transform.col(2)(0) << " " << transform.col(2)(1) << " " << transform.col(2)(2) << " " << 0 << " ";
+
+    // write the translation vector
+    out << transform.col(3)(0) << " "
+        << transform.col(3)(1) << " "
+        << transform.col(3)(2) << " "
+        << transform.col(3)(3);
+
+    out.close();
+}
+
 } // namespace slam6dmerger
 
 
@@ -252,14 +252,19 @@ int main(int argc, char** argv)
 
     std::cout << options << std::endl;
 
-    /// CHECK PARAMETERS ---------------------------------------------------------------------------------
+    // CHECK PARAMETERS ---------------------------------------------------------------------------------
 
     path transformPath(options.getTransformFile());
-    if(!exists(transformPath))
+    if(!exists(transformPath) || !is_regular_file(transformPath))
     {
-        std::cout << timestamp << "Could not open frame file " << options.getTransformFile() << std::endl;
+        std::cout << timestamp << "Could not open transformation file " << options.getTransformFile() << std::endl;
         exit(-1);
     }
+
+    Eigen::Matrix4d transform = getTransformationFromFrames(transformPath);
+
+    std::cout << timestamp << "Transforming: " << std::endl << std::endl;
+    std::cout << transform << std::endl << std::endl;
 
     path inputDir(options.getInputDir());
     if(!is_directory(inputDir))
@@ -332,6 +337,7 @@ int main(int argc, char** argv)
         sprintf(name_buffer, "scan%03d.3d", scan_counter);
         path target_path = outputDir / path(name_buffer);
         std::cout << timestamp << "Copying " << current_path.string() << " to " << target_path.string() << "." << std::endl;
+        boost::filesystem::copy(current_path, target_path);
 
         // Try to find frames file for current scan
         path frames_in = inputDir / getFramesPath(current_path);
@@ -348,6 +354,7 @@ int main(int argc, char** argv)
         else
         {
             std::cout << timestamp << "Copying " << frames_in.string() << " to " << frames_out.string() << "." << std::endl;
+            boost::filesystem::copy(frames_in, frames_out);
         }
 
         scan_counter++;
@@ -359,6 +366,7 @@ int main(int argc, char** argv)
         sprintf(name_buffer, "scan%03d.3d", scan_counter);
         path target_path = outputDir / path(name_buffer);
         std::cout << timestamp << "Copying " << current_path.string() << " to " << target_path.string() << "." << std::endl;
+        boost::filesystem::copy(current_path, target_path);
 
         // Try to find frames file for current scan
         path frames_in = mergeDir / getFramesPath(current_path);
@@ -374,9 +382,15 @@ int main(int argc, char** argv)
         }
         else
         {
-            std::cout << timestamp << "Copying " << frames_in.string() << " to " << frames_out.string() << "." << std::endl;
-        }
+            // Get transformation from file and transform
+            std::cout << timestamp << "Transforming " << frames_in.string() << std::endl;
+            Eigen::Matrix4d registration = getTransformationFromFrames(frames_in);
+            registration *= transform;
 
+            std::cout << timestamp << "Writing transformed registration to " << frames_out.string() << std::endl;
+            writeFrame(registration, frames_out);
+
+        }
         scan_counter++;
     }
 
