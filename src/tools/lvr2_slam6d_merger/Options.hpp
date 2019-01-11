@@ -99,6 +99,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	cout << "##### Input dir \t\t: "  << o.getInputDir() << endl;
     cout << "##### Merge dir \t\t: " 	<< o.getMergeDir() << endl;
 	cout << "##### Output dir \t\t: " 	<< o.getOutputDir() << endl;
+    cout << "##### Transform \t\t:" << o.getTransformFile() << endl;
     cout << "##### Start scan \t\t: " << o.getStart() << endl;
     cout << "##### End scan \t\t\t: " << o.getStart() << endl;
 	return os;
