@@ -105,6 +105,8 @@ void LVRModelBridge::setTransform(const Matrix4<BaseVector<float> > &transform)
     vtkSmartPointer<vtkTransform> t = vtkSmartPointer<vtkTransform>::New();
     vtkSmartPointer<vtkMatrix4x4> m = vtkSmartPointer<vtkMatrix4x4>::New();
 
+    // For some reason we have to copy the matrix
+    // values manually...
     int j = 0;
     for(int i = 0; i < 16; i++)
     {
@@ -114,10 +116,8 @@ void LVRModelBridge::setTransform(const Matrix4<BaseVector<float> > &transform)
         }
         double v = transform[i];
         m->SetElement(i / 4, j, v);
-        cout << i / 4 << " " << j << " " << v << endl;
         j++;
     }
-    m->Print(std::cout);
 
     t->PostMultiply();
     t->SetMatrix(m);
