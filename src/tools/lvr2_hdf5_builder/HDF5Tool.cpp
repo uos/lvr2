@@ -196,7 +196,7 @@ int main( int argc, char ** argv )
             data.m_boundingBox = bBox;
             data.m_registration = transformation;
 
-
+            std::cout << timestamp << " Adding raw scan data" << endl;
             // Add objects to hdf5 file
             hdf5.addRawScanData(scanNr, data);
 
@@ -226,8 +226,12 @@ int main( int argc, char ** argv )
 
             // Priliminary experiments showed that this chunking delivered
             // best compression of hyperspectral image data
-            std::vector<hsize_t> chunks = {50, 50, 50};
+            std::vector<hsize_t> chunks =
+                {options.getHSPChunk0(), options.getHSPChunk1(), options.getHSPChunk2()};
+
             sprintf(groupName, "/raw/spectral/position_%05d", scanNr);
+            std::cout << timestamp << "Adding spectral dataset to " << groupName << " with dims "
+                      << options.getHSPChunk0() << " " <<  options.getHSPChunk1() << " " << options.getHSPChunk2() << endl;
 
             hdf5.addArray(groupName, "spectral", dim, chunks, ucharArr(cube));
 

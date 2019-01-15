@@ -27,6 +27,7 @@ void HDF5IO::addArray(HighFive::Group& g,
     }
     if(m_compress)
     {
+        //properties.add(HighFive::Shuffle());
         properties.add(HighFive::Deflate(9));
     }
     HighFive::DataSet dataset = g.createDataSet<T>(datasetName, dataSpace, properties);
