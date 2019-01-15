@@ -395,7 +395,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 
         for(vtkIdType i = 0; i < n; i++)
         {
-            int index = 3 * i;
+            size_t index = 3 * i;
             point[0] = points[index    ];
             point[1] = points[index + 1];
             point[2] = points[index + 2];
@@ -417,7 +417,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
                 {
                     break;
                 }
-                int specIndex = n_s_channels * i;
+                size_t specIndex = n_s_channels * i;
                 unsigned char speccolor[3];
                 speccolor[0] = spec[specIndex + m_spectralChannels.r];
                 speccolor[1] = spec[specIndex + m_spectralChannels.g];

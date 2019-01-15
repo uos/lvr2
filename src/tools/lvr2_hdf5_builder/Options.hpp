@@ -69,6 +69,12 @@ public:
     string  getDataDir()        const { return m_variables["dataDir"].as<string>();}
     int     numPanoramaImages() const { return m_variables["nch"].as<int>();}
 
+    size_t  getHSPChunk0() const { return m_variables["hsp_chunk_0"].as<size_t>(); }
+    size_t  getHSPChunk1() const { return m_variables["hsp_chunk_1"].as<size_t>(); }
+    size_t  getHSPChunk2() const { return m_variables["hsp_chunk_2"].as<size_t>(); }
+
+    bool    addAnnotations() const { return (m_variables["addAnnotations"].as<int>() != 0);}
+
 private:
     /// The internally used variable map
     variables_map                   m_variables;
