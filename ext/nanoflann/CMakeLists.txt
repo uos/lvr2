@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(nanoflann)
-
 # set include dirs
 set(NANOFLANN_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/nanoflann CACHE PATH "install location of nanoflann headers")
 find_path(NANOFLANN_INCLUDE_DIR nanoflann.hpp PATH .)
