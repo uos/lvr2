@@ -290,6 +290,14 @@ struct hash<lvr2::VertexHandle> {
 };
 
 template<>
+struct less<lvr2::VertexHandle> {
+    bool operator()(const lvr2::VertexHandle& l, const lvr2::VertexHandle& r) const
+    {
+        return std::less<lvr2::Index>()(l.idx(), r.idx());
+    }
+};
+
+template<>
 struct hash<lvr2::ClusterHandle> {
     size_t operator()(const lvr2::ClusterHandle& h) const
     {

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 project(ctpl)
 
 set(CTPL_INSTALL_INCLUDE_DIR
-    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/lvr/ext/CTPL
+    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/CTPL
     CACHE
     PATH
     "install location of CTPL library header")
