@@ -47,7 +47,7 @@ namespace lvr2
 {
 
 LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer) :
-        m_renderer(renderer), m_motionFactor(50)
+        m_renderer(renderer), m_motionFactor(50), m_rotationFactor(20), m_interactorMode(TRACKBALL)
 {
     m_pickMode = None;
     m_correspondenceMode = false;
@@ -65,6 +65,16 @@ LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer
 
 }
 
+void LVRPickingInteractor::setMotionFactor(double factor)
+{
+    m_motionFactor = factor;
+}
+
+void LVRPickingInteractor::setRotationFactor(double factor)
+{
+    m_rotationFactor = factor;
+}
+
 LVRPickingInteractor::~LVRPickingInteractor()
 {
     // TODO Auto-generated destructor stub
@@ -73,45 +83,187 @@ LVRPickingInteractor::~LVRPickingInteractor()
 
 void LVRPickingInteractor::Dolly()
 {
-    if (this->CurrentRenderer == nullptr)
+    switch(m_interactorMode)
     {
-      return;
+        case TRACKBALL:
+            dollyTrackball();
+            break;
+        default:
+            dollyTrackball();
     }
-
-    vtkRenderWindowInteractor *rwi = this->Interactor;
-    double *center = this->CurrentRenderer->GetCenter();
-    int dy = rwi->GetEventPosition()[1] - rwi->GetLastEventPosition()[1];
-    double dyf = 1 * dy / center[1];
-
-    if (this->CurrentRenderer == nullptr)
-    {
-        return;
-    }
-
-    vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
-    if (camera->GetParallelProjection())
-    {
-        camera->SetParallelScale(camera->GetParallelScale() / dyf);
-    }
-    else
-    {
-        camera->Dolly(dyf);
-        if (this->AutoAdjustCameraClippingRange)
-        {
-            this->CurrentRenderer->ResetCameraClippingRange();
-        }
-    }
-
-    if (this->Interactor->GetLightFollowCamera())
-    {
-        this->CurrentRenderer->UpdateLightsGeometryToFollowCamera();
-    }
-
-    this->Interactor->Render();
-
 }
 
-void LVRPickingInteractor::Dolly(double factor)
+void LVRPickingInteractor::Dolly(double speed)
+{
+    switch(m_interactorMode)
+    {
+        case TRACKBALL:
+            dollyTrackball(speed);
+            break;
+        default:
+            dollyTrackball();
+
+    }
+}
+
+void LVRPickingInteractor::Pan()
+{
+    switch(m_interactorMode)
+    {
+        case TRACKBALL:
+            panTrackball();
+            break;
+        default:
+            panTrackball();
+
+    }
+}
+
+void LVRPickingInteractor::Spin()
+{
+    switch(m_interactorMode)
+    {
+        case TRACKBALL:
+            spinTrackball();
+            break;
+        default:
+            spinTrackball();
+    }
+}
+
+void LVRPickingInteractor::Rotate()
+{
+    switch(m_interactorMode)
+    {
+        case TRACKBALL:
+            rotateTrackball();
+            break;
+        default:
+            rotateTrackball();
+    }
+}
+
+void LVRPickingInteractor::Zoom()
+{
+    switch(m_interactorMode)
+    {
+        case TRACKBALL:
+            zoomTrackball();
+            break;
+        default:
+            zoomTrackball();
+    }
+}
+
+ void LVRPickingInteractor::OnLeftButtonDown()
+ {
+     switch(m_interactorMode)
+     {
+         case TRACKBALL:
+             onLeftButtonDownTrackball();
+             break;
+         default:
+             onLeftButtonDownTrackball();
+     }
+ }
+
+ void LVRPickingInteractor::OnLeftButtonUp()
+ {
+     switch(m_interactorMode)
+     {
+         case TRACKBALL:
+             onLeftButtonUpTrackball();
+             break;
+         default:
+             onLeftButtonUpTrackball();
+     }
+ }
+
+ void LVRPickingInteractor::OnMouseMove()
+ {
+     switch(m_interactorMode)
+     {
+         case TRACKBALL:
+             onMouseMoveTrackball();
+             break;
+         default:
+             onMouseMoveTrackball();
+     }
+ }
+
+ void LVRPickingInteractor::OnMiddleButtonUp()
+ {
+     switch(m_interactorMode)
+     {
+         case TRACKBALL:
+             onMiddleButtonUpTrackball();
+             break;
+         default:
+             onMiddleButtonUpTrackball();
+     }
+ }
+
+ void LVRPickingInteractor::OnMiddleButtonDown()
+ {
+     switch(m_interactorMode)
+     {
+         case TRACKBALL:
+             onMiddleButtonDownTrackball();
+             break;
+         default:
+             onMiddleButtonDownTrackball();
+     }
+ }
+
+ void LVRPickingInteractor::OnRightButtonUp()
+ {
+     switch(m_interactorMode)
+     {
+         case TRACKBALL:
+             onRightButtonUpTrackball();
+             break;
+         default:
+             onRightButtonUpTrackball();
+     }
+ }
+
+ void LVRPickingInteractor::OnRightButtonDown()
+ {
+     switch(m_interactorMode)
+     {
+         case TRACKBALL:
+             onRightButtonDownTrackball();
+             break;
+         default:
+             onRightButtonDownTrackball();
+     }
+ }
+
+ void LVRPickingInteractor::OnMouseWheelBackward()
+ {
+     switch(m_interactorMode)
+     {
+         case TRACKBALL:
+             onMouseWheelBackwardTrackball();
+             break;
+         default:
+             onMouseWheelBackwardTrackball();
+     }
+ }
+
+ void LVRPickingInteractor::OnMouseWheelForward()
+ {
+     switch(m_interactorMode)
+     {
+         case TRACKBALL:
+             onMouseWheelForwardTrackball();
+             break;
+         default:
+             onMouseWheelForwardTrackball();
+     }
+ }
+
+void LVRPickingInteractor::dollyTrackball(double factor)
 {
     if (this->CurrentRenderer == nullptr)
     {
@@ -151,7 +303,46 @@ void LVRPickingInteractor::Dolly(double factor)
     this->Interactor->Render();
 }
 
-void LVRPickingInteractor::Pan()
+void LVRPickingInteractor::dollyTrackball()
+{
+    if (this->CurrentRenderer == nullptr)
+    {
+      return;
+    }
+
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    double *center = this->CurrentRenderer->GetCenter();
+    int dy = rwi->GetEventPosition()[1] - rwi->GetLastEventPosition()[1];
+    double dyf = 1 * dy / center[1];
+
+    if (this->CurrentRenderer == nullptr)
+    {
+        return;
+    }
+
+    vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
+    if (camera->GetParallelProjection())
+    {
+        camera->SetParallelScale(camera->GetParallelScale() / dyf);
+    }
+    else
+    {
+        camera->Dolly(dyf);
+        if (this->AutoAdjustCameraClippingRange)
+        {
+            this->CurrentRenderer->ResetCameraClippingRange();
+        }
+    }
+
+    if (this->Interactor->GetLightFollowCamera())
+    {
+        this->CurrentRenderer->UpdateLightsGeometryToFollowCamera();
+    }
+
+    this->Interactor->Render();
+}
+
+void LVRPickingInteractor::panTrackball()
 {
     if (this->CurrentRenderer == nullptr)
      {
@@ -208,7 +399,7 @@ void LVRPickingInteractor::Pan()
    rwi->Render();
 }
 
-void LVRPickingInteractor::Spin()
+void LVRPickingInteractor::spinTrackball()
 {
     if ( this->CurrentRenderer == nullptr )
     {
@@ -234,12 +425,12 @@ void LVRPickingInteractor::Spin()
     rwi->Render();
 }
 
-void LVRPickingInteractor::Zoom()
+void LVRPickingInteractor::zoomTrackball()
 {
     //vtkInteractorStyleTrackballCamera::Zoom();
 }
 
-void LVRPickingInteractor::Rotate()
+void LVRPickingInteractor::rotateTrackball()
 {
     if (this->CurrentRenderer == nullptr)
     {
@@ -296,7 +487,7 @@ void LVRPickingInteractor::correspondenceSearchOff()
     rwi->Render();
 }
 
-void LVRPickingInteractor::OnLeftButtonDown()
+void LVRPickingInteractor::onLeftButtonDownTrackball()
 {
     vtkPointPicker* picker = (vtkPointPicker*)this->Interactor->GetPicker();
 
@@ -357,7 +548,7 @@ void LVRPickingInteractor::OnLeftButtonDown()
     handleLeftButtonDownTrackball();
 }
 
-void LVRPickingInteractor::OnLeftButtonUp()
+void LVRPickingInteractor::onLeftButtonUpTrackball()
 {
     switch (this->State)
     {
@@ -384,7 +575,7 @@ void LVRPickingInteractor::OnLeftButtonUp()
     }
 }
 
-void LVRPickingInteractor::OnMouseMove()
+void LVRPickingInteractor::onMouseMoveTrackball()
 {
     int x = this->Interactor->GetEventPosition()[0];
     int y = this->Interactor->GetEventPosition()[1];
@@ -417,7 +608,7 @@ void LVRPickingInteractor::OnMouseMove()
     }
 }
 
-void LVRPickingInteractor::OnMiddleButtonUp()
+void LVRPickingInteractor::onMiddleButtonUpTrackball()
 {
     switch (this->State)
     {
@@ -431,7 +622,7 @@ void LVRPickingInteractor::OnMiddleButtonUp()
     }
 }
 
-void LVRPickingInteractor::OnMouseWheelForward()
+void LVRPickingInteractor::onMouseWheelForwardTrackball()
 {
     this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
             this->Interactor->GetEventPosition()[1]);
@@ -448,7 +639,7 @@ void LVRPickingInteractor::OnMouseWheelForward()
     this->ReleaseFocus();
 }
 
-void LVRPickingInteractor::OnMouseWheelBackward()
+void LVRPickingInteractor::onMouseWheelBackwardTrackball()
 {
     this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
             this->Interactor->GetEventPosition()[1]);
@@ -465,7 +656,7 @@ void LVRPickingInteractor::OnMouseWheelBackward()
     this->ReleaseFocus();
 }
 
-void LVRPickingInteractor::OnMiddleButtonDown()
+void LVRPickingInteractor::onMiddleButtonDownTrackball()
 {
     this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
             this->Interactor->GetEventPosition()[1]);
@@ -478,7 +669,7 @@ void LVRPickingInteractor::OnMiddleButtonDown()
     this->StartPan();
 }
 
-void LVRPickingInteractor::OnRightButtonUp()
+void LVRPickingInteractor::onRightButtonUpTrackball()
 {
     switch (this->State)
     {
@@ -493,7 +684,7 @@ void LVRPickingInteractor::OnRightButtonUp()
     }
 }
 
-void LVRPickingInteractor::OnRightButtonDown()
+void LVRPickingInteractor::onRightButtonDownTrackball()
 {
     this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
             this->Interactor->GetEventPosition()[1]);

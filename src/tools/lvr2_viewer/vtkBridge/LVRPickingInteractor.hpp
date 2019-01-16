@@ -95,6 +95,9 @@ public Q_SLOTS:
     void correspondenceSearchOn();
     void correspondenceSearchOff();
 
+    void setMotionFactor(double factor);
+    void setRotationFactor(double factor);
+
 Q_SIGNALS:
     void firstPointPicked(double*);
     void secondPointPicked(double*);
@@ -102,8 +105,27 @@ Q_SIGNALS:
 
 private:
 
-protected:
+    enum InteractorMode {TRACKBALL, SHOOTER, FLIGHT};
+
     void handleLeftButtonDownTrackball();
+
+    void dollyTrackball();
+    void dollyTrackball(double factor);
+    void panTrackball();
+    void spinTrackball();
+    void zoomTrackball();
+    void rotateTrackball();
+
+    void onLeftButtonDownTrackball();
+    void onLeftButtonUpTrackball();
+    void onMouseMoveTrackball();
+    void onMiddleButtonUpTrackball();
+    void onMiddleButtonDownTrackball();
+    void onRightButtonUpTrackball();
+    void onRightButtonDownTrackball();
+    void onMouseWheelBackwardTrackball();
+    void onMouseWheelForwardTrackball();
+
 
     /// Indicates picking mode
     PickMode            m_pickMode;
@@ -118,7 +140,10 @@ protected:
     unsigned int                    m_numberOfClicks;
     int                             m_previousPosition[2];
 
-    int                             m_motionFactor;
+    float                           m_motionFactor;
+    float                           m_rotationFactor;
+
+    InteractorMode                  m_interactorMode;
 
 };
 
