@@ -821,12 +821,8 @@ void LVRPickingInteractor::OnKeyDown()
     }
     if(key == "h")
     {
-        m_textActor->SetInput("Pick new camera focal point...");
-        m_textActor->VisibilityOn();
-        rwi->Render();
-        m_pickMode = PickFocal;
+       pickFocalPoint();
     }
-
 
     if(key == "q")
     {
@@ -835,6 +831,15 @@ void LVRPickingInteractor::OnKeyDown()
         rwi->Render();
     }
 
+}
+
+void LVRPickingInteractor::pickFocalPoint()
+{
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    m_textActor->SetInput("Pick new camera focal point...");
+    m_textActor->VisibilityOn();
+    rwi->Render();
+    m_pickMode = PickFocal;
 }
 
 void LVRPickingInteractor::OnKeyRelease()
