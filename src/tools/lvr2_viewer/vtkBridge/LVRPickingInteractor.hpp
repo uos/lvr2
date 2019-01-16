@@ -101,6 +101,8 @@ public Q_SLOTS:
 
     void setFocalPointRendering(int state);
 
+    void pickFocalPoint();
+
 Q_SIGNALS:
     void firstPointPicked(double*);
     void secondPointPicked(double*);

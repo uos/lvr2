@@ -711,13 +711,13 @@
    <property name="minimumSize">
     <size>
      <width>35</width>
-     <height>193</height>
+     <height>250</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
      <width>524287</width>
-     <height>193</height>
+     <height>250</height>
     </size>
    </property>
    <property name="floating">
@@ -939,6 +939,45 @@
       </property>
       <property name="value">
        <double>45.000000000000000</double>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="groupBoxCameraButtons">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>180</y>
+       <width>241</width>
+       <height>61</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string/>
+     </property>
+     <widget class="QPushButton" name="buttonPickFocal">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>101</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Pick Focal (h)</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="buttonResetCamera">
+      <property name="geometry">
+       <rect>
+        <x>119</x>
+        <y>30</y>
+        <width>111</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Reset Camera (r)</string>
       </property>
      </widget>
     </widget>
