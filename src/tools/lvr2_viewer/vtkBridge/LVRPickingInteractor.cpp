@@ -444,8 +444,8 @@ void LVRPickingInteractor::rotateTrackball()
 
     int *size = this->CurrentRenderer->GetRenderWindow()->GetSize();
 
-    double delta_elevation = -20.0 / size[1];
-    double delta_azimuth = -20.0 / size[0];
+    double delta_elevation = -m_rotationFactor / size[1];
+    double delta_azimuth = -m_rotationFactor / size[0];
 
     double rxf = dx * delta_azimuth * m_motionFactor;
     double ryf = dy * delta_elevation * m_motionFactor;

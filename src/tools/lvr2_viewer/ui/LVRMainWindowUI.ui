@@ -912,7 +912,7 @@
        <string>Stereo Mode</string>
       </property>
      </widget>
-     <widget class="QDoubleSpinBox" name="doubleSpinBoxDollySpeed_2">
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxRotationSpeed">
       <property name="geometry">
        <rect>
         <x>160</x>
