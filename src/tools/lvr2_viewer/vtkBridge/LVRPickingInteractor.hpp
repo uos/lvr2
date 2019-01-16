@@ -103,6 +103,9 @@ public Q_SLOTS:
 
     void pickFocalPoint();
 
+    void modeTerrain();
+    void modeTrackball();
+
 Q_SIGNALS:
     void firstPointPicked(double*);
     void secondPointPicked(double*);
@@ -110,10 +113,12 @@ Q_SIGNALS:
 
 private:
 
-    enum InteractorMode {TRACKBALL, SHOOTER, FLIGHT};
+    enum InteractorMode {TRACKBALL, SHOOTER, TERRAIN};
     enum PickMode {None, PickPoint, PickFirst, PickSecond, PickFocal};
 
     void handlePicking();
+
+    // ------------------------- TRACKBALL
 
     void dollyTrackball();
     void dollyTrackball(double factor);
@@ -131,6 +136,25 @@ private:
     void onRightButtonDownTrackball();
     void onMouseWheelBackwardTrackball();
     void onMouseWheelForwardTrackball();
+
+    // ------------------------ TERRAIN
+
+    void dollyTerrain();
+    void dollyTerrain(double factor);
+    void panTerrain();
+    void spinTerrain();
+    void zoomTerrain();
+    void rotateTerrain();
+
+    void onLeftButtonDownTerrain();
+    void onLeftButtonUpTerrain();
+    void onMouseMoveTerrain();
+    void onMiddleButtonUpTerrain();
+    void onMiddleButtonDownTerrain();
+    void onRightButtonUpTerrain();
+    void onRightButtonDownTerrain();
+    void onMouseWheelBackwardTerrain();
+    void onMouseWheelForwardTerrain();
 
 
 
