@@ -40,12 +40,14 @@
 #include <vtkRenderWindow.h>
 #include <vtkRendererCollection.h>
 #include <vtkPointPicker.h>
+#include <vtkCamera.h>
+#include <vtkCallbackCommand.h>
 
 namespace lvr2
 {
 
 LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer) :
-        m_renderer(renderer)
+        m_renderer(renderer), m_motionFactor(50)
 {
     m_pickMode = None;
     m_correspondenceMode = false;
@@ -71,27 +73,208 @@ LVRPickingInteractor::~LVRPickingInteractor()
 
 void LVRPickingInteractor::Dolly()
 {
-	vtkInteractorStyleTrackballCamera::Dolly();
+    if (this->CurrentRenderer == nullptr)
+    {
+      return;
+    }
+
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    double *center = this->CurrentRenderer->GetCenter();
+    int dy = rwi->GetEventPosition()[1] - rwi->GetLastEventPosition()[1];
+    double dyf = 1 * dy / center[1];
+
+    if (this->CurrentRenderer == nullptr)
+    {
+        return;
+    }
+
+    vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
+    if (camera->GetParallelProjection())
+    {
+        camera->SetParallelScale(camera->GetParallelScale() / dyf);
+    }
+    else
+    {
+        camera->Dolly(dyf);
+        if (this->AutoAdjustCameraClippingRange)
+        {
+            this->CurrentRenderer->ResetCameraClippingRange();
+        }
+    }
+
+    if (this->Interactor->GetLightFollowCamera())
+    {
+        this->CurrentRenderer->UpdateLightsGeometryToFollowCamera();
+    }
+
+    this->Interactor->Render();
+
+}
+
+void LVRPickingInteractor::Dolly(double factor)
+{
+    if (this->CurrentRenderer == nullptr)
+    {
+        return;
+    }
+
+    vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
+    if (camera->GetParallelProjection())
+    {
+        camera->SetParallelScale(camera->GetParallelScale() / factor);
+    }
+    else
+    {
+        double position[3];
+        double direction[3];
+
+        camera->GetPosition(position);
+        camera->GetDirectionOfProjection(direction);
+
+        // Compute desired position
+        camera->SetPosition(
+                position[0] - factor * direction[0],
+                position[1] - factor * direction[1],
+                position[2] - factor * direction[2]);
+
+        if (this->AutoAdjustCameraClippingRange)
+        {
+            this->CurrentRenderer->ResetCameraClippingRange();
+        }
+    }
+
+    if (this->Interactor->GetLightFollowCamera())
+    {
+        this->CurrentRenderer->UpdateLightsGeometryToFollowCamera();
+    }
+
+    this->Interactor->Render();
 }
 
 void LVRPickingInteractor::Pan()
 {
-	vtkInteractorStyleTrackballCamera::Pan();
+    if (this->CurrentRenderer == nullptr)
+     {
+       return;
+     }
+
+     vtkRenderWindowInteractor *rwi = this->Interactor;
+
+     double viewFocus[4], focalDepth, viewPoint[3];
+     double newPickPoint[4], oldPickPoint[4], motionVector[3];
+
+     // Calculate the focal depth since we'll be using it a lot
+
+     vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
+     camera->GetFocalPoint(viewFocus);
+     this->ComputeWorldToDisplay(viewFocus[0], viewFocus[1], viewFocus[2],
+                                 viewFocus);
+     focalDepth = viewFocus[2];
+
+     this->ComputeDisplayToWorld(rwi->GetEventPosition()[0],
+                                 rwi->GetEventPosition()[1],
+                                 focalDepth,
+                                 newPickPoint);
+
+     // Has to recalc old mouse point since the viewport has moved,
+     // so can't move it outside the loop
+
+     this->ComputeDisplayToWorld(rwi->GetLastEventPosition()[0],
+                                 rwi->GetLastEventPosition()[1],
+                                 focalDepth,
+                                 oldPickPoint);
+
+     // Camera motion is reversed
+
+     motionVector[0] = oldPickPoint[0] - newPickPoint[0];
+     motionVector[1] = oldPickPoint[1] - newPickPoint[1];
+     motionVector[2] = oldPickPoint[2] - newPickPoint[2];
+
+     camera->GetFocalPoint(viewFocus);
+     camera->GetPosition(viewPoint);
+     camera->SetFocalPoint(motionVector[0] + viewFocus[0],
+                           motionVector[1] + viewFocus[1],
+                           motionVector[2] + viewFocus[2]);
+
+     camera->SetPosition(motionVector[0] + viewPoint[0],
+                         motionVector[1] + viewPoint[1],
+                         motionVector[2] + viewPoint[2]);
+
+     if (rwi->GetLightFollowCamera())
+     {
+       this->CurrentRenderer->UpdateLightsGeometryToFollowCamera();
+     }
+
+   rwi->Render();
 }
 
 void LVRPickingInteractor::Spin()
 {
-	vtkInteractorStyleTrackballCamera::Spin();
+    if ( this->CurrentRenderer == nullptr )
+    {
+        return;
+    }
+
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+
+    double *center = this->CurrentRenderer->GetCenter();
+
+    double newAngle =
+            vtkMath::DegreesFromRadians( atan2( rwi->GetEventPosition()[1] - center[1],
+            rwi->GetEventPosition()[0] - center[0] ) );
+
+    double oldAngle =
+            vtkMath::DegreesFromRadians( atan2( rwi->GetLastEventPosition()[1] - center[1],
+            rwi->GetLastEventPosition()[0] - center[0] ) );
+
+    vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
+    camera->Roll( newAngle - oldAngle );
+    camera->OrthogonalizeViewUp();
+
+    rwi->Render();
 }
 
 void LVRPickingInteractor::Zoom()
 {
-	vtkInteractorStyleTrackballCamera::Zoom();
+    //vtkInteractorStyleTrackballCamera::Zoom();
 }
 
 void LVRPickingInteractor::Rotate()
 {
-	vtkInteractorStyleTrackballCamera::Rotate();
+    if (this->CurrentRenderer == nullptr)
+    {
+        return;
+    }
+
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+
+    int dx = rwi->GetEventPosition()[0] - rwi->GetLastEventPosition()[0];
+    int dy = rwi->GetEventPosition()[1] - rwi->GetLastEventPosition()[1];
+
+    int *size = this->CurrentRenderer->GetRenderWindow()->GetSize();
+
+    double delta_elevation = -20.0 / size[1];
+    double delta_azimuth = -20.0 / size[0];
+
+    double rxf = dx * delta_azimuth * m_motionFactor;
+    double ryf = dy * delta_elevation * m_motionFactor;
+
+    vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
+    camera->Azimuth(rxf);
+    camera->Elevation(ryf);
+    camera->OrthogonalizeViewUp();
+
+    if (this->AutoAdjustCameraClippingRange)
+    {
+        this->CurrentRenderer->ResetCameraClippingRange();
+    }
+
+    if (rwi->GetLightFollowCamera())
+    {
+        this->CurrentRenderer->UpdateLightsGeometryToFollowCamera();
+    }
+
+    rwi->Render();
 }
 
 void LVRPickingInteractor::correspondenceSearchOn()
@@ -170,7 +353,193 @@ void LVRPickingInteractor::OnLeftButtonDown()
             Q_EMIT(secondPointPicked(picked));
         }
     }
-    vtkInteractorStyleTrackballCamera::OnLeftButtonDown();
+
+    handleLeftButtonDownTrackball();
+}
+
+void LVRPickingInteractor::OnLeftButtonUp()
+{
+    switch (this->State)
+    {
+    case VTKIS_DOLLY:
+        this->EndDolly();
+        break;
+
+    case VTKIS_PAN:
+        this->EndPan();
+        break;
+
+    case VTKIS_SPIN:
+        this->EndSpin();
+        break;
+
+    case VTKIS_ROTATE:
+        this->EndRotate();
+        break;
+    }
+
+    if ( this->Interactor )
+    {
+        this->ReleaseFocus();
+    }
+}
+
+void LVRPickingInteractor::OnMouseMove()
+{
+    int x = this->Interactor->GetEventPosition()[0];
+    int y = this->Interactor->GetEventPosition()[1];
+
+    switch (this->State)
+    {
+    case VTKIS_ROTATE:
+        this->FindPokedRenderer(x, y);
+        this->Rotate();
+        this->InvokeEvent(vtkCommand::InteractionEvent, nullptr);
+        break;
+
+    case VTKIS_PAN:
+        this->FindPokedRenderer(x, y);
+        this->Pan();
+        this->InvokeEvent(vtkCommand::InteractionEvent, nullptr);
+        break;
+
+    case VTKIS_DOLLY:
+        this->FindPokedRenderer(x, y);
+        this->Dolly();
+        this->InvokeEvent(vtkCommand::InteractionEvent, nullptr);
+        break;
+
+    case VTKIS_SPIN:
+        this->FindPokedRenderer(x, y);
+        this->Spin();
+        this->InvokeEvent(vtkCommand::InteractionEvent, nullptr);
+        break;
+    }
+}
+
+void LVRPickingInteractor::OnMiddleButtonUp()
+{
+    switch (this->State)
+    {
+    case VTKIS_PAN:
+        this->EndPan();
+        if ( this->Interactor )
+        {
+            this->ReleaseFocus();
+        }
+        break;
+    }
+}
+
+void LVRPickingInteractor::OnMouseWheelForward()
+{
+    this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
+            this->Interactor->GetEventPosition()[1]);
+    if (this->CurrentRenderer == nullptr)
+    {
+        return;
+    }
+
+    this->GrabFocus(this->EventCallbackCommand);
+    this->StartDolly();
+    double factor = m_motionFactor * this->MouseWheelMotionFactor;
+    this->Dolly(-pow(1.1, factor));
+    this->EndDolly();
+    this->ReleaseFocus();
+}
+
+void LVRPickingInteractor::OnMouseWheelBackward()
+{
+    this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
+            this->Interactor->GetEventPosition()[1]);
+    if (this->CurrentRenderer == nullptr)
+    {
+        return;
+    }
+
+    this->GrabFocus(this->EventCallbackCommand);
+    this->StartDolly();
+    double factor = m_motionFactor * this->MouseWheelMotionFactor;
+    this->Dolly(pow(1.1, factor));
+    this->EndDolly();
+    this->ReleaseFocus();
+}
+
+void LVRPickingInteractor::OnMiddleButtonDown()
+{
+    this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
+            this->Interactor->GetEventPosition()[1]);
+    if (this->CurrentRenderer == nullptr)
+    {
+        return;
+    }
+
+    this->GrabFocus(this->EventCallbackCommand);
+    this->StartPan();
+}
+
+void LVRPickingInteractor::OnRightButtonUp()
+{
+    switch (this->State)
+    {
+    case VTKIS_DOLLY:
+        this->EndDolly();
+
+        if ( this->Interactor )
+        {
+            this->ReleaseFocus();
+        }
+        break;
+    }
+}
+
+void LVRPickingInteractor::OnRightButtonDown()
+{
+    this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
+            this->Interactor->GetEventPosition()[1]);
+    if (this->CurrentRenderer == nullptr)
+    {
+        return;
+    }
+
+    this->GrabFocus(this->EventCallbackCommand);
+    this->StartDolly();
+}
+
+
+void LVRPickingInteractor::handleLeftButtonDownTrackball()
+{
+    // Code taken from vtkInteractorStyleTrackballCamera
+    this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
+            this->Interactor->GetEventPosition()[1]);
+    if (this->CurrentRenderer == nullptr)
+    {
+        return;
+    }
+
+    GrabFocus(this->EventCallbackCommand, nullptr);
+    if (this->Interactor->GetShiftKey())
+    {
+        if (this->Interactor->GetControlKey())
+        {
+            this->StartDolly();
+        }
+        else
+        {
+            this->StartPan();
+        }
+    }
+    else
+    {
+        if (this->Interactor->GetControlKey())
+        {
+            this->StartSpin();
+        }
+        else
+        {
+            this->StartRotate();
+        }
+    }
 }
 
 void LVRPickingInteractor::OnKeyPress()
