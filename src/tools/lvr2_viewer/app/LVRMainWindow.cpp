@@ -417,9 +417,18 @@ void LVRMainWindow::setupQVTK()
 
 void LVRMainWindow::updateView()
 {
+
+
     m_renderer->ResetCamera();
     m_renderer->ResetCameraClippingRange();
     this->qvtkWidget->GetRenderWindow()->Render();
+
+    // Estimate cam speed -> imagine a plausible number
+    // of move operations to reach the focal point
+    vtkCamera* cam = m_renderer->GetActiveCamera();
+    double step = cam->GetDistance() / 100;
+
+    this->doubleSpinBoxDollySpeed->setValue(step);
 }
 
 void LVRMainWindow::refreshView()
