@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1112</width>
-    <height>974</height>
+    <width>1305</width>
+    <height>1006</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -37,7 +37,7 @@
    <property name="maximumSize">
     <size>
      <width>524287</width>
-     <height>524287</height>
+     <height>600</height>
     </size>
    </property>
    <property name="styleSheet">
@@ -71,7 +71,13 @@
        <property name="minimumSize">
         <size>
          <width>0</width>
-         <height>374</height>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
         </size>
        </property>
        <property name="autoExpandDelay">
@@ -96,184 +102,6 @@
       </widget>
      </item>
     </layout>
-   </widget>
-  </widget>
-  <widget class="QDockWidget" name="dockWidgetRendering">
-   <property name="minimumSize">
-    <size>
-     <width>299</width>
-     <height>125</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>524287</width>
-     <height>234</height>
-    </size>
-   </property>
-   <property name="styleSheet">
-    <string notr="true"/>
-   </property>
-   <property name="features">
-    <set>QDockWidget::DockWidgetVerticalTitleBar</set>
-   </property>
-   <property name="windowTitle">
-    <string>Render Settings</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>1</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetRenderingContents">
-    <widget class="QLabel" name="labelPointSize">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>91</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Point Size:</string>
-     </property>
-    </widget>
-    <widget class="QSlider" name="horizontalSliderPointSize">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>251</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="minimum">
-      <number>1</number>
-     </property>
-     <property name="maximum">
-      <number>10</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-    <widget class="QLabel" name="labelContrastTransparency">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>40</y>
-       <width>91</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Transparency:</string>
-     </property>
-    </widget>
-    <widget class="QSlider" name="horizontalSliderTransparency">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>60</y>
-       <width>251</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="maximum">
-      <number>100</number>
-     </property>
-     <property name="value">
-      <number>0</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-    <widget class="QLabel" name="labelColorGradient">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>90</y>
-       <width>131</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Color Gradient:</string>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="comboBoxGradient">
-     <property name="geometry">
-      <rect>
-       <x>110</x>
-       <y>90</y>
-       <width>151</width>
-       <height>25</height>
-      </rect>
-     </property>
-     <item>
-      <property name="text">
-       <string>Grey</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Hot</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Jet</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>HSV</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Simpsons</string>
-      </property>
-     </item>
-    </widget>
-    <widget class="QComboBox" name="comboBoxShading">
-     <property name="geometry">
-      <rect>
-       <x>110</x>
-       <y>130</y>
-       <width>151</width>
-       <height>25</height>
-      </rect>
-     </property>
-     <item>
-      <property name="text">
-       <string>Flat</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Gouraud</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Phong</string>
-      </property>
-     </item>
-    </widget>
-    <widget class="QLabel" name="labelShading">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>130</y>
-       <width>131</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Shading:</string>
-     </property>
-    </widget>
    </widget>
   </widget>
   <widget class="QDockWidget" name="dockWidgetSpectralSliderSettings">
@@ -740,132 +568,6 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidgetActions">
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>200</width>
-     <height>200</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>524287</width>
-     <height>200</height>
-    </size>
-   </property>
-   <property name="autoFillBackground">
-    <bool>false</bool>
-   </property>
-   <property name="features">
-    <set>QDockWidget::DockWidgetVerticalTitleBar</set>
-   </property>
-   <property name="windowTitle">
-    <string>Actions</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>1</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetActionsContents">
-    <widget class="QCommandLinkButton" name="buttonCameraPathTool">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>251</width>
-       <height>50</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Open Camera Path Tool</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../res/viewer.qrc">
-       <normaloff>:/qv_animation.png</normaloff>:/qv_animation.png</iconset>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>33</width>
-       <height>33</height>
-      </size>
-     </property>
-    </widget>
-    <widget class="QCommandLinkButton" name="buttonCreateMesh">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>50</y>
-       <width>251</width>
-       <height>50</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Create Mesh</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../res/viewer.qrc">
-       <normaloff>:/qv_createMesh.png</normaloff>:/qv_createMesh.png</iconset>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>33</width>
-       <height>33</height>
-      </size>
-     </property>
-    </widget>
-    <widget class="QCommandLinkButton" name="buttonExportData">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>100</y>
-       <width>251</width>
-       <height>50</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Export Data</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../res/viewer.qrc">
-       <normaloff>:/qv_export.png</normaloff>:/qv_export.png</iconset>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>33</width>
-       <height>33</height>
-      </size>
-     </property>
-    </widget>
-    <widget class="QCommandLinkButton" name="buttonTransformModel">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>150</y>
-       <width>251</width>
-       <height>50</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Transform Model</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../res/viewer.qrc">
-       <normaloff>:/qv_transform.png</normaloff>:/qv_transform.png</iconset>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>33</width>
-       <height>33</height>
-      </size>
-     </property>
-    </widget>
-   </widget>
-  </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
     <string>toolBar</string>
@@ -905,8 +607,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1112</width>
-     <height>27</height>
+     <width>1305</width>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -998,6 +700,385 @@
    <addaction name="menuRegistration"/>
    <addaction name="menuClassification"/>
    <addaction name="menuAbout"/>
+  </widget>
+  <widget class="QDockWidget" name="dockWidgetCamera">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>35</width>
+     <height>193</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>524287</width>
+     <height>193</height>
+    </size>
+   </property>
+   <property name="floating">
+    <bool>false</bool>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFeatureMask</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::LeftDockWidgetArea</set>
+   </property>
+   <property name="windowTitle">
+    <string>Camera Settings</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_3">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>110</y>
+       <width>241</width>
+       <height>81</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string/>
+     </property>
+     <widget class="QPushButton" name="pushButtonTrackball">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>61</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="../res/viewer.qrc">
+        <normaloff>:/qv_trackball.png</normaloff>:/qv_trackball.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>40</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+      <property name="autoExclusive">
+       <bool>true</bool>
+      </property>
+      <property name="flat">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonFly">
+      <property name="geometry">
+       <rect>
+        <x>90</x>
+        <y>30</y>
+        <width>61</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="../res/viewer.qrc">
+        <normaloff>:/qv_shooter.png</normaloff>:/qv_shooter.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>40</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="autoExclusive">
+       <bool>true</bool>
+      </property>
+      <property name="flat">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonTerrain">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>30</y>
+        <width>61</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="../res/viewer.qrc">
+        <normaloff>:/qv_flight.png</normaloff>:/qv_flight.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>40</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="autoExclusive">
+       <bool>true</bool>
+      </property>
+      <property name="flat">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="groupBoxCamSettings">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>-10</y>
+       <width>241</width>
+       <height>131</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string/>
+     </property>
+     <widget class="QCheckBox" name="checkBoxShowFocal">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>100</y>
+        <width>101</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Show Focal</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelRotationSpeed">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>64</y>
+        <width>121</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Rotation Speed:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelDollySpeed">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>30</y>
+        <width>121</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Dolly Speed:</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="checkBoxStereo">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>100</y>
+        <width>101</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Stereo Mode</string>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxDollySpeed_2">
+      <property name="geometry">
+       <rect>
+        <x>160</x>
+        <y>60</y>
+        <width>66</width>
+        <height>24</height>
+       </rect>
+      </property>
+      <property name="value">
+       <double>20.000000000000000</double>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxDollySpeed">
+      <property name="geometry">
+       <rect>
+        <x>160</x>
+        <y>30</y>
+        <width>66</width>
+        <height>24</height>
+       </rect>
+      </property>
+      <property name="value">
+       <double>45.000000000000000</double>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidgetActions">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>200</width>
+     <height>180</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>524287</width>
+     <height>200</height>
+    </size>
+   </property>
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetVerticalTitleBar</set>
+   </property>
+   <property name="windowTitle">
+    <string>Actions</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetActionsContents">
+    <widget class="QGroupBox" name="groupBoxTools">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>-10</y>
+       <width>241</width>
+       <height>191</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string/>
+     </property>
+     <widget class="QCommandLinkButton" name="buttonCameraPathTool">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>221</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Camera Path Tool</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../res/viewer.qrc">
+        <normaloff>:/qv_animation.png</normaloff>:/qv_animation.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>20</width>
+        <height>20</height>
+       </size>
+      </property>
+     </widget>
+     <widget class="QCommandLinkButton" name="buttonCreateMesh">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>70</y>
+        <width>221</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Create Mesh</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../res/viewer.qrc">
+        <normaloff>:/qv_createMesh.png</normaloff>:/qv_createMesh.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>20</width>
+        <height>33</height>
+       </size>
+      </property>
+     </widget>
+     <widget class="QCommandLinkButton" name="buttonExportData">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>110</y>
+        <width>221</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Export Data</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../res/viewer.qrc">
+        <normaloff>:/qv_export.png</normaloff>:/qv_export.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>20</width>
+        <height>20</height>
+       </size>
+      </property>
+     </widget>
+     <widget class="QCommandLinkButton" name="buttonTransformModel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>150</y>
+        <width>221</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Transform Model</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../res/viewer.qrc">
+        <normaloff>:/qv_transform.png</normaloff>:/qv_transform.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>20</width>
+        <height>20</height>
+       </size>
+      </property>
+     </widget>
+    </widget>
+   </widget>
   </widget>
   <action name="actionOpen">
    <property name="icon">

@@ -38,5 +38,8 @@
         <file>qv_histogram.png</file>
         <file>qv_point.png</file>
         <file>qv_spectralchannel.png</file>
+	<file>qv_trackball.png</file>
+	<file>qv_shooter.png</file>
+        <file>qv_flight.png</file>
     </qresource>
 </RCC>
