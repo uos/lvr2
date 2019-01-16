@@ -46,7 +46,7 @@ namespace lvr2
 
 enum PickMode {None, PickPoint, PickFirst, PickSecond};
 
-class LVRPickingInteractor : public QObject, public vtkInteractorStyleTrackballCamera
+class LVRPickingInteractor : public QObject, public vtkInteractorStyle
 {
     Q_OBJECT
 public:
@@ -57,6 +57,14 @@ public:
      * @brief   Overloaded mouse event handling.
      */
     virtual void OnLeftButtonDown();
+    virtual void OnLeftButtonUp();
+    virtual void OnMouseMove();
+    virtual void OnMiddleButtonUp();
+    virtual void OnMiddleButtonDown();
+    virtual void OnRightButtonUp();
+    virtual void OnRightButtonDown();
+    virtual void OnMouseWheelBackward();
+    virtual void OnMouseWheelForward();
 
     /**
      * @brief   Overloaded keyboard press event handling
@@ -71,10 +79,12 @@ public:
     virtual void OnKeyDown();
 
     virtual void Dolly();
+    virtual void Dolly(double factor);
     virtual void Pan();
     virtual void Spin();
     virtual void Zoom();
     virtual void Rotate();
+
 
     /**
      * @brief   returns the text-actor, needed to readd-it after clearing the render window
@@ -91,6 +101,10 @@ Q_SIGNALS:
     void pointSelected(vtkActor*, int);
 
 private:
+
+protected:
+    void handleLeftButtonDownTrackball();
+
     /// Indicates picking mode
     PickMode            m_pickMode;
 
@@ -103,6 +117,8 @@ private:
 
     unsigned int                    m_numberOfClicks;
     int                             m_previousPosition[2];
+
+    int                             m_motionFactor;
 
 };
 
