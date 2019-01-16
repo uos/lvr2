@@ -44,7 +44,6 @@
 namespace lvr2
 {
 
-enum PickMode {None, PickPoint, PickFirst, PickSecond};
 
 class LVRPickingInteractor : public QObject, public vtkInteractorStyle
 {
@@ -91,12 +90,16 @@ public:
      */
     vtkSmartPointer<vtkTextActor>   getTextActor(){ return m_textActor; }
 
+    void updateFocalPoint();
+
 public Q_SLOTS:
     void correspondenceSearchOn();
     void correspondenceSearchOff();
 
     void setMotionFactor(double factor);
     void setRotationFactor(double factor);
+
+    void setFocalPointRendering(int state);
 
 Q_SIGNALS:
     void firstPointPicked(double*);
@@ -106,8 +109,9 @@ Q_SIGNALS:
 private:
 
     enum InteractorMode {TRACKBALL, SHOOTER, FLIGHT};
+    enum PickMode {None, PickPoint, PickFirst, PickSecond, PickFocal};
 
-    void handleLeftButtonDownTrackball();
+    void handlePicking();
 
     void dollyTrackball();
     void dollyTrackball(double factor);
@@ -127,11 +131,14 @@ private:
     void onMouseWheelForwardTrackball();
 
 
+
+
     /// Indicates picking mode
     PickMode            m_pickMode;
 
     /// Text actor to display info if in picking mode
     vtkSmartPointer<vtkTextActor>   m_textActor;
+    vtkSmartPointer<vtkActor>       m_sphereActor;
 
     vtkSmartPointer<vtkRenderer>    m_renderer;
 

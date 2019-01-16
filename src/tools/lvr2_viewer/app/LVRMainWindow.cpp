@@ -332,7 +332,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     // Interaction with interactor
     QObject::connect(this->doubleSpinBoxDollySpeed, SIGNAL(valueChanged(double)), m_pickingInteractor, SLOT(setMotionFactor(double)));
     QObject::connect(this->doubleSpinBoxRotationSpeed, SIGNAL(valueChanged(double)), m_pickingInteractor, SLOT(setRotationFactor(double)));
-
+    QObject::connect(this->checkBoxShowFocal, SIGNAL(stateChanged(int)), m_pickingInteractor, SLOT(setFocalPointRendering(int)));
 
     QObject::connect(m_correspondanceDialog, SIGNAL(disableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
@@ -417,8 +417,6 @@ void LVRMainWindow::setupQVTK()
 
 void LVRMainWindow::updateView()
 {
-
-
     m_renderer->ResetCamera();
     m_renderer->ResetCameraClippingRange();
     this->qvtkWidget->GetRenderWindow()->Render();
@@ -429,6 +427,9 @@ void LVRMainWindow::updateView()
     double step = cam->GetDistance() / 100;
 
     this->doubleSpinBoxDollySpeed->setValue(step);
+
+    // Signal that focal point of camera may have changed
+    m_pickingInteractor->updateFocalPoint();
 }
 
 void LVRMainWindow::refreshView()

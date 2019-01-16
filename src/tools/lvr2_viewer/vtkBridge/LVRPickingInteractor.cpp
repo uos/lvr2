@@ -42,6 +42,11 @@
 #include <vtkPointPicker.h>
 #include <vtkCamera.h>
 #include <vtkCallbackCommand.h>
+#include <vtkSphereSource.h>
+#include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkActor.h>
 
 namespace lvr2
 {
@@ -63,6 +68,42 @@ LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer
     m_textActor->VisibilityOff();
     m_renderer->AddActor(m_textActor);
 
+    // Create a sphere actor to represent the current focal point
+    vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
+    sphereSource->SetCenter(0.0, 0.0, 0.0);
+    sphereSource->SetRadius(5.0);
+
+    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputConnection(sphereSource->GetOutputPort());
+
+    m_sphereActor = vtkSmartPointer<vtkActor>::New();
+    m_sphereActor->SetMapper(mapper);
+    m_renderer->AddActor(m_sphereActor);
+
+    double focalPoint[3];
+    m_renderer->GetActiveCamera()->GetFocalPoint(focalPoint);
+    m_sphereActor->SetPosition(focalPoint[0], focalPoint[1], focalPoint[2]);
+}
+
+void LVRPickingInteractor::setFocalPointRendering(int state)
+{
+    if(state == Qt::Checked)
+    {
+        m_sphereActor->SetVisibility(true);
+    }
+    else
+    {
+        m_sphereActor->SetVisibility(false);
+    }
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    rwi->Render();
+}
+
+void LVRPickingInteractor::updateFocalPoint()
+{
+    double focalPoint[3];
+    m_renderer->GetActiveCamera()->GetFocalPoint(focalPoint);
+    m_sphereActor->SetPosition(focalPoint[0], focalPoint[1], focalPoint[2]);
 }
 
 void LVRPickingInteractor::setMotionFactor(double factor)
@@ -165,6 +206,7 @@ void LVRPickingInteractor::Zoom()
          default:
              onLeftButtonDownTrackball();
      }
+     handlePicking();
  }
 
  void LVRPickingInteractor::OnLeftButtonUp()
@@ -487,7 +529,8 @@ void LVRPickingInteractor::correspondenceSearchOff()
     rwi->Render();
 }
 
-void LVRPickingInteractor::onLeftButtonDownTrackball()
+
+void LVRPickingInteractor::handlePicking()
 {
     vtkPointPicker* picker = (vtkPointPicker*)this->Interactor->GetPicker();
 
@@ -508,7 +551,7 @@ void LVRPickingInteractor::onLeftButtonDownTrackball()
 
         // Reset numClicks - If mouse moved further than resetPixelDistance
         if(moveDistance > 5)
-        { 
+        {
             this->m_numberOfClicks = 1;
         }
 
@@ -524,6 +567,27 @@ void LVRPickingInteractor::onLeftButtonDownTrackball()
             int point = picker->GetPointId();
             Q_EMIT(pointSelected(actor, point));
         }
+    }
+    else if(m_pickMode = PickFocal)
+    {
+        int* pickPos = this->Interactor->GetEventPosition();
+        double* picked = new double[3];
+        int res = picker->Pick(this->Interactor->GetEventPosition()[0],
+                                    this->Interactor->GetEventPosition()[1],
+                                    0,  // always zero.
+                                    this->Interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer());
+
+        if(res)
+        {
+            picker->GetPickPosition(picked);
+
+            vtkCamera* cam = m_renderer->GetActiveCamera();
+            cam->SetFocalPoint(picked[0], picked[1], picked[2]);
+            updateFocalPoint();
+
+            m_textActor->VisibilityOff();
+        }
+        m_pickMode = None;
     }
     else
     {
@@ -544,8 +608,40 @@ void LVRPickingInteractor::onLeftButtonDownTrackball()
             Q_EMIT(secondPointPicked(picked));
         }
     }
+}
+void LVRPickingInteractor::onLeftButtonDownTrackball()
+{
+    // Code taken from vtkInteractorStyleTrackballCamera
+    this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
+            this->Interactor->GetEventPosition()[1]);
+    if (this->CurrentRenderer == nullptr)
+    {
+        return;
+    }
 
-    handleLeftButtonDownTrackball();
+    GrabFocus(this->EventCallbackCommand, nullptr);
+    if (this->Interactor->GetShiftKey())
+    {
+        if (this->Interactor->GetControlKey())
+        {
+            this->StartDolly();
+        }
+        else
+        {
+            this->StartPan();
+        }
+    }
+    else
+    {
+        if (this->Interactor->GetControlKey())
+        {
+            this->StartSpin();
+        }
+        else
+        {
+            this->StartRotate();
+        }
+    }
 }
 
 void LVRPickingInteractor::onLeftButtonUpTrackball()
@@ -698,41 +794,6 @@ void LVRPickingInteractor::onRightButtonDownTrackball()
 }
 
 
-void LVRPickingInteractor::handleLeftButtonDownTrackball()
-{
-    // Code taken from vtkInteractorStyleTrackballCamera
-    this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
-            this->Interactor->GetEventPosition()[1]);
-    if (this->CurrentRenderer == nullptr)
-    {
-        return;
-    }
-
-    GrabFocus(this->EventCallbackCommand, nullptr);
-    if (this->Interactor->GetShiftKey())
-    {
-        if (this->Interactor->GetControlKey())
-        {
-            this->StartDolly();
-        }
-        else
-        {
-            this->StartPan();
-        }
-    }
-    else
-    {
-        if (this->Interactor->GetControlKey())
-        {
-            this->StartSpin();
-        }
-        else
-        {
-            this->StartRotate();
-        }
-    }
-}
-
 void LVRPickingInteractor::OnKeyPress()
 {
 
@@ -758,6 +819,14 @@ void LVRPickingInteractor::OnKeyDown()
         rwi->Render();
         m_pickMode = PickSecond;
     }
+    if(key == "h")
+    {
+        m_textActor->SetInput("Pick new camera focal point...");
+        m_textActor->VisibilityOn();
+        rwi->Render();
+        m_pickMode = PickFocal;
+    }
+
 
     if(key == "q")
     {
