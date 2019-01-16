@@ -151,11 +151,11 @@ LVRMainWindow::LVRMainWindow()
     m_actionShowSpectralHistogram = this->actionShow_SpectralHistogram;
 
     // Slider below tree widget
-    m_horizontalSliderPointSize = this->horizontalSliderPointSize;
-    m_horizontalSliderTransparency = this->horizontalSliderTransparency;
-    // Combo boxes
-    m_comboBoxGradient = this->comboBoxGradient; // TODO: implement gradients
-    m_comboBoxShading = this->comboBoxShading; // TODO: fix shading
+//    m_horizontalSliderPointSize = this->horizontalSliderPointSize;
+//    m_horizontalSliderTransparency = this->horizontalSliderTransparency;
+//    // Combo boxes
+//    m_comboBoxGradient = this->comboBoxGradient; // TODO: implement gradients
+//    m_comboBoxShading = this->comboBoxShading; // TODO: fix shading
     // Buttons below combo boxes
     m_buttonCameraPathTool = this->buttonCameraPathTool;
     m_buttonCreateMesh = this->buttonCreateMesh;
@@ -295,10 +295,10 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShowSpectralPointPreview, SIGNAL(triggered()), dockWidgetPointPreview, SLOT(show()));
     QObject::connect(m_actionShowSpectralHistogram, SIGNAL(triggered()), this, SLOT(showHistogramDialog()));
 
-    QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
-    QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
+//    QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
+//    QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
 
-    QObject::connect(m_comboBoxShading, SIGNAL(currentIndexChanged(int)), this, SLOT(changeShading(int)));
+//    QObject::connect(m_comboBoxShading, SIGNAL(currentIndexChanged(int)), this, SLOT(changeShading(int)));
 
     QObject::connect(m_buttonCameraPathTool, SIGNAL(pressed()), this, SLOT(openCameraPathTool()));
     QObject::connect(m_buttonCreateMesh, SIGNAL(pressed()), this, SLOT(reconstructUsingMarchingCubes()));
@@ -469,11 +469,11 @@ void LVRMainWindow::restoreSliders()
     {
         LVRPointCloudItem* pointCloudItem = *pointCloudItems.begin();
 
-        m_horizontalSliderPointSize->setEnabled(true);
-        m_horizontalSliderPointSize->setValue(pointCloudItem->getPointSize());
+//        m_horizontalSliderPointSize->setEnabled(true);
+//        m_horizontalSliderPointSize->setValue(pointCloudItem->getPointSize());
         int transparency = ((float)1 - pointCloudItem->getOpacity()) * 100;
-        m_horizontalSliderTransparency->setEnabled(true);
-        m_horizontalSliderTransparency->setValue(transparency);
+//        m_horizontalSliderTransparency->setEnabled(true);
+//        m_horizontalSliderTransparency->setValue(transparency);
 
         color<size_t> channels;
         color<bool> use_channel;
@@ -531,8 +531,8 @@ void LVRMainWindow::restoreSliders()
     }
     else
     {
-        m_horizontalSliderPointSize->setEnabled(false);
-        m_horizontalSliderPointSize->setValue(1);
+//        m_horizontalSliderPointSize->setEnabled(false);
+//        m_horizontalSliderPointSize->setValue(1);
 
         this->dockWidgetSpectralSliderSettingsContents->setEnabled(false);
         this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(false);
@@ -543,14 +543,14 @@ void LVRMainWindow::restoreSliders()
         LVRMeshItem* meshItem = *meshItems.begin();
 
         int transparency = ((float)1 - meshItem->getOpacity()) * 100;
-        m_horizontalSliderTransparency->setEnabled(true);
-        m_horizontalSliderTransparency->setValue(transparency);
+//        m_horizontalSliderTransparency->setEnabled(true);
+//        m_horizontalSliderTransparency->setValue(transparency);
     }
 
     if (pointCloudItems.empty() && meshItems.empty())
     {
-        m_horizontalSliderTransparency->setEnabled(false);
-        m_horizontalSliderTransparency->setValue(0);
+//        m_horizontalSliderTransparency->setEnabled(false);
+//        m_horizontalSliderTransparency->setValue(0);
     }
 }
 
