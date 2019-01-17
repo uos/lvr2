@@ -159,6 +159,24 @@ private:
     void onMouseWheelBackwardTerrain();
     void onMouseWheelForwardTerrain();
 
+    // ------------------------ SHOOTER
+
+    void dollyShooter();
+    void dollyShooter(double factor);
+    void panShooter();
+    void spinShooter();
+    void zoomShooter();
+    void rotateShooter();
+
+    void onLeftButtonDownShooter();
+    void onLeftButtonUpShooter();
+    void onMouseMoveShooter();
+    void onMiddleButtonUpShooter();
+    void onMiddleButtonDownShooter();
+    void onRightButtonUpShooter();
+    void onRightButtonDownShooter();
+    void onMouseWheelBackwardShooter();
+    void onMouseWheelForwardShooter();
 
 
 

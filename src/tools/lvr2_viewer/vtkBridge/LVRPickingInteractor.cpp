@@ -162,6 +162,9 @@ void LVRPickingInteractor::Dolly()
     case TERRAIN:
         dollyTerrain();
         break;
+    case SHOOTER:
+        dollyShooter();
+        break;
     default:
         dollyTrackball();
     }
@@ -176,6 +179,9 @@ void LVRPickingInteractor::Dolly(double speed)
         break;
     case TERRAIN:
         dollyTerrain(speed);
+        break;
+    case SHOOTER:
+        dollyShooter(speed);
         break;
     default:
         dollyTrackball();
@@ -193,6 +199,9 @@ void LVRPickingInteractor::Pan()
     case TERRAIN:
         panTerrain();
         break;
+    case SHOOTER:
+        panShooter();
+        break;
     default:
         panTrackball();
 
@@ -209,6 +218,9 @@ void LVRPickingInteractor::Spin()
     case TERRAIN:
         spinTerrain();
         break;
+    case SHOOTER:
+        spinShooter();
+        break;
     default:
         spinTrackball();
     }
@@ -223,6 +235,9 @@ void LVRPickingInteractor::Rotate()
         break;
     case TERRAIN:
         rotateTerrain();
+        break;
+    case SHOOTER:
+        rotateShooter();
         break;
     default:
         rotateTrackball();
@@ -239,6 +254,9 @@ void LVRPickingInteractor::Zoom()
     case TERRAIN:
         zoomTerrain();
         break;
+    case SHOOTER:
+        zoomShooter();
+        break;
     default:
         zoomTrackball();
     }
@@ -253,6 +271,9 @@ void LVRPickingInteractor::OnLeftButtonDown()
         break;
     case TERRAIN:
         onLeftButtonDownTerrain();
+        break;
+    case SHOOTER:
+        onLeftButtonDownShooter();
         break;
     default:
         onLeftButtonDownTrackball();
@@ -270,6 +291,9 @@ void LVRPickingInteractor::OnLeftButtonUp()
     case TERRAIN:
         onLeftButtonUpTerrain();
         break;
+    case SHOOTER:
+        onLeftButtonUpShooter();
+        break;
     default:
         onLeftButtonUpTrackball();
     }
@@ -284,6 +308,9 @@ void LVRPickingInteractor::OnMouseMove()
         break;
     case TERRAIN:
         onMouseMoveTerrain();
+        break;
+    case SHOOTER:
+        onMouseMoveShooter();
         break;
     default:
         onMouseMoveTrackball();
@@ -300,6 +327,9 @@ void LVRPickingInteractor::OnMiddleButtonUp()
     case TERRAIN:
         onMiddleButtonUpTerrain();
         break;
+    case SHOOTER:
+        onMiddleButtonUpShooter();
+        break;
     default:
         onMiddleButtonUpTrackball();
     }
@@ -314,6 +344,9 @@ void LVRPickingInteractor::OnMiddleButtonDown()
         break;
     case TERRAIN:
         onMiddleButtonDownTerrain();
+        break;
+    case SHOOTER:
+        onMiddleButtonDownShooter();
         break;
     default:
         onMiddleButtonDownTrackball();
@@ -330,6 +363,9 @@ void LVRPickingInteractor::OnRightButtonUp()
     case TERRAIN:
         onRightButtonUpTerrain();
         break;
+    case SHOOTER:
+        onRightButtonUpShooter();
+        break;
     default:
         onRightButtonUpTrackball();
     }
@@ -345,6 +381,9 @@ void LVRPickingInteractor::OnRightButtonDown()
     case TERRAIN:
         onRightButtonDownTerrain();
         break;
+    case SHOOTER:
+        onRightButtonDownShooter();
+        break;
     default:
         onRightButtonDownTrackball();
     }
@@ -359,6 +398,9 @@ void LVRPickingInteractor::OnMouseWheelBackward()
         break;
     case TERRAIN:
         onMouseWheelBackwardTerrain();
+        break;
+    case SHOOTER:
+        onMouseWheelBackwardShooter();
         break;
 
     default:
@@ -376,9 +418,87 @@ void LVRPickingInteractor::OnMouseWheelForward()
     case TERRAIN:
         onMouseWheelForwardTerrain();
         break;
+    case SHOOTER:
+        onMouseWheelForwardShooter();
+        break;
     default:
         onMouseWheelForwardTrackball();
     }
+}
+
+void LVRPickingInteractor::dollyShooter()
+{
+
+}
+
+void LVRPickingInteractor::dollyShooter(double factor)
+{
+
+}
+
+void LVRPickingInteractor::panShooter()
+{
+
+}
+
+void LVRPickingInteractor::spinShooter()
+{
+
+}
+
+void LVRPickingInteractor::zoomShooter()
+{
+
+}
+
+void LVRPickingInteractor::rotateShooter()
+{
+
+}
+
+void LVRPickingInteractor::onLeftButtonDownShooter()
+{
+
+}
+
+void LVRPickingInteractor::onLeftButtonUpShooter()
+{
+
+}
+
+void LVRPickingInteractor::onMouseMoveShooter()
+{
+
+}
+
+void LVRPickingInteractor::onMiddleButtonUpShooter()
+{
+
+}
+
+void LVRPickingInteractor::onMiddleButtonDownShooter()
+{
+
+}
+
+void LVRPickingInteractor::onRightButtonUpShooter()
+{
+
+}
+
+void LVRPickingInteractor::onRightButtonDownShooter()
+{
+
+}
+
+void LVRPickingInteractor::onMouseWheelBackwardShooter()
+{
+
+}
+
+void LVRPickingInteractor::onMouseWheelForwardShooter()
+{
+
 }
 
 void LVRPickingInteractor::dollyTerrain()
