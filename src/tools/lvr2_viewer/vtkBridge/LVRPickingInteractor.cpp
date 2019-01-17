@@ -71,7 +71,13 @@ LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer
     // Create a sphere actor to represent the current focal point
     vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
     sphereSource->SetCenter(0.0, 0.0, 0.0);
-    sphereSource->SetRadius(5.0);
+
+    double b[6];
+    m_renderer->ComputeVisiblePropBounds(b);
+    // Set radius to one percent of the largest scene dimension
+    double s = std::max(fabs(b[0] - b[1]), std::max(fabs(b[2] - b[3]), fabs(b[4] - b[5]))) * 0.1;
+    cout << s << endl;
+    sphereSource->SetRadius(s);
 
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(sphereSource->GetOutputPort());
