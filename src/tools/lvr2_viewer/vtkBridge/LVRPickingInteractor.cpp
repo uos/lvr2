@@ -91,6 +91,20 @@ LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer
     m_sphereActor->SetPosition(focalPoint[0], focalPoint[1], focalPoint[2]);
 }
 
+void LVRPickingInteractor::setStereoMode(int state)
+{
+     vtkRenderWindowInteractor *rwi = this->Interactor;
+     if(state == Qt::Checked)
+     {
+         rwi->GetRenderWindow()->StereoRenderOn();
+     }
+     else
+     {
+         rwi->GetRenderWindow()->StereoRenderOff();
+     }
+     rwi->Render();
+}
+
 void LVRPickingInteractor::setFocalPointRendering(int state)
 {
     if(state == Qt::Checked)
@@ -124,13 +138,11 @@ void LVRPickingInteractor::setRotationFactor(double factor)
 
 void LVRPickingInteractor::modeTerrain()
 {
-    cout << "TERRAIN" << endl;
     m_interactorMode = TERRAIN;
 }
 
 void LVRPickingInteractor::modeTrackball()
 {
-    cout << "TRACKBALL" << endl;
     m_interactorMode = TRACKBALL;
 }
 
