@@ -100,11 +100,14 @@ public Q_SLOTS:
     void setRotationFactor(double factor);
 
     void setFocalPointRendering(int state);
+    void setStereoMode(int state);
 
     void pickFocalPoint();
 
     void modeTerrain();
     void modeTrackball();
+
+
 
 Q_SIGNALS:
     void firstPointPicked(double*);
