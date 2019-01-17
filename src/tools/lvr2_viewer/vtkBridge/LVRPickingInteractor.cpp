@@ -475,6 +475,7 @@ void LVRPickingInteractor::dollyShooter(double factor)
     vtkRenderWindowInteractor *rwi = this->Interactor;
     vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
 
+    camera->SetThickness(1e7);
 
     double position[3];
     double direction[3];
@@ -484,9 +485,9 @@ void LVRPickingInteractor::dollyShooter(double factor)
 
 
     camera->SetFocalPoint(
-                position[0] + 3 * fabs(factor) * direction[0],
-                position[1] + 3 * fabs(factor) * direction[1],
-                position[2] + 3 * fabs(factor) * direction[2]);
+                position[0] + 0.1 * fabs(factor) * direction[0],
+                position[1] + 0.1 * fabs(factor) * direction[1],
+                position[2] + 0.1 * fabs(factor) * direction[2]);
 
     // Compute desired position
     camera->SetPosition(
@@ -528,7 +529,24 @@ void LVRPickingInteractor::onLeftButtonUpShooter()
 
 void LVRPickingInteractor::onMouseMoveShooter()
 {
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
 
+    int dx = rwi->GetEventPosition()[0] - rwi->GetLastEventPosition()[0];
+    int dy = rwi->GetEventPosition()[1] - rwi->GetLastEventPosition()[1];
+
+    if(dx > 2)
+    {
+        cout << "Y1" << endl;
+        camera->Yaw(-0.2);
+    }
+    else if(dx < 2)
+    {
+        camera->Yaw(+0.2);
+        cout << "Y2" << endl;
+    }
+    camera->OrthogonalizeViewUp();
+    rwi->Render();
 }
 
 void LVRPickingInteractor::onMiddleButtonUpShooter()
