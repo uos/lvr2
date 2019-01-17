@@ -337,6 +337,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(this->buttonPickFocal, SIGNAL(pressed()), m_pickingInteractor, SLOT(pickFocalPoint()));
     QObject::connect(this->pushButtonTerrain, SIGNAL(pressed()), m_pickingInteractor, SLOT(modeTerrain()));
     QObject::connect(this->pushButtonTrackball, SIGNAL(pressed()), m_pickingInteractor, SLOT(modeTrackball()));
+    QObject::connect(this->pushButtonFly , SIGNAL(pressed()), m_pickingInteractor, SLOT(modeShooter()));
 
 
     QObject::connect(m_correspondanceDialog, SIGNAL(disableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOff()));

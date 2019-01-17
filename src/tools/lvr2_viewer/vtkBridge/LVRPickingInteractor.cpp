@@ -146,6 +146,11 @@ void LVRPickingInteractor::modeTrackball()
     m_interactorMode = TRACKBALL;
 }
 
+void LVRPickingInteractor::modeShooter()
+{
+    m_interactorMode = SHOOTER;
+}
+
 LVRPickingInteractor::~LVRPickingInteractor()
 {
     // TODO Auto-generated destructor stub
@@ -431,9 +436,64 @@ void LVRPickingInteractor::dollyShooter()
 
 }
 
+void LVRPickingInteractor::strafeShooter(double factor)
+{
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
+
+
+    double position[3];
+    double direction[3];
+    double viewUp[3];
+    double cross[3];
+    double focalPoint[3];
+
+    camera->GetPosition(position);
+    camera->GetDirectionOfProjection(direction);
+    camera->GetFocalPoint(focalPoint);
+    camera->GetViewUp(viewUp[0], viewUp[1], viewUp[2]);
+
+    vtkMath::Cross(direction, viewUp, cross);
+
+    // Move position
+    camera->SetPosition(
+                position[0] + 3 * factor * cross[0],
+                position[1] + 3 * factor * cross[1],
+                position[2] + 3 * factor * cross[2]);
+
+    // Move position
+    camera->SetFocalPoint(
+                focalPoint[0] + 3 * factor * cross[0],
+                focalPoint[1] + 3 * factor * cross[1],
+                focalPoint[2] + 3 * factor * cross[2]);
+
+    rwi->Render();
+}
+
 void LVRPickingInteractor::dollyShooter(double factor)
 {
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
 
+
+    double position[3];
+    double direction[3];
+
+    camera->GetPosition(position);
+    camera->GetDirectionOfProjection(direction);
+
+
+    camera->SetFocalPoint(
+                position[0] + 3 * fabs(factor) * direction[0],
+                position[1] + 3 * fabs(factor) * direction[1],
+                position[2] + 3 * fabs(factor) * direction[2]);
+
+    // Compute desired position
+    camera->SetPosition(
+                position[0] - factor * direction[0],
+                position[1] - factor * direction[1],
+                position[2] - factor * direction[2]);
+    rwi->Render();
 }
 
 void LVRPickingInteractor::panShooter()
@@ -1276,7 +1336,7 @@ void LVRPickingInteractor::OnKeyDown()
     vtkRenderWindowInteractor *rwi = this->Interactor;
     std::string key = rwi->GetKeySym();
 
-    if(key == "a" && m_correspondenceMode)
+    if(key == "x" && m_correspondenceMode)
     {
         m_textActor->SetInput("Pick first correspondence point...");
         m_textActor->VisibilityOn();
@@ -1291,7 +1351,7 @@ void LVRPickingInteractor::OnKeyDown()
         rwi->Render();
         m_pickMode = PickSecond;
     }
-    if(key == "h")
+    if(key == "f")
     {
         pickFocalPoint();
     }
@@ -1303,6 +1363,39 @@ void LVRPickingInteractor::OnKeyDown()
         rwi->Render();
     }
 
+}
+
+void LVRPickingInteractor::OnChar()
+{
+    if(m_interactorMode == SHOOTER)
+    {
+        vtkRenderWindowInteractor *rwi = this->Interactor;
+        vtkCamera* cam = this->CurrentRenderer->GetActiveCamera();
+        switch (rwi->GetKeyCode())
+        {
+        case 'w':
+        case 'W':
+            dollyShooter(-this->m_motionFactor);
+            break;
+        case 'a':
+        case 'A':
+            strafeShooter(-this->m_motionFactor);
+            break;
+        case 's':
+        case 'S':
+            dollyShooter(this->m_motionFactor);
+            break;
+        case 'd':
+        case 'D':
+            strafeShooter(this->m_motionFactor);
+            cout << "D" << endl;
+            break;
+        }
+    }
+    else
+    {
+        vtkInteractorStyle::OnChar();
+    }
 }
 
 void LVRPickingInteractor::pickFocalPoint()

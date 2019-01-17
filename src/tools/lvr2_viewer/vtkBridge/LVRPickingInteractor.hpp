@@ -65,6 +65,8 @@ public:
     virtual void OnMouseWheelBackward();
     virtual void OnMouseWheelForward();
 
+    virtual void OnChar();
+
     /**
      * @brief   Overloaded keyboard press event handling
      */
@@ -106,6 +108,7 @@ public Q_SLOTS:
 
     void modeTerrain();
     void modeTrackball();
+    void modeShooter();
 
 
 
@@ -168,6 +171,8 @@ private:
     void zoomShooter();
     void rotateShooter();
 
+    void strafeShooter(double factor);
+
     void onLeftButtonDownShooter();
     void onLeftButtonUpShooter();
     void onMouseMoveShooter();
@@ -177,6 +182,8 @@ private:
     void onRightButtonDownShooter();
     void onMouseWheelBackwardShooter();
     void onMouseWheelForwardShooter();
+
+
 
 
 
