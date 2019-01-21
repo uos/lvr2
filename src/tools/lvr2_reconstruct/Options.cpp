@@ -53,7 +53,7 @@ Options::Options(int argc, char** argv)
         ("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
         ("pcm,p", value<string>(&m_pcm)->default_value("FLANN"), "Point cloud manager used for point handling and normal estimation. Choose from {STANN, PCL, NABO}.")
         ("ransac", "Set this flag for RANSAC based normal estimation.")
-        ("decomposition,d", value<string>(&m_pcm)->default_value("PMC"), "Defines the type of decomposition that is used for the voxels (Standard Marching Cubes (MC), Planar Marching Cubes (PMC), Standard Marching Cubes with sharp feature detection (SF) or Tetraeder (MT) decomposition. Choose from {MC, PMC, MT, SF}")
+        ("decomposition,d", value<string>(&m_pcm)->default_value("PMC"), "Defines the type of decomposition that is used for the voxels (Standard Marching Cubes (MC), Planar Marching Cubes (PMC), Standard Marching Cubes with sharp feature detection (SF), Dual Marching Cubes with an adaptive Octree (DMC) or Tetraeder (MT) decomposition. Choose from {MC, PMC, MT, SF}")
         ("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
         ("clusterPlanes,c", "Cluster planar regions based on normal threshold, do not shift vertices into regression plane.")
         ("cleanContours", value<int>(&m_cleanContourIterations)->default_value(0), "Remove noise artifacts from contours. Same values are between 2 and 4")
@@ -194,7 +194,6 @@ int   Options::getMinPlaneSize() const
 {
     return (m_variables["mp"].as<int> ());
 }
-
 
 bool Options::printUsage() const
 {
@@ -451,7 +450,6 @@ string Options::getProjectDir() const
 {
     return m_variables["projectDir"].as<string>();
 }
-
 
 Options::~Options() {
     // TODO Auto-generated destructor stub
