@@ -467,6 +467,14 @@ void LVRPickingInteractor::strafeShooter(double factor)
                 focalPoint[1] + 3 * factor * cross[1],
                 focalPoint[2] + 3 * factor * cross[2]);
 
+    camera->OrthogonalizeViewUp();
+
+    if (this->AutoAdjustCameraClippingRange)
+    {
+        this->CurrentRenderer->ResetCameraClippingRange();
+    }
+
+
     rwi->Render();
 }
 
@@ -475,25 +483,32 @@ void LVRPickingInteractor::dollyShooter(double factor)
     vtkRenderWindowInteractor *rwi = this->Interactor;
     vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
 
-    camera->SetThickness(1e7);
-
     double position[3];
     double direction[3];
 
     camera->GetPosition(position);
     camera->GetDirectionOfProjection(direction);
 
-
     camera->SetFocalPoint(
-                position[0] + 0.1 * fabs(factor) * direction[0],
-                position[1] + 0.1 * fabs(factor) * direction[1],
-                position[2] + 0.1 * fabs(factor) * direction[2]);
+                position[0] + 3 * fabs(factor) * direction[0],
+                position[1] + 3 * fabs(factor) * direction[1],
+                position[2] + 3 * fabs(factor) * direction[2]);
+
+
 
     // Compute desired position
     camera->SetPosition(
                 position[0] - factor * direction[0],
                 position[1] - factor * direction[1],
                 position[2] - factor * direction[2]);
+
+    camera->OrthogonalizeViewUp();
+
+    if (this->AutoAdjustCameraClippingRange)
+    {
+        this->CurrentRenderer->ResetCameraClippingRange();
+    }
+
     rwi->Render();
 }
 
@@ -546,6 +561,8 @@ void LVRPickingInteractor::onMouseMoveShooter()
         cout << "Y2" << endl;
     }
     camera->OrthogonalizeViewUp();
+    camera->ViewingRaysModified();
+
     rwi->Render();
 }
 
