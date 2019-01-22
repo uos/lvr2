@@ -115,6 +115,7 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
         C_Octree<BaseVecT, BoxT, my_dummy> &parent,
         int levels)
 {
+    m_leaves = 0;
     std::random_device rd;  //Will be used to obtain a seed for the random number engine
     std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
     std::uniform_int_distribution<> dis(0, 100);
@@ -134,10 +135,7 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
                 if(parent.location(ch).loc_x() < 16 || cur_Level > 1)
                 {
                     parent.split( ch );
-                    if(cur_Level == 1)
-                    {
-                        m_leaves += 8;
-                    }
+                    m_leaves += 7;
                 }
             }
         }
@@ -149,8 +147,6 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
 {
     m_globalIndex = 0;
     string comment = timestamp.getElapsedTime() + "Creating Mesh ";
-    // m_progressBar = new ProgressBar(m_leaves + m_leavesExtr, comment);
-    // m_leaves *= 7;
     m_progressBar = new ProgressBar(m_leaves, comment);
     m_threadPool->startPool();
     traverseTree(mesh, *octree, m_threadPool);
@@ -231,7 +227,6 @@ void DMCReconstruction<BaseVecT, BoxT>::traverseTree(
                             dualLeaf,
                             cells));
                 }
-                //++(*m_progressBar);
             }
             ++(*m_progressBar);
         }
