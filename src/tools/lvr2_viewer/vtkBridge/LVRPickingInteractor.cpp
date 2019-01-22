@@ -552,13 +552,11 @@ void LVRPickingInteractor::onMouseMoveShooter()
 
     if(dx > 2)
     {
-        cout << "Y1" << endl;
         camera->Yaw(-0.2);
     }
     else if(dx < 2)
     {
         camera->Yaw(+0.2);
-        cout << "Y2" << endl;
     }
     camera->OrthogonalizeViewUp();
     camera->ViewingRaysModified();
