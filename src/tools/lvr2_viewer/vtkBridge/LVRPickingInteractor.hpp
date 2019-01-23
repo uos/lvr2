@@ -66,6 +66,7 @@ public:
     virtual void OnMouseWheelForward();
 
     virtual void OnChar();
+    virtual void OnTimer();
 
     /**
      * @brief   Overloaded keyboard press event handling
@@ -200,11 +201,13 @@ private:
 
     unsigned int                    m_numberOfClicks;
     int                             m_previousPosition[2];
+    int                             m_startCameraMovePosition[2];
 
     float                           m_motionFactor;
     float                           m_rotationFactor;
 
     InteractorMode                  m_interactorMode;
+
 
 };
 
