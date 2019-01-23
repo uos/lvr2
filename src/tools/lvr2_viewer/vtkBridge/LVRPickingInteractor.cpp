@@ -600,6 +600,11 @@ void LVRPickingInteractor::onMouseMoveShooter()
         camera->OrthogonalizeViewUp();
         camera->ViewingRaysModified();
 
+        if (this->AutoAdjustCameraClippingRange)
+        {
+            this->CurrentRenderer->ResetCameraClippingRange();
+        }
+
         rwi->Render();
 }
 
