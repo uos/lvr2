@@ -40,6 +40,7 @@
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
+#include <vtkMath.h>
 
 namespace lvr2
 {
