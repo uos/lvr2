@@ -26,6 +26,7 @@
         <file>qv_rendering.png</file>
         <file>qv_zoom.png</file>
         <file>qv_model_tree_icon.png</file>
+        <file>qv_scandata_tree_icon.png</file>
         <file>qv_mesh_tree_icon.png</file>
         <file>qv_mesh_texture_icon.png</file>
         <file>qv_transform_tree_icon.png</file>
@@ -37,5 +38,8 @@
         <file>qv_histogram.png</file>
         <file>qv_point.png</file>
         <file>qv_spectralchannel.png</file>
+	<file>qv_trackball.png</file>
+	<file>qv_shooter.png</file>
+        <file>qv_flight.png</file>
     </qresource>
 </RCC>

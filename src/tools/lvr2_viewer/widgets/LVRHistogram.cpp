@@ -43,7 +43,7 @@ LVRHistogram::LVRHistogram(QWidget* parent, PointBufferPtr points)
 
     //Get Array with Spectraldata
     //floatArr spec = points->getPointSpectralChannelsArray(n_spec, m_numChannels);
-    FloatChannelOptional spec = points->getFloatChannel("spectral_channels");
+    UCharChannelOptional spec = points->getUCharChannel("spectral_channels");
     m_numChannels = spec->width();
     n_spec = spec->numAttributes();
 
