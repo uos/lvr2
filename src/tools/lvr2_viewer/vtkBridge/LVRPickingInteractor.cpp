@@ -54,6 +54,9 @@ namespace lvr2
 LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer) :
     m_renderer(renderer), m_motionFactor(50), m_rotationFactor(20), m_interactorMode(TRACKBALL)
 {
+    m_startCameraMovePosition[0] = 0;
+    m_startCameraMovePosition[1] = 0;
+
     m_pickMode = None;
     m_correspondenceMode = false;
     vtkSmartPointer<vtkTextProperty> p = vtkSmartPointer<vtkTextProperty>::New();
@@ -89,6 +92,8 @@ LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer
     double focalPoint[3];
     m_renderer->GetActiveCamera()->GetFocalPoint(focalPoint);
     m_sphereActor->SetPosition(focalPoint[0], focalPoint[1], focalPoint[2]);
+
+    this->UseTimersOn();
 }
 
 void LVRPickingInteractor::setStereoMode(int state)
@@ -315,7 +320,7 @@ void LVRPickingInteractor::OnMouseMove()
         onMouseMoveTerrain();
         break;
     case SHOOTER:
-        onMouseMoveShooter();
+        //onMouseMoveShooter();
         break;
     default:
         onMouseMoveTrackball();
@@ -480,6 +485,7 @@ void LVRPickingInteractor::strafeShooter(double factor)
 
 void LVRPickingInteractor::dollyShooter(double factor)
 {
+
     vtkRenderWindowInteractor *rwi = this->Interactor;
     vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
 
@@ -535,33 +541,66 @@ void LVRPickingInteractor::rotateShooter()
 void LVRPickingInteractor::onLeftButtonDownShooter()
 {
 
+    this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
+            this->Interactor->GetEventPosition()[1]);
+    if (this->CurrentRenderer == nullptr)
+    {
+        return;
+    }
+
+    GrabFocus(this->EventCallbackCommand, nullptr);
+    this->StartTimer();
+
+    // Save klicked position to determine rotation speed
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    m_startCameraMovePosition[0] = rwi->GetEventPosition()[0];
+    m_startCameraMovePosition[1] = rwi->GetEventPosition()[1];
 }
 
 void LVRPickingInteractor::onLeftButtonUpShooter()
 {
+    switch (this->State)
+    {
+    case VTKIS_TIMER:
+        this->EndTimer();
+        if ( this->Interactor )
+        {
+            this->ReleaseFocus();
+        }
+        break;
+    }
+}
 
+void LVRPickingInteractor::OnTimer()
+{
+    if(m_interactorMode == SHOOTER)
+    {
+        onMouseMoveShooter();
+    }
 }
 
 void LVRPickingInteractor::onMouseMoveShooter()
 {
-    vtkRenderWindowInteractor *rwi = this->Interactor;
-    vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
 
-    int dx = rwi->GetEventPosition()[0] - rwi->GetLastEventPosition()[0];
-    int dy = rwi->GetEventPosition()[1] - rwi->GetLastEventPosition()[1];
+        vtkRenderWindowInteractor *rwi = this->Interactor;
+        vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
 
-    if(dx > 2)
-    {
-        camera->Yaw(-0.2);
-    }
-    else if(dx < 2)
-    {
-        camera->Yaw(+0.2);
-    }
-    camera->OrthogonalizeViewUp();
-    camera->ViewingRaysModified();
+        // Compute offset from screen center
+        int mx = rwi->GetSize()[0] / 2;
+        int my = rwi->GetSize()[1] / 2;
+        int dx = rwi->GetEventPosition()[0] - m_startCameraMovePosition[0];
+        int dy = rwi->GetEventPosition()[1] - m_startCameraMovePosition[1];
 
-    rwi->Render();
+
+        float yawAngle = (1.0 * dx / mx) * m_rotationFactor;
+        float pitchAngle =  (1.0 * dy / my) * m_rotationFactor;
+
+        camera->Yaw(-yawAngle);
+        camera->Pitch(pitchAngle);
+        camera->OrthogonalizeViewUp();
+        camera->ViewingRaysModified();
+
+        rwi->Render();
 }
 
 void LVRPickingInteractor::onMiddleButtonUpShooter()
