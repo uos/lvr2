@@ -462,7 +462,7 @@ set(SYSCONFIG_INSTALL_DIR etc/lvr/)
 
 configure_package_config_file(LVRConfig.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/LVRConfig.cmake
-  INSTALL_DESTINATION ${LIB_INSTALL_DIR}/lvr/cmake
+  INSTALL_DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr
   PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
 write_basic_package_version_file(
   ${CMAKE_CURRENT_BINARY_DIR}/LVRConfigVersion.cmake
@@ -471,7 +471,7 @@ write_basic_package_version_file(
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LVRConfig.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/LVRConfigVersion.cmake
-        DESTINATION ${LIB_INSTALL_DIR}/lvr/cmake )
+        DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr )
 
 install(FILES
     CMakeModules/FindEigen3.cmake
