@@ -58,6 +58,7 @@ LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer
     m_startCameraMovePosition[1] = 0;
 
     m_pickMode = None;
+    m_shooterMode = LOOK;
     m_correspondenceMode = false;
     vtkSmartPointer<vtkTextProperty> p = vtkSmartPointer<vtkTextProperty>::New();
     p->SetColor(1.0, 1.0, 0.0);
@@ -518,6 +519,80 @@ void LVRPickingInteractor::dollyShooter(double factor)
     rwi->Render();
 }
 
+void LVRPickingInteractor::onMouseMoveShooter()
+{
+
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
+
+    // Compute offset from screen center
+    int mx = rwi->GetSize()[0] / 2;
+    int my = rwi->GetSize()[1] / 2;
+    int dx = rwi->GetEventPosition()[0] - m_startCameraMovePosition[0];
+    int dy = rwi->GetEventPosition()[1] - m_startCameraMovePosition[1];
+
+
+    float yawAngle = (1.0 * dx / mx) * m_rotationFactor;
+    float pitchAngle =  (1.0 * dy / my) * m_rotationFactor;
+
+    camera->Yaw(-yawAngle);
+    camera->Pitch(pitchAngle);
+    camera->OrthogonalizeViewUp();
+    camera->ViewingRaysModified();
+
+    if (this->AutoAdjustCameraClippingRange)
+    {
+        this->CurrentRenderer->ResetCameraClippingRange();
+    }
+
+    rwi->Render();
+}
+
+void LVRPickingInteractor::hoverShooter()
+{
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
+
+    int my = rwi->GetSize()[1] / 2;
+    int dy = rwi->GetEventPosition()[1] - m_startCameraMovePosition[1];
+
+    double step = -(1.0 * dy / my) * m_motionFactor;
+    double position[3];
+    double focal[3];
+    double direction[3];
+
+    camera->GetPosition(position);
+    camera->GetFocalPoint(focal);
+    camera->GetViewUp(direction);
+
+//    cout << "STEP: " << step << endl;
+//    cout << "POSITION: " << position[0] << " " << position[1] << " " << position[2] << endl;
+//    cout << "DIRECTION: " << direction[0] << " " << direction[1] << " " << direction[2] << endl;
+
+    camera->SetPosition(
+                position[0] + step * direction[0],
+                position[1] + step * direction[1],
+                position[2] + step * direction[2]);
+
+    // Move position
+    camera->SetFocalPoint(
+                focal[0] + step * direction[0],
+                focal[1] + step * direction[1],
+                focal[2] + step * direction[2]);
+
+
+    camera->ViewingRaysModified();
+
+    if (this->AutoAdjustCameraClippingRange)
+    {
+        this->CurrentRenderer->ResetCameraClippingRange();
+    }
+
+    rwi->Render();
+
+}
+
+
 void LVRPickingInteractor::panShooter()
 {
 
@@ -540,7 +615,7 @@ void LVRPickingInteractor::rotateShooter()
 
 void LVRPickingInteractor::onLeftButtonDownShooter()
 {
-
+    this->m_shooterMode = LOOK;
     this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
             this->Interactor->GetEventPosition()[1]);
     if (this->CurrentRenderer == nullptr)
@@ -575,47 +650,50 @@ void LVRPickingInteractor::OnTimer()
 {
     if(m_interactorMode == SHOOTER)
     {
-        onMouseMoveShooter();
+        if(m_shooterMode == LOOK)
+        {
+            onMouseMoveShooter();
+        }
+        if(m_shooterMode == HOVER)
+        {
+            hoverShooter();
+        }
     }
 }
 
-void LVRPickingInteractor::onMouseMoveShooter()
-{
 
-        vtkRenderWindowInteractor *rwi = this->Interactor;
-        vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
-
-        // Compute offset from screen center
-        int mx = rwi->GetSize()[0] / 2;
-        int my = rwi->GetSize()[1] / 2;
-        int dx = rwi->GetEventPosition()[0] - m_startCameraMovePosition[0];
-        int dy = rwi->GetEventPosition()[1] - m_startCameraMovePosition[1];
-
-
-        float yawAngle = (1.0 * dx / mx) * m_rotationFactor;
-        float pitchAngle =  (1.0 * dy / my) * m_rotationFactor;
-
-        camera->Yaw(-yawAngle);
-        camera->Pitch(pitchAngle);
-        camera->OrthogonalizeViewUp();
-        camera->ViewingRaysModified();
-
-        if (this->AutoAdjustCameraClippingRange)
-        {
-            this->CurrentRenderer->ResetCameraClippingRange();
-        }
-
-        rwi->Render();
-}
 
 void LVRPickingInteractor::onMiddleButtonUpShooter()
 {
-
+    switch (this->State)
+    {
+    case VTKIS_TIMER:
+        this->EndTimer();
+        if ( this->Interactor )
+        {
+            this->ReleaseFocus();
+        }
+        break;
+    }
 }
 
 void LVRPickingInteractor::onMiddleButtonDownShooter()
 {
+    this->m_shooterMode = HOVER;
+    this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
+            this->Interactor->GetEventPosition()[1]);
+    if (this->CurrentRenderer == nullptr)
+    {
+        return;
+    }
 
+    GrabFocus(this->EventCallbackCommand, nullptr);
+    this->StartTimer();
+
+    // Save klicked position to determine rotation speed
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    m_startCameraMovePosition[0] = rwi->GetEventPosition()[0];
+    m_startCameraMovePosition[1] = rwi->GetEventPosition()[1];
 }
 
 void LVRPickingInteractor::onRightButtonUpShooter()

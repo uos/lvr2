@@ -121,6 +121,7 @@ Q_SIGNALS:
 private:
 
     enum InteractorMode {TRACKBALL, SHOOTER, TERRAIN};
+    enum ShooterMode {LOOK, HOVER};
     enum PickMode {None, PickPoint, PickFirst, PickSecond, PickFocal};
 
     void handlePicking();
@@ -171,6 +172,7 @@ private:
     void spinShooter();
     void zoomShooter();
     void rotateShooter();
+    void hoverShooter();
 
     void strafeShooter(double factor);
 
@@ -207,6 +209,7 @@ private:
     float                           m_rotationFactor;
 
     InteractorMode                  m_interactorMode;
+    ShooterMode                     m_shooterMode;
 
 
 };
