@@ -29,6 +29,10 @@
  * @file Hdf5IO.hpp
  */
 
+#ifndef __HDF5_IO_HPP_
+#define __HDF5_IO_HPP_
+
+
 #include <lvr2/io/PlutoMapIO.hpp>
 #include <lvr2/io/Timestamp.hpp>
 
@@ -38,9 +42,6 @@
 
 #include <lvr2/io/Model.hpp>
 #include <lvr2/io/BaseIO.hpp>
-
-#ifndef __HDF5_IO_HPP_
-#define __HDF5_IO_HPP_
 
 
 using std::string;

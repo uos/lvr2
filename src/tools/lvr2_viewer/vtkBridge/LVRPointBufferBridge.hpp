@@ -65,6 +65,7 @@ public:
     void setOpacity(float opacityValue);
     void setVisibility(bool visible);
     void setNormalsVisibility(bool visible);
+    void setColorsVisibility(bool visible);
     /// set the spectral channel for (r, g, b) and set if it is used
     void setSpectralChannels(color<size_t> channels, color<bool> use_channel);
     /// get spectral channel mappings
@@ -92,7 +93,7 @@ protected:
     size_t                          m_numPoints;
     bool                            m_hasNormals;
     bool                            m_hasColors;
-    PointBufferPtr                 m_pointBuffer;
+    PointBufferPtr                  m_pointBuffer;
     bool                            m_useGradient;
     bool                            m_useNormalizedGradient;
     color<size_t>                   m_spectralChannels;
