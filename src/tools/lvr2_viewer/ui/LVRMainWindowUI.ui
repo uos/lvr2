@@ -596,6 +596,7 @@
    <addaction name="actionShow_Normals"/>
    <addaction name="actionShow_Mesh"/>
    <addaction name="actionShow_Wireframe"/>
+   <addaction name="actionRenderEDM"/>
    <addaction name="separator"/>
    <addaction name="actionShow_SpectralSlider"/>
    <addaction name="actionShow_SpectralColorGradient"/>
@@ -1390,6 +1391,24 @@
   <action name="actionShowBackgroundSettings">
    <property name="text">
     <string>Background...</string>
+   </property>
+  </action>
+  <action name="actionRenderEDM">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_edm.png</normaloff>:/qv_edm.png</iconset>
+   </property>
+   <property name="text">
+    <string>EDM Rendering</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle EDM Rendering</string>
    </property>
   </action>
  </widget>

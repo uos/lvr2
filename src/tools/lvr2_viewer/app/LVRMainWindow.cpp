@@ -49,6 +49,7 @@
 #include <vtkProperty.h>
 #include <vtkPointPicker.h>
 #include <vtkCamera.h>
+#include <vtkDefaultPass.h>
 
 
 #include <QString>
@@ -284,7 +285,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), m_aboutDialog, SLOT(show()));
 
 
-
+    QObject::connect(actionRenderEDM, SIGNAL(toggled(bool)), this, SLOT(toogleEDL(bool)));
     QObject::connect(m_actionShow_Points, SIGNAL(toggled(bool)), this, SLOT(togglePoints(bool)));
     QObject::connect(m_actionShow_Normals, SIGNAL(toggled(bool)), this, SLOT(toggleNormals(bool)));
     QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
@@ -417,8 +418,33 @@ void LVRMainWindow::setupQVTK()
     m_pathCamera->SetInterpolator(cameraInterpolator);
     m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
 
+    // Enable EDL per default
+    qvtkWidget->GetRenderWindow()->SetMultiSamples(0);
+    m_basicPasses = vtkRenderStepsPass::New();
+    m_edl = vtkEDLShading::New();
+    m_edl->SetDelegatePass(m_basicPasses);
+
+    vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
+    glrenderer->SetPass(m_edl);
+
     // Finalize QVTK setup by adding the renderer to the window
     renderWindow->AddRenderer(m_renderer);
+
+
+}
+
+void LVRMainWindow::toogleEDL(bool state)
+{
+    vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
+    if(state == false)
+    {
+        glrenderer->SetPass(m_basicPasses);
+    }
+    else
+    {
+        glrenderer->SetPass(m_edl);
+    }
+    this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 void LVRMainWindow::updateView()
