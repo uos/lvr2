@@ -187,10 +187,6 @@ private:
     void onMouseWheelBackwardShooter();
     void onMouseWheelForwardShooter();
 
-
-
-
-
     /// Indicates picking mode
     PickMode            m_pickMode;
 
