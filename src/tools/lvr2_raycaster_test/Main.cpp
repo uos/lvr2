@@ -65,12 +65,78 @@ int main(int argc, char** argv){
 
     CLRaycaster<Vec> rc(buffer);
 
-    Point<Vec> origin = {0.0,0.0,0.0};
+    Point<Vec> origin = {20.0,40.0,50.0};
     Vector<Vec> ray = {1.0,0.0,0.0};
 
-    Point<Vec> intersection = rc.castRay(origin, ray);
 
-    std::cout << intersection << std::endl;
+    std::vector<Point<Vec> > origins;
+    std::vector<Vector<Vec> > rays;
+
+    for(int i=0; i<100; i++)
+    {
+        origins.push_back(origin);
+        rays.push_back(ray);
+    }
+
+    
+    std::cout << "TEST 1: one origin, one ray." << std::endl;
+
+    Point<Vec> intersection;
+    bool success = rc.castRay(origin, ray, intersection);
+
+    if(success)
+    {
+        std::cout << "success!" << std::endl;
+        std::cout << intersection << std::endl;
+    } else {
+        std::cout << "NOT succesful!" << std::endl;
+    }
+
+    std::cout << "TEST 2: one origin, mulitple rays." << std::endl;
+
+    std::vector<Point<Vec> > intersections1, intersections2;
+    std::vector<uint8_t> hits1, hits2;
+
+    rc.castRays(origin, rays, intersections1, hits1);
+
+    success = true;
+    for(int i=0;i<hits1.size(); i++)
+    {
+        if(!hits1[i])
+        {
+            success = false;
+        }
+    }
+
+    if(success)
+    {
+        std::cout << "success!" << std::endl;
+        std::cout << intersections1[0] << std::endl;
+    } else {
+        std::cout << "NOT succesful!" << std::endl;
+    }
+
+
+    std::cout << "TEST 3: multiple origins, mulitple rays." << std::endl;
+
+    rc.castRays(origins, rays, intersections2, hits2);
+
+    success = true;
+    for(int i=0;i<hits2.size(); i++)
+    {
+        if(!hits2[i])
+        {
+            success = false;
+        }
+    }
+    if(success)
+    {
+        std::cout << "success!" << std::endl;
+        std::cout << intersections2[0] << std::endl;
+    } else {
+        std::cout << "NOT succesful!" << std::endl;
+    }
+
 
 
     return 0;

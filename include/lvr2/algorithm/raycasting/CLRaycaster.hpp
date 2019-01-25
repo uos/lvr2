@@ -41,16 +41,18 @@ public:
         Point<BaseVecT>& intersection
     );
 
-    std::vector<bool> castRays(
+    void castRays(
         const Point<BaseVecT>& origin,
         const std::vector<Vector<BaseVecT> >& directions,
-        std::vector<Point<BaseVecT> >& intersections
+        std::vector<Point<BaseVecT> >& intersections,
+        std::vector<uint8_t>& hits
     );
 
-    std::vector<bool> castRays(
+    void castRays(
         const std::vector<Point<BaseVecT> >& origins,
         const std::vector<Vector<BaseVecT> >& directions,
-        std::vector<Point<BaseVecT> >& intersections
+        std::vector<Point<BaseVecT> >& intersections,
+        std::vector<uint8_t>& hits
     );
 
 private:
