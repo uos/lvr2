@@ -14,6 +14,8 @@ Point<BaseVecT> BVHRaycaster<BaseVecT>::castRay(
     const Vector<BaseVecT>& direction
 ) const
 {
+    // Cast one ray from one origin
+
     Point<BaseVecT> dst = {0.0, 0.0, 0.0};
 
     // TODO
@@ -27,6 +29,7 @@ std::vector<Point<BaseVecT> > BVHRaycaster<BaseVecT>::castRays(
     const std::vector<Vector<BaseVecT> >& directions
 ) const
 {
+    // Cast multiple rays from one origin
     std::vector<Point<BaseVecT> > dst;
     // TODO
     return dst;
@@ -38,6 +41,7 @@ std::vector<Point<BaseVecT> > BVHRaycaster<BaseVecT>::castRays(
     const std::vector<Vector<BaseVecT> >& directions
 ) const
 {
+    // Cast multiple rays from multiple origins
     std::vector<Point<BaseVecT> > dst;
     // TODO
     return dst;

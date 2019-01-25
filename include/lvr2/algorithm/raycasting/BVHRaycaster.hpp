@@ -38,8 +38,9 @@ public:
         const std::vector<Vector<BaseVecT> >& directions
     ) const;
 
-private:
+protected:
     BVHTree<BaseVecT> m_bvh;
+
 };
 
 } // namespace lvr2
