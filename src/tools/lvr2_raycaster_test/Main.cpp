@@ -115,13 +115,15 @@ int main(int argc, char** argv){
     if(success)
     {
         std::cout << "success!" << std::endl;
-        std::cout << intersections1[0] << std::endl;
+        std::cout << intersections1[99] << std::endl;
     } else {
         std::cout << "NOT succesful!" << std::endl;
     }
 
 
     std::cout << "TEST 3: multiple origins, mulitple rays." << std::endl;
+
+    origins[99].y = -444;
 
     rc.castRays(origins, rays, intersections2, hits2);
 
@@ -136,7 +138,7 @@ int main(int argc, char** argv){
     if(success)
     {
         std::cout << "success!" << std::endl;
-        std::cout << intersections2[0] << std::endl;
+        std::cout << intersections2[99] << std::endl;
     } else {
         std::cout << "NOT succesful!" << std::endl;
     }
