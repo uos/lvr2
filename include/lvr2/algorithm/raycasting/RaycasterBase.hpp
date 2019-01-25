@@ -24,21 +24,21 @@ public:
         const Point<BaseVecT>& origin,
         const Vector<BaseVecT>& direction,
         Point<BaseVecT>& intersection
-    ) const = 0;
+    ) = 0;
 
     virtual void castRays(
         const Point<BaseVecT>& origin,
         const std::vector<Vector<BaseVecT> >& directions,
         std::vector<Point<BaseVecT> >& intersections,
         std::vector<uint8_t>& hits
-    ) const = 0;
+    ) = 0;
 
     virtual void castRays(
         const std::vector<Point<BaseVecT> >& origins,
         const std::vector<Vector<BaseVecT> >& directions,
         std::vector<Point<BaseVecT> >& intersections,
         std::vector<uint8_t>& hits
-    ) const = 0;
+    ) = 0;
 
 private:
     const MeshBufferPtr m_mesh;
