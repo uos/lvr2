@@ -234,140 +234,6 @@ TriangleIntersectionResult intersectTrianglesBVH(
     return result;
 }
 
-float4 quat_from_axis_angle(float3 axis, float angle)
-{
-    float4 qr;
-
-    float half_angle = (angle * 0.5) * PI / 180.0;
-    qr.x = axis.x * sin(half_angle);
-    qr.y = axis.y * sin(half_angle);
-    qr.z = axis.z * sin(half_angle);
-    qr.w = cos(half_angle);
-
-    return qr;
-}
-
-float4 quat_conj(float4 q)
-{
-    return (float4)(-q.x, -q.y, -q.z, q.w);
-}
-
-float4 quat_mult(float4 q1, float4 q2)
-{
-    float4 qr;
-
-    qr.x = (q1.w * q2.x) + (q1.x * q2.w) + (q1.y * q2.z) - (q1.z * q2.y);
-    qr.y = (q1.w * q2.y) - (q1.x * q2.z) + (q1.y * q2.w) + (q1.z * q2.x);
-    qr.z = (q1.w * q2.z) + (q1.x * q2.y) - (q1.y * q2.x) + (q1.z * q2.w);
-    qr.w = (q1.w * q2.w) - (q1.x * q2.x) - (q1.y * q2.y) - (q1.z * q2.z);
-
-    return qr;
-}
-
-/**
- * @brief Rotates a vector around a given axis
- * @param position  The vector to be rotated
- * @param axis      The axis to rotate around
- * @param angle     The angle of the rotation
- * @return          The resulting vector
- */
-float3 rotate_vertex_position(float3 position, float3 axis, float angle)
-{
-    //float4 qr = quat_from_axis_angle(axis, angle);
-    //float4 qr_conj = quat_conj(qr);
-    //float4 q_pos = (float4)(position.x, position.y, position.z, 0);
-    //float4 q_tmp = quat_mult(qr, q_pos);
-    //qr = quat_mult(q_tmp, qr_conj);
-    //return (float3)(qr.x, qr.y, qr.z);
-
-    // the above optimized
-    float4 q = quat_from_axis_angle(axis, angle);
-    return position + (2.0f * cross(q.xyz, cross(q.xyz, position) + q.w * position));
-}
-
-/**
- * @brief Casts rays into a scene of triangles, given a bounding volume hierarchy
- *
- * @param rays_origin                   Origin of the ray
- * @param rays                          Forward directions of the pose
- * @param clBVHindicesOrTriLists        Compressed BVH Node data, that stores for each node, whether it is a leaf node
- *                                      and triangle indices lists for leaf nodes and the indices of their child nodes
- *                                      for inner nodes
- * @param clBVHlimits                   3d upper and lower limits for each bounding box in the BVH
- * @param clTriangleIntersectionData    Precomputed intersection data for each triangle
- * @param clTriIdxList                  List of triangle indices
- * @param scannerFOV                    Field of view of the scanner model
- * @param result                        Result point positions
- * @param result_hits                   Result hits, where for each ray is stored whether it has hit a triangle
- */
-__kernel void cast_rays(
-    __global float* ray_origin,
-    __global float* rays,
-    __global uint* clBVHindicesOrTriLists,
-    __global float2* clBVHlimits,
-    __global float4* clTriangleIntersectionData,
-    __global uint* clTriIdxList,
-    __global float* scannerFOV,
-    __global float* result,
-    __global uchar* result_hits
-)
-{
-    int idX = get_global_id(0);
-    int idY = get_global_id(1);
-    int numCols = get_global_size(0);
-    int numRows = get_global_size(1);
-
-    int id = (idY * numCols) + idX;
-
-    float3 ray_d = (float3)(rays[0], rays[1], rays[2]);
-    float3 ray_o = (float3)(ray_origin[0], ray_origin[1], ray_origin[2]);
-    float horizontalFOV = scannerFOV[0];
-    float verticalFOV = scannerFOV[1];
-
-    // define y and x axis as approximation for up and side direction to rotate the ray
-    float3 y_axis = (float3)(0, 0, 1);
-    float3 x_axis = (float3)(0, 1, 0);
-
-    // rotate the rays direction according to the current index
-    ray_d = rotate_vertex_position(ray_d, x_axis, idY * (verticalFOV / (float)numRows) - (verticalFOV / 2.0));
-    ray_d = rotate_vertex_position(ray_d, y_axis, idX * (horizontalFOV / (float)numCols) - (horizontalFOV / 2.0));
-
-    // initialize result memory with zeros
-    result[id*3] = 0;
-    result[id*3+1] = 0;
-    result[id*3+2] = 0;
-    result_hits[id] = 0;
-
-
-    // precompute ray values to speed up intersection calculation
-    Ray ray;
-    ray.dir = ray_d;
-    ray.invDir = (float3)(1.0 / ray_d.x, 1.0 / ray_d.y, 1.0 / ray_d.z);
-    ray.rayDirSign.x = ray.invDir.x < 0;
-    ray.rayDirSign.y = ray.invDir.y < 0;
-    ray.rayDirSign.z = ray.invDir.z < 0;
-
-
-    // intersect all triangles stored in the BVH
-    TriangleIntersectionResult resultBVH = intersectTrianglesBVH(
-        clBVHindicesOrTriLists,
-        ray_o,
-        ray,
-        clBVHlimits,
-        clTriangleIntersectionData,
-        clTriIdxList
-    );
-
-    // if a triangle was hit, store the calculated hit point in the result at the current id
-    if (resultBVH.hit)
-    {
-        result[id*3] = resultBVH.pointHit.x;
-        result[id*3 + 1] = resultBVH.pointHit.y;
-        result[id*3 + 2] = resultBVH.pointHit.z;
-        result_hits[id] = 1;
-    }
-}
-
 /**
  * @brief Casts multiple rays with corresponding origins into a scene of triangles, given a bounding volume hierarchy
  *
@@ -517,11 +383,8 @@ __kernel void cast_rays_one_multi(
  * @param clBVHlimits                   3d upper and lower limits for each bounding box in the BVH
  * @param clTriangleIntersectionData    Precomputed intersection data for each triangle
  * @param clTriIdxList                  List of triangle indices
- * @param scannerFOV                    Field of view of the scanner model
  * @param result                        Result point positions
  * @param result_hits                   Result hits, where for each ray is stored whether it has hit a triangle
- * @param ray_sides                     Side vectors for each pose
- * @param ray_ups                       Up vectors for each pose
  */
 __kernel void cast_rays_one_one(
     __global float* ray_origin,

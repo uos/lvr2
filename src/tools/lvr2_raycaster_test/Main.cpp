@@ -10,6 +10,7 @@
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/algorithm/raycasting/CLRaycaster.hpp>
+#include <lvr2/algorithm/raycasting/BVHRaycaster.hpp>
 
 using boost::optional;
 using std::unique_ptr;
@@ -63,7 +64,8 @@ int main(int argc, char** argv){
 
     MeshBufferPtr buffer = genMesh();
 
-    CLRaycaster<Vec> rc(buffer);
+    BVHRaycaster<Vec> rc(buffer);
+    // BVHRaycaster<Vec> rcCPU(buffer);
 
     Point<Vec> origin = {20.0,40.0,50.0};
     Vector<Vec> ray = {1.0,0.0,0.0};
@@ -83,6 +85,7 @@ int main(int argc, char** argv){
 
     Point<Vec> intersection;
     bool success = rc.castRay(origin, ray, intersection);
+    
 
     if(success)
     {
@@ -102,9 +105,10 @@ int main(int argc, char** argv){
     success = true;
     for(int i=0;i<hits1.size(); i++)
     {
-        if(!hits1[i])
+        success = hits1[i];
+        if(!success)
         {
-            success = false;
+            break;
         }
     }
 

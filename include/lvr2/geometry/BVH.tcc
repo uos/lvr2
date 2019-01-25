@@ -70,7 +70,6 @@ BVHTree<BaseVecT>::BVHTree(
     const floatArr vertices, size_t n_vertices,
     const indexArray faces, size_t n_faces)
 {
-    std::cout << "gen bvh tree with mesh" << std::endl;
     m_root = buildTree(vertices, n_vertices, faces, n_faces);
     createCFTree();
 }
