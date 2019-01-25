@@ -395,6 +395,11 @@ void LVRMainWindow::setupQVTK()
         m_renderer->RemoveAllLights();
     #endif
 
+    // Setup decent background colors
+    m_renderer->GradientBackgroundOn();
+    m_renderer->SetBackground(0.8, 0.8, 0.9);
+    m_renderer->SetBackground2(1.0, 1.0, 1.0);
+
     vtkSmartPointer<vtkRenderWindow> renderWindow = this->qvtkWidget->GetRenderWindow();
 
     m_renderWindowInteractor = this->qvtkWidget->GetInteractor();
