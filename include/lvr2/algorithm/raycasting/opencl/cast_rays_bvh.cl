@@ -534,7 +534,6 @@ __kernel void cast_rays_one_one(
     __global uchar* result_hits
 )
 {
-
     // get direction and origin of the ray for the current pose
     float3 ray_d = (float3)(rays[0], rays[1], rays[2]);
     float3 ray_o = (float3)(ray_origin[0], ray_origin[1], ray_origin[2]);
@@ -573,5 +572,16 @@ __kernel void cast_rays_one_one(
         result_hits[0] = 1;
     }
 }
+
+__kernel void test(
+    __global float* ray_origin,
+    __global float* rays
+)
+{
+    unsigned int id = get_global_id(0);
+    printf("test kernel: %u\n", id);
+    printf("number: %f\n", rays[0]);
+}
+
 
 )"

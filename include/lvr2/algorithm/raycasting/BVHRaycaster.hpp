@@ -23,19 +23,22 @@ public:
      */
     BVHRaycaster(const MeshBufferPtr mesh);
 
-    Point<BaseVecT> castRay(
+    bool castRay(
         const Point<BaseVecT>& origin,
-        const Vector<BaseVecT>& direction
+        const Vector<BaseVecT>& direction,
+        Point<BaseVecT>& intersection
     ) const;
 
-    std::vector<Point<BaseVecT> > castRays(
+    std::vector<bool> castRays(
         const Point<BaseVecT>& origin,
-        const std::vector<Vector<BaseVecT> >& directions
+        const std::vector<Vector<BaseVecT> >& directions,
+        std::vector<Point<BaseVecT> >& intersections
     ) const;
 
-    std::vector<Point<BaseVecT> > castRays(
+    std::vector<bool> castRays(
         const std::vector<Point<BaseVecT> >& origins,
-        const std::vector<Vector<BaseVecT> >& directions
+        const std::vector<Vector<BaseVecT> >& directions,
+        std::vector<Point<BaseVecT> >& intersections
     ) const;
 
 protected:
