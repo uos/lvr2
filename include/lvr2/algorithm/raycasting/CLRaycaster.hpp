@@ -35,19 +35,22 @@ public:
 
     /// Overload functions ///
 
-    Point<BaseVecT> castRay(
+    bool castRay(
         const Point<BaseVecT>& origin,
-        const Vector<BaseVecT>& direction
+        const Vector<BaseVecT>& direction,
+        Point<BaseVecT>& intersection
     );
 
-    std::vector<Point<BaseVecT> > castRays(
+    std::vector<bool> castRays(
         const Point<BaseVecT>& origin,
-        const std::vector<Vector<BaseVecT> >& directions
+        const std::vector<Vector<BaseVecT> >& directions,
+        std::vector<Point<BaseVecT> >& intersections
     );
 
-    std::vector<Point<BaseVecT> > castRays(
+    std::vector<bool> castRays(
         const std::vector<Point<BaseVecT> >& origins,
-        const std::vector<Vector<BaseVecT> >& directions
+        const std::vector<Vector<BaseVecT> >& directions,
+        std::vector<Point<BaseVecT> >& intersections
     );
 
 private:
@@ -88,8 +91,8 @@ private:
      * @brief TODO
      */
     void copyRayDataToGPU(
-        const float* origins, size_t num_origins,
-        const float* rays, size_t num_rays
+        const float* origin_buffer, size_t origin_buffer_size,
+        const float* ray_buffer, size_t ray_buffer_size
     );
 
     // Member vars
@@ -102,7 +105,7 @@ private:
     cl::Kernel m_kernel_one_one;
     cl::Kernel m_kernel_one_multi;
     cl::Kernel m_kernel_multi_multi;
-    cl::Kernel m_faster_kernel;
+    cl::Kernel m_kernel_test;
 
 
     /// BUFFER ///

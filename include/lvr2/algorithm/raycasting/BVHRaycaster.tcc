@@ -9,42 +9,44 @@ BVHRaycaster<BaseVecT>::BVHRaycaster(const MeshBufferPtr mesh)
 }
 
 template <typename BaseVecT>
-Point<BaseVecT> BVHRaycaster<BaseVecT>::castRay(
+bool BVHRaycaster<BaseVecT>::castRay(
     const Point<BaseVecT>& origin,
-    const Vector<BaseVecT>& direction
+    const Vector<BaseVecT>& direction,
+    Point<BaseVecT>& intersection
 ) const
 {
     // Cast one ray from one origin
-
-    Point<BaseVecT> dst = {0.0, 0.0, 0.0};
+    bool success = false;
 
     // TODO
 
-    return dst;
+    return success;
 }
 
 template <typename BaseVecT>
-std::vector<Point<BaseVecT> > BVHRaycaster<BaseVecT>::castRays(
+std::vector<bool> BVHRaycaster<BaseVecT>::castRays(
     const Point<BaseVecT>& origin,
-    const std::vector<Vector<BaseVecT> >& directions
+    const std::vector<Vector<BaseVecT> >& directions,
+    std::vector<Point<BaseVecT> >& intersections
 ) const
 {
     // Cast multiple rays from one origin
-    std::vector<Point<BaseVecT> > dst;
+    std::vector<bool> hits;
     // TODO
-    return dst;
+    return hits;
 }
 
 template <typename BaseVecT>
-std::vector<Point<BaseVecT> > BVHRaycaster<BaseVecT>::castRays(
+std::vector<bool> BVHRaycaster<BaseVecT>::castRays(
     const std::vector<Point<BaseVecT> >& origins,
-    const std::vector<Vector<BaseVecT> >& directions
+    const std::vector<Vector<BaseVecT> >& directions,
+    std::vector<Point<BaseVecT> >& intersections
 ) const
 {
     // Cast multiple rays from multiple origins
-    std::vector<Point<BaseVecT> > dst;
+    std::vector<bool> hits;
     // TODO
-    return dst;
+    return hits;
 }
 
 } // namespace lvr2

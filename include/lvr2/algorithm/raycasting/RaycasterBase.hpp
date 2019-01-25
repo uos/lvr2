@@ -20,19 +20,22 @@ public:
      */
     RaycasterBase(const MeshBufferPtr mesh);
 
-    virtual Point<BaseVecT> castRay(
+    virtual bool castRay(
         const Point<BaseVecT>& origin,
-        const Vector<BaseVecT>& direction
+        const Vector<BaseVecT>& direction,
+        Point<BaseVecT>& intersection
     ) const = 0;
 
-    virtual std::vector<Point<BaseVecT> > castRays(
+    virtual std::vector<bool> castRays(
         const Point<BaseVecT>& origin,
-        const std::vector<Vector<BaseVecT> >& directions
+        const std::vector<Vector<BaseVecT> >& directions,
+        std::vector<Point<BaseVecT> >& intersections
     ) const = 0;
 
-    virtual std::vector<Point<BaseVecT> > castRays(
+    virtual std::vector<bool> castRays(
         const std::vector<Point<BaseVecT> >& origins,
-        const std::vector<Vector<BaseVecT> >& directions
+        const std::vector<Vector<BaseVecT> >& directions,
+        std::vector<Point<BaseVecT> >& intersections
     ) const = 0;
 
 private:
