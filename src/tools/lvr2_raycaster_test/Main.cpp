@@ -9,6 +9,7 @@
 #include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/algorithm/raycasting/BVHRaycaster.hpp>
 
 using boost::optional;
 using std::unique_ptr;
@@ -61,7 +62,8 @@ int main(int argc, char** argv){
     std::cout << "Raycast Test started" << std::endl;
 
     MeshBufferPtr buffer = genMesh();
-    
+
+    BVHRaycaster<Vec> rc(buffer);
 
     return 0;
 }
