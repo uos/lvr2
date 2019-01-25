@@ -63,7 +63,7 @@ bool CLRaycaster<BaseVecT>::castRay(
         m_queue.enqueueNDRangeKernel(
             m_kernel_one_one,
             cl::NullRange,
-            cl::NDRange(10),
+            cl::NDRange(1),
             cl::NullRange,
             nullptr,
             &evt
@@ -109,41 +109,155 @@ bool CLRaycaster<BaseVecT>::castRay(
 }
 
 template <typename BaseVecT>
-std::vector<bool> CLRaycaster<BaseVecT>::castRays(
+void CLRaycaster<BaseVecT>::castRays(
     const Point<BaseVecT>& origin,
     const std::vector<Vector<BaseVecT> >& directions,
-    std::vector<Point<BaseVecT> >& intersections
+    std::vector<Point<BaseVecT> >& intersections,
+    std::vector<uint8_t>& hits
 )
 {
     // Cast multiple rays from one origin
-    std::vector<bool> hits;
+    hits.resize(directions.size());
+    intersections.resize(directions.size());
 
     // copy data
     const float* origin_f = reinterpret_cast<const float*>(&origin.x);
-    const float* direction_f = reinterpret_cast<float*>(directions.data());
-    copyRayDataToGPU(origin_f, 3, direction_f, directions.size()*3);
+    const float* direction_f = reinterpret_cast<const float*>(directions.data());
 
-    // TODO
-    return hits;
+    
+
+    try { 
+        initOpenCLRayBuffer(3, directions.size()*3);
+        copyRayDataToGPU(origin_f, 3, direction_f, directions.size()*3);
+
+        m_kernel_one_multi.setArg(0, m_rayOriginBuffer);
+        m_kernel_one_multi.setArg(1, m_rayBuffer);
+        m_kernel_one_multi.setArg(2, m_bvhIndicesOrTriListsBuffer);
+        m_kernel_one_multi.setArg(3, m_bvhLimitsnBuffer);
+        m_kernel_one_multi.setArg(4, m_bvhTriangleIntersectionDataBuffer);
+        m_kernel_one_multi.setArg(5, m_bvhTriIdxListBuffer);
+        m_kernel_one_multi.setArg(6, m_resultBuffer);
+        m_kernel_one_multi.setArg(7, m_resultHitsBuffer);
+
+        auto start = std::chrono::steady_clock::now();
+
+        std::cout << "enqueue ND Range kernel..." << std::endl;
+        cl::Event evt;
+        m_queue.enqueueNDRangeKernel(
+            m_kernel_one_multi,
+            cl::NullRange,
+            cl::NDRange(directions.size()),
+            cl::NullRange,
+            nullptr,
+            &evt
+        );
+        m_queue.finish();
+        std::cout << "enqueue ND Range kernel finished" << std::endl;
+
+        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>
+            (std::chrono::steady_clock::now() - start);
+
+        std::cout << "Kernel execution time (ms): " << duration.count() * 1e-6 << std::endl;
+        
+        m_queue.enqueueReadBuffer(
+            m_resultBuffer,
+            CL_TRUE,
+            0,
+            sizeof(float) * 3 * directions.size(),
+            intersections.data()
+        );
+        
+        m_queue.enqueueReadBuffer(
+            m_resultHitsBuffer,
+            CL_TRUE,
+            0,
+            sizeof(uint8_t) * directions.size(),
+            hits.data()
+        );
+        m_queue.finish();
+
+    }
+    catch (cl::Error err)
+    {
+        std::cerr << err.what() << ": " << CLUtil::getErrorString(err.err()) << std::endl;
+        std::cout << "(" << CLUtil::getErrorDescription(err.err()) << ")" << std::endl;
+    }
+
 }
 
 template <typename BaseVecT>
-std::vector<bool> CLRaycaster<BaseVecT>::castRays(
+void CLRaycaster<BaseVecT>::castRays(
     const std::vector<Point<BaseVecT> >& origins,
     const std::vector<Vector<BaseVecT> >& directions,
-    std::vector<Point<BaseVecT> >& intersections
+    std::vector<Point<BaseVecT> >& intersections,
+    std::vector<uint8_t>& hits
 )
 {
     // Cast multiple rays from multiple origins
-    std::vector<bool> hits;
+
+    hits.resize(directions.size());
+    intersections.resize(directions.size());
 
     // copy data
-    const float* origin_f = reinterpret_cast<float*>(origins.data());
-    const float* direction_f = reinterpret_cast<float*>(directions.data());
-    copyRayDataToGPU(origin_f, origins.size()*3, direction_f, directions.size()*3);
+    const float* origin_f = reinterpret_cast<const float*>(origins.data());
+    const float* direction_f = reinterpret_cast<const float*>(directions.data());
 
-    // TODO
-    return hits;
+    try {
+        initOpenCLRayBuffer(origins.size() * 3, directions.size()*3);
+        copyRayDataToGPU(origin_f, origins.size()*3, direction_f, directions.size()*3);
+    
+        m_kernel_multi_multi.setArg(0, m_rayOriginBuffer);
+        m_kernel_multi_multi.setArg(1, m_rayBuffer);
+        m_kernel_multi_multi.setArg(2, m_bvhIndicesOrTriListsBuffer);
+        m_kernel_multi_multi.setArg(3, m_bvhLimitsnBuffer);
+        m_kernel_multi_multi.setArg(4, m_bvhTriangleIntersectionDataBuffer);
+        m_kernel_multi_multi.setArg(5, m_bvhTriIdxListBuffer);
+        m_kernel_multi_multi.setArg(6, m_resultBuffer);
+        m_kernel_multi_multi.setArg(7, m_resultHitsBuffer);
+
+        auto start = std::chrono::steady_clock::now();
+
+        std::cout << "enqueue ND Range kernel..." << std::endl;
+        cl::Event evt;
+        m_queue.enqueueNDRangeKernel(
+            m_kernel_multi_multi,
+            cl::NullRange,
+            cl::NDRange(directions.size()),
+            cl::NullRange,
+            nullptr,
+            &evt
+        );
+        m_queue.finish();
+        std::cout << "enqueue ND Range kernel finished" << std::endl;
+
+        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>
+            (std::chrono::steady_clock::now() - start);
+
+        std::cout << "Kernel execution time (ms): " << duration.count() * 1e-6 << std::endl;
+        
+        m_queue.enqueueReadBuffer(
+            m_resultBuffer,
+            CL_TRUE,
+            0,
+            sizeof(float) * 3 * directions.size(),
+            intersections.data()
+        );
+        
+        m_queue.enqueueReadBuffer(
+            m_resultHitsBuffer,
+            CL_TRUE,
+            0,
+            sizeof(uint8_t) * directions.size(),
+            hits.data()
+        );
+        m_queue.finish();
+    }
+    catch (cl::Error err)
+    {
+        std::cerr << err.what() << ": " << CLUtil::getErrorString(err.err()) << std::endl;
+        std::cout << "(" << CLUtil::getErrorDescription(err.err()) << ")" << std::endl;
+    }
+    
 }
 
 // PRIVATE FUNCTIONS
@@ -232,14 +346,7 @@ void CLRaycaster<BaseVecT>::initOpenCL()
             << std::endl << std::endl;
 
     // read kernel file
-    // ifstream in(ros::package::getPath("geometric_localization") + CL_RAY_CAST_KERNEL_FILE);
-    // std::string cast_rays_kernel(static_cast<stringstream const&>(stringstream() << in.rdbuf()).str());
-
     std::string cast_rays_kernel(CAST_RAYS_BVH_PROGRAM);
-    
-
-    // ROS_INFO("Got kernel: %s", cast_rays_kernel.c_str());
-    // ROS_INFO("Got kernel: %s", CL_RAY_CAST_KERNEL_FILE);
 
     cl::Program::Sources sources(1, {cast_rays_kernel.c_str(), cast_rays_kernel.length()});
 
@@ -252,13 +359,6 @@ void CLRaycaster<BaseVecT>::initOpenCL()
     {
         std::cerr << "Error building: " << m_program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(m_device).c_str() << std::endl;
     }
-
-
-    // maybe put this at the very end?
-
-    // create queue to which we will push commands for the device.
-    
-    // cl::CommandQueue queue(context, device, CL_QUEUE_PROFILING_ENABLE);
 
     m_queue = cl::CommandQueue(m_context, m_device, 0);
 }
@@ -295,16 +395,17 @@ template<typename BaseVecT>
 void CLRaycaster<BaseVecT>::initOpenCLRayBuffer(int num_origins, int num_rays)
 {
     // input buffer
-    m_rayBuffer = cl::Buffer(
-        m_context,
-        CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
-        sizeof(float) * num_rays
-    );
 
     m_rayOriginBuffer = cl::Buffer(
         m_context,
         CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
         sizeof(float) * num_origins
+    );
+
+    m_rayBuffer = cl::Buffer(
+        m_context,
+        CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
+        sizeof(float) * num_rays
     );
 
     // output buffer
@@ -395,6 +496,8 @@ void CLRaycaster<BaseVecT>::copyRayDataToGPU(
     m_queue.enqueueWriteBuffer(m_rayOriginBuffer, CL_TRUE, 0, sizeof(float) * origin_buffer_size, origin_buffer);
 
     std::cout << "Size of rays: " << ray_buffer_size/3 << endl;
+
+    std::cout << ray_buffer[297] << std::endl;
     m_queue.enqueueWriteBuffer(m_rayBuffer, CL_TRUE, 0, sizeof(float) * ray_buffer_size, ray_buffer);
 }
 

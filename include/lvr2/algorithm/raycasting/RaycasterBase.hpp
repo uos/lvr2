@@ -26,16 +26,18 @@ public:
         Point<BaseVecT>& intersection
     ) const = 0;
 
-    virtual std::vector<bool> castRays(
+    virtual void castRays(
         const Point<BaseVecT>& origin,
         const std::vector<Vector<BaseVecT> >& directions,
-        std::vector<Point<BaseVecT> >& intersections
+        std::vector<Point<BaseVecT> >& intersections,
+        std::vector<uint8_t>& hits
     ) const = 0;
 
-    virtual std::vector<bool> castRays(
+    virtual void castRays(
         const std::vector<Point<BaseVecT> >& origins,
         const std::vector<Vector<BaseVecT> >& directions,
-        std::vector<Point<BaseVecT> >& intersections
+        std::vector<Point<BaseVecT> >& intersections,
+        std::vector<uint8_t>& hits
     ) const = 0;
 
 private:

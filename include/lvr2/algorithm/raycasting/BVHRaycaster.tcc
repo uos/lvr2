@@ -16,37 +16,33 @@ bool BVHRaycaster<BaseVecT>::castRay(
 ) const
 {
     // Cast one ray from one origin
-    bool success = false;
-
     // TODO
 
-    return success;
+    return false;
 }
 
 template <typename BaseVecT>
-std::vector<bool> BVHRaycaster<BaseVecT>::castRays(
+void BVHRaycaster<BaseVecT>::castRays(
     const Point<BaseVecT>& origin,
     const std::vector<Vector<BaseVecT> >& directions,
-    std::vector<Point<BaseVecT> >& intersections
+    std::vector<Point<BaseVecT> >& intersections,
+    std::vector<uint8_t>& hits
 ) const
 {
     // Cast multiple rays from one origin
-    std::vector<bool> hits;
     // TODO
-    return hits;
 }
 
 template <typename BaseVecT>
-std::vector<bool> BVHRaycaster<BaseVecT>::castRays(
+void BVHRaycaster<BaseVecT>::castRays(
     const std::vector<Point<BaseVecT> >& origins,
     const std::vector<Vector<BaseVecT> >& directions,
-    std::vector<Point<BaseVecT> >& intersections
+    std::vector<Point<BaseVecT> >& intersections,
+    std::vector<uint8_t>& hits
 ) const
 {
     // Cast multiple rays from multiple origins
-    std::vector<bool> hits;
     // TODO
-    return hits;
 }
 
 } // namespace lvr2
