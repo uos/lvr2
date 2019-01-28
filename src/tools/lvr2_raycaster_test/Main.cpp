@@ -9,6 +9,8 @@
 #include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
+
+#include <lvr2/algorithm/raycasting/RaycasterBase.hpp>
 #include <lvr2/algorithm/raycasting/CLRaycaster.hpp>
 #include <lvr2/algorithm/raycasting/BVHRaycaster.hpp>
 
@@ -32,8 +34,8 @@ MeshBufferPtr genMesh(){
     // gen vertices
     vertices[0] = 200.0; vertices[1] = -500.0; vertices[2] = -500.0;
     vertices[3] = 200.0; vertices[4] = -500.0; vertices[5] = 500.0;
-    vertices[6] = 200.0; vertices[7] = 500.0; vertices[8] = 500.0;
-    vertices[9] = 200.0; vertices[10] = 500.0; vertices[11] = -500.0;
+    vertices[6] = 2000.0; vertices[7] = 500.0; vertices[8] = 500.0;
+    vertices[9] = 2000.0; vertices[10] = 500.0; vertices[11] = -500.0;
 
     // gen normals
     normals[0] = 1.0; normals[1] = 0.0; normals[2] = 0.0;
@@ -58,14 +60,135 @@ MeshBufferPtr genMesh(){
     return dst_mesh;
 }
 
-int main(int argc, char** argv){
+void genRays(std::vector<Point<Vec> >& origins,
+std::vector<Vector<Vec> >& directions,
+float scale = 1.0,
+bool flip_axis = false)
+{
+    origins.resize(0);
+    directions.resize(0);
 
-    std::cout << "Raycast Test started" << std::endl;
+    // gen origins
 
-    MeshBufferPtr buffer = genMesh();
+    origins.push_back({0.0,0.0,0.0});
+    origins.push_back({0.0,1.0,0.0});
+    origins.push_back({0.0,2.0,0.0});
+    origins.push_back({0.0,3.0,0.0});
+    origins.push_back({0.0,4.0,0.0});
+    origins.push_back({0.0,5.0,0.0});
 
-    BVHRaycaster<Vec> rc(buffer);
-    // BVHRaycaster<Vec> rcCPU(buffer);
+    origins.push_back({0.0,6.0,1.0});
+    origins.push_back({0.0,6.0,2.0});
+
+    origins.push_back({0.0,7.0,3.0});
+    origins.push_back({0.0,7.0,4.0});
+    origins.push_back({0.0,7.0,5.0});
+
+    origins.push_back({0.0,8.0,6.0});
+    origins.push_back({0.0,8.0,7.0});
+    origins.push_back({0.0,8.0,8.0});
+    origins.push_back({0.0,8.0,9.0});
+    origins.push_back({0.0,8.0,10.0});
+    origins.push_back({0.0,8.0,11.0});
+    origins.push_back({0.0,8.0,12.0});
+    origins.push_back({0.0,8.0,13.0});
+
+    origins.push_back({0.0,7.0,14.0});
+
+    origins.push_back({0.0,6.0,15.0});
+
+    origins.push_back({0.0,5.0,15.0});
+    origins.push_back({0.0,5.0,14.0});
+    origins.push_back({0.0,5.0,13.0});
+    origins.push_back({0.0,5.0,12.0});
+
+    origins.push_back({0.0,4.0,16.0});
+    origins.push_back({0.0,3.0,16.0});
+
+    origins.push_back({0.0,2.0,16.0});
+    origins.push_back({0.0,2.0,15.0});
+    origins.push_back({0.0,2.0,14.0});
+    origins.push_back({0.0,2.0,13.0});
+    origins.push_back({0.0,2.0,17.0});
+    origins.push_back({0.0,2.0,18.0});
+    origins.push_back({0.0,2.0,19.0});
+    origins.push_back({0.0,2.0,20.0});
+    origins.push_back({0.0,2.0,21.0});
+    origins.push_back({0.0,2.0,22.0});
+
+    origins.push_back({0.0,1.0,23.0});
+    origins.push_back({0.0,0.0,23.0});
+
+    origins.push_back({0.0,-1.0,22.0});
+    origins.push_back({0.0,-1.0,21.0});
+    origins.push_back({0.0,-1.0,20.0});
+    origins.push_back({0.0,-1.0,19.0});
+    origins.push_back({0.0,-1.0,18.0});
+    origins.push_back({0.0,-1.0,17.0});
+    origins.push_back({0.0,-1.0,16.0});
+    origins.push_back({0.0,-1.0,15.0});
+    origins.push_back({0.0,-1.0,14.0});
+
+    origins.push_back({0.0,-2.0,16.0});
+    origins.push_back({0.0,-3.0,16.0});
+
+    origins.push_back({0.0,-4.0,15.0});
+    origins.push_back({0.0,-4.0,14.0});
+    origins.push_back({0.0,-4.0,13.0});
+    origins.push_back({0.0,-4.0,12.0});
+    origins.push_back({0.0,-4.0,11.0});
+
+    origins.push_back({0.0,-5.0,12.0});
+
+    origins.push_back({0.0,-6.0,13.0});
+    origins.push_back({0.0,-7.0,13.0});
+
+    origins.push_back({0.0,-8.0,12.0});
+
+    origins.push_back({0.0,-9.0,11.0});
+    origins.push_back({0.0,-9.0,10.0});
+
+    origins.push_back({0.0,-8.0,9.0});
+
+    origins.push_back({0.0,-7.0,8.0});
+    origins.push_back({0.0,-7.0,7.0});
+
+    origins.push_back({0.0,-6.0,6.0});
+    origins.push_back({0.0,-6.0,5.0});
+
+    origins.push_back({0.0,-5.0,4.0});
+    origins.push_back({0.0,-5.0,3.0});
+
+    origins.push_back({0.0,-4.0,2.0});
+    origins.push_back({0.0,-4.0,1.0});
+
+    origins.push_back({0.0,-3.0,0.0});
+    origins.push_back({0.0,-2.0,0.0});
+    origins.push_back({0.0,-1.0,0.0});
+
+
+
+
+    // same rays and scaling and flipping
+    for(int i=0; i<origins.size(); i++)
+    {
+        origins[i] *= scale;
+
+        if(flip_axis)
+        {
+            float tmp = origins[i].y;
+            origins[i].y = origins[i].z;
+            origins[i].z = tmp;
+        }
+
+        directions.push_back({1.0,0.0,0.0});
+    }
+
+}
+
+void test1(RaycasterBase<Vec>& rc)
+{
+    std::cout << "Raycast Test 1 started" << std::endl;
 
     Point<Vec> origin = {20.0,40.0,50.0};
     Vector<Vec> ray = {1.0,0.0,0.0};
@@ -142,7 +265,81 @@ int main(int argc, char** argv){
     } else {
         std::cout << "NOT succesful!" << std::endl;
     }
+}
 
+void test2(RaycasterBase<Vec>& rc)
+{
+    std::vector<Point<Vec> > origins;
+    std::vector<Vector<Vec> > rays;
+
+    genRays(origins, rays, 10.0, true);
+
+    std::vector<Point<Vec> > intersections;
+    std::vector<uint8_t> hits;
+
+    rc.castRays(origins, rays, intersections, hits);
+
+    std::vector<Point<Vec> > results;
+
+    for(int i=0; i<hits.size(); i++)
+    {
+        bool hit = hits[i];
+        if(hit)
+        {
+            results.push_back(intersections[i]);
+            
+        }
+    }
+
+    floatArr points(new float[results.size() * 3]);
+
+    for(int i=0; i<results.size(); i++)
+    {
+        points[i*3+0] = results[i].x;
+        points[i*3+1] = results[i].y;
+        points[i*3+2] = results[i].z;
+    }
+
+
+    PointBufferPtr p_buffer(new PointBuffer(points, results.size()));
+    ModelPtr model(new Model(p_buffer));
+
+    ModelFactory::saveModel(model, "projected_points.ply");
+
+    // save origins
+    floatArr origin_arr(new float[origins.size() * 3]);
+
+    for(int i=0; i<origins.size(); i++)
+    {
+        origin_arr[i*3+0] = origins[i].x;
+        origin_arr[i*3+1] = origins[i].y;
+        origin_arr[i*3+2] = origins[i].z;
+    }
+
+
+    PointBufferPtr orig_buffer(new PointBuffer(origin_arr, origins.size()));
+    ModelPtr orig_model(new Model(orig_buffer));
+
+    ModelFactory::saveModel(orig_model, "origins.ply");
+    
+}
+
+int main(int argc, char** argv){
+
+    MeshBufferPtr buffer = genMesh();
+    CLRaycaster<Vec> rcGPU(buffer);
+    BVHRaycaster<Vec> rcCPU(buffer);
+    
+
+    test1(rcCPU);
+    test2(rcCPU);
+
+    // test1(rcGPU);
+    // test2(rcGPU);
+
+    ModelPtr model(new Model(buffer));
+
+    ModelFactory::saveModel(model, "projection_mesh.ply");
 
 
     return 0;
