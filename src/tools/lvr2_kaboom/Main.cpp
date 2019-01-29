@@ -534,7 +534,7 @@ void processSingleFile(boost::filesystem::path& inFile)
         char dat[1024];
         sprintf(frames, "%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
         sprintf(pose, "%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
-        sprintf(pose, "%s/%s.dat", inFile.parent_path().c_str(), inFile.stem().c_str());
+        sprintf(dat, "%s/%s.dat", inFile.parent_path().c_str(), inFile.stem().c_str());
 
 
         boost::filesystem::path framesPath(frames);
