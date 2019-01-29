@@ -113,6 +113,8 @@ public Q_SLOTS:
     void modeTrackball();
     void modeShooter();
 
+    void resetCamera();
+
 
 
 Q_SIGNALS:
