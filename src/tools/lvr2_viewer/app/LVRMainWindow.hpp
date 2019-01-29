@@ -48,6 +48,10 @@
 #include <vtkGraphicsFactory.h>
 #include <vtkOrientationMarkerWidget.h>
 #include <vtkAxesActor.h>
+#include <vtkEDLShading.h>
+#include <vtkRenderStepsPass.h>
+#include <vtkOpenGLRenderer.h>
+#include <vtkNew.h>
 
 #include "../widgets/LVRPlotter.hpp"
 #include <QtGui>
@@ -153,6 +157,7 @@ public Q_SLOTS:
     void toggleNormals(bool checkboxState);
     void toggleMeshes(bool checkboxState);
     void toggleWireframe(bool checkboxState);
+    void toogleEDL(bool checkboxstate);
     void refreshView();
     void updateView();
     void saveCamera();
@@ -288,6 +293,11 @@ private:
 
     LVRPickingInteractor*               m_pickingInteractor;
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
+
+    // EDM Rendering
+    vtkSmartPointer<vtkRenderStepsPass> m_basicPasses;
+    vtkSmartPointer<vtkEDLShading>      m_edl;
+
 
     enum TYPE {
         MODELITEMS_ONLY,

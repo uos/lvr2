@@ -41,5 +41,6 @@
 	<file>qv_trackball.png</file>
 	<file>qv_shooter.png</file>
         <file>qv_flight.png</file>
+	<file>qv_edm.png</file>
     </qresource>
 </RCC>
