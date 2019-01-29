@@ -496,6 +496,20 @@ void LVRPickingInteractor::resetViewUpShooter()
     rwi->Render();
 }
 
+void LVRPickingInteractor::resetCamera()
+{
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    if(this->CurrentRenderer!=nullptr)
+    {
+        this->CurrentRenderer->ResetCamera();
+    }
+    else
+    {
+        vtkWarningMacro(<<"no current renderer on the interactor style.");
+    }
+    rwi->Render();
+}
+
 void LVRPickingInteractor::dollyShooter(double factor)
 {
 
@@ -1558,20 +1572,6 @@ void LVRPickingInteractor::OnChar()
             strafeShooter(this->m_motionFactor);
             cout << "D" << endl;
             break;
-        case 'r' :
-        case 'R' :
-            this->FindPokedRenderer(rwi->GetEventPosition()[0],
-                    rwi->GetEventPosition()[1]);
-            if(this->CurrentRenderer!=nullptr)
-            {
-                this->CurrentRenderer->ResetCamera();
-            }
-            else
-            {
-                vtkWarningMacro(<<"no current renderer on the interactor style.");
-            }
-            rwi->Render();
-            break;
         case 'u':
         case 'U':
             resetViewUpShooter();
@@ -1594,7 +1594,11 @@ void LVRPickingInteractor::OnChar()
             m_viewUp[2] = 1.0;
             resetViewUpShooter();
             break;
-        }
+        case 'R':
+        case 'r':
+            resetCamera();
+            break;
+        }  
     }
     else
     {
