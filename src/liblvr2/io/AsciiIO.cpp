@@ -63,7 +63,7 @@ ModelPtr AsciiIO::read(
         return ModelPtr();
     }
     // Count lines in file to estimate the number of present points
-    int lines_in_file = countLines(filename);
+    size_t lines_in_file = countLines(filename);
 
     if ( lines_in_file < 2 )
     {
@@ -128,8 +128,10 @@ ModelPtr AsciiIO::read(
 
     // Read data form file
     size_t c = 0;
+    cout << c << " " << numPoints << endl;
     while (in.good() && c < numPoints)
     {
+
         float x, y, z, intensity, dummy;
         unsigned int r, g, b;
 
@@ -147,19 +149,19 @@ ModelPtr AsciiIO::read(
             {
                 in >> z;
             }
-            else if(i == rPos)
+            else if(i == gPos)
             {
                 in >> r;
             }
-            else if(i == gPos)
+            else if(i == bPos)
             {
                 in >> g;
             }
-            else if(i == bPos)
+            else if(i == iPos)
             {
                 in >> b;
             }
-            else if(i == iPos)
+            else if(i == rPos)
             {
                 in >> intensity;
             }
@@ -184,6 +186,8 @@ ModelPtr AsciiIO::read(
             pointIntensities[c] = intensity;
 
         }
+
+//        cout << c << " " << x << " " << y << " " << z << endl;
 
         points[ c * 3     ] = x;
         points[ c * 3 + 1 ] = y;
