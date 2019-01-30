@@ -90,11 +90,19 @@ public:
         std::vector<uint8_t>& hits
     );
 
+    void testKernel(const Point<BaseVecT>& origin,
+        const std::vector<Vector<BaseVecT> >& directions);
+
 private:
     /**
      * @brief Initializes OpenCL related stuff
      */
     void initOpenCL();
+
+    /**
+     * @brief TODO
+     */
+    void getDeviceInformation();
 
     /**
      * @brief TODO docu
@@ -133,6 +141,15 @@ private:
     );
 
     // Member vars
+
+    // OpenCL Device information
+    cl_uint m_mps;
+    cl_uint m_threads_per_block;
+    size_t m_max_work_group_size;
+    size_t m_warp_size;
+    cl_ulong m_device_global_memory;
+    
+
     // OpenCL variables
     cl::Platform m_platform;
     cl::Device m_device;

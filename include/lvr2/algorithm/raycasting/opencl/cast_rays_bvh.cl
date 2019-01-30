@@ -262,7 +262,7 @@ __kernel void cast_rays_multi_multi(
     __global uchar* result_hits
 )
 {
-    unsigned int id = get_global_id(0);
+    const unsigned int id = get_global_id(0);
 
     // get direction and origin of the ray for the current pose
     float3 ray_d = (float3)(rays[id*3], rays[id*3+1], rays[id*3+2]);
@@ -331,11 +331,12 @@ __kernel void cast_rays_one_multi(
     __global uchar* result_hits
 )
 {
-    unsigned int id = get_global_id(0);
+    const unsigned int id = get_global_id(0);
 
     // get direction and origin of the ray for the current pose
-    float3 ray_d = (float3)(rays[0], rays[1], rays[2]);
-    float3 ray_o = (float3)(ray_origin[id*3], ray_origin[id*3+1], ray_origin[id*3+2]);
+    
+    float3 ray_o = (float3)(ray_origin[0], ray_origin[1], ray_origin[2]);
+    float3 ray_d = (float3)(rays[id*3], rays[id*3+1], rays[id*3+2]);
 
     // initialize result memory with zeros
     result[id*3] = 0;
@@ -370,6 +371,8 @@ __kernel void cast_rays_one_multi(
         result[id*3 + 2] = resultBVH.pointHit.z;
         result_hits[id] = 1;
     }
+
+    
 }
 
 /**
@@ -438,12 +441,32 @@ __kernel void cast_rays_one_one(
 
 __kernel void test(
     __global float* ray_origin,
-    __global float* rays
+    __global float* rays,
+    const unsigned int num_rays
 )
 {
-    unsigned int id = get_global_id(0);
-    printf("test kernel: %u\n", id);
-    printf("number: %f\n", rays[0]);
+    const unsigned int loc_id = get_local_id(0);
+    const unsigned int loc_size = get_local_size(0);
+    const unsigned int glob_id = get_global_id(0);
+    const unsigned int glob_size = get_global_size(0);
+    const unsigned int group_id = get_group_id(0);
+    const unsigned int group_size = get_num_groups(0);
+
+    const unsigned int offset = glob_size;
+
+    for(unsigned int tid=glob_id; tid<num_rays; tid+=offset)
+    {
+        // printf("tid: %u\n",tid);
+        float a = ray_origin[0] + ray_origin[tid*3+0];
+        float b = ray_origin[1] + ray_origin[tid*3+1];
+        float c = ray_origin[2] + ray_origin[tid*3+2];
+        float d = a + b + c;
+    }
+
+    // printf("tid: %u\n",glob_id  );
+
+    
+
 }
 
 

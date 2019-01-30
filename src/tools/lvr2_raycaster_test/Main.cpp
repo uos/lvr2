@@ -324,6 +324,29 @@ void test2(RaycasterBase<Vec>& rc)
     
 }
 
+void test3(RaycasterBase<Vec>& rc, size_t num_rays=984543)
+{
+    int u_max = int(3027.8730 * 2);
+    int v_max = int(2031.0270 * 2);
+
+    Vector<Vec> origin = {0.0,0.0,0.0};
+    std::vector<Vector<Vec> > rays(num_rays);
+
+    for(int i=0; i<num_rays; i++)
+    {
+        Vector<Vec> ray_world = {1.0,0.0,0.0};
+        rays[i].x = 1.0;
+        rays[i].y = 0.0;
+        rays[i].z = 0.0;
+    }
+
+    std::vector<Point<Vec> > intersections;
+    std::vector<uint8_t> hits;
+
+    rc.castRays(origin, rays, intersections, hits);
+
+}
+
 int main(int argc, char** argv){
 
     MeshBufferPtr buffer = genMesh();
@@ -334,8 +357,12 @@ int main(int argc, char** argv){
     test1(rcCPU);
     test2(rcCPU);
 
-    // test1(rcGPU);
-    // test2(rcGPU);
+    test1(rcGPU);
+    test2(rcGPU);
+
+    int num_rays = atoi(argv[1]);
+
+    test3(rcGPU, num_rays);
 
     ModelPtr model(new Model(buffer));
 
