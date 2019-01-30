@@ -49,6 +49,7 @@
 #include <vtkProperty.h>
 #include <vtkPointPicker.h>
 #include <vtkCamera.h>
+#include <vtkDefaultPass.h>
 
 
 #include <QString>
@@ -284,7 +285,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), m_aboutDialog, SLOT(show()));
 
 
-
+    QObject::connect(actionRenderEDM, SIGNAL(toggled(bool)), this, SLOT(toogleEDL(bool)));
     QObject::connect(m_actionShow_Points, SIGNAL(toggled(bool)), this, SLOT(togglePoints(bool)));
     QObject::connect(m_actionShow_Normals, SIGNAL(toggled(bool)), this, SLOT(toggleNormals(bool)));
     QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
@@ -336,6 +337,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(this->checkBoxStereo, SIGNAL(stateChanged(int)), m_pickingInteractor, SLOT(setStereoMode(int)));
     QObject::connect(this->buttonPickFocal, SIGNAL(pressed()), m_pickingInteractor, SLOT(pickFocalPoint()));
     QObject::connect(this->pushButtonTerrain, SIGNAL(pressed()), m_pickingInteractor, SLOT(modeTerrain()));
+    QObject::connect(this->buttonResetCamera, SIGNAL(pressed()), m_pickingInteractor, SLOT(resetCamera()));
     QObject::connect(this->pushButtonTrackball, SIGNAL(pressed()), m_pickingInteractor, SLOT(modeTrackball()));
     QObject::connect(this->pushButtonFly , SIGNAL(pressed()), m_pickingInteractor, SLOT(modeShooter()));
 
@@ -394,6 +396,11 @@ void LVRMainWindow::setupQVTK()
         m_renderer->RemoveAllLights();
     #endif
 
+    // Setup decent background colors
+    m_renderer->GradientBackgroundOn();
+    m_renderer->SetBackground(0.8, 0.8, 0.9);
+    m_renderer->SetBackground2(1.0, 1.0, 1.0);
+
     vtkSmartPointer<vtkRenderWindow> renderWindow = this->qvtkWidget->GetRenderWindow();
 
     m_renderWindowInteractor = this->qvtkWidget->GetInteractor();
@@ -417,8 +424,33 @@ void LVRMainWindow::setupQVTK()
     m_pathCamera->SetInterpolator(cameraInterpolator);
     m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
 
+    // Enable EDL per default
+    qvtkWidget->GetRenderWindow()->SetMultiSamples(0);
+    m_basicPasses = vtkRenderStepsPass::New();
+    m_edl = vtkEDLShading::New();
+    m_edl->SetDelegatePass(m_basicPasses);
+
+    vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
+    glrenderer->SetPass(m_edl);
+
     // Finalize QVTK setup by adding the renderer to the window
     renderWindow->AddRenderer(m_renderer);
+
+
+}
+
+void LVRMainWindow::toogleEDL(bool state)
+{
+    vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
+    if(state == false)
+    {
+        glrenderer->SetPass(m_basicPasses);
+    }
+    else
+    {
+        glrenderer->SetPass(m_edl);
+    }
+    this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 void LVRMainWindow::updateView()
