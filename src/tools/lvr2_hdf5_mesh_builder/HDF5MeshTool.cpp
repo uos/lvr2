@@ -70,7 +70,30 @@ int main( int argc, char ** argv )
     hdf5meshtool::Options options(argc, argv);
     HDF5IO hdf5(options.getOutputFile(), true);
 
+    ModelPtr model = ModelFactory::readModel(options.getInputFile());
+    MeshBufferPtr meshBuffer = model->m_mesh;
 
+    if(meshBuffer)
+    {
+        floatArr vertices = meshBuffer->getVertices();
+        indexArray indices = meshBuffer->getFaceIndices();
+
+        floatArr vertexNormals = meshBuffer->getVertexNormals();
+
+        if(!vertexNormals)
+        {
+            std::cout << timestamp << "Calculating vertex normals..." << std::endl;
+        }
+
+
+
+
+    }
+    else
+    {
+        std::cout << timestamp << "Error reading mesh data from "
+                  << options.getOutputFile() << std::endl;
+    }
 
     return 0;
 }
