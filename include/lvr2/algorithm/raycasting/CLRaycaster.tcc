@@ -3,22 +3,23 @@ namespace lvr2 {
 template <typename BaseVecT>
 CLRaycaster<BaseVecT>::CLRaycaster(const MeshBufferPtr mesh)
 :BVHRaycaster<BaseVecT>(mesh)
+,m_warp_size(32)
 { 
-    std::cout << "CL Raycaster. Loading OpenCl Kernels..." << std::endl;
+    // std::cout << "CL Raycaster. Loading OpenCl Kernels..." << std::endl;
 
     try {
         initOpenCL();
+        getDeviceInformation();
         initOpenCLTreeBuffer();
         copyBVHToGPU();
         createKernel();
-        
     }
     catch (cl::Error err)
     {
         std::cerr << err.what() << ": " << CLUtil::getErrorString(err.err()) << std::endl;
         std::cout << "(" << CLUtil::getErrorDescription(err.err()) << ")" << std::endl;
     }
-    std::cout << "BVH tree copied to gpu." << std::endl;
+    // std::cout << "BVH tree copied to gpu." << std::endl;
 }
 
 /// PUBLIC FUNTIONS
@@ -55,10 +56,7 @@ bool CLRaycaster<BaseVecT>::castRay(
         m_kernel_one_one.setArg(5, m_bvhTriIdxListBuffer);
         m_kernel_one_one.setArg(6, m_resultBuffer);
         m_kernel_one_one.setArg(7, m_resultHitsBuffer);
-        
-        auto start = std::chrono::steady_clock::now();
 
-        std::cout << "enqueue ND Range kernel..." << std::endl;
         cl::Event evt;
         m_queue.enqueueNDRangeKernel(
             m_kernel_one_one,
@@ -69,12 +67,6 @@ bool CLRaycaster<BaseVecT>::castRay(
             &evt
         );
         m_queue.finish();
-        std::cout << "enqueue ND Range kernel finished" << std::endl;
-
-        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>
-            (std::chrono::steady_clock::now() - start);
-
-        std::cout << "Kernel execution time (ms): " << duration.count() * 1e-6 << std::endl;
         
         m_queue.enqueueReadBuffer(
             m_resultBuffer,
@@ -139,10 +131,8 @@ void CLRaycaster<BaseVecT>::castRays(
         m_kernel_one_multi.setArg(6, m_resultBuffer);
         m_kernel_one_multi.setArg(7, m_resultHitsBuffer);
 
-        auto start = std::chrono::steady_clock::now();
-
-        std::cout << "enqueue ND Range kernel..." << std::endl;
         cl::Event evt;
+
         m_queue.enqueueNDRangeKernel(
             m_kernel_one_multi,
             cl::NullRange,
@@ -152,13 +142,8 @@ void CLRaycaster<BaseVecT>::castRays(
             &evt
         );
         m_queue.finish();
-        std::cout << "enqueue ND Range kernel finished" << std::endl;
+        // std::cout << "enqueue ND Range kernel finished" << std::endl;
 
-        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>
-            (std::chrono::steady_clock::now() - start);
-
-        std::cout << "Kernel execution time (ms): " << duration.count() * 1e-6 << std::endl;
-        
         m_queue.enqueueReadBuffer(
             m_resultBuffer,
             CL_TRUE,
@@ -217,7 +202,6 @@ void CLRaycaster<BaseVecT>::castRays(
 
         auto start = std::chrono::steady_clock::now();
 
-        std::cout << "enqueue ND Range kernel..." << std::endl;
         cl::Event evt;
         m_queue.enqueueNDRangeKernel(
             m_kernel_multi_multi,
@@ -228,13 +212,7 @@ void CLRaycaster<BaseVecT>::castRays(
             &evt
         );
         m_queue.finish();
-        std::cout << "enqueue ND Range kernel finished" << std::endl;
 
-        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>
-            (std::chrono::steady_clock::now() - start);
-
-        std::cout << "Kernel execution time (ms): " << duration.count() * 1e-6 << std::endl;
-        
         m_queue.enqueueReadBuffer(
             m_resultBuffer,
             CL_TRUE,
@@ -260,27 +238,66 @@ void CLRaycaster<BaseVecT>::castRays(
     
 }
 
+
+template<typename BaseVecT>
+void CLRaycaster<BaseVecT>::testKernel(const Point<BaseVecT>& origin,
+    const std::vector<Vector<BaseVecT> >& directions)
+{
+    const float* origin_f = reinterpret_cast<const float*>(&origin.x);
+    const float* direction_f = reinterpret_cast<const float*>(directions.data());
+
+    try { 
+        initOpenCLRayBuffer(3, directions.size()*3);
+        copyRayDataToGPU(origin_f, 3, direction_f, directions.size()*3);
+
+        const unsigned int N = directions.size();
+
+        m_kernel_test.setArg(0, m_rayOriginBuffer);
+        m_kernel_test.setArg(1, m_rayBuffer);
+        m_kernel_test.setArg(2, N);
+
+        cl::Event evt;
+
+        m_queue.enqueueNDRangeKernel(
+            m_kernel_test,
+            cl::NullRange,
+            cl::NDRange(1024),
+            cl::NDRange(32),
+            nullptr,
+            &evt
+        );
+        m_queue.finish();
+
+    }
+    catch (cl::Error err)
+    {
+        std::cerr << err.what() << ": " << CLUtil::getErrorString(err.err()) << std::endl;
+        std::cout << "(" << CLUtil::getErrorDescription(err.err()) << ")" << std::endl;
+    }
+
+}
+
 // PRIVATE FUNCTIONS
 
 
 template<typename BaseVecT>
 void CLRaycaster<BaseVecT>::initOpenCL()
 {
-    std::cout << "Get platforms" << std::endl;
+    // std::cout << "Get platforms" << std::endl;
     vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
-    for (auto const& platform: platforms)
-    {
-        std::cout << "Found platform: " 
-            << platform.getInfo<CL_PLATFORM_NAME>().c_str() 
-            << std::endl;
-    }
-    std::cout << std::endl;
+    // for (auto const& platform: platforms)
+    // {
+    //     std::cout << "Found platform: " 
+    //         << platform.getInfo<CL_PLATFORM_NAME>().c_str() 
+    //         << std::endl;
+    // }
+    // std::cout << std::endl;
 
     vector<cl::Device> consideredDevices;
     for (auto const& platform: platforms)
     {
-        std::cout << "Get devices of " << platform.getInfo<CL_PLATFORM_NAME>().c_str() << ": " << std::endl;
+        // std::cout << "Get devices of " << platform.getInfo<CL_PLATFORM_NAME>().c_str() << ": " << std::endl;
         cl_context_properties properties[] =
             {
                 CL_CONTEXT_PLATFORM,
@@ -291,27 +308,19 @@ void CLRaycaster<BaseVecT>::initOpenCL()
         vector<cl::Device> devices = tmpContext.getInfo<CL_CONTEXT_DEVICES>();
         for (auto const& device : devices)
         {
-            std::cout << "Found device: " << device.getInfo<CL_DEVICE_NAME>().c_str() << std::endl;
-            std::cout << "Device work units: " << device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
-            std::cout << "Device work group size: " << device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
+            // std::cout << "Found device: " << device.getInfo<CL_DEVICE_NAME>().c_str() << std::endl;
+            // std::cout << "Device work units: " << device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
+            // std::cout << "Device work group size: " << device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
 
-            // find all devices that support at least OpenCL version 2.0
-            //if ((cl::detail::getVersion(device.getInfo<CL_DEVICE_VERSION>().c_str()) >> 16) >= 2)
-            //{
-                consideredDevices.push_back(device);
-            //}
+            consideredDevices.push_back(device);
         }
     }
-    std::cout << std::endl;
+    // std::cout << std::endl;
 
     // preferably choose the first compatible device of type GPU
     bool deviceFound = false;
     for (auto const& device : consideredDevices)
     {
-        //ROS_INFO(
-        //    "device type: %s device.getInfo<CL_DEVICE_TYPE>() and %s CL_DEVICE_TYPE_GPU",
-        //    device.getInfo<CL_DEVICE_TYPE>(), CL_DEVICE_TYPE_GPU
-        //);
         if (device.getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_GPU)
         {
             m_device = device;
@@ -341,9 +350,10 @@ void CLRaycaster<BaseVecT>::initOpenCL()
         };
     m_context = cl::Context(CL_DEVICE_TYPE_ALL, properties);
 
-    std::cout << "Using device " << m_device.getInfo<CL_DEVICE_NAME>().c_str()
-            << " of platform " << m_platform.getInfo<CL_PLATFORM_NAME>().c_str()
-            << std::endl << std::endl;
+    // std::cout << "Using device " << m_device.getInfo<CL_DEVICE_NAME>().c_str()
+    //         << " of platform " << m_platform.getInfo<CL_PLATFORM_NAME>().c_str()
+    //         << std::endl << std::endl;
+    
 
     // read kernel file
     std::string cast_rays_kernel(CAST_RAYS_BVH_PROGRAM);
@@ -361,6 +371,40 @@ void CLRaycaster<BaseVecT>::initOpenCL()
     }
 
     m_queue = cl::CommandQueue(m_context, m_device, 0);
+}
+
+template<typename BaseVecT>
+void CLRaycaster<BaseVecT>::getDeviceInformation()
+{
+    cl_int ret;
+
+    // compute units
+    m_mps = m_device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>(&ret);
+
+    // max work item dimensions
+    cl_uint max_work_item_dimensions 
+        = m_device.getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>(&ret);
+
+    // max work item sizes
+    std::vector<size_t> max_work_item_sizes
+        = m_device.getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>(&ret);
+    m_threads_per_block = max_work_item_sizes[0];
+
+    // max work group size
+    m_max_work_group_size 
+        = m_device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>(&ret);
+
+    // memory
+    m_device_global_memory
+        = m_device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>(&ret);
+
+    // debug
+    // std::cout << "Device Information:" << std::endl;
+    // std::cout << "\tmax compute units: " << m_mps << std::endl;
+    // std::cout << "\tthreads per block: " << m_threads_per_block << std::endl;
+    // std::cout << "\tmax work group size: " << m_max_work_group_size << std::endl;
+    // std::cout << "\tglobal memory size: " << m_device_global_memory << std::endl;
+
 }
 
 template<typename BaseVecT>
@@ -492,12 +536,12 @@ void CLRaycaster<BaseVecT>::copyRayDataToGPU(
     const float* ray_buffer, size_t ray_buffer_size
 )
 {
-    std::cout << "Number of origins: " << origin_buffer_size/3 << endl;
+    // std::cout << "Number of origins: " << origin_buffer_size/3 << endl;
     m_queue.enqueueWriteBuffer(m_rayOriginBuffer, CL_TRUE, 0, sizeof(float) * origin_buffer_size, origin_buffer);
 
-    std::cout << "Size of rays: " << ray_buffer_size/3 << endl;
+    // std::cout << "Size of rays: " << ray_buffer_size/3 << endl;
 
-    std::cout << ray_buffer[297] << std::endl;
+    // std::cout << ray_buffer[297] << std::endl;
     m_queue.enqueueWriteBuffer(m_rayBuffer, CL_TRUE, 0, sizeof(float) * ray_buffer_size, ray_buffer);
 }
 
