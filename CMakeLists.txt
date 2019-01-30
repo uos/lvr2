@@ -430,6 +430,7 @@ add_subdirectory(src/tools/lvr2_kaboom)
 add_subdirectory(src/tools/lvr2_image_normals)
 add_subdirectory(src/tools/lvr2_plymerger)
 add_subdirectory(src/tools/lvr2_hdf5_builder)
+add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
 add_subdirectory(src/tools/lvr2_slam2hdf5)
 add_subdirectory(src/tools/lvr2_slam6d_merger)
 
