@@ -29,6 +29,10 @@
 #define BASEBUFFER_HPP
 
 #include <lvr2/io/AttributeManager.hpp>
+#include <lvr2/attrmaps/AttrMaps.hpp>
+#include <lvr2/geometry/Handles.hpp>
+
+using Index = uint32_t;
 
 namespace lvr2
 {
@@ -70,6 +74,18 @@ public:
     /// \param w                Number of elements per attribute
     ///
     virtual void addIndexChannel(indexArray data, std::string name, size_t n, unsigned w);
+
+    virtual void addAttributeMap(
+        const AttributeMap<BaseHandle<Index>, unsigned int>& map,
+        const std::string& keys_name, const std::string& values_name);
+
+    virtual void addAttributeMap(
+        const AttributeMap<BaseHandle<Index>, unsigned char>& map,
+        const std::string& keys_name, const std::string& values_name);
+
+    virtual void addAttributeMap(
+        const AttributeMap<BaseHandle<Index>, float>& map,
+        const std::string& keys_name, const std::string& values_name);
 
     void addFloatAttribute(float data, std::string name);
     void addUCharAttribute(unsigned char data, std::string name);
