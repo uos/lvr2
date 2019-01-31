@@ -70,9 +70,6 @@ int main( int argc, char ** argv )
         floatArr vertices = meshBuffer->getVertices();
         indexArray indices = meshBuffer->getFaceIndices();
 
-        //floatArr vertexNormals = meshBuffer->getVertexNormals();
-        //floatArr faceNormals = meshBuffer->getFaceNormals();
-
         HalfEdgeMesh<BaseVector<float>>* hem = nullptr;
         if(vertices && indices)
         {
@@ -86,10 +83,41 @@ int main( int argc, char ** argv )
             std::cout << timestamp << "Calculating vertex normals..." << std::endl;
             auto normals = calcVertexNormals(*hem, faceNormals);
 
+            //            for(auto i : normals)
+            //            {
+            //                cout << normals[i] << endl;
+            //            }
+
+            std::cout << "Creating HDF5 file..." << std::endl;
+            hdf5.addArray("meshes/triangle_mesh", "vertices", meshBuffer->numVertices() * 3, vertices);
+            hdf5.addArray("meshes/triangle_mesh", "indices", meshBuffer->numFaces() * 3, indices);
+
+            std::cout << "Converting face normals..." << std::endl;
+            floatArr faceNormalArray(new float [meshBuffer->numFaces() * 3]);
+            int c = 0;
+            for(auto i : faceNormals)
+            {
+                Normal<BaseVector<float>> n = faceNormals[i];
+                faceNormalArray[3 * c    ] = n[0];
+                faceNormalArray[3 * c + 1] = n[1];
+                faceNormalArray[3 * c + 2] = n[2];
+                c++;
+            }
+
+            std::cout << "Converting vertex normals" << std::endl;
+            floatArr vertexNormalArray(new float[meshBuffer->numVertices() * 3]);
+            c = 0;
             for(auto i : normals)
             {
-                cout << normals[i] << endl;
+                Normal<BaseVector<float>> n = normals[i];
+                vertexNormalArray[3 * c    ] = n[0];
+                vertexNormalArray[3 * c + 1] = n[1];
+                vertexNormalArray[3 * c + 2] = n[2];
+                c++;
             }
+
+            hdf5.addArray("meshes/triangle_mesh/face_attributes", "normals", meshBuffer->numFaces() * 3, faceNormalArray);
+            hdf5.addArray("meshes/triangle_mesh/vertex_attributes", "normals", meshBuffer->numVertices() * 3, vertexNormalArray);
 
         }
     }
