@@ -27,6 +27,7 @@ void HDF5IO::addArray(HighFive::Group& g,
     }
     if(m_compress)
     {
+        //properties.add(HighFive::Shuffle());
         properties.add(HighFive::Deflate(9));
     }
     HighFive::DataSet dataset = g.createDataSet<T>(datasetName, dataSpace, properties);
@@ -151,6 +152,28 @@ boost::shared_array<T> HDF5IO::getArray(
     }
 
     return ret;
+}
+
+template <typename T>
+boost::shared_array<T> HDF5IO::reduceData(boost::shared_array<T> data, size_t dataCount, size_t dataWidth, unsigned int reductionFactor, size_t *reducedDataCount)
+{
+    *reducedDataCount = dataCount / reductionFactor + 1;
+    boost::shared_array<T> reducedData = boost::shared_array<T>( new T[(*reducedDataCount) * dataWidth] );
+
+    size_t reducedDataIdx = 0;
+    for (size_t i = 0; i < dataCount; i++)
+    {
+        if (i % reductionFactor == 0)
+        {
+            std::copy(data.get() + i*dataWidth,
+                    data.get() + (i+1)*dataWidth,
+                    reducedData.get() + reducedDataIdx*dataWidth);
+
+            reducedDataIdx++;
+        }
+    }
+
+    return reducedData;
 }
 
 } // namespace lvr2

@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(rply)
+#project(rply)
 
 # set include dirs
-set(RPLY_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/lvr/ext/rply CACHE PATH "install location of rply library header")
+set(RPLY_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/rply CACHE PATH "install location of rply library header")
 find_path(RPLY_INCLUDE_DIR rply.h PATH .)
 mark_as_advanced(RPLY_INCLUDE_DIR RPLY_INSTALL_INCLUDE_DIR)
 

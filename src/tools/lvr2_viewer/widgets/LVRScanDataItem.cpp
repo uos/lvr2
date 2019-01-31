@@ -8,6 +8,7 @@ namespace lvr2
 
 LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, vtkSmartPointer<vtkRenderer> renderer, QString name, QTreeWidgetItem *parent) : QTreeWidgetItem(parent, LVRScanDataItemType)
 {
+    m_showSpectralsItem = nullptr;
     m_pcItem = nullptr;
     m_pItem  = nullptr;
     m_bbItem = nullptr;
@@ -15,7 +16,6 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
     m_name   = name;
     m_sdm    = sdm;
     m_idx    = idx;
-    //m_model.reset();
 
 
     // init pose
@@ -23,6 +23,7 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
     m_data.m_registration.transpose();
     m_data.m_registration.toPostionAngle(pose);
     m_data.m_registration.transpose();
+    m_matrix = m_data.m_registration;
 
     m_pose.x = pose[0];
     m_pose.y = pose[1];
@@ -31,6 +32,7 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
     m_pose.t = pose[4]  * 57.295779513;
     m_pose.p = pose[5]  * 57.295779513;
 
+    m_pItem = new LVRPoseItem(ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model))), this);
 
     // init bb
     m_bb = BoundingBoxBridgePtr(new LVRBoundingBoxBridge(m_data.m_boundingBox));
@@ -38,19 +40,14 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
     renderer->AddActor(m_bb->getActor());
     m_bb->setPose(m_pose);
 
-
-    //init preview
-    if (m_data.m_preview)
-    {
-        loadPreview(renderer);
-    }
-
+    // load data
+    reload(renderer);
 
     setText(0, m_name);
     setCheckState(0, Qt::Checked);
 }
 
-void LVRScanDataItem::loadPreview(vtkSmartPointer<vtkRenderer> renderer)
+void LVRScanDataItem::reload(vtkSmartPointer<vtkRenderer> renderer)
 {
         if (m_model)
         {
@@ -62,13 +59,32 @@ void LVRScanDataItem::loadPreview(vtkSmartPointer<vtkRenderer> renderer)
             delete m_pcItem;
         }
 
-        m_model = ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model(m_data.m_preview))));
-        m_pcItem = new LVRPointCloudItem(m_model->getPointBridge(), this);
+        if (m_showSpectralsItem)
+        {
+            delete m_showSpectralsItem;
+            m_showSpectralsItem = nullptr;
+        }
 
-        m_model->addActors(renderer);
-        m_model->setPose(m_pose);
+        if (m_data.m_points)
+        {
+            m_model = ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model(m_data.m_points))));
+            m_pcItem = new LVRPointCloudItem(m_model->getPointBridge(), this);
 
-        setText(1, "Preview");
+            m_model->addActors(renderer);
+            m_model->setTransform(m_matrix);
+
+            if (!isPointCloudLoaded())
+            {
+                setText(1, "(Preview)");
+            }
+
+            if (m_data.m_points->getUCharChannel("spectral_channels"))
+            {
+                m_showSpectralsItem = new QTreeWidgetItem(this);
+                m_showSpectralsItem->setText(0, "Spectrals");
+                m_showSpectralsItem->setCheckState(0, Qt::Checked);
+            }
+        }
 }
 
 bool LVRScanDataItem::isPointCloudLoaded()
@@ -80,29 +96,9 @@ void LVRScanDataItem::loadPointCloudData(vtkSmartPointer<vtkRenderer> renderer)
 {
     m_sdm->loadPointCloudData(m_data);
 
-    if (m_data.m_pointsLoaded)
+    if (isPointCloudLoaded())
     {
-        if (m_model)
-        {
-            m_model->removeActors(renderer);
-        }
-
-        if (m_pcItem)
-        {
-            delete m_pcItem;
-        }
-
-        m_model = ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model(m_data.m_points))));
-        m_pcItem = new LVRPointCloudItem(m_model->getPointBridge(), this);
-        m_model->addActors(renderer);
-
-        if (!m_pItem)
-        {
-            m_pItem = new LVRPoseItem(m_model, this);
-        }
-
-        m_pItem->setPose(m_pose);
-        m_model->setPose(m_pose);
+        reload(renderer);
 
         setText(1, "");
     }
@@ -110,27 +106,9 @@ void LVRScanDataItem::loadPointCloudData(vtkSmartPointer<vtkRenderer> renderer)
 
 void LVRScanDataItem::unloadPointCloudData(vtkSmartPointer<vtkRenderer> renderer)
 {
-    m_model->removeActors(renderer);
-    m_model.reset();
-    m_data.m_points.reset();
-    m_data.m_pointsLoaded = false;
+    m_sdm->loadPointCloudData(m_data, true);
 
-    if (m_pcItem)
-    {
-        delete m_pcItem;
-        m_pcItem = nullptr;
-    }
-
-    if (m_pItem)
-    {
-        delete m_pItem;
-        m_pItem = nullptr;
-    }
-
-    if (m_data.m_preview)
-    {
-        loadPreview(renderer);
-    }
+    reload(renderer);
 }
 
 ModelBridgePtr LVRScanDataItem::getModelBridgePtr()
@@ -140,25 +118,24 @@ ModelBridgePtr LVRScanDataItem::getModelBridgePtr()
 
 void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
 {
-    bool parents_checked = true;
-    QTreeWidgetItem *parent = this;
-
-    while (parent)
+    if (!this->checkState(0))
     {
-        if (!parent->checkState(0))
-        {
-            parents_checked = false;
-            break;
-        }
-
-        parent = parent->parent();
+        visible = false;
     }
 
-    visible = visible && parents_checked;
+    for (int i = 0; i < childCount(); i++)
+    {
+            child(i)->setHidden(!visible);
+    }
 
     if (m_model)
     {
         m_model->setVisibility(pc_visible && visible);
+    }
+
+    if (m_showSpectralsItem)
+    {
+        m_model->getPointBridge()->setColorsVisibility(m_showSpectralsItem->checkState(0));
     }
 
     if (m_bbItem)
@@ -169,21 +146,8 @@ void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
 
 LVRScanDataItem::~LVRScanDataItem()
 {
-    m_model.reset();
-    m_data.m_points.reset();
-    if (m_bbItem)
-    {
-        delete m_bbItem;
-    }
-    if (m_pcItem)
-    {
-        delete m_pcItem;
-    }
-
-    if (m_pItem)
-    {
-        delete m_pItem;
-    }
+    // we don't want to do delete m_bbItem, m_pItem and m_pcItem here
+    // because QTreeWidgetItem deletes its childs automatically in its destructor.
 }
 
 } // namespace lvr2

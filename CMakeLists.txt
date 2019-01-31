@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 2.8)
-project(LAS_VEGAS)
+cmake_minimum_required(VERSION 3.4)
+project(LAS_VEGAS VERSION 2)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
@@ -64,7 +64,7 @@ endif(CUDA_FOUND)
 ####
 ## Searching for OpenCV
 ##############################
-find_package( OpenCV 3 REQUIRED )
+find_package( OpenCV 3 )
 if (!OpenCV_FOUND)
   find_package( OpenCV 4 REQUIRED )
 endif()
@@ -83,9 +83,6 @@ endif(WITH_CV_NONFREE)
 find_package(  FLANN REQUIRED )
 if(FLANN_FOUND)
   include_directories(${FLANN_DIR})
-  # Flann has external dependency to LZ4
-  find_package(LZ4 REQUIRED)
-  include_directories(LZ4_INCLUDE_DIR)
 endif(FLANN_FOUND)
 
 find_package(  Lz4 REQUIRED )
@@ -400,7 +397,6 @@ endif()
 # HEADERS
 ##############################################################
 
-install(DIRECTORY include/lvr DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(DIRECTORY include/lvr2 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
 
@@ -444,6 +440,7 @@ add_subdirectory(src/tools/lvr2_plymerger)
 add_subdirectory(src/tools/lvr2_hdf5_builder)
 add_subdirectory(src/tools/lvr2_slam2hdf5)
 add_subdirectory(src/tools/lvr2_hdf5-tiff-converter)
+add_subdirectory(src/tools/lvr2_slam6d_merger)
 
 if (RiVLib_FOUND)
     add_subdirectory(src/tools/lvr2_riegl_project_converter)
@@ -467,9 +464,23 @@ install(EXPORT lvrTargets
     NAMESPACE lvr::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr)
 
-configure_file(LVRConfig.cmake.in ${CMAKE_BINARY_DIR}/LVRConfig.cmake @ONLY)
-install(FILES ${CMAKE_BINARY_DIR}/LVRConfig.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr)
+include(CMakePackageConfigHelpers)
+set(INCLUDE_INSTALL_DIR include/)
+set(LIB_INSTALL_DIR lib/)
+set(SYSCONFIG_INSTALL_DIR etc/lvr/)
+
+configure_package_config_file(LVRConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/LVRConfig.cmake
+  INSTALL_DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr
+  PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/LVRConfigVersion.cmake
+  COMPATIBILITY SameMajorVersion
+)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LVRConfig.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/LVRConfigVersion.cmake
+        DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr )
 
 install(FILES
     CMakeModules/FindEigen3.cmake

@@ -4,6 +4,8 @@
 #include <QString>
 #include <QTreeWidgetItem>
 
+#include <vtkMatrix4x4.h>
+
 #include <lvr2/io/ScanDataManager.hpp>
 
 #include "../vtkBridge/LVRModelBridge.hpp"
@@ -12,6 +14,7 @@
 #include "LVRBoundingBoxItem.hpp"
 #include "LVRPointCloudItem.hpp"
 #include "LVRPoseItem.hpp"
+
 
 namespace lvr2
 {
@@ -48,7 +51,7 @@ class LVRScanDataItem : public QTreeWidgetItem
 
     private:
 
-        void loadPreview(vtkSmartPointer<vtkRenderer> renderer);
+        void reload(vtkSmartPointer<vtkRenderer> renderer);
 
         QString                                 m_name;
         std::shared_ptr<ScanDataManager>        m_sdm;
@@ -60,6 +63,8 @@ class LVRScanDataItem : public QTreeWidgetItem
         LVRBoundingBoxItem                     *m_bbItem;
         LVRPointCloudItem                      *m_pcItem;
         LVRPoseItem                            *m_pItem;
+        QTreeWidgetItem                     *m_showSpectralsItem;
+        Matrix4<BaseVector<float> >             m_matrix;
 };
 
 } // namespace lvr2

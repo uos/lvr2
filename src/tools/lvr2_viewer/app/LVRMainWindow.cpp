@@ -49,6 +49,8 @@
 #include <vtkProperty.h>
 #include <vtkPointPicker.h>
 #include <vtkCamera.h>
+
+
 #include <QString>
 
 namespace lvr2
@@ -149,11 +151,11 @@ LVRMainWindow::LVRMainWindow()
     m_actionShowSpectralHistogram = this->actionShow_SpectralHistogram;
 
     // Slider below tree widget
-    m_horizontalSliderPointSize = this->horizontalSliderPointSize;
-    m_horizontalSliderTransparency = this->horizontalSliderTransparency;
-    // Combo boxes
-    m_comboBoxGradient = this->comboBoxGradient; // TODO: implement gradients
-    m_comboBoxShading = this->comboBoxShading; // TODO: fix shading
+//    m_horizontalSliderPointSize = this->horizontalSliderPointSize;
+//    m_horizontalSliderTransparency = this->horizontalSliderTransparency;
+//    // Combo boxes
+//    m_comboBoxGradient = this->comboBoxGradient; // TODO: implement gradients
+//    m_comboBoxShading = this->comboBoxShading; // TODO: fix shading
     // Buttons below combo boxes
     m_buttonCameraPathTool = this->buttonCameraPathTool;
     m_buttonCreateMesh = this->buttonCreateMesh;
@@ -281,13 +283,7 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), m_aboutDialog, SLOT(show()));
 
-    QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
-    QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), this, SLOT(alignPointClouds()));
-    QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(rejected()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
-    QObject::connect(m_correspondanceDialog, SIGNAL(addArrow(LVRVtkArrow*)), this, SLOT(addArrow(LVRVtkArrow*)));
-    QObject::connect(m_correspondanceDialog, SIGNAL(removeArrow(LVRVtkArrow*)), this, SLOT(removeArrow(LVRVtkArrow*)));
-    QObject::connect(m_correspondanceDialog, SIGNAL(disableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
-    QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
+
 
     QObject::connect(m_actionShow_Points, SIGNAL(toggled(bool)), this, SLOT(togglePoints(bool)));
     QObject::connect(m_actionShow_Normals, SIGNAL(toggled(bool)), this, SLOT(toggleNormals(bool)));
@@ -299,10 +295,10 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShowSpectralPointPreview, SIGNAL(triggered()), dockWidgetPointPreview, SLOT(show()));
     QObject::connect(m_actionShowSpectralHistogram, SIGNAL(triggered()), this, SLOT(showHistogramDialog()));
 
-    QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
-    QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
+//    QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
+//    QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
 
-    QObject::connect(m_comboBoxShading, SIGNAL(currentIndexChanged(int)), this, SLOT(changeShading(int)));
+//    QObject::connect(m_comboBoxShading, SIGNAL(currentIndexChanged(int)), this, SLOT(changeShading(int)));
 
     QObject::connect(m_buttonCameraPathTool, SIGNAL(pressed()), this, SLOT(openCameraPathTool()));
     QObject::connect(m_buttonCreateMesh, SIGNAL(pressed()), this, SLOT(reconstructUsingMarchingCubes()));
@@ -331,8 +327,29 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
-
     QObject::connect(m_pickingInteractor, SIGNAL(pointSelected(vtkActor*, int)), this, SLOT(showPointPreview(vtkActor*, int)));
+
+    // Interaction with interactor
+    QObject::connect(this->doubleSpinBoxDollySpeed, SIGNAL(valueChanged(double)), m_pickingInteractor, SLOT(setMotionFactor(double)));
+    QObject::connect(this->doubleSpinBoxRotationSpeed, SIGNAL(valueChanged(double)), m_pickingInteractor, SLOT(setRotationFactor(double)));
+    QObject::connect(this->checkBoxShowFocal, SIGNAL(stateChanged(int)), m_pickingInteractor, SLOT(setFocalPointRendering(int)));
+    QObject::connect(this->checkBoxStereo, SIGNAL(stateChanged(int)), m_pickingInteractor, SLOT(setStereoMode(int)));
+    QObject::connect(this->buttonPickFocal, SIGNAL(pressed()), m_pickingInteractor, SLOT(pickFocalPoint()));
+    QObject::connect(this->pushButtonTerrain, SIGNAL(pressed()), m_pickingInteractor, SLOT(modeTerrain()));
+    QObject::connect(this->pushButtonTrackball, SIGNAL(pressed()), m_pickingInteractor, SLOT(modeTrackball()));
+    QObject::connect(this->pushButtonFly , SIGNAL(pressed()), m_pickingInteractor, SLOT(modeShooter()));
+
+
+    QObject::connect(m_correspondanceDialog, SIGNAL(disableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
+    QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
+    QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
+    QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(rejected()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
+    QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), this, SLOT(alignPointClouds()));
+
+    QObject::connect(m_correspondanceDialog, SIGNAL(addArrow(LVRVtkArrow*)), this, SLOT(addArrow(LVRVtkArrow*)));
+    QObject::connect(m_correspondanceDialog, SIGNAL(removeArrow(LVRVtkArrow*)), this, SLOT(removeArrow(LVRVtkArrow*)));
+
+
     QObject::connect(plotter, SIGNAL(mouseRelease()), this, SLOT(showPointInfoDialog()));
 
     QObject::connect(radioButtonUseSpectralSlider, SIGNAL(toggled(bool)), this, SLOT(updateSpectralSlidersEnabled(bool)));
@@ -409,6 +426,16 @@ void LVRMainWindow::updateView()
     m_renderer->ResetCamera();
     m_renderer->ResetCameraClippingRange();
     this->qvtkWidget->GetRenderWindow()->Render();
+
+    // Estimate cam speed -> imagine a plausible number
+    // of move operations to reach the focal point
+    vtkCamera* cam = m_renderer->GetActiveCamera();
+    double step = cam->GetDistance() / 100;
+
+    this->doubleSpinBoxDollySpeed->setValue(step);
+
+    // Signal that focal point of camera may have changed
+    m_pickingInteractor->updateFocalPoint();
 }
 
 void LVRMainWindow::refreshView()
@@ -463,11 +490,11 @@ void LVRMainWindow::restoreSliders()
     {
         LVRPointCloudItem* pointCloudItem = *pointCloudItems.begin();
 
-        m_horizontalSliderPointSize->setEnabled(true);
-        m_horizontalSliderPointSize->setValue(pointCloudItem->getPointSize());
+//        m_horizontalSliderPointSize->setEnabled(true);
+//        m_horizontalSliderPointSize->setValue(pointCloudItem->getPointSize());
         int transparency = ((float)1 - pointCloudItem->getOpacity()) * 100;
-        m_horizontalSliderTransparency->setEnabled(true);
-        m_horizontalSliderTransparency->setValue(transparency);
+//        m_horizontalSliderTransparency->setEnabled(true);
+//        m_horizontalSliderTransparency->setValue(transparency);
 
         color<size_t> channels;
         color<bool> use_channel;
@@ -525,8 +552,8 @@ void LVRMainWindow::restoreSliders()
     }
     else
     {
-        m_horizontalSliderPointSize->setEnabled(false);
-        m_horizontalSliderPointSize->setValue(1);
+//        m_horizontalSliderPointSize->setEnabled(false);
+//        m_horizontalSliderPointSize->setValue(1);
 
         this->dockWidgetSpectralSliderSettingsContents->setEnabled(false);
         this->dockWidgetSpectralColorGradientSettingsContents->setEnabled(false);
@@ -537,14 +564,14 @@ void LVRMainWindow::restoreSliders()
         LVRMeshItem* meshItem = *meshItems.begin();
 
         int transparency = ((float)1 - meshItem->getOpacity()) * 100;
-        m_horizontalSliderTransparency->setEnabled(true);
-        m_horizontalSliderTransparency->setValue(transparency);
+//        m_horizontalSliderTransparency->setEnabled(true);
+//        m_horizontalSliderTransparency->setValue(transparency);
     }
 
     if (pointCloudItems.empty() && meshItems.empty())
     {
-        m_horizontalSliderTransparency->setEnabled(false);
-        m_horizontalSliderTransparency->setValue(0);
+//        m_horizontalSliderTransparency->setEnabled(false);
+//        m_horizontalSliderTransparency->setValue(0);
     }
 }
 
@@ -1058,12 +1085,9 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
 
         refreshView();
     }
-    else
+    else if (treeWidgetItem->parent() && treeWidgetItem->parent()->type() == LVRScanDataItemType)
     {
-        for (int i = 0; i < treeWidgetItem->childCount(); i++)
-        {
-            setModelVisibility(treeWidgetItem->child(i), 0);
-        }
+        setModelVisibility(treeWidgetItem->parent(), column);
     }
 }
 
@@ -1246,10 +1270,10 @@ void LVRMainWindow::toggleWireframe(bool checkboxState)
     }
 }
 
-QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm, std::string scanDataGroup, QTreeWidgetItem *parent)
+QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent)
 {
     QTreeWidgetItem *lastItem = nullptr;
-    std::vector<ScanData> scanData = sdm->getScanData(scanDataGroup);
+    std::vector<ScanData> scanData = sdm->getScanData();
 
     for (size_t i = 0; i < scanData.size(); i++)
     {
@@ -1284,30 +1308,11 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
             root->setIcon(0, icon);
 
             std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(argv[i]));
-            std::vector<std::string> scanDataGroups = sdm->getScanDataGroups();
 
-            if (std::find(scanDataGroups.begin(), scanDataGroups.end(), "/raw/scans") != scanDataGroups.end())
-            {
-                QTreeWidgetItem *item = new QTreeWidgetItem(root);
-                item->setText(0, "/raw/scans");
-                item->setCheckState(0, Qt::Unchecked);
-                lastItem = addScanData(sdm, "/raw/scans", item);
-            }
+            lastItem = addScanData(sdm, root);
 
-            if (std::find(scanDataGroups.begin(), scanDataGroups.end(), "/annotation") != scanDataGroups.end())
-            {
-                QTreeWidgetItem *item = new QTreeWidgetItem(root);
-                item->setText(0, "/annotation");
-                item->setCheckState(0, Qt::Unchecked);
-                lastItem = addScanData(sdm, "/annotation", item);
-            }
-
-
-            root->setCheckState(0, Qt::Checked);
             root->setExpanded(true);
 
-            lastItem->parent()->setCheckState(0, Qt::Checked);
-            lastItem->parent()->setExpanded(true);
         }
         else
         {
