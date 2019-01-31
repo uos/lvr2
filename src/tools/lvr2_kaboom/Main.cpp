@@ -270,6 +270,22 @@ Eigen::Matrix4d buildTransformation(double* alignxf)
     return transformation;
 }
 
+void addScanPosition(Eigen::Matrix4d& transform)
+{
+    Eigen::Vector4d translation = transform.rightCols<1>();
+    if(scanPosesOut.good())
+    {
+        std::cout << timestamp << "Exporting scan position @ "
+                  << translation[0] << " "
+                  << translation[1] << " "
+                  << translation[2] << std::endl;
+
+        scanPosesOut << translation[0] << " "
+                     << translation[1] << " "
+                     << translation[2] << std::endl;
+    }
+}
+
 Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
 {
     ifstream poseIn(pose.c_str());
@@ -555,12 +571,14 @@ void processSingleFile(boost::filesystem::path& inFile)
             std::cout << timestamp << "Getting transformation from dat: " << datPath << std::endl;
             Eigen::Matrix4d transform = getTransformationFromDat(datPath);
             transformModel(model, transform);
+            addScanPosition(transform);
         }
         else if(boost::filesystem::exists(framesPath))
         {
             std::cout << timestamp << "Getting transformation from frame: " << framesPath << std::endl;
             Eigen::Matrix4d transform = getTransformationFromFrames(framesPath);
             transformModel(model, transform);
+            addScanPosition(transform);
         }
         else if(boost::filesystem::exists(posePath))
         {
@@ -568,6 +586,7 @@ void processSingleFile(boost::filesystem::path& inFile)
             std::cout << timestamp << "Getting transformation from pose: " << posePath << std::endl;
             Eigen::Matrix4d transform = getTransformationFromPose(posePath);
             transformModel(model, transform);
+            addScanPosition(transform);
         }
 
         if(!options->transformBefore())
