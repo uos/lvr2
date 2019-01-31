@@ -44,8 +44,8 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 	m_descr.add_options()
             ("help", "Produce help message")
-            ("inputDir,i", value<string>()->default_value("triangle_mesh.ply"), "Input mesh file.")
-            ("outputDir", value<string>()->default_value("mesh.h5"), "Output file.")
+            ("inputFile,i", value<string>()->default_value("triangle_mesh.ply"), "Input mesh file.")
+            ("outputFile,o", value<string>()->default_value("mesh.h5"), "Output file.")
             ;
 
 
