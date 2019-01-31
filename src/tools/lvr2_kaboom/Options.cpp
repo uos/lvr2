@@ -50,6 +50,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 		("outputDir", value<string>()->default_value("./"), "The target directory for converted data.")
 		("outputFormat", value<string>()->default_value(""), "Specify the output format. Possible values are ASCII, PLY, DAT, LAS. If left empty, the format is deduced from the extension of the input files.")
 	    ("filter", value<bool>()->default_value(false), "Filter input data.")
+        ("exportScanPositions", value<bool>()->default_value(false), "Exports the original scan positions to 'scanpositions.txt'.")
 	    ("k", value<int>()->default_value(1), "k neighborhood for filtering.")
 	    ("sigma", value<float>()->default_value(1.0), "Deviation for outlier filter.")
 	    ("targetSize", value<int>()->default_value(0), "Target size (reduction) for the input scans.")
@@ -104,6 +105,11 @@ string 	Options::getOutputDir() const
 string 	Options::getOutputFormat() const
 {
 	return m_variables["outputFormat"].as<string>();
+}
+
+bool   Options:: exportScanPositions() const
+{
+    return m_variables["exportScanPositions"].as<bool>();
 }
 
 bool	Options::filter() const
