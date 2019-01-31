@@ -93,7 +93,7 @@ ModelPtr RxpIO::read(std::string filename, int reduction_factor, Matrix4<Vec> tf
 
     // TODO check this for null?
     float *data2 = new float[data.size() * 3];
-    assert(data2 =! NULL);
+    assert(data2 != nullptr);
 
     // TODO Since we don't know the size in advance there is no better way?
     for (int i = 0; i < data.size(); i++)

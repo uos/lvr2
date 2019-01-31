@@ -48,11 +48,6 @@
 namespace lvr2
 {
 
-inline unsigned char floatToColor(float f)
-{
-    return f * 255;
-}
-
 LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
 {
     // use all silders with channel 0
@@ -120,7 +115,7 @@ void LVRPointBufferBridge::refreshSpectralChannel()
 {
     size_t n;
     unsigned n_channels;
-    floatArr spec = m_pointBuffer->getFloatArray("spectral_channels", n, n_channels);
+    ucharArr spec = m_pointBuffer->getUCharArray("spectral_channels", n, n_channels);
 
     // check if we have spectral data
     if (!spec)
@@ -140,9 +135,9 @@ void LVRPointBufferBridge::refreshSpectralChannel()
         int specIndex = n_channels * i;
         unsigned char speccolor[3];
         // if the silder is not enabled the color get the value 0
-        speccolor[0] = m_useSpectralChannel.r ? floatToColor(spec[specIndex + m_spectralChannels.r]) : 0;
-        speccolor[1] = m_useSpectralChannel.g ? floatToColor(spec[specIndex + m_spectralChannels.g]) : 0;
-        speccolor[2] = m_useSpectralChannel.b ? floatToColor(spec[specIndex + m_spectralChannels.b]) : 0;
+        speccolor[0] = m_useSpectralChannel.r ? spec[specIndex + m_spectralChannels.r] : 0;
+        speccolor[1] = m_useSpectralChannel.g ? spec[specIndex + m_spectralChannels.g] : 0;
+        speccolor[2] = m_useSpectralChannel.b ? spec[specIndex + m_spectralChannels.b] : 0;
 
 #if VTK_MAJOR_VERSION < 7
         scalars->SetTupleValue(i, speccolor);
@@ -184,7 +179,7 @@ void LVRPointBufferBridge::refreshSpectralGradient()
 {
     size_t n;
     unsigned n_channels;
-    floatArr spec = m_pointBuffer->getFloatArray("spectral_channels", n, n_channels);
+    ucharArr spec = m_pointBuffer->getUCharArray("spectral_channels", n, n_channels);
 
     // check if we have spectral data
     if (!spec)
@@ -211,7 +206,7 @@ void LVRPointBufferBridge::refreshSpectralGradient()
         {
             float redTotal = 0;
             float nearRedTotal = 0;
-            float* specPixel = spec.get() + n_channels * i;
+            unsigned char* specPixel = spec.get() + n_channels * i;
 
             // sum red and nir
             for (int channel = redStart; channel < redEnd; channel++)
@@ -263,14 +258,14 @@ void LVRPointBufferBridge::refreshSpectralGradient()
                 min_val = spec[specIndex];
             }
         }
-        min = floatToColor(min_val);
-        max = floatToColor(max_val);
+        min = min_val;
+        max = max_val;
     }
 
     if(m_useNormalizedGradient && m_useNDVI)
     {
-        min = floatToColor(ndviMin);
-        max = floatToColor(ndviMax);
+        min = ndviMin * 255;
+        max = ndviMax * 255;
     }
 
     // Colormap is used to calculate gradients
@@ -286,11 +281,11 @@ void LVRPointBufferBridge::refreshSpectralGradient()
         // get gradient colors
         if (m_useNDVI)
         {
-            colorMap.getColor(color, floatToColor(ndvi[i]) - min, m_spectralGradient);
+            colorMap.getColor(color, (unsigned char) ((ndvi[i] * 255) - min) , m_spectralGradient);
         }
         else
         {
-            colorMap.getColor(color, floatToColor(spec[specIndex + m_spectralGradientChannel]) - min, m_spectralGradient);
+            colorMap.getColor(color, spec[specIndex + m_spectralGradientChannel] - min, m_spectralGradient);
         }
 
         unsigned char speccolor[3];
@@ -383,21 +378,24 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 
         floatArr points = pc->getPointArray();
         ucharArr colors = pc->getColorArray(w_color);
-        floatArr spec = pc->getFloatArray("spectral_channels", n_s_p, n_s_channels);
+        ucharArr spec = pc->getUCharArray("spectral_channels", n_s_p, n_s_channels);
         floatArr normals = pc->getNormalArray();
 
-        scalars->SetNumberOfTuples(n_s_p ? n_s_p : n);
+        if (spec || colors)
+        {
+            scalars->SetNumberOfTuples(n_s_p ? n_s_p : n);
+        }
+
         vtk_points->SetNumberOfPoints(n_s_p ? n_s_p : n);
 
         if(normals)
         {
             m_vtk_normals->SetNumberOfTuples(n);
         }
-        
 
         for(vtkIdType i = 0; i < n; i++)
         {
-            int index = 3 * i;
+            size_t index = 3 * i;
             point[0] = points[index    ];
             point[1] = points[index + 1];
             point[2] = points[index + 2];
@@ -419,11 +417,11 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
                 {
                     break;
                 }
-                int specIndex = n_s_channels * i;
+                size_t specIndex = n_s_channels * i;
                 unsigned char speccolor[3];
-                speccolor[0] = floatToColor(spec[specIndex + m_spectralChannels.r]);
-                speccolor[1] = floatToColor(spec[specIndex + m_spectralChannels.g]);
-                speccolor[2] = floatToColor(spec[specIndex + m_spectralChannels.b]);
+                speccolor[0] = spec[specIndex + m_spectralChannels.r];
+                speccolor[1] = spec[specIndex + m_spectralChannels.g];
+                speccolor[2] = spec[specIndex + m_spectralChannels.b];
 
 #if VTK_MAJOR_VERSION < 7
                 scalars->SetTupleValue(i, speccolor);
@@ -445,19 +443,6 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
                 scalars->SetTypedTuple(i, color); // no idea how the new method is called
 #endif
             }
-            else
-            {
-                unsigned char color[3];
-                color[0] = 255;
-                color[1] = 255;
-                color[2] = 255;
-
-#if VTK_MAJOR_VERSION < 7
-                scalars->SetTupleValue(i, color);
-#else
-                scalars->SetTypedTuple(i, color); // no idea how the new method is called
-#endif
-            }
 
             vtk_points->SetPoint(i, point);
             vtk_cells->InsertNextCell(1, &i);
@@ -466,22 +451,20 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         vtk_polyData->SetPoints(vtk_points);
         vtk_polyData->SetVerts(vtk_cells);
 
-        if(n_c || n_s_p)
+        if(hasColors() || n_s_p)
         {
             vtk_polyData->GetPointData()->SetScalars(scalars);
         }
 
-        
-
         // Create poly data mapper and generate actor
-        //vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-        vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
+        vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 #ifdef LVR_USE_VTK5
         mapper->SetInput(vtk_polyData);
 #else
         mapper->SetInputData(vtk_polyData);
 #endif
         m_pointCloudActor->SetMapper(mapper);
+        m_pointCloudActor->GetProperty()->SetColor(1.0, 1.0, 1.0);
     }
 }
 
@@ -502,29 +485,29 @@ LVRPointBufferBridge::LVRPointBufferBridge(const LVRPointBufferBridge& b)
 
 void LVRPointBufferBridge::setBaseColor(float r, float g, float b)
 {
-    vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
-    p->SetColor(r, g, b);
-    m_pointCloudActor->SetProperty(p);
+    m_pointCloudActor->GetProperty()->SetColor(r, g, b);
 }
 
 void LVRPointBufferBridge::setPointSize(int pointSize)
 {
     vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
     p->SetPointSize(pointSize);
-    m_pointCloudActor->SetProperty(p);
 }
 
 void LVRPointBufferBridge::setOpacity(float opacityValue)
 {
     vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
     p->SetOpacity(opacityValue);
-    m_pointCloudActor->SetProperty(p);
+}
+
+void LVRPointBufferBridge::setColorsVisibility(bool visible)
+{
+    m_pointCloudActor->GetMapper()->SetScalarVisibility(visible);
 }
 
 void LVRPointBufferBridge::setVisibility(bool visible)
 {
-    if(visible) m_pointCloudActor->VisibilityOn();
-    else m_pointCloudActor->VisibilityOff();
+    m_pointCloudActor->SetVisibility(visible);
 }
 
 void LVRPointBufferBridge::setNormalsVisibility(bool visible)
@@ -542,8 +525,6 @@ void LVRPointBufferBridge::setNormalsVisibility(bool visible)
             );
         }
     }
-    
-    
 }
 
 vtkSmartPointer<vtkActor> LVRPointBufferBridge::getPointCloudActor()

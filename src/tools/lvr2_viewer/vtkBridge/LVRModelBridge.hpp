@@ -88,6 +88,8 @@ public:
     void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
 
     void        setPose(const Pose& pose);
+    void        setTransform(const Matrix4<BaseVector<float> >& transform);
+
     Pose        getPose();
 
     void		setVisibility(bool visible);
@@ -106,10 +108,12 @@ public:
     friend class LVRModelItem;
 
 private:
+
+    void doStuff(vtkSmartPointer<vtkTransform> transform);
+
     PointBufferBridgePtr            m_pointBridge;
     MeshBufferBridgePtr             m_meshBridge;
     Pose                            m_pose;
-
 };
 
 typedef boost::shared_ptr<LVRModelBridge> ModelBridgePtr;

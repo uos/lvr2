@@ -36,6 +36,8 @@ cmake-build-debug/
 /*.creator
 /*.files
 /*.includes
+/*.user
+/*.orig
 
 # IDE files
 .vscode/

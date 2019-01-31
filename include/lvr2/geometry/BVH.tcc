@@ -66,6 +66,25 @@ BVHTree<BaseVecT>::BVHTree(const vector<float>& vertices, const vector<uint32_t>
 }
 
 template<typename BaseVecT>
+BVHTree<BaseVecT>::BVHTree(
+    const floatArr vertices, size_t n_vertices,
+    const indexArray faces, size_t n_faces)
+{
+    m_root = buildTree(vertices, n_vertices, faces, n_faces);
+    createCFTree();
+}
+
+template<typename BaseVecT>
+BVHTree<BaseVecT>::BVHTree(const MeshBufferPtr mesh)
+:BVHTree<BaseVecT>(
+    mesh->getVertices(), mesh->numVertices(),
+    mesh->getFaceIndices(), mesh->numFaces()
+    )
+{
+
+}
+
+template<typename BaseVecT>
 typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
     const vector<float>& vertices,
     const vector<uint32_t>& faces
@@ -161,7 +180,121 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
     }
 
     // Create the tree recursively from the list of AABBs
-    auto out = buildTreeRecursive(work);
+
+    BVHTree<BaseVecT>::BVHNodePtr out;
+
+    #pragma omp parallel
+    #pragma omp single nowait
+    out = buildTreeRecursive(work);
+    
+    std::cout << "end building." << std::endl;
+    out->bb = outerBb;
+
+    return out;
+}
+
+
+template<typename BaseVecT>
+typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
+    const floatArr vertices, size_t n_vertices,
+    const indexArray faces, size_t n_faces
+)
+{
+    vector<AABB> work;
+    work.reserve(n_faces);
+    m_triangles.reserve(n_faces);
+
+    BoundingBox<BaseVecT> outerBb;
+    // Iterate over all faces and create an AABB for all of them
+    for (size_t i = 0; i < n_faces*3; i += 3)
+    {
+        // Convert raw float data into objects
+        Vector<BaseVecT> point1;
+        point1.x = vertices[faces[i]*3];
+        point1.y = vertices[faces[i]*3+1];
+        point1.z = vertices[faces[i]*3+2];
+
+        Vector<BaseVecT> point2;
+        point2.x = vertices[faces[i+1]*3];
+        point2.y = vertices[faces[i+1]*3+1];
+        point2.z = vertices[faces[i+1]*3+2];
+
+        Vector<BaseVecT> point3;
+        point3.x = vertices[faces[i+2]*3];
+        point3.y = vertices[faces[i+2]*3+1];
+        point3.z = vertices[faces[i+2]*3+2];
+
+        // Precalculate intersection test data for faces
+        auto vc1 = point2 - point1;
+        auto vc2 = point3 - point2;
+        auto vc3 = point1 - point3;
+
+        // skip malformed faces
+        auto cross1 = vc1.cross(vc2);
+        auto cross2 = vc2.cross(vc3);
+        auto cross3 = vc3.cross(vc1);
+        if (cross1.length() == 0 || cross2.length() == 0 || cross3.length() == 0)
+        {
+            continue;
+        }
+
+        BoundingBox<BaseVecT> faceBb;
+        faceBb.expand(point1);
+        faceBb.expand(point2);
+        faceBb.expand(point3);
+
+        // Create triangles from faces for internal usage
+        Triangle triangle;
+        triangle.bb = faceBb;
+        triangle.center = (point1 + point2 + point3) / 3.0f;
+        triangle.idx1 = faces[i];
+        triangle.idx2 = faces[i+1];
+        triangle.idx3 = faces[i+2];
+
+        // pick best normal
+        Normal<BaseVecT> normal1(cross1);
+        Normal<BaseVecT> normal2(cross2);
+        Normal<BaseVecT> normal3(cross3);
+        auto bestNormal = normal1;
+        if (normal2.length() > bestNormal.length())
+        {
+            bestNormal = normal2;
+        }
+        if (normal3.length() > bestNormal.length())
+        {
+            bestNormal = normal3;
+        }
+        triangle.normal = Normal<BaseVecT>(bestNormal);
+
+        triangle.d = triangle.normal.dot(point1);
+
+        // calc edge planes for intersection tests
+        triangle.e1 = Normal<BaseVecT>(triangle.normal.cross(vc1));
+        triangle.d1 = triangle.e1.dot(point1);
+
+        triangle.e2 = Normal<BaseVecT>(triangle.normal.cross(vc2));
+        triangle.d2 = triangle.e2.dot(point2);
+
+        triangle.e3 = Normal<BaseVecT>(triangle.normal.cross(vc3));
+        triangle.d3 = triangle.e3.dot(point3);
+
+        // Create AABB and add current triangle (face) to it
+        AABB aabb;
+        aabb.bb = faceBb;
+        aabb.triangles.push_back(m_triangles.size());
+        m_triangles.push_back(triangle);
+
+        outerBb.expand(faceBb);
+        work.push_back(aabb);
+    }
+
+
+    // Create the tree recursively from the list of AABBs
+    BVHTree<BaseVecT>::BVHNodePtr out;
+    #pragma omp parallel
+    #pragma omp single nowait
+    out = buildTreeRecursive(work);
+
     out->bb = outerBb;
 
     return out;
@@ -345,13 +478,25 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vec
     }
 
     // Recursively split new sub trees into further inner or leaf nodes
+    
     auto inner = make_unique<BVHInner>();
-    inner->left = buildTreeRecursive(leftWork, depth + 1);
-    inner->left->bb = lBb;
 
-    inner->right = buildTreeRecursive(rightWork, depth + 1);
-    inner->right->bb = rBb;
-
+    // #pragma omp parallel
+    // #pragma omp single nowait
+    // {
+    #pragma omp task shared(inner)
+    {
+        inner->left = buildTreeRecursive(leftWork, depth + 1);
+        inner->left->bb = lBb;
+    }
+    #pragma omp task shared(inner)
+    {
+        inner->right = buildTreeRecursive(rightWork, depth + 1);
+        inner->right->bb = rBb;
+    }
+    #pragma omp taskwait
+    // }
+    
     return move(inner);
 }
 
