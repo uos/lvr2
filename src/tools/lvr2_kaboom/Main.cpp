@@ -347,6 +347,23 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
     return buildTransformation(alignxf);
 }
 
+Eigen::Matrix4d getTransformationFromDat(boost::filesystem::path& frames)
+{
+    double alignxf[16];
+    int color;
+
+    std::ifstream in(frames.c_str());
+    if(in.good())
+    {
+        for(int i = 0; i < 16; i++)
+        {
+            in >> alignxf[i];
+        }
+    }
+
+    return buildTransformation(alignxf);
+}
+
 Eigen::Matrix4d transformFrames(Eigen::Matrix4d frames)
 {
     Eigen::Matrix3d basisTrans;
@@ -515,11 +532,15 @@ void processSingleFile(boost::filesystem::path& inFile)
     {
         char frames[1024];
         char pose[1024];
+        char dat[1024];
         sprintf(frames, "%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
         sprintf(pose, "%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
+        sprintf(dat, "%s/%s.dat", inFile.parent_path().c_str(), inFile.stem().c_str());
+
 
         boost::filesystem::path framesPath(frames);
         boost::filesystem::path posePath(pose);
+        boost::filesystem::path datPath(dat);
 
         size_t reductionFactor = asciiReductionFactor(inFile);
 
@@ -528,7 +549,14 @@ void processSingleFile(boost::filesystem::path& inFile)
             transformFromOptions(model, reductionFactor);
         }
 
-        if(boost::filesystem::exists(framesPath))
+
+        if(boost::filesystem::exists(datPath))
+        {
+            std::cout << timestamp << "Getting transformation from dat: " << datPath << std::endl;
+            Eigen::Matrix4d transform = getTransformationFromDat(datPath);
+            transformModel(model, transform);
+        }
+        else if(boost::filesystem::exists(framesPath))
         {
             std::cout << timestamp << "Getting transformation from frame: " << framesPath << std::endl;
             Eigen::Matrix4d transform = getTransformationFromFrames(framesPath);
@@ -820,7 +848,7 @@ int main(int argc, char** argv) {
     for(boost::filesystem::directory_iterator it(inputDir); it != end; ++it)
     {
         std::string ext =	it->path().extension().string();
-        if(ext == ".3d" || ext == ".ply" || ext == ".dat" || ext == ".txt" )
+        if(ext == ".3d" || ext == ".ply" || ext == ".txt" )
         {
             v.push_back(it->path());
         }
