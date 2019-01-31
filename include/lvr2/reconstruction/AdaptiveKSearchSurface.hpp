@@ -206,11 +206,11 @@ public:
 
 private:
 
-    // /**
-    //  * @brief Parses the file with scan poses and creates a search tree to
-    //  *        search for the nearest pose when flipping normals
-    //  */
-    // void parseScanPoses(string posefile);
+     /**
+      * @brief Parses the file with scan poses and creates a search tree to
+      *        search for the nearest pose when flipping normals
+      */
+     void parseScanPoses(string posefile);
 
     // /**
     //  * @brief Returns the k closest neighbor vertices to a given queryy point
