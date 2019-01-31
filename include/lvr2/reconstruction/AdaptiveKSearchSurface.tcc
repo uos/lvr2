@@ -93,8 +93,8 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 
     if(posefile != "")
     {
-        panic_unimplemented("posefile handling");
-        // parseScanPoses(posefile);
+        //panic_unimplemented("posefile handling");
+        parseScanPoses(posefile);
     }
 
 }
