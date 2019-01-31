@@ -180,7 +180,14 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
     }
 
     // Create the tree recursively from the list of AABBs
-    auto out = buildTreeRecursive(work);
+
+    BVHTree<BaseVecT>::BVHNodePtr out;
+
+    #pragma omp parallel
+    #pragma omp single nowait
+    out = buildTreeRecursive(work);
+    
+    std::cout << "end building." << std::endl;
     out->bb = outerBb;
 
     return out;
@@ -198,7 +205,6 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
     m_triangles.reserve(n_faces);
 
     BoundingBox<BaseVecT> outerBb;
-
     // Iterate over all faces and create an AABB for all of them
     for (size_t i = 0; i < n_faces*3; i += 3)
     {
@@ -282,8 +288,13 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
         work.push_back(aabb);
     }
 
+
     // Create the tree recursively from the list of AABBs
-    auto out = buildTreeRecursive(work);
+    BVHTree<BaseVecT>::BVHNodePtr out;
+    #pragma omp parallel
+    #pragma omp single nowait
+    out = buildTreeRecursive(work);
+
     out->bb = outerBb;
 
     return out;
@@ -467,13 +478,25 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vec
     }
 
     // Recursively split new sub trees into further inner or leaf nodes
+    
     auto inner = make_unique<BVHInner>();
-    inner->left = buildTreeRecursive(leftWork, depth + 1);
-    inner->left->bb = lBb;
 
-    inner->right = buildTreeRecursive(rightWork, depth + 1);
-    inner->right->bb = rBb;
-
+    // #pragma omp parallel
+    // #pragma omp single nowait
+    // {
+    #pragma omp task shared(inner)
+    {
+        inner->left = buildTreeRecursive(leftWork, depth + 1);
+        inner->left->bb = lBb;
+    }
+    #pragma omp task shared(inner)
+    {
+        inner->right = buildTreeRecursive(rightWork, depth + 1);
+        inner->right->bb = rBb;
+    }
+    #pragma omp taskwait
+    // }
+    
     return move(inner);
 }
 

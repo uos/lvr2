@@ -63,7 +63,7 @@ ModelPtr AsciiIO::read(
         return ModelPtr();
     }
     // Count lines in file to estimate the number of present points
-    int lines_in_file = countLines(filename);
+    size_t lines_in_file = countLines(filename);
 
     if ( lines_in_file < 2 )
     {
@@ -130,6 +130,7 @@ ModelPtr AsciiIO::read(
     size_t c = 0;
     while (in.good() && c < numPoints)
     {
+
         float x, y, z, intensity, dummy;
         unsigned int r, g, b;
 

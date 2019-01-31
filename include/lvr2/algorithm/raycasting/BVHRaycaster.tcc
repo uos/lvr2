@@ -130,12 +130,12 @@ bool BVHRaycaster<BaseVecT>::rayIntersectsBox(Vector<BaseVecT> origin, Ray ray, 
     tymin = (limitsY2[    ray.rayDirSign.y] - origin.y) * ray.invDir.y;
     tymax = (limitsY2[1 - ray.rayDirSign.y] - origin.y) * ray.invDir.y;
 
-    std::cout << "Statisics: " << std::endl;
-    std::cout << tmin << std::endl;
-    std::cout << tmax << std::endl;
-    std::cout << tymin << std::endl;
-    std::cout << tymax << std::endl;
-    std::cout << std::endl;
+    // std::cout << "Statisics: " << std::endl;
+    // std::cout << tmin << std::endl;
+    // std::cout << tmax << std::endl;
+    // std::cout << tymin << std::endl;
+    // std::cout << tymax << std::endl;
+    // std::cout << std::endl;
 
     if ((tmin > tymax) || (tymin > tmax))
     {
