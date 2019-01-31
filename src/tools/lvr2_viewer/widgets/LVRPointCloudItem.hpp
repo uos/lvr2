@@ -46,7 +46,7 @@ class LVRPointCloudItem : public QTreeWidgetItem
 {
 public:
 
-    LVRPointCloudItem(PointBufferBridgePtr& ptr, QTreeWidgetItem* parent = 0);
+    LVRPointCloudItem(PointBufferBridgePtr ptr, QTreeWidgetItem* parent = 0);
     virtual ~LVRPointCloudItem();
     QColor	getColor();
     void    setColor(QColor &c);

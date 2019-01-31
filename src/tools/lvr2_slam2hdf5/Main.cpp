@@ -31,11 +31,11 @@ int main(int argc, char** argv)
     vector<ScanData> scans;
     parseSLAMDirectory(options.inputDir(), scans);
 
-    HDF5IO hdf5("test.h5");
+    HDF5IO hdf5("test.h5", true);
 
     for(size_t i = 0; i < scans.size(); i++)
     {
-       hdf5.addRawScanData((int)i, scans[i]);
+        hdf5.addRawScanData((int)i, scans[i]);
     }
 
 	return 0;
