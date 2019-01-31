@@ -99,77 +99,55 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 
 }
 
-// template<typename BaseVecT>
-// void AdaptiveKSearchSurface<BaseVecT>::parseScanPoses(string posefile)
-// {
-//     cout << timestamp << "Parsing scan poses." << endl;
-//     std::ifstream in(posefile.c_str());
-//     if(!in.good())
-//     {
-//         cout << timestamp << "Unable to open scan pose file " << posefile << endl;
-//         return;
-//     }
+ template<typename BaseVecT>
+ void AdaptiveKSearchSurface<BaseVecT>::parseScanPoses(string posefile)
+ {
+     cout << timestamp << "Parsing scan poses." << endl;
+     std::ifstream in(posefile.c_str());
+     if(!in.good())
+     {
+         cout << timestamp << "Unable to open scan pose file " << posefile << endl;
+         return;
+     }
 
-//     // Read vertex information
-//     float x, y, z;
-//     std::vector<VertexT> v;
-//     while(in.good())
-//     {
-//         in >> x >> y >> z;
-//         v.push_back(VertexT(x, y, z));
-//     }
+     // Read vertex information
+     float x, y, z;
+     std::vector<BaseVecT> v;
+     while(in.good())
+     {
+         in >> x >> y >> z;
+         v.push_back(BaseVecT(x, y, z));
+     }
 
-//     if(v.size() > 0)
-//     {
-//         PointBufferPtr loader (new PointBuffer);
-//         floatArr points(new float[3 * v.size()]);
-//         for(size_t i = 0; i < v.size(); i++)
-//         {
-//             points[3 * i]       = v[i][0];
-//             points[3 * i + 1]   = v[i][1];
-//             points[3 * i + 2]   = v[i][2];
-//         }
+     if(v.size() > 0)
+     {
+         PointBufferPtr loader (new PointBuffer);
+         floatArr points(new float[3 * v.size()]);
+         for(size_t i = 0; i < v.size(); i++)
+         {
+             points[3 * i]       = v[i][0];
+             points[3 * i + 1]   = v[i][1];
+             points[3 * i + 2]   = v[i][2];
+         }
 
-//         loader->setPointArray(points, v.size());
-//         size_t n = v.size();
+         loader->setPointArray(points, v.size());
+         size_t n = v.size();
 
-//         cout << timestamp << "Creating pose search tree(" << m_searchTreeName << ") with "
-//             << n << " poses." << endl;
+         cout << timestamp << "Creating pose search tree(" << m_searchTreeName << ") with "
+              << n << " poses." << endl;
 
-// #ifdef LVR_USE_PCL
-//         if( m_searchTreeName == "pcl"  || m_searchTreeName == "PCL" )
-//         {
-//             this->m_poseTree = search_tree::Ptr( new SearchTreeFlannPCL<VertexT>(loader, n, 1, 1, 1) );
-//         }
-// #endif
-// #ifdef LVR_USE_STANN
-//         if( m_searchTreeName == "stann" || m_searchTreeName == "STANN" )
-//         {
-//             this->m_poseTree = search_tree::Ptr( new SearchTreeStann<VertexT>(loader, n, 1, 1, 1) );
-//         }
-// #endif
-//         if( m_searchTreeName == "nanoflann" || m_searchTreeName == "NANOFLANN")
-//         {
-//             this->m_poseTree = search_tree::Ptr( new SearchTreeNanoflann<VertexT>(loader, n, 1, 1, 1));
-//         }
-// #ifdef LVR_USE_NABO
-//         if( m_searchTreeName == "nabo" || m_searchTreeName == "NABO" )
-//         {
-//             this->m_poseTree = search_tree::Ptr( new SearchTreeNabo<VertexT>(loader, n, 1, 1, 1));
-//         }
-// #endif
-//         if( m_searchTreeName == "flann" || m_searchTreeName == "FLANN")
-//         {
-//             this->m_searchTree = search_tree::Ptr(new SearchTreeFlann<VertexT>(loader, n, 1, 1, 1));
-//         }
 
-//         if( !this->m_poseTree )
-//         {
-//             cout << timestamp << "No Valid Searchtree class specified!" << endl;
-//             cout << timestamp << "Class: " << m_searchTreeName << endl;
-//         }
-//     }
-// }
+
+         this->m_poseTree = getSearchTree<BaseVecT>(m_searchTreeName, loader);
+
+
+         if( !this->m_poseTree )
+         {
+             cout << timestamp << "No Valid Searchtree class specified!" << endl;
+             cout << timestamp << "Class: " << m_searchTreeName << endl;
+         }
+     }
+ }
 
 template<typename BaseVecT>
 void AdaptiveKSearchSurface<BaseVecT>::init()
