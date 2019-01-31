@@ -41,27 +41,17 @@
 
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/io/Timestamp.hpp>
-#include <lvr2/display/ColorMap.hpp>
-
-#include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/geometry/BoundingBox.hpp"
-#include "lvr2/geometry/Matrix4.hpp"
-
-#include "lvr2/io/CalibrationParameters.hpp"
+#include <lvr2/io/HDF5IO.hpp>
+#include <lvr2/algorithm/NormalAlgorithms.hpp>
+#include <lvr2/geometry/HalfEdgeMesh.hpp>
 
 #include "Options.hpp"
-
-#include <boost/filesystem.hpp>
-
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
-#include <lvr2/io/HDF5IO.hpp>
 
 #include <string>
 #include <sstream>
 #include <algorithm>
 #include <cstring>
+#include <memory>
 
 using namespace lvr2;
 
@@ -73,21 +63,35 @@ int main( int argc, char ** argv )
     ModelPtr model = ModelFactory::readModel(options.getInputFile());
     MeshBufferPtr meshBuffer = model->m_mesh;
 
+
+
     if(meshBuffer)
     {
         floatArr vertices = meshBuffer->getVertices();
         indexArray indices = meshBuffer->getFaceIndices();
 
-        floatArr vertexNormals = meshBuffer->getVertexNormals();
+        //floatArr vertexNormals = meshBuffer->getVertexNormals();
+        //floatArr faceNormals = meshBuffer->getFaceNormals();
 
-        if(!vertexNormals)
+        HalfEdgeMesh<BaseVector<float>>* hem = nullptr;
+        if(vertices && indices)
         {
+            hem = new HalfEdgeMesh<BaseVector<float>>(meshBuffer);
+
+            std::cout << timestamp << "Calculating face normals..." << std::endl;
+            DenseFaceMap<Normal<BaseVector<float>>> faceNormals;
+            faceNormals = calcFaceNormals(*hem);
+
+
             std::cout << timestamp << "Calculating vertex normals..." << std::endl;
+            auto normals = calcVertexNormals(*hem, faceNormals);
+
+            for(auto i : normals)
+            {
+                cout << normals[i] << endl;
+            }
+
         }
-
-
-
-
     }
     else
     {
