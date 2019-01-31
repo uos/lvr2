@@ -69,6 +69,7 @@ const kaboom::Options* options;
 
 // This is dirty
 bool lastScan = false;
+ofstream scanPosesOut("scanpositions.txt");
 
 ModelPtr filterModel(ModelPtr p, int k, float sigma)
 {
