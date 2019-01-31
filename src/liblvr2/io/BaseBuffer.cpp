@@ -81,54 +81,6 @@ intOptional BaseBuffer::getIntAttribute(std::string name)
 }
 
 
-void BaseBuffer::addAttributeMap(
-    const AttributeMap<BaseHandle<lvr2::Index>, unsigned int>& map,
-    const std::string& keys_name, const std::string& values_name)
-{
-    floatArr values(new float[map.numValues()]);
-    indexArray keys(new unsigned int[map.numValues()]);
-    Index i = 0;
-    for(auto handle: map){
-        values[i] = map[handle];
-        keys[i++] = handle.idx();
-    }
-    m_channels.addFloatChannel(values, values_name, map.numValues(), 1);
-    m_channels.addIndexChannel(keys, keys_name, map.numValues(), 1);
-}
-
-
-void BaseBuffer::addAttributeMap(
-    const AttributeMap<BaseHandle<lvr2::Index>, unsigned int>& map,
-    const std::string& keys_name, const std::string& values_name)
-{
-    floatArr values(new unsigned int[map.numValues()]);
-    indexArray keys(new unsigned int[map.numValues()]);
-    Index i = 0;
-    for(auto handle: map){
-        values[i] = map[handle];
-        keys[i++] = handle.idx();
-    }
-    addFloatChannel(values, values_name, map.numValues(), 1);
-    addIndexChannel(keys, keys_name, map.numValues(), 1);
-}
-
-
-void BaseBuffer::addAttributeMap(
-    const AttributeMap<BaseHandle<lvr2::Index>, unsigned char>& map,
-    const std::string& keys_name, const std::string& values_name)
-{
-    floatArr values(new unsigned char[map.numValues()]);
-    indexArray keys(new unsigned int[map.numValues()]);
-    Index i = 0;
-    for(auto handle: map){
-        values[i] = map[handle];
-        keys[i++] = handle.idx();
-    }
-    addFloatChannel(values, values_name, map.numValues(), 1);
-    addIndexChannel(keys, keys_name, map.numValues(), 1);
-}
-
-
 void BaseBuffer::addFloatChannel(floatArr data, std::string name, size_t n, unsigned w)
 {
     m_channels.addFloatChannel(data, name, n, w);
