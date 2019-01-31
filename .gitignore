@@ -37,6 +37,8 @@ cmake-build-release/
 /*.creator
 /*.files
 /*.includes
+/*.user
+/*.orig
 
 # IDE files
 .vscode/

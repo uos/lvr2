@@ -158,6 +158,8 @@ int main( int argc, char ** argv )
     int scanNr = 0;
     for(auto it : annotated_scans)
     {
+
+
         std::string ply_file_name = it.stem().string();
         std::string number = ply_file_name.substr(15);
         size_t numExspectedPNGs = (size_t)options.numPanoramaImages();
@@ -166,6 +168,7 @@ int main( int argc, char ** argv )
         {
             // Read transformation
             path matrix_file = dataDir/path("scan_" + number + "_transformation.txt");
+            std::cout << timestamp << "Reading transformation: " << matrix_file.string() << std::endl;
             Matrix4<BaseVector<float> > transformation;
             transformation.loadFromFile(matrix_file.string());
 
@@ -175,11 +178,6 @@ int main( int argc, char ** argv )
 
             // Compute bounding box
             PointBufferPtr pointCloud = model->m_pointCloud;
-
-            // Load annotations
-            size_t an;
-            unsigned  aw;
-            ucharArr spectral = pointCloud->getUCharArray("spectral_channels", an, aw);
 
             std::cout << timestamp << "Calculating bounding box..." << std::endl;
             BoundingBox<BaseVector<float> > bBox;
@@ -198,26 +196,7 @@ int main( int argc, char ** argv )
             data.m_boundingBox = bBox;
             data.m_registration = transformation;
 
-            // Add point previews
-            int reduction_factor = 20;
-            int num_pts_preview = pointCloud->numPoints() / reduction_factor;
-
-            floatArr pts_preview = floatArr( new float[3 * num_pts_preview + 3] );
-
-            size_t preview_idx = 0;
-            for (size_t i = 0; i < pointCloud->numPoints(); i++)
-            {
-                if (i % reduction_factor == 0)
-                {
-                    pts_preview[preview_idx*3 + 0] = points[i*3 + 0];
-                    pts_preview[preview_idx*3 + 1] = points[i*3 + 1];
-                    pts_preview[preview_idx*3 + 2] = points[i*3 + 2];
-                    preview_idx++;
-                }
-            }
-
-            data.m_preview = PointBufferPtr( new PointBuffer(pts_preview, num_pts_preview) );
-
+            std::cout << timestamp << " Adding raw scan data" << endl;
             // Add objects to hdf5 file
             hdf5.addRawScanData(scanNr, data);
 
@@ -247,18 +226,17 @@ int main( int argc, char ** argv )
 
             // Priliminary experiments showed that this chunking delivered
             // best compression of hyperspectral image data
-            std::vector<hsize_t> chunks = {50, 50, 50};
+            std::vector<hsize_t> chunks =
+                {options.getHSPChunk0(), options.getHSPChunk1(), options.getHSPChunk2()};
+
             sprintf(groupName, "/raw/spectral/position_%05d", scanNr);
+            std::cout << timestamp << "Adding spectral dataset to " << groupName << " with dims "
+                      << options.getHSPChunk0() << " " <<  options.getHSPChunk1() << " " << options.getHSPChunk2() << endl;
 
             hdf5.addArray(groupName, "spectral", dim, chunks, ucharArr(cube));
-            scanNr++;
 
-            // Add spectral annotation channel
-            size_t chunk_w = std::min<size_t>(an, 1000000);    // Limit chunk size
-            std::vector<hsize_t> chunk_annotation = {chunk_w, aw};
-            std::vector<size_t> dim_annotation = {an, aw};
-            sprintf(groupName, "/annotation/position_%05d", scanNr);
-            hdf5.addArray(groupName, "spectral", dim_annotation, chunk_annotation, spectral);
+
+            scanNr++;
         }
         else
         {

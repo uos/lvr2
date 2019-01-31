@@ -395,7 +395,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 
         for(vtkIdType i = 0; i < n; i++)
         {
-            int index = 3 * i;
+            size_t index = 3 * i;
             point[0] = points[index    ];
             point[1] = points[index + 1];
             point[2] = points[index + 2];
@@ -417,7 +417,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
                 {
                     break;
                 }
-                int specIndex = n_s_channels * i;
+                size_t specIndex = n_s_channels * i;
                 unsigned char speccolor[3];
                 speccolor[0] = spec[specIndex + m_spectralChannels.r];
                 speccolor[1] = spec[specIndex + m_spectralChannels.g];
@@ -492,20 +492,22 @@ void LVRPointBufferBridge::setPointSize(int pointSize)
 {
     vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
     p->SetPointSize(pointSize);
-    //m_pointCloudActor->SetProperty(p);
 }
 
 void LVRPointBufferBridge::setOpacity(float opacityValue)
 {
     vtkSmartPointer<vtkProperty> p = m_pointCloudActor->GetProperty();
     p->SetOpacity(opacityValue);
-    //m_pointCloudActor->SetProperty(p);
+}
+
+void LVRPointBufferBridge::setColorsVisibility(bool visible)
+{
+    m_pointCloudActor->GetMapper()->SetScalarVisibility(visible);
 }
 
 void LVRPointBufferBridge::setVisibility(bool visible)
 {
-    if(visible) m_pointCloudActor->VisibilityOn();
-    else m_pointCloudActor->VisibilityOff();
+    m_pointCloudActor->SetVisibility(visible);
 }
 
 void LVRPointBufferBridge::setNormalsVisibility(bool visible)

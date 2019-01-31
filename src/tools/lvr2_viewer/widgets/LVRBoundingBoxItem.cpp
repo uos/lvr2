@@ -13,7 +13,7 @@ LVRBoundingBoxItem::LVRBoundingBoxItem(
                                    m_name(name)
 {
     setText(0, m_name);
-    setCheckState(0, Qt::Checked);
+    setCheckState(0, Qt::Unchecked);
 
     auto tmp = m_bb->getBoundingBox();
 

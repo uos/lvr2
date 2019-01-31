@@ -65,6 +65,7 @@ public:
     void setOpacity(float opacityValue);
     void setVisibility(bool visible);
     void setNormalsVisibility(bool visible);
+    void setColorsVisibility(bool visible);
     /// set the spectral channel for (r, g, b) and set if it is used
     void setSpectralChannels(color<size_t> channels, color<bool> use_channel);
     /// get spectral channel mappings

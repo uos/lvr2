@@ -28,7 +28,7 @@
  /*
  * Options.h
  *
- *  Created on: Aug 23 2012
+ *  Created on: Nov 21, 2010
  *      Author: Thomas Wiemann
  */
 
@@ -47,7 +47,7 @@ using std::string;
 using std::vector;
 
 
-namespace hdf5tool
+namespace slam6dmerger
 {
 
 using namespace boost::program_options;
@@ -66,16 +66,20 @@ public:
 	Options(int argc, char** argv);
 	virtual ~Options();
 
-    string  getDataDir()        const { return m_variables["dataDir"].as<string>();}
-    int     numPanoramaImages() const { return m_variables["nch"].as<int>();}
+	string	getInputDir() const;
+	string 	getOutputDir() const;
+    string  getMergeDir() const;
 
-    size_t  getHSPChunk0() const { return m_variables["hsp_chunk_0"].as<size_t>(); }
-    size_t  getHSPChunk1() const { return m_variables["hsp_chunk_1"].as<size_t>(); }
-    size_t  getHSPChunk2() const { return m_variables["hsp_chunk_2"].as<size_t>(); }
+    string  getTransformFile() const;
 
-    bool    addAnnotations() const { return (m_variables["addAnnotations"].as<int>() != 0);}
+    int getStart() const { return m_variables["start"].as<int>(); }
+    int getEnd() const { return m_variables["end"].as<int>(); }
 
 private:
+
+	/// Output file name
+	string m_outputFile;
+
     /// The internally used variable map
     variables_map                   m_variables;
 
@@ -92,8 +96,12 @@ private:
 inline ostream& operator<<(ostream& os, const Options &o)
 {
 	cout << "##### Program options: " 	<< endl;
-    cout << "##### Data directory \t\t: "  << o.getDataDir() << endl;
-
+	cout << "##### Input dir \t\t: "  << o.getInputDir() << endl;
+    cout << "##### Merge dir \t\t: " 	<< o.getMergeDir() << endl;
+	cout << "##### Output dir \t\t: " 	<< o.getOutputDir() << endl;
+    cout << "##### Transform \t\t:" << o.getTransformFile() << endl;
+    cout << "##### Start scan \t\t: " << o.getStart() << endl;
+    cout << "##### End scan \t\t\t: " << o.getStart() << endl;
 	return os;
 }
 

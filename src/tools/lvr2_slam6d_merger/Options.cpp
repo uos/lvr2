@@ -28,13 +28,13 @@
  /*
  * Options.cpp
  *
- *  Created on: Nov 21, 2010
+ *  Created on: Aug 7, 2013
  *      Author: Thomas Wiemann
  */
 
 #include "Options.hpp"
 
-namespace hdf5tool
+namespace slam6dmerger
 {
 
 Options::Options(int argc, char** argv) : m_descr("Supported options")
@@ -43,14 +43,16 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 	// Create option descriptions
 
 	m_descr.add_options()
-            ("help", "Produce help message")
-            ("dataDir", value<string>()->default_value("./"), "Directory with hyperspectral data.")
-            ("nch, n", value<int>()->default_value(150), "Number of spectral PNGs in image folder.")
-            ("hsp_chunk_0", value<size_t>()->default_value(50), "Dim 0 of HSP image chunks.")
-            ("hsp_chunk_1", value<size_t>()->default_value(50), "Dim 1 of HSP image chunks.")
-            ("hsp_chunk_2", value<size_t>()->default_value(50), "Dim 2 of HSP image chunks.")
-            ("addAnnotations", value<int>()->default_value(1), "Add spectral annotation channels");
+		("help", "Produce help message")
+		("inputDir", value<string>()->default_value("./"), "A directory containing several scan files for batch conversion.")
+        ("mergeDir", value<string>()->default_value("./"), "A directory containing scans to merge into the project defined in inputDir")
+        ("outputDir", value<string>()->default_value("./"), "The target directory for the merge scan data.")
+        ("transformFile", value<string>()->default_value("./"), "A text file containing the transformation between the coordinates systems of inputDir and mergeDir")
+        ("start,s", value<int>()->default_value(0), "start at scan NR in mergeDir")
+        ("end,e", value<int>()->default_value(0), "end at scan NR in mergeDir")
+	;
 
+	m_pdescr.add("inputFile", -1);
 
 	// Parse command line and generate variables map
 	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
@@ -63,6 +65,29 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 
 }
+
+
+string 	Options::getInputDir() const
+{
+	return m_variables["inputDir"].as<string>();
+}
+
+string 	Options::getMergeDir() const
+{
+    return m_variables["mergeDir"].as<string>();
+}
+
+string 	Options::getOutputDir() const
+{
+	return m_variables["outputDir"].as<string>();
+}
+
+string 	Options::getTransformFile() const
+{
+    return m_variables["transformFile"].as<string>();
+}
+
+
 
 Options::~Options() {
 	// TODO Auto-generated destructor stub

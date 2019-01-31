@@ -32,7 +32,7 @@ int main()
     ScanDataManager scanman(filename);
     HDF5IO hdf5(filename);
 
-    scandatas = scanman.getScanData("/raw/scans");
+/*    scandatas = scanman.getScanData("/raw/scans");*/
 
     std::vector<size_t> dim;
     string groupname = "annotation/position_00001";

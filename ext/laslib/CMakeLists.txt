@@ -1,6 +1,6 @@
 
 # set include dirs
-set(LASLIB_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/lvr/ext/laslib CACHE PATH "install location of laslib library headers")
+set(LASLIB_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/laslib CACHE PATH "install location of laslib library headers")
 find_path(LASLIB_INCLUDE_DIR lasreader.hpp PATH inc)
 mark_as_advanced(LASLIB_INCLUDE_DIR LASLIB_INSTALL_INCLUDE_DIR)
 
