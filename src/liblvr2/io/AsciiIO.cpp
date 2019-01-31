@@ -128,7 +128,6 @@ ModelPtr AsciiIO::read(
 
     // Read data form file
     size_t c = 0;
-    cout << c << " " << numPoints << endl;
     while (in.good() && c < numPoints)
     {
 
@@ -149,19 +148,19 @@ ModelPtr AsciiIO::read(
             {
                 in >> z;
             }
-            else if(i == gPos)
+            else if(i == rPos)
             {
                 in >> r;
             }
-            else if(i == bPos)
+            else if(i == gPos)
             {
                 in >> g;
             }
-            else if(i == iPos)
+            else if(i == bPos)
             {
                 in >> b;
             }
-            else if(i == rPos)
+            else if(i == iPos)
             {
                 in >> intensity;
             }
@@ -186,8 +185,6 @@ ModelPtr AsciiIO::read(
             pointIntensities[c] = intensity;
 
         }
-
-//        cout << c << " " << x << " " << y << " " << z << endl;
 
         points[ c * 3     ] = x;
         points[ c * 3 + 1 ] = y;
