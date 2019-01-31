@@ -50,7 +50,7 @@ namespace lvr2
  * Internally, the handle is just an index. How those indices are used is
  * determined by the thing creating handles (e.g. the mesh implementation).
  */
-template<typename IdxT>
+template<typename IdxT=uint32_t >
 class BaseHandle
 {
 public:

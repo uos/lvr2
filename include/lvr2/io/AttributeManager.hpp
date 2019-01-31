@@ -162,8 +162,8 @@ public:
     }
 
     DataPtr&     dataPtr() { return m_data;}
-    unsigned     width() { return m_width;}
-    size_t       numAttributes() { return m_numAttributes;}
+    unsigned     width() const { return m_width;}
+    size_t       numAttributes() const { return m_numAttributes;}
 
 private:
     size_t          m_numAttributes;
@@ -231,6 +231,24 @@ public:
             size_t n,
             unsigned width);
 
+    void addChannel(indexArray array, std::string name, size_t n, unsigned width)
+        { addIndexChannel(array, name, n, width);}
+
+    void addChannel(floatArr array, std::string name, size_t n, unsigned width)
+        { addFloatChannel(array, name, n, width);}
+
+    void addChannel(ucharArr array, std::string name, size_t n, unsigned width)
+        { addUCharChannel(array, name, n, width);}
+
+    void getChannel(std::string name, FloatChannelOptional& channelOptional )
+        { channelOptional = getFloatChannel(name);}
+
+    void getChannel(std::string name, IndexChannelOptional& channelOptional)
+        { channelOptional = getIndexChannel(name);}
+
+    void getChannel(std::string name, UCharChannelOptional& channelOptional)
+        { channelOptional = getUCharChannel(name);}
+
     bool hasUCharChannel(std::string name);
     bool hasFloatChannel(std::string name);
     bool hasIndexChannel(std::string name);
@@ -280,7 +298,6 @@ private:
     using UCharChannelMap = std::map<std::string, UCharChannelPtr>;
     using IndexChannelMap = std::map<std::string, IndexChannelPtr>;
 };
-
 
 } // namespace lvr2
 

@@ -106,12 +106,6 @@ intOptional AttributeManager::getIntAttribute(std::string name)
     }
 }
 
-void AttributeManager::addIntChannel(intArr data, std::string name, size_t n, unsigned width)
-{
-    IntChannelPtr channel(new IntChannel(n, width, data));
-    addIntChannel(channel, name);
-}
-
 void AttributeManager::addFloatChannel(floatArr data, std::string name, size_t n, unsigned width)
 {
     FloatChannelPtr channel(new FloatChannel(n, width, data));
