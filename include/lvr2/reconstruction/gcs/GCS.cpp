@@ -23,7 +23,7 @@
  *  @author Henning Strueber (hstruebe@uos.de)
  */
 namespace logging = boost::log;
-namespace lvr {
+namespace lvr2 {
 template <typename VertexT, typename NormalT>
 GCS<VertexT, NormalT>::GCS(PointBufferPtr pBuffer, std::string config) {
 
@@ -754,4 +754,4 @@ template <typename VertexT, typename NormalT> GCS<VertexT, NormalT>::~GCS() {
   delete m_filterChain;
   datafile.close();
 }
-} // namespace lvr
+} // namespace lvr2

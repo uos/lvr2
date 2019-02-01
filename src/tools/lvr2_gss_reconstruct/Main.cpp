@@ -28,11 +28,11 @@
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/Simple_cartesian.h>
 
-using namespace lvr;
+using namespace lvr2;
 
 typedef CGALPolyhedronMesh<ColorVertex<float, unsigned char>, Normal<float>,
                            CGAL::Exact_predicates_inexact_constructions_kernel,
-                           lvr::GrowingSurfaceStructure::GrowingItems>
+                           lvr2::GrowingSurfaceStructure::GrowingItems>
     GrowingMesh;
 typedef HalfEdgeMesh<ColorVertex<float, unsigned char>> Mesh;
 

@@ -23,7 +23,7 @@
  *  @author Henning Strüber (hstruebe@uos.de)
  */
 
-namespace lvr {
+namespace lvr2 {
 
 template <typename VertexT, typename NormalT, typename Kernel, typename Items>
 CGALPolyhedronMesh<VertexT, NormalT, Kernel, Items>::CGALPolyhedronMesh() {}
@@ -146,4 +146,4 @@ size_t CGALPolyhedronMesh<VertexT, NormalT, Kernel, Items>::meshSize() {
 
 template <typename VertexT, typename NormalT, typename Kernel, typename Items>
 CGALPolyhedronMesh<VertexT, NormalT, Kernel, Items>::~CGALPolyhedronMesh() {}
-} // namespace lvr
+} // namespace lvr2

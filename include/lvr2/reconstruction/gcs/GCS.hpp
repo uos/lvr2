@@ -36,12 +36,12 @@
 #include <stdlib.h>
 
 // lvr related includes
-#include <lvr/io/DataStruct.hpp>
+#include <lvr2/io/DataStruct.hpp>
 
-#include <lvr/geometry/BoundingBox.hpp>
-#include <lvr/geometry/CGALPolyhedronMesh.hpp>
-#include <lvr/geometry/ColorVertex.hpp>
-#include <lvr/geometry/Normal.hpp>
+#include <lvr2/geometry/BoundingBox.hpp>
+#include <lvr2/geometry/CGALPolyhedronMesh.hpp>
+#include <lvr2/geometry/ColorVertex.hpp>
+#include <lvr2/geometry/Normal.hpp>
 
 #include <CGAL/Point_3.h>
 #include <CGAL/Random.h>
@@ -80,11 +80,11 @@
 #include <boost/progress.hpp>
 
 // filter chain
-#include <lvr/reconstruction/gcs/FilterChain.hpp>
+#include <lvr2/reconstruction/gcs/FilterChain.hpp>
 
 namespace SMS = CGAL::Surface_mesh_simplification;
 
-namespace lvr {
+namespace lvr2 {
 template <typename VertexT = ColorVertex<float, unsigned char>,
           typename NormalT = Normal<float>>
 class GCS {
@@ -404,7 +404,7 @@ protected:
   void calcSCMean();
 
 }; // class GCS
-}; // namespace lvr
+}; // namespace lvr2
 
 #include "GCS.cpp"
 

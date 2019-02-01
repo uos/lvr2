@@ -38,7 +38,7 @@
 
 namespace PMP = CGAL::Polygon_mesh_processing;
 
-namespace lvr {
+namespace lvr2 {
 /**
  * FilterChain
  */
@@ -342,5 +342,5 @@ public:
     }
   } OptimizeValence;
 };
-}; // namespace lvr
+}; // namespace lvr2
 #endif

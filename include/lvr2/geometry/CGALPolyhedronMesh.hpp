@@ -30,7 +30,7 @@
 
 #include <iostream>
 
-#include <lvr/reconstruction/PointsetSurface.hpp>
+#include <lvr2/reconstruction/PointsetSurface.hpp>
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -47,12 +47,12 @@
 #include <CGAL/boost/graph/properties.h>
 #include <boost/graph/graph_traits.hpp>
 
-namespace lvr {
+namespace lvr2 {
 
 template <typename VertexT, typename NormalT,
           typename Kernel = CGAL::Exact_predicates_inexact_constructions_kernel,
           typename Items = CGAL::Polyhedron_items_with_id_3>
-class CGALPolyhedronMesh : public BaseMesh<VertexT, NormalT> {
+class CGALPolyhedronMesh : public BaseMesh<VertexT> {
 public:
   CGALPolyhedronMesh();
 
@@ -192,7 +192,7 @@ std::ostream &operator<<(std::ostream &os,
   return os;
 }
 
-} // namespace lvr
+} // namespace lvr2
 #include "CGALPolyhedronMesh.cpp"
 
 #endif /* CGALPOLYHEDRONMESH_H_ */
