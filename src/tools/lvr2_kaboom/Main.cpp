@@ -69,6 +69,7 @@ const kaboom::Options* options;
 
 // This is dirty
 bool lastScan = false;
+ofstream scanPosesOut("scanpositions.txt");
 
 ModelPtr filterModel(ModelPtr p, int k, float sigma)
 {
@@ -269,6 +270,22 @@ Eigen::Matrix4d buildTransformation(double* alignxf)
     return transformation;
 }
 
+void addScanPosition(Eigen::Matrix4d& transform)
+{
+    Eigen::Vector4d translation = transform.rightCols<1>();
+    if(scanPosesOut.good())
+    {
+        std::cout << timestamp << "Exporting scan position @ "
+                  << translation[0] << " "
+                  << translation[1] << " "
+                  << translation[2] << std::endl;
+
+        scanPosesOut << translation[0] << " "
+                     << translation[1] << " "
+                     << translation[2] << std::endl;
+    }
+}
+
 Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
 {
     ifstream poseIn(pose.c_str());
@@ -340,6 +357,23 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
         {
             c = 0;
             break;
+        }
+    }
+
+    return buildTransformation(alignxf);
+}
+
+Eigen::Matrix4d getTransformationFromDat(boost::filesystem::path& frames)
+{
+    double alignxf[16];
+    int color;
+
+    std::ifstream in(frames.c_str());
+    if(in.good())
+    {
+        for(int i = 0; i < 16; i++)
+        {
+            in >> alignxf[i];
         }
     }
 
@@ -514,11 +548,15 @@ void processSingleFile(boost::filesystem::path& inFile)
     {
         char frames[1024];
         char pose[1024];
+        char dat[1024];
         sprintf(frames, "%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
         sprintf(pose, "%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
+        sprintf(dat, "%s/%s.dat", inFile.parent_path().c_str(), inFile.stem().c_str());
+
 
         boost::filesystem::path framesPath(frames);
         boost::filesystem::path posePath(pose);
+        boost::filesystem::path datPath(dat);
 
         size_t reductionFactor = asciiReductionFactor(inFile);
 
@@ -527,11 +565,20 @@ void processSingleFile(boost::filesystem::path& inFile)
             transformFromOptions(model, reductionFactor);
         }
 
-        if(boost::filesystem::exists(framesPath))
+
+        if(boost::filesystem::exists(datPath))
+        {
+            std::cout << timestamp << "Getting transformation from dat: " << datPath << std::endl;
+            Eigen::Matrix4d transform = getTransformationFromDat(datPath);
+            transformModel(model, transform);
+            addScanPosition(transform);
+        }
+        else if(boost::filesystem::exists(framesPath))
         {
             std::cout << timestamp << "Getting transformation from frame: " << framesPath << std::endl;
             Eigen::Matrix4d transform = getTransformationFromFrames(framesPath);
             transformModel(model, transform);
+            addScanPosition(transform);
         }
         else if(boost::filesystem::exists(posePath))
         {
@@ -539,6 +586,7 @@ void processSingleFile(boost::filesystem::path& inFile)
             std::cout << timestamp << "Getting transformation from pose: " << posePath << std::endl;
             Eigen::Matrix4d transform = getTransformationFromPose(posePath);
             transformModel(model, transform);
+            addScanPosition(transform);
         }
 
         if(!options->transformBefore())
@@ -819,7 +867,7 @@ int main(int argc, char** argv) {
     for(boost::filesystem::directory_iterator it(inputDir); it != end; ++it)
     {
         std::string ext =	it->path().extension().string();
-        if(ext == ".3d" || ext == ".ply" || ext == ".dat" || ext == ".txt" )
+        if(ext == ".3d" || ext == ".ply" || ext == ".txt" )
         {
             v.push_back(it->path());
         }
