@@ -82,22 +82,7 @@ public:
     /// \param keys_name        The name of the map keys for the attribute manager
     /// \param values_name      The name of the map values for the attribute manager
     bool addAttributeMap(const AttributeMap<BaseHandle<Index>, BaseVector<float> >& map,
-        const std::string& keys_name, const std::string& values_name)
-    {
-        floatArr values(new float[map.numValues() * 3]);
-        indexArray keys(new unsigned int[map.numValues()]);
-        Index i = 0;
-        for(auto handle: map){
-            values[i*3+0] = map[handle].x;
-            values[i*3+1] = map[handle].y;
-            values[i*3+2] = map[handle].z;
-            keys[i++] = handle.idx();
-        }
-        m_channels.addFloatChannel(values, values_name, map.numValues(), 3);
-        m_channels.addIndexChannel(keys, keys_name, map.numValues(), 1);
-        return true;
-    }
-
+        const std::string& keys_name, const std::string& values_name);
     ///
     /// \brief addAttributeMap  Stores an attribute map of unsigned chars
     /// \param map              The attribute map, which can be a specific attribute map implementation
@@ -139,27 +124,7 @@ public:
     /// \param values_name      The name of the map values for the attribute manager
     /// \return                 true if the conversion and the reading succeeded
     bool getAttributeMap(AttributeMap<BaseHandle<Index>, BaseVector<float> >& map,
-        const std::string& keys_name, const std::string& values_name)
-    {
-        IndexChannelOptional keys_opt = m_channels.getIndexChannel(keys_name);
-        FloatChannelOptional values_opt = m_channels.getFloatChannel(values_name);
-
-        if(keys_opt && values_opt &&
-            keys_opt.get().width() == 1 &&
-            values_opt.get().width() == 3 &&
-            keys_opt.get().numAttributes() == values_opt.get().numAttributes())
-        {
-            FloatChannel& values = values_opt.get();
-            IndexChannel& keys = keys_opt.get();
-            map.clear();
-            for(size_t i=0; i<keys.numAttributes(); i++)
-            {
-              map.insert(BaseHandle<Index>(keys[i][0]), values[i]);
-            }
-            return true;
-        }
-        else return false;
-    }
+        const std::string& keys_name, const std::string& values_name);
 
     ///
     /// \brief getAttributeMap  Reads an attribute map of unsigned ints
@@ -194,6 +159,67 @@ public:
         AttributeMap<BaseHandle<Index>, float>& map,
         const std::string& keys_name, const std::string& values_name)
         {return getAttributeMap<float>(map, keys_name, values_name);}
+
+    ///
+    /// \brief addAttributeMap  Stores a dense attribute map of vectors
+    /// \tparam BaseVecT        The base vector type, with x, y, z attributes
+    /// \param map              The attribute map, which can be a specific attribute map implementation
+    /// \param name             The name of the map values for the attribute manager
+    bool addAttributeMap(const DenseAttrMap<BaseHandle<Index>, BaseVector<float> >& map, const std::string& name);
+
+    ///
+    /// \brief addAttributeMap  Stores a dense attribute map of unsigned chars
+    /// \param map              The attribute map, which can be a specific attribute map implementation
+    /// \param name             The name of the map values for the attribute manager
+    bool addAttributeMap(const DenseAttrMap<BaseHandle<Index>, unsigned char>& map, const std::string& name)
+    {return addAttributeMap<unsigned char>(map, name);}
+
+
+    ///
+    /// \brief addAttributeMap  Stores a dense attribute map of unsigned ints
+    /// \param map              The attribute map, which can be a specific attribute map implementation
+    /// \param name             The name of the map values for the attribute manager
+    bool addAttributeMap(const DenseAttrMap<BaseHandle<Index>, unsigned int>& map, const std::string& name)
+    {return addAttributeMap<unsigned int>(map, name);}
+
+    ///
+    /// \brief addAttributeMap  Stores a dense attribute map of floats
+    /// \param map              The attribute map, which can be a specific attribute map implementation
+    /// \param name             The name of the map values for the attribute manager
+    bool addAttributeMap(const DenseAttrMap<BaseHandle<Index>, float>& map, const std::string& name)
+    {return addAttributeMap<float>(map, name);}
+
+    ///
+    /// \brief getAttributeMap  Reads a dense attribute map of vectors
+    /// \tparam BaseVecT        The base vector type, with x, y, z attributes
+    /// \param map              The attribute map, which can be a specific attribute map implementation
+    /// \param name             The name of the map values for the attribute manager
+    /// \return                 true if the conversion and the reading succeeded
+    bool getAttributeMap(DenseAttrMap<BaseHandle<Index>, BaseVector<float> >& map, const std::string& name);
+
+    ///
+    /// \brief getAttributeMap  Reads a dense attribute map of unsigned ints
+    /// \param map              The attribute map, which can be a specific attribute map implementation
+    /// \param name             The name of the map values for the attribute manager
+    /// \return                 true if the conversion and the reading succeeded
+    bool getAttributeMap(DenseAttrMap <BaseHandle<Index>, unsigned int>& map, const std::string& name)
+    {return getAttributeMap<unsigned int>(map, name);}
+
+    ///
+    /// \brief getAttributeMap  Reads a dense attribute map of unsigned chars
+    /// \param map              The attribute map, which can be a specific attribute map implementation
+    /// \param name             The name of the map values for the attribute manager
+    /// \return                 true if the conversion and the reading succeeded
+    bool getAttributeMap(DenseAttrMap<BaseHandle<Index>, unsigned char>& map, const std::string& name)
+    {return getAttributeMap<unsigned char>(map, name);}
+
+    ///
+    /// \brief getAttributeMap  Reads a dense attribute map of floats
+    /// \param map              The attribute map, which can be a specific attribute map implementation
+    /// \param name             The name of the map values for the attribute manager
+    /// \return                 true if the conversion and the reading succeeded
+    bool getAttributeMap(DenseAttrMap<BaseHandle<Index>, float>& map, const std::string& name)
+    {return getAttributeMap<float>(map, name);}
 
     void addFloatAttribute(float data, std::string name);
     void addUCharAttribute(unsigned char data, std::string name);
@@ -286,17 +312,32 @@ private:
     bool addAttributeMap(const AttributeMap<BaseHandle<Index>, DataType>& map,
                          const std::string& keys_name, const std::string& values_name)
     {
-        boost::shared_array<DataType> values(new DataType[map.numValues()]);
-        indexArray keys(new unsigned int[map.numValues()]);
-        Index i = 0;
-        for(auto handle: map)
-        {
-            values[i] = map[handle];
-            keys[i++] = handle.idx();
-        }
+      boost::shared_array<DataType> values(new DataType[map.numValues()]);
+      indexArray keys(new unsigned int[map.numValues()]);
+      Index i = 0;
+      for(auto handle: map)
+      {
+        values[i] = map[handle];
+        keys[i++] = handle.idx();
+      }
 
-        m_channels.addChannel(values, values_name, map.numValues(), 1);
-        m_channels.addIndexChannel(keys, keys_name, map.numValues(), 1);
+      m_channels.addChannel(values, values_name, map.numValues(), 1);
+      m_channels.addIndexChannel(keys, keys_name, map.numValues(), 1);
+      return true;
+    }
+
+    ///
+    /// \brief addAttributeMap  Stores a dense attribute map
+    /// \tparam DataType        The data type to store
+    /// \param map              The attribute map, which can be a specific attribute map implementation
+    /// \param name             The name of the map values for the attribute manager
+    template<typename DataType>
+    bool addAttributeMap(const DenseAttrMap <BaseHandle<Index>, DataType>& map, const std::string& name)
+    {
+        boost::shared_array<DataType> values(new DataType[map.numValues()]);
+        Index i = 0;
+        for(auto handle: map) values[i++] = map[handle];
+        m_channels.addChannel(values, name, map.numValues(), 1);
         return true;
     }
 
@@ -304,8 +345,7 @@ private:
     /// \brief getAttributeMap  Reads and attribute map
     /// \tparam DataType        The data type to store
     /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param keys_name        The name of the map keys for the attribute manager
-    /// \param values_name      The name of the map values for the attribute manager
+    /// \param name             The name of the map values for the attribute manager
     /// \return                 true if the conversion and the reading succeeded
     template<typename DataType>
     bool getAttributeMap(AttributeMap<BaseHandle<Index>, DataType>& map,
@@ -331,6 +371,30 @@ private:
         }
         else return false;
     }
+
+    ///
+    /// \brief getAttributeMap  Reads a dense attribute map
+    /// \tparam DataType        The data type to store
+    /// \param map              The attribute map, which can be a specific attribute map implementation
+    /// \param name             The name of the map values for the attribute manager
+    /// \return                 true if the conversion and the reading succeeded
+    template<typename DataType>
+    bool getAttributeMap(DenseAttrMap<BaseHandle<Index>, DataType>& map, const std::string& name)
+    {
+        boost::optional<AttributeChannel<DataType>&> values_opt;
+        m_channels.getChannel(name, values_opt);
+
+        if(values_opt && values_opt.get().width() == 1)
+        {
+            map.clear();
+            AttributeChannel<DataType>& values = values_opt.get();
+            for(size_t i=0; i<values.numAttributes(); i++) map.insert(BaseHandle<Index>(i), values[i][0]);
+            //TODO map = DenseAttrMap<BaseHandle<Index>, DataType>(values_opt.get().dataPtr());
+            return true;
+        }
+        else return false;
+    }
+
 
 };
 
