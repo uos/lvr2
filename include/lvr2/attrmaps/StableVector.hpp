@@ -38,6 +38,7 @@
 #include <vector>
 #include <utility>
 #include <boost/optional.hpp>
+#include <boost/shared_array.hpp>
 
 using std::move;
 using std::vector;
@@ -125,6 +126,8 @@ public:
      * indices of these elements are 0 to `countElements` - 1.
      */
     StableVector(size_t countElements, const ElementType& defaultValue);
+
+    StableVector(size_t countElements, boost::shared_array<ElementType>& sharedArray);
 
     /**
      * @brief Adds the given element to the vector.

@@ -112,4 +112,77 @@ void BaseBuffer::addIntAttribute(int data, std::string name)
     m_channels.addIntAttribute(data, name);
 }
 
+bool BaseBuffer::addAttributeMap(const DenseAttrMap<BaseHandle<Index>, BaseVector<float> >& map, const std::string& name)
+{
+    floatArr values(new float[map.numValues() * 3]);
+    Index i = 0;
+    for(auto handle: map){
+        values[i*3+0] = map[handle].x;
+        values[i*3+1] = map[handle].y;
+        values[i*3+2] = map[handle].z;
+        i++;
+    }
+    m_channels.addFloatChannel(values, name, map.numValues(), 3);
+    return true;
 }
+
+bool BaseBuffer::addAttributeMap(const AttributeMap<BaseHandle<Index>, BaseVector<float> >& map,
+                     const std::string& keys_name, const std::string& values_name)
+{
+    floatArr values(new float[map.numValues() * 3]);
+    indexArray keys(new unsigned int[map.numValues()]);
+    Index i = 0;
+    for(auto handle: map){
+        values[i*3+0] = map[handle].x;
+        values[i*3+1] = map[handle].y;
+        values[i*3+2] = map[handle].z;
+        keys[i++] = handle.idx();
+    }
+    m_channels.addFloatChannel(values, values_name, map.numValues(), 3);
+    m_channels.addIndexChannel(keys, keys_name, map.numValues(), 1);
+    return true;
+}
+
+bool BaseBuffer::getAttributeMap(DenseAttrMap <BaseHandle<Index>, BaseVector<float> >& map, const std::string& name)
+{
+  FloatChannelOptional values_opt = m_channels.getFloatChannel(name);
+
+  if(values_opt && values_opt.get().width() == 3)
+  {
+    FloatChannel& values = values_opt.get();
+    map.clear();
+    for(size_t i=0; i<values.numAttributes(); i++)
+    {
+      map.insert(BaseHandle<Index>(i), values[i]);
+    }
+    return true;
+  }
+  else return false;
+}
+
+bool BaseBuffer::getAttributeMap(AttributeMap<BaseHandle<Index>, BaseVector<float> >& map,
+                     const std::string& keys_name, const std::string& values_name)
+{
+    IndexChannelOptional keys_opt = m_channels.getIndexChannel(keys_name);
+    FloatChannelOptional values_opt = m_channels.getFloatChannel(values_name);
+
+    if(keys_opt && values_opt &&
+        keys_opt.get().width() == 1 &&
+        values_opt.get().width() == 3 &&
+        keys_opt.get().numAttributes() == values_opt.get().numAttributes())
+    {
+        FloatChannel& values = values_opt.get();
+        IndexChannel& keys = keys_opt.get();
+        map.clear();
+        for(size_t i=0; i<keys.numAttributes(); i++)
+        {
+            map.insert(BaseHandle<Index>(keys[i][0]), values[i]);
+        }
+        return true;
+    }
+    else return false;
+}
+
+}
+
+
