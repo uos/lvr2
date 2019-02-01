@@ -79,7 +79,7 @@
 namespace SMS = CGAL::Surface_mesh_simplification;
 namespace PMP = CGAL::Polygon_mesh_processing;
 
-namespace lvr {
+namespace lvr2 {
 
 class GrowingSurfaceStructure {
 public:
@@ -565,6 +565,6 @@ protected:
    */
   void printInfo();
 };
-} // namespace lvr
+} // namespace lvr2
 #include "GrowingSurfaceStructure.cpp"
 #endif

@@ -25,7 +25,7 @@
  * Implementation for algorithm described in H. Anuth (2014)
  */
 
-namespace lvr {
+namespace lvr2 {
 
 GrowingSurfaceStructure::GrowingSurfaceStructure() {}
 
@@ -1118,4 +1118,4 @@ GrowingSurfaceStructure::~GrowingSurfaceStructure() {
   delete acc;
   datafile.close();
 }
-}
+} //namespace lvr2
