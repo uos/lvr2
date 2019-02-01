@@ -27,18 +27,23 @@
 
 namespace lvr2 {
 
-GrowingSurfaceStructure::GrowingSurfaceStructure() {}
+GrowingSurfaceStructure::GrowingSurfaceStructure() {
+}
 
 GrowingSurfaceStructure::GrowingSurfaceStructure(PointBufferPtr pBuffer,
                                                  std::string config) {
 
   // Get pointarray from pBuffer, save it to m_pointCoord and set m_pointNumber
-  m_pointCoord = pBuffer.get()->getIndexedPointArray(m_pointNumber);
+  m_pointNumber = pBuffer->numPoints();
+  //GET POINT ARRAY (FloatChannel)
+  m_pointCoord = *(pBuffer->getFloatChannel("points"));
+
+  //m_pointCoord = pBuffer.get()->getIndexedPointArray(m_pointNumber);
 
   // copy point coords to vector with Point_3 which the common format in CGAL
   for (size_t i = 0; i < m_pointNumber; i++) {
     m_point3Vec.push_back(
-        Point_3(m_pointCoord[i].x, m_pointCoord[i].y, m_pointCoord[i].z));
+        Point_3(m_pointCoord[i][0], m_pointCoord[i][1], m_pointCoord[i][2]));
   }
   boost::posix_time::ptime p(boost::posix_time::microsec_clock::local_time());
   datafile.open("gss_" + to_simple_string(p) + ".csv");
