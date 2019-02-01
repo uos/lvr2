@@ -361,7 +361,7 @@ protected:
 
   PolyhedronMesh *m_mesh;
 
-  coord3fArr m_pointCoord;          // aka. boost::shared_array< coord<float> >
+  FloatChannel m_pointCoord;          // aka. boost::shared_array< coord<float> >
   std::vector<Point_3> m_point3Vec; // contains raw point data as Point_3 DT
   size_t m_pointNumber;             // number of points
   double m_k;                       // k = 1 / 1 - 0.5^(1/p_lambda)
