@@ -28,19 +28,37 @@ int main()
     string filename = res_path + file;
 
     vector<ScanData> scandatas;
-/*    vector<cv::Mat2d> channels;*/
 
     HDF5IO hdf5(filename, false);
 
     std::vector<size_t> dim;
 
-    string groupname = "annotation/position_00010";
+    // TODO: really use raw data?
+    string groupname = "raw/spectral/position_00010";
     string datasetname = "spectral";
     boost::shared_array<unsigned int> spectrals = hdf5.getArray<unsigned int>(groupname, datasetname, dim);
 
-    for(size_t size: dim)
+    size_t num_channels = dim[0];
+    size_t num_points_y = dim[1];
+    size_t num_points_x = dim[2];
+
+    // debug
+    num_channels = 1;
+    num_points_y = 5; // TODO: causes segfault if real value is assigned
+/*    num_points_x = 5;*/
+
+    for(int channel = 0; channel < num_channels; channel++)
     {
-        cout << size << endl;
+        unsigned int data[num_points_y * num_points_x];
+        for(int i = 0; i < num_points_y * num_points_x; i++)
+        {
+            // pass auf deinen Ram auf!!
+            data[i] = spectrals.get()[(channel + 1) * i];
+        }
+        cv::Mat mat(num_points_y, num_points_x, CV_32SC1, data);
+
+        cout << mat << endl;
+
     }
 
     return 0;
