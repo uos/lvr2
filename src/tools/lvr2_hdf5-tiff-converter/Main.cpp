@@ -21,16 +21,22 @@ using std::ifstream;
 using std::cout;
 using std::endl;
 
-int main()
+void printUsage()
 {
-    string res_path = "../../../../res/";
-    string file = "botanischer_garten.h5";
-    string filename = res_path + file;
+    std::cout << "Please submit the path to a .h5 file." << std::endl;
+    std::cout << "Usage: ./hdf5-tiff-converter <path>.h5" << std::endl;
+}
 
-    vector<ScanData> scandatas;
+int main(int argc, char**argv)
+{
+    if(!argv[1])
+    {
+        printUsage();
+        return 0;
+    }
 
+    string filename = argv[1];
     HDF5IO hdf5(filename, false);
-
     std::vector<size_t> dim;
 
     // TODO: really use raw data?
@@ -39,26 +45,20 @@ int main()
     boost::shared_array<unsigned int> spectrals = hdf5.getArray<unsigned int>(groupname, datasetname, dim);
 
     size_t num_channels = dim[0];
-    size_t num_points_y = dim[1];
-    size_t num_points_x = dim[2];
+    size_t num_rows = dim[1];
+    size_t num_cols = dim[2];
 
-    // debug
-    num_channels = 1;
-    num_points_y = 5; // TODO: causes segfault if real value is assigned
-/*    num_points_x = 5;*/
-
-    for(int channel = 0; channel < num_channels; channel++)
+    // for each channel create a cv::Mat containing the spectral intensity data for the channel
+    for(size_t channel = 0; channel < num_channels; channel++)
     {
-        unsigned int data[num_points_y * num_points_x];
-        for(int i = 0; i < num_points_y * num_points_x; i++)
+        cv::Mat mat(num_rows, num_cols, CV_32SC1);
+        for(size_t row = 0; row < num_rows; row++)
         {
-            // pass auf deinen Ram auf!!
-            data[i] = spectrals.get()[(channel + 1) * i];
+            for(size_t col = 0; col < num_cols; col++)
+            {
+                mat.at<unsigned int>(row, col) = spectrals.get()[channel * num_cols * num_rows + row * num_cols + col];
+            }
         }
-        cv::Mat mat(num_points_y, num_points_x, CV_32SC1, data);
-
-        cout << mat << endl;
-
     }
 
     return 0;
