@@ -129,6 +129,15 @@ public:
         return BaseVecT(0, 0, 0);
     }
 
+    operator T() const
+    {
+        if(m_w == 1)
+        {
+            return m_ptr[0];
+        }
+        return T();
+    }
+
 private:
 
     T*              m_ptr;
