@@ -41,7 +41,6 @@ set(LVR2_SOURCES
     io/Timestamp.cpp
     io/BoctreeIO.cpp
     io/GridIO.cpp
-    io/Hdf5IO.cpp
     io/BaseBuffer.cpp
     io/PointBuffer.cpp
     io/ModelFactory.cpp
