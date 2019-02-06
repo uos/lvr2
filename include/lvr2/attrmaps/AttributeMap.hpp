@@ -82,10 +82,10 @@ class AttributeMap
 
 public:
     /// The type of the handle used as key in this map
-    using HandleType = HandleT;
+    typedef HandleT HandleType;
 
     /// The type of the value stored in this map
-    using ValueType = ValueT;
+    typedef ValueT ValueType;
 
     /**
      * @brief Returns true iff the map contains a value associated with the
