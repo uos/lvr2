@@ -32,8 +32,8 @@
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/attrmaps/AttrMaps.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
-
-using Index = uint32_t;
+#include <lvr2/geometry/Normal.hpp>
+#include <lvr2/geometry/Vector.hpp>
 
 namespace lvr2
 {
@@ -76,150 +76,92 @@ public:
     virtual void addIndexChannel(indexArray data, std::string name, size_t n, unsigned w);
 
     ///
-    /// \brief addAttributeMap  Stores an attribute map of vectors
-    /// \tparam BaseVecT        The base vector type, with x, y, z attributes
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param keys_name        The name of the map keys for the attribute manager
-    /// \param values_name      The name of the map values for the attribute manager
-    bool addAttributeMap(const AttributeMap<BaseHandle<Index>, BaseVector<float> >& map,
-        const std::string& keys_name, const std::string& values_name);
-    ///
-    /// \brief addAttributeMap  Stores an attribute map of unsigned chars
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param keys_name        The name of the map keys for the attribute manager
-    /// \param values_name      The name of the map values for the attribute manager
-    bool addAttributeMap(
-        const AttributeMap<BaseHandle<Index>, unsigned char>& map,
-        const std::string& keys_name, const std::string& values_name)
-        {return addAttributeMap<unsigned char>(map, keys_name, values_name);}
-
-
-    ///
-    /// \brief addAttributeMap  Stores an attribute map of unsigned ints
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param keys_name        The name of the map keys for the attribute manager
-    /// \param values_name      The name of the map values for the attribute manager
-    bool addAttributeMap(
-        const AttributeMap<BaseHandle<Index>, unsigned int>& map,
-        const std::string& keys_name, const std::string& values_name)
-        {return addAttributeMap<unsigned int>(map, keys_name, values_name);}
-
-
-    ///
-    /// \brief addAttributeMap  Stores an attribute map of floats
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param keys_name        The name of the map keys for the attribute manager
-    /// \param values_name      The name of the map values for the attribute manager
-    bool addAttributeMap(
-        const AttributeMap<BaseHandle<Index>, float>& map,
-        const std::string& keys_name, const std::string& values_name)
-        {return addAttributeMap<float>(map, keys_name, values_name);}
-
-
-    ///
-    /// \brief getAttributeMap  Reads an attribute map of vectors
-    /// \tparam BaseVecT        The base vector type, with x, y, z attributes
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param keys_name        The name of the map keys for the attribute manager
-    /// \param values_name      The name of the map values for the attribute manager
-    /// \return                 true if the conversion and the reading succeeded
-    bool getAttributeMap(AttributeMap<BaseHandle<Index>, BaseVector<float> >& map,
-        const std::string& keys_name, const std::string& values_name);
-
-    ///
-    /// \brief getAttributeMap  Reads an attribute map of unsigned ints
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param keys_name        The name of the map keys for the attribute manager
-    /// \param values_name      The name of the map values for the attribute manager
-    /// \return                 true if the conversion and the reading succeeded
-    bool getAttributeMap(
-        AttributeMap<BaseHandle<Index>, unsigned int>& map,
-        const std::string& keys_name, const std::string& values_name)
-        {return getAttributeMap<unsigned int>(map, keys_name, values_name);}
-
-
-    ///
-    /// \brief getAttributeMap  Reads an attribute map of unsigned chars
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param keys_name        The name of the map keys for the attribute manager
-    /// \param values_name      The name of the map values for the attribute manager
-    /// \return                 true if the conversion and the reading succeeded
-    bool getAttributeMap(
-        AttributeMap<BaseHandle<Index>, unsigned char>& map,
-        const std::string& keys_name, const std::string& values_name)
-        {return getAttributeMap<unsigned char>(map, keys_name, values_name);}
-
-    ///
-    /// \brief getAttributeMap  Reads an attribute map of floats
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param keys_name        The name of the map keys for the attribute manager
-    /// \param values_name      The name of the map values for the attribute manager
-    /// \return                 true if the conversion and the reading succeeded
-    bool getAttributeMap(
-        AttributeMap<BaseHandle<Index>, float>& map,
-        const std::string& keys_name, const std::string& values_name)
-        {return getAttributeMap<float>(map, keys_name, values_name);}
-
-    ///
-    /// \brief addAttributeMap  Stores a dense attribute map of vectors
-    /// \tparam BaseVecT        The base vector type, with x, y, z attributes
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param name             The name of the map values for the attribute manager
-    bool addAttributeMap(const DenseAttrMap<BaseHandle<Index>, BaseVector<float> >& map, const std::string& name);
-
-    ///
-    /// \brief addAttributeMap  Stores a dense attribute map of unsigned chars
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param name             The name of the map values for the attribute manager
-    bool addAttributeMap(const DenseAttrMap<BaseHandle<Index>, unsigned char>& map, const std::string& name)
-    {return addAttributeMap<unsigned char>(map, name);}
-
-
-    ///
-    /// \brief addAttributeMap  Stores a dense attribute map of unsigned ints
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param name             The name of the map values for the attribute manager
-    bool addAttributeMap(const DenseAttrMap<BaseHandle<Index>, unsigned int>& map, const std::string& name)
-    {return addAttributeMap<unsigned int>(map, name);}
-
-    ///
-    /// \brief addAttributeMap  Stores a dense attribute map of floats
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param name             The name of the map values for the attribute manager
-    bool addAttributeMap(const DenseAttrMap<BaseHandle<Index>, float>& map, const std::string& name)
-    {return addAttributeMap<float>(map, name);}
-
-    ///
-    /// \brief getAttributeMap  Reads a dense attribute map of vectors
-    /// \tparam BaseVecT        The base vector type, with x, y, z attributes
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param name             The name of the map values for the attribute manager
-    /// \return                 true if the conversion and the reading succeeded
-    bool getAttributeMap(DenseAttrMap<BaseHandle<Index>, BaseVector<float> >& map, const std::string& name);
-
-    ///
-    /// \brief getAttributeMap  Reads a dense attribute map of unsigned ints
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param name             The name of the map values for the attribute manager
-    /// \return                 true if the conversion and the reading succeeded
-    bool getAttributeMap(DenseAttrMap <BaseHandle<Index>, unsigned int>& map, const std::string& name)
-    {return getAttributeMap<unsigned int>(map, name);}
-
-    ///
-    /// \brief getAttributeMap  Reads a dense attribute map of unsigned chars
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param name             The name of the map values for the attribute manager
-    /// \return                 true if the conversion and the reading succeeded
-    bool getAttributeMap(DenseAttrMap<BaseHandle<Index>, unsigned char>& map, const std::string& name)
-    {return getAttributeMap<unsigned char>(map, name);}
-
-    ///
     /// \brief getAttributeMap  Reads a dense attribute map of floats
     /// \param map              The attribute map, which can be a specific attribute map implementation
     /// \param name             The name of the map values for the attribute manager
     /// \return                 true if the conversion and the reading succeeded
-    bool getAttributeMap(DenseAttrMap<BaseHandle<Index>, float>& map, const std::string& name)
-    {return getAttributeMap<float>(map, name);}
+    bool getAttributeMap(DenseFaceMap<Vector<BaseVector<float>>>& map, const std::string& name){
+        return getDenseVectorAttributeMap<DenseFaceMap<Vector<BaseVector<float> > > >(map, name);
+    }
+
+    bool getAttributeMap(DenseFaceMap<Normal<BaseVector<float>>>& map, const std::string& name){
+        return getDenseVectorAttributeMap<DenseFaceMap<Normal<BaseVector<float> > > >(map, name);
+    }
+
+    bool getAttributeMap(DenseFaceMap<float>& map, const std::string& name){
+        return getDenseValueAttributeMap<DenseFaceMap<float> >(map, name);
+    }
+
+    bool getAttributeMap(DenseFaceMap<unsigned int>& map, const std::string& name){
+        return getDenseValueAttributeMap<DenseFaceMap<unsigned int>>(map, name);
+    }
+
+    bool getAttributeMap(DenseFaceMap<unsigned char>& map, const std::string& name){
+        return getDenseValueAttributeMap<DenseFaceMap<unsigned char>>(map, name);
+    }
+
+    /// VertexMaps
+    bool getAttributeMap(DenseVertexMap<Vector<BaseVector<float>>>& map, const std::string& name){
+        return getDenseVectorAttributeMap<DenseVertexMap<Vector<BaseVector<float> > > >(map, name);
+    }
+
+    bool getAttributeMap(DenseVertexMap<Normal<BaseVector<float>>>& map, const std::string& name){
+        return getDenseVectorAttributeMap<DenseVertexMap<Normal<BaseVector<float> > > >(map, name);
+    }
+
+    bool getAttributeMap(DenseVertexMap<float>& map, const std::string& name){
+        return getDenseValueAttributeMap<DenseVertexMap<float>>(map, name);
+    }
+
+    bool getAttributeMap(DenseVertexMap<unsigned int>& map, const std::string& name){
+        return getDenseValueAttributeMap<DenseVertexMap<unsigned int>>(map, name);
+    }
+
+    bool getAttributeMap(DenseVertexMap<unsigned char>& map, const std::string& name){
+      return getDenseValueAttributeMap<DenseVertexMap<unsigned char>>(map, name);
+    }
+
+    /// Edge Maps
+    bool getAttributeMap(DenseEdgeMap<Vector<BaseVector<float>>>& map, const std::string& name){
+        return getDenseVectorAttributeMap<DenseEdgeMap<Vector<BaseVector<float> > > >(map, name);
+    }
+
+    bool getAttributeMap(DenseEdgeMap<Normal<BaseVector<float>>>& map, const std::string& name){
+        return getDenseVectorAttributeMap<DenseEdgeMap<Normal<BaseVector<float> > > >(map, name);
+    }
+
+    bool getAttributeMap(DenseEdgeMap<float>& map, const std::string& name){
+        return getDenseValueAttributeMap<DenseEdgeMap<float>>(map, name);
+    }
+
+    bool getAttributeMap(DenseEdgeMap<unsigned int>& map, const std::string& name){
+        return getDenseValueAttributeMap<DenseEdgeMap<unsigned int>>(map, name);
+    }
+
+    bool getAttributeMap(DenseEdgeMap<unsigned char>& map, const std::string& name){
+        return getDenseValueAttributeMap<DenseEdgeMap<unsigned char>>(map, name);
+    }
+
+    /// Cluster Maps
+    bool getAttributeMap(DenseClusterMap<Vector<BaseVector<float>>>& map, const std::string& name){
+        return getDenseVectorAttributeMap<DenseClusterMap<Vector<BaseVector<float> > > >(map, name);
+    }
+
+    bool getAttributeMap(DenseClusterMap<Normal<BaseVector<float>>>& map, const std::string& name){
+        return getDenseVectorAttributeMap<DenseClusterMap<Normal<BaseVector<float> > > >(map, name);
+    }
+
+    bool getAttributeMap(DenseClusterMap<float>& map, const std::string& name){
+        return getDenseValueAttributeMap<DenseClusterMap<float>>(map, name);
+    }
+
+    bool getAttributeMap(DenseClusterMap<unsigned int>& map, const std::string& name){
+        return getDenseValueAttributeMap<DenseClusterMap<unsigned int>>(map, name);
+    }
+
+    bool getAttributeMap(DenseClusterMap<unsigned char>& map, const std::string& name){
+        return getDenseValueAttributeMap<DenseClusterMap<unsigned char>>(map, name);
+    }
 
     void addFloatAttribute(float data, std::string name);
     void addUCharAttribute(unsigned char data, std::string name);
@@ -303,41 +245,74 @@ protected:
 private:
 
     ///
+    /// \brief getValueAttributeMap  Reads a dense attribute map of premitive values
+    /// \tparam BaseVecT        The base vector type, with x, y, z attributes
+    /// \param map              The attribute map, which can be a specific attribute map implementation
+    /// \param name             The name of the map values for the attribute manager
+    /// \return                 true if the conversion and the reading succeeded
+    template <typename MapT>
+    bool getDenseValueAttributeMap(MapT& map, const std::string name)
+    {
+      boost::optional< AttributeChannel< typename MapT::ValueType >& > values_opt;
+      m_channels.getChannel(name, values_opt);
+      if(values_opt && values_opt.get().width() == 1){
+        AttributeChannel<typename MapT::ValueType>& values = values_opt.get();
+        map.clear();
+        for(size_t i=0; i<values.numAttributes(); i++)
+        {
+          typename MapT::HandleType handle(i);
+          map.insert(handle, values[i]);
+        }
+        return true;
+      }
+      return false;
+    }
+
+    ///
+    /// \brief getAttributeMap  Reads a dense attribute map of vectors
+    /// \tparam BaseVecT        The base vector type, with x, y, z attributes
+    /// \param map              The attribute map, which can be a specific attribute map implementation
+    /// \param name             The name of the map values for the attribute manager
+    /// \return                 true if the conversion and the reading succeeded
+    template <typename MapT>
+    bool getDenseVectorAttributeMap(MapT& map, const std::string name)
+    {
+      FloatChannelOptional values_opt = m_channels.getFloatChannel(name);
+
+      if(values_opt && values_opt.get().width() == 3)
+      {
+        FloatChannel& values = values_opt.get();
+        map.clear();
+        for(size_t i=0; i<values.numAttributes(); i++)
+        {
+          typename MapT::HandleType handle(i);
+          map.insert(handle, values[i]);
+        }
+        return true;
+      }
+    }
+
+
+    ///
     /// \brief addAttributeMap  Stores an attribute map
     /// \tparam DataType        The data type to store
     /// \param map              The attribute map, which can be a specific attribute map implementation
     /// \param keys_name        The name of the map keys for the attribute manager
     /// \param values_name      The name of the map values for the attribute manager
-    template<typename DataType>
-    bool addAttributeMap(const AttributeMap<BaseHandle<Index>, DataType>& map,
-                         const std::string& keys_name, const std::string& values_name)
+    template<typename MapT>
+    bool addAttributeMap(const MapT& map, const std::string& keys_name, const std::string& values_name)
     {
-      boost::shared_array<DataType> values(new DataType[map.numValues()]);
-      indexArray keys(new unsigned int[map.numValues()]);
-      Index i = 0;
-      for(auto handle: map)
-      {
-        values[i] = map[handle];
-        keys[i++] = handle.idx();
-      }
-
-      m_channels.addChannel(values, values_name, map.numValues(), 1);
-      m_channels.addIndexChannel(keys, keys_name, map.numValues(), 1);
-      return true;
-    }
-
-    ///
-    /// \brief addAttributeMap  Stores a dense attribute map
-    /// \tparam DataType        The data type to store
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param name             The name of the map values for the attribute manager
-    template<typename DataType>
-    bool addAttributeMap(const DenseAttrMap <BaseHandle<Index>, DataType>& map, const std::string& name)
-    {
-        boost::shared_array<DataType> values(new DataType[map.numValues()]);
+        boost::shared_array<typename MapT::ValueType> values(new typename MapT::ValueType[map.numValues()]);
+        indexArray keys(new unsigned int[map.numValues()]);
         Index i = 0;
-        for(auto handle: map) values[i++] = map[handle];
-        m_channels.addChannel(values, name, map.numValues(), 1);
+        for(auto handle: map)
+        {
+          values[i] = map[handle];
+          keys[i++] = handle.idx();
+        }
+
+        m_channels.addChannel(values, values_name, map.numValues(), 1);
+        m_channels.addIndexChannel(keys, keys_name, map.numValues(), 1);
         return true;
     }
 
@@ -347,12 +322,11 @@ private:
     /// \param map              The attribute map, which can be a specific attribute map implementation
     /// \param name             The name of the map values for the attribute manager
     /// \return                 true if the conversion and the reading succeeded
-    template<typename DataType>
-    bool getAttributeMap(AttributeMap<BaseHandle<Index>, DataType>& map,
-                         const std::string& keys_name, const std::string& values_name)
+    template<typename MapT>
+    bool getAttributeMap(MapT& map, const std::string& keys_name, const std::string& values_name)
     {
         IndexChannelOptional keys_opt = m_channels.getIndexChannel(keys_name);
-        boost::optional<AttributeChannel<DataType>&> values_opt;
+        boost::optional<AttributeChannel<typename MapT::ValueType>&> values_opt;
         m_channels.getChannel(values_name, values_opt);
 
         if(keys_opt && values_opt &&
@@ -360,41 +334,17 @@ private:
             values_opt.get().width() == 1 &&
             keys_opt.get().numAttributes() == values_opt.get().numAttributes())
         {
-            AttributeChannel<DataType>& values = values_opt.get();
+            AttributeChannel<typename MapT::ValueType>& values = values_opt.get();
             IndexChannel& keys = keys_opt.get();
             map.clear();
             for(size_t i=0; i<keys.numAttributes(); i++)
             {
-                map.insert(BaseHandle<Index>(keys[i][0]), values[i][0]);
+                map.insert(typename MapT::HandleType(keys[i][0]), values[i][0]);
             }
             return true;
         }
         else return false;
     }
-
-    ///
-    /// \brief getAttributeMap  Reads a dense attribute map
-    /// \tparam DataType        The data type to store
-    /// \param map              The attribute map, which can be a specific attribute map implementation
-    /// \param name             The name of the map values for the attribute manager
-    /// \return                 true if the conversion and the reading succeeded
-    template<typename DataType>
-    bool getAttributeMap(DenseAttrMap<BaseHandle<Index>, DataType>& map, const std::string& name)
-    {
-        boost::optional<AttributeChannel<DataType>&> values_opt;
-        m_channels.getChannel(name, values_opt);
-
-        if(values_opt && values_opt.get().width() == 1)
-        {
-            map.clear();
-            AttributeChannel<DataType>& values = values_opt.get();
-            for(size_t i=0; i<values.numAttributes(); i++) map.insert(BaseHandle<Index>(i), values[i][0]);
-            //TODO map = DenseAttrMap<BaseHandle<Index>, DataType>(values_opt.get().dataPtr());
-            return true;
-        }
-        else return false;
-    }
-
 
 };
 
