@@ -34,7 +34,7 @@ namespace lvr2
 {
 
 template<
-    template<typename, typename> typename OutMapT,
+    template<typename, typename> class OutMapT,
     typename InMapT,
     typename MapF
 >
@@ -83,7 +83,7 @@ OutMapT<typename InMapT::HandleType, std::result_of_t<MapF(typename InMapT::Valu
 }
 
 template<
-    template<typename, typename> typename OutMapT,
+    template<typename, typename> class OutMapT,
     typename IterProxyT,
     typename GenF
 >

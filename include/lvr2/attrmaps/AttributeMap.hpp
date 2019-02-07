@@ -202,6 +202,8 @@ public:
     /// Returns the current handle.
     virtual HandleT operator*() const = 0;
     virtual std::unique_ptr<AttributeMapHandleIterator> clone() const = 0;
+
+    virtual ~AttributeMapHandleIterator() = default;
 };
 
 /**
@@ -228,6 +230,8 @@ public:
     bool operator==(const AttributeMapHandleIteratorPtr& other) const;
     bool operator!=(const AttributeMapHandleIteratorPtr& other) const;
     HandleT operator*() const;
+
+    virtual ~AttributeMapHandleIteratorPtr() = default;
 
 private:
     std::unique_ptr<AttributeMapHandleIterator<HandleT>> m_iter;
