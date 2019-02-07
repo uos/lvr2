@@ -130,7 +130,7 @@ void TextureFactory::saveTexture(const Texture& tex, std::string filename)
     size_t bytesToCopy = tex.m_width * tex.m_height * tex.m_numChannels * tex.m_numBytesPerChan;
     std::copy(tex.m_data, tex.m_data + bytesToCopy, mat.data);
 
-    if (!mat_type == CV_8UC1)
+    if (!(mat_type == CV_8UC1))
     {
         cv::cvtColor(mat, mat, conversionCode);
     }

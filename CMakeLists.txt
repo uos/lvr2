@@ -48,10 +48,12 @@ endif(MSVC)
 ####
 ## Searching for CUDA
 ##############################
-#find_package( CUDA 8)
+if(NOT APPLE)
+find_package( CUDA 8)
 if(CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
 endif(CUDA_FOUND)
+endif(NOT APPLE)
 
 ####
 ## Searching for OpenCV
