@@ -31,6 +31,7 @@
 #include <iostream>
 
 #include <lvr2/reconstruction/PointsetSurface.hpp>
+#include <lvr2/io/MeshBuffer.hpp>
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -56,7 +57,7 @@ class CGALPolyhedronMesh : public BaseMesh<VertexT> {
 public:
   CGALPolyhedronMesh();
 
-  CGALPolyhedronMesh(typename PointsetSurface<VertexT>::Ptr pm);
+  CGALPolyhedronMesh(PointsetSurfacePtr<VertexT> pm);
 
   virtual void addVertex(VertexT v);
 
@@ -66,9 +67,81 @@ public:
 
   virtual void flipEdge(uint v1, uint v2);
 
+  virtual void flipEdge(EdgeHandle edgeH) {};
+
   virtual void finalize();
 
   virtual size_t meshSize();
+
+
+  //pure virtuals from basemesh which need to be implemented to make this mesh implementation non-abstract.. :)
+  virtual inline VertexHandle addVertex(Vector<VertexT> pos){};
+
+  virtual FaceHandle addFace(VertexHandle v1, VertexHandle v2, VertexHandle v3){};
+
+  virtual void removeFace(FaceHandle handle){};
+
+  virtual  EdgeCollapseResult collapseEdge(EdgeHandle edgeH){};
+
+  virtual  size_t numVertices() const {}
+
+  virtual size_t numFaces() const {}
+
+  virtual size_t numEdges() const {}
+
+  virtual bool containsVertex(VertexHandle vH) const {}
+
+  virtual bool containsFace(FaceHandle vH) const {}
+
+  virtual bool containsEdge(EdgeHandle vH) const {}
+
+    virtual Index nextVertexIndex() const {}
+
+
+    virtual Index nextFaceIndex() const {}
+
+
+    virtual Index nextEdgeIndex() const {}
+
+    virtual Vector<VertexT> getVertexPosition(VertexHandle handle) const {}
+
+
+    virtual Vector<VertexT>& getVertexPosition(VertexHandle handle) {}
+
+
+    virtual array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const {}
+
+
+    virtual array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const {}
+
+
+    virtual void getNeighboursOfFace(FaceHandle handle, vector<FaceHandle>& facesOut) const {}
+
+    virtual array<VertexHandle, 2> getVerticesOfEdge(EdgeHandle edgeH) const {}
+
+    virtual array<OptionalFaceHandle, 2> getFacesOfEdge(EdgeHandle edgeH) const {}
+
+    virtual void getFacesOfVertex(VertexHandle handle, vector<FaceHandle>& facesOut) const {}
+
+    virtual void getEdgesOfVertex(VertexHandle handle, vector<EdgeHandle>& edgesOut) const {}
+
+    virtual void getNeighboursOfVertex(VertexHandle handle, vector<VertexHandle>& verticesOut) const {}
+
+    virtual MeshHandleIteratorPtr<VertexHandle> verticesBegin() const {}
+
+    virtual MeshHandleIteratorPtr<VertexHandle> verticesEnd() const {}
+
+    virtual MeshHandleIteratorPtr<FaceHandle> facesBegin() const {}
+
+    virtual MeshHandleIteratorPtr<FaceHandle> facesEnd() const {}
+
+    virtual MeshHandleIteratorPtr<EdgeHandle> edgesBegin() const {}
+
+    virtual MeshHandleIteratorPtr<EdgeHandle> edgesEnd() const {}
+
+    virtual bool isBorderEdge(EdgeHandle handle) const {};
+  //end pure virtuals
+
 
   virtual ~CGALPolyhedronMesh();
 
@@ -177,7 +250,7 @@ protected:
   };
   /* Internal variables*/
   size_t m_numFaces;
-  typename PointsetSurface<VertexT>::Ptr m_pointCloudManager;
+  std::shared_ptr <PointsetSurface<VertexT>> m_pointCloudManager;
 
 private:
   Polyhedron_3 P;

@@ -26,7 +26,7 @@ namespace logging = boost::log;
 namespace lvr2 {
 template <typename VertexT, typename NormalT>
 GCS<VertexT, NormalT>::GCS(PointBufferPtr pBuffer, std::string config) {
-    auto numPoint = pBuffer->numPoints();
+    m_pointNumber = pBuffer->numPoints(); //get number of points
     //GET POINT ARRAY (FloatChannel)
     m_pointCoord = *(pBuffer->getFloatChannel("points"));
 
@@ -35,7 +35,7 @@ GCS<VertexT, NormalT>::GCS(PointBufferPtr pBuffer, std::string config) {
 
   // copy point coords to vector with Point_3 which is common in CGAL
   for (size_t i = 0; i < m_pointNumber; i++) {
-    Point_3 p(m_pointCoord[i].x, m_pointCoord[i].y, m_pointCoord[i].z);
+    Point_3 p(m_pointCoord[i][0], m_pointCoord[i][1], m_pointCoord[i][2]);
     m_point3Vec.push_back(p);
   }
 
