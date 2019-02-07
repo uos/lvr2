@@ -29,9 +29,8 @@ template <typename VertexT, typename NormalT, typename Kernel, typename Items>
 CGALPolyhedronMesh<VertexT, NormalT, Kernel, Items>::CGALPolyhedronMesh() {}
 
 template <typename VertexT, typename NormalT, typename Kernel, typename Items>
-CGALPolyhedronMesh<VertexT, NormalT, Kernel, Items>::CGALPolyhedronMesh(
-    typename PointsetSurface<VertexT>::Ptr pm) {
-  this->m_pointCloudManager = pm;
+CGALPolyhedronMesh<VertexT, NormalT, Kernel, Items>::CGALPolyhedronMesh(PointsetSurfacePtr<VertexT> pm) {
+    m_pointCloudManager = pm;
 }
 
 template <typename VertexT, typename NormalT, typename Kernel, typename Items>

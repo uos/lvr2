@@ -265,7 +265,7 @@ protected:
   };
 
   // Data
-  coord3fArr m_pointCoord; // aka boost::shared_array< coord<float> > from
+  FloatChannel m_pointCoord; // aka boost::shared_array< coord<float> > from
                            // DataStruct.hpp
   std::vector<Point_3> m_point3Vec; // contains raw point data as Point_3 DT
   size_t m_pointNumber;             // number of points
@@ -308,7 +308,7 @@ protected:
   uint d_longEdgesDeleted;
   double d_vertexDistance;
 
-  ofstream datafile;
+  std::ofstream datafile;
 
   // internal mesh
   PolyhedronMesh *m_mesh;

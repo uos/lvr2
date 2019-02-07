@@ -1,42 +1,43 @@
-/* Copyright (C) 2011 Uni Osnabrück
- * This file is part of the LAS VEGAS Reconstruction Toolkit,
+/*
+ * Main.cpp
  *
- * LAS VEGAS is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * LAS VEGAS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ *  Created on: 24.02.2016
+ *      Author: Henning Strueber (hstruebe@uos.de)
  */
-// #define CGAL_EIGEN3_ENABLED
-
-//#include <lvr/geometry/CGALPolyhedronMesh.hpp>
-#include <lvr2/geometry/HalfEdgeMesh.hpp>
-#include <lvr2/geometry/ColorVertex.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/reconstruction/gcs/GCS.hpp>
-#include <lvr2/reconstruction/gcs/GrowingSurfaceStructure.hpp>
 
 #include <CGAL/Polyhedron_3.h>
-#include <CGAL/Simple_cartesian.h>
+#include <lvr2/geometry/BoundingBox.hpp>
+#include <lvr2/geometry/CGALPolyhedronMesh.hpp>
+//#include <lvr2/reconstruction/FastReconstruction.hpp>
+#include <lvr2/reconstruction/gcs/GCS.hpp>
+#include <lvr2/io/ModelFactory.hpp>
+#include <lvr2/algorithm/FinalizeAlgorithms.hpp>
 
 using namespace lvr2;
+typedef GCS<ColorVertex<float, unsigned char>, Normal<float>> cGCS;
+typedef CGAL::Simple_cartesian<double> SimpleCartesian;
 
-typedef CGALPolyhedronMesh<ColorVertex<float, unsigned char>, Normal<float>,
-                           CGAL::Exact_predicates_inexact_constructions_kernel,
-                           lvr2::GrowingSurfaceStructure::GrowingItems>
-    GrowingMesh;
-typedef HalfEdgeMesh<ColorVertex<float, unsigned char>> Mesh;
+// template <typename VertexT, typename NormalT, typename Kernel>
+// class Henning : public CGAL::Polyhedron_3<Kernel>,
+//                 public BaseMesh<VertexT, NormalT> {
+// public:
+//   Henning() : CGAL::Polyhedron_3<Kernel>(){};
+//
+//   virtual void addVertex(VertexT v){};
+//
+//   virtual void addNormal(NormalT n){};
+//
+//   virtual void addTriangle(uint a, uint b, uint c){};
+//
+//   virtual void flipEdge(uint v1, uint v2){};
+//
+//   virtual void finalize(){};
+//
+//   virtual size_t meshSize(){};
+// };
 
-int main(int argc, char const *argv[]) {
+int main(int argc, char **argv) {
+  BOOST_LOG_TRIVIAL(info) << "Using GrowingCellStructures Reconstruction.";
 
   if (argc < 3) {
     BOOST_LOG_TRIVIAL(fatal) << "Missing command-line argument.";
@@ -61,16 +62,31 @@ int main(int argc, char const *argv[]) {
 
   ModelPtr pn(new Model);
   pn->m_pointCloud = p_loader;
+  cGCS *recon = new cGCS(p_loader, argv[2]);
+  // Henning<ColorVertex<float, unsigned char>, Normal<float>> *h = new
+  // Henning();
 
-  // cGCS *recon = new cGCS(p_loader, argv[2]);
-  GrowingSurfaceStructure gss(p_loader, argv[2]);
+  cGCS::PolyhedronMesh mesh;
+  // Henning<ColorVertex<float, unsigned char>, Normal<float>, SimpleCartesian>
+  // h;
+  // h.make_tetrahedron();
+  // FastReconstruction<ColorVertex<float, unsigned char>, Normal<float>>
+  // fr;
+  // CGALPolyhedronMesh<ColorVertex<float, unsigned char>, Normal<float>>
+  // mesh;
 
-  GrowingMesh mesh;
-  gss.getMesh(mesh);
+  recon->getMesh(mesh);
 
-  mesh.finalize();
+  //mesh.finalize();
 
-  ModelPtr m(new Model(mesh.meshBuffer()));
+  SimpleFinalizer<ColorVertex<float, unsigned int>> fin;
 
-  ModelFactory::saveModel(m, "gss.ply");
+  MeshBufferPtr res = fin.apply(mesh);
+
+
+  ModelPtr m(new Model());
+
+  ModelFactory::saveModel(m, "gcs_tri_mesh.ply");
+
+  delete recon;
 }
