@@ -28,25 +28,13 @@ using std::endl;
 void printUsage()
 {
     std::cout << "Please submit the path to a .h5 file." << std::endl;
-    std::cout << "Usage: ./hdf5-tiff-converter <path>.h5" << std::endl;
+    std::cout << "Usage: ./hdf5-tiff-converter <input_path>.h5 [<output_path>.tif]" << std::endl;
 }
-
-/*int writeTIFF(cv::Mat *mat, TIFF* tif)
-{
-    if(!tif || !mat)
-    {
-        return -1;
-    }
-
-
-
-    return 0;
-}*/
 
 int main(int argc, char**argv)
 {
     /* ---------------- COMMAND LINE INPUT ----------------- */
-    if(!argv[1])
+    if(!argv[1] || argv[1] == "--help")
     {
         printUsage();
         return 0;
@@ -66,7 +54,7 @@ int main(int argc, char**argv)
     // TODO: really use raw data?
     string groupname = "raw/spectral/position_00010";
     string datasetname = "spectral";
-    boost::shared_array<unsigned int> spectrals = hdf5.getArray<unsigned int>(groupname, datasetname, dim);
+    boost::shared_array<uint8_t> spectrals = hdf5.getArray<uint8_t>(groupname, datasetname, dim);
 
     size_t num_channels = dim[0];
     size_t num_rows = dim[1];
@@ -75,28 +63,24 @@ int main(int argc, char**argv)
     /* ---------------- TIFF CONFIG ------------------------*/
     // TODO: ganzes Verzeichnis in TIFF Directory schreiben
     TIFFIO tif(output_filename);
+    tif.setFields(num_rows, num_cols, 1);
 
-    // debug
-/*    num_channels = 1;
-    num_rows = 5;
-    num_cols = 5;*/
 
     /* -------------- FILE CONVERSION ------------------- */
     // for each channel create a cv::Mat containing the spectral intensity data for the channel
     for(size_t channel = 0; channel < num_channels; channel++)
     {
-        cv::Mat *mat = new cv::Mat(num_rows, num_cols, CV_32SC1);
+        cv::Mat *mat = new cv::Mat(num_rows, num_cols, CV_8UC1);
         for(size_t row = 0; row < num_rows; row++)
         {
             for(size_t col = 0; col < num_cols; col++)
             {
-                mat->at<unsigned int>(row, col) = spectrals.get()[channel * num_cols * num_rows + row * num_cols + col];
+                mat->at<uint8_t>(row, col) = spectrals.get()[channel * num_cols * num_rows + row * num_cols + col];
             }
         }
-        if (channel == 100)
+        if (channel == 15)
         {
-/*            tif.writeLevel(mat);*/
-            cout << mat->row(0).data << endl;
+            tif.writePage(mat, channel + 1);
         }
     }
 

@@ -21,57 +21,44 @@ TIFFIO::~TIFFIO()
     }
 }
 
-int TIFFIO::writeLevel(cv::Mat *mat)
+int TIFFIO::writePage(cv::Mat *mat, int page)
 {
-    // TODO: make configurable?
     int sampleperpixel = 1;
 
-    setFields(mat, sampleperpixel);
-
     tsize_t linebytes = sampleperpixel * mat->cols;
-    unsigned int *buf = NULL;
 
-    if(TIFFScanlineSize(m_tiffile))
-    {
-        buf = (unsigned int *)_TIFFmalloc(linebytes);
-    } else {
-        buf = (unsigned int *)_TIFFmalloc(TIFFScanlineSize(m_tiffile));
-    }
+/*    TIFFSetField(m_tiffile, TIFFTAG_PAGENUMBER, page, 150);*/
 
     // write
-    for (uint32 row = 0; row < mat->rows; row++)
+    for (uint32_t row = 0; row < mat->rows; row++)
     {
-        unsigned int *row_content = (unsigned int *)mat->row(row).data;
-        memcpy(buf, &row_content, linebytes);
-        if(TIFFWriteScanline(m_tiffile, buf, row, 0) < 0)
+        uint8_t *row_content = &mat->row(row).at<uint8_t>(0);
+        if(TIFFWriteScanline(m_tiffile, &row_content[mat->rows * linebytes], row, 0) < 0)
         {
             std::cout << "An error occurred while writing the tiff file in row " << row << "." << std::endl;
-            break;
+            return -1;
         }
     }
-
-    if(buf)
-    {
-        _TIFFfree(buf);
-    }
+    return 0;
 }
 
-int TIFFIO::setFields(cv::Mat *mat, int sampleperpixel)
+int TIFFIO::setFields(int height, int width, int sampleperpixel)
 {
     if (!m_tiffile)
     {
         return -1;
     }
 
-    // TODO: check if fields are set already
-    TIFFSetField(m_tiffile, TIFFTAG_IMAGEWIDTH, mat->cols);
-    TIFFSetField(m_tiffile, TIFFTAG_IMAGELENGTH, mat->rows);
+    TIFFSetField(m_tiffile, TIFFTAG_IMAGEWIDTH, width);
+    TIFFSetField(m_tiffile, TIFFTAG_IMAGELENGTH, height);
     TIFFSetField(m_tiffile, TIFFTAG_SAMPLESPERPIXEL, sampleperpixel); // number of channels per pixel
     TIFFSetField(m_tiffile, TIFFTAG_BITSPERSAMPLE, 8); // size of the channel
     TIFFSetField(m_tiffile, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
-    // TODO: understand / change RGB to gray
     TIFFSetField(m_tiffile, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
     TIFFSetField(m_tiffile, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
-    TIFFSetField(m_tiffile, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(m_tiffile, mat->cols * sampleperpixel));
+    TIFFSetField(m_tiffile, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(m_tiffile, width * sampleperpixel));
+    TIFFSetField(m_tiffile, TIFFTAG_SUBFILETYPE, FILETYPE_PAGE);
+
+    return 0;
 }
 

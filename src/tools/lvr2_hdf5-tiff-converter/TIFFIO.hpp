@@ -26,9 +26,9 @@ namespace lvr2
          * @brief write the next scanline to the tiff file
          * @return true if no errors occurred
          */
-        int writeLevel(cv::Mat *mat);
+        int writePage(cv::Mat *mat, int page);
 
-        int setFields(cv::Mat *mat, int sampleperpixel);
+        int setFields(int height, int width, int sampleperpixel);
 
     private:
         TIFF* m_tiffile;
