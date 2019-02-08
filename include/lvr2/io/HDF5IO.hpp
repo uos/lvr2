@@ -25,52 +25,163 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /**
- * @file Hdf5IO.hpp
- */
+#ifndef HDF5IO_HPP_
+#define HDF5IO_HPP_
 
-#ifndef __HDF5_IO_HPP_
-#define __HDF5_IO_HPP_
+#include "BaseIO.hpp"
+#include "DataStruct.hpp"
+#include "ScanData.hpp"
+#include "CalibrationParameters.hpp"
+
+#include "lvr2/geometry/Matrix4.hpp"
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
+#include <H5Tpublic.h>
+#include <hdf5_hl.h>
 
 
-#include <lvr2/io/PlutoMapIO.hpp>
-#include <lvr2/io/Timestamp.hpp>
-
-#include <iomanip>
+#include <highfive/H5DataSet.hpp>
+#include <highfive/H5DataSpace.hpp>
+#include <highfive/H5File.hpp>
 #include <string>
-#include <vector>
-
-#include <lvr2/io/Model.hpp>
-#include <lvr2/io/BaseIO.hpp>
-
-
-using std::string;
-using std::vector;
 
 namespace lvr2
 {
 
-/**
- * An basic implemntation for the integrated HDF5 format.
- * This saves the mesh geomentry, normals, colors, materials and textures to an
- * defined HDF5 file format.
- *
- * This also tries to mitgate any erros while saving the file to disc, since
- * the HDF5 implementation is very picky about saving anything to an already opened
- * file or any other strange things on the file system. Thus if the first try of
- * saving it the defined filename it tries to make up an new one and saves everything there.
- */
-class Hdf5IO : public BaseIO
+class HDF5IO : public BaseIO
 {
-public:
-    Hdf5IO() {}
-    virtual ~Hdf5IO() {}
+  public:
+    /**
+         * \brief Parse the given file and load supported elements.
+         *#include <highfive/H5DataSet.hpp>
+#include <highfive/H5DataSpace.hpp>
+#include <highfive/H5File.hpp>
+         * @param filename  The file to read.
+         */
+    virtual ModelPtr read(std::string filename);
 
-    void save(string filename);
+    ModelPtr read(std::string filename, size_t scanNr);
 
-    ModelPtr read(string filename);
+    /**
+         * \brief Save the loaded elements to the given file.
+         *
+         * @param filename Filename of the file to write.
+         */
+    virtual void save(std::string filename);
+
+    HDF5IO(std::string filename, bool truncate = false);
+    virtual ~HDF5IO();
+
+    bool open(std::string filename, bool truncate);
+
+    template<typename T>
+    boost::shared_array<T> getArray(
+            std::string groupName, std::string datasetName,
+            unsigned int& size);
+
+    template<typename T>
+    boost::shared_array<T> getArray(
+            std::string groupName, std::string datasetName,
+            std::vector<size_t>& dim);
+
+    Texture getImage(std::string groupName, std::string datasetName);
+
+    ScanData    getSingleRawScanData(int nr, bool load_points = true);
+
+    std::vector<ScanData> getRawScanData(bool load_points = true);
+
+    floatArr getFloatChannelFromRawScanData(std::string name,
+            int nr, unsigned int& n, unsigned& w);
+
+    template<typename T>
+    void addArray(
+            std::string groupName,
+            std::string datasetName,
+            unsigned int size,
+            boost::shared_array<T> data);
+
+    template<typename T>
+    void addArray(
+            std::string groupName,
+            std::string datasetName,
+            std::vector<size_t>& dimensions,
+            boost::shared_array<T> data);
+
+    template<typename T>
+    void addArray(
+            std::string groupName,
+            std::string datasetName,
+            std::vector<size_t>& dimensions,
+            std::vector<hsize_t>& chunkSize,
+            boost::shared_array<T> data);
+
+
+    void addImage(
+            std::string groupName, std::string name, cv::Mat& img);
+
+    void addRawScanData(int nr, ScanData &scan);
+
+    void addFloatChannelToRawScanData(std::string name, int nr, size_t n, unsigned w, floatArr data);
+
+    void addRawDataHeader(std::string description, Matrix4<BaseVector<float>> &referenceFrame);
+
+    void addHyperspectralCalibration(int position, const HyperspectralCalibration& calibration);
+
+    void setCompress(bool compress);
+    void setChunkSize(const size_t& size);
+    void setPreviewReductionFactor(const unsigned int factor);
+    void setUsePreviews(bool use);
+
+    bool compress();
+
+    size_t chunkSize();
+
+
+  private:
+
+    template<typename T>
+    boost::shared_array<T> getArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim);
+
+    Texture getImage(HighFive::Group& g, std::string datasetName);
+
+    template<typename T>
+    void addArray(HighFive::Group& g,
+            std::string datasetName,
+            std::vector<size_t>& dim,
+            std::vector<hsize_t>& chunkSize,
+            boost::shared_array<T>& data);
+
+    void addImage(HighFive::Group& g, std::string datasetName, cv::Mat& img);
+
+    HighFive::Group getGroup(const std::string& groupName, bool create = true);
+
+    std::vector<std::string> splitGroupNames(const std::string &groupName);
+
+    bool exist(const std::string &groupName);
+
+    void write_base_structure();
+
+    bool isGroup(HighFive::Group grp, std::string objName);
+
+    template <typename T>
+    boost::shared_array<T> reduceData(boost::shared_array<T> data,
+            size_t dataCount,
+            size_t dataWidth,
+            unsigned int reductionFactor,
+            size_t *reducedDataCount);
+
+    HighFive::File*         m_hdf5_file;
+
+    bool                    m_compress;
+    size_t                  m_chunkSize;
+    bool                    m_usePreviews;
+    unsigned int            m_previewReductionFactor;
 };
 
 } // namespace lvr2
 
-#endif // __HDF5_IO_HPP_
+#include "HDF5IO.tcc"
+
+#endif /* !HDF5IO_HPP_ */
