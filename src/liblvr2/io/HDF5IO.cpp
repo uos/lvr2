@@ -25,252 +25,674 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/io/Hdf5IO.hpp>
+#include "lvr2/io/HDF5IO.hpp"
+
+#include <boost/filesystem.hpp>
+
+#include <chrono>
+#include <ctime>
+#include <algorithm>
 
 namespace lvr2
 {
 
-void Hdf5IO::save(string filename)
+HDF5IO::HDF5IO(std::string filename, bool truncate) :
+    m_hdf5_file(nullptr),
+    m_compress(true),
+    m_chunkSize(1e7),
+    m_usePreviews(true),
+    m_previewReductionFactor(20)
 {
-    using namespace std;
-
-    if (!m_model)
-    {
-        cerr << timestamp << "No data to save." << endl;
-        return;
-    }
-
-    if (m_model->m_pointCloud || !m_model->m_mesh)
-    {
-        cerr << timestamp << "Only supporting saving mesh right now." << endl;
-        return;
-    }
-
-    size_t numVertices = m_model->m_mesh->numVertices();
-    size_t numFaceIds = m_model->m_mesh->numFaces();
-    
-    // Is this assumption ok?
-    size_t numNormals = numVertices;
-    size_t numColors = numVertices;
-    size_t numCoords = numVertices;
-    size_t numMatFaceIndices = numFaceIds;
-
-    unsigned widthColor = 0;
-    unsigned dummy;
-
-    floatArr vertices = m_model->m_mesh->getVertices();
-    indexArray faceIndices = m_model->m_mesh->getFaceIndices();
-    floatArr normals = m_model->m_mesh->getVertexNormals();
-    ucharArr colors = m_model->m_mesh->getVertexColors(widthColor);
-    vector<Texture>& textures = m_model->m_mesh->getTextures();
-    vector<Material>& materials = m_model->m_mesh->getMaterials();
-    floatArr coords = m_model->m_mesh->getTextureCoordinates();
-    indexArray matFaceIndices = m_model->m_mesh->getFaceMaterialIndices();
-
-
-    auto verts = std::vector<float>(vertices.get(), vertices.get() + numVertices * 3);
-    auto indis = std::vector<uint32_t>(faceIndices.get(), faceIndices.get() + numFaceIds * 3);
-    auto normalsVector = std::vector<float>(normals.get(), normals.get() + numNormals * 3);
-    auto colorsVector = std::vector<uint8_t>(colors.get(), colors.get() + numColors * widthColor);
-    auto coordsVector = std::vector<float>(coords.get(), coords.get() + numCoords * 3);
-    auto matFaceIndicesVector = std::vector<uint32_t>(matFaceIndices.get(), matFaceIndices.get() + numMatFaceIndices);
-
-    // Save old error handler
-    H5E_auto2_t  oldfunc;
-    void *old_client_data;
-    H5Eget_auto(0, &oldfunc, &old_client_data);
-
-    // Turn off error handling
-    // We turn it of here, to avoid an error message from HDF5 because of already opened file.
-    // The first error message can be safely ignored since we only try to save to the default filename
-    // and change it if it fails.
-    // The error handler is turned on again later to make sure we have an proper error handler and message again
-    // while using / opening an new file.
-    H5Eset_auto(0, NULL, NULL);
-
-    auto pm = unique_ptr<lvr2::PlutoMapIO>{};
-    try {
-        pm = make_unique<lvr2::PlutoMapIO>(filename, verts, indis);
-    } catch(exception& e) {
-        // assume HDF5 could not open file and throws an exception
-        cerr << timestamp << "File writing error: " << e.what() << endl;
-
-        // prefix filename with current time (YearMonthDateHourMinuteSecond_) , which should be unique enough to save
-        auto t = std::time(nullptr);
-        auto tm = *std::localtime(&t);
-        ostringstream newFilename;
-        newFilename << std::put_time(&tm, "%Y%m%d%H%M%S") << "_" << filename;
-
-        cout << timestamp << "Saving now to '" << newFilename.str() << "'" << endl;
-
-        pm = make_unique<lvr2::PlutoMapIO>(newFilename.str(), verts, indis);
-    }
-
-    // Restore previous error handler
-    H5Eset_auto(0, oldfunc, old_client_data);
-
-    pm->addVertexNormals(normalsVector);
-    pm->addVertexColors(colorsVector);
-    pm->addVertexTextureCoords(coordsVector);
-
-    // add texture images
-
-    for (const Texture& t : textures)
-    {
-        pm->addTexture(t.m_index, t.m_width, t.m_height, t.m_data);
-    }
-
-    // add materials
-    std::vector<lvr2::PlutoMapMaterial> matVector;
-    for (const Material& m : materials)
-    {
-        lvr2::PlutoMapMaterial material{};
-
-        material.textureIndex = m.m_texture->idx();
-        material.r = m.m_color->at(0);
-        material.g = m.m_color->at(1);
-        material.b = m.m_color->at(2);
-    }
-
-    pm->addMaterials(matVector, matFaceIndicesVector);
+    open(filename, truncate);
 }
 
-using HighFive::File;
-using HighFive::Group;
-using HighFive::Exception;
-
-ModelPtr Hdf5IO::read(string filename)
+HDF5IO::~HDF5IO()
 {
-    PointBufferPtr pc;
-    MeshBufferPtr mesh;
+    if(m_hdf5_file)
+    {
+        delete m_hdf5_file;
+    }
+}
 
-    int numPoints = 0;
-    int numNormals = 0;
-    int numConfidences = 0;
-    int numIntensities = 0;
-    int numColors = 0;
-    int numSpectralChannels = 0;
-    int numChannels = 0;
-    int minSpectral = 0;
-    int maxSpectral = 0;
+void HDF5IO::setCompress(bool compress)
+{
+    m_compress = compress;
+}
 
-    floatArr points;
-    floatArr normals;
-    floatArr confidences;
-    floatArr intensities;
-    ucharArr colors;
-    floatArr spectralChannels;
+void HDF5IO::setChunkSize(const size_t& size)
+{
+    m_chunkSize = size;
+}
+
+void HDF5IO::setPreviewReductionFactor(const unsigned int factor)
+{
+    if (factor >= 1)
+    {
+        m_previewReductionFactor = factor;
+    }
+    else
+    {
+        m_previewReductionFactor = 20;
+    }
+}
+
+void HDF5IO::setUsePreviews(bool use)
+{
+    m_usePreviews = use;
+}
+
+bool HDF5IO::compress()
+{
+    return m_compress;
+}
+
+size_t HDF5IO::chunkSize()
+{
+    return m_chunkSize;
+}
+
+ModelPtr HDF5IO::read(std::string filename)
+{
+    return ModelPtr(new Model);
+}
+
+bool HDF5IO::open(std::string filename, bool truncate)
+{
+    // If file alredy exists, don't rewrite base structurec++11 init vector
+    bool have_to_init = false;
+
+    boost::filesystem::path path(filename);
+    if(!boost::filesystem::exists(path) | truncate)
+    {
+        have_to_init = true;
+    }
+
+    // Try to open the given HDF5 file
+    m_hdf5_file = new HighFive::File(
+                filename,
+                HighFive::File::OpenOrCreate | (truncate ? HighFive::File::Truncate : 0));
+
+    if (!m_hdf5_file->isValid())
+    {
+        return false;
+    }
+
+
+    if(have_to_init)
+    {
+        // Write default groupts to new HDF5 file
+        write_base_structure();
+    }
+
+    return true;
+}
+
+void HDF5IO::write_base_structure()
+{
+    int version = 1;
+    m_hdf5_file->createDataSet<int>("version", HighFive::DataSpace::From(version)).write(version);
+    HighFive::Group raw_data_group = m_hdf5_file->createGroup("raw");
+
+    // Create string with current time
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    std::time_t t_now= std::chrono::system_clock::to_time_t(now);
+    std::string time(ctime(&t_now));
+
+    // Add current time to raw data group
+    raw_data_group.createDataSet<std::string>("created", HighFive::DataSpace::From(time)).write(time);
+    raw_data_group.createDataSet<std::string>("changed", HighFive::DataSpace::From(time)).write(time);
+
+    // Create empty reference frame
+    vector<float> frame = Matrix4<BaseVector<float>>().getVector();
+    std::cout << frame.size() << std::endl;
+    raw_data_group.createDataSet<float>("position", HighFive::DataSpace::From(frame)).write(frame);
+
+}
+
+void HDF5IO::save(std::string filename)
+{
+
+}
+
+Texture HDF5IO::getImage(std::string groupName, std::string datasetName)
+{
+
+    Texture ret;
+
+    if (m_hdf5_file)
+    {
+        if (exist(groupName))
+        {
+            HighFive::Group g = getGroup(groupName, false);
+            ret = getImage(g, datasetName);
+        }
+    }
+
+    return ret;
+}
+
+Texture HDF5IO::getImage(HighFive::Group& g, std::string datasetName)
+{
+    Texture ret;
+
+    if (m_hdf5_file)
+    {
+        if (g.exist(datasetName))
+        {
+            long long unsigned int width, height, planes;
+            long long int npals;
+            char interlace[256];
+
+            if (!H5IMis_image(g.getId(), datasetName.c_str()))
+            {
+                return ret;
+            }
+
+            if (H5IMget_image_info(
+                        g.getId(), datasetName.c_str(), &width, &height,
+                        &planes, interlace, &npals) >= 0)
+            {
+                if (width && height && planes && npals == 0)
+                {
+                    ret = Texture(0, width, height, planes, 1, 1.0);
+
+                    if (H5IMread_image(g.getId(), datasetName.c_str(), ret.m_data) < 0)
+                    {
+                        ret = Texture();
+                    }
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
+std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
+{
+    std::string groupName = "/raw/scans/";
+    std::vector<ScanData> ret;
+
+    if (!exist(groupName))
+    {
+        return ret;
+    }
+
+    HighFive::Group root_group = getGroup(groupName);
+    size_t num_objects = root_group.getNumberObjects();
+
+    for (size_t i = 0; i < num_objects; i++)
+    {
+        int pos_num;
+        std::string cur_scan_pos = root_group.getObjectName(i);
+
+        if (std::sscanf(cur_scan_pos.c_str(), "position_%5d", &pos_num))
+        {
+            ScanData cur_pos = getSingleRawScanData(pos_num, load_points);
+            ret.push_back(cur_pos);
+        }
+    }
+
+    return ret;
+
+}
+
+ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
+{
+    ScanData ret;
+
+    if (m_hdf5_file)
+    {
+        char buffer[128];
+        sprintf(buffer, "position_%05d", nr);
+
+        string nr_str(buffer);
+        std::string groupName         = "/raw/scans/"  + nr_str;
+        std::string spectralGroupName = "/annotation/" + nr_str;
+
+        unsigned int dummy;
+        floatArr fov           = getArray<float>(groupName, "fov", dummy);
+        floatArr res           = getArray<float>(groupName, "resolution", dummy);
+        floatArr pose_estimate = getArray<float>(groupName, "initialPose", dummy);
+        floatArr registration  = getArray<float>(groupName, "finalPose", dummy);
+        floatArr bb            = getArray<float>(groupName, "boundingBox", dummy);
+
+        if (load_points || m_usePreviews)
+        {
+            if (!load_points)
+            {
+                groupName         = "/preview/" + nr_str;
+                spectralGroupName = groupName;
+            }
+
+            floatArr points    = getArray<float>(groupName, "points", dummy);
+
+            if (points)
+            {
+                ret.m_points = PointBufferPtr(new PointBuffer(points, dummy/3));
+
+                std::vector<size_t> dim;
+                ucharArr spectral = getArray<unsigned char>(spectralGroupName, "spectral", dim);
+
+                if (spectral)
+                {
+                    ret.m_points->addUCharChannel(spectral, "spectral_channels", dim[0], dim[1]);
+                    ret.m_points->addIntAttribute(400, "spectral_wavelength_min");
+                    ret.m_points->addIntAttribute(400 + 4 * dim[1], "spectral_wavelength_max");
+                }
+            }
+        }
+
+        if (fov)
+        {
+            ret.m_hFieldOfView = fov[0];
+            ret.m_vFieldOfView = fov[1];
+        }
+
+        if (res)
+        {
+            ret.m_hResolution = res[0];
+            ret.m_vResolution = res[1];
+        }
+
+        if (registration)
+        {
+            ret.m_registration   = Matrix4<BaseVector<float> >(registration.get());
+        }
+
+        if (pose_estimate)
+        {
+            ret.m_poseEstimation = Matrix4<BaseVector<float> >(pose_estimate.get());
+        }
+
+        if (bb)
+        {
+            ret.m_boundingBox = BoundingBox<BaseVector<float> >(
+                    {bb[0], bb[1], bb[2]}, {bb[3], bb[4], bb[5]});
+        }
+
+        ret.m_pointsLoaded = load_points;
+        ret.m_positionNumber = nr;
+
+        ret.m_scanDataRoot = groupName;
+    }
+
+    return ret;
+}
+
+floatArr HDF5IO::getFloatChannelFromRawScanData(std::string name, int nr, unsigned int& n, unsigned& w)
+{
+    floatArr ret;
+
+    if (m_hdf5_file)
+    {
+        char buffer[128];
+        sprintf(buffer, "pose%05d", nr);
+        string nr_str(buffer);
+
+        std::string groupName = "/raw_data/" + nr_str;
+
+        HighFive::Group g = getGroup(groupName);
+
+        std::vector<size_t> dim;
+        ret = getArray<float>(g, name, dim);
+
+        if (dim.size() != 2)
+        {
+            throw std::runtime_error(
+                "HDF5IO - getFloatchannelFromRawScanData() Error: dim.size() != 2");
+        }
+
+        n = dim[0];
+        w = dim[1];
+    }
+
+    return ret;
+}
+
+void HDF5IO::addImage(std::string group, std::string name, cv::Mat& img)
+{
+    if(m_hdf5_file)
+    {
+
+        HighFive::Group g = getGroup(group);
+        addImage(g, name, img);
+    }
+}
+
+void HDF5IO::addImage(HighFive::Group& g, std::string datasetName, cv::Mat& img)
+{
+    int w = img.cols;
+    int h = img.rows;
+    H5IMmake_image_8bit(g.getId(), datasetName.c_str(), w, h, img.data);
+}
+
+void HDF5IO::addFloatChannelToRawScanData(
+        std::string name, int nr, size_t n, unsigned w, floatArr data)
+{
+    try
+    {
+        HighFive::Group g = getGroup("raw/scans");
+    }
+    catch(HighFive::Exception& e)
+    {
+        std::cout << timestamp << "Error adding raw scan data: "
+                  << e.what() << std::endl;
+        throw e;
+    }
+
+    if(data != nullptr && n > 0 && w > 0 && m_hdf5_file)
+    {
+        // Setup group for scan data
+        char buffer[128];
+        sprintf(buffer, "position_%05d", nr);
+        string nr_str(buffer);
+        std::string groupName = "/raw/scans/" + nr_str;
+        std::vector<size_t> dim = {n, w};
+        addArray(groupName, name, dim, data);
+    }
+    else
+    {
+        std::cout << timestamp << "Error adding float channel '" << name
+                               << "'to raw scan data" << std::endl;
+    }
+}
+
+void HDF5IO::addHyperspectralCalibration(int position, const HyperspectralCalibration& calibration)
+{
+    try
+    {
+        HighFive::Group g = getGroup("raw/spectral");
+    }
+    catch(HighFive::Exception& e)
+    {
+        std::cout << timestamp << "Error adding hyperspectral calibration data: "
+                  << e.what() << std::endl;
+        throw e;
+    }
+
+    // Add calibration values
+    if(m_hdf5_file)
+    {
+        // Setup group for scan data
+        char buffer[128];
+        sprintf(buffer, "position_%05d", position);
+        string nr_str(buffer);
+        std::string groupName = "/raw/spectral/" + nr_str;
+
+        floatArr a(new float[3]);
+        a[0] = calibration.a0;
+        a[1] = calibration.a1;
+        a[2] = calibration.a2;
+
+        floatArr rotation(new float[3]);
+        a[0] = calibration.angle_x;
+        a[1] = calibration.angle_y;
+        a[2] = calibration.angle_z;
+
+        floatArr origin(new float[3]);
+        origin[0] = calibration.origin_x;
+        origin[1] = calibration.origin_y;
+        origin[2] = calibration.origin_z;
+
+        floatArr principal(new float[2]);
+        principal[0] = calibration.principal_x;
+        principal[1] = calibration.principal_y;
+
+        addArray(groupName, "distortion", 3, a);
+        addArray(groupName, "rotation", 3, rotation);
+        addArray(groupName, "origin", 3, origin);
+        addArray(groupName, "prinzipal", 2, principal);
+    }
+}
+
+void HDF5IO::addRawScanData(int nr, ScanData &scan)
+{
+    try
+    {
+        HighFive::Group g = getGroup("raw/scans");
+    }
+    catch(HighFive::Exception& e)
+    {
+        std::cout << timestamp << "Error adding raw scan data: "
+                  << e.what() << std::endl;
+        throw e;
+    }
+
+    if(m_hdf5_file)
+    {
+        // Check scan data
+        if(scan.m_points->numPoints())
+        {
+            // Setup group for scan data
+            char buffer[128];
+            sprintf(buffer, "position_%05d", nr);
+            string nr_str(buffer);
+
+
+            std::string groupName = "/raw/scans/" + nr_str;
+
+            // Generate tuples for field of view and resolution parameters
+            floatArr fov(new float[2]);
+            fov[0] = scan.m_hFieldOfView;
+            fov[1] = scan.m_vFieldOfView;
+
+            floatArr res(new float[2]);
+            res[0] = scan.m_hResolution;
+            res[1] = scan.m_vResolution;
+
+            // Generate pose estimation matrix array
+            floatArr pose_estimate(scan.m_poseEstimation.toFloatArray());
+            floatArr registration(scan.m_registration.toFloatArray());
+
+            // Generate bounding box representation
+            floatArr bb(new float[6]);
+
+            auto bb_min = scan.m_boundingBox.getMin();
+            auto bb_max = scan.m_boundingBox.getMax();
+            bb[0] = bb_min.x;
+            bb[1] = bb_min.y;
+            bb[2] = bb_min.z;
+
+            bb[3] = bb_max.x;
+            bb[4] = bb_max.y;
+            bb[5] = bb_max.z;
+
+            // Testing code to store point data as integers
+//            cout << "Copy float to int..." << endl;
+//            intArray ints(new int[scan.m_points->numPoints() * 3]);
+//            floatArr tmp_pts = scan.m_points->getPointArray();
+//            for(size_t i = 0; i < scan.m_points->numPoints() * 3; i++)
+//            {
+//                ints[i] = (int)tmp_pts[i] * 10000;
+//            }
+//            cout << "Done" << endl;
+
+
+            // Add data to group
+            std::vector<size_t> dim = {4,4};
+            std::vector<size_t> scan_dim = {scan.m_points->numPoints(), 3};
+            addArray(groupName, "fov", 2, fov);
+            addArray(groupName, "resolution", 2, res);
+            addArray(groupName, "initialPose", dim, pose_estimate);
+            addArray(groupName, "finalPose", dim, registration);
+            addArray(groupName, "boundingBox", 6, bb);
+            addArray(groupName, "points", scan_dim, scan.m_points->getPointArray());
+
+            // Uncomment this to store interger points
+            // addArray(groupName, "points", scan_dim, ints);
+
+
+            // Add spectral annotation channel
+            size_t an;
+            unsigned aw;
+            ucharArr spectral = scan.m_points->getUCharArray("spectral_channels", an, aw);
+
+            if (spectral)
+            {
+                size_t chunk_w = std::min<size_t>(an, 1000000);    // Limit chunk size
+                std::vector<hsize_t> chunk_annotation = {chunk_w, aw};
+                std::vector<size_t> dim_annotation = {an, aw};
+                addArray("/annotation/" + nr_str, "spectral", dim_annotation, chunk_annotation, spectral);
+            }
+
+            // Add preview data if wanted
+            if (m_usePreviews)
+            {
+                std::string previewGroupName = "/preview/" + nr_str;
+
+
+                // Add point preview
+                floatArr points = scan.m_points->getPointArray();
+                if (points)
+                {
+                    size_t numPreview;
+                    floatArr previewData = reduceData(points, scan.m_points->numPoints(), 3, m_previewReductionFactor, &numPreview);
+
+                    std::vector<size_t> previewDim = {numPreview, 3};
+                    addArray(previewGroupName, "points", previewDim, previewData);
+                }
+
+
+                // Add spectral preview
+                if (spectral)
+                {
+
+                    size_t numPreview;
+                    ucharArr previewData = reduceData(spectral, an, aw, m_previewReductionFactor, &numPreview);
+                    std::vector<size_t> previewDim = {numPreview, aw};
+                    addArray(previewGroupName, "spectral", previewDim, previewData);
+                }
+            }
+        }
+    }
+}
+
+void HDF5IO::addRawDataHeader(std::string description, Matrix4<BaseVector<float>> &referenceFrame)
+{
+
+}
+
+std::vector<std::string> HDF5IO::splitGroupNames(const std::string &groupName)
+{
+    std::vector<std::string> ret;
+
+    std::string remainder = groupName;
+    size_t delimiter_pos = 0;
+
+    while ( (delimiter_pos = remainder.find('/', delimiter_pos)) != std::string::npos)
+    {
+        if (delimiter_pos > 0)
+        {
+            ret.push_back(remainder.substr(0, delimiter_pos));
+        }
+
+        remainder = remainder.substr(delimiter_pos + 1);
+
+        delimiter_pos = 0;
+    }
+
+    if (remainder.size() > 0)
+    {
+        ret.push_back(remainder);
+    }
+
+    return ret;
+}
+
+
+HighFive::Group HDF5IO::getGroup(const std::string &groupName, bool create)
+{
+    std::vector<std::string> groupNames = splitGroupNames(groupName);
+    HighFive::Group cur_grp;
 
     try
     {
-        File file(filename);
+        cur_grp = m_hdf5_file->getGroup("/");
 
-        Group clouds = file.getGroup("/pointclouds");
-        std::vector<std::string> cloudNames = clouds.listObjectNames();
-
-        if (cloudNames.size() == 0)
+        for (size_t i = 0; i < groupNames.size(); i++)
         {
-            throw Exception("pointclouds Group does not contain clouds");
-        }
-
-        Group cloud = clouds.getGroup(cloudNames[0]);
-
-        if (!cloud.exist("points"))
-        {
-            throw Exception("pointcloud does not contain points");
-        }
-        Group pointGroup = cloud.getGroup("points");
-
-        pointGroup.getDataSet("numPoints").read(numPoints);
-
-        if (!numPoints)
-        {
-            throw Exception("pointcloud does not contain points");
-        }
-
-        points = floatArr(new float[numPoints * 3]);
-        pointGroup.getDataSet("points").read(points.get());
-
-        if (cloud.exist("colors"))
-        {
-            Group colorGroup = cloud.getGroup("colors");
-
-            colorGroup.getDataSet("numPoints").read(numColors);
-
-            if (numColors)
+            if (cur_grp.exist(groupNames[i]))
             {
-                colors = ucharArr(new unsigned char[numColors * 3]);
-                colorGroup.getDataSet("colors").read(colors.get());
+                cur_grp = cur_grp.getGroup(groupNames[i]);
             }
-        }
-
-        if (cloud.exist("confidences"))
-        {
-            Group confidenceGroup = cloud.getGroup("confidences");
-
-            confidenceGroup.getDataSet("numPoints").read(numConfidences);
-
-            if (numConfidences)
+            else if (create)
             {
-                confidences = floatArr(new float[numConfidences]);
-                confidenceGroup.getDataSet("confidences").read(confidences.get());
+                cur_grp = cur_grp.createGroup(groupNames[i]);
             }
-        }
-
-        if (cloud.exist("intensities"))
-        {
-            Group intensityGroup = cloud.getGroup("intensities");
-
-            intensityGroup.getDataSet("numPoints").read(numIntensities);
-
-            if (numIntensities)
+            else
             {
-                intensities = floatArr(new float[numIntensities]);
-                intensityGroup.getDataSet("intensities").read(intensities.get());
+                // Throw exception because a group we searched
+                // for doesn't exist and create flag was false
+                throw std::runtime_error("HDF5IO - getGroup(): Groupname '"
+                    + groupNames[i] + "' doesn't exist and create flag is false");
             }
-        }
-
-        if (cloud.exist("spectralChannels"))
-        {
-            Group spectralChannelGroup = cloud.getGroup("spectralChannels");
-
-            spectralChannelGroup.getDataSet("numPoints").read(numSpectralChannels);
-            spectralChannelGroup.getDataSet("numChannels").read(numChannels);
-            spectralChannelGroup.getDataSet("minSpectral").read(minSpectral);
-            spectralChannelGroup.getDataSet("maxSpectral").read(maxSpectral);
-
-            if (numSpectralChannels)
-            {
-                spectralChannels = floatArr(new float[numSpectralChannels * numChannels]);
-                spectralChannelGroup.getDataSet("spectralChannels").read(spectralChannels.get());
-            }
-        }
-
-        if(numPoints)
-        {
-            pc = PointBufferPtr(new PointBuffer);
-            pc->setPointArray(points, numPoints);
-            pc->setColorArray(colors, numColors);
-            pc->addFloatChannel(intensities, "intensities", numIntensities, 1);
-            pc->addFloatChannel(confidences, "confidences", numConfidences, 1);
-            pc->setNormalArray(normals, numNormals);
-
-            // add spectral channels to Pointbuffer 
-            pc->addIntAttribute(minSpectral, "spectral_wavelength_min");
-            pc->addIntAttribute(maxSpectral, "spectral_wavelength_max");
-            pc->addFloatChannel(spectralChannels, "spectral_channels", numSpectralChannels, numChannels);
         }
     }
-    catch(HighFive::Exception& err)
+    catch(HighFive::Exception& e)
     {
-        std::cerr << "Unable to read File: " << err.what() << std::endl;
+        std::cout << timestamp
+                  << "Error in getGroup (with group name '"
+                  << groupName << "': " << std::endl;
+        std::cout << e.what() << std::endl;
+        throw e;
     }
 
-    ModelPtr m(new Model(mesh, pc));
-    m_model = m;
-    return m;
+    return cur_grp;
 }
 
+bool HDF5IO::exist(const std::string &groupName)
+{
+    std::vector<std::string> groupNames = splitGroupNames(groupName);
+    HighFive::Group cur_grp;
 
+    try
+    {
+        cur_grp = m_hdf5_file->getGroup("/");
+
+        for (size_t i = 0; i < groupNames.size(); i++)
+        {
+            if (cur_grp.exist(groupNames[i]))
+            {
+                if (i < groupNames.size() -1)
+                {
+                    cur_grp = cur_grp.getGroup(groupNames[i]);
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+    catch (HighFive::Exception& e)
+    {
+        std::cout << timestamp
+                  << "Error in exist (with group name '"
+                  << groupName << "': " << std::endl;
+        std::cout << e.what() << std::endl;
+        throw e;
+
+    }
+
+    return true;
+}
+
+bool HDF5IO::isGroup(HighFive::Group grp, std::string objName)
+{
+    H5G_stat_t stats;
+
+    if (H5Gget_objinfo(grp.getId(), objName.c_str(), true, &stats) < 0)
+    {
+        return false;
+    }
+
+    if (stats.type == H5G_GROUP)
+    {
+        return true;
+    }
+
+    return false;
+}
 
 } // namespace lvr2
