@@ -49,7 +49,7 @@ using std::string;
 using std::vector;
 using namespace lvr2;
 
-namespace gss_reconstruct{
+namespace gs_reconstruction{
 
     class Options : public BaseOption {
     public:
@@ -64,7 +64,7 @@ namespace gss_reconstruct{
 
         float getBoxFactor() const;
 
-        int getWithCollapse() const;
+        bool getWithCollapse() const;
 
         float getLearningRate() const;
 
@@ -82,12 +82,17 @@ namespace gss_reconstruct{
 
         string getInputFileName() const;
 
+        /*
+         * prints information about needed command-line-inputs e.g: input-file (ply)
+         */
+        bool printUsage() const;
+
     private:
         int m_runtime;
         int m_basicSteps;
         int m_numSplits;
         float m_boxFactor;
-        int m_withCollapse;
+        bool m_withCollapse;
         float m_learningRate;
         float m_neighborLearningRate;
         float m_decreaseFactor;
@@ -95,10 +100,31 @@ namespace gss_reconstruct{
         float m_collapseThreshold;
         bool m_filterChain;
         int m_deleteLongEdgesFactor;
-        string m_inputFileName;
+        //string m_inputFileName;
 
     };
-}
+
+    /// Output the Options - overloaded output Operator
+    inline ostream& operator<<(ostream& os, const Options &o) {
+        o.printTransformation(os);
+
+        cout << "#### InputFile-Name: " <<  o.getInputFileName() << endl;
+        cout << "#### Runtime: " <<  o.getRuntime() << endl;
+        cout << "#### BasicSteps: " <<  o.getBasicSteps() << endl;
+        cout << "#### NumSplits: " <<  o.getNumSplits() << endl;
+        cout << "#### BoxFactor: " <<  o.getBoxFactor() << endl;
+        //cout << "#### WithCollapse: " <<  o.getWithCollapse() << endl;
+        cout << "#### LearningRate: " <<  o.getLearningRate() << endl;
+        cout << "#### NeighbourLearningRate: " <<  o.getNeighborLearningRate() << endl;
+        cout << "#### DecreaseFactor: " <<  o.getDecreaseFactor() << endl;
+        cout << "#### AllowMiss: " <<  o.getAllowMiss() << endl;
+        cout << "#### CollapseThreshold: " <<  o.getCollapseThreshold() << endl;
+        //cout << "#### FilterChain: " <<  o.isFilterChain() << endl;
+        cout << "#### DeleteLongEdgesFactor: " <<  o.getDeleteLongEdgesFactor() << endl;
+
+        return os;
+    }
+} //end namesprace gs_reconstruct
 
 
 
