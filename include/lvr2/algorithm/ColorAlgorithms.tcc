@@ -130,6 +130,10 @@ static Rgb8Color floatToRainbowColor(float value)
     {
         return { 255, static_cast<uint8_t>(floor(n * 255)), 0 };
     }
+    else 
+    {
+    return { 255, 255, 255 };
+    }
 }
 
 static Rgb8Color floatToGrayScaleColor(float value)

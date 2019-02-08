@@ -33,6 +33,7 @@
  */
 
 #include <lvr2/util/Panic.hpp>
+#include <boost/shared_array.hpp>
 
 #include <sstream>
 #include <string>
@@ -65,6 +66,12 @@ void StableVector<HandleT, ElemT>::checkAccess(HandleType handle) const
 template<typename HandleT, typename ElemT>
 StableVector<HandleT, ElemT>::StableVector(size_t countElements, const ElementType& defaultValue)
     : m_elements(countElements, defaultValue),
+      m_usedCount(countElements)
+{}
+
+template<typename HandleT, typename ElemT>
+StableVector<HandleT, ElemT>::StableVector(size_t countElements, boost::shared_array<ElementType>& sharedArray)
+    : m_elements(sharedArray.begin(), sharedArray.end()),
       m_usedCount(countElements)
 {}
 

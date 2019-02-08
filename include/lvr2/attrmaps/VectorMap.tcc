@@ -52,6 +52,11 @@ VectorMap<HandleT, ValueT>::VectorMap(size_t countElements, const ValueT& defaul
 }
 
 template<typename HandleT, typename ValueT>
+VectorMap<HandleT, ValueT>::VectorMap(size_t countElements, boost::shared_array<ValueT>& sharedArray)
+    : m_vec(countElements, sharedArray)
+{}
+
+template<typename HandleT, typename ValueT>
 bool VectorMap<HandleT, ValueT>::containsKey(HandleT key) const
 {
     return static_cast<bool>(m_vec.get(key));

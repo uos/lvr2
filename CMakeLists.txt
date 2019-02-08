@@ -48,10 +48,12 @@ endif(MSVC)
 ####
 ## Searching for CUDA
 ##############################
+if(NOT APPLE)
 find_package( CUDA 8)
 if(CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
 endif(CUDA_FOUND)
+endif(NOT APPLE)
 
 ####
 ## Searching for OpenCV
@@ -128,7 +130,7 @@ if(VTK_MAJOR_VERSION VERSION_LESS "6")
 endif()
 
 if(VTK_MAJOR_VERSION VERSION_GREATER "7")
-    list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
+  list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
 endif()
 if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
     if(VTK_MINOR_VERSION VERSION_GREATER "0")

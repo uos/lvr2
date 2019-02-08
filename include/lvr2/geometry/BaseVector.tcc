@@ -183,6 +183,7 @@ CoordT BaseVector<CoordT>::operator[](const unsigned& index) const
             return z;
         default:
             panic("Access index out of range.");
+            return x; // return statement to suppress clang warning
     }
 }
 
@@ -199,6 +200,7 @@ CoordT& BaseVector<CoordT>::operator[](const unsigned& index)
             return z;
         default:
             panic("Access index out of range.");
+            return x; // return statement to suppress clang warning
     }
 }
 
