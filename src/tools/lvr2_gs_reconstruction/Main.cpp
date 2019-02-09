@@ -17,7 +17,7 @@
 
 /// New includes, to be evaluated, which we actually need
 
-#include "OptionsGSS.hpp"
+#include "OptionsGS.hpp"
 
 
 
@@ -25,11 +25,25 @@
 /*typedef GCS<ColorVertex<float, unsigned char>, Normal<float>> cGCS;
 typedef CGAL::Simple_cartesian<double> SimpleCartesian;*/
 
-using namespace gs_reconstruction;
+#include <lvr2/geometry/HalfEdgeMesh.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/geometry/Vector.hpp>
+#include <lvr2/reconstruction/PointsetSurface.hpp>
+#include <lvr2/io/PointBuffer.hpp>
+#include <lvr2/io/MeshBuffer.hpp>
+#include <lvr2/io/ModelFactory.hpp>
+
+using Vec = BaseVector<float>;
+
+/*template <typename BaseVecT>
+PointsetSurface<BaseVecT> loadPointCloud(const gs_reconstruction::Options &options){
+
+}*/
+
 
 int main(int argc, char **argv) {
 
-    Options options(argc, argv);
+    gs_reconstruction::Options options(argc, argv);
 
     // if one of the needed parameters is missing,
     if(options.printUsage()){
@@ -37,6 +51,18 @@ int main(int argc, char **argv) {
     }
 
     std::cout << options << std::endl;
+
+    //try to parse the model
+    ModelPtr model = ModelFactory::readModel(options.getInputFileName());
+
+    // did model parse succeed
+    if (!model)
+    {
+        cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+        return EXIT_FAILURE;
+    }
+
+    PointBufferPtr buffer = model->m_pointCloud;
 
     return 0;
 

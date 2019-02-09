@@ -28,11 +28,11 @@
 /*
 * OptionsGSS.hpp
 *
-*  Created on: Nov 21, 2010
+*  Created on: Feb 09, 2019
 *      Author: Patrick Hoffmann
 */
-#ifndef LAS_VEGAS_OPTIONSGSS_H
-#define LAS_VEGAS_OPTIONSGSS_H
+#ifndef OPTIONSGS_H_
+#define OPTIONSHS_H_
 
 #include <iostream>
 #include <string>
@@ -100,27 +100,26 @@ namespace gs_reconstruction{
         float m_collapseThreshold;
         bool m_filterChain;
         int m_deleteLongEdgesFactor;
-        //string m_inputFileName;
 
     };
 
     /// Output the Options - overloaded output Operator
     inline ostream& operator<<(ostream& os, const Options &o) {
-        o.printTransformation(os);
+        //o.printTransformation(os);
 
-        cout << "#### InputFile-Name: " <<  o.getInputFileName() << endl;
-        cout << "#### Runtime: " <<  o.getRuntime() << endl;
-        cout << "#### BasicSteps: " <<  o.getBasicSteps() << endl;
-        cout << "#### NumSplits: " <<  o.getNumSplits() << endl;
-        cout << "#### BoxFactor: " <<  o.getBoxFactor() << endl;
-        //cout << "#### WithCollapse: " <<  o.getWithCollapse() << endl;
-        cout << "#### LearningRate: " <<  o.getLearningRate() << endl;
-        cout << "#### NeighbourLearningRate: " <<  o.getNeighborLearningRate() << endl;
-        cout << "#### DecreaseFactor: " <<  o.getDecreaseFactor() << endl;
-        cout << "#### AllowMiss: " <<  o.getAllowMiss() << endl;
-        cout << "#### CollapseThreshold: " <<  o.getCollapseThreshold() << endl;
-        //cout << "#### FilterChain: " <<  o.isFilterChain() << endl;
-        cout << "#### DeleteLongEdgesFactor: " <<  o.getDeleteLongEdgesFactor() << endl;
+        cout << "##### InputFile-Name: " <<  o.getInputFileName() << endl;
+        cout << "##### Runtime: " <<  o.getRuntime() << endl;
+        cout << "##### BasicSteps: " <<  o.getBasicSteps() << endl;
+        cout << "##### NumSplits: " <<  o.getNumSplits() << endl;
+        cout << "##### BoxFactor: " <<  o.getBoxFactor() << endl;
+        cout << "#### WithCollapse: " <<  o.getWithCollapse() << endl;
+        cout << "##### LearningRate: " <<  o.getLearningRate() << endl;
+        cout << "##### NeighbourLearningRate: " <<  o.getNeighborLearningRate() << endl;
+        cout << "##### DecreaseFactor: " <<  o.getDecreaseFactor() << endl;
+        cout << "##### AllowMiss: " <<  o.getAllowMiss() << endl;
+        cout << "##### CollapseThreshold: " <<  o.getCollapseThreshold() << endl;
+        cout << "##### FilterChain: " <<  o.isFilterChain() << endl;
+        cout << "##### DeleteLongEdgesFactor: " <<  o.getDeleteLongEdgesFactor() << endl;
 
         return os;
     }
@@ -128,4 +127,4 @@ namespace gs_reconstruction{
 
 
 
-#endif //LAS_VEGAS_OPTIONSGSS_H
+#endif //OPTIONSGS_H_
