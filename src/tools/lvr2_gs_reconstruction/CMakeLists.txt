@@ -4,7 +4,7 @@
 
 set(GS_RECONSTRUCTION_SOURCES
         Main.cpp
-		OptionsGSS.cpp
+        OptionsGS.cpp
 )
 
 #####################################################################################
@@ -12,13 +12,24 @@ set(GS_RECONSTRUCTION_SOURCES
 #####################################################################################
 
 set(GS_DEPENDENCIES
-	lvr2_static
-	lvrlas_static
-	lvrrply_static
-  ${PCL_LIBRARIES}
-  ${CGAL_LIBRARY}
-  ${EIGEN_LIBRARY}
+		lvr2_static
+		lvrlas_static
+		lvrrply_static
+		lvrslam6d_static
+  		${PCL_LIBRARIES}
+  		${EIGEN_LIBRARY}
+		${GLUT_LIBRARIES}
+		${OpenCV_LIBS}
 	)
+
+
+#####################################################################################
+# Add PCD io if PCL is installed
+#####################################################################################
+
+if(PCL_FOUND)
+	set(LVR_RECONSTRUCT_DEPENDENCIES  ${LVR_RECONSTRUCT_DEPENDENCIES} ${PCL_LIBRARIES})
+endif(PCL_FOUND)
 
 #####################################################################################
 # Add executable

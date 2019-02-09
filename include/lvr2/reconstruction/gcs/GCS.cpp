@@ -22,6 +22,8 @@
  *  @date 14.04.16
  *  @author Henning Strueber (hstruebe@uos.de)
  */
+#include "GCS.hpp"
+
 namespace logging = boost::log;
 namespace lvr2 {
 template <typename VertexT, typename NormalT>
@@ -162,8 +164,7 @@ void GCS<VertexT, NormalT>::initSimpleMesh() {
   // Create BoundingBox and expand it around Pointcloud
   BoundingBox<VertexT> m_boundingBox = BoundingBox<VertexT>();
   for (size_t i = 0; i < m_pointNumber; i++) {
-    m_boundingBox.expand(m_pointCoord[i][0], m_pointCoord[i][1],
-                         m_pointCoord[i][2]);
+    m_boundingBox.expand(m_pointCoord[i]);
   }
   // Check if BoundingBox is valid and exit otherwise
   if (!m_boundingBox.isValid()) {
@@ -244,8 +245,7 @@ void GCS<VertexT, NormalT>::initTetrahedron() {
   // Create BoundingBox and expand it around Pointcloud
   BoundingBox<VertexT> m_boundingBox = BoundingBox<VertexT>();
   for (size_t i = 0; i < m_pointNumber; i++) {
-    m_boundingBox.expand(m_pointCoord[i][0], m_pointCoord[i][1],
-                         m_pointCoord[i][2]);
+    m_boundingBox.expand(m_pointCoord[i];
   }
   // Check if BoundingBox is valid and exit otherwise
   if (!m_boundingBox.isValid()) {

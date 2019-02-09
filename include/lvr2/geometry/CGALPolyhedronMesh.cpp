@@ -23,6 +23,8 @@
  *  @author Henning Strüber (hstruebe@uos.de)
  */
 
+#include "CGALPolyhedronMesh.hpp"
+
 namespace lvr2 {
 
 template <typename VertexT, typename NormalT, typename Kernel, typename Items>
