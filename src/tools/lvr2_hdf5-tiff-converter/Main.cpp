@@ -14,6 +14,7 @@
 #include <fstream>
 
 #include "TIFFIO.hpp"
+#include "GeoTIFFIO.hpp"
 
 
 using namespace lvr2;
@@ -31,22 +32,8 @@ void printUsage()
     std::cout << "Usage: ./hdf5-tiff-converter <input_path>.h5 [<output_path>.tif]" << std::endl;
 }
 
-int main(int argc, char**argv)
+int processConversion(std::string input_filename, std::string output_filename)
 {
-    /* ---------------- COMMAND LINE INPUT ----------------- */
-    if(!argv[1] || argv[1] == "--help")
-    {
-        printUsage();
-        return 0;
-    }
-    string input_filename = argv[1];
-
-    string output_filename = "../../../../lvr_output/out.tif";
-    if(argv[2])
-    {
-        output_filename = argv[2];
-    }
-
     /* =----------------- HDF5 INPUT ----------------------- */
     HDF5IO hdf5(input_filename, false);
     std::vector<size_t> dim;
@@ -84,6 +71,26 @@ int main(int argc, char**argv)
         }
     }
 
+}
 
+int main(int argc, char**argv)
+{
+    /* ---------------- COMMAND LINE INPUT ----------------- */
+    if(!argv[1] || argv[1] == "--help")
+    {
+        printUsage();
+        return 0;
+    }
+    string input_filename = argv[1];
+
+    string output_filename = "../../../../lvr_output/out.tif";
+    if(argv[2])
+    {
+        output_filename = argv[2];
+    }
+
+    GeoTIFFIO gtif(output_filename);
     return 0;
+
+/*    return processConversion(input_filename, output_filename);*/
 }

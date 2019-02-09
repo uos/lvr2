@@ -49,9 +49,17 @@ endif(MSVC)
 ## Searching for TIFF Searching for TIFF
 ##############################
 find_package(TIFF REQUIRED)
-    if(TIFF_FOUND)
+if(TIFF_FOUND)
     include_directories(${TIFF_INCLUDE_DIRS} ${TIFF_LIBRARIES})
 endif(TIFF_FOUND)
+
+###
+## Searching for GeoTIFF
+##############################
+find_package(GEOTIFF)
+if(GEOTIFF_FOUND)
+    include_directories(${GEOTIFF_INCLUDE_DIR} ${GEOTIFF_LIBRARY})
+endif(GEOTIFF_FOUND)
 
 ####
 ## Searching for CUDA
