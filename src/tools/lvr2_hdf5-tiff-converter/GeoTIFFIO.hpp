@@ -5,18 +5,23 @@
 #ifndef GEOTIFFIO_HPP
 #define GEOTIFFIO_HPP
 
-#include <geotiff.h>
 #include <geotiffio.h>
+/*#include <tiffio.h>*/
+#include <string>
+#include "TIFFIO.hpp"
 
 namespace lvr2
 {
     class GeoTIFFIO
     {
     public:
-        GeoTIFFIO();
+        GeoTIFFIO(std::string filename);
+
+        ~GeoTIFFIO();
 
     private:
-        GTIF *m_geofile;
+        GTIF *m_gtiffile;
+        TIFF *m_tiffile;
     };
 }
 
