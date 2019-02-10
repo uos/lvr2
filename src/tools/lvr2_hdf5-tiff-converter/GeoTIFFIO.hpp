@@ -5,23 +5,26 @@
 #ifndef GEOTIFFIO_HPP
 #define GEOTIFFIO_HPP
 
-#include <geotiffio.h>
-/*#include <tiffio.h>*/
+#include <gdal/gdal_priv.h>
+#include <cv.h>
+
 #include <string>
-#include "TIFFIO.hpp"
 
 namespace lvr2
 {
     class GeoTIFFIO
     {
     public:
-        GeoTIFFIO(std::string filename);
+        GeoTIFFIO(std::string filename, int cols, int rows, int bands);
+
+        int writeBand(cv::Mat *mat, int band);
 
         ~GeoTIFFIO();
 
     private:
-        GTIF *m_gtiffile;
-        TIFF *m_tiffile;
+        GDALDataset *m_gtif_dataset;
+        GDALDriver *m_gtif_driver;
+        int m_cols, m_rows, m_bands;
     };
 }
 
