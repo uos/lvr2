@@ -141,7 +141,7 @@ endif()
 #####################################################################################
 
 if(OPENCL_FOUND)
-    set(LVR2_SOURCES ${LVR2_SOURCES} reconstruction/opencl/ClSurface.cpp)
+    set(LVR2_SOURCES ${LVR2_SOURCES} reconstruction/opencl/ClSurface.cpp ../../include/lvr2/reconstruction/gs2/GrowingCellStructure.cpp ../../include/lvr2/reconstruction/gs2/GrowingCellStructure.hpp)
     set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${OpenCL_LIBRARIES})
 endif()
 

@@ -2,4 +2,4 @@
 // Created by patrick on 10.02.19.
 //
 
-#include "GrowingCellStructures.hpp"
+#include "GrowingCellStructure.hpp"
