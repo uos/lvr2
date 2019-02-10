@@ -10,7 +10,6 @@
 /*#include <CGAL/Polyhedron_3.h>
 #include <lvr2/geometry/BoundingBox.hpp>
 #include <lvr2/geometry/CGALPolyhedronMesh.hpp>
-//#include <lvr2/reconstruction/FastReconstruction.hpp>
 #include <lvr2/reconstruction/gcs/GCS.hpp>
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/algorithm/FinalizeAlgorithms.hpp>*/
@@ -32,13 +31,88 @@ typedef CGAL::Simple_cartesian<double> SimpleCartesian;*/
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/io/ModelFactory.hpp>
+#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
+//#include <lvr2/reconstruction/gs2/GrowingCellStructure.hpp>
 
+
+
+/**
+ * Extended Vertex, which now includes the signal counter, TODO: make it work...how to inherit this wagshit?
+ * @tparam CoordT
+ */
+/*template <typename CoordT>
+struct GCSVector : BaseVector<CoordT>{
+public:
+
+    GCSVector() : BaseVector(x,y,z){
+        this->signal_counter = 0;
+    }
+    GCSVector(const CoordT &x, const CoordT &y, const CoordT &z)
+            : BaseVector(x,y,z)
+    {
+        this->signal_counter = 0;
+    }
+
+    void incrementSC() {
+        this->signal_counter++;
+    }
+
+    int getSC() const{
+        return this->signal_counter;
+    }
+
+    void setSC(int new_sc) {
+        this->signal_counter = new_sc;
+    }
+
+    int signal_counter;
+};*/
+
+//TODO: dont use BaseVector
 using Vec = BaseVector<float>;
 
-/*template <typename BaseVecT>
-PointsetSurface<BaseVecT> loadPointCloud(const gs_reconstruction::Options &options){
+template <typename BaseVecT>
+PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options &options, PointBufferPtr buffer){
+    // Create a point cloud manager
+    string pcm_name = options.getPcm();
+    PointsetSurfacePtr<Vec> surface;
 
-}*/
+    // Create point set surface object
+    if(pcm_name == "PCL")
+    {
+        cout << timestamp << "Using PCL as point cloud manager is not implemented yet!" << endl;
+        panic_unimplemented("PCL as point cloud manager");
+    }
+    else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
+    {
+        surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(
+                buffer,
+                pcm_name,
+                options.getKn(),
+                options.getKi(),
+                options.getKd(),
+                1,
+                ""
+        );
+    }
+    else
+    {
+        cout << timestamp << "Unable to create PointCloudManager." << endl;
+        cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
+        return nullptr;
+    }
+
+
+    // Set search options for normal estimation and distance evaluation
+    surface->setKd(options.getKd());
+    surface->setKi(options.getKi());
+    surface->setKn(options.getKn());
+
+    //calc normals if there are none, TODO: Seg-Fault beheben, woher kommt er?
+    /*if(!buffer->hasNormals()){
+        surface->calculateSurfaceNormals();
+    }*/
+}
 
 
 int main(int argc, char **argv) {
@@ -63,6 +137,24 @@ int main(int argc, char **argv) {
     }
 
     PointBufferPtr buffer = model->m_pointCloud;
+
+    // Create a point cloud manager
+    string pcm_name = options.getPcm();
+    auto surface = loadPointCloud<Vec>(options, buffer);
+    if (!surface)
+    {
+        cout << "Failed to create pointcloud. Exiting." << endl;
+        return EXIT_FAILURE;
+    }
+
+    //TODO: check, whether the centroid (needed for mesh positioning) is usable, else do it by myself..
+    //TODO: generate possibility to call GCS and GSS with one operation (create insantance, call "getMesh" or similar)
+    //      -> getMesh returns Pointer to a Mesh
+
+
+    //HalfEdgeMesh<Vec> mesh;
+
+    //GrowingCellStructure<Vec, Normal<float>> gcs(surface, options);
 
     return 0;
 

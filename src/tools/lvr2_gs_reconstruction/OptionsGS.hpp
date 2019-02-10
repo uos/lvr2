@@ -87,6 +87,15 @@ namespace gs_reconstruction{
          */
         bool printUsage() const;
 
+        int getKd() const;
+
+        int getKn() const;
+
+        int getKi() const;
+
+        string getPcm() const;
+
+
     private:
         int m_runtime;
         int m_basicSteps;
@@ -100,6 +109,18 @@ namespace gs_reconstruction{
         float m_collapseThreshold;
         bool m_filterChain;
         int m_deleteLongEdgesFactor;
+        /// The number of neighbors for distance function evaluation
+        int                             m_kd;
+
+        /// The number of neighbors for normal estimation
+        int                             m_kn;
+
+
+        /// The number of neighbors for normal interpolation
+        int                             m_ki;
+
+        /// The used point cloud manager
+        string                          m_pcm;
 
     };
 
@@ -120,6 +141,10 @@ namespace gs_reconstruction{
         cout << "##### CollapseThreshold: " <<  o.getCollapseThreshold() << endl;
         cout << "##### FilterChain: " <<  o.isFilterChain() << endl;
         cout << "##### DeleteLongEdgesFactor: " <<  o.getDeleteLongEdgesFactor() << endl;
+        cout << "##### PCM: " <<  o.getPcm() << endl;
+        cout << "##### KD: " <<  o.getKd() << endl;
+        cout << "##### KI: " <<  o.getKi() << endl;
+        cout << "##### KN: " <<  o.getKn() << endl;
 
         return os;
     }

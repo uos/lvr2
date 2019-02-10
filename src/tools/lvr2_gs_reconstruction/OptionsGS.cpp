@@ -26,6 +26,10 @@ namespace gs_reconstruction{
                 ("collapseThreshold",value<float>(&m_collapseThreshold)->default_value(0.3), "threshold for collapse, default: 0.3")
                 ("filterChain",value<bool>(&m_filterChain)->default_value(false),"should the filter chain run? default: false")
                 ("deleteLongEdgesFactor",value<int>(&m_deleteLongEdgesFactor)->default_value(10), "0 = no deleting, default: 10")
+                ("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
+                ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
+                ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
+                ("pcm,p", value<string>(&m_pcm)->default_value("FLANN"), "Point cloud manager used for point handling and normal estimation. Choose from {STANN, PCL, NABO}.")
                 ;
         setup();
     }
@@ -103,6 +107,23 @@ namespace gs_reconstruction{
             return true;
         }
         return false;
+    }
+
+
+    int Options::getKd() const {
+        return m_variables["kd"].as<int>();
+    }
+
+    int Options::getKn() const {
+        return m_variables["kn"].as<int>();
+    }
+
+    int Options::getKi() const {
+        return m_variables["ki"].as<int>();
+    }
+
+    string Options::getPcm() const {
+        return (m_variables["pcm"].as<string>());
     }
 }
 
