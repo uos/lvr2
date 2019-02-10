@@ -72,6 +72,19 @@ public:
     BVHTree(const vector<float>& vertices, const vector<uint32_t>& faces);
 
     /**
+     * @brief 
+     */
+    BVHTree(
+        const floatArr vertices, size_t n_vertices,
+        const indexArray faces, size_t n_faces
+    );
+
+    /**
+     * @brief
+     */
+    BVHTree(const MeshBufferPtr mesh);
+
+    /**
      * @return Index list (for getTrianglesIntersectionData) of triangles in the leaf nodes
      */
     const vector<uint32_t>& getTriIndexList() const;
@@ -188,6 +201,19 @@ private:
      * @return Root node of the tree
      */
     BVHNodePtr buildTree(const vector<float>& vertices, const vector<uint32_t>& faces);
+
+    /**
+     * @brief Builds the tree without it's cache friendly representation. Utilizes the buildTreeRecursive method.
+     *
+     * @param vertices Vertices of mesh to create tree for
+     * @param faces Faces of mesh to create tree for
+     *
+     * @return Root node of the tree
+     */
+    BVHNodePtr buildTree(
+        const floatArr vertices, size_t n_vertices,
+        const indexArray faces, size_t n_faces
+    );
 
     /**
      * @brief Recursive method to build the tree.

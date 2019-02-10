@@ -35,6 +35,7 @@
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/attrmaps/AttrMaps.hpp>
 #include <lvr2/geometry/Handles.hpp>
+#include <list>
 
 namespace lvr2
 {
@@ -54,7 +55,7 @@ namespace lvr2
  * @param neighborsOut  The found neighbors, stored in a vector.
  */
 template<typename BaseVecT>
-void calcVertexLocalNeighborhood(
+void calcLocalVertexNeighborhood(
         const BaseMesh<BaseVecT>& mesh,
         VertexHandle vH,
         double radius,
@@ -73,7 +74,7 @@ void calcVertexLocalNeighborhood(
  * given `visitor` is called exactly once.
  */
 template <typename BaseVecT, typename VisitorF>
-void visitLocalNeighborhoodOfVertex(
+void visitLocalVertexNeighborhood(
     const BaseMesh<BaseVecT>& mesh,
     VertexHandle vH,
     double radius,
@@ -90,7 +91,7 @@ void visitLocalNeighborhoodOfVertex(
  *          of each vertex.
  */
 template<typename BaseVecT>
-DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, double radius);
+DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT>& mesh, double radius);
 
 /**
  * @brief Calculates the roughness for each vertex.
@@ -163,13 +164,45 @@ DenseEdgeMap<float> calcVertexAngleEdges(
  * @param heightDiff  The calculated height difference values for each vertex.
  */
 template<typename BaseVecT>
-void calcVertexRoughnessAndHeightDiff(
+void calcVertexRoughnessAndHeightDifferences(
         const BaseMesh<BaseVecT>& mesh,
         double radius,
         const VertexMap<Normal<BaseVecT>>& normals,
         DenseVertexMap<float>& roughness,
         DenseVertexMap<float>& heightDiff
 );
+
+/**
+ * @brief Computes the distances between the vertices and stores them in the given dense edge map.
+ *
+ * @param mesh        The mesh containing the vertices and edges of interest
+ * @return            The dense edge map with the distance values
+ */
+template<typename BaseVecT>
+DenseEdgeMap<float> calcVertexDistances(const BaseMesh<BaseVecT>& mesh);
+
+/**
+ * @brief  Dijkstra's algorithm
+ *
+ * @param mesh        The mesh containing the vertices and edges of interest
+ * @param start       Start vertex
+ * @param goal        Goal vertex
+ * @param path        Resulted path from search
+ *
+ * @return true if a path between start and goals exists
+ */
+template<typename BaseVecT, typename Visitor>
+bool Dijkstra(
+    const BaseMesh<BaseVecT>& mesh,
+    const VertexHandle& start,
+    const VertexHandle& goal,
+    const DenseEdgeMap<float>& edgeCosts,
+    std::list<VertexHandle>& path,
+    DenseVertexMap<float>& distances,
+    DenseVertexMap<VertexHandle>& predecessors,
+    DenseVertexMap<bool>& seen,
+    Visitor visitor);
+
 
 } // namespace lvr2
 

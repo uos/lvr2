@@ -95,7 +95,42 @@ void LVRModelBridge::setPose(const Pose& pose)
     transform->RotateY(pose.t);
     transform->RotateZ(pose.p);
     transform->Translate(pose.x, pose.y, pose.z);
-    if(validPointBridge()) m_pointBridge->getPointCloudActor()->SetUserTransform(transform);
+
+    doStuff(transform);
+
+}
+
+void LVRModelBridge::setTransform(const Matrix4<BaseVector<float> > &transform)
+{
+    vtkSmartPointer<vtkTransform> t = vtkSmartPointer<vtkTransform>::New();
+    vtkSmartPointer<vtkMatrix4x4> m = vtkSmartPointer<vtkMatrix4x4>::New();
+
+    // For some reason we have to copy the matrix
+    // values manually...
+    int j = 0;
+    for(int i = 0; i < 16; i++)
+    {
+        if((i % 4) == 0)
+        {
+            j = 0;
+        }
+        double v = transform[i];
+        m->SetElement(i / 4, j, v);
+        j++;
+    }
+
+    t->PostMultiply();
+    t->SetMatrix(m);
+    doStuff(t);
+}
+
+void LVRModelBridge::doStuff(vtkSmartPointer<vtkTransform> transform)
+{
+    if(validPointBridge())
+    {
+        m_pointBridge->getPointCloudActor()->SetUserTransform(transform);
+    }
+
     if(validMeshBridge())
     {
         if (!m_meshBridge->hasTextures())
@@ -113,6 +148,7 @@ void LVRModelBridge::setPose(const Pose& pose)
         }
     }
 }
+
 
 Pose LVRModelBridge::getPose()
 {
@@ -133,7 +169,7 @@ void LVRModelBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
     	// (one actor per texture).
     	if(!m_meshBridge->hasTextures())
     	{
-            vtkActor* actor = m_meshBridge->getMeshActor();
+            vtkSmartPointer<vtkActor> actor = m_meshBridge->getMeshActor();
             renderer->AddActor(actor);
             actor->GetProperty()->BackfaceCullingOff();
     	}

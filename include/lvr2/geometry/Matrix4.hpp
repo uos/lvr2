@@ -500,11 +500,12 @@ public:
 
     std::vector<ValueType> getVector()
     {
-        std::vector<ValueType> tmp;
+        std::vector<ValueType> tmp(16);
         for(int i = 0; i < 16; i++)
         {
             tmp.push_back(m[i]);
         }
+        return tmp;
     }
 
 	/**

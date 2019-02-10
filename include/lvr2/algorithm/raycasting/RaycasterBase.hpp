@@ -25,51 +25,59 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /**
- * @file Hdf5IO.hpp
+/*
+ * RaycasterBase.hpp
+ *
+ *  @date 25.01.2019
+ *  @author Alexander Mock <amock@uos.de>
  */
 
-#include <lvr2/io/PlutoMapIO.hpp>
-#include <lvr2/io/Timestamp.hpp>
+#pragma once
 
-#include <iomanip>
-#include <string>
-#include <vector>
-
-#include <lvr2/io/Model.hpp>
-#include <lvr2/io/BaseIO.hpp>
-
-#ifndef __HDF5_IO_HPP_
-#define __HDF5_IO_HPP_
-
-
-using std::string;
-using std::vector;
+#include <lvr2/io/MeshBuffer.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
+#include <lvr2/geometry/Vector.hpp>
+#include <lvr2/geometry/Point.hpp>
 
 namespace lvr2
 {
 
 /**
- * An basic implemntation for the integrated HDF5 format.
- * This saves the mesh geomentry, normals, colors, materials and textures to an
- * defined HDF5 file format.
- *
- * This also tries to mitgate any erros while saving the file to disc, since
- * the HDF5 implementation is very picky about saving anything to an already opened
- * file or any other strange things on the file system. Thus if the first try of
- * saving it the defined filename it tries to make up an new one and saves everything there.
+ * @brief RaycasterBase interface
  */
-class Hdf5IO : public BaseIO
-{
+template <typename BaseVecT>
+class RaycasterBase {
 public:
-    Hdf5IO() {}
-    virtual ~Hdf5IO() {}
 
-    void save(string filename);
+    /**
+     * @brief Constructor: Stores mesh as member
+     */
+    RaycasterBase(const MeshBufferPtr mesh);
 
-    ModelPtr read(string filename);
+    virtual bool castRay(
+        const Point<BaseVecT>& origin,
+        const Vector<BaseVecT>& direction,
+        Point<BaseVecT>& intersection
+    ) = 0;
+
+    virtual void castRays(
+        const Point<BaseVecT>& origin,
+        const std::vector<Vector<BaseVecT> >& directions,
+        std::vector<Point<BaseVecT> >& intersections,
+        std::vector<uint8_t>& hits
+    ) = 0;
+
+    virtual void castRays(
+        const std::vector<Point<BaseVecT> >& origins,
+        const std::vector<Vector<BaseVecT> >& directions,
+        std::vector<Point<BaseVecT> >& intersections,
+        std::vector<uint8_t>& hits
+    ) = 0;
+
+private:
+    const MeshBufferPtr m_mesh;
 };
 
 } // namespace lvr2
 
-#endif // __HDF5_IO_HPP_
+#include <lvr2/algorithm/raycasting/RaycasterBase.tcc>
