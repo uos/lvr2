@@ -143,6 +143,12 @@ public:
     floatArr getTextureCoordinates();
 
     ///
+    /// \brief getFaceNormas    Returns an array containing face normals, i.e., three
+    ///                         float values per face.
+    ///
+    floatArr getFaceNormals();
+
+    ///
     /// \brief getFaceIndices   Returns an array with face definitions, i.e., three
     ///                         vertex indices per face.
     indexArray getFaceIndices();

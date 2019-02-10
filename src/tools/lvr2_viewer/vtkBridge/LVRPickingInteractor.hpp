@@ -35,18 +35,19 @@
 #define LVRPICKINGINTERACTOR_HPP_
 
 #include <QObject>
+#include <QMessageBox>
 
 #include <vtkTextActor.h>
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
+#include <vtkMath.h>
 
 namespace lvr2
 {
 
-enum PickMode {None, PickPoint, PickFirst, PickSecond};
 
-class LVRPickingInteractor : public QObject, public vtkInteractorStyleTrackballCamera
+class LVRPickingInteractor : public QObject, public vtkInteractorStyle
 {
     Q_OBJECT
 public:
@@ -57,6 +58,17 @@ public:
      * @brief   Overloaded mouse event handling.
      */
     virtual void OnLeftButtonDown();
+    virtual void OnLeftButtonUp();
+    virtual void OnMouseMove();
+    virtual void OnMiddleButtonUp();
+    virtual void OnMiddleButtonDown();
+    virtual void OnRightButtonUp();
+    virtual void OnRightButtonDown();
+    virtual void OnMouseWheelBackward();
+    virtual void OnMouseWheelForward();
+
+    virtual void OnChar();
+    virtual void OnTimer();
 
     /**
      * @brief   Overloaded keyboard press event handling
@@ -71,19 +83,39 @@ public:
     virtual void OnKeyDown();
 
     virtual void Dolly();
+    virtual void Dolly(double factor);
     virtual void Pan();
     virtual void Spin();
     virtual void Zoom();
     virtual void Rotate();
+
 
     /**
      * @brief   returns the text-actor, needed to readd-it after clearing the render window
      */
     vtkSmartPointer<vtkTextActor>   getTextActor(){ return m_textActor; }
 
+    void updateFocalPoint();
+
 public Q_SLOTS:
     void correspondenceSearchOn();
     void correspondenceSearchOff();
+
+    void setMotionFactor(double factor);
+    void setRotationFactor(double factor);
+
+    void setFocalPointRendering(int state);
+    void setStereoMode(int state);
+
+    void pickFocalPoint();
+
+    void modeTerrain();
+    void modeTrackball();
+    void modeShooter();
+
+    void resetCamera();
+
+
 
 Q_SIGNALS:
     void firstPointPicked(double*);
@@ -91,11 +123,79 @@ Q_SIGNALS:
     void pointSelected(vtkActor*, int);
 
 private:
+
+    enum InteractorMode {TRACKBALL, SHOOTER, TERRAIN};
+    enum ShooterMode {LOOK, HOVER};
+    enum PickMode {None, PickPoint, PickFirst, PickSecond, PickFocal};
+
+    void handlePicking();
+
+    // ------------------------- TRACKBALL
+
+    void dollyTrackball();
+    void dollyTrackball(double factor);
+    void panTrackball();
+    void spinTrackball();
+    void zoomTrackball();
+    void rotateTrackball();
+
+    void onLeftButtonDownTrackball();
+    void onLeftButtonUpTrackball();
+    void onMouseMoveTrackball();
+    void onMiddleButtonUpTrackball();
+    void onMiddleButtonDownTrackball();
+    void onRightButtonUpTrackball();
+    void onRightButtonDownTrackball();
+    void onMouseWheelBackwardTrackball();
+    void onMouseWheelForwardTrackball();
+
+    // ------------------------ TERRAIN
+
+    void dollyTerrain();
+    void dollyTerrain(double factor);
+    void panTerrain();
+    void spinTerrain();
+    void zoomTerrain();
+    void rotateTerrain();
+
+    void onLeftButtonDownTerrain();
+    void onLeftButtonUpTerrain();
+    void onMouseMoveTerrain();
+    void onMiddleButtonUpTerrain();
+    void onMiddleButtonDownTerrain();
+    void onRightButtonUpTerrain();
+    void onRightButtonDownTerrain();
+    void onMouseWheelBackwardTerrain();
+    void onMouseWheelForwardTerrain();
+
+    // ------------------------ SHOOTER
+
+    void dollyShooter();
+    void dollyShooter(double factor);
+    void panShooter();
+    void spinShooter();
+    void zoomShooter();
+    void rotateShooter();
+    void hoverShooter();
+    void resetViewUpShooter();
+    void strafeShooter(double factor);
+
+    void onLeftButtonDownShooter();
+    void onLeftButtonUpShooter();
+    void onMouseMoveShooter();
+    void onMiddleButtonUpShooter();
+    void onMiddleButtonDownShooter();
+    void onRightButtonUpShooter();
+    void onRightButtonDownShooter();
+    void onMouseWheelBackwardShooter();
+    void onMouseWheelForwardShooter();
+
     /// Indicates picking mode
     PickMode            m_pickMode;
 
     /// Text actor to display info if in picking mode
     vtkSmartPointer<vtkTextActor>   m_textActor;
+    vtkSmartPointer<vtkActor>       m_sphereActor;
 
     vtkSmartPointer<vtkRenderer>    m_renderer;
 
@@ -103,6 +203,16 @@ private:
 
     unsigned int                    m_numberOfClicks;
     int                             m_previousPosition[2];
+    int                             m_startCameraMovePosition[2];
+
+    double                          m_viewUp[3];
+
+    float                           m_motionFactor;
+    float                           m_rotationFactor;
+
+    InteractorMode                  m_interactorMode;
+    ShooterMode                     m_shooterMode;
+
 
 };
 

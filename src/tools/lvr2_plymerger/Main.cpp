@@ -81,7 +81,7 @@ void parsePLYHeader(
     bool found_points   = false;
     bool found_faces    = false;
 
-    while(element = ply_get_next_element(ply, element))
+    while( (element = ply_get_next_element(ply, element)))
     {
          ply_get_element_info( element, &name, &n );
          if(!strcmp( name, "vertex" ))

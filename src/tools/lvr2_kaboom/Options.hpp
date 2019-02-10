@@ -72,6 +72,7 @@ public:
     string 	getInputFile() const;
     string 	getOutputFile() const;
 
+    bool    exportScanPositions() const;
 	bool	filter() const;
     bool    transformBefore() const;
 	int		getK() const;

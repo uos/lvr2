@@ -240,6 +240,8 @@ int LVRCorrespondanceDialog::getMaxIterations()
 
 LVRCorrespondanceDialog::~LVRCorrespondanceDialog()
 {
+    delete m_ui;
+    delete m_dialog;
     // TODO Auto-generated destructor stub
 }
 

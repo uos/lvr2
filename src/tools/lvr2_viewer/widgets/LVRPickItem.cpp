@@ -57,6 +57,7 @@ LVRPickItem::~LVRPickItem()
 void LVRPickItem::setStart(double* start)
 {
     using Vec = BaseVector<float>;
+    if (m_start) delete[] m_start;
     m_start = start;
     QString x, y, z, text;
     x.setNum(start[0], 'f');
@@ -86,6 +87,7 @@ double* LVRPickItem::getEnd()
 
 void LVRPickItem::setEnd(double* end)
 {
+    if(m_end)    delete[] m_end;
     m_end = end;
     QString x, y, z, text;
     x.setNum(end[0], 'f');

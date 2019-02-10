@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 # set include dirs
-set(SLAM6D_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/lvr/ext/slam6d CACHE PATH "install location of slam6d headers")
+set(SLAM6D_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/slam6d CACHE PATH "install location of slam6d headers")
 find_path(SLAM6D_INCLUDE_DIR slam6d/scan_io.h PATH include)
 mark_as_advanced(SLAM6D_INCLUDE_DIR SLAM6D_INSTALL_INCLUDE_DIR)
 
@@ -20,7 +20,7 @@ add_library(lvrslam6d_static STATIC ${SLAM_SOURCES})
 
 add_library(lvrslam6d SHARED ${SLAM_SOURCES})
 
-# this intentionally installs to lvr/ext/slam6d/slam6d to keep a separate include path
+# this intentionally installs to lvr2/ext/slam6d/slam6d to keep a separate include path
 install(DIRECTORY include/slam6d DESTINATION ${SLAM6D_INSTALL_INCLUDE_DIR})
 
 install(TARGETS lvrslam6d_static lvrslam6d

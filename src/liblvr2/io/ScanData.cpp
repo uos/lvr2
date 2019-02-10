@@ -53,6 +53,15 @@ void parseSLAMDirectory(std::string dir, vector<ScanData>& scans)
                 ModelPtr model = io.read(scan_data_files[i].string());
                 scan_data.m_points = model->m_pointCloud;
 
+                size_t numPoints = scan_data.m_points->numPoints();
+                floatArr pts = scan_data.m_points->getPointArray();
+
+                for (size_t i = 0; i < numPoints; i++)
+                {
+                    Vector<BaseVector<float> > pt(pts[i*3 + 0], pts[i*3 + 1], pts[i*3 + 2]);
+                    scan_data.m_boundingBox.expand(pt);
+                }
+
                 Eigen::Matrix4d pose_estimate = Eigen::Matrix4d::Identity();
                 Eigen::Matrix4d registration = Eigen::Matrix4d::Identity();
 

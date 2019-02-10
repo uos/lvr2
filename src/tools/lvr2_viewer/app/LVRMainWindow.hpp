@@ -48,6 +48,10 @@
 #include <vtkGraphicsFactory.h>
 #include <vtkOrientationMarkerWidget.h>
 #include <vtkAxesActor.h>
+#include <vtkEDLShading.h>
+#include <vtkRenderStepsPass.h>
+#include <vtkOpenGLRenderer.h>
+#include <vtkNew.h>
 
 #include "../widgets/LVRPlotter.hpp"
 #include <QtGui>
@@ -73,6 +77,8 @@
 #include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
 #include "../widgets/LVRBackgroundDialog.hpp"
 #include "../widgets/LVRHistogram.hpp"
+#include "../widgets/LVRScanDataItem.hpp"
+#include "../widgets/LVRBoundingBoxItem.hpp"
 
 #include "../widgets/LVRPointInfo.hpp"
 
@@ -122,6 +128,8 @@ public Q_SLOTS:
     void applyMLSProjection();
     void removeOutliers();
     void deleteModelItem();
+    void loadPointCloudData();
+    void unloadPointCloudData();
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
     void changeShading(int shader);
@@ -149,6 +157,7 @@ public Q_SLOTS:
     void toggleNormals(bool checkboxState);
     void toggleMeshes(bool checkboxState);
     void toggleWireframe(bool checkboxState);
+    void toogleEDL(bool checkboxstate);
     void refreshView();
     void updateView();
     void saveCamera();
@@ -173,6 +182,7 @@ public Q_SLOTS:
     void updateSpectralSlidersEnabled(bool checked);
     /// Switches between Sliders and Gradients. checked == true => Gradient DockWidget enabled
     void updateSpectralGradientEnabled(bool checked);
+    QTreeWidgetItem* addScanData(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent);
 
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
@@ -185,6 +195,7 @@ protected Q_SLOTS:
     void setModelVisibility(QTreeWidgetItem* treeWidgetItem, int column);
     /// Adjusts all the Sliders, LineEdits and CheckBoxes to the currently selected Items
     void restoreSliders();
+    void highlightBoundingBoxes();
 
 Q_SIGNALS:
     void correspondenceDialogOpened();
@@ -197,7 +208,7 @@ private:
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;
     LVRPlotter*                                 m_PointPreviewPlotter;
     int                                         m_previewPoint;
-    PointBufferPtr                             m_previewPointBuffer;
+    PointBufferPtr                              m_previewPointBuffer;
     QDialog*                                    m_aboutDialog;
     QDialog*                                    m_errorDialog;
     QMessageBox*                                m_incompatibilityBox;
@@ -277,9 +288,16 @@ private:
     QAction*                            m_actionRenameModelItem;
     QAction*                            m_actionDeleteModelItem;
     QAction*                            m_actionExportModelTransformed;
+    QAction*                            m_actionLoadPointCloudData;
+    QAction*                            m_actionUnloadPointCloudData;
 
     LVRPickingInteractor*               m_pickingInteractor;
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
+
+    // EDM Rendering
+    vtkSmartPointer<vtkRenderStepsPass> m_basicPasses;
+    vtkSmartPointer<vtkEDLShading>      m_edl;
+
 
     enum TYPE {
         MODELITEMS_ONLY,
