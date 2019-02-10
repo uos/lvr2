@@ -411,7 +411,7 @@ if(Qt5_FOUND)
   find_package(QVTK)
   if(QVTK_FOUND)
     include_directories(${QVTK_INCLUDE_DIR})
-    add_subdirectory(src/tools/lvr2_viewer)
+    #add_subdirectory(src/tools/lvr2_viewer)
   endif(QVTK_FOUND)
 endif(Qt5_FOUND)
 
