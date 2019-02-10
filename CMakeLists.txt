@@ -46,7 +46,7 @@ endif(MSVC)
 ###############################################################
 
 ###
-## Searching for TIFF Searching for TIFF
+## Searching for TIFF
 ##############################
 find_package(TIFF REQUIRED)
 if(TIFF_FOUND)
@@ -54,12 +54,12 @@ if(TIFF_FOUND)
 endif(TIFF_FOUND)
 
 ###
-## Searching for GeoTIFF
+## Searching for GDAL
 ##############################
-find_package(GEOTIFF)
-if(GEOTIFF_FOUND)
-    include_directories(${GEOTIFF_INCLUDE_DIR} ${GEOTIFF_LIBRARY})
-endif(GEOTIFF_FOUND)
+find_package(GDAL)
+if(GDAL_FOUND)
+    include_directories(${GDAL_INCLUDE_DIR} ${GDAL_LIBRARY})
+endif(GDAL_FOUND)
 
 ####
 ## Searching for CUDA

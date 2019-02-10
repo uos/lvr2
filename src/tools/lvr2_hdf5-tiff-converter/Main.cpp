@@ -13,7 +13,6 @@
 #include <string>
 #include <fstream>
 
-#include "TIFFIO.hpp"
 #include "GeoTIFFIO.hpp"
 
 
@@ -41,34 +40,27 @@ int processConversion(std::string input_filename, std::string output_filename)
     // TODO: really use raw data?
     string groupname = "raw/spectral/position_00010";
     string datasetname = "spectral";
-    boost::shared_array<uint8_t> spectrals = hdf5.getArray<uint8_t>(groupname, datasetname, dim);
+    boost::shared_array<uint16_t> spectrals = hdf5.getArray<uint16_t>(groupname, datasetname, dim);
 
     size_t num_channels = dim[0];
     size_t num_rows = dim[1];
     size_t num_cols = dim[2];
 
-    /* ---------------- TIFF CONFIG ------------------------*/
-    // TODO: ganzes Verzeichnis in TIFF Directory schreiben
-    TIFFIO tif(output_filename);
-    tif.setFields(num_rows, num_cols, 1);
-
+    GeoTIFFIO gtifio(output_filename, num_cols, num_rows, num_channels);
 
     /* -------------- FILE CONVERSION ------------------- */
     // for each channel create a cv::Mat containing the spectral intensity data for the channel
     for(size_t channel = 0; channel < num_channels; channel++)
     {
-        cv::Mat *mat = new cv::Mat(num_rows, num_cols, CV_8UC1);
+        cv::Mat *mat = new cv::Mat(num_rows, num_cols, CV_16UC1);
         for(size_t row = 0; row < num_rows; row++)
         {
             for(size_t col = 0; col < num_cols; col++)
             {
-                mat->at<uint8_t>(row, col) = spectrals.get()[channel * num_cols * num_rows + row * num_cols + col];
+                mat->at<uint16_t>(row, col) = spectrals.get()[channel * num_cols * num_rows + row * num_cols + col];
             }
         }
-        if (channel == 15)
-        {
-            tif.writePage(mat, channel + 1);
-        }
+        gtifio.writeBand(mat, channel + 1);
     }
 
 }
@@ -89,8 +81,5 @@ int main(int argc, char**argv)
         output_filename = argv[2];
     }
 
-    GeoTIFFIO gtif(output_filename);
-    return 0;
-
-/*    return processConversion(input_filename, output_filename);*/
+    return processConversion(input_filename, output_filename);
 }

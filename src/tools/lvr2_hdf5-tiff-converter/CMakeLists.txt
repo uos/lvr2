@@ -20,7 +20,7 @@ set(
         lvrrply_static
         lvrslam6d_static
         ${TIFF_LIBRARIES}
-        ${GEOTIFF_LIBRARY}
+        ${GDAL_LIBRARY}
         ${OPENGL_LIBRARIES}
         ${GLUT_LIBRARIES}
         ${OpenCV_LIBS}
