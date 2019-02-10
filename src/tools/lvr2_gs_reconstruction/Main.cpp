@@ -1,8 +1,8 @@
 /*
- * Main.cpp
+ * MainGS.cpp
  *
- *  Created on: 24.02.2016
- *      Author: Henning Strueber (hstruebe@uos.de)
+ *  Created on: somewhen.02.2019
+ *      Author: Patrick Hoffmann (pahoffmann@uos.de)
  */
 
 
@@ -32,7 +32,7 @@ typedef CGAL::Simple_cartesian<double> SimpleCartesian;*/
 #include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
-//#include <lvr2/reconstruction/gs2/GrowingCellStructure.hpp>
+#include <lvr2/reconstruction/gs2/GrowingCellStructure.hpp>
 
 
 
@@ -152,9 +152,23 @@ int main(int argc, char **argv) {
     //      -> getMesh returns Pointer to a Mesh
 
 
-    //HalfEdgeMesh<Vec> mesh;
+    HalfEdgeMesh<Vec> mesh;
 
-    //GrowingCellStructure<Vec, Normal<float>> gcs(surface, options);
+    GrowingCellStructure<Vec, Normal<float>> gcs(surface);
+
+    //set gcs variables
+    gcs.setRuntime(options.getRuntime());
+    gcs.setBasicSteps(options.getBasicSteps());
+    gcs.setBoxFactor(options.getBoxFactor());
+    gcs.setAllowMiss(options.getAllowMiss());
+    gcs.setCollapseThreshold(options.getCollapseThreshold());
+    gcs.setDecreaseFactor(options.getDecreaseFactor());
+    gcs.setDeleteLongEdgesFactor(options.getDeleteLongEdgesFactor());
+    gcs.setFilterChain(options.isFilterChain());
+    gcs.setLearningRate(options.getLearningRate());
+    gcs.setNeighborLearningRate(options.getNeighborLearningRate());
+    gcs.setNumSplits(options.getNumSplits());
+    gcs.setWithCollapse(options.getWithCollapse());
 
     return 0;
 
