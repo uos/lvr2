@@ -108,9 +108,9 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options &op
     surface->setKn(options.getKn());
 
     //calc normals if there are none, TODO: Seg-Fault beheben, woher kommt er?
-    /*if(!buffer->hasNormals()){
+    if(!buffer->hasNormals()){
         surface->calculateSurfaceNormals();
-    }*/
+    }
     return surface;
 }
 
