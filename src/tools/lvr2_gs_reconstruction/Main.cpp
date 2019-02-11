@@ -102,7 +102,6 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options &op
         return nullptr;
     }
 
-
     // Set search options for normal estimation and distance evaluation
     surface->setKd(options.getKd());
     surface->setKi(options.getKi());
@@ -112,6 +111,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options &op
     /*if(!buffer->hasNormals()){
         surface->calculateSurfaceNormals();
     }*/
+    return surface;
 }
 
 
