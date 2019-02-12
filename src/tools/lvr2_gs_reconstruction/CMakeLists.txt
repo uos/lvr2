@@ -5,7 +5,7 @@
 set(GS_RECONSTRUCTION_SOURCES
         Main.cpp
         OptionsGS.cpp
-)
+		)
 
 #####################################################################################
 # Setup dependencies to external libraries
