@@ -1281,7 +1281,7 @@ void LVRPickingInteractor::handlePicking()
             Q_EMIT(pointSelected(actor, point));
         }
     }
-    else if(m_pickMode = PickFocal)
+    else if(m_pickMode == PickFocal)
     {
         int* pickPos = this->Interactor->GetEventPosition();
         double* picked = new double[3];
