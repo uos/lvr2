@@ -19,18 +19,54 @@ namespace lvr2{
             //std::cout << "Center:" << m_surface.get()->getBoundingBox().getCentroid() << std::endl;
         }
 
-
-        //execute basic step
-        void executeBasicStep();
-
-        //split vertex with .. -- get handle in function or pass it?
-        void executeVertexSplit(HalfEdgeHandle handle);
-
-        //collapse edge with ... -- get handle in function or pass it?
-        void executeEdgeCollapse(VertexHandle handle);
-
-        // TODO: add gcs construction with calls to above three functions
+        /**
+         * Only public method of the Reconstruction Class, calling all the other methods, generating the mesh
+         * approimating the pointcloud's surface
+         * @param mesh pointer to the mesh
+         */
         void getMesh(HalfEdgeMesh<BaseVecT> &mesh);
+
+
+        //needs to be moved, not working yet....
+        void getInitialMesh(HalfEdgeMesh<BaseVecT> &mesh){
+            auto bounding_box = m_surface.get()->getBoundingBox();
+
+            Vector<BaseVecT> centroid = bounding_box.getCentroid();
+            Vector<BaseVecT> min = bounding_box.getMin();
+            Vector<BaseVecT> max = bounding_box.getMax();
+
+            float xdiff = (max.x - min.x) / 2;
+            float ydiff = (max.y - max.x) / 2;
+            float zdiff = (max.z - min.z) / 2;
+
+            //scale diff acc to the box factor
+            xdiff *= (1 - m_boxFactor);
+            ydiff *= (1 - m_boxFactor);
+            zdiff *= (1 - m_boxFactor);
+
+            float minx, miny, minz, maxx, maxy, maxz;
+            minx = min.x + xdiff;
+            miny = min.y + ydiff;
+            minz = min.z + zdiff;
+            maxx = max.x - xdiff;
+            maxy = max.y - ydiff;
+            maxz = max.z - zdiff;
+
+            Vector<BaseVecT> top(BaseVecT(centroid.x, maxy, centroid.z));
+            Vector<BaseVecT> left(BaseVecT(minx, miny, minz));
+            Vector<BaseVecT> right(BaseVecT(maxx,miny,minz));
+            Vector<BaseVecT> back(BaseVecT(centroid.x, miny, maxz));
+
+            auto vH1 = mesh.addVertex(top);
+            auto vH2 = mesh.addVertex(left);
+            auto vH3 = mesh.addVertex(right);
+            auto vH4 = mesh.addVertex(back);
+
+            mesh.addFace(vH1, vH2, vH3);
+            mesh.addFace(vH1, vH2, vH4);
+            mesh.addFace(vH1, vH3, vH4);
+            mesh.addFace(vH2, vH3, vH4);
+        }
 
         //TODO: add functions to make gcs possible, such as laplacian smoothing
 
@@ -151,6 +187,23 @@ namespace lvr2{
         float m_collapseThreshold;
         bool m_filterChain;
         int m_deleteLongEdgesFactor;
+
+        /**
+         * Getting the initial Polyhedron Mesh and placing it in the center of the pointcloud (Tetrahedron)
+         * @param mesh
+         */
+        //void getInitialMesh(HalfEdgeMesh<BaseVecT> &mesh);
+
+        //execute basic step
+        void executeBasicStep();
+
+        //split vertex with .. -- get handle in function or pass it?
+        void executeVertexSplit(HalfEdgeHandle handle);
+
+        //collapse edge with ... -- get handle in function or pass it?
+        void executeEdgeCollapse(VertexHandle handle);
+
+        // TODO: add gcs construction with calls to above three functions
     };
 }
 

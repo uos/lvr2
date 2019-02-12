@@ -20,7 +20,7 @@
 
 
 
-//using namespace lvr2;
+using namespace lvr2;
 /*typedef GCS<ColorVertex<float, unsigned char>, Normal<float>> cGCS;
 typedef CGAL::Simple_cartesian<double> SimpleCartesian;*/
 
@@ -153,7 +153,6 @@ int main(int argc, char **argv) {
 
 
     HalfEdgeMesh<Vec> mesh;
-
     GrowingCellStructure<Vec, Normal<float>> gcs(surface);
 
     //set gcs variables
@@ -169,6 +168,17 @@ int main(int argc, char **argv) {
     gcs.setNeighborLearningRate(options.getNeighborLearningRate());
     gcs.setNumSplits(options.getNumSplits());
     gcs.setWithCollapse(options.getWithCollapse());
+
+    std::cout << "Test: " << gcs.getBasicSteps() << std::endl;
+    gcs.getInitialMesh(mesh);
+
+    SimpleFinalizer<Vec> fin;
+    MeshBufferPtr res = fin.apply(mesh);
+
+    ModelPtr m( new Model( res ) );
+
+    cout << timestamp << "Saving mesh." << endl;
+    ModelFactory::saveModel( m, "triangle_init_mesh.ply");
 
     return 0;
 
