@@ -13,9 +13,9 @@ set(LVR_HDF5_SOURCES
 
 set(LVR_HDF5_DEPENDENCIES
 	lvr2_static
-	lvrlas_static
-	lvrrply_static
-	lvrslam6d_static
+	lvr2las_static
+	lvr2rply_static
+	lvr2slam6d_static
 	${OPENGL_LIBRARIES}
 	${GLUT_LIBRARIES}
 )

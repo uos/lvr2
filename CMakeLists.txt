@@ -453,34 +453,34 @@ endif()
 # CMAKE FILES
 ################################################################
 
-install(EXPORT lvrTargets
-    FILE lvrTargets.cmake
-    NAMESPACE lvr::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr)
+install(EXPORT lvr2Targets
+    FILE lvr2Targets.cmake
+    NAMESPACE lvr2::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2)
 
 include(CMakePackageConfigHelpers)
 set(INCLUDE_INSTALL_DIR include/)
 set(LIB_INSTALL_DIR lib/)
-set(SYSCONFIG_INSTALL_DIR etc/lvr/)
+set(SYSCONFIG_INSTALL_DIR etc/lvr2/)
 
-configure_package_config_file(LVRConfig.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/LVRConfig.cmake
-  INSTALL_DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr
+configure_package_config_file(LVR2Config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
+  INSTALL_DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr2
   PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
 write_basic_package_version_file(
-  ${CMAKE_CURRENT_BINARY_DIR}/LVRConfigVersion.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/LVR2ConfigVersion.cmake
   COMPATIBILITY SameMajorVersion
 )
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LVRConfig.cmake
-              ${CMAKE_CURRENT_BINARY_DIR}/LVRConfigVersion.cmake
-        DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/LVR2ConfigVersion.cmake
+              DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr2 )
 
 install(FILES
     CMakeModules/FindEigen3.cmake
     CMakeModules/FindNabo.cmake
     CMakeModules/FindSTANN.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr/Modules)
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2/Modules)
 
 ################################################################
 # DOCUMENTATION
