@@ -5,7 +5,6 @@
 set(
         LVR_CONVERTER_SOURCES
         Main.cpp
-        TIFFIO.cpp TIFFIO.hpp
         GeoTIFFIO.cpp GeoTIFFIO.hpp
 )
 
@@ -19,7 +18,6 @@ set(
         lvrlas_static
         lvrrply_static
         lvrslam6d_static
-        ${TIFF_LIBRARIES}
         ${GDAL_LIBRARY}
         ${OPENGL_LIBRARIES}
         ${GLUT_LIBRARIES}

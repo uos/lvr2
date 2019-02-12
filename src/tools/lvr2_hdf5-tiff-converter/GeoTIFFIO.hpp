@@ -12,11 +12,27 @@
 
 namespace lvr2
 {
+    /**
+     * @brief class providing and encapsulating GDAL GeoTIFF I/O functions
+     * @author ndettmer <ndettmer@uos.de>
+     */
     class GeoTIFFIO
     {
     public:
+        /**
+         * @param filename filename of output GeoTIFF file
+         * @param cols number of columns / width of the image
+         * @param rows number of rows / length of the image
+         * @param bands number of bands
+         */
         GeoTIFFIO(std::string filename, int cols, int rows, int bands);
 
+        /**
+         * @brief Writing given band into open GeoTIFF file
+         * @param mat cv::Mat containing the band data
+         * @param band number of band to be written
+         * @return standard C++ return value
+         */
         int writeBand(cv::Mat *mat, int band);
 
         ~GeoTIFFIO();
