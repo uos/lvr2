@@ -16,9 +16,9 @@ set(LVR_CUDA_NORMAL_DEPS
     ${GLUT_LIBRARIES}
     ${OpenCV_LIBS}
     lvr2_static
-    lvrlas_static
-    lvrrply_static
-    lvrslam6d_static
+    lvr2las_static
+    lvr2rply_static
+    lvr2slam6d_static
     lvr2cuda_static
 )
 
