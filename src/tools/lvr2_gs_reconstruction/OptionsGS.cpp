@@ -17,7 +17,7 @@ namespace gs_reconstruction{
                 ("runtime", value<int>(&m_runtime)->default_value(3000), "Overall runtime of the Algorithm. The longer, the (better), default: 3000")
                 ("basicSteps",value<int>(&m_basicSteps)->default_value(10), "Basics step until split, default: 10")
                 ("numSplits",value<int>(&m_numSplits)->default_value(5), "splits per runtime, default: 5")
-                ("boxFactor",value<float>(&m_boxFactor)->default_value(1), "scale of initial mesh, default: 1")
+                ("boxFactor",value<float>(&m_boxFactor)->default_value(0.2), "scale of initial mesh, default: 1")
                 ("withCollapse",value<bool>(&m_withCollapse)->default_value(true), "with edge collapse? default: true")
                 ("learningRate",value<float>(&m_learningRate)->default_value(0.1),"learning rate of winner vertex, default: 1")
                 ("neighborLearningRate",value<float>(&m_neighborLearningRate)->default_value(0.08),"learning rate of winner vertex neighbours, default: 0.08")
