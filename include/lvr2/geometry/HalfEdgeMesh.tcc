@@ -708,15 +708,25 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     //get all outgoing edges
     auto outEdges = getEdgesOfVertex(vertexH);
 
-    float longestDistance; //save length of longest edge
-    HalfEdge longestEdge; //save longest edge
+    float longestDistance = 0; //save length of longest edge
+    EdgeHandle longestEdge(0); //save longest edge
+    HalfEdge longestEdgeHalf; //needed for vertex calc
+
+    //shouldnt happen
+    if(outEdges.size() < 3 ){
+        return;
+    }
+    /************************************
+     * Get vertex, which will be added. *
+     ************************************/
 
     // determine longest outgoing edge
     for(EdgeHandle edge : outEdges){
-        HalfEdgeHandle halfH = HalfEdgeHandle::oneHalfOf(edge);
+        HalfEdgeHandle halfH = HalfEdgeHandle::oneHalfOf(edge); //get Halfedge
         HalfEdge &half = getE(halfH);
         //if halfedge is pointing to the start vector, change it up
         if(half.target == vertexH){
+            halfH = half.twin;
             half = getE(half.twin);
         }
 
@@ -725,15 +735,32 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
         auto distance = target.distanceFrom(getV(vertexH).pos);
         if(distance > longestDistance){
             longestDistance = distance;
-            longestEdge = half;
+            longestEdge = edge;
+            longestEdgeHalf = half;
         }
     }
 
-    Vector<BaseVecT> vectorToAdd =
+    //calculate the position of the new vertex
+    Vector<BaseVecT> vectorToAdd = getV(vertexH).pos + (getV(longestEdgeHalf.target).pos - getV(vertexH).pos)/2;
 
-    std::cout << "Distance:" << longestDistance;
-    std::cout << "Target:" << getV(longestEdge.target).pos << std::endl;
-    //remove to be done
+    auto vertexAddedH = addVertex(vectorToAdd); //add the calculated vertex to the mesh.
+
+    std::cout << "Distance: " << longestDistance;
+    std::cout << "Target: " << getV(longestEdgeHalf.target).pos << std::endl;
+    std::cout << "Calculated Vertex: " << vectorToAdd << std::endl;
+
+
+    /**********************************************************************
+     * Get Incident Vertices to the two incident faces of the longes edge *
+     **********************************************************************/
+
+    auto incidentFaces = getFacesOfEdge(longestEdge);
+    vector<VertexHandle> incidentVertices;
+
+    for(OptionalFaceHandle handle : incidentFaces){
+        //todo: get all needed vertices, determine which faces need to be removed.
+    }
+
 
 }
 template <typename BaseVecT>
