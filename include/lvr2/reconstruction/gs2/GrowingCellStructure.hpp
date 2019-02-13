@@ -27,16 +27,24 @@ namespace lvr2{
         void getMesh(HalfEdgeMesh<BaseVecT> &mesh);
 
 
-        //needs to be moved, not working yet....
+        //needs to be moved, now working.. thumbusup
         void getInitialMesh(HalfEdgeMesh<BaseVecT> &mesh){
+            std::cout << "Test this shit" << std::endl;
+
+
             auto bounding_box = m_surface.get()->getBoundingBox();
+
+            if(!bounding_box.isValid()){
+                std::cout << "Bounding Box invalid" << std::endl;
+                exit(-1);
+            }
 
             Vector<BaseVecT> centroid = bounding_box.getCentroid();
             Vector<BaseVecT> min = bounding_box.getMin();
             Vector<BaseVecT> max = bounding_box.getMax();
 
             float xdiff = (max.x - min.x) / 2;
-            float ydiff = (max.y - max.x) / 2;
+            float ydiff = (max.y - min.y) / 2;
             float zdiff = (max.z - min.z) / 2;
 
             //scale diff acc to the box factor
@@ -44,6 +52,7 @@ namespace lvr2{
             ydiff *= (1 - m_boxFactor);
             zdiff *= (1 - m_boxFactor);
 
+            DOINDEBUG(dout() << "Test2" << endl);
             float minx, miny, minz, maxx, maxy, maxz;
             minx = min.x + xdiff;
             miny = min.y + ydiff;
@@ -57,15 +66,29 @@ namespace lvr2{
             Vector<BaseVecT> right(BaseVecT(maxx,miny,minz));
             Vector<BaseVecT> back(BaseVecT(centroid.x, miny, maxz));
 
+
+            std::cout << top << left << right << back << std::endl;
+
+            DOINDEBUG(dout() << "Test3" << endl);
             auto vH1 = mesh.addVertex(top);
             auto vH2 = mesh.addVertex(left);
             auto vH3 = mesh.addVertex(right);
             auto vH4 = mesh.addVertex(back);
 
-            mesh.addFace(vH1, vH2, vH3);
+            //add faces to create tetrahedron
+
+            //this doesnt work .. okaay
+            //mesh.addFace(vH1, vH2, vH3);
+            //mesh.addFace(vH1, vH2, vH4);
+            //mesh.addFace(vH1, vH3, vH4);
+            //mesh.addFace(vH2, vH3, vH4)
+
+
+            //this works...wtf :D
+            mesh.addFace(vH2, vH3, vH4)
             mesh.addFace(vH1, vH2, vH4);
-            mesh.addFace(vH1, vH3, vH4);
-            mesh.addFace(vH2, vH3, vH4);
+            mesh.addFace(vH1, vH4, vH3);
+            mesh.addFace(vH3, vH2, vH1);
         }
 
         //TODO: add functions to make gcs possible, such as laplacian smoothing
