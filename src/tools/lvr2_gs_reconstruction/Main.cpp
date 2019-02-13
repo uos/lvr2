@@ -170,7 +170,7 @@ int main(int argc, char **argv) {
     gcs.setWithCollapse(options.getWithCollapse());
 
     std::cout << "Test: " << gcs.getBasicSteps() << std::endl;
-    gcs.getInitialMesh(mesh);
+    gcs.getMesh(mesh);
 
     SimpleFinalizer<Vec> fin;
     MeshBufferPtr res = fin.apply(mesh);

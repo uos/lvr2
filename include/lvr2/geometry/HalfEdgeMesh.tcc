@@ -698,6 +698,45 @@ void HalfEdgeMesh<BaseVecT>::getNeighboursOfVertex(
 }
 
 template <typename BaseVecT>
+void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
+    //gets coordinates of new vertex, vertexH + 1/2 length of longest edge
+    //TODO: get longest edge
+    HalfEdge longestOutgoingEdge;
+
+
+
+    //get all outgoing edges
+    auto outEdges = getEdgesOfVertex(vertexH);
+
+    float longestDistance; //save length of longest edge
+    HalfEdge longestEdge; //save longest edge
+
+    // determine longest outgoing edge
+    for(EdgeHandle edge : outEdges){
+        HalfEdgeHandle halfH = HalfEdgeHandle::oneHalfOf(edge);
+        HalfEdge &half = getE(halfH);
+        //if halfedge is pointing to the start vector, change it up
+        if(half.target == vertexH){
+            half = getE(half.twin);
+        }
+
+        Vertex &targetHV = getV(half.target);
+        Vector<BaseVecT> target = targetHV.pos;
+        auto distance = target.distanceFrom(getV(vertexH).pos);
+        if(distance > longestDistance){
+            longestDistance = distance;
+            longestEdge = half;
+        }
+    }
+
+    Vector<BaseVecT> vectorToAdd =
+
+    std::cout << "Distance:" << longestDistance;
+    std::cout << "Target:" << getV(longestEdge.target).pos << std::endl;
+    //remove to be done
+
+}
+template <typename BaseVecT>
 EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 {
     if (!BaseMesh<BaseVecT>::isCollapsable(edgeH))
