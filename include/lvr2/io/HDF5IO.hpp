@@ -72,6 +72,18 @@ class HDF5IO : public BaseIO
     virtual void save(std::string filename);
 
     HDF5IO(std::string filename, bool truncate = false);
+
+    /**
+     * @brief Constructs a HDFIO io object to read a HDF5 file with the given filename.
+     * It accesses the mesh or point cloud with the given part name. The selected part can then be read and write
+     * to and from a Model pointer. This will automatically load and store all provided channels. The channels will
+     * be loaded if one accessing them in a lazy fashion.
+     * @param filename  The HDF5 file filename
+     * @param part_name The part in the HDF5 file which should be saved or loaded.
+     * @param truncate  Open flag: Truncate the HDF5 file if already existing
+     */
+    HDF5IO(const std::string filename, const std::string part_name, bool truncate = false);
+
     virtual ~HDF5IO();
 
     bool open(std::string filename, bool truncate);
@@ -178,6 +190,8 @@ class HDF5IO : public BaseIO
     size_t                  m_chunkSize;
     bool                    m_usePreviews;
     unsigned int            m_previewReductionFactor;
+    bool                    m_truncate;
+    std::string             m_part_name;
 };
 
 } // namespace lvr2

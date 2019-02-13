@@ -148,6 +148,8 @@ template<typename T>
 class AttributeChannel
 {
 public:
+    typedef boost::shared_ptr<AttributeChannel<T>> Ptr;
+
     using DataPtr = boost::shared_array<T>;
 
     AttributeChannel(size_t n, unsigned width)

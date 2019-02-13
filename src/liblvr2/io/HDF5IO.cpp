@@ -36,14 +36,27 @@
 namespace lvr2
 {
 
+HDF5IO::HDF5IO(const std::string filename, const std::string part_name, bool truncate) :
+    m_hdf5_file(nullptr),
+    m_compress(true),
+    m_chunkSize(1e7),
+    m_usePreviews(true),
+    m_previewReductionFactor(20),
+    m_part_name(part_name),
+    m_truncate(truncate)
+{
+}
+
 HDF5IO::HDF5IO(std::string filename, bool truncate) :
     m_hdf5_file(nullptr),
     m_compress(true),
     m_chunkSize(1e7),
     m_usePreviews(true),
-    m_previewReductionFactor(20)
+    m_previewReductionFactor(20),
+    m_part_name(""), // TODO default part_name ?
+    m_truncate(truncate)
 {
-    open(filename, truncate);
+    open(filename, truncate); // TODO Open should not be in the constructor
 }
 
 HDF5IO::~HDF5IO()
@@ -93,7 +106,32 @@ size_t HDF5IO::chunkSize()
 
 ModelPtr HDF5IO::read(std::string filename)
 {
-    return ModelPtr(new Model);
+    const std::string mesh_resource_path = "meshes/" + m_part_name;
+    const std::string vertices("vertices");
+    const std::string indices("indices");
+
+    open(filename, m_truncate);
+    ModelPtr model_ptr(new Model);
+    if(!exist(mesh_resource_path)){
+        std::cout << timestamp << " No mesh with the part name \"" << m_part_name << "\" given in the file \""
+        << filename << "\"!" << std::endl;
+    }
+    else
+    {
+        auto mesh = getGroup(mesh_resource_path);
+        if(!mesh.exist(vertices) || !mesh.exist(indices)){
+            std::cout << timestamp << " The mesh has to contain \"" << vertices
+                << "\" and \"" << indices << "\"" << std::endl;
+            std::cout << timestamp << " Return empty model pointer!" << std::endl;
+            return model_ptr;
+        }
+        // read mesh buffer
+        unsigned int numVertices;
+        model_ptr->m_mesh->setVertices(getArray<float>(mesh_resource_path, vertices, numVertices), numVertices);
+        unsigned int numFaces;
+        model_ptr->m_mesh->setFaceIndices(getArray<unsigned int>(mesh_resource_path, indices, numFaces), numFaces/3);
+    }
+    return model_ptr;
 }
 
 bool HDF5IO::open(std::string filename, bool truncate)
