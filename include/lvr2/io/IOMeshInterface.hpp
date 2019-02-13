@@ -30,6 +30,8 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
+#include <boost/optional.hpp>
+
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/attrmaps/AttrMaps.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
@@ -47,6 +49,22 @@ class IOMeshInterface
   static const std::string face_attributes;
   static const std::string edge_attributes;
   static const std::string cluster_attributes;
+
+  template<typename ValueT>
+  DenseVertexMapOptional<ValueT> getVertexAttributeMap(const std::string& name)
+  {
+      DenseVertexMap<ValueT> map;
+      bool b = getDenseVectorAttributeMap<DenseVertexMap<ValueT>>(map, vertex_attributes, name);
+      if(b)
+      {
+          return map;
+      }
+      else
+      {
+          return DenseVertexMapOptional<ValueT>();
+      }
+      
+  }
 
   ///
   /// \brief getAttributeMap  Reads a dense attribute map of floats
