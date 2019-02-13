@@ -36,6 +36,7 @@
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/geometry/Vector.hpp>
 #include <lvr2/io/AttributeManager.hpp>
+#include <lvr2/geometry/HalfEdgeMesh.hpp>
 
 namespace lvr2{
 
@@ -43,10 +44,36 @@ class IOMeshInterface
 {
  public:
 
+  using BaseVec = BaseVector<float>;
+
   static const std::string vertex_attributes;
   static const std::string face_attributes;
   static const std::string edge_attributes;
   static const std::string cluster_attributes;
+
+  HalfEdgeMesh<BaseVec> getMesh()
+  {
+    HalfEdgeMesh<BaseVec> hem;
+    auto vertices = getVertices();
+    auto indices = getIndices();
+
+    for (size_t i = 0; i < vertices.size();)
+    {
+      hem.addVertex(BaseVec(
+          vertices[i++],
+          vertices[i++],
+          vertices[i++]));
+    }
+
+    for (size_t i = 0; i < indices.size(); i++)
+    {
+      VertexHandle v1(indices[i++]);
+      VertexHandle v2(indices[i++]);
+      VertexHandle v3(indices[i++]);
+      hem.addFace(v1, v2, v3);
+    }
+    return hem;
+  }
 
   ///
   /// \brief getAttributeMap  Reads a dense attribute map of floats
@@ -73,7 +100,30 @@ class IOMeshInterface
     return getDenseValueAttributeMap<DenseFaceMap<unsigned char>>(map, face_attributes, name);
   }
 
+  virtual bool addAttributeMap(const DenseFaceMap<float>& map, const std::string& name){
+    return addDenseValueAttributeMap<DenseFaceMap<float>>(map, face_attributes, name);
+  }
+
+  virtual bool addAttributeMap(const DenseFaceMap<unsigned int>& map, const std::string& name){
+    return addDenseValueAttributeMap<DenseFaceMap<unsigned int>>(map, face_attributes, name);
+  }
+
+  virtual bool addAttributeMap(const DenseFaceMap<unsigned char>& map, const std::string& name){
+    return addDenseValueAttributeMap<DenseFaceMap<unsigned char>>(map, face_attributes, name);
+  }
+
+  virtual bool addAttributeMap(const DenseFaceMap<Vector<BaseVector<float>>>& map, const std::string& name){
+    return addDenseVectorAttributeMap<DenseFaceMap<Vector<BaseVector<float>>>>(map, face_attributes, name);
+  }
+
+  virtual bool addAttributeMap(const DenseFaceMap<Normal<BaseVector<float>>>& map, const std::string& name){
+    return addDenseVectorAttributeMap<DenseFaceMap<Normal<BaseVector<float>>>>(map, face_attributes, name);
+  }
+
+  ///
   /// VertexMaps
+  ///
+
   virtual bool getAttributeMap(DenseVertexMap<Vector<BaseVector<float>>>& map, const std::string& name){
     return getDenseVectorAttributeMap<DenseVertexMap<Vector<BaseVector<float> > > >(map, vertex_attributes, name);
   }
@@ -100,9 +150,24 @@ class IOMeshInterface
   /// \param map  The map which needs to be stored persistently.
   /// \param name The corresponding map name
   /// \return     True if the map as been added successfully, false otherwise.
-  virtual bool addAttributeMap(const DenseVertexMap<float>& map, const std::string& name)
-  {
-    return addDenseAttributeMap<DenseVertexMap<float>>(map, vertex_attributes, name);
+  virtual bool addAttributeMap(const DenseVertexMap<float>& map, const std::string& name){
+    return addDenseValueAttributeMap<DenseVertexMap<float>>(map, vertex_attributes, name);
+  }
+
+  virtual bool addAttributeMap(const DenseVertexMap<unsigned int>& map, const std::string& name){
+    return addDenseValueAttributeMap<DenseVertexMap<unsigned int>>(map, vertex_attributes, name);
+  }
+
+  virtual bool addAttributeMap(const DenseVertexMap<unsigned char>& map, const std::string& name){
+    return addDenseValueAttributeMap<DenseVertexMap<unsigned char>>(map, vertex_attributes, name);
+  }
+
+  virtual bool addAttributeMap(const DenseVertexMap<Vector<BaseVector<float>>>& map, const std::string& name){
+    return addDenseVectorAttributeMap<DenseVertexMap<Vector<BaseVector<float>>>>(map, vertex_attributes, name);
+  }
+
+  virtual bool addAttributeMap(const DenseVertexMap<Normal<BaseVector<float>>>& map, const std::string& name){
+    return addDenseVectorAttributeMap<DenseVertexMap<Normal<BaseVector<float>>>>(map, vertex_attributes, name);
   }
 
   /// Edge Maps
@@ -126,6 +191,26 @@ class IOMeshInterface
     return getDenseValueAttributeMap<DenseEdgeMap<unsigned char>>(map, edge_attributes, name);
   }
 
+  virtual bool addAttributeMap(const DenseEdgeMap<float>& map, const std::string& name){
+    return addDenseValueAttributeMap<DenseEdgeMap<float>>(map, edge_attributes, name);
+  }
+
+  virtual bool addAttributeMap(const DenseEdgeMap<unsigned int>& map, const std::string& name){
+    return addDenseValueAttributeMap<DenseEdgeMap<unsigned int>>(map, edge_attributes, name);
+  }
+
+  virtual bool addAttributeMap(const DenseEdgeMap<unsigned char>& map, const std::string& name){
+    return addDenseValueAttributeMap<DenseEdgeMap<unsigned char>>(map, edge_attributes, name);
+  }
+
+  virtual bool addAttributeMap(const DenseEdgeMap<Vector<BaseVector<float>>>& map, const std::string& name){
+    return addDenseVectorAttributeMap<DenseEdgeMap<Vector<BaseVector<float>>>>(map, edge_attributes, name);
+  }
+
+  virtual bool addAttributeMap(const DenseEdgeMap<Normal<BaseVector<float>>>& map, const std::string& name){
+    return addDenseVectorAttributeMap<DenseEdgeMap<Normal<BaseVector<float>>>>(map, edge_attributes, name);
+  }
+
   /// Cluster Maps
   virtual bool getAttributeMap(DenseClusterMap<Vector<BaseVector<float>>>& map, const std::string& name){
     return getDenseVectorAttributeMap<DenseClusterMap<Vector<BaseVector<float> > > >(map, cluster_attributes, name);
@@ -147,7 +232,30 @@ class IOMeshInterface
     return getDenseValueAttributeMap<DenseClusterMap<unsigned char>>(map, cluster_attributes, name);
   }
 
+  virtual bool addAttributeMap(const DenseClusterMap<float>& map, const std::string& name){
+    return addDenseValueAttributeMap<DenseClusterMap<float>>(map, cluster_attributes, name);
+  }
+
+  virtual bool addAttributeMap(const DenseClusterMap<unsigned int>& map, const std::string& name){
+    return addDenseValueAttributeMap<DenseClusterMap<unsigned int>>(map, cluster_attributes, name);
+  }
+
+  virtual bool addAttributeMap(const DenseClusterMap<unsigned char>& map, const std::string& name){
+    return addDenseValueAttributeMap<DenseClusterMap<unsigned char>>(map, cluster_attributes, name);
+  }
+
+  virtual bool addAttributeMap(const DenseClusterMap<Vector<BaseVector<float>>>& map, const std::string& name){
+    return addDenseVectorAttributeMap<DenseClusterMap<Vector<BaseVector<float>>>>(map, cluster_attributes, name);
+  }
+
+  virtual bool addAttributeMap(const DenseClusterMap<Normal<BaseVector<float>>>& map, const std::string& name){
+    return addDenseVectorAttributeMap<DenseClusterMap<Normal<BaseVector<float>>>>(map, cluster_attributes, name);
+  }
+
  private:
+
+  virtual std::vector<float> getVertices() = 0;
+  virtual std::vector<unsigned int> getIndices() = 0;
 
   virtual bool getChannel(const std::string group, const std::string name, FloatChannel::Ptr& channel) = 0;
   virtual bool getChannel(const std::string group, const std::string name, IndexChannel::Ptr& channel) = 0;
@@ -207,22 +315,44 @@ class IOMeshInterface
   }
 
   ///
-  /// \brief addAttributeMap  Stores an attribute map
-  /// \tparam DataType        The data type to store
-  /// \param map              The attribute map, which can be a specific attribute map implementation
-  /// \param keys_name        The name of the map keys for the attribute manager
-  /// \param values_name      The name of the map values for the attribute manager
+  /// \brief addDenseValueAttributeMap    Stores a dense attribute map of primitive values
+  /// \tparam DataType                    The data type to store
+  /// \param map                          The attribute map, which can be a specific attribute map implementation
+  /// \param keys_name                    The name of the map keys for the attribute manager
+  /// \param values_name                  The name of the map values for the attribute manager
   template<typename MapT>
-  bool addDenseAttributeMap(const MapT& map, const std::string& group, const std::string& name)
+  bool addDenseValueAttributeMap(const MapT& map, const std::string& group, const std::string& name)
   {
-    boost::shared_array<typename MapT::ValueType> values(new typename MapT::ValueType[map.numValues()]);
+    typename AttributeChannel<typename MapT::ValueType>::Ptr values_channel_ptr(
+        new AttributeChannel<typename MapT::ValueType>(map.numValues(), 1));
+
+    auto& values = *values_channel_ptr;
     Index i = 0;
     for(auto handle: map)
     {
       values[i++] = map[handle]; //TODO handle deleted map values.
     }
-    typename AttributeChannel<typename MapT::ValueType>::Ptr values_channel_ptr(
-        new AttributeChannel<typename MapT::ValueType>(map.numValues(), 1, values));
+    addChannel(group, name, values_channel_ptr);
+    return true;
+  }
+
+  ///
+  /// \brief addDenseVectorAttributeMap   Stores a dense attribute map of vectors
+  /// \tparam DataType                    The data type to store
+  /// \param map                          The attribute map, which can be a specific attribute map implementation
+  /// \param keys_name                    The name of the map keys for the attribute manager
+  /// \param values_name                  The name of the map values for the attribute manager
+  template<typename MapT>
+  bool addDenseVectorAttributeMap(const MapT& map, const std::string& group, const std::string& name)
+  {
+    typename AttributeChannel<float>::Ptr values_channel_ptr(new AttributeChannel<float>(map.numValues(), 3));
+    auto& channel = *values_channel_ptr;
+
+    Index i = 0;
+    for(auto handle: map)
+    {
+      channel[i++] = map[handle]; //TODO handle deleted map values.
+    }
     addChannel(group, name, values_channel_ptr);
     return true;
   }
@@ -236,8 +366,13 @@ class IOMeshInterface
   template<typename MapT>
   bool addAttributeMap(const MapT& map, const std::string& group, const std::string& name)
   {
-    boost::shared_array<typename MapT::ValueType> values(new typename MapT::ValueType[map.numValues()]);
-    indexArray indices(new unsigned int[map.numValues()]);
+    typename AttributeChannel<typename MapT::ValueType>::Ptr values_channel_ptr(
+        new AttributeChannel<typename MapT::ValueType>(map.numValues(), 1));
+    IndexChannel::Ptr index_channel_ptr(new IndexChannel(map.numValues(), 1));
+
+    auto& values = *values_channel_ptr;
+    auto& indices = *index_channel_ptr;
+
     Index i = 0;
     for(auto handle: map)
     {
@@ -245,9 +380,6 @@ class IOMeshInterface
       indices[i++] = handle.idx();
     }
 
-    typename AttributeChannel<typename MapT::ValueType>::Ptr values_channel_ptr(
-        new AttributeChannel<typename MapT::ValueType>(map.numValues(), 1, values));
-    IndexChannel::Ptr index_channel_ptr(new IndexChannel(map.numValues(), 1, indices));
     addChannel(group, name, values_channel_ptr);
     addChannel(group, name + "_idx", index_channel_ptr);
     return true;
