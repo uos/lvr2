@@ -39,6 +39,14 @@ template<typename T>
 class ElementProxy
 {
 public:
+
+    ElementProxy operator=(const T& v)
+    {
+        if( m_ptr && (m_w == 1))
+            m_ptr[0] = v;
+        return *this;
+    }
+
     template<typename BaseVecT>
     ElementProxy operator=(const BaseVecT& v)
     {
