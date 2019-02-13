@@ -24,12 +24,14 @@ namespace lvr2{
          * approimating the pointcloud's surface
          * @param mesh pointer to the mesh
          */
-        void getMesh(HalfEdgeMesh<BaseVecT> &mesh);
+        void getMesh(HalfEdgeMesh<BaseVecT> &mesh){
+            VertexHandle test = getInitialMesh(mesh);
+            mesh.splitGSVertex(test);
+        }
 
 
         //needs to be moved, now working.. thumbusup
-        void getInitialMesh(HalfEdgeMesh<BaseVecT> &mesh){
-            std::cout << "Test this shit" << std::endl;
+        VertexHandle getInitialMesh(HalfEdgeMesh<BaseVecT> &mesh){
 
 
             auto bounding_box = m_surface.get()->getBoundingBox();
@@ -85,11 +87,14 @@ namespace lvr2{
 
 
             //this works...wtf :D
-            mesh.addFace(vH2, vH3, vH4)
+            mesh.addFace(vH2, vH3, vH4);
             mesh.addFace(vH1, vH2, vH4);
             mesh.addFace(vH1, vH4, vH3);
             mesh.addFace(vH3, vH2, vH1);
+
+            return vH1;
         }
+
 
         //TODO: add functions to make gcs possible, such as laplacian smoothing
 

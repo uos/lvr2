@@ -65,9 +65,9 @@ namespace lvr2 {
     }*/
 
 
-    template <typename BaseVecT, typename NormalT>
+    /*template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::getMesh(HalfEdgeMesh<BaseVecT> &mesh){
         getInitialMesh(mesh);
-    }
+    }*/
 
 }
