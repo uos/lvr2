@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, University Osnabrück
+ * Copyright (c) 2019, University Osnabrück
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,11 +25,63 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/io/IOMeshInterface.hpp>
+#include <lvr2/io/MeshIOInterface.hpp>
 namespace lvr2{
-const std::string IOMeshInterface::vertex_attributes = "vertex_attributes";
-const std::string IOMeshInterface::face_attributes = "face_attributes";
-const std::string IOMeshInterface::edge_attributes = "edge_attributes";
-const std::string IOMeshInterface::cluster_attributes = "cluster_attributes";
+
+bool MeshIOInterface::addMesh(const HalfEdgeMesh<BaseVec>& hem)
+{
+  FloatChannel::Ptr vertices_ptr(new FloatChannel(hem.numVertices(), 3));
+  IndexChannel::Ptr indices_ptr(new IndexChannel(hem.numFaces(), 3));
+
+  auto& vertices = *vertices_ptr;
+  auto& indices = *indices_ptr;
+
+  Index i = 0;
+  DenseVertexMap<Index> new_indices;
+  new_indices.reserve(hem.nextVertexIndex());
+
+  for(auto vH : hem.vertices())
+  {
+    new_indices.insert(vH, i);
+    vertices[i++] = hem.getVertexPosition(vH);
+  }
+
+  i = 0;
+  for(auto fH : hem.faces())
+  {
+    auto vHs = hem.getVerticesOfFace(fH);
+    indices[i][0] = new_indices[vHs[0]];
+    indices[i][1] = new_indices[vHs[1]];
+    indices[i][2] = new_indices[vHs[2]];
+  }
+  return addVertices(vertices_ptr) && addIndices(indices_ptr);
+}
+
+boost::optional<HalfEdgeMesh<BaseVec> > MeshIOInterface::getMesh()
+{
+  auto vertices_opt = getVertices();
+  auto indices_opt = getIndices();
+
+  if(vertices_opt && indices_opt)
+  {
+    auto& vertices = vertices_opt.get();
+    auto& indices = indices_opt.get();
+
+    HalfEdgeMesh<BaseVec> hem;
+    for (size_t i = 0; i < vertices.numAttributes(); i++)
+    {
+      hem.addVertex(vertices[i]);
+    }
+
+    for (size_t i = 0; i < indices.numAttributes(); i++)
+    {
+      const std::array<VertexHandle, 3>& face = indices[i];
+      hem.addFace(face[0], face[1], face[2]);
+    }
+    return hem;
+  }
+  return boost::none;
+}
+
 }
 
