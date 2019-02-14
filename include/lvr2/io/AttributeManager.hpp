@@ -31,6 +31,7 @@
 #include <lvr2/io/DataStruct.hpp>
 #include <iostream>
 #include <boost/optional.hpp>
+#include <lvr2/geometry/Handles.hpp>
 
 namespace lvr2
 {
@@ -114,7 +115,19 @@ public:
 
     ElementProxy(T* pos = nullptr, unsigned w = 0) : m_ptr(pos), m_w(w) {}
 
-    T operator[](int i) const
+    T& operator[](int i) const
+    {
+        if(m_ptr && (i < m_w))
+        {
+            return m_ptr[i];
+        }
+        else
+        {
+            throw "exception";
+        }
+    }
+
+    const T& operator[](T i) const
     {
         if(m_ptr && (i < m_w))
         {
@@ -135,6 +148,26 @@ public:
             return BaseVecT(m_ptr[0], m_ptr[1], m_ptr[2]);
         }
         return BaseVecT(0, 0, 0);
+    }
+
+    operator std::array<VertexHandle, 3>() const
+    {
+        if(m_w == 3)
+        {
+            return  { VertexHandle(m_ptr[0]), VertexHandle(m_ptr[1]), VertexHandle(m_ptr[2]) };
+        }
+        // TODO throw error
+        return { VertexHandle(0), VertexHandle(0), VertexHandle(0) };
+    }
+
+    operator FaceHandle() const
+    {
+        if(m_w == 1)
+        {
+            return FaceHandle(m_ptr[0]);
+        }
+        // TODO throw error
+        return FaceHandle(0);
     }
 
     operator T() const

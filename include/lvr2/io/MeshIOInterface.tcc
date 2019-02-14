@@ -25,10 +25,27 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LAS_VEGAS_IOMESHINTERFACE_TCC
-#define LAS_VEGAS_IOMESHINTERFACE_TCC
+#ifndef LAS_VEGAS_MESHIOINTERFACE_TCC
+#define LAS_VEGAS_MESHIOINTERFACE_TCC
 
 namespace lvr2{
+
+template<typename ValueType> struct channel_type{};
+template<> struct channel_type<float>            { static const unsigned int w = 1; typedef float type; };
+template<> struct channel_type<unsigned int>     { static const unsigned int w = 1; typedef unsigned int type; };
+template<> struct channel_type<unsigned char>    { static const unsigned int w = 1; typedef unsigned char type; };
+template<> struct channel_type<Normal<BaseVec>>  { static const unsigned int w = 3; typedef float type; };
+template<> struct channel_type<Vector<BaseVec>>  { static const unsigned int w = 3; typedef float type; };
+
+template<typename HandleType> struct attribute_type{};;
+template<> struct attribute_type<EdgeHandle>            { static const std::string attr_group; };
+template<> struct attribute_type<OptionalEdgeHandle>    { static const std::string attr_group; };
+template<> struct attribute_type<VertexHandle>          { static const std::string attr_group; };
+template<> struct attribute_type<OptionalVertexHandle>  { static const std::string attr_group; };
+template<> struct attribute_type<FaceHandle>            { static const std::string attr_group; };
+template<> struct attribute_type<OptionalFaceHandle>    { static const std::string attr_group; };
+template<> struct attribute_type<ClusterHandle>         { static const std::string attr_group; };
+template<> struct attribute_type<OptionalClusterHandle> { static const std::string attr_group; };
 
 const std::string attribute_type<EdgeHandle>::attr_group            = "edge_attributes";
 const std::string attribute_type<OptionalEdgeHandle>::attr_group    = "edge_attributes";
@@ -40,7 +57,7 @@ const std::string attribute_type<ClusterHandle>::attr_group         = "cluster_a
 const std::string attribute_type<OptionalClusterHandle>::attr_group = "cluster_attributes";
 
 template<typename MapT>
-bool IOMeshInterface::addDenseAttributeMap(const MapT& map, const std::string& group, const std::string& name)
+bool MeshIOInterface::addDenseAttributeMap(const MapT& map, const std::string& name)
 {
   typename AttributeChannel<typename channel_type<typename MapT::ValueType>::type>::Ptr values_channel_ptr(
       new AttributeChannel<typename channel_type<typename MapT::ValueType>::type>(
@@ -52,14 +69,14 @@ bool IOMeshInterface::addDenseAttributeMap(const MapT& map, const std::string& g
   {
     values[i++] = map[handle]; //TODO handle deleted map values.
   }
-  return addChannel(group, name, values_channel_ptr);
+  return addChannel(attribute_type<typename MapT::HandleType>::attr_group, name, values_channel_ptr);
 }
 
 template <typename MapT>
-boost::optional<MapT> IOMeshInterface::getDenseAttributeMap(const std::string& group, const std::string& name)
+boost::optional<MapT> MeshIOInterface::getDenseAttributeMap(const std::string& name)
 {
   typename AttributeChannel<typename channel_type<typename MapT::ValueType>::type>::Ptr channel_ptr;
-  if(getChannel(group, name, channel_ptr) && channel_ptr
+  if(getChannel(attribute_type<typename MapT::HandleType>::attr_group, name, channel_ptr) && channel_ptr
       && channel_ptr->width() == channel_type<typename MapT::ValueType>::w)
   {
     auto& channel = *channel_ptr;
@@ -76,7 +93,7 @@ boost::optional<MapT> IOMeshInterface::getDenseAttributeMap(const std::string& g
 }
 
 template<typename MapT>
-bool IOMeshInterface::addAttributeMap(const MapT& map, const std::string& group, const std::string& name)
+bool MeshIOInterface::addAttributeMap(const MapT& map, const std::string& name)
 {
   typename AttributeChannel<typename channel_type<typename MapT::ValueType>::type>::Ptr values_channel_ptr(
       new AttributeChannel<typename channel_type<typename MapT::ValueType>::type>(
@@ -93,15 +110,17 @@ bool IOMeshInterface::addAttributeMap(const MapT& map, const std::string& group,
     indices[i++] = handle.idx();
   }
 
-  return addChannel(group, name, values_channel_ptr) && addChannel(group, name + "_idx", index_channel_ptr);
+  return addChannel(attribute_type<typename MapT::HandleType>::attr_group, name, values_channel_ptr)
+    && addChannel(attribute_type<typename MapT::HandleType>::attr_group, name + "_idx", index_channel_ptr);
 }
 
 template<typename MapT>
-boost::optional<MapT> IOMeshInterface::getAttributeMap(const std::string& group, const std::string& name)
+boost::optional<MapT> MeshIOInterface::getAttributeMap(const std::string& name)
 {
   typename AttributeChannel<typename channel_type<typename MapT::ValueType>::type>::Ptr values_channel_ptr;
   typename IndexChannel::Ptr index_channel_ptr;
-  if(getChannel(group, name+"_idx", index_channel_ptr) && getChannel(group, name, values_channel_ptr)
+  if(getChannel(attribute_type<typename MapT::HandleType>::attr_group, name+"_idx", index_channel_ptr)
+    && getChannel(attribute_type<typename MapT::HandleType>::attr_group, name, values_channel_ptr)
       && index_channel_ptr && values_channel_ptr && index_channel_ptr->width() == 1
       && values_channel_ptr->width() == channel_type<typename MapT::ValueType>::w
       && index_channel_ptr->numAttributes() == values_channel_ptr->numAttributes())
@@ -122,4 +141,4 @@ boost::optional<MapT> IOMeshInterface::getAttributeMap(const std::string& group,
 
 } /* namespace lvr2 */
 
-#endif //LAS_VEGAS_IOMESHINTERFACE_TCC
+#endif //LAS_VEGAS_MESHIOINTERFACE_TCC
