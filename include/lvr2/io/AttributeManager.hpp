@@ -115,7 +115,7 @@ public:
 
     ElementProxy(T* pos = nullptr, unsigned w = 0) : m_ptr(pos), m_w(w) {}
 
-    T& operator[](int i) const
+    T& operator[](int i) 
     {
         if(m_ptr && (i < m_w))
         {
@@ -127,7 +127,7 @@ public:
         }
     }
 
-    const T& operator[](T i) const
+    const T& operator[](int i) const
     {
         if(m_ptr && (i < m_w))
         {
