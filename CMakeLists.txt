@@ -126,6 +126,9 @@ endif()
 set(VTK_QT_VERSION 5)
 find_package(VTK REQUIRED)
 
+#TEEST
+
+
 if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
   list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK5)
 endif()
@@ -141,7 +144,20 @@ if(VTK_MAJOR_VERSION VERSION_GREATER "7")
 endif()
 
 if(VTK_VERSION VERSION_GREATER "7")
+  
   list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
+  set(VTK_COMPONENTS "${VTK_AVAILABLE_COMPONENTS}")
+  set(VTK_HAS_QT OFF)
+  foreach(VTK_COMPONENT ${VTK_COMPONENTS})
+    if("${VTK_COMPONENT}" STREQUAL "GUISupportQt")
+      set(VTK_HAS_QT ON)
+    endif()
+  endforeach()
+
+  message(STATUS "VTK > 7 found")
+  if(VTK_HAS_QT)
+    message(STATUS "VTK Component QVTK found")
+  endif()
 endif()
 
 ####
@@ -423,8 +439,8 @@ if(Qt5_FOUND)
   if(QVTK_FOUND)
     include_directories(${QVTK_INCLUDE_DIR})
     add_subdirectory(src/tools/lvr2_viewer)
-  # elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7")
-  #   add_subdirectory(src/tools/lvr2_viewer)
+  elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
+    add_subdirectory(src/tools/lvr2_viewer)
   endif(QVTK_FOUND)
 endif(Qt5_FOUND)
 
