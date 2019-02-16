@@ -59,6 +59,7 @@ bool MeshIOInterface::addMesh(const HalfEdgeMesh<BaseVec>& hem)
     indices[i][0] = new_indices[vHs[0]];
     indices[i][1] = new_indices[vHs[1]];
     indices[i][2] = new_indices[vHs[2]];
+    i++;
   }
   return addVertices(vertices) && addIndices(indices);
 }
