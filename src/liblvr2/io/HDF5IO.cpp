@@ -792,48 +792,29 @@ bool HDF5IO::addIndices(const IndexChannel& channel){
     addArray<unsigned int>(m_mesh_path, indices_name, dims, channel.dataPtr());
 }
 
-bool HDF5IO::getChannel(const std::string group, const std::string name, FloatChannelOptional& channel){
-    auto mesh_opt = getMeshGroup();
-    if(!mesh_opt) return false;
-    auto mesh = mesh_opt.get();
-    if(!mesh.exist(group))
-    {
-        std::cout << timestamp << " Could not find mesh attribute group \"" << group << "\" in the given HDF5 file!"
-            << std::endl;
-        return false;
-    }
-    auto attr_group = mesh.getGroup(group);
-    if(!attr_group.exist(name))
-    {
-        std::cout << timestamp << " Could not find mesh attribute \"" << name << "\" in group \"" << group
-            << "\" in the given HDF5 file!" << std::endl;
-        return false;
-    }
 
-    std::vector<size_t >dims;
-    auto values = getArray<float>(mesh, name, dims);
-    channel = FloatChannel(dims[0], dims[1], values);
-    return true;
+bool HDF5IO::getChannel(const std::string group, const std::string name, FloatChannelOptional& channel){
+    return getChannel<float>(group, name, channel);
 }
 
 bool HDF5IO::getChannel(const std::string group, const std::string name, IndexChannelOptional& channel){
-
+    return getChannel<unsigned int>(group, name, channel);
 }
 
 bool HDF5IO::getChannel(const std::string group, const std::string name, UCharChannelOptional& channel){
-
+    return getChannel<unsigned char>(group, name, channel);
 }
 
 bool HDF5IO::addChannel(const std::string group, const std::string name, const FloatChannel& channel){
-
+    return addChannel<float>(group, name, channel);
 }
 
 bool HDF5IO::addChannel(const std::string group, const std::string name, const IndexChannel& channel){
-
+    return addChannel<unsigned int>(group, name, channel);
 }
 
 bool HDF5IO::addChannel(const std::string group, const std::string name, const UCharChannel& channel){
-
+    return addChannel<unsigned char>(group, name, channel);
 }
 
 } // namespace lvr2
