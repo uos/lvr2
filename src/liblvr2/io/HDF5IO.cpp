@@ -36,6 +36,10 @@
 namespace lvr2
 {
 
+const std::string HDF5IO::vertices_name = "vertices";
+const std::string HDF5IO::indices_name = "indices";
+const std::string HDF5IO::meshes_group = "meshes";
+
 HDF5IO::HDF5IO(const std::string filename, const std::string part_name, bool truncate) :
     m_hdf5_file(nullptr),
     m_compress(true),
@@ -43,8 +47,10 @@ HDF5IO::HDF5IO(const std::string filename, const std::string part_name, bool tru
     m_usePreviews(true),
     m_previewReductionFactor(20),
     m_part_name(part_name),
+    m_mesh_path(meshes_group+"/"+part_name),
     m_truncate(truncate)
 {
+    open(filename, truncate);
 }
 
 HDF5IO::HDF5IO(std::string filename, bool truncate) :
@@ -731,6 +737,103 @@ bool HDF5IO::isGroup(HighFive::Group grp, std::string objName)
     }
 
     return false;
+}
+
+boost::optional<HighFive::Group> HDF5IO::getMeshGroup(bool create){
+    if(!create && !exist(m_mesh_path)){
+        std::cout << timestamp << " No mesh with the part name \""
+                  << m_part_name << "\" given in the HDF5 file \"" << std::endl;
+        return boost::none;
+    }
+    return getGroup(m_mesh_path);
+}
+
+
+FloatChannelOptional HDF5IO::getVertices(){
+    auto mesh_opt = getMeshGroup();
+    if(!mesh_opt) return boost::none;
+    auto mesh = mesh_opt.get();
+    if(!mesh.exist(vertices_name))
+    {
+        std::cout << timestamp << " Could not find mesh vertices in the given HDF5 file." << std::endl;
+        return boost::none;
+    }
+
+    std::vector<size_t >dims;
+    auto values = getArray<float>(mesh, vertices_name, dims);
+    return FloatChannel(dims[0], dims[1], values);
+}
+
+
+IndexChannelOptional HDF5IO::getIndices(){
+    auto mesh_opt = getMeshGroup();
+    if(!mesh_opt) return boost::none;
+    auto mesh = mesh_opt.get();
+    if(!mesh.exist(indices_name))
+    {
+        std::cout << timestamp << " Could not find mesh face indices in the given HDF5 file." << std::endl;
+        return boost::none;
+    }
+
+    std::vector<size_t >dims;
+    auto values = getArray<unsigned int>(mesh, indices_name, dims);
+    return IndexChannel(dims[0], dims[1], values);
+}
+
+bool HDF5IO::addVertices(const FloatChannel& channel){
+    auto mesh = getMeshGroup(true).get();
+    std::vector<size_t > dims = {channel.numAttributes(), channel.width()};
+    addArray<float>(m_mesh_path, vertices_name, dims, channel.dataPtr());
+}
+
+bool HDF5IO::addIndices(const IndexChannel& channel){
+    auto mesh = getMeshGroup(true).get();
+    std::vector<size_t > dims = {channel.numAttributes(), channel.width()};
+    addArray<unsigned int>(m_mesh_path, indices_name, dims, channel.dataPtr());
+}
+
+bool HDF5IO::getChannel(const std::string group, const std::string name, FloatChannelOptional& channel){
+    auto mesh_opt = getMeshGroup();
+    if(!mesh_opt) return false;
+    auto mesh = mesh_opt.get();
+    if(!mesh.exist(group))
+    {
+        std::cout << timestamp << " Could not find mesh attribute group \"" << group << "\" in the given HDF5 file!"
+            << std::endl;
+        return false;
+    }
+    auto attr_group = mesh.getGroup(group);
+    if(!attr_group.exist(name))
+    {
+        std::cout << timestamp << " Could not find mesh attribute \"" << name << "\" in group \"" << group
+            << "\" in the given HDF5 file!" << std::endl;
+        return false;
+    }
+
+    std::vector<size_t >dims;
+    auto values = getArray<float>(mesh, name, dims);
+    channel = FloatChannel(dims[0], dims[1], values);
+    return true;
+}
+
+bool HDF5IO::getChannel(const std::string group, const std::string name, IndexChannelOptional& channel){
+
+}
+
+bool HDF5IO::getChannel(const std::string group, const std::string name, UCharChannelOptional& channel){
+
+}
+
+bool HDF5IO::addChannel(const std::string group, const std::string name, const FloatChannel& channel){
+
+}
+
+bool HDF5IO::addChannel(const std::string group, const std::string name, const IndexChannel& channel){
+
+}
+
+bool HDF5IO::addChannel(const std::string group, const std::string name, const UCharChannel& channel){
+
 }
 
 } // namespace lvr2

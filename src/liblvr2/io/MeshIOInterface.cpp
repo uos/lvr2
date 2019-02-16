@@ -30,11 +30,8 @@ namespace lvr2{
 
 bool MeshIOInterface::addMesh(const HalfEdgeMesh<BaseVec>& hem)
 {
-  FloatChannel::Ptr vertices_ptr(new FloatChannel(hem.numVertices(), 3));
-  IndexChannel::Ptr indices_ptr(new IndexChannel(hem.numFaces(), 3));
-
-  auto& vertices = *vertices_ptr;
-  auto& indices = *indices_ptr;
+  FloatChannel vertices(hem.numVertices(), 3);
+  IndexChannel indices(hem.numFaces(), 3);
 
   Index i = 0;
   DenseVertexMap<Index> new_indices;
@@ -54,10 +51,10 @@ bool MeshIOInterface::addMesh(const HalfEdgeMesh<BaseVec>& hem)
     indices[i][1] = new_indices[vHs[1]];
     indices[i][2] = new_indices[vHs[2]];
   }
-  return addVertices(vertices_ptr) && addIndices(indices_ptr);
+  return addVertices(vertices) && addIndices(indices);
 }
 
-boost::optional<HalfEdgeMesh<BaseVec> > MeshIOInterface::getMesh()
+boost::optional<HalfEdgeMesh<BaseVec>> MeshIOInterface::getMesh()
 {
   auto vertices_opt = getVertices();
   auto indices_opt = getIndices();

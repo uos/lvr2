@@ -59,30 +59,28 @@ const std::string attribute_type<OptionalClusterHandle>::attr_group = "cluster_a
 template<typename MapT>
 bool MeshIOInterface::addDenseAttributeMap(const MapT& map, const std::string& name)
 {
-  typename AttributeChannel<typename channel_type<typename MapT::ValueType>::type>::Ptr values_channel_ptr(
-      new AttributeChannel<typename channel_type<typename MapT::ValueType>::type>(
-          map.numValues(), channel_type<typename MapT::ValueType>::w));
+  AttributeChannel<typename channel_type<typename MapT::ValueType>::type> values(
+          map.numValues(), channel_type<typename MapT::ValueType>::w);
 
-  auto& values = *values_channel_ptr;
   Index i = 0;
   for(auto handle: map)
   {
     values[i++] = map[handle]; //TODO handle deleted map values.
   }
-  return addChannel(attribute_type<typename MapT::HandleType>::attr_group, name, values_channel_ptr);
+  return addChannel(attribute_type<typename MapT::HandleType>::attr_group, name, values);
 }
 
 template <typename MapT>
 boost::optional<MapT> MeshIOInterface::getDenseAttributeMap(const std::string& name)
 {
-  typename AttributeChannel<typename channel_type<typename MapT::ValueType>::type>::Ptr channel_ptr;
-  if(getChannel(attribute_type<typename MapT::HandleType>::attr_group, name, channel_ptr) && channel_ptr
-      && channel_ptr->width() == channel_type<typename MapT::ValueType>::w)
+  typename AttributeChannel<typename channel_type<typename MapT::ValueType>::type>::Optional channel_opt;
+  if(getChannel(attribute_type<typename MapT::HandleType>::attr_group, name, channel_opt) && channel_opt
+      && channel_opt.get().width() == channel_type<typename MapT::ValueType>::w)
   {
-    auto& channel = *channel_ptr;
+    auto& channel = channel_opt.get();
     MapT map;
     map.reserve(channel.numAttributes());
-    for(size_t i=0; i<channel_ptr->numAttributes(); i++)
+    for(size_t i=0; i<channel.numAttributes(); i++)
     {
       typename MapT::HandleType handle(i);
       map.insert(handle, channel[i]);
@@ -95,13 +93,9 @@ boost::optional<MapT> MeshIOInterface::getDenseAttributeMap(const std::string& n
 template<typename MapT>
 bool MeshIOInterface::addAttributeMap(const MapT& map, const std::string& name)
 {
-  typename AttributeChannel<typename channel_type<typename MapT::ValueType>::type>::Ptr values_channel_ptr(
-      new AttributeChannel<typename channel_type<typename MapT::ValueType>::type>(
-          map.numValues(), channel_type<typename MapT::ValueType>::w));
-  IndexChannel::Ptr index_channel_ptr(new IndexChannel(map.numValues(), 1));
-
-  auto& values = *values_channel_ptr;
-  auto& indices = *index_channel_ptr;
+  AttributeChannel<typename channel_type<typename MapT::ValueType>::type> values(
+      map.numValues(), channel_type<typename MapT::ValueType>::w);
+  IndexChannel indices(map.numValues(), 1);
 
   Index i = 0;
   for(auto handle: map)
@@ -110,27 +104,27 @@ bool MeshIOInterface::addAttributeMap(const MapT& map, const std::string& name)
     indices[i++] = handle.idx();
   }
 
-  return addChannel(attribute_type<typename MapT::HandleType>::attr_group, name, values_channel_ptr)
-    && addChannel(attribute_type<typename MapT::HandleType>::attr_group, name + "_idx", index_channel_ptr);
+  return addChannel(attribute_type<typename MapT::HandleType>::attr_group, name, values)
+    && addChannel(attribute_type<typename MapT::HandleType>::attr_group, name + "_idx", indices);
 }
 
 template<typename MapT>
 boost::optional<MapT> MeshIOInterface::getAttributeMap(const std::string& name)
 {
-  typename AttributeChannel<typename channel_type<typename MapT::ValueType>::type>::Ptr values_channel_ptr;
-  typename IndexChannel::Ptr index_channel_ptr;
-  if(getChannel(attribute_type<typename MapT::HandleType>::attr_group, name+"_idx", index_channel_ptr)
-    && getChannel(attribute_type<typename MapT::HandleType>::attr_group, name, values_channel_ptr)
-      && index_channel_ptr && values_channel_ptr && index_channel_ptr->width() == 1
-      && values_channel_ptr->width() == channel_type<typename MapT::ValueType>::w
-      && index_channel_ptr->numAttributes() == values_channel_ptr->numAttributes())
+  typename AttributeChannel<typename channel_type<typename MapT::ValueType>::type>::Optional values_opt;
+  typename IndexChannel::Optional indices_opt;
+  if(getChannel(attribute_type<typename MapT::HandleType>::attr_group, name+"_idx", indices_opt)
+    && getChannel(attribute_type<typename MapT::HandleType>::attr_group, name, values_opt)
+      && indices_opt && values_opt && indices_opt.get().width() == 1
+      && values_opt.get().width() == channel_type<typename MapT::ValueType>::w
+      && indices_opt.get().numAttributes() == values_opt.get().numAttributes())
   {
-    auto& indices = *index_channel_ptr;
-    auto& values = *values_channel_ptr;
+    auto& indices =  indices_opt.get();
+    auto& values = values_opt.get();
     MapT map;
 
     map.reserve(indices.numAttributes());
-    for(size_t i=0; i<index_channel_ptr->numAttributes(); i++)
+    for(size_t i=0; i<indices.numAttributes(); i++)
     {
       map.insert(typename MapT::HandleType(indices[i]), values[i]);
     }
