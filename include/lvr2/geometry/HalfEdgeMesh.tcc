@@ -723,14 +723,14 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     // determine longest outgoing edge
     for(EdgeHandle edge : outEdges){
         HalfEdgeHandle halfH = HalfEdgeHandle::oneHalfOf(edge); //get Halfedge
-        HalfEdge &half = getE(halfH);
+        HalfEdge half = getE(halfH);
         //if halfedge is pointing to the start vector, change it up
         if(half.target == vertexH){
             halfH = half.twin;
-            half = getE(half.twin);
+            half = getE(halfH);
         }
 
-        Vertex &targetHV = getV(half.target);
+        Vertex targetHV = getV(half.target);
         Vector<BaseVecT> target = targetHV.pos;
         auto distance = target.distanceFrom(getV(vertexH).pos);
         if(distance > longestDistance){
@@ -741,13 +741,13 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     }
 
     //calculate the position of the new vertex
-    Vector<BaseVecT> vectorToAdd = getV(vertexH).pos + (getV(longestEdgeHalf.target).pos - getV(vertexH).pos)/2;
+    Vector<BaseVecT> vertexToAdd = getV(vertexH).pos + (getV(longestEdgeHalf.target).pos - getV(vertexH).pos)/2;
 
-    auto vertexAddedH = addVertex(vectorToAdd); //add the calculated vertex to the mesh.
+    //auto vertexAddedH = addVertex(vertexToAdd); //add the calculated vertex to the mesh.
 
     std::cout << "Distance: " << longestDistance;
     std::cout << "Target: " << getV(longestEdgeHalf.target).pos << std::endl;
-    std::cout << "Calculated Vertex: " << vectorToAdd << std::endl;
+    std::cout << "Calculated Vertex: " << vertexToAdd << std::endl;
 
 
     /**********************************************************************
@@ -759,9 +759,38 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
 
     for(OptionalFaceHandle handle : incidentFaces){
         //todo: get all needed vertices, determine which faces need to be removed.
+        if(handle){
+            auto fHandle = handle.unwrap(); //here every edge should have two incident faces
+            auto verticesOfFace = getVerticesOfFace(fHandle);
+            for(auto vertex : verticesOfFace){
+                if(getV(vertex).pos != getV(vertexH).pos) {
+                    incidentVertices.push_back(vertex);
+                }
+            }
+        }
     }
 
+    //erase vertex duplicates using a set
+    set<VertexHandle> s( incidentVertices.begin(), incidentVertices.end() );
+    incidentVertices.assign( s.begin(), s.end() );
 
+    for (auto vertex  : incidentVertices) {
+        std::cout << "#####Vertex added: " << getV(vertex).pos << std::endl;
+    }
+
+    /******************************************************************************
+     * Get Vertices which participate in the slit (dist -> old_v < dist -> new_v) *
+     ******************************************************************************/
+
+    // all the neighbors of the start vertex, which distance is smaller to it then to
+    // the new vertex
+    auto neigh_vertices = getNeighboursOfVertex(vertexH);
+    for(int i = 0; i < neigh_vertices.size(); i++){
+        Vector<BaseVecT> vec = getV(neigh_vertices[i]).pos;
+        if(vec.distance(getV(vertexH).pos) < vec.distance(vertexToAdd)){
+            neigh_vertices.erase(neigh_vertices.begin() + i);
+        }
+    }
 }
 template <typename BaseVecT>
 EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
