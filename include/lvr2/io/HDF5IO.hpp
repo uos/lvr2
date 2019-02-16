@@ -183,6 +183,9 @@ class HDF5IO : public BaseIO, public MeshIOInterface
      */
     virtual bool addIndices(const IndexChannel& channel_ptr);
 
+    template <typename T>
+    bool getChannel(const std::string group, const std::string name, boost::optional<AttributeChannel<T>>& channel);
+
     /**
      * @brief getChannel  Reads a float attribute channel in the given group with the given name
      * @param group       The associated attribute group
@@ -210,6 +213,8 @@ class HDF5IO : public BaseIO, public MeshIOInterface
      */
     virtual bool getChannel(const std::string group, const std::string name, UCharChannelOptional& channel);
 
+    template <typename T>
+    bool addChannel(const std::string group, const std::string name, const AttributeChannel<T>& channel);
 
     /**
      * @brief addChannel  Writes a float attribute channel from the given group with the given name
