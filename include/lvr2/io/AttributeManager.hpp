@@ -189,23 +189,20 @@ template<typename T>
 class AttributeChannel
 {
 public:
-    typedef boost::shared_ptr<AttributeChannel<T>> Ptr;
+    typedef boost::optional<AttributeChannel<T>> Optional;
 
     using DataPtr = boost::shared_array<T>;
 
     AttributeChannel(size_t n, unsigned width)
-        : m_width(width), m_numAttributes(n)
-    {
-        m_data = DataPtr(new T[m_numAttributes * width]);
-    }
+        : m_width(width), m_numAttributes(n),
+         m_data(new T[m_numAttributes * width])
+    {}
 
     AttributeChannel(size_t n, unsigned width, DataPtr ptr)
         : m_numAttributes(n),
           m_width(width),
           m_data(ptr)
-    {
-
-    }
+    {}
 
     ElementProxy<T> operator[](const unsigned& idx)
     {
@@ -213,9 +210,9 @@ public:
         return ElementProxy<T>(&(ptr[idx * m_width]), m_width);
     }
 
-    DataPtr&     dataPtr() { return m_data;}
-    unsigned     width() const { return m_width;}
-    size_t       numAttributes() const { return m_numAttributes;}
+    DataPtr    dataPtr() const { return m_data;}
+    unsigned   width() const { return m_width;}
+    size_t     numAttributes() const { return m_numAttributes;}
 
 private:
     size_t          m_numAttributes;
@@ -228,9 +225,9 @@ using FloatChannel = AttributeChannel<float>;
 using UCharChannel = AttributeChannel<unsigned char>;
 using IndexChannel = AttributeChannel<unsigned int>;
 
-using FloatChannelOptional = boost::optional<FloatChannel&>;
-using UCharChannelOptional= boost::optional<UCharChannel&>;
-using IndexChannelOptional = boost::optional<IndexChannel&>;
+using FloatChannelOptional = boost::optional<FloatChannel>;
+using UCharChannelOptional= boost::optional<UCharChannel>;
+using IndexChannelOptional = boost::optional<IndexChannel>;
 
 using FloatProxy = ElementProxy<float>;
 using UCharProxy = ElementProxy<unsigned char>;
