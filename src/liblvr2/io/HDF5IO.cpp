@@ -784,12 +784,14 @@ bool HDF5IO::addVertices(const FloatChannel& channel){
     auto mesh = getMeshGroup(true).get();
     std::vector<size_t > dims = {channel.numAttributes(), channel.width()};
     addArray<float>(m_mesh_path, vertices_name, dims, channel.dataPtr());
+    return true;
 }
 
 bool HDF5IO::addIndices(const IndexChannel& channel){
     auto mesh = getMeshGroup(true).get();
     std::vector<size_t > dims = {channel.numAttributes(), channel.width()};
     addArray<unsigned int>(m_mesh_path, indices_name, dims, channel.dataPtr());
+    return true;
 }
 
 
