@@ -37,7 +37,7 @@ template<> struct channel_type<unsigned char>    { static const unsigned int w =
 template<> struct channel_type<Normal<BaseVec>>  { static const unsigned int w = 3; typedef float type; };
 template<> struct channel_type<Vector<BaseVec>>  { static const unsigned int w = 3; typedef float type; };
 
-template<typename HandleType> struct attribute_type{};;
+template<typename HandleType> struct attribute_type{};
 template<> struct attribute_type<EdgeHandle>            { static const std::string attr_group; };
 template<> struct attribute_type<OptionalEdgeHandle>    { static const std::string attr_group; };
 template<> struct attribute_type<VertexHandle>          { static const std::string attr_group; };
@@ -46,15 +46,6 @@ template<> struct attribute_type<FaceHandle>            { static const std::stri
 template<> struct attribute_type<OptionalFaceHandle>    { static const std::string attr_group; };
 template<> struct attribute_type<ClusterHandle>         { static const std::string attr_group; };
 template<> struct attribute_type<OptionalClusterHandle> { static const std::string attr_group; };
-
-const std::string attribute_type<EdgeHandle>::attr_group            = "edge_attributes";
-const std::string attribute_type<OptionalEdgeHandle>::attr_group    = "edge_attributes";
-const std::string attribute_type<VertexHandle>::attr_group          = "vertex_attributes";
-const std::string attribute_type<OptionalVertexHandle>::attr_group  = "vertex_attributes";
-const std::string attribute_type<FaceHandle>::attr_group            = "face_attributes";
-const std::string attribute_type<OptionalFaceHandle>::attr_group    = "face_attributes";
-const std::string attribute_type<ClusterHandle>::attr_group         = "cluster_attributes";
-const std::string attribute_type<OptionalClusterHandle>::attr_group = "cluster_attributes";
 
 template<typename MapT>
 bool MeshIOInterface::addDenseAttributeMap(const MapT& map, const std::string& name)

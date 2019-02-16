@@ -28,6 +28,15 @@
 #include <lvr2/io/MeshIOInterface.hpp>
 namespace lvr2{
 
+const std::string attribute_type<EdgeHandle>::attr_group            = "edge_attributes";
+const std::string attribute_type<OptionalEdgeHandle>::attr_group    = "edge_attributes";
+const std::string attribute_type<VertexHandle>::attr_group          = "vertex_attributes";
+const std::string attribute_type<OptionalVertexHandle>::attr_group  = "vertex_attributes";
+const std::string attribute_type<FaceHandle>::attr_group            = "face_attributes";
+const std::string attribute_type<OptionalFaceHandle>::attr_group    = "face_attributes";
+const std::string attribute_type<ClusterHandle>::attr_group         = "cluster_attributes";
+const std::string attribute_type<OptionalClusterHandle>::attr_group = "cluster_attributes";
+
 bool MeshIOInterface::addMesh(const HalfEdgeMesh<BaseVec>& hem)
 {
   FloatChannel vertices(hem.numVertices(), 3);
