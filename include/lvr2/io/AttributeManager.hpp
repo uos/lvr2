@@ -28,10 +28,16 @@
 #ifndef CHANNELHANDLER_HPP
 #define CHANNELHANDLER_HPP
 
+// LVR2 includes
 #include <lvr2/io/DataStruct.hpp>
-#include <iostream>
-#include <boost/optional.hpp>
 #include <lvr2/geometry/Handles.hpp>
+
+// Std lib includes
+#include <iostream>
+#include <array>
+
+// Boost includes
+#include <boost/optional.hpp>
 
 namespace lvr2
 {
@@ -152,12 +158,14 @@ public:
 
     operator std::array<VertexHandle, 3>() const
     {
+        std::array<VertexHandle, 3> arr0 = {VertexHandle(0), VertexHandle(0), VertexHandle(0)};
         if(m_w == 3)
         {
-            return  { VertexHandle(m_ptr[0]), VertexHandle(m_ptr[1]), VertexHandle(m_ptr[2]) };
+            std::array<VertexHandle, 3> arr = {VertexHandle(m_ptr[0]), VertexHandle(m_ptr[1]), VertexHandle(m_ptr[2])};
+            return  arr;
         }
         // TODO throw error
-        return { VertexHandle(0), VertexHandle(0), VertexHandle(0) };
+        return arr0;
     }
 
     operator FaceHandle() const
