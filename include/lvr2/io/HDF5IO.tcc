@@ -176,4 +176,37 @@ boost::shared_array<T> HDF5IO::reduceData(boost::shared_array<T> data, size_t da
     return reducedData;
 }
 
+template <typename T>
+bool HDF5IO::getChannel(const std::string group, const std::string name, boost::optional<AttributeChannel<T>>& channel){
+    auto mesh_opt = getMeshGroup();
+    if(!mesh_opt) return false;
+    auto mesh = mesh_opt.get();
+    if(!mesh.exist(group))
+    {
+        std::cout << timestamp << " Could not find mesh attribute group \"" << group << "\" in the given HDF5 file!"
+        << std::endl;
+        return false;
+    }
+    auto attr_group = mesh.getGroup(group);
+    if(!attr_group.exist(name))
+    {
+        std::cout << timestamp << " Could not find mesh attribute \"" << name << "\" in group \"" << group
+        << "\" in the given HDF5 file!" << std::endl;
+        return false;
+    }
+
+    std::vector<size_t >dims;
+    auto values = getArray<T>(mesh, name, dims);
+    channel = AttributeChannel<T>(dims[0], dims[1], values);
+    return true;
+}
+
+template <typename T>
+bool HDF5IO::addChannel(const std::string group, const std::string name, const AttributeChannel<T>& channel)
+{
+    std::vector<size_t > dims = {channel.numAttributes(), channel.width()};
+    addArray<T>(m_mesh_path + "/" + group , name, dims, channel.dataPtr());
+    return true;
+}
+
 } // namespace lvr2
