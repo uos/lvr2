@@ -35,6 +35,7 @@
 // Std lib includes
 #include <iostream>
 #include <array>
+#include <exception>
 
 // Boost includes
 #include <boost/optional.hpp>
@@ -99,10 +100,7 @@ public:
             *this += v;
             return BaseVecT(m_ptr[0], m_ptr[1], m_ptr[2]);
         }
-        else
-        {
-            return BaseVecT(0, 0, 0);
-        }
+        throw std::range_error("Element Proxy: Width to small for BaseVec addition");
     }
 
     template<typename BaseVecT>
@@ -113,10 +111,7 @@ public:
             *this -= v;
             return BaseVecT(m_ptr[0], m_ptr[1], m_ptr[2]);
         }
-        else
-        {
-            return BaseVecT(0, 0, 0);
-        }
+        throw std::range_error("Element Proxy: Width to small for BaseVec subtraction");
     }
 
     ElementProxy(T* pos = nullptr, unsigned w = 0) : m_ptr(pos), m_w(w) {}
@@ -127,10 +122,7 @@ public:
         {
             return m_ptr[i];
         }
-        else
-        {
-            throw "exception";
-        }
+        throw std::range_error("Element Proxy: Index larger than width");
     }
 
     const T& operator[](int i) const
@@ -139,10 +131,7 @@ public:
         {
             return m_ptr[i];
         }
-        else
-        {
-            return 0;
-        }
+        throw std::range_error("Element Proxy: Index out of Bounds");
     }
 
     /// User defined conversion operator
@@ -153,7 +142,7 @@ public:
         {
             return BaseVecT(m_ptr[0], m_ptr[1], m_ptr[2]);
         }
-        return BaseVecT(0, 0, 0);
+        throw std::range_error("Element Proxy: Width != 3 in BaseVecT conversion");
     }
 
     operator std::array<VertexHandle, 3>() const
@@ -164,8 +153,7 @@ public:
             std::array<VertexHandle, 3> arr = {VertexHandle(m_ptr[0]), VertexHandle(m_ptr[1]), VertexHandle(m_ptr[2])};
             return  arr;
         }
-        // TODO throw error
-        return arr0;
+        throw std::range_error("Element Proxy: Width != 3 in std::array conversion.");
     }
 
     operator FaceHandle() const
@@ -174,8 +162,7 @@ public:
         {
             return FaceHandle(m_ptr[0]);
         }
-        // TODO throw error
-        return FaceHandle(0);
+        throw std::range_error("Element Proxy: Width != 1 in FaceHandle conversion.");
     }
 
     operator T() const
@@ -184,7 +171,7 @@ public:
         {
             return m_ptr[0];
         }
-        return T();
+        throw std::range_error("Element Proxy: Width != 1 in content type conversion.");
     }
 
 private:
