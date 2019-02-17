@@ -43,6 +43,7 @@
 #include <lvr2/io/Timestamp.hpp>
 #include <lvr2/io/HDF5IO.hpp>
 #include <lvr2/algorithm/NormalAlgorithms.hpp>
+#include <lvr2/algorithm/GeometryAlgorithms.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 
 #include "Options.hpp"
@@ -57,42 +58,64 @@ using namespace lvr2;
 
 int main( int argc, char ** argv )
 {
-    hdf5meshtool::Options options(argc, argv);
-    HDF5IO hdf5(options.getOutputFile(), options.getMeshName(), true);
+  hdf5meshtool::Options options(argc, argv);
+  std::cout << timestamp << "Load HDF5 file structure..." << std::endl;
+  HDF5IO hdf5(options.getOutputFile(), options.getMeshName(), true);
 
-    ModelPtr model = ModelFactory::readModel(options.getInputFile());
-    if(MeshBufferPtr meshBuffer = model->m_mesh){
-       std::cout << timestamp << "Building mesh from buffers..." << std::endl;
-       HalfEdgeMesh<BaseVector<float>> hem(meshBuffer);
-       std::cout << timestamp << "Calculating face normals..." << std::endl;
-       auto faceNormals = calcFaceNormals(hem);
-       std::cout << timestamp << "Calculating vertex normals..." << std::endl;
-       auto vertexNormals = calcVertexNormals(hem, faceNormals);
-       std::cout << timestamp << "Creating HDF5 file..." << std::endl;
+  ModelPtr model = ModelFactory::readModel(options.getInputFile());
+  if(MeshBufferPtr meshBuffer = model->m_mesh){
+    std::cout << timestamp << "Building mesh from buffers..." << std::endl;
 
-       // mesh
-       bool addedMesh = hdf5.addMesh(hem);
-       if(addedMesh) std::cout << timestamp << "successfully added mesh" << std::endl;
-       else std::cout << timestamp << "could not add the mesh!" << std::endl;
+    HalfEdgeMesh<BaseVector<float>> hem(meshBuffer);
 
-       // face normals
-       bool addedFaceNormals = hdf5.addDenseAttributeMap<DenseFaceMap<Normal<BaseVector<float> > > >(
-           faceNormals, "face_normals");
-       if(addedFaceNormals) std::cout << timestamp << "successfully added face normals" << std::endl;
-       else std::cout << timestamp << "could not add face normals!" << std::endl;
+    std::cout << timestamp << "Adding mesh to file..." << std::endl;
+    // mesh
+    bool addedMesh = hdf5.addMesh(hem);
+    if(addedMesh) std::cout << timestamp << "successfully added mesh" << std::endl;
+    else std::cout << timestamp << "could not add the mesh!" << std::endl;
 
-       // vertex normals
-       bool addedVertexNormals = hdf5.addDenseAttributeMap<DenseVertexMap<Normal<BaseVector<float> > > >(
-           vertexNormals, "vertex_normals");
-       if(addedVertexNormals) std::cout << timestamp << "successfully added vertex normals" << std::endl;
-       else std::cout << timestamp << "could not add vertex normals!" << std::endl;
-    
-    }
-    else
-    {
-        std::cout << timestamp << "Error reading mesh data from "
-                  << options.getOutputFile() << std::endl;
-    }
+    // face normals
+    std::cout << timestamp << "Computing face normals..." << std::endl;
+    auto faceNormals = calcFaceNormals(hem);
+    bool addedFaceNormals = hdf5.addDenseAttributeMap<DenseFaceMap<Normal<BaseVector<float>>>>(
+        faceNormals, "face_normals");
+    if(addedFaceNormals) std::cout << timestamp << "successfully added face normals" << std::endl;
+    else std::cout << timestamp << "could not add face normals!" << std::endl;
 
-    return 0;
+    // vertex normals
+    std::cout << timestamp << "Computing vertex normals..." << std::endl;
+    auto vertexNormals = calcVertexNormals(hem, faceNormals);
+    bool addedVertexNormals = hdf5.addDenseAttributeMap<DenseVertexMap<Normal<BaseVector<float>>>>(
+        vertexNormals, "vertex_normals");
+    if(addedVertexNormals) std::cout << timestamp << "successfully added vertex normals" << std::endl;
+    else std::cout << timestamp << "could not add vertex normals!" << std::endl;
+
+    // vertex average angles
+    std::cout << timestamp << "Computing average vertex angles..." << std::endl;
+    auto averageAngles = calcAverageVertexAngles(hem, vertexNormals);
+    bool addedAverageAngles = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(averageAngles, "average_angles");
+    if(addedAverageAngles) std::cout << timestamp << "successfully added vertex average angles" << std::endl;
+    else std::cout << timestamp << "could not add vertex average angles!" << std::endl;
+
+    /*
+    std::cout << timestamp << "Computing roughness..." << std::endl;
+    auto roughness = calcVertexRoughness(hem, 0.3, vertexNormals);
+    bool addedRoughness = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(roughness, "roughness");
+    if(addedRoughness) std::cout << timestamp << "successfully added roughness." << std::endl;
+    else std::cout << timestamp << "could not add roughness!" << std::endl;
+
+    std::cout << timestamp << "Computing height differences..." << std::endl;
+    auto heightDifferences = calcVertexHeightDifferences(hem, 0.3);
+    bool addedHeightDiff = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(heightDifferences, "height_diff");
+    if(addedHeightDiff) std::cout << timestamp << "successfully added height differences." << std::endl;
+    else std::cout << timestamp << "could not add height differences!" << std::endl;
+    */
+  }
+  else
+  {
+    std::cout << timestamp << "Error reading mesh data from "
+              << options.getOutputFile() << std::endl;
+  }
+
+  return 0;
 }
