@@ -46,8 +46,11 @@ bool MeshIOInterface::addMesh(const HalfEdgeMesh<BaseVec>& hem)
   DenseVertexMap<Index> new_indices;
   new_indices.reserve(hem.nextVertexIndex());
 
-  for(auto vH : hem.vertices())
+  #pragma omp parallel for
+  for(size_t i=0; i<hem.nextVertexIndex(); i++)
   {
+    VertexHandle vH(i);
+    if(!hem.containsVertex(vH)) continue;
     new_indices.insert(vH, i);
     vertices[i++] = hem.getVertexPosition(vH);
   }
