@@ -125,17 +125,39 @@ endif()
 ##############################
 set(VTK_QT_VERSION 5)
 find_package(VTK REQUIRED)
-if(VTK_MAJOR_VERSION VERSION_LESS "6")
+
+#TEEST
+
+
+if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
   list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK5)
+endif()
+
+if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
+    if(VTK_MINOR_VERSION VERSION_GREATER "0")
+        list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
+    endif()
 endif()
 
 if(VTK_MAJOR_VERSION VERSION_GREATER "7")
   list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
 endif()
-if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
-    if(VTK_MINOR_VERSION VERSION_GREATER "0")
-        list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
+
+if(VTK_VERSION VERSION_GREATER "7")
+  
+  list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
+  set(VTK_COMPONENTS "${VTK_AVAILABLE_COMPONENTS}")
+  set(VTK_HAS_QT OFF)
+  foreach(VTK_COMPONENT ${VTK_COMPONENTS})
+    if("${VTK_COMPONENT}" STREQUAL "GUISupportQt")
+      set(VTK_HAS_QT ON)
     endif()
+  endforeach()
+
+  message(STATUS "VTK > 7 found")
+  if(VTK_HAS_QT)
+    message(STATUS "VTK Component QVTK found")
+  endif()
 endif()
 
 ####
@@ -401,16 +423,23 @@ list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INC
 # nvcc call
 ##############################################################
 
-include(${VTK_USE_FILE})
+if(DEFINED VTK_USE_FILE)
+  include(${VTK_USE_FILE})
+endif()
 
 ##############################################################
 # VIEWERS
 ##############################################################
+
+# add_subdirectory(src/tools/lvr2_viewer)
+
 find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
 if(Qt5_FOUND)
   find_package(QVTK)
   if(QVTK_FOUND)
     include_directories(${QVTK_INCLUDE_DIR})
+    add_subdirectory(src/tools/lvr2_viewer)
+  elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
     add_subdirectory(src/tools/lvr2_viewer)
   endif(QVTK_FOUND)
 endif(Qt5_FOUND)

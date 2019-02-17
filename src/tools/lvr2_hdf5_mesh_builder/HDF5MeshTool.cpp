@@ -58,68 +58,35 @@ using namespace lvr2;
 int main( int argc, char ** argv )
 {
     hdf5meshtool::Options options(argc, argv);
-    HDF5IO hdf5(options.getOutputFile(), true);
+    HDF5IO hdf5(options.getOutputFile(), options.getMeshName(), true);
 
     ModelPtr model = ModelFactory::readModel(options.getInputFile());
-    MeshBufferPtr meshBuffer = model->m_mesh;
+    if(MeshBufferPtr meshBuffer = model->m_mesh){
+       std::cout << timestamp << "Building mesh from buffers..." << std::endl;
+       HalfEdgeMesh<BaseVector<float>> hem(meshBuffer);
+       std::cout << timestamp << "Calculating face normals..." << std::endl;
+       auto faceNormals = calcFaceNormals(hem);
+       std::cout << timestamp << "Calculating vertex normals..." << std::endl;
+       auto vertexNormals = calcVertexNormals(hem, faceNormals);
+       std::cout << timestamp << "Creating HDF5 file..." << std::endl;
 
+       // mesh
+       bool addedMesh = hdf5.addMesh(hem);
+       if(addedMesh) std::cout << timestamp << "successfully added mesh" << std::endl;
+       else std::cout << timestamp << "could not add the mesh!" << std::endl;
 
+       // face normals
+       bool addedFaceNormals = hdf5.addDenseAttributeMap<DenseFaceMap<Normal<BaseVector<float> > > >(
+           faceNormals, "face_normals");
+       if(addedFaceNormals) std::cout << timestamp << "successfully added face normals" << std::endl;
+       else std::cout << timestamp << "could not add face normals!" << std::endl;
 
-    if(meshBuffer)
-    {
-        floatArr vertices = meshBuffer->getVertices();
-        indexArray indices = meshBuffer->getFaceIndices();
-
-        HalfEdgeMesh<BaseVector<float>>* hem = nullptr;
-        if(vertices && indices)
-        {
-            hem = new HalfEdgeMesh<BaseVector<float>>(meshBuffer);
-
-            std::cout << timestamp << "Calculating face normals..." << std::endl;
-            DenseFaceMap<Normal<BaseVector<float>>> faceNormals;
-            faceNormals = calcFaceNormals(*hem);
-
-
-            std::cout << timestamp << "Calculating vertex normals..." << std::endl;
-            auto normals = calcVertexNormals(*hem, faceNormals);
-
-            //            for(auto i : normals)
-            //            {
-            //                cout << normals[i] << endl;
-            //            }
-
-            std::cout << "Creating HDF5 file..." << std::endl;
-            hdf5.addArray("meshes/triangle_mesh", "vertices", meshBuffer->numVertices() * 3, vertices);
-            hdf5.addArray("meshes/triangle_mesh", "indices", meshBuffer->numFaces() * 3, indices);
-
-            std::cout << "Converting face normals..." << std::endl;
-            floatArr faceNormalArray(new float [meshBuffer->numFaces() * 3]);
-            int c = 0;
-            for(auto i : faceNormals)
-            {
-                Normal<BaseVector<float>> n = faceNormals[i];
-                faceNormalArray[3 * c    ] = n[0];
-                faceNormalArray[3 * c + 1] = n[1];
-                faceNormalArray[3 * c + 2] = n[2];
-                c++;
-            }
-
-            std::cout << "Converting vertex normals" << std::endl;
-            floatArr vertexNormalArray(new float[meshBuffer->numVertices() * 3]);
-            c = 0;
-            for(auto i : normals)
-            {
-                Normal<BaseVector<float>> n = normals[i];
-                vertexNormalArray[3 * c    ] = n[0];
-                vertexNormalArray[3 * c + 1] = n[1];
-                vertexNormalArray[3 * c + 2] = n[2];
-                c++;
-            }
-
-            hdf5.addArray("meshes/triangle_mesh/face_attributes", "normals", meshBuffer->numFaces() * 3, faceNormalArray);
-            hdf5.addArray("meshes/triangle_mesh/vertex_attributes", "normals", meshBuffer->numVertices() * 3, vertexNormalArray);
-
-        }
+       // vertex normals
+       bool addedVertexNormals = hdf5.addDenseAttributeMap<DenseVertexMap<Normal<BaseVector<float> > > >(
+           vertexNormals, "vertex_normals");
+       if(addedVertexNormals) std::cout << timestamp << "successfully added vertex normals" << std::endl;
+       else std::cout << timestamp << "could not add vertex normals!" << std::endl;
+    
     }
     else
     {
