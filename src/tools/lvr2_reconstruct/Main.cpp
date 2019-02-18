@@ -593,8 +593,8 @@ int main(int argc, char** argv)
     {
         // Set optioins to save them to disk
         //materializer.saveTextures();
-        buffer->addIntAttribute(1, "mesh_save_textures");
-        buffer->addIntAttribute(1, "mesh_texture_image_extension");
+        buffer->addIntAtomic(1, "mesh_save_textures");
+        buffer->addIntAtomic(1, "mesh_texture_image_extension");
     }
 
     // =======================================================================

@@ -463,7 +463,7 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
 
     FloatChannel pts     = *(this->m_pointBuffer->getFloatChannel("points"));
     FloatChannel normals = *(this->m_pointBuffer->getFloatChannel("normals"));
-    size_t numPoints     = pts.numAttributes();
+    size_t numPoints     = pts.numElements();
     int k = this->m_kd;
 
     vector<size_t> id;
@@ -518,7 +518,7 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
 )
 {
     FloatChannel pts     = *(this->m_pointBuffer->getFloatChannel("points"));
-    size_t numPoints     = pts.numAttributes();
+    size_t numPoints     = pts.numElements();
 
     /**
      * @todo Think of a better way to code this magic number.
@@ -576,7 +576,7 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneIterative(
 
     FloatChannel pts     = *(this->m_pointBuffer->getFloatChannel("points"));
     FloatChannel normals = *(this->m_pointBuffer->getFloatChannel("normals"));
-    size_t numPoints     = pts.numAttributes();
+    size_t numPoints     = pts.numElements();
 
     Plane<BaseVecT> p;
     Vector<BaseVecT> normal;
@@ -684,7 +684,7 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
 {
     FloatChannel pts     = *(this->m_pointBuffer->getFloatChannel("points"));
     FloatChannel normals = *(this->m_pointBuffer->getFloatChannel("normals"));
-    size_t numPoints     = pts.numAttributes();
+    size_t numPoints     = pts.numElements();
 
    Plane<BaseVecT> p;
 

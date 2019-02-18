@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/io/MeshIOInterface.hpp>
+#include <lvr2/io/AttributeMeshIOBase.hpp>
 namespace lvr2{
 
 const std::string attribute_type<EdgeHandle>::attr_group            = "edge_attributes";
@@ -37,7 +37,7 @@ const std::string attribute_type<OptionalFaceHandle>::attr_group    = "face_attr
 const std::string attribute_type<ClusterHandle>::attr_group         = "cluster_attributes";
 const std::string attribute_type<OptionalClusterHandle>::attr_group = "cluster_attributes";
 
-bool MeshIOInterface::addMesh(const HalfEdgeMesh<BaseVec>& hem)
+bool AttributeMeshIOBase::addMesh(const HalfEdgeMesh<BaseVec>& hem)
 {
   FloatChannel vertices(hem.numVertices(), 3);
   IndexChannel indices(hem.numFaces(), 3);
@@ -67,7 +67,7 @@ bool MeshIOInterface::addMesh(const HalfEdgeMesh<BaseVec>& hem)
   return addVertices(vertices) && addIndices(indices);
 }
 
-boost::optional<HalfEdgeMesh<BaseVec>> MeshIOInterface::getMesh()
+boost::optional<HalfEdgeMesh<BaseVec>> AttributeMeshIOBase::getMesh()
 {
   auto vertices_opt = getVertices();
   auto indices_opt = getIndices();

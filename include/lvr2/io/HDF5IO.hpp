@@ -45,13 +45,13 @@
 #include <highfive/H5DataSet.hpp>
 #include <highfive/H5DataSpace.hpp>
 #include <highfive/H5File.hpp>
-#include <lvr2/io/MeshIOInterface.hpp>
+#include <lvr2/io/AttributeMeshIOBase.hpp>
 #include <string>
 
 namespace lvr2
 {
 
-class HDF5IO : public BaseIO, public MeshIOInterface
+class HDF5IO : public BaseIO, public AttributeMeshIOBase
 {
   public:
 
