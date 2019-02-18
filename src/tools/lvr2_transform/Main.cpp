@@ -159,7 +159,7 @@ int main(int argc, char **argv)
       FloatChannelOptional points = p_buffer->getFloatChannel("points");
        
       cout << mat;
-      for(size_t i = 0; i < points->numAttributes(); i++)
+      for(size_t i = 0; i < points->numElements(); i++)
       {
         Vectorf v((*points)[i][0], (*points)[i][1], (*points)[i][2]);
         v = mat * v;
@@ -179,7 +179,7 @@ int main(int argc, char **argv)
       did_anything = true;
       FloatChannelOptional points = m_buffer->getFloatChannel("vertices");
 
-      for(size_t i = 0; i < points->numAttributes(); i++)
+      for(size_t i = 0; i < points->numElements(); i++)
       {
         Vectorf v((*points)[i][0], (*points)[i][1], (*points)[i][2]);
         v = mat * v;

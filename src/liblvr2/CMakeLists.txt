@@ -24,6 +24,7 @@ set(LVR2_SOURCES
     io/CoordinateTransform.cpp
     io/ObjIO.cpp
 #    io/KinectIO.cpp
+    io/AttributeMeshIOBase.cpp
     io/PPMIO.cpp
     io/PLYIO.cpp
     io/IOUtils.cpp
@@ -47,7 +48,6 @@ set(LVR2_SOURCES
     io/ScanprojectIO.cpp
     io/ScanData.cpp
     io/ScanDataManager.cpp
-    io/MeshIOInterface.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp

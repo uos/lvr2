@@ -543,8 +543,8 @@ void LVRMainWindow::restoreSliders()
         if (spec_channels)
         {
             n_channels = spec_channels->width();
-            int wavelength_min = *p->getIntAttribute("spectral_wavelength_min");
-            int wavelength_max = *p->getIntAttribute("spectral_wavelength_max");
+            int wavelength_min = *p->getIntAtomic("spectral_wavelength_min");
+            int wavelength_max = *p->getIntAtomic("spectral_wavelength_max");
 
             this->dockWidgetSpectralSliderSettingsContents->setEnabled(false); // disable to stop changeSpectralColor from re-rendering 6 times
             for (int i = 0; i < 3; i++)
@@ -1734,8 +1734,8 @@ void LVRMainWindow::onGradientLineEditChanged()
     if(!items.empty())
     {
         PointBufferPtr points = (*items.begin())->getPointBuffer();
-        int min = *points->getIntAttribute("spectral_wavelength_min");
-        int max = *points->getIntAttribute("spectral_wavelength_max");
+        int min = *points->getIntAtomic("spectral_wavelength_min");
+        int max = *points->getIntAtomic("spectral_wavelength_max");
 
        
         QString test = m_gradientLineEdit-> text();
@@ -1801,8 +1801,8 @@ void LVRMainWindow::onSpectralLineEditChanged()
     if(!items.empty())
     {
         PointBufferPtr points = (*items.begin())->getPointBuffer();
-        int min = *points->getIntAttribute("spectral_wavelength_min");
-        int max = *points->getIntAttribute("spectral_wavelength_max");
+        int min = *points->getIntAtomic("spectral_wavelength_min");
+        int max = *points->getIntAtomic("spectral_wavelength_max");
 
         for (int i = 0; i < 3; i++)
         {
@@ -1896,7 +1896,7 @@ void LVRMainWindow::updatePointPreview(int pointId, PointBufferPtr points)
 
     if (spectral_channels)
     {
-        size_t n_spec = spectral_channels->numAttributes();
+        size_t n_spec = spectral_channels->numElements();
         unsigned n_channels = spectral_channels->width();
 
         if (pointId >= n_spec)
@@ -1911,7 +1911,7 @@ void LVRMainWindow::updatePointPreview(int pointId, PointBufferPtr points)
                 data[i] = (*spectral_channels)[pointId][i] / 255.0;
             }
             m_PointPreviewPlotter->setPoints(data, n_channels, 0, 1);
-            m_PointPreviewPlotter->setXRange(*points->getIntAttribute("spectral_wavelength_min"), *points->getIntAttribute("spectral_wavelength_max"));
+            m_PointPreviewPlotter->setXRange(*points->getIntAtomic("spectral_wavelength_min"), *points->getIntAtomic("spectral_wavelength_max"));
         }
     }
 }
