@@ -697,6 +697,7 @@ void HalfEdgeMesh<BaseVecT>::getNeighboursOfVertex(
     });
 }
 
+//now more like a edgesplit..
 template <typename BaseVecT>
 void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     //gets coordinates of new vertex, vertexH + 1/2 length of longest edge
@@ -711,6 +712,9 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     float longestDistance = 0; //save length of longest edge
     EdgeHandle longestEdge(0); //save longest edge
     HalfEdge longestEdgeHalf; //needed for vertex calc
+    Vector<BaseVecT> targetVec;
+    VertexHandle targetVecH(0);
+
 
     //shouldnt happen
     if(outEdges.size() < 3 ){
@@ -730,13 +734,17 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
             half = getE(halfH);
         }
 
-        Vertex targetHV = getV(half.target);
+        VertexHandle targetH = half.target;
+        Vertex targetHV = getV(targetH);
         Vector<BaseVecT> target = targetHV.pos;
         auto distance = target.distanceFrom(getV(vertexH).pos);
+        //changes values to longer edge
         if(distance > longestDistance){
             longestDistance = distance;
             longestEdge = edge;
             longestEdgeHalf = half;
+            targetVec=target;
+            targetVecH = targetH;
         }
     }
 
@@ -753,17 +761,20 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     /**********************************************************************
      * Get Incident Vertices to the two incident faces of the longes edge *
      **********************************************************************/
-    /* //NO GOOD
-    auto incidentFaces = getFacesOfEdge(longestEdge);
+
+    //get incident faces of the longest edge
+    auto incidentFaces = this->getFacesOfEdge(longestEdge);
+    vector<FaceHandle> faceHandles;
     vector<VertexHandle> incidentVertices;
 
     for(OptionalFaceHandle handle : incidentFaces){
         //todo: get all needed vertices, determine which faces need to be removed.
         if(handle){
             auto fHandle = handle.unwrap(); //here every edge should have two incident faces
-            auto verticesOfFace = getVerticesOfFace(fHandle);
+            faceHandles.push_back(fHandle);
+            auto verticesOfFace = this->getVerticesOfFace(fHandle);
             for(auto vertex : verticesOfFace){
-                if(getV(vertex).pos != getV(vertexH).pos) {
+                if(getV(vertex).pos != getV(vertexH).pos  && getV(vertex).pos != targetVec) {
                     incidentVertices.push_back(vertex);
                 }
             }
@@ -774,9 +785,61 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     set<VertexHandle> s( incidentVertices.begin(), incidentVertices.end() );
     incidentVertices.assign( s.begin(), s.end() );
 
+    /***********************************************
+     * Remove the two Faces and add four new faces *
+     ***********************************************/
+    for(FaceHandle handle : faceHandles){
+        this->removeFace(handle);
+    }
+
+    VertexHandle added = this->addVertex(vertexToAdd);
+
+    //add new faces (Clockwise!!) to the mesh
     for (auto vertex  : incidentVertices) {
         std::cout << "#####Vertex added: " << getV(vertex).pos << std::endl;
-    }*/
+
+        //first face between vertex, vertexToBeSplitted, and the newly added vertex
+        auto vectorToOldVertex = getV(vertexH).pos - getV(vertex).pos;
+        auto vectorToNewVertex = vertexToAdd - getV(vertex).pos;
+
+        auto dotP1 = vectorToOldVertex * vectorToNewVertex;
+        auto sq1 = vectorToOldVertex.length2();
+        auto sq2 = vectorToNewVertex.length2();
+
+        float angle = std::acos(dotP1/sqrt(sq1 * sq2));
+
+        //if angle < 180°, the following is clockwise, else the opposite
+        /*if(angle < 180){
+            this->addFace(vertex, vertexH, added);
+        }
+        else{
+            this->addFace(vertex, added, vertexH);
+        }*/
+
+        auto vectorToTargetVertex = targetVec - getV(vertex).pos;
+
+        auto dotP2 = vectorToOldVertex * vectorToTargetVertex;
+        sq1 = vectorToTargetVertex.length2();
+
+        angle = std::acos(dotP2/sqrt(sq2*sq1));
+
+        if(angle < 180){
+            this->addFace(vertex, added, targetVecH);
+        }
+        else{
+            this->addFace(vertex, targetVecH, added);
+        }
+
+        break;
+    }
+
+
+
+
+
+
+
+
 
     /******************************************************************************
      * Approach 2: Get Vertices which participate in the slit (dist -> old_v < dist -> new_v) *
@@ -784,7 +847,7 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
 
     // all the neighbors of the start vertex, except those, which distance is smaller to it then to
     // the new vertex and except those, which are between these two.
-    auto neigh_vertices = getNeighboursOfVertex(vertexH);
+    /*auto neigh_vertices = getNeighboursOfVertex(vertexH);
     for(int i = 0; i < neigh_vertices.size(); i++){
         Vector<BaseVecT> vec = getV(neigh_vertices[i]).pos;
         auto distOld = vec.distance(getV(vertexH).pos);
@@ -861,11 +924,11 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
 
 
         //smallest first...
-        /*if(v1.distance(getV(vertexH).pos) > v2.distance(getV(vertexH).pos)){
+        if(v1.distance(getV(vertexH).pos) > v2.distance(getV(vertexH).pos)){
             Vector<BaseVecT> tmp = v1;
             v1 = v2;
             v2 = tmp;
-        }*/
+        }
 
         VertexHandle v1H = this->addVertex(v1);
         VertexHandle v2H = this->addVertex(v2);
@@ -877,7 +940,7 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
 
         if (BaseMesh<BaseVecT>::isFaceInsertionValid(v1H,  v2H, added )) {
             this->addFace(v1H, v2H, added);
-        }
+        }*/
 
 
         //VertexHandle tmp1 = addVertex(v1);
@@ -916,9 +979,9 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
                 this->addFace(v1H, v2H, added);
             }
 
-        }*/
+        }
 
-    }
+    }*/
 
     //TESTAREA
 
