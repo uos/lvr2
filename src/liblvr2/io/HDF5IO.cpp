@@ -321,8 +321,8 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
                 if (spectral)
                 {
                     ret.m_points->addUCharChannel(spectral, "spectral_channels", dim[0], dim[1]);
-                    ret.m_points->addIntAttribute(400, "spectral_wavelength_min");
-                    ret.m_points->addIntAttribute(400 + 4 * dim[1], "spectral_wavelength_max");
+                    ret.m_points->addIntAtomic(400, "spectral_wavelength_min");
+                    ret.m_points->addIntAtomic(400 + 4 * dim[1], "spectral_wavelength_max");
                 }
             }
         }
@@ -782,14 +782,14 @@ IndexChannelOptional HDF5IO::getIndices(){
 
 bool HDF5IO::addVertices(const FloatChannel& channel){
     auto mesh = getMeshGroup(true).get();
-    std::vector<size_t > dims = {channel.numAttributes(), channel.width()};
+    std::vector<size_t > dims = {channel.numElements(), channel.width()};
     addArray<float>(m_mesh_path, vertices_name, dims, channel.dataPtr());
     return true;
 }
 
 bool HDF5IO::addIndices(const IndexChannel& channel){
     auto mesh = getMeshGroup(true).get();
-    std::vector<size_t > dims = {channel.numAttributes(), channel.width()};
+    std::vector<size_t > dims = {channel.numElements(), channel.width()};
     addArray<unsigned int>(m_mesh_path, indices_name, dims, channel.dataPtr());
     return true;
 }

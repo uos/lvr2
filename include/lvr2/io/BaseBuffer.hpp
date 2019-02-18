@@ -28,7 +28,7 @@
 #ifndef BASEBUFFER_HPP
 #define BASEBUFFER_HPP
 
-#include <lvr2/io/AttributeManager.hpp>
+#include <lvr2/io/ChannelManager.hpp>
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/attrmaps/AttrMaps.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
@@ -76,9 +76,9 @@ public:
     virtual void addIndexChannel(indexArray data, std::string name, size_t n, unsigned w);
 
 
-    void addFloatAttribute(float data, std::string name);
-    void addUCharAttribute(unsigned char data, std::string name);
-    void addIntAttribute(int data, std::string name);
+    void addFloatAtomic(float data, std::string name);
+    void addUCharAtomic(unsigned char data, std::string name);
+    void addIntAtomic(int data, std::string name);
 
     ///
     /// \brief getFloatArray    Returns a float array representation of the given channel
@@ -143,9 +143,9 @@ public:
     ///
     IndexChannelOptional getIndexChannel(const std::string& name);
 
-    floatOptional getFloatAttribute(std::string name);
-    ucharOptional getUCharAttribute(std::string name);
-    intOptional getIntAttribute(std::string name);
+    floatOptional getFloatAtomic(std::string name);
+    ucharOptional getUCharAtomic(std::string name);
+    intOptional getIntAtomic(std::string name);
 
     /// Destructor
     virtual ~BaseBuffer() {}
@@ -153,7 +153,7 @@ public:
 protected:
 
     /// Manager class to handle different attribute layers
-    AttributeManager        m_channels;
+    ChannelManager        m_channels;
 
 private:
 

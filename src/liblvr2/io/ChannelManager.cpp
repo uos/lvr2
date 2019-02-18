@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/io/AttributeManager.hpp>
+#include <lvr2/io/ChannelManager.hpp>
 #include <lvr2/io/Timestamp.hpp>
 
 #include <iostream>
@@ -33,44 +33,44 @@
 namespace lvr2
 {
 
-void AttributeManager::addFloatAttribute(float data, std::string name)
+void ChannelManager::addFloatAtomic(float data, std::string name)
 {
-    auto ret = m_floatAttributes.insert(std::pair<std::string, float>(name, data));
+    auto ret = m_floatAtomics.insert(std::pair<std::string, float>(name, data));
     if(!ret.second )
     {
-        std::cout << timestamp << "AttributeManager: Float attribute '"
+        std::cout << timestamp << "AtomicManager: Float Atomic '"
                   << name << "' already exists. Will not add data."
                   << std::endl;
     }
 }
 
-void AttributeManager::addUCharAttribute(unsigned char data, std::string name)
+void ChannelManager::addUCharAtomic(unsigned char data, std::string name)
 {
-    auto ret = m_ucharAttributes.insert(std::pair<std::string, unsigned char>(name, data));
+    auto ret = m_ucharAtomics.insert(std::pair<std::string, unsigned char>(name, data));
     if(!ret.second )
     {
-        std::cout << timestamp << "AttributeManager: UChar attribute '"
+        std::cout << timestamp << "AtomicManager: UChar Atomic '"
                   << name << "' already exists. Will not add data."
                   << std::endl;
     }
 }
 
 
-void AttributeManager::addIntAttribute(int data, std::string name)
+void ChannelManager::addIntAtomic(int data, std::string name)
 {
-    auto ret = m_intAttributes.insert(std::pair<std::string, int>(name, data));
+    auto ret = m_intAtomics.insert(std::pair<std::string, int>(name, data));
     if(!ret.second )
     {
-        std::cout << timestamp << "AttributeManager: Int attribute '"
+        std::cout << timestamp << "AtomicManager: Int Atomic '"
                   << name << "' already exists. Will not add data."
                   << std::endl;
     }
 }
 
-floatOptional AttributeManager::getFloatAttribute(std::string name)
+floatOptional ChannelManager::getFloatAtomic(std::string name)
 {
-    auto it = m_floatAttributes.find(name);
-    if(it != m_floatAttributes.end())
+    auto it = m_floatAtomics.find(name);
+    if(it != m_floatAtomics.end())
     {
         return floatOptional(it->second);
     }
@@ -80,10 +80,10 @@ floatOptional AttributeManager::getFloatAttribute(std::string name)
     }
 }
 
-ucharOptional AttributeManager::getUCharAttribute(std::string name)
+ucharOptional ChannelManager::getUCharAtomic(std::string name)
 {
-    auto it = m_ucharAttributes.find(name);
-    if(it != m_ucharAttributes.end())
+    auto it = m_ucharAtomics.find(name);
+    if(it != m_ucharAtomics.end())
     {
         return ucharOptional(it->second);
     }
@@ -93,10 +93,10 @@ ucharOptional AttributeManager::getUCharAttribute(std::string name)
     }
 }
 
-intOptional AttributeManager::getIntAttribute(std::string name)
+intOptional ChannelManager::getIntAtomic(std::string name)
 {
-    auto it = m_intAttributes.find(name);
-    if(it != m_intAttributes.end())
+    auto it = m_intAtomics.find(name);
+    if(it != m_intAtomics.end())
     {
         return intOptional(it->second);
     }
@@ -106,25 +106,25 @@ intOptional AttributeManager::getIntAttribute(std::string name)
     }
 }
 
-void AttributeManager::addFloatChannel(floatArr data, std::string name, size_t n, unsigned width)
+void ChannelManager::addFloatChannel(floatArr data, std::string name, size_t n, unsigned width)
 {
     FloatChannelPtr channel(new FloatChannel(n, width, data));
     addFloatChannel(channel, name);
 }
 
-void AttributeManager::addUCharChannel(ucharArr data, std::string name, size_t n, unsigned width)
+void ChannelManager::addUCharChannel(ucharArr data, std::string name, size_t n, unsigned width)
 {
     UCharChannelPtr channel(new UCharChannel(n, width, data));
     addUCharChannel(channel, name);
 }
 
-void AttributeManager::addIndexChannel(indexArray data, std::string name, size_t n, unsigned width)
+void ChannelManager::addIndexChannel(indexArray data, std::string name, size_t n, unsigned width)
 {
     IndexChannelPtr channel(new IndexChannel(n, width, data));
     addIndexChannel(channel, name);
 }
 
-void AttributeManager::addEmptyFloatChannel(std::string name, size_t n, unsigned width)
+void ChannelManager::addEmptyFloatChannel(std::string name, size_t n, unsigned width)
 {
     floatArr array(new float[width * n]);
     for(size_t i = 0; i < n * width; i++)
@@ -135,7 +135,7 @@ void AttributeManager::addEmptyFloatChannel(std::string name, size_t n, unsigned
     addFloatChannel(ptr, name);
 }
 
-void AttributeManager::addEmptyUCharChannel(std::string name, size_t n, unsigned width)
+void ChannelManager::addEmptyUCharChannel(std::string name, size_t n, unsigned width)
 {
     ucharArr array(new unsigned char[width * n]);
     for(size_t i = 0; i < n * width; i++)
@@ -146,7 +146,7 @@ void AttributeManager::addEmptyUCharChannel(std::string name, size_t n, unsigned
     addUCharChannel(ptr, name);
 }
 
-void AttributeManager::addEmptyIndexChannel(std::string name, size_t n, unsigned width)
+void ChannelManager::addEmptyIndexChannel(std::string name, size_t n, unsigned width)
 {
     indexArray array(new unsigned int[width * n]);
     for(size_t i = 0; i < n * width; i++)
@@ -157,58 +157,58 @@ void AttributeManager::addEmptyIndexChannel(std::string name, size_t n, unsigned
     addIndexChannel(ptr, name);
 }
 
-void AttributeManager::addFloatChannel(FloatChannelPtr data, std::string name)
+void ChannelManager::addFloatChannel(FloatChannelPtr data, std::string name)
 {
     auto ret = m_floatChannels.insert(std::pair<std::string, FloatChannelPtr>(name, data));
     if(!ret.second )
     {
-        std::cout << timestamp << "AttributeManager: Float channel '"
+        std::cout << timestamp << "AtomicManager: Float channel '"
                   << name << "' already exists. Will not add data."
                   << std::endl;
     }
 }
 
-void AttributeManager::addUCharChannel(UCharChannelPtr data, std::string name)
+void ChannelManager::addUCharChannel(UCharChannelPtr data, std::string name)
 {
     auto ret = m_ucharChannels.insert(std::pair<std::string, UCharChannelPtr>(name, data));
     if(!ret.second)
     {
-        std::cout << timestamp << "AttributeManager: UChar channel '"
+        std::cout << timestamp << "AtomicManager: UChar channel '"
                   << name << "' already exists. Will not add data."
                   << std::endl;
     }
 }
 
-void AttributeManager::addIndexChannel(IndexChannelPtr data, std::string name)
+void ChannelManager::addIndexChannel(IndexChannelPtr data, std::string name)
 {
     auto ret = m_indexChannels.insert(std::pair<std::string, IndexChannelPtr>(name, data));
     if(!ret.second)
     {
-        std::cout << timestamp << "AttributeManager: Index channel '"
+        std::cout << timestamp << "AtomicManager: Index channel '"
                   << name << "' already exists. Will not add data."
                   << std::endl;
     }
 }
 
-bool AttributeManager::hasUCharChannel(std::string name)
+bool ChannelManager::hasUCharChannel(std::string name)
 {
     auto it = m_ucharChannels.find(name);
     return !(it == m_ucharChannels.end());
 }
 
-bool AttributeManager::hasFloatChannel(std::string name)
+bool ChannelManager::hasFloatChannel(std::string name)
 {
     auto it = m_floatChannels.find(name);
     return !(it == m_floatChannels.end());
 }
 
-bool AttributeManager::hasIndexChannel(std::string name)
+bool ChannelManager::hasIndexChannel(std::string name)
 {
     auto it = m_indexChannels.find(name);
     return !(it == m_indexChannels.end());
 }
 
-unsigned AttributeManager::ucharChannelWidth(std::string name)
+unsigned ChannelManager::ucharChannelWidth(std::string name)
 {
     auto it = m_ucharChannels.find(name);
     if(it == m_ucharChannels.end())
@@ -221,7 +221,7 @@ unsigned AttributeManager::ucharChannelWidth(std::string name)
     }
 }
 
-unsigned AttributeManager::floatChannelWidth(std::string name)
+unsigned ChannelManager::floatChannelWidth(std::string name)
 {
     auto it = m_floatChannels.find(name);
     if(it == m_floatChannels.end())
@@ -234,7 +234,7 @@ unsigned AttributeManager::floatChannelWidth(std::string name)
     }
 }
 
-unsigned AttributeManager::indexChannelWidth(std::string name)
+unsigned ChannelManager::indexChannelWidth(std::string name)
 {
     auto it = m_indexChannels.find(name);
     if(it == m_indexChannels.end())
@@ -247,7 +247,7 @@ unsigned AttributeManager::indexChannelWidth(std::string name)
     }
 }
 
-FloatProxy AttributeManager::getFloatHandle(int idx, const std::string& name)
+FloatProxy ChannelManager::getFloatHandle(int idx, const std::string& name)
 {
     auto it = m_floatChannels.find(name);
     if(it != m_floatChannels.end())
@@ -255,33 +255,33 @@ FloatProxy AttributeManager::getFloatHandle(int idx, const std::string& name)
         FloatChannelPtr ptr = it->second;
         if(ptr)
         {
-            if(idx < ptr->numAttributes())
+            if(idx < ptr->numElements())
             {
                 floatArr array = ptr->dataPtr();
                 return FloatProxy(&array[idx], ptr->width());
             }
             else
             {
-                std::cout << timestamp << "AttributeManager::getFloatHandle(): Index " << idx
-                          << " / " << ptr->numAttributes() << " out of bounds." << std::endl;
+                std::cout << timestamp << "ChannelManager::getFloatHandle(): Index " << idx
+                          << " / " << ptr->numElements() << " out of bounds." << std::endl;
                 return FloatProxy();
             }
         }
         else
         {
-            std::cout << timestamp << "AttributeManager::getFloatHandle(): Found nullptr." << std::endl;
+            std::cout << timestamp << "ChannelManager::getFloatHandle(): Found nullptr." << std::endl;
             return FloatProxy();
         }
     }
     else
     {
-        std::cout << timestamp << "AttributeManager::getFloatHandle(): Could not find channel'"
+        std::cout << timestamp << "ChannelManager::getFloatHandle(): Could not find channel'"
                   << name << "'." << std::endl;
         return FloatProxy();
     }
 }
 
-UCharProxy AttributeManager::getUCharHandle(int idx, const std::string& name)
+UCharProxy ChannelManager::getUCharHandle(int idx, const std::string& name)
 {
     auto it = m_ucharChannels.find(name);
     if(it != m_ucharChannels.end())
@@ -289,33 +289,33 @@ UCharProxy AttributeManager::getUCharHandle(int idx, const std::string& name)
         UCharChannelPtr ptr = it->second;
         if(ptr)
         {
-            if(idx < ptr->numAttributes())
+            if(idx < ptr->numElements())
             {
                 ucharArr array = ptr->dataPtr();
                 return UCharProxy(&array[idx], ptr->width());
             }
             else
             {
-                std::cout << timestamp << "AttributeManager::getUCharHandle(): Index " << idx
-                          << " / " << ptr->numAttributes() << " out of bounds." << std::endl;
+                std::cout << timestamp << "ChannelManager::getUCharHandle(): Index " << idx
+                          << " / " << ptr->numElements() << " out of bounds." << std::endl;
                 return UCharProxy();
             }
         }
         else
         {
-            std::cout << timestamp << "AttributeManager::getUCharHandle(): Found nullptr." << std::endl;
+            std::cout << timestamp << "ChannelManager::getUCharHandle(): Found nullptr." << std::endl;
             return UCharProxy();
         }
     }
     else
     {
-        std::cout << timestamp << "AttributeManager::getUCharHandle(): Could not find channel'"
+        std::cout << timestamp << "ChannelManager::getUCharHandle(): Could not find channel'"
                   << name << "'." << std::endl;
         return UCharProxy();
     }
 }
 
-IndexProxy AttributeManager::getIndexHandle(int idx, const std::string& name)
+IndexProxy ChannelManager::getIndexHandle(int idx, const std::string& name)
 {
     auto it = m_indexChannels.find(name);
     if(it != m_indexChannels.end())
@@ -323,39 +323,39 @@ IndexProxy AttributeManager::getIndexHandle(int idx, const std::string& name)
         IndexChannelPtr ptr = it->second;
         if(ptr)
         {
-            if(idx < ptr->numAttributes())
+            if(idx < ptr->numElements())
             {
                 indexArray array = ptr->dataPtr();
                 return IndexProxy(&array[idx], ptr->width());
             }
             else
             {
-                std::cout << timestamp << "AttributeManager::getIndexHandle(): Index " << idx
-                          << " / " << ptr->numAttributes() << " out of bounds." << std::endl;
+                std::cout << timestamp << "ChannelManager::getIndexHandle(): Index " << idx
+                          << " / " << ptr->numElements() << " out of bounds." << std::endl;
                 return IndexProxy();
             }
         }
         else
         {
-            std::cout << timestamp << "AttributeManager::getIndexHandle(): Found nullptr." << std::endl;
+            std::cout << timestamp << "ChannelManager::getIndexHandle(): Found nullptr." << std::endl;
             return IndexProxy();
         }
     }
     else
     {
-        std::cout << timestamp << "AttributeManager::getIndexHandle(): Could not find channel'"
+        std::cout << timestamp << "ChannelManager::getIndexHandle(): Could not find channel'"
                   << name << "'." << std::endl;
         return IndexProxy();
     }
 }
 
 
-floatArr AttributeManager::getFloatArray(size_t& n, unsigned& w, const std::string name)
+floatArr ChannelManager::getFloatArray(size_t& n, unsigned& w, const std::string name)
 {
     auto it = m_floatChannels.find(name);
     if(it != m_floatChannels.end())
     {
-        n = it->second->numAttributes();
+        n = it->second->numElements();
         w = it->second->width();
         return it->second->dataPtr();
     }
@@ -368,12 +368,12 @@ floatArr AttributeManager::getFloatArray(size_t& n, unsigned& w, const std::stri
 
 }
 
-ucharArr AttributeManager::getUCharArray(size_t& n, unsigned& w, const std::string name)
+ucharArr ChannelManager::getUCharArray(size_t& n, unsigned& w, const std::string name)
 {
     auto it = m_ucharChannels.find(name);
     if(it != m_ucharChannels.end())
     {
-        n = it->second->numAttributes();
+        n = it->second->numElements();
         w = it->second->width();
         return it->second->dataPtr();
     }
@@ -385,12 +385,12 @@ ucharArr AttributeManager::getUCharArray(size_t& n, unsigned& w, const std::stri
     }
 }
 
-indexArray AttributeManager::getIndexArray(size_t& n, unsigned& w, const std::string name)
+indexArray ChannelManager::getIndexArray(size_t& n, unsigned& w, const std::string name)
 {
     auto it = m_indexChannels.find(name);
     if(it != m_indexChannels.end())
     {
-        n = it->second->numAttributes();
+        n = it->second->numElements();
         w = it->second->width();
         return it->second->dataPtr();
     }
@@ -402,7 +402,7 @@ indexArray AttributeManager::getIndexArray(size_t& n, unsigned& w, const std::st
     }
 }
 
-UCharChannelOptional AttributeManager::getUCharChannel(std::string name)
+UCharChannelOptional ChannelManager::getUCharChannel(std::string name)
 {
     auto it = m_ucharChannels.find(name);
     if(it != m_ucharChannels.end())
@@ -415,7 +415,7 @@ UCharChannelOptional AttributeManager::getUCharChannel(std::string name)
     }
 }
 
-FloatChannelOptional AttributeManager::getFloatChannel(std::string name)
+FloatChannelOptional ChannelManager::getFloatChannel(std::string name)
 {
     auto it = m_floatChannels.find(name);
     if(it != m_floatChannels.end())
@@ -430,7 +430,7 @@ FloatChannelOptional AttributeManager::getFloatChannel(std::string name)
 }
 
 
-IndexChannelOptional AttributeManager::getIndexChannel(std::string name)
+IndexChannelOptional ChannelManager::getIndexChannel(std::string name)
 {
     auto it = m_indexChannels.find(name);
     if(it != m_indexChannels.end())
