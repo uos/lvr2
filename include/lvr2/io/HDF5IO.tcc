@@ -204,7 +204,7 @@ bool HDF5IO::getChannel(const std::string group, const std::string name, boost::
 template <typename T>
 bool HDF5IO::addChannel(const std::string group, const std::string name, const AttributeChannel<T>& channel)
 {
-    std::vector<size_t > dims = {channel.numAttributes(), channel.width()};
+    std::vector<size_t > dims = {channel.numElements(), channel.width()};
     addArray<T>(m_mesh_path + "/" + group , name, dims, channel.dataPtr());
     return true;
 }

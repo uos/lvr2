@@ -189,29 +189,29 @@ public:
     using DataPtr = boost::shared_array<T>;
 
     AttributeChannel(size_t n, unsigned width)
-        : m_width(width), m_numAttributes(n),
-         m_data(new T[m_numAttributes * width])
+        : m_elementWidth(width), m_numElements(n),
+         m_data(new T[m_numElements * width])
     {}
 
     AttributeChannel(size_t n, unsigned width, DataPtr ptr)
-        : m_numAttributes(n),
-          m_width(width),
+        : m_numElements(n),
+          m_elementWidth(width),
           m_data(ptr)
     {}
 
     ElementProxy<T> operator[](const unsigned& idx)
     {
         T* ptr = m_data.get();
-        return ElementProxy<T>(&(ptr[idx * m_width]), m_width);
+        return ElementProxy<T>(&(ptr[idx * m_elementWidth]), m_elementWidth);
     }
 
     DataPtr    dataPtr() const { return m_data;}
-    unsigned   width() const { return m_width;}
-    size_t     numAttributes() const { return m_numAttributes;}
+    unsigned   width() const { return m_elementWidth;}
+    size_t     numElements() const { return m_numElements;}
 
 private:
-    size_t          m_numAttributes;
-    unsigned        m_width;
+    size_t          m_numElements;
+    unsigned        m_elementWidth;
     DataPtr         m_data;
 };
 
@@ -236,10 +236,10 @@ using intOptional = boost::optional<int>;
 using floatOptional = boost::optional<float>;
 using ucharOptional = boost::optional<unsigned char>;
 
-class AttributeManager
+class ChannelManager
 {
 public:
-    AttributeManager() {}
+    ChannelManager() {}
 
     void addIndexChannel(
             indexArray array,
@@ -315,17 +315,17 @@ public:
     UCharChannelOptional getUCharChannel(std::string name);
     IndexChannelOptional getIndexChannel(std::string name);
 
-    floatOptional getFloatAttribute(std::string name);
-    ucharOptional getUCharAttribute(std::string name);
-    intOptional getIntAttribute(std::string name);
+    floatOptional getFloatAtomic(std::string name);
+    ucharOptional getUCharAtomic(std::string name);
+    intOptional getIntAtomic(std::string name);
 
     void addFloatChannel(FloatChannelPtr data, std::string name);
     void addUCharChannel(UCharChannelPtr data, std::string name);
     void addIndexChannel(IndexChannelPtr data, std::string name);
 
-    void addFloatAttribute(float data, std::string name);
-    void addUCharAttribute(unsigned char data, std::string name);
-    void addIntAttribute(int data, std::string name);
+    void addFloatAtomic(float data, std::string name);
+    void addUCharAtomic(unsigned char data, std::string name);
+    void addIntAtomic(int data, std::string name);
 
 private:
 
@@ -333,9 +333,9 @@ private:
     std::map<std::string, UCharChannelPtr>      m_ucharChannels;
     std::map<std::string, IndexChannelPtr>      m_indexChannels;
 
-    std::map<std::string, float>                m_floatAttributes;
-    std::map<std::string, unsigned char>        m_ucharAttributes;
-    std::map<std::string, int>                  m_intAttributes;
+    std::map<std::string, float>                m_floatAtomics;
+    std::map<std::string, unsigned char>        m_ucharAtomics;
+    std::map<std::string, int>                  m_intAtomics;
 
 
     using FloatChannelMap = std::map<std::string, FloatChannelPtr>;

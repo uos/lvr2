@@ -78,12 +78,12 @@ boost::optional<HalfEdgeMesh<BaseVec>> MeshIOInterface::getMesh()
     auto& indices = indices_opt.get();
 
     HalfEdgeMesh<BaseVec> hem;
-    for (size_t i = 0; i < vertices.numAttributes(); i++)
+    for (size_t i = 0; i < vertices.numElements(); i++)
     {
       hem.addVertex(vertices[i]);
     }
 
-    for (size_t i = 0; i < indices.numAttributes(); i++)
+    for (size_t i = 0; i < indices.numElements(); i++)
     {
       const std::array<VertexHandle, 3>& face = indices[i];
       hem.addFace(face[0], face[1], face[2]);
