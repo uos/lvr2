@@ -281,6 +281,52 @@ std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
 
 }
 
+std::vector<std::vector<CamData> > HDF5IO::getRawCamData(bool load_image_data)
+{
+    std::vector<std::vector<CamData> > ret;
+    
+
+    if(m_hdf5_file) 
+    {
+        std::string groupNameScans = "/raw/scans/";
+
+        if(!exist(groupNameScans))
+        {
+            return ret;
+        }
+
+        HighFive::Group scans_group = getGroup(groupNameScans);
+
+        size_t num_scans = scans_group.getNumberObjects();
+
+        for (size_t i = 0; i < num_scans; i++)
+        {
+
+            std::string cur_scan_pos = scans_group.getObjectName(i);
+            HighFive::Group scan_group = getGroup(scans_group, cur_scan_pos);
+
+            std::vector<CamData> cam_data;
+
+            if(scan_group.exist("images"))
+            {
+                HighFive::Group image_group = getGroup(scan_group, "images");
+                
+                size_t num_images = image_group.getNumberObjects();
+                for(size_t j=0; j< num_images; j++)
+                {
+                    CamData cam = getSingleRawCamData(i, j, load_image_data);
+                    cam_data.push_back(cam);
+                }
+            }
+
+            ret.push_back(cam_data);
+        }
+
+    }
+
+    return ret;
+}
+
 ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
 {
     ScanData ret;
@@ -364,6 +410,60 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
     return ret;
 }
 
+
+CamData HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_data)
+{
+    CamData ret;
+
+    if (m_hdf5_file)
+    {
+        char buffer1[128];
+        sprintf(buffer1, "position_%05d", scan_id);
+        string scan_id_str(buffer1);
+        char buffer2[128];
+        sprintf(buffer2, "position_%05d", img_id);
+        string img_id_str(buffer2);
+
+
+        std::string groupName         = "/raw/scans/"  + scan_id_str + "/images/" + img_id_str;
+        
+        HighFive::Group g;
+        
+        try
+        {
+            g = getGroup(groupName);
+        }
+        catch(HighFive::Exception& e)
+        {
+            std::cout << timestamp << "Error getting cam data: "
+                    << e.what() << std::endl;
+            throw e;
+        }
+
+        unsigned int dummy;
+        floatArr intrinsics_arr = getArray<float>(groupName, "intrinsics", dummy);
+        floatArr extrinsics_arr = getArray<float>(groupName, "extrinsics", dummy);
+        
+        if(intrinsics_arr)
+        {
+            ret.m_intrinsics = Matrix4<BaseVector<float> >(intrinsics_arr.get());
+        }
+
+        if(extrinsics_arr)
+        {
+            ret.m_extrinsics = Matrix4<BaseVector<float> >(extrinsics_arr.get());
+        }
+
+        if(load_image_data)
+        {
+            getImage(g, "image", ret.m_image_data);
+        }
+
+    }
+
+    return ret;
+}
+
 floatArr HDF5IO::getFloatChannelFromRawScanData(std::string name, int nr, unsigned int& n, unsigned& w)
 {
     floatArr ret;
@@ -398,7 +498,6 @@ void HDF5IO::addImage(std::string group, std::string name, cv::Mat& img)
 {
     if(m_hdf5_file)
     {
-
         HighFive::Group g = getGroup(group);
         addImage(g, name, img);
     }
@@ -408,7 +507,37 @@ void HDF5IO::addImage(HighFive::Group& g, std::string datasetName, cv::Mat& img)
 {
     int w = img.cols;
     int h = img.rows;
-    H5IMmake_image_8bit(g.getId(), datasetName.c_str(), w, h, img.data);
+    const char* interlace = "INTERLACE_PIXEL";
+
+    if(img.type() == CV_8U)
+    {
+        // 1 channel image
+        H5IMmake_image_8bit(g.getId(), datasetName.c_str(), w, h, img.data);
+    } else if(img.type() == CV_8UC3) {
+        // 3 channel image
+        H5IMmake_image_24bit(g.getId(), datasetName.c_str(), w, h, interlace, img.data);
+    }
+
+}
+
+void HDF5IO::getImage(HighFive::Group& g, std::string datasetName, cv::Mat& img)
+{
+    long long unsigned int w,h,planes;
+    long long int npals;
+    char interlace[256];
+
+    H5IMget_image_info(g.getId(), datasetName.c_str(), &w, &h, &planes, interlace, &npals);
+
+    if(planes == 1)
+    {
+        // 1 channel image
+        img = cv::Mat(h, w, CV_8U);
+    } else if(planes == 3) {
+        // 3 channel image
+        img = cv::Mat(h, w, CV_8UC3);
+    }
+
+    H5IMread_image(g.getId(), datasetName.c_str(), img.data);
 }
 
 void HDF5IO::addFloatChannelToRawScanData(
@@ -612,6 +741,66 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
     }
 }
 
+void HDF5IO::addRawCamData( int scan_id, int img_id, CamData& cam_data )
+{
+    if(m_hdf5_file)
+    {
+
+        char buffer1[128];
+        sprintf(buffer1, "position_%05d", scan_id);
+        string scan_id_str(buffer1);
+        std::string groupName = "/raw/scans/" + scan_id_str + "/images";
+
+        HighFive::Group scan_images_group;
+
+        try
+        {
+            scan_images_group = getGroup(groupName);
+        }
+        catch(HighFive::Exception& e)
+        {
+            std::cout << timestamp << "Error adding raw image data: "
+                    << e.what() << std::endl;
+            throw e;
+        }
+
+        // scan images group loaded
+
+        char buffer2[128];
+        sprintf(buffer2, "position_%05d", img_id);
+        string img_id_str(buffer2);
+
+        // try to load group
+        HighFive::Group scan_image_group;
+        try
+        {
+            scan_image_group = getGroup(scan_images_group, img_id_str);
+        }
+        catch(HighFive::Exception& e)
+        {
+            std::cout << timestamp << "Error adding raw image data: "
+                    << e.what() << std::endl;
+            throw e;
+        }
+        
+        // add image to scan_image_group
+        floatArr intrinsics_arr(cam_data.m_intrinsics.toFloatArray());
+        floatArr extrinsics_arr(cam_data.m_extrinsics.toFloatArray());
+        std::vector<size_t> dim = {4,4};
+
+        std::vector<hsize_t> chunks;
+        for(auto i: dim)
+        {
+                chunks.push_back(i);
+        }
+
+        addArray(scan_image_group, "intrinsics", dim, chunks, intrinsics_arr);
+        addArray(scan_image_group, "extrinsics", dim, chunks, extrinsics_arr);
+        addImage(scan_image_group, "image", cam_data.m_image_data);
+
+    }
+}
+
 void HDF5IO::addRawDataHeader(std::string description, Matrix4<BaseVector<float>> &referenceFrame)
 {
 
@@ -663,6 +852,46 @@ HighFive::Group HDF5IO::getGroup(const std::string &groupName, bool create)
             else if (create)
             {
                 cur_grp = cur_grp.createGroup(groupNames[i]);
+            }
+            else
+            {
+                // Throw exception because a group we searched
+                // for doesn't exist and create flag was false
+                throw std::runtime_error("HDF5IO - getGroup(): Groupname '"
+                    + groupNames[i] + "' doesn't exist and create flag is false");
+            }
+        }
+    }
+    catch(HighFive::Exception& e)
+    {
+        std::cout << timestamp
+                  << "Error in getGroup (with group name '"
+                  << groupName << "': " << std::endl;
+        std::cout << e.what() << std::endl;
+        throw e;
+    }
+
+    return cur_grp;
+}
+
+HighFive::Group HDF5IO::getGroup(HighFive::Group& g, const std::string &groupName, bool create)
+{
+    std::vector<std::string> groupNames = splitGroupNames(groupName);
+    HighFive::Group cur_grp;
+
+    try
+    {
+
+        for (size_t i = 0; i < groupNames.size(); i++)
+        {
+
+            if (g.exist(groupNames[i]))
+            {
+                cur_grp = g.getGroup(groupNames[i]);
+            }
+            else if (create)
+            {
+                cur_grp = g.createGroup(groupNames[i]);
             }
             else
             {

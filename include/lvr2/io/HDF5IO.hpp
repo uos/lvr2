@@ -31,6 +31,7 @@
 #include "BaseIO.hpp"
 #include "DataStruct.hpp"
 #include "ScanData.hpp"
+#include "CamData.hpp"
 #include "CalibrationParameters.hpp"
 
 #include "lvr2/geometry/Matrix4.hpp"
@@ -108,7 +109,11 @@ class HDF5IO : public BaseIO, public MeshIOInterface
 
     ScanData    getSingleRawScanData(int nr, bool load_points = true);
 
+    CamData     getSingleRawCamData(int scan_id, int img_id, bool load_image_data = true);
+
     std::vector<ScanData> getRawScanData(bool load_points = true);
+
+    std::vector<std::vector<CamData> > getRawCamData(bool load_image_data = true);
 
     floatArr getFloatChannelFromRawScanData(std::string name,
             int nr, unsigned int& n, unsigned& w);
@@ -135,11 +140,15 @@ class HDF5IO : public BaseIO, public MeshIOInterface
             std::vector<hsize_t>& chunkSize,
             boost::shared_array<T> data);
 
-
     void addImage(
             std::string groupName, std::string name, cv::Mat& img);
-
+    
     void addRawScanData(int nr, ScanData &scan);
+
+    /**
+     * @brief add recorded image referenced to a scan pose
+     */
+    void addRawCamData( int scan_id, int img_id, CamData& cam_data );
 
     void addFloatChannelToRawScanData(std::string name, int nr, size_t n, unsigned w, floatArr data);
 
@@ -259,7 +268,11 @@ class HDF5IO : public BaseIO, public MeshIOInterface
 
     void addImage(HighFive::Group& g, std::string datasetName, cv::Mat& img);
 
+    void getImage(HighFive::Group& g, std::string datasetName, cv::Mat& img);
+
     HighFive::Group getGroup(const std::string& groupName, bool create = true);
+
+    HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool create = true);
 
     std::vector<std::string> splitGroupNames(const std::string &groupName);
 
