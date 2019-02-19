@@ -751,7 +751,6 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     //calculate the position of the new vertex
     Vector<BaseVecT> vertexToAdd = getV(vertexH).pos + (getV(longestEdgeHalf.target).pos - getV(vertexH).pos)/2;
 
-    //auto vertexAddedH = addVertex(vertexToAdd); //add the calculated vertex to the mesh.
 
     std::cout << "Distance: " << longestDistance;
     std::cout << "Target: " << getV(longestEdgeHalf.target).pos << std::endl;
@@ -764,15 +763,26 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
 
     //get incident faces of the longest edge
     auto incidentFaces = this->getFacesOfEdge(longestEdge);
+
+    Vector<BaseVecT> firstNormal;
+    Vector<BaseVecT> secondNormal;
+
+    vector<VertexHandle> groupOne;
+    vector<VertexHandle> groupTwo;
+
+
     vector<FaceHandle> faceHandles;
     vector<VertexHandle> incidentVertices;
 
-    for(OptionalFaceHandle handle : incidentFaces){
+    for(int i = 0; i < incidentFaces.size(); i++){
         //todo: get all needed vertices, determine which faces need to be removed.
+            OptionalFaceHandle handle = incidentFaces[i];
         if(handle){
             auto fHandle = handle.unwrap(); //here every edge should have two incident faces
             faceHandles.push_back(fHandle);
             auto verticesOfFace = this->getVerticesOfFace(fHandle);
+            //assign vertices for normal calculation
+            i == 0 ? groupOne.assign(verticesOfFace.begin(),verticesOfFace.end()) : groupTwo.assign(verticesOfFace.begin(),verticesOfFace.end());
             for(auto vertex : verticesOfFace){
                 if(getV(vertex).pos != getV(vertexH).pos  && getV(vertex).pos != targetVec) {
                     incidentVertices.push_back(vertex);
@@ -785,6 +795,18 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     set<VertexHandle> s( incidentVertices.begin(), incidentVertices.end() );
     incidentVertices.assign( s.begin(), s.end() );
 
+        //calculate normals for the two groups (faces) - needed for insertion of the new faces
+
+        auto firstVecGroup1 = getV(groupOne[1]).pos - getV(groupOne[0]).pos;
+        auto secondVecGroup1 = getV(groupOne[2]).pos - getV(groupOne[0]).pos;
+
+        firstNormal = firstVecGroup1.cross(secondVecGroup1);
+
+        auto firstVecGroup2 = getV(groupTwo[1]).pos - getV(groupTwo[0]).pos;
+        auto secondVecGroup2 = getV(groupTwo[2]).pos - getV(groupTwo[0]).pos;
+
+        secondNormal = firstVecGroup2.cross(secondVecGroup2);
+
     /***********************************************
      * Remove the two Faces and add four new faces *
      ***********************************************/
@@ -794,10 +816,24 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
 
     VertexHandle added = this->addVertex(vertexToAdd);
 
-    //add new faces (Clockwise!!) to the mesh
+    //add new faces (Clockwise!!) to the mesh, take normal direction into account
+        int counter = 0; //which vertex is currently examined
     for (auto vertex  : incidentVertices) {
         std::cout << "#####Vertex added: " << getV(vertex).pos << std::endl;
 
+
+        //using the calculated normales to determine which way the triangles are directed
+        bool clockwise = true;
+
+        if(counter == 0){
+            if(firstNormal.z > 0){
+                clockwise = false;
+            }
+        } else {
+            if(secondNormal.z > 0){
+                clockwise = false;
+            }
+        }
         //first face between vertex, vertexToBeSplitted, and the newly added vertex
         auto vectorToOldVertex = getV(vertexH).pos - getV(vertex).pos;
         auto vectorToNewVertex = vertexToAdd - getV(vertex).pos;
@@ -808,13 +844,14 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
 
         float angle = std::acos(dotP1/sqrt(sq1 * sq2));
 
+        //TODO: check normal vectors and look, whether they direct into negative or positive z
         //if angle < 180°, the following is clockwise, else the opposite
-        /*if(angle < 180){
-            this->addFace(vertex, vertexH, added);
+        if(angle < 180){
+            clockwise ? this->addFace(vertex, vertexH, added) : this->addFace(added, vertexH, vertex);
         }
         else{
-            this->addFace(vertex, added, vertexH);
-        }*/
+            clockwise ? this->addFace(vertexH, added, vertex) : this->addFace(vertex, added, vertexH);
+        }
 
         auto vectorToTargetVertex = targetVec - getV(vertex).pos;
 
@@ -824,13 +861,13 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
         angle = std::acos(dotP2/sqrt(sq2*sq1));
 
         if(angle < 180){
-            this->addFace(vertex, added, targetVecH);
+            clockwise ? this->addFace(vertex, added, targetVecH) : this->addFace(targetVecH, added, vertex);
         }
         else{
-            this->addFace(vertex, targetVecH, added);
+            clockwise ? this->addFace(added, targetVecH, vertex) : this->addFace(vertex, targetVecH, added);
         }
 
-        break;
+        counter ++;
     }
 
 
@@ -842,7 +879,7 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
 
 
     /******************************************************************************
-     * Approach 2: Get Vertices which participate in the slit (dist -> old_v < dist -> new_v) *
+     * Approach 2: Get Vertices which participate in the split (dist -> old_v < dist -> new_v) *
      ******************************************************************************/
 
     // all the neighbors of the start vertex, except those, which distance is smaller to it then to
