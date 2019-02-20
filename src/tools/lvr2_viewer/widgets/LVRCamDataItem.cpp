@@ -56,7 +56,7 @@ LVRCamDataItem::LVRCamDataItem(
 
     m_pItem = new LVRPoseItem(ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model))), this);
 
-    m_cvItem = new LVRCvImageItem(sdm, renderer, "image", this);
+    m_cvItem = new LVRCvImageItem(sdm, renderer, "Image", this);
 
     m_pItem->setPose(m_pose);
 

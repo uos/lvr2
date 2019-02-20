@@ -1366,7 +1366,7 @@ QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm
         if(camData[i].size() > 0)
         {
             QTreeWidgetItem* cameras_item = new QTreeWidgetItem(item, LVRCamerasItemType);
-            cameras_item->setText(0, QString("cameras"));
+            cameras_item->setText(0, QString("Cameras"));
             // insert cam poses
             // QTreeWidgetItem *images = new QTreeWidgetItem(item, QString("cams"));
             for(int j=0; j < camData[i].size(); j++)
