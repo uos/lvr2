@@ -5,6 +5,7 @@
 
 #include <lvr2/io/HDF5IO.hpp>
 #include <lvr2/io/ScanData.hpp>
+#include <lvr2/io/CamData.hpp>
 
 namespace lvr2
 {
@@ -17,6 +18,8 @@ class ScanDataManager
         void loadPointCloudData(ScanData &sd, bool preview = false);
 
         std::vector<ScanData> getScanData();
+
+        std::vector<std::vector<CamData> > getCamData();
 
     private:
         HDF5IO m_io;

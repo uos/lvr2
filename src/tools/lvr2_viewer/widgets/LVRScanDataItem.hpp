@@ -14,6 +14,8 @@
 #include "LVRBoundingBoxItem.hpp"
 #include "LVRPointCloudItem.hpp"
 #include "LVRPoseItem.hpp"
+#include "LVRCamDataItem.hpp"
+
 
 
 namespace lvr2
@@ -36,6 +38,8 @@ class LVRScanDataItem : public QTreeWidgetItem
 
         void unloadPointCloudData(vtkSmartPointer<vtkRenderer> renderer);
 
+        void addCamDataItem(LVRCamDataItem* cam_item);
+
         QString getName() { return m_name; }
 
         Pose getPose() { return getModelBridgePtr()->getPose(); }
@@ -48,6 +52,9 @@ class LVRScanDataItem : public QTreeWidgetItem
 
         bool isPointCloudLoaded();
 
+        Matrix4<BaseVector<float> > getTransformation() {
+            return m_matrix;
+        };
 
     private:
 
@@ -63,7 +70,8 @@ class LVRScanDataItem : public QTreeWidgetItem
         LVRBoundingBoxItem                     *m_bbItem;
         LVRPointCloudItem                      *m_pcItem;
         LVRPoseItem                            *m_pItem;
-        QTreeWidgetItem                     *m_showSpectralsItem;
+        QTreeWidgetItem                        *m_showSpectralsItem;
+        QTreeWidgetItem                        *m_images;
         Matrix4<BaseVector<float> >             m_matrix;
 };
 

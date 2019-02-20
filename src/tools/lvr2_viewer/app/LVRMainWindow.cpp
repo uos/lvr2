@@ -254,6 +254,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(restoreSliders()));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(highlightBoundingBoxes()));
     QObject::connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(setModelVisibility(QTreeWidgetItem*, int)));
+    
 
     QObject::connect(m_actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
@@ -1110,6 +1111,13 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
 
         refreshView();
     }
+    else if (treeWidgetItem->type() == LVRCamDataItemType)
+    {
+        LVRCamDataItem *item = static_cast<LVRCamDataItem *>(treeWidgetItem);
+        item->setVisibility(true);
+
+        refreshView();
+    }
     else if (treeWidgetItem->type() == LVRBoundingBoxItemType)
     {
         LVRBoundingBoxItem *item = static_cast<LVRBoundingBoxItem *>(treeWidgetItem);
@@ -1122,6 +1130,8 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
         setModelVisibility(treeWidgetItem->parent(), column);
     }
 }
+
+
 
 void LVRMainWindow::changePointSize(int pointSize)
 {
@@ -1306,12 +1316,33 @@ QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm
 {
     QTreeWidgetItem *lastItem = nullptr;
     std::vector<ScanData> scanData = sdm->getScanData();
+    std::vector<std::vector<CamData> > camData = sdm->getCamData();
 
     for (size_t i = 0; i < scanData.size(); i++)
     {
         char buf[128];
         std::sprintf(buf, "%05d", scanData[i].m_positionNumber);
         LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
+
+
+        std::cout << "scan " << i << ", cams " << camData[i].size() << std::endl;
+        if(camData[i].size() > 0)
+        {
+            // insert cam poses
+            // QTreeWidgetItem *images = new QTreeWidgetItem(item, QString("cams"));
+            for(int j=0; j < camData[i].size(); j++)
+            {
+                char buf2[128];
+                std::sprintf(buf2, "%05d", j);
+                // implement this
+                LVRCamDataItem *cam_item = new LVRCamDataItem(camData[i][j], sdm, j, m_renderer, QString("cam_") + buf2, NULL);
+                
+                item->addCamDataItem(cam_item);
+
+                lastItem = cam_item;
+            }
+        }
+        
 
         lastItem = item;
     }

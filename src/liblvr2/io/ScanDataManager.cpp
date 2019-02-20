@@ -20,4 +20,9 @@ std::vector<ScanData> ScanDataManager::getScanData()
     return m_io.getRawScanData(false);
 }
 
+std::vector<std::vector<CamData> > ScanDataManager::getCamData()
+{
+    return m_io.getRawCamData(false);
+}
+
 } // namespace lvr2
