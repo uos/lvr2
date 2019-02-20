@@ -22,13 +22,22 @@
 namespace lvr2
 {
 
-LVRCamDataItem::LVRCamDataItem(CamData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, vtkSmartPointer<vtkRenderer> renderer, QString name, QTreeWidgetItem *parent) : QTreeWidgetItem(parent, LVRCamDataItemType)
+LVRCamDataItem::LVRCamDataItem(
+    CamData data,
+    std::shared_ptr<ScanDataManager> sdm,
+    size_t cam_id,
+    vtkSmartPointer<vtkRenderer> renderer,
+    QString name,
+    QTreeWidgetItem *parent
+)
+: QTreeWidgetItem(parent, LVRCamDataItemType)
 {
-    // m_pItem  = nullptr;
+    m_pItem  = nullptr;
+    m_cvItem = nullptr;
     m_data   = data;
     m_name   = name;
     m_sdm    = sdm;
-    m_idx    = idx;
+    m_cam_id  = cam_id;
     m_renderer = renderer;
 
     // init pose
@@ -47,19 +56,15 @@ LVRCamDataItem::LVRCamDataItem(CamData data, std::shared_ptr<ScanDataManager> sd
 
     m_pItem = new LVRPoseItem(ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model))), this);
 
+    m_cvItem = new LVRCvImageItem(sdm, renderer, "image", this);
+
     m_pItem->setPose(m_pose);
 
     Matrix4<BaseVector<float> > global_transform = getTransformation();
 
     // search for upper scan items to get global transformation
 
-    // init bb
-    // m_bb = BoundingBoxBridgePtr(new LVRBoundingBoxBridge(m_data.m_boundingBox));
-    // m_bbItem = new LVRBoundingBoxItem(m_bb, "Bounding Box", this);
-    // renderer->AddActor(m_bb->getActor());
-    // m_bb->setPose(m_pose);
-
-    m_frustrum_actor = genFrustrum();
+    m_frustrum_actor = genFrustrum(0.5);
     // renderer->AddActor(m_frustrum_actor);
     // load data
     reload(renderer);
@@ -102,11 +107,30 @@ Matrix4<BaseVector<float> > LVRCamDataItem::getTransformation()
     return m_matrix;
 }
 
-vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum()
+vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum(float scale)
 {
     // TODO better frustrum
 
-    Matrix4<BaseVector<float> > T;
+    Matrix4<BaseVector<float> > T = getTransformation();
+    bool dummy;
+    Matrix4<BaseVector<float> > T_inv = T.inv(dummy);
+
+    Matrix4<BaseVector<float> > cam_mat_inv = m_data.m_intrinsics.inv(dummy);
+    cam_mat_inv.transpose();
+
+    std::vector<Vector<BaseVector<float> > > lvr_pixels;
+
+    // TODO change this. get size of image
+
+    int v_max = m_data.m_intrinsics[2] * 2;
+    int u_max = m_data.m_intrinsics[6] * 2;
+
+    lvr_pixels.push_back({0.0, 0.0, 1.0});
+    lvr_pixels.push_back({float(v_max), 0.0, 1.0});
+    lvr_pixels.push_back({float(v_max), float(u_max), 1.0});
+    lvr_pixels.push_back({0.0, float(u_max), 1.0});
+
+
     // Setup points
     vtkSmartPointer<vtkPoints> points =
         vtkSmartPointer<vtkPoints>::New();
@@ -114,13 +138,27 @@ vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum()
     // generate frustrum points
     std::vector<Vector<BaseVector<float> > > lvr_points;
     
-    lvr_points.push_back({10.0, 0.0, 0.0});
+    
+    // origin
     lvr_points.push_back({0.0, 0.0, 0.0});
-    lvr_points.push_back({0.0, 10.0, 0.0});
+
+    for(int i=0; i<lvr_pixels.size(); i++)
+    {
+        Vector<BaseVector<float> > pixel = lvr_pixels[i];
+        Vector<BaseVector<float> > p = cam_mat_inv * pixel;
+        p.normalize();
+        // Vector<BaseVector<float> > tmp = {
+        //     p.z,
+        //     p.y,
+        //     -p.x
+        // };
+        p *= scale;
+        lvr_points.push_back(p);
+    }
 
     // transform frustrum
     for(int i=0; i<lvr_points.size(); i++)
-    { 
+    {
         lvr_points[i] = T * lvr_points[i];
     }
 
@@ -134,9 +172,11 @@ vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum()
     }
 
     // // Define some colors
+    unsigned char white[3] = {255, 255, 255};
     unsigned char red[3] = {255, 0, 0};
     unsigned char green[3] = {0, 255, 0};
     unsigned char blue[3] = {0, 0, 255};
+    unsigned char yellow[3] = {255, 255, 0};
 
     // // Setup the colors array
     vtkSmartPointer<vtkUnsignedCharArray> colors =
@@ -146,13 +186,17 @@ vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum()
     colors->SetName("Colors");
 
 #if VTK_MAJOR_VERSION < 7
-    colors->SetTupleValue(0, red);
-    colors->SetTupleValue(1, green);
-    colors->SetTupleValue(2, blue);
+    colors->SetTupleValue(0, white);
+    colors->SetTupleValue(1, red);
+    colors->SetTupleValue(2, green);
+    colors->SetTupleValue(3, blue);
+    colors->SetTupleValue(4, yellow);
 #else
-    colors->SetTypedTuple(0, red); // no idea how the new method is called
-    colors->SetTypedTuple(1, green);
-    colors->SetTypedTuple(2, blue);
+    colors->SetTypedTuple(0, white); // no idea how the new method is called
+    colors->SetTypedTuple(1, red);
+    colors->SetTypedTuple(2, green);
+    colors->SetTypedTuple(3, blue);
+    colors->SetTypedTuple(4, yellow);
 #endif
 
     // Create a triangle
@@ -163,10 +207,32 @@ vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum()
     vtkSmartPointer<vtkTriangle> triangle =
         vtkSmartPointer<vtkTriangle>::New();
 
-    
+    // left plane
+
     triangle->GetPointIds()->SetId(0, 0);
     triangle->GetPointIds()->SetId(1, 1);
     triangle->GetPointIds()->SetId(2, 2);
+
+    triangles->InsertNextCell(triangle);
+
+    // bottom plane
+    triangle->GetPointIds()->SetId(0, 0);
+    triangle->GetPointIds()->SetId(1, 2);
+    triangle->GetPointIds()->SetId(2, 3);
+
+    triangles->InsertNextCell(triangle);
+
+    // right plane
+    triangle->GetPointIds()->SetId(0, 0);
+    triangle->GetPointIds()->SetId(1, 3);
+    triangle->GetPointIds()->SetId(2, 4);
+
+    triangles->InsertNextCell(triangle);
+
+    // top plane
+    triangle->GetPointIds()->SetId(0, 0);
+    triangle->GetPointIds()->SetId(1, 4);
+    triangle->GetPointIds()->SetId(2, 1);
 
     triangles->InsertNextCell(triangle);
 
@@ -190,10 +256,6 @@ vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum()
     actor->SetMapper(mapper);
     return actor;
 }
-
-// void LVRCamDataItem::dataChanged(){
-//     std::cout << "test" << std::endl;
-// }
 
 LVRCamDataItem::~LVRCamDataItem()
 {

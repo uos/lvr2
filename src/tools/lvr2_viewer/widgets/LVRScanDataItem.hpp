@@ -38,7 +38,7 @@ class LVRScanDataItem : public QTreeWidgetItem
 
         void unloadPointCloudData(vtkSmartPointer<vtkRenderer> renderer);
 
-        void addCamDataItem(LVRCamDataItem* cam_item);
+        size_t getScanId() { return m_idx; }
 
         QString getName() { return m_name; }
 
@@ -71,7 +71,6 @@ class LVRScanDataItem : public QTreeWidgetItem
         LVRPointCloudItem                      *m_pcItem;
         LVRPoseItem                            *m_pItem;
         QTreeWidgetItem                        *m_showSpectralsItem;
-        QTreeWidgetItem                        *m_images;
         Matrix4<BaseVector<float> >             m_matrix;
 };
 

@@ -12,7 +12,6 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
     m_pcItem = nullptr;
     m_pItem  = nullptr;
     m_bbItem = nullptr;
-    m_images = nullptr;
     m_data   = data;
     m_name   = name;
     m_sdm    = sdm;
@@ -112,15 +111,6 @@ void LVRScanDataItem::unloadPointCloudData(vtkSmartPointer<vtkRenderer> renderer
     reload(renderer);
 }
 
-void LVRScanDataItem::addCamDataItem(LVRCamDataItem* cam_item)
-{
-    if(!m_images) {
-        m_images = new QTreeWidgetItem(this, LVRModelItemType);
-        m_images->setText(0, QString("cameras"));
-    }
-    m_images->addChild(cam_item);
-}
-
 ModelBridgePtr LVRScanDataItem::getModelBridgePtr()
 {
     return m_model;
@@ -135,7 +125,24 @@ void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
 
     for (int i = 0; i < childCount(); i++)
     {
-            child(i)->setHidden(!visible);
+        QTreeWidgetItem* item = child(i);
+        
+        if(item->type() == LVRCamerasItemType)
+        {
+            for(int j=0; j < item->childCount(); j++)
+            {
+                QTreeWidgetItem* cam_item = item->child(j);
+
+                if(cam_item->type() == LVRCamDataItemType)
+                {
+                    LVRCamDataItem* cam_item_c = static_cast<LVRCamDataItem*>(cam_item);
+                    cam_item_c->setVisibility(visible);
+                }
+                
+            }
+        }
+
+        item->setHidden(!visible);
     }
 
     if (m_model)
@@ -153,20 +160,6 @@ void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
         m_bbItem->setVisibility(visible);
     }
 
-    if( m_images )
-    {
-        if(!visible)
-        {
-            for (int i = 0; i < m_images->childCount(); i++)
-            {
-                if(m_images->child(i)->type() == LVRCamDataItemType)
-                {
-                    LVRCamDataItem* item = static_cast<LVRCamDataItem*>(m_images->child(i));
-                    item->setVisibility(false);
-                }
-            }
-        }
-    }
 }
 
 LVRScanDataItem::~LVRScanDataItem()
