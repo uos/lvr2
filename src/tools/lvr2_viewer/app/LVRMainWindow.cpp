@@ -94,7 +94,7 @@ LVRMainWindow::LVRMainWindow()
     m_actionUnloadPointCloudData = new QAction("unload PointCloud", this);
 
     m_actionShowImage = new QAction("Show Image", this);
-
+    m_actionSetViewToCamera = new QAction("Set view to camera", this);
 
     m_treeParentItemContextMenu = new QMenu;
     m_treeParentItemContextMenu->addAction(m_actionRenameModelItem);
@@ -248,6 +248,7 @@ LVRMainWindow::~LVRMainWindow()
     delete m_actionLoadPointCloudData;
     delete m_actionUnloadPointCloudData;
     delete m_actionShowImage;
+    delete m_actionSetViewToCamera;
 }
 
 void LVRMainWindow::connectSignalsAndSlots()
@@ -269,6 +270,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionUnloadPointCloudData, SIGNAL(triggered()), this, SLOT(unloadPointCloudData()));
 
     QObject::connect(m_actionShowImage, SIGNAL(triggered()), this, SLOT(showImage()));
+    QObject::connect(m_actionSetViewToCamera, SIGNAL(triggered()), this, SLOT(setViewToCamera()));
+
 
     QObject::connect(m_actionExportModelTransformed, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
 
@@ -828,6 +831,18 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
 
             delete con_menu;
         }
+        if(item->type() == LVRCamDataItemType)
+        {
+            QPoint globalPos = treeWidget->mapToGlobal(p);
+            QMenu *con_menu = new QMenu;
+
+            LVRCamDataItem* cam = static_cast<LVRCamDataItem *>(item);
+
+            con_menu->addAction(m_actionSetViewToCamera);
+            con_menu->exec(globalPos);
+
+            delete con_menu;
+        }
     }
 }
 
@@ -942,7 +957,6 @@ void LVRMainWindow::showImage()
 
     if(items.size() > 0)
     {
-
         QTreeWidgetItem* item = items.first();
 
         if(item->type() == LVRCvImageItemType)
@@ -952,8 +966,25 @@ void LVRMainWindow::showImage()
             cvi->openWindow();
         }
     }
+}
 
-    
+void LVRMainWindow::setViewToCamera()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+
+        if(item->type() == LVRCamDataItemType)
+        {
+            LVRCamDataItem *cam = static_cast<LVRCamDataItem *>(item);
+
+            cam->setCameraView();
+
+            refreshView();
+        }
+    }
 }
 
 void LVRMainWindow::deleteModelItem()

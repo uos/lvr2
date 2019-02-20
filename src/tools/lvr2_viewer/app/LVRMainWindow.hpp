@@ -136,6 +136,7 @@ public Q_SLOTS:
     void changeShading(int shader);
 
     void showImage();
+    void setViewToCamera();
 
     /// Updates all selected LVRPointCloudItems to the desired Spectral. **can take seconds**
     void changeSpectralColor();
@@ -295,6 +296,7 @@ private:
     QAction*                            m_actionUnloadPointCloudData;
 
     QAction*                            m_actionShowImage;
+    QAction*                            m_actionSetViewToCamera;
 
     LVRPickingInteractor*               m_pickingInteractor;
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
