@@ -49,6 +49,8 @@ class LVRCamDataItem : public QTreeWidgetItem
 
         Matrix4<BaseVector<float> > getTransformation();
 
+        void setCameraView();
+
     private:
 
         vtkSmartPointer<vtkActor> genFrustrum(float scale=1.0);

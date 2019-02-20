@@ -18,6 +18,8 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkTriangle.h>
 #include <vtkCellArray.h>
+#include <vtkMatrix4x4.h>
+#include <vtkTransform.h>
 
 namespace lvr2
 {
@@ -40,12 +42,14 @@ LVRCamDataItem::LVRCamDataItem(
     m_cam_id  = cam_id;
     m_renderer = renderer;
 
+    m_matrix = m_data.m_extrinsics;
+
     // init pose
     float pose[6];
     m_data.m_extrinsics.transpose();
     m_data.m_extrinsics.toPostionAngle(pose);
     m_data.m_extrinsics.transpose();
-    m_matrix = m_data.m_extrinsics;
+    
 
     m_pose.x = pose[0];
     m_pose.y = pose[1];
@@ -60,11 +64,13 @@ LVRCamDataItem::LVRCamDataItem(
 
     m_pItem->setPose(m_pose);
 
-    Matrix4<BaseVector<float> > global_transform = getTransformation();
+    // Matrix4<BaseVector<float> > global_transform = getTransformation();
+    // std::cout << m_matrix << std::endl;
+    // std::cout << global_transform << std::endl;
 
     // search for upper scan items to get global transformation
 
-    m_frustrum_actor = genFrustrum(0.5);
+    m_frustrum_actor = genFrustrum(2.0);
     // renderer->AddActor(m_frustrum_actor);
     // load data
     reload(renderer);
@@ -100,16 +106,55 @@ Matrix4<BaseVector<float> > LVRCamDataItem::getTransformation()
     if(parent_it)
     {
         LVRScanDataItem* item = (LVRScanDataItem*)parent_it;
+        std::cout << "got upper transformation" << std::endl;
         // TODO: check this
         Matrix4<BaseVector<float> > global_transform = item->getTransformation();
-        return global_transform * m_matrix;
+        bool dummy;
+        return global_transform.inv(dummy) * m_matrix;
+    }else{
+        std::cout << "doesnt found upper transform" << std::endl;
     }
     return m_matrix;
 }
 
+void LVRCamDataItem::setCameraView()
+{
+    std::cout << "move rendering camera to this" << std::endl;
+    auto cam = m_renderer->MakeCamera();
+
+    double x,y,z;
+    cam->GetPosition(x,y,z);
+    std::cout << "current pos: " << x << ", " << y << ", " << z << std::endl;
+
+    Matrix4<BaseVector<float> > transform = getTransformation();
+
+    vtkSmartPointer<vtkTransform> t = vtkSmartPointer<vtkTransform>::New();
+    vtkSmartPointer<vtkMatrix4x4> m = vtkSmartPointer<vtkMatrix4x4>::New();
+
+    // For some reason we have to copy the matrix
+    // values manually...
+    int j = 0;
+    for(int i = 0; i < 16; i++)
+    {
+        if((i % 4) == 0)
+        {
+            j = 0;
+        }
+        double v = transform[i];
+        m->SetElement(i / 4, j, v);
+        j++;
+    }
+
+    t->PostMultiply();
+    t->SetMatrix(m);
+
+    cam->ApplyTransform(t);
+
+    m_renderer->SetActiveCamera(cam);
+}
+
 vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum(float scale)
 {
-    // TODO better frustrum
 
     Matrix4<BaseVector<float> > T = getTransformation();
     bool dummy;
@@ -125,9 +170,13 @@ vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum(float scale)
     int v_max = m_data.m_intrinsics[2] * 2;
     int u_max = m_data.m_intrinsics[6] * 2;
 
+    // top left
     lvr_pixels.push_back({0.0, 0.0, 1.0});
+    // bottom left
     lvr_pixels.push_back({float(v_max), 0.0, 1.0});
+    // bottem right
     lvr_pixels.push_back({float(v_max), float(u_max), 1.0});
+    // top right
     lvr_pixels.push_back({0.0, float(u_max), 1.0});
 
 
@@ -146,20 +195,32 @@ vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum(float scale)
     {
         Vector<BaseVector<float> > pixel = lvr_pixels[i];
         Vector<BaseVector<float> > p = cam_mat_inv * pixel;
-        p.normalize();
-        // Vector<BaseVector<float> > tmp = {
-        //     p.z,
-        //     p.y,
-        //     -p.x
-        // };
-        p *= scale;
-        lvr_points.push_back(p);
+
+        std::cout << p << std::endl;
+
+
+        // opencv to lvr
+        Vector<BaseVector<float> > tmp = {
+            p.y,
+            p.z,
+            -p.x
+        };
+        tmp *= scale;
+        lvr_points.push_back(tmp);
     }
 
+
+    T_inv.transpose();
+    T.transpose();
     // transform frustrum
     for(int i=0; i<lvr_points.size(); i++)
     {
-        lvr_points[i] = T * lvr_points[i];
+        std::cout << "Transform point" << std::endl;
+        std::cout << lvr_points[i] << std::endl;
+
+        lvr_points[i] = T_inv * lvr_points[i];
+
+        std::cout << lvr_points[i] << std::endl;
     }
 
     // convert to vtk
