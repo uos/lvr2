@@ -21,6 +21,8 @@ class ScanDataManager
 
         std::vector<std::vector<CamData> > getCamData();
 
+        cv::Mat loadImageData(int scan_id, int cam_id);
+
     private:
         HDF5IO m_io;
 };
