@@ -97,7 +97,6 @@ int main( int argc, char ** argv )
     if(addedAverageAngles) std::cout << timestamp << "successfully added vertex average angles" << std::endl;
     else std::cout << timestamp << "could not add vertex average angles!" << std::endl;
 
-    /*
     std::cout << timestamp << "Computing roughness..." << std::endl;
     auto roughness = calcVertexRoughness(hem, 0.3, vertexNormals);
     bool addedRoughness = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(roughness, "roughness");
@@ -109,7 +108,6 @@ int main( int argc, char ** argv )
     bool addedHeightDiff = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(heightDifferences, "height_diff");
     if(addedHeightDiff) std::cout << timestamp << "successfully added height differences." << std::endl;
     else std::cout << timestamp << "could not add height differences!" << std::endl;
-    */
   }
   else
   {
