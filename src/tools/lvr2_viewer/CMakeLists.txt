@@ -43,7 +43,9 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRHistogram.cpp
     widgets/LVRScanDataItem.cpp
     widgets/LVRCamDataItem.cpp
+    widgets/LVRCvImageItem.cpp
     widgets/LVRBoundingBoxItem.cpp
+    widgets/LVRGraphicsView.cpp
 )
 
 #####################################################################################

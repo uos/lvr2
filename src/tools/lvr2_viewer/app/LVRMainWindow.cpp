@@ -93,6 +93,9 @@ LVRMainWindow::LVRMainWindow()
     m_actionLoadPointCloudData = new QAction("load PointCloud", this);
     m_actionUnloadPointCloudData = new QAction("unload PointCloud", this);
 
+    m_actionShowImage = new QAction("Show Image", this);
+
+
     m_treeParentItemContextMenu = new QMenu;
     m_treeParentItemContextMenu->addAction(m_actionRenameModelItem);
     m_treeParentItemContextMenu->addAction(m_actionDeleteModelItem);
@@ -244,6 +247,7 @@ LVRMainWindow::~LVRMainWindow()
     delete m_actionShowColorDialog;
     delete m_actionLoadPointCloudData;
     delete m_actionUnloadPointCloudData;
+    delete m_actionShowImage;
 }
 
 void LVRMainWindow::connectSignalsAndSlots()
@@ -263,6 +267,9 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionDeleteModelItem, SIGNAL(triggered()), this, SLOT(deleteModelItem()));
     QObject::connect(m_actionLoadPointCloudData, SIGNAL(triggered()), this, SLOT(loadPointCloudData()));
     QObject::connect(m_actionUnloadPointCloudData, SIGNAL(triggered()), this, SLOT(unloadPointCloudData()));
+
+    QObject::connect(m_actionShowImage, SIGNAL(triggered()), this, SLOT(showImage()));
+
     QObject::connect(m_actionExportModelTransformed, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
 
     QObject::connect(m_actionReset_Camera, SIGNAL(triggered()), this, SLOT(updateView()));
@@ -809,6 +816,18 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
 
             delete con_menu;
         }
+        if(item->type() == LVRCvImageItemType)
+        {
+            QPoint globalPos = treeWidget->mapToGlobal(p);
+            QMenu *con_menu = new QMenu;
+
+            LVRCvImageItem *cvi = static_cast<LVRCvImageItem *>(item);
+
+            con_menu->addAction(m_actionShowImage);
+            con_menu->exec(globalPos);
+
+            delete con_menu;
+        }
     }
 }
 
@@ -915,6 +934,26 @@ void LVRMainWindow::unloadPointCloudData()
         }
     }
 
+}
+
+void LVRMainWindow::showImage()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+
+    if(items.size() > 0)
+    {
+
+        QTreeWidgetItem* item = items.first();
+
+        if(item->type() == LVRCvImageItemType)
+        {
+            LVRCvImageItem *cvi = static_cast<LVRCvImageItem *>(item);
+
+            cvi->openWindow();
+        }
+    }
+
+    
 }
 
 void LVRMainWindow::deleteModelItem()
@@ -1324,10 +1363,10 @@ QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm
         std::sprintf(buf, "%05d", scanData[i].m_positionNumber);
         LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
 
-
-        std::cout << "scan " << i << ", cams " << camData[i].size() << std::endl;
         if(camData[i].size() > 0)
         {
+            QTreeWidgetItem* cameras_item = new QTreeWidgetItem(item, LVRCamerasItemType);
+            cameras_item->setText(0, QString("cameras"));
             // insert cam poses
             // QTreeWidgetItem *images = new QTreeWidgetItem(item, QString("cams"));
             for(int j=0; j < camData[i].size(); j++)
@@ -1335,9 +1374,7 @@ QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm
                 char buf2[128];
                 std::sprintf(buf2, "%05d", j);
                 // implement this
-                LVRCamDataItem *cam_item = new LVRCamDataItem(camData[i][j], sdm, j, m_renderer, QString("cam_") + buf2, NULL);
-                
-                item->addCamDataItem(cam_item);
+                LVRCamDataItem *cam_item = new LVRCamDataItem(camData[i][j], sdm, j, m_renderer, QString("cam_") + buf2, cameras_item);
 
                 lastItem = cam_item;
             }

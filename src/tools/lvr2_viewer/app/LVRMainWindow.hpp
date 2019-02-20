@@ -135,6 +135,8 @@ public Q_SLOTS:
     void changeTransparency(int transparencyValue);
     void changeShading(int shader);
 
+    void showImage();
+
     /// Updates all selected LVRPointCloudItems to the desired Spectral. **can take seconds**
     void changeSpectralColor();
     /// Determines if changeSpectralColor() should be called. Updates the m_spectralLineEdit to the value from m_spectralSlider
@@ -291,6 +293,8 @@ private:
     QAction*                            m_actionExportModelTransformed;
     QAction*                            m_actionLoadPointCloudData;
     QAction*                            m_actionUnloadPointCloudData;
+
+    QAction*                            m_actionShowImage;
 
     LVRPickingInteractor*               m_pickingInteractor;
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
