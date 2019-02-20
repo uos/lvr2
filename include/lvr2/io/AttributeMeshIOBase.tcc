@@ -149,14 +149,7 @@ boost::optional<MapT> AttributeMeshIOBase::getDenseAttributeMap(const std::strin
   if (getChannel(attribute_type<typename MapT::HandleType>::attr_group, name, channel_opt) && channel_opt && channel_opt.get().width() == channel_type<typename MapT::ValueType>::w)
   {
     auto &channel = channel_opt.get();
-    MapT map;
-    map.reserve(channel.numElements());
-    for (size_t i = 0; i < channel.numElements(); i++)
-    {
-      typename MapT::HandleType handle(i);
-      map.insert(handle, channel[i]);
-    }
-    return map;
+    return MapT(channel.numElements(), channel.dataPtr());
   }
   return boost::none;
 }

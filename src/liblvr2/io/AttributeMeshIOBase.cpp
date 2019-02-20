@@ -42,20 +42,19 @@ bool AttributeMeshIOBase::addMesh(const HalfEdgeMesh<BaseVec>& hem)
   FloatChannel vertices(hem.numVertices(), 3);
   IndexChannel indices(hem.numFaces(), 3);
 
-  Index i = 0;
-  DenseVertexMap<Index> new_indices;
-  new_indices.reserve(hem.nextVertexIndex());
+  DenseVertexMap<size_t > new_indices;
+  new_indices.reserve(hem.numVertices());
 
-  #pragma omp parallel for
+  size_t k = 0;
   for(size_t i=0; i<hem.nextVertexIndex(); i++)
   {
     VertexHandle vH(i);
     if(!hem.containsVertex(vH)) continue;
-    new_indices.insert(vH, i);
-    vertices[i++] = hem.getVertexPosition(vH);
+    new_indices.insert(vH, k);
+    vertices[k++] = hem.getVertexPosition(vH);
   }
 
-  i = 0;
+  Index i = 0;
   for(auto fH : hem.faces())
   {
     auto vHs = hem.getVerticesOfFace(fH);

@@ -127,7 +127,7 @@ DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT>& mesh
     heightDiff.reserve(mesh.nextVertexIndex());
 
     // Calculate height difference for each vertex
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
     {
         auto vH = VertexHandle(i);
@@ -215,7 +215,7 @@ DenseVertexMap<float> calcVertexRoughness(
     auto averageAngles = calcAverageVertexAngles(mesh, normals);
 
     // Calculate roughness for each vertex
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
     {
         auto vH = VertexHandle(i);
