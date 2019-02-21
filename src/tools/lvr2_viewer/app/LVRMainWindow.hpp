@@ -48,8 +48,13 @@
 #include <vtkGraphicsFactory.h>
 #include <vtkOrientationMarkerWidget.h>
 #include <vtkAxesActor.h>
-#include <vtkEDLShading.h>
-#include <vtkRenderStepsPass.h>
+
+
+#if VTK_MAJOR_VERSION > 6
+    #include <vtkRenderStepsPass.h>
+    #include <vtkEDLShading.h>
+#endif
+
 #include <vtkOpenGLRenderer.h>
 #include <vtkNew.h>
 
@@ -301,10 +306,12 @@ private:
     LVRPickingInteractor*               m_pickingInteractor;
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
 
+
     // EDM Rendering
+#if VTK_MAJOR_VERSION > 6
     vtkSmartPointer<vtkRenderStepsPass> m_basicPasses;
     vtkSmartPointer<vtkEDLShading>      m_edl;
-
+#endif
 
     enum TYPE {
         MODELITEMS_ONLY,

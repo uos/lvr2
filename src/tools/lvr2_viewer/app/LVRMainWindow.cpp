@@ -259,7 +259,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(restoreSliders()));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(highlightBoundingBoxes()));
     QObject::connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(setModelVisibility(QTreeWidgetItem*, int)));
-    
+
 
     QObject::connect(m_actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
@@ -436,30 +436,41 @@ void LVRMainWindow::setupQVTK()
     m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
 
     // Enable EDL per default
+
     qvtkWidget->GetRenderWindow()->SetMultiSamples(0);
+
+#if VTK_MAJOR_VERSION > 6
+    // EDL exist only in vtk > 6
     m_basicPasses = vtkRenderStepsPass::New();
     m_edl = vtkEDLShading::New();
     m_edl->SetDelegatePass(m_basicPasses);
-
+#endif
     vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
+
+#if VTK_MAJOR_VERSION > 6
     glrenderer->SetPass(m_edl);
+#endif
 
     // Finalize QVTK setup by adding the renderer to the window
     renderWindow->AddRenderer(m_renderer);
-
 
 }
 
 void LVRMainWindow::toogleEDL(bool state)
 {
     vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
+
     if(state == false)
     {
+#if VTK_MAJOR_VERSION > 6
         glrenderer->SetPass(m_basicPasses);
+#endif
     }
     else
     {
+#if VTK_MAJOR_VERSION > 6
         glrenderer->SetPass(m_edl);
+#endif
     }
     this->qvtkWidget->GetRenderWindow()->Render();
 }
@@ -1410,7 +1421,7 @@ QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm
                 lastItem = cam_item;
             }
         }
-        
+
 
         lastItem = item;
     }
@@ -1836,7 +1847,7 @@ void LVRMainWindow::onGradientLineEditChanged()
         int min = *points->getIntAttribute("spectral_wavelength_min");
         int max = *points->getIntAttribute("spectral_wavelength_max");
 
-       
+
         QString test = m_gradientLineEdit-> text();
         bool ok;
         int wavelength = test.toUInt(&ok);
@@ -1845,14 +1856,14 @@ void LVRMainWindow::onGradientLineEditChanged()
         {
             return;
         }
-        
+
         if (wavelength < min)
             m_gradientSlider->setValue(min);
         else if (wavelength >= max)
             m_gradientSlider->setValue(max-1);
         else
             m_gradientSlider->setValue(wavelength);
-        
+
     }
 }
 
@@ -1941,9 +1952,9 @@ void LVRMainWindow::onGradientSliderChanged(int action)
             if (!m_gradientLineEdit->hasFocus())
             {
                 m_gradientLineEdit->setText(QString("%1").arg(wavelength));
-            }            
+            }
         }
-    }  
+    }
 }
 
 void LVRMainWindow::changeGradientColor()
