@@ -85,7 +85,7 @@ int main(int argc, char**argv)
     boost::filesystem::path input_filename(argv[1]);
     string position_code = argv[2];
 
-    string output_filename_str = "../../../../lvr_output/out.tif";
+    string output_filename_str = "../../../../lvr_output/" + position_code + "out.tif";
     if(argv[3])
     {
         output_filename_str = argv[3];

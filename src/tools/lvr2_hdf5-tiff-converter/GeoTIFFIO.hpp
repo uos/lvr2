@@ -5,7 +5,7 @@
 #ifndef GEOTIFFIO_HPP
 #define GEOTIFFIO_HPP
 
-#include <gdal/gdal_priv.h>
+#include <gdal_priv.h>
 #include <cv.h>
 
 #include <string>
