@@ -9,6 +9,7 @@
 #include <vtkMatrix4x4.h>
 
 #include <lvr2/io/ScanDataManager.hpp>
+#include <lvr2/geometry/Transformable.hpp>
 
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../vtkBridge/LVRBoundingBoxBridge.hpp"
@@ -25,7 +26,7 @@ namespace lvr2
 {
 
 
-class LVRCamDataItem : public QTreeWidgetItem
+class LVRCamDataItem : public QTreeWidgetItem, public Transformable
 {
 
     public:
@@ -47,11 +48,22 @@ class LVRCamDataItem : public QTreeWidgetItem
 
         size_t getCamId() { return m_cam_id; }
 
-        Matrix4<BaseVector<float> > getTransformation();
-
         void setCameraView();
 
     private:
+
+        /**
+         * @brief   Get Transformation from Camera frame to Global.
+         *          QTree used as TF tree, lvr2::Transformable types
+         *          are used to determine the global Transform.
+         *          Output T can be used for:
+         *          p_global = T * p_local
+         *          
+         * @return  Returns the Transformation as type lvr2::Matrix4
+         */
+        Matrix4<BaseVector<float> > getGlobalTransform();
+
+        std::vector<Vector<BaseVector<float> > > genFrustrumLVR(float scale=1.0);
 
         vtkSmartPointer<vtkActor> genFrustrum(float scale=1.0);
 
@@ -65,6 +77,8 @@ class LVRCamDataItem : public QTreeWidgetItem
         LVRPoseItem*                            m_pItem;
         LVRCvImageItem*                         m_cvItem;
         Matrix4<BaseVector<float> >             m_matrix;
+        Matrix4<BaseVector<float> >             m_intrinsics;
+
         vtkSmartPointer<vtkActor>               m_frustrum_actor;
         vtkSmartPointer<vtkRenderer>            m_renderer;
 };

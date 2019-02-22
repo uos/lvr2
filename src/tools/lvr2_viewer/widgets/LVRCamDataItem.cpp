@@ -41,8 +41,17 @@ LVRCamDataItem::LVRCamDataItem(
     m_sdm    = sdm;
     m_cam_id  = cam_id;
     m_renderer = renderer;
+    
+    // m_matrix = m_data.m_extrinsics;
 
-    m_matrix = m_data.m_extrinsics;
+    // change this to not inverse
+    bool dummy;
+    m_matrix = m_data.m_extrinsics; //.inv(dummy);
+
+    // set Transform from 
+    setTransform(m_matrix);
+
+    m_intrinsics = m_data.m_intrinsics;
 
     // init pose
     float pose[6];
@@ -64,14 +73,8 @@ LVRCamDataItem::LVRCamDataItem(
 
     m_pItem->setPose(m_pose);
 
-    // Matrix4<BaseVector<float> > global_transform = getTransformation();
-    // std::cout << m_matrix << std::endl;
-    // std::cout << global_transform << std::endl;
-
-    // search for upper scan items to get global transformation
-
-    m_frustrum_actor = genFrustrum(2.0);
-    // renderer->AddActor(m_frustrum_actor);
+    m_frustrum_actor = genFrustrum(0.1);
+    
     // load data
     reload(renderer);
 
@@ -94,81 +97,67 @@ void LVRCamDataItem::setVisibility(bool visible)
     }
 }
 
-Matrix4<BaseVector<float> > LVRCamDataItem::getTransformation()
+Matrix4<BaseVector<float> > LVRCamDataItem::getGlobalTransform()
 {
-    Matrix4<BaseVector<float> > ret;
+    Matrix4<BaseVector<float> > ret = m_matrix;
     QTreeWidgetItem* parent_it = parent();
 
-    while(parent_it != NULL && parent_it->type() != LVRScanDataItemType)
+    while(parent_it != NULL)
     {
+
+        auto transform_obj = dynamic_cast< Transformable* >(parent_it);
+        if(transform_obj)
+        {
+            ret = ret * transform_obj->getTransform();
+        }
         parent_it = parent_it->parent();
     }
-    if(parent_it)
-    {
-        LVRScanDataItem* item = (LVRScanDataItem*)parent_it;
-        std::cout << "got upper transformation" << std::endl;
-        // TODO: check this
-        Matrix4<BaseVector<float> > global_transform = item->getTransformation();
-        bool dummy;
-        return global_transform.inv(dummy) * m_matrix;
-    }else{
-        std::cout << "doesnt found upper transform" << std::endl;
-    }
-    return m_matrix;
+
+    return ret;
 }
 
 void LVRCamDataItem::setCameraView()
 {
-    std::cout << "move rendering camera to this" << std::endl;
-    auto cam = m_renderer->MakeCamera();
+    auto cam = m_renderer->GetActiveCamera();
 
     double x,y,z;
     cam->GetPosition(x,y,z);
-    std::cout << "current pos: " << x << ", " << y << ", " << z << std::endl;
 
-    Matrix4<BaseVector<float> > transform = getTransformation();
+    Matrix4<BaseVector<float> > T = getGlobalTransform();
 
-    vtkSmartPointer<vtkTransform> t = vtkSmartPointer<vtkTransform>::New();
-    vtkSmartPointer<vtkMatrix4x4> m = vtkSmartPointer<vtkMatrix4x4>::New();
+    T.transpose();
 
-    // For some reason we have to copy the matrix
-    // values manually...
-    int j = 0;
-    for(int i = 0; i < 16; i++)
-    {
-        if((i % 4) == 0)
-        {
-            j = 0;
-        }
-        double v = transform[i];
-        m->SetElement(i / 4, j, v);
-        j++;
-    }
 
-    t->PostMultiply();
-    t->SetMatrix(m);
+    Vector<BaseVector<float> > cam_origin = {0.0f, 0.0f, -1.0f};
+    Normal<BaseVector<float> > view_up = {1.0f, 0.0f, 0.0f};
+    Vector<BaseVector<float> > focal_point = {0.0f, 0.0f, 0.0f};
 
-    cam->ApplyTransform(t);
+    cam_origin = T * cam_origin;
+    view_up = T * view_up;
+    focal_point = T * focal_point;
 
-    m_renderer->SetActiveCamera(cam);
+    cam->SetPosition(cam_origin.x, cam_origin.y, cam_origin.z);
+    cam->SetFocalPoint(focal_point.x, focal_point.y, focal_point.z);
+    cam->SetViewUp(view_up.x, view_up.y, view_up.z);
+
+    //  TODO: set intrinsics
+
 }
 
-vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum(float scale)
+std::vector<Vector<BaseVector<float> > > LVRCamDataItem::genFrustrumLVR(float scale)
 {
-
-    Matrix4<BaseVector<float> > T = getTransformation();
     bool dummy;
-    Matrix4<BaseVector<float> > T_inv = T.inv(dummy);
-
-    Matrix4<BaseVector<float> > cam_mat_inv = m_data.m_intrinsics.inv(dummy);
+    Matrix4<BaseVector<float> > T = getGlobalTransform();
+    Matrix4<BaseVector<float> > cam_mat_inv = m_intrinsics.inv(dummy);
     cam_mat_inv.transpose();
+    T.transpose();
 
     std::vector<Vector<BaseVector<float> > > lvr_pixels;
 
     // TODO change this. get size of image
 
-    int v_max = m_data.m_intrinsics[2] * 2;
-    int u_max = m_data.m_intrinsics[6] * 2;
+    int v_max = m_intrinsics[2] * 2;
+    int u_max = m_intrinsics[6] * 2;
 
     // top left
     lvr_pixels.push_back({0.0, 0.0, 1.0});
@@ -179,10 +168,6 @@ vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum(float scale)
     // top right
     lvr_pixels.push_back({0.0, float(u_max), 1.0});
 
-
-    // Setup points
-    vtkSmartPointer<vtkPoints> points =
-        vtkSmartPointer<vtkPoints>::New();
 
     // generate frustrum points
     std::vector<Vector<BaseVector<float> > > lvr_points;
@@ -196,32 +181,34 @@ vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum(float scale)
         Vector<BaseVector<float> > pixel = lvr_pixels[i];
         Vector<BaseVector<float> > p = cam_mat_inv * pixel;
 
-        std::cout << p << std::endl;
-
-
         // opencv to lvr
         Vector<BaseVector<float> > tmp = {
+            -p.x,
             p.y,
-            p.z,
-            -p.x
+            p.z
         };
+
         tmp *= scale;
         lvr_points.push_back(tmp);
     }
 
-
-    T_inv.transpose();
-    T.transpose();
     // transform frustrum
     for(int i=0; i<lvr_points.size(); i++)
     {
-        std::cout << "Transform point" << std::endl;
-        std::cout << lvr_points[i] << std::endl;
-
-        lvr_points[i] = T_inv * lvr_points[i];
-
-        std::cout << lvr_points[i] << std::endl;
+        lvr_points[i] = T * lvr_points[i];
     }
+
+    return lvr_points;
+}
+
+vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum(float scale)
+{
+
+    std::vector<Vector<BaseVector<float> > > lvr_points = genFrustrumLVR(scale);
+
+    // Setup points
+    vtkSmartPointer<vtkPoints> points =
+        vtkSmartPointer<vtkPoints>::New();
 
     // convert to vtk
     points->SetNumberOfPoints(lvr_points.size());

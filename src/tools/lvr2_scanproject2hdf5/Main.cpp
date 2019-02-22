@@ -77,7 +77,7 @@ CamData toCamData(ImageFile img_file)
     ret.m_intrinsics[6] = img_file.intrinsic_params[3];
 
     bool dummy;
-    ret.m_extrinsics = img_file.orientation_transform.inv(dummy) * img_file.extrinsic_transform;
+    ret.m_extrinsics = img_file.extrinsic_transform.inv(dummy) * img_file.orientation_transform;
 
     ret.m_image_data = cv::imread(img_file.image_file.string(), CV_LOAD_IMAGE_COLOR);
 
