@@ -40,6 +40,8 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
     renderer->AddActor(m_bb->getActor());
     m_bb->setPose(m_pose);
 
+    setTransform(m_matrix);
+
     // load data
     reload(renderer);
 

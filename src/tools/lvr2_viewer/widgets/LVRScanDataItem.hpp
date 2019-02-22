@@ -7,6 +7,7 @@
 #include <vtkMatrix4x4.h>
 
 #include <lvr2/io/ScanDataManager.hpp>
+#include <lvr2/geometry/Transformable.hpp>
 
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../vtkBridge/LVRBoundingBoxBridge.hpp"
@@ -21,7 +22,7 @@
 namespace lvr2
 {
 
-class LVRScanDataItem : public QTreeWidgetItem
+class LVRScanDataItem : public QTreeWidgetItem, public Transformable
 {
     public:
 
@@ -51,10 +52,6 @@ class LVRScanDataItem : public QTreeWidgetItem
         void setVisibility(bool visible, bool pc_visible);
 
         bool isPointCloudLoaded();
-
-        Matrix4<BaseVector<float> > getTransformation() {
-            return m_matrix;
-        };
 
     private:
 

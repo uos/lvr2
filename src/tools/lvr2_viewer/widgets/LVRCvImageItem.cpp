@@ -84,10 +84,6 @@ void LVRCvImageItem::openWindow()
             m_graphics_view->fitInView(pixmap.rect(), Qt::KeepAspectRatio);
 
             // connect SLOT
-            // QObject::connect(m_actionOpen, SIGNAL(triggered()), this, SLOT(loadModel()));
-            // connect(myGL,SIGNAL(askToClosed(QString)),this,SLOT(askToClosed(QString)));
-
-            
 
             QObject::connect(
                 m_graphics_view,
