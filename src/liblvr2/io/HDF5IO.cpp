@@ -50,7 +50,11 @@ HDF5IO::HDF5IO(const std::string filename, const std::string part_name, bool tru
     m_mesh_path(meshes_group+"/"+part_name),
     m_truncate(truncate)
 {
-    open(filename, truncate);
+    std::cout << timestamp << " Try to open file \"" << filename << "\"..." << std::endl;
+    if(!open(filename, truncate))
+    {
+        std::cerr << timestamp << " Could not open file \"" << filename << "\"!" << std::endl;
+    }
 }
 
 HDF5IO::HDF5IO(std::string filename, bool truncate) :
