@@ -870,12 +870,12 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
         counter ++;
     }
 
+    // END OF EDGE SPLIT (EVERYTHING ABOVE IS EDGESPLIT)
 
 
 
 
-
-
+    //Todo: EVERYTHING BELOW CAN BE USED FOR THE VERTEX SPLIT, FOR NOW THE EDGE SPLIT IS ENOUGH
 
 
     /******************************************************************************

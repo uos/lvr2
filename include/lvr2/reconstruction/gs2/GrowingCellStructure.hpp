@@ -26,7 +26,10 @@ namespace lvr2{
          */
         void getMesh(HalfEdgeMesh<BaseVecT> &mesh){
             VertexHandle test = getInitialMesh(mesh);
-            mesh.splitGSVertex(test);
+            mesh.splitGSVertex(test); //test
+
+            //TODO: add gcs construction.. call to basic step, call to other functions
+            // for { for { for { basicStep() } vertexSplit() } edgeCollapse()}
         }
 
 
@@ -91,6 +94,8 @@ namespace lvr2{
             mesh.addFace(vH1, vH2, vH4);
             mesh.addFace(vH1, vH4, vH3);
             mesh.addFace(vH3, vH2, vH1);
+
+            //initial mesh done, doesnt need handle-return
 
             return vH1;
         }
@@ -201,19 +206,19 @@ namespace lvr2{
         }
 
     private:
-        PointsetSurfacePtr<BaseVecT> m_surface;
+        PointsetSurfacePtr<BaseVecT> m_surface; //helper-surface
 
-        int m_runtime;
-        int m_basicSteps;
-        int m_numSplits;
-        float m_boxFactor;
-        bool m_withCollapse;
-        float m_learningRate;
+        int m_runtime; //how many steps?
+        int m_basicSteps; //how many steps until collapse?
+        int m_numSplits; //how many splits
+        float m_boxFactor; //for initial mesh
+        bool m_withCollapse; //should we collapse?
+        float m_learningRate; //learning rate of the algorithm
         float m_neighborLearningRate;
-        float m_decreaseFactor;
+        float m_decreaseFactor; //for sc calc
         int m_allowMiss;
-        float m_collapseThreshold;
-        bool m_filterChain;
+        float m_collapseThreshold; //threshold for the collapse - when does it make sense
+        bool m_filterChain; //should a filter chain be applied?
         int m_deleteLongEdgesFactor;
 
         /**
@@ -223,15 +228,36 @@ namespace lvr2{
         //void getInitialMesh(HalfEdgeMesh<BaseVecT> &mesh);
 
         //execute basic step
-        void executeBasicStep();
+        void executeBasicStep(){
+
+            //TODO: get random point of the pointcloud
+
+            //TODO: search the closest point of the mesh
+
+            //TODO: smooth the winning vertex
+
+            //TODO: smooth the winning vertices' neighbors (laplacian smoothing)
+
+            //TODO: increase signal counter of winner by one
+
+            //TODO: decrease signal counter of others by a fraction
+
+        }
 
         //split vertex with .. -- get handle in function or pass it?
-        void executeVertexSplit(HalfEdgeHandle handle);
+        void executeVertexSplit(HalfEdgeHandle handle){
+            
+            //TODO: find vertex with highst sc, split that vertex
+        }
 
         //collapse edge with ... -- get handle in function or pass it?
-        void executeEdgeCollapse(VertexHandle handle);
+        void executeEdgeCollapse(VertexHandle handle){
 
-        // TODO: add gcs construction with calls to above three functions
+            //TODO: select edge to collapse, examine whether it should be collapsed, collapse it
+        }
+
+
+
     };
 }
 

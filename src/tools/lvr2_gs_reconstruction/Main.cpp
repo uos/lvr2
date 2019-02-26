@@ -40,18 +40,17 @@ typedef CGAL::Simple_cartesian<double> SimpleCartesian;*/
  * Extended Vertex, which now includes the signal counter, TODO: make it work...how to inherit this wagshit?
  * @tparam CoordT
  */
-/*template <typename CoordT>
-struct GCSVector : BaseVector<CoordT>{
+template <typename BaseVecT>
+struct GCSVector : public Vector<BaseVecT>{
 public:
+    GCSVector() : signal_counter(0) {};
+    GCSVector(BaseVecT base) : Vector<BaseVecT>(base), signal_counter(0) {};
+    using BaseVecT::BaseVecT;
 
-    GCSVector() : BaseVector(x,y,z){
-        this->signal_counter = 0;
-    }
-    GCSVector(const CoordT &x, const CoordT &y, const CoordT &z)
-            : BaseVector(x,y,z)
-    {
-        this->signal_counter = 0;
-    }
+
+    GCSVector(const BaseVecT &x, const BaseVecT &y, const BaseVecT &z)
+            : Vector<BaseVecT>(x,y,z), signal_counter(0)
+    {}
 
     void incrementSC() {
         this->signal_counter++;
@@ -64,6 +63,20 @@ public:
     void setSC(int new_sc) {
         this->signal_counter = new_sc;
     }
+
+    int signal_counter;
+};
+
+/*template<typename CoordT>
+struct GCSVectorTest : BaseVector<CoordT>{
+    GCSVectorTest() : BaseVector<CoordT>(), signal_counter(0) {}
+    GCSVectorTest(const CoordT &x, const CoordT &y, const CoordT &z)
+            : BaseVector<CoordT>(x,y,z), signal_counter(0)
+    {}
+
+    void incSC(){this->signal_counter++;}
+    int getSC(){return this->signal_counter;}
+    void setSC(int new_sc){this->signal_counter = new_sc;}
 
     int signal_counter;
 };*/
