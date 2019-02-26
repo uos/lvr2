@@ -142,14 +142,21 @@ bool AttributeMeshIOBase::addAttributeMap(const MapT &map, const std::string &na
   return addChannel(attribute_type<typename MapT::HandleType>::attr_group, name, values) && addChannel(attribute_type<typename MapT::HandleType>::attr_group, name + "_idx", indices);
 }
 
+
 template <typename MapT>
 boost::optional<MapT> AttributeMeshIOBase::getDenseAttributeMap(const std::string &name)
 {
   typename AttributeChannel<typename channel_type<typename MapT::ValueType>::type>::Optional channel_opt;
   if (getChannel(attribute_type<typename MapT::HandleType>::attr_group, name, channel_opt) && channel_opt && channel_opt.get().width() == channel_type<typename MapT::ValueType>::w)
   {
-    auto &channel = channel_opt.get();
-    return MapT(channel.numElements(), channel.dataPtr());
+    AttributeChannel<typename channel_type<typename MapT::ValueType>::type> &channel = channel_opt.get();
+    MapT map;
+    map.reserve(channel.numElements());
+    for (size_t i = 0; i < channel.numElements(); i++)
+    {
+      map.insert(typename MapT::HandleType(i), channel[i]);
+    }
+    return map;
   }
   return boost::none;
 }
