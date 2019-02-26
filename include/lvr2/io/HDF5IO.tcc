@@ -187,8 +187,8 @@ bool HDF5IO::getChannel(const std::string group, const std::string name, boost::
         << std::endl;
         return false;
     }
-    auto attr_group = mesh.getGroup(group);
-    if(!attr_group.exist(name))
+    auto attribute_group = mesh.getGroup(group);
+    if(!attribute_group.exist(name))
     {
         std::cout << timestamp << " Could not find mesh attribute \"" << name << "\" in group \"" << group
         << "\" in the given HDF5 file!" << std::endl;
@@ -196,7 +196,7 @@ bool HDF5IO::getChannel(const std::string group, const std::string name, boost::
     }
 
     std::vector<size_t >dims;
-    auto values = getArray<T>(mesh, name, dims);
+    auto values = getArray<T>(attribute_group, name, dims);
     channel = AttributeChannel<T>(dims[0], dims[1], values);
     return true;
 }
