@@ -7,7 +7,7 @@
 
 namespace lvr2 {
 
-    template <typename BaseVecT, typename NormalT>
+    /*template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::executeBasicStep(){
 
     }
@@ -20,7 +20,7 @@ namespace lvr2 {
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::executeEdgeCollapse(VertexHandle handle) {
 
-    }
+    }*/
 
 
     /*template <typename BaseVecT, typename NormalT>
