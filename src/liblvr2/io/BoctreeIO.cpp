@@ -117,8 +117,8 @@ ModelPtr BoctreeIO::read(string directory )
                 {
                     float euler[6];
                     for(int i = 0; i < 6; i++) pose_in >> euler[i];
-                    Vector<Vec> position(euler[0], euler[1], euler[2]);
-                    Vector<Vec> angle(euler[3], euler[4], euler[5]);
+                    Vec position(euler[0], euler[1], euler[2]);
+                    Vec angle(euler[3], euler[4], euler[5]);
                     tf = Matrix4<Vec>(position, angle);
                 }
                 else
@@ -138,7 +138,7 @@ ModelPtr BoctreeIO::read(string directory )
             // Ugly hack to transform scan data
             for(int j = 0; j < points.size(); j++)
             {
-                Vector<Vec> v(points[j].x, points[j].y, points[j].z);
+                Vec v(points[j].x, points[j].y, points[j].z);
                 v = tf * v;
                 if(v.length() < 10000)
                 {

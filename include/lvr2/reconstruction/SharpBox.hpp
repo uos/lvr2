@@ -42,7 +42,6 @@
 #include <float.h>
 #include "ExtendedMCTable.hpp"
 #include "PointsetSurface.hpp"
-#include "../geometry/Vector.hpp"
 
 namespace lvr2
 {
@@ -117,10 +116,10 @@ private:
      *                             after calling the method.
      */
     void getNormals(BaseVecT vertex_positions[],
-                    Normal<BaseVecT> vertex_normals[]);
+                    Normal<typename BaseVecT::CoordType> vertex_normals[]);
 
     void detectSharpFeatures(BaseVecT vertex_positions[],
-                             Normal<BaseVecT> vertex_normals[], uint index);
+                             Normal<typename BaseVecT::CoordType> vertex_normals[], uint index);
 
 
     typedef SharpBox<BaseVecT> BoxType;

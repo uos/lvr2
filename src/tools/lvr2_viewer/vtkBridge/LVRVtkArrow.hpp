@@ -38,7 +38,6 @@
 #include <vtkActor.h>
 
 #include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Vector.hpp>
 
 namespace lvr2
 {
@@ -53,7 +52,7 @@ class LVRVtkArrow
 
 public:
 
-    LVRVtkArrow(Vector<Vec> start, Vector<Vec> end);
+    LVRVtkArrow(Vec start, Vec end);
 
     vtkSmartPointer<vtkActor>   getArrowActor();
     vtkSmartPointer<vtkActor>   getStartActor();
@@ -68,8 +67,8 @@ private:
     vtkSmartPointer<vtkActor>   m_arrowActor;
     vtkSmartPointer<vtkActor>   m_startActor;
     vtkSmartPointer<vtkActor>   m_endActor;
-    Vector<Vec>                 m_start;
-    Vector<Vec>                 m_end;
+    Vec                 m_start;
+    Vec                 m_end;
     double                      m_r;
     double                      m_g;
     double                      m_b;

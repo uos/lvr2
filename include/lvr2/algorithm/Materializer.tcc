@@ -45,7 +45,7 @@ template<typename BaseVecT>
 Materializer<BaseVecT>::Materializer(
     const BaseMesh<BaseVecT>& mesh,
     const ClusterBiMap<FaceHandle>& cluster,
-    const FaceMap<Normal<BaseVecT>>& normals,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     const PointsetSurface<BaseVecT>& surface
 ) :
     m_mesh(mesh),
@@ -172,7 +172,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             );
 
             // Bounding rectangle
-            BoundingRectangle<BaseVecT> boundingRect = calculateBoundingRectangle(
+            BoundingRectangle<typename BaseVecT::CoordType> boundingRect = calculateBoundingRectangle(
                 contour,
                 m_mesh,
                 cluster,

@@ -63,7 +63,7 @@ SharpBox<BaseVecT>::~SharpBox()
 }
 
 template<typename BaseVecT>
-void SharpBox<BaseVecT>::getNormals(BaseVecT vertex_positions[], Normal<BaseVecT> vertex_normals[])
+void SharpBox<BaseVecT>::getNormals(BaseVecT vertex_positions[], Normal<typename BaseVecT::CoordType> vertex_normals[])
 {
     for (int i = 0; i < 12; i++)
     {
@@ -74,7 +74,7 @@ void SharpBox<BaseVecT>::getNormals(BaseVecT vertex_positions[], Normal<BaseVecT
 template<typename BaseVecT>
 void SharpBox<BaseVecT>::detectSharpFeatures(
         BaseVecT vertex_positions[],
-        Normal<BaseVecT> vertex_normals[],
+        Normal<typename BaseVecT::CoordType> vertex_normals[],
         uint index)
 {
     //  skip unhandled configurations
@@ -86,7 +86,7 @@ void SharpBox<BaseVecT>::detectSharpFeatures(
 
     getNormals(vertex_positions, vertex_normals);
 
-    Normal<BaseVecT> n_asterisk;
+    Normal<typename BaseVecT::CoordType> n_asterisk;
     float phi = FLT_MAX;
 
     int edge_index1, edge_index2;
@@ -159,9 +159,9 @@ void SharpBox<BaseVecT>::getSurface(
         vector<QueryPoint<BaseVecT> > &query_points,
         uint &globalIndex)
 {
-    Vector<BaseVecT> corners[8];
-    Vector<BaseVecT> vertex_positions[12];
-    Normal<BaseVecT> vertex_normals[12];
+    BaseVecT corners[8];
+    BaseVecT vertex_positions[12];
+    Normal<typename BaseVecT::CoordType> vertex_normals[12];
 
     float distances[8];
 
@@ -246,15 +246,15 @@ void SharpBox<BaseVecT>::getSurface(
         {
             //First plane
             BaseVecT v1 = vertex_positions[ExtendedMCTable[index][0]];
-            Normal<BaseVecT> n1 = vertex_normals[ExtendedMCTable[index][0]];
+            Normal<typename BaseVecT::CoordType> n1 = vertex_normals[ExtendedMCTable[index][0]];
 
             //Second plane
             BaseVecT v2 = vertex_positions[ExtendedMCTable[index][1]];
-            Normal<BaseVecT> n2 = vertex_normals[ExtendedMCTable[index][1]];
+            Normal<typename BaseVecT::CoordType> n2 = vertex_normals[ExtendedMCTable[index][1]];
 
             //Third plane
             BaseVecT v3 = vertex_positions[ExtendedMCTable[index][3]];
-            Normal<BaseVecT> n3 = vertex_normals[ExtendedMCTable[index][3]];
+            Normal<typename BaseVecT::CoordType> n3 = vertex_normals[ExtendedMCTable[index][3]];
 
             //calculate intersection between plane 1 and 2
             if (fabs(n1 * n2) < 0.9)
@@ -283,12 +283,12 @@ void SharpBox<BaseVecT>::getSurface(
         else
         {
             //First plane
-            Vector<BaseVecT> v1( (vertex_positions[ExtendedMCTable[index][2]] + vertex_positions[ExtendedMCTable[index][3]]) * 0.5);
-            Normal<BaseVecT> n1( (vertex_normals[ExtendedMCTable[index][2]] + vertex_normals[ExtendedMCTable[index][3]]) * 0.5);
+            BaseVecT v1( (vertex_positions[ExtendedMCTable[index][2]] + vertex_positions[ExtendedMCTable[index][3]]) * 0.5);
+            Normal<typename BaseVecT::CoordType> n1( (vertex_normals[ExtendedMCTable[index][2]] + vertex_normals[ExtendedMCTable[index][3]]) * 0.5);
 
             //Second plane
-            Vector<BaseVecT> v2( (vertex_positions[ExtendedMCTable[index][6]] + vertex_positions[ExtendedMCTable[index][7]]) * 0.5);
-            Normal<BaseVecT> n2( (vertex_normals[ExtendedMCTable[index][6]] + vertex_normals[ExtendedMCTable[index][7]]) * 0.5);
+            BaseVecT v2( (vertex_positions[ExtendedMCTable[index][6]] + vertex_positions[ExtendedMCTable[index][7]]) * 0.5);
+            Normal<typename BaseVecT::CoordType> n2( (vertex_normals[ExtendedMCTable[index][6]] + vertex_normals[ExtendedMCTable[index][7]]) * 0.5);
 
             //calculate intersection between plane 1 and 2
             if (fabs(n1 * n2) < 0.9)
@@ -296,11 +296,11 @@ void SharpBox<BaseVecT>::getSurface(
                 float d1 = n1 * v1;
                 float d2 = n2 * v2;
 
-                Vector<BaseVecT> direction = n1.cross(n2);
+                BaseVecT direction = n1.cross(n2);
 
                 float denom = direction * direction;
 
-                Vector<BaseVecT> x = (( (n2 * d1) - (n1 * d2)).cross(direction)) * (1 / denom);
+                BaseVecT x = (( (n2 * d1) - (n1 * d2)).cross(direction)) * (1 / denom);
 
                 // project center of the box onto intersection line of the two planes
                 v = x + direction * (((v - x) * direction) / (direction.length() * direction.length()));

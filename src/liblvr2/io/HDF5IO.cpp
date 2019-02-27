@@ -356,7 +356,7 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
         if (bb)
         {
             ret.m_boundingBox = BoundingBox<BaseVector<float> >(
-                    {bb[0], bb[1], bb[2]}, {bb[3], bb[4], bb[5]});
+                    BaseVector<float>(bb[0], bb[1], bb[2]), BaseVector<float>(bb[3], bb[4], bb[5]));
         }
 
         ret.m_pointsLoaded = load_points;

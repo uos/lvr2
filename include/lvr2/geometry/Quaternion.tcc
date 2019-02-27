@@ -74,7 +74,7 @@ Quaternion<BaseVecT>::Quaternion(ValueType pitch, ValueType yaw, ValueType roll)
 }
 
 template<typename BaseVecT>
-Quaternion<BaseVecT>::Quaternion(Vector<BaseVecT> vec, ValueType angle){
+Quaternion<BaseVecT>::Quaternion(BaseVecT vec, ValueType angle){
 
   fromAxis(vec, angle);
 
@@ -137,11 +137,11 @@ void Quaternion<BaseVecT>::fromAxis(ValueType *vec, ValueType angle){
 }
 
 template<typename BaseVecT>
-void Quaternion<BaseVecT>::fromAxis(Vector<BaseVecT> axis, ValueType angle){
+void Quaternion<BaseVecT>::fromAxis(BaseVecT axis, ValueType angle){
 
   ValueType sinAngle;
   angle *= 0.5f;
-  Normal<BaseVecT> vn(axis.x, axis.y, axis.z);
+  Normal<typename BaseVecT::CoordType> vn(axis.x, axis.y, axis.z);
 
 
   sinAngle = sin(angle);
@@ -169,9 +169,9 @@ Quaternion<BaseVecT> Quaternion<BaseVecT>::operator* (const Quaternion<BaseVecT>
 }
 
 template<typename BaseVecT>
-Vector<BaseVecT> Quaternion<BaseVecT>::operator* (Vector<BaseVecT> vec){
+BaseVecT Quaternion<BaseVecT>::operator* (BaseVecT vec){
 
-  Normal<BaseVecT> vn(vec);
+  Normal<typename BaseVecT::CoordType> vn(vec);
 
   Quaternion<BaseVecT> vecQuat, resQuat;
   vecQuat.x = vn.x;
@@ -182,7 +182,7 @@ Vector<BaseVecT> Quaternion<BaseVecT>::operator* (Vector<BaseVecT> vec){
   resQuat = vecQuat * getConjugate();
   resQuat = *this * resQuat;
 
-  return (Vector<BaseVecT>(resQuat.x, resQuat.y, resQuat.z));
+  return (BaseVecT(resQuat.x, resQuat.y, resQuat.z));
 
 }
 
@@ -210,7 +210,7 @@ void Quaternion<BaseVecT>::fromEuler(ValueType pitch, ValueType yaw, ValueType r
 }
 
 template<typename BaseVecT>
-void Quaternion<BaseVecT>::getAxisAngle(Vector<BaseVecT> *axis, ValueType *angle){
+void Quaternion<BaseVecT>::getAxisAngle(BaseVecT *axis, ValueType *angle){
 
 	ValueType scale = sqrt(x * x + y * y + z * z);
 	axis->x = x / scale;
@@ -269,7 +269,7 @@ void Quaternion<BaseVecT>::getMatrix(ValueType *m){
 }
 
 template<typename BaseVecT>
-Vector<BaseVecT> Quaternion<BaseVecT>::toEuler(){
+BaseVecT Quaternion<BaseVecT>::toEuler(){
 
 //	double sqw = q1.w*q1.w;
 //	double sqx = q1.x*q1.x;
@@ -306,18 +306,18 @@ Vector<BaseVecT> Quaternion<BaseVecT>::toEuler(){
 		yaw = 0;
 		pitch = 2.0f * atan2(x, w);
 		roll = PH;
-		return Vector<BaseVecT>(yaw, pitch, roll);
+		return BaseVecT(yaw, pitch, roll);
 	}
 	if(test < -0.49999 * unit){  //singularity at south pole
 		yaw = 0;
 		pitch = -2 * atan2(x, w);
 		roll = PH;
-		return Vector<BaseVecT>(yaw, pitch, roll);
+		return BaseVecT(yaw, pitch, roll);
 	}
 	yaw = atan2(2 * x * w - 2 * y * z, -sqx + sqy - sqz + sqw );
 	pitch = atan2(2 * y * w - 2 * x * z, sqx - sqy - sqz + sqw);
 	roll = asin(2 * test / unit);
-	return Vector<BaseVecT>(yaw, pitch, roll);
+	return BaseVecT(yaw, pitch, roll);
 }
 
 template<typename BaseVecT>

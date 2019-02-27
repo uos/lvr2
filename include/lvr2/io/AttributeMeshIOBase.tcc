@@ -54,13 +54,13 @@ struct channel_type<unsigned char>
   typedef unsigned char type;
 };
 template <>
-struct channel_type<Normal<BaseVec>>
+struct channel_type<Normal<float>>
 {
   static const unsigned int w = 3;
   typedef float type;
 };
 template <>
-struct channel_type<Vector<BaseVec>>
+struct channel_type<BaseVector<float>>
 {
   static const unsigned int w = 3;
   typedef float type;

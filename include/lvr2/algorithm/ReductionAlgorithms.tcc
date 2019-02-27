@@ -85,7 +85,7 @@ template<typename BaseVecT, typename CostF>
 size_t iterativeEdgeCollapse(
     BaseMesh<BaseVecT>& mesh,
     const size_t count,
-    FaceMap<Normal<BaseVecT>>& faceNormals,
+    FaceMap<Normal<typename BaseVecT::CoordType>>& faceNormals,
     CostF collapseCost
 )
 {
@@ -208,7 +208,7 @@ size_t iterativeEdgeCollapse(
             auto maybeNormal = getFaceNormal(mesh.getVertexPositionsOfFace(fH));
             auto normal = maybeNormal
                 ? *maybeNormal
-                : Normal<BaseVecT>(0, 0, 1);
+                : Normal<typename BaseVecT::CoordType>(0, 0, 1);
 
             faceNormals[fH] = normal;
         }
@@ -234,7 +234,7 @@ template<typename BaseVecT>
 size_t simpleMeshReduction(
     BaseMesh<BaseVecT>& mesh,
     const size_t count,
-    FaceMap<Normal<BaseVecT>>& faceNormals
+    FaceMap<Normal<typename BaseVecT::CoordType>>& faceNormals
 )
 {
     vector<EdgeHandle> edgesAroundFrom;
@@ -243,7 +243,7 @@ size_t simpleMeshReduction(
     return iterativeEdgeCollapse(mesh, count, faceNormals, [&](
         VertexHandle fromH,
         VertexHandle toH,
-        const FaceMap<Normal<BaseVecT>>& normals
+        const FaceMap<Normal<typename BaseVecT::CoordType>>& normals
     ) -> boost::optional<float>
     {
         // The minimal value of the dot product between two normals that is allowed.
@@ -290,13 +290,15 @@ size_t simpleMeshReduction(
                 continue;
             }
 
-            // We calculate the normal that the face would have if the edge in
-            // question would be collapsed.
-            auto newNormal = getFaceNormal<BaseVecT>({
+            std::array<BaseVecT, 3> f_verts = {
                 mesh.getVertexPosition(toH),
                 mesh.getVertexPosition(v1H),
                 mesh.getVertexPosition(v2H)
-            });
+            };
+
+            // We calculate the normal that the face would have if the edge in
+            // question would be collapsed.
+            boost::optional<Normal<typename BaseVecT::CoordType>> newNormal = getFaceNormal(f_verts);
 
             // If the face will have 0 area, we don't want to collapse this edge
             if (!newNormal)
