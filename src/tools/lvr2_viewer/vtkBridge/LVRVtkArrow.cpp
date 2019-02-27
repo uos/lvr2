@@ -52,15 +52,15 @@
 namespace lvr2
 {
 
-LVRVtkArrow::LVRVtkArrow(Vector<Vec> start, Vector<Vec> end):
+LVRVtkArrow::LVRVtkArrow(Vec start, Vec end):
     m_start(start), m_end(end)
 {
     //Create an arrow.
     vtkSmartPointer<vtkArrowSource> arrowSource = vtkSmartPointer<vtkArrowSource>::New();
 
     // The x-axis is a vector from start to end
-    Vector<Vec> diff = end - start;
-    Normal<Vec> x_axis(diff);
+    Vec diff = end - start;
+    Normal<float> x_axis(diff);
     double length = diff.length();
 
     // The Z axis is an arbitrary vecotr cross X
@@ -69,11 +69,11 @@ LVRVtkArrow::LVRVtkArrow(Vector<Vec> start, Vector<Vec> end):
     arbitrary[0] = vtkMath::Random(-10,10);
     arbitrary[1] = vtkMath::Random(-10,10);
     arbitrary[2] = vtkMath::Random(-10,10);
-    Vector<Vec> dummy(arbitrary[0], arbitrary[1], arbitrary[2]);
+    Vec dummy(arbitrary[0], arbitrary[1], arbitrary[2]);
 
     // Compute other two local base vectors
-    Normal<Vec> z_axis(x_axis.cross(dummy));
-    Normal<Vec> y_axis(z_axis.cross(x_axis));
+    Normal<float> z_axis(x_axis.cross(dummy));
+    Normal<float> y_axis(z_axis.cross(x_axis));
 
     vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
     matrix->Identity();

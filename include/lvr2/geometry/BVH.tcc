@@ -100,17 +100,17 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
     for (size_t i = 0; i < faces.size(); i += 3)
     {
         // Convert raw float data into objects
-        Vector<BaseVecT> point1;
+        BaseVecT point1;
         point1.x = vertices[faces[i]*3];
         point1.y = vertices[faces[i]*3+1];
         point1.z = vertices[faces[i]*3+2];
 
-        Vector<BaseVecT> point2;
+        BaseVecT point2;
         point2.x = vertices[faces[i+1]*3];
         point2.y = vertices[faces[i+1]*3+1];
         point2.z = vertices[faces[i+1]*3+2];
 
-        Vector<BaseVecT> point3;
+        BaseVecT point3;
         point3.x = vertices[faces[i+2]*3];
         point3.y = vertices[faces[i+2]*3+1];
         point3.z = vertices[faces[i+2]*3+2];
@@ -137,15 +137,15 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
         // Create triangles from faces for internal usage
         Triangle triangle;
         triangle.bb = faceBb;
-        triangle.center = Vector<BaseVecT>((point1.asVector() + point2.asVector() + point3.asVector()) / 3.0f);
+        triangle.center = BaseVecT((point1.asVector() + point2.asVector() + point3.asVector()) / 3.0f);
         triangle.idx1 = faces[i];
         triangle.idx2 = faces[i+1];
         triangle.idx3 = faces[i+2];
 
         // pick best normal
-        Normal<BaseVecT> normal1(cross1);
-        Normal<BaseVecT> normal2(cross2);
-        Normal<BaseVecT> normal3(cross3);
+        Normal<typename BaseVecT::CoordType> normal1(cross1);
+        Normal<typename BaseVecT::CoordType> normal2(cross2);
+        Normal<typename BaseVecT::CoordType> normal3(cross3);
         auto bestNormal = normal1;
         if (normal2.length() > bestNormal.length())
         {
@@ -155,18 +155,18 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
         {
             bestNormal = normal3;
         }
-        triangle.normal = Normal<BaseVecT>(bestNormal);
+        triangle.normal = Normal<typename BaseVecT::CoordType>(bestNormal);
 
         triangle.d = triangle.normal.dot(point1);
 
         // calc edge planes for intersection tests
-        triangle.e1 = Normal<BaseVecT>(triangle.normal.cross(vc1));
+        triangle.e1 = Normal<typename BaseVecT::CoordType>(triangle.normal.cross(vc1));
         triangle.d1 = triangle.e1.dot(point1);
 
-        triangle.e2 = Normal<BaseVecT>(triangle.normal.cross(vc2));
+        triangle.e2 = Normal<typename BaseVecT::CoordType>(triangle.normal.cross(vc2));
         triangle.d2 = triangle.e2.dot(point2);
 
-        triangle.e3 = Normal<BaseVecT>(triangle.normal.cross(vc3));
+        triangle.e3 = Normal<typename BaseVecT::CoordType>(triangle.normal.cross(vc3));
         triangle.d3 = triangle.e3.dot(point3);
 
         // Create AABB and add current triangle (face) to it
@@ -209,17 +209,17 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
     for (size_t i = 0; i < n_faces*3; i += 3)
     {
         // Convert raw float data into objects
-        Vector<BaseVecT> point1;
+        BaseVecT point1;
         point1.x = vertices[faces[i]*3];
         point1.y = vertices[faces[i]*3+1];
         point1.z = vertices[faces[i]*3+2];
 
-        Vector<BaseVecT> point2;
+        BaseVecT point2;
         point2.x = vertices[faces[i+1]*3];
         point2.y = vertices[faces[i+1]*3+1];
         point2.z = vertices[faces[i+1]*3+2];
 
-        Vector<BaseVecT> point3;
+        BaseVecT point3;
         point3.x = vertices[faces[i+2]*3];
         point3.y = vertices[faces[i+2]*3+1];
         point3.z = vertices[faces[i+2]*3+2];
@@ -252,9 +252,9 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
         triangle.idx3 = faces[i+2];
 
         // pick best normal
-        Normal<BaseVecT> normal1(cross1);
-        Normal<BaseVecT> normal2(cross2);
-        Normal<BaseVecT> normal3(cross3);
+        Normal<typename BaseVecT::CoordType> normal1(cross1);
+        Normal<typename BaseVecT::CoordType> normal2(cross2);
+        Normal<typename BaseVecT::CoordType> normal3(cross3);
         auto bestNormal = normal1;
         if (normal2.length() > bestNormal.length())
         {
@@ -264,18 +264,18 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
         {
             bestNormal = normal3;
         }
-        triangle.normal = Normal<BaseVecT>(bestNormal);
+        triangle.normal = Normal<typename BaseVecT::CoordType>(bestNormal);
 
         triangle.d = triangle.normal.dot(point1);
 
         // calc edge planes for intersection tests
-        triangle.e1 = Normal<BaseVecT>(triangle.normal.cross(vc1));
+        triangle.e1 = Normal<typename BaseVecT::CoordType>(triangle.normal.cross(vc1));
         triangle.d1 = triangle.e1.dot(point1);
 
-        triangle.e2 = Normal<BaseVecT>(triangle.normal.cross(vc2));
+        triangle.e2 = Normal<typename BaseVecT::CoordType>(triangle.normal.cross(vc2));
         triangle.d2 = triangle.e2.dot(point2);
 
-        triangle.e3 = Normal<BaseVecT>(triangle.normal.cross(vc3));
+        triangle.e3 = Normal<typename BaseVecT::CoordType>(triangle.normal.cross(vc3));
         triangle.d3 = triangle.e3.dot(point3);
 
         // Create AABB and add current triangle (face) to it

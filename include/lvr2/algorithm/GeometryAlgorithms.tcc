@@ -160,7 +160,7 @@ DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT>& mesh
 }
 
 template<typename BaseVecT>
-DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<BaseVecT>>& normals)
+DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<typename BaseVecT::CoordType>>& normals)
 {
     DenseEdgeMap<float> edgeAngle(mesh.nextEdgeIndex(), 0);
     for (auto eH: mesh.edges())
@@ -175,7 +175,7 @@ DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const V
 template<typename BaseVecT>
 DenseVertexMap<float> calcAverageVertexAngles(
     const BaseMesh<BaseVecT>& mesh,
-    const VertexMap<Normal<BaseVecT>>& normals
+    const VertexMap<Normal<typename BaseVecT::CoordType>>& normals
 )
 {
     DenseVertexMap<float> vertexAngles(mesh.nextVertexIndex(), 0);
@@ -200,7 +200,7 @@ template<typename BaseVecT>
 DenseVertexMap<float> calcVertexRoughness(
     const BaseMesh<BaseVecT>& mesh,
     double radius,
-    const VertexMap<Normal<BaseVecT>>& normals
+    const VertexMap<Normal<typename BaseVecT::CoordType>>& normals
 )
 {
     // We create a map to store the roughness for each vertex. We preallocate
@@ -244,7 +244,7 @@ template<typename BaseVecT>
 void calcVertexRoughnessAndHeightDifferences(
     const BaseMesh<BaseVecT>& mesh,
     double radius,
-    const VertexMap<Normal<BaseVecT>>& normals,
+    const VertexMap<Normal<typename BaseVecT::CoordType>>& normals,
     DenseVertexMap<float>& roughness,
     DenseVertexMap<float>& heightDiff
 )

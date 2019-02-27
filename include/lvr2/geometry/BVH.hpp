@@ -37,9 +37,8 @@
 #include <vector>
 #include <memory>
 
-#include <lvr2/geometry/BoundingBox.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/geometry/Vector.hpp>
+#include "lvr2/geometry/BoundingBox.hpp"
+#include "lvr2/geometry/Normal.hpp"
 
 using std::unique_ptr;
 using std::vector;
@@ -135,8 +134,8 @@ private:
         uint32_t idx2;
         uint32_t idx3;
 
-        Vector<BaseVecT> center;
-        Normal<BaseVecT> normal;
+        BaseVecT center;
+        Normal<float> normal;
 
         // intersection pre-computed cache
         float d, d1, d2, d3;

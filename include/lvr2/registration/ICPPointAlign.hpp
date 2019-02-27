@@ -37,7 +37,6 @@
 #include <lvr2/registration/EigenSVDPointAlign.hpp>
 #include <lvr2/reconstruction/SearchTree.hpp>
 #include <lvr2/geometry/Matrix4.hpp>
-#include <lvr2/geometry/Vector.hpp>
 
 namespace lvr2
 {
@@ -60,7 +59,7 @@ public:
     double  getMaxMatchDistance();
     int     getMaxIterations();
     
-    void getPointPairs(PointPairVector<BaseVecT>& pairs, Vector<BaseVecT>& centroid_m, Vector<BaseVecT>& centroid_d, double& sum);
+    void getPointPairs(PointPairVector<BaseVecT>& pairs, BaseVecT& centroid_m, BaseVecT& centroid_d, double& sum);
 
 protected:
 
