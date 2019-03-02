@@ -36,13 +36,12 @@
 
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/geometry/Matrix4.hpp>
-#include <lvr2/geometry/Vector.hpp>
 
 namespace lvr2
 {
 
 template <typename BaseVecT>
-using PointPairVector = std::vector<std::pair<Vector<BaseVecT>, Vector<BaseVecT>> >;
+using PointPairVector = std::vector<std::pair<BaseVecT, BaseVecT> >;
 
 template <typename BaseVecT>
 class EigenSVDPointAlign
@@ -51,8 +50,8 @@ public:
     EigenSVDPointAlign() {};
     double alignPoints(
             const PointPairVector<BaseVecT>& pairs,
-            const Vector<BaseVecT> centroid1,
-            const Vector<BaseVecT> centroid2,
+            const BaseVecT centroid1,
+            const BaseVecT centroid2,
             Matrix4<BaseVecT>& align);
 };
 

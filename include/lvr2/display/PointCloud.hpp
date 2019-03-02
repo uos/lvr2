@@ -57,10 +57,8 @@ enum
 };
 
 class PointCloud : public Renderable{
-
-    using uColorVertex = ColorVertex<Vec, unsigned char>;
 public:
-
+    using uColorVertex = ColorVertex<float, unsigned char>;
     PointCloud();
     PointCloud(ModelPtr loader, string name = "<unamed cloud>");
     PointCloud(PointBufferPtr buffer, string name = "<unamed cloud>");
@@ -71,13 +69,15 @@ public:
     vector<uColorVertex> getPoints(){return m_points;};
     void setPoints(){};
 
-    void addPoint(float x, float y, float z, unsigned char r, unsigned char g, unsigned char b){
-        m_boundingBox->expand(uColorVertex(x, y, z, r, g, b));
+    void addPoint(float x, float y, float z, unsigned char r, unsigned char g, unsigned char b)
+    {
+        m_boundingBox->expand(Vec(x, y, z));
         m_points.push_back(uColorVertex(x, y, z, r, g, b));
     };
 
-    void addPoint(const uColorVertex v) {
-        m_boundingBox->expand(Vector<Vec>(v.x, v.y, v.z));
+    void addPoint(const uColorVertex& v) 
+    {
+        m_boundingBox->expand(Vec(v.x, v.y, v.z));
         m_points.push_back(v);
     };
 

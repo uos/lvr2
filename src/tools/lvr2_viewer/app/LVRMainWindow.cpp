@@ -686,7 +686,7 @@ void LVRMainWindow::exportSelectedModel()
 
                 // Get transformation matrix
                 Pose p = model_item->getPose();
-                Matrix4<Vec> mat(Vector<Vec>(p.x, p.y, p.z), Vector<Vec>(p.r, p.t, p.p));
+                Matrix4<Vec> mat(Vec(p.x, p.y, p.z), Vec(p.r, p.t, p.p));
 
                 // Allocate target buffer and insert transformed points
                 size_t n = points->numPoints();
@@ -694,8 +694,8 @@ void LVRMainWindow::exportSelectedModel()
                 floatArr pointArray = points->getPointArray();
                 for(size_t i = 0; i < n; i++)
                 {
-                    Vector<Vec> v(pointArray[3 * i], pointArray[3 * i + 1], pointArray[3 * i + 2]);
-                    Vector<Vec> vt = mat * v;
+                    Vec v(pointArray[3 * i], pointArray[3 * i + 1], pointArray[3 * i + 2]);
+                    Vec vt = mat * v;
 
                     transformedPoints[3 * i    ] = vt[0];
                     transformedPoints[3 * i + 1] = vt[1];

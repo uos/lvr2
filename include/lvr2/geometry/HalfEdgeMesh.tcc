@@ -84,7 +84,7 @@ HalfEdgeMesh<BaseVecT>::HalfEdgeMesh(MeshBufferPtr ptr)
 // ========================================================================
 
 template <typename BaseVecT>
-VertexHandle HalfEdgeMesh<BaseVecT>::addVertex(Vector<BaseVecT> pos)
+VertexHandle HalfEdgeMesh<BaseVecT>::addVertex(BaseVecT pos)
 {
     Vertex v;
     v.pos = pos;
@@ -541,13 +541,13 @@ Index HalfEdgeMesh<BaseVecT>::nextEdgeIndex() const
 
 
 template <typename BaseVecT>
-Vector<BaseVecT> HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle) const
+BaseVecT HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle) const
 {
     return getV(handle).pos;
 }
 
 template <typename BaseVecT>
-Vector<BaseVecT>& HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle)
+BaseVecT& HalfEdgeMesh<BaseVecT>::getVertexPosition(VertexHandle handle)
 {
     return getV(handle).pos;
 }

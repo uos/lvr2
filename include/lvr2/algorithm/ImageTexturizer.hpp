@@ -51,8 +51,8 @@ namespace lvr2
 template<typename BaseVecT>
 struct ImageData {
     cv::Mat data;
-    Vector<BaseVecT>  pos;
-    Vector<BaseVecT>  dir;
+    BaseVecT  pos;
+    BaseVecT  dir;
     Matrix4<BaseVecT> project_to_image_transform;
     float distortion_params[6];
     float intrinsic_params[4];
@@ -119,9 +119,9 @@ private:
     template<typename ValueType>
     void undistorted_to_distorted_uv(ValueType &u, ValueType &v, const ImageData<BaseVecT> &img);
 
-    bool exclude_image(Vector<BaseVecT> pos, const ImageData<BaseVecT> &image_data);
+    bool exclude_image(BaseVecT pos, const ImageData<BaseVecT> &image_data);
 
-    bool point_behind_camera(Vector<BaseVecT> pos, const ImageData<BaseVecT> &image_data);
+    bool point_behind_camera(BaseVecT pos, const ImageData<BaseVecT> &image_data);
     /// @endcond
 };
 

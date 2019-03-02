@@ -46,24 +46,24 @@ PointsetSurface<BaseVecT>::PointsetSurface(PointBufferPtr pointBuffer)
 
     for(size_t i = 0; i < numPoints; i++)
     {
-        this->m_boundingBox.expand(Vector<BaseVecT>(pts[i*3 + 0], pts[i*3 + 1], pts[i*3 + 2]));
+        this->m_boundingBox.expand(BaseVecT(pts[i*3 + 0], pts[i*3 + 1], pts[i*3 + 2]));
     }
 }
 
 template<typename BaseVecT>
-Normal<BaseVecT> PointsetSurface<BaseVecT>::getInterpolatedNormal(Vector<BaseVecT> position) const
+Normal<float> PointsetSurface<BaseVecT>::getInterpolatedNormal(const BaseVecT& position) const
 {
     FloatChannelOptional normals = m_pointBuffer->getFloatChannel("normals"); 
     vector<size_t> indices;
-    Normal<BaseVecT> result;
+    Normal<float> result;
     m_searchTree->kSearch(position, m_ki, indices);
     for (int i = 0; i < m_ki; i++)
     {
-        Normal<BaseVecT> n = (*normals)[i];
+        Normal<float> n = (*normals)[i];
         result += n;
     }
     result /= m_ki;
-    return Normal<BaseVecT>(result);
+    return Normal<float>(result);
 }
 
 template<typename BaseVecT>

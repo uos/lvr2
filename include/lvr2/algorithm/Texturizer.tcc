@@ -92,7 +92,7 @@ void Texturizer<BaseVecT>::saveTextures()
 template<typename BaseVecT>
 TexCoords Texturizer<BaseVecT>::calculateTexCoords(
     TextureHandle h,
-    const BoundingRectangle<BaseVecT>& br,
+    const BoundingRectangle<typename BaseVecT::CoordType>& br,
     BaseVecT point
 )
 {
@@ -112,7 +112,7 @@ TexCoords Texturizer<BaseVecT>::calculateTexCoords(
 template<typename BaseVecT>
 BaseVecT Texturizer<BaseVecT>::calculateTexCoordsInv(
     TextureHandle h,
-    const BoundingRectangle<BaseVecT>& br,
+    const BoundingRectangle<typename BaseVecT::CoordType>& br,
     const TexCoords& coords
 )
 {
@@ -128,7 +128,7 @@ template<typename BaseVecT>
 TextureHandle Texturizer<BaseVecT>::generateTexture(
     int index,
     const PointsetSurface<BaseVecT>& surface,
-    const BoundingRectangle<BaseVecT>& boundingRect
+    const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect
 )
 {
 
@@ -156,7 +156,7 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
 
                 vector<size_t> cv;
 
-                Vector<BaseVecT> currentPos =
+                BaseVecT currentPos =
                     boundingRect.m_supportVector
                     + boundingRect.m_vec1 * (x * m_texelSize + boundingRect.m_minDistA - m_texelSize / 2.0)
                     + boundingRect.m_vec2 * (y * m_texelSize + boundingRect.m_minDistB - m_texelSize / 2.0);
@@ -200,7 +200,7 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
 
 template<typename BaseVecT>
 void Texturizer<BaseVecT>::findKeyPointsInTexture(const TextureHandle texH,
-        const BoundingRectangle<BaseVecT>& boundingRect,
+        const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect,
         const cv::Ptr<cv::Feature2D>& detector,
         std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
 {
@@ -218,7 +218,7 @@ void Texturizer<BaseVecT>::findKeyPointsInTexture(const TextureHandle texH,
 
 template<typename BaseVecT>
 std::vector<BaseVecT> Texturizer<BaseVecT>::keypoints23d(const std::vector<cv::KeyPoint>&
-        keypoints, const BoundingRectangle<BaseVecT>& boundingRect, const TextureHandle& h)
+        keypoints, const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect, const TextureHandle& h)
 {
     const size_t N = keypoints.size();
     std::vector<BaseVecT> keypoints3d(N);

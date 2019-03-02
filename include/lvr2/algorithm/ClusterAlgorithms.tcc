@@ -247,11 +247,11 @@ std::vector<VertexHandle> calculateClusterContourVertices(
 }
 
 template<typename BaseVecT>
-BoundingRectangle<BaseVecT> calculateBoundingRectangle(
+BoundingRectangle<typename BaseVecT::CoordType> calculateBoundingRectangle(
     const std::vector<VertexHandle>& contour,
     const BaseMesh<BaseVecT>& mesh,
     const Cluster<FaceHandle>& cluster,
-    const FaceMap<Normal<BaseVecT>>& normals,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     float texelSize,
     ClusterHandle clusterH
 )
@@ -266,13 +266,13 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     int minArea = std::numeric_limits<int>::max();
 
     float bestMinA, bestMaxA, bestMinB, bestMaxB;
-    Vector<BaseVecT> bestBoundingAxisA, bestBoundingAxisB;
+    BaseVecT bestBoundingAxisA, bestBoundingAxisB;
 
     // calculate regression plane for the cluster
     Plane<BaseVecT> regressionPlane = calcRegressionPlane(mesh, cluster, normals);
 
     // support vector for the plane
-    Vector<BaseVecT> supportVector = regressionPlane.project(mesh.getVertexPosition(contour[0]));
+    BaseVecT supportVector = regressionPlane.project(mesh.getVertexPosition(contour[0]));
 
     // calculate two orthogonal vectors in the plane
     auto normal = regressionPlane.normal;
@@ -280,7 +280,7 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
     auto boudningAxis1 = (pointInPlane - supportVector).cross(normal);
     boudningAxis1.normalize();
 
-    Vector<BaseVecT> boundingAxis2 = boudningAxis1.cross(normal);
+    BaseVecT boundingAxis2 = boudningAxis1.cross(normal);
     boundingAxis2.normalize();
 
     // const float pi = boost::math::constants::pi<float>(); // FIXME: doesnt seem to work with c++11
@@ -366,7 +366,7 @@ BoundingRectangle<BaseVecT> calculateBoundingRectangle(
         }
     }
 
-    return BoundingRectangle<BaseVecT>(
+    return BoundingRectangle<typename BaseVecT::CoordType>(
         supportVector,
         bestBoundingAxisA,
         bestBoundingAxisB,
@@ -435,7 +435,7 @@ ClusterBiMap<FaceHandle> clusterGrowing(const BaseMesh<BaseVecT>& mesh, Pred pre
 template<typename BaseVecT>
 ClusterBiMap<FaceHandle> planarClusterGrowing(
     const BaseMesh<BaseVecT>& mesh,
-    const FaceMap<Normal<BaseVecT>>& normals,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     float minSinAngle
 )
 {
@@ -448,7 +448,7 @@ ClusterBiMap<FaceHandle> planarClusterGrowing(
 template<typename BaseVecT>
 ClusterBiMap<FaceHandle> iterativePlanarClusterGrowing(
     BaseMesh<BaseVecT>& mesh,
-    FaceMap<Normal<BaseVecT>>& normals,
+    FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     float minSinAngle,
     int numIterations,
     int minClusterSize
@@ -489,7 +489,7 @@ template<typename BaseVecT>
 DenseClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
     const BaseMesh<BaseVecT>& mesh,
     const ClusterBiMap<FaceHandle>& clusters,
-    const FaceMap<Normal<BaseVecT>>& normals,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     int minClusterSize
 )
 {
@@ -516,15 +516,15 @@ template<typename BaseVecT>
 Plane<BaseVecT> calcRegressionPlane(
     const BaseMesh<BaseVecT>& mesh,
     const Cluster<FaceHandle>& cluster,
-    const FaceMap<Normal<BaseVecT>>& normals
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals
 )
 {
     // Calc normal of plane
     size_t countFirst = 0;
     size_t countSecond = 0;
 
-    Vector<BaseVecT> vectorFirst;
-    Vector<BaseVecT> vectorSecond;
+    BaseVecT vectorFirst;
+    BaseVecT vectorSecond;
 
     // Average Normals for both normal directions
     for (auto faceH: cluster.handles)
@@ -555,7 +555,7 @@ Plane<BaseVecT> calcRegressionPlane(
     }
 
     // Flip normals to same direction
-    Vector<BaseVecT> vector;
+    BaseVecT vector;
     if (countFirst > countSecond)
     {
         vector = vectorFirst;
@@ -567,7 +567,7 @@ Plane<BaseVecT> calcRegressionPlane(
         vector -= vectorFirst;
     }
 
-    Normal<BaseVecT> normal(vector);
+    Normal<typename BaseVecT::CoordType> normal(vector);
     Plane<BaseVecT> plane;
     plane.normal = normal;
     plane.pos = mesh.getVertexPositionsOfFace(cluster.handles[0])[0];
@@ -602,7 +602,7 @@ void dragToRegressionPlanes(
     BaseMesh<BaseVecT>& mesh,
     const ClusterBiMap<FaceHandle>& clusters,
     const ClusterMap<Plane<BaseVecT>>& planes,
-    FaceMap<Normal<BaseVecT>>& normals
+    FaceMap<Normal<typename BaseVecT::CoordType>>& normals
 )
 {
     // For all clusters in cluster map
@@ -618,7 +618,7 @@ void dragToRegressionPlane(
     BaseMesh<BaseVecT>& mesh,
     const Cluster<FaceHandle>& cluster,
     const Plane<BaseVecT>& plane,
-    FaceMap<Normal<BaseVecT>>& normals
+    FaceMap<Normal<typename BaseVecT::CoordType>>& normals
 )
 {
     for (auto faceH: cluster.handles)
@@ -750,8 +750,8 @@ void debugPlanes(
         {
             point = plane.project(bBox.getMax());
         }
-        auto tangent1 = Normal<BaseVecT>(point - centroid);
-        auto tangent2 = Normal<BaseVecT>(plane.normal.cross(tangent1));
+        auto tangent1 = Normal<typename BaseVecT::CoordType>(point - centroid);
+        auto tangent2 = Normal<typename BaseVecT::CoordType>(plane.normal.cross(tangent1));
 
         auto v1 = plane.pos + tangent1 * bBox.getLongestSide();
         auto v2 = plane.pos - tangent1 * bBox.getLongestSide();
