@@ -29,7 +29,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-bool ImageTexturizer<BaseVecT>::exclude_image(Vector<BaseVecT> pos, const ImageData<BaseVecT> &image_data)
+bool ImageTexturizer<BaseVecT>::exclude_image(BaseVecT pos, const ImageData<BaseVecT> &image_data)
 {
     if (point_behind_camera(pos, image_data)) {
         return true;
@@ -41,9 +41,9 @@ bool ImageTexturizer<BaseVecT>::exclude_image(Vector<BaseVecT> pos, const ImageD
 }
 
 template<typename BaseVecT>
-bool ImageTexturizer<BaseVecT>::point_behind_camera(Vector<BaseVecT> pos, const ImageData<BaseVecT> &image_data)
+bool ImageTexturizer<BaseVecT>::point_behind_camera(BaseVecT pos, const ImageData<BaseVecT> &image_data)
 {
-    Vector<BaseVecT> norm = image_data.pos - pos;
+    BaseVecT norm = image_data.pos - pos;
     norm.normalize();
     if (norm.dot(image_data.dir) >= 0.0f) {
         return true;
@@ -79,7 +79,7 @@ TextureHandle ImageTexturizer<BaseVecT>::generateTexture(
             for (int x = 0; x < sizeX; x++)
             {
 
-                Vector<BaseVecT> currentPos =
+                BaseVecT currentPos =
                     boundingRect.m_supportVector
                     + boundingRect.m_vec1 * (x * this->m_texelSize + boundingRect.m_minDistA - this->m_texelSize / 2.0)
                     + boundingRect.m_vec2 * (y * this->m_texelSize + boundingRect.m_minDistB - this->m_texelSize / 2.0);
@@ -87,7 +87,7 @@ TextureHandle ImageTexturizer<BaseVecT>::generateTexture(
                 for (const ImageData<BaseVecT> &img_data : images)
                 {
                     // transforming from slam6D coords to riegl coords
-                    Vector<BaseVecT> pos(currentPos.z/100.0, -currentPos.x/100.0, currentPos.y/100.0);
+                    BaseVecT pos(currentPos.z/100.0, -currentPos.x/100.0, currentPos.y/100.0);
 
                     if (exclude_image(pos, img_data))
                         continue;
@@ -194,7 +194,7 @@ void ImageTexturizer<BaseVecT>::init_image_data()
             transform_inverse.transpose();
 
             //caluclate cam direction and cam pos for image in project space
-            Vector<BaseVecT> cam_pos = {0.0f, 0.0f, 0.0f};
+            BaseVecT cam_pos = {0.0f, 0.0f, 0.0f};
             Normal<BaseVecT> cam_dir = {0.0f, 0.0f, 1.0f};
             cam_pos = transform_inverse * cam_pos;
             cam_dir = transform_inverse * cam_dir;

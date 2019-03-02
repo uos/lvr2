@@ -38,7 +38,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-float Plane<BaseVecT>::distance(const Vector<BaseVecT>& other) const
+float Plane<BaseVecT>::distance(const BaseVecT& other) const
 {
     // Distance betweeen plane and query point (calculated by hesse normal form)
     // Credits: https://oberprima.com/mathematik/abstand-berechnen/
@@ -46,7 +46,7 @@ float Plane<BaseVecT>::distance(const Vector<BaseVecT>& other) const
 }
 
 template<typename BaseVecT>
-Vector<BaseVecT> Plane<BaseVecT>::project(const Vector<BaseVecT>& other) const
+BaseVecT Plane<BaseVecT>::project(const BaseVecT& other) const
 {
     // Credits to: https://stackoverflow.com/questions/9605556/#answer-41897378
     return other - (this->normal * (this->normal.dot(other - this->pos)));

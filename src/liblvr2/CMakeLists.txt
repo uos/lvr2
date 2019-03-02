@@ -24,10 +24,11 @@ set(LVR2_SOURCES
     io/CoordinateTransform.cpp
     io/ObjIO.cpp
 #    io/KinectIO.cpp
+    io/AttributeMeshIOBase.cpp
     io/PPMIO.cpp
     io/PLYIO.cpp
     io/IOUtils.cpp
-    io/AttributeManager.cpp
+    io/ChannelManager.cpp
     io/STLIO.cpp
     io/UosIO.cpp
     io/PCDIO.cpp
@@ -72,14 +73,14 @@ endif()
 #####################################################################################
 
 set(LVR2_INTERNAL_DEPENDENCIES_STATIC
-    lvrrply_static
-    lvrlas_static
-    lvrslam6d_static)
+    lvr2rply_static
+    lvr2las_static
+    lvr2slam6d_static)
 
 set(LVR2_INTERNAL_DEPENDENCIES_SHARED
-    lvrrply
-    lvrlas
-    lvrslam6d)
+    lvr2rply
+    lvr2las
+    lvr2slam6d)
 
 set(LVR2_LIB_DEPENDENCIES
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
@@ -184,7 +185,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 
     install(
         TARGETS lvr2cuda_static lvr2cuda
-        EXPORT lvrTargets
+        EXPORT lvr2Targets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )

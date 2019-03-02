@@ -127,7 +127,7 @@ public:
      */
     StableVector(size_t countElements, const ElementType& defaultValue);
 
-    StableVector(size_t countElements, boost::shared_array<ElementType>& sharedArray);
+    StableVector(size_t countElements, const boost::shared_array<ElementType>& sharedArray);
 
     /**
      * @brief Adds the given element to the vector.

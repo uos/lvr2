@@ -50,7 +50,6 @@
 #include "math.h"
 
 #include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/Matrix4.hpp>
 #include <lvr2/geometry/Normal.hpp>
 
@@ -69,7 +68,7 @@ class Quaternion{
 public:
   Quaternion();
   Quaternion(const Quaternion<BaseVecT> &o){ x = o.x; y = o.y; z = o.z; w = o.w;};
-  Quaternion(Vector<BaseVecT> vec, ValueType angle);
+  Quaternion(BaseVecT vec, ValueType angle);
   Quaternion(ValueType pitch, ValueType yaw, ValueType roll);
   Quaternion(ValueType x, ValueType y, ValueType z, ValueType w);
   Quaternion(ValueType *vec, ValueType w);
@@ -78,16 +77,16 @@ public:
 
   void normalize();
   void fromAxis(ValueType *vec, ValueType angle);
-  void fromAxis(Vector<BaseVecT> axis, ValueType angle);
+  void fromAxis(BaseVecT axis, ValueType angle);
   void fromEuler(ValueType pitch, ValueType yaw, ValueType roll);
 
-  void getAxisAngle(Vector<BaseVecT> *axis, ValueType *angle);
+  void getAxisAngle(BaseVecT *axis, ValueType *angle);
   void getMatrix(ValueType *m);
 
   void printMatrix();
   void printDebugInfo();
 
-  Vector<BaseVecT> toEuler();
+  BaseVecT toEuler();
 
   ValueType X() const {return x;};
   ValueType Y() const {return y;};
@@ -99,8 +98,8 @@ public:
 
   Quaternion<BaseVecT> operator* (Quaternion<BaseVecT> rq);
 
-  Vector<BaseVecT> operator* (Vector<BaseVecT> vec);
-  Vector<BaseVecT> operator* (Vector<BaseVecT> *vec);
+  BaseVecT operator* (BaseVecT vec);
+  BaseVecT operator* (BaseVecT *vec);
 
   Matrix4<BaseVecT> getMatrix();
 

@@ -70,10 +70,16 @@ StableVector<HandleT, ElemT>::StableVector(size_t countElements, const ElementTy
 {}
 
 template<typename HandleT, typename ElemT>
-StableVector<HandleT, ElemT>::StableVector(size_t countElements, boost::shared_array<ElementType>& sharedArray)
-    : m_elements(sharedArray.begin(), sharedArray.end()),
-      m_usedCount(countElements)
-{}
+StableVector<HandleT, ElemT>::StableVector(size_t countElements, const boost::shared_array<ElementType>& sharedArray)
+    : m_usedCount(countElements)
+{
+    m_elements.reserve(countElements);
+    #pragma omp parallel for
+    for(size_t i=0; i<countElements; i++)
+    {
+        m_elements[i] = sharedArray[i];
+    }
+}
 
 template<typename HandleT, typename ElemT>
 HandleT StableVector<HandleT, ElemT>::push(const ElementType& elem)

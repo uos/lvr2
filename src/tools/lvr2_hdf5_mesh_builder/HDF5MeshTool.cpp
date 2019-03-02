@@ -43,6 +43,7 @@
 #include <lvr2/io/Timestamp.hpp>
 #include <lvr2/io/HDF5IO.hpp>
 #include <lvr2/algorithm/NormalAlgorithms.hpp>
+#include <lvr2/algorithm/GeometryAlgorithms.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 
 #include "Options.hpp"
@@ -57,75 +58,62 @@ using namespace lvr2;
 
 int main( int argc, char ** argv )
 {
-    hdf5meshtool::Options options(argc, argv);
-    HDF5IO hdf5(options.getOutputFile(), true);
+  hdf5meshtool::Options options(argc, argv);
+  std::cout << timestamp << "Load HDF5 file structure..." << std::endl;
+  HDF5IO hdf5(options.getOutputFile(), options.getMeshName(), true);
 
-    ModelPtr model = ModelFactory::readModel(options.getInputFile());
-    MeshBufferPtr meshBuffer = model->m_mesh;
+  ModelPtr model = ModelFactory::readModel(options.getInputFile());
+  if(MeshBufferPtr meshBuffer = model->m_mesh){
+    std::cout << timestamp << "Building mesh from buffers..." << std::endl;
 
+    HalfEdgeMesh<BaseVector<float>> hem(meshBuffer);
 
+    std::cout << timestamp << "Adding mesh to file..." << std::endl;
+    // mesh
+    bool addedMesh = hdf5.addMesh(hem);
+    if(addedMesh) std::cout << timestamp << "successfully added mesh" << std::endl;
+    else std::cout << timestamp << "could not add the mesh!" << std::endl;
 
-    if(meshBuffer)
-    {
-        floatArr vertices = meshBuffer->getVertices();
-        indexArray indices = meshBuffer->getFaceIndices();
+    // face normals
+    std::cout << timestamp << "Computing face normals..." << std::endl;
+    auto faceNormals = calcFaceNormals(hem);
+    bool addedFaceNormals = hdf5.addDenseAttributeMap<DenseFaceMap<Normal<float>>>(
+        faceNormals, "face_normals");
+    if(addedFaceNormals) std::cout << timestamp << "successfully added face normals" << std::endl;
+    else std::cout << timestamp << "could not add face normals!" << std::endl;
 
-        HalfEdgeMesh<BaseVector<float>>* hem = nullptr;
-        if(vertices && indices)
-        {
-            hem = new HalfEdgeMesh<BaseVector<float>>(meshBuffer);
+    // vertex normals
+    std::cout << timestamp << "Computing vertex normals..." << std::endl;
+    auto vertexNormals = calcVertexNormals(hem, faceNormals);
+    bool addedVertexNormals = hdf5.addDenseAttributeMap<DenseVertexMap<Normal<float>>>(
+        vertexNormals, "vertex_normals");
+    if(addedVertexNormals) std::cout << timestamp << "successfully added vertex normals" << std::endl;
+    else std::cout << timestamp << "could not add vertex normals!" << std::endl;
 
-            std::cout << timestamp << "Calculating face normals..." << std::endl;
-            DenseFaceMap<Normal<BaseVector<float>>> faceNormals;
-            faceNormals = calcFaceNormals(*hem);
+    // vertex average angles
+    std::cout << timestamp << "Computing average vertex angles..." << std::endl;
+    auto averageAngles = calcAverageVertexAngles(hem, vertexNormals);
+    bool addedAverageAngles = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(averageAngles, "average_angles");
+    if(addedAverageAngles) std::cout << timestamp << "successfully added vertex average angles" << std::endl;
+    else std::cout << timestamp << "could not add vertex average angles!" << std::endl;
 
+    std::cout << timestamp << "Computing roughness..." << std::endl;
+    auto roughness = calcVertexRoughness(hem, 0.3, vertexNormals);
+    bool addedRoughness = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(roughness, "roughness");
+    if(addedRoughness) std::cout << timestamp << "successfully added roughness." << std::endl;
+    else std::cout << timestamp << "could not add roughness!" << std::endl;
 
-            std::cout << timestamp << "Calculating vertex normals..." << std::endl;
-            auto normals = calcVertexNormals(*hem, faceNormals);
+    std::cout << timestamp << "Computing height differences..." << std::endl;
+    auto heightDifferences = calcVertexHeightDifferences(hem, 0.3);
+    bool addedHeightDiff = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(heightDifferences, "height_diff");
+    if(addedHeightDiff) std::cout << timestamp << "successfully added height differences." << std::endl;
+    else std::cout << timestamp << "could not add height differences!" << std::endl;
+  }
+  else
+  {
+    std::cout << timestamp << "Error reading mesh data from "
+              << options.getOutputFile() << std::endl;
+  }
 
-            //            for(auto i : normals)
-            //            {
-            //                cout << normals[i] << endl;
-            //            }
-
-            std::cout << "Creating HDF5 file..." << std::endl;
-            hdf5.addArray("meshes/triangle_mesh", "vertices", meshBuffer->numVertices() * 3, vertices);
-            hdf5.addArray("meshes/triangle_mesh", "indices", meshBuffer->numFaces() * 3, indices);
-
-            std::cout << "Converting face normals..." << std::endl;
-            floatArr faceNormalArray(new float [meshBuffer->numFaces() * 3]);
-            int c = 0;
-            for(auto i : faceNormals)
-            {
-                Normal<BaseVector<float>> n = faceNormals[i];
-                faceNormalArray[3 * c    ] = n[0];
-                faceNormalArray[3 * c + 1] = n[1];
-                faceNormalArray[3 * c + 2] = n[2];
-                c++;
-            }
-
-            std::cout << "Converting vertex normals" << std::endl;
-            floatArr vertexNormalArray(new float[meshBuffer->numVertices() * 3]);
-            c = 0;
-            for(auto i : normals)
-            {
-                Normal<BaseVector<float>> n = normals[i];
-                vertexNormalArray[3 * c    ] = n[0];
-                vertexNormalArray[3 * c + 1] = n[1];
-                vertexNormalArray[3 * c + 2] = n[2];
-                c++;
-            }
-
-            hdf5.addArray("meshes/triangle_mesh/face_attributes", "normals", meshBuffer->numFaces() * 3, faceNormalArray);
-            hdf5.addArray("meshes/triangle_mesh/vertex_attributes", "normals", meshBuffer->numVertices() * 3, vertexNormalArray);
-
-        }
-    }
-    else
-    {
-        std::cout << timestamp << "Error reading mesh data from "
-                  << options.getOutputFile() << std::endl;
-    }
-
-    return 0;
+  return 0;
 }

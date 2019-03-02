@@ -46,7 +46,7 @@ namespace lvr2
 
 template <typename BaseVecT>
 double EigenSVDPointAlign<BaseVecT>::alignPoints(const PointPairVector<BaseVecT>& pairs,
-        const Vector<BaseVecT> centroid_m, const Vector<BaseVecT> centroid_d, Matrix4<BaseVecT>& alignfx)
+        const BaseVecT centroid_m, const BaseVecT centroid_d, Matrix4<BaseVecT>& alignfx)
 {
     double error = 0;
     double sum = 0.0;
@@ -137,11 +137,11 @@ double EigenSVDPointAlign<BaseVecT>::alignPoints(const PointPairVector<BaseVecT>
 
 
     for(unsigned int i = 0; i <  pairs.size(); i++){
-        delete [] m[i];
-        delete [] d[i];
+        delete m[i];
+        delete d[i];
     }
-    delete [] m;
-    delete [] d;
+    delete[] m;
+    delete[] d;
 
     return error;
 }

@@ -46,7 +46,7 @@ const string BoxTraits<BilinearFastBox<BaseVecT>>::type = "BilinearFastBox";
 
 
 template<typename BaseVecT>
-BilinearFastBox<BaseVecT>::BilinearFastBox(Vector<BaseVecT> center)
+BilinearFastBox<BaseVecT>::BilinearFastBox(BaseVecT center)
     : FastBox<BaseVecT>(center), m_mcIndex(0)
 {
     //cout << m_surface << endl;
@@ -59,8 +59,8 @@ void BilinearFastBox<BaseVecT>::getSurface(
         uint &globalIndex)
 {
     //FastBox<BaseVecT>::getSurface(mesh, qp, globalIndex);
-     Vector<BaseVecT> corners[8];
-     Vector<BaseVecT> vertex_positions[12];
+     BaseVecT corners[8];
+     BaseVecT vertex_positions[12];
 
      float distances[8];
 
@@ -151,8 +151,8 @@ void BilinearFastBox<BaseVecT>::getSurface(
                 vector<size_t> nearest1, nearest2;
 
                 auto vertices = mesh.getVerticesOfEdge(out_edges[i]);
-                Vector<BaseVecT>& p1 = mesh.getVertexPosition(vertices[0]);
-                Vector<BaseVecT>& p2 = mesh.getVertexPosition(vertices[1]);
+                BaseVecT& p1 = mesh.getVertexPosition(vertices[0]);
+                BaseVecT& p2 = mesh.getVertexPosition(vertices[1]);
 
                 this->m_surface->searchTree()->kSearch(p1, kc, nearest1);
                 size_t nk = min(kc, nearest1.size());
@@ -161,11 +161,11 @@ void BilinearFastBox<BaseVecT>::getSurface(
                 //Hmmm, sometimes the k-search seems to fail...
                 if(nk > 0)
                 {
-                    Vector<BaseVecT> centroid1;
+                    BaseVecT centroid1;
                     for(auto idx : nearest1)
                     {
                         
-                        Vector<BaseVecT> p = pts[idx];
+                        BaseVecT p = pts[idx];
                         centroid1 += p;
                     }
                     centroid1 /= nk;
@@ -181,10 +181,10 @@ void BilinearFastBox<BaseVecT>::getSurface(
                 //Hmmm, sometimes the k-search seems to fail...
                 if(nk > 0)
                 {
-                    Vector<BaseVecT> centroid2;
+                    BaseVecT centroid2;
                     for(auto idx : nearest2)
                     {
-                        Vector<BaseVecT> p = pts[idx];
+                        BaseVecT p = pts[idx];
                         centroid2 += p;
                     }
                     centroid2 /= nk;

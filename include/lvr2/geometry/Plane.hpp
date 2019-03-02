@@ -51,11 +51,11 @@ struct Plane
 {
     Plane() : normal(0, 0, 1) {}
 
-    Normal<BaseVecT> normal;
-    Vector<BaseVecT> pos;
+    Normal<typename BaseVecT::CoordType> normal;
+    BaseVecT pos;
 
     /// Projects the given point onto the plane and returns the projection point.
-    Vector<BaseVecT> project(const Vector<BaseVecT>& other) const;
+    BaseVecT project(const BaseVecT& other) const;
 
     /**
      * @brief Calculates the distance between the plane and the given point.
@@ -64,7 +64,7 @@ struct Plane
      *         == 0: The point lies in the plane
      *         > 0: The point lies behind the plane, oberserved from the origin
      */
-    float distance(const Vector<BaseVecT>& other) const;
+    float distance(const BaseVecT& other) const;
 
     /// Calculates the intersection between this and other
     Line<BaseVecT> intersect(const Plane<BaseVecT>& other) const;

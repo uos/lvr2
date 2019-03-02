@@ -40,8 +40,8 @@ namespace lvr2
 InteractivePointCloud::InteractivePointCloud()
 {
 	m_boundingBox = new BoundingBox<Vec>(
-			Vector<Vec>(-8, -8, -8),
-			Vector<Vec>(8, 8, 8)
+			Vec(-8, -8, -8),
+			Vec(8, 8, 8)
 			);
 
 	updateBuffer(PointBufferPtr());
@@ -50,8 +50,8 @@ InteractivePointCloud::InteractivePointCloud()
 InteractivePointCloud::InteractivePointCloud(PointBufferPtr buffer)
 {
 	m_boundingBox = new BoundingBox<Vec>(
-			Vector<Vec>(-8, -8, -8),
-			Vector<Vec>(8, 8, 8)
+			Vec(-8, -8, -8),
+			Vec(8, 8, 8)
 			);
 
 	updateBuffer(buffer);
@@ -79,7 +79,7 @@ void InteractivePointCloud::updateBuffer(PointBufferPtr buffer)
 		if(!m_boundingBox)
 		{
 			m_boundingBox = new BoundingBox<Vec>;
-			m_boundingBox->expand(Vector<Vec>(8000, 8000, 8000));
+			m_boundingBox->expand(Vec(8000, 8000, 8000));
 		}
 
 		size_t num_vertices = buffer->numPoints();

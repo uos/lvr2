@@ -74,7 +74,7 @@ template<typename BaseVecT, typename CostF>
 size_t iterativeEdgeCollapse(
     BaseMesh<BaseVecT>& mesh,
     const size_t count,
-    FaceMap<Normal<BaseVecT>>& faceNormals,
+    FaceMap<Normal<typename BaseVecT::CoordType>>& faceNormals,
     CostF collapseCost
 );
 
@@ -85,7 +85,7 @@ template<typename BaseVecT>
 size_t simpleMeshReduction(
     BaseMesh<BaseVecT>& mesh,
     const size_t count,
-    FaceMap<Normal<BaseVecT>>& faceNormals
+    FaceMap<Normal<typename BaseVecT::CoordType>>& faceNormals
 );
 
 } // namespace lvr2

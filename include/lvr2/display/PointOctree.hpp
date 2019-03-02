@@ -32,7 +32,6 @@
 
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/BoundingBox.hpp>
 
 
@@ -55,7 +54,7 @@ namespace lvr2
 
   struct TmpLeaf
   {
-    std::vector<Vector<BaseVector<float> > > pts;
+    std::vector<BaseVector<float>> pts;
   };
 
   template <typename T>
@@ -83,15 +82,15 @@ namespace lvr2
       
       BoundingBox<BaseVector<float> > m_bbox;
       
-      int getBBoxIndex(const Vector<BaseVector<float> >& point, const BoundingBox<BaseVector<float> >& bbox, BoundingBox<BaseVector<float> >& subOctBbox);
+      int getBBoxIndex(const BaseVector<float>& point, const BoundingBox<BaseVector<float> >& bbox, BoundingBox<BaseVector<float> >& subOctBbox);
 
-      void insertPoint(const Vector<BaseVector<float> >& point, BOct* oct, const BoundingBox<BaseVector<float> >& bbox);
+      void insertPoint(const BaseVector<float>& point, BOct* oct, const BoundingBox<BaseVector<float> >& bbox);
 
       template <typename T>
       int getOctant(BOct* oct, int index);
 
       /* return is first free index in serial Buffer */
-      void serializePointBuffer(BOct* oct, std::vector<Vector<BaseVector<float> > >& pts);
+      void serializePointBuffer(BOct* oct, std::vector<BaseVector<float>>& pts);
       
       void clear(BOct* oct);
 

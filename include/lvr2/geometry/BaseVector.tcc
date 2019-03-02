@@ -33,6 +33,7 @@
  */
 
 #include <cmath>
+#include "Normal.hpp"
 #include <lvr2/util/Panic.hpp>
 
 namespace lvr2
@@ -165,7 +166,7 @@ bool BaseVector<CoordT>::operator!=(const BaseVector &other) const
 }
 
 template<typename CoordT>
-CoordT BaseVector<CoordT>::operator*(const BaseVector<CoordType> &other) const
+CoordT BaseVector<CoordT>::operator*(const BaseVector<CoordT> &other) const
 {
     return dot(other);
 }
@@ -203,6 +204,61 @@ CoordT& BaseVector<CoordT>::operator[](const unsigned& index)
             return x; // return statement to suppress clang warning
     }
 }
+
+template <typename CoordT>
+Normal<CoordT> BaseVector<CoordT>::normalized() const
+{
+    return Normal<CoordT>(*this);
+}
+
+template <typename CoordT>
+CoordT BaseVector<CoordT>::distanceFrom(const BaseVector<CoordT> &other) const
+{
+    return (*this - other).length();
+}
+
+template <typename CoordT>
+CoordT BaseVector<CoordT>::squaredDistanceFrom(const BaseVector<CoordT> &other) const
+{
+    return (*this - other).length2();
+}
+
+template<typename CoordT>
+template<typename CollectionT>
+BaseVector<CoordT> BaseVector<CoordT>::average(const CollectionT& vecs)
+{
+    BaseVector<CoordT> acc(0, 0, 0);
+    size_t count = 0;
+    for (auto v: vecs)
+    {
+        static_assert(
+            std::is_same<decltype(v), BaseVector<CoordT>>::value,
+            "Collection has to contain Vectors"
+        );
+        acc += v;
+        count += 1;
+    }
+    return acc / count;
+}
+
+template<typename CoordT>
+template<typename CollectionT>
+BaseVector<CoordT> BaseVector<CoordT>::centroid(const CollectionT& points)
+{
+    BaseVector<CoordT> acc(0, 0, 0);
+    size_t count = 0;
+    for (auto p: points)
+    {
+        static_assert(
+            std::is_same<decltype(p), BaseVector<CoordT>>::value,
+            "Type mismatch in centroid calculation."
+        );
+        acc += p;
+        count += 1;
+    }
+    return BaseVector<CoordT>(0, 0, 0) + acc / count;
+}
+
 
 } // namespace lvr2
 

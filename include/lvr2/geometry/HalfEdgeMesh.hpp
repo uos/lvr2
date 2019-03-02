@@ -47,7 +47,6 @@ using std::vector;
 using std::get;
 using std::min;
 
-#include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/BaseMesh.hpp>
 #include <lvr2/geometry/HalfEdge.hpp>
 #include <lvr2/geometry/HalfEdgeFace.hpp>
@@ -84,7 +83,7 @@ public:
 
     // We declare all methods as `final` to make devirtualization optimizations
     // more likely and effective.
-    VertexHandle addVertex(Vector<BaseVecT> pos) final;
+    VertexHandle addVertex(BaseVecT pos) final;
     FaceHandle addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H) final;
     void removeFace(FaceHandle handle) final;
     EdgeCollapseResult collapseEdge(EdgeHandle edgeH) final;
@@ -105,8 +104,8 @@ public:
     Index nextFaceIndex() const;
     Index nextEdgeIndex() const;
 
-    Vector<BaseVecT> getVertexPosition(VertexHandle handle) const final;
-    Vector<BaseVecT>& getVertexPosition(VertexHandle handle) final;
+    BaseVecT getVertexPosition(VertexHandle handle) const final;
+    BaseVecT& getVertexPosition(VertexHandle handle) final;
 
     array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const final;
     array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const final;
