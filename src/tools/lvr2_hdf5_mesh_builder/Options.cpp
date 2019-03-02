@@ -47,6 +47,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
             ("inputFile,i", value<string>()->default_value("triangle_mesh.ply"), "Input mesh file.")
             ("outputFile,o", value<string>()->default_value("mesh.h5"), "Output file.")
             ("meshName,m", value<string>()->default_value("mesh"), "The name of the mesh to write")
+            ("3dtk2ros,c", value<bool>()->default_value(false), "Whether the input file should be converted from 3DTK format to the ROS format")
             ;
 
 

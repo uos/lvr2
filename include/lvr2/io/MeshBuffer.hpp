@@ -48,6 +48,11 @@ public:
     ///
     MeshBuffer();
 
+    bool removeVertices(){
+        m_numVertices = 0;
+        return m_channels.removeFloatChannel("vertices");
+    }
+
     ///
     /// \brief addVertices      Adds the vertex array. Three floats per vertex
     /// \param vertices         The vertex array

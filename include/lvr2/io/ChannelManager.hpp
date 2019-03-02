@@ -156,6 +156,15 @@ public:
         throw std::range_error("Element Proxy: Width != 3 in std::array conversion.");
     }
 
+    operator EdgeHandle() const
+    {
+        if(m_w == 1)
+        {
+            return EdgeHandle(m_ptr[0]);
+        }
+        throw std::range_error("Element Proxy: Width != 1 in EdgeHandle conversion.");
+    }
+
     operator FaceHandle() const
     {
         if(m_w == 1)
@@ -240,6 +249,19 @@ class ChannelManager
 {
 public:
     ChannelManager() {}
+
+    bool removeIndexChannel(const std::string& name)
+    {
+        return m_indexChannels.erase(name) > 0;
+    }
+    bool removeFloatChannel(const std::string& name)
+    {
+        return m_floatChannels.erase(name) > 0;
+    }
+    bool removeUCharChannel(const std::string& name)
+    {
+        return m_ucharChannels.erase(name) > 0;
+    }
 
     void addIndexChannel(
             indexArray array,
