@@ -33,7 +33,6 @@
  */
 
 #include <algorithm>
-#include <array>
 #include <cmath>
 
 using std::array;

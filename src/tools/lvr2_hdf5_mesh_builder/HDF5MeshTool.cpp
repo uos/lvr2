@@ -92,7 +92,7 @@ int main( int argc, char ** argv )
     // face normals
     std::cout << timestamp << "Computing face normals..." << std::endl;
     auto faceNormals = calcFaceNormals(hem);
-    bool addedFaceNormals = hdf5.addDenseAttributeMap<DenseFaceMap<Normal<BaseVector<float>>>>(
+    bool addedFaceNormals = hdf5.addDenseAttributeMap<DenseFaceMap<Normal<float>>>(
         faceNormals, "face_normals");
     if(addedFaceNormals) std::cout << timestamp << "successfully added face normals" << std::endl;
     else std::cout << timestamp << "could not add face normals!" << std::endl;
@@ -100,7 +100,7 @@ int main( int argc, char ** argv )
     // vertex normals
     std::cout << timestamp << "Computing vertex normals..." << std::endl;
     auto vertexNormals = calcVertexNormals(hem, faceNormals);
-    bool addedVertexNormals = hdf5.addDenseAttributeMap<DenseVertexMap<Normal<BaseVector<float>>>>(
+    bool addedVertexNormals = hdf5.addDenseAttributeMap<DenseVertexMap<Normal<float>>>(
         vertexNormals, "vertex_normals");
     if(addedVertexNormals) std::cout << timestamp << "successfully added vertex normals" << std::endl;
     else std::cout << timestamp << "could not add vertex normals!" << std::endl;

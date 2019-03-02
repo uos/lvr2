@@ -86,7 +86,7 @@ TexturedMesh::TexturedMesh(MeshBufferPtr mesh) : m_materials(mesh->getMaterials(
 		float x = m_vertices[3 * i];
 		float y = m_vertices[3 * i + 1];
 		float z = m_vertices[3 * i + 2];
-		m_boundingBox->expand(Vector<Vec>(x, y, z));
+		m_boundingBox->expand(Vec(x, y, z));
 	}
 
 	// Create material groups for optimized rendering
@@ -107,14 +107,14 @@ TexturedMesh::TexturedMesh(MeshBufferPtr mesh) : m_materials(mesh->getMaterials(
 void TexturedMesh::generateMaterialGroups()
 {
 	map<int, MaterialGroup* > texMatMap;
-	map<Vector<VecUChar>, MaterialGroup*, Util::ColorVecCompare> colorMatMap;
+	map<VecUChar, MaterialGroup*, Util::ColorVecCompare> colorMatMap;
 
 	// Iterate over face material buffer and
 	// sort faces by their material
 	for(size_t i = 0; i < m_numFaces; i++)
 	{
 		map<int, MaterialGroup*>::iterator texIt;
-		map<Vector<VecUChar>, MaterialGroup*, Util::ColorVecCompare>::iterator colIt;
+		map<VecUChar, MaterialGroup*, Util::ColorVecCompare>::iterator colIt;
 
 		// Get material by index and lookup in map. If present
 		// add face index to the corresponding group. Create a new
@@ -130,7 +130,7 @@ void TexturedMesh::generateMaterialGroups()
 			{
 				MaterialGroup* g = new MaterialGroup;
 				g->textureIndex = m.m_texture->idx();
-				g->color = Vector<Vec>(1.0, 1.0, 1.0);
+				g->color = Vec(1.0, 1.0, 1.0);
 				g->faceBuffer.push_back(i);
 				m_textureMaterials.push_back(g);
 				texMatMap[m.m_texture->idx()] = g;
@@ -142,13 +142,13 @@ void TexturedMesh::generateMaterialGroups()
 		}
 		else
 		{
-			colIt = colorMatMap.find(Vector<VecUChar>(m.m_color->at(0), m.m_color->at(1), m.m_color->at(2)));
+			colIt = colorMatMap.find(VecUChar(m.m_color->at(0), m.m_color->at(1), m.m_color->at(2)));
 			if(colIt == colorMatMap.end())
 			{
 				MaterialGroup* g = new MaterialGroup;
 				g->textureIndex = -1;
 				g->faceBuffer.push_back(i);
-				g->color = Vector<Vec>(m.m_color->at(0) / 255.0f, m.m_color->at(0) / 255.0f, m.m_color->at(0) / 255.0f);
+				g->color = Vec(m.m_color->at(0) / 255.0f, m.m_color->at(0) / 255.0f, m.m_color->at(0) / 255.0f);
 				m_colorMaterials.push_back(g);
 			}
 			else

@@ -37,9 +37,6 @@
 
 #include <vector>
 
-using std::vector;
-
-
 namespace lvr2
 {
 
@@ -66,7 +63,7 @@ public:
      *                    that are found.
      */
     virtual void kSearch(
-        const Vector<BaseVecT>& qp,
+        const BaseVecT& qp,
         int k,
         vector<size_t>& indices,
         vector<typename BaseVecT::CoordType>& distances
@@ -81,14 +78,14 @@ public:
      *                    the points that were found.
      */
     virtual void radiusSearch(
-        const Vector<BaseVecT>& qp,
+        const BaseVecT& qp,
         typename BaseVecT::CoordType r,
         vector<size_t>& indices
     ) const = 0;
 
     /// Like the other overload, but ignoring the `distances` vector.
     virtual void kSearch(
-        const Vector<BaseVecT>& qp,
+        const BaseVecT& qp,
         int k,
         vector<size_t>& indices
     ) const;

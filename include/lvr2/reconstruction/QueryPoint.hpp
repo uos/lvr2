@@ -35,8 +35,6 @@
 #ifndef _LVR2_RECONSTRUCTION_QueryPoint_H_
 #define _LVR2_RECONSTRUCTION_QueryPoint_H_
 
-#include <lvr2/geometry/Vector.hpp>
-
 namespace lvr2
 {
 
@@ -62,7 +60,7 @@ public:
      * @param p          The position of the query Vector. The distance
      *                   value is set to 0
      */
-    QueryPoint(Vector<BaseVecT> p);
+    QueryPoint(const BaseVecT& p);
 
     /**
      * @brief Constructor.
@@ -70,7 +68,7 @@ public:
      * @param p         The position of the query Vector.
      * @param f         The distance value for the query Vector.
      */
-    QueryPoint(Vector<BaseVecT> p, float f);
+    QueryPoint(const BaseVecT& p, float f);
 
     /**
      * @brief Copy constructor.
@@ -85,7 +83,7 @@ public:
     virtual ~QueryPoint() {};
 
     /// The position of the query Vector
-    Vector<BaseVecT> m_position;
+    BaseVecT m_position;
 
     /// The associated distance value
     float           m_distance;

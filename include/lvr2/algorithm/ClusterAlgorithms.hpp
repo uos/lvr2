@@ -136,11 +136,11 @@ vector<VertexHandle> calculateClusterContourVertices(
  * @param clusterH cluster handle (TODO: is not used! remove)
  */
 template<typename BaseVecT>
-BoundingRectangle<BaseVecT> calculateBoundingRectangle(
+BoundingRectangle<typename BaseVecT::CoordType> calculateBoundingRectangle(
     const vector<VertexHandle>& contour,
     const BaseMesh<BaseVecT>& mesh,
     const Cluster<FaceHandle>& cluster,
-    const FaceMap<Normal<BaseVecT>>& normals,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     float texelSize,
     ClusterHandle clusterH
 );
@@ -165,7 +165,7 @@ ClusterBiMap<FaceHandle> clusterGrowing(const BaseMesh<BaseVecT>& mesh, Pred pre
 template<typename BaseVecT>
 ClusterBiMap<FaceHandle> planarClusterGrowing(
     const BaseMesh<BaseVecT>& mesh,
-    const FaceMap<Normal<BaseVecT>>& normals,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     float minSinAngle
 );
 
@@ -191,7 +191,7 @@ template<typename BaseVecT>
 Plane<BaseVecT> calcRegressionPlane(
     const BaseMesh<BaseVecT>& mesh,
     const Cluster<FaceHandle>& cluster,
-    const FaceMap<Normal<BaseVecT>>& normals
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals
 );
 
 /**
@@ -203,7 +203,7 @@ template<typename BaseVecT>
 DenseClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
     const BaseMesh<BaseVecT>& mesh,
     const ClusterBiMap<FaceHandle>& clusters,
-    const FaceMap<Normal<BaseVecT>>& normals,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     int minClusterSize
 );
 
@@ -213,7 +213,7 @@ void dragToRegressionPlane(
     BaseMesh<BaseVecT>& mesh,
     const Cluster<FaceHandle>& cluster,
     const Plane<BaseVecT>& plane,
-    FaceMap<Normal<BaseVecT>>& normals
+    FaceMap<Normal<typename BaseVecT::CoordType>>& normals
 );
 
 /// Drags all points from the given clusters into their regression planes
@@ -222,7 +222,7 @@ void dragToRegressionPlanes(
     BaseMesh<BaseVecT>& mesh,
     const ClusterBiMap<FaceHandle>& clusters,
     const ClusterMap<Plane<BaseVecT>>& planes,
-    FaceMap<Normal<BaseVecT>>& normals
+    FaceMap<Normal<typename BaseVecT::CoordType>>& normals
 );
 
 /**

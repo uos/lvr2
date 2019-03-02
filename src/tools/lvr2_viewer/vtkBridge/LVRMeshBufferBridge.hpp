@@ -90,8 +90,8 @@ protected:
     size_t							m_numTextures;
 
     void computeMaterialGroups(vector<MaterialGroup*>& matGroups, vector<MaterialGroup*>& colorMatGroups);
-    void remapTexturedIndices(MaterialGroup* g, vector<Vector<Vec> >& vertices, vector<Vector<Vec> >& texCoords, vector<int>& indices);
-    void remapIndices(vector<MaterialGroup*> g, vector<Vector<Vec> >& vertices, vector<Vector<VecUChar> >& colors, vector<int>& indices);
+    void remapTexturedIndices(MaterialGroup* g, vector<Vec >& vertices, vector<Vec >& texCoords, vector<int>& indices);
+    void remapIndices(vector<MaterialGroup*> g, vector<Vec >& vertices, vector<VecUChar >& colors, vector<int>& indices);
 
 
     vtkSmartPointer<vtkActor>		getTexturedActor(MaterialGroup* g);

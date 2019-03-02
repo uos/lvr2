@@ -32,7 +32,6 @@
  *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
  */
 
-#include "Vector.hpp"
 
 #include <lvr2/util/Panic.hpp>
 
@@ -40,45 +39,34 @@
 namespace lvr2
 {
 
-template <typename BaseVecT>
-Normal<BaseVecT>::Normal(BaseVecT base)
-    : Vector<BaseVecT>(base)
+template <typename CoordType>
+Normal<CoordType>::Normal(BaseVector<CoordType> base)
+    : BaseVector<CoordType>(base)
 {
     this->normalize();
 }
 
-template <typename BaseVecT>
-Normal<BaseVecT>::Normal(Vector<BaseVecT> vec)
-    : Vector<BaseVecT>(vec)
+template <typename CoordType>
+Normal<CoordType>::Normal(CoordType x, CoordType y, CoordType z) 
+    : BaseVector<CoordType>(x, y, z)
 {
     this->normalize();
 }
 
-template <typename BaseVecT>
-Normal<BaseVecT>::Normal(
-    typename BaseVecT::CoordType x,
-    typename BaseVecT::CoordType y,
-    typename BaseVecT::CoordType z
-)
-    : Vector<BaseVecT>(x, y, z)
-{
-    this->normalize();
-}
-
-template<typename BaseVecT>
+template<typename CoordType>
 template<typename CollectionT>
-Normal<BaseVecT>& Normal<BaseVecT>::average(const CollectionT& normals)
+Normal<CoordType>& Normal<CoordType>::average(const CollectionT& normals)
 {
     if (normals.empty())
     {
         panic("average() of 0 normals");
     }
 
-    Vector<BaseVecT> acc(0, 0, 0);
+    BaseVector<CoordType> acc(0, 0, 0);
     for (auto n: normals)
     {
         static_assert(
-            std::is_same<decltype(n), Normal<BaseVecT>>::value,
+            std::is_same<decltype(n), Normal<CoordType>>::value,
             "Collection has to contain Vectors"
         );
         acc += n.asVector();
@@ -86,8 +74,9 @@ Normal<BaseVecT>& Normal<BaseVecT>::average(const CollectionT& normals)
     return acc.normalized();
 }
 
-template <typename BaseVecT>
-Normal<BaseVecT>& Normal<BaseVecT>::operator=(const Vector<BaseVecT>& other)
+template <typename CoordType>
+template <typename T>
+Normal<CoordType>& Normal<CoordType>::operator=(const T& other)
 {
     if(&other != this)
     {
@@ -99,20 +88,22 @@ Normal<BaseVecT>& Normal<BaseVecT>::operator=(const Vector<BaseVecT>& other)
     return *this;
 }
 
-template <typename BaseVecT>
-Normal<BaseVecT> Normal<BaseVecT>::operator-() const
+template <typename CoordType>
+Normal<CoordType> Normal<CoordType>::operator-() const
 {
     return Normal(-this->x, -this->y, -this->z);
 }
 
-template <typename BaseVecT>
-Normal<BaseVecT> Normal<BaseVecT>::operator+(const Vector<BaseVecT>& other) const
+template <typename CoordType>
+template <typename T>
+Normal<CoordType> Normal<CoordType>::operator+(const T& other) const
 {
     return Normal(other.x + this->x, other.y + this->y, other.z + this->z);
 }
 
-template <typename BaseVecT>
-Normal<BaseVecT> Normal<BaseVecT>::operator-(const Vector<BaseVecT>& other) const
+template <typename CoordType>
+template <typename T>
+Normal<CoordType> Normal<CoordType>::operator-(const T& other) const
 {
     return Normal(other.x - this->x, other.y - this->y, other.z - this->z);
 }
