@@ -177,7 +177,7 @@ boost::optional<MapT> AttributeMeshIOBase::getAttributeMap(const std::string &na
     map.reserve(indices.numElements());
     for (size_t i = 0; i < indices.numElements(); i++)
     {
-      map.insert(typename MapT::HandleType(indices[i]), values[i]);
+      map.insert(indices[i], values[i]);
     }
     return map;
   }
