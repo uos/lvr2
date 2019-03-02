@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, University Osnabrück
+ * Copyright (c) 2019, University Osnabrück
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,37 +25,43 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * HalfEdgeVertex.hpp
- *
- *  @date 02.06.2017
- *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
- */
 
-#ifndef LVR2_GEOMETRY_HALFEDGEVERTEX_H_
-#define LVR2_GEOMETRY_HALFEDGEVERTEX_H_
+#ifndef MESHGEOMETRYIO
+#define MESHGEOMETRYIO
 
-#include "BaseMesh.hpp"
+#include <lvr2/io/ChannelManager.hpp>
 
 namespace lvr2
+{ 
+
+class MeshGeometryIO
 {
+public:
+    /**
+     * @brief Persistence layer interface, Accesses the vertices of the mesh in the persistence layer.
+     * @return An optional float channel, the channel is valid if the mesh vertices have been read successfully
+     */
+    virtual FloatChannelOptional getVertices() = 0;
 
-// Forward declarations
-struct OptionalHalfEdgeHandle;
+    /**
+     * @brief Persistence layer interface, Accesses the face indices of the mesh in the persistence layer.
+     * @return An optional index channel, the channel is valid if the mesh indices have been read successfully
+     */
+    virtual IndexChannelOptional getIndices() = 0;
 
-/**
- * @brief Represents a vertex in the HEM data structure.
- */
-template <typename BaseVecT>
-struct HalfEdgeVertex
-{
-    /// The edge starting at this vertex.
-    OptionalHalfEdgeHandle outgoing;
+    /**
+     * @brief Persistence layer interface, Writes the vertices of the mesh to the persistence layer.
+     * @return true if the channel has been written successfully
+     */
+    virtual bool addVertices(const FloatChannel& channel_ptr) = 0;
 
-    /// The 3D position of this vertex.
-    BaseVecT pos;
+    /**
+     * @brief Persistence layer interface, Writes the face indices of the mesh to the persistence layer.
+     * @return true if the channel has been written successfully
+     */
+    virtual bool addIndices(const IndexChannel& channel_ptr) = 0;
 };
 
 } // namespace lvr2
 
-#endif /* LVR2_GEOMETRY_HALFEDGEVERTEX_H_ */
+#endif

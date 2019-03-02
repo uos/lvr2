@@ -46,6 +46,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
             ("help", "Produce help message")
             ("inputFile,i", value<string>()->default_value("triangle_mesh.ply"), "Input mesh file.")
             ("outputFile,o", value<string>()->default_value("mesh.h5"), "Output file.")
+            ("meshName,m", value<string>()->default_value("mesh"), "The name of the mesh to write")
             ;
 
 

@@ -36,7 +36,6 @@
 #include <lvr2/io/STLIO.hpp>
 #include <lvr2/io/Timestamp.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/Normal.hpp>
 
 #include <iostream>
@@ -98,9 +97,9 @@ void STLIO::save( ModelPtr model, string filename )
 			int c = (int)indices[3 * i + 2];
 
             using Vec = BaseVector<float>;
-			Vector<Vec> v1;
-			Vector<Vec> v2;
-			Vector<Vec> v3;
+			Vec v1;
+			Vec v2;
+			Vec v3;
 
 			v1.x = vertices[3 * a];
 			v1.y = vertices[3 * a + 1];
@@ -114,7 +113,7 @@ void STLIO::save( ModelPtr model, string filename )
 			v3.y = vertices[3 * c + 1];
 			v3.z = vertices[3 * c + 2];
 
-			Normal<Vec> normal( (v1 - v2).cross(v1 - v3));
+			Normal<float> normal( (v1 - v2).cross(v1 - v3));
 
 			myfile.write( (char*)&normal.x, 4);
 			myfile.write( (char*)&normal.y, 4);

@@ -68,7 +68,7 @@ public:
     static void apply(
         BaseMesh<BaseVecT>& mesh,
         ClusterBiMap<FaceHandle>& clusters,
-        DenseFaceMap<Normal<BaseVecT>>& faceNormals,
+        DenseFaceMap<Normal<typename BaseVecT::CoordType>>& faceNormals,
         float lineFusionThreshold
     );
 
@@ -87,12 +87,12 @@ private:
     /**
     * List of vertices to keep track of until the end of the tesselation.
     */
-    static vector<Vector<BaseVecT>> m_vertices;
+    static std::vector<BaseVecT> m_vertices;
 
     /**
     * List of faces to keep track of until the end of the tesselation.
     */
-    static vector<Vector<BaseVecT>> m_faces;
+    static std::vector<BaseVecT> m_faces;
 
     /**
     * OpenGL callback, which is invoked by glBegin() to indicate the start of an primitiv.
@@ -137,7 +137,7 @@ private:
     static void addTesselatedFaces(
         BaseMesh<BaseVecT>& mesh,
         ClusterBiMap<FaceHandle>& clusters,
-        DenseFaceMap<Normal<BaseVecT>>& faceNormal,
+        DenseFaceMap<Normal<typename BaseVecT::CoordType>>& faceNormal,
         ClusterHandle clusterH
     );
 };

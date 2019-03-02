@@ -16,14 +16,14 @@ set(SLAM_SOURCES
 )
 set_source_files_properties(${SLAM_SOURCES} PROPERTIES COMPILE_FLAGS "-std=gnu++0x")
 
-add_library(lvrslam6d_static STATIC ${SLAM_SOURCES})
+add_library(lvr2slam6d_static STATIC ${SLAM_SOURCES})
 
-add_library(lvrslam6d SHARED ${SLAM_SOURCES})
+add_library(lvr2slam6d SHARED ${SLAM_SOURCES})
 
 # this intentionally installs to lvr2/ext/slam6d/slam6d to keep a separate include path
 install(DIRECTORY include/slam6d DESTINATION ${SLAM6D_INSTALL_INCLUDE_DIR})
 
-install(TARGETS lvrslam6d_static lvrslam6d
-  EXPORT lvrTargets
+install(TARGETS lvr2slam6d_static lvr2slam6d
+  EXPORT lvr2Targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

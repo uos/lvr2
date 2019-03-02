@@ -9,14 +9,14 @@ mark_as_advanced(RPLY_INCLUDE_DIR RPLY_INSTALL_INCLUDE_DIR)
 
 include_directories(${RPLY_INCLUDE_DIR})
 
-add_library(lvrrply_static STATIC rply.c)
+add_library(lvr2rply_static STATIC rply.c)
 
-add_library(lvrrply SHARED rply.c)
+add_library(lvr2rply SHARED rply.c)
 
 install(DIRECTORY . DESTINATION ${RPLY_INSTALL_INCLUDE_DIR}
   FILES_MATCHING PATTERN "*.h")
 
-install(TARGETS lvrrply_static lvrrply
+install(TARGETS lvr2rply_static lvr2rply
   EXPORT lvrTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

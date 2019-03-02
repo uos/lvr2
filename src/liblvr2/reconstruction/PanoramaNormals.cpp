@@ -28,7 +28,6 @@
 #include <lvr2/reconstruction/PanoramaNormals.hpp>
 
 #include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/io/Progress.hpp>
 #include <lvr2/io/Timestamp.hpp>
@@ -151,14 +150,14 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
 
 
                 // Compute mean
-                Vector<Vec> mean;
+                Vec mean;
                 for(int i = 0; i < nb.size(); i++)
                 {
                     // Determine position of geometry in point array
                     size_t index = nb[i].index * 3;
 
                     // Get point coordinates
-                    Vector<Vec> neighbor(in_points[index],
+                    Vec neighbor(in_points[index],
                                            in_points[index + 1],
                                            in_points[index + 2]);
 
@@ -178,7 +177,7 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                 {
                     size_t index = nb[i].index * 3;
 
-                    Vector<Vec> pt(in_points[index    ] - mean.x,
+                    Vec pt(in_points[index    ] - mean.x,
                                      in_points[index + 1] - mean.y,
                                      in_points[index + 3] - mean.z);
 
@@ -223,13 +222,13 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
                 float nz = gsl_vector_get(&evec_0.vector, 2);
 
                 // Flip normals towards reference point
-                Normal<Vec> nn(nx, ny, nz);
-                Vector<Vec> center(0, 0, 0);
+                Normal<float> nn(nx, ny, nz);
+                Vec center(0, 0, 0);
 
                 size_t index = mat.pixels[i][j][0].index * 3;
-                Vector<Vec> p1 = center - Vector<Vec>(in_points[index], in_points[index + 1], in_points[index + 2]);
+                Vec p1 = center - Vec(in_points[index], in_points[index + 1], in_points[index + 2]);
 
-                if(Normal<Vec>(p1) * nn < 0)
+                if(Normal<float>(p1) * nn < 0)
                 {
                     nx *= -1;
                     ny *= -1;

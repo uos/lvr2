@@ -204,8 +204,8 @@ void UosIO::reduce(string dir, string target, int reduction)
 
 void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size_t &n)
 {
-    list<Vector<Vec> > allPoints;
-    list<Vector<BaseVector<int>> > allColors;
+    list<Vec > allPoints;
+    list<BaseVector<int> > allColors;
 
     size_t point_counter = 0;
 
@@ -282,7 +282,7 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
         else
         {
             // Tmp list of read points
-            list<Vector<Vec> > tmp_points;
+            list<Vec > tmp_points;
 
 
             // Try to get fransformation from .frames file
@@ -310,8 +310,8 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
                     euler[4] *= 0.017453293;
                     euler[5] *= 0.017453293;
 
-                    Vector<Vec> position(euler[0], euler[1], euler[2]);
-                    Vector<Vec> angle(euler[3], euler[4], euler[5]);
+                    Vec position(euler[0], euler[1], euler[2]);
+                    Vec angle(euler[3], euler[4], euler[5]);
 
                     tf = Matrix4<Vec>(position, angle);
                 }
@@ -360,12 +360,12 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
                 else if(has_intensity && has_color)
                 {
                     scan_in >> x >> y >> z >> rem >> r >> g >> b;
-                    allColors.push_back(Vector<BaseVector<int>> (r, g, b));
+                    allColors.push_back(BaseVector<int> (r, g, b));
                 }
                 else if(has_color && !has_intensity)
                 {
                     scan_in >> x >> y >> z >> r >> g >> b;
-                    allColors.push_back(Vector<BaseVector<int>> (r, g, b));
+                    allColors.push_back(BaseVector<int> (r, g, b));
                 }
                 else
                 {
@@ -373,8 +373,8 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
                     for(int n_dummys = 0; n_dummys < num_attributes; n_dummys++) scan_in >> dummy;
                 }
 
-                Vector<Vec> point(x, y, z);
-                Vector<BaseVector<unsigned char>> color;
+                BaseVector<float> point(x, y, z);
+                BaseVector<unsigned char> color;
 
                 // Code branching for point converter!
                 if(!m_saveToDisk)
@@ -425,10 +425,10 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
             }
 
             // Transform scan point with current matrix
-            list<Vector<Vec> >::iterator it, it1;
+            list<Vec >::iterator it, it1;
             for(it = tmp_points.begin(); it != tmp_points.end(); it++)
             {
-                Vector<Vec> v = *it;
+                Vec v = *it;
                 v = tf * v;
                 allPoints.push_back(v);
             }
@@ -465,11 +465,11 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
 
         numPoints = allPoints.size();
         points = floatArr( new float[3 * allPoints.size()] );
-        list<Vector<Vec> >::iterator p_it;
+        list<Vec >::iterator p_it;
         size_t i(0);
         for( p_it = allPoints.begin(); p_it != allPoints.end(); p_it++ )
         {
-            Vector<Vec> v = *p_it;
+            Vec v = *p_it;
             points[i    ] = v[0];
             points[i + 1] = v[1];
             points[i + 2] = v[2];
@@ -481,10 +481,10 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
         {
             pointColors = ucharArr( new unsigned char[ 3 * numPoints ] );
             i = 0;
-            list<Vector<BaseVector<int>>>::iterator c_it;
+            list<BaseVector<int>>::iterator c_it;
             for(c_it = allColors.begin(); c_it != allColors.end(); c_it++)
             {
-                Vector<BaseVector<int>> v = *c_it;
+                BaseVector<int> v = *c_it;
                 pointColors[i    ] = (unsigned char) v[0];
                 pointColors[i + 1] = (unsigned char) v[1];
                 pointColors[i + 2] = (unsigned char) v[2];
@@ -522,8 +522,8 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
 {
     Matrix4<Vec> m_tf;
 
-    list<Vector<Vec> > ptss;
-    list<Vector<Vec> > allPoints;
+    list<Vec > ptss;
+    list<Vec > allPoints;
     for(int fileCounter = first; fileCounter <= last; fileCounter++)
     {
         float euler[6];
@@ -636,7 +636,7 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
                 }
 
                 // calculate 3D coordinates (local coordinates)
-                Vector<Vec> p;
+                Vec p;
                 p[0] = X;
                 p[1] = Z * sin_currentAngle;
                 p[2] = Z * cos_currentAngle;
@@ -666,16 +666,16 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
         else
         {
             // Transform scan data using information from 'position.dat'
-            Vector<Vec> position(euler[0], euler[1], euler[2]);
-            Vector<Vec> angle(euler[3], euler[4], euler[5]);
+            Vec position(euler[0], euler[1], euler[2]);
+            Vec angle(euler[3], euler[4], euler[5]);
             m_tf = Matrix4<Vec>(position, angle);
         }
 
         // Transform points and insert in to global vector
-        list<Vector<Vec> >::iterator it;
+        list<Vec >::iterator it;
         for(it = ptss.begin(); it != ptss.end(); it++)
         {
-            Vector<Vec> v = *it;
+            Vec v = *it;
             v = m_tf * v;
             allPoints.push_back(v);
         }
@@ -690,12 +690,12 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
         cout << timestamp << "UOS Reader: Read " << allPoints.size() << " points." << endl;
         n = allPoints.size();
         floatArr points( new float[3 * allPoints.size()] );
-        list<Vector<Vec> >::iterator p_it;
+        list<Vec >::iterator p_it;
         int i(0);
         for( p_it = allPoints.begin(); p_it != allPoints.end(); p_it++ )
         {
             int t_index = 3 * i;
-            Vector<Vec> v = *p_it;
+            Vec v = *p_it;
             points[t_index    ] = v[0];
             points[t_index + 1] = v[1];
             points[t_index + 2] = v[2];

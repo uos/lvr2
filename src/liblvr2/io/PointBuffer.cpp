@@ -111,7 +111,7 @@ bool PointBuffer::hasColors() const
 {
     if (m_colors)
     {
-        return (m_colors->numAttributes() > 0);
+        return (m_colors->numElements() > 0);
     }
 
     return false;
@@ -121,7 +121,7 @@ bool PointBuffer::hasNormals() const
 {
     if (m_normals)
     {
-        return (m_normals->numAttributes() > 0);
+        return (m_normals->numElements() > 0);
     }
 
     return false;

@@ -28,8 +28,16 @@
 #ifndef CHANNELHANDLER_HPP
 #define CHANNELHANDLER_HPP
 
+// LVR2 includes
 #include <lvr2/io/DataStruct.hpp>
+#include <lvr2/geometry/Handles.hpp>
+
+// Std lib includes
 #include <iostream>
+#include <array>
+#include <exception>
+
+// Boost includes
 #include <boost/optional.hpp>
 
 namespace lvr2
@@ -39,6 +47,14 @@ template<typename T>
 class ElementProxy
 {
 public:
+
+    ElementProxy operator=(const T& v)
+    {
+        if( m_ptr && (m_w == 1))
+            m_ptr[0] = v;
+        return *this;
+    }
+
     template<typename BaseVecT>
     ElementProxy operator=(const BaseVecT& v)
     {
@@ -84,10 +100,7 @@ public:
             *this += v;
             return BaseVecT(m_ptr[0], m_ptr[1], m_ptr[2]);
         }
-        else
-        {
-            return BaseVecT(0, 0, 0);
-        }
+        throw std::range_error("Element Proxy: Width to small for BaseVec addition");
     }
 
     template<typename BaseVecT>
@@ -98,24 +111,27 @@ public:
             *this -= v;
             return BaseVecT(m_ptr[0], m_ptr[1], m_ptr[2]);
         }
-        else
-        {
-            return BaseVecT(0, 0, 0);
-        }
+        throw std::range_error("Element Proxy: Width to small for BaseVec subtraction");
     }
 
     ElementProxy(T* pos = nullptr, unsigned w = 0) : m_ptr(pos), m_w(w) {}
 
-    T operator[](int i) const
+    T& operator[](int i) 
     {
         if(m_ptr && (i < m_w))
         {
             return m_ptr[i];
         }
-        else
+        throw std::range_error("Element Proxy: Index larger than width");
+    }
+
+    const T& operator[](int i) const
+    {
+        if(m_ptr && (i < m_w))
         {
-            return 0;
+            return m_ptr[i];
         }
+        throw std::range_error("Element Proxy: Index out of Bounds");
     }
 
     /// User defined conversion operator
@@ -126,7 +142,27 @@ public:
         {
             return BaseVecT(m_ptr[0], m_ptr[1], m_ptr[2]);
         }
-        return BaseVecT(0, 0, 0);
+        throw std::range_error("Element Proxy: Width != 3 in BaseVecT conversion");
+    }
+
+    operator std::array<VertexHandle, 3>() const
+    {
+        std::array<VertexHandle, 3> arr0 = {VertexHandle(0), VertexHandle(0), VertexHandle(0)};
+        if(m_w == 3)
+        {
+            std::array<VertexHandle, 3> arr = {VertexHandle(m_ptr[0]), VertexHandle(m_ptr[1]), VertexHandle(m_ptr[2])};
+            return  arr;
+        }
+        throw std::range_error("Element Proxy: Width != 3 in std::array conversion.");
+    }
+
+    operator FaceHandle() const
+    {
+        if(m_w == 1)
+        {
+            return FaceHandle(m_ptr[0]);
+        }
+        throw std::range_error("Element Proxy: Width != 1 in FaceHandle conversion.");
     }
 
     operator T() const
@@ -135,7 +171,7 @@ public:
         {
             return m_ptr[0];
         }
-        return T();
+        throw std::range_error("Element Proxy: Width != 1 in content type conversion.");
     }
 
 private:
@@ -148,35 +184,34 @@ template<typename T>
 class AttributeChannel
 {
 public:
+    typedef boost::optional<AttributeChannel<T>> Optional;
+
     using DataPtr = boost::shared_array<T>;
 
     AttributeChannel(size_t n, unsigned width)
-        : m_width(width), m_numAttributes(n)
-    {
-        m_data = DataPtr(new T[m_numAttributes * width]);
-    }
+        : m_elementWidth(width), m_numElements(n),
+         m_data(new T[m_numElements * width])
+    {}
 
     AttributeChannel(size_t n, unsigned width, DataPtr ptr)
-        : m_numAttributes(n),
-          m_width(width),
+        : m_numElements(n),
+          m_elementWidth(width),
           m_data(ptr)
-    {
-
-    }
+    {}
 
     ElementProxy<T> operator[](const unsigned& idx)
     {
         T* ptr = m_data.get();
-        return ElementProxy<T>(&(ptr[idx * m_width]), m_width);
+        return ElementProxy<T>(&(ptr[idx * m_elementWidth]), m_elementWidth);
     }
 
-    DataPtr&     dataPtr() { return m_data;}
-    unsigned     width() const { return m_width;}
-    size_t       numAttributes() const { return m_numAttributes;}
+    DataPtr    dataPtr() const { return m_data;}
+    unsigned   width() const { return m_elementWidth;}
+    size_t     numElements() const { return m_numElements;}
 
 private:
-    size_t          m_numAttributes;
-    unsigned        m_width;
+    size_t          m_numElements;
+    unsigned        m_elementWidth;
     DataPtr         m_data;
 };
 
@@ -185,9 +220,9 @@ using FloatChannel = AttributeChannel<float>;
 using UCharChannel = AttributeChannel<unsigned char>;
 using IndexChannel = AttributeChannel<unsigned int>;
 
-using FloatChannelOptional = boost::optional<FloatChannel&>;
-using UCharChannelOptional= boost::optional<UCharChannel&>;
-using IndexChannelOptional = boost::optional<IndexChannel&>;
+using FloatChannelOptional = boost::optional<FloatChannel>;
+using UCharChannelOptional= boost::optional<UCharChannel>;
+using IndexChannelOptional = boost::optional<IndexChannel>;
 
 using FloatProxy = ElementProxy<float>;
 using UCharProxy = ElementProxy<unsigned char>;
@@ -201,10 +236,10 @@ using intOptional = boost::optional<int>;
 using floatOptional = boost::optional<float>;
 using ucharOptional = boost::optional<unsigned char>;
 
-class AttributeManager
+class ChannelManager
 {
 public:
-    AttributeManager() {}
+    ChannelManager() {}
 
     void addIndexChannel(
             indexArray array,
@@ -280,17 +315,17 @@ public:
     UCharChannelOptional getUCharChannel(std::string name);
     IndexChannelOptional getIndexChannel(std::string name);
 
-    floatOptional getFloatAttribute(std::string name);
-    ucharOptional getUCharAttribute(std::string name);
-    intOptional getIntAttribute(std::string name);
+    floatOptional getFloatAtomic(std::string name);
+    ucharOptional getUCharAtomic(std::string name);
+    intOptional getIntAtomic(std::string name);
 
     void addFloatChannel(FloatChannelPtr data, std::string name);
     void addUCharChannel(UCharChannelPtr data, std::string name);
     void addIndexChannel(IndexChannelPtr data, std::string name);
 
-    void addFloatAttribute(float data, std::string name);
-    void addUCharAttribute(unsigned char data, std::string name);
-    void addIntAttribute(int data, std::string name);
+    void addFloatAtomic(float data, std::string name);
+    void addUCharAtomic(unsigned char data, std::string name);
+    void addIntAtomic(int data, std::string name);
 
 private:
 
@@ -298,9 +333,9 @@ private:
     std::map<std::string, UCharChannelPtr>      m_ucharChannels;
     std::map<std::string, IndexChannelPtr>      m_indexChannels;
 
-    std::map<std::string, float>                m_floatAttributes;
-    std::map<std::string, unsigned char>        m_ucharAttributes;
-    std::map<std::string, int>                  m_intAttributes;
+    std::map<std::string, float>                m_floatAtomics;
+    std::map<std::string, unsigned char>        m_ucharAtomics;
+    std::map<std::string, int>                  m_intAtomics;
 
 
     using FloatChannelMap = std::map<std::string, FloatChannelPtr>;

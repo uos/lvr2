@@ -37,11 +37,10 @@
 
 #include <ostream>
 
+#include "lvr2/geometry/BaseVector.hpp"
+
 namespace lvr2
 {
-
-// Forward declarations
-template <typename> struct Vector;
 
 
 /**
@@ -51,8 +50,8 @@ template <typename> struct Vector;
  * the length 1. The easiest way to create a `Normal` is to use the method
  * `Vector::normalized()`.
  */
-template <typename BaseVecT>
-struct Normal : public Vector<BaseVecT>
+template <typename CoordType>
+struct Normal : public BaseVector<CoordType>
 {
     Normal() { this->x = 0; this->y = 1; this->z = 0;}
 
@@ -67,18 +66,7 @@ struct Normal : public Vector<BaseVecT>
      * @param base This vector must not be the null-vector, else the behavior
      *             is undefined.
      */
-    explicit Normal(BaseVecT base);
-
-    /**
-     * @brief Creates a normal vector from a vector.
-     *
-     * Also see: `Vector::normalized()` which is easier to use in many
-     * situations.
-     *
-     * @param base This vector must not be the null-vector, else the behavior
-     *             is undefined.
-     */
-    explicit Normal(Vector<BaseVecT> vec);
+    explicit Normal(BaseVector<CoordType> base);
 
     /**
      * @brief Initializes the normal with the given coordinates
@@ -87,23 +75,25 @@ struct Normal : public Vector<BaseVecT>
      * behavior is undefined.
      */
     Normal(
-        typename BaseVecT::CoordType x,
-        typename BaseVecT::CoordType y,
-        typename BaseVecT::CoordType z
+        CoordType x,
+        CoordType y,
+        CoordType z
     );
 
 
     // Since the fields x, y and z can't be access directly anymore (else the
     // user could invalidate this *normal*), we provide getter methods.
-    typename BaseVecT::CoordType getX() const
+    CoordType getX() const
     {
         return this->x;
     }
-    typename BaseVecT::CoordType getY() const
+    
+    CoordType getY() const
     {
         return this->y;
     }
-    typename BaseVecT::CoordType getZ() const
+    
+    CoordType getZ() const
     {
         return this->z;
     }
@@ -112,22 +102,27 @@ struct Normal : public Vector<BaseVecT>
      * @brief Returns the average of all normals in the given collection.
      *
      * The collection need to work with a range-based for-loop and its elements
-     * need to be `Normal<BaseVecT>`. It has to contain at least one element.
+     * need to be normals. It has to contain at least one element.
      */
     template<typename CollectionT>
-    static Normal<BaseVecT>& average(const CollectionT& normals);
+    static Normal<CoordType>& average(const CollectionT& normals);
 
     /// Allows to assign Vectors to normals. Vector data will be copied
     /// and normalized.
-    Normal<BaseVecT>& operator=(const Vector<BaseVecT>& other);
+    template<typename T>
+    Normal<CoordType>& operator=(const T& other);
 
-    Normal<BaseVecT> operator+(const Vector<BaseVecT>& other) const;
-    Normal<BaseVecT> operator-(const Vector<BaseVecT>& other) const;
-    Normal<BaseVecT> operator-() const;
+    template<typename T>
+    Normal<CoordType> operator+(const T& other) const;
+
+    template<typename T>
+    Normal<CoordType> operator-(const T& other) const;
+    
+    Normal<CoordType> operator-() const;
 };
 
-template<typename BaseVecT>
-inline std::ostream& operator<<(std::ostream& os, const Normal<BaseVecT>& n)
+template<typename CoordType>
+inline std::ostream& operator<<(std::ostream& os, const Normal<CoordType>& n)
 {
     os << "Normal[" << n.getX() << ", " << n.getY() << ", " << n.getZ() << "]";
     return os;

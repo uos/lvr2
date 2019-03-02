@@ -68,6 +68,7 @@ public:
 
     string  getInputFile()        const { return m_variables["inputFile"].as<string>();}
     string  getOutputFile()       const { return m_variables["outputFile"].as<string>();}
+    string  getMeshName()         const { return m_variables["meshName"].as<string>();}
 
 private:
     /// The internally used variable map
@@ -88,6 +89,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
 	cout << "##### Program options: " 	<< endl;
     cout << "##### Input file \t\t: "  << o.getInputFile() << endl;
     cout << "##### Output file \t\t: "  << o.getOutputFile() << endl;
+    cout << "##### Mesh name \t\t: "  << o.getMeshName() << endl;
 
 	return os;
 }

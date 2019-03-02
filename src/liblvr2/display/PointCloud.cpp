@@ -96,7 +96,7 @@ void PointCloud::init(PointBufferPtr buffer)
 			float y = points[i*3 + 1];
 			float z = points[i*3 + 2];
 
-			m_boundingBox->expand(Vector<Vec>(x,y,z));
+			m_boundingBox->expand(Vec(x,y,z));
 
 			unsigned char r, g, b;
 
@@ -190,9 +190,9 @@ void PointCloud::updateDisplayLists(){
         glColor3f(1.0, 0.0, 1.0);
         for(int i = 0; i < m_numNormals; i++)
         {
-            Vector<Vec> start(m_points[i].x, m_points[i].y, m_points[i].z);
-            Normal<Vec> normal(m_normals[i*3 + 0], m_normals[i*3 + 1], m_normals[i*3 + 2]);
-            Vector<Vec> end = start + normal * length;
+            Vec start(m_points[i].x, m_points[i].y, m_points[i].z);
+            Normal<float> normal(m_normals[i*3 + 0], m_normals[i*3 + 1], m_normals[i*3 + 2]);
+            Vec end = start + normal * length;
             glBegin(GL_LINES);
             glVertex3f(start[0], start[1], start[2]);
             glVertex3f(end[0], end[1], end[2]);

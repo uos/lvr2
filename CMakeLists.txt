@@ -125,17 +125,39 @@ endif()
 ##############################
 set(VTK_QT_VERSION 5)
 find_package(VTK REQUIRED)
-if(VTK_MAJOR_VERSION VERSION_LESS "6")
+
+#TEEST
+
+
+if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
   list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK5)
+endif()
+
+if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
+    if(VTK_MINOR_VERSION VERSION_GREATER "0")
+        list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
+    endif()
 endif()
 
 if(VTK_MAJOR_VERSION VERSION_GREATER "7")
   list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
 endif()
-if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
-    if(VTK_MINOR_VERSION VERSION_GREATER "0")
-        list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
+
+if(VTK_VERSION VERSION_GREATER "7")
+  
+  list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
+  set(VTK_COMPONENTS "${VTK_AVAILABLE_COMPONENTS}")
+  set(VTK_HAS_QT OFF)
+  foreach(VTK_COMPONENT ${VTK_COMPONENTS})
+    if("${VTK_COMPONENT}" STREQUAL "GUISupportQt")
+      set(VTK_HAS_QT ON)
     endif()
+  endforeach()
+
+  message(STATUS "VTK > 7 found")
+  if(VTK_HAS_QT)
+    message(STATUS "VTK Component QVTK found")
+  endif()
 endif()
 
 ####
@@ -401,17 +423,24 @@ list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INC
 # nvcc call
 ##############################################################
 
-include(${VTK_USE_FILE})
+if(DEFINED VTK_USE_FILE)
+  include(${VTK_USE_FILE})
+endif()
 
 ##############################################################
 # VIEWERS
 ##############################################################
+
+# add_subdirectory(src/tools/lvr2_viewer)
+
 find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
 if(Qt5_FOUND)
   find_package(QVTK)
   if(QVTK_FOUND)
     include_directories(${QVTK_INCLUDE_DIR})
     #add_subdirectory(src/tools/lvr2_viewer)
+  elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
+    add_subdirectory(src/tools/lvr2_viewer)
   endif(QVTK_FOUND)
 endif(Qt5_FOUND)
 
@@ -454,34 +483,34 @@ endif()
 # CMAKE FILES
 ################################################################
 
-install(EXPORT lvrTargets
-    FILE lvrTargets.cmake
-    NAMESPACE lvr::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr)
+install(EXPORT lvr2Targets
+    FILE lvr2Targets.cmake
+    NAMESPACE lvr2::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2)
 
 include(CMakePackageConfigHelpers)
 set(INCLUDE_INSTALL_DIR include/)
 set(LIB_INSTALL_DIR lib/)
-set(SYSCONFIG_INSTALL_DIR etc/lvr/)
+set(SYSCONFIG_INSTALL_DIR etc/lvr2/)
 
-configure_package_config_file(LVRConfig.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/LVRConfig.cmake
-  INSTALL_DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr
+configure_package_config_file(LVR2Config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
+  INSTALL_DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr2
   PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
 write_basic_package_version_file(
-  ${CMAKE_CURRENT_BINARY_DIR}/LVRConfigVersion.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/LVR2ConfigVersion.cmake
   COMPATIBILITY SameMajorVersion
 )
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LVRConfig.cmake
-              ${CMAKE_CURRENT_BINARY_DIR}/LVRConfigVersion.cmake
-        DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/LVR2ConfigVersion.cmake
+              DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr2 )
 
 install(FILES
     CMakeModules/FindEigen3.cmake
     CMakeModules/FindNabo.cmake
     CMakeModules/FindSTANN.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr/Modules)
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2/Modules)
 
 ################################################################
 # DOCUMENTATION

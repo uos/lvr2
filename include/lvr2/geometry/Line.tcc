@@ -38,7 +38,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-Vector<BaseVecT> Line<BaseVecT>::project(const Vector<BaseVecT> &other) const {
+BaseVecT Line<BaseVecT>::project(const BaseVecT &other) const {
     // taken from lvr1
     return pos + normal * ((other - pos).dot(normal) / normal.length2());
 }

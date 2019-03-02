@@ -55,7 +55,7 @@ namespace lvr2
  * @return Either the normal or `none` if the face has a zero area.
  */
 template <typename BaseVecT>
-boost::optional<Normal<BaseVecT>> getFaceNormal(array<Vector<BaseVecT>, 3> vertices);
+boost::optional<Normal<typename BaseVecT::CoordType>> getFaceNormal(array<BaseVecT, 3> vertices);
 
 /**
  * @brief Calculates a normal for each face in the mesh.
@@ -65,16 +65,16 @@ boost::optional<Normal<BaseVecT>> getFaceNormal(array<Vector<BaseVecT>, 3> verti
  * case, a dummy normal (0, 0, 1) is inserted.
  */
 template<typename BaseVecT>
-DenseFaceMap<Normal<BaseVecT>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh);
+DenseFaceMap<Normal<typename BaseVecT::CoordType>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh);
 
 /**
  * @brief Returns a vertex normal for the given vertex interpolated from the
  *        normals of its adjacent faces.
  */
 template<typename BaseVecT>
-optional<Normal<BaseVecT>> interpolatedVertexNormal(
+optional<Normal<typename BaseVecT::CoordType>> interpolatedVertexNormal(
     const BaseMesh<BaseVecT>& mesh,
-    const FaceMap<Normal<BaseVecT>>& normals,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     VertexHandle handle
 );
 
@@ -88,9 +88,9 @@ optional<Normal<BaseVecT>> interpolatedVertexNormal(
  * @param surface A point cloud with normal information
  */
 template<typename BaseVecT>
-DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
+DenseVertexMap<Normal<typename BaseVecT::CoordType>> calcVertexNormals(
     const BaseMesh<BaseVecT>& mesh,
-    const FaceMap<Normal<BaseVecT>>& normals,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     const PointsetSurface<BaseVecT>& surface
 );
 
@@ -104,9 +104,9 @@ DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
  * @param surface A point cloud with normal information
  */
 template<typename BaseVecT>
-DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
+DenseVertexMap<Normal<typename BaseVecT::CoordType>> calcVertexNormals(
     const BaseMesh<BaseVecT>& mesh,
-    const FaceMap<Normal<BaseVecT>>& normals
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals
 );
 
 } // namespace lvr2
