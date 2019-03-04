@@ -23,7 +23,8 @@ using namespace lvr2;
 void printUsage()
 {
     std::cout << "Please submit the path to a .h5 file." << std::endl;
-    std::cout << "Usage: ./hdf5-tiff-converter <input_path>.h5 <position code> [<output_path>.tif]" << std::endl;
+    std::cout << "Usage: ./hdf5-tiff-converter <input_path>.h5 <position code> "
+                 "[<lower channel boundary>] [<upper channel boundary>] [<output_path>.tif]" << std::endl;
 }
 
 /**
@@ -33,7 +34,8 @@ void printUsage()
  * @param output_filename Path to the output GeoTIFF file
  * @return standard C++ return value
  */
-int processConversion(std::string input_filename, std::string position_code, std::string output_filename)
+int processConversion(std::string input_filename,
+        std::string position_code, std::string output_filename, size_t channel_min, size_t channel_max)
 {
     /* =----------------- HDF5 INPUT ----------------------- */
     HDF5IO hdf5(input_filename, false);
@@ -49,6 +51,13 @@ int processConversion(std::string input_filename, std::string position_code, std
     size_t num_channels = dim[0];
     size_t num_rows = dim[1];
     size_t num_cols = dim[2];
+
+    if(num_channels < channel_max)
+    {
+        std::cout << "The Dataset has only " << num_channels << " channels. Using this as upper boundary." << std::endl;
+        channel_max = num_channels;
+    }
+    num_channels = channel_max - channel_min;
 
     GeoTIFFIO gtifio(output_filename, num_cols, num_rows, num_channels);
 
@@ -85,10 +94,26 @@ int main(int argc, char**argv)
     boost::filesystem::path input_filename(argv[1]);
     string position_code = argv[2];
 
-    string output_filename_str = "../../../../lvr_output/" + position_code + "out.tif";
-    if(argv[3])
+    size_t channel_min = 0;
+    size_t channel_max = UINT_MAX;
+    if(argv[3] && argv[4])
     {
-        output_filename_str = argv[3];
+        std::stringstream min(argv[3]);
+        min >> channel_min;
+        if (channel_min < 0)
+        {
+            std::cout << "You entered a negative lower boundary. Using 0." << endl;
+            channel_min = 0;
+        }
+        std::stringstream max(argv[4]);
+        max >> channel_max;
+    }
+
+    string output_filename_str = "../../../../lvr_output/"
+            + position_code + "_" + argv[3] + "_" + argv[4] + ".tif";
+    if(argv[5])
+    {
+        output_filename_str = argv[5];
     }
     boost::filesystem::path output_filename(output_filename_str);
 
@@ -98,7 +123,7 @@ int main(int argc, char**argv)
         boost::filesystem::create_directory(output_dir);
     }
 
-    if (processConversion(input_filename.string(), position_code, output_filename.string()) < 0)
+    if (processConversion(input_filename.string(), position_code, output_filename.string(), channel_min, channel_max) < 0)
     {
         std::cout << "An Error occurred during conversion." << std::endl;
     }
