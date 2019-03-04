@@ -126,8 +126,6 @@ endif()
 set(VTK_QT_VERSION 5)
 find_package(VTK REQUIRED)
 
-#TEEST
-
 
 if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK5)
@@ -321,6 +319,11 @@ list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 
 # GSL
 include_directories("ext/gsl/include")
+
+# draco
+add_subdirectory(ext/draco)
+include_directories(ext/draco/src/)
+include_directories(${CMAKE_BINARY_DIR})
 
 # HighFive
 set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
