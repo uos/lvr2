@@ -579,7 +579,7 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneIterative(
     size_t numPoints     = pts.numElements();
 
     Plane<BaseVecT> p;
-    BaseVecT normal;
+    Normal<typename BaseVecT::CoordType> normal;
 
 
     //x

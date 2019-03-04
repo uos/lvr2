@@ -44,9 +44,9 @@ namespace lvr2{
                 exit(-1);
             }
 
-            Vector<BaseVecT> centroid = bounding_box.getCentroid();
-            Vector<BaseVecT> min = bounding_box.getMin();
-            Vector<BaseVecT> max = bounding_box.getMax();
+            BaseVecT centroid = bounding_box.getCentroid();
+            BaseVecT min = bounding_box.getMin();
+            BaseVecT max = bounding_box.getMax();
 
             float xdiff = (max.x - min.x) / 2;
             float ydiff = (max.y - min.y) / 2;
@@ -66,10 +66,10 @@ namespace lvr2{
             maxy = max.y - ydiff;
             maxz = max.z - zdiff;
 
-            Vector<BaseVecT> top(BaseVecT(centroid.x, maxy, centroid.z));
-            Vector<BaseVecT> left(BaseVecT(minx, miny, minz));
-            Vector<BaseVecT> right(BaseVecT(maxx,miny,minz));
-            Vector<BaseVecT> back(BaseVecT(centroid.x, miny, maxz));
+            BaseVecT top(BaseVecT(centroid.x, maxy, centroid.z));
+            BaseVecT left(BaseVecT(minx, miny, minz));
+            BaseVecT right(BaseVecT(maxx,miny,minz));
+            BaseVecT back(BaseVecT(centroid.x, miny, maxz));
 
 
             std::cout << top << left << right << back << std::endl;
@@ -246,8 +246,11 @@ namespace lvr2{
 
         //split vertex with .. -- get handle in function or pass it?
         void executeVertexSplit(HalfEdgeHandle handle){
-            
+
             //TODO: find vertex with highst sc, split that vertex
+            auto pointer = m_surface.get()->pointBuffer();
+            auto x = pointer.get()->getPointArray(); //x,y,z,x,y,z .... 3*random, 3*random+2,3*random+3
+            //auto x = pointer.get()->get
         }
 
         //collapse edge with ... -- get handle in function or pass it?

@@ -13,9 +13,9 @@ set(GS_RECONSTRUCTION_SOURCES
 
 set(GS_DEPENDENCIES
 		lvr2_static
-		lvrlas_static
-		lvrrply_static
-		lvrslam6d_static
+		lvr2las_static
+		lvr2rply_static
+		lvr2slam6d_static
   		${PCL_LIBRARIES}
   		${EIGEN_LIBRARY}
 		${GLUT_LIBRARIES}

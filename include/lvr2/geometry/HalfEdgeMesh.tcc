@@ -704,15 +704,14 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     //TODO: get longest edge
     HalfEdge longestOutgoingEdge;
 
-
-    Vector<BaseVecT> toBeSplit = getV(vertexH).pos;
+        BaseVecT toBeSplit = getV(vertexH).pos;
     //get all outgoing edges
     auto outEdges = getEdgesOfVertex(vertexH);
 
     float longestDistance = 0; //save length of longest edge
     EdgeHandle longestEdge(0); //save longest edge
     HalfEdge longestEdgeHalf; //needed for vertex calc
-    Vector<BaseVecT> targetVec;
+        BaseVecT targetVec;
     VertexHandle targetVecH(0);
 
 
@@ -736,7 +735,7 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
 
         VertexHandle targetH = half.target;
         Vertex targetHV = getV(targetH);
-        Vector<BaseVecT> target = targetHV.pos;
+        BaseVecT target = targetHV.pos;
         auto distance = target.distanceFrom(getV(vertexH).pos);
         //changes values to longer edge
         if(distance > longestDistance){
@@ -749,7 +748,7 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     }
 
     //calculate the position of the new vertex
-    Vector<BaseVecT> vertexToAdd = getV(vertexH).pos + (getV(longestEdgeHalf.target).pos - getV(vertexH).pos)/2;
+        BaseVecT vertexToAdd = getV(vertexH).pos + (getV(longestEdgeHalf.target).pos - getV(vertexH).pos)/2;
 
 
     std::cout << "Distance: " << longestDistance;
@@ -764,8 +763,8 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     //get incident faces of the longest edge
     auto incidentFaces = this->getFacesOfEdge(longestEdge);
 
-    Vector<BaseVecT> firstNormal;
-    Vector<BaseVecT> secondNormal;
+        BaseVecT firstNormal;
+        BaseVecT secondNormal;
 
     vector<VertexHandle> groupOne;
     vector<VertexHandle> groupTwo;
