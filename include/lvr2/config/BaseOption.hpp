@@ -32,8 +32,8 @@
  *      Author: twiemann
  */
 
-#ifndef INCLUDE_LIBLVR_CONFIG_BASEOPTION_HPP_
-#define INCLUDE_LIBLVR_CONFIG_BASEOPTION_HPP_
+#ifndef INCLUDE_LIBLVR2_CONFIG_BASEOPTION_HPP_
+#define INCLUDE_LIBLVR2_CONFIG_BASEOPTION_HPP_
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -117,4 +117,4 @@ protected:
 
 } /* namespace lvr2 */
 
-#endif /* INCLUDE_LIBLVR_CONFIG_BASEOPTION_HPP_ */
+#endif /* INCLUDE_LIBLVR2_CONFIG_BASEOPTION_HPP_ */

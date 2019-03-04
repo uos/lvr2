@@ -35,7 +35,7 @@
 #ifndef PCLFILTERING_H_
 #define PCLFILTERING_H_
 
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
 
 #include <lvr2/io/Timestamp.hpp>
 #include <lvr2/io/PointBuffer.hpp>

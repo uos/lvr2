@@ -47,12 +47,12 @@
 #include <lvr2/io/Progress.hpp>
 
 // PCL related includes
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
 #include <lvr2/io/PCDIO.hpp>
 #endif
 
 // RiVLib
-#ifdef LVR_USE_RIVLIB
+#ifdef LVR2_USE_RIVLIB
 #include <lvr2/io/RxpIO.hpp>
 #endif
 
@@ -82,7 +82,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         io = new AsciiIO;
     }
-#ifdef LVR_USE_RIVLIB
+#ifdef LVR2_USE_RIVLIB
     else if(extension == ".rxp")
     {
         io = new RxpIO;
@@ -100,12 +100,12 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         io = new DatIO;
     }
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
     else if (extension == ".pcd")
     {
         io = new PCDIO;
     }
-#endif /* LVR_USE_PCL */
+#endif /* LVR2_USE_PCL */
     else if (extension == "" && ScanprojectIO().parse_project(selectedFile.string(), true))
     {
         io = new ScanprojectIO;
@@ -248,7 +248,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     {
         io = new STLIO;
     }
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
     else if (extension == ".pcd")
     {
         io = new PCDIO;
