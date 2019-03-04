@@ -14,91 +14,19 @@ namespace lvr2{
     template <typename BaseVecT, typename NormalT>
     class GrowingCellStructure {
     public:
-        GrowingCellStructure(PointsetSurfacePtr<BaseVecT> surface){
-            m_surface = surface;
-            //std::cout << "Center:" << m_surface.get()->getBoundingBox().getCentroid() << std::endl;
-        }
 
         /**
-         * Only public method of the Reconstruction Class, calling all the other methods, generating the mesh
-         * approimating the pointcloud's surface
+         * Construct a GCS instance
+         * @param surface pointsetsurface to get pointcloud information from
+         */
+        GrowingCellStructure(PointsetSurfacePtr<BaseVecT> surface);
+
+        /**
+         * Public method of the Reconstruction Class, calling all the other methods, generating the mesh
+         * approximating the pointcloud's surface
          * @param mesh pointer to the mesh
          */
-        void getMesh(HalfEdgeMesh<BaseVecT> &mesh){
-            VertexHandle test = getInitialMesh(mesh);
-            mesh.splitGSVertex(test); //test
-
-            //TODO: add gcs construction.. call to basic step, call to other functions
-            // for { for { for { basicStep() } vertexSplit() } edgeCollapse()}
-        }
-
-
-        //needs to be moved, now working.. thumbusup
-        VertexHandle getInitialMesh(HalfEdgeMesh<BaseVecT> &mesh){
-
-
-            auto bounding_box = m_surface.get()->getBoundingBox();
-
-            if(!bounding_box.isValid()){
-                std::cout << "Bounding Box invalid" << std::endl;
-                exit(-1);
-            }
-
-            BaseVecT centroid = bounding_box.getCentroid();
-            BaseVecT min = bounding_box.getMin();
-            BaseVecT max = bounding_box.getMax();
-
-            float xdiff = (max.x - min.x) / 2;
-            float ydiff = (max.y - min.y) / 2;
-            float zdiff = (max.z - min.z) / 2;
-
-            //scale diff acc to the box factor
-            xdiff *= (1 - m_boxFactor);
-            ydiff *= (1 - m_boxFactor);
-            zdiff *= (1 - m_boxFactor);
-
-            DOINDEBUG(dout() << "Test2" << endl);
-            float minx, miny, minz, maxx, maxy, maxz;
-            minx = min.x + xdiff;
-            miny = min.y + ydiff;
-            minz = min.z + zdiff;
-            maxx = max.x - xdiff;
-            maxy = max.y - ydiff;
-            maxz = max.z - zdiff;
-
-            BaseVecT top(BaseVecT(centroid.x, maxy, centroid.z));
-            BaseVecT left(BaseVecT(minx, miny, minz));
-            BaseVecT right(BaseVecT(maxx,miny,minz));
-            BaseVecT back(BaseVecT(centroid.x, miny, maxz));
-
-
-            std::cout << top << left << right << back << std::endl;
-
-            DOINDEBUG(dout() << "Test3" << endl);
-            auto vH1 = mesh.addVertex(top);
-            auto vH2 = mesh.addVertex(left);
-            auto vH3 = mesh.addVertex(right);
-            auto vH4 = mesh.addVertex(back);
-
-            //add faces to create tetrahedron
-
-            //this doesnt work .. okaay
-            //mesh.addFace(vH1, vH2, vH3);
-            //mesh.addFace(vH1, vH2, vH4);
-            //mesh.addFace(vH1, vH3, vH4);
-            //mesh.addFace(vH2, vH3, vH4)
-
-
-            //this works...wtf :D
-            mesh.addFace(vH2, vH3, vH4);
-            mesh.addFace(vH1, vH2, vH4);
-            mesh.addFace(vH1, vH4, vH3);
-            mesh.addFace(vH3, vH2, vH1);
-
-            //initial mesh done, doesnt need handle-return
-
-            return vH1;
-        }
+        void getMesh(HalfEdgeMesh<BaseVecT> &mesh);
 
 
         //TODO: add functions to make gcs possible, such as laplacian smoothing
@@ -207,6 +135,7 @@ namespace lvr2{
 
     private:
         PointsetSurfacePtr<BaseVecT> m_surface; //helper-surface
+        HalfEdgeMesh<BaseVecT> &m_mesh;
 
         int m_runtime; //how many steps?
         int m_basicSteps; //how many steps until collapse?
@@ -228,36 +157,20 @@ namespace lvr2{
         //void getInitialMesh(HalfEdgeMesh<BaseVecT> &mesh);
 
         //execute basic step
-        void executeBasicStep(){
-
-            //TODO: get random point of the pointcloud
-
-            //TODO: search the closest point of the mesh
-
-            //TODO: smooth the winning vertex
-
-            //TODO: smooth the winning vertices' neighbors (laplacian smoothing)
-
-            //TODO: increase signal counter of winner by one
-
-            //TODO: decrease signal counter of others by a fraction
-
-        }
+        void executeBasicStep();
 
         //split vertex with .. -- get handle in function or pass it?
-        void executeVertexSplit(HalfEdgeHandle handle){
-
-            //TODO: find vertex with highst sc, split that vertex
-            auto pointer = m_surface.get()->pointBuffer();
-            auto x = pointer.get()->getPointArray(); //x,y,z,x,y,z .... 3*random, 3*random+2,3*random+3
-            //auto x = pointer.get()->get
-        }
+        void executeVertexSplit();
 
         //collapse edge with ... -- get handle in function or pass it?
-        void executeEdgeCollapse(VertexHandle handle){
+        void executeEdgeCollapse(VertexHandle handle);
 
-            //TODO: select edge to collapse, examine whether it should be collapsed, collapse it
-        }
+        /**
+         * Getting the initial Tetrahedron, which will be used to approx the surface
+         * @param mesh: pointer to a mesh
+         * @return nothing
+         */
+        VertexHandle getInitialMesh(HalfEdgeMesh<BaseVecT> &mesh);
 
 
 
@@ -265,6 +178,6 @@ namespace lvr2{
 }
 
 
-
+#include <lvr2/reconstruction/gs2/GrowingCellStructure.tcc>
 
 #endif //LAS_VEGAS_GROWINGCELLSTRUCTURE_HPP
