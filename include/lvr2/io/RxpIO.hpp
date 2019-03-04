@@ -40,7 +40,6 @@
 #include <lvr2/io/BaseIO.hpp>
 
 #include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/Matrix4.hpp>
 
 namespace lvr2
