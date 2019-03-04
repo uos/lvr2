@@ -11,7 +11,7 @@ set(ASCII_SOURCES
 # Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_ASCIICONVERT_DEPENDENCIES
+set(LVR2_ASCIICONVERT_DEPENDENCIES
 	lvr2_static
 	lvr2las_static
 	lvr2rply_static
@@ -25,7 +25,7 @@ set(LVR_ASCIICONVERT_DEPENDENCIES
 #####################################################################################
 
 add_executable(lvr2_ascii_convert ${ASCII_SOURCES})
-target_link_libraries(lvr2_ascii_convert ${LVR_ASCIICONVERT_DEPENDENCIES})
+target_link_libraries(lvr2_ascii_convert ${LVR2_ASCIICONVERT_DEPENDENCIES})
 
 install(TARGETS lvr2_ascii_convert
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

@@ -11,7 +11,7 @@ set(RECONSTRUCT_SOURCES
 # Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_RECONSTRUCT_DEPENDENCIES
+set(LVR2_RECONSTRUCT_DEPENDENCIES
     lvr2_static
     lvr2las_static
     lvr2rply_static
@@ -23,7 +23,7 @@ set(LVR_RECONSTRUCT_DEPENDENCIES
 )
 
 if( ${NABO_FOUND} )
-  set(LVR_RECONSTRUCT_DEPENDENCIES ${LVR_RECONSTRUCT_DEPENDENCIES} ${NABO_LIBRARY})
+  set(LVR2_RECONSTRUCT_DEPENDENCIES ${LVR2_RECONSTRUCT_DEPENDENCIES} ${NABO_LIBRARY})
 endif( ${NABO_FOUND} )
 
 #####################################################################################
@@ -31,7 +31,7 @@ endif( ${NABO_FOUND} )
 #####################################################################################
 
 if(PCL_FOUND)
-  set(LVR_RECONSTRUCT_DEPENDENCIES  ${LVR_RECONSTRUCT_DEPENDENCIES} ${PCL_LIBRARIES})
+  set(LVR2_RECONSTRUCT_DEPENDENCIES  ${LVR2_RECONSTRUCT_DEPENDENCIES} ${PCL_LIBRARIES})
 endif(PCL_FOUND)
 
 
@@ -41,7 +41,7 @@ endif(PCL_FOUND)
 
 add_executable(lvr2_reconstruct ${RECONSTRUCT_SOURCES})
 #set_target_properties(lvr2_reconstruct PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-target_link_libraries(lvr2_reconstruct ${LVR_RECONSTRUCT_DEPENDENCIES})
+target_link_libraries(lvr2_reconstruct ${LVR2_RECONSTRUCT_DEPENDENCIES})
 
 find_package(HDF5 QUIET REQUIRED)
 include_directories(${HDF5_INCLUDE_DIR})

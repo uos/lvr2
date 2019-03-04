@@ -27,17 +27,17 @@
 
 #include <lvr2/io/PCDIO.hpp>
 #include <fstream>
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-#endif /* LVR_USE_PCL */
+#endif /* LVR2_USE_PCL */
 
 #define isnan(x) ((x) != (x))
 
 namespace lvr2
 {
 
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
 
 ModelPtr PCDIO::read( string filename )
 {
@@ -111,7 +111,7 @@ ModelPtr PCDIO::read( string filename )
     return model;
 
 }
-#else /*  LVR_USE_PCL */
+#else /*  LVR2_USE_PCL */
 
 ModelPtr PCDIO::read( string filename )
 {
@@ -119,7 +119,7 @@ ModelPtr PCDIO::read( string filename )
     ModelPtr m( new Model );
     return m;
 }
-#endif /* LVR_USE_PCL */
+#endif /* LVR2_USE_PCL */
 
 
 void PCDIO::save( string filename )

@@ -33,7 +33,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
 endif(CMAKE_COMPILER_IS_GNUCC)
 
 if(MSVC)
-  list(APPEND LVR_DEFINITIONS -DNOMINMAX)
+  list(APPEND LVR2_DEFINITIONS -DNOMINMAX)
 else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
   # with cmake 3.3
@@ -67,7 +67,7 @@ include_directories( ${OpenCV_INCLUDE_DIRS} )
 option(WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
 if(WITH_CV_NONFREE)
   message(STATUS "Using OpenCV non-free module")
-  list(APPEND LVR_DEFINITIONS -DLVR_USE_CV_NONFREE)
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_CV_NONFREE)
 endif(WITH_CV_NONFREE)
 
 
@@ -130,22 +130,22 @@ find_package(VTK REQUIRED)
 
 
 if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
-  list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK5)
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK5)
 endif()
 
 if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
     if(VTK_MINOR_VERSION VERSION_GREATER "0")
-        list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
+        list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
     endif()
 endif()
 
 if(VTK_MAJOR_VERSION VERSION_GREATER "7")
-  list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
 endif()
 
 if(VTK_VERSION VERSION_GREATER "7")
   
-  list(APPEND LVR_DEFINITIONS -DLVR_USE_VTK_GE_7_1)
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
   set(VTK_COMPONENTS "${VTK_AVAILABLE_COMPONENTS}")
   set(VTK_HAS_QT OFF)
   foreach(VTK_COMPONENT ${VTK_COMPONENTS})
@@ -167,7 +167,7 @@ endif()
 find_package(Nabo)
 if(NABO_FOUND)
   include_directories(${NABO_INCLUDE_DIRS})
-  list(APPEND LVR_DEFINITIONS -DLVR_USE_NABO)
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_NABO)
 endif(NABO_FOUND)
 
 ####
@@ -179,7 +179,7 @@ endif(NABO_FOUND)
 #  include_directories(${PCL_INCLUDE_DIRS})
 #  link_directories(${PCL_LIBRARY_DIRS})
 #  add_definitions(${PCL_DEFINITIONS})
-#  list(APPEND LVR_DEFINITIONS -DLVR_USE_PCL)
+#  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_PCL)
 #else(PCL_FOUND)
 #  message( "-- No PCL found." )
 #  message( "-- PCL related stuff will be disabled." )
@@ -245,7 +245,7 @@ find_package(OpenMP)
 if(OPENMP_FOUND)
   link_directories(${OpenMP_LIBRARY_DIRS})
   include_directories(${OpenMP_INCLUDE_DIRS})
-  list(APPEND LVR_DEFINITIONS -DLVR_USE_OPEN_MP)
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPEN_MP)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif(OPENMP_FOUND)
 
@@ -290,7 +290,7 @@ endif()
 set(STANN_DIR "" CACHE PATH "directory that contains the STANN library headers")
 find_package(STANN)
 if(STANN_FOUND)
-  list(APPEND LVR_DEFINITIONS -DLVR_USE_STANN)
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_STANN)
   include_directories(${STANN_INCLUDE_DIR})
 endif(STANN_FOUND)
 
@@ -302,22 +302,22 @@ endif(STANN_FOUND)
 # NanoFLANN
 add_subdirectory(ext/nanoflann)
 include_directories( ${NANOFLANN_INCLUDE_DIR} )
-list(APPEND LVR_INSTALL_INCLUDE_DIRS ${NANOFLANN_INSTALL_INCLUDE_DIR})
+list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${NANOFLANN_INSTALL_INCLUDE_DIR})
 
 # PSIMPL
 add_subdirectory(ext/psimpl)
 include_directories( ${PSIMPL_INCLUDE_DIR} )
-list(APPEND LVR_INSTALL_INCLUDE_DIRS ${PSIMPL_INSTALL_INCLUDE_DIR})
+list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${PSIMPL_INSTALL_INCLUDE_DIR})
 
 # RPLY
 add_subdirectory(ext/rply)
 include_directories( ${RPLY_INCLUDE_DIR} )
-list(APPEND LVR_INSTALL_INCLUDE_DIRS ${RPLY_INSTALL_INCLUDE_DIR})
+list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${RPLY_INSTALL_INCLUDE_DIR})
 
 # LASLIB
 add_subdirectory(ext/laslib)
 include_directories( ${LASLIB_INCLUDE_DIR} )
-list(APPEND LVR_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
+list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 
 # GSL
 include_directories("ext/gsl/include")
@@ -334,12 +334,12 @@ link_directories(${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 # SLAM6D stuff
 add_subdirectory(ext/slam6d)
 include_directories( ${SLAM6D_INCLUDE_DIR} )
-list(APPEND LVR_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
+list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
 
 # CTPL
 add_subdirectory(ext/CTPL)
 include_directories(${CTPL_INCLUDE_DIR})
-list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CTPL_INSTALL_INCLUDE_DIR})
+list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${CTPL_INSTALL_INCLUDE_DIR})
 
 # RiVLib
 set(RiVLib_DIR ext/rivlib/cmake)
@@ -348,7 +348,7 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/${RiVLib_DIR})
     find_package(RiVLib COMPONENTS scanifc)
     if(RiVLib_FOUND)
         include_directories(${RiVLib_INCLUDE_DIRS})
-        list(APPEND LVR_DEFINITIONS -DLVR_USE_RIVLIB)
+        list(APPEND LVR2_DEFINITIONS -DLVR2_USE_RIVLIB)
         message(STATUS "Found RiVLib")
     endif()
 endif()
@@ -357,7 +357,7 @@ endif()
 # ADD LVR DEFINITIONS
 ##############################################################
 
-add_definitions(${LVR_DEFINITIONS})
+add_definitions(${LVR2_DEFINITIONS})
 
 ##############################################################
 # LVR-Kinfu Checks
@@ -403,7 +403,7 @@ if(APPLE AND (NOT OPENMP_FOUND))
   if(WITH_CLANG_OMP)
     set(CMAKE_C_COMPILER /usr/local/bin/clang-omp CACHE STRING "C compiler" FORCE)
       set(CMAKE_CXX_COMPILER /usr/local/bin/clang-omp++ CACHE STRING "C++ compiler" FORCE)
-      list(APPEND LVR_DEFINITIONS -DLVR_USE_OPEN_MP)
+      list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPEN_MP)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
   endif()
 
@@ -414,7 +414,7 @@ endif()
 ##############################################################
 
 install(DIRECTORY include/lvr2 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-list(APPEND LVR_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
+list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
 
 
 ##############################################################
