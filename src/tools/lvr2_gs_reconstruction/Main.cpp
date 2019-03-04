@@ -26,7 +26,7 @@ typedef CGAL::Simple_cartesian<double> SimpleCartesian;*/
 
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Vector.hpp>
+//#include <lvr2/geometry/Vector.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/io/MeshBuffer.hpp>
@@ -40,55 +40,102 @@ typedef CGAL::Simple_cartesian<double> SimpleCartesian;*/
  * Extended Vertex, which now includes the signal counter, TODO: make it work...how to inherit this wagshit?
  * @tparam CoordT
  */
-template <typename BaseVecT>
-struct GCSVector : public Vector<BaseVecT>{
-public:
-    GCSVector() : signal_counter(0) {};
-    GCSVector(BaseVecT base) : Vector<BaseVecT>(base), signal_counter(0) {};
-    using BaseVecT::BaseVecT;
 
-
-    GCSVector(const BaseVecT &x, const BaseVecT &y, const BaseVecT &z)
-            : Vector<BaseVecT>(x,y,z), signal_counter(0)
-    {}
-
-    void incrementSC() {
-        this->signal_counter++;
-    }
-
-    int getSC() const{
-        return this->signal_counter;
-    }
-
-    void setSC(int new_sc) {
-        this->signal_counter = new_sc;
-    }
-
-    int signal_counter;
-};
-
-/*template<typename CoordT>
-struct GCSVectorTest : BaseVector<CoordT>{
-    GCSVectorTest() : BaseVector<CoordT>(), signal_counter(0) {}
-    GCSVectorTest(const CoordT &x, const CoordT &y, const CoordT &z)
+template<typename CoordT>
+struct GCSVector : public BaseVector<CoordT>{
+    GCSVector() : BaseVector<CoordT>(), signal_counter(0) {}
+    GCSVector(const CoordT &x, const CoordT &y, const CoordT &z)
             : BaseVector<CoordT>(x,y,z), signal_counter(0)
     {}
 
+    GCSVector(const GCSVector& o) : BaseVector<CoordT>(o.x,o.y,o.z), signal_counter(o.signal_counter)
+    {
+    }
     void incSC(){this->signal_counter++;}
     int getSC(){return this->signal_counter;}
     void setSC(int new_sc){this->signal_counter = new_sc;}
 
     int signal_counter;
-};*/
+
+    GCSVector<CoordT> cross(const GCSVector &other) const
+    {
+        BaseVector<CoordT> cp = BaseVector<CoordT>::cross(other);
+        return GCSVector<CoordT>(cp.x, cp.y, cp.z);
+    }
+
+    GCSVector operator*(const CoordT &scale) const
+    {
+        return GCSVector(*this) *= scale;
+    }
+
+    GCSVector operator/(const CoordT &scale) const
+    {
+        return GCSVector(*this) /= scale;
+    }
+
+    GCSVector& operator*=(const CoordT &scale)
+    {
+        BaseVector<CoordT>::operator *= (scale);
+        //return static_cast<GCSVector&>(BaseVector::operator *= (scale));
+
+        return *this;
+    }
+
+    GCSVector& operator/=(const CoordT &scale)
+    {
+        BaseVector<CoordT>::operator /= (scale);
+
+        return *this;
+    }
+
+    GCSVector<CoordT> operator+(const GCSVector &other) const
+    {
+        return GCSVector(*this) += other;
+    }
+
+    GCSVector<CoordT> operator-(const GCSVector &other) const
+    {
+        return GCSVector(*this) -= other;
+    }
+
+    GCSVector<CoordT>& operator+=(const GCSVector<CoordT> &other)
+    {
+        BaseVector<CoordT>::operator += (other);
+
+        return *this;
+    }
+
+    GCSVector<CoordT>& operator-=(const GCSVector<CoordT> &other)
+    {
+        BaseVector<CoordT>::operator -= (other);
+
+        return *this;
+    }
+
+    bool operator==(const GCSVector<CoordT> &other) const
+    {
+        return BaseVector<CoordT>::operator == (other);
+    }
+
+    bool operator!=(const GCSVector<CoordT> &other) const
+    {
+        return BaseVector<CoordT>::operator != (other);
+    }
+
+    CoordT operator*(const GCSVector<CoordT> &other) const
+    {
+        return BaseVector<CoordT>::dot(other);
+    }
+};
 
 //TODO: dont use BaseVector
-using Vec = BaseVector<float>;
+using Vec = GCSVector<float>;
 
 template <typename BaseVecT>
 PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options &options, PointBufferPtr buffer){
     // Create a point cloud manager
     string pcm_name = options.getPcm();
-    PointsetSurfacePtr<Vec> surface;
+    PointsetSurfacePtr<BaseVecT> surface;
 
     // Create point set surface object
     if(pcm_name == "PCL")
