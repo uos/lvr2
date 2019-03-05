@@ -110,6 +110,16 @@ public:
     ///
     void setFaceColors(ucharArr colors, unsigned w = 3);
 
+    void setTextures(std::vector<Texture>& textures)
+    {
+        m_textures = std::move(textures);
+    }
+
+    void setMaterials(std::vector<Material>& materials)
+    {
+        m_materials = std::move(materials);
+    }
+
     ///
     /// \brief numVertices      Number of vertices in the mesh
     ///

@@ -32,7 +32,7 @@
 
 #include "BaseIO.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 class DrcIO : public BaseIO
