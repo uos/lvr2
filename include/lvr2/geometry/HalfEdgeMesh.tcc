@@ -825,11 +825,11 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
         bool clockwise = true;
 
         if(counter == 0){
-            if(firstNormal.z > 0){
+            if(firstNormal.z >= 0){
                 clockwise = false;
             }
         } else {
-            if(secondNormal.z > 0){
+            if(secondNormal.z >= 0){ //TODO: what happens, if z = 0?
                 clockwise = false;
             }
         }

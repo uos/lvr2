@@ -135,7 +135,7 @@ namespace lvr2{
 
     private:
         PointsetSurfacePtr<BaseVecT> m_surface; //helper-surface
-        HalfEdgeMesh<BaseVecT> &m_mesh;
+        HalfEdgeMesh<BaseVecT> *m_mesh;
 
         int m_runtime; //how many steps?
         int m_basicSteps; //how many steps until collapse?
@@ -163,14 +163,14 @@ namespace lvr2{
         void executeVertexSplit();
 
         //collapse edge with ... -- get handle in function or pass it?
-        void executeEdgeCollapse(VertexHandle handle);
+        void executeEdgeCollapse();
 
         /**
          * Getting the initial Tetrahedron, which will be used to approx the surface
          * @param mesh: pointer to a mesh
          * @return nothing
          */
-        VertexHandle getInitialMesh(HalfEdgeMesh<BaseVecT> &mesh);
+        void getInitialMesh();
 
 
 
