@@ -31,7 +31,7 @@ namespace lvr2 {
 
         BaseVecT random_point(p_arr[3 * random], p_arr[3 * random + 1], p_arr[3 * random + 2]);
 
-        std::cout << random_point.x << "|" << random_point.y << "|"<< random_point.z << std::endl;
+        //std::cout << random_point.x << "|" << random_point.y << "|"<< random_point.z << std::endl;
 
         //TODO: search the closest point of the mesh
 
@@ -54,6 +54,31 @@ namespace lvr2 {
     void GrowingCellStructure<BaseVecT, NormalT>::executeVertexSplit() {
         //TODO: find vertex with highst sc, split that vertex
 
+        auto vertices = m_mesh->vertices();
+
+        VertexHandle highestSC(0);
+        for(auto vertexH : vertices){
+            BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
+
+            std::cout << "after getting real vertex" << std::endl;
+            if(vertex.signal_counter > m_mesh->getVertexPosition(highestSC).signal_counter){
+
+                std::cout << "in if..." << std::endl;
+                highestSC = vertexH;
+
+            }
+            std::cout << "i bims, 1 vertex" << std::endl;
+            highestSC = vertexH;
+        }
+
+        //TODO: split it.. :)
+        std::cout << m_mesh->getVertexPosition(highestSC) << std::endl;
+        //m_mesh->splitGSVertex(highestSC);
+
+        //TODO: reduce sc
+        BaseVecT& highestSCVec = m_mesh->getVertexPosition(highestSC);
+        highestSCVec.signal_counter /= 2; //half of it..*/
+
 
     }
 
@@ -61,7 +86,7 @@ namespace lvr2 {
 
     //TODO: EDGECOLLAPSE execution
     template <typename BaseVecT, typename NormalT>
-    void GrowingCellStructure<BaseVecT, NormalT>::executeEdgeCollapse(VertexHandle handle){
+    void GrowingCellStructure<BaseVecT, NormalT>::executeEdgeCollapse(){
 
         //TODO: select edge to collapse, examine whether it should be collapsed, collapse it
     }
@@ -72,7 +97,7 @@ namespace lvr2 {
 
 
     template <typename BaseVecT, typename NormalT>
-    VertexHandle GrowingCellStructure<BaseVecT, NormalT>::getInitialMesh(HalfEdgeMesh<BaseVecT> &mesh){
+    void GrowingCellStructure<BaseVecT, NormalT>::getInitialMesh(){
         auto bounding_box = m_surface.get()->getBoundingBox();
 
         if(!bounding_box.isValid()){
@@ -102,48 +127,61 @@ namespace lvr2 {
         maxz = max.z - zdiff;
 
         BaseVecT top(BaseVecT(centroid.x, maxy, centroid.z));
-        BaseVecT left(BaseVecT(minx, miny, minz));
-        BaseVecT right(BaseVecT(maxx,miny,minz));
-        BaseVecT back(BaseVecT(centroid.x, miny, maxz));
+        BaseVecT left(BaseVecT(minx, miny, maxz));
+        BaseVecT right(BaseVecT(maxx,miny,maxz));
+        BaseVecT back(BaseVecT(centroid.x, miny, minz));
 
 
         std::cout << top << left << right << back << std::endl;
 
-        auto vH1 = mesh.addVertex(top);
-        auto vH2 = mesh.addVertex(left);
-        auto vH3 = mesh.addVertex(right);
-        auto vH4 = mesh.addVertex(back);
+        auto vH1 = m_mesh->addVertex(top);
+        auto vH2 = m_mesh->addVertex(left);
+        auto vH3 = m_mesh->addVertex(right);
+        auto vH4 = m_mesh->addVertex(back);
 
         //add faces to create tetrahedron
-        mesh.addFace(vH2, vH3, vH4);
-        mesh.addFace(vH1, vH2, vH4);
-        mesh.addFace(vH1, vH4, vH3);
-        mesh.addFace(vH3, vH2, vH1);
+        m_mesh->addFace(vH4, vH3, vH2);
+        m_mesh->addFace(vH4, vH2, vH1);
+        m_mesh->addFace(vH4, vH1, vH3);
+        m_mesh->addFace(vH3, vH1, vH2);
 
         //initial mesh done, doesnt need handle-return
 
-        return vH1;
+        //TODO: splits won't work, faces need to be inserted against the clock....
+        //test splitting
+        //m_mesh->splitGSVertex(vH2);
+        //m_mesh->splitGSVertex(vH1);
+        //m_mesh->splitGSVertex(vH3);
+        //m_mesh->splitGSVertex(vH4);
+
     }
 
 
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::getMesh(HalfEdgeMesh<BaseVecT> &mesh){
 
-        m_mesh = mesh;
+        //set pointer to mesh
+        m_mesh = &mesh;
 
-        VertexHandle test = getInitialMesh(m_mesh);
-        mesh.splitGSVertex(test); //test
+        getInitialMesh();
+
 
         //TODO: add gcs construction.. call to basic step, call to other functions
-        // for { for { for { basicStep() } vertexSplit() } edgeCollapse()}
 
         for(int i = 0; i < getRuntime(); i++){
-            executeBasicStep();
-            if(i % getBasicSteps() == 0){
-                executeVertexSplit();
 
-                std::cout << "Vertex Split!!" << std::endl;
+            for(int j = 0; j < getNumSplits(); j++){
+                for(int k = 0; k < getBasicSteps(); k++){
+                    executeBasicStep();
+                }
+                //executeVertexSplit();
+
+                //std::cout << "Vertex Split!!" << std::endl;
             }
+
+            executeEdgeCollapse();
+
+            //std::cout << "Edge Collapse!!!" << std::endl;
         }
     }
 

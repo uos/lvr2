@@ -13,7 +13,7 @@ namespace gs_reconstruction{
     Options::Options(int argc, char **argv) : BaseOption(argc, argv) {
         m_descr.add_options()
                 ("help", "Produce help message")
-                ("inputFile",value<vector<string>>()->required(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
+                ("inputFile",value<vector<string>>(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
                 ("runtime", value<int>(&m_runtime)->default_value(3000), "Overall runtime of the Algorithm. The longer, the (better), default: 3000")
                 ("basicSteps",value<int>(&m_basicSteps)->default_value(10), "Basics step until split, default: 10")
                 ("numSplits",value<int>(&m_numSplits)->default_value(5), "splits per runtime, default: 5")
