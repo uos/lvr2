@@ -26,13 +26,13 @@
  **/
 
 #include <fstream>
-#include <lvr/io/DrcIO.hpp>
 #include <unistd.h>
 
-#include "lvr/io/DracoDecoder.hpp"
-#include "lvr/io/DracoEncoder.hpp"
+#include "lvr2/io/DracoDecoder.hpp"
+#include "lvr2/io/DracoEncoder.hpp"
+#include "lvr2/io/DrcIO.hpp"
 
-namespace lvr
+namespace lvr2
 {
 
 ModelPtr DrcIO::read(string filename)

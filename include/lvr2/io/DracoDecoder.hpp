@@ -33,7 +33,7 @@
 #include "Model.hpp"
 #include "draco/compression/decode.h"
 
-namespace lvr
+namespace lvr2
 {
 
 /**

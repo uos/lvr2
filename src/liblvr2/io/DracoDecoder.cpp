@@ -27,10 +27,10 @@
  *
  **/
 
-#include "lvr/io/DracoDecoder.hpp"
+#include "lvr2/io/DracoDecoder.hpp"
 #include "draco/metadata/geometry_metadata.h"
 
-namespace lvr
+namespace lvr2
 {
 
 /**
@@ -103,6 +103,39 @@ void createTextures(std::vector<int32_t>& drcTextures, std::vector<GlTexture*>& 
         GlTexture* glTexture  = new GlTexture(pixel, width, height);
         glTexture->m_texIndex = (GLuint)id;
         lvrTextures.push_back(glTexture);
+    }
+}
+
+/**
+ *
+ * @brief transforms the int32_t vector with texture data into actual GlTextures
+ *
+ * @param drcTextures the int32_t vector holding the image data
+ * @param lvrTextures a GlTexture vector with the created textures
+ */
+void createTextures(std::vector<int32_t>& drcTextures, std::vector<Texture>& lvrTextures)
+{
+    unsigned long size  = drcTextures.size();
+    unsigned long index = 0;
+
+    while (index < size)
+    {
+        // set texture attributes
+        int id     = drcTextures[index++];
+        int height = drcTextures[index++];
+        int width  = drcTextures[index++];
+
+        int            pixelDat = height * width * 3;
+        unsigned char* pixel    = new unsigned char[pixelDat];
+
+        // create pixel array
+        for (int i = 0; i < pixelDat; ++i)
+        {
+            pixel[i] = (unsigned char)drcTextures[index++];
+        }
+
+        Texture texture(id, width, height, 3, 1, 1, pixel);
+        lvrTextures.push_back(texture);
     }
 }
 
@@ -180,7 +213,7 @@ ModelPtr readPointCloud(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
         const draco::PointAttribute* attribute =
             dracoPointCloud->GetNamedAttribute(draco::GeometryAttribute::NORMAL);
         floatArr data = loadAttributeFromDraco<floatArr, float, 3>(attribute);
-        modelPtr->m_pointCloud->setPointNormalArray(data, attribute->size());
+        modelPtr->m_pointCloud->setNormalArray(data, attribute->size());
     }
     catch (const std::invalid_argument& ia)
     {
@@ -192,35 +225,35 @@ ModelPtr readPointCloud(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
         const draco::PointAttribute* attribute =
             dracoPointCloud->GetNamedAttribute(draco::GeometryAttribute::COLOR);
         ucharArr data = loadAttributeFromDraco<ucharArr, unsigned char, 3>(attribute);
-        modelPtr->m_pointCloud->setPointColorArray(data, attribute->size());
+        modelPtr->m_pointCloud->setColorArray(data, attribute->size());
     }
     catch (const std::invalid_argument& ia)
     {
     }
 
-    // get confidences
-    try
-    {
-        const draco::PointAttribute* attribute =
-            getDracoAttributeByAttributeMetadata(dracoPointCloud.get(), "name", "confidence");
-        floatArr data = loadAttributeFromDraco<floatArr, float, 1>(attribute);
-        modelPtr->m_pointCloud->setPointConfidenceArray(data, attribute->size());
-    }
-    catch (const std::invalid_argument& ia)
-    {
-    }
+    // // get confidences
+    // try
+    // {
+    //     const draco::PointAttribute* attribute =
+    //         getDracoAttributeByAttributeMetadata(dracoPointCloud.get(), "name", "confidence");
+    //     floatArr data = loadAttributeFromDraco<floatArr, float, 1>(attribute);
+    //     modelPtr->m_pointCloud->setPointConfidenceArray(data, attribute->size());
+    // }
+    // catch (const std::invalid_argument& ia)
+    // {
+    // }
 
-    // get intensities
-    try
-    {
-        const draco::PointAttribute* attribute =
-            getDracoAttributeByAttributeMetadata(dracoPointCloud.get(), "name", "intensity");
-        floatArr data = loadAttributeFromDraco<floatArr, float, 1>(attribute);
-        modelPtr->m_pointCloud->setPointIntensityArray(data, attribute->size());
-    }
-    catch (const std::invalid_argument& ia)
-    {
-    }
+    // // get intensities
+    // try
+    // {
+    //     const draco::PointAttribute* attribute =
+    //         getDracoAttributeByAttributeMetadata(dracoPointCloud.get(), "name", "intensity");
+    //     floatArr data = loadAttributeFromDraco<floatArr, float, 1>(attribute);
+    //     modelPtr->m_pointCloud->setPointIntensityArray(data, attribute->size());
+    // }
+    // catch (const std::invalid_argument& ia)
+    // {
+    // }
 
     return modelPtr;
 }
@@ -256,11 +289,11 @@ ModelPtr readMesh(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
 
         if (metadata->GetEntryIntArray("texture", &texture))
         {
-            std::vector<GlTexture*> textures;
+            std::vector<Texture> textures;
 
             createTextures(texture, textures);
 
-            modelPtr->m_mesh->setTextureArray(textures);
+            modelPtr->m_mesh->setTextures(textures);
         }
     }
 
@@ -271,18 +304,24 @@ ModelPtr readMesh(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
 
         if (metadata->GetEntryIntArray("material", &dat))
         {
-            materialArr materials(new Material*[dat.size() / 4]);
-
+            vector<Material> materials;
             for (int i = 0; i < dat.size() / 4; i++)
             {
-                materials[i]                = new Material();
-                materials[i]->r             = static_cast<unsigned char>(dat[4 * i + 0]);
-                materials[i]->g             = static_cast<unsigned char>(dat[4 * i + 1]);
-                materials[i]->b             = static_cast<unsigned char>(dat[4 * i + 2]);
-                materials[i]->texture_index = dat[4 * i + 3];
+                Material m;
+                Rgb8Color rgb;
+                rgb[0] = static_cast<unsigned char>(dat[4 * i + 0]);
+                rgb[0] = static_cast<unsigned char>(dat[4 * i + 1]);
+                rgb[0] = static_cast<unsigned char>(dat[4 * i + 2]);
+
+                TextureHandle h(dat[4 * i + 3]);
+
+                m.m_texture = h;
+                m.m_color = rgb;
+
+                materials.push_back(m);
             }
 
-            modelPtr->m_mesh->setMaterialArray(materials, dat.size() / 4);
+            modelPtr->m_mesh->setMaterials(materials);
         }
     }
 
@@ -292,7 +331,7 @@ ModelPtr readMesh(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
         const draco::PointAttribute* attribute =
             dracoMesh->GetNamedAttribute(draco::GeometryAttribute::POSITION);
         floatArr data = loadAttributeFromDraco<floatArr, float, 3>(attribute);
-        modelPtr->m_mesh->setVertexArray(data, attribute->size());
+        modelPtr->m_mesh->setVertices(data, attribute->size());
     }
     catch (const std::invalid_argument& ia)
     {
@@ -307,7 +346,7 @@ ModelPtr readMesh(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
         const draco::PointAttribute* attribute =
             dracoMesh->GetNamedAttribute(draco::GeometryAttribute::NORMAL);
         floatArr data = loadAttributeFromDraco<floatArr, float, 3>(attribute);
-        modelPtr->m_mesh->setVertexNormalArray(data, attribute->size());
+        modelPtr->m_mesh->setVertexNormals(data);
     }
     catch (const std::invalid_argument& ia)
     {
@@ -319,35 +358,35 @@ ModelPtr readMesh(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
         const draco::PointAttribute* attribute =
             dracoMesh->GetNamedAttribute(draco::GeometryAttribute::COLOR);
         ucharArr data = loadAttributeFromDraco<ucharArr, unsigned char, 3>(attribute);
-        modelPtr->m_mesh->setVertexColorArray(data, attribute->size());
+        modelPtr->m_mesh->setVertexColors(data);
     }
     catch (const std::invalid_argument& ia)
     {
     }
 
-    // get confidences
-    try
-    {
-        const draco::PointAttribute* attribute =
-            getDracoAttributeByAttributeMetadata(dracoMesh.get(), "name", "confidence");
-        floatArr data = loadAttributeFromDraco<floatArr, float, 1>(attribute);
-        modelPtr->m_mesh->setVertexConfidenceArray(data, attribute->size());
-    }
-    catch (const std::invalid_argument& ia)
-    {
-    }
+    // // get confidences
+    // try
+    // {
+    //     const draco::PointAttribute* attribute =
+    //         getDracoAttributeByAttributeMetadata(dracoMesh.get(), "name", "confidence");
+    //     floatArr data = loadAttributeFromDraco<floatArr, float, 1>(attribute);
+    //     modelPtr->m_mesh->setVertexConfidenceArray(data, attribute->size());
+    // }
+    // catch (const std::invalid_argument& ia)
+    // {
+    // }
 
-    // get intensities
-    try
-    {
-        const draco::PointAttribute* attribute =
-            getDracoAttributeByAttributeMetadata(dracoMesh.get(), "name", "intensity");
-        floatArr data = loadAttributeFromDraco<floatArr, float, 1>(attribute);
-        modelPtr->m_mesh->setVertexIntensityArray(data, attribute->size());
-    }
-    catch (const std::invalid_argument& ia)
-    {
-    }
+    // // get intensities
+    // try
+    // {
+    //     const draco::PointAttribute* attribute =
+    //         getDracoAttributeByAttributeMetadata(dracoMesh.get(), "name", "intensity");
+    //     floatArr data = loadAttributeFromDraco<floatArr, float, 1>(attribute);
+    //     modelPtr->m_mesh->setVertexIntensityArray(data, attribute->size());
+    // }
+    // catch (const std::invalid_argument& ia)
+    // {
+    // }
 
     // get texture coordinates
     try
@@ -355,7 +394,7 @@ ModelPtr readMesh(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
         const draco::PointAttribute* attribute =
             dracoMesh->GetNamedAttribute(draco::GeometryAttribute::TEX_COORD);
         floatArr data = loadAttributeFromDraco<floatArr, float, 3>(attribute);
-        modelPtr->m_mesh->setVertexTextureCoordinateArray(data, attribute->size());
+        modelPtr->m_mesh->setTextureCoordinates(data);
     }
     catch (const std::invalid_argument& ia)
     {
@@ -366,7 +405,7 @@ ModelPtr readMesh(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
         getDracoAttributeByAttributeMetadata(dracoMesh.get(), "name", "materialindex");
     if (matIndexAttribute)
     {
-        uintArr data(new uint32_t[dracoMesh->num_faces()]);
+        indexArray data(new uint32_t[dracoMesh->num_faces()]);
 
         uint32_t tmp;
         for (draco::FaceIndex i(0); i < dracoMesh->num_faces(); i++)
@@ -381,7 +420,7 @@ ModelPtr readMesh(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
             data[i.value()] = tmp;
         }
 
-        modelPtr->m_mesh->setFaceMaterialIndexArray(data, dracoMesh->num_faces());
+        modelPtr->m_mesh->setFaceMaterialIndices(data);
     }
 
     // get faces
@@ -394,7 +433,7 @@ ModelPtr readMesh(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
         faceArr[i.value() * 3 + 1] = faceAttribute->mapped_index(dracoMesh->face(i)[1]).value();
         faceArr[i.value() * 3 + 2] = faceAttribute->mapped_index(dracoMesh->face(i)[2]).value();
     }
-    modelPtr->m_mesh->setFaceArray(faceArr, dracoMesh->num_faces());
+    modelPtr->m_mesh->setFaceIndices(faceArr, dracoMesh->num_faces());
 
     return modelPtr;
 }
