@@ -285,38 +285,33 @@ std::vector<std::vector<CamData> > HDF5IO::getRawCamData(bool load_image_data)
 {
     std::vector<std::vector<CamData> > ret;
     
-
     if(m_hdf5_file) 
     {
-        std::string groupNameScans = "/raw/scans/";
+        std::string groupNamePhotos = "/raw/photos/";
 
-        if(!exist(groupNameScans))
+        if(!exist(groupNamePhotos))
         {
             return ret;
         }
 
-        HighFive::Group scans_group = getGroup(groupNameScans);
+        HighFive::Group photos_group = getGroup(groupNamePhotos);
 
-        size_t num_scans = scans_group.getNumberObjects();
+        size_t num_scans = photos_group.getNumberObjects();
+
 
         for (size_t i = 0; i < num_scans; i++)
         {
 
-            std::string cur_scan_pos = scans_group.getObjectName(i);
-            HighFive::Group scan_group = getGroup(scans_group, cur_scan_pos);
+            std::string cur_scan_pos = photos_group.getObjectName(i);
+            HighFive::Group photo_group = getGroup(photos_group, cur_scan_pos);
 
             std::vector<CamData> cam_data;
 
-            if(scan_group.exist("images"))
+            size_t num_photos = photo_group.getNumberObjects();
+            for(size_t j=0; j< num_photos; j++)
             {
-                HighFive::Group image_group = getGroup(scan_group, "images");
-                
-                size_t num_images = image_group.getNumberObjects();
-                for(size_t j=0; j< num_images; j++)
-                {
-                    CamData cam = getSingleRawCamData(i, j, load_image_data);
-                    cam_data.push_back(cam);
-                }
+                CamData cam = getSingleRawCamData(i, j, load_image_data);
+                cam_data.push_back(cam);
             }
 
             ret.push_back(cam_data);
@@ -421,11 +416,11 @@ CamData HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_dat
         sprintf(buffer1, "position_%05d", scan_id);
         string scan_id_str(buffer1);
         char buffer2[128];
-        sprintf(buffer2, "position_%05d", img_id);
+        sprintf(buffer2, "photo_%05d", img_id);
         string img_id_str(buffer2);
 
 
-        std::string groupName         = "/raw/scans/"  + scan_id_str + "/images/" + img_id_str;
+        std::string groupName  = "/raw/photos/"  + scan_id_str + "/" + img_id_str;
         
         HighFive::Group g;
         
@@ -749,32 +744,18 @@ void HDF5IO::addRawCamData( int scan_id, int img_id, CamData& cam_data )
         char buffer1[128];
         sprintf(buffer1, "position_%05d", scan_id);
         string scan_id_str(buffer1);
-        std::string groupName = "/raw/scans/" + scan_id_str + "/images";
-
-        HighFive::Group scan_images_group;
-
-        try
-        {
-            scan_images_group = getGroup(groupName);
-        }
-        catch(HighFive::Exception& e)
-        {
-            std::cout << timestamp << "Error adding raw image data: "
-                    << e.what() << std::endl;
-            throw e;
-        }
-
-        // scan images group loaded
 
         char buffer2[128];
-        sprintf(buffer2, "position_%05d", img_id);
-        string img_id_str(buffer2);
+        sprintf(buffer2, "photo_%05d", img_id);
+        string photo_id_str(buffer2);
 
-        // try to load group
-        HighFive::Group scan_image_group;
+        std::string groupName = "/raw/photos/" + scan_id_str + "/" + photo_id_str;
+
+        HighFive::Group photo_group;
+
         try
         {
-            scan_image_group = getGroup(scan_images_group, img_id_str);
+            photo_group = getGroup(groupName);
         }
         catch(HighFive::Exception& e)
         {
@@ -794,9 +775,9 @@ void HDF5IO::addRawCamData( int scan_id, int img_id, CamData& cam_data )
                 chunks.push_back(i);
         }
 
-        addArray(scan_image_group, "intrinsics", dim, chunks, intrinsics_arr);
-        addArray(scan_image_group, "extrinsics", dim, chunks, extrinsics_arr);
-        addImage(scan_image_group, "image", cam_data.m_image_data);
+        addArray(photo_group, "intrinsics", dim, chunks, intrinsics_arr);
+        addArray(photo_group, "extrinsics", dim, chunks, extrinsics_arr);
+        addImage(photo_group, "image", cam_data.m_image_data);
 
     }
 }

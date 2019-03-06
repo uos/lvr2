@@ -205,7 +205,7 @@ public:
 
 	Matrix4(string filename);
 
-	virtual ~Matrix4()
+	~Matrix4()
 	{
 
 	}
@@ -432,7 +432,7 @@ public:
 				pose[5]  = atan2( _trY, _trX );
 			}
 
-			//cout << pose[3] << " " << pose[4] << " " << pose[5] << endl;
+			// cout << pose[3] << " " << pose[4] << " " << pose[5] << endl;
 
 			pose[0] = m[12];
 			pose[1] = m[13];
@@ -486,7 +486,7 @@ public:
 	 * @brief	Returns the internal data array. Unsafe. Will probably
 	 * 			removed in one of the next versions.
 	 */
-	ValueType* getData(){ return m;};
+	ValueType* getData(){ return m;}
 
     floatArr toFloatArray()
     {
@@ -567,6 +567,8 @@ public:
 	    return Mout;
 	}
 
+	ValueType m[16];
+
 private:
 
     /**
@@ -602,7 +604,7 @@ private:
 	  return ( det );
 	}
 
-	ValueType m[16];
+	
 };
 
 /**
