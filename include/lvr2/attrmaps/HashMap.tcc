@@ -31,7 +31,7 @@
  *  @date 27.07.2017
  */
 #include <utility>
-
+#include <memory>
 #include <lvr2/util/Panic.hpp>
 
 using std::make_pair;

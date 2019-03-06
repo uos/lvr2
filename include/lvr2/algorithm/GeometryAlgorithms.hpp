@@ -113,7 +113,7 @@ template<typename BaseVecT>
 DenseVertexMap<float> calcVertexRoughness(
         const BaseMesh<BaseVecT>& mesh,
         double radius,
-        const VertexMap<Normal<BaseVecT>>& normals
+        const VertexMap<Normal<typename BaseVecT::CoordType>>& normals
 );
 
 /**
@@ -128,7 +128,7 @@ DenseVertexMap<float> calcVertexRoughness(
 template<typename BaseVecT>
 DenseVertexMap<float> calcAverageVertexAngles(
         const BaseMesh<BaseVecT>& mesh,
-        const VertexMap<Normal<BaseVecT>>& normals
+        const VertexMap<Normal<typename BaseVecT::CoordType>>& normals
 );
 
 /**
@@ -143,7 +143,7 @@ DenseVertexMap<float> calcAverageVertexAngles(
 template<typename BaseVecT>
 DenseEdgeMap<float> calcVertexAngleEdges(
         const BaseMesh<BaseVecT>& mesh,
-        const VertexMap<Normal<BaseVecT>>& normals
+        const VertexMap<Normal<typename BaseVecT::CoordType>>& normals
 );
 
 /**
@@ -167,7 +167,7 @@ template<typename BaseVecT>
 void calcVertexRoughnessAndHeightDifferences(
         const BaseMesh<BaseVecT>& mesh,
         double radius,
-        const VertexMap<Normal<BaseVecT>>& normals,
+        const VertexMap<Normal<typename BaseVecT::CoordType>>& normals,
         DenseVertexMap<float>& roughness,
         DenseVertexMap<float>& heightDiff
 );
@@ -191,7 +191,7 @@ DenseEdgeMap<float> calcVertexDistances(const BaseMesh<BaseVecT>& mesh);
  *
  * @return true if a path between start and goals exists
  */
-template<typename BaseVecT, typename Visitor>
+template<typename BaseVecT>
 bool Dijkstra(
     const BaseMesh<BaseVecT>& mesh,
     const VertexHandle& start,
@@ -201,7 +201,7 @@ bool Dijkstra(
     DenseVertexMap<float>& distances,
     DenseVertexMap<VertexHandle>& predecessors,
     DenseVertexMap<bool>& seen,
-    Visitor visitor);
+    DenseVertexMap<float>& vertex_costs);
 
 
 } // namespace lvr2

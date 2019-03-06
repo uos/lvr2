@@ -41,7 +41,6 @@
 #include <H5Tpublic.h>
 #include <hdf5_hl.h>
 
-
 #include <highfive/H5DataSet.hpp>
 #include <highfive/H5DataSpace.hpp>
 #include <highfive/H5File.hpp>
@@ -77,7 +76,7 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
          */
     virtual void save(std::string filename);
 
-    HDF5IO(std::string filename, bool truncate = false);
+    HDF5IO(std::string filename, int open_flags = HighFive::File::ReadOnly);
 
     /**
      * @brief Constructs a HDFIO io object to read a HDF5 file with the given filename.
@@ -86,13 +85,13 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
      * be loaded if one accessing them in a lazy fashion.
      * @param filename  The HDF5 file filename
      * @param part_name The part in the HDF5 file which should be saved or loaded.
-     * @param truncate  Open flag: Truncate the HDF5 file if already existing
+     * @param open_flag Open flags: See the HighFive::File open flags
      */
-    HDF5IO(const std::string filename, const std::string part_name, bool truncate = false);
+    HDF5IO(const std::string filename, const std::string part_name, int open_flags = HighFive::File::ReadOnly);
 
     virtual ~HDF5IO();
 
-    bool open(std::string filename, bool truncate);
+    bool open(std::string filename, int open_flag);
 
     template<typename T>
     boost::shared_array<T> getArray(
@@ -282,7 +281,6 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
     size_t                  m_chunkSize;
     bool                    m_usePreviews;
     unsigned int            m_previewReductionFactor;
-    bool                    m_truncate;
     std::string             m_part_name;
     std::string             m_mesh_path;
 };

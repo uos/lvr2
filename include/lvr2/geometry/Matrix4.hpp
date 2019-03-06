@@ -40,7 +40,6 @@
 #include <iomanip>
 #include <vector>
 
-#include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/io/DataStruct.hpp>
 
@@ -100,7 +99,7 @@ public:
 	 * 			avoid a gimbal lock.
 	 */
 	template<typename T>
-	Matrix4(Vector<T> axis, ValueType angle)
+	Matrix4(T axis, ValueType angle)
 	{
 		// Check for gimbal lock
 		if(fabs(angle) < 0.0001){
@@ -128,12 +127,12 @@ public:
 			cout << "YAW: " << yaw << " PITCH: " << pitch << endl;
 
 			if(fabs(yaw)   > 0.0001){
-				m2 = Matrix4(Vector<T>(1.0, 0.0, 0.0), yaw);
+				m2 = Matrix4(T(1.0, 0.0, 0.0), yaw);
 				m3 = m3 * m2;
 			}
 
 			if(fabs(pitch) > 0.0001){
-				m1 = Matrix4(Vector<T>(0.0, 1.0, 0.0), pitch);
+				m1 = Matrix4(T(0.0, 1.0, 0.0), pitch);
 				m3 = m3 * m1;
 			}
 
@@ -174,7 +173,7 @@ public:
 	}
 
 	template<typename T>
-	Matrix4(const Vector<T> &position, const Vector<T> &angles)
+	Matrix4(const T &position, const T &angles)
 	{
 		float sx = sin(angles[0]);
 		float cx = cos(angles[0]);
@@ -238,8 +237,7 @@ public:
 	/**
 	 * @brief	Scales the matrix elemnts by the given factor
 	 */
-	template<typename T>
-	Matrix4<BaseVecT> operator*(const T &scale) const
+	Matrix4<BaseVecT> operator*(const typename BaseVecT::CoordType &scale) const
 	{
 		ValueType new_matrix[16];
 		for(int i = 0; i < 16; i++){
@@ -339,7 +337,7 @@ public:
 	 * @brief	Multiplication of Matrix and Vertex types
 	 */
 	template<typename T>
-	Vector<T> operator*(const Vector<T> &v) const
+	T operator*(const T &v) const
 	{
         using ValType = typename T::CoordType;
 		ValType x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
@@ -350,7 +348,7 @@ public:
 		y = y + m[13];
 		z = z + m[14];
 
-		return Vector<T>(x, y, z);
+		return T(x, y, z);
 	}
 
     /**

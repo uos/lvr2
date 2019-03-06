@@ -33,7 +33,7 @@
 #include <lvr2/attrmaps/AttrMaps.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Normal.hpp>
-#include <lvr2/geometry/Vector.hpp>
+
 
 namespace lvr2
 {

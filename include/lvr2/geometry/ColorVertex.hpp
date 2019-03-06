@@ -35,7 +35,7 @@
 #ifndef COLORVERTEX_H_
 #define COLORVERTEX_H_
 
-#include <lvr2/geometry/Vector.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
 
 #include <ostream>
 
@@ -46,12 +46,12 @@ namespace lvr2
 /**
  * @brief	A color vertex
  */
-template<typename BaseVecT, typename ColorT>
-class ColorVertex : public Vector<BaseVecT>
+template<typename T, typename ColorT>
+class ColorVertex : public BaseVector<T>
 {
 public:
 
-    using CoordType = typename BaseVecT::CoordType;
+    using CoordType = T;
 	/**
 	 * @brief	Default constructor. All coordinates and the color are initialized
 	 * 			with zeros.
@@ -109,7 +109,7 @@ public:
 	/**
 	 * @brief	Copy Ctor.
 	 */
-	ColorVertex(const Vector<BaseVecT> &o)
+	ColorVertex(const T &o)
 	{
 		this->x = o.x;
 		this->y = o.y;

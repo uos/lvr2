@@ -54,13 +54,13 @@ struct channel_type<unsigned char>
   typedef unsigned char type;
 };
 template <>
-struct channel_type<Normal<BaseVec>>
+struct channel_type<Normal<float>>
 {
   static const unsigned int w = 3;
   typedef float type;
 };
 template <>
-struct channel_type<Vector<BaseVec>>
+struct channel_type<BaseVector<float>>
 {
   static const unsigned int w = 3;
   typedef float type;
@@ -142,19 +142,19 @@ bool AttributeMeshIOBase::addAttributeMap(const MapT &map, const std::string &na
   return addChannel(attribute_type<typename MapT::HandleType>::attr_group, name, values) && addChannel(attribute_type<typename MapT::HandleType>::attr_group, name + "_idx", indices);
 }
 
+
 template <typename MapT>
 boost::optional<MapT> AttributeMeshIOBase::getDenseAttributeMap(const std::string &name)
 {
   typename AttributeChannel<typename channel_type<typename MapT::ValueType>::type>::Optional channel_opt;
   if (getChannel(attribute_type<typename MapT::HandleType>::attr_group, name, channel_opt) && channel_opt && channel_opt.get().width() == channel_type<typename MapT::ValueType>::w)
   {
-    auto &channel = channel_opt.get();
+    AttributeChannel<typename channel_type<typename MapT::ValueType>::type> &channel = channel_opt.get();
     MapT map;
     map.reserve(channel.numElements());
     for (size_t i = 0; i < channel.numElements(); i++)
     {
-      typename MapT::HandleType handle(i);
-      map.insert(handle, channel[i]);
+      map.insert(typename MapT::HandleType(i), channel[i]);
     }
     return map;
   }
@@ -177,7 +177,7 @@ boost::optional<MapT> AttributeMeshIOBase::getAttributeMap(const std::string &na
     map.reserve(indices.numElements());
     for (size_t i = 0; i < indices.numElements(); i++)
     {
-      map.insert(typename MapT::HandleType(indices[i]), values[i]);
+      map.insert(indices[i], values[i]);
     }
     return map;
   }

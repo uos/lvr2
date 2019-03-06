@@ -69,7 +69,7 @@ class SimpleFinalizer
 {
 private:
     optional<const VertexMap<Rgb8Color>&> m_colorData;
-    optional<const VertexMap<Normal<BaseVecT>>&> m_normalData;
+    optional<const VertexMap<Normal<typename BaseVecT::CoordType>>&> m_normalData;
 
 public:
     SimpleFinalizer() {};
@@ -94,7 +94,7 @@ public:
      *
      * @param normalData normals for all vertices in the mesh which will be passed to apply
      */
-    void setNormalData(const VertexMap<Normal<BaseVecT>>& normalData);
+    void setNormalData(const VertexMap<Normal<typename BaseVecT::CoordType>>& normalData);
 };
 
 /**
@@ -117,7 +117,7 @@ public:
      *
      * @param normals normals for all vertices in the mesh which will be passed to apply
      */
-    void setVertexNormals(const VertexMap<Normal<BaseVecT>>& normals);
+    void setVertexNormals(const VertexMap<Normal<typename BaseVecT::CoordType>>& normals);
 
     /**
      * Sets color data for all clusters for the apply method. This has to be done before apply is called.
@@ -154,7 +154,7 @@ private:
     const ClusterBiMap<FaceHandle>& m_cluster;
 
     // Normals (optional)
-    optional<const VertexMap<Normal<BaseVecT>>&> m_vertexNormals;
+    optional<const VertexMap<Normal<typename BaseVecT::CoordType>>&> m_vertexNormals;
 
     // Basic colors
     // Cluster colors will color each vertex in the color of its corresponding cluster

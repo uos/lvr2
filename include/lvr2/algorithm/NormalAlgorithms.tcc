@@ -37,11 +37,13 @@
 
 using std::vector;
 
+#include "lvr2/geometry/Normal.hpp"
+
 namespace lvr2
 {
 
 template <typename BaseVecT>
-boost::optional<Normal<BaseVecT>> getFaceNormal(array<Vector<BaseVecT>, 3> vertices)
+boost::optional<Normal<typename BaseVecT::CoordType>> getFaceNormal(array<BaseVecT, 3> vertices)
 {
     auto v1 = vertices[0];
     auto v2 = vertices[1];
@@ -49,13 +51,13 @@ boost::optional<Normal<BaseVecT>> getFaceNormal(array<Vector<BaseVecT>, 3> verti
     auto normalDir = (v1 - v2).cross(v1 - v3);
     return normalDir.length2() == 0
         ? boost::none
-        : boost::optional<Normal<BaseVecT>>(Normal<BaseVecT>(normalDir));
+        : boost::optional<Normal<typename BaseVecT::CoordType>>(Normal<typename BaseVecT::CoordType>(normalDir));
 }
 
 template <typename BaseVecT>
-DenseFaceMap<Normal<BaseVecT>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh)
+DenseFaceMap<Normal<typename BaseVecT::CoordType>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh)
 {
-    DenseFaceMap<Normal<BaseVecT>> out;
+    DenseFaceMap<Normal<typename BaseVecT::CoordType>> out;
     out.reserve(mesh.numFaces());
 
     for (auto faceH: mesh.faces())
@@ -63,16 +65,16 @@ DenseFaceMap<Normal<BaseVecT>> calcFaceNormals(const BaseMesh<BaseVecT>& mesh)
         auto maybeNormal = getFaceNormal(mesh.getVertexPositionsOfFace(faceH));
         auto normal = maybeNormal
             ? *maybeNormal
-            : Normal<BaseVecT>(0, 0, 1);
+            : Normal<typename BaseVecT::CoordType>(0, 0, 1);
         out.insert(faceH, normal);
     }
     return out;
 }
 
 template <typename BaseVecT>
-optional<Normal<BaseVecT>> interpolatedVertexNormal(
+optional<Normal<typename BaseVecT::CoordType>> interpolatedVertexNormal(
     const BaseMesh<BaseVecT>& mesh,
-    const FaceMap<Normal<BaseVecT>>& normals,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     VertexHandle handle
 )
 {
@@ -85,7 +87,7 @@ optional<Normal<BaseVecT>> interpolatedVertexNormal(
     }
 
     // Average normal over all connected faces
-    Vector<BaseVecT> v(0, 0, 0);
+    BaseVecT v(0, 0, 0);
     for (auto face: faces)
     {
         v += normals[face];
@@ -93,17 +95,17 @@ optional<Normal<BaseVecT>> interpolatedVertexNormal(
 
     // It is indeed possible that `v` is the zero vector here: if there are two
     // faces with normals pointing into exactly different directions.
-    return v.length2() == 0 ? boost::none : boost::optional<Normal<BaseVecT>>(v.normalized());
+    return v.length2() == 0 ? boost::none : boost::optional<Normal<typename BaseVecT::CoordType>>(v.normalized());
 }
 
 template<typename BaseVecT>
-DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
+DenseVertexMap<Normal<typename BaseVecT::CoordType>> calcVertexNormals(
     const BaseMesh<BaseVecT>& mesh,
-    const FaceMap<Normal<BaseVecT>>& normals,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     const PointsetSurface<BaseVecT>& surface
 )
 {
-    DenseVertexMap<Normal<BaseVecT>> normalMap;
+    DenseVertexMap<Normal<typename BaseVecT::CoordType>> normalMap;
     normalMap.reserve(mesh.numVertices());
 
     for (auto vH: mesh.vertices())
@@ -137,7 +139,7 @@ DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
             FloatChannelOptional normals = surface.pointBuffer()->getFloatChannel("normals");
             if(normals)
             {
-                Normal<BaseVecT> normal = (*normals)[pointIdx[0]];
+                Normal<typename BaseVecT::CoordType> normal = (*normals)[pointIdx[0]];
                 normalMap.insert(vH, normal);
             }
             else
@@ -151,12 +153,12 @@ DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
 }
 
 template<typename BaseVecT>
-DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
+DenseVertexMap<Normal<typename BaseVecT::CoordType>> calcVertexNormals(
     const BaseMesh<BaseVecT>& mesh,
-    const FaceMap<Normal<BaseVecT>>& normals
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals
 )
 {
-    DenseVertexMap<Normal<BaseVecT>> normalMap;
+    DenseVertexMap<Normal<typename BaseVecT::CoordType>> normalMap;
     normalMap.reserve(mesh.numVertices());
 
     for (auto vH: mesh.vertices())
@@ -168,7 +170,7 @@ DenseVertexMap<Normal<BaseVecT>> calcVertexNormals(
         }
         else
         {
-            normalMap.insert(vH, Normal<BaseVecT>(0, 0, 1));
+            normalMap.insert(vH, Normal<typename BaseVecT::CoordType>(0, 0, 1));
         }
     }
 

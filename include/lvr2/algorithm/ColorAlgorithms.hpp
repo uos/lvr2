@@ -38,9 +38,10 @@
 #define LVR2_ALGORITHM_COLORALGORITHMS_H_
 
 #include <vector>
+#include <array>
+
 #include <boost/optional.hpp>
 
-using std::vector;
 using boost::optional;
 
 #include <lvr2/geometry/BaseMesh.hpp>
@@ -50,7 +51,7 @@ using boost::optional;
 namespace lvr2
 {
 
-using Rgb8Color = array<uint8_t, 3>;
+using Rgb8Color = std::array<uint8_t, 3>;
 
 /**
  * @brief   Calculates the color of each vertex from the point cloud

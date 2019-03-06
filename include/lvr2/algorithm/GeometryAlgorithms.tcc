@@ -127,7 +127,7 @@ DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT>& mesh
     heightDiff.reserve(mesh.nextVertexIndex());
 
     // Calculate height difference for each vertex
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
     {
         auto vH = VertexHandle(i);
@@ -160,7 +160,7 @@ DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT>& mesh
 }
 
 template<typename BaseVecT>
-DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<BaseVecT>>& normals)
+DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<typename BaseVecT::CoordType>>& normals)
 {
     DenseEdgeMap<float> edgeAngle(mesh.nextEdgeIndex(), 0);
     for (auto eH: mesh.edges())
@@ -175,7 +175,7 @@ DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const V
 template<typename BaseVecT>
 DenseVertexMap<float> calcAverageVertexAngles(
     const BaseMesh<BaseVecT>& mesh,
-    const VertexMap<Normal<BaseVecT>>& normals
+    const VertexMap<Normal<typename BaseVecT::CoordType>>& normals
 )
 {
     DenseVertexMap<float> vertexAngles(mesh.nextVertexIndex(), 0);
@@ -200,7 +200,7 @@ template<typename BaseVecT>
 DenseVertexMap<float> calcVertexRoughness(
     const BaseMesh<BaseVecT>& mesh,
     double radius,
-    const VertexMap<Normal<BaseVecT>>& normals
+    const VertexMap<Normal<typename BaseVecT::CoordType>>& normals
 )
 {
     // We create a map to store the roughness for each vertex. We preallocate
@@ -215,7 +215,7 @@ DenseVertexMap<float> calcVertexRoughness(
     auto averageAngles = calcAverageVertexAngles(mesh, normals);
 
     // Calculate roughness for each vertex
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
     {
         auto vH = VertexHandle(i);
@@ -244,7 +244,7 @@ template<typename BaseVecT>
 void calcVertexRoughnessAndHeightDifferences(
     const BaseMesh<BaseVecT>& mesh,
     double radius,
-    const VertexMap<Normal<BaseVecT>>& normals,
+    const VertexMap<Normal<typename BaseVecT::CoordType>>& normals,
     DenseVertexMap<float>& roughness,
     DenseVertexMap<float>& heightDiff
 )
@@ -321,7 +321,7 @@ class CompareDist
 };
 
 
-template<typename BaseVecT, typename Visitor>
+template<typename BaseVecT>
 bool Dijkstra(
     const BaseMesh<BaseVecT>& mesh,
     const VertexHandle& start,
@@ -331,7 +331,7 @@ bool Dijkstra(
     DenseVertexMap<float>& distances,
     DenseVertexMap<VertexHandle>& predecessors,
     DenseVertexMap<bool>& seen,
-    Visitor visitor)
+    DenseVertexMap<float>& vertex_costs)
 {
     path.clear();
     distances.clear();
@@ -380,7 +380,7 @@ bool Dijkstra(
 
         for(auto neighbour_vh: neighbours)
         {
-            if(seen[neighbour_vh] || !visitor(neighbour_vh)) continue;
+            if(seen[neighbour_vh] || vertex_costs[neighbour_vh] >= 1) continue;
 
             float edge_cost = edgeCosts[mesh.getEdgeBetween(current_vh, neighbour_vh).unwrap()];
 

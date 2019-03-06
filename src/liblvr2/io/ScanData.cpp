@@ -58,7 +58,7 @@ void parseSLAMDirectory(std::string dir, vector<ScanData>& scans)
 
                 for (size_t i = 0; i < numPoints; i++)
                 {
-                    Vector<BaseVector<float> > pt(pts[i*3 + 0], pts[i*3 + 1], pts[i*3 + 2]);
+                    BaseVector<float> pt(pts[i*3 + 0], pts[i*3 + 1], pts[i*3 + 2]);
                     scan_data.m_boundingBox.expand(pt);
                 }
 
