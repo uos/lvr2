@@ -36,7 +36,6 @@
 #include <lvr2/reconstruction/Projection.hpp>
 #include <lvr2/io/Progress.hpp>
 #include <lvr2/io/Timestamp.hpp>
-#include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
 
 #include <iostream>
@@ -114,7 +113,7 @@ void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
     int img_x, img_y;
     for(int i = 0; i < n_points; i++)
     {        
-        Vector<Vec> ppt(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
+        Vec ppt(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
 
         m_projection->project(
                     img_x, img_y, range,

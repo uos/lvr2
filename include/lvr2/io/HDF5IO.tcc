@@ -12,14 +12,13 @@ void HDF5IO::addArray(HighFive::Group& g,
 
     if(m_chunkSize)
     {
-        // We habe to check explicitly if chunk size
+        // We have to check explicitly if chunk size
         // is < dimensionality to avoid errors from
         // the HDF5 lib
         for(size_t i = 0; i < chunkSizes.size(); i++)
         {
             if(chunkSizes[i] > dim[i])
             {
-
                 chunkSizes[i] = dim[i];
             }
         }
@@ -33,6 +32,8 @@ void HDF5IO::addArray(HighFive::Group& g,
     HighFive::DataSet dataset = g.createDataSet<T>(datasetName, dataSpace, properties);
     const T* ptr = data.get();
     dataset.write(ptr);
+    m_hdf5_file->flush();
+    std::cout << timestamp << " Wrote " << datasetName << " to HDF5 file." << std::endl;
 }
 
 template<typename T>
@@ -187,8 +188,8 @@ bool HDF5IO::getChannel(const std::string group, const std::string name, boost::
         << std::endl;
         return false;
     }
-    auto attr_group = mesh.getGroup(group);
-    if(!attr_group.exist(name))
+    auto attribute_group = mesh.getGroup(group);
+    if(!attribute_group.exist(name))
     {
         std::cout << timestamp << " Could not find mesh attribute \"" << name << "\" in group \"" << group
         << "\" in the given HDF5 file!" << std::endl;
@@ -196,7 +197,7 @@ bool HDF5IO::getChannel(const std::string group, const std::string name, boost::
     }
 
     std::vector<size_t >dims;
-    auto values = getArray<T>(mesh, name, dims);
+    auto values = getArray<T>(attribute_group, name, dims);
     channel = AttributeChannel<T>(dims[0], dims[1], values);
     return true;
 }
@@ -205,7 +206,10 @@ template <typename T>
 bool HDF5IO::addChannel(const std::string group, const std::string name, const AttributeChannel<T>& channel)
 {
     std::vector<size_t > dims = {channel.numElements(), channel.width()};
-    addArray<T>(m_mesh_path + "/" + group , name, dims, channel.dataPtr());
+    const std::string final_group = m_mesh_path + "/" + group;
+    addArray<T>(final_group , name, dims, channel.dataPtr());
+    std::cout << timestamp << " Added attribute \"" << name << "\" to group \"" << final_group
+    << "\" to the given HDF5 file!" << std::endl;
     return true;
 }
 

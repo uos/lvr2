@@ -52,7 +52,7 @@ VectorMap<HandleT, ValueT>::VectorMap(size_t countElements, const ValueT& defaul
 }
 
 template<typename HandleT, typename ValueT>
-VectorMap<HandleT, ValueT>::VectorMap(size_t countElements, boost::shared_array<ValueT>& sharedArray)
+VectorMap<HandleT, ValueT>::VectorMap(size_t countElements, const boost::shared_array<ValueT>& sharedArray)
     : m_vec(countElements, sharedArray)
 {}
 

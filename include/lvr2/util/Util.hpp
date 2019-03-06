@@ -42,7 +42,6 @@
 
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Matrix4.hpp>
-#include <lvr2/geometry/Vector.hpp>
 
 namespace lvr2
 {
@@ -219,7 +218,7 @@ public:
          *
          * @return Returns true if lhs is smaller and elsewise false
          */
-        bool operator() (const Vector<VecUChar>& lhs, const Vector<VecUChar>& rhs) const
+        bool operator() (const VecUChar& lhs, const VecUChar& rhs) const
         {
             return (lhs.x < rhs.x) ||
                    (lhs.x == rhs.x && lhs.y < rhs.y) ||

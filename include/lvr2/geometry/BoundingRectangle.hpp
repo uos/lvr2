@@ -34,7 +34,7 @@
 #ifndef LVR2_GEOMETRY_BOUNDINGRECTANGLE_H_
 #define LVR2_GEOMETRY_BOUNDINGRECTANGLE_H_
 
-#include <lvr2/geometry/Vector.hpp>
+#include "lvr2/geometry/Normal.hpp"
 
 namespace lvr2
 {
@@ -73,39 +73,39 @@ namespace lvr2
  *
  *
  */
-template<typename BaseVecT>
+template<typename CoordType>
 struct BoundingRectangle
 {
     /// A 3D point, that is the support vector of the rectangle
-    Vector<BaseVecT> m_supportVector;
+    BaseVector<CoordType> m_supportVector;
     /// The first direction vector
-    Vector<BaseVecT> m_vec1;
+    BaseVector<CoordType> m_vec1;
     /// The second direction vector (that should be orthogonal to the first direction)
-    Vector<BaseVecT> m_vec2;
+    BaseVector<CoordType> m_vec2;
     /// The normal of the rectangle
-    Normal<BaseVecT> m_normal;
+    Normal<CoordType> m_normal;
     /// Distance of the beginning border from the support vector in the first direction (if negative: reverse direction)
-    float m_minDistA;
+    CoordType m_minDistA;
     /// Distance of the end border from the support vector in the first direction (if negative: reverse direction)
-    float m_maxDistA;
+    CoordType m_maxDistA;
     /// Distance of the beginning border from the support vector in the second direction (if negative: reverse
     /// direction)
-    float m_minDistB;
+    CoordType m_minDistB;
     /// Distance of the end border from the support vector in the second direction (if negative: reverse direction)
-    float m_maxDistB;
+    CoordType m_maxDistB;
 
     /**
      * @brief Constructor
      */
     BoundingRectangle(
-        Vector<BaseVecT> supportVector,
-        Vector<BaseVecT> vec1,
-        Vector<BaseVecT> vec2,
-        Normal<BaseVecT> normal,
-        float minDistA,
-        float maxDistA,
-        float minDistB,
-        float maxDistB
+        BaseVector<CoordType> supportVector,
+        BaseVector<CoordType> vec1,
+        BaseVector<CoordType> vec2,
+        Normal<CoordType> normal,
+        CoordType minDistA,
+        CoordType maxDistA,
+        CoordType minDistB,
+        CoordType maxDistB
     ) :
         m_supportVector(supportVector),
         m_vec1(vec1),

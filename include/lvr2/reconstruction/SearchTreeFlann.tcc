@@ -52,7 +52,7 @@ SearchTreeFlann<BaseVecT>::SearchTreeFlann(PointBufferPtr buffer)
     auto flannPoints = flann::Matrix<CoordT>(new CoordT[3 * n], n, 3);
     for(size_t i = 0; i < n; i++)
     {
-        Vector<BaseVecT> p = pts_channel[i];
+        BaseVecT p = pts_channel[i];
         flannPoints[i][0] = p.x;
         flannPoints[i][1] = p.y;
         flannPoints[i][2] = p.z;
@@ -68,7 +68,7 @@ SearchTreeFlann<BaseVecT>::SearchTreeFlann(PointBufferPtr buffer)
 
 template<typename BaseVecT>
 void SearchTreeFlann<BaseVecT>::kSearch(
-    const Vector<BaseVecT>& qp,
+    const BaseVecT& qp,
     int k,
     vector<size_t>& indices,
     vector<CoordT>& distances
@@ -96,7 +96,7 @@ void SearchTreeFlann<BaseVecT>::kSearch(
 
 template<typename BaseVecT>
 void SearchTreeFlann<BaseVecT>::radiusSearch(
-    const Vector<BaseVecT>& qp,
+    const BaseVecT& qp,
     CoordT r,
     vector<size_t>& indices
 ) const

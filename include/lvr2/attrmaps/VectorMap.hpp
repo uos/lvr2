@@ -89,7 +89,7 @@ public:
      */
     VectorMap(size_t countElements, const ValueT& defaultValue);
 
-    VectorMap(size_t countElements, boost::shared_array<ValueT>& values);
+    VectorMap(size_t countElements, const boost::shared_array<ValueT>& values);
 
     // =======================================================================
     // Implemented methods from the interface (check interface for docs)

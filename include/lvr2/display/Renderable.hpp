@@ -155,11 +155,11 @@ protected:
 
     string                       m_name;
 
-	Normal<Vec>                  m_xAxis;
-	Normal<Vec>                  m_yAxis;
-	Normal<Vec>                  m_z_Axis;
+	Normal<typename Vec::CoordType>       			 m_xAxis;
+	Normal<typename Vec::CoordType>                  m_yAxis;
+	Normal<typename Vec::CoordType>                  m_z_Axis;
 
-	Vector<Vec>                  m_position;
+	Vec                 		 m_position;
 
     Matrix4<Vec>                 m_transformation;
     BoundingBox<Vec>*            m_boundingBox;

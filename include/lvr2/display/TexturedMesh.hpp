@@ -47,7 +47,7 @@ struct MaterialGroup
 {
 	int	textureIndex;
 	int numFaces;
-	Vector<Vec> color;
+	Vec color;
 	vector<size_t> faceBuffer;
 };
 

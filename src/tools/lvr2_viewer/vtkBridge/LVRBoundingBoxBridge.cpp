@@ -19,8 +19,8 @@ LVRBoundingBoxBridge::LVRBoundingBoxBridge(BoundingBox<Vec> bb) : m_boundingBox(
     vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
     vtkSmartPointer<vtkPoints>   points = vtkSmartPointer<vtkPoints>::New();
 
-    Vector<Vec> min = m_boundingBox.getMin();
-    Vector<Vec> max = m_boundingBox.getMax();
+    Vec min = m_boundingBox.getMin();
+    Vec max = m_boundingBox.getMax();
 
     float pt[3];
     // front
