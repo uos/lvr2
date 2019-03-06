@@ -269,6 +269,7 @@ bool BaseMesh<BaseVecT>::isFaceInsertionValid(VertexHandle v1H, VertexHandle v2H
     // If there is already a face, we can't add another one
     if (getFaceBetween(v1H, v2H, v3H))
     {
+        std::cout << "1" << std::endl;
         return false;
     }
 
@@ -295,6 +296,7 @@ bool BaseMesh<BaseVecT>::isFaceInsertionValid(VertexHandle v1H, VertexHandle v2H
         });
         if (boundaryEdgeIt == edges.end())
         {
+            std::cout << "2" << std::endl;
             return false;
         }
     }

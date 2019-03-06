@@ -74,7 +74,16 @@ HalfEdgeMesh<BaseVecT>::HalfEdgeMesh(MeshBufferPtr ptr)
         VertexHandle v1(indices[pos]);
         VertexHandle v2(indices[pos + 1]);
         VertexHandle v3(indices[pos + 2]);
-        this->addFace(v1, v2, v3);
+        try
+        {
+            this->addFace(v1, v2, v3);
+        }
+        catch(const std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+        }
+        
+        
     }
 }
 
