@@ -28,12 +28,25 @@ namespace lvr2
         GeoTIFFIO(std::string filename, int cols, int rows, int bands);
 
         /**
+         * @param filename
+         */
+        GeoTIFFIO(std::string filename);
+
+        /**
          * @brief Writing given band into open GeoTIFF file
          * @param mat cv::Mat containing the band data
          * @param band number of band to be written
          * @return standard C++ return value
          */
         int writeBand(cv::Mat *mat, int band);
+
+        int getRasterXSize();
+
+        int getRasterYSize();
+
+        int getNumBands();
+
+        cv::Mat *readBand(int i);
 
         ~GeoTIFFIO();
 
