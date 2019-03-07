@@ -16,6 +16,12 @@ GeoTIFFIO::GeoTIFFIO(std::string filename, int cols, int rows, int bands) : m_co
     // TODO: SetGeoTransform , SetGeoProjection ??
 }
 
+GeoTIFFIO::GeoTIFFIO(std::string filename)
+{
+    GDALAllRegister();
+    m_gtif_dataset = (GDALDataset *) GDALOpen(filename.c_str(), GA_ReadOnly);
+}
+
 int GeoTIFFIO::writeBand(cv::Mat *mat, int band)
 {
     if (!m_gtif_dataset)
@@ -40,6 +46,37 @@ int GeoTIFFIO::writeBand(cv::Mat *mat, int band)
         }
     }
     return 0;
+}
+
+int GeoTIFFIO::getRasterXSize()
+{
+    return m_gtif_dataset->GetRasterXSize();
+}
+
+int GeoTIFFIO::getRasterYSize()
+{
+    return m_gtif_dataset->GetRasterYSize();
+}
+
+int GeoTIFFIO::getNumBands()
+{
+    return m_gtif_dataset->GetRasterCount();
+}
+
+cv::Mat *GeoTIFFIO::readBand(int index)
+{
+    GDALRasterBand *band = m_gtif_dataset->GetRasterBand(index);
+    int nXSize = band->GetXSize();
+    int nYSize = band->GetYSize();
+    unsigned char *buf = (unsigned char *) CPLMalloc(sizeof(unsigned char) * nXSize * nYSize);
+
+    band->RasterIO(GF_Read, 0, 0, nXSize, nYSize, buf, nXSize, nYSize, GDT_UInt16, 0, 0);
+
+    cv::Mat *mat = new cv::Mat(nXSize, nYSize, CV_16UC1, buf);
+
+    CPLFree(buf);
+
+    return mat;
 }
 
 GeoTIFFIO::~GeoTIFFIO()
