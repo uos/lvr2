@@ -48,6 +48,3 @@ cmake-build-release/
 
 # RiVLib lib path
 ext/rivlib/
-
-# testing
-src/tools/lvr2_hdf5-tiff-converter/test.cpp

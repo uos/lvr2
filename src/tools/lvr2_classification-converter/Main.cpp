@@ -1,5 +1,5 @@
 /**
- * @brief main file for HDF5 to GeoTIFF conversion
+ * @brief Main file for HDF5 to GeoTIFF or BSQ to HDF5 conversion.
  * @author ndettmer <ndettmer@uos.de>
  */
 
@@ -42,7 +42,6 @@ int processConversionHDFtoGTIFF(std::string input_filename,
     std::vector<size_t> dim;
 
     // extract radiometric data
-    // TODO: really use raw data?
     std::string groupname = "raw/spectral/position_" + position_code;
     std::string datasetname = "spectral";
     boost::shared_array<uint16_t> spectrals = hdf5.getArray<uint16_t>(groupname, datasetname, dim);
@@ -120,12 +119,8 @@ int processConversionGDALtoHDF(std::string in,
 
 int main(int argc, char**argv)
 {
-    // TODO: vielleicht umstellen auf GDAL Rasterdaten -> HDF5
-    // TODO: make clear that tif input should be a classification
-    // TODO: alle zulaessigen file extensions abdecken
-    // TODO: regexs nutzen
+    // TODO: vollends umstellen auf GDAL Rasterdaten -> HDF5
     // TODO: boost Fehlerbehandlung nutzen
-    // TODO: enable empty user input for dialogs
     if(argc < 3)
     {
         printUsage();
@@ -142,7 +137,7 @@ int main(int argc, char**argv)
     boost::filesystem::path output_filename(argv[2]);
     std::string  output_extension = boost::filesystem::extension(output_filename);
 
-    if(input_extension == ".tif" || input_extension == ".geotif" || input_extension == ".bsq")
+    if(input_extension == ".bsq")
     {
         if (output_extension != ".h5")
         {
@@ -164,7 +159,7 @@ int main(int argc, char**argv)
     size_t channel_min = 0;
     size_t channel_max = UINT_MAX;
 
-    std::cout << "Please enter lower channel boundary (default: channel 0):";
+    std::cout << "Please enter lower channel boundary:";
     std::cin >> channel_min;
     if (channel_min < 0)
     {
@@ -172,7 +167,7 @@ int main(int argc, char**argv)
         channel_min = 0;
     }
 
-    std::cout << "Please enter upper channel boundary (default: highest channel):";
+    std::cout << "Please enter upper channel boundary:";
     std::cin >> channel_max;
     if (!channel_max)
     {
