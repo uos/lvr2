@@ -83,7 +83,7 @@ int processConversionHDFtoGTIFF(std::string input_filename,
 
 }
 
-int processConversionGTIFFtoHDF(std::string in,
+int processConversionGDALtoHDF(std::string in,
         std::string position_code, std::string out, size_t channel_min, size_t channel_max)
 {
     GeoTIFFIO gtifio(in);
@@ -142,7 +142,7 @@ int main(int argc, char**argv)
     boost::filesystem::path output_filename(argv[2]);
     std::string  output_extension = boost::filesystem::extension(output_filename);
 
-    if(input_extension == ".tif" || input_extension == ".geotif")
+    if(input_extension == ".tif" || input_extension == ".geotif" || input_extension == ".bsq")
     {
         if (output_extension != ".h5")
         {
@@ -199,7 +199,7 @@ int main(int argc, char**argv)
     if (tif_to_h5)
     {
         std::cout << "Starting conversion..." <<  std::endl;
-        if (processConversionGTIFFtoHDF(input_filename.string(), position_code, output_filename.string(), channel_min, channel_max) < 0)
+        if (processConversionGDALtoHDF(input_filename.string(), position_code, output_filename.string(), channel_min, channel_max) < 0)
         {
             std::cout << "An Error occurred during conversion." << std::endl;
         }
