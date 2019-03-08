@@ -447,7 +447,7 @@ add_subdirectory(src/tools/lvr2_image_normals)
 add_subdirectory(src/tools/lvr2_plymerger)
 add_subdirectory(src/tools/lvr2_hdf5_builder)
 add_subdirectory(src/tools/lvr2_slam2hdf5)
-add_subdirectory(src/tools/lvr2_hdf5-tiff-converter)
+add_subdirectory(src/tools/lvr2_classification-converter)
 add_subdirectory(src/tools/lvr2_slam6d_merger)
 
 if (RiVLib_FOUND)
