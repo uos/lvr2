@@ -22,9 +22,12 @@ using namespace lvr2;
 
 void printUsage()
 {
-    std::cout << "Please submit the path to a .h5 file." << std::endl;
-    std::cout << "Usage: ./hdf5-tiff-converter <input_path>.h5 <position code> "
-                 "[<lower channel boundary>] [<upper channel boundary>] [<output_path>.tif]" << std::endl;
+    std::cout   << "This program converts either the radiometric data from a HDF5 file into a GeoTIFF file "
+                << "or a classification BSQ file into a HDF5 Dataset."
+                << std::endl
+                << "Usage: ./lvr2_classification-converter <input path should be .bsq or .h5>"
+                << "<output path should be .tif or .h5>"
+                << std::endl;
 }
 
 /**
@@ -119,7 +122,6 @@ int processConversionGDALtoHDF(std::string in,
 
 int main(int argc, char**argv)
 {
-    // TODO: vollends umstellen auf GDAL Rasterdaten -> HDF5
     // TODO: boost Fehlerbehandlung nutzen
     if(argc < 3)
     {
