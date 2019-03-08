@@ -46,7 +46,7 @@ namespace lvr2
 
         int getNumBands();
 
-        cv::Mat *readBand(int i);
+        cv::Mat *readBand(int band_index);
 
         ~GeoTIFFIO();
 
