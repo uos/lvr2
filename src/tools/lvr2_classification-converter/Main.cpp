@@ -40,7 +40,7 @@ void printUsage()
 int processConversionHDFtoGTIFF(std::string input_filename,
         std::string position_code, std::string output_filename, size_t channel_min, size_t channel_max)
 {
-    /* =----------------- HDF5 INPUT ----------------------- */
+    /*------------------- HDF5 INPUT ------------------------*/
     HDF5IO hdf5(input_filename, false);
     std::vector<size_t> dim;
 
@@ -63,7 +63,7 @@ int processConversionHDFtoGTIFF(std::string input_filename,
 
     GeoTIFFIO gtifio(output_filename, num_cols, num_rows, num_channels);
 
-    /* -------------- FILE CONVERSION ------------------- */
+    /*--------------- FILE CONVERSION --------------------*/
     // for each channel create a cv::Mat containing the spectral intensity data for the channel ...
     for(size_t channel = 0; channel < num_channels; channel++)
     {
@@ -153,10 +153,12 @@ int main(int argc, char**argv)
             printUsage();
             return 0;
         }
+    } else {
+        printUsage();
+        return 0;
     }
 
     /*---------------- PREPARE CONVERSION -------------------*/
-
 
     size_t channel_min = 0;
     size_t channel_max = UINT_MAX;
