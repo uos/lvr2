@@ -68,13 +68,11 @@ cv::Mat *GeoTIFFIO::readBand(int index)
     GDALRasterBand *band = m_gtif_dataset->GetRasterBand(index);
     int nXSize = band->GetXSize();
     int nYSize = band->GetYSize();
-    unsigned char *buf = (unsigned char *) CPLMalloc(sizeof(unsigned char) * nXSize * nYSize);
+    uint16_t *buf = (uint16_t *) CPLMalloc(sizeof(uint16_t) * nXSize * nYSize);
 
     band->RasterIO(GF_Read, 0, 0, nXSize, nYSize, buf, nXSize, nYSize, GDT_UInt16, 0, 0);
 
     cv::Mat *mat = new cv::Mat(nXSize, nYSize, CV_16UC1, buf);
-
-    CPLFree(buf);
 
     return mat;
 }

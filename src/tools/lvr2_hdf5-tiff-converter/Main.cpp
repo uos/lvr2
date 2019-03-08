@@ -90,7 +90,6 @@ int processConversionGTIFFtoHDF(std::string in,
     HDF5IO hdfio(out);
     std::string groupname = "annotation/position_" + position_code;
     std::string datasetname = "classification";
-    size_t num_channels = channel_max - channel_min;
     size_t length = (size_t) gtifio.getRasterYSize();
     size_t width = (size_t) gtifio.getRasterXSize();
 
@@ -98,25 +97,22 @@ int processConversionGTIFFtoHDF(std::string in,
     {
         channel_max = (size_t) gtifio.getNumBands();
         std::cout << "The Dataset has only " << channel_max << " channels. Using this as upper boundary." << std::endl;
-
     }
+    size_t num_channels = channel_max - channel_min;
 
-    std::vector<size_t> dim = {num_channels,
-                               length,
-                               width};
+    std::vector<size_t> dim = {num_channels, length, width};
 
-    unsigned char *cube = new unsigned char[num_channels
+    uint16_t *cube = new uint16_t[num_channels
                                   * length
                                   * width];
 
     for(int i = channel_min; i < channel_max; i++)
     {
         cv::Mat *m = gtifio.readBand(i + 1);
-        // TODO: causes segfault!
-/*        memcpy(cube + i * (length * width), m->data, length * width * sizeof(unsigned char));*/
+        memcpy(cube + i * (length * width), m->data, length * width * sizeof(uint16_t));
     }
 
-/*    hdfio.addArray(groupname, datasetname, dim, ucharArr(cube));*/
+    hdfio.addArray(groupname, datasetname, dim, boost::shared_array<uint16_t>(cube));
 
     return 0;
 }
