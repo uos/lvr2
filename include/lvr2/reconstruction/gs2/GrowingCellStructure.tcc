@@ -149,9 +149,9 @@ namespace lvr2 {
 
         //TODO: splits won't work, faces need to be inserted against the clock....
         //test splitting
-        //m_mesh->splitGSVertex(vH2);
-        //m_mesh->splitGSVertex(vH1);
-        //m_mesh->splitGSVertex(vH3);
+        m_mesh->splitGSVertex(vH1); //works
+        //m_mesh->splitGSVertex(vH2); //mysteriously doesnt work
+        //m_mesh->splitGSVertex(vH3); //works
         //m_mesh->splitGSVertex(vH4);
 
     }

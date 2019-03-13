@@ -15,7 +15,6 @@ set(GSS_DEPENDENCIES
 	lvrlas_static
 	lvrrply_static
   ${PCL_LIBRARIES}
-  ${CGAL_LIBRARY}
   ${EIGEN_LIBRARY}
 	)
 

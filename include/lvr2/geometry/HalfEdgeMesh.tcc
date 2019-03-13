@@ -711,7 +711,7 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     float longestDistance = 0; //save length of longest edge
     EdgeHandle longestEdge(0); //save longest edge
     HalfEdge longestEdgeHalf; //needed for vertex calc
-        BaseVecT targetVec;
+    BaseVecT targetVec;
     VertexHandle targetVecH(0);
 
 
@@ -751,9 +751,9 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
         BaseVecT vertexToAdd = getV(vertexH).pos + (getV(longestEdgeHalf.target).pos - getV(vertexH).pos)/2;
 
 
-    std::cout << "Distance: " << longestDistance;
-    std::cout << "Target: " << getV(longestEdgeHalf.target).pos << std::endl;
-    std::cout << "Calculated Vertex: " << vertexToAdd << std::endl;
+    //std::cout << "Distance: " << longestDistance;
+    //std::cout << "Target: " << getV(longestEdgeHalf.target).pos << std::endl;
+    //std::cout << "Calculated Vertex: " << vertexToAdd << std::endl;
 
 
     /**********************************************************************
@@ -763,19 +763,19 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     //get incident faces of the longest edge
     auto incidentFaces = this->getFacesOfEdge(longestEdge);
 
-        BaseVecT firstNormal;
-        BaseVecT secondNormal;
+    BaseVecT firstNormal;
+    BaseVecT secondNormal;
 
     vector<VertexHandle> groupOne;
     vector<VertexHandle> groupTwo;
 
 
     vector<FaceHandle> faceHandles;
-    vector<VertexHandle> incidentVertices;
+    vector<VertexHandle> incidentVertices; // 2 for edgeSplit
 
     for(int i = 0; i < incidentFaces.size(); i++){
         //todo: get all needed vertices, determine which faces need to be removed.
-            OptionalFaceHandle handle = incidentFaces[i];
+        OptionalFaceHandle handle = incidentFaces[i];
         if(handle){
             auto fHandle = handle.unwrap(); //here every edge should have two incident faces
             faceHandles.push_back(fHandle);
@@ -794,79 +794,132 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     set<VertexHandle> s( incidentVertices.begin(), incidentVertices.end() );
     incidentVertices.assign( s.begin(), s.end() );
 
-        //calculate normals for the two groups (faces) - needed for insertion of the new faces
+    //calculate normals for the two groups (faces) - needed for insertion of the new faces
+    //seems to be working fine for now
+    auto firstVecGroup1 = getV(groupOne[1]).pos - getV(groupOne[0]).pos;
+    auto secondVecGroup1 = getV(groupOne[2]).pos - getV(groupOne[0]).pos;
 
-        auto firstVecGroup1 = getV(groupOne[1]).pos - getV(groupOne[0]).pos;
-        auto secondVecGroup1 = getV(groupOne[2]).pos - getV(groupOne[0]).pos;
+    firstNormal = firstVecGroup1.cross(secondVecGroup1);
 
-        firstNormal = firstVecGroup1.cross(secondVecGroup1);
+    auto firstVecGroup2 = getV(groupTwo[1]).pos - getV(groupTwo[0]).pos;
+    auto secondVecGroup2 = getV(groupTwo[2]).pos - getV(groupTwo[0]).pos;
 
-        auto firstVecGroup2 = getV(groupTwo[1]).pos - getV(groupTwo[0]).pos;
-        auto secondVecGroup2 = getV(groupTwo[2]).pos - getV(groupTwo[0]).pos;
+    secondNormal = firstVecGroup2.cross(secondVecGroup2);
 
-        secondNormal = firstVecGroup2.cross(secondVecGroup2);
+    cout << "First Normal : " << firstNormal << endl;
+    cout << "Second Normal: " << secondNormal << endl;
 
     /***********************************************
      * Remove the two Faces and add four new faces *
      ***********************************************/
+
+    if(faceHandles.size() != 2){
+        cout << "Tried removing more than two faces.." << endl;
+        exit(EXIT_FAILURE);
+    }
     for(FaceHandle handle : faceHandles){
         this->removeFace(handle);
     }
 
     VertexHandle added = this->addVertex(vertexToAdd);
 
-    //add new faces (Clockwise!!) to the mesh, take normal direction into account
-        int counter = 0; //which vertex is currently examined
+    //TODO: check y coords of old and target vertex, change needed?
+
+    //add new faces (Counter Clockwise!!) to the mesh, take normal direction into account
+    int counter = 0; //which vertex is currently examined
     for (auto vertex  : incidentVertices) {
-        std::cout << "#####Vertex added: " << getV(vertex).pos << std::endl;
+        std::cout << counter + 1 << " #####Vertex used: " << getV(vertex).pos << std::endl;
 
 
         //using the calculated normales to determine which way the triangles are directed
         bool clockwise = true;
 
+
+        //NORMAL CALCULATION SEEMS TO BE WORKING FINE NOW.
         if(counter == 0){
             if(firstNormal.z >= 0){
                 clockwise = false;
+
+
+                if(firstNormal.z == 0){
+                    /*
+                     * Really special case: normal only lookin in x and y direction
+                     */
+                    if(firstNormal.x < 0 || (firstNormal.x == 0 && firstNormal.y < 0)) {
+                        clockwise = true;
+                    }
+                }
             }
         } else {
             if(secondNormal.z >= 0){ //TODO: what happens, if z = 0?
                 clockwise = false;
+
+                if(secondNormal.z == 0){
+                    /*
+                     * Really special case: normal only lookin in x and y direction
+                     */
+                    if(secondNormal.x < 0 || (secondNormal.x == 0 && secondNormal.y < 0)) {
+                        clockwise = true;
+                    }
+                }
             }
         }
+
+        counter ++;
+
+        cout << "Uhrzeigersinn? " << clockwise << endl;
         //first face between vertex, vertexToBeSplitted, and the newly added vertex
         auto vectorToOldVertex = getV(vertexH).pos - getV(vertex).pos;
         auto vectorToNewVertex = vertexToAdd - getV(vertex).pos;
 
+
+        //TODO: fix angle calculation
         auto dotP1 = vectorToOldVertex * vectorToNewVertex;
         auto sq1 = vectorToOldVertex.length2();
         auto sq2 = vectorToNewVertex.length2();
 
         float angle = std::acos(dotP1/sqrt(sq1 * sq2));
 
+        std::cout << "Angle Old Vec -> New Vec " << angle << endl;
+
         //TODO: check normal vectors and look, whether they direct into negative or positive z
-        //if angle < 180°, the following is clockwise, else the opposite
-        if(angle < 180){
-            clockwise ? this->addFace(vertex, vertexH, added) : this->addFace(added, vertexH, vertex);
+        //if angle < 180°, the following is counter clockwise, else the opposite
+        try{
+            if(angle < 180){
+                clockwise ? this->addFace(vertex, vertexH, added) : this->addFace(added, vertexH, vertex);
+            }
+            else{
+                clockwise ? this->addFace(vertex, added, vertexH) : this->addFace(vertexH, added, vertex);
+            }
         }
-        else{
-            clockwise ? this->addFace(vertexH, added, vertex) : this->addFace(vertex, added, vertexH);
+        catch (const std::exception &e) {
+            std::cout << e.what() << std::endl;
         }
+
 
         auto vectorToTargetVertex = targetVec - getV(vertex).pos;
 
-        auto dotP2 = vectorToOldVertex * vectorToTargetVertex;
+        auto dotP2 = vectorToNewVertex * vectorToTargetVertex;
         sq1 = vectorToTargetVertex.length2();
 
         angle = std::acos(dotP2/sqrt(sq2*sq1));
 
-        if(angle < 180){
-            clockwise ? this->addFace(vertex, added, targetVecH) : this->addFace(targetVecH, added, vertex);
+        std::cout << "Angle New Vec -> Target Vec " << angle << endl;
+
+        try{
+            if(angle < 180){
+                clockwise ? this->addFace(vertex, added, targetVecH) : this->addFace(targetVecH, added, vertex);
+            }
+            else{
+                clockwise ? this->addFace(added, vertex, targetVecH) : this->addFace(vertex, added, targetVecH);
+            }
+
         }
-        else{
-            clockwise ? this->addFace(added, targetVecH, vertex) : this->addFace(vertex, targetVecH, added);
+        catch(const std::exception& e) //for debug purposes. Remove if working.
+        {
+            std::cout << e.what() << std::endl;
         }
 
-        counter ++;
     }
 
     // END OF EDGE SPLIT (EVERYTHING ABOVE IS EDGESPLIT)

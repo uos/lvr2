@@ -454,29 +454,29 @@ add_subdirectory(src/liblvr2)
 # BINARIES
 ##############################################################
 
-add_subdirectory(src/tools/lvr2_reconstruct)
-add_subdirectory(src/tools/lvr2_asciiconverter)
-add_subdirectory(src/tools/lvr2_transform)
-add_subdirectory(src/tools/lvr2_kaboom)
-add_subdirectory(src/tools/lvr2_image_normals)
-add_subdirectory(src/tools/lvr2_plymerger)
-add_subdirectory(src/tools/lvr2_hdf5_builder)
-add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
-add_subdirectory(src/tools/lvr2_slam2hdf5)
-add_subdirectory(src/tools/lvr2_slam6d_merger)
+#add_subdirectory(src/tools/lvr2_reconstruct)
+#add_subdirectory(src/tools/lvr2_asciiconverter)
+#add_subdirectory(src/tools/lvr2_transform)
+#add_subdirectory(src/tools/lvr2_kaboom)
+#add_subdirectory(src/tools/lvr2_image_normals)
+#add_subdirectory(src/tools/lvr2_plymerger)
+#add_subdirectory(src/tools/lvr2_hdf5_builder)
+#add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
+#add_subdirectory(src/tools/lvr2_slam2hdf5)
+#add_subdirectory(src/tools/lvr2_slam6d_merger)
 add_subdirectory(src/tools/lvr2_gs_reconstruction)
 
 if (RiVLib_FOUND)
-    add_subdirectory(src/tools/lvr2_riegl_project_converter)
+    #add_subdirectory(src/tools/lvr2_riegl_project_converter)
 endif()
 
 if(CUDA_FOUND)
 #    cuda_include_directories(ext/CTPL)
-    add_subdirectory(src/tools/lvr2_cuda_normals)
+    #add_subdirectory(src/tools/lvr2_cuda_normals)
 endif()
 
 if(OPENCL_FOUND)
-    add_subdirectory(src/tools/lvr2_cl_normals)
+    #add_subdirectory(src/tools/lvr2_cl_normals)
 endif()
 
 ################################################################
