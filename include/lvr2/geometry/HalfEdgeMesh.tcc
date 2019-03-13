@@ -752,8 +752,8 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
 
 
     //std::cout << "Distance: " << longestDistance;
-    //std::cout << "Target: " << getV(longestEdgeHalf.target).pos << std::endl;
-    //std::cout << "Calculated Vertex: " << vertexToAdd << std::endl;
+    std::cout << "Target of longest Edge: " << getV(longestEdgeHalf.target).pos << std::endl;
+    std::cout << "Vertex to Add to Mesh: " << vertexToAdd << std::endl;
 
 
     /**********************************************************************
@@ -800,11 +800,12 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     auto secondVecGroup1 = getV(groupOne[2]).pos - getV(groupOne[0]).pos;
 
     firstNormal = firstVecGroup1.cross(secondVecGroup1);
-
+    firstNormal.normalize();
     auto firstVecGroup2 = getV(groupTwo[1]).pos - getV(groupTwo[0]).pos;
     auto secondVecGroup2 = getV(groupTwo[2]).pos - getV(groupTwo[0]).pos;
 
     secondNormal = firstVecGroup2.cross(secondVecGroup2);
+    secondNormal.normalize();
 
     cout << "First Normal : " << firstNormal << endl;
     cout << "Second Normal: " << secondNormal << endl;
@@ -836,7 +837,7 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
 
 
         //NORMAL CALCULATION SEEMS TO BE WORKING FINE NOW.
-        if(counter == 0){
+        if(counter == 1){
             if(firstNormal.z >= 0){
                 clockwise = false;
 
@@ -865,7 +866,7 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
             }
         }
 
-        counter ++;
+
 
         cout << "Uhrzeigersinn? " << clockwise << endl;
         //first face between vertex, vertexToBeSplitted, and the newly added vertex
@@ -874,18 +875,23 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
 
 
         //TODO: fix angle calculation
-        auto dotP1 = vectorToOldVertex * vectorToNewVertex;
+        /*auto dotP1 = vectorToOldVertex * vectorToNewVertex;
         auto sq1 = vectorToOldVertex.length2();
         auto sq2 = vectorToNewVertex.length2();
 
-        float angle = std::acos(dotP1/sqrt(sq1 * sq2));
+        float angle = std::acos(dotP1/sqrt(sq1 * sq2)) * (180 / 3.14159);*/
+        cout << "vecToOldV: " << vectorToOldVertex << " vecToNewV: " << vectorToNewVertex << endl;
+        BaseVecT crossVec = vectorToOldVertex.cross(vectorToNewVertex); // maybe change values
+        crossVec.normalize();
 
-        std::cout << "Angle Old Vec -> New Vec " << angle << endl;
+        //std::cout << "Angle Old Vec -> New Vec " << angle << endl;
+        std::cout << "normalized Vec Old -> New Vec crossP " << crossVec << endl;
 
         //TODO: check normal vectors and look, whether they direct into negative or positive z
-        //if angle < 180°, the following is counter clockwise, else the opposite
+        //if angle < 180°, the following is counter clockwise, else the opposite [NOPE]
         try{
-            if(angle < 180){
+            if((crossVec == secondNormal && counter == 0) || (crossVec == firstNormal && counter == 1)){
+                cout << "Normals are the same." << endl;
                 clockwise ? this->addFace(vertex, vertexH, added) : this->addFace(added, vertexH, vertex);
             }
             else{
@@ -899,15 +905,22 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
 
         auto vectorToTargetVertex = targetVec - getV(vertex).pos;
 
-        auto dotP2 = vectorToNewVertex * vectorToTargetVertex;
+        /*auto dotP2 = vectorToNewVertex * vectorToTargetVertex;
         sq1 = vectorToTargetVertex.length2();
 
-        angle = std::acos(dotP2/sqrt(sq2*sq1));
+        angle = std::acos(dotP2/sqrt(sq2*sq1)) * (180 / 3.14159);
 
-        std::cout << "Angle New Vec -> Target Vec " << angle << endl;
+        std::cout << "Angle New Vec -> Target Vec " << angle << endl;*/
+
+
+        cout << "vecToNewV: " << vectorToNewVertex << " vecToTargetV: " << vectorToTargetVertex << endl;
+        crossVec = vectorToNewVertex.cross(vectorToTargetVertex);
+        crossVec.normalize();
+        std::cout << "normalized Vec New -> Target Vec crossP " << crossVec << endl;
 
         try{
-            if(angle < 180){
+            if((crossVec == secondNormal && counter == 0) || (crossVec == firstNormal && counter == 1)){
+                cout << "Normals are the same." << endl;
                 clockwise ? this->addFace(vertex, added, targetVecH) : this->addFace(targetVecH, added, vertex);
             }
             else{
@@ -919,7 +932,7 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
         {
             std::cout << e.what() << std::endl;
         }
-
+        counter ++;
     }
 
     // END OF EDGE SPLIT (EVERYTHING ABOVE IS EDGESPLIT)
