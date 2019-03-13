@@ -145,13 +145,13 @@ namespace lvr2 {
         m_mesh->addFace(vH4, vH1, vH3);
         m_mesh->addFace(vH3, vH1, vH2);
 
-        //initial mesh done, doesnt need handle-return
+        //initial mesh done
 
         //TODO: splits won't work, faces need to be inserted against the clock....
         //test splitting
-        m_mesh->splitGSVertex(vH1); //works
-        //m_mesh->splitGSVertex(vH2); //mysteriously doesnt work
-        //m_mesh->splitGSVertex(vH3); //works
+        m_mesh->splitGSVertex(vH1);
+        //m_mesh->splitGSVertex(vH2);
+        //m_mesh->splitGSVertex(vH3);
         //m_mesh->splitGSVertex(vH4);
 
     }
