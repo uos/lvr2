@@ -697,6 +697,115 @@ void HalfEdgeMesh<BaseVecT>::getNeighboursOfVertex(
     });
 }
 
+
+template <typename BaseVecT>
+void HalfEdgeMesh<BaseVecT>::splitEdge(VertexHandle vertexH) {
+    HalfEdge longestOutgoingEdge;
+
+    BaseVecT toBeSplit = getV(vertexH).pos;
+    //get all outgoing edges
+    auto outEdges = getEdgesOfVertex(vertexH);
+
+    float longestDistance = 0; //save length of longest edge
+    EdgeHandle longestEdge(0); //save longest edge
+    HalfEdge longestEdgeHalf; //needed for vertex calc
+    BaseVecT targetVec;
+    VertexHandle targetVecH(0); //store target of longest Edge
+
+    /************************************
+     * Get vertex, which will be added. *
+     ************************************/
+
+    // determine longest outgoing edge
+    for (EdgeHandle edge : outEdges) {
+        HalfEdgeHandle halfH = HalfEdgeHandle::oneHalfOf(edge); //get Halfedge
+        HalfEdge half = getE(halfH);
+        //if halfedge is pointing to the start vector, change it up
+        if (half.target == vertexH) {
+            halfH = half.twin;
+            half = getE(halfH);
+        }
+
+        VertexHandle targetH = half.target;
+        Vertex targetHV = getV(targetH);
+        BaseVecT target = targetHV.pos;
+        auto distance = target.distanceFrom(getV(vertexH).pos);
+        //changes values to longer edge
+        if (distance > longestDistance) {
+            longestDistance = distance;
+            longestEdge = edge;
+            longestEdgeHalf = half;
+            targetVec = target;
+            targetVecH = targetH;
+        }
+    }
+
+    //calculate the position of the new vertex
+    BaseVecT vertexToAdd = getV(vertexH).pos + (getV(longestEdgeHalf.target).pos - getV(vertexH).pos) / 2;
+
+
+    //std::cout << "Distance: " << longestDistance;
+    std::cout << "Target of longest Edge: " << getV(longestEdgeHalf.target).pos << std::endl;
+    std::cout << "Vertex to Add to Mesh: " << vertexToAdd << std::endl;
+
+
+    /**********************************************************************
+     * Get Incident Vertices to the two incident faces of the longes edge *
+     **********************************************************************/
+
+    //get incident faces of the longest edge
+    auto incidentFaces = this->getFacesOfEdge(longestEdge);
+
+    auto fHArr1 = this->getVerticesOfFace(incidentFaces[0].unwrap());
+    auto fHArr2 = this->getVerticesOfFace(incidentFaces[1].unwrap());
+
+    //get VertexHandles of each Face
+    vector<VertexHandle> verticesOfFace1(fHArr1.begin(), fHArr1.end());
+    vector<VertexHandle> verticesOfFace2(fHArr2.begin(), fHArr2.end());
+
+    VertexHandle centerOfLongestEdge = this->addVertex(vertexToAdd);
+
+    //vertexH = start, targetVecH = end
+
+    //remove the two incident Faces
+    this->removeFace(incidentFaces[0].unwrap());
+    this->removeFace(incidentFaces[1].unwrap());
+
+    //now insert new Faces, using the direction the getVerticesOfFace method gives
+    //first face
+    auto findStart1 = std::find(verticesOfFace1.begin(), verticesOfFace1.end(), vertexH);
+    auto findEnd1 = std::find(verticesOfFace1.begin(), verticesOfFace1.end(), targetVecH);
+
+    int indexStart1 = std::distance(verticesOfFace1.begin(), findStart1);
+    int indexEnd1 = std::distance(verticesOfFace1.begin(), findEnd1);
+
+    vector<VertexHandle> faceInsert1(verticesOfFace1.begin(), verticesOfFace1.end());
+    faceInsert1[indexEnd1] = centerOfLongestEdge;
+    this->addFace(faceInsert1[0], faceInsert1[1], faceInsert1[2]);
+
+    faceInsert1.assign(verticesOfFace1.begin(), verticesOfFace1.end());
+    faceInsert1[indexStart1] = centerOfLongestEdge;
+    this->addFace(faceInsert1[0], faceInsert1[1], faceInsert1[2]);
+
+    //second face
+    auto findStart2 = std::find(verticesOfFace2.begin(), verticesOfFace2.end(), vertexH);
+    auto findEnd2 = std::find(verticesOfFace2.begin(), verticesOfFace2.end(), targetVecH);
+
+    int indexStart2 = std::distance(verticesOfFace2.begin(), findStart2);
+    int indexEnd2 = std::distance(verticesOfFace2.begin(), findEnd2);
+
+    vector<VertexHandle> faceInsert2(verticesOfFace2.begin(), verticesOfFace2.end());
+    faceInsert2[indexEnd2] = centerOfLongestEdge;
+    this->addFace(faceInsert2[0], faceInsert2[1], faceInsert2[2]);
+
+    faceInsert2.assign(verticesOfFace2.begin(), verticesOfFace2.end());
+    faceInsert2[indexStart2] = centerOfLongestEdge;
+    this->addFace(faceInsert2[0], faceInsert2[1], faceInsert2[2]);
+
+    cout << "Done inserting" << endl;
+}
+
+
 //now more like a edgesplit..
 template <typename BaseVecT>
 void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
@@ -704,7 +813,7 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     //TODO: get longest edge
     HalfEdge longestOutgoingEdge;
 
-        BaseVecT toBeSplit = getV(vertexH).pos;
+    BaseVecT toBeSplit = getV(vertexH).pos;
     //get all outgoing edges
     auto outEdges = getEdgesOfVertex(vertexH);
 
@@ -748,7 +857,7 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     }
 
     //calculate the position of the new vertex
-        BaseVecT vertexToAdd = getV(vertexH).pos + (getV(longestEdgeHalf.target).pos - getV(vertexH).pos)/2;
+    BaseVecT vertexToAdd = getV(vertexH).pos + (getV(longestEdgeHalf.target).pos - getV(vertexH).pos)/2;
 
 
     //std::cout << "Distance: " << longestDistance;
@@ -785,6 +894,7 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
             for(auto vertex : verticesOfFace){
                 if(getV(vertex).pos != getV(vertexH).pos  && getV(vertex).pos != targetVec) {
                     incidentVertices.push_back(vertex);
+                    cout << "Incident Vertex: " << getV(vertex).pos << endl;
                 }
             }
         }
@@ -815,7 +925,7 @@ void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
      ***********************************************/
 
     if(faceHandles.size() != 2){
-        cout << "Tried removing more than two faces.." << endl;
+        cout << "Tried removing more or less than two faces.." << endl;
         exit(EXIT_FAILURE);
     }
     for(FaceHandle handle : faceHandles){
