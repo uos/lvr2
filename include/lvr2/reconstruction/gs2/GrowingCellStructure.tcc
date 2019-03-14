@@ -35,7 +35,7 @@ namespace lvr2 {
 
         //TODO: search the closest point of the mesh
 
-
+        
 
         //TODO: smooth the winning vertex
 
@@ -60,20 +60,17 @@ namespace lvr2 {
         for(auto vertexH : vertices){
             BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
 
-            std::cout << "after getting real vertex" << std::endl;
             if(vertex.signal_counter > m_mesh->getVertexPosition(highestSC).signal_counter){
 
-                std::cout << "in if..." << std::endl;
                 highestSC = vertexH;
 
             }
-            std::cout << "i bims, 1 vertex" << std::endl;
             highestSC = vertexH;
         }
 
         //TODO: split it.. :)
         std::cout << m_mesh->getVertexPosition(highestSC) << std::endl;
-        //m_mesh->splitGSVertex(highestSC);
+        m_mesh->splitEdge(highestSC);
 
         //TODO: reduce sc
         BaseVecT& highestSCVec = m_mesh->getVertexPosition(highestSC);
@@ -149,10 +146,10 @@ namespace lvr2 {
 
         //TODO: splits won't work, faces need to be inserted against the clock....
         //test splitting
-        m_mesh->splitGSVertex(vH1);
-        //m_mesh->splitGSVertex(vH2);
-        //m_mesh->splitGSVertex(vH3);
-        //m_mesh->splitGSVertex(vH4);
+        //m_mesh->splitEdge(vH1);
+        //m_mesh->splitEdge(vH2);
+        //m_mesh->splitEdge(vH3);
+        //m_mesh->splitEdge(vH4);
 
     }
 
@@ -174,9 +171,9 @@ namespace lvr2 {
                 for(int k = 0; k < getBasicSteps(); k++){
                     executeBasicStep();
                 }
-                //executeVertexSplit();
+                executeVertexSplit();
 
-                //std::cout << "Vertex Split!!" << std::endl;
+                std::cout << "Vertex Split!!" << std::endl;
             }
 
             executeEdgeCollapse();

@@ -115,7 +115,7 @@ struct GCSVector : public BaseVector<CoordT>{
 };
 
 //TODO: dont use BaseVector
-using Vec = BaseVector<float>;
+using Vec = GCSVector<float>;
 
 template <typename BaseVecT>
 PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options &options, PointBufferPtr buffer){
