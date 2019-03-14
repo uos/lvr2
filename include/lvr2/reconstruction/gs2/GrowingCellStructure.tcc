@@ -35,13 +35,49 @@ namespace lvr2 {
 
         //TODO: search the closest point of the mesh
 
-        
+        auto vertices = m_mesh->vertices();
+
+        VertexHandle closestVertexToRandomPoint(0);
+        float smallestDistance = numeric_limits<float>::infinity();
+        BaseVecT vectorToRandomPoint;
+
+        for(auto vertexH : vertices){
+            BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
+
+            BaseVecT distanceVector = random_point - vertex;
+            float length = distanceVector.length();
+
+            if(length < smallestDistance){
+
+                closestVertexToRandomPoint = vertexH;
+                vectorToRandomPoint = distanceVector;
+                smallestDistance = length;
+
+            }
+        }
+
+        std::cout << "Closest Point: " << m_mesh->getVertexPosition(closestVertexToRandomPoint) << endl;
+        cout << "Distance: " << smallestDistance;
 
         //TODO: smooth the winning vertex
 
+        BaseVecT &vertex = m_mesh->getVertexPosition(closestVertexToRandomPoint);
+        vertex += vectorToRandomPoint * getLearningRate();
+
+
         //TODO: smooth the winning vertices' neighbors (laplacian smoothing)
 
+        vector<VertexHandle> neighborsOfWinner;
+        m_mesh->getNeighboursOfVertex(closestVertexToRandomPoint, neighborsOfWinner);
+
+        for(auto v : neighborsOfWinner){
+            BaseVecT& nb = m_mesh->getVertexPosition(v);
+            nb += vectorToRandomPoint * getNeighborLearningRate();
+        }
+
         //TODO: increase signal counter of winner by one
+
+        vertex.incSC();
 
         //TODO: decrease signal counter of others by a fraction
 
