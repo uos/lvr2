@@ -806,7 +806,8 @@ void HalfEdgeMesh<BaseVecT>::splitEdge(VertexHandle vertexH) {
 }
 
 
-//now more like a edgesplit..
+//now more like a edgesplit..but above is working.. okay, cool.
+
 template <typename BaseVecT>
 void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
     //gets coordinates of new vertex, vertexH + 1/2 length of longest edge
