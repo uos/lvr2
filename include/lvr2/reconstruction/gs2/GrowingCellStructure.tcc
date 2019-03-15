@@ -56,8 +56,8 @@ namespace lvr2 {
             }
         }
 
-        std::cout << "Closest Point: " << m_mesh->getVertexPosition(closestVertexToRandomPoint) << endl;
-        cout << "Distance: " << smallestDistance;
+        //std::cout << "Closest Point: " << m_mesh->getVertexPosition(closestVertexToRandomPoint) << endl;
+        //cout << "Distance: " << smallestDistance;
 
         //TODO: smooth the winning vertex
 
@@ -93,15 +93,16 @@ namespace lvr2 {
         auto vertices = m_mesh->vertices();
 
         VertexHandle highestSC(0);
+        float maxSC = -1;
         for(auto vertexH : vertices){
             BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
 
-            if(vertex.signal_counter > m_mesh->getVertexPosition(highestSC).signal_counter){
+            if(vertex.signal_counter > maxSC ){
 
                 highestSC = vertexH;
+                maxSC = vertex.signal_counter;
 
             }
-            highestSC = vertexH;
         }
 
         //TODO: split it.. :)
@@ -122,6 +123,26 @@ namespace lvr2 {
     void GrowingCellStructure<BaseVecT, NormalT>::executeEdgeCollapse(){
 
         //TODO: select edge to collapse, examine whether it should be collapsed, collapse it
+
+        auto vertices = m_mesh->vertices();
+
+        VertexHandle lowestSC(0);
+        float minSC = numeric_limits<float>::infinity();
+        for(auto vertexH : vertices){
+            BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
+
+            if(vertex.signal_counter < minSC){
+
+                lowestSC = vertexH;
+                minSC = vertex.signal_counter;
+            }
+        }
+
+        //found vertex with lowest sc
+        //TODO: collapse the edge leading to the vertex with the valence closest to six
+        if(minSC < this->getCollapseThreshold()){
+            std::cout << "Lowest SC: " << std::endl;
+        }
     }
 
 
@@ -209,12 +230,12 @@ namespace lvr2 {
                 }
                 executeVertexSplit();
 
-                std::cout << "Vertex Split!!" << std::endl;
+                //std::cout << "Vertex Split!!" << std::endl;
             }
 
             executeEdgeCollapse();
 
-            //std::cout << "Edge Collapse!!!" << std::endl;
+            std::cout << "Edge Collapse!!!" << std::endl;
         }
     }
 
