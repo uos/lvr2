@@ -89,14 +89,8 @@ size_t iterativeEdgeCollapse(
     CostF collapseCost
 )
 {
-    // Output
-    string msg = timestamp.getElapsedTime()
-        + "Reducing mesh by collapsing up to "
-        + std::to_string(count)
-        + " edges ";
-    ProgressBar progress(count + 1, msg);
-    ++progress;
 
+    std::cout << timestamp << "Reduce mesh by collapsing " << count << " edges" << std::endl;
 
     Meap<VertexHandle, float> queue(mesh.nextVertexIndex());
     DenseVertexMap<VertexHandle> bestEdge;
@@ -148,13 +142,26 @@ size_t iterativeEdgeCollapse(
         }
     };
 
+    // Output
+    string msg_init = timestamp.getElapsedTime()
+        + "Computing all costs for all edges ";
+    ProgressBar progress_init(mesh.numVertices() + 1, msg_init);
+    ++progress_init;
 
     // Calculate initial costs of all edges
     for (const auto fromH: mesh.vertices())
     {
         updateVertex(fromH);
+        ++progress_init;
     }
 
+    // Output
+    string msg = timestamp.getElapsedTime()
+        + "Collapsing up to "
+        + std::to_string(count)
+        + "of the edges ";
+    ProgressBar progress(count + 1, msg);
+    ++progress;
 
     size_t collapsedEdgeCount = 0;
 

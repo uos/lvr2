@@ -65,6 +65,18 @@ class AttributeMeshIOBase : public MeshGeometryIO, public GroupedChannelIO
    * @brief addDenseAttributeMap    Stores a dense attribute map to the persistence layer where the attribute group
    *                                is defined by the given map type.
    * @tparam MapT                   The map type of the map which has to be stored
+   * @param mesh                    The mesh which correspond to the map
+   * @param map                     The map which has to be stored
+   * @param name                    The name under which the map should be stored
+   * @return                        true if the map has been stored successfully, false otherwise
+   */
+  template<typename MapT, typename BaseVecT>
+  bool addDenseAttributeMap(const BaseMesh<BaseVecT>& mesh, const MapT& map, const std::string& name);
+
+  /**
+   * @brief addDenseAttributeMap    Stores a dense attribute map to the persistence layer where the attribute group
+   *                                is defined by the given map type.
+   * @tparam MapT                   The map type of the map which has to be stored
    * @param map                     The map which has to be stored
    * @param name                    The name under which the map should be stored
    * @return                        true if the map has been stored successfully, false otherwise

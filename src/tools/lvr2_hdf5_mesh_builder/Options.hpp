@@ -25,13 +25,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /*
- * Options.h
- *
- *  Created on: Aug 23 2012
- *      Author: Thomas Wiemann
- */
-
 #ifndef OPTIONS_H_
 #define OPTIONS_H_
 
@@ -70,6 +63,7 @@ public:
     string  getOutputFile()       const { return m_variables["outputFile"].as<string>();}
     string  getMeshName()         const { return m_variables["meshName"].as<string>();}
     bool    getConvert3DTK2ROS()  const { return m_variables["3dtk2ros"].as<bool>();}
+    size_t  getEdgeCollapseNum()  const { return m_variables["edgeCollapse"].as<size_t >();}
 
 private:
     /// The internally used variable map
@@ -91,8 +85,8 @@ inline ostream& operator<<(ostream& os, const Options &o)
     cout << "##### Input file \t\t: "  << o.getInputFile() << endl;
     cout << "##### Output file \t\t: "  << o.getOutputFile() << endl;
     cout << "##### Mesh name \t\t: "  << o.getMeshName() << endl;
+    cout << "##### Edge collapse num \t\t: "  << o.getEdgeCollapseNum() << endl;
     cout << "##### 3DTK2ROS \t\t: "  << o.getConvert3DTK2ROS() << endl;
-
 	return os;
 }
 

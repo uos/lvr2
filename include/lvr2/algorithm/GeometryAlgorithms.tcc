@@ -34,7 +34,7 @@
 #include <queue>
 
 #include <lvr2/attrmaps/AttrMaps.hpp>
-
+#include <lvr2/io/Progress.hpp>
 
 namespace lvr2
 {
@@ -126,8 +126,13 @@ DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT>& mesh
     DenseVertexMap<float> heightDiff;
     heightDiff.reserve(mesh.nextVertexIndex());
 
+    // Output
+    string msg = timestamp.getElapsedTime() + "Computing height differences...";
+    ProgressBar progress(mesh.numVertices(), msg);
+    ++progress;
+
     // Calculate height difference for each vertex
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
     {
         auto vH = VertexHandle(i);
@@ -153,7 +158,11 @@ DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT>& mesh
         });
 
         // Calculate the final height difference
-        heightDiff.insert(vH, maxHeight - minHeight);
+        #pragma omp critical
+        {
+            heightDiff.insert(vH, maxHeight - minHeight);
+            ++progress;
+        }
     }
 
     return heightDiff;
@@ -214,8 +223,13 @@ DenseVertexMap<float> calcVertexRoughness(
 
     auto averageAngles = calcAverageVertexAngles(mesh, normals);
 
+    // Output
+    string msg = timestamp.getElapsedTime() + "Computing roughness";
+    ProgressBar progress(mesh.numVertices(), msg);
+    ++progress;
+
     // Calculate roughness for each vertex
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
     {
         auto vH = VertexHandle(i);
@@ -232,9 +246,12 @@ DenseVertexMap<float> calcVertexRoughness(
             count += 1;
         });
 
-        // Calculate the final roughness
-        roughness.insert(vH, sum / count);
-
+        #pragma omp critical
+        {
+            // Calculate the final roughness
+            roughness.insert(vH, sum / count);
+            ++progress;
+        }
     }
     return roughness;
 
