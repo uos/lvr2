@@ -41,7 +41,7 @@ struct GCSVector : public BaseVector<CoordT>{
     int getSC(){return this->signal_counter;}
     void setSC(int new_sc){this->signal_counter = new_sc;}
 
-    int signal_counter;
+    float signal_counter;
 
     GCSVector<CoordT> cross(const GCSVector &other) const
     {

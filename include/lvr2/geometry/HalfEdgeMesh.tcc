@@ -699,7 +699,7 @@ void HalfEdgeMesh<BaseVecT>::getNeighboursOfVertex(
 
 
 template <typename BaseVecT>
-void HalfEdgeMesh<BaseVecT>::splitEdge(VertexHandle vertexH) {
+VertexHandle HalfEdgeMesh<BaseVecT>::splitEdge(VertexHandle vertexH) {
     HalfEdge longestOutgoingEdge;
 
     BaseVecT toBeSplit = getV(vertexH).pos;
@@ -745,8 +745,8 @@ void HalfEdgeMesh<BaseVecT>::splitEdge(VertexHandle vertexH) {
 
 
     //std::cout << "Distance: " << longestDistance;
-    std::cout << "Target of longest Edge: " << getV(longestEdgeHalf.target).pos << std::endl;
-    std::cout << "Vertex to Add to Mesh: " << vertexToAdd << std::endl;
+    //std::cout << "Target of longest Edge: " << getV(longestEdgeHalf.target).pos << std::endl;
+    //std::cout << "Vertex to Add to Mesh: " << vertexToAdd << std::endl;
 
 
     /**********************************************************************
@@ -802,7 +802,8 @@ void HalfEdgeMesh<BaseVecT>::splitEdge(VertexHandle vertexH) {
     faceInsert2[indexStart2] = centerOfLongestEdge;
     this->addFace(faceInsert2[0], faceInsert2[1], faceInsert2[2]);
 
-    cout << "Done inserting" << endl;
+
+    return centerOfLongestEdge; //return the newly added vertex
 }
 
 

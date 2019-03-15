@@ -106,12 +106,13 @@ namespace lvr2 {
         }
 
         //TODO: split it.. :)
-        std::cout << m_mesh->getVertexPosition(highestSC) << std::endl;
-        m_mesh->splitEdge(highestSC);
+        VertexHandle newVH = m_mesh->splitEdge(highestSC);
+        BaseVecT& newV = m_mesh->getVertexPosition(newVH);
 
-        //TODO: reduce sc
+        //TODO: reduce sc, set sc of newly added vertex
         BaseVecT& highestSCVec = m_mesh->getVertexPosition(highestSC);
         highestSCVec.signal_counter /= 2; //half of it..*/
+        newV.signal_counter = highestSCVec.signal_counter;
 
 
     }
@@ -224,6 +225,9 @@ namespace lvr2 {
 
         for(int i = 0; i < getRuntime(); i++){
 
+            if(i == getRuntime() / 8) std::cout << "Achtel done!!" << endl;
+            if(i == getRuntime() / 4) std::cout << "Viertel done!!" << endl;
+            if(i == getRuntime() / 2) std::cout << "HALF done!!" << endl;
             for(int j = 0; j < getNumSplits(); j++){
                 for(int k = 0; k < getBasicSteps(); k++){
                     executeBasicStep();
@@ -235,7 +239,7 @@ namespace lvr2 {
 
             executeEdgeCollapse();
 
-            std::cout << "Edge Collapse!!!" << std::endl;
+            //std::cout << "Edge Collapse!!!" << std::endl;
         }
     }
 
