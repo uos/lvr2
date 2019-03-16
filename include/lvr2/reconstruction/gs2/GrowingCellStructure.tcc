@@ -87,7 +87,7 @@ namespace lvr2 {
 
 
 
-    //TODO: Vertex split execution
+    //TODO: Vertex split execution (For now only edge split)
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::executeVertexSplit()
     {
@@ -122,13 +122,13 @@ namespace lvr2 {
 
     }
 
-
+    bool collapsed = false;
 
     //TODO: EDGECOLLAPSE execution
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::executeEdgeCollapse()
     {
-
+        if(collapsed) return;
         //TODO: select edge to collapse, examine whether it should be collapsed, collapse it
 
         auto vertices = m_mesh->vertices();
@@ -146,8 +146,6 @@ namespace lvr2 {
             }
         }
 
-        std::cout << "Where is the Prob1?" << endl;
-
         //found vertex with lowest sc
         //TODO: collapse the edge leading to the vertex with the valence closest to six
         if(minSC > this->getCollapseThreshold() && lowestSC.idx() != 0)
@@ -158,35 +156,23 @@ namespace lvr2 {
             EdgeHandle eToSixVal(0);
             int difference = numeric_limits<int>::infinity();
 
-            std::cout << "Where is the Prob1.5?" << endl;
 
-            for(VertexHandle vertex : nbMinSc)
-            {
+            for(VertexHandle vertex : nbMinSc) {
                 vector<VertexHandle> nbs;
                 m_mesh->getNeighboursOfVertex(vertex, nbs);
                 size_t length = nbs.size();
 
-                if(abs((int)(6 - length)) < difference)
-                {
-                    difference = abs((int)(6-length));
+                if (abs((int) (6 - length)) < difference) {
+                    difference = abs((int) (6 - length));
                     eToSixVal = m_mesh->getEdgeBetween(lowestSC, vertex).unwrap();
                 }
             }
-            std::cout << "Where is the Prob2?" << endl;
 
-            /*OptionalEdgeHandle edgeO = m_mesh->getEdgeBetween(lowestSC, valenceClosestToSix);
-            EdgeHandle edge(0);
-            if(edgeO){
-                cout << "Unwrapped" << endl;
-                edge = edgeO.unwrap();
-            }*/
-
-            std::cout << "Where is the Prob3?" << endl;
-            if(m_mesh->isCollapsable(eToSixVal))
+            if(eToSixVal.idx() != 0 && m_mesh->isCollapsable(eToSixVal))
             {
-                std::cout << "Where is the Prob4?" << endl;
                 m_mesh->collapseEdge(eToSixVal);
                 std::cout << "Collapsed an Edge!" << endl;
+                collapsed = true;
             }
 
         }
@@ -282,12 +268,9 @@ namespace lvr2 {
 
             }
             if(this->isWithCollapse()){
-                cout << "Before Edge Collapse" << endl;
-                executeEdgeCollapse();
-                cout << "After Edge Collapse" << endl;
+                //executeEdgeCollapse();
             }
-
-            //std::cout << "Edge Collapse!!!" << std::endl;
+            
         }
     }
 
