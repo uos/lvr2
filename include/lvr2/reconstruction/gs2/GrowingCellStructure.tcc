@@ -7,11 +7,13 @@
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/config/BaseOption.hpp>
+#include <cmath>
 
 namespace lvr2 {
 
     template <typename BaseVecT, typename NormalT>
-    GrowingCellStructure<BaseVecT, NormalT>::GrowingCellStructure(PointsetSurfacePtr<BaseVecT> surface){
+    GrowingCellStructure<BaseVecT, NormalT>::GrowingCellStructure(PointsetSurfacePtr<BaseVecT> surface)
+    {
         m_surface = surface;
         m_mesh = 0;
     }
@@ -19,7 +21,8 @@ namespace lvr2 {
 
 
     template <typename BaseVecT, typename NormalT>
-    void GrowingCellStructure<BaseVecT, NormalT>::executeBasicStep(){
+    void GrowingCellStructure<BaseVecT, NormalT>::executeBasicStep()
+    {
 
         //TODO: get random point of the pointcloud
 
@@ -31,8 +34,6 @@ namespace lvr2 {
 
         BaseVecT random_point(p_arr[3 * random], p_arr[3 * random + 1], p_arr[3 * random + 2]);
 
-        //std::cout << random_point.x << "|" << random_point.y << "|"<< random_point.z << std::endl;
-
         //TODO: search the closest point of the mesh
 
         auto vertices = m_mesh->vertices();
@@ -41,13 +42,15 @@ namespace lvr2 {
         float smallestDistance = numeric_limits<float>::infinity();
         BaseVecT vectorToRandomPoint;
 
-        for(auto vertexH : vertices){
+        for(auto vertexH : vertices)
+        {
             BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
 
             BaseVecT distanceVector = random_point - vertex;
             float length = distanceVector.length();
 
-            if(length < smallestDistance){
+            if(length < smallestDistance)
+            {
 
                 closestVertexToRandomPoint = vertexH;
                 vectorToRandomPoint = distanceVector;
@@ -56,8 +59,6 @@ namespace lvr2 {
             }
         }
 
-        //std::cout << "Closest Point: " << m_mesh->getVertexPosition(closestVertexToRandomPoint) << endl;
-        //cout << "Distance: " << smallestDistance;
 
         //TODO: smooth the winning vertex
 
@@ -70,7 +71,8 @@ namespace lvr2 {
         vector<VertexHandle> neighborsOfWinner;
         m_mesh->getNeighboursOfVertex(closestVertexToRandomPoint, neighborsOfWinner);
 
-        for(auto v : neighborsOfWinner){
+        for(auto v : neighborsOfWinner)
+        {
             BaseVecT& nb = m_mesh->getVertexPosition(v);
             nb += vectorToRandomPoint * getNeighborLearningRate();
         }
@@ -87,17 +89,20 @@ namespace lvr2 {
 
     //TODO: Vertex split execution
     template <typename BaseVecT, typename NormalT>
-    void GrowingCellStructure<BaseVecT, NormalT>::executeVertexSplit() {
+    void GrowingCellStructure<BaseVecT, NormalT>::executeVertexSplit()
+    {
         //TODO: find vertex with highst sc, split that vertex
 
         auto vertices = m_mesh->vertices();
 
         VertexHandle highestSC(0);
         float maxSC = -1;
-        for(auto vertexH : vertices){
+        for(auto vertexH : vertices)
+        {
             BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
 
-            if(vertex.signal_counter > maxSC ){
+            if(vertex.signal_counter > maxSC )
+            {
 
                 highestSC = vertexH;
                 maxSC = vertex.signal_counter;
@@ -121,28 +126,69 @@ namespace lvr2 {
 
     //TODO: EDGECOLLAPSE execution
     template <typename BaseVecT, typename NormalT>
-    void GrowingCellStructure<BaseVecT, NormalT>::executeEdgeCollapse(){
+    void GrowingCellStructure<BaseVecT, NormalT>::executeEdgeCollapse()
+    {
 
         //TODO: select edge to collapse, examine whether it should be collapsed, collapse it
 
         auto vertices = m_mesh->vertices();
-
         VertexHandle lowestSC(0);
         float minSC = numeric_limits<float>::infinity();
-        for(auto vertexH : vertices){
+        for(auto vertexH : vertices)
+        {
             BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
 
-            if(vertex.signal_counter < minSC){
+            if(vertex.signal_counter < minSC && vertex.signal_counter != 0)
+            {
 
                 lowestSC = vertexH;
                 minSC = vertex.signal_counter;
             }
         }
 
+        std::cout << "Where is the Prob1?" << endl;
+
         //found vertex with lowest sc
         //TODO: collapse the edge leading to the vertex with the valence closest to six
-        if(minSC < this->getCollapseThreshold()){
-            std::cout << "Lowest SC: " << std::endl;
+        if(minSC > this->getCollapseThreshold() && lowestSC.idx() != 0)
+        {
+
+            vector<VertexHandle> nbMinSc;
+            m_mesh->getNeighboursOfVertex(lowestSC, nbMinSc);
+            EdgeHandle eToSixVal(0);
+            int difference = numeric_limits<int>::infinity();
+
+            std::cout << "Where is the Prob1.5?" << endl;
+
+            for(VertexHandle vertex : nbMinSc)
+            {
+                vector<VertexHandle> nbs;
+                m_mesh->getNeighboursOfVertex(vertex, nbs);
+                size_t length = nbs.size();
+
+                if(abs((int)(6 - length)) < difference)
+                {
+                    difference = abs((int)(6-length));
+                    eToSixVal = m_mesh->getEdgeBetween(lowestSC, vertex).unwrap();
+                }
+            }
+            std::cout << "Where is the Prob2?" << endl;
+
+            /*OptionalEdgeHandle edgeO = m_mesh->getEdgeBetween(lowestSC, valenceClosestToSix);
+            EdgeHandle edge(0);
+            if(edgeO){
+                cout << "Unwrapped" << endl;
+                edge = edgeO.unwrap();
+            }*/
+
+            std::cout << "Where is the Prob3?" << endl;
+            if(m_mesh->isCollapsable(eToSixVal))
+            {
+                std::cout << "Where is the Prob4?" << endl;
+                m_mesh->collapseEdge(eToSixVal);
+                std::cout << "Collapsed an Edge!" << endl;
+            }
+
         }
     }
 
@@ -234,10 +280,12 @@ namespace lvr2 {
                 }
                 executeVertexSplit();
 
-                //std::cout << "Vertex Split!!" << std::endl;
             }
-
-            executeEdgeCollapse();
+            if(this->isWithCollapse()){
+                cout << "Before Edge Collapse" << endl;
+                executeEdgeCollapse();
+                cout << "After Edge Collapse" << endl;
+            }
 
             //std::cout << "Edge Collapse!!!" << std::endl;
         }
