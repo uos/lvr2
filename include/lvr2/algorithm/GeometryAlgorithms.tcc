@@ -249,7 +249,7 @@ DenseVertexMap<float> calcVertexRoughness(
         #pragma omp critical
         {
             // Calculate the final roughness
-            roughness.insert(vH, sum / count);
+            roughness.insert(vH, count ? sum / count : 0);
             ++progress;
         }
     }
@@ -306,7 +306,7 @@ void calcVertexRoughnessAndHeightDifferences(
         });
 
         // Calculate the final roughness
-        roughness.insert(vH, sum / count);
+        roughness.insert(vH, count ? sum / count : 0);
 
         // Calculate the final height difference
         heightDiff.insert(vH, maxHeight - minHeight);
