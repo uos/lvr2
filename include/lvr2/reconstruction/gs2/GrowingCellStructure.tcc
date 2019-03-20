@@ -111,7 +111,7 @@ namespace lvr2 {
         }
 
         //TODO: split it.. :)
-        VertexHandle newVH = m_mesh->splitEdge(highestSC);
+        VertexHandle newVH = m_mesh->splitVertex(highestSC);
         BaseVecT& newV = m_mesh->getVertexPosition(newVH);
 
         //TODO: reduce sc, set sc of newly added vertex
@@ -122,13 +122,10 @@ namespace lvr2 {
 
     }
 
-    bool collapsed = false;
-
-    //TODO: EDGECOLLAPSE execution
+    //TODO: why does the second collapse (collapsable) fail?
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::executeEdgeCollapse()
     {
-        if(collapsed) return;
         //TODO: select edge to collapse, examine whether it should be collapsed, collapse it
 
         auto vertices = m_mesh->vertices();
@@ -157,12 +154,14 @@ namespace lvr2 {
             int difference = numeric_limits<int>::infinity();
 
 
-            for(VertexHandle vertex : nbMinSc) {
+            for(VertexHandle vertex : nbMinSc)
+            {
                 vector<VertexHandle> nbs;
                 m_mesh->getNeighboursOfVertex(vertex, nbs);
                 size_t length = nbs.size();
 
-                if (abs((int) (6 - length)) < difference) {
+                if (abs((int) (6 - length)) < difference)
+                {
                     difference = abs((int) (6 - length));
                     eToSixVal = m_mesh->getEdgeBetween(lowestSC, vertex).unwrap();
                 }
@@ -172,7 +171,6 @@ namespace lvr2 {
             {
                 m_mesh->collapseEdge(eToSixVal);
                 std::cout << "Collapsed an Edge!" << endl;
-                collapsed = true;
             }
 
         }
@@ -180,14 +178,12 @@ namespace lvr2 {
 
 
 
-
-
-
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::getInitialMesh(){
         auto bounding_box = m_surface.get()->getBoundingBox();
 
-        if(!bounding_box.isValid()){
+        if(!bounding_box.isValid())
+        {
             std::cout << "Bounding Box invalid" << std::endl;
             exit(-1);
         }
@@ -234,13 +230,7 @@ namespace lvr2 {
 
         //initial mesh done
 
-        //TODO: splits won't work, faces need to be inserted against the clock....
-        //test splitting
-        //m_mesh->splitEdge(vH1);
-        //m_mesh->splitEdge(vH2);
-        //m_mesh->splitEdge(vH3);
-        //m_mesh->splitEdge(vH4);
-
+        m_mesh->splitVertex(vH1);
     }
 
 
@@ -270,7 +260,7 @@ namespace lvr2 {
             if(this->isWithCollapse()){
                 //executeEdgeCollapse();
             }
-            
+
         }
     }
 
