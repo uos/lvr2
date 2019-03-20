@@ -684,6 +684,7 @@ void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
     });
 }
 
+
 template <typename BaseVecT>
 void HalfEdgeMesh<BaseVecT>::getNeighboursOfVertex(
     VertexHandle handle,
@@ -695,6 +696,25 @@ void HalfEdgeMesh<BaseVecT>::getNeighboursOfVertex(
         verticesOut.push_back(getE(getE(eH).twin).target);
         return true;
     });
+}
+
+template <typename BaseVecT>
+vector<VertexHandle> HalfEdgeMesh<BaseVecT>::findCommonNeigbours(VertexHandle vH1, VertexHandle vH2){
+    vector<VertexHandle> vH1nb = this->getNeighboursOfVertex(vH1);
+    vector<VertexHandle> vH2nb = this->getNeighboursOfVertex(vH2);
+
+    vector<VertexHandle> commonVertexHandles;
+
+    for(auto i = vH1nb.begin(); i != vH1nb.end(); ++i)
+    {
+        if(find(vH2nb.begin(), vH2nb.end(), *i) != vH2nb.end())
+        {
+            commonVertexHandles.push_back(*i);
+            std::cout << "Test" << endl;
+        }
+    }
+
+    return commonVertexHandles;
 }
 
 
@@ -807,250 +827,77 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdge(VertexHandle vertexH) {
 }
 
 
+
 //now more like a edgesplit..but above is working.. okay, cool.
 
 template <typename BaseVecT>
-void HalfEdgeMesh<BaseVecT>::splitGSVertex(VertexHandle vertexH){
-    //gets coordinates of new vertex, vertexH + 1/2 length of longest edge
-    //TODO: get longest edge
-    HalfEdge longestOutgoingEdge;
+VertexHandle HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
+{
 
-    BaseVecT toBeSplit = getV(vertexH).pos;
-    //get all outgoing edges
-    auto outEdges = getEdgesOfVertex(vertexH);
+    HalfEdge longestOutgoingEdge;
+    BaseVecT vertexToBeSplit = getV(vertexToBeSplitH).pos;
+    auto outEdges = getEdgesOfVertex(vertexToBeSplitH);
 
     float longestDistance = 0; //save length of longest edge
     EdgeHandle longestEdge(0); //save longest edge
     HalfEdge longestEdgeHalf; //needed for vertex calc
-    BaseVecT targetVec;
-    VertexHandle targetVecH(0);
 
-
-    //shouldnt happen
-    if(outEdges.size() < 3 ){
-        return;
-    }
     /************************************
      * Get vertex, which will be added. *
      ************************************/
 
     // determine longest outgoing edge
-    for(EdgeHandle edge : outEdges){
+    for(EdgeHandle edge : outEdges)
+    {
         HalfEdgeHandle halfH = HalfEdgeHandle::oneHalfOf(edge); //get Halfedge
         HalfEdge half = getE(halfH);
-        //if halfedge is pointing to the start vector, change it up
-        if(half.target == vertexH){
+
+        //make halfedge direct to the target of the longest edge
+        if(half.target == vertexToBeSplitH)
+        {
             halfH = half.twin;
             half = getE(halfH);
         }
 
-        VertexHandle targetH = half.target;
-        Vertex targetHV = getV(targetH);
-        BaseVecT target = targetHV.pos;
-        auto distance = target.distanceFrom(getV(vertexH).pos);
+        BaseVecT target = getV(half.target).pos;
+        auto distance = target.distanceFrom(getV(vertexToBeSplitH).pos);
         //changes values to longer edge
         if(distance > longestDistance){
             longestDistance = distance;
             longestEdge = edge;
             longestEdgeHalf = half;
-            targetVec=target;
-            targetVecH = targetH;
         }
     }
 
+    VertexHandle targetOfLongestEdgeH = longestEdgeHalf.target;
+    BaseVecT targetOfLongestEdge = getV(targetOfLongestEdgeH).pos;
     //calculate the position of the new vertex
-    BaseVecT vertexToAdd = getV(vertexH).pos + (getV(longestEdgeHalf.target).pos - getV(vertexH).pos)/2;
+    BaseVecT vertexToAdd = vertexToBeSplit + (targetOfLongestEdge - vertexToBeSplit)/2;
+    VertexHandle centerOfLongestEdge = this->addVertex(vertexToAdd);
 
 
-    //std::cout << "Distance: " << longestDistance;
-    std::cout << "Target of longest Edge: " << getV(longestEdgeHalf.target).pos << std::endl;
-    std::cout << "Vertex to Add to Mesh: " << vertexToAdd << std::endl;
+    //TODO: get common neighbour vertices of the longest edge target vertex and the vertex to be split (must be 2)
 
+    vector<VertexHandle> commonVertexHandles = findCommonNeigbours(vertexToBeSplitH, targetOfLongestEdgeH);
 
-    /**********************************************************************
-     * Get Incident Vertices to the two incident faces of the longes edge *
-     **********************************************************************/
-
-    //get incident faces of the longest edge
-    auto incidentFaces = this->getFacesOfEdge(longestEdge);
-
-    BaseVecT firstNormal;
-    BaseVecT secondNormal;
-
-    vector<VertexHandle> groupOne;
-    vector<VertexHandle> groupTwo;
-
-
-    vector<FaceHandle> faceHandles;
-    vector<VertexHandle> incidentVertices; // 2 for edgeSplit
-
-    for(int i = 0; i < incidentFaces.size(); i++){
-        //todo: get all needed vertices, determine which faces need to be removed.
-        OptionalFaceHandle handle = incidentFaces[i];
-        if(handle){
-            auto fHandle = handle.unwrap(); //here every edge should have two incident faces
-            faceHandles.push_back(fHandle);
-            auto verticesOfFace = this->getVerticesOfFace(fHandle);
-            //assign vertices for normal calculation
-            i == 0 ? groupOne.assign(verticesOfFace.begin(),verticesOfFace.end()) : groupTwo.assign(verticesOfFace.begin(),verticesOfFace.end());
-            for(auto vertex : verticesOfFace){
-                if(getV(vertex).pos != getV(vertexH).pos  && getV(vertex).pos != targetVec) {
-                    incidentVertices.push_back(vertex);
-                    cout << "Incident Vertex: " << getV(vertex).pos << endl;
-                }
-            }
-        }
+    if(commonVertexHandles.size() != 2){
+        cout << "there must be exactly two common vertices" << endl;
+        //exit(EXIT_FAILURE);
     }
 
-    //erase vertex duplicates using a set
-    set<VertexHandle> s( incidentVertices.begin(), incidentVertices.end() );
-    incidentVertices.assign( s.begin(), s.end() );
 
-    //calculate normals for the two groups (faces) - needed for insertion of the new faces
-    //seems to be working fine for now
-    auto firstVecGroup1 = getV(groupOne[1]).pos - getV(groupOne[0]).pos;
-    auto secondVecGroup1 = getV(groupOne[2]).pos - getV(groupOne[0]).pos;
+    //TODO: for each of the two found vertices, there needs to be iterated "upwords" to the first vertex, which
+    //TODO: is closer to the vertex to be split, than to the newly added vertex.
 
-    firstNormal = firstVecGroup1.cross(secondVecGroup1);
-    firstNormal.normalize();
-    auto firstVecGroup2 = getV(groupTwo[1]).pos - getV(groupTwo[0]).pos;
-    auto secondVecGroup2 = getV(groupTwo[2]).pos - getV(groupTwo[0]).pos;
+    //splitEdge(vertexToBeSplitH);
 
-    secondNormal = firstVecGroup2.cross(secondVecGroup2);
-    secondNormal.normalize();
-
-    cout << "First Normal : " << firstNormal << endl;
-    cout << "Second Normal: " << secondNormal << endl;
-
-    /***********************************************
-     * Remove the two Faces and add four new faces *
-     ***********************************************/
-
-    if(faceHandles.size() != 2){
-        cout << "Tried removing more or less than two faces.." << endl;
-        exit(EXIT_FAILURE);
-    }
-    for(FaceHandle handle : faceHandles){
-        this->removeFace(handle);
+    for(VertexHandle vertex : commonVertexHandles)
+    {
+        EdgeHandle handle = this->getEdgeBetween(vertex,vertexToBeSplitH).unwrap();
+        this->flipEdge(handle);
     }
 
-    VertexHandle added = this->addVertex(vertexToAdd);
-
-    //TODO: check y coords of old and target vertex, change needed?
-
-    //add new faces (Counter Clockwise!!) to the mesh, take normal direction into account
-    int counter = 0; //which vertex is currently examined
-    for (auto vertex  : incidentVertices) {
-        std::cout << counter + 1 << " #####Vertex used: " << getV(vertex).pos << std::endl;
-
-
-        //using the calculated normales to determine which way the triangles are directed
-        bool clockwise = true;
-
-
-        //NORMAL CALCULATION SEEMS TO BE WORKING FINE NOW.
-        if(counter == 1){
-            if(firstNormal.z >= 0){
-                clockwise = false;
-
-
-                if(firstNormal.z == 0){
-                    /*
-                     * Really special case: normal only lookin in x and y direction
-                     */
-                    if(firstNormal.x < 0 || (firstNormal.x == 0 && firstNormal.y < 0)) {
-                        clockwise = true;
-                    }
-                }
-            }
-        } else {
-            if(secondNormal.z >= 0){ //TODO: what happens, if z = 0?
-                clockwise = false;
-
-                if(secondNormal.z == 0){
-                    /*
-                     * Really special case: normal only lookin in x and y direction
-                     */
-                    if(secondNormal.x < 0 || (secondNormal.x == 0 && secondNormal.y < 0)) {
-                        clockwise = true;
-                    }
-                }
-            }
-        }
-
-
-
-        cout << "Uhrzeigersinn? " << clockwise << endl;
-        //first face between vertex, vertexToBeSplitted, and the newly added vertex
-        auto vectorToOldVertex = getV(vertexH).pos - getV(vertex).pos;
-        auto vectorToNewVertex = vertexToAdd - getV(vertex).pos;
-
-
-        //TODO: fix angle calculation
-        /*auto dotP1 = vectorToOldVertex * vectorToNewVertex;
-        auto sq1 = vectorToOldVertex.length2();
-        auto sq2 = vectorToNewVertex.length2();
-
-        float angle = std::acos(dotP1/sqrt(sq1 * sq2)) * (180 / 3.14159);*/
-        cout << "vecToOldV: " << vectorToOldVertex << " vecToNewV: " << vectorToNewVertex << endl;
-        BaseVecT crossVec = vectorToOldVertex.cross(vectorToNewVertex); // maybe change values
-        crossVec.normalize();
-
-        //std::cout << "Angle Old Vec -> New Vec " << angle << endl;
-        std::cout << "normalized Vec Old -> New Vec crossP " << crossVec << endl;
-
-        //TODO: check normal vectors and look, whether they direct into negative or positive z
-        //if angle < 180°, the following is counter clockwise, else the opposite [NOPE]
-        try{
-            if((crossVec == secondNormal && counter == 0) || (crossVec == firstNormal && counter == 1)){
-                cout << "Normals are the same." << endl;
-                clockwise ? this->addFace(vertex, vertexH, added) : this->addFace(added, vertexH, vertex);
-            }
-            else{
-                clockwise ? this->addFace(vertex, added, vertexH) : this->addFace(vertexH, added, vertex);
-            }
-        }
-        catch (const std::exception &e) {
-            std::cout << e.what() << std::endl;
-        }
-
-
-        auto vectorToTargetVertex = targetVec - getV(vertex).pos;
-
-        /*auto dotP2 = vectorToNewVertex * vectorToTargetVertex;
-        sq1 = vectorToTargetVertex.length2();
-
-        angle = std::acos(dotP2/sqrt(sq2*sq1)) * (180 / 3.14159);
-
-        std::cout << "Angle New Vec -> Target Vec " << angle << endl;*/
-
-
-        cout << "vecToNewV: " << vectorToNewVertex << " vecToTargetV: " << vectorToTargetVertex << endl;
-        crossVec = vectorToNewVertex.cross(vectorToTargetVertex);
-        crossVec.normalize();
-        std::cout << "normalized Vec New -> Target Vec crossP " << crossVec << endl;
-
-        try{
-            if((crossVec == secondNormal && counter == 0) || (crossVec == firstNormal && counter == 1)){
-                cout << "Normals are the same." << endl;
-                clockwise ? this->addFace(vertex, added, targetVecH) : this->addFace(targetVecH, added, vertex);
-            }
-            else{
-                clockwise ? this->addFace(added, vertex, targetVecH) : this->addFace(vertex, added, targetVecH);
-            }
-
-        }
-        catch(const std::exception& e) //for debug purposes. Remove if working.
-        {
-            std::cout << e.what() << std::endl;
-        }
-        counter ++;
-    }
-
-    // END OF EDGE SPLIT (EVERYTHING ABOVE IS EDGESPLIT)
-
-
-
+    return centerOfLongestEdge;
 
     //Todo: EVERYTHING BELOW CAN BE USED FOR THE VERTEX SPLIT, FOR NOW THE EDGE SPLIT IS ENOUGH
 

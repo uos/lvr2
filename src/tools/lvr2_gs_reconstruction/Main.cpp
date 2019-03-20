@@ -23,7 +23,7 @@
 using namespace lvr2;
 
 /**
- * Extended Vertex, which now includes the signal counter, TODO: make it work...how to inherit this wagshit?
+ * Extended Vertex, which now includes the signal counter
  * @tparam CoordT
  */
 
