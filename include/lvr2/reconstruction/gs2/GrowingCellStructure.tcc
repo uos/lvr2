@@ -62,8 +62,8 @@ namespace lvr2 {
 
         //TODO: smooth the winning vertex
 
-        BaseVecT &vertex = m_mesh->getVertexPosition(closestVertexToRandomPoint);
-        vertex += vectorToRandomPoint * getLearningRate();
+        BaseVecT &winner = m_mesh->getVertexPosition(closestVertexToRandomPoint);
+        winner += vectorToRandomPoint * getLearningRate();
 
 
         //TODO: smooth the winning vertices' neighbors (laplacian smoothing)
@@ -79,9 +79,14 @@ namespace lvr2 {
 
         //TODO: increase signal counter of winner by one
 
-        vertex.incSC();
+        winner.incSC();
 
         //TODO: decrease signal counter of others by a fraction
+
+        for(auto vertexH : vertices){
+            BaseVecT& vertex = m_mesh->getVertexPosition(vertexH);
+            vertex.setSC(vertex.getSC() * 0.9);
+        }
 
     }
 
@@ -150,7 +155,7 @@ namespace lvr2 {
 
             vector<VertexHandle> nbMinSc;
             m_mesh->getNeighboursOfVertex(lowestSC, nbMinSc);
-            EdgeHandle eToSixVal(0);
+            OptionalEdgeHandle eToSixVal(0);
             int difference = numeric_limits<int>::infinity();
 
 
@@ -163,13 +168,13 @@ namespace lvr2 {
                 if (abs((int) (6 - length)) < difference)
                 {
                     difference = abs((int) (6 - length));
-                    eToSixVal = m_mesh->getEdgeBetween(lowestSC, vertex).unwrap();
+                    eToSixVal = m_mesh->getEdgeBetween(lowestSC, vertex);
                 }
             }
 
-            if(eToSixVal.idx() != 0 && m_mesh->isCollapsable(eToSixVal))
+            if(eToSixVal && m_mesh->isCollapsable(eToSixVal.unwrap()))
             {
-                m_mesh->collapseEdge(eToSixVal);
+                m_mesh->collapseEdge(eToSixVal.unwrap());
                 std::cout << "Collapsed an Edge!" << endl;
             }
 
@@ -185,7 +190,7 @@ namespace lvr2 {
         if(!bounding_box.isValid())
         {
             std::cout << "Bounding Box invalid" << std::endl;
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
 
         BaseVecT centroid = bounding_box.getCentroid();
@@ -227,10 +232,6 @@ namespace lvr2 {
         m_mesh->addFace(vH4, vH2, vH1);
         m_mesh->addFace(vH4, vH1, vH3);
         m_mesh->addFace(vH3, vH1, vH2);
-
-        //initial mesh done
-
-        m_mesh->splitVertex(vH1);
     }
 
 
@@ -240,6 +241,7 @@ namespace lvr2 {
         //set pointer to mesh
         m_mesh = &mesh;
 
+        //get initial tetrahedron mesh
         getInitialMesh();
 
 
