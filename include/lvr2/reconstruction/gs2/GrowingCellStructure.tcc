@@ -83,11 +83,6 @@ namespace lvr2 {
 
         //TODO: decrease signal counter of others by a fraction
 
-        for(auto vertexH : vertices){
-            BaseVecT& vertex = m_mesh->getVertexPosition(vertexH);
-            vertex.setSC(vertex.getSC() * 0.9);
-        }
-
     }
 
 
@@ -244,6 +239,8 @@ namespace lvr2 {
         //get initial tetrahedron mesh
         getInitialMesh();
 
+
+        //TODO: add some progress...needs to include the fact, that the runtime of the algorithm is exponential (boost progress display)
 
         //TODO: add gcs construction.. call to basic step, call to other functions
 

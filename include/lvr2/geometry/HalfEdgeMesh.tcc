@@ -845,9 +845,9 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
     //first idea: just do an edge split on the longest edge and do an edge flip for each of the 2 found vertices
     vector<VertexHandle> commonVertexHandles = findCommonNeigbours(vertexToBeSplitH, targetOfLongestEdgeH);
 
-    VertexHandle centerOfLongestEdge = splitEdge(longestEdge);
+    VertexHandle centerOfLongestEdge = this->splitEdge(longestEdge);
 
-    /*if(commonVertexHandles.size() == 2 && this->numVertices() > 8)
+    if(commonVertexHandles.size() == 2 && this->numVertices() > 8)
     {
         //cout << "there are exactly two common vertices" << endl;
 
@@ -857,10 +857,10 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
             if(handle && this->isFlippable(handle.unwrap()))
             {
                 std::cout << "FLIPPABLE!!!" << endl << endl;
-                //this->flipEdge(handle.unwrap());
+                this->flipEdge(handle.unwrap());
             }
         }
-    }*/
+    }
 
 
     //TODO: for each of the two found vertices, there needs to be iterated "upwards" to the first vertex, which
