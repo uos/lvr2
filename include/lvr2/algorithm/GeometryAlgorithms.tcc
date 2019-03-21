@@ -321,7 +321,7 @@ class CompareDist
 };
 
 
-template<typename BaseVecT, typename Visitor>
+template<typename BaseVecT>
 bool Dijkstra(
     const BaseMesh<BaseVecT>& mesh,
     const VertexHandle& start,
@@ -331,7 +331,7 @@ bool Dijkstra(
     DenseVertexMap<float>& distances,
     DenseVertexMap<VertexHandle>& predecessors,
     DenseVertexMap<bool>& seen,
-    Visitor visitor)
+    DenseVertexMap<float>& vertex_costs)
 {
     path.clear();
     distances.clear();
@@ -380,7 +380,7 @@ bool Dijkstra(
 
         for(auto neighbour_vh: neighbours)
         {
-            if(seen[neighbour_vh] || !visitor(neighbour_vh)) continue;
+            if(seen[neighbour_vh] || vertex_costs[neighbour_vh] >= 1) continue;
 
             float edge_cost = edgeCosts[mesh.getEdgeBetween(current_vh, neighbour_vh).unwrap()];
 

@@ -53,7 +53,7 @@ using namespace std;
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Matrix4.hpp>
 
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
 #include <lvr2/reconstruction/PCLFiltering.hpp>
 #endif
 

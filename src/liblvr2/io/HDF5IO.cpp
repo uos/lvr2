@@ -40,33 +40,31 @@ const std::string HDF5IO::vertices_name = "vertices";
 const std::string HDF5IO::indices_name = "indices";
 const std::string HDF5IO::meshes_group = "meshes";
 
-HDF5IO::HDF5IO(const std::string filename, const std::string part_name, bool truncate) :
+HDF5IO::HDF5IO(const std::string filename, const std::string part_name, int open_flag) :
     m_hdf5_file(nullptr),
     m_compress(true),
     m_chunkSize(1e7),
     m_usePreviews(true),
     m_previewReductionFactor(20),
     m_part_name(part_name),
-    m_mesh_path(meshes_group+"/"+part_name),
-    m_truncate(truncate)
+    m_mesh_path(meshes_group+"/"+part_name)
 {
     std::cout << timestamp << " Try to open file \"" << filename << "\"..." << std::endl;
-    if(!open(filename, truncate))
+    if(!open(filename, open_flag))
     {
         std::cerr << timestamp << " Could not open file \"" << filename << "\"!" << std::endl;
     }
 }
 
-HDF5IO::HDF5IO(std::string filename, bool truncate) :
+HDF5IO::HDF5IO(std::string filename, int open_flag) :
     m_hdf5_file(nullptr),
     m_compress(true),
     m_chunkSize(1e7),
     m_usePreviews(true),
     m_previewReductionFactor(20),
-    m_part_name(""), // TODO default part_name ?
-    m_truncate(truncate)
+    m_part_name("")
 {
-    open(filename, truncate); // TODO Open should not be in the constructor
+    open(filename, open_flag); // TODO Open should not be in the constructor
 }
 
 HDF5IO::~HDF5IO()
@@ -120,7 +118,7 @@ ModelPtr HDF5IO::read(std::string filename)
     const std::string vertices("vertices");
     const std::string indices("indices");
 
-    open(filename, m_truncate);
+    open(filename, HighFive::File::ReadOnly);
     ModelPtr model_ptr(new Model);
     if(!exist(mesh_resource_path)){
         std::cout << timestamp << " No mesh with the part name \"" << m_part_name << "\" given in the file \""
@@ -144,21 +142,19 @@ ModelPtr HDF5IO::read(std::string filename)
     return model_ptr;
 }
 
-bool HDF5IO::open(std::string filename, bool truncate)
+bool HDF5IO::open(std::string filename, int open_flag)
 {
     // If file alredy exists, don't rewrite base structurec++11 init vector
     bool have_to_init = false;
 
     boost::filesystem::path path(filename);
-    if(!boost::filesystem::exists(path) | truncate)
+    if(!boost::filesystem::exists(path) | open_flag == HighFive::File::Truncate)
     {
         have_to_init = true;
     }
 
     // Try to open the given HDF5 file
-    m_hdf5_file = new HighFive::File(
-                filename,
-                HighFive::File::OpenOrCreate | (truncate ? HighFive::File::Truncate : 0));
+    m_hdf5_file = new HighFive::File(filename, open_flag);
 
     if (!m_hdf5_file->isValid())
     {

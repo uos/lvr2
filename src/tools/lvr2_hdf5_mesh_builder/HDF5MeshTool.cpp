@@ -60,10 +60,25 @@ int main( int argc, char ** argv )
 {
   hdf5meshtool::Options options(argc, argv);
   std::cout << timestamp << "Load HDF5 file structure..." << std::endl;
-  HDF5IO hdf5(options.getOutputFile(), options.getMeshName(), true);
+  HDF5IO hdf5(options.getOutputFile(), options.getMeshName(), HighFive::File::Truncate);
 
   ModelPtr model = ModelFactory::readModel(options.getInputFile());
   if(MeshBufferPtr meshBuffer = model->m_mesh){
+    if(options.getConvert3DTK2ROS())
+    {
+      std::cout << timestamp << "Converting from 3DTK to ROS coords..." << std::endl;
+      const size_t numVertices = meshBuffer->numVertices();
+      lvr2::floatArr new_vertices(new float[numVertices*3]);
+      lvr2::floatArr old_vertices = meshBuffer->getVertices();
+      for(int i=0; i<numVertices*3; i+=3){
+        new_vertices[i] = old_vertices[i+2] / 100.0;
+        new_vertices[i+1] = -old_vertices[i] / 100.0;
+        new_vertices[i+2] = old_vertices[i+1] / 100.0;
+      }
+      meshBuffer->removeVertices();
+      meshBuffer->setVertices(new_vertices, numVertices);
+    }
+
     std::cout << timestamp << "Building mesh from buffers..." << std::endl;
 
     HalfEdgeMesh<BaseVector<float>> hem(meshBuffer);

@@ -34,6 +34,9 @@ set(LVR2_SOURCES
     io/PCDIO.cpp
     io/Progress.cpp
     io/MeshBuffer.cpp
+    io/DracoEncoder.cpp
+    io/DracoDecoder.cpp
+    io/DrcIO.cpp
 #    io/KinectGrabber.cpp
     io/DatIO.cpp
     io/LasIO.cpp
@@ -82,6 +85,7 @@ set(LVR2_INTERNAL_DEPENDENCIES_SHARED
     lvr2slam6d)
 
 set(LVR2_LIB_DEPENDENCIES
+    draco
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
@@ -91,6 +95,7 @@ set(LVR2_LIB_DEPENDENCIES
     ${OpenCV_LIBS}
     ${GSL_LIBRARIES}
     ${LZ4_LIBRARY})
+
 
 #####################################################################################
 # On Unix/Linux we need to link against pthreads

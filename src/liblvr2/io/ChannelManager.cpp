@@ -157,6 +157,7 @@ void ChannelManager::addEmptyIndexChannel(std::string name, size_t n, unsigned w
     addIndexChannel(ptr, name);
 }
 
+
 void ChannelManager::addFloatChannel(FloatChannelPtr data, std::string name)
 {
     auto ret = m_floatChannels.insert(std::pair<std::string, FloatChannelPtr>(name, data));

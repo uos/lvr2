@@ -191,7 +191,7 @@ DenseEdgeMap<float> calcVertexDistances(const BaseMesh<BaseVecT>& mesh);
  *
  * @return true if a path between start and goals exists
  */
-template<typename BaseVecT, typename Visitor>
+template<typename BaseVecT>
 bool Dijkstra(
     const BaseMesh<BaseVecT>& mesh,
     const VertexHandle& start,
@@ -201,7 +201,7 @@ bool Dijkstra(
     DenseVertexMap<float>& distances,
     DenseVertexMap<VertexHandle>& predecessors,
     DenseVertexMap<bool>& seen,
-    Visitor visitor);
+    DenseVertexMap<float>& vertex_costs);
 
 
 } // namespace lvr2

@@ -47,12 +47,12 @@
 #include <lvr2/io/Progress.hpp>
 
 // PCL related includes
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
 #include <lvr2/io/PCDIO.hpp>
 #endif
 
 // RiVLib
-#ifdef LVR_USE_RIVLIB
+#ifdef LVR2_USE_RIVLIB
 #include <lvr2/io/RxpIO.hpp>
 #endif
 
@@ -82,7 +82,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         io = new AsciiIO;
     }
-#ifdef LVR_USE_RIVLIB
+#ifdef LVR2_USE_RIVLIB
     else if(extension == ".rxp")
     {
         io = new RxpIO;
@@ -100,12 +100,12 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         io = new DatIO;
     }
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
     else if (extension == ".pcd")
     {
         io = new PCDIO;
     }
-#endif /* LVR_USE_PCL */
+#endif /* LVR2_USE_PCL */
     else if (extension == "" && ScanprojectIO().parse_project(selectedFile.string(), true))
     {
         io = new ScanprojectIO;
@@ -176,42 +176,45 @@ ModelPtr ModelFactory::readModel( std::string filename )
         {
             // Convert coordinates in model
             PointBufferPtr points = m->m_pointCloud;
-            size_t n_points = points->numPoints();
-            size_t n_normals = 0;
-            unsigned dummy;
-
-            floatArr p = points->getPointArray();
-            floatArr n = points->getFloatArray("normals", n_normals, dummy);
-
-            // If normals are present every point should habe one
-            if(n_normals)
+            if (points)
             {
-                assert(n_normals == n_points);
-            }
+                size_t n_points = points->numPoints();
+                size_t n_normals = 0;
+                unsigned dummy;
 
-            // Convert coordinates
-            float point[3];
-            float normal[3];
+                floatArr p = points->getPointArray();
+                floatArr n = points->getFloatArray("normals", n_normals, dummy);
 
-            for(size_t i = 0; i < n_points; i++)
-            {
-                // Re-order and scale point coordinates
-                point[0] = p[3 * i + m_transform.x] * m_transform.sx;
-                point[1] = p[3 * i + m_transform.y] * m_transform.sy;
-                point[2] = p[3 * i + m_transform.z] * m_transform.sz;
-
-                p[3 * i]         = point[0];
-                p[3 * i + 1]    = point[1];
-                p[3 * i + 2]    = point[2];
-                if(n_normals)
+                // If normals are present every point should habe one
+                if (n_normals)
                 {
-                    normal[0] = n[3 * i + m_transform.x] * m_transform.sx;
-                    normal[1] = n[3 * i + m_transform.y] * m_transform.sy;
-                    normal[2] = n[3 * i + m_transform.z] * m_transform.sz;
+                    assert(n_normals == n_points);
+                }
 
-                    n[3 * i]         = normal[0];
-                    n[3 * i + 1]    = normal[1];
-                    n[3 * i + 2]    = normal[2];
+                // Convert coordinates
+                float point[3];
+                float normal[3];
+
+                for (size_t i = 0; i < n_points; i++)
+                {
+                    // Re-order and scale point coordinates
+                    point[0] = p[3 * i + m_transform.x] * m_transform.sx;
+                    point[1] = p[3 * i + m_transform.y] * m_transform.sy;
+                    point[2] = p[3 * i + m_transform.z] * m_transform.sz;
+
+                    p[3 * i] = point[0];
+                    p[3 * i + 1] = point[1];
+                    p[3 * i + 2] = point[2];
+                    if (n_normals)
+                    {
+                        normal[0] = n[3 * i + m_transform.x] * m_transform.sx;
+                        normal[1] = n[3 * i + m_transform.y] * m_transform.sy;
+                        normal[2] = n[3 * i + m_transform.z] * m_transform.sz;
+
+                        n[3 * i] = normal[0];
+                        n[3 * i + 1] = normal[1];
+                        n[3 * i + 2] = normal[2];
+                    }
                 }
             }
         }
@@ -248,7 +251,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     {
         io = new STLIO;
     }
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
     else if (extension == ".pcd")
     {
         io = new PCDIO;

@@ -55,7 +55,7 @@ using namespace std;
 #include <lvr2/io/Timestamp.hpp>
 #include <lvr2/io/ModelFactory.hpp>
 
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
 #include <lvr2/reconstruction/PCLFiltering.hpp>
 #endif
 
@@ -77,7 +77,7 @@ ModelPtr filterModel(ModelPtr p, int k, float sigma)
     {
         if(p->m_pointCloud)
         {
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
             PCLFiltering filter(p->m_pointCloud);
             cout << timestamp << "Filtering outliers with k=" << k << " and sigma=" << sigma << "." << endl;
             size_t original_size = p->m_pointCloud->getNumPoints();
