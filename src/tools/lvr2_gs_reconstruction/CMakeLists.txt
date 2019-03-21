@@ -15,10 +15,10 @@ set(GS_DEPENDENCIES
 		lvr2_static
 		lvr2las_static
 		lvr2rply_static
-  		#${PCL_LIBRARIES}
-  		#${EIGEN_LIBRARY}
-		#${GLUT_LIBRARIES}
-		#${OpenCV_LIBS}
+  		${PCL_LIBRARIES}
+  		${EIGEN_LIBRARY}
+		${GLUT_LIBRARIES}
+		${OpenCV_LIBS}
 	)
 
 
