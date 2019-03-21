@@ -97,138 +97,77 @@ ofstream scanPosesOut("scanpositions.txt");
 //     return NULL;
 // }
 
-// size_t countPointsInFile(boost::filesystem::path& inFile)
-// {
-//     ifstream in(inFile.c_str());
-//     cout << timestamp << "Counting points in " << inFile.filename().string() << "..." << endl;
+size_t writePly(ModelPtr model, std::fstream& out)
+{
+    size_t n_ip = model->m_pointCloud->numPoints();
+    size_t n_colors = n_ip;
+    unsigned w_color;
 
-//     // Count lines in file
-//     size_t n_points = 0;
-//     char line[2048];
-//     while(in.good())
-//     {
-//         in.getline(line, 1024);
-//         n_points++;
-//     }
-//     in.close();
+    floatArr arr = model->m_pointCloud->getPointArray();
 
-//     cout << timestamp << "File " << inFile.filename().string() << " contains " << n_points << " points." << endl;
+    ucharArr colors = model->m_pointCloud->getColorArray(w_color);
 
-//     return n_points;
-// }
+    if(colors)
+    {
+        if(n_colors != n_ip)
+        {
+            std::cout << timestamp << "Numbers of points and colors needs to be identical" << std::endl;
+            return 0;
+        }
 
-// void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut)
-// {
-//     std::ofstream out(framesOut.c_str());
+        for(int a = 0; a < n_ip; a++)
+        {
+            // x y z
+            out.write((char*) (arr.get() + (3 * a)), sizeof(float) * 3);
 
-//     // write the rotation matrix
-//     out << transform.col(0)(0) << " " << transform.col(0)(1) << " " << transform.col(0)(2) << " " << 0 << " "
-//         << transform.col(1)(0) << " " << transform.col(1)(1) << " " << transform.col(1)(2) << " " << 0 << " "
-//         << transform.col(2)(0) << " " << transform.col(2)(1) << " " << transform.col(2)(2) << " " << 0 << " ";
+            // r g b
+            out.write((char*) (colors.get() + (w_color * a)), sizeof(unsigned char) * 3);
+        }
+    }
+    else
+    {
+        // simply write whole points array
+        out.write((char*) arr.get(), sizeof(float) * n_ip * 3);
+    }
 
-//     // write the translation vector
-//     out << transform.col(3)(0) << " "
-//         << transform.col(3)(1) << " "
-//         << transform.col(3)(2) << " "
-//         << transform.col(3)(3);
+    return n_ip;
 
-//     out.close();
-// }
+}
 
-// size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
-// {
-//     size_t n_ip = model->m_pointCloud->numPoints();
-//     floatArr arr = model->m_pointCloud->getPointArray();
+size_t writePlyHeader(std::ofstream& out, size_t n_points, bool colors)
+{
+    out << "ply" << std::endl;
+    out << "format binary_little_endian 1.0" << std::endl;
 
-//     // ModelFactory::saveModel(model, outfile.string());
+    out << "element point " << n_points << std::endl;
+    out << "property float32 x" << std::endl;
+    out << "property float32 y" << std::endl;
+    out << "property float32 z" << std::endl;
 
-//     return n_ip;
-// }
+    if(colors)
+    {
+        out << "property uchar red" << std::endl;
+        out << "property uchar green" << std::endl;
+        out << "property uchar blue" << std::endl;
+    }
+    out << "end_header" << std::endl;
+}
 
-// size_t writeAscii(ModelPtr model, std::ofstream& out)
-// {
-//     size_t n_ip = model->m_pointCloud->numPoints();
-//     size_t n_colors = n_ip;
-//     unsigned w_color;
+void addScanPosition(Eigen::Matrix4d& transform)
+{
+    Eigen::Vector4d translation = transform.rightCols<1>();
+    if(scanPosesOut.good())
+    {
+        std::cout << timestamp << "Exporting scan position @ "
+                  << translation[0] << " "
+                  << translation[1] << " "
+                  << translation[2] << std::endl;
 
-//     floatArr arr = model->m_pointCloud->getPointArray();
-
-//     ucharArr colors = model->m_pointCloud->getColorArray(w_color);
-//     for(int a = 0; a < n_ip; a++)
-//     {
-//         out << arr[a * 3] << " " << arr[a * 3 + 1] << " " << arr[a * 3 + 2];
-
-//         if(colors)
-//         {
-//             out << " " << (int)colors[a * w_color] << " " << (int)colors[a * w_color + 1] << " " << (int)colors[a * w_color + 2];
-//         }
-//         out << endl;
-
-//     }
-
-//     return n_ip;
-// }
-
-// size_t writePly(ModelPtr model, std::fstream& out)
-// {
-//     size_t n_ip = model->m_pointCloud->numPoints();
-//     size_t n_colors = n_ip;
-//     unsigned w_color;
-
-//     floatArr arr = model->m_pointCloud->getPointArray();
-
-//     ucharArr colors = model->m_pointCloud->getColorArray(w_color);
-
-//     if(colors)
-//     {
-//         if(n_colors != n_ip)
-//         {
-//             std::cout << timestamp << "Numbers of points and colors needs to be identical" << std::endl;
-//             return 0;
-//         }
-
-//         for(int a = 0; a < n_ip; a++)
-//         {
-//             // x y z
-//             out.write((char*) (arr.get() + (3 * a)), sizeof(float) * 3);
-
-//             // r g b
-//             out.write((char*) (colors.get() + (w_color * a)), sizeof(unsigned char) * 3);
-//         }
-//     }
-//     else
-//     {
-//         // simply write whole points array
-//         out.write((char*) arr.get(), sizeof(float) * n_ip * 3);
-//     }
-
-//     return n_ip;
-
-// }
-
-// size_t writePlyHeader(std::ofstream& out, size_t n_points, bool colors)
-// {
-//     out << "ply" << std::endl;
-//     out << "format binary_little_endian 1.0" << std::endl;
-
-//     out << "element point " << n_points << std::endl;
-//     out << "property float32 x" << std::endl;
-//     out << "property float32 y" << std::endl;
-//     out << "property float32 z" << std::endl;
-
-//     if(colors)
-//     {
-//         out << "property uchar red" << std::endl;
-//         out << "property uchar green" << std::endl;
-//         out << "property uchar blue" << std::endl;
-//     }
-//     out << "end_header" << std::endl;
-// }
-
-
-
-
-
+        scanPosesOut << translation[0] << " "
+                     << translation[1] << " "
+                     << translation[2] << std::endl;
+    }
+}
 
 
 void processSingleFile(boost::filesystem::path& inFile)
@@ -314,7 +253,7 @@ void processSingleFile(boost::filesystem::path& inFile)
                 out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::trunc);
             }
 
-            points_written += writeAscii(model, out);
+            points_written += writePointsToStream(model, out);
 
             out.close();
         }
@@ -438,8 +377,8 @@ void processSingleFile(boost::filesystem::path& inFile)
             }
 
             ofstream out(name);
-            transformAndReducePointCloud(model, asciiReductionFactor(inFile), options->coordinateTransform());
-            size_t points_written = writeAscii(model, out);
+            transformAndReducePointCloud(model, getReductionFactor(inFile, options->getTargetSize()), options->coordinateTransform());
+            size_t points_written = writePointsToStream(model, out);
 
             out.close();
 
