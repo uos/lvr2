@@ -710,7 +710,6 @@ vector<VertexHandle> HalfEdgeMesh<BaseVecT>::findCommonNeigbours(VertexHandle vH
         if(find(vH2nb.begin(), vH2nb.end(), *i) != vH2nb.end())
         {
             commonVertexHandles.push_back(*i);
-            std::cout << "Test" << endl;
         }
     }
 
@@ -719,54 +718,23 @@ vector<VertexHandle> HalfEdgeMesh<BaseVecT>::findCommonNeigbours(VertexHandle vH
 
 
 template <typename BaseVecT>
-VertexHandle HalfEdgeMesh<BaseVecT>::splitEdge(VertexHandle vertexH) {
-    HalfEdge longestOutgoingEdge;
+VertexHandle HalfEdgeMesh<BaseVecT>::splitEdge(EdgeHandle edgeH) {
 
-    BaseVecT toBeSplit = getV(vertexH).pos;
-    //get all outgoing edges
-    auto outEdges = getEdgesOfVertex(vertexH);
+    auto verticesOfEdge = getVerticesOfEdge(edgeH);
 
-    float longestDistance = 0; //save length of longest edge
-    EdgeHandle longestEdge(0); //save longest edge
-    HalfEdge longestEdgeHalf; //needed for vertex calc
-    BaseVecT targetVec;
-    VertexHandle targetVecH(0); //store target of longest Edge
+    VertexHandle startH = verticesOfEdge[0];
+    BaseVecT start = getV(startH).pos;
+
+    VertexHandle endH = verticesOfEdge[1];
+    BaseVecT end = getV(endH).pos;
+
 
     /************************************
      * Get vertex, which will be added. *
      ************************************/
 
-    // determine longest outgoing edge
-    for (EdgeHandle edge : outEdges) {
-        HalfEdgeHandle halfH = HalfEdgeHandle::oneHalfOf(edge); //get Halfedge
-        HalfEdge half = getE(halfH);
-        //if halfedge is pointing to the start vector, change it up
-        if (half.target == vertexH) {
-            halfH = half.twin;
-            half = getE(halfH);
-        }
-
-        VertexHandle targetH = half.target;
-        Vertex targetHV = getV(targetH);
-        BaseVecT target = targetHV.pos;
-        auto distance = target.distanceFrom(getV(vertexH).pos);
-        //changes values to longer edge
-        if (distance > longestDistance) {
-            longestDistance = distance;
-            longestEdge = edge;
-            longestEdgeHalf = half;
-            targetVec = target;
-            targetVecH = targetH;
-        }
-    }
-
     //calculate the position of the new vertex
-    BaseVecT vertexToAdd = getV(vertexH).pos + (getV(longestEdgeHalf.target).pos - getV(vertexH).pos) / 2;
-
-
-    //std::cout << "Distance: " << longestDistance;
-    //std::cout << "Target of longest Edge: " << getV(longestEdgeHalf.target).pos << std::endl;
-    //std::cout << "Vertex to Add to Mesh: " << vertexToAdd << std::endl;
+    BaseVecT vertexToAdd = start + (end - start) / 2;
 
 
     /**********************************************************************
@@ -774,7 +742,7 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdge(VertexHandle vertexH) {
      **********************************************************************/
 
     //get incident faces of the longest edge
-    auto incidentFaces = this->getFacesOfEdge(longestEdge);
+    auto incidentFaces = this->getFacesOfEdge(edgeH);
 
     auto fHArr1 = this->getVerticesOfFace(incidentFaces[0].unwrap());
     auto fHArr2 = this->getVerticesOfFace(incidentFaces[1].unwrap());
@@ -793,8 +761,8 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdge(VertexHandle vertexH) {
 
     //now insert new Faces, using the direction the getVerticesOfFace method gives
     //first face
-    auto findStart1 = std::find(verticesOfFace1.begin(), verticesOfFace1.end(), vertexH);
-    auto findEnd1 = std::find(verticesOfFace1.begin(), verticesOfFace1.end(), targetVecH);
+    auto findStart1 = std::find(verticesOfFace1.begin(), verticesOfFace1.end(), startH);
+    auto findEnd1 = std::find(verticesOfFace1.begin(), verticesOfFace1.end(), endH);
 
     int indexStart1 = std::distance(verticesOfFace1.begin(), findStart1);
     int indexEnd1 = std::distance(verticesOfFace1.begin(), findEnd1);
@@ -808,8 +776,8 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdge(VertexHandle vertexH) {
     this->addFace(faceInsert1[0], faceInsert1[1], faceInsert1[2]);
 
     //second face
-    auto findStart2 = std::find(verticesOfFace2.begin(), verticesOfFace2.end(), vertexH);
-    auto findEnd2 = std::find(verticesOfFace2.begin(), verticesOfFace2.end(), targetVecH);
+    auto findStart2 = std::find(verticesOfFace2.begin(), verticesOfFace2.end(), startH);
+    auto findEnd2 = std::find(verticesOfFace2.begin(), verticesOfFace2.end(), endH);
 
     int indexStart2 = std::distance(verticesOfFace2.begin(), findStart2);
     int indexEnd2 = std::distance(verticesOfFace2.begin(), findEnd2);
@@ -826,9 +794,6 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdge(VertexHandle vertexH) {
     return centerOfLongestEdge; //return the newly added vertex
 }
 
-
-
-//now more like a edgesplit..but above is working.. okay, cool.
 
 template <typename BaseVecT>
 VertexHandle HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
@@ -873,203 +838,36 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
     BaseVecT targetOfLongestEdge = getV(targetOfLongestEdgeH).pos;
     //calculate the position of the new vertex
     BaseVecT vertexToAdd = vertexToBeSplit + (targetOfLongestEdge - vertexToBeSplit)/2;
-    VertexHandle centerOfLongestEdge = this->addVertex(vertexToAdd);
 
 
     //TODO: get common neighbour vertices of the longest edge target vertex and the vertex to be split (must be 2)
 
+    //first idea: just do an edge split on the longest edge and do an edge flip for each of the 2 found vertices
     vector<VertexHandle> commonVertexHandles = findCommonNeigbours(vertexToBeSplitH, targetOfLongestEdgeH);
 
-    if(commonVertexHandles.size() != 2){
-        cout << "there must be exactly two common vertices" << endl;
-        //exit(EXIT_FAILURE);
-    }
+    VertexHandle centerOfLongestEdge = splitEdge(longestEdge);
+
+    /*if(commonVertexHandles.size() == 2 && this->numVertices() > 8)
+    {
+        //cout << "there are exactly two common vertices" << endl;
+
+        for(VertexHandle vertex : commonVertexHandles)
+        {
+            OptionalEdgeHandle handle = this->getEdgeBetween(vertex,vertexToBeSplitH);
+            if(handle && this->isFlippable(handle.unwrap()))
+            {
+                std::cout << "FLIPPABLE!!!" << endl << endl;
+                //this->flipEdge(handle.unwrap());
+            }
+        }
+    }*/
 
 
-    //TODO: for each of the two found vertices, there needs to be iterated "upwords" to the first vertex, which
+    //TODO: for each of the two found vertices, there needs to be iterated "upwards" to the first vertex, which
     //TODO: is closer to the vertex to be split, than to the newly added vertex.
 
-    //splitEdge(vertexToBeSplitH);
-
-    for(VertexHandle vertex : commonVertexHandles)
-    {
-        EdgeHandle handle = this->getEdgeBetween(vertex,vertexToBeSplitH).unwrap();
-        this->flipEdge(handle);
-    }
 
     return centerOfLongestEdge;
-
-    //Todo: EVERYTHING BELOW CAN BE USED FOR THE VERTEX SPLIT, FOR NOW THE EDGE SPLIT IS ENOUGH
-
-
-    /******************************************************************************
-     * Approach 2: Get Vertices which participate in the split (dist -> old_v < dist -> new_v) *
-     ******************************************************************************/
-
-    // all the neighbors of the start vertex, except those, which distance is smaller to it then to
-    // the new vertex and except those, which are between these two.
-    /*auto neigh_vertices = getNeighboursOfVertex(vertexH);
-    for(int i = 0; i < neigh_vertices.size(); i++){
-        Vector<BaseVecT> vec = getV(neigh_vertices[i]).pos;
-        auto distOld = vec.distance(getV(vertexH).pos);
-        auto distNew = vec.distance(vertexToAdd);
-        auto distBetween = getV(vertexH).pos.distance(vertexToAdd);
-        if(distOld < distNew && (distOld > distBetween || distNew > distBetween)){
-            neigh_vertices.erase(neigh_vertices.begin() + i);
-        }
-    }
-
-    //print them #DEBUG
-    for(auto vertex : neigh_vertices){
-        std::cout << "#####Neighbour-Vertex: " << getV(vertex).pos << std::endl;
-    }
-
-    //get the faces which need to be removed
-    vector<FaceHandle> facesToBeDeleted;
-    for(auto neigh_vertex : neigh_vertices){
-        EdgeHandle edge = this->getEdgeBetween(neigh_vertex, vertexH).unwrap();
-
-        auto facesOfEdge = getFacesOfEdge(edge);
-        for(OptionalFaceHandle fHandle : facesOfEdge){
-            if(fHandle){
-                facesToBeDeleted.push_back(fHandle.unwrap());
-            }
-        }
-    }
-
-    //set<FaceHandle> faceSet(facesToBeDeleted.begin(), facesToBeDeleted.end());
-    //facesToBeDeleted.assign(faceSet.begin(), faceSet.end());
-
-    //#DEBUG
-    int counter = 0;
-    for(auto face : facesToBeDeleted){
-        //std::cout << "Face which needs to be deleted:" << getF(face) << std::endl;
-        std::cout << "FaceCounter: " << counter << std::endl;
-        counter++;
-    }
-    //now got all the faces which need to be removed an rearranged
-
-    //TODO: get vertices somewhat intelligent... how to store them? vertices of found faces important...
-    //TODO: IDEA: vector of pairs
-
-    //vector of pairs .. :)
-    vector<pair<Vector<BaseVecT>, Vector<BaseVecT>>> pairVertices;
-    for(auto face : facesToBeDeleted){
-        auto faceVerticesArr = getVerticesOfFace(face);
-        vector<VertexHandle> faceVertices(faceVerticesArr.begin(), faceVerticesArr.end());
-        for(int i = 0; i < faceVertices.size(); i++){
-            if(faceVertices[i] == vertexH){
-                faceVertices.erase(faceVertices.begin() + i);
-            }
-
-            pairVertices.push_back(std::make_pair(getV(faceVertices[0]).pos, getV(faceVertices[1]).pos));
-        }
-    }
-
-    //Can also remove vertices!!!!!
-    for(auto face: facesToBeDeleted){
-        this->removeFace(face);
-    }
-
-    //add vertex, which might have been remove, again
-    vertexH = addVertex(toBeSplit);
-
-    VertexHandle added = addVertex(vertexToAdd); //add calculated vertex
-
-
-    //TODO: now they are in the correct order, new faces need to be inserted...how do we do that?
-    //TODO: idea: start with the old one, inserting the closest first..(at least trying to)
-    for(auto pair : pairVertices){
-        auto v1 = pair.first;
-        auto v2 = pair.second;
-
-
-        //smallest first...
-        if(v1.distance(getV(vertexH).pos) > v2.distance(getV(vertexH).pos)){
-            Vector<BaseVecT> tmp = v1;
-            v1 = v2;
-            v2 = tmp;
-        }
-
-        VertexHandle v1H = this->addVertex(v1);
-        VertexHandle v2H = this->addVertex(v2);
-
-        //this->addFace(v1H, v2H, added);
-        if (BaseMesh<BaseVecT>::isFaceInsertionValid(v1H,  v2H, vertexH )) {
-            this->addFace(v1H, v2H, vertexH);
-        }
-
-        if (BaseMesh<BaseVecT>::isFaceInsertionValid(v1H,  v2H, added )) {
-            this->addFace(v1H, v2H, added);
-        }*/
-
-
-        //VertexHandle tmp1 = addVertex(v1);
-        //VertexHandle tmp2 = addVertex(v2);
-
-        //nearer to vertex to be splitted
-        /*if(v1.distance(getV(vertexH).pos) < v2.distance(getV(vertexH).pos)){
-            //closer to cal vertex
-            if(v1.distance(vertexToAdd) < v2.distance(vertexToAdd)){
-
-            }
-            else{
-
-            }
-            v1H = tmp1;
-            v2H = tmp2;
-        }
-        else{
-            v1H = tmp2;
-            v2H = tmp1;
-        }*/
-
-
-        /*if(v1.distance(v2) < v1.distance(getV(vertexH).pos) ){
-            if (BaseMesh<BaseVecT>::isFaceInsertionValid(v1H, vertexH, v2H)){
-                this->addFace(v1H,vertexH,v2H);
-            }
-            if (BaseMesh<BaseVecT>::isFaceInsertionValid(v2H, vertexH, added)){
-                this->addFace(v1H,vertexH,added);
-            }
-        } else {
-            if (BaseMesh<BaseVecT>::isFaceInsertionValid(v1H, vertexH, added)) {
-                this->addFace(v1H, vertexH, added);
-            }
-            if (BaseMesh<BaseVecT>::isFaceInsertionValid(v1H, added, v2H )) {
-                this->addFace(v1H, v2H, added);
-            }
-
-        }
-
-    }*/
-
-    //TESTAREA
-
-    /*auto testVertices = getVerticesOfFace(facesToBeDeleted[0]);
-    vector<VertexHandle> tVertices(testVertices.begin(), testVertices.end());
-
-
-    for(int i = 0; i < tVertices.size() ; i++){
-        if(tVertices[i] == vertexH){
-            tVertices.erase(tVertices.begin() + i);
-        }
-    }*/
-    //remove the vertices, as they are no longer needed
-
-    //addFace(tVertices[0], tVertices[1], added);
-
-
-    //END TESTAREA
-
-
-    //working as expected... :)
-
-
-
-
-    //idea: exclude vertices north of the surface the vector between new and old vertex is a normal to...
-
 
 }
 template <typename BaseVecT>
