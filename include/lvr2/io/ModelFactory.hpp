@@ -35,45 +35,19 @@
 #ifndef IOFACTORY_H_
 #define IOFACTORY_H_
 
-#include <lvr2/io/Model.hpp>
+#include "lvr2/io/Model.hpp"
+#include "lvr2/io/IOUtils.hpp"
+#include "lvr2/io/CoordinateTransform.hpp"
 
 #include <string>
 #include <vector>
-#include "boost/shared_ptr.hpp"
 #include <map>
+
+#include "boost/shared_ptr.hpp"
+
 
 namespace lvr2
 {
-
-/**
- * @brief Struct to define coordinate transformations
- */
-struct CoordinateTransform
-{
-	// x scaling
-	float sx;
-
-	// y scaling
-	float sy;
-
-	// z scaling
-	float sz;
-
-	// Position of the x coordinate in the input data
-	int	  x;
-
-	// Position of the x coordinate in the input data
-	int   y;
-
-	// Position of the x coordinate in the input data
-	int   z;
-
-	// True, if conversion is necessary
-	bool  convert;
-
-	CoordinateTransform()
-		: sx(1.0), sy(1.0), sz(1.0), x(0), y(1), z(2), convert(false) {}
-};
 
 /**
  * @brief Factory class extract point cloud and mesh information
@@ -90,7 +64,7 @@ class ModelFactory
 
         static void saveModel( ModelPtr m, std::string file);
 
-        static CoordinateTransform m_transform;
+        static CoordinateTransform<float> m_transform;
 
 };
 

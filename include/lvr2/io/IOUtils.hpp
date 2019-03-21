@@ -28,9 +28,10 @@
 #ifndef IOUTILS_HPP
 #define IOUTILS_HPP
 
-#include <lvr2/io/Timestamp.hpp>
-#include <lvr2/io/Model.hpp>
-#include <lvr2/io/ModelFactory.hpp>
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/io/Model.hpp"
+#include "lvr2/io/CoordinateTransform.hpp"
+
 #include <boost/filesystem.hpp>
 
 #include <Eigen/Dense>
@@ -52,6 +53,12 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames);
  *          represented in the given pose file.
  */
 Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose);
+
+/**
+ * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
+ *          represented in the given dat file.
+ */
+Eigen::Matrix4d getTransformationFromDat(boost::filesystem::path& frames);
 
 /**
  * @brief   Transforms an slam6d transformation matrix into an Eigen 4x4 matrix.
@@ -119,12 +126,12 @@ size_t getReductionFactor(ModelPtr model, size_t targetSize);
  *          have to write only every nth point to have approximately \ref
  *          targetSize points in the reduced point cloud.
  */
-size_t getReductionFactorASCII(boost::filesystem::path& inFile, size_t targetSize);
+size_t getReductionFactor(boost::filesystem::path& inFile, size_t targetSize);
 
 /**
  * @brief   Transforms (scale and switch coordinates) and reduces a model
  *          containing point cloud data using a modulo filter. Use this
- *          fuction the convert between different coordinate systems.
+ *          function the convert between different coordinate systems.
  *
  * @param   model       A model containing point cloud data
  * @param   modulo      The reduction factor for the modulo filter. Set to
@@ -138,7 +145,25 @@ size_t getReductionFactorASCII(boost::filesystem::path& inFile, size_t targetSiz
  * @param   yPos        Same as with xPos for y.
  * @param   zPos        Same as with xPos for z.
  */
-void transformAndReducePointCloud(ModelPtr model, int modulo, int sx, int sy, int sz, int xPos, int yPos, int zPos);
+template<typename T>
+void transformAndReducePointCloud(ModelPtr model, int modulo, 
+        const T& sx, const T& sy, const T& sz, 
+        const unsigned char& xPos, 
+        const unsigned char& yPos, 
+        const unsigned char& zPos);
+
+/**
+ * @brief  Transforms (scale and switch coordinates) and reduces a model
+ *         containing point cloud data using a modulo filter. Use this
+ *         function the convert between different coordinate systems.          
+ * 
+ * @param model         A model containing point cloud data 
+ * @param modulo        The reduction factor for the modulo filter. Set to
+ *                      1 to keep the original resolution.
+ * @param c             The coordinate transformation applied to the \ref model
+ */
+template<typename T>
+void transformAndReducePointCloud(ModelPtr& model, int modulo, const CoordinateTransform<T>& c);
 
 /**
  * @brief   Transforms a model containing a point cloud according to the given
@@ -176,6 +201,16 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
  */
 void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::string outfile);
 
+/**
+ * @brief   Transforms the given source frame according to the given coordinate
+ *          transform struct 
+ * 
+ * @param   frame           Source frame
+ * @param   ct               Coordinate system transformation
+ * @return                  The transformed frame
+ */
+template<typename T>
+Eigen::Matrix4d transformFrame(Eigen::Matrix4d frame, const CoordinateTransform<T>& ct);
 
 } // namespace lvr2
 

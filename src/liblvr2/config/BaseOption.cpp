@@ -49,13 +49,18 @@ BaseOption::BaseOption(int argc, char** argv)
 			("sy", value<float>()->default_value(1.0), "Scaling factor for the y coordinates.")
 			("sz", value<float>()->default_value(1.0), "Scaling factor for the z coordinates.")
 	;
-    m_coordinateTransform = new CoordinateTransform;
+    m_coordinateTransform = new CoordinateTransform<float>;
+}
+
+CoordinateTransform<float> BaseOption::coordinateTransform() const
+{
+	return CoordinateTransform<float>(x(), y(), z(), sx(), sy(), sz());
 }
 
 void BaseOption::printTransformation(std::ostream& out) const
 {
 	out << "##### Program options: " << std::endl;
-    if(m_coordinateTransform->convert)
+    if(m_coordinateTransform->transforms())
 	{
 		out << "##### Transform input data\t: YES" << std::endl;
 		out << "##### Position of x coordinates\t: " << x() << std::endl;
@@ -90,7 +95,6 @@ void BaseOption::setup()
 
 	if(sx() != 1.0 || sy() != 1.0 || sz() != 0 || x() != 1 || y() != 1 || z() != 1)
 	{
-        m_coordinateTransform->convert = true;
         m_coordinateTransform->x = x();
         m_coordinateTransform->y = y();
         m_coordinateTransform->z = z();
