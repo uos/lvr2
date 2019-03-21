@@ -88,18 +88,7 @@ void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& frame
  */
 size_t writeModel( ModelPtr model, const  boost::filesystem::path& outfile);
 
-/**
- * @brief   Writes the points stored in the given model to the fiven output
- *          stream. This function is used to apend point cloud data to an
- *          already existing ASCII file..
- *
- * @param   model       A model containing point cloud data
- * @param   out         A output stream
- * @param   nocolor     If set to true, the color information in the model
- *                      is ignored.
- * @return  The number of points written to the output stream.
- */
-size_t writePointsToASCII(ModelPtr model, std::ofstream& out, bool nocolor = false);
+
 
 /**
  * @brief   Computes the reduction factor for a given target size (number of
@@ -212,6 +201,22 @@ void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::st
 template<typename T>
 Eigen::Matrix4d transformFrame(Eigen::Matrix4d frame, const CoordinateTransform<T>& ct);
 
+
+/**
+ * @brief   Writes the points stored in the given model to the fiven output
+ *          stream. This function is used to apend point cloud data to an
+ *          already existing ASCII file..
+ *
+ * @param   model       A model containing point cloud data
+ * @param   out         A output stream
+ * @param   nocolor     If set to true, the color information in the model
+ *                      is ignored.
+ * @return  The number of points written to the output stream.
+ */
+size_t writePointsToStream(ModelPtr model, std::ofstream& out, bool nocolor = false);
+
 } // namespace lvr2
+
+#include "IOUtils.tcc"
 
 #endif // IOUTILS_HPP
