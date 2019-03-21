@@ -30,6 +30,88 @@
 namespace lvr2
 {
 
+
+Eigen::Matrix4d transformRegistration(const Eigen::Matrix4d& transform, const Eigen::Matrix4d& registration)
+{
+    Eigen::Matrix3d rotation_trans;
+    Eigen::Matrix3d rotation_registration;
+
+    rotation_trans = transform.block<3,3>(0, 0);
+    rotation_registration = registration.block<3,3>(0, 0);
+
+    Eigen::Matrix3d rotation = rotation_trans * rotation_registration;
+
+    Eigen::Matrix4d result;
+    result.block<3,3>(0, 0) = rotation;
+
+    Eigen::Vector3d tmp;
+    tmp = registration.block<3,1>(0,3);
+    tmp = rotation_trans * tmp;
+
+    (result.rightCols<1>())(0) = transform.col(3)(0) + tmp(0);
+    (result.rightCols<1>())(1) = transform.col(3)(1) + tmp(1);
+    (result.rightCols<1>())(2) = transform.col(3)(2) + tmp(2);
+    (result.rightCols<1>())(3) = 1.0;
+
+    return result;
+
+}
+
+void getPoseFromMatrix(BaseVector<float>& position, BaseVector<float>& angles, const Eigen::Matrix4d& mat)
+{
+    double m[16];
+
+    m[0]  = mat(0, 0);
+    m[1]  = mat(0, 1);
+    m[2]  = mat(0, 2);
+    m[3]  = mat(0, 3);
+
+    m[4]  = mat(1, 0);
+    m[5]  = mat(1, 1);
+    m[6]  = mat(1, 2);
+    m[7]  = mat(1, 3);
+
+    m[8]  = mat(2, 0);
+    m[9]  = mat(2, 1);
+    m[10] = mat(2, 2);
+    m[11] = mat(2, 3);
+
+    m[12] = mat(3, 0);
+    m[13] = mat(3, 1);
+    m[14] = mat(3, 2);
+    m[15] = mat(3, 3);
+
+    float _trX, _trY;
+    if(m[0] > 0.0) {
+       angles.y = asin(m[8]);
+    } else {
+       angles.y = (float)M_PI - asin(m[8]);
+    }
+    // rPosTheta[1] =  asin( m[8]);      // Calculate Y-axis angle
+
+    float  C    =  cos(angles.y );
+    if ( fabs( C ) > 0.005 )  {          // Gimball lock?
+        _trX      =  m[10] / C;          // No, so get X-axis angle
+        _trY      =  -m[9] / C;
+        angles.x  = atan2( _trY, _trX );
+        _trX      =  m[0] / C;           // Get Z-axis angle
+        _trY      = -m[4] / C;
+        angles.z  = atan2( _trY, _trX );
+    } else {                             // Gimball lock has occurred
+        angles.x = 0.0;                   // Set X-axis angle to zero
+        _trX      =  m[5];  //1          // And calculate Z-axis angle
+        _trY      =  m[1];  //2
+        angles.z  = atan2( _trY, _trX );
+    }
+
+    //cout << angles.x << " " <<angles.y << " " << angles.z << endl;
+
+    position.x = m[12];
+    position.y = m[13];
+    position.z = m[14];
+
+}
+
 Eigen::Matrix4d buildTransformation(double* alignxf)
 {
     Eigen::Matrix3d rotation;
@@ -165,7 +247,17 @@ size_t countPointsInFile(boost::filesystem::path& inFile)
     return n_points;
 }
 
-void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut)
+void writePose(const BaseVector<float>& position, const BaseVector<float>& angles, const boost::filesystem::path& out)
+{
+    std::ofstream o(out.c_str());
+    if(o.good())
+    {
+        o << position[0] << " " << position[1] << " " << position[2] << std::endl;
+        o << angles[0] << " " << angles[1] << " " << angles[2];
+    }
+}
+
+void writeFrame(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut)
 {
     std::ofstream out(framesOut.c_str());
 
@@ -422,7 +514,34 @@ void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::st
     std::cout << timestamp << "Done." << std::endl;
 }
 
+Eigen::Matrix4d inverseTransform(const Eigen::Matrix4d& transform)
+{
+    Eigen::Matrix3d rotation = transform.block<3,3>(0, 0);
+    rotation.transposeInPlace();
 
+    Eigen::Matrix4d inv;
+    inv.block<3, 3>(0, 0) = rotation;
 
+    (inv.rightCols<1>())(0) = -transform.col(3)(0);
+    (inv.rightCols<1>())(1) = -transform.col(3)(1);
+    (inv.rightCols<1>())(2) = -transform.col(3)(2);
+    (inv.rightCols<1>())(3) = 1.0;
+
+    return inv;
+}
+
+void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, const boost::filesystem::path file)
+{
+    ifstream in(file.c_str());
+    if(in.good())
+    {
+        in >> position.x >> position.y >> position.z;
+        in >> angles.y >> angles.y >> angles.z;
+    }
+    else
+    {
+        cout << timestamp << "Unable to open " << file.string() << endl;
+    }
+}
 
 } // namespace lvr2

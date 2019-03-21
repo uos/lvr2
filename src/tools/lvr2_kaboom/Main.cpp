@@ -373,7 +373,7 @@ void processSingleFile(boost::filesystem::path& inFile)
             {
                 std::cout << timestamp << "Transforming frame: " << framesPath << std::endl;
                 Eigen::Matrix4d transformed = transformFrame(getTransformationFromFrames(framesPath), options->coordinateTransform());
-                writeFrames(transformed, framesOut);
+                writeFrame(transformed, framesOut);
             }
 
             ofstream out(name);
