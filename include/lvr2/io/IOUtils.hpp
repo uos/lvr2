@@ -43,6 +43,34 @@ namespace lvr2
 {
 
 /**
+ * @brief Transforms a registration matrix according to the given
+ *        transformation matrix, i.e., applies @ref transform to @ref registration
+ * 
+ * @param transform             A transformation matrix
+ * @param registration          A matrix representing a registration (i.e. transformation) that
+ * @return Eigen::Matrix4d      The transformed registration matrix
+ */
+Eigen::Matrix4d transformRegistration(const Eigen::Matrix4d& transform, const Eigen::Matrix4d& registration);
+
+/**
+ * @brief   Loads an Euler representation of from a pose file
+ * 
+ * @param position      Will contain the postion
+ * @param angles        Will contain the rotation angles in degrees
+ * @param file          The pose file
+ */
+void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, const boost::filesystem::path file);
+
+/**
+ * @brief   Computes a Euler representation from the given transformation matrix
+ * 
+ * @param  position     Will contain the position
+ * @param  angles       Will contain the rotation angles in radians
+ * @param  mat          The transformation matrix
+ */
+void getPoseFromMatrix(BaseVector<float>& position, BaseVector<float>& angles, const Eigen::Matrix4d& mat);
+
+/**
  * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
  *          represented in the given frame file.
  */
@@ -77,7 +105,15 @@ size_t countPointsInFile(boost::filesystem::path& inFile);
  * @param   transform   The transformation
  * @param   framesOut   The target file.
  */
-void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut);
+void writeFrame(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut);
+
+/**
+ * @brief               Writes pose information in Euler representation to the given file
+ * 
+ * @param position      Position
+ * @param angles        Rotation angles in degrees
+ */
+void writePose(const BaseVector<float>& position, const BaseVector<float>& angles, const boost::filesystem::path& out);
 
 /**
  * @brief   Writes the given model to the given file
@@ -214,6 +250,17 @@ Eigen::Matrix4d transformFrame(Eigen::Matrix4d frame, const CoordinateTransform<
  * @return  The number of points written to the output stream.
  */
 size_t writePointsToStream(ModelPtr model, std::ofstream& out, bool nocolor = false);
+
+/**
+ * @brif    Computes the inverse transformation from the given 
+ *          transformation matrix, which means if transform encodes
+ *          the transformation A->B, the return will transform from 
+ *          B to A.
+ * 
+ * @param transform             A transformation matrix
+ * @return Eigen::Matrix4d      The inverse transformation
+ */
+Eigen::Matrix4d inverseTransform(const Eigen::Matrix4d& transform);
 
 } // namespace lvr2
 
