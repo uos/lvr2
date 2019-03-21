@@ -689,6 +689,14 @@ void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
     circulateAroundVertex(handle, [&edgesOut, this](auto eH)
     {
         edgesOut.push_back(halfToFullEdgeHandle(eH));
+
+        // Throw an exception if number of out edges becomes
+        // too large. This can happen if there is a bug in the
+        // half edge mesh topology
+        if(edgesOut.size() > 20)
+        {
+            throw VertexLoopException("getEdgesOfVertex: Loop detected");
+        }
         return true;
     });
 }
