@@ -55,7 +55,7 @@
 
 #include "PointsetSurface.hpp"
 
-// #ifdef LVR_USE_STANN
+// #ifdef LVR2_USE_STANN
 // // SearchTreeStann
 // #include "SearchTreeStann.hpp"
 // #endif
@@ -64,12 +64,12 @@
 #include "SearchTreeFlann.hpp"
 
 // // SearchTreePCL
-// #ifdef LVR_USE_PCL
+// #ifdef LVR2_USE_PCL
 //     #include "SearchTreeFlannPCL.hpp"
 // #endif
 
 // // SearchTreeNabo
-// #ifdef LVR_USE_NABO
+// #ifdef LVR2_USE_NABO
 //     #include "SearchTreeNabo.hpp"
 // #endif
 

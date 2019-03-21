@@ -34,7 +34,7 @@
 
 #include <lvr2/config/lvropenmp.hpp>
 
-#ifdef LVR_USE_OPEN_MP
+#ifdef LVR2_USE_OPEN_MP
 #include <omp.h>
 #endif
 
@@ -46,7 +46,7 @@ namespace lvr2
 
 bool OpenMPConfig::haveOpenMP()
 {
-#ifdef LVR_USE_OPEN_MP
+#ifdef LVR2_USE_OPEN_MP
 	return true;
 #else
 	return false;
@@ -55,21 +55,21 @@ bool OpenMPConfig::haveOpenMP()
 
 void OpenMPConfig::setNumThreads(int n)
 {
-#ifdef LVR_USE_OPEN_MP
+#ifdef LVR2_USE_OPEN_MP
 	omp_set_num_threads(n);
 #endif
 }
 
 void OpenMPConfig::setMaxNumThreads()
 {
-#ifdef LVR_USE_OPEN_MP
+#ifdef LVR2_USE_OPEN_MP
 	omp_set_num_threads(omp_get_num_procs());
 #endif
 }
 
 int OpenMPConfig::getNumThreads()
 {
-#ifdef LVR_USE_OPEN_MP
+#ifdef LVR2_USE_OPEN_MP
 	return omp_get_num_procs();
 #else
 	return 1;

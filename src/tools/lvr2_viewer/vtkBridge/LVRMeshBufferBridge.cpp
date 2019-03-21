@@ -195,7 +195,7 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
         }
 
         vtkSmartPointer<vtkPolyDataMapper> mesh_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-#ifdef LVR_USE_VTK5
+#ifdef LVR2_USE_VTK5
         mesh_mapper->SetInput(mesh);
 #else
         mesh_mapper->SetInputData(mesh);
@@ -204,7 +204,7 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
         m_meshActor->SetMapper(mesh_mapper);
         m_meshActor->GetProperty()->BackfaceCullingOff();
         vtkSmartPointer<vtkPolyDataMapper> wireframe_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-#ifdef LVR_USE_VTK5
+#ifdef LVR2_USE_VTK5
         wireframe_mapper->SetInput(mesh);
 #else
         wireframe_mapper->SetInputData(mesh);
@@ -563,7 +563,7 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getTexturedActor(MaterialGroup* g
 
 	// Generate actor
 	vtkSmartPointer<vtkPolyDataMapper> mesh_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-#ifdef LVR_USE_VTK5
+#ifdef LVR2_USE_VTK5
 	mesh_mapper->SetInput(mesh);
 #else
 	mesh_mapper->SetInputData(mesh);
@@ -593,7 +593,7 @@ vtkSmartPointer<vtkTexture> LVRMeshBufferBridge::getTexture(int index)
 
 	vtkSmartPointer<vtkImageData> data = vtkSmartPointer<vtkImageData>::New();
 	data->SetDimensions(h, w, 1);
-#ifdef LVR_USE_VTK5
+#ifdef LVR2_USE_VTK5
 	data->SetNumberOfScalarComponents(3);
 	data->SetScalarTypeToUnsignedChar();
 	data->AllocateScalars();
@@ -616,7 +616,7 @@ vtkSmartPointer<vtkTexture> LVRMeshBufferBridge::getTexture(int index)
 	data->Modified();
 
 	vtkSmartPointer<vtkTexture> texture = vtkSmartPointer<vtkTexture>::New();
-#ifdef LVR_USE_VTK5
+#ifdef LVR2_USE_VTK5
 	texture->SetInput(data);
 #else
 	texture->SetInputData(data);
@@ -718,7 +718,7 @@ vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getColorMeshActor(vector<Material
 
 	// Generate actor
 	vtkSmartPointer<vtkPolyDataMapper> mesh_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-#ifdef LVR_USE_VTK5
+#ifdef LVR2_USE_VTK5
 	mesh_mapper->SetInput(mesh);
 #else
 	mesh_mapper->SetInputData(mesh);

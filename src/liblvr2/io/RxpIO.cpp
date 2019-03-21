@@ -35,16 +35,18 @@
 
 #include <lvr2/io/RxpIO.hpp>
 
+#include <lvr2/geometry/BaseVector.hpp>
+
 namespace lvr2
 {
 
 
 ModelPtr RxpIO::read(std::string filename)
 {
-    return read(filename, 1, Matrix4<Vec>());
+    return read(filename, 1, Matrix4<BaseVector<float>>());
 }
 
-ModelPtr RxpIO::read(std::string filename, int reduction_factor, Matrix4<Vec> tf)
+ModelPtr RxpIO::read(std::string filename, int reduction_factor, Matrix4<BaseVector<float>> tf)
 {
     if (reduction_factor < 1)
     {
@@ -58,13 +60,15 @@ ModelPtr RxpIO::read(std::string filename, int reduction_factor, Matrix4<Vec> tf
         return ModelPtr();
     }
 
-    std::vector<BaseVector<float>> data;
+    std::vector<BaseVector<float> > data;
+    BaseVector<float> cur_point;
+
     const unsigned int point_buf_size = 32768;
     scanifc_xyz32_t point_buf[point_buf_size];
     int end_of_frame = 0;
     unsigned int got = 0;
     int count = 0;
-    BaseVector<float> cur_point;
+    
 
     // read data
     do

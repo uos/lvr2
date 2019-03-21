@@ -7,7 +7,7 @@ include_directories(OpenCL_INCLUDE_DIRS)
 message(STATUS "Loaded OpenCL version ${OpenCL_VERSION_STRING}")
 message(STATUS "OpenCL Libraries: ${OpenCL_LIBRARIES}")
 
-set(LVR_CL_NORMAL_SRC
+set(LVR2_CL_NORMAL_SRC
     Main.cpp
     Options.cpp
 )
@@ -16,7 +16,7 @@ set(LVR_CL_NORMAL_SRC
 # Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_CL_NORMAL_DEPS
+set(LVR2_CL_NORMAL_DEPS
     lvr2
     ${OpenCL_LIBRARIES}
 )
@@ -26,6 +26,6 @@ set(LVR_CL_NORMAL_DEPS
 #####################################################################################
 # Add executable
 #####################################################################################
-add_executable(lvr2_cl_normals ${LVR_CL_NORMAL_SRC})
+add_executable(lvr2_cl_normals ${LVR2_CL_NORMAL_SRC})
 
-target_link_libraries(lvr2_cl_normals ${LVR_CL_NORMAL_DEPS})
+target_link_libraries(lvr2_cl_normals ${LVR2_CL_NORMAL_DEPS})

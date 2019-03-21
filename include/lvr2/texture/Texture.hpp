@@ -68,7 +68,8 @@ public:
         unsigned short int height,
         unsigned char numChannels,
         unsigned char numBytesPerChan,
-        float texelSize
+        float texelSize,
+        unsigned char* data = nullptr
     );
 
     /**

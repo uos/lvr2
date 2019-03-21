@@ -74,7 +74,16 @@ HalfEdgeMesh<BaseVecT>::HalfEdgeMesh(MeshBufferPtr ptr)
         VertexHandle v1(indices[pos]);
         VertexHandle v2(indices[pos + 1]);
         VertexHandle v3(indices[pos + 2]);
-        this->addFace(v1, v2, v3);
+        try
+        {
+            this->addFace(v1, v2, v3);
+        }
+        catch(const std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+        }
+        
+        
     }
 }
 
@@ -680,6 +689,14 @@ void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
     circulateAroundVertex(handle, [&edgesOut, this](auto eH)
     {
         edgesOut.push_back(halfToFullEdgeHandle(eH));
+
+        // Throw an exception if number of out edges becomes
+        // too large. This can happen if there is a bug in the
+        // half edge mesh topology
+        if(edgesOut.size() > 20)
+        {
+            throw VertexLoopException("getEdgesOfVertex: Loop detected");
+        }
         return true;
     });
 }

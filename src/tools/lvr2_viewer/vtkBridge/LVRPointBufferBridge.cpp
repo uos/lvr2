@@ -458,7 +458,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 
         // Create poly data mapper and generate actor
         vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-#ifdef LVR_USE_VTK5
+#ifdef LVR2_USE_VTK5
         mapper->SetInput(vtk_polyData);
 #else
         mapper->SetInputData(vtk_polyData);

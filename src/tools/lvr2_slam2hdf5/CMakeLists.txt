@@ -11,7 +11,7 @@ set(PLY_MERGE_SRC
 # Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_PLY_MERGER_DEPENDENCIES
+set(LVR2_PLY_MERGER_DEPENDENCIES
 	lvr2_static
 	lvr2las_static
 	lvr2rply_static
@@ -25,7 +25,7 @@ set(LVR_PLY_MERGER_DEPENDENCIES
 #####################################################################################
 
 add_executable(lvr2_slam2hdf5 ${PLY_MERGE_SRC})
-target_link_libraries(lvr2_slam2hdf5 ${LVR_PLY_MERGER_DEPENDENCIES})
+target_link_libraries(lvr2_slam2hdf5 ${LVR2_PLY_MERGER_DEPENDENCIES})
 
 install(TARGETS lvr2_slam2hdf5
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
