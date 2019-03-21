@@ -61,7 +61,7 @@
 namespace lvr2
 {
 
-CoordinateTransform ModelFactory::m_transform;
+CoordinateTransform<float> ModelFactory::m_transform;
 
 ModelPtr ModelFactory::readModel( std::string filename )
 {
@@ -172,7 +172,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         m = io->read( filename );
 
-        if(m_transform.convert)
+        if( m_transform.transforms())
         {
             // Convert coordinates in model
             PointBufferPtr points = m->m_pointCloud;

@@ -40,6 +40,8 @@
 #include <vector>
 #include <boost/program_options.hpp>
 
+#include "lvr2/config/BaseOption.hpp"
+
 using std::ostream;
 using std::cout;
 using std::endl;
@@ -56,7 +58,8 @@ using namespace boost::program_options;
  * @brief A class to parse the program options for the reconstruction
  * 		  executable.
  */
-class Options {
+class Options : public lvr2::BaseOption
+{
 public:
 
 	/**
@@ -82,21 +85,6 @@ public:
 	/**
 	 * @brief   Returns the position of the x coordinate in the data.
 	 */
-	int x() const { return m_variables["xPos"].as<int>();}
-
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
-	int y() const { return m_variables["yPos"].as<int>();}
-
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
-	int z() const { return m_variables["zPos"].as<int>();}
-
-	/**
-	 * @brief   Returns the position of the x coordinate in the data.
-	 */
 	int r() const { return m_variables["rPos"].as<int>() ;}
 
 	/**
@@ -113,22 +101,6 @@ public:
 	 * @brief   Returns the position of the x coordinate in the data.
 	 */
 	int i() const { return m_variables["iPos"].as<int>();}
-
-
-	/**
-	 * @brief   Returns the scaling factor for the x coordinates
-	 */
-	float sx() const { return m_variables["sx"].as<float>();}
-
-	/**
-	 * @brief   Returns the scaling factor for the y coordinates
-	 */
-	float sy() const { return m_variables["sy"].as<float>();}
-
-	/**
-	 * @brief   Returns the scaling factor for the z coordinates
-	 */
-	float sz() const { return m_variables["sz"].as<float>();}
     
     int getStart() const { return m_variables["start"].as<int>(); }
 

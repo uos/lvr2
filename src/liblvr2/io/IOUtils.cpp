@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/io/IOUtils.hpp>
-
+#include "lvr2/io/IOUtils.hpp"
+#include "lvr2/io/ModelFactory.hpp"
 namespace lvr2
 {
 
@@ -126,6 +126,22 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
     return buildTransformation(alignxf);
 }
 
+Eigen::Matrix4d getTransformationFromDat(boost::filesystem::path& frames)
+{
+    double alignxf[16];
+    int color;
+
+    std::ifstream in(frames.c_str());
+    if(in.good())
+    {
+        for(int i = 0; i < 16; i++)
+        {
+            in >> alignxf[i];
+        }
+    }
+
+    return buildTransformation(alignxf);
+}
 
 size_t countPointsInFile(boost::filesystem::path& inFile)
 {
@@ -234,7 +250,7 @@ size_t getReductionFactor(ModelPtr model, size_t reduction)
     return 1;
 }
 
-size_t getReductionFactorASCII(boost::filesystem::path& inFile, size_t targetSize)
+size_t getReductionFactor(boost::filesystem::path& inFile, size_t targetSize)
 {
     /*
      * If reduction is less than the number of points it will segfault
@@ -258,8 +274,17 @@ size_t getReductionFactorASCII(boost::filesystem::path& inFile, size_t targetSiz
 
 }
 
-void transformAndReducePointCloud(ModelPtr model, int modulo, int sx, int sy, int sz,
-        int xPos, int yPos, int zPos)
+template<typename T>
+void transformAndReducePointCloud(ModelPtr& model, int modulo, const CoordinateTransform<T>& c)
+{
+    transformAndReducePointCloud(model, modulo, c.sx, c.sy, c.sz, c.x, c.y, c.z);
+}
+
+template<typename T>
+void transformAndReducePointCloud(
+    ModelPtr model, int modulo, 
+    const T& sx, const T& sy, const T& sz,
+    const unsigned char& xPos, const unsigned char& yPos, const unsigned char& zPos)
 {
     size_t n_ip, n_colors;
     size_t cntr = 0;
@@ -483,6 +508,57 @@ void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::st
     std::cout << timestamp << "Saving " << outfile << std::endl;
     ModelFactory::saveModel(model, outfile);
     std::cout << timestamp << "Done." << std::endl;
+}
+
+template<typename T>
+Eigen::Matrix4d transformFrame(Eigen::Matrix4d frame, const CoordinateTransform<T>& ct)
+{
+    Eigen::Matrix3d basisTrans;
+    Eigen::Matrix3d reflection;
+    Eigen::Vector3d tmp;
+    std::vector<Eigen::Vector3d> xyz;
+    xyz.push_back(Eigen::Vector3d(1,0,0));
+    xyz.push_back(Eigen::Vector3d(0,1,0));
+    xyz.push_back(Eigen::Vector3d(0,0,1));
+
+    reflection.setIdentity();
+
+    if(ct.sx < 0)
+    {
+        reflection.block<3,1>(0,0) = (-1) * xyz[0];
+    }
+
+    if(ct.sy < 0)
+    {
+        reflection.block<3,1>(0,1) = (-1) * xyz[1];
+    }
+
+    if(ct.sz < 0)
+    {
+        reflection.block<3,1>(0,2) = (-1) * xyz[2];
+    }
+
+    // axis reflection
+    frame.block<3,3>(0,0) *= reflection;
+
+    // We are always transforming from the canonical base => T = (B')^(-1)
+    basisTrans.col(0) = xyz[ct.x];
+    basisTrans.col(1) = xyz[ct.y];
+    basisTrans.col(2) = xyz[ct.z];
+
+    // Transform the rotation matrix
+    frame.block<3,3>(0,0) = basisTrans.inverse() * frame.block<3,3>(0,0) * basisTrans;
+
+    // Setting translation vector
+    tmp = frame.block<3,1>(0,3);
+    tmp = basisTrans.inverse() * tmp;
+
+    (frame.rightCols<1>())(0) = tmp(0);
+    (frame.rightCols<1>())(1) = tmp(1);
+    (frame.rightCols<1>())(2) = tmp(2);
+    (frame.rightCols<1>())(3) = 1.0;
+
+    return frame;
 }
 
 
