@@ -754,9 +754,9 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdge(EdgeHandle edgeH) {
     BaseVecT vertexToAdd = start + (end - start) / 2;
 
 
-    /**********************************************************************
-     * Get Incident Vertices to the two incident faces of the longes edge *
-     **********************************************************************/
+    /***********************************************************************
+     * Get Incident Vertices to the two incident faces of the longest edge *
+     ***********************************************************************/
 
     //get incident faces of the longest edge
     auto incidentFaces = this->getFacesOfEdge(edgeH);
@@ -786,11 +786,16 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdge(EdgeHandle edgeH) {
 
     vector<VertexHandle> faceInsert1(verticesOfFace1.begin(), verticesOfFace1.end());
     faceInsert1[indexEnd1] = centerOfLongestEdge;
-    this->addFace(faceInsert1[0], faceInsert1[1], faceInsert1[2]);
+    if(this->isFaceInsertionValid(faceInsert1[0], faceInsert1[1], faceInsert1[2])){
+        this->addFace(faceInsert1[0], faceInsert1[1], faceInsert1[2]);
+    }
 
     faceInsert1.assign(verticesOfFace1.begin(), verticesOfFace1.end());
     faceInsert1[indexStart1] = centerOfLongestEdge;
-    this->addFace(faceInsert1[0], faceInsert1[1], faceInsert1[2]);
+    if(this->isFaceInsertionValid(faceInsert1[0], faceInsert1[1], faceInsert1[2])){
+        this->addFace(faceInsert1[0], faceInsert1[1], faceInsert1[2]);
+    }
+
 
     //second face
     auto findStart2 = std::find(verticesOfFace2.begin(), verticesOfFace2.end(), startH);
@@ -801,12 +806,16 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdge(EdgeHandle edgeH) {
 
     vector<VertexHandle> faceInsert2(verticesOfFace2.begin(), verticesOfFace2.end());
     faceInsert2[indexEnd2] = centerOfLongestEdge;
-    this->addFace(faceInsert2[0], faceInsert2[1], faceInsert2[2]);
+    if(this->isFaceInsertionValid(faceInsert2[0], faceInsert2[1], faceInsert2[2])){
+        this->addFace(faceInsert2[0], faceInsert2[1], faceInsert2[2]);
+    }
+
 
     faceInsert2.assign(verticesOfFace2.begin(), verticesOfFace2.end());
     faceInsert2[indexStart2] = centerOfLongestEdge;
-    this->addFace(faceInsert2[0], faceInsert2[1], faceInsert2[2]);
-
+    if(this->isFaceInsertionValid(faceInsert2[0], faceInsert2[1], faceInsert2[2])){
+        this->addFace(faceInsert2[0], faceInsert2[1], faceInsert2[2]);
+    }
 
     return centerOfLongestEdge; //return the newly added vertex
 }
@@ -851,6 +860,11 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
         }
     }
 
+    if(isBorderEdge(longestEdge))
+    {
+        return VertexHandle(0);
+    }
+
     VertexHandle targetOfLongestEdgeH = longestEdgeHalf.target;
     BaseVecT targetOfLongestEdge = getV(targetOfLongestEdgeH).pos;
     //calculate the position of the new vertex
@@ -864,7 +878,7 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
 
     VertexHandle centerOfLongestEdge = this->splitEdge(longestEdge);
 
-    /*if(commonVertexHandles.size() == 2 && this->numVertices() > 8)
+    if(commonVertexHandles.size() == 2 && this->numVertices() > 8)
     {
         //cout << "there are exactly two common vertices" << endl;
 
@@ -877,7 +891,7 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
                 this->flipEdge(handle.unwrap());
             }
         }
-    }*/
+    }
 
 
     //TODO: for each of the two found vertices, there needs to be iterated "upwards" to the first vertex, which

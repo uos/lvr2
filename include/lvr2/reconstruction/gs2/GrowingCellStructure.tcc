@@ -112,13 +112,16 @@ namespace lvr2 {
 
         //TODO: split it.. :)
         VertexHandle newVH = m_mesh->splitVertex(highestSC);
-        BaseVecT& newV = m_mesh->getVertexPosition(newVH);
 
-        //TODO: reduce sc, set sc of newly added vertex
-        BaseVecT& highestSCVec = m_mesh->getVertexPosition(highestSC);
-        highestSCVec.signal_counter /= 2; //half of it..*/
-        newV.signal_counter = highestSCVec.signal_counter;
+        if(newVH.idx() != -1){
+            BaseVecT& newV = m_mesh->getVertexPosition(newVH);
 
+            //TODO: reduce sc, set sc of newly added vertex
+            BaseVecT& highestSCVec = m_mesh->getVertexPosition(highestSC);
+            highestSCVec.signal_counter /= 2; //half of it..*/
+            newV.signal_counter = highestSCVec.signal_counter;
+
+        }
 
     }
 
