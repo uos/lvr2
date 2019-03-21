@@ -847,7 +847,7 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
 
     VertexHandle centerOfLongestEdge = this->splitEdge(longestEdge);
 
-    if(commonVertexHandles.size() == 2 && this->numVertices() > 8)
+    /*if(commonVertexHandles.size() == 2 && this->numVertices() > 8)
     {
         //cout << "there are exactly two common vertices" << endl;
 
@@ -860,7 +860,7 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
                 this->flipEdge(handle.unwrap());
             }
         }
-    }
+    }*/
 
 
     //TODO: for each of the two found vertices, there needs to be iterated "upwards" to the first vertex, which
