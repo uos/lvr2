@@ -58,13 +58,13 @@ ModelPtr RxpIO::read(std::string filename, int reduction_factor, Matrix4<Vec> tf
         return ModelPtr();
     }
 
-    std::vector<Vector<Vec>> data;
+    std::vector<BaseVector<float>> data;
     const unsigned int point_buf_size = 32768;
     scanifc_xyz32_t point_buf[point_buf_size];
     int end_of_frame = 0;
     unsigned int got = 0;
     int count = 0;
-    Vector<Vec> cur_point;
+    BaseVector<float> cur_point;
 
     // read data
     do
