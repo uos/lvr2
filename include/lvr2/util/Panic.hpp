@@ -56,6 +56,19 @@ private:
     std::string m_msg;
 };
 
+
+struct VertexLoopException : public std::exception
+{
+    VertexLoopException(std::string msg) : m_msg(msg) {}
+
+    virtual const char* what() const noexcept
+    {
+        return m_msg.c_str();
+    }
+private:
+    std::string m_msg;
+};
+
 /**
  * @brief Throws a panic exception with the given error message.
  */
