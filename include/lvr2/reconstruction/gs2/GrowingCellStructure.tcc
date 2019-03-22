@@ -179,7 +179,29 @@ namespace lvr2 {
         }
     }
 
+    template <typename BaseVecT, typename NormalT>
+    void GrowingCellStructure<BaseVecT, NormalT>::initTestMesh(){
+        VertexHandle v0 = m_mesh->addVertex(BaseVecT(3,0,0));
+        VertexHandle v1 = m_mesh->addVertex(BaseVecT(0,3,0));
+        VertexHandle v2 = m_mesh->addVertex(BaseVecT(6,3,0));
+        VertexHandle v3 = m_mesh->addVertex(BaseVecT(0,6,0));
+        VertexHandle v4 = m_mesh->addVertex(BaseVecT(6,6,0));
+        VertexHandle v5 = m_mesh->addVertex(BaseVecT(0,9,0));
+        VertexHandle v6 = m_mesh->addVertex(BaseVecT(6,9,0));
+        VertexHandle v7 = m_mesh->addVertex(BaseVecT(3,12,0));
+        VertexHandle v8 = m_mesh->addVertex(BaseVecT(3,7,0));
 
+        m_mesh->addFace(v0,v8,v1);
+        m_mesh->addFace(v0,v2,v8);
+        m_mesh->addFace(v1,v8,v3);
+        m_mesh->addFace(v2,v4,v8);
+        m_mesh->addFace(v3,v8,v5);
+        m_mesh->addFace(v4,v6,v8);
+        m_mesh->addFace(v5,v8,v7);
+        m_mesh->addFace(v6,v7,v8);
+
+        m_mesh->flipEdge(m_mesh->getEdgeBetween(v8,v0).unwrap());
+    };
 
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::getInitialMesh(){
@@ -241,7 +263,7 @@ namespace lvr2 {
 
         //get initial tetrahedron mesh
         getInitialMesh();
-
+        //initTestMesh();
 
         //TODO: add some progress...needs to include the fact, that the runtime of the algorithm is exponential (boost progress display)
 

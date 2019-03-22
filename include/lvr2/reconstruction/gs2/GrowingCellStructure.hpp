@@ -172,6 +172,8 @@ namespace lvr2{
          */
         void getInitialMesh();
 
+        void initTestMesh();
+
 
 
     };

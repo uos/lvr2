@@ -89,6 +89,7 @@ public:
     EdgeCollapseResult collapseEdge(EdgeHandle edgeH) final;
     VertexHandle splitVertex(VertexHandle vertexH);
     VertexHandle splitEdge(EdgeHandle edgeH);
+    VertexHandle splitEdgeNoRemove(EdgeHandle edgeH);
     vector<VertexHandle> findCommonNeigbours(VertexHandle vH1, VertexHandle vH2);
     void flipEdge(EdgeHandle edgeH) final;
 
