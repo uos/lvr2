@@ -757,11 +757,11 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
     //     /  /     | |     \  \       |        /  /     | |     \  \        |
     //    /  /      | |      \  \      |       /  /      | |      \  \       |
     //   /  /       | |       \  \     |      /  /       | |       \  \      |
-    //  /  v        | |        \  v    |     /  v        | |        \  v     |
+    //  /  v        | |        \  v    |     /  v        | v        \  v     |
     //              | |                |          ----->     ----->          |
     //  [A]  (X)    a  b   (Y)  [B]    |     [A]         [E]         [B]     |
     //              | |                |          <-----     <-----          |
-    //  ^  \        | |        ^  /    |     ^  \        | |        ^  /     |
+    //  ^  \        | |        ^  /    |     ^  \        ^ |        ^  /     |
     //   \  \       | |       /  /     |      \  \       | |       /  /      |
     //    \  \      | |      /  /      |       \  \      | |      /  /       |
     //     \  \     | |     /  /       |        \  \     | |     /  /        |
@@ -827,16 +827,14 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
     BaseVecT vAddedV = vAbove.pos + (vBelow.pos - vAbove.pos) / 2;
 
     //add it
-    VertexHandle vAddedH = this->addVertex(vAddedH);
+    VertexHandle vAddedH = this->addVertex(vAddedV);
     Vertex& vAdded = getV(vAddedH);
 
     //now, that all vertices are there, we need to remove the two faces from the faceList
     m_faces.erase(faceLeft);
     m_faces.erase(faceRight);
 
-    //we also need to remove the two center Halfedges
-    m_edges.erase(centerH);
-    m_edges.erase(centerTwinH);
+    //we also need to remove the two center Halfedges, but where?
 
     //we need to create 8 new halfedges
     HalfEdgeHandle leftAddedH = findOrCreateEdgeBetween(vLeftH, vAddedH);
@@ -854,6 +852,24 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
     HalfEdgeHandle belowAddedH = findOrCreateEdgeBetween(vBelowH, vAddedH);
     HalfEdge& belowAdded = getE(belowAddedH);
     HalfEdge& addedBelow = getE(belowAdded.twin);
+
+    std::cout << vAbove.outgoing.unwrap().idx() << " | " << centerTwinH.idx() << endl;
+    std::cout << vBelow.outgoing.unwrap().idx() << " | " << centerH.idx() << endl;
+
+
+    vAbove.outgoing = aboveAddedH;
+    cout << "Fixed outgoing edges" << vAbove.outgoing.unwrap().idx() << endl;
+
+    vBelow.outgoing = belowAddedH;
+    cout << "Fixed outgoing edges " << vBelow.outgoing.unwrap().idx() << endl;
+
+    //set outgoing of added Vertex
+    vAdded.outgoing = aboveAdded.twin;
+
+    //after above check it should be secure to delete these halfedges
+    m_edges.erase(centerTwinH);
+    m_edges.erase(centerH);
+
 
     //we need to redirect all the Halfedges
     leftAdded.next = aboveAdded.twin;
@@ -876,18 +892,19 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
     //now, that all the edges are redirected, we need to insert new faces (4) and set the faces of each inner edge
 
     FaceHandle topLeftH = m_faces.nextHandle();
-    FaceHandle topRightH = m_faces.nextHandle();
-    FaceHandle bottomLeftH = m_faces.nextHandle();
-    FaceHandle bottomRightH = m_faces.nextHandle();
-
     Face topLeft(aboveLeftH);
-    Face topRight(aboveRightH);
-    Face bottomLeft(belowLeftH);
-    Face bottomRight(belowRightH);
-
     m_faces.push(topLeft);
+
+    FaceHandle topRightH = m_faces.nextHandle();
+    Face topRight(aboveRightH);
     m_faces.push(topRight);
+
+    FaceHandle bottomLeftH = m_faces.nextHandle();
+    Face bottomLeft(belowLeftH);
     m_faces.push(bottomLeft);
+
+    FaceHandle bottomRightH = m_faces.nextHandle();
+    Face bottomRight(belowRightH);
     m_faces.push(bottomRight);
 
     aboveLeft.face = topLeftH;
@@ -904,6 +921,11 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
     aboveAdded.face = topRightH;
     rightAdded.face = bottomRightH;
     leftAdded.face = topLeftH;
+
+    /*this->addFace(vLeftH, vAddedH, vAboveH);
+    this->addFace(vBelowH, vAddedH, vLeftH);
+    this->addFace(vBelowH, vRightH, vAddedH);
+    this->addFace(vRightH, vAboveH, vAddedH);*/
 }
 
 template <typename BaseVecT>
