@@ -90,6 +90,7 @@ int processConversionGDALtoHDF(std::string in,
 {
     GeoTIFFIO gtifio(in);
     HDF5IO hdfio(out);
+    // TODO: handle file exists
     std::string groupname = "annotation/position_" + position_code;
     std::string datasetname = "classification";
     size_t length = (size_t) gtifio.getRasterYSize();
@@ -139,7 +140,7 @@ int main(int argc, char**argv)
     boost::filesystem::path output_filename(argv[2]);
     std::string  output_extension = boost::filesystem::extension(output_filename);
 
-    if(input_extension == ".bsq")
+    if(input_extension == ".tif" || ".geotif")
     {
         if (output_extension != ".h5")
         {
