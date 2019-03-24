@@ -262,8 +262,8 @@ namespace lvr2 {
         m_mesh = &mesh;
 
         //get initial tetrahedron mesh
-        //getInitialMesh();
-        initTestMesh();
+        getInitialMesh();
+        //initTestMesh();
 
         //TODO: add some progress...needs to include the fact, that the runtime of the algorithm is exponential (boost progress display)
 
@@ -276,9 +276,9 @@ namespace lvr2 {
             if(i == getRuntime() / 2) std::cout << "HALF done!!" << endl;
             for(int j = 0; j < getNumSplits(); j++){
                 for(int k = 0; k < getBasicSteps(); k++){
-                    //executeBasicStep();
+                    executeBasicStep();
                 }
-                //executeVertexSplit();
+                executeVertexSplit();
 
             }
             if(this->isWithCollapse()){
