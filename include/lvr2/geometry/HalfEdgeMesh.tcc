@@ -886,6 +886,7 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
 
     aboveLeft.next = leftAddedH;
     aboveRight.next = aboveAddedH;
+
     belowLeft.next = belowAddedH;
     belowRight.next = rightAddedH;
 
@@ -955,16 +956,9 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdge(EdgeHandle edgeH) {
     //get incident faces of the longest edge
     auto incidentFaces = this->getFacesOfEdge(edgeH);
 
-    vector<BaseVecT> verA1;
-    vector<BaseVecT> verA2;
     auto fHArr1 = this->getVerticesOfFace(incidentFaces[0].unwrap());
     auto fHArr2 = this->getVerticesOfFace(incidentFaces[1].unwrap());
 
-    for(int i = 0; i < 3; i++)
-    {
-        verA1.push_back(getV(fHArr1[i]).pos);
-        verA2.push_back(getV(fHArr2[i]).pos);
-    }
 
     //get VertexHandles of each Face
     vector<VertexHandle> verticesOfFace1(fHArr1.begin(), fHArr1.end());
@@ -975,22 +969,6 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdge(EdgeHandle edgeH) {
     //remove the two incident Faces
     this->removeFace(incidentFaces[0].unwrap());
     this->removeFace(incidentFaces[1].unwrap());
-
-    //reinsert removed vertices
-    for(int i = 0; i < 3; i++)
-    {
-        cout << "in contains" << endl;
-        if(!this->containsVertex(verticesOfFace1[i]))
-        {
-            std::cout << "Face 1 needs reinsertion" << endl;
-            verticesOfFace1[i] = this->addVertex(verA1[i]);
-        }
-        if(!this->containsVertex(verticesOfFace2[i]))
-        {
-            std::cout << "Face 2 needs reinsertion" << endl;
-            verticesOfFace2[i] = this->addVertex(verA2[i]);
-        }
-    }
 
     //now insert new Faces, using the direction the getVerticesOfFace method gives
     //first face
@@ -1096,9 +1074,8 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
 
     VertexHandle centerOfLongestEdge = this->splitEdge(longestEdge);
 
-    if(commonVertexHandles.size() == 2 && this->numVertices() > 8)
+    /*if(commonVertexHandles.size() == 2 && this->numVertices() > 8)
     {
-        //cout << "there are exactly two common vertices" << endl;
 
         for(VertexHandle vertex : commonVertexHandles)
         {
@@ -1106,10 +1083,10 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
             if(handle && this->isFlippable(handle.unwrap()))
             {
                 std::cout << "FLIPPABLE!!!" << endl << endl;
-                this->flipEdge(handle.unwrap());
+                //this->flipEdge(handle.unwrap());
             }
         }
-    }
+    }*/
 
 
     //TODO: for each of the two found vertices, there needs to be iterated "upwards" to the first vertex, which
