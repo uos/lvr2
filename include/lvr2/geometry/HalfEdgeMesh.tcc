@@ -103,10 +103,10 @@ VertexHandle HalfEdgeMesh<BaseVecT>::addVertex(BaseVecT pos)
 template <typename BaseVecT>
 FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H)
 {
-    if (!BaseMesh<BaseVecT>::isFaceInsertionValid(v1H, v2H, v3H))
+    /*if (!BaseMesh<BaseVecT>::isFaceInsertionValid(v1H, v2H, v3H))
     {
         panic("Attempting to add a face which cannot be added!");
-    }
+    }*/
 
     using std::make_tuple;
 
@@ -693,7 +693,7 @@ void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
         // Throw an exception if number of out edges becomes
         // too large. This can happen if there is a bug in the
         // half edge mesh topology
-        if(edgesOut.size() > 20)
+        if(edgesOut.size() > 40)
         {
             throw VertexLoopException("getEdgesOfVertex: Loop detected");
         }
@@ -817,7 +817,7 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
     VertexHandle vLeftH = aboveLeft.target;
     Vertex& vLeft = getV(vLeftH);
     VertexHandle vRightH = belowRight.target;
-    Vertex vRight = getV(vRightH);
+    Vertex& vRight = getV(vRightH);
     VertexHandle vAboveH = center.target;
     Vertex& vAbove = getV(vAboveH);
     VertexHandle vBelowH = centerTwin.target;
@@ -927,12 +927,16 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
     this->addFace(vBelowH, vAddedH, vLeftH);
     this->addFace(vBelowH, vRightH, vAddedH);
     this->addFace(vRightH, vAboveH, vAddedH);*/
+
+    cout << "end of split" << endl;
+
+    return vAddedH;
 }
 
 template <typename BaseVecT>
 VertexHandle HalfEdgeMesh<BaseVecT>::splitEdge(EdgeHandle edgeH) {
 
-    auto verticesOfEdge = getVerticesOfEdge(edgeH);
+    auto verticesOfEdge = this->getVerticesOfEdge(edgeH);
 
     VertexHandle startH = verticesOfEdge[0];
     BaseVecT start = getV(startH).pos;
@@ -980,15 +984,12 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdge(EdgeHandle edgeH) {
 
     vector<VertexHandle> faceInsert1(verticesOfFace1.begin(), verticesOfFace1.end());
     faceInsert1[indexEnd1] = centerOfLongestEdge;
-    if(this->isFaceInsertionValid(faceInsert1[0], faceInsert1[1], faceInsert1[2])){
-        this->addFace(faceInsert1[0], faceInsert1[1], faceInsert1[2]);
-    }
+    this->addFace(faceInsert1[0], faceInsert1[1], faceInsert1[2]);
 
     faceInsert1.assign(verticesOfFace1.begin(), verticesOfFace1.end());
     faceInsert1[indexStart1] = centerOfLongestEdge;
-    if(this->isFaceInsertionValid(faceInsert1[0], faceInsert1[1], faceInsert1[2])){
-        this->addFace(faceInsert1[0], faceInsert1[1], faceInsert1[2]);
-    }
+
+    this->addFace(faceInsert1[0], faceInsert1[1], faceInsert1[2]);
 
 
     //second face
@@ -1000,16 +1001,13 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdge(EdgeHandle edgeH) {
 
     vector<VertexHandle> faceInsert2(verticesOfFace2.begin(), verticesOfFace2.end());
     faceInsert2[indexEnd2] = centerOfLongestEdge;
-    if(this->isFaceInsertionValid(faceInsert2[0], faceInsert2[1], faceInsert2[2])){
-        this->addFace(faceInsert2[0], faceInsert2[1], faceInsert2[2]);
-    }
+    this->addFace(faceInsert2[0], faceInsert2[1], faceInsert2[2]);
 
 
     faceInsert2.assign(verticesOfFace2.begin(), verticesOfFace2.end());
     faceInsert2[indexStart2] = centerOfLongestEdge;
-    if(this->isFaceInsertionValid(faceInsert2[0], faceInsert2[1], faceInsert2[2])){
-        this->addFace(faceInsert2[0], faceInsert2[1], faceInsert2[2]);
-    }
+    this->addFace(faceInsert2[0], faceInsert2[1], faceInsert2[2]);
+
 
     return centerOfLongestEdge; //return the newly added vertex
 }
@@ -1063,8 +1061,6 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
 
     VertexHandle targetOfLongestEdgeH = longestEdgeHalf.target;
     BaseVecT targetOfLongestEdge = getV(targetOfLongestEdgeH).pos;
-    //calculate the position of the new vertex
-    BaseVecT vertexToAdd = vertexToBeSplit + (targetOfLongestEdge - vertexToBeSplit)/2;
 
 
     //TODO: get common neighbour vertices of the longest edge target vertex and the vertex to be split (must be 2)
@@ -1072,7 +1068,7 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
     //first idea: just do an edge split on the longest edge and do an edge flip for each of the 2 found vertices
     vector<VertexHandle> commonVertexHandles = findCommonNeigbours(vertexToBeSplitH, targetOfLongestEdgeH);
 
-    VertexHandle centerOfLongestEdge = this->splitEdge(longestEdge);
+    VertexHandle centerOfLongestEdge = this->splitEdgeNoRemove(longestEdge);
 
     /*if(commonVertexHandles.size() == 2 && this->numVertices() > 8)
     {
