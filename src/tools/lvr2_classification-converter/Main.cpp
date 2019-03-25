@@ -25,7 +25,7 @@ void printUsage()
     std::cout   << "This program converts either the radiometric data from a HDF5 file into a GeoTIFF file "
                 << "or a classification BSQ file into a HDF5 Dataset."
                 << std::endl
-                << "Usage: ./lvr2_classification-converter <input path should be .bsq or .h5>"
+                << "Usage: ./lvr2_classification-converter <input path should be .tif or .h5> "
                 << "<output path should be .tif or .h5>"
                 << std::endl;
 }
@@ -140,7 +140,7 @@ int main(int argc, char**argv)
     boost::filesystem::path output_filename(argv[2]);
     std::string  output_extension = boost::filesystem::extension(output_filename);
 
-    if(input_extension == ".tif" || ".geotif")
+    if(input_extension == ".tif" ||  input_extension == ".geotif")
     {
         if (output_extension != ".h5")
         {
