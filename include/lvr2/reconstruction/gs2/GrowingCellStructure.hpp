@@ -174,7 +174,7 @@ namespace lvr2{
 
         void initTestMesh();
 
-
+        void performLaplacianSmoothing(VertexHandle vertex);
 
     };
 }

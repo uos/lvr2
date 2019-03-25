@@ -2,7 +2,6 @@
 // Created by patrick on 10.02.19.
 //
 
-//#include <lvr2/reconstruction/gs2/GrowingCellStructure.hpp>
 #include <lvr2/util/Debug.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
@@ -19,15 +18,13 @@ namespace lvr2 {
     }
 
 
-
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::executeBasicStep()
     {
-
         //TODO: get random point of the pointcloud
 
         auto pointer = m_surface.get()->pointBuffer();
-        auto p_arr = pointer.get()->getPointArray(); //x,y,z,x,y,z .... 3*random, 3*random+2,3*random+3
+        auto p_arr = pointer.get()->getPointArray();
         auto num_points = pointer.get()->numPoints();
 
         size_t random = rand() % num_points;
@@ -75,6 +72,8 @@ namespace lvr2 {
         {
             BaseVecT& nb = m_mesh->getVertexPosition(v);
             nb += vectorToRandomPoint * getNeighborLearningRate();
+            performLaplacianSmoothing(v);
+
         }
 
         //TODO: increase signal counter of winner by one
@@ -138,9 +137,8 @@ namespace lvr2 {
         {
             BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
 
-            if(vertex.signal_counter < minSC && vertex.signal_counter != 0)
+            if(vertex.signal_counter < minSC)
             {
-
                 lowestSC = vertexH;
                 minSC = vertex.signal_counter;
             }
@@ -148,7 +146,7 @@ namespace lvr2 {
 
         //found vertex with lowest sc
         //TODO: collapse the edge leading to the vertex with the valence closest to six
-        if(minSC > this->getCollapseThreshold() && lowestSC.idx() != 0)
+        if(minSC < this->getCollapseThreshold())
         {
 
             vector<VertexHandle> nbMinSc;
@@ -254,6 +252,24 @@ namespace lvr2 {
         m_mesh->addFace(vH3, vH1, vH2);
     }
 
+    template <typename BaseVecT, typename NormalT>
+    void GrowingCellStructure<BaseVecT, NormalT>::performLaplacianSmoothing(VertexHandle vertexH)
+    {
+        vector<VertexHandle> n_vertices = m_mesh->getNeighboursOfVertex(vertexH);
+        BaseVecT& vertex = m_mesh->getVertexPosition(vertexH);
+        BaseVecT avg_vec(0,0,0);
+
+        for(VertexHandle vH : n_vertices)
+        {
+            BaseVecT v = m_mesh->getVertexPosition(vH);
+            avg_vec += v - vertex;
+        }
+
+        avg_vec /= n_vertices.size();
+
+        vertex += avg_vec * 0.01;
+    }
+
 
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::getMesh(HalfEdgeMesh<BaseVecT> &mesh){
@@ -262,8 +278,8 @@ namespace lvr2 {
         m_mesh = &mesh;
 
         //get initial tetrahedron mesh
-        //getInitialMesh();
-        initTestMesh();
+        getInitialMesh();
+        //initTestMesh();
 
         //TODO: add some progress...needs to include the fact, that the runtime of the algorithm is exponential (boost progress display)
 
@@ -276,9 +292,9 @@ namespace lvr2 {
             if(i == getRuntime() / 2) std::cout << "HALF done!!" << endl;
             for(int j = 0; j < getNumSplits(); j++){
                 for(int k = 0; k < getBasicSteps(); k++){
-                    //executeBasicStep();
+                    executeBasicStep();
                 }
-                //executeVertexSplit();
+                executeVertexSplit();
 
             }
             if(this->isWithCollapse()){
@@ -286,6 +302,7 @@ namespace lvr2 {
             }
 
         }
+
     }
 
 }

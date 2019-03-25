@@ -866,10 +866,9 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
     //set outgoing of added Vertex
     vAdded.outgoing = aboveAdded.twin;
 
-    //after above check it should be secure to delete these halfedges
+    //after editing the outgoings it should be secure to delete these halfedges
     m_edges.erase(centerTwinH);
     m_edges.erase(centerH);
-
 
     //we need to redirect all the Halfedges
     leftAdded.next = aboveAdded.twin;
@@ -1068,7 +1067,7 @@ VertexHandle HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
     //first idea: just do an edge split on the longest edge and do an edge flip for each of the 2 found vertices
     vector<VertexHandle> commonVertexHandles = findCommonNeigbours(vertexToBeSplitH, targetOfLongestEdgeH);
 
-    VertexHandle centerOfLongestEdge = this->splitEdgeNoRemove(longestEdge);
+    VertexHandle centerOfLongestEdge = this->splitEdge/*NoRemove*/(longestEdge);
 
     /*if(commonVertexHandles.size() == 2 && this->numVertices() > 8)
     {
