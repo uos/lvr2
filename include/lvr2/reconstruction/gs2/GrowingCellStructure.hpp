@@ -85,6 +85,10 @@ namespace lvr2{
             return m_deleteLongEdgesFactor;
         }
 
+        bool isInterior() const {
+            return m_interior;
+        }
+
         void setRuntime(int m_runtime) {
             GrowingCellStructure::m_runtime = m_runtime;
         }
@@ -133,6 +137,10 @@ namespace lvr2{
             GrowingCellStructure::m_deleteLongEdgesFactor = m_deleteLongEdgesFactor;
         }
 
+        void setInterior(bool m_interior) {
+            GrowingCellStructure::m_interior = m_interior;
+        }
+
     private:
         PointsetSurfacePtr<BaseVecT> m_surface; //helper-surface
         HalfEdgeMesh<BaseVecT> *m_mesh;
@@ -149,6 +157,7 @@ namespace lvr2{
         float m_collapseThreshold; //threshold for the collapse - when does it make sense
         bool m_filterChain; //should a filter chain be applied?
         int m_deleteLongEdgesFactor;
+        bool m_interior;
 
         /**
          * Getting the initial Polyhedron Mesh and placing it in the center of the pointcloud (Tetrahedron)
@@ -176,6 +185,7 @@ namespace lvr2{
 
         void performLaplacianSmoothing(VertexHandle vertex);
 
+        void removeWrongFaces();
     };
 }
 
