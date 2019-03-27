@@ -80,6 +80,8 @@ namespace gs_reconstruction{
 
         int getDeleteLongEdgesFactor() const;
 
+        bool isInterior() const;
+
         string getInputFileName() const;
 
         /*
@@ -109,6 +111,7 @@ namespace gs_reconstruction{
         float m_collapseThreshold;
         bool m_filterChain;
         int m_deleteLongEdgesFactor;
+        bool m_interior;
         /// The number of neighbors for distance function evaluation
         int                             m_kd;
 
@@ -141,6 +144,7 @@ namespace gs_reconstruction{
         cout << "##### CollapseThreshold: " <<  o.getCollapseThreshold() << endl;
         cout << "##### FilterChain: " <<  o.isFilterChain() << endl;
         cout << "##### DeleteLongEdgesFactor: " <<  o.getDeleteLongEdgesFactor() << endl;
+        cout << "##### Interior: " <<  o.isInterior() << endl;
         cout << "##### PCM: " <<  o.getPcm() << endl;
         cout << "##### KD: " <<  o.getKd() << endl;
         cout << "##### KI: " <<  o.getKi() << endl;

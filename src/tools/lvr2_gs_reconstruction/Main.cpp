@@ -19,6 +19,7 @@
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/gs2/GrowingCellStructure.hpp>
+#include <lvr2/algorithm/CleanupAlgorithms.hpp>
 
 using namespace lvr2;
 
@@ -155,7 +156,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options &op
 
     //calc normals if there are none, TODO: Seg-Fault beheben, woher kommt er?
     if(!buffer->hasNormals()){
-        surface->calculateSurfaceNormals();
+        //surface->calculateSurfaceNormals();
     }
     return surface;
 }
@@ -181,14 +182,14 @@ int main(int argc, char **argv) {
         cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
         return EXIT_FAILURE;
     }
-
     PointBufferPtr buffer = model->m_pointCloud;
+
+
 
     // Create a point cloud manager
     string pcm_name = options.getPcm();
     auto surface = loadPointCloud<Vec>(options, buffer);
-    if (!surface)
-    {
+    if (!surface) {
         cout << "Failed to create pointcloud. Exiting." << endl;
         return EXIT_FAILURE;
     }
@@ -196,7 +197,6 @@ int main(int argc, char **argv) {
     //TODO: check, whether the centroid (needed for mesh positioning) is usable, else do it by myself..
     //TODO: generate possibility to call GCS and GSS with one operation (create insantance, call "getMesh" or similar)
     //      -> getMesh returns Pointer to a Mesh
-
 
     HalfEdgeMesh<Vec> mesh;
     GrowingCellStructure<Vec, Normal<float>> gcs(surface);
@@ -214,10 +214,10 @@ int main(int argc, char **argv) {
     gcs.setNeighborLearningRate(options.getNeighborLearningRate());
     gcs.setNumSplits(options.getNumSplits());
     gcs.setWithCollapse(options.getWithCollapse());
+    gcs.setInterior(options.isInterior());
 
-    std::cout << "Test: " << gcs.getBasicSteps() << std::endl;
     gcs.getMesh(mesh);
-
+    naiveFillSmallHoles(mesh, 10, false);
     SimpleFinalizer<Vec> fin;
     MeshBufferPtr res = fin.apply(mesh);
 

@@ -245,11 +245,20 @@ namespace lvr2 {
         auto vH3 = m_mesh->addVertex(right);
         auto vH4 = m_mesh->addVertex(back);
 
-        //add faces to create tetrahedron
-        m_mesh->addFace(vH4, vH3, vH2);
-        m_mesh->addFace(vH4, vH2, vH1);
-        m_mesh->addFace(vH4, vH1, vH3);
-        m_mesh->addFace(vH3, vH1, vH2);
+        //add faces to create tetrahedron (interior/exterior)
+        if(!isInterior())
+        {
+            m_mesh->addFace(vH4, vH3, vH2);
+            m_mesh->addFace(vH4, vH2, vH1);
+            m_mesh->addFace(vH4, vH1, vH3);
+            m_mesh->addFace(vH3, vH1, vH2);
+        }
+        else{
+            m_mesh->addFace(vH2, vH3, vH4);
+            m_mesh->addFace(vH1, vH2, vH4);
+            m_mesh->addFace(vH3, vH1, vH4);
+            m_mesh->addFace(vH2, vH1, vH3);
+        }
     }
 
     template <typename BaseVecT, typename NormalT>
@@ -268,6 +277,45 @@ namespace lvr2 {
         avg_vec /= n_vertices.size();
 
         vertex += avg_vec * 0.01;
+    }
+
+    template <typename BaseVecT, typename NormalT>
+    void GrowingCellStructure<BaseVecT, NormalT>::removeWrongFaces()
+    {
+        double avg_dist = 0;
+        for(EdgeHandle eH: m_mesh->edges())
+        {
+            auto e_arr = m_mesh->getVerticesOfEdge(eH);
+            BaseVecT v0 = m_mesh->getVertexPosition(e_arr[0]);
+            BaseVecT v1 = m_mesh->getVertexPosition(e_arr[1]);
+            avg_dist += v0.distance(v1);
+        }
+
+        avg_dist /= m_mesh->numEdges();
+
+        for(VertexHandle vH : m_mesh->vertices())
+        {
+            auto edges = m_mesh->getEdgesOfVertex(vH);
+            bool removable = true;
+            for(EdgeHandle eH : edges)
+            {
+                auto e_arr = m_mesh->getVerticesOfEdge(eH);
+                BaseVecT v0 = m_mesh->getVertexPosition(e_arr[0]);
+                BaseVecT v1 = m_mesh->getVertexPosition(e_arr[1]);
+                double dist = v0.distance(v1);
+                if(dist <= 3 * avg_dist) {
+                    removable = false;
+                }
+            }
+            if(removable)
+            {
+                auto faces = m_mesh->getFacesOfVertex(vH);
+                for(auto face : faces)
+                {
+                    m_mesh->removeFace(face);
+                }
+            }
+        }
     }
 
 
@@ -302,6 +350,8 @@ namespace lvr2 {
             }
 
         }
+
+        removeWrongFaces();
 
     }
 
