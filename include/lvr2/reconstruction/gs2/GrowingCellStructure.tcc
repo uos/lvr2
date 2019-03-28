@@ -7,6 +7,8 @@
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/config/BaseOption.hpp>
 #include <cmath>
+//#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/progress.hpp>
 
 namespace lvr2 {
 
@@ -333,11 +335,10 @@ namespace lvr2 {
 
         //TODO: add gcs construction.. call to basic step, call to other functions
 
-        for(int i = 0; i < getRuntime(); i++){
+        boost::progress_display show_progress((unsigned long)( m_runtime ));
 
-            if(i == getRuntime() / 8) std::cout << "Achtel done!!" << endl;
-            if(i == getRuntime() / 4) std::cout << "Viertel done!!" << endl;
-            if(i == getRuntime() / 2) std::cout << "HALF done!!" << endl;
+        for(int i = 0; i < getRuntime(); i++){
+            ++show_progress;
             for(int j = 0; j < getNumSplits(); j++){
                 for(int k = 0; k < getBasicSteps(); k++){
                     executeBasicStep();
@@ -351,7 +352,7 @@ namespace lvr2 {
 
         }
 
-        removeWrongFaces();
+        //removeWrongFaces();
 
     }
 
