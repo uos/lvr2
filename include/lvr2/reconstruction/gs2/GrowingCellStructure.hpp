@@ -186,6 +186,8 @@ namespace lvr2{
         void performLaplacianSmoothing(VertexHandle vertex);
 
         void removeWrongFaces();
+
+        //TODO: add gss related functions
     };
 }
 
