@@ -284,40 +284,25 @@ namespace lvr2 {
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::removeWrongFaces()
     {
-        double avg_dist = 0;
-        for(EdgeHandle eH: m_mesh->edges())
+
+        double avg_area = 0;
+
+        for(FaceHandle face: m_mesh->faces())
         {
-            auto e_arr = m_mesh->getVerticesOfEdge(eH);
-            BaseVecT v0 = m_mesh->getVertexPosition(e_arr[0]);
-            BaseVecT v1 = m_mesh->getVertexPosition(e_arr[1]);
-            avg_dist += v0.distance(v1);
+            avg_area += m_mesh->calcFaceArea(face);
         }
 
-        avg_dist /= m_mesh->numEdges();
+        avg_area /= m_mesh->numFaces();
 
-        for(VertexHandle vH : m_mesh->vertices())
+        for(FaceHandle face: m_mesh->faces())
         {
-            auto edges = m_mesh->getEdgesOfVertex(vH);
-            bool removable = true;
-            for(EdgeHandle eH : edges)
+            double area = m_mesh->calcFaceArea(face);
+            if(area > 3 * avg_area)
             {
-                auto e_arr = m_mesh->getVerticesOfEdge(eH);
-                BaseVecT v0 = m_mesh->getVertexPosition(e_arr[0]);
-                BaseVecT v1 = m_mesh->getVertexPosition(e_arr[1]);
-                double dist = v0.distance(v1);
-                if(dist <= 3 * avg_dist) {
-                    removable = false;
-                }
-            }
-            if(removable)
-            {
-                auto faces = m_mesh->getFacesOfVertex(vH);
-                for(auto face : faces)
-                {
-                    m_mesh->removeFace(face);
-                }
+                m_mesh->removeFace(face);
             }
         }
+
     }
 
 
