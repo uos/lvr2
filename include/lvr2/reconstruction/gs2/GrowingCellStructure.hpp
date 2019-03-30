@@ -173,7 +173,7 @@ namespace lvr2{
 
         // SHARED MEMBER FUNCTIONS
 
-        void executeBasicStep();
+        void executeBasicStep(PacmanProgressBar& progress_bar);
 
         void executeVertexSplit();
 
@@ -183,13 +183,13 @@ namespace lvr2{
 
         BaseVecT getRandomPointFromPointcloud();
 
-        VertexHandle getClostestPointInMesh(BaseVecT point);
+        VertexHandle getClosestPointInMesh(BaseVecT point, PacmanProgressBar& progress_bar);
 
         void initTestMesh(); //test
 
         // GCS MEMBER FUNCTIONS
 
-        void performLaplacianSmoothing(VertexHandle vertex);
+        void performLaplacianSmoothing(VertexHandle vertexH);
 
 
         // ADDITIONAL FUNCTIONS
