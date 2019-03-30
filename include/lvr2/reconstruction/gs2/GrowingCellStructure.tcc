@@ -23,58 +23,23 @@ namespace lvr2 {
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::executeBasicStep()
     {
-        //TODO: get random point of the pointcloud
+        //get random point of the pointcloud
+        BaseVecT random_point = this->getRandomPointFromPointcloud();
 
-        auto pointer = m_surface.get()->pointBuffer();
-        auto p_arr = pointer.get()->getPointArray();
-        auto num_points = pointer.get()->numPoints();
+        VertexHandle closestVertexToRandomPoint = this->getClostestPointInMesh(random_point);
 
-        size_t random = rand() % num_points;
-
-        BaseVecT random_point(p_arr[3 * random], p_arr[3 * random + 1], p_arr[3 * random + 2]);
-
-        //TODO: search the closest point of the mesh
-
-        auto vertices = m_mesh->vertices();
-
-        VertexHandle closestVertexToRandomPoint(0);
-        float smallestDistance = numeric_limits<float>::infinity();
-        BaseVecT vectorToRandomPoint;
-        float avg_counter = 0;
-
-        for(auto vertexH : vertices)
-        {
-            BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
-            avg_counter += vertex.signal_counter; //calc the avg signal counter
-            BaseVecT distanceVector = random_point - vertex;
-            float length = distanceVector.length();
-
-            if(length < smallestDistance)
-            {
-
-                closestVertexToRandomPoint = vertexH;
-                vectorToRandomPoint = distanceVector;
-                smallestDistance = length;
-
-            }
-            //vertex.signal_counter *= 0.999; how to decrease it?
-        }
-
-        m_avgSignalCounter = avg_counter / m_mesh->numVertices();
-
-
-        //TODO: smooth the winning vertex
+        //smooth the winning vertex
 
         BaseVecT &winner = m_mesh->getVertexPosition(closestVertexToRandomPoint);
-        winner += vectorToRandomPoint * getLearningRate();
+        winner += (random_point - winner) * getLearningRate();
 
 
-        //TODO: smooth the winning vertices' neighbors (laplacian smoothing)
+        //smooth the winning vertices' neighbors (laplacian smoothing)
 
         vector<VertexHandle> neighborsOfWinner;
         m_mesh->getNeighboursOfVertex(closestVertexToRandomPoint, neighborsOfWinner);
 
-
+        //perform laplacian smoothing on all the neighbors of the winning vertex
         for(auto v : neighborsOfWinner)
         {
             //BaseVecT& nb = m_mesh->getVertexPosition(v);
@@ -91,12 +56,10 @@ namespace lvr2 {
 
 
 
-    //TODO: Vertex split execution (For now only edge split)
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::executeVertexSplit()
     {
-        //TODO: find vertex with highst sc, split that vertex
-
+        //find vertex with highst sc, split that vertex
         auto vertices = m_mesh->vertices();
 
         VertexHandle highestSC(0);
@@ -181,6 +144,52 @@ namespace lvr2 {
 
         }
     }
+
+
+    template <typename BaseVecT, typename NormalT>
+    BaseVecT GrowingCellStructure<BaseVecT, NormalT>::getRandomPointFromPointcloud(){
+        auto pointer = m_surface.get()->pointBuffer();
+        auto p_arr = pointer.get()->getPointArray();
+        auto num_points = pointer.get()->numPoints();
+
+        size_t random = rand() % num_points; //random number
+
+        BaseVecT random_point(p_arr[3 * random], p_arr[3 * random + 1], p_arr[3 * random + 2]);
+        return random_point;
+    }
+
+    template <typename BaseVecT, typename NormalT>
+    VertexHandle GrowingCellStructure<BaseVecT, NormalT>::getClostestPointInMesh(BaseVecT point)
+    {
+        //search the closest point of the mesh
+        auto vertices = m_mesh->vertices();
+
+        VertexHandle closestVertexToRandomPoint(0);
+        float smallestDistance = numeric_limits<float>::infinity();
+        BaseVecT vectorToRandomPoint;
+        float avg_counter = 0;
+
+        for(auto vertexH : vertices)
+        {
+            BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
+            avg_counter += vertex.signal_counter; //calc the avg signal counter
+            BaseVecT distanceVector = point - vertex;
+            float length = distanceVector.length();
+
+            if(length < smallestDistance)
+            {
+
+                closestVertexToRandomPoint = vertexH;
+                vectorToRandomPoint = distanceVector;
+                smallestDistance = length;
+
+            }
+        }
+
+        m_avgSignalCounter = avg_counter / m_mesh->numVertices();
+
+        return closestVertexToRandomPoint;
+    };
 
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::initTestMesh(){
@@ -349,7 +358,6 @@ namespace lvr2 {
             }
 
         }
-
 
         //final operations on the mesh (like removing wrong faces and filling the holes)
 

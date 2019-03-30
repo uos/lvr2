@@ -154,31 +154,45 @@ namespace lvr2{
         bool m_withCollapse; //should we collapse?
         float m_learningRate; //learning rate of the algorithm
         float m_neighborLearningRate;
+        bool m_filterChain; //should a filter chain be applied?
+        bool m_interior; //should the interior be reconstructed or the exterior?
+
+
+        // "GCS" related members
         float m_decreaseFactor; //for sc calc
         int m_allowMiss;
         float m_collapseThreshold; //threshold for the collapse - when does it make sense
-        bool m_filterChain; //should a filter chain be applied?
         int m_deleteLongEdgesFactor;
-        bool m_interior;
         float m_avgSignalCounter = 0;
 
 
-        //void getInitialMesh(HalfEdgeMesh<BaseVecT> &mesh);
+        // "GSS" related members
+        bool m_useGSS;
+        HashMap<FaceHandle, std::pair<float, float>> faceAgeErrorMap; //hashmap for mapping a triangle to a
 
-        //execute basic step
+
+        // SHARED MEMBER FUNCTIONS
+
         void executeBasicStep();
 
-        //split vertex with .. -- get handle in function or pass it?
         void executeVertexSplit();
 
-        //collapse edge with ... -- get handle in function or pass it?
         void executeEdgeCollapse();
 
         void getInitialMesh();
 
-        void initTestMesh();
+        BaseVecT getRandomPointFromPointcloud();
+
+        VertexHandle getClostestPointInMesh(BaseVecT point);
+
+        void initTestMesh(); //test
+
+        // GCS MEMBER FUNCTIONS
 
         void performLaplacianSmoothing(VertexHandle vertex);
+
+
+        // ADDITIONAL FUNCTIONS
 
         void removeWrongFaces();
 
