@@ -8,6 +8,7 @@
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/config/BaseOption.hpp>
+#include <lvr2/attrmaps/HashMap.hpp>
 
 namespace lvr2{
 
@@ -145,6 +146,7 @@ namespace lvr2{
         PointsetSurfacePtr<BaseVecT> m_surface; //helper-surface
         HalfEdgeMesh<BaseVecT> *m_mesh;
 
+        //SHARED members
         int m_runtime; //how many steps?
         int m_basicSteps; //how many steps until collapse?
         int m_numSplits; //how many splits
@@ -158,11 +160,9 @@ namespace lvr2{
         bool m_filterChain; //should a filter chain be applied?
         int m_deleteLongEdgesFactor;
         bool m_interior;
+        float m_avgSignalCounter = 0;
 
-        /**
-         * Getting the initial Polyhedron Mesh and placing it in the center of the pointcloud (Tetrahedron)
-         * @param mesh
-         */
+
         //void getInitialMesh(HalfEdgeMesh<BaseVecT> &mesh);
 
         //execute basic step
@@ -174,11 +174,6 @@ namespace lvr2{
         //collapse edge with ... -- get handle in function or pass it?
         void executeEdgeCollapse();
 
-        /**
-         * Getting the initial Tetrahedron, which will be used to approx the surface
-         * @param mesh: pointer to a mesh
-         * @return nothing
-         */
         void getInitialMesh();
 
         void initTestMesh();
