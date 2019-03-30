@@ -21,12 +21,12 @@ namespace lvr2 {
 
 
     template <typename BaseVecT, typename NormalT>
-    void GrowingCellStructure<BaseVecT, NormalT>::executeBasicStep()
+    void GrowingCellStructure<BaseVecT, NormalT>::executeBasicStep(PacmanProgressBar& progress_bar)
     {
         //get random point of the pointcloud
         BaseVecT random_point = this->getRandomPointFromPointcloud();
 
-        VertexHandle closestVertexToRandomPoint = this->getClostestPointInMesh(random_point);
+        VertexHandle closestVertexToRandomPoint = this->getClosestPointInMesh(random_point, progress_bar);
 
         //smooth the winning vertex
 
@@ -159,18 +159,18 @@ namespace lvr2 {
     }
 
     template <typename BaseVecT, typename NormalT>
-    VertexHandle GrowingCellStructure<BaseVecT, NormalT>::getClostestPointInMesh(BaseVecT point)
+    VertexHandle GrowingCellStructure<BaseVecT, NormalT>::getClosestPointInMesh(BaseVecT point, PacmanProgressBar& progress_bar)
     {
         //search the closest point of the mesh
         auto vertices = m_mesh->vertices();
 
         VertexHandle closestVertexToRandomPoint(0);
         float smallestDistance = numeric_limits<float>::infinity();
-        BaseVecT vectorToRandomPoint;
         float avg_counter = 0;
 
         for(auto vertexH : vertices)
         {
+            ++progress_bar;
             BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
             avg_counter += vertex.signal_counter; //calc the avg signal counter
             BaseVecT distanceVector = point - vertex;
@@ -180,7 +180,6 @@ namespace lvr2 {
             {
 
                 closestVertexToRandomPoint = vertexH;
-                vectorToRandomPoint = distanceVector;
                 smallestDistance = length;
 
             }
@@ -341,14 +340,13 @@ namespace lvr2 {
         getInitialMesh();
         //initTestMesh();
 
-        PacmanProgressBar progress_bar(m_runtime); //showing the progress, not yet finished
+        PacmanProgressBar progress_bar((unsigned int)((m_runtime*m_numSplits)*((m_numSplits*m_runtime)+1)/2) * m_basicSteps); //showing the progress, not yet finished
 
         //algorithm
         for(int i = 0; i < getRuntime(); i++){
-            ++progress_bar;
             for(int j = 0; j < getNumSplits(); j++){
                 for(int k = 0; k < getBasicSteps(); k++){
-                    executeBasicStep();
+                    executeBasicStep(progress_bar);
                 }
                 executeVertexSplit();
 
