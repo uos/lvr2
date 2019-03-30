@@ -8,7 +8,7 @@ import cv2
 # Input: Classification as .tif
 # Output: Colorized classification panorama as PNG
 
-if len(sys.argv) == 2:
+if len(sys.argv) == 3:
     inname = sys.argv[1]
     outname = sys.argv[2]
 
@@ -36,6 +36,7 @@ max_val = np.amax(values)
 
 num_classes = max_val - min_val + 1
 
+print("Loading color map...")
 color_map = np.array(cm.get_cmap('viridis').colors)
 colors = np.empty((num_classes, 4), dtype=np.uint)
 step = int((len(color_map)-1) / (num_classes-1))
@@ -45,14 +46,17 @@ for class_i in range(num_classes):
     # alpha channel
     colors[class_i, 3] = 255
 
+print("Assigning data to colorized array...")
 shape = values.shape
-
 png_values = np.zeros((shape[1], shape[2], 4), dtype=np.uint)
-
 # OpenCV requires BGRA channel order
 for rgb_channel in reversed(range(4)):
     for y in range(shape[1]):
         for x in range(shape[2]):
             png_values[ y, x, rgb_channel] = colors[values[0, y, x] - 1, rgb_channel]
 
-print(cv2.imwrite(outname, png_values))
+print("Writing PNG file...")
+if cv2.imwrite(outname, png_values):
+    print("Done. Data has bin written to ", outname)
+else:
+    print("Could not write PNG file.")
