@@ -83,6 +83,32 @@ CoordT BaseVector<CoordT>::dot(const BaseVector &other) const
     return x * other.x + y * other.y + z * other.z;
 }
 
+/**
+ * @brief    Calculates the cross product between this and
+ *           the given vector. Returns a new BaseVector instance.
+ */
+template <typename CoordT>
+BaseVector<CoordT> BaseVector<CoordT>::rotated(const BaseVector &n, const double &angle) const
+{
+    const double sin = std::sin(angle);
+    const double cos = std::cos(angle);
+    const double ncos = 1-cos;
+
+    const double n1sqncos = n.x * n.x * ncos;
+    const double n2sqncos = n.y * n.y * ncos;
+    const double n3sqncos = n.z * n.z * ncos;
+
+    const double n12ncos = n.x * n.y * ncos;
+    const double n13ncos = n.x * n.z * ncos;
+    const double n23ncos = n.y * n.z * ncos;
+
+    return BaseVector(
+        (n1sqncos+cos)*x + (n12ncos-n.z*sin)*y + (n13ncos+n.y*sin)*z,
+        (n12ncos+n.z*sin)*x + (n2sqncos+cos)*y + (n23ncos-n.x*sin)*z,
+        (n13ncos+n.y*sin)*x + (n23ncos+n.x*sin)*y + (n3sqncos+cos)*z
+    );
+}
+
 
 // ========================================================================
 // === Operator overloads
