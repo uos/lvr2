@@ -4,9 +4,9 @@ import numpy as np
 from matplotlib import cm
 import cv2
 
-
-# Input: Klassifikation als .tif
-# Output: Klassifiziertes Panorama als PNG
+# Takes a one channel classification TIFF file as input and converts it to a colorized PNG file
+# Input: Classification as .tif
+# Output: Colorized classification panorama as PNG
 
 if len(sys.argv) == 2:
     inname = sys.argv[1]
@@ -29,7 +29,7 @@ if len(sys.argv) == 2:
 else:
 
     values = np.random.randint(1, 5, (1, 900, 7480))
-    outname = "/home/hitech-gandalf/ba/lvr_output_test/colored_classification.png"
+    outname = "./colored_classification.png"
 
 min_val = np.amin(values)
 max_val = np.amax(values)
