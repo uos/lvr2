@@ -115,7 +115,6 @@ struct GCSVector : public BaseVector<CoordT>{
     }
 };
 
-//TODO: dont use BaseVector
 using Vec = GCSVector<float>;
 
 template <typename BaseVecT>
@@ -154,7 +153,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options &op
     surface->setKi(options.getKi());
     surface->setKn(options.getKn());
 
-    //calc normals if there are none, TODO: Seg-Fault beheben, woher kommt er?
+    //calc normals if there are none
     if(!buffer->hasNormals()){
         //surface->calculateSurfaceNormals();
     }
@@ -193,10 +192,6 @@ int main(int argc, char **argv) {
         cout << "Failed to create pointcloud. Exiting." << endl;
         return EXIT_FAILURE;
     }
-
-    //TODO: check, whether the centroid (needed for mesh positioning) is usable, else do it by myself..
-    //TODO: generate possibility to call GCS and GSS with one operation (create insantance, call "getMesh" or similar)
-    //      -> getMesh returns Pointer to a Mesh
 
     HalfEdgeMesh<Vec> mesh;
     GrowingCellStructure<Vec, Normal<float>> gcs(surface);
