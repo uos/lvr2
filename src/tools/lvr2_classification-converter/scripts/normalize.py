@@ -42,7 +42,7 @@ values = savgol_filter(values, 11, 2, axis=0)
 
 # write normalized dataset
 driver = gdal.GetDriverByName("GTiff")
-nds = driver.Create(outname, x_size, y_size, raster_count, gdal.GDT_Float32)
+nds = driver.Create(outname, x_size, y_size, raster_count, gdal.GDT_UInt16)
 for i in range(0, num_channels):
     nds.GetRasterBand(i + 1).WriteArray(values[i])
 
