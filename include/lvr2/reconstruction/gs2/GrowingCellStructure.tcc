@@ -12,14 +12,26 @@
 
 namespace lvr2 {
 
+    /**
+     * Constructor setting the references to the instance of the surface storing the pointcloud
+     * @tparam NormalT
+     * @param surface - reference to the surface storing the pointcloud
+     */
     template <typename BaseVecT, typename NormalT>
-    GrowingCellStructure<BaseVecT, NormalT>::GrowingCellStructure(PointsetSurfacePtr<BaseVecT> surface)
+    GrowingCellStructure<BaseVecT, NormalT>::GrowingCellStructure(PointsetSurfacePtr<BaseVecT>& surface)
     {
-        m_surface = surface;
+        m_surface = &surface;
         m_mesh = 0;
     }
 
 
+    /**
+     * executes the basic step of the algorithm, getting a random point, finding the closest point of the mesh,
+     * expanding and smoothing the neigbors
+     * @tparam BaseVecT
+     * @tparam NormalT
+     * @param progress_bar needed to pass it to the getClosestPointInMesh operation
+     */
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::executeBasicStep(PacmanProgressBar& progress_bar)
     {
@@ -55,7 +67,11 @@ namespace lvr2 {
     }
 
 
-
+    /**
+     * Performs an vertex split operation on the vertex with the highest signal counter, reduces signal counters by half
+     * @tparam BaseVecT
+     * @tparam NormalT
+     */
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::executeVertexSplit()
     {
@@ -92,7 +108,12 @@ namespace lvr2 {
 
     }
 
-    //TODO: why does the second collapse (collapsable) fail?
+
+    /**
+     * Performs an edge collapse on the vertex with the smalles signal counter, if needed
+     * @tparam BaseVecT
+     * @tparam NormalT
+     */
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::executeEdgeCollapse()
     {
@@ -146,9 +167,15 @@ namespace lvr2 {
     }
 
 
+    /**
+     * Gets a random point from the Pointcloud stored in m_surface
+     * @tparam BaseVecT
+     * @tparam NormalT
+     * @return returns the random point
+     */
     template <typename BaseVecT, typename NormalT>
     BaseVecT GrowingCellStructure<BaseVecT, NormalT>::getRandomPointFromPointcloud(){
-        auto pointer = m_surface.get()->pointBuffer();
+        auto pointer = m_surface->get()->pointBuffer();
         auto p_arr = pointer.get()->getPointArray();
         auto num_points = pointer.get()->numPoints();
 
@@ -158,6 +185,15 @@ namespace lvr2 {
         return random_point;
     }
 
+
+    /**
+     * Gets the closest point to the given point using the euclidean distance
+     * @tparam BaseVecT
+     * @tparam NormalT
+     * @param point - point of the pointcloud
+     * @param progress_bar - needed to print the progress of the algorithm
+     * @return a handle pointing to the closest point of the mesh to the point in the paramters
+     */
     template <typename BaseVecT, typename NormalT>
     VertexHandle GrowingCellStructure<BaseVecT, NormalT>::getClosestPointInMesh(BaseVecT point, PacmanProgressBar& progress_bar)
     {
@@ -190,6 +226,11 @@ namespace lvr2 {
         return closestVertexToRandomPoint;
     };
 
+    /**
+     * Test Method creating a mesh with 9 vertices. Used for testing vertex and edge split operations
+     * @tparam BaseVecT
+     * @tparam NormalT
+     */
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::initTestMesh(){
         VertexHandle v0 = m_mesh->addVertex(BaseVecT(3,0,0));
@@ -214,9 +255,14 @@ namespace lvr2 {
         m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v8,v0).unwrap());
     };
 
+    /**
+     * Constructs the initial tetrahedron mesh, scales it and places it in the middle of the pointcloud
+     * @tparam BaseVecT - vector type used
+     * @tparam NormalT - normal type used
+     */
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::getInitialMesh(){
-        auto bounding_box = m_surface.get()->getBoundingBox();
+        auto bounding_box = m_surface->get()->getBoundingBox();
 
         if(!bounding_box.isValid())
         {
@@ -251,8 +297,6 @@ namespace lvr2 {
         BaseVecT back(BaseVecT(centroid.x, miny, minz));
 
 
-        std::cout << top << left << right << back << std::endl;
-
         auto vH1 = m_mesh->addVertex(top);
         auto vH2 = m_mesh->addVertex(left);
         auto vH3 = m_mesh->addVertex(right);
@@ -274,6 +318,13 @@ namespace lvr2 {
         }
     }
 
+
+    /**
+     * Performs a laplacian smoothing operation on the vertex given as paramter
+     * @tparam BaseVecT - the vector type used
+     * @tparam NormalT - the normal type used
+     * @param vertexH - vertex, which will be smoothed
+     */
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::performLaplacianSmoothing(VertexHandle vertexH)
     {
@@ -292,6 +343,11 @@ namespace lvr2 {
         vertex += avg_vec * getNeighborLearningRate();
     }
 
+    /**
+     * WIP: Method removing faces, which were inserted due to the nature of the algorithm, but dont belong to the reconstruction
+     * @tparam BaseVecT - vector type used
+     * @tparam NormalT - normal type used
+     */
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::removeWrongFaces()
     {
@@ -329,7 +385,12 @@ namespace lvr2 {
 
     }
 
-
+    /**
+     * Only public method, central remote for other function calls
+     * @tparam BaseVecT - the vector type used, needs an signal counter for GCS
+     * @tparam NormalT - the normal type used, usually the default type is enough
+     * @param mesh - reference to an halfedge mesh, which will contain the reconstruction afterwards
+     */
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::getMesh(HalfEdgeMesh<BaseVecT> &mesh){
 

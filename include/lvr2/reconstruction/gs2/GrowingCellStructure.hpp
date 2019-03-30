@@ -20,7 +20,7 @@ namespace lvr2{
          * Construct a GCS instance
          * @param surface pointsetsurface to get pointcloud information from
          */
-        GrowingCellStructure(PointsetSurfacePtr<BaseVecT> surface);
+        GrowingCellStructure(PointsetSurfacePtr<BaseVecT>& surface);
 
         /**
          * Public method of the Reconstruction Class, calling all the other methods, generating the mesh
@@ -143,7 +143,7 @@ namespace lvr2{
         }
 
     private:
-        PointsetSurfacePtr<BaseVecT> m_surface; //helper-surface
+        PointsetSurfacePtr<BaseVecT> *m_surface; //helper-surface
         HalfEdgeMesh<BaseVecT> *m_mesh;
 
         //SHARED members
@@ -156,19 +156,17 @@ namespace lvr2{
         float m_neighborLearningRate;
         bool m_filterChain; //should a filter chain be applied?
         bool m_interior; //should the interior be reconstructed or the exterior?
-
+        float m_avgSignalCounter = 0;
 
         // "GCS" related members
         float m_decreaseFactor; //for sc calc
         int m_allowMiss;
         float m_collapseThreshold; //threshold for the collapse - when does it make sense
         int m_deleteLongEdgesFactor;
-        float m_avgSignalCounter = 0;
-
 
         // "GSS" related members
         bool m_useGSS;
-        HashMap<FaceHandle, std::pair<float, float>> faceAgeErrorMap; //hashmap for mapping a triangle to a
+        HashMap<FaceHandle, std::pair<float, float>> faceAgeErrorMap; //hashmap for mapping a FaceHandle to <age, error>
 
 
         // SHARED MEMBER FUNCTIONS
