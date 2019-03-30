@@ -7,8 +7,8 @@
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/config/BaseOption.hpp>
 #include <cmath>
-//#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/progress.hpp>
+
+#include <lvr2/io/Progress.hpp>
 
 namespace lvr2 {
 
@@ -40,11 +40,12 @@ namespace lvr2 {
         VertexHandle closestVertexToRandomPoint(0);
         float smallestDistance = numeric_limits<float>::infinity();
         BaseVecT vectorToRandomPoint;
+        float avg_counter = 0;
 
         for(auto vertexH : vertices)
         {
             BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
-
+            avg_counter += vertex.signal_counter; //calc the avg signal counter
             BaseVecT distanceVector = random_point - vertex;
             float length = distanceVector.length();
 
@@ -56,7 +57,10 @@ namespace lvr2 {
                 smallestDistance = length;
 
             }
+            //vertex.signal_counter *= 0.999; how to decrease it?
         }
+
+        m_avgSignalCounter = avg_counter / m_mesh->numVertices();
 
 
         //TODO: smooth the winning vertex
@@ -70,19 +74,18 @@ namespace lvr2 {
         vector<VertexHandle> neighborsOfWinner;
         m_mesh->getNeighboursOfVertex(closestVertexToRandomPoint, neighborsOfWinner);
 
+
         for(auto v : neighborsOfWinner)
         {
-            BaseVecT& nb = m_mesh->getVertexPosition(v);
-            nb += vectorToRandomPoint * getNeighborLearningRate();
+            //BaseVecT& nb = m_mesh->getVertexPosition(v);
+            //nb += vectorToRandomPoint * getNeighborLearningRate();
             performLaplacianSmoothing(v);
-
         }
 
-        //TODO: increase signal counter of winner by one
-
+        //increase signal counter by one
         winner.incSC();
 
-        //TODO: decrease signal counter of others by a fraction
+        //TODO: decrease signal counter of others by a fraction (see above)
 
     }
 
@@ -111,13 +114,13 @@ namespace lvr2 {
             }
         }
 
-        //TODO: split it.. :)
+        //split the found vertex
         VertexHandle newVH = m_mesh->splitVertex(highestSC);
 
         if(newVH.idx() != -1){
             BaseVecT& newV = m_mesh->getVertexPosition(newVH);
 
-            //TODO: reduce sc, set sc of newly added vertex
+            //reduce sc, set sc of newly added vertex
             BaseVecT& highestSCVec = m_mesh->getVertexPosition(highestSC);
             highestSCVec.signal_counter /= 2; //half of it..*/
             newV.signal_counter = highestSCVec.signal_counter;
@@ -273,12 +276,12 @@ namespace lvr2 {
         for(VertexHandle vH : n_vertices)
         {
             BaseVecT v = m_mesh->getVertexPosition(vH);
-            avg_vec += v - vertex;
+            avg_vec += (v - vertex) ;
         }
 
         avg_vec /= n_vertices.size();
 
-        vertex += avg_vec * 0.01;
+        vertex += avg_vec * getNeighborLearningRate();
     }
 
     template <typename BaseVecT, typename NormalT>
@@ -303,6 +306,19 @@ namespace lvr2 {
             }
         }
 
+
+        //now remove faces with one ore less neighbour faces, as those become redundant as well.
+        /*for(FaceHandle face: m_mesh->faces())
+        {
+            vector<FaceHandle> n_faces;
+            m_mesh->getNeighboursOfFace(face, n_faces);
+            if(n_faces.size() == 0)
+            {
+                m_mesh->removeFace(face);
+                //removeWrongFaces(); //maybe too long runtime on this one...
+            }
+        }*/
+
     }
 
 
@@ -316,14 +332,11 @@ namespace lvr2 {
         getInitialMesh();
         //initTestMesh();
 
-        //TODO: add some progress...needs to include the fact, that the runtime of the algorithm is exponential (boost progress display)
+        PacmanProgressBar progress_bar(m_runtime); //showing the progress, not yet finished
 
-        //TODO: add gcs construction.. call to basic step, call to other functions
-
-        boost::progress_display show_progress((unsigned long)( m_runtime ));
-
+        //algorithm
         for(int i = 0; i < getRuntime(); i++){
-            ++show_progress;
+            ++progress_bar;
             for(int j = 0; j < getNumSplits(); j++){
                 for(int k = 0; k < getBasicSteps(); k++){
                     executeBasicStep();
@@ -337,7 +350,12 @@ namespace lvr2 {
 
         }
 
-        //removeWrongFaces();
+
+        //final operations on the mesh (like removing wrong faces and filling the holes)
+
+        if(m_mesh->numVertices() > 500){
+            removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
+        }
 
     }
 
