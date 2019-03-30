@@ -115,6 +115,12 @@ public:
      *           the given vector. Returns a new BaseVector instance.
      */
     BaseVector<CoordT> cross(const BaseVector &other) const;
+    
+    /**
+     * @brief    Calculates the rotated vector around an normal vector n with the rotation angle alpha
+     *
+     */
+    BaseVector<CoordT> rotated(const BaseVector &n, const double &alpha) const;
 
     /**
      * @brief    Calculates the dot product between this and
