@@ -57,6 +57,6 @@ for rgb_channel in reversed(range(4)):
 
 print("Writing PNG file...")
 if cv2.imwrite(outname, png_values):
-    print("Done. Data has bin written to ", outname)
+    print("Done. Data has been written to", outname)
 else:
     print("Could not write PNG file.")
