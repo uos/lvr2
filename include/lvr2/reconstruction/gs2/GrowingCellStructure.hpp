@@ -165,7 +165,7 @@ namespace lvr2{
         int m_deleteLongEdgesFactor;
 
         // "GSS" related members
-        bool m_useGSS;
+        bool m_useGSS = false;
         HashMap<FaceHandle, std::pair<float, float>> faceAgeErrorMap; //hashmap for mapping a FaceHandle to <age, error>
 
 
