@@ -61,6 +61,7 @@ public:
 
     bool operator==(const BaseHandle& other) const;
     bool operator!=(const BaseHandle& other) const;
+    bool operator<(const BaseHandle& other) const;
 
 protected:
     IdxT m_idx;
