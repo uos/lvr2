@@ -78,7 +78,8 @@ Texture::Texture(
     unsigned short int height,
     unsigned char numChannels,
     unsigned char numBytesPerChan,
-    float texelSize
+    float texelSize,
+    unsigned char* data
 ) :
     m_index(index),
     m_width(width),
@@ -88,6 +89,10 @@ Texture::Texture(
     m_texelSize(texelSize),
     m_data(new unsigned char[width * height * numChannels * numBytesPerChan])
 {
+    if(data)
+    {
+        memcpy(m_data, data, width * height * numChannels * numBytesPerChan);
+    }
 }
 
 Texture::Texture(Texture &&other) {
