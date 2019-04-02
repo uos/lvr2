@@ -38,6 +38,7 @@
 
 using boost::optional;
 
+#include <memory>
 #include <lvr2/util/BaseHandle.hpp>
 
 namespace lvr2
