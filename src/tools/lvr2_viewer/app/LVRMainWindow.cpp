@@ -296,7 +296,9 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), m_aboutDialog, SLOT(show()));
 
 
+#if VTK_MAJOR_VERSION > 6
     QObject::connect(actionRenderEDM, SIGNAL(toggled(bool)), this, SLOT(toogleEDL(bool)));
+#endif
     QObject::connect(m_actionShow_Points, SIGNAL(toggled(bool)), this, SLOT(togglePoints(bool)));
     QObject::connect(m_actionShow_Normals, SIGNAL(toggled(bool)), this, SLOT(toggleNormals(bool)));
     QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
@@ -435,20 +437,21 @@ void LVRMainWindow::setupQVTK()
     m_pathCamera->SetInterpolator(cameraInterpolator);
     m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
 
+#if VTK_MAJOR_VERSION > 6
     // Enable EDL per default
 
     qvtkWidget->GetRenderWindow()->SetMultiSamples(0);
 
-#if VTK_MAJOR_VERSION > 6
-    // EDL exist only in vtk > 6
     m_basicPasses = vtkRenderStepsPass::New();
     m_edl = vtkEDLShading::New();
     m_edl->SetDelegatePass(m_basicPasses);
-#endif
     vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
 
-#if VTK_MAJOR_VERSION > 6
     glrenderer->SetPass(m_edl);
+#else
+    // disable button if we don't have EDL support
+    actionRenderEDM->setChecked(false);
+    actionRenderEDM->setDisabled(true);
 #endif
 
     // Finalize QVTK setup by adding the renderer to the window
@@ -456,24 +459,22 @@ void LVRMainWindow::setupQVTK()
 
 }
 
+#if VTK_MAJOR_VERSION > 6
 void LVRMainWindow::toogleEDL(bool state)
 {
     vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
 
     if(state == false)
     {
-#if VTK_MAJOR_VERSION > 6
         glrenderer->SetPass(m_basicPasses);
-#endif
     }
     else
     {
-#if VTK_MAJOR_VERSION > 6
         glrenderer->SetPass(m_edl);
-#endif
     }
     this->qvtkWidget->GetRenderWindow()->Render();
 }
+#endif
 
 void LVRMainWindow::updateView()
 {

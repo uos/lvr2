@@ -41,7 +41,7 @@ LVRCamDataItem::LVRCamDataItem(
     m_sdm    = sdm;
     m_cam_id  = cam_id;
     m_renderer = renderer;
-    
+ 
     // m_matrix = m_data.m_extrinsics;
 
     // change this to not inverse
@@ -128,9 +128,9 @@ void LVRCamDataItem::setCameraView()
     T.transpose();
 
 
-    Vector<BaseVector<float> > cam_origin = {0.0f, 0.0f, -1.0f};
+    BaseVector<float> cam_origin = {0.0f, 0.0f, -1.0f};
     Normal<float > view_up = {1.0f, 0.0f, 0.0f};
-    Vector<BaseVector<float> > focal_point = {0.0f, 0.0f, 0.0f};
+    BaseVector<float> focal_point = {0.0f, 0.0f, 0.0f};
 
 
 
@@ -146,7 +146,7 @@ void LVRCamDataItem::setCameraView()
 
 }
 
-std::vector<Vector<BaseVector<float> > > LVRCamDataItem::genFrustrumLVR(float scale)
+std::vector<BaseVector<float> > LVRCamDataItem::genFrustrumLVR(float scale)
 {
     bool dummy;
     Matrix4<BaseVector<float> > T = getGlobalTransform();
@@ -154,7 +154,7 @@ std::vector<Vector<BaseVector<float> > > LVRCamDataItem::genFrustrumLVR(float sc
     cam_mat_inv.transpose();
     T.transpose();
 
-    std::vector<Vector<BaseVector<float> > > lvr_pixels;
+    std::vector<BaseVector<float> > lvr_pixels;
 
     // TODO change this. get size of image
 
@@ -172,19 +172,19 @@ std::vector<Vector<BaseVector<float> > > LVRCamDataItem::genFrustrumLVR(float sc
 
 
     // generate frustrum points
-    std::vector<Vector<BaseVector<float> > > lvr_points;
-    
-    
+    std::vector<BaseVector<float> > lvr_points;
+
+
     // origin
     lvr_points.push_back({0.0, 0.0, 0.0});
 
     for(int i=0; i<lvr_pixels.size(); i++)
     {
-        Vector<BaseVector<float> > pixel = lvr_pixels[i];
-        Vector<BaseVector<float> > p = cam_mat_inv * pixel;
+        BaseVector<float> pixel = lvr_pixels[i];
+        BaseVector<float> p = cam_mat_inv * pixel;
 
         // opencv to lvr
-        Vector<BaseVector<float> > tmp = {
+        BaseVector<float> tmp = {
             -p.x,
             p.y,
             p.z
@@ -206,7 +206,7 @@ std::vector<Vector<BaseVector<float> > > LVRCamDataItem::genFrustrumLVR(float sc
 vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum(float scale)
 {
 
-    std::vector<Vector<BaseVector<float> > > lvr_points = genFrustrumLVR(scale);
+    std::vector<BaseVector<float> > lvr_points = genFrustrumLVR(scale);
 
     // Setup points
     vtkSmartPointer<vtkPoints> points =

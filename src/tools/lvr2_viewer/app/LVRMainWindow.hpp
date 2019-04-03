@@ -166,7 +166,9 @@ public Q_SLOTS:
     void toggleNormals(bool checkboxState);
     void toggleMeshes(bool checkboxState);
     void toggleWireframe(bool checkboxState);
+#if VTK_MAJOR_VERSION > 6
     void toogleEDL(bool checkboxstate);
+#endif
     void refreshView();
     void updateView();
     void saveCamera();
