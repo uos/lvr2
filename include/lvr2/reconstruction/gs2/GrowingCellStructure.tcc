@@ -188,8 +188,9 @@ namespace lvr2 {
                 }
             }
             //split the found vertex
-            VertexHandle newVH = m_mesh->splitVertex(highestSC);
-
+            VertexSplitResult result = m_mesh->splitVertex(highestSC);
+            if(result.edgeCenter.idx() == 0) return; //if longest edge is a border edge
+            VertexHandle newVH = result.edgeCenter;
             if(newVH.idx() != -1){
                 BaseVecT& newV = m_mesh->getVertexPosition(newVH);
 
@@ -203,12 +204,43 @@ namespace lvr2 {
         else //GSS
         {
             //select triangle with highst err
+            FaceHandle errorFaceH(0);
+            float max_err = 0;
+            for(auto faceH : m_mesh->faces())
+            {
+                float err = faceAgeErrorMap.get(faceH).value().second;
+                if(err > max_err)
+                {
+                    errorFaceH = faceH;
+                    max_err = err;
+                }
+            }
 
             //split vertex
+            EdgeHandle longestEdgeH(0);
+            float max_len = 0;
+            for(EdgeHandle eH : m_mesh->getEdgesOfFace(errorFaceH))
+            {
+                auto vertices = m_mesh->getVerticesOfEdge(eH);
+                BaseVecT v1 = m_mesh->getVertexPosition(vertices[0]);
+                BaseVecT v2 = m_mesh->getVertexPosition(vertices[1]);
+
+                float len = v1.distance(v2);
+                if(len > max_len)
+                {
+                    max_len = len;
+                    longestEdgeH = eH;
+                }
+            }
+
+            // TODO: after finding the longest edge.... we need a way to split it.. vertexSplit(VertexHandle vH) not enough
 
             //reset age to initial age
 
-            //filter chain
+            ////?????????????
+
+
+            //TODO: filter chain ( not yet programmed )
         }
 
 
@@ -430,19 +462,32 @@ namespace lvr2 {
         auto vH3 = m_mesh->addVertex(right);
         auto vH4 = m_mesh->addVertex(back);
 
+        FaceHandle fH1(0);
+        FaceHandle fH2(0);
+        FaceHandle fH3(0);
+        FaceHandle fH4(0);
         //add faces to create tetrahedron (interior/exterior)
         if(!isInterior())
         {
-            m_mesh->addFace(vH4, vH3, vH2);
-            m_mesh->addFace(vH4, vH2, vH1);
-            m_mesh->addFace(vH4, vH1, vH3);
-            m_mesh->addFace(vH3, vH1, vH2);
+            fH1 = m_mesh->addFace(vH4, vH3, vH2);
+            fH2 = m_mesh->addFace(vH4, vH2, vH1);
+            fH3 = m_mesh->addFace(vH4, vH1, vH3);
+            fH4 = m_mesh->addFace(vH3, vH1, vH2);
         }
         else{
-            m_mesh->addFace(vH2, vH3, vH4);
-            m_mesh->addFace(vH1, vH2, vH4);
-            m_mesh->addFace(vH3, vH1, vH4);
-            m_mesh->addFace(vH2, vH1, vH3);
+            fH1 = m_mesh->addFace(vH2, vH3, vH4);
+            fH2 = m_mesh->addFace(vH1, vH2, vH4);
+            fH3 = m_mesh->addFace(vH3, vH1, vH4);
+            fH4 = m_mesh->addFace(vH2, vH1, vH3);
+        }
+
+        //add faces to the hashmap with no error and zero age
+        if(m_useGSS)
+        {
+            faceAgeErrorMap.insert(fH1, std::make_pair(0.0f, 0.0f));
+            faceAgeErrorMap.insert(fH2, std::make_pair(0.0f, 0.0f));
+            faceAgeErrorMap.insert(fH3, std::make_pair(0.0f, 0.0f));
+            faceAgeErrorMap.insert(fH4, std::make_pair(0.0f, 0.0f));
         }
     }
 

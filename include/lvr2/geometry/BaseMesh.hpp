@@ -646,6 +646,25 @@ struct EdgeCollapseResult
     EdgeCollapseResult(VertexHandle midPoint) : midPoint(midPoint) {};
 };
 
+
+struct VertexSplitResult
+{
+
+    VertexHandle edgeCenter;
+    vector<FaceHandle> addedFaces;
+
+    explicit VertexSplitResult(VertexHandle longestEdgeCenter) : edgeCenter(longestEdgeCenter) {};
+};
+
+struct EdgeSplitResult
+{
+
+    VertexHandle edgeCenter;
+    vector<FaceHandle> addedFaces;
+
+    explicit EdgeSplitResult(VertexHandle longestEdgeCenter) : edgeCenter(longestEdgeCenter) {};
+};
+
 } // namespace lvr2
 
 #include <lvr2/geometry/BaseMesh.tcc>
