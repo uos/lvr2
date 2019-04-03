@@ -42,8 +42,6 @@
 
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Matrix4.hpp>
-#include <lvr2/geometry/Vector.hpp>
-#include <lvr2/geometry/Point.hpp>
 
 
 namespace lvr2
@@ -181,23 +179,13 @@ public:
         return ret;
     }
 
-    template <typename BaseVecT>
-    static Point<BaseVecT> slam6d_to_riegl_point(const Point<BaseVecT> &in)
+    template <typename ValueType>
+    static BaseVector<ValueType> slam6d_to_riegl_point(const BaseVector<ValueType> &in)
     {
         return {
-            in.z / 100.0f,
-            - in.x / 100.0f,
-            in.y / 100.0f
-        };
-    }
-
-    template <typename BaseVecT>
-    static Vector<BaseVecT> slam6d_to_riegl_point(const Vector<BaseVecT> &in)
-    {
-        return {
-            in.z / 100.0,
-            - in.x / 100.0,
-            in.y / 100.0
+            in.z   / (ValueType) 100.0,
+            - in.x / (ValueType) 100.0,
+            in.y   / (ValueType) 100.0
         };
     }
 

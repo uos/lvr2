@@ -145,7 +145,7 @@ public:
 			float tmp1, tmp2;
 
 			// Normalize axis
-			Normal<T> a(axis);
+			Normal<ValueType> a(axis);
 
 			m[ 0] = c + a.x * a.x * t;
 			m[ 5] = c + a.y * a.y * t;
@@ -237,7 +237,7 @@ public:
 	/**
 	 * @brief	Scales the matrix elemnts by the given factor
 	 */
-	Matrix4<BaseVecT> operator*(const typename BaseVecT::CoordType &scale) const
+	Matrix4<BaseVecT> operator*(const ValueType &scale) const
 	{
 		ValueType new_matrix[16];
 		for(int i = 0; i < 16; i++){
@@ -357,10 +357,9 @@ public:
     template<typename T>
     Normal<T> operator*(const Normal<T> &v) const
     {
-        using ValType = T;
-        ValType x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
-        ValType y = m[ 1] * v.x + m[ 5] * v.y + m[9 ] * v.z;
-        ValType z = m[ 2] * v.x + m[ 6] * v.y + m[10] * v.z;
+        T x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
+        T y = m[ 1] * v.x + m[ 5] * v.y + m[9 ] * v.z;
+        T z = m[ 2] * v.x + m[ 6] * v.y + m[10] * v.z;
 
         return Normal<T>(x, y, z);
     }
