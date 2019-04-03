@@ -59,7 +59,7 @@
 
 using Vec = lvr2::BaseVector<float>;
 
-void transformModel(lvr2::ModelPtr model, lvr2::Matrix4<Vec> transform)
+void transformModel(lvr2::ModelPtr model, const lvr2::Matrix4<Vec> transform)
 {
     size_t num_points = model->m_pointCloud->numPoints();
 
@@ -240,6 +240,7 @@ void convert_rxp_to_3d_per_thread(
                     reduction,
                     riegl_to_slam_transform
                 );
+
             } else if(outputcoords == "lvr") {
                 tmp = rxpio.read(
                     pos.scan_file.string(),
@@ -250,15 +251,20 @@ void convert_rxp_to_3d_per_thread(
         } else {
             // ascii etc
             
+            bool dummy;
+            lvr2::Matrix4<Vec > inv_transform = pos.transform.inv(dummy);
+            inv_transform.transpose();
+            
+            tmp = lvr2::ModelFactory::readModel(pos.scan_file.string());
+
             // ascii export is already transformed, have to transform it back.
             // or find the button to save the ascii clouds without transformation
-            tmp = lvr2::ModelFactory::readModel(pos.scan_file.string());
-            bool dummy;
-            transformModel(tmp, pos.transform.inv(dummy));
+            transformModel(tmp, inv_transform);
 
             if(outputcoords == "slam6d")
             {
                 // convert to slam6d
+                std::cout << "[read_rxp_per_thread] Transform to slam6d" << std::endl;
                 transformModel(tmp, riegl_to_slam_transform);
             }
         }
