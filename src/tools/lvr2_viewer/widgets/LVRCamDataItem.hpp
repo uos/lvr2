@@ -10,7 +10,7 @@
 
 #include <lvr2/io/ScanDataManager.hpp>
 #include <lvr2/geometry/Transformable.hpp>
-#include <lvr2/geometry/Vector.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Normal.hpp>
 
 #include "../vtkBridge/LVRModelBridge.hpp"
@@ -65,7 +65,7 @@ class LVRCamDataItem : public QTreeWidgetItem, public Transformable
          */
         Matrix4<BaseVector<float> > getGlobalTransform();
 
-        std::vector<Vector<BaseVector<float> > > genFrustrumLVR(float scale=1.0);
+        std::vector<BaseVector<float> > genFrustrumLVR(float scale=1.0);
 
         vtkSmartPointer<vtkActor> genFrustrum(float scale=1.0);
 

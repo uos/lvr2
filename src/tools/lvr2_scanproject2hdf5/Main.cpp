@@ -2,15 +2,13 @@
 #include <lvr2/io/ScanData.hpp>
 #include <lvr2/io/CamData.hpp>
 #include <lvr2/io/HDF5IO.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Matrix4.hpp>
 #include <lvr2/util/Util.hpp>
-#include <lvr2/geometry/Point.hpp>
 #include <opencv2/core.hpp>
 #include <lvr2/io/ScanprojectIO.hpp>
 
 using namespace lvr2;
-
-using Vec = BaseVector<float>;
 
 ScanData toScanData(ScanPosition sp)
 {
@@ -23,7 +21,7 @@ ScanData toScanData(ScanPosition sp)
 
     for (size_t i = 0; i < numPoints; i++)
     {
-        Vector<BaseVector<float> > pt(pts[i*3 + 0], pts[i*3 + 1], pts[i*3 + 2]);
+        BaseVector<float> pt(pts[i*3 + 0], pts[i*3 + 1], pts[i*3 + 2]);
         scan_data.m_boundingBox.expand(pt);
     }
 
@@ -55,8 +53,8 @@ void slamToLVR(ScanData& sd)
     #pragma omp for
     for(size_t j=0; j<num_points; j++)
     {
-        Point<Vec>* mem_ptr = reinterpret_cast<Point<Vec>*>(pts.get()+j*3);
-        const Point<Vec> p = Util::slam6d_to_riegl_point(*mem_ptr);
+        BaseVector<float>* mem_ptr = reinterpret_cast<BaseVector<float>*>(pts.get()+j*3);
+        const BaseVector<float> p = Util::slam6d_to_riegl_point(*mem_ptr);
         
         bb.expand(p);
         mem_ptr->x = p.x;
