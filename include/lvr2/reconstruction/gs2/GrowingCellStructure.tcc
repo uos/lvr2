@@ -46,7 +46,9 @@ namespace lvr2 {
         getInitialMesh();
         //initTestMesh();
 
-        PacmanProgressBar progress_bar((unsigned int)((m_runtime*m_numSplits)*((m_numSplits*m_runtime)+1)/2) * m_basicSteps); //showing the progress, not yet finished
+        //progress bar
+        PacmanProgressBar progress_bar((size_t)((((size_t)m_runtime*(size_t)m_numSplits)
+                                     *(((size_t)m_numSplits*(size_t)m_runtime)+1)/(size_t)2) * (size_t)m_basicSteps));
 
         //algorithm
         for(int i = 0; i < getRuntime(); i++)
@@ -95,31 +97,52 @@ namespace lvr2 {
 
         if(!m_useGSS) //if only gcs is used (gcs basic step)
         {
-            VertexHandle closestVertexToRandomPoint = this->getClosestPointInMesh(random_point, progress_bar);
+            VertexHandle winnerH = this->getClosestPointInMesh(random_point, progress_bar);
 
             //smooth the winning vertex
 
-            BaseVecT &winner = m_mesh->getVertexPosition(closestVertexToRandomPoint);
+            BaseVecT &winner = m_mesh->getVertexPosition(winnerH);
             winner += (random_point - winner) * getLearningRate();
 
 
             //smooth the winning vertices' neighbors (laplacian smoothing)
 
             vector<VertexHandle> neighborsOfWinner;
-            m_mesh->getNeighboursOfVertex(closestVertexToRandomPoint, neighborsOfWinner);
+            m_mesh->getNeighboursOfVertex(winnerH, neighborsOfWinner);
 
             //perform laplacian smoothing on all the neighbors of the winning vertex
             for(auto v : neighborsOfWinner)
             {
-                //BaseVecT& nb = m_mesh->getVertexPosition(v);
-                //nb += (random_point - nb) * 0.08;//getNeighborLearningRate();
+                BaseVecT& nb = m_mesh->getVertexPosition(v);
+                nb += (random_point - nb) * 0.08;//getNeighborLearningRate();
                 performLaplacianSmoothing(v);
             }
 
             //increase signal counter by one
             winner.incSC();
 
-            //TODO: decrease signal counter of others by a fraction (see above)
+            //decrease signal counter of others by a fraction according to hennings implementation
+            if(m_decreaseFactor == 1.0)
+            {
+                size_t n = m_allowMiss * m_mesh->numVertices();
+                double dynamicDecrease = 1 - pow(m_collapseThreshold, (1.0 / n));
+                for (auto v : m_mesh->vertices()) {
+                    if (!(winnerH == v)) {
+                        double delta = -dynamicDecrease * m_mesh->getVertexPosition(v).signal_counter;
+                        m_mesh->getVertexPosition(v).signal_counter += delta;
+                    }
+                }
+
+            }
+            else
+            {
+                for (auto v : m_mesh->vertices()) {
+                    if (!(winnerH == v)) {
+                        auto& vertex = m_mesh->getVertexPosition(v);
+                        vertex.signal_counter -= (m_decreaseFactor * vertex.signal_counter);
+                    }
+                }
+            }
         }
         else //GSS
         {
