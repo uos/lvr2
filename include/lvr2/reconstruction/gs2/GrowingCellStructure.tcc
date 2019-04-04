@@ -5,7 +5,6 @@
 #include <lvr2/util/Debug.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/config/BaseOption.hpp>
 #include <lvr2/io/Progress.hpp>
 
 #include <cmath>
@@ -73,7 +72,7 @@ namespace lvr2 {
 
         if(m_mesh->numVertices() > 500)
         {
-            removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
+           // removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
         }
 
     }
