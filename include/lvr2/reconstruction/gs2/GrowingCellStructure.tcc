@@ -72,7 +72,7 @@ namespace lvr2 {
 
         if(m_mesh->numVertices() > 500)
         {
-           // removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
+           //removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
         }
 
     }
@@ -113,15 +113,17 @@ namespace lvr2 {
             for(auto v : neighborsOfWinner)
             {
                 BaseVecT& nb = m_mesh->getVertexPosition(v);
-                nb += (random_point - nb) * 0.08;//getNeighborLearningRate();
+
+                nb += (random_point - winner) * getNeighborLearningRate();
+
                 performLaplacianSmoothing(v);
             }
 
             //increase signal counter by one
             winner.incSC();
 
-            //decrease signal counter of others by a fraction according to hennings implementation
-            if(m_decreaseFactor == 1.0)
+            //TODO: decrease signal counter of others by a fraction according to hennings implementation
+            /*if(m_decreaseFactor == 1.0)
             {
                 size_t n = m_allowMiss * m_mesh->numVertices();
                 double dynamicDecrease = 1 - pow(m_collapseThreshold, (1.0 / n));
@@ -141,7 +143,7 @@ namespace lvr2 {
                         vertex.signal_counter -= (m_decreaseFactor * vertex.signal_counter);
                     }
                 }
-            }
+            }*/
         }
         else //GSS
         {
@@ -224,7 +226,7 @@ namespace lvr2 {
                 BaseVecT v1 = m_mesh->getVertexPosition(vertices[0]);
                 BaseVecT v2 = m_mesh->getVertexPosition(vertices[1]);
 
-                float len = v1.distance(v2);
+                float len = v1.distance2(v2);
                 if(len > max_len)
                 {
                     max_len = len;
@@ -367,7 +369,7 @@ namespace lvr2 {
             BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
             avg_counter += vertex.signal_counter; //calc the avg signal counter
             BaseVecT distanceVector = point - vertex;
-            float length = distanceVector.length();
+            float length = distanceVector.length2();
 
             if(length < smallestDistance)
             {
@@ -513,7 +515,7 @@ namespace lvr2 {
 
         avg_vec /= n_vertices.size();
 
-        vertex += avg_vec * getNeighborLearningRate();
+        vertex += avg_vec * 0.01/*getNeighborLearningRate()*/;
     }
 
     // GCS METHODS - Methods which are only used by the GCS-algorithm

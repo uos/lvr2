@@ -155,7 +155,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options &op
 
     //calc normals if there are none
     if(!buffer->hasNormals()){
-        //surface->calculateSurfaceNormals();
+        surface->calculateSurfaceNormals();
     }
     return surface;
 }
@@ -212,7 +212,7 @@ int main(int argc, char **argv) {
     gcs.setInterior(options.isInterior());
 
     gcs.getMesh(mesh);
-    naiveFillSmallHoles(mesh, 10, true);
+    //naiveFillSmallHoles(mesh, 10, true);
     SimpleFinalizer<Vec> fin;
     MeshBufferPtr res = fin.apply(mesh);
 
