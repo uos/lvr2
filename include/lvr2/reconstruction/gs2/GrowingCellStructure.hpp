@@ -10,6 +10,7 @@
 #include <lvr2/config/BaseOption.hpp>
 #include <lvr2/attrmaps/HashMap.hpp>
 
+
 namespace lvr2{
 
     template <typename BaseVecT, typename NormalT>
@@ -167,6 +168,13 @@ namespace lvr2{
         // "GSS" related members
         bool m_useGSS = false;
         HashMap<FaceHandle, std::pair<float, float>> faceAgeErrorMap; //hashmap for mapping a FaceHandle to <age, error>
+        float m_avgFaceSize = 0;
+        float m_avgEdgeLength = 0;
+
+        float m_limSkip;
+        float m_limSingle;
+        float m_maxAge;
+        bool m_withRemove;
 
 
         // SHARED MEMBER FUNCTIONS
