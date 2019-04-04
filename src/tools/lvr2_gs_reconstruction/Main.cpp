@@ -30,9 +30,9 @@ using namespace lvr2;
 
 template<typename CoordT>
 struct GCSVector : public BaseVector<CoordT>{
-    GCSVector() : BaseVector<CoordT>(), signal_counter(0) {}
+    GCSVector() : BaseVector<CoordT>(), signal_counter(1) {}
     GCSVector(const CoordT &x, const CoordT &y, const CoordT &z)
-            : BaseVector<CoordT>(x,y,z), signal_counter(0)
+            : BaseVector<CoordT>(x,y,z), signal_counter(1)
     {}
 
     GCSVector(const GCSVector& o) : BaseVector<CoordT>(o.x,o.y,o.z), signal_counter(o.signal_counter)

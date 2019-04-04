@@ -123,7 +123,7 @@ namespace lvr2 {
             winner.incSC();
 
             //TODO: decrease signal counter of others by a fraction according to hennings implementation
-            /*if(m_decreaseFactor == 1.0)
+            if(m_decreaseFactor == 1.0)
             {
                 size_t n = m_allowMiss * m_mesh->numVertices();
                 double dynamicDecrease = 1 - pow(m_collapseThreshold, (1.0 / n));
@@ -143,7 +143,7 @@ namespace lvr2 {
                         vertex.signal_counter -= (m_decreaseFactor * vertex.signal_counter);
                     }
                 }
-            }*/
+            }
         }
         else //GSS
         {
@@ -413,7 +413,7 @@ namespace lvr2 {
         m_mesh->addFace(v6,v7,v8);
 
         m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v8,v0).unwrap());
-    };
+    }
 
     /**
      * Constructs the initial tetrahedron mesh, scales it and places it in the middle of the pointcloud
@@ -554,7 +554,7 @@ namespace lvr2 {
         for(FaceHandle face: m_mesh->faces())
         {
             double area = m_mesh->calcFaceArea(face);
-            if(area > 3 * avg_area)
+            if(area > 5 * avg_area)
             {
                 m_mesh->removeFace(face);
             }

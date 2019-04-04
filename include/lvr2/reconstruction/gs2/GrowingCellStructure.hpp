@@ -9,6 +9,7 @@
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/config/BaseOption.hpp>
 #include <lvr2/attrmaps/HashMap.hpp>
+#include <lvr2/reconstruction/gs2/TumbleTree.hpp>
 
 
 namespace lvr2{
