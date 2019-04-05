@@ -35,6 +35,7 @@
 
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
+#include <boost/system/error_code.hpp>
 namespace fs = boost::filesystem;
 
 #include <boost/property_tree/ptree.hpp>
@@ -48,14 +49,24 @@ namespace lvr2
 
 class RieglProject {
     public:
-        RieglProject(std::string dir);        
-        bool parse_project(unsigned int start, unsigned int end); 
+        /**
+         * @brief Construct a new Riegl Project object
+         * 
+         * @param dir 
+         * @param input_cloud_format  Implemented: rxp,ascii
+         */
+        RieglProject(std::string dir, std::string input_cloud_format = "rxp");
+        bool parse_project(unsigned int start, unsigned int end);
 
     //private:
         fs::path m_project_dir;
         std::vector<ScanPosition> m_scan_positions;
         void parse_scanpositions(pt::ptree project_ptree, unsigned int start, unsigned int end);
         void parse_images_per_scanpos(ScanPosition &scanpos, pt::ptree scanpos_ptree, pt::ptree project_ptree);
+
+        void parse_asciiclouds();
+
+        std::string m_input_cloud_format;
 };
 
 std::ostream& operator<<(std::ostream &lhs, const RieglProject &rhs); 
