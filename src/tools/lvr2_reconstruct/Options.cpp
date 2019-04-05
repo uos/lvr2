@@ -35,7 +35,20 @@
 #include "Options.hpp"
 #include <lvr2/config/lvropenmp.hpp>
 
+#include <iostream>
 #include <fstream>
+
+namespace std
+{
+  std::ostream& operator<<(std::ostream &os, const std::vector<std::string> &vec) 
+  {    
+    for (auto item : vec) 
+    { 
+      os << item << " "; 
+    } 
+    return os; 
+  }
+} 
 
 namespace reconstruct{
 
@@ -48,6 +61,7 @@ Options::Options(int argc, char** argv)
     m_descr.add_options()
         ("help", "Produce help message")
         ("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
+        ("outputFile", value< vector<string> >()->multitoken()->default_value(vector<string>{"triangle_mesh.ply", "triangle_mesh.obj"}), "Output file name. Supported formats are ASCII (.pts, .xyz) and .ply")
         ("voxelsize,v", value<float>(&m_voxelsize)->default_value(10), "Voxelsize of grid used for reconstruction.")
         ("noExtrusion", "Do not extend grid. Can be used  to avoid artefacts in dense data sets but. Disabling will possibly create additional holes in sparse data sets.")
         ("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
@@ -153,6 +167,16 @@ int Options::getPlaneIterations() const
 string Options::getInputFileName() const
 {
     return (m_variables["inputFile"].as< vector<string> >())[0];
+}
+
+string Options::getOutputFileName() const
+{
+    return getOutputFileNames()[0];
+}
+
+vector<string> Options::getOutputFileNames() const
+{
+    return  m_variables["outputFile"].as< vector<string> >();
 }
 
 string Options::getPCM() const
