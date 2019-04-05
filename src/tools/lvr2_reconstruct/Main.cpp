@@ -609,10 +609,11 @@ int main(int argc, char** argv)
         cout << "REPAIR SAVING" << endl;
     }
 
-    cout << timestamp << "Saving mesh." << endl;
-    ModelFactory::saveModel(m, "triangle_mesh.ply");
-    ModelFactory::saveModel(m, "triangle_mesh.obj");
-    //ModelFactory::saveModel(m, "triangle_mesh.h5");
+    for(const std::string& output_filename : options.getOutputFileNames())
+    {
+        cout << timestamp << "Saving mesh to "<< output_filename << "." << endl;
+        ModelFactory::saveModel(m, output_filename);
+    }
 
     if (matResult.m_keypoints)
     {
