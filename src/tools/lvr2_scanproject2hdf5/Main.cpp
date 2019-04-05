@@ -109,6 +109,8 @@ int main(int argc, char** argv)
 
         HDF5IO hdf5("test.h5", true);
 
+        std::cout << "Found " << proj.scans.size() << " scans." << std::endl;
+
         for(int scan_id = 0; scan_id < proj.scans.size(); scan_id++)
         {
             const ScanPosition &pos = proj.scans[scan_id];
