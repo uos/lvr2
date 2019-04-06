@@ -75,6 +75,9 @@ namespace lvr2 {
         {
            //removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
         }
+
+        cout << "Tumble Tree size: " << tumble_tree->size() << endl;
+
         delete tumble_tree;
     }
 
@@ -134,24 +137,13 @@ namespace lvr2 {
             {
                 size_t n = m_allowMiss * m_mesh->numVertices();
                 float dynamicDecrease = 1 - (float)pow(m_collapseThreshold, (1.0 / n));
-                tumble_tree->updateSC(dynamicDecrease);
-                /*for (auto v : m_mesh->vertices()) {
-                    if (!(winnerH == v)) {
-                        double delta = -dynamicDecrease * m_mesh->getVertexPosition(v).signal_counter;
-                        m_mesh->getVertexPosition(v).signal_counter += delta;
-                    }
-                }*/
+                tumble_tree->updateSC(dynamicDecrease, winnerH.idx());
 
             }
             else
             {
-                tumble_tree->updateSC(m_decreaseFactor);
-                /*for (auto v : m_mesh->vertices()) {
-                    if (!(winnerH == v)) {
-                        auto& vertex = m_mesh->getVertexPosition(v);
-                        vertex.signal_counter -= (m_decreaseFactor * vertex.signal_counter);
-                    }
-                }*/
+                tumble_tree->updateSC(m_decreaseFactor, winnerH.idx());
+
             }
         }
         else //GSS

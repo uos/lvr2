@@ -28,8 +28,9 @@ namespace  lvr2{
         Cell* remove(float sc, Index vH, Cell* c);
         Cell* findMin(Cell* c);
         Cell* findMax(Cell*);
+        int size(Cell* c);
 
-        void update(Cell* c, float alpha);
+        void update(Cell* c, float alpha, Index i);
 
         void inorder(Cell* c);
 
@@ -46,7 +47,9 @@ namespace  lvr2{
         Cell* min();
         Cell* max();
 
-        void updateSC(float alpha);
+        int size();
+
+        void updateSC(float alpha, Index i);
     };
 
 }

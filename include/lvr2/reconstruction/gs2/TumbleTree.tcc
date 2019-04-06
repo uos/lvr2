@@ -58,14 +58,14 @@ namespace lvr2{
         }
         else if(sc <= c->signal_counter)
         {
-            remove(sc, vH, c->left);
+            c->left = remove(sc, vH, c->left);
         }
         else if(sc > c->signal_counter) {
-            remove(sc, vH, c->right);
+            c->right = remove(sc, vH, c->right);
         }
         else if(vH != c->vH){
             if(findMax(c->left)->signal_counter == sc){ //if there is another equal sc in the left subtree
-                remove(sc, vH, c->left); //if the handle index is not correct, we can't delete it...looking for another matching sc
+                c->left = remove(sc, vH, c->left); //if the handle index is not correct, we can't delete it...looking for another matching sc
             }
             else return NULL; //not found
         }
@@ -73,7 +73,7 @@ namespace lvr2{
             tmp = findMin(c->right); //find minimum sc cell of the right subtree (should be bigger than all left cells sc's)
             c->signal_counter = tmp->signal_counter; //copy
             c->vH = tmp->vH; //copy
-            delete tmp; //delete the minimum of the right subtree, as it now serves as the new subtree-root
+            c->right = remove(c->signal_counter, c->vH, c->right); //delete the minimum of the right subtree, as it now serves as the new subtree-root
         }
         else{
             tmp = c;
@@ -130,12 +130,31 @@ namespace lvr2{
     }
 
     //update the SCs (righ now linear -> O(n), later O(log(n))
-    void TumbleTree::update(Cell *c, float alpha)
+    void TumbleTree::update(Cell *c, float alpha, Index i)
     {
         if(c == NULL) return;
-        c->signal_counter -= c->signal_counter*alpha;
-        update(c->left,alpha);
-        update(c->right, alpha);
+        if(c->vH != i)
+        {
+            c->signal_counter -= c->signal_counter*alpha;
+        }
+
+        update(c->left, alpha, i);
+        update(c->right, alpha, i);
+    }
+
+    int TumbleTree::size(Cell* c)
+    {
+        int i = 1;
+        if(c->right)
+        {
+            i += size(c->right);
+        }
+        if(c->left)
+        {
+            i += size(c->left);
+        }
+
+        return i;
     }
 
     TumbleTree::TumbleTree()
@@ -183,8 +202,12 @@ namespace lvr2{
         return this->findMax(root);
     }
 
-    void TumbleTree::updateSC(float alpha) {
-        this->update(root, alpha);
+    void TumbleTree::updateSC(float alpha, Index i) {
+        this->update(root, alpha, i);
+    }
+
+    int TumbleTree::size(){
+        return size(root);
     }
 
 } // namespace lvr2
