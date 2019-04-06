@@ -26,6 +26,7 @@ namespace lvr2 {
     {
         m_surface = &surface;
         m_mesh = 0;
+        tumble_tree = new TumbleTree(); //create tumble tree
     }
 
     /**
@@ -74,7 +75,7 @@ namespace lvr2 {
         {
            //removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
         }
-
+        delete tumble_tree;
     }
 
 
@@ -120,33 +121,42 @@ namespace lvr2 {
             }
 
             //increase signal counter by one
-            winner.incSC();
+            //winner.incSC();
+
+            Cell* winnerNode = vertexCellMap.get(winnerH).get();
+            float winnerSC = winnerNode->signal_counter;
+
+            tumble_tree->remove(winnerNode); //remove the winning vertex from the tumble tree
+            vertexCellMap.get(winnerH).get() = tumble_tree->insert(winnerSC+1, winnerH); //reinsert it with incremented sc, update map
 
             //TODO: decrease signal counter of others by a fraction according to hennings implementation
             if(m_decreaseFactor == 1.0)
             {
                 size_t n = m_allowMiss * m_mesh->numVertices();
-                double dynamicDecrease = 1 - pow(m_collapseThreshold, (1.0 / n));
-                for (auto v : m_mesh->vertices()) {
+                float dynamicDecrease = 1 - (float)pow(m_collapseThreshold, (1.0 / n));
+                tumble_tree->updateSC(dynamicDecrease);
+                /*for (auto v : m_mesh->vertices()) {
                     if (!(winnerH == v)) {
                         double delta = -dynamicDecrease * m_mesh->getVertexPosition(v).signal_counter;
                         m_mesh->getVertexPosition(v).signal_counter += delta;
                     }
-                }
+                }*/
 
             }
             else
             {
-                for (auto v : m_mesh->vertices()) {
+                tumble_tree->updateSC(m_decreaseFactor);
+                /*for (auto v : m_mesh->vertices()) {
                     if (!(winnerH == v)) {
                         auto& vertex = m_mesh->getVertexPosition(v);
                         vertex.signal_counter -= (m_decreaseFactor * vertex.signal_counter);
                     }
-                }
+                }*/
             }
         }
         else //GSS
         {
+            std::cout << "Using GSS" << endl;
             //find closest structure
 
             //set approx error(s) and age of faces (using HashMap)
@@ -175,9 +185,9 @@ namespace lvr2 {
         {
             //find vertex with highst sc, split that vertex
             auto vertices = m_mesh->vertices();
-
-            VertexHandle highestSC(0);
-            float maxSC = -1;
+            Cell* max = tumble_tree->max();
+            VertexHandle highestSC(max->vH);
+            /*float maxSC = -1;
             for (auto vertexH : vertices) {
                 BaseVecT &vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
 
@@ -187,20 +197,26 @@ namespace lvr2 {
                     maxSC = vertex.signal_counter;
 
                 }
-            }
+            }*/
             //split the found vertex
             VertexSplitResult result = m_mesh->splitVertex(highestSC);
-            if(result.edgeCenter.idx() == 0) return; //if longest edge is a border edge
+            if(result.edgeCenter.idx() == numeric_limits<int>::infinity()) return; //if longest edge is a border edge
             VertexHandle newVH = result.edgeCenter;
-            if(newVH.idx() != -1){
-                BaseVecT& newV = m_mesh->getVertexPosition(newVH);
+            float sc_middle = max->signal_counter / 2;
 
-                //reduce sc, set sc of newly added vertex
-                BaseVecT& highestSCVec = m_mesh->getVertexPosition(highestSC);
-                highestSCVec.signal_counter /= 2; //half of it..*/
-                newV.signal_counter = highestSCVec.signal_counter;
+            //now update tumble tree and the map
+            tumble_tree->remove(max);
 
-            }
+            vertexCellMap.get(highestSC).get() = tumble_tree->insert(sc_middle, highestSC);
+            vertexCellMap.insert(newVH, tumble_tree->insert(sc_middle, newVH)); //add the new vertex to the tree and the map
+
+            //BaseVecT& newV = m_mesh->getVertexPosition(newVH);
+
+            //reduce sc, set sc of newly added vertex
+            //BaseVecT& highestSCVec = m_mesh->getVertexPosition(highestSC);
+            //highestSCVec.signal_counter /= 2; //half of it..*/
+            //newV.signal_counter = highestSCVec.signal_counter;
+
         }
         else //GSS
         {
@@ -261,7 +277,7 @@ namespace lvr2 {
     void GrowingCellStructure<BaseVecT, NormalT>::executeEdgeCollapse()
     {
         //TODO: select edge to collapse, examine whether it should be collapsed, collapse it
-
+        //TODO: tumble tree support
         if(!m_useGSS)
         {
             auto vertices = m_mesh->vertices();
@@ -489,6 +505,16 @@ namespace lvr2 {
             faceAgeErrorMap.insert(fH2, std::make_pair(0.0f, 0.0f));
             faceAgeErrorMap.insert(fH3, std::make_pair(0.0f, 0.0f));
             faceAgeErrorMap.insert(fH4, std::make_pair(0.0f, 0.0f));
+        }
+        else
+        {
+            //insert vertices to the hashmap as well as the tumbletree
+            vertexCellMap.insert(vH1,tumble_tree->insert(1, vH1));
+            vertexCellMap.insert(vH2,tumble_tree->insert(1, vH2));
+            vertexCellMap.insert(vH3,tumble_tree->insert(1, vH3));
+            vertexCellMap.insert(vH4,tumble_tree->insert(1, vH4));
+
+            tumble_tree->display();
         }
     }
 

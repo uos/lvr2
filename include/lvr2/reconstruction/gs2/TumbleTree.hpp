@@ -9,49 +9,46 @@
 #include <lvr2/geometry/Handles.hpp>
 namespace  lvr2{
 
+    struct Cell
+    {
+        float alpha;
+        float signal_counter;
+        Index vH; //VertexHandle-Index for mapping between VertexHandle and a Cell
+        Cell* left; //left subtree
+        Cell* right; //right subtree
+    };
+
     class TumbleTree {
 
-        struct node
-        {
-            float alpha;
-            float signal_counter;
-            //VertexHandle vH;
-            int vH; //index of the corresponding vertexhandle
-            node* left;
-            node* right;
-        };
+        Cell* root;
 
-        node* makeEmpty(node* t);
+        Cell* makeEmpty(Cell* c);
 
-        node* insert(float sc, int vH, node* t);
+        Cell* insert(float sc, Index vH, Cell* c);
+        Cell* remove(float sc, Index vH, Cell* c);
+        Cell* findMin(Cell* c);
+        Cell* findMax(Cell*);
 
-        node* findMin(node* t);
+        void update(Cell* c, float alpha);
 
-        node* findMax(node* t);
-
-        node* remove(float sc, node* t);
-
-        void inorder(node* t);
-
-        node* find(node* t, float sc);
-
-
-        node* root;
+        void inorder(Cell* c);
 
     public:
+
         TumbleTree();
         ~TumbleTree();
 
-        void insert(int x, VertexHandle vH);
-        void remove(int x);
+        Cell* insert(float sc, VertexHandle vH);
+        void remove(Cell* c);
 
         void display();
 
-        VertexHandle min();
-        VertexHandle max();
+        Cell* min();
+        Cell* max();
 
-        void update(float alpha);
+        void updateSC(float alpha);
     };
+
 }
 
 
