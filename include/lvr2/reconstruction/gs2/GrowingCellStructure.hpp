@@ -161,6 +161,8 @@ namespace lvr2{
         float m_avgSignalCounter = 0;
 
         // "GCS" related members
+        TumbleTree* tumble_tree;
+        HashMap<VertexHandle, Cell*> vertexCellMap;
         float m_decreaseFactor; //for sc calc
         int m_allowMiss;
         float m_collapseThreshold; //threshold for the collapse - when does it make sense

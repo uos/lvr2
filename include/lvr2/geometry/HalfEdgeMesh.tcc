@@ -695,7 +695,7 @@ void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
         // half edge mesh topology
         if(edgesOut.size() > 20)
         {
-            throw VertexLoopException("getEdgesOfVertex: Loop detected");
+            //throw VertexLoopException("getEdgesOfVertex: Loop detected");
         }
         return true;
     });
@@ -739,7 +739,7 @@ EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
     if(this->isBorderEdge(edgeH))
     {
         std::cout << "splitEdge() cannot be called with border edge" << endl;
-        VertexHandle dummy(0);
+        VertexHandle dummy(std::numeric_limits<int>::max());
         return EdgeSplitResult(dummy); //return a result with a dummy vector
     }
     // A fancy drawing of the current and expected situation:
@@ -1069,7 +1069,7 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
     if(isBorderEdge(longestEdge))
     {
         cout << "Border edge selected, will not be split" << endl;
-        VertexHandle dummy(0);
+        VertexHandle dummy(std::numeric_limits<int>::max());
         VertexSplitResult ret(dummy);
         return ret;
     }
