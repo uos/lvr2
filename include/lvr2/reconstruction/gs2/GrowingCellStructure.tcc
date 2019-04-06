@@ -125,9 +125,9 @@ namespace lvr2 {
 
             //increase signal counter by one
             //winner.incSC();
-
+            //TODO: use map and tumble tree correctly
             Cell* winnerNode = vertexCellMap.get(winnerH).get();
-            float winnerSC = winnerNode->signal_counter;
+            float winnerSC = winnerNode->signal_counter; //optain the signal counter from the map
 
             tumble_tree->remove(winnerNode); //remove the winning vertex from the tumble tree
             vertexCellMap.get(winnerH).get() = tumble_tree->insert(winnerSC+1, winnerH); //reinsert it with incremented sc, update map

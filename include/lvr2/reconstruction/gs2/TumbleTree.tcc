@@ -48,7 +48,7 @@ namespace lvr2{
         return c; //return the inserted Cell
     }
 
-    //private
+    //TODO: make it work. expected number of cells after the algorithm: runtime*numsplits
     Cell* TumbleTree::remove(float sc, Index vH, Cell* c)
     {
         Cell* tmp;
@@ -63,11 +63,9 @@ namespace lvr2{
         else if(sc > c->signal_counter) {
             c->right = remove(sc, vH, c->right);
         }
-        else if(vH != c->vH){
-            if(findMax(c->left)->signal_counter == sc){ //if there is another equal sc in the left subtree
-                c->left = remove(sc, vH, c->left); //if the handle index is not correct, we can't delete it...looking for another matching sc
-            }
-            else return NULL; //not found
+        else if(vH != c->vH && findMax(c->left)->signal_counter == sc)
+        { //TODO  if there is another equal sc in the left subtree
+            c->left = remove(sc, vH, c->left); //if the handle index is not correct, we can't delete it...looking for another matching sc
         }
         else if(c->left && c->right){
             tmp = findMin(c->right); //find minimum sc cell of the right subtree (should be bigger than all left cells sc's)
@@ -88,6 +86,7 @@ namespace lvr2{
             }
             delete tmp;
         }
+        //return c;
     }
 
     /**
