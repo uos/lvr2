@@ -77,6 +77,7 @@ namespace lvr2 {
         }
 
         cout << "Tumble Tree size: " << tumble_tree->size() << endl;
+        cout << "VertexCell map size: " << vertexCellMap.numValues() << endl;
 
         delete tumble_tree;
     }
@@ -100,10 +101,9 @@ namespace lvr2 {
 
         if(!m_useGSS) //if only gcs is used (gcs basic step)
         {
-            VertexHandle winnerH = this->getClosestPointInMesh(random_point, progress_bar);
+            VertexHandle winnerH = this->getClosestPointInMesh(random_point, progress_bar); //TODO: better runtime efficency(kd-tree)
 
             //smooth the winning vertex
-
             BaseVecT &winner = m_mesh->getVertexPosition(winnerH);
             winner += (random_point - winner) * getLearningRate();
 
@@ -124,27 +124,31 @@ namespace lvr2 {
             }
 
             //increase signal counter by one
-            //winner.incSC();
+
             //TODO: use map and tumble tree correctly
             Cell* winnerNode = vertexCellMap.get(winnerH).get();
-            float winnerSC = winnerNode->signal_counter; //optain the signal counter from the map
+            float winnerSC = winnerNode->signal_counter; //obtain the signal counter from the map
 
-            tumble_tree->remove(winnerNode); //remove the winning vertex from the tumble tree
-            vertexCellMap.get(winnerH).get() = tumble_tree->insert(winnerSC+1, winnerH); //reinsert it with incremented sc, update map
+            tumble_tree->remove(winnerNode, winnerH); //remove the winning vertex from the tumble tree
 
             //TODO: decrease signal counter of others by a fraction according to hennings implementation
             if(m_decreaseFactor == 1.0)
             {
                 size_t n = m_allowMiss * m_mesh->numVertices();
                 float dynamicDecrease = 1 - (float)pow(m_collapseThreshold, (1.0 / n));
-                tumble_tree->updateSC(dynamicDecrease, winnerH.idx());
+                tumble_tree->updateSC(dynamicDecrease, winnerH);
 
             }
             else
             {
-                tumble_tree->updateSC(m_decreaseFactor, winnerH.idx());
+                tumble_tree->updateSC(m_decreaseFactor, winnerH);
 
             }
+            tumble_tree->insert(winnerSC+1, winnerH);
+            vertexCellMap.get(winnerH).get() = tumble_tree->find(winnerSC+1, winnerH); //reinsert it with incremented sc, update map
+
+
+
         }
         else //GSS
         {
@@ -178,18 +182,8 @@ namespace lvr2 {
             //find vertex with highst sc, split that vertex
             auto vertices = m_mesh->vertices();
             Cell* max = tumble_tree->max();
-            VertexHandle highestSC(max->vH);
-            /*float maxSC = -1;
-            for (auto vertexH : vertices) {
-                BaseVecT &vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
+            VertexHandle highestSC(max->duplicateMap.begin().operator*().idx());
 
-                if (vertex.signal_counter > maxSC) {
-
-                    highestSC = vertexH;
-                    maxSC = vertex.signal_counter;
-
-                }
-            }*/
             //split the found vertex
             VertexSplitResult result = m_mesh->splitVertex(highestSC);
             if(result.edgeCenter.idx() == numeric_limits<int>::infinity()) return; //if longest edge is a border edge
@@ -197,17 +191,12 @@ namespace lvr2 {
             float sc_middle = max->signal_counter / 2;
 
             //now update tumble tree and the map
-            tumble_tree->remove(max);
+            tumble_tree->remove(max, highestSC);
+            tumble_tree->insert(sc_middle, highestSC);
+            vertexCellMap.get(highestSC).get() =  tumble_tree->find(sc_middle, highestSC);//reinsert and update links
 
-            vertexCellMap.get(highestSC).get() = tumble_tree->insert(sc_middle, highestSC);
-            vertexCellMap.insert(newVH, tumble_tree->insert(sc_middle, newVH)); //add the new vertex to the tree and the map
-
-            //BaseVecT& newV = m_mesh->getVertexPosition(newVH);
-
-            //reduce sc, set sc of newly added vertex
-            //BaseVecT& highestSCVec = m_mesh->getVertexPosition(highestSC);
-            //highestSCVec.signal_counter /= 2; //half of it..*/
-            //newV.signal_counter = highestSCVec.signal_counter;
+            tumble_tree->insert(sc_middle, newVH);
+            vertexCellMap.insert(newVH, tumble_tree->find(sc_middle, newVH)); //add the new vertex to the tree and the map
 
         }
         else //GSS
@@ -367,7 +356,7 @@ namespace lvr2 {
         //search the closest point of the mesh
         auto vertices = m_mesh->vertices();
 
-        VertexHandle closestVertexToRandomPoint(0);
+        VertexHandle closestVertexToRandomPoint(numeric_limits<int>::max());
         float smallestDistance = numeric_limits<float>::infinity();
         float avg_counter = 0;
 
@@ -501,10 +490,19 @@ namespace lvr2 {
         else
         {
             //insert vertices to the hashmap as well as the tumbletree
-            vertexCellMap.insert(vH1,tumble_tree->insert(1, vH1));
-            vertexCellMap.insert(vH2,tumble_tree->insert(1, vH2));
-            vertexCellMap.insert(vH3,tumble_tree->insert(1, vH3));
-            vertexCellMap.insert(vH4,tumble_tree->insert(1, vH4));
+            tumble_tree->insert(1, vH1);
+            vertexCellMap.insert(vH1,tumble_tree->find(1,vH1));
+
+            tumble_tree->insert(1, vH2);
+
+            vertexCellMap.insert(vH2,tumble_tree->find(1,vH2));
+
+            tumble_tree->insert(1, vH3);
+            vertexCellMap.insert(vH3,tumble_tree->find(1,vH3));
+
+            tumble_tree->insert(1, vH4);
+            vertexCellMap.insert(vH4,tumble_tree->find(1,vH4));
+
 
             tumble_tree->display();
         }

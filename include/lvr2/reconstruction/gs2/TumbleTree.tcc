@@ -22,34 +22,33 @@ namespace lvr2{
         return NULL;
     }
 
-    Cell* TumbleTree::insert(float sc, Index vH, Cell* c)
+    Cell* TumbleTree::insert(float sc, VertexHandle vH, Cell* c)
     {
         if(c == NULL)
         {
             c = new Cell;
             c->signal_counter = sc;
-            c->vH = vH;
+            c->duplicateMap.insert(vH, sc);
             c->left = c->right = NULL;
         }
-        else if(sc <= c->signal_counter)
+        else if(sc < c->signal_counter)
         {
-            if(sc == c->signal_counter && vH == c->vH)
-            {
-                std::cout << "Attempted to insert an existing Cell into the Tumble-Tree" << std::endl;
-                return NULL;
-            }
             c->left = insert(sc, vH, c->left);
         }
         else if(sc > c->signal_counter)
         {
             c->right = insert(sc, vH, c->right);
         }
+        else
+        {
+            c->duplicateMap.insert(vH,sc);
+        }
 
         return c; //return the inserted Cell
     }
 
     //TODO: make it work. expected number of cells after the algorithm: runtime*numsplits
-    Cell* TumbleTree::remove(float sc, Index vH, Cell* c)
+    Cell* TumbleTree::remove(float sc, VertexHandle vH, Cell* c)
     {
         Cell* tmp;
         if(c == NULL)
@@ -63,28 +62,36 @@ namespace lvr2{
         else if(sc > c->signal_counter) {
             c->right = remove(sc, vH, c->right);
         }
-        else if(vH != c->vH && findMax(c->left)->signal_counter == sc)
-        { //TODO  if there is another equal sc in the left subtree
-            c->left = remove(sc, vH, c->left); //if the handle index is not correct, we can't delete it...looking for another matching sc
-        }
-        else if(c->left && c->right){
-            tmp = findMin(c->right); //find minimum sc cell of the right subtree (should be bigger than all left cells sc's)
-            c->signal_counter = tmp->signal_counter; //copy
-            c->vH = tmp->vH; //copy
-            c->right = remove(c->signal_counter, c->vH, c->right); //delete the minimum of the right subtree, as it now serves as the new subtree-root
+        else if(c->left && c->right)
+        {
+            c->duplicateMap.erase(vH); //erase key and value in hashlist
+            if(c->duplicateMap.numValues() == 0)
+            {
+                tmp = findMin(c->right); //find minimum sc cell of the right subtree (should be bigger than all left cells sc's)
+                c->signal_counter = tmp->signal_counter; //copy sc and duplicate map
+                c->duplicateMap = tmp->duplicateMap;
+                c->right = remove(c->signal_counter, c->duplicateMap.begin().operator*(), c->right); //delete the minimum of the right subtree, as it now serves as the new subtree-root
+            }
+
         }
         else{
             tmp = c;
-            //now we only got one or no subtree left
-            if(c->left == NULL)
+            //now we only got one or no subtree left, if there
+            if(c->duplicateMap.numValues() == 0)
             {
-                c = c->right;
+                if(c->left == NULL)
+                {
+                    c = c->right;
+                }
+                else if(c->right == NULL)
+                {
+                    c = c->left;
+                }
+                delete tmp;
+            } else{
+                c->duplicateMap.erase(vH);
             }
-            else if(c->right == NULL)
-            {
-                c = c->left;
-            }
-            delete tmp;
+
         }
         //return c;
     }
@@ -119,6 +126,27 @@ namespace lvr2{
             return findMax(c->right);
     }
 
+    Cell* TumbleTree::find(float sc, VertexHandle vH, Cell* c)
+    {
+        if(c == NULL)
+        {
+            return NULL;
+        }
+        else if(sc < c->signal_counter)
+        {
+            return find(sc, vH, c->left);
+        }
+        else if(sc > c->signal_counter)
+        {
+            return find(sc, vH, c->right);
+        }
+        else if(c->duplicateMap.containsKey(vH))
+        {
+            return c;
+        }
+        else return NULL; //if the key does not exist in the cell with the suitable signal counter
+    }
+
     void TumbleTree::inorder(Cell* c)
     {
         if(c == NULL)
@@ -129,21 +157,26 @@ namespace lvr2{
     }
 
     //update the SCs (righ now linear -> O(n), later O(log(n))
-    void TumbleTree::update(Cell *c, float alpha, Index i)
+    void TumbleTree::update(Cell *c, float alpha, VertexHandle vH)
     {
         if(c == NULL) return;
-        if(c->vH != i)
+        if(!c->duplicateMap.containsKey(vH))
         {
             c->signal_counter -= c->signal_counter*alpha;
+            for(auto iter = c->duplicateMap.begin(); iter!= c->duplicateMap.end(); ++iter)
+            {
+                float& sc = c->duplicateMap[*iter];
+                sc -= sc * alpha;
+            }
         }
 
-        update(c->left, alpha, i);
-        update(c->right, alpha, i);
+        update(c->left, alpha, vH);
+        update(c->right, alpha, vH);
     }
 
     int TumbleTree::size(Cell* c)
     {
-        int i = 1;
+        int i = (int)c->duplicateMap.numValues();
         if(c->right)
         {
             i += size(c->right);
@@ -170,18 +203,15 @@ namespace lvr2{
     // public       ||
     // calls        \/
 
-    Cell* TumbleTree::insert(float sc, VertexHandle vH)
+    void TumbleTree::insert(float sc, VertexHandle vH)
     {
-        Cell* ret = insert(sc, vH.idx(), this->root);
-        if(root == NULL)
-            root = ret;
-        return ret;
+        root = insert(sc, vH, this->root);
     }
 
     // we only need functionality to remove a specific cell.
-    void TumbleTree::remove(Cell* c)
+    void TumbleTree::remove(Cell* c, VertexHandle vH)
     {
-        remove(c->signal_counter, c->vH, this->root); //TODO: use c instead of root
+        root = remove(c->signal_counter, vH, this->root);
     }
 
     void TumbleTree::display()
@@ -201,8 +231,13 @@ namespace lvr2{
         return this->findMax(root);
     }
 
-    void TumbleTree::updateSC(float alpha, Index i) {
-        this->update(root, alpha, i);
+    Cell* TumbleTree::find(float sc, VertexHandle vH)
+    {
+        return find(sc, vH, root);
+    }
+
+    void TumbleTree::updateSC(float alpha, VertexHandle vH) {
+        this->update(root, alpha, vH);
     }
 
     int TumbleTree::size(){
