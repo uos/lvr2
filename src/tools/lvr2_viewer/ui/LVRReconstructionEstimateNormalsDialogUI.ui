@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>198</width>
-    <height>180</height>
+    <width>452</width>
+    <height>297</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,8 +19,8 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>-150</x>
-     <y>140</y>
+     <x>-130</x>
+     <y>250</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -36,13 +36,13 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>40</y>
-     <width>181</width>
-     <height>61</height>
+     <y>70</y>
+     <width>411</width>
+     <height>21</height>
     </rect>
    </property>
    <property name="text">
-    <string>Number of nearest neighbors to use for normal interpolation</string>
+    <string>ki: Number of nearest neighbors for normal interpolation</string>
    </property>
    <property name="wordWrap">
     <bool>true</bool>
@@ -50,37 +50,209 @@
   </widget>
   <widget class="QSpinBox" name="spinBox_ki">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>20</x>
      <y>100</y>
      <width>181</width>
      <height>27</height>
     </rect>
    </property>
    <property name="minimum">
-    <number>1</number>
+    <number>0</number>
    </property>
    <property name="maximum">
-    <number>64</number>
+    <number>10000</number>
    </property>
    <property name="value">
-    <number>4</number>
+    <number>50</number>
    </property>
   </widget>
-  <widget class="QCheckBox" name="checkBox_in">
+  <widget class="QLabel" name="label_kn">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>10</y>
-     <width>181</width>
-     <height>22</height>
+     <y>20</y>
+     <width>421</width>
+     <height>17</height>
     </rect>
    </property>
    <property name="text">
-    <string>Interpolate normals</string>
+    <string>kn: Number of nearest neighbors for normal estimation</string>
+   </property>
+   <property name="textFormat">
+    <enum>Qt::AutoText</enum>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox_kn">
+   <property name="geometry">
+    <rect>
+     <x>17</x>
+     <y>40</y>
+     <width>281</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>10000</number>
+   </property>
+   <property name="value">
+    <number>100</number>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBox_kn_auto">
+   <property name="geometry">
+    <rect>
+     <x>340</x>
+     <y>40</y>
+     <width>92</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Auto</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBox_ki_auto">
+   <property name="geometry">
+    <rect>
+     <x>250</x>
+     <y>100</y>
+     <width>92</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Auto</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="comboBox_algo_select">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>160</y>
+     <width>86</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>FLANN</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>NANOFLANN</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>STANN</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>NABO</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>GPU</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLabel" name="label_algo_select">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>140</y>
+     <width>291</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Type of normal estimation</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="doubleSpinBox_fp_x">
+   <property name="geometry">
+    <rect>
+     <x>300</x>
+     <y>160</y>
+     <width>121</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="buttonSymbols">
+    <enum>QAbstractSpinBox::NoButtons</enum>
+   </property>
+   <property name="minimum">
+    <double>-1000000.000000000000000</double>
+   </property>
+   <property name="maximum">
+    <double>1000000.000000000000000</double>
+   </property>
+   <property name="value">
+    <double>1000000.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_fp">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>140</y>
+     <width>67</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Flippoint</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="doubleSpinBox_fp_y">
+   <property name="geometry">
+    <rect>
+     <x>300</x>
+     <y>190</y>
+     <width>121</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="buttonSymbols">
+    <enum>QAbstractSpinBox::NoButtons</enum>
+   </property>
+   <property name="minimum">
+    <double>-1000000.000000000000000</double>
+   </property>
+   <property name="maximum">
+    <double>1000000.000000000000000</double>
+   </property>
+   <property name="value">
+    <double>1000000.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="doubleSpinBox_fp_z">
+   <property name="geometry">
+    <rect>
+     <x>300</x>
+     <y>220</y>
+     <width>121</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="buttonSymbols">
+    <enum>QAbstractSpinBox::NoButtons</enum>
+   </property>
+   <property name="minimum">
+    <double>-1000000.000000000000000</double>
+   </property>
+   <property name="maximum">
+    <double>1000000.000000000000000</double>
+   </property>
+   <property name="value">
+    <double>1000000.000000000000000</double>
    </property>
   </widget>
  </widget>
