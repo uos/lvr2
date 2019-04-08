@@ -52,8 +52,38 @@
 namespace lvr2
 {
 
+// old
 LVREstimateNormalsDialog::LVREstimateNormalsDialog(LVRPointCloudItem* pc, QTreeWidgetItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
    m_pc(pc), m_parent(parent), m_treeWidget(treeWidget), m_renderWindow(window)
+{
+    m_pcs.append(pc);
+    m_parents.append(parent);
+    // Setup DialogUI and events
+    QDialog* dialog = new QDialog(m_treeWidget);
+    m_dialog = new EstimateNormalsDialog;
+    m_dialog->setupUi(dialog);
+
+    connectSignalsAndSlots();
+
+    dialog->show();
+    dialog->raise();
+    dialog->activateWindow();
+
+    // init defaults
+    toggleSpecialOptions(m_dialog->comboBox_algo_select->currentText());
+}
+
+// new
+LVREstimateNormalsDialog::LVREstimateNormalsDialog(
+        QList<LVRPointCloudItem*> pc_items,
+        QList<QTreeWidgetItem*> parents,
+        QTreeWidget* treeWidget,
+        vtkRenderWindow* renderer
+    )
+:m_pcs(pc_items)
+,m_parents(parents)
+,m_treeWidget(treeWidget)
+,m_renderWindow(renderer)
 {
     // Setup DialogUI and events
     QDialog* dialog = new QDialog(m_treeWidget);
@@ -68,7 +98,6 @@ LVREstimateNormalsDialog::LVREstimateNormalsDialog(LVRPointCloudItem* pc, QTreeW
 
     // init defaults
     toggleSpecialOptions(m_dialog->comboBox_algo_select->currentText());
-
 }
 
 LVREstimateNormalsDialog::~LVREstimateNormalsDialog()
@@ -141,7 +170,7 @@ void LVREstimateNormalsDialog::estimateNormals()
     QString algo = m_dialog->comboBox_algo_select->currentText();
     std::string algo_str = algo.toStdString();
 
-    print stuff
+    // print stuff
     std::cout << "NORMAL ESTIMATION SETTINGS: " << std::endl;
     if(autoKn)
     {
@@ -158,115 +187,124 @@ void LVREstimateNormalsDialog::estimateNormals()
     }
 
     std::cout << "-- algo: " << algo_str << std::endl;
-    
-    // create new point cloud
-    PointBufferPtr pc = m_pc->getPointBuffer();
-    floatArr old_pts = pc->getPointArray();
-    size_t numPoints = m_pc->getNumPoints();
 
-    // Create buffer arrays
-    floatArr points(new float[3 * numPoints]);
-
-    // copy pts to new pointbuffer 
-    std::copy(old_pts.get(), old_pts.get() + numPoints*3, points.get());
-
-    PointBufferPtr new_pc = PointBufferPtr( new PointBuffer );
-    new_pc->setPointArray(points, numPoints);
-    
-    PointsetSurfacePtr<Vec> surface;
-
-    if(algo_str == "STANN" || algo_str == "FLANN" || algo_str == "NABO" || algo_str == "NANOFLANN")
+    for(int pc_id = 0; pc_id < m_pcs.size(); pc_id++)
     {
-        surface = std::make_shared<AdaptiveKSearchSurface<Vec> >(
-            new_pc, algo_str, kn, ki, 20, false
-        );
-    } else if(algo_str == "GPU") {
-        surface = std::make_shared<AdaptiveKSearchSurface<Vec> >(
-            new_pc, "FLANN", kn, ki, 20, false
-        );
-    }
-
-    if(autoKn || autoKi)
-    {
-        const BoundingBox<Vec>& bb = surface->getBoundingBox();
-        double V = bb.getXSize() * bb.getYSize() * bb.getZSize();
-
-        if(autoKn)
-        {
-            kn = static_cast<int>(
-                sqrt(static_cast<double>(numPoints)) / V * 270.0);
-        }
-
-        if(autoKi)
-        {
-            ki = static_cast<int>(
-                sqrt(static_cast<double>(numPoints)) / V * 270.0);
-        }
-    }
-    
+        LVRPointCloudItem* pc_item = m_pcs[pc_id];
+        QTreeWidgetItem* parent = m_parents[pc_id];
+        // create new point cloud
+        PointBufferPtr pc = pc_item->getPointBuffer();
+        floatArr old_pts = pc->getPointArray();
+        size_t numPoints = pc_item->getNumPoints();
 
 
-    
-    if(algo_str == "GPU")
-    {
-        #ifdef GPU_FOUND
-        // TODO
-        float fpx = static_cast<float>(m_dialog->doubleSpinBox_fp_x->value());
-        float fpy = static_cast<float>(m_dialog->doubleSpinBox_fp_y->value());
-        float fpz = static_cast<float>(m_dialog->doubleSpinBox_fp_z->value());
+        // Create buffer arrays
+        floatArr points(new float[3 * numPoints]);
 
-        std::vector<float> flipPoint = {fpx, fpy, fpz};
-        size_t num_points = new_pc->numPoints();
-        floatArr points = new_pc->getPointArray();
-        floatArr normals = floatArr(new float[ num_points * 3 ]);
-        std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
-        GpuSurface gpu_surface(points, num_points);
+        // copy pts to new pointbuffer 
+        std::copy(old_pts.get(), old_pts.get() + numPoints*3, points.get());
 
-        gpu_surface.setKn(kn);
-        gpu_surface.setKi(ki);
-        gpu_surface.setFlippoint(flipPoint[0], flipPoint[1], flipPoint[2]);
-
-        std::cout << timestamp << "Calculated normals..." << std::endl;
-        gpu_surface.calculateNormals();
-        gpu_surface.getNormals(normals);
-
-        new_pc->setNormalArray(normals, num_points);
-        gpu_surface.freeGPU();
+        PointBufferPtr new_pc = PointBufferPtr( new PointBuffer );
+        new_pc->setPointArray(points, numPoints);
         
-        #else
-        std::cout << "ERROR: GPU Driver not installed, using FLANN instead" << std::endl;
-        surface->calculateSurfaceNormals();
-        #endif
-    } else {
-        surface->calculateSurfaceNormals();
+        PointsetSurfacePtr<Vec> surface;
+
+        if(algo_str == "STANN" || algo_str == "FLANN" || algo_str == "NABO" || algo_str == "NANOFLANN")
+        {
+            surface = std::make_shared<AdaptiveKSearchSurface<Vec> >(
+                new_pc, algo_str, kn, ki, 20, false
+            );
+        } else if(algo_str == "GPU") {
+            surface = std::make_shared<AdaptiveKSearchSurface<Vec> >(
+                new_pc, "FLANN", kn, ki, 20, false
+            );
+        }
+
+        if(autoKn || autoKi)
+        {
+            const BoundingBox<Vec>& bb = surface->getBoundingBox();
+            double V = bb.getXSize() * bb.getYSize() * bb.getZSize();
+
+            if(autoKn)
+            {
+                kn = static_cast<int>(
+                    sqrt(static_cast<double>(numPoints)) / V * 270.0);
+                std::cout << "-- auto kn: " << kn << std::endl;
+            }
+
+            if(autoKi)
+            {
+                ki = static_cast<int>(
+                    sqrt(static_cast<double>(numPoints)) / V * 270.0);
+
+                std::cout << "-- auto ki: " << ki << std::endl;
+            }
+
+        }
+        
+        
+        if(algo_str == "GPU")
+        {
+            #ifdef GPU_FOUND
+            // TODO
+            float fpx = static_cast<float>(m_dialog->doubleSpinBox_fp_x->value());
+            float fpy = static_cast<float>(m_dialog->doubleSpinBox_fp_y->value());
+            float fpz = static_cast<float>(m_dialog->doubleSpinBox_fp_z->value());
+
+            std::vector<float> flipPoint = {fpx, fpy, fpz};
+            size_t num_points = new_pc->numPoints();
+            floatArr points = new_pc->getPointArray();
+            floatArr normals = floatArr(new float[ num_points * 3 ]);
+            std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
+            GpuSurface gpu_surface(points, num_points);
+
+            gpu_surface.setKn(kn);
+            gpu_surface.setKi(ki);
+            gpu_surface.setFlippoint(flipPoint[0], flipPoint[1], flipPoint[2]);
+
+            std::cout << timestamp << "Calculated normals..." << std::endl;
+            gpu_surface.calculateNormals();
+            gpu_surface.getNormals(normals);
+
+            new_pc->setNormalArray(normals, num_points);
+            gpu_surface.freeGPU();
+            
+            #else
+            std::cout << "ERROR: GPU Driver not installed, using FLANN instead" << std::endl;
+            surface->calculateSurfaceNormals();
+            #endif
+        } else {
+            surface->calculateSurfaceNormals();
+        }
+
+        std::cout << timestamp << "Finished." << std::endl;
+
+        ModelPtr model(new Model(new_pc));
+
+        ModelBridgePtr bridge(new LVRModelBridge(model));
+        vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
+        bridge->addActors(renderer);
+
+        QString base;
+        if (parent->type() == LVRModelItemType)
+        {
+            LVRModelItem *model_item = static_cast<LVRModelItem *>(parent);
+            base = model_item->getName() + " (w. normals)";
+            m_pointCloudWithNormals = new LVRModelItem(bridge, base);
+            m_pointCloudWithNormals->setPose(model_item->getPose());
+        }
+        else if (parent->type() == LVRScanDataItemType)
+        {
+            LVRScanDataItem *sd_item = static_cast<LVRScanDataItem *>(parent);
+            base = sd_item->getName() + " (w. normals)";
+            m_pointCloudWithNormals = new LVRModelItem(bridge, base);
+            m_pointCloudWithNormals->setPose(sd_item->getPose());
+        }
+
+        m_treeWidget->addTopLevelItem(m_pointCloudWithNormals);
+        m_pointCloudWithNormals->setExpanded(true);
+
     }
-
-    std::cout << timestamp << "Finished." << std::endl;
-
-    ModelPtr model(new Model(new_pc));
-
-    ModelBridgePtr bridge(new LVRModelBridge(model));
-    vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
-    bridge->addActors(renderer);
-
-    QString base;
-    if (m_parent->type() == LVRModelItemType)
-    {
-        LVRModelItem *model_item = static_cast<LVRModelItem *>(m_parent);
-        base = model_item->getName() + " (w. normals)";
-        m_pointCloudWithNormals = new LVRModelItem(bridge, base);
-        m_pointCloudWithNormals->setPose(model_item->getPose());
-    }
-    else if (m_parent->type() == LVRScanDataItemType)
-    {
-        LVRScanDataItem *sd_item = static_cast<LVRScanDataItem *>(m_parent);
-        base = sd_item->getName() + " (w. normals)";
-        m_pointCloudWithNormals = new LVRModelItem(bridge, base);
-        m_pointCloudWithNormals->setPose(sd_item->getPose());
-    }
-
-    m_treeWidget->addTopLevelItem(m_pointCloudWithNormals);
-    m_pointCloudWithNormals->setExpanded(true);
 }
 
 } // namespace lvr2

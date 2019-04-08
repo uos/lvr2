@@ -198,6 +198,7 @@ public Q_SLOTS:
 
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
+    QList<LVRPointCloudItem*> getPointCloudItems(QList<QTreeWidgetItem*> items);
     LVRMeshItem* getMeshItem(QTreeWidgetItem* item);
     std::set<LVRModelItem*> getSelectedModelItems();
     std::set<LVRPointCloudItem*> getSelectedPointCloudItems();
