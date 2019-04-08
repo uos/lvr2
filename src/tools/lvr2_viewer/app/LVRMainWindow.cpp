@@ -869,29 +869,66 @@ void LVRMainWindow::renameModelItem()
     }
 }
 
-void LVRMainWindow::loadModel()
+void LVRMainWindow::loadModels(const QStringList& filenames)
 {
-    QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open Model"), "", tr("Model Files (*.ply *.obj *.pts *.3d *.txt *.h5)"));
-
     if(filenames.size() > 0)
     {
         QTreeWidgetItem* lastItem = nullptr;
 
-        QStringList::Iterator it = filenames.begin();
+        QStringList::const_iterator it = filenames.begin();
         while(it != filenames.end())
         {
-            // Load model and generate vtk representation
-            ModelPtr model = ModelFactory::readModel((*it).toStdString());
-            ModelBridgePtr bridge(new LVRModelBridge(model));
-            bridge->addActors(m_renderer);
-
-            // Add item for this model to tree widget
+            // check for h5
             QFileInfo info((*it));
             QString base = info.fileName();
-            LVRModelItem* item = new LVRModelItem(bridge, base);
-            this->treeWidget->addTopLevelItem(item);
-            item->setExpanded(true);
-            lastItem = item;
+
+            if (info.suffix() == "h5")
+            {
+                // h5 special loading case
+                // special case h5:
+                // scan data is stored as 
+                QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
+                root->setText(0, base);
+
+                QIcon icon;
+                icon.addFile(QString::fromUtf8(":/qv_scandata_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
+                root->setIcon(0, icon);
+
+                std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(base.toStdString()));
+
+                lastItem = addScanData(sdm, root);
+
+                root->setExpanded(true);
+
+                // load mesh only
+                ModelPtr model_ptr(new Model());
+                std::shared_ptr<HDF5IO> h5_io_ptr(new HDF5IO(base.toStdString()));
+                if(h5_io_ptr->readMesh(model_ptr))
+                {
+                    ModelBridgePtr bridge(new LVRModelBridge(model_ptr));
+                    bridge->addActors(m_renderer);
+
+                    // Add item for this model to tree widget
+                    LVRModelItem* item = new LVRModelItem(bridge, "mesh");
+                    root->addChild(item);
+                    item->setExpanded(false);
+                    lastItem = item;
+                }
+
+            } else {
+                // Load model and generate vtk representation
+                ModelPtr model = ModelFactory::readModel((*it).toStdString());
+                ModelBridgePtr bridge(new LVRModelBridge(model));
+                bridge->addActors(m_renderer);
+
+                // Add item for this model to tree widget
+                
+                LVRModelItem* item = new LVRModelItem(bridge, base);
+                this->treeWidget->addTopLevelItem(item);
+                item->setExpanded(true);
+                lastItem = item;
+            }
+
             ++it;
         }
 
@@ -909,6 +946,13 @@ void LVRMainWindow::loadModel()
         assertToggles();
         updateView();
     }
+}
+
+void LVRMainWindow::loadModel()
+{
+    QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open Model"), "", tr("Model Files (*.ply *.obj *.pts *.3d *.txt *.h5)"));
+    loadModels(filenames);
+    
 }
 
 void LVRMainWindow::loadPointCloudData()
@@ -1432,59 +1476,14 @@ QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm
 
 void LVRMainWindow::parseCommandLine(int argc, char** argv)
 {
-    QTreeWidgetItem* lastItem = nullptr;
 
+    QStringList filenames;
     for(int i = 1; i < argc; i++)
     {
-        QString s(argv[i]);
-        QFileInfo info(s);
-        QString base = info.fileName();
-
-        if (info.suffix() == "h5")
-        {
-
-            QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
-            root->setText(0, base);
-
-            QIcon icon;
-            icon.addFile(QString::fromUtf8(":/qv_scandata_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
-            root->setIcon(0, icon);
-
-            std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(argv[i]));
-
-            lastItem = addScanData(sdm, root);
-
-            root->setExpanded(true);
-
-        }
-        else
-        {
-            // Load model and generate vtk representation
-            ModelPtr model = ModelFactory::readModel(string(argv[i]));
-            ModelBridgePtr bridge(new LVRModelBridge(model));
-            bridge->addActors(m_renderer);
-
-            // Add item for this model to tree widget
-            LVRModelItem* item = new LVRModelItem(bridge, base);
-            this->treeWidget->addTopLevelItem(item);
-            item->setExpanded(true);
-            lastItem = item;
-        }
+        filenames << argv[i];
     }
-
-    if (lastItem != nullptr)
-    {
-        for(QTreeWidgetItem* selected : treeWidget->selectedItems())
-        {
-            selected->setSelected(false);
-        }
-        lastItem->setSelected(true);
-    }
-
-    restoreSliders();
-    updateView();
-    assertToggles();
-
+    
+    loadModels(filenames);
 }
 
 void LVRMainWindow::manualICP()
