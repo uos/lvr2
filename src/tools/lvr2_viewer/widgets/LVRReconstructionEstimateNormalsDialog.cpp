@@ -33,7 +33,21 @@
 
 #include <lvr2/io/DataStruct.hpp>
 
+#include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
+
+#if defined CUDA_FOUND
+    #define GPU_FOUND
+
+    #include <lvr2/reconstruction/cuda/CudaSurface.hpp>
+
+    typedef lvr2::CudaSurface GpuSurface;
+#elif defined OPENCL_FOUND
+    #define GPU_FOUND
+
+    #include <lvr2/reconstruction/opencl/ClSurface.hpp>
+    typedef lvr2::ClSurface GpuSurface;
+#endif
 
 namespace lvr2
 {
@@ -51,6 +65,10 @@ LVREstimateNormalsDialog::LVREstimateNormalsDialog(LVRPointCloudItem* pc, QTreeW
     dialog->show();
     dialog->raise();
     dialog->activateWindow();
+
+    // init defaults
+    toggleSpecialOptions(m_dialog->comboBox_algo_select->currentText());
+
 }
 
 LVREstimateNormalsDialog::~LVREstimateNormalsDialog()
@@ -61,31 +79,87 @@ LVREstimateNormalsDialog::~LVREstimateNormalsDialog()
 void LVREstimateNormalsDialog::connectSignalsAndSlots()
 {
     QObject::connect(m_dialog->buttonBox, SIGNAL(accepted()), this, SLOT(estimateNormals()));
-    QObject::connect(m_dialog->checkBox_in, SIGNAL(stateChanged(int)), this, SLOT(toggleNormalInterpolation(int)));
+    QObject::connect(m_dialog->checkBox_kn_auto, SIGNAL(stateChanged(int)), this, SLOT(toggleAutoNormalEstimation(int)));
+    QObject::connect(m_dialog->checkBox_ki_auto, SIGNAL(stateChanged(int)), this, SLOT(toggleAutoNormalInterpolation(int)));
+    QObject::connect(m_dialog->comboBox_algo_select, SIGNAL(currentTextChanged(QString)), this, SLOT(toggleSpecialOptions(QString)));
 }
 
-void LVREstimateNormalsDialog::toggleNormalInterpolation(int state)
+void LVREstimateNormalsDialog::toggleAutoNormalEstimation(int state)
+{
+    QSpinBox* spinBox_kn = m_dialog->spinBox_kn;
+    if(state == Qt::Checked)
+    {
+        spinBox_kn->setEnabled(false);
+    }
+    else
+    {
+        spinBox_kn->setEnabled(true);
+    }
+}
+
+void LVREstimateNormalsDialog::toggleAutoNormalInterpolation(int state)
 {
     QSpinBox* spinBox_ki = m_dialog->spinBox_ki;
     if(state == Qt::Checked)
     {
-        spinBox_ki->setEnabled(true);
+        spinBox_ki->setEnabled(false);
     }
     else
     {
-        spinBox_ki->setEnabled(false);
+        spinBox_ki->setEnabled(true);
     }
+}
+
+void LVREstimateNormalsDialog::toggleSpecialOptions(QString current_text)
+{
+    std::string alog_str = current_text.toStdString();
+    if(alog_str == "GPU")
+    {
+        m_dialog->label_fp->setVisible(true);
+        m_dialog->doubleSpinBox_fp_x->setVisible(true);
+        m_dialog->doubleSpinBox_fp_y->setVisible(true);
+        m_dialog->doubleSpinBox_fp_z->setVisible(true);
+    } else {
+        m_dialog->label_fp->setVisible(false);
+        m_dialog->doubleSpinBox_fp_x->setVisible(false);
+        m_dialog->doubleSpinBox_fp_y->setVisible(false);
+        m_dialog->doubleSpinBox_fp_z->setVisible(false);
+    }
+    
 }
 
 void LVREstimateNormalsDialog::estimateNormals()
 {
     using Vec = BaseVector<float>;
 
-    QCheckBox* checkBox_in = m_dialog->checkBox_in;
-    bool interpolateNormals = checkBox_in->isChecked();
-    QSpinBox* spinBox_ki = m_dialog->spinBox_ki;
-    int ki = spinBox_ki->value();
+    bool autoKn = m_dialog->checkBox_kn_auto->isChecked();
+    bool autoKi = m_dialog->checkBox_ki_auto->isChecked();
 
+    int kn = m_dialog->spinBox_kn->value();
+    int ki = m_dialog->spinBox_ki->value();
+
+    QString algo = m_dialog->comboBox_algo_select->currentText();
+    std::string algo_str = algo.toStdString();
+
+    print stuff
+    std::cout << "NORMAL ESTIMATION SETTINGS: " << std::endl;
+    if(autoKn)
+    {
+        std::cout << "-- kn: auto" << std::endl;
+    } else {
+        std::cout << "-- kn: " << kn << std::endl;
+    }
+
+    if(autoKi)
+    {
+        std::cout << "-- ki: auto" << std::endl;
+    } else {
+        std::cout << "-- ki: " << ki << std::endl;
+    }
+
+    std::cout << "-- algo: " << algo_str << std::endl;
+    
+    // create new point cloud
     PointBufferPtr pc = m_pc->getPointBuffer();
     floatArr old_pts = pc->getPointArray();
     size_t numPoints = m_pc->getNumPoints();
@@ -98,12 +172,76 @@ void LVREstimateNormalsDialog::estimateNormals()
 
     PointBufferPtr new_pc = PointBufferPtr( new PointBuffer );
     new_pc->setPointArray(points, numPoints);
+    
+    PointsetSurfacePtr<Vec> surface;
 
-    // with k == 0 no normal interpolation
-    int k = interpolateNormals ? 10 : 0;
+    if(algo_str == "STANN" || algo_str == "FLANN" || algo_str == "NABO" || algo_str == "NANOFLANN")
+    {
+        surface = std::make_shared<AdaptiveKSearchSurface<Vec> >(
+            new_pc, algo_str, kn, ki, 20, false
+        );
+    } else if(algo_str == "GPU") {
+        surface = std::make_shared<AdaptiveKSearchSurface<Vec> >(
+            new_pc, "FLANN", kn, ki, 20, false
+        );
+    }
 
-    AdaptiveKSearchSurface<Vec> surface(new_pc, "FLANN", ki, k, k);
-    surface.calculateSurfaceNormals();
+    if(autoKn || autoKi)
+    {
+        const BoundingBox<Vec>& bb = surface->getBoundingBox();
+        double V = bb.getXSize() * bb.getYSize() * bb.getZSize();
+
+        if(autoKn)
+        {
+            kn = static_cast<int>(
+                sqrt(static_cast<double>(numPoints)) / V * 270.0);
+        }
+
+        if(autoKi)
+        {
+            ki = static_cast<int>(
+                sqrt(static_cast<double>(numPoints)) / V * 270.0);
+        }
+    }
+    
+
+
+    
+    if(algo_str == "GPU")
+    {
+        #ifdef GPU_FOUND
+        // TODO
+        float fpx = static_cast<float>(m_dialog->doubleSpinBox_fp_x->value());
+        float fpy = static_cast<float>(m_dialog->doubleSpinBox_fp_y->value());
+        float fpz = static_cast<float>(m_dialog->doubleSpinBox_fp_z->value());
+
+        std::vector<float> flipPoint = {fpx, fpy, fpz};
+        size_t num_points = new_pc->numPoints();
+        floatArr points = new_pc->getPointArray();
+        floatArr normals = floatArr(new float[ num_points * 3 ]);
+        std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
+        GpuSurface gpu_surface(points, num_points);
+
+        gpu_surface.setKn(kn);
+        gpu_surface.setKi(ki);
+        gpu_surface.setFlippoint(flipPoint[0], flipPoint[1], flipPoint[2]);
+
+        std::cout << timestamp << "Calculated normals..." << std::endl;
+        gpu_surface.calculateNormals();
+        gpu_surface.getNormals(normals);
+
+        new_pc->setNormalArray(normals, num_points);
+        gpu_surface.freeGPU();
+        
+        #else
+        std::cout << "ERROR: GPU Driver not installed, using FLANN instead" << std::endl;
+        surface->calculateSurfaceNormals();
+        #endif
+    } else {
+        surface->calculateSurfaceNormals();
+    }
+
+    std::cout << timestamp << "Finished." << std::endl;
 
     ModelPtr model(new Model(new_pc));
 
@@ -126,7 +264,6 @@ void LVREstimateNormalsDialog::estimateNormals()
         m_pointCloudWithNormals = new LVRModelItem(bridge, base);
         m_pointCloudWithNormals->setPose(sd_item->getPose());
     }
-
 
     m_treeWidget->addTopLevelItem(m_pointCloudWithNormals);
     m_pointCloudWithNormals->setExpanded(true);

@@ -53,7 +53,10 @@ public:
 
 private Q_SLOTS:
     void estimateNormals();
-    void toggleNormalInterpolation(int state);
+    void toggleAutoNormalEstimation(int state);
+    void toggleAutoNormalInterpolation(int state);
+    void toggleSpecialOptions(QString current_text);
+    
 
 private:
     void connectSignalsAndSlots();
