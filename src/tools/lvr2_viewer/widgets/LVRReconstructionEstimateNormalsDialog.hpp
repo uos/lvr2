@@ -48,7 +48,17 @@ class LVREstimateNormalsDialog : public QObject
     Q_OBJECT
 
 public:
+    // old
     LVREstimateNormalsDialog(LVRPointCloudItem* pc_item, QTreeWidgetItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
+
+    // new
+    LVREstimateNormalsDialog(
+        QList<LVRPointCloudItem*> pc_items,
+        QList<QTreeWidgetItem*> parents,
+        QTreeWidget* treeWidget,
+        vtkRenderWindow* renderer
+    );
+
     virtual ~LVREstimateNormalsDialog();
 
 private Q_SLOTS:
@@ -62,6 +72,13 @@ private:
     void connectSignalsAndSlots();
 
     EstimateNormalsDialog*                  m_dialog;
+
+    // new
+    QList<LVRPointCloudItem*>               m_pcs;
+    // QList<LVRPointCloudItem*>               m_pcs_with_normals;
+    QList<QTreeWidgetItem*>                 m_parents;
+
+    // old
     LVRPointCloudItem*                      m_pc;
     LVRModelItem*                           m_pointCloudWithNormals;
     QTreeWidgetItem*                        m_parent;

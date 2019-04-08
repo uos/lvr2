@@ -1118,6 +1118,52 @@ LVRModelItem* LVRMainWindow::getModelItem(QTreeWidgetItem* item)
     return NULL;
 }
 
+QList<LVRPointCloudItem*> LVRMainWindow::getPointCloudItems(QList<QTreeWidgetItem*> items)
+{
+    QList<LVRPointCloudItem*> pcs;
+
+    for(QTreeWidgetItem* item : items)
+    {
+        if(item->type() == LVRPointCloudItemType)
+        {
+            pcs.append(static_cast<LVRPointCloudItem*>(item));
+        } else if(item->type() == LVRModelItemType) {
+            // get pc of model
+            QTreeWidgetItemIterator it(item);
+            while(*it)
+            {
+                QTreeWidgetItem* child_item = *it;
+                if(child_item->type() == LVRPointCloudItemType
+                    && child_item->parent() == item)
+                {
+                    pcs.append(static_cast<LVRPointCloudItem*>(child_item));
+                }
+                ++it;
+            }
+
+        } else if(item->type() == LVRScanDataItemType) {
+            // Scan data selected: fetch pointcloud (transformed?)
+            QTreeWidgetItemIterator it(item);
+            while(*it)
+            {
+                QTreeWidgetItem* child_item = *it;
+                if(child_item->type() == LVRPointCloudItemType
+                    && child_item->parent() == item)
+                {
+                    // pointcloud found!
+                    pcs.append(static_cast<LVRPointCloudItem*>(child_item));
+                }
+
+                ++it;
+            }
+
+        }
+
+    }
+
+    return pcs;
+}
+
 LVRPointCloudItem* LVRMainWindow::getPointCloudItem(QTreeWidgetItem* item)
 {
     if(item->type() == LVRPointCloudItemType) return static_cast<LVRPointCloudItem*>(item);
@@ -1559,13 +1605,20 @@ void LVRMainWindow::estimateNormals()
     buildIncompatibilityBox(string("normal estimation"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+
     if(items.size() > 0)
     {
-        LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
-        QTreeWidgetItem* parent_item = items.first()->parent();
-        if(pc_item != NULL)
+
+        QList<LVRPointCloudItem*> pc_items = getPointCloudItems(items);
+        QList<QTreeWidgetItem*> parent_items;
+        for(LVRPointCloudItem* pc_item : pc_items)
         {
-            LVREstimateNormalsDialog* dialog = new LVREstimateNormalsDialog(pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            parent_items.append(pc_item->parent());
+        }
+
+        if(pc_items.size() > 0)
+        {
+            LVREstimateNormalsDialog* dialog = new LVREstimateNormalsDialog(pc_items, parent_items, treeWidget, qvtkWidget->GetRenderWindow());
             return;
         }
     }
