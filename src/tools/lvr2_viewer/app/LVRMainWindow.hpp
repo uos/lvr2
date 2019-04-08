@@ -116,6 +116,7 @@ public:
 
 public Q_SLOTS:
     void loadModel();
+    void loadModels(const QStringList& filenames);
     void manualICP();
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);
