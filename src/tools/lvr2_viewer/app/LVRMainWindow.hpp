@@ -135,6 +135,8 @@ public Q_SLOTS:
     void applyMLSProjection();
     void removeOutliers();
     void deleteModelItem();
+    void copyModelItem();
+    void pasteModelItem();
     void loadPointCloudData();
     void unloadPointCloudData();
     void changePointSize(int pointSize);
@@ -216,7 +218,10 @@ Q_SIGNALS:
 private:
     void setupQVTK();
     void connectSignalsAndSlots();
+    bool childNameExists(QTreeWidgetItem* item, const QString& name);
+    QString increaseFilename(QString filename);
 
+    QList<QTreeWidgetItem*>                     m_items_copied;
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;
     LVRPlotter*                                 m_PointPreviewPlotter;
@@ -298,6 +303,8 @@ private:
     QLineEdit*                          m_gradientLineEdit;
     // ContextMenu Items
     QAction*                            m_actionShowColorDialog;
+    QAction*                            m_actionCopyModelItem;
+    QAction*                            m_actionPasteModelItem;
     QAction*                            m_actionRenameModelItem;
     QAction*                            m_actionDeleteModelItem;
     QAction*                            m_actionExportModelTransformed;
