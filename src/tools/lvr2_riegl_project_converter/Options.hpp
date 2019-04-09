@@ -47,8 +47,16 @@ class Options {
             return vm["out"].as<std::string>();
         }
 
+        std::string getOutputFormat() {
+            return vm["outformat"].as<std::string>();
+        }
+
         std::string getInputDir() {
             return vm["input"].as<std::string>();
+        }
+
+        std::string getInputFormat() {
+            return vm["inputformat"].as<std::string>();
         }
 
         bool force_overwrite() {
@@ -66,4 +74,6 @@ class Options {
         unsigned int getReductionFactor() {
             return vm["reduction"].as<unsigned int>();
         }
+
+        
 };

@@ -40,6 +40,8 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
     renderer->AddActor(m_bb->getActor());
     m_bb->setPose(m_pose);
 
+    setTransform(m_matrix);
+
     // load data
     reload(renderer);
 
@@ -125,7 +127,24 @@ void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
 
     for (int i = 0; i < childCount(); i++)
     {
-            child(i)->setHidden(!visible);
+        QTreeWidgetItem* item = child(i);
+        
+        if(item->type() == LVRCamerasItemType)
+        {
+            for(int j=0; j < item->childCount(); j++)
+            {
+                QTreeWidgetItem* cam_item = item->child(j);
+
+                if(cam_item->type() == LVRCamDataItemType)
+                {
+                    LVRCamDataItem* cam_item_c = static_cast<LVRCamDataItem*>(cam_item);
+                    cam_item_c->setVisibility(visible);
+                }
+                
+            }
+        }
+
+        item->setHidden(!visible);
     }
 
     if (m_model)
@@ -142,6 +161,7 @@ void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
     {
         m_bbItem->setVisibility(visible);
     }
+
 }
 
 LVRScanDataItem::~LVRScanDataItem()
