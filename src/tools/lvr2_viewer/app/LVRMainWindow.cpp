@@ -1761,7 +1761,7 @@ void LVRMainWindow::reconstructUsingMarchingCubes()
     if(items.size() > 0)
     {
         LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
-        LVRModelItem* parent_item = getModelItem(items.first());
+        QTreeWidgetItem* parent_item = pc_item->parent();
         if(pc_item != NULL)
         {
             LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("MC", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
