@@ -93,6 +93,9 @@ LVRMainWindow::LVRMainWindow()
     m_actionLoadPointCloudData = new QAction("load PointCloud", this);
     m_actionUnloadPointCloudData = new QAction("unload PointCloud", this);
 
+    m_actionShowImage = new QAction("Show Image", this);
+    m_actionSetViewToCamera = new QAction("Set view to camera", this);
+
     m_treeParentItemContextMenu = new QMenu;
     m_treeParentItemContextMenu->addAction(m_actionRenameModelItem);
     m_treeParentItemContextMenu->addAction(m_actionDeleteModelItem);
@@ -244,6 +247,8 @@ LVRMainWindow::~LVRMainWindow()
     delete m_actionShowColorDialog;
     delete m_actionLoadPointCloudData;
     delete m_actionUnloadPointCloudData;
+    delete m_actionShowImage;
+    delete m_actionSetViewToCamera;
 }
 
 void LVRMainWindow::connectSignalsAndSlots()
@@ -255,6 +260,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(highlightBoundingBoxes()));
     QObject::connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(setModelVisibility(QTreeWidgetItem*, int)));
 
+
     QObject::connect(m_actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
     QObject::connect(m_actionShowColorDialog, SIGNAL(triggered()), this, SLOT(showColorDialog()));
@@ -262,6 +268,11 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionDeleteModelItem, SIGNAL(triggered()), this, SLOT(deleteModelItem()));
     QObject::connect(m_actionLoadPointCloudData, SIGNAL(triggered()), this, SLOT(loadPointCloudData()));
     QObject::connect(m_actionUnloadPointCloudData, SIGNAL(triggered()), this, SLOT(unloadPointCloudData()));
+
+    QObject::connect(m_actionShowImage, SIGNAL(triggered()), this, SLOT(showImage()));
+    QObject::connect(m_actionSetViewToCamera, SIGNAL(triggered()), this, SLOT(setViewToCamera()));
+
+
     QObject::connect(m_actionExportModelTransformed, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
 
     QObject::connect(m_actionReset_Camera, SIGNAL(triggered()), this, SLOT(updateView()));
@@ -285,7 +296,9 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), m_aboutDialog, SLOT(show()));
 
 
+#if VTK_MAJOR_VERSION > 6
     QObject::connect(actionRenderEDM, SIGNAL(toggled(bool)), this, SLOT(toogleEDL(bool)));
+#endif
     QObject::connect(m_actionShow_Points, SIGNAL(toggled(bool)), this, SLOT(togglePoints(bool)));
     QObject::connect(m_actionShow_Normals, SIGNAL(toggled(bool)), this, SLOT(toggleNormals(bool)));
     QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
@@ -424,24 +437,33 @@ void LVRMainWindow::setupQVTK()
     m_pathCamera->SetInterpolator(cameraInterpolator);
     m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
 
+#if VTK_MAJOR_VERSION > 6
     // Enable EDL per default
+
     qvtkWidget->GetRenderWindow()->SetMultiSamples(0);
+
     m_basicPasses = vtkRenderStepsPass::New();
     m_edl = vtkEDLShading::New();
     m_edl->SetDelegatePass(m_basicPasses);
-
     vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
+
     glrenderer->SetPass(m_edl);
+#else
+    // disable button if we don't have EDL support
+    actionRenderEDM->setChecked(false);
+    actionRenderEDM->setDisabled(true);
+#endif
 
     // Finalize QVTK setup by adding the renderer to the window
     renderWindow->AddRenderer(m_renderer);
 
-
 }
 
+#if VTK_MAJOR_VERSION > 6
 void LVRMainWindow::toogleEDL(bool state)
 {
     vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
+
     if(state == false)
     {
         glrenderer->SetPass(m_basicPasses);
@@ -452,6 +474,7 @@ void LVRMainWindow::toogleEDL(bool state)
     }
     this->qvtkWidget->GetRenderWindow()->Render();
 }
+#endif
 
 void LVRMainWindow::updateView()
 {
@@ -808,6 +831,30 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
 
             delete con_menu;
         }
+        if(item->type() == LVRCvImageItemType)
+        {
+            QPoint globalPos = treeWidget->mapToGlobal(p);
+            QMenu *con_menu = new QMenu;
+
+            LVRCvImageItem *cvi = static_cast<LVRCvImageItem *>(item);
+
+            con_menu->addAction(m_actionShowImage);
+            con_menu->exec(globalPos);
+
+            delete con_menu;
+        }
+        if(item->type() == LVRCamDataItemType)
+        {
+            QPoint globalPos = treeWidget->mapToGlobal(p);
+            QMenu *con_menu = new QMenu;
+
+            LVRCamDataItem* cam = static_cast<LVRCamDataItem *>(item);
+
+            con_menu->addAction(m_actionSetViewToCamera);
+            con_menu->exec(globalPos);
+
+            delete con_menu;
+        }
     }
 }
 
@@ -914,6 +961,42 @@ void LVRMainWindow::unloadPointCloudData()
         }
     }
 
+}
+
+void LVRMainWindow::showImage()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+
+        if(item->type() == LVRCvImageItemType)
+        {
+            LVRCvImageItem *cvi = static_cast<LVRCvImageItem *>(item);
+
+            cvi->openWindow();
+        }
+    }
+}
+
+void LVRMainWindow::setViewToCamera()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+
+        if(item->type() == LVRCamDataItemType)
+        {
+            LVRCamDataItem *cam = static_cast<LVRCamDataItem *>(item);
+
+            cam->setCameraView();
+
+            refreshView();
+        }
+    }
 }
 
 void LVRMainWindow::deleteModelItem()
@@ -1110,6 +1193,13 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
 
         refreshView();
     }
+    else if (treeWidgetItem->type() == LVRCamDataItemType)
+    {
+        LVRCamDataItem *item = static_cast<LVRCamDataItem *>(treeWidgetItem);
+        item->setVisibility(true);
+
+        refreshView();
+    }
     else if (treeWidgetItem->type() == LVRBoundingBoxItemType)
     {
         LVRBoundingBoxItem *item = static_cast<LVRBoundingBoxItem *>(treeWidgetItem);
@@ -1122,6 +1212,8 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
         setModelVisibility(treeWidgetItem->parent(), column);
     }
 }
+
+
 
 void LVRMainWindow::changePointSize(int pointSize)
 {
@@ -1306,12 +1398,31 @@ QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm
 {
     QTreeWidgetItem *lastItem = nullptr;
     std::vector<ScanData> scanData = sdm->getScanData();
+    std::vector<std::vector<CamData> > camData = sdm->getCamData();
 
     for (size_t i = 0; i < scanData.size(); i++)
     {
         char buf[128];
         std::sprintf(buf, "%05d", scanData[i].m_positionNumber);
         LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
+
+        if(camData[i].size() > 0)
+        {
+            QTreeWidgetItem* cameras_item = new QTreeWidgetItem(item, LVRCamerasItemType);
+            cameras_item->setText(0, QString("Photos"));
+            // insert cam poses
+            // QTreeWidgetItem *images = new QTreeWidgetItem(item, QString("cams"));
+            for(int j=0; j < camData[i].size(); j++)
+            {
+                char buf2[128];
+                std::sprintf(buf2, "%05d", j);
+                // implement this
+                LVRCamDataItem *cam_item = new LVRCamDataItem(camData[i][j], sdm, j, m_renderer, QString("photo_") + buf2, cameras_item);
+
+                lastItem = cam_item;
+            }
+        }
+
 
         lastItem = item;
     }
@@ -1737,7 +1848,7 @@ void LVRMainWindow::onGradientLineEditChanged()
         int min = *points->getIntAtomic("spectral_wavelength_min");
         int max = *points->getIntAtomic("spectral_wavelength_max");
 
-       
+
         QString test = m_gradientLineEdit-> text();
         bool ok;
         int wavelength = test.toUInt(&ok);
@@ -1746,14 +1857,14 @@ void LVRMainWindow::onGradientLineEditChanged()
         {
             return;
         }
-        
+
         if (wavelength < min)
             m_gradientSlider->setValue(min);
         else if (wavelength >= max)
             m_gradientSlider->setValue(max-1);
         else
             m_gradientSlider->setValue(wavelength);
-        
+
     }
 }
 
@@ -1842,9 +1953,9 @@ void LVRMainWindow::onGradientSliderChanged(int action)
             if (!m_gradientLineEdit->hasFocus())
             {
                 m_gradientLineEdit->setText(QString("%1").arg(wavelength));
-            }            
+            }
         }
-    }  
+    }
 }
 
 void LVRMainWindow::changeGradientColor()

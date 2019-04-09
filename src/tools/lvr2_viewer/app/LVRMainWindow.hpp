@@ -48,8 +48,13 @@
 #include <vtkGraphicsFactory.h>
 #include <vtkOrientationMarkerWidget.h>
 #include <vtkAxesActor.h>
-#include <vtkEDLShading.h>
-#include <vtkRenderStepsPass.h>
+
+
+#if VTK_MAJOR_VERSION > 6
+    #include <vtkRenderStepsPass.h>
+    #include <vtkEDLShading.h>
+#endif
+
 #include <vtkOpenGLRenderer.h>
 #include <vtkNew.h>
 
@@ -78,6 +83,7 @@
 #include "../widgets/LVRBackgroundDialog.hpp"
 #include "../widgets/LVRHistogram.hpp"
 #include "../widgets/LVRScanDataItem.hpp"
+#include "../widgets/LVRCamDataItem.hpp"
 #include "../widgets/LVRBoundingBoxItem.hpp"
 
 #include "../widgets/LVRPointInfo.hpp"
@@ -134,6 +140,9 @@ public Q_SLOTS:
     void changeTransparency(int transparencyValue);
     void changeShading(int shader);
 
+    void showImage();
+    void setViewToCamera();
+
     /// Updates all selected LVRPointCloudItems to the desired Spectral. **can take seconds**
     void changeSpectralColor();
     /// Determines if changeSpectralColor() should be called. Updates the m_spectralLineEdit to the value from m_spectralSlider
@@ -157,7 +166,9 @@ public Q_SLOTS:
     void toggleNormals(bool checkboxState);
     void toggleMeshes(bool checkboxState);
     void toggleWireframe(bool checkboxState);
+#if VTK_MAJOR_VERSION > 6
     void toogleEDL(bool checkboxstate);
+#endif
     void refreshView();
     void updateView();
     void saveCamera();
@@ -291,13 +302,18 @@ private:
     QAction*                            m_actionLoadPointCloudData;
     QAction*                            m_actionUnloadPointCloudData;
 
+    QAction*                            m_actionShowImage;
+    QAction*                            m_actionSetViewToCamera;
+
     LVRPickingInteractor*               m_pickingInteractor;
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
 
+
     // EDM Rendering
+#if VTK_MAJOR_VERSION > 6
     vtkSmartPointer<vtkRenderStepsPass> m_basicPasses;
     vtkSmartPointer<vtkEDLShading>      m_edl;
-
+#endif
 
     enum TYPE {
         MODELITEMS_ONLY,

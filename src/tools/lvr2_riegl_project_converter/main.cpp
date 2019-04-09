@@ -43,6 +43,7 @@
 #include <lvr2/io/ScanprojectIO.hpp>
 
 #include <lvr2/util/Util.hpp>
+#include <lvr2/geometry/BaseVector.hpp>
 
 #include "Options.hpp"
 #include "RieglProject.hpp"
@@ -57,6 +58,22 @@
 */
 
 using Vec = lvr2::BaseVector<float>;
+
+void transformModel(lvr2::ModelPtr model, const lvr2::Matrix4<Vec> transform)
+{
+    size_t num_points = model->m_pointCloud->numPoints();
+
+    // float test = model->m_pointCloud->getPointArray().get()[0];
+
+    lvr2::BaseVector<float>* pts_raw = 
+        reinterpret_cast<lvr2::BaseVector<float>*>(&model->m_pointCloud->getPointArray().get()[0]);
+
+    #pragma omp for
+    for(size_t i=0; i<num_points; i++)
+    {
+        pts_raw[i] = transform * pts_raw[i];
+    }
+}
 
 template <typename ValueType>
 bool write_params_to_file(fs::path dest, bool force_overwrite, ValueType *values, int count) {
@@ -149,7 +166,7 @@ bool write_mat4_to_pose_file(const fs::path file, const lvr2::Matrix4<Vec> trans
 
         fs::ofstream pose(file);
         if (!pose.is_open() || !pose.good()) {
-            std::cout << "[writing_mat4_to_pose_file] Error: Error while writing " << file << std::endl;;
+            std::cout << "[writing_mat4_to_pose_file] Error: Error while writing " << file << std::endl;
             return false;
         }
 
@@ -168,9 +185,20 @@ bool write_mat4_to_pose_file(const fs::path file, const lvr2::Matrix4<Vec> trans
         return true;
 }
 
-void convert_rxp_to_3d_per_thread(std::vector<lvr2::ScanPosition> *work, int *read_file_count, int *current_file_idx, const fs::path *scans_dir,  std::mutex *mtx, int id, bool force_overwrite, unsigned int reduction) {
+void convert_rxp_to_3d_per_thread(
+    std::vector<lvr2::ScanPosition> *work,
+    int *read_file_count,
+    int *current_file_idx,
+    const fs::path *scans_dir,
+    std::mutex *mtx,
+    int id,
+    bool force_overwrite,
+    unsigned int reduction,
+    std::string inputformat = "rxp",
+    std::string outputcoords = "slam6d")
+{
 
-    lvr2::RxpIO io;
+    lvr2::RxpIO rxpio;
 
     mtx->lock();
 
@@ -192,6 +220,7 @@ void convert_rxp_to_3d_per_thread(std::vector<lvr2::ScanPosition> *work, int *re
             continue;
         }
 
+        lvr2::Matrix4<Vec> identity;
         lvr2::Matrix4<Vec> riegl_to_slam_transform;
 
         riegl_to_slam_transform[4]  = -100.0;
@@ -200,7 +229,46 @@ void convert_rxp_to_3d_per_thread(std::vector<lvr2::ScanPosition> *work, int *re
         riegl_to_slam_transform[2]  =  100.0;
         riegl_to_slam_transform[10] =  0.0;
 
-        lvr2::ModelPtr tmp = io.read(pos.scan_file.string(), reduction, riegl_to_slam_transform);
+        lvr2::ModelPtr tmp;
+        
+        if(inputformat == "rxp")
+        {
+            if(outputcoords == "slam6d")
+            {
+                tmp = rxpio.read(
+                    pos.scan_file.string(),
+                    reduction,
+                    riegl_to_slam_transform
+                );
+
+            } else if(outputcoords == "lvr") {
+                tmp = rxpio.read(
+                    pos.scan_file.string(),
+                    reduction,
+                    identity
+                );
+            }
+        } else {
+            // ascii etc
+            
+            bool dummy;
+            lvr2::Matrix4<Vec > inv_transform = pos.transform.inv(dummy);
+            inv_transform.transpose();
+            
+            tmp = lvr2::ModelFactory::readModel(pos.scan_file.string());
+
+            // ascii export is already transformed, have to transform it back.
+            // or find the button to save the ascii clouds without transformation
+            transformModel(tmp, inv_transform);
+
+            if(outputcoords == "slam6d")
+            {
+                // convert to slam6d
+                std::cout << "[read_rxp_per_thread] Transform to slam6d" << std::endl;
+                transformModel(tmp, riegl_to_slam_transform);
+            }
+        }
+        
         lvr2::ModelFactory::saveModel(tmp, out_file.string());
 
         mtx->lock();
@@ -211,7 +279,13 @@ void convert_rxp_to_3d_per_thread(std::vector<lvr2::ScanPosition> *work, int *re
     mtx->unlock();
 }
 
-bool convert_riegl_project(lvr2::RieglProject &ri_proj, const fs::path &out_scan_dir, bool force_overwrite, unsigned int reduction) {
+bool convert_riegl_project(
+    lvr2::RieglProject &ri_proj,
+    const fs::path &out_scan_dir,
+    bool force_overwrite,
+    unsigned int reduction,
+    std::string output_coords = "slam6d"
+) {
     //sub folders
     fs::path scans_dir        = out_scan_dir / "scans/";
     fs::path images_dir       = out_scan_dir / "images/";
@@ -247,8 +321,19 @@ bool convert_riegl_project(lvr2::RieglProject &ri_proj, const fs::path &out_scan
     int current_file_idx = 0;
 
     for (int j = 0; j < num_cores; j++) {
-        threads[j] = std::thread(convert_rxp_to_3d_per_thread, &ri_proj.m_scan_positions,
-                                 &read_file_count, &current_file_idx, &scans_dir, &mtx, j, force_overwrite, reduction);
+        threads[j] = std::thread(
+            convert_rxp_to_3d_per_thread,
+            &ri_proj.m_scan_positions,
+            &read_file_count,
+            &current_file_idx,
+            &scans_dir,
+            &mtx, 
+            j,
+            force_overwrite,
+            reduction,
+            ri_proj.m_input_cloud_format,
+            output_coords
+        );
     }
 
     for (int j = 0; j < num_cores; j++) {
@@ -345,14 +430,15 @@ int main(int argc, char **argv) {
     std::cout << "Arguments:\n InputDir: " << opt.getInputDir() << "; OutputDir: " << opt.getOutputDir() << "; Forced: " << opt.force_overwrite() << "; Reduction: " << opt.getReductionFactor() << "; Start: " << opt.getStartscan() << "; End: " << opt.getEndscan() << std::endl;
 
 #if 1
-    lvr2::RieglProject tmp(opt.getInputDir());
+    lvr2::RieglProject tmp(opt.getInputDir(), opt.getInputFormat());
+
+    
 
     if (!tmp.parse_project(opt.getStartscan(), opt.getEndscan())) {
         std::cout << "[main] Error: The directory \'" << opt.getInputDir() << "\' is NOT a Riegl Scanproject directory." << std::endl;
 
         return 0;
     }
-
 
     if (!convert_riegl_project(tmp, fs::path(opt.getOutputDir()), opt.force_overwrite(), opt.getReductionFactor())) {
             std::cout << "[main] Error: It occured an error while converting the Riegl Scan Project." << std::endl;
