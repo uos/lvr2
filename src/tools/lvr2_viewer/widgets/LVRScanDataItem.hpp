@@ -43,7 +43,7 @@ class LVRScanDataItem : public QTreeWidgetItem, public Transformable
 
         QString getName() { return m_name; }
 
-        Pose getPose() { return m_pose; }
+        Pose getPose() { return getModelBridgePtr()->getPose(); }
 
         ModelBridgePtr getModelBridgePtr();
 
