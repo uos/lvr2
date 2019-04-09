@@ -7,6 +7,7 @@ namespace lvr2
 {
 
 LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, vtkSmartPointer<vtkRenderer> renderer, QString name, QTreeWidgetItem *parent) : QTreeWidgetItem(parent, LVRScanDataItemType)
+,m_renderer(renderer)
 {
     m_showSpectralsItem = nullptr;
     m_pcItem = nullptr;
@@ -45,10 +46,15 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
     setTransform(m_matrix);
 
     // load data
-    reload(renderer);
+    reload();
 
     setText(0, m_name);
     setCheckState(0, Qt::Checked);
+}
+
+void LVRScanDataItem::reload()
+{
+    reload(m_renderer);
 }
 
 void LVRScanDataItem::reload(vtkSmartPointer<vtkRenderer> renderer)

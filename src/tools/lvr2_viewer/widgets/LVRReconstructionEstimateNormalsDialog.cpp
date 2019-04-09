@@ -312,7 +312,20 @@ void LVREstimateNormalsDialog::estimateNormals()
         
         } else {
             // TODO. Only update view
-            pc_item->update();
+
+            if(parent->type() == LVRScanDataItemType)
+            {
+                // pc_item->update();
+                LVRScanDataItem *sd_item = static_cast<LVRScanDataItem *>(parent);
+                sd_item->reload();
+            } else {
+                vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
+                renderer->RemoveActor(pc_item->getPointBufferBridge()->getPointCloudActor());
+                pc_item->update();
+                renderer->AddActor(pc_item->getPointBufferBridge()->getPointCloudActor());
+            }
+            
+
         }
 
         m_renderWindow->Render();

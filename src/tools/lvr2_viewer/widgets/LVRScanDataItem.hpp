@@ -53,6 +53,8 @@ class LVRScanDataItem : public QTreeWidgetItem, public Transformable
 
         bool isPointCloudLoaded();
 
+        void reload();
+
     private:
 
         void reload(vtkSmartPointer<vtkRenderer> renderer);
@@ -69,6 +71,8 @@ class LVRScanDataItem : public QTreeWidgetItem, public Transformable
         LVRPoseItem                            *m_pItem;
         QTreeWidgetItem                        *m_showSpectralsItem;
         Matrix4<BaseVector<float> >             m_matrix;
+        vtkSmartPointer<vtkRenderer>            m_renderer;
+
 };
 
 } // namespace lvr2
