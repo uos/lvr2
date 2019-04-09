@@ -340,7 +340,7 @@ size_t  LVRPointBufferBridge::getNumPoints()
 
 bool LVRPointBufferBridge::hasNormals()
 {
-    return m_hasNormals;
+    return m_pointBuffer->hasNormals();
 }
 
 bool LVRPointBufferBridge::hasColors()
@@ -391,6 +391,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 
         if(normals)
         {
+            std::cout << "vtk: adding normals" << std::endl;
             m_vtk_normals->SetNumberOfTuples(n);
         }
 

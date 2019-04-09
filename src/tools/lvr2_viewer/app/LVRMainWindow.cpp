@@ -86,6 +86,19 @@ LVRMainWindow::LVRMainWindow()
 
     m_treeWidgetHelper = new LVRTreeWidgetHelper(treeWidget);
 
+    
+    m_actionCopyModelItem = new QAction("Copy item", this);
+    m_actionCopyModelItem->setShortcut(QKeySequence::Copy);
+    m_actionCopyModelItem->setShortcutContext(Qt::ApplicationShortcut);
+    m_actionCopyModelItem->setShortcutVisibleInContextMenu(true);
+
+
+    m_actionPasteModelItem = new QAction("Paste item", this);
+    m_actionPasteModelItem->setShortcut(QKeySequence::Paste);
+    m_actionPasteModelItem->setShortcutContext(Qt::ApplicationShortcut);
+    m_actionPasteModelItem->setShortcutVisibleInContextMenu(true);
+
+
     m_actionRenameModelItem = new QAction("Rename item", this);
     m_actionDeleteModelItem = new QAction("Delete item", this);
     m_actionExportModelTransformed = new QAction("Export item with transformation", this);
@@ -96,20 +109,25 @@ LVRMainWindow::LVRMainWindow()
     m_actionShowImage = new QAction("Show Image", this);
     m_actionSetViewToCamera = new QAction("Set view to camera", this);
 
+    this->addAction(m_actionCopyModelItem);
+    this->addAction(m_actionPasteModelItem);
+
     m_treeParentItemContextMenu = new QMenu;
     m_treeParentItemContextMenu->addAction(m_actionRenameModelItem);
     m_treeParentItemContextMenu->addAction(m_actionDeleteModelItem);
+    m_treeParentItemContextMenu->addAction(m_actionCopyModelItem);
 
     m_treeChildItemContextMenu = new QMenu;
     m_treeChildItemContextMenu->addAction(m_actionExportModelTransformed);
     m_treeChildItemContextMenu->addAction(m_actionShowColorDialog);
     m_treeChildItemContextMenu->addAction(m_actionDeleteModelItem);
+    m_treeChildItemContextMenu->addAction(m_actionCopyModelItem);
 
     m_PointPreviewPlotter = this->plotter;
     this->dockWidgetSpectralSliderSettings->close();
     this->dockWidgetSpectralColorGradientSettings->close();
     this->dockWidgetPointPreview->close();
-
+ 
     // Toolbar item "File"
     m_actionOpen = this->actionOpen;
     m_actionExport = this->actionExport;
@@ -243,12 +261,15 @@ LVRMainWindow::~LVRMainWindow()
 
     delete m_actionRenameModelItem;
     delete m_actionDeleteModelItem;
+    delete m_actionCopyModelItem;
+    delete m_actionPasteModelItem;
     delete m_actionExportModelTransformed;
     delete m_actionShowColorDialog;
     delete m_actionLoadPointCloudData;
     delete m_actionUnloadPointCloudData;
     delete m_actionShowImage;
     delete m_actionSetViewToCamera;
+    
 }
 
 void LVRMainWindow::connectSignalsAndSlots()
@@ -266,6 +287,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShowColorDialog, SIGNAL(triggered()), this, SLOT(showColorDialog()));
     QObject::connect(m_actionRenameModelItem, SIGNAL(triggered()), this, SLOT(renameModelItem()));
     QObject::connect(m_actionDeleteModelItem, SIGNAL(triggered()), this, SLOT(deleteModelItem()));
+    QObject::connect(m_actionCopyModelItem, SIGNAL(triggered()), this, SLOT(copyModelItem()));
+    QObject::connect(m_actionPasteModelItem, SIGNAL(triggered()), this, SLOT(pasteModelItem()));
     QObject::connect(m_actionLoadPointCloudData, SIGNAL(triggered()), this, SLOT(loadPointCloudData()));
     QObject::connect(m_actionUnloadPointCloudData, SIGNAL(triggered()), this, SLOT(unloadPointCloudData()));
 
@@ -826,7 +849,13 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
             {
                 con_menu->addAction(m_actionLoadPointCloudData);
             }
+
             con_menu->addAction(m_actionDeleteModelItem);
+            con_menu->addAction(m_actionCopyModelItem);
+            if(m_items_copied.size() > 0)
+            {
+                con_menu->addAction(m_actionPasteModelItem);
+            } 
             con_menu->exec(globalPos);
 
             delete con_menu;
@@ -1106,6 +1135,104 @@ void LVRMainWindow::deleteModelItem()
         restoreSliders();
     }
 }
+
+
+void LVRMainWindow::copyModelItem()
+{
+    // std::cout << "COPY!" << std::endl;
+
+    if(m_items_copied.size() == 0)
+    {
+        m_treeParentItemContextMenu->addAction(m_actionPasteModelItem);
+        m_treeChildItemContextMenu->addAction(m_actionPasteModelItem);
+    }
+
+    m_items_copied = treeWidget->selectedItems();
+}
+
+void LVRMainWindow::pasteModelItem()
+{
+
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* to_item = items.first();
+
+        for(QTreeWidgetItem* from_item : m_items_copied)
+        {
+            std::cout << "copy " << from_item->text(0).toStdString() << std::endl;
+            QString name = from_item->text(0);
+
+            // check if name already exist
+            bool child_name_exists = false;
+            bool recheck = true;
+
+            while(childNameExists(to_item, name))
+            {
+                
+                // TODO better
+                name = increaseFilename(name);
+                std::cout << "Change name to " << name.toStdString() << std::endl; 
+
+            }
+
+            QTreeWidgetItem* insert_item = from_item->clone();
+            insert_item->setText(0, name);
+            insert_item->setToolTip(0, name);
+
+            // addChild removes all other childs?
+
+            to_item->addChild(insert_item);
+
+        }
+
+        m_items_copied.clear();
+
+        m_treeParentItemContextMenu->removeAction(m_actionPasteModelItem);
+        m_treeChildItemContextMenu->removeAction(m_actionPasteModelItem);
+
+    }
+
+}
+
+bool LVRMainWindow::childNameExists(QTreeWidgetItem* item, const QString& name)
+{
+    bool child_name_exists = false;
+
+    const int num_children = item->childCount();
+
+    for(int i=0; i<num_children; i++)
+    {
+        const QTreeWidgetItem* child = item->child(i);
+        const QString child_name = child->text(0);
+        if(name == child_name)
+        {
+            child_name_exists = true;
+            break;
+        }
+    }
+
+    return child_name_exists;
+}
+
+QString LVRMainWindow::increaseFilename(QString filename)
+{
+    QRegExp rx("(\\d+)$");
+    
+    if(rx.indexIn(filename, 0) != -1)
+    {
+        int number = 0;
+        number = rx.cap(1).toInt();
+        number += 1;
+        filename.replace(rx, QString::number(number));
+    } else {
+        filename += "_1";
+    }
+
+    return filename;
+}
+
 
 LVRModelItem* LVRMainWindow::getModelItem(QTreeWidgetItem* item)
 {
@@ -1623,6 +1750,7 @@ void LVRMainWindow::estimateNormals()
         }
     }
     m_incompatibilityBox->exec();
+    qvtkWidget->GetRenderWindow()->Render();
 }
 
 void LVRMainWindow::reconstructUsingMarchingCubes()

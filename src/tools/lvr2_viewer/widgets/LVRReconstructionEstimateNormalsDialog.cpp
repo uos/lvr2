@@ -163,6 +163,7 @@ void LVREstimateNormalsDialog::estimateNormals()
 
     bool autoKn = m_dialog->checkBox_kn_auto->isChecked();
     bool autoKi = m_dialog->checkBox_ki_auto->isChecked();
+    bool genNew = m_dialog->checkBox_new_item->isChecked();
 
     int kn = m_dialog->spinBox_kn->value();
     int ki = m_dialog->spinBox_ki->value();
@@ -194,29 +195,31 @@ void LVREstimateNormalsDialog::estimateNormals()
         QTreeWidgetItem* parent = m_parents[pc_id];
         // create new point cloud
         PointBufferPtr pc = pc_item->getPointBuffer();
-        floatArr old_pts = pc->getPointArray();
         size_t numPoints = pc_item->getNumPoints();
 
+        if(genNew)
+        {
+            floatArr old_pts = pc->getPointArray();
+            // Create buffer arrays
+            floatArr points(new float[3 * numPoints]);
 
-        // Create buffer arrays
-        floatArr points(new float[3 * numPoints]);
+            // copy pts to new pointbuffer 
+            std::copy(old_pts.get(), old_pts.get() + numPoints*3, points.get());
 
-        // copy pts to new pointbuffer 
-        std::copy(old_pts.get(), old_pts.get() + numPoints*3, points.get());
-
-        PointBufferPtr new_pc = PointBufferPtr( new PointBuffer );
-        new_pc->setPointArray(points, numPoints);
+            pc.reset(new PointBuffer);
+            pc->setPointArray(points, numPoints);
+        }
         
         PointsetSurfacePtr<Vec> surface;
 
         if(algo_str == "STANN" || algo_str == "FLANN" || algo_str == "NABO" || algo_str == "NANOFLANN")
         {
             surface = std::make_shared<AdaptiveKSearchSurface<Vec> >(
-                new_pc, algo_str, kn, ki, 20, false
+                pc, algo_str, kn, ki, 20, false
             );
         } else if(algo_str == "GPU") {
             surface = std::make_shared<AdaptiveKSearchSurface<Vec> >(
-                new_pc, "FLANN", kn, ki, 20, false
+                pc, "FLANN", kn, ki, 20, false
             );
         }
 
@@ -228,20 +231,19 @@ void LVREstimateNormalsDialog::estimateNormals()
             if(autoKn)
             {
                 kn = static_cast<int>(
-                    sqrt(static_cast<double>(numPoints)) / V * 270.0);
+                    sqrt(static_cast<double>(numPoints)) / V * 400.0);
                 std::cout << "-- auto kn: " << kn << std::endl;
             }
 
             if(autoKi)
             {
                 ki = static_cast<int>(
-                    sqrt(static_cast<double>(numPoints)) / V * 270.0);
+                    sqrt(static_cast<double>(numPoints)) / V * 400.0);
 
                 std::cout << "-- auto ki: " << ki << std::endl;
             }
 
         }
-        
         
         if(algo_str == "GPU")
         {
@@ -252,8 +254,8 @@ void LVREstimateNormalsDialog::estimateNormals()
             float fpz = static_cast<float>(m_dialog->doubleSpinBox_fp_z->value());
 
             std::vector<float> flipPoint = {fpx, fpy, fpz};
-            size_t num_points = new_pc->numPoints();
-            floatArr points = new_pc->getPointArray();
+            size_t num_points = pc->numPoints();
+            floatArr points = pc->getPointArray();
             floatArr normals = floatArr(new float[ num_points * 3 ]);
             std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
             GpuSurface gpu_surface(points, num_points);
@@ -266,7 +268,7 @@ void LVREstimateNormalsDialog::estimateNormals()
             gpu_surface.calculateNormals();
             gpu_surface.getNormals(normals);
 
-            new_pc->setNormalArray(normals, num_points);
+            pc->setNormalArray(normals, num_points);
             gpu_surface.freeGPU();
             
             #else
@@ -277,32 +279,47 @@ void LVREstimateNormalsDialog::estimateNormals()
             surface->calculateSurfaceNormals();
         }
 
+        
+
+        
+
+        if(genNew)
+        {
+            ModelPtr model(new Model(pc));
+
+            ModelBridgePtr bridge(new LVRModelBridge(model));
+            vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
+            bridge->addActors(renderer);
+
+            QString base;
+            if (parent->type() == LVRModelItemType)
+            {
+                LVRModelItem *model_item = static_cast<LVRModelItem *>(parent);
+                base = model_item->getName() + " (w. normals)";
+                m_pointCloudWithNormals = new LVRModelItem(bridge, base);
+                m_pointCloudWithNormals->setPose(model_item->getPose());
+            }
+            else if (parent->type() == LVRScanDataItemType)
+            {
+                LVRScanDataItem *sd_item = static_cast<LVRScanDataItem *>(parent);
+                base = sd_item->getName() + " (w. normals)";
+                m_pointCloudWithNormals = new LVRModelItem(bridge, base);
+                m_pointCloudWithNormals->setPose(sd_item->getPose());
+            }
+
+            m_treeWidget->addTopLevelItem(m_pointCloudWithNormals);
+            m_pointCloudWithNormals->setExpanded(true);
+        
+        } else {
+            // TODO. Only update view
+            pc_item->update();
+        }
+
+        m_renderWindow->Render();
+
         std::cout << timestamp << "Finished." << std::endl;
-
-        ModelPtr model(new Model(new_pc));
-
-        ModelBridgePtr bridge(new LVRModelBridge(model));
-        vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
-        bridge->addActors(renderer);
-
-        QString base;
-        if (parent->type() == LVRModelItemType)
-        {
-            LVRModelItem *model_item = static_cast<LVRModelItem *>(parent);
-            base = model_item->getName() + " (w. normals)";
-            m_pointCloudWithNormals = new LVRModelItem(bridge, base);
-            m_pointCloudWithNormals->setPose(model_item->getPose());
-        }
-        else if (parent->type() == LVRScanDataItemType)
-        {
-            LVRScanDataItem *sd_item = static_cast<LVRScanDataItem *>(parent);
-            base = sd_item->getName() + " (w. normals)";
-            m_pointCloudWithNormals = new LVRModelItem(bridge, base);
-            m_pointCloudWithNormals->setPose(sd_item->getPose());
-        }
-
-        m_treeWidget->addTopLevelItem(m_pointCloudWithNormals);
-        m_pointCloudWithNormals->setExpanded(true);
+        
+        // m_renderWindow->GetRenderers()->GetFirstRenderer()->render();
 
     }
 }

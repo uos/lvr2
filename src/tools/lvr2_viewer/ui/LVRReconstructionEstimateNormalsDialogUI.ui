@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>452</width>
-    <height>297</height>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -253,6 +253,22 @@
    </property>
    <property name="value">
     <double>1000000.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBox_new_item">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>210</y>
+     <width>151</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Generate new item</string>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
    </property>
   </widget>
  </widget>

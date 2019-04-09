@@ -28,11 +28,13 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
     m_pose.x = pose[0];
     m_pose.y = pose[1];
     m_pose.z = pose[2];
-    m_pose.r = pose[3]  * 57.295779513;
-    m_pose.t = pose[4]  * 57.295779513;
-    m_pose.p = pose[5]  * 57.295779513;
+    m_pose.r = pose[3];
+    m_pose.t = pose[4];
+    m_pose.p = pose[5];
 
     m_pItem = new LVRPoseItem(ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model))), this);
+
+    m_pItem->setPose(m_pose);
 
     // init bb
     m_bb = BoundingBoxBridgePtr(new LVRBoundingBoxBridge(m_data.m_boundingBox));
