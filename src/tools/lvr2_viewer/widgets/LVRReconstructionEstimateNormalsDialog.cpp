@@ -279,10 +279,6 @@ void LVREstimateNormalsDialog::estimateNormals()
             surface->calculateSurfaceNormals();
         }
 
-        
-
-        
-
         if(genNew)
         {
             ModelPtr model(new Model(pc));
@@ -311,7 +307,6 @@ void LVREstimateNormalsDialog::estimateNormals()
             m_pointCloudWithNormals->setExpanded(true);
         
         } else {
-            // TODO. Only update view
 
             if(parent->type() == LVRScanDataItemType)
             {
@@ -325,7 +320,6 @@ void LVREstimateNormalsDialog::estimateNormals()
                 renderer->AddActor(pc_item->getPointBufferBridge()->getPointCloudActor());
             }
             
-
         }
 
         m_renderWindow->Render();

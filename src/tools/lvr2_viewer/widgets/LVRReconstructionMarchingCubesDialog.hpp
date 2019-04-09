@@ -34,12 +34,16 @@
 #include <vtkSmartPointer.h>
 
 #include "../vtkBridge/LVRModelBridge.hpp"
+#include "../util/qttf.hpp"
 
 #include "ui_LVRReconstructionMarchingCubesDialogUI.h"
 #include "LVRPointCloudItem.hpp"
 #include "LVRModelItem.hpp"
 
 #include <QProgressDialog>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
+
 
 using Ui::ReconstructViaMarchingCubesDialog;
 
@@ -51,7 +55,22 @@ class LVRReconstructViaMarchingCubesDialog : public QObject
     Q_OBJECT
 
 public:
-    LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* renderer);
+    LVRReconstructViaMarchingCubesDialog(
+        string decomposition,
+        LVRPointCloudItem* pc,
+        QTreeWidgetItem* parent,
+        QTreeWidget* treeWidget,
+        vtkRenderWindow* renderer
+    );
+
+    // LVRReconstructViaMarchingCubesDialog(
+    //     string decomposition,
+    //     QList<LVRPointCloudItem*> pcs,
+    //     QList<QTreeWidgetItem*> parent,
+    //     QTreeWidget* treeWidget,
+    //     vtkRenderWindow* renderer
+    // );
+
     virtual ~LVRReconstructViaMarchingCubesDialog();
 
     static void updateProgressbar(int p);
@@ -77,7 +96,7 @@ private:
     string                                          m_decomposition;
     ReconstructViaMarchingCubesDialog*              m_dialog;
     LVRPointCloudItem*                              m_pc;
-    LVRModelItem*                                   m_parent;
+    QTreeWidgetItem*                                m_parent;
     QTreeWidget*                                    m_treeWidget;
     LVRModelItem*                                   m_generatedModel;
     vtkRenderWindow*                                m_renderWindow;

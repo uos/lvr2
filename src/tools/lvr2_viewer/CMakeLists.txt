@@ -46,6 +46,7 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRCvImageItem.cpp
     widgets/LVRBoundingBoxItem.cpp
     widgets/LVRGraphicsView.cpp
+    util/qttf.cpp
 )
 
 #####################################################################################
