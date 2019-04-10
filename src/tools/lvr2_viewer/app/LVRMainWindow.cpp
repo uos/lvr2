@@ -754,12 +754,12 @@ void LVRMainWindow::alignPointClouds()
         // Pose ist in radians, so we need to convert p to degrees
         // to achieve consistency
         Pose p;
-        p.x = pose[0];
-        p.y = pose[1];
-        p.z = pose[2];
-        p.r = pose[3]  * 57.295779513;
-        p.t = pose[4]  * 57.295779513;
-        p.p = pose[5]  * 57.295779513;
+        p.x = -pose[0];
+        p.y = -pose[1];
+        p.z = -pose[2];
+        p.r = -pose[3]  * 57.295779513;
+        p.t = -pose[4]  * 57.295779513;
+        p.p = -pose[5]  * 57.295779513;
         item->setPose(p);
     }
 
@@ -782,12 +782,12 @@ void LVRMainWindow::alignPointClouds()
         cout << "Refined: " << refinedTransform << endl;
 
         Pose p;
-        p.x = pose[0];
-        p.y = pose[1];
-        p.z = pose[2];
-        p.r = pose[3]  * 57.295779513;
-        p.t = pose[4]  * 57.295779513;
-        p.p = pose[5]  * 57.295779513;
+        p.x = -pose[0];
+        p.y = -pose[1];
+        p.z = -pose[2];
+        p.r = -pose[3]  * 57.295779513;
+        p.t = -pose[4]  * 57.295779513;
+        p.p = -pose[5]  * 57.295779513;
         item->setPose(p);
     }
     m_correspondanceDialog->clearAllItems();
