@@ -28,7 +28,7 @@ namespace  lvr2{
         Cell* makeEmpty(Cell* c);
 
         Cell* insert(float sc, VertexHandle vH, Cell* c);
-        Cell* remove(float sc, VertexHandle vH, Cell* c);
+        Cell* remove(float sc, VertexHandle vH, Cell* c, bool removeWhole = false);
         Cell* findMin(Cell* c);
         Cell* findMax(Cell*);
         Cell* find(float sc, VertexHandle vH, Cell* c);
@@ -44,8 +44,11 @@ namespace  lvr2{
         ~TumbleTree();
 
         void insert(float sc, VertexHandle vH);
+        Cell* insertIterative(float sc, VertexHandle vH);
+        void removeIterative(float sc, VertexHandle vH, bool removeWhole = false);
         void remove(Cell* c, VertexHandle vH);
 
+        void remove(float sc, VertexHandle vH);
         Cell* find(float sc, VertexHandle vH);
 
         void display();
