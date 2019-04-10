@@ -306,7 +306,10 @@ namespace lvr2{
         if(c == NULL)
             return NULL;
         else if(c->left == NULL)
-            return c;
+            if(c != root)
+                return c;
+            else
+                return findMin(c->right);
         else
             return findMin(c->left);
     }
@@ -321,7 +324,10 @@ namespace lvr2{
         if(c == NULL)
             return NULL;
         else if(c->right == NULL)
-            return c;
+            if(c != root)
+                return c;
+            else
+                return findMax(c->left);
         else
             return findMax(c->right);
     }
@@ -366,7 +372,6 @@ namespace lvr2{
     void TumbleTree::update(Cell *c, float alpha, VertexHandle vH)
     {
         if(c == NULL) return;
-        if(c->duplicateMap.numValues() == 0)
         c->signal_counter -= c->signal_counter*alpha;
         for(auto iter = c->duplicateMap.begin(); iter != c->duplicateMap.end(); ++iter)
         {
