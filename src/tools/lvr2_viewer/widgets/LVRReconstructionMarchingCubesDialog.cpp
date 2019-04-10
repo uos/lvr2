@@ -205,6 +205,7 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
     } 
 
     PointBufferPtr pc_buffer = m_pc->getPointBuffer();
+    
     Matrix4<Vec> T = qttf::getTransformation(m_pc, NULL);
     std::cout << T << std::endl;
 
