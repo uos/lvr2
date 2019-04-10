@@ -55,7 +55,7 @@ build this way, you have to compile and install the library manually with these
 flags. The sources can be found on the project website: http://www.libqglviewer.com/
 
 ```bash
-sudo apt install libflann-dev liblz4-dev libgsl-dev libxmu-dev libboost-dev libeigen3-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev libboost-mpi-dev libboost-all-dev freeglut3-dev libvtk6-dev libvtk6-qt-dev libproj-dev cmake build-essential
+sudo apt install libflann-dev liblz4-dev libgsl-dev libxmu-dev libboost-dev libeigen3-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev libboost-mpi-dev libboost-all-dev freeglut3-dev libvtk6-dev libvtk6-qt-dev libproj-dev libcgal-dev libcgal-qt5-dev ocl-icd-opencv-dev doxygen libgraphviz-dev cmake build-essential
 ```
 **Note on OpenCV**: You probably need to compile OpenCV from Source. Make sure that the opencv_contrib packages are included in the installation.
 ```bash
@@ -71,8 +71,8 @@ make -j$(nproc)
 sudo make install
 ```
 
-**Note on CUDA**: You need an NVIDIA Graphics card and the CUDA Toolkit from the official NVIDIA website. There have been problems with the .deb package, so you should probably use the .run file
-	not all targets require CUDA
+**Note on CUDA**: You need an NVIDIA Graphics card and the CUDA Toolkit from the official NVIDIA website. There have been problems with the .deb package, so you should probably use the .run file.  
+not all targets require CUDA.
 
 USAGE
 =====
