@@ -35,6 +35,7 @@
 #include <lvr2/registration/EigenSVDPointAlign.hpp>
 #include <lvr2/io/Timestamp.hpp>
 #include <lvr2/reconstruction/SearchTreeFlann.hpp>
+#include <lvr2/io/IOUtils.hpp>
 
 
 #include <fstream>
@@ -83,6 +84,8 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
         return Matrix4<BaseVecT>();
     }
 
+    m_transformation = Matrix4<BaseVecT>();
+
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
     EigenSVDPointAlign<BaseVecT> align;
     for(int i = 0; i < m_maxIterations; i++)
@@ -104,24 +107,64 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
         // Get transformation (if possible)
         ret = align.alignPoints(pairs, centroid_m, centroid_d, transform);
 
-        cout << timestamp << "CORRECTION" << endl;
-        cout << transform << endl;
+        //cout << timestamp << "CORRECTION" << endl;
+        //cout << transform << endl;
 
         // Apply transformation
-        m_transformation *= transform;
+        m_transformation = transformRegistration(transform.toEigenMatrix().transpose(), m_transformation.toEigenMatrix().transpose()).transpose();
 
-        cout << timestamp << "TRANSFORMATION: " << endl;
-        cout << m_transformation << endl;
+        //cout << timestamp << "TRANSFORMATION: " << endl;
+        //cout << m_transformation << endl;
 
-        cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << " using " << pairs.size() << " points."<< endl;
+        //cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << " using " << pairs.size() << " points."<< endl;
         //cout << m_transformation << endl;
         // Check minimum distance
         if ((fabs(ret - prev_ret) < m_epsilon) && (fabs(ret - prev_prev_ret) < m_epsilon))
         {
-			cout << timestamp << " Error below m_epsilon " << endl;
+			cout << timestamp << " Error below m_epsilon after " << i << " / " << m_maxIterations << " Iterations" << endl;
             break;
         }
     }
+    cout << "Error: " << ret << "; Result: " << m_transformation << endl;
+    return m_transformation;
+}
+
+// TODO: remove
+template <typename BaseVecT>
+Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::old_match()
+{
+    if(m_maxIterations == 0)
+    {
+        return Matrix4<BaseVecT>();
+    }
+
+    m_transformation = Matrix4<BaseVecT>();
+
+    double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
+    EigenSVDPointAlign<BaseVecT> align;
+    for(int i = 0; i < m_maxIterations; i++)
+    {
+        prev_prev_ret = prev_ret;
+        prev_ret = ret;
+        BaseVecT  centroid_m;
+        BaseVecT  centroid_d;
+        Matrix4<BaseVecT> transform;
+        double            sum;
+        PointPairVector<BaseVecT> pairs;
+        getPointPairs(pairs, centroid_m, centroid_d, sum);
+        ret = align.alignPoints(pairs, centroid_m, centroid_d, transform);
+
+        // Apply transformation
+        m_transformation *= transform;
+
+        //cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << " using " << pairs.size() << " points."<< endl;
+        if ((fabs(ret - prev_ret) < m_epsilon) && (fabs(ret - prev_prev_ret) < m_epsilon))
+        {
+			cout << timestamp << " Error below m_epsilon after " << i << " / " << m_maxIterations << " Iterations" << endl;
+            break;
+        }
+    }
+    cout << "old Error: " << ret << "; old Result: " << m_transformation << endl;
     return m_transformation;
 }
 

@@ -48,6 +48,8 @@ public:
     ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4<BaseVecT> transformation);
 
     Matrix4<BaseVecT> match();
+    // TODO: remove
+    Matrix4<BaseVecT> old_match();
 
     virtual ~ICPPointAlign();
 
