@@ -86,6 +86,19 @@ LVRMainWindow::LVRMainWindow()
 
     m_treeWidgetHelper = new LVRTreeWidgetHelper(treeWidget);
 
+    
+    m_actionCopyModelItem = new QAction("Copy item", this);
+    m_actionCopyModelItem->setShortcut(QKeySequence::Copy);
+    m_actionCopyModelItem->setShortcutContext(Qt::ApplicationShortcut);
+    m_actionCopyModelItem->setShortcutVisibleInContextMenu(true);
+
+
+    m_actionPasteModelItem = new QAction("Paste item", this);
+    m_actionPasteModelItem->setShortcut(QKeySequence::Paste);
+    m_actionPasteModelItem->setShortcutContext(Qt::ApplicationShortcut);
+    m_actionPasteModelItem->setShortcutVisibleInContextMenu(true);
+
+
     m_actionRenameModelItem = new QAction("Rename item", this);
     m_actionDeleteModelItem = new QAction("Delete item", this);
     m_actionExportModelTransformed = new QAction("Export item with transformation", this);
@@ -96,20 +109,25 @@ LVRMainWindow::LVRMainWindow()
     m_actionShowImage = new QAction("Show Image", this);
     m_actionSetViewToCamera = new QAction("Set view to camera", this);
 
+    this->addAction(m_actionCopyModelItem);
+    this->addAction(m_actionPasteModelItem);
+
     m_treeParentItemContextMenu = new QMenu;
     m_treeParentItemContextMenu->addAction(m_actionRenameModelItem);
     m_treeParentItemContextMenu->addAction(m_actionDeleteModelItem);
+    m_treeParentItemContextMenu->addAction(m_actionCopyModelItem);
 
     m_treeChildItemContextMenu = new QMenu;
     m_treeChildItemContextMenu->addAction(m_actionExportModelTransformed);
     m_treeChildItemContextMenu->addAction(m_actionShowColorDialog);
     m_treeChildItemContextMenu->addAction(m_actionDeleteModelItem);
+    m_treeChildItemContextMenu->addAction(m_actionCopyModelItem);
 
     m_PointPreviewPlotter = this->plotter;
     this->dockWidgetSpectralSliderSettings->close();
     this->dockWidgetSpectralColorGradientSettings->close();
     this->dockWidgetPointPreview->close();
-
+ 
     // Toolbar item "File"
     m_actionOpen = this->actionOpen;
     m_actionExport = this->actionExport;
@@ -243,12 +261,15 @@ LVRMainWindow::~LVRMainWindow()
 
     delete m_actionRenameModelItem;
     delete m_actionDeleteModelItem;
+    delete m_actionCopyModelItem;
+    delete m_actionPasteModelItem;
     delete m_actionExportModelTransformed;
     delete m_actionShowColorDialog;
     delete m_actionLoadPointCloudData;
     delete m_actionUnloadPointCloudData;
     delete m_actionShowImage;
     delete m_actionSetViewToCamera;
+    
 }
 
 void LVRMainWindow::connectSignalsAndSlots()
@@ -266,6 +287,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShowColorDialog, SIGNAL(triggered()), this, SLOT(showColorDialog()));
     QObject::connect(m_actionRenameModelItem, SIGNAL(triggered()), this, SLOT(renameModelItem()));
     QObject::connect(m_actionDeleteModelItem, SIGNAL(triggered()), this, SLOT(deleteModelItem()));
+    QObject::connect(m_actionCopyModelItem, SIGNAL(triggered()), this, SLOT(copyModelItem()));
+    QObject::connect(m_actionPasteModelItem, SIGNAL(triggered()), this, SLOT(pasteModelItem()));
     QObject::connect(m_actionLoadPointCloudData, SIGNAL(triggered()), this, SLOT(loadPointCloudData()));
     QObject::connect(m_actionUnloadPointCloudData, SIGNAL(triggered()), this, SLOT(unloadPointCloudData()));
 
@@ -826,7 +849,13 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
             {
                 con_menu->addAction(m_actionLoadPointCloudData);
             }
+
             con_menu->addAction(m_actionDeleteModelItem);
+            con_menu->addAction(m_actionCopyModelItem);
+            if(m_items_copied.size() > 0)
+            {
+                con_menu->addAction(m_actionPasteModelItem);
+            } 
             con_menu->exec(globalPos);
 
             delete con_menu;
@@ -869,29 +898,66 @@ void LVRMainWindow::renameModelItem()
     }
 }
 
-void LVRMainWindow::loadModel()
+void LVRMainWindow::loadModels(const QStringList& filenames)
 {
-    QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open Model"), "", tr("Model Files (*.ply *.obj *.pts *.3d *.txt *.h5)"));
-
     if(filenames.size() > 0)
     {
         QTreeWidgetItem* lastItem = nullptr;
 
-        QStringList::Iterator it = filenames.begin();
+        QStringList::const_iterator it = filenames.begin();
         while(it != filenames.end())
         {
-            // Load model and generate vtk representation
-            ModelPtr model = ModelFactory::readModel((*it).toStdString());
-            ModelBridgePtr bridge(new LVRModelBridge(model));
-            bridge->addActors(m_renderer);
-
-            // Add item for this model to tree widget
+            // check for h5
             QFileInfo info((*it));
             QString base = info.fileName();
-            LVRModelItem* item = new LVRModelItem(bridge, base);
-            this->treeWidget->addTopLevelItem(item);
-            item->setExpanded(true);
-            lastItem = item;
+
+            if (info.suffix() == "h5")
+            {
+                // h5 special loading case
+                // special case h5:
+                // scan data is stored as 
+                QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
+                root->setText(0, base);
+
+                QIcon icon;
+                icon.addFile(QString::fromUtf8(":/qv_scandata_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
+                root->setIcon(0, icon);
+
+                std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(base.toStdString()));
+
+                lastItem = addScanData(sdm, root);
+
+                root->setExpanded(true);
+
+                // load mesh only
+                ModelPtr model_ptr(new Model());
+                std::shared_ptr<HDF5IO> h5_io_ptr(new HDF5IO(base.toStdString()));
+                if(h5_io_ptr->readMesh(model_ptr))
+                {
+                    ModelBridgePtr bridge(new LVRModelBridge(model_ptr));
+                    bridge->addActors(m_renderer);
+
+                    // Add item for this model to tree widget
+                    LVRModelItem* item = new LVRModelItem(bridge, "mesh");
+                    root->addChild(item);
+                    item->setExpanded(false);
+                    lastItem = item;
+                }
+
+            } else {
+                // Load model and generate vtk representation
+                ModelPtr model = ModelFactory::readModel((*it).toStdString());
+                ModelBridgePtr bridge(new LVRModelBridge(model));
+                bridge->addActors(m_renderer);
+
+                // Add item for this model to tree widget
+                
+                LVRModelItem* item = new LVRModelItem(bridge, base);
+                this->treeWidget->addTopLevelItem(item);
+                item->setExpanded(true);
+                lastItem = item;
+            }
+
             ++it;
         }
 
@@ -909,6 +975,13 @@ void LVRMainWindow::loadModel()
         assertToggles();
         updateView();
     }
+}
+
+void LVRMainWindow::loadModel()
+{
+    QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open Model"), "", tr("Model Files (*.ply *.obj *.pts *.3d *.txt *.h5)"));
+    loadModels(filenames);
+    
 }
 
 void LVRMainWindow::loadPointCloudData()
@@ -1063,6 +1136,104 @@ void LVRMainWindow::deleteModelItem()
     }
 }
 
+
+void LVRMainWindow::copyModelItem()
+{
+    // std::cout << "COPY!" << std::endl;
+
+    if(m_items_copied.size() == 0)
+    {
+        m_treeParentItemContextMenu->addAction(m_actionPasteModelItem);
+        m_treeChildItemContextMenu->addAction(m_actionPasteModelItem);
+    }
+
+    m_items_copied = treeWidget->selectedItems();
+}
+
+void LVRMainWindow::pasteModelItem()
+{
+
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* to_item = items.first();
+
+        for(QTreeWidgetItem* from_item : m_items_copied)
+        {
+            std::cout << "copy " << from_item->text(0).toStdString() << std::endl;
+            QString name = from_item->text(0);
+
+            // check if name already exist
+            bool child_name_exists = false;
+            bool recheck = true;
+
+            while(childNameExists(to_item, name))
+            {
+                
+                // TODO better
+                name = increaseFilename(name);
+                std::cout << "Change name to " << name.toStdString() << std::endl; 
+
+            }
+
+            QTreeWidgetItem* insert_item = from_item->clone();
+            insert_item->setText(0, name);
+            insert_item->setToolTip(0, name);
+
+            // addChild removes all other childs?
+
+            to_item->addChild(insert_item);
+
+        }
+
+        m_items_copied.clear();
+
+        m_treeParentItemContextMenu->removeAction(m_actionPasteModelItem);
+        m_treeChildItemContextMenu->removeAction(m_actionPasteModelItem);
+
+    }
+
+}
+
+bool LVRMainWindow::childNameExists(QTreeWidgetItem* item, const QString& name)
+{
+    bool child_name_exists = false;
+
+    const int num_children = item->childCount();
+
+    for(int i=0; i<num_children; i++)
+    {
+        const QTreeWidgetItem* child = item->child(i);
+        const QString child_name = child->text(0);
+        if(name == child_name)
+        {
+            child_name_exists = true;
+            break;
+        }
+    }
+
+    return child_name_exists;
+}
+
+QString LVRMainWindow::increaseFilename(QString filename)
+{
+    QRegExp rx("(\\d+)$");
+    
+    if(rx.indexIn(filename, 0) != -1)
+    {
+        int number = 0;
+        number = rx.cap(1).toInt();
+        number += 1;
+        filename.replace(rx, QString::number(number));
+    } else {
+        filename += "_1";
+    }
+
+    return filename;
+}
+
+
 LVRModelItem* LVRMainWindow::getModelItem(QTreeWidgetItem* item)
 {
     if(item->type() == LVRModelItemType)
@@ -1072,6 +1243,52 @@ LVRModelItem* LVRMainWindow::getModelItem(QTreeWidgetItem* item)
         return static_cast<LVRModelItem*>(item->parent());
 
     return NULL;
+}
+
+QList<LVRPointCloudItem*> LVRMainWindow::getPointCloudItems(QList<QTreeWidgetItem*> items)
+{
+    QList<LVRPointCloudItem*> pcs;
+
+    for(QTreeWidgetItem* item : items)
+    {
+        if(item->type() == LVRPointCloudItemType)
+        {
+            pcs.append(static_cast<LVRPointCloudItem*>(item));
+        } else if(item->type() == LVRModelItemType) {
+            // get pc of model
+            QTreeWidgetItemIterator it(item);
+            while(*it)
+            {
+                QTreeWidgetItem* child_item = *it;
+                if(child_item->type() == LVRPointCloudItemType
+                    && child_item->parent() == item)
+                {
+                    pcs.append(static_cast<LVRPointCloudItem*>(child_item));
+                }
+                ++it;
+            }
+
+        } else if(item->type() == LVRScanDataItemType) {
+            // Scan data selected: fetch pointcloud (transformed?)
+            QTreeWidgetItemIterator it(item);
+            while(*it)
+            {
+                QTreeWidgetItem* child_item = *it;
+                if(child_item->type() == LVRPointCloudItemType
+                    && child_item->parent() == item)
+                {
+                    // pointcloud found!
+                    pcs.append(static_cast<LVRPointCloudItem*>(child_item));
+                }
+
+                ++it;
+            }
+
+        }
+
+    }
+
+    return pcs;
 }
 
 LVRPointCloudItem* LVRMainWindow::getPointCloudItem(QTreeWidgetItem* item)
@@ -1432,59 +1649,14 @@ QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm
 
 void LVRMainWindow::parseCommandLine(int argc, char** argv)
 {
-    QTreeWidgetItem* lastItem = nullptr;
 
+    QStringList filenames;
     for(int i = 1; i < argc; i++)
     {
-        QString s(argv[i]);
-        QFileInfo info(s);
-        QString base = info.fileName();
-
-        if (info.suffix() == "h5")
-        {
-
-            QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
-            root->setText(0, base);
-
-            QIcon icon;
-            icon.addFile(QString::fromUtf8(":/qv_scandata_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
-            root->setIcon(0, icon);
-
-            std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(argv[i]));
-
-            lastItem = addScanData(sdm, root);
-
-            root->setExpanded(true);
-
-        }
-        else
-        {
-            // Load model and generate vtk representation
-            ModelPtr model = ModelFactory::readModel(string(argv[i]));
-            ModelBridgePtr bridge(new LVRModelBridge(model));
-            bridge->addActors(m_renderer);
-
-            // Add item for this model to tree widget
-            LVRModelItem* item = new LVRModelItem(bridge, base);
-            this->treeWidget->addTopLevelItem(item);
-            item->setExpanded(true);
-            lastItem = item;
-        }
+        filenames << argv[i];
     }
-
-    if (lastItem != nullptr)
-    {
-        for(QTreeWidgetItem* selected : treeWidget->selectedItems())
-        {
-            selected->setSelected(false);
-        }
-        lastItem->setSelected(true);
-    }
-
-    restoreSliders();
-    updateView();
-    assertToggles();
-
+    
+    loadModels(filenames);
 }
 
 void LVRMainWindow::manualICP()
@@ -1560,17 +1732,25 @@ void LVRMainWindow::estimateNormals()
     buildIncompatibilityBox(string("normal estimation"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+
     if(items.size() > 0)
     {
-        LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
-        QTreeWidgetItem* parent_item = items.first()->parent();
-        if(pc_item != NULL)
+
+        QList<LVRPointCloudItem*> pc_items = getPointCloudItems(items);
+        QList<QTreeWidgetItem*> parent_items;
+        for(LVRPointCloudItem* pc_item : pc_items)
         {
-            LVREstimateNormalsDialog* dialog = new LVREstimateNormalsDialog(pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            parent_items.append(pc_item->parent());
+        }
+
+        if(pc_items.size() > 0)
+        {
+            LVREstimateNormalsDialog* dialog = new LVREstimateNormalsDialog(pc_items, parent_items, treeWidget, qvtkWidget->GetRenderWindow());
             return;
         }
     }
     m_incompatibilityBox->exec();
+    qvtkWidget->GetRenderWindow()->Render();
 }
 
 void LVRMainWindow::reconstructUsingMarchingCubes()
@@ -1581,7 +1761,7 @@ void LVRMainWindow::reconstructUsingMarchingCubes()
     if(items.size() > 0)
     {
         LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
-        LVRModelItem* parent_item = getModelItem(items.first());
+        QTreeWidgetItem* parent_item = pc_item->parent();
         if(pc_item != NULL)
         {
             LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("MC", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());

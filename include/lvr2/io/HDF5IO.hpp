@@ -70,12 +70,29 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
 
     ModelPtr read(std::string filename, size_t scanNr);
 
+    bool readPointCloud(ModelPtr model_ptr);
+
+    bool readMesh(ModelPtr model_ptr);
+
+
     /**
          * \brief Save the loaded elements to the given file.
          *
          * @param filename Filename of the file to write.
          */
     virtual void save(std::string filename);
+
+    virtual void save(ModelPtr model, std::string filename);
+
+    bool saveMesh(ModelPtr model_ptr);
+
+
+
+    /**
+     * @brief Construct a new HDF5IO object. Do not use this. Only used by ModelFactory
+     *  
+     */
+    HDF5IO() {}
 
     HDF5IO(std::string filename, int open_flags = HighFive::File::ReadOnly);
 
@@ -163,7 +180,6 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
     bool compress();
 
     size_t chunkSize();
-
 
   private:
 
