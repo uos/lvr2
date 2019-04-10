@@ -76,6 +76,8 @@ namespace lvr2 {
            //removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
         }
 
+        tumble_tree->display();
+
         cout << "Tumble Tree size: " << tumble_tree->size() << endl;
         cout << "VertexCell map size: " << vertexCellMap.numValues() << endl;
 
@@ -144,8 +146,8 @@ namespace lvr2 {
                 tumble_tree->updateSC(m_decreaseFactor, winnerH);
 
             }
-            tumble_tree->insert(winnerSC+1, winnerH);
-            vertexCellMap.get(winnerH).get() = tumble_tree->find(winnerSC+1, winnerH); //reinsert it with incremented sc, update map
+
+            vertexCellMap.get(winnerH).get() = tumble_tree->insertIterative(winnerSC+1, winnerH); //reinsert it with incremented sc, update map
 
 
 
@@ -180,9 +182,10 @@ namespace lvr2 {
         if(!m_useGSS) //GCS
         {
             //find vertex with highst sc, split that vertex
-            auto vertices = m_mesh->vertices();
             Cell* max = tumble_tree->max();
-            VertexHandle highestSC(max->duplicateMap.begin().operator*().idx());
+            //cout << "Max C: " << max->signal_counter;
+            auto iter = max->duplicateMap.begin();
+            VertexHandle highestSC = *iter;
 
             //split the found vertex
             VertexSplitResult result = m_mesh->splitVertex(highestSC);
@@ -192,11 +195,8 @@ namespace lvr2 {
 
             //now update tumble tree and the map
             tumble_tree->remove(max, highestSC);
-            tumble_tree->insert(sc_middle, highestSC);
-            vertexCellMap.get(highestSC).get() =  tumble_tree->find(sc_middle, highestSC);//reinsert and update links
-
-            tumble_tree->insert(sc_middle, newVH);
-            vertexCellMap.insert(newVH, tumble_tree->find(sc_middle, newVH)); //add the new vertex to the tree and the map
+            vertexCellMap.get(highestSC).get() = tumble_tree->insertIterative(sc_middle, highestSC);//reinsert and update links
+            vertexCellMap.insert(newVH, tumble_tree->insertIterative(sc_middle, newVH)); //add the new vertex to the tree and the map
 
         }
         else //GSS
@@ -323,6 +323,7 @@ namespace lvr2 {
 
     /**
      * Gets a random point from the Pointcloud stored in m_surface
+     * runtime: O(1)
      *
      * @tparam BaseVecT
      * @tparam NormalT
@@ -343,6 +344,7 @@ namespace lvr2 {
 
     /**
      * Gets the closest point to the given point using the euclidean distance
+     * runtime: O(n) //TODO: make it better. kd-tree?
      *
      * @tparam BaseVecT
      * @tparam NormalT
@@ -490,21 +492,29 @@ namespace lvr2 {
         else
         {
             //insert vertices to the hashmap as well as the tumbletree
-            tumble_tree->insert(1, vH1);
-            vertexCellMap.insert(vH1,tumble_tree->find(1,vH1));
-
-            tumble_tree->insert(1, vH2);
-
-            vertexCellMap.insert(vH2,tumble_tree->find(1,vH2));
-
-            tumble_tree->insert(1, vH3);
-            vertexCellMap.insert(vH3,tumble_tree->find(1,vH3));
-
-            tumble_tree->insert(1, vH4);
-            vertexCellMap.insert(vH4,tumble_tree->find(1,vH4));
-
-
+            vertexCellMap.insert(vH1,tumble_tree->insertIterative(1, vH1));
+            vertexCellMap.insert(vH2,tumble_tree->insertIterative(1, vH2));
+            vertexCellMap.insert(vH3,tumble_tree->insertIterative(1, vH3));
+            vertexCellMap.insert(vH4,tumble_tree->insertIterative(1, vH4));
+            /*tumble_tree->remove(1, vH1);
+            tumble_tree->insertIterative(2,vH1);
             tumble_tree->display();
+
+            VertexHandle v1(5);
+            VertexHandle v2(6);
+            VertexHandle v3(7);
+            VertexHandle v4(8);
+            VertexHandle v5(9);
+            tumble_tree->insertIterative(3,v1);
+            tumble_tree->insertIterative(0.5,v2);
+            tumble_tree->insertIterative(2,v3);
+            tumble_tree->insertIterative(22,v4);
+            tumble_tree->insertIterative(9,v5);
+            tumble_tree->display();
+            tumble_tree->remove(2,vH1);
+            tumble_tree->remove(2,v3);*/
+            tumble_tree->display();
+            std::cout << "tt init size: " << tumble_tree->size() << endl;
         }
     }
 
