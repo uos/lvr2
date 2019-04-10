@@ -156,14 +156,27 @@ void LVRCorrespondanceDialog::fillComboBoxes()
     m_ui->comboBoxModel->clear();
     m_ui->comboBoxData->clear();
 
+    int index = 0;
+
     // Iterator over all items
     QTreeWidgetItemIterator it(m_treeWidget);
     while (*it)
     {
         if ( (*it)->type() == LVRPointCloudItemType)
         {
-            m_ui->comboBoxData->addItem((*it)->parent()->text(0));
-            m_ui->comboBoxModel->addItem((*it)->parent()->text(0));
+            QString text = (*it)->parent()->text(0);
+            m_ui->comboBoxData->addItem(text);
+            m_ui->comboBoxModel->addItem(text);
+            
+            if (index == 0)
+            {
+                m_ui->comboBoxModel->setCurrentText(text);
+            }
+            else if (index == 1)
+            {
+                m_ui->comboBoxData->setCurrentText(text);
+            }
+            index++;
         }
         ++it;
     }

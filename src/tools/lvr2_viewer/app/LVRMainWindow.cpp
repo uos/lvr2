@@ -773,13 +773,16 @@ void LVRMainWindow::alignPointClouds()
         icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
         Matrix4<Vec> refinedTransform = icp.match();
 
-        cout << "Initial: " << mat << endl;
+        // TODO: remove
+        icp.old_match();
+
+        //cout << "Initial: " << mat << endl;
 
         // Apply correction to initial estimation
         //refinedTransform = mat * refinedTransform;
         refinedTransform.toPostionAngle(pose);
 
-        cout << "Refined: " << refinedTransform << endl;
+        //cout << "Refined: " << refinedTransform << endl;
 
         Pose p;
         p.x = -pose[0];

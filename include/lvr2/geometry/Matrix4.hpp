@@ -234,6 +234,33 @@ public:
         return *this;
     }
 
+    Eigen::Matrix4d toEigenMatrix()
+    {
+		Eigen::Matrix4d mat;
+
+        mat(0, 0) = m[0];
+        mat(0, 1) = m[1];
+        mat(0, 2) = m[2];
+        mat(0, 3) = m[3];
+
+        mat(1, 0) = m[4];
+        mat(1, 1) = m[5];
+        mat(1, 2) = m[6];
+        mat(1, 3) = m[7];
+
+        mat(2, 0) = m[8];
+        mat(2, 1) = m[9];
+        mat(2, 2) = m[10];
+        mat(2, 3) = m[11];
+
+        mat(3, 0) = m[12];
+        mat(3, 1) = m[13];
+        mat(3, 2) = m[14];
+        mat(3, 3) = m[15];
+
+        return mat;
+    }
+
 	/**
 	 * @brief	Scales the matrix elemnts by the given factor
 	 */
