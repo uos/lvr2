@@ -54,32 +54,31 @@ namespace lvr2
 /**
  *  @brief BVHRaycaster: CPU version of BVH Raycasting: WIP
  */
-template <typename BaseVecT>
-class BVHRaycaster : public RaycasterBase<BaseVecT> {
+template<typename PointT, typename NormalT>
+class BVHRaycaster : public RaycasterBase<PointT, NormalT > {
 public:
-
     /**
      * @brief Constructor: Stores mesh as member
      */
     BVHRaycaster(const MeshBufferPtr mesh);
 
     bool castRay(
-        const Point<BaseVecT>& origin,
-        const Vector<BaseVecT>& direction,
-        Point<BaseVecT>& intersection
+        const PointT& origin,
+        const NormalT& direction,
+        PointT& intersection
     );
 
     void castRays(
-        const Point<BaseVecT>& origin,
-        const std::vector<Vector<BaseVecT> >& directions,
-        std::vector<Point<BaseVecT> >& intersections,
+        const PointT& origin,
+        const std::vector<NormalT >& directions,
+        std::vector<PointT >& intersections,
         std::vector<uint8_t>& hits
     );
 
     void castRays(
-        const std::vector<Point<BaseVecT> >& origins,
-        const std::vector<Vector<BaseVecT> >& directions,
-        std::vector<Point<BaseVecT> >& intersections,
+        const std::vector<PointT >& origins,
+        const std::vector<NormalT >& directions,
+        std::vector<PointT >& intersections,
         std::vector<uint8_t>& hits
     );
 
@@ -90,9 +89,9 @@ public:
      */
 
     struct Ray {
-        Vector<BaseVecT> dir;
-        Vector<BaseVecT> invDir;
-        Vector<BaseVector<int> > rayDirSign;
+        NormalT dir;
+        NormalT invDir;
+        BaseVector<int> rayDirSign;
     };
 
 
@@ -103,13 +102,13 @@ public:
     struct TriangleIntersectionResult {
         bool hit;
         unsigned int pBestTriId;
-        Vector<BaseVecT> pointHit;
+        PointT pointHit;
         float hitDist;
     };
     
 
 protected:
-    BVHTree<BaseVecT> m_bvh;
+    BVHTree<PointT> m_bvh;
 
 private:
 
@@ -120,7 +119,7 @@ private:
      * @param b Second vector
      * @return The square distance
      */
-    inline float distanceSquare(Vector<BaseVecT> a, Vector<BaseVecT> b)
+    inline float distanceSquare(const PointT& a, const PointT& b)
     {
         float result = (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
         return fabs(result);
@@ -133,7 +132,7 @@ private:
      * @param boxPtr    A pointer to the box data
      * @return          A boolean indicating whether the ray hits the box
      */
-    bool rayIntersectsBox(Vector<BaseVecT> origin, Ray ray, const float* boxPtr);
+    bool rayIntersectsBox(PointT origin, Ray ray, const float* boxPtr);
 
     /**
      * @brief Calculates the closest intersection of a raycast into a scene of triangles, given a bounding volume hierarchy
@@ -150,7 +149,7 @@ private:
      */
     TriangleIntersectionResult intersectTrianglesBVH(
         const unsigned int* clBVHindicesOrTriLists,
-        Vector<BaseVecT> origin,
+        PointT origin,
         Ray ray,
         const float* clBVHlimits,
         const float* clTriangleIntersectionData,
