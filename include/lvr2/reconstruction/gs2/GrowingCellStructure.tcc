@@ -45,6 +45,8 @@ namespace lvr2 {
 
         //get initial tetrahedron mesh
         getInitialMesh();
+        cout << "KD-Tree size: " << kd_tree->size() << endl;
+
         //initTestMesh();
 
         //progress bar
@@ -80,6 +82,7 @@ namespace lvr2 {
         //tumble_tree->display();
 
         cout << "Tumble Tree size: " << tumble_tree->size() << endl;
+        cout << "KD-Tree size: " << kd_tree->size() << endl;
         cout << "VertexCell map size: " << vertexCellMap.numValues() << endl;
 
         delete tumble_tree;
@@ -108,8 +111,11 @@ namespace lvr2 {
 
             //smooth the winning vertex
             BaseVecT &winner = m_mesh->getVertexPosition(winnerH);
+            BaseVecT winnerVec = m_mesh->getVertexPosition(winnerH);
+            kd_tree->deleteNode(winnerVec);
             winner += (random_point - winner) * getLearningRate();
-
+            winnerVec = m_mesh->getVertexPosition(winnerH);
+            kd_tree->insert(winnerVec, winnerH);
 
             //smooth the winning vertices' neighbors (laplacian smoothing)
 
@@ -120,10 +126,13 @@ namespace lvr2 {
             for(auto v : neighborsOfWinner)
             {
                 BaseVecT& nb = m_mesh->getVertexPosition(v);
-
+                BaseVecT nbVec = m_mesh->getVertexPosition(v);
+                kd_tree->deleteNode(nbVec);
                 nb += (random_point - winner) * getNeighborLearningRate();
 
                 performLaplacianSmoothing(v);
+                nbVec = m_mesh->getVertexPosition(v);
+                kd_tree->insert(nbVec, v);
             }
 
             //increase signal counter by one
@@ -198,6 +207,8 @@ namespace lvr2 {
             tumble_tree->remove(max, highestSC);
             vertexCellMap.get(highestSC).get() = tumble_tree->insertIterative(sc_middle, highestSC);//reinsert and update links
             vertexCellMap.insert(newVH, tumble_tree->insertIterative(sc_middle, newVH)); //add the new vertex to the tree and the map
+            BaseVecT kdInsert = m_mesh->getVertexPosition(newVH);
+            kd_tree->insert(kdInsert, newVH);
 
         }
         else //GSS
@@ -504,7 +515,6 @@ namespace lvr2 {
             kd_tree->insert(left, vH2);
             kd_tree->insert(right, vH3);
             kd_tree->insert(back, vH4);
-
             /*tumble_tree->remove(1, vH1);
             tumble_tree->insertIterative(2,vH1);
             tumble_tree->display();

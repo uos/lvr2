@@ -12,7 +12,7 @@ namespace lvr2{
     {
         BaseVecT point; // To store k dimensional point
         Index vH; //To store the belonging vertexHandle index
-        Node *left, *right;
+        Node<BaseVecT> *left, *right;
     };
 
     template <typename BaseVecT>
@@ -37,17 +37,21 @@ namespace lvr2{
             return point1 == point2;
         }
 
-        void copyPoint(BaseVecT p1, BaseVecT p2)
+        void copyPoint(BaseVecT& p1, BaseVecT& p2)
         {
             p1 = p2;
         }
 
         Node<BaseVecT>* deleteNodeRec(Node<BaseVecT>* node, BaseVecT point, int depth);
 
-    public:
-        Node<BaseVecT>* insert(BaseVecT point, VertexHandle vH);
+        int sizeRec(Node<BaseVecT>* node);
 
-        Node<BaseVecT>* deleteNode(BaseVecT point);
+    public:
+        void insert(BaseVecT point, VertexHandle vH);
+
+        void deleteNode(BaseVecT point);
+
+        int size();
 
         explicit DynamicKDTree(int k)
         {

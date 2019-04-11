@@ -5,11 +5,12 @@
 namespace lvr2{
 
     template <typename BaseVecT>
-    struct Node<BaseVecT>* DynamicKDTree<BaseVecT>::newNode(BaseVecT point, VertexHandle vH)
+    Node<BaseVecT>* DynamicKDTree<BaseVecT>::newNode(BaseVecT point, VertexHandle vH)
     {
         auto temp = new Node<BaseVecT>;
         temp->point = point;
         temp->vH = vH.idx();
+        temp->left = temp->right = NULL;
         return temp;
     }
     template <typename BaseVecT>
@@ -31,8 +32,10 @@ namespace lvr2{
 
         return node;
     }
+
+    
     template <typename BaseVecT>
-    Node<BaseVecT>*  DynamicKDTree<BaseVecT>::minNode(Node<BaseVecT>* x, Node<BaseVecT>* y, Node<BaseVecT>* z, int d)
+    Node<BaseVecT>* DynamicKDTree<BaseVecT>::minNode(Node<BaseVecT>* x, Node<BaseVecT>* y, Node<BaseVecT>* z, int d)
     {
         Node<BaseVecT> *res = x;
         if (y != NULL && y->point[d] < res->point[d])
@@ -41,8 +44,10 @@ namespace lvr2{
             res = z;
         return res;
     }
+
+
     template <typename BaseVecT>
-    Node<BaseVecT>*  DynamicKDTree<BaseVecT>::findMinRec(Node<BaseVecT>* node, int d, unsigned depth)
+    Node<BaseVecT>* DynamicKDTree<BaseVecT>::findMinRec(Node<BaseVecT>* node, int d, unsigned depth)
     {
         // Base cases
         if (node == NULL)
@@ -62,6 +67,7 @@ namespace lvr2{
 
         // If current dimension is different then minimum can be anywhere
         // in this subtree
+
         return minNode(node,
                        findMinRec(node->left, d, depth+1),
                        findMinRec(node->right, d, depth+1), d);
@@ -95,7 +101,9 @@ namespace lvr2{
                 Node<BaseVecT> *min = findMin(node->right, cd);
 
                 // Copy the minimum to root
-                copyPoint(node->point, min->point);
+                //copyPoint(node->point, min->point);
+                node->point = min->point;
+                node->vH = min->vH;
 
                 // Recursively delete the minimum
                 node->right = deleteNodeRec(node->right, min->point, depth+1);
@@ -103,7 +111,9 @@ namespace lvr2{
             else if (node->left != NULL) // same as above
             {
                 Node<BaseVecT> *min = findMin(node->left, cd);
-                copyPoint(node->point, min->point);
+                //copyPoint(node->point, min->point);
+                node->point = min->point;
+                node->vH = min->vH;
                 node->right = deleteNodeRec(node->left, min->point, depth+1);
             }
             else // If node to be deleted is leaf node
@@ -121,17 +131,32 @@ namespace lvr2{
             node->right = deleteNodeRec(node->right, point, depth+1);
         return node;
     }
+
     template <typename BaseVecT>
-    Node<BaseVecT>* DynamicKDTree<BaseVecT>::insert(BaseVecT point, VertexHandle vH)
+    int DynamicKDTree<BaseVecT>::sizeRec(Node<BaseVecT>* node)
     {
-        return insertRec(root, point, vH, 0);
+        if(node == NULL) return 0;
+        return 1 + sizeRec(node->right) + sizeRec(node->left);
     }
 
     template <typename BaseVecT>
-    Node<BaseVecT>* DynamicKDTree<BaseVecT>::deleteNode(BaseVecT point)
+    void DynamicKDTree<BaseVecT>::insert(BaseVecT point, VertexHandle vH)
+    {
+        root = insertRec(root, point, vH, 0);
+    }
+
+    template <typename BaseVecT>
+    void DynamicKDTree<BaseVecT>::deleteNode(BaseVecT point)
     {
         // Pass depth as 0
-        return deleteNodeRec(root, point, 0);
+        std::cout << "Deleting..." << endl;
+        root =  deleteNodeRec(root, point, 0);
+    }
+
+    template <typename BaseVecT>
+    int DynamicKDTree<BaseVecT>::size()
+    {
+        return sizeRec(root);
     }
 
 } //end namespace lvr2
