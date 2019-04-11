@@ -30,7 +30,7 @@ namespace  lvr2{
         Cell* insert(float sc, VertexHandle vH, Cell* c);
         Cell* remove(float sc, VertexHandle vH, Cell* c, bool removeWhole = false);
         Cell* findMin(Cell* c);
-        Cell* findMax(Cell*);
+        Cell* findMax(Cell*, int* depth = new int(0));
         Cell* find(float sc, VertexHandle vH, Cell* c);
         int size(Cell* c);
 

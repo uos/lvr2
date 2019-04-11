@@ -5,6 +5,9 @@
 
 namespace lvr2{
 
+
+    //TODO: use REDBLACKTREE
+
     /**
      * Deletes the (subtree) beginning with cell c
      * @param c
@@ -307,7 +310,7 @@ namespace lvr2{
             return NULL;
         else if(c->left == NULL)
             if(c != root)
-                return c;
+                return c;               // TODO: update it after the sc update is O(log(n))
             else
                 return findMin(c->right);
         else
@@ -319,17 +322,24 @@ namespace lvr2{
      * @param c starting cell
      * @return cell with max sc
      */
-    Cell* TumbleTree::findMax(Cell* c)
+    Cell* TumbleTree::findMax(Cell* c, int* depth)
     {
         if(c == NULL)
             return NULL;
         else if(c->right == NULL)
-            if(c != root)
+            if(c != root){
+                //std::cout << "Depth finding max: " << *depth << endl;
                 return c;
-            else
-                return findMax(c->left);
-        else
-            return findMax(c->right);
+            }
+            else{
+                *depth = *depth + 1;
+                return findMax(c->left, depth);
+            }
+        else{
+            *depth = *depth + 1;
+            return findMax(c->right, depth);
+        }
+
     }
 
     Cell* TumbleTree::find(float sc, VertexHandle vH, Cell* c)

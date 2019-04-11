@@ -73,10 +73,10 @@ namespace lvr2 {
 
         if(m_mesh->numVertices() > 500)
         {
-           //removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
+           removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
         }
 
-        tumble_tree->display();
+        //tumble_tree->display();
 
         cout << "Tumble Tree size: " << tumble_tree->size() << endl;
         cout << "VertexCell map size: " << vertexCellMap.numValues() << endl;
