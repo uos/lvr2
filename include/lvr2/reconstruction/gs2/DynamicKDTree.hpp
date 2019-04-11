@@ -11,6 +11,7 @@ namespace lvr2{
     struct Node
     {
         BaseVecT point; // To store k dimensional point
+        Index vH; //To store the belonging vertexHandle index
         Node *left, *right;
     };
 
@@ -19,16 +20,17 @@ namespace lvr2{
 
     private:
         Node<BaseVecT>* root;
+        int k;
 
-        struct Node<BaseVecT>* newNode(BaseVecT point);
+        struct Node<BaseVecT>* newNode(BaseVecT point, VertexHandle vH);
 
-        Node<BaseVecT>* insertRec(Node<BaseVecT>* root, BaseVecT point, unsigned int depth);
+        Node<BaseVecT>* insertRec(Node<BaseVecT>* node, BaseVecT point, VertexHandle vH, unsigned int depth);
 
         Node<BaseVecT>* minNode(Node<BaseVecT>* x, Node<BaseVecT>* y, Node<BaseVecT>* z, int d);
 
-        Node<BaseVecT>* findMinRec(Node<BaseVecT>* root, int d, unsigned depth);
+        Node<BaseVecT>* findMinRec(Node<BaseVecT>* node, int d, unsigned depth);
 
-        Node<BaseVecT> *findMin(Node<BaseVecT>* root, int d);
+        Node<BaseVecT> *findMin(Node<BaseVecT>* node, int d);
 
         bool arePointsSame(BaseVecT point1, BaseVecT point2)
         {
@@ -40,12 +42,24 @@ namespace lvr2{
             p1 = p2;
         }
 
-        Node<BaseVecT>* deleteNodeRec(Node<BaseVecT>* root, BaseVecT point, int depth);
+        Node<BaseVecT>* deleteNodeRec(Node<BaseVecT>* node, BaseVecT point, int depth);
 
     public:
-        Node<BaseVecT>* insert(BaseVecT point);
+        Node<BaseVecT>* insert(BaseVecT point, VertexHandle vH);
 
         Node<BaseVecT>* deleteNode(BaseVecT point);
+
+        explicit DynamicKDTree(int k)
+        {
+            this->k = k;
+            root = NULL;
+        }
+
+        //TODO
+        ~DynamicKDTree()
+        {
+            return;
+        }
 
     };
 }

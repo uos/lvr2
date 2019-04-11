@@ -11,7 +11,7 @@
 
 namespace  lvr2{
 
-    struct Cell
+    typedef struct Cell
     {
         float alpha;
         float signal_counter;
@@ -19,7 +19,7 @@ namespace  lvr2{
         HashMap<VertexHandle, float> duplicateMap;
         Cell* left; //left subtree
         Cell* right; //right subtree
-    };
+    } Cell;
 
     class TumbleTree {
 

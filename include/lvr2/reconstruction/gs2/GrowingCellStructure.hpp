@@ -163,6 +163,7 @@ namespace lvr2{
 
         // "GCS" related members
         TumbleTree* tumble_tree;
+        DynamicKDTree<BaseVecT>* kd_tree;
         HashMap<VertexHandle, Cell*> vertexCellMap;
         float m_decreaseFactor; //for sc calc
         int m_allowMiss;

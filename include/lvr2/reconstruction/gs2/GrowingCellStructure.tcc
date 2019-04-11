@@ -27,6 +27,7 @@ namespace lvr2 {
         m_surface = &surface;
         m_mesh = 0;
         tumble_tree = new TumbleTree(); //create tumble tree
+        kd_tree = new DynamicKDTree<BaseVecT>(3); // create 3-dimensional kd-tree for distance evaluation
     }
 
     /**
@@ -497,7 +498,13 @@ namespace lvr2 {
             vertexCellMap.insert(vH3,tumble_tree->insertIterative(1, vH3));
             vertexCellMap.insert(vH4,tumble_tree->insertIterative(1, vH4));
             VertexHandle ret(numeric_limits<int>::max());
-            vertexCellMap.insert(ret,tumble_tree->insertIterative(10.00001f, ret));
+            tumble_tree->insertIterative(10.00001f, ret); //dummy root
+
+            kd_tree->insert(top, vH1);
+            kd_tree->insert(left, vH2);
+            kd_tree->insert(right, vH3);
+            kd_tree->insert(back, vH4);
+
             /*tumble_tree->remove(1, vH1);
             tumble_tree->insertIterative(2,vH1);
             tumble_tree->display();
