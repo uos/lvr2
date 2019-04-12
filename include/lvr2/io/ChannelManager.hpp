@@ -42,6 +42,8 @@
 
 namespace lvr2
 {
+template<typename T>
+class ElementProxy;
 
 template<typename T>
 class ElementProxyPtr
@@ -63,24 +65,24 @@ class ElementProxyPtr
     T& z;
 
 
-    ElementProxyPtr operator+() delete;
+    ElementProxyPtr operator+() = delete;
 
     ssize_t operator-(const ElementProxyPtr& p) {this->m_ptr - p.m_ptr; }
 
-    ElementProxyPtr operator++(int) { m_ptr += m_size; return *this; }
+    ElementProxyPtr operator++(int) { m_ptr += m_w; return *this; }
 
     ElementProxyPtr operator+=(int i)
     {
-        m_ptr += (m_size * i);
+        m_ptr += (m_w * i);
         return *this;
     }
 
     ElementProxyPtr operator-=(int)
     {
-      m_ptr -= m_size;
+      m_ptr -= m_w;
     }
 
-    // comparison operators
+  // comparison operators
     bool operator==(const ElementProxyPtr& p) { return p.m_ptr == this->m_ptr; }
     bool operator!=(const ElementProxyPtr& p) { return !(p == *this); }
     bool operator<(const ElementProxyPtr& p) { return p.m_ptr < this->m_ptr; }
@@ -89,7 +91,7 @@ class ElementProxyPtr
     bool operator>=(const ElementProxyPtr& p) { return !(p<(*this)); }
 
     // "Dereferencing"
-    ElementProxy operator*() { return ElementProxy(m_ptr, m_size); }
+    ElementProxy<T> operator*() { return ElementProxy<T>(m_ptr, m_w); }
 
     // TODO < <= >= > ->
 
@@ -103,10 +105,10 @@ template<typename T>
 class ElementProxy
 {
 public:
-
-    ElementProxyPtr operator&()
+    friend class ElementProxyPtr<T>;
+    ElementProxyPtr<T> operator&()
     {
-      return ElementProxyPtr(m_ptr, m_w);
+      return ElementProxyPtr<T>(m_ptr, m_w);
     }
 
     ElementProxy operator=(const T& v)
