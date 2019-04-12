@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <cmath>
-#include <lvr/io/Timestamp.hpp>
 
 // TODO reorder colors etc...
 
