@@ -44,9 +44,70 @@ namespace lvr2
 {
 
 template<typename T>
+class ElementProxyPtr
+{
+  public:
+//    ElementProxyPtr(T& x_, T& y_, T& z_, size_t w) : x(x_), y(y_), z(z_) 
+//    {
+//      m_ptr = &x;
+//    }
+    ElementProxyPtr(T* ptr, size_t w) : m_ptr(ptr), x(m_ptr[0]) , y(m_ptr[1]), z(m_ptr[2])
+    {}
+
+    ElementProxyPtr(const ElementProxyPtr& p) : m_ptr(p.m_ptr), x(m_ptr[0]) , y(m_ptr[1]), z(m_ptr[2])
+    {}
+    
+    // I don't think I need these.
+    T& x;
+    T& y;
+    T& z;
+
+
+    ElementProxyPtr operator+() delete;
+
+    ssize_t operator-(const ElementProxyPtr& p) {this->m_ptr - p.m_ptr; }
+
+    ElementProxyPtr operator++(int) { m_ptr += m_size; return *this; }
+
+    ElementProxyPtr operator+=(int i)
+    {
+        m_ptr += (m_size * i);
+        return *this;
+    }
+
+    ElementProxyPtr operator-=(int)
+    {
+      m_ptr -= m_size;
+    }
+
+    // comparison operators
+    bool operator==(const ElementProxyPtr& p) { return p.m_ptr == this->m_ptr; }
+    bool operator!=(const ElementProxyPtr& p) { return !(p == *this); }
+    bool operator<(const ElementProxyPtr& p) { return p.m_ptr < this->m_ptr; }
+    bool operator<=(const ElementProxyPtr& p) { return ((p==(*this)) || (p < *this)); }
+    bool operator>(const ElementProxyPtr& p) { return !(p<=(*this)); }
+    bool operator>=(const ElementProxyPtr& p) { return !(p<(*this)); }
+
+    // "Dereferencing"
+    ElementProxy operator*() { return ElementProxy(m_ptr, m_size); }
+
+    // TODO < <= >= > ->
+
+  private:
+    T* m_ptr;
+    size_t m_w;
+
+};
+
+template<typename T>
 class ElementProxy
 {
 public:
+
+    ElementProxyPtr operator&()
+    {
+      return ElementProxyPtr(m_ptr, m_w);
+    }
 
     ElementProxy operator=(const T& v)
     {
