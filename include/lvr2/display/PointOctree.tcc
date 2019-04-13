@@ -1,15 +1,17 @@
 #include <stdio.h>
 #include <cmath>
 
+#include <lvr2/io/Timestamp.hpp>
+
 // TODO reorder colors etc...
 
 namespace lvr2{ 
   template <typename BaseVecT>
-    PointOctree<BaseVecT>::PointOctree(PointBufferPtr points, int depth)/*: m_points(points->getPointArray()) */
+    PointOctree<BaseVecT>::PointOctree(PointBufferPtr& points, int depth) : m_points(*(points->getFloatChannel("points")))
     {
 
-      FloatChannelOptional pts_channel = points->getFloatChannel("points");
-      m_points = *pts_channel;
+//      FloatChannelOptional pts_channel = points->getFloatChannel("points");
+//      m_points = *pts_channel;
 
       // initializ min max for bounding box
       BaseVecT p = m_points[0];
@@ -46,8 +48,8 @@ namespace lvr2{
       float min = std::min(minX, std::min(minY, minZ));
       float max = std::max(maxX, std::max(maxY, maxZ));
 
-      Point<BaseVecT> v1(min, min, min);
-      Point<BaseVecT> v2(max, max, max);
+      BaseVecT v1(min, min, min);
+      BaseVecT v2(max, max, max);
 
       m_bbox = BoundingBox<BaseVecT>(v1, v2);
 
@@ -63,20 +65,20 @@ namespace lvr2{
       //  std::cout << "offset" << std::endl;
       //}
 
-      std::vector<Point<BaseVecT> > pts = points->getPointBufferReference();
+//      std::vector<BaseVecT > pts = points->getPointBufferReference();
       std::cout << m_bbox << std::endl;
 
-      std::cout << lvr::timestamp << "Start building octree with voxelsize " << m_voxelSize << std::endl;
-      m_root = (BOct*)((unsigned char*) m_root + buildTree(m_root, 0, points.numPoints(), m_bbox));
+      std::cout << lvr2::timestamp << "Start building octree with voxelsize " << m_voxelSize << std::endl;
+      m_root = (BOct*)((unsigned char*) m_root + buildTree(m_root, 0, points->numPoints(), m_bbox));
 
-      std::cout << lvr::timestamp << "generating genDisplayLists " << std::endl;
+      std::cout << lvr2::timestamp << "generating genDisplayLists " << std::endl;
       genDisplayLists();
 
-      std::cout << lvr::timestamp << "generating genDisplayLists done" << std::endl;
-      std::cout << lvr::timestamp << "Octree rdy " << m_points.size() << std::endl;
+      std::cout << lvr2::timestamp << "generating genDisplayLists done" << std::endl;
+      std::cout << lvr2::timestamp << "Octree rdy " << std::endl;
 
 //        m_points.clear();
-//        std::vector<Point<BaseVecT> >().swap(m_points);
+//        std::vector<BaseVecT >().swap(m_points);
 
       //  colorAndWrite(m_root);
 
@@ -86,15 +88,15 @@ namespace lvr2{
     void PointOctree<BaseVecT>::getBBoxes(const BoundingBox<BaseVecT>& bbox, BoundingBox<BaseVecT>* boxes)
     {
 
-      Point<BaseVecT > centroid = bbox.getCentroid();
+      BaseVecT centroid = bbox.getCentroid();
 
       // square bbox
       auto size = bbox.getXSize();
 
       for(int i = 0; i < 8; ++i)
       {
-        Point<BaseVecT> bboxLowerLeft = centroid;
-        Point<BaseVecT> bboxTopRight = centroid;
+        BaseVecT bboxLowerLeft = centroid;
+        BaseVecT bboxTopRight = centroid;
 
         // top
         if(i & 4)
@@ -129,9 +131,9 @@ namespace lvr2{
     }
 
   template <typename BaseVecT> 
-    unsigned char PointOctree<BaseVecT>::getIndex(const Point<BaseVecT>& point, const BoundingBox<BaseVecT>& bbox)
+    unsigned char PointOctree<BaseVecT>::getIndex(const BaseVecT& point, const BoundingBox<BaseVecT>& bbox)
     {
-      Point<BaseVecT > centroid = bbox.getCentroid();
+      BaseVecT centroid = bbox.getCentroid();
       unsigned char index = 0;
 
 
@@ -177,8 +179,9 @@ namespace lvr2{
   template <typename BaseVecT>
     void PointOctree<BaseVecT>::sortPC(size_t start, size_t size, const BoundingBox<BaseVecT>& bbox, size_t bucket_sizes[8])
     {
-      Point<BaseVecT >* ptr[8];
-      Point<BaseVecT >* beg[8];
+      // TODO template this properly
+      ElementProxyPtr<float> ptr[8];
+      ElementProxyPtr<float> beg[8];
 
       beg[0] = ptr[0] = &m_points[start];
 
@@ -188,9 +191,9 @@ namespace lvr2{
         // pointing to first position of bucket.
         beg[j] = ptr[j] = ptr[j - 1] + bucket_sizes[j - 1];
       }
-     
+
       size_t end = start + size;
-      //size_t full = ptr[1] - &pts[0];
+            //size_t full = ptr[1] - &pts[0];
       for(size_t i = start; i < end; )
       {
         int index = getIndex(m_points[i], bbox);
@@ -200,11 +203,12 @@ namespace lvr2{
           std::cout << (int) index << std::endl;
         }
 
-        if(beg[index] <= &m_points[i] && &m_points[i] < ptr[index])
+        if((beg[index] <= &m_points[i]) && (&m_points[i] < ptr[index]))
         {
           i = ptr[index] - &m_points[0];
           continue;
         }
+
         
         if(ptr[index] == &m_points[i])
         {
@@ -216,14 +220,20 @@ namespace lvr2{
         }
         else
         {
+          // TODO 
+          // We somehow need 2 temporary variables. Otherwise it won't work with the proxy(Ptr)
+
           // advance bucket pointer if current element is correct.
-          while(*ptr[index] == m_points[i])
+          BaseVecT tmp = *ptr[index];
+          while(getIndex(tmp, bbox) == index)
           {
             if(ptr[index] < &(m_points[end - 1]))
               ptr[index]++;
+
+            tmp = *ptr[index];
           }
-          Vec tmp = *(ptr[index]);
-          *(ptr[index]) = m_points[i];
+          BaseVecT aux = m_points[i];
+          *(ptr[index]) = aux;
           m_points[i] = tmp;
           if(ptr[index] < &(m_points[end - 1]))
             ptr[index]++;
@@ -243,7 +253,7 @@ namespace lvr2{
       BoundingBox<BaseVecT> boxes[8];
       getBBoxes(bbox, boxes);
 
-//      std::vector<Point<BaseVecT> > octPoints[8];
+//      std::vector<BaseVecT > octPoints[8];
 
       size_t octSizes[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -269,7 +279,7 @@ namespace lvr2{
 
         // force reallocation to clear vec
 //        pts.clear();
-//        std::vector<Point<BaseVecT> >().swap(pts);
+//        std::vector<BaseVecT >().swap(pts);
 
         long offset = 0;
 
@@ -305,7 +315,7 @@ namespace lvr2{
 //            cnt++;
 //            // clear and force reallocation
 //            octPoints[i].clear();
-//            std::vector<Point<BaseVecT> >().swap(octPoints[i]);
+//            std::vector<BaseVecT >().swap(octPoints[i]);
           }
         }
         //std::cout << "return offset " << offset << std::endl;
@@ -329,7 +339,7 @@ namespace lvr2{
       sortPC(start, size, bbox, octSizes);
       // force reallocation to clear vec
 //      pts.clear();
-//      std::vector<Point<BaseVecT> >().swap(pts);
+//      std::vector<BaseVecT >().swap(pts);
 
       long offset = 0;
 
@@ -573,10 +583,11 @@ namespace lvr2{
             continue;
 
           glColor3f(255.0f, 255.0f, 255.0f);
-          glVertex3f(m_points[j].x,
-              m_points[j].y,
-              m_points[j].z);
-        }
+          BaseVecT p = m_points[j];
+          glVertex3f(p.x,
+                     p.y,
+                     p.z);
+          }
         glEnd();
         glEndList();
       }
@@ -644,9 +655,9 @@ namespace lvr2{
 
       for(unsigned char i = 0; i < 6; ++i)
       {
-        Point<BaseVecT> octMin = bbox.getMin();
-        Point<BaseVecT> octMax = bbox.getMax();
-        Point<BaseVecT> pVertex = octMin;
+        BaseVecT octMin = bbox.getMin();
+        BaseVecT octMax = bbox.getMax();
+        BaseVecT pVertex = octMin;
 
         if(planes[i][0] >= 0)
         {
@@ -682,10 +693,10 @@ namespace lvr2{
 
       for(unsigned char i = 0; i < 6; ++i)
       {
-        Point<BaseVecT> octMin = bbox.getMin();
-        Point<BaseVecT> octMax = bbox.getMax();
-        Point<BaseVecT> pVertex = octMin;
-        Point<BaseVecT> nVertex = octMax;
+        BaseVecT octMin = bbox.getMin();
+        BaseVecT octMax = bbox.getMax();
+        BaseVecT pVertex = octMin;
+        BaseVecT nVertex = octMax;
 
         if(planes[i][0] >= 0)
         {
@@ -752,12 +763,12 @@ namespace lvr2{
 
 
   //  template <typename BaseVecT>
-  //    void PointOctree<BaseVecT>::intersect(const BoundingBox<BaseVecT>& cullBBox, std::vector<Point<BaseVecT >>& pts)
+  //    void PointOctree<BaseVecT>::intersect(const BoundingBox<BaseVecT>& cullBBox, std::vector<BaseVecT>& pts)
   //    {
   //      intersect(m_root, m_bbox, cullBBox, pts);
   //    }
   //  template <typename BaseVecT>
-  //    void PointOctree<BaseVecT>::intersect(BOct* oct, const BoundingBox<BaseVecT>& octBBox, const BoundingBox<BaseVecT>& cullBBox, std::vector<Point<BaseVecT >>& pts)
+  //    void PointOctree<BaseVecT>::intersect(BOct* oct, const BoundingBox<BaseVecT>& octBBox, const BoundingBox<BaseVecT>& cullBBox, std::vector<BaseVecT>& pts)
   //    {
   //      if(oct == nullptr)
   //      {
@@ -770,10 +781,10 @@ namespace lvr2{
   //        return;
   //      }
   //
-  //      Point<BaseVecT> cullMin = cullBBox.getMin();
-  //      Point<BaseVecT> cullMax = cullBBox.getMax();
-  //      Point<BaseVecT> octMin = octBBox.getMin();
-  //      Point<BaseVecT> octMax = octBBox.getMax();
+  //      BaseVecT cullMin = cullBBox.getMin();
+  //      BaseVecT cullMax = cullBBox.getMax();
+  //      BaseVecT octMin = octBBox.getMin();
+  //      BaseVecT octMax = octBBox.getMax();
   //
   //      // octree is completely visible.
   //      if((cullMin.x <= octMin.x && cullMax.x >= octMax.x) &&

@@ -4,7 +4,6 @@ set(LVR2_SOURCES
     texture/Texture.cpp
     texture/TextureFactory.cpp
     util/Util.cpp
-    display/PointOctree.cpp
     display/Renderable.cpp
     display/GroundPlane.cpp
     display/MultiPointCloud.cpp
