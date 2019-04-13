@@ -60,7 +60,8 @@ namespace lvr2
       unsigned char getIndex(const BaseVecT& point, const BoundingBox<BaseVecT>& bbox);
 
       void getBBoxes(const BoundingBox<BaseVecT>& bbox, BoundingBox<BaseVecT>* boxes);
-
+      
+      template <typename PtrT>
       void sortPC(size_t start, size_t size, const BoundingBox<BaseVecT>& bbox, size_t bucket_sizes[8]);
 
       long buildTree(BOct* oct, size_t start, size_t size, const BoundingBox<BaseVecT>& bbox);
