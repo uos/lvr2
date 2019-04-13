@@ -49,24 +49,17 @@ template<typename T>
 class ElementProxyPtr
 {
   public:
-//    ElementProxyPtr(T& x_, T& y_, T& z_, size_t w) : x(x_), y(y_), z(z_) 
-//    {
-//      m_ptr = &x;
-//    }
-    ElementProxyPtr(T* ptr, size_t w) : m_ptr(ptr), m_w(w)
-    {}
+    ElementProxyPtr(T* ptr = nullptr, size_t w = 0) : m_ptr(ptr), m_w(w) {}
 
-    //ElementProxyPtr(T* ptr, size_t w) : m_ptr(ptr), x(m_ptr[0]) , y(m_ptr[1]), z(m_ptr[2])
-    //{}
-    //ElementProxyPtr(const ElementProxyPtr& p) : m_ptr(p.m_ptr), x(m_ptr[0]) , y(m_ptr[1]), z(m_ptr[2])
-    //{}
-    
-    // I don't think I need these.
-    //T& x;
-    //T& y;
-    //T& z;
+    //ElementProxyPtr(const ElementProxyPtr& p)
+    //{
+    //  *this.m_ptr = p.m_ptr;
+    //  *this.m_w = p.m_w;
+    //}
 
-    ElementProxyPtr operator+() = delete;
+
+
+    ElementProxyPtr operator+(const ElementProxyPtr&) = delete;
     
     ssize_t operator-(const ElementProxyPtr& p)
     {
@@ -77,6 +70,13 @@ class ElementProxyPtr
     {
        m_ptr += m_w;
        return *this;
+    }
+
+    ElementProxyPtr operator+(size_t i)
+    {
+      ElementProxyPtr tmp(*this); 
+      tmp += i;
+      return tmp;
     }
 
     ElementProxyPtr operator++(int)
@@ -98,11 +98,13 @@ class ElementProxyPtr
     }
 
     // comparison operators
-    bool operator< ( const ElementProxyPtr& rhs) const { return (*this).m_ptr < rhs.m_ptr;  }
-    bool operator> ( const ElementProxyPtr& rhs) const { return rhs > (*this); }
-    bool operator<=( const ElementProxyPtr& rhs) const { return !((*this) > rhs); }
-    bool operator>=( const ElementProxyPtr& rhs) const { return !((*this) < rhs); }
-  
+    bool operator< (const ElementProxyPtr& rhs) const { return (*this).m_ptr < rhs.m_ptr;  }
+    bool operator> (const ElementProxyPtr& rhs) const { return rhs < (*this); }
+    bool operator<=(const ElementProxyPtr& rhs) const { return !((*this) > rhs); }
+    bool operator>=(const ElementProxyPtr& rhs) const { return !((*this) < rhs); }
+    bool operator==(const ElementProxyPtr& rhs) const { return (*this).m_ptr == rhs.m_ptr; }
+    bool operator!=(const ElementProxyPtr& rhs) const { return !(*this == rhs); }
+
 
     // member access.
     ElementProxy<T> operator*() { return ElementProxy<T>(m_ptr, m_w); }
