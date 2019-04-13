@@ -53,45 +53,65 @@ class ElementProxyPtr
 //    {
 //      m_ptr = &x;
 //    }
-    ElementProxyPtr(T* ptr, size_t w) : m_ptr(ptr), x(m_ptr[0]) , y(m_ptr[1]), z(m_ptr[2])
+    ElementProxyPtr(T* ptr, size_t w) : m_ptr(ptr), m_w(w)
     {}
 
-    ElementProxyPtr(const ElementProxyPtr& p) : m_ptr(p.m_ptr), x(m_ptr[0]) , y(m_ptr[1]), z(m_ptr[2])
-    {}
+    //ElementProxyPtr(T* ptr, size_t w) : m_ptr(ptr), x(m_ptr[0]) , y(m_ptr[1]), z(m_ptr[2])
+    //{}
+    //ElementProxyPtr(const ElementProxyPtr& p) : m_ptr(p.m_ptr), x(m_ptr[0]) , y(m_ptr[1]), z(m_ptr[2])
+    //{}
     
     // I don't think I need these.
-    T& x;
-    T& y;
-    T& z;
-
+    //T& x;
+    //T& y;
+    //T& z;
 
     ElementProxyPtr operator+() = delete;
+    
+    ssize_t operator-(const ElementProxyPtr& p)
+    {
+      (this->m_ptr - p.m_ptr) / m_w;
+    }
 
-    ssize_t operator-(const ElementProxyPtr& p) {this->m_ptr - p.m_ptr; }
+    ElementProxyPtr& operator++()
+    {
+       m_ptr += m_w;
+       return *this;
+    }
 
-    ElementProxyPtr operator++(int) { m_ptr += m_w; return *this; }
+    ElementProxyPtr operator++(int)
+    { 
+      ElementProxyPtr tmp(*this); 
+      operator++();
+      return tmp;
+    }
 
-    ElementProxyPtr operator+=(int i)
+    ElementProxyPtr& operator+=(size_t i)
     {
         m_ptr += (m_w * i);
         return *this;
     }
 
-    ElementProxyPtr operator-=(int)
+    ElementProxyPtr operator-=(size_t i)
     {
-      m_ptr -= m_w;
+      m_ptr -= (m_w * i);
     }
 
-  // comparison operators
-    bool operator==(const ElementProxyPtr& p) { return p.m_ptr == this->m_ptr; }
-    bool operator!=(const ElementProxyPtr& p) { return !(p == *this); }
-    bool operator<(const ElementProxyPtr& p) { return p.m_ptr < this->m_ptr; }
-    bool operator<=(const ElementProxyPtr& p) { return ((p==(*this)) || (p < *this)); }
-    bool operator>(const ElementProxyPtr& p) { return !(p<=(*this)); }
-    bool operator>=(const ElementProxyPtr& p) { return !(p<(*this)); }
+    // comparison operators
+    bool operator< ( const ElementProxyPtr& rhs) const { return (*this).m_ptr < rhs.m_ptr;  }
+    bool operator> ( const ElementProxyPtr& rhs) const { return rhs > (*this); }
+    bool operator<=( const ElementProxyPtr& rhs) const { return !((*this) > rhs); }
+    bool operator>=( const ElementProxyPtr& rhs) const { return !((*this) < rhs); }
+  
 
-    // "Dereferencing"
+    // member access.
     ElementProxy<T> operator*() { return ElementProxy<T>(m_ptr, m_w); }
+
+    // I don't think we are able to return a useful raw pointer.
+    // Array pointer breaks the abstraction.
+    // Pointer to Elementproxy is pointless because we would need to create one with new.
+    // We cannot overload the -> operator in ElementProxy for the same reasons.
+    ElementProxy<T>* operator->() = delete;
 
     // TODO < <= >= > ->
 
