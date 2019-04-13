@@ -111,11 +111,9 @@ namespace lvr2 {
 
             //smooth the winning vertex
             BaseVecT &winner = m_mesh->getVertexPosition(winnerH);
-            BaseVecT winnerVec = m_mesh->getVertexPosition(winnerH);
-            kd_tree->deleteNode(winnerVec);
+            //kd_tree->deleteNode(winner);
             winner += (random_point - winner) * getLearningRate();
-            winnerVec = m_mesh->getVertexPosition(winnerH);
-            kd_tree->insert(winnerVec, winnerH);
+            //kd_tree->insert(winner, winnerH);
 
             //smooth the winning vertices' neighbors (laplacian smoothing)
 
@@ -126,13 +124,11 @@ namespace lvr2 {
             for(auto v : neighborsOfWinner)
             {
                 BaseVecT& nb = m_mesh->getVertexPosition(v);
-                BaseVecT nbVec = m_mesh->getVertexPosition(v);
-                kd_tree->deleteNode(nbVec);
+                //kd_tree->deleteNode(nb);
                 nb += (random_point - winner) * getNeighborLearningRate();
 
                 performLaplacianSmoothing(v);
-                nbVec = m_mesh->getVertexPosition(v);
-                kd_tree->insert(nbVec, v);
+                //kd_tree->insert(nb, v);
             }
 
             //increase signal counter by one
@@ -207,8 +203,9 @@ namespace lvr2 {
             tumble_tree->remove(max, highestSC);
             vertexCellMap.get(highestSC).get() = tumble_tree->insertIterative(sc_middle, highestSC);//reinsert and update links
             vertexCellMap.insert(newVH, tumble_tree->insertIterative(sc_middle, newVH)); //add the new vertex to the tree and the map
-            BaseVecT kdInsert = m_mesh->getVertexPosition(newVH);
-            kd_tree->insert(kdInsert, newVH);
+
+            //BaseVecT kdInsert = m_mesh->getVertexPosition(newVH);
+            //kd_tree->insert(kdInsert, newVH);
 
         }
         else //GSS
@@ -378,7 +375,7 @@ namespace lvr2 {
         {
             ++progress_bar;
             BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
-            avg_counter += vertex.signal_counter; //calc the avg signal counter
+            //avg_counter += vertex.signal_counter; //calc the avg signal counter
             BaseVecT distanceVector = point - vertex;
             float length = distanceVector.length2();
 
@@ -391,7 +388,7 @@ namespace lvr2 {
             }
         }
 
-        m_avgSignalCounter = avg_counter / m_mesh->numVertices();
+        //m_avgSignalCounter = avg_counter / m_mesh->numVertices();
 
         return closestVertexToRandomPoint;
     };
@@ -423,12 +420,15 @@ namespace lvr2 {
         m_mesh->addFace(v5,v8,v7);
         m_mesh->addFace(v6,v7,v8);
 
-        m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v8,v0).unwrap());
+        EdgeSplitResult result = m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v8,v0).unwrap());
+        m_mesh->flipEdge(m_mesh->getEdgeBetween(v2,v8).unwrap());
+        m_mesh->flipEdge(m_mesh->getEdgeBetween(v8,v1).unwrap());
     }
 
     /**
      * Constructs the initial tetrahedron mesh, scales it and places it in the middle of the pointcloud
      *
+     * @tparam BaseVecT - vector type used
      * @tparam BaseVecT - vector type used
      * @tparam NormalT - normal type used
      */

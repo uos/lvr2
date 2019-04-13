@@ -1104,7 +1104,7 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
     //TODO: is closer to the vertex to be split, than to the newly added vertex.
 
     VertexSplitResult result(splitResult.edgeCenter);
-    result.addedFaces.assign(result.addedFaces.begin(), result.addedFaces.end());
+    result.addedFaces.assign(splitResult.addedFaces.begin(), splitResult.addedFaces.end());
 
     return result;
 
