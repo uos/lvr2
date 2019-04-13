@@ -177,13 +177,15 @@ namespace lvr2{
     }
 
   template <typename BaseVecT>
+    template <typename PtrT>
     void PointOctree<BaseVecT>::sortPC(size_t start, size_t size, const BoundingBox<BaseVecT>& bbox, size_t bucket_sizes[8])
     {
       // TODO template this properly
-      ElementProxyPtr<float> ptr[8];
-      ElementProxyPtr<float> beg[8];
+      PtrT ptr[8];
+      PtrT beg[8];
 
       beg[0] = ptr[0] = &m_points[start];
+//      beg[0] = ptr[0] = p;
 
       //creating pointers for bucket starts.
       for(int j = 1; j < 8; ++j)
@@ -275,7 +277,9 @@ namespace lvr2{
           }
         }
         
-        sortPC(start, size, bbox, octSizes);
+//        sortPC(&m_points[start], start, size, bbox, octSizes);
+        sortPC<decltype(&(m_points[start]))>(start, size, bbox, octSizes);
+     //   sortPC(start, size, bbox, octSizes);
 
         // force reallocation to clear vec
 //        pts.clear();
@@ -336,7 +340,8 @@ namespace lvr2{
         }
       }
 
-      sortPC(start, size, bbox, octSizes);
+      //sortPC(&m_points[start], start, size, bbox, octSizes);
+      sortPC<decltype(&(m_points[start]))>(start, size, bbox, octSizes);
       // force reallocation to clear vec
 //      pts.clear();
 //      std::vector<BaseVecT >().swap(pts);
