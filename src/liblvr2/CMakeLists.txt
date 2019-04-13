@@ -172,36 +172,27 @@ target_link_libraries(lvr2_static ${LVR2_INTERNAL_DEPENDENCIES_STATIC} ${LVR2_LI
 # Build shared and static library
 #####################################################################################
 
-set(EXPORT_DEPS_STATIC
-  lvr2rply_static
-  draco
-)
 
-set(EXPORT_DEPS_SHARED
-  lvr2rply
-)
+# set(EXPORT_DEPS_STATIC
+#   lvr2rply_static
+#   draco
+# )
+
+# set(EXPORT_DEPS_SHARED
+#   lvr2rply
+# )
 
 if( NOT MSVC )
   message(STATUS "Building shared library")
   add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
   target_link_libraries(lvr2 ${LVR2_INTERNAL_DEPENDENCIES_SHARED} ${LVR2_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 
-
-
-  install(TARGETS lvr2_static ${EXPORT_DEPS_STATIC}
-    EXPORT lvr2Targets
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-
-install(TARGETS lvr2 ${EXPORT_DEPS_SHARED}
-  EXPORT lvr2Targets
+install(TARGETS lvr2_static lvr2
+  EXPORT lvrTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
-
+  )
 endif( NOT MSVC)
-
 #####################################################################################
 # CUDA
 #####################################################################################
