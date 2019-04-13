@@ -395,17 +395,8 @@ namespace lvr2{
 
     int TumbleTree::size(Cell* c)
     {
-        int i = (int)c->duplicateMap.numValues();
-        if(c->right)
-        {
-            i += size(c->right);
-        }
-        if(c->left)
-        {
-            i += size(c->left);
-        }
-
-        return i;
+        if(c == NULL) return 0;
+        return (int)c->duplicateMap.numValues() + size(c->left) + size(c->right);
     }
 
     TumbleTree::TumbleTree()
@@ -465,6 +456,7 @@ namespace lvr2{
     }
 
     int TumbleTree::size(){
+        if(root == NULL) return 0;
         return size(root);
     }
 

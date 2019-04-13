@@ -4,6 +4,13 @@
 
 namespace lvr2{
 
+    /**
+     * Creates a new tree node and returns it
+     * @tparam BaseVecT     the Vector type used
+     * @param point         the point inserted to the tree
+     * @param vH            the index of the corresponding VertexHandle
+     * @return              a new node
+     */
     template <typename BaseVecT>
     Node<BaseVecT>* DynamicKDTree<BaseVecT>::newNode(BaseVecT point, VertexHandle vH)
     {
@@ -13,12 +20,25 @@ namespace lvr2{
         temp->left = temp->right = NULL;
         return temp;
     }
+
+    /**
+     * Insert a new node into the tree recursively
+     * @tparam BaseVecT
+     * @param node      needed for recursion, should be initially called with the root of the tree
+     * @param point     the point, which will be inserted
+     * @param vH        the corresponding VertexHandle
+     * @param depth     the current depth in the tree
+     * @return          the root of the tree
+     */
     template <typename BaseVecT>
-    Node<BaseVecT>*  DynamicKDTree<BaseVecT>::insertRec(Node<BaseVecT>* node, BaseVecT point,VertexHandle vH, unsigned int depth)
+    Node<BaseVecT>* DynamicKDTree<BaseVecT>::insertRec(Node<BaseVecT>* node, BaseVecT& point,VertexHandle vH, unsigned int depth)
     {
+
         // Tree is empty?
-        if (node == NULL)
+        if (node == NULL){
+            //cout << "Insert Depth: " << depth << endl;
             return newNode(point, vH);
+        }
 
         // Calculate current dimension (cd) of comparison
         unsigned cd = depth % k;
@@ -33,7 +53,15 @@ namespace lvr2{
         return node;
     }
 
-    
+    /**
+     * returns the min node of three nodes concerning a specific dimension
+     * @tparam BaseVecT
+     * @param x     node 1
+     * @param y     node 2
+     * @param z     node 3
+     * @param d     dimension
+     * @return
+     */
     template <typename BaseVecT>
     Node<BaseVecT>* DynamicKDTree<BaseVecT>::minNode(Node<BaseVecT>* x, Node<BaseVecT>* y, Node<BaseVecT>* z, int d)
     {
@@ -46,6 +74,14 @@ namespace lvr2{
     }
 
 
+    /**
+     * finds the minimum of the (sub-)tree given as node, specified by the dimension d
+     * @tparam BaseVecT
+     * @param node      for recursion, initially base of the search
+     * @param d         dimension
+     * @param depth     current depth
+     * @return
+     */
     template <typename BaseVecT>
     Node<BaseVecT>* DynamicKDTree<BaseVecT>::findMinRec(Node<BaseVecT>* node, int d, unsigned depth)
     {
@@ -73,6 +109,14 @@ namespace lvr2{
                        findMinRec(node->right, d, depth+1), d);
 
     }
+
+    /**
+     * Calls the recursive findMin function
+     * @tparam BaseVecT
+     * @param node      starting node
+     * @param d         dimension
+     * @return
+     */
     template <typename BaseVecT>
     Node<BaseVecT>* DynamicKDTree<BaseVecT>::findMin(Node<BaseVecT>* node, int d)
     {
@@ -81,8 +125,16 @@ namespace lvr2{
     }
 
 
+    /**
+     * Deletes a specified node from the tree
+     * @tparam BaseVecT
+     * @param node      for recursion, initially the root of the search
+     * @param point     point to be removed
+     * @param depth     current depth
+     * @return
+     */
     template <typename BaseVecT>
-    Node<BaseVecT>* DynamicKDTree<BaseVecT>::deleteNodeRec(Node<BaseVecT>* node, BaseVecT point, int depth)
+    Node<BaseVecT>* DynamicKDTree<BaseVecT>::deleteNodeRec(Node<BaseVecT>* node, BaseVecT& point, int depth)
     {
         // Given point is not present
         if (node == NULL)
@@ -102,7 +154,9 @@ namespace lvr2{
 
                 // Copy the minimum to root
                 //copyPoint(node->point, min->point);
-                node->point = min->point;
+                node->point.x = min->point.x;
+                node->point.y = min->point.y;
+                node->point.z = min->point.z;
                 node->vH = min->vH;
 
                 // Recursively delete the minimum
@@ -112,7 +166,9 @@ namespace lvr2{
             {
                 Node<BaseVecT> *min = findMin(node->left, cd);
                 //copyPoint(node->point, min->point);
-                node->point = min->point;
+                node->point.x = min->point.x;
+                node->point.y = min->point.y;
+                node->point.z = min->point.z;
                 node->vH = min->vH;
                 node->right = deleteNodeRec(node->left, min->point, depth+1);
             }
@@ -132,6 +188,12 @@ namespace lvr2{
         return node;
     }
 
+    /**
+     * Calculates the size of the Tree, given a node
+     * @tparam BaseVecT
+     * @param node      the root node of the size calculation
+     * @return          the size of the tree (number of nodes)
+     */
     template <typename BaseVecT>
     int DynamicKDTree<BaseVecT>::sizeRec(Node<BaseVecT>* node)
     {
@@ -139,20 +201,35 @@ namespace lvr2{
         return 1 + sizeRec(node->right) + sizeRec(node->left);
     }
 
+    /**
+     * Calls the recursive insertion
+     * @tparam BaseVecT
+     * @param point      Point to be inserted to the tree
+     * @param vH
+     */
     template <typename BaseVecT>
-    void DynamicKDTree<BaseVecT>::insert(BaseVecT point, VertexHandle vH)
+    void DynamicKDTree<BaseVecT>::insert(BaseVecT& point, VertexHandle vH)
     {
         root = insertRec(root, point, vH, 0);
     }
 
+    /**
+     * Calls the recursive deletion
+     * @tparam BaseVecT
+     * @param point     Point to be removed from the tree
+     */
     template <typename BaseVecT>
-    void DynamicKDTree<BaseVecT>::deleteNode(BaseVecT point)
+    void DynamicKDTree<BaseVecT>::deleteNode(BaseVecT& point)
     {
         // Pass depth as 0
-        std::cout << "Deleting..." << endl;
         root =  deleteNodeRec(root, point, 0);
     }
 
+    /**
+     * Calls the recursive size calculation
+     * @tparam BaseVecT
+     * @return size of the tree
+     */
     template <typename BaseVecT>
     int DynamicKDTree<BaseVecT>::size()
     {
