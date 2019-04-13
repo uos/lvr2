@@ -31,7 +31,7 @@ namespace lvr2
   class PointOctree
   {
     public:
-      PointOctree(PointBufferPtr points, int depth);
+      PointOctree(PointBufferPtr& points, int depth);
 
       void intersect(double planes[6][4], std::vector<unsigned int>& indices);
       void setLOD(unsigned char lod) { m_lod = lod; }
@@ -57,7 +57,7 @@ namespace lvr2
       template <typename T>
         T* getChildPtr(BOct* parent);
       
-      unsigned char getIndex(BaseVecT& point, const BoundingBox<BaseVecT>& bbox);
+      unsigned char getIndex(const BaseVecT& point, const BoundingBox<BaseVecT>& bbox);
 
       void getBBoxes(const BoundingBox<BaseVecT>& bbox, BoundingBox<BaseVecT>* boxes);
 
@@ -85,9 +85,9 @@ namespace lvr2
 //      
 //      void writeLeaf(Leaf* leaf, unsigned char index);
 
-    //  void intersect(BOct* oct,  const BoundingBox<BaseVecT>& octBBox, const BoundingBox<BaseVecT>& cullBBox, std::vector<Point<BaseVecT > >& pts);
+    //  void intersect(BOct* oct,  const BoundingBox<BaseVecT>& octBBox, const BoundingBox<BaseVecT>& cullBBox, std::vector<BaseVecT >& pts);
 
-    //  void intersect(const BoundingBox<BaseVecT>& cullBBox, std::vector<Point<BaseVecT > >& pts);
+    //  void intersect(const BoundingBox<BaseVecT>& cullBBox, std::vector<BaseVecT >& pts);
 
 
   };
