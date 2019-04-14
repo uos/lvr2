@@ -90,13 +90,17 @@ LVRMainWindow::LVRMainWindow()
     m_actionCopyModelItem = new QAction("Copy item", this);
     m_actionCopyModelItem->setShortcut(QKeySequence::Copy);
     m_actionCopyModelItem->setShortcutContext(Qt::ApplicationShortcut);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
     m_actionCopyModelItem->setShortcutVisibleInContextMenu(true);
+#endif
 
 
     m_actionPasteModelItem = new QAction("Paste item", this);
     m_actionPasteModelItem->setShortcut(QKeySequence::Paste);
     m_actionPasteModelItem->setShortcutContext(Qt::ApplicationShortcut);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
     m_actionPasteModelItem->setShortcutVisibleInContextMenu(true);
+#endif
 
 
     m_actionRenameModelItem = new QAction("Rename item", this);
