@@ -893,21 +893,17 @@ EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
 
     //now, that all the edges are redirected, we need to insert new faces (4) and set the faces of each inner edge
 
-    FaceHandle topLeftH = m_faces.nextHandle();
-    Face topLeft(aboveLeftH);
-    m_faces.push(topLeft);
+    Face topLeft(leftAddedH);
+    FaceHandle topLeftH = m_faces.push(topLeft);
 
-    FaceHandle topRightH = m_faces.nextHandle();
-    Face topRight(aboveRightH);
-    m_faces.push(topRight);
+    Face topRight(rightAdded.twin);
+    FaceHandle topRightH = m_faces.push(topRight);
 
-    FaceHandle bottomLeftH = m_faces.nextHandle();
-    Face bottomLeft(belowLeftH);
-    m_faces.push(bottomLeft);
+    Face bottomLeft(leftAdded.twin);
+    FaceHandle bottomLeftH = m_faces.push(bottomLeft);
 
-    FaceHandle bottomRightH = m_faces.nextHandle();
-    Face bottomRight(belowRightH);
-    m_faces.push(bottomRight);
+    Face bottomRight(rightAddedH);
+    FaceHandle bottomRightH = m_faces.push(bottomRight);
 
     aboveLeft.face = topLeftH;
     aboveRight.face = topRightH;
@@ -1094,7 +1090,7 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
             if(handle && this->isFlippable(handle.unwrap()))
             {
                 std::cout << "FLIPPABLE!!!" << endl << endl;
-                //this->flipEdge(handle.unwrap());
+                this->flipEdge(handle.unwrap());
             }
         }
     }*/

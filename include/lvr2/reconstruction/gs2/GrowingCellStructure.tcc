@@ -44,10 +44,10 @@ namespace lvr2 {
         m_mesh = &mesh;
 
         //get initial tetrahedron mesh
-        getInitialMesh();
+        //getInitialMesh();
         cout << "KD-Tree size: " << kd_tree->size() << endl;
 
-        //initTestMesh();
+        initTestMesh();
 
         //progress bar
         PacmanProgressBar progress_bar((size_t)((((size_t)m_runtime*(size_t)m_numSplits)
@@ -60,9 +60,9 @@ namespace lvr2 {
             {
                 for(int k = 0; k < getBasicSteps(); k++)
                 {
-                    executeBasicStep(progress_bar);
+                    //executeBasicStep(progress_bar);
                 }
-                executeVertexSplit(); //TODO: execute vertex split after a specific number of basic steps
+                //executeVertexSplit(); //TODO: execute vertex split after a specific number of basic steps
 
             }
             if(this->isWithCollapse())
@@ -74,7 +74,7 @@ namespace lvr2 {
 
         //final operations on the mesh (like removing wrong faces and filling the holes)
 
-        if(m_mesh->numVertices() > 500)
+        if(m_mesh->numVertices() > 5000)
         {
            removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
         }
@@ -423,6 +423,9 @@ namespace lvr2 {
         EdgeSplitResult result = m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v8,v0).unwrap());
         m_mesh->flipEdge(m_mesh->getEdgeBetween(v2,v8).unwrap());
         m_mesh->flipEdge(m_mesh->getEdgeBetween(v8,v1).unwrap());
+        std::cout << "Vertex(center): " << m_mesh->getVertexPosition(v8) << endl;
+        std::cout << "Vertex(center): " << m_mesh->getVertexPosition(v2) << endl;
+        std::cout << "Vertex(center): " << m_mesh->getVertexPosition(v1) << endl;
     }
 
     /**
