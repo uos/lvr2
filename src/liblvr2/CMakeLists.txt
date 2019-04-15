@@ -4,7 +4,6 @@ set(LVR2_SOURCES
     texture/Texture.cpp
     texture/TextureFactory.cpp
     util/Util.cpp
-    display/PointOctree.cpp
     display/Renderable.cpp
     display/GroundPlane.cpp
     display/MultiPointCloud.cpp
@@ -151,48 +150,6 @@ if(OPENCL_FOUND)
     set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${OpenCL_LIBRARIES})
 endif()
 
-
-
-#####################################################################################
-# Compile object files for static and dynamic library
-#####################################################################################
-
-add_library(lvr2core OBJECT ${LVR2_SOURCES})
-
-#####################################################################################
-# Build static library
-#####################################################################################
-
-message(STATUS "Building static library")
-add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
-target_link_libraries(lvr2_static ${LVR2_INTERNAL_DEPENDENCIES_STATIC} ${LVR2_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
-
-
-#####################################################################################
-# Build shared and static library
-#####################################################################################
-
-
-# set(EXPORT_DEPS_STATIC
-#   lvr2rply_static
-#   draco
-# )
-
-# set(EXPORT_DEPS_SHARED
-#   lvr2rply
-# )
-
-if( NOT MSVC )
-  message(STATUS "Building shared library")
-  add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
-  target_link_libraries(lvr2 ${LVR2_INTERNAL_DEPENDENCIES_SHARED} ${LVR2_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
-
-install(TARGETS lvr2_static lvr2
-  EXPORT lvrTargets
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif( NOT MSVC)
 #####################################################################################
 # CUDA
 #####################################################################################
@@ -237,3 +194,35 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
     )
 
 endif()
+
+#####################################################################################
+# Compile object files for static and dynamic library
+#####################################################################################
+
+add_library(lvr2core OBJECT ${LVR2_SOURCES})
+
+#####################################################################################
+# Build static library
+#####################################################################################
+
+message(STATUS "Building static library")
+add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
+target_link_libraries(lvr2_static ${LVR2_INTERNAL_DEPENDENCIES_STATIC} ${LVR2_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+
+
+#####################################################################################
+# Build shared library
+#####################################################################################
+
+if( NOT MSVC )
+  message(STATUS "Building shared library")
+  add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
+  target_link_libraries(lvr2 ${LVR2_INTERNAL_DEPENDENCIES_SHARED} ${LVR2_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+
+install(TARGETS lvr2_static lvr2
+  EXPORT lvrTargets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  )
+endif( NOT MSVC)
+
