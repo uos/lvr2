@@ -31,6 +31,7 @@
 #include "BaseIO.hpp"
 #include "DataStruct.hpp"
 #include "ScanData.hpp"
+#include "CamData.hpp"
 #include "CalibrationParameters.hpp"
 
 #include "lvr2/geometry/Matrix4.hpp"
@@ -69,12 +70,29 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
 
     ModelPtr read(std::string filename, size_t scanNr);
 
+    bool readPointCloud(ModelPtr model_ptr);
+
+    bool readMesh(ModelPtr model_ptr);
+
+
     /**
          * \brief Save the loaded elements to the given file.
          *
          * @param filename Filename of the file to write.
          */
     virtual void save(std::string filename);
+
+    virtual void save(ModelPtr model, std::string filename);
+
+    bool saveMesh(ModelPtr model_ptr);
+
+
+
+    /**
+     * @brief Construct a new HDF5IO object. Do not use this. Only used by ModelFactory
+     *  
+     */
+    HDF5IO() {}
 
     HDF5IO(std::string filename, int open_flags = HighFive::File::ReadOnly);
 
@@ -107,7 +125,11 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
 
     ScanData    getSingleRawScanData(int nr, bool load_points = true);
 
+    CamData     getSingleRawCamData(int scan_id, int img_id, bool load_image_data = true);
+
     std::vector<ScanData> getRawScanData(bool load_points = true);
+
+    std::vector<std::vector<CamData> > getRawCamData(bool load_image_data = true);
 
     floatArr getFloatChannelFromRawScanData(std::string name,
             int nr, unsigned int& n, unsigned& w);
@@ -134,11 +156,15 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
             std::vector<hsize_t>& chunkSize,
             boost::shared_array<T> data);
 
-
     void addImage(
             std::string groupName, std::string name, cv::Mat& img);
-
+    
     void addRawScanData(int nr, ScanData &scan);
+
+    /**
+     * @brief add recorded image referenced to a scan pose
+     */
+    void addRawCamData( int scan_id, int img_id, CamData& cam_data );
 
     void addFloatChannelToRawScanData(std::string name, int nr, size_t n, unsigned w, floatArr data);
 
@@ -154,7 +180,6 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
     bool compress();
 
     size_t chunkSize();
-
 
   private:
 
@@ -258,7 +283,11 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
 
     void addImage(HighFive::Group& g, std::string datasetName, cv::Mat& img);
 
+    void getImage(HighFive::Group& g, std::string datasetName, cv::Mat& img);
+
     HighFive::Group getGroup(const std::string& groupName, bool create = true);
+
+    HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool create = true);
 
     std::vector<std::string> splitGroupNames(const std::string &groupName);
 

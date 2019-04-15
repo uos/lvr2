@@ -25,59 +25,54 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * LVRPointCloudItem.hpp
+/*
+ * CudaRaycaster.hpp
  *
- *  @date Feb 7, 2014
- *  @author Thomas Wiemann
+ *  @date 04.02.2019
+ *  @author Alexander Mock <amock@uos.de>
  */
-#ifndef LVRPOINTCLOUDITEM_HPP_
-#define LVRPOINTCLOUDITEM_HPP_
 
-#include "../vtkBridge/LVRPointBufferBridge.hpp"
+#pragma once
 
-#include <QTreeWidgetItem>
-#include <QColor>
+#include <vector>
 
 namespace lvr2
 {
 
-class LVRPointCloudItem : public QTreeWidgetItem
-{
+/**
+ *  @brief CudaRaycaster: GPU Cuda version of BVH Raycasting
+ */
+template <typename BaseVecT>
+class CudaRaycaster : public RaycasterBase<BaseVecT> {
 public:
 
-    LVRPointCloudItem(PointBufferBridgePtr ptr, QTreeWidgetItem* parent = 0);
-    virtual ~LVRPointCloudItem();
-    QColor	getColor();
-    void    setColor(QColor &c);
-    void    setSelectionColor(QColor &c);
-    void    resetColor();
-    int		getPointSize();
-    void    setPointSize(int &pointSize);
-    float	getOpacity();
-    void    setOpacity(float &opacity);
-    bool	getVisibility();
-    void    setVisibility(bool &visiblity);
-    size_t  getNumPoints();
-    void    update();
-    PointBufferPtr getPointBuffer();
-    PointBufferBridgePtr getPointBufferBridge();
-    vtkSmartPointer<vtkActor> getActor();
+    /**
+     * @brief Constructor: Stores mesh as member
+     */
+    CudaRaycaster(const MeshBufferPtr mesh);
 
-protected:
-    QTreeWidgetItem*        m_parent;
-    QTreeWidgetItem*        m_numItem;
-    QTreeWidgetItem*        m_normalItem;
-    QTreeWidgetItem*        m_colorItem;
-    QTreeWidgetItem*        m_specItem;
+    bool castRay(
+        const Point<BaseVecT>& origin,
+        const Vector<BaseVecT>& direction,
+        Point<BaseVecT>& intersection
+    );
 
-    PointBufferBridgePtr    m_pointBridge;
-    QColor                  m_color;
-    int						m_pointSize;
-    float					m_opacity;
-    bool					m_visible;
+    void castRays(
+        const Point<BaseVecT>& origin,
+        const std::vector<Vector<BaseVecT> >& directions,
+        std::vector<Point<BaseVecT> >& intersections,
+        std::vector<uint8_t>& hits
+    );
+
+    void castRays(
+        const std::vector<Point<BaseVecT> >& origins,
+        const std::vector<Vector<BaseVecT> >& directions,
+        std::vector<Point<BaseVecT> >& intersections,
+        std::vector<uint8_t>& hits
+    );
+
 };
 
-} /* namespace lvr2 */
+} // namespace lvr2
 
-#endif /* LVRPOINTCLOUDITEM_HPP_ */
+#include <lvr2/algorithm/raycasting/CudaRaycaster.tcc>

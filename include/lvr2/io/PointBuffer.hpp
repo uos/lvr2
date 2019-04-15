@@ -123,6 +123,9 @@ public:
 
     /// Returns the number of points in the buffer
     size_t numPoints() const;
+
+    /// Makes a clone
+    PointBuffer clone();
 private:
 
     /// Point channel, 'cached' to allow faster access

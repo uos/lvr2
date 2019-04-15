@@ -35,7 +35,7 @@
 #ifndef COORDINATETRANSFORM_HPP_
 #define COORDINATETRANSFORM_HPP_
 
-#include <lvr2/io/PointBuffer.hpp>
+#include "lvr2/io/PointBuffer.hpp"
 
 namespace lvr2
 {
@@ -44,6 +44,55 @@ namespace lvr2
 
 	void convert(COORD_SYSTEM from, COORD_SYSTEM to, float* point);
 	void convert(COORD_SYSTEM from, COORD_SYSTEM to, PointBufferPtr &buffer);
+
+	/**
+	 * @brief 	Stores information to transform a 3D point into
+	 * 			a different coordinate system. It is assumed, that
+	 * 			the coordinate called x is refered to as coordinate 0,
+	 * 			y is 1 and z is 2. 
+	 * 
+	 */
+	template<typename T> 
+	struct CoordinateTransform
+	{
+		CoordinateTransform(const unsigned char& _x = 0,
+						    const unsigned char& _y = 1,
+						    const unsigned char& _z = 2,
+						    const T& _sx = 1.0,
+						    const T& _sy = 1.0,
+						    const T& _sz = 1.0) : 
+						    x(_x), y(_y), z(_z), sx(_sx), sy(_sy), sz(_sz) {}
+
+		/// Returns true, if the saved information actually 
+		/// is a transform. False only, if the 
+		/// default values are used.
+		bool transforms()
+		{
+			return ((x != 0) || (y != 1) || (z != 2) || (sx != 1.0) || (sy != 1.0) || (sz != 1.0));
+		} 
+						   
+		/// Position of the x coordinate in the target system
+		unsigned char x;
+
+		/// Position of the y coordinate in the target system
+		unsigned char y;
+
+		/// Position of the z coordinate in the target system
+		unsigned char z;
+
+		/// Scale factor of the x coordinate in the source system
+		/// to match the target systems' scale
+		T sx;
+
+		/// Scale factor of the y coordinate in the source system
+		/// to match the target systems' scale
+		T sy;
+
+		/// Scale factor of the y coordinate in the source system
+		/// to match the target systems' scale
+		T sz;
+	};
+	
 } // namespace lvr2
 
 #endif /* COORDINATETRANSFORM_HPP_ */

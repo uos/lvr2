@@ -27,6 +27,7 @@
 
 #include <QFileDialog>
 #include "LVRReconstructionMarchingCubesDialog.hpp"
+#include "LVRItemTypes.hpp"
 
 #include <lvr2/algorithm/NormalAlgorithms.hpp>
 
@@ -71,7 +72,7 @@ void LVRReconstructViaMarchingCubesDialog::setProgressTitle(string t)
     QApplication::processEvents();
 }
 
-LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, LVRModelItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
+LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(string decomposition, LVRPointCloudItem* pc, QTreeWidgetItem* parent, QTreeWidget* treeWidget, vtkRenderWindow* window) :
    m_decomposition(decomposition), 
    m_pc(pc), m_parent(parent), 
    m_treeWidget(treeWidget),
@@ -97,6 +98,8 @@ LVRReconstructViaMarchingCubesDialog::LVRReconstructViaMarchingCubesDialog(strin
     m_progressDialog->setMinimumDuration(100);
     m_progressDialog->setWindowTitle("Processing...");
     m_progressDialog->setAutoClose(false);
+    m_progressDialog->reset();
+    m_progressDialog->hide();
 
     // Register LVR progress callbacks
     ProgressBar::setProgressCallback(&updateProgressbar);
@@ -192,7 +195,21 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
 
     using Vec = BaseVector<float>;
 
+    QTreeWidgetItem* entry_point = m_parent;
+    if(m_parent)
+    {
+        if(m_parent->type() == LVRScanDataItemType)
+        {
+            entry_point = m_parent->parent();
+        }
+    } 
+
     PointBufferPtr pc_buffer = m_pc->getPointBuffer();
+    
+    Matrix4<Vec> T = qttf::getTransformation(m_pc, NULL);
+    std::cout << T << std::endl;
+
+    pc_buffer = qttf::transform(pc_buffer, T);
 
     PointsetSurfacePtr<Vec> surface;
 
@@ -280,19 +297,34 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
     finalize.setMaterializerResult(matResult);
     MeshBufferPtr buffer = finalize.apply(mesh);
 
+
     ModelPtr model(new Model(buffer));
 	ModelBridgePtr bridge(new LVRModelBridge(model));
 	
 	vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
 	bridge->addActors(renderer);
    
-	QString base = m_parent->getName() + " (mesh)";
+    QString base("mesh");
+
+    if(m_parent)
+    {
+        base = m_parent->text(0) + " (mesh)";
+    }
+
     m_generatedModel = new LVRModelItem(bridge, base);
 
-    m_treeWidget->addTopLevelItem(m_generatedModel);
+    if(entry_point)
+    {
+        entry_point->addChild(m_generatedModel);
+    } else {
+        m_treeWidget->addTopLevelItem(m_generatedModel);
+    }
+    
+    
     m_generatedModel->setExpanded(true);
 
     m_progressDialog->hide();
+
 }
 
 } // namespace lvr2

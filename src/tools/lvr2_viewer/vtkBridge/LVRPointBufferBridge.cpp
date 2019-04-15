@@ -72,6 +72,9 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
         // Save pc data
         m_pointBuffer = pointCloud;
 
+        if(pointCloud->hasColors()) m_hasColors = true;
+        if(pointCloud->hasNormals()) m_hasNormals = true;
+
         // default: visible light
         m_spectralChannels.r = Util::getSpectralChannel(612, pointCloud);
         m_spectralChannels.g = Util::getSpectralChannel(552, pointCloud);
@@ -83,8 +86,6 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
         // Save meta information
         m_numPoints = pointCloud->numPoints();
 
-        if(pointCloud->hasColors()) m_hasColors = true;
-        if(pointCloud->hasNormals()) m_hasNormals = true;
     }
 }
 
@@ -339,7 +340,7 @@ size_t  LVRPointBufferBridge::getNumPoints()
 
 bool LVRPointBufferBridge::hasNormals()
 {
-    return m_hasNormals;
+    return m_pointBuffer->hasNormals();
 }
 
 bool LVRPointBufferBridge::hasColors()
@@ -390,6 +391,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 
         if(normals)
         {
+            std::cout << "vtk: adding normals" << std::endl;
             m_vtk_normals->SetNumberOfTuples(n);
         }
 

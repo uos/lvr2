@@ -42,7 +42,11 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRPlotter.cpp
     widgets/LVRHistogram.cpp
     widgets/LVRScanDataItem.cpp
+    widgets/LVRCamDataItem.cpp
+    widgets/LVRCvImageItem.cpp
     widgets/LVRBoundingBoxItem.cpp
+    widgets/LVRGraphicsView.cpp
+    util/qttf.cpp
 )
 
 #####################################################################################
@@ -167,6 +171,14 @@ add_executable(lvr2_viewer
   ${LVR2_VIEWER_MOCS}
   ${LVR2_VIEWER_UI_HDRS})
 target_link_libraries(lvr2_viewer ${LVR2_VIEWER_DEPENDENCIES})
+
+if(CUDA_FOUND)
+        target_link_libraries(lvr2_viewer lvr2cuda)
+        target_compile_definitions(lvr2_viewer PRIVATE CUDA_FOUND=1)
+endif()
+if(OPENCL_FOUND)
+        target_compile_definitions(lvr2_viewer PRIVATE OPENCL_FOUND=1)
+endif()
 
 install(TARGETS lvr2_viewer
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
