@@ -64,6 +64,7 @@ ModelPtr AsciiIO::read(
     }
     // Count lines in file to estimate the number of present points
     size_t lines_in_file = countLines(filename);
+    cout << lines_in_file << endl;
 
     if ( lines_in_file < 2 )
     {
@@ -106,9 +107,9 @@ ModelPtr AsciiIO::read(
     // (Some) sanity checks for given paramters
     if(rPos > num_columns || gPos > num_columns || bPos > num_columns || iPos > num_columns)
     {
-        cout << timestamp << "Error: At least one attribute index is largen than the number of columns" << endl;
+        cout << timestamp << "Error: At least one attribute index is larger than the number of columns" << endl;
         // Retrun empty model
-        return model;
+        return ModelPtr();
     }
 
     // Check for color and intensity

@@ -145,7 +145,7 @@ public:
 			float tmp1, tmp2;
 
 			// Normalize axis
-			Normal<T> a(axis);
+			Normal<ValueType> a(axis);
 
 			m[ 0] = c + a.x * a.x * t;
 			m[ 5] = c + a.y * a.y * t;
@@ -204,7 +204,7 @@ public:
 
 	Matrix4(string filename);
 
-	virtual ~Matrix4()
+	~Matrix4()
 	{
 
 	}
@@ -237,7 +237,7 @@ public:
 	/**
 	 * @brief	Scales the matrix elemnts by the given factor
 	 */
-	Matrix4<BaseVecT> operator*(const typename BaseVecT::CoordType &scale) const
+	Matrix4<BaseVecT> operator*(const ValueType &scale) const
 	{
 		ValueType new_matrix[16];
 		for(int i = 0; i < 16; i++){
@@ -357,10 +357,9 @@ public:
     template<typename T>
     Normal<T> operator*(const Normal<T> &v) const
     {
-        using ValType = typename T::CoordType;
-        ValType x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
-        ValType y = m[ 1] * v.x + m[ 5] * v.y + m[9 ] * v.z;
-        ValType z = m[ 2] * v.x + m[ 6] * v.y + m[10] * v.z;
+        T x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
+        T y = m[ 1] * v.x + m[ 5] * v.y + m[9 ] * v.z;
+        T z = m[ 2] * v.x + m[ 6] * v.y + m[10] * v.z;
 
         return Normal<T>(x, y, z);
     }
@@ -430,7 +429,7 @@ public:
 				pose[5]  = atan2( _trY, _trX );
 			}
 
-			//cout << pose[3] << " " << pose[4] << " " << pose[5] << endl;
+			// cout << pose[3] << " " << pose[4] << " " << pose[5] << endl;
 
 			pose[0] = m[12];
 			pose[1] = m[13];
@@ -484,7 +483,7 @@ public:
 	 * @brief	Returns the internal data array. Unsafe. Will probably
 	 * 			removed in one of the next versions.
 	 */
-	ValueType* getData(){ return m;};
+	ValueType* getData(){ return m;}
 
     floatArr toFloatArray()
     {
@@ -565,6 +564,8 @@ public:
 	    return Mout;
 	}
 
+	ValueType m[16];
+
 private:
 
     /**
@@ -600,7 +601,7 @@ private:
 	  return ( det );
 	}
 
-	ValueType m[16];
+	
 };
 
 /**

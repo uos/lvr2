@@ -37,7 +37,7 @@
 namespace kaboom
 {
 
-Options::Options(int argc, char** argv) : m_descr("Supported options")
+Options::Options(int argc, char** argv) : lvr2::BaseOption(argc, argv), m_descr("Supported options")
 {
 
 	// Create option descriptions
@@ -54,12 +54,6 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 	    ("k", value<int>()->default_value(1), "k neighborhood for filtering.")
 	    ("sigma", value<float>()->default_value(1.0), "Deviation for outlier filter.")
 	    ("targetSize", value<int>()->default_value(0), "Target size (reduction) for the input scans.")
-	    ("xPos,x", value<int>()->default_value(0), "Position of the x-coordinates in the input data lines.")
-	    ("yPos,y", value<int>()->default_value(1), "Position of the y-coordinates in the input data lines.")
-	    ("zPos,z", value<int>()->default_value(2), "Position of the z-coordinates in the input data lines.")
-	    ("sx", value<float>()->default_value(1.0), "Scaling factor for the x coordinates.")
-	    ("sy", value<float>()->default_value(1.0), "Scaling factor for the y coordinates.")
-	    ("sz", value<float>()->default_value(1.0), "Scaling factor for the z coordinates.")
         ("transformBefore", value<bool>()->default_value(false), "Transform the scans before frames/pose-transformation.")
 	    ("rPos,r", value<int>()->default_value(-1), "Position of the red color component in the input data lines. (-1) means no color information")
 	    ("gPos,g", value<int>()->default_value(-1), "Position of the green color component in the input data lines. (-1) means no color information")

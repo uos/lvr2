@@ -43,6 +43,7 @@
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Matrix4.hpp>
 
+
 namespace lvr2
 {
 
@@ -177,6 +178,18 @@ public:
 
         return ret;
     }
+
+    template <typename ValueType>
+    static BaseVector<ValueType> slam6d_to_riegl_point(const BaseVector<ValueType> &in)
+    {
+        return {
+            in.z   / (ValueType) 100.0,
+            - in.x / (ValueType) 100.0,
+            in.y   / (ValueType) 100.0
+        };
+    }
+
+
 
     /**
      * @brief Converts an angle from degree to radian.
