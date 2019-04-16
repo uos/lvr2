@@ -28,10 +28,6 @@ for i in range(0, num_sets):
     ds = None
     values = None
 
-print(mins)
-print(means)
-print(maxs)
-
 all_min = np.amin(mins)
 print("Calculated minimum value over data sets: ", all_min)
 all_mean = np.mean(means)
