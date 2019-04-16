@@ -771,10 +771,16 @@ void LVRMainWindow::alignPointClouds()
         icp.setEpsilon(m_correspondanceDialog->getEpsilon());
         icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
         icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
-        Matrix4<Vec> refinedTransform = icp.match();
+        Matrix4<Vec> refinedTransform ;
+
+        cout << "New method: " << endl;
+        refinedTransform = icp.match();
 
         // TODO: remove
+        cout << "Old method: " << endl;
         icp.old_match();
+        cout << "Euler method: " << endl;
+        icp.euler_match();
 
         //cout << "Initial: " << mat << endl;
 

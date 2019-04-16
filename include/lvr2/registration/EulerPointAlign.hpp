@@ -26,61 +26,37 @@
  */
 
 /**
- * ICPPointAlign.hpp
+ * EulerPointAlign.hpp
  *
- *  @date Mar 18, 2014
+ *  @date Feb 21, 2014
  *  @author Thomas Wiemann
  */
-#ifndef ICPPOINTALIGN_HPP_
-#define ICPPOINTALIGN_HPP_
+#ifndef EULERPOINTALIGN_HPP_
+#define EULERPOINTALIGN_HPP_
 
-#include <lvr2/registration/EigenSVDPointAlign.hpp>
-#include <lvr2/reconstruction/SearchTree.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/geometry/Matrix4.hpp>
 
 namespace lvr2
 {
 
 template <typename BaseVecT>
-class ICPPointAlign
+using PointPairVector = std::vector<std::pair<BaseVecT, BaseVecT> >;
+
+template <typename BaseVecT>
+class EulerPointAlign
 {
 public:
-    ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4<BaseVecT> transformation);
-
-    Matrix4<BaseVecT> match();
-    // TODO: remove
-    Matrix4<BaseVecT> old_match();
-    Matrix4<BaseVecT> euler_match();
-
-    virtual ~ICPPointAlign();
-
-    void    setMaxMatchDistance(double distance);
-    void    setMaxIterations(int iterations);
-    void    setEpsilon(double epsilon);
-
-    double  getEpsilon();
-    double  getMaxMatchDistance();
-    int     getMaxIterations();
-    
-    void getPointPairs(PointPairVector<BaseVecT>& pairs, BaseVecT& centroid_m, BaseVecT& centroid_d, double& sum);
-
-protected:
-
-    void transform();
-
-    double                              m_epsilon;
-    double                              m_maxDistanceMatch;
-    int                                 m_maxIterations;
-
-    PointBufferPtr                     m_modelCloud;
-    PointBufferPtr                     m_dataCloud;
-    Matrix4<BaseVecT>                   m_transformation;
-
-    SearchTreePtr<BaseVecT> 			m_searchTree;
+    EulerPointAlign() {};
+    double alignPoints(
+            const PointPairVector<BaseVecT>& pairs,
+            const BaseVecT centroid1,
+            const BaseVecT centroid2,
+            Matrix4<BaseVecT>& align);
 };
 
 } /* namespace lvr2 */
 
-#include <lvr2/registration/ICPPointAlign.tcc>
+#include <lvr2/registration/EulerPointAlign.tcc>
 
-#endif /* ICPPOINTALIGN_HPP_ */
+#endif /* EULERPOINTALIGN_HPP_ */
