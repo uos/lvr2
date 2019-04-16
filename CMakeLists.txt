@@ -462,6 +462,7 @@ add_subdirectory(src/tools/lvr2_asciiconverter)
 add_subdirectory(src/tools/lvr2_transform)
 # doesnt compile
 # add_subdirectory(src/tools/lvr2_kaboom)
+add_subdirectory(src/tools/lvr2_octree_test)
 add_subdirectory(src/tools/lvr2_image_normals)
 add_subdirectory(src/tools/lvr2_plymerger)
 add_subdirectory(src/tools/lvr2_hdf5_builder)
