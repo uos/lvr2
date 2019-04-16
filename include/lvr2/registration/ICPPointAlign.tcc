@@ -85,8 +85,6 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
         return Matrix4<BaseVecT>();
     }
 
-    m_transformation = Matrix4<BaseVecT>();
-
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
     EigenSVDPointAlign<BaseVecT> align;
     for(int i = 0; i < m_maxIterations; i++)
@@ -112,7 +110,7 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
         //cout << transform << endl;
 
         // Apply transformation
-        m_transformation = transformRegistration(transform.toEigenMatrix().transpose(), m_transformation.toEigenMatrix().transpose()).transpose();
+        m_transformation = transformRegistration(m_transformation.toEigenMatrix().transpose(), transform.toEigenMatrix().transpose()).transpose();
 
         //cout << timestamp << "TRANSFORMATION: " << endl;
         //cout << m_transformation << endl;
@@ -138,8 +136,6 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::old_match()
     {
         return Matrix4<BaseVecT>();
     }
-
-    m_transformation = Matrix4<BaseVecT>();
 
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
     EigenSVDPointAlign<BaseVecT> align;
@@ -177,8 +173,6 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::euler_match()
     {
         return Matrix4<BaseVecT>();
     }
-
-    m_transformation = Matrix4<BaseVecT>();
 
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
     EulerPointAlign<BaseVecT> align;

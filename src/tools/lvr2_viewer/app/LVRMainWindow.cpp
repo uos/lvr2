@@ -754,12 +754,12 @@ void LVRMainWindow::alignPointClouds()
         // Pose ist in radians, so we need to convert p to degrees
         // to achieve consistency
         Pose p;
-        p.x = -pose[0];
-        p.y = -pose[1];
-        p.z = -pose[2];
-        p.r = -pose[3]  * 57.295779513;
-        p.t = -pose[4]  * 57.295779513;
-        p.p = -pose[5]  * 57.295779513;
+        p.x = pose[0];
+        p.y = pose[1];
+        p.z = pose[2];
+        p.r = pose[3]  * 57.295779513;
+        p.t = pose[4]  * 57.295779513;
+        p.p = pose[5]  * 57.295779513;
         item->setPose(p);
     }
 
@@ -767,20 +767,30 @@ void LVRMainWindow::alignPointClouds()
     // Refine pose via ICP
     if(m_correspondanceDialog->doICP() && modelBuffer && dataBuffer)
     {
+        Matrix4<Vec> refinedTransform ;
+
         ICPPointAlign<BaseVector<float>> icp(modelBuffer, dataBuffer, mat);
         icp.setEpsilon(m_correspondanceDialog->getEpsilon());
         icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
         icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
-        Matrix4<Vec> refinedTransform ;
-
         cout << "New method: " << endl;
         refinedTransform = icp.match();
 
         // TODO: remove
+        icp = ICPPointAlign<BaseVector<float>>(modelBuffer, dataBuffer, mat);
+        icp.setEpsilon(m_correspondanceDialog->getEpsilon());
+        icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
+        icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
         cout << "Old method: " << endl;
-        icp.old_match();
+        refinedTransform = icp.match();
+
+        // TODO: remove
+        icp = ICPPointAlign<BaseVector<float>>(modelBuffer, dataBuffer, mat);
+        icp.setEpsilon(m_correspondanceDialog->getEpsilon());
+        icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
+        icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
         cout << "Euler method: " << endl;
-        icp.euler_match();
+        refinedTransform = icp.match();
 
         //cout << "Initial: " << mat << endl;
 
