@@ -512,7 +512,12 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
 
 install(FILES
     CMakeModules/FindEigen3.cmake
+    CMakeModules/FindFLANN.cmake
+    CMakeModules/FindLZ4.cmake
     CMakeModules/FindNabo.cmake
+    CMakeModules/FindOpenNI.cmake
+    CMakeModules/FindOpenNI2.cmake
+    CMakeModules/FindQVTK.cmake
     CMakeModules/FindSTANN.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2/Modules)
 
