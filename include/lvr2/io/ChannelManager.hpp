@@ -64,7 +64,7 @@ class ElementProxyPtr
     
     ssize_t operator-(const ElementProxyPtr& p)
     {
-      (this->m_ptr - p.m_ptr) / m_w;
+      return (this->m_ptr - p.m_ptr) / m_w;
     }
 
     ElementProxyPtr& operator++()
