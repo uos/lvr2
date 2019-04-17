@@ -36,7 +36,7 @@ namespace lvr2{
 
         // Tree is empty?
         if (node == NULL){
-            //cout << "Insert Depth: " << depth << endl;
+            cout << "Insert" << endl;
             return newNode(point, vH);
         }
 
@@ -170,10 +170,11 @@ namespace lvr2{
                 node->point.y = min->point.y;
                 node->point.z = min->point.z;
                 node->vH = min->vH;
-                node->right = deleteNodeRec(node->left, min->point, depth+1);
+                node->left = deleteNodeRec(node->left, min->point, depth+1);
             }
             else // If node to be deleted is leaf node
             {
+                std::cout << "Delete." << endl;
                 delete node;
                 return NULL;
             }
@@ -199,6 +200,55 @@ namespace lvr2{
     {
         if(node == NULL) return 0;
         return 1 + sizeRec(node->right) + sizeRec(node->left);
+    }
+
+    /**
+     * recursively searches for the nearest point in the kd tree for the clostest one to the given point
+     * @tparam BaseVecT
+     * @param node          for recursion, root at the beginning
+     * @param point         searches the closest point int three tree to this point
+     * @param depth         current depth of the tree
+     * @param minDist       index of the vertex with the closest index
+     * @param minDistSq     current minimal squared distance
+     * @return              the index of the vertexhandle "containing" the clostest point
+     */
+    template <typename BaseVecT>
+    Index DynamicKDTree<BaseVecT>::findNearestRec(Node<BaseVecT>* node, BaseVecT & point, int depth, Index minDist, float minDistSq)
+    {
+        //if the root is NULL, we return a dummy index
+        if(node == NULL) return std::numeric_limits<int>::max();
+
+        int cd = depth % k;
+        float distance = point.distance2(node->point);
+
+
+        //current dimension smaller ? search in left tree... bigger: search in right tree
+        if(node->left && point[cd] < node->point[cd])
+        {
+            //update values if current vertex is nearer
+            if(distance < minDistSq)
+            {
+                minDistSq = distance;
+                minDist = node->vH;
+                return findNearestRec(node->left, point, depth+1, minDist, minDistSq);
+            }
+            //recursion on the left subtree
+            return minDist;
+        }
+        else if(node->right && point[cd] >= node->point[cd])
+        {
+            //update values if current vertex is nearer
+            if(distance < minDistSq)
+            {
+                minDistSq = distance;
+                minDist = node->vH;
+                return findNearestRec(node->right, point, depth+1, minDist, minDistSq);
+            }
+            //recursion on the right subtree
+            return minDist;
+        }
+
+        return minDist;
     }
 
     /**
@@ -234,6 +284,12 @@ namespace lvr2{
     int DynamicKDTree<BaseVecT>::size()
     {
         return sizeRec(root);
+    }
+
+    template <typename BaseVecT>
+    Index DynamicKDTree<BaseVecT>::findNearest(BaseVecT point)
+    {
+        return findNearestRec(root, point, 0, std::numeric_limits<int>::max(), std::numeric_limits<float>::max());
     }
 
 } //end namespace lvr2
