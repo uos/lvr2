@@ -46,12 +46,16 @@ namespace lvr2{
 
         int sizeRec(Node<BaseVecT>* node);
 
+        Index findNearestRec(Node<BaseVecT>* node, BaseVecT & point, int depth, Index minDist, float minDistSq);
+
     public:
         void insert(BaseVecT& point, VertexHandle vH);
 
         void deleteNode(BaseVecT& point);
 
         int size();
+
+        Index findNearest(BaseVecT point);
 
         explicit DynamicKDTree(int k) : k(k)
         {

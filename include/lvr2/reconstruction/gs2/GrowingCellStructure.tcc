@@ -44,10 +44,10 @@ namespace lvr2 {
         m_mesh = &mesh;
 
         //get initial tetrahedron mesh
-        //getInitialMesh();
+        getInitialMesh();
         cout << "KD-Tree size: " << kd_tree->size() << endl;
 
-        initTestMesh();
+        //initTestMesh();
 
         //progress bar
         PacmanProgressBar progress_bar((size_t)((((size_t)m_runtime*(size_t)m_numSplits)
@@ -60,9 +60,9 @@ namespace lvr2 {
             {
                 for(int k = 0; k < getBasicSteps(); k++)
                 {
-                    //executeBasicStep(progress_bar);
+                    executeBasicStep(progress_bar);
                 }
-                //executeVertexSplit(); //TODO: execute vertex split after a specific number of basic steps
+                executeVertexSplit(); //TODO: execute vertex split after a specific number of basic steps
 
             }
             if(this->isWithCollapse())
@@ -108,12 +108,15 @@ namespace lvr2 {
         if(!m_useGSS) //if only gcs is used (gcs basic step)
         {
             VertexHandle winnerH = this->getClosestPointInMesh(random_point, progress_bar); //TODO: better runtime efficency(kd-tree)
+            /*Index winnerIndex = kd_tree->findNearest(random_point);
+            VertexHandle winnerH(winnerIndex);
+            std::cout << "winner index: " << winnerIndex << endl;*/
 
             //smooth the winning vertex
             BaseVecT &winner = m_mesh->getVertexPosition(winnerH);
-            //kd_tree->deleteNode(winner);
+            kd_tree->deleteNode(winner);
             winner += (random_point - winner) * getLearningRate();
-            //kd_tree->insert(winner, winnerH);
+            kd_tree->insert(winner, winnerH);
 
             //smooth the winning vertices' neighbors (laplacian smoothing)
 
@@ -124,11 +127,11 @@ namespace lvr2 {
             for(auto v : neighborsOfWinner)
             {
                 BaseVecT& nb = m_mesh->getVertexPosition(v);
-                //kd_tree->deleteNode(nb);
+                kd_tree->deleteNode(nb);
                 nb += (random_point - winner) * getNeighborLearningRate();
 
                 performLaplacianSmoothing(v);
-                //kd_tree->insert(nb, v);
+                kd_tree->insert(nb, v);
             }
 
             //increase signal counter by one
@@ -204,8 +207,8 @@ namespace lvr2 {
             vertexCellMap.get(highestSC).get() = tumble_tree->insertIterative(sc_middle, highestSC);//reinsert and update links
             vertexCellMap.insert(newVH, tumble_tree->insertIterative(sc_middle, newVH)); //add the new vertex to the tree and the map
 
-            //BaseVecT kdInsert = m_mesh->getVertexPosition(newVH);
-            //kd_tree->insert(kdInsert, newVH);
+            BaseVecT kdInsert = m_mesh->getVertexPosition(newVH);
+            kd_tree->insert(kdInsert, newVH);
 
         }
         else //GSS
@@ -421,8 +424,11 @@ namespace lvr2 {
         m_mesh->addFace(v6,v7,v8);
 
         EdgeSplitResult result = m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v8,v0).unwrap());
-        m_mesh->flipEdge(m_mesh->getEdgeBetween(v2,v8).unwrap());
-        m_mesh->flipEdge(m_mesh->getEdgeBetween(v8,v1).unwrap());
+        //m_mesh->flipEdge(m_mesh->getEdgeBetween(v2,v8).unwrap());
+        //m_mesh->flipEdge(m_mesh->getEdgeBetween(v8,v1).unwrap());
+        auto eH = m_mesh->getEdgeBetween(v2,v8);
+        auto veH = m_mesh->getVerticesOfEdge(eH.unwrap());
+        std::cout << m_mesh->getVertexPosition(veH[0]) << " ||| " << m_mesh->getVertexPosition(veH[1]) << endl;
         std::cout << "Vertex(center): " << m_mesh->getVertexPosition(v8) << endl;
         std::cout << "Vertex(center): " << m_mesh->getVertexPosition(v2) << endl;
         std::cout << "Vertex(center): " << m_mesh->getVertexPosition(v1) << endl;
