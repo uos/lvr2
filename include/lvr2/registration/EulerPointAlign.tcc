@@ -49,21 +49,15 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-double EulerPointAlign<BaseVecT>::alignPoints(const PointPairVector<BaseVecT>& pairs,
-        const BaseVecT centroid_m, const BaseVecT centroid_d, Matrix4<BaseVecT>& alignfx)
+Matrix4d EulerPointAlign<BaseVecT>::alignPoints(const PointPairVector<BaseVecT>& pairs, const Matrix4<BaseVecT>& old_transform)
 {
     float pose[6];
-    Matrix4<BaseVecT> transposed(alignfx);
+    Matrix4<BaseVecT> transposed(old_transform);
     transposed.transpose();
     transposed.toPostionAngle(pose);
 
-    Vector3d pos, theta;
-    pos[0] = pose[0];
-    pos[1] = pose[1];
-    pos[2] = pose[2];
-    theta[0] = pose[3];
-    theta[1] = pose[4];
-    theta[2] = pose[5];
+    Vector3d pos(pose[0], pose[1], pose[2]);
+    Vector3d theta(pose[3], pose[4], pose[5]);
 
     /// create transform matrix of the first scan
     Matrix4d trans_m = Matrix4d::Identity();
@@ -100,15 +94,14 @@ double EulerPointAlign<BaseVecT>::alignPoints(const PointPairVector<BaseVecT>& p
     Vector3d mz_top = Vector3d::Zero(), mz_bottom = Vector3d::Zero();
     double xpy = 0.0, xpz = 0.0, ypz = 0.0;
     double xy = 0.0, xz = 0.0, yz = 0.0;
-    double error = 0.0;
-    #pragma omp parallel for reduction(+:mid_sum, xpy, xpz, ypz, xy, xz, yz, mz_top, mz_bottom, error)
+    #pragma omp parallel for reduction(+:mid_sum, xpy, xpz, ypz, xy, xz, yz, mz_top, mz_bottom)
     for (size_t i = 0; i < pairs.size(); i++)
     {
-        BaseVecT base_m = pairs[i].first;
-        BaseVecT base_d = pairs[i].second;
+        const BaseVecT& base_d = pairs[i].first;
+        const BaseVecT& base_m = pairs[i].second;
 
-        Vector3d pm(base_m[0], base_m[1], base_m[2]);
         Vector3d pd(base_d[0], base_d[1], base_d[2]);
+        Vector3d pm(base_m[0], base_m[1], base_m[2]);
 
         Vector3d mid = (pm + pd) / 2.0;
         Vector3d delta = pm - pd;
@@ -129,11 +122,7 @@ double EulerPointAlign<BaseVecT>::alignPoints(const PointPairVector<BaseVecT>& p
         mz_bottom += Vector3d(-mid.z() * delta.y() + mid.y() * delta.z(),
                               -mid.y() * delta.x() + mid.x() * delta.y(),
                               mid.z() * delta.x() - mid.x() * delta.z());
-
-        error += delta.norm();
     }
-
-    error /= pairs.size();
 
     Vector6d mz;
     mz.block<3, 1>(0, 0) = mz_top;
@@ -176,9 +165,7 @@ double EulerPointAlign<BaseVecT>::alignPoints(const PointPairVector<BaseVecT>& p
     //  of the two scans
     Matrix4d result = trans_m * trans_d.inverse();
 
-    alignfx = result.transpose();
-
-    return error;
+    return result.transpose();
 }
 
 } // namespace lvr2

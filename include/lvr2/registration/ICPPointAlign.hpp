@@ -49,7 +49,6 @@ public:
 
     Matrix4<BaseVecT> match();
     // TODO: remove
-    Matrix4<BaseVecT> old_match();
     Matrix4<BaseVecT> euler_match();
 
     virtual ~ICPPointAlign();

@@ -38,6 +38,8 @@
 #include <lvr2/reconstruction/SearchTreeFlann.hpp>
 #include <lvr2/io/IOUtils.hpp>
 
+// TODO: remove
+#include <chrono>
 
 #include <fstream>
 using std::ofstream;
@@ -62,7 +64,7 @@ ICPPointAlign<BaseVecT>::ICPPointAlign(PointBufferPtr model, PointBufferPtr data
     floatArr o_points = data->getPointArray();
     floatArr t_points(new float[3 * n]);
 
-    for(size_t i = 0; i < numPoints; i++)
+    for (size_t i = 0; i < numPoints; i++)
     {
         BaseVecT v(o_points[3 * i], o_points[3 * i + 1], o_points[3 * i + 2]);
         BaseVecT t  = transform * v;
@@ -80,14 +82,16 @@ ICPPointAlign<BaseVecT>::ICPPointAlign(PointBufferPtr model, PointBufferPtr data
 template <typename BaseVecT>
 Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
 {
-    if(m_maxIterations == 0)
+    if (m_maxIterations == 0)
     {
         return Matrix4<BaseVecT>();
     }
 
+    auto start_time = clock();
+
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
     EigenSVDPointAlign<BaseVecT> align;
-    for(int i = 0; i < m_maxIterations; i++)
+    for (int i = 0; i < m_maxIterations; i++)
     {
         // Update break variables
         prev_prev_ret = prev_ret;
@@ -105,6 +109,8 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
 
         // Get transformation (if possible)
         ret = align.alignPoints(pairs, centroid_m, centroid_d, transform);
+        bool ok;
+        transform = transform.inv(ok);
 
         //cout << timestamp << "CORRECTION" << endl;
         //cout << transform << endl;
@@ -120,48 +126,12 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
         // Check minimum distance
         if ((fabs(ret - prev_ret) < m_epsilon) && (fabs(ret - prev_prev_ret) < m_epsilon))
         {
-			cout << timestamp << " Error below m_epsilon after " << i << " / " << m_maxIterations << " Iterations" << endl;
+            cout << timestamp << " Error below m_epsilon after " << i << " / " << m_maxIterations << " Iterations" << endl;
             break;
         }
     }
+    cout << "Time: " << (double)(clock() - start_time) / CLOCKS_PER_SEC / 5.0 << endl;
     cout << "Error: " << ret << "; Result: " << m_transformation << endl;
-    return m_transformation;
-}
-
-// TODO: remove
-template <typename BaseVecT>
-Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::old_match()
-{
-    if(m_maxIterations == 0)
-    {
-        return Matrix4<BaseVecT>();
-    }
-
-    double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
-    EigenSVDPointAlign<BaseVecT> align;
-    for(int i = 0; i < m_maxIterations; i++)
-    {
-        prev_prev_ret = prev_ret;
-        prev_ret = ret;
-        BaseVecT  centroid_m;
-        BaseVecT  centroid_d;
-        Matrix4<BaseVecT> transform;
-        double            sum;
-        PointPairVector<BaseVecT> pairs;
-        getPointPairs(pairs, centroid_m, centroid_d, sum);
-        ret = align.alignPoints(pairs, centroid_m, centroid_d, transform);
-
-        // Apply transformation
-        m_transformation *= transform;
-
-        cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << " using " << pairs.size() << " points."<< endl;
-        if ((fabs(ret - prev_ret) < m_epsilon) && (fabs(ret - prev_prev_ret) < m_epsilon))
-        {
-			cout << timestamp << " Error below m_epsilon after " << i << " / " << m_maxIterations << " Iterations" << endl;
-            break;
-        }
-    }
-    cout << "old Error: " << ret << "; old Result: " << m_transformation << endl;
     return m_transformation;
 }
 
@@ -169,35 +139,44 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::old_match()
 template <typename BaseVecT>
 Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::euler_match()
 {
-    if(m_maxIterations == 0)
+    if (m_maxIterations == 0)
     {
         return Matrix4<BaseVecT>();
     }
 
+    auto start_time = clock();
+
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
     EulerPointAlign<BaseVecT> align;
-    for(int i = 0; i < m_maxIterations; i++)
+    BaseVecT  centroid_m;
+    BaseVecT  centroid_d;
+    Matrix4<BaseVecT> transform = m_transformation;
+    PointPairVector<BaseVecT> pairs;
+
+    for (int i = 0; i < m_maxIterations; i++)
     {
         prev_prev_ret = prev_ret;
         prev_ret = ret;
-        BaseVecT  centroid_m;
-        BaseVecT  centroid_d;
-        Matrix4<BaseVecT> transform = m_transformation;
-        double            sum;
-        PointPairVector<BaseVecT> pairs;
-        getPointPairs(pairs, centroid_m, centroid_d, sum);
-        ret = align.alignPoints(pairs, centroid_m, centroid_d, transform);
+
+        pairs.clear();
+        getPointPairs(pairs, centroid_m, centroid_d, ret);
+        ret = sqrt(ret / pairs.size()); // copy from slam6d to match results
+
+        transform = align.alignPoints(pairs, m_transformation);
 
         // Apply transformation
         m_transformation *= transform;
 
-        cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << " using " << pairs.size() << " points."<< endl;
+        cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations
+             << " using " << pairs.size() << " / " << m_dataCloud->numPoints() << " points." << endl;
+
         if ((fabs(ret - prev_ret) < m_epsilon) && (fabs(ret - prev_prev_ret) < m_epsilon))
         {
-			cout << timestamp << " Error below m_epsilon after " << i << " / " << m_maxIterations << " Iterations" << endl;
+            cout << timestamp << " Error below m_epsilon after " << i << " / " << m_maxIterations << " Iterations" << endl;
             break;
         }
     }
+    cout << "Euler Time: " << (double)(clock() - start_time) / CLOCKS_PER_SEC / 5.0 << endl;
     cout << "Euler Error: " << ret << "; Euler Result: " << m_transformation << endl;
     return m_transformation;
 }
@@ -205,11 +184,10 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::euler_match()
 template <typename BaseVecT>
 void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector<BaseVecT>& pairs, BaseVecT& centroid_m, BaseVecT& centroid_d, double& sum)
 {
-    size_t n = m_dataCloud->numPoints();
-    bool ok;
-    Matrix4<BaseVecT> transformInv = m_transformation.inv(ok);
-    floatArr dataPoints = m_dataCloud->getPointArray();
     sum = 0;
+
+    FloatChannel model_pts = m_modelCloud->getFloatChannel("points").get();
+    FloatChannel data_pts = m_dataCloud->getFloatChannel("points").get();
 
     #pragma omp parallel
     {
@@ -217,46 +195,33 @@ void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector<BaseVecT>& pairs, Ba
         BaseVecT centroid_mP;
         BaseVecT centroid_dP;
         vector<size_t> neighbors;
+        vector<float> distances;
 
         #pragma omp for nowait //fill vec_private in parallel
-        for(size_t i = 0; i < m_dataCloud->numPoints(); i++)
+        for (size_t i = 0; i < data_pts.numElements(); i++)
         {
             // Get vertex representation of current data point
-            BaseVecT t(dataPoints[i * 3], dataPoints[i * 3 + 1], dataPoints[i * 3 + 2]);
+            BaseVecT data = data_pts[i];
+            BaseVecT t = m_transformation * data;
 
+            int found = m_searchTree->kSearch(t, 1, neighbors, distances);
 
-            // Perform inverse transformation on query point to
-            // it's position relative to the model point data
-            BaseVecT s = transformInv * t;
-
-            // Get closest point to "inverse query point"
-            neighbors.clear();
-            m_searchTree->kSearch(s, 1, neighbors);
-
-            // If closest point was found, transform back to the corresponding
-            // position in the data reference frame
-            if(neighbors.size())
+            if (found == 1 && distances[0] < m_maxDistanceMatch * m_maxDistanceMatch)
             {
-                FloatChannelOptional pts_channel = m_modelCloud->getFloatChannel("points");
-                FloatChannel pts = *pts_channel;
-                BaseVecT nb_pt = pts[neighbors[0]];
-                BaseVecT closest = m_transformation * nb_pt;
-                if( (closest - t).length() < m_maxDistanceMatch)
-                {
-                    centroid_dP += closest;
-                    centroid_mP += t;
+                BaseVecT closest = model_pts[neighbors[0]];
 
-                    sum += (closest - t).length2();
+                centroid_dP += closest;
+                centroid_mP += t;
 
-                    std::pair<BaseVecT, BaseVecT> ptPair(t, closest);
-                    privatePairs.push_back(ptPair);
-                }
+                sum += distances[0];
+
+                privatePairs.push_back(make_pair(t, closest));
             }
         }
         #pragma omp critical
         pairs.insert(pairs.end(), privatePairs.begin(), privatePairs.end());
 
-        if(pairs.size())
+        if (pairs.size())
         {
             centroid_d += centroid_dP;
             centroid_m += centroid_mP;
