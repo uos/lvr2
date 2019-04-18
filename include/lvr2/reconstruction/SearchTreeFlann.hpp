@@ -65,9 +65,6 @@ private:
 
 public:
 
-    // typedef boost::shared_ptr< SearchTreeFlann< VertexT> > Ptr;
-
-
     /**
      *  @brief Takes the point-data and initializes the underlying searchtree.
      *
@@ -76,33 +73,26 @@ public:
     SearchTreeFlann(PointBufferPtr buffer);
 
     /// See interface documentation.
-    virtual void kSearch(
+    virtual int kSearch(
         const BaseVecT& qp,
         int k,
         vector<size_t>& indices,
         vector<CoordT>& distances
-    ) const;
+    ) const override;
 
     /// See interface documentation.
     virtual void radiusSearch(
         const BaseVecT& qp,
         CoordT r,
         vector<size_t>& indices
-    ) const;
+    ) const override;
 
 protected:
 
     /// The FLANN search tree structure.
-    unique_ptr<flann::Index<flann::L2_Simple<float>>> m_tree;
+    unique_ptr<flann::Index<flann::L2_Simple<CoordT>>> m_tree;
 
-    // /// FLANN matrix representation of the points
-    // flann::Matrix<float>                                            m_flannPoints;
-
-    // vector<int>                                                     m_ind;
-    // vector<float>                                                   m_dst;
-
-
-
+    boost::shared_array<CoordT> m_data;
 };
 
 } // namespace lvr2
