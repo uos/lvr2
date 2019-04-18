@@ -48,11 +48,7 @@ class EulerPointAlign
 {
 public:
     EulerPointAlign() {};
-    double alignPoints(
-            const PointPairVector<BaseVecT>& pairs,
-            const BaseVecT centroid1,
-            const BaseVecT centroid2,
-            Matrix4<BaseVecT>& align);
+    Matrix4d alignPoints(const PointPairVector<BaseVecT>& pairs, const Matrix4<BaseVecT>& old_transform);
 };
 
 } /* namespace lvr2 */

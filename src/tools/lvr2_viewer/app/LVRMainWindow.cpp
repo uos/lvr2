@@ -747,8 +747,16 @@ void LVRMainWindow::alignPointClouds()
     float pose[6];
     LVRModelItem* item = m_treeWidgetHelper->getModelItem(name);
 
+
     if(item)
     {
+        auto old_pose = item->getPose();
+        Vec pos(old_pose.x, old_pose.y, old_pose.z);
+        Vec angles(old_pose.r, old_pose.t, old_pose.p);
+        angles *= 0.01745329;
+        cout << "old pose: " << Matrix4<Vec>(pos, angles) << endl;
+        mat = Matrix4<Vec>(pos, angles) * mat;
+
         mat.toPostionAngle(pose);
 
         // Pose ist in radians, so we need to convert p to degrees
@@ -773,15 +781,6 @@ void LVRMainWindow::alignPointClouds()
         icp.setEpsilon(m_correspondanceDialog->getEpsilon());
         icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
         icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
-        cout << "New method: " << endl;
-        refinedTransform = icp.match();
-
-        // TODO: remove
-        icp = ICPPointAlign<BaseVector<float>>(modelBuffer, dataBuffer, mat);
-        icp.setEpsilon(m_correspondanceDialog->getEpsilon());
-        icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
-        icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
-        cout << "Old method: " << endl;
         refinedTransform = icp.match();
 
         // TODO: remove
@@ -790,7 +789,7 @@ void LVRMainWindow::alignPointClouds()
         icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
         icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
         cout << "Euler method: " << endl;
-        refinedTransform = icp.match();
+        refinedTransform = icp.euler_match();
 
         //cout << "Initial: " << mat << endl;
 
@@ -801,12 +800,12 @@ void LVRMainWindow::alignPointClouds()
         //cout << "Refined: " << refinedTransform << endl;
 
         Pose p;
-        p.x = -pose[0];
-        p.y = -pose[1];
-        p.z = -pose[2];
-        p.r = -pose[3]  * 57.295779513;
-        p.t = -pose[4]  * 57.295779513;
-        p.p = -pose[5]  * 57.295779513;
+        p.x = pose[0];
+        p.y = pose[1];
+        p.z = pose[2];
+        p.r = pose[3]  * 57.295779513;
+        p.t = pose[4]  * 57.295779513;
+        p.p = pose[5]  * 57.295779513;
         item->setPose(p);
     }
     m_correspondanceDialog->clearAllItems();
