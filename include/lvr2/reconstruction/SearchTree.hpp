@@ -51,6 +51,8 @@ class SearchTree
 {
 public:
 
+    virtual ~SearchTree() = default;
+
     /**
      * @brief This function performs a k-next-neighbor search on the
               data that was given in the constructor.
@@ -61,8 +63,9 @@ public:
      *                    within the dataset.
      * @param distances   A vector that stores the distances for the neighbours
      *                    that are found.
+     * @returns           The number of neighbours found
      */
-    virtual void kSearch(
+    virtual int kSearch(
         const BaseVecT& qp,
         int k,
         vector<size_t>& indices,
@@ -84,7 +87,7 @@ public:
     ) const = 0;
 
     /// Like the other overload, but ignoring the `distances` vector.
-    virtual void kSearch(
+    virtual int kSearch(
         const BaseVecT& qp,
         int k,
         vector<size_t>& indices
