@@ -447,7 +447,7 @@ void LVRCorrespondanceDialog::treeItemSelected(QTreeWidgetItem* current, QTreeWi
     Q_EMIT(render());
 }
 
-Matrix4<Vec> LVRCorrespondanceDialog::getTransformation()
+boost::optional<Matrix4<Vec>> LVRCorrespondanceDialog::getTransformation()
 {
     PointPairVector<Vec> pairs;
     Vec centroid1;
@@ -486,12 +486,14 @@ Matrix4<Vec> LVRCorrespondanceDialog::getTransformation()
 
         EigenSVDPointAlign<Vec> align;
         align.alignPoints(pairs, centroid1, centroid2, matrix);
+
+        return boost::make_optional(matrix);
     }
     else
     {
         cout << "Need at least 4 corresponding points" << endl;
+        return boost::none;
     }
-    return matrix;
 }
 
 QString LVRCorrespondanceDialog::getModelName()

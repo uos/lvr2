@@ -44,6 +44,8 @@
 #include <iostream>
 using namespace std;
 
+#include <boost/optional.hpp>
+
 namespace lvr2
 {
 
@@ -57,7 +59,7 @@ public:
     LVRCorrespondanceDialog(QTreeWidget* parent);
     virtual ~LVRCorrespondanceDialog();
     void fillComboBoxes();
-    Matrix4<Vec> getTransformation();
+    boost::optional<Matrix4<Vec>> getTransformation();
     QString  getModelName();
     QString  getDataName();
 
