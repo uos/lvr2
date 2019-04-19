@@ -737,7 +737,6 @@ void LVRMainWindow::exportSelectedModel()
 
 void LVRMainWindow::alignPointClouds()
 {
-    Matrix4<Vec> mat = m_correspondanceDialog->getTransformation();
     QString name = m_correspondanceDialog->getDataName();
     QString modelName = m_correspondanceDialog->getModelName();
 
@@ -746,17 +745,16 @@ void LVRMainWindow::alignPointClouds()
 
     float pose[6];
     LVRModelItem* item = m_treeWidgetHelper->getModelItem(name);
+    if (!item) {
+        return;
+    }
 
+    boost::optional<Matrix4<Vec>> correspondence = m_correspondanceDialog->getTransformation();
+    Matrix4<Vec> mat;
 
-    if(item)
+    if (correspondence.is_initialized())
     {
-        auto old_pose = item->getPose();
-        Vec pos(old_pose.x, old_pose.y, old_pose.z);
-        Vec angles(old_pose.r, old_pose.t, old_pose.p);
-        angles *= 0.01745329;
-        cout << "old pose: " << Matrix4<Vec>(pos, angles) << endl;
-        mat = Matrix4<Vec>(pos, angles) * mat;
-
+        mat = correspondence.get();
         mat.toPostionAngle(pose);
 
         // Pose ist in radians, so we need to convert p to degrees
@@ -769,9 +767,20 @@ void LVRMainWindow::alignPointClouds()
         p.t = pose[4]  * 57.295779513;
         p.p = pose[5]  * 57.295779513;
         item->setPose(p);
+
+        updateView();
+    }
+    else
+    {
+        auto old_pose = item->getPose();
+        Vec pos(old_pose.x, old_pose.y, old_pose.z);
+        Vec angles(old_pose.r, old_pose.t, old_pose.p);
+        angles /= 57.295779513; // degrees -> radians
+
+        cout << "old pose: " << Matrix4<Vec>(pos, angles) << endl;
+        mat = Matrix4<Vec>(pos, angles);
     }
 
-    updateView();
     // Refine pose via ICP
     if(m_correspondanceDialog->doICP() && modelBuffer && dataBuffer)
     {

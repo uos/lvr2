@@ -49,30 +49,12 @@ namespace lvr2
 
 template <typename BaseVecT>
 ICPPointAlign<BaseVecT>::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4<BaseVecT> transform) :
-    m_modelCloud(model), m_transformation(transform)
+    m_modelCloud(model), m_dataCloud(data), m_transformation(transform)
 {
     // Init default values
     m_epsilon               = 0.00001;
     m_maxDistanceMatch      = 25;
     m_maxIterations         = 50;
-
-    size_t numPoints = data->numPoints();
-
-    // Transform data points according to initial pose estimation
-    m_dataCloud = PointBufferPtr(new PointBuffer);
-    size_t n = numPoints;
-    floatArr o_points = data->getPointArray();
-    floatArr t_points(new float[3 * n]);
-
-    for (size_t i = 0; i < numPoints; i++)
-    {
-        BaseVecT v(o_points[3 * i], o_points[3 * i + 1], o_points[3 * i + 2]);
-        BaseVecT t  = transform * v;
-        t_points[3 * i    ] = t[0];
-        t_points[3 * i + 1] = t[1];
-        t_points[3 * i + 2] = t[2];
-    }
-    m_dataCloud->setPointArray(t_points, n);
 
     // Create search tree
     m_searchTree = SearchTreePtr<BaseVecT>(new SearchTreeFlann<BaseVecT>(model));
