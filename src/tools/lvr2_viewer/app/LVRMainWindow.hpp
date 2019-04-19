@@ -214,6 +214,7 @@ Q_SIGNALS:
 private:
     void setupQVTK();
     void connectSignalsAndSlots();
+    LVRModelItem* loadModelItem(QString name);
 
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;

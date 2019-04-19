@@ -896,6 +896,36 @@ void LVRMainWindow::renameModelItem()
     }
 }
 
+LVRModelItem* LVRMainWindow::loadModelItem(QString name)
+{
+    // Load model and generate vtk representation
+    ModelPtr model = ModelFactory::readModel(name.toStdString());
+    ModelBridgePtr bridge(new LVRModelBridge(model));
+    bridge->addActors(m_renderer);
+
+    // Add item for this model to tree widget
+    QFileInfo info(name);
+    QString base = info.fileName();
+    LVRModelItem* item = new LVRModelItem(bridge, base);
+    this->treeWidget->addTopLevelItem(item);
+    item->setExpanded(true);
+
+    // Read Pose file
+    boost::filesystem::path poseFile = name.toStdString();
+    poseFile.replace_extension("pose");
+    if (boost::filesystem::exists(poseFile))
+    {
+        cout << "Found Pose file: " << poseFile << endl;
+        ifstream in;
+        in.open(poseFile.string());
+        lvr2::Pose pose;
+        in >> pose.x >> pose.y >> pose.z;
+        in >> pose.r >> pose.t >> pose.p;
+        item->setPose(pose);
+    }
+    return item;
+}
+
 void LVRMainWindow::loadModel()
 {
     QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open Model"), "", tr("Model Files (*.ply *.obj *.pts *.3d *.txt *.h5)"));
@@ -907,18 +937,7 @@ void LVRMainWindow::loadModel()
         QStringList::Iterator it = filenames.begin();
         while(it != filenames.end())
         {
-            // Load model and generate vtk representation
-            ModelPtr model = ModelFactory::readModel((*it).toStdString());
-            ModelBridgePtr bridge(new LVRModelBridge(model));
-            bridge->addActors(m_renderer);
-
-            // Add item for this model to tree widget
-            QFileInfo info((*it));
-            QString base = info.fileName();
-            LVRModelItem* item = new LVRModelItem(bridge, base);
-            this->treeWidget->addTopLevelItem(item);
-            item->setExpanded(true);
-            lastItem = item;
+            lastItem = loadModelItem(*it);
             ++it;
         }
 
@@ -1486,16 +1505,7 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
         }
         else
         {
-            // Load model and generate vtk representation
-            ModelPtr model = ModelFactory::readModel(string(argv[i]));
-            ModelBridgePtr bridge(new LVRModelBridge(model));
-            bridge->addActors(m_renderer);
-
-            // Add item for this model to tree widget
-            LVRModelItem* item = new LVRModelItem(bridge, base);
-            this->treeWidget->addTopLevelItem(item);
-            item->setExpanded(true);
-            lastItem = item;
+            lastItem = loadModelItem(QString(argv[i]));
         }
     }
 
