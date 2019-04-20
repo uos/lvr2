@@ -45,7 +45,7 @@ template <typename BaseVecT>
 class ICPPointAlign
 {
 public:
-    ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4<BaseVecT> transformation);
+    ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4<BaseVecT> modelPose, Matrix4<BaseVecT> dataPose);
 
     Matrix4<BaseVecT> match();
     // TODO: remove
