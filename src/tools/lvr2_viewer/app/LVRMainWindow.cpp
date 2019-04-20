@@ -737,24 +737,29 @@ void LVRMainWindow::exportSelectedModel()
 
 void LVRMainWindow::alignPointClouds()
 {
-    QString name = m_correspondanceDialog->getDataName();
+    QString dataName = m_correspondanceDialog->getDataName();
     QString modelName = m_correspondanceDialog->getModelName();
 
     PointBufferPtr modelBuffer = m_treeWidgetHelper->getPointBuffer(modelName);
-    PointBufferPtr dataBuffer  = m_treeWidgetHelper->getPointBuffer(name);
+    PointBufferPtr dataBuffer  = m_treeWidgetHelper->getPointBuffer(dataName);
 
     float pose[6];
-    LVRModelItem* item = m_treeWidgetHelper->getModelItem(name);
-    if (!item) {
+    LVRModelItem* dataItem = m_treeWidgetHelper->getModelItem(dataName);
+    LVRModelItem* modelItem = m_treeWidgetHelper->getModelItem(modelName);
+    if (!dataItem || !modelItem) {
         return;
     }
 
-    boost::optional<Matrix4<Vec>> correspondence = m_correspondanceDialog->getTransformation();
-    Matrix4<Vec> mat;
+    Pose dataPose = dataItem->getPose();
+    Vec pos(dataPose.x, dataPose.y, dataPose.z);
+    Vec angles(dataPose.r, dataPose.t, dataPose.p);
+    angles /= 57.295779513; // degrees -> radians
+    Matrix4<Vec> mat = Matrix4<Vec>(pos, angles);
 
+    boost::optional<Matrix4<Vec>> correspondence = m_correspondanceDialog->getTransformation();
     if (correspondence.is_initialized())
     {
-        mat = correspondence.get();
+        mat *= correspondence.get();
         mat.toPostionAngle(pose);
 
         // Pose ist in radians, so we need to convert p to degrees
@@ -766,47 +771,37 @@ void LVRMainWindow::alignPointClouds()
         p.r = pose[3]  * 57.295779513;
         p.t = pose[4]  * 57.295779513;
         p.p = pose[5]  * 57.295779513;
-        item->setPose(p);
+        dataItem->setPose(p);
 
         updateView();
-    }
-    else
-    {
-        auto old_pose = item->getPose();
-        Vec pos(old_pose.x, old_pose.y, old_pose.z);
-        Vec angles(old_pose.r, old_pose.t, old_pose.p);
-        angles /= 57.295779513; // degrees -> radians
-
-        cout << "old pose: " << Matrix4<Vec>(pos, angles) << endl;
-        mat = Matrix4<Vec>(pos, angles);
     }
 
     // Refine pose via ICP
     if(m_correspondanceDialog->doICP() && modelBuffer && dataBuffer)
     {
+        Pose modelPose = modelItem->getPose();
+        pos = Vec(modelPose.x, modelPose.y, modelPose.z);
+        angles = Vec(modelPose.r, modelPose.t, modelPose.p);
+        angles /= 57.295779513;
+        Matrix4<Vec> modelTransform = Matrix4<Vec>(pos, angles);
+
         Matrix4<Vec> refinedTransform ;
 
-        ICPPointAlign<BaseVector<float>> icp(modelBuffer, dataBuffer, mat);
+        ICPPointAlign<Vec> icp(modelBuffer, dataBuffer, modelTransform, mat);
         icp.setEpsilon(m_correspondanceDialog->getEpsilon());
         icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
         icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
         refinedTransform = icp.match();
 
         // TODO: remove
-        icp = ICPPointAlign<BaseVector<float>>(modelBuffer, dataBuffer, mat);
-        icp.setEpsilon(m_correspondanceDialog->getEpsilon());
-        icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
-        icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
-        cout << "Euler method: " << endl;
-        refinedTransform = icp.euler_match();
+        //icp = ICPPointAlign<Vec>(modelBuffer, dataBuffer, mat);
+        //icp.setEpsilon(m_correspondanceDialog->getEpsilon());
+        //icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
+        //icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
+        //cout << "Euler method: " << endl;
+        //refinedTransform = icp.euler_match();
 
-        //cout << "Initial: " << mat << endl;
-
-        // Apply correction to initial estimation
-        //refinedTransform = mat * refinedTransform;
         refinedTransform.toPostionAngle(pose);
-
-        //cout << "Refined: " << refinedTransform << endl;
 
         Pose p;
         p.x = pose[0];
@@ -815,7 +810,7 @@ void LVRMainWindow::alignPointClouds()
         p.r = pose[3]  * 57.295779513;
         p.t = pose[4]  * 57.295779513;
         p.p = pose[5]  * 57.295779513;
-        item->setPose(p);
+        dataItem->setPose(p);
     }
     m_correspondanceDialog->clearAllItems();
     updateView();

@@ -48,16 +48,32 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-ICPPointAlign<BaseVecT>::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4<BaseVecT> transform) :
-    m_modelCloud(model), m_dataCloud(data), m_transformation(transform)
+ICPPointAlign<BaseVecT>::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4<BaseVecT> modelPose, Matrix4<BaseVecT> dataPose) :
+    m_dataCloud(data), m_transformation(dataPose)
 {
     // Init default values
     m_epsilon               = 0.00001;
     m_maxDistanceMatch      = 25;
     m_maxIterations         = 50;
 
+    // Transform model points according to initial pose
+    m_modelCloud = PointBufferPtr(new PointBuffer);
+    size_t n = model->numPoints();
+    floatArr o_points = model->getPointArray();
+    floatArr t_points(new float[3 * n]);
+
+    for (size_t i = 0; i < n; i++)
+    {
+        BaseVecT v(o_points[3 * i], o_points[3 * i + 1], o_points[3 * i + 2]);
+        BaseVecT t  = modelPose * v;
+        t_points[3 * i    ] = t[0];
+        t_points[3 * i + 1] = t[1];
+        t_points[3 * i + 2] = t[2];
+    }
+    m_modelCloud->setPointArray(t_points, n);
+
     // Create search tree
-    m_searchTree = SearchTreePtr<BaseVecT>(new SearchTreeFlann<BaseVecT>(model));
+    m_searchTree = SearchTreePtr<BaseVecT>(new SearchTreeFlann<BaseVecT>(m_modelCloud));
 
 }
 
@@ -91,6 +107,8 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
 
         // Get transformation (if possible)
         ret = align.alignPoints(pairs, centroid_m, centroid_d, transform);
+
+        // EigenSVDPointAlign produces a model -> data transform, but we want data -> model
         bool ok;
         transform = transform.inv(ok);
 
