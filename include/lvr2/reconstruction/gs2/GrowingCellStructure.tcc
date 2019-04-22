@@ -198,7 +198,9 @@ namespace lvr2 {
 
             //split the found vertex
             VertexSplitResult result = m_mesh->splitVertex(highestSC);
-            if(result.edgeCenter.idx() == numeric_limits<int>::infinity()) return; //if longest edge is a border edge
+            if(result.edgeCenter.idx() == numeric_limits<int>::infinity()){
+                return; //if longest edge is a border edge
+            }
             VertexHandle newVH = result.edgeCenter;
             float sc_middle = max->signal_counter / 2;
 
@@ -423,9 +425,8 @@ namespace lvr2 {
         m_mesh->addFace(v5,v8,v7);
         m_mesh->addFace(v6,v7,v8);
 
-        EdgeSplitResult result = m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v8,v0).unwrap());
-        m_mesh->flipEdge(m_mesh->getEdgeBetween(v2,v8).unwrap());
-        //m_mesh->flipEdge(m_mesh->getEdgeBetween(v8,v1).unwrap());
+        EdgeSplitResult result = m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v6,v8).unwrap());
+        m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v4,result.edgeCenter).unwrap());
 
     }
 
