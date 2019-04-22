@@ -425,8 +425,10 @@ namespace lvr2 {
         m_mesh->addFace(v5,v8,v7);
         m_mesh->addFace(v6,v7,v8);
 
-        EdgeSplitResult result = m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v6,v8).unwrap());
-        m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v4,result.edgeCenter).unwrap());
+        //EdgeSplitResult result = m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v6,v8).unwrap());
+        //result = m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v4,result.edgeCenter).unwrap());
+        //result = m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v8,result.edgeCenter).unwrap());
+        m_mesh->splitVertex(v8);
 
     }
 
