@@ -31,12 +31,12 @@ namespace lvr2{
      * @return          the root of the tree
      */
     template <typename BaseVecT>
-    Node<BaseVecT>* DynamicKDTree<BaseVecT>::insertRec(Node<BaseVecT>* node, BaseVecT& point,VertexHandle vH, unsigned int depth)
+    Node<BaseVecT>* DynamicKDTree<BaseVecT>::insertRec(Node<BaseVecT>* node, BaseVecT point,VertexHandle vH, unsigned int depth)
     {
 
         // Tree is empty?
         if (node == NULL){
-            cout << "Insert" << endl;
+            //cout << "Insert" << endl;
             return newNode(point, vH);
         }
 
@@ -134,7 +134,7 @@ namespace lvr2{
      * @return
      */
     template <typename BaseVecT>
-    Node<BaseVecT>* DynamicKDTree<BaseVecT>::deleteNodeRec(Node<BaseVecT>* node, BaseVecT& point, int depth)
+    Node<BaseVecT>* DynamicKDTree<BaseVecT>::deleteNodeRec(Node<BaseVecT>* node, BaseVecT point, int depth)
     {
         // Given point is not present
         if (node == NULL)
@@ -174,7 +174,7 @@ namespace lvr2{
             }
             else // If node to be deleted is leaf node
             {
-                std::cout << "Delete." << endl;
+                //std::cout << "Delete." << endl;
                 delete node;
                 return NULL;
             }
@@ -213,42 +213,73 @@ namespace lvr2{
      * @return              the index of the vertexhandle "containing" the clostest point
      */
     template <typename BaseVecT>
-    Index DynamicKDTree<BaseVecT>::findNearestRec(Node<BaseVecT>* node, BaseVecT & point, int depth, Index minDist, float minDistSq)
+    std::pair<Index, float> DynamicKDTree<BaseVecT>::findNearestRec(Node<BaseVecT>* node, BaseVecT point, int depth, Index minDist, float minDistSq, BaseVecT currentBest)
     {
         //if the root is NULL, we return a dummy index
-        if(node == NULL) return std::numeric_limits<int>::max();
+        if(node == NULL){
+            Index i = std::numeric_limits<int>::max();
+            return std::make_pair(i ,std::numeric_limits<float>::max());
 
+        }
         int cd = depth % k;
         float distance = point.distance2(node->point);
 
+        if(distance < minDistSq)
+        {
+            minDistSq = distance;
+            minDist = node->vH;
+        }
 
         //current dimension smaller ? search in left tree... bigger: search in right tree
         if(node->left && point[cd] < node->point[cd])
         {
-            //update values if current vertex is nearer
-            if(distance < minDistSq)
+            std::pair<Index, float> closestLeft = findNearestRec(node->left, point, depth+1, minDist, minDistSq, node->point);
+            std::pair<Index, float> closestRight;
+            //TODO: update values if closest left is smaller than the current smallest :)
+
+            //might there be a closer node in the right subtree, and there is a right subtree
+            if(abs(point[cd]-node->point[cd]) < point.distance(currentBest) && node->right)
             {
-                minDistSq = distance;
-                minDist = node->vH;
-                return findNearestRec(node->left, point, depth+1, minDist, minDistSq);
+                //if there might be a closer point in the right subtree, we search it.
+                std::pair<Index, float> closestRightPair = findNearestRec(node->right, point, depth+1, minDist, minDistSq, currentBest);
+                closestRight.swap(closestRightPair); //copy data
             }
-            //recursion on the left subtree
-            return minDist;
+
+            //now we got the closest of the right subtree, left subtree, and the currently closest
+            float closest = min({closestLeft.second, closestRight.second, minDistSq});
+
+            //std::cout << "Depth: " << depth << endl;
+
+            if(closest == closestLeft.second) return closestLeft; //left min is closest
+            if(closest == closestRight.second) return closestRight; //right min is closest
+            return std::make_pair(minDist, minDistSq); //current node is closest
         }
         else if(node->right && point[cd] >= node->point[cd])
         {
-            //update values if current vertex is nearer
-            if(distance < minDistSq)
-            {
-                minDistSq = distance;
-                minDist = node->vH;
-                return findNearestRec(node->right, point, depth+1, minDist, minDistSq);
-            }
-            //recursion on the right subtree
-            return minDist;
-        }
 
-        return minDist;
+            std::pair<Index, float> closestRight = findNearestRec(node->right, point, depth+1, minDist, minDistSq, node->point);
+            std::pair<Index, float> closestLeft;
+            //TODO: update values if closest left is smaller than the current smallest :)
+
+            //might there be a closer node in the right subtree, and there is a right subtree
+            if(abs(point[cd]-node->point[cd]) < point.distance(currentBest) && node->left) //TODO: square?
+            {
+                //if there might be a closer point in the right subtree, we search it.
+                std::pair<Index, float> closestLeftPair = findNearestRec(node->left, point, depth+1, minDist, minDistSq, currentBest);
+                closestLeft.swap(closestLeftPair); //copy data
+            }
+
+            //now we got the closest of the right subtree, left subtree, and the currently closest
+            float closest = min({closestLeft.second, closestRight.second, minDistSq});
+
+            //std::cout << "Depth: " << depth << endl;
+
+            if(closest == closestLeft.second) return closestLeft; //left min is closest
+            if(closest == closestRight.second) return closestRight; //right min is closest
+            return std::make_pair(minDist, minDistSq); //current node is closest
+        }
+        //std::cout << "Depth: " << depth << endl;
+        return std::make_pair(minDist, minDistSq);
     }
 
     /**
@@ -258,7 +289,7 @@ namespace lvr2{
      * @param vH
      */
     template <typename BaseVecT>
-    void DynamicKDTree<BaseVecT>::insert(BaseVecT& point, VertexHandle vH)
+    void DynamicKDTree<BaseVecT>::insert(BaseVecT point, VertexHandle vH)
     {
         root = insertRec(root, point, vH, 0);
     }
@@ -269,7 +300,7 @@ namespace lvr2{
      * @param point     Point to be removed from the tree
      */
     template <typename BaseVecT>
-    void DynamicKDTree<BaseVecT>::deleteNode(BaseVecT& point)
+    void DynamicKDTree<BaseVecT>::deleteNode(BaseVecT point)
     {
         // Pass depth as 0
         root =  deleteNodeRec(root, point, 0);
@@ -289,7 +320,8 @@ namespace lvr2{
     template <typename BaseVecT>
     Index DynamicKDTree<BaseVecT>::findNearest(BaseVecT point)
     {
-        return findNearestRec(root, point, 0, std::numeric_limits<int>::max(), std::numeric_limits<float>::max());
+        float max = std::numeric_limits<float>::max();
+        return findNearestRec(root, point, 0, std::numeric_limits<int>::max(), max,BaseVecT(max,max,max)).first;
     }
 
 } //end namespace lvr2

@@ -44,10 +44,10 @@ namespace lvr2 {
         m_mesh = &mesh;
 
         //get initial tetrahedron mesh
-        getInitialMesh();
+        //getInitialMesh();
         cout << "KD-Tree size: " << kd_tree->size() << endl;
 
-        //initTestMesh();
+        initTestMesh();
 
         //progress bar
         PacmanProgressBar progress_bar((size_t)((((size_t)m_runtime*(size_t)m_numSplits)
@@ -60,9 +60,9 @@ namespace lvr2 {
             {
                 for(int k = 0; k < getBasicSteps(); k++)
                 {
-                    executeBasicStep(progress_bar);
+                    //executeBasicStep(progress_bar);
                 }
-                executeVertexSplit(); //TODO: execute vertex split after a specific number of basic steps
+                //executeVertexSplit(); //TODO: execute vertex split after a specific number of basic steps
 
             }
             if(this->isWithCollapse())
@@ -109,8 +109,8 @@ namespace lvr2 {
         {
             VertexHandle winnerH = this->getClosestPointInMesh(random_point, progress_bar); //TODO: better runtime efficency(kd-tree)
             /*Index winnerIndex = kd_tree->findNearest(random_point);
-            VertexHandle winnerH(winnerIndex);
-            std::cout << "winner index: " << winnerIndex << endl;*/
+            VertexHandle winnerH(winnerIndex);*/
+            //std::cout << "winner index: " << winnerIndex << endl;
 
             //smooth the winning vertex
             BaseVecT &winner = m_mesh->getVertexPosition(winnerH);
@@ -424,14 +424,9 @@ namespace lvr2 {
         m_mesh->addFace(v6,v7,v8);
 
         EdgeSplitResult result = m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v8,v0).unwrap());
-        //m_mesh->flipEdge(m_mesh->getEdgeBetween(v2,v8).unwrap());
+        m_mesh->flipEdge(m_mesh->getEdgeBetween(v2,v8).unwrap());
         //m_mesh->flipEdge(m_mesh->getEdgeBetween(v8,v1).unwrap());
-        auto eH = m_mesh->getEdgeBetween(v2,v8);
-        auto veH = m_mesh->getVerticesOfEdge(eH.unwrap());
-        std::cout << m_mesh->getVertexPosition(veH[0]) << " ||| " << m_mesh->getVertexPosition(veH[1]) << endl;
-        std::cout << "Vertex(center): " << m_mesh->getVertexPosition(v8) << endl;
-        std::cout << "Vertex(center): " << m_mesh->getVertexPosition(v2) << endl;
-        std::cout << "Vertex(center): " << m_mesh->getVertexPosition(v1) << endl;
+
     }
 
     /**

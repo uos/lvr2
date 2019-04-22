@@ -24,7 +24,7 @@ namespace lvr2{
 
         struct Node<BaseVecT>* newNode(BaseVecT point, VertexHandle vH);
 
-        Node<BaseVecT>* insertRec(Node<BaseVecT>* node, BaseVecT& point, VertexHandle vH, unsigned int depth);
+        Node<BaseVecT>* insertRec(Node<BaseVecT>* node, BaseVecT point, VertexHandle vH, unsigned int depth);
 
         Node<BaseVecT>* minNode(Node<BaseVecT>* x, Node<BaseVecT>* y, Node<BaseVecT>* z, int d);
 
@@ -42,16 +42,16 @@ namespace lvr2{
             p1 = p2;
         }
 
-        Node<BaseVecT>* deleteNodeRec(Node<BaseVecT>* node, BaseVecT& point, int depth);
+        Node<BaseVecT>* deleteNodeRec(Node<BaseVecT>* node, BaseVecT point, int depth);
 
         int sizeRec(Node<BaseVecT>* node);
 
-        Index findNearestRec(Node<BaseVecT>* node, BaseVecT & point, int depth, Index minDist, float minDistSq);
+        std::pair<Index, float> findNearestRec(Node<BaseVecT>* node, BaseVecT point, int depth, Index minDist, float minDistSq, BaseVecT currentBest);
 
     public:
-        void insert(BaseVecT& point, VertexHandle vH);
+        void insert(BaseVecT point, VertexHandle vH);
 
-        void deleteNode(BaseVecT& point);
+        void deleteNode(BaseVecT point);
 
         int size();
 
