@@ -799,8 +799,8 @@ EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
     HalfEdge& centerTwin = getE(centerTwinH);
 
     //get the two faces
-    FaceHandle faceLeft = center.face.unwrap();
-    FaceHandle faceRight = centerTwin.face.unwrap();
+    FaceHandle topLeftH = center.face.unwrap();
+    FaceHandle topRightH = centerTwin.face.unwrap();
 
     //get missing halfedges
     HalfEdgeHandle aboveLeftH = center.next;
@@ -817,28 +817,19 @@ EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
 
     //get vertices
     VertexHandle vLeftH = aboveLeft.target;
-    Vertex& vLeft = getV(vLeftH);
     VertexHandle vRightH = belowRight.target;
-    Vertex& vRight = getV(vRightH);
     VertexHandle vAboveH = center.target;
-    Vertex& vAbove = getV(vAboveH);
     VertexHandle vBelowH = centerTwin.target;
-    Vertex& vBelow = getV(vBelowH);
 
     //calculate the new vertex
-    BaseVecT vAddedV = vAbove.pos + (vBelow.pos - vAbove.pos) / 2;
+    BaseVecT vAddedV = getV(vAboveH).pos + (getV(vBelowH).pos - getV(vAboveH).pos) / 2;
 
     //add it
     VertexHandle vAddedH = this->addVertex(vAddedV);
     Vertex& vAdded = getV(vAddedH);
 
-    //now, that all vertices are there, we need to remove the two faces from the faceList
-    m_faces.erase(faceLeft);
-    m_faces.erase(faceRight);
 
-    //we also need to remove the two center Halfedges, but where?
-
-    //we need to create 8 new halfedges
+    //CREATE 6 NEW HALFEDGES
     HalfEdgeHandle leftAddedH = findOrCreateEdgeBetween(vLeftH, vAddedH);
     HalfEdge& leftAdded = getE(leftAddedH);
     HalfEdge& addedLeft = getE(leftAdded.twin);
@@ -847,57 +838,14 @@ EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
     HalfEdge& rightAdded = getE(rightAddedH);
     HalfEdge& addedRight = getE(rightAdded.twin);
 
-    HalfEdgeHandle aboveAddedH = findOrCreateEdgeBetween(vAboveH, vAddedH);
-    HalfEdge& aboveAdded = getE(aboveAddedH);
-    HalfEdge& addedAbove = getE(aboveAdded.twin);
-
     HalfEdgeHandle belowAddedH = findOrCreateEdgeBetween(vBelowH, vAddedH);
     HalfEdge& belowAdded = getE(belowAddedH);
     HalfEdge& addedBelow = getE(belowAdded.twin);
 
-    std::cout << vAbove.outgoing.unwrap().idx() << " | " << centerTwinH.idx() << endl;
-    std::cout << vBelow.outgoing.unwrap().idx() << " | " << centerH.idx() << endl;
+    //FIX OUTGOINGS, WHICH MIGHT BE BROKEN
+    getV(vBelowH).outgoing = belowRightH;
+    getV(vAddedH).outgoing = centerH;
 
-
-    vAbove.outgoing = aboveAddedH;
-    cout << "Fixed outgoing edges" << vAbove.outgoing.unwrap().idx() << endl;
-
-    vBelow.outgoing = belowAddedH;
-    cout << "Fixed outgoing edges " << vBelow.outgoing.unwrap().idx() << endl;
-
-    //set outgoing of added Vertex
-    vAdded.outgoing = aboveAdded.twin;
-
-    //after editing the outgoings it should be secure to delete these halfedges
-    m_edges.erase(centerTwinH);
-    m_edges.erase(centerH);
-
-    //we need to redirect all the Halfedges
-    leftAdded.next = aboveAdded.twin;
-    addedLeft.next = belowLeftH;
-
-    rightAdded.next = belowAdded.twin;
-    addedRight.next = aboveRightH;
-
-    aboveAdded.next = rightAdded.twin;
-    addedAbove.next = aboveLeftH;
-
-    belowAdded.next = leftAdded.twin;
-    addedBelow.next = belowRightH;
-
-    aboveLeft.next = leftAddedH;
-    aboveRight.next = aboveAddedH;
-
-    belowLeft.next = belowAddedH;
-    belowRight.next = rightAddedH;
-
-    //now, that all the edges are redirected, we need to insert new faces (4) and set the faces of each inner edge
-
-    Face topLeft(leftAddedH);
-    FaceHandle topLeftH = m_faces.push(topLeft);
-
-    Face topRight(rightAdded.twin);
-    FaceHandle topRightH = m_faces.push(topRight);
 
     Face bottomLeft(leftAdded.twin);
     FaceHandle bottomLeftH = m_faces.push(bottomLeft);
@@ -905,25 +853,48 @@ EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
     Face bottomRight(rightAddedH);
     FaceHandle bottomRightH = m_faces.push(bottomRight);
 
-    aboveLeft.face = topLeftH;
-    aboveRight.face = topRightH;
-    belowLeft.face = bottomLeftH;
-    belowRight.face = bottomRightH;
+    //SET EDGES OF UPPER FACES
+    getF(topRightH).edge = centerTwinH;
+    getF(topLeftH).edge = centerH;
 
-    addedAbove.face = topLeftH;
-    addedBelow.face = bottomRightH;
-    addedLeft.face = bottomLeftH;
-    addedRight.face = topRightH;
+    //fix center handles
+    getE(centerH).next = aboveLeftH;
+    getE(centerTwinH).next = rightAdded.twin;
 
-    belowAdded.face = bottomLeftH;
-    aboveAdded.face = topRightH;
-    rightAdded.face = bottomRightH;
-    leftAdded.face = topLeftH;
+    getE(centerH).target = vAboveH;
+    getE(centerTwinH).target = vAddedH;
 
-    /*this->addFace(vLeftH, vAddedH, vAboveH);
-    this->addFace(vBelowH, vAddedH, vLeftH);
-    this->addFace(vBelowH, vRightH, vAddedH);
-    this->addFace(vRightH, vAboveH, vAddedH);*/
+    //we need to redirect all the Halfedges
+    getE(leftAddedH).next = centerH;
+    getE(leftAdded.twin).next = belowLeftH;
+
+    getE(rightAddedH).next = belowAdded.twin;
+    addedRight.next = aboveRightH;
+
+    getE(belowAddedH).next = leftAdded.twin;
+    getE(belowAdded.twin).next = belowRightH;
+
+    getE(aboveLeftH).next = leftAddedH;
+    getE(aboveRightH).next = centerTwinH;
+
+    getE(belowLeftH).next = belowAddedH;
+    getE(belowRightH).next = rightAddedH;
+
+    //now, that all the edges are redirected, we need to insert new faces (4(2?)) and set the faces of each inner edge
+
+    getE(belowLeftH).face = bottomLeftH;
+    getE(belowRightH).face = bottomRightH;
+
+    getE(belowAdded.twin).face = bottomRightH;
+    getE(rightAdded.twin).face = topRightH;
+    getE(leftAdded.twin).face = bottomLeftH;
+
+    getE(belowAddedH).face = bottomLeftH;
+    getE(rightAddedH).face = bottomRightH;
+    getE(leftAddedH).face = topLeftH;
+
+    getE(centerH).face = topLeftH;
+    getE(centerTwinH).face = topRightH;
 
     cout << "end of split" << endl;
 
@@ -1386,7 +1357,7 @@ void HalfEdgeMesh<BaseVecT>::flipEdge(EdgeHandle edgeH)
 {
     if (!BaseMesh<BaseVecT>::isFlippable(edgeH))
     {
-        panic("flipEdge() called for non-flippable edge!");
+        //panic("flipEdge() called for non-flippable edge!");
     }
 
     // A fancy drawing of the current and expected situation:
