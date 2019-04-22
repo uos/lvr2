@@ -1050,9 +1050,9 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
     //first idea: just do an edge split on the longest edge and do an edge flip for each of the 2 found vertices
     vector<VertexHandle> commonVertexHandles = findCommonNeigbours(vertexToBeSplitH, targetOfLongestEdgeH);
 
-    EdgeSplitResult splitResult = this->splitEdge/*NoRemove*/(longestEdge);
+    EdgeSplitResult splitResult = this->splitEdgeNoRemove(longestEdge);
 
-    /*if(commonVertexHandles.size() == 2 && this->numVertices() > 8)
+    /*if(commonVertexHandles.size() == 2 && this->numVertices() > 20)
     {
 
         for(VertexHandle vertex : commonVertexHandles)
@@ -1357,7 +1357,7 @@ void HalfEdgeMesh<BaseVecT>::flipEdge(EdgeHandle edgeH)
 {
     if (!BaseMesh<BaseVecT>::isFlippable(edgeH))
     {
-        //panic("flipEdge() called for non-flippable edge!");
+        panic("flipEdge() called for non-flippable edge!");
     }
 
     // A fancy drawing of the current and expected situation:
