@@ -48,7 +48,7 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-ICPPointAlign<BaseVecT>::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4<BaseVecT> modelPose, Matrix4<BaseVecT> dataPose) :
+ICPPointAlign<BaseVecT>::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Matrix4<BaseVecT>& modelPose, const Matrix4<BaseVecT>& dataPose) :
     m_dataCloud(data), m_transformation(dataPose)
 {
     // Init default values
@@ -86,6 +86,8 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
     }
 
     auto start_time = clock();
+    double pairTime = 0;
+    double alignTime = 0;
 
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
     EigenSVDPointAlign<BaseVecT> align;
@@ -103,10 +105,14 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
 
 
         PointPairVector<BaseVecT> pairs;
+        auto pre_pair = clock();
         getPointPairs(pairs, centroid_m, centroid_d, sum);
+        pairTime += (double)(clock() - pre_pair) / CLOCKS_PER_SEC / 5.0;
 
         // Get transformation (if possible)
+        auto pre_align = clock();
         ret = align.alignPoints(pairs, centroid_m, centroid_d, transform);
+        alignTime += (double)(clock() - pre_align) / CLOCKS_PER_SEC / 5.0;
 
         // EigenSVDPointAlign produces a model -> data transform, but we want data -> model
         bool ok;
@@ -131,6 +137,7 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
         }
     }
     cout << "Time: " << (double)(clock() - start_time) / CLOCKS_PER_SEC / 5.0 << endl;
+    cout << "Pairing time: " << pairTime << "; " << "Algining time: " << alignTime << endl;
     cout << "Error: " << ret << "; Result: " << m_transformation << endl;
     return m_transformation;
 }
@@ -189,46 +196,30 @@ void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector<BaseVecT>& pairs, Ba
     FloatChannel model_pts = m_modelCloud->getFloatChannel("points").get();
     FloatChannel data_pts = m_dataCloud->getFloatChannel("points").get();
 
-    #pragma omp parallel
+    #pragma omp declare reduction (+: BaseVecT: omp_out=omp_out+omp_in) initializer(omp_priv=BaseVecT(0, 0, 0))
+
+    #pragma omp parallel for reduction(+:centroid_d, centroid_m, sum)
+    for (size_t i = 0; i < data_pts.numElements(); i++)
     {
-        PointPairVector<BaseVecT> privatePairs;
-        BaseVecT centroid_mP;
-        BaseVecT centroid_dP;
+        // Get vertex representation of current data point
+        BaseVecT data = data_pts[i];
+        BaseVecT t = m_transformation * data;
+
         vector<size_t> neighbors;
         vector<float> distances;
+        int found = m_searchTree->kSearch(t, 1, neighbors, distances);
 
-        #pragma omp for nowait //fill vec_private in parallel
-        for (size_t i = 0; i < data_pts.numElements(); i++)
+        if (found == 1 && distances[0] < m_maxDistanceMatch * m_maxDistanceMatch)
         {
-            // Get vertex representation of current data point
-            BaseVecT data = data_pts[i];
-            BaseVecT t = m_transformation * data;
+            BaseVecT closest = model_pts[neighbors[0]];
 
-            int found = m_searchTree->kSearch(t, 1, neighbors, distances);
+            centroid_d += closest;
+            centroid_m += t;
 
-            if (found == 1 && distances[0] < m_maxDistanceMatch * m_maxDistanceMatch)
-            {
-                BaseVecT closest = model_pts[neighbors[0]];
+            sum += distances[0];
 
-                centroid_dP += closest;
-                centroid_mP += t;
-
-                sum += distances[0];
-
-                privatePairs.push_back(make_pair(t, closest));
-            }
-        }
-        #pragma omp critical
-        pairs.insert(pairs.end(), privatePairs.begin(), privatePairs.end());
-
-        if (pairs.size())
-        {
-            centroid_d += centroid_dP;
-            centroid_m += centroid_mP;
-        }
-        else
-        {
-            cout << timestamp << "Warning: ICPPointAlign::getPointPairs(): No correspondences found." << endl;
+            #pragma omp critical
+            pairs.push_back(make_pair(t, closest));
         }
     }
     centroid_m /= pairs.size();
