@@ -113,10 +113,6 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
         ret = align.alignPoints(pairs, centroid_m, centroid_d, transform);
         alignTime += (double)(clock() - pre_align) / CLOCKS_PER_SEC / 5.0;
 
-        // EigenSVDPointAlign produces a model -> data transform, but we want data -> model
-        bool ok;
-        transform = transform.inv(ok);
-
         //cout << timestamp << "CORRECTION" << endl;
         //cout << transform << endl;
 
