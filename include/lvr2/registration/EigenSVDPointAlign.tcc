@@ -55,6 +55,7 @@ double EigenSVDPointAlign<BaseVecT>::alignPoints(const PointPairVector<BaseVecT>
     double** m = new double*[pairs.size()];
     double** d = new double*[pairs.size()];
 
+    #pragma omp parallel for reduction(+:sum)
     for(unsigned int i = 0; i <  pairs.size(); i++){
         m[i] = new double[3];
         d[i] = new double[3];
@@ -74,20 +75,12 @@ double EigenSVDPointAlign<BaseVecT>::alignPoints(const PointPairVector<BaseVecT>
     error = sqrt(sum / (double)pairs.size());
 
     // Fill H matrix
-    Matrix3d H, R;
-    for(int i = 0; i < 3; i++)
-    {
-        for(int j = 0; j < 3; j++)
-        {
-            H(i,j) = 0.0;
-            R(i,j) = 0.0;
-        }
-    }
+    Matrix3d H = Matrix3d::Zero();
 
     for(size_t i = 0; i < pairs.size(); i++){
         for(int j = 0; j < 3; j++){
             for(int k = 0; k < 3; k++){
-                H(j, k) += d[i][j]*m[i][k];
+                H(j, k) += m[i][j]*d[i][k];
             }
         }
     }
@@ -97,7 +90,7 @@ double EigenSVDPointAlign<BaseVecT>::alignPoints(const PointPairVector<BaseVecT>
     Matrix3d U = svd.matrixU();
     Matrix3d V = svd.matrixV();
 
-    R = V * U.transpose();
+    Matrix3d R = V * U.transpose();
 
 
     // Calculate translation
@@ -106,14 +99,14 @@ double EigenSVDPointAlign<BaseVecT>::alignPoints(const PointPairVector<BaseVecT>
 
     MatrixXd col_vec(3,1);
     for(int j = 0; j < 3; j++)
-        col_vec(j,0) = centroid_d[j];
+        col_vec(j,0) = centroid_m[j];
 
     MatrixXd r_time_colVec(3,1);
 
     r_time_colVec = R * col_vec;
-    translation[0] = centroid_m[0] - r_time_colVec(0);
-    translation[1] = centroid_m[1] - r_time_colVec(1);
-    translation[2] = centroid_m[2] - r_time_colVec(2);
+    translation[0] = centroid_d[0] - r_time_colVec(0);
+    translation[1] = centroid_d[1] - r_time_colVec(1);
+    translation[2] = centroid_d[2] - r_time_colVec(2);
 
 
     // Fill result
