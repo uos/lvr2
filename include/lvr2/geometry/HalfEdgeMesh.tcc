@@ -793,111 +793,109 @@ EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
     //
     // First, we just obtain all the handles
 
-    HalfEdgeHandle centerH = HalfEdgeHandle::oneHalfOf(edgeH);
+    HalfEdgeHandle centerH = HalfEdgeHandle::oneHalfOf(edgeH); // 1 (X)
     HalfEdge& center = getE(centerH);
-    HalfEdgeHandle centerTwinH = center.twin;
+    HalfEdgeHandle centerTwinH = getE(centerH).twin; //e2 (target->vM, next->e9)
     HalfEdge& centerTwin = getE(centerTwinH);
 
     //get the two faces
-    FaceHandle topLeftH = center.face.unwrap();
-    FaceHandle topRightH = centerTwin.face.unwrap();
+    FaceHandle topLeftH = getE(centerH).face.unwrap(); //f1 (edge->e1)
+    FaceHandle topRightH = getE(centerTwinH).face.unwrap();  //f2 (edge->e9)
 
     //get missing halfedges
-    HalfEdgeHandle aboveLeftH = center.next;
+    HalfEdgeHandle aboveLeftH = getE(centerH).next; //e3 (next->e7)
     HalfEdge& aboveLeft = getE(aboveLeftH);
 
-    HalfEdgeHandle belowRightH = centerTwin.next;
+    HalfEdgeHandle belowRightH = getE(centerTwinH).next; //e5 (next->e10, face->f4)
     HalfEdge& belowRight = getE(belowRightH);
 
-    HalfEdgeHandle aboveRightH = belowRight.next;
+    HalfEdgeHandle aboveRightH = getE(belowRightH).next; //e4 (next->e11, face->f3)
     HalfEdge& aboveRight = getE(aboveRightH);
 
-    HalfEdgeHandle belowLeftH = aboveLeft.next;
+    HalfEdgeHandle belowLeftH = getE(aboveLeftH).next; //e6 (X)
     HalfEdge& belowLeft = getE(belowLeftH);
 
     //get vertices
-    VertexHandle vLeftH = aboveLeft.target;
-    VertexHandle vRightH = belowRight.target;
-    VertexHandle vAboveH = center.target;
-    VertexHandle vBelowH = centerTwin.target;
+    VertexHandle vLeftH = aboveLeft.target; //vL (X)
+    VertexHandle vRightH = belowRight.target; //vR (X)
+    VertexHandle vAboveH = center.target; //vO (X)
+    VertexHandle vBelowH = centerTwin.target; //vU (outgoing -> e11)
 
     //calculate the new vertex
     BaseVecT vAddedV = getV(vAboveH).pos + (getV(vBelowH).pos - getV(vAboveH).pos) / 2;
 
     //add it
-    VertexHandle vAddedH = this->addVertex(vAddedV);
+    VertexHandle vAddedH = this->addVertex(vAddedV); //vM (outgoing -> e9)
     Vertex& vAdded = getV(vAddedH);
 
 
     //CREATE 6 NEW HALFEDGES
-    HalfEdgeHandle leftAddedH = findOrCreateEdgeBetween(vLeftH, vAddedH);
-    HalfEdge& leftAdded = getE(leftAddedH);
-    HalfEdge& addedLeft = getE(leftAdded.twin);
+    HalfEdgeHandle leftAddedH = findOrCreateEdgeBetween(vLeftH, vAddedH); //e7 (face->f1, next->e1)
+    HalfEdgeHandle addedLeftH = getE(leftAddedH).twin; //e8 (face->f3, next->e4)
 
-    HalfEdgeHandle rightAddedH = findOrCreateEdgeBetween(vRightH, vAddedH);
-    HalfEdge& rightAdded = getE(rightAddedH);
-    HalfEdge& addedRight = getE(rightAdded.twin);
+    HalfEdgeHandle rightAddedH = findOrCreateEdgeBetween(vRightH, vAddedH); //e10 (face->f4, next->e12)
+    HalfEdgeHandle addedRightH = getE(rightAddedH).twin; //e9 (face->f2, next->e6)
 
-    HalfEdgeHandle belowAddedH = findOrCreateEdgeBetween(vBelowH, vAddedH);
-    HalfEdge& belowAdded = getE(belowAddedH);
-    HalfEdge& addedBelow = getE(belowAdded.twin);
+    HalfEdgeHandle belowAddedH = findOrCreateEdgeBetween(vBelowH, vAddedH); //e11 (face->f3, next->e8)
+    HalfEdgeHandle addedBelowH = getE(belowAddedH).twin; //e12 (face->f4, next->e5)
 
     //FIX OUTGOINGS, WHICH MIGHT BE BROKEN
-    getV(vBelowH).outgoing = belowRightH;
-    getV(vAddedH).outgoing = centerH;
+    getV(vBelowH).outgoing = belowAddedH;
+    getV(vAddedH).outgoing = addedRightH;
 
-
-    Face bottomLeft(leftAdded.twin);
+    Face bottomLeft(addedBelowH);
     FaceHandle bottomLeftH = m_faces.push(bottomLeft);
+    getF(bottomLeftH).edge = addedBelowH;
 
     Face bottomRight(rightAddedH);
     FaceHandle bottomRightH = m_faces.push(bottomRight);
+    getF(bottomRightH).edge = rightAddedH;
 
     //SET EDGES OF UPPER FACES
-    getF(topRightH).edge = centerTwinH;
+    getF(topRightH).edge = addedRightH;
     getF(topLeftH).edge = centerH;
 
     //fix center handles
-    getE(centerH).next = aboveLeftH;
-    getE(centerTwinH).next = rightAdded.twin;
+    //getE(centerH).next = aboveLeftH;
+    getE(centerTwinH).next = addedRightH;
 
-    getE(centerH).target = vAboveH;
+    //getE(centerH).target = vAboveH;
     getE(centerTwinH).target = vAddedH;
 
     //we need to redirect all the Halfedges
     getE(leftAddedH).next = centerH;
-    getE(leftAdded.twin).next = belowLeftH;
+    getE(addedLeftH).next = belowLeftH;
 
-    getE(rightAddedH).next = belowAdded.twin;
-    addedRight.next = aboveRightH;
+    getE(rightAddedH).next = addedBelowH;
+    getE(addedRightH).next = aboveRightH;
 
-    getE(belowAddedH).next = leftAdded.twin;
-    getE(belowAdded.twin).next = belowRightH;
+    getE(belowAddedH).next = addedLeftH;
+    getE(addedBelowH).next = belowRightH;
 
     getE(aboveLeftH).next = leftAddedH;
-    getE(aboveRightH).next = centerTwinH;
-
+    //getE(aboveRightH).next = centerTwinH;
     getE(belowLeftH).next = belowAddedH;
     getE(belowRightH).next = rightAddedH;
 
     //now, that all the edges are redirected, we need to insert new faces (4(2?)) and set the faces of each inner edge
 
+    getE(leftAddedH).face = topLeftH;
+    getE(addedLeftH).face = bottomLeftH;
+
+    getE(rightAddedH).face = bottomRightH;
+    getE(addedRightH).face = topRightH;
+
+    getE(belowAddedH).face = bottomLeftH;
+    getE(addedBelowH).face = bottomRightH;
+
     getE(belowLeftH).face = bottomLeftH;
     getE(belowRightH).face = bottomRightH;
 
-    getE(belowAdded.twin).face = bottomRightH;
-    getE(rightAdded.twin).face = topRightH;
-    getE(leftAdded.twin).face = bottomLeftH;
 
-    getE(belowAddedH).face = bottomLeftH;
-    getE(rightAddedH).face = bottomRightH;
-    getE(leftAddedH).face = topLeftH;
 
     getE(centerH).face = topLeftH;
     getE(centerTwinH).face = topRightH;
-
-    cout << "end of split" << endl;
-
+    
     //fill edge split result
     EdgeSplitResult result(vAddedH);
     result.addedFaces.push_back(topLeftH);
@@ -1052,7 +1050,7 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
 
     EdgeSplitResult splitResult = this->splitEdgeNoRemove(longestEdge);
 
-    if(commonVertexHandles.size() == 2)
+    /*if(commonVertexHandles.size() == 2)
     {
 
         for(VertexHandle vertex : commonVertexHandles)
@@ -1064,7 +1062,7 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
                 this->flipEdge(handle.unwrap());
             }
         }
-    }
+    }*/
 
 
     //TODO (?): for each of the two found vertices, there needs to be iterated "upwards" to the first vertex, which
