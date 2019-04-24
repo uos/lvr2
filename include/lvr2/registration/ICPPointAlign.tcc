@@ -35,7 +35,6 @@
 #include <lvr2/registration/EigenSVDPointAlign.hpp>
 #include <lvr2/registration/EulerPointAlign.hpp>
 #include <lvr2/io/Timestamp.hpp>
-#include <lvr2/reconstruction/SearchTreeFlann.hpp>
 #include <lvr2/io/IOUtils.hpp>
 
 // TODO: remove
@@ -73,7 +72,7 @@ ICPPointAlign<BaseVecT>::ICPPointAlign(PointBufferPtr model, PointBufferPtr data
     m_modelCloud->setPointArray(t_points, n);
 
     // Create search tree
-    m_searchTree = SearchTreePtr<BaseVecT>(new SearchTreeFlann<BaseVecT>(m_modelCloud));
+    m_searchTree = make_shared<SearchTreeFlann<BaseVecT>>(m_modelCloud);
 
 }
 
@@ -195,35 +194,43 @@ void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector<BaseVecT>& pairs, Ba
 
     FloatChannel model_pts = m_modelCloud->getFloatChannel("points").get();
     FloatChannel data_pts = m_dataCloud->getFloatChannel("points").get();
+    size_t n = data_pts.numElements();
 
-    #pragma omp declare reduction (+: BaseVecT: omp_out=omp_out+omp_in) initializer(omp_priv=BaseVecT(0, 0, 0))
-
-    #pragma omp parallel for reduction(+:centroid_d, centroid_m, sum)
-    for (size_t i = 0; i < data_pts.numElements(); i++)
+    BaseVecT* transformed = new BaseVecT[n];
+    #pragma omp parallel for
+    for (size_t i = 0; i < n; i++)
     {
-        // Get vertex representation of current data point
         BaseVecT data = data_pts[i];
-        BaseVecT t = m_transformation * data;
+        transformed[i] = m_transformation * data;
+    }
 
-        vector<size_t> neighbors;
-        vector<float> distances;
-        int found = m_searchTree->kSearch(t, 1, neighbors, distances);
+    size_t* indices = new size_t[n];
+    float* distances = new float[n];
+    m_searchTree->kSearchMany(transformed, n, 1, indices, distances);
 
-        if (found == 1 && distances[0] < m_maxDistanceMatch * m_maxDistanceMatch)
+    pairs.clear();
+    pairs.reserve(n);
+    for (size_t i = 0; i < n; i++)
+    {
+        if (distances[i] < m_maxDistanceMatch * m_maxDistanceMatch)
         {
-            BaseVecT closest = model_pts[neighbors[0]];
+            const BaseVecT& t = transformed[i];
+            const BaseVecT& closest = model_pts[indices[i]];
 
-            centroid_d += closest;
             centroid_m += t;
+            centroid_d += closest;
 
-            sum += distances[0];
+            sum += distances[i];
 
-            #pragma omp critical
             pairs.push_back(make_pair(t, closest));
         }
     }
+
     centroid_m /= pairs.size();
     centroid_d /= pairs.size();
+
+    delete[] indices;
+    delete[] distances;
 }
 
 template <typename BaseVecT>
