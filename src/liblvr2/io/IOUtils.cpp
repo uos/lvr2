@@ -41,17 +41,14 @@ Eigen::Matrix4d transformRegistration(const Eigen::Matrix4d& transform, const Ei
 
     Eigen::Matrix3d rotation = rotation_trans * rotation_registration;
 
-    Eigen::Matrix4d result;
+    Eigen::Matrix4d result = Eigen::Matrix4d::Identity();
     result.block<3,3>(0, 0) = rotation;
 
     Eigen::Vector3d tmp;
     tmp = registration.block<3,1>(0,3);
     tmp = rotation_trans * tmp;
 
-    (result.rightCols<1>())(0) = transform.col(3)(0) + tmp(0);
-    (result.rightCols<1>())(1) = transform.col(3)(1) + tmp(1);
-    (result.rightCols<1>())(2) = transform.col(3)(2) + tmp(2);
-    (result.rightCols<1>())(3) = 1.0;
+    result.block<3, 1>(0, 3) = transform.block<3, 1>(0, 3) + tmp;
 
     return result;
 
