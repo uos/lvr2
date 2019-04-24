@@ -87,6 +87,14 @@ public:
         vector<size_t>& indices
     ) const override;
 
+    void kSearchMany(
+        const BaseVecT* query,
+        int n,
+        int k,
+        size_t* indices,
+        CoordT* distances
+    ) const;
+
 protected:
 
     /// The FLANN search tree structure.

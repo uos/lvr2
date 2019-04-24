@@ -35,7 +35,7 @@
 #define ICPPOINTALIGN_HPP_
 
 #include <lvr2/registration/EigenSVDPointAlign.hpp>
-#include <lvr2/reconstruction/SearchTree.hpp>
+#include <lvr2/reconstruction/SearchTreeFlann.hpp>
 #include <lvr2/geometry/Matrix4.hpp>
 
 namespace lvr2
@@ -75,7 +75,7 @@ protected:
     PointBufferPtr                     m_dataCloud;
     Matrix4<BaseVecT>                   m_transformation;
 
-    SearchTreePtr<BaseVecT> 			m_searchTree;
+    shared_ptr<SearchTreeFlann<BaseVecT>> m_searchTree;
 };
 
 } /* namespace lvr2 */

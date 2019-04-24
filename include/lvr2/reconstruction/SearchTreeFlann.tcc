@@ -38,6 +38,8 @@
 
 #include <lvr2/util/Panic.hpp>
 
+#include <omp.h>
+
 using std::make_unique;
 
 namespace lvr2
@@ -61,9 +63,9 @@ SearchTreeFlann<BaseVecT>::SearchTreeFlann(PointBufferPtr buffer)
     }
 
     m_tree = make_unique<flann::Index<flann::L2_Simple<CoordT>>>(
-        flannPoints,
-        ::flann::KDTreeSingleIndexParams(10, false)
-    );
+                 flannPoints,
+                 ::flann::KDTreeSingleIndexParams(10, false)
+             );
     m_tree->buildIndex();
 }
 
@@ -97,5 +99,35 @@ void SearchTreeFlann<BaseVecT>::radiusSearch(
 {
     panic_unimplemented("radiusSearch() is not implemented for FLANN yet");
 }
+
+template<typename BaseVecT>
+void SearchTreeFlann<BaseVecT>::kSearchMany(
+    const BaseVecT* query,
+    int n,
+    int k,
+    size_t* indices,
+    CoordT* distances
+) const
+{
+    float* queries = new float[n * 3];
+    flann::Matrix<float> queries_mat(queries, n, 3);
+    flann::Matrix<size_t> indices_mat(indices, n, 1);
+    flann::Matrix<float> distances_mat(distances, n, 1);
+
+    #pragma omp parallel for
+    for (size_t i = 0; i < n; i++)
+    {
+        queries_mat[i][0] = query[i].x;
+        queries_mat[i][1] = query[i].y;
+        queries_mat[i][2] = query[i].z;
+    }
+
+    flann::SearchParams params;
+    params.cores = omp_get_max_threads();
+    m_tree->knnSearch(queries_mat, indices_mat, distances_mat, 1, params);
+
+    delete[] queries;
+}
+
 
 } // namespace lvr2
