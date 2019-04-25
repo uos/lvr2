@@ -59,6 +59,7 @@ namespace  lvr2{
         int size();
 
         void updateSC(float alpha, VertexHandle vH);
+        int notDeleted = 0;
     };
 
 }
