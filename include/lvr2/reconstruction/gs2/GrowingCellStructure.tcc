@@ -67,7 +67,7 @@ namespace lvr2 {
             }
             if(this->isWithCollapse())
             {
-                executeEdgeCollapse(); //TODO: execute an edge collapse, only if the user specified so
+                //executeEdgeCollapse(); //TODO: execute an edge collapse, only if the user specified so
             }
 
         }
@@ -80,7 +80,7 @@ namespace lvr2 {
         }
 
         //tumble_tree->display();
-
+        cout << "Not Deleted in TT: " << tumble_tree->notDeleted << endl;
         cout << "Tumble Tree size: " << tumble_tree->size() << endl;
         cout << "KD-Tree size: " << kd_tree->size() << endl;
         cout << "VertexCell map size: " << vertexCellMap.numValues() << endl;

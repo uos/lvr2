@@ -212,19 +212,26 @@ namespace lvr2{
         Cell* tmp;
         if(c == NULL)
         {
+            std::cout << "root or not found" << endl;
+            c != root ? notDeleted++ : notDeleted = notDeleted-1+1;
             return NULL;
         }
         else if(sc < c->signal_counter)
         {
-            c->left = remove(sc, vH, c->left);
+            c->left = remove(sc, vH, c->left, removeWhole);
         }
         else if(sc > c->signal_counter) {
-            c->right = remove(sc, vH, c->right);
+            c->right = remove(sc, vH, c->right, removeWhole);
         }
         else{
             //if there are two are more, just remove from the duplicate map
             if(c->duplicateMap.numValues() > 1 && !removeWhole){
+                int numV = c->duplicateMap.numValues();
                 c->duplicateMap.erase(vH);
+                if(c->duplicateMap.numValues() == numV){
+                    cout << "error removing from duplicate map" << endl;
+                    notDeleted++;
+                }
                 return c;
             }
 
@@ -247,55 +254,17 @@ namespace lvr2{
             //copy data from inorder successor
             c->signal_counter = tmp->signal_counter;
             c->duplicateMap.clear();
+            //copy values from one dupilcate map to the other
             for(auto iter = tmp->duplicateMap.begin(); iter != tmp->duplicateMap.end();++iter)
             {
                 c->duplicateMap.insert(*iter,tmp->signal_counter);
             }
             //remove inorder successor
             VertexHandle ret(0);
-            c->right = remove(tmp->signal_counter, ret, c->right);
+            c->right = remove(tmp->signal_counter, ret, c->right, true);
 
         }
-        /*else if(c->left && c->right)
-        {
-            c->duplicateMap.erase(vH); //erase key and value in hashlist
 
-            if(c->duplicateMap.numValues() == 0)
-            {
-                tmp = findMin(c->right); //find minimum sc cell of the right subtree (should be bigger than all left cells sc's)
-                c->signal_counter = tmp->signal_counter; //copy sc and duplicate map
-                for(auto iter = tmp->duplicateMap.begin(); iter != tmp->duplicateMap.end();++iter)
-                {
-                    c->duplicateMap.insert(*iter,tmp->signal_counter);
-                }
-                VertexHandle ret(0);
-                c->right = remove(c->signal_counter, ret, c->right, true); //delete the minimum of the right subtree, as it now serves as the new subtree-root
-            }
-
-        }
-        else{
-            tmp = c;
-            //now we only got one or no subtree left, if there
-            if(!removeWhole)
-            {
-                c->duplicateMap.erase(vH); //remove only, if the cell is not supposed to be deleted inititally
-            }
-
-            if(c->duplicateMap.numValues() == 0 || removeWhole)
-            {
-                if(c->left == NULL)
-                {
-                    c = c->right;
-                }
-                else if(c->right == NULL)
-                {
-                    c = c->left;
-                }
-                cout << "Remove!!!" << endl;
-                delete tmp;
-            }
-
-        }*/
         return c;
     }
 
