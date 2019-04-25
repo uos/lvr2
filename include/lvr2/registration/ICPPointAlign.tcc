@@ -33,7 +33,6 @@
  */
 #include <lvr2/registration/ICPPointAlign.hpp>
 #include <lvr2/registration/EigenSVDPointAlign.hpp>
-#include <lvr2/registration/EulerPointAlign.hpp>
 #include <lvr2/io/Timestamp.hpp>
 #include <lvr2/io/IOUtils.hpp>
 
@@ -47,7 +46,7 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-ICPPointAlign<BaseVecT>::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Matrix4<BaseVecT>& modelPose, const Matrix4<BaseVecT>& dataPose) :
+ICPPointAlign<BaseVecT>::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Matrix4d& modelPose, const Matrix4d& dataPose) :
     m_dataCloud(data), m_transformation(dataPose)
 {
     // Init default values
@@ -63,11 +62,11 @@ ICPPointAlign<BaseVecT>::ICPPointAlign(PointBufferPtr model, PointBufferPtr data
 
     for (size_t i = 0; i < n; i++)
     {
-        BaseVecT v(o_points[3 * i], o_points[3 * i + 1], o_points[3 * i + 2]);
-        BaseVecT t  = modelPose * v;
-        t_points[3 * i    ] = t[0];
-        t_points[3 * i + 1] = t[1];
-        t_points[3 * i + 2] = t[2];
+        Eigen::Vector4d v(o_points[3 * i], o_points[3 * i + 1], o_points[3 * i + 2], 1.0);
+        Eigen::Vector4d t = modelPose * v;
+        t_points[3 * i    ] = t.x();
+        t_points[3 * i + 1] = t.y();
+        t_points[3 * i + 2] = t.z();
     }
     m_modelCloud->setPointArray(t_points, n);
 
@@ -77,11 +76,11 @@ ICPPointAlign<BaseVecT>::ICPPointAlign(PointBufferPtr model, PointBufferPtr data
 }
 
 template <typename BaseVecT>
-Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
+Matrix4d ICPPointAlign<BaseVecT>::match()
 {
     if (m_maxIterations == 0)
     {
-        return Matrix4<BaseVecT>();
+        return Matrix4d();
     }
 
     auto start_time = clock();
@@ -89,7 +88,7 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
     double alignTime = 0;
 
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
-    EigenSVDPointAlign<BaseVecT> align;
+    EigenSVDPointAlign align;
     for (int i = 0; i < m_maxIterations; i++)
     {
         // Update break variables
@@ -97,13 +96,13 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
         prev_ret = ret;
 
         // Get point pairs
-        BaseVecT  centroid_m;
-        BaseVecT  centroid_d;
-        Matrix4<BaseVecT> transform;
-        double            sum;
+        Vector3d centroid_m = Vector3d::Zero();
+        Vector3d centroid_d = Vector3d::Zero();
+        Matrix4d transform;
+        double sum;
 
 
-        PointPairVector<BaseVecT> pairs;
+        PointPairVector pairs;
         auto pre_pair = clock();
         getPointPairs(pairs, centroid_m, centroid_d, sum);
         pairTime += (double)(clock() - pre_pair) / CLOCKS_PER_SEC / 5.0;
@@ -117,13 +116,13 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
         //cout << transform << endl;
 
         // Apply transformation
-        m_transformation = transformRegistration(m_transformation.toEigenMatrix().transpose(), transform.toEigenMatrix().transpose()).transpose();
+        m_transformation = transformRegistration(m_transformation, transform);
 
         //cout << timestamp << "TRANSFORMATION: " << endl;
         //cout << m_transformation << endl;
 
         cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << " using " << pairs.size() << " points."<< endl;
-        //cout << m_transformation << endl;
+
         // Check minimum distance
         if ((fabs(ret - prev_ret) < m_epsilon) && (fabs(ret - prev_prev_ret) < m_epsilon))
         {
@@ -133,58 +132,12 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
     }
     cout << "Time: " << (double)(clock() - start_time) / CLOCKS_PER_SEC / 5.0 << endl;
     cout << "Pairing time: " << pairTime << "; " << "Algining time: " << alignTime << endl;
-    cout << "Error: " << ret << "; Result: " << m_transformation << endl;
-    return m_transformation;
-}
-
-// TODO: remove
-template <typename BaseVecT>
-Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::euler_match()
-{
-    if (m_maxIterations == 0)
-    {
-        return Matrix4<BaseVecT>();
-    }
-
-    auto start_time = clock();
-
-    double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
-    EulerPointAlign<BaseVecT> align;
-    BaseVecT  centroid_m;
-    BaseVecT  centroid_d;
-    Matrix4<BaseVecT> transform = m_transformation;
-    PointPairVector<BaseVecT> pairs;
-
-    for (int i = 0; i < m_maxIterations; i++)
-    {
-        prev_prev_ret = prev_ret;
-        prev_ret = ret;
-
-        pairs.clear();
-        getPointPairs(pairs, centroid_m, centroid_d, ret);
-        ret = sqrt(ret / pairs.size()); // copy from slam6d to match results
-
-        transform = align.alignPoints(pairs, m_transformation);
-
-        // Apply transformation
-        m_transformation *= transform;
-
-        cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations
-             << " using " << pairs.size() << " / " << m_dataCloud->numPoints() << " points." << endl;
-
-        if ((fabs(ret - prev_ret) < m_epsilon) && (fabs(ret - prev_prev_ret) < m_epsilon))
-        {
-            cout << timestamp << " Error below m_epsilon after " << i << " / " << m_maxIterations << " Iterations" << endl;
-            break;
-        }
-    }
-    cout << "Euler Time: " << (double)(clock() - start_time) / CLOCKS_PER_SEC / 5.0 << endl;
-    cout << "Euler Error: " << ret << "; Euler Result: " << m_transformation << endl;
+    cout << "Error: " << ret << "; Result: " << endl << m_transformation << endl;
     return m_transformation;
 }
 
 template <typename BaseVecT>
-void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector<BaseVecT>& pairs, BaseVecT& centroid_m, BaseVecT& centroid_d, double& sum)
+void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d, double& sum)
 {
     sum = 0;
 
@@ -193,11 +146,13 @@ void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector<BaseVecT>& pairs, Ba
     size_t n = data_pts.numElements();
 
     BaseVecT* transformed = new BaseVecT[n];
+    Matrix4<BaseVecT> transform;
+    transform = m_transformation.transpose();
     #pragma omp parallel for
     for (size_t i = 0; i < n; i++)
     {
         BaseVecT data = data_pts[i];
-        transformed[i] = m_transformation * data;
+        transformed[i] = transform * data;
     }
 
     size_t* indices = new size_t[n];
@@ -210,8 +165,8 @@ void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector<BaseVecT>& pairs, Ba
     {
         if (distances[i] < m_maxDistanceMatch * m_maxDistanceMatch)
         {
-            const BaseVecT& t = transformed[i];
-            const BaseVecT& closest = model_pts[indices[i]];
+            Vector3d t(transformed[i].x, transformed[i].y, transformed[i].z);
+            Vector3d closest = model_pts[indices[i]];
 
             centroid_m += t;
             centroid_d += closest;

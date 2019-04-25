@@ -37,8 +37,6 @@
 #include "ui_LVRRegistrationPickCorrespondancesDialogUI.h"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
-#include <lvr2/geometry/Matrix4.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/registration/EigenSVDPointAlign.hpp>
 
 #include <iostream>
@@ -49,8 +47,6 @@ using namespace std;
 namespace lvr2
 {
 
-using Vec = BaseVector<float>;
-
 class LVRCorrespondanceDialog : public QObject
 {
     Q_OBJECT
@@ -59,7 +55,7 @@ public:
     LVRCorrespondanceDialog(QTreeWidget* parent);
     virtual ~LVRCorrespondanceDialog();
     void fillComboBoxes();
-    boost::optional<Matrix4<Vec>> getTransformation();
+    boost::optional<Matrix4d> getTransformation();
     QString  getModelName();
     QString  getDataName();
 

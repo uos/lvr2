@@ -743,7 +743,6 @@ void LVRMainWindow::alignPointClouds()
     PointBufferPtr modelBuffer = m_treeWidgetHelper->getPointBuffer(modelName);
     PointBufferPtr dataBuffer  = m_treeWidgetHelper->getPointBuffer(dataName);
 
-    float pose[6];
     LVRModelItem* dataItem = m_treeWidgetHelper->getModelItem(dataName);
     LVRModelItem* modelItem = m_treeWidgetHelper->getModelItem(modelName);
     if (!dataItem || !modelItem) {
@@ -754,23 +753,25 @@ void LVRMainWindow::alignPointClouds()
     Vec pos(dataPose.x, dataPose.y, dataPose.z);
     Vec angles(dataPose.r, dataPose.t, dataPose.p);
     angles /= 57.295779513; // degrees -> radians
-    Matrix4<Vec> mat = Matrix4<Vec>(pos, angles);
+    
+    Matrix4d mat = Matrix4<Vec>(pos, angles).toEigenMatrix().transpose(); // TODO: remove transpose()
 
-    boost::optional<Matrix4<Vec>> correspondence = m_correspondanceDialog->getTransformation();
+    boost::optional<Matrix4d> correspondence = m_correspondanceDialog->getTransformation();
     if (correspondence.is_initialized())
     {
         mat *= correspondence.get();
-        mat.toPostionAngle(pose);
+        getPoseFromMatrix(pos, angles, mat.transpose()); // TODO: remove transpose()
 
-        // Pose ist in radians, so we need to convert p to degrees
-        // to achieve consistency
+        // Pose ist in radians, so we need to convert p to degrees to achieve consistency
+        angles *= 57.295779513; // radians -> degrees
+
         Pose p;
-        p.x = pose[0];
-        p.y = pose[1];
-        p.z = pose[2];
-        p.r = pose[3]  * 57.295779513;
-        p.t = pose[4]  * 57.295779513;
-        p.p = pose[5]  * 57.295779513;
+        p.x = pos.x;
+        p.y = pos.y;
+        p.z = pos.z;
+        p.r = angles.x;
+        p.t = angles.y;
+        p.p = angles.z;
         dataItem->setPose(p);
 
         updateView();
@@ -783,33 +784,24 @@ void LVRMainWindow::alignPointClouds()
         pos = Vec(modelPose.x, modelPose.y, modelPose.z);
         angles = Vec(modelPose.r, modelPose.t, modelPose.p);
         angles /= 57.295779513;
-        Matrix4<Vec> modelTransform = Matrix4<Vec>(pos, angles);
-
-        Matrix4<Vec> refinedTransform ;
+        Matrix4d modelTransform = Matrix4<Vec>(pos, angles).toEigenMatrix().transpose(); // TODO: remove transpose()
 
         ICPPointAlign<Vec> icp(modelBuffer, dataBuffer, modelTransform, mat);
         icp.setEpsilon(m_correspondanceDialog->getEpsilon());
         icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
         icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
-        refinedTransform = icp.match();
+        Matrix4d refinedTransform = icp.match();
 
-        // TODO: remove
-        //icp = ICPPointAlign<Vec>(modelBuffer, dataBuffer, mat);
-        //icp.setEpsilon(m_correspondanceDialog->getEpsilon());
-        //icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
-        //icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
-        //cout << "Euler method: " << endl;
-        //refinedTransform = icp.euler_match();
-
-        refinedTransform.toPostionAngle(pose);
+        getPoseFromMatrix(pos, angles, refinedTransform.transpose()); // TODO: remove transpose()
+        angles *= 57.295779513; // radians -> degrees
 
         Pose p;
-        p.x = pose[0];
-        p.y = pose[1];
-        p.z = pose[2];
-        p.r = pose[3]  * 57.295779513;
-        p.t = pose[4]  * 57.295779513;
-        p.p = pose[5]  * 57.295779513;
+        p.x = pos.x;
+        p.y = pos.y;
+        p.z = pos.z;
+        p.r = angles.x;
+        p.t = angles.y;
+        p.p = angles.z;
         dataItem->setPose(p);
     }
     m_correspondanceDialog->clearAllItems();
