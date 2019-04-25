@@ -58,6 +58,7 @@ set(LVR2_SOURCES
     reconstruction/LBKdTree.cpp
     reconstruction/cuda/CudaSurface.cu
     reconstruction/PCLFiltering.cpp
+    registration/EigenSVDPointAlign.cpp
 )
 
 

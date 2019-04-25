@@ -34,29 +34,28 @@
 #ifndef EIGENSVDPOINTALIGN_HPP_
 #define EIGENSVDPOINTALIGN_HPP_
 
-#include <lvr2/io/PointBuffer.hpp>
-#include <lvr2/geometry/Matrix4.hpp>
+#include <vector>
+
+#include <Eigen/Dense>
+using Eigen::Matrix4d;
+using Eigen::Vector3d;
 
 namespace lvr2
 {
 
-template <typename BaseVecT>
-using PointPairVector = std::vector<std::pair<BaseVecT, BaseVecT> >;
+using PointPairVector = std::vector<std::pair<Vector3d, Vector3d>>;
 
-template <typename BaseVecT>
 class EigenSVDPointAlign
 {
 public:
     EigenSVDPointAlign() {};
     double alignPoints(
-            const PointPairVector<BaseVecT>& pairs,
-            const BaseVecT centroid1,
-            const BaseVecT centroid2,
-            Matrix4<BaseVecT>& align);
+        const PointPairVector& pairs,
+        const Vector3d centroid_m,
+        const Vector3d centroid_d,
+        Matrix4d& align);
 };
 
 } /* namespace lvr2 */
-
-#include <lvr2/registration/EigenSVDPointAlign.tcc>
 
 #endif /* EIGENSVDPOINTALIGN_HPP_ */

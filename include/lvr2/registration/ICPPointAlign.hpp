@@ -36,7 +36,6 @@
 
 #include <lvr2/registration/EigenSVDPointAlign.hpp>
 #include <lvr2/reconstruction/SearchTreeFlann.hpp>
-#include <lvr2/geometry/Matrix4.hpp>
 
 namespace lvr2
 {
@@ -45,11 +44,11 @@ template <typename BaseVecT>
 class ICPPointAlign
 {
 public:
-    ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Matrix4<BaseVecT>& modelPose, const Matrix4<BaseVecT>& dataPose);
+    ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Matrix4d& modelPose, const Matrix4d& dataPose);
 
-    Matrix4<BaseVecT> match();
+    Matrix4d match();
     // TODO: remove
-    Matrix4<BaseVecT> euler_match();
+    Matrix4d euler_match();
 
     virtual ~ICPPointAlign();
 
@@ -61,21 +60,21 @@ public:
     double  getMaxMatchDistance();
     int     getMaxIterations();
     
-    void getPointPairs(PointPairVector<BaseVecT>& pairs, BaseVecT& centroid_m, BaseVecT& centroid_d, double& sum);
+    void getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d, double& sum);
 
 protected:
 
     void transform();
 
-    double                              m_epsilon;
-    double                              m_maxDistanceMatch;
-    int                                 m_maxIterations;
+    double          m_epsilon;
+    double          m_maxDistanceMatch;
+    int             m_maxIterations;
 
-    PointBufferPtr                     m_modelCloud;
-    PointBufferPtr                     m_dataCloud;
-    Matrix4<BaseVecT>                   m_transformation;
+    PointBufferPtr  m_modelCloud;
+    PointBufferPtr  m_dataCloud;
+    Matrix4d        m_transformation;
 
-    shared_ptr<SearchTreeFlann<BaseVecT>> m_searchTree;
+    shared_ptr<SearchTreeFlann<BaseVecT>>   m_searchTree;
 };
 
 } /* namespace lvr2 */
