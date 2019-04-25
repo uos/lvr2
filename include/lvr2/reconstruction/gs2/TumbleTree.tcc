@@ -212,7 +212,6 @@ namespace lvr2{
         Cell* tmp;
         if(c == NULL)
         {
-            std::cout << "root or not found" << endl;
             c != root ? notDeleted++ : notDeleted = notDeleted-1+1;
             return NULL;
         }
@@ -229,7 +228,6 @@ namespace lvr2{
                 int numV = c->duplicateMap.numValues();
                 c->duplicateMap.erase(vH);
                 if(c->duplicateMap.numValues() == numV){
-                    cout << "error removing from duplicate map" << endl;
                     notDeleted++;
                 }
                 return c;
