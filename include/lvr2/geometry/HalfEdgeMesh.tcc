@@ -695,7 +695,7 @@ void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
         // half edge mesh topology
         if(edgesOut.size() > 20)
         {
-            throw VertexLoopException("getEdgesOfVertex: Loop detected");
+            //throw VertexLoopException("getEdgesOfVertex: Loop detected");
         }
         return true;
     });
@@ -845,7 +845,7 @@ EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
 
     Face bottomLeft(addedBelowH);
     FaceHandle bottomLeftH = m_faces.push(bottomLeft);
-    getF(bottomLeftH).edge = addedBelowH;
+    getF(bottomLeftH).edge = belowAddedH;
 
     Face bottomRight(rightAddedH);
     FaceHandle bottomRightH = m_faces.push(bottomRight);
@@ -891,11 +891,9 @@ EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
     getE(belowLeftH).face = bottomLeftH;
     getE(belowRightH).face = bottomRightH;
 
-
-
     getE(centerH).face = topLeftH;
     getE(centerTwinH).face = topRightH;
-    
+
     //fill edge split result
     EdgeSplitResult result(vAddedH);
     result.addedFaces.push_back(topLeftH);
@@ -1050,7 +1048,7 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
 
     EdgeSplitResult splitResult = this->splitEdgeNoRemove(longestEdge);
 
-    /*if(commonVertexHandles.size() == 2)
+    /*if(commonVertexHandles.size() == 2 )
     {
 
         for(VertexHandle vertex : commonVertexHandles)
@@ -1058,7 +1056,7 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
             OptionalEdgeHandle handle = this->getEdgeBetween(vertex,vertexToBeSplitH);
             if(handle && this->isFlippable(handle.unwrap()))
             {
-                std::cout << "FLIPPABLE!!!" << endl << endl;
+                //std::cout << "FLIPPABLE!!!" << endl << endl;
                 this->flipEdge(handle.unwrap());
             }
         }

@@ -43,11 +43,11 @@ namespace lvr2 {
         //set pointer to mesh
         m_mesh = &mesh;
 
+        //initTestMesh(); //init a mesh used for vertex split and edge split testing
+
         //get initial tetrahedron mesh
         getInitialMesh();
         cout << "KD-Tree size: " << kd_tree->size() << endl;
-
-        //initTestMesh();
 
         //progress bar
         PacmanProgressBar progress_bar((size_t)((((size_t)m_runtime*(size_t)m_numSplits)
@@ -67,7 +67,7 @@ namespace lvr2 {
             }
             if(this->isWithCollapse())
             {
-                //executeEdgeCollapse(); //TODO: execute an edge collapse, only if the user specified so
+                executeEdgeCollapse(); //TODO: execute an edge collapse, only if the user specified so
             }
 
         }
@@ -192,7 +192,6 @@ namespace lvr2 {
         {
             //find vertex with highst sc, split that vertex
             Cell* max = tumble_tree->max();
-            //cout << "Max C: " << max->signal_counter;
             auto iter = max->duplicateMap.begin();
             VertexHandle highestSC = *iter;
 
@@ -275,23 +274,14 @@ namespace lvr2 {
         //TODO: tumble tree support
         if(!m_useGSS)
         {
-            auto vertices = m_mesh->vertices();
-            VertexHandle lowestSC(0);
-            float minSC = numeric_limits<float>::infinity();
-            for(auto vertexH : vertices)
-            {
-                BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
 
-                if(vertex.signal_counter < minSC)
-                {
-                    lowestSC = vertexH;
-                    minSC = vertex.signal_counter;
-                }
-            }
+            Cell* min = tumble_tree->min();
+            auto iter = min->duplicateMap.begin();
+            VertexHandle lowestSC = *iter;
 
             //found vertex with lowest sc
             //TODO: collapse the edge leading to the vertex with the valence closest to six
-            if(minSC < this->getCollapseThreshold())
+            if(min->signal_counter < this->getCollapseThreshold())
             {
 
                 vector<VertexHandle> nbMinSc;
@@ -315,7 +305,7 @@ namespace lvr2 {
 
                 if(eToSixVal && m_mesh->isCollapsable(eToSixVal.unwrap()))
                 {
-                    m_mesh->collapseEdge(eToSixVal.unwrap());
+                    EdgeCollapseResult result = m_mesh->collapseEdge(eToSixVal.unwrap());
                     std::cout << "Collapsed an Edge!" << endl;
                 }
             }
@@ -568,7 +558,7 @@ namespace lvr2 {
 
         avg_vec /= n_vertices.size();
 
-        vertex += avg_vec * 0.01/*getNeighborLearningRate()*/;
+        vertex += avg_vec * 0.01;//getNeighborLearningRate();
     }
 
     // GCS METHODS - Methods which are only used by the GCS-algorithm
