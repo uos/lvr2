@@ -74,7 +74,7 @@ protected:
     PointBufferPtr  m_dataCloud;
     Matrix4d        m_transformation;
 
-    shared_ptr<SearchTreeFlann<BaseVecT>>   m_searchTree;
+    std::shared_ptr<SearchTreeFlann<BaseVecT>>   m_searchTree;
 };
 
 } /* namespace lvr2 */

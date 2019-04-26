@@ -35,12 +35,15 @@
 #include <lvr2/registration/EigenSVDPointAlign.hpp>
 #include <lvr2/io/Timestamp.hpp>
 #include <lvr2/io/IOUtils.hpp>
+#include <lvr2/geometry/Matrix4.hpp>
 
 // TODO: remove
 #include <chrono>
 
 #include <fstream>
 using std::ofstream;
+
+using namespace std;
 
 namespace lvr2
 {
