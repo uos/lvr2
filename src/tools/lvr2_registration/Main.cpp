@@ -29,14 +29,33 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <iostream>
+#include <chrono>
 
 // internal includes
+#include <lvr2/io/ModelFactory.hpp>
+#include <lvr2/io/IOUtils.hpp>
+#include <lvr2/registration/ICPPointAlign.hpp>
 
 // local includes
 
-using namespace boost::program_options;
-using namespace boost::filesystem;
+using namespace lvr2;
 using namespace std;
+using boost::filesystem::path;
+using Eigen::Matrix4d;
+
+using Vec = BaseVector<float>;
+
+class Scan
+{
+public:
+    PointBufferPtr points;
+    Matrix4d pose;
+
+    Scan(PointBufferPtr& points, Matrix4d pose = Matrix4d::Identity())
+        : points(points), pose(pose)
+    { }
+};
+using ScanPtr = shared_ptr<Scan>;
 
 string format_name(string prefix, int index, string suffix, int number_length = -1)
 {
@@ -58,6 +77,8 @@ int main(int argc, char** argv)
 
     try
     {
+        using namespace boost::program_options;
+
         options_description visible_options("OPTIONS");
         visible_options.add_options()
         ("start,s", value<int>(&start)->default_value(-1), "The first scan to process.\n-1 (default): search for first scan")
@@ -101,7 +122,7 @@ int main(int argc, char** argv)
             dir = variables["dir"].as<path>();
         }
     }
-    catch (const error& ex)
+    catch (const boost::program_options::error& ex)
     {
         std::cerr << ex.what() << endl;
         std::cerr << endl;
@@ -178,10 +199,39 @@ int main(int argc, char** argv)
         file.replace_extension("pose");
         if (!exists(file))
         {
-            cerr << "Mising pose file " << file.filename() << endl;
+            cerr << "Missing pose file " << file.filename() << endl;
             return EXIT_FAILURE;
         }
     }
+
+    vector<ScanPtr> scans;
+    scans.reserve(end - start);
+
+    for (int i = start; i <= end; i++)
+    {
+        path file = dir / format_name(format_prefix, i, format_suffix, format_number_length);
+        auto model = ModelFactory::readModel(file.string());
+
+        file.replace_extension("pose");
+        Matrix4d pose = getTransformationFromPose(file);
+
+        scans.push_back(ScanPtr(new Scan(model->m_pointCloud, pose)));
+    }
+
+    clock_t start_time = clock();
+
+    for (size_t i = 1; i < scans.size(); i++)
+    {
+        ScanPtr& prev = scans[i - 1];
+        ScanPtr& current = scans[i];
+        ICPPointAlign<Vec> icp(prev->points, current->points, prev->pose, current->pose);
+        // TODO: configure icp
+        Matrix4d result = icp.match();
+        current->pose = result;
+    }
+
+    double required_time = (clock() - start_time) / CLOCKS_PER_SEC / 5.0 * 1000.0;
+    cout << "ICP finished in " << required_time << "ms" << endl;
 
     return EXIT_SUCCESS;
 }
