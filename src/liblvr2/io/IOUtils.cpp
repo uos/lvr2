@@ -541,4 +541,44 @@ void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, con
     }
 }
 
+Eigen::Matrix4d poseToMatrix(const Eigen::Vector3d& position, const Eigen::Vector3d& rotation)
+{
+    Eigen::Matrix4d mat = Eigen::Matrix4d::Identity();
+    mat.block<3, 3>(0, 0) = Eigen::AngleAxisd(rotation.x(), Eigen::Vector3d::UnitX()).matrix()
+                           * Eigen::AngleAxisd(rotation.y(), Eigen::Vector3d::UnitY())
+                           * Eigen::AngleAxisd(rotation.z(), Eigen::Vector3d::UnitZ());
+
+    mat.block<3, 1>(0, 3) = position;
+    return mat;
+}
+
+void matrixToPose(const Eigen::Matrix4d& mat, Eigen::Vector3d& position, Eigen::Vector3d& rotation)
+{
+    // Calculate Y-axis angle
+    if (mat(0, 0) > 0.0)
+    {
+        rotation.y() = asin(mat(2, 0));
+    }
+    else
+    {
+        rotation.y() = M_PI - asin(mat(2, 0));
+    }
+
+    double C = cos(rotation.y());
+    if (fabs(C) < 0.005) // Gimbal lock?
+    {
+        // Gimbal lock has occurred
+        rotation.x() = 0.0;
+        rotation.z() = atan2(mat(0, 1), mat(1, 1));
+    }
+    else
+    {
+        rotation.x() = atan2(-mat(2, 1) / C, mat(2, 2) / C);
+        rotation.z() = atan2(-mat(1, 0) / C, mat(0, 0) / C);
+    }
+
+    position = mat.block<3, 1>(0, 3);
+}
+
+
 } // namespace lvr2

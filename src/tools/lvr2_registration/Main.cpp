@@ -43,8 +43,6 @@ using namespace std;
 using boost::filesystem::path;
 using Eigen::Matrix4d;
 
-using Vec = BaseVector<float>;
-
 class Scan
 {
 public:
@@ -224,7 +222,7 @@ int main(int argc, char** argv)
     {
         ScanPtr& prev = scans[i - 1];
         ScanPtr& current = scans[i];
-        ICPPointAlign<Vec> icp(prev->points, current->points, prev->pose, current->pose);
+        ICPPointAlign icp(prev->points, current->points, prev->pose, current->pose);
         // TODO: configure icp
         Matrix4d result = icp.match();
         current->pose = result;

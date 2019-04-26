@@ -46,10 +46,10 @@ template<typename BaseVecT>
 int SearchTree<BaseVecT>::kSearch(
     const BaseVecT &qp,
     int neighbours,
-    vector<size_t>& indices
+    std::vector<size_t>& indices
 ) const
 {
-    vector<typename BaseVecT::CoordType> distances;
+    std::vector<CoordT> distances;
     return this->kSearch(qp, neighbours, indices, distances);
 }
 
