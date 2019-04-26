@@ -262,6 +262,24 @@ size_t writePointsToStream(ModelPtr model, std::ofstream& out, bool nocolor = fa
  */
 Eigen::Matrix4d inverseTransform(const Eigen::Matrix4d& transform);
 
+/**
+ * @brief   Converts a Pose to a Matrix.
+ * 
+ * @param position  The position of the Pose
+ * @param rotation  The rotation in radians
+ * @return          The Matrix representation of the Pose
+ */
+Eigen::Matrix4d poseToMatrix(const Eigen::Vector3d& position, const Eigen::Vector3d& rotation);
+
+/**
+ * @brief   Extracts the Pose from a Matrix
+ * 
+ * @param pose      A Matrix representing a Pose
+ * @param position  Output for the position of the Pose
+ * @param rotation  Output for the rotation in radians
+ */
+void matrixToPose(const Eigen::Matrix4d& mat, Eigen::Vector3d& position, Eigen::Vector3d& rotation);
+
 } // namespace lvr2
 
 // #include "IOUtils.tcc"

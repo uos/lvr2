@@ -40,15 +40,12 @@
 namespace lvr2
 {
 
-template <typename BaseVecT>
 class ICPPointAlign
 {
 public:
     ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Matrix4d& modelPose, const Matrix4d& dataPose);
 
     Matrix4d match();
-    // TODO: remove
-    Matrix4d euler_match();
 
     virtual ~ICPPointAlign();
 
@@ -74,11 +71,10 @@ protected:
     PointBufferPtr  m_dataCloud;
     Matrix4d        m_transformation;
 
-    std::shared_ptr<SearchTreeFlann<BaseVecT>>   m_searchTree;
+    using FlannVec = BaseVector<double>;
+    std::shared_ptr<SearchTreeFlann<FlannVec>>   m_searchTree;
 };
 
 } /* namespace lvr2 */
-
-#include <lvr2/registration/ICPPointAlign.tcc>
 
 #endif /* ICPPOINTALIGN_HPP_ */

@@ -59,6 +59,7 @@ set(LVR2_SOURCES
     reconstruction/cuda/CudaSurface.cu
     reconstruction/PCLFiltering.cpp
     registration/EigenSVDPointAlign.cpp
+    registration/ICPPointAlign.cpp
 )
 
 

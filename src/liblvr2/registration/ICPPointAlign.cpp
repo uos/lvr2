@@ -48,8 +48,7 @@ using namespace std;
 namespace lvr2
 {
 
-template <typename BaseVecT>
-ICPPointAlign<BaseVecT>::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Matrix4d& modelPose, const Matrix4d& dataPose) :
+ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Matrix4d& modelPose, const Matrix4d& dataPose) :
     m_dataCloud(data), m_transformation(dataPose)
 {
     // Init default values
@@ -74,12 +73,11 @@ ICPPointAlign<BaseVecT>::ICPPointAlign(PointBufferPtr model, PointBufferPtr data
     m_modelCloud->setPointArray(t_points, n);
 
     // Create search tree
-    m_searchTree = make_shared<SearchTreeFlann<BaseVecT>>(m_modelCloud);
+    m_searchTree = make_shared<SearchTreeFlann<FlannVec>>(m_modelCloud);
 
 }
 
-template <typename BaseVecT>
-Matrix4d ICPPointAlign<BaseVecT>::match()
+Matrix4d ICPPointAlign::match()
 {
     if (m_maxIterations == 0)
     {
@@ -139,8 +137,7 @@ Matrix4d ICPPointAlign<BaseVecT>::match()
     return m_transformation;
 }
 
-template <typename BaseVecT>
-void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d, double& sum)
+void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d, double& sum)
 {
     sum = 0;
 
@@ -148,18 +145,18 @@ void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector& pairs, Vector3d& ce
     FloatChannel data_pts = m_dataCloud->getFloatChannel("points").get();
     size_t n = data_pts.numElements();
 
-    BaseVecT* transformed = new BaseVecT[n];
-    Matrix4<BaseVecT> transform;
+    FlannVec* transformed = new FlannVec[n];
+    Matrix4<FlannVec> transform;
     transform = m_transformation.transpose();
     #pragma omp parallel for
     for (size_t i = 0; i < n; i++)
     {
-        BaseVecT data = data_pts[i];
+        FlannVec data = data_pts[i];
         transformed[i] = transform * data;
     }
 
     size_t* indices = new size_t[n];
-    float* distances = new float[n];
+    double* distances = new double[n];
     m_searchTree->kSearchMany(transformed, n, 1, indices, distances);
 
     pairs.clear();
@@ -183,49 +180,43 @@ void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector& pairs, Vector3d& ce
     centroid_m /= pairs.size();
     centroid_d /= pairs.size();
 
+    delete[] transformed;
     delete[] indices;
     delete[] distances;
 }
 
-template <typename BaseVecT>
-ICPPointAlign<BaseVecT>::~ICPPointAlign()
+ICPPointAlign::~ICPPointAlign()
 {
     // TODO Auto-generated destructor stub
 }
 
-template <typename BaseVecT>
-void ICPPointAlign<BaseVecT>::setMaxMatchDistance(double d)
+void ICPPointAlign::setMaxMatchDistance(double d)
 {
     m_maxDistanceMatch = d;
 }
 
-template <typename BaseVecT>
-void ICPPointAlign<BaseVecT>::setMaxIterations(int i)
+void ICPPointAlign::setMaxIterations(int i)
 {
     m_maxIterations = i;
 }
 
-template <typename BaseVecT>
-void ICPPointAlign<BaseVecT>::setEpsilon(double e)
+void ICPPointAlign::setEpsilon(double e)
 {
     m_epsilon = e;
 }
 
-template <typename BaseVecT>
-double ICPPointAlign<BaseVecT>::getEpsilon()
+double ICPPointAlign::getEpsilon()
 {
     return m_epsilon;
 }
 
-template <typename BaseVecT>
-double ICPPointAlign<BaseVecT>::getMaxMatchDistance()
+double ICPPointAlign::getMaxMatchDistance()
 {
     return m_maxDistanceMatch;
 }
 
 
-template <typename BaseVecT>
-int ICPPointAlign<BaseVecT>::getMaxIterations()
+int ICPPointAlign::getMaxIterations()
 {
     return m_maxIterations;
 }

@@ -750,29 +750,22 @@ void LVRMainWindow::alignPointClouds()
     }
 
     Pose dataPose = dataItem->getPose();
-    Vec pos(dataPose.x, dataPose.y, dataPose.z);
-    Vec angles(dataPose.r, dataPose.t, dataPose.p);
-    angles /= 57.295779513; // degrees -> radians
-    
-    Matrix4d mat = Matrix4<Vec>(pos, angles).toEigenMatrix().transpose(); // TODO: remove transpose()
+    Vector3d pos(dataPose.x, dataPose.y, dataPose.z);
+    Vector3d angles(dataPose.r, dataPose.t, dataPose.p);
+    angles *= M_PI / 180.0; // degrees -> radians
+    Matrix4d mat = poseToMatrix(pos, angles);
 
     boost::optional<Matrix4d> correspondence = m_correspondanceDialog->getTransformation();
     if (correspondence.is_initialized())
     {
         mat *= correspondence.get();
-        getPoseFromMatrix(pos, angles, mat.transpose()); // TODO: remove transpose()
+        matrixToPose(mat, pos, angles);
+        angles *= 180.0 / M_PI; // radians -> degrees
 
-        // Pose ist in radians, so we need to convert p to degrees to achieve consistency
-        angles *= 57.295779513; // radians -> degrees
-
-        Pose p;
-        p.x = pos.x;
-        p.y = pos.y;
-        p.z = pos.z;
-        p.r = angles.x;
-        p.t = angles.y;
-        p.p = angles.z;
-        dataItem->setPose(p);
+        dataItem->setPose(Pose {
+            (float)pos.x(), (float)pos.y(), (float)pos.z(),
+            (float)angles.x(), (float)angles.y(), (float)angles.z()
+        });
 
         updateView();
     }
@@ -781,28 +774,24 @@ void LVRMainWindow::alignPointClouds()
     if(m_correspondanceDialog->doICP() && modelBuffer && dataBuffer)
     {
         Pose modelPose = modelItem->getPose();
-        pos = Vec(modelPose.x, modelPose.y, modelPose.z);
-        angles = Vec(modelPose.r, modelPose.t, modelPose.p);
-        angles /= 57.295779513;
-        Matrix4d modelTransform = Matrix4<Vec>(pos, angles).toEigenMatrix().transpose(); // TODO: remove transpose()
+        pos = Vector3d(modelPose.x, modelPose.y, modelPose.z);
+        angles = Vector3d(modelPose.r, modelPose.t, modelPose.p);
+        angles /= 180.0 / M_PI;
+        Matrix4d modelTransform = poseToMatrix(pos, angles);
 
-        ICPPointAlign<Vec> icp(modelBuffer, dataBuffer, modelTransform, mat);
+        ICPPointAlign icp(modelBuffer, dataBuffer, modelTransform, mat);
         icp.setEpsilon(m_correspondanceDialog->getEpsilon());
         icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
         icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
         Matrix4d refinedTransform = icp.match();
 
-        getPoseFromMatrix(pos, angles, refinedTransform.transpose()); // TODO: remove transpose()
-        angles *= 57.295779513; // radians -> degrees
+        matrixToPose(refinedTransform, pos, angles);
+        angles *= M_PI / 180.0; // radians -> degrees
 
-        Pose p;
-        p.x = pos.x;
-        p.y = pos.y;
-        p.z = pos.z;
-        p.r = angles.x;
-        p.t = angles.y;
-        p.p = angles.z;
-        dataItem->setPose(p);
+        dataItem->setPose(Pose {
+            (float)pos.x(), (float)pos.y(), (float)pos.z(),
+            (float)angles.x(), (float)angles.y(), (float)angles.z()
+        });
     }
     m_correspondanceDialog->clearAllItems();
     updateView();

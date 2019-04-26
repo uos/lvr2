@@ -78,8 +78,8 @@ int SearchTreeFlann<BaseVecT>::kSearch(
     vector<CoordT>& distances
 ) const
 {
-    float point[3] = { qp.x, qp.y, qp.z };
-    flann::Matrix<float> query_point(point, 1, 3);
+    CoordT point[3] = { qp.x, qp.y, qp.z };
+    flann::Matrix<CoordT> query_point(point, 1, 3);
 
     indices.resize(k);
     distances.resize(k);
@@ -109,10 +109,10 @@ void SearchTreeFlann<BaseVecT>::kSearchMany(
     CoordT* distances
 ) const
 {
-    float* queries = new float[n * 3];
-    flann::Matrix<float> queries_mat(queries, n, 3);
+    CoordT* queries = new CoordT[n * 3];
+    flann::Matrix<CoordT> queries_mat(queries, n, 3);
     flann::Matrix<size_t> indices_mat(indices, n, 1);
-    flann::Matrix<float> distances_mat(distances, n, 1);
+    flann::Matrix<CoordT> distances_mat(distances, n, 1);
 
     #pragma omp parallel for
     for (size_t i = 0; i < n; i++)
