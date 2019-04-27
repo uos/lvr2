@@ -79,6 +79,15 @@ namespace lvr2 {
            removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
         }
 
+        for(auto vertexH : m_mesh->vertices())
+        {
+            if(!vertexCellMap.containsKey(vertexH)) cout << "Inconsistency between mesh and map" << endl;
+            else{
+                Cell* cell = vertexCellMap.get(vertexH).get();
+                if(tumble_tree->find(cell->signal_counter, vertexH) == NULL)  cout << "Inconsistency between mesh and tree" << endl;
+            }
+        }
+
         //tumble_tree->display();
         cout << "Not Deleted in TT: " << tumble_tree->notDeleted << endl;
         cout << "Tumble Tree size: " << tumble_tree->size() << endl;
@@ -139,8 +148,8 @@ namespace lvr2 {
             //TODO: use map and tumble tree correctly
             Cell* winnerNode = vertexCellMap.get(winnerH).get();
             float winnerSC = winnerNode->signal_counter; //obtain the signal counter from the map
-
             tumble_tree->remove(winnerNode, winnerH); //remove the winning vertex from the tumble tree
+
 
             //TODO: decrease signal counter of others by a fraction according to hennings implementation
             if(m_decreaseFactor == 1.0)
@@ -205,7 +214,7 @@ namespace lvr2 {
 
             //now update tumble tree and the map
             tumble_tree->remove(max, highestSC);
-            vertexCellMap.get(highestSC).get() = tumble_tree->insertIterative(sc_middle, highestSC);//reinsert and update links
+            vertexCellMap.get(highestSC).get() = tumble_tree->insertIterative(sc_middle, highestSC); //reinsert and update links
             vertexCellMap.insert(newVH, tumble_tree->insertIterative(sc_middle, newVH)); //add the new vertex to the tree and the map
 
             //BaseVecT kdInsert = m_mesh->getVertexPosition(newVH);
@@ -585,6 +594,10 @@ namespace lvr2 {
     void GrowingCellStructure<BaseVecT, NormalT>::removeWrongFaces()
     {
 
+        //TODO: remove faces with Xu < E(X) - 1,64 * o(x) <= E(X) <= E(X) + 1.64 * o(x) < Xo (confidence interval)
+
+
+
         double avg_area = 0;
 
         for(FaceHandle face: m_mesh->faces())
@@ -593,11 +606,31 @@ namespace lvr2 {
         }
 
         avg_area /= m_mesh->numFaces();
+        float standart_deviation = 0;
 
         for(FaceHandle face: m_mesh->faces())
         {
+            standart_deviation += pow(m_mesh->calcFaceArea(face) - avg_area, 2);
+        }
+
+        standart_deviation /= m_mesh->numFaces();
+        standart_deviation = sqrt(standart_deviation);
+
+        std::cout << "Standart Deviation: " << standart_deviation << "Face Mean: " << avg_area << endl;
+
+        /*for(FaceHandle face: m_mesh->faces())
+        {
             double area = m_mesh->calcFaceArea(face);
             if(area > 5 * avg_area)
+            {
+                m_mesh->removeFace(face);
+            }
+        }*/
+
+        for(FaceHandle face : m_mesh->faces())
+        {
+            double area = m_mesh->calcFaceArea(face);
+            if(area < avg_area - 1.64*standart_deviation || area > 1.64 *standart_deviation)
             {
                 m_mesh->removeFace(face);
             }
