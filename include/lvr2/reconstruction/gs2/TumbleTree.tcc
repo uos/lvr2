@@ -323,11 +323,23 @@ namespace lvr2{
         {
             return find(sc, vH, c->right);
         }
-        else if(c->duplicateMap.containsKey(vH))
+        else
         {
-            return c;
+            if(c->duplicateMap.containsKey(vH))
+                return c;
+            else
+            {
+                cout << "Cell found, though it doesnt contain the found handle: " << vH.idx() << endl;
+                cout << "It contains: " << endl;
+                for(auto iter = c->duplicateMap.begin(); iter != c->duplicateMap.end(); ++iter)
+                {
+                    cout << *iter << " ";
+                }
+                cout << endl;
+                return NULL; //if the key does not exist in the cell with the suitable signal counter
+            }
         }
-        else return NULL; //if the key does not exist in the cell with the suitable signal counter
+
     }
 
     void TumbleTree::inorder(Cell* c)
