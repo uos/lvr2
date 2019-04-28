@@ -60,6 +60,7 @@ set(LVR2_SOURCES
     reconstruction/PCLFiltering.cpp
     registration/EigenSVDPointAlign.cpp
     registration/ICPPointAlign.cpp
+    registration/KDTree.cpp
 )
 
 

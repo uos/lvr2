@@ -228,7 +228,7 @@ int main(int argc, char** argv)
         current->pose = result;
     }
 
-    double required_time = (clock() - start_time) / CLOCKS_PER_SEC / 5.0 * 1000.0;
+    double required_time = (double)(clock() - start_time) / CLOCKS_PER_SEC / 5.0 * 1000.0;
     cout << "ICP finished in " << required_time << "ms" << endl;
 
     return EXIT_SUCCESS;

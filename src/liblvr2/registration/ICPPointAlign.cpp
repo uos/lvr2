@@ -57,24 +57,19 @@ ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Ma
     m_maxIterations         = 50;
 
     // Transform model points according to initial pose
-    m_modelCloud = PointBufferPtr(new PointBuffer);
     size_t n = model->numPoints();
     floatArr o_points = model->getPointArray();
-    floatArr t_points(new float[3 * n]);
+
+    PointArray modelPoints = PointArray(new Vector3d[n]);
 
     for (size_t i = 0; i < n; i++)
     {
         Eigen::Vector4d v(o_points[3 * i], o_points[3 * i + 1], o_points[3 * i + 2], 1.0);
-        Eigen::Vector4d t = modelPose * v;
-        t_points[3 * i    ] = t.x();
-        t_points[3 * i + 1] = t.y();
-        t_points[3 * i + 2] = t.z();
+        modelPoints[i] = (modelPose * v).block<3, 1>(0, 0);
     }
-    m_modelCloud->setPointArray(t_points, n);
 
     // Create search tree
-    m_searchTree = make_shared<SearchTreeFlann<FlannVec>>(m_modelCloud);
-
+    m_searchTree = KDTree::create(modelPoints, n);
 }
 
 Matrix4d ICPPointAlign::match()
@@ -100,12 +95,10 @@ Matrix4d ICPPointAlign::match()
         Vector3d centroid_m = Vector3d::Zero();
         Vector3d centroid_d = Vector3d::Zero();
         Matrix4d transform;
-        double sum;
-
 
         PointPairVector pairs;
         auto pre_pair = clock();
-        getPointPairs(pairs, centroid_m, centroid_d, sum);
+        getPointPairs(pairs, centroid_m, centroid_d);
         pairTime += (double)(clock() - pre_pair) / CLOCKS_PER_SEC / 5.0;
 
         // Get transformation (if possible)
@@ -122,7 +115,7 @@ Matrix4d ICPPointAlign::match()
         //cout << timestamp << "TRANSFORMATION: " << endl;
         //cout << m_transformation << endl;
 
-        cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << " using " << pairs.size() << " points."<< endl;
+        cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << " using " << pairs.size() << " points." << endl;
 
         // Check minimum distance
         if ((fabs(ret - prev_ret) < m_epsilon) && (fabs(ret - prev_prev_ret) < m_epsilon))
@@ -137,52 +130,40 @@ Matrix4d ICPPointAlign::match()
     return m_transformation;
 }
 
-void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d, double& sum)
+void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d)
 {
-    sum = 0;
-
-    FloatChannel model_pts = m_modelCloud->getFloatChannel("points").get();
     FloatChannel data_pts = m_dataCloud->getFloatChannel("points").get();
     size_t n = data_pts.numElements();
 
-    FlannVec* transformed = new FlannVec[n];
-    Matrix4<FlannVec> transform;
-    transform = m_transformation.transpose();
+    pairs.clear();
+    pairs.reserve(n);
+
     #pragma omp parallel for
     for (size_t i = 0; i < n; i++)
     {
-        FlannVec data = data_pts[i];
-        transformed[i] = transform * data;
-    }
+        Eigen::Vector3d data = data_pts[i];
+        Eigen::Vector4d extended(data.x(), data.y(), data.z(), 1.0);
+        Eigen::Vector3d point = (m_transformation * extended).block<3, 1>(0, 0);
 
-    size_t* indices = new size_t[n];
-    double* distances = new double[n];
-    m_searchTree->kSearchMany(transformed, n, 1, indices, distances);
+        Vector3d* neighbor;
+        double distance;
 
-    pairs.clear();
-    pairs.reserve(n);
-    for (size_t i = 0; i < n; i++)
-    {
-        if (distances[i] < m_maxDistanceMatch * m_maxDistanceMatch)
+        m_searchTree->nearestNeighbor(point, neighbor, distance, m_maxDistanceMatch);
+
+        if (neighbor != nullptr)
         {
-            Vector3d t(transformed[i].x, transformed[i].y, transformed[i].z);
-            Vector3d closest = model_pts[indices[i]];
+            #pragma omp critical
+            {
+                centroid_m += point;
+                centroid_d += *neighbor;
 
-            centroid_m += t;
-            centroid_d += closest;
-
-            sum += distances[i];
-
-            pairs.push_back(make_pair(t, closest));
+                pairs.push_back(make_pair(point, *neighbor));
+            }
         }
     }
 
     centroid_m /= pairs.size();
     centroid_d /= pairs.size();
-
-    delete[] transformed;
-    delete[] indices;
-    delete[] distances;
 }
 
 ICPPointAlign::~ICPPointAlign()

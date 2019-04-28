@@ -1,3 +1,4 @@
+
 /**
  * Copyright (c) 2018, University Osnabrück
  * All rights reserved.
@@ -26,55 +27,67 @@
  */
 
 /**
- * ICPPointAlign.hpp
+ * KDTree.hpp
  *
  *  @date Mar 18, 2014
- *  @author Thomas Wiemann
+ *  @author Malte Hillmann
  */
-#ifndef ICPPOINTALIGN_HPP_
-#define ICPPOINTALIGN_HPP_
+#ifndef KDTREE_HPP_
+#define KDTREE_HPP_
 
 #include <lvr2/registration/EigenSVDPointAlign.hpp>
-#include <lvr2/registration/KDTree.hpp>
 #include <lvr2/reconstruction/SearchTreeFlann.hpp>
+
+#include <limits>
 
 namespace lvr2
 {
 
-class ICPPointAlign
+using PointArray = boost::shared_array<Vector3d>;
+
+class KDTree
 {
 public:
-    ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Matrix4d& modelPose, const Matrix4d& dataPose);
+    /**
+     * @brief Creates a new KDTree from the given Point Cloud. Note that this function modifies
+     *        the order of elements in 'points'.
+     * 
+     * @param points        The Point Cloud
+     * @param n             The number of points in 'points'
+     * @param maxLeafSize   The maximum number of points to use for a Leaf in the Tree
+     */
+    static std::shared_ptr<KDTree> create(PointArray points, int n, int maxLeafSize = 10);
 
-    Matrix4d match();
+    /**
+     * @brief Finds the nearest neighbor of 'point' that is within 'maxDistance' (defaults to infinity).
+     *        The resulting neighbor is written into 'neighbor' (or nullptr if none is found).
+     * 
+     * @param point         The Point whose neighbor is searched
+     * @param neighbor      A Pointer that is set to the neighbor or nullptr if none is found
+     * @param distance      The final distance between point and neighbor
+     * @param maxDistance   The maximum distance allowed between neighbors. Setting this value
+     *                      significantly speeds up the search.
+     */
+    void nearestNeighbor(
+        const Vector3d& point,
+        Vector3d*& neighbor,
+        double& distance,
+        double maxDistance = std::numeric_limits<double>::infinity()
+    ) const;
 
-    virtual ~ICPPointAlign();
-
-    void    setMaxMatchDistance(double distance);
-    void    setMaxIterations(int iterations);
-    void    setEpsilon(double epsilon);
-
-    double  getEpsilon();
-    double  getMaxMatchDistance();
-    int     getMaxIterations();
-
-    void getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d);
+    virtual ~KDTree() = default;
 
 protected:
+    virtual void nn_internal(const Vector3d& point, Vector3d*& neighbor, double& maxDist) const = 0;
 
-    void transform();
+    friend class KDNode;
 
-    double          m_epsilon;
-    double          m_maxDistanceMatch;
-    int             m_maxIterations;
-
-    PointBufferPtr  m_modelCloud;
-    PointBufferPtr  m_dataCloud;
-    Matrix4d        m_transformation;
-
-    KDTreePtr m_searchTree;
+	PointArray points;
 };
+
+using KDTreePtr = std::shared_ptr<KDTree>;
 
 } /* namespace lvr2 */
 
-#endif /* ICPPOINTALIGN_HPP_ */
+#endif /* KDTREE_HPP_ */
+
