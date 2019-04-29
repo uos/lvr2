@@ -52,9 +52,10 @@ ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Ma
     m_dataCloud(data), m_transformation(dataPose)
 {
     // Init default values
-    m_epsilon               = 0.00001;
-    m_maxDistanceMatch      = 25;
-    m_maxIterations         = 50;
+    m_maxDistanceMatch  = 25;
+    m_maxIterations     = 50;
+    m_epsilon           = 0.00001;
+    m_quiet             = false;
 
     // Transform model points according to initial pose
     size_t n = model->numPoints();
@@ -106,16 +107,13 @@ Matrix4d ICPPointAlign::match()
         ret = align.alignPoints(pairs, centroid_m, centroid_d, transform);
         alignTime += (double)(clock() - pre_align) / CLOCKS_PER_SEC / 5.0;
 
-        //cout << timestamp << "CORRECTION" << endl;
-        //cout << transform << endl;
-
         // Apply transformation
         m_transformation = transformRegistration(m_transformation, transform);
 
-        //cout << timestamp << "TRANSFORMATION: " << endl;
-        //cout << m_transformation << endl;
-
-        cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << " using " << pairs.size() << " points." << endl;
+        if (!m_quiet)
+        {
+            cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << " using " << pairs.size() << " points." << endl;
+        }
 
         // Check minimum distance
         if ((fabs(ret - prev_ret) < m_epsilon) && (fabs(ret - prev_prev_ret) < m_epsilon))
@@ -166,11 +164,6 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, 
     centroid_d /= pairs.size();
 }
 
-ICPPointAlign::~ICPPointAlign()
-{
-    // TODO Auto-generated destructor stub
-}
-
 void ICPPointAlign::setMaxMatchDistance(double d)
 {
     m_maxDistanceMatch = d;
@@ -185,10 +178,9 @@ void ICPPointAlign::setEpsilon(double e)
 {
     m_epsilon = e;
 }
-
-double ICPPointAlign::getEpsilon()
+void ICPPointAlign::setQuiet(bool quiet)
 {
-    return m_epsilon;
+    m_quiet = quiet;
 }
 
 double ICPPointAlign::getMaxMatchDistance()
@@ -196,10 +188,19 @@ double ICPPointAlign::getMaxMatchDistance()
     return m_maxDistanceMatch;
 }
 
-
 int ICPPointAlign::getMaxIterations()
 {
     return m_maxIterations;
+}
+
+double ICPPointAlign::getEpsilon()
+{
+    return m_epsilon;
+}
+
+bool ICPPointAlign::getQuiet()
+{
+    return m_quiet;
 }
 
 } /* namespace lvr2 */
