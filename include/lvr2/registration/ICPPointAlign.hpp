@@ -48,15 +48,17 @@ public:
 
     Matrix4d match();
 
-    virtual ~ICPPointAlign();
+    virtual ~ICPPointAlign() = default;
 
     void    setMaxMatchDistance(double distance);
     void    setMaxIterations(int iterations);
     void    setEpsilon(double epsilon);
+    void    setQuiet(bool quiet);
 
-    double  getEpsilon();
     double  getMaxMatchDistance();
     int     getMaxIterations();
+    double  getEpsilon();
+    bool    getQuiet();
 
     void getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d);
 
@@ -67,6 +69,8 @@ protected:
     double          m_epsilon;
     double          m_maxDistanceMatch;
     int             m_maxIterations;
+
+    bool            m_quiet;
 
     PointBufferPtr  m_modelCloud;
     PointBufferPtr  m_dataCloud;

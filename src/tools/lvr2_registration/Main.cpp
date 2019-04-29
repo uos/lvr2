@@ -68,10 +68,11 @@ string format_name(string prefix, int index, string suffix, int number_length = 
 int main(int argc, char** argv)
 {
     // =============== parse options ===============
-    int start;
-    int end;
+    int start, end, iterations;
+    double epsilon, distance;
     string format;
     path dir;
+    bool quiet;
 
     try
     {
@@ -82,6 +83,10 @@ int main(int argc, char** argv)
         ("start,s", value<int>(&start)->default_value(-1), "The first scan to process.\n-1 (default): search for first scan")
         ("end,e", value<int>(&end)->default_value(-1), "The last scan to process.\n-1 (default): continue until no more scan found")
         ("format,f", value<string>(&format)->default_value("uos"), "The format to use.\navailable formats are listed <somewhere>")
+        ("iterations,i", value<int>(&iterations)->default_value(50), "Number of iterations for ICP")
+        ("distance,d", value<double>(&distance)->default_value(25), "The maximum distance between two points during ICP")
+        ("epsilon", value<double>(&epsilon)->default_value(0.00001), "The desired epsilon difference between two error values")
+        ("quiet,q", "Hide detailed output and only show results")
         ("help,h", "Print this help")
         ;
 
@@ -119,6 +124,7 @@ int main(int argc, char** argv)
         {
             dir = variables["dir"].as<path>();
         }
+        quiet = variables.count("quiet") > 0;
     }
     catch (const boost::program_options::error& ex)
     {
@@ -223,7 +229,11 @@ int main(int argc, char** argv)
         ScanPtr& prev = scans[i - 1];
         ScanPtr& current = scans[i];
         ICPPointAlign icp(prev->points, current->points, prev->pose, current->pose);
-        // TODO: configure icp
+        icp.setMaxMatchDistance(distance);
+        icp.setMaxIterations(iterations);
+        icp.setEpsilon(epsilon);
+        icp.setQuiet(quiet);
+
         Matrix4d result = icp.match();
         current->pose = result;
     }
