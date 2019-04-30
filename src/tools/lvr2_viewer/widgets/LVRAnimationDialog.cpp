@@ -157,16 +157,29 @@ void LVRAnimationDialog::savePath()
 
 void LVRAnimationDialog::loadPath()
 {
-    QString filename = QFileDialog::getOpenFileName(m_treeWidget, tr("Load Path"), "", tr("VCP files (*.vcp)"));
-    QFile pfile(filename);
+    QFileDialog dialog(m_treeWidget);
+    dialog.setAcceptMode(QFileDialog::AcceptOpen);
+    dialog.setOption(QFileDialog::Option::DontUseNativeDialog, true);
+    dialog.setNameFilter("*.vcp");
 
+    if(!dialog.exec())
+    {
+        return;
+    }
+
+    QStringList files = dialog.selectedFiles();
+    QString filename =  files.front();
+    QFile pfile(filename);
     if (!pfile.open(QFile::ReadOnly | QIODevice::Text))
     {
+        cout << "Error opening file " << filename.toStdString() << endl;
         return;
     }
 
     QTextStream in(&pfile);
     QString line = in.readLine();
+
+
 
     // TODO: surround with try and catch to prevent errors
     // very basic file validity checking
@@ -240,7 +253,7 @@ void LVRAnimationDialog::saveVideo()
 
 	double minT = i->GetMinimumT();
 	double maxT = i->GetMaximumT();
-	int n = frameMultiplier;
+    int n = frameMultiplier * frameCount;
 	double step = (maxT - minT) / (double)n;
 	vtkSmartPointer<vtkCamera> i_cam = vtkSmartPointer<vtkCamera>::New();
 
@@ -280,7 +293,7 @@ void LVRAnimationDialog::saveVideo()
 		  writer->SetInputConnection(windowToImageFilter->GetOutputPort());
 		  writer->Write();
 
-		cout << c << endl;
+        cout << c << " / " << frameCount * frameMultiplier << endl;
 		c++;
 
 

@@ -48,6 +48,11 @@ public:
     ///
     MeshBuffer();
 
+    bool removeVertices(){
+        m_numVertices = 0;
+        return m_channels.removeFloatChannel("vertices");
+    }
+
     ///
     /// \brief addVertices      Adds the vertex array. Three floats per vertex
     /// \param vertices         The vertex array
@@ -105,6 +110,16 @@ public:
     ///
     void setFaceColors(ucharArr colors, unsigned w = 3);
 
+    void setTextures(std::vector<Texture>& textures)
+    {
+        m_textures = std::move(textures);
+    }
+
+    void setMaterials(std::vector<Material>& materials)
+    {
+        m_materials = std::move(materials);
+    }
+
     ///
     /// \brief numVertices      Number of vertices in the mesh
     ///
@@ -141,6 +156,12 @@ public:
     ///                         if no texture coordinates were loaded.
     ///
     floatArr getTextureCoordinates();
+
+    ///
+    /// \brief getFaceNormas    Returns an array containing face normals, i.e., three
+    ///                         float values per face.
+    ///
+    floatArr getFaceNormals();
 
     ///
     /// \brief getFaceIndices   Returns an array with face definitions, i.e., three

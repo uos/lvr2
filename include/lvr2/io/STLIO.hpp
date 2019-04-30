@@ -32,8 +32,8 @@
  *      Author: robot
  */
 
-#ifndef INCLUDE_LVR_IO_STLIO_HPP_
-#define INCLUDE_LVR_IO_STLIO_HPP_
+#ifndef INCLUDE_LVR2_IO_STLIO_HPP_
+#define INCLUDE_LVR2_IO_STLIO_HPP_
 
 #include <lvr2/io/BaseIO.hpp>
 
@@ -65,4 +65,4 @@ public:
 
 } /* namespace lvr2 */
 
-#endif /* INCLUDE_LVR_IO_STLIO_HPP_ */
+#endif /* INCLUDE_LVR2_IO_STLIO_HPP_ */

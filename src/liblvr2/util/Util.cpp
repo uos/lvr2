@@ -40,7 +40,7 @@ int Util::getSpectralChannel(int wavelength, PointBufferPtr p, int fallback)
         return fallback;
     }
 
-    int minWavelength = *p->getIntAttribute("spectral_wavelength_min");
+    int minWavelength = *p->getIntAtomic("spectral_wavelength_min");
 
     int channel = (wavelength - minWavelength) / wavelengthPerChannel(p);
 
@@ -60,7 +60,7 @@ int Util::getSpectralWavelength(int channel, PointBufferPtr p, int fallback)
         return fallback;
     }
     
-    int minWavelength = *p->getIntAttribute("spectral_wavelength_min");
+    int minWavelength = *p->getIntAtomic("spectral_wavelength_min");
 
     if (channel < 0 || channel >= spectral_channels->width())
     {
@@ -78,8 +78,8 @@ float Util::wavelengthPerChannel(PointBufferPtr p)
         return -1.0f;
     }
 
-    int minWavelength = *p->getIntAttribute("spectral_wavelength_min");
-    int maxWavelength = *p->getIntAttribute("spectral_wavelength_max");
+    int minWavelength = *p->getIntAtomic("spectral_wavelength_min");
+    int maxWavelength = *p->getIntAtomic("spectral_wavelength_max");
 
     return (maxWavelength - minWavelength) / static_cast<float>(spectral_channels->width());
 }

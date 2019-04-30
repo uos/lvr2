@@ -140,7 +140,7 @@ void SimpleFinalizer<BaseVecT>::setColorData(const VertexMap<Rgb8Color>& colorDa
 }
 
 template<typename BaseVecT>
-void SimpleFinalizer<BaseVecT>::setNormalData(const VertexMap<Normal<BaseVecT>>& normalData)
+void SimpleFinalizer<BaseVecT>::setNormalData(const VertexMap<Normal<typename BaseVecT::CoordType>>& normalData)
 {
     m_normalData = normalData;
 }
@@ -153,7 +153,7 @@ TextureFinalizer<BaseVecT>::TextureFinalizer(
 {}
 
 template<typename BaseVecT>
-void TextureFinalizer<BaseVecT>::setVertexNormals(const VertexMap<Normal<BaseVecT>>& normals)
+void TextureFinalizer<BaseVecT>::setVertexNormals(const VertexMap<Normal<typename BaseVecT::CoordType>>& normals)
 {
     m_vertexNormals = normals;
 }

@@ -34,10 +34,10 @@
 
 #include <lvr2/io/AsciiIO.hpp>
 #include <lvr2/io/PLYIO.hpp>
-#include <lvr2/io/Hdf5IO.hpp>
 #include <lvr2/io/UosIO.hpp>
 #include <lvr2/io/ObjIO.hpp>
 #include <lvr2/io/LasIO.hpp>
+#include <lvr2/io/HDF5IO.hpp>
 #include <lvr2/io/BoctreeIO.hpp>
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/io/DatIO.hpp>
@@ -48,12 +48,12 @@
 #include <lvr2/io/Progress.hpp>
 
 // PCL related includes
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
 #include <lvr2/io/PCDIO.hpp>
 #endif
 
 // RiVLib
-#ifdef LVR_USE_RIVLIB
+#ifdef LVR2_USE_RIVLIB
 #include <lvr2/io/RxpIO.hpp>
 #endif
 
@@ -62,7 +62,7 @@
 namespace lvr2
 {
 
-CoordinateTransform ModelFactory::m_transform;
+CoordinateTransform<float> ModelFactory::m_transform;
 
 ModelPtr ModelFactory::readModel( std::string filename )
 {
@@ -83,7 +83,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         io = new AsciiIO;
     }
-#ifdef LVR_USE_RIVLIB
+#ifdef LVR2_USE_RIVLIB
     else if(extension == ".rxp")
     {
         io = new RxpIO;
@@ -101,16 +101,16 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         io = new DatIO;
     }
-    else if (extension == ".h5")
+    else if (extension ==".h5")
     {
-        io = new Hdf5IO;
+        io = new HDF5IO;
     }
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
     else if (extension == ".pcd")
     {
         io = new PCDIO;
     }
-#endif /* LVR_USE_PCL */
+#endif /* LVR2_USE_PCL */
     else if (extension == "" && ScanprojectIO().parse_project(selectedFile.string(), true))
     {
         io = new ScanprojectIO;
@@ -177,7 +177,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         m = io->read( filename );
 
-        if(m_transform.convert)
+        if( m_transform.transforms())
         {
             // Convert coordinates in model
             PointBufferPtr points = m->m_pointCloud;
@@ -255,9 +255,9 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     }
     else if (extension == ".h5")
     {
-        io = new Hdf5IO;
+        io = new HDF5IO;
     }
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
     else if (extension == ".pcd")
     {
         io = new PCDIO;

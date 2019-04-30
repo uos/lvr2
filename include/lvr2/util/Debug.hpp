@@ -60,7 +60,7 @@ inline std::ostream& dout()
     // unopened file, as no one ever checks the error state or sth. Source:
     //
     // https://stackoverflow.com/a/8244052/2408867
-    static bool isDebug = getenv("LVR_MESH_DEBUG") != nullptr;
+    static bool isDebug = getenv("LVR2_MESH_DEBUG") != nullptr;
     static std::ofstream unopenedFile;
 
     return isDebug ? cout : unopenedFile;

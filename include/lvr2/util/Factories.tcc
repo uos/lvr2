@@ -46,7 +46,7 @@ SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr buffer)
     // problem in our case).
     std::transform(name.begin(), name.end(), name.begin(), ::tolower);
 
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
     if(name == "pcl")
     {
         // TODO2
@@ -54,7 +54,7 @@ SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr buffer)
     }
 #endif
 
-#ifdef LVR_USE_STANN
+#ifdef LVR2_USE_STANN
     if(name == "stann")
     {
         // TODO2
@@ -62,7 +62,7 @@ SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr buffer)
     }
 #endif
 
-#ifdef LVR_USE_NABO
+#ifdef LVR2_USE_NABO
     if(name == "nabo")
     {
         // TODO2

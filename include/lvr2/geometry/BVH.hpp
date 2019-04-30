@@ -37,9 +37,8 @@
 #include <vector>
 #include <memory>
 
-#include <lvr2/geometry/BoundingBox.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/geometry/Vector.hpp>
+#include "lvr2/geometry/BoundingBox.hpp"
+#include "lvr2/geometry/Normal.hpp"
 
 using std::unique_ptr;
 using std::vector;
@@ -70,6 +69,19 @@ public:
      * @param faces Faces of mesh to create tree for
      */
     BVHTree(const vector<float>& vertices, const vector<uint32_t>& faces);
+
+    /**
+     * @brief 
+     */
+    BVHTree(
+        const floatArr vertices, size_t n_vertices,
+        const indexArray faces, size_t n_faces
+    );
+
+    /**
+     * @brief
+     */
+    BVHTree(const MeshBufferPtr mesh);
 
     /**
      * @return Index list (for getTrianglesIntersectionData) of triangles in the leaf nodes
@@ -122,12 +134,12 @@ private:
         uint32_t idx2;
         uint32_t idx3;
 
-        Vector<BaseVecT> center;
-        Normal<BaseVecT> normal;
+        BaseVecT center;
+        Normal<float> normal;
 
         // intersection pre-computed cache
         float d, d1, d2, d3;
-        Normal<BaseVecT> e1, e2, e3;
+        Normal<float> e1, e2, e3;
 
         // todo: not used?
         BoundingBox<BaseVecT> bb;
@@ -188,6 +200,19 @@ private:
      * @return Root node of the tree
      */
     BVHNodePtr buildTree(const vector<float>& vertices, const vector<uint32_t>& faces);
+
+    /**
+     * @brief Builds the tree without it's cache friendly representation. Utilizes the buildTreeRecursive method.
+     *
+     * @param vertices Vertices of mesh to create tree for
+     * @param faces Faces of mesh to create tree for
+     *
+     * @return Root node of the tree
+     */
+    BVHNodePtr buildTree(
+        const floatArr vertices, size_t n_vertices,
+        const indexArray faces, size_t n_faces
+    );
 
     /**
      * @brief Recursive method to build the tree.

@@ -85,18 +85,12 @@ template<typename BaseVecT, typename CostF>
 size_t iterativeEdgeCollapse(
     BaseMesh<BaseVecT>& mesh,
     const size_t count,
-    FaceMap<Normal<BaseVecT>>& faceNormals,
+    FaceMap<Normal<typename BaseVecT::CoordType>>& faceNormals,
     CostF collapseCost
 )
 {
-    // Output
-    string msg = timestamp.getElapsedTime()
-        + "Reducing mesh by collapsing up to "
-        + std::to_string(count)
-        + " edges ";
-    ProgressBar progress(count + 1, msg);
-    ++progress;
 
+    std::cout << timestamp << "Reduce mesh by collapsing " << count << " edges" << std::endl;
 
     Meap<VertexHandle, float> queue(mesh.nextVertexIndex());
     DenseVertexMap<VertexHandle> bestEdge;
@@ -148,13 +142,26 @@ size_t iterativeEdgeCollapse(
         }
     };
 
+    // Output
+    string msg_init = timestamp.getElapsedTime()
+        + "Computing all costs for all edges ";
+    ProgressBar progress_init(mesh.numVertices() + 1, msg_init);
+    ++progress_init;
 
     // Calculate initial costs of all edges
     for (const auto fromH: mesh.vertices())
     {
         updateVertex(fromH);
+        ++progress_init;
     }
 
+    // Output
+    string msg = timestamp.getElapsedTime()
+        + "Collapsing up to "
+        + std::to_string(count)
+        + "of the edges ";
+    ProgressBar progress(count + 1, msg);
+    ++progress;
 
     size_t collapsedEdgeCount = 0;
 
@@ -208,7 +215,7 @@ size_t iterativeEdgeCollapse(
             auto maybeNormal = getFaceNormal(mesh.getVertexPositionsOfFace(fH));
             auto normal = maybeNormal
                 ? *maybeNormal
-                : Normal<BaseVecT>(0, 0, 1);
+                : Normal<typename BaseVecT::CoordType>(0, 0, 1);
 
             faceNormals[fH] = normal;
         }
@@ -234,7 +241,7 @@ template<typename BaseVecT>
 size_t simpleMeshReduction(
     BaseMesh<BaseVecT>& mesh,
     const size_t count,
-    FaceMap<Normal<BaseVecT>>& faceNormals
+    FaceMap<Normal<typename BaseVecT::CoordType>>& faceNormals
 )
 {
     vector<EdgeHandle> edgesAroundFrom;
@@ -243,7 +250,7 @@ size_t simpleMeshReduction(
     return iterativeEdgeCollapse(mesh, count, faceNormals, [&](
         VertexHandle fromH,
         VertexHandle toH,
-        const FaceMap<Normal<BaseVecT>>& normals
+        const FaceMap<Normal<typename BaseVecT::CoordType>>& normals
     ) -> boost::optional<float>
     {
         // The minimal value of the dot product between two normals that is allowed.
@@ -290,13 +297,15 @@ size_t simpleMeshReduction(
                 continue;
             }
 
-            // We calculate the normal that the face would have if the edge in
-            // question would be collapsed.
-            auto newNormal = getFaceNormal<BaseVecT>({
+            std::array<BaseVecT, 3> f_verts = {
                 mesh.getVertexPosition(toH),
                 mesh.getVertexPosition(v1H),
                 mesh.getVertexPosition(v2H)
-            });
+            };
+
+            // We calculate the normal that the face would have if the edge in
+            // question would be collapsed.
+            boost::optional<Normal<typename BaseVecT::CoordType>> newNormal = getFaceNormal(f_verts);
 
             // If the face will have 0 area, we don't want to collapse this edge
             if (!newNormal)

@@ -45,7 +45,7 @@ template<typename BaseVecT>
 class BilinearFastBox : public FastBox<BaseVecT>
 {
 public:
-    BilinearFastBox(Vector<BaseVecT> center);
+    BilinearFastBox(BaseVecT center);
     virtual ~BilinearFastBox();
 
     /**

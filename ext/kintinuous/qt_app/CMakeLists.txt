@@ -71,7 +71,7 @@ endif(QT4_FOUND)
 
 qt_wrap_cpp(kinfu_viewer KINFU_VIEWER_MOC_SRC ${KINFU_VIEWER_MOCS})
 qt_wrap_ui(kinfu_viewer KINFU_VIEWER_UI_HDRS KINFU_VIEWER_UI_SRC ${KINFU_VIEWER_UIS})
-#qt4_add_resources(LVR_VIEWER_RES ${LVR_VIEWER_RESOURCES})
+#qt4_add_resources(LVR2_VIEWER_RES ${LVR2_VIEWER_RESOURCES})
 
 add_definitions(${QT_DEFINITIONS})
 

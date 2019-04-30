@@ -42,7 +42,7 @@
 
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Matrix4.hpp>
-#include <lvr2/geometry/Vector.hpp>
+
 
 namespace lvr2
 {
@@ -179,6 +179,18 @@ public:
         return ret;
     }
 
+    template <typename ValueType>
+    static BaseVector<ValueType> slam6d_to_riegl_point(const BaseVector<ValueType> &in)
+    {
+        return {
+            in.z   / (ValueType) 100.0,
+            - in.x / (ValueType) 100.0,
+            in.y   / (ValueType) 100.0
+        };
+    }
+
+
+
     /**
      * @brief Converts an angle from degree to radian.
      *
@@ -219,7 +231,7 @@ public:
          *
          * @return Returns true if lhs is smaller and elsewise false
          */
-        bool operator() (const Vector<VecUChar>& lhs, const Vector<VecUChar>& rhs) const
+        bool operator() (const VecUChar& lhs, const VecUChar& rhs) const
         {
             return (lhs.x < rhs.x) ||
                    (lhs.x == rhs.x && lhs.y < rhs.y) ||

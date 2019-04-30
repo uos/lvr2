@@ -31,7 +31,6 @@ void parseSLAMDirectory(std::string dir, vector<ScanData>& scans)
                 {
                     scan_data_files.push_back(p);
                 }
-
             }
         }
 
@@ -58,7 +57,7 @@ void parseSLAMDirectory(std::string dir, vector<ScanData>& scans)
 
                 for (size_t i = 0; i < numPoints; i++)
                 {
-                    Vector<BaseVector<float> > pt(pts[i*3 + 0], pts[i*3 + 1], pts[i*3 + 2]);
+                    BaseVector<float> pt(pts[i*3 + 0], pts[i*3 + 1], pts[i*3 + 2]);
                     scan_data.m_boundingBox.expand(pt);
                 }
 
@@ -75,7 +74,7 @@ void parseSLAMDirectory(std::string dir, vector<ScanData>& scans)
                     std::cout << timestamp << "Did not find a frame file for " << filename << std::endl;
                 }
 
-                if(boost::filesystem::exists(frame_path))
+                if(boost::filesystem::exists(pose_path))
                 {
                     std::cout << timestamp << "Loading pose estimation from " << pose_path << std::endl;
                     pose_estimate = getTransformationFromPose(pose_path);
@@ -85,6 +84,7 @@ void parseSLAMDirectory(std::string dir, vector<ScanData>& scans)
                     std::cout << timestamp << "Did not find a pose file for " << filename << std::endl;
                 }
 
+                // transform points?
                 scan_data.m_registration = registration;
                 scan_data.m_poseEstimation = pose_estimate;
 

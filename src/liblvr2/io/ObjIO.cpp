@@ -364,13 +364,13 @@ void ObjIO::save( string filename )
     std::string textureImageExtension = ".ppm";
 
     // should we write textures to disk?
-    intOptional saveTexturesOpt = m_model->m_mesh->getIntAttribute("mesh_save_textures");
+    intOptional saveTexturesOpt = m_model->m_mesh->getIntAtomic("mesh_save_textures");
     if (saveTexturesOpt && (*saveTexturesOpt) != 0)
     {
         saveTextures = true;
     }
 
-    intOptional textureImageExtensionOpt = m_model->m_mesh->getIntAttribute("mesh_texture_image_extension");
+    intOptional textureImageExtensionOpt = m_model->m_mesh->getIntAtomic("mesh_texture_image_extension");
 
     // 0 = .ppm (default); 1 = .jpg; 2 = .png
     if (textureImageExtensionOpt)

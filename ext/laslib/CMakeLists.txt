@@ -43,13 +43,13 @@ set(LASLIB_SOURCES
 	src/arithmeticmodel.cpp
 	src/fopen_compressed.cpp)
 
-add_library(lvrlas_static STATIC ${LASLIB_SOURCES})
+add_library(lvr2las_static STATIC ${LASLIB_SOURCES})
 
-add_library(lvrlas SHARED ${LASLIB_SOURCES})
+add_library(lvr2las SHARED ${LASLIB_SOURCES})
 
 install(DIRECTORY inc/ DESTINATION ${LASLIB_INSTALL_INCLUDE_DIR})
 
-install(TARGETS lvrlas_static lvrlas
-  EXPORT lvrTargets
+install(TARGETS lvr2las_static lvr2las
+  EXPORT lvr2Targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

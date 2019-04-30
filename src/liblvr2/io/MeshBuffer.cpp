@@ -168,6 +168,13 @@ floatArr MeshBuffer::getVertexNormals()
     return m_channels.getFloatArray(n, w, "vertex_normals");
 }
 
+floatArr MeshBuffer::getFaceNormals()
+{
+    size_t n;
+    unsigned w;
+    return m_channels.getFloatArray(n, w, "face_normals");
+}
+
 floatArr MeshBuffer::getTextureCoordinates()
 {
     size_t n;

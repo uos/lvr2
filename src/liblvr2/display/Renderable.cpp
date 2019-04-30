@@ -56,9 +56,9 @@ Renderable::Renderable()
 	m_active    = true;
 	m_selected  = false;
 
-	m_xAxis     = Vector<Vec>(1.0f, 0.0f, 0.0f);
-	m_yAxis     = Vector<Vec>(0.0f, 1.0f, 0.0f);
-	m_z_Axis    = Vector<Vec>(0.0f, 0.0f, 1.0f);
+	m_xAxis     = Vec(1.0f, 0.0f, 0.0f);
+	m_yAxis     = Vec(0.0f, 1.0f, 0.0f);
+	m_z_Axis    = Vec(0.0f, 0.0f, 1.0f);
 
 	m_boundingBox = 0;
 
@@ -143,9 +143,9 @@ Renderable::Renderable(string n)
     m_lineWidth         = 1.0;
     m_pointSize         = 1.0;
 
-	m_xAxis     = Vector<Vec>(1.0f, 0.0f, 0.0f);
-	m_yAxis     = Vector<Vec>(0.0f, 1.0f, 0.0f);
-	m_z_Axis    = Vector<Vec>(0.0f, 0.0f, 1.0f);
+	m_xAxis     = Vec(1.0f, 0.0f, 0.0f);
+	m_yAxis     = Vec(0.0f, 1.0f, 0.0f);
+	m_z_Axis    = Vec(0.0f, 0.0f, 1.0f);
 
 	m_scaleFactor           = 1.0f;
 
@@ -217,7 +217,7 @@ void Renderable::rotX(bool invert)
 	invert ? speed = m_rotationSpeed : speed = -m_rotationSpeed;
 
 	Quaternion<Vec> q;
-	q.fromAxis(Vector<Vec>(1.0, 0.0, 0.0), speed);
+	q.fromAxis(Vec(1.0, 0.0, 0.0), speed);
 
 	m_xAxis = q * m_xAxis;
 	m_yAxis = q * m_yAxis;
@@ -233,7 +233,7 @@ void Renderable::rotY(bool invert)
 	invert ? speed = m_rotationSpeed : speed = -m_rotationSpeed;
 
 	Quaternion<Vec> q;
-	q.fromAxis(Vector<Vec>(0.0, 1.0, 0.0), speed);
+	q.fromAxis(Vec(0.0, 1.0, 0.0), speed);
 
 	m_xAxis = q * m_xAxis;
 	m_yAxis = q * m_yAxis;
@@ -249,7 +249,7 @@ void Renderable::rotZ(bool invert)
 	invert ? speed = m_rotationSpeed : speed = -m_rotationSpeed;
 
 	Quaternion<Vec> q;
-	q.fromAxis(Vector<Vec>(0.0, 0.0, 1.0), speed);
+	q.fromAxis(Vec(0.0, 0.0, 1.0), speed);
 
 	m_xAxis = q * m_xAxis;
 	m_yAxis = q * m_yAxis;
@@ -262,7 +262,7 @@ void Renderable::rotZ(bool invert)
 void Renderable::accel(bool invert)
 {
 
-	Normal<Vec> direction(m_z_Axis);
+	Normal<typename Vec::CoordType> direction(m_z_Axis);
 	if(invert) direction = direction * -1;
 	m_position = m_position + direction * m_translationSpeed;
 
@@ -271,7 +271,7 @@ void Renderable::accel(bool invert)
 
 void Renderable::lift(bool invert)
 {
-	Normal<Vec> direction(m_yAxis);
+	Normal<typename Vec::CoordType> direction(m_yAxis);
 	if(invert) direction = direction * -1;
 	m_position = m_position + direction * m_translationSpeed;
 
@@ -281,11 +281,10 @@ void Renderable::lift(bool invert)
 void Renderable::strafe(bool invert)
 {
 
-	Normal<Vec> direction(m_xAxis);
+	Normal<typename Vec::CoordType> direction(m_xAxis);
 	if(invert) direction = direction * -1;
 	m_position = m_position + direction * m_translationSpeed;
-	cout << m_position;
-
+	
 	computeMatrix();
 }
 
@@ -361,9 +360,9 @@ void Renderable::setTransformationMatrix(Matrix4<Vec> m)
 {
 
 	m_transformation = m;
-	m_xAxis = Normal<Vec>(m[0 ], m[1 ], m[2 ]);
-	m_yAxis = Normal<Vec>(m[4 ], m[5 ], m[6 ]);
-	m_z_Axis = Normal<Vec>(m[8 ], m[9 ], m[10]);
+	m_xAxis = Normal<typename Vec::CoordType>(m[0 ], m[1 ], m[2 ]);
+	m_yAxis = Normal<typename Vec::CoordType>(m[4 ], m[5 ], m[6 ]);
+	m_z_Axis = Normal<typename Vec::CoordType>(m[8 ], m[9 ], m[10]);
 
 	m_position.x = m[12];
 	m_position.y = m[13];

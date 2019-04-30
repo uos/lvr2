@@ -43,14 +43,12 @@
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/Normal.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/geometry/Vector.hpp>
+#include <lvr2/geometry/BoundingRectangle.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/texture/ClusterTexCoordMapping.hpp>
 #include <lvr2/texture/Texture.hpp>
-#include <lvr2/util/ClusterBiMap.hpp>
 #include <lvr2/texture/Material.hpp>
-#include <lvr2/geometry/BoundingRectangle.hpp>
+#include <lvr2/util/ClusterBiMap.hpp>
 
 #include <opencv2/features2d.hpp>
 
@@ -115,7 +113,7 @@ public:
      * @param[out] descriptors Matrix of descriptors for the keypoint
      */
     void findKeyPointsInTexture(const TextureHandle texH,
-            const BoundingRectangle<BaseVecT>& boundingRect,
+            const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect,
             const cv::Ptr<cv::Feature2D>& detector,
             std::vector<cv::KeyPoint>&
             keypoints, cv::Mat& descriptors);
@@ -129,7 +127,7 @@ public:
      * @return Vector of 3D coordinates of all keypoints
      */
     std::vector<BaseVecT> keypoints23d(const std::vector<cv::KeyPoint>&
-        keypoints, const BoundingRectangle<BaseVecT>& boundingRect, const TextureHandle& h);
+        keypoints, const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect, const TextureHandle& h);
 
     /**
      * @brief Generates a texture for a given bounding rectangle
@@ -147,7 +145,7 @@ public:
     virtual TextureHandle generateTexture(
         int index,
         const PointsetSurface<BaseVecT>& surface,
-        const BoundingRectangle<BaseVecT>& boundingRect
+        const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect
     );
 
     /**
@@ -161,7 +159,7 @@ public:
      */
     TexCoords calculateTexCoords(
         TextureHandle texH,
-        const BoundingRectangle<BaseVecT>& boundingRect,
+        const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect,
         BaseVecT v
     );
 
@@ -176,7 +174,7 @@ public:
      */
     BaseVecT calculateTexCoordsInv(
         TextureHandle texH,
-        const BoundingRectangle<BaseVecT>& boundingRect,
+        const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect,
         const TexCoords& coords
     );
 

@@ -61,7 +61,7 @@ struct TexCoords
     /**
      * @brief Constructor
      */
-    TexCoords(float u, float v) : u(u), v(v) {}
+    TexCoords(float u = 0, float v = 0) : u(u), v(v) {}
 
 };
 
@@ -122,6 +122,7 @@ public:
                 return m_mapping[i]->second;
             }
         }
+        return TexCoords();
     }
 
 

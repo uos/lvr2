@@ -37,10 +37,6 @@
 
 #include <cmath>
 
-#include "Vector.hpp"
-
-using std::endl;
-
 namespace lvr2
 {
 
@@ -52,6 +48,7 @@ class BoundingBox
 {
 public:
 
+    using VectorType = BaseVecT;
     /**
      * @brief Default constructor
      */
@@ -64,7 +61,8 @@ public:
      * @param v2        Upper right corner of the BoundingBox
      * @return
      */
-    BoundingBox(Vector<BaseVecT> v1, Vector<BaseVecT> v2);
+    template<typename T>
+    BoundingBox(T v1, T v2);
 
     /**
      * @brief Expands the bounding box if the given Vector \ref{v} is
@@ -72,7 +70,8 @@ public:
      *
      * @param v         A 3d Vector
      */
-    inline void expand(Vector<BaseVecT> v);
+    template<typename T>
+    inline void expand(T v);
 
     /**
      * @brief  Calculates the surrounding bounding box of the current
@@ -98,7 +97,7 @@ public:
     /**
      * @brief Returns the center Vector of the bounding box.
      */
-    Vector<BaseVecT> getCentroid() const;
+    BaseVecT getCentroid() const;
 
     /**
      * @brief Returns the longest side of the bounding box
@@ -123,22 +122,22 @@ public:
     /**
      * @brief Returns the upper right coordinates
      */
-    Vector<BaseVecT> getMax() const;
+    BaseVecT getMax() const;
 
     /**
      * @brief Returns the lower left coordinates
      */
-    Vector<BaseVecT> getMin() const;
+    BaseVecT getMin() const;
 
 private:
     /// The lower right Vector of the bounding box
-    Vector<BaseVecT> m_min;
+    BaseVecT m_min;
 
     /// The upper right Vector of the bounding box
-    Vector<BaseVecT> m_max;
+    BaseVecT m_max;
 
     /// The center Vector of the bounding box
-    Vector<BaseVecT> m_centroid;
+    BaseVecT m_centroid;
 };
 
 template<typename BaseVecT>

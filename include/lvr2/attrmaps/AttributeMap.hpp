@@ -38,6 +38,7 @@
 
 using boost::optional;
 
+#include <memory>
 #include <lvr2/util/BaseHandle.hpp>
 
 namespace lvr2
@@ -82,10 +83,10 @@ class AttributeMap
 
 public:
     /// The type of the handle used as key in this map
-    using HandleType = HandleT;
+    typedef HandleT HandleType;
 
     /// The type of the value stored in this map
-    using ValueType = ValueT;
+    typedef ValueT ValueType;
 
     /**
      * @brief Returns true iff the map contains a value associated with the
@@ -202,6 +203,8 @@ public:
     /// Returns the current handle.
     virtual HandleT operator*() const = 0;
     virtual std::unique_ptr<AttributeMapHandleIterator> clone() const = 0;
+
+    virtual ~AttributeMapHandleIterator() = default;
 };
 
 /**
@@ -228,6 +231,8 @@ public:
     bool operator==(const AttributeMapHandleIteratorPtr& other) const;
     bool operator!=(const AttributeMapHandleIteratorPtr& other) const;
     HandleT operator*() const;
+
+    virtual ~AttributeMapHandleIteratorPtr() = default;
 
 private:
     std::unique_ptr<AttributeMapHandleIterator<HandleT>> m_iter;

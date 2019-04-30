@@ -69,8 +69,8 @@ void LVRPickItem::setStart(double* start)
     // Create new arrow if necessary
     if(m_start && m_end)
     {
-        Vector<Vec> start(m_start[0], m_start[1], m_start[2]);
-        Vector<Vec> end(m_end[0], m_end[1], m_end[2]);
+        Vec start(m_start[0], m_start[1], m_start[2]);
+        Vec end(m_end[0], m_end[1], m_end[2]);
         m_arrow = new LVRVtkArrow(start, end);
     }
 }
@@ -99,8 +99,8 @@ void LVRPickItem::setEnd(double* end)
     // Create new arrow if necessary
     if(m_start && m_end)
     {
-        Vector<Vec> start(m_start[0], m_start[1], m_start[2]);
-        Vector<Vec> end(m_end[0], m_end[1], m_end[2]);
+        Vec start(m_start[0], m_start[1], m_start[2]);
+        Vec end(m_end[0], m_end[1], m_end[2]);
         m_arrow = new LVRVtkArrow(start, end);
     }
 }

@@ -147,7 +147,6 @@
 
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/attrmaps/StableVector.hpp>
 #include <lvr2/attrmaps/VectorMap.hpp>
@@ -593,8 +592,8 @@ int main(int argc, char** argv)
     {
         // Set optioins to save them to disk
         //materializer.saveTextures();
-        buffer->addIntAttribute(1, "mesh_save_textures");
-        buffer->addIntAttribute(1, "mesh_texture_image_extension");
+        buffer->addIntAtomic(1, "mesh_save_textures");
+        buffer->addIntAtomic(1, "mesh_texture_image_extension");
     }
 
     // =======================================================================
@@ -610,10 +609,11 @@ int main(int argc, char** argv)
         cout << "REPAIR SAVING" << endl;
     }
 
-    cout << timestamp << "Saving mesh." << endl;
-    ModelFactory::saveModel(m, "triangle_mesh.ply");
-    ModelFactory::saveModel(m, "triangle_mesh.obj");
-    //ModelFactory::saveModel(m, "triangle_mesh.h5");
+    for(const std::string& output_filename : options.getOutputFileNames())
+    {
+        cout << timestamp << "Saving mesh to "<< output_filename << "." << endl;
+        ModelFactory::saveModel(m, output_filename);
+    }
 
     if (matResult.m_keypoints)
     {

@@ -1,0 +1,96 @@
+# -----------------------------------------------------------------
+# lvr's cmake configuration
+#
+# provided options:
+# - LVR2_USE_STATIC_LIBS(=OFF) to link the static libraries of lvr
+#
+# provided interface variables:
+# - LVR2_INCLUDE_DIRS
+# - LVR2_DEFINITIONS
+# - LVR2_LIBRARIES
+#
+# Do not forget to add_defintions(${LVR2_DEFINITIONS}) as they
+# describe the build configuration of liblvr.
+#
+# -----------------------------------------------------------------
+@PACKAGE_INIT@
+include("${CMAKE_CURRENT_LIST_DIR}/lvr2Targets.cmake")
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/Modules")
+
+cmake_policy(PUSH)
+cmake_policy(SET CMP0012 NEW)
+
+set(LVR2_INCLUDE_DIRS @LVR2_INSTALL_INCLUDE_DIRS@)
+set(LVR2_DEFINITIONS @LVR2_DEFINITIONS@)
+
+option(LVR2_USE_STATIC_LIBS OFF)
+if(LVR2_USE_STATIC_LIBS)
+  set(LVR2_LIBRARIES lvr2_static)
+else()
+  set(LVR2_LIBRARIES lvr2)
+endif()
+
+find_package(OpenCV REQUIRED)
+
+find_package(Eigen3 REQUIRED)
+list(APPEND LVR2_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+
+find_package(VTK REQUIRED)
+list(APPEND LVR2_INCLUDE_DIRS ${VTK_INCLUDE_DIRS})
+list(APPEND LVR2_DEFINITIONS ${VTK_DEFINTIONS})
+
+# nabo
+if(@NABO_FOUND@)
+  find_package(Nabo REQUIRED)
+  list(APPEND LVR2_INCLUDE_DIRS ${NABO_INCLUDE_DIRS})
+endif()
+
+# pcl
+if(@PCL_FOUND@)
+  find_package(PCL REQUIRED)
+  list(APPEND LVR2_INCLUDE_DIRS ${PCL_INCLUDE_DIRS})
+  list(APPEND LVR2_DEFINITIONS ${PCL_DEFINITIONS})
+endif()
+
+# cgal
+if(@CGAL_FOUND@)
+  find_package(CGAL REQUIRED)
+  list(APPEND LVR2_INCLUDE_DIRS ${CGAL_INCLUDE_DIRS})
+endif()
+
+find_package(Boost REQUIRED)
+list(APPEND LVR2_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+list(APPEND LVR2_DEFINITIONS ${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
+
+find_package(OpenGL REQUIRED)
+list(APPEND LVR2_INCLUDE_DIRS ${OPENGL_INCLUDE_DIR})
+
+find_package(GLUT REQUIRED)
+list(APPEND LVR2_INCLUDE_DIRS ${GLUT_INCLUDE_DIR})
+
+find_package(LZ4 REQUIRED)
+list(APPEND LVR2_INCLUDE_DIRS ${LZ4_INCLUDE_DIR})
+list(APPEND LVR2_LIBRARIES ${LZ4_LIBRARY})
+
+# libfreenect
+if(@LIBFREENECT_FOUND@)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(LIBFREENECT REQUIRED libfreenect)
+  list(APPEND LVR2_INCLUDE_DIRS ${LIBFREENECT_INCLUDE_DIRS})
+endif()
+
+# stann
+if(@STANN_FOUND@)
+  set(STANN_DIR @STANN_DIR@)
+  find_package(STANN REQUIRED)
+  list(APPEND LVR2_2INCLUDE_DIRS ${STANN_INCLUDE_DIR})
+endif()
+
+# HDF5
+find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+list(APPEND LVR2_INCLUDE_DIRS ${HDF5_INCLUDE_DIRS})
+
+cmake_policy(POP)
+
+set(LVR2_FOUND TRUE)

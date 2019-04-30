@@ -35,9 +35,12 @@
 #ifndef LVR2_GEOMETRY_BASEVECTOR_H_
 #define LVR2_GEOMETRY_BASEVECTOR_H_
 
+#include <iostream>
 
 namespace lvr2
 {
+
+template <typename> struct Normal;
 
 /**
  * @brief A generic, weakly-typed vector.
@@ -74,6 +77,9 @@ public:
     {
     }
 
+    BaseVector(const BaseVector& o) : x(o.x), y(o.y), z(o.z)
+    {
+    }
     // ========================================================================
     // === Named operations
     // ========================================================================
@@ -109,12 +115,34 @@ public:
      *           the given vector. Returns a new BaseVector instance.
      */
     BaseVector<CoordT> cross(const BaseVector &other) const;
+    
+    /**
+     * @brief    Calculates the rotated vector around an normal vector n with the rotation angle alpha
+     *
+     */
+    BaseVector<CoordT> rotated(const BaseVector &n, const double &alpha) const;
 
     /**
      * @brief    Calculates the dot product between this and
      *           the given vector.
      */
     CoordT dot(const BaseVector &other) const;
+
+   
+    void normalize()
+    {
+        // Check for invalid vector. This check can be disabled in release mode,
+        // which will probably lead to +inf and -inf values. In the documentation
+        // for this function we require the vector to not be the null-vector.
+        // assert(!(this->x == 0 && this->y == 0 && this->z == 0));
+        if(!(this->x == 0 && this->y == 0 && this->z == 0))
+        {
+            auto len = this->length();
+            this->x /= len;
+            this->y /= len;
+            this->z /= len;
+        }
+    }
 
 
     // ========================================================================
@@ -141,6 +169,36 @@ public:
     /// Element-wise subtraction.
     BaseVector<CoordT>& operator-=(const BaseVector<CoordT> &other);
 
+    CoordType distanceFrom(const BaseVector<CoordT> &other) const;
+    CoordType squaredDistanceFrom(const BaseVector<CoordType> &other) const;
+
+      /**
+     * @brief Returns the centroid of all points in the given collection.
+     *
+     * The collection need to work with a range-based for-loop and its elements
+     * need to be `Point<BaseVecT>`. It has to contain at least one element.
+     */
+    template<typename CollectionT>
+    static BaseVector<CoordT> centroid(const CollectionT& points);
+
+
+    /**
+     * @brief Returns the average of all vectors in the given collection.
+     *
+     * The collection need to work with a range-based for-loop and its elements
+     * need to be `Vector<BaseVecT>`. It has to contain at least one element.
+     */
+    template<typename CollectionT>
+    static BaseVector<CoordT> average(const CollectionT& vecs);
+
+        /**
+     * @brief Returns a normalized version of this vector.
+     *
+     * Note that `this` must not be the null vector, or else the behavior is
+     * undefined.
+     */
+    Normal<CoordT> normalized() const;
+
     bool operator==(const BaseVector &other) const;
     bool operator!=(const BaseVector &other) const;
 
@@ -156,6 +214,13 @@ public:
      */
     CoordT& operator[](const unsigned& index);
 };
+
+template<typename T>
+std::ostream& operator<<( std::ostream& os, const BaseVector<T>& v)
+{
+    os << "Vec: [" << v.x << " " << v.y << " " << v.z << "]" << std::endl;
+    return os;
+}
 
 } // namespace lvr
 

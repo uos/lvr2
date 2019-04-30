@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     // Parse command line arguments
     slam2hdf5::Options options(argc, argv);
 
-    vector<ScanData> scans;
+    std::vector<ScanData> scans;
     parseSLAMDirectory(options.inputDir(), scans);
 
     HDF5IO hdf5("test.h5", true);

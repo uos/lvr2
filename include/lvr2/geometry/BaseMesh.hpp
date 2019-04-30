@@ -41,13 +41,9 @@
 #include <type_traits>
 #include <boost/optional.hpp>
 
-using std::vector;
-using std::array;
 using boost::optional;
 
 #include "Handles.hpp"
-
-#include <lvr2/geometry/Vector.hpp>
 
 namespace lvr2
 {
@@ -156,7 +152,7 @@ public:
      *
      * @return A handle to access the inserted vertex later.
      */
-    virtual VertexHandle addVertex(Vector<BaseVecT> pos) = 0;
+    virtual VertexHandle addVertex(BaseVecT pos) = 0;
 
     /**
      * @brief Creates a face connecting the three given vertices.
@@ -276,26 +272,26 @@ public:
     /**
      * @brief Get the position of the given vertex.
      */
-    virtual Vector<BaseVecT> getVertexPosition(VertexHandle handle) const = 0;
+    virtual BaseVecT getVertexPosition(VertexHandle handle) const = 0;
 
     /**
      * @brief Get a ref to the position of the given vertex.
      */
-    virtual Vector<BaseVecT>& getVertexPosition(VertexHandle handle) = 0;
+    virtual BaseVecT& getVertexPosition(VertexHandle handle) = 0;
 
     /**
      * @brief Get the three vertices surrounding the given face.
      *
      * @return The vertex-handles in counter-clockwise order.
      */
-    virtual array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const = 0;
+    virtual std::array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const = 0;
 
     /**
      * @brief Get the three edges surrounding the given face.
      *
      * @return The edge-handles in counter-clockwise order.
      */
-    virtual array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const = 0;
+    virtual std::array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const = 0;
 
     /**
      * @brief Get face handles of the neighbours of the requested face.
@@ -314,21 +310,21 @@ public:
      *                 There are at most three neighbours of a face, so this
      *                 method will push 0, 1, 2 or 3 handles to `facesOut`.
      */
-    virtual void getNeighboursOfFace(FaceHandle handle, vector<FaceHandle>& facesOut) const = 0;
+    virtual void getNeighboursOfFace(FaceHandle handle, std::vector<FaceHandle>& facesOut) const = 0;
 
     /**
      * @brief Get the two vertices of an edge.
      *
      * The order of the vertices is not specified
      */
-    virtual array<VertexHandle, 2> getVerticesOfEdge(EdgeHandle edgeH) const = 0;
+    virtual std::array<VertexHandle, 2> getVerticesOfEdge(EdgeHandle edgeH) const = 0;
 
     /**
      * @brief Get the two faces of an edge.
      *
      * The order of the faces is not specified
      */
-    virtual array<OptionalFaceHandle, 2> getFacesOfEdge(EdgeHandle edgeH) const = 0;
+    virtual std::array<OptionalFaceHandle, 2> getFacesOfEdge(EdgeHandle edgeH) const = 0;
 
     /**
      * @brief Get a list of faces the given vertex belongs to.
@@ -345,7 +341,7 @@ public:
      * @param facesOut The handles of the faces around `handle` will be written
      *                 into this vector in clockwise order.
      */
-    virtual void getFacesOfVertex(VertexHandle handle, vector<FaceHandle>& facesOut) const = 0;
+    virtual void getFacesOfVertex(VertexHandle handle, std::vector<FaceHandle>& facesOut) const = 0;
 
     /**
      * @brief Get a list of edges around the given vertex.
@@ -362,7 +358,7 @@ public:
      * @param edgesOut The handles of the edges around `handle` will be written
      *                 into this vector in clockwise order.
      */
-    virtual void getEdgesOfVertex(VertexHandle handle, vector<EdgeHandle>& edgesOut) const = 0;
+    virtual void getEdgesOfVertex(VertexHandle handle, std::vector<EdgeHandle>& edgesOut) const = 0;
 
     /**
      * @brief Get vertex handles of the neighbours of the requested vertex.
@@ -376,11 +372,11 @@ public:
      *
      * Note: you probably should remember to `clear()` the vector before
      * passing it into this method.
-     *
+     *  
      * @param verticesOut The vertex-handles of the neighbours of `handle` will
      *                    be written into this vector in clockwise order.
      */
-    virtual void getNeighboursOfVertex(VertexHandle handle, vector<VertexHandle>& verticesOut) const = 0;
+    virtual void getNeighboursOfVertex(VertexHandle handle, std::vector<VertexHandle>& verticesOut) const = 0;
 
 
     /**
@@ -428,12 +424,12 @@ public:
      *
      * @return The points of the vertices in counter-clockwise order.
      */
-    virtual array<Vector<BaseVecT>, 3> getVertexPositionsOfFace(FaceHandle handle) const;
+    virtual std::array<BaseVecT, 3> getVertexPositionsOfFace(FaceHandle handle) const;
 
     /**
      * @brief Calc and return the centroid of the requested face.
      */
-    Vector<BaseVecT> calcFaceCentroid(FaceHandle handle) const;
+    BaseVecT calcFaceCentroid(FaceHandle handle) const;
 
     /**
      * @brief Calc and return the area of the requested face.
@@ -450,7 +446,7 @@ public:
      *
      * @return The face-handles of the neighbours in counter-clockwise order.
      */
-    virtual vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const;
+    virtual std::vector<FaceHandle> getNeighboursOfFace(FaceHandle handle) const;
 
     /**
      * @brief Determines whether or not an edge collapse of the given edge is
@@ -519,7 +515,7 @@ public:
      *
      * @return The face-handles in counter-clockwise order.
      */
-    virtual vector<FaceHandle> getFacesOfVertex(VertexHandle handle) const;
+    virtual std::vector<FaceHandle> getFacesOfVertex(VertexHandle handle) const;
 
     /**
      * @brief Get a list of edges around the given vertex.
@@ -531,7 +527,7 @@ public:
      *
      * @return The edge-handles in counter-clockwise order.
      */
-    virtual vector<EdgeHandle> getEdgesOfVertex(VertexHandle handle) const;
+    virtual std::vector<EdgeHandle> getEdgesOfVertex(VertexHandle handle) const;
 
     /**
      * @brief Get a list of vertices around the given vertex.
@@ -543,7 +539,7 @@ public:
      *
      * @return The vertex-handles in clockwise order.
      */
-    virtual vector<VertexHandle> getNeighboursOfVertex(VertexHandle handle) const;
+    virtual std::vector<VertexHandle> getNeighboursOfVertex(VertexHandle handle) const;
 
     /**
      * @brief If the given edges share a vertex, it is returned. None
@@ -587,8 +583,8 @@ public:
     MeshHandleIteratorPtr<FaceHandle> begin() const;
     MeshHandleIteratorPtr<FaceHandle> end() const;
 
-private:
     FaceIteratorProxy(const BaseMesh<BaseVecT>& mesh) : m_mesh(mesh) {}
+ private:
     const BaseMesh<BaseVecT>& m_mesh;
     friend BaseMesh<BaseVecT>;
 };
@@ -600,8 +596,8 @@ public:
     MeshHandleIteratorPtr<EdgeHandle> begin() const;
     MeshHandleIteratorPtr<EdgeHandle> end() const;
 
-private:
     EdgeIteratorProxy(const BaseMesh<BaseVecT>& mesh) : m_mesh(mesh) {}
+ private:
     const BaseMesh<BaseVecT>& m_mesh;
     friend BaseMesh<BaseVecT>;
 };
@@ -613,8 +609,8 @@ public:
     MeshHandleIteratorPtr<VertexHandle> begin() const;
     MeshHandleIteratorPtr<VertexHandle> end() const;
 
-private:
     VertexIteratorProxy(const BaseMesh<BaseVecT>& mesh) : m_mesh(mesh) {}
+ private:
     const BaseMesh<BaseVecT>& m_mesh;
     friend BaseMesh<BaseVecT>;
 };
@@ -625,14 +621,14 @@ struct EdgeCollapseRemovedFace
     FaceHandle removedFace;
 
     /// The edges of the removed face (excluding the collapsed edge itself)
-    array<EdgeHandle, 2> removedEdges;
+    std::array<EdgeHandle, 2> removedEdges;
 
     /// The edge that was inserted to replace the removed face
     EdgeHandle newEdge;
 
     EdgeCollapseRemovedFace(
         FaceHandle removedFace,
-        array<EdgeHandle, 2> removedEdges,
+        std::array<EdgeHandle, 2> removedEdges,
         EdgeHandle newEdge
     ) : removedFace(removedFace), removedEdges(removedEdges), newEdge(newEdge) {};
 };
@@ -645,7 +641,7 @@ struct EdgeCollapseResult
     /// The (face) neighbors of the edge which might have been removed. If so,
     /// the entry is not `none` and contains information about the invalidated
     /// handles and the replacement edge.
-    array<optional<EdgeCollapseRemovedFace>, 2> neighbors;
+    std::array<optional<EdgeCollapseRemovedFace>, 2> neighbors;
 
     EdgeCollapseResult(VertexHandle midPoint) : midPoint(midPoint) {};
 };

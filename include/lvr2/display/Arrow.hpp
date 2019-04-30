@@ -38,7 +38,6 @@
 #include <lvr2/display/Renderable.hpp>
 
 #include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Vector.hpp>
 
 #include <vector>
 #include <string>

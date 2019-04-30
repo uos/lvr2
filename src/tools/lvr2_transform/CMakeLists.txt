@@ -2,7 +2,7 @@
 # Set source files
 #####################################################################################
 
-set(LVR_TRANSFORM_SOURCES
+set(LVR2_TRANSFORM_SOURCES
     Options.cpp
     Main.cpp
 )
@@ -11,11 +11,11 @@ set(LVR_TRANSFORM_SOURCES
 # Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_TRANSFORM_DEPENDENCIES
+set(LVR2_TRANSFORM_DEPENDENCIES
 	lvr2_static
-	lvrlas_static
-	lvrrply_static
-	lvrslam6d_static
+	lvr2las_static
+	lvr2rply_static
+	lvr2slam6d_static
 	${OPENGL_LIBRARIES}
 	${GLUT_LIBRARIES}
 	${OpenCV_LIBS}
@@ -23,7 +23,7 @@ set(LVR_TRANSFORM_DEPENDENCIES
 	)
 
 if( ${NABO_FOUND} )
-  set(LVR_TRANSFORM_DEPENDENCIES ${LVR_TRANSFORM_DEPENDENCIES} ${NABO_LIBRARY})
+  set(LVR2_TRANSFORM_DEPENDENCIES ${LVR2_TRANSFORM_DEPENDENCIES} ${NABO_LIBRARY})
 endif( ${NABO_FOUND} )
 
 
@@ -31,8 +31,8 @@ endif( ${NABO_FOUND} )
 # Add executable
 #####################################################################################
 
-add_executable(lvr2_transform_model ${LVR_TRANSFORM_SOURCES})
-target_link_libraries(lvr2_transform_model ${LVR_TRANSFORM_DEPENDENCIES})
+add_executable(lvr2_transform_model ${LVR2_TRANSFORM_SOURCES})
+target_link_libraries(lvr2_transform_model ${LVR2_TRANSFORM_DEPENDENCIES})
 
 install(TARGETS lvr2_transform_model
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

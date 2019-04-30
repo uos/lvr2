@@ -64,11 +64,18 @@ std::string get_first_group_regex(std::regex regex_string, std::string data) {
     return sm.str(1);
 }
 
-RieglProject::RieglProject(std::string dir) {
-    m_project_dir    = fs::path(dir);
+RieglProject::RieglProject(
+    std::string dir,
+    std::string input_cloud_format
+)
+:m_project_dir(fs::path(dir))
+,m_input_cloud_format(input_cloud_format)
+{
+
 }
 
 void RieglProject::parse_scanpositions(pt::ptree project_ptree, unsigned int start, unsigned int end) {
+    int scan_id = 0;
     for (auto scanpos_info : project_ptree.get_child("project.scanpositions")) {
         if (scanpos_info.first != "scanposition") continue;
 
@@ -147,11 +154,19 @@ void RieglProject::parse_scanpositions(pt::ptree project_ptree, unsigned int sta
             std::cout << "[RieglProject] Warning: Scanposition '" << scan_dir
                       << "' has no images and will be skipped." << std::endl;
 
-            continue;
+            // continue;
         }
 
-        m_scan_positions.push_back(scanpos);
+        if(scan_id < m_scan_positions.size())
+        {
+            m_scan_positions[scan_id] = scanpos;
+        } else {
+            m_scan_positions.push_back(scanpos);
+        }
+        
+        scan_id++;
     }
+
 }
 
 void RieglProject::parse_images_per_scanpos(ScanPosition &scanpos,
@@ -247,6 +262,81 @@ void RieglProject::parse_images_per_scanpos(ScanPosition &scanpos,
     }
 }
 
+void RieglProject::parse_asciiclouds()
+{
+    
+    fs::path scans_path = m_project_dir / "SCANS";
+    
+    if(!fs::exists(scans_path))
+    {
+        std::stringstream ss;
+        ss << "[RieglProject] Error: RiSCAN scans path '" << scans_path
+                << "' doesn't exist or isn't a directory";
+        throw fs::filesystem_error(
+            ss.str(),
+            scans_path,
+            boost::system::errc::make_error_code(boost::system::errc::not_a_directory)
+        );
+    }
+
+    std::vector<fs::path> path_vec;
+
+
+    std::copy(
+        fs::directory_iterator{scans_path},
+        fs::directory_iterator{},
+        std::back_inserter(path_vec)
+    );
+
+    // sort directories by name
+    std::sort(path_vec.begin(), path_vec.end());
+
+    for(int scan_id = 0; scan_id < path_vec.size(); scan_id ++)
+    {
+        fs::path cloud_path = path_vec[scan_id] / "POINTCLOUDS";
+
+        if(!fs::exists(cloud_path))
+        {
+            std::stringstream ss;
+            ss << "[RieglProject] Error: RiSCAN cloud path '" << cloud_path
+                  << "' doesn't exist or isn't a directory";
+            throw fs::filesystem_error(
+                ss.str(),
+                cloud_path,
+                boost::system::errc::make_error_code(boost::system::errc::not_a_directory)
+            );
+        }
+
+        std::vector<fs::path> potential_clouds;
+
+        std::copy(
+            fs::directory_iterator{cloud_path},
+            fs::directory_iterator{},
+            std::back_inserter(potential_clouds)
+        );
+
+        std::sort(
+            potential_clouds.begin(),
+            potential_clouds.end(),
+            [](const fs::path& a, const fs::path& b) {
+                return fs::file_size(a) > fs::file_size(b);
+            }
+        );
+
+        fs::path biggest_cloud_path = potential_clouds[0];
+
+        if(scan_id < m_scan_positions.size())
+        {
+            m_scan_positions[scan_id].scan_file = biggest_cloud_path;
+        } else {
+            ScanPosition sp;
+            sp.scan_file = biggest_cloud_path;
+            m_scan_positions.push_back(sp);
+        }
+
+    }
+}
+
 bool RieglProject::parse_project(unsigned int start, unsigned int end) {
     // check if project path exists
     if (!fs::exists(m_project_dir) || !fs::is_directory(m_project_dir)) {
@@ -275,6 +365,12 @@ bool RieglProject::parse_project(unsigned int start, unsigned int end) {
         std::cout << "[RieglProject] Error: Unable to parse any scanposition." << std::endl;
 
         return false;
+    }
+
+    // search for ascii pointcloud files if input cloud format is specified as "ascii"
+    if(m_input_cloud_format == "ascii")
+    {
+        parse_asciiclouds();
     }
 
     return true;

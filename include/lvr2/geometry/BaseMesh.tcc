@@ -114,14 +114,14 @@ MeshHandleIteratorPtr<VertexHandle> VertexIteratorProxy<BaseVecT>::begin() const
     return m_mesh.verticesBegin();
 }
 
-template <typename BaseVecT>
+template <typename BaseVecT>    
 MeshHandleIteratorPtr<VertexHandle> VertexIteratorProxy<BaseVecT>::end() const
 {
     return m_mesh.verticesEnd();
 }
 
 template <typename BaseVecT>
-array<Vector<BaseVecT>, 3> BaseMesh<BaseVecT>::getVertexPositionsOfFace(FaceHandle handle) const
+std::array<BaseVecT, 3> BaseMesh<BaseVecT>::getVertexPositionsOfFace(FaceHandle handle) const
 {
     auto handles = getVerticesOfFace(handle);
 
@@ -133,9 +133,9 @@ array<Vector<BaseVecT>, 3> BaseMesh<BaseVecT>::getVertexPositionsOfFace(FaceHand
 }
 
 template <typename BaseVecT>
-Vector<BaseVecT> BaseMesh<BaseVecT>::calcFaceCentroid(FaceHandle handle) const
+BaseVecT BaseMesh<BaseVecT>::calcFaceCentroid(FaceHandle handle) const
 {
-    return Vector<BaseVecT>::centroid(
+    return BaseVecT::centroid(
         this->getVertexPositionsOfFace(handle)
     );
 }

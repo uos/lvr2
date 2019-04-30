@@ -27,7 +27,7 @@ set(KFUSION_CUDA_SRC
 	src/cuda/tsdf_volume.cu
 	)
 	
-set(LVR_KINFU_SRC
+set(LVR2_KINFU_SRC
 	src/app/LVR_KinFu.cpp
 	src/app/Options.cpp
 	)
@@ -60,7 +60,7 @@ target_link_libraries(kfusion
 	
 if(OPENCV_VIZ_FOUND)
 
-add_executable(lvr_kinfu ${LVR_KINFU_SRC})
+add_executable(lvr_kinfu ${LVR2_KINFU_SRC})
 
 target_link_libraries(lvr_kinfu 
 	kfusion

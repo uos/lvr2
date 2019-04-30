@@ -36,14 +36,35 @@
 namespace lvr2
 {
 
-HDF5IO::HDF5IO(std::string filename, bool truncate) :
+const std::string HDF5IO::vertices_name = "vertices";
+const std::string HDF5IO::indices_name = "indices";
+const std::string HDF5IO::meshes_group = "meshes";
+
+HDF5IO::HDF5IO(const std::string filename, const std::string part_name, int open_flag) :
     m_hdf5_file(nullptr),
     m_compress(true),
     m_chunkSize(1e7),
     m_usePreviews(true),
-    m_previewReductionFactor(20)
+    m_previewReductionFactor(20),
+    m_part_name(part_name),
+    m_mesh_path(meshes_group+"/"+part_name)
 {
-    open(filename, truncate);
+    std::cout << timestamp << " Try to open file \"" << filename << "\"..." << std::endl;
+    if(!open(filename, open_flag))
+    {
+        std::cerr << timestamp << " Could not open file \"" << filename << "\"!" << std::endl;
+    }
+}
+
+HDF5IO::HDF5IO(std::string filename, int open_flag) :
+    m_hdf5_file(nullptr),
+    m_compress(true),
+    m_chunkSize(1e7),
+    m_usePreviews(true),
+    m_previewReductionFactor(20),
+    m_part_name("")
+{
+    open(filename, open_flag); // TODO Open should not be in the constructor
 }
 
 HDF5IO::~HDF5IO()
@@ -93,24 +114,128 @@ size_t HDF5IO::chunkSize()
 
 ModelPtr HDF5IO::read(std::string filename)
 {
-    return ModelPtr(new Model);
+    open(filename, HighFive::File::ReadOnly);
+    ModelPtr model_ptr(new Model);
+
+    std::cout << timestamp << "HDF5IO: loading..." << std::endl;
+    // read mesh information
+    if(readMesh(model_ptr))
+    {
+        std::cout << timestamp << " Mesh successfully loaded." << std::endl;
+    } else {
+        std::cout << timestamp << " Mesh could not be loaded." << std::endl;
+    }
+
+    // read pointcloud information out of scans
+    if(readPointCloud(model_ptr))
+    {
+        std::cout << timestamp << " PointCloud successfully loaded." << std::endl;
+    } else {
+        std::cout << timestamp << " PointCloud could not be loaded." << std::endl;
+    }
+    
+    return model_ptr;
 }
 
-bool HDF5IO::open(std::string filename, bool truncate)
+bool HDF5IO::readPointCloud(ModelPtr model_ptr)
+{
+    std::vector<ScanData> scans = getRawScanData(true);
+    if(scans.size() == 0)
+    {
+        return false;
+    }
+
+    size_t n_points_total = 0;
+    for(const ScanData& scan : scans)
+    {
+        n_points_total += scan.m_points->numPoints();
+    }
+
+    floatArr points(new float[n_points_total * 3]);
+    BaseVector<float>* points_raw_it = reinterpret_cast<BaseVector<float>* >(
+        points.get()
+    );
+
+    for(int i=0; i<scans.size(); i++)
+    {
+        size_t num_points = scans[i].m_points->numPoints();
+        floatArr pts = scans[i].m_points->getPointArray();
+
+        Matrix4<BaseVector<float> > T = scans[i].m_poseEstimation;
+        T.transpose();
+
+        BaseVector<float>* begin = reinterpret_cast<BaseVector<float>* >(pts.get());
+        BaseVector<float>* end = begin + num_points;
+
+        while(begin != end)
+        {
+            const BaseVector<float>& cp = *begin;
+            *points_raw_it = T * cp;
+
+            begin++;
+            points_raw_it++;
+        }
+    }
+
+    model_ptr->m_pointCloud.reset(new PointBuffer(points, n_points_total));
+
+    return true;
+}
+
+bool HDF5IO::readMesh(ModelPtr model_ptr)
+{
+    const std::string mesh_resource_path = "meshes/" + m_part_name;
+    const std::string vertices("vertices");
+    const std::string indices("indices");
+
+    if(!exist(mesh_resource_path)){
+        return false;
+    } else {
+        auto mesh = getGroup(mesh_resource_path);
+        
+        if(!mesh.exist(vertices) || !mesh.exist(indices)){
+            std::cout << timestamp << " The mesh has to contain \"" << vertices
+                << "\" and \"" << indices << "\"" << std::endl;
+            std::cout << timestamp << " Return empty model pointer!" << std::endl;
+            return false;
+        }
+
+        std::vector<size_t> vertexDims;
+        std::vector<size_t> faceDims;
+
+        // read mesh buffer
+        floatArr vbuffer = getArray<float>(mesh_resource_path, vertices, vertexDims);
+        indexArray ibuffer = getArray<unsigned int>(mesh_resource_path, indices, faceDims);
+
+        if(vertexDims[0] == 0)
+        {
+            return false;
+        }
+        if(!model_ptr->m_mesh)
+        {
+            model_ptr->m_mesh.reset(new MeshBuffer());
+        }
+
+        model_ptr->m_mesh->setVertices(vbuffer, vertexDims[0]);
+
+        model_ptr->m_mesh->setFaceIndices(ibuffer, faceDims[0]);
+    }
+    return true;
+}
+
+bool HDF5IO::open(std::string filename, int open_flag)
 {
     // If file alredy exists, don't rewrite base structurec++11 init vector
     bool have_to_init = false;
 
     boost::filesystem::path path(filename);
-    if(!boost::filesystem::exists(path) | truncate)
+    if(!boost::filesystem::exists(path) | open_flag == HighFive::File::Truncate)
     {
         have_to_init = true;
     }
 
     // Try to open the given HDF5 file
-    m_hdf5_file = new HighFive::File(
-                filename,
-                HighFive::File::OpenOrCreate | (truncate ? HighFive::File::Truncate : 0));
+    m_hdf5_file = new HighFive::File(filename, open_flag);
 
     if (!m_hdf5_file->isValid())
     {
@@ -151,6 +276,79 @@ void HDF5IO::write_base_structure()
 
 void HDF5IO::save(std::string filename)
 {
+
+}
+
+void HDF5IO::save(ModelPtr model, std::string filename)
+{
+    open(filename, HighFive::File::ReadWrite);
+
+    if(saveMesh(model))
+    {
+        std::cout << timestamp << " Mesh succesfully saved to " << filename << std::endl;
+    } else {
+        std::cout << timestamp << " Mesh could not saved to " << filename << std::endl;
+    }
+}
+
+bool HDF5IO::saveMesh(ModelPtr model_ptr)
+{
+    if(!model_ptr->m_mesh)
+    {
+        std::cout << timestamp << " Model does not contain a mesh" << std::endl;
+        return false;
+    }
+    
+    const std::string mesh_resource_path = "meshes/" + m_part_name;
+    const std::string vertices("vertices");
+    const std::string indices("indices");
+
+    
+    if(exist(mesh_resource_path)){
+        std::cout << timestamp << " Mesh already exists in file!" << std::endl;
+        return false;
+    } else {
+
+        auto mesh = getGroup(mesh_resource_path);
+
+        if(mesh.exist(vertices) || mesh.exist(indices)){
+            std::cout << timestamp << " The mesh has to contain \"" << vertices
+                << "\" and \"" << indices << "\"" << std::endl;
+            std::cout << timestamp << " Return empty model pointer!" << std::endl;
+            return false;
+        }
+
+        std::vector<size_t> vertexDims = {model_ptr->m_mesh->numVertices(), 3};
+        std::vector<size_t> faceDims = {model_ptr->m_mesh->numFaces(), 3};
+
+        if(vertexDims[0] == 0)
+        {
+            std::cout << timestamp << " The mesh has 0 vertices" << std::endl;
+            return false;
+        }
+        if(faceDims[0] == 0)
+        {
+            std::cout << timestamp << " The mesh has 0 faces" << std::endl;
+            return false;
+        }
+
+        addArray<float>(
+            mesh_resource_path,
+            vertices,
+            vertexDims,
+            model_ptr->m_mesh->getVertices()
+        );
+
+        addArray<unsigned int>(
+            mesh_resource_path,
+            indices,
+            faceDims,
+            model_ptr->m_mesh->getFaceIndices()
+        );
+        
+    }
+
+    return true;
 
 }
 
@@ -237,6 +435,47 @@ std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
 
 }
 
+std::vector<std::vector<CamData> > HDF5IO::getRawCamData(bool load_image_data)
+{
+    std::vector<std::vector<CamData> > ret;
+    
+    if(m_hdf5_file) 
+    {
+        std::string groupNamePhotos = "/raw/photos/";
+
+        if(!exist(groupNamePhotos))
+        {
+            return ret;
+        }
+
+        HighFive::Group photos_group = getGroup(groupNamePhotos);
+
+        size_t num_scans = photos_group.getNumberObjects();
+
+
+        for (size_t i = 0; i < num_scans; i++)
+        {
+
+            std::string cur_scan_pos = photos_group.getObjectName(i);
+            HighFive::Group photo_group = getGroup(photos_group, cur_scan_pos);
+
+            std::vector<CamData> cam_data;
+
+            size_t num_photos = photo_group.getNumberObjects();
+            for(size_t j=0; j< num_photos; j++)
+            {
+                CamData cam = getSingleRawCamData(i, j, load_image_data);
+                cam_data.push_back(cam);
+            }
+
+            ret.push_back(cam_data);
+        }
+
+    }
+
+    return ret;
+}
+
 ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
 {
     ScanData ret;
@@ -277,8 +516,8 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
                 if (spectral)
                 {
                     ret.m_points->addUCharChannel(spectral, "spectral_channels", dim[0], dim[1]);
-                    ret.m_points->addIntAttribute(400, "spectral_wavelength_min");
-                    ret.m_points->addIntAttribute(400 + 4 * dim[1], "spectral_wavelength_max");
+                    ret.m_points->addIntAtomic(400, "spectral_wavelength_min");
+                    ret.m_points->addIntAtomic(400 + 4 * dim[1], "spectral_wavelength_max");
                 }
             }
         }
@@ -308,13 +547,67 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
         if (bb)
         {
             ret.m_boundingBox = BoundingBox<BaseVector<float> >(
-                    {bb[0], bb[1], bb[2]}, {bb[3], bb[4], bb[5]});
+                    BaseVector<float>(bb[0], bb[1], bb[2]), BaseVector<float>(bb[3], bb[4], bb[5]));
         }
 
         ret.m_pointsLoaded = load_points;
         ret.m_positionNumber = nr;
 
         ret.m_scanDataRoot = groupName;
+    }
+
+    return ret;
+}
+
+
+CamData HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_data)
+{
+    CamData ret;
+
+    if (m_hdf5_file)
+    {
+        char buffer1[128];
+        sprintf(buffer1, "position_%05d", scan_id);
+        string scan_id_str(buffer1);
+        char buffer2[128];
+        sprintf(buffer2, "photo_%05d", img_id);
+        string img_id_str(buffer2);
+
+
+        std::string groupName  = "/raw/photos/"  + scan_id_str + "/" + img_id_str;
+        
+        HighFive::Group g;
+        
+        try
+        {
+            g = getGroup(groupName);
+        }
+        catch(HighFive::Exception& e)
+        {
+            std::cout << timestamp << "Error getting cam data: "
+                    << e.what() << std::endl;
+            throw e;
+        }
+
+        unsigned int dummy;
+        floatArr intrinsics_arr = getArray<float>(groupName, "intrinsics", dummy);
+        floatArr extrinsics_arr = getArray<float>(groupName, "extrinsics", dummy);
+        
+        if(intrinsics_arr)
+        {
+            ret.m_intrinsics = Matrix4<BaseVector<float> >(intrinsics_arr.get());
+        }
+
+        if(extrinsics_arr)
+        {
+            ret.m_extrinsics = Matrix4<BaseVector<float> >(extrinsics_arr.get());
+        }
+
+        if(load_image_data)
+        {
+            getImage(g, "image", ret.m_image_data);
+        }
+
     }
 
     return ret;
@@ -354,7 +647,6 @@ void HDF5IO::addImage(std::string group, std::string name, cv::Mat& img)
 {
     if(m_hdf5_file)
     {
-
         HighFive::Group g = getGroup(group);
         addImage(g, name, img);
     }
@@ -364,7 +656,37 @@ void HDF5IO::addImage(HighFive::Group& g, std::string datasetName, cv::Mat& img)
 {
     int w = img.cols;
     int h = img.rows;
-    H5IMmake_image_8bit(g.getId(), datasetName.c_str(), w, h, img.data);
+    const char* interlace = "INTERLACE_PIXEL";
+
+    if(img.type() == CV_8U)
+    {
+        // 1 channel image
+        H5IMmake_image_8bit(g.getId(), datasetName.c_str(), w, h, img.data);
+    } else if(img.type() == CV_8UC3) {
+        // 3 channel image
+        H5IMmake_image_24bit(g.getId(), datasetName.c_str(), w, h, interlace, img.data);
+    }
+
+}
+
+void HDF5IO::getImage(HighFive::Group& g, std::string datasetName, cv::Mat& img)
+{
+    long long unsigned int w,h,planes;
+    long long int npals;
+    char interlace[256];
+
+    H5IMget_image_info(g.getId(), datasetName.c_str(), &w, &h, &planes, interlace, &npals);
+
+    if(planes == 1)
+    {
+        // 1 channel image
+        img = cv::Mat(h, w, CV_8U);
+    } else if(planes == 3) {
+        // 3 channel image
+        img = cv::Mat(h, w, CV_8UC3);
+    }
+
+    H5IMread_image(g.getId(), datasetName.c_str(), img.data);
 }
 
 void HDF5IO::addFloatChannelToRawScanData(
@@ -568,6 +890,52 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
     }
 }
 
+void HDF5IO::addRawCamData( int scan_id, int img_id, CamData& cam_data )
+{
+    if(m_hdf5_file)
+    {
+
+        char buffer1[128];
+        sprintf(buffer1, "position_%05d", scan_id);
+        string scan_id_str(buffer1);
+
+        char buffer2[128];
+        sprintf(buffer2, "photo_%05d", img_id);
+        string photo_id_str(buffer2);
+
+        std::string groupName = "/raw/photos/" + scan_id_str + "/" + photo_id_str;
+
+        HighFive::Group photo_group;
+
+        try
+        {
+            photo_group = getGroup(groupName);
+        }
+        catch(HighFive::Exception& e)
+        {
+            std::cout << timestamp << "Error adding raw image data: "
+                    << e.what() << std::endl;
+            throw e;
+        }
+        
+        // add image to scan_image_group
+        floatArr intrinsics_arr(cam_data.m_intrinsics.toFloatArray());
+        floatArr extrinsics_arr(cam_data.m_extrinsics.toFloatArray());
+        std::vector<size_t> dim = {4,4};
+
+        std::vector<hsize_t> chunks;
+        for(auto i: dim)
+        {
+                chunks.push_back(i);
+        }
+
+        addArray(photo_group, "intrinsics", dim, chunks, intrinsics_arr);
+        addArray(photo_group, "extrinsics", dim, chunks, extrinsics_arr);
+        addImage(photo_group, "image", cam_data.m_image_data);
+
+    }
+}
+
 void HDF5IO::addRawDataHeader(std::string description, Matrix4<BaseVector<float>> &referenceFrame)
 {
 
@@ -619,6 +987,46 @@ HighFive::Group HDF5IO::getGroup(const std::string &groupName, bool create)
             else if (create)
             {
                 cur_grp = cur_grp.createGroup(groupNames[i]);
+            }
+            else
+            {
+                // Throw exception because a group we searched
+                // for doesn't exist and create flag was false
+                throw std::runtime_error("HDF5IO - getGroup(): Groupname '"
+                    + groupNames[i] + "' doesn't exist and create flag is false");
+            }
+        }
+    }
+    catch(HighFive::Exception& e)
+    {
+        std::cout << timestamp
+                  << "Error in getGroup (with group name '"
+                  << groupName << "': " << std::endl;
+        std::cout << e.what() << std::endl;
+        throw e;
+    }
+
+    return cur_grp;
+}
+
+HighFive::Group HDF5IO::getGroup(HighFive::Group& g, const std::string &groupName, bool create)
+{
+    std::vector<std::string> groupNames = splitGroupNames(groupName);
+    HighFive::Group cur_grp;
+
+    try
+    {
+
+        for (size_t i = 0; i < groupNames.size(); i++)
+        {
+
+            if (g.exist(groupNames[i]))
+            {
+                cur_grp = g.getGroup(groupNames[i]);
+            }
+            else if (create)
+            {
+                cur_grp = g.createGroup(groupNames[i]);
             }
             else
             {
@@ -693,6 +1101,86 @@ bool HDF5IO::isGroup(HighFive::Group grp, std::string objName)
     }
 
     return false;
+}
+
+boost::optional<HighFive::Group> HDF5IO::getMeshGroup(bool create){
+    if(!create && !exist(m_mesh_path)){
+        std::cout << timestamp << " No mesh with the part name \""
+                  << m_part_name << "\" given in the HDF5 file \"" << std::endl;
+        return boost::none;
+    }
+    return getGroup(m_mesh_path);
+}
+
+
+FloatChannelOptional HDF5IO::getVertices(){
+    auto mesh_opt = getMeshGroup();
+    if(!mesh_opt) return boost::none;
+    auto mesh = mesh_opt.get();
+    if(!mesh.exist(vertices_name))
+    {
+        std::cout << timestamp << " Could not find mesh vertices in the given HDF5 file." << std::endl;
+        return boost::none;
+    }
+
+    std::vector<size_t >dims;
+    auto values = getArray<float>(mesh, vertices_name, dims);
+    return FloatChannel(dims[0], dims[1], values);
+}
+
+
+IndexChannelOptional HDF5IO::getIndices(){
+    auto mesh_opt = getMeshGroup();
+    if(!mesh_opt) return boost::none;
+    auto mesh = mesh_opt.get();
+    if(!mesh.exist(indices_name))
+    {
+        std::cout << timestamp << " Could not find mesh face indices in the given HDF5 file." << std::endl;
+        return boost::none;
+    }
+
+    std::vector<size_t >dims;
+    auto values = getArray<unsigned int>(mesh, indices_name, dims);
+    return IndexChannel(dims[0], dims[1], values);
+}
+
+bool HDF5IO::addVertices(const FloatChannel& channel){
+    auto mesh = getMeshGroup(true).get();
+    std::vector<size_t > dims = {channel.numElements(), channel.width()};
+    addArray<float>(m_mesh_path, vertices_name, dims, channel.dataPtr());
+    return true;
+}
+
+bool HDF5IO::addIndices(const IndexChannel& channel){
+    auto mesh = getMeshGroup(true).get();
+    std::vector<size_t > dims = {channel.numElements(), channel.width()};
+    addArray<unsigned int>(m_mesh_path, indices_name, dims, channel.dataPtr());
+    return true;
+}
+
+
+bool HDF5IO::getChannel(const std::string group, const std::string name, FloatChannelOptional& channel){
+    return getChannel<float>(group, name, channel);
+}
+
+bool HDF5IO::getChannel(const std::string group, const std::string name, IndexChannelOptional& channel){
+    return getChannel<unsigned int>(group, name, channel);
+}
+
+bool HDF5IO::getChannel(const std::string group, const std::string name, UCharChannelOptional& channel){
+    return getChannel<unsigned char>(group, name, channel);
+}
+
+bool HDF5IO::addChannel(const std::string group, const std::string name, const FloatChannel& channel){
+    return addChannel<float>(group, name, channel);
+}
+
+bool HDF5IO::addChannel(const std::string group, const std::string name, const IndexChannel& channel){
+    return addChannel<unsigned int>(group, name, channel);
+}
+
+bool HDF5IO::addChannel(const std::string group, const std::string name, const UCharChannel& channel){
+    return addChannel<unsigned char>(group, name, channel);
 }
 
 } // namespace lvr2
