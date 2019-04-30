@@ -48,18 +48,18 @@ step = int((len(color_map)-1) / (num_classes-1))
 
 # demo
 colors[0] = [0, 255, 0, 255]        # greenVeg
-colors[1] = [217, 129, 28, 255]     # Gestein
-colors[2] = [0, 0, 255, 255]        # Wasser
+colors[2] = [191, 117, 0, 255]      # Gestein
+colors[1] = [0, 0, 255, 255]        # Wasser
 colors[3] = [102, 102, 102, 255]    # Schatten
 
 print("Assigning data to colorized array...")
 shape = values.shape
 png_values = np.zeros((shape[1], shape[2], 4), dtype=np.uint)
 # OpenCV requires BGRA channel order
-for rgb_channel in reversed(range(4)):
+for rgba_channel in reversed(range(4)):
     for y in range(shape[1]):
         for x in range(shape[2]):
-            png_values[ y, x, rgb_channel] = colors[values[0, y, x] - 1, rgb_channel]
+            png_values[y, x, rgba_channel] = colors[values[0, y, x] - 1, rgba_channel]
 
 print("Writing PNG file...")
 if cv2.imwrite(outname, png_values):
