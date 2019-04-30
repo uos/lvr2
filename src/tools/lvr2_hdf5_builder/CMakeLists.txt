@@ -2,7 +2,7 @@
 # Set source files
 #####################################################################################
 
-set(LVR_HDF5_SOURCES
+set(LVR2_HDF5_SOURCES
     HDF5Tool.cpp
     Options.cpp
 )
@@ -11,11 +11,11 @@ set(LVR_HDF5_SOURCES
 # Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_HDF5_DEPENDENCIES
+set(LVR2_HDF5_DEPENDENCIES
 	lvr2_static
-	lvrlas_static
-	lvrrply_static
-	lvrslam6d_static
+	lvr2las_static
+	lvr2rply_static
+	lvr2slam6d_static
 	${OPENGL_LIBRARIES}
 	${GLUT_LIBRARIES}
 )
@@ -25,8 +25,8 @@ set(LVR_HDF5_DEPENDENCIES
 # Add executable
 #####################################################################################
 
-add_executable( lvr2_hdf5tool ${LVR_HDF5_SOURCES} )
-target_link_libraries( lvr2_hdf5tool ${LVR_HDF5_DEPENDENCIES} )
+add_executable( lvr2_hdf5tool ${LVR2_HDF5_SOURCES} )
+target_link_libraries( lvr2_hdf5tool ${LVR2_HDF5_DEPENDENCIES} )
 
 install(TARGETS lvr2_hdf5tool
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

@@ -36,7 +36,7 @@ LVRHistogram::LVRHistogram(QWidget* parent, PointBufferPtr points)
     m_histogram.setupUi(this);
     //Set Plotmode to create a bar chart
     m_histogram.plotter->setPlotMode(PlotMode::BAR);
-    m_histogram.plotter->setXRange(*points->getIntAttribute("spectral_wavelength_min"), *points->getIntAttribute("spectral_wavelength_max"));
+    m_histogram.plotter->setXRange(*points->getIntAtomic("spectral_wavelength_min"), *points->getIntAtomic("spectral_wavelength_max"));
 
     size_t n;
     size_t n_spec;
@@ -45,7 +45,7 @@ LVRHistogram::LVRHistogram(QWidget* parent, PointBufferPtr points)
     //floatArr spec = points->getPointSpectralChannelsArray(n_spec, m_numChannels);
     UCharChannelOptional spec = points->getUCharChannel("spectral_channels");
     m_numChannels = spec->width();
-    n_spec = spec->numAttributes();
+    n_spec = spec->numElements();
 
     //New Array for Average channelintensity   
     m_data = floatArr(new float[m_numChannels]);

@@ -1,5 +1,5 @@
-#ifndef LVR_PIPELINE_HPP_
-#define LVR_PIPELINE_HPP_
+#ifndef LVR2_PIPELINE_HPP_
+#define LVR2_PIPELINE_HPP_
 
 #include <lvr/reconstruction/FastReconstruction.hpp>
 #include <lvr/reconstruction/TSDFGrid.hpp>

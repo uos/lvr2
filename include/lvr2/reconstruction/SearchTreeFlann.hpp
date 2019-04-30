@@ -77,7 +77,7 @@ public:
 
     /// See interface documentation.
     virtual void kSearch(
-        const Vector<BaseVecT>& qp,
+        const BaseVecT& qp,
         int k,
         vector<size_t>& indices,
         vector<CoordT>& distances
@@ -85,7 +85,7 @@ public:
 
     /// See interface documentation.
     virtual void radiusSearch(
-        const Vector<BaseVecT>& qp,
+        const BaseVecT& qp,
         CoordT r,
         vector<size_t>& indices
     ) const;

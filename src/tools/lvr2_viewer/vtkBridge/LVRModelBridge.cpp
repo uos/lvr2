@@ -34,7 +34,6 @@
 #include "LVRModelBridge.hpp"
 
 #include <lvr2/geometry/Matrix4.hpp>
-#include <lvr2/geometry/Vector.hpp>
 
 #include <vtkTransform.h>
 #include <vtkActor.h>

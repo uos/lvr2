@@ -278,7 +278,7 @@ protected:
     unsigned int                m_globalIndex;
 
     /// Save scaling factors (i.e., -1 or +1) to mapp different coordinate systems
-    Vector<BaseVecT>            m_coordinateScales;
+    BaseVecT                  m_coordinateScales;
 };
 
 } /* namespace lvr */

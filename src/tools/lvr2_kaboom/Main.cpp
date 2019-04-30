@@ -54,8 +54,9 @@ using namespace std;
 #include "Options.hpp"
 #include <lvr2/io/Timestamp.hpp>
 #include <lvr2/io/ModelFactory.hpp>
+#include <lvr2/io/IOUtils.hpp>
 
-#ifdef LVR_USE_PCL
+#ifdef LVR2_USE_PCL
 #include <lvr2/reconstruction/PCLFiltering.hpp>
 #endif
 
@@ -69,103 +70,32 @@ const kaboom::Options* options;
 
 // This is dirty
 bool lastScan = false;
+ofstream scanPosesOut("scanpositions.txt");
 
-ModelPtr filterModel(ModelPtr p, int k, float sigma)
-{
-    if(p)
-    {
-        if(p->m_pointCloud)
-        {
-#ifdef LVR_USE_PCL
-            PCLFiltering filter(p->m_pointCloud);
-            cout << timestamp << "Filtering outliers with k=" << k << " and sigma=" << sigma << "." << endl;
-            size_t original_size = p->m_pointCloud->getNumPoints();
-            filter.applyOutlierRemoval(k, sigma);
-            PointBufferPtr pb( filter.getPointBuffer() );
-            ModelPtr out_model( new Model( pb ) );
-            cout << timestamp << "Filtered out " << original_size - out_model->m_pointCloud->getNumPoints() << " points." << endl;
-            return out_model;
-#else
-            cout << timestamp << "Can't create a PCL Filter without PCL installed." << endl;
-            return NULL;
-#endif
+// ModelPtr filterModel(ModelPtr p, int k, float sigma)
+// {
+//     if(p)
+//     {
+//         if(p->m_pointCloud)
+//         {
+// #ifdef LVR2_USE_PCL
+//             PCLFiltering filter(p->m_pointCloud);
+//             cout << timestamp << "Filtering outliers with k=" << k << " and sigma=" << sigma << "." << endl;
+//             size_t original_size = p->m_pointCloud->getNumPoints();
+//             filter.applyOutlierRemoval(k, sigma);
+//             PointBufferPtr pb( filter.getPointBuffer() );
+//             ModelPtr out_model( new Model( pb ) );
+//             cout << timestamp << "Filtered out " << original_size - out_model->m_pointCloud->getNumPoints() << " points." << endl;
+//             return out_model;
+// #else
+//             cout << timestamp << "Can't create a PCL Filter without PCL installed." << endl;
+//             return NULL;
+// #endif
 
-        }
-    }
-    return NULL;
-}
-
-size_t countPointsInFile(boost::filesystem::path& inFile)
-{
-    ifstream in(inFile.c_str());
-    cout << timestamp << "Counting points in " << inFile.filename().string() << "..." << endl;
-
-    // Count lines in file
-    size_t n_points = 0;
-    char line[2048];
-    while(in.good())
-    {
-        in.getline(line, 1024);
-        n_points++;
-    }
-    in.close();
-
-    cout << timestamp << "File " << inFile.filename().string() << " contains " << n_points << " points." << endl;
-
-    return n_points;
-}
-
-void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut)
-{
-    std::ofstream out(framesOut.c_str());
-
-    // write the rotation matrix
-    out << transform.col(0)(0) << " " << transform.col(0)(1) << " " << transform.col(0)(2) << " " << 0 << " "
-        << transform.col(1)(0) << " " << transform.col(1)(1) << " " << transform.col(1)(2) << " " << 0 << " "
-        << transform.col(2)(0) << " " << transform.col(2)(1) << " " << transform.col(2)(2) << " " << 0 << " ";
-
-    // write the translation vector
-    out << transform.col(3)(0) << " "
-        << transform.col(3)(1) << " "
-        << transform.col(3)(2) << " "
-        << transform.col(3)(3);
-
-    out.close();
-}
-
-size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
-{
-    size_t n_ip = model->m_pointCloud->numPoints();
-    floatArr arr = model->m_pointCloud->getPointArray();
-
-    // ModelFactory::saveModel(model, outfile.string());
-
-    return n_ip;
-}
-
-size_t writeAscii(ModelPtr model, std::ofstream& out)
-{
-    size_t n_ip = model->m_pointCloud->numPoints();
-    size_t n_colors = n_ip;
-    unsigned w_color;
-
-    floatArr arr = model->m_pointCloud->getPointArray();
-
-    ucharArr colors = model->m_pointCloud->getColorArray(w_color);
-    for(int a = 0; a < n_ip; a++)
-    {
-        out << arr[a * 3] << " " << arr[a * 3 + 1] << " " << arr[a * 3 + 2];
-
-        if(colors)
-        {
-            out << " " << (int)colors[a * w_color] << " " << (int)colors[a * w_color + 1] << " " << (int)colors[a * w_color + 2];
-        }
-        out << endl;
-
-    }
-
-    return n_ip;
-}
+//         }
+//     }
+//     return NULL;
+// }
 
 size_t writePly(ModelPtr model, std::fstream& out)
 {
@@ -223,277 +153,22 @@ size_t writePlyHeader(std::ofstream& out, size_t n_points, bool colors)
     out << "end_header" << std::endl;
 }
 
-int asciiReductionFactor(boost::filesystem::path& inFile)
+void addScanPosition(Eigen::Matrix4d& transform)
 {
-
-    int reduction = options->getTargetSize();
-
-    /*
-     * If reduction is less than the number of points it will segfault
-     * because the modulo operation is not defined for n mod 0
-     * and we have to keep all points anyways.
-     * Same if no targetSize was given.
-     */
-    if(reduction != 0)
+    Eigen::Vector4d translation = transform.rightCols<1>();
+    if(scanPosesOut.good())
     {
-        // Count lines in file
-        size_t n_points = countPointsInFile(inFile);
+        std::cout << timestamp << "Exporting scan position @ "
+                  << translation[0] << " "
+                  << translation[1] << " "
+                  << translation[2] << std::endl;
 
-        if(reduction < n_points)
-        {
-            return (int)n_points / reduction;
-        }
-    }
-
-    /* No reduction write all points */
-    return 1;
-
-}
-
-Eigen::Matrix4d buildTransformation(double* alignxf)
-{
-    Eigen::Matrix3d rotation;
-    Eigen::Vector4d translation;
-
-    rotation  << alignxf[0],  alignxf[4],  alignxf[8],
-    alignxf[1],  alignxf[5],  alignxf[9],
-    alignxf[2],  alignxf[6],  alignxf[10];
-
-    translation << alignxf[12], alignxf[13], alignxf[14], 1.0;
-
-    Eigen::Matrix4d transformation;
-    transformation.setIdentity();
-    transformation.block<3,3>(0,0) = rotation;
-    transformation.rightCols<1>() = translation;
-
-    return transformation;
-}
-
-Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
-{
-    ifstream poseIn(pose.c_str());
-    if(poseIn.good())
-    {
-        double rPosTheta[3];
-        double rPos[3];
-        double alignxf[16];
-
-        poseIn >> rPos[0] >> rPos[1] >> rPos[2];
-        poseIn >> rPosTheta[0] >> rPosTheta[1] >> rPosTheta[2];
-
-        rPosTheta[0] *= 0.0174533;
-        rPosTheta[1] *= 0.0174533;
-        rPosTheta[2] *= 0.0174533;
-
-        double sx = sin(rPosTheta[0]);
-        double cx = cos(rPosTheta[0]);
-        double sy = sin(rPosTheta[1]);
-        double cy = cos(rPosTheta[1]);
-        double sz = sin(rPosTheta[2]);
-        double cz = cos(rPosTheta[2]);
-
-        alignxf[0]  = cy*cz;
-        alignxf[1]  = sx*sy*cz + cx*sz;
-        alignxf[2]  = -cx*sy*cz + sx*sz;
-        alignxf[3]  = 0.0;
-        alignxf[4]  = -cy*sz;
-        alignxf[5]  = -sx*sy*sz + cx*cz;
-        alignxf[6]  = cx*sy*sz + sx*cz;
-        alignxf[7]  = 0.0;
-        alignxf[8]  = sy;
-        alignxf[9]  = -sx*cy;
-        alignxf[10] = cx*cy;
-
-        alignxf[11] = 0.0;
-
-        alignxf[12] = rPos[0];
-        alignxf[13] = rPos[1];
-        alignxf[14] = rPos[2];
-        alignxf[15] = 1;
-
-        return buildTransformation(alignxf);
-    }
-    else
-    {
-        return Eigen::Matrix4d::Identity();
+        scanPosesOut << translation[0] << " "
+                     << translation[1] << " "
+                     << translation[2] << std::endl;
     }
 }
 
-Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
-{
-    double alignxf[16];
-    int color;
-
-    std::ifstream in(frames.c_str());
-    int c = 0;
-    while(in.good())
-    {
-        c++;
-        for(int i = 0; i < 16; i++)
-        {
-            in >> alignxf[i];
-        }
-
-        in >> color;
-
-        if(!in.good())
-        {
-            c = 0;
-            break;
-        }
-    }
-
-    return buildTransformation(alignxf);
-}
-
-Eigen::Matrix4d transformFrames(Eigen::Matrix4d frames)
-{
-    Eigen::Matrix3d basisTrans;
-    Eigen::Matrix3d reflection;
-    Eigen::Vector3d tmp;
-    std::vector<Eigen::Vector3d> xyz;
-    xyz.push_back(Eigen::Vector3d(1,0,0));
-    xyz.push_back(Eigen::Vector3d(0,1,0));
-    xyz.push_back(Eigen::Vector3d(0,0,1));
-
-    reflection.setIdentity();
-
-    if(options->sx() < 0)
-    {
-        reflection.block<3,1>(0,0) = (-1) * xyz[0];
-    }
-
-    if(options->sy() < 0)
-    {
-        reflection.block<3,1>(0,1) = (-1) * xyz[1];
-    }
-
-    if(options->sz() < 0)
-    {
-        reflection.block<3,1>(0,2) = (-1) * xyz[2];
-    }
-
-    // axis reflection
-    frames.block<3,3>(0,0) *= reflection;
-
-    // We are always transforming from the canonical base => T = (B')^(-1)
-    basisTrans.col(0) = xyz[options->x()];
-    basisTrans.col(1) = xyz[options->y()];
-    basisTrans.col(2) = xyz[options->z()];
-
-    // Transform the rotation matrix
-    frames.block<3,3>(0,0) = basisTrans.inverse() * frames.block<3,3>(0,0) * basisTrans;
-
-    // Setting translation vector
-    tmp = frames.block<3,1>(0,3);
-    tmp = basisTrans.inverse() * tmp;
-
-    (frames.rightCols<1>())(0) = tmp(0);
-    (frames.rightCols<1>())(1) = tmp(1);
-    (frames.rightCols<1>())(2) = tmp(2);
-    (frames.rightCols<1>())(3) = 1.0;
-
-    return frames;
-}
-
-void transformFromOptions(ModelPtr& model, int modulo)
-{
-    size_t n_ip = model->m_pointCloud->numPoints();
-    size_t n_colors = n_ip;
-    unsigned w_color;
-    size_t cntr = 0;
-
-    floatArr arr = model->m_pointCloud->getPointArray();
-    ucharArr colors = model->m_pointCloud->getColorArray(w_color);
-
-    // Plus one because it might differ because of the 0-index
-    // better waste memory for one float than having not enough space.
-    // TO-DO think about exact calculation.
-    size_t targetSize = (3 * ((n_ip)/modulo)) + modulo;
-    floatArr points(new float[targetSize ]);
-    ucharArr newColorsArr;
-
-    if(colors)
-    {
-        newColorsArr = ucharArr(new unsigned char[targetSize]);
-    }
-
-    for(int i = 0; i < n_ip; i++)
-    {
-        if(i % modulo == 0)
-        {
-            if(options->sx() != 1)
-            {
-                arr[i * 3] 		*= options->sx();
-            }
-
-            if(options->sy() != 1)
-            {
-                arr[i * 3 + 1] 	*= options->sy();
-            }
-
-            if(options->sz() != 1)
-            {
-                arr[i * 3 + 2] 	*= options->sz();
-            }
-
-            if((cntr * 3) < targetSize)
-            {
-                points[cntr * 3]     = arr[i * 3 + options->x()];
-                points[cntr * 3 + 1] = arr[i * 3 + options->y()];
-                points[cntr * 3 + 2] = arr[i * 3 + options->z()];
-            }
-            else
-            {
-                std::cout << "The following is for debugging purpose" << std::endl;
-                std::cout << "Cntr: " << (cntr * 3) << " targetSize: " << targetSize << std::endl;
-                std::cout << "nip : " << n_ip << " modulo " << modulo << std::endl;
-                break;
-            }
-
-            if(colors)
-            {
-                newColorsArr[cntr * 3]     = colors[i * w_color];
-                newColorsArr[cntr * 3 + 1] = colors[i * w_color + 1];
-                newColorsArr[cntr * 3 + 2] = colors[i * w_color + 2];
-            }
-
-            cntr++;
-        }
-    }
-
-    // Pass counter because it is the actual number of points used after reduction
-    // it might be 1 less than the size
-    model->m_pointCloud->setPointArray(points, cntr);
-
-    if(newColorsArr)
-    {
-        model->m_pointCloud->setColorArray(newColorsArr, cntr);
-    }
-}
-
-// transforming with Matrix from frames/pose
-void transformModel(ModelPtr model, Eigen::Matrix4d transformation)
-{
-    cout << timestamp << "Transforming model." << endl;
-    size_t numPoints = model->m_pointCloud->numPoints();
-
-    floatArr arr = model->m_pointCloud->getPointArray();
-
-    for(int i = 0; i < numPoints; i++)
-    {
-        float x = arr[3 * i];
-        float y = arr[3 * i + 1];
-        float z = arr[3 * i + 2];
-
-        Eigen::Vector4d v(x,y,z,1);
-        Eigen::Vector4d tv = transformation * v;
-
-        arr[3 * i]     = tv[0];
-        arr[3 * i + 1] = tv[1];
-        arr[3 * i + 2] = tv[2];
-    }
-}
 
 void processSingleFile(boost::filesystem::path& inFile)
 {
@@ -514,36 +189,50 @@ void processSingleFile(boost::filesystem::path& inFile)
     {
         char frames[1024];
         char pose[1024];
+        char dat[1024];
         sprintf(frames, "%s/%s.frames", inFile.parent_path().c_str(), inFile.stem().c_str());
         sprintf(pose, "%s/%s.pose", inFile.parent_path().c_str(), inFile.stem().c_str());
+        sprintf(dat, "%s/%s.dat", inFile.parent_path().c_str(), inFile.stem().c_str());
+
 
         boost::filesystem::path framesPath(frames);
         boost::filesystem::path posePath(pose);
+        boost::filesystem::path datPath(dat);
 
-        size_t reductionFactor = asciiReductionFactor(inFile);
+        size_t reductionFactor = lvr2::getReductionFactor(inFile, options->getTargetSize());
 
         if(options->transformBefore())
         {
-            transformFromOptions(model, reductionFactor);
+            transformAndReducePointCloud(model, reductionFactor, options->coordinateTransform());
         }
 
-        if(boost::filesystem::exists(framesPath))
+
+        if(boost::filesystem::exists(datPath))
+        {
+            std::cout << timestamp << "Getting transformation from dat: " << datPath << std::endl;
+            Eigen::Matrix4d transform = getTransformationFromDat(datPath);
+            transformPointCloud(model, transform);
+            addScanPosition(transform);
+        }
+        else if(boost::filesystem::exists(framesPath))
         {
             std::cout << timestamp << "Getting transformation from frame: " << framesPath << std::endl;
             Eigen::Matrix4d transform = getTransformationFromFrames(framesPath);
-            transformModel(model, transform);
+            transformPointCloud(model, transform);
+            addScanPosition(transform);
         }
         else if(boost::filesystem::exists(posePath))
         {
 
             std::cout << timestamp << "Getting transformation from pose: " << posePath << std::endl;
             Eigen::Matrix4d transform = getTransformationFromPose(posePath);
-            transformModel(model, transform);
+            transformPointCloud(model, transform);
+            addScanPosition(transform);
         }
 
         if(!options->transformBefore())
         {
-            transformFromOptions(model, reductionFactor);
+            transformAndReducePointCloud(model, reductionFactor, options->coordinateTransform());
         }
 
         static size_t points_written = 0;
@@ -564,7 +253,7 @@ void processSingleFile(boost::filesystem::path& inFile)
                 out.open(options->getOutputFile().c_str(), std::ofstream::out | std::ofstream::trunc);
             }
 
-            points_written += writeAscii(model, out);
+            points_written += writePointsToStream(model, out);
 
             out.close();
         }
@@ -683,13 +372,13 @@ void processSingleFile(boost::filesystem::path& inFile)
             if(boost::filesystem::exists(framesPath))
             {
                 std::cout << timestamp << "Transforming frame: " << framesPath << std::endl;
-                Eigen::Matrix4d transformed = transformFrames(getTransformationFromFrames(framesPath));
-                writeFrames(transformed, framesOut);
+                Eigen::Matrix4d transformed = transformFrame(getTransformationFromFrames(framesPath), options->coordinateTransform());
+                writeFrame(transformed, framesOut);
             }
 
             ofstream out(name);
-            transformFromOptions(model, asciiReductionFactor(inFile));
-            size_t points_written = writeAscii(model, out);
+            transformAndReducePointCloud(model, getReductionFactor(inFile, options->getTargetSize()), options->coordinateTransform());
+            size_t points_written = writePointsToStream(model, out);
 
             out.close();
 
@@ -819,7 +508,7 @@ int main(int argc, char** argv) {
     for(boost::filesystem::directory_iterator it(inputDir); it != end; ++it)
     {
         std::string ext =	it->path().extension().string();
-        if(ext == ".3d" || ext == ".ply" || ext == ".dat" || ext == ".txt" )
+        if(ext == ".3d" || ext == ".ply" || ext == ".txt" )
         {
             v.push_back(it->path());
         }

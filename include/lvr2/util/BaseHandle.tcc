@@ -79,6 +79,12 @@ bool BaseHandle<IdxT>::operator!=(const BaseHandle& other) const
     return m_idx != other.m_idx;
 }
 
+template <typename IdxT>
+bool BaseHandle<IdxT>::operator<(const BaseHandle& other) const
+{
+    return m_idx < other.m_idx;
+}
+
 template <typename IdxT, typename NonOptionalT>
 BaseOptionalHandle<IdxT, NonOptionalT>::BaseOptionalHandle()
     : m_idx(numeric_limits<IdxT>::max())

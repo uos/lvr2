@@ -31,6 +31,7 @@
 #include "BaseIO.hpp"
 #include "DataStruct.hpp"
 #include "ScanData.hpp"
+#include "CamData.hpp"
 #include "CalibrationParameters.hpp"
 
 #include "lvr2/geometry/Matrix4.hpp"
@@ -41,18 +42,23 @@
 #include <H5Tpublic.h>
 #include <hdf5_hl.h>
 
-
 #include <highfive/H5DataSet.hpp>
 #include <highfive/H5DataSpace.hpp>
 #include <highfive/H5File.hpp>
+#include <lvr2/io/AttributeMeshIOBase.hpp>
 #include <string>
 
 namespace lvr2
 {
 
-class HDF5IO : public BaseIO
+class HDF5IO : public BaseIO, public AttributeMeshIOBase
 {
   public:
+
+    static const std::string vertices_name;
+    static const std::string indices_name;
+    static const std::string meshes_group;
+
     /**
          * \brief Parse the given file and load supported elements.
          *#include <highfive/H5DataSet.hpp>
@@ -64,6 +70,11 @@ class HDF5IO : public BaseIO
 
     ModelPtr read(std::string filename, size_t scanNr);
 
+    bool readPointCloud(ModelPtr model_ptr);
+
+    bool readMesh(ModelPtr model_ptr);
+
+
     /**
          * \brief Save the loaded elements to the given file.
          *
@@ -71,10 +82,34 @@ class HDF5IO : public BaseIO
          */
     virtual void save(std::string filename);
 
-    HDF5IO(std::string filename, bool truncate = false);
+    virtual void save(ModelPtr model, std::string filename);
+
+    bool saveMesh(ModelPtr model_ptr);
+
+
+
+    /**
+     * @brief Construct a new HDF5IO object. Do not use this. Only used by ModelFactory
+     *  
+     */
+    HDF5IO() {}
+
+    HDF5IO(std::string filename, int open_flags = HighFive::File::ReadOnly);
+
+    /**
+     * @brief Constructs a HDFIO io object to read a HDF5 file with the given filename.
+     * It accesses the mesh or point cloud with the given part name. The selected part can then be read and write
+     * to and from a Model pointer. This will automatically load and store all provided channels. The channels will
+     * be loaded if one accessing them in a lazy fashion.
+     * @param filename  The HDF5 file filename
+     * @param part_name The part in the HDF5 file which should be saved or loaded.
+     * @param open_flag Open flags: See the HighFive::File open flags
+     */
+    HDF5IO(const std::string filename, const std::string part_name, int open_flags = HighFive::File::ReadOnly);
+
     virtual ~HDF5IO();
 
-    bool open(std::string filename, bool truncate);
+    bool open(std::string filename, int open_flag);
 
     template<typename T>
     boost::shared_array<T> getArray(
@@ -90,7 +125,11 @@ class HDF5IO : public BaseIO
 
     ScanData    getSingleRawScanData(int nr, bool load_points = true);
 
+    CamData     getSingleRawCamData(int scan_id, int img_id, bool load_image_data = true);
+
     std::vector<ScanData> getRawScanData(bool load_points = true);
+
+    std::vector<std::vector<CamData> > getRawCamData(bool load_image_data = true);
 
     floatArr getFloatChannelFromRawScanData(std::string name,
             int nr, unsigned int& n, unsigned& w);
@@ -117,11 +156,15 @@ class HDF5IO : public BaseIO
             std::vector<hsize_t>& chunkSize,
             boost::shared_array<T> data);
 
-
     void addImage(
             std::string groupName, std::string name, cv::Mat& img);
-
+    
     void addRawScanData(int nr, ScanData &scan);
+
+    /**
+     * @brief add recorded image referenced to a scan pose
+     */
+    void addRawCamData( int scan_id, int img_id, CamData& cam_data );
 
     void addFloatChannelToRawScanData(std::string name, int nr, size_t n, unsigned w, floatArr data);
 
@@ -138,8 +181,93 @@ class HDF5IO : public BaseIO
 
     size_t chunkSize();
 
-
   private:
+
+    /**
+     * @brief Persistence layer interface, Accesses the vertices of the mesh in the persistence layer.
+     * @return An optional float channel, the channel is valid if the mesh vertices have been read successfully
+     */
+    virtual FloatChannelOptional getVertices();
+
+    /**
+     * @brief Persistence layer interface, Accesses the face indices of the mesh in the persistence layer.
+     * @return An optional index channel, the channel is valid if the mesh indices have been read successfully
+     */
+    virtual IndexChannelOptional getIndices();
+
+    /**
+     * @brief Persistence layer interface, Writes the vertices of the mesh to the persistence layer.
+     * @return true if the channel has been written successfully
+     */
+    virtual bool addVertices(const FloatChannel& channel_ptr);
+
+    /**
+     * @brief Persistence layer interface, Writes the face indices of the mesh to the persistence layer.
+     * @return true if the channel has been written successfully
+     */
+    virtual bool addIndices(const IndexChannel& channel_ptr);
+
+    template <typename T>
+    bool getChannel(const std::string group, const std::string name, boost::optional<AttributeChannel<T>>& channel);
+
+    /**
+     * @brief getChannel  Reads a float attribute channel in the given group with the given name
+     * @param group       The associated attribute group
+     * @param name        The associated attribute name
+     * @param channel     The pointer to the float channel
+     * @return            true if the channel has been loaded successfully, false otherwise
+     */
+    virtual bool getChannel(const std::string group, const std::string name, FloatChannelOptional& channel);
+
+    /**
+     * @brief getChannel  Reads an index attribute channel in the given group with the given name
+     * @param group       The associated attribute group
+     * @param name        The associated attribute name
+     * @param channel     The pointer to the index channel
+     * @return            true if the channel has been loaded successfully, false otherwise
+     */
+    virtual bool getChannel(const std::string group, const std::string name, IndexChannelOptional& channel);
+
+    /**
+     * @brief getChannel  Reads an unsigned char attribute channel in the given group with the given name
+     * @param group       The associated attribute group
+     * @param name        The associated attribute name
+     * @param channel     The pointer to the unsigned char channel
+     * @return            true if the channel has been loaded successfully, false otherwise
+     */
+    virtual bool getChannel(const std::string group, const std::string name, UCharChannelOptional& channel);
+
+    template <typename T>
+    bool addChannel(const std::string group, const std::string name, const AttributeChannel<T>& channel);
+
+    /**
+     * @brief addChannel  Writes a float attribute channel from the given group with the given name
+     * @param group       The associated attribute group
+     * @param name        The associated attribute name
+     * @param channel     The pointer to the float channel which should be written
+     * @return            true if the channel has been written successfully, false otherwise
+     */
+    virtual bool addChannel(const std::string group, const std::string name, const FloatChannel& channel);
+
+    /**
+     * @brief addChannel  Writes an index attribute channel from the given group with the given name
+     * @param group       The associated attribute group
+     * @param name        The associated attribute name
+     * @param channel     The pointer to the index channel which should be written
+     * @return            true if the channel has been written successfully, false otherwise
+     */
+    virtual bool addChannel(const std::string group, const std::string name, const IndexChannel& channel);
+
+    /**
+     * @brief addChannel  Writes an unsigned char attribute channel from the given group with the given name
+     * @param group       The associated attribute group
+     * @param name        The associated attribute name
+     * @param channel     The pointer to the unsigned char channel which should be written
+     * @return            true if the channel has been written successfully, false otherwise
+     */
+    virtual bool addChannel(const std::string group, const std::string name, const UCharChannel& channel);
+
+    boost::optional<HighFive::Group> getMeshGroup(bool create = false);
 
     template<typename T>
     boost::shared_array<T> getArray(HighFive::Group& g, std::string datasetName, std::vector<size_t>& dim);
@@ -155,7 +283,11 @@ class HDF5IO : public BaseIO
 
     void addImage(HighFive::Group& g, std::string datasetName, cv::Mat& img);
 
+    void getImage(HighFive::Group& g, std::string datasetName, cv::Mat& img);
+
     HighFive::Group getGroup(const std::string& groupName, bool create = true);
+
+    HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool create = true);
 
     std::vector<std::string> splitGroupNames(const std::string &groupName);
 
@@ -178,6 +310,8 @@ class HDF5IO : public BaseIO
     size_t                  m_chunkSize;
     bool                    m_usePreviews;
     unsigned int            m_previewReductionFactor;
+    std::string             m_part_name;
+    std::string             m_mesh_path;
 };
 
 } // namespace lvr2

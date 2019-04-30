@@ -4,7 +4,6 @@ set(LVR2_SOURCES
     texture/Texture.cpp
     texture/TextureFactory.cpp
     util/Util.cpp
-    display/PointOctree.cpp
     display/Renderable.cpp
     display/GroundPlane.cpp
     display/MultiPointCloud.cpp
@@ -24,15 +23,19 @@ set(LVR2_SOURCES
     io/CoordinateTransform.cpp
     io/ObjIO.cpp
 #    io/KinectIO.cpp
+    io/AttributeMeshIOBase.cpp
     io/PPMIO.cpp
     io/PLYIO.cpp
     io/IOUtils.cpp
-    io/AttributeManager.cpp
+    io/ChannelManager.cpp
     io/STLIO.cpp
     io/UosIO.cpp
     io/PCDIO.cpp
     io/Progress.cpp
     io/MeshBuffer.cpp
+    io/DracoEncoder.cpp
+    io/DracoDecoder.cpp
+    io/DrcIO.cpp
 #    io/KinectGrabber.cpp
     io/DatIO.cpp
     io/LasIO.cpp
@@ -41,7 +44,6 @@ set(LVR2_SOURCES
     io/Timestamp.cpp
     io/BoctreeIO.cpp
     io/GridIO.cpp
-    io/Hdf5IO.cpp
     io/BaseBuffer.cpp
     io/PointBuffer.cpp
     io/ModelFactory.cpp
@@ -72,16 +74,17 @@ endif()
 #####################################################################################
 
 set(LVR2_INTERNAL_DEPENDENCIES_STATIC
-    lvrrply_static
-    lvrlas_static
-    lvrslam6d_static)
+    lvr2rply_static
+    lvr2las_static
+    lvr2slam6d_static)
 
 set(LVR2_INTERNAL_DEPENDENCIES_SHARED
-    lvrrply
-    lvrlas
-    lvrslam6d)
+    lvr2rply
+    lvr2las
+    lvr2slam6d)
 
 set(LVR2_LIB_DEPENDENCIES
+    draco
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
@@ -91,6 +94,7 @@ set(LVR2_LIB_DEPENDENCIES
     ${OpenCV_LIBS}
     ${GSL_LIBRARIES}
     ${LZ4_LIBRARY})
+
 
 #####################################################################################
 # On Unix/Linux we need to link against pthreads
@@ -184,7 +188,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 
     install(
         TARGETS lvr2cuda_static lvr2cuda
-        EXPORT lvrTargets
+        EXPORT lvr2Targets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
@@ -221,3 +225,4 @@ install(TARGETS lvr2_static lvr2
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )
 endif( NOT MSVC)
+

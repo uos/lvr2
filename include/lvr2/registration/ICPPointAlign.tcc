@@ -62,8 +62,8 @@ ICPPointAlign<BaseVecT>::ICPPointAlign(PointBufferPtr model, PointBufferPtr data
 
     for(size_t i = 0; i < numPoints; i++)
     {
-        Vector<BaseVecT> v(o_points[3 * i], o_points[3 * i + 1], o_points[3 * i + 2]);
-        Vector<BaseVecT> t  = transform * v;
+        BaseVecT v(o_points[3 * i], o_points[3 * i + 1], o_points[3 * i + 2]);
+        BaseVecT t  = transform * v;
         t_points[3 * i    ] = t[0];
         t_points[3 * i + 1] = t[1];
         t_points[3 * i + 2] = t[2];
@@ -92,8 +92,8 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
         prev_ret = ret;
 
         // Get point pairs
-        Vector<BaseVecT>  centroid_m;
-        Vector<BaseVecT>  centroid_d;
+        BaseVecT  centroid_m;
+        BaseVecT  centroid_d;
         Matrix4<BaseVecT> transform;
         double            sum;
 
@@ -126,7 +126,7 @@ Matrix4<BaseVecT> ICPPointAlign<BaseVecT>::match()
 }
 
 template <typename BaseVecT>
-void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector<BaseVecT>& pairs, Vector<BaseVecT>& centroid_m, Vector<BaseVecT>& centroid_d, double& sum)
+void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector<BaseVecT>& pairs, BaseVecT& centroid_m, BaseVecT& centroid_d, double& sum)
 {
     size_t n = m_dataCloud->numPoints();
     bool ok;
@@ -137,20 +137,20 @@ void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector<BaseVecT>& pairs, Ve
     #pragma omp parallel
     {
         PointPairVector<BaseVecT> privatePairs;
-        Vector<BaseVecT> centroid_mP;
-        Vector<BaseVecT> centroid_dP;
+        BaseVecT centroid_mP;
+        BaseVecT centroid_dP;
         vector<size_t> neighbors;
 
         #pragma omp for nowait //fill vec_private in parallel
         for(size_t i = 0; i < m_dataCloud->numPoints(); i++)
         {
             // Get vertex representation of current data point
-            Vector<BaseVecT> t(dataPoints[i * 3], dataPoints[i * 3 + 1], dataPoints[i * 3 + 2]);
+            BaseVecT t(dataPoints[i * 3], dataPoints[i * 3 + 1], dataPoints[i * 3 + 2]);
 
 
             // Perform inverse transformation on query point to
             // it's position relative to the model point data
-            Vector<BaseVecT> s = transformInv * t;
+            BaseVecT s = transformInv * t;
 
             // Get closest point to "inverse query point"
             neighbors.clear();
@@ -162,8 +162,8 @@ void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector<BaseVecT>& pairs, Ve
             {
                 FloatChannelOptional pts_channel = m_modelCloud->getFloatChannel("points");
                 FloatChannel pts = *pts_channel;
-                Vector<BaseVecT> nb_pt = pts[neighbors[0]];
-                Vector<BaseVecT> closest = m_transformation * nb_pt;
+                BaseVecT nb_pt = pts[neighbors[0]];
+                BaseVecT closest = m_transformation * nb_pt;
                 if( (closest - t).length() < m_maxDistanceMatch)
                 {
                     centroid_dP += closest;
@@ -171,7 +171,7 @@ void ICPPointAlign<BaseVecT>::getPointPairs(PointPairVector<BaseVecT>& pairs, Ve
 
                     sum += (closest - t).length2();
 
-                    std::pair<Vector<BaseVecT>, Vector<BaseVecT>> ptPair(t, closest);
+                    std::pair<BaseVecT, BaseVecT> ptPair(t, closest);
                     privatePairs.push_back(ptPair);
                 }
             }

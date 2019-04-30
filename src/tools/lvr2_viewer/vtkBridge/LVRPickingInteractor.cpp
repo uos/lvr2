@@ -57,6 +57,10 @@ LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer
     m_startCameraMovePosition[0] = 0;
     m_startCameraMovePosition[1] = 0;
 
+    m_viewUp[0] = 0.0;
+    m_viewUp[1] = 1.0;
+    m_viewUp[2] = 0.0;
+
     m_pickMode = None;
     m_shooterMode = LOOK;
     m_correspondenceMode = false;
@@ -481,6 +485,28 @@ void LVRPickingInteractor::strafeShooter(double factor)
     }
 
 
+    rwi->Render();
+}
+
+void LVRPickingInteractor::resetViewUpShooter()
+{
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
+    camera->SetViewUp(m_viewUp[0], m_viewUp[1], m_viewUp[2]);
+    rwi->Render();
+}
+
+void LVRPickingInteractor::resetCamera()
+{
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    if(this->CurrentRenderer!=nullptr)
+    {
+        this->CurrentRenderer->ResetCamera();
+    }
+    else
+    {
+        vtkWarningMacro(<<"no current renderer on the interactor style.");
+    }
     rwi->Render();
 }
 
@@ -1255,7 +1281,7 @@ void LVRPickingInteractor::handlePicking()
             Q_EMIT(pointSelected(actor, point));
         }
     }
-    else if(m_pickMode = PickFocal)
+    else if(m_pickMode == PickFocal)
     {
         int* pickPos = this->Interactor->GetEventPosition();
         double* picked = new double[3];
@@ -1518,6 +1544,7 @@ void LVRPickingInteractor::OnKeyDown()
         rwi->Render();
     }
 
+
 }
 
 void LVRPickingInteractor::OnChar()
@@ -1545,7 +1572,33 @@ void LVRPickingInteractor::OnChar()
             strafeShooter(this->m_motionFactor);
             cout << "D" << endl;
             break;
-        }
+        case 'u':
+        case 'U':
+            resetViewUpShooter();
+            break;
+        case '1':
+            m_viewUp[0] = 1.0;
+            m_viewUp[1] = 0.0;
+            m_viewUp[2] = 0.0;
+            resetViewUpShooter();
+            break;
+        case '2':
+            m_viewUp[0] = 0.0;
+            m_viewUp[1] = 1.0;
+            m_viewUp[2] = 0.0;
+            resetViewUpShooter();
+            break;
+        case '3':
+            m_viewUp[0] = 0.0;
+            m_viewUp[1] = 0.0;
+            m_viewUp[2] = 1.0;
+            resetViewUpShooter();
+            break;
+        case 'R':
+        case 'r':
+            resetCamera();
+            break;
+        }  
     }
     else
     {

@@ -35,6 +35,7 @@
 #define LVRPICKINGINTERACTOR_HPP_
 
 #include <QObject>
+#include <QMessageBox>
 
 #include <vtkTextActor.h>
 #include <vtkInteractorStyleTrackballCamera.h>
@@ -112,6 +113,8 @@ public Q_SLOTS:
     void modeTrackball();
     void modeShooter();
 
+    void resetCamera();
+
 
 
 Q_SIGNALS:
@@ -174,7 +177,7 @@ private:
     void zoomShooter();
     void rotateShooter();
     void hoverShooter();
-
+    void resetViewUpShooter();
     void strafeShooter(double factor);
 
     void onLeftButtonDownShooter();
@@ -186,10 +189,6 @@ private:
     void onRightButtonDownShooter();
     void onMouseWheelBackwardShooter();
     void onMouseWheelForwardShooter();
-
-
-
-
 
     /// Indicates picking mode
     PickMode            m_pickMode;
@@ -205,6 +204,8 @@ private:
     unsigned int                    m_numberOfClicks;
     int                             m_previousPosition[2];
     int                             m_startCameraMovePosition[2];
+
+    double                          m_viewUp[3];
 
     float                           m_motionFactor;
     float                           m_rotationFactor;

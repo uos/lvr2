@@ -62,7 +62,7 @@ typedef map<PointCloud*, PointCloudAttribute*>::iterator pc_attr_it;
 class MultiPointCloud : public Renderable
 {
 
-    using uColorVertex = ColorVertex<Vec, unsigned char>;
+    using uColorVertex = ColorVertex<float, unsigned char>;
 public:
     MultiPointCloud(ModelPtr model, string name = "<unnamed point cloud>");
     MultiPointCloud(PointBufferPtr buffer, string name = "<unnamed point cloud>");
@@ -91,7 +91,7 @@ private:
 
     void init(PointBufferPtr buffer);
 
-    map<PointCloud*, PointCloudAttribute*>    m_clouds;
+    map<PointCloud*, PointCloudAttribute*> m_clouds;
 };
 
 void MultiPointCloud::render()

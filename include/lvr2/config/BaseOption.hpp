@@ -32,16 +32,16 @@
  *      Author: twiemann
  */
 
-#ifndef INCLUDE_LIBLVR_CONFIG_BASEOPTION_HPP_
-#define INCLUDE_LIBLVR_CONFIG_BASEOPTION_HPP_
+#ifndef INCLUDE_LIBLVR2_CONFIG_BASEOPTION_HPP_
+#define INCLUDE_LIBLVR2_CONFIG_BASEOPTION_HPP_
 
 #include <boost/program_options.hpp>
 #include <iostream>
 
+#include "lvr2/io/CoordinateTransform.hpp"
+
 namespace lvr2
 {
-
-class CoordinateTransform;
 
 using namespace boost::program_options;
 
@@ -86,6 +86,10 @@ public:
 	 */
 	int z() const { return m_variables["zPos"].as<int>();}
 
+	/// Returns the coordinate system transformation stored
+	/// in the option
+	CoordinateTransform<float> coordinateTransform() const;
+
 protected:
 
 	/// Setup internal data structures
@@ -104,7 +108,7 @@ protected:
 	positional_options_description 	m_pdescr;
 
     /// Coordinate transform information
-    CoordinateTransform*            m_coordinateTransform;
+    CoordinateTransform<float>*     m_coordinateTransform;
 
 	/// Argument count
 	int 							m_argc;
@@ -117,4 +121,4 @@ protected:
 
 } /* namespace lvr2 */
 
-#endif /* INCLUDE_LIBLVR_CONFIG_BASEOPTION_HPP_ */
+#endif /* INCLUDE_LIBLVR2_CONFIG_BASEOPTION_HPP_ */

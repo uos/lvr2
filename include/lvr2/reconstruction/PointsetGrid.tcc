@@ -59,7 +59,7 @@ PointsetGrid<BaseVecT, BoxT>::PointsetGrid(
     // Iterator over all points, calc lattice indices and add lattice points to the grid
     for(size_t i = 0; i < numPoint; i++)
     {
-        Vector<BaseVecT> pt = pts[i];
+        BaseVecT pt = pts[i];
         auto index = (pt - v_min) / this->m_voxelsize;
         this->addLatticePoint(calcIndex(index.x), calcIndex(index.y), calcIndex(index.z));
     }

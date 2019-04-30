@@ -33,6 +33,7 @@
  */
 
 #include <cmath>
+#include "Normal.hpp"
 #include <lvr2/util/Panic.hpp>
 
 namespace lvr2
@@ -80,6 +81,32 @@ template <typename CoordT>
 CoordT BaseVector<CoordT>::dot(const BaseVector &other) const
 {
     return x * other.x + y * other.y + z * other.z;
+}
+
+/**
+ * @brief    Calculates the cross product between this and
+ *           the given vector. Returns a new BaseVector instance.
+ */
+template <typename CoordT>
+BaseVector<CoordT> BaseVector<CoordT>::rotated(const BaseVector &n, const double &angle) const
+{
+    const double sin = std::sin(angle);
+    const double cos = std::cos(angle);
+    const double ncos = 1-cos;
+
+    const double n1sqncos = n.x * n.x * ncos;
+    const double n2sqncos = n.y * n.y * ncos;
+    const double n3sqncos = n.z * n.z * ncos;
+
+    const double n12ncos = n.x * n.y * ncos;
+    const double n13ncos = n.x * n.z * ncos;
+    const double n23ncos = n.y * n.z * ncos;
+
+    return BaseVector(
+        (n1sqncos+cos)*x + (n12ncos-n.z*sin)*y + (n13ncos+n.y*sin)*z,
+        (n12ncos+n.z*sin)*x + (n2sqncos+cos)*y + (n23ncos-n.x*sin)*z,
+        (n13ncos+n.y*sin)*x + (n23ncos+n.x*sin)*y + (n3sqncos+cos)*z
+    );
 }
 
 
@@ -165,7 +192,7 @@ bool BaseVector<CoordT>::operator!=(const BaseVector &other) const
 }
 
 template<typename CoordT>
-CoordT BaseVector<CoordT>::operator*(const BaseVector<CoordType> &other) const
+CoordT BaseVector<CoordT>::operator*(const BaseVector<CoordT> &other) const
 {
     return dot(other);
 }
@@ -183,6 +210,7 @@ CoordT BaseVector<CoordT>::operator[](const unsigned& index) const
             return z;
         default:
             panic("Access index out of range.");
+            return x; // return statement to suppress clang warning
     }
 }
 
@@ -199,8 +227,64 @@ CoordT& BaseVector<CoordT>::operator[](const unsigned& index)
             return z;
         default:
             panic("Access index out of range.");
+            return x; // return statement to suppress clang warning
     }
 }
+
+template <typename CoordT>
+Normal<CoordT> BaseVector<CoordT>::normalized() const
+{
+    return Normal<CoordT>(*this);
+}
+
+template <typename CoordT>
+CoordT BaseVector<CoordT>::distanceFrom(const BaseVector<CoordT> &other) const
+{
+    return (*this - other).length();
+}
+
+template <typename CoordT>
+CoordT BaseVector<CoordT>::squaredDistanceFrom(const BaseVector<CoordT> &other) const
+{
+    return (*this - other).length2();
+}
+
+template<typename CoordT>
+template<typename CollectionT>
+BaseVector<CoordT> BaseVector<CoordT>::average(const CollectionT& vecs)
+{
+    BaseVector<CoordT> acc(0, 0, 0);
+    size_t count = 0;
+    for (auto v: vecs)
+    {
+        static_assert(
+            std::is_same<decltype(v), BaseVector<CoordT>>::value,
+            "Collection has to contain Vectors"
+        );
+        acc += v;
+        count += 1;
+    }
+    return acc / count;
+}
+
+template<typename CoordT>
+template<typename CollectionT>
+BaseVector<CoordT> BaseVector<CoordT>::centroid(const CollectionT& points)
+{
+    BaseVector<CoordT> acc(0, 0, 0);
+    size_t count = 0;
+    for (auto p: points)
+    {
+        static_assert(
+            std::is_same<decltype(p), BaseVector<CoordT>>::value,
+            "Type mismatch in centroid calculation."
+        );
+        acc += p;
+        count += 1;
+    }
+    return BaseVector<CoordT>(0, 0, 0) + acc / count;
+}
+
 
 } // namespace lvr2
 

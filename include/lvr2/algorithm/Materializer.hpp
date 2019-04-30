@@ -44,8 +44,6 @@
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/geometry/Handles.hpp>
 #include <lvr2/geometry/Normal.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/geometry/Vector.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/texture/ClusterTexCoordMapping.hpp>
 #include <lvr2/texture/Texture.hpp>
@@ -146,7 +144,7 @@ public:
     Materializer(
         const BaseMesh<BaseVecT>& mesh,
         const ClusterBiMap<FaceHandle>& cluster,
-        const FaceMap<Normal<BaseVecT>>& normals,
+        const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
         const PointsetSurface<BaseVecT>& surface
     );
 
@@ -187,7 +185,7 @@ private:
     /// Clusters
     const ClusterBiMap<FaceHandle>& m_cluster;
     /// Normals
-    const FaceMap<Normal<BaseVecT>>& m_normals;
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& m_normals;
     /// Point cloud
     const PointsetSurface<BaseVecT>& m_surface;
 

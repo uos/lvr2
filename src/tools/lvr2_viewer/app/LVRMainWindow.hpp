@@ -49,6 +49,15 @@
 #include <vtkOrientationMarkerWidget.h>
 #include <vtkAxesActor.h>
 
+
+#if VTK_MAJOR_VERSION > 6
+    #include <vtkRenderStepsPass.h>
+    #include <vtkEDLShading.h>
+#endif
+
+#include <vtkOpenGLRenderer.h>
+#include <vtkNew.h>
+
 #include "../widgets/LVRPlotter.hpp"
 #include <QtGui>
 #include "ui_LVRMainWindowUI.h"
@@ -74,6 +83,7 @@
 #include "../widgets/LVRBackgroundDialog.hpp"
 #include "../widgets/LVRHistogram.hpp"
 #include "../widgets/LVRScanDataItem.hpp"
+#include "../widgets/LVRCamDataItem.hpp"
 #include "../widgets/LVRBoundingBoxItem.hpp"
 
 #include "../widgets/LVRPointInfo.hpp"
@@ -106,6 +116,7 @@ public:
 
 public Q_SLOTS:
     void loadModel();
+    void loadModels(const QStringList& filenames);
     void manualICP();
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);
@@ -124,11 +135,16 @@ public Q_SLOTS:
     void applyMLSProjection();
     void removeOutliers();
     void deleteModelItem();
+    void copyModelItem();
+    void pasteModelItem();
     void loadPointCloudData();
     void unloadPointCloudData();
     void changePointSize(int pointSize);
     void changeTransparency(int transparencyValue);
     void changeShading(int shader);
+
+    void showImage();
+    void setViewToCamera();
 
     /// Updates all selected LVRPointCloudItems to the desired Spectral. **can take seconds**
     void changeSpectralColor();
@@ -153,6 +169,9 @@ public Q_SLOTS:
     void toggleNormals(bool checkboxState);
     void toggleMeshes(bool checkboxState);
     void toggleWireframe(bool checkboxState);
+#if VTK_MAJOR_VERSION > 6
+    void toogleEDL(bool checkboxstate);
+#endif
     void refreshView();
     void updateView();
     void saveCamera();
@@ -181,6 +200,7 @@ public Q_SLOTS:
 
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
+    QList<LVRPointCloudItem*> getPointCloudItems(QList<QTreeWidgetItem*> items);
     LVRMeshItem* getMeshItem(QTreeWidgetItem* item);
     std::set<LVRModelItem*> getSelectedModelItems();
     std::set<LVRPointCloudItem*> getSelectedPointCloudItems();
@@ -198,7 +218,10 @@ Q_SIGNALS:
 private:
     void setupQVTK();
     void connectSignalsAndSlots();
+    bool childNameExists(QTreeWidgetItem* item, const QString& name);
+    QString increaseFilename(QString filename);
 
+    QList<QTreeWidgetItem*>                     m_items_copied;
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;
     LVRPlotter*                                 m_PointPreviewPlotter;
@@ -280,14 +303,26 @@ private:
     QLineEdit*                          m_gradientLineEdit;
     // ContextMenu Items
     QAction*                            m_actionShowColorDialog;
+    QAction*                            m_actionCopyModelItem;
+    QAction*                            m_actionPasteModelItem;
     QAction*                            m_actionRenameModelItem;
     QAction*                            m_actionDeleteModelItem;
     QAction*                            m_actionExportModelTransformed;
     QAction*                            m_actionLoadPointCloudData;
     QAction*                            m_actionUnloadPointCloudData;
 
+    QAction*                            m_actionShowImage;
+    QAction*                            m_actionSetViewToCamera;
+
     LVRPickingInteractor*               m_pickingInteractor;
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
+
+
+    // EDM Rendering
+#if VTK_MAJOR_VERSION > 6
+    vtkSmartPointer<vtkRenderStepsPass> m_basicPasses;
+    vtkSmartPointer<vtkEDLShading>      m_edl;
+#endif
 
     enum TYPE {
         MODELITEMS_ONLY,

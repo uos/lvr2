@@ -50,11 +50,11 @@ struct Line
 {
     Line() : normal(0, 0, 1) {}
 
-    Normal<BaseVecT> normal;
-    Vector<BaseVecT> pos;
+    Normal<typename BaseVecT::CoordType> normal;
+    BaseVecT pos;
 
     /// Projects the given point onto the line and returns the projection point.
-    Vector<BaseVecT> project(const Vector<BaseVecT>& other) const;
+    BaseVecT project(const BaseVecT& other) const;
 };
 
 template<typename BaseVecT>

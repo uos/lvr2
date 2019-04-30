@@ -33,6 +33,7 @@
  */
 
 #include <lvr2/util/Panic.hpp>
+#include <boost/shared_array.hpp>
 
 #include <sstream>
 #include <string>
@@ -67,6 +68,18 @@ StableVector<HandleT, ElemT>::StableVector(size_t countElements, const ElementTy
     : m_elements(countElements, defaultValue),
       m_usedCount(countElements)
 {}
+
+template<typename HandleT, typename ElemT>
+StableVector<HandleT, ElemT>::StableVector(size_t countElements, const boost::shared_array<ElementType>& sharedArray)
+    : m_usedCount(countElements)
+{
+    m_elements.reserve(countElements);
+    #pragma omp parallel for
+    for(size_t i=0; i<countElements; i++)
+    {
+        m_elements[i] = sharedArray[i];
+    }
+}
 
 template<typename HandleT, typename ElemT>
 HandleT StableVector<HandleT, ElemT>::push(const ElementType& elem)

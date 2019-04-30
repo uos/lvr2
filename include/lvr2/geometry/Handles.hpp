@@ -112,7 +112,7 @@ using Index = uint32_t;
 // - while executing unit tests
 // - in production
 //
-// No one wants to notice bugs when alreay running software in production. Thus
+// No one wants to notice bugs when already running software in production. Thus
 // we want to notice our mistakes earlier. Since this whole library clearly
 // doesn't care about unit tests, mistakes can only be noticed either at
 // compile time or when the developer executes the program.
@@ -122,7 +122,7 @@ using Index = uint32_t;
 // system, you can avoid many huge classes of bugs! The compiler will tell you
 // right away, when you made a mistake.
 //
-// So with these strongly typed handles, you cannot falsly assign an EdgeHandle
+// So with these strongly typed handles, you cannot falsely assign an EdgeHandle
 // to a FaceHandle -- it will result in a compiler error. If you were using
 // simple integers, the compiler wouldn't notice and you would have to track
 // down the bug manually. Not so great.

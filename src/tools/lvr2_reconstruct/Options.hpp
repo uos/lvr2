@@ -183,9 +183,19 @@ public:
     bool    writeClassificationResult() const;
 
     /**
-     * @brief   Returns the output file name
+     * @brief   Returns the input file name
      */
     string  getInputFileName() const;
+
+    /**
+     * @brief   Returns the output file name
+     */
+    string  getOutputFileName() const;
+
+    /**
+     * @brief   Returns the output file names
+     */
+    vector<string>  getOutputFileNames() const;
 
     /**
      * @brief   Returns the name of the classifier used to color the mesh

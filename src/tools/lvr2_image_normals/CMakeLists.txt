@@ -2,7 +2,7 @@
 # Set source files
 #####################################################################################
 
-set(LVR_IMG_NORMAL_SRC
+set(LVR2_IMG_NORMAL_SRC
     Main.cpp
     Options.cpp
 )
@@ -11,30 +11,30 @@ set(LVR_IMG_NORMAL_SRC
 # Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR_IMG_NORMAL_DEPS
+set(LVR2_IMG_NORMAL_DEPS
 	lvr2_static
-	lvrlas_static
-	lvrrply_static
-	lvrslam6d_static
+	lvr2las_static
+	lvr2rply_static
+	lvr2slam6d_static
 	${OPENGL_LIBRARIES}
 	${GLUT_LIBRARIES}
 	${OpenCV_LIBS}
 	)
 
 if(PCL_FOUND)
-  set(LVR_IMG_NORMAL_DEPS  ${LVR_IMG_NORMAL_DEPS} ${PCL_LIBRARIES} )
+  set(LVR2_IMG_NORMAL_DEPS  ${LVR2_IMG_NORMAL_DEPS} ${PCL_LIBRARIES} )
 endif(PCL_FOUND)
 
 if( ${NABO_FOUND} )
- set(LVR_IMG_NORMAL_DEPS  ${LVR_IMG_NORMAL_DEPS} ${NABO_LIBRARY} )
+ set(LVR2_IMG_NORMAL_DEPS  ${LVR2_IMG_NORMAL_DEPS} ${NABO_LIBRARY} )
 endif( ${NABO_FOUND} )
 
 #####################################################################################
 # Add executable
 #####################################################################################
 
-add_executable(lvr2_image_normals ${LVR_IMG_NORMAL_SRC})
-target_link_libraries(lvr2_image_normals ${LVR_IMG_NORMAL_DEPS})
+add_executable(lvr2_image_normals ${LVR2_IMG_NORMAL_SRC})
+target_link_libraries(lvr2_image_normals ${LVR2_IMG_NORMAL_DEPS})
 
 install(TARGETS lvr2_image_normals
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

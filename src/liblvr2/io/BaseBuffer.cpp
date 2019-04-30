@@ -65,19 +65,19 @@ IndexChannelOptional BaseBuffer::getIndexChannel(const std::string& name)
     return m_channels.getIndexChannel(name);
 }
 
-floatOptional BaseBuffer::getFloatAttribute(std::string name)
+floatOptional BaseBuffer::getFloatAtomic(std::string name)
 {
-    return m_channels.getFloatAttribute(name);
+    return m_channels.getFloatAtomic(name);
 }
 
-ucharOptional BaseBuffer::getUCharAttribute(std::string name)
+ucharOptional BaseBuffer::getUCharAtomic(std::string name)
 {
-    return m_channels.getUCharAttribute(name);
+    return m_channels.getUCharAtomic(name);
 }
 
-intOptional BaseBuffer::getIntAttribute(std::string name)
+intOptional BaseBuffer::getIntAtomic(std::string name)
 {
-    return m_channels.getIntAttribute(name);
+    return m_channels.getIntAtomic(name);
 }
 
 
@@ -97,19 +97,21 @@ void BaseBuffer::addIndexChannel(indexArray data, std::string name, size_t n, un
     m_channels.addIndexChannel(data, name, n, w);
 }
 
-void BaseBuffer::addFloatAttribute(float data, std::string name)
+void BaseBuffer::addFloatAtomic(float data, std::string name)
 {
-    m_channels.addFloatAttribute(data, name);
+    m_channels.addFloatAtomic(data, name);
 }
 
-void BaseBuffer::addUCharAttribute(unsigned char data, std::string name)
+void BaseBuffer::addUCharAtomic(unsigned char data, std::string name)
 {
-    m_channels.addUCharAttribute(data, name);
+    m_channels.addUCharAtomic(data, name);
 }
 
-void BaseBuffer::addIntAttribute(int data, std::string name)
+void BaseBuffer::addIntAtomic(int data, std::string name)
 {
-    m_channels.addIntAttribute(data, name);
+    m_channels.addIntAtomic(data, name);
 }
 
 }
+
+

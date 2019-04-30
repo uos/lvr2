@@ -40,7 +40,6 @@
 #include <iomanip>
 #include <vector>
 
-#include <lvr2/geometry/Vector.hpp>
 #include <lvr2/geometry/Normal.hpp>
 #include <lvr2/io/DataStruct.hpp>
 
@@ -100,7 +99,7 @@ public:
 	 * 			avoid a gimbal lock.
 	 */
 	template<typename T>
-	Matrix4(Vector<T> axis, ValueType angle)
+	Matrix4(T axis, ValueType angle)
 	{
 		// Check for gimbal lock
 		if(fabs(angle) < 0.0001){
@@ -128,12 +127,12 @@ public:
 			cout << "YAW: " << yaw << " PITCH: " << pitch << endl;
 
 			if(fabs(yaw)   > 0.0001){
-				m2 = Matrix4(Vector<T>(1.0, 0.0, 0.0), yaw);
+				m2 = Matrix4(T(1.0, 0.0, 0.0), yaw);
 				m3 = m3 * m2;
 			}
 
 			if(fabs(pitch) > 0.0001){
-				m1 = Matrix4(Vector<T>(0.0, 1.0, 0.0), pitch);
+				m1 = Matrix4(T(0.0, 1.0, 0.0), pitch);
 				m3 = m3 * m1;
 			}
 
@@ -146,7 +145,7 @@ public:
 			float tmp1, tmp2;
 
 			// Normalize axis
-			Normal<T> a(axis);
+			Normal<ValueType> a(axis);
 
 			m[ 0] = c + a.x * a.x * t;
 			m[ 5] = c + a.y * a.y * t;
@@ -174,7 +173,7 @@ public:
 	}
 
 	template<typename T>
-	Matrix4(const Vector<T> &position, const Vector<T> &angles)
+	Matrix4(const T &position, const T &angles)
 	{
 		float sx = sin(angles[0]);
 		float cx = cos(angles[0]);
@@ -205,7 +204,7 @@ public:
 
 	Matrix4(string filename);
 
-	virtual ~Matrix4()
+	~Matrix4()
 	{
 
 	}
@@ -238,8 +237,7 @@ public:
 	/**
 	 * @brief	Scales the matrix elemnts by the given factor
 	 */
-	template<typename T>
-	Matrix4<BaseVecT> operator*(const T &scale) const
+	Matrix4<BaseVecT> operator*(const ValueType &scale) const
 	{
 		ValueType new_matrix[16];
 		for(int i = 0; i < 16; i++){
@@ -339,7 +337,7 @@ public:
 	 * @brief	Multiplication of Matrix and Vertex types
 	 */
 	template<typename T>
-	Vector<T> operator*(const Vector<T> &v) const
+	T operator*(const T &v) const
 	{
         using ValType = typename T::CoordType;
 		ValType x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
@@ -350,7 +348,7 @@ public:
 		y = y + m[13];
 		z = z + m[14];
 
-		return Vector<T>(x, y, z);
+		return T(x, y, z);
 	}
 
     /**
@@ -359,10 +357,9 @@ public:
     template<typename T>
     Normal<T> operator*(const Normal<T> &v) const
     {
-        using ValType = typename T::CoordType;
-        ValType x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
-        ValType y = m[ 1] * v.x + m[ 5] * v.y + m[9 ] * v.z;
-        ValType z = m[ 2] * v.x + m[ 6] * v.y + m[10] * v.z;
+        T x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
+        T y = m[ 1] * v.x + m[ 5] * v.y + m[9 ] * v.z;
+        T z = m[ 2] * v.x + m[ 6] * v.y + m[10] * v.z;
 
         return Normal<T>(x, y, z);
     }
@@ -432,7 +429,7 @@ public:
 				pose[5]  = atan2( _trY, _trX );
 			}
 
-			//cout << pose[3] << " " << pose[4] << " " << pose[5] << endl;
+			// cout << pose[3] << " " << pose[4] << " " << pose[5] << endl;
 
 			pose[0] = m[12];
 			pose[1] = m[13];
@@ -486,7 +483,7 @@ public:
 	 * @brief	Returns the internal data array. Unsafe. Will probably
 	 * 			removed in one of the next versions.
 	 */
-	ValueType* getData(){ return m;};
+	ValueType* getData(){ return m;}
 
     floatArr toFloatArray()
     {
@@ -567,6 +564,8 @@ public:
 	    return Mout;
 	}
 
+	ValueType m[16];
+
 private:
 
     /**
@@ -602,7 +601,7 @@ private:
 	  return ( det );
 	}
 
-	ValueType m[16];
+	
 };
 
 /**

@@ -31,9 +31,10 @@
 
 #include <algorithm>
 #include <limits>
+#include <queue>
 
 #include <lvr2/attrmaps/AttrMaps.hpp>
-
+#include <lvr2/io/Progress.hpp>
 
 namespace lvr2
 {
@@ -51,8 +52,10 @@ void calcVertexLocalNeighborhood(
     });
 }
 
+
+
 template <typename BaseVecT, typename VisitorF>
-void visitLocalNeighborhoodOfVertex(
+void visitLocalVertexNeighborhood(
     const BaseMesh<BaseVecT>& mesh,
     VertexHandle vH,
     double radius,
@@ -61,7 +64,7 @@ void visitLocalNeighborhoodOfVertex(
 {
     // Prepare values for the radius test
     auto vPos = mesh.getVertexPosition(vH);
-    double radiusSquared = radius * radius;
+    const double radiusSquared = radius * radius;
 
     // Store the vertices we want to expand. We reserve memory for 8 vertices
     // already, since it's rather likely to have at least that many vertices
@@ -77,8 +80,7 @@ void visitLocalNeighborhoodOfVertex(
     //
     // It would be more appropriate to use a set instead of a map, but there
     // are no attribute-sets...
-    // TODO: reserve memory once the API allows it
-    SparseVertexMap<bool> visited(false);
+    SparseVertexMap<bool> visited(8, false);
     visited.insert(vH, true);
 
     // This vector is later used to store the neighbors of a vertex. It's
@@ -113,7 +115,7 @@ void visitLocalNeighborhoodOfVertex(
 }
 
 template <typename BaseVecT>
-DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, double radius)
+DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT>& mesh, double radius)
 {
     // We create a map to store a height-diff for each vertex. We preallocate
     // memory for all vertices. This is not only an optimization, but more
@@ -123,6 +125,11 @@ DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, doubl
     // threads are involved.
     DenseVertexMap<float> heightDiff;
     heightDiff.reserve(mesh.nextVertexIndex());
+
+    // Output
+    string msg = timestamp.getElapsedTime() + "Computing height differences...";
+    ProgressBar progress(mesh.numVertices(), msg);
+    ++progress;
 
     // Calculate height difference for each vertex
     #pragma omp parallel for
@@ -137,7 +144,7 @@ DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, doubl
         float minHeight = std::numeric_limits<float>::max();
         float maxHeight = std::numeric_limits<float>::lowest();
 
-        visitLocalNeighborhoodOfVertex(mesh, vH, radius, [&](auto neighbor) {
+        visitLocalVertexNeighborhood(mesh, vH, radius, [&](auto neighbor) {
             auto curPos = mesh.getVertexPosition(neighbor);
 
             if (curPos.z < minHeight)
@@ -151,25 +158,25 @@ DenseVertexMap<float> calcVertexHeightDiff(const BaseMesh<BaseVecT>& mesh, doubl
         });
 
         // Calculate the final height difference
-        heightDiff.insert(vH, maxHeight - minHeight);
+        #pragma omp critical
+        {
+            heightDiff.insert(vH, maxHeight - minHeight);
+            ++progress;
+        }
     }
 
     return heightDiff;
 }
 
 template<typename BaseVecT>
-DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<BaseVecT>>& normals)
+DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<typename BaseVecT::CoordType>>& normals)
 {
-    DenseEdgeMap<float> edgeAngle;
-
+    DenseEdgeMap<float> edgeAngle(mesh.nextEdgeIndex(), 0);
     for (auto eH: mesh.edges())
     {
         auto vHVector = mesh.getVerticesOfEdge(eH);
-        edgeAngle.insert(eH, acos(normals[vHVector[0]].dot(normals[vHVector[1]].asVector())));
-        if(isnan(edgeAngle[eH]))
-        {
-                edgeAngle[eH] = 0;
-        }
+        edgeAngle.insert(eH, acos(normals[vHVector[0]].dot(normals[vHVector[1]])));
+        if(isnan(edgeAngle[eH])) edgeAngle[eH] = 0;
     }
     return edgeAngle;
 }
@@ -177,10 +184,10 @@ DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const V
 template<typename BaseVecT>
 DenseVertexMap<float> calcAverageVertexAngles(
     const BaseMesh<BaseVecT>& mesh,
-    const VertexMap<Normal<BaseVecT>>& normals
+    const VertexMap<Normal<typename BaseVecT::CoordType>>& normals
 )
 {
-    DenseVertexMap<float> vertexAngles;
+    DenseVertexMap<float> vertexAngles(mesh.nextVertexIndex(), 0);
     auto edgeAngles = calcVertexAngleEdges(mesh, normals);
 
     for (auto vH: mesh.vertices())
@@ -202,7 +209,7 @@ template<typename BaseVecT>
 DenseVertexMap<float> calcVertexRoughness(
     const BaseMesh<BaseVecT>& mesh,
     double radius,
-    const VertexMap<Normal<BaseVecT>>& normals
+    const VertexMap<Normal<typename BaseVecT::CoordType>>& normals
 )
 {
     // We create a map to store the roughness for each vertex. We preallocate
@@ -216,6 +223,11 @@ DenseVertexMap<float> calcVertexRoughness(
 
     auto averageAngles = calcAverageVertexAngles(mesh, normals);
 
+    // Output
+    string msg = timestamp.getElapsedTime() + "Computing roughness";
+    ProgressBar progress(mesh.numVertices(), msg);
+    ++progress;
+
     // Calculate roughness for each vertex
     #pragma omp parallel for
     for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
@@ -226,27 +238,30 @@ DenseVertexMap<float> calcVertexRoughness(
             continue;
         }
 
-        double sum = 0.0;
-        uint32_t count = 0;
+        float sum = 0.0;
+        size_t count = 0;
 
-        visitLocalNeighborhoodOfVertex(mesh, vH, radius, [&](auto neighbor) {
+        visitLocalVertexNeighborhood(mesh, vH, radius, [&](auto neighbor) {
             sum += averageAngles[neighbor];
             count += 1;
         });
 
-        // Calculate the final roughness
-        roughness.insert(vH, sum / count);
-
+        #pragma omp critical
+        {
+            // Calculate the final roughness
+            roughness.insert(vH, count ? sum / count : 0);
+            ++progress;
+        }
     }
     return roughness;
 
 }
 
 template<typename BaseVecT>
-void calcVertexRoughnessAndHeightDiff(
+void calcVertexRoughnessAndHeightDifferences(
     const BaseMesh<BaseVecT>& mesh,
     double radius,
-    const VertexMap<Normal<BaseVecT>>& normals,
+    const VertexMap<Normal<typename BaseVecT::CoordType>>& normals,
     DenseVertexMap<float>& roughness,
     DenseVertexMap<float>& heightDiff
 )
@@ -275,7 +290,7 @@ void calcVertexRoughnessAndHeightDiff(
         float minHeight = std::numeric_limits<float>::max();
         float maxHeight = std::numeric_limits<float>::lowest();
 
-        visitLocalNeighborhoodOfVertex(mesh, vH, radius, [&](auto neighbor) {
+        visitLocalVertexNeighborhood(mesh, vH, radius, [&](auto neighbor) {
             sum += averageAngles[neighbor];
             count += 1;
 
@@ -291,12 +306,124 @@ void calcVertexRoughnessAndHeightDiff(
         });
 
         // Calculate the final roughness
-        roughness.insert(vH, sum / count);
+        roughness.insert(vH, count ? sum / count : 0);
 
         // Calculate the final height difference
         heightDiff.insert(vH, maxHeight - minHeight);
     }
 }
 
+template<typename BaseVecT>
+DenseEdgeMap<float> calcVertexDistances(const BaseMesh<BaseVecT>& mesh)
+{
+    DenseEdgeMap<float> distances;
+
+    distances.clear();
+    distances.reserve(mesh.nextEdgeIndex());
+    for(auto eH: mesh.edges())
+    {
+        auto vertices = mesh.getVerticesOfEdge(eH);
+        const float dist = mesh.getVertexPosition(vertices[0]).distance(mesh.getVertexPosition(vertices[1]));
+        distances.insert(eH, dist);
+    }
+    return distances;
+}
+
+class CompareDist
+{
+ public:
+  bool operator()(pair<lvr2::VertexHandle,float> n1,pair<lvr2::VertexHandle,float> n2) {
+      return n1.second>n2.second;
+  }
+};
+
+
+template<typename BaseVecT>
+bool Dijkstra(
+    const BaseMesh<BaseVecT>& mesh,
+    const VertexHandle& start,
+    const VertexHandle& goal,
+    const DenseEdgeMap<float>& edgeCosts,
+    std::list<VertexHandle>& path,
+    DenseVertexMap<float>& distances,
+    DenseVertexMap<VertexHandle>& predecessors,
+    DenseVertexMap<bool>& seen,
+    DenseVertexMap<float>& vertex_costs)
+{
+    path.clear();
+    distances.clear();
+    predecessors.clear();
+
+    // initialize distances with infinity
+    // initialize predecessor of each vertex with itself
+    for(auto const &vH : mesh.vertices())
+    {
+        distances.insert(vH, std::numeric_limits<float>::infinity());
+        predecessors.insert(vH, vH);
+    }
+
+    distances[start] = 0;
+
+    if(goal == start)
+    {
+        return true;
+    }
+
+    std::priority_queue<pair<VertexHandle,float>, vector< pair<VertexHandle,float> >,CompareDist> pq;
+
+    pair<VertexHandle,float> first_pair (start, 0);
+    pq.push(first_pair);
+
+
+    while(!pq.empty())
+    {
+        pair<VertexHandle, float> pair = pq.top();
+        VertexHandle current_vh = pair.first;
+        float current_dist = pair.second;
+        pq.pop();
+
+        // Check if the current Vertex was seen already
+        if(seen[current_vh])
+        {
+            // Skip to while
+            continue;
+        }
+        // Set the seen vertex to True
+        seen[current_vh] = true;
+
+        // Get all edges from the current Vertex
+        std::vector<VertexHandle> neighbours;
+        mesh.getNeighboursOfVertex(current_vh, neighbours);
+
+        for(auto neighbour_vh: neighbours)
+        {
+            if(seen[neighbour_vh] || vertex_costs[neighbour_vh] >= 1) continue;
+
+            float edge_cost = edgeCosts[mesh.getEdgeBetween(current_vh, neighbour_vh).unwrap()];
+
+            float tmp_neighbour_cost = distances[current_vh] + edge_cost;
+            if(distances[neighbour_vh] > tmp_neighbour_cost)
+            {
+                distances[neighbour_vh] = tmp_neighbour_cost;
+                predecessors[neighbour_vh] = current_vh;
+                pq.push(std::pair<VertexHandle,float>(neighbour_vh, tmp_neighbour_cost));
+            }
+        }
+    }
+
+    VertexHandle prev = goal;
+
+    if(prev == predecessors[goal]) return false;
+
+    do{
+        path.push_front(prev);
+        prev = predecessors[prev];
+    } while(prev != start);
+
+    path.push_front(start);
+
+    return true;
+
+}
 
 } // namespace lvr2

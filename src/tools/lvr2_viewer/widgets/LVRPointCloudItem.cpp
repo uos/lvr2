@@ -48,53 +48,84 @@ LVRPointCloudItem::LVRPointCloudItem(PointBufferBridgePtr ptr, QTreeWidgetItem* 
     setExpanded(true);
 
     // Setup Infos
-    QTreeWidgetItem* numItem = new QTreeWidgetItem(this);
+    m_numItem = new QTreeWidgetItem(this);
     QString num;
-    numItem->setText(0, "Num Points:");
-    numItem->setText(1, num.setNum(ptr->getNumPoints()));
-    addChild(numItem);
+    m_numItem->setText(0, "Num Points:");
+    m_numItem->setText(1, num.setNum(ptr->getNumPoints()));
+    addChild(m_numItem);
 
-    QTreeWidgetItem* normalItem = new QTreeWidgetItem(this);
-    normalItem->setText(0, "Has Normals:");
+    m_normalItem = new QTreeWidgetItem(this);
+    m_normalItem->setText(0, "Has Normals:");
     if(ptr->hasNormals())
     {
-        normalItem->setText(1, "yes");
+        m_normalItem->setText(1, "yes");
     }
     else
     {
-        normalItem->setText(1, "no");
+        m_normalItem->setText(1, "no");
     }
-    addChild(normalItem);
+    addChild(m_normalItem);
 
-    QTreeWidgetItem* colorItem = new QTreeWidgetItem(this);
-    colorItem->setText(0, "Has Colors:");
+    m_colorItem = new QTreeWidgetItem(this);
+    m_colorItem->setText(0, "Has Colors:");
     if(ptr->hasColors())
     {
-        colorItem->setText(1, "yes");
+        m_colorItem->setText(1, "yes");
     }
     else
     {
-        colorItem->setText(1, "no");
+        m_colorItem->setText(1, "no");
     }
-    addChild(colorItem);
+    addChild(m_colorItem);
 
-    QTreeWidgetItem* specItem = new QTreeWidgetItem(this);
-    specItem->setText(0, "Has Spectraldata:");
+    m_specItem = new QTreeWidgetItem(this);
+    m_specItem->setText(0, "Has Spectraldata:");
     if(ptr->getPointBuffer()->getUCharChannel("spectral_channels"))
     {
-        specItem->setText(1, "yes");
+        m_specItem->setText(1, "yes");
     }
     else
     {
-        specItem->setText(1, "no");
+        m_specItem->setText(1, "no");
     }
-    addChild(specItem);
+    addChild(m_specItem);
 
     // set initial values
     m_opacity = 1;
     m_pointSize = 1;
     m_color = QColor(255,255,255);
     m_visible = true;
+}
+
+void LVRPointCloudItem::update()
+{
+    m_pointBridge.reset(new LVRPointBufferBridge(m_pointBridge->getPointBuffer()));
+
+    QString num;
+    m_numItem->setText(1, num.setNum(m_pointBridge->getNumPoints()));
+
+    // normals update
+    if(m_pointBridge->hasNormals()) {
+        m_normalItem->setText(1, "yes");
+    } else {
+        m_normalItem->setText(1, "no");
+    }
+
+    // color update
+    if(m_pointBridge->hasColors())
+    {
+        m_colorItem->setText(1, "yes");
+    } else {
+        m_colorItem->setText(1, "no");
+    }
+
+    // hyperspectral update
+    if(m_pointBridge->getPointBuffer()->getUCharChannel("spectral_channels")) {
+        m_specItem->setText(1, "yes");
+    } else {
+        m_specItem->setText(1, "no");
+    }
+
 }
 
 QColor LVRPointCloudItem::getColor()
