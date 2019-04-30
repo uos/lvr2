@@ -64,7 +64,6 @@ ModelPtr AsciiIO::read(
     }
     // Count lines in file to estimate the number of present points
     size_t lines_in_file = countLines(filename);
-    cout << lines_in_file << endl;
 
     if ( lines_in_file < 2 )
     {
