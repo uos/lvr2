@@ -39,6 +39,7 @@
 
 // TODO: remove
 #include <chrono>
+using namespace std::chrono;
 
 #include <fstream>
 using std::ofstream;
@@ -80,13 +81,14 @@ Matrix4d ICPPointAlign::match()
         return Matrix4d();
     }
 
-    auto start_time = clock();
+    auto start_time = steady_clock::now();
     double pairTime = 0;
     double alignTime = 0;
 
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
     EigenSVDPointAlign align;
-    for (int i = 0; i < m_maxIterations; i++)
+    int iteration;
+    for (iteration = 0; iteration < m_maxIterations; iteration++)
     {
         // Update break variables
         prev_prev_ret = prev_ret;
@@ -98,33 +100,37 @@ Matrix4d ICPPointAlign::match()
         Matrix4d transform;
 
         PointPairVector pairs;
-        auto pre_pair = clock();
         getPointPairs(pairs, centroid_m, centroid_d);
-        pairTime += (double)(clock() - pre_pair) / CLOCKS_PER_SEC / 5.0;
 
-        // Get transformation (if possible)
-        auto pre_align = clock();
+        // Get transformation
         ret = align.alignPoints(pairs, centroid_m, centroid_d, transform);
-        alignTime += (double)(clock() - pre_align) / CLOCKS_PER_SEC / 5.0;
 
         // Apply transformation
         m_transformation = transformRegistration(m_transformation, transform);
 
         if (!m_quiet)
         {
-            cout << timestamp << "ICP Error is " << ret << " in iteration " << i << " / " << m_maxIterations << " using " << pairs.size() << " points." << endl;
+            cout << timestamp << "ICP Error is " << ret << " in iteration " << iteration << " / " << m_maxIterations << " using " << pairs.size() << " points." << endl;
         }
 
         // Check minimum distance
         if ((fabs(ret - prev_ret) < m_epsilon) && (fabs(ret - prev_prev_ret) < m_epsilon))
         {
-            cout << timestamp << " Error below m_epsilon after " << i << " / " << m_maxIterations << " Iterations" << endl;
             break;
         }
     }
-    cout << "Time: " << (double)(clock() - start_time) / CLOCKS_PER_SEC / 5.0 << endl;
-    cout << "Pairing time: " << pairTime << "; " << "Algining time: " << alignTime << endl;
-    cout << "Error: " << ret << "; Result: " << endl << m_transformation << endl;
+    auto duration = steady_clock::now() - start_time;
+    cout << setw(6) << (int)(duration.count() / 1e6) << " ms, ";
+    cout << "Error: " << fixed << setprecision(3) << setw(7) << ret;
+    if (iteration < m_maxIterations)
+    {
+        cout << " after " << iteration << " Iterations";
+    }
+    cout << endl;
+    if (!m_quiet)
+    {
+        cout << "Result: " << endl << m_transformation << endl;
+    }
     return m_transformation;
 }
 

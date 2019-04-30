@@ -36,8 +36,6 @@
 #include <lvr2/io/IOUtils.hpp>
 #include <lvr2/registration/ICPPointAlign.hpp>
 
-// local includes
-
 using namespace lvr2;
 using namespace std;
 using boost::filesystem::path;
@@ -222,7 +220,10 @@ int main(int argc, char** argv)
         scans.push_back(ScanPtr(new Scan(model->m_pointCloud, pose)));
     }
 
-    clock_t start_time = clock();
+    cout << "Loaded " << scans.size() << " Scans" << endl;
+
+    auto start_time = chrono::steady_clock::now();
+    string scan_number_string = to_string(end);
 
     for (size_t i = 1; i < scans.size(); i++)
     {
@@ -234,12 +235,21 @@ int main(int argc, char** argv)
         icp.setEpsilon(epsilon);
         icp.setQuiet(quiet);
 
+        if (quiet)
+        {
+            cout << setw(scan_number_string.length()) << (i + start) << "/" << scan_number_string << ": " << flush;
+        }
+        else
+        {
+            cout << "Iteration " << setw(scan_number_string.length()) << (i + start) << "/" << scan_number_string << ": " << endl;
+        }
+
         Matrix4d result = icp.match();
         current->pose = result;
     }
 
-    double required_time = (double)(clock() - start_time) / CLOCKS_PER_SEC / 5.0 * 1000.0;
-    cout << "ICP finished in " << required_time << "ms" << endl;
+    auto required_time = chrono::steady_clock::now() - start_time;
+    cout << "ICP finished in " << required_time.count() / 1e9 << " seconds" << endl;
 
     return EXIT_SUCCESS;
 }
