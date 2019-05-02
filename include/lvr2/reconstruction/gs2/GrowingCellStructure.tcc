@@ -76,7 +76,7 @@ namespace lvr2 {
 
         if(m_mesh->numVertices() > 5000)
         {
-           removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
+           //removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
         }
 
         for(auto vertexH : m_mesh->vertices())
