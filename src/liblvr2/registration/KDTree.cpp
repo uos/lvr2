@@ -26,6 +26,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * KDTree.hpp
+ *
+ *  @date Apr 28, 2019
+ *  @author Malte Hillmann
+ */
 #include <lvr2/registration/KDTree.hpp>
 
 namespace lvr2

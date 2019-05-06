@@ -26,59 +26,65 @@
  */
 
 /**
- * ICPPointAlign.hpp
+ * SlamAlign.hpp
  *
- *  @date Mar 18, 2014
- *  @author Thomas Wiemann
+ *  @date May 6, 2019
+ *  @author Malte Hillmann
  */
-#ifndef ICPPOINTALIGN_HPP_
-#define ICPPOINTALIGN_HPP_
+#ifndef SLAMALIGN_HPP_
+#define SLAMALIGN_HPP_
 
-#include <lvr2/registration/EigenSVDPointAlign.hpp>
-#include <lvr2/registration/KDTree.hpp>
-#include <lvr2/registration/ScanPose.hpp>
+#include <lvr2/registration/ICPPointAlign.hpp>
 
 namespace lvr2
 {
 
-class ICPPointAlign
+class SlamAlign
 {
+
+using Scan = std::pair<PointBufferPtr, ScanPose>;
+
 public:
-    ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const ScanPose& modelPose, const ScanPose& dataPose);
+    SlamAlign();
 
-    Matrix4d match();
+    void addScan(PointBufferPtr points, ScanPose pose);
 
-    virtual ~ICPPointAlign() = default;
+    size_t scanCount() const;
 
-    void    setMaxMatchDistance(double distance);
-    void    setMaxIterations(int iterations);
+    virtual ~SlamAlign() = default;
+
+    void    setSlamMaxDistance(double slamMaxDistance);
+    void    setSlamIterations(int slamIterations);
+    void    setIcpMaxDistance(double icpMaxDistance);
+    void    setIcpIterations(int icpIterations);
+    void    setDoLoopClosing(bool doLoopClosing);
+    void    setDoGraphSlam(bool doGraphSlam);
     void    setEpsilon(double epsilon);
     void    setQuiet(bool quiet);
 
-    double  getMaxMatchDistance();
-    int     getMaxIterations();
-    double  getEpsilon();
-    bool    getQuiet();
-
-    void getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d);
+    double  getSlamMaxDistance() const;
+    int     getSlamIterations() const;
+    double  getIcpMaxDistance() const;
+    int     getIcpIterations() const;
+    bool    getDoLoopClosing() const;
+    bool    getDoGraphSlam() const;
+    double  getEpsilon() const;
+    bool    getQuiet() const;
 
 protected:
 
-    void transform();
+    double  m_slamMaxDistance = 25;
+    int     m_slamIterations = 50;
+    double  m_icpMaxDistance = 25;
+    int     m_icpIterations = 50;
+    bool    m_doLoopClosing = false;
+    bool    m_doGraphSlam = false;
+    double  m_epsilon = 0.00001;
+    bool    m_quiet = false;
 
-    double          m_epsilon;
-    double          m_maxDistanceMatch;
-    int             m_maxIterations;
-
-    bool            m_quiet;
-
-    PointBufferPtr  m_modelCloud;
-    PointBufferPtr  m_dataCloud;
-    Matrix4d        m_transformation;
-
-    KDTreePtr m_searchTree;
+    vector<Scan> m_scans;
 };
 
 } /* namespace lvr2 */
 
-#endif /* ICPPOINTALIGN_HPP_ */
+#endif /* SLAMALIGN_HPP_ */

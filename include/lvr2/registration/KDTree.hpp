@@ -29,7 +29,7 @@
 /**
  * KDTree.hpp
  *
- *  @date Mar 18, 2014
+ *  @date Apr 28, 2019
  *  @author Malte Hillmann
  */
 #ifndef KDTREE_HPP_
