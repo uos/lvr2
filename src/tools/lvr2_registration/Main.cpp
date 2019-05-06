@@ -25,6 +25,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * Main.cpp
+ *
+ *  @date Apr 25, 2019
+ *  @author Malte Hillmann
+ */
+
 // external includes
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -34,24 +41,11 @@
 // internal includes
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/io/IOUtils.hpp>
-#include <lvr2/registration/ICPPointAlign.hpp>
+#include <lvr2/registration/SlamAlign.hpp>
 
 using namespace lvr2;
 using namespace std;
 using boost::filesystem::path;
-using Eigen::Matrix4d;
-
-class Scan
-{
-public:
-    PointBufferPtr points;
-    Matrix4d pose;
-
-    Scan(PointBufferPtr& points, Matrix4d pose = Matrix4d::Identity())
-        : points(points), pose(pose)
-    { }
-};
-using ScanPtr = shared_ptr<Scan>;
 
 string format_name(string prefix, int index, string suffix, int number_length = -1)
 {
@@ -66,11 +60,11 @@ string format_name(string prefix, int index, string suffix, int number_length = 
 int main(int argc, char** argv)
 {
     // =============== parse options ===============
-    int start, end, iterations;
-    double epsilon, distance;
+    int start, end, icpIterations, slamIterations;
+    double epsilon, icpMaxDistance, slamMaxDistance;
     string format;
     path dir;
-    bool quiet;
+    bool quiet, doLoopClosing, doGraphSlam, help;
 
     try
     {
@@ -81,11 +75,15 @@ int main(int argc, char** argv)
         ("start,s", value<int>(&start)->default_value(-1), "The first scan to process.\n-1 (default): search for first scan")
         ("end,e", value<int>(&end)->default_value(-1), "The last scan to process.\n-1 (default): continue until no more scan found")
         ("format,f", value<string>(&format)->default_value("uos"), "The format to use.\navailable formats are listed <somewhere>")
-        ("iterations,i", value<int>(&iterations)->default_value(50), "Number of iterations for ICP")
-        ("distance,d", value<double>(&distance)->default_value(25), "The maximum distance between two points during ICP")
+        ("icpIterations,i", value<int>(&icpIterations)->default_value(50), "Number of iterations for ICP")
+        ("icpMaxDistance,d", value<double>(&icpMaxDistance)->default_value(25), "The maximum distance between two points during ICP")
+        ("slamIterations,I", value<int>(&slamIterations)->default_value(50), "Number of iterations for SLAM")
+        ("slamMaxDistance,D", value<double>(&slamMaxDistance)->default_value(25), "The maximum distance between two points during SLAM")
         ("epsilon", value<double>(&epsilon)->default_value(0.00001), "The desired epsilon difference between two error values")
-        ("quiet,q", "Hide detailed output and only show results")
-        ("help,h", "Print this help")
+        ("loop,L", bool_switch(&doLoopClosing), "Use simple Loop Closing")
+        ("graph,G", bool_switch(&doGraphSlam), "Use complex Loop Closing with GraphSLAM")
+        ("quiet,q", bool_switch(&quiet), "Hide detailed output and only show results")
+        ("help,h", bool_switch(&help), "Print this help")
         ;
 
         options_description hidden_options("hidden_options");
@@ -103,7 +101,7 @@ int main(int argc, char** argv)
         store(command_line_parser(argc, argv).options(options).positional(pos).run(), variables);
         notify(variables);
 
-        if (variables.count("help"))
+        if (help)
         {
             cout << "The Scan Registration Tool" << endl;
             cout << "Usage: " << endl;
@@ -118,11 +116,6 @@ int main(int argc, char** argv)
         {
             throw error("Missing <dir> Parameter");
         }
-        else
-        {
-            dir = variables["dir"].as<path>();
-        }
-        quiet = variables.count("quiet") > 0;
     }
     catch (const boost::program_options::error& ex)
     {
@@ -206,8 +199,19 @@ int main(int argc, char** argv)
         }
     }
 
-    vector<ScanPtr> scans;
-    scans.reserve(end - start);
+    SlamAlign align;
+
+    align.setSlamMaxDistance(slamMaxDistance);
+    align.setSlamIterations(slamIterations);
+    align.setIcpMaxDistance(icpMaxDistance);
+    align.setIcpIterations(icpIterations);
+    align.setDoLoopClosing(doLoopClosing);
+    align.setDoGraphSlam(doGraphSlam);
+    align.setEpsilon(epsilon);
+    align.setQuiet(quiet);
+
+    auto start_time = chrono::steady_clock::now();
+    string scan_number_string = to_string(end);
 
     for (int i = start; i <= end; i++)
     {
@@ -215,41 +219,25 @@ int main(int argc, char** argv)
         auto model = ModelFactory::readModel(file.string());
 
         file.replace_extension("pose");
-        Matrix4d pose = getTransformationFromPose(file);
+        ScanPose pose = ScanPose::fromFile(file.string());
 
-        scans.push_back(ScanPtr(new Scan(model->m_pointCloud, pose)));
-    }
-
-    cout << "Loaded " << scans.size() << " Scans" << endl;
-
-    auto start_time = chrono::steady_clock::now();
-    string scan_number_string = to_string(end);
-
-    for (size_t i = 1; i < scans.size(); i++)
-    {
-        ScanPtr& prev = scans[i - 1];
-        ScanPtr& current = scans[i];
-        ICPPointAlign icp(prev->points, current->points, prev->pose, current->pose);
-        icp.setMaxMatchDistance(distance);
-        icp.setMaxIterations(iterations);
-        icp.setEpsilon(epsilon);
-        icp.setQuiet(quiet);
-
-        if (quiet)
+        if (i != start)
         {
-            cout << setw(scan_number_string.length()) << (i + start) << "/" << scan_number_string << ": " << flush;
-        }
-        else
-        {
-            cout << "Iteration " << setw(scan_number_string.length()) << (i + start) << "/" << scan_number_string << ": " << endl;
+            if (quiet)
+            {
+                cout << setw(scan_number_string.length()) << (i + start) << "/" << scan_number_string << ": " << flush;
+            }
+            else
+            {
+                cout << "Iteration " << setw(scan_number_string.length()) << (i + start) << "/" << scan_number_string << ": " << endl;
+            }
         }
 
-        Matrix4d result = icp.match();
-        current->pose = result;
+        align.addScan(model->m_pointCloud, pose);
     }
 
     auto required_time = chrono::steady_clock::now() - start_time;
-    cout << "ICP finished in " << required_time.count() / 1e9 << " seconds" << endl;
+    cout << "SLAM finished in " << required_time.count() / 1e9 << " seconds" << endl;
 
     return EXIT_SUCCESS;
 }

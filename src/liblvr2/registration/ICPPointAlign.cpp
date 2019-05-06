@@ -49,8 +49,8 @@ using namespace std;
 namespace lvr2
 {
 
-ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Matrix4d& modelPose, const Matrix4d& dataPose) :
-    m_dataCloud(data), m_transformation(dataPose)
+ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const ScanPose& modelPose, const ScanPose& dataPose) :
+    m_dataCloud(data), m_transformation(dataPose.toMatrix())
 {
     // Init default values
     m_maxDistanceMatch  = 25;
@@ -63,11 +63,12 @@ ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Ma
     floatArr o_points = model->getPointArray();
 
     PointArray modelPoints = PointArray(new Vector3d[n]);
+    Matrix4d modelMat = modelPose.toMatrix();
 
     for (size_t i = 0; i < n; i++)
     {
         Eigen::Vector4d v(o_points[3 * i], o_points[3 * i + 1], o_points[3 * i + 2], 1.0);
-        modelPoints[i] = (modelPose * v).block<3, 1>(0, 0);
+        modelPoints[i] = (modelMat * v).block<3, 1>(0, 0);
     }
 
     // Create search tree

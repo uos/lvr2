@@ -61,6 +61,8 @@ set(LVR2_SOURCES
     registration/EigenSVDPointAlign.cpp
     registration/ICPPointAlign.cpp
     registration/KDTree.cpp
+    registration/ScanPose.cpp
+    registration/SlamAlign.cpp
 )
 
 
