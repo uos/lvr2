@@ -26,61 +26,45 @@
  */
 
 /**
- * ICPPointAlign.hpp
+ * Scan.hpp
  *
- *  @date Mar 18, 2014
- *  @author Thomas Wiemann
+ *  @date May 6, 2019
+ *  @author Malte Hillmann
  */
-#ifndef ICPPOINTALIGN_HPP_
-#define ICPPOINTALIGN_HPP_
+#ifndef SCAN_HPP_
+#define SCAN_HPP_
 
-#include <lvr2/registration/EigenSVDPointAlign.hpp>
-#include <lvr2/registration/KDTree.hpp>
+#include <Eigen/Dense>
+#include <lvr2/io/PointBuffer.hpp>
+using Eigen::Matrix4d;
+using Eigen::Vector3d;
 
 namespace lvr2
 {
 
-class ICPPointAlign
+class Scan
 {
 public:
-    ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Matrix4d& modelPose, const Matrix4d& dataPose);
+    Scan(PointBufferPtr points, const Matrix4d& pose);
 
-    Matrix4d match();
+    void transform(const Matrix4d& transform);
+    void addFrame();
 
-    virtual ~ICPPointAlign() = default;
+    const PointBufferPtr& getPoints() const;
+    const Matrix4d& getPose() const;
 
-    void    setMaxMatchDistance(double distance);
-    void    setMaxIterations(int iterations);
-    void    setEpsilon(double epsilon);
-    void    setQuiet(bool quiet);
+    void writeFrames(std::string path) const;
 
-    double  getMaxMatchDistance() const;
-    int     getMaxIterations() const;
-    double  getEpsilon() const;
-    bool    getQuiet() const;
+private:
+    PointBufferPtr m_points;
+    Matrix4d m_pose;
+    Matrix4d m_deltaPose;
 
-    void getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d) const;
-
-    const Matrix4d& getDeltaTransform() const;
-
-protected:
-
-    void transform();
-
-    double          m_epsilon;
-    double          m_maxDistanceMatch;
-    int             m_maxIterations;
-
-    bool            m_quiet;
-
-    PointBufferPtr  m_modelCloud;
-    PointBufferPtr  m_dataCloud;
-    Matrix4d        m_transformation;
-    Matrix4d        m_deltaTransform;
-
-    KDTreePtr m_searchTree;
+    std::vector<Matrix4d> m_frames;
 };
+
+using ScanPtr = std::shared_ptr<Scan>;
 
 } /* namespace lvr2 */
 
-#endif /* ICPPOINTALIGN_HPP_ */
+#endif /* SCAN_HPP_ */

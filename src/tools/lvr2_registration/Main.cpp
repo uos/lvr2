@@ -199,7 +199,21 @@ int main(int argc, char** argv)
         }
     }
 
-    SlamAlign align;
+    vector<ScanPtr> scans;
+    scans.reserve(end - start);
+
+    for (int i = start; i <= end; i++)
+    {
+        path file = dir / format_name(format_prefix, i, format_suffix, format_number_length);
+        auto model = ModelFactory::readModel(file.string());
+
+        file.replace_extension("pose");
+        Matrix4d pose = getTransformationFromPose(file);
+
+        scans.push_back(make_shared<Scan>(model->m_pointCloud, pose));
+    }
+
+    SlamAlign align(scans);
 
     align.setSlamMaxDistance(slamMaxDistance);
     align.setSlamIterations(slamIterations);
@@ -211,33 +225,19 @@ int main(int argc, char** argv)
     align.setQuiet(quiet);
 
     auto start_time = chrono::steady_clock::now();
-    string scan_number_string = to_string(end);
+
+    align.match();
+
+    auto required_time = chrono::steady_clock::now() - start_time;
+    cout << "SLAM finished in " << required_time.count() / 1e9 << " seconds" << endl;
 
     for (int i = start; i <= end; i++)
     {
         path file = dir / format_name(format_prefix, i, format_suffix, format_number_length);
-        auto model = ModelFactory::readModel(file.string());
+        file.replace_extension("frames");
 
-        file.replace_extension("pose");
-        ScanPose pose = ScanPose::fromFile(file.string());
-
-        if (i != start)
-        {
-            if (quiet)
-            {
-                cout << setw(scan_number_string.length()) << (i + start) << "/" << scan_number_string << ": " << flush;
-            }
-            else
-            {
-                cout << "Iteration " << setw(scan_number_string.length()) << (i + start) << "/" << scan_number_string << ": " << endl;
-            }
-        }
-
-        align.addScan(model->m_pointCloud, pose);
+        scans[i - start]->writeFrames(file.string());
     }
-
-    auto required_time = chrono::steady_clock::now() - start_time;
-    cout << "SLAM finished in " << required_time.count() / 1e9 << " seconds" << endl;
 
     return EXIT_SUCCESS;
 }

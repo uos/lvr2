@@ -49,8 +49,8 @@ using namespace std;
 namespace lvr2
 {
 
-ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const ScanPose& modelPose, const ScanPose& dataPose) :
-    m_dataCloud(data), m_transformation(dataPose.toMatrix())
+ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Matrix4d& modelPose, const Matrix4d& dataPose) :
+    m_dataCloud(data), m_transformation(dataPose), m_deltaTransform(Matrix4d::Identity())
 {
     // Init default values
     m_maxDistanceMatch  = 25;
@@ -63,12 +63,12 @@ ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Sc
     floatArr o_points = model->getPointArray();
 
     PointArray modelPoints = PointArray(new Vector3d[n]);
-    Matrix4d modelMat = modelPose.toMatrix();
 
+    #pragma omp parallel for
     for (size_t i = 0; i < n; i++)
     {
         Eigen::Vector4d v(o_points[3 * i], o_points[3 * i + 1], o_points[3 * i + 2], 1.0);
-        modelPoints[i] = (modelMat * v).block<3, 1>(0, 0);
+        modelPoints[i] = (modelPose * v).block<3, 1>(0, 0);
     }
 
     // Create search tree
@@ -108,6 +108,7 @@ Matrix4d ICPPointAlign::match()
 
         // Apply transformation
         m_transformation = transformRegistration(m_transformation, transform);
+        m_deltaTransform = transformRegistration(m_deltaTransform, transform);
 
         if (!m_quiet)
         {
@@ -135,7 +136,12 @@ Matrix4d ICPPointAlign::match()
     return m_transformation;
 }
 
-void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d)
+const Matrix4d& ICPPointAlign::getDeltaTransform() const
+{
+    return m_deltaTransform;
+}
+
+void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d) const
 {
     FloatChannel data_pts = m_dataCloud->getFloatChannel("points").get();
     size_t n = data_pts.numElements();
@@ -190,22 +196,22 @@ void ICPPointAlign::setQuiet(bool quiet)
     m_quiet = quiet;
 }
 
-double ICPPointAlign::getMaxMatchDistance()
+double ICPPointAlign::getMaxMatchDistance() const
 {
     return m_maxDistanceMatch;
 }
 
-int ICPPointAlign::getMaxIterations()
+int ICPPointAlign::getMaxIterations() const
 {
     return m_maxIterations;
 }
 
-double ICPPointAlign::getEpsilon()
+double ICPPointAlign::getEpsilon() const
 {
     return m_epsilon;
 }
 
-bool ICPPointAlign::getQuiet()
+bool ICPPointAlign::getQuiet() const
 {
     return m_quiet;
 }

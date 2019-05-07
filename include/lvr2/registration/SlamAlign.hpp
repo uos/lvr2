@@ -35,6 +35,7 @@
 #define SLAMALIGN_HPP_
 
 #include <lvr2/registration/ICPPointAlign.hpp>
+#include <lvr2/registration/Scan.hpp>
 
 namespace lvr2
 {
@@ -42,14 +43,10 @@ namespace lvr2
 class SlamAlign
 {
 
-using Scan = std::pair<PointBufferPtr, ScanPose>;
-
 public:
-    SlamAlign();
+    SlamAlign(const std::vector<ScanPtr>& scans);
 
-    void addScan(PointBufferPtr points, ScanPose pose);
-
-    size_t scanCount() const;
+    void match();
 
     virtual ~SlamAlign() = default;
 
@@ -82,7 +79,7 @@ protected:
     double  m_epsilon = 0.00001;
     bool    m_quiet = false;
 
-    vector<Scan> m_scans;
+    vector<ScanPtr> m_scans;
 };
 
 } /* namespace lvr2 */
