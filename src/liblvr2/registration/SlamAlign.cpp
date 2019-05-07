@@ -38,33 +38,47 @@ using namespace std;
 namespace lvr2
 {
 
-SlamAlign::SlamAlign()
+SlamAlign::SlamAlign(const std::vector<ScanPtr>& scans)
+    : m_scans(move(scans))
 {
 
 }
 
-void SlamAlign::addScan(PointBufferPtr points, ScanPose pose)
+void SlamAlign::match()
 {
-    if (m_scans.empty())
+    string scan_number_string = to_string(m_scans.size());
+
+    for(size_t i = 1; i < m_scans.size(); i++)
     {
-        m_scans.push_back(make_pair(points, pose));
-        return;
+        if (m_quiet)
+        {
+            cout << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << flush;
+        }
+        else
+        {
+            cout << "Iteration " << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << endl;
+        }
+
+        const ScanPtr& prev = m_scans[i - 1];
+        const ScanPtr& cur = m_scans[i];
+
+        ICPPointAlign icp(prev->getPoints(), cur->getPoints(), prev->getPose(), cur->getPose());
+        icp.setMaxMatchDistance(m_icpMaxDistance);
+        icp.setMaxIterations(m_icpIterations);
+        icp.setEpsilon(m_epsilon);
+        icp.setQuiet(m_quiet);
+
+        Matrix4d result = icp.match();
+        cur->transform(icp.getDeltaTransform());
+
+        for(const ScanPtr& scan : m_scans)
+        {
+            if (scan != cur)
+            {
+                scan->addFrame();
+            }
+        }
     }
-    Scan& prev = m_scans.back();
-    ICPPointAlign icp(prev.first, points, prev.second, pose);
-    icp.setMaxMatchDistance(m_icpMaxDistance);
-    icp.setMaxIterations(m_icpIterations);
-    icp.setEpsilon(m_epsilon);
-    icp.setQuiet(m_quiet);
-
-    Matrix4d result = icp.match();
-
-    m_scans.push_back(make_pair(points, ScanPose(result)));
-}
-
-size_t SlamAlign::scanCount() const
-{
-    return m_scans.size();
 }
 
 // ============================== Getters, Setters ==============================

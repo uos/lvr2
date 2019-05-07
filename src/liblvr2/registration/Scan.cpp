@@ -26,61 +26,60 @@
  */
 
 /**
- * ICPPointAlign.hpp
+ * Scan.cpp
  *
- *  @date Mar 18, 2014
- *  @author Thomas Wiemann
+ *  @date May 6, 2019
+ *  @author Malte Hillmann
  */
-#ifndef ICPPOINTALIGN_HPP_
-#define ICPPOINTALIGN_HPP_
+#include <lvr2/registration/Scan.hpp>
 
-#include <lvr2/registration/EigenSVDPointAlign.hpp>
-#include <lvr2/registration/KDTree.hpp>
+#include <iostream>
+#include <fstream>
+
+using namespace std;
 
 namespace lvr2
 {
 
-class ICPPointAlign
+Scan::Scan(PointBufferPtr points, const Matrix4d& pose)
+    : m_points(points), m_pose(pose), m_deltaPose(Matrix4d::Identity())
 {
-public:
-    ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Matrix4d& modelPose, const Matrix4d& dataPose);
+    m_frames.push_back(m_pose);
+}
 
-    Matrix4d match();
+void Scan::transform(const Matrix4d& transform)
+{
+    m_pose *= transform;
+    m_deltaPose *= transform;
+    addFrame();
+}
 
-    virtual ~ICPPointAlign() = default;
+const PointBufferPtr& Scan::getPoints() const
+{
+    return m_points;
+}
+const Matrix4d& Scan::getPose() const
+{
+    return m_pose;
+}
 
-    void    setMaxMatchDistance(double distance);
-    void    setMaxIterations(int iterations);
-    void    setEpsilon(double epsilon);
-    void    setQuiet(bool quiet);
+void Scan::addFrame()
+{
+    m_frames.push_back(m_pose);
+}
 
-    double  getMaxMatchDistance() const;
-    int     getMaxIterations() const;
-    double  getEpsilon() const;
-    bool    getQuiet() const;
+void Scan::writeFrames(std::string path) const
+{
+    ofstream out(path);
+    for (const Matrix4d& frame : m_frames)
+    {
+        for(int i = 0; i < 16; i++)
+        {
+            out << frame(i) << " ";
+        }
 
-    void getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d) const;
-
-    const Matrix4d& getDeltaTransform() const;
-
-protected:
-
-    void transform();
-
-    double          m_epsilon;
-    double          m_maxDistanceMatch;
-    int             m_maxIterations;
-
-    bool            m_quiet;
-
-    PointBufferPtr  m_modelCloud;
-    PointBufferPtr  m_dataCloud;
-    Matrix4d        m_transformation;
-    Matrix4d        m_deltaTransform;
-
-    KDTreePtr m_searchTree;
-};
+        out << "1" << endl;
+    }
+}
 
 } /* namespace lvr2 */
-
-#endif /* ICPPOINTALIGN_HPP_ */
