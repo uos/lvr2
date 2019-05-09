@@ -89,9 +89,9 @@ public:
     EdgeCollapseResult collapseEdge(EdgeHandle edgeH) final;
     VertexSplitResult splitVertex(VertexHandle vertexToBeSplitH);
     EdgeSplitResult splitEdge(EdgeHandle edgeH);
-    EdgeSplitResult splitEdgeNoRemove(EdgeHandle edgeH);
     vector<VertexHandle> findCommonNeigbours(VertexHandle vH1, VertexHandle vH2);
     void flipEdge(EdgeHandle edgeH) final;
+    std::pair<BaseVecT, float> triCircumCenter(FaceHandle faceH);
 
     size_t numVertices() const final;
     size_t numFaces() const final;

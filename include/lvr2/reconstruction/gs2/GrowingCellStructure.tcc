@@ -91,7 +91,7 @@ namespace lvr2 {
 
         if(m_mesh->numVertices() > 2000)
         {
-           removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
+           removeWrongFaces(); //removes faces which area are way bigger (3 times) than the average
         }
 
         cout << "Diff between ca and tt: " << counter << endl;
@@ -630,7 +630,7 @@ namespace lvr2 {
         for(FaceHandle face : m_mesh->faces())
         {
             double area = m_mesh->calcFaceArea(face);
-            if(area < avg_area - 1.64*standart_deviation || area > 1.64 *standart_deviation)
+            if(area > 1.64 *standart_deviation)
             {
                 m_mesh->removeFace(face);
             }
