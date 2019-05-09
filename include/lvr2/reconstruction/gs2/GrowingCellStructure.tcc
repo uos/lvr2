@@ -43,11 +43,13 @@ namespace lvr2 {
         //set pointer to mesh
         m_mesh = &mesh;
 
+        std::vector<Cell*>::size_type size = (unsigned long)(m_runtime*m_numSplits+4);
+        cellArr.resize(size, NULL);
+
         //initTestMesh(); //init a mesh used for vertex split and edge split testing
 
         //get initial tetrahedron mesh
         getInitialMesh();
-        cout << "KD-Tree size: " << kd_tree->size() << endl;
 
         //progress bar
         PacmanProgressBar progress_bar((size_t)((((size_t)m_runtime*(size_t)m_numSplits)
@@ -74,26 +76,31 @@ namespace lvr2 {
 
         //final operations on the mesh (like removing wrong faces and filling the holes)
 
-        if(m_mesh->numVertices() > 5000)
+        int counter = 0;
+        for(int i = 0; i < cellArr.size(); i++)
         {
-           //removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
-        }
-
-        for(auto vertexH : m_mesh->vertices())
-        {
-            if(!vertexCellMap.containsKey(vertexH)) cout << "Inconsistency between mesh and map" << endl;
-            else{
-                Cell* cell = vertexCellMap.get(vertexH).get();
-                if(tumble_tree->find(cell->signal_counter, vertexH) == NULL)  cout << "Inconsistency between mesh and tree" << endl;
+            //std::cout << cellArr[i]->signal_counter;
+            VertexHandle vH(i);
+            if(tumble_tree->find(cellArr[i]->signal_counter, vH) == NULL)
+            {
+                counter ++;
             }
         }
 
-        //tumble_tree->display();
+
+
+        if(m_mesh->numVertices() > 2000)
+        {
+           removeWrongFaces(); //removes faces which area is way bigger (3 times) than the average
+        }
+
+        cout << "Diff between ca and tt: " << counter << endl;
         cout << "Not Deleted in TT: " << tumble_tree->notDeleted << endl;
         cout << "Tumble Tree size: " << tumble_tree->size() << endl;
-        //cout << "KD-Tree size: " << kd_tree->size() << endl;
+        cout << "KD-Tree size: " << kd_tree->size() << endl;
         cout << "VertexCell map size: " << vertexCellMap.numValues() << endl;
-
+        cout << "Cell array size: " << cellVecSize() << endl;
+        cout << "Not found counter: " << notFoundCounter << endl;
         delete tumble_tree;
     }
 
@@ -137,22 +144,33 @@ namespace lvr2 {
             {
                 BaseVecT& nb = m_mesh->getVertexPosition(v);
                 //kd_tree->deleteNode(nb);
-                nb += (random_point - winner) * getNeighborLearningRate();
 
+                nb += (random_point - winner) * getNeighborLearningRate();
                 performLaplacianSmoothing(v);
+
                 //kd_tree->insert(nb, v);
             }
 
             //increase signal counter by one
-
-            //TODO: use map and tumble tree correctly
-            Cell* winnerNode = vertexCellMap.get(winnerH).get();
+            Cell* winnerNode = cellArr[winnerH.idx()];
+            if(tumble_tree->find(winnerNode->signal_counter, winnerH) == NULL)
+            {
+                /*cout << "Winner node not found in tumble tree" << endl;
+                cout << "Idx: " <<  winnerH.idx() << endl;
+                cout << "SC: " << winnerNode->signal_counter << endl;
+                cout << "cell-size: " << cellVecSize() << " | TT-size: " << tumble_tree->size() << endl;*/
+                notFoundCounter++;
+            }
+            //Cell* winnerNode = vertexCellMap.get(winnerH).get();
             float winnerSC = winnerNode->signal_counter; //obtain the signal counter from the map
+
+            //TODO: determine mistake in remove operation in basic step. why on earth is there a prob here
+
             tumble_tree->remove(winnerNode, winnerH); //remove the winning vertex from the tumble tree
+            if(tumble_tree->find(winnerSC, winnerH) != NULL) std::cout << "error removing in basic step" << endl;
 
-
-            //TODO: decrease signal counter of others by a fraction according to hennings implementation
-            if(m_decreaseFactor == 1.0)
+            //decrease signal counter of others by a fraction according to hennings implementation
+            /*if(m_decreaseFactor == 1.0)
             {
                 size_t n = m_allowMiss * m_mesh->numVertices();
                 float dynamicDecrease = 1 - (float)pow(m_collapseThreshold, (1.0 / n));
@@ -163,12 +181,14 @@ namespace lvr2 {
             {
                 //tumble_tree->updateSC(m_decreaseFactor, winnerH);
 
-            }
+            }*/
 
-            vertexCellMap.get(winnerH).get() = tumble_tree->insertIterative(winnerSC+1, winnerH); //reinsert it with incremented sc, update map
+            //float cellSC = vertexCellMap.get(winnerH).get()->signal_counter;
+            //vertexCellMap.get(winnerH).get() = tumble_tree->insertIterative(winnerSC+1, winnerH); //reinsert it with incremented sc, update map
+            cellArr[winnerH.idx()] = tumble_tree->insertIterative(winnerSC + 1.0f, winnerH);
 
-
-
+            if(tumble_tree->find(winnerSC+1, winnerH) == NULL || cellArr[winnerH.idx()] != tumble_tree->find(winnerSC+1, winnerH))
+                std:: cout << "Insert problems..." << endl;
         }
         else //GSS
         {
@@ -214,11 +234,15 @@ namespace lvr2 {
 
             //now update tumble tree and the map
             tumble_tree->remove(max, highestSC);
-            vertexCellMap.get(highestSC).get() = tumble_tree->insertIterative(sc_middle, highestSC); //reinsert and update links
-            vertexCellMap.insert(newVH, tumble_tree->insertIterative(sc_middle, newVH)); //add the new vertex to the tree and the map
 
-            //BaseVecT kdInsert = m_mesh->getVertexPosition(newVH);
-            //kd_tree->insert(kdInsert, newVH);
+            cellArr[highestSC.idx()] = tumble_tree->insertIterative(sc_middle, highestSC);
+            cellArr[newVH.idx()] = tumble_tree->insertIterative(sc_middle, newVH);
+            //vertexCellMap.get(highestSC).get() = tumble_tree->insertIterative(sc_middle, highestSC); //reinsert and update links
+            //vertexCellMap.insert(newVH, tumble_tree->insertIterative(sc_middle, newVH)); //add the new vertex to the tree and the map
+
+
+            BaseVecT kdInsert = m_mesh->getVertexPosition(newVH);
+            kd_tree->insert(kdInsert, newVH);
 
         }
         else //GSS
@@ -511,36 +535,22 @@ namespace lvr2 {
         else
         {
             //insert vertices to the hashmap as well as the tumbletree
-            vertexCellMap.insert(vH1,tumble_tree->insertIterative(1, vH1));
+            /*vertexCellMap.insert(vH1,tumble_tree->insertIterative(1, vH1));
             vertexCellMap.insert(vH2,tumble_tree->insertIterative(1, vH2));
             vertexCellMap.insert(vH3,tumble_tree->insertIterative(1, vH3));
-            vertexCellMap.insert(vH4,tumble_tree->insertIterative(1, vH4));
+            vertexCellMap.insert(vH4,tumble_tree->insertIterative(1, vH4));*/
             VertexHandle ret(numeric_limits<int>::max());
             tumble_tree->insertIterative(10.00001f, ret); //dummy root
+
+            cellArr[vH1.idx()] = tumble_tree->insertIterative(1, vH1);
+            cellArr[vH2.idx()] = tumble_tree->insertIterative(1, vH2);
+            cellArr[vH3.idx()] = tumble_tree->insertIterative(1, vH3);
+            cellArr[vH4.idx()] = tumble_tree->insertIterative(1, vH4);
 
             kd_tree->insert(top, vH1);
             kd_tree->insert(left, vH2);
             kd_tree->insert(right, vH3);
             kd_tree->insert(back, vH4);
-            /*tumble_tree->remove(1, vH1);
-            tumble_tree->insertIterative(2,vH1);
-            tumble_tree->display();
-
-            VertexHandle v1(5);
-            VertexHandle v2(6);
-            VertexHandle v3(7);
-            VertexHandle v4(8);
-            VertexHandle v5(9);
-            tumble_tree->insertIterative(3,v1);
-            tumble_tree->insertIterative(0.5,v2);
-            tumble_tree->insertIterative(2,v3);
-            tumble_tree->insertIterative(22,v4);
-            tumble_tree->insertIterative(9,v5);
-            tumble_tree->display();
-            tumble_tree->remove(2,vH1);
-            tumble_tree->remove(2,v3);*/
-            tumble_tree->display();
-            std::cout << "tt init size: " << tumble_tree->size() << endl;
         }
     }
 
@@ -594,7 +604,7 @@ namespace lvr2 {
     void GrowingCellStructure<BaseVecT, NormalT>::removeWrongFaces()
     {
 
-        //TODO: remove faces with Xu < E(X) - 1,64 * o(x) <= E(X) <= E(X) + 1.64 * o(x) < Xo (confidence interval)
+        //remove faces with  E(X) <= E(X) + 1.64 * o(x) < Xo (confidence interval)
 
 
 
@@ -616,16 +626,6 @@ namespace lvr2 {
         standart_deviation /= m_mesh->numFaces();
         standart_deviation = sqrt(standart_deviation);
 
-        std::cout << "Standart Deviation: " << standart_deviation << "Face Mean: " << avg_area << endl;
-
-        /*for(FaceHandle face: m_mesh->faces())
-        {
-            double area = m_mesh->calcFaceArea(face);
-            if(area > 5 * avg_area)
-            {
-                m_mesh->removeFace(face);
-            }
-        }*/
 
         for(FaceHandle face : m_mesh->faces())
         {
@@ -638,17 +638,46 @@ namespace lvr2 {
 
 
         //now remove faces with one ore less neighbour faces, as those become redundant as well.
-        /*for(FaceHandle face: m_mesh->faces())
+
+        bool oneOrNoEdges = true;
+        while(oneOrNoEdges)
         {
-            vector<FaceHandle> n_faces;
-            m_mesh->getNeighboursOfFace(face, n_faces);
-            if(n_faces.size() == 0)
+            oneOrNoEdges = false;
+            for(FaceHandle face: m_mesh->faces())
             {
-                m_mesh->removeFace(face);
-                //removeWrongFaces(); //maybe too long runtime on this one...
+                vector<FaceHandle> n_faces;
+                m_mesh->getNeighboursOfFace(face, n_faces);
+                if(n_faces.size() <= 1)
+                {
+                    m_mesh->removeFace(face);
+                    oneOrNoEdges = true;
+                }
+                else if(n_faces.size() == 2)
+                {
+                    for(FaceHandle f : n_faces){
+                        vector<FaceHandle> n_faces2;
+                        m_mesh->getNeighboursOfFace(f, n_faces2);
+                        if(n_faces2.size() <= 2)
+                        {
+                            m_mesh->removeFace(face);
+                        }
+                    }
+                }
             }
-        }*/
+        }
+
 
     }
+
+    template <typename BaseVecT, typename NormalT>
+    int GrowingCellStructure<BaseVecT, NormalT>::cellVecSize()
+    {
+        int cellArrS = 0;
+        for(int i = 0; i < cellArr.size(); i++)
+        {
+            if(cellArr[i] != NULL) cellArrS++;
+        }
+        return cellArrS;
+    };
 
 }
