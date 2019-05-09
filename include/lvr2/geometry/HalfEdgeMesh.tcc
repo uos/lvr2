@@ -733,8 +733,43 @@ vector<VertexHandle> HalfEdgeMesh<BaseVecT>::findCommonNeigbours(VertexHandle vH
     return commonVertexHandles;
 }
 
+
+  /**
+   *    Triangle in R^3:
+   *
+   *             |c-a|^2 [(b-a)x(c-a)]x(b-a) + |b-a|^2 (c-a)x[(b-a)x(c-a)]
+   *     m = a + ---------------------------------------------------------.
+   *                                 2 | (b-a)x(c-a) |^2
+   */
+
 template <typename BaseVecT>
-EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
+std::pair<BaseVecT, float> HalfEdgeMesh<BaseVecT>::triCircumCenter(FaceHandle faceH) {
+    //get vertices of the face
+    auto vertices = getVerticesOfFace(faceH);
+    BaseVecT a = getV(vertices[0]).pos;
+    BaseVecT b = getV(vertices[1]).pos;
+    BaseVecT c = getV(vertices[2]).pos;
+
+    BaseVecT circumCenter = a;
+
+    float radius;
+
+    BaseVecT cMinusA = c-a;
+    BaseVecT bMinusA = b-a;
+
+    BaseVecT numerator = ( (bMinusA.cross(cMinusA).cross(bMinusA)) * cMinusA.length2()  +  (cMinusA.cross(bMinusA.cross(cMinusA))) * bMinusA.length2() );
+    float denominator = ( 2 * (bMinusA.cross(cMinusA)).length2());
+
+    circumCenter += numerator / denominator;
+    radius = numerator.length() / denominator;
+
+
+    return std::make_pair(circumCenter, radius);
+
+}
+
+template <typename BaseVecT>
+EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdge(EdgeHandle edgeH) {
 
     if(this->isBorderEdge(edgeH))
     {
@@ -904,91 +939,6 @@ EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdgeNoRemove(EdgeHandle edgeH) {
     return result;
 }
 
-template <typename BaseVecT>
-EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdge(EdgeHandle edgeH) {
-
-    auto verticesOfEdge = this->getVerticesOfEdge(edgeH);
-
-    VertexHandle startH = verticesOfEdge[0];
-    BaseVecT start = getV(startH).pos;
-
-    VertexHandle endH = verticesOfEdge[1];
-    BaseVecT end = getV(endH).pos;
-
-
-    /************************************
-     * Get vertex, which will be added. *
-     ************************************/
-
-    //calculate the position of the new vertex
-    BaseVecT vertexToAdd = start + (end - start) / 2;
-
-
-    /***********************************************************************
-     * Get Incident Vertices to the two incident faces of the longest edge *
-     ***********************************************************************/
-
-    //get incident faces of the longest edge
-    auto incidentFaces = this->getFacesOfEdge(edgeH);
-
-    auto fHArr1 = this->getVerticesOfFace(incidentFaces[0].unwrap());
-    auto fHArr2 = this->getVerticesOfFace(incidentFaces[1].unwrap());
-
-
-    //get VertexHandles of each Face
-    vector<VertexHandle> verticesOfFace1(fHArr1.begin(), fHArr1.end());
-    vector<VertexHandle> verticesOfFace2(fHArr2.begin(), fHArr2.end());
-
-    VertexHandle centerOfLongestEdge = this->addVertex(vertexToAdd);
-
-    //remove the two incident Faces
-    this->removeFace(incidentFaces[0].unwrap());
-    this->removeFace(incidentFaces[1].unwrap());
-
-    //now insert new Faces, using the direction the getVerticesOfFace method gives
-    //first face
-    auto findStart1 = std::find(verticesOfFace1.begin(), verticesOfFace1.end(), startH);
-    auto findEnd1 = std::find(verticesOfFace1.begin(), verticesOfFace1.end(), endH);
-
-    int indexStart1 = std::distance(verticesOfFace1.begin(), findStart1);
-    int indexEnd1 = std::distance(verticesOfFace1.begin(), findEnd1);
-
-    vector<VertexHandle> faceInsert1(verticesOfFace1.begin(), verticesOfFace1.end());
-    faceInsert1[indexEnd1] = centerOfLongestEdge;
-    FaceHandle fH1 = this->addFace(faceInsert1[0], faceInsert1[1], faceInsert1[2]);
-
-    faceInsert1.assign(verticesOfFace1.begin(), verticesOfFace1.end());
-    faceInsert1[indexStart1] = centerOfLongestEdge;
-
-    FaceHandle fH2 = this->addFace(faceInsert1[0], faceInsert1[1], faceInsert1[2]);
-
-
-    //second face
-    auto findStart2 = std::find(verticesOfFace2.begin(), verticesOfFace2.end(), startH);
-    auto findEnd2 = std::find(verticesOfFace2.begin(), verticesOfFace2.end(), endH);
-
-    int indexStart2 = std::distance(verticesOfFace2.begin(), findStart2);
-    int indexEnd2 = std::distance(verticesOfFace2.begin(), findEnd2);
-
-    vector<VertexHandle> faceInsert2(verticesOfFace2.begin(), verticesOfFace2.end());
-    faceInsert2[indexEnd2] = centerOfLongestEdge;
-    FaceHandle fH3 = this->addFace(faceInsert2[0], faceInsert2[1], faceInsert2[2]);
-
-
-    faceInsert2.assign(verticesOfFace2.begin(), verticesOfFace2.end());
-    faceInsert2[indexStart2] = centerOfLongestEdge;
-    FaceHandle fH4 = this->addFace(faceInsert2[0], faceInsert2[1], faceInsert2[2]);
-
-    //fill edge split result
-    EdgeSplitResult result(centerOfLongestEdge);
-    result.addedFaces.push_back(fH1);
-    result.addedFaces.push_back(fH2);
-    result.addedFaces.push_back(fH3);
-    result.addedFaces.push_back(fH4);
-
-    return result; //return the newly added vertex
-}
-
 
 template <typename BaseVecT>
 VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
@@ -1046,21 +996,58 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
     //first idea: just do an edge split on the longest edge and do an edge flip for each of the 2 found vertices
     vector<VertexHandle> commonVertexHandles = findCommonNeigbours(vertexToBeSplitH, targetOfLongestEdgeH);
 
-    EdgeSplitResult splitResult = this->splitEdgeNoRemove(longestEdge);
+    EdgeSplitResult splitResult = this->splitEdge(longestEdge);
 
-    /*if(commonVertexHandles.size() == 2 && numVertices() > 200)
+
+    //TODO: only flip if a criteria is given (delauney triangulation, delaunay edge) ...else just do the common edge split
+    for(VertexHandle vertex : commonVertexHandles)
     {
-
-        for(VertexHandle vertex : commonVertexHandles)
+        OptionalEdgeHandle handle = this->getEdgeBetween(vertex,vertexToBeSplitH);
+        if(handle)
         {
-            OptionalEdgeHandle handle = this->getEdgeBetween(vertex,vertexToBeSplitH);
-            if(handle && this->isFlippable(handle.unwrap()))
+            auto faces = this->getFacesOfEdge(handle.unwrap());
+            FaceHandle fH1 = faces[0].unwrap();
+            FaceHandle fH2 = faces[1].unwrap();
+
+            auto f1Vertices = getVerticesOfFace(fH1);
+            auto f2Vertices = getVerticesOfFace(fH2);
+            //calculate the circumcenter of each triangle, look whether the local delaunay criteria is fulfilled
+
+            auto circumCenterPair1 = triCircumCenter(fH1);
+            auto circumCenterPair2 = triCircumCenter(fH2);
+
+            BaseVecT circumCenter1 = circumCenterPair1.first;
+            BaseVecT circumCenter2 = circumCenterPair2.first;
+
+            std::cout << "circumcenter1: " << circumCenter1 << endl;
+            std::cout << "circumcenter2: " << circumCenter2 << endl;
+
+            float radius1 = circumCenterPair1.second;
+            float radius2 = circumCenterPair2.second;
+
+            BaseVecT singleFace1;
+            BaseVecT singleFace2;
+
+            //get the vertices not part of the center edge
+            for(int i = 0; i< 3; i++)
             {
-                //std::cout << "FLIPPABLE!!!" << endl << endl;
-                this->flipEdge(handle.unwrap());
+                VertexHandle current = f1Vertices[i];
+                if(current != vertex && current != vertexToBeSplitH) singleFace1 = getV(current).pos;
+                current = f2Vertices[i];
+                if(current != vertex && current != vertexToBeSplitH) singleFace2 = getV(current).pos;
+            }
+
+            //flip only, if one of the single vertices is inside the circumcircle of the other triangle
+            if((singleFace1-circumCenter2).length() <= radius1 || (singleFace2-circumCenter1).length() <= radius2)
+            {
+                if(this->isFlippable(handle.unwrap()))
+                {
+                    this->flipEdge(handle.unwrap());
+                }
             }
         }
-    }*/
+    }
+
 
 
     //TODO (?): for each of the two found vertices, there needs to be iterated "upwards" to the first vertex, which

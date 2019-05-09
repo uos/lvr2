@@ -64,7 +64,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options &op
 
     //calc normals if there are none
     if(!buffer->hasNormals()){
-        surface->calculateSurfaceNormals();
+        //surface->calculateSurfaceNormals();
     }
     return surface;
 }
