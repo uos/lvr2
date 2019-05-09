@@ -225,8 +225,8 @@ namespace lvr2{
         else{
             //if there are two are more, just remove from the duplicate map
             if(c->duplicateMap.numValues() > 1 && !removeWhole){
-                int numV = c->duplicateMap.numValues();
-                c->duplicateMap.erase(vH);
+                size_t numV = c->duplicateMap.numValues();
+                c->duplicateMap.erase(vH); //erase index from duplicate map
                 if(c->duplicateMap.numValues() == numV){
                     notDeleted++;
                 }
@@ -329,13 +329,13 @@ namespace lvr2{
                 return c;
             else
             {
-                cout << "Cell found, though it doesnt contain the found handle: " << vH.idx() << endl;
-                cout << "It contains: " << endl;
+                //cout << "Cell found, though it doesnt contain the found handle: " << vH.idx() << endl;
+                //cout << "It contains: " << endl;
                 for(auto iter = c->duplicateMap.begin(); iter != c->duplicateMap.end(); ++iter)
                 {
-                    cout << *iter << " ";
+                    //cout << *iter << " ";
                 }
-                cout << endl;
+                //cout << endl;
                 return NULL; //if the key does not exist in the cell with the suitable signal counter
             }
         }

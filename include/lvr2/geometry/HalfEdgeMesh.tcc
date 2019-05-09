@@ -1048,7 +1048,7 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
 
     EdgeSplitResult splitResult = this->splitEdgeNoRemove(longestEdge);
 
-    if(commonVertexHandles.size() == 2 && numVertices() > 200)
+    /*if(commonVertexHandles.size() == 2 && numVertices() > 200)
     {
 
         for(VertexHandle vertex : commonVertexHandles)
@@ -1060,7 +1060,7 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
                 this->flipEdge(handle.unwrap());
             }
         }
-    }
+    }*/
 
 
     //TODO (?): for each of the two found vertices, there needs to be iterated "upwards" to the first vertex, which

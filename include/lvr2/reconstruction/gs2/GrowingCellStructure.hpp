@@ -165,10 +165,12 @@ namespace lvr2{
         TumbleTree* tumble_tree;
         DynamicKDTree<BaseVecT>* kd_tree;
         HashMap<VertexHandle, Cell*> vertexCellMap;
+        std::vector<Cell*> cellArr;
         float m_decreaseFactor; //for sc calc
         int m_allowMiss;
         float m_collapseThreshold; //threshold for the collapse - when does it make sense
         int m_deleteLongEdgesFactor;
+        int notFoundCounter=0;
 
         // "GSS" related members
         bool m_useGSS = false;
@@ -206,6 +208,8 @@ namespace lvr2{
         // ADDITIONAL FUNCTIONS
 
         void removeWrongFaces();
+
+        int cellVecSize();
 
         //TODO: add gss related functions
     };
