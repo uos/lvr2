@@ -98,7 +98,6 @@ namespace lvr2 {
         cout << "Not Deleted in TT: " << tumble_tree->notDeleted << endl;
         cout << "Tumble Tree size: " << tumble_tree->size() << endl;
         cout << "KD-Tree size: " << kd_tree->size() << endl;
-        cout << "VertexCell map size: " << vertexCellMap.numValues() << endl;
         cout << "Cell array size: " << cellVecSize() << endl;
         cout << "Not found counter: " << notFoundCounter << endl;
         delete tumble_tree;
@@ -161,7 +160,7 @@ namespace lvr2 {
                 cout << "cell-size: " << cellVecSize() << " | TT-size: " << tumble_tree->size() << endl;*/
                 notFoundCounter++;
             }
-            //Cell* winnerNode = vertexCellMap.get(winnerH).get();
+
             float winnerSC = winnerNode->signal_counter; //obtain the signal counter from the map
 
             //TODO: determine mistake in remove operation in basic step. why on earth is there a prob here
@@ -183,8 +182,6 @@ namespace lvr2 {
 
             }*/
 
-            //float cellSC = vertexCellMap.get(winnerH).get()->signal_counter;
-            //vertexCellMap.get(winnerH).get() = tumble_tree->insertIterative(winnerSC+1, winnerH); //reinsert it with incremented sc, update map
             cellArr[winnerH.idx()] = tumble_tree->insertIterative(winnerSC + 1.0f, winnerH);
 
             if(tumble_tree->find(winnerSC+1, winnerH) == NULL || cellArr[winnerH.idx()] != tumble_tree->find(winnerSC+1, winnerH))
@@ -237,9 +234,6 @@ namespace lvr2 {
 
             cellArr[highestSC.idx()] = tumble_tree->insertIterative(sc_middle, highestSC);
             cellArr[newVH.idx()] = tumble_tree->insertIterative(sc_middle, newVH);
-            //vertexCellMap.get(highestSC).get() = tumble_tree->insertIterative(sc_middle, highestSC); //reinsert and update links
-            //vertexCellMap.insert(newVH, tumble_tree->insertIterative(sc_middle, newVH)); //add the new vertex to the tree and the map
-
 
             BaseVecT kdInsert = m_mesh->getVertexPosition(newVH);
             kd_tree->insert(kdInsert, newVH);
@@ -448,11 +442,8 @@ namespace lvr2 {
         m_mesh->addFace(v5,v8,v7);
         m_mesh->addFace(v6,v7,v8);
 
-        //EdgeSplitResult result = m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v6,v8).unwrap());
-        //result = m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v4,result.edgeCenter).unwrap());
-        //result = m_mesh->splitEdgeNoRemove(m_mesh->getEdgeBetween(v8,result.edgeCenter).unwrap());
-        m_mesh->splitVertex(v8);
-        m_mesh->splitVertex(v8);
+        /*m_mesh->splitVertex(v8);
+        m_mesh->splitVertex(v8);*/
 
     }
 
@@ -535,10 +526,6 @@ namespace lvr2 {
         else
         {
             //insert vertices to the hashmap as well as the tumbletree
-            /*vertexCellMap.insert(vH1,tumble_tree->insertIterative(1, vH1));
-            vertexCellMap.insert(vH2,tumble_tree->insertIterative(1, vH2));
-            vertexCellMap.insert(vH3,tumble_tree->insertIterative(1, vH3));
-            vertexCellMap.insert(vH4,tumble_tree->insertIterative(1, vH4));*/
             VertexHandle ret(numeric_limits<int>::max());
             tumble_tree->insertIterative(10.00001f, ret); //dummy root
 
@@ -630,7 +617,7 @@ namespace lvr2 {
         for(FaceHandle face : m_mesh->faces())
         {
             double area = m_mesh->calcFaceArea(face);
-            if(area > 1.64 *standart_deviation)
+            if(area > avg_area + 1.64 *standart_deviation)
             {
                 m_mesh->removeFace(face);
             }
