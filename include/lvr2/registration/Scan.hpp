@@ -42,13 +42,20 @@ using Eigen::Vector3d;
 namespace lvr2
 {
 
+enum class ScanUse
+{
+    INVALID = 0,
+    UPDATED = 1,
+    UNUSED = 2,
+};
+
 class Scan
 {
 public:
     Scan(PointBufferPtr points, const Matrix4d& pose);
 
     void transform(const Matrix4d& transform);
-    void addFrame();
+    void addFrame(ScanUse use = ScanUse::UNUSED);
 
     const PointBufferPtr& getPoints() const;
     const Matrix4d& getPose() const;
@@ -60,7 +67,7 @@ private:
     Matrix4d m_pose;
     Matrix4d m_deltaPose;
 
-    std::vector<Matrix4d> m_frames;
+    std::vector<std::pair<Matrix4d, ScanUse>> m_frames;
 };
 
 using ScanPtr = std::shared_ptr<Scan>;

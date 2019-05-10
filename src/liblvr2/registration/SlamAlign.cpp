@@ -69,13 +69,32 @@ void SlamAlign::match()
         icp.setQuiet(m_quiet);
 
         Matrix4d result = icp.match();
-        cur->transform(icp.getDeltaTransform());
 
+        bool found = false;
         for(const ScanPtr& scan : m_scans)
         {
             if (scan != cur)
             {
-                scan->addFrame();
+                scan->addFrame(found ? ScanUse::INVALID : ScanUse::UNUSED);
+            }
+            else
+            {
+                found = true;
+            }
+        }
+
+        cur->transform(icp.getDeltaTransform());
+
+        found = false;
+        for(const ScanPtr& scan : m_scans)
+        {
+            if (scan != cur)
+            {
+                scan->addFrame(found ? ScanUse::INVALID : ScanUse::UNUSED);
+            }
+            else
+            {
+                found = true;
             }
         }
     }
