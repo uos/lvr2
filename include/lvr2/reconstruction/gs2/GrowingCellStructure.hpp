@@ -171,6 +171,7 @@ namespace lvr2{
         float m_collapseThreshold; //threshold for the collapse - when does it make sense
         int m_deleteLongEdgesFactor;
         int notFoundCounter=0;
+        int flipCounter=0;
 
         // "GSS" related members
         bool m_useGSS = false;

@@ -1000,7 +1000,7 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
 
 
     //TODO: only flip if a criteria is given (delauney triangulation, delaunay edge) ...else just do the common edge split
-    for(VertexHandle vertex : commonVertexHandles)
+    /*for(VertexHandle vertex : commonVertexHandles)
     {
         OptionalEdgeHandle handle = this->getEdgeBetween(vertex,vertexToBeSplitH);
         if(handle)
@@ -1019,9 +1019,6 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
             BaseVecT circumCenter1 = circumCenterPair1.first;
             BaseVecT circumCenter2 = circumCenterPair2.first;
 
-            std::cout << "circumcenter1: " << circumCenter1 << endl;
-            std::cout << "circumcenter2: " << circumCenter2 << endl;
-
             float radius1 = circumCenterPair1.second;
             float radius2 = circumCenterPair2.second;
 
@@ -1038,15 +1035,15 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
             }
 
             //flip only, if one of the single vertices is inside the circumcircle of the other triangle
-            if((singleFace1-circumCenter2).length() <= radius1 || (singleFace2-circumCenter1).length() <= radius2)
+            if((singleFace1-circumCenter2).length() <= radius2 || (singleFace2-circumCenter1).length() <= radius1)
             {
                 if(this->isFlippable(handle.unwrap()))
                 {
-                    this->flipEdge(handle.unwrap());
+                    //this->flipEdge(handle.unwrap());
                 }
             }
         }
-    }
+    }*/
 
 
 

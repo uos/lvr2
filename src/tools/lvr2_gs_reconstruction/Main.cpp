@@ -10,7 +10,6 @@
 
 #include "OptionsGS.hpp"
 
-
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
@@ -21,10 +20,13 @@
 #include <lvr2/reconstruction/gs2/GrowingCellStructure.hpp>
 #include <lvr2/algorithm/CleanupAlgorithms.hpp>
 
+#include <signal.h>
+
 using namespace lvr2;
 
-
 using Vec = BaseVector<float>;
+HalfEdgeMesh<Vec> mesh;
+
 
 template <typename BaseVecT>
 PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options &options, PointBufferPtr buffer){
@@ -69,6 +71,21 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options &op
     return surface;
 }
 
+void saveMesh(int s = 0)
+{
+    if(s != 0)
+    {
+        std::cout << "Received signal bit..." << endl;
+    }
+    SimpleFinalizer<Vec> fin;
+    MeshBufferPtr res = fin.apply(mesh);
+
+    ModelPtr m( new Model( res ) );
+
+    cout << timestamp << "Saving mesh." << endl;
+    ModelFactory::saveModel( m, "triangle_init_mesh.ply");
+    exit(0);
+}
 
 int main(int argc, char **argv) {
 
@@ -90,6 +107,17 @@ int main(int argc, char **argv) {
         cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
         return EXIT_FAILURE;
     }
+
+
+    /* Catch ctr+c and save the Mesh.. */
+    struct sigaction sigIntHandler;
+
+    sigIntHandler.sa_handler = saveMesh;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+
+    sigaction(SIGINT, &sigIntHandler, NULL);
+
     PointBufferPtr buffer = model->m_pointCloud;
 
 
@@ -102,7 +130,7 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    HalfEdgeMesh<Vec> mesh;
+
     GrowingCellStructure<Vec, Normal<float>> gcs(surface);
 
     //set gcs variables
@@ -122,14 +150,7 @@ int main(int argc, char **argv) {
 
     gcs.getMesh(mesh);
     //naiveFillSmallHoles(mesh, 10, true);
-    SimpleFinalizer<Vec> fin;
-    MeshBufferPtr res = fin.apply(mesh);
-
-    ModelPtr m( new Model( res ) );
-
-    cout << timestamp << "Saving mesh." << endl;
-    ModelFactory::saveModel( m, "triangle_init_mesh.ply");
+    saveMesh();
 
     return 0;
-
 }
