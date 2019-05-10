@@ -43,15 +43,13 @@ namespace lvr2
 
 Scan::Scan(PointBufferPtr points, const Matrix4d& pose)
     : m_points(points), m_pose(pose), m_deltaPose(Matrix4d::Identity())
-{
-    m_frames.push_back(m_pose);
-}
+{ }
 
 void Scan::transform(const Matrix4d& transform)
 {
     m_pose *= transform;
     m_deltaPose *= transform;
-    addFrame();
+    addFrame(ScanUse::UPDATED);
 }
 
 const PointBufferPtr& Scan::getPoints() const
@@ -63,22 +61,22 @@ const Matrix4d& Scan::getPose() const
     return m_pose;
 }
 
-void Scan::addFrame()
+void Scan::addFrame(ScanUse use)
 {
-    m_frames.push_back(m_pose);
+    m_frames.push_back(make_pair(m_pose, use));
 }
 
 void Scan::writeFrames(std::string path) const
 {
     ofstream out(path);
-    for (const Matrix4d& frame : m_frames)
+    for (const std::pair<Matrix4d, ScanUse>& frame : m_frames)
     {
         for(int i = 0; i < 16; i++)
         {
-            out << frame(i) << " ";
+            out << frame.first(i) << " ";
         }
 
-        out << "1" << endl;
+        out << (int)frame.second << endl;
     }
 }
 
