@@ -79,7 +79,6 @@ namespace lvr2 {
         int counter = 0;
         for(int i = 0; i < cellArr.size(); i++)
         {
-            //std::cout << cellArr[i]->signal_counter;
             VertexHandle vH(i);
             if(tumble_tree->find(cellArr[i]->signal_counter, vH) == NULL)
             {
@@ -152,14 +151,14 @@ namespace lvr2 {
 
             //increase signal counter by one
             Cell* winnerNode = cellArr[winnerH.idx()];
-            if(tumble_tree->find(winnerNode->signal_counter, winnerH) == NULL)
+            /*if(tumble_tree->find(winnerNode->signal_counter, winnerH) == NULL)
             {
-                /*cout << "Winner node not found in tumble tree" << endl;
+                cout << "Winner node not found in tumble tree" << endl;
                 cout << "Idx: " <<  winnerH.idx() << endl;
                 cout << "SC: " << winnerNode->signal_counter << endl;
-                cout << "cell-size: " << cellVecSize() << " | TT-size: " << tumble_tree->size() << endl;*/
+                cout << "cell-size: " << cellVecSize() << " | TT-size: " << tumble_tree->size() << endl;
                 notFoundCounter++;
-            }
+            }*/
 
             float winnerSC = winnerNode->signal_counter; //obtain the signal counter from the map
 
@@ -395,7 +394,13 @@ namespace lvr2 {
 
         for(auto vertexH : vertices)
         {
+            /*if(m_mesh->numVertices() != 4)
+            {
+                cout << "\33[2K\r" << endl;
+            }*/
             ++progress_bar;
+            //cout << "Vertices in Mesh: " << m_mesh->numVertices() << endl;
+
             BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
             //avg_counter += vertex.signal_counter; //calc the avg signal counter
             BaseVecT distanceVector = point - vertex;
@@ -426,24 +431,36 @@ namespace lvr2 {
         VertexHandle v0 = m_mesh->addVertex(BaseVecT(3,0,0));
         VertexHandle v1 = m_mesh->addVertex(BaseVecT(0,3,0));
         VertexHandle v2 = m_mesh->addVertex(BaseVecT(6,3,0));
-        VertexHandle v3 = m_mesh->addVertex(BaseVecT(0,6,0));
-        VertexHandle v4 = m_mesh->addVertex(BaseVecT(6,6,0));
+        VertexHandle v3 = m_mesh->addVertex(BaseVecT(-1.5,6,0));
+        VertexHandle v4 = m_mesh->addVertex(BaseVecT(7.5,6,0));
         VertexHandle v5 = m_mesh->addVertex(BaseVecT(0,9,0));
         VertexHandle v6 = m_mesh->addVertex(BaseVecT(6,9,0));
         VertexHandle v7 = m_mesh->addVertex(BaseVecT(3,12,0));
         VertexHandle v8 = m_mesh->addVertex(BaseVecT(3,7,0));
 
-        m_mesh->addFace(v0,v8,v1);
-        m_mesh->addFace(v0,v2,v8);
-        m_mesh->addFace(v1,v8,v3);
-        m_mesh->addFace(v2,v4,v8);
-        m_mesh->addFace(v3,v8,v5);
-        m_mesh->addFace(v4,v6,v8);
-        m_mesh->addFace(v5,v8,v7);
-        m_mesh->addFace(v6,v7,v8);
+        FaceHandle fH1 = m_mesh->addFace(v0,v8,v1);
+        FaceHandle fH2 = m_mesh->addFace(v0,v2,v8);
+        FaceHandle fH3 = m_mesh->addFace(v1,v8,v3);
+        FaceHandle fH4 = m_mesh->addFace(v2,v4,v8);
+        FaceHandle fH5 = m_mesh->addFace(v3,v8,v5);
+        FaceHandle fH6 = m_mesh->addFace(v4,v6,v8);
+        FaceHandle fH7 = m_mesh->addFace(v5,v8,v7);
+        FaceHandle fH8 = m_mesh->addFace(v6,v7,v8);
 
-        /*m_mesh->splitVertex(v8);
-        m_mesh->splitVertex(v8);*/
+        auto pair = m_mesh->triCircumCenter(fH1);
+        std::cout << "CircumCenter1: " << pair.first << "| Radius: " << pair.second << endl;
+        auto pair1 = m_mesh->triCircumCenter(fH2);
+        std::cout << "CircumCenter1: " << pair1.first << "| Radius: " << pair1.second << endl;
+        auto pair2 = m_mesh->triCircumCenter(fH3);
+        std::cout << "CircumCenter1: " << pair2.first << "| Radius: " << pair2.second << endl;
+        auto pair3 = m_mesh->triCircumCenter(fH4);
+        std::cout << "CircumCenter1: " << pair3.first << "| Radius: " << pair3.second << endl;
+        auto pair4 = m_mesh->triCircumCenter(fH5);
+        std::cout << "CircumCenter1: " << pair4.first << "| Radius: " << pair4.second << endl;
+
+        m_mesh->splitVertex(v8);
+        //m_mesh->splitVertex(v8);
+
 
     }
 
@@ -592,9 +609,6 @@ namespace lvr2 {
     {
 
         //remove faces with  E(X) <= E(X) + 1.64 * o(x) < Xo (confidence interval)
-
-
-
         double avg_area = 0;
 
         for(FaceHandle face: m_mesh->faces())
@@ -617,15 +631,54 @@ namespace lvr2 {
         for(FaceHandle face : m_mesh->faces())
         {
             double area = m_mesh->calcFaceArea(face);
-            if(area > avg_area + 1.64 *standart_deviation)
+            if(area > avg_area + 2.56 *standart_deviation)
             {
                 m_mesh->removeFace(face);
             }
         }
 
+        //remove faces, which have a edge, which is much longer, than the average
+        double avg_length = 0;
+        for(EdgeHandle edgeH: m_mesh->edges())
+        {
+            auto vertices = m_mesh->getVerticesOfEdge(edgeH);
+            BaseVecT v1 = m_mesh->getVertexPosition(vertices[0]);
+            BaseVecT v2 = m_mesh->getVertexPosition(vertices[1]);
+            avg_length += (v2-v1).length();
+        }
+
+        avg_length /= m_mesh->numEdges();
+        float standart_deviation_edge = 0;
+
+        for(EdgeHandle edgeH: m_mesh->edges())
+        {
+            auto vertices = m_mesh->getVerticesOfEdge(edgeH);
+            BaseVecT v1 = m_mesh->getVertexPosition(vertices[0]);
+            BaseVecT v2 = m_mesh->getVertexPosition(vertices[1]);
+            standart_deviation_edge += pow((v2 - v1).length() - avg_length, 2);
+        }
+
+        standart_deviation_edge /= m_mesh->numFaces();
+        standart_deviation_edge = sqrt(standart_deviation_edge);
+
+
+        for(EdgeHandle edgeH : m_mesh->edges())
+        {
+            auto vertices = m_mesh->getVerticesOfEdge(edgeH);
+            BaseVecT v1 = m_mesh->getVertexPosition(vertices[0]);
+            BaseVecT v2 = m_mesh->getVertexPosition(vertices[1]);
+            double length = (v2-v1).length();
+            if(length < avg_length - 5 *standart_deviation_edge || length > avg_length + 5 *standart_deviation_edge)
+            {
+                auto faces = m_mesh->getFacesOfEdge(edgeH);
+                //if(faces[0]) m_mesh->removeFace(faces[0].unwrap()); //remove faces of the edge
+                //if(faces[1]) m_mesh->removeFace(faces[1].unwrap());
+
+            }
+        }
 
         //now remove faces with one ore less neighbour faces, as those become redundant as well.
-
+        //or those, who have two, but also a neighbor face which also has only two neighbors
         bool oneOrNoEdges = true;
         while(oneOrNoEdges)
         {
