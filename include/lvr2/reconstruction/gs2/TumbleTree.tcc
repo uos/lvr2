@@ -303,15 +303,17 @@ namespace lvr2{
 
 
         float sc = c->signal_counter;
-        while(c != root) //iteratre up the tree to find the correct sc.
+        Cell* tmp = c;
+        while(tmp != root) //iteratre up the tree to find the correct sc.
         {
-            if(!c->parent){
+            if(!tmp->parent){
                 cout << "NO PARENT!!!" << endl;
                 break;
             }
-            c = c->parent;
-            sc *= c->alpha;
+            sc *= tmp->alpha;
+            tmp = tmp->parent;
         }
+        sc *= tmp->alpha; //include root sc
         root = remove(sc, vH, root);
     }
 
@@ -410,6 +412,9 @@ namespace lvr2{
            left and right subtress */
         cell->left = buildTree(cells, start, mid - 1);
         cell->right = buildTree(cells, mid + 1, end);
+
+        if(cell->left)cell->left->parent = cell;
+        if(cell->right)cell->right->parent = cell;
 
         return cell;
     }
