@@ -13,12 +13,13 @@ namespace  lvr2{
 
     typedef struct Cell
     {
-        float alpha;
+        float alpha = 1;
         float signal_counter;
         //Index vH; //VertexHandle-Index for mapping between VertexHandle and a Cell
         HashMap<VertexHandle, float> duplicateMap;
         Cell* left; //left subtree
         Cell* right; //right subtree
+        Cell* parent;
     } Cell;
 
     class TumbleTree {
@@ -27,38 +28,43 @@ namespace  lvr2{
 
         Cell* makeEmpty(Cell* c);
 
-        Cell* insert(float sc, VertexHandle vH, Cell* c);
-        Cell* remove(float sc, VertexHandle vH, Cell* c, bool removeWhole = false);
+        Cell* remove(float sc, VertexHandle vH, Cell* c, bool removeWhole = false, float alpha = 1);
         Cell* findMin(Cell* c);
-        Cell* findMax(Cell*, int* depth = new int(0));
-        Cell* find(float sc, VertexHandle vH, Cell* c);
+        Cell* findMax(Cell* c);
+        Cell* find(float sc, VertexHandle vH, Cell* c, float alpha = 1);
         int size(Cell* c);
+        int maxDepth(Cell* cell);
+        int minDepth(Cell* cell);
+        Cell* buildTree(vector<Cell*>& cells, int start, int end);
+        void getCellsAsVector(Cell* c, vector<Cell*>& cells);
 
-        void update(Cell* c, float alpha, VertexHandle vH);
+        void update(float alpha);
 
         void inorder(Cell* c);
+
 
     public:
 
         TumbleTree();
         ~TumbleTree();
 
-        void insert(float sc, VertexHandle vH);
         Cell* insertIterative(float sc, VertexHandle vH);
-        void removeIterative(float sc, VertexHandle vH, bool removeWhole = false);
         void remove(Cell* c, VertexHandle vH);
 
-        void remove(float sc, VertexHandle vH);
+
+        int maxDepth();
+        int minDepth();
         Cell* find(float sc, VertexHandle vH);
 
         void display();
+        void balance();
 
         Cell* min();
         Cell* max();
 
         int size();
 
-        void updateSC(float alpha, VertexHandle vH);
+        void updateSC(float alpha);
         int notDeleted = 0;
     };
 
