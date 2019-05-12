@@ -59,6 +59,7 @@ namespace lvr2 {
         //algorithm
         for(int i = 0; i < getRuntime(); i++)
         {
+            if(i % 500 == 0 ) tumble_tree->balance();
             for(int j = 0; j < getNumSplits(); j++)
             {
                 for(int k = 0; k < getBasicSteps(); k++)
@@ -94,7 +95,7 @@ namespace lvr2 {
            removeWrongFaces(); //removes faces which area are way bigger (3 times) than the average
         }
 
-        tumble_tree->balance();
+        //tumble_tree->balance();
         tumble_tree->display();
 
         cout << "Max depth of tt: " << tumble_tree->maxDepth() << endl;
