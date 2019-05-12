@@ -52,8 +52,9 @@ namespace lvr2 {
         getInitialMesh();
 
         //progress bar
-        PacmanProgressBar progress_bar((size_t)((((size_t)m_runtime*(size_t)m_numSplits)
-                                     *(((size_t)m_numSplits*(size_t)m_runtime)+1)/(size_t)2) * (size_t)m_basicSteps));
+        size_t runtime_length = (size_t)((((size_t)m_runtime*(size_t)m_numSplits)
+                                          *(((size_t)m_numSplits*(size_t)m_runtime)+1)/(size_t)2) * (size_t)m_basicSteps);
+        PacmanProgressBar progress_bar(runtime_length);
 
         //algorithm
         for(int i = 0; i < getRuntime(); i++)
@@ -93,6 +94,11 @@ namespace lvr2 {
            removeWrongFaces(); //removes faces which area are way bigger (3 times) than the average
         }
 
+        tumble_tree->balance();
+        tumble_tree->display();
+
+        cout << "Max depth of tt: " << tumble_tree->maxDepth() << endl;
+        cout << "Min depth of tt: " << tumble_tree->minDepth() << endl;
         cout << "Diff between ca and tt: " << counter << endl;
         cout << "Not Deleted in TT: " << tumble_tree->notDeleted << endl;
         cout << "Tumble Tree size: " << tumble_tree->size() << endl;
@@ -165,26 +171,27 @@ namespace lvr2 {
             //TODO: determine mistake in remove operation in basic step. why on earth is there a prob here
 
             tumble_tree->remove(winnerNode, winnerH); //remove the winning vertex from the tumble tree
-            if(tumble_tree->find(winnerSC, winnerH) != NULL) std::cout << "error removing in basic step" << endl;
+            //if(tumble_tree->find(winnerSC, winnerH) != NULL) std::cout << "error removing in basic step" << endl;
 
             //decrease signal counter of others by a fraction according to hennings implementation
-            /*if(m_decreaseFactor == 1.0)
+            if(m_decreaseFactor == 1.0)
             {
                 size_t n = m_allowMiss * m_mesh->numVertices();
-                float dynamicDecrease = 1 - (float)pow(m_collapseThreshold, (1.0 / n));
-                //tumble_tree->updateSC(dynamicDecrease, winnerH);
+                float dynamicDecrease = 1 - (float)pow(m_collapseThreshold, (1.0f / n));
+                tumble_tree->updateSC(dynamicDecrease);
 
             }
             else
             {
-                //tumble_tree->updateSC(m_decreaseFactor, winnerH);
+                tumble_tree->updateSC(m_decreaseFactor);
 
-            }*/
+            }
 
             cellArr[winnerH.idx()] = tumble_tree->insertIterative(winnerSC + 1.0f, winnerH);
 
-            if(tumble_tree->find(winnerSC+1, winnerH) == NULL || cellArr[winnerH.idx()] != tumble_tree->find(winnerSC+1, winnerH))
-                std:: cout << "Insert problems..." << endl;
+            if(tumble_tree->find(winnerSC+1, winnerH) == NULL || cellArr[winnerH.idx()] != tumble_tree->find(winnerSC+1, winnerH)){
+                //std:: cout << "Insert problems..." << endl;
+            }
         }
         else //GSS
         {
@@ -218,7 +225,7 @@ namespace lvr2 {
             //find vertex with highst sc, split that vertex
             Cell* max = tumble_tree->max();
             auto iter = max->duplicateMap.begin();
-            VertexHandle highestSC = *iter;
+            VertexHandle highestSC = *iter; //get the first of the duplicate map
 
             //split the found vertex
             VertexSplitResult result = m_mesh->splitVertex(highestSC);
@@ -228,7 +235,7 @@ namespace lvr2 {
             VertexHandle newVH = result.edgeCenter;
             float sc_middle = max->signal_counter / 2;
 
-            //now update tumble tree and the map
+            //now update tumble tree and the cell array
             tumble_tree->remove(max, highestSC);
 
             cellArr[highestSC.idx()] = tumble_tree->insertIterative(sc_middle, highestSC);
@@ -304,6 +311,7 @@ namespace lvr2 {
             Cell* min = tumble_tree->min();
             auto iter = min->duplicateMap.begin();
             VertexHandle lowestSC = *iter;
+            cout << "Lowest SC from Tumble Tree: " << min->signal_counter << endl;
 
             //found vertex with lowest sc
             //TODO: collapse the edge leading to the vertex with the valence closest to six
@@ -331,7 +339,11 @@ namespace lvr2 {
 
                 if(eToSixVal && m_mesh->isCollapsable(eToSixVal.unwrap()))
                 {
+                    //TODO: use collapse result to remove the (vertex) from the tumble tree and the kd tree
+                    //otherwise this wont work
                     EdgeCollapseResult result = m_mesh->collapseEdge(eToSixVal.unwrap());
+                    tumble_tree->remove(cellArr[result.removedPoint.idx()], result.removedPoint);
+                    cellArr[result.removedPoint.idx()] = NULL;
                     std::cout << "Collapsed an Edge!" << endl;
                 }
             }
@@ -542,10 +554,9 @@ namespace lvr2 {
         }
         else
         {
-            //insert vertices to the hashmap as well as the tumbletree
+            //insert vertices to the cellindexarray as well as the tumbletree
             VertexHandle ret(numeric_limits<int>::max());
-            tumble_tree->insertIterative(10.00001f, ret); //dummy root
-
+            tumble_tree->insertIterative(8.000001, ret);
             cellArr[vH1.idx()] = tumble_tree->insertIterative(1, vH1);
             cellArr[vH2.idx()] = tumble_tree->insertIterative(1, vH2);
             cellArr[vH3.idx()] = tumble_tree->insertIterative(1, vH3);
@@ -631,7 +642,7 @@ namespace lvr2 {
         for(FaceHandle face : m_mesh->faces())
         {
             double area = m_mesh->calcFaceArea(face);
-            if(area > avg_area + 2.56 *standart_deviation)
+            if(area > avg_area + 1.64 *standart_deviation)
             {
                 m_mesh->removeFace(face);
             }

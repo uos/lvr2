@@ -1037,9 +1037,9 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
             //flip only, if one of the single vertices is inside the circumcircle of the other triangle
             if((singleFace1-circumCenter2).length() <= radius2 || (singleFace2-circumCenter1).length() <= radius1)
             {
-                if(this->isFlippable(handle.unwrap()))
+                if(this->isFlippable(handle.unwrap()) && this->numVertices() > 200)
                 {
-                    //this->flipEdge(handle.unwrap());
+                    this->flipEdge(handle.unwrap());
                 }
             }
         }
@@ -1102,7 +1102,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 
     // The result that contains information about the removed faces and edges
     // and the new vertex and edges
-    EdgeCollapseResult result(vertexToKeepH);
+    EdgeCollapseResult result(vertexToKeepH, vertexToRemoveH);
 
     // Fix targets for ingoing edges of the vertex that will be deleted. This
     // has to be done before changing the twin edges.
