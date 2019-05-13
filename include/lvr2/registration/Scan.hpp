@@ -54,11 +54,13 @@ class Scan
 public:
     Scan(PointBufferPtr points, const Matrix4d& pose);
 
-    void transform(const Matrix4d& transform);
+    void transform(const Matrix4d& transform, bool writeFrame = true);
     void addFrame(ScanUse use = ScanUse::UNUSED);
 
     const PointBufferPtr& getPoints() const;
     const Matrix4d& getPose() const;
+    const Matrix4d& getDeltaPose() const;
+    const Matrix4d& getInitialPose() const;
 
     void writeFrames(std::string path) const;
 
@@ -66,6 +68,7 @@ private:
     PointBufferPtr m_points;
     Matrix4d m_pose;
     Matrix4d m_deltaPose;
+    Matrix4d m_initialPose;
 
     std::vector<std::pair<Matrix4d, ScanUse>> m_frames;
 };

@@ -36,20 +36,26 @@
 #include <iostream>
 #include <fstream>
 
+#include <lvr2/io/IOUtils.hpp>
+
 using namespace std;
 
 namespace lvr2
 {
 
 Scan::Scan(PointBufferPtr points, const Matrix4d& pose)
-    : m_points(points), m_pose(pose), m_deltaPose(Matrix4d::Identity())
+    : m_points(points), m_pose(pose), m_initialPose(pose), m_deltaPose(Matrix4d::Identity())
 { }
 
-void Scan::transform(const Matrix4d& transform)
+void Scan::transform(const Matrix4d& transform, bool writeFrame)
 {
-    m_pose *= transform;
-    m_deltaPose *= transform;
-    addFrame(ScanUse::UPDATED);
+    m_pose = transformRegistration(m_pose, transform);
+    m_deltaPose = transformRegistration(m_deltaPose, transform);
+
+    if (writeFrame)
+    {
+        addFrame(ScanUse::UPDATED);
+    }
 }
 
 const PointBufferPtr& Scan::getPoints() const
@@ -59,6 +65,14 @@ const PointBufferPtr& Scan::getPoints() const
 const Matrix4d& Scan::getPose() const
 {
     return m_pose;
+}
+const Matrix4d& Scan::getDeltaPose() const
+{
+    return m_deltaPose;
+}
+const Matrix4d& Scan::getInitialPose() const
+{
+    return m_initialPose;
 }
 
 void Scan::addFrame(ScanUse use)
