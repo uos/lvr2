@@ -70,6 +70,8 @@ public:
 
 protected:
 
+    void applyTransform(ScanPtr scan, const Matrix4d& transform);
+
     double  m_slamMaxDistance = 25;
     int     m_slamIterations = 50;
     double  m_icpMaxDistance = 25;

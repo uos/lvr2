@@ -62,6 +62,8 @@ void SlamAlign::match()
         const ScanPtr& prev = m_scans[i - 1];
         const ScanPtr& cur = m_scans[i];
 
+        applyTransform(cur, prev->getDeltaPose());
+
         ICPPointAlign icp(prev->getPoints(), cur->getPoints(), prev->getPose(), cur->getPose());
         icp.setMaxMatchDistance(m_icpMaxDistance);
         icp.setMaxIterations(m_icpIterations);
@@ -70,32 +72,24 @@ void SlamAlign::match()
 
         Matrix4d result = icp.match();
 
-        bool found = false;
-        for(const ScanPtr& scan : m_scans)
+        applyTransform(cur, icp.getDeltaTransform());
+    }
+}
+
+void SlamAlign::applyTransform(ScanPtr scan, const Matrix4d& transform)
+{
+    scan->transform(transform);
+
+    bool found = false;
+    for(const ScanPtr& s : m_scans)
+    {
+        if (s != scan)
         {
-            if (scan != cur)
-            {
-                scan->addFrame(found ? ScanUse::INVALID : ScanUse::UNUSED);
-            }
-            else
-            {
-                found = true;
-            }
+            s->addFrame(found ? ScanUse::INVALID : ScanUse::UNUSED);
         }
-
-        cur->transform(icp.getDeltaTransform());
-
-        found = false;
-        for(const ScanPtr& scan : m_scans)
+        else
         {
-            if (scan != cur)
-            {
-                scan->addFrame(found ? ScanUse::INVALID : ScanUse::UNUSED);
-            }
-            else
-            {
-                found = true;
-            }
+            found = true;
         }
     }
 }
