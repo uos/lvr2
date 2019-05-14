@@ -41,6 +41,7 @@
 #include <chrono>
 using namespace std::chrono;
 
+#include <omp.h>
 #include <fstream>
 using std::ofstream;
 
@@ -146,31 +147,59 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, 
     FloatChannel data_pts = m_dataCloud->getFloatChannel("points").get();
     size_t n = data_pts.numElements();
 
+    centroid_m = Vector3d::Zero();
+    centroid_d = Vector3d::Zero();
     pairs.clear();
     pairs.reserve(n);
 
-    #pragma omp parallel for
-    for (size_t i = 0; i < n; i++)
+    size_t numThreads = omp_get_max_threads();
+    size_t pairsPerThread = ceil((double)n / numThreads);
+    PointPairVector privPairs[numThreads];
+    Vector3d privCentroidM[numThreads];
+    Vector3d privCentroidD[numThreads];
+    for (size_t i = 0; i < numThreads; i++)
     {
-        Eigen::Vector3d data = data_pts[i];
-        Eigen::Vector4d extended(data.x(), data.y(), data.z(), 1.0);
-        Eigen::Vector3d point = (m_transformation * extended).block<3, 1>(0, 0);
+        privPairs[i].reserve(pairsPerThread);
+        privCentroidM[i] = Vector3d::Zero();
+        privCentroidD[i] = Vector3d::Zero();
+    }
 
-        Vector3d* neighbor;
-        double distance;
+    #pragma omp parallel num_threads(numThreads)
+    {
+        size_t thread = omp_get_thread_num();
 
-        m_searchTree->nearestNeighbor(point, neighbor, distance, m_maxDistanceMatch);
+        PointPairVector& myPairs = privPairs[thread];
+        Vector3d& myCentroidM = privCentroidM[thread];
+        Vector3d& myCentroidD = privCentroidD[thread];
 
-        if (neighbor != nullptr)
+        size_t start = thread * pairsPerThread;
+        size_t end = min((thread + 1) * pairsPerThread, n);
+
+        for (size_t i = start; i < end; i++)
         {
-            #pragma omp critical
-            {
-                centroid_m += point;
-                centroid_d += *neighbor;
+            Eigen::Vector3d data = data_pts[i];
+            Eigen::Vector4d extended(data.x(), data.y(), data.z(), 1.0);
+            Eigen::Vector3d point = (m_transformation * extended).block<3, 1>(0, 0);
 
-                pairs.push_back(make_pair(point, *neighbor));
+            Vector3d* neighbor;
+            double distance;
+
+            m_searchTree->nearestNeighbor(point, neighbor, distance, m_maxDistanceMatch);
+
+            if (neighbor != nullptr)
+            {
+                myCentroidM += point;
+                myCentroidD += *neighbor;
+                myPairs.push_back(make_pair(point, *neighbor));
             }
         }
+    }
+
+    for (size_t i = 0; i < numThreads; i++)
+    {
+        pairs.insert(pairs.end(), privPairs[i].begin(), privPairs[i].end());
+        centroid_m += privCentroidM[i];
+        centroid_d += privCentroidD[i];
     }
 
     centroid_m /= pairs.size();

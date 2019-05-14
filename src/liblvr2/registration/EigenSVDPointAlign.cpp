@@ -153,22 +153,7 @@ double EigenSVDPointAlign::alignPoints(
     return error;
 // */
 //*
-    double error = 0;
-
-    // Get centered PtPairs
-    Vector3d* m = new Vector3d[pairs.size()];
-    Vector3d* d = new Vector3d[pairs.size()];
-
-    #pragma omp parallel for reduction(+:error)
-    for (unsigned int i = 0; i < pairs.size(); i++)
-    {
-        m[i] = pairs[i].first - centroid_m;
-        d[i] = pairs[i].second - centroid_d;
-
-        error += (pairs[i].first - pairs[i].second).squaredNorm();
-    }
-
-    error = sqrt(error / (double)pairs.size());
+    double error = 0.0;
 
     // Fill H matrix
     Matrix3d H = Matrix3d::Zero();
@@ -178,15 +163,22 @@ double EigenSVDPointAlign::alignPoints(
     // #pragma omp parallel for reduction(+:H)
     for (size_t i = 0; i < pairs.size(); i++)
     {
+        Vector3d m = pairs[i].first - centroid_m;
+        Vector3d d = pairs[i].second - centroid_d;
+
+        error += (m - d).squaredNorm();
+
         // same as "H += m[i] * d[i].transpose();" but faster
         for (int j = 0; j < 3; j++)
         {
             for (int k = 0; k < 3; k++)
             {
-                H(j, k) += m[i][j] * d[i][k];
+                H(j, k) += m[j] * d[k];
             }
         }
     }
+
+    error = sqrt(error / (double)pairs.size());
 
     JacobiSVD<Matrix3d> svd(H, ComputeFullU | ComputeFullV);
 
@@ -199,9 +191,6 @@ double EigenSVDPointAlign::alignPoints(
     // Calculate translation
     Vector3d translation = centroid_d - R * centroid_m;
     align.block<3, 1>(0, 3) = translation;
-
-    delete[] m;
-    delete[] d;
 
     return error;
 // */
