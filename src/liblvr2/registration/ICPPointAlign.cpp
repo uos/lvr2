@@ -108,8 +108,8 @@ Matrix4d ICPPointAlign::match()
         ret = align.alignPoints(pairs, centroid_m, centroid_d, transform);
 
         // Apply transformation
-        m_transformation = transformRegistration(m_transformation, transform);
-        m_deltaTransform = transformRegistration(m_deltaTransform, transform);
+        m_transformation = transformRegistration(transform, m_transformation);
+        m_deltaTransform = transformRegistration(transform, m_deltaTransform);
 
         if (!m_quiet)
         {
