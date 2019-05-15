@@ -204,6 +204,8 @@ namespace lvr2{
 
         void performLaplacianSmoothing(VertexHandle vertexH, float factor = 0.01);
 
+        void aggressiveCutOut(VertexHandle vH);
+
 
         // ADDITIONAL FUNCTIONS
 
