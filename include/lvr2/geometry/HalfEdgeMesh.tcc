@@ -979,13 +979,13 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
         }
     }
 
-    if(isBorderEdge(longestEdge) || longestDistance == 0)
+    /*if(isBorderEdge(longestEdge) || longestDistance == 0)
     {
         cout << "Border edge or no edge, will not be split" << endl;
         VertexHandle dummy(std::numeric_limits<int>::max());
         VertexSplitResult ret(dummy);
         return ret;
-    }
+    }*/
 
     VertexHandle targetOfLongestEdgeH = longestEdgeHalf.target;
     BaseVecT targetOfLongestEdge = getV(targetOfLongestEdgeH).pos;
@@ -1045,10 +1045,6 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
         }
     }
 
-
-
-    //TODO (?): for each of the two found vertices, there needs to be iterated "upwards" to the first vertex, which
-    //TODO: is closer to the vertex to be split, than to the newly added vertex.
 
     VertexSplitResult result(splitResult.edgeCenter);
     result.addedFaces.assign(splitResult.addedFaces.begin(), splitResult.addedFaces.end());
