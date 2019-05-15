@@ -6,7 +6,7 @@
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/reconstruction/PointsetSurface.hpp>
 #include <lvr2/io/Progress.hpp>
-
+#include <lvr2/reconstruction/LBKdTree.hpp>
 #include <cmath>
 
 
@@ -59,7 +59,7 @@ namespace lvr2 {
         //algorithm
         for(int i = 0; i < getRuntime(); i++)
         {
-            if(i % 500 == 0 ) tumble_tree->balance();
+            if(i % (getRuntime() / 20) == 0 ) tumble_tree->balance();
             for(int j = 0; j < getNumSplits(); j++)
             {
                 for(int k = 0; k < getBasicSteps(); k++)
@@ -71,7 +71,7 @@ namespace lvr2 {
             }
             if(this->isWithCollapse())
             {
-                //executeEdgeCollapse(); //TODO: execute an edge collapse, only if the user specified so
+                executeEdgeCollapse(); //TODO: execute an edge collapse, only if the user specified so
             }
 
         }
@@ -230,8 +230,10 @@ namespace lvr2 {
         {
             //find vertex with highst sc, split that vertex
             Cell* max = tumble_tree->max();
+            //std::cout << "Maximum SC: " << max->signal_counter << endl;
             auto iter = max->duplicateMap.begin();
             VertexHandle highestSC = *iter; //get the first of the duplicate map
+            //cout << "Max sc VH: " << highestSC.idx() << endl;
 
             //split the found vertex
             VertexSplitResult result = m_mesh->splitVertex(highestSC);
@@ -313,46 +315,55 @@ namespace lvr2 {
         //TODO: tumble tree support
         if(!m_useGSS)
         {
-
             Cell* min = tumble_tree->min();
             auto iter = min->duplicateMap.begin();
             VertexHandle lowestSC = *iter;
-            cout << "Lowest SC from Tumble Tree: " << min->signal_counter << endl;
 
-            //found vertex with lowest sc
-            //TODO: collapse the edge leading to the vertex with the valence closest to six
-            if(min->signal_counter < this->getCollapseThreshold())
+            if(m_mesh->getNeighboursOfVertex(lowestSC).size() > 10)
+            {
+                aggressiveCutOut(lowestSC); //cut out the lowest sc if its valence is too high
+            }
+            else if(1 == 2)
             {
 
-                vector<VertexHandle> nbMinSc;
-                m_mesh->getNeighboursOfVertex(lowestSC, nbMinSc);
-                OptionalEdgeHandle eToSixVal(0);
-                int difference = numeric_limits<int>::infinity();
+                cout << "Lowest SC from Tumble Tree: " << min->signal_counter << endl;
 
-
-                for(VertexHandle vertex : nbMinSc)
+                //found vertex with lowest sc
+                //TODO: collapse the edge leading to the vertex with the valence closest to six
+                if(min->signal_counter < this->getCollapseThreshold())
                 {
-                    vector<VertexHandle> nbs;
-                    m_mesh->getNeighboursOfVertex(vertex, nbs);
-                    size_t length = nbs.size();
 
-                    if (abs((int) (6 - length)) < difference)
+                    vector<VertexHandle> nbMinSc;
+                    m_mesh->getNeighboursOfVertex(lowestSC, nbMinSc);
+                    OptionalEdgeHandle eToSixVal(0);
+                    int difference = numeric_limits<int>::infinity();
+
+
+                    for(VertexHandle vertex : nbMinSc)
                     {
-                        difference = abs((int) (6 - length));
-                        eToSixVal = m_mesh->getEdgeBetween(lowestSC, vertex);
+                        vector<VertexHandle> nbs;
+                        m_mesh->getNeighboursOfVertex(vertex, nbs);
+                        size_t length = nbs.size();
+
+                        if (abs((int) (6 - length)) < difference)
+                        {
+                            difference = abs((int) (6 - length));
+                            eToSixVal = m_mesh->getEdgeBetween(lowestSC, vertex);
+                        }
+                    }
+
+                    if(eToSixVal && m_mesh->isCollapsable(eToSixVal.unwrap()))
+                    {
+                        //TODO: use collapse result to remove the (vertex) from the tumble tree and the kd tree
+                        //otherwise this wont work
+                        EdgeCollapseResult result = m_mesh->collapseEdge(eToSixVal.unwrap());
+                        tumble_tree->remove(cellArr[result.removedPoint.idx()], result.removedPoint);
+                        cellArr[result.removedPoint.idx()] = NULL;
+                        std::cout << "Collapsed an Edge!" << endl;
                     }
                 }
-
-                if(eToSixVal && m_mesh->isCollapsable(eToSixVal.unwrap()))
-                {
-                    //TODO: use collapse result to remove the (vertex) from the tumble tree and the kd tree
-                    //otherwise this wont work
-                    EdgeCollapseResult result = m_mesh->collapseEdge(eToSixVal.unwrap());
-                    tumble_tree->remove(cellArr[result.removedPoint.idx()], result.removedPoint);
-                    cellArr[result.removedPoint.idx()] = NULL;
-                    std::cout << "Collapsed an Edge!" << endl;
-                }
             }
+
         }
         else
         {
@@ -624,9 +635,37 @@ namespace lvr2 {
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::removeWrongFaces()
     {
+        auto tree = m_surface->get()->searchTree();
+
+        float avg_distance = 0;
+        for(auto vertex : m_mesh->vertices())
+        {
+            vector<size_t> indexes;
+            vector<float> distances;
+            tree.get()->kSearch(m_mesh->getVertexPosition(vertex), 1, indexes, distances);
+            avg_distance += distances[0];
+        }
+
+        avg_distance /= m_mesh->numVertices();
+
+        std::cout << "avg_distance: " << avg_distance << endl;
+        for(auto vertex : m_mesh->vertices())
+        {
+            vector<size_t> indexes;
+            vector<float> distances;
+            tree.get()->kSearch(m_mesh->getVertexPosition(vertex), 1, indexes, distances);
+            if(distances[0] > 10 * avg_distance)
+            {
+                auto faces = m_mesh->getFacesOfVertex(vertex);
+                for(auto face : faces)
+                {
+                    m_mesh->removeFace(face);
+                }
+            }
+        }
 
         //remove faces with  E(X) <= E(X) + 1.64 * o(x) < Xo (confidence interval)
-        double avg_area = 0;
+        /*double avg_area = 0;
 
         for(FaceHandle face: m_mesh->faces())
         {
@@ -634,7 +673,7 @@ namespace lvr2 {
         }
 
         avg_area /= m_mesh->numFaces();
-        /*float standart_deviation = 0;
+        float standart_deviation = 0;
 
         for(FaceHandle face: m_mesh->faces())
         {
@@ -642,13 +681,13 @@ namespace lvr2 {
         }
 
         standart_deviation /= m_mesh->numFaces();
-        standart_deviation = sqrt(standart_deviation);*/
+        standart_deviation = sqrt(standart_deviation);
 
 
         for(FaceHandle face : m_mesh->faces())
         {
             double area = m_mesh->calcFaceArea(face);
-            if(area > 5 * avg_area/* + 1.64 *standart_deviation*/)
+            if(area > 5 * avg_area// + 1.64 *standart_deviation)
             {
                 m_mesh->removeFace(face);
             }
@@ -665,7 +704,7 @@ namespace lvr2 {
         }
 
         avg_length /= m_mesh->numEdges();
-        /*float standart_deviation_edge = 0;
+        float standart_deviation_edge = 0;
 
         for(EdgeHandle edgeH: m_mesh->edges())
         {
@@ -676,7 +715,7 @@ namespace lvr2 {
         }
 
         standart_deviation_edge /= m_mesh->numFaces();
-        standart_deviation_edge = sqrt(standart_deviation_edge);*/
+        standart_deviation_edge = sqrt(standart_deviation_edge);
 
 
         for(EdgeHandle edgeH : m_mesh->edges())
@@ -685,7 +724,7 @@ namespace lvr2 {
             BaseVecT v1 = m_mesh->getVertexPosition(vertices[0]);
             BaseVecT v2 = m_mesh->getVertexPosition(vertices[1]);
             double length = (v2-v1).length();
-            if(/*length < avg_length - 5 *standart_deviation_edge || */length > 5 * avg_length /*+ 5 *standart_deviation_edge*/)
+            if(//length < avg_length - 5 *standart_deviation_edge || length > 5 * avg_length //+ 5 *standart_deviation_edge)
             {
                 auto faces = m_mesh->getFacesOfEdge(edgeH);
                 if(faces[0]) m_mesh->removeFace(faces[0].unwrap()); //remove faces of the edge
@@ -721,9 +760,26 @@ namespace lvr2 {
                     }
                 }
             }
+        }*/
+
+
+    }
+
+    /**
+     * Aggressivly cuts out the vertex and all its adjacent faces
+     * @tparam BaseVecT
+     * @tparam NormalT
+     * @param vH  Vertex which will be removed including its adjacent faces.
+     */
+    template <typename BaseVecT, typename NormalT>
+    void GrowingCellStructure<BaseVecT, NormalT>::aggressiveCutOut(VertexHandle vH) {
+        cout << "Aggressive Cutout..." << endl;
+        auto faces = m_mesh->getFacesOfVertex(vH);
+        tumble_tree->remove(cellArr[vH.idx()], vH);
+        for(auto face : faces)
+        {
+            m_mesh->removeFace(face);
         }
-
-
     }
 
     template <typename BaseVecT, typename NormalT>

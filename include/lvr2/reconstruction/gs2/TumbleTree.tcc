@@ -393,10 +393,10 @@ namespace lvr2{
     {
         if(c == NULL)
             return;
-        /*c->signal_counter *= c->alpha; //update sc and propagate alphas
+        c->signal_counter *= c->alpha; //update sc and propagate alphas
         if(c->left) c->left->alpha *= c->alpha;
         if(c->right) c->right->alpha *= c->alpha;
-        c->alpha = 1;*/
+        c->alpha = 1;
 
         getCellsAsVector(c->left, cells);
         cells.push_back(c);
