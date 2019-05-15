@@ -75,7 +75,7 @@ void saveMesh(int s = 0)
 {
     if(s != 0)
     {
-        std::cout << "Received signal bit..." << endl;
+        std::cout << endl << "Received signal bit..." << endl;
     }
     SimpleFinalizer<Vec> fin;
     MeshBufferPtr res = fin.apply(mesh);
@@ -148,7 +148,14 @@ int main(int argc, char **argv) {
     gcs.setWithCollapse(options.getWithCollapse());
     gcs.setInterior(options.isInterior());
 
-    gcs.getMesh(mesh);
+    try {
+        gcs.getMesh(mesh);
+    }
+    catch (exception e){
+        std::cout << "Error while running the Algrotihm, source currently unknown, probably due to an error in the mesh."<<endl;
+        cout << "Please try again." << endl;
+    }
+
     //naiveFillSmallHoles(mesh, 10, true);
     saveMesh();
 

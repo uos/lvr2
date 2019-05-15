@@ -88,6 +88,11 @@ namespace lvr2 {
             }
         }
 
+        for(auto vertex : m_mesh->vertices())
+        {
+            performLaplacianSmoothing(vertex, 0.5);
+        }
+
 
 
         if(m_mesh->numVertices() > 2000)
@@ -96,7 +101,7 @@ namespace lvr2 {
         }
 
         //tumble_tree->balance();
-        tumble_tree->display();
+        //tumble_tree->display();
 
         cout << "Max depth of tt: " << tumble_tree->maxDepth() << endl;
         cout << "Min depth of tt: " << tumble_tree->minDepth() << endl;
@@ -230,9 +235,9 @@ namespace lvr2 {
 
             //split the found vertex
             VertexSplitResult result = m_mesh->splitVertex(highestSC);
-            if(result.edgeCenter.idx() == numeric_limits<int>::infinity()){
+            /*if(result.edgeCenter.idx() == numeric_limits<int>::max()){
                 return; //if longest edge is a border edge
-            }
+            }*/
             VertexHandle newVH = result.edgeCenter;
             float sc_middle = max->signal_counter / 2;
 
@@ -579,7 +584,7 @@ namespace lvr2 {
      * @param vertexH - vertex, which will be smoothed
      */
     template <typename BaseVecT, typename NormalT>
-    void GrowingCellStructure<BaseVecT, NormalT>::performLaplacianSmoothing(VertexHandle vertexH)
+    void GrowingCellStructure<BaseVecT, NormalT>::performLaplacianSmoothing(VertexHandle vertexH, float factor)
     {
         vector<VertexHandle> n_vertices = m_mesh->getNeighboursOfVertex(vertexH);
         BaseVecT& vertex = m_mesh->getVertexPosition(vertexH);
@@ -593,7 +598,7 @@ namespace lvr2 {
 
         avg_vec /= n_vertices.size();
 
-        vertex += avg_vec * 0.01;//getNeighborLearningRate();
+        vertex += avg_vec * factor;
     }
 
     // GCS METHODS - Methods which are only used by the GCS-algorithm
@@ -629,7 +634,7 @@ namespace lvr2 {
         }
 
         avg_area /= m_mesh->numFaces();
-        float standart_deviation = 0;
+        /*float standart_deviation = 0;
 
         for(FaceHandle face: m_mesh->faces())
         {
@@ -637,13 +642,13 @@ namespace lvr2 {
         }
 
         standart_deviation /= m_mesh->numFaces();
-        standart_deviation = sqrt(standart_deviation);
+        standart_deviation = sqrt(standart_deviation);*/
 
 
         for(FaceHandle face : m_mesh->faces())
         {
             double area = m_mesh->calcFaceArea(face);
-            if(area > avg_area + 1.64 *standart_deviation)
+            if(area > 5 * avg_area/* + 1.64 *standart_deviation*/)
             {
                 m_mesh->removeFace(face);
             }
@@ -660,7 +665,7 @@ namespace lvr2 {
         }
 
         avg_length /= m_mesh->numEdges();
-        float standart_deviation_edge = 0;
+        /*float standart_deviation_edge = 0;
 
         for(EdgeHandle edgeH: m_mesh->edges())
         {
@@ -671,7 +676,7 @@ namespace lvr2 {
         }
 
         standart_deviation_edge /= m_mesh->numFaces();
-        standart_deviation_edge = sqrt(standart_deviation_edge);
+        standart_deviation_edge = sqrt(standart_deviation_edge);*/
 
 
         for(EdgeHandle edgeH : m_mesh->edges())
@@ -680,11 +685,11 @@ namespace lvr2 {
             BaseVecT v1 = m_mesh->getVertexPosition(vertices[0]);
             BaseVecT v2 = m_mesh->getVertexPosition(vertices[1]);
             double length = (v2-v1).length();
-            if(length < avg_length - 5 *standart_deviation_edge || length > avg_length + 5 *standart_deviation_edge)
+            if(/*length < avg_length - 5 *standart_deviation_edge || */length > 5 * avg_length /*+ 5 *standart_deviation_edge*/)
             {
                 auto faces = m_mesh->getFacesOfEdge(edgeH);
-                //if(faces[0]) m_mesh->removeFace(faces[0].unwrap()); //remove faces of the edge
-                //if(faces[1]) m_mesh->removeFace(faces[1].unwrap());
+                if(faces[0]) m_mesh->removeFace(faces[0].unwrap()); //remove faces of the edge
+                if(faces[1]) m_mesh->removeFace(faces[1].unwrap());
 
             }
         }

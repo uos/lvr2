@@ -202,7 +202,7 @@ namespace lvr2{
 
         // GCS MEMBER FUNCTIONS
 
-        void performLaplacianSmoothing(VertexHandle vertexH);
+        void performLaplacianSmoothing(VertexHandle vertexH, float factor = 0.01);
 
 
         // ADDITIONAL FUNCTIONS
