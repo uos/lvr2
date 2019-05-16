@@ -35,8 +35,10 @@
 
 #include <iostream>
 #include <fstream>
+#include <stdexcept>
 
 #include <lvr2/io/IOUtils.hpp>
+#include <lvr2/registration/TreeUtils.hpp>
 
 using namespace std;
 
@@ -44,8 +46,19 @@ namespace lvr2
 {
 
 Scan::Scan(PointBufferPtr points, const Matrix4d& pose)
-    : m_points(points), m_pose(pose), m_initialPose(pose), m_deltaPose(Matrix4d::Identity())
-{ }
+    : m_pose(pose), m_initialPose(pose), m_deltaPose(Matrix4d::Identity())
+{
+    m_count = points->numPoints();
+    m_points = boost::shared_array<Vector3d>(new Vector3d[m_count]);
+
+    floatArr src = points->getPointArray();
+
+    #pragma omp parallel for
+    for (size_t i = 0; i < m_count; i++)
+    {
+        m_points[i] = Vector3d(src[i * 3], src[i * 3 + 1], src[i * 3 + 2]);
+    }
+}
 
 void Scan::transform(const Matrix4d& transform, bool writeFrame)
 {
@@ -58,9 +71,22 @@ void Scan::transform(const Matrix4d& transform, bool writeFrame)
     }
 }
 
-const PointBufferPtr& Scan::getPoints() const
+void Scan::reduce(double voxelSize)
 {
-    return m_points;
+    m_count = octreeReduce(m_points.get(), m_count, voxelSize);
+}
+
+const Vector3d& Scan::getPoint(size_t index) const
+{
+    if (index >= m_count)
+    {
+        throw out_of_range("getPoint on Scan out of Range");
+    }
+    return m_points[index];
+}
+size_t Scan::count() const
+{
+    return m_count;
 }
 const Matrix4d& Scan::getPose() const
 {

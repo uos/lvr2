@@ -50,8 +50,8 @@ using namespace std;
 namespace lvr2
 {
 
-ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Matrix4d& modelPose, const Matrix4d& dataPose) :
-    m_dataCloud(data), m_transformation(dataPose), m_deltaTransform(Matrix4d::Identity())
+ICPPointAlign::ICPPointAlign(ScanPtr model, ScanPtr data) :
+    m_dataCloud(data), m_modelCloud(model), m_transformation(data->getPose()), m_deltaTransform(Matrix4d::Identity())
 {
     // Init default values
     m_maxDistanceMatch  = 25;
@@ -60,15 +60,16 @@ ICPPointAlign::ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Ma
     m_quiet             = false;
 
     // Transform model points according to initial pose
-    size_t n = model->numPoints();
-    floatArr o_points = model->getPointArray();
+    size_t n = model->count();
+    const Matrix4d& modelPose = model->getPose();
 
     PointArray modelPoints = PointArray(new Vector3d[n]);
 
     #pragma omp parallel for
     for (size_t i = 0; i < n; i++)
     {
-        Eigen::Vector4d v(o_points[3 * i], o_points[3 * i + 1], o_points[3 * i + 2], 1.0);
+        const Vector3d& point = model->getPoint(i);
+        Eigen::Vector4d v(point.x(), point.y(), point.z(), 1.0);
         modelPoints[i] = (modelPose * v).block<3, 1>(0, 0);
     }
 
@@ -144,8 +145,7 @@ const Matrix4d& ICPPointAlign::getDeltaTransform() const
 
 void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d) const
 {
-    FloatChannel data_pts = m_dataCloud->getFloatChannel("points").get();
-    size_t n = data_pts.numElements();
+    size_t n = m_dataCloud->count();
 
     centroid_m = Vector3d::Zero();
     centroid_d = Vector3d::Zero();
@@ -177,7 +177,7 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, 
 
         for (size_t i = start; i < end; i++)
         {
-            Eigen::Vector3d data = data_pts[i];
+            Eigen::Vector3d data = m_dataCloud->getPoint(i);
             Eigen::Vector4d extended(data.x(), data.y(), data.z(), 1.0);
             Eigen::Vector3d point = (m_transformation * extended).block<3, 1>(0, 0);
 

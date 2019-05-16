@@ -36,6 +36,7 @@
 
 #include <lvr2/registration/EigenSVDPointAlign.hpp>
 #include <lvr2/registration/KDTree.hpp>
+#include <lvr2/registration/Scan.hpp>
 
 namespace lvr2
 {
@@ -43,7 +44,7 @@ namespace lvr2
 class ICPPointAlign
 {
 public:
-    ICPPointAlign(PointBufferPtr model, PointBufferPtr data, const Matrix4d& modelPose, const Matrix4d& dataPose);
+    ICPPointAlign(ScanPtr model, ScanPtr data);
 
     Matrix4d match();
 
@@ -67,18 +68,18 @@ protected:
 
     void transform();
 
-    double          m_epsilon;
-    double          m_maxDistanceMatch;
-    int             m_maxIterations;
+    double      m_epsilon;
+    double      m_maxDistanceMatch;
+    int         m_maxIterations;
 
-    bool            m_quiet;
+    bool        m_quiet;
 
-    PointBufferPtr  m_modelCloud;
-    PointBufferPtr  m_dataCloud;
-    Matrix4d        m_transformation;
-    Matrix4d        m_deltaTransform;
+    ScanPtr     m_modelCloud;
+    ScanPtr     m_dataCloud;
+    Matrix4d    m_transformation;
+    Matrix4d    m_deltaTransform;
 
-    KDTreePtr m_searchTree;
+    KDTreePtr   m_searchTree;
 };
 
 } /* namespace lvr2 */

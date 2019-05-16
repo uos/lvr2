@@ -45,25 +45,23 @@ public:
     { }
 
 protected:
-    virtual void nn_internal(const Vector3d& point, Vector3d*& neighbor, double& maxDist) const override
+    virtual void nnInternal(const Vector3d& point, Vector3d*& neighbor, double& maxDist) const override
     {
         double val = point(this->axis);
-        //this->lesser->nn_internal(point, neighbor, maxDist);
-        //this->greater->nn_internal(point, neighbor, maxDist);
         if (val < this->split)
         {
-            this->lesser->nn_internal(point, neighbor, maxDist);
+            this->lesser->nnInternal(point, neighbor, maxDist);
             if (val + maxDist >= this->split)
             {
-                this->greater->nn_internal(point, neighbor, maxDist);
+                this->greater->nnInternal(point, neighbor, maxDist);
             }
         }
         else
         {
-            this->greater->nn_internal(point, neighbor, maxDist);
+            this->greater->nnInternal(point, neighbor, maxDist);
             if (val - maxDist <= this->split)
             {
-                this->lesser->nn_internal(point, neighbor, maxDist);
+                this->lesser->nnInternal(point, neighbor, maxDist);
             }
         }
     }
@@ -83,7 +81,7 @@ public:
     { }
 
 protected:
-    virtual void nn_internal(const Vector3d& point, Vector3d*& neighbor, double& maxDist) const override
+    virtual void nnInternal(const Vector3d& point, Vector3d*& neighbor, double& maxDist) const override
     {
         double maxDistSq = maxDist * maxDist;
         bool changed = false;
@@ -108,121 +106,35 @@ private:
     int count;
 };
 
-struct PointCloudStats
-{
-    Vector3d min;
-    Vector3d max;
-    Vector3d avg;
-    int count;
-
-    PointCloudStats()
-    {
-        min.setConstant(INFINITY);
-        max.setConstant(-INFINITY);
-        avg.setConstant(0);
-        count = 0;
-    }
-    void addPoint(const Vector3d& point)
-    {
-        for (int axis = 0; axis < 3; axis++)
-        {
-            double val = point(axis);
-            if (val < min(axis))
-            {
-                min(axis) = val;
-            }
-            if (val > max(axis))
-            {
-                max(axis) = val;
-            }
-            avg(axis) += val;
-        }
-        count++;
-    }
-    void finish()
-    {
-        for (int axis = 0; axis < 3; axis++)
-        {
-            avg(axis) /= count;
-        }
-        count = 1;
-    }
-    double difference(int axis)
-    {
-        return max(axis) - min(axis);
-    }
-};
-
-KDTreePtr create_recursive(Vector3d* points, int n, PointCloudStats stats, int maxLeafSize)
+KDTreePtr create_recursive(Vector3d* points, int n, int maxLeafSize)
 {
     if (n <= maxLeafSize)
     {
         return KDTreePtr(new KDLeaf(points, n));
     }
-    int split_axis = 0;
-    for (int axis = 1; axis < 3; axis++)
-    {
-        if (stats.difference(axis) > stats.difference(split_axis))
-        {
-            split_axis = axis;
-        }
-    }
-    double split = stats.avg(split_axis);
 
-    if (stats.difference(split_axis) == 0.0) // all points are exactly the same
+    AABB boundingBox(points, n);
+
+    int splitAxis = boundingBox.longestAxis();
+    double splitValue = boundingBox.avg(splitAxis);
+
+    if (boundingBox.difference(splitAxis) == 0.0) // all points are exactly the same
     {
         // there is no need to check all of them later on, so just pretend like there is only one
         return KDTreePtr(new KDLeaf(points, 1));
     }
 
-    PointCloudStats lesser_stats;
-    PointCloudStats greater_stats;
+    int l = splitPoints(points, n, splitAxis, splitValue);
 
-    int l = 0, r = n - 1;
+    KDTreePtr lesser = create_recursive(points, l, maxLeafSize);
+    KDTreePtr greater = create_recursive(points + l, n - l, maxLeafSize);
 
-    while (l < r)
-    {
-        while (l <= r && points[l](split_axis) < split)
-        {
-            lesser_stats.addPoint(points[l]);
-            l += 1;
-        }
-        while (r >= l && points[r](split_axis) >= split)
-        {
-            greater_stats.addPoint(points[r]);
-            if (r == l) // prevent r from going below 0
-            {
-                break;
-            }
-            r -= 1;
-        }
-        if (l < r)
-        {
-            Vector3d tmp = points[l];
-            points[l] = points[r];
-            points[r] = tmp;
-        }
-    }
-
-    lesser_stats.finish();
-    greater_stats.finish();
-
-    KDTreePtr lesser = create_recursive(points, l, lesser_stats, maxLeafSize);
-    KDTreePtr greater = create_recursive(points + l, n - l, greater_stats, maxLeafSize);
-
-    return KDTreePtr(new KDNode(split_axis, split, lesser, greater));
+    return KDTreePtr(new KDNode(splitAxis, splitValue, lesser, greater));
 }
 
 KDTreePtr KDTree::create(PointArray points, int n, int maxLeafSize)
 {
-    PointCloudStats stats;
-    for (int i = 0; i < n; i++)
-    {
-        stats.addPoint(points[i]);
-    }
-    stats.finish();
-
-    KDTreePtr ret = create_recursive(points.get(), n, stats, maxLeafSize);
+    KDTreePtr ret = create_recursive(points.get(), n, maxLeafSize);
     ret->points = points;
     return ret;
 }
@@ -231,7 +143,7 @@ void KDTree::nearestNeighbor(const Vector3d& point, Vector3d*& neighbor, double&
 {
     neighbor = nullptr;
     distance = maxDistance;
-    nn_internal(point, neighbor, distance);
+    nnInternal(point, neighbor, distance);
 }
 
 }

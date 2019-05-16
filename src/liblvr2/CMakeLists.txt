@@ -63,6 +63,7 @@ set(LVR2_SOURCES
     registration/KDTree.cpp
     registration/Scan.cpp
     registration/SlamAlign.cpp
+    registration/TreeUtils.cpp
 )
 
 
