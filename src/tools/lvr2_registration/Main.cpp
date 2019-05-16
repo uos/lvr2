@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 {
     // =============== parse options ===============
     int start, end, icpIterations, slamIterations;
-    double epsilon, icpMaxDistance, slamMaxDistance;
+    double epsilon, icpMaxDistance, slamMaxDistance, reduction;
     string format;
     path dir;
     bool quiet, doLoopClosing, doGraphSlam, help;
@@ -79,6 +79,7 @@ int main(int argc, char** argv)
         ("icpMaxDistance,d", value<double>(&icpMaxDistance)->default_value(25), "The maximum distance between two points during ICP")
         ("slamIterations,I", value<int>(&slamIterations)->default_value(50), "Number of iterations for SLAM")
         ("slamMaxDistance,D", value<double>(&slamMaxDistance)->default_value(25), "The maximum distance between two points during SLAM")
+        ("reduction,r", value<double>(&reduction)->default_value(-1), "The Voxel size for Voxel based reduction. -1 for no reduction")
         ("epsilon", value<double>(&epsilon)->default_value(0.00001), "The desired epsilon difference between two error values")
         ("loop,L", bool_switch(&doLoopClosing), "Use simple Loop Closing")
         ("graph,G", bool_switch(&doGraphSlam), "Use complex Loop Closing with GraphSLAM")
@@ -221,6 +222,7 @@ int main(int argc, char** argv)
     align.setIcpIterations(icpIterations);
     align.setDoLoopClosing(doLoopClosing);
     align.setDoGraphSlam(doGraphSlam);
+    align.setReduction(reduction);
     align.setEpsilon(epsilon);
     align.setQuiet(quiet);
 

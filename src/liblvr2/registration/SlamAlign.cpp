@@ -33,6 +33,8 @@
  */
 #include <lvr2/registration/SlamAlign.hpp>
 
+#include <iomanip>
+
 using namespace std;
 
 namespace lvr2
@@ -46,9 +48,17 @@ SlamAlign::SlamAlign(const std::vector<ScanPtr>& scans)
 
 void SlamAlign::match()
 {
-    string scan_number_string = to_string(m_scans.size());
+    if (m_reduction >= 0)
+    {
+        #pragma omp parallel for
+        for (size_t i = 1; i < m_scans.size(); i++)
+        {
+            m_scans[i]->reduce(m_reduction);
+        }
+    }
 
-    for(size_t i = 1; i < m_scans.size(); i++)
+    string scan_number_string = to_string(m_scans.size());
+    for (size_t i = 1; i < m_scans.size(); i++)
     {
         if (m_quiet)
         {
@@ -64,7 +74,7 @@ void SlamAlign::match()
 
         applyTransform(cur, prev->getDeltaPose());
 
-        ICPPointAlign icp(prev->getPoints(), cur->getPoints(), prev->getPose(), cur->getPose());
+        ICPPointAlign icp(prev, cur);
         icp.setMaxMatchDistance(m_icpMaxDistance);
         icp.setMaxIterations(m_icpIterations);
         icp.setEpsilon(m_epsilon);
@@ -120,6 +130,10 @@ void SlamAlign::setDoGraphSlam(bool doGraphSlam)
 {
     m_doGraphSlam = doGraphSlam;
 }
+void SlamAlign::setReduction(double reduction)
+{
+    m_reduction = reduction;
+}
 void SlamAlign::setEpsilon(double epsilon)
 {
     m_epsilon = epsilon;
@@ -152,6 +166,10 @@ bool SlamAlign::getDoLoopClosing() const
 bool SlamAlign::getDoGraphSlam() const
 {
     return m_doGraphSlam;
+}
+double SlamAlign::getReduction() const
+{
+    return m_reduction;
 }
 double SlamAlign::getEpsilon() const
 {

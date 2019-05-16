@@ -57,7 +57,11 @@ public:
     void transform(const Matrix4d& transform, bool writeFrame = true);
     void addFrame(ScanUse use = ScanUse::UNUSED);
 
-    const PointBufferPtr& getPoints() const;
+    void reduce(double voxelSize);
+
+    const Vector3d& getPoint(size_t index) const;
+    size_t count() const;
+
     const Matrix4d& getPose() const;
     const Matrix4d& getDeltaPose() const;
     const Matrix4d& getInitialPose() const;
@@ -65,10 +69,12 @@ public:
     void writeFrames(std::string path) const;
 
 private:
-    PointBufferPtr m_points;
-    Matrix4d m_pose;
-    Matrix4d m_deltaPose;
-    Matrix4d m_initialPose;
+    boost::shared_array<Vector3d> m_points;
+    size_t      m_count;
+
+    Matrix4d    m_pose;
+    Matrix4d    m_deltaPose;
+    Matrix4d    m_initialPose;
 
     std::vector<std::pair<Matrix4d, ScanUse>> m_frames;
 };

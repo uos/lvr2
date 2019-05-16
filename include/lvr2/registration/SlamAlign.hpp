@@ -56,6 +56,7 @@ public:
     void    setIcpIterations(int icpIterations);
     void    setDoLoopClosing(bool doLoopClosing);
     void    setDoGraphSlam(bool doGraphSlam);
+    void    setReduction(double reduction);
     void    setEpsilon(double epsilon);
     void    setQuiet(bool quiet);
 
@@ -65,6 +66,7 @@ public:
     int     getIcpIterations() const;
     bool    getDoLoopClosing() const;
     bool    getDoGraphSlam() const;
+    double  getReduction() const;
     double  getEpsilon() const;
     bool    getQuiet() const;
 
@@ -78,6 +80,7 @@ protected:
     int     m_icpIterations = 50;
     bool    m_doLoopClosing = false;
     bool    m_doGraphSlam = false;
+    double  m_reduction = -1;
     double  m_epsilon = 0.00001;
     bool    m_quiet = false;
 

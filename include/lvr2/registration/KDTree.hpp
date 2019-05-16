@@ -35,10 +35,11 @@
 #ifndef KDTREE_HPP_
 #define KDTREE_HPP_
 
-#include <lvr2/registration/EigenSVDPointAlign.hpp>
-#include <lvr2/reconstruction/SearchTreeFlann.hpp>
+#include <lvr2/registration/TreeUtils.hpp>
 
+#include <memory>
 #include <limits>
+#include <boost/shared_array.hpp>
 
 namespace lvr2
 {
@@ -78,7 +79,7 @@ public:
     virtual ~KDTree() = default;
 
 protected:
-    virtual void nn_internal(const Vector3d& point, Vector3d*& neighbor, double& maxDist) const = 0;
+    virtual void nnInternal(const Vector3d& point, Vector3d*& neighbor, double& maxDist) const = 0;
 
     friend class KDNode;
 
