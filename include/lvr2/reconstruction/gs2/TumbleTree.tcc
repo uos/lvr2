@@ -49,7 +49,7 @@ namespace lvr2{
         tmp->signal_counter *= tmp->alpha;
         if(tmp->left != NULL) tmp->left->alpha *= tmp->alpha;
         if(tmp->right != NULL) tmp->right->alpha *= tmp->alpha;
-        tmp->alpha = 1.0f;
+        tmp->alpha = 1;
 
         while(sc != tmp->signal_counter)
         {
@@ -65,7 +65,7 @@ namespace lvr2{
                 tmp->signal_counter *= tmp->alpha;
                 if(tmp->left != NULL) tmp->left->alpha *= tmp->alpha;
                 if(tmp->right != NULL) tmp->right->alpha *= tmp->alpha;
-                tmp->alpha = 1.0f;
+                tmp->alpha = 1;
 
                 tmp = tmp->left;
             }
@@ -81,7 +81,7 @@ namespace lvr2{
                 tmp->signal_counter *= tmp->alpha;
                 if(tmp->left != NULL) tmp->left->alpha *= tmp->alpha;
                 if(tmp->right != NULL) tmp->right->alpha *= tmp->alpha;
-                tmp->alpha = 1.0f;
+                tmp->alpha = 1;
 
                 tmp = tmp->right;
             }
@@ -101,10 +101,11 @@ namespace lvr2{
         if(c == NULL)
         {
             c != root ? notDeleted++ : notDeleted = notDeleted-1+1;
+            std::cout << "  signal counter not found in TT" << endl;
             return NULL;
         }
         else{
-            c->signal_counter *= alpha;
+            c->signal_counter *= c->alpha;
             if(c->left)c->left->alpha *= c->alpha;
             if(c->right)c->right->alpha *= c->alpha;
             c->alpha = 1;
@@ -113,9 +114,11 @@ namespace lvr2{
         if(sc < c->signal_counter)
         {
             c->left = remove(sc, vH, c->left, removeWhole, alpha);
+            if(c->left) c->left->parent = c;
         }
         else if(sc > c->signal_counter) {
             c->right = remove(sc, vH, c->right, removeWhole, alpha);
+            if(c->right) c->right->parent = c;
         }
         else{
             //if there are two are more, just remove from the duplicate map
@@ -124,6 +127,7 @@ namespace lvr2{
                 c->duplicateMap.erase(vH); //erase index from duplicate map
                 if(c->duplicateMap.numValues() == numV){
                     notDeleted++;
+                    std::cout << "  Not found in duplicate map..." << endl;
                 }
                 return c;
             }
@@ -131,14 +135,12 @@ namespace lvr2{
             //if there is one or no child
             if(c->left == NULL)
             {
-                if(c->right) c->right->parent = c->parent;
                 tmp = c->right;
                 delete c;
                 return tmp;
             }
             else if(c->right == NULL)
             {
-                c->left->parent = c->parent;
                 tmp = c->left;
                 delete c;
                 return tmp;
@@ -156,7 +158,8 @@ namespace lvr2{
             }
             //remove inorder successor
             VertexHandle ret(0);
-            c->right = remove(tmp->signal_counter, ret, c->right, true, alpha);
+            c->right = remove(tmp->signal_counter, ret, c->right, true, alpha); // no good...
+            if(c->right) c->right->parent = c;
 
         }
 
@@ -208,8 +211,7 @@ namespace lvr2{
 
             if(c->right == NULL)
             {
-                if(c == root) findMax(c->left);
-                else return c;
+                return c;
             }
             else{
                 return findMax(c->right);
@@ -297,7 +299,7 @@ namespace lvr2{
 
 
     // we only need functionality to remove a specific cell. TODO: look, wheather or not it really returns  the root
-    void TumbleTree::remove(Cell* c, VertexHandle vH)
+    float TumbleTree::remove(Cell* c, VertexHandle vH)
     {
         //TODO: FIX PROBLEM FOR SC UPDATES.
 
@@ -315,6 +317,7 @@ namespace lvr2{
         }
         sc *= tmp->alpha; //include root sc
         root = remove(sc, vH, root);
+        return sc;
     }
 
     void TumbleTree::display()

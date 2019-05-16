@@ -1037,7 +1037,7 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
             //flip only, if one of the single vertices is inside the circumcircle of the other triangle
             if((singleFace1-circumCenter2).length() <= radius2 || (singleFace2-circumCenter1).length() <= radius1)
             {
-                if(this->isFlippable(handle.unwrap()) && this->numVertices() > 200)
+                if(this->isFlippable(handle.unwrap()) && this->numVertices() > 1000)
                 {
                     this->flipEdge(handle.unwrap());
                 }

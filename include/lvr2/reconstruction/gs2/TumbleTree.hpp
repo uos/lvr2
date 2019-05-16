@@ -49,7 +49,7 @@ namespace  lvr2{
         ~TumbleTree();
 
         Cell* insertIterative(float sc, VertexHandle vH);
-        void remove(Cell* c, VertexHandle vH);
+        float remove(Cell* c, VertexHandle vH); //returns the real sc
 
 
         int maxDepth();
