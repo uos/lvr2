@@ -71,7 +71,7 @@ namespace lvr2 {
             }
             if(this->isWithCollapse())
             {
-                executeEdgeCollapse(); //TODO: execute an edge collapse, only if the user specified so
+                //executeEdgeCollapse(); //TODO: execute an edge collapse, only if the user specified so
             }
 
         }
@@ -175,15 +175,17 @@ namespace lvr2 {
             float winnerSC = winnerNode->signal_counter; //obtain the signal counter from the map
 
             //TODO: determine mistake in remove operation in basic step. why on earth is there a prob here
+            std::cout << "Removing in Basic Step" << endl;
 
             tumble_tree->remove(winnerNode, winnerH); //remove the winning vertex from the tumble tree
+            cout << "End remove in basic step" << endl;
             //if(tumble_tree->find(winnerSC, winnerH) != NULL) std::cout << "error removing in basic step" << endl;
 
             //decrease signal counter of others by a fraction according to hennings implementation
             if(m_decreaseFactor == 1.0)
             {
                 size_t n = m_allowMiss * m_mesh->numVertices();
-                float dynamicDecrease = 1 - (float)pow(m_collapseThreshold, (1.0f / n));
+                float dynamicDecrease = 1 - (float)pow(m_collapseThreshold, (1 / n));
                 tumble_tree->updateSC(dynamicDecrease);
 
             }
@@ -193,7 +195,7 @@ namespace lvr2 {
 
             }
 
-            cellArr[winnerH.idx()] = tumble_tree->insertIterative(winnerSC + 1.0f, winnerH);
+            cellArr[winnerH.idx()] = tumble_tree->insertIterative(winnerSC + 1, winnerH);
 
             if(tumble_tree->find(winnerSC+1, winnerH) == NULL || cellArr[winnerH.idx()] != tumble_tree->find(winnerSC+1, winnerH)){
                 //std:: cout << "Insert problems..." << endl;
@@ -230,10 +232,10 @@ namespace lvr2 {
         {
             //find vertex with highst sc, split that vertex
             Cell* max = tumble_tree->max();
-            //std::cout << "Maximum SC: " << max->signal_counter << endl;
+
             auto iter = max->duplicateMap.begin();
             VertexHandle highestSC = *iter; //get the first of the duplicate map
-            //cout << "Max sc VH: " << highestSC.idx() << endl;
+
 
             //split the found vertex
             VertexSplitResult result = m_mesh->splitVertex(highestSC);
@@ -241,13 +243,17 @@ namespace lvr2 {
                 return; //if longest edge is a border edge
             }*/
             VertexHandle newVH = result.edgeCenter;
-            float sc_middle = max->signal_counter / 2;
 
+            //std::cout << "Max SC: " << max->signal_counter << endl;
             //now update tumble tree and the cell array
-            tumble_tree->remove(max, highestSC);
+            cout << "Removing in Split" << endl;
+            float actual_sc = tumble_tree->remove(max, highestSC);
+            cout << "End Remove in split" << endl;
 
-            cellArr[highestSC.idx()] = tumble_tree->insertIterative(sc_middle, highestSC);
-            cellArr[newVH.idx()] = tumble_tree->insertIterative(sc_middle, newVH);
+            //std::cout << "Actual SC: " << actual_sc << endl;
+
+            cellArr[highestSC.idx()] = tumble_tree->insertIterative(actual_sc / 2, highestSC);
+            cellArr[newVH.idx()] = tumble_tree->insertIterative(actual_sc / 2, newVH);
 
             BaseVecT kdInsert = m_mesh->getVertexPosition(newVH);
             kd_tree->insert(kdInsert, newVH);
@@ -430,7 +436,7 @@ namespace lvr2 {
             ++progress_bar;
             //cout << "Vertices in Mesh: " << m_mesh->numVertices() << endl;
 
-            BaseVecT& vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
+            BaseVecT vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
             //avg_counter += vertex.signal_counter; //calc the avg signal counter
             BaseVecT distanceVector = point - vertex;
             float length = distanceVector.length2();
@@ -447,7 +453,7 @@ namespace lvr2 {
         //m_avgSignalCounter = avg_counter / m_mesh->numVertices();
 
         return closestVertexToRandomPoint;
-    };
+    }
 
     /**
      * Test Method creating a mesh with 9 vertices. Used for testing vertex and edge split operations
@@ -573,7 +579,6 @@ namespace lvr2 {
         {
             //insert vertices to the cellindexarray as well as the tumbletree
             VertexHandle ret(numeric_limits<int>::max());
-            tumble_tree->insertIterative(8.000001, ret);
             cellArr[vH1.idx()] = tumble_tree->insertIterative(1, vH1);
             cellArr[vH2.idx()] = tumble_tree->insertIterative(1, vH2);
             cellArr[vH3.idx()] = tumble_tree->insertIterative(1, vH3);
