@@ -58,6 +58,8 @@ public:
     void addFrame(ScanUse use = ScanUse::UNUSED);
 
     void reduce(double voxelSize);
+    void setMinDistance(double minDistance);
+    void setMaxDistance(double maxDistance);
 
     const Vector3d& getPoint(size_t index) const;
     size_t count() const;

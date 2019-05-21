@@ -50,23 +50,36 @@ public:
 
     virtual ~SlamAlign() = default;
 
-    void    setSlamMaxDistance(double slamMaxDistance);
-    void    setSlamIterations(int slamIterations);
-    void    setIcpMaxDistance(double icpMaxDistance);
-    void    setIcpIterations(int icpIterations);
     void    setDoLoopClosing(bool doLoopClosing);
     void    setDoGraphSlam(bool doGraphSlam);
+    void    setSlamMaxDistance(double slamMaxDistance);
+    void    setSlamIterations(int slamIterations);
+
+    void    setIcpMaxDistance(double icpMaxDistance);
+    void    setIcpIterations(int icpIterations);
+
+    void    setMinDistance(double minDistance);
+    void    setMaxDistance(double maxDistance);
     void    setReduction(double reduction);
+
+    void    setTrustPose(bool trustPose);
+    void    setMetascan(bool metascan);
+
     void    setEpsilon(double epsilon);
     void    setQuiet(bool quiet);
 
+
+    bool    getDoLoopClosing() const;
+    bool    getDoGraphSlam() const;
     double  getSlamMaxDistance() const;
     int     getSlamIterations() const;
     double  getIcpMaxDistance() const;
     int     getIcpIterations() const;
-    bool    getDoLoopClosing() const;
-    bool    getDoGraphSlam() const;
+    double  getMinDistance() const;
+    double  getMaxDistance() const;
     double  getReduction() const;
+    bool    getTrustPose() const;
+    bool    getMetascan() const;
     double  getEpsilon() const;
     bool    getQuiet() const;
 
@@ -74,13 +87,21 @@ protected:
 
     void applyTransform(ScanPtr scan, const Matrix4d& transform);
 
-    double  m_slamMaxDistance = 25;
-    int     m_slamIterations = 50;
-    double  m_icpMaxDistance = 25;
-    int     m_icpIterations = 50;
     bool    m_doLoopClosing = false;
     bool    m_doGraphSlam = false;
+    double  m_slamMaxDistance = 25;
+    int     m_slamIterations = 50;
+
+    double  m_icpMaxDistance = 25;
+    int     m_icpIterations = 50;
+
+    double  m_minDistance = -1;
+    double  m_maxDistance = -1;
     double  m_reduction = -1;
+
+    bool    m_trustPose = false;
+    bool    m_metascan = false;
+
     double  m_epsilon = 0.00001;
     bool    m_quiet = false;
 

@@ -76,6 +76,43 @@ void Scan::reduce(double voxelSize)
     m_count = octreeReduce(m_points.get(), m_count, voxelSize);
 }
 
+void Scan::setMinDistance(double minDistance)
+{
+    double sqDist = minDistance * minDistance;
+
+    size_t i = 0;
+    while (i < m_count)
+    {
+        if (m_points[i].squaredNorm() <= sqDist)
+        {
+            m_count--;
+            std::swap(m_points[i], m_points[m_count]);
+        }
+        else
+        {
+            i++;
+        }
+    }
+}
+void Scan::setMaxDistance(double maxDistance)
+{
+    double sqDist = maxDistance * maxDistance;
+
+    size_t i = 0;
+    while (i < m_count)
+    {
+        if (m_points[i].squaredNorm() >= sqDist)
+        {
+            m_count--;
+            std::swap(m_points[i], m_points[m_count]);
+        }
+        else
+        {
+            i++;
+        }
+    }
+}
+
 const Vector3d& Scan::getPoint(size_t index) const
 {
     if (index >= m_count)

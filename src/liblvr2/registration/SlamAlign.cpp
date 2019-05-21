@@ -48,12 +48,23 @@ SlamAlign::SlamAlign(const std::vector<ScanPtr>& scans)
 
 void SlamAlign::match()
 {
-    if (m_reduction >= 0)
+    if (m_reduction >= 0 || m_minDistance >= 0 || m_maxDistance >= 0)
     {
         #pragma omp parallel for
-        for (size_t i = 1; i < m_scans.size(); i++)
+        for (size_t i = 0; i < m_scans.size(); i++)
         {
-            m_scans[i]->reduce(m_reduction);
+            if (m_reduction >= 0)
+            {
+                m_scans[i]->reduce(m_reduction);
+            }
+            if (m_minDistance >= 0)
+            {
+                m_scans[i]->setMinDistance(m_minDistance);
+            }
+            if (m_maxDistance >= 0)
+            {
+                m_scans[i]->setMaxDistance(m_maxDistance);
+            }
         }
     }
 
@@ -72,7 +83,15 @@ void SlamAlign::match()
         const ScanPtr& prev = m_scans[i - 1];
         const ScanPtr& cur = m_scans[i];
 
-        applyTransform(cur, prev->getDeltaPose());
+        if (!m_trustPose)
+        {
+            applyTransform(cur, prev->getDeltaPose());
+        }
+        else
+        {
+            // create frame entry
+            applyTransform(cur, Matrix4d::Identity());
+        }
 
         ICPPointAlign icp(prev, cur);
         icp.setMaxMatchDistance(m_icpMaxDistance);
@@ -106,76 +125,113 @@ void SlamAlign::applyTransform(ScanPtr scan, const Matrix4d& transform)
 
 // ============================== Getters, Setters ==============================
 
-void SlamAlign::setSlamMaxDistance(double slamMaxDistance)
-{
-    m_slamMaxDistance = slamMaxDistance;
-}
-void SlamAlign::setSlamIterations(int slamIterations)
-{
-    m_slamIterations = slamIterations;
-}
-void SlamAlign::setIcpMaxDistance(double icpMaxDistance)
-{
-    m_icpMaxDistance = icpMaxDistance;
-}
-void SlamAlign::setIcpIterations(int icpIterations)
-{
-    m_icpIterations = icpIterations;
-}
-void SlamAlign::setDoLoopClosing(bool doLoopClosing)
+void    SlamAlign::setDoLoopClosing(bool doLoopClosing)
 {
     m_doLoopClosing = doLoopClosing;
 }
-void SlamAlign::setDoGraphSlam(bool doGraphSlam)
+void    SlamAlign::setDoGraphSlam(bool doGraphSlam)
 {
     m_doGraphSlam = doGraphSlam;
 }
-void SlamAlign::setReduction(double reduction)
+void    SlamAlign::setSlamMaxDistance(double slamMaxDistance)
+{
+    m_slamMaxDistance = slamMaxDistance;
+}
+void    SlamAlign::setSlamIterations(int slamIterations)
+{
+    m_slamIterations = slamIterations;
+}
+
+void    SlamAlign::setIcpMaxDistance(double icpMaxDistance)
+{
+    m_icpMaxDistance = icpMaxDistance;
+}
+void    SlamAlign::setIcpIterations(int icpIterations)
+{
+    m_icpIterations = icpIterations;
+}
+
+void    SlamAlign::setMinDistance(double minDistance)
+{
+    m_minDistance = minDistance;
+}
+void    SlamAlign::setMaxDistance(double maxDistance)
+{
+    m_maxDistance = maxDistance;
+}
+void    SlamAlign::setReduction(double reduction)
 {
     m_reduction = reduction;
 }
-void SlamAlign::setEpsilon(double epsilon)
+
+void    SlamAlign::setTrustPose(bool trustPose)
+{
+    m_trustPose = trustPose;
+}
+void    SlamAlign::setMetascan(bool metascan)
+{
+    m_metascan = metascan;
+}
+
+void    SlamAlign::setEpsilon(double epsilon)
 {
     m_epsilon = epsilon;
 }
-void SlamAlign::setQuiet(bool quiet)
+void    SlamAlign::setQuiet(bool quiet)
 {
     m_quiet = quiet;
 }
 
-double SlamAlign::getSlamMaxDistance() const
-{
-    return m_slamMaxDistance;
-}
-int SlamAlign::getSlamIterations() const
-{
-    return m_slamIterations;
-}
-double SlamAlign::getIcpMaxDistance() const
-{
-    return m_icpMaxDistance;
-}
-int SlamAlign::getIcpIterations() const
-{
-    return m_icpIterations;
-}
-bool SlamAlign::getDoLoopClosing() const
+
+bool    SlamAlign::getDoLoopClosing() const
 {
     return m_doLoopClosing;
 }
-bool SlamAlign::getDoGraphSlam() const
+bool    SlamAlign::getDoGraphSlam() const
 {
     return m_doGraphSlam;
 }
-double SlamAlign::getReduction() const
+double  SlamAlign::getSlamMaxDistance() const
+{
+    return m_slamMaxDistance;
+}
+int     SlamAlign::getSlamIterations() const
+{
+    return m_slamIterations;
+}
+double  SlamAlign::getIcpMaxDistance() const
+{
+    return m_icpMaxDistance;
+}
+int     SlamAlign::getIcpIterations() const
+{
+    return m_icpIterations;
+}
+double  SlamAlign::getMinDistance() const
+{
+    return m_minDistance;
+}
+double  SlamAlign::getMaxDistance() const
+{
+    return m_maxDistance;
+}
+double  SlamAlign::getReduction() const
 {
     return m_reduction;
 }
-double SlamAlign::getEpsilon() const
+bool    SlamAlign::getTrustPose() const
+{
+    return m_trustPose;
+}
+bool    SlamAlign::getMetascan() const
+{
+    return m_metascan;
+}
+double  SlamAlign::getEpsilon() const
 {
     return m_epsilon;
 }
-bool SlamAlign::getQuiet() const
+bool    SlamAlign::getQuiet() const
 {
     return m_quiet;
 }
