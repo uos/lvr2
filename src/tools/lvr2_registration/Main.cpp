@@ -60,11 +60,29 @@ string format_name(string prefix, int index, string suffix, int number_length = 
 int main(int argc, char** argv)
 {
     // =============== parse options ===============
-    int start, end, icpIterations, slamIterations;
-    double epsilon, icpMaxDistance, slamMaxDistance, reduction;
-    string format;
+    bool    doLoopClosing = false;
+    bool    doGraphSlam = false;
+    double  slamMaxDistance = 25;
+    int     slamIterations = 50;
+
+    double  icpMaxDistance = 25;
+    int     icpIterations = 50;
+
+    double  minDistance = -1;
+    double  maxDistance = -1;
+    double  reduction = -1;
+
+    bool    trustPose = false;
+    bool    metascan = false;
+
+    double  epsilon = 0.00001;
+    bool    quiet = false;
+
+    int start = -1;
+    int end = -1;
+    string format = "uos";
     path dir;
-    bool quiet, doLoopClosing, doGraphSlam, help;
+    bool help;
 
     try
     {
@@ -72,17 +90,21 @@ int main(int argc, char** argv)
 
         options_description visible_options("OPTIONS");
         visible_options.add_options()
-        ("start,s", value<int>(&start)->default_value(-1), "The first scan to process.\n-1 (default): search for first scan")
-        ("end,e", value<int>(&end)->default_value(-1), "The last scan to process.\n-1 (default): continue until no more scan found")
-        ("format,f", value<string>(&format)->default_value("uos"), "The format to use.\navailable formats are listed <somewhere>")
-        ("icpIterations,i", value<int>(&icpIterations)->default_value(50), "Number of iterations for ICP")
-        ("icpMaxDistance,d", value<double>(&icpMaxDistance)->default_value(25), "The maximum distance between two points during ICP")
-        ("slamIterations,I", value<int>(&slamIterations)->default_value(50), "Number of iterations for SLAM")
-        ("slamMaxDistance,D", value<double>(&slamMaxDistance)->default_value(25), "The maximum distance between two points during SLAM")
-        ("reduction,r", value<double>(&reduction)->default_value(-1), "The Voxel size for Voxel based reduction. -1 for no reduction")
-        ("epsilon", value<double>(&epsilon)->default_value(0.00001), "The desired epsilon difference between two error values")
+        ("start,s", value<int>(&start)->default_value(start), "The first scan to process.\n-1 (default): search for first scan")
+        ("end,e", value<int>(&end)->default_value(end), "The last scan to process.\n-1 (default): continue until no more scan found")
+        ("format,f", value<string>(&format)->default_value(format), "The format to use.\navailable formats are listed <somewhere>")
+        ("icpIterations,i", value<int>(&icpIterations)->default_value(icpIterations), "Number of iterations for ICP")
+        ("icpMaxDistance,d", value<double>(&icpMaxDistance)->default_value(icpMaxDistance), "The maximum distance between two points during ICP")
+        ("slamIterations,I", value<int>(&slamIterations)->default_value(slamIterations), "Number of iterations for SLAM")
+        ("slamMaxDistance,D", value<double>(&slamMaxDistance)->default_value(slamMaxDistance), "The maximum distance between two points during SLAM")
+        ("reduction,r", value<double>(&reduction)->default_value(reduction), "The Voxel size for Voxel based reduction. -1 for no reduction")
+        ("min,m", value<double>(&minDistance)->default_value(minDistance), "Ignore all Points closer than <value> to the origin of the scan\n-1 (default): No filter")
+        ("max,M", value<double>(&maxDistance)->default_value(maxDistance), "Ignore all Points farther away than <value> from the origin of the scan\n-1 (default): No filter")
+        ("epsilon", value<double>(&epsilon)->default_value(epsilon), "The desired epsilon difference between two error values")
         ("loop,L", bool_switch(&doLoopClosing), "Use simple Loop Closing")
         ("graph,G", bool_switch(&doGraphSlam), "Use complex Loop Closing with GraphSLAM")
+        ("trustPose,p", bool_switch(&trustPose), "Use the unmodified Pose for ICP. Useful for GPS Poses")
+        ("metascan", bool_switch(&metascan), "Match scans to the combined pointcloud of all previous scans")
         ("quiet,q", bool_switch(&quiet), "Hide detailed output and only show results")
         ("help,h", bool_switch(&help), "Print this help")
         ;
@@ -216,13 +238,21 @@ int main(int argc, char** argv)
 
     SlamAlign align(scans);
 
-    align.setSlamMaxDistance(slamMaxDistance);
-    align.setSlamIterations(slamIterations);
-    align.setIcpMaxDistance(icpMaxDistance);
-    align.setIcpIterations(icpIterations);
     align.setDoLoopClosing(doLoopClosing);
     align.setDoGraphSlam(doGraphSlam);
+    align.setSlamMaxDistance(slamMaxDistance);
+    align.setSlamIterations(slamIterations);
+
+    align.setIcpMaxDistance(icpMaxDistance);
+    align.setIcpIterations(icpIterations);
+
+    align.setMinDistance(minDistance);
+    align.setMaxDistance(maxDistance);
     align.setReduction(reduction);
+
+    align.setTrustPose(trustPose);
+    align.setMetascan(metascan);
+
     align.setEpsilon(epsilon);
     align.setQuiet(quiet);
 
