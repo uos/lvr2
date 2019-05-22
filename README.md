@@ -1,4 +1,4 @@
-#ABOUT
+# About
 
 This software delivers tools to build surface reconstructions from point cloud
 data and a simple viewer to display the results. Additionally, the found
@@ -68,7 +68,7 @@ cd build
 cmake .. && make
 ```
 
-#USAGE
+# Usage
 
 Your can experiment with the software using the provided dataset. For a simple
 reconstruction call in yout build directory:
