@@ -40,9 +40,9 @@ namespace lvr2
          */
         int writeBand(cv::Mat *mat, int band);
 
-        int getRasterXSize();
+        int getRasterWidth();
 
-        int getRasterYSize();
+        int getRasterHeight();
 
         int getNumBands();
 

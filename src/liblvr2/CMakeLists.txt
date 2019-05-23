@@ -40,6 +40,7 @@ set(LVR2_SOURCES
     io/DatIO.cpp
     io/LasIO.cpp
     io/BaseIO.cpp
+    io/GeoTIFFIO.cpp
     io/HDF5IO.cpp
     io/Timestamp.cpp
     io/BoctreeIO.cpp
@@ -91,6 +92,7 @@ set(LVR2_LIB_DEPENDENCIES
     ${Boost_FILESYSTEM_LIBRARY}
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARIES}
+    ${GDAL_LIBRARY}
     ${OpenCV_LIBS}
     ${GSL_LIBRARIES}
     ${LZ4_LIBRARY})
