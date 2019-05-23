@@ -92,6 +92,7 @@ public:
     vector<VertexHandle> findCommonNeigbours(VertexHandle vH1, VertexHandle vH2);
     void flipEdge(EdgeHandle edgeH) final;
     std::pair<BaseVecT, float> triCircumCenter(FaceHandle faceH);
+    void coalescing();
 
     size_t numVertices() const final;
     size_t numFaces() const final;

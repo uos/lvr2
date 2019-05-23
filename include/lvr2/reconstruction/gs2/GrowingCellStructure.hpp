@@ -206,6 +206,8 @@ namespace lvr2{
 
         void aggressiveCutOut(VertexHandle vH);
 
+        void coalescing();
+
 
         // ADDITIONAL FUNCTIONS
 

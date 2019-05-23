@@ -1052,6 +1052,30 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
     return result;
 
 }
+
+
+template <typename BaseVecT>
+void HalfEdgeMesh<BaseVecT>::coalescing() {
+
+    for(auto vertex : this->vertices())
+    {
+        auto edges = getEdgesOfVertex(vertex);
+        int counter = 0;
+        vector<VertexHandle> verticesForFaceInsertion;
+        for(auto edge : edges)
+        {
+            if(isBorderEdge(edge))
+            {
+                counter++;
+                auto hE = HalfEdgeHandle::oneHalfOf(edge);
+                
+            }
+        }
+    }
+
+}
+
+
 template <typename BaseVecT>
 EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 {

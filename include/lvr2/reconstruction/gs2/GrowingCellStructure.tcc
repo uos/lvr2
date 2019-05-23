@@ -163,22 +163,12 @@ namespace lvr2 {
 
             //increase signal counter by one
             Cell* winnerNode = cellArr[winnerH.idx()];
-            /*if(tumble_tree->find(winnerNode->signal_counter, winnerH) == NULL)
-            {
-                cout << "Winner node not found in tumble tree" << endl;
-                cout << "Idx: " <<  winnerH.idx() << endl;
-                cout << "SC: " << winnerNode->signal_counter << endl;
-                cout << "cell-size: " << cellVecSize() << " | TT-size: " << tumble_tree->size() << endl;
-                notFoundCounter++;
-            }*/
 
             float winnerSC = winnerNode->signal_counter; //obtain the signal counter from the map
 
             //TODO: determine mistake in remove operation in basic step. why on earth is there a prob here
-            std::cout << "Removing in Basic Step" << endl;
 
-            tumble_tree->remove(winnerNode, winnerH); //remove the winning vertex from the tumble tree
-            cout << "End remove in basic step" << endl;
+            winnerSC = tumble_tree->remove(winnerNode, winnerH); //remove the winning vertex from the tumble tree bet the real sc
             //if(tumble_tree->find(winnerSC, winnerH) != NULL) std::cout << "error removing in basic step" << endl;
 
             //decrease signal counter of others by a fraction according to hennings implementation
@@ -197,9 +187,9 @@ namespace lvr2 {
 
             cellArr[winnerH.idx()] = tumble_tree->insertIterative(winnerSC + 1, winnerH);
 
-            if(tumble_tree->find(winnerSC+1, winnerH) == NULL || cellArr[winnerH.idx()] != tumble_tree->find(winnerSC+1, winnerH)){
+            /*if(tumble_tree->find(winnerSC+1, winnerH) == NULL || cellArr[winnerH.idx()] != tumble_tree->find(winnerSC+1, winnerH)){
                 //std:: cout << "Insert problems..." << endl;
-            }
+            }*/
         }
         else //GSS
         {
@@ -246,9 +236,7 @@ namespace lvr2 {
 
             //std::cout << "Max SC: " << max->signal_counter << endl;
             //now update tumble tree and the cell array
-            cout << "Removing in Split" << endl;
             float actual_sc = tumble_tree->remove(max, highestSC);
-            cout << "End Remove in split" << endl;
 
             //std::cout << "Actual SC: " << actual_sc << endl;
 
@@ -786,6 +774,7 @@ namespace lvr2 {
             m_mesh->removeFace(face);
         }
     }
+
 
     template <typename BaseVecT, typename NormalT>
     int GrowingCellStructure<BaseVecT, NormalT>::cellVecSize()

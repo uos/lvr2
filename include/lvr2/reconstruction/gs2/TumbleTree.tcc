@@ -46,13 +46,14 @@ namespace lvr2{
 
         Cell* maintain = NULL;
 
-        tmp->signal_counter *= tmp->alpha;
-        if(tmp->left != NULL) tmp->left->alpha *= tmp->alpha;
-        if(tmp->right != NULL) tmp->right->alpha *= tmp->alpha;
-        tmp->alpha = 1;
 
         while(sc != tmp->signal_counter)
         {
+            tmp->signal_counter *= tmp->alpha;
+            if(tmp->left != NULL) tmp->left->alpha *= tmp->alpha;
+            if(tmp->right != NULL) tmp->right->alpha *= tmp->alpha;
+            tmp->alpha = 1;
+
             if(sc < tmp->signal_counter)
             {
                 if(tmp->left == NULL)
@@ -61,11 +62,6 @@ namespace lvr2{
                     newCell->parent = tmp;
                     return tmp->left;
                 }
-
-                tmp->signal_counter *= tmp->alpha;
-                if(tmp->left != NULL) tmp->left->alpha *= tmp->alpha;
-                if(tmp->right != NULL) tmp->right->alpha *= tmp->alpha;
-                tmp->alpha = 1;
 
                 tmp = tmp->left;
             }
@@ -89,7 +85,7 @@ namespace lvr2{
 
         //found
         tmp->duplicateMap.insert(vH,sc);
-
+        cout << "Inserting a duplicate" << endl;
         return tmp;
 
     }
@@ -101,7 +97,7 @@ namespace lvr2{
         if(c == NULL)
         {
             c != root ? notDeleted++ : notDeleted = notDeleted-1+1;
-            std::cout << "  signal counter not found in TT" << endl;
+            //std::cout << "  signal counter not found in TT" << endl;
             return NULL;
         }
         else{
@@ -109,6 +105,8 @@ namespace lvr2{
             if(c->left)c->left->alpha *= c->alpha;
             if(c->right)c->right->alpha *= c->alpha;
             c->alpha = 1;
+
+            //cout << "Search sc: " << sc << " | Current sc: " << c->signal_counter << endl;
         }
 
         if(sc < c->signal_counter)
@@ -127,7 +125,7 @@ namespace lvr2{
                 c->duplicateMap.erase(vH); //erase index from duplicate map
                 if(c->duplicateMap.numValues() == numV){
                     notDeleted++;
-                    std::cout << "  Not found in duplicate map..." << endl;
+                    //std::cout << "  Not found in duplicate map..." << endl;
                 }
                 return c;
             }
@@ -213,12 +211,11 @@ namespace lvr2{
             {
                 return c;
             }
-            else{
+            else
+            {
                 return findMax(c->right);
             }
         }
-
-
     }
 
     Cell* TumbleTree::find(float sc, VertexHandle vH, Cell* c, float alpha)
@@ -259,15 +256,15 @@ namespace lvr2{
         if(c == NULL)
             return;
         if(c->left)c->left->alpha *= c->alpha;
+
         inorder(c->left);
+
         std::cout << " | [";
-        /*for(auto iter = c->duplicateMap.begin(); iter!= c->duplicateMap.end(); ++iter)
-        {
-            cout << c->duplicateMap[*iter] * c->alpha << ", ";
-        }*/
         cout << c->signal_counter * c->alpha;
         std::cout << "]";
+
         if(c->right)c->right->alpha *= c->alpha;
+
         inorder(c->right);
     }
 
@@ -298,11 +295,12 @@ namespace lvr2{
     // calls        \/
 
 
-    // we only need functionality to remove a specific cell. TODO: look, wheather or not it really returns  the root
+    // we only need functionality to remove a specific cell.
     float TumbleTree::remove(Cell* c, VertexHandle vH)
     {
         //TODO: FIX PROBLEM FOR SC UPDATES.
 
+        //cout << "Starting to remove..." << endl;
 
         float sc = c->signal_counter;
         Cell* tmp = c;
