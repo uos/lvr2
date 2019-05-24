@@ -3,7 +3,7 @@
 ## Conversion HDF5 to TIFF
 1. Create a HDF5 file of a scan dataset using the lvr2_hdf5tool
 2. extract the radiometric data to a GDAL readable TIFF file like so:
-   in your build/bin execute `./lvr2_classification-converter <ipnut path of .h5 file> <output path of .tif file>`
+   in your build/bin execute `./lvr2_hdf5togeotiff <ipnut path of .h5 file> <output path of .tif file>`
 
 ## Post processing 
 You can process your radiometric data using the script normalize.py. This will apply a normalization and afterwards a savgol filter to the radiometric data.

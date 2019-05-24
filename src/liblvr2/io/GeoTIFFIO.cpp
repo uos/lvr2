@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-#include "GeoTIFFIO.hpp"
+#include "lvr2/io/GeoTIFFIO.hpp"
 
 using namespace lvr2;
 
@@ -48,12 +48,12 @@ int GeoTIFFIO::writeBand(cv::Mat *mat, int band)
     return 0;
 }
 
-int GeoTIFFIO::getRasterXSize()
+int GeoTIFFIO::getRasterWidth()
 {
     return m_gtif_dataset->GetRasterXSize();
 }
 
-int GeoTIFFIO::getRasterYSize()
+int GeoTIFFIO::getRasterHeight()
 {
     return m_gtif_dataset->GetRasterYSize();
 }

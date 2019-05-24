@@ -15,7 +15,7 @@
 
 #include <sys/stat.h>
 
-#include "GeoTIFFIO.hpp"
+#include "lvr2/io/GeoTIFFIO.hpp"
 
 
 using namespace lvr2;
@@ -25,7 +25,7 @@ void printUsage()
     std::cout   << "This program converts either the radiometric data from a HDF5 file into a GeoTIFF file "
                 << "or a classification BSQ file into a HDF5 Dataset."
                 << std::endl
-                << "Usage: ./lvr2_classification-converter <input path should be .tif or .h5> "
+                << "Usage: ./lvr2_hdf5togeotiff <input path should be .tif or .h5> "
                 << "<output path should be .tif or .h5>"
                 << std::endl;
 }
@@ -93,8 +93,8 @@ int processConversionGDALtoHDF(std::string in,
     // TODO: handle file exists
     std::string groupname = "annotation/position_" + position_code;
     std::string datasetname = "classification";
-    size_t length = (size_t) gtifio.getRasterYSize();
-    size_t width = (size_t) gtifio.getRasterXSize();
+    size_t length = (size_t) gtifio.getRasterHeight();
+    size_t width = (size_t) gtifio.getRasterWidth();
 
     if (gtifio.getNumBands() < channel_max)
     {
