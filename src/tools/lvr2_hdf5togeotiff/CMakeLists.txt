@@ -15,10 +15,6 @@ set(
 set(
         LVR_CONVERTER_DEPENDENCIES
         lvr2_static
-        lvrlas_static
-        lvrrply_static
-        lvrslam6d_static
-        ${GDAL_LIBRARY}
         ${OPENGL_LIBRARIES}
         ${GLUT_LIBRARIES}
         ${OpenCV_LIBS}
