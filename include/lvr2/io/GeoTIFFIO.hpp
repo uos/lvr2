@@ -6,7 +6,7 @@
 #define GEOTIFFIO_HPP
 
 #include <gdal_priv.h>
-#include <cv.h>
+#include <opencv2/opencv.hpp>
 
 #include <string>
 
@@ -40,9 +40,9 @@ namespace lvr2
          */
         int writeBand(cv::Mat *mat, int band);
 
-        int getRasterXSize();
+        int getRasterWidth();
 
-        int getRasterYSize();
+        int getRasterHeight();
 
         int getNumBands();
 

@@ -5,7 +5,7 @@
 set(
         LVR_CONVERTER_SOURCES
         Main.cpp
-        GeoTIFFIO.cpp GeoTIFFIO.hpp
+        ../../liblvr2/io/GeoTIFFIO.cpp ../../../include/lvr2/io/GeoTIFFIO.hpp
 )
 
 #####################################################################################
@@ -15,10 +15,6 @@ set(
 set(
         LVR_CONVERTER_DEPENDENCIES
         lvr2_static
-        lvrlas_static
-        lvrrply_static
-        lvrslam6d_static
-        ${GDAL_LIBRARY}
         ${OPENGL_LIBRARIES}
         ${GLUT_LIBRARIES}
         ${OpenCV_LIBS}
@@ -29,7 +25,7 @@ set(
 # Add executable
 #####################################################################################
 
-add_executable( lvr2_classification-converter ${LVR_CONVERTER_SOURCES} )
-target_link_libraries( lvr2_classification-converter ${LVR_CONVERTER_DEPENDENCIES} )
+add_executable( lvr2_hdf5togeotiff ${LVR_CONVERTER_SOURCES} )
+target_link_libraries( lvr2_hdf5togeotiff ${LVR_CONVERTER_DEPENDENCIES} )
 
-install(TARGETS lvr2_classification-converter RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS lvr2_hdf5togeotiff RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
