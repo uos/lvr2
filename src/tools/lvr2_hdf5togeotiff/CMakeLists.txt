@@ -5,7 +5,7 @@
 set(
         LVR_CONVERTER_SOURCES
         Main.cpp
-        ../../liblvr2/io/GeoTIFFIO.cpp ../../../include/lvr2/io/GeoTIFFIO.hpp
+        Options.cpp
 )
 
 #####################################################################################
