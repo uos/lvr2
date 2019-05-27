@@ -47,14 +47,12 @@ using namespace lvr2;
 using namespace std;
 using boost::filesystem::path;
 
-string format_name(string prefix, int index, string suffix, int number_length = -1)
+string format_name(const string& format, int index)
 {
-    string num = to_string(index);
-    if (number_length != -1)
-    {
-        num = string(number_length - num.length(), '0') + num;
-    }
-    return prefix + num + suffix;
+    size_t size = snprintf(nullptr, 0, format.c_str(), index) + 1; // Extra space for '\0'
+    char buff[size];
+    snprintf(buff, size, format.c_str(), index);
+    return string(buff);
 }
 
 int main(int argc, char** argv)
@@ -149,34 +147,11 @@ int main(int argc, char** argv)
     }
 
     // =============== parse format ===============
-    string format_prefix;
-    string format_suffix;
-    int format_number_length;
-
     size_t split_point;
-    if ((split_point = format.find('%')) != string::npos)
-    {
-        format_prefix = format.substr(0, split_point);
-        split_point += 1; // ignore %
-
-        size_t second_split = format.find('i', split_point);
-        if (second_split == split_point)
-        {
-            format_number_length = -1;
-        }
-        else
-        {
-            format_number_length = stoi(format.substr(split_point, second_split - split_point));
-        }
-
-        format_suffix = format.substr(second_split + 1);
-    }
-    else
+    if ((split_point = format.find('%')) == string::npos)
     {
         // TODO: map formats
-        format_prefix = "scan";
-        format_suffix = ".3d";
-        format_number_length = 3;
+        format = "scan%03i.3d";
     }
 
     // =============== search scans ===============
@@ -184,7 +159,7 @@ int main(int argc, char** argv)
     {
         for (int i = 0; i < 100; i++)
         {
-            path file = dir / format_name(format_prefix, i, format_suffix, format_number_length);
+            path file = dir / format_name(format, i);
             if (exists(file))
             {
                 start = i;
@@ -202,7 +177,7 @@ int main(int argc, char** argv)
     // make sure all scan and pose files are in the directory
     for (int i = start; end == -1 || i <= end; i++)
     {
-        path file = dir / format_name(format_prefix, i, format_suffix, format_number_length);
+        path file = dir / format_name(format, i);
         if (!exists(file))
         {
             if (end != -1 || i == start)
@@ -211,7 +186,7 @@ int main(int argc, char** argv)
                 return EXIT_FAILURE;
             }
             end = i - 1;
-            cout << "Last scan: \"" << format_name(format_prefix, end, format_suffix, format_number_length) << '"' << endl;
+            cout << "Last scan: \"" << format_name(format, end) << '"' << endl;
             break;
         }
         file.replace_extension("pose");
@@ -227,7 +202,7 @@ int main(int argc, char** argv)
 
     for (int i = start; i <= end; i++)
     {
-        path file = dir / format_name(format_prefix, i, format_suffix, format_number_length);
+        path file = dir / format_name(format, i);
         auto model = ModelFactory::readModel(file.string());
 
         file.replace_extension("pose");
@@ -265,7 +240,7 @@ int main(int argc, char** argv)
 
     for (int i = start; i <= end; i++)
     {
-        path file = dir / format_name(format_prefix, i, format_suffix, format_number_length);
+        path file = dir / format_name(format, i);
         file.replace_extension("frames");
 
         scans[i - start]->writeFrames(file.string());
