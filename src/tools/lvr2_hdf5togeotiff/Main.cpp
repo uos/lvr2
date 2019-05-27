@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 
 #include "lvr2/io/GeoTIFFIO.hpp"
+#include "Options.hpp"
 
 
 using namespace lvr2;
@@ -85,79 +86,20 @@ int processConversionHDFtoGTIFF(std::string input_filename,
 
 }
 
-int processConversionGDALtoHDF(std::string in,
-        std::string position_code, std::string out, size_t channel_min, size_t channel_max)
-{
-    GeoTIFFIO gtifio(in);
-    HDF5IO hdfio(out);
-    // TODO: handle file exists
-    std::string groupname = "annotation/position_" + position_code;
-    std::string datasetname = "classification";
-    size_t length = (size_t) gtifio.getRasterHeight();
-    size_t width = (size_t) gtifio.getRasterWidth();
-
-    if (gtifio.getNumBands() < channel_max)
-    {
-        channel_max = (size_t) gtifio.getNumBands();
-        std::cout << "The Dataset has only " << channel_max << " channels. Using this as upper boundary." << std::endl;
-    }
-    size_t num_channels = channel_max - channel_min;
-
-    std::vector<size_t> dim = {num_channels, length, width};
-
-    uint16_t *cube = new uint16_t[num_channels
-                                  * length
-                                  * width];
-
-    for(int i = channel_min; i < channel_max; i++)
-    {
-        cv::Mat *m = gtifio.readBand(i + 1);
-        memcpy(cube + i * (length * width), m->data, length * width * sizeof(uint16_t));
-    }
-
-    hdfio.addArray(groupname, datasetname, dim, boost::shared_array<uint16_t>(cube));
-
-    return 0;
-}
-
-
 int main(int argc, char**argv)
 {
-    // TODO: boost Fehlerbehandlung nutzen
-    if(argc < 3)
-    {
-        printUsage();
-        return 0;
-    }
+    hdf5togeotiff::Options options(argc, argv);
 
-    /*----------------- GET FILE TYPES ----------------------*/
+    /*--------------- GET PROGRAM OPTIONS --------------------*/
 
-    bool tif_to_h5 = false;
-
-    boost::filesystem::path input_filename(argv[1]);
+    boost::filesystem::path input_filename(options.getH5File());
     std::string input_extension = boost::filesystem::extension(input_filename);
 
-    boost::filesystem::path output_filename(argv[2]);
+    boost::filesystem::path output_filename(options.getGTIFFFile());
     std::string  output_extension = boost::filesystem::extension(output_filename);
+    
+    size_t
 
-    if(input_extension == ".tif" ||  input_extension == ".geotif")
-    {
-        if (output_extension != ".h5")
-        {
-            printUsage();
-            return 0;
-        }
-        tif_to_h5 = true;
-    } else if (input_extension == ".h5") {
-        if (output_extension != ".tif" && output_extension != ".geotif")
-        {
-            printUsage();
-            return 0;
-        }
-    } else {
-        printUsage();
-        return 0;
-    }
 
     /*---------------- PREPARE CONVERSION -------------------*/
 
@@ -193,16 +135,6 @@ int main(int argc, char**argv)
     if (position_code.length() != 5)
     {
         printUsage();
-        return 0;
-    }
-
-    if (tif_to_h5)
-    {
-        std::cout << "Starting conversion..." <<  std::endl;
-        if (processConversionGDALtoHDF(input_filename.string(), position_code, output_filename.string(), channel_min, channel_max) < 0)
-        {
-            std::cout << "An Error occurred during conversion." << std::endl;
-        }
         return 0;
     }
 
