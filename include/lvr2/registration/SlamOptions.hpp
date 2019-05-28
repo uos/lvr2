@@ -26,49 +26,38 @@
  */
 
 /**
- * SlamAlign.hpp
+ * SlamOptions.hpp
  *
  *  @date May 6, 2019
  *  @author Malte Hillmann
  */
-#ifndef SLAMALIGN_HPP_
-#define SLAMALIGN_HPP_
-
-#include <lvr2/registration/ICPPointAlign.hpp>
-#include <lvr2/registration/Scan.hpp>
-#include <lvr2/registration/SlamOptions.hpp>
+#ifndef SLAMOPTIONS_HPP_
+#define SLAMOPTIONS_HPP_
 
 namespace lvr2
 {
 
-class SlamAlign
+struct SlamOptions
 {
+    bool    doLoopClosing = false;
+    bool    doGraphSlam = false;
+    double  slamMaxDistance = 25;
+    int     slamIterations = 50;
 
-public:
-    SlamAlign(const std::vector<ScanPtr>& scans, const SlamOptions& options = SlamOptions());
+    double  icpMaxDistance = 25;
+    int     icpIterations = 50;
 
-    void match();
+    double  minDistance = -1;
+    double  maxDistance = -1;
+    double  reduction = -1;
 
-    virtual ~SlamAlign() = default;
+    bool    trustPose = false;
+    bool    metascan = false;
 
-    void setOptions(const SlamOptions& options)
-    {
-        m_options = options;
-    }
-    const SlamOptions& getOptions()
-    {
-        return m_options;
-    }
-
-protected:
-
-    void applyTransform(ScanPtr scan, const Matrix4d& transform);
-
-    SlamOptions m_options;
-
-    vector<ScanPtr> m_scans;
+    double  epsilon = 0.00001;
+    bool	quiet = false;
 };
 
 } /* namespace lvr2 */
 
-#endif /* SLAMALIGN_HPP_ */
+#endif /* SLAMOPTIONS_HPP_ */

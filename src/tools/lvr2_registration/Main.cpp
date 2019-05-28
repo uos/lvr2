@@ -58,23 +58,7 @@ string format_name(const string& format, int index)
 int main(int argc, char** argv)
 {
     // =============== parse options ===============
-    bool    doLoopClosing = false;
-    bool    doGraphSlam = false;
-    double  slamMaxDistance = 25;
-    int     slamIterations = 50;
-
-    double  icpMaxDistance = 25;
-    int     icpIterations = 50;
-
-    double  minDistance = -1;
-    double  maxDistance = -1;
-    double  reduction = -1;
-
-    bool    trustPose = false;
-    bool    metascan = false;
-
-    double  epsilon = 0.00001;
-    bool    quiet = false;
+    SlamOptions options;
 
     int start = -1;
     int end = -1;
@@ -88,23 +72,56 @@ int main(int argc, char** argv)
 
         options_description visible_options("OPTIONS");
         visible_options.add_options()
-        ("start,s", value<int>(&start)->default_value(start), "The first scan to process.\n-1 (default): search for first scan")
-        ("end,e", value<int>(&end)->default_value(end), "The last scan to process.\n-1 (default): continue until no more scan found")
-        ("format,f", value<string>(&format)->default_value(format), "The format to use.\navailable formats are listed <somewhere>")
-        ("icpIterations,i", value<int>(&icpIterations)->default_value(icpIterations), "Number of iterations for ICP")
-        ("icpMaxDistance,d", value<double>(&icpMaxDistance)->default_value(icpMaxDistance), "The maximum distance between two points during ICP")
-        ("slamIterations,I", value<int>(&slamIterations)->default_value(slamIterations), "Number of iterations for SLAM")
-        ("slamMaxDistance,D", value<double>(&slamMaxDistance)->default_value(slamMaxDistance), "The maximum distance between two points during SLAM")
-        ("reduction,r", value<double>(&reduction)->default_value(reduction), "The Voxel size for Voxel based reduction. -1 for no reduction")
-        ("min,m", value<double>(&minDistance)->default_value(minDistance), "Ignore all Points closer than <value> to the origin of the scan\n-1 (default): No filter")
-        ("max,M", value<double>(&maxDistance)->default_value(maxDistance), "Ignore all Points farther away than <value> from the origin of the scan\n-1 (default): No filter")
-        ("epsilon", value<double>(&epsilon)->default_value(epsilon), "The desired epsilon difference between two error values")
-        ("loop,L", bool_switch(&doLoopClosing), "Use simple Loop Closing")
-        ("graph,G", bool_switch(&doGraphSlam), "Use complex Loop Closing with GraphSLAM")
-        ("trustPose,p", bool_switch(&trustPose), "Use the unmodified Pose for ICP. Useful for GPS Poses")
-        ("metascan", bool_switch(&metascan), "Match scans to the combined pointcloud of all previous scans")
-        ("quiet,q", bool_switch(&quiet), "Hide detailed output and only show results")
-        ("help,h", bool_switch(&help), "Print this help")
+        ("start,s", value<int>(&start)->default_value(start),
+         "The first scan to process.\n-1 (default): search for first scan")
+
+        ("end,e", value<int>(&end)->default_value(end),
+         "The last scan to process.\n-1 (default): continue until no more scan found")
+
+        ("format,f", value<string>(&format)->default_value(format),
+         "The format to use.\navailable formats are listed <somewhere>")
+
+        ("icpIterations,i", value<int>(&options.icpIterations)->default_value(options.icpIterations),
+         "Number of iterations for ICP")
+
+        ("icpMaxDistance,d", value<double>(&options.icpMaxDistance)->default_value(options.icpMaxDistance),
+         "The maximum distance between two points during ICP")
+
+        ("slamIterations,I", value<int>(&options.slamIterations)->default_value(options.slamIterations),
+         "Number of iterations for SLAM")
+
+        ("slamMaxDistance,D", value<double>(&options.slamMaxDistance)->default_value(options.slamMaxDistance),
+         "The maximum distance between two points during SLAM")
+
+        ("reduction,r", value<double>(&options.reduction)->default_value(options.reduction),
+         "The Voxel size for Voxel based reduction. -1 for no reduction")
+
+        ("min,m", value<double>(&options.minDistance)->default_value(options.minDistance),
+         "Ignore all Points closer than <value> to the origin of the scan\n-1 (default): No filter")
+
+        ("max,M", value<double>(&options.maxDistance)->default_value(options.maxDistance),
+         "Ignore all Points farther away than <value> from the origin of the scan\n-1 (default): No filter")
+
+        ("epsilon", value<double>(&options.epsilon)->default_value(options.epsilon),
+         "The desired epsilon difference between two error values")
+
+        ("loop,L", bool_switch(&options.doLoopClosing),
+         "Use simple Loop Closing")
+
+        ("graph,G", bool_switch(&options.doGraphSlam),
+         "Use complex Loop Closing with GraphSLAM")
+
+        ("trustPose,p", bool_switch(&options.trustPose),
+         "Use the unmodified Pose for ICP. Useful for GPS Poses")
+
+        ("metascan", bool_switch(&options.metascan),
+         "Match scans to the combined pointcloud of all previous scans")
+
+        ("quiet,q", bool_switch(&options.quiet),
+         "Hide detailed output and only show results")
+
+        ("help,h", bool_switch(&help),
+         "Print this help")
         ;
 
         options_description hidden_options("hidden_options");
@@ -211,25 +228,7 @@ int main(int argc, char** argv)
         scans.push_back(make_shared<Scan>(model->m_pointCloud, pose));
     }
 
-    SlamAlign align(scans);
-
-    align.setDoLoopClosing(doLoopClosing);
-    align.setDoGraphSlam(doGraphSlam);
-    align.setSlamMaxDistance(slamMaxDistance);
-    align.setSlamIterations(slamIterations);
-
-    align.setIcpMaxDistance(icpMaxDistance);
-    align.setIcpIterations(icpIterations);
-
-    align.setMinDistance(minDistance);
-    align.setMaxDistance(maxDistance);
-    align.setReduction(reduction);
-
-    align.setTrustPose(trustPose);
-    align.setMetascan(metascan);
-
-    align.setEpsilon(epsilon);
-    align.setQuiet(quiet);
+    SlamAlign align(scans, options);
 
     auto start_time = chrono::steady_clock::now();
 
