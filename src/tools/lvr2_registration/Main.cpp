@@ -117,8 +117,8 @@ int main(int argc, char** argv)
         ("metascan", bool_switch(&options.metascan),
          "Match scans to the combined pointcloud of all previous scans")
 
-        ("quiet,q", bool_switch(&options.quiet),
-         "Hide detailed output and only show results")
+        ("verbose,v", bool_switch(&options.verbose),
+         "Show more detailed output")
 
         ("help,h", bool_switch(&help),
          "Print this help")
