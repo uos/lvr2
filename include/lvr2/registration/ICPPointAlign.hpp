@@ -53,12 +53,12 @@ public:
     void    setMaxMatchDistance(double distance);
     void    setMaxIterations(int iterations);
     void    setEpsilon(double epsilon);
-    void    setQuiet(bool quiet);
+    void    setVerbose(bool verbose);
 
     double  getMaxMatchDistance() const;
     int     getMaxIterations() const;
     double  getEpsilon() const;
-    bool    getQuiet() const;
+    bool    getVerbose() const;
 
     void getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d) const;
 
@@ -72,7 +72,7 @@ protected:
     double      m_maxDistanceMatch;
     int         m_maxIterations;
 
-    bool        m_quiet;
+    bool        m_verbose;
 
     ScanPtr     m_modelCloud;
     ScanPtr     m_dataCloud;

@@ -57,7 +57,7 @@ ICPPointAlign::ICPPointAlign(ScanPtr model, ScanPtr data) :
     m_maxDistanceMatch  = 25;
     m_maxIterations     = 50;
     m_epsilon           = 0.00001;
-    m_quiet             = false;
+    m_verbose           = false;
 
     // Transform model points according to initial pose
     size_t n = model->count();
@@ -112,7 +112,7 @@ Matrix4d ICPPointAlign::match()
         m_transformation = transformRegistration(transform, m_transformation);
         m_deltaTransform = transformRegistration(transform, m_deltaTransform);
 
-        if (!m_quiet)
+        if (m_verbose)
         {
             cout << timestamp << "ICP Error is " << ret << " in iteration " << iteration << " / " << m_maxIterations << " using " << pairs.size() << " points." << endl;
         }
@@ -131,7 +131,7 @@ Matrix4d ICPPointAlign::match()
         cout << " after " << iteration << " Iterations";
     }
     cout << endl;
-    if (!m_quiet)
+    if (m_verbose)
     {
         cout << "Result: " << endl << m_transformation << endl;
     }
@@ -220,9 +220,9 @@ void ICPPointAlign::setEpsilon(double e)
 {
     m_epsilon = e;
 }
-void ICPPointAlign::setQuiet(bool quiet)
+void ICPPointAlign::setVerbose(bool verbose)
 {
-    m_quiet = quiet;
+    m_verbose = verbose;
 }
 
 double ICPPointAlign::getMaxMatchDistance() const
@@ -240,9 +240,9 @@ double ICPPointAlign::getEpsilon() const
     return m_epsilon;
 }
 
-bool ICPPointAlign::getQuiet() const
+bool ICPPointAlign::getVerbose() const
 {
-    return m_quiet;
+    return m_verbose;
 }
 
 } /* namespace lvr2 */

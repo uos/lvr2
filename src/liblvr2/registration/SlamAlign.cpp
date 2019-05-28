@@ -68,16 +68,16 @@ void SlamAlign::match()
         }
     }
 
-    string scan_number_string = to_string(m_scans.size());
+    string scan_number_string = to_string(m_scans.size() - 1);
     for (size_t i = 1; i < m_scans.size(); i++)
     {
-        if (m_options.quiet)
+        if (m_options.verbose)
         {
-            cout << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << flush;
+            cout << "Iteration " << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << endl;
         }
         else
         {
-            cout << "Iteration " << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << endl;
+            cout << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << flush;
         }
 
         const ScanPtr& prev = m_scans[i - 1];
@@ -97,7 +97,7 @@ void SlamAlign::match()
         icp.setMaxMatchDistance(m_options.icpMaxDistance);
         icp.setMaxIterations(m_options.icpIterations);
         icp.setEpsilon(m_options.epsilon);
-        icp.setQuiet(m_options.quiet);
+        icp.setVerbose(m_options.verbose);
 
         Matrix4d result = icp.match();
 

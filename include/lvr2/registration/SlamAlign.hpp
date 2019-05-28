@@ -55,7 +55,7 @@ public:
     {
         m_options = options;
     }
-    const SlamOptions& getOptions()
+    SlamOptions& options()
     {
         return m_options;
     }
