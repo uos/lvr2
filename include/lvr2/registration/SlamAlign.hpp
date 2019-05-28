@@ -64,9 +64,11 @@ protected:
 
     void applyTransform(ScanPtr scan, const Matrix4d& transform);
 
-    SlamOptions m_options;
+    SlamOptions     m_options;
 
     vector<ScanPtr> m_scans;
+
+    ScanPtr         m_metascan;
 };
 
 } /* namespace lvr2 */

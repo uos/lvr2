@@ -26,38 +26,71 @@
  */
 
 /**
- * SlamOptions.hpp
+ * MetaScan.hpp
  *
  *  @date May 28, 2019
  *  @author Malte Hillmann
  */
-#ifndef SLAMOPTIONS_HPP_
-#define SLAMOPTIONS_HPP_
+#ifndef METASCAN_HPP_
+#define METASCAN_HPP_
+
+#include <Eigen/Dense>
+#include "Scan.hpp"
 
 namespace lvr2
 {
 
-struct SlamOptions
+class MetaScan : public Scan
 {
-    bool    doLoopClosing = false;
-    bool    doGraphSlam = false;
-    double  slamMaxDistance = 25;
-    int     slamIterations = 50;
+public:
+    MetaScan()
+	{ }
 
-    double  icpMaxDistance = 25;
-    int     icpIterations = 50;
+    const Vector3d& getPoint(size_t index) const override
+	{
+		for (const ScanPtr& scan : m_scans)
+		{
+			if (index < scan->count())
+			{
+				return scan->getPoint(index);
+			}
+			else
+			{
+				index -= scan->count();
+			}
+		}
+        throw std::out_of_range("getPoint on MetaScan out of Range");
+	}
 
-    double  minDistance = -1;
-    double  maxDistance = -1;
-    double  reduction = -1;
+    Vector3d getPointTransformed(size_t index) const override
+	{
+		for (const ScanPtr& scan : m_scans)
+		{
+			if (index < scan->count())
+			{
+				return scan->getPointTransformed(index);
+			}
+			else
+			{
+				index -= scan->count();
+			}
+		}
+        throw std::out_of_range("getPointTransformed on MetaScan out of Range");
+	}
 
-    bool    trustPose = false;
-    bool    metascan = false;
+	void addScan(ScanPtr scan)
+	{
+		m_count += scan->count();
+		m_scans.push_back(scan);
+		m_deltaPose = scan->getDeltaPose();
+	}
 
-    double  epsilon = 0.00001;
-    bool	verbose = false;
+private:
+    std::vector<ScanPtr> m_scans;
 };
+
+using ScanPtr = std::shared_ptr<Scan>;
 
 } /* namespace lvr2 */
 
-#endif /* SLAMOPTIONS_HPP_ */
+#endif /* METASCAN_HPP_ */

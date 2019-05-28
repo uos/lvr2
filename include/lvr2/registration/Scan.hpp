@@ -52,6 +52,8 @@ enum class ScanUse
 class Scan
 {
 public:
+    using PointArray = boost::shared_array<Vector3d>;
+
     Scan(PointBufferPtr points, const Matrix4d& pose);
 
     void transform(const Matrix4d& transform, bool writeFrame = true);
@@ -61,7 +63,8 @@ public:
     void setMinDistance(double minDistance);
     void setMaxDistance(double maxDistance);
 
-    const Vector3d& getPoint(size_t index) const;
+    virtual const Vector3d& getPoint(size_t index) const;
+    virtual Vector3d getPointTransformed(size_t index) const;
     size_t count() const;
 
     const Matrix4d& getPose() const;
@@ -70,8 +73,10 @@ public:
 
     void writeFrames(std::string path) const;
 
-private:
-    boost::shared_array<Vector3d> m_points;
+protected:
+    Scan();
+
+    PointArray  m_points;
     size_t      m_count;
 
     Matrix4d    m_pose;
