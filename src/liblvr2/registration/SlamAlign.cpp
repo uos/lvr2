@@ -32,6 +32,7 @@
  *  @author Malte Hillmann
  */
 #include <lvr2/registration/SlamAlign.hpp>
+#include <lvr2/registration/MetaScan.hpp>
 
 #include <iomanip>
 
@@ -68,6 +69,13 @@ void SlamAlign::match()
         }
     }
 
+    if (m_options.metascan)
+    {
+        MetaScan* meta = new MetaScan();
+        meta->addScan(m_scans[0]);
+        m_metascan = ScanPtr(meta);
+    }
+
     string scan_number_string = to_string(m_scans.size() - 1);
     for (size_t i = 1; i < m_scans.size(); i++)
     {
@@ -80,7 +88,7 @@ void SlamAlign::match()
             cout << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << flush;
         }
 
-        const ScanPtr& prev = m_scans[i - 1];
+        ScanPtr prev = m_options.metascan ? m_metascan : m_scans[i - 1];
         const ScanPtr& cur = m_scans[i];
 
         if (!m_options.trustPose)
@@ -102,6 +110,12 @@ void SlamAlign::match()
         Matrix4d result = icp.match();
 
         applyTransform(cur, icp.getDeltaTransform());
+
+        if (m_options.metascan && i + 1 < m_scans.size())
+        {
+            MetaScan* meta = (MetaScan*)(m_metascan.get());
+            meta->addScan(cur);
+        }
     }
 }
 

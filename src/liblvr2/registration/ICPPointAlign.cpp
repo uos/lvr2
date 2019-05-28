@@ -61,16 +61,13 @@ ICPPointAlign::ICPPointAlign(ScanPtr model, ScanPtr data) :
 
     // Transform model points according to initial pose
     size_t n = model->count();
-    const Matrix4d& modelPose = model->getPose();
 
     PointArray modelPoints = PointArray(new Vector3d[n]);
 
     #pragma omp parallel for
     for (size_t i = 0; i < n; i++)
     {
-        const Vector3d& point = model->getPoint(i);
-        Eigen::Vector4d v(point.x(), point.y(), point.z(), 1.0);
-        modelPoints[i] = (modelPose * v).block<3, 1>(0, 0);
+        modelPoints[i] = model->getPointTransformed(i);
     }
 
     // Create search tree
@@ -177,8 +174,8 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, 
 
         for (size_t i = start; i < end; i++)
         {
-            Eigen::Vector3d data = m_dataCloud->getPoint(i);
-            Eigen::Vector4d extended(data.x(), data.y(), data.z(), 1.0);
+            Eigen::Vector4d extended;
+            extended << m_dataCloud->getPoint(i), 1.0;
             Eigen::Vector3d point = (m_transformation * extended).block<3, 1>(0, 0);
 
             Vector3d* neighbor;

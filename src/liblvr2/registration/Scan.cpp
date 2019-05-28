@@ -60,6 +60,10 @@ Scan::Scan(PointBufferPtr points, const Matrix4d& pose)
     }
 }
 
+Scan::Scan()
+    : m_count(0), m_pose(Matrix4d::Identity()), m_initialPose(Matrix4d::Identity()), m_deltaPose(Matrix4d::Identity())
+{ }
+
 void Scan::transform(const Matrix4d& transform, bool writeFrame)
 {
     m_pose = transformRegistration(transform, m_pose);
@@ -120,6 +124,12 @@ const Vector3d& Scan::getPoint(size_t index) const
         throw out_of_range("getPoint on Scan out of Range");
     }
     return m_points[index];
+}
+Vector3d Scan::getPointTransformed(size_t index) const
+{
+    Eigen::Vector4d extended;
+    extended << getPoint(index), 1.0;
+    return (m_pose * extended).block<3, 1>(0, 0);
 }
 size_t Scan::count() const
 {
