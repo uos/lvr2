@@ -37,8 +37,6 @@ mins = values.min(axis=0) # min of every spectrum
 #maxs = values.max(axis=0)
 vmax = np.amax(values)
 values = ((values - mins) / (means - mins))
-#image_spectral.data.Image.values = values # minmax_scale(values.ravel()).reshape(shape)
-#image_spectral.data.Image.values = minmax_scale(normalize_spectral_image(image_spectral.data.Image.values.astype(np.float32)).ravel()).reshape(shape)
 
 mins = None
 means = None

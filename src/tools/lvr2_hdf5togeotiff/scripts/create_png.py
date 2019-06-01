@@ -40,17 +40,17 @@ num_classes = max_val - min_val + 1
 color_map = np.array(cm.get_cmap('viridis').colors)
 colors = np.empty((num_classes, 4), dtype=np.uint)
 step = int((len(color_map)-1) / (num_classes-1))
-#for class_i in range(num_classes):
-#    for rgb_channel in range(3):
-#        colors[class_i, rgb_channel] = int(color_map[step * class_i, rgb_channel] * 256)
-#    # alpha channel
-#    colors[class_i, 3] = 255
+for class_i in range(num_classes):
+    for rgb_channel in range(3):
+        colors[class_i, rgb_channel] = int(color_map[step * class_i, rgb_channel] * 256)
+    # alpha channel
+    colors[class_i, 3] = 255
 
 # demo
-colors[0] = [0, 255, 0, 255]        # greenVeg
-colors[2] = [191, 117, 0, 255]      # Gestein
-colors[1] = [0, 0, 255, 255]        # Wasser
-colors[3] = [102, 102, 102, 255]    # Schatten
+#colors[0] = [0, 255, 0, 255]        # greenVeg
+#colors[2] = [191, 117, 0, 255]      # Gestein
+#colors[1] = [0, 0, 255, 255]        # Wasser
+#colors[3] = [102, 102, 102, 255]    # Schatten
 
 print("Assigning data to colorized array...")
 shape = values.shape
