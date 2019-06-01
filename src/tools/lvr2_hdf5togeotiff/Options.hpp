@@ -18,9 +18,16 @@ namespace hdf5togeotiff
 
     using namespace boost::program_options;
 
+    /**
+     * @brief A class to parse the program options for the extraction of radiometric data from a HDF5 dataset
+     */
     class Options {
     public:
 
+        /**
+         * @brief 	Ctor. Parses the command parameters given to the main
+         * 		  	function of the program
+         */
         Options(int argc, char** argv);
         virtual ~Options();
 
@@ -42,6 +49,7 @@ namespace hdf5togeotiff
 
     };
 
+    /// Overloaded output operator
     inline ostream& operator<<(ostream& os, const Options &o)
     {
         cout << "##### Porgram options: " << endl;

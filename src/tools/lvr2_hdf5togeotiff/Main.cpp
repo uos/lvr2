@@ -21,25 +21,17 @@
 
 using namespace lvr2;
 
-void printUsage()
-{
-    std::cout   << "This program converts either the radiometric data from a HDF5 file into a GeoTIFF file "
-                << "or a classification BSQ file into a HDF5 Dataset."
-                << std::endl
-                << "Usage: ./lvr2_hdf5togeotiff <input path should be .tif or .h5> "
-                << "<output path should be .tif or .h5>"
-                << std::endl;
-}
-
 /**
- * @brief Extraction of radiometric data from a given HDF5 file into a new GeoTIFF file in given output path
+ * @brief Extraction of radiometric data from a given HDF5 file into a new GeoTIFF file in (optionally) given output path
  * @param input_filename Path to the input HDF5 file formatted due to lvr_2 convention
  * @param position_code 5 character code of the scan position (e.g. 00000)
  * @param output_filename Path to the output GeoTIFF file
+ * @param min_channel lowest channel to be extracted
+ * @param max_channel highest channel to be extracted
  * @return standard C++ return value
  */
-int processConversionHDFtoGTIFF(std::string input_filename,
-        std::string position_code, std::string output_filename, size_t channel_min, size_t channel_max)
+int processConversion(std::string input_filename,
+        std::string position_code, std::string output_filename, size_t min_channel, size_t max_channel)
 {
     /*------------------- HDF5 INPUT ------------------------*/
     HDF5IO hdf5(input_filename, false);
@@ -55,12 +47,13 @@ int processConversionHDFtoGTIFF(std::string input_filename,
     size_t num_rows = dim[1];
     size_t num_cols = dim[2];
 
-    if(num_channels < channel_max)
+    // set upper boundary
+    if(num_channels < max_channel)
     {
         std::cout << "The Dataset has only " << num_channels << " channels. Using this as upper boundary." << std::endl;
-        channel_max = num_channels;
+        max_channel = num_channels;
     }
-    num_channels = channel_max - channel_min;
+    num_channels = max_channel - min_channel;
 
     GeoTIFFIO gtifio(output_filename, num_cols, num_rows, num_channels);
 
@@ -98,48 +91,21 @@ int main(int argc, char**argv)
     boost::filesystem::path output_filename(options.getGTIFFFile());
     std::string  output_extension = boost::filesystem::extension(output_filename);
     
-    size_t
+    size_t min_channel = options.getMinChannel();
+    size_t max_channel = options.getMaxChannel();
 
+    std::string position_code = options.getPositionCode();
 
     /*---------------- PREPARE CONVERSION -------------------*/
 
-    size_t channel_min = 0;
-    size_t channel_max = UINT_MAX;
-
-    std::cout << "Please enter lower channel boundary:";
-    std::cin >> channel_min;
-    if (channel_min < 0)
-    {
-        std::cout << "You entered a negative lower boundary. Using 0." << endl;
-        channel_min = 0;
-    }
-
-    std::cout << "Please enter upper channel boundary:";
-    std::cin >> channel_max;
-    if (!channel_max)
-    {
-        channel_max = UINT_MAX;
-    }
-
-
     boost::filesystem::path output_dir = output_filename.parent_path();
-    if (!boost::filesystem::exists(output_dir))
+    if (output_dir != "" && !boost::filesystem::exists(output_dir))
     {
         boost::filesystem::create_directory(output_dir);
     }
 
-    std::string position_code;
-    std::cout << "Please enter the correct scan position code of five integers (e.g. 00000):";
-    std::cin >> position_code;
-
-    if (position_code.length() != 5)
-    {
-        printUsage();
-        return 0;
-    }
-
     std::cout << "Starting conversion..." <<  std::endl;
-    if (processConversionHDFtoGTIFF(input_filename.string(), position_code, output_filename.string(), channel_min, channel_max) < 0)
+    if (processConversion(input_filename.string(), position_code, output_filename.string(), min_channel, max_channel) < 0)
     {
         std::cout << "An Error occurred during conversion." << std::endl;
     }

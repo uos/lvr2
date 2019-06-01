@@ -9,6 +9,7 @@ mins = np.empty((num_sets), dtype=np.float32)
 means = np.empty((num_sets), dtype=np.float32)
 maxs = np.empty((num_sets), dtype=np.float32)
 
+# determine min, max and mean of each dataset
 for i in range(0, num_sets):
     ds = gdal.Open(inputs[i], gdal.GA_ReadOnly)
 
@@ -28,6 +29,7 @@ for i in range(0, num_sets):
     ds = None
     values = None
 
+# determine global min, max and mean
 all_min = np.amin(mins)
 print("Calculated minimum value over data sets: ", all_min)
 all_mean = np.mean(means)
@@ -36,6 +38,7 @@ all_max = np.amax(maxs)
 print("Calculated maximum value over data sets: ", all_max)
 denominator = all_mean - all_min
 
+# perform normalization for each dataset
 for i in range(0, num_sets):
     ds = gdal.Open(inputs[i], gdal.GA_ReadOnly)
 
