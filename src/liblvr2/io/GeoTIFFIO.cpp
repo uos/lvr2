@@ -13,7 +13,6 @@ GeoTIFFIO::GeoTIFFIO(std::string filename, int cols, int rows, int bands) : m_co
     GDALAllRegister();
     m_gtif_driver = GetGDALDriverManager()->GetDriverByName("GTiff");
     m_gtif_dataset = m_gtif_driver->Create(filename.c_str(), m_cols, m_rows, m_bands, GDT_UInt16, NULL);
-    // TODO: SetGeoTransform , SetGeoProjection ??
 }
 
 GeoTIFFIO::GeoTIFFIO(std::string filename)

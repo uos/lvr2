@@ -14,7 +14,7 @@ namespace lvr2
 {
     /**
      * @brief class providing and encapsulating GDAL GeoTIFF I/O functions
-     * @author ndettmer <ndettmer@uos.de>
+     * @author Niklas Dettmer <ndettmer@uos.de>
      */
     class GeoTIFFIO
     {
@@ -40,12 +40,25 @@ namespace lvr2
          */
         int writeBand(cv::Mat *mat, int band);
 
+        /**
+         * @return width of dataset in number of pixels
+         */
         int getRasterWidth();
 
+        /**
+         * @return height of dataset in number of pixels
+         */
         int getRasterHeight();
 
+        /**
+         * @return number of bands of dataset
+         */
         int getNumBands();
 
+        /**
+         * @param band_index index of the band to be read
+         * @return indexed band of the dataset as cv::Mat *
+         */
         cv::Mat *readBand(int band_index);
 
         ~GeoTIFFIO();
