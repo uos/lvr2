@@ -50,7 +50,7 @@ int processConversion(std::string input_filename,
     // set upper boundary
     if(num_channels < max_channel)
     {
-        std::cout << "The Dataset has only " << num_channels << " channels. Using this as upper boundary." << std::endl;
+        std::cout << "The dataset has only " << num_channels << " channels. Using this as upper boundary." << std::endl;
         max_channel = num_channels;
     }
     num_channels = max_channel - min_channel;
@@ -66,7 +66,7 @@ int processConversion(std::string input_filename,
         {
             for(size_t col = 0; col < num_cols; col++)
             {
-                mat->at<uint16_t>(row, col) = spectrals.get()[channel * num_cols * num_rows + row * num_cols + col];
+                mat->at<uint16_t>(row, col) = spectrals.get()[(channel + min_channel) * num_cols * num_rows + row * num_cols + col];
             }
         }
         // ... and write it to the output GeoTIFF file

@@ -7,7 +7,6 @@
 
 #include <gdal_priv.h>
 #include <opencv2/opencv.hpp>
-
 #include <string>
 
 namespace lvr2
