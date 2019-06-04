@@ -77,7 +77,7 @@ void SlamAlign::match()
     }
 
     string scan_number_string = to_string(m_scans.size() - 1);
-    for (size_t i = 1; i < m_scans.size(); i++)
+    for (int i = 1; i < m_scans.size(); i++)
     {
         if (m_options.verbose)
         {
@@ -116,6 +116,8 @@ void SlamAlign::match()
             MetaScan* meta = (MetaScan*)(m_metascan.get());
             meta->addScan(cur);
         }
+
+        checkLoopClose(i);
     }
 }
 
@@ -135,6 +137,82 @@ void SlamAlign::applyTransform(ScanPtr scan, const Matrix4d& transform)
             found = true;
         }
     }
+}
+
+void SlamAlign::checkLoopClose(int last)
+{
+    if (!m_options.doLoopClosing && !m_options.doGraphSlam)
+    {
+        return;
+    }
+
+    const ScanPtr& cur = m_scans[last];
+
+    int first = -1;
+
+    // no Pairs => use closeLoopDistance
+    if (m_options.closeLoopPairs < 0)
+    {
+        double maxDist = std::pow(m_options.closeLoopDistance, 2);
+        Vector3d pos = cur->getPosition();
+        for (int other = 0; other < last; other++)
+        {
+            double dist = (m_scans[other]->getPosition() - pos).squaredNorm();
+            if (dist < maxDist)
+            {
+                first = other;
+                break;
+            }
+        }
+    }
+    else
+    {
+        // convert current Scan to KDTree for Pair search
+        size_t n = cur->count();
+        PointArray points = PointArray(new Vector3d[n]);
+
+        #pragma omp parallel for
+        for (size_t i = 0; i < n; i++)
+        {
+            points[i] = cur->getPointTransformed(i);
+        }
+        auto tree = KDTree::create(points, n);
+
+        for (int other = 0; other < last; other++)
+        {
+            const ScanPtr& scan = m_scans[other];
+            int count = 0;
+
+            #pragma omp parallel for reduction(+:count)
+            for (size_t i = 0; i < scan->count(); i++)
+            {
+                Vector3d point = scan->getPointTransformed(i);
+                Vector3d* neighbor = nullptr;
+                double dist;
+                tree->nearestNeighbor(point, neighbor, dist, m_options.slamMaxDistance);
+                if (neighbor != nullptr)
+                {
+                    count++;
+                }
+            }
+
+            if (count >= m_options.closeLoopPairs)
+            {
+                first = other;
+                break;
+            }
+        }
+    }
+
+    if (first != -1)
+    {
+        closeLoop(first, last);
+    }
+}
+
+void SlamAlign::closeLoop(int first, int last)
+{
+    // TODO: implement
 }
 
 } /* namespace lvr2 */

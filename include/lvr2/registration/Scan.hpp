@@ -71,6 +71,8 @@ public:
     const Matrix4d& getDeltaPose() const;
     const Matrix4d& getInitialPose() const;
 
+    Vector3d getPosition() const;
+
     void writeFrames(std::string path) const;
 
 protected:
