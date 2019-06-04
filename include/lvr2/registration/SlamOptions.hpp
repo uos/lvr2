@@ -43,6 +43,8 @@ struct SlamOptions
     bool    doGraphSlam = false;
     double  slamMaxDistance = 25;
     int     slamIterations = 50;
+    double  closeLoopDistance = 500;
+    int     closeLoopPairs = -1;
 
     double  icpMaxDistance = 25;
     int     icpIterations = 50;

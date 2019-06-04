@@ -64,6 +64,9 @@ protected:
 
     void applyTransform(ScanPtr scan, const Matrix4d& transform);
 
+    void checkLoopClose(int last);
+    void closeLoop(int first, int last);
+
     SlamOptions     m_options;
 
     vector<ScanPtr> m_scans;

@@ -148,6 +148,11 @@ const Matrix4d& Scan::getInitialPose() const
     return m_initialPose;
 }
 
+Vector3d Scan::getPosition() const
+{
+    return m_pose.block<3, 1>(0, 3);
+}
+
 void Scan::addFrame(ScanUse use)
 {
     m_frames.push_back(make_pair(m_pose, use));

@@ -73,13 +73,16 @@ int main(int argc, char** argv)
         options_description visible_options("OPTIONS");
         visible_options.add_options()
         ("start,s", value<int>(&start)->default_value(start),
-         "The first scan to process.\n-1 (default): search for first scan")
+         "The first scan to process.\n"
+         "-1 (default): search for first scan")
 
         ("end,e", value<int>(&end)->default_value(end),
-         "The last scan to process.\n-1 (default): continue until no more scan found")
+         "The last scan to process.\n"
+         "-1 (default): continue until no more scan found")
 
         ("format,f", value<string>(&format)->default_value(format),
-         "The format to use.\navailable formats are listed <somewhere>")
+         "The format to use.\n"
+         "available formats are listed <somewhere>")
 
         ("icpIterations,i", value<int>(&options.icpIterations)->default_value(options.icpIterations),
          "Number of iterations for ICP")
@@ -97,13 +100,22 @@ int main(int argc, char** argv)
          "The Voxel size for Voxel based reduction. -1 for no reduction")
 
         ("min,m", value<double>(&options.minDistance)->default_value(options.minDistance),
-         "Ignore all Points closer than <value> to the origin of the scan\n-1 (default): No filter")
+         "Ignore all Points closer than <value> to the origin of the scan.\n"
+         "-1 (default): No filter")
 
         ("max,M", value<double>(&options.maxDistance)->default_value(options.maxDistance),
-         "Ignore all Points farther away than <value> from the origin of the scan\n-1 (default): No filter")
+         "Ignore all Points farther away than <value> from the origin of the scan.\n"
+         "-1 (default): No filter")
 
         ("epsilon", value<double>(&options.epsilon)->default_value(options.epsilon),
          "The desired epsilon difference between two error values")
+
+        ("closeLoopDistance,c", value<double>(&options.closeLoopDistance)->default_value(options.closeLoopDistance),
+         "The maximum distance between two poses to consider a closed loop")
+
+        ("closeLoopPairs,C", value<int>(&options.closeLoopPairs)->default_value(options.closeLoopPairs),
+         "The minimum pair overlap between two poses to consider a closed loop. Pairs are judged using slamMaxDistance.\n"
+         "-1 (default): use closeLoopDistance instead")
 
         ("loop,L", bool_switch(&options.doLoopClosing),
          "Use simple Loop Closing")
