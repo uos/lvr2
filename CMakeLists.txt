@@ -50,15 +50,15 @@ endif(MSVC)
 ##############################
 find_package(TIFF REQUIRED)
 if(TIFF_FOUND)
-    include_directories(${TIFF_INCLUDE_DIRS} ${TIFF_LIBRARIES})
+    include_directories(${TIFF_INCLUDE_DIRS})
 endif(TIFF_FOUND)
 
 ###
 ## Searching for GDAL
 ##############################
-find_package(GDAL)
+find_package(GDAL REQUIRED)
 if(GDAL_FOUND)
-    include_directories(${GDAL_INCLUDE_DIR} ${GDAL_LIBRARY})
+    include_directories(${GDAL_INCLUDE_DIR})
 endif(GDAL_FOUND)
 
 ####
