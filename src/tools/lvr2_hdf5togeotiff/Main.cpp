@@ -71,6 +71,7 @@ int processConversion(std::string input_filename,
         }
         // ... and write it to the output GeoTIFF file
         int ret = gtifio.writeBand(mat, channel + 1);
+        delete mat;
         if (ret != 0)
         {
             return ret;

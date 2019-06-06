@@ -5,8 +5,11 @@
 #include <iostream>
 
 #include "lvr2/io/GeoTIFFIO.hpp"
+#include "lvr2/io/Timestamp.hpp"
 
-using namespace lvr2;
+namespace lvr2
+{
+    
 
 GeoTIFFIO::GeoTIFFIO(std::string filename, int cols, int rows, int bands) : m_cols(cols), m_rows(rows), m_bands(bands)
 {
@@ -25,7 +28,7 @@ int GeoTIFFIO::writeBand(cv::Mat *mat, int band)
 {
     if (!m_gtif_dataset)
     {
-        std::cout << "GeoTIFF dataset not initialized!" << std::endl;
+        std::cout << timestamp << "GeoTIFF dataset not initialized!" << std::endl;
         return -1;
     }
 
@@ -39,7 +42,7 @@ int GeoTIFFIO::writeBand(cv::Mat *mat, int band)
         if (m_gtif_dataset->GetRasterBand(band)->RasterIO(
                 GF_Write, 0, row, m_cols, 1, rowBuff, m_cols, 1, GDT_UInt16, 0, 0) != CPLE_None)
         {
-            std::cout << "An error occurred in GDAL while writing band "
+            std::cout << timestamp << "An error occurred in GDAL while writing band "
                 << band << " in row " << row << "." << std::endl;
             return -1;
         }
@@ -49,31 +52,60 @@ int GeoTIFFIO::writeBand(cv::Mat *mat, int band)
 
 int GeoTIFFIO::getRasterWidth()
 {
-    return m_gtif_dataset->GetRasterXSize();
+    if(m_gtif_dataset)
+    {
+        return m_gtif_dataset->GetRasterXSize();
+    }
+    else
+    {
+        return 0;
+    }
+    
 }
 
 int GeoTIFFIO::getRasterHeight()
 {
-    return m_gtif_dataset->GetRasterYSize();
+    if(m_gtif_dataset)
+    {
+        return m_gtif_dataset->GetRasterYSize();
+    }
+    else
+    {
+        return 0;
+    }
+    
 }
 
 int GeoTIFFIO::getNumBands()
 {
-    return m_gtif_dataset->GetRasterCount();
+    if(m_gtif_dataset)
+    {
+        return m_gtif_dataset->GetRasterCount();
+    }
+    return 0;
 }
 
 cv::Mat *GeoTIFFIO::readBand(int index)
 {
     GDALRasterBand *band = m_gtif_dataset->GetRasterBand(index);
-    int nXSize = band->GetXSize();
-    int nYSize = band->GetYSize();
-    uint16_t *buf = (uint16_t *) CPLMalloc(sizeof(uint16_t) * nXSize * nYSize);
+    if(band)
+    {
+        int nXSize = band->GetXSize();
+        int nYSize = band->GetYSize();
+        uint16_t *buf = (uint16_t *) CPLMalloc(sizeof(uint16_t) * nXSize * nYSize);
 
-    band->RasterIO(GF_Read, 0, 0, nXSize, nYSize, buf, nXSize, nYSize, GDT_UInt16, 0, 0);
+        CPLErr error = band->RasterIO(GF_Read, 0, 0, nXSize, nYSize, buf, nXSize, nYSize, GDT_UInt16, 0, 0);
 
-    cv::Mat *mat = new cv::Mat(nXSize, nYSize, CV_16UC1, buf);
-
-    return mat;
+        cv::Mat *mat = new cv::Mat(nXSize, nYSize, CV_16UC1, buf);
+        
+        return mat;
+    }
+    else
+    {
+        std::cout << timestamp << "Error getting raster band" << std::endl;
+        return new cv::Mat;
+    }
+    
 }
 
 GeoTIFFIO::~GeoTIFFIO()
@@ -81,4 +113,6 @@ GeoTIFFIO::~GeoTIFFIO()
     GDALClose(m_gtif_dataset);
     GDALDestroyDriverManager();
 }
+
+} // namespace lvr2
 
