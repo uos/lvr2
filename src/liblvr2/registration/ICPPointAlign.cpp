@@ -51,7 +51,7 @@ namespace lvr2
 {
 
 ICPPointAlign::ICPPointAlign(ScanPtr model, ScanPtr data) :
-    m_dataCloud(data), m_modelCloud(model), m_transformation(data->getPose()), m_deltaTransform(Matrix4d::Identity())
+    m_dataCloud(data), m_modelCloud(model)
 {
     // Init default values
     m_maxDistanceMatch  = 25;
@@ -59,20 +59,8 @@ ICPPointAlign::ICPPointAlign(ScanPtr model, ScanPtr data) :
     m_epsilon           = 0.00001;
     m_verbose           = false;
 
-    // Transform model points according to initial pose
-    size_t n = model->count();
-
-    PointArray modelPoints = PointArray(new Vector3d[n]);
-
-    #pragma omp parallel for
-    for (size_t i = 0; i < n; i++)
-    {
-        modelPoints[i] = model->getPointTransformed(i);
+    m_searchTree = KDTree::create(model->points(), model->count());
     }
-
-    // Create search tree
-    m_searchTree = KDTree::create(modelPoints, n);
-}
 
 Matrix4d ICPPointAlign::match()
 {
@@ -88,6 +76,14 @@ Matrix4d ICPPointAlign::match()
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
     EigenSVDPointAlign align;
     int iteration;
+
+    Vector3d centroid_m = Vector3d::Zero();
+    Vector3d centroid_d = Vector3d::Zero();
+    Matrix4d transform;
+
+    PointPairVector pairs;
+    pairs.reserve(m_dataCloud->count());
+
     for (iteration = 0; iteration < m_maxIterations; iteration++)
     {
         // Update break variables
@@ -95,19 +91,18 @@ Matrix4d ICPPointAlign::match()
         prev_ret = ret;
 
         // Get point pairs
-        Vector3d centroid_m = Vector3d::Zero();
-        Vector3d centroid_d = Vector3d::Zero();
-        Matrix4d transform;
+        centroid_m = Vector3d::Zero();
+        centroid_d = Vector3d::Zero();
+        transform = Matrix4d::Identity();
+        pairs.clear();
 
-        PointPairVector pairs;
         getPointPairs(pairs, centroid_m, centroid_d);
 
         // Get transformation
         ret = align.alignPoints(pairs, centroid_m, centroid_d, transform);
 
         // Apply transformation
-        m_transformation = transformRegistration(transform, m_transformation);
-        m_deltaTransform = transformRegistration(transform, m_deltaTransform);
+        m_dataCloud->transform(transform, false);
 
         if (m_verbose)
         {
@@ -130,24 +125,19 @@ Matrix4d ICPPointAlign::match()
     cout << endl;
     if (m_verbose)
     {
-        cout << "Result: " << endl << m_transformation << endl;
-    }
-    return m_transformation;
+        cout << "Result: " << endl << m_dataCloud->getDeltaPose() << endl;
 }
-
-const Matrix4d& ICPPointAlign::getDeltaTransform() const
-{
-    return m_deltaTransform;
+    return m_dataCloud->getPose();
 }
 
 void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d) const
 {
     size_t n = m_dataCloud->count();
+    Vector3d* dataPoints = m_dataCloud->points();
 
     centroid_m = Vector3d::Zero();
     centroid_d = Vector3d::Zero();
     pairs.clear();
-    pairs.reserve(n);
 
     size_t numThreads = omp_get_max_threads();
     size_t pairsPerThread = ceil((double)n / numThreads);
@@ -174,9 +164,7 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, 
 
         for (size_t i = start; i < end; i++)
         {
-            Eigen::Vector4d extended;
-            extended << m_dataCloud->getPoint(i), 1.0;
-            Eigen::Vector3d point = (m_transformation * extended).block<3, 1>(0, 0);
+            const Vector3d& point = dataPoints[i];
 
             Vector3d* neighbor;
             double distance;
@@ -187,7 +175,7 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, 
             {
                 myCentroidM += point;
                 myCentroidD += *neighbor;
-                myPairs.push_back(make_pair(point, *neighbor));
+                myPairs.push_back(make_pair(&point, neighbor));
             }
         }
     }

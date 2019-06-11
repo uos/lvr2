@@ -779,6 +779,8 @@ void LVRMainWindow::alignPointClouds()
         angles /= 180.0 / M_PI;
         Matrix4d modelTransform = poseToMatrix(pos, angles);
 
+        /* TODO: convert to new ICPPointAlign
+
         ICPPointAlign icp(modelBuffer, dataBuffer, modelTransform, mat);
         icp.setEpsilon(m_correspondanceDialog->getEpsilon());
         icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
@@ -792,6 +794,7 @@ void LVRMainWindow::alignPointClouds()
             (float)pos.x(), (float)pos.y(), (float)pos.z(),
             (float)angles.x(), (float)angles.y(), (float)angles.z()
         });
+        */
     }
     m_correspondanceDialog->clearAllItems();
     updateView();

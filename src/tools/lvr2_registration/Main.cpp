@@ -226,21 +226,22 @@ int main(int argc, char** argv)
         }
     }
 
-    vector<ScanPtr> scans;
-    scans.reserve(end - start);
+    int count = end - start + 1;
 
-    for (int i = start; i <= end; i++)
+    SlamAlign align(options, count);
+
+    for (int i = 0; i < count; i++)
     {
-        path file = dir / format_name(format, i);
+        path file = dir / format_name(format, start + i);
         auto model = ModelFactory::readModel(file.string());
 
         file.replace_extension("pose");
         Matrix4d pose = getTransformationFromPose(file);
 
-        scans.push_back(make_shared<Scan>(model->m_pointCloud, pose));
-    }
+        auto points = model->m_pointCloud;
 
-    SlamAlign align(scans, options);
+        align.setScan(i, make_shared<Scan>(model->m_pointCloud, pose));
+    }
 
     auto start_time = chrono::steady_clock::now();
 
@@ -249,12 +250,12 @@ int main(int argc, char** argv)
     auto required_time = chrono::steady_clock::now() - start_time;
     cout << "SLAM finished in " << required_time.count() / 1e9 << " seconds" << endl;
 
-    for (int i = start; i <= end; i++)
+    for (int i = 0; i < count; i++)
     {
-        path file = dir / format_name(format, i);
+        path file = dir / format_name(format, start + i);
         file.replace_extension("frames");
 
-        scans[i - start]->writeFrames(file.string());
+        align.writeFrames(i, file.string());
     }
 
     return EXIT_SUCCESS;

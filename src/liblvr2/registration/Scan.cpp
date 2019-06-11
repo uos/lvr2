@@ -46,28 +46,28 @@ namespace lvr2
 {
 
 Scan::Scan(PointBufferPtr points, const Matrix4d& pose)
-    : m_pose(pose), m_initialPose(pose), m_deltaPose(Matrix4d::Identity())
+    : m_pose(pose), m_initialPose(pose), m_deltaPose(Matrix4d::Identity()), m_transformChanged(false), m_transformChange(Matrix4d::Identity())
 {
-    m_count = points->numPoints();
-    m_points = boost::shared_array<Vector3d>(new Vector3d[m_count]);
+    size_t n = points->numPoints();
+    m_points.resize(n);
 
     floatArr src = points->getPointArray();
 
     #pragma omp parallel for
-    for (size_t i = 0; i < m_count; i++)
+    for (size_t i = 0; i < n; i++)
     {
-        m_points[i] = Vector3d(src[i * 3], src[i * 3 + 1], src[i * 3 + 2]);
+        Eigen::Vector4d extended(src[i * 3], src[i * 3 + 1], src[i * 3 + 2], 1.0);
+        m_points[i] = (pose * extended).block<3, 1>(0, 0);
     }
 }
-
-Scan::Scan()
-    : m_count(0), m_pose(Matrix4d::Identity()), m_initialPose(Matrix4d::Identity()), m_deltaPose(Matrix4d::Identity())
-{ }
 
 void Scan::transform(const Matrix4d& transform, bool writeFrame)
 {
     m_pose = transformRegistration(transform, m_pose);
     m_deltaPose = transformRegistration(transform, m_deltaPose);
+
+    m_transformChanged = true;
+    m_transformChange = transformRegistration(transform, m_transformChange);
 
     if (writeFrame)
     {
@@ -77,7 +77,9 @@ void Scan::transform(const Matrix4d& transform, bool writeFrame)
 
 void Scan::reduce(double voxelSize)
 {
-    m_count = octreeReduce(m_points.get(), m_count, voxelSize);
+    size_t count = octreeReduce(m_points.data(), m_points.size(), voxelSize);
+    m_points.resize(count);
+    m_points.shrink_to_fit();
 }
 
 void Scan::setMinDistance(double minDistance)
@@ -85,64 +87,83 @@ void Scan::setMinDistance(double minDistance)
     double sqDist = minDistance * minDistance;
 
     size_t i = 0;
-    while (i < m_count)
+    while (i < count())
     {
         if (m_points[i].squaredNorm() <= sqDist)
         {
-            m_count--;
-            std::swap(m_points[i], m_points[m_count]);
+            std::iter_swap(m_points.begin() + i, m_points.end() - 1);
+            m_points.pop_back();
         }
         else
         {
             i++;
         }
     }
+    m_points.shrink_to_fit();
 }
 void Scan::setMaxDistance(double maxDistance)
 {
     double sqDist = maxDistance * maxDistance;
 
     size_t i = 0;
-    while (i < m_count)
+    while (i < count())
     {
         if (m_points[i].squaredNorm() >= sqDist)
         {
-            m_count--;
-            std::swap(m_points[i], m_points[m_count]);
+            std::iter_swap(m_points.begin() + i, m_points.end() - 1);
+            m_points.pop_back();
         }
         else
         {
             i++;
         }
     }
+    m_points.shrink_to_fit();
 }
 
-const Vector3d& Scan::getPoint(size_t index) const
+Vector3d Scan::getPoint(size_t index) const
 {
-    if (index >= m_count)
+    if (m_transformChanged)
     {
-        throw out_of_range("getPoint on Scan out of Range");
+        Eigen::Vector4d extended;
+        extended << m_points[index], 1.0;
+        return (m_transformChange * extended).block<3, 1>(0, 0);
     }
     return m_points[index];
 }
-Vector3d Scan::getPointTransformed(size_t index) const
+
+Vector3d* Scan::points()
 {
-    Eigen::Vector4d extended;
-    extended << getPoint(index), 1.0;
-    return (m_pose * extended).block<3, 1>(0, 0);
+    if (m_transformChanged)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < m_points.size(); i++)
+        {
+            Eigen::Vector4d extended;
+            extended << m_points[i], 1.0;
+            m_points[i] = (m_transformChange * extended).block<3, 1>(0, 0);
+        }
+        m_transformChange = Matrix4d::Identity();
+        m_transformChanged = false;
+    }
+    return m_points.data();
 }
+
 size_t Scan::count() const
 {
-    return m_count;
+    return m_points.size();
 }
+
 const Matrix4d& Scan::getPose() const
 {
     return m_pose;
 }
+
 const Matrix4d& Scan::getDeltaPose() const
 {
     return m_deltaPose;
 }
+
 const Matrix4d& Scan::getInitialPose() const
 {
     return m_initialPose;
@@ -163,13 +184,26 @@ void Scan::writeFrames(std::string path) const
     ofstream out(path);
     for (const std::pair<Matrix4d, ScanUse>& frame : m_frames)
     {
-        for(int i = 0; i < 16; i++)
+        for (int i = 0; i < 16; i++)
         {
             out << frame.first(i) << " ";
         }
 
         out << (int)frame.second << endl;
     }
+
+    ofstream poseFile(path + ".pose");
+    Vector3d pos, rot;
+    matrixToPose(m_pose, pos, rot);
+    poseFile << pos.x() << ' ' << pos.y() << ' ' << pos.z() << endl;
+    poseFile << rot.x() << ' ' << rot.y() << ' ' << rot.z() << flush;
+}
+
+void Scan::addScanToMeta(ScanPtr scan)
+{
+    m_points.reserve(scan->count());
+    m_points.insert(m_points.end(), scan->m_points.begin(), scan->m_points.end());
+    m_deltaPose = scan->getDeltaPose();
 }
 
 } /* namespace lvr2 */

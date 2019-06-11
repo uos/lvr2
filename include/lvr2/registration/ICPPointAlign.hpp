@@ -62,11 +62,7 @@ public:
 
     void getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d) const;
 
-    const Matrix4d& getDeltaTransform() const;
-
 protected:
-
-    void transform();
 
     double      m_epsilon;
     double      m_maxDistanceMatch;
@@ -76,8 +72,6 @@ protected:
 
     ScanPtr     m_modelCloud;
     ScanPtr     m_dataCloud;
-    Matrix4d    m_transformation;
-    Matrix4d    m_deltaTransform;
 
     KDTreePtr   m_searchTree;
 };

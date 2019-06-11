@@ -32,7 +32,6 @@
  *  @author Malte Hillmann
  */
 #include <lvr2/registration/SlamAlign.hpp>
-#include <lvr2/registration/MetaScan.hpp>
 
 #include <iomanip>
 
@@ -41,39 +40,53 @@ using namespace std;
 namespace lvr2
 {
 
-SlamAlign::SlamAlign(const std::vector<ScanPtr>& scans, const SlamOptions& options)
-    : m_scans(move(scans)), m_options(options)
+SlamAlign::SlamAlign(const SlamOptions& options, int count)
+    : m_options(options)
 {
+    if (count > 0)
+    {
+        m_scans.resize(count);
+    }
+}
 
+void SlamAlign::addScan(const ScanPtr& scan)
+{
+    reduceScan(scan);
+    m_scans.push_back(scan);
+}
+void SlamAlign::setScan(int index, const ScanPtr& scan)
+{
+    reduceScan(scan);
+    m_scans[index] = scan;
+}
+
+void SlamAlign::reduceScan(const ScanPtr& scan)
+{
+    size_t prev = scan->count();
+    if (m_options.reduction >= 0)
+    {
+        scan->reduce(m_options.reduction);
+    }
+    if (m_options.minDistance >= 0)
+    {
+        scan->setMinDistance(m_options.minDistance);
+    }
+    if (m_options.maxDistance >= 0)
+    {
+        scan->setMaxDistance(m_options.maxDistance);
+    }
+
+    if (scan->count() < prev)
+    {
+        cout << "Removed " << (prev - scan->count()) << " / " << prev << " Points -> " << scan->count() << " left" << endl;
+    }
 }
 
 void SlamAlign::match()
 {
-    if (m_options.reduction >= 0 || m_options.minDistance >= 0 || m_options.maxDistance >= 0)
-    {
-        #pragma omp parallel for
-        for (size_t i = 0; i < m_scans.size(); i++)
-        {
-            if (m_options.reduction >= 0)
-            {
-                m_scans[i]->reduce(m_options.reduction);
-            }
-            if (m_options.minDistance >= 0)
-            {
-                m_scans[i]->setMinDistance(m_options.minDistance);
-            }
-            if (m_options.maxDistance >= 0)
-            {
-                m_scans[i]->setMaxDistance(m_options.maxDistance);
-            }
-        }
-    }
-
     if (m_options.metascan)
     {
-        MetaScan* meta = new MetaScan();
-        meta->addScan(m_scans[0]);
-        m_metascan = ScanPtr(meta);
+        m_metascan = ScanPtr(new Scan(*m_scans[0]));
     }
 
     string scan_number_string = to_string(m_scans.size() - 1);
@@ -91,14 +104,13 @@ void SlamAlign::match()
         ScanPtr prev = m_options.metascan ? m_metascan : m_scans[i - 1];
         const ScanPtr& cur = m_scans[i];
 
-        if (!m_options.trustPose)
+        if (!m_options.trustPose && i != 1) // no deltaPose on first run
         {
             applyTransform(cur, prev->getDeltaPose());
         }
         else
         {
-            // create frame entry
-            applyTransform(cur, Matrix4d::Identity());
+            addFrame(cur);
         }
 
         ICPPointAlign icp(prev, cur);
@@ -109,12 +121,11 @@ void SlamAlign::match()
 
         Matrix4d result = icp.match();
 
-        applyTransform(cur, icp.getDeltaTransform());
+        addFrame(cur);
 
         if (m_options.metascan && i + 1 < m_scans.size())
         {
-            MetaScan* meta = (MetaScan*)(m_metascan.get());
-            meta->addScan(cur);
+            m_metascan->addScanToMeta(cur);
         }
 
         checkLoopClose(i);
@@ -126,7 +137,7 @@ void SlamAlign::applyTransform(ScanPtr scan, const Matrix4d& transform)
     scan->transform(transform);
 
     bool found = false;
-    for(const ScanPtr& s : m_scans)
+    for (const ScanPtr& s : m_scans)
     {
         if (s != scan)
         {
@@ -134,6 +145,23 @@ void SlamAlign::applyTransform(ScanPtr scan, const Matrix4d& transform)
         }
         else
         {
+            found = true;
+        }
+    }
+}
+
+void SlamAlign::addFrame(ScanPtr current)
+{
+    bool found = false;
+    for (const ScanPtr& s : m_scans)
+    {
+        if (s != current)
+        {
+            s->addFrame(found ? ScanUse::INVALID : ScanUse::UNUSED);
+        }
+        else
+        {
+            s->addFrame(ScanUse::UPDATED);
             found = true;
         }
     }
@@ -169,14 +197,7 @@ void SlamAlign::checkLoopClose(int last)
     {
         // convert current Scan to KDTree for Pair search
         size_t n = cur->count();
-        PointArray points = PointArray(new Vector3d[n]);
-
-        #pragma omp parallel for
-        for (size_t i = 0; i < n; i++)
-        {
-            points[i] = cur->getPointTransformed(i);
-        }
-        auto tree = KDTree::create(points, n);
+        auto tree = KDTree::create(cur->points(), cur->count());
 
         for (int other = 0; other < last; other++)
         {
@@ -186,7 +207,7 @@ void SlamAlign::checkLoopClose(int last)
             #pragma omp parallel for reduction(+:count)
             for (size_t i = 0; i < scan->count(); i++)
             {
-                Vector3d point = scan->getPointTransformed(i);
+                const Vector3d& point = scan->getPoint(i);
                 Vector3d* neighbor = nullptr;
                 double dist;
                 tree->nearestNeighbor(point, neighbor, dist, m_options.slamMaxDistance);
