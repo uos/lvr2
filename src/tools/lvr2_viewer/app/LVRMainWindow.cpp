@@ -902,6 +902,24 @@ LVRModelItem* LVRMainWindow::loadModelItem(QString name)
         in >> pose.r >> pose.t >> pose.p;
         item->setPose(pose);
     }
+    else
+    {
+        poseFile.replace_extension("dat");
+        if (boost::filesystem::exists(poseFile))
+        {
+            cout << "Found Pose file: " << poseFile << endl;
+            Eigen::Matrix4d mat = getTransformationFromPose(poseFile);
+            Eigen::Vector3d pos, angles;
+            matrixToPose(mat, pos, angles);
+
+            angles *= M_PI / 180.0; // radians -> degrees
+
+            item->setPose(Pose {
+                (float)pos.x(), (float)pos.y(), (float)pos.z(),
+                (float)angles.x(), (float)angles.y(), (float)angles.z()
+            });
+        }
+    }
     return item;
 }
 

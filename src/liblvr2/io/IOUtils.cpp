@@ -133,6 +133,19 @@ Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
     std::ifstream poseIn(pose.c_str());
     if(poseIn.good())
     {
+        if (pose.extension() == ".dat")
+        {
+            Eigen::Matrix4d ret;
+            for (int y = 0; y < 4; y++)
+            {
+                for (int x = 0; x < 4; x++)
+                {
+                    poseIn >> ret(y, x);
+                }
+            }
+            return ret;
+        }
+
         double rPosTheta[3];
         double rPos[3];
         double alignxf[16];
