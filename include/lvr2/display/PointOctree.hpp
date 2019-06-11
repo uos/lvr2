@@ -3,11 +3,11 @@
 
 #include <vector>
 
-#include <lvr2/io/PointBuffer.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/BoundingBox.hpp>
+#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/BoundingBox.hpp"
 
-#include <lvr2/display/MemoryHandler.hpp>
+#include "lvr2/display/MemoryHandler.hpp"
 
 namespace lvr2
 {
