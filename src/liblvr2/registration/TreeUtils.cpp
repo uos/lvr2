@@ -98,7 +98,6 @@ void createOctree(Vector3d* points, int n, bool* flagged, Vector3d min, Vector3d
                 flagged[i] = true;
             }
         }
-        std::cout << "Removed " << (n - 1) << std::endl;
         return;
     }
 

@@ -63,6 +63,7 @@ int main(int argc, char** argv)
     int start = -1;
     int end = -1;
     string format = "uos";
+    string pose_format = "pose";
     path dir;
     bool help;
 
@@ -84,6 +85,10 @@ int main(int argc, char** argv)
          "The format to use.\n"
          "available formats are listed <somewhere>")
 
+        ("pose-format", value<string>(&pose_format)->default_value(pose_format),
+         "The format for the pose files to use.\n"
+         "available formats are listed <somewhere>")
+
         ("icpIterations,i", value<int>(&options.icpIterations)->default_value(options.icpIterations),
          "Number of iterations for ICP")
 
@@ -91,10 +96,12 @@ int main(int argc, char** argv)
          "The maximum distance between two points during ICP")
 
         ("slamIterations,I", value<int>(&options.slamIterations)->default_value(options.slamIterations),
-         "Number of iterations for SLAM")
+         "Number of iterations for SLAM\n"
+         ">>Only works if either -L or -G are specified<<")
 
         ("slamMaxDistance,D", value<double>(&options.slamMaxDistance)->default_value(options.slamMaxDistance),
-         "The maximum distance between two points during SLAM")
+         "The maximum distance between two points during SLAM\n"
+         ">>Only works if either -L or -G are specified<<")
 
         ("reduction,r", value<double>(&options.reduction)->default_value(options.reduction),
          "The Voxel size for Voxel based reduction. -1 for no reduction")
@@ -111,11 +118,13 @@ int main(int argc, char** argv)
          "The desired epsilon difference between two error values")
 
         ("closeLoopDistance,c", value<double>(&options.closeLoopDistance)->default_value(options.closeLoopDistance),
-         "The maximum distance between two poses to consider a closed loop")
+         "The maximum distance between two poses to consider a closed loop\n"
+         ">>Only works if either -L or -G are specified<<")
 
         ("closeLoopPairs,C", value<int>(&options.closeLoopPairs)->default_value(options.closeLoopPairs),
          "The minimum pair overlap between two poses to consider a closed loop. Pairs are judged using slamMaxDistance.\n"
-         "-1 (default): use closeLoopDistance instead")
+         "-1 (default): use closeLoopDistance instead\n"
+         ">>Only works if either -L or -G are specified<<")
 
         ("loop,L", bool_switch(&options.doLoopClosing),
          "Use simple Loop Closing")
@@ -180,7 +189,23 @@ int main(int argc, char** argv)
     if ((split_point = format.find('%')) == string::npos)
     {
         // TODO: map formats
+        if (format == "uos")
+        {
         format = "scan%03i.3d";
+    }
+        else if (format == "riegl_txt")
+        {
+            format = "scan%03i.txt";
+        }
+        else if (format == "riegl")
+        {
+            format = "scan%03i.rxp";
+        }
+        else
+        {
+            cout << "Unknown format: " << format << endl;
+            return EXIT_FAILURE;
+        }
     }
 
     // =============== search scans ===============
@@ -218,7 +243,7 @@ int main(int argc, char** argv)
             cout << "Last scan: \"" << format_name(format, end) << '"' << endl;
             break;
         }
-        file.replace_extension("pose");
+        file.replace_extension(pose_format);
         if (!exists(file))
         {
             cerr << "Missing pose file " << file.filename() << endl;
@@ -235,10 +260,19 @@ int main(int argc, char** argv)
         path file = dir / format_name(format, start + i);
         auto model = ModelFactory::readModel(file.string());
 
-        file.replace_extension("pose");
-        Matrix4d pose = getTransformationFromPose(file);
+        if (!model)
+        {
+            cerr << "Unable to read Model from: " << file.string() << endl;
+            return EXIT_FAILURE;
+        }
+        if (!model->m_pointCloud)
+        {
+            cerr << "file does not contain Points: " << file.string() << endl;
+            return EXIT_FAILURE;
+        }
 
-        auto points = model->m_pointCloud;
+        file.replace_extension(pose_format);
+        Matrix4d pose = getTransformationFromPose(file);
 
         align.setScan(i, make_shared<Scan>(model->m_pointCloud, pose));
     }
