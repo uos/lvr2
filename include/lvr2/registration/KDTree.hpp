@@ -60,6 +60,17 @@ public:
     static std::shared_ptr<KDTree> create(PointArray points, int n, int maxLeafSize = 10);
 
     /**
+     * @brief Creates a new KDTree from the given Point Cloud. Note that this function modifies
+     *        the order of elements in 'points'.
+     *        This does not take ownership of the pointer. the caller must manage the memory.
+     * 
+     * @param points        The Point Cloud
+     * @param n             The number of points in 'points'
+     * @param maxLeafSize   The maximum number of points to use for a Leaf in the Tree
+     */
+    static std::shared_ptr<KDTree> create(Vector3d* points, int n, int maxLeafSize = 10);
+
+    /**
      * @brief Finds the nearest neighbor of 'point' that is within 'maxDistance' (defaults to infinity).
      *        The resulting neighbor is written into 'neighbor' (or nullptr if none is found).
      * 

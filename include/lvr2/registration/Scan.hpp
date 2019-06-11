@@ -63,8 +63,8 @@ public:
     void setMinDistance(double minDistance);
     void setMaxDistance(double maxDistance);
 
-    virtual const Vector3d& getPoint(size_t index) const;
-    virtual Vector3d getPointTransformed(size_t index) const;
+    Vector3d getPoint(size_t index) const;
+    Vector3d* points();
     size_t count() const;
 
     const Matrix4d& getPose() const;
@@ -75,17 +75,20 @@ public:
 
     void writeFrames(std::string path) const;
 
-protected:
-    Scan();
+    /// Only for Meta Scans
+	void addScanToMeta(std::shared_ptr<Scan> scan);
 
-    PointArray  m_points;
-    size_t      m_count;
+protected:
+    std::vector<Vector3d> m_points;
 
     Matrix4d    m_pose;
     Matrix4d    m_deltaPose;
     Matrix4d    m_initialPose;
 
     std::vector<std::pair<Matrix4d, ScanUse>> m_frames;
+
+    bool        m_transformChanged;
+    Matrix4d    m_transformChange;
 };
 
 using ScanPtr = std::shared_ptr<Scan>;

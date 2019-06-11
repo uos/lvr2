@@ -139,6 +139,12 @@ KDTreePtr KDTree::create(PointArray points, int n, int maxLeafSize)
     return ret;
 }
 
+KDTreePtr KDTree::create(Vector3d* points, int n, int maxLeafSize)
+{
+    KDTreePtr ret = create_recursive(points, n, maxLeafSize);
+    return ret;
+}
+
 void KDTree::nearestNeighbor(const Vector3d& point, Vector3d*& neighbor, double& distance, double maxDistance) const
 {
     neighbor = nullptr;

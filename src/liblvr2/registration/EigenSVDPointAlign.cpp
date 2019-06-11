@@ -50,8 +50,8 @@ namespace lvr2
 
 double EigenSVDPointAlign::alignPoints(
     const PointPairVector& pairs,
-    const Vector3d centroid_m,
-    const Vector3d centroid_d,
+    const Vector3d& centroid_m,
+    const Vector3d& centroid_d,
     Matrix4d& align)
 {
 /*
@@ -93,8 +93,8 @@ double EigenSVDPointAlign::alignPoints(
     #pragma omp parallel for reduction(+:mid_sum, xpy, xpz, ypz, xy, xz, yz, mz, error)
     for (size_t i = 0; i < pairs.size(); i++)
     {
-        Vector3d mid = (pairs[i].second + pairs[i].first) / 2.0;
-        Vector3d delta = pairs[i].second - pairs[i].first;
+        Vector3d mid = (*pairs[i].second + *pairs[i].first) / 2.0;
+        Vector3d delta = *pairs[i].second - *pairs[i].first;
 
         mid_sum += mid;
 
@@ -163,8 +163,8 @@ double EigenSVDPointAlign::alignPoints(
     // #pragma omp parallel for reduction(+:H)
     for (size_t i = 0; i < pairs.size(); i++)
     {
-        Vector3d m = pairs[i].first - centroid_m;
-        Vector3d d = pairs[i].second - centroid_d;
+        Vector3d m = *pairs[i].first - centroid_m;
+        Vector3d d = *pairs[i].second - centroid_d;
 
         error += (m - d).squaredNorm();
 

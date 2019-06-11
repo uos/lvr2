@@ -45,9 +45,17 @@ class SlamAlign
 {
 
 public:
-    SlamAlign(const std::vector<ScanPtr>& scans, const SlamOptions& options = SlamOptions());
+    SlamAlign(const SlamOptions& options = SlamOptions(), int count = -1);
+
+    void addScan(const ScanPtr& scan);
+    void setScan(int index, const ScanPtr& scan);
 
     void match();
+
+    void writeFrames(int scan, std::string file)
+    {
+        m_scans[scan]->writeFrames(file);
+    }
 
     virtual ~SlamAlign() = default;
 
@@ -62,8 +70,10 @@ public:
 
 protected:
 
-    void applyTransform(ScanPtr scan, const Matrix4d& transform);
+    void reduceScan(const ScanPtr& scan);
 
+    void applyTransform(ScanPtr scan, const Matrix4d& transform);
+    void addFrame(ScanPtr current);
     void checkLoopClose(int last);
     void closeLoop(int first, int last);
 
