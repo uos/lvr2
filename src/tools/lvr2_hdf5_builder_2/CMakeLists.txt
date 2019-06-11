@@ -1,0 +1,32 @@
+#####################################################################################
+# Set source files
+#####################################################################################
+
+set(LVR2_HDF5_SOURCES
+    Main.cpp
+    Options.cpp
+)
+
+#####################################################################################
+# Setup dependencies to external libraries
+#####################################################################################
+
+set(LVR2_HDF5_DEPENDENCIES
+	lvr2_static
+	lvr2las_static
+	lvr2rply_static
+	lvr2slam6d_static
+	${OPENGL_LIBRARIES}
+	${GLUT_LIBRARIES}
+)
+
+
+#####################################################################################
+# Add executable
+#####################################################################################
+
+add_executable( lvr2_hdf5tool_2 ${LVR2_HDF5_SOURCES} )
+target_link_libraries( lvr2_hdf5tool_2 ${LVR2_HDF5_DEPENDENCIES} )
+
+install(TARGETS lvr2_hdf5tool_2
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
