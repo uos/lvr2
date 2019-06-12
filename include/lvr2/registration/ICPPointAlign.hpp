@@ -46,7 +46,7 @@ class ICPPointAlign
 public:
     ICPPointAlign(ScanPtr model, ScanPtr data);
 
-    Matrix4d match();
+    Matrix4f match();
 
     virtual ~ICPPointAlign() = default;
 
@@ -60,7 +60,7 @@ public:
     double  getEpsilon() const;
     bool    getVerbose() const;
 
-    void getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d) const;
+    void getPointPairs(PointPairVector& pairs, Vector3f& centroid_m, Vector3f& centroid_d) const;
 
 protected:
 

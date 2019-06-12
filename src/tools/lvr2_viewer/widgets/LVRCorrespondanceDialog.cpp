@@ -450,6 +450,7 @@ void LVRCorrespondanceDialog::treeItemSelected(QTreeWidgetItem* current, QTreeWi
 boost::optional<Matrix4d> LVRCorrespondanceDialog::getTransformation()
 {
     PointPairVector pairs;
+    std::vector<Vector3d> startPoints, endPoints;
     Vector3d centroid_m = Vector3d::Zero();
     Vector3d centroid_d = Vector3d::Zero();
 
@@ -465,11 +466,14 @@ boost::optional<Matrix4d> LVRCorrespondanceDialog::getTransformation()
                 double* e = item->getEnd();
 
                 // Convert to left handed coordinates!
-                Vector3d start(s[0], s[1], s[2]);
-                Vector3d end(e[0], e[1], e[2]);
+                startPoints.push_back(Vector3d(s[0], s[1], s[2]));
+                endPoints.push_back(Vector3d(e[0], e[1], e[2]));
 
-                centroid_m += start;
-                centroid_d += end;
+                Vector3d* start = &startPoints.back();
+                Vector3d* end = &endPoints.back();
+
+                centroid_m += *start;
+                centroid_d += *end;
 
                 pairs.push_back(make_pair(start, end));
             }

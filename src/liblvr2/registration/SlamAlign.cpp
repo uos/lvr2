@@ -119,7 +119,7 @@ void SlamAlign::match()
         icp.setEpsilon(m_options.epsilon);
         icp.setVerbose(m_options.verbose);
 
-        Matrix4d result = icp.match();
+        Matrix4f result = icp.match();
 
         addFrame(cur);
 
@@ -132,7 +132,7 @@ void SlamAlign::match()
     }
 }
 
-void SlamAlign::applyTransform(ScanPtr scan, const Matrix4d& transform)
+void SlamAlign::applyTransform(ScanPtr scan, const Matrix4f& transform)
 {
     scan->transform(transform);
 
@@ -182,7 +182,7 @@ void SlamAlign::checkLoopClose(int last)
     if (m_options.closeLoopPairs < 0)
     {
         double maxDist = std::pow(m_options.closeLoopDistance, 2);
-        Vector3d pos = cur->getPosition();
+        Vector3f pos = cur->getPosition();
         for (int other = 0; other < last; other++)
         {
             double dist = (m_scans[other]->getPosition() - pos).squaredNorm();
@@ -207,8 +207,8 @@ void SlamAlign::checkLoopClose(int last)
             #pragma omp parallel for reduction(+:count)
             for (size_t i = 0; i < scan->count(); i++)
             {
-                const Vector3d& point = scan->getPoint(i);
-                Vector3d* neighbor = nullptr;
+                const Vector3f& point = scan->getPoint(i);
+                Vector3f* neighbor = nullptr;
                 double dist;
                 tree->nearestNeighbor(point, neighbor, dist, m_options.slamMaxDistance);
                 if (neighbor != nullptr)

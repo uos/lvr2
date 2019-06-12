@@ -912,7 +912,7 @@ LVRModelItem* LVRMainWindow::loadModelItem(QString name)
             Eigen::Vector3d pos, angles;
             matrixToPose(mat, pos, angles);
 
-            angles *= M_PI / 180.0; // radians -> degrees
+            angles *= 180.0 / M_PI; // radians -> degrees
 
             item->setPose(Pose {
                 (float)pos.x(), (float)pos.y(), (float)pos.z(),

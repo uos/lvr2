@@ -45,7 +45,7 @@ public:
     { }
 
 protected:
-    virtual void nnInternal(const Vector3d& point, Vector3d*& neighbor, double& maxDist) const override
+    virtual void nnInternal(const Vector3f& point, Vector3f*& neighbor, double& maxDist) const override
     {
         double val = point(this->axis);
         if (val < this->split)
@@ -76,12 +76,12 @@ private:
 class KDLeaf : public KDTree
 {
 public:
-    KDLeaf(Vector3d* points, int count)
+    KDLeaf(Vector3f* points, int count)
         : points(points), count(count)
     { }
 
 protected:
-    virtual void nnInternal(const Vector3d& point, Vector3d*& neighbor, double& maxDist) const override
+    virtual void nnInternal(const Vector3f& point, Vector3f*& neighbor, double& maxDist) const override
     {
         double maxDistSq = maxDist * maxDist;
         bool changed = false;
@@ -102,11 +102,11 @@ protected:
     }
 
 private:
-    Vector3d* points;
+    Vector3f* points;
     int count;
 };
 
-KDTreePtr create_recursive(Vector3d* points, int n, int maxLeafSize)
+KDTreePtr create_recursive(Vector3f* points, int n, int maxLeafSize)
 {
     if (n <= maxLeafSize)
     {
@@ -139,13 +139,13 @@ KDTreePtr KDTree::create(PointArray points, int n, int maxLeafSize)
     return ret;
 }
 
-KDTreePtr KDTree::create(Vector3d* points, int n, int maxLeafSize)
+KDTreePtr KDTree::create(Vector3f* points, int n, int maxLeafSize)
 {
     KDTreePtr ret = create_recursive(points, n, maxLeafSize);
     return ret;
 }
 
-void KDTree::nearestNeighbor(const Vector3d& point, Vector3d*& neighbor, double& distance, double maxDistance) const
+void KDTree::nearestNeighbor(const Vector3f& point, Vector3f*& neighbor, double& distance, double maxDistance) const
 {
     neighbor = nullptr;
     distance = maxDistance;

@@ -31,20 +31,20 @@ namespace lvr2
 {
 
 
-Eigen::Matrix4d transformRegistration(const Eigen::Matrix4d& transform, const Eigen::Matrix4d& registration)
+Eigen::Matrix4f transformRegistration(const Eigen::Matrix4f& transform, const Eigen::Matrix4f& registration)
 {
-    Eigen::Matrix3d rotation_trans;
-    Eigen::Matrix3d rotation_registration;
+    Eigen::Matrix3f rotation_trans;
+    Eigen::Matrix3f rotation_registration;
 
     rotation_trans = transform.block<3,3>(0, 0);
     rotation_registration = registration.block<3,3>(0, 0);
 
-    Eigen::Matrix3d rotation = rotation_trans * rotation_registration;
+    Eigen::Matrix3f rotation = rotation_trans * rotation_registration;
 
-    Eigen::Matrix4d result = Eigen::Matrix4d::Identity();
+    Eigen::Matrix4f result = Eigen::Matrix4f::Identity();
     result.block<3,3>(0, 0) = rotation;
 
-    Eigen::Vector3d tmp;
+    Eigen::Vector3f tmp;
     tmp = registration.block<3,1>(0,3);
     tmp = rotation_trans * tmp;
 
@@ -554,18 +554,18 @@ void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, con
     }
 }
 
-Eigen::Matrix4d poseToMatrix(const Eigen::Vector3d& position, const Eigen::Vector3d& rotation)
+Eigen::Matrix4f poseToMatrix(const Eigen::Vector3f& position, const Eigen::Vector3f& rotation)
 {
-    Eigen::Matrix4d mat = Eigen::Matrix4d::Identity();
-    mat.block<3, 3>(0, 0) = Eigen::AngleAxisd(rotation.x(), Eigen::Vector3d::UnitX()).matrix()
-                           * Eigen::AngleAxisd(rotation.y(), Eigen::Vector3d::UnitY())
-                           * Eigen::AngleAxisd(rotation.z(), Eigen::Vector3d::UnitZ());
+    Eigen::Matrix4f mat = Eigen::Matrix4f::Identity();
+    mat.block<3, 3>(0, 0) = Eigen::AngleAxisf(rotation.x(), Eigen::Vector3f::UnitX()).matrix()
+                           * Eigen::AngleAxisf(rotation.y(), Eigen::Vector3f::UnitY())
+                           * Eigen::AngleAxisf(rotation.z(), Eigen::Vector3f::UnitZ());
 
     mat.block<3, 1>(0, 3) = position;
     return mat;
 }
 
-void matrixToPose(const Eigen::Matrix4d& mat, Eigen::Vector3d& position, Eigen::Vector3d& rotation)
+void matrixToPose(const Eigen::Matrix4f& mat, Eigen::Vector3f& position, Eigen::Vector3f& rotation)
 {
     // Calculate Y-axis angle
     if (mat(0, 0) > 0.0)

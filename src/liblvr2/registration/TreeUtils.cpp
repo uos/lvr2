@@ -40,7 +40,7 @@ using namespace std;
 namespace lvr2
 {
 
-int splitPoints(Vector3d* points, int n, int axis, double splitValue)
+int splitPoints(Vector3f* points, int n, int axis, double splitValue)
 {
     int l = 0, r = n - 1;
 
@@ -67,9 +67,9 @@ int splitPoints(Vector3d* points, int n, int axis, double splitValue)
     return l;
 }
 
-void octreeSplit(Vector3d* points, int start, int n, const Vector3d& center, int axis, int* starts, int* counts, int& current);
+void octreeSplit(Vector3f* points, int start, int n, const Vector3f& center, int axis, int* starts, int* counts, int& current);
 
-void createOctree(Vector3d* points, int n, bool* flagged, Vector3d min, Vector3d max, double voxelSize, int maxLeafSize)
+void createOctree(Vector3f* points, int n, bool* flagged, Vector3f min, Vector3f max, double voxelSize, int maxLeafSize)
 {
     if (n <= maxLeafSize)
     {
@@ -81,7 +81,7 @@ void createOctree(Vector3d* points, int n, bool* flagged, Vector3d min, Vector3d
     if (boundingBox.difference(boundingBox.longestAxis()) < voxelSize)
     {
         // keep the Point closest to the center
-        Vector3d center = boundingBox.avg();
+        Vector3f center = boundingBox.avg();
         int closest = 0;
         for (int i = 1; i < n; i++)
         {
@@ -101,8 +101,8 @@ void createOctree(Vector3d* points, int n, bool* flagged, Vector3d min, Vector3d
         return;
     }
 
-    Vector3d center = (min + max) / 2.0;
-    Vector3d dist = (max - min) / 2.0;
+    Vector3f center = (min + max) / 2.0;
+    Vector3f dist = (max - min) / 2.0;
 
     int starts[8] = { 0 };
     int counts[8] = { 0 };
@@ -111,8 +111,8 @@ void createOctree(Vector3d* points, int n, bool* flagged, Vector3d min, Vector3d
 
     for (size_t i = 0; i < 8; i++)
     {
-        Vector3d my_min = min;
-        Vector3d my_max = max;
+        Vector3f my_min = min;
+        Vector3f my_max = max;
 
         if ((i >> 2) & 1)
         {
@@ -143,7 +143,7 @@ void createOctree(Vector3d* points, int n, bool* flagged, Vector3d min, Vector3d
     }
 }
 
-void octreeSplit(Vector3d* points, int start, int n, const Vector3d& center, int axis, int* starts, int* counts, int& current)
+void octreeSplit(Vector3f* points, int start, int n, const Vector3f& center, int axis, int* starts, int* counts, int& current)
 {
     int split = splitPoints(points + start, n, axis, center[axis]);
 
@@ -165,7 +165,7 @@ void octreeSplit(Vector3d* points, int start, int n, const Vector3d& center, int
     }
 }
 
-int octreeReduce(Vector3d* points, int n, double voxelSize, int maxLeafSize)
+int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize)
 {
     bool* flagged = new bool[n];
     for (int i = 0; i < n; i++)
@@ -211,7 +211,7 @@ AABB::AABB()
     m_count = 0;
 }
 
-AABB::AABB(const Vector3d* points, size_t count)
+AABB::AABB(const Vector3f* points, size_t count)
     : AABB()
 {
     for (size_t i = 0; i < count; i++)
@@ -220,7 +220,7 @@ AABB::AABB(const Vector3d* points, size_t count)
     }
 }
 
-void AABB::addPoint(const Vector3d& point)
+void AABB::addPoint(const Vector3f& point)
 {
     for (int axis = 0; axis < 3; axis++)
     {

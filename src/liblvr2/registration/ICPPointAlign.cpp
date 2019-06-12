@@ -62,11 +62,11 @@ ICPPointAlign::ICPPointAlign(ScanPtr model, ScanPtr data) :
     m_searchTree = KDTree::create(model->points(), model->count());
     }
 
-Matrix4d ICPPointAlign::match()
+Matrix4f ICPPointAlign::match()
 {
     if (m_maxIterations == 0)
     {
-        return Matrix4d();
+        return Matrix4f();
     }
 
     auto start_time = steady_clock::now();
@@ -77,9 +77,9 @@ Matrix4d ICPPointAlign::match()
     EigenSVDPointAlign align;
     int iteration;
 
-    Vector3d centroid_m = Vector3d::Zero();
-    Vector3d centroid_d = Vector3d::Zero();
-    Matrix4d transform;
+    Vector3f centroid_m = Vector3f::Zero();
+    Vector3f centroid_d = Vector3f::Zero();
+    Matrix4f transform;
 
     PointPairVector pairs;
     pairs.reserve(m_dataCloud->count());
@@ -91,9 +91,9 @@ Matrix4d ICPPointAlign::match()
         prev_ret = ret;
 
         // Get point pairs
-        centroid_m = Vector3d::Zero();
-        centroid_d = Vector3d::Zero();
-        transform = Matrix4d::Identity();
+        centroid_m = Vector3f::Zero();
+        centroid_d = Vector3f::Zero();
+        transform = Matrix4f::Identity();
         pairs.clear();
 
         getPointPairs(pairs, centroid_m, centroid_d);
@@ -130,25 +130,25 @@ Matrix4d ICPPointAlign::match()
     return m_dataCloud->getPose();
 }
 
-void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, Vector3d& centroid_d) const
+void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3f& centroid_m, Vector3f& centroid_d) const
 {
     size_t n = m_dataCloud->count();
-    Vector3d* dataPoints = m_dataCloud->points();
+    Vector3f* dataPoints = m_dataCloud->points();
 
-    centroid_m = Vector3d::Zero();
-    centroid_d = Vector3d::Zero();
+    centroid_m = Vector3f::Zero();
+    centroid_d = Vector3f::Zero();
     pairs.clear();
 
     size_t numThreads = omp_get_max_threads();
     size_t pairsPerThread = ceil((double)n / numThreads);
     PointPairVector privPairs[numThreads];
-    Vector3d privCentroidM[numThreads];
-    Vector3d privCentroidD[numThreads];
+    Vector3f privCentroidM[numThreads];
+    Vector3f privCentroidD[numThreads];
     for (size_t i = 0; i < numThreads; i++)
     {
         privPairs[i].reserve(pairsPerThread);
-        privCentroidM[i] = Vector3d::Zero();
-        privCentroidD[i] = Vector3d::Zero();
+        privCentroidM[i] = Vector3f::Zero();
+        privCentroidD[i] = Vector3f::Zero();
     }
 
     #pragma omp parallel num_threads(numThreads)
@@ -156,17 +156,17 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3d& centroid_m, 
         size_t thread = omp_get_thread_num();
 
         PointPairVector& myPairs = privPairs[thread];
-        Vector3d& myCentroidM = privCentroidM[thread];
-        Vector3d& myCentroidD = privCentroidD[thread];
+        Vector3f& myCentroidM = privCentroidM[thread];
+        Vector3f& myCentroidD = privCentroidD[thread];
 
         size_t start = thread * pairsPerThread;
         size_t end = min((thread + 1) * pairsPerThread, n);
 
         for (size_t i = start; i < end; i++)
         {
-            const Vector3d& point = dataPoints[i];
+            const Vector3f& point = dataPoints[i];
 
-            Vector3d* neighbor;
+            Vector3f* neighbor;
             double distance;
 
             m_searchTree->nearestNeighbor(point, neighbor, distance, m_maxDistanceMatch);

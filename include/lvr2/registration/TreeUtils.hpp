@@ -36,8 +36,8 @@
 #define TREEUTILS_HPP_
 
 #include <Eigen/Dense>
-using Eigen::Matrix4d;
-using Eigen::Vector3d;
+using Eigen::Matrix4f;
+using Eigen::Vector3f;
 
 namespace lvr2
 {
@@ -54,7 +54,7 @@ namespace lvr2
  *
  * @returns The number of smaller elements. points + this value gives the start of the greater elements
  */
-int splitPoints(Vector3d* points, int n, int axis, double splitValue);
+int splitPoints(Vector3f* points, int n, int axis, double splitValue);
 
 /**
  * @brief Reduces a Point Cloud using an Octree with a minimum Voxel size
@@ -65,7 +65,7 @@ int splitPoints(Vector3d* points, int n, int axis, double splitValue);
  *
  * @returns the new number of Points in the Point Cloud
  */
-int octreeReduce(Vector3d* points, int n, double voxelSize, int maxLeafSize = 10);
+int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize = 10);
 
 
 /**
@@ -73,29 +73,29 @@ int octreeReduce(Vector3d* points, int n, double voxelSize, int maxLeafSize = 10
  */
 class AABB
 {
-    Vector3d m_min;
-    Vector3d m_max;
-    Vector3d m_sum;
+    Vector3f m_min;
+    Vector3f m_max;
+    Vector3f m_sum;
     size_t m_count;
 
 public:
     AABB();
-    AABB(const Vector3d* points, size_t count);
+    AABB(const Vector3f* points, size_t count);
 
     /// Returns the "lower left" Corner of the Bounding Box, as in the smallest x, y, z of the Point Cloud.
-    const Vector3d& min() const
+    const Vector3f& min() const
     {
         return m_min;
     }
 
     /// Returns the "upper right" Corner of the Bounding Box, as in the largest x, y, z of the Point Cloud.
-    const Vector3d& max() const
+    const Vector3f& max() const
     {
         return m_max;
     }
 
     /// Returns the average of all the Points in the Point Cloud.
-    Vector3d avg() const
+    Vector3f avg() const
     {
         return m_sum / m_count;
     }
@@ -107,7 +107,7 @@ public:
     }
 
     /// adds a Point to the Point Cloud
-    void addPoint(const Vector3d& point);
+    void addPoint(const Vector3f& point);
 
     /// Returns the smallest value of an axis of the Point Cloud.
     double min(int axis) const
