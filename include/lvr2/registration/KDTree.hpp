@@ -44,7 +44,7 @@
 namespace lvr2
 {
 
-using PointArray = boost::shared_array<Vector3d>;
+using PointArray = boost::shared_array<Vector3f>;
 
 class KDTree
 {
@@ -68,7 +68,7 @@ public:
      * @param n             The number of points in 'points'
      * @param maxLeafSize   The maximum number of points to use for a Leaf in the Tree
      */
-    static std::shared_ptr<KDTree> create(Vector3d* points, int n, int maxLeafSize = 10);
+    static std::shared_ptr<KDTree> create(Vector3f* points, int n, int maxLeafSize = 10);
 
     /**
      * @brief Finds the nearest neighbor of 'point' that is within 'maxDistance' (defaults to infinity).
@@ -81,8 +81,8 @@ public:
      *                      significantly speeds up the search.
      */
     void nearestNeighbor(
-        const Vector3d& point,
-        Vector3d*& neighbor,
+        const Vector3f& point,
+        Vector3f*& neighbor,
         double& distance,
         double maxDistance = std::numeric_limits<double>::infinity()
     ) const;
@@ -90,7 +90,7 @@ public:
     virtual ~KDTree() = default;
 
 protected:
-    virtual void nnInternal(const Vector3d& point, Vector3d*& neighbor, double& maxDist) const = 0;
+    virtual void nnInternal(const Vector3f& point, Vector3f*& neighbor, double& maxDist) const = 0;
 
     friend class KDNode;
 
