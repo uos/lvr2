@@ -33,6 +33,8 @@
  *  @author Malte Hillmann
  */
 #include <lvr2/registration/KDTree.hpp>
+#include <omp.h>
+#include <future>
 
 namespace lvr2
 {
@@ -106,7 +108,7 @@ private:
     int count;
 };
 
-KDTreePtr create_recursive(Vector3f* points, int n, int maxLeafSize)
+KDTreePtr create_recursive(Vector3f* points, int n, int maxLeafSize, int level)
 {
     if (n <= maxLeafSize)
     {
@@ -126,22 +128,41 @@ KDTreePtr create_recursive(Vector3f* points, int n, int maxLeafSize)
 
     int l = splitPoints(points, n, splitAxis, splitValue);
 
-    KDTreePtr lesser = create_recursive(points, l, maxLeafSize);
-    KDTreePtr greater = create_recursive(points + l, n - l, maxLeafSize);
+    // every step splits into 2 threads. ceil => 6 Core CPUs get 8 threads
+    int max_level = std::ceil(std::log2(omp_get_max_threads()));
+
+    KDTreePtr lesser, greater;
+
+    if (level < max_level)
+    {
+        auto lesser_async = std::async([&]()
+        {
+            return create_recursive(points    , l    , maxLeafSize, level + 1);
+        });
+
+        greater =  create_recursive(points + l, n - l, maxLeafSize, level + 1);
+
+        lesser = lesser_async.get();
+    }
+    else
+    {
+        lesser =   create_recursive(points    , l    , maxLeafSize, level + 1);
+        greater =  create_recursive(points + l, n - l, maxLeafSize, level + 1);
+    }
 
     return KDTreePtr(new KDNode(splitAxis, splitValue, lesser, greater));
 }
 
 KDTreePtr KDTree::create(PointArray points, int n, int maxLeafSize)
 {
-    KDTreePtr ret = create_recursive(points.get(), n, maxLeafSize);
+    KDTreePtr ret = create_recursive(points.get(), n, maxLeafSize, 0);
     ret->points = points;
     return ret;
 }
 
 KDTreePtr KDTree::create(Vector3f* points, int n, int maxLeafSize)
 {
-    KDTreePtr ret = create_recursive(points, n, maxLeafSize);
+    KDTreePtr ret = create_recursive(points, n, maxLeafSize, 0);
     return ret;
 }
 

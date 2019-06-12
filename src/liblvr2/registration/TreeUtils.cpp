@@ -35,6 +35,9 @@
 
 #include <limits>
 #include <iostream>
+#include <vector>
+#include <future>
+#include <omp.h>
 using namespace std;
 
 namespace lvr2
@@ -69,7 +72,7 @@ int splitPoints(Vector3f* points, int n, int axis, double splitValue)
 
 void octreeSplit(Vector3f* points, int start, int n, const Vector3f& center, int axis, int* starts, int* counts, int& current);
 
-void createOctree(Vector3f* points, int n, bool* flagged, Vector3f min, Vector3f max, double voxelSize, int maxLeafSize)
+void createOctree(Vector3f* points, int n, bool* flagged, Vector3f min, Vector3f max, double voxelSize, int maxLeafSize, int threads_left)
 {
     if (n <= maxLeafSize)
     {
@@ -109,8 +112,35 @@ void createOctree(Vector3f* points, int n, bool* flagged, Vector3f min, Vector3f
     int current = 0;
     octreeSplit(points, 0, n, center, 0, starts, counts, current);
 
-    for (size_t i = 0; i < 8; i++)
+    int next_threads_left = threads_left;
+    if (threads_left > 0)
     {
+        int thread_count = 0;
+        for (int i = 0; i < 8; i++)
+        {
+            if (counts[i] > maxLeafSize * 64) // only count significant branches
+            {
+                thread_count++;
+            }
+        }
+
+        if (thread_count == 0)
+        {
+            return;
+        }
+
+        next_threads_left = std::max(0, threads_left - thread_count);
+    }
+
+    vector<future<void>> futures;
+
+    for (int i = 0; i < 8; i++)
+    {
+        if (counts[i] <= maxLeafSize)
+        {
+            continue;
+        }
+
         Vector3f my_min = min;
         Vector3f my_max = max;
 
@@ -139,7 +169,19 @@ void createOctree(Vector3f* points, int n, bool* flagged, Vector3f min, Vector3f
             my_max.z() = center.z();
         }
 
-        createOctree(points + starts[i], counts[i], flagged + starts[i], my_min, my_max, voxelSize, maxLeafSize);
+        if (threads_left > 0)
+        {
+            futures.push_back(async(createOctree, points + starts[i], counts[i], flagged + starts[i], my_min, my_max, voxelSize, maxLeafSize, next_threads_left));
+        }
+        else
+        {
+            createOctree(points + starts[i], counts[i], flagged + starts[i], my_min, my_max, voxelSize, maxLeafSize, 0);
+        }
+    }
+
+    for (future<void>& future : futures)
+    {
+        future.get();
     }
 }
 
@@ -175,7 +217,7 @@ int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize)
 
     AABB boundingBox(points, n);
 
-    createOctree(points, n, flagged, boundingBox.min(), boundingBox.max(), voxelSize, maxLeafSize);
+    createOctree(points, n, flagged, boundingBox.min(), boundingBox.max(), voxelSize, maxLeafSize, omp_get_max_threads() * 2);
 
     // swap_remove all flagged elements
     int i = 0;
