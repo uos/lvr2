@@ -268,9 +268,9 @@ void HDF5IO::write_base_structure()
     raw_data_group.createDataSet<std::string>("changed", HighFive::DataSpace::From(time)).write(time);
 
     // Create empty reference frame
-    vector<float> frame = Matrix4<BaseVector<float>>().getVector();
-    std::cout << frame.size() << std::endl;
-    raw_data_group.createDataSet<float>("position", HighFive::DataSpace::From(frame)).write(frame);
+    //vector<float> frame = Matrix4<BaseVector<float>>().getVector();
+    //std::cout << frame.size() << std::endl;
+    //raw_data_group.createDataSet<float>("position", HighFive::DataSpace::From(frame)).write(frame);
 
 }
 
