@@ -1,3 +1,7 @@
+#ifndef PLUTO_METADATA_IO_HPP_
+#define PLUTO_METADATA_IO_HPP_
+
+
 #include <memory>
 #include <chrono>
 #include <vector>
@@ -6,6 +10,7 @@
 // boost
 #include <boost/filesystem.hpp>
 
+#include "lvr2/io/DataStruct.hpp"
 #include "lvr2/io/ScanData.hpp"
 
 //struct ScanMetaData
@@ -16,18 +21,18 @@
 //    double m_scanAngles[6]; // TODO Document
 //};
 //
-struct SpectralMetaData
-{
-    size_t m_numImages;
-    SpectralMetaData(size_t numImages) : m_numImages(numImages)
-    {
-        m_timeStamps.reserve(m_numImages);
-        m_angles.reserve(m_numImages);
-    }
-
-    std::vector<std::chrono::system_clock::time_point> m_timeStamps;
-    std::vector<double> m_angles;
-};
+//struct SpectralMetaData
+//{
+//    size_t m_numImages;
+//    SpectralMetaData(size_t numImages) : m_numImages(numImages)
+//    {
+//        m_timeStamps.reserve(m_numImages);
+//        m_angles.reserve(m_numImages);
+//    }
+//
+//    std::vector<std::chrono::system_clock::time_point> m_timeStamps;
+//    std::vector<double> m_angles;
+//};
 
 
 namespace lvr2{
@@ -43,9 +48,11 @@ class PlutoMetaDataIO{
        *    
        * @return 
        */
-    static int readScanMetaData(boost::filesystem::path& fn, ScanData& data);
+    static void readScanMetaData(const boost::filesystem::path& fn, ScanData& data);
 
-    static int readSpectralMetaData(boost::filesystem::path& fn, std::shared_ptr<SpectralMetaData>& data);
+    static size_t readSpectralMetaData(const boost::filesystem::path& fn, floatArr& angles);
 };
 
 } // lvr2
+
+#endif
