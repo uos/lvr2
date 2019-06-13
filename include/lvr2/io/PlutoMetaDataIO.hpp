@@ -1,17 +1,21 @@
 #include <memory>
-
-//#include <ctime>
 #include <chrono>
 #include <vector>
 
-struct ScanMetaData
-{
-    std::chrono::system_clock::time_point m_start;
-    std::chrono::system_clock::time_point m_end;
-    double m_pose[6];
-    double m_scanAngles[6]; // TODO Document
-};
 
+// boost
+#include <boost/filesystem.hpp>
+
+#include "lvr2/io/ScanData.hpp"
+
+//struct ScanMetaData
+//{
+//    std::chrono::system_clock::time_point m_start;
+//    std::chrono::system_clock::time_point m_end;
+//    double m_pose[6];
+//    double m_scanAngles[6]; // TODO Document
+//};
+//
 struct SpectralMetaData
 {
     size_t m_numImages;
@@ -29,7 +33,18 @@ struct SpectralMetaData
 namespace lvr2{
 class PlutoMetaDataIO{
   public:
-    static int readScanMetaData(boost::filesystem::path& fn, std::shared_ptr<ScanMetaData>& data);
+      /**
+       * @brief 
+       *        parse Pose in m_poseEstimation 4x4 Matrix.
+       *        parse angles in fov?
+       *
+       * @param fn
+       * @param data
+       *    
+       * @return 
+       */
+    static int readScanMetaData(boost::filesystem::path& fn, ScanData& data);
+
     static int readSpectralMetaData(boost::filesystem::path& fn, std::shared_ptr<SpectralMetaData>& data);
 };
 
