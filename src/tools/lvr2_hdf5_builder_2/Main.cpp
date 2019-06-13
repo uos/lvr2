@@ -200,7 +200,7 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     return true;
 }
 
-bool scanIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
+bool scanIO(const boost::filesystem::path& p,  int number, const boost::filesystem::path& yaml, HDF5IO& hdf)
 {
         std::cout << "read scan " << p << std::endl;
         ModelPtr model = ModelFactory::readModel(p.string());
@@ -219,8 +219,9 @@ bool scanIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
         }
 
         // TODO parse yaml
-
+        PlutoMetaDataIO::readScanMetaData(yaml, scan);
         hdf.addRawScanData(number, scan);
+
         // needed?
         return true;
 }   
@@ -300,6 +301,6 @@ int main(int argc, char** argv)
            std::cout << "No spectral information in: " << p << std::endl;
            exit(-1);
         }
-        scanIO(ply, count, hdf);
+        scanIO(ply, count, p/std::string("scan.yaml"), hdf);
     }
 }
