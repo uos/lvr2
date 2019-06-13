@@ -2,11 +2,15 @@
 #include <iterator>
 
 #include <boost/filesystem.hpp>
+#include <boost/lambda/bind.hpp>
 
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/qi_lit.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 
 #include "lvr2/io/HDF5IO.hpp"
@@ -18,13 +22,14 @@
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/PointBuffer.hpp"
 
+#include "lvr2/io/PlutoMetaDataIO.hpp"
+
 //const hdf5tool2::Options* options;
 namespace qi = boost::spirit::qi;
 using namespace lvr2;
 template <typename Iterator>
-bool parse_filename(Iterator first, Iterator last, int& i)
+bool parse_scan_filename(Iterator first, Iterator last, int& i)
 {
-
     using qi::lit;
     using qi::uint_parser;
     using qi::parse;
@@ -44,6 +49,31 @@ bool parse_filename(Iterator first, Iterator last, int& i)
     return r;
 }
 
+namespace qi = boost::spirit::qi;
+using namespace lvr2;
+template <typename Iterator>
+bool parse_png_filename(Iterator first, Iterator last, int& i)
+{
+
+    using qi::lit;
+    using qi::uint_parser;
+    using qi::parse;
+    using boost::spirit::qi::_1;
+    using boost::phoenix::ref;
+
+    uint_parser<unsigned, 10, 3, 3> uint_3_d;
+
+    bool r = parse(
+            first,                          /*< start iterator >*/
+            last,                           /*< end iterator >*/
+            (uint_3_d[ref(i) = _1])   /*< the parser >*/
+            );
+
+    if (first != last) // fail if we did not get a full match
+        return false;
+    return r;
+}
+
 bool sortScans(boost::filesystem::path firstScan, boost::filesystem::path secScan)
 {
     std::string firstStem = firstScan.stem().string();
@@ -52,8 +82,8 @@ bool sortScans(boost::filesystem::path firstScan, boost::filesystem::path secSca
     int i = 0;
     int j = 0;
 
-    bool first = parse_filename(firstStem.begin(), firstStem.end(), i);
-    bool sec = parse_filename(secStem.begin(), secStem.end(), j);
+    bool first = parse_scan_filename(firstStem.begin(), firstStem.end(), i);
+    bool sec   = parse_scan_filename(secStem.begin(), secStem.end(), j);
 
     if(first && sec)
     {
@@ -73,7 +103,126 @@ bool sortScans(boost::filesystem::path firstScan, boost::filesystem::path secSca
     }
 }
 
+bool sortPanoramas(boost::filesystem::path firstScan, boost::filesystem::path secScan)
+{
+    std::string firstStem = firstScan.stem().string();
+    std::string secStem   = secScan.stem().string();
 
+    int i = 0;
+    int j = 0;
+
+    bool first = parse_png_filename(firstStem.begin(), firstStem.end(), i);
+    bool sec   = parse_png_filename(secStem.begin(), secStem.end(), j);
+
+    if(first && sec)
+    {
+        return (i < j);
+    }
+    else
+    {
+        // this causes non valid files being at the beginning of the vector.
+        if(sec)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+}
+
+bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
+{
+    std::vector<boost::filesystem::path> spectral;
+    char group[256];
+    sprintf(group, "/raw/spectral/position_%05d", number);
+    floatArr angles;
+    std::cout << p << std::endl;
+   
+    size_t count = 0;
+    size_t size  = 0;
+    // count files and get all png pathes.
+    for(boost::filesystem::directory_iterator it(p); it != boost::filesystem::directory_iterator(); ++it)
+    {
+        if(it->path().extension() == ".yaml")
+        {
+            size = PlutoMetaDataIO::readSpectralMetaData(it->path(), angles);
+        }
+
+        if(it->path().extension() == ".jpg")
+        {
+            spectral.push_back(*it);
+            count++;
+        }
+    }
+    if(size != count)
+    {
+        std::cout << "Incosistent" << std::endl;
+        exit(-1);
+    }
+    std::sort(spectral.begin(), spectral.end(), sortPanoramas);
+    std::cout << "sorted " << std::endl;
+
+    // we assume that every frame has the same resolution
+    // TODO change dimensions when writing
+    cv::Mat img = cv::imread(spectral[0].string(), CV_LOAD_IMAGE_GRAYSCALE);
+    ucharArr data(new unsigned char[count * img.cols * img.rows]);
+    std::memcpy(data.get() + (img.rows * img.cols),
+                img.data,
+                img.rows * img.cols * sizeof(unsigned char));
+    
+    std::vector<size_t> dim = {count, 
+                               static_cast<size_t>(img.rows),
+                               static_cast<size_t>(img.cols)};
+
+    for(size_t i = 1; i < spectral.size(); ++ i)
+    {   
+
+        cv::Mat img = cv::imread(spectral[i].string(), CV_LOAD_IMAGE_GRAYSCALE);
+        std::memcpy(data.get() + i * (img.rows * img.cols),
+                    img.data,
+                    img.rows * img.cols * sizeof(unsigned char));
+    }
+    
+    std::vector<hsize_t> chunks = {50, 50, 50};
+    hdf.addArray(group, "spectral", dim, chunks, data);
+    std::cout << "wrote spectral" << std::endl;
+    
+    hdf.addArray(group, "angles", size, angles);
+    std::cout << "wrote angles" << std::endl;
+
+
+    // TODO panorama?
+
+    // check if correct number of pngs
+    return true;
+}
+
+bool scanIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
+{
+        std::cout << "read scan " << p << std::endl;
+        ModelPtr model = ModelFactory::readModel(p.string());
+        ScanData scan;
+
+        
+        PointBufferPtr pc = model->m_pointCloud;
+        scan.m_points = pc;
+        floatArr points = pc->getPointArray();
+        for(int i = 0; i < pc->numPoints(); i++)
+        {
+            scan.m_boundingBox.expand(BaseVector<float>(
+                                      points[3 * i],
+                                      points[3 * i + 1],
+                                      points[3 * i + 2]));
+        }
+
+        // TODO parse yaml
+
+        hdf.addRawScanData(number, scan);
+        // needed?
+        return true;
+}   
 
 
 int main(int argc, char** argv)
@@ -112,19 +261,16 @@ int main(int argc, char** argv)
     std::vector<boost::filesystem::path> scans;
     for(boost::filesystem::directory_iterator it(inputDir); it != boost::filesystem::directory_iterator(); ++it)
     {
-//        std::cout << *it << std::endl;
         scans.push_back(*it);
-    
     }
+
     std::sort(scans.begin(), scans.end(), sortScans);
     int count = 0;
     for(auto p: scans)
     {
         char buffer[64];
-        ScanData scan;
-
         boost::filesystem::path ply;
-        boost::filesystem::path spectral;
+
         bool ply_exists = false;
         bool spectral_exists = false;
         for(boost::filesystem::directory_iterator it(p); it != boost::filesystem::directory_iterator(); ++it)
@@ -132,20 +278,7 @@ int main(int argc, char** argv)
             if(boost::filesystem::is_directory((*it).path()) &&
                (*it).path().stem() == "spectral")
             {
-                for(boost::filesystem::directory_iterator it2((*it).path()); it2 != boost::filesystem::directory_iterator(); ++it2)
-                {
-                    std::cout << *it2 << std::endl;
-                    if((*it2).path().extension() == ".png")
-                    {
-                        spectral = (*it2).path();
-                        spectral_exists = true;
-                    }
-                    else
-                    {
-                        std::cout << "No spectral information in: " << p << std::endl;
-                    }
-                }
-       
+                spectral_exists = spectralIO(it->path(), count, hdf);
             }
                     
             if((*it).path().extension() == ".ply")
@@ -160,29 +293,12 @@ int main(int argc, char** argv)
             std::cout << "aaaaaaa" << std::endl;
             exit(-1);
         }
-            
 
         if(!spectral_exists)
         {
            std::cout << "No spectral information in: " << p << std::endl;
            exit(-1);
         }
-        
-        ModelPtr model = ModelFactory::readModel(ply.string());
-        
-        PointBufferPtr pc = model->m_pointCloud;
-        // TODO bb
-        scan.m_points = pc;
-        floatArr points = pc->getPointArray();
-        for(int i = 0; i < pc->numPoints(); i++)
-        {
-            scan.m_boundingBox.expand(BaseVector<float>(
-                                      points[3 * i],
-                                      points[3 * i + 1],
-                                      points[3 * i + 2]));
-        }
-
-        hdf.addRawScanData(count, scan);
-
+        scanIO(ply, count, hdf);
     }
 }

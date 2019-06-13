@@ -350,6 +350,12 @@ find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 include_directories(${HDF5_INCLUDE_DIRS})
 link_directories(${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 
+# yaml-cpp
+find_package(yaml-cpp) 
+# no found variable 
+include_directories(${YAML_CPP_INCLUDE_DIR})
+#link_directories(${YAML_CPP_LIBRARIES})
+
 # SLAM6D stuff
 add_subdirectory(ext/slam6d)
 include_directories( ${SLAM6D_INCLUDE_DIR} )
@@ -479,6 +485,7 @@ add_subdirectory(src/tools/lvr2_transform)
 # doesnt compile
 # add_subdirectory(src/tools/lvr2_kaboom)
 add_subdirectory(src/tools/lvr2_octree_test)
+add_subdirectory(src/tools/lvr2_yaml_test)
 add_subdirectory(src/tools/lvr2_image_normals)
 add_subdirectory(src/tools/lvr2_plymerger)
 add_subdirectory(src/tools/lvr2_hdf5_builder)

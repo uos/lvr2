@@ -51,6 +51,7 @@ set(LVR2_SOURCES
     io/ScanprojectIO.cpp
     io/ScanData.cpp
     io/ScanDataManager.cpp
+    #io/PlutoMetaDataIO.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
@@ -144,6 +145,8 @@ if(RiVLib_FOUND)
     set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${RiVLib_SCANIFC_LIBRARY})
 endif()
 
+
+
 #####################################################################################
 # OpenCL
 #####################################################################################
@@ -153,6 +156,15 @@ if(OPENCL_FOUND)
     set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${OpenCL_LIBRARIES})
 endif()
 
+#####################################################################################
+# yaml-cpp 
+#####################################################################################
+# no found variable
+if(YAML_CPP_LIBRARIES)
+    message("with yaml-cpp")
+    set(LVR2_SOURCES ${LVR2_SOURCES} io/PlutoMetaDataIO.cpp)
+    set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${YAML_CPP_LIBRARIES})
+endif()
 #####################################################################################
 # CUDA
 #####################################################################################
@@ -223,7 +235,7 @@ if( NOT MSVC )
   target_link_libraries(lvr2 ${LVR2_INTERNAL_DEPENDENCIES_SHARED} ${LVR2_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 
 install(TARGETS lvr2_static lvr2
-  EXPORT lvrTargets
+  EXPORT lvr2Targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )

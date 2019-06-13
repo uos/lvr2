@@ -1139,6 +1139,7 @@ else ()
 
   # Add install rules for lib and executable targets.
   install(TARGETS dracodec dracoenc draco
+          EXPORT lvr2Targets
           DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
   if (BUILD_UNITY_PLUGIN)
     install(TARGETS dracodec_unity

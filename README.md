@@ -24,7 +24,8 @@ sudo apt-get install build-essential \
      openmpi-bin opencl-c-headers ocl-icd-opencl-dev \
      libvtk7-dev libvtk-qt-dev libboost-all-dev \
      freeglut3-dev libhdf5-dev qtbase5-dev \
-     qt5-default libqt5opengl5-dev liblz4-dev libopencv-dev
+     qt5-default libqt5opengl5-dev liblz4-dev libopencv-dev \
+     libyaml-cpp-dev
 ```
 
 
