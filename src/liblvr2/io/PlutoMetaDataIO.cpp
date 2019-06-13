@@ -20,4 +20,11 @@ size_t PlutoMetaDataIO::readSpectralMetaData(const boost::filesystem::path& fn, 
 
     return size;
 }
+
+void PlutoMetaDataIO::readScanMetaData(const boost::filesystem::path& fn, ScanData& scan)
+{
+    // TODO parse.
+    return;
+}
+
 } // namespace lvr2
