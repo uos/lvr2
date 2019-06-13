@@ -161,6 +161,7 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
         std::cout << "Incosistent" << std::endl;
         exit(-1);
     }
+
     std::sort(spectral.begin(), spectral.end(), sortPanoramas);
     std::cout << "sorted " << std::endl;
 
@@ -192,7 +193,7 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     hdf.addArray(group, "angles", size, angles);
     std::cout << "wrote angles" << std::endl;
 
-
+    // TODO write aperture. 47.5 deg oder so
     // TODO panorama?
 
     // check if correct number of pngs
