@@ -1,11 +1,9 @@
 #ifndef PLUTO_METADATA_IO_HPP_
 #define PLUTO_METADATA_IO_HPP_
 
-
 #include <memory>
 #include <chrono>
 #include <vector>
-
 
 // boost
 #include <boost/filesystem.hpp>
@@ -34,25 +32,31 @@
 //    std::vector<double> m_angles;
 //};
 
+namespace lvr2
+{
+class PlutoMetaDataIO
+{
+public:
+  /**
+   * @brief parse metadata of the laserscan
+   *
+   * @param fn path of the yaml file
+   * @param data ScanData Object
+   * @return size_t
+   */
+  static void readScanMetaData(const boost::filesystem::path &fn, ScanData &data);
 
-namespace lvr2{
-class PlutoMetaDataIO{
-  public:
-      /**
-       * @brief 
-       *        parse Pose in m_poseEstimation 4x4 Matrix.
-       *        parse angles in fov?
-       *
-       * @param fn
-       * @param data
-       *    
-       * @return 
-       */
-    static void readScanMetaData(const boost::filesystem::path& fn, ScanData& data);
-
-    static size_t readSpectralMetaData(const boost::filesystem::path& fn, floatArr& angles);
+  /**
+   * @brief parse Pose in m_poseEstimation 4x4 Matrix.
+   *
+   * @param fn path of the yaml file
+   * @param angles Angles Object
+   *
+   * @return
+   */
+  static size_t readSpectralMetaData(const boost::filesystem::path &fn, floatArr &angles);
 };
 
-} // lvr2
+} // namespace lvr2
 
 #endif
