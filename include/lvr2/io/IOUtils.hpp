@@ -264,6 +264,6 @@ Eigen::Matrix4d inverseTransform(const Eigen::Matrix4d& transform);
 
 } // namespace lvr2
 
-// #include "IOUtils.tcc"
+#include "IOUtils.tcc"
 
 #endif // IOUTILS_HPP
