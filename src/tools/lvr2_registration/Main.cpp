@@ -92,32 +92,32 @@ int main(int argc, char** argv)
         ("icpIterations,i", value<int>(&options.icpIterations)->default_value(options.icpIterations),
          "Number of iterations for ICP")
 
-        ("icpMaxDistance,d", value<double>(&options.icpMaxDistance)->default_value(options.icpMaxDistance),
+        ("icpMaxDistance,d", value<float>(&options.icpMaxDistance)->default_value(options.icpMaxDistance),
          "The maximum distance between two points during ICP")
 
         ("slamIterations,I", value<int>(&options.slamIterations)->default_value(options.slamIterations),
          "Number of iterations for SLAM\n"
          ">>Only works if either -L or -G are specified<<")
 
-        ("slamMaxDistance,D", value<double>(&options.slamMaxDistance)->default_value(options.slamMaxDistance),
+        ("slamMaxDistance,D", value<float>(&options.slamMaxDistance)->default_value(options.slamMaxDistance),
          "The maximum distance between two points during SLAM\n"
          ">>Only works if either -L or -G are specified<<")
 
-        ("reduction,r", value<double>(&options.reduction)->default_value(options.reduction),
+        ("reduction,r", value<float>(&options.reduction)->default_value(options.reduction),
          "The Voxel size for Voxel based reduction. -1 for no reduction")
 
-        ("min,m", value<double>(&options.minDistance)->default_value(options.minDistance),
+        ("min,m", value<float>(&options.minDistance)->default_value(options.minDistance),
          "Ignore all Points closer than <value> to the origin of the scan.\n"
          "-1 (default): No filter")
 
-        ("max,M", value<double>(&options.maxDistance)->default_value(options.maxDistance),
+        ("max,M", value<float>(&options.maxDistance)->default_value(options.maxDistance),
          "Ignore all Points farther away than <value> from the origin of the scan.\n"
          "-1 (default): No filter")
 
         ("epsilon", value<double>(&options.epsilon)->default_value(options.epsilon),
          "The desired epsilon difference between two error values")
 
-        ("closeLoopDistance,c", value<double>(&options.closeLoopDistance)->default_value(options.closeLoopDistance),
+        ("closeLoopDistance,c", value<float>(&options.closeLoopDistance)->default_value(options.closeLoopDistance),
          "The maximum distance between two poses to consider a closed loop\n"
          ">>Only works if either -L or -G are specified<<")
 
@@ -191,8 +191,8 @@ int main(int argc, char** argv)
         // TODO: map formats
         if (format == "uos")
         {
-        format = "scan%03i.3d";
-    }
+            format = "scan%03i.3d";
+        }
         else if (format == "riegl_txt")
         {
             format = "scan%03i.txt";

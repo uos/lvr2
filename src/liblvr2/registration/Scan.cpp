@@ -75,23 +75,23 @@ void Scan::transform(const Matrix4f& transform, bool writeFrame)
     }
 }
 
-void Scan::reduce(double voxelSize)
+void Scan::reduce(float voxelSize)
 {
     size_t count = octreeReduce(m_points.data(), m_points.size(), voxelSize);
     m_points.resize(count);
     m_points.shrink_to_fit();
 }
 
-void Scan::setMinDistance(double minDistance)
+void Scan::setMinDistance(float minDistance)
 {
-    double sqDist = minDistance * minDistance;
+    float sqDist = minDistance * minDistance;
 
     size_t i = 0;
     while (i < count())
     {
         if (m_points[i].squaredNorm() <= sqDist)
         {
-            std::iter_swap(m_points.begin() + i, m_points.end() - 1);
+            m_points[i] = m_points.back();
             m_points.pop_back();
         }
         else
@@ -101,16 +101,16 @@ void Scan::setMinDistance(double minDistance)
     }
     m_points.shrink_to_fit();
 }
-void Scan::setMaxDistance(double maxDistance)
+void Scan::setMaxDistance(float maxDistance)
 {
-    double sqDist = maxDistance * maxDistance;
+    float sqDist = maxDistance * maxDistance;
 
     size_t i = 0;
     while (i < count())
     {
         if (m_points[i].squaredNorm() >= sqDist)
         {
-            std::iter_swap(m_points.begin() + i, m_points.end() - 1);
+            m_points[i] = m_points.back();
             m_points.pop_back();
         }
         else

@@ -43,7 +43,7 @@ using namespace std;
 namespace lvr2
 {
 
-int splitPoints(Vector3f* points, int n, int axis, double splitValue)
+int splitPoints(Vector3f* points, int n, int axis, float splitValue)
 {
     int l = 0, r = n - 1;
 
@@ -72,7 +72,7 @@ int splitPoints(Vector3f* points, int n, int axis, double splitValue)
 
 void octreeSplit(Vector3f* points, int start, int n, const Vector3f& center, int axis, int* starts, int* counts, int& current);
 
-void createOctree(Vector3f* points, int n, bool* flagged, Vector3f min, Vector3f max, double voxelSize, int maxLeafSize, int threads_left)
+void createOctree(Vector3f* points, int n, bool* flagged, Vector3f min, Vector3f max, float voxelSize, int maxLeafSize, int threads_left)
 {
     if (n <= maxLeafSize)
     {
@@ -207,7 +207,7 @@ void octreeSplit(Vector3f* points, int start, int n, const Vector3f& center, int
     }
 }
 
-int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize)
+int octreeReduce(Vector3f* points, int n, float voxelSize, int maxLeafSize)
 {
     bool* flagged = new bool[n];
     for (int i = 0; i < n; i++)
@@ -219,7 +219,7 @@ int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize)
 
     createOctree(points, n, flagged, boundingBox.min(), boundingBox.max(), voxelSize, maxLeafSize, omp_get_max_threads() * 2);
 
-    // swap_remove all flagged elements
+    // remove all flagged elements
     int i = 0;
     while (i < n)
     {
@@ -230,7 +230,7 @@ int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize)
             {
                 break;
             }
-            std::swap(points[i], points[n]);
+            points[i] = points[n];
             flagged[i] = flagged[n];
         }
         else
@@ -247,8 +247,8 @@ int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize)
 
 AABB::AABB()
 {
-    m_min.setConstant(numeric_limits<double>::infinity());
-    m_max.setConstant(-numeric_limits<double>::infinity());
+    m_min.setConstant(numeric_limits<float>::infinity());
+    m_max.setConstant(-numeric_limits<float>::infinity());
     m_sum.setConstant(0.0);
     m_count = 0;
 }
@@ -266,7 +266,7 @@ void AABB::addPoint(const Vector3f& point)
 {
     for (int axis = 0; axis < 3; axis++)
     {
-        double val = point(axis);
+        float val = point(axis);
         if (val < m_min(axis))
         {
             m_min(axis) = val;

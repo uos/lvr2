@@ -42,14 +42,14 @@ namespace lvr2
 class KDNode : public KDTree
 {
 public:
-    KDNode(int axis, double split, KDTreePtr& lesser, KDTreePtr& greater)
+    KDNode(int axis, float split, KDTreePtr& lesser, KDTreePtr& greater)
         : axis(axis), split(split), lesser(move(lesser)), greater(move(greater))
     { }
 
 protected:
-    virtual void nnInternal(const Vector3f& point, Vector3f*& neighbor, double& maxDist) const override
+    virtual void nnInternal(const Vector3f& point, Vector3f*& neighbor, float& maxDist) const override
     {
-        double val = point(this->axis);
+        float val = point(this->axis);
         if (val < this->split)
         {
             this->lesser->nnInternal(point, neighbor, maxDist);
@@ -70,7 +70,7 @@ protected:
 
 private:
     int axis;
-    double split;
+    float split;
     KDTreePtr lesser;
     KDTreePtr greater;
 };
@@ -83,13 +83,13 @@ public:
     { }
 
 protected:
-    virtual void nnInternal(const Vector3f& point, Vector3f*& neighbor, double& maxDist) const override
+    virtual void nnInternal(const Vector3f& point, Vector3f*& neighbor, float& maxDist) const override
     {
-        double maxDistSq = maxDist * maxDist;
+        float maxDistSq = maxDist * maxDist;
         bool changed = false;
         for (int i = 0; i < this->count; i++)
         {
-            double dist = (point - this->points[i]).squaredNorm();
+            float dist = (point - this->points[i]).squaredNorm();
             if (dist < maxDistSq)
             {
                 neighbor = &this->points[i];
@@ -118,7 +118,7 @@ KDTreePtr create_recursive(Vector3f* points, int n, int maxLeafSize, int level)
     AABB boundingBox(points, n);
 
     int splitAxis = boundingBox.longestAxis();
-    double splitValue = boundingBox.avg(splitAxis);
+    float splitValue = boundingBox.avg(splitAxis);
 
     if (boundingBox.difference(splitAxis) == 0.0) // all points are exactly the same
     {
@@ -166,7 +166,7 @@ KDTreePtr KDTree::create(Vector3f* points, int n, int maxLeafSize)
     return ret;
 }
 
-void KDTree::nearestNeighbor(const Vector3f& point, Vector3f*& neighbor, double& distance, double maxDistance) const
+void KDTree::nearestNeighbor(const Vector3f& point, Vector3f*& neighbor, float& distance, float maxDistance) const
 {
     neighbor = nullptr;
     distance = maxDistance;

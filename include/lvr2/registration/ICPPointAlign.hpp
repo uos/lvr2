@@ -50,12 +50,12 @@ public:
 
     virtual ~ICPPointAlign() = default;
 
-    void    setMaxMatchDistance(double distance);
+    void    setMaxMatchDistance(float distance);
     void    setMaxIterations(int iterations);
     void    setEpsilon(double epsilon);
     void    setVerbose(bool verbose);
 
-    double  getMaxMatchDistance() const;
+    float   getMaxMatchDistance() const;
     int     getMaxIterations() const;
     double  getEpsilon() const;
     bool    getVerbose() const;
