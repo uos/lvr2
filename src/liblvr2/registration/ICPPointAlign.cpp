@@ -60,7 +60,7 @@ ICPPointAlign::ICPPointAlign(ScanPtr model, ScanPtr data) :
     m_verbose           = false;
 
     m_searchTree = KDTree::create(model->points(), model->count());
-    }
+}
 
 Matrix4f ICPPointAlign::match()
 {
@@ -70,15 +70,13 @@ Matrix4f ICPPointAlign::match()
     }
 
     auto start_time = steady_clock::now();
-    double pairTime = 0;
-    double alignTime = 0;
 
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
     EigenSVDPointAlign align;
     int iteration;
 
-    Vector3f centroid_m = Vector3f::Zero();
-    Vector3f centroid_d = Vector3f::Zero();
+    Vector3f centroid_m;
+    Vector3f centroid_d;
     Matrix4f transform;
 
     PointPairVector pairs;
@@ -140,7 +138,7 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3f& centroid_m, 
     pairs.clear();
 
     size_t numThreads = omp_get_max_threads();
-    size_t pairsPerThread = ceil((double)n / numThreads);
+    size_t pairsPerThread = ceil((float)n / numThreads);
     PointPairVector privPairs[numThreads];
     Vector3f privCentroidM[numThreads];
     Vector3f privCentroidD[numThreads];
@@ -167,7 +165,7 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3f& centroid_m, 
             const Vector3f& point = dataPoints[i];
 
             Vector3f* neighbor;
-            double distance;
+            float distance;
 
             m_searchTree->nearestNeighbor(point, neighbor, distance, m_maxDistanceMatch);
 
@@ -191,7 +189,7 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3f& centroid_m, 
     centroid_d /= pairs.size();
 }
 
-void ICPPointAlign::setMaxMatchDistance(double d)
+void ICPPointAlign::setMaxMatchDistance(float d)
 {
     m_maxDistanceMatch = d;
 }
@@ -210,7 +208,7 @@ void ICPPointAlign::setVerbose(bool verbose)
     m_verbose = verbose;
 }
 
-double ICPPointAlign::getMaxMatchDistance() const
+float ICPPointAlign::getMaxMatchDistance() const
 {
     return m_maxDistanceMatch;
 }

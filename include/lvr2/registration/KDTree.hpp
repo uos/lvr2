@@ -83,14 +83,14 @@ public:
     void nearestNeighbor(
         const Vector3f& point,
         Vector3f*& neighbor,
-        double& distance,
-        double maxDistance = std::numeric_limits<double>::infinity()
+        float& distance,
+        float maxDistance = std::numeric_limits<float>::infinity()
     ) const;
 
     virtual ~KDTree() = default;
 
 protected:
-    virtual void nnInternal(const Vector3f& point, Vector3f*& neighbor, double& maxDist) const = 0;
+    virtual void nnInternal(const Vector3f& point, Vector3f*& neighbor, float& maxDist) const = 0;
 
     friend class KDNode;
 

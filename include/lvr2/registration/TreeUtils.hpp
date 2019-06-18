@@ -54,7 +54,7 @@ namespace lvr2
  *
  * @returns The number of smaller elements. points + this value gives the start of the greater elements
  */
-int splitPoints(Vector3f* points, int n, int axis, double splitValue);
+int splitPoints(Vector3f* points, int n, int axis, float splitValue);
 
 /**
  * @brief Reduces a Point Cloud using an Octree with a minimum Voxel size
@@ -65,7 +65,7 @@ int splitPoints(Vector3f* points, int n, int axis, double splitValue);
  *
  * @returns the new number of Points in the Point Cloud
  */
-int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize = 10);
+int octreeReduce(Vector3f* points, int n, float voxelSize, int maxLeafSize = 10);
 
 
 /**
@@ -110,25 +110,25 @@ public:
     void addPoint(const Vector3f& point);
 
     /// Returns the smallest value of an axis of the Point Cloud.
-    double min(int axis) const
+    float min(int axis) const
     {
         return m_min[axis];
     }
 
     ///	Returns the largest value of an axis of the Point Cloud.
-    double max(int axis) const
+    float max(int axis) const
     {
         return m_max[axis];
     }
 
     /// Returns the average of an axis of all the Points in the Point Cloud.
-    double avg(int axis) const
+    float avg(int axis) const
     {
         return m_sum[axis] / m_count;
     }
 
     /// Calculates the size of the Bounding Box along a certain axis
-    double difference(int axis) const
+    float difference(int axis) const
     {
         return max(axis) - min(axis);
     }

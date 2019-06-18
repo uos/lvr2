@@ -41,17 +41,17 @@ struct SlamOptions
 {
     bool    doLoopClosing = false;
     bool    doGraphSlam = false;
-    double  slamMaxDistance = 25;
+    float   slamMaxDistance = 25;
     int     slamIterations = 50;
-    double  closeLoopDistance = 500;
+    float   closeLoopDistance = 500;
     int     closeLoopPairs = -1;
 
-    double  icpMaxDistance = 25;
+    float   icpMaxDistance = 25;
     int     icpIterations = 50;
 
-    double  minDistance = -1;
-    double  maxDistance = -1;
-    double  reduction = -1;
+    float   minDistance = -1;
+    float   maxDistance = -1;
+    float   reduction = -1;
 
     bool    trustPose = false;
     bool    metascan = false;

@@ -76,7 +76,7 @@ void SlamAlign::reduceScan(const ScanPtr& scan)
         scan->setMaxDistance(m_options.maxDistance);
     }
 
-    if (scan->count() < prev)
+    if (scan->count() < prev && m_options.verbose)
     {
         cout << "Removed " << (prev - scan->count()) << " / " << prev << " Points -> " << scan->count() << " left" << endl;
     }
@@ -181,11 +181,11 @@ void SlamAlign::checkLoopClose(int last)
     // no Pairs => use closeLoopDistance
     if (m_options.closeLoopPairs < 0)
     {
-        double maxDist = std::pow(m_options.closeLoopDistance, 2);
+        float maxDist = std::pow(m_options.closeLoopDistance, 2);
         Vector3f pos = cur->getPosition();
         for (int other = 0; other < last; other++)
         {
-            double dist = (m_scans[other]->getPosition() - pos).squaredNorm();
+            float dist = (m_scans[other]->getPosition() - pos).squaredNorm();
             if (dist < maxDist)
             {
                 first = other;
@@ -209,7 +209,7 @@ void SlamAlign::checkLoopClose(int last)
             {
                 const Vector3f& point = scan->getPoint(i);
                 Vector3f* neighbor = nullptr;
-                double dist;
+                float dist;
                 tree->nearestNeighbor(point, neighbor, dist, m_options.slamMaxDistance);
                 if (neighbor != nullptr)
                 {

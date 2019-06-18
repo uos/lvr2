@@ -57,9 +57,9 @@ public:
     void transform(const Matrix4f& transform, bool writeFrame = true);
     void addFrame(ScanUse use = ScanUse::UNUSED);
 
-    void reduce(double voxelSize);
-    void setMinDistance(double minDistance);
-    void setMaxDistance(double maxDistance);
+    void reduce(float voxelSize);
+    void setMinDistance(float minDistance);
+    void setMaxDistance(float maxDistance);
 
     Vector3f getPoint(size_t index) const;
     Vector3f* points();
