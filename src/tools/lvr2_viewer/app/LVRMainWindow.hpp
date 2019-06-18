@@ -48,15 +48,14 @@
 #include <vtkGraphicsFactory.h>
 #include <vtkOrientationMarkerWidget.h>
 #include <vtkAxesActor.h>
-
-
-#if VTK_MAJOR_VERSION > 6
-    #include <vtkRenderStepsPass.h>
-    #include <vtkEDLShading.h>
-#endif
-
 #include <vtkOpenGLRenderer.h>
 #include <vtkNew.h>
+
+// EDL shading is only available in new vtk versions
+#ifdef LVR_USE_VTK_GE_7_1
+#include <vtkEDLShading.h>
+#include <vtkRenderStepsPass.h>
+#endif
 
 #include "../widgets/LVRPlotter.hpp"
 #include <QtGui>
@@ -169,9 +168,8 @@ public Q_SLOTS:
     void toggleNormals(bool checkboxState);
     void toggleMeshes(bool checkboxState);
     void toggleWireframe(bool checkboxState);
-#if VTK_MAJOR_VERSION > 6
     void toogleEDL(bool checkboxstate);
-#endif
+
     void refreshView();
     void updateView();
     void saveCamera();
@@ -319,10 +317,11 @@ private:
 
 
     // EDM Rendering
-#if VTK_MAJOR_VERSION > 6
+#ifdef LVR_USE_VTK_GE_7_1
     vtkSmartPointer<vtkRenderStepsPass> m_basicPasses;
     vtkSmartPointer<vtkEDLShading>      m_edl;
 #endif
+
 
     enum TYPE {
         MODELITEMS_ONLY,

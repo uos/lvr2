@@ -221,6 +221,11 @@ LVRMainWindow::LVRMainWindow()
      m_axesWidget->SetEnabled( 1 );
      m_axesWidget->InteractiveOff();
 
+     // Disable action if EDL is not available
+#ifndef LVR_USE_VTK_GE_7_1
+     actionRenderEDM->setEnabled(false);
+#endif
+
     connectSignalsAndSlots();
 }
 
@@ -322,10 +327,8 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), m_aboutDialog, SLOT(show()));
 
-
-#if VTK_MAJOR_VERSION > 6
     QObject::connect(actionRenderEDM, SIGNAL(toggled(bool)), this, SLOT(toogleEDL(bool)));
-#endif
+
     QObject::connect(m_actionShow_Points, SIGNAL(toggled(bool)), this, SLOT(togglePoints(bool)));
     QObject::connect(m_actionShow_Normals, SIGNAL(toggled(bool)), this, SLOT(toggleNormals(bool)));
     QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
@@ -430,11 +433,11 @@ void LVRMainWindow::setupQVTK()
     // Grab relevant entities from the qvtk widget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
 
-    #ifdef LVR2_USE_VTK_GE_7_1
+#ifdef LVR2_USE_VTK_GE_7_1
         m_renderer->TwoSidedLightingOn ();
         m_renderer->UseHiddenLineRemovalOff();
         m_renderer->RemoveAllLights();
-    #endif
+#endif
 
     // Setup decent background colors
     m_renderer->GradientBackgroundOn();
@@ -464,9 +467,9 @@ void LVRMainWindow::setupQVTK()
     m_pathCamera->SetInterpolator(cameraInterpolator);
     m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
 
-#if VTK_MAJOR_VERSION > 6
-    // Enable EDL per default
 
+#ifdef LVR_USE_VTK_GE_7_1 
+    // Enable EDL per default
     qvtkWidget->GetRenderWindow()->SetMultiSamples(0);
 
     m_basicPasses = vtkRenderStepsPass::New();
@@ -475,10 +478,6 @@ void LVRMainWindow::setupQVTK()
     vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
 
     glrenderer->SetPass(m_edl);
-#else
-    // disable button if we don't have EDL support
-    actionRenderEDM->setChecked(false);
-    actionRenderEDM->setDisabled(true);
 #endif
 
     // Finalize QVTK setup by adding the renderer to the window
@@ -486,9 +485,9 @@ void LVRMainWindow::setupQVTK()
 
 }
 
-#if VTK_MAJOR_VERSION > 6
 void LVRMainWindow::toogleEDL(bool state)
 {
+#ifdef LVR_USE_VTK_GE_7_1
     vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
 
     if(state == false)
@@ -500,8 +499,9 @@ void LVRMainWindow::toogleEDL(bool state)
         glrenderer->SetPass(m_edl);
     }
     this->qvtkWidget->GetRenderWindow()->Render();
-}
 #endif
+}
+
 
 void LVRMainWindow::updateView()
 {
