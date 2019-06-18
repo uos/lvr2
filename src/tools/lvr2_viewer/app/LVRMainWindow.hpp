@@ -48,10 +48,14 @@
 #include <vtkGraphicsFactory.h>
 #include <vtkOrientationMarkerWidget.h>
 #include <vtkAxesActor.h>
-#include <vtkEDLShading.h>
-#include <vtkRenderStepsPass.h>
 #include <vtkOpenGLRenderer.h>
 #include <vtkNew.h>
+
+// EDL shading is only available in new vtk versions
+#ifdef LVR_USE_VTK_GE_7_1
+#include <vtkEDLShading.h>
+#include <vtkRenderStepsPass.h>
+#endif
 
 #include "../widgets/LVRPlotter.hpp"
 #include <QtGui>
@@ -295,8 +299,10 @@ private:
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
 
     // EDM Rendering
+#ifdef LVR_USE_VTK_GE_7_1
     vtkSmartPointer<vtkRenderStepsPass> m_basicPasses;
     vtkSmartPointer<vtkEDLShading>      m_edl;
+#endif
 
 
     enum TYPE {

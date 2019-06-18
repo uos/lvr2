@@ -196,6 +196,11 @@ LVRMainWindow::LVRMainWindow()
      m_axesWidget->SetEnabled( 1 );
      m_axesWidget->InteractiveOff();
 
+     // Disable action if EDL is not available
+#ifndef LVR_USE_VTK_GE_7_1
+     actionRenderEDM->setEnabled(false);
+#endif
+
     connectSignalsAndSlots();
 }
 
@@ -390,11 +395,11 @@ void LVRMainWindow::setupQVTK()
     // Grab relevant entities from the qvtk widget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
 
-    #ifdef LVR_USE_VTK_GE_7_1
+#ifdef LVR_USE_VTK_GE_7_1
         m_renderer->TwoSidedLightingOn ();
         m_renderer->UseHiddenLineRemovalOff();
         m_renderer->RemoveAllLights();
-    #endif
+#endif
 
     // Setup decent background colors
     m_renderer->GradientBackgroundOn();
@@ -424,6 +429,7 @@ void LVRMainWindow::setupQVTK()
     m_pathCamera->SetInterpolator(cameraInterpolator);
     m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
 
+#ifdef LVR_USE_VTK_GE_7_1 
     // Enable EDL per default
     qvtkWidget->GetRenderWindow()->SetMultiSamples(0);
     m_basicPasses = vtkRenderStepsPass::New();
@@ -432,6 +438,7 @@ void LVRMainWindow::setupQVTK()
 
     vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
     glrenderer->SetPass(m_edl);
+#endif
 
     // Finalize QVTK setup by adding the renderer to the window
     renderWindow->AddRenderer(m_renderer);
@@ -441,6 +448,7 @@ void LVRMainWindow::setupQVTK()
 
 void LVRMainWindow::toogleEDL(bool state)
 {
+#ifdef LVR_USE_VTK_GE_7_1
     vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
     if(state == false)
     {
@@ -451,6 +459,7 @@ void LVRMainWindow::toogleEDL(bool state)
         glrenderer->SetPass(m_edl);
     }
     this->qvtkWidget->GetRenderWindow()->Render();
+#endif
 }
 
 void LVRMainWindow::updateView()
