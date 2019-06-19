@@ -519,6 +519,7 @@ configure_package_config_file(LVR2Config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
   INSTALL_DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr2
   PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
+  
 write_basic_package_version_file(
   ${CMAKE_CURRENT_BINARY_DIR}/LVR2ConfigVersion.cmake
   COMPATIBILITY SameMajorVersion

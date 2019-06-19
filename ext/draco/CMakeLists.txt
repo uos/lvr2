@@ -1140,6 +1140,10 @@ else ()
   # Add install rules for lib and executable targets.
   install(TARGETS dracodec dracoenc draco
           DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+
+  # Fix to solve LVR2 cmake dependency
+  install(TARGETS dracodec dracoenc draco EXPORT lvr2Targets DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+
   if (BUILD_UNITY_PLUGIN)
     install(TARGETS dracodec_unity
             DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
