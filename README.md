@@ -41,11 +41,7 @@ cmake .. && make
 
 If you want to compile with CUDA support install the latest version of the CUDA toolkit, which you can find on NVIDIAs CUDA download site:
 
-To enable CUDA support, you need to compile the software with a compatible GCC version. We have testet compilation with CUDA 9.1 and GCC 6. To use this compiler for compilation of CUDA generated code, set the `CUDA_HOST_COMPILER` option to `g++-6` either using ccmake or specifying it directly when configuring:
-
-```bash
-cmake -DCUDA_HOST_COMPILER=g++-6 ..
-```
+To enable CUDA support, you need to compile the software with a compatible GCC version. We have testet compilation with CUDA 9.1 and GCC 6. To use this compiler for compilation of CUDA generated code, set the `CUDA_HOST_COMPILER` option to `g++-6` is forced to g++-6. Please ensure that this version is installed on your system.
 
 ### Step 3: Installation
 
