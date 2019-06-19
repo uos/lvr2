@@ -387,15 +387,14 @@ option(WITH_KINFU "Compile LVR Kinfu" OFF)
 # compatible to gcc4.8. Older CUDA versions require GCC lower
 # than 4.8
 
-if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VERSION_EQUAL 8)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6 )
+if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VERSION_GREATER 8)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7 )
         message(STATUS "******************************************************************")
         message(STATUS "* Your gcc version needs to be lower than 6 to compile the LVR   *")
-        message(STATUS "* CUDA library and apps with CUDA 8. Please install gcc 5.       *")
+        message(STATUS "* CUDA library and apps with CUDA. Setting CUDA_HOST_COMPILER to *")
+        message(STATUS "* g++-6*. Please ensure that g++ 6 is installed on your system.  *")
         message(STATUS "******************************************************************")
-        message(WARNING "Incompatible CUDA host compiler detected. Setting host compiler to gcc-5.
-          Please ensure that this version is installed on your system")
-        set(CUDA_HOST_COMPILER "gcc-5")
+        set(CUDA_HOST_COMPILER "g++-6" CACHE STRING "" FORCE)
         endif()
 endif()
 
