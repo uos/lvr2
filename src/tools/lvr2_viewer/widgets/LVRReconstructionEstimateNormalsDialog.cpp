@@ -29,23 +29,23 @@
 #include "LVRReconstructionEstimateNormalsDialog.hpp"
 #include "LVRItemTypes.hpp"
 
-#include <lvr2/geometry/BaseVector.hpp>
+#include "lvr2/geometry/BaseVector.hpp"
 
-#include <lvr2/io/DataStruct.hpp>
+#include "lvr2/io/DataStruct.hpp"
 
-#include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
+#include "lvr2/reconstruction/PointsetSurface.hpp"
+#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 
 #if defined CUDA_FOUND
     #define GPU_FOUND
 
-    #include <lvr2/reconstruction/cuda/CudaSurface.hpp>
+    #include "lvr2/reconstruction/cuda/CudaSurface.hpp"
 
     typedef lvr2::CudaSurface GpuSurface;
 #elif defined OPENCL_FOUND
     #define GPU_FOUND
 
-    #include <lvr2/reconstruction/opencl/ClSurface.hpp>
+    #include "lvr2/reconstruction/opencl/ClSurface.hpp"
     typedef lvr2::ClSurface GpuSurface;
 #endif
 

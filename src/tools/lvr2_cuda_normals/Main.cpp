@@ -34,20 +34,20 @@
 
 #include <boost/filesystem.hpp>
 
-#include <lvr2/reconstruction/cuda/CudaSurface.hpp>
+#include "lvr2/reconstruction/cuda/CudaSurface.hpp"
 
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/HalfEdgeMesh.hpp>
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/HalfEdgeMesh.hpp"
 
-#include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
-#include <lvr2/reconstruction/FastReconstruction.hpp>
-#include <lvr2/reconstruction/PointsetGrid.hpp>
-#include <lvr2/reconstruction/BilinearFastBox.hpp>
+#include "lvr2/reconstruction/PointsetSurface.hpp"
+#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
+#include "lvr2/reconstruction/FastReconstruction.hpp"
+#include "lvr2/reconstruction/PointsetGrid.hpp"
+#include "lvr2/reconstruction/BilinearFastBox.hpp"
 
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/io/Timestamp.hpp>
-#include <lvr2/io/IOUtils.hpp>
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/io/IOUtils.hpp"
 
 #include "Options.hpp"
 

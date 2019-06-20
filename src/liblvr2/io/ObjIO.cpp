@@ -36,10 +36,6 @@
  *  @author Denis Meyer (denmeyer@uos.de)
  */
 
-#include <lvr2/io/ObjIO.hpp>
-
-#include <lvr2/util/Util.hpp>
-
 #include <climits>
 #include <iostream>
 #include <fstream>
@@ -50,11 +46,12 @@
 #include <boost/filesystem.hpp>
 #include <boost/tuple/tuple.hpp>
 
-#include <lvr2/io/Timestamp.hpp>
-
-#include <lvr2/texture/TextureFactory.hpp>
-#include <lvr2/texture/Texture.hpp>
-#include <lvr2/texture/Material.hpp>
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/io/ObjIO.hpp"
+#include "lvr2/texture/TextureFactory.hpp"
+#include "lvr2/texture/Texture.hpp"
+#include "lvr2/texture/Material.hpp"
+#include "lvr2/util/Util.hpp"
 
 
 namespace lvr2

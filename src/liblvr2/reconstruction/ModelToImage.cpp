@@ -32,11 +32,11 @@
  *      Author: Thomas Wiemann (twiemann@uos.de)
  */
 
-#include <lvr2/reconstruction/ModelToImage.hpp>
-#include <lvr2/reconstruction/Projection.hpp>
-#include <lvr2/io/Progress.hpp>
-#include <lvr2/io/Timestamp.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
+#include "lvr2/reconstruction/ModelToImage.hpp"
+#include "lvr2/reconstruction/Projection.hpp"
+#include "lvr2/io/Progress.hpp"
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
 
 #include <iostream>
 #include <fstream>

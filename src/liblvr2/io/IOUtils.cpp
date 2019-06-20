@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/io/IOUtils.hpp>
-#include <lvr2/io/ModelFactory.hpp>
+#include "lvr2/io/IOUtils.hpp"
+#include "lvr2/io/ModelFactory.hpp"
 namespace lvr2
 {
 

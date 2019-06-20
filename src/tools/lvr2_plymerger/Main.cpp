@@ -29,11 +29,11 @@
 
 #include <rply.h>
 
-#include <lvr2/io/Timestamp.hpp>
-#include <lvr2/io/PointBuffer.hpp>
-#include <lvr2/io/DataStruct.hpp>
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/io/Progress.hpp>
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/io/DataStruct.hpp"
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/Progress.hpp"
 
 #include <boost/filesystem.hpp>
 

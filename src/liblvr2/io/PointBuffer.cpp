@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/io/PointBuffer.hpp>
-#include <lvr2/io/Timestamp.hpp>
+#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/io/Timestamp.hpp"
 
 #include <iostream>
 

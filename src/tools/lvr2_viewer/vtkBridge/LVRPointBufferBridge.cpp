@@ -43,7 +43,7 @@
 #include <vtkProperty.h>
 #include <vtkPointData.h>
 
-#include <lvr2/util/Util.hpp>
+#include "lvr2/util/Util.hpp"
 
 namespace lvr2
 {

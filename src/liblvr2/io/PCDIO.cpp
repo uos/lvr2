@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/io/PCDIO.hpp>
+#include "lvr2/io/PCDIO.hpp"
 #include <fstream>
 #ifdef LVR2_USE_PCL
 #include <pcl/io/pcd_io.h>

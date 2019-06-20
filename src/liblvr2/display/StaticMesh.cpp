@@ -32,7 +32,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr2/display/StaticMesh.hpp>
+#include "lvr2/display/StaticMesh.hpp"
 
 #include <cassert>
 

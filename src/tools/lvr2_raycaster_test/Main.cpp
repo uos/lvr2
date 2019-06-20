@@ -6,13 +6,13 @@
 #include <boost/optional.hpp>
 
 // lvr2 includes
-#include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
+#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
 
-#include <lvr2/algorithm/raycasting/RaycasterBase.hpp>
-#include <lvr2/algorithm/raycasting/CLRaycaster.hpp>
-#include <lvr2/algorithm/raycasting/BVHRaycaster.hpp>
+#include "lvr2/algorithm/raycasting/RaycasterBase.hpp"
+#include "lvr2/algorithm/raycasting/CLRaycaster.hpp"
+#include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
 
 using boost::optional;
 using std::unique_ptr;

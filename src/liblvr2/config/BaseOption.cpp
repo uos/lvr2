@@ -32,8 +32,8 @@
  *      Author: twiemann
  */
 
-#include <lvr2/config/BaseOption.hpp>
-#include <lvr2/io/ModelFactory.hpp>
+#include "lvr2/config/BaseOption.hpp"
+#include "lvr2/io/ModelFactory.hpp"
 
 namespace lvr2
 {

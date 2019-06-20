@@ -39,8 +39,8 @@
  */
 
 
-#include <lvr2/io/PLYIO.hpp>
-#include <lvr2/io/Timestamp.hpp>
+#include "lvr2/io/PLYIO.hpp"
+#include "lvr2/io/Timestamp.hpp"
 
 #include <cstring>
 #include <ctime>

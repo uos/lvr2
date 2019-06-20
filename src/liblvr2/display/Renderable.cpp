@@ -32,7 +32,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr2/display/Renderable.hpp>
+#include "lvr2/display/Renderable.hpp"
 
 namespace lvr2
 {
