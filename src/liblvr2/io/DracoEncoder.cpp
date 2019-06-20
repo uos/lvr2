@@ -27,8 +27,8 @@
  *
  **/
 
-#include "lvr2/io/DracoEncoder.hpp"
-#include "draco/metadata/geometry_metadata.h"
+#include <lvr2/io/DracoEncoder.hpp>
+#include <draco/metadata/geometry_metadata.h>
 
 namespace lvr2
 {

@@ -28,9 +28,9 @@
 #include <fstream>
 #include <unistd.h>
 
-#include "lvr2/io/DracoDecoder.hpp"
-#include "lvr2/io/DracoEncoder.hpp"
-#include "lvr2/io/DrcIO.hpp"
+#include <lvr2/io/DracoDecoder.hpp>
+#include <lvr2/io/DracoEncoder.hpp>
+#include <lvr2/io/DrcIO.hpp>
 
 namespace lvr2
 {
