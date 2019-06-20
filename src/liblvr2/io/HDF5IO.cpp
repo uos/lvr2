@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "lvr2/io/HDF5IO.hpp"
+#include <lvr2/io/HDF5IO.hpp>
 
 #include <boost/filesystem.hpp>
 

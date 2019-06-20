@@ -48,7 +48,7 @@
 #include <sstream>
 
 #include <boost/filesystem.hpp>
-#include "boost/tuple/tuple.hpp"
+#include <boost/tuple/tuple.hpp>
 
 #include <lvr2/io/Timestamp.hpp>
 

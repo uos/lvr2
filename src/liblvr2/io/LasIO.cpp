@@ -39,8 +39,8 @@ using std::endl;
 #include <lvr2/io/LasIO.hpp>
 #include <lvr2/io/Timestamp.hpp>
 
-#include "lasreader.hpp"
-#include "laswriter.hpp"
+#include <lasreader.hpp>
+#include <laswriter.hpp>
 
 namespace lvr2
 {

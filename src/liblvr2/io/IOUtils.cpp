@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "lvr2/io/IOUtils.hpp"
-#include "lvr2/io/ModelFactory.hpp"
+#include <lvr2/io/IOUtils.hpp>
+#include <lvr2/io/ModelFactory.hpp>
 namespace lvr2
 {
 
@@ -537,10 +537,6 @@ void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, con
     {
         in >> position.x >> position.y >> position.z;
         in >> angles.y >> angles.y >> angles.z;
-    }
-    else
-    {
-        cout << timestamp << "Unable to open " << file.string() << endl;
     }
 }
 

@@ -1,6 +1,5 @@
 #include "LVRScanDataItem.hpp"
 #include "LVRModelItem.hpp"
-
 #include "LVRItemTypes.hpp"
 
 namespace lvr2
