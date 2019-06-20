@@ -37,7 +37,7 @@
 
 #ifndef LVR2_OBJIO_HPP_
 #define LVR2_OBJIO_HPP_
-#include <lvr2/io/BaseIO.hpp>
+#include "lvr2/io/BaseIO.hpp"
 #include <fstream>
 #include <set>
 #include <map>

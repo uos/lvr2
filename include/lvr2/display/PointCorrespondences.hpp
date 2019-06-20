@@ -28,7 +28,7 @@
 #ifndef POINTCORRESPONDENCES_H
 #define POINTCORRESPONDENCES_H
 
-#include <lvr2/display/Renderable.hpp>
+#include "lvr2/display/Renderable.hpp"
 
 #include <vector>
 

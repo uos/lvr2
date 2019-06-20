@@ -35,7 +35,7 @@
 #ifndef LASIO_H_
 #define LASIO_H_
 
-#include <lvr2/io/BaseIO.hpp>
+#include "lvr2/io/BaseIO.hpp"
 
 namespace lvr2
 {

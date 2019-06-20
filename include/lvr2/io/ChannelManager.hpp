@@ -29,8 +29,8 @@
 #define CHANNELHANDLER_HPP
 
 // LVR2 includes
-#include <lvr2/io/DataStruct.hpp>
-#include <lvr2/geometry/Handles.hpp>
+#include "lvr2/io/DataStruct.hpp"
+#include "lvr2/geometry/Handles.hpp"
 
 // Std lib includes
 #include <iostream>

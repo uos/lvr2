@@ -28,9 +28,9 @@
 #ifndef MESHBUFFER2_HPP
 #define MESHBUFFER2_HPP
 
-#include <lvr2/io/BaseBuffer.hpp>
-#include <lvr2/texture/Material.hpp>
-#include <lvr2/texture/Texture.hpp>
+#include "lvr2/io/BaseBuffer.hpp"
+#include "lvr2/texture/Material.hpp"
+#include "lvr2/texture/Texture.hpp"
 
 namespace lvr2
 {

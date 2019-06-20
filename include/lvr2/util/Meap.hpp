@@ -38,7 +38,7 @@
 
 #include <boost/optional.hpp>
 
-#include <lvr2/attrmaps/AttributeMap.hpp>
+#include "lvr2/attrmaps/AttributeMap.hpp"
 
 using std::vector;
 using std::unordered_map;
@@ -171,6 +171,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/util/Meap.tcc>
+#include "lvr2/util/Meap.tcc"
 
 #endif /* LVR2_UTIL_MEAP_H_ */

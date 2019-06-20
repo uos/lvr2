@@ -42,7 +42,7 @@
 #ifndef PCDIO_HPP_INCLUDED
 #define PCDIO_HPP_INCLUDED
 
-#include <lvr2/io/BaseIO.hpp>
+#include "lvr2/io/BaseIO.hpp"
 
 namespace lvr2
 {

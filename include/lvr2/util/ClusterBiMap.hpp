@@ -35,11 +35,11 @@
 #ifndef LVR2_UTIL_CLUSTERBIMAP_H_
 #define LVR2_UTIL_CLUSTERBIMAP_H_
 
-#include <lvr2/geometry/Handles.hpp>
-#include <lvr2/util/Cluster.hpp>
+#include "lvr2/geometry/Handles.hpp"
+#include "lvr2/util/Cluster.hpp"
 
-#include <lvr2/attrmaps/AttrMaps.hpp>
-#include <lvr2/attrmaps/StableVector.hpp>
+#include "lvr2/attrmaps/AttrMaps.hpp"
+#include "lvr2/attrmaps/StableVector.hpp"
 
 namespace lvr2
 {
@@ -159,6 +159,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/util/ClusterBiMap.tcc>
+#include "lvr2/util/ClusterBiMap.tcc"
 
 #endif /* LVR2_UTIL_CLUSTERBIMAP_H_ */

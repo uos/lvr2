@@ -29,7 +29,7 @@
 #ifndef MESHGEOMETRYIO
 #define MESHGEOMETRYIO
 
-#include <lvr2/io/ChannelManager.hpp>
+#include "lvr2/io/ChannelManager.hpp"
 
 namespace lvr2
 { 

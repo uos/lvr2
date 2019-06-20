@@ -246,4 +246,4 @@ private:
 
 } /* namespace lvr2 */
 
-#include <lvr2/geometry/BVH.tcc>
+#include "lvr2/geometry/BVH.tcc"

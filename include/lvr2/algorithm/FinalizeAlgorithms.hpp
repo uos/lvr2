@@ -41,16 +41,16 @@
 
 using boost::optional;
 
-#include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/attrmaps/AttrMaps.hpp>
-#include <lvr2/algorithm/ColorAlgorithms.hpp>
-#include <lvr2/util/ClusterBiMap.hpp>
-#include <lvr2/texture/Texture.hpp>
-#include <lvr2/texture/Material.hpp>
-#include <lvr2/algorithm/ClusterPainter.hpp>
+#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/geometry/Normal.hpp"
+#include "lvr2/attrmaps/AttrMaps.hpp"
+#include "lvr2/algorithm/ColorAlgorithms.hpp"
+#include "lvr2/util/ClusterBiMap.hpp"
+#include "lvr2/texture/Texture.hpp"
+#include "lvr2/texture/Material.hpp"
+#include "lvr2/algorithm/ClusterPainter.hpp"
 
-#include <lvr2/io/ObjIO.hpp>
+#include "lvr2/io/ObjIO.hpp"
 
 namespace lvr2
 {
@@ -171,6 +171,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/FinalizeAlgorithms.tcc>
+#include "lvr2/algorithm/FinalizeAlgorithms.tcc"
 
 #endif /* LVR2_ALGORITHM_FINALIZEALGORITHM_H_ */

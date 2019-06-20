@@ -40,10 +40,9 @@
 
 #include <flann/flann.hpp>
 
-#include <lvr2/io/Timestamp.hpp>
-
-#include <lvr2/reconstruction/SearchTree.hpp>
-#include <lvr2/io/PointBuffer.hpp>
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/reconstruction/SearchTree.hpp"
 
 using std::vector;
 using std::unique_ptr;
@@ -107,6 +106,6 @@ protected:
 
 } // namespace lvr2
 
-#include <lvr2/reconstruction/SearchTreeFlann.tcc>
+#include "lvr2/reconstruction/SearchTreeFlann.tcc"
 
 #endif /* LVR2_RECONSTRUCTION_SEARCHTREEFLANN_HPP_ */

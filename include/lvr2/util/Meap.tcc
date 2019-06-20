@@ -29,7 +29,7 @@
  * Meap.tcc
  */
 
-#include <lvr2/util/Panic.hpp>
+#include "lvr2/util/Panic.hpp"
 
 using std::move;
 using std::swap;

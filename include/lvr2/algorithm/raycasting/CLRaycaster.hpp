@@ -36,19 +36,19 @@
 #pragma once
 
 #include <chrono>
-#include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Vector.hpp>
-#include <lvr2/geometry/Point.hpp>
-#include <lvr2/geometry/BVH.hpp>
+#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/Vector.hpp"
+#include "lvr2/geometry/Point.hpp"
+#include "lvr2/geometry/BVH.hpp"
 
-#include <lvr2/algorithm/raycasting/BVHRaycaster.hpp>
+#include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
 
 #define CL_HPP_ENABLE_EXCEPTIONS
 #define CL_HPP_MINIMUM_OPENCL_VERSION 120 // Need to set to 120 on CUDA 8
 #define CL_HPP_TARGET_OPENCL_VERSION 120 // Need to set to 120 on CUDA 8
-#include <CL/cl2.hpp>
-#include <lvr2/util/CLUtil.hpp>
+#include <CL/cl2.hpp"
+#include "lvr2/util/CLUtil.hpp"
 
 const char *CAST_RAYS_BVH_PROGRAM =
     #include "opencl/cast_rays_bvh.cl"
@@ -209,4 +209,4 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/raycasting/CLRaycaster.tcc>
+#include "lvr2/algorithm/raycasting/CLRaycaster.tcc"

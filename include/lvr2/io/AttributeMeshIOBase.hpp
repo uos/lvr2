@@ -30,15 +30,15 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
-#include <lvr2/geometry/Handles.hpp>
-#include <lvr2/attrmaps/AttrMaps.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/io/ChannelManager.hpp>
-#include <lvr2/geometry/HalfEdgeMesh.hpp>
+#include "lvr2/geometry/Handles.hpp"
+#include "lvr2/attrmaps/AttrMaps.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/Normal.hpp"
+#include "lvr2/io/ChannelManager.hpp"
+#include "lvr2/geometry/HalfEdgeMesh.hpp"
 
-#include <lvr2/io/GroupedChannelIO.hpp>
-#include <lvr2/io/MeshGeometryIO.hpp>
+#include "lvr2/io/GroupedChannelIO.hpp"
+#include "lvr2/io/MeshGeometryIO.hpp"
 
 namespace lvr2{
 

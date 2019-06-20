@@ -32,9 +32,9 @@
 #ifndef LVR2_ALGORITHM_TESSELATOR_H
 #define LVR2_ALGORITHM_TESSELATOR_H
 
-#include <lvr2/geometry/Handles.hpp>
-#include <lvr2/util/ClusterBiMap.hpp>
-#include <lvr2/algorithm/NormalAlgorithms.hpp>
+#include "lvr2/geometry/Handles.hpp"
+#include "lvr2/util/ClusterBiMap.hpp"
+#include "lvr2/algorithm/NormalAlgorithms.hpp"
 
 #if _MSC_VER
 #include <Windows.h>
@@ -144,6 +144,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/Tesselator.tcc>
+#include "lvr2/algorithm/Tesselator.tcc"
 
 #endif //LVR2_ALGORITHM_TESSELATOR_H

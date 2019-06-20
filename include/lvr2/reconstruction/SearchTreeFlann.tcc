@@ -32,11 +32,11 @@
  *      Author: twiemann
  */
 
-#include <lvr2/reconstruction/SearchTreeFlann.hpp>
+#include "lvr2/reconstruction/SearchTreeFlann.hpp"
 
-#include <lvr2/io/Timestamp.hpp>
+#include "lvr2/io/Timestamp.hpp"
 
-#include <lvr2/util/Panic.hpp>
+#include "lvr2/util/Panic.hpp"
 
 using std::make_unique;
 

@@ -46,10 +46,10 @@ using std::array;
 using std::string;
 using std::vector;
 
-#include <lvr2/geometry/Handles.hpp>
-#include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/algorithm/ClusterPainter.hpp>
-#include <lvr2/algorithm/ColorAlgorithms.hpp>
+#include "lvr2/geometry/Handles.hpp"
+#include "lvr2/geometry/BaseMesh.hpp"
+#include "lvr2/algorithm/ClusterPainter.hpp"
+#include "lvr2/algorithm/ColorAlgorithms.hpp"
 
 namespace lvr2
 {
@@ -111,6 +111,6 @@ void writeDebugContourMesh(
 
 } // namespace lvr2
 
-#include <lvr2/util/Debug.tcc>
+#include "lvr2/util/Debug.tcc"
 
 #endif /* LVR2_UTIL_DEBUG_H_ */

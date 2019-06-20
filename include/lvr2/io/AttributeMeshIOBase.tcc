@@ -28,7 +28,7 @@
 #ifndef LAS_VEGAS_MESHIOINTERFACE_TCC
 #define LAS_VEGAS_MESHIOINTERFACE_TCC
 
-#include <lvr2/util/ClusterBiMap.hpp>
+#include "lvr2/util/ClusterBiMap.hpp"
 
 namespace lvr2
 {

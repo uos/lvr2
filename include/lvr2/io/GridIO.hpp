@@ -35,7 +35,7 @@
 #ifndef GRIDIO_HPP_
 #define GRIDIO_HPP_
 
-#include <lvr2/io/DataStruct.hpp>
+#include "lvr2/io/DataStruct.hpp"
 
 #include <string>
 

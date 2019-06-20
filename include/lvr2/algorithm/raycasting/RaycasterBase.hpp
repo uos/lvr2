@@ -34,9 +34,9 @@
 
 #pragma once
 
-#include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Normal.hpp>
+#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/Normal.hpp"
 
 namespace lvr2
 {
@@ -79,4 +79,4 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/raycasting/RaycasterBase.tcc>
+#include "lvr2/algorithm/raycasting/RaycasterBase.tcc"

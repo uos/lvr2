@@ -37,7 +37,7 @@
 
 #include <cstdint>
 #include <utility>
-#include <lvr2/attrmaps/StableVector.hpp>
+#include "lvr2/attrmaps/StableVector.hpp"
 #include <array>
 #include <vector>
 
@@ -47,12 +47,12 @@ using std::vector;
 using std::get;
 using std::min;
 
-#include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/geometry/HalfEdge.hpp>
-#include <lvr2/geometry/HalfEdgeFace.hpp>
-#include <lvr2/geometry/HalfEdgeVertex.hpp>
+#include "lvr2/geometry/BaseMesh.hpp"
+#include "lvr2/geometry/HalfEdge.hpp"
+#include "lvr2/geometry/HalfEdgeFace.hpp"
+#include "lvr2/geometry/HalfEdgeVertex.hpp"
 
-#include <lvr2/io/MeshBuffer.hpp>
+#include "lvr2/io/MeshBuffer.hpp"
 
 namespace lvr2
 {
@@ -278,6 +278,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/geometry/HalfEdgeMesh.tcc>
+#include "lvr2/geometry/HalfEdgeMesh.tcc"
 
 #endif /* LVR2_GEOMETRY_HALFEDGEMESH_H_ */

@@ -648,6 +648,6 @@ struct EdgeCollapseResult
 
 } // namespace lvr2
 
-#include <lvr2/geometry/BaseMesh.tcc>
+#include "lvr2/geometry/BaseMesh.tcc"
 
 #endif /* LVR2_GEOMETRY_BASEMESH_H_ */
