@@ -25,12 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/reconstruction/PanoramaNormals.hpp>
+#include "lvr2/reconstruction/PanoramaNormals.hpp"
 
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/io/Progress.hpp>
-#include <lvr2/io/Timestamp.hpp>
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/Normal.hpp"
+#include "lvr2/io/Progress.hpp"
+#include "lvr2/io/Timestamp.hpp"
 
 #include <Eigen/Dense>
 

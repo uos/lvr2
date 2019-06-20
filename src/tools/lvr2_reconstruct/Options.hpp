@@ -41,7 +41,7 @@
 #include <boost/program_options.hpp>
 #include <float.h>
 
-#include <lvr2/config/BaseOption.hpp>
+#include "lvr2/config/BaseOption.hpp"
 
 using std::ostream;
 using std::cout;

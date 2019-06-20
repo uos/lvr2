@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/io/BaseBuffer.hpp>
+#include "lvr2/io/BaseBuffer.hpp"
 
 namespace lvr2
 {

@@ -30,8 +30,8 @@
 
 #include <boost/filesystem/fstream.hpp>
 
-#include <lvr2/io/ScanprojectIO.hpp>
-#include <lvr2/io/UosIO.hpp>
+#include "lvr2/io/ScanprojectIO.hpp"
+#include "lvr2/io/UosIO.hpp"
 
 
 namespace lvr2

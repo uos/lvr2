@@ -31,7 +31,7 @@
  * @author Alexander Mock
  */
 
-#include <lvr2/reconstruction/cuda/CudaSurface.hpp>
+#include "lvr2/reconstruction/cuda/CudaSurface.hpp"
 
 namespace lvr2
 {

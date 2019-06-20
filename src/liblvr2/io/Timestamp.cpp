@@ -32,7 +32,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr2/io/Timestamp.hpp>
+#include "lvr2/io/Timestamp.hpp"
 
 #if defined(_MSC_VER)
 #include <time.h>

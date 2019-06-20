@@ -27,7 +27,7 @@
  *
  **/
 
-#include <lvr2/io/DracoDecoder.hpp>
+#include "lvr2/io/DracoDecoder.hpp"
 #include <draco/metadata/geometry_metadata.h>
 
 namespace lvr2

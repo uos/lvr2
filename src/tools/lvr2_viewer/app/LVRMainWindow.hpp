@@ -57,12 +57,15 @@
 #include <vtkRenderStepsPass.h>
 #endif
 
-#include "../widgets/LVRPlotter.hpp"
 #include <QtGui>
+
 #include "ui_LVRMainWindowUI.h"
 #include "ui_LVRAboutDialogUI.h"
 #include "ui_LVRTooltipDialogUI.h"
+
 #include "LVRTreeWidgetHelper.hpp"
+
+#include "../widgets/LVRPlotter.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../widgets/LVRModelItem.hpp"
 #include "../widgets/LVRPointCloudItem.hpp"
@@ -84,9 +87,7 @@
 #include "../widgets/LVRScanDataItem.hpp"
 #include "../widgets/LVRCamDataItem.hpp"
 #include "../widgets/LVRBoundingBoxItem.hpp"
-
 #include "../widgets/LVRPointInfo.hpp"
-
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
@@ -95,6 +96,7 @@
 #include <vector>
 #include <set>
 #include <boost/format.hpp>
+
 using std::vector;
 using std::cout;
 using std::endl;

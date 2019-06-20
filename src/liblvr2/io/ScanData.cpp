@@ -1,7 +1,7 @@
-#include <lvr2/io/ScanData.hpp>
-#include <lvr2/io/Timestamp.hpp>
-#include <lvr2/io/AsciiIO.hpp>
-#include <lvr2/io/IOUtils.hpp>
+#include "lvr2/io/ScanData.hpp"
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/io/AsciiIO.hpp"
+#include "lvr2/io/IOUtils.hpp"
 
 #include <boost/filesystem.hpp>
 

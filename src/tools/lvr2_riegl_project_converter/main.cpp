@@ -36,14 +36,11 @@
 
 #include <boost/filesystem/fstream.hpp>
 
-#include <lvr2/geometry/BaseVector.hpp>
-
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/io/RxpIO.hpp>
-#include <lvr2/io/ScanprojectIO.hpp>
-
-#include <lvr2/util/Util.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/RxpIO.hpp"
+#include "lvr2/io/ScanprojectIO.hpp"
+#include "lvr2/util/Util.hpp"
 
 #include "Options.hpp"
 #include "RieglProject.hpp"

@@ -38,12 +38,12 @@
 
 #include "LVRMainWindow.hpp"
 
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/io/DataStruct.hpp>
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/DataStruct.hpp"
 
-#include <lvr2/registration/ICPPointAlign.hpp>
+#include "lvr2/registration/ICPPointAlign.hpp"
 
-#include <lvr2/util/Util.hpp>
+#include "lvr2/util/Util.hpp"
 
 #include <vtkActor.h>
 #include <vtkProperty.h>

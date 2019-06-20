@@ -32,9 +32,6 @@
  *  @author Thomas Wiemann
  */
 
-#include <lvr2/io/UosIO.hpp>
-
-
 #include <list>
 #include <vector>
 #include <string>
@@ -50,11 +47,10 @@ using std::ifstream;
 using std::stringstream;
 
 #include <boost/filesystem.hpp>
-//using namespace boost::filesystem;
 
-
-#include <lvr2/io/Progress.hpp>
-#include <lvr2/io/Timestamp.hpp>
+#include "lvr2/io/UosIO.hpp"
+#include "lvr2/io/Progress.hpp"
+#include "lvr2/io/Timestamp.hpp"
 
 namespace lvr2
 {

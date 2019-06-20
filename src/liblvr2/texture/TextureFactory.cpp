@@ -34,11 +34,11 @@
  *  @author Denis Meyer
  */
 
-#include <lvr2/texture/TextureFactory.hpp>
+#include "lvr2/texture/TextureFactory.hpp"
 
-#include <lvr2/io/PPMIO.hpp>
-#include <lvr2/io/Timestamp.hpp>
-#include <lvr2/texture/Texture.hpp>
+#include "lvr2/io/PPMIO.hpp"
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/texture/Texture.hpp"
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
