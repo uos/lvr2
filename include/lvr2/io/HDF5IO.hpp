@@ -41,11 +41,11 @@
 
 #include <H5Tpublic.h>
 #include <hdf5_hl.h>
-
 #include <highfive/H5DataSet.hpp>
 #include <highfive/H5DataSpace.hpp>
 #include <highfive/H5File.hpp>
-#include <lvr2/io/AttributeMeshIOBase.hpp>
+
+#include "lvr2/io/AttributeMeshIOBase.hpp"
 #include <string>
 
 namespace lvr2
@@ -61,9 +61,9 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
 
     /**
          * \brief Parse the given file and load supported elements.
-         *#include <highfive/H5DataSet.hpp>
-#include <highfive/H5DataSpace.hpp>
-#include <highfive/H5File.hpp>
+         *#include <highfive/H5DataSet.hpp"
+#include <highfive/H5DataSpace.hpp"
+#include <highfive/H5File.hpp"
          * @param filename  The file to read.
          */
     virtual ModelPtr read(std::string filename);

@@ -40,11 +40,11 @@
 
 using std::array;
 
-#include <lvr2/geometry/Handles.hpp>
-#include <lvr2/util/ClusterBiMap.hpp>
-#include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/attrmaps/AttrMaps.hpp>
-#include <lvr2/algorithm/ColorAlgorithms.hpp>
+#include "lvr2/geometry/Handles.hpp"
+#include "lvr2/util/ClusterBiMap.hpp"
+#include "lvr2/reconstruction/PointsetSurface.hpp"
+#include "lvr2/attrmaps/AttrMaps.hpp"
+#include "lvr2/algorithm/ColorAlgorithms.hpp"
 
 namespace lvr2
 {
@@ -79,6 +79,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/ClusterPainter.tcc>
+#include "lvr2/algorithm/ClusterPainter.tcc"
 
 #endif /* LVR2_ALGORITHM_CLUSTERPAINTER_H_ */

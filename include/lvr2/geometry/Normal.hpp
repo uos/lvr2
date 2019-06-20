@@ -130,6 +130,6 @@ inline std::ostream& operator<<(std::ostream& os, const Normal<CoordType>& n)
 
 } // namespace lvr2
 
-#include <lvr2/geometry/Normal.tcc>
+#include "lvr2/geometry/Normal.tcc"
 
 #endif /* LVR2_GEOMETRY_NORMAL_H_ */

@@ -33,8 +33,8 @@
 #include <limits>
 #include <queue>
 
-#include <lvr2/attrmaps/AttrMaps.hpp>
-#include <lvr2/io/Progress.hpp>
+#include "lvr2/attrmaps/AttrMaps.hpp"
+#include "lvr2/io/Progress.hpp"
 
 namespace lvr2
 {

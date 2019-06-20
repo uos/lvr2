@@ -35,7 +35,7 @@
 #ifndef MULTIPOINTCLOUD_H_
 #define MULTIPOINTCLOUD_H_
 
-#include <lvr2/display/PointCloud.hpp>
+#include "lvr2/display/PointCloud.hpp"
 
 #include <map>
 #include <string>

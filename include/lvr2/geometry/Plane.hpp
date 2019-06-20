@@ -79,6 +79,6 @@ inline std::ostream& operator<<(std::ostream& os, const Plane<BaseVecT>& p)
 
 } // namespace lvr2
 
-#include <lvr2/geometry/Plane.tcc>
+#include "lvr2/geometry/Plane.tcc"
 
 #endif /* LVR2_GEOMETRY_PLANE_H_ */

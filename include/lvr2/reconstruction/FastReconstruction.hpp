@@ -35,8 +35,8 @@
 #ifndef _LVR2_RECONSTRUCTION_FASTRECONSTRUCTION_H_
 #define _LVR2_RECONSTRUCTION_FASTRECONSTRUCTION_H_
 
-#include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/geometry/BoundingBox.hpp>
+#include "lvr2/geometry/BaseMesh.hpp"
+#include "lvr2/geometry/BoundingBox.hpp"
 
 //#include "PointsetMeshGenerator.hpp"
 #include "LocalApproximation.hpp"
@@ -122,6 +122,6 @@ private:
 } // namespace lvr2
 
 
-#include <lvr2/reconstruction/FastReconstruction.tcc>
+#include "lvr2/reconstruction/FastReconstruction.tcc"
 
 #endif /* _LVR2_RECONSTRUCTION_FASTRECONSTRUCTION_H_ */

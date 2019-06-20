@@ -34,9 +34,9 @@
 #ifndef ICPPOINTALIGN_HPP_
 #define ICPPOINTALIGN_HPP_
 
-#include <lvr2/registration/EigenSVDPointAlign.hpp>
-#include <lvr2/reconstruction/SearchTree.hpp>
-#include <lvr2/geometry/Matrix4.hpp>
+#include "lvr2/registration/EigenSVDPointAlign.hpp"
+#include "lvr2/reconstruction/SearchTree.hpp"
+#include "lvr2/geometry/Matrix4.hpp"
 
 namespace lvr2
 {
@@ -78,6 +78,6 @@ protected:
 
 } /* namespace lvr2 */
 
-#include <lvr2/registration/ICPPointAlign.tcc>
+#include "lvr2/registration/ICPPointAlign.tcc"
 
 #endif /* ICPPOINTALIGN_HPP_ */

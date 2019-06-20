@@ -39,16 +39,16 @@
 #ifndef LVR2_ALGORITHM_CLUSTERALGORITHMS_H_
 #define LVR2_ALGORITHM_CLUSTERALGORITHMS_H_
 
-#include <lvr2/algorithm/Materializer.hpp>
-#include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/geometry/HalfEdgeMesh.hpp>
-#include <lvr2/geometry/Handles.hpp>
-#include <lvr2/geometry/Plane.hpp>
-#include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/util/Cluster.hpp>
-#include <lvr2/util/ClusterBiMap.hpp>
-#include <lvr2/attrmaps/AttrMaps.hpp>
-#include <lvr2/geometry/Line.hpp>
+#include "lvr2/algorithm/Materializer.hpp"
+#include "lvr2/geometry/BaseMesh.hpp"
+#include "lvr2/geometry/HalfEdgeMesh.hpp"
+#include "lvr2/geometry/Handles.hpp"
+#include "lvr2/geometry/Plane.hpp"
+#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/util/Cluster.hpp"
+#include "lvr2/util/ClusterBiMap.hpp"
+#include "lvr2/attrmaps/AttrMaps.hpp"
+#include "lvr2/geometry/Line.hpp"
 
 #include <vector>
 
@@ -274,6 +274,6 @@ void deleteSmallPlanarCluster(
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/ClusterAlgorithms.tcc>
+#include "lvr2/algorithm/ClusterAlgorithms.tcc"
 
 #endif /* LVR2_ALGORITHM_CLUSTERALGORITHMS_H_ */

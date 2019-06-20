@@ -31,10 +31,10 @@
  *  @date Mar 18, 2014
  *  @author Thomas Wiemann
  */
-#include <lvr2/registration/ICPPointAlign.hpp>
-#include <lvr2/registration/EigenSVDPointAlign.hpp>
-#include <lvr2/io/Timestamp.hpp>
-#include <lvr2/reconstruction/SearchTreeFlann.hpp>
+#include "lvr2/registration/ICPPointAlign.hpp"
+#include "lvr2/registration/EigenSVDPointAlign.hpp"
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/reconstruction/SearchTreeFlann.hpp"
 
 
 #include <fstream>

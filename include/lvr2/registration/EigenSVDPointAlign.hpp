@@ -34,8 +34,8 @@
 #ifndef EIGENSVDPOINTALIGN_HPP_
 #define EIGENSVDPOINTALIGN_HPP_
 
-#include <lvr2/io/PointBuffer.hpp>
-#include <lvr2/geometry/Matrix4.hpp>
+#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/geometry/Matrix4.hpp"
 
 namespace lvr2
 {
@@ -57,6 +57,6 @@ public:
 
 } /* namespace lvr2 */
 
-#include <lvr2/registration/EigenSVDPointAlign.tcc>
+#include "lvr2/registration/EigenSVDPointAlign.tcc"
 
 #endif /* EIGENSVDPOINTALIGN_HPP_ */

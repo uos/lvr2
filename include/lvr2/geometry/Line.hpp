@@ -66,6 +66,6 @@ inline std::ostream& operator<<(std::ostream& os, const Line<BaseVecT>& l)
 
 } // namespace lvr2
 
-#include <lvr2/geometry/Line.tcc>
+#include "lvr2/geometry/Line.tcc"
 
 #endif /* LVR2_GEOMETRY_LINE_H_ */

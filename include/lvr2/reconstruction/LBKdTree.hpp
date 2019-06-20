@@ -29,15 +29,16 @@
 #define __LBKDTREE_HPP
 
 
-#include <lvr2/geometry/LBPointArray.hpp>
+#include "lvr2/geometry/LBPointArray.hpp"
 
 #include <ctpl.h>
 
 #include <stdlib.h>
 #include <math.h>
-#include <boost/shared_ptr.hpp>
 #include <list>
 #include <unordered_set>
+
+#include <boost/shared_ptr.hpp>
 
 namespace lvr2
 {

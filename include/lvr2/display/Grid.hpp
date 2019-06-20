@@ -35,8 +35,8 @@
 #ifndef GRID_HPP_
 #define GRID_HPP_
 
-#include <lvr2/display/Renderable.hpp>
-#include <lvr2/io/DataStruct.hpp>
+#include "lvr2/display/Renderable.hpp"
+#include "lvr2/io/DataStruct.hpp"
 
 namespace lvr2
 {
