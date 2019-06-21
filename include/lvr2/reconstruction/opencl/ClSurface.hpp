@@ -28,10 +28,10 @@
 #ifndef __ClSurface_H
 #define __ClSurface_H
 
-#include <lvr2/reconstruction/QueryPoint.hpp>
-#include <lvr2/reconstruction/LBKdTree.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/LBPointArray.hpp>
+#include "lvr2/reconstruction/QueryPoint.hpp"
+#include "lvr2/reconstruction/LBKdTree.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/LBPointArray.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/shared_array.hpp>
@@ -48,7 +48,7 @@
 #else
     #include <CL/cl.h>
 #endif
-#include <lvr2/reconstruction/opencl/cl_helper.h>
+#include "lvr2/reconstruction/opencl/cl_helper.h"
 
 #define MAX_SOURCE_SIZE (0x1024)
 

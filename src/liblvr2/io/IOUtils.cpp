@@ -31,20 +31,20 @@ namespace lvr2
 {
 
 
-Eigen::Matrix4f transformRegistration(const Eigen::Matrix4f& transform, const Eigen::Matrix4f& registration)
+Eigen::Matrix4d transformRegistration(const Eigen::Matrix4d& transform, const Eigen::Matrix4d& registration)
 {
-    Eigen::Matrix3f rotation_trans;
-    Eigen::Matrix3f rotation_registration;
+    Eigen::Matrix3d rotation_trans;
+    Eigen::Matrix3d rotation_registration;
 
     rotation_trans = transform.block<3,3>(0, 0);
     rotation_registration = registration.block<3,3>(0, 0);
 
-    Eigen::Matrix3f rotation = rotation_trans * rotation_registration;
+    Eigen::Matrix3d rotation = rotation_trans * rotation_registration;
 
-    Eigen::Matrix4f result = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4d result = Eigen::Matrix4d::Identity();
     result.block<3,3>(0, 0) = rotation;
 
-    Eigen::Vector3f tmp;
+    Eigen::Vector3d tmp;
     tmp = registration.block<3,1>(0,3);
     tmp = rotation_trans * tmp;
 
@@ -547,10 +547,6 @@ void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, con
     {
         in >> position.x >> position.y >> position.z;
         in >> angles.y >> angles.y >> angles.z;
-    }
-    else
-    {
-        cout << timestamp << "Unable to open " << file.string() << endl;
     }
 }
 

@@ -32,7 +32,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr2/config/lvropenmp.hpp>
+#include "lvr2/config/lvropenmp.hpp"
 
 #ifdef LVR2_USE_OPEN_MP
 #include <omp.h>

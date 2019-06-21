@@ -3,9 +3,9 @@
 
 #include <vector>
 
-#include <lvr2/io/HDF5IO.hpp>
-#include <lvr2/io/ScanData.hpp>
-#include <lvr2/io/CamData.hpp>
+#include "lvr2/io/HDF5IO.hpp"
+#include "lvr2/io/ScanData.hpp"
+#include "lvr2/io/CamData.hpp"
 
 namespace lvr2
 {

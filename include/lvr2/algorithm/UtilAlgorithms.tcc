@@ -27,8 +27,8 @@
 
 #include <algorithm>
 
-#include <lvr2/attrmaps/AttrMaps.hpp>
-#include <lvr2/geometry/Handles.hpp>
+#include "lvr2/attrmaps/AttrMaps.hpp"
+#include "lvr2/geometry/Handles.hpp"
 
 namespace lvr2
 {

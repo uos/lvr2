@@ -41,11 +41,11 @@
 
 #include <H5Tpublic.h>
 #include <hdf5_hl.h>
-
 #include <highfive/H5DataSet.hpp>
 #include <highfive/H5DataSpace.hpp>
 #include <highfive/H5File.hpp>
-#include <lvr2/io/AttributeMeshIOBase.hpp>
+
+#include "lvr2/io/AttributeMeshIOBase.hpp"
 #include <string>
 
 namespace lvr2
@@ -61,14 +61,19 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
 
     /**
          * \brief Parse the given file and load supported elements.
-         *#include <highfive/H5DataSet.hpp>
-#include <highfive/H5DataSpace.hpp>
-#include <highfive/H5File.hpp>
+         *#include <highfive/H5DataSet.hpp"
+#include <highfive/H5DataSpace.hpp"
+#include <highfive/H5File.hpp"
          * @param filename  The file to read.
          */
     virtual ModelPtr read(std::string filename);
 
     ModelPtr read(std::string filename, size_t scanNr);
+
+    bool readPointCloud(ModelPtr model_ptr);
+
+    bool readMesh(ModelPtr model_ptr);
+
 
     /**
          * \brief Save the loaded elements to the given file.
@@ -76,6 +81,18 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
          * @param filename Filename of the file to write.
          */
     virtual void save(std::string filename);
+
+    virtual void save(ModelPtr model, std::string filename);
+
+    bool saveMesh(ModelPtr model_ptr);
+
+
+
+    /**
+     * @brief Construct a new HDF5IO object. Do not use this. Only used by ModelFactory
+     *  
+     */
+    HDF5IO() {}
 
     HDF5IO(std::string filename, int open_flags = HighFive::File::ReadOnly);
 
@@ -163,7 +180,6 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
     bool compress();
 
     size_t chunkSize();
-
 
   private:
 

@@ -48,22 +48,24 @@
 #include <vtkGraphicsFactory.h>
 #include <vtkOrientationMarkerWidget.h>
 #include <vtkAxesActor.h>
-
-
-#if VTK_MAJOR_VERSION > 6
-    #include <vtkRenderStepsPass.h>
-    #include <vtkEDLShading.h>
-#endif
-
 #include <vtkOpenGLRenderer.h>
 #include <vtkNew.h>
 
-#include "../widgets/LVRPlotter.hpp"
+// EDL shading is only available in new vtk versions
+#ifdef LVR_USE_VTK_GE_7_1
+#include <vtkEDLShading.h>
+#include <vtkRenderStepsPass.h>
+#endif
+
 #include <QtGui>
+
 #include "ui_LVRMainWindowUI.h"
 #include "ui_LVRAboutDialogUI.h"
 #include "ui_LVRTooltipDialogUI.h"
+
 #include "LVRTreeWidgetHelper.hpp"
+
+#include "../widgets/LVRPlotter.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../widgets/LVRModelItem.hpp"
 #include "../widgets/LVRPointCloudItem.hpp"
@@ -85,9 +87,7 @@
 #include "../widgets/LVRScanDataItem.hpp"
 #include "../widgets/LVRCamDataItem.hpp"
 #include "../widgets/LVRBoundingBoxItem.hpp"
-
 #include "../widgets/LVRPointInfo.hpp"
-
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
@@ -95,7 +95,8 @@
 #include <iterator>
 #include <vector>
 #include <set>
-#include "boost/format.hpp"
+#include <boost/format.hpp>
+
 using std::vector;
 using std::cout;
 using std::endl;
@@ -116,6 +117,7 @@ public:
 
 public Q_SLOTS:
     void loadModel();
+    void loadModels(const QStringList& filenames);
     void manualICP();
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);
@@ -134,6 +136,8 @@ public Q_SLOTS:
     void applyMLSProjection();
     void removeOutliers();
     void deleteModelItem();
+    void copyModelItem();
+    void pasteModelItem();
     void loadPointCloudData();
     void unloadPointCloudData();
     void changePointSize(int pointSize);
@@ -166,9 +170,8 @@ public Q_SLOTS:
     void toggleNormals(bool checkboxState);
     void toggleMeshes(bool checkboxState);
     void toggleWireframe(bool checkboxState);
-#if VTK_MAJOR_VERSION > 6
     void toogleEDL(bool checkboxstate);
-#endif
+
     void refreshView();
     void updateView();
     void saveCamera();
@@ -197,6 +200,7 @@ public Q_SLOTS:
 
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
+    QList<LVRPointCloudItem*> getPointCloudItems(QList<QTreeWidgetItem*> items);
     LVRMeshItem* getMeshItem(QTreeWidgetItem* item);
     std::set<LVRModelItem*> getSelectedModelItems();
     std::set<LVRPointCloudItem*> getSelectedPointCloudItems();
@@ -215,7 +219,10 @@ private:
     void setupQVTK();
     void connectSignalsAndSlots();
     LVRModelItem* loadModelItem(QString name);
+    bool childNameExists(QTreeWidgetItem* item, const QString& name);
+    QString increaseFilename(QString filename);
 
+    QList<QTreeWidgetItem*>                     m_items_copied;
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;
     LVRPlotter*                                 m_PointPreviewPlotter;
@@ -297,6 +304,8 @@ private:
     QLineEdit*                          m_gradientLineEdit;
     // ContextMenu Items
     QAction*                            m_actionShowColorDialog;
+    QAction*                            m_actionCopyModelItem;
+    QAction*                            m_actionPasteModelItem;
     QAction*                            m_actionRenameModelItem;
     QAction*                            m_actionDeleteModelItem;
     QAction*                            m_actionExportModelTransformed;
@@ -311,10 +320,11 @@ private:
 
 
     // EDM Rendering
-#if VTK_MAJOR_VERSION > 6
+#ifdef LVR_USE_VTK_GE_7_1
     vtkSmartPointer<vtkRenderStepsPass> m_basicPasses;
     vtkSmartPointer<vtkEDLShading>      m_edl;
 #endif
+
 
     enum TYPE {
         MODELITEMS_ONLY,

@@ -40,8 +40,8 @@
 #include <iomanip>
 #include <vector>
 
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/io/DataStruct.hpp>
+#include "lvr2/geometry/Normal.hpp"
+#include "lvr2/io/DataStruct.hpp"
 
 #define _USE_MATH_DEFINES
 #include <cmath>

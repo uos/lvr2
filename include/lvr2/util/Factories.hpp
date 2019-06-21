@@ -37,8 +37,8 @@
 #include <memory>
 #include <string>
 
-#include <lvr2/reconstruction/SearchTree.hpp>
-#include <lvr2/io/PointBuffer.hpp>
+#include "lvr2/reconstruction/SearchTree.hpp"
+#include "lvr2/io/PointBuffer.hpp"
 
 using std::string;
 
@@ -57,6 +57,6 @@ SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr buffer);
 
 } // namespace lvr2
 
-#include <lvr2/util/Factories.tcc>
+#include "lvr2/util/Factories.tcc"
 
 #endif // LVR2_UTIL_FACTORIES_H_

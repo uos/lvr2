@@ -37,7 +37,7 @@
 #include "ui_LVRRegistrationPickCorrespondancesDialogUI.h"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
-#include <lvr2/registration/EigenSVDPointAlign.hpp>
+#include "lvr2/registration/EigenSVDPointAlign.hpp"
 
 #include <iostream>
 using namespace std;
@@ -55,7 +55,7 @@ public:
     LVRCorrespondanceDialog(QTreeWidget* parent);
     virtual ~LVRCorrespondanceDialog();
     void fillComboBoxes();
-    boost::optional<Matrix4d> getTransformation();
+    boost::optional<Matrix4f> getTransformation();
     QString  getModelName();
     QString  getDataName();
 

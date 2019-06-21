@@ -28,9 +28,9 @@
 #ifndef POINTBUFFER2_HPP
 #define POINTBUFFER2_HPP
 
-#include <lvr2/io/DataStruct.hpp>
-#include <lvr2/io/BaseBuffer.hpp>
-#include <lvr2/io/ChannelManager.hpp>
+#include "lvr2/io/DataStruct.hpp"
+#include "lvr2/io/BaseBuffer.hpp"
+#include "lvr2/io/ChannelManager.hpp"
 
 #include <map>
 #include <string>
@@ -123,6 +123,9 @@ public:
 
     /// Returns the number of points in the buffer
     size_t numPoints() const;
+
+    /// Makes a clone
+    PointBuffer clone();
 private:
 
     /// Point channel, 'cached' to allow faster access

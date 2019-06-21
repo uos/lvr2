@@ -32,7 +32,7 @@
  */
 #include <utility>
 #include <memory>
-#include <lvr2/util/Panic.hpp>
+#include "lvr2/util/Panic.hpp"
 
 using std::make_pair;
 

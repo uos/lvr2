@@ -35,7 +35,7 @@
 #ifndef COORDINATEAXES_H_
 #define COORDINATEAXES_H_
 
-#include <lvr2/display/Renderable.hpp>
+#include "lvr2/display/Renderable.hpp"
 
 namespace lvr2
 {

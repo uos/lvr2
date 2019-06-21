@@ -45,11 +45,11 @@
 #include <sstream>
 #include <vector>
 
-#include <lvr2/io/BaseIO.hpp>
-#include <lvr2/io/AsciiIO.hpp>
+#include "lvr2/io/BaseIO.hpp"
+#include "lvr2/io/AsciiIO.hpp"
 
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Matrix4.hpp>
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/Matrix4.hpp"
 
 using std::string;
 using std::fstream;

@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/display/Color.hpp>
+#include "lvr2/display/Color.hpp"
 
 namespace lvr2
 {

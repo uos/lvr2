@@ -32,7 +32,7 @@
  *      Author: twiemann
  */
 
-#include <lvr2/display/Arrow.hpp>
+#include "lvr2/display/Arrow.hpp"
 #include <GL/glut.h>
 
 namespace lvr2

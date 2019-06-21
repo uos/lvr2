@@ -37,7 +37,7 @@
  * @date       Last modified: 2012-01-03 12:34:28
  */
 
-#include <lvr2/io/BaseIO.hpp>
+#include "lvr2/io/BaseIO.hpp"
 
 
 #include <string>

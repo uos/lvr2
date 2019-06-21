@@ -41,7 +41,7 @@
 #ifndef __PLY_IO_H__
 #define __PLY_IO_H__
 
-#include <lvr2/io/BaseIO.hpp>
+#include "lvr2/io/BaseIO.hpp"
 
 #include <rply.h>
 #include <stdint.h>

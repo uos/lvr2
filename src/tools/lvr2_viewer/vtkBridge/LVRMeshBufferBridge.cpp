@@ -47,7 +47,7 @@
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 
-#include <lvr2/util/Util.hpp>
+#include "lvr2/util/Util.hpp"
 
 namespace lvr2
 {

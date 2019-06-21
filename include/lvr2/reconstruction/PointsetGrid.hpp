@@ -38,7 +38,7 @@
 #include "HashGrid.hpp"
 
 #include "PointsetSurface.hpp"
-#include <lvr2/geometry/BoundingBox.hpp>
+#include "lvr2/geometry/BoundingBox.hpp"
 
 namespace lvr2
 {
@@ -74,7 +74,7 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/reconstruction/PointsetGrid.tcc>
+#include "lvr2/reconstruction/PointsetGrid.tcc"
 
 
 #endif // _LVR2_RECONSTRUCTION_POINTSETGRID_H_

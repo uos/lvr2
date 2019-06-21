@@ -8,10 +8,10 @@
 
 #include <vtkMatrix4x4.h>
 
-#include <lvr2/io/ScanDataManager.hpp>
-#include <lvr2/geometry/Transformable.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Normal.hpp>
+#include "lvr2/io/ScanDataManager.hpp"
+#include "lvr2/geometry/Transformable.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/Normal.hpp"
 
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../vtkBridge/LVRBoundingBoxBridge.hpp"

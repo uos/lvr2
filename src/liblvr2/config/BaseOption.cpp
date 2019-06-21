@@ -32,8 +32,8 @@
  *      Author: twiemann
  */
 
-#include <lvr2/config/BaseOption.hpp>
-#include <lvr2/io/ModelFactory.hpp>
+#include "lvr2/config/BaseOption.hpp"
+#include "lvr2/io/ModelFactory.hpp"
 
 namespace lvr2
 {
@@ -45,9 +45,9 @@ BaseOption::BaseOption(int argc, char** argv)
     		("xPos,x", value<int>()->default_value(0), "Position of the x-coordinates in the input point data (according to screen coordinates).")
 			("yPos,y", value<int>()->default_value(1), "Position of the y-coordinates in the input data lines (according to screen coordinates).")
 			("zPos,z", value<int>()->default_value(2), "Position of the z-coordinates in the input data lines (according to screen coordinates).")
-			("sx", value<float>()->default_value(1.0), "Scaling factor for the x coordinates.")
-			("sy", value<float>()->default_value(1.0), "Scaling factor for the y coordinates.")
-			("sz", value<float>()->default_value(1.0), "Scaling factor for the z coordinates.")
+            ("sx", value<float>()->default_value(1.0f), "Scaling factor for the x coordinates.")
+            ("sy", value<float>()->default_value(1.0f), "Scaling factor for the y coordinates.")
+            ("sz", value<float>()->default_value(1.0f), "Scaling factor for the z coordinates.")
 	;
     m_coordinateTransform = new CoordinateTransform<float>;
 }

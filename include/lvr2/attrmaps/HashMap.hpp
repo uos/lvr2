@@ -36,7 +36,7 @@
 
 #include <unordered_map>
 
-#include <lvr2/attrmaps/AttributeMap.hpp>
+#include "lvr2/attrmaps/AttributeMap.hpp"
 
 using std::unordered_map;
 
@@ -118,6 +118,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/attrmaps/HashMap.tcc>
+#include "lvr2/attrmaps/HashMap.tcc"
 
 #endif /* LVR2_ATTRMAPS_HASHMAP_H_ */

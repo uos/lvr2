@@ -35,9 +35,9 @@
 #ifndef POINTCLOUD_H_
 #define POINTCLOUD_H_
 
-#include <lvr2/display/Renderable.hpp>
+#include "lvr2/display/Renderable.hpp"
 
-#include <lvr2/geometry/ColorVertex.hpp>
+#include "lvr2/geometry/ColorVertex.hpp"
 
 #include <vector>
 #include <string>

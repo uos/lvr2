@@ -48,7 +48,7 @@ using std::string;
 #include <OpenGL/gl.h>
 #endif
 
-#include <lvr2/texture/Texture.hpp>
+#include "lvr2/texture/Texture.hpp"
 
 namespace lvr2
 {

@@ -32,8 +32,8 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr2/display/PointCloud.hpp>
-#include <lvr2/display/ColorMap.hpp>
+#include "lvr2/display/PointCloud.hpp"
+#include "lvr2/display/ColorMap.hpp"
 
 #include <string.h>
 

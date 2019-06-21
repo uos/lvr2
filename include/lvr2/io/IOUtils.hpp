@@ -50,7 +50,7 @@ namespace lvr2
  * @param registration          A matrix representing a registration (i.e. transformation) that
  * @return Eigen::Matrix4d      The transformed registration matrix
  */
-Eigen::Matrix4f transformRegistration(const Eigen::Matrix4f& transform, const Eigen::Matrix4f& registration);
+Eigen::Matrix4d transformRegistration(const Eigen::Matrix4d& transform, const Eigen::Matrix4d& registration);
 
 /**
  * @brief   Loads an Euler representation of from a pose file

@@ -28,7 +28,7 @@
 #include <stdio.h>
 
 #include <iostream>
-#include <lvr2/reconstruction/LBKdTree.hpp>
+#include "lvr2/reconstruction/LBKdTree.hpp"
 
 namespace lvr2
 {

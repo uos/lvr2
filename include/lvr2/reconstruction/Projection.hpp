@@ -29,7 +29,7 @@
 #define PROJECTION_H
 #include <cmath>
 
-#include <lvr2/reconstruction/ModelToImage.hpp>
+#include "lvr2/reconstruction/ModelToImage.hpp"
 
 namespace lvr2
 {

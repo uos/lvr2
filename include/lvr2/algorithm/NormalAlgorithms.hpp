@@ -38,12 +38,12 @@
 #ifndef LVR2_ALGORITHM_NORMALALGORITHMS_H_
 #define LVR2_ALGORITHM_NORMALALGORITHMS_H_
 
-#include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/util/Cluster.hpp>
-#include <lvr2/util/ClusterBiMap.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/attrmaps/AttrMaps.hpp>
+#include "lvr2/geometry/BaseMesh.hpp"
+#include "lvr2/util/Cluster.hpp"
+#include "lvr2/util/ClusterBiMap.hpp"
+#include "lvr2/geometry/Normal.hpp"
+#include "lvr2/reconstruction/PointsetSurface.hpp"
+#include "lvr2/attrmaps/AttrMaps.hpp"
 
 namespace lvr2
 {
@@ -111,6 +111,6 @@ DenseVertexMap<Normal<typename BaseVecT::CoordType>> calcVertexNormals(
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/NormalAlgorithms.tcc>
+#include "lvr2/algorithm/NormalAlgorithms.tcc"
 
 #endif /* LVR2_ALGORITHM_NORMALALGORITHMS_H_ */

@@ -34,9 +34,9 @@
 #ifndef ICPPOINTALIGN_HPP_
 #define ICPPOINTALIGN_HPP_
 
-#include <lvr2/registration/EigenSVDPointAlign.hpp>
-#include <lvr2/registration/KDTree.hpp>
-#include <lvr2/registration/Scan.hpp>
+#include "lvr2/registration/EigenSVDPointAlign.hpp"
+#include "lvr2/registration/KDTree.hpp"
+#include "lvr2/registration/Scan.hpp"
 
 namespace lvr2
 {

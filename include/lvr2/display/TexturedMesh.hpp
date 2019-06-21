@@ -35,8 +35,8 @@
 #ifndef TEXTUREDMESH_HPP_
 #define TEXTUREDMESH_HPP_
 
-#include <lvr2/display/StaticMesh.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
+#include "lvr2/display/StaticMesh.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
 
 namespace lvr2
 {
