@@ -44,9 +44,9 @@
 
 using boost::optional;
 
-#include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/attrmaps/AttrMaps.hpp>
+#include "lvr2/geometry/BaseMesh.hpp"
+#include "lvr2/reconstruction/PointsetSurface.hpp"
+#include "lvr2/attrmaps/AttrMaps.hpp"
 
 namespace lvr2
 {
@@ -117,6 +117,6 @@ Rgb8Color calcColorForFaceCentroid(
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/ColorAlgorithms.tcc>
+#include "lvr2/algorithm/ColorAlgorithms.tcc"
 
 #endif /* LVR2_ALGORITHM_COLORALGORITHMS_H_ */

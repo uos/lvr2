@@ -34,8 +34,8 @@
 #ifndef LVRPOINTBUFFERBRIDGE_HPP_
 #define LVRPOINTBUFFERBRIDGE_HPP_
 
-#include <lvr2/display/ColorMap.hpp>
-#include <lvr2/io/PointBuffer.hpp>
+#include "lvr2/display/ColorMap.hpp"
+#include "lvr2/io/PointBuffer.hpp"
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>

@@ -5,8 +5,8 @@
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/BoundingBox.hpp>
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/BoundingBox.hpp"
 
 
 namespace lvr2

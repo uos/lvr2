@@ -45,6 +45,22 @@ endif(MSVC)
 # EXTERNAL LIBRARIES
 ###############################################################
 
+###
+## Searching for TIFF
+##############################
+find_package(TIFF REQUIRED)
+if(TIFF_FOUND)
+    include_directories(${TIFF_INCLUDE_DIRS})
+endif(TIFF_FOUND)
+
+###
+## Searching for GDAL
+##############################
+find_package(GDAL REQUIRED)
+if(GDAL_FOUND)
+    include_directories(${GDAL_INCLUDE_DIR})
+endif(GDAL_FOUND)
+
 ####
 ## Searching for CUDA
 ##############################
@@ -60,7 +76,7 @@ endif(NOT APPLE)
 ##############################
 find_package( OpenCV 3 )
 if (!OpenCV_FOUND)
-  find_package( OpenCV 4 REQUIRED )
+  find_package( OpenCV )
 endif()
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
@@ -371,15 +387,14 @@ option(WITH_KINFU "Compile LVR Kinfu" OFF)
 # compatible to gcc4.8. Older CUDA versions require GCC lower
 # than 4.8
 
-if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VERSION_EQUAL 8)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6 )
+if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VERSION_GREATER 8)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7 )
         message(STATUS "******************************************************************")
         message(STATUS "* Your gcc version needs to be lower than 6 to compile the LVR   *")
-        message(STATUS "* CUDA library and apps with CUDA 8. Please install gcc 5.       *")
+        message(STATUS "* CUDA library and apps with CUDA. Setting CUDA_HOST_COMPILER to *")
+        message(STATUS "* g++-6*. Please ensure that g++ 6 is installed on your system.  *")
         message(STATUS "******************************************************************")
-        message(WARNING "Incompatible CUDA host compiler detected. Setting host compiler to gcc-5.
-          Please ensure that this version is installed on your system")
-        set(CUDA_HOST_COMPILER "gcc-5")
+        set(CUDA_HOST_COMPILER "g++-6" CACHE STRING "" FORCE)
         endif()
 endif()
 
@@ -462,11 +477,13 @@ add_subdirectory(src/tools/lvr2_asciiconverter)
 add_subdirectory(src/tools/lvr2_transform)
 # doesnt compile
 # add_subdirectory(src/tools/lvr2_kaboom)
+add_subdirectory(src/tools/lvr2_octree_test)
 add_subdirectory(src/tools/lvr2_image_normals)
 add_subdirectory(src/tools/lvr2_plymerger)
 add_subdirectory(src/tools/lvr2_hdf5_builder)
 add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
 add_subdirectory(src/tools/lvr2_slam2hdf5)
+add_subdirectory(src/tools/lvr2_hdf5togeotiff)
 add_subdirectory(src/tools/lvr2_slam6d_merger)
 add_subdirectory(src/tools/lvr2_scanproject2hdf5)
 add_subdirectory(src/tools/lvr2_registration)
@@ -502,6 +519,7 @@ configure_package_config_file(LVR2Config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
   INSTALL_DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr2
   PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
+  
 write_basic_package_version_file(
   ${CMAKE_CURRENT_BINARY_DIR}/LVR2ConfigVersion.cmake
   COMPATIBILITY SameMajorVersion
@@ -513,7 +531,12 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
 
 install(FILES
     CMakeModules/FindEigen3.cmake
+    CMakeModules/FindFLANN.cmake
+    CMakeModules/FindLZ4.cmake
     CMakeModules/FindNabo.cmake
+    CMakeModules/FindOpenNI.cmake
+    CMakeModules/FindOpenNI2.cmake
+    CMakeModules/FindQVTK.cmake
     CMakeModules/FindSTANN.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2/Modules)
 

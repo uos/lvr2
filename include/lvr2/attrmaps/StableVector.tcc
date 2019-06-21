@@ -32,7 +32,7 @@
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#include <lvr2/util/Panic.hpp>
+#include "lvr2/util/Panic.hpp"
 #include <boost/shared_array.hpp>
 
 #include <sstream>

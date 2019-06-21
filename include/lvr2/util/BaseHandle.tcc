@@ -35,7 +35,7 @@
 
 #include <limits>
 
-#include <lvr2/util/Panic.hpp>
+#include "lvr2/util/Panic.hpp"
 
 using std::numeric_limits;
 
@@ -77,6 +77,12 @@ template <typename IdxT>
 bool BaseHandle<IdxT>::operator!=(const BaseHandle& other) const
 {
     return m_idx != other.m_idx;
+}
+
+template <typename IdxT>
+bool BaseHandle<IdxT>::operator<(const BaseHandle& other) const
+{
+    return m_idx < other.m_idx;
 }
 
 template <typename IdxT, typename NonOptionalT>

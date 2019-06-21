@@ -36,7 +36,7 @@
 #ifndef LVR2_TEXTURE_CLUSTER_TEXCOORD_MAPPING_H_
 #define LVR2_TEXTURE_CLUSTER_TEXCOORD_MAPPING_H_
 
-#include <lvr2/geometry/Handles.hpp>
+#include "lvr2/geometry/Handles.hpp"
 
 #include <vector>
 #include <utility>

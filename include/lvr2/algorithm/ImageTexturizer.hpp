@@ -35,11 +35,11 @@
 #ifndef LVR2_ALGORITHM_IMAGETEXTURIZER_HPP
 #define LVR2_ALGORITHM_IMAGETEXTURIZER_HPP
 
-#include <lvr2/algorithm/Texturizer.hpp>
-#include <lvr2/geometry/Normal.hpp>
+#include "lvr2/algorithm/Texturizer.hpp"
+#include "lvr2/geometry/Normal.hpp"
 
-#include <lvr2/io/ScanprojectIO.hpp>
-#include <lvr2/geometry/Matrix4.hpp>
+#include "lvr2/io/ScanprojectIO.hpp"
+#include "lvr2/geometry/Matrix4.hpp"
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -49,7 +49,8 @@ namespace lvr2
 
 /// @cond internal
 template<typename BaseVecT>
-struct ImageData {
+struct ImageData 
+{
     cv::Mat data;
     BaseVecT  pos;
     BaseVecT  dir;
@@ -64,7 +65,8 @@ struct ImageData {
  *        for meshes.
  */
 template<typename BaseVecT>
-class ImageTexturizer : public Texturizer<BaseVecT> {
+class ImageTexturizer : public Texturizer<BaseVecT> 
+{
 
 public:
 

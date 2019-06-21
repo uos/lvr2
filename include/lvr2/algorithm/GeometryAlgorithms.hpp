@@ -32,9 +32,9 @@
 #ifndef LVR2_ALGORITHM_GEOMETRYALGORITHMS_H_
 #define LVR2_ALGORITHM_GEOMETRYALGORITHMS_H_
 
-#include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/attrmaps/AttrMaps.hpp>
-#include <lvr2/geometry/Handles.hpp>
+#include "lvr2/geometry/BaseMesh.hpp"
+#include "lvr2/attrmaps/AttrMaps.hpp"
+#include "lvr2/geometry/Handles.hpp"
 #include <list>
 
 namespace lvr2

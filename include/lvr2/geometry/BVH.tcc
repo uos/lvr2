@@ -252,6 +252,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTree(
         triangle.idx3 = faces[i+2];
 
         // pick best normal
+        typename BaseVecT::CoordType test = 2.0;
         Normal<typename BaseVecT::CoordType> normal1(cross1);
         Normal<typename BaseVecT::CoordType> normal2(cross2);
         Normal<typename BaseVecT::CoordType> normal3(cross3);

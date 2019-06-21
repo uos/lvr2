@@ -35,9 +35,9 @@
 #ifndef INTERACTIVEPOINTCLOUD_HPP_
 #define INTERACTIVEPOINTCLOUD_HPP_
 
-#include <lvr2/display/Renderable.hpp>
+#include "lvr2/display/Renderable.hpp"
 
-#include <lvr2/io/Model.hpp>
+#include "lvr2/io/Model.hpp"
 
 namespace lvr2
 {

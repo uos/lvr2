@@ -32,7 +32,7 @@
  *  @author Thomas Wiemann
  */
 
-#include <lvr2/display/ColorMap.hpp>
+#include "lvr2/display/ColorMap.hpp"
 
 #include <cassert>
 #include <cmath>

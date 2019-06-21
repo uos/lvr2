@@ -30,15 +30,15 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
-#include <lvr2/geometry/Handles.hpp>
-#include <lvr2/attrmaps/AttrMaps.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/io/ChannelManager.hpp>
-#include <lvr2/geometry/HalfEdgeMesh.hpp>
+#include "lvr2/geometry/Handles.hpp"
+#include "lvr2/attrmaps/AttrMaps.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/Normal.hpp"
+#include "lvr2/io/ChannelManager.hpp"
+#include "lvr2/geometry/HalfEdgeMesh.hpp"
 
-#include <lvr2/io/GroupedChannelIO.hpp>
-#include <lvr2/io/MeshGeometryIO.hpp>
+#include "lvr2/io/GroupedChannelIO.hpp"
+#include "lvr2/io/MeshGeometryIO.hpp"
 
 namespace lvr2{
 
@@ -60,6 +60,18 @@ class AttributeMeshIOBase : public MeshGeometryIO, public GroupedChannelIO
    * @return Returns an optional to a HalfEdgeMesh which is valid if the mesh has been read successfully
    */
   boost::optional<HalfEdgeMesh<BaseVec>> getMesh();
+
+  /**
+   * @brief addDenseAttributeMap    Stores a dense attribute map to the persistence layer where the attribute group
+   *                                is defined by the given map type.
+   * @tparam MapT                   The map type of the map which has to be stored
+   * @param mesh                    The mesh which correspond to the map
+   * @param map                     The map which has to be stored
+   * @param name                    The name under which the map should be stored
+   * @return                        true if the map has been stored successfully, false otherwise
+   */
+  template<typename MapT, typename BaseVecT>
+  bool addDenseAttributeMap(const BaseMesh<BaseVecT>& mesh, const MapT& map, const std::string& name);
 
   /**
    * @brief addDenseAttributeMap    Stores a dense attribute map to the persistence layer where the attribute group

@@ -34,10 +34,10 @@
 
 #include <stdio.h>
 
-#include <lvr2/io/BoctreeIO.hpp>
-#include <lvr2/io/Timestamp.hpp>
+#include "lvr2/io/BoctreeIO.hpp"
+#include "lvr2/io/Timestamp.hpp"
 
-#include "slam6d/Boctree.h"
+#include <slam6d/Boctree.h>
 
 namespace lvr2
 {

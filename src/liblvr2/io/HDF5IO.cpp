@@ -114,32 +114,113 @@ size_t HDF5IO::chunkSize()
 
 ModelPtr HDF5IO::read(std::string filename)
 {
+    open(filename, HighFive::File::ReadOnly);
+    ModelPtr model_ptr(new Model);
+
+    std::cout << timestamp << "HDF5IO: loading..." << std::endl;
+    // read mesh information
+    if(readMesh(model_ptr))
+    {
+        std::cout << timestamp << " Mesh successfully loaded." << std::endl;
+    } else {
+        std::cout << timestamp << " Mesh could not be loaded." << std::endl;
+    }
+
+    // read pointcloud information out of scans
+    if(readPointCloud(model_ptr))
+    {
+        std::cout << timestamp << " PointCloud successfully loaded." << std::endl;
+    } else {
+        std::cout << timestamp << " PointCloud could not be loaded." << std::endl;
+    }
+    
+    return model_ptr;
+}
+
+bool HDF5IO::readPointCloud(ModelPtr model_ptr)
+{
+    std::vector<ScanData> scans = getRawScanData(true);
+    if(scans.size() == 0)
+    {
+        return false;
+    }
+
+    size_t n_points_total = 0;
+    for(const ScanData& scan : scans)
+    {
+        n_points_total += scan.m_points->numPoints();
+    }
+
+    floatArr points(new float[n_points_total * 3]);
+    BaseVector<float>* points_raw_it = reinterpret_cast<BaseVector<float>* >(
+        points.get()
+    );
+
+    for(int i=0; i<scans.size(); i++)
+    {
+        size_t num_points = scans[i].m_points->numPoints();
+        floatArr pts = scans[i].m_points->getPointArray();
+
+        Matrix4<BaseVector<float> > T = scans[i].m_poseEstimation;
+        T.transpose();
+
+        BaseVector<float>* begin = reinterpret_cast<BaseVector<float>* >(pts.get());
+        BaseVector<float>* end = begin + num_points;
+
+        while(begin != end)
+        {
+            const BaseVector<float>& cp = *begin;
+            *points_raw_it = T * cp;
+
+            begin++;
+            points_raw_it++;
+        }
+    }
+
+    model_ptr->m_pointCloud.reset(new PointBuffer(points, n_points_total));
+
+    return true;
+}
+
+bool HDF5IO::readMesh(ModelPtr model_ptr)
+{
     const std::string mesh_resource_path = "meshes/" + m_part_name;
     const std::string vertices("vertices");
     const std::string indices("indices");
 
-    open(filename, HighFive::File::ReadOnly);
-    ModelPtr model_ptr(new Model);
     if(!exist(mesh_resource_path)){
-        std::cout << timestamp << " No mesh with the part name \"" << m_part_name << "\" given in the file \""
-        << filename << "\"!" << std::endl;
-    }
-    else
-    {
+        return false;
+    } else {
         auto mesh = getGroup(mesh_resource_path);
+        
         if(!mesh.exist(vertices) || !mesh.exist(indices)){
             std::cout << timestamp << " The mesh has to contain \"" << vertices
                 << "\" and \"" << indices << "\"" << std::endl;
             std::cout << timestamp << " Return empty model pointer!" << std::endl;
-            return model_ptr;
+            return false;
         }
+
+        std::vector<size_t> vertexDims;
+        std::vector<size_t> faceDims;
+
         // read mesh buffer
-        unsigned int numVertices;
-        model_ptr->m_mesh->setVertices(getArray<float>(mesh_resource_path, vertices, numVertices), numVertices);
-        unsigned int numFaces;
-        model_ptr->m_mesh->setFaceIndices(getArray<unsigned int>(mesh_resource_path, indices, numFaces), numFaces/3);
+        floatArr vbuffer = getArray<float>(mesh_resource_path, vertices, vertexDims);
+        indexArray ibuffer = getArray<unsigned int>(mesh_resource_path, indices, faceDims);
+
+        if(vertexDims[0] == 0)
+        {
+            return false;
+        }
+        if(!model_ptr->m_mesh)
+        {
+            model_ptr->m_mesh.reset(new MeshBuffer());
+        }
+
+        model_ptr->m_mesh->setVertices(vbuffer, vertexDims[0]);
+
+        model_ptr->m_mesh->setFaceIndices(ibuffer, faceDims[0]);
     }
-    return model_ptr;
+    return true;
 }
 
 bool HDF5IO::open(std::string filename, int open_flag)
@@ -195,6 +276,79 @@ void HDF5IO::write_base_structure()
 
 void HDF5IO::save(std::string filename)
 {
+
+}
+
+void HDF5IO::save(ModelPtr model, std::string filename)
+{
+    open(filename, HighFive::File::ReadWrite);
+
+    if(saveMesh(model))
+    {
+        std::cout << timestamp << " Mesh succesfully saved to " << filename << std::endl;
+    } else {
+        std::cout << timestamp << " Mesh could not saved to " << filename << std::endl;
+    }
+}
+
+bool HDF5IO::saveMesh(ModelPtr model_ptr)
+{
+    if(!model_ptr->m_mesh)
+    {
+        std::cout << timestamp << " Model does not contain a mesh" << std::endl;
+        return false;
+    }
+    
+    const std::string mesh_resource_path = "meshes/" + m_part_name;
+    const std::string vertices("vertices");
+    const std::string indices("indices");
+
+    
+    if(exist(mesh_resource_path)){
+        std::cout << timestamp << " Mesh already exists in file!" << std::endl;
+        return false;
+    } else {
+
+        auto mesh = getGroup(mesh_resource_path);
+
+        if(mesh.exist(vertices) || mesh.exist(indices)){
+            std::cout << timestamp << " The mesh has to contain \"" << vertices
+                << "\" and \"" << indices << "\"" << std::endl;
+            std::cout << timestamp << " Return empty model pointer!" << std::endl;
+            return false;
+        }
+
+        std::vector<size_t> vertexDims = {model_ptr->m_mesh->numVertices(), 3};
+        std::vector<size_t> faceDims = {model_ptr->m_mesh->numFaces(), 3};
+
+        if(vertexDims[0] == 0)
+        {
+            std::cout << timestamp << " The mesh has 0 vertices" << std::endl;
+            return false;
+        }
+        if(faceDims[0] == 0)
+        {
+            std::cout << timestamp << " The mesh has 0 faces" << std::endl;
+            return false;
+        }
+
+        addArray<float>(
+            mesh_resource_path,
+            vertices,
+            vertexDims,
+            model_ptr->m_mesh->getVertices()
+        );
+
+        addArray<unsigned int>(
+            mesh_resource_path,
+            indices,
+            faceDims,
+            model_ptr->m_mesh->getFaceIndices()
+        );
+        
+    }
+
+    return true;
 
 }
 

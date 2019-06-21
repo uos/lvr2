@@ -28,9 +28,9 @@
 // Program options for this tool
 
 
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/reconstruction/ModelToImage.hpp>
-#include <lvr2/reconstruction/PanoramaNormals.hpp>
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/reconstruction/ModelToImage.hpp"
+#include "lvr2/reconstruction/PanoramaNormals.hpp"
 #include "Options.hpp"
 using namespace lvr2;
 

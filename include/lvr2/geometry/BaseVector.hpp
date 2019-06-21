@@ -115,6 +115,12 @@ public:
      *           the given vector. Returns a new BaseVector instance.
      */
     BaseVector<CoordT> cross(const BaseVector &other) const;
+    
+    /**
+     * @brief    Calculates the rotated vector around an normal vector n with the rotation angle alpha
+     *
+     */
+    BaseVector<CoordT> rotated(const BaseVector &n, const double &alpha) const;
 
     /**
      * @brief    Calculates the dot product between this and
@@ -218,6 +224,6 @@ std::ostream& operator<<( std::ostream& os, const BaseVector<T>& v)
 
 } // namespace lvr
 
-#include <lvr2/geometry/BaseVector.tcc>
+#include "lvr2/geometry/BaseVector.tcc"
 
 #endif /* LVR2_GEOMETRY_BASEVECTOR_H_ */

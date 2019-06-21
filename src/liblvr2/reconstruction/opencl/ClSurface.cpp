@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/reconstruction/opencl/ClSurface.hpp>
+#include "lvr2/reconstruction/opencl/ClSurface.hpp"
 
 namespace lvr2
 {

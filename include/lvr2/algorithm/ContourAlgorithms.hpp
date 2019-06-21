@@ -33,8 +33,8 @@
 #define LVR2_ALGORITHM_CONTOURALGORITHMS_H_
 
 
-#include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/geometry/Handles.hpp>
+#include "lvr2/geometry/BaseMesh.hpp"
+#include "lvr2/geometry/Handles.hpp"
 
 namespace lvr2
 {
@@ -152,6 +152,6 @@ void calcContourVertices(
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/ContourAlgorithms.tcc>
+#include "lvr2/algorithm/ContourAlgorithms.tcc"
 
 #endif /* LVR2_ALGORITHM_CONTOURALGORITHMS_H_ */

@@ -1,8 +1,8 @@
 namespace lvr2 {
 
-template <typename BaseVecT>
-CLRaycaster<BaseVecT>::CLRaycaster(const MeshBufferPtr mesh)
-:BVHRaycaster<BaseVecT>(mesh)
+template <typename PointT, typename NormalT>
+CLRaycaster<PointT, NormalT>::CLRaycaster(const MeshBufferPtr mesh)
+:BVHRaycaster<PointT, NormalT>(mesh)
 ,m_warp_size(32)
 { 
     // std::cout << "CL Raycaster. Loading OpenCl Kernels..." << std::endl;
@@ -25,17 +25,15 @@ CLRaycaster<BaseVecT>::CLRaycaster(const MeshBufferPtr mesh)
 /// PUBLIC FUNTIONS
 /// Overload functions ///
 
-template <typename BaseVecT>
-bool CLRaycaster<BaseVecT>::castRay(
-    const Point<BaseVecT>& origin,
-    const Vector<BaseVecT>& direction,
-    Point<BaseVecT>& intersection
+template <typename PointT, typename NormalT>
+bool CLRaycaster<PointT, NormalT>::castRay(
+    const PointT& origin,
+    const NormalT& direction,
+    PointT& intersection
 ) 
 {
     // Cast one ray from one origin
     bool success = false;
-
-    Point<BaseVecT> dst = {0.0, 0.0, 0.0};
 
     // yeah
     const float* origin_f = reinterpret_cast<const float*>(&origin.x);
@@ -100,11 +98,11 @@ bool CLRaycaster<BaseVecT>::castRay(
     return success;
 }
 
-template <typename BaseVecT>
-void CLRaycaster<BaseVecT>::castRays(
-    const Point<BaseVecT>& origin,
-    const std::vector<Vector<BaseVecT> >& directions,
-    std::vector<Point<BaseVecT> >& intersections,
+template <typename PointT, typename NormalT>
+void CLRaycaster<PointT, NormalT>::castRays(
+    const PointT& origin,
+    const std::vector<NormalT >& directions,
+    std::vector<PointT >& intersections,
     std::vector<uint8_t>& hits
 )
 {
@@ -170,11 +168,105 @@ void CLRaycaster<BaseVecT>::castRays(
 
 }
 
-template <typename BaseVecT>
-void CLRaycaster<BaseVecT>::castRays(
-    const std::vector<Point<BaseVecT> >& origins,
-    const std::vector<Vector<BaseVecT> >& directions,
-    std::vector<Point<BaseVecT> >& intersections,
+
+template <typename PointT, typename NormalT>
+CLRaycasterRuntimeStats CLRaycaster<PointT, NormalT>::castRaysWithStats(
+    const PointT& origin,
+    const std::vector<NormalT >& directions,
+    std::vector<PointT >& intersections,
+    std::vector<uint8_t>& hits
+)
+{
+    CLRaycasterRuntimeStats stats;
+    // Cast multiple rays from one origin
+    hits.resize(directions.size());
+    intersections.resize(directions.size());
+
+    // copy data
+    const float* origin_f = reinterpret_cast<const float*>(&origin.x);
+    const float* direction_f = reinterpret_cast<const float*>(directions.data());
+
+    std::chrono::time_point<std::chrono::steady_clock> start, end;
+
+
+    try { 
+        start = std::chrono::steady_clock::now();
+        initOpenCLRayBuffer(3, directions.size()*3);
+        copyRayDataToGPU(origin_f, 3, direction_f, directions.size()*3);
+        end = std::chrono::steady_clock::now();
+        stats.copy_data_to_device 
+            = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+        start = std::chrono::steady_clock::now();
+
+        m_kernel_one_multi.setArg(0, m_rayOriginBuffer);
+        m_kernel_one_multi.setArg(1, m_rayBuffer);
+        m_kernel_one_multi.setArg(2, m_bvhIndicesOrTriListsBuffer);
+        m_kernel_one_multi.setArg(3, m_bvhLimitsnBuffer);
+        m_kernel_one_multi.setArg(4, m_bvhTriangleIntersectionDataBuffer);
+        m_kernel_one_multi.setArg(5, m_bvhTriIdxListBuffer);
+        m_kernel_one_multi.setArg(6, m_resultBuffer);
+        m_kernel_one_multi.setArg(7, m_resultHitsBuffer);
+
+        end = std::chrono::steady_clock::now();
+        stats.kernel_building 
+            = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+        start = std::chrono::steady_clock::now();
+        cl::Event evt;
+
+        m_queue.enqueueNDRangeKernel(
+            m_kernel_one_multi,
+            cl::NullRange,
+            cl::NDRange(directions.size()),
+            cl::NullRange,
+            nullptr,
+            &evt
+        );
+        
+        m_queue.finish();
+        end = std::chrono::steady_clock::now();
+        stats.kernel_execution 
+            = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+        // std::cout << "enqueue ND Range kernel finished" << std::endl;
+
+        start = std::chrono::steady_clock::now();
+        m_queue.enqueueReadBuffer(
+            m_resultBuffer,
+            CL_TRUE,
+            0,
+            sizeof(float) * 3 * directions.size(),
+            intersections.data()
+        );
+        
+        m_queue.enqueueReadBuffer(
+            m_resultHitsBuffer,
+            CL_TRUE,
+            0,
+            sizeof(uint8_t) * directions.size(),
+            hits.data()
+        );
+        m_queue.finish();
+        end = std::chrono::steady_clock::now();
+        stats.copy_data_to_host 
+            = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+    }
+    catch (cl::Error err)
+    {
+        std::cerr << err.what() << ": " << CLUtil::getErrorString(err.err()) << std::endl;
+        std::cout << "(" << CLUtil::getErrorDescription(err.err()) << ")" << std::endl;
+    }
+
+    return stats;
+
+}
+
+template <typename PointT, typename NormalT>
+void CLRaycaster<PointT, NormalT>::castRays(
+    const std::vector<PointT >& origins,
+    const std::vector<NormalT >& directions,
+    std::vector<PointT >& intersections,
     std::vector<uint8_t>& hits
 )
 {
@@ -239,9 +331,9 @@ void CLRaycaster<BaseVecT>::castRays(
 }
 
 
-template<typename BaseVecT>
-void CLRaycaster<BaseVecT>::testKernel(const Point<BaseVecT>& origin,
-    const std::vector<Vector<BaseVecT> >& directions)
+template <typename PointT, typename NormalT>
+void CLRaycaster<PointT, NormalT>::testKernel(const PointT& origin,
+    const std::vector<NormalT >& directions)
 {
     const float* origin_f = reinterpret_cast<const float*>(&origin.x);
     const float* direction_f = reinterpret_cast<const float*>(directions.data());
@@ -280,8 +372,8 @@ void CLRaycaster<BaseVecT>::testKernel(const Point<BaseVecT>& origin,
 // PRIVATE FUNCTIONS
 
 
-template<typename BaseVecT>
-void CLRaycaster<BaseVecT>::initOpenCL()
+template <typename PointT, typename NormalT>
+void CLRaycaster<PointT, NormalT>::initOpenCL()
 {
     // std::cout << "Get platforms" << std::endl;
     vector<cl::Platform> platforms;
@@ -373,8 +465,8 @@ void CLRaycaster<BaseVecT>::initOpenCL()
     m_queue = cl::CommandQueue(m_context, m_device, 0);
 }
 
-template<typename BaseVecT>
-void CLRaycaster<BaseVecT>::getDeviceInformation()
+template <typename PointT, typename NormalT>
+void CLRaycaster<PointT, NormalT>::getDeviceInformation()
 {
     cl_int ret;
 
@@ -407,36 +499,36 @@ void CLRaycaster<BaseVecT>::getDeviceInformation()
 
 }
 
-template<typename BaseVecT>
-void CLRaycaster<BaseVecT>::initOpenCLTreeBuffer()
+template <typename PointT, typename NormalT>
+void CLRaycaster<PointT, NormalT>::initOpenCLTreeBuffer()
 {
 
     // create buffers on the device
     m_bvhIndicesOrTriListsBuffer = cl::Buffer(
         m_context,
         CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
-        sizeof(uint32_t) * BVHRaycaster<BaseVecT>::m_bvh.getIndexesOrTrilists().size()
+        sizeof(uint32_t) * BVHRaycaster<PointT, NormalT>::m_bvh.getIndexesOrTrilists().size()
     );
     m_bvhLimitsnBuffer = cl::Buffer(
         m_context,
         CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
-        sizeof(float) * BVHRaycaster<BaseVecT>::m_bvh.getLimits().size()
+        sizeof(float) * BVHRaycaster<PointT, NormalT>::m_bvh.getLimits().size()
     );
     m_bvhTriangleIntersectionDataBuffer = cl::Buffer(
         m_context,
         CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
-        sizeof(float) * BVHRaycaster<BaseVecT>::m_bvh.getTrianglesIntersectionData().size()
+        sizeof(float) * BVHRaycaster<PointT, NormalT>::m_bvh.getTrianglesIntersectionData().size()
     );
     m_bvhTriIdxListBuffer = cl::Buffer(
         m_context,
         CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
-        sizeof(uint32_t) * BVHRaycaster<BaseVecT>::m_bvh.getTriIndexList().size()
+        sizeof(uint32_t) * BVHRaycaster<PointT, NormalT>::m_bvh.getTriIndexList().size()
     );
 
 }
 
-template<typename BaseVecT>
-void CLRaycaster<BaseVecT>::initOpenCLRayBuffer(int num_origins, int num_rays)
+template <typename PointT, typename NormalT>
+void CLRaycaster<PointT, NormalT>::initOpenCLRayBuffer(int num_origins, int num_rays)
 {
     // input buffer
 
@@ -467,42 +559,42 @@ void CLRaycaster<BaseVecT>::initOpenCLRayBuffer(int num_origins, int num_rays)
 
 }
 
-template<typename BaseVecT>
-void CLRaycaster<BaseVecT>::copyBVHToGPU()
+template <typename PointT, typename NormalT>
+void CLRaycaster<PointT, NormalT>::copyBVHToGPU()
 {
     m_queue.enqueueWriteBuffer(
         m_bvhIndicesOrTriListsBuffer,
         CL_TRUE,
         0,
-        sizeof(uint32_t) * BVHRaycaster<BaseVecT>::m_bvh.getIndexesOrTrilists().size(),
-        BVHRaycaster<BaseVecT>::m_bvh.getIndexesOrTrilists().data()
+        sizeof(uint32_t) * BVHRaycaster<PointT, NormalT>::m_bvh.getIndexesOrTrilists().size(),
+        BVHRaycaster<PointT, NormalT>::m_bvh.getIndexesOrTrilists().data()
     );
     m_queue.enqueueWriteBuffer(
         m_bvhLimitsnBuffer,
         CL_TRUE,
         0,
-        sizeof(float) * BVHRaycaster<BaseVecT>::m_bvh.getLimits().size(),
-        BVHRaycaster<BaseVecT>::m_bvh.getLimits().data()
+        sizeof(float) * BVHRaycaster<PointT, NormalT>::m_bvh.getLimits().size(),
+        BVHRaycaster<PointT, NormalT>::m_bvh.getLimits().data()
     );
     m_queue.enqueueWriteBuffer(
         m_bvhTriangleIntersectionDataBuffer,
         CL_TRUE,
         0,
-        sizeof(float) * BVHRaycaster<BaseVecT>::m_bvh.getTrianglesIntersectionData().size(),
-        BVHRaycaster<BaseVecT>::m_bvh.getTrianglesIntersectionData().data()
+        sizeof(float) * BVHRaycaster<PointT, NormalT>::m_bvh.getTrianglesIntersectionData().size(),
+        BVHRaycaster<PointT, NormalT>::m_bvh.getTrianglesIntersectionData().data()
     );
     m_queue.enqueueWriteBuffer(
         m_bvhTriIdxListBuffer,
         CL_TRUE,
         0,
-        sizeof(uint32_t) * BVHRaycaster<BaseVecT>::m_bvh.getTriIndexList().size(),
-        BVHRaycaster<BaseVecT>::m_bvh.getTriIndexList().data()
+        sizeof(uint32_t) * BVHRaycaster<PointT, NormalT>::m_bvh.getTriIndexList().size(),
+        BVHRaycaster<PointT, NormalT>::m_bvh.getTriIndexList().data()
     );
 
 }
 
-template<typename BaseVecT>
-void CLRaycaster<BaseVecT>::createKernel()
+template <typename PointT, typename NormalT>
+void CLRaycaster<PointT, NormalT>::createKernel()
 {
     // one origin one ray
 
@@ -521,8 +613,8 @@ void CLRaycaster<BaseVecT>::createKernel()
     m_kernel_test = cl::Kernel(m_program, "test");
 }
 
-template<typename BaseVecT>
-void CLRaycaster<BaseVecT>::copyRayDataToGPU(
+template <typename PointT, typename NormalT>
+void CLRaycaster<PointT, NormalT>::copyRayDataToGPU(
     const vector<float>& origins,
     const vector<float>& rays
 )
@@ -530,8 +622,8 @@ void CLRaycaster<BaseVecT>::copyRayDataToGPU(
     copyRayDataToGPU(origins.data(), origins.size(), rays.data(), rays.size());
 }
 
-template<typename BaseVecT>
-void CLRaycaster<BaseVecT>::copyRayDataToGPU(
+template <typename PointT, typename NormalT>
+void CLRaycaster<PointT, NormalT>::copyRayDataToGPU(
     const float* origin_buffer, size_t origin_buffer_size,
     const float* ray_buffer, size_t ray_buffer_size
 )

@@ -33,9 +33,9 @@
  */
 
 
-#include <lvr2/display/TexturedMesh.hpp>
+#include "lvr2/display/TexturedMesh.hpp"
 
-#include <lvr2/util/Util.hpp>
+#include "lvr2/util/Util.hpp"
 
 #include <map>
 using std::multimap;

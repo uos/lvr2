@@ -447,12 +447,12 @@ void LVRCorrespondanceDialog::treeItemSelected(QTreeWidgetItem* current, QTreeWi
     Q_EMIT(render());
 }
 
-boost::optional<Matrix4d> LVRCorrespondanceDialog::getTransformation()
+boost::optional<Matrix4f> LVRCorrespondanceDialog::getTransformation()
 {
     PointPairVector pairs;
-    std::vector<Vector3d> startPoints, endPoints;
-    Vector3d centroid_m = Vector3d::Zero();
-    Vector3d centroid_d = Vector3d::Zero();
+    std::vector<Vector3f> startPoints, endPoints;
+    Vector3f centroid_m = Vector3f::Zero();
+    Vector3f centroid_d = Vector3f::Zero();
 
     QTreeWidgetItemIterator it(m_ui->treeWidget);
     while (*it)
@@ -466,11 +466,11 @@ boost::optional<Matrix4d> LVRCorrespondanceDialog::getTransformation()
                 double* e = item->getEnd();
 
                 // Convert to left handed coordinates!
-                startPoints.push_back(Vector3d(s[0], s[1], s[2]));
-                endPoints.push_back(Vector3d(e[0], e[1], e[2]));
+                startPoints.push_back(Vector3f(s[0], s[1], s[2]));
+                endPoints.push_back(Vector3f(e[0], e[1], e[2]));
 
-                Vector3d* start = &startPoints.back();
-                Vector3d* end = &endPoints.back();
+                Vector3f* start = &startPoints.back();
+                Vector3f* end = &endPoints.back();
 
                 centroid_m += *start;
                 centroid_d += *end;
@@ -487,7 +487,7 @@ boost::optional<Matrix4d> LVRCorrespondanceDialog::getTransformation()
         centroid_m /= pairs.size();
         centroid_d /= pairs.size();
 
-        Matrix4d matrix;
+        Matrix4f matrix;
         EigenSVDPointAlign align;
         align.alignPoints(pairs, centroid_m, centroid_d, matrix);
 

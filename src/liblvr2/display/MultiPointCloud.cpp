@@ -32,7 +32,7 @@
  *  @author Thomas Wiemann
  */
 
-#include <lvr2/display/MultiPointCloud.hpp>
+#include "lvr2/display/MultiPointCloud.hpp"
 
 namespace lvr2
 {

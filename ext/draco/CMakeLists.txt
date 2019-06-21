@@ -793,13 +793,13 @@ if (EMSCRIPTEN AND ENABLE_JS_GLUE)
       ${draco_points_enc_sources}
       ${draco_version_sources})
 
-  add_executable(draco_decoder
+  add_executable(lvr2_draco_decoder
                  ${draco_js_dec_sources}
                  ${draco_decoder_src})
   append_link_flag_to_target(draco_decoder
                              "-s EXPORT_NAME=\"'DracoDecoderModule'\"")
 
-  add_executable(draco_encoder
+  add_executable(lvr2_draco_encoder
                  ${draco_js_enc_sources}
                  ${draco_encoder_src})
   append_link_flag_to_target(draco_encoder
@@ -934,7 +934,7 @@ else ()
   endif ()
 
   # Library targets that consume the object collections.
-  add_library(dracodec
+  add_library(lvr2dracodec
               ${draco_version_sources}
               $<TARGET_OBJECTS:draco_attributes>
               $<TARGET_OBJECTS:draco_compression_attributes_dec>
@@ -953,7 +953,7 @@ else ()
               $<TARGET_OBJECTS:draco_animation_dec>
               $<TARGET_OBJECTS:draco_point_cloud>
               $<TARGET_OBJECTS:draco_points_dec>)
-  add_library(dracoenc
+  add_library(lvr2dracoenc
               ${draco_version_sources}
               $<TARGET_OBJECTS:draco_attributes>
               $<TARGET_OBJECTS:draco_compression_attributes_enc>
@@ -972,7 +972,7 @@ else ()
               $<TARGET_OBJECTS:draco_animation_enc>
               $<TARGET_OBJECTS:draco_point_cloud>
               $<TARGET_OBJECTS:draco_points_enc>)
-  add_library(draco
+  add_library(lvr2draco
               ${draco_version_sources}
               $<TARGET_OBJECTS:draco_attributes>
               $<TARGET_OBJECTS:draco_compression_attributes_dec>
@@ -1106,11 +1106,11 @@ else ()
   endif ()
 
   # Draco app targets.
-  add_executable(draco_decoder "${draco_src_root}/tools/draco_decoder.cc")
-  target_link_libraries(draco_decoder PRIVATE dracodec)
-  add_executable(draco_encoder
+  add_executable(lvr2_draco_decoder "${draco_src_root}/tools/draco_decoder.cc")
+  target_link_libraries(lvr2_draco_decoder PRIVATE lvr2dracodec)
+  add_executable(lvr2_draco_encoder
                  "${draco_src_root}/tools/draco_encoder.cc")
-  target_link_libraries(draco_encoder PRIVATE draco)
+  target_link_libraries(lvr2_draco_encoder PRIVATE lvr2draco)
 
   if (ENABLE_TESTS)
     add_executable(draco_tests ${draco_test_sources})
@@ -1138,8 +1138,12 @@ else ()
   endif ()
 
   # Add install rules for lib and executable targets.
-  install(TARGETS dracodec dracoenc draco
+  install(TARGETS lvr2dracodec lvr2dracoenc lvr2draco
           DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+
+  # Fix to solve LVR2 cmake dependency
+  install(TARGETS lvr2dracodec lvr2dracoenc lvr2draco EXPORT lvr2Targets DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+
   if (BUILD_UNITY_PLUGIN)
     install(TARGETS dracodec_unity
             DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
@@ -1149,7 +1153,7 @@ else ()
             DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
   endif ()
 
-  install(TARGETS draco_decoder draco_encoder DESTINATION
+  install(TARGETS lvr2_draco_decoder lvr2_draco_encoder DESTINATION
           "${CMAKE_INSTALL_PREFIX}/bin")
 
   # Generate a CMake config file.

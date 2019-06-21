@@ -35,10 +35,10 @@
 #ifndef _LVR2_RECONSTRUCTION_FASTBOX_H_
 #define _LVR2_RECONSTRUCTION_FASTBOX_H_
 
-#include <lvr2/reconstruction/MCTable.hpp>
-#include <lvr2/reconstruction/FastBoxTables.hpp>
+#include "lvr2/reconstruction/MCTable.hpp"
+#include "lvr2/reconstruction/FastBoxTables.hpp"
 
-#include <lvr2/geometry/Normal.hpp>
+#include "lvr2/geometry/Normal.hpp"
 
 #include "QueryPoint.hpp"
 
@@ -220,6 +220,6 @@ protected:
 
 } // namespace lvr2
 
-#include <lvr2/reconstruction/FastBox.tcc>
+#include "lvr2/reconstruction/FastBox.tcc"
 
 #endif /* _LVR2_RECONSTRUCTION_FASTBOX_H_ */

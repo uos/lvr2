@@ -36,12 +36,12 @@
 #include <utility>
 #include <cmath>
 
-#include <lvr2/algorithm/Materializer.hpp>
+#include "lvr2/algorithm/Materializer.hpp"
 
-#include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/io/Progress.hpp>
+#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/io/Progress.hpp"
 
-#include <lvr2/util/Util.hpp>
+#include "lvr2/util/Util.hpp"
 
 namespace lvr2
 {

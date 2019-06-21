@@ -38,8 +38,8 @@
 #include <list>
 using namespace std;
 
-#include <lvr2/display/Renderable.hpp>
-#include <lvr2/display/StaticMesh.hpp>
+#include "lvr2/display/Renderable.hpp"
+#include "lvr2/display/StaticMesh.hpp"
 
 namespace lvr2
 {

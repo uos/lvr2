@@ -38,7 +38,8 @@
 
 using boost::optional;
 
-#include <lvr2/util/BaseHandle.hpp>
+#include <memory>
+#include "lvr2/util/BaseHandle.hpp"
 
 namespace lvr2
 {
@@ -239,6 +240,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/attrmaps/AttributeMap.tcc>
+#include "lvr2/attrmaps/AttributeMap.tcc"
 
 #endif /* LVR2_ATTRMAPS_ATTRIBUTEMAP_H_ */

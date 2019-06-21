@@ -139,7 +139,7 @@ private:
 
         // intersection pre-computed cache
         float d, d1, d2, d3;
-        Normal<BaseVecT> e1, e2, e3;
+        Normal<float> e1, e2, e3;
 
         // todo: not used?
         BoundingBox<BaseVecT> bb;
@@ -246,4 +246,4 @@ private:
 
 } /* namespace lvr2 */
 
-#include <lvr2/geometry/BVH.tcc>
+#include "lvr2/geometry/BVH.tcc"

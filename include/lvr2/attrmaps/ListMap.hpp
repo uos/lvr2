@@ -37,7 +37,7 @@
 #include <utility>
 #include <vector>
 
-#include <lvr2/attrmaps/AttributeMap.hpp>
+#include "lvr2/attrmaps/AttributeMap.hpp"
 
 using std::vector;
 using std::pair;
@@ -142,6 +142,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/attrmaps/ListMap.tcc>
+#include "lvr2/attrmaps/ListMap.tcc"
 
 #endif /* LVR2_ATTRMAPS_LISTMAP_H_ */

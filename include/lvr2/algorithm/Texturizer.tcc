@@ -33,9 +33,9 @@
 *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
 */
 
-#include <lvr2/io/Progress.hpp>
-#include <lvr2/io/Timestamp.hpp>
-#include <lvr2/algorithm/ColorAlgorithms.hpp>
+#include "lvr2/io/Progress.hpp"
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/algorithm/ColorAlgorithms.hpp"
 
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>

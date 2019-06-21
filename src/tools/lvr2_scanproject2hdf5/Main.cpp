@@ -1,12 +1,15 @@
 #include <iostream>
-#include <lvr2/io/ScanData.hpp>
-#include <lvr2/io/CamData.hpp>
-#include <lvr2/io/HDF5IO.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Matrix4.hpp>
-#include <lvr2/util/Util.hpp>
+
+#include "lvr2/io/ScanData.hpp"
+#include "lvr2/io/CamData.hpp"
+#include "lvr2/io/HDF5IO.hpp"
+#include "lvr2/io/ScanprojectIO.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/Matrix4.hpp"
+#include "lvr2/util/Util.hpp"
+
 #include <opencv2/core.hpp>
-#include <lvr2/io/ScanprojectIO.hpp>
+
 
 using namespace lvr2;
 

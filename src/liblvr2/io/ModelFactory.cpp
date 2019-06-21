@@ -32,28 +32,29 @@
  *  @author Thomas Wiemann
  */
 
-#include <lvr2/io/AsciiIO.hpp>
-#include <lvr2/io/PLYIO.hpp>
-#include <lvr2/io/UosIO.hpp>
-#include <lvr2/io/ObjIO.hpp>
-#include <lvr2/io/LasIO.hpp>
-#include <lvr2/io/BoctreeIO.hpp>
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/io/DatIO.hpp>
-#include <lvr2/io/STLIO.hpp>
-#include <lvr2/io/ScanprojectIO.hpp>
+#include "lvr2/io/AsciiIO.hpp"
+#include "lvr2/io/PLYIO.hpp"
+#include "lvr2/io/UosIO.hpp"
+#include "lvr2/io/ObjIO.hpp"
+#include "lvr2/io/LasIO.hpp"
+#include "lvr2/io/HDF5IO.hpp"
+#include "lvr2/io/BoctreeIO.hpp"
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/DatIO.hpp"
+#include "lvr2/io/STLIO.hpp"
+#include "lvr2/io/ScanprojectIO.hpp"
 
-#include <lvr2/io/Timestamp.hpp>
-#include <lvr2/io/Progress.hpp>
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/io/Progress.hpp"
 
 // PCL related includes
 #ifdef LVR2_USE_PCL
-#include <lvr2/io/PCDIO.hpp>
+#include "lvr2/io/PCDIO.hpp"
 #endif
 
 // RiVLib
 #ifdef LVR2_USE_RIVLIB
-#include <lvr2/io/RxpIO.hpp>
+#include "lvr2/io/RxpIO.hpp"
 #endif
 
 #include <boost/filesystem.hpp>
@@ -99,6 +100,10 @@ ModelPtr ModelFactory::readModel( std::string filename )
     else if (extension ==".dat")
     {
         io = new DatIO;
+    }
+    else if (extension ==".h5")
+    {
+        io = new HDF5IO;
     }
 #ifdef LVR2_USE_PCL
     else if (extension == ".pcd")
@@ -247,6 +252,10 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     else if (extension == ".stl")
     {
         io = new STLIO;
+    }
+    else if (extension == ".h5")
+    {
+        io = new HDF5IO;
     }
 #ifdef LVR2_USE_PCL
     else if (extension == ".pcd")

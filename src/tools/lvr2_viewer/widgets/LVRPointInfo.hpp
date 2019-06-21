@@ -28,7 +28,7 @@
 #ifndef POINTINFO_H_
 #define POINTINFO_H_
 
-#include <lvr2/io/PointBuffer.hpp>
+#include "lvr2/io/PointBuffer.hpp"
 #include <QtWidgets>
 #include <QDialog>
 #include "LVRPlotter.hpp"

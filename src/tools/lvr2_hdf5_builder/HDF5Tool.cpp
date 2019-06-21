@@ -36,18 +36,20 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-
 #include <string.h>
+#include <string>
+#include <sstream>
+#include <algorithm>
+#include <cstring>
 
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/io/Timestamp.hpp>
-#include <lvr2/display/ColorMap.hpp>
-
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/io/HDF5IO.hpp"
+#include "lvr2/io/CalibrationParameters.hpp"
+#include "lvr2/display/ColorMap.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/geometry/Matrix4.hpp"
-
-#include "lvr2/io/CalibrationParameters.hpp"
 
 #include "Options.hpp"
 
@@ -55,13 +57,6 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-
-#include <lvr2/io/HDF5IO.hpp>
-
-#include <string>
-#include <sstream>
-#include <algorithm>
-#include <cstring>
 
 using namespace lvr2;
 using boost::filesystem::path;

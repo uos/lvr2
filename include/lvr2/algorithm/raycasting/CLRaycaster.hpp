@@ -35,19 +35,20 @@
 
 #pragma once
 
-#include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Vector.hpp>
-#include <lvr2/geometry/Point.hpp>
-#include <lvr2/geometry/BVH.hpp>
+#include <chrono>
+#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/Vector.hpp"
+#include "lvr2/geometry/Point.hpp"
+#include "lvr2/geometry/BVH.hpp"
 
-#include <lvr2/algorithm/raycasting/BVHRaycaster.hpp>
+#include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
 
 #define CL_HPP_ENABLE_EXCEPTIONS
 #define CL_HPP_MINIMUM_OPENCL_VERSION 120 // Need to set to 120 on CUDA 8
 #define CL_HPP_TARGET_OPENCL_VERSION 120 // Need to set to 120 on CUDA 8
-#include <CL/cl2.hpp>
-#include <lvr2/util/CLUtil.hpp>
+#include <CL/cl2.hpp"
+#include "lvr2/util/CLUtil.hpp"
 
 const char *CAST_RAYS_BVH_PROGRAM =
     #include "opencl/cast_rays_bvh.cl"
@@ -56,11 +57,31 @@ const char *CAST_RAYS_BVH_PROGRAM =
 namespace lvr2
 {
 
+struct CLRaycasterRuntimeStats {
+    int copy_data_to_device;
+    int copy_data_to_host;
+    int kernel_execution;
+    int kernel_building;
+public:
+
+    int copy() const {
+        return copy_data_to_host + copy_data_to_device;
+    }
+
+    int kernel() const {
+        return kernel_execution + kernel_building;
+    }
+
+    int total() const {
+        return kernel() + copy();
+    }
+};
+
 /**
  *  @brief CLRaycaster: GPU OpenCL version of BVH Raycasting: WIP
  */
-template <typename BaseVecT>
-class CLRaycaster : public BVHRaycaster<BaseVecT> {
+template <typename PointT, typename NormalT>
+class CLRaycaster : public BVHRaycaster<PointT, NormalT> {
 public:
 
     /**
@@ -71,27 +92,34 @@ public:
     /// Overload functions ///
 
     bool castRay(
-        const Point<BaseVecT>& origin,
-        const Vector<BaseVecT>& direction,
-        Point<BaseVecT>& intersection
+        const PointT& origin,
+        const NormalT& direction,
+        PointT& intersection
     );
 
     void castRays(
-        const Point<BaseVecT>& origin,
-        const std::vector<Vector<BaseVecT> >& directions,
-        std::vector<Point<BaseVecT> >& intersections,
+        const PointT& origin,
+        const std::vector<NormalT >& directions,
+        std::vector<PointT >& intersections,
+        std::vector<uint8_t>& hits
+    );
+
+    CLRaycasterRuntimeStats castRaysWithStats(
+        const PointT& origin,
+        const std::vector<NormalT >& directions,
+        std::vector<PointT >& intersections,
         std::vector<uint8_t>& hits
     );
 
     void castRays(
-        const std::vector<Point<BaseVecT> >& origins,
-        const std::vector<Vector<BaseVecT> >& directions,
-        std::vector<Point<BaseVecT> >& intersections,
+        const std::vector<PointT >& origins,
+        const std::vector<NormalT >& directions,
+        std::vector<PointT >& intersections,
         std::vector<uint8_t>& hits
     );
 
-    void testKernel(const Point<BaseVecT>& origin,
-        const std::vector<Vector<BaseVecT> >& directions);
+    void testKernel(const PointT& origin,
+        const std::vector<NormalT >& directions);
 
 private:
     /**
@@ -181,4 +209,4 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/raycasting/CLRaycaster.tcc>
+#include "lvr2/algorithm/raycasting/CLRaycaster.tcc"
