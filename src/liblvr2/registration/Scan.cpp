@@ -63,11 +63,11 @@ Scan::Scan(PointBufferPtr points, const Matrix4f& pose)
 
 void Scan::transform(const Matrix4f& transform, bool writeFrame)
 {
-    m_pose *= transform;
-    m_deltaPose *= transform;
+    m_pose = transform * m_pose;
+    m_deltaPose = transform * m_deltaPose;
 
     m_transformChanged = true;
-    m_transformChange *= transform;
+    m_transformChange = transform * m_transformChange;
 
     if (writeFrame)
     {
