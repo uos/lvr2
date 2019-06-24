@@ -64,6 +64,7 @@ int main(int argc, char** argv)
     int end = -1;
     string format = "uos";
     string pose_format = "pose";
+    bool load_parallel = false;
     path dir;
     bool help;
 
@@ -137,6 +138,9 @@ int main(int argc, char** argv)
 
         ("metascan", bool_switch(&options.metascan),
          "Match scans to the combined pointcloud of all previous scans")
+
+        ("load-parallel", bool_switch(&load_parallel),
+         "Load scans in Parallel. Good for ASCII Scans that do not exceed RAM")
 
         ("verbose,v", bool_switch(&options.verbose),
          "Show more detailed output")
@@ -255,26 +259,41 @@ int main(int argc, char** argv)
 
     SlamAlign align(options, count);
 
+    // omp does not allow early break/return
+    bool failed = false;
+
+    #pragma omp parallel for if(load_parallel)
     for (int i = 0; i < count; i++)
     {
+        if (failed) // "break" was called => skip rest of loop
+        {
+            continue;
+        }
         path file = dir / format_name(format, start + i);
         auto model = ModelFactory::readModel(file.string());
 
         if (!model)
         {
             cerr << "Unable to read Model from: " << file.string() << endl;
-            return EXIT_FAILURE;
+            failed = true;
+            continue;
         }
         if (!model->m_pointCloud)
         {
             cerr << "file does not contain Points: " << file.string() << endl;
-            return EXIT_FAILURE;
+            failed = true;
+            continue;
         }
 
         file.replace_extension(pose_format);
         Matrix4f pose = getTransformationFromPose(file).cast<float>();
 
         align.setScan(i, make_shared<Scan>(model->m_pointCloud, pose));
+    }
+
+    if (failed)
+    {
+        return EXIT_FAILURE;
     }
 
     auto start_time = chrono::steady_clock::now();
