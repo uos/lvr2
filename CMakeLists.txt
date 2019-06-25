@@ -129,14 +129,6 @@ if(OPENCL_FOUND)
 endif()
 
 ####
-## Searching for OpenCl
-#############################
-find_package(OpenCL)
-if(OPENCL_FOUND)
-    include_directories(OPENCL_INCLUDE_DIR)
-endif()
-
-####
 ## Searching for VTK
 ##############################
 set(VTK_QT_VERSION 5)
