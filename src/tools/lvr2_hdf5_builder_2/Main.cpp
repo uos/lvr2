@@ -36,12 +36,12 @@ bool parse_scan_filename(Iterator first, Iterator last, int& i)
     using boost::spirit::qi::_1;
     using boost::phoenix::ref;
 
-    uint_parser<unsigned, 10, 3, 3> uint_3_d;
+    uint_parser<unsigned, 10, 1, -1> uint_3_d;
 
     bool r = parse(
             first,                          /*< start iterator >*/
             last,                           /*< end iterator >*/
-            ((lit("scan")|lit("Scan")) >> uint_3_d[ref(i) = _1])   /*< the parser >*/
+            (uint_3_d[ref(i) = _1])   /*< the parser >*/
             );
 
     if (first != last) // fail if we did not get a full match
@@ -61,7 +61,7 @@ bool parse_png_filename(Iterator first, Iterator last, int& i)
     using boost::spirit::qi::_1;
     using boost::phoenix::ref;
 
-    uint_parser<unsigned, 10, 3, 3> uint_3_d;
+    uint_parser<unsigned, 10, 1, -1> uint_3_d;
 
     bool r = parse(
             first,                          /*< start iterator >*/
@@ -150,12 +150,13 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
             size = PlutoMetaDataIO::readSpectralMetaData(it->path(), angles);
         }
 
-        if(it->path().extension() == ".jpg")
+        if(it->path().extension() == ".png")
         {
             spectral.push_back(*it);
             count++;
         }
     }
+
     if(size != count)
     {
         std::cout << "Incosistent" << std::endl;
