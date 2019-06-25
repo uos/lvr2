@@ -134,6 +134,7 @@ bool sortPanoramas(boost::filesystem::path firstScan, boost::filesystem::path se
 
 bool channelIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
 {
+    std::cout << timestamp << "Start processing channels" << std::endl;
     std::vector<boost::filesystem::path> spectral;
     char group[256];
     sprintf(group, "/raw/spectral/position_%05d", number);
@@ -182,12 +183,13 @@ bool channelIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     // TODO write aperture. 47.5 deg oder so
     // TODO panorama?
 
-    // check if correct number of pngs
+    std::cout << timestamp << "Finished processing channels" << std::endl;
     return true;
 }
 
 bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
 {
+    std::cout << timestamp << "Start processing frames" << std::endl;
     std::vector<boost::filesystem::path> spectral;
     char group[256];
     sprintf(group, "/raw/spectral/position_%05d", number);
@@ -214,6 +216,7 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
             count++;
         }
     }
+
     if(!yaml)
     {
       std::cout << timestamp << "No yaml config found" << std::endl;
@@ -257,6 +260,7 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     // TODO panorama?
 
     // check if correct number of pngs
+    std::cout << timestamp << "Finished processing frames" << std::endl;
     return true;
 }
 
@@ -278,7 +282,16 @@ bool scanIO(const boost::filesystem::path& p,  int number, const boost::filesyst
         }
 
         // TODO parse yaml
-        PlutoMetaDataIO::readScanMetaData(yaml, scan);
+        if(boost::filesystem::exists(yaml))
+        {
+          PlutoMetaDataIO::readScanMetaData(yaml, scan);
+        }
+        else
+        {
+          std::cout << timestamp << "No scan config found" << std::endl;
+        }
+        
+
         hdf.addRawScanData(number, scan);
 
         // needed?
@@ -363,17 +376,19 @@ int main(int argc, char** argv)
             }
         }
 
-        if(!ply_exists)
-        {
-            std::cout << timestamp << "No scan found" << std::endl;
-            exit(-1);
-        }
+        
 
         if(!spectral_exists)
         {
            std::cout << "No spectral information in: " << p << std::endl;
-           exit(-1);
         }
-        scanIO(ply, count, p/std::string("scan.yaml"), hdf);
+        if(!ply_exists)
+        {
+            std::cout << timestamp << "No scan found" << std::endl;
+        }
+        else
+        {
+          scanIO(ply, count, p/std::string("scan.yaml"), hdf);
+        }
     }
 }
