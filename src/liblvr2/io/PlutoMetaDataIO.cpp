@@ -10,7 +10,7 @@ size_t PlutoMetaDataIO::readSpectralMetaData(const boost::filesystem::path &fn, 
     for (auto &n : root)
     {
         angles = floatArr(new float[n.size()]);
-        std::cout << n.size() << std::endl;
+//        std::cout << n.size() << std::endl;
         size = n.size();
         for (YAML::const_iterator it = n.begin(); it != n.end(); ++it)
         {

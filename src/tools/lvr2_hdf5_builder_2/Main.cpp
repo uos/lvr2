@@ -196,7 +196,6 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     floatArr angles;
     //std::cout << p << std::endl;
    
-    size_t count = 0;
     size_t size  = 0;
     // count files and get all png pathes.
     bool yaml = false;
@@ -213,7 +212,6 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
         if((it->path().extension() == ".png") && parse_png_filename(fn.begin(), fn.end(), position))
         {
             spectral.push_back(*it);
-            count++;
         }
     }
 
@@ -222,9 +220,9 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
       std::cout << timestamp << "No yaml config found" << std::endl;
     }
 
-    if(size != count)
+    if(size != spectral.size())
     {
-        std::cout << timestamp << "Incosistent" << " " << size << " " << count << std::endl;
+        std::cout << timestamp << "Incosistent" << " " << size << " " << spectral.size() << std::endl;
     }
 
     std::sort(spectral.begin(), spectral.end(), sortPanoramas);
@@ -232,12 +230,12 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     // we assume that every frame has the same resolution
     // TODO change dimensions when writing
     cv::Mat img = cv::imread(spectral[0].string(), CV_LOAD_IMAGE_GRAYSCALE);
-    ucharArr data(new unsigned char[count * img.cols * img.rows]);
+    ucharArr data(new unsigned char[spectral.size() * img.cols * img.rows]);
     std::memcpy(data.get() + (img.rows * img.cols),
                 img.data,
                 img.rows * img.cols * sizeof(unsigned char));
     
-    std::vector<size_t> dim = {count, 
+    std::vector<size_t> dim = {spectral.size(), 
                                static_cast<size_t>(img.rows),
                                static_cast<size_t>(img.cols)};
 
@@ -254,7 +252,10 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
 
     hdf.addArray(group, "frames", dim, chunks, data);
     
-    hdf.addArray(group, "angles", size, angles);
+    if(size)
+    {
+      hdf.addArray(group, "angles", size, angles);
+    }
 
     // TODO write aperture. 47.5 deg oder so
     // TODO panorama?
