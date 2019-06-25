@@ -132,39 +132,99 @@ bool sortPanoramas(boost::filesystem::path firstScan, boost::filesystem::path se
     }
 }
 
+bool channelIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
+{
+    std::vector<boost::filesystem::path> spectral;
+    char group[256];
+    sprintf(group, "/raw/spectral/position_%05d", number);
+    floatArr angles;
+    //std::cout << p << std::endl;
+   
+    // count files and get all png pathes.
+    for(boost::filesystem::directory_iterator it(p); it != boost::filesystem::directory_iterator(); ++it)
+    {
+        std::string fn = it->path().stem().string();
+        int position;
+        if((it->path().extension() == ".png") && parse_png_filename(fn.begin(), fn.end(), position))
+        {
+            spectral.push_back(*it);
+        }
+    }
+
+    std::sort(spectral.begin(), spectral.end(), sortPanoramas);
+    //std::cout << "sorted " << std::endl;
+
+    // we assume that every frame has the same resolution
+    // TODO change dimensions when writing
+    cv::Mat img = cv::imread(spectral[0].string(), CV_LOAD_IMAGE_GRAYSCALE);
+    ucharArr data(new unsigned char[spectral.size() * img.cols * img.rows]);
+    std::memcpy(data.get() + (img.rows * img.cols),
+                img.data,
+                img.rows * img.cols * sizeof(unsigned char));
+    
+    std::vector<size_t> dim = {spectral.size(), 
+                               static_cast<size_t>(img.rows),
+                               static_cast<size_t>(img.cols)};
+
+    for(size_t i = 1; i < spectral.size(); ++i)
+    {   
+
+        cv::Mat img = cv::imread(spectral[i].string(), CV_LOAD_IMAGE_GRAYSCALE);
+        std::memcpy(data.get() + i * (img.rows * img.cols),
+                    img.data,
+                    img.rows * img.cols * sizeof(unsigned char));
+    }
+    
+    std::vector<hsize_t> chunks = {50, 50, 50};
+    hdf.addArray(group, "channels", dim, chunks, data);
+    //std::cout << "wrote channels" << std::endl;
+    
+    // TODO write aperture. 47.5 deg oder so
+    // TODO panorama?
+
+    // check if correct number of pngs
+    return true;
+}
+
 bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
 {
     std::vector<boost::filesystem::path> spectral;
     char group[256];
     sprintf(group, "/raw/spectral/position_%05d", number);
     floatArr angles;
-    std::cout << p << std::endl;
+    //std::cout << p << std::endl;
    
     size_t count = 0;
     size_t size  = 0;
     // count files and get all png pathes.
+    bool yaml = false;
     for(boost::filesystem::directory_iterator it(p); it != boost::filesystem::directory_iterator(); ++it)
     {
         if(it->path().extension() == ".yaml")
         {
             size = PlutoMetaDataIO::readSpectralMetaData(it->path(), angles);
+            yaml = true;
         }
-
-        if(it->path().extension() == ".png")
+        
+        std::string fn = it->path().stem().string();
+        int position;
+        if((it->path().extension() == ".png") && parse_png_filename(fn.begin(), fn.end(), position))
         {
             spectral.push_back(*it);
             count++;
         }
     }
+    if(!yaml)
+    {
+      std::cout << timestamp << "No yaml config found" << std::endl;
+    }
 
     if(size != count)
     {
-        std::cout << "Incosistent" << std::endl;
-        exit(-1);
+        std::cout << timestamp << "Incosistent" << " " << size << " " << count << std::endl;
     }
 
     std::sort(spectral.begin(), spectral.end(), sortPanoramas);
-    std::cout << "sorted " << std::endl;
 
     // we assume that every frame has the same resolution
     // TODO change dimensions when writing
@@ -178,7 +238,7 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
                                static_cast<size_t>(img.rows),
                                static_cast<size_t>(img.cols)};
 
-    for(size_t i = 1; i < spectral.size(); ++ i)
+    for(size_t i = 1; i < spectral.size(); ++i)
     {   
 
         cv::Mat img = cv::imread(spectral[i].string(), CV_LOAD_IMAGE_GRAYSCALE);
@@ -188,11 +248,10 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     }
     
     std::vector<hsize_t> chunks = {50, 50, 50};
-    hdf.addArray(group, "spectral", dim, chunks, data);
-    std::cout << "wrote spectral" << std::endl;
+
+    hdf.addArray(group, "frames", dim, chunks, data);
     
     hdf.addArray(group, "angles", size, angles);
-    std::cout << "wrote angles" << std::endl;
 
     // TODO write aperture. 47.5 deg oder so
     // TODO panorama?
@@ -203,7 +262,6 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
 
 bool scanIO(const boost::filesystem::path& p,  int number, const boost::filesystem::path& yaml, HDF5IO& hdf)
 {
-        std::cout << "read scan " << p << std::endl;
         ModelPtr model = ModelFactory::readModel(p.string());
         ScanData scan;
 
@@ -273,15 +331,29 @@ int main(int argc, char** argv)
     {
         char buffer[64];
         boost::filesystem::path ply;
+        std::string fn = p.stem().string();
+        if(!parse_png_filename(fn.begin(), fn.end(), count))
+        {
+          std::cout << timestamp << "Invalid path " << p << std::endl;
+          continue;
+        }
+        
+        std::cout << lvr2::timestamp << "Processing position " << count << std::endl;
 
         bool ply_exists = false;
         bool spectral_exists = false;
         for(boost::filesystem::directory_iterator it(p); it != boost::filesystem::directory_iterator(); ++it)
         {
             if(boost::filesystem::is_directory((*it).path()) &&
-               (*it).path().stem() == "spectral")
+               (*it).path().stem() == "frames")
             {
                 spectral_exists = spectralIO(it->path(), count, hdf);
+            }
+
+            if(boost::filesystem::is_directory((*it).path()) &&
+               (*it).path().stem() == "channels")
+            {
+              channelIO(it->path(), count, hdf);
             }
                     
             if((*it).path().extension() == ".ply")
@@ -293,7 +365,7 @@ int main(int argc, char** argv)
 
         if(!ply_exists)
         {
-            std::cout << "aaaaaaa" << std::endl;
+            std::cout << timestamp << "No scan found" << std::endl;
             exit(-1);
         }
 
