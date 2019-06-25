@@ -33,8 +33,6 @@
  *  @author Malte Hillmann
  */
 #include <lvr2/registration/KDTree.hpp>
-#include <omp.h>
-#include <future>
 
 namespace lvr2
 {
@@ -108,7 +106,7 @@ private:
     int count;
 };
 
-KDTreePtr create_recursive(Vector3f* points, int n, int maxLeafSize, int level)
+KDTreePtr create_recursive(Vector3f* points, int n, int maxLeafSize)
 {
     if (n <= maxLeafSize)
     {
@@ -128,41 +126,26 @@ KDTreePtr create_recursive(Vector3f* points, int n, int maxLeafSize, int level)
 
     int l = splitPoints(points, n, splitAxis, splitValue);
 
-    // every step splits into 2 threads. ceil => 6 Core CPUs get 8 threads
-    int max_level = std::ceil(std::log2(omp_get_max_threads()));
-
     KDTreePtr lesser, greater;
 
-    if (level < max_level)
-    {
-        auto lesser_async = std::async([&]()
-        {
-            return create_recursive(points    , l    , maxLeafSize, level + 1);
-        });
+    #pragma omp task shared(lesser)
+    lesser  = create_recursive(points    , l    , maxLeafSize);
 
-        greater =  create_recursive(points + l, n - l, maxLeafSize, level + 1);
+    #pragma omp task shared(greater)
+    greater = create_recursive(points + l, n - l, maxLeafSize);
 
-        lesser = lesser_async.get();
-    }
-    else
-    {
-        lesser =   create_recursive(points    , l    , maxLeafSize, level + 1);
-        greater =  create_recursive(points + l, n - l, maxLeafSize, level + 1);
-    }
+    #pragma omp taskwait
 
     return KDTreePtr(new KDNode(splitAxis, splitValue, lesser, greater));
 }
 
-KDTreePtr KDTree::create(PointArray points, int n, int maxLeafSize)
-{
-    KDTreePtr ret = create_recursive(points.get(), n, maxLeafSize, 0);
-    ret->points = points;
-    return ret;
-}
-
 KDTreePtr KDTree::create(Vector3f* points, int n, int maxLeafSize)
 {
-    KDTreePtr ret = create_recursive(points, n, maxLeafSize, 0);
+    KDTreePtr ret;
+    #pragma omp parallel // allows "pragma omp task"
+    #pragma omp single // only execute every task once
+    ret = create_recursive(points, n, maxLeafSize);
+
     return ret;
 }
 

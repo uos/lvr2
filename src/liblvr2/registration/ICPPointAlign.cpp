@@ -89,14 +89,10 @@ Matrix4f ICPPointAlign::match()
         prev_ret = ret;
 
         // Get point pairs
-        centroid_m = Vector3f::Zero();
-        centroid_d = Vector3f::Zero();
-        transform = Matrix4f::Identity();
-        pairs.clear();
-
         getPointPairs(pairs, centroid_m, centroid_d);
 
         // Get transformation
+        transform = Matrix4f::Identity();
         ret = align.alignPoints(pairs, centroid_m, centroid_d, transform);
 
         // Apply transformation
@@ -137,52 +133,38 @@ void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3f& centroid_m, 
     centroid_d = Vector3f::Zero();
     pairs.clear();
 
-    size_t numThreads = omp_get_max_threads();
-    size_t pairsPerThread = ceil((float)n / numThreads);
-    PointPairVector privPairs[numThreads];
-    Vector3f privCentroidM[numThreads];
-    Vector3f privCentroidD[numThreads];
-    for (size_t i = 0; i < numThreads; i++)
+    #pragma omp parallel
     {
-        privPairs[i].reserve(pairsPerThread);
-        privCentroidM[i] = Vector3f::Zero();
-        privCentroidD[i] = Vector3f::Zero();
-    }
+        Vector3f my_centroid_m = Vector3f::Zero();
+        Vector3f my_centroid_d = Vector3f::Zero();
+        PointPairVector my_pairs;
+        my_pairs.reserve(n / omp_get_num_threads());
 
-    #pragma omp parallel num_threads(numThreads)
-    {
-        size_t thread = omp_get_thread_num();
+        Vector3f* point;
+        Vector3f* neighbor;
+        float distance;
 
-        PointPairVector& myPairs = privPairs[thread];
-        Vector3f& myCentroidM = privCentroidM[thread];
-        Vector3f& myCentroidD = privCentroidD[thread];
-
-        size_t start = thread * pairsPerThread;
-        size_t end = min((thread + 1) * pairsPerThread, n);
-
-        for (size_t i = start; i < end; i++)
+        #pragma omp for nowait
+        for (size_t i = 0; i < n; i++)
         {
-            const Vector3f& point = dataPoints[i];
+            point = dataPoints + i;
 
-            Vector3f* neighbor;
-            float distance;
-
-            m_searchTree->nearestNeighbor(point, neighbor, distance, m_maxDistanceMatch);
+            m_searchTree->nearestNeighbor(*point, neighbor, distance, m_maxDistanceMatch);
 
             if (neighbor != nullptr)
             {
-                myCentroidM += point;
-                myCentroidD += *neighbor;
-                myPairs.push_back(make_pair(&point, neighbor));
+                my_centroid_m += *point;
+                my_centroid_d += *neighbor;
+                my_pairs.push_back(make_pair(point, neighbor));
             }
         }
-    }
 
-    for (size_t i = 0; i < numThreads; i++)
-    {
-        pairs.insert(pairs.end(), privPairs[i].begin(), privPairs[i].end());
-        centroid_m += privCentroidM[i];
-        centroid_d += privCentroidD[i];
+        #pragma omp critical
+        {
+            centroid_m += my_centroid_m;
+            centroid_d += my_centroid_d;
+            pairs.insert(pairs.end(), my_pairs.begin(), my_pairs.end());
+        }
     }
 
     centroid_m /= pairs.size();

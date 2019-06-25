@@ -34,10 +34,7 @@
 #include <lvr2/registration/TreeUtils.hpp>
 
 #include <limits>
-#include <iostream>
 #include <vector>
-#include <future>
-#include <omp.h>
 using namespace std;
 
 namespace lvr2
@@ -107,24 +104,11 @@ void createOctree(Vector3f* points, int n, bool* flagged, const Vector3f& min, c
     lMax[axis] = center[axis];
     rMin[axis] = center[axis];
 
-    int max_level = std::ceil(std::log2(omp_get_max_threads())) + 4;
+    #pragma omp task
+    createOctree(points    , l    , flagged    , lMin, lMax, level + 1, voxelSize, maxLeafSize);
 
-    if (level < max_level)
-    {
-        auto lesser = std::async(std::launch::async, [&]()
-        {
-            createOctree(points, l, flagged, lMin, lMax, level + 1, voxelSize, maxLeafSize);
-        });
-
-        createOctree(points + l, n - l, flagged + l, rMin, rMax, level + 1, voxelSize, maxLeafSize);
-
-        lesser.get();
-    }
-    else
-    {
-        createOctree(points, l, flagged, lMin, lMax, level + 1, voxelSize, maxLeafSize);
-        createOctree(points + l, n - l, flagged + l, rMin, rMax, level + 1, voxelSize, maxLeafSize);
-    }
+    #pragma omp task
+    createOctree(points + l, n - l, flagged + l, rMin, rMax, level + 1, voxelSize, maxLeafSize);
 }
 
 int octreeReduce(Vector3f* points, int n, float voxelSize, int maxLeafSize)
@@ -137,6 +121,8 @@ int octreeReduce(Vector3f* points, int n, float voxelSize, int maxLeafSize)
 
     AABB boundingBox(points, n);
 
+    #pragma omp parallel // allows "pragma omp task"
+    #pragma omp single // only execute every task once
     createOctree(points, n, flagged, boundingBox.min(), boundingBox.max(), 0, voxelSize, maxLeafSize);
 
     // remove all flagged elements
