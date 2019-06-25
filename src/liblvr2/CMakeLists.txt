@@ -96,7 +96,8 @@ set(LVR2_LIB_DEPENDENCIES
     ${OpenCV_LIBS}
     ${GSL_LIBRARIES}
     ${LZ4_LIBRARY}
-    ${TIFF_LIBRARY})
+    ${TIFF_LIBRARY}
+    ${OpenCL_LIBRARY} )
 
 
 #####################################################################################
