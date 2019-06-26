@@ -85,7 +85,7 @@ namespace lvr2{
 
         //found
         tmp->duplicateMap.insert(vH,sc);
-        cout << "Inserting a duplicate" << endl;
+        //cout << "Inserting a duplicate" << endl;
         return tmp;
 
     }
@@ -271,7 +271,7 @@ namespace lvr2{
     //update the SCs (righ now linear -> O(n), later O(log(n))
     void TumbleTree::update(float alpha)
     {
-        root->alpha *= alpha;
+        root->alpha *= 1;
     }
 
     int TumbleTree::size(Cell* c)
@@ -288,7 +288,6 @@ namespace lvr2{
     TumbleTree::~TumbleTree()
     {
         root = makeEmpty(root);
-
     }
 
     // public       ||
@@ -303,7 +302,7 @@ namespace lvr2{
         //cout << "Starting to remove..." << endl;
 
         float sc = c->signal_counter;
-        Cell* tmp = c;
+        /*Cell* tmp = c;
         while(tmp != root) //iteratre up the tree to find the correct sc.
         {
             if(!tmp->parent){
@@ -313,7 +312,7 @@ namespace lvr2{
             sc *= tmp->alpha;
             tmp = tmp->parent;
         }
-        sc *= tmp->alpha; //include root sc
+        sc *= tmp->alpha; //include root sc*/
         root = remove(sc, vH, root);
         return sc;
     }

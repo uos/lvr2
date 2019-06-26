@@ -103,6 +103,7 @@ public:
     bool containsEdge(EdgeHandle eH) const;
 
     bool isBorderEdge(EdgeHandle handle) const;
+    bool isFlippable(EdgeHandle handle) const;
 
     Index nextVertexIndex() const;
     Index nextFaceIndex() const;

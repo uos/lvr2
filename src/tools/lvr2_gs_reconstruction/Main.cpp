@@ -68,6 +68,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options &op
     if(!buffer->hasNormals()){
         surface->calculateSurfaceNormals();
     }
+
     return surface;
 }
 
@@ -119,6 +120,12 @@ int main(int argc, char **argv) {
     sigaction(SIGINT, &sigIntHandler, NULL);
 
     PointBufferPtr buffer = model->m_pointCloud;
+
+    if(!buffer)
+    {
+        cout << "Failed to create Buffer...exiting..." << endl;
+        return EXIT_FAILURE;
+    }
 
 
 
