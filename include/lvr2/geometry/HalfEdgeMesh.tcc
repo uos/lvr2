@@ -990,16 +990,13 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
     VertexHandle targetOfLongestEdgeH = longestEdgeHalf.target;
     BaseVecT targetOfLongestEdge = getV(targetOfLongestEdgeH).pos;
 
-
-    //TODO: get common neighbour vertices of the longest edge target vertex and the vertex to be split (must be 2)
-
     //first idea: just do an edge split on the longest edge and do an edge flip for each of the 2 found vertices
     vector<VertexHandle> commonVertexHandles = findCommonNeigbours(vertexToBeSplitH, targetOfLongestEdgeH);
 
     EdgeSplitResult splitResult = this->splitEdge(longestEdge);
 
 
-    //TODO: only flip if a criteria is given (delauney triangulation, delaunay edge) ...else just do the common edge split
+    //only flip if a criteria is given (delauney triangulation, delaunay edge) ...else just do the common edge split
     for(VertexHandle vertex : commonVertexHandles)
     {
         OptionalEdgeHandle handle = this->getEdgeBetween(vertex,vertexToBeSplitH);
@@ -1050,10 +1047,10 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
     result.addedFaces.assign(splitResult.addedFaces.begin(), splitResult.addedFaces.end());
 
     return result;
-
 }
 
-
+//TODO: idea: find vertices, which got two edges which are a border edge and are nect to each other. connect them with a face and
+//TODO:       recursively call the function for the next vertices
 template <typename BaseVecT>
 void HalfEdgeMesh<BaseVecT>::coalescing() {
 
@@ -1350,6 +1347,49 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     m_edges.erase(startEdgeTwinH);
 
     return result;
+}
+
+
+template<typename BaseVecT>
+bool HalfEdgeMesh<BaseVecT>::isFlippable(EdgeHandle handle) const
+{
+    auto adjFaces = getFacesOfEdge(handle);
+    if (!adjFaces[0] || !adjFaces[1])
+    {
+        return false;
+    }
+
+    //works only for huetchens which are not connected to any other structure
+    HalfEdgeHandle hEH = HalfEdgeHandle::oneHalfOf(handle);
+    if(getE(hEH).face && getE(getE(getE(hEH).next).twin).face && getE(getE(getE(getE(hEH).next).next).twin).face)
+    {
+        if(getE(getE(getE(getE(hEH).next).twin).next).next.idx() == getE(getE(getE(getE(getE(hEH).next).next).twin).next).twin.idx())
+        {
+            cout << "Hütchen :o :o :O" << endl;
+            return false;
+        }
+    }
+
+    /*if(edge->face() != 0 && edge->next()->pair()->face() != 0 && edge->next()->next()->pair()->face() != 0)
+    {
+        if(edge->next()->pair()->next()->next() == edge->next()->next()->pair()->next()->pair())
+        {
+            return false;
+        }
+    }*/
+
+    //check huetchen
+
+    // Make sure we have 4 different vertices around the faces of that edge.
+    auto faces = getFacesOfEdge(handle);
+    auto face0vertices = getVerticesOfFace(faces[0].unwrap());
+    auto face1vertices = getVerticesOfFace(faces[1].unwrap());
+
+    auto diffCount = std::count_if(face0vertices.begin(), face0vertices.end(), [&](auto f0v)
+    {
+        return std::find(face1vertices.begin(), face1vertices.end(), f0v) == face1vertices.end();
+    });
+    return diffCount == 1;
 }
 
 template <typename BaseVecT>

@@ -59,7 +59,7 @@ namespace lvr2 {
         //algorithm
         for(int i = 0; i < getRuntime(); i++)
         {
-            if(i % (getRuntime() / 20) == 0 ) tumble_tree->balance();
+            if(getRuntime() >= 20 && i % (getRuntime() / 20) == 0 ) tumble_tree->balance();
             for(int j = 0; j < getNumSplits(); j++)
             {
                 for(int k = 0; k < getBasicSteps(); k++)
@@ -71,7 +71,7 @@ namespace lvr2 {
             }
             if(this->isWithCollapse())
             {
-                //executeEdgeCollapse(); //TODO: execute an edge collapse, only if the user specified so
+                executeEdgeCollapse(); //TODO: execute an edge collapse, only if the user specified so
             }
 
         }
@@ -82,10 +82,15 @@ namespace lvr2 {
         for(int i = 0; i < cellArr.size(); i++)
         {
             VertexHandle vH(i);
-            if(tumble_tree->find(cellArr[i]->signal_counter, vH) == NULL)
+            if(cellArr[i] != NULL && tumble_tree->find(cellArr[i]->signal_counter, vH) == NULL)
             {
                 counter ++;
             }
+        }
+
+        if(m_mesh->numVertices() > 2000)
+        {
+           removeWrongFaces(); //removes faces which area are way bigger (3 times) than the average
         }
 
         for(auto vertex : m_mesh->vertices())
@@ -93,12 +98,6 @@ namespace lvr2 {
             performLaplacianSmoothing(vertex, 0.5);
         }
 
-
-
-        if(m_mesh->numVertices() > 2000)
-        {
-           removeWrongFaces(); //removes faces which area are way bigger (3 times) than the average
-        }
 
         //tumble_tree->balance();
         //tumble_tree->display();
@@ -313,15 +312,15 @@ namespace lvr2 {
             auto iter = min->duplicateMap.begin();
             VertexHandle lowestSC = *iter;
 
-            if(m_mesh->getNeighboursOfVertex(lowestSC).size() > 10)
+            if(m_mesh->getNeighboursOfVertex(lowestSC).size() > 50)
             {
                 aggressiveCutOut(lowestSC); //cut out the lowest sc if its valence is too high
             }
-            else if(1 == 2)
+            else
             {
 
-                cout << "Lowest SC from Tumble Tree: " << min->signal_counter << endl;
-
+                cout << "Lowest SC from Tumble Tree: " << min->signal_counter << " | " << (*min->duplicateMap.begin()).idx() << endl;
+                cout << "Colapse threshold: " << m_collapseThreshold << endl;
                 //found vertex with lowest sc
                 //TODO: collapse the edge leading to the vertex with the valence closest to six
                 if(min->signal_counter < this->getCollapseThreshold())
@@ -357,6 +356,8 @@ namespace lvr2 {
                     }
                 }
             }
+
+            m_collapseThreshold += 0.05;
 
         }
         else
@@ -630,7 +631,7 @@ namespace lvr2 {
     {
         auto tree = m_surface->get()->searchTree();
 
-        float avg_distance = 0;
+        double avg_distance = 0;
         for(auto vertex : m_mesh->vertices())
         {
             vector<size_t> indexes;
@@ -641,20 +642,70 @@ namespace lvr2 {
 
         avg_distance /= m_mesh->numVertices();
 
-        std::cout << "avg_distance: " << avg_distance << endl;
+        std::cout << "avg_distance to cloud: " << avg_distance << endl;
+
+
+        double avg_len = 0;
+
+        for(auto eH : m_mesh->edges())
+        {
+            auto vertices = m_mesh->getVerticesOfEdge(eH);
+            avg_len += (m_mesh->getVertexPosition(vertices[0]) - m_mesh->getVertexPosition(vertices[1])).length();
+        }
+
+        avg_len /= m_mesh->numEdges();
+
+
+        //now remove .. :)
+
+        vector<OptionalFaceHandle> f_handles;
         for(auto vertex : m_mesh->vertices())
         {
             vector<size_t> indexes;
             vector<float> distances;
             tree.get()->kSearch(m_mesh->getVertexPosition(vertex), 1, indexes, distances);
-            if(distances[0] > 10 * avg_distance)
+            if(distances[0] > 5 * avg_distance)
             {
-                auto faces = m_mesh->getFacesOfVertex(vertex);
-                for(auto face : faces)
+                /*EdgeHandle longestH(0);
+                float length = 0.0f;*/
+                for(auto eH : m_mesh->getEdgesOfVertex(vertex))
                 {
-                    m_mesh->removeFace(face);
+                    auto vertices = m_mesh->getVerticesOfEdge(eH);
+                    float tmp = (m_mesh->getVertexPosition(vertices[0]) - m_mesh->getVertexPosition(vertices[1])).length();
+                    if(tmp > 2 * avg_len)
+                    {
+                        auto faces = m_mesh->getFacesOfEdge(eH);
+                        for(auto face : faces)
+                        {
+                            if(face)
+                            {
+                                bool in = false;
+                                for(auto fH : f_handles)
+                                {
+                                    if(fH.unwrap().idx() == face.unwrap().idx())
+                                    {
+                                        in = true;
+                                    }
+                                }
+                                if(!in)
+                                {
+                                    f_handles.push_back(face);
+                                }
+                            }
+                        }
+                    }
                 }
+
             }
+        }
+
+        for(auto fH : f_handles)
+        {
+            if(fH)
+            {
+                m_mesh->removeFace(fH.unwrap());
+            }
+
         }
 
         //remove faces with  E(X) <= E(X) + 1.64 * o(x) < Xo (confidence interval)
