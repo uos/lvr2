@@ -13,10 +13,10 @@ namespace  lvr2{
 
     typedef struct Cell
     {
-        float alpha = 1;
-        float signal_counter;
+        double alpha = 1;
+        double signal_counter;
         //Index vH; //VertexHandle-Index for mapping between VertexHandle and a Cell
-        HashMap<VertexHandle, float> duplicateMap;
+        HashMap<VertexHandle, double> duplicateMap;
         Cell* left; //left subtree
         Cell* right; //right subtree
         Cell* parent;
@@ -28,17 +28,18 @@ namespace  lvr2{
 
         Cell* makeEmpty(Cell* c);
 
-        Cell* remove(float sc, VertexHandle vH, Cell* c, bool removeWhole = false, float alpha = 1);
+        Cell* remove(double sc, VertexHandle vH, Cell* c, bool removeWhole = false, double alpha = 1);
+        Cell* insert(Cell* c, double sc, VertexHandle vH);
         Cell* findMin(Cell* c);
         Cell* findMax(Cell* c);
-        Cell* find(float sc, VertexHandle vH, Cell* c, float alpha = 1);
+        Cell* find(double sc, VertexHandle vH, Cell* c, double alpha = 1);
         int size(Cell* c);
         int maxDepth(Cell* cell);
         int minDepth(Cell* cell);
         Cell* buildTree(vector<Cell*>& cells, int start, int end);
         void getCellsAsVector(Cell* c, vector<Cell*>& cells);
 
-        void update(float alpha);
+        void update(double alpha);
 
         void inorder(Cell* c);
 
@@ -48,13 +49,17 @@ namespace  lvr2{
         TumbleTree();
         ~TumbleTree();
 
-        Cell* insertIterative(float sc, VertexHandle vH);
-        float remove(Cell* c, VertexHandle vH); //returns the real sc
+        Cell* insertIterative(double sc, VertexHandle vH);
+        Cell* insert(double sc, VertexHandle vH)
+        {
+            return insert(root, sc, vH);
+        }
+        double remove(Cell* c, VertexHandle vH); //returns the real sc
 
 
         int maxDepth();
         int minDepth();
-        Cell* find(float sc, VertexHandle vH);
+        Cell* find(double sc, VertexHandle vH);
 
         void display();
         void balance();
@@ -64,7 +69,7 @@ namespace  lvr2{
 
         int size();
 
-        void updateSC(float alpha);
+        void updateSC(double alpha);
         int notDeleted = 0;
     };
 

@@ -25,7 +25,7 @@ namespace lvr2{
         return NULL;
     }
 
-    Cell* TumbleTree::insertIterative(float sc, VertexHandle vH)
+    Cell* TumbleTree::insertIterative(double sc, VertexHandle vH)
     {
 
         Cell* newCell = new Cell;
@@ -90,8 +90,63 @@ namespace lvr2{
 
     }
 
+    Cell* TumbleTree::insert(Cell* c, double sc, VertexHandle vH)
+    {
+        if(root == NULL)
+        {
+            root = new Cell();
+            root->left = root->right = root->parent = NULL;
+            root->alpha = 1;
+            root->signal_counter = sc;
+            root->duplicateMap.insert(vH, sc);
+
+            return root;
+        }
+
+        c->signal_counter *= c->alpha;
+        if(c->left) c->left->alpha *= c->alpha;
+        if(c->right) c->right->alpha *= c->alpha;
+        c->alpha = 1;
+
+        if(sc < c->signal_counter)
+        {
+            if(c->left)
+                return insert(c->left, sc, vH);
+            else
+            {
+                c->left = new Cell();
+                c->left->left = c->left->right = NULL;
+                c->left->alpha = 1;
+                c->left->parent = c;
+                c->left->signal_counter = sc;
+                c->left->duplicateMap.insert(vH, sc);
+                return c->left;
+            }
+        }
+        else if(sc > c->signal_counter)
+        {
+            if(c->right)
+                return insert(c->right, sc, vH);
+            else
+            {
+                c->right = new Cell();
+                c->right->left = c->right->right = NULL;
+                c->right->alpha = 1;
+                c->right->parent = c;
+                c->right->signal_counter = sc;
+                c->right->duplicateMap.insert(vH, sc);
+                return c->right;
+            }
+        }
+        else
+        {
+            c->duplicateMap.insert(vH, sc);
+            return c;
+        }
+    }
+
     //TODO: make it work. expected number of cells after the algorithm: runtime*numsplits iterative??
-    Cell* TumbleTree::remove(float sc, VertexHandle vH, Cell* c, bool removeWhole, float alpha)
+    Cell* TumbleTree::remove(double sc, VertexHandle vH, Cell* c, bool removeWhole, double alpha)
     {
         Cell* tmp;
         if(c == NULL)
@@ -218,7 +273,7 @@ namespace lvr2{
         }
     }
 
-    Cell* TumbleTree::find(float sc, VertexHandle vH, Cell* c, float alpha)
+    Cell* TumbleTree::find(double sc, VertexHandle vH, Cell* c, double alpha)
     {
         if(c == NULL)
         {
@@ -269,7 +324,7 @@ namespace lvr2{
     }
 
     //update the SCs (righ now linear -> O(n), later O(log(n))
-    void TumbleTree::update(float alpha)
+    void TumbleTree::update(double alpha)
     {
         root->alpha *= 1;
     }
@@ -295,13 +350,13 @@ namespace lvr2{
 
 
     // we only need functionality to remove a specific cell.
-    float TumbleTree::remove(Cell* c, VertexHandle vH)
+    double TumbleTree::remove(Cell* c, VertexHandle vH)
     {
         //TODO: FIX PROBLEM FOR SC UPDATES.
 
         //cout << "Starting to remove..." << endl;
 
-        float sc = c->signal_counter;
+        double sc = c->signal_counter;
         /*Cell* tmp = c;
         while(tmp != root) //iteratre up the tree to find the correct sc.
         {
@@ -313,7 +368,7 @@ namespace lvr2{
             tmp = tmp->parent;
         }
         sc *= tmp->alpha; //include root sc*/
-        root = remove(sc, vH, root);
+        //root = remove(sc, vH, root);
         return sc;
     }
 
@@ -334,13 +389,13 @@ namespace lvr2{
         return this->findMax(root);
     }
 
-    Cell* TumbleTree::find(float sc, VertexHandle vH)
+    Cell* TumbleTree::find(double sc, VertexHandle vH)
     {
         return find(sc, vH, root);
     }
 
-    void TumbleTree::updateSC(float alpha) {
-        this->update(alpha);
+    void TumbleTree::updateSC(double alpha) {
+        //this->update(alpha);
     }
 
     int TumbleTree::size(){
