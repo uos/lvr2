@@ -60,6 +60,7 @@ namespace lvr2 {
         for(int i = 0; i < getRuntime(); i++)
         {
             if(getRuntime() >= 20 && i % (getRuntime() / 20) == 0 ) tumble_tree->balance();
+
             for(int j = 0; j < getNumSplits(); j++)
             {
                 for(int k = 0; k < getBasicSteps(); k++)
@@ -71,7 +72,7 @@ namespace lvr2 {
             }
             if(this->isWithCollapse())
             {
-                executeEdgeCollapse(); //TODO: execute an edge collapse, only if the user specified so
+                //executeEdgeCollapse(); //TODO: execute an edge collapse, only if the user specified so
             }
 
         }
@@ -100,7 +101,7 @@ namespace lvr2 {
 
 
         //tumble_tree->balance();
-        //tumble_tree->display();
+        tumble_tree->display();
 
         cout << "Max depth of tt: " << tumble_tree->maxDepth() << endl;
         cout << "Min depth of tt: " << tumble_tree->minDepth() << endl;
@@ -163,7 +164,7 @@ namespace lvr2 {
             //increase signal counter by one
             Cell* winnerNode = cellArr[winnerH.idx()];
 
-            float winnerSC = winnerNode->signal_counter; //obtain the signal counter from the map
+            double winnerSC = winnerNode->signal_counter; //obtain the signal counter from the map
 
             //TODO: determine mistake in remove operation in basic step. why on earth is there a prob here
 
@@ -171,7 +172,7 @@ namespace lvr2 {
             //if(tumble_tree->find(winnerSC, winnerH) != NULL) std::cout << "error removing in basic step" << endl;
 
             //decrease signal counter of others by a fraction according to hennings implementation
-            if(m_decreaseFactor == 1.0)
+            if(m_decreaseFactor == 1.0)            //if(getRuntime() >= 20 && i % (getRuntime() / 20) == 0 ) tumble_tree->balance();
             {
                 size_t n = m_allowMiss * m_mesh->numVertices();
                 float dynamicDecrease = 1 - (float)pow(m_collapseThreshold, (1 / n));
@@ -184,7 +185,7 @@ namespace lvr2 {
 
             }
 
-            cellArr[winnerH.idx()] = tumble_tree->insertIterative(winnerSC + 1, winnerH);
+            cellArr[winnerH.idx()] = tumble_tree->insert(winnerSC + 1, winnerH);
 
             /*if(tumble_tree->find(winnerSC+1, winnerH) == NULL || cellArr[winnerH.idx()] != tumble_tree->find(winnerSC+1, winnerH)){
                 //std:: cout << "Insert problems..." << endl;
@@ -235,12 +236,12 @@ namespace lvr2 {
 
             //std::cout << "Max SC: " << max->signal_counter << endl;
             //now update tumble tree and the cell array
-            float actual_sc = tumble_tree->remove(max, highestSC);
+            double actual_sc = tumble_tree->remove(max, highestSC);
 
             //std::cout << "Actual SC: " << actual_sc << endl;
 
-            cellArr[highestSC.idx()] = tumble_tree->insertIterative(actual_sc / 2, highestSC);
-            cellArr[newVH.idx()] = tumble_tree->insertIterative(actual_sc / 2, newVH);
+            cellArr[highestSC.idx()] = tumble_tree->insert(actual_sc / 2, highestSC);
+            cellArr[newVH.idx()] = tumble_tree->insert(actual_sc / 2, newVH);
 
             BaseVecT kdInsert = m_mesh->getVertexPosition(newVH);
             kd_tree->insert(kdInsert, newVH);
@@ -356,8 +357,6 @@ namespace lvr2 {
                     }
                 }
             }
-
-            m_collapseThreshold += 0.05;
 
         }
         else
@@ -568,10 +567,10 @@ namespace lvr2 {
         {
             //insert vertices to the cellindexarray as well as the tumbletree
             VertexHandle ret(numeric_limits<int>::max());
-            cellArr[vH1.idx()] = tumble_tree->insertIterative(1, vH1);
-            cellArr[vH2.idx()] = tumble_tree->insertIterative(1, vH2);
-            cellArr[vH3.idx()] = tumble_tree->insertIterative(1, vH3);
-            cellArr[vH4.idx()] = tumble_tree->insertIterative(1, vH4);
+            cellArr[vH1.idx()] = tumble_tree->insert(1, vH1);
+            cellArr[vH2.idx()] = tumble_tree->insert(1, vH2);
+            cellArr[vH3.idx()] = tumble_tree->insert(1, vH3);
+            cellArr[vH4.idx()] = tumble_tree->insert(1, vH4);
 
             kd_tree->insert(top, vH1);
             kd_tree->insert(left, vH2);
