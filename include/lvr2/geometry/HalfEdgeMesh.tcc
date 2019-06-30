@@ -693,9 +693,9 @@ void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
         // Throw an exception if number of out edges becomes
         // too large. This can happen if there is a bug in the
         // half edge mesh topology
-        if(edgesOut.size() > 20)
+        if(edgesOut.size() > 40)
         {
-            //throw VertexLoopException("getEdgesOfVertex: Loop detected");
+            throw VertexLoopException("getEdgesOfVertex: Loop detected");
         }
         return true;
     });

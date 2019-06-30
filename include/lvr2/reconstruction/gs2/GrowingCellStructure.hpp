@@ -163,6 +163,7 @@ namespace lvr2{
 
         // "GCS" related members
         TumbleTree* tumble_tree;
+        BST* bst_tree;
         DynamicKDTree<BaseVecT>* kd_tree;
         std::vector<Cell*> cellArr;
         float m_decreaseFactor; //for sc calc
@@ -202,7 +203,7 @@ namespace lvr2{
 
         // GCS MEMBER FUNCTIONS
 
-        void performLaplacianSmoothing(VertexHandle vertexH, float factor = 0.01);
+        void performLaplacianSmoothing(VertexHandle vertexH, BaseVecT random, float factor = 0.01);
 
         void aggressiveCutOut(VertexHandle vH);
 
