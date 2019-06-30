@@ -21,7 +21,7 @@ namespace gs_reconstruction{
                 ("withCollapse",value<bool>(&m_withCollapse)->default_value(true), "with edge collapse? default: true")
                 ("learningRate",value<float>(&m_learningRate)->default_value(0.1),"learning rate of winner vertex, default: 1")
                 ("neighborLearningRate",value<float>(&m_neighborLearningRate)->default_value(0.08),"learning rate of winner vertex neighbours, default: 0.08")
-                ("decreaseFactor",value<float>(&m_decreaseFactor)->default_value(0.99999),"dynamic decrease factor, default start: 1.0")
+                ("decreaseFactor",value<float>(&m_decreaseFactor)->default_value(0.999),"dynamic decrease factor, default start: 1.0")
                 ("allowMiss",value<int>(&m_allowMiss)->default_value(7), "allow miss of vertex, default: 7")
                 ("collapseThreshold",value<float>(&m_collapseThreshold)->default_value(0.3), "threshold for collapse, default: 0.3")
                 ("filterChain",value<bool>(&m_filterChain)->default_value(false),"should the filter chain run? default: false")

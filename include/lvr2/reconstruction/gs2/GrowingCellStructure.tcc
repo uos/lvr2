@@ -28,6 +28,7 @@ namespace lvr2 {
         m_mesh = 0;
         tumble_tree = new TumbleTree(); //create tumble tree
         kd_tree = new DynamicKDTree<BaseVecT>(3); // create 3-dimensional kd-tree for distance evaluation
+        bst_tree = new BST();
     }
 
     /**
@@ -96,13 +97,14 @@ namespace lvr2 {
 
         for(auto vertex : m_mesh->vertices())
         {
-            performLaplacianSmoothing(vertex, 0.5);
+            performLaplacianSmoothing(vertex, m_mesh->getVertexPosition(vertex), 0.5); //no random point influence
         }
 
 
         //tumble_tree->balance();
         tumble_tree->display();
 
+        cout << "Size of BST: " << bst_tree->size() << endl;
         cout << "Max depth of tt: " << tumble_tree->maxDepth() << endl;
         cout << "Min depth of tt: " << tumble_tree->minDepth() << endl;
         cout << "Diff between ca and tt: " << counter << endl;
@@ -156,7 +158,7 @@ namespace lvr2 {
                 //kd_tree->deleteNode(nb);
 
                 nb += (random_point - winner) * getNeighborLearningRate();
-                performLaplacianSmoothing(v);
+                if(m_mesh->numVertices() > 100) performLaplacianSmoothing(v, random_point, getNeighborLearningRate());
 
                 //kd_tree->insert(nb, v);
             }
@@ -170,7 +172,7 @@ namespace lvr2 {
 
             winnerSC = tumble_tree->remove(winnerNode, winnerH); //remove the winning vertex from the tumble tree bet the real sc
             //if(tumble_tree->find(winnerSC, winnerH) != NULL) std::cout << "error removing in basic step" << endl;
-
+            bst_tree->remove(winnerSC, winnerH);
             //decrease signal counter of others by a fraction according to hennings implementation
             if(m_decreaseFactor == 1.0)            //if(getRuntime() >= 20 && i % (getRuntime() / 20) == 0 ) tumble_tree->balance();
             {
@@ -186,6 +188,7 @@ namespace lvr2 {
             }
 
             cellArr[winnerH.idx()] = tumble_tree->insert(winnerSC + 1, winnerH);
+            bst_tree->insert(winnerSC + 1, winnerH);
 
             /*if(tumble_tree->find(winnerSC+1, winnerH) == NULL || cellArr[winnerH.idx()] != tumble_tree->find(winnerSC+1, winnerH)){
                 //std:: cout << "Insert problems..." << endl;
@@ -237,11 +240,14 @@ namespace lvr2 {
             //std::cout << "Max SC: " << max->signal_counter << endl;
             //now update tumble tree and the cell array
             double actual_sc = tumble_tree->remove(max, highestSC);
+            bst_tree->remove(max->signal_counter, highestSC);
 
             //std::cout << "Actual SC: " << actual_sc << endl;
 
             cellArr[highestSC.idx()] = tumble_tree->insert(actual_sc / 2, highestSC);
             cellArr[newVH.idx()] = tumble_tree->insert(actual_sc / 2, newVH);
+            bst_tree->insert(actual_sc / 2, highestSC);
+            bst_tree->insert(actual_sc / 2, newVH);
 
             BaseVecT kdInsert = m_mesh->getVertexPosition(newVH);
             kd_tree->insert(kdInsert, newVH);
@@ -588,7 +594,7 @@ namespace lvr2 {
      * @param vertexH - vertex, which will be smoothed
      */
     template <typename BaseVecT, typename NormalT>
-    void GrowingCellStructure<BaseVecT, NormalT>::performLaplacianSmoothing(VertexHandle vertexH, float factor)
+    void GrowingCellStructure<BaseVecT, NormalT>::performLaplacianSmoothing(VertexHandle vertexH, BaseVecT random, float factor)
     {
         vector<VertexHandle> n_vertices = m_mesh->getNeighboursOfVertex(vertexH);
         BaseVecT& vertex = m_mesh->getVertexPosition(vertexH);
@@ -599,8 +605,8 @@ namespace lvr2 {
             BaseVecT v = m_mesh->getVertexPosition(vH);
             avg_vec += (v - vertex) ;
         }
-
-        avg_vec /= n_vertices.size();
+        avg_vec += (random - vertex);
+        avg_vec /= n_vertices.size() + 1 ;
 
         vertex += avg_vec * factor;
     }
