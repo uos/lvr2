@@ -94,7 +94,7 @@ void Scan::setMinDistance(float minDistance)
         {
             if (i < count() - 1)
             {
-            m_points[i] = m_points.back();
+                m_points[i] = m_points.back();
             }
             m_points.pop_back();
         }
@@ -117,7 +117,7 @@ void Scan::setMaxDistance(float maxDistance)
         {
             if (i < count() - 1)
             {
-            m_points[i] = m_points.back();
+                m_points[i] = m_points.back();
             }
             m_points.pop_back();
         }
@@ -147,8 +147,8 @@ Vector3f* Scan::points()
         #pragma omp parallel for
         for (int i = 0; i < m_points.size(); i++)
         {
-        const Eigen::Vector3f& p = m_points[i];
-        Eigen::Vector4f extended(p.x(), p.y(), p.z(), 1.0);
+            const Eigen::Vector3f& p = m_points[i];
+            Eigen::Vector4f extended(p.x(), p.y(), p.z(), 1.0);
             m_points[i] = (m_transformChange * extended).block<3, 1>(0, 0);
         }
         m_transformChange = Matrix4f::Identity();
@@ -206,6 +206,24 @@ void Scan::writeFrames(std::string path) const
     rot *= 180.0 / M_PI;
     poseFile << pos.x() << ' ' << pos.y() << ' ' << pos.z() << endl;
     poseFile << rot.x() << ' ' << rot.y() << ' ' << rot.z() << flush;
+}
+
+PointBufferPtr Scan::toPointBuffer() const
+{
+    auto ret = make_shared<PointBuffer>();
+    auto arr = floatArr(new float[3 * count()]);
+
+    #pragma omp parallel for
+    for (int i = 0; i < count(); i++)
+    {
+        arr[3 * i + 0] = m_points[i].x();
+        arr[3 * i + 1] = m_points[i].y();
+        arr[3 * i + 2] = m_points[i].z();
+    }
+
+    ret->setPointArray(arr, count());
+
+    return ret;
 }
 
 void Scan::addScanToMeta(ScanPtr scan)
