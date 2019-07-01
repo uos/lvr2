@@ -75,13 +75,17 @@ protected:
     void applyTransform(ScanPtr scan, const Matrix4f& transform);
     void addFrame(ScanPtr current);
     void checkLoopClose(int last);
-    void closeLoop(int first, int last);
+    void loopClose(int first, int last);
+    void graphSlam(int last);
+    void findCloseScans(int scan, vector<int>& output);
 
-    SlamOptions     m_options;
+    SlamOptions             m_options;
 
-    vector<ScanPtr> m_scans;
+    vector<ScanPtr>         m_scans;
 
-    ScanPtr         m_metascan;
+    ScanPtr                 m_metascan;
+
+    vector<pair<int, int>>  m_graph;
 };
 
 } /* namespace lvr2 */

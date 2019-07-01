@@ -45,6 +45,7 @@ struct SlamOptions
     int     slamIterations = 50;
     float   closeLoopDistance = 500;
     int     closeLoopPairs = -1;
+    int     loopSize = 20;
 
     float   icpMaxDistance = 25;
     int     icpIterations = 50;
