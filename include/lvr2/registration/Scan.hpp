@@ -73,8 +73,10 @@ public:
 
     void writeFrames(std::string path) const;
 
+    PointBufferPtr toPointBuffer() const;
+
     /// Only for Meta Scans
-	void addScanToMeta(std::shared_ptr<Scan> scan);
+    void addScanToMeta(std::shared_ptr<Scan> scan);
 
 protected:
     std::vector<Vector3f> m_points;

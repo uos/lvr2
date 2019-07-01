@@ -65,6 +65,7 @@ int main(int argc, char** argv)
     string format = "uos";
     string pose_format = "pose";
     bool load_parallel = false;
+    bool write = false;
     path dir;
     bool help;
 
@@ -146,6 +147,9 @@ int main(int argc, char** argv)
         ("load-parallel", bool_switch(&load_parallel),
          "Load scans in Parallel. Good for ASCII Scans that do not exceed RAM")
 
+        ("write,w", bool_switch(&write),
+         "Write Scans and Poses to <dir>/output directory ")
+
         ("verbose,v", bool_switch(&options.verbose),
          "Show more detailed output")
 
@@ -209,6 +213,10 @@ int main(int argc, char** argv)
         {
             format = "scan%03i.rxp";
         }
+        else if (format == "ply")
+        {
+            format = "scan%03i.ply";
+        }
         else
         {
             cout << "Unknown format: " << format << endl;
@@ -262,6 +270,7 @@ int main(int argc, char** argv)
     int count = end - start + 1;
 
     SlamAlign align(options, count);
+    vector<ScanPtr> scans;
 
     // omp does not allow early break/return
     bool failed = false;
@@ -292,7 +301,9 @@ int main(int argc, char** argv)
         file.replace_extension(pose_format);
         Matrix4f pose = getTransformationFromPose(file).cast<float>();
 
-        align.setScan(i, make_shared<Scan>(model->m_pointCloud, pose));
+        ScanPtr scan = make_shared<Scan>(model->m_pointCloud, pose);
+        align.setScan(i, scan);
+        scans.push_back(scan);
     }
 
     if (failed)
@@ -307,12 +318,44 @@ int main(int argc, char** argv)
     auto required_time = chrono::steady_clock::now() - start_time;
     cout << "SLAM finished in " << required_time.count() / 1e9 << " seconds" << endl;
 
-    for (int i = 0; i < count; i++)
+    if (write)
     {
-        path file = dir / format_name(format, start + i);
-        file.replace_extension("frames");
+        create_directory(dir / "output");
 
-        align.writeFrames(i, file.string());
+        for (int i = 0; i < count; i++)
+        {
+            auto& scan = scans[i];
+
+            path file = dir / format_name(format, start + i);
+            file.replace_extension("frames");
+
+            scan->writeFrames(file.string());
+
+            // save points
+            file = dir / "output" / format_name(format, start + i);
+
+            auto model = make_shared<Model>();
+            model->m_pointCloud = scan->toPointBuffer();
+            ModelFactory::saveModel(model, file.string());
+
+            // save pose
+            file.replace_extension("dat");
+            ofstream out(file.string());
+
+            auto pose = scan->getPose();
+            for (int y = 0; y < 4; y++)
+            {
+                for (int x = 0; x < 4; x++)
+                {
+                    out << pose(y, x);
+                    if (x < 3)
+                    {
+                        out << " ";
+                    }
+                }
+                out << endl;
+            }
+        }
     }
 
     return EXIT_SUCCESS;
