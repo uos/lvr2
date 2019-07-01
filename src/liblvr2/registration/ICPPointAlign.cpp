@@ -120,7 +120,7 @@ Matrix4f ICPPointAlign::match()
     if (m_verbose)
     {
         cout << "Result: " << endl << m_dataCloud->getDeltaPose() << endl;
-}
+    }
     return m_dataCloud->getPose();
 }
 

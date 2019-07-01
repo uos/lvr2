@@ -47,9 +47,9 @@ namespace lvr2
  *
  * Uses the QuickSort Pivot step
  *
- * @param points	 The Point array
- * @param n			 The number of Points
- * @param axis		 The axis to sort by
+ * @param points     The Point array
+ * @param n          The number of Points
+ * @param axis       The axis to sort by
  * @param splitValue The value to sort by
  *
  * @returns The number of smaller elements. points + this value gives the start of the greater elements
@@ -60,7 +60,7 @@ int splitPoints(Vector3f* points, int n, int axis, float splitValue);
  * @brief Reduces a Point Cloud using an Octree with a minimum Voxel size
  *
  * @param points    The Point Cloud
- * @param n		    The number of Points in the Point Cloud
+ * @param n         The number of Points in the Point Cloud
  * @param voxelSize The minimum size of a Voxel
  *
  * @returns the new number of Points in the Point Cloud
@@ -115,7 +115,7 @@ public:
         return m_min[axis];
     }
 
-    ///	Returns the largest value of an axis of the Point Cloud.
+    /// Returns the largest value of an axis of the Point Cloud.
     float max(int axis) const
     {
         return m_max[axis];

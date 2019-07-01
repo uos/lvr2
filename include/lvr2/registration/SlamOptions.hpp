@@ -58,7 +58,7 @@ struct SlamOptions
     bool    metascan = false;
 
     double  epsilon = 0.00001;
-    bool	verbose = false;
+    bool    verbose = false;
 };
 
 } /* namespace lvr2 */
