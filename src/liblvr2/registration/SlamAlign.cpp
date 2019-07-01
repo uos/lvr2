@@ -174,22 +174,76 @@ void SlamAlign::checkLoopClose(int last)
         return;
     }
 
-    const ScanPtr& cur = m_scans[last];
+    // GraphSlam cares about all Edges, LoopClosing not
+    if (!m_options.doGraphSlam && last < m_options.loopSize)
+    {
+        return;
+    }
 
-    int first = -1;
+    vector<int> others;
+    findCloseScans(last, others);
 
-    // no Pairs => use closeLoopDistance
+    if (others.empty())
+    {
+        return;
+    }
+
+    if (m_options.doGraphSlam)
+    {
+        for (int i : others)
+        {
+            m_graph.push_back(make_pair(i, last));
+        }
+    }
+
+    auto iter = find_if(others.begin(), others.end(), [&](int i)
+    {
+        return last - i > m_options.loopSize;
+    });
+
+    if (iter == others.end())
+    {
+        return;
+    }
+
+    int first = *iter;
+
+    if (m_options.doLoopClosing)
+    {
+        loopClose(first, last);
+    }
+    if (m_options.doGraphSlam)
+    {
+        graphSlam(last);
+    }
+}
+
+void SlamAlign::loopClose(int first, int last)
+{
+    cout << "LOOPCLOSE!!!!" << first << " -> " << last << endl;
+    // TODO: implement
+}
+
+void SlamAlign::graphSlam(int last)
+{
+    // TODO: implement
+}
+
+void SlamAlign::findCloseScans(int scan, vector<int>& output)
+{
+    ScanPtr& cur = m_scans[scan];
+
+    // closeLoopPairs not specified => use closeLoopDistance
     if (m_options.closeLoopPairs < 0)
     {
         float maxDist = std::pow(m_options.closeLoopDistance, 2);
         Vector3f pos = cur->getPosition();
-        for (int other = 0; other < last; other++)
+        for (int other = 0; other < scan; other++)
         {
             float dist = (m_scans[other]->getPosition() - pos).squaredNorm();
             if (dist < maxDist)
             {
-                first = other;
-                break;
+                output.push_back(other);
             }
         }
     }
@@ -199,7 +253,7 @@ void SlamAlign::checkLoopClose(int last)
         size_t n = cur->count();
         auto tree = KDTree::create(cur->points(), cur->count());
 
-        for (int other = 0; other < last; other++)
+        for (int other = 0; other < scan; other++)
         {
             const ScanPtr& scan = m_scans[other];
             int count = 0;
@@ -219,21 +273,10 @@ void SlamAlign::checkLoopClose(int last)
 
             if (count >= m_options.closeLoopPairs)
             {
-                first = other;
-                break;
+                output.push_back(other);
             }
         }
     }
-
-    if (first != -1)
-    {
-        closeLoop(first, last);
-    }
-}
-
-void SlamAlign::closeLoop(int first, int last)
-{
-    // TODO: implement
 }
 
 } /* namespace lvr2 */

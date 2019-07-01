@@ -127,6 +127,10 @@ int main(int argc, char** argv)
          "-1 (default): use closeLoopDistance instead\n"
          ">>Only works if either -L or -G are specified<<")
 
+        ("loopSize,l", value<int>(&options.loopSize)->default_value(options.loopSize),
+         "The minimum number of Scans to be considered a Loop\n"
+         ">>Only works if either -L or -G are specified<<")
+
         ("loop,L", bool_switch(&options.doLoopClosing),
          "Use simple Loop Closing")
 
