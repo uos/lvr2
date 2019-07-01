@@ -85,13 +85,17 @@ void Scan::reduce(float voxelSize)
 void Scan::setMinDistance(float minDistance)
 {
     float sqDist = minDistance * minDistance;
+    Vector3f origin = getPosition();
 
     size_t i = 0;
     while (i < count())
     {
-        if (m_points[i].squaredNorm() <= sqDist)
+        if ((m_points[i] - origin).squaredNorm() <= sqDist)
         {
+            if (i < count() - 1)
+            {
             m_points[i] = m_points.back();
+            }
             m_points.pop_back();
         }
         else
@@ -104,13 +108,17 @@ void Scan::setMinDistance(float minDistance)
 void Scan::setMaxDistance(float maxDistance)
 {
     float sqDist = maxDistance * maxDistance;
+    Vector3f origin = getPosition();
 
     size_t i = 0;
     while (i < count())
     {
-        if (m_points[i].squaredNorm() >= sqDist)
+        if ((m_points[i] - origin).squaredNorm() >= sqDist)
         {
+            if (i < count() - 1)
+            {
             m_points[i] = m_points.back();
+            }
             m_points.pop_back();
         }
         else
