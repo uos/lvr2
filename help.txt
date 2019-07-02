@@ -1,0 +1,151 @@
+slam6D - A highly efficient SLAM implementation based on scan matching
+         with 6 degrees of freedom
+(c) University of Wuerzburg, Germany, since 2013
+    Jacobs University Bremen gGmbH, Germany, 2009 - 2013
+    University of Osnabrueck, Germany, 2006 - 2009
+
+
+Generic options:
+  -h [ --help ]                         output this help message
+
+Input options:
+  -f [ --format ] arg (=uos)            using shared library <arg> for input. 
+                                        (chose F from {uos, uos_map, uos_rgb, 
+                                        uos_frames, uos_map_frames, old, rts, 
+                                        rts_map, ifp, riegl_txt, riegl_rgb, 
+                                        riegl_bin, zahn, ply, las})
+  -s [ --start ] arg (=0)               start at scan <arg> (i.e., neglects the
+                                        first <arg> scans) [ATTENTION: counting
+                                        naturally starts with 0]
+  -e [ --end ] arg (=-1)                end after scan <arg>
+  -a [ --algo ] arg (=1)                selects the minimization method for the
+                                        ICP matching algorithm
+                                        1 = unit quaternion based method by 
+                                        Horn
+                                        2 = singular value decomposition by 
+                                        Arun et al.
+                                        3 = orthonormal matrices by Horn et al.
+                                        4 = dual quaternion method by Walker et
+                                        al.
+                                        5 = helix approximation by Hofer & 
+                                        Potmann
+                                        6 = small angle approximation
+                                        7 = Lu & Milios style, i.e., 
+                                        uncertainty based, with Euler angles
+                                        8 = Lu & Milios style, i.e., 
+                                        uncertainty based, with Quaternion
+                                        9 = unit quaternion with scale method 
+                                        by Horn
+  -t [ --nns_method ] arg (=0)          selects the Nearest Neighbor Search 
+                                        Algorithm
+                                        0 = simple k-d tree
+                                        1 = cached k-d tree
+                                        2 = ANNTree
+                                        3 = BOCTree
+  -L [ --loop6DAlgo ] arg (=0)          selects the method for closing the loop
+                                        explicitly
+                                        0 = no loop closing technique
+                                        1 = euler angles
+                                        2 = quaternions
+                                        3 = unit quaternions
+                                        4 = SLERP (recommended)
+  -G [ --graphSlam6DAlgo ] arg (=0)     selects the minimizazion method for the
+                                        SLAM matching algorithm
+                                        0 = no global relaxation technique
+                                        1 = Lu & Milios extension using euler 
+                                        angles due to Borrmann et al.
+                                        2 = Lu & Milios extension using using 
+                                        unit quaternions
+                                        3 = HELIX approximation by Hofer and 
+                                        Pottmann
+                                        4 = small angle approximation
+  -n [ --net ] arg (=none)              specifies the file that includes the 
+                                        net structure for SLAM
+  -i [ --iter ] arg (=50)               sets the maximal number of ICP 
+                                        iterations to <NR>
+  -I [ --iterSLAM ] arg (=-1)           sets the maximal number of iterations 
+                                        for SLAM to <NR>(if not set, graphSLAM 
+                                        is not executed)
+  -m [ --max ] arg (=-1)                neglegt all data points with a distance
+                                        larger than NR 'units'
+  -u [ --customFilter ] arg             Apply a custom filter. Filter mode and 
+                                        data are specified as a 
+                                        semicolon-seperated string:
+                                        {filterMode};{nrOfParams}[;param1][;par
+                                        am2][...]
+                                        Multiple filters can be specified in a 
+                                        file (syntax in file is same asdirect 
+                                        specification)
+                                        FILE;{fileName}
+                                        See filter implementation in 
+                                        src/slam6d/pointfilter.cc for more 
+                                        detail.
+  -l [ --loopsize ] arg (=20)           sets the size of a loop, i.e., a loop 
+                                        must exceed <NR> of scans
+  -c [ --cldist ] arg (=500)            specifies the maximal distance for 
+                                        closed loops
+  -C [ --clpairs ] arg (=-1)            specifies the minimal number of points 
+                                        for an overlap. If not specifiedcldist 
+                                        is used instead
+  -M [ --min ] arg (=-1)                neglegt all data points with a distance
+                                        smaller than NR 'units'
+  -d [ --dist ] arg (=25)               sets the maximal point-to-point 
+                                        distance for matching with ICP to <NR> 
+                                        'units'(unit of scan data, e.g. cm)
+  -D [ --distSLAM ] arg (=25)           sets the maximal point-to-point 
+                                        distance for matching with SLAM to <NR>
+                                        'units'(unit of scan data, e.g. cm)
+  -r [ --reduce ] arg (=-1)             turns on octree based point reduction 
+                                        (voxel size=<NR>)
+  -O [ --octree ] arg (=0)              use randomized octree based point 
+                                        reduction (pts per voxel=<NR>)
+  -R [ --random ] arg (=-1)             turns on randomized reduction, using 
+                                        about every <NR>-th point only
+  -q [ --quiet ]                        Quiet mode. Suppress (most) messages
+  -Q [ --veryquiet ]                    Very quiet mode. Suppress all messages,
+                                        except in case of error.
+  -p [ --trustpose ]                    Trust the pose file, do not extrapolate
+                                        the last transformation.(just for 
+                                        testing purposes, or gps input.)
+  -A [ --anim ] arg (=-1)               if specified, use only every NR-th 
+                                        frame for animation
+  -2 [ --metascan ]                     Match current scan against a meta scan 
+                                        of all previous scans (default match 
+                                        against the last scan only)
+  -4 [ --DlastSLAM ] arg (=-1)          sets the maximal point-to-point 
+                                        distance for the final SLAM 
+                                        correction,if final SLAM is not 
+                                        required don't set it.
+  -5 [ --epsICP ] arg (=1.0000000000000001e-05)
+                                        stop ICP iteration if difference is 
+                                        smaller than NR
+  -6 [ --epsSLAM ] arg (=0.5)           stop SLAM iteration if average 
+                                        difference is smaller than NR
+  -7 [ --normal_shoot-simple ]          use closest point along normal for 
+                                        point correspondences'
+  -z [ --point-to-plane-simple ]        use point to plane distance for 
+                                        correspondences'
+  -8 [ --exportAllPoints ]              writes all registered reduced points to
+                                        the file points.pts beforeslam6D 
+                                        terminated
+  -9 [ --distLoop ] arg (=700)          sets the maximal point-to-point 
+                                        distance for the loop closing
+  -1 [ --iterLoop ] arg (=100)          sets the maximal number of iterations 
+                                        for the loop closing
+  -3 [ --graphDist ] arg (=500)         specifies the maximal distance for 
+                                        closed loops for the final SLAM 
+                                        correction
+  -S [ --scanserver ]                   Use the scanserver as an input method 
+                                        and handling of scan data
+  -0 [ --continue ]                     continue using last frames entry as 
+                                        starting pose
+  -b [ --bucketSize ] arg (=20)         specifies the bucket size for leafs of 
+                                        the k-d tree. During construction of 
+                                        thetree, any subtree of at most this 
+                                        size will be replaced by an array.
+  --loopclosefile arg                   filename to write scan poses
+
+Example usage:
+	./bin/slam6d dat
+	./bin/slam6d --max=500 -r 10.2 -i 20 dat
+	./bin/slam6d -s 2 -e 10 dat
