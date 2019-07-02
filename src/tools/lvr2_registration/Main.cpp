@@ -60,101 +60,122 @@ int main(int argc, char** argv)
     // =============== parse options ===============
     SlamOptions options;
 
+    path dir;
     int start = -1;
     int end = -1;
     string format = "uos";
     string pose_format = "pose";
     bool load_parallel = false;
-    bool write = false;
-    path dir;
+
+    bool write_pose = false;
+    bool write_scans = false;
+    bool no_frames = false;
+    path output_dir;
+
     bool help;
 
     try
     {
         using namespace boost::program_options;
 
-        options_description visible_options("OPTIONS");
-        visible_options.add_options()
+        options_description general_options("General Options");
+        options_description icp_options("ICP Options");
+        options_description loopclosing_options("Loopclosing Options");
+
+        general_options.add_options()
         ("start,s", value<int>(&start)->default_value(start),
          "The first scan to process.\n"
-         "-1 (default): search for first scan")
+         "-1 (default): Search for first scan.")
 
         ("end,e", value<int>(&end)->default_value(end),
          "The last scan to process.\n"
-         "-1 (default): continue until no more scan found")
+         "-1 (default): Continue until no more scan found.")
 
         ("format,f", value<string>(&format)->default_value(format),
          "The format to use.\n"
-         "available formats are listed <somewhere>")
+         "available formats are listed <somewhere>.")
 
         ("pose-format", value<string>(&pose_format)->default_value(pose_format),
          "The format for the pose files to use.\n"
-         "available formats are listed <somewhere>")
-
-        ("icpIterations,i", value<int>(&options.icpIterations)->default_value(options.icpIterations),
-         "Number of iterations for ICP")
-
-        ("icpMaxDistance,d", value<float>(&options.icpMaxDistance)->default_value(options.icpMaxDistance),
-         "The maximum distance between two points during ICP")
-
-        ("slamIterations,I", value<int>(&options.slamIterations)->default_value(options.slamIterations),
-         "Number of iterations for SLAM\n"
-         ">>Only works if either -L or -G are specified<<")
-
-        ("slamMaxDistance,D", value<float>(&options.slamMaxDistance)->default_value(options.slamMaxDistance),
-         "The maximum distance between two points during SLAM\n"
-         ">>Only works if either -L or -G are specified<<")
+         "available formats are listed <somewhere>.")
 
         ("reduction,r", value<float>(&options.reduction)->default_value(options.reduction),
-         "The Voxel size for Voxel based reduction. -1 for no reduction")
+         "The Voxel size for Voxel based reduction.\n"
+         "-1 (default): No reduction.")
 
         ("min,m", value<float>(&options.minDistance)->default_value(options.minDistance),
          "Ignore all Points closer than <value> to the origin of the scan.\n"
-         "-1 (default): No filter")
+         "-1 (default): No filter.")
 
         ("max,M", value<float>(&options.maxDistance)->default_value(options.maxDistance),
          "Ignore all Points farther away than <value> from the origin of the scan.\n"
-         "-1 (default): No filter")
+         "-1 (default): No filter.")
+
+        ("trustPose,p", bool_switch(&options.trustPose),
+         "Use the unmodified Pose for ICP. Useful for GPS Poses.\n"
+         "false (default): Apply the relative refinement of previous Scans.")
+
+        ("metascan", bool_switch(&options.metascan),
+         "Match scans to the combined pointcloud of all previous scans instead of just the last Scan.")
+
+        ("loadParallel", bool_switch(&load_parallel),
+         "Load scans in Parallel. Useful for ASCII Scans that do not exceed RAM.")
+
+        ("noFrames,F", bool_switch(&no_frames),
+         "Don't write \".frames\" files.")
+
+        ("writePose,w", bool_switch(&write_pose),
+         "Write Poses to directory specified by --output.")
+
+        ("writeScans,W", bool_switch(&write_scans),
+         "Write Scans to directory specified by --output.")
+
+        ("output,o", value<path>(&output_dir),
+         "Changes output directory of --writePose and --writeScans.\n"
+         "default: <dir>/output.")
+
+        ("verbose,v", bool_switch(&options.verbose),
+         "Show more detailed output.")
+
+        ("help,h", bool_switch(&help),
+         "Print this help.")
+        ;
+
+        icp_options.add_options()
+        ("icpIterations,i", value<int>(&options.icpIterations)->default_value(options.icpIterations),
+         "Number of iterations for ICP.")
+
+        ("icpMaxDistance,d", value<float>(&options.icpMaxDistance)->default_value(options.icpMaxDistance),
+         "The maximum distance between two points during ICP.")
 
         ("epsilon", value<double>(&options.epsilon)->default_value(options.epsilon),
-         "The desired epsilon difference between two error values")
+         "The epsilon difference between ICP-errors for the stop criterion of ICP.")
+        ;
+
+        loopclosing_options.add_options()
+        ("loopClosing,L", bool_switch(&options.doLoopClosing),
+         "Use simple Loop Closing.\n"
+         "At least one of -L and -G must be specified for Loopclosing to take place.")
+
+        ("graphSlam,G", bool_switch(&options.doGraphSlam),
+         "Use complex Loop Closing with GraphSLAM.\n"
+         "At least one of -L and -G must be specified for Loopclosing to take place.")
 
         ("closeLoopDistance,c", value<float>(&options.closeLoopDistance)->default_value(options.closeLoopDistance),
-         "The maximum distance between two poses to consider a closed loop\n"
-         ">>Only works if either -L or -G are specified<<")
+         "The maximum distance between two poses to consider a closed loop.")
 
         ("closeLoopPairs,C", value<int>(&options.closeLoopPairs)->default_value(options.closeLoopPairs),
          "The minimum pair overlap between two poses to consider a closed loop. Pairs are judged using slamMaxDistance.\n"
-         "-1 (default): use closeLoopDistance instead\n"
-         ">>Only works if either -L or -G are specified<<")
+         "-1 (default): use closeLoopDistance instead.")
 
         ("loopSize,l", value<int>(&options.loopSize)->default_value(options.loopSize),
-         "The minimum number of Scans to be considered a Loop\n"
-         ">>Only works if either -L or -G are specified<<")
+         "The minimum number of Scans to be considered a Loop.")
 
-        ("loop,L", bool_switch(&options.doLoopClosing),
-         "Use simple Loop Closing")
+        ("slamIterations,I", value<int>(&options.slamIterations)->default_value(options.slamIterations),
+         "Number of iterations for SLAM.")
 
-        ("graph,G", bool_switch(&options.doGraphSlam),
-         "Use complex Loop Closing with GraphSLAM")
-
-        ("trustPose,p", bool_switch(&options.trustPose),
-         "Use the unmodified Pose for ICP. Useful for GPS Poses")
-
-        ("metascan", bool_switch(&options.metascan),
-         "Match scans to the combined pointcloud of all previous scans")
-
-        ("load-parallel", bool_switch(&load_parallel),
-         "Load scans in Parallel. Good for ASCII Scans that do not exceed RAM")
-
-        ("write,w", bool_switch(&write),
-         "Write Scans and Poses to <dir>/output directory ")
-
-        ("verbose,v", bool_switch(&options.verbose),
-         "Show more detailed output")
-
-        ("help,h", bool_switch(&help),
-         "Print this help")
+        ("slamMaxDistance,D", value<float>(&options.slamMaxDistance)->default_value(options.slamMaxDistance),
+         "The maximum distance between two points during SLAM.")
         ;
 
         options_description hidden_options("hidden_options");
@@ -166,7 +187,7 @@ int main(int argc, char** argv)
         pos.add("dir", 1);
 
         options_description options("options");
-        options.add(visible_options).add(hidden_options);
+        options.add(general_options).add(icp_options).add(loopclosing_options).add(hidden_options);
 
         variables_map variables;
         store(command_line_parser(argc, argv).options(options).positional(pos).run(), variables);
@@ -178,14 +199,24 @@ int main(int argc, char** argv)
             cout << "Usage: " << endl;
             cout << "\tlvr2_registration [OPTIONS] <dir>" << endl;
             cout << endl;
-            visible_options.print(cout);
+            general_options.print(cout);
+            cout << endl;
+            icp_options.print(cout);
+            cout << endl;
+            loopclosing_options.print(cout);
             cout << endl;
             cout << "<dir> is the directory to search scans in" << endl;
             return EXIT_SUCCESS;
         }
+
         if (variables.count("dir") != 1)
         {
             throw error("Missing <dir> Parameter");
+        }
+
+        if (variables.count("output") == 0)
+        {
+            output_dir = dir / "output";
         }
     }
     catch (const boost::program_options::error& ex)
@@ -318,27 +349,28 @@ int main(int argc, char** argv)
     auto required_time = chrono::steady_clock::now() - start_time;
     cout << "SLAM finished in " << required_time.count() / 1e9 << " seconds" << endl;
 
-    if (write)
+    if (write_pose || write_scans)
     {
-        create_directory(dir / "output");
+        create_directories(output_dir);
+    }
 
-        for (int i = 0; i < count; i++)
+    path file;
+
+    for (int i = 0; i < count; i++)
+    {
+        auto& scan = scans[i];
+
+        if (!no_frames)
         {
-            auto& scan = scans[i];
-
-            path file = dir / format_name(format, start + i);
+            file = dir / format_name(format, start + i);
             file.replace_extension("frames");
 
             scan->writeFrames(file.string());
+        }
 
-            // save points
-            file = dir / "output" / format_name(format, start + i);
-
-            auto model = make_shared<Model>();
-            model->m_pointCloud = scan->toPointBuffer();
-            ModelFactory::saveModel(model, file.string());
-
-            // save pose
+        if (write_pose)
+        {
+            file = output_dir / format_name(format, start + i);
             file.replace_extension("dat");
             ofstream out(file.string());
 
@@ -355,6 +387,15 @@ int main(int argc, char** argv)
                 }
                 out << endl;
             }
+        }
+
+        if (write_scans)
+        {
+            file = output_dir / format_name(format, start + i);
+
+            auto model = make_shared<Model>();
+            model->m_pointCloud = scan->toPointBuffer();
+            ModelFactory::saveModel(model, file.string());
         }
     }
 
