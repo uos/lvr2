@@ -15,7 +15,6 @@ namespace  lvr2{
     {
         double alpha = 1;
         double signal_counter;
-        //Index vH; //VertexHandle-Index for mapping between VertexHandle and a Cell
         HashMap<VertexHandle, double> duplicateMap;
         Cell* left; //left subtree
         Cell* right; //right subtree
@@ -65,7 +64,7 @@ namespace  lvr2{
 
                 root = newCell;
 
-                return newCell;
+                return root;
             }
 
             return insert(root, sc, vH);

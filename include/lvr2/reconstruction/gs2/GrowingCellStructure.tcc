@@ -28,7 +28,7 @@ namespace lvr2 {
         m_mesh = 0;
         tumble_tree = new TumbleTree(); //create tumble tree
         kd_tree = new DynamicKDTree<BaseVecT>(3); // create 3-dimensional kd-tree for distance evaluation
-        bst_tree = new BST();
+        //bst_tree = new BST();
     }
 
     /**
@@ -47,10 +47,10 @@ namespace lvr2 {
         std::vector<Cell*>::size_type size = (unsigned long)(m_runtime*m_numSplits+4);
         cellArr.resize(size, NULL);
 
-        //initTestMesh(); //init a mesh used for vertex split and edge split testing
+        initTestMesh(); //init a mesh used for vertex split and edge split testing
 
         //get initial tetrahedron mesh
-        getInitialMesh();
+        //getInitialMesh();
 
         //progress bar
         size_t runtime_length = (size_t)((((size_t)m_runtime*(size_t)m_numSplits)
@@ -66,9 +66,9 @@ namespace lvr2 {
             {
                 for(int k = 0; k < getBasicSteps(); k++)
                 {
-                    executeBasicStep(progress_bar);
+                    //executeBasicStep(progress_bar);
                 }
-                executeVertexSplit(); //TODO: execute vertex split after a specific number of basic steps
+                //executeVertexSplit(); //TODO: execute vertex split after a specific number of basic steps
 
             }
             if(this->isWithCollapse())
@@ -104,7 +104,7 @@ namespace lvr2 {
         //tumble_tree->balance();
         tumble_tree->display();
 
-        cout << "Size of BST: " << bst_tree->size() << endl;
+        //cout << "Size of BST: " << bst_tree->size() << endl;
         cout << "Max depth of tt: " << tumble_tree->maxDepth() << endl;
         cout << "Min depth of tt: " << tumble_tree->minDepth() << endl;
         cout << "Diff between ca and tt: " << counter << endl;
@@ -172,7 +172,7 @@ namespace lvr2 {
 
             winnerSC = tumble_tree->remove(winnerNode, winnerH); //remove the winning vertex from the tumble tree bet the real sc
             //if(tumble_tree->find(winnerSC, winnerH) != NULL) std::cout << "error removing in basic step" << endl;
-            bst_tree->remove(winnerSC, winnerH);
+            //bst_tree->remove(winnerSC, winnerH);
             //decrease signal counter of others by a fraction according to hennings implementation
             if(m_decreaseFactor == 1.0)            //if(getRuntime() >= 20 && i % (getRuntime() / 20) == 0 ) tumble_tree->balance();
             {
@@ -188,7 +188,7 @@ namespace lvr2 {
             }
 
             cellArr[winnerH.idx()] = tumble_tree->insert(winnerSC + 1, winnerH);
-            bst_tree->insert(winnerSC + 1, winnerH);
+            //bst_tree->insert(winnerSC + 1, winnerH);
 
             /*if(tumble_tree->find(winnerSC+1, winnerH) == NULL || cellArr[winnerH.idx()] != tumble_tree->find(winnerSC+1, winnerH)){
                 //std:: cout << "Insert problems..." << endl;
@@ -240,14 +240,14 @@ namespace lvr2 {
             //std::cout << "Max SC: " << max->signal_counter << endl;
             //now update tumble tree and the cell array
             double actual_sc = tumble_tree->remove(max, highestSC);
-            bst_tree->remove(max->signal_counter, highestSC);
+            //bst_tree->remove(max->signal_counter, highestSC);
 
             //std::cout << "Actual SC: " << actual_sc << endl;
 
             cellArr[highestSC.idx()] = tumble_tree->insert(actual_sc / 2, highestSC);
             cellArr[newVH.idx()] = tumble_tree->insert(actual_sc / 2, newVH);
-            bst_tree->insert(actual_sc / 2, highestSC);
-            bst_tree->insert(actual_sc / 2, newVH);
+            //bst_tree->insert(actual_sc / 2, highestSC);
+            //bst_tree->insert(actual_sc / 2, newVH);
 
             BaseVecT kdInsert = m_mesh->getVertexPosition(newVH);
             kd_tree->insert(kdInsert, newVH);
@@ -487,10 +487,32 @@ namespace lvr2 {
         auto pair4 = m_mesh->triCircumCenter(fH5);
         std::cout << "CircumCenter1: " << pair4.first << "| Radius: " << pair4.second << endl;
 
-        m_mesh->splitVertex(v8);
+        //m_mesh->splitVertex(v8);
         //m_mesh->splitVertex(v8);
 
 
+        Cell* c1 = tumble_tree->insert(5,v0);
+        Cell* c2 = tumble_tree->insert(2,v1);
+        Cell* c3 = tumble_tree->insert(10,v2);
+        Cell* c4 = tumble_tree->insert(1,v3);
+        Cell* c5 = tumble_tree->insert(3,v4);
+        Cell* c6 = tumble_tree->insert(7,v6);
+        Cell* c7 = tumble_tree->insert(12,v7);
+        Cell* c8 = tumble_tree->insert(2.5,v5);
+        Cell* c9 = tumble_tree->insert(2.5,v8);
+
+        tumble_tree->display();
+        tumble_tree->updateSC(0.9);
+        tumble_tree->display();
+
+        tumble_tree->remove(c9, v8);
+        tumble_tree->display();
+        tumble_tree->remove(c4, v3);
+        tumble_tree->display();
+        tumble_tree->remove(c5, v4);
+        tumble_tree->display();
+        tumble_tree->remove(c3, v2);
+        tumble_tree->display();
     }
 
     /**
@@ -572,7 +594,7 @@ namespace lvr2 {
         else
         {
             //insert vertices to the cellindexarray as well as the tumbletree
-            VertexHandle ret(numeric_limits<int>::max());
+
             cellArr[vH1.idx()] = tumble_tree->insert(1, vH1);
             cellArr[vH2.idx()] = tumble_tree->insert(1, vH2);
             cellArr[vH3.idx()] = tumble_tree->insert(1, vH3);

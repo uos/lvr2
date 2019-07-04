@@ -1034,7 +1034,7 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
             //flip only, if one of the single vertices is inside the circumcircle of the other triangle
             if((singleFace1-circumCenter2).length() <= radius2 || (singleFace2-circumCenter1).length() <= radius1)
             {
-                if(this->isFlippable(handle.unwrap()) && this->numVertices() > 1000)
+                if(this->isFlippable(handle.unwrap()))
                 {
                     this->flipEdge(handle.unwrap());
                 }
@@ -1359,8 +1359,18 @@ bool HalfEdgeMesh<BaseVecT>::isFlippable(EdgeHandle handle) const
         return false;
     }
 
-    //works only for huetchens which are not connected to any other structure
     HalfEdgeHandle hEH = HalfEdgeHandle::oneHalfOf(handle);
+    auto target1 = getE(hEH).target;
+    auto target2 = getE(getE(hEH).twin).target;
+
+    int count1 = getEdgesOfVertex(target1).size();
+    int count2 = getEdgesOfVertex(target2).size();
+
+    if(count1 <= 4 || count2 <= 4) return false;
+
+
+    //works only for huetchens which are not connected to any other structure
+
     if(getE(hEH).face && getE(getE(getE(hEH).next).twin).face && getE(getE(getE(getE(hEH).next).next).twin).face)
     {
         if(getE(getE(getE(getE(hEH).next).twin).next).next.idx() == getE(getE(getE(getE(getE(hEH).next).next).twin).next).twin.idx())

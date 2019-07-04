@@ -314,9 +314,15 @@ namespace lvr2{
 
         inorder(c->left);
 
-        std::cout << " | [";
+        cout << " | [";
         cout << c->signal_counter * c->alpha;
-        std::cout << "]";
+        cout << "{ ";
+        for(auto iter = c->duplicateMap.begin(); iter != c->duplicateMap.end(); ++iter)
+        {
+            cout << *iter << ", ";
+        }
+        cout << "}";
+        cout << "]";
 
         if(c->right)c->right->alpha *= c->alpha;
 
@@ -326,7 +332,7 @@ namespace lvr2{
     //update the SCs (righ now linear -> O(n), later O(log(n))
     void TumbleTree::update(double alpha)
     {
-        if(root) root->alpha *= 1;//  alpha;
+        if(root) root->alpha *=  alpha;
         else cout << "shut up mf " << endl;
     }
 
@@ -356,8 +362,9 @@ namespace lvr2{
         //TODO: FIX PROBLEM FOR SC UPDATES.
 
         double sc = c->signal_counter * c->alpha;
-        /*Cell* tmp = c;
-        while(tmp != root) //iteratre up the tree to find the correct sc.
+        /*double tmp_sc = sc;
+        Cell* tmp = c;
+        while(tmp != root) //iterate up the tree to find the correct sc.
         {
             if(!tmp->parent){
                 cout << "NO PARENT!!!" << endl;
@@ -373,9 +380,14 @@ namespace lvr2{
             tmp = tmp->parent;
             //cout << "Iterating the parents.. " << endl;
         }
-        sc *= tmp->alpha; //include root sc*/
-        root = remove(sc, vH, root);
+        sc *= tmp->alpha; //include root alpha
 
+        if(c->parent)
+            c->parent->right == c ? c->parent->right = remove(tmp_sc, vH, c) : c->parent->left = remove(tmp_sc, vH, c);
+        else
+            root = remove(tmp_sc, vH, c);*/
+
+        root = remove(sc, vH, root);
         return sc;
     }
 
