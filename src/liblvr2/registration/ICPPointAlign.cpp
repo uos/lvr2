@@ -79,8 +79,9 @@ Matrix4f ICPPointAlign::match()
     Vector3f centroid_d;
     Matrix4f transform;
 
-    PointPairVector pairs;
-    pairs.reserve(m_dataCloud->count());
+    size_t numPoints = m_dataCloud->count();
+
+    Vector3f** neighbors = new Vector3f*[numPoints];
 
     for (iteration = 0; iteration < m_maxIterations; iteration++)
     {
@@ -89,18 +90,18 @@ Matrix4f ICPPointAlign::match()
         prev_ret = ret;
 
         // Get point pairs
-        getPointPairs(pairs, centroid_m, centroid_d);
+        size_t pairs = getNearestNeighbors(m_searchTree, m_dataCloud->points(), neighbors, numPoints, m_maxDistanceMatch, centroid_m, centroid_d);
 
         // Get transformation
         transform = Matrix4f::Identity();
-        ret = align.alignPoints(pairs, centroid_m, centroid_d, transform);
+        ret = align.alignPoints(m_dataCloud->points(), neighbors, numPoints, centroid_m, centroid_d, transform);
 
         // Apply transformation
         m_dataCloud->transform(transform, false);
 
         if (m_verbose)
         {
-            cout << timestamp << "ICP Error is " << ret << " in iteration " << iteration << " / " << m_maxIterations << " using " << pairs.size() << " points." << endl;
+            cout << timestamp << "ICP Error is " << ret << " in iteration " << iteration << " / " << m_maxIterations << " using " << pairs << " points." << endl;
         }
 
         // Check minimum distance
@@ -109,6 +110,9 @@ Matrix4f ICPPointAlign::match()
             break;
         }
     }
+
+    delete neighbors;
+
     auto duration = steady_clock::now() - start_time;
     cout << setw(6) << (int)(duration.count() / 1e6) << " ms, ";
     cout << "Error: " << fixed << setprecision(3) << setw(7) << ret;
@@ -121,54 +125,8 @@ Matrix4f ICPPointAlign::match()
     {
         cout << "Result: " << endl << m_dataCloud->getDeltaPose() << endl;
     }
+
     return m_dataCloud->getPose();
-}
-
-void ICPPointAlign::getPointPairs(PointPairVector& pairs, Vector3f& centroid_m, Vector3f& centroid_d) const
-{
-    size_t n = m_dataCloud->count();
-    Vector3f* dataPoints = m_dataCloud->points();
-
-    centroid_m = Vector3f::Zero();
-    centroid_d = Vector3f::Zero();
-    pairs.clear();
-
-    #pragma omp parallel
-    {
-        Vector3f my_centroid_m = Vector3f::Zero();
-        Vector3f my_centroid_d = Vector3f::Zero();
-        PointPairVector my_pairs;
-        my_pairs.reserve(n / omp_get_num_threads());
-
-        Vector3f* point;
-        Vector3f* neighbor;
-        float distance;
-
-        #pragma omp for nowait
-        for (size_t i = 0; i < n; i++)
-        {
-            point = dataPoints + i;
-
-            m_searchTree->nearestNeighbor(*point, neighbor, distance, m_maxDistanceMatch);
-
-            if (neighbor != nullptr)
-            {
-                my_centroid_m += *point;
-                my_centroid_d += *neighbor;
-                my_pairs.push_back(make_pair(point, neighbor));
-            }
-        }
-
-        #pragma omp critical
-        {
-            centroid_m += my_centroid_m;
-            centroid_d += my_centroid_d;
-            pairs.insert(pairs.end(), my_pairs.begin(), my_pairs.end());
-        }
-    }
-
-    centroid_m /= pairs.size();
-    centroid_d /= pairs.size();
 }
 
 void ICPPointAlign::setMaxMatchDistance(float d)

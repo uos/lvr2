@@ -49,136 +49,58 @@ namespace lvr2
 {
 
 double EigenSVDPointAlign::alignPoints(
-    const PointPairVector& pairs,
+    Vector3f* data,
+    Vector3f** neighbors,
+    size_t n,
     const Vector3f& centroid_m,
     const Vector3f& centroid_d,
     Matrix4f& align)
 {
-/*
-    Vector3f pos, theta;
-    matrixToPose(align, pos, theta);
-    
-    /// create transform matrix of the first scan
-    Matrix4f trans_m = poseToMatrix(pos, theta);
-
-    Vector3f sin, cos;
-    sincos(theta.x(), &sin.x(), &cos.x());
-    sincos(theta.y(), &sin.y(), &cos.y());
-    sincos(theta.z(), &sin.z(), &cos.z());
-
-    /// create matrix H
-    Matrix6f H = Matrix6f::Identity();
-    H(0, 4) = -pos.z() * cos.x() + pos.y() * sin.x();
-    H(0, 5) = pos.y() * cos.x() * cos.y() + pos.z() * cos.y() * sin.x();
-    H(1, 3) = pos.z();
-    H(1, 4) = -pos.x() * sin.x();
-    H(1, 5) = -pos.x() * cos.x() * cos.y() + pos.z() * sin.y();
-    H(2, 3) = -pos.y();
-    H(2, 4) = pos.x() * cos.x();
-    H(2, 5) = -pos.x() * cos.y() * sin.x() - pos.y() * sin.y();
-    H(3, 5) = sin.y();
-    H(4, 4) = sin.x();
-    H(4, 5) = cos.x() * cos.y();
-    H(5, 4) = cos.x();
-    H(5, 5) = -cos.y() * sin.x();
-
-    #pragma omp declare reduction (+: Vector3f: omp_out=omp_out+omp_in) initializer(omp_priv=Vector3f::Zero())
-    #pragma omp declare reduction (+: Vector6f: omp_out=omp_out+omp_in) initializer(omp_priv=Vector6f::Zero())
-
-    Vector3f mid_sum = Vector3f::Zero();
-    Vector6f mz = Vector6f::Zero();
-    double xpy = 0.0, xpz = 0.0, ypz = 0.0;
-    double xy = 0.0, xz = 0.0, yz = 0.0;
     double error = 0.0;
-    #pragma omp parallel for reduction(+:mid_sum, xpy, xpz, ypz, xy, xz, yz, mz, error)
-    for (size_t i = 0; i < pairs.size(); i++)
-    {
-        Vector3f mid = (*pairs[i].second + *pairs[i].first) / 2.0;
-        Vector3f delta = *pairs[i].second - *pairs[i].first;
-
-        mid_sum += mid;
-
-        /// sums of squares of pairs of coordinates
-        xpy += mid.x() * mid.x() + mid.y() * mid.y();
-        xpz += mid.x() * mid.x() + mid.z() * mid.z();
-        ypz += mid.y() * mid.y() + mid.z() * mid.z();
-
-        /// sums of products of pairs of coordinates
-        xy += mid.x() * mid.y();
-        xz += mid.x() * mid.z();
-        yz += mid.y() * mid.z();
-
-        mz.block<3, 1>(0, 0) += delta;
-        mz.block<3, 1>(3, 0) += Vector3f(-mid.z() * delta.y() + mid.y() * delta.z(),
-                              -mid.y() * delta.x() + mid.x() * delta.y(),
-                              mid.z() * delta.x() - mid.x() * delta.z());
-        
-        error += delta.squaredNorm();
-    }
-
-    error = sqrt(error / pairs.size());
-
-    Matrix6f mm = Matrix6f::Identity();
-    mm(0, 0) = mm(1, 1) = mm(2, 2) = pairs.size();
-    mm(3, 3) = ypz;
-    mm(4, 4) = xpy;
-    mm(5, 5) = xpz;
-    mm(0, 4) = mm(4, 0) = -mid_sum.y();
-    mm(0, 5) = mm(5, 0) = mid_sum.z();
-    mm(1, 3) = mm(3, 1) = -mid_sum.z();
-    mm(1, 4) = mm(4, 1) = mid_sum.x();
-    mm(2, 3) = mm(3, 2) = mid_sum.y();
-    mm(2, 5) = mm(5, 2) = -mid_sum.x();
-    mm(3, 4) = mm(4, 3) = -xz;
-    mm(3, 5) = mm(5, 3) = -xy;
-    mm(4, 5) = mm(5, 4) = -yz;
-
-    Vector6f eHat = mm.inverse() * mz;
-
-    /// the vector pose_d is the pose estimation of the
-    // second scan = the final pose of the first scan
-    Vector6f pose_d;
-    pose_d.block<3, 1>(0, 0) = pos;
-    pose_d.block<3, 1>(3, 0) = theta;
-
-    pose_d -= H.inverse() * eHat;
-
-    /// transform of the second scan as computed so far
-    Matrix4f trans_d = poseToMatrix(pose_d.block<3, 1>(0, 0), pose_d.block<3, 1>(3, 0));
-
-    /// the incremental transform calculated from the absolute poses
-    //  of the two scans
-    align = trans_m * trans_d.inverse();
-
-    return error;
-// */
-//*
-    double error = 0.0;
+    size_t pairs = 0;
 
     // Fill H matrix
     Matrix3f H = Matrix3f::Zero();
 
-    // openMP seems to make this part slower
-    // #pragma omp declare reduction (+: Matrix3f: omp_out=omp_out+omp_in) initializer(omp_priv=Matrix3f::Zero())
-    // #pragma omp parallel for reduction(+:H)
-    for (size_t i = 0; i < pairs.size(); i++)
+    #pragma omp parallel
     {
-        Vector3f m = *pairs[i].first - centroid_m;
-        Vector3f d = *pairs[i].second - centroid_d;
+        Matrix3f localH = Matrix3f::Zero();
+        double localError = 0.0;
+        size_t localPairs = 0;
 
-        error += (m - d).squaredNorm();
-
-        // same as "H += m[i] * d[i].transpose();" but faster
-        for (int j = 0; j < 3; j++)
+        #pragma omp for nowait
+        for (size_t i = 0; i < n; i++)
         {
-            for (int k = 0; k < 3; k++)
+            if (neighbors[i] == nullptr)
             {
-                H(j, k) += m[j] * d[k];
+                continue;
             }
+
+            Vector3f m = *neighbors[i] - centroid_m;
+            Vector3f d = data[i] - centroid_d;
+
+            localError += (m - d).squaredNorm();
+            localPairs++;
+
+            // same as "localH += m * d.transpose();" but faster
+            for (int j = 0; j < 3; j++)
+            {
+                for (int k = 0; k < 3; k++)
+                {
+                    localH(j, k) += d[j] * m[k];
+                }
+            }
+        }
+
+        #pragma omp critical
+        {
+            H += localH;
+            error += localError;
+            pairs += localPairs;
         }
     }
 
-    error = sqrt(error / (double)pairs.size());
+    error = sqrt(error / (double)pairs);
 
     JacobiSVD<Matrix3f> svd(H, ComputeFullU | ComputeFullV);
 
@@ -189,11 +111,10 @@ double EigenSVDPointAlign::alignPoints(
     align.block<3, 3>(0, 0) = R;
 
     // Calculate translation
-    Eigen::Vector3f translation = centroid_d - R * centroid_m;
+    Eigen::Vector3f translation = centroid_m - R * centroid_d;
     align.block<3, 1>(0, 3) = translation;
 
     return error;
-// */
 }
 
 } // namespace lvr2

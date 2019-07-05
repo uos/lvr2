@@ -43,14 +43,14 @@ using Eigen::Vector3f;
 namespace lvr2
 {
 
-using PointPairVector = std::vector<std::pair<const Vector3f*, const Vector3f*>>;
-
 class EigenSVDPointAlign
 {
 public:
     EigenSVDPointAlign() {};
     double alignPoints(
-        const PointPairVector& pairs,
+        Vector3f* data,
+        Vector3f** neighbors,
+        size_t n,
         const Vector3f& centroid_m,
         const Vector3f& centroid_d,
         Matrix4f& align);

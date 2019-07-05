@@ -60,8 +60,6 @@ public:
     double  getEpsilon() const;
     bool    getVerbose() const;
 
-    void getPointPairs(PointPairVector& pairs, Vector3f& centroid_m, Vector3f& centroid_d) const;
-
 protected:
 
     double      m_epsilon;

@@ -52,7 +52,7 @@ public:
     /**
      * @brief Creates a new KDTree from the given Point Cloud. Note that this function modifies
      *        the order of elements in 'points'.
-     * 
+     *
      * @param points        The Point Cloud
      * @param n             The number of points in 'points'
      * @param maxLeafSize   The maximum number of points to use for a Leaf in the Tree
@@ -63,7 +63,7 @@ public:
      * @brief Creates a new KDTree from the given Point Cloud. Note that this function modifies
      *        the order of elements in 'points'.
      *        This does not take ownership of the pointer. the caller must manage the memory.
-     * 
+     *
      * @param points        The Point Cloud
      * @param n             The number of points in 'points'
      * @param maxLeafSize   The maximum number of points to use for a Leaf in the Tree
@@ -73,14 +73,15 @@ public:
     /**
      * @brief Finds the nearest neighbor of 'point' that is within 'maxDistance' (defaults to infinity).
      *        The resulting neighbor is written into 'neighbor' (or nullptr if none is found).
-     * 
+     *
      * @param point         The Point whose neighbor is searched
      * @param neighbor      A Pointer that is set to the neighbor or nullptr if none is found
      * @param distance      The final distance between point and neighbor
      * @param maxDistance   The maximum distance allowed between neighbors. Setting this value
      *                      significantly speeds up the search.
+     * @returns             true if a neighbors was found, false otherwise
      */
-    void nearestNeighbor(
+    bool nearestNeighbor(
         const Vector3f& point,
         Vector3f*& neighbor,
         float& distance,
@@ -94,10 +95,40 @@ protected:
 
     friend class KDNode;
 
-	PointArray points;
+    PointArray points;
 };
 
 using KDTreePtr = std::shared_ptr<KDTree>;
+
+/**
+ * @brief Finds the nearest neighbors of all points in 'points' using a pre-generated KDTree
+ *
+ * @param tree          The KDTree to search in
+ * @param points        The Points to search for
+ * @param neighbors     An array to store the results in. neighbors[i] is set to a Pointer to the
+ *                      neighbor of points[i] or nullptr if none was found
+ * @param n             The number of Points
+ * @param maxDistance   The maximum Distance for a Neighbor
+ * @param centroid_m    Will be set to the average of all Points in 'neighbors'
+ * @param centroid_d    Will be set to the average of all Points in 'points' that have neighbors
+ *
+ * @returns             The number of neighbors that were found
+ */
+size_t getNearestNeighbors(KDTreePtr tree, Vector3f* points, Vector3f** neighbors, size_t n, float maxDistance, Vector3f& centroid_m, Vector3f& centroid_d);
+
+/**
+ * @brief Finds the nearest neighbors of all points in 'points' using a pre-generated KDTree
+ *
+ * @param tree          The KDTree to search in
+ * @param points        The Points to search for
+ * @param neighbors     An array to store the results in. neighbors[i] is set to a Pointer to the
+ *                      neighbor of points[i] or nullptr if none was found
+ * @param n             The number of Points
+ * @param maxDistance   The maximum Distance for a Neighbor
+ *
+ * @returns             The number of neighbors that were found
+ */
+size_t getNearestNeighbors(KDTreePtr tree, Vector3f* points, Vector3f** neighbors, size_t n, float maxDistance);
 
 } /* namespace lvr2 */
 
