@@ -264,8 +264,7 @@ void SlamAlign::findCloseScans(int scan, vector<int>& output)
                 const Vector3f& point = scan->getPoint(i);
                 Vector3f* neighbor = nullptr;
                 float dist;
-                tree->nearestNeighbor(point, neighbor, dist, m_options.slamMaxDistance);
-                if (neighbor != nullptr)
+                if (tree->nearestNeighbor(point, neighbor, dist, m_options.slamMaxDistance))
                 {
                     count++;
                 }

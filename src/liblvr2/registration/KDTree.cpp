@@ -149,11 +149,75 @@ KDTreePtr KDTree::create(Vector3f* points, int n, int maxLeafSize)
     return ret;
 }
 
-void KDTree::nearestNeighbor(const Vector3f& point, Vector3f*& neighbor, float& distance, float maxDistance) const
+bool KDTree::nearestNeighbor(const Vector3f& point, Vector3f*& neighbor, float& distance, float maxDistance) const
 {
     neighbor = nullptr;
     distance = maxDistance;
     nnInternal(point, neighbor, distance);
+
+    return neighbor != nullptr;
+}
+
+size_t getNearestNeighbors(KDTreePtr tree, Vector3f* points, Vector3f** neighbors, size_t n, float maxDistance, Vector3f& centroid_m, Vector3f& centroid_d)
+{
+    centroid_m = Vector3f::Zero();
+    centroid_d = Vector3f::Zero();
+
+    size_t found = 0;
+
+    #pragma omp parallel
+    {
+        Vector3f localCentroid_m = Vector3f::Zero();
+        Vector3f localCentroid_d = Vector3f::Zero();
+        double localError = 0.0f;
+
+        size_t localFound = 0;
+        float localDistance = 0.0f;
+
+        #pragma omp for nowait
+        for (size_t i = 0; i < n; i++)
+        {
+            if (tree->nearestNeighbor(points[i], neighbors[i], localDistance, maxDistance))
+            {
+                localCentroid_m += *neighbors[i];
+                localCentroid_d += points[i];
+
+                localFound++;
+            }
+        }
+
+        #pragma omp critical
+        {
+            centroid_m += localCentroid_m;
+            centroid_d += localCentroid_d;
+            found += localFound;
+        }
+    }
+
+    centroid_m /= found;
+    centroid_d /= found;
+
+    return found;
+}
+
+size_t getNearestNeighbors(KDTreePtr tree, Vector3f* points, Vector3f** neighbors, size_t n, float maxDistance)
+{
+    size_t found = 0;
+
+    #pragma omp parallel
+    {
+        float localDistance = 0.0f;
+        size_t localFound = 0;
+
+        #pragma omp for nowait
+        for (size_t i = 0; i < n; i++)
+        {
+            if (tree->nearestNeighbor(points[i], neighbors[i], localDistance, maxDistance))
+            {
+                localFound++;
+            }
+        }
+    }
 }
 
 }
