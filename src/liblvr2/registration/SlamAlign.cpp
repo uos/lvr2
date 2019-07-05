@@ -174,12 +174,6 @@ void SlamAlign::checkLoopClose(int last)
         return;
     }
 
-    // GraphSlam cares about all Edges, LoopClosing not
-    if (!m_options.doGraphSlam && last < m_options.loopSize)
-    {
-        return;
-    }
-
     vector<int> others;
     findCloseScans(last, others);
 
@@ -188,12 +182,9 @@ void SlamAlign::checkLoopClose(int last)
         return;
     }
 
-    if (m_options.doGraphSlam)
+    for (int i : others)
     {
-        for (int i : others)
-        {
-            m_graph.push_back(make_pair(i, last));
-        }
+        m_graph.push_back(make_pair(i, last));
     }
 
     auto iter = find_if(others.begin(), others.end(), [&](int i)
@@ -221,7 +212,27 @@ void SlamAlign::checkLoopClose(int last)
 void SlamAlign::loopClose(int first, int last)
 {
     cout << "LOOPCLOSE!!!!" << first << " -> " << last << endl;
-    // TODO: implement
+
+    ScanPtr metaFirst = make_shared<Scan>(m_scans[first]);
+    metaFirst->addScanToMeta(m_scans[first + 1]);
+    metaFirst->addScanToMeta(m_scans[first + 2]);
+
+    ScanPtr metaLast = make_shared<Scan>(m_scans[last]);
+    metaLast->addScanToMeta(m_scans[last - 1]);
+    metaLast->addScanToMeta(m_scans[last - 2]);
+
+    ICPPointAlign icp(metaFirst, metaLast);
+    icp.setMaxMatchDistance(m_options.slamMaxDistance);
+    icp.setMaxIterations(m_options.slamIterations);
+    icp.setEpsilon(m_options.epsilon);
+    icp.setVerbose(m_options.verbose);
+
+    Matrix4f result = icp.match();
+
+    // TODO: Calculate Covariance
+    // TODO: Emulate graph_balancer
+    // TODO: Calculate weights
+    // TODO: Transform based on weights
 }
 
 void SlamAlign::graphSlam(int last)
