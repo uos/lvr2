@@ -119,7 +119,7 @@ void SlamAlign::match()
         icp.setEpsilon(m_options.epsilon);
         icp.setVerbose(m_options.verbose);
 
-        Matrix4f result = icp.match();
+        icp.match();
 
         addFrame(cur);
 
@@ -179,6 +179,7 @@ void SlamAlign::checkLoopClose(int last)
 
     if (others.empty())
     {
+        m_foundLoop = 0;
         return;
     }
 
@@ -193,6 +194,14 @@ void SlamAlign::checkLoopClose(int last)
     });
 
     if (iter == others.end())
+    {
+        m_foundLoop = 0;
+        return;
+    }
+
+    m_foundLoop++;
+
+    if (m_foundLoop < 2)
     {
         return;
     }
@@ -209,15 +218,108 @@ void SlamAlign::checkLoopClose(int last)
     }
 }
 
+Matrix6f SlamAlign::eulerCovariance(int a, int b) const
+{
+    const ScanPtr& scanA = m_scans[a];
+    const ScanPtr& scanB = m_scans[b];
+
+    size_t n = scanB->count();
+
+    auto tree = KDTree::create(scanA->points(), scanA->count());
+    Vector3f* points = scanB->points();
+    Vector3f** results = new Vector3f*[n];
+    getNearestNeighbors(tree, points, results, n, m_options.slamMaxDistance);
+
+    Vector6f mz = Vector6f::Zero();
+    Vector3f sum, sumProducts, sumSquares;
+    sum = sumProducts = sumSquares = Vector3f::Zero();
+
+    for (size_t i = 0; i < n; i++)
+    {
+        if (results[i] == nullptr)
+        {
+            continue;
+        }
+        Vector3f mid = (points[i] + *results[i]) / 2.0f;
+        Vector3f delta = *results[i] - points[i];
+
+        sum += mid;
+
+        sumProducts.x() += mid.x() * mid.y();
+        sumProducts.y() += mid.y() * mid.z();
+        sumProducts.z() += mid.z() * mid.x();
+
+        Vector3f squared = mid.cwiseProduct(mid);
+
+        sumSquares.x() += squared.x() +  squared.y();
+        sumSquares.y() += squared.y() +  squared.z();
+        sumSquares.z() += squared.z() +  squared.x();
+
+        mz.block<3, 1>(0, 0) += delta;
+
+        Vector3f cross = mid.cross(delta);
+        mz(3) += cross.x();
+        mz(4) += cross.z();
+        mz(5) += cross.y();
+    }
+
+    Matrix6f mm = Matrix6f::Zero();
+    mm(0, 0) = mm(1, 1) = mm(2, 2) = n;
+    mm(3, 3) = sumSquares.y();
+    mm(4, 4) = sumSquares.x();
+    mm(5, 5) = sumSquares.z();
+
+    mm(0, 4) = mm(4, 0) = -sum.y();
+    mm(0, 5) = mm(5, 0) = sum.z();
+    mm(1, 3) = mm(3, 1) = -sum.z();
+    mm(1, 4) = mm(4, 1) = sum.x();
+    mm(2, 3) = mm(3, 2) = sum.y();
+    mm(2, 5) = mm(5, 2) = -sum.x();
+
+    mm(3, 4) = mm(4, 3) = -sumProducts.z();
+    mm(3, 5) = mm(5, 3) = -sumProducts.y();
+    mm(4, 5) = mm(5, 4) = -sumProducts.x();
+
+    Vector6f d = mm.inverse() * mz;
+
+    float ss = 0.0f;
+
+    for (size_t i = 0; i < n; i++)
+    {
+        if (results[i] == nullptr)
+        {
+            continue;
+        }
+
+        Vector3f mid = (points[i] + *results[i]) / 2.0f;
+
+        Vector3f s(d(0) - mid.y() * d(4) + mid.z() * d(5),
+                   d(1) - mid.z() * d(3) + mid.x() * d(4),
+                   d(2) - mid.x() * d(5) + mid.y() * d(3));
+
+        s = points[i] - *results[i] - s;
+
+        ss = s.squaredNorm();
+    }
+
+    delete results;
+
+    ss = ss / ( 2.0f * n - 3.0f);
+
+    ss = 1.0f / ss;
+
+    return mm * ss;
+}
+
 void SlamAlign::loopClose(int first, int last)
 {
     cout << "LOOPCLOSE!!!!" << first << " -> " << last << endl;
 
-    ScanPtr metaFirst = make_shared<Scan>(m_scans[first]);
+    ScanPtr metaFirst = make_shared<Scan>(*m_scans[first]);
     metaFirst->addScanToMeta(m_scans[first + 1]);
     metaFirst->addScanToMeta(m_scans[first + 2]);
 
-    ScanPtr metaLast = make_shared<Scan>(m_scans[last]);
+    ScanPtr metaLast = make_shared<Scan>(*m_scans[last]);
     metaLast->addScanToMeta(m_scans[last - 1]);
     metaLast->addScanToMeta(m_scans[last - 2]);
 
@@ -227,12 +329,33 @@ void SlamAlign::loopClose(int first, int last)
     icp.setEpsilon(m_options.epsilon);
     icp.setVerbose(m_options.verbose);
 
-    Matrix4f result = icp.match();
+    Matrix4f transform = icp.match();
+
+    cout << "Loopclose delta: " << endl << transform << endl << endl;
 
     // TODO: Calculate Covariance
     // TODO: Emulate graph_balancer
     // TODO: Calculate weights
     // TODO: Transform based on weights
+
+    for (int i = first; i <= last; i++)
+    {
+        float factor = (i - first) / (float)(last - first);
+
+        Matrix4f delta = (transform - Matrix4f::Identity()) * factor + Matrix4f::Identity();
+
+        m_scans[i]->transform(delta, true, ScanUse::LOOPCLOSE);
+    }
+
+    // Add frame to unaffected scans
+    for (int i = 0; i < first; i++)
+    {
+        m_scans[i]->addFrame();
+    }
+    for (int i = last + 1; i < m_scans.size(); i++)
+    {
+        m_scans[i]->addFrame(ScanUse::INVALID);
+    }
 }
 
 void SlamAlign::graphSlam(int last)

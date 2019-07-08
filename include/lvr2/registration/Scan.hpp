@@ -47,6 +47,8 @@ enum class ScanUse
     INVALID = 0,
     UPDATED = 1,
     UNUSED = 2,
+    LOOPCLOSE = 3,
+    GRAPHSLAM = 4,
 };
 
 class Scan
@@ -54,7 +56,7 @@ class Scan
 public:
     Scan(PointBufferPtr points, const Matrix4f& pose);
 
-    void transform(const Matrix4f& transform, bool writeFrame = true);
+    void transform(const Matrix4f& transform, bool writeFrame = true, ScanUse use = ScanUse::UPDATED);
     void addFrame(ScanUse use = ScanUse::UNUSED);
 
     void reduce(float voxelSize);

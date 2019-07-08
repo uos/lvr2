@@ -42,9 +42,6 @@
 using namespace Eigen;
 using std::numeric_limits;
 
-using Matrix6f = Matrix<float, 6, 6>;
-using Vector6f = Matrix<float, 6, 1>;
-
 namespace lvr2
 {
 

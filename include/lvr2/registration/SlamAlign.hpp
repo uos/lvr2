@@ -78,6 +78,7 @@ protected:
     void loopClose(int first, int last);
     void graphSlam(int last);
     void findCloseScans(int scan, vector<int>& output);
+    Matrix6f eulerCovariance(int a, int b) const;
 
     SlamOptions             m_options;
 
@@ -86,6 +87,7 @@ protected:
     ScanPtr                 m_metascan;
 
     vector<pair<int, int>>  m_graph;
+    int                     m_foundLoop;
 };
 
 } /* namespace lvr2 */
