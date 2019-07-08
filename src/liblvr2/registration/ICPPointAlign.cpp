@@ -78,6 +78,7 @@ Matrix4f ICPPointAlign::match()
     Vector3f centroid_m;
     Vector3f centroid_d;
     Matrix4f transform;
+    Matrix4f delta = Matrix4f::Identity();
 
     size_t numPoints = m_dataCloud->count();
 
@@ -98,6 +99,7 @@ Matrix4f ICPPointAlign::match()
 
         // Apply transformation
         m_dataCloud->transform(transform, false);
+        delta = delta * transform;
 
         if (m_verbose)
         {
@@ -126,7 +128,7 @@ Matrix4f ICPPointAlign::match()
         cout << "Result: " << endl << m_dataCloud->getDeltaPose() << endl;
     }
 
-    return m_dataCloud->getPose();
+    return delta;
 }
 
 void ICPPointAlign::setMaxMatchDistance(float d)

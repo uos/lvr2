@@ -203,21 +203,18 @@ size_t getNearestNeighbors(KDTreePtr tree, Vector3f* points, Vector3f** neighbor
 size_t getNearestNeighbors(KDTreePtr tree, Vector3f* points, Vector3f** neighbors, size_t n, float maxDistance)
 {
     size_t found = 0;
+    float distance = 0.0f;
 
-    #pragma omp parallel
+    #pragma omp parallel for firstprivate(distance) reduction(+:found)
+    for (size_t i = 0; i < n; i++)
     {
-        float localDistance = 0.0f;
-        size_t localFound = 0;
-
-        #pragma omp for nowait
-        for (size_t i = 0; i < n; i++)
+        if (tree->nearestNeighbor(points[i], neighbors[i], distance, maxDistance))
         {
-            if (tree->nearestNeighbor(points[i], neighbors[i], localDistance, maxDistance))
-            {
-                localFound++;
-            }
+            found++;
         }
     }
+
+    return found;
 }
 
 }
