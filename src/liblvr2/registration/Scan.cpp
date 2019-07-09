@@ -199,13 +199,6 @@ void Scan::writeFrames(std::string path) const
 
         out << (int)frame.second << endl;
     }
-
-    ofstream poseFile(path + ".pose");
-    Vector3f pos, rot;
-    matrixToPose(m_pose, pos, rot);
-    rot *= 180.0 / M_PI;
-    poseFile << pos.x() << ' ' << pos.y() << ' ' << pos.z() << endl;
-    poseFile << rot.x() << ' ' << rot.y() << ' ' << rot.z() << flush;
 }
 
 PointBufferPtr Scan::toPointBuffer() const
