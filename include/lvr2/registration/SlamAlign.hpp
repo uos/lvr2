@@ -87,7 +87,7 @@ protected:
     ScanPtr                 m_metascan;
 
     vector<pair<int, int>>  m_graph;
-    int                     m_foundLoop;
+    bool                    m_foundLoop;
 };
 
 } /* namespace lvr2 */

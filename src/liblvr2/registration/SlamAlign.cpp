@@ -41,7 +41,7 @@ namespace lvr2
 {
 
 SlamAlign::SlamAlign(const SlamOptions& options, int count)
-    : m_options(options)
+    : m_options(options), m_foundLoop(false)
 {
     if (count > 0)
     {
@@ -174,48 +174,44 @@ void SlamAlign::checkLoopClose(int last)
         return;
     }
 
+    bool hasLoop = false;
+
+    int first = -1;
+
     vector<int> others;
     findCloseScans(last, others);
 
-    if (others.empty())
+    if (!others.empty())
     {
-        m_foundLoop = 0;
-        return;
+        for (int i : others)
+        {
+            m_graph.push_back(make_pair(i, last));
+        }
+
+        auto iter = find_if(others.begin(), others.end(), [&](int i)
+        {
+            return last - i > m_options.loopSize;
+        });
+
+        if (iter != others.end())
+        {
+            first = *iter;
+            hasLoop = true;
+        }
     }
 
-    for (int i : others)
-    {
-        m_graph.push_back(make_pair(i, last));
-    }
-
-    auto iter = find_if(others.begin(), others.end(), [&](int i)
-    {
-        return last - i > m_options.loopSize;
-    });
-
-    if (iter == others.end())
-    {
-        m_foundLoop = 0;
-        return;
-    }
-
-    m_foundLoop++;
-
-    if (m_foundLoop < 2)
-    {
-        return;
-    }
-
-    int first = *iter;
-
-    if (m_options.doLoopClosing)
+    if (hasLoop && m_options.doLoopClosing)
     {
         loopClose(first, last);
     }
-    if (m_options.doGraphSlam)
+
+    // wait for falling edge
+    if (m_foundLoop && !hasLoop && m_options.doGraphSlam)
     {
         graphSlam(last);
     }
+
+    m_foundLoop = hasLoop;
 }
 
 Matrix6f SlamAlign::eulerCovariance(int a, int b) const
