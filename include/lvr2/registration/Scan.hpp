@@ -47,8 +47,8 @@ enum class ScanUse
     INVALID = 0,
     UPDATED = 1,
     UNUSED = 2,
-    LOOPCLOSE = 3,
-    GRAPHSLAM = 4,
+    GRAPHSLAM = 3,
+    LOOPCLOSE = 4,
 };
 
 class Scan
