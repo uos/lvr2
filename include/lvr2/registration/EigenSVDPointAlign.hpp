@@ -45,14 +45,23 @@ using Vector6f = Eigen::Matrix<float, 6, 1>;
 namespace lvr2
 {
 
+using PointPairVector = std::vector<std::pair<Vector3f, Vector3f>>;
+
 class EigenSVDPointAlign
 {
 public:
     EigenSVDPointAlign() {};
+
     double alignPoints(
         Vector3f* data,
         Vector3f** neighbors,
         size_t n,
+        const Vector3f& centroid_m,
+        const Vector3f& centroid_d,
+        Matrix4f& align);
+
+    double alignPoints(
+        PointPairVector& points,
         const Vector3f& centroid_m,
         const Vector3f& centroid_d,
         Matrix4f& align);
