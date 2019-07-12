@@ -262,6 +262,15 @@ size_t writePointsToStream(ModelPtr model, std::ofstream& out, bool nocolor = fa
  */
 Eigen::Matrix4d inverseTransform(const Eigen::Matrix4d& transform);
 
+/**
+ * @brief  Get the Number Of Points (element points if present, vertex count otherwise) 
+ *         in a PLY file.
+ * 
+ * @param filename              A valid PLY file.                 
+ * @return size_t               Number of points in examined file
+ */
+size_t getNumberOfPointsInPLY(const std::string& filename);
+
 } // namespace lvr2
 
 #include "IOUtils.tcc"

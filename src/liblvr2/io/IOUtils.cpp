@@ -540,4 +540,62 @@ void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, con
     }
 }
 
+size_t getNumberOfPointsInPLY(const std::string& filename)
+{
+    size_t n_points = 0;
+    size_t n_vertices = 0;
+
+    // Try to open file
+    std::ifstream in(filename.c_str());
+    if(in.good())
+    {
+        // Check for ply tag
+        std::string tag;
+        in >> tag;
+        if(tag == "PLY" || tag == "ply")
+        {
+            // Parse header
+            std::string token;
+            while (in.good() && token != "end_header" && token != "END_HEADER")
+            {
+                in >> token;
+              
+
+                // Check for vertex field
+                if(token == "vertex" || token == "VERTEX")
+                {
+                    in >> n_vertices;
+                }
+
+                // Check for point field
+                if(token == "point" || token == "POINT")
+                {
+                    in >> n_points;
+                }
+            }
+            if(n_points == 0 && n_vertices == 0)
+            {
+                std::cout << timestamp << "PLY contains neither vertices nor points." << std::endl;
+                return 0;
+            }
+            
+            // Prefer points over vertices
+            if(n_points)
+            {
+                return n_points;
+            }
+            else
+            {
+                return n_vertices;
+            }
+        }
+        else
+        {
+            std::cout << timestamp << filename << " is not a valid .ply file." << std::endl;
+        }
+        
+    }
+    return 0;
+}
+
 } // namespace lvr2
