@@ -55,6 +55,7 @@ using namespace std;
 #include "lvr2/io/Timestamp.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/IOUtils.hpp"
+#include "lvr2/io/ScanDirectoryParser.hpp"
 
 #ifdef LVR2_USE_PCL
 #include "lvr2/reconstruction/PCLFiltering.hpp"
@@ -454,128 +455,136 @@ int main(int argc, char** argv) {
     // Parse command line arguments
     options = new kaboom::Options(argc, argv);
 
-    // Check if a specific input file was given. If so, convert the single
-    // file according to .pose or .frame information
-    if(options->getInputFile() != "")
-    {
-        boost::filesystem::path inputFile(options->getInputFile());
-        if(boost::filesystem::exists((inputFile)))
-        {
-            processSingleFile(inputFile);
-            exit(0);
-        }
-        else
-        {
-            cout << timestamp << "File '" << options->getInputFile() << "' does not exist." << endl;
-            exit(-1);
-        }
-    }
+    // // Check if a specific input file was given. If so, convert the single
+    // // file according to .pose or .frame information
+    // if(options->getInputFile() != "")
+    // {
+    //     boost::filesystem::path inputFile(options->getInputFile());
+    //     if(boost::filesystem::exists((inputFile)))
+    //     {
+    //         processSingleFile(inputFile);
+    //         exit(0);
+    //     }
+    //     else
+    //     {
+    //         cout << timestamp << "File '" << options->getInputFile() << "' does not exist." << endl;
+    //         exit(-1);
+    //     }
+    // }
 
-    // If an input directory is given, enter directory parsing mode
-    boost::filesystem::path inputDir(options->getInputDir());
-    boost::filesystem::path outputDir(options->getOutputDir());
+    // // If an input directory is given, enter directory parsing mode
+    // boost::filesystem::path inputDir(options->getInputDir());
+    // boost::filesystem::path outputDir(options->getOutputDir());
 
-    // Check input directory
-    if(!boost::filesystem::exists(inputDir))
-    {
-        cout << timestamp << "Error: Directory " << options->getInputDir() << " does not exist" << endl;
-        exit(-1);
-    }
+    // // Check input directory
+    // if(!boost::filesystem::exists(inputDir))
+    // {
+    //     cout << timestamp << "Error: Directory " << options->getInputDir() << " does not exist" << endl;
+    //     exit(-1);
+    // }
 
-    // Check if output dir exists
-    if(!boost::filesystem::exists(outputDir))
-    {
-        cout << timestamp << "Creating directory " << options->getOutputDir() << endl;
-        if(!boost::filesystem::create_directory(outputDir))
-        {
-            cout << timestamp << "Error: Unable to create " << options->getOutputDir() << endl;
-            exit(-1);
-        }
-    }
+    // // Check if output dir exists
+    // if(!boost::filesystem::exists(outputDir))
+    // {
+    //     cout << timestamp << "Creating directory " << options->getOutputDir() << endl;
+    //     if(!boost::filesystem::create_directory(outputDir))
+    //     {
+    //         cout << timestamp << "Error: Unable to create " << options->getOutputDir() << endl;
+    //         exit(-1);
+    //     }
+    // }
 
-    boost::filesystem::path abs_in = boost::filesystem::canonical(inputDir);
-    boost::filesystem::path abs_out = boost::filesystem::canonical(outputDir);
+    // boost::filesystem::path abs_in = boost::filesystem::canonical(inputDir);
+    // boost::filesystem::path abs_out = boost::filesystem::canonical(outputDir);
 
-    if(abs_in == abs_out)
-    {
-        cout << timestamp << "Error: We think it is not a good idea to write into the same directory. " << endl;
-        exit(-1);
-    }
+    // if(abs_in == abs_out)
+    // {
+    //     cout << timestamp << "Error: We think it is not a good idea to write into the same directory. " << endl;
+    //     exit(-1);
+    // }
 
-    // Create director iterator and parse supported file formats
-    boost::filesystem::directory_iterator end;
-    vector<boost::filesystem::path> v;
-    for(boost::filesystem::directory_iterator it(inputDir); it != end; ++it)
-    {
-        std::string ext =	it->path().extension().string();
-        if(ext == ".3d" || ext == ".ply" || ext == ".txt" )
-        {
-            v.push_back(it->path());
-        }
-    }
+    // // Create director iterator and parse supported file formats
+    // boost::filesystem::directory_iterator end;
+    // vector<boost::filesystem::path> v;
+    // for(boost::filesystem::directory_iterator it(inputDir); it != end; ++it)
+    // {
+    //     std::string ext =	it->path().extension().string();
+    //     if(ext == ".3d" || ext == ".ply" || ext == ".txt" )
+    //     {
+    //         v.push_back(it->path());
+    //     }
+    // }
 
-    // Sort entries
-    sort(v.begin(), v.end(), sortScans);
+    // // Sort entries
+    // sort(v.begin(), v.end(), sortScans);
 
-    vector<float>	 		merge_points;
-    vector<unsigned char>	merge_colors;
+    // vector<float>	 		merge_points;
+    // vector<unsigned char>	merge_colors;
 
-    int j = -1;
-    for(vector<boost::filesystem::path>::iterator it = v.begin(); it != v.end(); ++it)
-    {
-        int i = 0;
+    // int j = -1;
+    // for(vector<boost::filesystem::path>::iterator it = v.begin(); it != v.end(); ++it)
+    // {
+    //     int i = 0;
 
-        std::string currFile = (it->stem()).string();
-        bool p = parse_filename(currFile.begin(), currFile.end(), i);
+    //     std::string currFile = (it->stem()).string();
+    //     bool p = parse_filename(currFile.begin(), currFile.end(), i);
 
-        //if parsing failed terminate, this should never happen.
-        if(!p)
-        {
-            std::cerr << timestamp << "ERROR " << " " << *it << " does not match the naming convention" << std::endl;
-            break;
-        }
+    //     //if parsing failed terminate, this should never happen.
+    //     if(!p)
+    //     {
+    //         std::cerr << timestamp << "ERROR " << " " << *it << " does not match the naming convention" << std::endl;
+    //         break;
+    //     }
 
-        // check if the current scan has the same numbering like the previous, this should not happen.
-        if(i == j)
-        {
-            std::cerr << timestamp << "ERROR " << *std::prev(it) << " & " << *it << " have identical numbering" << std::endl;
-            break;
-        }
+    //     // check if the current scan has the same numbering like the previous, this should not happen.
+    //     if(i == j)
+    //     {
+    //         std::cerr << timestamp << "ERROR " << *std::prev(it) << " & " << *it << " have identical numbering" << std::endl;
+    //         break;
+    //     }
 
-        // check if the scan is in the range which should be processed
-        if(i >= options->getStart()){
-            // when end is default(=0) process the complete vector
-            if(0 == options->getEnd() || i <= options->getEnd())
-            {
-                try
-                {
-                    // This is dirty and bad designed.
-                    // We need to know when we advanced to the last scan
-                    // for ply merging. Which originally was not planned.
-                    // Two cases end option set or not.
-                    if((i  == options->getEnd()) || std::next(it, 1) == v.end())
-                    {
-                        lastScan = true;
-                    }
-                    processSingleFile(*it);
-                    std::cout << " finished" << std::endl;
-                }
-                catch(const char* msg)
-                {
-                    std::cerr << timestamp << msg << *it << std::endl;
-                    break;
-                }
-                j = i;
-            }
-            else
-            {
-                break;
-            }
-        }
+    //     // check if the scan is in the range which should be processed
+    //     if(i >= options->getStart()){
+    //         // when end is default(=0) process the complete vector
+    //         if(0 == options->getEnd() || i <= options->getEnd())
+    //         {
+    //             try
+    //             {
+    //                 // This is dirty and bad designed.
+    //                 // We need to know when we advanced to the last scan
+    //                 // for ply merging. Which originally was not planned.
+    //                 // Two cases end option set or not.
+    //                 if((i  == options->getEnd()) || std::next(it, 1) == v.end())
+    //                 {
+    //                     lastScan = true;
+    //                 }
+    //                 processSingleFile(*it);
+    //                 std::cout << " finished" << std::endl;
+    //             }
+    //             catch(const char* msg)
+    //             {
+    //                 std::cerr << timestamp << msg << *it << std::endl;
+    //                 break;
+    //             }
+    //             j = i;
+    //         }
+    //         else
+    //         {
+    //             break;
+    //         }
+    //     }
 
-    }
+    // }
 
-    cout << timestamp << "Program end." << endl;
+    // cout << timestamp << "Program end." << endl;
+
+    ScanDirectoryParser parser(options->getInputDir());
+    parser.setStart(options->getStart());
+    parser.setEnd(options->getEnd());
+
+    cout << timestamp << parser.computeNumberOfPoints() << endl;
+
+
     delete options;
     return 0;
 }
