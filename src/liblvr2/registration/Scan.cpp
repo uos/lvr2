@@ -221,8 +221,10 @@ PointBufferPtr Scan::toPointBuffer() const
 
 void Scan::addScanToMeta(ScanPtr scan)
 {
+    auto points = scan->points(); // ensure all transformations are applied
+
     m_points.reserve(scan->count());
-    m_points.insert(m_points.end(), scan->m_points.begin(), scan->m_points.end());
+    m_points.insert(m_points.end(), points, points + scan->count());
     m_deltaPose = scan->getDeltaPose();
 }
 
