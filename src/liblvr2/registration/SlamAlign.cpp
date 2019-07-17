@@ -40,24 +40,49 @@ using namespace std;
 namespace lvr2
 {
 
-SlamAlign::SlamAlign(const SlamOptions& options, int count)
-    : m_options(options), m_foundLoop(false)
+SlamAlign::SlamAlign(const SlamOptions& options, vector<ScanPtr>& scans)
+    : m_options(options), m_scans(scans), m_foundLoop(false)
 {
-    if (count > 0)
+    // The first Scan is never changed
+    m_alreadyMatched = 1;
+
+    for (auto& scan : m_scans)
     {
-        m_scans.resize(count);
+        reduceScan(scan);
     }
 }
 
-void SlamAlign::addScan(const ScanPtr& scan)
+SlamAlign::SlamAlign(const SlamOptions& options)
+    : m_options(options), m_foundLoop(false)
+{
+    // The first Scan is never changed
+    m_alreadyMatched = 1;
+}
+
+void SlamAlign::setOptions(const SlamOptions& options)
+{
+    m_options = options;
+}
+
+SlamOptions& SlamAlign::options()
+{
+    return m_options;
+}
+
+void SlamAlign::addScan(const ScanPtr& scan, bool match)
 {
     reduceScan(scan);
     m_scans.push_back(scan);
+
+    if (match)
+    {
+        this->match();
+    }
 }
-void SlamAlign::setScan(int index, const ScanPtr& scan)
+
+ScanPtr SlamAlign::getScan(int index)
 {
-    reduceScan(scan);
-    m_scans[index] = scan;
+    return m_scans[index];
 }
 
 void SlamAlign::reduceScan(const ScanPtr& scan)
@@ -84,14 +109,24 @@ void SlamAlign::reduceScan(const ScanPtr& scan)
 
 void SlamAlign::match()
 {
-    if (m_options.metascan)
+    // need at least 2 Scans
+    if (m_scans.size() <= 1)
+    {
+        return;
+    }
+
+    if (m_options.metascan && !m_metascan)
     {
         m_metascan = ScanPtr(new Scan(*m_scans[0]));
     }
 
     string scan_number_string = to_string(m_scans.size() - 1);
-    for (int i = 1; i < m_scans.size(); i++)
+
+    // only match everything after m_alreadyMatched
+    for (; m_alreadyMatched < m_scans.size(); m_alreadyMatched++)
     {
+        size_t i = m_alreadyMatched;
+
         if (m_options.verbose)
         {
             cout << "Iteration " << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << endl;
@@ -123,7 +158,7 @@ void SlamAlign::match()
 
         addFrame(cur);
 
-        if (m_options.metascan && i + 1 < m_scans.size())
+        if (m_options.metascan)
         {
             m_metascan->addScanToMeta(cur);
         }

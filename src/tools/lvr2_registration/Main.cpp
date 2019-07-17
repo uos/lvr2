@@ -300,8 +300,8 @@ int main(int argc, char** argv)
 
     int count = end - start + 1;
 
-    SlamAlign align(options, count);
-    vector<ScanPtr> scans;
+    SlamAlign align(options);
+    vector<ScanPtr> scans(count);
 
     // omp does not allow early break/return
     bool failed = false;
@@ -333,13 +333,27 @@ int main(int argc, char** argv)
         Matrix4f pose = getTransformationFromPose(file).cast<float>();
 
         ScanPtr scan = make_shared<Scan>(model->m_pointCloud, pose);
-        align.setScan(i, scan);
-        scans.push_back(scan);
+        scans[i] = scan;
+
+        if (!load_parallel)
+        {
+            // adding applies reduction => save Memory while loading
+            align.addScan(scan);
+        }
     }
 
     if (failed)
     {
         return EXIT_FAILURE;
+    }
+
+    // load_parallel prevents ordered adding of Scans
+    if (load_parallel)
+    {
+        for (auto& scan : scans)
+        {
+            align.addScan(scan);
+        }
     }
 
     auto start_time = chrono::steady_clock::now();

@@ -45,28 +45,18 @@ class SlamAlign
 {
 
 public:
-    SlamAlign(const SlamOptions& options = SlamOptions(), int count = -1);
-
-    void addScan(const ScanPtr& scan);
-    void setScan(int index, const ScanPtr& scan);
-
-    void match();
-
-    void writeFrames(int scan, std::string file)
-    {
-        m_scans[scan]->writeFrames(file);
-    }
+    SlamAlign(const SlamOptions& options, vector<ScanPtr>& scans);
+    SlamAlign(const SlamOptions& options = SlamOptions());
 
     virtual ~SlamAlign() = default;
 
-    void setOptions(const SlamOptions& options)
-    {
-        m_options = options;
-    }
-    SlamOptions& options()
-    {
-        return m_options;
-    }
+    void addScan(const ScanPtr& scan, bool match = false);
+    ScanPtr getScan(int index);
+
+    void match();
+
+    void setOptions(const SlamOptions& options);
+    SlamOptions& options();
 
 protected:
 
@@ -88,6 +78,8 @@ protected:
 
     vector<pair<int, int>>  m_graph;
     bool                    m_foundLoop;
+
+    size_t                  m_alreadyMatched;
 };
 
 } /* namespace lvr2 */
