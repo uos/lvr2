@@ -92,7 +92,11 @@ void channelManagerTest()
     Channel<unsigned char> colors(num_points, 3);
     fillChannel(colors, static_cast<unsigned char>(255));
 
-    ChannelManager cm;
+    // initializer list
+    ChannelManager cm = {
+        {"points2" , points}
+    };
+    
     cm["points"] = points;
     cm["colors"] = colors;
     cm["normals"] = normals;
@@ -161,7 +165,8 @@ void channelManagerTest()
         std::cout << "success" << std::endl;
     }
 
-
+    std::cout << "total number of elements: " << cm.size() << std::endl;
+    std::cout << "num float channels: " << cm.numChannels<float>() << std::endl;
     std::cout << cm << std::endl;
 
 }
