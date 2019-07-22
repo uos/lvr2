@@ -22,6 +22,8 @@ public:
     using key_type = std::string;
     using val_type = VariantChannel<T...>;
     using types = std::tuple<T...>;
+    using base = std::unordered_map<std::string, VariantChannel<T...> >;
+    using base::base;
 
     /**
      * @brief Access type index by type.
@@ -82,6 +84,27 @@ public:
      */
     template<typename U>
     bool is_type(const std::string& name) const;
+
+    /**
+     * @brief Gets the available keys by a specific type.
+     * 
+     * @tparam U Type of the channels.
+     * @return Vector of keys.
+     * 
+     */
+    template<typename U>
+    std::vector<std::string> keys();
+
+    /**
+     * @brief Counts the number of channels by a specific type.
+     * @detail For total number of channels use "size()"
+     * 
+     * @tparam U Type of the channels.
+     * @return Number of channels.
+     * 
+     */
+    template<typename U>
+    size_t numChannels();
 
     /**
      * @brief Output cout

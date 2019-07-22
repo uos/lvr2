@@ -19,10 +19,6 @@ template<typename... T>
 template<typename U>
 const Channel<U>& VariantChannelMap<T...>::get(const std::string& name) const
 {
-    // if(this->at(name).which() == index_of_type<U>::value)
-    // {
-
-    // }
     return boost::get<Channel<U> >(this->at(name));
 }
 
@@ -39,11 +35,39 @@ bool VariantChannelMap<T...>::is_type(const std::string& name) const
     return this->type(name) == index_of_type<U>::value;
 }
 
-// template<typename... U>
-// std::ostream& operator<<(std::ostream& os, const VariantChannelMap<U...>& cm)
-// {
-//     os << "bla";
-//     return os;
-// }
+template<typename... T>
+template<typename U>
+std::vector<std::string> VariantChannelMap<T...>::keys()
+{
+    std::vector<std::string> ret;
+
+    for(auto it = this->begin(); it != this->end(); ++it)
+    {
+        if(it->second.is_type<U>())
+        {
+            ret.push_back(it.first);
+        }
+    }
+
+    return ret;
+}
+
+template<typename... T>
+template<typename U>
+size_t VariantChannelMap<T...>::numChannels()
+{
+    size_t ret = 0;
+
+    for(auto it = this->begin(); it != this->end(); ++it)
+    {
+        if(it->second.is_type<U>())
+        {
+            ret ++;
+        }
+    }
+
+    return ret;
+}
+
 
 } // namespace lvr2
