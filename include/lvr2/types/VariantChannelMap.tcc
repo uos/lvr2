@@ -45,7 +45,7 @@ std::vector<std::string> VariantChannelMap<T...>::keys()
     {
         if(it->second.is_type<U>())
         {
-            ret.push_back(it.first);
+            ret.push_back(it->first);
         }
     }
 

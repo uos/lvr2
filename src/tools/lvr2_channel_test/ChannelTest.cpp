@@ -85,6 +85,8 @@ void channelManagerTest()
     std::cout << "ChannelManager Test" << std::endl;
 
     size_t num_points = 10000;
+
+
     Channel<float> points(num_points, 3);
     fillChannel(points, 0.0f);
     Channel<float> normals(num_points, 3);
@@ -92,9 +94,13 @@ void channelManagerTest()
     Channel<unsigned char> colors(num_points, 3);
     fillChannel(colors, static_cast<unsigned char>(255));
 
+    Channel<unsigned char> hyper(600, 600);
+    fillChannel(hyper, static_cast<unsigned char>(100));
+
     // initializer list
     ChannelManager cm = {
-        {"points2" , points}
+        {"points2" , points},
+        {"hyper", hyper}
     };
     
     cm["points"] = points;
@@ -106,7 +112,7 @@ void channelManagerTest()
     points_test = cm.getFloatChannel("points");
     if(!points_test)
     {
-        std::cerr << "doof" << std::endl;
+        std::cerr << "wrong" << std::endl;
     } else {
         std::cout << "points: " << points_test->numElements() << std::endl;
     }
@@ -114,7 +120,7 @@ void channelManagerTest()
     points_test = cm.getFloatChannel("colors");
     if(points_test)
     {
-        std::cerr << "doof" << std::endl;
+        std::cerr << "wrong" << std::endl;
     } else {
         std::cout << "success" << std::endl;
     }
@@ -122,7 +128,7 @@ void channelManagerTest()
     points_test = cm.getFloatChannel("asdf");
     if(points_test)
     {
-        std::cerr << "doof" << std::endl;
+        std::cerr << "wrong" << std::endl;
     } else {
         std::cout << "success" << std::endl;
     }
@@ -130,7 +136,7 @@ void channelManagerTest()
     cm.getChannel("points", points_test);
     if(!points_test)
     {
-        std::cerr << "doof" << std::endl;
+        std::cerr << "wrong" << std::endl;
     } else {
         std::cout << "points: " << points_test->numElements() << std::endl;
     }
@@ -138,7 +144,7 @@ void channelManagerTest()
     cm.getChannel("colors", points_test);
     if(points_test)
     {
-        std::cerr << "doof" << std::endl;
+        std::cerr << "wrong" << std::endl;
     } else {
         std::cout << "success" << std::endl;
     }
@@ -146,7 +152,7 @@ void channelManagerTest()
     cm.getChannel("asdf", points_test);
     if(points_test)
     {
-        std::cerr << "doof" << std::endl;
+        std::cerr << "wrong" << std::endl;
     } else {
         std::cout << "success" << std::endl;
     }
@@ -167,7 +173,14 @@ void channelManagerTest()
 
     std::cout << "total number of elements: " << cm.size() << std::endl;
     std::cout << "num float channels: " << cm.numChannels<float>() << std::endl;
+    
     std::cout << cm << std::endl;
+
+    std::cout << "float channels are:" << std::endl;
+    for(auto key : cm.keys<float>())
+    {
+        std::cout << "-- " << key << std::endl;
+    }
 
 }
 
