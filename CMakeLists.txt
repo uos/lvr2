@@ -479,6 +479,8 @@ add_subdirectory(src/tools/lvr2_hdf5togeotiff)
 add_subdirectory(src/tools/lvr2_slam6d_merger)
 add_subdirectory(src/tools/lvr2_scanproject2hdf5)
 
+add_subdirectory(src/tools/lvr2_channel_test)
+
 if (RiVLib_FOUND)
     add_subdirectory(src/tools/lvr2_riegl_project_converter)
 endif()
