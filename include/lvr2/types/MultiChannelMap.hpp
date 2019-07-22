@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef LVR2_TYPES_MULTICHANNELMAP
+#define LVR2_TYPES_MULTICHANNELMAP
+
 #include "VariantChannelMap.hpp"
 
 namespace lvr2 {
@@ -27,3 +30,5 @@ using MultiChannelMap = VariantChannelMap<
     >;
 
 } // namespace lvr2
+
+#endif // LVR2_TYPES_MULTICHANNELMAP

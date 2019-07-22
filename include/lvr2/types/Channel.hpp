@@ -1,6 +1,9 @@
 #pragma once
 
-#include "lvr2/io/ChannelManager.hpp"
+#ifndef LVR2_TYPES_CHANNEL
+#define LVR2_TYPES_CHANNEL
+
+#include "ElementProxy.hpp"
 #include <memory>
 #include <boost/optional.hpp>
 #include <boost/shared_array.hpp>
@@ -39,7 +42,30 @@ protected:
     DataPtr         m_data;
 };
 
+template<typename T>
+using AttributeChannel = Channel<T>;
+
+template<typename T>
+using ChannelPtr = typename Channel<T>::Ptr;
+
+template<typename T>
+using ChannelOptional = typename Channel<T>::Optional;
+
+using FloatChannel = Channel<float>;
+using FloatChannelOptional = FloatChannel::Optional;
+using FloatChannelPtr = FloatChannel::Ptr;
+
+using UCharChannel = Channel<unsigned char>;
+using UCharChannelOptional = UCharChannel::Optional;
+using UCharChannelPtr = UCharChannel::Ptr;
+
+using IndexChannel = Channel<unsigned int>;
+using IndexChannelOptional = IndexChannel::Optional;
+using IndexChannelPtr = IndexChannel::Ptr;
+
 
 } // namespace lvr2
 
 #include "Channel.tcc"
+
+#endif // LVR2_TYPES_CHANNEL

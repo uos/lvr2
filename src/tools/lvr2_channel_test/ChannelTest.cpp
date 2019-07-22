@@ -5,6 +5,8 @@
 #include "lvr2/types/VariantChannelMap.hpp"
 #include "lvr2/types/MultiChannelMap.hpp"
 
+#include "lvr2/types/ChannelManager.hpp"
+
 
 using namespace lvr2;
 
@@ -57,7 +59,9 @@ void channelTest()
 
     std::cout << cm.size() << std::endl;
 
+    std::cout << "BLAASAA" << std::endl;
 
+    std::cout << cm["points"].width() << std::endl;
 
     for(auto it: cm)
     {
@@ -76,29 +80,96 @@ void channelTest()
     std::cout << cm << std::endl;
 }
 
-// void pointCloudTest()
-// {
-//     std::cout << "PointCloud Test" << std::endl;
+void channelManagerTest()
+{
+    std::cout << "ChannelManager Test" << std::endl;
 
-//     size_t num_points = 10000;
-//     Channel<float> points(num_points, 3);
-//     fillChannel(points, 0.0f);
-//     Channel<float> normals(num_points, 3);
-//     fillChannel(normals, 1.0f);
-//     Channel<unsigned char> colors(num_points, 3);
-//     fillChannel(colors, static_cast<unsigned char>(255));
+    size_t num_points = 10000;
+    Channel<float> points(num_points, 3);
+    fillChannel(points, 0.0f);
+    Channel<float> normals(num_points, 3);
+    fillChannel(normals, 1.0f);
+    Channel<unsigned char> colors(num_points, 3);
+    fillChannel(colors, static_cast<unsigned char>(255));
 
-//     PointCloud pc;
-//     pc["points"] = points;
+    ChannelManager cm;
+    cm["points"] = points;
+    cm["colors"] = colors;
+    cm["normals"] = normals;
 
-//     std::cout << pc << std::endl;
+    FloatChannelOptional points_test;
 
-// }
+    points_test = cm.getFloatChannel("points");
+    if(!points_test)
+    {
+        std::cerr << "doof" << std::endl;
+    } else {
+        std::cout << "points: " << points_test->numElements() << std::endl;
+    }
+
+    points_test = cm.getFloatChannel("colors");
+    if(points_test)
+    {
+        std::cerr << "doof" << std::endl;
+    } else {
+        std::cout << "success" << std::endl;
+    }
+
+    points_test = cm.getFloatChannel("asdf");
+    if(points_test)
+    {
+        std::cerr << "doof" << std::endl;
+    } else {
+        std::cout << "success" << std::endl;
+    }
+
+    cm.getChannel("points", points_test);
+    if(!points_test)
+    {
+        std::cerr << "doof" << std::endl;
+    } else {
+        std::cout << "points: " << points_test->numElements() << std::endl;
+    }
+
+    cm.getChannel("colors", points_test);
+    if(points_test)
+    {
+        std::cerr << "doof" << std::endl;
+    } else {
+        std::cout << "success" << std::endl;
+    }
+
+    cm.getChannel("asdf", points_test);
+    if(points_test)
+    {
+        std::cerr << "doof" << std::endl;
+    } else {
+        std::cout << "success" << std::endl;
+    }
+
+
+    cm.addFloatAtomic(5.5, "myatomic");
+    auto myatomic = cm.getFloatAtomic("myatomic");
+    if(myatomic)
+    {
+        std::cout << "myatomic is " << *myatomic << std::endl;
+    }
+
+    myatomic = cm.getFloatAtomic("bla");
+    if(!myatomic)
+    {
+        std::cout << "success" << std::endl;
+    }
+
+
+    std::cout << cm << std::endl;
+
+}
 
 int main(int argc, const char** argv)
 {
-    channelTest();
-    // pointCloudTest();
+    // channelTest();
+    channelManagerTest();
 
     return 0;
 }

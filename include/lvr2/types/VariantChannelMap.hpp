@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef LVR2_TYPES_VARIANTCHANNELMAP
+#define LVR2_TYPES_VARIANTCHANNELMAP
+
 #include <unordered_map>
 #include <iostream>
 #include "VariantChannel.hpp"
@@ -21,8 +24,8 @@ public:
     using types = std::tuple<T...>;
 
     /**
-     * @brief Access type index with type
-     * - example: ChanneVariantMap<int, float> my_map;
+     * @brief Access type index by type.
+     * @details Example usage: ChanneVariantMap<int, float> my_map;
      *            ChanneVariantMap<int, float>::type_index<int>::value -> 0
      */
     template<class U>
@@ -34,35 +37,48 @@ public:
     using type_of_index = typename std::tuple_element<N, types>::type;
 
     /**
-     * @brief Add an Key + AttributeChannel to the map
+     * @brief Adds an Key + AttributeChannel to the map.
+     * 
+     * @param[in] name Key of the channel.
+     * @param[in] channel The channel.
      * 
      */
     template<typename U>
     void add(const std::string& name, Channel<U> channel);
 
     /**
-     * @brief Get AttributeChannel with type U from map as reference
+     * @brief Gets AttributeChannel with type U from map as reference.
      * 
+     * @param[in] name Key of the channel.
      */
     template<typename U>
     Channel<U>& get(const std::string& name);
 
     /**
-     * @brief get AttributeChannel with type U from map
+     * @brief Gets AttributeChannel by type U from map.
+     * 
+     * @param[in] name Key of the channel.
      * 
      */
     template<typename U>
     const Channel<U>& get(const std::string& name) const;
 
     /**
-     * @brief get type index of a map entry
+     * @brief Gets type index of a map entry.
      * 
+     * @param[in] Key of the channel.
+     * @return Index of type tuple of the variant.
      */
     int type(const std::string& name) const;
 
     /**
-     * @brief Check if key has specific type U
-     *          Example: cm.is_type<float>("points") -> true
+     * @brief Checks if key has specific type U.
+     * @details Example Usage: cm.is_type<float>("points") -> true
+     * 
+     * @param[in] name Key of the channel.
+     * @tparam U Type of the value to check.
+     * @return true If the type is equal.
+     * @return false If the type is unequal.
      */
     template<typename U>
     bool is_type(const std::string& name) const;
@@ -97,4 +113,6 @@ protected:
 } // namespace lvr2
 
 #include "VariantChannelMap.tcc"
+
+#endif // LVR2_TYPES_VARIANTCHANNELMAP
 
