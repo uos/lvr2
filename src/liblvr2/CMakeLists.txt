@@ -27,7 +27,6 @@ set(LVR2_SOURCES
     io/PPMIO.cpp
     io/PLYIO.cpp
     io/IOUtils.cpp
-    io/ChannelManager.cpp
     io/STLIO.cpp
     io/UosIO.cpp
     io/PCDIO.cpp

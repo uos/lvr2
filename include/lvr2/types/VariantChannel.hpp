@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef LVR2_TYPES_VARIANTCHANNEL
+#define LVR2_TYPES_VARIANTCHANNEL
 
 #include <boost/variant.hpp>
 #include <tuple>
@@ -51,14 +53,14 @@ public:
     }
 
     /**
-     * @brief get type index of a map entry
+     * @brief Get type index of a map entry
      * 
      */
     int type() const;
 
     /**
-     * @brief Check if key has specific type U
-     *          Example: cm.is_type<float>() -> true
+     * @brief Checks if key has specific type U.
+     * @example cm.is_type<float>() -> true
      */
     template<typename U>
     bool is_type() const;
@@ -124,3 +126,5 @@ protected:
 } // namespace lvr2
 
 #include "VariantChannel.tcc"
+
+#endif // LVR2_TYPES_VARIANTCHANNEL
