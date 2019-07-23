@@ -20,9 +20,9 @@ https://github.com/uos/lvr2
 ```bash
 sudo apt-get install build-essential \
      cmake cmake-curses-gui libflann-dev \
-     libgsl-dev libeigen3-dev openmpi-dev \
+     libgsl-dev libeigen3-dev libopenmpi-dev \
      openmpi-bin opencl-c-headers ocl-icd-opencl-dev \
-     libvtk7-dev libvtk-qt-dev libboost-all-dev \
+     libvtk7-dev libvtk7-qt-dev libboost-all-dev \
      freeglut3-dev libhdf5-dev qtbase5-dev \
      qt5-default libqt5opengl5-dev liblz4-dev \
      libopencv-dev libyaml-cpp-dev
