@@ -28,7 +28,7 @@
 #ifndef BASEBUFFER_HPP
 #define BASEBUFFER_HPP
 
-#include "lvr2/io/ChannelManager.hpp"
+#include "lvr2/types/ChannelManager.hpp"
 #include "lvr2/geometry/Handles.hpp"
 #include "lvr2/attrmaps/AttrMaps.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
