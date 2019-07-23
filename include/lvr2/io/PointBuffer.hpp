@@ -30,7 +30,7 @@
 
 #include "lvr2/io/DataStruct.hpp"
 #include "lvr2/io/BaseBuffer.hpp"
-#include "lvr2/io/ChannelManager.hpp"
+#include "lvr2/types/ChannelManager.hpp"
 
 #include <map>
 #include <string>
