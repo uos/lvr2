@@ -98,10 +98,16 @@ void channelManagerTest()
     fillChannel(hyper, static_cast<unsigned char>(100));
 
     // initializer list
+
+
     ChannelManager cm = {
         {"points2" , points},
         {"hyper", hyper}
     };
+
+
+
+
     
     cm["points"] = points;
     cm["colors"] = colors;
@@ -180,6 +186,18 @@ void channelManagerTest()
     for(auto key : cm.keys<float>())
     {
         std::cout << "-- " << key << std::endl;
+    }
+
+    std::cout << "float iteration:" << std::endl;
+    for(auto it = cm.typedBegin<float>(); it != cm.end(); ++it)
+    {
+        std::cout << "-- " << it->first << std::endl;
+    }
+
+    std::cout << "unsigned char iteration:" << std::endl;
+    for(auto it = cm.typedBegin<unsigned char>(); it != cm.end(); ++it)
+    {
+        std::cout << "-- " << it->first << std::endl;
     }
 
 }

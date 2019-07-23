@@ -21,9 +21,71 @@ protected:
 public:
     using key_type = std::string;
     using val_type = VariantChannel<T...>;
+    using elem_type = std::pair<const key_type, val_type>;
+
     using types = std::tuple<T...>;
     using base = std::unordered_map<std::string, VariantChannel<T...> >;
     using base::base;
+
+    template<typename U>
+    struct iterator {
+
+        using pointer = elem_type*;
+        using reference = elem_type&;
+
+        iterator(
+            typename base::iterator base_it,
+            typename base::iterator end_it)
+        :m_base_it(base_it),
+        m_end_it(end_it)
+        {
+            while(m_base_it != m_end_it && m_base_it->second.which() != index_of_type<U>::value)
+            {
+                m_base_it++;
+            }
+        }
+
+        reference operator*() const noexcept
+        {
+            return *m_base_it;
+        }
+
+        pointer operator->() const noexcept
+        {
+            return m_base_it.base::iterator::operator->();
+        }
+
+        iterator<U>& operator++() noexcept
+        {
+            m_base_it++;
+            while(m_base_it != m_end_it && m_base_it->second.which() != index_of_type<U>::value)
+            {
+                m_base_it++;
+            }
+            return *this;
+        }
+
+        iterator<U> operator++(int) noexcept
+        {
+            iterator<U> tmp(*this);
+            m_base_it++;
+            return tmp;
+        }
+
+        inline bool operator==(const typename base::iterator& rhs) noexcept
+        {
+            return m_base_it == rhs;
+        }
+
+        inline bool operator!=(const typename base::iterator& rhs) noexcept
+        {
+            return m_base_it != rhs;
+        }
+
+        typename base::iterator m_base_it;
+        typename base::iterator m_end_it;
+    };
+
 
     /**
      * @brief Access type index by type.
@@ -106,13 +168,21 @@ public:
     template<typename U>
     size_t numChannels();
 
+    template<typename U>
+    iterator<U> typedBegin()
+    {
+        typename base::iterator it_base = this->begin();
+        typename base::iterator it_end = this->end();
+        return iterator<U>(it_base, it_end);
+    }
+
     /**
      * @brief Output cout
      * 
      */
     friend std::ostream& operator<<(std::ostream& os, const VariantChannelMap<T...>& cm)
     {
-        std::cout << "[VariantChannelMap]\n";
+        std::cout << "[ VariantChannelMap ]\n";
         for(auto it : cm)
         {
             std::cout << it.first << ": " << it.second  << "\n";
