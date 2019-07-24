@@ -101,7 +101,7 @@ void StaticMesh::init( MeshBufferPtr mesh )
 		m_faceNormals = 0;
         m_numVertices = mesh->numVertices();
         m_numFaces = mesh->numFaces();
-        unsigned w_color;
+        size_t w_color;
 
 		m_normals 			= mesh->getVertexNormals();
 		m_colors        	= mesh->getVertexColors(w_color);

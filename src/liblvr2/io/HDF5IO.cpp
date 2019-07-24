@@ -847,7 +847,7 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
 
             // Add spectral annotation channel
             size_t an;
-            unsigned aw;
+            size_t aw;
             ucharArr spectral = scan.m_points->getUCharArray("spectral_channels", an, aw);
 
             if (spectral)
