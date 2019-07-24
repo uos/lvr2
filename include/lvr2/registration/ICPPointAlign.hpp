@@ -52,11 +52,13 @@ public:
 
     void    setMaxMatchDistance(float distance);
     void    setMaxIterations(int iterations);
+    void    setMaxLeafSize(int maxLeafSize);
     void    setEpsilon(double epsilon);
     void    setVerbose(bool verbose);
 
     float   getMaxMatchDistance() const;
     int     getMaxIterations() const;
+    int     getMaxLeafSize() const;
     double  getEpsilon() const;
     bool    getVerbose() const;
 
@@ -65,6 +67,7 @@ protected:
     double      m_epsilon;
     double      m_maxDistanceMatch;
     int         m_maxIterations;
+    int         m_maxLeafSize;
 
     bool        m_verbose;
 

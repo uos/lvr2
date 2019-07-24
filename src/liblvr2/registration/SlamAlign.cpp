@@ -151,6 +151,7 @@ void SlamAlign::match()
         ICPPointAlign icp(prev, cur);
         icp.setMaxMatchDistance(m_options.icpMaxDistance);
         icp.setMaxIterations(m_options.icpIterations);
+        icp.setMaxLeafSize(m_options.maxLeafSize);
         icp.setEpsilon(m_options.epsilon);
         icp.setVerbose(m_options.verbose);
 
@@ -256,7 +257,7 @@ Matrix6f SlamAlign::eulerCovariance(int a, int b) const
 
     size_t n = scanB->count();
 
-    auto tree = KDTree::create(scanA->points(), scanA->count());
+    auto tree = KDTree::create(scanA->points(), scanA->count(), m_options.maxLeafSize);
     Vector3f* points = scanB->points();
     Vector3f** results = new Vector3f*[n];
     getNearestNeighbors(tree, points, results, n, m_options.slamMaxDistance);
@@ -357,6 +358,7 @@ void SlamAlign::loopClose(int first, int last)
     ICPPointAlign icp(metaFirst, metaLast);
     icp.setMaxMatchDistance(m_options.slamMaxDistance);
     icp.setMaxIterations(m_options.slamIterations);
+    icp.setMaxLeafSize(m_options.maxLeafSize);
     icp.setEpsilon(m_options.epsilon);
     icp.setVerbose(m_options.verbose);
 
@@ -416,7 +418,7 @@ void SlamAlign::findCloseScans(int scan, vector<int>& output)
     {
         // convert current Scan to KDTree for Pair search
         size_t n = cur->count();
-        auto tree = KDTree::create(cur->points(), cur->count());
+        auto tree = KDTree::create(cur->points(), cur->count(), m_options.maxLeafSize);
 
         for (int other = 0; other < scan; other++)
         {

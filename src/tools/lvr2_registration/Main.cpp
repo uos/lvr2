@@ -148,6 +148,9 @@ int main(int argc, char** argv)
         ("icpMaxDistance,d", value<float>(&options.icpMaxDistance)->default_value(options.icpMaxDistance),
          "The maximum distance between two points during ICP.")
 
+        ("maxLeafSize", value<int>(&options.maxLeafSize)->default_value(options.maxLeafSize),
+         "The maximum number of Points in a Leaf of a KDTree.")
+
         ("epsilon", value<double>(&options.epsilon)->default_value(options.epsilon),
          "The epsilon difference between ICP-errors for the stop criterion of ICP.")
         ;

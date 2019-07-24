@@ -49,6 +49,7 @@ struct SlamOptions
 
     float   icpMaxDistance = 25;
     int     icpIterations = 50;
+    int     maxLeafSize = 20;
 
     float   minDistance = -1;
     float   maxDistance = -1;
