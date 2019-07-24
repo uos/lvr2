@@ -32,4 +32,18 @@ bool VariantChannel<T...>::is_type() const {
     return this->which() == index_of_type<U>::value;
 }
 
+template<typename... T>
+template<typename U>
+Channel<U> VariantChannel<T...>::extract() const
+{
+    return boost::get<Channel<U> >(*this);
+}
+
+template<typename... T>
+template<typename U>
+Channel<U>& VariantChannel<T...>::extract()
+{
+    return boost::get<Channel<U> >(*this);
+}
+
 }
