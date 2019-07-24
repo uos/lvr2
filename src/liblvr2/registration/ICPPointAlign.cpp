@@ -59,7 +59,7 @@ ICPPointAlign::ICPPointAlign(ScanPtr model, ScanPtr data) :
     m_epsilon           = 0.00001;
     m_verbose           = false;
 
-    m_searchTree = KDTree::create(model->points(), model->count());
+    m_searchTree = KDTree::create(model->points(), model->count(), m_maxLeafSize);
 }
 
 Matrix4f ICPPointAlign::match()
@@ -141,6 +141,11 @@ void ICPPointAlign::setMaxIterations(int i)
     m_maxIterations = i;
 }
 
+void ICPPointAlign::setMaxLeafSize(int m)
+{
+    m_maxLeafSize = m;
+}
+
 void ICPPointAlign::setEpsilon(double e)
 {
     m_epsilon = e;
@@ -158,6 +163,11 @@ float ICPPointAlign::getMaxMatchDistance() const
 int ICPPointAlign::getMaxIterations() const
 {
     return m_maxIterations;
+}
+
+int ICPPointAlign::getMaxLeafSize() const
+{
+    return m_maxLeafSize;
 }
 
 double ICPPointAlign::getEpsilon() const

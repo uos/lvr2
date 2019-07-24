@@ -57,7 +57,7 @@ public:
      * @param n             The number of points in 'points'
      * @param maxLeafSize   The maximum number of points to use for a Leaf in the Tree
      */
-    static std::shared_ptr<KDTree> create(PointArray points, int n, int maxLeafSize = 10);
+    static std::shared_ptr<KDTree> create(PointArray points, int n, int maxLeafSize = 20);
 
     /**
      * @brief Creates a new KDTree from the given Point Cloud. Note that this function modifies
@@ -68,7 +68,7 @@ public:
      * @param n             The number of points in 'points'
      * @param maxLeafSize   The maximum number of points to use for a Leaf in the Tree
      */
-    static std::shared_ptr<KDTree> create(Vector3f* points, int n, int maxLeafSize = 10);
+    static std::shared_ptr<KDTree> create(Vector3f* points, int n, int maxLeafSize = 20);
 
     /**
      * @brief Finds the nearest neighbor of 'point' that is within 'maxDistance' (defaults to infinity).
