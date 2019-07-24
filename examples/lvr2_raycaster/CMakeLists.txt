@@ -11,11 +11,11 @@ message(STATUS "OpenCL Libraries: ${OpenCL_LIBRARIES}")
 #####################################################################################
 # Add executable
 #####################################################################################
-add_executable(lvr2_raycaster_test
+add_executable(lvr2_example_raycaster_test
     Main.cpp
 )
 
-target_link_libraries(lvr2_raycaster_test
+target_link_libraries(lvr2_example_raycaster_test
     lvr2_static
     ${OpenCL_LIBRARIES}
 )
