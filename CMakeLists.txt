@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.4)
 project(LAS_VEGAS VERSION 2)
 
+# OPTIONS
+option(BUILD_EXAMPLES "Build the examples" OFF)
+
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -477,8 +480,6 @@ add_subdirectory(src/tools/lvr2_hdf5togeotiff)
 add_subdirectory(src/tools/lvr2_slam6d_merger)
 add_subdirectory(src/tools/lvr2_scanproject2hdf5)
 
-add_subdirectory(src/tools/lvr2_channel_test)
-
 if (RiVLib_FOUND)
     add_subdirectory(src/tools/lvr2_riegl_project_converter)
 endif()
@@ -490,6 +491,10 @@ endif()
 
 if(OPENCL_FOUND)
     add_subdirectory(src/tools/lvr2_cl_normals)
+endif()
+
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
 endif()
 
 ################################################################
