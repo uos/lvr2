@@ -75,9 +75,9 @@ void PLYIO::save( string filename )
     floatArr m_pointIntensities;
     floatArr m_pointNormals;
 
-    unsigned dummy                    = 0;
-    unsigned w_point_color            = 0;
-    unsigned w_vertex_color            = 0;
+    size_t dummy                    = 0;
+    size_t w_point_color            = 0;
+    size_t w_vertex_color            = 0;
     size_t m_numVertices              = 0;
     size_t m_numVertexColors          = 0;
     size_t m_numVertexConfidences     = 0;

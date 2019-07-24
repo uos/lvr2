@@ -39,6 +39,7 @@
 #include <array>
 #include <vector>
 #include <type_traits>
+#include <memory>
 #include <boost/optional.hpp>
 
 using boost::optional;

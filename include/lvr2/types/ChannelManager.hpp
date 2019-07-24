@@ -386,7 +386,7 @@ public:
      * @return ElementProxy<T> The handle.
      */
     template<typename T>
-    ElementProxy<T> getHandle(int idx, const std::string& name);
+    ElementProxy<T> getHandle(unsigned int idx, const std::string& name);
     
     /**
      * @brief Get a Handle object (ElementProxy) of a float channel.
@@ -395,7 +395,7 @@ public:
      * @param[in] name Key of the channel.
      * @return FloatProxy The handle.
      */
-    inline FloatProxy getFloatHandle(int idx, const std::string& name)
+    inline FloatProxy getFloatHandle(unsigned int idx, const std::string& name)
     {
         return getHandle<float>(idx, name);
     }
@@ -407,7 +407,7 @@ public:
      * @param[in] name Key of the channel.
      * @return UCharProxy The handle.
      */
-    inline UCharProxy getUCharHandle(int idx, const std::string& name)
+    inline UCharProxy getUCharHandle(unsigned int idx, const std::string& name)
     {
         return getHandle<unsigned char>(idx, name);
     }
@@ -419,7 +419,7 @@ public:
      * @param[in] name Key of the channel.
      * @return IndexProxy The handle.
      */
-    inline IndexProxy getIndexHandle(int idx, const std::string& name)
+    inline IndexProxy getIndexHandle(unsigned int idx, const std::string& name)
     {
         return getHandle<unsigned int>(idx, name);
     }
@@ -438,7 +438,7 @@ public:
      * @return boost::shared_array<T> The data pointer. Empty if the channel was not found.
      */
     template<typename T>
-    boost::shared_array<T> getArray(size_t& n, unsigned& w, const std::string& name);
+    boost::shared_array<T> getArray(const std::string& name, size_t& n, size_t& w);
 
     /**
      * @brief Gets a float channel as array.
@@ -448,9 +448,9 @@ public:
      * @param[in] name Key of the channel.
      * @return floatArr The data pointer. Empty if the channel was not found.
      */
-    inline floatArr getFloatArray(size_t& n, unsigned& w, const std::string& name)
+    inline floatArr getFloatArray(const std::string& name, size_t& n, size_t& w)
     {
-        return getArray<float>(n, w, name);
+        return getArray<float>(name, n, w);
     }
 
     /**
@@ -461,9 +461,9 @@ public:
      * @param[in] name Key of the channel.
      * @return ucharArr The data pointer. Empty if the channel was not found.
      */
-    inline ucharArr getUCharArray(size_t& n, unsigned& w, const std::string& name)
+    inline ucharArr getUCharArray(const std::string& name, size_t& n, size_t& w)
     {
-        return getArray<unsigned char>(n, w, name);
+        return getArray<unsigned char>(name, n, w);
     }
 
     /**
@@ -474,9 +474,9 @@ public:
      * @param[in] name Key of the channel.
      * @return indexArray The data pointer. Empty if the channel was not found.
      */
-    inline indexArray getIndexArray(size_t& n, unsigned& w, const std::string& name)
+    inline indexArray getIndexArray(const std::string& name, size_t& n, size_t& w)
     {
-        return getArray<unsigned int>(n, w, name);
+        return getArray<unsigned int>(name, n, w);
     }
 
     ///////////////////////////////

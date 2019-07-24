@@ -115,7 +115,7 @@ void LVRPointBufferBridge::setSpectralChannels(color<size_t> channels, color<boo
 void LVRPointBufferBridge::refreshSpectralChannel()
 {
     size_t n;
-    unsigned n_channels;
+    size_t n_channels;
     ucharArr spec = m_pointBuffer->getUCharArray("spectral_channels", n, n_channels);
 
     // check if we have spectral data
@@ -179,7 +179,7 @@ void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_
 void LVRPointBufferBridge::refreshSpectralGradient()
 {
     size_t n;
-    unsigned n_channels;
+    size_t n_channels;
     ucharArr spec = m_pointBuffer->getUCharArray("spectral_channels", n, n_channels);
 
     // check if we have spectral data
@@ -373,7 +373,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         double point[3];
         double normal[3];
         size_t n, n_c, n_s_p;
-        unsigned n_s_channels, w_color;
+        size_t n_s_channels, w_color;
         n = pc->numPoints();
         n_c = n;
 

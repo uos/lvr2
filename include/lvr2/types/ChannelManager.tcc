@@ -77,7 +77,7 @@ typename Channel<T>::Optional ChannelManager::getChannel(const std::string& name
 }
 
 template<typename T>
-ElementProxy<T> ChannelManager::getHandle(int idx, const std::string& name)
+ElementProxy<T> ChannelManager::getHandle(unsigned int idx, const std::string& name)
 {
     // std::cout << "WARNING: runtime critical access [ChannelManager::getHandle]" << std::endl;
     auto it = this->find(name);
@@ -89,7 +89,8 @@ ElementProxy<T> ChannelManager::getHandle(int idx, const std::string& name)
 }
 
 template<typename T>
-boost::shared_array<T> ChannelManager::getArray(size_t& n, unsigned& w, const std::string& name)
+boost::shared_array<T> ChannelManager::getArray(
+    const std::string& name, size_t& n, size_t& w)
 {
     auto it = this->find(name);
     if(it != this->end() && it->second.is_type<T>())

@@ -36,6 +36,8 @@
 #include "lvr2/geometry/BaseMesh.hpp"
 #include "lvr2/geometry/Handles.hpp"
 
+#include <vector>
+
 namespace lvr2
 {
 
@@ -106,7 +108,7 @@ template<typename BaseVecT, typename PredF>
 void calcContourEdges(
     const BaseMesh<BaseVecT>& mesh,
     EdgeHandle startH,
-    vector<EdgeHandle>& contourOut,
+    std::vector<EdgeHandle>& contourOut,
     PredF exists
 );
 
@@ -120,7 +122,7 @@ template<typename BaseVecT>
 void calcContourEdges(
     const BaseMesh<BaseVecT>& mesh,
     EdgeHandle startH,
-    vector<EdgeHandle>& contourOut
+    std::vector<EdgeHandle>& contourOut
 );
 
 /**
@@ -133,7 +135,7 @@ template<typename BaseVecT, typename PredF>
 void calcContourVertices(
     const BaseMesh<BaseVecT>& mesh,
     EdgeHandle startH,
-    vector<VertexHandle>& contourOut,
+    std::vector<VertexHandle>& contourOut,
     PredF exists
 );
 
@@ -147,7 +149,7 @@ template<typename BaseVecT>
 void calcContourVertices(
     const BaseMesh<BaseVecT>& mesh,
     EdgeHandle startH,
-    vector<VertexHandle>& contourOut
+    std::vector<VertexHandle>& contourOut
 );
 
 } // namespace lvr2

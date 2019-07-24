@@ -34,6 +34,7 @@ namespace lvr2
 {
 
 PointBuffer::PointBuffer()
+:base()
 {
     m_numPoints = 0;
 }
@@ -43,7 +44,7 @@ PointBuffer::PointBuffer(floatArr points, size_t n)
     // Generate channel object pointer and add it
     // to channel map
     FloatChannelPtr point_data(new FloatChannel(n, 3, points));
-    m_channels.addFloatChannel(point_data, "points");
+    this->addFloatChannel(point_data, "points");
 
     // Save pointers
     m_points = point_data;
@@ -54,25 +55,25 @@ PointBuffer::PointBuffer(floatArr points, floatArr normals, size_t n) : PointBuf
 {
     // Add normal data
     m_normals = FloatChannelPtr(new FloatChannel(n, 3, points));
-    m_channels.addFloatChannel(m_normals, "normals");
+    this->addFloatChannel(m_normals, "normals");
 }
 
 void PointBuffer::setPointArray(floatArr points, size_t n)
 {
     m_points = FloatChannelPtr(new FloatChannel(n, 3, points));
     m_numPoints = n;
-    m_channels.addFloatChannel(m_points, "points");
+    this->addFloatChannel(m_points, "points");
 }
 
 void PointBuffer::setNormalArray(floatArr normals, size_t n)
 {
     m_normals = FloatChannelPtr(new FloatChannel(n, 3, normals));
-    m_channels.addFloatChannel(m_normals, "normals");
+    this->addFloatChannel(m_normals, "normals");
 }
-void PointBuffer::setColorArray(ucharArr colors, size_t n, unsigned width)
+void PointBuffer::setColorArray(ucharArr colors, size_t n, size_t width)
 {
     m_colors = UCharChannelPtr(new UCharChannel(n, width, colors));
-    m_channels.addUCharChannel(m_colors, "colors");
+    this->addUCharChannel(m_colors, "colors");
 }
 
 floatArr PointBuffer::getPointArray()
@@ -95,7 +96,7 @@ floatArr PointBuffer::getNormalArray()
     return floatArr();
 }
 
-ucharArr PointBuffer::getColorArray(unsigned& w)
+ucharArr PointBuffer::getColorArray(size_t& w)
 {
     if (m_colors)
     {
@@ -164,7 +165,7 @@ PointBuffer PointBuffer::clone()
     // 3) colors
     if(hasColors())
     {
-        unsigned w;
+        size_t w;
         ucharArr colors_from = getColorArray(w);
         ucharArr colors_to(new unsigned char[w * num_points]);
         std::copy(
