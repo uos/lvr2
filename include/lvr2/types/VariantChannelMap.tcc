@@ -41,12 +41,9 @@ std::vector<std::string> VariantChannelMap<T...>::keys()
 {
     std::vector<std::string> ret;
 
-    for(auto it = this->begin(); it != this->end(); ++it)
+    for(auto it = this->typedBegin<U>(); it != this->end(); ++it)
     {
-        if(it->second.is_type<U>())
-        {
-            ret.push_back(it->first);
-        }
+        ret.push_back(it->first);
     }
 
     return ret;
@@ -58,12 +55,9 @@ size_t VariantChannelMap<T...>::numChannels()
 {
     size_t ret = 0;
 
-    for(auto it = this->begin(); it != this->end(); ++it)
+    for(auto it = this->typedBegin<U>(); it != this->end(); ++it)
     {
-        if(it->second.is_type<U>())
-        {
-            ret ++;
-        }
+        ret ++;
     }
 
     return ret;

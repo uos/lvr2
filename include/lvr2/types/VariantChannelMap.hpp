@@ -5,6 +5,8 @@
 
 #include <unordered_map>
 #include <iostream>
+#include <utility>
+#include <memory>
 #include "VariantChannel.hpp"
 
 namespace lvr2 {
@@ -30,7 +32,9 @@ public:
     template<typename U>
     struct iterator {
 
-        using pointer = elem_type*;
+        using resolved_elem_type = std::pair<const key_type&, Channel<U>& >;
+        using pointer = std::unique_ptr<resolved_elem_type>;
+        // using pointer = elem_type*;
         using reference = elem_type&;
 
         iterator(
@@ -45,14 +49,22 @@ public:
             }
         }
 
-        reference operator*() const noexcept
+        resolved_elem_type operator*() const noexcept
         {
-            return *m_base_it;
+            return {
+                m_base_it->first,
+                m_base_it->second.template extract<U>()
+            };
         }
 
         pointer operator->() const noexcept
         {
-            return m_base_it.base::iterator::operator->();
+            return std::unique_ptr<resolved_elem_type>(
+                new resolved_elem_type({
+                    m_base_it->first,
+                    m_base_it->second.template extract<U>()
+                })
+            );
         }
 
         iterator<U>& operator++() noexcept
@@ -69,6 +81,10 @@ public:
         {
             iterator<U> tmp(*this);
             m_base_it++;
+            while(m_base_it != m_end_it && m_base_it->second.which() != index_of_type<U>::value)
+            {
+                m_base_it++;
+            }
             return tmp;
         }
 
@@ -80,6 +96,11 @@ public:
         inline bool operator!=(const typename base::iterator& rhs) noexcept
         {
             return m_base_it != rhs;
+        }
+
+        typename base::iterator operator()() const noexcept
+        {
+            return m_base_it;
         }
 
         typename base::iterator m_base_it;
@@ -172,6 +193,16 @@ public:
     iterator<U> typedBegin()
     {
         typename base::iterator it_base = this->begin();
+        typename base::iterator it_end = this->end();
+        return iterator<U>(it_base, it_end);
+    }
+
+    using base::erase;
+
+    template<typename U>
+    iterator<U> erase(iterator<U> it)
+    {
+        typename base::iterator it_base = erase(it());
         typename base::iterator it_end = this->end();
         return iterator<U>(it_base, it_end);
     }

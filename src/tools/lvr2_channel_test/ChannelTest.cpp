@@ -50,6 +50,13 @@ void channelTest()
 
     std::cout << VariantChannel<float, unsigned char>::index_of_type<float>::value << std::endl;
 
+    // VariantChannel<float, unsigned char>::index_of_type<float>::value;
+
+    // VariantChannel<float, unsigned char>::type_of_index<
+    //     VariantChannel<float, unsigned char>::index_of_type<float>::value
+    // > bla = 0.0;
+
+
     std::cout << data[0] << std::endl;
 
     MultiChannelMap cm;
@@ -74,6 +81,7 @@ void channelTest()
             
             cm.get<float>("points");
             Channel<float> data = cm.get<float>(it.first);
+            Channel<float> data2 = it.second.extract<float>();
         }
     }
 
@@ -185,14 +193,33 @@ void channelManagerTest()
     std::cout << "float channels are:" << std::endl;
     for(auto key : cm.keys<float>())
     {
-        std::cout << "-- " << key << std::endl;
+        // std::cout << "-- " << key << std::endl;
     }
 
-    std::cout << "float iteration:" << std::endl;
+    ChannelManager cm2;
+
     for(auto it = cm.typedBegin<float>(); it != cm.end(); ++it)
     {
-        std::cout << "-- " << it->first << std::endl;
+        std::cout << "-- " << it->first << " " << it->second.numElements() << std::endl;
+
+        cm2.insert({it->first, it->second});
+
+        cm2[it->first] = it->second;
+
+        cm2.insert(*it);
     }
+
+    std::cout << cm2 << std::endl;
+
+    std::cout << "float iteration with remove:" << std::endl;
+    auto it = cm.typedBegin<float>();
+    while(it != cm.end())
+    {
+        std::cout << "remove " << it->first << std::endl;
+        it = cm.erase(it);
+    }
+
+    std::cout << cm << std::endl;
 
     std::cout << "unsigned char iteration:" << std::endl;
     for(auto it = cm.typedBegin<unsigned char>(); it != cm.end(); ++it)
