@@ -58,6 +58,12 @@ public:
      */
     int type() const;
 
+    template<typename U>
+    Channel<U> extract() const;
+
+    template<typename U>
+    Channel<U>& extract();
+
     /**
      * @brief Checks if key has specific type U.
      * @example cm.is_type<float>() -> true
