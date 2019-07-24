@@ -33,7 +33,7 @@ public:
     struct iterator {
 
         using resolved_elem_type = std::pair<const key_type&, Channel<U>& >;
-        using pointer = std::unique_ptr<resolved_elem_type>;
+        using pointer = std::shared_ptr<resolved_elem_type>;
         // using pointer = elem_type*;
         using reference = elem_type&;
 
@@ -59,7 +59,7 @@ public:
 
         pointer operator->() const noexcept
         {
-            return std::unique_ptr<resolved_elem_type>(
+            return pointer(
                 new resolved_elem_type({
                     m_base_it->first,
                     m_base_it->second.template extract<U>()
