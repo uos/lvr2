@@ -41,7 +41,7 @@ namespace lvr2
 {
 
 SlamAlign::SlamAlign(const SlamOptions& options, vector<ScanPtr>& scans)
-    : m_options(options), m_scans(scans), m_foundLoop(false)
+    : m_options(options), m_scans(scans), m_graph(&m_options), m_foundLoop(false)
 {
     // The first Scan is never changed
     m_alreadyMatched = 1;
@@ -53,7 +53,7 @@ SlamAlign::SlamAlign(const SlamOptions& options, vector<ScanPtr>& scans)
 }
 
 SlamAlign::SlamAlign(const SlamOptions& options)
-    : m_options(options), m_foundLoop(false)
+    : m_options(options), m_graph(&m_options), m_foundLoop(false)
 {
     // The first Scan is never changed
     m_alreadyMatched = 1;
@@ -210,6 +210,8 @@ void SlamAlign::checkLoopClose(int last)
         return;
     }
 
+    m_graph.addEdge(last - 1, last);
+
     bool hasLoop = false;
 
     int first = -1;
@@ -219,21 +221,13 @@ void SlamAlign::checkLoopClose(int last)
 
     if (!others.empty())
     {
+        hasLoop = true;
         for (int i : others)
         {
-            m_graph.push_back(make_pair(i, last));
+            m_graph.addEdge(i, last);
         }
 
-        auto iter = find_if(others.begin(), others.end(), [&](int i)
-        {
-            return last - i > m_options.loopSize;
-        });
-
-        if (iter != others.end())
-        {
-            first = *iter;
-            hasLoop = true;
-        }
+        first = others[0];
     }
 
     if (hasLoop && m_options.doLoopClosing)
@@ -248,99 +242,6 @@ void SlamAlign::checkLoopClose(int last)
     }
 
     m_foundLoop = hasLoop;
-}
-
-Matrix6f SlamAlign::eulerCovariance(int a, int b) const
-{
-    const ScanPtr& scanA = m_scans[a];
-    const ScanPtr& scanB = m_scans[b];
-
-    size_t n = scanB->count();
-
-    auto tree = KDTree::create(scanA->points(), scanA->count(), m_options.maxLeafSize);
-    Vector3f* points = scanB->points();
-    Vector3f** results = new Vector3f*[n];
-    getNearestNeighbors(tree, points, results, n, m_options.slamMaxDistance);
-
-    Vector6f mz = Vector6f::Zero();
-    Vector3f sum, sumProducts, sumSquares;
-    sum = sumProducts = sumSquares = Vector3f::Zero();
-
-    for (size_t i = 0; i < n; i++)
-    {
-        if (results[i] == nullptr)
-        {
-            continue;
-        }
-        Vector3f mid = (points[i] + *results[i]) / 2.0f;
-        Vector3f delta = *results[i] - points[i];
-
-        sum += mid;
-
-        sumProducts.x() += mid.x() * mid.y();
-        sumProducts.y() += mid.y() * mid.z();
-        sumProducts.z() += mid.z() * mid.x();
-
-        Vector3f squared = mid.cwiseProduct(mid);
-
-        sumSquares.x() += squared.x() +  squared.y();
-        sumSquares.y() += squared.y() +  squared.z();
-        sumSquares.z() += squared.z() +  squared.x();
-
-        mz.block<3, 1>(0, 0) += delta;
-
-        Vector3f cross = mid.cross(delta);
-        mz(3) += cross.x();
-        mz(4) += cross.z();
-        mz(5) += cross.y();
-    }
-
-    Matrix6f mm = Matrix6f::Zero();
-    mm(0, 0) = mm(1, 1) = mm(2, 2) = n;
-    mm(3, 3) = sumSquares.y();
-    mm(4, 4) = sumSquares.x();
-    mm(5, 5) = sumSquares.z();
-
-    mm(0, 4) = mm(4, 0) = -sum.y();
-    mm(0, 5) = mm(5, 0) = sum.z();
-    mm(1, 3) = mm(3, 1) = -sum.z();
-    mm(1, 4) = mm(4, 1) = sum.x();
-    mm(2, 3) = mm(3, 2) = sum.y();
-    mm(2, 5) = mm(5, 2) = -sum.x();
-
-    mm(3, 4) = mm(4, 3) = -sumProducts.z();
-    mm(3, 5) = mm(5, 3) = -sumProducts.y();
-    mm(4, 5) = mm(5, 4) = -sumProducts.x();
-
-    Vector6f d = mm.inverse() * mz;
-
-    float ss = 0.0f;
-
-    for (size_t i = 0; i < n; i++)
-    {
-        if (results[i] == nullptr)
-        {
-            continue;
-        }
-
-        Vector3f mid = (points[i] + *results[i]) / 2.0f;
-
-        Vector3f s(d(0) - mid.y() * d(4) + mid.z() * d(5),
-                   d(1) - mid.z() * d(3) + mid.x() * d(4),
-                   d(2) - mid.x() * d(5) + mid.y() * d(3));
-
-        s = points[i] - *results[i] - s;
-
-        ss = s.squaredNorm();
-    }
-
-    delete results;
-
-    ss = ss / ( 2.0f * n - 3.0f);
-
-    ss = 1.0f / ss;
-
-    return mm * ss;
 }
 
 void SlamAlign::loopClose(int first, int last)
@@ -393,7 +294,7 @@ void SlamAlign::loopClose(int first, int last)
 
 void SlamAlign::graphSlam(int last)
 {
-    // TODO: implement
+    m_graph.doGraphSlam(m_scans, last);
 }
 
 void SlamAlign::findCloseScans(int scan, vector<int>& output)
@@ -405,7 +306,7 @@ void SlamAlign::findCloseScans(int scan, vector<int>& output)
     {
         float maxDist = std::pow(m_options.closeLoopDistance, 2);
         Vector3f pos = cur->getPosition();
-        for (int other = 0; other < scan; other++)
+        for (int other = 0; other < scan - m_options.loopSize; other++)
         {
             float dist = (m_scans[other]->getPosition() - pos).squaredNorm();
             if (dist < maxDist)
@@ -420,7 +321,7 @@ void SlamAlign::findCloseScans(int scan, vector<int>& output)
         size_t n = cur->count();
         auto tree = KDTree::create(cur->points(), cur->count(), m_options.maxLeafSize);
 
-        for (int other = 0; other < scan; other++)
+        for (int other = 0; other < scan - m_options.loopSize; other++)
         {
             const ScanPtr& scan = m_scans[other];
             int count = 0;
