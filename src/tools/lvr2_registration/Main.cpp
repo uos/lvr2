@@ -179,6 +179,9 @@ int main(int argc, char** argv)
 
         ("slamMaxDistance,D", value<float>(&options.slamMaxDistance)->default_value(options.slamMaxDistance),
          "The maximum distance between two points during SLAM.")
+
+        ("slamEpsilon", value<double>(&options.slamEpsilon)->default_value(options.slamEpsilon),
+         "The epsilon difference of SLAM corrections for the stop criterion of SLAM.")
         ;
 
         options_description hidden_options("hidden_options");

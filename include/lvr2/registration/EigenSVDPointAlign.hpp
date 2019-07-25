@@ -39,8 +39,6 @@
 #include <Eigen/Dense>
 using Eigen::Matrix4f;
 using Eigen::Vector3f;
-using Matrix6f = Eigen::Matrix<float, 6, 6>;
-using Vector6f = Eigen::Matrix<float, 6, 1>;
 
 namespace lvr2
 {

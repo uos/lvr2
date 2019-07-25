@@ -26,43 +26,49 @@
  */
 
 /**
- * SlamOptions.hpp
+ * GraphSlam.hpp
  *
- *  @date May 28, 2019
+ *  @date July 22, 2019
  *  @author Malte Hillmann
  */
-#ifndef SLAMOPTIONS_HPP_
-#define SLAMOPTIONS_HPP_
+#ifndef GRAPHSLAM_HPP_
+#define GRAPHSLAM_HPP_
+
+#include "Scan.hpp"
+#include "SlamOptions.hpp"
+
+#include <Eigen/Sparse>
+
+using Matrix6f = Eigen::Matrix<float, 6, 6>;
+using Vector6f = Eigen::Matrix<float, 6, 1>;
+using GraphMatrix = Eigen::SparseMatrix<float>;
+using GraphVector = Eigen::VectorXf;
 
 namespace lvr2
 {
 
-struct SlamOptions
+class GraphSlam
 {
-    bool    doLoopClosing = false;
-    bool    doGraphSlam = false;
-    float   slamMaxDistance = 25;
-    int     slamIterations = 50;
-    float   closeLoopDistance = 500;
-    int     closeLoopPairs = -1;
-    int     loopSize = 20;
-    double  slamEpsilon = 0.5;
 
-    float   icpMaxDistance = 25;
-    int     icpIterations = 50;
-    int     maxLeafSize = 20;
-    double  epsilon = 0.00001;
+public:
+    GraphSlam(const SlamOptions* options);
 
-    float   minDistance = -1;
-    float   maxDistance = -1;
-    float   reduction = -1;
+    virtual ~GraphSlam() = default;
 
-    bool    trustPose = false;
-    bool    metascan = false;
+    void addEdge(int start, int end);
 
-    bool    verbose = false;
+    void doGraphSlam(vector<ScanPtr>& scans, int last);
+
+protected:
+
+    void eulerCovariance(ScanPtr a, ScanPtr b, Matrix6f& outMat, Vector6f& outVec) const;
+    void fillEquation(const vector<ScanPtr>& scans, GraphMatrix& mat, GraphVector& vec);
+
+    const SlamOptions*     m_options;
+
+    vector<pair<int, int>> m_graph;
 };
 
 } /* namespace lvr2 */
 
-#endif /* SLAMOPTIONS_HPP_ */
+#endif /* GRAPHSLAM_HPP_ */

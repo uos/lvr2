@@ -34,9 +34,10 @@
 #ifndef SLAMALIGN_HPP_
 #define SLAMALIGN_HPP_
 
-#include <lvr2/registration/ICPPointAlign.hpp>
-#include <lvr2/registration/Scan.hpp>
-#include <lvr2/registration/SlamOptions.hpp>
+#include "ICPPointAlign.hpp"
+#include "Scan.hpp"
+#include "SlamOptions.hpp"
+#include "GraphSlam.hpp"
 
 namespace lvr2
 {
@@ -68,7 +69,6 @@ protected:
     void loopClose(int first, int last);
     void graphSlam(int last);
     void findCloseScans(int scan, vector<int>& output);
-    Matrix6f eulerCovariance(int a, int b) const;
 
     SlamOptions             m_options;
 
@@ -76,7 +76,7 @@ protected:
 
     ScanPtr                 m_metascan;
 
-    vector<pair<int, int>>  m_graph;
+    GraphSlam               m_graph;
     bool                    m_foundLoop;
 
     size_t                  m_alreadyMatched;
