@@ -28,7 +28,7 @@ typename Channel<U>::Optional VariantChannelMap<T...>::getOptional(const std::st
 {
     typename Channel<U>::Optional ret;
     auto it = this->find(name);
-    if(it != this->end() && it->second.is_type<U>())
+    if(it != this->end() && it->second.template is_type<U>())
     {
         ret = boost::get<Channel<U> >(it->second);
     }
