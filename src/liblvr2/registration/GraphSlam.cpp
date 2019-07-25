@@ -60,8 +60,6 @@ void GraphSlam::addEdge(int start, int end)
 
 void GraphSlam::doGraphSlam(vector<ScanPtr>& scans, int last)
 {
-    double ret = std::numeric_limits<double>::max();
-
     // ignore first scan, keep last scan => n = last - 1 + 1
     int n = last;
 
@@ -143,7 +141,7 @@ void GraphSlam::doGraphSlam(vector<ScanPtr>& scans, int last)
 
             scan->transform(transform, true, ScanUse::GRAPHSLAM);
 
-            sum_position_diff += pos.norm();
+            sum_position_diff += result.block<3, 1>(0, 0).norm();
         }
 
         // add Frames to unused Scans
@@ -154,7 +152,12 @@ void GraphSlam::doGraphSlam(vector<ScanPtr>& scans, int last)
         }
 
         cout << "Sum of Position differences = " << sum_position_diff << endl;
-        ret = sum_position_diff / last;
+
+        double avg = sum_position_diff / n;
+        if (avg < m_options->slamEpsilon)
+        {
+            break;
+        }
     }
 }
 
