@@ -4,6 +4,7 @@
 #define LVR2_TYPES_CHANNELMANAGER
 
 #include <algorithm>
+#include <vector>
 #include "MultiChannelMap.hpp"
 #include "lvr2/io/DataStruct.hpp"
 
@@ -296,6 +297,25 @@ public:
     ///////////////////////////////
     //// Get Channel functions ////
     ///////////////////////////////
+    //
+   
+    /**
+     * @brief Returns all channels of type T.
+     *
+     * @tparam T The type of the channels.
+     * @param channels The vector of channel pairs(name, Channel).
+     *
+     * @return The type index in the MultiChannelMap.
+     */
+    template <typename T>
+    int getAllChannelsOfType(std::vector<std::pair<std::string, Channel<T> > > channels)
+    {
+      for(auto it = this->typedBegin<T>(); it != this->end(); ++it)
+      {
+        channels.push_back({it->first, it->second});
+      }
+      return index_of_type<T>::value;
+    }
 
     /**
      * @brief Gets a channel and returns it as optional. 
