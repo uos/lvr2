@@ -25,78 +25,52 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /**
- * Options.cpp
+/**
+ * ChunkBuilder.hpp
  *
- * @date 22.07.2019
- * @author Marcel Wiegand
+ * @date 21.07.2019
+ * @author Malte kl. Piening
  */
 
-#include "Options.hpp"
+#ifndef CHUNK_BUILDER_HPP
+#define CHUNK_BUILDER_HPP
 
-#include <iostream>
+#include "lvr2/io/Model.hpp"
 
-namespace chunking {
+#include <unordered_map>
 
-using std::cout;
-using std::endl;
-using boost::program_options::value;
-using boost::program_options::command_line_parser;
-
-Options::Options(int argc, char** argv)
-    : m_descr("Supported options")
+namespace lvr2
 {
-    // Create option descriptions
-    m_descr.add_options()
-        ("help", "Produce help message")
-        ("inputFile", value<string>(), "Input file name.")
-        ("outputDir", value<string>(), "Output directory name.")
-        ("chunkSize", value<float>()->default_value(10.0f), "Side length of chunks.")
-    ;
 
-    // Parse command line and generate variables map
-    store(
-          command_line_parser(argc, argv).options(m_descr).positional(m_posDescr).run(),
-          m_variables);
-    notify(m_variables);
-}
-
-bool Options::printUsage() const
+class ChunkBuilder
 {
-    if (m_variables.count("help"))
-    {
-        cout << m_descr << endl;
-        return true;
-    }
+    public:
+        ChunkBuilder(unsigned int id, lvr2::ModelPtr originalModel, boost::shared_array<std::shared_ptr<std::vector<unsigned int>>> vertexUse);
 
-    if (!m_variables.count("inputFile"))
-    {
-        cout << "Error: You must specify an input file." << endl;
-        cout << endl;
-        cout << m_descr << endl;
-        return true;
-    }
+        ~ChunkBuilder();
 
-    return false;
-}
+        /// add a face to this chunk
+        void addFace(unsigned int index);
 
-string Options::getInputFile() const
-{
-    return m_variables["inputFile"].as<string>();
-}
+        /// build mesh of chunk
+        lvr2::ModelPtr buildMesh();
 
-string Options::getOutputDir() const
-{
-    return m_variables["outputDir"].as<string>();
-}
+        unsigned int numFaces();
+        
+    private:
+        unsigned int m_id;
 
-float Options::getChunkSize() const
-{
-    return m_variables["chunkSize"].as<float>();
-}
+        /// model that is being chunked
+        lvr2::ModelPtr m_originalModel = nullptr;
 
-Options::~Options() {
-    // TODO Auto-generated destructor stub
-}
+        unsigned int m_numVertices = 0;
 
-} // namespace chunking
+        /// indices of faces in original model
+        std::vector<unsigned int> m_faces;
+
+        boost::shared_array<std::shared_ptr<std::vector<unsigned int>>> m_vertexUse;
+};
+
+} /* namespace lvr2 */
+
+#endif // CHUNK_BUILDER_HPP

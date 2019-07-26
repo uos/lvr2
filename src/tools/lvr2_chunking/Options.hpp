@@ -70,6 +70,16 @@ public:
      */
     string getInputFile() const;
 
+    /**
+     * @brief	Returns the output directory
+     */
+    string getOutputDir() const;
+
+    /**
+     * @brief   Returns the side length of a chunk
+     */
+    float getChunkSize() const;
+
 private:
     /// The internally used variable map
     variables_map m_variables;

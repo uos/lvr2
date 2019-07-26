@@ -58,6 +58,8 @@ set(LVR2_SOURCES
     reconstruction/LBKdTree.cpp
     reconstruction/cuda/CudaSurface.cu
     reconstruction/PCLFiltering.cpp
+    algorithm/ChunkBuilder.cpp
+    algorithm/Chunker.cpp
 )
 
 

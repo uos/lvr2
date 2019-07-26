@@ -35,6 +35,9 @@
 #include <iostream>
 #include <string>
 
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/algorithm/Chunker.hpp"
+
 #include "Options.hpp"
 
 int main(int argc, char** argv)
@@ -54,7 +57,13 @@ int main(int argc, char** argv)
 
     std::string inputFile = options.getInputFile();
 
-    // TODO: Read input file
+    lvr2::ModelFactory mf;
+    lvr2::ModelPtr model = mf.readModel(options.getInputFile());
+    std::string savePath = options.getOutputDir();
+    float size = options.getChunkSize();
+
+    lvr2::Chunker chunker(model);
+    chunker.chunk(size, savePath);
 
     return EXIT_SUCCESS;
 }
