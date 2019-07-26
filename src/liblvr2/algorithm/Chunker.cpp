@@ -84,7 +84,7 @@ void Chunker::chunk(float chunksize, std::string savePath)
                 if (m_chunks[i][j][k]->numFaces() > 0)
                 {
                     std::cout << "writing " << i << " " << j << " " << k << std::endl;
-                    mf.saveModel(m_chunks[i][j][k]->buildMesh(), savePath + std::to_string(i) + "-" + std::to_string(j) + "-" + std::to_string(k) + ".ply");
+                    mf.saveModel(m_chunks[i][j][k]->buildMesh(), savePath + "/" + std::to_string(i) + "-" + std::to_string(j) + "-" + std::to_string(k) + ".ply");
                 }
             }
         }
