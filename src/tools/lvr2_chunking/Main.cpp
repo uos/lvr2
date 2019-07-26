@@ -34,6 +34,7 @@
 
 #include <iostream>
 #include <string>
+#include <boost/filesystem.hpp>
 
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/algorithm/Chunker.hpp"
@@ -55,15 +56,19 @@ int main(int argc, char** argv)
         return EXIT_SUCCESS;
     }
 
-    std::string inputFile = options.getInputFile();
-
     lvr2::ModelFactory mf;
     lvr2::ModelPtr model = mf.readModel(options.getInputFile());
-    std::string savePath = options.getOutputDir();
+
+    boost::filesystem::path outputPath = boost::filesystem::absolute(options.getOutputDir());
+    if (!boost::filesystem::is_directory(outputPath))
+    {
+        boost::filesystem::create_directories(outputPath);
+    }
+
     float size = options.getChunkSize();
 
     lvr2::Chunker chunker(model);
-    chunker.chunk(size, savePath);
+    chunker.chunk(size, outputPath.string());
 
     return EXIT_SUCCESS;
 }
