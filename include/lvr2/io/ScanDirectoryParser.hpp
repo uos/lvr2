@@ -5,11 +5,19 @@
 #include <vector>
 
 #include <boost/filesystem.hpp>
+#include <Eigen/Dense>
 
 #include "Timestamp.hpp"
 
 namespace lvr2
 {
+
+struct ScanInfo
+{
+    string              m_filename;
+    size_t              m_numPoints;
+    Eigen::Matrix4d     m_pose;
+};
 
 class ScanDirectoryParser
 {
@@ -27,28 +35,31 @@ public:
 
     void setTargetSize(const size_t& size);
 
-    size_t computeNumberOfPoints();
+    void parseDirectory();
 
     ~ScanDirectoryParser() = default;
 
 private:
 
     using Path = boost::filesystem::path;
-    using ScanPosePair = std::pair<std::string, std::string>;
 
-    size_t examinePLY(const std::string filename);
-    size_t examineASCII(const std::string filename);    
+    size_t examinePLY(const std::string& filename);
+    size_t examineASCII(const std::string& filename);    
 
-    size_t          m_numPoints;
-    std::string     m_pointPrefix;
-    std::string     m_posePrefix;
-    std::string     m_poseExtension;
-    std::string     m_pointExtension;
-    std::string     m_directory;
+    Eigen::Matrix4d getPose(const Path& poseFile);
 
-    size_t          m_start;
-    size_t          m_end;
-    size_t          m_targetSize;
+    size_t                  m_numPoints;
+    std::string             m_pointPrefix;
+    std::string             m_posePrefix;
+    std::string             m_poseExtension;
+    std::string             m_pointExtension;
+    std::string             m_directory;
+
+    size_t                  m_start;
+    size_t                  m_end;
+    size_t                  m_targetSize;
+
+    std::vector<ScanInfo>   m_scans;
 };
 
 } // namespace lvr2
