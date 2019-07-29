@@ -51,7 +51,7 @@ namespace lvr2
 {
 
 ICPPointAlign::ICPPointAlign(ScanPtr model, ScanPtr data) :
-    m_dataCloud(data), m_modelCloud(model)
+    m_modelCloud(model), m_dataCloud(data)
 {
     // Init default values
     m_maxDistanceMatch  = 25;
@@ -66,18 +66,18 @@ Matrix4f ICPPointAlign::match()
 {
     if (m_maxIterations == 0)
     {
-        return Matrix4f();
+        return Matrix4f::Identity();
     }
 
     auto start_time = steady_clock::now();
 
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
     EigenSVDPointAlign align;
-    int iteration;
+    int iteration = 0;
 
-    Vector3f centroid_m;
-    Vector3f centroid_d;
-    Matrix4f transform;
+    Vector3f centroid_m = Vector3f::Zero();
+    Vector3f centroid_d = Vector3f::Zero();
+    Matrix4f transform = Matrix4f::Identity();
     Matrix4f delta = Matrix4f::Identity();
 
     size_t numPoints = m_dataCloud->count();

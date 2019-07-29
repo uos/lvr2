@@ -318,31 +318,28 @@ void SlamAlign::findCloseScans(int scan, vector<int>& output)
     else
     {
         // convert current Scan to KDTree for Pair search
-        size_t n = cur->count();
         auto tree = KDTree::create(cur->points(), cur->count(), m_options.maxLeafSize);
+
+        size_t maxLen = 0;
+        for (int other = 0; other < scan - m_options.loopSize; other++)
+        {
+            maxLen = max(maxLen, m_scans[other]->count());
+        }
+
+        Vector3f** neighbors = new Vector3f*[maxLen];
 
         for (int other = 0; other < scan - m_options.loopSize; other++)
         {
             const ScanPtr& scan = m_scans[other];
-            int count = 0;
-
-            #pragma omp parallel for reduction(+:count)
-            for (size_t i = 0; i < scan->count(); i++)
-            {
-                const Vector3f& point = scan->getPoint(i);
-                Vector3f* neighbor = nullptr;
-                float dist;
-                if (tree->nearestNeighbor(point, neighbor, dist, m_options.slamMaxDistance))
-                {
-                    count++;
-                }
-            }
+            int count = getNearestNeighbors(tree, scan->points(), neighbors, scan->count(), m_options.slamMaxDistance);
 
             if (count >= m_options.closeLoopPairs)
             {
                 output.push_back(other);
             }
         }
+
+        delete[] neighbors;
     }
 }
 

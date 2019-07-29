@@ -46,14 +46,14 @@ namespace lvr2
 {
 
 Scan::Scan(PointBufferPtr points, const Matrix4f& pose)
-    : m_pose(pose), m_initialPose(pose), m_deltaPose(Matrix4f::Identity()), m_transformChanged(false), m_transformChange(Matrix4f::Identity())
+    : m_pose(pose), m_deltaPose(Matrix4f::Identity()), m_initialPose(pose), m_transformChanged(false), m_transformChange(Matrix4f::Identity())
 {
     size_t n = points->numPoints();
     m_points.resize(n);
 
     floatArr src = points->getPointArray();
 
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < n; i++)
     {
         Eigen::Vector4f extended(src[i * 3], src[i * 3 + 1], src[i * 3 + 2], 1.0);
@@ -144,8 +144,8 @@ Vector3f* Scan::points()
 {
     if (m_transformChanged)
     {
-        #pragma omp parallel for
-        for (int i = 0; i < m_points.size(); i++)
+        #pragma omp parallel for schedule(static)
+        for (size_t i = 0; i < m_points.size(); i++)
         {
             const Eigen::Vector3f& p = m_points[i];
             Eigen::Vector4f extended(p.x(), p.y(), p.z(), 1.0);
@@ -206,8 +206,8 @@ PointBufferPtr Scan::toPointBuffer() const
     auto ret = make_shared<PointBuffer>();
     auto arr = floatArr(new float[3 * count()]);
 
-    #pragma omp parallel for
-    for (int i = 0; i < count(); i++)
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < count(); i++)
     {
         arr[3 * i + 0] = m_points[i].x();
         arr[3 * i + 1] = m_points[i].y();

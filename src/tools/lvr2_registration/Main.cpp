@@ -65,7 +65,6 @@ int main(int argc, char** argv)
     int end = -1;
     string format = "uos";
     string pose_format = "pose";
-    bool load_parallel = false;
 
     bool write_pose = false;
     bool write_scans = false;
@@ -117,9 +116,6 @@ int main(int argc, char** argv)
 
         ("metascan", bool_switch(&options.metascan),
          "Match scans to the combined pointcloud of all previous scans instead of just the last Scan.")
-
-        ("loadParallel", bool_switch(&load_parallel),
-         "Load scans in Parallel. Useful for ASCII Scans that do not exceed RAM.")
 
         ("noFrames,F", bool_switch(&no_frames),
          "Don't write \".frames\" files.")
@@ -307,59 +303,30 @@ int main(int argc, char** argv)
     int count = end - start + 1;
 
     SlamAlign align(options);
-    vector<ScanPtr> scans(count);
+    vector<ScanPtr> scans;
 
-    // omp does not allow early break/return
-    bool failed = false;
-
-    #pragma omp parallel for if(load_parallel)
     for (int i = 0; i < count; i++)
     {
-        if (failed) // "break" was called => skip rest of loop
-        {
-            continue;
-        }
         path file = dir / format_name(format, start + i);
         auto model = ModelFactory::readModel(file.string());
 
         if (!model)
         {
             cerr << "Unable to read Model from: " << file.string() << endl;
-            failed = true;
-            continue;
+            return EXIT_FAILURE;
         }
         if (!model->m_pointCloud)
         {
             cerr << "file does not contain Points: " << file.string() << endl;
-            failed = true;
-            continue;
+            return EXIT_FAILURE;
         }
 
         file.replace_extension(pose_format);
         Matrix4f pose = getTransformationFromPose(file).cast<float>();
 
         ScanPtr scan = make_shared<Scan>(model->m_pointCloud, pose);
-        scans[i] = scan;
-
-        if (!load_parallel)
-        {
-            // adding applies reduction => save Memory while loading
-            align.addScan(scan);
-        }
-    }
-
-    if (failed)
-    {
-        return EXIT_FAILURE;
-    }
-
-    // load_parallel prevents ordered adding of Scans
-    if (load_parallel)
-    {
-        for (auto& scan : scans)
-        {
-            align.addScan(scan);
-        }
+        scans.push_back(scan);
+        align.addScan(scan);
     }
 
     auto start_time = chrono::steady_clock::now();
