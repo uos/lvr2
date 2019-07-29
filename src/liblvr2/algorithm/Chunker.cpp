@@ -48,7 +48,7 @@ void Chunker::chunk(float chunksize, std::string savePath)
     int amountY = (int) std::ceil((m_maxY - m_minY) / chunksize);
     int amountZ = (int) std::ceil((m_maxZ - m_minZ) / chunksize);
 
-    std::shared_ptr<ChunkBuilder> m_chunks[amountX][amountY][amountZ];
+    boost::shared_array<std::shared_ptr<ChunkBuilder>> m_chunks(new std::shared_ptr<ChunkBuilder>[amountX * amountY * amountZ]);
 
     for (int i = 0; i < amountX; i++)
     {
@@ -56,7 +56,7 @@ void Chunker::chunk(float chunksize, std::string savePath)
         {
             for (int k = 0; k < amountZ; k++)
             {
-                m_chunks[i][j][k] = std::shared_ptr<ChunkBuilder>(new ChunkBuilder(i * amountY * amountZ + j * amountZ + k, m_originalModel, vertexUse));
+                m_chunks[i * amountY * amountZ + j * amountZ + k] = std::shared_ptr<ChunkBuilder>(new ChunkBuilder(i * amountY * amountZ + j * amountZ + k, m_originalModel, vertexUse));
             }
         }
     }
@@ -70,7 +70,7 @@ void Chunker::chunk(float chunksize, std::string savePath)
 
         getCenter(m_originalModel->m_mesh->getFaceIndices()[i * 3], m_originalModel->m_mesh->getFaceIndices()[i * 3 + 1], m_originalModel->m_mesh->getFaceIndices()[i * 3 + 2], x, y, z);
 
-        m_chunks[(int) ((x - m_minX) / chunksize)][(int) ((y - m_minY) / chunksize)][(int) ((z - m_minZ) / chunksize)]->addFace(i);
+        m_chunks[(int) ((x - m_minX) / chunksize) * amountY * amountZ + (int) ((y - m_minY) / chunksize) * amountZ + (int) ((z - m_minZ) / chunksize)]->addFace(i);
     }
 
     // save the chunks as .ply  
@@ -81,10 +81,10 @@ void Chunker::chunk(float chunksize, std::string savePath)
         {
             for (int k = 0; k < amountZ; k++)
             {
-                if (m_chunks[i][j][k]->numFaces() > 0)
+                if (m_chunks[i * amountY * amountZ + j * amountZ + k]->numFaces() > 0)
                 {
                     std::cout << "writing " << i << " " << j << " " << k << std::endl;
-                    mf.saveModel(m_chunks[i][j][k]->buildMesh(), savePath + "/" + std::to_string(i) + "-" + std::to_string(j) + "-" + std::to_string(k) + ".ply");
+                    mf.saveModel(m_chunks[i * amountY * amountZ + j * amountZ + k]->buildMesh(), savePath + "/" + std::to_string(i) + "-" + std::to_string(j) + "-" + std::to_string(k) + ".ply");
                 }
             }
         }
