@@ -15,7 +15,7 @@ void transformAndReducePointCloud(
 {
     size_t n_ip, n_colors;
     size_t cntr = 0;
-    unsigned w_colors;
+    size_t w_colors;
 
     n_ip = model->m_pointCloud->numPoints();
     floatArr arr = model->m_pointCloud->getPointArray();

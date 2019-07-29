@@ -126,7 +126,7 @@ void PCDIO::save( string filename )
 {
 
     size_t pointcount(0), buf(0);
-    unsigned w_color(0);
+    size_t w_color(0);
 
     floatArr points;
     ucharArr pointColors;

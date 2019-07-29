@@ -291,7 +291,7 @@ size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
 size_t writePointsToStream(ModelPtr model, std::ofstream& out, bool nocolor)
 {
     size_t n_ip, n_colors;
-    unsigned w_colors;
+    size_t w_colors;
 
     n_ip = model->m_pointCloud->numPoints();
     floatArr arr = model->m_pointCloud->getPointArray();
@@ -426,7 +426,7 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
      }
 
      size_t n_normals;
-     unsigned w_normals;
+     size_t w_normals;
      size_t n_points = buffer->numPoints();
 
      floatArr normals = buffer->getFloatArray("normals", n_normals, w_normals); 
