@@ -27,7 +27,6 @@ set(LVR2_SOURCES
     io/PPMIO.cpp
     io/PLYIO.cpp
     io/IOUtils.cpp
-    io/ChannelManager.cpp
     io/STLIO.cpp
     io/UosIO.cpp
     io/PCDIO.cpp
@@ -45,7 +44,6 @@ set(LVR2_SOURCES
     io/Timestamp.cpp
     io/BoctreeIO.cpp
     io/GridIO.cpp
-    io/BaseBuffer.cpp
     io/PointBuffer.cpp
     io/ModelFactory.cpp
     io/ScanprojectIO.cpp

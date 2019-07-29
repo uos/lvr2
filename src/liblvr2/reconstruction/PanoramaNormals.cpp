@@ -64,7 +64,7 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
 
     // Get input buffer's points
     PointBufferPtr in_buffer = m_mti->pointBuffer();
-    unsigned w_color;
+    size_t w_color;
     size_t n_inPoints = in_buffer->numPoints();
     floatArr in_points = in_buffer->getPointArray();
     ucharArr in_colors = in_buffer->getColorArray(w_color);

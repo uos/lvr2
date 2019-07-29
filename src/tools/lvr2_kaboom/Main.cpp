@@ -101,7 +101,7 @@ size_t writePly(ModelPtr model, std::fstream& out)
 {
     size_t n_ip = model->m_pointCloud->numPoints();
     size_t n_colors = n_ip;
-    unsigned w_color;
+    size_t w_color;
 
     floatArr arr = model->m_pointCloud->getPointArray();
 

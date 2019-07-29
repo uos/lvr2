@@ -183,7 +183,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
             PointBufferPtr points = m->m_pointCloud;
             size_t n_points = points->numPoints();
             size_t n_normals = 0;
-            unsigned dummy;
+            size_t dummy;
 
             floatArr p = points->getPointArray();
             floatArr n = points->getFloatArray("normals", n_normals, dummy);
