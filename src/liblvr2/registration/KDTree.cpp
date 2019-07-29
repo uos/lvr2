@@ -160,37 +160,17 @@ bool KDTree::nearestNeighbor(const Vector3f& point, Vector3f*& neighbor, float& 
 
 size_t getNearestNeighbors(KDTreePtr tree, Vector3f* points, Vector3f** neighbors, size_t n, float maxDistance, Vector3f& centroid_m, Vector3f& centroid_d)
 {
+    size_t found = getNearestNeighbors(tree, points, neighbors, n, maxDistance);
+
     centroid_m = Vector3f::Zero();
     centroid_d = Vector3f::Zero();
 
-    size_t found = 0;
-
-    #pragma omp parallel
+    for (size_t i = 0; i < n; i++)
     {
-        Vector3f localCentroid_m = Vector3f::Zero();
-        Vector3f localCentroid_d = Vector3f::Zero();
-        double localError = 0.0f;
-
-        size_t localFound = 0;
-        float localDistance = 0.0f;
-
-        #pragma omp for nowait
-        for (size_t i = 0; i < n; i++)
+        if (neighbors[i] != nullptr)
         {
-            if (tree->nearestNeighbor(points[i], neighbors[i], localDistance, maxDistance))
-            {
-                localCentroid_m += *neighbors[i];
-                localCentroid_d += points[i];
-
-                localFound++;
-            }
-        }
-
-        #pragma omp critical
-        {
-            centroid_m += localCentroid_m;
-            centroid_d += localCentroid_d;
-            found += localFound;
+            centroid_m += *neighbors[i];
+            centroid_d += points[i];
         }
     }
 
@@ -205,7 +185,7 @@ size_t getNearestNeighbors(KDTreePtr tree, Vector3f* points, Vector3f** neighbor
     size_t found = 0;
     float distance = 0.0f;
 
-    #pragma omp parallel for firstprivate(distance) reduction(+:found)
+    #pragma omp parallel for firstprivate(distance) reduction(+:found) schedule(dynamic,8)
     for (size_t i = 0; i < n; i++)
     {
         if (tree->nearestNeighbor(points[i], neighbors[i], distance, maxDistance))

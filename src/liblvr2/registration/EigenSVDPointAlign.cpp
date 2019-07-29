@@ -59,41 +59,26 @@ double EigenSVDPointAlign::alignPoints(
     // Fill H matrix
     Matrix3f H = Matrix3f::Zero();
 
-    #pragma omp parallel
+    for (size_t i = 0; i < n; i++)
     {
-        Matrix3f localH = Matrix3f::Zero();
-        double localError = 0.0;
-        size_t localPairs = 0;
-
-        #pragma omp for nowait
-        for (size_t i = 0; i < n; i++)
+        if (neighbors[i] == nullptr)
         {
-            if (neighbors[i] == nullptr)
-            {
-                continue;
-            }
-
-            Vector3f m = *neighbors[i] - centroid_m;
-            Vector3f d = data[i] - centroid_d;
-
-            localError += (m - d).squaredNorm();
-            localPairs++;
-
-            // same as "localH += m * d.transpose();" but faster
-            for (int j = 0; j < 3; j++)
-            {
-                for (int k = 0; k < 3; k++)
-                {
-                    localH(j, k) += d[j] * m[k];
-                }
-            }
+            continue;
         }
 
-        #pragma omp critical
+        Vector3f m = *neighbors[i] - centroid_m;
+        Vector3f d = data[i] - centroid_d;
+
+        error += (m - d).squaredNorm();
+        pairs++;
+
+        // same as "localH += m * d.transpose();" but faster
+        for (int j = 0; j < 3; j++)
         {
-            H += localH;
-            error += localError;
-            pairs += localPairs;
+            for (int k = 0; k < 3; k++)
+            {
+                H(j, k) += d[j] * m[k];
+            }
         }
     }
 
@@ -105,6 +90,8 @@ double EigenSVDPointAlign::alignPoints(
     Matrix3f V = svd.matrixV();
 
     Matrix3f R = V * U.transpose();
+
+    align = Matrix4f::Identity();
     align.block<3, 3>(0, 0) = R;
 
     // Calculate translation
@@ -126,34 +113,20 @@ double EigenSVDPointAlign::alignPoints(
     // Fill H matrix
     Matrix3f H = Matrix3f::Zero();
 
-    #pragma omp parallel
+    for (size_t i = 0; i < n; i++)
     {
-        Matrix3f localH = Matrix3f::Zero();
-        double localError = 0.0;
-        size_t localPairs = 0;
+        Vector3f m = pairs[i].first - centroid_m;
+        Vector3f d = pairs[i].second - centroid_d;
 
-        #pragma omp for nowait
-        for (size_t i = 0; i < n; i++)
+        error += (m - d).squaredNorm();
+
+        // same as "localH += m * d.transpose();" but faster
+        for (int j = 0; j < 3; j++)
         {
-            Vector3f m = pairs[i].first - centroid_m;
-            Vector3f d = pairs[i].second - centroid_d;
-
-            localError += (m - d).squaredNorm();
-
-            // same as "localH += m * d.transpose();" but faster
-            for (int j = 0; j < 3; j++)
+            for (int k = 0; k < 3; k++)
             {
-                for (int k = 0; k < 3; k++)
-                {
-                    localH(j, k) += d[j] * m[k];
-                }
+                H(j, k) += d[j] * m[k];
             }
-        }
-
-        #pragma omp critical
-        {
-            H += localH;
-            error += localError;
         }
     }
 
@@ -165,6 +138,8 @@ double EigenSVDPointAlign::alignPoints(
     Matrix3f V = svd.matrixV();
 
     Matrix3f R = V * U.transpose();
+
+    align = Matrix4f::Identity();
     align.block<3, 3>(0, 0) = R;
 
     // Calculate translation

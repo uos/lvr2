@@ -82,7 +82,7 @@ void GraphSlam::doGraphSlam(vector<ScanPtr>& scans, int last)
         double sum_position_diff = 0.0;
 
         // Start with second Scan
-        #pragma omp parallel for reduction(+:sum_position_diff)
+        #pragma omp parallel for reduction(+:sum_position_diff) schedule(dynamic)
         for (int i = 1; i <= last; i++)
         {
             ScanPtr& scan = scans[i];
@@ -171,7 +171,7 @@ void GraphSlam::fillEquation(const vector<ScanPtr>& scans, GraphMatrix& mat, Gra
 
     map<pair<int, int>, Matrix6f> result;
 
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(dynamic)
     for (size_t i = 0; i < m_graph.size(); i++)
     {
         int a, b;
@@ -255,9 +255,8 @@ void GraphSlam::eulerCovariance(ScanPtr a, ScanPtr b, Matrix6f& outMat, Vector6f
     size_t pairs = getNearestNeighbors(tree, points, results, n, m_options->slamMaxDistance);
 
     Vector6f mz = Vector6f::Zero();
-    Vector3f sum;
+    Vector3f sum = Vector3f::Zero();
     float xy, yz, xz, ypz, xpz, xpy;
-    sum = Vector3f::Zero();
     xy = yz = xz = ypz = xpz = xpy = 0.0f;
 
     for (size_t i = 0; i < n; i++)
