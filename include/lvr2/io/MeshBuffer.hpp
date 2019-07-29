@@ -28,7 +28,6 @@
 #ifndef MESHBUFFER2_HPP
 #define MESHBUFFER2_HPP
 
-#include "lvr2/io/BaseBuffer.hpp"
 #include "lvr2/texture/Material.hpp"
 #include "lvr2/texture/Texture.hpp"
 
@@ -38,8 +37,9 @@ namespace lvr2
 ////
 /// \brief The MeshBuffer Mesh representation for I/O modules.
 ///
-class MeshBuffer : public BaseBuffer
+class MeshBuffer : public ChannelManager
 {
+    using base = ChannelManager;
 public:
 
     ///
@@ -50,7 +50,7 @@ public:
 
     bool removeVertices(){
         m_numVertices = 0;
-        return m_channels.removeFloatChannel("vertices");
+        return this->removeFloatChannel("vertices");
     }
 
     ///
@@ -71,7 +71,7 @@ public:
     /// \param colors           Vertex color array
     /// \param w                Number of bytes per color. (3 for RGB, 4 for RGBA)
     ///
-    void setVertexColors(ucharArr colors, unsigned w = 3);
+    void setVertexColors(ucharArr colors, size_t w = 3);
 
     ///
     /// \brief addTextureCoordinates    Adds texture coordinates for vertices
@@ -108,7 +108,7 @@ public:
     /// \param colors           An array containing color information
     /// \param w                Bytes per color attribute (3 for RGB, 4 for RGBA)
     ///
-    void setFaceColors(ucharArr colors, unsigned w = 3);
+    void setFaceColors(ucharArr colors, size_t w = 3);
 
     void setTextures(std::vector<Texture>& textures)
     {
@@ -142,7 +142,7 @@ public:
     /// \param width            Number of bytes per color (3 for RGB, 4 for RGBA)
     /// \return
     ///
-    ucharArr getVertexColors(unsigned& width);
+    ucharArr getVertexColors(size_t& width);
 
     ///
     /// \brief getVertexNormals Returns an array with vertex normals or an empty array
@@ -174,7 +174,7 @@ public:
     /// \return                 An array containing point data or an nullptr if
     ///                         no colors are present.
     ///
-    ucharArr getFaceColors(unsigned& width);
+    ucharArr getFaceColors(size_t& width);
 
     ///
     /// \brief getFaceMaterialIndices   Returns an array with face material indices 

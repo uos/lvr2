@@ -214,7 +214,7 @@ void addToFile(ofstream& out, string filename)
     PointBufferPtr pointBuffer = model->m_pointCloud;
 
     size_t np, nn, nc;
-    unsigned w_color;
+    size_t w_color;
     np = pointBuffer->numPoints();
     nc = nn = np;
 
