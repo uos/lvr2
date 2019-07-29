@@ -74,19 +74,19 @@ void getPoseFromMatrix(BaseVector<float>& position, BaseVector<float>& angles, c
  * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
  *          represented in the given frame file.
  */
-Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames);
+Eigen::Matrix4d getTransformationFromFrames(const boost::filesystem::path& frames);
 
 /**
  * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
  *          represented in the given pose file.
  */
-Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose);
+Eigen::Matrix4d getTransformationFromPose(const boost::filesystem::path& pose);
 
 /**
  * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
  *          represented in the given dat file.
  */
-Eigen::Matrix4d getTransformationFromDat(boost::filesystem::path& frames);
+Eigen::Matrix4d getTransformationFromDat(const boost::filesystem::path& frames);
 
 /**
  * @brief   Transforms an slam6d transformation matrix into an Eigen 4x4 matrix.

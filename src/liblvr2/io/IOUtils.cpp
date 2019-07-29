@@ -131,7 +131,7 @@ Eigen::Matrix4d buildTransformation(double* alignxf)
     return transformation;
 }
 
-Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
+Eigen::Matrix4d getTransformationFromPose(const boost::filesystem::path& pose)
 {
     std::ifstream poseIn(pose.c_str());
     if(poseIn.good())
@@ -181,7 +181,7 @@ Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
     }
 }
 
-Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
+Eigen::Matrix4d getTransformationFromFrames(const boost::filesystem::path& frames)
 {
     double alignxf[16];
     int color;
@@ -208,7 +208,7 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
     return buildTransformation(alignxf);
 }
 
-Eigen::Matrix4d getTransformationFromDat(boost::filesystem::path& frames)
+Eigen::Matrix4d getTransformationFromDat(const boost::filesystem::path& frames)
 {
     double alignxf[16];
     int color;

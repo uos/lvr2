@@ -581,8 +581,7 @@ int main(int argc, char** argv) {
     ScanDirectoryParser parser(options->getInputDir());
     parser.setStart(options->getStart());
     parser.setEnd(options->getEnd());
-
-    cout << timestamp << parser.computeNumberOfPoints() << endl;
+    parser.parseDirectory();
 
 
     delete options;
