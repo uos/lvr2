@@ -320,7 +320,7 @@ void AsciiIO::save( std::string filename )
 
 
 //    pointColors = this->m_model->m_pointCloud->getIndexedPointColorArray( buf );
-    pointColors = this->m_model->m_pointCloud->getColorArray(buf);
+//    pointColors = this->m_model->m_pointCloud->getColorArray(buf);
     auto colors = this->m_model->m_pointCloud->getChannel<unsigned char>("colors");
     if(colors)
     {
