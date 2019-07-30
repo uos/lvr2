@@ -1,3 +1,5 @@
+#include <cstring>
+
 namespace lvr2 {
 
 template<typename T>
@@ -18,6 +20,20 @@ Channel<T>::Channel(size_t n, size_t width, DataPtr ptr)
 , m_elementWidth(width)
 , m_data(ptr)
 {}
+
+template<typename T>
+Channel<T>::Channel(const Channel<T>& other)
+:m_numElements(other.numElements())
+,m_elementWidth(other.width())
+,m_data(new T[m_numElements * m_elementWidth])
+{
+    // copy
+    std::memcpy(
+        other.dataPtr().get(),
+        m_data.get(),
+        sizeof(T) * m_numElements * m_elementWidth
+    );
+}
 
 template<typename T>
 ElementProxy<T> Channel<T>::operator[](const unsigned& idx)

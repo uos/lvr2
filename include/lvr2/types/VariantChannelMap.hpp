@@ -29,6 +29,8 @@ public:
     using base = std::unordered_map<std::string, VariantChannel<T...> >;
     using base::base;
 
+    static constexpr std::size_t num_types = std::tuple_size<types>::value;
+
     template<typename U>
     struct iterator {
 
@@ -108,6 +110,85 @@ public:
     };
 
 
+    template<typename U>
+    struct const_iterator {
+
+        using resolved_elem_type = std::pair<const key_type&, const Channel<U>& >;
+        using pointer = std::shared_ptr<resolved_elem_type>;
+        // using pointer = elem_type*;
+        using reference = elem_type&;
+
+        const_iterator(
+            typename base::const_iterator base_it,
+            typename base::const_iterator end_it)
+        :m_base_it(base_it),
+        m_end_it(end_it)
+        {
+            while(m_base_it != m_end_it && m_base_it->second.which() != index_of_type<U>::value)
+            {
+                m_base_it++;
+            }
+        }
+
+        resolved_elem_type operator*() const noexcept
+        {
+            return {
+                m_base_it->first,
+                m_base_it->second.template extract<U>()
+            };
+        }
+
+        pointer operator->() const noexcept
+        {
+            return pointer(
+                new resolved_elem_type({
+                    m_base_it->first,
+                    m_base_it->second.template extract<U>()
+                })
+            );
+        }
+
+        const_iterator<U>& operator++() noexcept
+        {
+            m_base_it++;
+            while(m_base_it != m_end_it && m_base_it->second.which() != index_of_type<U>::value)
+            {
+                m_base_it++;
+            }
+            return *this;
+        }
+
+        const_iterator<U> operator++(int) noexcept
+        {
+            iterator<U> tmp(*this);
+            m_base_it++;
+            while(m_base_it != m_end_it && m_base_it->second.which() != index_of_type<U>::value)
+            {
+                m_base_it++;
+            }
+            return tmp;
+        }
+
+        inline bool operator==(const typename base::const_iterator& rhs) noexcept
+        {
+            return m_base_it == rhs;
+        }
+
+        inline bool operator!=(const typename base::const_iterator& rhs) noexcept
+        {
+            return m_base_it != rhs;
+        }
+
+        typename base::iterator operator()() const noexcept
+        {
+            return m_base_it;
+        }
+
+        typename base::const_iterator m_base_it;
+        typename base::const_iterator m_end_it;
+    };
+
+
     /**
      * @brief Access type index by type.
      * @details Example usage: ChanneVariantMap<int, float> my_map;
@@ -130,6 +211,25 @@ public:
      */
     template<typename U>
     void add(const std::string& name, Channel<U> channel);
+
+
+    /**
+     * @brief Adds an empty channel
+     * @param[in] name Key of the channel.
+     * 
+     */
+    template<typename U>
+    void add(const std::string& name);
+
+    /**
+     * @brief Adds an empty channel with size
+     * @param[in] name Key of the channel.
+     * @param[in] numElements Number of elements in channel.
+     * @param[in] width Element size.
+     * 
+     */
+    template<typename U>
+    void add(const std::string& name, size_t numElements, size_t width);
 
     /**
      * @brief Gets AttributeChannel with type U from map as reference.
@@ -201,6 +301,14 @@ public:
         return iterator<U>(it_base, it_end);
     }
 
+    template<typename U>
+    const_iterator<U> typedBegin() const
+    {
+        typename base::const_iterator it_base = this->begin();
+        typename base::const_iterator it_end = this->end();
+        return const_iterator<U>(it_base, it_end);
+    }
+
     using base::erase;
 
     template<typename U>
@@ -209,6 +317,17 @@ public:
         typename base::iterator it_base = erase(it());
         typename base::iterator it_end = this->end();
         return iterator<U>(it_base, it_end);
+    }
+
+    template<typename V>
+    VariantChannelMap<T...> manipulate(V visitor)
+    {
+        VariantChannelMap<T...> cm;
+        for(auto vchannel: *this)
+        {
+            cm.insert({vchannel.first, boost::apply_visitor(visitor, vchannel.second)});
+        }
+        return cm;
     }
 
     /**

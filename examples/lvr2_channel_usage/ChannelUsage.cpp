@@ -7,6 +7,8 @@
 
 #include "lvr2/types/ChannelManager.hpp"
 
+#include "lvr2/algorithm/BaseBufferManipulators.hpp"
+
 
 using namespace lvr2;
 
@@ -49,12 +51,19 @@ void basicChannelUsage()
     std::cout << "  number of normals: " << normals.numElements() << std::endl;
     std::cout << "  number of color channels: " << colors.width() << std::endl;
 
+    // copy channels
+    std::cout << "  deep copy" << std::endl;
+    Channel<float> points2(points);
+    std::cout << "  shallow copy" << std::endl;
+    Channel<float> points3(0,0);
+    points3 = points2;
 
     /////////////
     /// 2) Variant Channels
     /////////////
 
     // build a variant channel of two possible types float or unsigned char
+    std::cout << "  generate a variant channel..." << std::endl;
     VariantChannel<float, unsigned char> vchannel(points);
     std::cout << "  a variant channel: " << vchannel << std::endl;
     
@@ -167,6 +176,19 @@ void multiChannelMapUsage()
     // 7) print
     std::cout << "  The channel map: " << std::endl;
     std::cout << cm << std::endl;
+
+    // 8) copy
+    std::cout << "  Channel Map Copy:" << std::endl;
+    // deep copy
+    std::cout << "  deep copy" << std::endl;
+    MultiChannelMap cm2(fcm);
+    std::cout << "  deep copy" << std::endl;
+    MultiChannelMap cm3 = fcm;
+    // shallow copy
+    std::cout << "  shallow copy" << std::endl;
+    MultiChannelMap cm4;
+    cm4 = cm3;
+    
 }
 
 void channelManagerUsage()
@@ -258,11 +280,46 @@ void channelManagerUsage()
 
 }
 
+void manipulatorUsage()
+{
+    size_t num_points = 10000;
+
+    Channel<float> points(num_points, 3);
+    Channel<float> normals(num_points, 3);
+    Channel<unsigned char> colors(num_points, 3);
+    
+    fillChannel(points, 0.0f);
+    fillChannel(normals, 1.0f);
+    fillChannel(colors, static_cast<unsigned char>(255));
+
+    std::cout << "3) Channel Manager Usage" << std::endl;
+
+    // MultiChannelMap with extended functions -> ChannelManager
+
+    ChannelManager cm = {
+        {"points2" , points}
+    };
+    
+    cm["points"] = points;
+    cm["colors"] = colors;
+    cm["normals"] = normals;
+
+
+    ChannelManager cm_sliced = cm.manipulate(manipulators::Slice(10, 100));
+    std::cout << "Sliced:" << std::endl;
+    std::cout << cm_sliced << std::endl;
+
+    ChannelManager cm_sampled = cm.manipulate(manipulators::RandomSample(1000));
+    std::cout << "Random Sampled:" << std::endl;
+    std::cout << cm_sampled << std::endl;
+}
+
 int main(int argc, const char** argv)
 {
     basicChannelUsage();
     multiChannelMapUsage();
     channelManagerUsage();
+    manipulatorUsage();
 
     return 0;
 }
