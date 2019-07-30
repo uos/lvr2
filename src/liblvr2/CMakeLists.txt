@@ -57,7 +57,7 @@ set(LVR2_SOURCES
     reconstruction/cuda/CudaSurface.cu
     reconstruction/PCLFiltering.cpp
     algorithm/ChunkBuilder.cpp
-    algorithm/Chunker.cpp
+    algorithm/ChunkManager.cpp
 )
 
 

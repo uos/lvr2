@@ -37,7 +37,7 @@
 #include <boost/filesystem.hpp>
 
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/algorithm/Chunker.hpp"
+#include "lvr2/algorithm/ChunkManager.hpp"
 
 #include "Options.hpp"
 
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 
     float size = options.getChunkSize();
 
-    lvr2::Chunker chunker(model);
+    lvr2::ChunkManager chunker(model);
     chunker.chunk(size, outputPath.string());
 
     return EXIT_SUCCESS;

@@ -1,16 +1,16 @@
-#ifndef CHUNKER_HPP
-#define CHUNKER_HPP
+#ifndef CHUNK_MANAGER_HPP
+#define CHUNK_MANAGER_HPP
 
 #include "ChunkBuilder.hpp"
 #include "lvr2/io/Model.hpp"
 
 namespace lvr2 {
 
-class Chunker
+class ChunkManager
 {
     public:
-        Chunker(lvr2::ModelPtr model);
-        Chunker(std::string modelPath);
+        ChunkManager(lvr2::ModelPtr model);
+        ChunkManager(std::string modelPath);
 
         // add each face to one chunk and save all chunks sequentially
         void chunk(float chunksize, std::string savePath);
@@ -27,4 +27,4 @@ class Chunker
 
 } /* namespace lvr2 */
 
-#endif // CHUNKER_HPP
+#endif // CHUNK_MANAGER_HPP
