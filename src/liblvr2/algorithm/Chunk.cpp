@@ -26,63 +26,29 @@
  */
 
 /**
- * ChunkBuilder.cpp
+ * Chunk.cpp
  *
- * @date 21.07.2019
- * @author Malte kl. Piening
+ * @date 
+ * @author 
  */
 
-#include "lvr2/algorithm/ChunkBuilder.hpp"
+#include "lvr2/algorithm/Chunk.hpp"
 
 namespace lvr2
 {
-
-ChunkBuilder::ChunkBuilder(unsigned int id, lvr2::ModelPtr originalModel, boost::shared_array<std::shared_ptr<std::vector<unsigned int>>> vertexUse) :
-    m_id(id),
-    m_originalModel(originalModel),
-    m_vertexUse(vertexUse)
-{
-
-}
-
-ChunkBuilder::~ChunkBuilder()
-{
-
-}
-
-void ChunkBuilder::addFace(unsigned int index)
-{
-    m_faces.push_back(index);
-
-    for (uint8_t i = 0; i < 3; i++)
-    {
-        if (m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]] == nullptr)
-        {
-            m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]] = std::shared_ptr<std::vector<unsigned int>>(new std::vector<unsigned int>);
-        }
-
-        if(std::find(m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]]->begin(), m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]]->end(), m_id) == m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]]->end())
-        {
-            m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]]->push_back(m_id);
-            m_numVertices++;
-        }
-    }
-}
-
-unsigned int ChunkBuilder::numFaces()
-{
-    return m_faces.size();
-}
-
-lvr2::ModelPtr ChunkBuilder::buildMesh()
+    
+Chunk::Chunk(lvr2::ModelPtr originalModel, std::vector<unsigned int> faces, unsigned int numVertices) 
+:m_originalModel(originalModel),
+m_numVertices(numVertices),
+m_faces(faces)
 {
     std::unordered_map<unsigned int, unsigned int> vertexIndices;
 
-    lvr2::floatArr vertices(new float[m_numVertices * 3]);
-    lvr2::indexArray faceIndices(new unsigned int[m_faces.size() * 3]);
+    m_vertices = lvr2::floatArr(new float[m_numVertices * 3]);
+    m_faceIndices = lvr2::indexArray(new unsigned int[faces.size() * 3]);
 
     unsigned int faceIndexCnt = 0;
-    for (unsigned int faceIndex : m_faces)
+    for (unsigned int faceIndex : faces)
     {
         for (uint8_t i = 0; i < 3; i++)
         {
@@ -92,22 +58,39 @@ lvr2::ModelPtr ChunkBuilder::buildMesh()
 
                 for (uint8_t j = 0; j < 3; j++)
                 {
-                    vertices[vertexIndices[m_originalModel->m_mesh->getFaceIndices()[faceIndex * 3 + i]] * 3 + j]
+                    m_vertices[vertexIndices[m_originalModel->m_mesh->getFaceIndices()[faceIndex * 3 + i]] * 3 + j]
                             = m_originalModel->m_mesh->getVertices()[m_originalModel->m_mesh->getFaceIndices()[faceIndex * 3 + i] * 3 + j];
                 }
             }
 
-            faceIndices[faceIndexCnt * 3 + i] = vertexIndices[m_originalModel->m_mesh->getFaceIndices()[faceIndex * 3 + i]];
+            m_faceIndices[faceIndexCnt * 3 + i] = vertexIndices[m_originalModel->m_mesh->getFaceIndices()[faceIndex * 3 + i]];
         }
         faceIndexCnt++;
     }
+}
 
+Chunk::~Chunk()
+{
+
+}
+
+lvr2::indexArray Chunk::getFaceIndices()
+{
+    return m_faceIndices;
+}
+lvr2::floatArr Chunk::getVertices()
+{
+    return m_vertices;
+}
+
+lvr2::ModelPtr Chunk::getModel()
+{
     lvr2::ModelPtr model(new lvr2::Model(lvr2::MeshBufferPtr(new lvr2::MeshBuffer)));
 
-    model->m_mesh->setVertices(vertices, vertexIndices.size());
-    model->m_mesh->setFaceIndices(faceIndices, m_faces.size());
+    model->m_mesh->setVertices(m_vertices, m_numVertices);
+    model->m_mesh->setFaceIndices(m_faceIndices, m_faces.size());
 
     return model;
 }
 
-} /* namespacd lvr2 */
+} /* namespace lvr2 */
