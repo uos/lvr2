@@ -1,25 +1,25 @@
 #include <cmath>
 
-#include "lvr2/algorithm/Chunker.hpp"
+#include "lvr2/algorithm/ChunkManager.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 
 namespace lvr2
 {
 
-Chunker::Chunker(lvr2::ModelPtr model)
+ChunkManager::ChunkManager(lvr2::ModelPtr model)
 {
     m_originalModel = model;
     findRange();
 }
 
-Chunker::Chunker(std::string modelPath)
+ChunkManager::ChunkManager(std::string modelPath)
 {
     lvr2::ModelFactory mf;
     m_originalModel = mf.readModel(modelPath);
     findRange();
 }
 
-void Chunker::findRange()
+void ChunkManager::findRange()
 {
     m_maxX = std::numeric_limits<float>::lowest();
     m_maxY = std::numeric_limits<float>::lowest();
@@ -39,7 +39,7 @@ void Chunker::findRange()
     }
 }
 
-void Chunker::chunk(float chunksize, std::string savePath)
+void ChunkManager::chunk(float chunksize, std::string savePath)
 {
     boost::shared_array<std::shared_ptr<std::vector<unsigned int>>> vertexUse(new std::shared_ptr<std::vector<unsigned int>>[m_originalModel->m_mesh->numVertices()]);
 
@@ -91,7 +91,7 @@ void Chunker::chunk(float chunksize, std::string savePath)
     }
 }
 
-void Chunker::getCenter(unsigned int index0, unsigned int index1, unsigned int index2, float& x, float& y, float& z)
+void ChunkManager::getCenter(unsigned int index0, unsigned int index1, unsigned int index2, float& x, float& y, float& z)
 {
     x = (m_originalModel->m_mesh->getVertices()[index0 * 3 + 0]
             + m_originalModel->m_mesh->getVertices()[index1 * 3 + 0]
