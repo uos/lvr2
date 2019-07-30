@@ -46,4 +46,10 @@ Channel<U>& VariantChannel<T...>::extract()
     return boost::get<Channel<U> >(*this);
 }
 
+template<typename... T>
+VariantChannel<T...> VariantChannel<T...>::clone() const
+{
+    return boost::apply_visitor(CloneVisitor(), *this);
+}
+
 }

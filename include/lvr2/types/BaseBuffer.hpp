@@ -618,7 +618,16 @@ public:
         return cm;
     }
 
+    BaseBuffer clone() const {
+        BaseBuffer ret;
 
+        for(auto elem : *this)
+        {
+            ret.insert({elem.first, elem.second.clone()});
+        }
+
+        return ret;
+    }
 };
 
 } // namespace lvr2
