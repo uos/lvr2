@@ -36,7 +36,7 @@
 
 #include <Eigen/Dense>
 #include <lvr2/io/PointBuffer.hpp>
-using Eigen::Matrix4f;
+using Eigen::Matrix4d;
 using Eigen::Vector3f;
 
 namespace lvr2
@@ -54,9 +54,9 @@ enum class ScanUse
 class Scan
 {
 public:
-    Scan(PointBufferPtr points, const Matrix4f& pose);
+    Scan(PointBufferPtr points, const Matrix4d& pose);
 
-    void transform(const Matrix4f& transform, bool writeFrame = true, ScanUse use = ScanUse::UPDATED);
+    void transform(const Matrix4d& transform, bool writeFrame = true, ScanUse use = ScanUse::UPDATED);
     void addFrame(ScanUse use = ScanUse::UNUSED);
 
     void reduce(float voxelSize);
@@ -67,9 +67,9 @@ public:
     Vector3f* points();
     size_t count() const;
 
-    const Matrix4f& getPose() const;
-    const Matrix4f& getDeltaPose() const;
-    const Matrix4f& getInitialPose() const;
+    const Matrix4d& getPose() const;
+    const Matrix4d& getDeltaPose() const;
+    const Matrix4d& getInitialPose() const;
 
     Vector3f getPosition() const;
 
@@ -83,14 +83,14 @@ public:
 protected:
     std::vector<Vector3f> m_points;
 
-    Matrix4f    m_pose;
-    Matrix4f    m_deltaPose;
-    Matrix4f    m_initialPose;
+    Matrix4d    m_pose;
+    Matrix4d    m_deltaPose;
+    Matrix4d    m_initialPose;
 
-    std::vector<std::pair<Matrix4f, ScanUse>> m_frames;
+    std::vector<std::pair<Matrix4d, ScanUse>> m_frames;
 
     bool        m_transformChanged;
-    Matrix4f    m_transformChange;
+    Matrix4d    m_transformChange;
 };
 
 using ScanPtr = std::shared_ptr<Scan>;

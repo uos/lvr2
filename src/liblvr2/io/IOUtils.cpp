@@ -550,18 +550,18 @@ void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, con
     }
 }
 
-Eigen::Matrix4f poseToMatrix(const Eigen::Vector3f& position, const Eigen::Vector3f& rotation)
+Eigen::Matrix4d poseToMatrix(const Eigen::Vector3f& position, const Eigen::Vector3f& rotation)
 {
-    Eigen::Matrix4f mat = Eigen::Matrix4f::Identity();
-    mat.block<3, 3>(0, 0) = Eigen::AngleAxisf(rotation.x(), Eigen::Vector3f::UnitX()).matrix()
-                           * Eigen::AngleAxisf(rotation.y(), Eigen::Vector3f::UnitY())
-                           * Eigen::AngleAxisf(rotation.z(), Eigen::Vector3f::UnitZ());
+    Eigen::Matrix4d mat = Eigen::Matrix4d::Identity();
+    mat.block<3, 3>(0, 0) = Eigen::AngleAxisd(rotation.x(), Eigen::Vector3d::UnitX()).matrix()
+                           * Eigen::AngleAxisd(rotation.y(), Eigen::Vector3d::UnitY())
+                           * Eigen::AngleAxisd(rotation.z(), Eigen::Vector3d::UnitZ());
 
-    mat.block<3, 1>(0, 3) = position;
+    mat.block<3, 1>(0, 3) = position.cast<double>();
     return mat;
 }
 
-void matrixToPose(const Eigen::Matrix4f& mat, Eigen::Vector3f& position, Eigen::Vector3f& rotation)
+void matrixToPose(const Eigen::Matrix4d& mat, Eigen::Vector3f& position, Eigen::Vector3f& rotation)
 {
     // Calculate Y-axis angle
     if (mat(0, 0) > 0.0)
@@ -586,7 +586,7 @@ void matrixToPose(const Eigen::Matrix4f& mat, Eigen::Vector3f& position, Eigen::
         rotation.z() = atan2(-mat(1, 0) / C, mat(0, 0) / C);
     }
 
-    position = mat.block<3, 1>(0, 3);
+    position = mat.block<3, 1>(0, 3).cast<float>();
 }
 
 

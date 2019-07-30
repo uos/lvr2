@@ -46,7 +46,7 @@ class ICPPointAlign
 public:
     ICPPointAlign(ScanPtr model, ScanPtr data);
 
-    Matrix4f match();
+    Matrix4d match();
 
     virtual ~ICPPointAlign() = default;
 

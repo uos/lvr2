@@ -63,7 +63,7 @@ protected:
 
     void reduceScan(const ScanPtr& scan);
 
-    void applyTransform(ScanPtr scan, const Matrix4f& transform);
+    void applyTransform(ScanPtr scan, const Matrix4d& transform);
     void addFrame(ScanPtr current);
     void checkLoopClose(int last);
     void loopClose(int first, int last);

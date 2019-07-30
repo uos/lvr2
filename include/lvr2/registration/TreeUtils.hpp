@@ -36,7 +36,8 @@
 #define TREEUTILS_HPP_
 
 #include <Eigen/Dense>
-using Eigen::Matrix4f;
+using Eigen::Matrix4d;
+using Eigen::Vector3d;
 using Eigen::Vector3f;
 
 namespace lvr2

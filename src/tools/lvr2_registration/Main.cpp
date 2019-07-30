@@ -322,7 +322,7 @@ int main(int argc, char** argv)
         }
 
         file.replace_extension(pose_format);
-        Matrix4f pose = getTransformationFromPose(file).cast<float>();
+        Matrix4d pose = getTransformationFromPose(file);
 
         ScanPtr scan = make_shared<Scan>(model->m_pointCloud, pose);
         scans.push_back(scan);
