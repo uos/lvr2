@@ -29,7 +29,7 @@
 #define POINTBUFFER2_HPP
 
 #include "lvr2/io/DataStruct.hpp"
-#include "lvr2/types/ChannelManager.hpp"
+#include "lvr2/types/BaseBuffer.hpp"
 
 #include <map>
 #include <string>
@@ -50,9 +50,9 @@ namespace lvr2
 ///        between geometry (channel 'points') and the associated layers like RGB
 ///        colors or point normals consistent.
 ///
-class PointBuffer : public ChannelManager
+class PointBuffer : public BaseBuffer
 {
-    using base = ChannelManager;
+    using base = BaseBuffer;
 public:    
     PointBuffer();
 
