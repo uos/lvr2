@@ -92,5 +92,18 @@ size_t VariantChannelMap<T...>::numChannels()
     return ret;
 }
 
+template<typename... T>
+VariantChannelMap<T...> VariantChannelMap<T...>::clone() const
+{
+    VariantChannelMap<T...> ret;
+
+    for(auto elem : *this)
+    {
+        ret.insert({elem.first, elem.second.clone()});
+    }
+
+    return ret;
+}
+
 
 } // namespace lvr2

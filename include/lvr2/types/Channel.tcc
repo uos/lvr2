@@ -22,7 +22,7 @@ Channel<T>::Channel(size_t n, size_t width, DataPtr ptr)
 {}
 
 template<typename T>
-Channel<T> Channel<T>::clone()
+Channel<T> Channel<T>::clone() const
 {
     Channel<T> ret(m_numElements, m_elementWidth);
     std::memcpy(

@@ -26,7 +26,7 @@ public:
     
 
     // clone
-    Channel<T> clone();
+    Channel<T> clone() const;
 
     ElementProxy<T> operator[](const unsigned& idx);
     const ElementProxy<T> operator[](const unsigned& idx) const;

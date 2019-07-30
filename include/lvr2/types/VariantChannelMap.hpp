@@ -330,6 +330,8 @@ public:
         return cm;
     }
 
+    VariantChannelMap<T...> clone() const;
+
     /**
      * @brief Output cout
      * 

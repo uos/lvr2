@@ -77,6 +77,7 @@ public:
         return os;
     }
 
+    VariantChannel<T...> clone() const;
     
 // Visitor Implementations
 protected:
@@ -114,6 +115,15 @@ protected:
         {
             throw std::invalid_argument("tried to get wrong type of channel");
             return boost::shared_array<U>();
+        }
+    };
+
+    struct CloneVisitor : public boost::static_visitor< VariantChannel<T...> >
+    {
+        template<typename U>
+        VariantChannel<T...> operator()(const Channel<U>& channel) const
+        {
+            return channel.clone();
         }
     };
 

@@ -313,7 +313,7 @@ void manipulatorUsage()
     std::cout << "Random Sampled:" << std::endl;
     std::cout << cm_sampled << std::endl;
 
-    BaseBuffer cm2(cm);
+    BaseBuffer cm2 = cm.clone();
 
     Channel<float> pts = cm.get<float>("points");
     Channel<float> pts2 = cm2.get<float>("points");
