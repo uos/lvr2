@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_TYPES_CHANNELMANAGER
-#define LVR2_TYPES_CHANNELMANAGER
+#ifndef LVR2_TYPES_BASEBUFFER
+#define LVR2_TYPES_BASEBUFFER
 
 #include <algorithm>
 #include <vector>
@@ -24,7 +24,7 @@ using IndexProxy = ElementProxy<unsigned int>;
  *      downwoards compitibility functions of the old ChannelManager.
  * 
  */
-class ChannelManager : public MultiChannelMap {
+class BaseBuffer : public MultiChannelMap {
 using base = MultiChannelMap;
 public:
     using base::base;
@@ -608,9 +608,9 @@ public:
     }
 
     template<typename V>
-    ChannelManager manipulate(V visitor)
+    BaseBuffer manipulate(V visitor)
     {
-        ChannelManager cm;
+        BaseBuffer cm;
         for(auto vchannel: *this)
         {
             cm.insert({vchannel.first, boost::apply_visitor(visitor, vchannel.second)});
@@ -623,6 +623,6 @@ public:
 
 } // namespace lvr2
 
-#include "ChannelManager.tcc"
+#include "BaseBuffer.tcc"
 
-#endif // LVR2_TYPES_CHANNELMANAGER
+#endif // LVR2_TYPES_BASEBUFFER

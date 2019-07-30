@@ -30,6 +30,7 @@
 
 #include "lvr2/texture/Material.hpp"
 #include "lvr2/texture/Texture.hpp"
+#include "lvr2/types/BaseBuffer.hpp"
 
 namespace lvr2
 {
@@ -37,9 +38,9 @@ namespace lvr2
 ////
 /// \brief The MeshBuffer Mesh representation for I/O modules.
 ///
-class MeshBuffer : public ChannelManager
+class MeshBuffer : public BaseBuffer
 {
-    using base = ChannelManager;
+    using base = BaseBuffer;
 public:
 
     ///

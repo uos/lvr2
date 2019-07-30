@@ -5,7 +5,7 @@
 #include "lvr2/types/VariantChannelMap.hpp"
 #include "lvr2/types/MultiChannelMap.hpp"
 
-#include "lvr2/types/ChannelManager.hpp"
+#include "lvr2/types/BaseBuffer.hpp"
 
 #include "lvr2/algorithm/BaseBufferManipulators.hpp"
 
@@ -209,7 +209,7 @@ void channelManagerUsage()
 
     // MultiChannelMap with extended functions -> ChannelManager
 
-    ChannelManager cm = {
+    BaseBuffer cm = {
         {"points2" , points},
         {"hyper", hyper}
     };
@@ -244,7 +244,7 @@ void channelManagerUsage()
         std::cout << "  -- " << key << std::endl;
     }
 
-    ChannelManager cm2;
+    BaseBuffer cm2;
 
     std::cout << "  float channels again:" << std::endl;
     for(auto it = cm.typedBegin<float>(); it != cm.end(); ++it)
@@ -296,7 +296,7 @@ void manipulatorUsage()
 
     // MultiChannelMap with extended functions -> ChannelManager
 
-    ChannelManager cm = {
+    BaseBuffer cm = {
         {"points2" , points}
     };
     
@@ -305,13 +305,29 @@ void manipulatorUsage()
     cm["normals"] = normals;
 
 
-    ChannelManager cm_sliced = cm.manipulate(manipulators::Slice(10, 100));
+    BaseBuffer cm_sliced = cm.manipulate(manipulators::Slice(10, 100));
     std::cout << "Sliced:" << std::endl;
     std::cout << cm_sliced << std::endl;
 
-    ChannelManager cm_sampled = cm.manipulate(manipulators::RandomSample(1000));
+    BaseBuffer cm_sampled = cm.manipulate(manipulators::RandomSample(1000));
     std::cout << "Random Sampled:" << std::endl;
     std::cout << cm_sampled << std::endl;
+
+    BaseBuffer cm2(cm);
+
+    Channel<float> pts = cm.get<float>("points");
+    Channel<float> pts2 = cm2.get<float>("points");
+    
+    for(int i=0; i<pts.numElements(); i++)
+    {
+        for(int j=0; j<pts.width(); j++)
+        {
+            if(pts[i][j] != pts2[i][j])
+            {
+                std::cout << "ERROR" << std::endl;
+            }
+        }
+    }
 }
 
 int main(int argc, const char** argv)

@@ -1,7 +1,7 @@
 namespace lvr2 {
 
 template<typename T>
-size_t ChannelManager::channelWidth(const std::string& name)
+size_t BaseBuffer::channelWidth(const std::string& name)
 {
     auto it = this->find(name);
     if(it != this->end() && it->second.is_type<T>())
@@ -12,7 +12,7 @@ size_t ChannelManager::channelWidth(const std::string& name)
 }
 
 template<typename T>
-bool ChannelManager::hasChannel(const std::string& name)
+bool BaseBuffer::hasChannel(const std::string& name)
 {
     auto it = this->find(name);
     if(it != this->end() && it->second.is_type<T>())
@@ -23,13 +23,13 @@ bool ChannelManager::hasChannel(const std::string& name)
 }
 
 template<typename T>
-void ChannelManager::addChannel(typename Channel<T>::Ptr data, const std::string& name)
+void BaseBuffer::addChannel(typename Channel<T>::Ptr data, const std::string& name)
 {
     this->insert({name, *data});
 }
 
 template<typename T>
-void ChannelManager::addChannel(
+void BaseBuffer::addChannel(
     boost::shared_array<T> array,
     std::string name,
     size_t n,
@@ -39,7 +39,7 @@ void ChannelManager::addChannel(
 }
 
 template<typename T>
-void ChannelManager::addEmptyChannel(
+void BaseBuffer::addEmptyChannel(
     const std::string& name,
     size_t n,
     size_t width)
@@ -51,7 +51,7 @@ void ChannelManager::addEmptyChannel(
 }
 
 template<typename T>
-bool ChannelManager::removeChannel(const std::string& name)
+bool BaseBuffer::removeChannel(const std::string& name)
 {
     auto it = this->find(name);
     if(it != this->end() && it->second.is_type<T>())
@@ -63,7 +63,7 @@ bool ChannelManager::removeChannel(const std::string& name)
 }
 
 template<typename T>
-typename Channel<T>::Optional ChannelManager::getChannel(const std::string& name)
+typename Channel<T>::Optional BaseBuffer::getChannel(const std::string& name)
 {
     typename Channel<T>::Optional ret;
 
@@ -77,9 +77,9 @@ typename Channel<T>::Optional ChannelManager::getChannel(const std::string& name
 }
 
 template<typename T>
-ElementProxy<T> ChannelManager::getHandle(unsigned int idx, const std::string& name)
+ElementProxy<T> BaseBuffer::getHandle(unsigned int idx, const std::string& name)
 {
-    // std::cout << "WARNING: runtime critical access [ChannelManager::getHandle]" << std::endl;
+    // std::cout << "WARNING: runtime critical access [BaseBuffer::getHandle]" << std::endl;
     auto it = this->find(name);
     if(it != this->end() && it->second.is_type<T>())
     {
@@ -89,7 +89,7 @@ ElementProxy<T> ChannelManager::getHandle(unsigned int idx, const std::string& n
 }
 
 template<typename T>
-boost::shared_array<T> ChannelManager::getArray(
+boost::shared_array<T> BaseBuffer::getArray(
     const std::string& name, size_t& n, size_t& w)
 {
     auto it = this->find(name);
@@ -107,7 +107,7 @@ boost::shared_array<T> ChannelManager::getArray(
 
 
 template<typename T>
-void ChannelManager::addAtomic(T data, const std::string& name)
+void BaseBuffer::addAtomic(T data, const std::string& name)
 {
     Channel<T> channel(1, 1);
     channel[0][0] = data;
@@ -115,7 +115,7 @@ void ChannelManager::addAtomic(T data, const std::string& name)
 }
 
 template<typename T>
-boost::optional<T> ChannelManager::getAtomic(const std::string& name)
+boost::optional<T> BaseBuffer::getAtomic(const std::string& name)
 {
     boost::optional<T> ret;
     typename Channel<T>::Optional channel = getChannel<T>(name);
