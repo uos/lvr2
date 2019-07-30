@@ -114,7 +114,7 @@ using KDTreePtr = std::shared_ptr<KDTree>;
  *
  * @returns             The number of neighbors that were found
  */
-size_t getNearestNeighbors(KDTreePtr tree, Vector3f* points, Vector3f** neighbors, size_t n, float maxDistance, Vector3f& centroid_m, Vector3f& centroid_d);
+size_t getNearestNeighbors(KDTreePtr tree, Vector3f* points, Vector3f** neighbors, size_t n, float maxDistance, Vector3d& centroid_m, Vector3d& centroid_d);
 
 /**
  * @brief Finds the nearest neighbors of all points in 'points' using a pre-generated KDTree

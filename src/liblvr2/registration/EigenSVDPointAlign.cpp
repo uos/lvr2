@@ -49,15 +49,15 @@ double EigenSVDPointAlign::alignPoints(
     Vector3f* data,
     Vector3f** neighbors,
     size_t n,
-    const Vector3f& centroid_m,
-    const Vector3f& centroid_d,
-    Matrix4f& align)
+    const Vector3d& centroid_m,
+    const Vector3d& centroid_d,
+    Matrix4d& align)
 {
     double error = 0.0;
     size_t pairs = 0;
 
     // Fill H matrix
-    Matrix3f H = Matrix3f::Zero();
+    Matrix3d H = Matrix3d::Zero();
 
     for (size_t i = 0; i < n; i++)
     {
@@ -66,8 +66,8 @@ double EigenSVDPointAlign::alignPoints(
             continue;
         }
 
-        Vector3f m = *neighbors[i] - centroid_m;
-        Vector3f d = data[i] - centroid_d;
+        Vector3d m = neighbors[i]->cast<double>() - centroid_m;
+        Vector3d d = data[i].cast<double>() - centroid_d;
 
         error += (m - d).squaredNorm();
         pairs++;
@@ -84,18 +84,18 @@ double EigenSVDPointAlign::alignPoints(
 
     error = sqrt(error / (double)pairs);
 
-    JacobiSVD<Matrix3f> svd(H, ComputeFullU | ComputeFullV);
+    JacobiSVD<Matrix3d> svd(H, ComputeFullU | ComputeFullV);
 
-    Matrix3f U = svd.matrixU();
-    Matrix3f V = svd.matrixV();
+    Matrix3d U = svd.matrixU();
+    Matrix3d V = svd.matrixV();
 
-    Matrix3f R = V * U.transpose();
+    Matrix3d R = V * U.transpose();
 
-    align = Matrix4f::Identity();
+    align = Matrix4d::Identity();
     align.block<3, 3>(0, 0) = R;
 
     // Calculate translation
-    Eigen::Vector3f translation = centroid_m - R * centroid_d;
+    Eigen::Vector3d translation = centroid_m - R * centroid_d;
     align.block<3, 1>(0, 3) = translation;
 
     return error;
@@ -103,20 +103,20 @@ double EigenSVDPointAlign::alignPoints(
 
 double EigenSVDPointAlign::alignPoints(
     PointPairVector& pairs,
-    const Vector3f& centroid_m,
-    const Vector3f& centroid_d,
-    Matrix4f& align)
+    const Vector3d& centroid_m,
+    const Vector3d& centroid_d,
+    Matrix4d& align)
 {
     double error = 0.0;
     size_t n = pairs.size();
 
     // Fill H matrix
-    Matrix3f H = Matrix3f::Zero();
+    Matrix3d H = Matrix3d::Zero();
 
     for (size_t i = 0; i < n; i++)
     {
-        Vector3f m = pairs[i].first - centroid_m;
-        Vector3f d = pairs[i].second - centroid_d;
+        Vector3d m = pairs[i].first.cast<double>() - centroid_m;
+        Vector3d d = pairs[i].second.cast<double>() - centroid_d;
 
         error += (m - d).squaredNorm();
 
@@ -132,18 +132,18 @@ double EigenSVDPointAlign::alignPoints(
 
     error = sqrt(error / (double)n);
 
-    JacobiSVD<Matrix3f> svd(H, ComputeFullU | ComputeFullV);
+    JacobiSVD<Matrix3d> svd(H, ComputeFullU | ComputeFullV);
 
-    Matrix3f U = svd.matrixU();
-    Matrix3f V = svd.matrixV();
+    Matrix3d U = svd.matrixU();
+    Matrix3d V = svd.matrixV();
 
-    Matrix3f R = V * U.transpose();
+    Matrix3d R = V * U.transpose();
 
-    align = Matrix4f::Identity();
+    align = Matrix4d::Identity();
     align.block<3, 3>(0, 0) = R;
 
     // Calculate translation
-    Eigen::Vector3f translation = centroid_m - R * centroid_d;
+    Eigen::Vector3d translation = centroid_m - R * centroid_d;
     align.block<3, 1>(0, 3) = translation;
 
     return error;

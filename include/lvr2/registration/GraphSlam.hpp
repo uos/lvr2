@@ -39,10 +39,10 @@
 
 #include <Eigen/Sparse>
 
-using Matrix6f = Eigen::Matrix<float, 6, 6>;
-using Vector6f = Eigen::Matrix<float, 6, 1>;
-using GraphMatrix = Eigen::SparseMatrix<float>;
-using GraphVector = Eigen::VectorXf;
+using Matrix6d = Eigen::Matrix<double, 6, 6>;
+using Vector6d = Eigen::Matrix<double, 6, 1>;
+using GraphMatrix = Eigen::SparseMatrix<double>;
+using GraphVector = Eigen::VectorXd;
 
 namespace lvr2
 {
@@ -61,7 +61,7 @@ public:
 
 protected:
 
-    void eulerCovariance(ScanPtr a, ScanPtr b, Matrix6f& outMat, Vector6f& outVec) const;
+    void eulerCovariance(ScanPtr a, ScanPtr b, Matrix6d& outMat, Vector6d& outVec) const;
     void fillEquation(const vector<ScanPtr>& scans, GraphMatrix& mat, GraphVector& vec);
 
     const SlamOptions*     m_options;

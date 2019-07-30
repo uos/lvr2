@@ -269,7 +269,7 @@ Eigen::Matrix4d inverseTransform(const Eigen::Matrix4d& transform);
  * @param rotation  The rotation in radians
  * @return          The Matrix representation of the Pose
  */
-Eigen::Matrix4f poseToMatrix(const Eigen::Vector3f& position, const Eigen::Vector3f& rotation);
+Eigen::Matrix4d poseToMatrix(const Eigen::Vector3f& position, const Eigen::Vector3f& rotation);
 
 /**
  * @brief   Extracts the Pose from a Matrix
@@ -278,7 +278,7 @@ Eigen::Matrix4f poseToMatrix(const Eigen::Vector3f& position, const Eigen::Vecto
  * @param position  Output for the position of the Pose
  * @param rotation  Output for the rotation in radians
  */
-void matrixToPose(const Eigen::Matrix4f& mat, Eigen::Vector3f& position, Eigen::Vector3f& rotation);
+void matrixToPose(const Eigen::Matrix4d& mat, Eigen::Vector3f& position, Eigen::Vector3f& rotation);
 
 } // namespace lvr2
 

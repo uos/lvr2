@@ -45,8 +45,8 @@ using namespace Eigen;
 namespace lvr2
 {
 
-void EulerToMatrix4(const Vector3f& pos, const Vector3f& theta, Matrix4f& mat);
-void Matrix4ToEuler(const Matrix4f mat, Vector3f& rPosTheta, Vector3f& rPos);
+void EulerToMatrix4(const Vector3d& pos, const Vector3d& theta, Matrix4d& mat);
+void Matrix4ToEuler(const Matrix4d mat, Vector3d& rPosTheta, Vector3d& rPos);
 
 GraphSlam::GraphSlam(const SlamOptions* options)
     : m_options(options)
@@ -82,25 +82,25 @@ void GraphSlam::doGraphSlam(vector<ScanPtr>& scans, int last)
         double sum_position_diff = 0.0;
 
         // Start with second Scan
-        #pragma omp parallel for reduction(+:sum_position_diff) schedule(dynamic)
+        #pragma omp parallel for reduction(+:sum_position_diff) schedule(static)
         for (int i = 1; i <= last; i++)
         {
             ScanPtr& scan = scans[i];
 
             // Now update the Poses
-            Matrix6f Ha = Matrix6f::Identity();
+            Matrix6d Ha = Matrix6d::Identity();
 
-            Matrix4f initialPose = scan->getPose();
-            Vector3f pos, theta;
+            Matrix4d initialPose = scan->getPose();
+            Vector3d pos, theta;
             Matrix4ToEuler(initialPose, theta, pos);
             if (m_options->verbose)
             {
                 cout << "Start of " << i << ": " << pos.transpose() << ", " << theta.transpose() << endl;
             }
 
-            float ctx, stx, cty, sty;
-            sincosf(theta.x(), &stx, &ctx);
-            sincosf(theta.y(), &sty, &cty);
+            double ctx, stx, cty, sty;
+            sincos(theta.x(), &stx, &ctx);
+            sincos(theta.y(), &sty, &cty);
 
             // Fill Ha
             Ha(0, 4) = -pos.z() * ctx + pos.y() * stx;
@@ -124,12 +124,12 @@ void GraphSlam::doGraphSlam(vector<ScanPtr>& scans, int last)
             Ha(5, 5) = -stx * cty;
 
             // Correct pose estimate
-            Vector6f result = Ha.inverse() * X.block<6, 1>((i - 1) * 6, 0);
+            Vector6d result = Ha.inverse() * X.block<6, 1>((i - 1) * 6, 0);
 
             // Update the Pose
             pos -= result.block<3, 1>(0, 0);
             theta -= result.block<3, 1>(3, 0);
-            Matrix4f transform;
+            Matrix4d transform;
             EulerToMatrix4(pos, theta, transform);
 
             if (m_options->verbose)
@@ -169,7 +169,13 @@ void GraphSlam::fillEquation(const vector<ScanPtr>& scans, GraphMatrix& mat, Gra
     mat.setZero();
     vec.setZero();
 
-    map<pair<int, int>, Matrix6f> result;
+    for (auto& scan : scans)
+    {
+        // apply previous transformations
+        scan->points();
+    }
+
+    vector<pair<Matrix6d, Vector6d>> coeff(m_graph.size());
 
     #pragma omp parallel for schedule(dynamic)
     for (size_t i = 0; i < m_graph.size(); i++)
@@ -180,84 +186,119 @@ void GraphSlam::fillEquation(const vector<ScanPtr>& scans, GraphMatrix& mat, Gra
         ScanPtr firstScan  = scans[a];
         ScanPtr secondScan = scans[b];
 
-        Matrix6f coeffMat;
-        Vector6f coeffVec;
+        Matrix6d coeffMat;
+        Vector6d coeffVec;
         eulerCovariance(firstScan, secondScan, coeffMat, coeffVec);
 
-        #pragma omp critical
+        coeff[i] = make_pair(coeffMat, coeffVec);
+    }
+
+    map<pair<int, int>, Matrix6d> result;
+
+    for (size_t i = 0; i < m_graph.size(); i++)
+    {
+        int a, b;
+        std::tie(a, b) = m_graph[i];
+
+        Matrix6d coeffMat;
+        Vector6d coeffVec;
+        std::tie(coeffMat, coeffVec) = coeff[i];
+
+        // first scan is not part of Matrix => ignore any a or b of 0
+
+        int offsetA = (a - 1) * 6;
+        int offsetB = (b - 1) * 6;
+
+        if (offsetA >= 0)
         {
-            // first scan is not part of Matrix => ignore any a or b of 0
-
-            int offsetA = (a - 1) * 6;
-            int offsetB = (b - 1) * 6;
-
-            if (offsetA >= 0)
+            vec.block<6, 1>(offsetA, 0) += coeffVec;
+            auto key = make_pair(offsetA, offsetA);
+            auto found = result.find(key);
+            if (found == result.end())
             {
-                vec.block<6, 1>(offsetA, 0) += coeffVec;
-                auto key = make_pair(offsetA, offsetA);
-                if (result.find(key) == result.end())
-                {
-                    result.insert(make_pair(key, Matrix6f::Zero()));
-                }
-                result[key] += coeffMat;
+                result.insert(make_pair(key, coeffMat));
             }
-            if (offsetB >= 0)
+            else
             {
-                vec.block<6, 1>(offsetB, 0) -= coeffVec;
-                auto key = make_pair(offsetB, offsetB);
-                if (result.find(key) == result.end())
-                {
-                    result.insert(make_pair(key, Matrix6f::Zero()));
-                }
-                result[key] += coeffMat;
+                found->second += coeffMat;
             }
-            if (offsetA >= 0 && offsetB >= 0)
+        }
+        if (offsetB >= 0)
+        {
+            vec.block<6, 1>(offsetB, 0) -= coeffVec;
+            auto key = make_pair(offsetB, offsetB);
+            auto found = result.find(key);
+            if (found == result.end())
             {
-                auto key = make_pair(offsetA, offsetB);
-                auto key2 = make_pair(offsetB, offsetA);
-                if (result.find(key) == result.end())
-                {
-                    result.insert(make_pair(key, Matrix6f::Zero()));
-                }
-                if (result.find(key2) == result.end())
-                {
-                    result.insert(make_pair(key2, Matrix6f::Zero()));
-                }
-                result[key] -= coeffMat;
-                result[key2] -= coeffMat;
+                result.insert(make_pair(key, coeffMat));
+            }
+            else
+            {
+                found->second += coeffMat;
+            }
+        }
+        if (offsetA >= 0 && offsetB >= 0)
+        {
+            auto key = make_pair(offsetA, offsetB);
+            auto found = result.find(key);
+            if (found == result.end())
+            {
+                result.insert(make_pair(key, -coeffMat));
+            }
+            else
+            {
+                found->second -= coeffMat;
+            }
+
+            key = make_pair(offsetB, offsetA);
+            found = result.find(key);
+            if (found == result.end())
+            {
+                result.insert(make_pair(key, -coeffMat));
+            }
+            else
+            {
+                found->second -= coeffMat;
             }
         }
     }
 
-    mat.reserve(result.size() * 6 * 6);
+    vector<Triplet<double>> triplets;
+    triplets.reserve(result.size() * 6 * 6);
+
     int x, y;
     for (auto& e : result)
     {
         tie(x, y) = e.first;
-        Matrix6f& m = e.second;
+        Matrix6d& m = e.second;
         for (int dx = 0; dx < 6; dx++)
         {
             for (int dy = 0; dy < 6; dy++)
             {
-                mat.insert(x + dx, y + dy) = m(dx, dy);
+                triplets.push_back(Triplet<double>(x + dx, y + dy, m(dx, dy)));
             }
         }
     }
+    mat.setFromTriplets(triplets.begin(), triplets.end());
 }
 
-void GraphSlam::eulerCovariance(ScanPtr a, ScanPtr b, Matrix6f& outMat, Vector6f& outVec) const
+void GraphSlam::eulerCovariance(ScanPtr a, ScanPtr b, Matrix6d& outMat, Vector6d& outVec) const
 {
     size_t n = b->count();
 
-    auto tree = KDTree::create(a->points(), a->count(), m_options->maxLeafSize);
-    Vector3f* points = b->points();
+    Vector3f* a_points = new Vector3f[a->count()];
+    std::copy_n(a->points(), a->count(), a_points);
+
     Vector3f** results = new Vector3f*[n];
+
+    auto tree = KDTree::create(a_points, a->count(), m_options->maxLeafSize);
+    Vector3f* points = b->points();
     size_t pairs = getNearestNeighbors(tree, points, results, n, m_options->slamMaxDistance);
 
-    Vector6f mz = Vector6f::Zero();
-    Vector3f sum = Vector3f::Zero();
-    float xy, yz, xz, ypz, xpz, xpy;
-    xy = yz = xz = ypz = xpz = xpy = 0.0f;
+    Vector6d mz = Vector6d::Zero();
+    Vector3d sum = Vector3d::Zero();
+    double xy, yz, xz, ypz, xpz, xpy;
+    xy = yz = xz = ypz = xpz = xpy = 0.0;
 
     for (size_t i = 0; i < n; i++)
     {
@@ -265,10 +306,14 @@ void GraphSlam::eulerCovariance(ScanPtr a, ScanPtr b, Matrix6f& outMat, Vector6f
         {
             continue;
         }
-        Vector3f mid = (points[i] + *results[i]) / 2.0f;
-        Vector3f d = *results[i] - points[i];
 
-        float x = mid.x(), y = mid.y(), z = mid.z();
+        Vector3d p = points[i].cast<double>();
+        Vector3d r = results[i]->cast<double>();
+
+        Vector3d mid = (p + r) / 2.0;
+        Vector3d d = r - p;
+
+        double x = mid.x(), y = mid.y(), z = mid.z();
 
         sum += mid;
 
@@ -287,7 +332,7 @@ void GraphSlam::eulerCovariance(ScanPtr a, ScanPtr b, Matrix6f& outMat, Vector6f
         mz(5) += z * d.x() - x * d.z();
     }
 
-    Matrix6f mm = Matrix6f::Zero();
+    Matrix6d mm = Matrix6d::Zero();
     mm(0, 0) = mm(1, 1) = mm(2, 2) = pairs;
     mm(3, 3) = ypz;
     mm(4, 4) = xpy;
@@ -304,9 +349,9 @@ void GraphSlam::eulerCovariance(ScanPtr a, ScanPtr b, Matrix6f& outMat, Vector6f
     mm(3, 5) = mm(5, 3) = -xy;
     mm(4, 5) = mm(5, 4) = -yz;
 
-    Vector6f d = mm.inverse() * mz;
+    Vector6d d = mm.inverse() * mz;
 
-    float ss = 0.0f;
+    double ss = 0.0;
 
     for (size_t i = 0; i < n; i++)
     {
@@ -315,34 +360,38 @@ void GraphSlam::eulerCovariance(ScanPtr a, ScanPtr b, Matrix6f& outMat, Vector6f
             continue;
         }
 
-        Vector3f mid = (points[i] + *results[i]) / 2.0f;
-        Vector3f delta = *results[i] - points[i];
+        Vector3d p = points[i].cast<double>();
+        Vector3d r = results[i]->cast<double>();
 
-        ss += powf(delta.x() + (d(0) - mid.y() * d(4) + mid.z() * d(5)), 2.0f)
-              + powf(delta.y() + (d(1) - mid.z() * d(3) + mid.x() * d(4)), 2.0f)
-              + powf(delta.z() + (d(2) + mid.y() * d(3) - mid.x() * d(5)), 2.0f);
+        Vector3d mid = (p + r) / 2.0;
+        Vector3d delta = r - p;
+
+        ss += pow(delta.x() + (d(0) - mid.y() * d(4) + mid.z() * d(5)), 2.0)
+              + pow(delta.y() + (d(1) - mid.z() * d(3) + mid.x() * d(4)), 2.0)
+              + pow(delta.z() + (d(2) + mid.y() * d(3) - mid.x() * d(5)), 2.0);
     }
 
-    delete results;
+    delete[] results;
+    delete[] a_points;
 
-    ss = ss / (2.0f * pairs - 3.0f);
+    ss = ss / (2.0 * pairs - 3.0);
 
-    ss = 1.0f / ss;
+    ss = 1.0 / ss;
 
     outMat = mm * ss;
     outVec = mz * ss;
 }
 
-void EulerToMatrix4(const Vector3f& pos,
-                    const Vector3f& theta,
-                    Matrix4f& mat)
+void EulerToMatrix4(const Vector3d& pos,
+                    const Vector3d& theta,
+                    Matrix4d& mat)
 {
-    float sx = sinf(theta[0]);
-    float cx = cosf(theta[0]);
-    float sy = sinf(theta[1]);
-    float cy = cosf(theta[1]);
-    float sz = sinf(theta[2]);
-    float cz = cosf(theta[2]);
+    double sx = sin(theta[0]);
+    double cx = cos(theta[0]);
+    double sy = sin(theta[1]);
+    double cy = cos(theta[1]);
+    double sz = sin(theta[2]);
+    double cz = cos(theta[2]);
 
     mat << cy* cz,
         sx* sy* cz + cx* sz,
@@ -366,37 +415,37 @@ void EulerToMatrix4(const Vector3f& pos,
     mat.transposeInPlace();
 }
 
-void Matrix4ToEuler(const Matrix4f inputMat,
-                    Vector3f& rPosTheta,
-                    Vector3f& rPos)
+void Matrix4ToEuler(const Matrix4d inputMat,
+                    Vector3d& rPosTheta,
+                    Vector3d& rPos)
 {
-    Matrix4f mat = inputMat.transpose();
+    Matrix4d mat = inputMat.transpose();
 
-    float _trX, _trY;
+    double _trX, _trY;
 
     // Calculate Y-axis angle
-    rPosTheta[1] = asinf(max(min(mat(2, 0), 1.0f), -1.0f)); // asin returns nan for any number outside [-1, 1]
+    rPosTheta[1] = asin(max(-1.0, min(1.0, mat(2, 0)))); // asin returns nan for any number outside [-1, 1]
     if (mat(0, 0) <= 0.0)
     {
         rPosTheta[1] = M_PI - rPosTheta[1];
     }
 
-    float  C    =  cosf( rPosTheta[1] );
-    if ( fabsf( C ) > 0.005 )                    // Gimbal lock?
+    double C = cos(rPosTheta[1]);
+    if (fabs( C ) > 0.005)                    // Gimbal lock?
     {
         _trX      =  mat(2, 2) / C;             // No, so get X-axis angle
         _trY      =  -mat(2, 1) / C;
-        rPosTheta[0]  = atan2f( _trY, _trX );
+        rPosTheta[0]  = atan2( _trY, _trX );
         _trX      =  mat(0, 0) / C;              // Get Z-axis angle
         _trY      = -mat(1, 0) / C;
-        rPosTheta[2]  = atan2f( _trY, _trX );
+        rPosTheta[2]  = atan2( _trY, _trX );
     }
     else                                        // Gimbal lock has occurred
     {
         rPosTheta[0] = 0.0;                       // Set X-axis angle to zero
         _trX      =  mat(1, 1);  //1                // And calculate Z-axis angle
         _trY      =  mat(0, 1);  //2
-        rPosTheta[2]  = atan2f( _trY, _trX );
+        rPosTheta[2]  = atan2( _trY, _trX );
     }
 
     rPos = inputMat.block<3, 1>(0, 3);

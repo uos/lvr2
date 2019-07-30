@@ -62,11 +62,11 @@ ICPPointAlign::ICPPointAlign(ScanPtr model, ScanPtr data) :
     m_searchTree = KDTree::create(model->points(), model->count(), m_maxLeafSize);
 }
 
-Matrix4f ICPPointAlign::match()
+Matrix4d ICPPointAlign::match()
 {
     if (m_maxIterations == 0)
     {
-        return Matrix4f::Identity();
+        return Matrix4d::Identity();
     }
 
     auto start_time = steady_clock::now();
@@ -75,10 +75,10 @@ Matrix4f ICPPointAlign::match()
     EigenSVDPointAlign align;
     int iteration = 0;
 
-    Vector3f centroid_m = Vector3f::Zero();
-    Vector3f centroid_d = Vector3f::Zero();
-    Matrix4f transform = Matrix4f::Identity();
-    Matrix4f delta = Matrix4f::Identity();
+    Vector3d centroid_m = Vector3d::Zero();
+    Vector3d centroid_d = Vector3d::Zero();
+    Matrix4d transform = Matrix4d::Identity();
+    Matrix4d delta = Matrix4d::Identity();
 
     size_t numPoints = m_dataCloud->count();
 
@@ -94,7 +94,7 @@ Matrix4f ICPPointAlign::match()
         size_t pairs = getNearestNeighbors(m_searchTree, m_dataCloud->points(), neighbors, numPoints, m_maxDistanceMatch, centroid_m, centroid_d);
 
         // Get transformation
-        transform = Matrix4f::Identity();
+        transform = Matrix4d::Identity();
         ret = align.alignPoints(m_dataCloud->points(), neighbors, numPoints, centroid_m, centroid_d, transform);
 
         // Apply transformation
@@ -113,7 +113,7 @@ Matrix4f ICPPointAlign::match()
         }
     }
 
-    delete neighbors;
+    delete[] neighbors;
 
     auto duration = steady_clock::now() - start_time;
     cout << setw(6) << (int)(duration.count() / 1e6) << " ms, ";

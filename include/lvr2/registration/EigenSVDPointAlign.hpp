@@ -37,7 +37,8 @@
 #include <vector>
 
 #include <Eigen/Dense>
-using Eigen::Matrix4f;
+using Eigen::Matrix4d;
+using Eigen::Vector3d;
 using Eigen::Vector3f;
 
 namespace lvr2
@@ -54,15 +55,15 @@ public:
         Vector3f* data,
         Vector3f** neighbors,
         size_t n,
-        const Vector3f& centroid_m,
-        const Vector3f& centroid_d,
-        Matrix4f& align);
+        const Vector3d& centroid_m,
+        const Vector3d& centroid_d,
+        Matrix4d& align);
 
     double alignPoints(
         PointPairVector& points,
-        const Vector3f& centroid_m,
-        const Vector3f& centroid_d,
-        Matrix4f& align);
+        const Vector3d& centroid_m,
+        const Vector3d& centroid_d,
+        Matrix4d& align);
 };
 
 } /* namespace lvr2 */

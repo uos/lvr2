@@ -780,9 +780,9 @@ void LVRMainWindow::alignPointClouds()
     Vector3f pos(dataPose.x, dataPose.y, dataPose.z);
     Vector3f angles(dataPose.r, dataPose.t, dataPose.p);
     angles *= M_PI / 180.0; // degrees -> radians
-    Matrix4f mat = poseToMatrix(pos, angles);
+    Matrix4d mat = poseToMatrix(pos, angles);
 
-    boost::optional<Matrix4f> correspondence = m_correspondanceDialog->getTransformation();
+    boost::optional<Matrix4d> correspondence = m_correspondanceDialog->getTransformation();
     if (correspondence.is_initialized())
     {
         mat *= correspondence.get();
@@ -804,7 +804,7 @@ void LVRMainWindow::alignPointClouds()
         pos = Vector3f(modelPose.x, modelPose.y, modelPose.z);
         angles = Vector3f(modelPose.r, modelPose.t, modelPose.p);
         angles /= 180.0 / M_PI;
-        Matrix4f modelTransform = poseToMatrix(pos, angles);
+        Matrix4d modelTransform = poseToMatrix(pos, angles);
 
         /* TODO: convert to new ICPPointAlign
 
@@ -812,7 +812,7 @@ void LVRMainWindow::alignPointClouds()
         icp.setEpsilon(m_correspondanceDialog->getEpsilon());
         icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
         icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
-        Matrix4f refinedTransform = icp.match();
+        Matrix4d refinedTransform = icp.match();
 
         matrixToPose(refinedTransform, pos, angles);
         angles *= M_PI / 180.0; // radians -> degrees

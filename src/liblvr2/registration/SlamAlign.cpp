@@ -168,7 +168,7 @@ void SlamAlign::match()
     }
 }
 
-void SlamAlign::applyTransform(ScanPtr scan, const Matrix4f& transform)
+void SlamAlign::applyTransform(ScanPtr scan, const Matrix4d& transform)
 {
     scan->transform(transform);
 
@@ -263,7 +263,7 @@ void SlamAlign::loopClose(int first, int last)
     icp.setEpsilon(m_options.epsilon);
     icp.setVerbose(m_options.verbose);
 
-    Matrix4f transform = icp.match();
+    Matrix4d transform = icp.match();
 
     cout << "Loopclose delta: " << endl << transform << endl << endl;
 
@@ -276,7 +276,7 @@ void SlamAlign::loopClose(int first, int last)
     {
         float factor = (i - first) / (float)(last - first);
 
-        Matrix4f delta = (transform - Matrix4f::Identity()) * factor + Matrix4f::Identity();
+        Matrix4d delta = (transform - Matrix4d::Identity()) * factor + Matrix4d::Identity();
 
         m_scans[i]->transform(delta, true, ScanUse::LOOPCLOSE);
     }
