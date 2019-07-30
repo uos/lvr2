@@ -8,6 +8,21 @@ void VariantChannelMap<T...>::add(const std::string& name, Channel<U> channel)
     this->insert({name, channel});
 }
 
+
+template<typename... T>
+template<typename U>
+void VariantChannelMap<T...>::add(const std::string& name)
+{
+    this->insert({name, Channel<U>(0,0)});
+}
+
+template<typename... T>
+template<typename U>
+void VariantChannelMap<T...>::add(const std::string& name, size_t numElements, size_t width)
+{
+    this->insert({name, Channel<U>(numElements, width)});
+}
+
 template<typename... T>
 template<typename U>
 Channel<U>& VariantChannelMap<T...>::get(const std::string& name)

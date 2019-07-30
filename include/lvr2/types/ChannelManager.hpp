@@ -607,6 +607,17 @@ public:
         return getAtomic<int>(name);
     }
 
+    template<typename V>
+    ChannelManager manipulate(V visitor)
+    {
+        ChannelManager cm;
+        for(auto vchannel: *this)
+        {
+            cm.insert({vchannel.first, boost::apply_visitor(visitor, vchannel.second)});
+        }
+        return cm;
+    }
+
 
 };
 

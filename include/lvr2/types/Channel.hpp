@@ -23,6 +23,8 @@ public:
     Channel();
     Channel(size_t n, size_t width);
     Channel(size_t n, size_t width, DataPtr ptr);
+    // Copy constructor
+    Channel(const Channel<T>& other);
 
     ElementProxy<T> operator[](const unsigned& idx);
 
