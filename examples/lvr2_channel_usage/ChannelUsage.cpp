@@ -313,6 +313,17 @@ void manipulatorUsage()
     std::cout << "Random Sampled:" << std::endl;
     std::cout << cm_sampled << std::endl;
 
+    BaseBuffer cm_sliced_shallow = cm.manipulate(manipulators::SliceShallow(10, 100));
+
+    // test shallow
+    Channel<float> pts3 = cm_sliced_shallow.get<float>("points");
+    pts3[0][0] = 42.0;
+    Channel<float> pts4 = cm.get<float>("points");
+    std::cout << "  should be 42: " << pts4[10][0] << std::endl;
+
+
+
+    // clone
     BaseBuffer cm2 = cm.clone();
 
     Channel<float> pts = cm.get<float>("points");
