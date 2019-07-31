@@ -52,7 +52,7 @@ public:
     virtual ~SlamAlign() = default;
 
     void addScan(const ScanPtr& scan, bool match = false);
-    ScanPtr getScan(int index);
+    ScanPtr getScan(size_t index);
 
     void match();
 
@@ -64,11 +64,13 @@ protected:
     void reduceScan(const ScanPtr& scan);
 
     void applyTransform(ScanPtr scan, const Matrix4d& transform);
-    void addFrame(ScanPtr current);
-    void checkLoopClose(int last);
-    void loopClose(int first, int last);
-    void graphSlam(int last);
-    void findCloseScans(int scan, vector<int>& output);
+
+    void createMetascan();
+
+    void checkLoopClose(size_t last);
+    void loopClose(size_t first, size_t last);
+    void graphSlam(size_t last);
+    bool findCloseScans(size_t scan, vector<size_t>& output);
 
     SlamOptions             m_options;
 

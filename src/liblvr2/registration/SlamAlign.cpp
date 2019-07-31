@@ -80,7 +80,7 @@ void SlamAlign::addScan(const ScanPtr& scan, bool match)
     }
 }
 
-ScanPtr SlamAlign::getScan(int index)
+ScanPtr SlamAlign::getScan(size_t index)
 {
     return m_scans[index];
 }
@@ -117,7 +117,7 @@ void SlamAlign::match()
 
     if (m_options.metascan && !m_metascan)
     {
-        m_metascan = ScanPtr(new Scan(*m_scans[0]));
+        createMetascan();
     }
 
     string scan_number_string = to_string(m_scans.size() - 1);
@@ -145,7 +145,7 @@ void SlamAlign::match()
         }
         else
         {
-            addFrame(cur);
+            applyTransform(cur, Matrix4d::Identity());
         }
 
         ICPPointAlign icp(prev, cur);
@@ -157,7 +157,7 @@ void SlamAlign::match()
 
         icp.match();
 
-        addFrame(cur);
+        applyTransform(cur, Matrix4d::Identity());
 
         if (m_options.metascan)
         {
@@ -186,24 +186,17 @@ void SlamAlign::applyTransform(ScanPtr scan, const Matrix4d& transform)
     }
 }
 
-void SlamAlign::addFrame(ScanPtr current)
+void SlamAlign::createMetascan()
 {
-    bool found = false;
-    for (const ScanPtr& s : m_scans)
+    m_metascan = ScanPtr(new Scan(*m_scans[0]));
+
+    for (size_t i = 1; i < m_alreadyMatched; i++)
     {
-        if (s != current)
-        {
-            s->addFrame(found ? ScanUse::INVALID : ScanUse::UNUSED);
-        }
-        else
-        {
-            s->addFrame(ScanUse::UPDATED);
-            found = true;
-        }
+        m_metascan->addScanToMeta(m_scans[i]);
     }
 }
 
-void SlamAlign::checkLoopClose(int last)
+void SlamAlign::checkLoopClose(size_t last)
 {
     if (!m_options.doLoopClosing && !m_options.doGraphSlam)
     {
@@ -214,39 +207,45 @@ void SlamAlign::checkLoopClose(int last)
 
     bool hasLoop = false;
 
-    int first = -1;
+    size_t first = 0;
 
-    vector<int> others;
-    findCloseScans(last, others);
-
-    if (!others.empty())
+    vector<size_t> others;
+    if (findCloseScans(last, others))
     {
         hasLoop = true;
-        for (int i : others)
+        first = others[0];
+
+        for (size_t i : others)
         {
             m_graph.addEdge(i, last);
         }
-
-        first = others[0];
     }
 
     if (hasLoop && m_options.doLoopClosing)
     {
         loopClose(first, last);
+        if (m_options.metascan)
+        {
+            createMetascan();
+        }
     }
 
     // wait for falling edge
     if (m_foundLoop && !hasLoop && m_options.doGraphSlam)
     {
         graphSlam(last);
+        if (m_options.metascan)
+        {
+            createMetascan();
+        }
     }
 
     m_foundLoop = hasLoop;
 }
 
-void SlamAlign::loopClose(int first, int last)
+void SlamAlign::loopClose(size_t first, size_t last)
 {
-    cout << "LOOPCLOSE!!!!" << first << " -> " << last << endl;
+    cout << "Loopclose " << first << " -> " << last << endl;
 
     ScanPtr metaFirst = make_shared<Scan>(*m_scans[first]);
     metaFirst->addScanToMeta(m_scans[first + 1]);
@@ -267,12 +266,7 @@ void SlamAlign::loopClose(int first, int last)
 
     cout << "Loopclose delta: " << endl << transform << endl << endl;
 
-    // TODO: Calculate Covariance
-    // TODO: Emulate graph_balancer
-    // TODO: Calculate weights
-    // TODO: Transform based on weights
-
-    for (int i = first; i <= last; i++)
+    for (size_t i = first; i <= last; i++)
     {
         float factor = (i - first) / (float)(last - first);
 
@@ -282,22 +276,22 @@ void SlamAlign::loopClose(int first, int last)
     }
 
     // Add frame to unaffected scans
-    for (int i = 0; i < first; i++)
+    for (size_t i = 0; i < first; i++)
     {
         m_scans[i]->addFrame();
     }
-    for (int i = last + 1; i < m_scans.size(); i++)
+    for (size_t i = last + 1; i < m_scans.size(); i++)
     {
         m_scans[i]->addFrame(ScanUse::INVALID);
     }
 }
 
-void SlamAlign::graphSlam(int last)
+void SlamAlign::graphSlam(size_t last)
 {
     m_graph.doGraphSlam(m_scans, last);
 }
 
-void SlamAlign::findCloseScans(int scan, vector<int>& output)
+bool SlamAlign::findCloseScans(size_t scan, vector<size_t>& output)
 {
     ScanPtr& cur = m_scans[scan];
 
@@ -306,7 +300,7 @@ void SlamAlign::findCloseScans(int scan, vector<int>& output)
     {
         float maxDist = std::pow(m_options.closeLoopDistance, 2);
         Vector3f pos = cur->getPosition();
-        for (int other = 0; other < scan - m_options.loopSize; other++)
+        for (size_t other = 0; other < scan - m_options.loopSize; other++)
         {
             float dist = (m_scans[other]->getPosition() - pos).squaredNorm();
             if (dist < maxDist)
@@ -321,17 +315,17 @@ void SlamAlign::findCloseScans(int scan, vector<int>& output)
         auto tree = KDTree::create(cur->points(), cur->count(), m_options.maxLeafSize);
 
         size_t maxLen = 0;
-        for (int other = 0; other < scan - m_options.loopSize; other++)
+        for (size_t other = 0; other < scan - m_options.loopSize; other++)
         {
             maxLen = max(maxLen, m_scans[other]->count());
         }
 
         Vector3f** neighbors = new Vector3f*[maxLen];
 
-        for (int other = 0; other < scan - m_options.loopSize; other++)
+        for (size_t other = 0; other < scan - m_options.loopSize; other++)
         {
             const ScanPtr& scan = m_scans[other];
-            int count = getNearestNeighbors(tree, scan->points(), neighbors, scan->count(), m_options.slamMaxDistance);
+            size_t count = getNearestNeighbors(tree, scan->points(), neighbors, scan->count(), m_options.slamMaxDistance);
 
             if (count >= m_options.closeLoopPairs)
             {
@@ -341,6 +335,8 @@ void SlamAlign::findCloseScans(int scan, vector<int>& output)
 
         delete[] neighbors;
     }
+
+    return !output.empty();
 }
 
 } /* namespace lvr2 */
