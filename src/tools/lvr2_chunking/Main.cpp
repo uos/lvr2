@@ -67,8 +67,7 @@ int main(int argc, char** argv)
 
     float size = options.getChunkSize();
 
-    lvr2::ChunkManager chunker(model);
-    chunker.chunk(size, outputPath.string());
+    lvr2::ChunkManager chunker(model, size, outputPath.string());
 
     return EXIT_SUCCESS;
 }

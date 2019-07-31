@@ -26,29 +26,68 @@
  */
 
 /**
- * Chunk.cpp
+ * ChunkBuilder.cpp
  *
- * @date 
- * @author 
+ * @date 21.07.2019
+ * @author Malte kl. Piening
  */
 
-#include "lvr2/algorithm/Chunk.hpp"
+#include "lvr2/algorithm/ChunkBuilder.hpp"
 
 namespace lvr2
 {
-    
-Chunk::Chunk(lvr2::ModelPtr originalModel, std::vector<unsigned int> faces, unsigned int numVertices) 
-:m_originalModel(originalModel),
-m_numVertices(numVertices),
-m_faces(faces)
+
+ChunkBuilder::ChunkBuilder(unsigned int id, lvr2::ModelPtr originalModel, boost::shared_array<std::shared_ptr<std::vector<unsigned int>>> vertexUse) :
+    m_id(id),
+    m_originalModel(originalModel),
+    m_vertexUse(vertexUse)
+{
+
+}
+
+ChunkBuilder::~ChunkBuilder()
+{
+
+}
+
+void ChunkBuilder::addFace(unsigned int index)
+{
+    // add the original index of the face to the chunk with its chunkID
+    m_faces.push_back(index);
+
+    // next add the vertices of the face to the chunk
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        // if the chunk has not been initialized, we make a vector to store the vertex indices
+        if (m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]] == nullptr)
+        {
+            m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]] = std::shared_ptr<std::vector<unsigned int>>(new std::vector<unsigned int>);
+        }
+
+        // if the vertex is not in the vector, we add the vertex (we just mark the vertex by adding the chunkID)
+        if(std::find(m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]]->begin(), m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]]->end(), m_id) == m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]]->end())
+        {
+            m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]]->push_back(m_id);
+            m_numVertices++;
+        }
+    }
+}
+
+unsigned int ChunkBuilder::numFaces()
+{
+    return m_faces.size();
+}
+
+lvr2::ModelPtr ChunkBuilder::buildMesh()
 {
     std::unordered_map<unsigned int, unsigned int> vertexIndices;
 
-    m_vertices = lvr2::floatArr(new float[m_numVertices * 3]);
-    m_faceIndices = lvr2::indexArray(new unsigned int[faces.size() * 3]);
+    lvr2::floatArr vertices(new float[m_numVertices * 3]);
+    lvr2::indexArray faceIndices(new unsigned int[m_faces.size() * 3]);
 
+    // fill new vertex and face buffer
     unsigned int faceIndexCnt = 0;
-    for (unsigned int faceIndex : faces)
+    for (unsigned int faceIndex : m_faces)
     {
         for (uint8_t i = 0; i < 3; i++)
         {
@@ -58,39 +97,23 @@ m_faces(faces)
 
                 for (uint8_t j = 0; j < 3; j++)
                 {
-                    m_vertices[vertexIndices[m_originalModel->m_mesh->getFaceIndices()[faceIndex * 3 + i]] * 3 + j]
+                    vertices[vertexIndices[m_originalModel->m_mesh->getFaceIndices()[faceIndex * 3 + i]] * 3 + j]
                             = m_originalModel->m_mesh->getVertices()[m_originalModel->m_mesh->getFaceIndices()[faceIndex * 3 + i] * 3 + j];
                 }
             }
 
-            m_faceIndices[faceIndexCnt * 3 + i] = vertexIndices[m_originalModel->m_mesh->getFaceIndices()[faceIndex * 3 + i]];
+            faceIndices[faceIndexCnt * 3 + i] = vertexIndices[m_originalModel->m_mesh->getFaceIndices()[faceIndex * 3 + i]];
         }
         faceIndexCnt++;
     }
-}
 
-Chunk::~Chunk()
-{
-
-}
-
-lvr2::indexArray Chunk::getFaceIndices()
-{
-    return m_faceIndices;
-}
-lvr2::floatArr Chunk::getVertices()
-{
-    return m_vertices;
-}
-
-lvr2::ModelPtr Chunk::getModel()
-{
+    // build new model from newly created buffers
     lvr2::ModelPtr model(new lvr2::Model(lvr2::MeshBufferPtr(new lvr2::MeshBuffer)));
 
-    model->m_mesh->setVertices(m_vertices, m_numVertices);
-    model->m_mesh->setFaceIndices(m_faceIndices, m_faces.size());
+    model->m_mesh->setVertices(vertices, vertexIndices.size());
+    model->m_mesh->setFaceIndices(faceIndices, m_faces.size());
 
     return model;
 }
 
-} /* namespace lvr2 */
+} /* namespacd lvr2 */

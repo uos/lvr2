@@ -26,51 +26,51 @@
  */
 
 /**
- * Chunk.hpp
+ * ChunkBuilder.hpp
  *
- * @date
- * @author
+ * @date 21.07.2019
+ * @author Malte kl. Piening
  */
 
-#ifndef CHUNK_HPP
-#define CHUNK_HPP
+#ifndef CHUNK_BUILDER_HPP
+#define CHUNK_BUILDER_HPP
 
 #include "lvr2/io/Model.hpp"
+
+#include <unordered_map>
 
 namespace lvr2
 {
 
-class Chunk
+class ChunkBuilder
 {
     public:
-        Chunk(lvr2::ModelPtr originalModel, std::vector<unsigned int> faceIndices, unsigned int numVertices);
+        ChunkBuilder(unsigned int id, lvr2::ModelPtr originalModel, boost::shared_array<std::shared_ptr<std::vector<unsigned int>>> vertexUse);
 
-        ~Chunk();
+        ~ChunkBuilder();
+
+        /// add a face to this chunk
+        void addFace(unsigned int index);
 
         /// build mesh of chunk
-        lvr2::ModelPtr getModel();
+        lvr2::ModelPtr buildMesh();
 
         unsigned int numFaces();
-        lvr2::indexArray getFaceIndices();
-        lvr2::floatArr getVertices();
-
         
     private:
+        unsigned int m_id;
 
         /// model that is being chunked
         lvr2::ModelPtr m_originalModel = nullptr;
 
-        unsigned int m_numVertices;
-
-        lvr2::floatArr m_vertices;
-        lvr2::indexArray m_faceIndices;
+        unsigned int m_numVertices = 0;
 
         /// indices of faces in original model
         std::vector<unsigned int> m_faces;
 
-
+        boost::shared_array<std::shared_ptr<std::vector<unsigned int>>> m_vertexUse;
 };
 
 } /* namespace lvr2 */
 
-#endif // CHUNK_HPP
+#endif // CHUNK_BUILDER_HPP
