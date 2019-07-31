@@ -648,8 +648,6 @@ PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const size_t& n)
     std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> dist(0, numSrcPts);
- 
-    cout << numSrcPts << " / " << n << endl;
 
     // Check buffer size
     if(n <= numSrcPts)
