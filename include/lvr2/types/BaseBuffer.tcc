@@ -12,7 +12,7 @@ size_t BaseBuffer::channelWidth(const std::string& name)
 }
 
 template<typename T>
-bool BaseBuffer::hasChannel(const std::string& name)
+bool BaseBuffer::hasChannel(const std::string& name) const
 {
     auto it = this->find(name);
     if(it != this->end() && it->second.is_type<T>())
@@ -77,6 +77,20 @@ typename Channel<T>::Optional BaseBuffer::getChannel(const std::string& name)
 }
 
 template<typename T>
+const typename Channel<T>::Optional BaseBuffer::getChannel(const std::string& name) const
+{
+     typename Channel<T>::Optional ret;
+
+    auto it = this->find(name);
+    if(it != this->end() && it->second.is_type<T>())
+    {
+        ret = boost::get<Channel<T> >(it->second);
+    }
+
+    return ret;
+}
+
+template<typename T>
 ElementProxy<T> BaseBuffer::getHandle(unsigned int idx, const std::string& name)
 {
     // std::cout << "WARNING: runtime critical access [BaseBuffer::getHandle]" << std::endl;
@@ -104,7 +118,6 @@ boost::shared_array<T> BaseBuffer::getArray(
     w = 0;
     return boost::shared_array<T>();
 }
-
 
 template<typename T>
 void BaseBuffer::addAtomic(T data, const std::string& name)
