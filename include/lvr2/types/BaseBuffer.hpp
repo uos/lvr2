@@ -40,14 +40,14 @@ public:
      * @return 0 if not found, otherwise the channels width.
      */
     template<typename T>
-    size_t channelWidth(const std::string& name);
+    size_t channelWidth(const std::string& name) const;
 
     /**
      * @brief Gets an uchar channels width.
      * @param[in] name Key of the channel.
      * @return 0 if not found, otherwise the channels width.
      */
-    inline size_t ucharChannelWidth(const std::string& name)
+    inline size_t ucharChannelWidth(const std::string& name) const
     {
         return channelWidth<unsigned char>(name);
     }
@@ -57,7 +57,7 @@ public:
      * @param[in] name Key of the channel.
      * @return 0 if not found, otherwise the channels width.
      */
-    inline size_t floatChannelWidth(const std::string& name)
+    inline size_t floatChannelWidth(const std::string& name) const
     {
         return channelWidth<float>(name);
     }
@@ -67,7 +67,7 @@ public:
      * @param[in] name Key of the channel.
      * @return 0 if not found, otherwise the channels width.
      */
-    inline size_t indexChannelWidth(const std::string& name)
+    inline size_t indexChannelWidth(const std::string& name) const
     {
         return channelWidth<unsigned int>(name);
     }

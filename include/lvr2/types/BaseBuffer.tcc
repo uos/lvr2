@@ -1,7 +1,7 @@
 namespace lvr2 {
 
 template<typename T>
-size_t BaseBuffer::channelWidth(const std::string& name)
+size_t BaseBuffer::channelWidth(const std::string& name) const
 {
     auto it = this->find(name);
     if(it != this->end() && it->second.is_type<T>())
@@ -65,29 +65,13 @@ bool BaseBuffer::removeChannel(const std::string& name)
 template<typename T>
 typename Channel<T>::Optional BaseBuffer::getChannel(const std::string& name)
 {
-    typename Channel<T>::Optional ret;
-
-    auto it = this->find(name);
-    if(it != this->end() && it->second.is_type<T>())
-    {
-        ret = boost::get<Channel<T> >(it->second);
-    }
-
-    return ret;
+    return getOptional<T>(name);
 }
 
 template<typename T>
 const typename Channel<T>::Optional BaseBuffer::getChannel(const std::string& name) const
 {
-     typename Channel<T>::Optional ret;
-
-    auto it = this->find(name);
-    if(it != this->end() && it->second.is_type<T>())
-    {
-        ret = boost::get<Channel<T> >(it->second);
-    }
-
-    return ret;
+    return getOptional<T>(name);
 }
 
 template<typename T>
