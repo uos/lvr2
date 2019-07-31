@@ -8,6 +8,7 @@
 #include <Eigen/Dense>
 
 #include "Timestamp.hpp"
+#include "PointBuffer.hpp"
 
 namespace lvr2
 {
@@ -36,6 +37,7 @@ public:
     void setTargetSize(const size_t& size);
 
     void parseDirectory();
+    PointBufferPtr subSample();
 
     ~ScanDirectoryParser() = default;
 

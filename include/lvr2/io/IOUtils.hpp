@@ -39,6 +39,7 @@
 #include <fstream>
 #include <vector>
 
+
 namespace lvr2
 {
 
@@ -270,6 +271,8 @@ Eigen::Matrix4d inverseTransform(const Eigen::Matrix4d& transform);
  * @return size_t               Number of points in examined file
  */
 size_t getNumberOfPointsInPLY(const std::string& filename);
+
+PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const size_t& n);
 
 } // namespace lvr2
 

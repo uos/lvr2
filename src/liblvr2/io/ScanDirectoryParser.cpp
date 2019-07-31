@@ -4,6 +4,7 @@
 
 #include "lvr2/io/ScanDirectoryParser.hpp"
 #include "lvr2/io/IOUtils.hpp"
+#include "lvr2/io/ModelFactory.hpp"
 
 using namespace boost::filesystem;
 
@@ -91,6 +92,29 @@ Eigen::Matrix4d ScanDirectoryParser::getPose(const Path& poseFile)
     }
     
     return Eigen::Matrix4d::Identity();
+}
+
+PointBufferPtr ScanDirectoryParser::subSample()
+{
+    ModelPtr out_model(new Model);
+    for(auto i : m_scans)
+    {
+        ModelPtr model = ModelFactory::readModel(i.m_filename);
+        if(model)
+        {
+            PointBufferPtr buffer = model->m_pointCloud;
+            if(buffer)
+            {
+                PointBufferPtr reduced = subSamplePointBuffer(buffer, 1000000);
+                out_model->m_pointCloud = reduced;
+
+                Path p(i.m_filename);
+                std::stringstream name_stream;
+                name_stream << p.stem().string() << "_reduced" << ".ply";
+                ModelFactory::saveModel(out_model, name_stream.str());
+            }
+        }
+    }
 }
 
 void ScanDirectoryParser::parseDirectory()

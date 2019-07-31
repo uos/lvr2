@@ -25,6 +25,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <random>
+#include <ctime> 
+#include <unordered_set>
+
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 namespace lvr2
@@ -596,6 +600,89 @@ size_t getNumberOfPointsInPLY(const std::string& filename)
         
     }
     return 0;
+}
+
+template<typename T>
+typename Channel<T>::Ptr subSampleChannel(Channel<T>& src, std::vector<size_t> ids)
+{
+    // Create smaller channel of same type
+    size_t width = src.width();
+    typename Channel<T>::Ptr red(new Channel<T>(ids.size(), width));
+
+    // Sample from original and insert into reduced 
+    // channel
+    for(size_t i = 0; i < ids.size(); i++)
+    {
+        for(size_t j = 0; j < red->width(); j++)
+        {
+            (*red)[width * i + j] = src[ids[i] * width + j];
+        }
+    }
+    return red;
+}
+
+template<typename T>
+void subsample(PointBufferPtr src, PointBufferPtr dst, vector<size_t>& indices)
+{
+    // Go over all supported channel types and sub-sample
+    vector<std::pair<std::string, Channel<T>>> channels;
+    src->getAllChannelsOfType(channels);      
+    for(auto i : channels)
+    {
+        std::cout << timestamp << "Subsampling channel " << i.first << std::endl;
+        typename Channel<T>::Ptr c = subSampleChannel(i.second, indices);
+        dst->addChannel<T>(c, i.first);
+    }
+
+}
+
+PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const size_t& n)
+{
+    // Buffer for reduced points
+    PointBufferPtr buffer(new PointBuffer);
+    size_t numSrcPts = src->numPoints();
+    
+    // Setup random device and distribution
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist(0, numSrcPts);
+ 
+    cout << numSrcPts << " / " << n << endl;
+
+    // Check buffer size
+    if(n <= numSrcPts)
+    {
+        // Create index buffer for sub-sampling, using set to avoid duplicates
+        std::unordered_set<size_t> index_set;
+        while(index_set.size() < n)
+        {   
+            index_set.insert(dist(rng));
+        }
+
+        // Copy indices into vector for faster access and []-operator support
+        //.In c++14 this is the fastest way. In C++17 a better alternative 
+        // would be to use extract().
+        vector<size_t> indices;
+        indices.insert(indices.end(), index_set.begin(), index_set.end());
+        index_set.clear();
+
+        // Go over all supported channel types and sub-sample
+        subsample<char>(src, buffer, indices);
+        subsample<unsigned char>(src, buffer, indices);
+        subsample<short>(src, buffer, indices);
+        subsample<int>(src, buffer, indices);
+        subsample<unsigned int>(src, buffer, indices);
+        subsample<float>(src, buffer, indices);
+        subsample<double>(src, buffer, indices);
+    }
+    else
+    {
+        std::cout << timestamp << "Sub-sampling not possible. Number of sampling points is " << std::endl;
+        std::cout << timestamp << "larger than number in src buffer. (" << n << " / " << numSrcPts << ")" << std::endl;
+    }
+    
+
+    return buffer;
 }
 
 } // namespace lvr2

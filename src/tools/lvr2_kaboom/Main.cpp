@@ -583,6 +583,7 @@ int main(int argc, char** argv) {
     parser.setEnd(options->getEnd());
     parser.parseDirectory();
 
+    PointBufferPtr result = parser.subSample();
 
     delete options;
     return 0;

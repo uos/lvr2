@@ -52,6 +52,9 @@ public:
         return boost::apply_visitor(DataPtrVisitor<type_of_index<N> >(), *this);
     }
 
+    template<typename U>
+    Channel<U>& channel();
+
     /**
      * @brief Get type index of a map entry
      * 
@@ -114,6 +117,25 @@ protected:
         {
             throw std::invalid_argument("tried to get wrong type of channel");
             return boost::shared_array<U>();
+        }
+    };
+
+    template<typename U>
+    struct ChannelVisitor : public boost::static_visitor<Channel<U> >
+    {
+        template<typename V,
+                std::enable_if_t<std::is_same<U, V>::value, int> = 0>
+        Channel<U> operator()(const Channel<V>& channel) const
+        {
+            return channel;
+        }
+
+        template<typename V,
+                std::enable_if_t<!std::is_same<U, V>::value, int> = 0>
+        Channel<U> operator()(const Channel<V>& channel) const
+        {
+            throw std::invalid_argument("tried to get wrong type of channel");
+            return Channel<U>();
         }
     };
 
