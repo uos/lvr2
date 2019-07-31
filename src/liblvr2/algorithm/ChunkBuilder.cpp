@@ -37,7 +37,7 @@
 namespace lvr2
 {
 
-ChunkBuilder::ChunkBuilder(unsigned int id, lvr2::ModelPtr originalModel, boost::shared_array<std::shared_ptr<std::vector<unsigned int>>> vertexUse) :
+ChunkBuilder::ChunkBuilder(unsigned int id, lvr2::ModelPtr originalModel, std::shared_ptr<std::vector<std::vector<unsigned int>>> vertexUse) :
     m_id(id),
     m_originalModel(originalModel),
     m_vertexUse(vertexUse)
@@ -58,16 +58,12 @@ void ChunkBuilder::addFace(unsigned int index)
     // next add the vertices of the face to the chunk
     for (uint8_t i = 0; i < 3; i++)
     {
-        // if the chunk has not been initialized, we make a vector to store the vertex indices
-        if (m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]] == nullptr)
-        {
-            m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]] = std::shared_ptr<std::vector<unsigned int>>(new std::vector<unsigned int>);
-        }
-
         // if the vertex is not in the vector, we add the vertex (we just mark the vertex by adding the chunkID)
-        if(std::find(m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]]->begin(), m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]]->end(), m_id) == m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]]->end())
+        if(std::find(m_vertexUse->at(m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]).begin(),
+                     m_vertexUse->at(m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]).end(), m_id)
+                == m_vertexUse->at(m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]).end())
         {
-            m_vertexUse[m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]]->push_back(m_id);
+            m_vertexUse->at(m_originalModel->m_mesh->getFaceIndices()[index * 3 + i]).push_back(m_id);
             m_numVertices++;
         }
     }
@@ -78,7 +74,7 @@ unsigned int ChunkBuilder::numFaces()
     return m_faces.size();
 }
 
-lvr2::ModelPtr ChunkBuilder::buildMesh()
+lvr2::MeshBufferPtr ChunkBuilder::buildMesh()
 {
     std::unordered_map<unsigned int, unsigned int> vertexIndices;
 
@@ -108,12 +104,12 @@ lvr2::ModelPtr ChunkBuilder::buildMesh()
     }
 
     // build new model from newly created buffers
-    lvr2::ModelPtr model(new lvr2::Model(lvr2::MeshBufferPtr(new lvr2::MeshBuffer)));
+    lvr2::MeshBufferPtr mesh(new lvr2::MeshBuffer);
 
-    model->m_mesh->setVertices(vertices, vertexIndices.size());
-    model->m_mesh->setFaceIndices(faceIndices, m_faces.size());
+    mesh->setVertices(vertices, vertexIndices.size());
+    mesh->setFaceIndices(faceIndices, m_faces.size());
 
-    return model;
+    return mesh;
 }
 
 } /* namespacd lvr2 */
