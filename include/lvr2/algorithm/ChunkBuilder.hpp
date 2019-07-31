@@ -45,7 +45,7 @@ namespace lvr2
 class ChunkBuilder
 {
     public:
-        ChunkBuilder(unsigned int id, lvr2::ModelPtr originalModel, boost::shared_array<std::shared_ptr<std::vector<unsigned int>>> vertexUse);
+        ChunkBuilder(unsigned int id, lvr2::ModelPtr originalModel, std::shared_ptr<std::vector<std::vector<unsigned int>>> vertexUse);
 
         ~ChunkBuilder();
 
@@ -53,7 +53,7 @@ class ChunkBuilder
         void addFace(unsigned int index);
 
         /// build mesh of chunk
-        lvr2::ModelPtr buildMesh();
+        lvr2::MeshBufferPtr buildMesh();
 
         unsigned int numFaces();
         
@@ -68,7 +68,7 @@ class ChunkBuilder
         /// indices of faces in original model
         std::vector<unsigned int> m_faces;
 
-        boost::shared_array<std::shared_ptr<std::vector<unsigned int>>> m_vertexUse;
+        std::shared_ptr<std::vector<std::vector<unsigned int>>> m_vertexUse;
 };
 
 } /* namespace lvr2 */
