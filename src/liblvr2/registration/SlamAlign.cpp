@@ -203,22 +203,14 @@ void SlamAlign::checkLoopClose(size_t last)
         return;
     }
 
-    m_graph.addEdge(last - 1, last);
-
     bool hasLoop = false;
-
     size_t first = 0;
 
     vector<size_t> others;
-    if (findCloseScans(last, others))
+    if (findCloseScans(m_scans, last, m_options, others))
     {
         hasLoop = true;
         first = others[0];
-
-        for (size_t i : others)
-        {
-            m_graph.addEdge(i, last);
-        }
     }
 
     if (hasLoop && m_options.doLoopClosing)
@@ -291,52 +283,14 @@ void SlamAlign::graphSlam(size_t last)
     m_graph.doGraphSlam(m_scans, last);
 }
 
-bool SlamAlign::findCloseScans(size_t scan, vector<size_t>& output)
+void SlamAlign::finish()
 {
-    ScanPtr& cur = m_scans[scan];
+    match();
 
-    // closeLoopPairs not specified => use closeLoopDistance
-    if (m_options.closeLoopPairs < 0)
+    if (m_options.doGraphSlam)
     {
-        float maxDist = std::pow(m_options.closeLoopDistance, 2);
-        Vector3f pos = cur->getPosition();
-        for (size_t other = 0; other < scan - m_options.loopSize; other++)
-        {
-            float dist = (m_scans[other]->getPosition() - pos).squaredNorm();
-            if (dist < maxDist)
-            {
-                output.push_back(other);
-            }
-        }
+        graphSlam(m_scans.size() - 1);
     }
-    else
-    {
-        // convert current Scan to KDTree for Pair search
-        auto tree = KDTree::create(cur->points(), cur->count(), m_options.maxLeafSize);
-
-        size_t maxLen = 0;
-        for (size_t other = 0; other < scan - m_options.loopSize; other++)
-        {
-            maxLen = max(maxLen, m_scans[other]->count());
-        }
-
-        Vector3f** neighbors = new Vector3f*[maxLen];
-
-        for (size_t other = 0; other < scan - m_options.loopSize; other++)
-        {
-            const ScanPtr& scan = m_scans[other];
-            size_t count = getNearestNeighbors(tree, scan->points(), neighbors, scan->count(), m_options.slamMaxDistance);
-
-            if (count >= m_options.closeLoopPairs)
-            {
-                output.push_back(other);
-            }
-        }
-
-        delete[] neighbors;
-    }
-
-    return !output.empty();
 }
 
 } /* namespace lvr2 */

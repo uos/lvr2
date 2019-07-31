@@ -45,6 +45,55 @@ using namespace Eigen;
 namespace lvr2
 {
 
+bool findCloseScans(const vector<ScanPtr>& scans, size_t scan, const SlamOptions& options, vector<size_t>& output)
+{
+    if (scan < options.loopSize)
+    {
+        return false;
+    }
+
+    const ScanPtr& cur = scans[scan];
+
+    // closeLoopPairs not specified => use closeLoopDistance
+    if (options.closeLoopPairs < 0)
+    {
+        float maxDist = std::pow(options.closeLoopDistance, 2);
+        Vector3f pos = cur->getPosition();
+        for (size_t other = 0; other < scan - options.loopSize; other++)
+        {
+            if ((scans[other]->getPosition() - pos).squaredNorm() < maxDist)
+            {
+                output.push_back(other);
+            }
+        }
+    }
+    else
+    {
+        // convert current Scan to KDTree for Pair search
+        auto tree = KDTree::create(cur->points(), cur->count(), options.maxLeafSize);
+
+        size_t maxLen = 0;
+        for (size_t other = 0; other < scan - options.loopSize; other++)
+        {
+            maxLen = max(maxLen, scans[other]->count());
+        }
+        Vector3f** neighbors = new Vector3f*[maxLen];
+
+        for (size_t other = 0; other < scan - options.loopSize; other++)
+        {
+            size_t count = getNearestNeighbors(tree, scans[other]->points(), neighbors, scans[other]->count(), options.slamMaxDistance);
+            if (count >= options.closeLoopPairs)
+            {
+                output.push_back(other);
+            }
+        }
+
+        delete[] neighbors;
+    }
+
+    return !output.empty();
+}
+
 void EulerToMatrix4(const Vector3d& pos, const Vector3d& theta, Matrix4d& mat);
 void Matrix4ToEuler(const Matrix4d mat, Vector3d& rPosTheta, Vector3d& rPos);
 
@@ -53,29 +102,30 @@ GraphSlam::GraphSlam(const SlamOptions* options)
 {
 }
 
-void GraphSlam::addEdge(int start, int end)
-{
-    m_graph.push_back(make_pair(start, end));
-}
-
-void GraphSlam::doGraphSlam(vector<ScanPtr>& scans, int last)
+void GraphSlam::doGraphSlam(const vector<ScanPtr>& scans, size_t last)
 {
     // ignore first scan, keep last scan => n = last - 1 + 1
-    int n = last;
+    size_t n = last;
+
+    Graph graph;
+    graph.reserve(n * n / 2);
 
     GraphMatrix A(6 * n, 6 * n);
     GraphVector B(6 * n);
     GraphVector X(6 * n);
 
-    for (int iteration = 0;
+    for (size_t iteration = 0;
             iteration < m_options->slamIterations;
             iteration++)
     {
         cout << "GraphSLAM Iteration " << iteration << " of " << m_options->slamIterations << endl;
 
-        // scoped to garbage collect the Matrix
+        createGraph(scans, last, graph);
+
         // Construct the linear equation system A * X = B..
-        fillEquation(scans, A, B);
+        fillEquation(scans, last, graph, A, B);
+
+        graph.clear();
 
         X = SimplicialCholesky<GraphMatrix>().compute(A).solve(B);
 
@@ -83,9 +133,9 @@ void GraphSlam::doGraphSlam(vector<ScanPtr>& scans, int last)
 
         // Start with second Scan
         #pragma omp parallel for reduction(+:sum_position_diff) schedule(static)
-        for (int i = 1; i <= last; i++)
+        for (size_t i = 1; i <= last; i++)
         {
-            ScanPtr& scan = scans[i];
+            const ScanPtr& scan = scans[i];
 
             // Now update the Poses
             Matrix6d Ha = Matrix6d::Identity();
@@ -161,27 +211,50 @@ void GraphSlam::doGraphSlam(vector<ScanPtr>& scans, int last)
     }
 }
 
+void GraphSlam::createGraph(const vector<ScanPtr>& scans, size_t last, Graph& graph)
+{
+    graph.clear();
+
+    for (size_t i = 1; i <= last; i++)
+    {
+        graph.push_back(make_pair(i - 1, i));
+    }
+
+    vector<size_t> others;
+    for (size_t i = m_options->loopSize; i <= last; i++)
+    {
+        findCloseScans(scans, i, *m_options, others);
+
+        for (size_t other : others)
+        {
+            graph.push_back(make_pair(other, i));
+        }
+
+        others.clear();
+    }
+}
+
 /**
  * A function to fill the linear system mat * x = vec.
  */
-void GraphSlam::fillEquation(const vector<ScanPtr>& scans, GraphMatrix& mat, GraphVector& vec)
+void GraphSlam::fillEquation(const vector<ScanPtr>& scans, size_t last, const Graph& graph, GraphMatrix& mat, GraphVector& vec)
 {
     mat.setZero();
     vec.setZero();
 
-    for (auto& scan : scans)
+    for (size_t i = 0; i <= last; i++)
     {
         // apply previous transformations
-        scan->points();
+        scans[i]->points();
     }
 
-    vector<pair<Matrix6d, Vector6d>> coeff(m_graph.size());
+    vector<pair<Matrix6d, Vector6d>> coeff(graph.size());
 
     #pragma omp parallel for schedule(dynamic)
-    for (size_t i = 0; i < m_graph.size(); i++)
+    for (size_t i = 0; i < graph.size(); i++)
     {
         int a, b;
-        std::tie(a, b) = m_graph[i];
+        std::tie(a, b) = graph[i];
 
         ScanPtr firstScan  = scans[a];
         ScanPtr secondScan = scans[b];
@@ -195,10 +268,10 @@ void GraphSlam::fillEquation(const vector<ScanPtr>& scans, GraphMatrix& mat, Gra
 
     map<pair<int, int>, Matrix6d> result;
 
-    for (size_t i = 0; i < m_graph.size(); i++)
+    for (size_t i = 0; i < graph.size(); i++)
     {
         int a, b;
-        std::tie(a, b) = m_graph[i];
+        std::tie(a, b) = graph[i];
 
         Matrix6d coeffMat;
         Vector6d coeffVec;
