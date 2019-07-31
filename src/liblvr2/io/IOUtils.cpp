@@ -611,11 +611,13 @@ typename Channel<T>::Ptr subSampleChannel(Channel<T>& src, std::vector<size_t> i
 
     // Sample from original and insert into reduced 
     // channel
+    boost::shared_array<T> a(red->dataPtr());
+    boost::shared_array<T> b(src.dataPtr());
     for(size_t i = 0; i < ids.size(); i++)
     {
         for(size_t j = 0; j < red->width(); j++)
         {
-            (*red)[width * i + j] = src[ids[i] * width + j];
+            a[i * width + j] = b[ids[i] * width + j];
         }
     }
     return red;
