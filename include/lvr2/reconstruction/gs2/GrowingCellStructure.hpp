@@ -207,6 +207,8 @@ namespace lvr2{
 
         void aggressiveCutOut(VertexHandle vH);
 
+        double avgDistanceBetweenPointsInPointcloud();
+
         void coalescing();
 
 

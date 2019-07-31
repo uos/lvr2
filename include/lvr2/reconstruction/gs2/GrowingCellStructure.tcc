@@ -44,13 +44,14 @@ namespace lvr2 {
         //set pointer to mesh
         m_mesh = &mesh;
 
+        //initialize cell array.
         std::vector<Cell*>::size_type size = (unsigned long)(m_runtime*m_numSplits+4);
         cellArr.resize(size, NULL);
 
-        initTestMesh(); //init a mesh used for vertex split and edge split testing
+        //initTestMesh(); //init a mesh used for vertex split and edge split testing
 
         //get initial tetrahedron mesh
-        //getInitialMesh();
+        getInitialMesh();
 
         //progress bar
         size_t runtime_length = (size_t)((((size_t)m_runtime*(size_t)m_numSplits)
@@ -66,9 +67,9 @@ namespace lvr2 {
             {
                 for(int k = 0; k < getBasicSteps(); k++)
                 {
-                    //executeBasicStep(progress_bar);
+                    executeBasicStep(progress_bar);
                 }
-                //executeVertexSplit(); //TODO: execute vertex split after a specific number of basic steps
+                executeVertexSplit(); //TODO: execute vertex split after a specific number of basic steps
 
             }
             if(this->isWithCollapse())
@@ -102,12 +103,12 @@ namespace lvr2 {
 
 
         //tumble_tree->balance();
-        tumble_tree->display();
+        //tumble_tree->display();
 
         //cout << "Size of BST: " << bst_tree->size() << endl;
         cout << "Max depth of tt: " << tumble_tree->maxDepth() << endl;
         cout << "Min depth of tt: " << tumble_tree->minDepth() << endl;
-        cout << "Diff between ca and tt: " << counter << endl;
+        cout << "Diff between ca and tt (waaaaaag): " << counter << endl;
         cout << "Not Deleted in TT: " << tumble_tree->notDeleted << endl;
         cout << "Tumble Tree size: " << tumble_tree->size() << endl;
         cout << "KD-Tree size: " << kd_tree->size() << endl;
@@ -132,13 +133,12 @@ namespace lvr2 {
     {
         //get random point of the pointcloud
         BaseVecT random_point = this->getRandomPointFromPointcloud();
-
+        //cout << "basic step" << endl;
         if(!m_useGSS) //if only gcs is used (gcs basic step)
         {
             VertexHandle winnerH = this->getClosestPointInMesh(random_point, progress_bar); //TODO: better runtime efficency(kd-tree)
             /*Index winnerIndex = kd_tree->findNearest(random_point);
             VertexHandle winnerH(winnerIndex);*/
-            //std::cout << "winner index: " << winnerIndex << endl;
 
             //smooth the winning vertex
             BaseVecT &winner = m_mesh->getVertexPosition(winnerH);
@@ -163,18 +163,16 @@ namespace lvr2 {
                 //kd_tree->insert(nb, v);
             }
 
-            //increase signal counter by one
-            Cell* winnerNode = cellArr[winnerH.idx()];
 
-            double winnerSC = winnerNode->signal_counter; //obtain the signal counter from the map
+            Cell* winnerNode = cellArr[winnerH.idx()];
 
             //TODO: determine mistake in remove operation in basic step. why on earth is there a prob here
 
-            winnerSC = tumble_tree->remove(winnerNode, winnerH); //remove the winning vertex from the tumble tree bet the real sc
-            //if(tumble_tree->find(winnerSC, winnerH) != NULL) std::cout << "error removing in basic step" << endl;
-            //bst_tree->remove(winnerSC, winnerH);
+            //we need to remove the winner before updating.
+            double winnerSC = tumble_tree->remove(winnerNode, winnerH); //remove the winning vertex from the tumble tree, get the real sc
+
             //decrease signal counter of others by a fraction according to hennings implementation
-            if(m_decreaseFactor == 1.0)            //if(getRuntime() >= 20 && i % (getRuntime() / 20) == 0 ) tumble_tree->balance();
+            if(m_decreaseFactor == 1.0)
             {
                 size_t n = m_allowMiss * m_mesh->numVertices();
                 float dynamicDecrease = 1 - (float)pow(m_collapseThreshold, (1 / n));
@@ -186,13 +184,9 @@ namespace lvr2 {
                 tumble_tree->updateSC(m_decreaseFactor);
 
             }
-
+            //reinsert the winner's vH with updated sc
             cellArr[winnerH.idx()] = tumble_tree->insert(winnerSC + 1, winnerH);
-            //bst_tree->insert(winnerSC + 1, winnerH);
 
-            /*if(tumble_tree->find(winnerSC+1, winnerH) == NULL || cellArr[winnerH.idx()] != tumble_tree->find(winnerSC+1, winnerH)){
-                //std:: cout << "Insert problems..." << endl;
-            }*/
         }
         else //GSS
         {
@@ -221,36 +215,28 @@ namespace lvr2 {
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::executeVertexSplit()
     {
+        //cout << "Vertex Split" << endl;
         if(!m_useGSS) //GCS
         {
             //find vertex with highst sc, split that vertex
             Cell* max = tumble_tree->max();
 
-            auto iter = max->duplicateMap.begin();
+            auto iter = max->duplicateMap.begin(); //get the first vertexhandle, if there are more then one
             VertexHandle highestSC = *iter; //get the first of the duplicate map
 
 
             //split the found vertex
             VertexSplitResult result = m_mesh->splitVertex(highestSC);
-            /*if(result.edgeCenter.idx() == numeric_limits<int>::max()){
-                return; //if longest edge is a border edge
-            }*/
-            VertexHandle newVH = result.edgeCenter;
+            VertexHandle newVH = result.edgeCenter; //obtain the vertex newly added to the mesh
 
-            //std::cout << "Max SC: " << max->signal_counter << endl;
             //now update tumble tree and the cell array
             double actual_sc = tumble_tree->remove(max, highestSC);
-            //bst_tree->remove(max->signal_counter, highestSC);
-
-            //std::cout << "Actual SC: " << actual_sc << endl;
-
             cellArr[highestSC.idx()] = tumble_tree->insert(actual_sc / 2, highestSC);
             cellArr[newVH.idx()] = tumble_tree->insert(actual_sc / 2, newVH);
-            //bst_tree->insert(actual_sc / 2, highestSC);
-            //bst_tree->insert(actual_sc / 2, newVH);
 
-            BaseVecT kdInsert = m_mesh->getVertexPosition(newVH);
-            kd_tree->insert(kdInsert, newVH);
+
+            /*BaseVecT kdInsert = m_mesh->getVertexPosition(newVH);
+            kd_tree->insert(kdInsert, newVH);*/
 
         }
         else //GSS
@@ -285,12 +271,9 @@ namespace lvr2 {
                 }
             }
 
-            // TODO: after finding the longest edge.... we need a way to split it.. vertexSplit(VertexHandle vH) not enough
+            //TODO: after finding the longest edge.... we need a way to split it.. vertexSplit(VertexHandle vH) not enough
 
             //reset age to initial age
-
-            ////?????????????
-
 
             //TODO: filter chain ( not yet programmed )
         }
@@ -502,17 +485,25 @@ namespace lvr2 {
         Cell* c9 = tumble_tree->insert(2.5,v8);
 
         tumble_tree->display();
-        tumble_tree->updateSC(0.9);
+        /*tumble_tree->updateSC(0.9);
+        tumble_tree->display();*/
+
+        double sc = tumble_tree->remove(c1, v0);
+        tumble_tree->insert(sc + 1,v0);
+        tumble_tree->display();
+        sc = tumble_tree->remove(c9, v5);
+        tumble_tree->insert(sc+1,v5);
+        tumble_tree->insert(sc+1,v5);
+        tumble_tree->display();
+        sc = tumble_tree->remove(c4, v3);
+        tumble_tree->insert(sc+1,v3);
+        tumble_tree->display();
+        sc = tumble_tree->remove(c5, v4);
+        tumble_tree->insert(sc+1,v4);
+        tumble_tree->display();
+        sc = tumble_tree->remove(c3, v2);
         tumble_tree->display();
 
-        tumble_tree->remove(c9, v8);
-        tumble_tree->display();
-        tumble_tree->remove(c4, v3);
-        tumble_tree->display();
-        tumble_tree->remove(c5, v4);
-        tumble_tree->display();
-        tumble_tree->remove(c3, v2);
-        tumble_tree->display();
     }
 
     /**
@@ -535,6 +526,9 @@ namespace lvr2 {
         BaseVecT centroid = bounding_box.getCentroid();
         BaseVecT min = bounding_box.getMin();
         BaseVecT max = bounding_box.getMax();
+
+        cout << "Bounding Box min: " << min << endl;
+        cout << "Bounding Box max: " << max << endl;
 
         float xdiff = (max.x - min.x) / 2;
         float ydiff = (max.y - min.y) / 2;
@@ -563,6 +557,8 @@ namespace lvr2 {
         auto vH2 = m_mesh->addVertex(left);
         auto vH3 = m_mesh->addVertex(right);
         auto vH4 = m_mesh->addVertex(back);
+
+        cout << vH1 << " | " << vH2 << " | " << vH3 << " | " << vH4 << endl;
 
         FaceHandle fH1(0);
         FaceHandle fH2(0);
@@ -670,6 +666,7 @@ namespace lvr2 {
         avg_distance /= m_mesh->numVertices();
 
         std::cout << "avg_distance to cloud: " << avg_distance << endl;
+        std::cout << "avg distance between the points in the cloud: " << avgDistanceBetweenPointsInPointcloud() << endl;
 
 
         double avg_len = 0;
@@ -699,7 +696,7 @@ namespace lvr2 {
                 {
                     auto vertices = m_mesh->getVerticesOfEdge(eH);
                     float tmp = (m_mesh->getVertexPosition(vertices[0]) - m_mesh->getVertexPosition(vertices[1])).length();
-                    if(tmp > 2 * avg_len)
+                    if(tmp > 4 * avg_len)
                     {
                         auto faces = m_mesh->getFacesOfEdge(eH);
                         for(auto face : faces)
@@ -851,6 +848,28 @@ namespace lvr2 {
         {
             m_mesh->removeFace(face);
         }
+    }
+
+    template<typename BaseVecT, typename NormalT>
+    double GrowingCellStructure<BaseVecT,NormalT>::avgDistanceBetweenPointsInPointcloud()
+    {
+        //get average distance between the points
+        auto pointer = m_surface->get()->pointBuffer();
+        auto tree = m_surface->get()->searchTree();
+        auto p_arr = pointer.get()->getPointArray();
+        auto num_points = pointer.get()->numPoints();
+
+        double sumDistance = 0;
+        for(int i = 0; i < 3*num_points; i += 3)
+        {
+            BaseVecT point(p_arr[i], p_arr[i+1],p_arr[i+2]);
+            vector<size_t> indices;
+            vector<float> distances;
+            tree->kSearch(point, 2, indices, distances);
+            sumDistance += distances[1];
+        }
+        double avgDistance = sumDistance / num_points;
+        return avgDistance;
     }
 
 

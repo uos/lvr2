@@ -28,6 +28,9 @@ namespace  lvr2{
         Cell* makeEmpty(Cell* c);
 
         Cell* remove(double sc, VertexHandle vH, Cell* c, bool removeWhole = false);
+        Cell* removeTwo(double sc, VertexHandle vH, Cell* c, bool removeWhole = false, double alpha = 1);
+
+
         Cell* insert(Cell* c, double sc, VertexHandle vH);
         Cell* findMin(Cell* c);
         Cell* findMax(Cell* c);
@@ -54,15 +57,13 @@ namespace  lvr2{
             if(root == NULL)
             {
                 cout << "new root.." << endl;
-                auto newCell = new Cell();
-                newCell->left = NULL;
-                newCell->right = NULL;
-                newCell->parent = NULL;
-                newCell->alpha = 1;
-                newCell->signal_counter = sc;
-                newCell->duplicateMap.insert(vH, sc);
-
-                root = newCell;
+                root = new Cell();
+                root->left = NULL;
+                root->right = NULL;
+                root->parent = NULL;
+                root->alpha = 1;
+                root->signal_counter = sc;
+                root->duplicateMap.insert(vH, sc);
 
                 return root;
             }
@@ -72,6 +73,9 @@ namespace  lvr2{
 
         }
         double remove(Cell* c, VertexHandle vH); //returns the real sc
+        double removeMin();
+
+        double removeMax();
 
 
         int maxDepth();
@@ -83,6 +87,8 @@ namespace  lvr2{
 
         Cell* min();
         Cell* max();
+
+        Cell* makeCell(double sc, VertexHandle vH, Cell* left = NULL, Cell* right = NULL, Cell* parent = NULL, double alpha = 1);
 
         int size();
 
