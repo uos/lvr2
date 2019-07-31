@@ -56,6 +56,11 @@ public:
 
     void match();
 
+    /**
+     * @brief Indicates that no new Scans will be added
+     */
+    void finish();
+
     void setOptions(const SlamOptions& options);
     SlamOptions& options();
 
@@ -70,7 +75,6 @@ protected:
     void checkLoopClose(size_t last);
     void loopClose(size_t first, size_t last);
     void graphSlam(size_t last);
-    bool findCloseScans(size_t scan, vector<size_t>& output);
 
     SlamOptions             m_options;
 

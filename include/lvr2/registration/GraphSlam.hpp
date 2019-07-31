@@ -43,9 +43,12 @@ using Matrix6d = Eigen::Matrix<double, 6, 6>;
 using Vector6d = Eigen::Matrix<double, 6, 1>;
 using GraphMatrix = Eigen::SparseMatrix<double>;
 using GraphVector = Eigen::VectorXd;
+using Graph = vector<pair<int, int>>;
 
 namespace lvr2
 {
+
+bool findCloseScans(const vector<ScanPtr>& scans, size_t scan, const SlamOptions& options, vector<size_t>& output);
 
 class GraphSlam
 {
@@ -55,18 +58,15 @@ public:
 
     virtual ~GraphSlam() = default;
 
-    void addEdge(int start, int end);
-
-    void doGraphSlam(vector<ScanPtr>& scans, int last);
+    void doGraphSlam(const vector<ScanPtr>& scans, size_t last);
 
 protected:
 
+    void createGraph(const vector<ScanPtr>& scans, size_t last, Graph& graph);
+    void fillEquation(const vector<ScanPtr>& scans, size_t last, const Graph& graph, GraphMatrix& mat, GraphVector& vec);
     void eulerCovariance(ScanPtr a, ScanPtr b, Matrix6d& outMat, Vector6d& outVec) const;
-    void fillEquation(const vector<ScanPtr>& scans, GraphMatrix& mat, GraphVector& vec);
 
     const SlamOptions*     m_options;
-
-    vector<pair<int, int>> m_graph;
 };
 
 } /* namespace lvr2 */

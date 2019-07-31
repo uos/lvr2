@@ -331,7 +331,7 @@ int main(int argc, char** argv)
 
     auto start_time = chrono::steady_clock::now();
 
-    align.match();
+    align.finish();
 
     auto required_time = chrono::steady_clock::now() - start_time;
     cout << "SLAM finished in " << required_time.count() / 1e9 << " seconds" << endl;
