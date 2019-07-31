@@ -105,12 +105,20 @@ PointBufferPtr ScanDirectoryParser::subSample()
             PointBufferPtr buffer = model->m_pointCloud;
             if(buffer)
             {
-                PointBufferPtr reduced = subSamplePointBuffer(buffer, 1000000);
-                out_model->m_pointCloud = reduced;
+                // Calc number of points to sample
+                float ratio = (float)i.m_numPoints / m_numPoints;
+                int target_size = (int)(ratio * i.m_numPoints + 0.5);
+                std::cout << timestamp << "Sampling " << target_size << " points from " << i.m_filename << std::endl;
 
-                Path p(i.m_filename);
+                // Sub-sample buffer
+                PointBufferPtr reduced = subSamplePointBuffer(buffer, target_size);
+
+                // Write reduced data
                 std::stringstream name_stream;
+                Path p(i.m_filename);
                 name_stream << p.stem().string() << "_reduced" << ".ply";
+                std::cout << timestamp << "Saving reduced data to " << name_stream.str() << std::endl;
+                out_model->m_pointCloud = reduced;
                 ModelFactory::saveModel(out_model, name_stream.str());
             }
         }
