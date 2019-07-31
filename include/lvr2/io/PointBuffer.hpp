@@ -125,7 +125,7 @@ public:
     size_t numPoints() const;
 
     /// Makes a clone
-    PointBuffer clone();
+    PointBuffer clone() const;
 
 };
 
