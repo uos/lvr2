@@ -25,6 +25,19 @@ namespace lvr2{
         return NULL;
     }
 
+    Cell* TumbleTree::makeCell(double sc, VertexHandle vH, Cell* left, Cell* right, Cell* parent, double alpha)
+    {
+        Cell* cell = new Cell();
+        cell->parent = parent;
+        cell->left = left;
+        cell->right = right;
+        cell->alpha = alpha;
+        cell->signal_counter = sc;
+        cell->duplicateMap.insert(vH, sc);
+
+        return cell;
+    }
+
     Cell* TumbleTree::insertIterative(double sc, VertexHandle vH)
     {
 
@@ -74,11 +87,6 @@ namespace lvr2{
                     return tmp->right;
                 }
 
-                tmp->signal_counter *= tmp->alpha;
-                if(tmp->left != NULL) tmp->left->alpha *= tmp->alpha;
-                if(tmp->right != NULL) tmp->right->alpha *= tmp->alpha;
-                tmp->alpha = 1;
-
                 tmp = tmp->right;
             }
         }
@@ -105,14 +113,9 @@ namespace lvr2{
                 return insert(c->left, sc, vH);
             else //insert new cell, if the left subtree is empty
             {
-                c->left = new Cell();
-                c->left->left = NULL;
-                c->left->right = NULL;
-                c->left->alpha = 1;
-                c->left->parent = c;
-                c->left->signal_counter = sc;
-                c->left->duplicateMap.insert(vH, sc);
-                return c->left;
+                auto cell = makeCell(sc, vH, NULL, NULL, c, 1);
+                c->left = cell;
+                return cell;
             }
         }
         //if the sc is bigger than the cell's sc, go to the right subtree
@@ -122,14 +125,9 @@ namespace lvr2{
                 return insert(c->right, sc, vH);
             else //insert new cell, if the right subtree is empty
             {
-                c->right = new Cell();
-                c->right->left = NULL;
-                c->right->right = NULL;
-                c->right->alpha = 1;
-                c->right->parent = c;
-                c->right->signal_counter = sc;
-                c->right->duplicateMap.insert(vH, sc);
-                return c->right;
+                auto cell = makeCell(sc, vH, NULL, NULL, c, 1);
+                c->right = cell;
+                return cell;
             }
         }
         else
@@ -140,9 +138,87 @@ namespace lvr2{
     }
 
     //TODO: make it work. expected number of cells after the algorithm: runtime*numsplits iterative??
+    Cell* TumbleTree::removeTwo(double sc, VertexHandle vH, Cell* c, bool removeWhole, double alpha)
+    {
+        Cell* tmp;
+        if(c == NULL)
+        {
+            c != root ? notDeleted++ : notDeleted = notDeleted-1+1;
+            //std::cout << "  signal counter not found in TT" << endl;
+            return NULL;
+        }
+        else{
+            c->signal_counter *= c->alpha;
+            if(c->left)c->left->alpha *= c->alpha;
+            if(c->right)c->right->alpha *= c->alpha;
+            c->alpha = 1;
+
+            //cout << "Search sc: " << sc << " | Current sc: " << c->signal_counter << endl;
+        }
+
+        if(sc < c->signal_counter)
+        {
+            c->left = removeTwo(sc, vH, c->left, removeWhole, alpha);
+            if(c->left) c->left->parent = c;
+        }
+        else if(sc > c->signal_counter) {
+            c->right = removeTwo(sc, vH, c->right, removeWhole, alpha);
+            if(c->right) c->right->parent = c;
+        }
+        else{
+            //if there are two are more, just remove from the duplicate map
+            if(c->duplicateMap.numValues() > 1 && !removeWhole){
+                size_t numV = c->duplicateMap.numValues();
+                c->duplicateMap.erase(vH); //erase index from duplicate map
+                if(c->duplicateMap.numValues() == numV){
+                    notDeleted++;
+                    //std::cout << "  Not found in duplicate map..." << endl;
+                }
+                return c;
+            }
+
+            //if there is one or no child
+            if(c->left == NULL)
+            {
+                tmp = c->right;
+                delete c;
+                return tmp;
+            }
+            else if(c->right == NULL)
+            {
+                tmp = c->left;
+                delete c;
+                return tmp;
+            }
+            //node with two children: get min of the right subtree (inorder successor of right subtree)
+            tmp = findMin(c->right);
+
+            //copy data from inorder successor
+            c->signal_counter = tmp->signal_counter;
+            c->duplicateMap.clear();
+            //copy values from one dupilcate map to the other
+            for(auto iter = tmp->duplicateMap.begin(); iter != tmp->duplicateMap.end();++iter)
+            {
+                c->duplicateMap.insert(*iter,tmp->signal_counter);
+            }
+            //remove inorder successor
+            VertexHandle ret(0);
+            c->right = removeTwo(tmp->signal_counter, ret, c->right, true, alpha); // no good...
+            if(c->right) c->right->parent = c;
+
+        }
+
+        return c;
+    }
+
+
+    //TODO: make it work. expected number of cells after the algorithm: runtime*numsplits + 4  -  iterative??
     Cell* TumbleTree::remove(double sc, VertexHandle vH, Cell* c, bool removeWhole)
     {
-        if(c == NULL) return c; //empty tree or not found
+        if(c == NULL){
+            //cout << "Cell not found or tree null" << endl;
+            return NULL;
+        } //empty tree or not found
 
         c->signal_counter *= c->alpha;
         if(c->left) c->left->alpha *= c->alpha;
@@ -177,7 +253,9 @@ namespace lvr2{
             //if the duplicate map has one or more handles inside, erase from it
             if(c->duplicateMap.numValues() > 1 && !removeWhole)
             {
+                long num = c->duplicateMap.numValues();
                 c->duplicateMap.erase(vH);
+                //if(num != c->duplicateMap.numValues()) cout << "found in duplicate Map" << endl;
             }
             //no children
             else if(!c->left && !c->right)
@@ -217,6 +295,48 @@ namespace lvr2{
         }
 
         return c;
+    }
+
+
+    double TumbleTree::removeMin()
+    {
+        Cell* tmp = findMin(root);
+
+        if(tmp->duplicateMap.numValues() > 1){
+            tmp->duplicateMap.erase(*tmp->duplicateMap.begin());
+            return tmp->signal_counter;
+        }
+        Cell* tmp2 = tmp->parent;
+        double sc = tmp->signal_counter;
+        delete tmp;
+        tmp2->left = NULL;
+        return sc;
+
+    }
+
+    double TumbleTree::removeMax()
+    {
+        Cell* tmp = findMax(root);
+
+        if(tmp->duplicateMap.numValues() > 1){
+            tmp->duplicateMap.erase(*tmp->duplicateMap.begin());
+            return tmp->signal_counter;
+        }
+
+        double sc = tmp->signal_counter;
+        if(tmp->parent){
+            Cell* tmp2 = tmp->parent;
+            delete tmp;
+            tmp2->left = NULL;
+        }
+        else
+        {
+            delete tmp;
+        }
+
+
+        return sc;
+
     }
 
     /**
@@ -310,21 +430,22 @@ namespace lvr2{
     {
         if(c == NULL)
             return;
-        if(c->left)c->left->alpha *= c->alpha;
+        //if(c->left)c->left->alpha *= c->alpha;
 
         inorder(c->left);
 
         cout << " | [";
-        cout << c->signal_counter * c->alpha;
+        cout << c->signal_counter;// * c->alpha;
         cout << "{ ";
         for(auto iter = c->duplicateMap.begin(); iter != c->duplicateMap.end(); ++iter)
         {
             cout << *iter << ", ";
         }
         cout << "}";
+        cout << "((" << c->alpha << "))";
         cout << "]";
 
-        if(c->right)c->right->alpha *= c->alpha;
+        //if(c->right)c->right->alpha *= c->alpha;
 
         inorder(c->right);
     }
@@ -332,7 +453,7 @@ namespace lvr2{
     //update the SCs (righ now linear -> O(n), later O(log(n))
     void TumbleTree::update(double alpha)
     {
-        if(root) root->alpha *=  alpha;
+        if(root) root->alpha *= 1;//alpha;
         else cout << "shut up mf " << endl;
     }
 
@@ -341,6 +462,8 @@ namespace lvr2{
         if(c == NULL) return 0;
         return (int)c->duplicateMap.numValues() + size(c->left) + size(c->right);
     }
+
+
 
     TumbleTree::TumbleTree()
     {
@@ -360,9 +483,9 @@ namespace lvr2{
     double TumbleTree::remove(Cell* c, VertexHandle vH)
     {
         //TODO: FIX PROBLEM FOR SC UPDATES.
-
+        //cout << "#####start remove" <<endl;
         double sc = c->signal_counter * c->alpha;
-        /*double tmp_sc = sc;
+        /*double tmp_sc = sc * c->alpha;
         Cell* tmp = c;
         while(tmp != root) //iterate up the tree to find the correct sc.
         {
@@ -371,7 +494,7 @@ namespace lvr2{
                 break;
             }
 
-            if(tmp->parent->parent == tmp) //problem here
+            if(tmp->parent->parent == tmp || tmp->parent == tmp) //problem here
             {
                 cout << "circlleeeeee" << endl;
                 break;
@@ -382,13 +505,21 @@ namespace lvr2{
         }
         sc *= tmp->alpha; //include root alpha
 
-        if(c->parent)
-            c->parent->right == c ? c->parent->right = remove(tmp_sc, vH, c) : c->parent->left = remove(tmp_sc, vH, c);
-        else
-            root = remove(tmp_sc, vH, c);*/
+        if(c->parent != NULL)
+            c->parent->right == c ? c->parent->right = removeTwo(tmp_sc, vH, c) : c->parent->left = removeTwo(tmp_sc, vH, c);
+        else if(c == root){
+            root = remove(tmp_sc, vH, root);
+            cout << "root remove" << endl;
+        }
+        else{
+            cout << "not possible" << endl;
+            exit(1);
+        }*/
 
+
+        //cout << "#####end remove" << endl;
         root = remove(sc, vH, root);
-        return sc;
+        return sc; //return the correct sc
     }
 
     void TumbleTree::display()

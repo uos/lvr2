@@ -1366,7 +1366,7 @@ bool HalfEdgeMesh<BaseVecT>::isFlippable(EdgeHandle handle) const
     int count1 = getEdgesOfVertex(target1).size();
     int count2 = getEdgesOfVertex(target2).size();
 
-    if(count1 <= 4 || count2 <= 4) return false;
+    if(count1 <= 5 || count2 <= 5) return false; //4 or 5?
 
 
     //works only for huetchens which are not connected to any other structure
@@ -1379,14 +1379,6 @@ bool HalfEdgeMesh<BaseVecT>::isFlippable(EdgeHandle handle) const
             return false;
         }
     }
-
-    /*if(edge->face() != 0 && edge->next()->pair()->face() != 0 && edge->next()->next()->pair()->face() != 0)
-    {
-        if(edge->next()->pair()->next()->next() == edge->next()->next()->pair()->next()->pair())
-        {
-            return false;
-        }
-    }*/
 
     //check huetchen
 
