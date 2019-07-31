@@ -46,22 +46,80 @@ class SlamAlign
 {
 
 public:
+    /**
+     * @brief Creates a new SlamAlign instance with the given Options and Scans
+     *
+     * This does not yet register the Scans, it only applies reduction options if specified
+     *
+     * @param options The Options to use
+     * @param scans The Scans to start with
+     */
     SlamAlign(const SlamOptions& options, vector<ScanPtr>& scans);
+
+    /**
+     * @brief Creates a new SlamAlign instance with the given Options
+     *
+     * @param options The Options to use
+     */
     SlamAlign(const SlamOptions& options = SlamOptions());
 
     virtual ~SlamAlign() = default;
 
+    /**
+     * @brief Adds a new Scan to the Slam instance
+     *
+     * This method will apply any reduction options that are specified
+     *
+     * @param scan The new Scan
+     * @param match true: Immediately call match() with the new Scan added
+     */
     void addScan(const ScanPtr& scan, bool match = false);
+
+    /**
+     * @brief Returns a shared_ptr to a Scan
+     *
+     * @param index The index of the Scan
+     */
     ScanPtr getScan(size_t index);
 
+    /**
+     * @brief Executes SLAM on all current Scans
+     *
+     * This methods registers any new Scans added since the last call to match()
+     * (or the creation of this instance) using Scanmatching and Loopclosing, as specified by
+     * the SlamOptions.
+     *
+     * Calling this method several times without adding any new Scans has no additional effect
+     * after the first call.
+     */
     void match();
 
     /**
      * @brief Indicates that no new Scans will be added
+     *
+     * This method ensures that all Scans are properly registered, including any Loopclosing
      */
     void finish();
 
+    /**
+     * @brief Sets the SlamOptions struct to the parameter
+     *
+     * Note that changing options on an active SlamAlign instance with previously added / matched
+     * Scans can cause Undefined Behaviour.
+     *
+     * @param options The new options
+     */
     void setOptions(const SlamOptions& options);
+
+    /**
+     * @brief Returns a reference to the internal SlamOptions struct
+     *
+     * This can be used to make changes to specific values within the SlamOptions without replacing
+     * the entire struct.
+     *
+     * Note that changing options on an active SlamAlign instance with previously added / matched
+     * Scans can cause Undefined Behaviour.
+     */
     SlamOptions& options();
 
 protected:
