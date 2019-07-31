@@ -82,13 +82,13 @@ public:
      * @tparam T Type of the channel.
      */
     template<typename T>
-    bool hasChannel(const std::string& name);
+    bool hasChannel(const std::string& name) const;
 
     /**
      * @brief Checks if an uchar channel is available.
      * @param[in] name Key of the channel.
      */
-    inline bool hasUCharChannel(const std::string& name)
+    inline bool hasUCharChannel(const std::string& name) const
     {
         return hasChannel<unsigned char>(name);
     }
@@ -97,7 +97,7 @@ public:
      * @brief Checks if a float channel is available.
      * @param[in] name Key of the channel.
      */
-    inline bool hasFloatChannel(const std::string& name)
+    inline bool hasFloatChannel(const std::string& name) const
     {
         return hasChannel<float>(name);
     }
@@ -106,7 +106,7 @@ public:
      * @brief Checks if an index channel is available.
      * @param[in] name Key of the channel.
      */
-    inline bool hasIndexChannel(const std::string& name)
+    inline bool hasIndexChannel(const std::string& name) const
     {
         return hasChannel<unsigned int>(name);
     }
@@ -326,6 +326,17 @@ public:
      */
     template<typename T>
     typename Channel<T>::Optional getChannel(const std::string& name);
+
+        /**
+     * @brief Gets a channel and returns it as optional. 
+     * 
+     * @param[in] name Key of the channel.
+     * @tparam T Type of the channel.
+     * @return An OptionalChannel which is filled if the channel was found.
+     */
+    template<typename T>
+    const typename Channel<T>::Optional getChannel(const std::string& name) const;
+
 
     /**
      * @brief Gets a float channel and returns it as optional. 

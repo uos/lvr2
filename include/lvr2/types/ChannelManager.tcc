@@ -12,7 +12,7 @@ size_t ChannelManager::channelWidth(const std::string& name)
 }
 
 template<typename T>
-bool ChannelManager::hasChannel(const std::string& name)
+bool ChannelManager::hasChannel(const std::string& name) const
 {
     auto it = this->find(name);
     if(it != this->end() && it->second.is_type<T>())
@@ -66,6 +66,20 @@ template<typename T>
 typename Channel<T>::Optional ChannelManager::getChannel(const std::string& name)
 {
     typename Channel<T>::Optional ret;
+
+    auto it = this->find(name);
+    if(it != this->end() && it->second.is_type<T>())
+    {
+        ret = boost::get<Channel<T> >(it->second);
+    }
+
+    return ret;
+}
+
+template<typename T>
+const typename Channel<T>::Optional ChannelManager::getChannel(const std::string& name) const
+{
+     typename Channel<T>::Optional ret;
 
     auto it = this->find(name);
     if(it != this->end() && it->second.is_type<T>())
