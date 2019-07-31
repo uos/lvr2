@@ -51,7 +51,7 @@ PointBuffer::PointBuffer(floatArr points, size_t n)
 PointBuffer::PointBuffer(floatArr points, floatArr normals, size_t n) : PointBuffer(points, n)
 {
     // Add normal data
-   FloatChannelPtr normal_data(new FloatChannel(n, 3, points));
+    FloatChannelPtr normal_data(new FloatChannel(n, 3, points));
     this->addFloatChannel(normal_data, "normals");
 }
 
@@ -133,46 +133,13 @@ size_t PointBuffer::numPoints() const
 }
 
 
-PointBuffer PointBuffer::clone()
+PointBuffer PointBuffer::clone() const
 {
     PointBuffer pb;
-    size_t num_points = this->numPoints();
 
-    // 1) points
-    floatArr points_from = getPointArray();
-    floatArr points_to( new float[3 * num_points] );
-    std::copy(
-        points_from.get(),
-        points_from.get() + num_points * 3,
-        points_to.get()
-    );
-    pb.setPointArray(points_to, num_points);
-
-    // 2) normals
-    if(hasNormals())
+    for(const auto& elem : *this)
     {
-        floatArr normals_from = getNormalArray();
-        floatArr normals_to(new float[3 * num_points]);
-        std::copy(
-            normals_from.get(),
-            normals_from.get() + num_points * 3,
-            normals_to.get()
-        );
-        pb.setNormalArray(normals_to, num_points);
-    }
-
-    // 3) colors
-    if(hasColors())
-    {
-        size_t w;
-        ucharArr colors_from = getColorArray(w);
-        ucharArr colors_to(new unsigned char[w * num_points]);
-        std::copy(
-            colors_from.get(),
-            colors_from.get() + num_points * w,
-            colors_to.get()
-        );
-        pb.setColorArray(colors_to, num_points, w);
+        pb.insert({elem.first, elem.second.clone()});
     }
 
     return pb;
