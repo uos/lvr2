@@ -225,8 +225,7 @@ Eigen::Matrix4d getTransformationFromDat(const boost::filesystem::path& frames)
             in >> alignxf[i];
         }
     }
-
-    return buildTransformation(alignxf);
+    return Eigen::Map<Eigen::Matrix4d>(alignxf).transpose();
 }
 
 size_t countPointsInFile(boost::filesystem::path& inFile)

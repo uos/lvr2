@@ -581,6 +581,7 @@ int main(int argc, char** argv) {
     ScanDirectoryParser parser(options->getInputDir());
     parser.setStart(options->getStart());
     parser.setEnd(options->getEnd());
+    parser.setTargetSize(options->getTargetSize());
     parser.parseDirectory();
 
     PointBufferPtr result = parser.subSample();

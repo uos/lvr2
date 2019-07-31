@@ -29,6 +29,7 @@ ScanDirectoryParser::ScanDirectoryParser(const std::string& directory) noexcept
     m_poseExtension = ".dat";
     m_pointPrefix = "scan";
     m_posePrefix = "scan";
+    m_targetSize = 0;
 
     m_start = 0;
     m_end = 0;
@@ -97,6 +98,12 @@ Eigen::Matrix4d ScanDirectoryParser::getPose(const Path& poseFile)
 PointBufferPtr ScanDirectoryParser::subSample()
 {
     ModelPtr out_model(new Model);
+
+    // Compute global reduction ratio and clamp
+    float ratio1 = (float)m_targetSize / m_numPoints;
+    cout << "EEEE : "  << ratio1 << " " << m_targetSize << " " << m_numPoints << endl;
+    size_t actual_points = 0;
+
     for(auto i : m_scans)
     {
         ModelPtr model = ModelFactory::readModel(i.m_filename);
@@ -107,19 +114,26 @@ PointBufferPtr ScanDirectoryParser::subSample()
             {
                 // Calc number of points to sample
                 float ratio = (float)i.m_numPoints / m_numPoints;
-                int target_size = (int)(ratio * i.m_numPoints + 0.5);
+                int target_size = (int)(ratio * i.m_numPoints + 0.5) * ratio1;
                 std::cout << timestamp << "Sampling " << target_size << " points from " << i.m_filename << std::endl;
 
                 // Sub-sample buffer
                 PointBufferPtr reduced = subSamplePointBuffer(buffer, target_size);
 
+                // Apply transformation
+                std::cout << timestamp << "Transforming point cloud" << std::endl;
+                out_model->m_pointCloud = reduced;
+                transformPointCloud(out_model, i.m_pose);
+
                 // Write reduced data
                 std::stringstream name_stream;
                 Path p(i.m_filename);
                 name_stream << p.stem().string() << "_reduced" << ".ply";
-                std::cout << timestamp << "Saving reduced data to " << name_stream.str() << std::endl;
-                out_model->m_pointCloud = reduced;
+                std::cout << timestamp << "Saving data to " << name_stream.str() << std::endl;
                 ModelFactory::saveModel(out_model, name_stream.str());
+
+                actual_points += target_size;
+                std::cout << timestamp << "Points written: " << actual_points << " / " << m_targetSize << std::endl;
             }
         }
     }
