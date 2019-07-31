@@ -250,7 +250,10 @@ public:
 
 
     template<typename U>
-    typename Channel<U>::Optional getOptional(const std::string& name) const;
+    typename Channel<U>::Optional getOptional(const std::string& name);
+
+    template<typename U>
+    const typename Channel<U>::Optional getOptional(const std::string& name) const;
 
     /**
      * @brief Gets type index of a map entry.

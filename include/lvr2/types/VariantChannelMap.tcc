@@ -39,7 +39,21 @@ const Channel<U>& VariantChannelMap<T...>::get(const std::string& name) const
 
 template<typename... T>
 template<typename U>
-typename Channel<U>::Optional VariantChannelMap<T...>::getOptional(const std::string& name) const
+typename Channel<U>::Optional VariantChannelMap<T...>::getOptional(const std::string& name)
+{
+    typename Channel<U>::Optional ret;
+    auto it = this->find(name);
+    if(it != this->end() && it->second.template is_type<U>())
+    {
+        ret = boost::get<Channel<U> >(it->second);
+    }
+
+    return ret;
+}
+
+template<typename... T>
+template<typename U>
+const typename Channel<U>::Optional VariantChannelMap<T...>::getOptional(const std::string& name) const
 {
     typename Channel<U>::Optional ret;
     auto it = this->find(name);
