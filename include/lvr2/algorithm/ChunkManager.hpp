@@ -52,7 +52,7 @@ class ChunkManager
          *
          * @param mesh mesh to be chunked
          * @param chunksize size of a chunk - unit depends on the given mesh
-         * @param savePath JUST FOR DEBUGGING - REMOVE LATER ON
+         * @param savePath JUST FOR TESTING - REMOVE LATER ON
          */
         ChunkManager(MeshBufferPtr mesh, float chunksize, std::string savePath);
 
@@ -73,20 +73,19 @@ class ChunkManager
          *
          * @param mesh mesh which is being chunked
          * @param chunksize size of a chunk
-         * @param savePath UST FOR DEBUGGING - REMOVE LATER ON
+         * @param savePath UST FOR TESTING - REMOVE LATER ON
          */
         void buildChunks(MeshBufferPtr mesh, float chunksize, std::string savePath);
 
         /**
-         * @brief getCenter computes the center of a face in a given model
+         * @brief getFaceCenter gets the center point for a given face
          *
-         * @param mesh original mesh which contains the face
-         * @param index0 index of first vertex in original mesh
-         * @param index1 index of second vertex in original mesh
-         * @param index2 index of third vertex in original mesh
-         * @return center point of the face
+         * @param verticesChannel channel of mesh that holds the vertices
+         * @param facesChannel channel of mesh that holds the faces
+         * @param faceIndex index of the requested face
+         * @return center point of the given face
          */
-        BaseVector<float> getCenter(MeshBufferPtr mesh, unsigned int index0, unsigned int index1, unsigned int index2);
+        BaseVector<float> getFaceCenter(FloatChannel verticesChannel, IndexChannel facesChannel, unsigned int faceIndex);
 
         // bounding box of the entire chunked model
         BoundingBox<BaseVector<float>> m_boundingBox;
