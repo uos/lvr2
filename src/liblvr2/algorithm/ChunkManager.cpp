@@ -85,12 +85,12 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float chunksize, std::string 
     }
 
     // assign the faces to the chunks
+    FloatChannel verticesChannel = *mesh->getFloatChannel("vertices");
+    IndexChannel facesChannel = *mesh->getIndexChannel("face_indices");
     BaseVector<float> currentCenterPoint;
     for(int i = 0; i < mesh->numFaces(); i++)
     {
-        currentCenterPoint = getCenter(mesh, mesh->getFaceIndices()[i * 3],
-                mesh->getFaceIndices()[i * 3 + 1],
-                mesh->getFaceIndices()[i * 3 + 2]);
+        currentCenterPoint = getFaceCenter(verticesChannel, facesChannel, i);
 
         chunkBuilders[(int) ((currentCenterPoint.x - m_boundingBox.getMin().x) / chunksize) * amountY * amountZ
                 + (int) ((currentCenterPoint.y - m_boundingBox.getMin().y) / chunksize) * amountZ
@@ -117,21 +117,13 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float chunksize, std::string 
     }
 }
 
-BaseVector<float> ChunkManager::getCenter(MeshBufferPtr mesh, unsigned int index0, unsigned int index1, unsigned int index2)
+BaseVector<float> ChunkManager::getFaceCenter(FloatChannel verticesChannel, IndexChannel facesChannel, unsigned int faceIndex)
 {
-    float x = (mesh->getVertices()[index0 * 3 + 0]
-            + mesh->getVertices()[index1 * 3 + 0]
-            + mesh->getVertices()[index2 * 3 + 0]) / 3;
+    BaseVector<float> vertex1(verticesChannel[facesChannel[faceIndex][0]]);
+    BaseVector<float> vertex2(verticesChannel[facesChannel[faceIndex][1]]);
+    BaseVector<float> vertex3(verticesChannel[facesChannel[faceIndex][2]]);
 
-    float y = (mesh->getVertices()[index0 * 3 + 1]
-            + mesh->getVertices()[index1 * 3 + 1]
-            + mesh->getVertices()[index2 * 3 + 1]) / 3;
-
-    float z = (mesh->getVertices()[index0 * 3 + 2]
-          + mesh->getVertices()[index1 * 3 + 2]
-          + mesh->getVertices()[index2 * 3 + 2]) / 3;
-
-    return BaseVector<float>(x, y, z);
+    return (vertex1 + vertex2 + vertex3) / 3;
 }
 
 } /* namespace lvr2 */
