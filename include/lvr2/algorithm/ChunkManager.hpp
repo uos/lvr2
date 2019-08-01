@@ -30,6 +30,7 @@
  *
  * @date 21.07.2019
  * @author Malte kl. Piening
+ * @author Marcel Wiegand
  */
 
 #ifndef CHUNK_MANAGER_HPP
@@ -89,6 +90,9 @@ class ChunkManager
 
         // bounding box of the entire chunked model
         BoundingBox<BaseVector<float>> m_boundingBox;
+
+        // hash grid containing chunked meshes
+        std::unordered_map<std::size_t, MeshBufferPtr> m_hashGrid;
 };
 
 } /* namespace lvr2 */

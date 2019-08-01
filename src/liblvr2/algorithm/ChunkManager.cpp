@@ -105,12 +105,22 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float chunksize, std::string 
         {
             for (int k = 0; k < amountZ; k++)
             {
-                if (chunkBuilders[i * amountY * amountZ + j * amountZ + k]->numFaces() > 0)
-                {
-                    // TODO: dont simply save the chunks as ply files and insert them into the hashgrid
+                std::size_t hash = i * amountY * amountZ + j * amountZ + k;
 
+                if (chunkBuilders[hash]->numFaces() > 0)
+                {
                     std::cout << "writing " << i << " " << j << " " << k << std::endl;
-                    ModelFactory::saveModel(ModelPtr(new Model(chunkBuilders[i * amountY * amountZ + j * amountZ + k]->buildMesh())), savePath + "/" + std::to_string(i) + "-" + std::to_string(j) + "-" + std::to_string(k) + ".ply");
+
+                    // get mesh of chunk from chunk builder
+                    MeshBufferPtr chunkMeshPtr = chunkBuilders[hash]->buildMesh();
+
+                    // insert chunked mesh into hash grid
+                    m_hashGrid.insert({hash, chunkMeshPtr});
+
+                    // export chunked meshes for debugging
+                    ModelFactory::saveModel(
+                        ModelPtr(new Model(chunkMeshPtr)),
+                        savePath + "/" + std::to_string(i) + "-" + std::to_string(j) + "-" + std::to_string(k) + ".ply");
                 }
             }
         }
