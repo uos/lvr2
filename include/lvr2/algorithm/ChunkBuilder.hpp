@@ -45,8 +45,15 @@ namespace lvr2
 class ChunkBuilder
 {
     public:
+        /**
+         * @brief ChunkBuilder constructs a chun builder that can create individual chunks
+         *
+         * @param id unique id of the chunk
+         * @param originalMesh mesh that is being chunked
+         * @param vertexUse list of ChunkBuilders that for each vertex of the original mesh
+         */
         ChunkBuilder(unsigned int id,
-                     lvr2::ModelPtr originalModel,
+                     MeshBufferPtr originalMesh,
                      std::shared_ptr<std::vector<std::vector<unsigned int>>> vertexUse);
 
         ~ChunkBuilder();
@@ -73,7 +80,7 @@ class ChunkBuilder
          *
          * @return mesh of the newly created chunk
          */
-        lvr2::MeshBufferPtr buildMesh();
+        MeshBufferPtr buildMesh();
 
         /**
          * @brief numFaces delivers the number of faces for the chunk
@@ -91,7 +98,7 @@ class ChunkBuilder
         unsigned int m_id;
 
         // model that is being chunked
-        lvr2::ModelPtr m_originalModel = nullptr;
+        MeshBufferPtr m_originalMesh = nullptr;
 
         // amount of added vertcices
         unsigned int m_numVertices = 0;

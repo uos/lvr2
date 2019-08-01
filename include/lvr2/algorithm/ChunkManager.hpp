@@ -45,48 +45,48 @@ class ChunkManager
 {
     public:
         /**
-         * @brief ChunkManager creates chunks from an original model
+         * @brief ChunkManager creates chunks from an original mesh
          *
          * Chunks the original model into chunks of given size.
          * Every created chunk has ste same length in height, width and depth.
          *
-         * @param model model to be chunked
-         * @param chunksize size of a chunk - unit depends on the given model
+         * @param mesh mesh to be chunked
+         * @param chunksize size of a chunk - unit depends on the given mesh
          * @param savePath JUST FOR DEBUGGING - REMOVE LATER ON
          */
-        ChunkManager(ModelPtr model, float chunksize, std::string savePath);
+        ChunkManager(MeshBufferPtr mesh, float chunksize, std::string savePath);
 
     private:
         /**
-         * @brief initBoundingBox calculates a bounding box of the original model
+         * @brief initBoundingBox calculates a bounding box of the original mesh
          *
          * This calculates the bounding box of the given model and saves it to m_boundingBox.
          *
-         * @param model model whose bounding box shall be calculated
+         * @param mesh mesh whose bounding box shall be calculated
          */
-        void initBoundingBox(ModelPtr model);
+        void initBoundingBox(MeshBufferPtr mesh);
 
         /**
-         * @brief buildChunks builds chunks from an original model
+         * @brief buildChunks builds chunks from an original mesh
          *
-         * Creates chunks from an original model and initializes the initial chunk structure
+         * Creates chunks from an original mesh and initializes the initial chunk structure
          *
-         * @param model model which is being chunked
+         * @param mesh mesh which is being chunked
          * @param chunksize size of a chunk
          * @param savePath UST FOR DEBUGGING - REMOVE LATER ON
          */
-        void buildChunks(ModelPtr model, float chunksize, std::string savePath);
+        void buildChunks(MeshBufferPtr mesh, float chunksize, std::string savePath);
 
         /**
          * @brief getCenter computes the center of a face in a given model
          *
-         * @param model original model which contains the face
-         * @param index0 index of first vertex in original model
-         * @param index1 index of second vertex in original model
-         * @param index2 index of third vertex in original model
+         * @param mesh original mesh which contains the face
+         * @param index0 index of first vertex in original mesh
+         * @param index1 index of second vertex in original mesh
+         * @param index2 index of third vertex in original mesh
          * @return center point of the face
          */
-        BaseVector<float> getCenter(ModelPtr model, unsigned int index0, unsigned int index1, unsigned int index2);
+        BaseVector<float> getCenter(MeshBufferPtr mesh, unsigned int index0, unsigned int index1, unsigned int index2);
 
         // bounding box of the entire chunked model
         BoundingBox<BaseVector<float>> m_boundingBox;
