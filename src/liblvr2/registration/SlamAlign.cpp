@@ -33,6 +33,8 @@
  */
 #include <lvr2/registration/SlamAlign.hpp>
 
+#include <lvr2/registration/Metascan.hpp>
+
 #include <iomanip>
 
 using namespace std;
@@ -117,7 +119,13 @@ void SlamAlign::match()
 
     if (m_options.metascan && !m_metascan)
     {
-        createMetascan();
+        Metascan* meta = new Metascan();
+        for (size_t i = 0; i < m_alreadyMatched; i++)
+        {
+            meta->addScan(m_scans[i]);
+        }
+
+        m_metascan = ScanPtr(meta);
     }
 
     string scan_number_string = to_string(m_scans.size() - 1);
@@ -161,7 +169,7 @@ void SlamAlign::match()
 
         if (m_options.metascan)
         {
-            m_metascan->addScanToMeta(cur);
+            ((Metascan*)m_metascan.get())->addScan(cur);
         }
 
         checkLoopClose(i);
@@ -186,16 +194,6 @@ void SlamAlign::applyTransform(ScanPtr scan, const Matrix4d& transform)
     }
 }
 
-void SlamAlign::createMetascan()
-{
-    m_metascan = ScanPtr(new Scan(*m_scans[0]));
-
-    for (size_t i = 1; i < m_alreadyMatched; i++)
-    {
-        m_metascan->addScanToMeta(m_scans[i]);
-    }
-}
-
 void SlamAlign::checkLoopClose(size_t last)
 {
     if (!m_options.doLoopClosing && !m_options.doGraphSlam)
@@ -216,20 +214,12 @@ void SlamAlign::checkLoopClose(size_t last)
     if (hasLoop && m_options.doLoopClosing)
     {
         loopClose(first, last);
-        if (m_options.metascan)
-        {
-            createMetascan();
-        }
     }
 
     // wait for falling edge
     if (m_foundLoop && !hasLoop && m_options.doGraphSlam)
     {
         graphSlam(last);
-        if (m_options.metascan)
-        {
-            createMetascan();
-        }
     }
 
     m_foundLoop = hasLoop;
@@ -239,15 +229,18 @@ void SlamAlign::loopClose(size_t first, size_t last)
 {
     cout << "Loopclose " << first << " -> " << last << endl;
 
-    ScanPtr metaFirst = make_shared<Scan>(*m_scans[first]);
-    metaFirst->addScanToMeta(m_scans[first + 1]);
-    metaFirst->addScanToMeta(m_scans[first + 2]);
+    Metascan* metaFirst = new Metascan();
+    Metascan* metaLast = new Metascan();
+    for (size_t i = 0; i < 3; i++)
+    {
+        metaFirst->addScan(m_scans[first + i]);
+        metaLast->addScan(m_scans[last - i]);
+    }
 
-    ScanPtr metaLast = make_shared<Scan>(*m_scans[last]);
-    metaLast->addScanToMeta(m_scans[last - 1]);
-    metaLast->addScanToMeta(m_scans[last - 2]);
+    ScanPtr scanFirst(metaFirst);
+    ScanPtr scanLast(metaLast);
 
-    ICPPointAlign icp(metaFirst, metaLast);
+    ICPPointAlign icp(scanFirst, scanLast);
     icp.setMaxMatchDistance(m_options.slamMaxDistance);
     icp.setMaxIterations(m_options.slamIterations);
     icp.setMaxLeafSize(m_options.maxLeafSize);

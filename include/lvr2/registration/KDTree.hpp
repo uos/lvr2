@@ -35,7 +35,8 @@
 #ifndef KDTREE_HPP_
 #define KDTREE_HPP_
 
-#include <lvr2/registration/TreeUtils.hpp>
+#include "TreeUtils.hpp"
+#include "Scan.hpp"
 
 #include <memory>
 #include <limits>
@@ -50,14 +51,13 @@ class KDTree
 {
 public:
     /**
-     * @brief Creates a new KDTree from the given Point Cloud. Note that this function modifies
-     *        the order of elements in 'points'.
+     * @brief Creates a new KDTree from the given Scan.
      *
      * @param points        The Point Cloud
      * @param n             The number of points in 'points'
      * @param maxLeafSize   The maximum number of points to use for a Leaf in the Tree
      */
-    static std::shared_ptr<KDTree> create(PointArray points, int n, int maxLeafSize = 20);
+    static std::shared_ptr<KDTree> create(ScanPtr scan, int maxLeafSize = 20);
 
     /**
      * @brief Creates a new KDTree from the given Point Cloud. Note that this function modifies
@@ -101,34 +101,32 @@ protected:
 using KDTreePtr = std::shared_ptr<KDTree>;
 
 /**
- * @brief Finds the nearest neighbors of all points in 'points' using a pre-generated KDTree
+ * @brief Finds the nearest neighbors of all points in a Scan using a pre-generated KDTree
  *
  * @param tree          The KDTree to search in
- * @param points        The Points to search for
+ * @param scan          The Scan to search for
  * @param neighbors     An array to store the results in. neighbors[i] is set to a Pointer to the
  *                      neighbor of points[i] or nullptr if none was found
- * @param n             The number of Points
  * @param maxDistance   The maximum Distance for a Neighbor
  * @param centroid_m    Will be set to the average of all Points in 'neighbors'
  * @param centroid_d    Will be set to the average of all Points in 'points' that have neighbors
  *
  * @returns             The number of neighbors that were found
  */
-size_t getNearestNeighbors(KDTreePtr tree, Vector3f* points, Vector3f** neighbors, size_t n, float maxDistance, Vector3d& centroid_m, Vector3d& centroid_d);
+size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, Vector3f** neighbors, float maxDistance, Vector3d& centroid_m, Vector3d& centroid_d);
 
 /**
- * @brief Finds the nearest neighbors of all points in 'points' using a pre-generated KDTree
+ * @brief Finds the nearest neighbors of all points in a Scan using a pre-generated KDTree
  *
  * @param tree          The KDTree to search in
- * @param points        The Points to search for
+ * @param scan          The Scan to search for
  * @param neighbors     An array to store the results in. neighbors[i] is set to a Pointer to the
  *                      neighbor of points[i] or nullptr if none was found
- * @param n             The number of Points
  * @param maxDistance   The maximum Distance for a Neighbor
  *
  * @returns             The number of neighbors that were found
  */
-size_t getNearestNeighbors(KDTreePtr tree, Vector3f* points, Vector3f** neighbors, size_t n, float maxDistance);
+size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, Vector3f** neighbors, float maxDistance);
 
 } /* namespace lvr2 */
 

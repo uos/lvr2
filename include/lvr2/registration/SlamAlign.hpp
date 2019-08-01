@@ -128,8 +128,6 @@ protected:
 
     void applyTransform(ScanPtr scan, const Matrix4d& transform);
 
-    void createMetascan();
-
     void checkLoopClose(size_t last);
     void loopClose(size_t first, size_t last);
     void graphSlam(size_t last);

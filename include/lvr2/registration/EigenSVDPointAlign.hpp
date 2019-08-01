@@ -36,10 +36,9 @@
 
 #include <vector>
 
-#include <Eigen/Dense>
-using Eigen::Matrix4d;
+#include "Scan.hpp"
+
 using Eigen::Vector3d;
-using Eigen::Vector3f;
 
 namespace lvr2
 {
@@ -52,9 +51,8 @@ public:
     EigenSVDPointAlign() {};
 
     double alignPoints(
-        Vector3f* data,
+        ScanPtr scan,
         Vector3f** neighbors,
-        size_t n,
         const Vector3d& centroid_m,
         const Vector3d& centroid_d,
         Matrix4d& align);

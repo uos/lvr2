@@ -59,7 +59,7 @@ ICPPointAlign::ICPPointAlign(ScanPtr model, ScanPtr data) :
     m_epsilon           = 0.00001;
     m_verbose           = false;
 
-    m_searchTree = KDTree::create(model->points(), model->count(), m_maxLeafSize);
+    m_searchTree = KDTree::create(model, m_maxLeafSize);
 }
 
 Matrix4d ICPPointAlign::match()
@@ -91,11 +91,11 @@ Matrix4d ICPPointAlign::match()
         prev_ret = ret;
 
         // Get point pairs
-        size_t pairs = getNearestNeighbors(m_searchTree, m_dataCloud->points(), neighbors, numPoints, m_maxDistanceMatch, centroid_m, centroid_d);
+        size_t pairs = getNearestNeighbors(m_searchTree, m_dataCloud, neighbors, m_maxDistanceMatch, centroid_m, centroid_d);
 
         // Get transformation
         transform = Matrix4d::Identity();
-        ret = align.alignPoints(m_dataCloud->points(), neighbors, numPoints, centroid_m, centroid_d, transform);
+        ret = align.alignPoints(m_dataCloud, neighbors, centroid_m, centroid_d, transform);
 
         // Apply transformation
         m_dataCloud->transform(transform, false);
