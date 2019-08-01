@@ -38,7 +38,7 @@ namespace lvr2{
         return cell;
     }
 
-    Cell* TumbleTree::insertIterative(double sc, VertexHandle vH)
+    /*Cell* TumbleTree::insertIterative(double sc, VertexHandle vH)
     {
 
         Cell* newCell = new Cell();
@@ -96,7 +96,7 @@ namespace lvr2{
         //cout << "Inserting a duplicate" << endl;
         return tmp;
 
-    }
+    }*/
 
     Cell* TumbleTree::insert(Cell* c, double sc, VertexHandle vH)
     {
@@ -138,7 +138,7 @@ namespace lvr2{
     }
 
     //TODO: make it work. expected number of cells after the algorithm: runtime*numsplits iterative??
-    Cell* TumbleTree::removeTwo(double sc, VertexHandle vH, Cell* c, bool removeWhole, double alpha)
+    /*Cell* TumbleTree::removeTwo(double sc, VertexHandle vH, Cell* c, bool removeWhole, double alpha)
     {
         Cell* tmp;
         if(c == NULL)
@@ -209,7 +209,7 @@ namespace lvr2{
         }
 
         return c;
-    }
+    }*/
 
 
     //TODO: make it work. expected number of cells after the algorithm: runtime*numsplits + 4  -  iterative??
@@ -260,20 +260,20 @@ namespace lvr2{
             //no children
             else if(!c->left && !c->right)
             {
-                free(c); //delete leaf node
+                delete c; //delete leaf node
                 return NULL; //leaf now a null pointer
             }
             //one subtree
             else if(!c->left && c->right)
             {
                 struct Cell *tmp = c->right; //add reference to right subtree root, to ensure it is not deleted
-                free(c); //delete the current node
+                delete c; //delete the current node
                 return tmp; //the current node is now it's right child
             }
             else if(c->left && !c->right)
             {
                 struct Cell *tmp = c->left;
-                free(c);
+                delete c;
                 return tmp;
             }
             //two subtrees
@@ -484,7 +484,7 @@ namespace lvr2{
     {
         //TODO: FIX PROBLEM FOR SC UPDATES.
         //cout << "#####start remove" <<endl;
-        double sc = c->signal_counter * c->alpha;
+        double sc = c->signal_counter;//* c->alpha;
         /*double tmp_sc = sc * c->alpha;
         Cell* tmp = c;
         while(tmp != root) //iterate up the tree to find the correct sc.
@@ -506,7 +506,7 @@ namespace lvr2{
         sc *= tmp->alpha; //include root alpha
 
         if(c->parent != NULL)
-            c->parent->right == c ? c->parent->right = removeTwo(tmp_sc, vH, c) : c->parent->left = removeTwo(tmp_sc, vH, c);
+            c->parent->right == c ? c->parent->right = remove(tmp_sc, vH, c) : c->parent->left = remove(tmp_sc, vH, c);
         else if(c == root){
             root = remove(tmp_sc, vH, root);
             cout << "root remove" << endl;
@@ -518,7 +518,7 @@ namespace lvr2{
 
 
         //cout << "#####end remove" << endl;
-        root = remove(sc, vH, root);
+        root = remove(sc * c->alpha, vH, root);
         return sc; //return the correct sc
     }
 
@@ -585,6 +585,20 @@ namespace lvr2{
     int TumbleTree::minDepth()
     {
         return minDepth(root);
+    }
+
+    int TumbleTree::sumDepth(Cell *c, int currentDepth)
+    {
+        if(c == NULL) return 0;
+        if(c->right == NULL && c->left == NULL) return currentDepth;
+        return sumDepth(c->right, currentDepth + 1) + sumDepth(c->left, currentDepth + 1);
+    }
+
+    int TumbleTree::numLeafes(Cell *c)
+    {
+        if(c == NULL) return 0;
+        if(c->right == NULL && c->left == NULL) return 1;
+        return numLeafes(c->right) + numLeafes(c->left);
     }
 
     void TumbleTree::balance()
