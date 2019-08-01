@@ -45,29 +45,61 @@ namespace lvr2
 class ChunkBuilder
 {
     public:
-        ChunkBuilder(unsigned int id, lvr2::ModelPtr originalModel, std::shared_ptr<std::vector<std::vector<unsigned int>>> vertexUse);
+        ChunkBuilder(unsigned int id,
+                     lvr2::ModelPtr originalModel,
+                     std::shared_ptr<std::vector<std::vector<unsigned int>>> vertexUse);
 
         ~ChunkBuilder();
 
-        /// add a face to this chunk
+        /**
+         * @brief assigns a face to the chunk this builder is generating
+         *
+         * This adds a face to the face list of this builder.
+         * It is used to create a chunk when calling buildMesh.
+         *
+         * @param index index of face in the original model
+         */
         void addFace(unsigned int index);
 
-        /// build mesh of chunk
+        /**
+         * @brief buildMesh builds a chunk by generating a new mesh buffer
+         *
+         * By calling buildMesh(), the mesh of a new chunk is being created.
+         * Before building a chunk, faces need to be added to this builder using the method addFace(index).
+         * The vertex buffer of resulting mesh holds the vertices that got duplicated during the chunking
+         * process at the first fields of the buffer followed by the normal vertices.
+         * If the number of added faces is 0 this function will return an mesh buffer holding no vertices
+         * or faces.
+         *
+         * @return mesh of the newly created chunk
+         */
         lvr2::MeshBufferPtr buildMesh();
 
+        /**
+         * @brief numFaces delivers the number of faces for the chunk
+         *
+         * This delivers the amount of faces currently added to a ChunkBuilder instance.
+         * This functionality is especially useful for checking whether or not a generatec mesh would be
+         * empty before calling buildMesh.
+         *
+         * @return number of faces added to this builder
+         */
         unsigned int numFaces();
         
     private:
+        // unique identificator for a ChunkBuilder
         unsigned int m_id;
 
-        /// model that is being chunked
+        // model that is being chunked
         lvr2::ModelPtr m_originalModel = nullptr;
 
+        // amount of added vertcices
         unsigned int m_numVertices = 0;
 
-        /// indices of faces in original model
+        // indices of faces in original model
         std::vector<unsigned int> m_faces;
 
+        // one dynamic sized vector with ChunkBuilder ids for all vertices of the original mesh for duplicate detection
         std::shared_ptr<std::vector<std::vector<unsigned int>>> m_vertexUse;
 };
 

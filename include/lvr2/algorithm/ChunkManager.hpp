@@ -44,19 +44,50 @@ namespace lvr2 {
 class ChunkManager
 {
     public:
+        /**
+         * @brief ChunkManager creates chunks from an original model
+         *
+         * Chunks the original model into chunks of given size.
+         * Every created chunk has ste same length in height, width and depth.
+         *
+         * @param model model to be chunked
+         * @param chunksize size of a chunk - unit depends on the given model
+         * @param savePath JUST FOR DEBUGGING - REMOVE LATER ON
+         */
         ChunkManager(ModelPtr model, float chunksize, std::string savePath);
 
     private:
-        // sets the bounding box for all dimensions in the mesh (minX, maxX, minY, ...)
+        /**
+         * @brief initBoundingBox calculates a BoundingBox of the original model
+         *
+         * This calculates the BoundingBox of the given model and saves it to m_boundingBox.
+         */
         void initBoundingBox();
 
-        // add each face to one chunk and save all chunks sequentially
+        /**
+         * @brief buildChunks builds chunks from an original model
+         *
+         * Creates chunks from an original model and initializes the initial chunk structure
+         *
+         * @param chunksize size of a chunk
+         * @param savePath UST FOR DEBUGGING - REMOVE LATER ON
+         */
         void buildChunks(float chunksize, std::string savePath);
 
-        // computes the center of a face with given vertex-indices
+        /**
+         * @brief getCenter computes the center of a face in the original model
+         *
+         * @param index0 index of first vertex in original model
+         * @param index1 index of second vertex in original model
+         * @param index2 index of third vertex in original model
+         * @return center point of the face
+         */
         BaseVector<float> getCenter(unsigned int index0, unsigned int index1, unsigned int index2);
         
+        // model that is being chunked
         ModelPtr m_originalModel;
+
+        // bounding box of the entire chunked model
         BoundingBox<BaseVector<float>> m_boundingBox;
 };
 
