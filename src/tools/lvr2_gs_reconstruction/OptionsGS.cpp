@@ -27,6 +27,7 @@ namespace gs_reconstruction{
                 ("filterChain",value<bool>(&m_filterChain)->default_value(false),"should the filter chain run? default: false")
                 ("deleteLongEdgesFactor",value<int>(&m_deleteLongEdgesFactor)->default_value(10), "0 = no deleting, default: 10")
                 ("interior",value<bool>(&m_interior)->default_value(false), "false: reconstruct exterior, true: reconstruct interior")
+                ("balances",value<int>(&m_balances)->default_value(20), "Number of TumbleTree-Balances during the reconstruction. default: 20")
                 ("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
                 ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
                 ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
@@ -94,6 +95,11 @@ namespace gs_reconstruction{
     bool Options::isInterior() const {
         return m_variables["interior"].as<bool>();
     }
+
+    int Options::getNumBalances() const {
+        return m_variables["balances"].as<int>();
+    }
+
 
 
 

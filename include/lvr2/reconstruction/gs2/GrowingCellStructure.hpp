@@ -145,6 +145,10 @@ namespace lvr2{
             GrowingCellStructure::m_interior = m_interior;
         }
 
+        void setNumBalances(int m_balances) {
+            GrowingCellStructure::m_balances = m_balances;
+        }
+
     private:
         PointsetSurfacePtr<BaseVecT> *m_surface; //helper-surface
         HalfEdgeMesh<BaseVecT> *m_mesh;
@@ -159,6 +163,7 @@ namespace lvr2{
         float m_neighborLearningRate;
         bool m_filterChain; //should a filter chain be applied?
         bool m_interior; //should the interior be reconstructed or the exterior?
+        int m_balances;
         float m_avgSignalCounter = 0;
 
         // "GCS" related members

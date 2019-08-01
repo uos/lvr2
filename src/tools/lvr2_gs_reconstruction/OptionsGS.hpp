@@ -82,6 +82,8 @@ namespace gs_reconstruction{
 
         bool isInterior() const;
 
+        int getNumBalances() const;
+
         string getInputFileName() const;
 
         /*
@@ -112,6 +114,7 @@ namespace gs_reconstruction{
         bool m_filterChain;
         int m_deleteLongEdgesFactor;
         bool m_interior;
+        int m_balances;
         /// The number of neighbors for distance function evaluation
         int                             m_kd;
 
@@ -145,6 +148,7 @@ namespace gs_reconstruction{
         cout << "##### FilterChain: " <<  o.isFilterChain() << endl;
         cout << "##### DeleteLongEdgesFactor: " <<  o.getDeleteLongEdgesFactor() << endl;
         cout << "##### Interior: " <<  o.isInterior() << endl;
+        cout << "##### Balances: " <<  o.getNumBalances() << endl;
         cout << "##### PCM: " <<  o.getPcm() << endl;
         cout << "##### KD: " <<  o.getKd() << endl;
         cout << "##### KI: " <<  o.getKi() << endl;

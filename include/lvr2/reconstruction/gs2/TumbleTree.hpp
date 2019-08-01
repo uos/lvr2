@@ -28,7 +28,7 @@ namespace  lvr2{
         Cell* makeEmpty(Cell* c);
 
         Cell* remove(double sc, VertexHandle vH, Cell* c, bool removeWhole = false);
-        Cell* removeTwo(double sc, VertexHandle vH, Cell* c, bool removeWhole = false, double alpha = 1);
+        //Cell* removeTwo(double sc, VertexHandle vH, Cell* c, bool removeWhole = false, double alpha = 1);
 
 
         Cell* insert(Cell* c, double sc, VertexHandle vH);
@@ -38,6 +38,8 @@ namespace  lvr2{
         int size(Cell* c);
         int maxDepth(Cell* cell);
         int minDepth(Cell* cell);
+        int sumDepth(Cell* c, int currentDepth = 1);
+        int numLeafes(Cell* c);
         Cell* buildTree(vector<Cell*>& cells, int start, int end);
         void getCellsAsVector(Cell* c, vector<Cell*>& cells);
 
@@ -51,7 +53,7 @@ namespace  lvr2{
         TumbleTree();
         ~TumbleTree();
 
-        Cell* insertIterative(double sc, VertexHandle vH);
+        //Cell* insertIterative(double sc, VertexHandle vH);
         Cell* insert(double sc, VertexHandle vH)
         {
             if(root == NULL)
@@ -80,6 +82,10 @@ namespace  lvr2{
 
         int maxDepth();
         int minDepth();
+        int avgDepth()
+        {
+            return sumDepth(root) / numLeafes(root);
+        }
         Cell* find(double sc, VertexHandle vH);
 
         void display();

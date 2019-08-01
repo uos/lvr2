@@ -61,7 +61,10 @@ namespace lvr2 {
         //algorithm
         for(int i = 0; i < getRuntime(); i++)
         {
-            if(getRuntime() >= 20 && i % (getRuntime() / 20) == 0 ) tumble_tree->balance();
+            if(getRuntime() >= m_balances && m_balances >= 0 && i % (getRuntime() / m_balances) == 0 )
+            {
+                tumble_tree->balance();
+            }
 
             for(int j = 0; j < getNumSplits(); j++)
             {
@@ -108,6 +111,7 @@ namespace lvr2 {
         //cout << "Size of BST: " << bst_tree->size() << endl;
         cout << "Max depth of tt: " << tumble_tree->maxDepth() << endl;
         cout << "Min depth of tt: " << tumble_tree->minDepth() << endl;
+        cout << "Average depth of tt: " << tumble_tree->avgDepth() << endl;
         cout << "Diff between ca and tt (waaaaaag): " << counter << endl;
         cout << "Not Deleted in TT: " << tumble_tree->notDeleted << endl;
         cout << "Tumble Tree size: " << tumble_tree->size() << endl;
@@ -688,7 +692,7 @@ namespace lvr2 {
             vector<size_t> indexes;
             vector<float> distances;
             tree.get()->kSearch(m_mesh->getVertexPosition(vertex), 1, indexes, distances);
-            if(distances[0] > 5 * avg_distance)
+            if(distances[0] > 3 * avg_distance)
             {
                 /*EdgeHandle longestH(0);
                 float length = 0.0f;*/

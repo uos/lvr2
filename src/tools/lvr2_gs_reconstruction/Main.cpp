@@ -65,7 +65,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options &op
     surface->setKn(options.getKn());
 
     //calc normals if there are none
-    if(!buffer->hasNormals()){
+    if(!buffer->hasNormals() && buffer.get()->numPoints() < 1000000){
         surface->calculateSurfaceNormals();
     }
 
@@ -154,6 +154,7 @@ int main(int argc, char **argv) {
     gcs.setNumSplits(options.getNumSplits());
     gcs.setWithCollapse(options.getWithCollapse());
     gcs.setInterior(options.isInterior());
+    gcs.setNumBalances(options.getNumBalances());
 
     //try {
         gcs.getMesh(mesh);
