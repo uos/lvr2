@@ -70,7 +70,7 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float chunksize, std::string 
     int amountZ = (int) std::ceil((m_boundingBox.getMax().z - m_boundingBox.getMin().z) / chunksize);
 
     // one vector of variable size for each vertex - this is used for duplicate detection
-    std::shared_ptr<std::vector<std::vector<unsigned int>>> vertexUse(new std::vector<std::vector<unsigned int>>(mesh->numVertices(), std::vector<unsigned int>()));
+    std::shared_ptr<std::vector<std::vector<std::shared_ptr<ChunkBuilder>>>> vertexUse(new std::vector<std::vector<std::shared_ptr<ChunkBuilder>>>(mesh->numVertices(), std::vector<std::shared_ptr<ChunkBuilder>>()));
 
     std::vector<std::shared_ptr<ChunkBuilder>> chunkBuilders(amountX * amountY * amountZ);
 
@@ -80,7 +80,7 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float chunksize, std::string 
         {
             for (int k = 0; k < amountZ; k++)
             {
-                chunkBuilders[i * amountY * amountZ + j * amountZ + k] = std::shared_ptr<ChunkBuilder>(new ChunkBuilder(i * amountY * amountZ + j * amountZ + k, mesh, vertexUse));
+                chunkBuilders[i * amountY * amountZ + j * amountZ + k] = std::shared_ptr<ChunkBuilder>(new ChunkBuilder(mesh, vertexUse));
             }
         }
     }

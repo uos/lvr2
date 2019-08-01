@@ -37,8 +37,7 @@
 namespace lvr2
 {
 
-ChunkBuilder::ChunkBuilder(unsigned int id, MeshBufferPtr originalMesh, std::shared_ptr<std::vector<std::vector<unsigned int>>> vertexUse) :
-    m_id(id),
+ChunkBuilder::ChunkBuilder(MeshBufferPtr originalMesh, std::shared_ptr<std::vector<std::vector<std::shared_ptr<ChunkBuilder>>>> vertexUse) :
     m_originalMesh(originalMesh),
     m_vertexUse(vertexUse)
 {
@@ -60,12 +59,30 @@ void ChunkBuilder::addFace(unsigned int index)
     {
         // if the vertex is not in the vector, we add the vertex (we just mark the vertex by adding the chunkID)
         if(std::find(m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).begin(),
-                     m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).end(), m_id)
+                     m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).end(), shared_from_this())
                 == m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).end())
         {
-            m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).push_back(m_id);
+            m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).push_back(shared_from_this());
             m_numVertices++;
         }
+
+        if (m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).size() == 2)
+        {
+            for (unsigned int i = 0; i < m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).size(); i++)
+            {
+                m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i])[i]->addDuplicateVertex(m_originalMesh->getFaceIndices()[index * 3 + i]);
+            }
+        }
+    }
+}
+
+void ChunkBuilder::addDuplicateVertex(unsigned int index)
+{
+    if(std::find(m_duplicateVertices.begin(),
+                 m_duplicateVertices.end(), index)
+            == m_duplicateVertices.end())
+    {
+        m_duplicateVertices.push_back(index);
     }
 }
 
@@ -85,6 +102,7 @@ MeshBufferPtr ChunkBuilder::buildMesh()
     lvr2::ucharArr vertexColors;
     lvr2::floatArr faceNormals;
     lvr2::floatArr vertexNormals;
+
     if(m_originalMesh->hasFaceColors())
     {
         faceColors = lvr2::ucharArr(new unsigned char[m_faces.size() * 3]);
@@ -101,50 +119,77 @@ MeshBufferPtr ChunkBuilder::buildMesh()
     {
         vertexNormals = lvr2::floatArr(new float[m_numVertices * 3]);
     }
-    
+
+    // fill vertex buffer with duplicate vertices
+    for (unsigned int vertex : m_duplicateVertices)
+    {
+        if (vertexIndices.find(vertex) == vertexIndices.end())
+        {
+            unsigned int vertexIndex = vertexIndices.size();
+            vertexIndices[vertex] = vertexIndex;
+
+            for (uint8_t j = 0; j < 3; j++)
+            {
+                vertices[vertexIndex * 3 + j]
+                        = m_originalMesh->getVertices()[vertex * 3 + j];
+
+                if(m_originalMesh->hasVertexColors())
+                {
+                    size_t width = 3;
+                    vertexColors[vertexIndex * 3 + j]
+                        = m_originalMesh->getVertexColors(width)[vertex * 3 + j];
+                }
+
+                if(m_originalMesh->hasVertexNormals())
+                {
+                    vertexNormals[vertexIndex * 3 + j]
+                        = m_originalMesh->getVertexNormals()[vertex * 3 + j];
+                }
+            }
+        }
+    }
 
     // fill new vertex and face buffer
-    unsigned int faceIndexCnt = 0;
-    for (unsigned int faceIndex : m_faces)
+    for (unsigned int face = 0; face < m_faces.size(); face++)
     {
-        for (uint8_t i = 0; i < 3; i++)
+        for (uint8_t faceVertex = 0; faceVertex < 3; faceVertex++)
         {
-            if (vertexIndices.find(m_originalMesh->getFaceIndices()[faceIndex * 3 + i]) == vertexIndices.end())
+            if (vertexIndices.find(m_originalMesh->getFaceIndices()[m_faces[face] * 3 + faceVertex]) == vertexIndices.end())
             {
-                vertexIndices[m_originalMesh->getFaceIndices()[faceIndex * 3 + i]] = vertexIndices.size();
+                unsigned int vertexIndex = vertexIndices.size();
+                vertexIndices[m_originalMesh->getFaceIndices()[m_faces[face] * 3 + faceVertex]] = vertexIndex;
 
-                for (uint8_t j = 0; j < 3; j++)
+                for (uint8_t vertexComponent = 0; vertexComponent < 3; vertexComponent++)
                 {
-                    vertices[vertexIndices[m_originalMesh->getFaceIndices()[faceIndex * 3 + i]] * 3 + j]
-                            = m_originalMesh->getVertices()[m_originalMesh->getFaceIndices()[faceIndex * 3 + i] * 3 + j];
+                    vertices[vertexIndex * 3 + vertexComponent]
+                            = m_originalMesh->getVertices()[m_originalMesh->getFaceIndices()[m_faces[face] * 3 + faceVertex] * 3 + vertexComponent];
                     
                     if(m_originalMesh->hasVertexColors())
                     {
                         size_t width = 3;
-                        vertexColors[(vertexIndices[m_originalMesh->getFaceIndices()[faceIndex * 3 + i]] * 3 + j)]
-                            = m_originalMesh->getVertexColors(width)[(m_originalMesh->getFaceIndices()[faceIndex * 3 + i] * 3 + j)];
+                        vertexColors[vertexIndex * 3 + vertexComponent]
+                            = m_originalMesh->getVertexColors(width)[m_originalMesh->getFaceIndices()[m_faces[face] * 3 + faceVertex] * 3 + vertexComponent];
                     }
                     if(m_originalMesh->hasVertexNormals())
                     {   
-                        vertexNormals[(vertexIndices[m_originalMesh->getFaceIndices()[faceIndex * 3 + i]] * 3 + j)] 
-                            = m_originalMesh->getVertexNormals()[(m_originalMesh->getFaceIndices()[faceIndex * 3 + i] * 3 + j)];
+                        vertexNormals[vertexIndex * 3 + vertexComponent]
+                            = m_originalMesh->getVertexNormals()[m_originalMesh->getFaceIndices()[m_faces[face] * 3 + faceVertex] * 3 + vertexComponent];
                     }
                 }
             }
 
-            faceIndices[faceIndexCnt * 3 + i] = vertexIndices[m_originalMesh->getFaceIndices()[faceIndex * 3 + i]];
+            faceIndices[face * 3 + faceVertex] = vertexIndices[m_originalMesh->getFaceIndices()[m_faces[face] * 3 + faceVertex]];
 
             if (m_originalMesh->hasFaceColors())
             {
                 size_t width = 3;
-                faceColors[faceIndexCnt * 3 + i] = m_originalMesh->getFaceColors(width)[faceIndex * 3 + i];
+                faceColors[face * 3 + faceVertex] = m_originalMesh->getFaceColors(width)[m_faces[face] * 3 + faceVertex];
             }
             if(m_originalMesh->hasFaceNormals())
             {
-                faceNormals[faceIndexCnt * 3 + i] = m_originalMesh->getFaceNormals()[faceIndex * 3 + i];
+                faceNormals[face * 3 + faceVertex] = m_originalMesh->getFaceNormals()[m_faces[face] * 3 + faceVertex];
             }
         }
-        faceIndexCnt++;
     }
 
     // build new model from newly created buffers
@@ -156,7 +201,7 @@ MeshBufferPtr ChunkBuilder::buildMesh()
     // add additional channels
     if(m_originalMesh->hasFaceColors())
     {
-        mesh->setFaceColors(faceColors, 3); // do we have rgba?
+        mesh->setFaceColors(faceColors, 3);
     }
     if(m_originalMesh->hasVertexColors())
     {
@@ -170,6 +215,8 @@ MeshBufferPtr ChunkBuilder::buildMesh()
     {
         mesh->setVertexNormals(vertexNormals);
     }
+
+    mesh->addAtomic<unsigned int>(m_duplicateVertices.size(), "num_duplicate_vertices");
 
     return mesh;
 }

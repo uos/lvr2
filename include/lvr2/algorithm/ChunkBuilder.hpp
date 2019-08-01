@@ -42,19 +42,17 @@
 namespace lvr2
 {
 
-class ChunkBuilder
+class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
 {
     public:
         /**
          * @brief ChunkBuilder constructs a chun builder that can create individual chunks
          *
-         * @param id unique id of the chunk
          * @param originalMesh mesh that is being chunked
          * @param vertexUse list of ChunkBuilders that for each vertex of the original mesh
          */
-        ChunkBuilder(unsigned int id,
-                     MeshBufferPtr originalMesh,
-                     std::shared_ptr<std::vector<std::vector<unsigned int>>> vertexUse);
+        ChunkBuilder(MeshBufferPtr originalMesh,
+                     std::shared_ptr<std::vector<std::vector<std::shared_ptr<ChunkBuilder>>>> vertexUse);
 
         ~ChunkBuilder();
 
@@ -67,6 +65,16 @@ class ChunkBuilder
          * @param index index of face in the original model
          */
         void addFace(unsigned int index);
+
+        /**
+         * @brief addDuplicateVertex marks a vertex as duplicate
+         *
+         * Duplicate vertices will be added to the beginning of the Vertex array of the chunk mesh when
+         * calling buildMesh().
+         *
+         * @param index vertex index of diplicate vertex
+         */
+        void addDuplicateVertex(unsigned int index);
 
         /**
          * @brief buildMesh builds a chunk by generating a new mesh buffer
@@ -94,20 +102,20 @@ class ChunkBuilder
         unsigned int numFaces();
         
     private:
-        // unique identificator for a ChunkBuilder
-        unsigned int m_id;
-
         // model that is being chunked
         MeshBufferPtr m_originalMesh = nullptr;
 
         // amount of added vertcices
         unsigned int m_numVertices = 0;
 
+        // indices of vertices of this chunk that got dupliplicated during the chunking process
+        std::vector<unsigned int> m_duplicateVertices;
+
         // indices of faces in original model
         std::vector<unsigned int> m_faces;
 
         // one dynamic sized vector with ChunkBuilder ids for all vertices of the original mesh for duplicate detection
-        std::shared_ptr<std::vector<std::vector<unsigned int>>> m_vertexUse;
+        std::shared_ptr<std::vector<std::vector<std::shared_ptr<ChunkBuilder>>>> m_vertexUse;
 };
 
 } /* namespace lvr2 */
