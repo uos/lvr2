@@ -28,8 +28,8 @@
 /**
  * ChunkManager.hpp
  *
- * @date
- * @author
+ * @date 21.07.2019
+ * @author Malte kl. Piening
  */
 
 #ifndef CHUNK_MANAGER_HPP
