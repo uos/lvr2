@@ -81,6 +81,28 @@ MeshBufferPtr ChunkBuilder::buildMesh()
     lvr2::floatArr vertices(new float[m_numVertices * 3]);
     lvr2::indexArray faceIndices(new unsigned int[m_faces.size() * 3]);
 
+    lvr2::ucharArr faceColors;
+    lvr2::ucharArr vertexColors;
+    lvr2::floatArr faceNormals;
+    lvr2::floatArr vertexNormals;
+    if(m_originalMesh->hasFaceColors())
+    {
+        faceColors = lvr2::ucharArr(new unsigned char[m_faces.size() * 3]);
+    }
+    if(m_originalMesh->hasVertexColors())
+    {
+        vertexColors = lvr2::ucharArr(new unsigned char[m_numVertices * 3]);
+    }
+    if(m_originalMesh->hasFaceNormals())
+    {
+        faceNormals = lvr2::floatArr(new float[m_faces.size() * 3]);
+    }
+    if(m_originalMesh->hasVertexNormals())
+    {
+        vertexNormals = lvr2::floatArr(new float[m_numVertices * 3]);
+    }
+    
+
     // fill new vertex and face buffer
     unsigned int faceIndexCnt = 0;
     for (unsigned int faceIndex : m_faces)
@@ -95,10 +117,32 @@ MeshBufferPtr ChunkBuilder::buildMesh()
                 {
                     vertices[vertexIndices[m_originalMesh->getFaceIndices()[faceIndex * 3 + i]] * 3 + j]
                             = m_originalMesh->getVertices()[m_originalMesh->getFaceIndices()[faceIndex * 3 + i] * 3 + j];
+                    
+                    if(m_originalMesh->hasVertexColors())
+                    {
+                        size_t width = 3;
+                        vertexColors[(vertexIndices[m_originalMesh->getFaceIndices()[faceIndex * 3 + i]] * 3 + j)]
+                            = m_originalMesh->getVertexColors(width)[(m_originalMesh->getFaceIndices()[faceIndex * 3 + i] * 3 + j)];
+                    }
+                    if(m_originalMesh->hasVertexNormals())
+                    {   
+                        vertexNormals[(vertexIndices[m_originalMesh->getFaceIndices()[faceIndex * 3 + i]] * 3 + j)] 
+                            = m_originalMesh->getVertexNormals()[(m_originalMesh->getFaceIndices()[faceIndex * 3 + i] * 3 + j)];
+                    }
                 }
             }
 
             faceIndices[faceIndexCnt * 3 + i] = vertexIndices[m_originalMesh->getFaceIndices()[faceIndex * 3 + i]];
+
+            if (m_originalMesh->hasFaceColors())
+            {
+                size_t width = 3;
+                faceColors[faceIndexCnt * 3 + i] = m_originalMesh->getFaceColors(width)[faceIndex * 3 + i];
+            }
+            if(m_originalMesh->hasFaceNormals())
+            {
+                faceNormals[faceIndexCnt * 3 + i] = m_originalMesh->getFaceNormals()[faceIndex * 3 + i];
+            }
         }
         faceIndexCnt++;
     }
@@ -108,6 +152,24 @@ MeshBufferPtr ChunkBuilder::buildMesh()
 
     mesh->setVertices(vertices, vertexIndices.size());
     mesh->setFaceIndices(faceIndices, m_faces.size());
+
+    // add additional channels
+    if(m_originalMesh->hasFaceColors())
+    {
+        mesh->setFaceColors(faceColors, 3); // do we have rgba?
+    }
+    if(m_originalMesh->hasVertexColors())
+    {
+        mesh->setVertexColors(vertexColors, 3);
+    }
+    if(m_originalMesh->hasFaceNormals())
+    {
+        mesh->setFaceNormals(faceNormals);
+    }
+    if(m_originalMesh->hasVertexNormals())
+    {
+        mesh->setVertexNormals(vertexNormals);
+    }
 
     return mesh;
 }
