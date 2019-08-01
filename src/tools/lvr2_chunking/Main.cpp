@@ -56,8 +56,7 @@ int main(int argc, char** argv)
         return EXIT_SUCCESS;
     }
 
-    lvr2::ModelFactory mf;
-    lvr2::ModelPtr model = mf.readModel(options.getInputFile());
+    lvr2::ModelPtr model = lvr2::ModelFactory::readModel(options.getInputFile());
 
     boost::filesystem::path outputPath = boost::filesystem::absolute(options.getOutputDir());
     if (!boost::filesystem::is_directory(outputPath))
