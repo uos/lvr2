@@ -58,34 +58,35 @@ class ChunkManager
 
     private:
         /**
-         * @brief initBoundingBox calculates a BoundingBox of the original model
+         * @brief initBoundingBox calculates a bounding box of the original model
          *
-         * This calculates the BoundingBox of the given model and saves it to m_boundingBox.
+         * This calculates the bounding box of the given model and saves it to m_boundingBox.
+         *
+         * @param model model whose bounding box shall be calculated
          */
-        void initBoundingBox();
+        void initBoundingBox(ModelPtr model);
 
         /**
          * @brief buildChunks builds chunks from an original model
          *
          * Creates chunks from an original model and initializes the initial chunk structure
          *
+         * @param model model which is being chunked
          * @param chunksize size of a chunk
          * @param savePath UST FOR DEBUGGING - REMOVE LATER ON
          */
-        void buildChunks(float chunksize, std::string savePath);
+        void buildChunks(ModelPtr model, float chunksize, std::string savePath);
 
         /**
-         * @brief getCenter computes the center of a face in the original model
+         * @brief getCenter computes the center of a face in a given model
          *
+         * @param model original model which contains the face
          * @param index0 index of first vertex in original model
          * @param index1 index of second vertex in original model
          * @param index2 index of third vertex in original model
          * @return center point of the face
          */
-        BaseVector<float> getCenter(unsigned int index0, unsigned int index1, unsigned int index2);
-        
-        // model that is being chunked
-        ModelPtr m_originalModel;
+        BaseVector<float> getCenter(ModelPtr model, unsigned int index0, unsigned int index1, unsigned int index2);
 
         // bounding box of the entire chunked model
         BoundingBox<BaseVector<float>> m_boundingBox;

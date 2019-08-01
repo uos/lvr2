@@ -43,26 +43,25 @@ namespace lvr2
 
 ChunkManager::ChunkManager(ModelPtr model, float chunksize, std::string savePath)
 {
-    m_originalModel = model;
-    initBoundingBox();
-    buildChunks(chunksize, savePath);
+    initBoundingBox(model);
+    buildChunks(model, chunksize, savePath);
 }
 
-void ChunkManager::initBoundingBox()
+void ChunkManager::initBoundingBox(ModelPtr model)
 {
     BaseVector<float> currVertex;
 
-    for(size_t i = 0; i < m_originalModel->m_mesh->numVertices(); i++)
+    for(size_t i = 0; i < model->m_mesh->numVertices(); i++)
     {
-        currVertex.x = m_originalModel->m_mesh->getVertices()[3 * i];
-        currVertex.y = m_originalModel->m_mesh->getVertices()[3 * i + 1];
-        currVertex.z = m_originalModel->m_mesh->getVertices()[3 * i + 2];
+        currVertex.x = model->m_mesh->getVertices()[3 * i];
+        currVertex.y = model->m_mesh->getVertices()[3 * i + 1];
+        currVertex.z = model->m_mesh->getVertices()[3 * i + 2];
 
         m_boundingBox.expand(currVertex);
     }
 }
 
-void ChunkManager::buildChunks(float chunksize, std::string savePath)
+void ChunkManager::buildChunks(ModelPtr model, float chunksize, std::string savePath)
 {
     // compute number of chunks for each dimension
     int amountX = (int) std::ceil((m_boundingBox.getMax().x - m_boundingBox.getMin().x) / chunksize);
@@ -70,7 +69,7 @@ void ChunkManager::buildChunks(float chunksize, std::string savePath)
     int amountZ = (int) std::ceil((m_boundingBox.getMax().z - m_boundingBox.getMin().z) / chunksize);
 
     // one vector of variable size for each vertex - this is used for duplicate detection
-    std::shared_ptr<std::vector<std::vector<unsigned int>>> vertexUse(new std::vector<std::vector<unsigned int>>(m_originalModel->m_mesh->numVertices(), std::vector<unsigned int>()));
+    std::shared_ptr<std::vector<std::vector<unsigned int>>> vertexUse(new std::vector<std::vector<unsigned int>>(model->m_mesh->numVertices(), std::vector<unsigned int>()));
 
     std::vector<std::shared_ptr<ChunkBuilder>> chunkBuilders(amountX * amountY * amountZ);
 
@@ -80,18 +79,18 @@ void ChunkManager::buildChunks(float chunksize, std::string savePath)
         {
             for (int k = 0; k < amountZ; k++)
             {
-                chunkBuilders[i * amountY * amountZ + j * amountZ + k] = std::shared_ptr<ChunkBuilder>(new ChunkBuilder(i * amountY * amountZ + j * amountZ + k, m_originalModel, vertexUse));
+                chunkBuilders[i * amountY * amountZ + j * amountZ + k] = std::shared_ptr<ChunkBuilder>(new ChunkBuilder(i * amountY * amountZ + j * amountZ + k, model, vertexUse));
             }
         }
     }
 
     // assign the faces to the chunks
     BaseVector<float> currentCenterPoint;
-    for(int i = 0; i < m_originalModel->m_mesh->numFaces(); i++)
+    for(int i = 0; i < model->m_mesh->numFaces(); i++)
     {
-        currentCenterPoint = getCenter(m_originalModel->m_mesh->getFaceIndices()[i * 3],
-                m_originalModel->m_mesh->getFaceIndices()[i * 3 + 1],
-                m_originalModel->m_mesh->getFaceIndices()[i * 3 + 2]);
+        currentCenterPoint = getCenter(model, model->m_mesh->getFaceIndices()[i * 3],
+                model->m_mesh->getFaceIndices()[i * 3 + 1],
+                model->m_mesh->getFaceIndices()[i * 3 + 2]);
 
         chunkBuilders[(int) ((currentCenterPoint.x - m_boundingBox.getMin().x) / chunksize) * amountY * amountZ
                 + (int) ((currentCenterPoint.y - m_boundingBox.getMin().y) / chunksize) * amountZ
@@ -118,19 +117,19 @@ void ChunkManager::buildChunks(float chunksize, std::string savePath)
     }
 }
 
-BaseVector<float> ChunkManager::getCenter(unsigned int index0, unsigned int index1, unsigned int index2)
+BaseVector<float> ChunkManager::getCenter(ModelPtr model, unsigned int index0, unsigned int index1, unsigned int index2)
 {
-    float x = (m_originalModel->m_mesh->getVertices()[index0 * 3 + 0]
-            + m_originalModel->m_mesh->getVertices()[index1 * 3 + 0]
-            + m_originalModel->m_mesh->getVertices()[index2 * 3 + 0]) / 3;
+    float x = (model->m_mesh->getVertices()[index0 * 3 + 0]
+            + model->m_mesh->getVertices()[index1 * 3 + 0]
+            + model->m_mesh->getVertices()[index2 * 3 + 0]) / 3;
 
-    float y = (m_originalModel->m_mesh->getVertices()[index0 * 3 + 1]
-            + m_originalModel->m_mesh->getVertices()[index1 * 3 + 1]
-            + m_originalModel->m_mesh->getVertices()[index2 * 3 + 1]) / 3;
+    float y = (model->m_mesh->getVertices()[index0 * 3 + 1]
+            + model->m_mesh->getVertices()[index1 * 3 + 1]
+            + model->m_mesh->getVertices()[index2 * 3 + 1]) / 3;
 
-    float z = (m_originalModel->m_mesh->getVertices()[index0 * 3 + 2]
-          + m_originalModel->m_mesh->getVertices()[index1 * 3 + 2]
-          + m_originalModel->m_mesh->getVertices()[index2 * 3 + 2]) / 3;
+    float z = (model->m_mesh->getVertices()[index0 * 3 + 2]
+          + model->m_mesh->getVertices()[index1 * 3 + 2]
+          + model->m_mesh->getVertices()[index2 * 3 + 2]) / 3;
 
     return BaseVector<float>(x, y, z);
 }
