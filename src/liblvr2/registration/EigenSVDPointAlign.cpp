@@ -46,9 +46,8 @@ namespace lvr2
 {
 
 double EigenSVDPointAlign::alignPoints(
-    Vector3f* data,
+    ScanPtr scan,
     Vector3f** neighbors,
-    size_t n,
     const Vector3d& centroid_m,
     const Vector3d& centroid_d,
     Matrix4d& align)
@@ -59,7 +58,7 @@ double EigenSVDPointAlign::alignPoints(
     // Fill H matrix
     Matrix3d H = Matrix3d::Zero();
 
-    for (size_t i = 0; i < n; i++)
+    for (size_t i = 0; i < scan->count(); i++)
     {
         if (neighbors[i] == nullptr)
         {
@@ -67,7 +66,7 @@ double EigenSVDPointAlign::alignPoints(
         }
 
         Vector3d m = neighbors[i]->cast<double>() - centroid_m;
-        Vector3d d = data[i].cast<double>() - centroid_d;
+        Vector3d d = scan->getPoint(i).cast<double>() - centroid_d;
 
         error += (m - d).squaredNorm();
         pairs++;

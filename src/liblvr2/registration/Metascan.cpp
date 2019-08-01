@@ -26,50 +26,44 @@
  */
 
 /**
- * GraphSlam.hpp
+ * Metascan.cpp
  *
- *  @date July 22, 2019
+ *  @date May 6, 2019
  *  @author Malte Hillmann
  */
-#ifndef GRAPHSLAM_HPP_
-#define GRAPHSLAM_HPP_
-
-#include "Scan.hpp"
-#include "SlamOptions.hpp"
-#include "KDTree.hpp"
-
-#include <Eigen/Sparse>
-
-using Matrix6d = Eigen::Matrix<double, 6, 6>;
-using Vector6d = Eigen::Matrix<double, 6, 1>;
-using GraphMatrix = Eigen::SparseMatrix<double>;
-using GraphVector = Eigen::VectorXd;
-using Graph = vector<pair<int, int>>;
+#include <lvr2/registration/Metascan.hpp>
 
 namespace lvr2
 {
 
-bool findCloseScans(const vector<ScanPtr>& scans, size_t scan, const SlamOptions& options, vector<size_t>& output);
-
-class GraphSlam
+Metascan::Metascan()
+    : Scan(PointBufferPtr(), Matrix4d::Identity()), m_count(0)
 {
 
-public:
-    GraphSlam(const SlamOptions* options);
+}
 
-    virtual ~GraphSlam() = default;
+Vector3f Metascan::getPoint(size_t index) const
+{
+    for (auto& scan : m_scans)
+    {
+        if (index < scan->count())
+        {
+            return scan->getPoint(index);
+        }
+        index -= scan->count();
+    }
+}
 
-    void doGraphSlam(const vector<ScanPtr>& scans, size_t last);
+size_t Metascan::count() const
+{
+    return m_count;
+}
 
-protected:
-
-    void createGraph(const vector<ScanPtr>& scans, size_t last, Graph& graph);
-    void fillEquation(const vector<ScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec);
-    void eulerCovariance(KDTreePtr tree, ScanPtr scan, Matrix6d& outMat, Vector6d& outVec) const;
-
-    const SlamOptions*     m_options;
-};
+void Metascan::addScan(ScanPtr scan)
+{
+    m_scans.push_back(scan);
+    m_count += scan->count();
+    m_deltaPose = scan->getDeltaPose();
+}
 
 } /* namespace lvr2 */
-
-#endif /* GRAPHSLAM_HPP_ */

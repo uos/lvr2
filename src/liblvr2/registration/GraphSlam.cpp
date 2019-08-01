@@ -33,7 +33,6 @@
  */
 #include <lvr2/registration/GraphSlam.hpp>
 
-#include <lvr2/registration/KDTree.hpp>
 #include <lvr2/io/IOUtils.hpp>
 
 #include <limits>
@@ -70,7 +69,7 @@ bool findCloseScans(const vector<ScanPtr>& scans, size_t scan, const SlamOptions
     else
     {
         // convert current Scan to KDTree for Pair search
-        auto tree = KDTree::create(cur->points(), cur->count(), options.maxLeafSize);
+        auto tree = KDTree::create(cur, options.maxLeafSize);
 
         size_t maxLen = 0;
         for (size_t other = 0; other < scan - options.loopSize; other++)
@@ -81,7 +80,7 @@ bool findCloseScans(const vector<ScanPtr>& scans, size_t scan, const SlamOptions
 
         for (size_t other = 0; other < scan - options.loopSize; other++)
         {
-            size_t count = getNearestNeighbors(tree, scans[other]->points(), neighbors, scans[other]->count(), options.slamMaxDistance);
+            size_t count = getNearestNeighbors(tree, scans[other], neighbors, options.slamMaxDistance);
             if (count >= options.closeLoopPairs)
             {
                 output.push_back(other);
@@ -123,7 +122,7 @@ void GraphSlam::doGraphSlam(const vector<ScanPtr>& scans, size_t last)
         createGraph(scans, last, graph);
 
         // Construct the linear equation system A * X = B..
-        fillEquation(scans, last, graph, A, B);
+        fillEquation(scans, graph, A, B);
 
         graph.clear();
 
@@ -237,15 +236,18 @@ void GraphSlam::createGraph(const vector<ScanPtr>& scans, size_t last, Graph& gr
 /**
  * A function to fill the linear system mat * x = vec.
  */
-void GraphSlam::fillEquation(const vector<ScanPtr>& scans, size_t last, const Graph& graph, GraphMatrix& mat, GraphVector& vec)
+void GraphSlam::fillEquation(const vector<ScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec)
 {
-    mat.setZero();
-    vec.setZero();
-
-    for (size_t i = 0; i <= last; i++)
+    // Cache all KDTrees
+    map<size_t, KDTreePtr> trees;
+    for (size_t i = 0; i < graph.size(); i++)
     {
-        // apply previous transformations
-        scans[i]->points();
+        size_t a = graph[i].first;
+        if (trees.find(a) == trees.end())
+        {
+            auto tree = KDTree::create(scans[a], m_options->maxLeafSize);
+            trees.insert(make_pair(a, tree));
+        }
     }
 
     vector<pair<Matrix6d, Vector6d>> coeff(graph.size());
@@ -256,17 +258,22 @@ void GraphSlam::fillEquation(const vector<ScanPtr>& scans, size_t last, const Gr
         int a, b;
         std::tie(a, b) = graph[i];
 
-        ScanPtr firstScan  = scans[a];
-        ScanPtr secondScan = scans[b];
+        KDTreePtr tree  = trees[a];
+        ScanPtr scan = scans[b];
 
         Matrix6d coeffMat;
         Vector6d coeffVec;
-        eulerCovariance(firstScan, secondScan, coeffMat, coeffVec);
+        eulerCovariance(tree, scan, coeffMat, coeffVec);
 
         coeff[i] = make_pair(coeffMat, coeffVec);
     }
 
+    trees.clear();
+
     map<pair<int, int>, Matrix6d> result;
+
+    mat.setZero();
+    vec.setZero();
 
     for (size_t i = 0; i < graph.size(); i++)
     {
@@ -355,18 +362,13 @@ void GraphSlam::fillEquation(const vector<ScanPtr>& scans, size_t last, const Gr
     mat.setFromTriplets(triplets.begin(), triplets.end());
 }
 
-void GraphSlam::eulerCovariance(ScanPtr a, ScanPtr b, Matrix6d& outMat, Vector6d& outVec) const
+void GraphSlam::eulerCovariance(KDTreePtr tree, ScanPtr scan, Matrix6d& outMat, Vector6d& outVec) const
 {
-    size_t n = b->count();
-
-    Vector3f* a_points = new Vector3f[a->count()];
-    std::copy_n(a->points(), a->count(), a_points);
+    size_t n = scan->count();
 
     Vector3f** results = new Vector3f*[n];
 
-    auto tree = KDTree::create(a_points, a->count(), m_options->maxLeafSize);
-    Vector3f* points = b->points();
-    size_t pairs = getNearestNeighbors(tree, points, results, n, m_options->slamMaxDistance);
+    size_t pairs = getNearestNeighbors(tree, scan, results, m_options->slamMaxDistance);
 
     Vector6d mz = Vector6d::Zero();
     Vector3d sum = Vector3d::Zero();
@@ -380,7 +382,7 @@ void GraphSlam::eulerCovariance(ScanPtr a, ScanPtr b, Matrix6d& outMat, Vector6d
             continue;
         }
 
-        Vector3d p = points[i].cast<double>();
+        Vector3d p = scan->getPoint(i).cast<double>();
         Vector3d r = results[i]->cast<double>();
 
         Vector3d mid = (p + r) / 2.0;
@@ -433,7 +435,7 @@ void GraphSlam::eulerCovariance(ScanPtr a, ScanPtr b, Matrix6d& outMat, Vector6d
             continue;
         }
 
-        Vector3d p = points[i].cast<double>();
+        Vector3d p = scan->getPoint(i).cast<double>();
         Vector3d r = results[i]->cast<double>();
 
         Vector3d mid = (p + r) / 2.0;
@@ -445,7 +447,6 @@ void GraphSlam::eulerCovariance(ScanPtr a, ScanPtr b, Matrix6d& outMat, Vector6d
     }
 
     delete[] results;
-    delete[] a_points;
 
     ss = ss / (2.0 * pairs - 3.0);
 

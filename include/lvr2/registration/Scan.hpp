@@ -56,6 +56,8 @@ class Scan
 public:
     Scan(PointBufferPtr points, const Matrix4d& pose);
 
+    virtual ~Scan() = default;
+
     void transform(const Matrix4d& transform, bool writeFrame = true, ScanUse use = ScanUse::UPDATED);
     void addFrame(ScanUse use = ScanUse::UNUSED);
 
@@ -63,9 +65,8 @@ public:
     void setMinDistance(float minDistance);
     void setMaxDistance(float maxDistance);
 
-    Vector3f getPoint(size_t index) const;
-    Vector3f* points();
-    size_t count() const;
+    virtual Vector3f getPoint(size_t index) const;
+    virtual size_t count() const;
 
     const Matrix4d& getPose() const;
     const Matrix4d& getDeltaPose() const;
@@ -77,9 +78,6 @@ public:
 
     PointBufferPtr toPointBuffer() const;
 
-    /// Only for Meta Scans
-    void addScanToMeta(std::shared_ptr<Scan> scan);
-
 protected:
     std::vector<Vector3f> m_points;
 
@@ -88,9 +86,6 @@ protected:
     Matrix4d    m_initialPose;
 
     std::vector<std::pair<Matrix4d, ScanUse>> m_frames;
-
-    bool        m_transformChanged;
-    Matrix4d    m_transformChange;
 };
 
 using ScanPtr = std::shared_ptr<Scan>;

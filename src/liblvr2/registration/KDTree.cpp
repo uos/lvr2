@@ -149,6 +149,28 @@ KDTreePtr KDTree::create(Vector3f* points, int n, int maxLeafSize)
     return ret;
 }
 
+KDTreePtr KDTree::create(ScanPtr scan, int maxLeafSize)
+{
+    KDTreePtr ret;
+
+    size_t n = scan->count();
+    PointArray points = PointArray(new Vector3f[n]);
+
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < n; i++)
+    {
+        points[i] = scan->getPoint(i);
+    }
+
+    #pragma omp parallel // allows "pragma omp task"
+    #pragma omp single // only execute every task once
+    ret = create_recursive(points.get(), n, maxLeafSize);
+
+    ret->points = points;
+
+    return ret;
+}
+
 bool KDTree::nearestNeighbor(const Vector3f& point, Vector3f*& neighbor, float& distance, float maxDistance) const
 {
     neighbor = nullptr;
@@ -158,19 +180,19 @@ bool KDTree::nearestNeighbor(const Vector3f& point, Vector3f*& neighbor, float& 
     return neighbor != nullptr;
 }
 
-size_t getNearestNeighbors(KDTreePtr tree, Vector3f* points, Vector3f** neighbors, size_t n, float maxDistance, Vector3d& centroid_m, Vector3d& centroid_d)
+size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, Vector3f** neighbors, float maxDistance, Vector3d& centroid_m, Vector3d& centroid_d)
 {
-    size_t found = getNearestNeighbors(tree, points, neighbors, n, maxDistance);
+    size_t found = getNearestNeighbors(tree, scan, neighbors, maxDistance);
 
     centroid_m = Vector3d::Zero();
     centroid_d = Vector3d::Zero();
 
-    for (size_t i = 0; i < n; i++)
+    for (size_t i = 0; i < scan->count(); i++)
     {
         if (neighbors[i] != nullptr)
         {
             centroid_m += neighbors[i]->cast<double>();
-            centroid_d += points[i].cast<double>();
+            centroid_d += scan->getPoint(i).cast<double>();
         }
     }
 
@@ -180,15 +202,15 @@ size_t getNearestNeighbors(KDTreePtr tree, Vector3f* points, Vector3f** neighbor
     return found;
 }
 
-size_t getNearestNeighbors(KDTreePtr tree, Vector3f* points, Vector3f** neighbors, size_t n, float maxDistance)
+size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, Vector3f** neighbors, float maxDistance)
 {
     size_t found = 0;
     float distance = 0.0f;
 
     #pragma omp parallel for firstprivate(distance) reduction(+:found) schedule(dynamic,8)
-    for (size_t i = 0; i < n; i++)
+    for (size_t i = 0; i < scan->count(); i++)
     {
-        if (tree->nearestNeighbor(points[i], neighbors[i], distance, maxDistance))
+        if (tree->nearestNeighbor(scan->getPoint(i), neighbors[i], distance, maxDistance))
         {
             found++;
         }

@@ -46,7 +46,7 @@ namespace lvr2
 {
 
 Scan::Scan(PointBufferPtr points, const Matrix4d& pose)
-    : m_pose(pose), m_deltaPose(Matrix4d::Identity()), m_initialPose(pose), m_transformChanged(false), m_transformChange(Matrix4d::Identity())
+    : m_pose(pose), m_deltaPose(Matrix4d::Identity()), m_initialPose(pose)
 {
     size_t n = points->numPoints();
     m_points.resize(n);
@@ -56,8 +56,7 @@ Scan::Scan(PointBufferPtr points, const Matrix4d& pose)
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < n; i++)
     {
-        Eigen::Vector4d extended(src[i * 3], src[i * 3 + 1], src[i * 3 + 2], 1.0);
-        m_points[i] = (pose * extended).block<3, 1>(0, 0).cast<float>();
+        m_points[i] = Vector3f(src[i * 3], src[i * 3 + 1], src[i * 3 + 2]);
     }
 }
 
@@ -65,9 +64,6 @@ void Scan::transform(const Matrix4d& transform, bool writeFrame, ScanUse use)
 {
     m_pose = transform * m_pose;
     m_deltaPose = transform * m_deltaPose;
-
-    m_transformChanged = true;
-    m_transformChange = transform * m_transformChange;
 
     if (writeFrame)
     {
@@ -85,12 +81,11 @@ void Scan::reduce(float voxelSize)
 void Scan::setMinDistance(float minDistance)
 {
     float sqDist = minDistance * minDistance;
-    Vector3f origin = getPosition();
 
     size_t i = 0;
     while (i < count())
     {
-        if ((m_points[i] - origin).squaredNorm() <= sqDist)
+        if (m_points[i].squaredNorm() <= sqDist)
         {
             if (i < count() - 1)
             {
@@ -108,12 +103,11 @@ void Scan::setMinDistance(float minDistance)
 void Scan::setMaxDistance(float maxDistance)
 {
     float sqDist = maxDistance * maxDistance;
-    Vector3f origin = getPosition();
 
     size_t i = 0;
     while (i < count())
     {
-        if ((m_points[i] - origin).squaredNorm() >= sqDist)
+        if (m_points[i].squaredNorm() >= sqDist)
         {
             if (i < count() - 1)
             {
@@ -131,30 +125,9 @@ void Scan::setMaxDistance(float maxDistance)
 
 Vector3f Scan::getPoint(size_t index) const
 {
-    if (m_transformChanged)
-    {
-        const Eigen::Vector3f& p = m_points[index];
-        Eigen::Vector4d extended(p.x(), p.y(), p.z(), 1.0);
-        return (m_transformChange * extended).block<3, 1>(0, 0).cast<float>();
-    }
-    return m_points[index];
-}
-
-Vector3f* Scan::points()
-{
-    if (m_transformChanged)
-    {
-        #pragma omp parallel for schedule(static)
-        for (size_t i = 0; i < m_points.size(); i++)
-        {
-            const Eigen::Vector3f& p = m_points[i];
-            Eigen::Vector4d extended(p.x(), p.y(), p.z(), 1.0);
-            m_points[i] = (m_transformChange * extended).block<3, 1>(0, 0).cast<float>();
-        }
-        m_transformChange = Matrix4d::Identity();
-        m_transformChanged = false;
-    }
-    return m_points.data();
+    const Vector3f& p = m_points[index];
+    Eigen::Vector4d extended(p.x(), p.y(), p.z(), 1.0);
+    return (m_pose * extended).block<3, 1>(0, 0).cast<float>();
 }
 
 size_t Scan::count() const
@@ -217,15 +190,6 @@ PointBufferPtr Scan::toPointBuffer() const
     ret->setPointArray(arr, count());
 
     return ret;
-}
-
-void Scan::addScanToMeta(ScanPtr scan)
-{
-    auto points = scan->points(); // ensure all transformations are applied
-
-    m_points.reserve(scan->count());
-    m_points.insert(m_points.end(), points, points + scan->count());
-    m_deltaPose = scan->getDeltaPose();
 }
 
 } /* namespace lvr2 */
