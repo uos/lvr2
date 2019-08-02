@@ -57,6 +57,19 @@ class ChunkManager
          */
         ChunkManager(MeshBufferPtr mesh, float chunksize, std::string savePath);
 
+        /**
+         * @brief Calculates the hash value for the given index triple
+         *
+         * @param i index of x-axis
+         * @param j index of y-axis
+         * @param k index of z-axis
+         * @return hash value
+         */
+        inline std::size_t hashValue(int i, int j, int k) const
+        {
+            return i * m_amount.y * m_amount.z + j * m_amount.z + k;
+        }
+
     private:
         /**
          * @brief initBoundingBox calculates a bounding box of the original mesh
@@ -76,7 +89,7 @@ class ChunkManager
          * @param chunksize size of a chunk
          * @param savePath UST FOR TESTING - REMOVE LATER ON
          */
-        void buildChunks(MeshBufferPtr mesh, float chunksize, std::string savePath);
+        void buildChunks(MeshBufferPtr mesh, std::string savePath);
 
         /**
          * @brief getFaceCenter gets the center point for a given face
@@ -88,8 +101,22 @@ class ChunkManager
          */
         BaseVector<float> getFaceCenter(FloatChannel verticesChannel, IndexChannel facesChannel, unsigned int faceIndex);
 
+        /**
+         * @brief find corresponding grid cell of given point
+         *
+         * @param vec point of mesh to find cell id for
+         * @return cell id
+         */
+        std::size_t getCellIndex(const BaseVector<float>& vec);
+
         // bounding box of the entire chunked model
         BoundingBox<BaseVector<float>> m_boundingBox;
+
+        // size of chunks
+        float m_chunkSize;
+
+        // amount of chunks
+        BaseVector<std::size_t> m_amount;
 
         // hash grid containing chunked meshes
         std::unordered_map<std::size_t, MeshBufferPtr> m_hashGrid;
