@@ -42,17 +42,23 @@
 namespace lvr2
 {
 
-ChunkManager::ChunkManager(MeshBufferPtr mesh, float chunksize, std::string savePath)
+ChunkManager::ChunkManager(MeshBufferPtr mesh, float chunksize, std::string savePath) : m_chunkSize(chunksize)
 {
     initBoundingBox(mesh);
-    buildChunks(mesh, chunksize, savePath);
+
+    // compute number of chunks for each dimension
+    m_amount.x = (std::size_t) std::ceil(m_boundingBox.getXSize() / m_chunkSize);
+    m_amount.y = (std::size_t) std::ceil(m_boundingBox.getYSize() / m_chunkSize);
+    m_amount.z = (std::size_t) std::ceil(m_boundingBox.getZSize() / m_chunkSize);
+
+    buildChunks(mesh, savePath);
 }
 
 void ChunkManager::initBoundingBox(MeshBufferPtr mesh)
 {
     BaseVector<float> currVertex;
 
-    for(size_t i = 0; i < mesh->numVertices(); i++)
+    for (std::size_t i = 0; i < mesh->numVertices(); i++)
     {
         currVertex.x = mesh->getVertices()[3 * i];
         currVertex.y = mesh->getVertices()[3 * i + 1];
@@ -62,25 +68,20 @@ void ChunkManager::initBoundingBox(MeshBufferPtr mesh)
     }
 }
 
-void ChunkManager::buildChunks(MeshBufferPtr mesh, float chunksize, std::string savePath)
+void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
 {
-    // compute number of chunks for each dimension
-    int amountX = (int) std::ceil((m_boundingBox.getMax().x - m_boundingBox.getMin().x) / chunksize);
-    int amountY = (int) std::ceil((m_boundingBox.getMax().y - m_boundingBox.getMin().y) / chunksize);
-    int amountZ = (int) std::ceil((m_boundingBox.getMax().z - m_boundingBox.getMin().z) / chunksize);
-
     // one vector of variable size for each vertex - this is used for duplicate detection
     std::shared_ptr<std::vector<std::vector<std::shared_ptr<ChunkBuilder>>>> vertexUse(new std::vector<std::vector<std::shared_ptr<ChunkBuilder>>>(mesh->numVertices(), std::vector<std::shared_ptr<ChunkBuilder>>()));
 
-    std::vector<std::shared_ptr<ChunkBuilder>> chunkBuilders(amountX * amountY * amountZ);
+    std::vector<std::shared_ptr<ChunkBuilder>> chunkBuilders(m_amount.x * m_amount.y * m_amount.z);
 
-    for (int i = 0; i < amountX; i++)
+    for (std::size_t i = 0; i < m_amount.x; i++)
     {
-        for (int j = 0; j < amountY; j++)
+        for (std::size_t j = 0; j < m_amount.y; j++)
         {
-            for (int k = 0; k < amountZ; k++)
+            for (std::size_t k = 0; k < m_amount.z; k++)
             {
-                chunkBuilders[i * amountY * amountZ + j * amountZ + k] = std::shared_ptr<ChunkBuilder>(new ChunkBuilder(mesh, vertexUse));
+                chunkBuilders[hashValue(i, j, k)] = std::shared_ptr<ChunkBuilder>(new ChunkBuilder(mesh, vertexUse));
             }
         }
     }
@@ -89,23 +90,20 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float chunksize, std::string 
     FloatChannel verticesChannel = *mesh->getFloatChannel("vertices");
     IndexChannel facesChannel = *mesh->getIndexChannel("face_indices");
     BaseVector<float> currentCenterPoint;
-    for(int i = 0; i < mesh->numFaces(); i++)
+    for (std::size_t i = 0; i < mesh->numFaces(); i++)
     {
         currentCenterPoint = getFaceCenter(verticesChannel, facesChannel, i);
-
-        chunkBuilders[(int) ((currentCenterPoint.x - m_boundingBox.getMin().x) / chunksize) * amountY * amountZ
-                + (int) ((currentCenterPoint.y - m_boundingBox.getMin().y) / chunksize) * amountZ
-                + (int) ((currentCenterPoint.z - m_boundingBox.getMin().z) / chunksize)]->addFace(i);
+        chunkBuilders[getCellIndex(currentCenterPoint)]->addFace(i);
     }
 
     // save the chunks as .ply
-    for (int i = 0; i < amountX; i++)
+    for (std::size_t i = 0; i < m_amount.x; i++)
     {
-        for (int j = 0; j < amountY; j++)
+        for (std::size_t j = 0; j < m_amount.y; j++)
         {
-            for (int k = 0; k < amountZ; k++)
+            for (std::size_t k = 0; k < m_amount.z; k++)
             {
-                std::size_t hash = i * amountY * amountZ + j * amountZ + k;
+                std::size_t hash = hashValue(i, j, k);
 
                 if (chunkBuilders[hash]->numFaces() > 0)
                 {
@@ -134,6 +132,12 @@ BaseVector<float> ChunkManager::getFaceCenter(FloatChannel verticesChannel, Inde
     BaseVector<float> vertex3(verticesChannel[facesChannel[faceIndex][2]]);
 
     return (vertex1 + vertex2 + vertex3) / 3;
+}
+
+std::size_t ChunkManager::getCellIndex(const BaseVector<float>& vec)
+{
+    BaseVector<float> tmpVec = (vec - m_boundingBox.getMin()) / m_chunkSize;
+    return (std::size_t) tmpVec.x * m_amount.y * m_amount.z + (std::size_t) tmpVec.x * m_amount.z + (std::size_t) tmpVec.z;
 }
 
 } /* namespace lvr2 */
