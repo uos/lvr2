@@ -137,7 +137,7 @@ BaseVector<float> ChunkManager::getFaceCenter(FloatChannel verticesChannel, Inde
 std::size_t ChunkManager::getCellIndex(const BaseVector<float>& vec)
 {
     BaseVector<float> tmpVec = (vec - m_boundingBox.getMin()) / m_chunkSize;
-    return (std::size_t) tmpVec.x * m_amount.y * m_amount.z + (std::size_t) tmpVec.x * m_amount.z + (std::size_t) tmpVec.z;
+    return (std::size_t) tmpVec.x * m_amount.y * m_amount.z + (std::size_t) tmpVec.y * m_amount.z + (std::size_t) tmpVec.z;
 }
 
 } /* namespace lvr2 */
