@@ -34,7 +34,6 @@
 #ifndef SLAMALIGN_HPP_
 #define SLAMALIGN_HPP_
 
-#include "ICPPointAlign.hpp"
 #include "Scan.hpp"
 #include "SlamOptions.hpp"
 #include "GraphSlam.hpp"
@@ -42,6 +41,9 @@
 namespace lvr2
 {
 
+/**
+ * @brief A class to run Slam on Scans
+ */
 class SlamAlign
 {
 
@@ -80,7 +82,7 @@ public:
      *
      * @param index The index of the Scan
      */
-    ScanPtr getScan(size_t index);
+    ScanPtr getScan(size_t index) const;
 
     /**
      * @brief Executes SLAM on all current Scans
@@ -121,6 +123,11 @@ public:
      * Scans can cause Undefined Behaviour.
      */
     SlamOptions& options();
+
+    /**
+     * @brief Returns a reference to the internal SlamOptions struct
+     */
+    const SlamOptions& options() const;
 
 protected:
 

@@ -33,6 +33,7 @@
  */
 #include <lvr2/registration/SlamAlign.hpp>
 
+#include <lvr2/registration/ICPPointAlign.hpp>
 #include <lvr2/registration/Metascan.hpp>
 
 #include <iomanip>
@@ -71,6 +72,11 @@ SlamOptions& SlamAlign::options()
     return m_options;
 }
 
+const SlamOptions& SlamAlign::options() const
+{
+    return m_options;
+}
+
 void SlamAlign::addScan(const ScanPtr& scan, bool match)
 {
     reduceScan(scan);
@@ -82,7 +88,7 @@ void SlamAlign::addScan(const ScanPtr& scan, bool match)
     }
 }
 
-ScanPtr SlamAlign::getScan(size_t index)
+ScanPtr SlamAlign::getScan(size_t index) const
 {
     return m_scans[index];
 }

@@ -33,9 +33,6 @@
  */
 #include <lvr2/registration/GraphSlam.hpp>
 
-#include <lvr2/io/IOUtils.hpp>
-
-#include <limits>
 #include <Eigen/SparseCholesky>
 
 using namespace std;
@@ -93,6 +90,7 @@ bool findCloseScans(const vector<ScanPtr>& scans, size_t scan, const SlamOptions
     return !output.empty();
 }
 
+// Conversions between Pose and Matrix representations in GraphSlams internally consistent Coordinate System
 void EulerToMatrix4(const Vector3d& pos, const Vector3d& theta, Matrix4d& mat);
 void Matrix4ToEuler(const Matrix4d mat, Vector3d& rPosTheta, Vector3d& rPos);
 
@@ -101,7 +99,7 @@ GraphSlam::GraphSlam(const SlamOptions* options)
 {
 }
 
-void GraphSlam::doGraphSlam(const vector<ScanPtr>& scans, size_t last)
+void GraphSlam::doGraphSlam(const vector<ScanPtr>& scans, size_t last) const
 {
     // ignore first scan, keep last scan => n = last - 1 + 1
     size_t n = last;
@@ -210,7 +208,7 @@ void GraphSlam::doGraphSlam(const vector<ScanPtr>& scans, size_t last)
     }
 }
 
-void GraphSlam::createGraph(const vector<ScanPtr>& scans, size_t last, Graph& graph)
+void GraphSlam::createGraph(const vector<ScanPtr>& scans, size_t last, Graph& graph) const
 {
     graph.clear();
 
@@ -236,7 +234,7 @@ void GraphSlam::createGraph(const vector<ScanPtr>& scans, size_t last, Graph& gr
 /**
  * A function to fill the linear system mat * x = vec.
  */
-void GraphSlam::fillEquation(const vector<ScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec)
+void GraphSlam::fillEquation(const vector<ScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec) const
 {
     // Cache all KDTrees
     map<size_t, KDTreePtr> trees;

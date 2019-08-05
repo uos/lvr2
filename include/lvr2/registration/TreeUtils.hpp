@@ -36,8 +36,6 @@
 #define TREEUTILS_HPP_
 
 #include <Eigen/Dense>
-using Eigen::Matrix4d;
-using Eigen::Vector3d;
 using Eigen::Vector3f;
 
 namespace lvr2
@@ -60,13 +58,14 @@ int splitPoints(Vector3f* points, int n, int axis, float splitValue);
 /**
  * @brief Reduces a Point Cloud using an Octree with a minimum Voxel size
  *
- * @param points    The Point Cloud
- * @param n         The number of Points in the Point Cloud
- * @param voxelSize The minimum size of a Voxel
+ * @param points      The Point Cloud
+ * @param n           The number of Points in the Point Cloud
+ * @param voxelSize   The minimum size of a Voxel
+ * @param maxLeafSize When to stop subdividing Voxels
  *
  * @returns the new number of Points in the Point Cloud
  */
-int octreeReduce(Vector3f* points, int n, float voxelSize, int maxLeafSize = 10);
+int octreeReduce(Vector3f* points, int n, float voxelSize, int maxLeafSize = 20);
 
 
 /**

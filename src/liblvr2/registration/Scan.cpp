@@ -33,12 +33,9 @@
  */
 #include <lvr2/registration/Scan.hpp>
 
-#include <iostream>
-#include <fstream>
-#include <stdexcept>
-
-#include <lvr2/io/IOUtils.hpp>
 #include <lvr2/registration/TreeUtils.hpp>
+
+#include <fstream>
 
 using namespace std;
 
