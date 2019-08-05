@@ -31,6 +31,7 @@
  * @date 21.07.2019
  * @author Malte kl. Piening
  * @author Marcel Wiegand
+ * @author Raphael Marx
  */
 
 #ifndef CHUNK_MANAGER_HPP
@@ -56,6 +57,17 @@ class ChunkManager
          * @param savePath JUST FOR TESTING - REMOVE LATER ON
          */
         ChunkManager(MeshBufferPtr mesh, float chunksize, std::string savePath);
+
+        /**
+         * @brief extractArea creates and returns MeshBufferPtr of merged chunks for given area.
+         *
+         * Finds corresponding chunks for given area inside the grid and merges those chunks to a new mesh
+         * without duplicated vertices. The new mesh is returned as MeshBufferPtr.
+         *
+         * @param area
+         * @return mesh of the given area
+         */
+        MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area);
 
         /**
          * @brief Calculates the hash value for the given index triple
