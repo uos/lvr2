@@ -55,7 +55,7 @@ void ChunkBuilder::addFace(unsigned int index)
     m_faces.push_back(index);
 
     // next add the vertices of the face to the chunk
-    for (uint8_t i = 0; i < 3; i++)
+    for (unsigned int i = 0; i < 3; i++)
     {
         // if the vertex is not in the vector, we add the vertex (we just mark the vertex by adding the chunkID)
         if(std::find(m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).begin(),
@@ -64,13 +64,17 @@ void ChunkBuilder::addFace(unsigned int index)
         {
             m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).push_back(shared_from_this());
             m_numVertices++;
-        }
-
-        if (m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).size() == 2)
-        {
-            for (unsigned int i = 0; i < m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).size(); i++)
+        
+            if (m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).size() == 2)
             {
-                m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i])[i]->addDuplicateVertex(m_originalMesh->getFaceIndices()[index * 3 + i]);
+                for (unsigned int j = 0; j < 2; j++)
+                {
+                    m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i])[j]->addDuplicateVertex(m_originalMesh->getFaceIndices()[index * 3 + i]);
+                }
+            }
+            else if (m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).size() > 2)
+            {
+                m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).back()->addDuplicateVertex(m_originalMesh->getFaceIndices()[index * 3 + i]);
             }
         }
     }

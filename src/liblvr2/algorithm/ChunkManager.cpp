@@ -31,6 +31,7 @@
  * @date 21.07.2019
  * @author Malte kl. Piening
  * @author Marcel Wiegand
+ * @author Raphael Marx
  */
 
 #include <cmath>
