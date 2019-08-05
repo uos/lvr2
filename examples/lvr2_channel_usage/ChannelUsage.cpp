@@ -341,12 +341,47 @@ void manipulatorUsage()
     }
 }
 
+void compileTimeFunctionsUsage()
+{
+    size_t num_points = 10000;
+
+    Channel<float> points(num_points, 3);
+    Channel<float> normals(num_points, 3);
+    Channel<unsigned char> colors(num_points, 3);
+
+    BaseBuffer bb = {
+        {"points", points},
+        {"normals", normals},
+        {"color", colors}
+    };
+
+    std::cout << "  index of float: " << BaseBuffer::index_of_type<float>::value << std::endl; 
+
+    auto it = bb.find("points");
+    if(it != bb.end())
+    {
+        BaseBuffer::val_type vchannel;
+        vchannel = it->second;
+        switch(vchannel.type())
+        {
+            case BaseBuffer::index_of_type<char>::value:
+                std::cout << "  a char!" << std::endl;
+                break;
+            case BaseBuffer::index_of_type<float>::value:
+                std::cout << "  a float! " << vchannel.numElements() << std::endl;
+                break;
+        }
+    }
+
+}
+
 int main(int argc, const char** argv)
 {
     basicChannelUsage();
     multiChannelMapUsage();
     channelManagerUsage();
     manipulatorUsage();
+    compileTimeFunctionsUsage();
 
     return 0;
 }

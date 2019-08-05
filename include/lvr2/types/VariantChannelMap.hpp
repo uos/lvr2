@@ -15,11 +15,6 @@ template<typename... T>
 class VariantChannelMap
 : public std::unordered_map<std::string, VariantChannel<T...> > 
 {
-
-protected:
-    template <class T1, class Tuple>
-    struct TupleIndex;
-
 public:
     using key_type = std::string;
     using val_type = VariantChannel<T...>;
@@ -29,7 +24,20 @@ public:
     using base = std::unordered_map<std::string, VariantChannel<T...> >;
     using base::base;
 
-    static constexpr std::size_t num_types = std::tuple_size<types>::value;
+    /**
+     * @brief Access type index by type.
+     * @details Example usage: ChanneVariantMap<int, float> my_map;
+     *            ChanneVariantMap<int, float>::type_index<int>::value -> 0
+     */
+    template<class U>
+    struct index_of_type {
+        static constexpr std::size_t value = val_type::template index_of_type<U>::value;
+    };
+
+    template <std::size_t N>
+    using type_of_index = typename val_type::template type_of_index<N>;
+
+    static constexpr std::size_t num_types = val_type::num_types;
 
     template<typename U>
     struct iterator {
@@ -188,20 +196,6 @@ public:
         typename base::const_iterator m_end_it;
     };
 
-
-    /**
-     * @brief Access type index by type.
-     * @details Example usage: ChanneVariantMap<int, float> my_map;
-     *            ChanneVariantMap<int, float>::type_index<int>::value -> 0
-     */
-    template<class U>
-    struct index_of_type {
-        static const std::size_t value = TupleIndex<U, types>::value;
-    };
-
-    template <std::size_t N>
-    using type_of_index = typename std::tuple_element<N, types>::type;
-
     /**
      * @brief Adds an Key + AttributeChannel to the map.
      * 
@@ -348,18 +342,6 @@ public:
         }
         return os;
     }
-
-protected:
-    template <class T1, class... Types>
-    struct TupleIndex<T1, std::tuple<T1, Types...>> {
-        static const std::size_t value = 0;
-    };
-
-    template <class T1, class U, class... Types>
-    struct TupleIndex<T1, std::tuple<U, Types...>> {
-        static const std::size_t value = 1 + TupleIndex<T1, std::tuple<Types...>>::value;
-    };
-
 };
 
 } // namespace lvr2
