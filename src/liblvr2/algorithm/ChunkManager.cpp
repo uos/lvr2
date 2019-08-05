@@ -31,6 +31,7 @@
  * @date 21.07.2019
  * @author Malte kl. Piening
  * @author Marcel Wiegand
+ * @author Raphael Marx
  */
 
 #include <cmath>
@@ -52,6 +53,40 @@ ChunkManager::ChunkManager(MeshBufferPtr mesh, float chunksize, std::string save
     m_amount.z = (std::size_t) std::ceil(m_boundingBox.getZSize() / m_chunkSize);
 
     buildChunks(mesh, savePath);
+}
+
+MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area)
+{
+    std::vector<MeshBufferPtr> chunks;
+
+    // find all required chunks
+    // TODO: check if we need + 1
+    BaseVector<float> maxSteps = (area.getMax() - area.getMin()) / m_chunkSize;
+    for (std::size_t i = 0; i < maxSteps.x; ++i)
+    {
+        for (std::size_t j = 0; j < maxSteps.y; ++j)
+        {
+            for (std::size_t k = 0; k < maxSteps.z; ++k)
+            {
+                std::size_t cellIndex = getCellIndex(
+                        area.getMin() + BaseVector<float>(i * m_chunkSize, j * m_chunkSize, k * m_chunkSize));
+
+                auto it = m_hashGrid.find(cellIndex);
+                if(it == m_hashGrid.end())
+                {
+                  continue;
+                }
+                // TODO: remove saving tmp chunks later
+                ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(it->second)), "area/" + std::to_string(cellIndex) + ".ply");
+                chunks.push_back(it->second);
+            }
+        }
+    }
+
+    // TODO: concat chunks
+    MeshBufferPtr areaMeshPtr = nullptr;
+
+    return areaMeshPtr;
 }
 
 void ChunkManager::initBoundingBox(MeshBufferPtr mesh)

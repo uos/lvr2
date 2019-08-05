@@ -64,13 +64,17 @@ void ChunkBuilder::addFace(unsigned int index)
         {
             m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).push_back(shared_from_this());
             m_numVertices++;
-        }
-
-        if (m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).size() == 2)
-        {
-            for (unsigned int j = 0; j < m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).size(); j++)
+        
+            if (m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).size() == 2)
             {
-                m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i])[j]->addDuplicateVertex(m_originalMesh->getFaceIndices()[index * 3 + i]);
+                for (unsigned int j = 0; j < 2; j++)
+                {
+                    m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i])[j]->addDuplicateVertex(m_originalMesh->getFaceIndices()[index * 3 + i]);
+                }
+            }
+            else if (m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).size() > 2)
+            {
+                m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).back()->addDuplicateVertex(m_originalMesh->getFaceIndices()[index * 3 + i]);
             }
         }
     }
@@ -249,7 +253,7 @@ MeshBufferPtr ChunkBuilder::buildMesh()
          mesh->setVertexNormals(vertexNormals);
     }
 
-    mesh->addAtomic<unsigned int>(m_duplicateVertices.size(), "num_duplicate_vertices");
+    mesh->addAtomic<unsigned int>(m_duplicateVertices.size(), "num_duplicates");
 
     return mesh;
 }

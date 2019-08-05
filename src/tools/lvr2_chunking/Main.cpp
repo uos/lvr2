@@ -68,5 +68,16 @@ int main(int argc, char** argv)
 
     lvr2::ChunkManager chunker(model->m_mesh, size, outputPath.string());
 
+    // TODO: remove tmp test later
+    // beginn: tmp test of extractArea method for dat/scan.pts with chunkSize 200
+    if (!boost::filesystem::exists("area"))
+    {
+        boost::filesystem::create_directories("area");
+    }
+    lvr2::BoundingBox<lvr2::BaseVector<float> > area(lvr2::BaseVector<float>(-50, 130, 105), lvr2::BaseVector<float>(155, 194, 211));
+    // end: tmp test of extractArea method
+
+    lvr2::ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(chunker.extractArea(area))), "area.ply");
+
     return EXIT_SUCCESS;
 }
