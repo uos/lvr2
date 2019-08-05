@@ -69,6 +69,8 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
             {
                 std::size_t cellIndex = getCellIndex(
                         area.getMin() + BaseVector<float>(i * m_chunkSize, j * m_chunkSize, k * m_chunkSize));
+                // TODO: remove saving tmp chunks later
+                ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(m_hashGrid[cellIndex])), "area/" + std::to_string(cellIndex) + ".ply");
                 chunks.push_back(m_hashGrid[cellIndex]);
             }
         }
