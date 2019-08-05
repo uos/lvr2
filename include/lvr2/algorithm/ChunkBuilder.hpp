@@ -77,6 +77,32 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
         void addDuplicateVertex(unsigned int index);
 
         /**
+         * @brief addAdditionalVertex adds a new vertex that is not part of the original mesh buffer
+         *
+         * Adds a new vertex that is not part of the original mesh to allow splitting faces during the
+         * chunking process.
+         *
+         * @param x x-coordinate of the new vertex
+         * @param y y-coordinate of the new vertex
+         * @param z z-coordinate of the new vertex
+         * @return index of the newly created vertex
+         */
+        unsigned int addAdditionalVertex(float x, float y, float z);
+
+        /**
+         * @brief addAdditionalFace adds a new face that is not part of the original mesh buffer
+         *
+         * Adds a new face from three vertices to the resulting mesh.
+         * Use negative vertex indices for now to reference vertices that were added as additional vertices.
+         * TODO: use a nicer method to reference additional vertices than just using negative indices!
+         *
+         * @param vertex1 first vertex index
+         * @param vertex2 second vertex index
+         * @param vertex3 third vertex index
+         */
+        void addAdditionalFace(int vertex1, int vertex2, int vertex3);
+
+        /**
          * @brief buildMesh builds a chunk by generating a new mesh buffer
          *
          * By calling buildMesh(), the mesh of a new chunk is being created.
@@ -100,6 +126,15 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
          * @return number of faces added to this builder
          */
         unsigned int numFaces();
+
+        /**
+         * @brief numVertices amount of vertices ot the resulting mesh
+         *
+         * This delivers the amount of vertices that the resulting mesh would have when calling buildMesh.
+         *
+         * @return number of vertices added to this builder
+         */
+        unsigned int numVertices();
         
     private:
         // model that is being chunked
@@ -113,6 +148,12 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
 
         // indices of faces in original model
         std::vector<unsigned int> m_faces;
+
+        // vertices that are not included in the original mesh buffer but are required to be added to the resulting mesh
+        std::vector<std::shared_ptr<float[]>> m_additionalVertices;
+
+        // faces that are not included in the original mesh buffer
+        std::vector<std::shared_ptr<int[]>> m_additionalFaces;
 
         // one dynamic sized vector with ChunkBuilder ids for all vertices of the original mesh for duplicate detection
         std::shared_ptr<std::vector<std::vector<std::shared_ptr<ChunkBuilder>>>> m_vertexUse;
