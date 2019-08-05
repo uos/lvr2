@@ -54,6 +54,32 @@ ChunkManager::ChunkManager(MeshBufferPtr mesh, float chunksize, std::string save
     buildChunks(mesh, savePath);
 }
 
+MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area)
+{
+    std::vector<MeshBufferPtr> chunks;
+
+    // find all required chunks
+    // TODO: check if we need + 1
+    BaseVector<float> maxSteps = (area.getMax() - area.getMin()) / m_chunkSize;
+    for (std::size_t i = 0; i < maxSteps.x; ++i)
+    {
+        for (std::size_t j = 0; j < maxSteps.y; ++j)
+        {
+            for (std::size_t k = 0; k < maxSteps.z; ++k)
+            {
+                std::size_t cellIndex = getCellIndex(
+                        area.getMin() + BaseVector<float>(i * m_chunkSize, j * m_chunkSize, k * m_chunkSize));
+                chunks.push_back(m_hashGrid[cellIndex]);
+            }
+        }
+    }
+
+    // TODO: concat chunks
+    MeshBufferPtr areaMeshPtr = nullptr;
+
+    return areaMeshPtr;
+}
+
 void ChunkManager::initBoundingBox(MeshBufferPtr mesh)
 {
     BaseVector<float> currVertex;
