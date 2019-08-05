@@ -34,16 +34,9 @@
 #include <lvr2/registration/ICPPointAlign.hpp>
 #include <lvr2/registration/EigenSVDPointAlign.hpp>
 #include <lvr2/io/Timestamp.hpp>
-#include <lvr2/io/IOUtils.hpp>
-#include <lvr2/geometry/Matrix4.hpp>
 
-// TODO: remove
+#include <iomanip>
 #include <chrono>
-using namespace std::chrono;
-
-#include <omp.h>
-#include <fstream>
-using std::ofstream;
 
 using namespace std;
 
@@ -69,7 +62,7 @@ Matrix4d ICPPointAlign::match()
         return Matrix4d::Identity();
     }
 
-    auto start_time = steady_clock::now();
+    auto start_time = chrono::steady_clock::now();
 
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
     EigenSVDPointAlign align;
@@ -115,7 +108,7 @@ Matrix4d ICPPointAlign::match()
 
     delete[] neighbors;
 
-    auto duration = steady_clock::now() - start_time;
+    auto duration = chrono::steady_clock::now() - start_time;
     cout << setw(6) << (int)(duration.count() / 1e6) << " ms, ";
     cout << "Error: " << fixed << setprecision(3) << setw(7) << ret;
     if (iteration < m_maxIterations)

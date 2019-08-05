@@ -34,8 +34,6 @@
 #ifndef EIGENSVDPOINTALIGN_HPP_
 #define EIGENSVDPOINTALIGN_HPP_
 
-#include <vector>
-
 #include "Scan.hpp"
 
 using Eigen::Vector3d;
@@ -50,18 +48,46 @@ class EigenSVDPointAlign
 public:
     EigenSVDPointAlign() {};
 
+    /**
+     * @brief Calculates the estimated Transformation to match a Data Pointcloud to a Model
+     *        Pointcloud
+     * 
+     * Apply the resulting Transform to the Data Pointcloud.
+     *
+     * @param scan       The Data Pointcloud
+     * @param neighbors  An array containing a Pointer to a neighbor in the Model Pointcloud for
+     *                   each Point in `scan`, or nullptr if there is no neighbor for a Point
+     * @param centroid_m The center of the Model Pointcloud
+     * @param centroid_d The center of the Data Pointcloud
+     * @param align      Will be set to the Transformation
+     *
+     * @return The average Point-to-Point error of the Scans
+     */
     double alignPoints(
         ScanPtr scan,
         Vector3f** neighbors,
         const Vector3d& centroid_m,
         const Vector3d& centroid_d,
-        Matrix4d& align);
+        Matrix4d& align) const;
 
+    /**
+     * @brief Calculates the estimated Transformation to match a Data Pointcloud to a Model
+     *        Pointcloud
+     * 
+     * Apply the resulting Transform to the Data Pointcloud.
+     *
+     * @param points     A vector of pairs with (model, data) Points
+     * @param centroid_m The center of the Model Pointcloud
+     * @param centroid_d The center of the Data Pointcloud
+     * @param align      Will be set to the Transformation
+     *
+     * @return The average Point-to-Point error of the Scans
+     */
     double alignPoints(
         PointPairVector& points,
         const Vector3d& centroid_m,
         const Vector3d& centroid_d,
-        Matrix4d& align);
+        Matrix4d& align) const;
 };
 
 } /* namespace lvr2 */

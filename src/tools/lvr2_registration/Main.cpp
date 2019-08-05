@@ -32,16 +32,15 @@
  *  @author Malte Hillmann
  */
 
-// external includes
+#include <lvr2/io/ModelFactory.hpp>
+#include <lvr2/io/IOUtils.hpp>
+#include <lvr2/registration/SlamAlign.hpp>
+
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <iostream>
 #include <chrono>
-
-// internal includes
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/io/IOUtils.hpp>
-#include <lvr2/registration/SlamAlign.hpp>
+#include <fstream>
 
 using namespace lvr2;
 using namespace std;

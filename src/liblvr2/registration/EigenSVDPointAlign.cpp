@@ -32,15 +32,10 @@
  *  @author Thomas Wiemann
  */
 #include <lvr2/registration/EigenSVDPointAlign.hpp>
-#include <lvr2/io/IOUtils.hpp>
 
-#include <limits>
-#include <cmath>
-#include <Eigen/Dense>
 #include <Eigen/SVD>
 
 using namespace Eigen;
-using std::numeric_limits;
 
 namespace lvr2
 {
@@ -50,7 +45,7 @@ double EigenSVDPointAlign::alignPoints(
     Vector3f** neighbors,
     const Vector3d& centroid_m,
     const Vector3d& centroid_d,
-    Matrix4d& align)
+    Matrix4d& align) const
 {
     double error = 0.0;
     size_t pairs = 0;
@@ -104,7 +99,7 @@ double EigenSVDPointAlign::alignPoints(
     PointPairVector& pairs,
     const Vector3d& centroid_m,
     const Vector3d& centroid_d,
-    Matrix4d& align)
+    Matrix4d& align) const
 {
     double error = 0.0;
     size_t n = pairs.size();

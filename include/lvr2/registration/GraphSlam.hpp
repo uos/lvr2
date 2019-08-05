@@ -38,7 +38,7 @@
 #include "SlamOptions.hpp"
 #include "KDTree.hpp"
 
-#include <Eigen/Sparse>
+#include <Eigen/SparseCore>
 
 using Matrix6d = Eigen::Matrix<double, 6, 6>;
 using Vector6d = Eigen::Matrix<double, 6, 1>;
@@ -49,8 +49,21 @@ using Graph = vector<pair<int, int>>;
 namespace lvr2
 {
 
+/**
+ * @brief finds Scans that are "close" to a Scan as determined by a Loopclosing strategy
+ * 
+ * @param scans   A vector with all Scans
+ * @param scan    The index of the scan
+ * @param options The options on how to search
+ * @param output  Will be filled with the indices of all close Scans
+ * 
+ * @return true if any Scans were found, false otherwise
+ */
 bool findCloseScans(const vector<ScanPtr>& scans, size_t scan, const SlamOptions& options, vector<size_t>& output);
 
+/**
+ * @brief Wrapper class for running GraphSlam on Scans
+ */
 class GraphSlam
 {
 
@@ -59,12 +72,19 @@ public:
 
     virtual ~GraphSlam() = default;
 
-    void doGraphSlam(const vector<ScanPtr>& scans, size_t last);
+    /**
+     * @brief runs the GraphSlam algorithm
+     * 
+     * @param scans The scans to work on
+     * @param last  The index of the last Scan to consider. `scans` may be longer, but anything
+     *              after `last` will be ignored
+     */
+    void doGraphSlam(const vector<ScanPtr>& scans, size_t last) const;
 
 protected:
 
-    void createGraph(const vector<ScanPtr>& scans, size_t last, Graph& graph);
-    void fillEquation(const vector<ScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec);
+    void createGraph(const vector<ScanPtr>& scans, size_t last, Graph& graph) const;
+    void fillEquation(const vector<ScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec) const;
     void eulerCovariance(KDTreePtr tree, ScanPtr scan, Matrix6d& outMat, Vector6d& outVec) const;
 
     const SlamOptions*     m_options;

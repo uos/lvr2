@@ -28,7 +28,7 @@
 /**
  * Metascan.cpp
  *
- *  @date May 6, 2019
+ *  @date Aug 1, 2019
  *  @author Malte Hillmann
  */
 #include <lvr2/registration/Metascan.hpp>

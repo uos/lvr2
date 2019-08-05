@@ -34,23 +34,37 @@
 #ifndef SCAN_HPP_
 #define SCAN_HPP_
 
-#include <Eigen/Dense>
 #include <lvr2/io/PointBuffer.hpp>
+
+#include <Eigen/Dense>
 using Eigen::Matrix4d;
 using Eigen::Vector3f;
 
 namespace lvr2
 {
 
+/**
+ * @brief Annotates the use of a Scan when creating an slam6D .frames file
+ */
 enum class ScanUse
 {
+    /// The Scan has not been registered yet
     INVALID = 0,
+    /// The Scan changed since the last Frame
     UPDATED = 1,
+    /// The Scan did not change since the last Frame
     UNUSED = 2,
+    /// The Scan was part of a GraphSLAM Iteration
     GRAPHSLAM = 3,
+    /// The Scan was part of a Loopclose Iteration
     LOOPCLOSE = 4,
 };
 
+/**
+ * @brief Represents a Scan as a Pointcloud and a Pose
+ * 
+ * TODO: This will be replaced with ScanData from ../io/ScanData.hpp eventually
+ */
 class Scan
 {
 public:

@@ -28,7 +28,7 @@
 /**
  * Metascan.hpp
  *
- *  @date May 6, 2019
+ *  @date Aug 1, 2019
  *  @author Malte Hillmann
  */
 #ifndef METASCAN_HPP_
@@ -39,6 +39,11 @@
 namespace lvr2
 {
 
+/**
+ * @brief Represents several Scans as part of a single Scan
+ * 
+ * Note that most methods of Scan don't make sense on a Metascan, like reductions or Pose getters.
+ */
 class Metascan : public Scan
 {
 public:

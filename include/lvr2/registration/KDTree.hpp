@@ -42,11 +42,16 @@
 #include <limits>
 #include <boost/shared_array.hpp>
 
+using Eigen::Vector3d;
+
 namespace lvr2
 {
 
 using PointArray = boost::shared_array<Vector3f>;
 
+/**
+ * @brief a kd-Tree Implementation for nearest Neighbor searches
+ */
 class KDTree
 {
 public:
