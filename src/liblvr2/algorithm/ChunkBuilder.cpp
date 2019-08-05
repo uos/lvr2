@@ -216,7 +216,7 @@ MeshBufferPtr ChunkBuilder::buildMesh()
         mesh->setVertexNormals(vertexNormals);
     }
 
-    mesh->addAtomic<unsigned int>(m_duplicateVertices.size(), "num_duplicate_vertices");
+    mesh->addAtomic<unsigned int>(m_duplicateVertices.size(), "num_duplicates");
 
     return mesh;
 }
