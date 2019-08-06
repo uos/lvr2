@@ -37,7 +37,7 @@
 namespace lvr2
 {
 
-ChunkBuilder::ChunkBuilder(MeshBufferPtr originalMesh, std::shared_ptr<std::vector<std::vector<std::shared_ptr<ChunkBuilder>>>> vertexUse) :
+ChunkBuilder::ChunkBuilder(MeshBufferPtr originalMesh, std::shared_ptr<std::vector<std::vector<ChunkBuilderPtr>>> vertexUse) :
     m_originalMesh(originalMesh),
     m_vertexUse(vertexUse)
 {

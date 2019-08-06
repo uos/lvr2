@@ -106,9 +106,9 @@ void ChunkManager::initBoundingBox(MeshBufferPtr mesh)
 void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
 {
     // one vector of variable size for each vertex - this is used for duplicate detection
-    std::shared_ptr<std::vector<std::vector<std::shared_ptr<ChunkBuilder>>>> vertexUse(new std::vector<std::vector<std::shared_ptr<ChunkBuilder>>>(mesh->numVertices(), std::vector<std::shared_ptr<ChunkBuilder>>()));
+    std::shared_ptr<std::vector<std::vector<ChunkBuilderPtr>>> vertexUse(new std::vector<std::vector<std::shared_ptr<ChunkBuilder>>>(mesh->numVertices(), std::vector<std::shared_ptr<ChunkBuilder>>()));
 
-    std::vector<std::shared_ptr<ChunkBuilder>> chunkBuilders(m_amount.x * m_amount.y * m_amount.z);
+    std::vector<ChunkBuilderPtr> chunkBuilders(m_amount.x * m_amount.y * m_amount.z);
 
     for (std::size_t i = 0; i < m_amount.x; i++)
     {
@@ -116,7 +116,7 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
         {
             for (std::size_t k = 0; k < m_amount.z; k++)
             {
-                chunkBuilders[hashValue(i, j, k)] = std::shared_ptr<ChunkBuilder>(new ChunkBuilder(mesh, vertexUse));
+                chunkBuilders[hashValue(i, j, k)] = ChunkBuilderPtr(new ChunkBuilder(mesh, vertexUse));
             }
         }
     }
