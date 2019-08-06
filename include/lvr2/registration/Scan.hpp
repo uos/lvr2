@@ -37,8 +37,12 @@
 #include <lvr2/io/PointBuffer.hpp>
 
 #include <Eigen/Dense>
+#include <vector>
+
 using Eigen::Matrix4d;
 using Eigen::Vector3f;
+using std::vector;
+using std::pair;
 
 namespace lvr2
 {
@@ -93,13 +97,13 @@ public:
     PointBufferPtr toPointBuffer() const;
 
 protected:
-    std::vector<Vector3f> m_points;
+    vector<Vector3f> m_points;
 
     Matrix4d    m_pose;
     Matrix4d    m_deltaPose;
     Matrix4d    m_initialPose;
 
-    std::vector<std::pair<Matrix4d, ScanUse>> m_frames;
+    vector<pair<Matrix4d, ScanUse>> m_frames;
 };
 
 using ScanPtr = std::shared_ptr<Scan>;

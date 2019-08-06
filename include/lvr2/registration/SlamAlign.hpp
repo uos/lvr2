@@ -141,7 +141,7 @@ protected:
 
     SlamOptions             m_options;
 
-    vector<ScanPtr>         m_scans;
+    std::vector<ScanPtr>    m_scans;
 
     ScanPtr                 m_metascan;
 
