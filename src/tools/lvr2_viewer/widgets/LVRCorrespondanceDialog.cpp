@@ -450,8 +450,8 @@ void LVRCorrespondanceDialog::treeItemSelected(QTreeWidgetItem* current, QTreeWi
 boost::optional<Matrix4d> LVRCorrespondanceDialog::getTransformation()
 {
     PointPairVector pairs;
-    Vector3f centroid_m = Vector3f::Zero();
-    Vector3f centroid_d = Vector3f::Zero();
+    Eigen::Vector3d centroid_m = Eigen::Vector3d::Zero();
+    Eigen::Vector3d centroid_d = Eigen::Vector3d::Zero();
 
     QTreeWidgetItemIterator it(m_ui->treeWidget);
     while (*it)
@@ -467,8 +467,8 @@ boost::optional<Matrix4d> LVRCorrespondanceDialog::getTransformation()
                 Vector3f start(s[0], s[1], s[2]);
                 Vector3f end(e[0], e[1], e[2]);
 
-                centroid_m += start;
-                centroid_d += end;
+                centroid_m += start.cast<double>();
+                centroid_d += end.cast<double>();
 
                 pairs.push_back(make_pair(start, end));
             }
