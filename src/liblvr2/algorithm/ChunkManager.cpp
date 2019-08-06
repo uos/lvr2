@@ -105,11 +105,33 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
         for (std::size_t i = 0; i < numDuplicates; ++i)
         {
             // TODO: get and compare duplicate vertices
-            auto duplicateIndex = std::find(areaDuplicates.begin(), areaDuplicates.end(), vertices[i]);
-            if(duplicateIndex == areaDuplicates.end())
+            for(std::size_t j = 0; j < (numDuplicates * 3); j+=3)
             {
-                areaDuplicates.push_back(vertices[i]);
+                if(areaDuplicates[j] != vertices[i][0])
+                {
+                    continue;
+                }
+                else if(areaDuplicates[j + 1] != vertices[i][1])
+                {
+                    continue;
+                }
+                else if(areaDuplicates[j + 2] != vertices[i][2])
+                {
+                    continue;
+                }
+                else 
+                {
+                    areaDuplicates.push_back(vertices[i][0]);
+                    areaDuplicates.push_back(vertices[i][1]);
+                    areaDuplicates.push_back(vertices[i][2]);
+                }
+
             }
+//            auto duplicateIndex = std::find(areaDuplicates.begin(), areaDuplicates.end(), vertices[i]);
+//            if(duplicateIndex == areaDuplicates.end())
+//            {
+//                areaDuplicates.push_back(vertices[i]);
+//            }
             // TODO: update indices
         }
     }
