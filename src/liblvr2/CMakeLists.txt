@@ -52,9 +52,7 @@ set(LVR2_SOURCES
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
-    reconstruction/opencl/ClSurface.cpp
     reconstruction/LBKdTree.cpp
-    reconstruction/cuda/CudaSurface.cu
     reconstruction/PCLFiltering.cpp
 )
 
@@ -94,8 +92,8 @@ set(LVR2_LIB_DEPENDENCIES
     ${OpenCV_LIBS}
     ${GSL_LIBRARIES}
     ${LZ4_LIBRARY}
-    ${TIFF_LIBRARY}
-    ${OpenCL_LIBRARY} )
+    ${TIFF_LIBRARY} 
+    uuid)
 
 
 #####################################################################################
@@ -148,7 +146,9 @@ endif()
 #####################################################################################
 
 if(OPENCL_FOUND)
-    set(LVR2_SOURCES ${LVR2_SOURCES} reconstruction/opencl/ClSurface.cpp)
+    set(LVR2_SOURCES ${LVR2_SOURCES}
+        reconstruction/opencl/ClSurface.cpp
+    )
     set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${OpenCL_LIBRARIES})
 endif()
 
