@@ -84,9 +84,44 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
     }
 
     // TODO: concat chunks
-    MeshBufferPtr areaMeshPtr = nullptr;
+    std::vector<float> areaDuplicates;
+    std::vector<float> areaUniqueVertices;
+    std::vector<float> faceIndices;
+    for (auto chunkIt = chunks.begin(); chunkIt != chunks.end(); ++chunkIt)
+    {
+        MeshBufferPtr chunk = *chunkIt;
+        std::size_t numDuplicates = *chunk->getAtomic<unsigned int>("num_duplicates");
+        FloatChannel vertices = *(chunk->getChannel<float>("vertices"));
+        std::size_t numVertices = chunk->numVertices();
 
-    return areaMeshPtr;
+        areaUniqueVertices.insert(areaUniqueVertices.end(), vertices.dataPtr().get() + (numDuplicates * 3), (vertices.dataPtr().get() + (numVertices * 3 )));
+
+        if (chunkIt == chunks.begin())
+        {
+            areaDuplicates.insert(areaDuplicates.end(), vertices.dataPtr().get(), vertices.dataPtr().get() + (numDuplicates * 3));
+            continue;
+        }
+
+        for (std::size_t i = 0; i < numDuplicates; ++i)
+        {
+            // TODO: get and compare duplicate vertices
+            auto duplicateIndex = std::find(areaDuplicates.begin(), areaDuplicates.end(), vertices[i]);
+            if(duplicateIndex == areaDuplicates.end())
+            {
+                areaDuplicates.push_back(vertices[i]);
+            }
+            // TODO: update indices
+        }
+    }
+
+    PointBufferPtr areaPointPtr(new PointBuffer);
+
+    areaDuplicates.insert(areaDuplicates.end(), areaUniqueVertices.begin(), areaUniqueVertices.end());
+    areaPointPtr->setPointArray(floatArr(areaDuplicates.data()), areaDuplicates.size());
+
+    ModelFactory::saveModel(ModelPtr(new Model(areaPointPtr)), "area/merged.xyz");
+
+    return nullptr;
 }
 
 void ChunkManager::initBoundingBox(MeshBufferPtr mesh)
