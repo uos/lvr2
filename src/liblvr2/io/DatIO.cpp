@@ -186,7 +186,7 @@ void  DatIO::save(string filename)
 		{
 			size_t numPoints = pointBuffer->numPoints();
 			size_t numIntensities;
-            unsigned w_intensities;
+            size_t w_intensities;
 			floatArr pointArray = pointBuffer->getPointArray();
 			floatArr intensityArray = pointBuffer->getFloatArray("intensities", numIntensities, w_intensities);
 			float buffer[4];

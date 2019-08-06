@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.4)
 project(LAS_VEGAS VERSION 2)
 
+# OPTIONS
+option(BUILD_EXAMPLES "Build the examples" OFF)
+
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -123,14 +126,6 @@ endif(MPI_FOUND)
 ###
 ## Searching for OpenCl
 ##############################
-find_package(OpenCL)
-if(OPENCL_FOUND)
-    include_directories(OPENCL_INCLUDE_DIR)
-endif()
-
-####
-## Searching for OpenCl
-#############################
 find_package(OpenCL)
 if(OPENCL_FOUND)
     include_directories(OPENCL_INCLUDE_DIR)
@@ -449,8 +444,6 @@ endif()
 # VIEWERS
 ##############################################################
 
-# add_subdirectory(src/tools/lvr2_viewer)
-
 find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
 if(Qt5_FOUND)
   find_package(QVTK)
@@ -499,6 +492,10 @@ endif()
 
 if(OPENCL_FOUND)
     add_subdirectory(src/tools/lvr2_cl_normals)
+endif()
+
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
 endif()
 
 ################################################################

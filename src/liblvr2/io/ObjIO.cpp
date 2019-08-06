@@ -342,7 +342,7 @@ void ObjIO::save( string filename )
         return;
     }
 
-    unsigned w_color;
+    size_t w_color;
     size_t lenVertices = m_model->m_mesh->numVertices();
     size_t lenNormals = lenVertices;
     size_t lenFaces = m_model->m_mesh->numFaces();

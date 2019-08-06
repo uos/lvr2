@@ -29,8 +29,7 @@
 #define POINTBUFFER2_HPP
 
 #include "lvr2/io/DataStruct.hpp"
-#include "lvr2/io/BaseBuffer.hpp"
-#include "lvr2/io/ChannelManager.hpp"
+#include "lvr2/types/BaseBuffer.hpp"
 
 #include <map>
 #include <string>
@@ -53,6 +52,7 @@ namespace lvr2
 ///
 class PointBuffer : public BaseBuffer
 {
+    using base = BaseBuffer;
 public:    
     PointBuffer();
 
@@ -100,7 +100,7 @@ public:
      * @param   width   Number of attributes per element. Normally
      *                  3 for RGB and 4 for RGBA buffers.
      */
-    void setColorArray(ucharArr colors, size_t n, unsigned width = 3);
+    void setColorArray(ucharArr colors, size_t n, size_t width = 3);
 
     /// Returns the internal point array
     floatArr getPointArray();
@@ -113,7 +113,7 @@ public:
     /// If the buffer stores color information, the
     /// call we return an empty array, i.e., the shared pointer
     /// contains a nullptr.
-    ucharArr getColorArray(unsigned& w);
+    ucharArr getColorArray(size_t& w);
 
     /// True, if buffer contains colors
     bool hasColors() const;
@@ -125,22 +125,7 @@ public:
     size_t numPoints() const;
 
     /// Makes a clone
-    PointBuffer clone();
-private:
-
-    /// Point channel, 'cached' to allow faster access
-    FloatChannelPtr                     m_points;
-
-    /// Normal channel, 'cached' to allow faster access
-    FloatChannelPtr                     m_normals;
-
-    /// Color channel, 'chached' to allow faster access
-    UCharChannelPtr                     m_colors;
-
-    // Number of points in buffer
-    size_t              m_numPoints;
-
-
+    PointBuffer clone() const;
 
 };
 
