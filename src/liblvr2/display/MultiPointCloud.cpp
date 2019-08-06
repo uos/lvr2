@@ -57,7 +57,7 @@ void MultiPointCloud::init(PointBufferPtr buffer)
 	{
         m_boundingBox = new BoundingBox<Vec>;
         size_t numSubClouds;
-        unsigned dummy; 
+        size_t dummy; 
 
         indexArray subClouds = buffer->getIndexArray("sub_clouds", numSubClouds, dummy);
 
@@ -73,7 +73,7 @@ void MultiPointCloud::init(PointBufferPtr buffer)
 
 		int c(1);
 		size_t n = buffer->numPoints();
-        unsigned w_color;
+        size_t w_color;
 		floatArr points = buffer->getPointArray();
 		ucharArr colors = buffer->getColorArray(w_color);
 

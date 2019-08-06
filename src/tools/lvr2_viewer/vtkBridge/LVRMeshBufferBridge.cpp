@@ -136,7 +136,7 @@ void LVRMeshBufferBridge::computeMeshActor(MeshBufferPtr meshbuffer)
 
         // Parse vertex and index buffer
         size_t n_v, n_i, n_c;
-        unsigned w_color;
+        size_t w_color;
         n_v = meshbuffer->numVertices();
         floatArr vertices = meshbuffer->getVertices();
         n_i = meshbuffer->numFaces();
