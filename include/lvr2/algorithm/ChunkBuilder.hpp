@@ -42,6 +42,10 @@
 namespace lvr2
 {
 
+class ChunkBuilder;
+
+using ChunkBuilderPtr = std::shared_ptr<ChunkBuilder>;
+
 class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
 {
     public:
@@ -52,7 +56,7 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
          * @param vertexUse list of ChunkBuilders that for each vertex of the original mesh
          */
         ChunkBuilder(MeshBufferPtr originalMesh,
-                     std::shared_ptr<std::vector<std::vector<std::shared_ptr<ChunkBuilder>>>> vertexUse);
+                     std::shared_ptr<std::vector<std::vector<ChunkBuilderPtr>>> vertexUse);
 
         ~ChunkBuilder();
 
@@ -156,7 +160,7 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
         std::vector<std::shared_ptr<int[]>> m_additionalFaces;
 
         // one dynamic sized vector with ChunkBuilder ids for all vertices of the original mesh for duplicate detection
-        std::shared_ptr<std::vector<std::vector<std::shared_ptr<ChunkBuilder>>>> m_vertexUse;
+        std::shared_ptr<std::vector<std::vector<ChunkBuilderPtr>>> m_vertexUse;
 };
 
 } /* namespace lvr2 */
