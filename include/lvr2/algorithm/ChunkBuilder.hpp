@@ -154,10 +154,10 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
         std::vector<unsigned int> m_faces;
 
         // vertices that are not included in the original mesh buffer but are required to be added to the resulting mesh
-        std::vector<std::shared_ptr<float[]>> m_additionalVertices;
+        std::vector<std::vector<float>> m_additionalVertices;
 
         // faces that are not included in the original mesh buffer
-        std::vector<std::shared_ptr<int[]>> m_additionalFaces;
+        std::vector<std::vector<int>> m_additionalFaces;
 
         // one dynamic sized vector with ChunkBuilder ids for all vertices of the original mesh for duplicate detection
         std::shared_ptr<std::vector<std::vector<ChunkBuilderPtr>>> m_vertexUse;

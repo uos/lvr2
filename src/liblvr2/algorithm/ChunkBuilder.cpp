@@ -92,14 +92,14 @@ void ChunkBuilder::addDuplicateVertex(unsigned int index)
 
 unsigned int ChunkBuilder::addAdditionalVertex(float x, float y, float z)
 {
-    m_additionalVertices.push_back(std::shared_ptr<float[]>(new float[3] {x, y, z}));
+    m_additionalVertices.push_back(std::vector<float> {x, y, z});
 
     return m_additionalVertices.size();
 }
 
 void ChunkBuilder::addAdditionalFace(int vertex1, int vertex2, int vertex3)
 {
-    m_additionalFaces.push_back(std::shared_ptr<int[]>(new int[3] {vertex1, vertex2, vertex3}));
+    m_additionalFaces.push_back(std::vector<int> {vertex1, vertex2, vertex3});
 }
 
 unsigned int ChunkBuilder::numFaces()
