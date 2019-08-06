@@ -43,7 +43,7 @@ namespace lvr2 {
 
         //set pointer to mesh
         m_mesh = &mesh;
-
+        int max_depth = 0;
         //initialize cell array.
         std::vector<Cell*>::size_type size = (unsigned long)(m_runtime*m_numSplits+4);
         cellArr.resize(size, NULL);
@@ -61,8 +61,10 @@ namespace lvr2 {
         //algorithm
         for(int i = 0; i < getRuntime(); i++)
         {
-            if(getRuntime() >= m_balances && m_balances >= 0 && i % (getRuntime() / m_balances) == 0 )
+            if(getRuntime() >= m_balances && m_balances > 0 && i % (getRuntime() / m_balances) == 0 )
             {
+                int tmp = tumble_tree->maxDepth();
+                if(tmp > max_depth) max_depth = tmp;
                 tumble_tree->balance();
             }
 
@@ -84,7 +86,7 @@ namespace lvr2 {
 
         //final operations on the mesh (like removing wrong faces and filling the holes)
 
-        int counter = 0;
+        /*int counter = 0;
         for(int i = 0; i < cellArr.size(); i++)
         {
             VertexHandle vH(i);
@@ -92,7 +94,7 @@ namespace lvr2 {
             {
                 counter ++;
             }
-        }
+        }*/
 
         if(m_mesh->numVertices() > 2000)
         {
@@ -109,10 +111,10 @@ namespace lvr2 {
         //tumble_tree->display();
 
         //cout << "Size of BST: " << bst_tree->size() << endl;
-        cout << "Max depth of tt: " << tumble_tree->maxDepth() << endl;
-        cout << "Min depth of tt: " << tumble_tree->minDepth() << endl;
-        cout << "Average depth of tt: " << tumble_tree->avgDepth() << endl;
-        cout << "Diff between ca and tt (waaaaaag): " << counter << endl;
+        cout << "Max depth of tt: " << (m_balances != 0 ? max_depth : tumble_tree->maxDepth()) << endl;
+        //cout << "Min depth of tt: " << tumble_tree->minDepth() << endl;
+        //cout << "Average depth of tt: " << tumble_tree->avgDepth() << endl;
+        //cout << "Diff between ca and tt (waaaaaag): " << counter << endl;
         cout << "Not Deleted in TT: " << tumble_tree->notDeleted << endl;
         cout << "Tumble Tree size: " << tumble_tree->size() << endl;
         cout << "KD-Tree size: " << kd_tree->size() << endl;
@@ -670,7 +672,7 @@ namespace lvr2 {
         avg_distance /= m_mesh->numVertices();
 
         std::cout << "avg_distance to cloud: " << avg_distance << endl;
-        std::cout << "avg distance between the points in the cloud: " << avgDistanceBetweenPointsInPointcloud() << endl;
+        if(m_surface->get()->pointBuffer().get()->numPoints() < 10000000) std::cout << "avg distance between the points in the cloud: " << avgDistanceBetweenPointsInPointcloud() << endl;
 
 
         double avg_len = 0;
