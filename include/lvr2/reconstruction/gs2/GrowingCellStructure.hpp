@@ -214,6 +214,12 @@ namespace lvr2{
 
         double avgDistanceBetweenPointsInPointcloud();
 
+        int numVertexValences(int minValence);
+
+        std::pair<double, double> equilaterality();
+
+        double avgValence();
+
         void coalescing();
 
 
