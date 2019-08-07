@@ -38,7 +38,6 @@
 
 #include "lvr2/algorithm/ChunkManager.hpp"
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/algorithm/ChunkBuilder.hpp"
 
 namespace lvr2
 {
@@ -103,10 +102,178 @@ void ChunkManager::initBoundingBox(MeshBufferPtr mesh)
     }
 }
 
+bool ChunkManager::cutFace(BaseVector<float> v1, BaseVector<float> v2, BaseVector<float> v3, float alpha, std::vector<ChunkBuilderPtr>& chunkBuilders)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            if (i != j)
+            {
+                BaseVector<float> v;
+                switch(i)
+                {
+                    case 0:
+                        v = v1;
+                        break;
+                    case 1:
+                        v = v2;
+                        break;
+                    case 2:
+                        v = v3;
+                        break;
+                }
+
+                BaseVector<float> vw;
+                switch(j)
+                {
+                    case 0:
+                        vw = v1;
+                        break;
+                    case 1:
+                        vw = v2;
+                        break;
+                    case 2:
+                        vw = v3;
+                        break;
+                }
+
+                for (int k = 0; k < 3; k++)
+                {
+                    float vKey = v[k];
+                    float vwKey = vw[k];
+
+                    float plane = m_chunkSize * ((int) (vKey / m_chunkSize));
+                    if (vKey < vwKey)
+                    {
+                        plane += m_chunkSize;
+                    }
+
+                    bool large = false;
+                    if (vKey - plane < 0 && vwKey - plane >= 0)
+                    {
+                        if (vKey - plane > -alpha * m_chunkSize
+                                && vwKey - plane > alpha * m_chunkSize)
+                        {
+                            large = true;
+                        }
+                    }
+                    else if (vKey - plane >= 0 && vwKey - plane < 0)
+                    {
+                        if (vKey - plane > alpha * m_chunkSize
+                                && vwKey - plane > -alpha * m_chunkSize)
+                        {
+                            large = true;
+                        }
+                    }
+
+                    if (large)
+                    {
+                        BaseVector<float> vec11, vec12, vec13;
+                        BaseVector<float> vec21, vec22, vec23;
+                        switch(i)
+                        {
+                            case 0:
+                                switch(j)
+                                {
+                                    case 1:
+                                        vec11 = v1;
+                                        vec12 = (v + vw) / 2;
+                                        vec13 = v3;
+
+                                        vec21 = (v + vw) / 2;
+                                        vec22 = v2;
+                                        vec23 = v3;
+                                        break;
+                                    case 2:
+                                        vec11 = v1;
+                                        vec12 = v2;
+                                        vec13 = (v + vw) / 2;
+
+                                        vec21 = v2;
+                                        vec22 = v3;
+                                        vec23 = (v + vw) / 2;
+                                        break;
+                                }
+                                break;
+                            case 1:
+                                switch(j)
+                                {
+                                    case 0:
+                                        vec11 = v1;
+                                        vec12 = (v + vw) / 2;
+                                        vec13 = v3;
+
+                                        vec21 = (v + vw) / 2;
+                                        vec22 = v2;
+                                        vec23 = v3;
+                                        break;
+                                    case 2:
+                                        vec11 = v1;
+                                        vec12 = v2;
+                                        vec13 = (v + vw) / 2;
+
+                                        vec21 = v1;
+                                        vec22 = (v + vw) / 2;
+                                        vec23 = v3;
+                                        break;
+                                }
+                                break;
+                            case 2:
+                                switch(j)
+                                {
+                                    case 0:
+                                        vec11 = v1;
+                                        vec12 = v2;
+                                        vec13 = (v + vw) / 2;
+
+                                        vec21 = v2;
+                                        vec22 = v3;
+                                        vec23 = (v + vw) / 2;
+                                        break;
+                                    case 1:
+                                        vec11 = v1;
+                                        vec12 = v2;
+                                        vec13 = (v + vw) / 2;
+
+                                        vec21 = v1;
+                                        vec22 = (v + vw) / 2;
+                                        vec23 = v3;
+                                        break;
+                                }
+                                break;
+                        }
+
+                        if (!cutFace(vec11, vec12, vec13, alpha, chunkBuilders))
+                        {
+                            int a = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalVertex(vec11.x, vec11.y, vec11.z);
+                            int b = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalVertex(vec12.x, vec12.y, vec12.z);
+                            int c = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalVertex(vec13.x, vec13.y, vec13.z);
+
+                            chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalFace(-a, -b, -c);
+                        }
+                        if (!cutFace(vec21, vec22, vec23, alpha, chunkBuilders))
+                        {
+                            int a = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalVertex(vec21.x, vec21.y, vec21.z);
+                            int b = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalVertex(vec22.x, vec22.y, vec22.z);
+                            int c = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalVertex(vec23.x, vec23.y, vec23.z);
+
+                            chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalFace(-a, -b, -c);
+                        }
+
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
 void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
 {
     // one vector of variable size for each vertex - this is used for duplicate detection
-    std::shared_ptr<std::vector<std::vector<ChunkBuilderPtr>>> vertexUse(new std::vector<std::vector<std::shared_ptr<ChunkBuilder>>>(mesh->numVertices(), std::vector<std::shared_ptr<ChunkBuilder>>()));
+    std::shared_ptr<std::vector<std::vector<ChunkBuilderPtr>>> vertexUse(new std::vector<std::vector<ChunkBuilderPtr>>(mesh->numVertices(), std::vector<std::shared_ptr<ChunkBuilder>>()));
 
     std::vector<ChunkBuilderPtr> chunkBuilders(m_amount.x * m_amount.y * m_amount.z);
 
@@ -128,7 +295,31 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
     for (std::size_t i = 0; i < mesh->numFaces(); i++)
     {
         currentCenterPoint = getFaceCenter(verticesChannel, facesChannel, i);
-        chunkBuilders[getCellIndex(currentCenterPoint)]->addFace(i);
+        unsigned int cellIndex = getCellIndex(currentCenterPoint);
+        bool added = false;
+        for (int j = 0; j < 3; j++)
+        {
+            BaseVector<float> vertex(verticesChannel[facesChannel[i][j]]);
+
+            if (getCellIndex(vertex) != cellIndex)
+            {
+                added = cutFace(BaseVector<float>(verticesChannel[facesChannel[i][0]]),
+                            BaseVector<float>(verticesChannel[facesChannel[i][1]]),
+                            BaseVector<float>(verticesChannel[facesChannel[i][2]]),
+                            0.001,
+                            chunkBuilders);
+                break;
+            }
+        }
+
+        if (!added)
+        {
+            chunkBuilders[cellIndex]->addFace(i);
+        }
+        else
+        {
+            std::cout << "large" << std::endl;
+        }
     }
 
     // save the chunks as .ply

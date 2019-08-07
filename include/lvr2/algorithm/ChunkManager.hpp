@@ -40,6 +40,7 @@
 #include "lvr2/io/Model.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/algorithm/ChunkBuilder.hpp"
 
 namespace lvr2 {
 
@@ -91,6 +92,8 @@ class ChunkManager
          * @param mesh mesh whose bounding box shall be calculated
          */
         void initBoundingBox(MeshBufferPtr mesh);
+
+        bool cutFace(BaseVector<float> v1, BaseVector<float> v2, BaseVector<float> v3, float alpha, std::vector<ChunkBuilderPtr>& chunkBuilders);
 
         /**
          * @brief buildChunks builds chunks from an original mesh
