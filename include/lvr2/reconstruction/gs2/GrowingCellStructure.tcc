@@ -120,6 +120,13 @@ namespace lvr2 {
         cout << "KD-Tree size: " << kd_tree->size() << endl;
         cout << "Cell array size: " << cellVecSize() << endl;
         cout << "Not found counter: " << notFoundCounter << endl;
+        cout << endl;
+        cout << "Equilaterality test percentage: " << equilaterality().second << endl;
+        cout << "Skewness test percentage: " << equilaterality().first << endl;
+        cout << "Average Valence: " << avgValence() << endl;
+
+        cout << "Valances >= 10: " << numVertexValences(10) << endl;
+        cout << "Valances >= 15: " << numVertexValences(15) << endl;
         delete tumble_tree;
     }
 
@@ -878,6 +885,83 @@ namespace lvr2 {
         return avgDistance;
     }
 
+
+    template <typename BaseVecT, typename NormalT>
+    int GrowingCellStructure<BaseVecT, NormalT>::numVertexValences(int minValence)
+    {
+        auto vertices = m_mesh->vertices();
+        int counter = 0;
+        for(auto vertex : vertices)
+        {
+            size_t val = m_mesh->getNeighboursOfVertex(vertex).size();
+            if(val >= minValence) counter++;
+        }
+
+        return counter;
+    }
+
+    template <typename BaseVecT, typename NormalT>
+    double GrowingCellStructure<BaseVecT, NormalT>::avgValence()
+    {
+        auto vertices = m_mesh->vertices();
+
+        double val_counter = 0;
+
+        for(auto vertex : vertices)
+        {
+            size_t val = m_mesh->getNeighboursOfVertex(vertex).size();
+            val_counter += val;
+        }
+
+        return val_counter / m_mesh->numVertices();
+    }
+
+    template <typename BaseVecT, typename NormalT>
+    std::pair<double, double> GrowingCellStructure<BaseVecT, NormalT>::equilaterality()
+    {
+        auto faces = m_mesh->faces();
+        size_t numFaces = m_mesh->numFaces();
+
+        double skewnessPercentage = 0.0;
+        double equilateralPercentage = 0.0;
+
+        for(auto face : faces)
+        {
+            auto edges = m_mesh->getEdgesOfFace(face);
+            double actual_area = m_mesh->calcFaceArea(face);
+
+            /*double longestEdge = 0.0;
+
+            for(auto e : edges)
+            {
+                auto vertices = m_mesh->getVerticesOfEdge(e);
+
+                BaseVecT p1 = m_mesh->getVertexPosition(vertices[0]);
+                BaseVecT p2 = m_mesh->getVertexPosition(vertices[1]);
+
+                double length = (p2 - p1).length();
+                if(length > longestEdge)
+                {
+                    longestEdge = length;
+                }
+            }
+
+            //found longest edge
+
+            auto equilateralFaceArea = (sqrt(3) / 4) * (longestEdge * longestEdge);*/
+
+            float circumRadius = m_mesh->triCircumCenter(face).second;
+
+            double sideLength = (3*circumRadius)/sqrt(3);
+
+            double equilateralFaceArea = (sqrt(3) / 4) * (sideLength * sideLength);
+
+            skewnessPercentage += (equilateralFaceArea - actual_area) / equilateralFaceArea;
+            equilateralPercentage += actual_area / equilateralFaceArea;
+        }
+
+        return std::make_pair(skewnessPercentage / numFaces, equilateralPercentage / numFaces) ;
+    }
 
     template <typename BaseVecT, typename NormalT>
     int GrowingCellStructure<BaseVecT, NormalT>::cellVecSize()
