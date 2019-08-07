@@ -118,15 +118,15 @@ int main(int argc, char **argv) {
     sigIntHandler.sa_flags = 0;
 
     sigaction(SIGINT, &sigIntHandler, NULL);
-
     PointBufferPtr buffer = model->m_pointCloud;
 
     if(!buffer)
     {
         cout << "Failed to create Buffer...exiting..." << endl;
-        return EXIT_FAILURE;
+        PointBuffer* pointBuffer = new PointBuffer(model.get()->m_mesh.get()->getVertices(), model.get()->m_mesh.get()->numVertices());
+        PointBufferPtr pointer(pointBuffer);
+        buffer = pointer;
     }
-
 
 
     // Create a point cloud manager
