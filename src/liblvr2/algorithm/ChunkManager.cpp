@@ -102,7 +102,7 @@ void ChunkManager::initBoundingBox(MeshBufferPtr mesh)
     }
 }
 
-bool ChunkManager::cutFace(BaseVector<BaseVector<float>> triangle, float alpha, std::vector<ChunkBuilderPtr>& chunkBuilders)
+bool ChunkManager::cutFace(BaseVector<BaseVector<float>> triangle, float overlapRatio, std::vector<ChunkBuilderPtr>& chunkBuilders)
 {
     for (int i = 0; i < 3; i++)
     {
@@ -120,36 +120,36 @@ bool ChunkManager::cutFace(BaseVector<BaseVector<float>> triangle, float alpha, 
                     float comparedVertexKey = comparedVertex[axis];
 
                     // get coordinate for plane in direction of the current axis
-                    float plane = m_chunkSize * ((int) (referenceVertexKey / m_chunkSize))
+                    float chunkBorder = m_chunkSize * ((int) (referenceVertexKey / m_chunkSize))
                             + fmod(m_boundingBox.getMin()[axis], m_chunkSize);
 
                     // select plane of chunk depending oh the relative position of the copared vertex
                     if (referenceVertexKey < comparedVertexKey)
                     {
-                        plane += m_chunkSize;
+                        chunkBorder += m_chunkSize;
                     }
 
                     // chech whether or not to cut the face
-                    bool isLargePlane = false;
-                    if (referenceVertexKey - plane < 0 && comparedVertexKey - plane >= 0)
+                    bool isLargeFace = false;
+                    if (referenceVertexKey - chunkBorder < 0 && comparedVertexKey - chunkBorder >= 0)
                     {
-                        if (plane - referenceVertexKey > alpha * m_chunkSize
-                                && comparedVertexKey - plane > alpha * m_chunkSize)
+                        if (chunkBorder - referenceVertexKey > overlapRatio * m_chunkSize
+                                && comparedVertexKey - chunkBorder > overlapRatio * m_chunkSize)
                         {
-                            isLargePlane = true;
+                            isLargeFace = true;
                         }
                     }
-                    else if (referenceVertexKey - plane >= 0 && comparedVertexKey - plane < 0)
+                    else if (referenceVertexKey - chunkBorder >= 0 && comparedVertexKey - chunkBorder < 0)
                     {
-                        if (referenceVertexKey - plane > alpha * m_chunkSize
-                                && plane - comparedVertexKey > alpha * m_chunkSize)
+                        if (referenceVertexKey - chunkBorder > overlapRatio * m_chunkSize
+                                && chunkBorder - comparedVertexKey > overlapRatio * m_chunkSize)
                         {
-                            isLargePlane = true;
+                            isLargeFace = true;
                         }
                     }
 
                     // cut the face if it is too large
-                    if (isLargePlane)
+                    if (isLargeFace)
                     {
                         // get new triangles depending on the current reference and compared vertex
                         BaseVector<float> vec11, vec12, vec13;
@@ -187,7 +187,7 @@ bool ChunkManager::cutFace(BaseVector<BaseVector<float>> triangle, float alpha, 
                         }
 
                         // check if the new faces need to be cut too
-                        if (!cutFace(BaseVector<BaseVector<float>>(vec11, vec12, vec13), alpha, chunkBuilders))
+                        if (!cutFace(BaseVector<BaseVector<float>>(vec11, vec12, vec13), overlapRatio, chunkBuilders))
                         {
                             int a = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalVertex(vec11.x, vec11.y, vec11.z);
                             int b = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalVertex(vec12.x, vec12.y, vec12.z);
@@ -195,7 +195,7 @@ bool ChunkManager::cutFace(BaseVector<BaseVector<float>> triangle, float alpha, 
 
                             chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalFace(-a, -b, -c);
                         }
-                        if (!cutFace(BaseVector<BaseVector<float>>(vec21, vec22, vec23), alpha, chunkBuilders))
+                        if (!cutFace(BaseVector<BaseVector<float>>(vec21, vec22, vec23), overlapRatio, chunkBuilders))
                         {
                             int a = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalVertex(vec21.x, vec21.y, vec21.z);
                             int b = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalVertex(vec22.x, vec22.y, vec22.z);
