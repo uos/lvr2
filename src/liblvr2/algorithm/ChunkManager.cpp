@@ -70,8 +70,8 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
             for (std::size_t k = 0; k < maxSteps.z; ++k)
             {
                 std::size_t cellIndex = getCellIndex(
-                    area.getMin() +
-                    BaseVector<float>(i * m_chunkSize, j * m_chunkSize, k * m_chunkSize));
+                    area.getMin()
+                    + BaseVector<float>(i * m_chunkSize, j * m_chunkSize, k * m_chunkSize));
 
                 auto it = m_hashGrid.find(cellIndex);
                 if (it == m_hashGrid.end())
@@ -117,17 +117,17 @@ bool ChunkManager::cutFace(BaseVector<BaseVector<float>> triangle,
             if (i != j)
             {
                 BaseVector<float> referenceVertex = triangle[i];
-                BaseVector<float> comparedVertex = triangle[j];
+                BaseVector<float> comparedVertex  = triangle[j];
 
                 for (unsigned int axis = 0; axis < 3; axis++)
                 {
                     // key for size comparison depending on the current axis
                     float referenceVertexKey = referenceVertex[axis];
-                    float comparedVertexKey = comparedVertex[axis];
+                    float comparedVertexKey  = comparedVertex[axis];
 
                     // get coordinate for plane in direction of the current axis
-                    float chunkBorder = m_chunkSize * ((int) (referenceVertexKey / m_chunkSize)) +
-                                        fmod(m_boundingBox.getMin()[axis], m_chunkSize);
+                    float chunkBorder = m_chunkSize * ((int)(referenceVertexKey / m_chunkSize))
+                                        + fmod(m_boundingBox.getMin()[axis], m_chunkSize);
 
                     // select plane of chunk depending oh the relative position of the copared
                     // vertex
@@ -138,20 +138,20 @@ bool ChunkManager::cutFace(BaseVector<BaseVector<float>> triangle,
 
                     // chech whether or not to cut the face
                     bool isLargeFace = false;
-                    if (referenceVertexKey - chunkBorder < 0 &&
-                        comparedVertexKey - chunkBorder >= 0)
+                    if (referenceVertexKey - chunkBorder < 0
+                        && comparedVertexKey - chunkBorder >= 0)
                     {
-                        if (chunkBorder - referenceVertexKey > overlapRatio * m_chunkSize &&
-                            comparedVertexKey - chunkBorder > overlapRatio * m_chunkSize)
+                        if (chunkBorder - referenceVertexKey > overlapRatio * m_chunkSize
+                            && comparedVertexKey - chunkBorder > overlapRatio * m_chunkSize)
                         {
                             isLargeFace = true;
                         }
                     }
-                    else if (referenceVertexKey - chunkBorder >= 0 &&
-                             comparedVertexKey - chunkBorder < 0)
+                    else if (referenceVertexKey - chunkBorder >= 0
+                             && comparedVertexKey - chunkBorder < 0)
                     {
-                        if (referenceVertexKey - chunkBorder > overlapRatio * m_chunkSize &&
-                            chunkBorder - comparedVertexKey > overlapRatio * m_chunkSize)
+                        if (referenceVertexKey - chunkBorder > overlapRatio * m_chunkSize
+                            && chunkBorder - comparedVertexKey > overlapRatio * m_chunkSize)
                         {
                             isLargeFace = true;
                         }
@@ -249,19 +249,19 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
         {
             for (std::size_t k = 0; k < m_amount.z; k++)
             {
-                chunkBuilders[hashValue(i, j, k)] =
-                    ChunkBuilderPtr(new ChunkBuilder(mesh, vertexUse));
+                chunkBuilders[hashValue(i, j, k)]
+                    = ChunkBuilderPtr(new ChunkBuilder(mesh, vertexUse));
             }
         }
     }
 
     // assign the faces to the chunks
     FloatChannel verticesChannel = *mesh->getFloatChannel("vertices");
-    IndexChannel facesChannel = *mesh->getIndexChannel("face_indices");
+    IndexChannel facesChannel    = *mesh->getIndexChannel("face_indices");
     BaseVector<float> currentCenterPoint;
     for (std::size_t i = 0; i < mesh->numFaces(); i++)
     {
-        currentCenterPoint = getFaceCenter(verticesChannel, facesChannel, i);
+        currentCenterPoint     = getFaceCenter(verticesChannel, facesChannel, i);
         unsigned int cellIndex = getCellIndex(currentCenterPoint);
 
         // check it the face is to large and needs to be cut
@@ -310,9 +310,9 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
 
                     // export chunked meshes for debugging
                     ModelFactory::saveModel(ModelPtr(new Model(chunkMeshPtr)),
-                                            savePath + "/" + std::to_string(i) + "-" +
-                                                std::to_string(j) + "-" + std::to_string(k) +
-                                                ".ply");
+                                            savePath + "/" + std::to_string(i) + "-"
+                                                + std::to_string(j) + "-" + std::to_string(k)
+                                                + ".ply");
                 }
             }
         }
@@ -333,8 +333,8 @@ BaseVector<float> ChunkManager::getFaceCenter(FloatChannel verticesChannel,
 std::size_t ChunkManager::getCellIndex(const BaseVector<float>& vec)
 {
     BaseVector<float> tmpVec = (vec - m_boundingBox.getMin()) / m_chunkSize;
-    return (std::size_t)tmpVec.x * m_amount.y * m_amount.z + (std::size_t)tmpVec.y * m_amount.z +
-           (std::size_t)tmpVec.z;
+    return (std::size_t)tmpVec.x * m_amount.y * m_amount.z + (std::size_t)tmpVec.y * m_amount.z
+           + (std::size_t)tmpVec.z;
 }
 
 } /* namespace lvr2 */

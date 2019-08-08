@@ -77,11 +77,20 @@ bool Options::printUsage() const
     return false;
 }
 
-string Options::getInputFile() const { return m_variables["inputFile"].as<string>(); }
+string Options::getInputFile() const
+{
+    return m_variables["inputFile"].as<string>();
+}
 
-string Options::getOutputDir() const { return m_variables["outputDir"].as<string>(); }
+string Options::getOutputDir() const
+{
+    return m_variables["outputDir"].as<string>();
+}
 
-float Options::getChunkSize() const { return m_variables["chunkSize"].as<float>(); }
+float Options::getChunkSize() const
+{
+    return m_variables["chunkSize"].as<float>();
+}
 
 Options::~Options()
 {
