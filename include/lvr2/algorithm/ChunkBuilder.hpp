@@ -91,7 +91,7 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
          * @param z z-coordinate of the new vertex
          * @return index of the newly created vertex
          */
-        unsigned int addAdditionalVertex(float x, float y, float z);
+        unsigned int addAdditionalVertex(BaseVector<float> additionalVertex);
 
         /**
          * @brief addAdditionalFace adds a new face that is not part of the original mesh buffer
@@ -154,7 +154,7 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
         std::vector<unsigned int> m_faces;
 
         // vertices that are not included in the original mesh buffer but are required to be added to the resulting mesh
-        std::vector<std::vector<float>> m_additionalVertices;
+        std::vector<BaseVector<float>> m_additionalVertices;
 
         // faces that are not included in the original mesh buffer
         std::vector<std::vector<int>> m_additionalFaces;

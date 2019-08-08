@@ -246,17 +246,17 @@ bool ChunkManager::cutFace(BaseVector<float> v1, BaseVector<float> v2, BaseVecto
 
                         if (!cutFace(vec11, vec12, vec13, alpha, chunkBuilders))
                         {
-                            int a = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalVertex(vec11.x, vec11.y, vec11.z);
-                            int b = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalVertex(vec12.x, vec12.y, vec12.z);
-                            int c = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalVertex(vec13.x, vec13.y, vec13.z);
+                            int a = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalVertex(vec11);
+                            int b = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalVertex(vec12);
+                            int c = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalVertex(vec13);
 
                             chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalFace(-a, -b, -c);
                         }
                         if (!cutFace(vec21, vec22, vec23, alpha, chunkBuilders))
                         {
-                            int a = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalVertex(vec21.x, vec21.y, vec21.z);
-                            int b = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalVertex(vec22.x, vec22.y, vec22.z);
-                            int c = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalVertex(vec23.x, vec23.y, vec23.z);
+                            int a = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalVertex(vec21);
+                            int b = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalVertex(vec22);
+                            int c = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalVertex(vec23);
 
                             chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalFace(-a, -b, -c);
                         }
@@ -306,7 +306,7 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
                 added = cutFace(BaseVector<float>(verticesChannel[facesChannel[i][0]]),
                             BaseVector<float>(verticesChannel[facesChannel[i][1]]),
                             BaseVector<float>(verticesChannel[facesChannel[i][2]]),
-                            0.00001,
+                            0.0001,
                             chunkBuilders);
                 break;
             }
