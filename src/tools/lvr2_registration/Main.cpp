@@ -65,8 +65,10 @@ int main(int argc, char** argv)
     string format = "uos";
     string pose_format = "pose";
 
-    bool write_pose = false;
     bool write_scans = false;
+    string output_format;
+    bool write_pose = false;
+    string output_pose_format;
     bool no_frames = false;
     path output_dir;
 
@@ -119,10 +121,10 @@ int main(int argc, char** argv)
         ("noFrames,F", bool_switch(&no_frames),
          "Don't write \".frames\" files.")
 
-        ("writePose,w", bool_switch(&write_pose),
+        ("writePose,w", value<string>(&output_pose_format)->implicit_value("<pose-format>"),
          "Write Poses to directory specified by --output.")
 
-        ("writeScans,W", bool_switch(&write_scans),
+        ("writeScans,W", value<string>(&output_format)->implicit_value("<format>"),
          "Write Scans to directory specified by --output.")
 
         ("output,o", value<path>(&output_dir),
@@ -219,6 +221,50 @@ int main(int argc, char** argv)
         {
             output_dir = dir / "output";
         }
+
+        // parse format
+        if (format.find('%') == string::npos)
+        {
+            // TODO: map formats
+            if (format == "uos")
+            {
+                format = "scan%03i.3d";
+            }
+            else if (format == "riegl_txt")
+            {
+                format = "scan%03i.txt";
+            }
+            else if (format == "riegl")
+            {
+                format = "scan%03i.rxp";
+            }
+            else if (format == "ply")
+            {
+                format = "scan%03i.ply";
+            }
+            else
+            {
+                cout << "Unknown format: " << format << endl;
+                return EXIT_FAILURE;
+            }
+        }
+
+        if (variables.count("writePose") == 1)
+        {
+            write_pose = true;
+            if (output_pose_format[0] == '<')
+            {
+                output_pose_format = pose_format;
+            }
+        }
+        if (variables.count("writeScans") == 1)
+        {
+            write_scans = true;
+            if (output_format[0] == '<')
+            {
+                output_format = format;
+            }
+        }
     }
     catch (const boost::program_options::error& ex)
     {
@@ -226,34 +272,6 @@ int main(int argc, char** argv)
         std::cerr << endl;
         std::cerr << "Use '--help' to see the list of possible options" << endl;
         return EXIT_FAILURE;
-    }
-
-    // =============== parse format ===============
-    size_t split_point;
-    if ((split_point = format.find('%')) == string::npos)
-    {
-        // TODO: map formats
-        if (format == "uos")
-        {
-            format = "scan%03i.3d";
-        }
-        else if (format == "riegl_txt")
-        {
-            format = "scan%03i.txt";
-        }
-        else if (format == "riegl")
-        {
-            format = "scan%03i.rxp";
-        }
-        else if (format == "ply")
-        {
-            format = "scan%03i.ply";
-        }
-        else
-        {
-            cout << "Unknown format: " << format << endl;
-            return EXIT_FAILURE;
-        }
     }
 
     // =============== search scans ===============
@@ -356,8 +374,8 @@ int main(int argc, char** argv)
 
         if (write_pose)
         {
-            file = output_dir / format_name(format, start + i);
-            file.replace_extension("dat");
+            file = output_dir / format_name(write_scans ? output_format : format, start + i);
+            file.replace_extension(output_pose_format);
             ofstream out(file.string());
 
             auto pose = scan->getPose();
@@ -377,7 +395,7 @@ int main(int argc, char** argv)
 
         if (write_scans)
         {
-            file = output_dir / format_name(format, start + i);
+            file = output_dir / format_name(output_format, start + i);
 
             auto model = make_shared<Model>();
             model->m_pointCloud = scan->toPointBuffer();
