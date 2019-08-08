@@ -49,7 +49,12 @@ namespace lvr2
 template< typename BaseVecT>
 class SearchTree
 {
+private:
+    using CoordT = typename BaseVecT::CoordType;
+
 public:
+
+    virtual ~SearchTree() = default;
 
     /**
      * @brief This function performs a k-next-neighbor search on the
@@ -61,12 +66,13 @@ public:
      *                    within the dataset.
      * @param distances   A vector that stores the distances for the neighbours
      *                    that are found.
+     * @returns           The number of neighbours found
      */
-    virtual void kSearch(
+    virtual int kSearch(
         const BaseVecT& qp,
         int k,
-        vector<size_t>& indices,
-        vector<typename BaseVecT::CoordType>& distances
+        std::vector<size_t>& indices,
+        std::vector<CoordT>& distances
     ) const = 0;
 
     /**
@@ -79,15 +85,15 @@ public:
      */
     virtual void radiusSearch(
         const BaseVecT& qp,
-        typename BaseVecT::CoordType r,
-        vector<size_t>& indices
+        CoordT r,
+        std::vector<size_t>& indices
     ) const = 0;
 
     /// Like the other overload, but ignoring the `distances` vector.
-    virtual void kSearch(
+    virtual int kSearch(
         const BaseVecT& qp,
         int k,
-        vector<size_t>& indices
+        std::vector<size_t>& indices
     ) const;
 
     // /**

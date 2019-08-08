@@ -156,14 +156,27 @@ void LVRCorrespondanceDialog::fillComboBoxes()
     m_ui->comboBoxModel->clear();
     m_ui->comboBoxData->clear();
 
+    int index = 0;
+
     // Iterator over all items
     QTreeWidgetItemIterator it(m_treeWidget);
     while (*it)
     {
         if ( (*it)->type() == LVRPointCloudItemType)
         {
-            m_ui->comboBoxData->addItem((*it)->parent()->text(0));
-            m_ui->comboBoxModel->addItem((*it)->parent()->text(0));
+            QString text = (*it)->parent()->text(0);
+            m_ui->comboBoxData->addItem(text);
+            m_ui->comboBoxModel->addItem(text);
+            
+            if (index == 0)
+            {
+                m_ui->comboBoxModel->setCurrentText(text);
+            }
+            else if (index == 1)
+            {
+                m_ui->comboBoxData->setCurrentText(text);
+            }
+            index++;
         }
         ++it;
     }
@@ -434,12 +447,11 @@ void LVRCorrespondanceDialog::treeItemSelected(QTreeWidgetItem* current, QTreeWi
     Q_EMIT(render());
 }
 
-Matrix4<Vec> LVRCorrespondanceDialog::getTransformation()
+boost::optional<Matrix4d> LVRCorrespondanceDialog::getTransformation()
 {
-    PointPairVector<Vec> pairs;
-    Vec centroid1;
-    Vec centroid2;
-    Matrix4<Vec> matrix;
+    PointPairVector pairs;
+    Eigen::Vector3d centroid_m = Eigen::Vector3d::Zero();
+    Eigen::Vector3d centroid_d = Eigen::Vector3d::Zero();
 
     QTreeWidgetItemIterator it(m_ui->treeWidget);
     while (*it)
@@ -452,14 +464,13 @@ Matrix4<Vec> LVRCorrespondanceDialog::getTransformation()
                 double* s = item->getStart();
                 double* e = item->getEnd();
 
-                // Convert to left handed coordinates!
-                Vec start(s[0], s[1], s[2]);
-                Vec end(e[0], e[1], e[2]);
+                Vector3f start(s[0], s[1], s[2]);
+                Vector3f end(e[0], e[1], e[2]);
 
-                centroid1 += start;
-                centroid2 += end;
+                centroid_m += start.cast<double>();
+                centroid_d += end.cast<double>();
 
-                pairs.push_back(std::pair<Vec, Vec>(start, end));
+                pairs.push_back(make_pair(start, end));
             }
         }
         ++it;
@@ -468,17 +479,20 @@ Matrix4<Vec> LVRCorrespondanceDialog::getTransformation()
 
     if(pairs.size() > 3)
     {
-        centroid1 /= pairs.size();
-        centroid2 /= pairs.size();
+        centroid_m /= pairs.size();
+        centroid_d /= pairs.size();
 
-        EigenSVDPointAlign<Vec> align;
-        align.alignPoints(pairs, centroid1, centroid2, matrix);
+        Matrix4d matrix;
+        EigenSVDPointAlign align;
+        align.alignPoints(pairs, centroid_m, centroid_d, matrix);
+
+        return boost::make_optional(matrix);
     }
     else
     {
         cout << "Need at least 4 corresponding points" << endl;
+        return boost::none;
     }
-    return matrix;
 }
 
 QString LVRCorrespondanceDialog::getModelName()

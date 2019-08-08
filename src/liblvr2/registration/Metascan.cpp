@@ -26,56 +26,44 @@
  */
 
 /**
- * ICPPointAlign.hpp
+ * Metascan.cpp
  *
- *  @date Mar 18, 2014
- *  @author Thomas Wiemann
+ *  @date Aug 1, 2019
+ *  @author Malte Hillmann
  */
-#ifndef ICPPOINTALIGN_HPP_
-#define ICPPOINTALIGN_HPP_
-
-#include "KDTree.hpp"
-#include "Scan.hpp"
+#include <lvr2/registration/Metascan.hpp>
 
 namespace lvr2
 {
 
-class ICPPointAlign
+Metascan::Metascan()
+    : Scan(PointBufferPtr(), Matrix4d::Identity()), m_count(0)
 {
-public:
-    ICPPointAlign(ScanPtr model, ScanPtr data);
 
-    Matrix4d match();
+}
 
-    virtual ~ICPPointAlign() = default;
+Vector3f Metascan::getPoint(size_t index) const
+{
+    for (auto& scan : m_scans)
+    {
+        if (index < scan->count())
+        {
+            return scan->getPoint(index);
+        }
+        index -= scan->count();
+    }
+}
 
-    void    setMaxMatchDistance(float distance);
-    void    setMaxIterations(int iterations);
-    void    setMaxLeafSize(int maxLeafSize);
-    void    setEpsilon(double epsilon);
-    void    setVerbose(bool verbose);
+size_t Metascan::count() const
+{
+    return m_count;
+}
 
-    float   getMaxMatchDistance() const;
-    int     getMaxIterations() const;
-    int     getMaxLeafSize() const;
-    double  getEpsilon() const;
-    bool    getVerbose() const;
-
-protected:
-
-    double      m_epsilon;
-    double      m_maxDistanceMatch;
-    int         m_maxIterations;
-    int         m_maxLeafSize;
-
-    bool        m_verbose;
-
-    ScanPtr     m_modelCloud;
-    ScanPtr     m_dataCloud;
-
-    KDTreePtr   m_searchTree;
-};
+void Metascan::addScan(ScanPtr scan)
+{
+    m_scans.push_back(scan);
+    m_count += scan->count();
+    m_deltaPose = scan->getDeltaPose();
+}
 
 } /* namespace lvr2 */
-
-#endif /* ICPPOINTALIGN_HPP_ */

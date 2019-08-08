@@ -34,29 +34,62 @@
 #ifndef EIGENSVDPOINTALIGN_HPP_
 #define EIGENSVDPOINTALIGN_HPP_
 
-#include "lvr2/io/PointBuffer.hpp"
-#include "lvr2/geometry/Matrix4.hpp"
+#include "Scan.hpp"
+
+using Eigen::Vector3d;
 
 namespace lvr2
 {
 
-template <typename BaseVecT>
-using PointPairVector = std::vector<std::pair<BaseVecT, BaseVecT> >;
+using PointPairVector = std::vector<std::pair<Vector3f, Vector3f>>;
 
-template <typename BaseVecT>
 class EigenSVDPointAlign
 {
 public:
     EigenSVDPointAlign() {};
+
+    /**
+     * @brief Calculates the estimated Transformation to match a Data Pointcloud to a Model
+     *        Pointcloud
+     * 
+     * Apply the resulting Transform to the Data Pointcloud.
+     *
+     * @param scan       The Data Pointcloud
+     * @param neighbors  An array containing a Pointer to a neighbor in the Model Pointcloud for
+     *                   each Point in `scan`, or nullptr if there is no neighbor for a Point
+     * @param centroid_m The center of the Model Pointcloud
+     * @param centroid_d The center of the Data Pointcloud
+     * @param align      Will be set to the Transformation
+     *
+     * @return The average Point-to-Point error of the Scans
+     */
     double alignPoints(
-            const PointPairVector<BaseVecT>& pairs,
-            const BaseVecT centroid1,
-            const BaseVecT centroid2,
-            Matrix4<BaseVecT>& align);
+        ScanPtr scan,
+        Vector3f** neighbors,
+        const Vector3d& centroid_m,
+        const Vector3d& centroid_d,
+        Matrix4d& align) const;
+
+    /**
+     * @brief Calculates the estimated Transformation to match a Data Pointcloud to a Model
+     *        Pointcloud
+     * 
+     * Apply the resulting Transform to the Data Pointcloud.
+     *
+     * @param points     A vector of pairs with (model, data) Points
+     * @param centroid_m The center of the Model Pointcloud
+     * @param centroid_d The center of the Data Pointcloud
+     * @param align      Will be set to the Transformation
+     *
+     * @return The average Point-to-Point error of the Scans
+     */
+    double alignPoints(
+        PointPairVector& points,
+        const Vector3d& centroid_m,
+        const Vector3d& centroid_d,
+        Matrix4d& align) const;
 };
 
 } /* namespace lvr2 */
-
-#include "lvr2/registration/EigenSVDPointAlign.tcc"
 
 #endif /* EIGENSVDPOINTALIGN_HPP_ */
