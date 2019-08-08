@@ -48,119 +48,123 @@ using ChunkBuilderPtr = std::shared_ptr<ChunkBuilder>;
 
 class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
 {
-    public:
-        /**
-         * @brief ChunkBuilder constructs a chun builder that can create individual chunks
-         *
-         * @param originalMesh mesh that is being chunked
-         * @param vertexUse list of ChunkBuilders that for each vertex of the original mesh
-         */
-        ChunkBuilder(MeshBufferPtr originalMesh,
-                     std::shared_ptr<std::vector<std::vector<ChunkBuilderPtr>>> vertexUse);
+  public:
+    /**
+     * @brief ChunkBuilder constructs a chun builder that can create individual chunks
+     *
+     * @param originalMesh mesh that is being chunked
+     * @param vertexUse list of ChunkBuilders that for each vertex of the original mesh
+     */
+    ChunkBuilder(MeshBufferPtr originalMesh,
+                 std::shared_ptr<std::vector<std::vector<ChunkBuilderPtr>>> vertexUse);
 
-        ~ChunkBuilder();
+    ~ChunkBuilder();
 
-        /**
-         * @brief assigns a face to the chunk this builder is generating
-         *
-         * This adds a face to the face list of this builder.
-         * It is used to create a chunk when calling buildMesh.
-         *
-         * @param index index of face in the original model
-         */
-        void addFace(unsigned int index);
+    /**
+     * @brief assigns a face to the chunk this builder is generating
+     *
+     * This adds a face to the face list of this builder.
+     * It is used to create a chunk when calling buildMesh.
+     *
+     * @param index index of face in the original model
+     */
+    void addFace(unsigned int index);
 
-        /**
-         * @brief addDuplicateVertex marks a vertex as duplicate
-         *
-         * Duplicate vertices will be added to the beginning of the Vertex array of the chunk mesh when
-         * calling buildMesh().
-         *
-         * @param index vertex index of diplicate vertex
-         */
-        void addDuplicateVertex(unsigned int index);
+    /**
+     * @brief addDuplicateVertex marks a vertex as duplicate
+     *
+     * Duplicate vertices will be added to the beginning of the Vertex array of the chunk mesh when
+     * calling buildMesh().
+     *
+     * @param index vertex index of diplicate vertex
+     */
+    void addDuplicateVertex(unsigned int index);
 
-        /**
-         * @brief addAdditionalVertex adds a new vertex that is not part of the original mesh buffer
-         *
-         * Adds a new vertex that is not part of the original mesh to allow splitting faces during the
-         * chunking process.
-         *
-         * @param x x-coordinate of the new vertex
-         * @param y y-coordinate of the new vertex
-         * @param z z-coordinate of the new vertex
-         * @return index of the newly created vertex
-         */
-        unsigned int addAdditionalVertex(BaseVector<float> additionalVertex);
+    /**
+     * @brief addAdditionalVertex adds a new vertex that is not part of the original mesh buffer
+     *
+     * Adds a new vertex that is not part of the original mesh to allow splitting faces during the
+     * chunking process.
+     *
+     * @param x x-coordinate of the new vertex
+     * @param y y-coordinate of the new vertex
+     * @param z z-coordinate of the new vertex
+     * @return index of the newly created vertex
+     */
+    unsigned int addAdditionalVertex(BaseVector<float> additionalVertex);
 
-        /**
-         * @brief addAdditionalFace adds a new face that is not part of the original mesh buffer
-         *
-         * Adds a new face from three vertices to the resulting mesh.
-         * Use negative vertex indices for now to reference vertices that were added as additional vertices.
-         * TODO: use a nicer method to reference additional vertices than just using negative indices!
-         *
-         * @param vertex1 first vertex index
-         * @param vertex2 second vertex index
-         * @param vertex3 third vertex index
-         */
-        void addAdditionalFace(int vertex1, int vertex2, int vertex3);
+    /**
+     * @brief addAdditionalFace adds a new face that is not part of the original mesh buffer
+     *
+     * Adds a new face from three vertices to the resulting mesh.
+     * Use negative vertex indices for now to reference vertices that were added as additional
+     * vertices.
+     * TODO: use a nicer method to reference additional vertices than just using negative indices!
+     *
+     * @param vertex1 first vertex index
+     * @param vertex2 second vertex index
+     * @param vertex3 third vertex index
+     */
+    void addAdditionalFace(int vertex1, int vertex2, int vertex3);
 
-        /**
-         * @brief buildMesh builds a chunk by generating a new mesh buffer
-         *
-         * By calling buildMesh(), the mesh of a new chunk is being created.
-         * Before building a chunk, faces need to be added to this builder using the method addFace(index).
-         * The vertex buffer of resulting mesh holds the vertices that got duplicated during the chunking
-         * process at the first fields of the buffer followed by the normal vertices.
-         * If the number of added faces is 0 this function will return an mesh buffer holding no vertices
-         * or faces.
-         *
-         * @return mesh of the newly created chunk
-         */
-        MeshBufferPtr buildMesh();
+    /**
+     * @brief buildMesh builds a chunk by generating a new mesh buffer
+     *
+     * By calling buildMesh(), the mesh of a new chunk is being created.
+     * Before building a chunk, faces need to be added to this builder using the method
+     * addFace(index). The vertex buffer of resulting mesh holds the vertices that got duplicated
+     * during the chunking process at the first fields of the buffer followed by the normal
+     * vertices. If the number of added faces is 0 this function will return an mesh buffer holding
+     * no vertices or faces.
+     *
+     * @return mesh of the newly created chunk
+     */
+    MeshBufferPtr buildMesh();
 
-        /**
-         * @brief numFaces delivers the number of faces for the chunk
-         *
-         * This delivers the amount of faces currently added to a ChunkBuilder instance.
-         * This functionality is especially useful for checking whether or not a generatec mesh would be
-         * empty before calling buildMesh.
-         *
-         * @return number of faces added to this builder
-         */
-        unsigned int numFaces();
+    /**
+     * @brief numFaces delivers the number of faces for the chunk
+     *
+     * This delivers the amount of faces currently added to a ChunkBuilder instance.
+     * This functionality is especially useful for checking whether or not a generatec mesh would be
+     * empty before calling buildMesh.
+     *
+     * @return number of faces added to this builder
+     */
+    unsigned int numFaces();
 
-        /**
-         * @brief numVertices amount of vertices ot the resulting mesh
-         *
-         * This delivers the amount of vertices that the resulting mesh would have when calling buildMesh.
-         *
-         * @return number of vertices added to this builder
-         */
-        unsigned int numVertices();
-        
-    private:
-        // model that is being chunked
-        MeshBufferPtr m_originalMesh = nullptr;
+    /**
+     * @brief numVertices amount of vertices ot the resulting mesh
+     *
+     * This delivers the amount of vertices that the resulting mesh would have when calling
+     * buildMesh.
+     *
+     * @return number of vertices added to this builder
+     */
+    unsigned int numVertices();
 
-        // amount of added vertcices
-        unsigned int m_numVertices = 0;
+  private:
+    // model that is being chunked
+    MeshBufferPtr m_originalMesh = nullptr;
 
-        // indices of vertices of this chunk that got dupliplicated during the chunking process
-        std::vector<unsigned int> m_duplicateVertices;
+    // amount of added vertcices
+    unsigned int m_numVertices = 0;
 
-        // indices of faces in original model
-        std::vector<unsigned int> m_faces;
+    // indices of vertices of this chunk that got dupliplicated during the chunking process
+    std::vector<unsigned int> m_duplicateVertices;
 
-        // vertices that are not included in the original mesh buffer but are required to be added to the resulting mesh
-        std::vector<BaseVector<float>> m_additionalVertices;
+    // indices of faces in original model
+    std::vector<unsigned int> m_faces;
 
-        // faces that are not included in the original mesh buffer
-        std::vector<std::vector<int>> m_additionalFaces;
+    // vertices that are not included in the original mesh buffer but are required to be added to
+    // the resulting mesh
+    std::vector<BaseVector<float>> m_additionalVertices;
 
-        // one dynamic sized vector with ChunkBuilder ids for all vertices of the original mesh for duplicate detection
-        std::shared_ptr<std::vector<std::vector<ChunkBuilderPtr>>> m_vertexUse;
+    // faces that are not included in the original mesh buffer
+    std::vector<std::vector<int>> m_additionalFaces;
+
+    // one dynamic sized vector with ChunkBuilder ids for all vertices of the original mesh for
+    // duplicate detection
+    std::shared_ptr<std::vector<std::vector<ChunkBuilderPtr>>> m_vertexUse;
 };
 
 } /* namespace lvr2 */

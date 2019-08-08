@@ -37,116 +37,120 @@
 #ifndef CHUNK_MANAGER_HPP
 #define CHUNK_MANAGER_HPP
 
-#include "lvr2/io/Model.hpp"
-#include "lvr2/geometry/BoundingBox.hpp"
-#include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/algorithm/ChunkBuilder.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/BoundingBox.hpp"
+#include "lvr2/io/Model.hpp"
 
-namespace lvr2 {
+namespace lvr2
+{
 
 class ChunkManager
 {
-    public:
-        /**
-         * @brief ChunkManager creates chunks from an original mesh
-         *
-         * Chunks the original model into chunks of given size.
-         * Every created chunk has ste same length in height, width and depth.
-         *
-         * @param mesh mesh to be chunked
-         * @param chunksize size of a chunk - unit depends on the given mesh
-         * @param savePath JUST FOR TESTING - REMOVE LATER ON
-         */
-        ChunkManager(MeshBufferPtr mesh, float chunksize, std::string savePath);
+  public:
+    /**
+     * @brief ChunkManager creates chunks from an original mesh
+     *
+     * Chunks the original model into chunks of given size.
+     * Every created chunk has ste same length in height, width and depth.
+     *
+     * @param mesh mesh to be chunked
+     * @param chunksize size of a chunk - unit depends on the given mesh
+     * @param savePath JUST FOR TESTING - REMOVE LATER ON
+     */
+    ChunkManager(MeshBufferPtr mesh, float chunksize, std::string savePath);
 
-        /**
-         * @brief extractArea creates and returns MeshBufferPtr of merged chunks for given area.
-         *
-         * Finds corresponding chunks for given area inside the grid and merges those chunks to a new mesh
-         * without duplicated vertices. The new mesh is returned as MeshBufferPtr.
-         *
-         * @param area
-         * @return mesh of the given area
-         */
-        MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area);
+    /**
+     * @brief extractArea creates and returns MeshBufferPtr of merged chunks for given area.
+     *
+     * Finds corresponding chunks for given area inside the grid and merges those chunks to a new
+     * mesh without duplicated vertices. The new mesh is returned as MeshBufferPtr.
+     *
+     * @param area
+     * @return mesh of the given area
+     */
+    MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area);
 
-        /**
-         * @brief Calculates the hash value for the given index triple
-         *
-         * @param i index of x-axis
-         * @param j index of y-axis
-         * @param k index of z-axis
-         * @return hash value
-         */
-        inline std::size_t hashValue(int i, int j, int k) const
-        {
-            return i * m_amount.y * m_amount.z + j * m_amount.z + k;
-        }
+    /**
+     * @brief Calculates the hash value for the given index triple
+     *
+     * @param i index of x-axis
+     * @param j index of y-axis
+     * @param k index of z-axis
+     * @return hash value
+     */
+    inline std::size_t hashValue(int i, int j, int k) const
+    {
+        return i * m_amount.y * m_amount.z + j * m_amount.z + k;
+    }
 
-    private:
-        /**
-         * @brief initBoundingBox calculates a bounding box of the original mesh
-         *
-         * This calculates the bounding box of the given model and saves it to m_boundingBox.
-         *
-         * @param mesh mesh whose bounding box shall be calculated
-         */
-        void initBoundingBox(MeshBufferPtr mesh);
+  private:
+    /**
+     * @brief initBoundingBox calculates a bounding box of the original mesh
+     *
+     * This calculates the bounding box of the given model and saves it to m_boundingBox.
+     *
+     * @param mesh mesh whose bounding box shall be calculated
+     */
+    void initBoundingBox(MeshBufferPtr mesh);
 
-        /**
-         * @brief cutFace cuts a face if it is too large
-         *
-         * Checks whether or not a triangle is overlapping the chunk borders too much and
-         * cuts those faces. The resulting smaller faces will be added as additional vertices
-         * and faces to the chunk hat holds their center point.
-         *
-         * @param triangle triangle to be cut
-         * @param overlapRatio ration of maximum allowed overlap and the chunks side length
-         * @param chunkBuilders list of all chunkBuilders
-         * @return true if the cut was successful and the faces were added to a chunkBuilder; false else
-         */
-        bool cutFace(BaseVector<BaseVector<float>> triangle, float overlapRatio, std::vector<ChunkBuilderPtr>& chunkBuilders);
+    /**
+     * @brief cutFace cuts a face if it is too large
+     *
+     * Checks whether or not a triangle is overlapping the chunk borders too much and
+     * cuts those faces. The resulting smaller faces will be added as additional vertices
+     * and faces to the chunk hat holds their center point.
+     *
+     * @param triangle triangle to be cut
+     * @param overlapRatio ration of maximum allowed overlap and the chunks side length
+     * @param chunkBuilders list of all chunkBuilders
+     * @return true if the cut was successful and the faces were added to a chunkBuilder; false else
+     */
+    bool cutFace(BaseVector<BaseVector<float>> triangle,
+                 float overlapRatio,
+                 std::vector<ChunkBuilderPtr>& chunkBuilders);
 
-        /**
-         * @brief buildChunks builds chunks from an original mesh
-         *
-         * Creates chunks from an original mesh and initializes the initial chunk structure
-         *
-         * @param mesh mesh which is being chunked
-         * @param chunksize size of a chunk
-         * @param savePath UST FOR TESTING - REMOVE LATER ON
-         */
-        void buildChunks(MeshBufferPtr mesh, std::string savePath);
+    /**
+     * @brief buildChunks builds chunks from an original mesh
+     *
+     * Creates chunks from an original mesh and initializes the initial chunk structure
+     *
+     * @param mesh mesh which is being chunked
+     * @param chunksize size of a chunk
+     * @param savePath UST FOR TESTING - REMOVE LATER ON
+     */
+    void buildChunks(MeshBufferPtr mesh, std::string savePath);
 
-        /**
-         * @brief getFaceCenter gets the center point for a given face
-         *
-         * @param verticesChannel channel of mesh that holds the vertices
-         * @param facesChannel channel of mesh that holds the faces
-         * @param faceIndex index of the requested face
-         * @return center point of the given face
-         */
-        BaseVector<float> getFaceCenter(FloatChannel verticesChannel, IndexChannel facesChannel, unsigned int faceIndex);
+    /**
+     * @brief getFaceCenter gets the center point for a given face
+     *
+     * @param verticesChannel channel of mesh that holds the vertices
+     * @param facesChannel channel of mesh that holds the faces
+     * @param faceIndex index of the requested face
+     * @return center point of the given face
+     */
+    BaseVector<float>
+    getFaceCenter(FloatChannel verticesChannel, IndexChannel facesChannel, unsigned int faceIndex);
 
-        /**
-         * @brief find corresponding grid cell of given point
-         *
-         * @param vec point of mesh to find cell id for
-         * @return cell id
-         */
-        std::size_t getCellIndex(const BaseVector<float>& vec);
+    /**
+     * @brief find corresponding grid cell of given point
+     *
+     * @param vec point of mesh to find cell id for
+     * @return cell id
+     */
+    std::size_t getCellIndex(const BaseVector<float>& vec);
 
-        // bounding box of the entire chunked model
-        BoundingBox<BaseVector<float>> m_boundingBox;
+    // bounding box of the entire chunked model
+    BoundingBox<BaseVector<float>> m_boundingBox;
 
-        // size of chunks
-        float m_chunkSize;
+    // size of chunks
+    float m_chunkSize;
 
-        // amount of chunks
-        BaseVector<std::size_t> m_amount;
+    // amount of chunks
+    BaseVector<std::size_t> m_amount;
 
-        // hash grid containing chunked meshes
-        std::unordered_map<std::size_t, MeshBufferPtr> m_hashGrid;
+    // hash grid containing chunked meshes
+    std::unordered_map<std::size_t, MeshBufferPtr> m_hashGrid;
 };
 
 } /* namespace lvr2 */
