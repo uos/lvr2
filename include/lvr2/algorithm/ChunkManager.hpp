@@ -93,7 +93,19 @@ class ChunkManager
          */
         void initBoundingBox(MeshBufferPtr mesh);
 
-        bool cutFace(BaseVector<float> v1, BaseVector<float> v2, BaseVector<float> v3, float alpha, std::vector<ChunkBuilderPtr>& chunkBuilders);
+        /**
+         * @brief cutFace cuts a face if it is too large
+         *
+         * Checks whether or not a triangle is overlapping the chunk borders too much and
+         * cuts those faces. The resulting smaller faces will be added as additional vertices
+         * and faces to the chunk hat holds their center point.
+         *
+         * @param triangle triangle to be cut
+         * @param overlapRatio ration of maximum allowed overlap and the chunks side length
+         * @param chunkBuilders list of all chunkBuilders
+         * @return true if the cut was successful and the faces were added to a chunkBuilder; false else
+         */
+        bool cutFace(BaseVector<BaseVector<float>> triangle, float overlapRatio, std::vector<ChunkBuilderPtr>& chunkBuilders);
 
         /**
          * @brief buildChunks builds chunks from an original mesh
