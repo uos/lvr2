@@ -102,7 +102,7 @@ void ChunkManager::initBoundingBox(MeshBufferPtr mesh)
     }
 }
 
-bool ChunkManager::cutFace(BaseVector<float> v1, BaseVector<float> v2, BaseVector<float> v3, float alpha, std::vector<ChunkBuilderPtr>& chunkBuilders)
+bool ChunkManager::cutFace(BaseVector<BaseVector<float>> triangle, float overlapRatio, std::vector<ChunkBuilderPtr>& chunkBuilders)
 {
     for (int i = 0; i < 3; i++)
     {
@@ -110,141 +110,84 @@ bool ChunkManager::cutFace(BaseVector<float> v1, BaseVector<float> v2, BaseVecto
         {
             if (i != j)
             {
-                BaseVector<float> v;
-                switch(i)
-                {
-                    case 0:
-                        v = v1;
-                        break;
-                    case 1:
-                        v = v2;
-                        break;
-                    case 2:
-                        v = v3;
-                        break;
-                }
+                BaseVector<float> referenceVertex = triangle[i];
+                BaseVector<float> comparedVertex = triangle[j];
 
-                BaseVector<float> vw;
-                switch(j)
+                for (int axis = 0; axis < 3; axis++)
                 {
-                    case 0:
-                        vw = v1;
-                        break;
-                    case 1:
-                        vw = v2;
-                        break;
-                    case 2:
-                        vw = v3;
-                        break;
-                }
+                    // key for size comparison depending on the current axis
+                    float referenceVertexKey = referenceVertex[axis];
+                    float comparedVertexKey = comparedVertex[axis];
 
-                for (int k = 0; k < 3; k++)
-                {
-                    float vKey = v[k];
-                    float vwKey = vw[k];
+                    // get coordinate for plane in direction of the current axis
+                    float chunkBorder = m_chunkSize * ((int) (referenceVertexKey / m_chunkSize))
+                            + fmod(m_boundingBox.getMin()[axis], m_chunkSize);
 
-                    float plane = m_chunkSize * ((int) (vKey / m_chunkSize)) + fmod(m_boundingBox.getMin()[k], m_chunkSize);
-                    if (vKey < vwKey)
+                    // select plane of chunk depending oh the relative position of the copared vertex
+                    if (referenceVertexKey < comparedVertexKey)
                     {
-                        plane += m_chunkSize;
+                        chunkBorder += m_chunkSize;
                     }
 
-                    bool large = false;
-                    if (vKey - plane < 0 && vwKey - plane >= 0)
+                    // chech whether or not to cut the face
+                    bool isLargeFace = false;
+                    if (referenceVertexKey - chunkBorder < 0 && comparedVertexKey - chunkBorder >= 0)
                     {
-                        if (plane - vKey > alpha * m_chunkSize
-                                && vwKey - plane > alpha * m_chunkSize)
+                        if (chunkBorder - referenceVertexKey > overlapRatio * m_chunkSize
+                                && comparedVertexKey - chunkBorder > overlapRatio * m_chunkSize)
                         {
-                            large = true;
+                            isLargeFace = true;
                         }
                     }
-                    else if (vKey - plane >= 0 && vwKey - plane < 0)
+                    else if (referenceVertexKey - chunkBorder >= 0 && comparedVertexKey - chunkBorder < 0)
                     {
-                        if (vKey - plane > alpha * m_chunkSize
-                                && plane - vwKey > alpha * m_chunkSize)
+                        if (referenceVertexKey - chunkBorder > overlapRatio * m_chunkSize
+                                && chunkBorder - comparedVertexKey > overlapRatio * m_chunkSize)
                         {
-                            large = true;
+                            isLargeFace = true;
                         }
                     }
 
-                    if (large)
+                    // cut the face if it is too large
+                    if (isLargeFace)
                     {
+                        // get new triangles depending on the current reference and compared vertex
                         BaseVector<float> vec11, vec12, vec13;
                         BaseVector<float> vec21, vec22, vec23;
-                        switch(i)
+
+                        if ((i == 0 && j == 1) || (i == 1 && j == 0))
                         {
-                            case 0:
-                                switch(j)
-                                {
-                                    case 1:
-                                        vec11 = v1;
-                                        vec12 = (v + vw) / 2;
-                                        vec13 = v3;
+                            vec11 = triangle[0];
+                            vec12 = (referenceVertex + comparedVertex) / 2;
+                            vec13 = triangle[2];
 
-                                        vec21 = (v + vw) / 2;
-                                        vec22 = v2;
-                                        vec23 = v3;
-                                        break;
-                                    case 2:
-                                        vec11 = v1;
-                                        vec12 = v2;
-                                        vec13 = (v + vw) / 2;
+                            vec21 = (referenceVertex + comparedVertex) / 2;
+                            vec22 = triangle[1];
+                            vec23 = triangle[2];
+                        }
+                        else if ((i == 0 && j == 2) || (i == 2 && j == 0))
+                        {
+                            vec11 = triangle[0];
+                            vec12 = triangle[1];
+                            vec13 = (referenceVertex + comparedVertex) / 2;
 
-                                        vec21 = v2;
-                                        vec22 = v3;
-                                        vec23 = (v + vw) / 2;
-                                        break;
-                                }
-                                break;
-                            case 1:
-                                switch(j)
-                                {
-                                    case 0:
-                                        vec11 = v1;
-                                        vec12 = (v + vw) / 2;
-                                        vec13 = v3;
+                            vec21 = (referenceVertex + comparedVertex) / 2;
+                            vec22 = triangle[1];
+                            vec23 = triangle[2];
+                        }
+                        else if ((i == 1 && j == 2) || (i == 2 && j == 1))
+                        {
+                            vec11 = triangle[0];
+                            vec12 = triangle[1];
+                            vec13 = (referenceVertex + comparedVertex) / 2;
 
-                                        vec21 = (v + vw) / 2;
-                                        vec22 = v2;
-                                        vec23 = v3;
-                                        break;
-                                    case 2:
-                                        vec11 = v1;
-                                        vec12 = v2;
-                                        vec13 = (v + vw) / 2;
-
-                                        vec21 = v1;
-                                        vec22 = (v + vw) / 2;
-                                        vec23 = v3;
-                                        break;
-                                }
-                                break;
-                            case 2:
-                                switch(j)
-                                {
-                                    case 0:
-                                        vec11 = v1;
-                                        vec12 = v2;
-                                        vec13 = (v + vw) / 2;
-
-                                        vec21 = v2;
-                                        vec22 = v3;
-                                        vec23 = (v + vw) / 2;
-                                        break;
-                                    case 1:
-                                        vec11 = v1;
-                                        vec12 = v2;
-                                        vec13 = (v + vw) / 2;
-
-                                        vec21 = v1;
-                                        vec22 = (v + vw) / 2;
-                                        vec23 = v3;
-                                        break;
-                                }
-                                break;
+                            vec21 = triangle[0];
+                            vec22 = (referenceVertex + comparedVertex) / 2;
+                            vec23 = triangle[2];
                         }
 
-                        if (!cutFace(vec11, vec12, vec13, alpha, chunkBuilders))
+                        // check if the new faces need to be cut too
+                        if (!cutFace(BaseVector<BaseVector<float>>(vec11, vec12, vec13), overlapRatio, chunkBuilders))
                         {
                             int a = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalVertex(vec11);
                             int b = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalVertex(vec12);
@@ -252,7 +195,7 @@ bool ChunkManager::cutFace(BaseVector<float> v1, BaseVector<float> v2, BaseVecto
 
                             chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalFace(-a, -b, -c);
                         }
-                        if (!cutFace(vec21, vec22, vec23, alpha, chunkBuilders))
+                        if (!cutFace(BaseVector<BaseVector<float>>(vec21, vec22, vec23), overlapRatio, chunkBuilders))
                         {
                             int a = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalVertex(vec21);
                             int b = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalVertex(vec22);
@@ -296,23 +239,27 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
     {
         currentCenterPoint = getFaceCenter(verticesChannel, facesChannel, i);
         unsigned int cellIndex = getCellIndex(currentCenterPoint);
-        bool added = false;
+
+        // check it the face is to large and needs to be cut
+        bool alreadyAdded = false;
         for (int j = 0; j < 3; j++)
         {
             BaseVector<float> vertex(verticesChannel[facesChannel[i][j]]);
 
             if (getCellIndex(vertex) != cellIndex)
             {
-                added = cutFace(BaseVector<float>(verticesChannel[facesChannel[i][0]]),
-                            BaseVector<float>(verticesChannel[facesChannel[i][1]]),
-                            BaseVector<float>(verticesChannel[facesChannel[i][2]]),
-                            0.0001,
-                            chunkBuilders);
+                BaseVector<BaseVector<float>> triangle(BaseVector<float>(verticesChannel[facesChannel[i][0]]),
+                                                    BaseVector<float>(verticesChannel[facesChannel[i][1]]),
+                                                    BaseVector<float>(verticesChannel[facesChannel[i][2]]));
+
+
+                alreadyAdded = cutFace(triangle, 0.01, chunkBuilders);
                 break;
             }
         }
 
-        if (!added)
+        // only add the face if the face hasnt been added during the cutting process
+        if (!alreadyAdded)
         {
             chunkBuilders[cellIndex]->addFace(i);
         }
