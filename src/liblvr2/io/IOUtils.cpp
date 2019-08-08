@@ -25,6 +25,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <random>
+#include <ctime> 
+#include <unordered_set>
+
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 namespace lvr2
@@ -131,7 +135,7 @@ Eigen::Matrix4d buildTransformation(double* alignxf)
     return transformation;
 }
 
-Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
+Eigen::Matrix4d getTransformationFromPose(const boost::filesystem::path& pose)
 {
     std::ifstream poseIn(pose.c_str());
     if(poseIn.good())
@@ -181,7 +185,7 @@ Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
     }
 }
 
-Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
+Eigen::Matrix4d getTransformationFromFrames(const boost::filesystem::path& frames)
 {
     double alignxf[16];
     int color;
@@ -208,7 +212,7 @@ Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
     return buildTransformation(alignxf);
 }
 
-Eigen::Matrix4d getTransformationFromDat(boost::filesystem::path& frames)
+Eigen::Matrix4d getTransformationFromDat(const boost::filesystem::path& frames)
 {
     double alignxf[16];
     int color;
@@ -221,8 +225,7 @@ Eigen::Matrix4d getTransformationFromDat(boost::filesystem::path& frames)
             in >> alignxf[i];
         }
     }
-
-    return buildTransformation(alignxf);
+    return Eigen::Map<Eigen::Matrix4d>(alignxf).transpose();
 }
 
 size_t countPointsInFile(boost::filesystem::path& inFile)
@@ -538,6 +541,147 @@ void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, con
         in >> position.x >> position.y >> position.z;
         in >> angles.y >> angles.y >> angles.z;
     }
+}
+
+size_t getNumberOfPointsInPLY(const std::string& filename)
+{
+    size_t n_points = 0;
+    size_t n_vertices = 0;
+
+    // Try to open file
+    std::ifstream in(filename.c_str());
+    if(in.good())
+    {
+        // Check for ply tag
+        std::string tag;
+        in >> tag;
+        if(tag == "PLY" || tag == "ply")
+        {
+            // Parse header
+            std::string token;
+            while (in.good() && token != "end_header" && token != "END_HEADER")
+            {
+                in >> token;
+              
+
+                // Check for vertex field
+                if(token == "vertex" || token == "VERTEX")
+                {
+                    in >> n_vertices;
+                }
+
+                // Check for point field
+                if(token == "point" || token == "POINT")
+                {
+                    in >> n_points;
+                }
+            }
+            if(n_points == 0 && n_vertices == 0)
+            {
+                std::cout << timestamp << "PLY contains neither vertices nor points." << std::endl;
+                return 0;
+            }
+            
+            // Prefer points over vertices
+            if(n_points)
+            {
+                return n_points;
+            }
+            else
+            {
+                return n_vertices;
+            }
+        }
+        else
+        {
+            std::cout << timestamp << filename << " is not a valid .ply file." << std::endl;
+        }
+        
+    }
+    return 0;
+}
+
+template<typename T>
+typename Channel<T>::Ptr subSampleChannel(Channel<T>& src, std::vector<size_t> ids)
+{
+    // Create smaller channel of same type
+    size_t width = src.width();
+    typename Channel<T>::Ptr red(new Channel<T>(ids.size(), width));
+
+    // Sample from original and insert into reduced 
+    // channel
+    boost::shared_array<T> a(red->dataPtr());
+    boost::shared_array<T> b(src.dataPtr());
+    for(size_t i = 0; i < ids.size(); i++)
+    {
+        for(size_t j = 0; j < red->width(); j++)
+        {
+            a[i * width + j] = b[ids[i] * width + j];
+        }
+    }
+    return red;
+}
+
+template<typename T>
+void subsample(PointBufferPtr src, PointBufferPtr dst, vector<size_t>& indices)
+{
+    // Go over all supported channel types and sub-sample
+    vector<std::pair<std::string, Channel<T>>> channels;
+    src->getAllChannelsOfType(channels);      
+    for(auto i : channels)
+    {
+        std::cout << timestamp << "Subsampling channel " << i.first << std::endl;
+        typename Channel<T>::Ptr c = subSampleChannel(i.second, indices);
+        dst->addChannel<T>(c, i.first);
+    }
+
+}
+
+PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const size_t& n)
+{
+    // Buffer for reduced points
+    PointBufferPtr buffer(new PointBuffer);
+    size_t numSrcPts = src->numPoints();
+    
+    // Setup random device and distribution
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist(0, numSrcPts);
+
+    // Check buffer size
+    if(n <= numSrcPts)
+    {
+        // Create index buffer for sub-sampling, using set to avoid duplicates
+        std::unordered_set<size_t> index_set;
+        while(index_set.size() < n)
+        {   
+            index_set.insert(dist(rng));
+        }
+
+        // Copy indices into vector for faster access and []-operator support
+        //.In c++14 this is the fastest way. In C++17 a better alternative 
+        // would be to use extract().
+        vector<size_t> indices;
+        indices.insert(indices.end(), index_set.begin(), index_set.end());
+        index_set.clear();
+
+        // Go over all supported channel types and sub-sample
+        subsample<char>(src, buffer, indices);
+        subsample<unsigned char>(src, buffer, indices);
+        subsample<short>(src, buffer, indices);
+        subsample<int>(src, buffer, indices);
+        subsample<unsigned int>(src, buffer, indices);
+        subsample<float>(src, buffer, indices);
+        subsample<double>(src, buffer, indices);
+    }
+    else
+    {
+        std::cout << timestamp << "Sub-sampling not possible. Number of sampling points is " << std::endl;
+        std::cout << timestamp << "larger than number in src buffer. (" << n << " / " << numSrcPts << ")" << std::endl;
+    }
+    
+
+    return buffer;
 }
 
 } // namespace lvr2

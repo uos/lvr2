@@ -146,8 +146,8 @@ public:
 
     /**
      * @brief Adds an index channel pointer to the map.
-     * @param[in] data The channel pointer to add. 
-     * @param[in] name Key of the channel.
+     * cointer to add. 
+     * cannel.
      */
     inline void addIndexChannel(IndexChannelPtr data, const std::string& name)
     {
@@ -308,7 +308,7 @@ public:
      * @return The type index in the MultiChannelMap.
      */
     template <typename T>
-    int getAllChannelsOfType(std::vector<std::pair<std::string, Channel<T> > > channels)
+    int getAllChannelsOfType(std::vector<std::pair<std::string, Channel<T> > >& channels)
     {
       for(auto it = this->typedBegin<T>(); it != this->end(); ++it)
       {
