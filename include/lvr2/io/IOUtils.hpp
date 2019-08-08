@@ -260,7 +260,8 @@ size_t writePointsToStream(ModelPtr model, std::ofstream& out, bool nocolor = fa
  * @param transform             A transformation matrix
  * @return Eigen::Matrix4d      The inverse transformation
  */
-Eigen::Matrix4d inverseTransform(const Eigen::Matrix4d& transform);
+template<typename T>
+Eigen::Matrix<T,4,4> inverseTransform(const Eigen::Matrix<T, 4, 4>& transform);
 
 /**
  * @brief  Get the Number Of Points (element points if present, vertex count otherwise) 
@@ -289,6 +290,7 @@ Eigen::Matrix4d poseToMatrix(const Eigen::Vector3f& position, const Eigen::Vecto
  * @param position  Output for the position of the Pose
  * @param rotation  Output for the rotation in radians
  */
+void matrixToPose(const Eigen::Matrix4d& mat, Eigen::Vector3f& position, Eigen::Vector3f& rotation);
 
 } // namespace lvr2
 
