@@ -100,8 +100,6 @@ PointBufferPtr ScanDirectoryParser::subSample()
     ModelPtr out_model(new Model);
 
     // Compute global reduction ratio and clamp
-    float ratio1 = (float)m_targetSize / m_numPoints;
-    cout << "EEEE : "  << ratio1 << " " << m_targetSize << " " << m_numPoints << endl;
     size_t actual_points = 0;
 
     for(auto i : m_scans)
@@ -113,8 +111,11 @@ PointBufferPtr ScanDirectoryParser::subSample()
             if(buffer)
             {
                 // Calc number of points to sample
-                float ratio = (float)i.m_numPoints / m_numPoints;
-                int target_size = (int)(ratio * i.m_numPoints + 0.5) * ratio1;
+                float total_ratio = (float)i.m_numPoints / m_numPoints;
+                float target_ratio = total_ratio * m_targetSize;
+
+
+                int target_size = (int)(target_ratio + 0.5);
                 std::cout << timestamp << "Sampling " << target_size << " points from " << i.m_filename << std::endl;
 
                 // Sub-sample buffer
