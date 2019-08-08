@@ -143,7 +143,7 @@ bool ChunkManager::cutFace(BaseVector<float> v1, BaseVector<float> v2, BaseVecto
                     float vKey = v[k];
                     float vwKey = vw[k];
 
-                    float plane = m_chunkSize * ((int) (vKey / m_chunkSize));
+                    float plane = m_chunkSize * ((int) (vKey / m_chunkSize)) + fmod(m_boundingBox.getMin()[k], m_chunkSize);
                     if (vKey < vwKey)
                     {
                         plane += m_chunkSize;
@@ -152,7 +152,7 @@ bool ChunkManager::cutFace(BaseVector<float> v1, BaseVector<float> v2, BaseVecto
                     bool large = false;
                     if (vKey - plane < 0 && vwKey - plane >= 0)
                     {
-                        if (vKey - plane > -alpha * m_chunkSize
+                        if (plane - vKey > alpha * m_chunkSize
                                 && vwKey - plane > alpha * m_chunkSize)
                         {
                             large = true;
@@ -161,7 +161,7 @@ bool ChunkManager::cutFace(BaseVector<float> v1, BaseVector<float> v2, BaseVecto
                     else if (vKey - plane >= 0 && vwKey - plane < 0)
                     {
                         if (vKey - plane > alpha * m_chunkSize
-                                && vwKey - plane > -alpha * m_chunkSize)
+                                && plane - vwKey > alpha * m_chunkSize)
                         {
                             large = true;
                         }
@@ -306,7 +306,7 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
                 added = cutFace(BaseVector<float>(verticesChannel[facesChannel[i][0]]),
                             BaseVector<float>(verticesChannel[facesChannel[i][1]]),
                             BaseVector<float>(verticesChannel[facesChannel[i][2]]),
-                            0.001,
+                            0.00001,
                             chunkBuilders);
                 break;
             }
@@ -315,10 +315,6 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
         if (!added)
         {
             chunkBuilders[cellIndex]->addFace(i);
-        }
-        else
-        {
-            std::cout << "large" << std::endl;
         }
     }
 
