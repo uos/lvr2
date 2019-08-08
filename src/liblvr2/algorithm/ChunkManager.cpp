@@ -34,22 +34,24 @@
  * @author Raphael Marx
  */
 
-#include <cmath>
-
 #include "lvr2/algorithm/ChunkManager.hpp"
+
 #include "lvr2/io/ModelFactory.hpp"
+
+#include <cmath>
 
 namespace lvr2
 {
 
-ChunkManager::ChunkManager(MeshBufferPtr mesh, float chunksize, std::string savePath) : m_chunkSize(chunksize)
+ChunkManager::ChunkManager(MeshBufferPtr mesh, float chunksize, std::string savePath)
+    : m_chunkSize(chunksize)
 {
     initBoundingBox(mesh);
 
     // compute number of chunks for each dimension
-    m_amount.x = (std::size_t) std::ceil(m_boundingBox.getXSize() / m_chunkSize);
-    m_amount.y = (std::size_t) std::ceil(m_boundingBox.getYSize() / m_chunkSize);
-    m_amount.z = (std::size_t) std::ceil(m_boundingBox.getZSize() / m_chunkSize);
+    m_amount.x = (std::size_t)std::ceil(m_boundingBox.getXSize() / m_chunkSize);
+    m_amount.y = (std::size_t)std::ceil(m_boundingBox.getYSize() / m_chunkSize);
+    m_amount.z = (std::size_t)std::ceil(m_boundingBox.getZSize() / m_chunkSize);
 
     buildChunks(mesh, savePath);
 }
@@ -68,15 +70,17 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
             for (std::size_t k = 0; k < maxSteps.z; ++k)
             {
                 std::size_t cellIndex = getCellIndex(
-                        area.getMin() + BaseVector<float>(i * m_chunkSize, j * m_chunkSize, k * m_chunkSize));
+                    area.getMin() +
+                    BaseVector<float>(i * m_chunkSize, j * m_chunkSize, k * m_chunkSize));
 
                 auto it = m_hashGrid.find(cellIndex);
-                if(it == m_hashGrid.end())
+                if (it == m_hashGrid.end())
                 {
-                  continue;
+                    continue;
                 }
                 // TODO: remove saving tmp chunks later
-                ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(it->second)), "area/" + std::to_string(cellIndex) + ".ply");
+                ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(it->second)),
+                                        "area/" + std::to_string(cellIndex) + ".ply");
                 chunks.push_back(it->second);
             }
         }
@@ -102,28 +106,31 @@ void ChunkManager::initBoundingBox(MeshBufferPtr mesh)
     }
 }
 
-bool ChunkManager::cutFace(BaseVector<BaseVector<float>> triangle, float overlapRatio, std::vector<ChunkBuilderPtr>& chunkBuilders)
+bool ChunkManager::cutFace(BaseVector<BaseVector<float>> triangle,
+                           float overlapRatio,
+                           std::vector<ChunkBuilderPtr>& chunkBuilders)
 {
-    for (int i = 0; i < 3; i++)
+    for (unsigned int i = 0; i < 3; i++)
     {
-        for (int j = 0; j < 3; j++)
+        for (unsigned int j = 0; j < 3; j++)
         {
             if (i != j)
             {
                 BaseVector<float> referenceVertex = triangle[i];
                 BaseVector<float> comparedVertex = triangle[j];
 
-                for (int axis = 0; axis < 3; axis++)
+                for (unsigned int axis = 0; axis < 3; axis++)
                 {
                     // key for size comparison depending on the current axis
                     float referenceVertexKey = referenceVertex[axis];
                     float comparedVertexKey = comparedVertex[axis];
 
                     // get coordinate for plane in direction of the current axis
-                    float chunkBorder = m_chunkSize * ((int) (referenceVertexKey / m_chunkSize))
-                            + fmod(m_boundingBox.getMin()[axis], m_chunkSize);
+                    float chunkBorder = m_chunkSize * ((int) (referenceVertexKey / m_chunkSize)) +
+                                        fmod(m_boundingBox.getMin()[axis], m_chunkSize);
 
-                    // select plane of chunk depending oh the relative position of the copared vertex
+                    // select plane of chunk depending oh the relative position of the copared
+                    // vertex
                     if (referenceVertexKey < comparedVertexKey)
                     {
                         chunkBorder += m_chunkSize;
@@ -131,18 +138,20 @@ bool ChunkManager::cutFace(BaseVector<BaseVector<float>> triangle, float overlap
 
                     // chech whether or not to cut the face
                     bool isLargeFace = false;
-                    if (referenceVertexKey - chunkBorder < 0 && comparedVertexKey - chunkBorder >= 0)
+                    if (referenceVertexKey - chunkBorder < 0 &&
+                        comparedVertexKey - chunkBorder >= 0)
                     {
-                        if (chunkBorder - referenceVertexKey > overlapRatio * m_chunkSize
-                                && comparedVertexKey - chunkBorder > overlapRatio * m_chunkSize)
+                        if (chunkBorder - referenceVertexKey > overlapRatio * m_chunkSize &&
+                            comparedVertexKey - chunkBorder > overlapRatio * m_chunkSize)
                         {
                             isLargeFace = true;
                         }
                     }
-                    else if (referenceVertexKey - chunkBorder >= 0 && comparedVertexKey - chunkBorder < 0)
+                    else if (referenceVertexKey - chunkBorder >= 0 &&
+                             comparedVertexKey - chunkBorder < 0)
                     {
-                        if (referenceVertexKey - chunkBorder > overlapRatio * m_chunkSize
-                                && chunkBorder - comparedVertexKey > overlapRatio * m_chunkSize)
+                        if (referenceVertexKey - chunkBorder > overlapRatio * m_chunkSize &&
+                            chunkBorder - comparedVertexKey > overlapRatio * m_chunkSize)
                         {
                             isLargeFace = true;
                         }
@@ -187,21 +196,33 @@ bool ChunkManager::cutFace(BaseVector<BaseVector<float>> triangle, float overlap
                         }
 
                         // check if the new faces need to be cut too
-                        if (!cutFace(BaseVector<BaseVector<float>>(vec11, vec12, vec13), overlapRatio, chunkBuilders))
+                        if (!cutFace(BaseVector<BaseVector<float>>(vec11, vec12, vec13),
+                                     overlapRatio,
+                                     chunkBuilders))
                         {
-                            int a = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalVertex(vec11);
-                            int b = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalVertex(vec12);
-                            int c = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalVertex(vec13);
+                            int a = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]
+                                        ->addAdditionalVertex(vec11);
+                            int b = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]
+                                        ->addAdditionalVertex(vec12);
+                            int c = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]
+                                        ->addAdditionalVertex(vec13);
 
-                            chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]->addAdditionalFace(-a, -b, -c);
+                            chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]
+                                ->addAdditionalFace(-a, -b, -c);
                         }
-                        if (!cutFace(BaseVector<BaseVector<float>>(vec21, vec22, vec23), overlapRatio, chunkBuilders))
+                        if (!cutFace(BaseVector<BaseVector<float>>(vec21, vec22, vec23),
+                                     overlapRatio,
+                                     chunkBuilders))
                         {
-                            int a = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalVertex(vec21);
-                            int b = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalVertex(vec22);
-                            int c = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalVertex(vec23);
+                            int a = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]
+                                        ->addAdditionalVertex(vec21);
+                            int b = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]
+                                        ->addAdditionalVertex(vec22);
+                            int c = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]
+                                        ->addAdditionalVertex(vec23);
 
-                            chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]->addAdditionalFace(-a, -b, -c);
+                            chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]
+                                ->addAdditionalFace(-a, -b, -c);
                         }
 
                         return true;
@@ -216,7 +237,9 @@ bool ChunkManager::cutFace(BaseVector<BaseVector<float>> triangle, float overlap
 void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
 {
     // one vector of variable size for each vertex - this is used for duplicate detection
-    std::shared_ptr<std::vector<std::vector<ChunkBuilderPtr>>> vertexUse(new std::vector<std::vector<ChunkBuilderPtr>>(mesh->numVertices(), std::vector<std::shared_ptr<ChunkBuilder>>()));
+    std::shared_ptr<std::vector<std::vector<ChunkBuilderPtr>>> vertexUse(
+        new std::vector<std::vector<ChunkBuilderPtr>>(
+            mesh->numVertices(), std::vector<std::shared_ptr<ChunkBuilder>>()));
 
     std::vector<ChunkBuilderPtr> chunkBuilders(m_amount.x * m_amount.y * m_amount.z);
 
@@ -226,7 +249,8 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
         {
             for (std::size_t k = 0; k < m_amount.z; k++)
             {
-                chunkBuilders[hashValue(i, j, k)] = ChunkBuilderPtr(new ChunkBuilder(mesh, vertexUse));
+                chunkBuilders[hashValue(i, j, k)] =
+                    ChunkBuilderPtr(new ChunkBuilder(mesh, vertexUse));
             }
         }
     }
@@ -248,10 +272,10 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
 
             if (getCellIndex(vertex) != cellIndex)
             {
-                BaseVector<BaseVector<float>> triangle(BaseVector<float>(verticesChannel[facesChannel[i][0]]),
-                                                    BaseVector<float>(verticesChannel[facesChannel[i][1]]),
-                                                    BaseVector<float>(verticesChannel[facesChannel[i][2]]));
-
+                BaseVector<BaseVector<float>> triangle(
+                    BaseVector<float>(verticesChannel[facesChannel[i][0]]),
+                    BaseVector<float>(verticesChannel[facesChannel[i][1]]),
+                    BaseVector<float>(verticesChannel[facesChannel[i][2]]));
 
                 alreadyAdded = cutFace(triangle, 0.01, chunkBuilders);
                 break;
@@ -285,16 +309,19 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
                     m_hashGrid.insert({hash, chunkMeshPtr});
 
                     // export chunked meshes for debugging
-                    ModelFactory::saveModel(
-                        ModelPtr(new Model(chunkMeshPtr)),
-                        savePath + "/" + std::to_string(i) + "-" + std::to_string(j) + "-" + std::to_string(k) + ".ply");
+                    ModelFactory::saveModel(ModelPtr(new Model(chunkMeshPtr)),
+                                            savePath + "/" + std::to_string(i) + "-" +
+                                                std::to_string(j) + "-" + std::to_string(k) +
+                                                ".ply");
                 }
             }
         }
     }
 }
 
-BaseVector<float> ChunkManager::getFaceCenter(FloatChannel verticesChannel, IndexChannel facesChannel, unsigned int faceIndex)
+BaseVector<float> ChunkManager::getFaceCenter(FloatChannel verticesChannel,
+                                              IndexChannel facesChannel,
+                                              unsigned int faceIndex)
 {
     BaseVector<float> vertex1(verticesChannel[facesChannel[faceIndex][0]]);
     BaseVector<float> vertex2(verticesChannel[facesChannel[faceIndex][1]]);
@@ -306,7 +333,8 @@ BaseVector<float> ChunkManager::getFaceCenter(FloatChannel verticesChannel, Inde
 std::size_t ChunkManager::getCellIndex(const BaseVector<float>& vec)
 {
     BaseVector<float> tmpVec = (vec - m_boundingBox.getMin()) / m_chunkSize;
-    return (std::size_t) tmpVec.x * m_amount.y * m_amount.z + (std::size_t) tmpVec.y * m_amount.z + (std::size_t) tmpVec.z;
+    return (std::size_t)tmpVec.x * m_amount.y * m_amount.z + (std::size_t)tmpVec.y * m_amount.z +
+           (std::size_t)tmpVec.z;
 }
 
 } /* namespace lvr2 */

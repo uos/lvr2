@@ -25,26 +25,26 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /**
-  * Options.hpp
-  *
-  * @date 22.07.2019
-  * @author Marcel Wiegand
-  */
+/**
+ * Options.hpp
+ *
+ * @date 22.07.2019
+ * @author Marcel Wiegand
+ */
 
 #ifndef OPTIONS_HPP_
 #define OPTIONS_HPP_
 
-#include <string>
 #include <boost/program_options.hpp>
+#include <string>
 
 namespace chunking
 {
 
-using std::string;
-using boost::program_options::variables_map;
 using boost::program_options::options_description;
 using boost::program_options::positional_options_description;
+using boost::program_options::variables_map;
+using std::string;
 
 /**
  * @brief A class to parse the program options for the chunking
@@ -52,7 +52,7 @@ using boost::program_options::positional_options_description;
  */
 class Options
 {
-public:
+  public:
     /**
      * @brief   Ctor. Parses the command parameters given to the main
      *          function of the program
@@ -80,7 +80,7 @@ public:
      */
     float getChunkSize() const;
 
-private:
+  private:
     /// The internally used variable map
     variables_map m_variables;
 
@@ -92,6 +92,5 @@ private:
 };
 
 } // namespace chunking
-
 
 #endif /* OPTIONS_HPP_ */
