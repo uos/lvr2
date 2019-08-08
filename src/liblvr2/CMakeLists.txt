@@ -55,6 +55,14 @@ set(LVR2_SOURCES
     reconstruction/ModelToImage.cpp
     reconstruction/LBKdTree.cpp
     reconstruction/PCLFiltering.cpp
+    registration/EigenSVDPointAlign.cpp
+    registration/ICPPointAlign.cpp
+    registration/KDTree.cpp
+    registration/Scan.cpp
+    registration/Metascan.cpp
+    registration/SlamAlign.cpp
+    registration/GraphSlam.cpp
+    registration/TreeUtils.cpp
 )
 
 

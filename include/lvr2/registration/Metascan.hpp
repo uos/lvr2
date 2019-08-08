@@ -26,56 +26,42 @@
  */
 
 /**
- * ICPPointAlign.hpp
+ * Metascan.hpp
  *
- *  @date Mar 18, 2014
- *  @author Thomas Wiemann
+ *  @date Aug 1, 2019
+ *  @author Malte Hillmann
  */
-#ifndef ICPPOINTALIGN_HPP_
-#define ICPPOINTALIGN_HPP_
+#ifndef METASCAN_HPP_
+#define METASCAN_HPP_
 
-#include "KDTree.hpp"
 #include "Scan.hpp"
 
 namespace lvr2
 {
 
-class ICPPointAlign
+/**
+ * @brief Represents several Scans as part of a single Scan
+ * 
+ * Note that most methods of Scan don't make sense on a Metascan, like reductions or Pose getters.
+ */
+class Metascan : public Scan
 {
 public:
-    ICPPointAlign(ScanPtr model, ScanPtr data);
+    Metascan();
 
-    Matrix4d match();
+    virtual ~Metascan() = default;
 
-    virtual ~ICPPointAlign() = default;
+    virtual Vector3f getPoint(size_t index) const override;
+    virtual size_t count() const override;
 
-    void    setMaxMatchDistance(float distance);
-    void    setMaxIterations(int iterations);
-    void    setMaxLeafSize(int maxLeafSize);
-    void    setEpsilon(double epsilon);
-    void    setVerbose(bool verbose);
-
-    float   getMaxMatchDistance() const;
-    int     getMaxIterations() const;
-    int     getMaxLeafSize() const;
-    double  getEpsilon() const;
-    bool    getVerbose() const;
+    void addScan(ScanPtr scan);
 
 protected:
+    std::vector<ScanPtr> m_scans;
 
-    double      m_epsilon;
-    double      m_maxDistanceMatch;
-    int         m_maxIterations;
-    int         m_maxLeafSize;
-
-    bool        m_verbose;
-
-    ScanPtr     m_modelCloud;
-    ScanPtr     m_dataCloud;
-
-    KDTreePtr   m_searchTree;
+    size_t               m_count;
 };
 
 } /* namespace lvr2 */
 
-#endif /* ICPPOINTALIGN_HPP_ */
+#endif /* METASCAN_HPP_ */

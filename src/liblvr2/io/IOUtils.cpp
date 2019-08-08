@@ -25,12 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <random>
-#include <ctime> 
-#include <unordered_set>
-
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/ModelFactory.hpp"
+
+#include <random>
+#include <unordered_set>
+
 namespace lvr2
 {
 
@@ -45,17 +45,14 @@ Eigen::Matrix4d transformRegistration(const Eigen::Matrix4d& transform, const Ei
 
     Eigen::Matrix3d rotation = rotation_trans * rotation_registration;
 
-    Eigen::Matrix4d result;
+    Eigen::Matrix4d result = Eigen::Matrix4d::Identity();
     result.block<3,3>(0, 0) = rotation;
 
     Eigen::Vector3d tmp;
     tmp = registration.block<3,1>(0,3);
     tmp = rotation_trans * tmp;
 
-    (result.rightCols<1>())(0) = transform.col(3)(0) + tmp(0);
-    (result.rightCols<1>())(1) = transform.col(3)(1) + tmp(1);
-    (result.rightCols<1>())(2) = transform.col(3)(2) + tmp(2);
-    (result.rightCols<1>())(3) = 1.0;
+    result.block<3, 1>(0, 3) = transform.block<3, 1>(0, 3) + tmp;
 
     return result;
 
@@ -682,6 +679,46 @@ PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const size_t& n)
     
 
     return buffer;
+}
+
+
+Eigen::Matrix4d poseToMatrix(const Eigen::Vector3f& position, const Eigen::Vector3f& rotation)
+{
+    Eigen::Matrix4d mat = Eigen::Matrix4d::Identity();
+    mat.block<3, 3>(0, 0) = Eigen::AngleAxisd(rotation.x(), Eigen::Vector3d::UnitX()).matrix()
+                           * Eigen::AngleAxisd(rotation.y(), Eigen::Vector3d::UnitY())
+                           * Eigen::AngleAxisd(rotation.z(), Eigen::Vector3d::UnitZ());
+
+    mat.block<3, 1>(0, 3) = position.cast<double>();
+    return mat;
+}
+
+void matrixToPose(const Eigen::Matrix4d& mat, Eigen::Vector3f& position, Eigen::Vector3f& rotation)
+{
+    // Calculate Y-axis angle
+    if (mat(0, 0) > 0.0)
+    {
+        rotation.y() = asin(mat(2, 0));
+    }
+    else
+    {
+        rotation.y() = M_PI - asin(mat(2, 0));
+    }
+
+    double C = cos(rotation.y());
+    if (fabs(C) < 0.005) // Gimbal lock?
+    {
+        // Gimbal lock has occurred
+        rotation.x() = 0.0;
+        rotation.z() = atan2(mat(0, 1), mat(1, 1));
+    }
+    else
+    {
+        rotation.x() = atan2(-mat(2, 1) / C, mat(2, 2) / C);
+        rotation.z() = atan2(-mat(1, 0) / C, mat(0, 0) / C);
+    }
+
+    position = mat.block<3, 1>(0, 3).cast<float>();
 }
 
 } // namespace lvr2

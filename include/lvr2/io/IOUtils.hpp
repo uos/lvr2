@@ -39,7 +39,6 @@
 #include <fstream>
 #include <vector>
 
-
 namespace lvr2
 {
 
@@ -273,6 +272,23 @@ Eigen::Matrix4d inverseTransform(const Eigen::Matrix4d& transform);
 size_t getNumberOfPointsInPLY(const std::string& filename);
 
 PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const size_t& n);
+
+/**
+ * @brief   Converts a Pose to a Matrix.
+ * 
+ * @param position  The position of the Pose
+ * @param rotation  The rotation in radians
+ * @return          The Matrix representation of the Pose
+ */
+Eigen::Matrix4d poseToMatrix(const Eigen::Vector3f& position, const Eigen::Vector3f& rotation);
+
+/**
+ * @brief   Extracts the Pose from a Matrix
+ * 
+ * @param pose      A Matrix representing a Pose
+ * @param position  Output for the position of the Pose
+ * @param rotation  Output for the rotation in radians
+ */
 
 } // namespace lvr2
 
