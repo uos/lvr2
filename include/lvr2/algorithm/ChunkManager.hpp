@@ -93,7 +93,7 @@ class ChunkManager
          */
         void initBoundingBox(MeshBufferPtr mesh);
 
-        bool cutFace(BaseVector<float> v1, BaseVector<float> v2, BaseVector<float> v3, float alpha, std::vector<ChunkBuilderPtr>& chunkBuilders);
+        bool cutFace(BaseVector<BaseVector<float>> triangle, float alpha, std::vector<ChunkBuilderPtr>& chunkBuilders);
 
         /**
          * @brief buildChunks builds chunks from an original mesh
