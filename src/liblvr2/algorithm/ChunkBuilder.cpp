@@ -37,8 +37,9 @@
 namespace lvr2
 {
 
-ChunkBuilder::ChunkBuilder(MeshBufferPtr originalMesh,
-                           std::shared_ptr<std::vector<std::vector<ChunkBuilderPtr>>> vertexUse)
+ChunkBuilder::ChunkBuilder(
+    MeshBufferPtr originalMesh,
+    std::shared_ptr<std::vector<std::vector<std::weak_ptr<ChunkBuilder>>>> vertexUse)
     : m_originalMesh(originalMesh), m_vertexUse(vertexUse)
 {
 }
@@ -53,11 +54,14 @@ void ChunkBuilder::addFace(unsigned int index)
     // next add the vertices of the face to the chunk
     for (unsigned int i = 0; i < 3; i++)
     {
+        std::weak_ptr<ChunkBuilder> thisBuilderPtr(shared_from_this());
         // if the vertex is not in the vector, we add the vertex (we just mark the vertex by adding
         // the chunkID)
-        if (std::find(m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).begin(),
+        if (std::find_if(m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).begin(),
                       m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).end(),
-                      shared_from_this())
+                      [&thisBuilderPtr](const std::weak_ptr<ChunkBuilder>& otherBuilderPtr) {
+                          return thisBuilderPtr.lock() == otherBuilderPtr.lock();
+                      })
             == m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).end())
         {
             m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i])
@@ -69,6 +73,7 @@ void ChunkBuilder::addFace(unsigned int index)
                 for (unsigned int j = 0; j < 2; j++)
                 {
                     m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i])[j]
+                        .lock()
                         ->addDuplicateVertex(m_originalMesh->getFaceIndices()[index * 3 + i]);
                 }
             }
@@ -76,6 +81,7 @@ void ChunkBuilder::addFace(unsigned int index)
             {
                 m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i])
                     .back()
+                    .lock()
                     ->addDuplicateVertex(m_originalMesh->getFaceIndices()[index * 3 + i]);
             }
         }
