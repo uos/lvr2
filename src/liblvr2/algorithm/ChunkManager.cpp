@@ -157,6 +157,16 @@ bool ChunkManager::cutFace(BaseVector<BaseVector<float>> triangle,
                         }
                     }
 
+                    // if the triangle is (nearly) a straight line, we don't cut the face
+                    if(isLargeFace)
+                    {
+                        float epsilon = 0.00001;
+                        if(std::abs((triangle[1] - triangle[0]).dot(triangle[2] - triangle[0])) - ((triangle[1] - triangle[0]).length() + (triangle[2] - triangle[0]).length()) > -epsilon)
+                        {
+                            isLargeFace = false;
+                        }
+                    }
+
                     // cut the face if it is too large
                     if (isLargeFace)
                     {
