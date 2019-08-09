@@ -36,16 +36,21 @@
 
 #include "Scan.hpp"
 
-using Eigen::Vector3d;
+#include <Eigen/Dense>
 
 namespace lvr2
 {
 
-using PointPairVector = std::vector<std::pair<Vector3f, Vector3f>>;
-
+template<typename T, typename PointT = float>
 class EigenSVDPointAlign
 {
 public:
+    using Vec3 = Eigen::Matrix<T, 3, 1>;
+    using Mat4 = Eigen::Matrix<T, 4, 4>;
+    using Mat3 = Eigen::Matrix<T, 3, 3>;
+    using Point3 = Eigen::Matrix<PointT, 3, 1>;
+    using PointPairVector = std::vector<std::pair<Point3, Point3>>;
+
     EigenSVDPointAlign() {};
 
     /**
@@ -63,12 +68,12 @@ public:
      *
      * @return The average Point-to-Point error of the Scans
      */
-    double alignPoints(
+    T alignPoints(
         ScanPtr scan,
-        Vector3f** neighbors,
-        const Vector3d& centroid_m,
-        const Vector3d& centroid_d,
-        Matrix4d& align) const;
+        Point3** neighbors,
+        const Vec3& centroid_m,
+        const Vec3& centroid_d,
+        Mat4& align) const;
 
     /**
      * @brief Calculates the estimated Transformation to match a Data Pointcloud to a Model
@@ -83,13 +88,15 @@ public:
      *
      * @return The average Point-to-Point error of the Scans
      */
-    double alignPoints(
+    T alignPoints(
         PointPairVector& points,
-        const Vector3d& centroid_m,
-        const Vector3d& centroid_d,
-        Matrix4d& align) const;
+        const Vec3& centroid_m,
+        const Vec3& centroid_d,
+        Mat4& align) const;
 };
 
 } /* namespace lvr2 */
+
+#include "EigenSVDPointAlign.tcc"
 
 #endif /* EIGENSVDPOINTALIGN_HPP_ */

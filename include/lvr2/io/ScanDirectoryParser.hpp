@@ -7,8 +7,9 @@
 #include <boost/filesystem.hpp>
 #include <Eigen/Dense>
 
-#include "Timestamp.hpp"
-#include "PointBuffer.hpp"
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/registration/TransformUtils.hpp"
 
 namespace lvr2
 {

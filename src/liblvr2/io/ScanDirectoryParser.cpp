@@ -81,15 +81,15 @@ Eigen::Matrix4d ScanDirectoryParser::getPose(const Path& poseFile)
 {
     if(m_poseExtension == ".dat")
     {
-        return getTransformationFromDat(poseFile);
+        return getTransformationFromDat<double>(poseFile);
     }
     else if(m_poseExtension == ".pose")
     {
-        return getTransformationFromPose(poseFile);
+        return getTransformationFromPose<double>(poseFile);
     }
     else if(m_poseExtension == ".frames")
     {
-        return getTransformationFromFrames(poseFile);
+        return getTransformationFromFrames<double>(poseFile);
     }
     
     return Eigen::Matrix4d::Identity();
