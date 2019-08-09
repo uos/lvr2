@@ -247,9 +247,9 @@ bool ChunkManager::cutFace(BaseVector<BaseVector<float>> triangle,
 void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
 {
     // one vector of variable size for each vertex - this is used for duplicate detection
-    std::shared_ptr<std::vector<std::vector<ChunkBuilderPtr>>> vertexUse(
-        new std::vector<std::vector<ChunkBuilderPtr>>(
-            mesh->numVertices(), std::vector<std::shared_ptr<ChunkBuilder>>()));
+    std::shared_ptr<std::vector<std::vector<std::weak_ptr<ChunkBuilder>>>> vertexUse(
+        new std::vector<std::vector<std::weak_ptr<ChunkBuilder>>>(
+            mesh->numVertices(), std::vector<std::weak_ptr<ChunkBuilder>>()));
 
     std::vector<ChunkBuilderPtr> chunkBuilders(m_amount.x * m_amount.y * m_amount.z);
 
