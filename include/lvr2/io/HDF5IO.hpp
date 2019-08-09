@@ -31,10 +31,11 @@
 #include "BaseIO.hpp"
 #include "DataStruct.hpp"
 #include "ScanData.hpp"
-#include "CamData.hpp"
 #include "CalibrationParameters.hpp"
 
+#include "lvr2/io/AttributeMeshIOBase.hpp"
 #include "lvr2/geometry/Matrix4.hpp"
+#include "lvr2/types/CameraData.hpp"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -45,7 +46,7 @@
 #include <highfive/H5DataSpace.hpp>
 #include <highfive/H5File.hpp>
 
-#include "lvr2/io/AttributeMeshIOBase.hpp"
+
 #include <string>
 
 namespace lvr2
