@@ -95,10 +95,10 @@ ScanPtr SlamAlign::getScan(size_t index) const
 
 void SlamAlign::reduceScan(const ScanPtr& scan)
 {
-    size_t prev = scan->count();
+    size_t prev = scan->numPoints();
     if (m_options.reduction >= 0)
     {
-        scan->reduce(m_options.reduction);
+        scan->reduce(m_options.reduction, m_options.maxLeafSize);
     }
     if (m_options.minDistance >= 0)
     {
@@ -109,9 +109,14 @@ void SlamAlign::reduceScan(const ScanPtr& scan)
         scan->setMaxDistance(m_options.maxDistance);
     }
 
-    if (scan->count() < prev && m_options.verbose)
+    if (scan->numPoints() < prev)
     {
-        cout << "Removed " << (prev - scan->count()) << " / " << prev << " Points -> " << scan->count() << " left" << endl;
+        scan->trim();
+
+        if (m_options.verbose)
+        {
+            cout << "Removed " << (prev - scan->numPoints()) << " / " << prev << " Points -> " << scan->numPoints() << " left" << endl;
+        }
     }
 }
 
@@ -259,7 +264,7 @@ void SlamAlign::loopClose(size_t first, size_t last)
 
     for (size_t i = first; i <= last; i++)
     {
-        float factor = (i - first) / (float)(last - first);
+        double factor = (i - first) / (double)(last - first);
 
         Matrix4d delta = (transform - Matrix4d::Identity()) * factor + Matrix4d::Identity();
 

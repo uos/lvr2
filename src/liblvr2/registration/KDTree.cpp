@@ -1,4 +1,3 @@
-
 /**
  * Copyright (c) 2018, University Osnabrück
  * All rights reserved.
@@ -40,14 +39,14 @@ namespace lvr2
 class KDNode : public KDTree
 {
 public:
-    KDNode(int axis, float split, KDTreePtr& lesser, KDTreePtr& greater)
+    KDNode(int axis, double split, KDTreePtr& lesser, KDTreePtr& greater)
         : axis(axis), split(split), lesser(move(lesser)), greater(move(greater))
     { }
 
 protected:
-    virtual void nnInternal(const Vector3f& point, Vector3f*& neighbor, float& maxDist) const override
+    virtual void nnInternal(const Point& point, Neighbor& neighbor, double& maxDist) const override
     {
-        float val = point(this->axis);
+        double val = point(this->axis);
         if (val < this->split)
         {
             this->lesser->nnInternal(point, neighbor, maxDist);
@@ -68,7 +67,7 @@ protected:
 
 private:
     int axis;
-    float split;
+    double split;
     KDTreePtr lesser;
     KDTreePtr greater;
 };
@@ -76,18 +75,18 @@ private:
 class KDLeaf : public KDTree
 {
 public:
-    KDLeaf(Vector3f* points, int count)
+    KDLeaf(Point* points, int count)
         : points(points), count(count)
     { }
 
 protected:
-    virtual void nnInternal(const Vector3f& point, Vector3f*& neighbor, float& maxDist) const override
+    virtual void nnInternal(const Point& point, Neighbor& neighbor, double& maxDist) const override
     {
-        float maxDistSq = maxDist * maxDist;
+        double maxDistSq = maxDist * maxDist;
         bool changed = false;
         for (int i = 0; i < this->count; i++)
         {
-            float dist = (point - this->points[i]).squaredNorm();
+            double dist = (point - this->points[i]).squaredNorm();
             if (dist < maxDistSq)
             {
                 neighbor = &this->points[i];
@@ -102,11 +101,11 @@ protected:
     }
 
 private:
-    Vector3f* points;
+    Point* points;
     int count;
 };
 
-KDTreePtr create_recursive(Vector3f* points, int n, int maxLeafSize)
+KDTreePtr create_recursive(KDTree::Point* points, int n, int maxLeafSize)
 {
     if (n <= maxLeafSize)
     {
@@ -116,7 +115,7 @@ KDTreePtr create_recursive(Vector3f* points, int n, int maxLeafSize)
     AABB boundingBox(points, n);
 
     int splitAxis = boundingBox.longestAxis();
-    float splitValue = boundingBox.avg(splitAxis);
+    double splitValue = boundingBox.avg()(splitAxis);
 
     if (boundingBox.difference(splitAxis) == 0.0) // all points are exactly the same
     {
@@ -139,28 +138,12 @@ KDTreePtr create_recursive(Vector3f* points, int n, int maxLeafSize)
     return KDTreePtr(new KDNode(splitAxis, splitValue, lesser, greater));
 }
 
-KDTreePtr KDTree::create(Vector3f* points, int n, int maxLeafSize)
-{
-    KDTreePtr ret;
-    #pragma omp parallel // allows "pragma omp task"
-    #pragma omp single // only execute every task once
-    ret = create_recursive(points, n, maxLeafSize);
-
-    return ret;
-}
-
 KDTreePtr KDTree::create(ScanPtr scan, int maxLeafSize)
 {
     KDTreePtr ret;
 
-    size_t n = scan->count();
-    PointArray points = PointArray(new Vector3f[n]);
-
-    #pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < n; i++)
-    {
-        points[i] = scan->getPoint(i);
-    }
+    size_t n = scan->numPoints();
+    auto points = scan->toVector3fArr();
 
     #pragma omp parallel // allows "pragma omp task"
     #pragma omp single // only execute every task once
@@ -171,28 +154,20 @@ KDTreePtr KDTree::create(ScanPtr scan, int maxLeafSize)
     return ret;
 }
 
-bool KDTree::nearestNeighbor(const Vector3f& point, Vector3f*& neighbor, float& distance, float maxDistance) const
-{
-    neighbor = nullptr;
-    distance = maxDistance;
-    nnInternal(point, neighbor, distance);
 
-    return neighbor != nullptr;
-}
-
-size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, Vector3f** neighbors, float maxDistance, Vector3d& centroid_m, Vector3d& centroid_d)
+size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance, Vector3d& centroid_m, Vector3d& centroid_d)
 {
     size_t found = getNearestNeighbors(tree, scan, neighbors, maxDistance);
 
     centroid_m = Vector3d::Zero();
     centroid_d = Vector3d::Zero();
 
-    for (size_t i = 0; i < scan->count(); i++)
+    for (size_t i = 0; i < scan->numPoints(); i++)
     {
         if (neighbors[i] != nullptr)
         {
             centroid_m += neighbors[i]->cast<double>();
-            centroid_d += scan->getPoint(i).cast<double>();
+            centroid_d += scan->getPoint(i);
         }
     }
 
@@ -202,13 +177,13 @@ size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, Vector3f** neighbors, f
     return found;
 }
 
-size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, Vector3f** neighbors, float maxDistance)
+size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance)
 {
     size_t found = 0;
-    float distance = 0.0f;
+    double distance = 0.0;
 
     #pragma omp parallel for firstprivate(distance) reduction(+:found) schedule(dynamic,8)
-    for (size_t i = 0; i < scan->count(); i++)
+    for (size_t i = 0; i < scan->numPoints(); i++)
     {
         if (tree->nearestNeighbor(scan->getPoint(i), neighbors[i], distance, maxDistance))
         {

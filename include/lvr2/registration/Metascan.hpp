@@ -51,15 +51,12 @@ public:
 
     virtual ~Metascan() = default;
 
-    virtual Vector3f getPoint(size_t index) const override;
-    virtual size_t count() const override;
+    virtual Vector3d getPoint(size_t index) const override;
 
     void addScan(ScanPtr scan);
 
 protected:
     std::vector<ScanPtr> m_scans;
-
-    size_t               m_count;
 };
 
 } /* namespace lvr2 */

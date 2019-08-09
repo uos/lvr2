@@ -46,13 +46,8 @@ using namespace lvr2;
 using namespace std;
 using boost::filesystem::path;
 
-string format_name(const string& format, int index)
-{
-    size_t size = snprintf(nullptr, 0, format.c_str(), index) + 1; // Extra space for '\0'
-    char buff[size];
-    snprintf(buff, size, format.c_str(), index);
-    return string(buff);
-}
+string format_name(const string& format, int index);
+Eigen::Matrix4d get_pose(const path& poseFile);
 
 int main(int argc, char** argv)
 {
@@ -99,15 +94,15 @@ int main(int argc, char** argv)
          "The format for the pose files to use.\n"
          "available formats are listed <somewhere>.")
 
-        ("reduction,r", value<float>(&options.reduction)->default_value(options.reduction),
+        ("reduction,r", value<double>(&options.reduction)->default_value(options.reduction),
          "The Voxel size for Voxel based reduction.\n"
          "-1 (default): No reduction.")
 
-        ("min,m", value<float>(&options.minDistance)->default_value(options.minDistance),
+        ("min,m", value<double>(&options.minDistance)->default_value(options.minDistance),
          "Ignore all Points closer than <value> to the origin of the scan.\n"
          "-1 (default): No filter.")
 
-        ("max,M", value<float>(&options.maxDistance)->default_value(options.maxDistance),
+        ("max,M", value<double>(&options.maxDistance)->default_value(options.maxDistance),
          "Ignore all Points farther away than <value> from the origin of the scan.\n"
          "-1 (default): No filter.")
 
@@ -142,7 +137,7 @@ int main(int argc, char** argv)
         ("icpIterations,i", value<int>(&options.icpIterations)->default_value(options.icpIterations),
          "Number of iterations for ICP.")
 
-        ("icpMaxDistance,d", value<float>(&options.icpMaxDistance)->default_value(options.icpMaxDistance),
+        ("icpMaxDistance,d", value<double>(&options.icpMaxDistance)->default_value(options.icpMaxDistance),
          "The maximum distance between two points during ICP.")
 
         ("maxLeafSize", value<int>(&options.maxLeafSize)->default_value(options.maxLeafSize),
@@ -161,7 +156,7 @@ int main(int argc, char** argv)
          "Use complex Loop Closing with GraphSLAM.\n"
          "At least one of -L and -G must be specified for Loopclosing to take place.")
 
-        ("closeLoopDistance,c", value<float>(&options.closeLoopDistance)->default_value(options.closeLoopDistance),
+        ("closeLoopDistance,c", value<double>(&options.closeLoopDistance)->default_value(options.closeLoopDistance),
          "The maximum distance between two poses to consider a closed loop.")
 
         ("closeLoopPairs,C", value<int>(&options.closeLoopPairs)->default_value(options.closeLoopPairs),
@@ -174,7 +169,7 @@ int main(int argc, char** argv)
         ("slamIterations,I", value<int>(&options.slamIterations)->default_value(options.slamIterations),
          "Number of iterations for SLAM.")
 
-        ("slamMaxDistance,D", value<float>(&options.slamMaxDistance)->default_value(options.slamMaxDistance),
+        ("slamMaxDistance,D", value<double>(&options.slamMaxDistance)->default_value(options.slamMaxDistance),
          "The maximum distance between two points during SLAM.")
 
         ("slamEpsilon", value<double>(&options.slamEpsilon)->default_value(options.slamEpsilon),
@@ -339,7 +334,7 @@ int main(int argc, char** argv)
         }
 
         file.replace_extension(pose_format);
-        Matrix4d pose = getTransformationFromPose<double>(file);
+        Matrix4d pose = get_pose(file);
 
         ScanPtr scan = make_shared<Scan>(model->m_pointCloud, pose);
         scans.push_back(scan);
@@ -405,3 +400,31 @@ int main(int argc, char** argv)
 
     return EXIT_SUCCESS;
 }
+
+string format_name(const string& format, int index)
+{
+    size_t size = snprintf(nullptr, 0, format.c_str(), index) + 1; // Extra space for '\0'
+    char buff[size];
+    snprintf(buff, size, format.c_str(), index);
+    return string(buff);
+}
+
+Eigen::Matrix4d get_pose(const path& poseFile)
+{
+    path extension = poseFile.extension();
+    if(extension == ".dat")
+    {
+        return getTransformationFromDat<double>(poseFile);
+    }
+    else if(extension == ".pose")
+    {
+        return getTransformationFromPose<double>(poseFile);
+    }
+    else if(extension == ".frames")
+    {
+        return getTransformationFromFrames<double>(poseFile);
+    }
+    
+    throw std::invalid_argument(string("Unknown Pose extension: ") + extension.string());
+}
+

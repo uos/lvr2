@@ -40,23 +40,17 @@
 
 #include <Eigen/SparseCore>
 
-using Matrix6d = Eigen::Matrix<double, 6, 6>;
-using Vector6d = Eigen::Matrix<double, 6, 1>;
-using GraphMatrix = Eigen::SparseMatrix<double>;
-using GraphVector = Eigen::VectorXd;
-using Graph = vector<pair<int, int>>;
-
 namespace lvr2
 {
 
 /**
  * @brief finds Scans that are "close" to a Scan as determined by a Loopclosing strategy
- * 
+ *
  * @param scans   A vector with all Scans
  * @param scan    The index of the scan
  * @param options The options on how to search
  * @param output  Will be filled with the indices of all close Scans
- * 
+ *
  * @return true if any Scans were found, false otherwise
  */
 bool findCloseScans(const vector<ScanPtr>& scans, size_t scan, const SlamOptions& options, vector<size_t>& output);
@@ -66,15 +60,20 @@ bool findCloseScans(const vector<ScanPtr>& scans, size_t scan, const SlamOptions
  */
 class GraphSlam
 {
-
 public:
+    using Matrix6d = Eigen::Matrix<double, 6, 6>;
+    using Vector6d = Eigen::Matrix<double, 6, 1>;
+    using GraphMatrix = Eigen::SparseMatrix<double>;
+    using GraphVector = Eigen::VectorXd;
+    using Graph = vector<pair<int, int>>;
+
     GraphSlam(const SlamOptions* options);
 
     virtual ~GraphSlam() = default;
 
     /**
      * @brief runs the GraphSlam algorithm
-     * 
+     *
      * @param scans The scans to work on
      * @param last  The index of the last Scan to consider. `scans` may be longer, but anything
      *              after `last` will be ignored
