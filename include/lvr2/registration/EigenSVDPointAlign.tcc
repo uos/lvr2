@@ -31,7 +31,6 @@
  *  @date Feb 21, 2014
  *  @author Thomas Wiemann
  */
-#include <lvr2/registration/EigenSVDPointAlign.hpp>
 
 #include <Eigen/SVD>
 
@@ -40,18 +39,19 @@ using namespace Eigen;
 namespace lvr2
 {
 
-double EigenSVDPointAlign::alignPoints(
+template<typename T, typename PointT>
+T EigenSVDPointAlign<T, PointT>::alignPoints(
     ScanPtr scan,
-    Vector3f** neighbors,
-    const Vector3d& centroid_m,
-    const Vector3d& centroid_d,
-    Matrix4d& align) const
+    Point3** neighbors,
+    const Vec3& centroid_m,
+    const Vec3& centroid_d,
+    Mat4& align) const
 {
-    double error = 0.0;
+    T error = 0.0;
     size_t pairs = 0;
 
     // Fill H matrix
-    Matrix3d H = Matrix3d::Zero();
+    Mat3 H = Matrix3d::Zero();
 
     for (size_t i = 0; i < scan->count(); i++)
     {
@@ -60,8 +60,8 @@ double EigenSVDPointAlign::alignPoints(
             continue;
         }
 
-        Vector3d m = neighbors[i]->cast<double>() - centroid_m;
-        Vector3d d = scan->getPoint(i).cast<double>() - centroid_d;
+        Vec3 m = neighbors[i]->template cast<T>() - centroid_m;
+        Vec3 d = scan->getPoint(i).template cast<T>() - centroid_d;
 
         error += (m - d).squaredNorm();
         pairs++;
@@ -76,41 +76,42 @@ double EigenSVDPointAlign::alignPoints(
         }
     }
 
-    error = sqrt(error / (double)pairs);
+    error = sqrt(error / (T)pairs);
 
-    JacobiSVD<Matrix3d> svd(H, ComputeFullU | ComputeFullV);
+    JacobiSVD<Mat3> svd(H, ComputeFullU | ComputeFullV);
 
-    Matrix3d U = svd.matrixU();
-    Matrix3d V = svd.matrixV();
+    Mat3 U = svd.matrixU();
+    Mat3 V = svd.matrixV();
 
-    Matrix3d R = V * U.transpose();
+    Mat3 R = V * U.transpose();
 
-    align = Matrix4d::Identity();
-    align.block<3, 3>(0, 0) = R;
+    align = Mat4::Identity();
+    align.template block<3, 3>(0, 0) = R;
 
     // Calculate translation
-    Eigen::Vector3d translation = centroid_m - R * centroid_d;
-    align.block<3, 1>(0, 3) = translation;
+    Vec3 translation = centroid_m - R * centroid_d;
+    align.template block<3, 1>(0, 3) = translation;
 
     return error;
 }
 
-double EigenSVDPointAlign::alignPoints(
+template<typename T, typename PointT>
+T EigenSVDPointAlign<T, PointT>::alignPoints(
     PointPairVector& pairs,
-    const Vector3d& centroid_m,
-    const Vector3d& centroid_d,
-    Matrix4d& align) const
+    const Vec3& centroid_m,
+    const Vec3& centroid_d,
+    Mat4& align) const
 {
-    double error = 0.0;
+    T error = 0.0;
     size_t n = pairs.size();
 
     // Fill H matrix
-    Matrix3d H = Matrix3d::Zero();
+    Mat3 H = Mat3::Zero();
 
     for (size_t i = 0; i < n; i++)
     {
-        Vector3d m = pairs[i].first.cast<double>() - centroid_m;
-        Vector3d d = pairs[i].second.cast<double>() - centroid_d;
+        Vec3 m = pairs[i].first.template cast<T>() - centroid_m;
+        Vec3 d = pairs[i].second.template cast<T>() - centroid_d;
 
         error += (m - d).squaredNorm();
 
@@ -124,21 +125,21 @@ double EigenSVDPointAlign::alignPoints(
         }
     }
 
-    error = sqrt(error / (double)n);
+    error = sqrt(error / (T)n);
 
-    JacobiSVD<Matrix3d> svd(H, ComputeFullU | ComputeFullV);
+    JacobiSVD<Mat3> svd(H, ComputeFullU | ComputeFullV);
 
-    Matrix3d U = svd.matrixU();
-    Matrix3d V = svd.matrixV();
+    Mat3 U = svd.matrixU();
+    Mat3 V = svd.matrixV();
 
-    Matrix3d R = V * U.transpose();
+    Mat3 R = V * U.transpose();
 
-    align = Matrix4d::Identity();
-    align.block<3, 3>(0, 0) = R;
+    align = Mat4::Identity();
+    align.template block<3, 3>(0, 0) = R;
 
     // Calculate translation
-    Eigen::Vector3d translation = centroid_m - R * centroid_d;
-    align.block<3, 1>(0, 3) = translation;
+    Vec3 translation = centroid_m - R * centroid_d;
+    align.template block<3, 1>(0, 3) = translation;
 
     return error;
 }

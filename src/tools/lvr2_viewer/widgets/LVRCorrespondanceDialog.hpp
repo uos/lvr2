@@ -43,6 +43,7 @@
 using namespace std;
 
 #include <boost/optional.hpp>
+#include <Eigen/Dense>
 
 namespace lvr2
 {
@@ -55,7 +56,7 @@ public:
     LVRCorrespondanceDialog(QTreeWidget* parent);
     virtual ~LVRCorrespondanceDialog();
     void fillComboBoxes();
-    boost::optional<Matrix4d> getTransformation();
+    boost::optional<Eigen::Matrix4f> getTransformation();
     QString  getModelName();
     QString  getDataName();
 

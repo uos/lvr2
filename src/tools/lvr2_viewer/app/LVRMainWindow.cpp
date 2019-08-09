@@ -41,6 +41,7 @@
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/DataStruct.hpp"
 
+#include "lvr2/registration/TransformUtils.hpp"
 #include "lvr2/registration/ICPPointAlign.hpp"
 
 #include "lvr2/util/Util.hpp"
@@ -782,12 +783,12 @@ void LVRMainWindow::alignPointClouds()
     }
 
     Pose dataPose = dataItem->getPose();
-    Vector3f pos(dataPose.x, dataPose.y, dataPose.z);
-    Vector3f angles(dataPose.r, dataPose.t, dataPose.p);
+    Eigen::Vector3f pos(dataPose.x, dataPose.y, dataPose.z);
+    Eigen::Vector3f angles(dataPose.r, dataPose.t, dataPose.p);
     angles *= M_PI / 180.0; // degrees -> radians
-    Matrix4d mat = poseToMatrix(pos, angles);
+    Eigen::Matrix4f mat = poseToMatrix(pos, angles);
 
-    boost::optional<Matrix4d> correspondence = m_correspondanceDialog->getTransformation();
+    boost::optional<Eigen::Matrix4f> correspondence = m_correspondanceDialog->getTransformation();
     if (correspondence.is_initialized())
     {
         mat *= correspondence.get();
@@ -806,10 +807,10 @@ void LVRMainWindow::alignPointClouds()
     if(m_correspondanceDialog->doICP() && modelBuffer && dataBuffer)
     {
         Pose modelPose = modelItem->getPose();
-        pos = Vector3f(modelPose.x, modelPose.y, modelPose.z);
-        angles = Vector3f(modelPose.r, modelPose.t, modelPose.p);
+        pos = Eigen::Vector3f(modelPose.x, modelPose.y, modelPose.z);
+        angles = Eigen::Vector3f(modelPose.r, modelPose.t, modelPose.p);
         angles /= 180.0 / M_PI;
-        Matrix4d modelTransform = poseToMatrix(pos, angles);
+        Eigen::Matrix4f modelTransform = poseToMatrix(pos, angles);
 
         /* TODO: convert to new ICPPointAlign
 
@@ -946,9 +947,9 @@ LVRModelItem* LVRMainWindow::loadModelItem(QString name)
         if (boost::filesystem::exists(poseFile))
         {
             cout << "Found Pose file: " << poseFile << endl;
-            Eigen::Matrix4d mat = getTransformationFromPose(poseFile).transpose();
+            Eigen::Matrix4f mat = getTransformationFromPose<float>(poseFile).transpose();
             BaseVector<float> pos, angles;
-            getPoseFromMatrix(pos, angles, mat);
+            getPoseFromMatrix<float>(pos, angles, mat);
 
             angles *= 180.0 / M_PI; // radians -> degrees
 

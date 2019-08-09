@@ -65,7 +65,7 @@ Matrix4d ICPPointAlign::match()
     auto start_time = chrono::steady_clock::now();
 
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
-    EigenSVDPointAlign align;
+    EigenSVDPointAlign<double> align;
     int iteration = 0;
 
     Vector3d centroid_m = Vector3d::Zero();
