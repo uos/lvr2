@@ -57,13 +57,13 @@ struct SlamOptions
     // ==================== Reduction Options ====================================================
 
     /// The Voxel size for Voxel based reduction
-    float   reduction = -1;
+    double  reduction = -1;
 
     /// Ignore all Points closer than <value> to the origin of a scan
-    float   minDistance = -1;
+    double  minDistance = -1;
 
     /// Ignore all Points farther away than <value> from the origin of a scan
-    float   maxDistance = -1;
+    double  maxDistance = -1;
 
     // ==================== ICP Options ==========================================================
 
@@ -71,7 +71,7 @@ struct SlamOptions
     int     icpIterations = 50;
 
     /// The maximum distance between two points during ICP
-    float   icpMaxDistance = 25;
+    double  icpMaxDistance = 25;
 
     /// The maximum number of Points in a Leaf of a KDTree
     int     maxLeafSize = 20;
@@ -89,7 +89,7 @@ struct SlamOptions
 
     /// The maximum distance between two poses to consider a closed loop or Edge.
     /// Mutually exclusive to closeLoopPairs
-    float   closeLoopDistance = 500;
+    double  closeLoopDistance = 500;
 
     /// The minimum pair overlap between two poses to consider a closed loop or Edge.
     /// Mutually exclusive to closeLoopDistance
@@ -104,7 +104,7 @@ struct SlamOptions
     int     slamIterations = 50;
 
     /// The maximum distance between two points during SLAM
-    float   slamMaxDistance = 25;
+    double  slamMaxDistance = 25;
 
     /// The epsilon difference of SLAM corrections for the stop criterion of SLAM
     double  slamEpsilon = 0.5;

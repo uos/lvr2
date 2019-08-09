@@ -53,7 +53,7 @@ T EigenSVDPointAlign<T, PointT>::alignPoints(
     // Fill H matrix
     Mat3 H = Matrix3d::Zero();
 
-    for (size_t i = 0; i < scan->count(); i++)
+    for (size_t i = 0; i < scan->numPoints(); i++)
     {
         if (neighbors[i] == nullptr)
         {
@@ -66,7 +66,7 @@ T EigenSVDPointAlign<T, PointT>::alignPoints(
         error += (m - d).squaredNorm();
         pairs++;
 
-        // same as "localH += m * d.transpose();" but faster
+        // same as "H += m * d.transpose();" but faster
         for (int j = 0; j < 3; j++)
         {
             for (int k = 0; k < 3; k++)
@@ -115,7 +115,7 @@ T EigenSVDPointAlign<T, PointT>::alignPoints(
 
         error += (m - d).squaredNorm();
 
-        // same as "localH += m * d.transpose();" but faster
+        // same as "H += m * d.transpose();" but faster
         for (int j = 0; j < 3; j++)
         {
             for (int k = 0; k < 3; k++)
