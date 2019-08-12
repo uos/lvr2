@@ -74,11 +74,11 @@ enum class ScanUse
 class Scan
 {
 public:
-    Scan(PointBufferPtr points, const Matrix4d& pose);
+    Scan(PointBufferPtr points, const Eigen::Matrix<double, 4, 4, Eigen::RowMajor>& pose);
 
     virtual ~Scan() = default;
 
-    void transform(const Matrix4d& transform, bool writeFrame = true, ScanUse use = ScanUse::UPDATED);
+    void transform(const Eigen::Matrix<double, 4, 4, Eigen::RowMajor>& transform, bool writeFrame = true, ScanUse use = ScanUse::UPDATED);
     void addFrame(ScanUse use = ScanUse::UNUSED);
 
     void reduce(double voxelSize, int maxLeafSize);
@@ -89,9 +89,9 @@ public:
     virtual Vector3d getPoint(size_t index) const;
     size_t numPoints() const;
 
-    const Matrix4d& getPose() const;
-    const Matrix4d& getDeltaPose() const;
-    const Matrix4d& getInitialPose() const;
+    const Eigen::Matrix<double, 4, 4, Eigen::RowMajor>& getPose() const;
+    const Eigen::Matrix<double, 4, 4, Eigen::RowMajor>& getDeltaPose() const;
+    const Eigen::Matrix<double, 4, 4, Eigen::RowMajor>& getInitialPose() const;
 
     Vector3d getPosition() const;
 
@@ -104,11 +104,11 @@ protected:
     floatArr m_points;
     size_t   m_numPoints;
 
-    Matrix4d m_pose;
-    Matrix4d m_deltaPose;
-    Matrix4d m_initialPose;
+    Eigen::Matrix<double, 4, 4, Eigen::RowMajor> m_pose;
+    Eigen::Matrix<double, 4, 4, Eigen::RowMajor> m_deltaPose;
+    Eigen::Matrix<double, 4, 4, Eigen::RowMajor> m_initialPose;
 
-    vector<pair<Matrix4d, ScanUse>> m_frames;
+    vector<pair<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>, ScanUse>> m_frames;
 };
 
 using ScanPtr = std::shared_ptr<Scan>;

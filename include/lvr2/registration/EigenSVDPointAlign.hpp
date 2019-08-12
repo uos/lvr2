@@ -46,8 +46,8 @@ class EigenSVDPointAlign
 {
 public:
     using Vec3 = Eigen::Matrix<T, 3, 1>;
-    using Mat4 = Eigen::Matrix<T, 4, 4>;
-    using Mat3 = Eigen::Matrix<T, 3, 3>;
+    using Mat4 = Eigen::Matrix<T, 4, 4, Eigen::RowMajor>;
+    using Mat3 = Eigen::Matrix<T, 3, 3, Eigen::RowMajor>;
     using Point3 = Eigen::Matrix<PointT, 3, 1>;
     using PointPairVector = std::vector<std::pair<Point3, Point3>>;
 

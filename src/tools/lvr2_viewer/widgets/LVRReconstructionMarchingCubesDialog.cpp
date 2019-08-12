@@ -209,7 +209,7 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
 
     PointBufferPtr pc_buffer = m_pc->getPointBuffer();
     
-    Eigen::Matrix4f T = qttf::getTransformation(m_pc, NULL);
+    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> T = qttf::getTransformation(m_pc, NULL);
     std::cout << T << std::endl;
 
     pc_buffer = qttf::transform(pc_buffer, T);

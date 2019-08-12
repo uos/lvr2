@@ -101,7 +101,7 @@ int main(int argc, char** argv)
         exit(-1);
     }
 
-    Eigen::Matrix4f transform = getTransformationFromFrames<float>(transformPath);
+    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> transform = getTransformationFromFrames<float>(transformPath);
     //transform = inverseTransform(transform);
     Vector3f transform_position;
     Vector3f transform_angles;
@@ -277,9 +277,9 @@ int main(int argc, char** argv)
         {
             // Get transformation from file and transform
             std::cout << timestamp << "Transforming " << frames_in.string() << std::endl;
-            Eigen::Matrix4f registration = getTransformationFromFrames<float>(frames_in);
+            Eigen::Matrix<float, 4, 4, Eigen::RowMajor> registration = getTransformationFromFrames<float>(frames_in);
             //registration *= transform;
-            Eigen::Matrix4f t_reg = transformRegistration<float>(transform, registration);
+            Eigen::Matrix<float, 4, 4, Eigen::RowMajor> t_reg = transformRegistration<float>(transform, registration);
 
             std::cout << timestamp << "Writing transformed registration to " << frames_out.string() << std::endl;
             writeFrame(t_reg, frames_out);

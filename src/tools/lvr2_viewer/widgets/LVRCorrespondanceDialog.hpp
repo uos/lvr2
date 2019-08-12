@@ -56,7 +56,7 @@ public:
     LVRCorrespondanceDialog(QTreeWidget* parent);
     virtual ~LVRCorrespondanceDialog();
     void fillComboBoxes();
-    boost::optional<Eigen::Matrix4f> getTransformation();
+    boost::optional<Eigen::Matrix<float, 4, 4, Eigen::RowMajor>> getTransformation();
     QString  getModelName();
     QString  getDataName();
 
