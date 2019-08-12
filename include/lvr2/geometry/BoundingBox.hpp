@@ -36,6 +36,7 @@
 #define LVR2_GEOMETRY_BOUNDINGBOX_H_
 
 #include <cmath>
+#include <ostream>
 
 namespace lvr2
 {
@@ -145,7 +146,7 @@ inline std::ostream& operator<<(std::ostream& os, const BoundingBox<BaseVecT>& b
 {
     os << "Bounding Box[min: " << bb.getMin() << ", max: " <<  bb.getMax();
     os << ", dimension: " << bb.getXSize() << ", " << bb.getYSize() << ", "
-       << bb.getZSize() << "]" << endl;
+       << bb.getZSize() << "]" << std::endl;
     return os;
 }
 
