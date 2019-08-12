@@ -37,32 +37,27 @@ namespace lvr2
 {
 
 Metascan::Metascan()
-    : Scan(PointBufferPtr(), Matrix4d::Identity()), m_count(0)
+    : Scan(PointBufferPtr(), Matrix4d::Identity())
 {
 
 }
 
-Vector3f Metascan::getPoint(size_t index) const
+Vector3d Metascan::getPoint(size_t index) const
 {
     for (auto& scan : m_scans)
     {
-        if (index < scan->count())
+        if (index < scan->numPoints())
         {
             return scan->getPoint(index);
         }
-        index -= scan->count();
+        index -= scan->numPoints();
     }
-}
-
-size_t Metascan::count() const
-{
-    return m_count;
 }
 
 void Metascan::addScan(ScanPtr scan)
 {
     m_scans.push_back(scan);
-    m_count += scan->count();
+    m_numPoints += scan->numPoints();
     m_deltaPose = scan->getDeltaPose();
 }
 

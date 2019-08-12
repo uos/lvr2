@@ -49,13 +49,13 @@ public:
 
     virtual ~ICPPointAlign() = default;
 
-    void    setMaxMatchDistance(float distance);
+    void    setMaxMatchDistance(double distance);
     void    setMaxIterations(int iterations);
     void    setMaxLeafSize(int maxLeafSize);
     void    setEpsilon(double epsilon);
     void    setVerbose(bool verbose);
 
-    float   getMaxMatchDistance() const;
+    double  getMaxMatchDistance() const;
     int     getMaxIterations() const;
     int     getMaxLeafSize() const;
     double  getEpsilon() const;

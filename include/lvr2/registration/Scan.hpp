@@ -40,12 +40,14 @@
 #include <vector>
 
 using Eigen::Matrix4d;
-using Eigen::Vector3f;
+using Eigen::Vector3d;
 using std::vector;
 using std::pair;
 
 namespace lvr2
 {
+
+using Vector3fArr = boost::shared_array<Eigen::Vector3f>;
 
 /**
  * @brief Annotates the use of a Scan when creating an slam6D .frames file
@@ -79,29 +81,32 @@ public:
     void transform(const Matrix4d& transform, bool writeFrame = true, ScanUse use = ScanUse::UPDATED);
     void addFrame(ScanUse use = ScanUse::UNUSED);
 
-    void reduce(float voxelSize);
-    void setMinDistance(float minDistance);
-    void setMaxDistance(float maxDistance);
+    void reduce(double voxelSize, int maxLeafSize);
+    void setMinDistance(double minDistance);
+    void setMaxDistance(double maxDistance);
+    void trim();
 
-    virtual Vector3f getPoint(size_t index) const;
-    virtual size_t count() const;
+    virtual Vector3d getPoint(size_t index) const;
+    size_t numPoints() const;
 
     const Matrix4d& getPose() const;
     const Matrix4d& getDeltaPose() const;
     const Matrix4d& getInitialPose() const;
 
-    Vector3f getPosition() const;
+    Vector3d getPosition() const;
 
     void writeFrames(std::string path) const;
 
     PointBufferPtr toPointBuffer() const;
+    Vector3fArr toVector3fArr() const;
 
 protected:
-    vector<Vector3f> m_points;
+    floatArr m_points;
+    size_t   m_numPoints;
 
-    Matrix4d    m_pose;
-    Matrix4d    m_deltaPose;
-    Matrix4d    m_initialPose;
+    Matrix4d m_pose;
+    Matrix4d m_deltaPose;
+    Matrix4d m_initialPose;
 
     vector<pair<Matrix4d, ScanUse>> m_frames;
 };
