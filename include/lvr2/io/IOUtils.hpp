@@ -31,6 +31,7 @@
 #include "lvr2/io/Timestamp.hpp"
 #include "lvr2/io/Model.hpp"
 #include "lvr2/io/CoordinateTransform.hpp"
+#include "lvr2/registration/TransformUtils.hpp"
 
 #include <boost/filesystem.hpp>
 
@@ -42,15 +43,6 @@
 namespace lvr2
 {
 
-/**
- * @brief Transforms a registration matrix according to the given
- *        transformation matrix, i.e., applies @ref transform to @ref registration
- * 
- * @param transform             A transformation matrix
- * @param registration          A matrix representing a registration (i.e. transformation) that
- * @return Eigen::Matrix4d      The transformed registration matrix
- */
-Eigen::Matrix4d transformRegistration(const Eigen::Matrix4d& transform, const Eigen::Matrix4d& registration);
 
 /**
  * @brief   Loads an Euler representation of from a pose file
@@ -62,36 +54,43 @@ Eigen::Matrix4d transformRegistration(const Eigen::Matrix4d& transform, const Ei
 void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, const boost::filesystem::path file);
 
 /**
- * @brief   Computes a Euler representation from the given transformation matrix
- * 
- * @param  position     Will contain the position
- * @param  angles       Will contain the rotation angles in radians
- * @param  mat          The transformation matrix
+ * @brief   Transforms the given point buffer according to the transformation
+ *          stored in \ref transformFile and appends the transformed points and
+ *          normals to \ref pts and \ref nrm.
+ *
+ * @param   buffer          A PointBuffer
+ * @param   transformFile   The input file name. The fuction will search for transformation information
+ *                          (.pose or .frames)
+ * @param   pts             The transformed points are added to this vector
+ * @param   nrm             The transformed normals are added to this vector
  */
-void getPoseFromMatrix(BaseVector<float>& position, BaseVector<float>& angles, const Eigen::Matrix4d& mat);
+void transformPointCloudAndAppend(PointBufferPtr& buffer,
+        boost::filesystem::path& transfromFile,
+        std::vector<float>& pts,
+        std::vector<float>& nrm);
+
 
 /**
  * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
  *          represented in the given frame file.
  */
-Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames);
+template<typename T>
+Eigen::Matrix<T, 4, 4> getTransformationFromFrames(const boost::filesystem::path& frames);
 
 /**
  * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
  *          represented in the given pose file.
  */
-Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose);
+template<typename T>
+Eigen::Matrix<T, 4, 4> getTransformationFromPose(const boost::filesystem::path& pose);
 
 /**
  * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
  *          represented in the given dat file.
  */
-Eigen::Matrix4d getTransformationFromDat(boost::filesystem::path& frames);
+template<typename T>
+Eigen::Matrix<T, 4, 4> getTransformationFromDat(const boost::filesystem::path& frames);
 
-/**
- * @brief   Transforms an slam6d transformation matrix into an Eigen 4x4 matrix.
- */
-Eigen::Matrix4d buildTransformation(double* alignxf);
 
 /***
  * @brief   Counts the number of points (i.e., lines) in the given file. We
@@ -105,7 +104,8 @@ size_t countPointsInFile(boost::filesystem::path& inFile);
  * @param   transform   The transformation
  * @param   framesOut   The target file.
  */
-void writeFrame(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut);
+template<typename T>
+void writeFrame(const Eigen::Matrix<T, 4, 4>& transform, const boost::filesystem::path& framesOut);
 
 /**
  * @brief               Writes pose information in Euler representation to the given file
@@ -154,67 +154,6 @@ size_t getReductionFactor(ModelPtr model, size_t targetSize);
 size_t getReductionFactor(boost::filesystem::path& inFile, size_t targetSize);
 
 /**
- * @brief   Transforms (scale and switch coordinates) and reduces a model
- *          containing point cloud data using a modulo filter. Use this
- *          function the convert between different coordinate systems.
- *
- * @param   model       A model containing point cloud data
- * @param   modulo      The reduction factor for the modulo filter. Set to
- *                      1 to keep the original resolution.
- * @param   sx          Scaling factor in x direction
- * @param   sy          Scaling factor in y direction
- * @param   sz          Scaling factor in z direction
- * @param   xPos        Position of the x position in the input data, i.e,
- *                      "which array position has the x coordinate that is written
- *                      to the output data in the input data"
- * @param   yPos        Same as with xPos for y.
- * @param   zPos        Same as with xPos for z.
- */
-template<typename T>
-void transformAndReducePointCloud(ModelPtr model, int modulo, 
-        const T& sx, const T& sy, const T& sz, 
-        const unsigned char& xPos, 
-        const unsigned char& yPos, 
-        const unsigned char& zPos);
-
-/**
- * @brief  Transforms (scale and switch coordinates) and reduces a model
- *         containing point cloud data using a modulo filter. Use this
- *         function the convert between different coordinate systems.          
- * 
- * @param model         A model containing point cloud data 
- * @param modulo        The reduction factor for the modulo filter. Set to
- *                      1 to keep the original resolution.
- * @param c             The coordinate transformation applied to the \ref model
- */
-template<typename T>
-void transformAndReducePointCloud(ModelPtr& model, int modulo, const CoordinateTransform<T>& c);
-
-/**
- * @brief   Transforms a model containing a point cloud according to the given
- *          transformation (usually from a .frames file)
- * @param   A model containing point cloud data.
- * @param   A transformation.
- */
-void transformPointCloud(ModelPtr model, Eigen::Matrix4d transformation);
-
-/**
- * @brief   Transforms the given point buffer according to the transformation
- *          stored in \ref transformFile and appends the transformed points and
- *          normals to \ref pts and \ref nrm.
- *
- * @param   buffer          A PointBuffer
- * @param   transformFile   The input file name. The fuction will search for transformation information
- *                          (.pose or .frames)
- * @param   pts             The transformed points are added to this vector
- * @param   nrm             The transformed normals are added to this vector
- */
-void transformPointCloudAndAppend(PointBufferPtr& buffer,
-        boost::filesystem::path& transfromFile,
-        std::vector<float>& pts,
-        std::vector<float>& nrm);
-
-/**
  * @brief   Writes the points and normals (float triples) stored in \ref p and \ref n
  *          to the given output file. Attention: The data is converted to a PointBuffer
  *          structure to be able to use the IO library, which results in a considerable
@@ -226,16 +165,6 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
  */
 void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::string outfile);
 
-/**
- * @brief   Transforms the given source frame according to the given coordinate
- *          transform struct 
- * 
- * @param   frame           Source frame
- * @param   ct               Coordinate system transformation
- * @return                  The transformed frame
- */
-template<typename T>
-Eigen::Matrix4d transformFrame(Eigen::Matrix4d frame, const CoordinateTransform<T>& ct);
 
 
 /**
@@ -251,16 +180,18 @@ Eigen::Matrix4d transformFrame(Eigen::Matrix4d frame, const CoordinateTransform<
  */
 size_t writePointsToStream(ModelPtr model, std::ofstream& out, bool nocolor = false);
 
+
 /**
- * @brif    Computes the inverse transformation from the given 
- *          transformation matrix, which means if transform encodes
- *          the transformation A->B, the return will transform from 
- *          B to A.
+ * @brief  Get the Number Of Points (element points if present, vertex count otherwise) 
+ *         in a PLY file.
  * 
- * @param transform             A transformation matrix
- * @return Eigen::Matrix4d      The inverse transformation
+ * @param filename              A valid PLY file.                 
+ * @return size_t               Number of points in examined file
  */
-Eigen::Matrix4d inverseTransform(const Eigen::Matrix4d& transform);
+size_t getNumberOfPointsInPLY(const std::string& filename);
+
+PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const size_t& n);
+
 
 } // namespace lvr2
 

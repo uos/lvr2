@@ -1,9 +1,10 @@
 #pragma once
 
-#ifndef LVR2_TYPES_CHANNELMANAGER
-#define LVR2_TYPES_CHANNELMANAGER
+#ifndef LVR2_TYPES_BASEBUFFER
+#define LVR2_TYPES_BASEBUFFER
 
 #include <algorithm>
+#include <vector>
 #include "MultiChannelMap.hpp"
 #include "lvr2/io/DataStruct.hpp"
 
@@ -23,7 +24,7 @@ using IndexProxy = ElementProxy<unsigned int>;
  *      downwoards compitibility functions of the old ChannelManager.
  * 
  */
-class ChannelManager : public MultiChannelMap {
+class BaseBuffer : public MultiChannelMap {
 using base = MultiChannelMap;
 public:
     using base::base;
@@ -39,14 +40,14 @@ public:
      * @return 0 if not found, otherwise the channels width.
      */
     template<typename T>
-    size_t channelWidth(const std::string& name);
+    size_t channelWidth(const std::string& name) const;
 
     /**
      * @brief Gets an uchar channels width.
      * @param[in] name Key of the channel.
      * @return 0 if not found, otherwise the channels width.
      */
-    inline size_t ucharChannelWidth(const std::string& name)
+    inline size_t ucharChannelWidth(const std::string& name) const
     {
         return channelWidth<unsigned char>(name);
     }
@@ -56,7 +57,7 @@ public:
      * @param[in] name Key of the channel.
      * @return 0 if not found, otherwise the channels width.
      */
-    inline size_t floatChannelWidth(const std::string& name)
+    inline size_t floatChannelWidth(const std::string& name) const
     {
         return channelWidth<float>(name);
     }
@@ -66,7 +67,7 @@ public:
      * @param[in] name Key of the channel.
      * @return 0 if not found, otherwise the channels width.
      */
-    inline size_t indexChannelWidth(const std::string& name)
+    inline size_t indexChannelWidth(const std::string& name) const
     {
         return channelWidth<unsigned int>(name);
     }
@@ -81,13 +82,13 @@ public:
      * @tparam T Type of the channel.
      */
     template<typename T>
-    bool hasChannel(const std::string& name);
+    bool hasChannel(const std::string& name) const;
 
     /**
      * @brief Checks if an uchar channel is available.
      * @param[in] name Key of the channel.
      */
-    inline bool hasUCharChannel(const std::string& name)
+    inline bool hasUCharChannel(const std::string& name) const
     {
         return hasChannel<unsigned char>(name);
     }
@@ -96,7 +97,7 @@ public:
      * @brief Checks if a float channel is available.
      * @param[in] name Key of the channel.
      */
-    inline bool hasFloatChannel(const std::string& name)
+    inline bool hasFloatChannel(const std::string& name) const
     {
         return hasChannel<float>(name);
     }
@@ -105,7 +106,7 @@ public:
      * @brief Checks if an index channel is available.
      * @param[in] name Key of the channel.
      */
-    inline bool hasIndexChannel(const std::string& name)
+    inline bool hasIndexChannel(const std::string& name) const
     {
         return hasChannel<unsigned int>(name);
     }
@@ -145,8 +146,8 @@ public:
 
     /**
      * @brief Adds an index channel pointer to the map.
-     * @param[in] data The channel pointer to add. 
-     * @param[in] name Key of the channel.
+     * cointer to add. 
+     * cannel.
      */
     inline void addIndexChannel(IndexChannelPtr data, const std::string& name)
     {
@@ -296,6 +297,25 @@ public:
     ///////////////////////////////
     //// Get Channel functions ////
     ///////////////////////////////
+    //
+   
+    /**
+     * @brief Returns all channels of type T.
+     *
+     * @tparam T The type of the channels.
+     * @param channels The vector of channel pairs(name, Channel).
+     *
+     * @return The type index in the MultiChannelMap.
+     */
+    template <typename T>
+    int getAllChannelsOfType(std::vector<std::pair<std::string, Channel<T> > >& channels)
+    {
+      for(auto it = this->typedBegin<T>(); it != this->end(); ++it)
+      {
+        channels.push_back({it->first, it->second});
+      }
+      return index_of_type<T>::value;
+    }
 
     /**
      * @brief Gets a channel and returns it as optional. 
@@ -306,6 +326,17 @@ public:
      */
     template<typename T>
     typename Channel<T>::Optional getChannel(const std::string& name);
+
+        /**
+     * @brief Gets a channel and returns it as optional. 
+     * 
+     * @param[in] name Key of the channel.
+     * @tparam T Type of the channel.
+     * @return An OptionalChannel which is filled if the channel was found.
+     */
+    template<typename T>
+    const typename Channel<T>::Optional getChannel(const std::string& name) const;
+
 
     /**
      * @brief Gets a float channel and returns it as optional. 
@@ -587,11 +618,31 @@ public:
         return getAtomic<int>(name);
     }
 
+    template<typename V>
+    BaseBuffer manipulate(V visitor)
+    {
+        BaseBuffer cm;
+        for(auto vchannel: *this)
+        {
+            cm.insert({vchannel.first, boost::apply_visitor(visitor, vchannel.second)});
+        }
+        return cm;
+    }
 
+    BaseBuffer clone() const {
+        BaseBuffer ret;
+
+        for(auto elem : *this)
+        {
+            ret.insert({elem.first, elem.second.clone()});
+        }
+
+        return ret;
+    }
 };
 
 } // namespace lvr2
 
-#include "ChannelManager.tcc"
+#include "BaseBuffer.tcc"
 
-#endif // LVR2_TYPES_CHANNELMANAGER
+#endif // LVR2_TYPES_BASEBUFFER

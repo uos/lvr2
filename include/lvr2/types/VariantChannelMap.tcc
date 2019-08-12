@@ -8,6 +8,21 @@ void VariantChannelMap<T...>::add(const std::string& name, Channel<U> channel)
     this->insert({name, channel});
 }
 
+
+template<typename... T>
+template<typename U>
+void VariantChannelMap<T...>::add(const std::string& name)
+{
+    this->insert({name, Channel<U>(0,0)});
+}
+
+template<typename... T>
+template<typename U>
+void VariantChannelMap<T...>::add(const std::string& name, size_t numElements, size_t width)
+{
+    this->insert({name, Channel<U>(numElements, width)});
+}
+
 template<typename... T>
 template<typename U>
 Channel<U>& VariantChannelMap<T...>::get(const std::string& name)
@@ -24,11 +39,25 @@ const Channel<U>& VariantChannelMap<T...>::get(const std::string& name) const
 
 template<typename... T>
 template<typename U>
-typename Channel<U>::Optional VariantChannelMap<T...>::getOptional(const std::string& name) const
+typename Channel<U>::Optional VariantChannelMap<T...>::getOptional(const std::string& name)
 {
     typename Channel<U>::Optional ret;
     auto it = this->find(name);
-    if(it != this->end() && it->second.is_type<U>())
+    if(it != this->end() && it->second.template is_type<U>())
+    {
+        ret = boost::get<Channel<U> >(it->second);
+    }
+
+    return ret;
+}
+
+template<typename... T>
+template<typename U>
+const typename Channel<U>::Optional VariantChannelMap<T...>::getOptional(const std::string& name) const
+{
+    typename Channel<U>::Optional ret;
+    auto it = this->find(name);
+    if(it != this->end() && it->second.template is_type<U>())
     {
         ret = boost::get<Channel<U> >(it->second);
     }
@@ -72,6 +101,19 @@ size_t VariantChannelMap<T...>::numChannels()
     for(auto it = this->typedBegin<U>(); it != this->end(); ++it)
     {
         ret ++;
+    }
+
+    return ret;
+}
+
+template<typename... T>
+VariantChannelMap<T...> VariantChannelMap<T...>::clone() const
+{
+    VariantChannelMap<T...> ret;
+
+    for(auto elem : *this)
+    {
+        ret.insert({elem.first, elem.second.clone()});
     }
 
     return ret;

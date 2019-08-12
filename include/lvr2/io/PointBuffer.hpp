@@ -29,7 +29,7 @@
 #define POINTBUFFER2_HPP
 
 #include "lvr2/io/DataStruct.hpp"
-#include "lvr2/types/ChannelManager.hpp"
+#include "lvr2/types/BaseBuffer.hpp"
 
 #include <map>
 #include <string>
@@ -50,9 +50,9 @@ namespace lvr2
 ///        between geometry (channel 'points') and the associated layers like RGB
 ///        colors or point normals consistent.
 ///
-class PointBuffer : public ChannelManager
+class PointBuffer : public BaseBuffer
 {
-    using base = ChannelManager;
+    using base = BaseBuffer;
 public:    
     PointBuffer();
 
@@ -125,22 +125,7 @@ public:
     size_t numPoints() const;
 
     /// Makes a clone
-    PointBuffer clone();
-private:
-
-    /// Point channel, 'cached' to allow faster access
-    FloatChannelPtr                     m_points;
-
-    /// Normal channel, 'cached' to allow faster access
-    FloatChannelPtr                     m_normals;
-
-    /// Color channel, 'chached' to allow faster access
-    UCharChannelPtr                     m_colors;
-
-    // Number of points in buffer
-    size_t              m_numPoints;
-
-
+    PointBuffer clone() const;
 
 };
 

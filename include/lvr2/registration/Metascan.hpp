@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019, University Osnabrück
+ * Copyright (c) 2018, University Osnabrück
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,43 +25,40 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * Metascan.hpp
+ *
+ *  @date Aug 1, 2019
+ *  @author Malte Hillmann
+ */
+#ifndef METASCAN_HPP_
+#define METASCAN_HPP_
 
-#ifndef MESHGEOMETRYIO
-#define MESHGEOMETRYIO
-
-#include "lvr2/types/BaseBuffer.hpp"
+#include "Scan.hpp"
 
 namespace lvr2
-{ 
+{
 
-class MeshGeometryIO
+/**
+ * @brief Represents several Scans as part of a single Scan
+ * 
+ * Note that most methods of Scan don't make sense on a Metascan, like reductions or Pose getters.
+ */
+class Metascan : public Scan
 {
 public:
-    /**
-     * @brief Persistence layer interface, Accesses the vertices of the mesh in the persistence layer.
-     * @return An optional float channel, the channel is valid if the mesh vertices have been read successfully
-     */
-    virtual FloatChannelOptional getVertices() = 0;
+    Metascan();
 
-    /**
-     * @brief Persistence layer interface, Accesses the face indices of the mesh in the persistence layer.
-     * @return An optional index channel, the channel is valid if the mesh indices have been read successfully
-     */
-    virtual IndexChannelOptional getIndices() = 0;
+    virtual ~Metascan() = default;
 
-    /**
-     * @brief Persistence layer interface, Writes the vertices of the mesh to the persistence layer.
-     * @return true if the channel has been written successfully
-     */
-    virtual bool addVertices(const FloatChannel& channel_ptr) = 0;
+    virtual Vector3d getPoint(size_t index) const override;
 
-    /**
-     * @brief Persistence layer interface, Writes the face indices of the mesh to the persistence layer.
-     * @return true if the channel has been written successfully
-     */
-    virtual bool addIndices(const IndexChannel& channel_ptr) = 0;
+    void addScan(ScanPtr scan);
+
+protected:
+    std::vector<ScanPtr> m_scans;
 };
 
-} // namespace lvr2
+} /* namespace lvr2 */
 
-#endif
+#endif /* METASCAN_HPP_ */
