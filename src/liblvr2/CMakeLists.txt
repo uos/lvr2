@@ -56,6 +56,7 @@ set(LVR2_SOURCES
     reconstruction/LBKdTree.cpp
     reconstruction/cuda/CudaSurface.cu
     reconstruction/PCLFiltering.cpp
+    reconstruction/NodeData.cpp
 )
 
 
@@ -177,7 +178,7 @@ if( NOT MSVC )
   add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
   target_link_libraries(lvr2 ${LVR2_INTERNAL_DEPENDENCIES_SHARED} ${LVR2_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 
-install(TARGETS lvr2_static lvr2 
+install(TARGETS lvr2_static lvr2
   EXPORT lvr2Targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -223,8 +224,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
     target_link_libraries(lvr2cuda lvr2)
 
     install(
-        TARGETS lvr2cuda_static lvr2cuda 
-        EXPORT lvr2Targets 
+        TARGETS lvr2cuda_static lvr2cuda
+        EXPORT lvr2Targets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
