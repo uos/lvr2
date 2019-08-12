@@ -53,8 +53,8 @@ bool findCloseScans(const vector<ScanPtr>& scans, size_t scan, const SlamOptions
     // closeLoopPairs not specified => use closeLoopDistance
     if (options.closeLoopPairs < 0)
     {
-        float maxDist = std::pow(options.closeLoopDistance, 2);
-        Vector3f pos = cur->getPosition();
+        double maxDist = std::pow(options.closeLoopDistance, 2);
+        Vector3d pos = cur->getPosition();
         for (size_t other = 0; other < scan - options.loopSize; other++)
         {
             if ((scans[other]->getPosition() - pos).squaredNorm() < maxDist)
@@ -71,9 +71,9 @@ bool findCloseScans(const vector<ScanPtr>& scans, size_t scan, const SlamOptions
         size_t maxLen = 0;
         for (size_t other = 0; other < scan - options.loopSize; other++)
         {
-            maxLen = max(maxLen, scans[other]->count());
+            maxLen = max(maxLen, scans[other]->numPoints());
         }
-        Vector3f** neighbors = new Vector3f*[maxLen];
+        KDTree::Neighbor* neighbors = new KDTree::Neighbor[maxLen];
 
         for (size_t other = 0; other < scan - options.loopSize; other++)
         {
@@ -362,9 +362,9 @@ void GraphSlam::fillEquation(const vector<ScanPtr>& scans, const Graph& graph, G
 
 void GraphSlam::eulerCovariance(KDTreePtr tree, ScanPtr scan, Matrix6d& outMat, Vector6d& outVec) const
 {
-    size_t n = scan->count();
+    size_t n = scan->numPoints();
 
-    Vector3f** results = new Vector3f*[n];
+    KDTree::Neighbor* results = new KDTree::Neighbor[n];
 
     size_t pairs = getNearestNeighbors(tree, scan, results, m_options->slamMaxDistance);
 

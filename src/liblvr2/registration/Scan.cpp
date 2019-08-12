@@ -45,15 +45,14 @@ namespace lvr2
 Scan::Scan(PointBufferPtr points, const Matrix4d& pose)
     : m_pose(pose), m_deltaPose(Matrix4d::Identity()), m_initialPose(pose)
 {
-    size_t n = points->numPoints();
-    m_points.resize(n);
-
-    floatArr src = points->getPointArray();
-
-    #pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < n; i++)
+    if (points)
     {
-        m_points[i] = Vector3f(src[i * 3], src[i * 3 + 1], src[i * 3 + 2]);
+        m_points = points->getPointArray();
+        m_numPoints = points->numPoints();
+    }
+    else
+    {
+        m_numPoints = 0;
     }
 }
 
@@ -68,68 +67,76 @@ void Scan::transform(const Matrix4d& transform, bool writeFrame, ScanUse use)
     }
 }
 
-void Scan::reduce(float voxelSize)
+void Scan::reduce(double voxelSize, int maxLeafSize)
 {
-    size_t count = octreeReduce(m_points.data(), m_points.size(), voxelSize);
-    m_points.resize(count);
-    m_points.shrink_to_fit();
+    m_numPoints = octreeReduce((Eigen::Vector3f*)m_points.get(), m_numPoints, voxelSize, maxLeafSize);
 }
 
-void Scan::setMinDistance(float minDistance)
+void Scan::setMinDistance(double minDistance)
 {
-    float sqDist = minDistance * minDistance;
+    double sqDist = minDistance * minDistance;
 
-    size_t i = 0;
-    while (i < count())
+    float* cur = m_points.get();
+    float* end = m_points.get() + m_numPoints * 3;
+    while (cur < end)
     {
-        if (m_points[i].squaredNorm() <= sqDist)
+        if (pow(*cur, 2.0) + pow(*(cur + 1), 2.0) + pow(*(cur + 2), 2.0) <= sqDist)
         {
-            if (i < count() - 1)
+            end -= 3;
+            if (cur < end)
             {
-                m_points[i] = m_points.back();
+                copy_n(end, 3, cur);
             }
-            m_points.pop_back();
+            m_numPoints--;
         }
         else
         {
-            i++;
+            cur += 3;
         }
     }
-    m_points.shrink_to_fit();
 }
-void Scan::setMaxDistance(float maxDistance)
-{
-    float sqDist = maxDistance * maxDistance;
 
-    size_t i = 0;
-    while (i < count())
+void Scan::setMaxDistance(double maxDistance)
+{
+    double sqDist = maxDistance * maxDistance;
+
+    float* cur = m_points.get();
+    float* end = m_points.get() + m_numPoints * 3;
+    while (cur < end)
     {
-        if (m_points[i].squaredNorm() >= sqDist)
+        if (pow(*cur, 2.0) + pow(*(cur + 1), 2.0) + pow(*(cur + 2), 2.0) <= sqDist)
         {
-            if (i < count() - 1)
+            end -= 3;
+            if (cur < end)
             {
-                m_points[i] = m_points.back();
+                copy_n(end, 3, cur);
             }
-            m_points.pop_back();
+            m_numPoints--;
         }
         else
         {
-            i++;
+            cur += 3;
         }
     }
-    m_points.shrink_to_fit();
 }
 
-Vector3f Scan::getPoint(size_t index) const
+void Scan::trim()
 {
-    const Vector3f& p = m_points[index];
-    Eigen::Vector4d extended(p.x(), p.y(), p.z(), 1.0);
-    return (m_pose * extended).block<3, 1>(0, 0).cast<float>();
+    floatArr array = floatArr(new float[m_numPoints * 3]);
+    copy_n(m_points.get(), m_numPoints * 3, array.get());
+    m_points.swap(array);
 }
 
-size_t Scan::count() const
+Vector3d Scan::getPoint(size_t index) const
 {
-    return m_points.size();
+    float* p = m_points.get() + index * 3;
+    Eigen::Vector4d extended(*p, *(p + 1), *(p + 2), 1.0);
+    return (m_pose * extended).block<3, 1>(0, 0);
+}
+
+size_t Scan::numPoints() const
+{
+    return m_numPoints;
 }
 
 const Matrix4d& Scan::getPose() const
@@ -147,9 +154,9 @@ const Matrix4d& Scan::getInitialPose() const
     return m_initialPose;
 }
 
-Vector3f Scan::getPosition() const
+Vector3d Scan::getPosition() const
 {
-    return m_pose.block<3, 1>(0, 3).cast<float>();
+    return m_pose.block<3, 1>(0, 3);
 }
 
 void Scan::addFrame(ScanUse use)
@@ -174,17 +181,19 @@ void Scan::writeFrames(std::string path) const
 PointBufferPtr Scan::toPointBuffer() const
 {
     auto ret = make_shared<PointBuffer>();
-    auto arr = floatArr(new float[3 * count()]);
+    ret->setPointArray(m_points, m_numPoints);
+    return ret;
+}
+
+Vector3fArr Scan::toVector3fArr() const
+{
+    auto ret = Vector3fArr(new Eigen::Vector3f[m_numPoints]);
 
     #pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < count(); i++)
+    for (size_t i = 0; i < m_numPoints; i++)
     {
-        arr[3 * i + 0] = m_points[i].x();
-        arr[3 * i + 1] = m_points[i].y();
-        arr[3 * i + 2] = m_points[i].z();
+        ret[i] = getPoint(i).cast<float>();
     }
-
-    ret->setPointArray(arr, count());
 
     return ret;
 }

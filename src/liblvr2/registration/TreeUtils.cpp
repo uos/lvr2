@@ -26,7 +26,7 @@
  */
 
 /**
- * TreeUtils.cpp
+ * TreeUtils.tcc
  *
  *  @date May 16, 2019
  *  @author Malte Hillmann
@@ -36,11 +36,12 @@
 #include <limits>
 #include <vector>
 using namespace std;
+using namespace Eigen;
 
 namespace lvr2
 {
 
-int splitPoints(Vector3f* points, int n, int axis, float splitValue)
+int splitPoints(Eigen::Vector3f* points, int n, int axis, double splitValue)
 {
     int l = 0, r = n - 1;
 
@@ -67,7 +68,14 @@ int splitPoints(Vector3f* points, int n, int axis, float splitValue)
     return l;
 }
 
-void createOctree(Vector3f* points, int n, bool* flagged, const Vector3f& min, const Vector3f& max, int level, float voxelSize, int maxLeafSize)
+void createOctree(Eigen::Vector3f* points,
+                  int n,
+                  bool* flagged,
+                  const Vector3d& min,
+                  const Vector3d& max,
+                  int level,
+                  double voxelSize,
+                  int maxLeafSize)
 {
     if (n <= maxLeafSize)
     {
@@ -75,17 +83,20 @@ void createOctree(Vector3f* points, int n, bool* flagged, const Vector3f& min, c
     }
 
     int axis = level % 3;
-    Vector3f center = (max + min) / 2.0f;
+    Vector3d center = (max + min) / 2.0;
 
     if (max[axis] - min[axis] <= voxelSize)
     {
         // keep the Point closest to the center
         int closest = 0;
+        double minDist = (points[closest].cast<double>() - center).squaredNorm();
         for (int i = 1; i < n; i++)
         {
-            if ((points[i] - center).squaredNorm() < (points[closest] - center).squaredNorm())
+            double dist = (points[i].cast<double>() - center).squaredNorm();
+            if (dist < minDist)
             {
                 closest = i;
+                minDist = dist;
             }
         }
         // flag all other Points for deletion
@@ -98,8 +109,8 @@ void createOctree(Vector3f* points, int n, bool* flagged, const Vector3f& min, c
 
     int l = splitPoints(points, n, axis, center[axis]);
 
-    Vector3f lMin = min, lMax = max;
-    Vector3f rMin = min, rMax = max;
+    Vector3d lMin = min, lMax = max;
+    Vector3d rMin = min, rMax = max;
 
     lMax[axis] = center[axis];
     rMin[axis] = center[axis];
@@ -111,7 +122,7 @@ void createOctree(Vector3f* points, int n, bool* flagged, const Vector3f& min, c
     createOctree(points + l, n - l, flagged + l, rMin, rMax, level + 1, voxelSize, maxLeafSize);
 }
 
-int octreeReduce(Vector3f* points, int n, float voxelSize, int maxLeafSize)
+int octreeReduce(Eigen::Vector3f* points, int n, double voxelSize, int maxLeafSize)
 {
     bool* flagged = new bool[n];
     for (int i = 0; i < n; i++)
@@ -152,38 +163,36 @@ int octreeReduce(Vector3f* points, int n, float voxelSize, int maxLeafSize)
 
 
 AABB::AABB()
+    : m_count(0)
 {
-    m_min.setConstant(numeric_limits<float>::infinity());
-    m_max.setConstant(-numeric_limits<float>::infinity());
+    m_min.setConstant(numeric_limits<double>::infinity());
+    m_max.setConstant(-numeric_limits<double>::infinity());
     m_sum.setConstant(0.0);
-    m_count = 0;
 }
 
-AABB::AABB(const Vector3f* points, size_t count)
-    : AABB()
+const Vector3d& AABB::min() const
 {
-    for (size_t i = 0; i < count; i++)
-    {
-        addPoint(points[i]);
-    }
+    return m_min;
 }
 
-void AABB::addPoint(const Vector3f& point)
+const Vector3d& AABB::max() const
 {
-    for (int axis = 0; axis < 3; axis++)
-    {
-        float val = point(axis);
-        if (val < m_min(axis))
-        {
-            m_min(axis) = val;
-        }
-        if (val > m_max(axis))
-        {
-            m_max(axis) = val;
-        }
-    }
-    m_sum += point;
-    m_count++;
+    return m_max;
+}
+
+Vector3d AABB::avg() const
+{
+    return m_sum / m_count;
+}
+
+size_t AABB::count() const
+{
+    return m_count;
+}
+
+double AABB::difference(int axis) const
+{
+    return m_max(axis) - m_min(axis);
 }
 
 int AABB::longestAxis() const
@@ -198,5 +207,6 @@ int AABB::longestAxis() const
     }
     return splitAxis;
 }
+
 
 } /* namespace lvr2 */

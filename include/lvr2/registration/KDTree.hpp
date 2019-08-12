@@ -42,12 +42,8 @@
 #include <limits>
 #include <boost/shared_array.hpp>
 
-using Eigen::Vector3d;
-
 namespace lvr2
 {
-
-using PointArray = boost::shared_array<Vector3f>;
 
 /**
  * @brief a kd-Tree Implementation for nearest Neighbor searches
@@ -55,6 +51,10 @@ using PointArray = boost::shared_array<Vector3f>;
 class KDTree
 {
 public:
+    using PointT = float;
+    using Point = Eigen::Vector3f;
+    using Neighbor = Point*;
+
     /**
      * @brief Creates a new KDTree from the given Scan.
      *
@@ -63,17 +63,6 @@ public:
      * @param maxLeafSize   The maximum number of points to use for a Leaf in the Tree
      */
     static std::shared_ptr<KDTree> create(ScanPtr scan, int maxLeafSize = 20);
-
-    /**
-     * @brief Creates a new KDTree from the given Point Cloud. Note that this function modifies
-     *        the order of elements in 'points'.
-     *        This does not take ownership of the pointer. the caller must manage the memory.
-     *
-     * @param points        The Point Cloud
-     * @param n             The number of points in 'points'
-     * @param maxLeafSize   The maximum number of points to use for a Leaf in the Tree
-     */
-    static std::shared_ptr<KDTree> create(Vector3f* points, int n, int maxLeafSize = 20);
 
     /**
      * @brief Finds the nearest neighbor of 'point' that is within 'maxDistance' (defaults to infinity).
@@ -86,21 +75,29 @@ public:
      *                      significantly speeds up the search.
      * @returns             true if a neighbors was found, false otherwise
      */
+    template<typename T>
     bool nearestNeighbor(
-        const Vector3f& point,
-        Vector3f*& neighbor,
-        float& distance,
-        float maxDistance = std::numeric_limits<float>::infinity()
-    ) const;
+        const Eigen::Matrix<T, 3, 1>& point,
+        Neighbor& neighbor,
+        double& distance,
+        double maxDistance = std::numeric_limits<double>::infinity()
+    ) const
+    {
+        neighbor = nullptr;
+        distance = maxDistance;
+        nnInternal(point.template cast<PointT>(), neighbor, distance);
+
+        return neighbor != nullptr;
+    }
 
     virtual ~KDTree() = default;
 
 protected:
-    virtual void nnInternal(const Vector3f& point, Vector3f*& neighbor, float& maxDist) const = 0;
+    virtual void nnInternal(const Point& point, Neighbor& neighbor, double& maxDist) const = 0;
 
     friend class KDNode;
 
-    PointArray points;
+    Vector3fArr points;
 };
 
 using KDTreePtr = std::shared_ptr<KDTree>;
@@ -118,7 +115,7 @@ using KDTreePtr = std::shared_ptr<KDTree>;
  *
  * @returns             The number of neighbors that were found
  */
-size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, Vector3f** neighbors, float maxDistance, Vector3d& centroid_m, Vector3d& centroid_d);
+size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance, Vector3d& centroid_m, Vector3d& centroid_d);
 
 /**
  * @brief Finds the nearest neighbors of all points in a Scan using a pre-generated KDTree
@@ -131,7 +128,7 @@ size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, Vector3f** neighbors, f
  *
  * @returns             The number of neighbors that were found
  */
-size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, Vector3f** neighbors, float maxDistance);
+size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance);
 
 } /* namespace lvr2 */
 

@@ -1,4 +1,3 @@
-
 /**
  * Copyright (c) 2018, University Osnabrück
  * All rights reserved.
@@ -36,7 +35,7 @@
 #define TREEUTILS_HPP_
 
 #include <Eigen/Dense>
-using Eigen::Vector3f;
+using Eigen::Vector3d;
 
 namespace lvr2
 {
@@ -53,7 +52,7 @@ namespace lvr2
  *
  * @returns The number of smaller elements. points + this value gives the start of the greater elements
  */
-int splitPoints(Vector3f* points, int n, int axis, float splitValue);
+int splitPoints(Eigen::Vector3f* points, int n, int axis, double splitValue);
 
 /**
  * @brief Reduces a Point Cloud using an Octree with a minimum Voxel size
@@ -65,7 +64,7 @@ int splitPoints(Vector3f* points, int n, int axis, float splitValue);
  *
  * @returns the new number of Points in the Point Cloud
  */
-int octreeReduce(Vector3f* points, int n, float voxelSize, int maxLeafSize = 20);
+int octreeReduce(Eigen::Vector3f* points, int n, double voxelSize, int maxLeafSize);
 
 
 /**
@@ -73,65 +72,58 @@ int octreeReduce(Vector3f* points, int n, float voxelSize, int maxLeafSize = 20)
  */
 class AABB
 {
-    Vector3f m_min;
-    Vector3f m_max;
-    Vector3f m_sum;
+    Vector3d m_min;
+    Vector3d m_max;
+    Vector3d m_sum;
     size_t m_count;
 
 public:
     AABB();
-    AABB(const Vector3f* points, size_t count);
+
+    template<typename T>
+    AABB(const Eigen::Matrix<T, 3, 1>* points, size_t count)
+        : AABB()
+    {
+        for (size_t i = 0; i < count; i++)
+        {
+            addPoint(points[i]);
+        }
+    }
 
     /// Returns the "lower left" Corner of the Bounding Box, as in the smallest x, y, z of the Point Cloud.
-    const Vector3f& min() const
-    {
-        return m_min;
-    }
+    const Vector3d& min() const;
 
     /// Returns the "upper right" Corner of the Bounding Box, as in the largest x, y, z of the Point Cloud.
-    const Vector3f& max() const
-    {
-        return m_max;
-    }
+    const Vector3d& max() const;
 
     /// Returns the average of all the Points in the Point Cloud.
-    Vector3f avg() const
-    {
-        return m_sum / m_count;
-    }
+    Vector3d avg() const;
 
     /// Returns the number of Points in the Point Cloud
-    size_t count() const
-    {
-        return m_count;
-    }
+    size_t count() const;
 
     /// adds a Point to the Point Cloud
-    void addPoint(const Vector3f& point);
-
-    /// Returns the smallest value of an axis of the Point Cloud.
-    float min(int axis) const
+    template<typename T>
+    void addPoint(const Eigen::Matrix<T, 3, 1>& point)
     {
-        return m_min[axis];
-    }
-
-    /// Returns the largest value of an axis of the Point Cloud.
-    float max(int axis) const
-    {
-        return m_max[axis];
-    }
-
-    /// Returns the average of an axis of all the Points in the Point Cloud.
-    float avg(int axis) const
-    {
-        return m_sum[axis] / m_count;
+        for (int axis = 0; axis < 3; axis++)
+        {
+            double val = point(axis);
+            if (val < m_min(axis))
+            {
+                m_min(axis) = val;
+            }
+            if (val > m_max(axis))
+            {
+                m_max(axis) = val;
+            }
+            m_sum(axis) += val;
+        }
+        m_count++;
     }
 
     /// Calculates the size of the Bounding Box along a certain axis
-    float difference(int axis) const
-    {
-        return max(axis) - min(axis);
-    }
+    double difference(int axis) const;
 
     /// Calculates the axis that has the largest size of the Bounding Box
     int longestAxis() const;

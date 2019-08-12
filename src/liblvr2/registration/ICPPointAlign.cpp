@@ -73,9 +73,9 @@ Matrix4d ICPPointAlign::match()
     Matrix4d transform = Matrix4d::Identity();
     Matrix4d delta = Matrix4d::Identity();
 
-    size_t numPoints = m_dataCloud->count();
+    size_t numPoints = m_dataCloud->numPoints();
 
-    Vector3f** neighbors = new Vector3f*[numPoints];
+    KDTree::Neighbor* neighbors = new KDTree::Neighbor[numPoints];
 
     for (iteration = 0; iteration < m_maxIterations; iteration++)
     {
@@ -124,7 +124,7 @@ Matrix4d ICPPointAlign::match()
     return delta;
 }
 
-void ICPPointAlign::setMaxMatchDistance(float d)
+void ICPPointAlign::setMaxMatchDistance(double d)
 {
     m_maxDistanceMatch = d;
 }
@@ -148,7 +148,7 @@ void ICPPointAlign::setVerbose(bool verbose)
     m_verbose = verbose;
 }
 
-float ICPPointAlign::getMaxMatchDistance() const
+double ICPPointAlign::getMaxMatchDistance() const
 {
     return m_maxDistanceMatch;
 }
