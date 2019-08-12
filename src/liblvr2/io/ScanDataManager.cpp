@@ -20,15 +20,15 @@ std::vector<ScanData> ScanDataManager::getScanData()
     return m_io.getRawScanData(false);
 }
 
-std::vector<std::vector<CamData> > ScanDataManager::getCamData()
+std::vector<std::vector<CameraData> > ScanDataManager::getCameraData()
 {
     return m_io.getRawCamData(false);
 }
 
 cv::Mat ScanDataManager::loadImageData(int scan_id, int cam_id)
 {
-    CamData ret = m_io.getSingleRawCamData(scan_id, cam_id, true);
-    return ret.m_image_data;
+    CameraData ret = m_io.getSingleRawCamData(scan_id, cam_id, true);
+    return ret.image;
 }
 
 

@@ -1,7 +1,7 @@
 #ifndef __LVRGEOMETRYTRANSFORMABLE_HPP__
 #define __LVRGEOMETRYTRANSFORMABLE_HPP__
 
-#include "Matrix4.hpp"
+#include <Eigen/Dense>
 
 namespace lvr2
 {
@@ -9,22 +9,23 @@ namespace lvr2
 /**
  * @brief Interface for transformable objects
  */
-template <typename BaseVecT>
-class TransformableBase {
+template <typename T>
+class TransformableBase 
+{
 public:
 
-    Matrix4<BaseVecT> getTransform()
+    Eigen::Matrix<T, 4, 4> getTransform()
     {
         return m_transform;
     }
 
-    void setTransform(Matrix4<BaseVecT> transform)
+    void setTransform(Eigen::Matrix<T, 4, 4> transform)
     {
         m_transform = transform;
     }
 
 private:
-    Matrix4<BaseVecT> m_transform;
+    Eigen::Matrix<T, 4, 4> m_transform;
 };
 
 /**
@@ -38,7 +39,7 @@ private:
  *      // obj is not derived from Transformable
  * }
  */
-typedef TransformableBase<BaseVector<float> > Transformable;
+typedef TransformableBase<float> Transformable;
 
 } // namespace lvr2
 

@@ -5,7 +5,7 @@
 
 #include "lvr2/io/HDF5IO.hpp"
 #include "lvr2/io/ScanData.hpp"
-#include "lvr2/io/CamData.hpp"
+#include "lvr2/types/CameraData.hpp"
 
 namespace lvr2
 {
@@ -19,7 +19,7 @@ class ScanDataManager
 
         std::vector<ScanData> getScanData();
 
-        std::vector<std::vector<CamData> > getCamData();
+        std::vector<std::vector<CameraData> > getCameraData();
 
         cv::Mat loadImageData(int scan_id, int cam_id);
 

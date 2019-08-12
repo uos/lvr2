@@ -2,11 +2,16 @@
 #include "LVRModelItem.hpp"
 #include "LVRItemTypes.hpp"
 
+#include "lvr2/registration/TransformUtils.hpp"
+
 namespace lvr2
 {
 
-LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, vtkSmartPointer<vtkRenderer> renderer, QString name, QTreeWidgetItem *parent) : QTreeWidgetItem(parent, LVRScanDataItemType)
-,m_renderer(renderer)
+LVRScanDataItem::LVRScanDataItem(
+    ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx,
+    vtkSmartPointer<vtkRenderer> renderer, 
+    QString name, QTreeWidgetItem *parent) 
+    : QTreeWidgetItem(parent, LVRScanDataItemType) ,m_renderer(renderer)
 {
     m_showSpectralsItem = nullptr;
     m_pcItem = nullptr;
@@ -20,9 +25,8 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
 
     // init pose
     float pose[6];
-    m_data.m_registration.transpose();
-    m_data.m_registration.toPostionAngle(pose);
-    m_data.m_registration.transpose();
+    eigenToEuler<float>(m_data.m_registration, pose);
+
     m_matrix = m_data.m_registration;
 
     m_pose.x = pose[0];

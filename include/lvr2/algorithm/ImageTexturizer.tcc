@@ -176,21 +176,21 @@ void ImageTexturizer<BaseVecT>::init_image_data()
             }
 
             //calculate transformation matrix
-            Matrix4<BaseVecT> projection;
+            Eigen::Matrix<float, 4, 4, Eigen::RowMajor> pro;
+            float* projection = pro.data();
             projection[0] = img.intrinsic_params[0];
             projection[5] = img.intrinsic_params[1];
             projection[2] = img.intrinsic_params[2];
             projection[6] = img.intrinsic_params[3];
 
-            bool dummy;
-            Matrix4<BaseVecT> transform;
-            Matrix4<BaseVecT> orientation = img.orientation_transform;
+            Eigen::Matrix<float, 4, 4, Eigen::RowMajor> transform;
+            Eigen::Matrix<float, 4, 4, Eigen::RowMajor> orientation = img.orientation_transform;
 
             // because matrix multipl. is CM and our matrices are RM we have to do it this way
-            transform = Util::slam6d_to_riegl_transform(pos.transform).inv(dummy);
-            transform = transform * orientation.inv(dummy);
+            transform = Util::slam6d_to_riegl_transform<float>(pos.transform).inverse();
+            transform = transform * orientation.inverse();
             transform = transform * img.extrinsic_transform;
-            Matrix4<BaseVecT> transform_inverse = transform.inv(dummy);
+            Eigen::Matrix<float, 4, 4, Eigen::RowMajor> transform_inverse = transform.inverse();
             transform_inverse.transpose();
 
             //caluclate cam direction and cam pos for image in project space

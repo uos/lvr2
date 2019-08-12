@@ -17,7 +17,7 @@
 #include "LVRPoseItem.hpp"
 #include "LVRCamDataItem.hpp"
 
-
+#include <Eigen/Dense>
 
 namespace lvr2
 {
@@ -70,7 +70,7 @@ class LVRScanDataItem : public QTreeWidgetItem, public Transformable
         LVRPointCloudItem                      *m_pcItem;
         LVRPoseItem                            *m_pItem;
         QTreeWidgetItem                        *m_showSpectralsItem;
-        Matrix4<BaseVector<float> >             m_matrix;
+        Eigen::Matrix4f                         m_matrix;
         vtkSmartPointer<vtkRenderer>            m_renderer;
 
 };

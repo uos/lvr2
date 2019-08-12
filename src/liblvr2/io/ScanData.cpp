@@ -61,13 +61,13 @@ void parseSLAMDirectory(std::string dir, vector<ScanData>& scans)
                     scan_data.m_boundingBox.expand(pt);
                 }
 
-                Eigen::Matrix4d pose_estimate = Eigen::Matrix4d::Identity();
-                Eigen::Matrix4d registration = Eigen::Matrix4d::Identity();
+                Eigen::Matrix<float, 4, 4, Eigen::RowMajor> pose_estimate = Eigen::Matrix<float, 4, 4, Eigen::RowMajor>::Identity();
+                Eigen::Matrix<float, 4, 4, Eigen::RowMajor> registration = Eigen::Matrix<float, 4, 4, Eigen::RowMajor>::Identity();
 
                 if(boost::filesystem::exists(frame_path))
                 {
                     std::cout << timestamp << "Loading frame information from " << frame_path << std::endl;
-                    registration = getTransformationFromFrames<double>(frame_path);
+                    registration = getTransformationFromFrames<float>(frame_path);
                 }
                 else
                 {
@@ -77,7 +77,7 @@ void parseSLAMDirectory(std::string dir, vector<ScanData>& scans)
                 if(boost::filesystem::exists(pose_path))
                 {
                     std::cout << timestamp << "Loading pose estimation from " << pose_path << std::endl;
-                    pose_estimate = getTransformationFromPose<double>(pose_path);
+                    pose_estimate = getTransformationFromPose<float>(pose_path);
                 }
                 else
                 {

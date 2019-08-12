@@ -154,11 +154,11 @@ public:
      *
      * @return The transformation matrix in riegl coordinate system
      */
-    template <typename BaseVecT>
-    static Matrix4<BaseVecT> slam6d_to_riegl_transform(const Matrix4<BaseVecT> &in)
+    template <typename T>
+    static Eigen::Matrix<float, 4, 4, Eigen::RowMajor> slam6d_to_riegl_transform(const Eigen::Matrix<float, 4, 4, Eigen::RowMajor> &mat)
     {
-        Matrix4<BaseVecT> ret;
-
+        T* in = mat.data();
+        T* ret[16];
         ret[0] = in[10];
         ret[1] = -in[2];
         ret[2] = in[6];
@@ -176,7 +176,7 @@ public:
         ret[14] = in[7];
         ret[15] = in[15];
 
-        return ret;
+        return Eigen::Map<Eigen::Matrix<T, 4, 4, Eigen::RowMajor> >(ret);
     }
 
     template <typename ValueType>
