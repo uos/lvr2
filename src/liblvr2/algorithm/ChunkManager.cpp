@@ -106,7 +106,7 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
             continue;
         }
 
-        for (std::size_t i = 0; i < numDuplicates; i += 3)
+        for (std::size_t i = 0; i < numDuplicates; ++i)
         {
             size_t areaDuplicatesSize = areaDuplicates.size();
 
