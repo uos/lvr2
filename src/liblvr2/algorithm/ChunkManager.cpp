@@ -94,56 +94,51 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
         FloatChannel vertices = *(chunk->getChannel<float>("vertices"));
         std::size_t numVertices = chunk->numVertices();
 
-        areaUniqueVertices.insert(areaUniqueVertices.end(), vertices.dataPtr().get() + (numDuplicates * 3), (vertices.dataPtr().get() + (numVertices * 3 )));
+        areaUniqueVertices.insert(areaUniqueVertices.end(),
+                vertices.dataPtr().get() + (numDuplicates * 3),
+                (vertices.dataPtr().get() + (numVertices * 3 )));
 
-        if (chunkIt == chunks.begin())
+        if (chunkIt == chunks.begin() || areaDuplicates.empty())
         {
-            areaDuplicates.insert(areaDuplicates.end(), vertices.dataPtr().get(), vertices.dataPtr().get() + (numDuplicates * 3));
+            areaDuplicates.insert(areaDuplicates.end(),
+                    vertices.dataPtr().get(),
+                    vertices.dataPtr().get() + (numDuplicates * 3));
             continue;
         }
 
-        for (std::size_t i = 0; i < numDuplicates; ++i)
+        for (std::size_t i = 0; i < numDuplicates; i += 3)
         {
-            // TODO: get and compare duplicate vertices
-            for(std::size_t j = 0; j < (numDuplicates * 3); j+=3)
-            {
-                if(areaDuplicates[j] != vertices[i][0])
-                {
-                    continue;
-                }
-                else if(areaDuplicates[j + 1] != vertices[i][1])
-                {
-                    continue;
-                }
-                else if(areaDuplicates[j + 2] != vertices[i][2])
-                {
-                    continue;
-                }
-                else 
-                {
-                    areaDuplicates.push_back(vertices[i][0]);
-                    areaDuplicates.push_back(vertices[i][1]);
-                    areaDuplicates.push_back(vertices[i][2]);
-                }
+            size_t areaDuplicatesSize = areaDuplicates.size();
 
+            // TODO: get and compare duplicate vertices
+            bool found = false;
+            for (std::size_t j = 0; j < areaDuplicatesSize; j += 3)
+            {
+                if ((areaDuplicates[j] == vertices[i][0]) && (areaDuplicates[j + 1] == vertices[i][1]) && (areaDuplicates[j + 2] == vertices[i][2]))
+                {
+                    found = true;
+                    break;
+                }
             }
-//            auto duplicateIndex = std::find(areaDuplicates.begin(), areaDuplicates.end(), vertices[i]);
-//            if(duplicateIndex == areaDuplicates.end())
-//            {
-//                areaDuplicates.push_back(vertices[i]);
-//            }
+
+            if (!found) {
+                areaDuplicates.push_back(vertices[i][0]);
+                areaDuplicates.push_back(vertices[i][1]);
+                areaDuplicates.push_back(vertices[i][2]);
+            }
+
             // TODO: update indices
         }
     }
 
-    PointBufferPtr areaPointPtr(new PointBuffer);
-
     areaDuplicates.insert(areaDuplicates.end(), areaUniqueVertices.begin(), areaUniqueVertices.end());
-    areaPointPtr->setPointArray(floatArr(areaDuplicates.data()), areaDuplicates.size());
 
+    PointBufferPtr areaPointPtr(new PointBuffer(floatArr(areaDuplicates.data()), areaDuplicates.size() / 3));
     ModelFactory::saveModel(ModelPtr(new Model(areaPointPtr)), "area/merged.xyz");
 
-    return nullptr;
+    MeshBufferPtr areaMeshPtr(new MeshBuffer);
+
+    return areaMeshPtr;
 }
 
 void ChunkManager::initBoundingBox(MeshBufferPtr mesh)
