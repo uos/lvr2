@@ -26,7 +26,7 @@
  */
 
 #include "LargeScaleOptions.hpp"
-/* #include "lvr2/algorithm/CleanupAlgorithms.hpp" */
+#include "lvr2/algorithm/CleanupAlgorithms.hpp"
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/algorithm/ReductionAlgorithms.hpp"
@@ -94,55 +94,6 @@ struct duplicateVertex
     float z;
     unsigned int id;
 };
-
-/*template <typename BaseVecT>
-void getBoundingBoxNumPoints(LineReader& lr, BoundingBox<BaseVecT>& bb, size_t& numPoints)
-{
-    while (lr.ok())
-    {
-        size_t rsize;
-        if (lr.getFileType() == XYZNRGB)
-        {
-            boost::shared_ptr<xyznc> a =
-                boost::static_pointer_cast<xyznc>(lr.getNextPoints(rsize, 1024));
-            for (int i = 0; i < rsize; i++)
-            {
-                bb.expand(a.get()[i].point.x, a.get()[i].point.y, a.get()[i].point.z);
-            }
-            numPoints += rsize;
-        }
-        else if (lr.getFileType() == XYZN)
-        {
-            boost::shared_ptr<xyzn> a =
-                boost::static_pointer_cast<xyzn>(lr.getNextPoints(rsize, 1024));
-            for (int i = 0; i < rsize; i++)
-            {
-                bb.expand(a.get()[i].point.x, a.get()[i].point.y, a.get()[i].point.z);
-            }
-            numPoints += rsize;
-        }
-        else if (lr.getFileType() == XYZ)
-        {
-            boost::shared_ptr<xyz> a =
-                boost::static_pointer_cast<xyz>(lr.getNextPoints(rsize, 1024));
-            for (int i = 0; i < rsize; i++)
-            {
-                bb.expand(a.get()[i].point.x, a.get()[i].point.y, a.get()[i].point.z);
-            }
-            numPoints += rsize;
-        }
-        else if (lr.getFileType() == XYZRGB)
-        {
-            boost::shared_ptr<xyzc> a =
-                boost::static_pointer_cast<xyzc>(lr.getNextPoints(rsize, 1024));
-            for (int i = 0; i < rsize; i++)
-            {
-                bb.expand(a.get()[i].point.x, a.get()[i].point.y, a.get()[i].point.z);
-            }
-            numPoints += rsize;
-        }
-    }
-}*/
 
 using Vec = lvr2::BaseVector<float>;
 
@@ -500,12 +451,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
         cout << lvr2::timestamp << " saving data " << i << endl;
         vector<unsigned int> duplicates;
-        // reconstruction->getMesh(mesh, grid->qp_bb, duplicates, voxelsize * 5);
         reconstruction->getMesh(mesh);
-
-        // ===== DEBUG ===== DEBUG ===== DEBUG =====
-        cout << "DEBUG: " << mesh.numVertices() << " Vertices with " << mesh.numFaces() << " Faces"
-             << endl;
 
         // =======================================================================
         // Optimize mesh
@@ -517,12 +463,12 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         }
 
         // Magic number from lvr1 `cleanContours`...
-        // cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
+        cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
 
         // Fill small holes if requested
         if (options.getFillHoles())
         {
-            // naiveFillSmallHoles(mesh, options.getFillHoles(), false);
+            naiveFillSmallHoles(mesh, options.getFillHoles(), false);
         }
 
         // Calculate normals for vertices
@@ -622,38 +568,18 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         ia& duplicates;
         cout << "MESH " << i << " has " << duplicates.size() << " possible duplicates" << endl;
 
-        cout << "DEBUG #0" << endl;
-
-        // LineReader lr(ply_path);
-
-        cout << "DEBUG #1" << endl;
-
-        /*size_t numPoints = lr.getNumPoints();
-        offsets.push_back(numPoints + offsets[i]);
-        if (numPoints == 0)
-            continue;*/
-
         lvr2::PLYIO io;
         ModelPtr modelPtr = io.read(ply_path);
-
-        cout << "DEBUG #1.5" << endl;
 
         size_t numPoints = modelPtr->m_mesh->numVertices();
         offsets.push_back(numPoints + offsets[i]);
         if (numPoints == 0)
             continue;
 
-        // ModelPtr modelPtr = ModelFactory::readModel(ply_path);
         size_t numVertices = modelPtr->m_mesh->numVertices();
         floatArr modelVertices = modelPtr->m_mesh->getVertices();
         double end_s = lvr2::timestamp.getElapsedTimeInS();
         seconds += (end_s - start_s);
-        //        for (size_t j = 0; j < numVertices; j++)
-        //        {
-        //            duplicates.push_back(static_cast<unsigned int>(j));
-        //        }
-
-        cout << "DEBUG #2" << endl;
 
         for (size_t j = 0; j < duplicates.size(); j++)
         {
@@ -666,11 +592,8 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         }
 
         cout << "DEBUG #3" << endl;
-
-        //        std::transform (duplicates.begin(), duplicates.end(), duplicates.begin(),
-        //        [&](unsigned int x){return x+offsets[i];});
-        //        all_duplicates.insert(all_duplicates.end(),duplicates.begin(), duplicates.end());
     }
+
     std::sort(duplicateVertices.begin(),
               duplicateVertices.end(),
               [](const duplicateVertex& left, const duplicateVertex& right) {
@@ -682,58 +605,9 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     ofstream ofsd;
     ofsd.open("duplicate_colors.pts", ios_base::app);
 
-    //    flann::Matrix<float> flannPoints = flann::Matrix<float> (new float[3 *
-    //    duplicateVertices.size()], duplicateVertices.size(), 3); for(size_t i = 0; i <
-    //    duplicateVertices.size(); i++)
-    //    {
-    //        flannPoints[i][0] = duplicateVertices[3 * i];
-    //        flannPoints[i][1] = duplicateVertices[3 * i + 1];
-    //        flannPoints[i][2] = duplicateVertices[3 * i + 2];
-    //    }
-    //    std::shared_ptr<flann::Index<flann::L2_Simple<float> > >     tree =
-    //            std::shared_ptr<flann::Index<flann::L2_Simple<float> > >(new
-    //            flann::Index<flann::L2_Simple<float> >(flannPoints,
-    //            ::flann::KDTreeSingleIndexParams (10, false)));
-    //    tree->buildIndex();
     float comp_dist = std::max(voxelsize / 1000, 0.0001f);
     double dist_epsilon_squared = comp_dist * comp_dist;
     double dup_start = lvr2::timestamp.getElapsedTimeInS();
-
-    //    vector<float> dupBuffer(duplicateVertices.size());
-    //    for(duplicateVertex & v : duplicateVertices)
-    //    {
-    //        dupBuffer.push_back(v.x);
-    //        dupBuffer.push_back(v.y);
-    //        dupBuffer.push_back(v.z);
-    //    }
-    //    if(duplicateVertices.size()>0)
-    //    {
-    //        SearchTreeFlann<BaseVecT> searchTree(duplicateVertices);
-    //
-    //        for(size_t i = 0 ; i < duplicateVertices.size() ; i++)
-    //        {
-    //            vector<size_t> indices;
-    //            vector<float> distances;
-    //            searchTree.kSearch(duplicateVertices[i].x, duplicateVertices[i].y,
-    //            duplicateVertices[i].z,5, indices, distances); for(int j = 0 ; j
-    //            <distances.size();j++)
-    //            {
-    //                if(distances[j] < comp_dist && all_duplicates[i/3] !=
-    //                all_duplicates[indices[j]])
-    //                {
-    //                    if(all_duplicates[i/3] == all_duplicates[indices[j]]) continue;
-    //                    auto find_it = oldToNew.find(all_duplicates[i/3]);
-    //                    if( find_it == oldToNew.end())
-    //                    {
-    //                        oldToNew[all_duplicates[indices[j]]] = all_duplicates[i/3];
-    ////                    cout << "dup found! mapping " << all_duplicates[j/3] << " -> " <<
-    /// all_duplicates[i/3] << " dist: " << sqrt(dist_squared)<< endl;
-    //
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
 
     string comment = lvr2::timestamp.getElapsedTime() + "Removing duplicates ";
     lvr2::ProgressBar progress(duplicateVertices.size(), comment);
@@ -774,15 +648,6 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
                     oldToNew[duplicateVertices[j].id] = duplicateVertices[i].id;
                     found++;
                     omp_unset_lock(&writelock);
-                    //                    cout << "dup found! mapping " <<duplicateVertices[j].id <<
-                    //                    " -> " << duplicateVertices[i].id << " dist: " <<
-                    //                    sqrt(dist_squared)<< endl;
-
-                    //                    ofsd << duplicateVertices[j].x << " " <<
-                    //                    duplicateVertices[j].y << " " << duplicateVertices[j].z <<
-                    //                    endl;
-
-                    //                omp_unset_lock(&writelock);
                 }
             }
         }
@@ -913,21 +778,6 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
                "property list uchar int vertex_indices\n"
                "end_header"
             << endl;
-    //    ofs_ply.close();
-    //    ofstream ofs_ply_binary("bigMesh.ply",std::ofstream::out | std::ofstream::app |
-    //    std::ofstream::binary ); char a1 = 10; char a2 = 32; char a3 = 180; char a4 = 174;
-    //    ofs_ply_binary.write(&a1,1);
-    //    ofs_ply_binary.write(&a2,1);
-    //    ofs_ply_binary.write(&a3,1);
-    //    ofs_ply_binary.write(&a4,1);
-    //    istreambuf_iterator<char> begin_source(ifs_vertices);
-    //    istreambuf_iterator<char> end_source;
-    //    ostreambuf_iterator<char> begin_dest(ofs_ply_binary);
-    //    copy(begin_source, end_source, begin_dest);
-    //    istreambuf_iterator<char> begin_source2(ifs_faces);
-    //    istreambuf_iterator<char> end_source2;
-    //    ostreambuf_iterator<char> begin_dest2(ofs_ply_binary);
-    //    copy(begin_source2, end_source2, begin_dest2);
     while (std::getline(ifs_vertices, line))
     {
         ofs_ply << line << endl;
@@ -1038,24 +888,6 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
 int main(int argc, char** argv)
 {
-
-    // make sure to include the random number generators and such
-
-    //    std::random_device seeder;
-    //    std::mt19937 engine(seeder());
-    //    std::uniform_real_distribution<float> dist(10, 10.05);
-    //    std::random_device seeder2;
-    //    std::mt19937 engine2(seeder());
-    //    std::uniform_real_distribution<float> dist2(0, 10);
-    //    ofstream testofs("plane.pts");
-    //    for(float x = 0; x < 10; x+=0.05)
-    //    {
-    //        for(float y = 0 ; y < 10 ; y+=0.05)
-    //        {
-    //            testofs << dist2(engine2) << " " << dist2(engine2) << " " << dist(engine) << endl;
-    //        }
-    //    }
-
     LargeScaleOptions::Options options(argc, argv);
 
     int i = mpiReconstruct<Vec>(options);
