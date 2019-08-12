@@ -3,7 +3,7 @@ namespace lvr2
 {
 
 template<typename T>
-Eigen::Matrix<T,4,4> getTransformationFromPose(const boost::filesystem::path& pose)
+Eigen::Matrix<T,4,4, Eigen::RowMajor> getTransformationFromPose(const boost::filesystem::path& pose)
 {
     std::ifstream poseIn(pose.c_str());
     if(poseIn.good())
@@ -54,7 +54,7 @@ Eigen::Matrix<T,4,4> getTransformationFromPose(const boost::filesystem::path& po
 }
 
 template<typename T>
-Eigen::Matrix<T,4,4> getTransformationFromFrames(const boost::filesystem::path& frames)
+Eigen::Matrix<T,4,4, Eigen::RowMajor> getTransformationFromFrames(const boost::filesystem::path& frames)
 {
     T alignxf[16];
     int color;
@@ -82,7 +82,7 @@ Eigen::Matrix<T,4,4> getTransformationFromFrames(const boost::filesystem::path& 
 }
 
 template<typename T>
-Eigen::Matrix<T,4,4> getTransformationFromDat(const boost::filesystem::path& frames)
+Eigen::Matrix<T,4,4, Eigen::RowMajor> getTransformationFromDat(const boost::filesystem::path& frames)
 {
     T alignxf[16];
     int color;
@@ -99,7 +99,7 @@ Eigen::Matrix<T,4,4> getTransformationFromDat(const boost::filesystem::path& fra
 }
 
 template<typename T>
-void writeFrame(const Eigen::Matrix<T, 4, 4>& transform, const boost::filesystem::path& framesOut)
+void writeFrame(const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& transform, const boost::filesystem::path& framesOut)
 {
     std::ofstream out(framesOut.c_str());
 
@@ -121,9 +121,9 @@ void writeFrame(const Eigen::Matrix<T, 4, 4>& transform, const boost::filesystem
 }
 
 template<typename T>
-Eigen::Matrix<T, 4, 4> loadFromFile(const boost::filesystem::path& file)
+Eigen::Matrix<T, 4, 4, Eigen::RowMajor> loadFromFile(const boost::filesystem::path& file)
 {
-    Eigen::Matrix<T, 4, 4> m;
+    Eigen::Matrix<T, 4, 4, Eigen::RowMajor> m;
     T arr[16];
     std::ifstream in(file.string());
     for(size_t i = 0; i < 16; i++)

@@ -14,14 +14,14 @@ namespace lvr2 {
 
 namespace qttf {
 
-Eigen::Matrix4f getTransformation(
+Eigen::Matrix<float, 4, 4, Eigen::RowMajor> getTransformation(
     QTreeWidgetItem* from,
     QTreeWidgetItem* to = NULL
 );
 
 PointBufferPtr transform(
     PointBufferPtr pc_in,
-    const Eigen::Matrix4f& T
+    const Eigen::Matrix<float, 4, 4, Eigen::RowMajor>& T
 );
 
 PointBufferPtr transform(

@@ -75,21 +75,21 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
  *          represented in the given frame file.
  */
 template<typename T>
-Eigen::Matrix<T, 4, 4> getTransformationFromFrames(const boost::filesystem::path& frames);
+Eigen::Matrix<T, 4, 4, Eigen::RowMajor> getTransformationFromFrames(const boost::filesystem::path& frames);
 
 /**
  * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
  *          represented in the given pose file.
  */
 template<typename T>
-Eigen::Matrix<T, 4, 4> getTransformationFromPose(const boost::filesystem::path& pose);
+Eigen::Matrix<T, 4, 4, Eigen::RowMajor> getTransformationFromPose(const boost::filesystem::path& pose);
 
 /**
  * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
  *          represented in the given dat file.
  */
 template<typename T>
-Eigen::Matrix<T, 4, 4> getTransformationFromDat(const boost::filesystem::path& frames);
+Eigen::Matrix<T, 4, 4, Eigen::RowMajor> getTransformationFromDat(const boost::filesystem::path& frames);
 
 /**
  * @brief               Reads an Eigen 4x4 matrix from the given file (16 coefficients, row major)
@@ -98,7 +98,7 @@ Eigen::Matrix<T, 4, 4> getTransformationFromDat(const boost::filesystem::path& f
  * @param file          A file with serialized matrix data
  */
 template<typename T>
-Eigen::Matrix<T, 4, 4> loadFromFile(const boost::filesystem::path& file);
+Eigen::Matrix<T, 4, 4, Eigen::RowMajor> loadFromFile(const boost::filesystem::path& file);
 
 
 /***
@@ -114,7 +114,7 @@ size_t countPointsInFile(boost::filesystem::path& inFile);
  * @param   framesOut   The target file.
  */
 template<typename T>
-void writeFrame(const Eigen::Matrix<T, 4, 4>& transform, const boost::filesystem::path& framesOut);
+void writeFrame(const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& transform, const boost::filesystem::path& framesOut);
 
 /**
  * @brief               Writes pose information in Euler representation to the given file

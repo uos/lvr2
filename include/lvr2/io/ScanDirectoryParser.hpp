@@ -18,7 +18,7 @@ struct ScanInfo
 {
     string              m_filename;
     size_t              m_numPoints;
-    Eigen::Matrix4d     m_pose;
+    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> m_pose;
 };
 
 class ScanDirectoryParser
@@ -49,7 +49,7 @@ private:
     size_t examinePLY(const std::string& filename);
     size_t examineASCII(const std::string& filename);    
 
-    Eigen::Matrix4d getPose(const Path& poseFile);
+    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> getPose(const Path& poseFile);
 
     size_t                  m_numPoints;
     std::string             m_pointPrefix;
