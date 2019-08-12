@@ -41,6 +41,7 @@
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/DataStruct.hpp"
 
+#include "lvr2/registration/TransformUtils.hpp"
 #include "lvr2/registration/ICPPointAlign.hpp"
 
 #include "lvr2/util/Util.hpp"
@@ -430,6 +431,11 @@ void LVRMainWindow::showBackgroundDialog()
 
 void LVRMainWindow::setupQVTK()
 {
+    // z buffer fix
+    QSurfaceFormat surfaceFormat = qvtkWidget->windowHandle()->format();
+    surfaceFormat.setStencilBufferSize(8);
+    qvtkWidget->windowHandle()->setFormat(surfaceFormat);
+
     // Grab relevant entities from the qvtk widget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
 
@@ -764,58 +770,64 @@ void LVRMainWindow::exportSelectedModel()
 
 void LVRMainWindow::alignPointClouds()
 {
-    Matrix4<Vec> mat = m_correspondanceDialog->getTransformation();
-    QString name = m_correspondanceDialog->getDataName();
+    QString dataName = m_correspondanceDialog->getDataName();
     QString modelName = m_correspondanceDialog->getModelName();
 
     PointBufferPtr modelBuffer = m_treeWidgetHelper->getPointBuffer(modelName);
-    PointBufferPtr dataBuffer  = m_treeWidgetHelper->getPointBuffer(name);
+    PointBufferPtr dataBuffer  = m_treeWidgetHelper->getPointBuffer(dataName);
 
-    float pose[6];
-    LVRModelItem* item = m_treeWidgetHelper->getModelItem(name);
-
-    if(item)
-    {
-        mat.toPostionAngle(pose);
-
-        // Pose ist in radians, so we need to convert p to degrees
-        // to achieve consistency
-        Pose p;
-        p.x = pose[0];
-        p.y = pose[1];
-        p.z = pose[2];
-        p.r = pose[3]  * 57.295779513;
-        p.t = pose[4]  * 57.295779513;
-        p.p = pose[5]  * 57.295779513;
-        item->setPose(p);
+    LVRModelItem* dataItem = m_treeWidgetHelper->getModelItem(dataName);
+    LVRModelItem* modelItem = m_treeWidgetHelper->getModelItem(modelName);
+    if (!dataItem || !modelItem) {
+        return;
     }
 
-    updateView();
+    Pose dataPose = dataItem->getPose();
+    Eigen::Vector3f pos(dataPose.x, dataPose.y, dataPose.z);
+    Eigen::Vector3f angles(dataPose.r, dataPose.t, dataPose.p);
+    angles *= M_PI / 180.0; // degrees -> radians
+    Eigen::Matrix4f mat = poseToMatrix(pos, angles);
+
+    boost::optional<Eigen::Matrix4f> correspondence = m_correspondanceDialog->getTransformation();
+    if (correspondence.is_initialized())
+    {
+        mat *= correspondence.get();
+        matrixToPose(mat, pos, angles);
+        angles *= 180.0 / M_PI; // radians -> degrees
+
+        dataItem->setPose(Pose {
+            pos.x(), pos.y(), pos.z(),
+            angles.x(), angles.y(), angles.z()
+        });
+
+        updateView();
+    }
+
     // Refine pose via ICP
     if(m_correspondanceDialog->doICP() && modelBuffer && dataBuffer)
     {
-        ICPPointAlign<BaseVector<float>> icp(modelBuffer, dataBuffer, mat);
+        Pose modelPose = modelItem->getPose();
+        pos = Eigen::Vector3f(modelPose.x, modelPose.y, modelPose.z);
+        angles = Eigen::Vector3f(modelPose.r, modelPose.t, modelPose.p);
+        angles /= 180.0 / M_PI;
+        Eigen::Matrix4f modelTransform = poseToMatrix(pos, angles);
+
+        /* TODO: convert to new ICPPointAlign
+
+        ICPPointAlign icp(modelBuffer, dataBuffer, modelTransform, mat);
         icp.setEpsilon(m_correspondanceDialog->getEpsilon());
         icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
         icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
-        Matrix4<Vec> refinedTransform = icp.match();
+        Matrix4d refinedTransform = icp.match();
 
-        cout << "Initial: " << mat << endl;
+        matrixToPose(refinedTransform, pos, angles);
+        angles *= M_PI / 180.0; // radians -> degrees
 
-        // Apply correction to initial estimation
-        //refinedTransform = mat * refinedTransform;
-        refinedTransform.toPostionAngle(pose);
-
-        cout << "Refined: " << refinedTransform << endl;
-
-        Pose p;
-        p.x = pose[0];
-        p.y = pose[1];
-        p.z = pose[2];
-        p.r = pose[3]  * 57.295779513;
-        p.t = pose[4]  * 57.295779513;
-        p.p = pose[5]  * 57.295779513;
-        item->setPose(p);
+        dataItem->setPose(Pose {
+            pos.x(), pos.y(), pos.z(),
+            angles.x(), angles.y(), angles.z()
+        });
+        */
     }
     m_correspondanceDialog->clearAllItems();
     updateView();
@@ -902,6 +914,54 @@ void LVRMainWindow::renameModelItem()
     }
 }
 
+LVRModelItem* LVRMainWindow::loadModelItem(QString name)
+{
+    // Load model and generate vtk representation
+    ModelPtr model = ModelFactory::readModel(name.toStdString());
+    ModelBridgePtr bridge(new LVRModelBridge(model));
+    bridge->addActors(m_renderer);
+
+    // Add item for this model to tree widget
+    QFileInfo info(name);
+    QString base = info.fileName();
+    LVRModelItem* item = new LVRModelItem(bridge, base);
+    this->treeWidget->addTopLevelItem(item);
+    item->setExpanded(true);
+
+    // Read Pose file
+    boost::filesystem::path poseFile = name.toStdString();
+    poseFile.replace_extension("pose");
+    if (boost::filesystem::exists(poseFile))
+    {
+        cout << "Found Pose file: " << poseFile << endl;
+        ifstream in;
+        in.open(poseFile.string());
+        lvr2::Pose pose;
+        in >> pose.x >> pose.y >> pose.z;
+        in >> pose.r >> pose.t >> pose.p;
+        item->setPose(pose);
+    }
+    else
+    {
+        poseFile.replace_extension("dat");
+        if (boost::filesystem::exists(poseFile))
+        {
+            cout << "Found Pose file: " << poseFile << endl;
+            Eigen::Matrix4f mat = getTransformationFromPose<float>(poseFile).transpose();
+            BaseVector<float> pos, angles;
+            getPoseFromMatrix<float>(pos, angles, mat);
+
+            angles *= 180.0 / M_PI; // radians -> degrees
+
+            item->setPose(Pose {
+                pos.x, pos.y, pos.z,
+                angles.x, angles.y, angles.z
+            });
+        }
+    }
+    return item;
+}
+
 void LVRMainWindow::loadModels(const QStringList& filenames)
 {
     if(filenames.size() > 0)
@@ -949,17 +1009,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
                 }
 
             } else {
-                // Load model and generate vtk representation
-                ModelPtr model = ModelFactory::readModel((*it).toStdString());
-                ModelBridgePtr bridge(new LVRModelBridge(model));
-                bridge->addActors(m_renderer);
-
-                // Add item for this model to tree widget
-                
-                LVRModelItem* item = new LVRModelItem(bridge, base);
-                this->treeWidget->addTopLevelItem(item);
-                item->setExpanded(true);
-                lastItem = item;
+                lastItem = loadModelItem(*it);
             }
 
             ++it;

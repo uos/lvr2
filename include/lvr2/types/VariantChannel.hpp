@@ -33,8 +33,10 @@ public:
      */
     template<class U>
     struct index_of_type {
-        static const std::size_t value = TupleIndex<U, types>::value;
+        static constexpr std::size_t value = TupleIndex<U, types>::value;
     };
+
+    static constexpr std::size_t num_types = std::tuple_size<types>::value;
 
     template <std::size_t N>
     using type_of_index = typename std::tuple_element<N, types>::type;
@@ -77,6 +79,7 @@ public:
         return os;
     }
 
+    VariantChannel<T...> clone() const;
     
 // Visitor Implementations
 protected:
@@ -117,14 +120,23 @@ protected:
         }
     };
 
+    struct CloneVisitor : public boost::static_visitor< VariantChannel<T...> >
+    {
+        template<typename U>
+        VariantChannel<T...> operator()(const Channel<U>& channel) const
+        {
+            return channel.clone();
+        }
+    };
+
     template <class T1, class... Types>
     struct TupleIndex<T1, std::tuple<T1, Types...>> {
-        static const std::size_t value = 0;
+        static constexpr std::size_t value = 0;
     };
 
     template <class T1, class U, class... Types>
     struct TupleIndex<T1, std::tuple<U, Types...>> {
-        static const std::size_t value = 1 + TupleIndex<T1, std::tuple<Types...>>::value;
+        static constexpr std::size_t value = 1 + TupleIndex<T1, std::tuple<Types...>>::value;
     };
 
 };

@@ -54,6 +54,7 @@ using namespace std;
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Matrix4.hpp"
+#include "lvr2/registration/TransformUtils.hpp"
 
 #ifdef LVR2_USE_PCL
 #include "lvr2/reconstruction/PCLFiltering.hpp"
@@ -100,7 +101,7 @@ int main(int argc, char** argv)
         exit(-1);
     }
 
-    Eigen::Matrix4d transform = getTransformationFromFrames(transformPath);
+    Eigen::Matrix4f transform = getTransformationFromFrames<float>(transformPath);
     //transform = inverseTransform(transform);
     Vector3f transform_position;
     Vector3f transform_angles;
@@ -276,9 +277,9 @@ int main(int argc, char** argv)
         {
             // Get transformation from file and transform
             std::cout << timestamp << "Transforming " << frames_in.string() << std::endl;
-            Eigen::Matrix4d registration = getTransformationFromFrames(frames_in);
+            Eigen::Matrix4f registration = getTransformationFromFrames<float>(frames_in);
             //registration *= transform;
-            Eigen::Matrix4d t_reg = transformRegistration(transform, registration);
+            Eigen::Matrix4f t_reg = transformRegistration<float>(transform, registration);
 
             std::cout << timestamp << "Writing transformed registration to " << frames_out.string() << std::endl;
             writeFrame(t_reg, frames_out);

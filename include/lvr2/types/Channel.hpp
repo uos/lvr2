@@ -23,8 +23,13 @@ public:
     Channel();
     Channel(size_t n, size_t width);
     Channel(size_t n, size_t width, DataPtr ptr);
+    
+
+    // clone
+    Channel<T> clone() const;
 
     ElementProxy<T> operator[](const unsigned& idx);
+    const ElementProxy<T> operator[](const unsigned& idx) const;
 
     size_t     width() const;
     size_t     numElements() const;
