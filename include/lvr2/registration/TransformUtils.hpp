@@ -159,6 +159,118 @@ Eigen::Matrix<T, 4, 4> poseToMatrix(const Eigen::Matrix<T, 3, 1>& position, cons
 template<typename T>
 void matrixToPose(const Eigen::Matrix<T, 4, 4>& mat, Eigen::Matrix<T, 3, 1>& position, Eigen::Matrix<T, 3, 1>& rotation);
 
+/**
+ * @brief Converts a transformation matrix that is used in riegl coordinate system into
+ *        a transformation matrix that is used in slam6d coordinate system.
+ *
+ * @param    in    The transformation matrix in riegl coordinate system
+ *
+ * @return The transformation matrix in slam6d coordinate system
+ */
+template <typename T>
+static Eigen::Matrix<T, 4, 4> rieglToSLAM6DTransform(const Eigen::Matrix<T, 4, 4>& in)
+{
+        Eigen::Matrix<T, 4, 4> ret;
+
+        ret(0) = in(5);
+        ret(1) = -in(9);
+        ret(2) = -in(1);
+        ret(3) = -in(13);
+        ret(4) = -in(6);
+        ret(5) = in(10);
+        ret(6) = in(2);
+        ret(7) = in(14);
+        ret(8) = -in(4);
+        ret(9) = in(8);
+        ret(10) = in(0);
+        ret(11) = in(12);
+        ret(12) = -100*in(7);
+        ret(13) = 100*in(11);
+        ret(14) = 100*in(3);
+        ret(15) = in(15);
+
+        return ret;
+}
+
+/**
+ * @brief Converts a transformation matrix that is used in slam6d coordinate system into
+ *        a transformation matrix that is used in riegl coordinate system.
+ *
+ * @param    in    The transformation matrix in slam6d coordinate system
+ *
+ * @return The transformation matrix in riegl coordinate system
+ */
+template <typename T>
+static Eigen::Matrix<T, 4, 4> slam6dToRieglTransform(const Eigen::Matrix<T, 4, 4> &in)
+{
+        Eigen::Matrix<T, 4, 4> ret;
+
+        ret(0) = in(10);
+        ret(1) = -in(2);
+        ret(2) = in(6);
+        ret(3) = in(14)/100.0;
+        ret(4) = -in(8);
+        ret(5) = in(0);
+        ret(6) = -in(4);
+        ret(7) = -in(12)/100.0;
+        ret(8) = in(9);
+        ret(9) = -in(1);
+        ret(10) = in(5);
+        ret(11) = in(13)/100.0;
+        ret(12) = in(11);
+        ret(13) = -in(3);
+        ret(14) = in(7);
+        ret(15) = in(15);
+
+        return ret;
+}
+
+template <typename T>
+static Eigen::Matrix<T, 3, 1> slam6DToRieglPoint(const Eigen::Matrix<T, 3, 1> &in)
+{
+        return {
+                in.z   / (T) 100.0,
+                - in.x / (T) 100.0,
+                in.y   / (T) 100.0
+        };
+}
+
+template<typename T>
+void eigenToEuler(Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& mat, T* pose)
+{
+        T* m = mat.data();
+        if(pose != 0){
+                float _trX, _trY;
+                if(m[0] > 0.0) {
+                        pose[4] = asin(m[8]);
+                } else {
+                        pose[4] = (float)M_PI - asin(m[8]);
+                }
+                // rPosTheta[1] =  asin( m[8]);      // Calculate Y-axis angle
+
+                float  C    =  cos( pose[4] );
+                if ( fabs( C ) > 0.005 )  {          // Gimball lock?
+                        _trX      =  m[10] / C;          // No, so get X-axis angle
+                        _trY      =  -m[9] / C;
+                        pose[3]  = atan2( _trY, _trX );
+                        _trX      =  m[0] / C;           // Get Z-axis angle
+                        _trY      = -m[4] / C;
+                        pose[5]  = atan2( _trY, _trX );
+                } else {                             // Gimball lock has occurred
+                        pose[3] = 0.0;                   // Set X-axis angle to zero
+                        _trX      =  m[5];  //1          // And calculate Z-axis angle
+                        _trY      =  m[1];  //2
+                        pose[5]  = atan2( _trY, _trX );
+                }
+
+                // cout << pose[3] << " " << pose[4] << " " << pose[5] << endl;
+
+                pose[0] = m[12];
+                pose[1] = m[13];
+                pose[2] = m[14];
+        }
+}
+
 } // namespace lvr2
 
 #include "TransformUtils.tcc"

@@ -1669,7 +1669,7 @@ QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm
 {
     QTreeWidgetItem *lastItem = nullptr;
     std::vector<ScanData> scanData = sdm->getScanData();
-    std::vector<std::vector<CamData> > camData = sdm->getCamData();
+    std::vector<std::vector<CameraData> > camData = sdm->getCameraData();
 
     for (size_t i = 0; i < scanData.size(); i++)
     {

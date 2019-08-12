@@ -9,6 +9,8 @@
 #include <string>
 #include <iostream>
 
+#include <Eigen/Dense>
+
 namespace lvr2
 {
 
@@ -26,19 +28,19 @@ struct ScanData
 
 	~ScanData() {};
 
-    PointBufferPtr                      m_points;
-    Matrix4<BaseVector<float> >         m_registration;
-    Matrix4<BaseVector<float> >         m_poseEstimation;
-    BoundingBox<BaseVector<float> >     m_boundingBox;
+    PointBufferPtr                          m_points;
+    Eigen::Matrix<float, 4, 4, Eigen::RowMajor>   m_registration;
+    Eigen::Matrix<float, 4, 4, Eigen::RowMajor>   m_poseEstimation;
+    BoundingBox<BaseVector<float> >         m_boundingBox;
 
-    float                               m_hFieldOfView;
-    float                               m_vFieldOfView;
-    float                               m_hResolution;
-    float                               m_vResolution;
+    float                                   m_hFieldOfView;
+    float                                   m_vFieldOfView;
+    float                                   m_hResolution;
+    float                                   m_vResolution;
 
-    bool                                m_pointsLoaded;
-    int                                 m_positionNumber;
-    std::string                         m_scanDataRoot;
+    bool                                    m_pointsLoaded;
+    int                                     m_positionNumber;
+    std::string                             m_scanDataRoot;
 };
 
 

@@ -31,11 +31,12 @@
 #include "BaseIO.hpp"
 #include "DataStruct.hpp"
 #include "ScanData.hpp"
-#include "CalibrationParameters.hpp"
 
+#include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/io/AttributeMeshIOBase.hpp"
 #include "lvr2/geometry/Matrix4.hpp"
 #include "lvr2/types/CameraData.hpp"
+#include "lvr2/types/Hyperspectral.hpp"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -62,9 +63,6 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
 
     /**
          * \brief Parse the given file and load supported elements.
-         *#include <highfive/H5DataSet.hpp"
-#include <highfive/H5DataSpace.hpp"
-#include <highfive/H5File.hpp"
          * @param filename  The file to read.
          */
     virtual ModelPtr read(std::string filename);
@@ -126,11 +124,11 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
 
     ScanData    getSingleRawScanData(int nr, bool load_points = true);
 
-    CamData     getSingleRawCamData(int scan_id, int img_id, bool load_image_data = true);
+    CameraData  getSingleRawCamData(int scan_id, int img_id, bool load_image_data = true);
 
     std::vector<ScanData> getRawScanData(bool load_points = true);
 
-    std::vector<std::vector<CamData> > getRawCamData(bool load_image_data = true);
+    std::vector<std::vector<CameraData> > getRawCamData(bool load_image_data = true);
 
     floatArr getFloatChannelFromRawScanData(std::string name,
             int nr, unsigned int& n, unsigned& w);
@@ -165,13 +163,13 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
     /**
      * @brief add recorded image referenced to a scan pose
      */
-    void addRawCamData( int scan_id, int img_id, CamData& cam_data );
+    void addRawCamData( int scan_id, int img_id, CameraData& cam_data );
 
     void addFloatChannelToRawScanData(std::string name, int nr, size_t n, unsigned w, floatArr data);
 
     void addRawDataHeader(std::string description, Matrix4<BaseVector<float>> &referenceFrame);
 
-    void addHyperspectralCalibration(int position, const HyperspectralCalibration& calibration);
+    void addHyperspectralCalibration(int position, const HyperspectralPanorama& hyperspectral);
 
     void setCompress(bool compress);
     void setChunkSize(const size_t& size);

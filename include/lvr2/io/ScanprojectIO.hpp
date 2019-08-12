@@ -53,9 +53,9 @@ using Vec = BaseVector<float>;
 struct ImageFile
 {
     /// transformation matrix
-    Matrix4<Vec> orientation_transform;
+    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> orientation_transform;
     /// transformation matrix
-    Matrix4<Vec> extrinsic_transform;
+    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> extrinsic_transform;
 
     /// path to image
     fs::path image_file;
@@ -73,9 +73,9 @@ struct ImageFile
 struct ScanPosition
 {
     /// file path for pointcloud data
-    fs::path               scan_file;
+    fs::path scan_file;
     /// transformation  matrix from scan position space to scan project space
-    Matrix4<Vec>           transform;
+    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> transform;
     /// a vector with image informations for this scanposition
     std::vector<ImageFile> images;
 };

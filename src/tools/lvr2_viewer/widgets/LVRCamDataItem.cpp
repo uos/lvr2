@@ -25,7 +25,7 @@ namespace lvr2
 {
 
 LVRCamDataItem::LVRCamDataItem(
-    CamData data,
+    CameraData data,
     std::shared_ptr<ScanDataManager> sdm,
     size_t cam_id,
     vtkSmartPointer<vtkRenderer> renderer,
@@ -46,19 +46,16 @@ LVRCamDataItem::LVRCamDataItem(
 
     // change this to not inverse
     bool dummy;
-    m_matrix = m_data.m_extrinsics; //.inv(dummy);
+    m_matrix = m_data.extrinsics; //.inv(dummy);
 
     // set Transform from 
     setTransform(m_matrix);
 
-    m_intrinsics = m_data.m_intrinsics;
+    m_intrinsics = m_data.intrinsics;
 
     // init pose
     float pose[6];
-    m_data.m_extrinsics.transpose();
-    m_data.m_extrinsics.toPostionAngle(pose);
-    m_data.m_extrinsics.transpose();
-    
+    eigenToEuler<float>(m_data.extrinsics, pose);
 
     m_pose.x = pose[0];
     m_pose.y = pose[1];
@@ -97,9 +94,9 @@ void LVRCamDataItem::setVisibility(bool visible)
     }
 }
 
-Matrix4<BaseVector<float> > LVRCamDataItem::getGlobalTransform()
+Eigen::Matrix<float, 4, 4, Eigen::RowMajor> LVRCamDataItem::getGlobalTransform()
 {
-    Matrix4<BaseVector<float> > ret = m_matrix;
+    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> ret = m_matrix;
     QTreeWidgetItem* parent_it = parent();
 
     while(parent_it != NULL)
@@ -123,7 +120,7 @@ void LVRCamDataItem::setCameraView()
     double x,y,z;
     cam->GetPosition(x,y,z);
 
-    Matrix4<BaseVector<float> > T = getGlobalTransform();
+    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> T = getGlobalTransform();
 
     T.transpose();
 
@@ -148,18 +145,17 @@ void LVRCamDataItem::setCameraView()
 
 std::vector<BaseVector<float> > LVRCamDataItem::genFrustrumLVR(float scale)
 {
-    bool dummy;
-    Matrix4<BaseVector<float> > T = getGlobalTransform();
-    Matrix4<BaseVector<float> > cam_mat_inv = m_intrinsics.inv(dummy);
+    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> T = getGlobalTransform();
+    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> cam_mat_inv = m_intrinsics.inverse();
     cam_mat_inv.transpose();
     T.transpose();
 
     std::vector<BaseVector<float> > lvr_pixels;
 
     // TODO change this. get size of image
-
-    int v_max = m_intrinsics[2] * 2;
-    int u_max = m_intrinsics[6] * 2;
+    const float* arr = m_intrinsics.data();
+    int v_max = arr[2] * 2;
+    int u_max = arr[6] * 2;
 
     // top left
     lvr_pixels.push_back({0.0, 0.0, 1.0});

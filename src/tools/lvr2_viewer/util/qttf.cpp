@@ -6,13 +6,13 @@ namespace lvr2 {
 
 namespace qttf {
 
-Matrix4<BaseVector<float> > getTransformation(
+Eigen::Matrix4f getTransformation(
     QTreeWidgetItem* from,
     QTreeWidgetItem* to
 )
 {
     // default identity
-    Matrix4<BaseVector<float> > ret;
+    Eigen::Matrix4f ret = Eigen::Matrix4f::Identity();
 
     QTreeWidgetItem* it = from;
 
@@ -31,13 +31,13 @@ Matrix4<BaseVector<float> > getTransformation(
 
 PointBufferPtr transform(
     PointBufferPtr pc_in,
-    const Matrix4<BaseVector<float> > T
+    const Eigen::Matrix4f& T
 )
 {
     // generate copy
     PointBufferPtr buffer_ptr = std::make_shared<PointBuffer>(pc_in->clone());
     
-    Matrix4<BaseVector<float> > T_trans = T;
+    Eigen::Matrix4f T_trans = T;
     T_trans.transpose();
 
     // 1) transform points

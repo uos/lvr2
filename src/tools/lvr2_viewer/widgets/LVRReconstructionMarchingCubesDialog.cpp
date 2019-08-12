@@ -26,6 +26,9 @@
  */
 
 #include <QFileDialog>
+
+#include <Eigen/Dense>
+
 #include "LVRReconstructionMarchingCubesDialog.hpp"
 #include "LVRItemTypes.hpp"
 
@@ -206,7 +209,7 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
 
     PointBufferPtr pc_buffer = m_pc->getPointBuffer();
     
-    Matrix4<Vec> T = qttf::getTransformation(m_pc, NULL);
+    Eigen::Matrix4f T = qttf::getTransformation(m_pc, NULL);
     std::cout << T << std::endl;
 
     pc_buffer = qttf::transform(pc_buffer, T);

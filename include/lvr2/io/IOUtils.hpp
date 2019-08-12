@@ -91,6 +91,15 @@ Eigen::Matrix<T, 4, 4> getTransformationFromPose(const boost::filesystem::path& 
 template<typename T>
 Eigen::Matrix<T, 4, 4> getTransformationFromDat(const boost::filesystem::path& frames);
 
+/**
+ * @brief               Reads an Eigen 4x4 matrix from the given file (16 coefficients, row major)
+ * 
+ * @tparam T            Scalar type of the created Eigen matrix
+ * @param file          A file with serialized matrix data
+ */
+template<typename T>
+Eigen::Matrix<T, 4, 4> loadFromFile(const boost::filesystem::path& file);
+
 
 /***
  * @brief   Counts the number of points (i.e., lines) in the given file. We

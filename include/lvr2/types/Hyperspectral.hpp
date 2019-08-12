@@ -5,6 +5,9 @@
 
 #include <opencv2/core.hpp>
 
+namespace lvr2
+{
+
 /**
  * @brief   Struct to hold hyperspectral a hyperspectral panorama
  *          cube and corresponding model parameters to align it 
@@ -13,7 +16,11 @@
 struct HyperspectralPanorama
 {
     /// Distortion
-    float   distortion;
+    float   distortion1;
+
+    float   distortion2;
+
+    float   distortion3;
 
     /// Origin x
     float   ox;
@@ -44,14 +51,26 @@ struct HyperspectralPanorama
     /// the last channel
     float   wmax;
 
+    /// Rotation x
+    float   rx;
+
+    /// Rotation y
+    float   ry;
+
+    /// Rotation z
+    float   rz;
+
     /// Vector of intensity (greyscale) images, one for each
     /// channel
     std::vector<cv::Mat> channels;
 
     HyperspectralPanorama() :
-        distortion(0.0f), ox(0.0f), oy(0.0f), oz(0.0f),
+        distortion1(0.0f), distortion2(0.0f), distortion3(0.0f), 
+        ox(0.0f), oy(0.0f), oz(0.0f),
         p1(0.0f), p2(0.0f), fovh((0.0f)), fovv(0.0f),
         wmin(0.0f), wmax(0.0f) {}
-}
+};
+
+} // namespace lvr2
 
 #endif

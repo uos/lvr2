@@ -120,4 +120,17 @@ void writeFrame(const Eigen::Matrix<T, 4, 4>& transform, const boost::filesystem
     out.close();
 }
 
+template<typename T>
+Eigen::Matrix<T, 4, 4> loadFromFile(const boost::filesystem::path& file)
+{
+    Eigen::Matrix<T, 4, 4> m;
+    T arr[16];
+    std::ifstream in(file.string());
+    for(size_t i = 0; i < 16; i++)
+    {
+        in >> arr[i];
+    }
+    return Eigen::Map<Eigen::Matrix<T, 4, 4, Eigen::RowMajor>>(arr);
+}
+
 } // namespace lvr2

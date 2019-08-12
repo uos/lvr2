@@ -88,7 +88,7 @@ public:
     void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
 
     void        setPose(const Pose& pose);
-    void        setTransform(const Matrix4<BaseVector<float> >& transform);
+    void        setTransform(const Eigen::Matrix<float, 4, 4, Eigen::RowMajor>& transform);
 
     Pose        getPose();
 
