@@ -5,6 +5,7 @@ namespace lvr2
 
 ScanDataManager::ScanDataManager(std::string filename) : m_io(filename)
 {
+    
 }
 
 void ScanDataManager::loadPointCloudData(ScanData& sd, bool preview)

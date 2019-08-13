@@ -987,7 +987,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
                 icon.addFile(QString::fromUtf8(":/qv_scandata_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
                 root->setIcon(0, icon);
 
-                std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(base.toStdString()));
+                std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(info.absoluteFilePath().toStdString()));
 
                 lastItem = addScanData(sdm, root);
 
@@ -995,7 +995,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 
                 // load mesh only
                 ModelPtr model_ptr(new Model());
-                std::shared_ptr<HDF5IO> h5_io_ptr(new HDF5IO(base.toStdString()));
+                std::shared_ptr<HDF5IO> h5_io_ptr(new HDF5IO(info.absoluteFilePath().toStdString()));
                 if(h5_io_ptr->readMesh(model_ptr))
                 {
                     ModelBridgePtr bridge(new LVRModelBridge(model_ptr));
@@ -1677,22 +1677,22 @@ QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm
         std::sprintf(buf, "%05d", scanData[i].m_positionNumber);
         LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
 
-        if(camData[i].size() > 0)
-        {
-            QTreeWidgetItem* cameras_item = new QTreeWidgetItem(item, LVRCamerasItemType);
-            cameras_item->setText(0, QString("Photos"));
-            // insert cam poses
-            // QTreeWidgetItem *images = new QTreeWidgetItem(item, QString("cams"));
-            for(int j=0; j < camData[i].size(); j++)
-            {
-                char buf2[128];
-                std::sprintf(buf2, "%05d", j);
-                // implement this
-                LVRCamDataItem *cam_item = new LVRCamDataItem(camData[i][j], sdm, j, m_renderer, QString("photo_") + buf2, cameras_item);
+        // if(camData[i].size() > 0)
+        // {
+        //     QTreeWidgetItem* cameras_item = new QTreeWidgetItem(item, LVRCamerasItemType);
+        //     cameras_item->setText(0, QString("Photos"));
+        //     // insert cam poses
+        //     // QTreeWidgetItem *images = new QTreeWidgetItem(item, QString("cams"));
+        //     for(int j=0; j < camData[i].size(); j++)
+        //     {
+        //         char buf2[128];
+        //         std::sprintf(buf2, "%05d", j);
+        //         // implement this
+        //         LVRCamDataItem *cam_item = new LVRCamDataItem(camData[i][j], sdm, j, m_renderer, QString("photo_") + buf2, cameras_item);
 
-                lastItem = cam_item;
-            }
-        }
+        //         lastItem = cam_item;
+        //     }
+        // }
 
 
         lastItem = item;
