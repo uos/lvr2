@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CAMDATA_HPP_
-#define CAMDATA_HPP_
+#ifndef __CAMERADATA_HPP__
+#define __CAMERADATA_HPP__
 
 #include <Eigen/Dense>
 #include <opencv2/core.hpp>
