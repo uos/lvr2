@@ -29,7 +29,7 @@
 /* #include "lvr2/algorithm/CleanupAlgorithms.hpp" */
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
-#include "lvr2/algorithm/ReductionAlgorithms.hpp"
+/* #include "lvr2/algorithm/ReductionAlgorithms.hpp" */
 #include "lvr2/algorithm/Tesselator.hpp"
 #include "lvr2/algorithm/UtilAlgorithms.hpp"
 #include "lvr2/io/DataStruct.hpp"
