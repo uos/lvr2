@@ -26,7 +26,7 @@
  */
 
 #include "LargeScaleOptions.hpp"
-#include "lvr2/algorithm/CleanupAlgorithms.hpp"
+/* #include "lvr2/algorithm/CleanupAlgorithms.hpp" */
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/algorithm/ReductionAlgorithms.hpp"
@@ -456,7 +456,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         // =======================================================================
         // Optimize mesh
         // =======================================================================
-        if (options.getDanglingArtifacts())
+        /*if (options.getDanglingArtifacts())
         {
             cout << timestamp << "Removing dangling artifacts" << endl;
             removeDanglingCluster(mesh, static_cast<size_t>(options.getDanglingArtifacts()));
@@ -469,7 +469,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         if (options.getFillHoles())
         {
             naiveFillSmallHoles(mesh, options.getFillHoles(), false);
-        }
+        }*/
 
         // Calculate normals for vertices
         auto faceNormals = calcFaceNormals(mesh);
