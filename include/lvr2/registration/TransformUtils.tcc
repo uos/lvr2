@@ -36,7 +36,7 @@ namespace lvr2
 {
 
 template<typename T>
-void getPoseFromMatrix(BaseVector<T>& position, BaseVector<T>& angles, const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& mat)
+void getPoseFromMatrix(BaseVector<T>& position, BaseVector<T>& angles, const Transform<T>& mat)
 {
     double m[16];
 
@@ -92,17 +92,17 @@ void getPoseFromMatrix(BaseVector<T>& position, BaseVector<T>& angles, const Eig
 }
 
 template<typename T>
-Eigen::Matrix<T, 4, 4, Eigen::RowMajor> transformRegistration(const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& transform, const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& registration)
+Transform<T> transformRegistration(const Transform<T>& transform, const Transform<T>& registration)
 {
-    Eigen::Matrix<T, 3, 3> rotation_trans;
-    Eigen::Matrix<T, 3, 3> rotation_registration;
+    Rotation<T> rotation_trans;
+    Rotation<T> rotation_registration;
 
     rotation_trans = transform.template block<3,3>(0, 0);
     rotation_registration = registration.template block<3,3>(0, 0);
 
-    Eigen::Matrix<T, 3, 3> rotation = rotation_trans * rotation_registration;
+    Rotation<T> rotation = rotation_trans * rotation_registration;
 
-    Eigen::Matrix<T, 4, 4> result = Eigen::Matrix<T, 4, 4>::Identity();
+    Transform<T> result = Eigen::Matrix<T, 4, 4>::Identity();
     result.template block<3,3>(0, 0) = rotation;
 
     Eigen::Matrix<T, 3, 1> tmp;
@@ -116,9 +116,9 @@ Eigen::Matrix<T, 4, 4, Eigen::RowMajor> transformRegistration(const Eigen::Matri
 }
 
 template<typename T>
-Eigen::Matrix<T,4,4, Eigen::RowMajor> buildTransformation(T* alignxf)
+Transform<T> buildTransformation(T* alignxf)
 {
-    Eigen::Matrix<T,3,3> rotation;
+    Rotation<T> rotation;
     Eigen::Matrix<T,4,1> translation;
 
     rotation  << alignxf[0],  alignxf[4],  alignxf[8],
@@ -127,7 +127,7 @@ Eigen::Matrix<T,4,4, Eigen::RowMajor> buildTransformation(T* alignxf)
 
     translation << alignxf[12], alignxf[13], alignxf[14], 1.0;
 
-    Eigen::Matrix<T, 4, 4> transformation;
+    Transform<T> transformation;
     transformation.setIdentity();
     transformation.template block<3,3>(0,0) = rotation;
     transformation.template rightCols<1>() = translation;
@@ -247,7 +247,7 @@ void transformPointCloud(ModelPtr model, const Eigen::Matrix<T, 4, 4, Eigen::Row
 }
 
 template<typename T>
-Eigen::Matrix<T, 4, 4> transformFrame(const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& frame, const CoordinateTransform<T>& ct)
+Transform<T> transformFrame(const Transform<T>& frame, const CoordinateTransform<T>& ct)
 {
     Eigen::Matrix<T, 3, 3> basisTrans;
     Eigen::Matrix<T, 3, 3> reflection;
@@ -298,7 +298,7 @@ Eigen::Matrix<T, 4, 4> transformFrame(const Eigen::Matrix<T, 4, 4, Eigen::RowMaj
 }
 
 template<typename T>
-Eigen::Matrix<T, 4, 4, Eigen::RowMajor> inverseTransform(const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& transform)
+Transform<T> inverseTransform(const Transform<T>& transform)
 {
     Eigen::Matrix<T, 3, 3> rotation = transform.template block<3, 3>(0, 0);
     rotation.transposeInPlace();
@@ -315,7 +315,7 @@ Eigen::Matrix<T, 4, 4, Eigen::RowMajor> inverseTransform(const Eigen::Matrix<T, 
 }
 
 template<typename T>
-Eigen::Matrix<T, 4, 4, Eigen::RowMajor> poseToMatrix(const Eigen::Matrix<T, 3, 1>& position, const Eigen::Matrix<T, 3, 1>& rotation)
+Transform<T> poseToMatrix(const Eigen::Matrix<T, 3, 1>& position, const Eigen::Matrix<T, 3, 1>& rotation)
 {
     Eigen::Matrix<T, 4, 4> mat = Eigen::Matrix<T, 4, 4>::Identity();
     mat.template block<3, 3>(0, 0) =  Eigen::AngleAxis<T>(rotation.x(), Eigen::Matrix<T, 3, 1>::UnitX()).matrix()
@@ -327,7 +327,7 @@ Eigen::Matrix<T, 4, 4, Eigen::RowMajor> poseToMatrix(const Eigen::Matrix<T, 3, 1
 }
 
 template<typename T>
-void matrixToPose(const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& mat, Eigen::Matrix<T, 3, 1>& position, Eigen::Matrix<T, 3, 1>& rotation)
+void matrixToPose(const Transform<T>& mat, Eigen::Matrix<T, 3, 1>& position, Eigen::Matrix<T, 3, 1>& rotation)
 {
     // Calculate Y-axis angle
     if (mat(0, 0) > 0.0)

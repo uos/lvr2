@@ -66,7 +66,7 @@ class LVRCamDataItem : public QTreeWidgetItem, public Transformable
          *          
          * @return  Returns the Transformation as type lvr2::Matrix4
          */
-        Eigen::Matrix<float, 4, 4, Eigen::RowMajor> getGlobalTransform();
+        Transformd getGlobalTransform();
 
         std::vector<BaseVector<float> > genFrustrumLVR(float scale=1.0);
 
@@ -81,8 +81,8 @@ class LVRCamDataItem : public QTreeWidgetItem, public Transformable
         Pose                                    m_pose;
         LVRPoseItem*                            m_pItem;
         LVRCvImageItem*                         m_cvItem;
-        Eigen::Matrix<float, 4, 4, Eigen::RowMajor> m_matrix;
-        Eigen::Matrix<float, 4, 4, Eigen::RowMajor> m_intrinsics;
+        Transformd                              m_matrix;
+        Intrinsicsd                             m_intrinsics;
 
         vtkSmartPointer<vtkActor>               m_frustrum_actor;
         vtkSmartPointer<vtkRenderer>            m_renderer;

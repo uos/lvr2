@@ -70,7 +70,7 @@ class LVRScanDataItem : public QTreeWidgetItem, public Transformable
         LVRPointCloudItem                      *m_pcItem;
         LVRPoseItem                            *m_pItem;
         QTreeWidgetItem                        *m_showSpectralsItem;
-        Eigen::Matrix<float, 4, 4, Eigen::RowMajor>                         m_matrix;
+        Transformd                              m_matrix;
         vtkSmartPointer<vtkRenderer>            m_renderer;
 
 };

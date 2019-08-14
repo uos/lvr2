@@ -447,7 +447,7 @@ void LVRCorrespondanceDialog::treeItemSelected(QTreeWidgetItem* current, QTreeWi
     Q_EMIT(render());
 }
 
-boost::optional<Eigen::Matrix<float, 4, 4, Eigen::RowMajor>> LVRCorrespondanceDialog::getTransformation()
+boost::optional<Transformf> LVRCorrespondanceDialog::getTransformation()
 {
     std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> pairs;
     Eigen::Vector3f centroid_m = Eigen::Vector3f::Zero();
@@ -482,7 +482,7 @@ boost::optional<Eigen::Matrix<float, 4, 4, Eigen::RowMajor>> LVRCorrespondanceDi
         centroid_m /= pairs.size();
         centroid_d /= pairs.size();
 
-        Eigen::Matrix<float, 4, 4, Eigen::RowMajor> matrix;
+        Transformf matrix;
         EigenSVDPointAlign<float> align;
         align.alignPoints(pairs, centroid_m, centroid_d, matrix);
 

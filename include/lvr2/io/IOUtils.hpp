@@ -32,6 +32,7 @@
 #include "lvr2/io/Model.hpp"
 #include "lvr2/io/CoordinateTransform.hpp"
 #include "lvr2/registration/TransformUtils.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 
 #include <boost/filesystem.hpp>
 
@@ -75,21 +76,21 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
  *          represented in the given frame file.
  */
 template<typename T>
-Eigen::Matrix<T, 4, 4, Eigen::RowMajor> getTransformationFromFrames(const boost::filesystem::path& frames);
+Transform<T> getTransformationFromFrames(const boost::filesystem::path& frames);
 
 /**
  * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
  *          represented in the given pose file.
  */
 template<typename T>
-Eigen::Matrix<T, 4, 4, Eigen::RowMajor> getTransformationFromPose(const boost::filesystem::path& pose);
+Transform<T> getTransformationFromPose(const boost::filesystem::path& pose);
 
 /**
  * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
  *          represented in the given dat file.
  */
 template<typename T>
-Eigen::Matrix<T, 4, 4, Eigen::RowMajor> getTransformationFromDat(const boost::filesystem::path& frames);
+Transform<T> getTransformationFromDat(const boost::filesystem::path& frames);
 
 /**
  * @brief               Reads an Eigen 4x4 matrix from the given file (16 coefficients, row major)
@@ -98,12 +99,15 @@ Eigen::Matrix<T, 4, 4, Eigen::RowMajor> getTransformationFromDat(const boost::fi
  * @param file          A file with serialized matrix data
  */
 template<typename T>
-Eigen::Matrix<T, 4, 4, Eigen::RowMajor> loadFromFile(const boost::filesystem::path& file);
+Eigen::Matrix<T, 4, 4> loadFromFile(const boost::filesystem::path& file);
 
 
-/***
- * @brief   Counts the number of points (i.e., lines) in the given file. We
- *          assume that it is an plain ASCII with one point per line.
+/**
+ * @brief               Counts the number of points (i.e. number of lines)
+ *                      in the given file
+ * 
+ * @param inFile        An ASCII file containing point cloud data (one point per line)
+ * @return size_t       Number of points in file
  */
 size_t countPointsInFile(boost::filesystem::path& inFile);
 
@@ -114,7 +118,7 @@ size_t countPointsInFile(boost::filesystem::path& inFile);
  * @param   framesOut   The target file.
  */
 template<typename T>
-void writeFrame(const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& transform, const boost::filesystem::path& framesOut);
+void writeFrame(const Transform<T>& transform, const boost::filesystem::path& framesOut);
 
 /**
  * @brief               Writes pose information in Euler representation to the given file

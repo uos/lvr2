@@ -24,8 +24,8 @@ LVRScanDataItem::LVRScanDataItem(
 
 
     // init pose
-    float pose[6];
-    eigenToEuler<float>(m_data.m_registration, pose);
+    double pose[6];
+    eigenToEuler<double>(m_data.m_registration, pose);
 
     m_matrix = m_data.m_registration;
 

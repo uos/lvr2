@@ -37,6 +37,8 @@
 #include "KDTree.hpp"
 #include "Scan.hpp"
 
+#include "lvr2/types/MatrixTypes.hpp"
+
 namespace lvr2
 {
 
@@ -45,7 +47,7 @@ class ICPPointAlign
 public:
     ICPPointAlign(ScanPtr model, ScanPtr data);
 
-    Eigen::Matrix<double, 4, 4, Eigen::RowMajor> match();
+    Transformd match();
 
     virtual ~ICPPointAlign() = default;
 

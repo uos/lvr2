@@ -99,14 +99,14 @@ void LVRModelBridge::setPose(const Pose& pose)
 
 }
 
-void LVRModelBridge::setTransform(const Eigen::Matrix<float, 4, 4, Eigen::RowMajor> &transform)
+void LVRModelBridge::setTransform(const Transformd &transform)
 {
     vtkSmartPointer<vtkTransform> t = vtkSmartPointer<vtkTransform>::New();
     vtkSmartPointer<vtkMatrix4x4> m = vtkSmartPointer<vtkMatrix4x4>::New();
 
     // For some reason we have to copy the matrix
     // values manually...
-    const float* arr = transform.data();
+    const double* arr = transform.data();
     int j = 0;
     for(int i = 0; i < 16; i++)
     {

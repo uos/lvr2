@@ -36,8 +36,6 @@
 namespace lvr2
 {
 
-template BaseVector<float> operator*<float, float>(const Eigen::Matrix<float, 4, 4, 1, 4, 4>&, const lvr2::BaseVector<float>&);
-
 const std::string HDF5IO::vertices_name = "vertices";
 const std::string HDF5IO::indices_name = "indices";
 const std::string HDF5IO::meshes_group = "meshes";
@@ -163,7 +161,7 @@ bool HDF5IO::readPointCloud(ModelPtr model_ptr)
         size_t num_points = scans[i].m_points->numPoints();
         floatArr pts = scans[i].m_points->getPointArray();
 
-        Eigen::Matrix<float, 4, 4, Eigen::RowMajor> T = scans[i].m_poseEstimation;
+        Transformd T = scans[i].m_poseEstimation;
         T.transpose();
 
         BaseVector<float>* begin = reinterpret_cast<BaseVector<float>* >(pts.get());
@@ -492,11 +490,11 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
         std::string spectralGroupName = "/annotation/" + nr_str;
 
         unsigned int dummy;
-        floatArr fov           = getArray<float>(groupName, "fov", dummy);
-        floatArr res           = getArray<float>(groupName, "resolution", dummy);
-        floatArr pose_estimate = getArray<float>(groupName, "initialPose", dummy);
-        floatArr registration  = getArray<float>(groupName, "finalPose", dummy);
-        floatArr bb            = getArray<float>(groupName, "boundingBox", dummy);
+        floatArr fov            = getArray<float>(groupName, "fov", dummy);
+        floatArr res            = getArray<float>(groupName, "resolution", dummy);
+        doubleArr pose_estimate = getArray<double>(groupName, "initialPose", dummy);
+        doubleArr registration  = getArray<double>(groupName, "finalPose", dummy);
+        floatArr bb             = getArray<float>(groupName, "boundingBox", dummy);
 
         if (load_points || m_usePreviews)
         {
@@ -538,12 +536,12 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
 
         if (registration)
         {
-            ret.m_registration = Eigen::Map<Eigen::Matrix<float, 4, 4, Eigen::RowMajor>>(registration.get());
+            ret.m_registration = Transformd(registration.get());
         }
 
         if (pose_estimate)
         {
-            ret.m_poseEstimation = Eigen::Map<Eigen::Matrix<float, 4, 4, Eigen::RowMajor>>(pose_estimate.get());
+            ret.m_poseEstimation = Transformd(pose_estimate.get());
         }
 
         if (bb)
@@ -592,17 +590,17 @@ CameraData HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_
         }
 
         unsigned int dummy;
-        floatArr intrinsics_arr = getArray<float>(groupName, "intrinsics", dummy);
-        floatArr extrinsics_arr = getArray<float>(groupName, "extrinsics", dummy);
+        doubleArr intrinsics_arr = getArray<double>(groupName, "intrinsics", dummy);
+        doubleArr extrinsics_arr = getArray<double>(groupName, "extrinsics", dummy);
         
         if(intrinsics_arr)
         {
-            ret.intrinsics = Eigen::Map<Eigen::Matrix<float, 4, 4, Eigen::RowMajor>>(intrinsics_arr.get());
+            ret.intrinsics = Transformd(intrinsics_arr.get());
         }
 
         if(extrinsics_arr)
         {
-            ret.extrinsics = Eigen::Map<Eigen::Matrix<float, 4, 4, Eigen::RowMajor>>(extrinsics_arr.get());
+            ret.extrinsics = Transformd(extrinsics_arr.get());
         }
 
         if(load_image_data)

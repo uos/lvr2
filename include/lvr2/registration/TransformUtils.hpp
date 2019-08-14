@@ -35,6 +35,7 @@
  *  @author Thomas Wiemann
  */
 
+#include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/io/Model.hpp"
 #include "lvr2/io/CoordinateTransform.hpp"
 
@@ -51,7 +52,7 @@ namespace lvr2
  * @param  mat          The transformation matrix
  */
 template<typename T>
-void getPoseFromMatrix(BaseVector<T>& position, BaseVector<T>& angles, const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& mat);
+void getPoseFromMatrix(BaseVector<T>& position, BaseVector<T>& angles, const Transform<T>& mat);
 
 /**
  * @brief Transforms a registration matrix according to the given
@@ -62,13 +63,13 @@ void getPoseFromMatrix(BaseVector<T>& position, BaseVector<T>& angles, const Eig
  * @return Eigen::Matrix4d      The transformed registration matrix
  */
 template<typename T>
-Eigen::Matrix<T, 4, 4, Eigen::RowMajor> transformRegistration(const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& transform, const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& registration);
+Transform<T> transformRegistration(const Transform<T>& transform, const Transform<T>& registration);
 
 /**
  * @brief   Transforms an slam6d transformation matrix into an Eigen 4x4 matrix.
  */
 template<typename T>
-Eigen::Matrix<T, 4, 4, Eigen::RowMajor> buildTransformation(T* alignxf);
+Transform<T> buildTransformation(T* alignxf);
 
 /**
  * @brief   Transforms (scale and switch coordinates) and reduces a model
@@ -125,7 +126,7 @@ void transformPointCloud(ModelPtr model, const Eigen::Matrix<T, 4, 4, Eigen::Row
  * @return                  The transformed frame
  */
 template<typename T>
-Eigen::Matrix<T, 4, 4, Eigen::RowMajor> transformFrame(const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& frame, const CoordinateTransform<T>& ct);
+Transform<T> transformFrame(const Transform<T>& frame, const CoordinateTransform<T>& ct);
 
 /**
  * @brief    Computes the inverse transformation from the given 
@@ -137,7 +138,7 @@ Eigen::Matrix<T, 4, 4, Eigen::RowMajor> transformFrame(const Eigen::Matrix<T, 4,
  * @return Eigen::Matrix4d      The inverse transformation
  */
 template<typename T>
-Eigen::Matrix<T, 4, 4, Eigen::RowMajor> inverseTransform(const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& transform);
+Transform<T> inverseTransform(const Transform<T>& transform);
 
 /**
  * @brief   Converts a Pose to a Matrix.
@@ -147,7 +148,7 @@ Eigen::Matrix<T, 4, 4, Eigen::RowMajor> inverseTransform(const Eigen::Matrix<T, 
  * @return          The Matrix representation of the Pose
  */
 template<typename T>
-Eigen::Matrix<T, 4, 4, Eigen::RowMajor> poseToMatrix(const Eigen::Matrix<T, 3, 1>& position, const Eigen::Matrix<T, 3, 1>& rotation);
+Transform<T> poseToMatrix(const Eigen::Matrix<T, 3, 1>& position, const Eigen::Matrix<T, 3, 1>& rotation);
 
 /**
  * @brief   Extracts the Pose from a Matrix
@@ -157,7 +158,7 @@ Eigen::Matrix<T, 4, 4, Eigen::RowMajor> poseToMatrix(const Eigen::Matrix<T, 3, 1
  * @param rotation  Output for the rotation in radians
  */
 template<typename T>
-void matrixToPose(const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& mat, Eigen::Matrix<T, 3, 1>& position, Eigen::Matrix<T, 3, 1>& rotation);
+void matrixToPose(const Transform<T>& mat, Eigen::Matrix<T, 3, 1>& position, Eigen::Matrix<T, 3, 1>& rotation);
 
 /**
  * @brief Converts a transformation matrix that is used in riegl coordinate system into
@@ -168,9 +169,9 @@ void matrixToPose(const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& mat, Eigen::Mat
  * @return The transformation matrix in slam6d coordinate system
  */
 template <typename T>
-static Eigen::Matrix<T, 4, 4, Eigen::RowMajor> rieglToSLAM6DTransform(const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& in)
+static Transform<T> rieglToSLAM6DTransform(const Transform<T>& in)
 {
-        Eigen::Matrix<T, 4, 4> ret;
+       Transform<T> ret;
 
         ret(0) = in(5);
         ret(1) = -in(9);
@@ -201,9 +202,9 @@ static Eigen::Matrix<T, 4, 4, Eigen::RowMajor> rieglToSLAM6DTransform(const Eige
  * @return The transformation matrix in riegl coordinate system
  */
 template <typename T>
-static Eigen::Matrix<T, 4, 4, Eigen::RowMajor> slam6dToRieglTransform(const Eigen::Matrix<T, 4, 4, Eigen::RowMajor> &in)
+static Transform<T> slam6dToRieglTransform(const Transform<T> &in)
 {
-        Eigen::Matrix<T, 4, 4, Eigen::RowMajor> ret;
+        Transform<T> ret;
 
         ret(0) = in(10);
         ret(1) = -in(2);
@@ -236,7 +237,7 @@ static Eigen::Matrix<T, 3, 1> slam6DToRieglPoint(const Eigen::Matrix<T, 3, 1> &i
 }
 
 template<typename T>
-void eigenToEuler(Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& mat, T* pose)
+void eigenToEuler(Transform<T>& mat, T* pose)
 {
         T* m = mat.data();
         if(pose != 0){

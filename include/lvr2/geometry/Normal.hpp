@@ -131,10 +131,7 @@ struct Normal : public BaseVector<CoordType>
 #ifndef __NVCC__
     // Friend declaration for Eigen multiplication
     template<typename T, typename S>
-    friend Normal<T> operator*(const Eigen::Matrix<S, 4, 4, Eigen::RowMajor>& mat, const Normal<T>& normal);
-
-    template<typename T, typename S>
-    friend Normal<T> operator*(const Eigen::Matrix<S, 4, 4, Eigen::ColMajor>& mat, const Normal<T>& normal);
+    friend Normal<T> operator*(const Eigen::Matrix<S, 4, 4>& mat, const Normal<T>& normal);
 #endif // ifndef __NVCC__
 
 };
@@ -162,7 +159,7 @@ inline std::ostream& operator<<(std::ostream& os, const Normal<CoordType>& n)
  * @return Normal<CoordType>    Transformed normal
  */
 template<typename CoordType, typename Scalar = CoordType>
-inline Normal<CoordType> operator*(const Eigen::Matrix<Scalar, 4, 4, Eigen::RowMajor>& mat, const Normal<CoordType>& normal)
+inline Normal<CoordType> operator*(const Eigen::Matrix<Scalar, 4, 4>& mat, const Normal<CoordType>& normal)
 {
     // TODO: CHECK IF THIS IS CORRECT
     CoordType x = mat(0, 0) * normal.x + mat(1, 0) * normal.y + mat(2, 0) * normal.z;
@@ -170,27 +167,6 @@ inline Normal<CoordType> operator*(const Eigen::Matrix<Scalar, 4, 4, Eigen::RowM
     CoordType z = mat(0, 2) * normal.x + mat(1, 2) * normal.y + mat(2, 2) * normal.z;
     return Normal<CoordType>(x,y,z);
 }
-
-/**
- * @brief   Multiplication operator to support transformation with Eigen
- *          matrices. Rotates the normal, ignores translation. Implementation
- *          for ColumnMajor matrices.
- * 
- * @tparam CoordType            Coordinate type of the normals
- * @tparam Scalar               Scalar type of the Eigen matrix
- * @param mat                   Eigen matrix 
- * @param normal                Input normal
- * @return Normal<CoordType>    Transformed normal
- */
-template<typename CoordType, typename Scalar = CoordType>
-inline Normal<CoordType> operator*(const Eigen::Matrix<Scalar, 4, 4, Eigen::ColMajor>& mat, const Normal<CoordType>& normal)
-{
-    CoordType x = mat(0, 0) * normal.x + mat(0, 1) * normal.y + mat(0, 2) * normal.z;
-    CoordType y = mat(1, 0) * normal.x + mat(1, 1) * normal.y + mat(1, 2) * normal.z;
-    CoordType z = mat(2, 0) * normal.x + mat(2, 1) * normal.y + mat(2, 2) * normal.z;
-    return Normal<CoordType>(x,y,z);
-}
-
 #endif // ifndef __NVCC__
 
 } // namespace lvr2

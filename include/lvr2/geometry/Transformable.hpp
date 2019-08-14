@@ -39,7 +39,7 @@ private:
  *      // obj is not derived from Transformable
  * }
  */
-typedef TransformableBase<float> Transformable;
+typedef TransformableBase<double> Transformable;
 
 } // namespace lvr2
 

@@ -5,6 +5,7 @@
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/geometry/Matrix4.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 
 #include <string>
 #include <iostream>
@@ -29,8 +30,8 @@ struct ScanData
 	~ScanData() {};
 
     PointBufferPtr                          m_points;
-    Eigen::Matrix<float, 4, 4, Eigen::RowMajor>   m_registration;
-    Eigen::Matrix<float, 4, 4, Eigen::RowMajor>   m_poseEstimation;
+    Transformd                              m_registration;
+    Transformd                              m_poseEstimation;
     BoundingBox<BaseVector<float> >         m_boundingBox;
 
     float                                   m_hFieldOfView;

@@ -217,10 +217,8 @@ public:
 #ifndef __NVCC__
     // Friend declaration for Eigen multiplication
     template<typename T, typename S>
-    friend BaseVector<T> operator*(const Eigen::Matrix<S, 4, 4, Eigen::RowMajor>& mat, const BaseVector<T>& normal);
+    friend BaseVector<T> operator*(const Eigen::Matrix<S, 4, 4>& mat, const BaseVector<T>& normal);
 
-    template<typename T, typename S>
-    friend BaseVector<T> operator*(const Eigen::Matrix<S, 4, 4, Eigen::ColMajor>& mat, const BaseVector<T>& normal);
 #endif // ifndef __NVCC__
 
 };
@@ -248,7 +246,7 @@ std::ostream& operator<<( std::ostream& os, const BaseVector<T>& v)
  * @return Normal<CoordType>    Transformed normal
  */
 template<typename CoordType, typename Scalar = CoordType>
-inline BaseVector<CoordType> operator*(const Eigen::Matrix<Scalar, 4, 4, Eigen::RowMajor>& mat, const BaseVector<CoordType>& normal)
+inline BaseVector<CoordType> operator*(const Eigen::Matrix<Scalar, 4, 4>& mat, const BaseVector<CoordType>& normal)
 {
     // TODO: CHECK IF THIS IS CORRECT
     CoordType x = mat(0, 0) * normal.x + mat(1, 0) * normal.y + mat(2, 0) * normal.z;
@@ -259,30 +257,6 @@ inline BaseVector<CoordType> operator*(const Eigen::Matrix<Scalar, 4, 4, Eigen::
     y += mat(1, 3);
     z += mat(2, 3);
 
-    return BaseVector<CoordType>(x,y,z);
-}
-
-/**
- * @brief   Multiplication operator to support transformation with Eigen
- *          matrices. Rotates the normal, ignores translation. Implementation
- *          for ColumnMajor matrices.
- * 
- * @tparam CoordType            Coordinate type of the normals
- * @tparam Scalar               Scalar type of the Eigen matrix
- * @param mat                   Eigen matrix 
- * @param normal                Input normal
- * @return Normal<CoordType>    Transformed normal
- */
-template<typename CoordType, typename Scalar = CoordType>
-inline BaseVector<CoordType> operator*(const Eigen::Matrix<Scalar, 4, 4, Eigen::ColMajor>& mat, const BaseVector<CoordType>& normal)
-{
-    CoordType x = mat(0, 0) * normal.x + mat(0, 1) * normal.y + mat(0, 2) * normal.z;
-    CoordType y = mat(1, 0) * normal.x + mat(1, 1) * normal.y + mat(1, 2) * normal.z;
-    CoordType z = mat(2, 0) * normal.x + mat(2, 1) * normal.y + mat(2, 2) * normal.z;
-
-    x += mat(3, 0);
-    y += mat(3, 1);
-    z += mat(3, 2);
     return BaseVector<CoordType>(x,y,z);
 }
 

@@ -34,13 +34,12 @@
 #ifndef SCAN_HPP_
 #define SCAN_HPP_
 
-#include <lvr2/io/PointBuffer.hpp>
+#include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/io/PointBuffer.hpp"
 
 #include <Eigen/Dense>
 #include <vector>
 
-using Eigen::Matrix4d;
-using Eigen::Vector3d;
 using std::vector;
 using std::pair;
 
@@ -74,11 +73,11 @@ enum class ScanUse
 class Scan
 {
 public:
-    Scan(PointBufferPtr points, const Eigen::Matrix<double, 4, 4, Eigen::RowMajor>& pose);
+    Scan(PointBufferPtr points, const Transformd& pose);
 
     virtual ~Scan() = default;
 
-    void transform(const Eigen::Matrix<double, 4, 4, Eigen::RowMajor>& transform, bool writeFrame = true, ScanUse use = ScanUse::UPDATED);
+    void transform(const Transformd& transform, bool writeFrame = true, ScanUse use = ScanUse::UPDATED);
     void addFrame(ScanUse use = ScanUse::UNUSED);
 
     void reduce(double voxelSize, int maxLeafSize);
@@ -89,9 +88,9 @@ public:
     virtual Vector3d getPoint(size_t index) const;
     size_t numPoints() const;
 
-    const Eigen::Matrix<double, 4, 4, Eigen::RowMajor>& getPose() const;
-    const Eigen::Matrix<double, 4, 4, Eigen::RowMajor>& getDeltaPose() const;
-    const Eigen::Matrix<double, 4, 4, Eigen::RowMajor>& getInitialPose() const;
+    const Transformd& getPose() const;
+    const Transformd& getDeltaPose() const;
+    const Transformd& getInitialPose() const;
 
     Vector3d getPosition() const;
 
@@ -104,11 +103,11 @@ protected:
     floatArr m_points;
     size_t   m_numPoints;
 
-    Eigen::Matrix<double, 4, 4, Eigen::RowMajor> m_pose;
-    Eigen::Matrix<double, 4, 4, Eigen::RowMajor> m_deltaPose;
-    Eigen::Matrix<double, 4, 4, Eigen::RowMajor> m_initialPose;
+    Transformd m_pose;
+    Transformd m_deltaPose;
+    Transformd m_initialPose;
 
-    vector<pair<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>, ScanUse>> m_frames;
+    vector<pair<Transformd, ScanUse>> m_frames;
 };
 
 using ScanPtr = std::shared_ptr<Scan>;

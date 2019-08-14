@@ -122,7 +122,7 @@ bool ScanprojectIO::parse_project(const std::string &dir, bool silent)
         }
 
         // is it really sane to use no transformation if .frames file wasn't found?
-        pos.transform = Eigen::Matrix<float, 4, 4, Eigen::RowMajor>::Identity();
+        pos.transform = Transformd::Identity();
 
         fs::path frames_file(project.scans_dir / (buffer + std::string(".frames")));
         if (!fs::exists(frames_file) || fs::is_empty(frames_file))
@@ -155,7 +155,7 @@ bool ScanprojectIO::parse_project(const std::string &dir, bool silent)
                 continue;
             }
 
-            pos.transform = getTransformationFromFrames<float>(frames_file.string());
+            pos.transform = getTransformationFromFrames<double>(frames_file.string());
 
             frames_fstream.close();
         }
@@ -180,7 +180,7 @@ bool ScanprojectIO::parse_project(const std::string &dir, bool silent)
                 std::cout << extrinsic_file << std::endl;
                 continue;
             }
-            img.extrinsic_transform = loadFromFile<float>(extrinsic_file);
+            img.extrinsic_transform = loadFromFile<double>(extrinsic_file);
 
             fs::path orientation_file(project.img_dir / (std::string(buffer) + "_orientation.dat"));
             if (!fs::exists(orientation_file))
@@ -189,7 +189,7 @@ bool ScanprojectIO::parse_project(const std::string &dir, bool silent)
                 std::cout << orientation_file << std::endl;
                 continue;
             }
-            img.orientation_transform = loadFromFile<float>(orientation_file);
+            img.orientation_transform = loadFromFile<double>(orientation_file);
 
             fs::path intrinsic_file(project.img_dir / (std::string(buffer) + "_intrinsic.txt"));
             if (!fs::exists(intrinsic_file))
