@@ -49,7 +49,7 @@ Transform<T> getTransformationFromPose(const boost::filesystem::path& pose)
     }
     else
     {
-        return Eigen::Matrix<T,4,4>::Identity();
+        return Transform<T>::Identity();
     }
 }
 
@@ -95,7 +95,7 @@ Transform<T> getTransformationFromDat(const boost::filesystem::path& frames)
             in >> alignxf[i];
         }
     }
-    return Eigen::Map<Eigen::Matrix<T,4,4>>(alignxf).transpose();
+    return Eigen::Map<Transform<T>>(alignxf).transpose();
 }
 
 template<typename T>
@@ -121,16 +121,16 @@ void writeFrame(const Transform<T>& transform, const boost::filesystem::path& fr
 }
 
 template<typename T>
-Eigen::Matrix<T, 4, 4> loadFromFile(const boost::filesystem::path& file)
+Transform<T> loadFromFile(const boost::filesystem::path& file)
 {
-    Eigen::Matrix<T, 4, 4> m;
+    Transform<T> m;
     T arr[16];
     std::ifstream in(file.string());
     for(size_t i = 0; i < 16; i++)
     {
         in >> arr[i];
     }
-    return Eigen::Map<Eigen::Matrix<T, 4, 4, Eigen::RowMajor>>(arr);
+    return Eigen::Map<Matrix4RM<T>>(arr);
 }
 
 } // namespace lvr2

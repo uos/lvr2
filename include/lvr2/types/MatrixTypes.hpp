@@ -52,7 +52,7 @@ using Matrix4dRM = Matrix4RM<double>;
 template<typename T> 
 using Matrix3RM = Eigen::Matrix<T, 3, 3, Eigen::RowMajor>;
 
-/// 3x34 row major matrix with float scalars
+/// 3x3 row major matrix with float scalars
 using Matrix3fRM = Matrix3RM<float>;
 /// 3x3 row major matrix with double scalars
 using Matrix3dRM = Matrix3RM<double>;
@@ -67,7 +67,7 @@ using Transformf = Transform<float>;
 /// 3x3 double precision transformation matrix
 using Transformd = Transform<double>;
 
-/// General 3x4 rotation matrix
+/// General 3x3 rotation matrix
 template<typename T>
 using Rotation = Eigen::Matrix<T, 3, 3>;
 
@@ -97,13 +97,27 @@ using Intrinsicsf = Intrinsics<float>;
 /// 4x4 extrinsic calibration (double precision)
 using Intrinsicsd = Intrinsics<double>;
 
-/// Eigen 3D vector, double precision
-using Vector3d = Eigen::Vector3d;
+/// Eigen 3D vector
+template<typename T>
+using Vector3 = Eigen::Matrix<T, 3, 1>;
 
 /// Eigen 3D vector, single precision
 using Vector3f = Eigen::Vector3f;
 
-/// Eigen 4x4 matrix, sigle precision
+/// Eigen 3D vector, double precision
+using Vector3d = Eigen::Vector3d;
+
+/// Eigen 4D vector
+template<typename T>
+using Vector4 = Eigen::Matrix<T, 4, 1>;
+
+/// Eigen 4D vector, single precision
+using Vector4f = Eigen::Vector4f;
+
+/// Eigen 4D vector, double precision
+using Vector4d = Eigen::Vector4d;
+
+/// Eigen 4x4 matrix, single precision
 using Matrix4f = Eigen::Matrix4f;
 
 /// Eigen 4x4 matrix, double precision
