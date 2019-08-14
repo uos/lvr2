@@ -33,6 +33,8 @@
 
 #include <vector>
 
+#include "lvr2/types/MatrixTypes.hpp"
+
 namespace lvr2
 {
 
@@ -44,10 +46,10 @@ namespace lvr2
 struct CameraData
 {
     /// Instrinsic camera paramter matrix
-    Eigen::Matrix<float, 4, 4, Eigen::RowMajor>     intrinsics;
+    Intrinsicsd     intrinsics;
 
     /// Extrinsic parameter matrix
-    Eigen::Matrix<float, 4, 4, Eigen::RowMajor>     extrinsics;
+    Extrinsicsd     extrinsics;
 
     /// RGB image
     cv::Mat             image;

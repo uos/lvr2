@@ -33,7 +33,6 @@
 #include "LVRItemTypes.hpp"
 
 #include "lvr2/algorithm/NormalAlgorithms.hpp"
-
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/reconstruction/BilinearFastBox.hpp"
 #include "lvr2/reconstruction/FastReconstruction.hpp"
@@ -41,11 +40,10 @@
 #include "lvr2/reconstruction/FastBox.hpp"
 #include "lvr2/reconstruction/PointsetGrid.hpp"
 #include "lvr2/reconstruction/TetraederBox.hpp"
-
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
-
 #include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/io/Progress.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 
 namespace lvr2
 {
@@ -209,7 +207,7 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
 
     PointBufferPtr pc_buffer = m_pc->getPointBuffer();
     
-    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> T = qttf::getTransformation(m_pc, NULL);
+    Transformd T = qttf::getTransformation(m_pc, NULL);
     std::cout << T << std::endl;
 
     pc_buffer = qttf::transform(pc_buffer, T);

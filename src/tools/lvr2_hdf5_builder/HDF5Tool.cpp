@@ -50,6 +50,7 @@
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/geometry/Matrix4.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 
 #include "Options.hpp"
 
@@ -164,7 +165,7 @@ int main( int argc, char ** argv )
             // Read transformation
             path matrix_file = dataDir/path("scan_" + number + "_transformation.txt");
             std::cout << timestamp << "Reading transformation: " << matrix_file.string() << std::endl;
-            Eigen::Matrix<float, 4, 4, Eigen::RowMajor> transformation = loadFromFile<float>(matrix_file.string());
+            Transformd transformation = loadFromFile<double>(matrix_file.string());
 
             // Read scan data
             std::cout << timestamp << "Reading scan data: " << it << std::endl;

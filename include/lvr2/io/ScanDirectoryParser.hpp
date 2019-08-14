@@ -36,6 +36,7 @@
 
 #include "lvr2/io/Timestamp.hpp"
 #include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/registration/TransformUtils.hpp"
 
 namespace lvr2
@@ -45,7 +46,7 @@ struct ScanInfo
 {
     string              m_filename;
     size_t              m_numPoints;
-    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> m_pose;
+    Transformd m_pose;
 };
 
 class ScanDirectoryParser
@@ -76,7 +77,7 @@ private:
     size_t examinePLY(const std::string& filename);
     size_t examineASCII(const std::string& filename);    
 
-    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> getPose(const Path& poseFile);
+    Transformd getPose(const Path& poseFile);
 
     size_t                  m_numPoints;
     std::string             m_pointPrefix;

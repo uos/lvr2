@@ -4,6 +4,7 @@
 
 #include <Eigen/Dense>
 
+#include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Normal.hpp"
 #include "lvr2/geometry/Transformable.hpp"
@@ -14,14 +15,14 @@ namespace lvr2 {
 
 namespace qttf {
 
-Eigen::Matrix<float, 4, 4, Eigen::RowMajor> getTransformation(
+Transformd getTransformation(
     QTreeWidgetItem* from,
     QTreeWidgetItem* to = NULL
 );
 
 PointBufferPtr transform(
     PointBufferPtr pc_in,
-    const Eigen::Matrix<float, 4, 4, Eigen::RowMajor>& T
+    const Transformd& T
 );
 
 PointBufferPtr transform(

@@ -55,7 +55,7 @@ ICPPointAlign::ICPPointAlign(ScanPtr model, ScanPtr data) :
     m_searchTree = KDTree::create(model, m_maxLeafSize);
 }
 
-Eigen::Matrix<double, 4, 4, Eigen::RowMajor> ICPPointAlign::match()
+Transformd ICPPointAlign::match()
 {
     if (m_maxIterations == 0)
     {
@@ -70,8 +70,8 @@ Eigen::Matrix<double, 4, 4, Eigen::RowMajor> ICPPointAlign::match()
 
     Vector3d centroid_m = Vector3d::Zero();
     Vector3d centroid_d = Vector3d::Zero();
-    Matrix<double, 4, 4, Eigen::RowMajor> transform = Matrix4d::Identity();
-    Matrix<double, 4, 4, Eigen::RowMajor> delta = Matrix4d::Identity();
+    Transformd transform = Matrix4d::Identity();
+    Transformd delta = Matrix4d::Identity();
 
     size_t numPoints = m_dataCloud->numPoints();
 
@@ -87,7 +87,7 @@ Eigen::Matrix<double, 4, 4, Eigen::RowMajor> ICPPointAlign::match()
         size_t pairs = getNearestNeighbors(m_searchTree, m_dataCloud, neighbors, m_maxDistanceMatch, centroid_m, centroid_d);
 
         // Get transformation
-        transform = Eigen::Matrix<double, 4, 4, Eigen::RowMajor>::Identity();
+        transform = Transformd::Identity();
         ret = align.alignPoints(m_dataCloud, neighbors, centroid_m, centroid_d, transform);
 
         // Apply transformation

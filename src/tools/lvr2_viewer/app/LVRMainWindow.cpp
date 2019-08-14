@@ -786,9 +786,9 @@ void LVRMainWindow::alignPointClouds()
     Eigen::Vector3f pos(dataPose.x, dataPose.y, dataPose.z);
     Eigen::Vector3f angles(dataPose.r, dataPose.t, dataPose.p);
     angles *= M_PI / 180.0; // degrees -> radians
-    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> mat = poseToMatrix<float>(pos, angles);
+    Transformf mat = poseToMatrix<float>(pos, angles);
 
-    boost::optional<Eigen::Matrix<float, 4, 4, Eigen::RowMajor>> correspondence = m_correspondanceDialog->getTransformation();
+    boost::optional<Transformf> correspondence = m_correspondanceDialog->getTransformation();
     if (correspondence.is_initialized())
     {
         mat *= correspondence.get();
@@ -810,7 +810,7 @@ void LVRMainWindow::alignPointClouds()
         pos = Eigen::Vector3f(modelPose.x, modelPose.y, modelPose.z);
         angles = Eigen::Vector3f(modelPose.r, modelPose.t, modelPose.p);
         angles /= 180.0 / M_PI;
-        Eigen::Matrix<float, 4, 4, Eigen::RowMajor> modelTransform = poseToMatrix<float>(pos, angles);
+        Transformf modelTransform = poseToMatrix<float>(pos, angles);
 
         /* TODO: convert to new ICPPointAlign
 
@@ -947,7 +947,7 @@ LVRModelItem* LVRMainWindow::loadModelItem(QString name)
         if (boost::filesystem::exists(poseFile))
         {
             cout << "Found Pose file: " << poseFile << endl;
-            Eigen::Matrix<float, 4, 4, Eigen::RowMajor> mat = getTransformationFromPose<float>(poseFile).transpose();
+            Transformf mat = getTransformationFromPose<float>(poseFile).transpose();
             BaseVector<float> pos, angles;
             getPoseFromMatrix<float>(pos, angles, mat);
 

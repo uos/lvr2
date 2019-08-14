@@ -38,8 +38,8 @@
 #include <vector>
 #include <boost/shared_array.hpp>
 
+#include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/io/PointBuffer.hpp"
-
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Matrix4.hpp"
 
@@ -155,7 +155,7 @@ public:
      * @return The transformation matrix in riegl coordinate system
      */
     template <typename T>
-    static Eigen::Matrix<float, 4, 4, Eigen::RowMajor> slam6d_to_riegl_transform(const Eigen::Matrix<float, 4, 4, Eigen::RowMajor> &mat)
+    Transform<T> slam6d_to_riegl_transform(const Transform<T> &mat)
     {
         T* in = mat.data();
         T* ret[16];

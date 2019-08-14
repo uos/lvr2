@@ -77,22 +77,22 @@ size_t ScanDirectoryParser::examineASCII(const std::string& filename)
     return countPointsInFile(p);
 } 
 
-Eigen::Matrix<float, 4, 4, Eigen::RowMajor> ScanDirectoryParser::getPose(const Path& poseFile)
+Transformd ScanDirectoryParser::getPose(const Path& poseFile)
 {
     if(m_poseExtension == ".dat")
     {
-        return getTransformationFromDat<float>(poseFile);
+        return getTransformationFromDat<double>(poseFile);
     }
     else if(m_poseExtension == ".pose")
     {
-        return getTransformationFromPose<float>(poseFile);
+        return getTransformationFromPose<double>(poseFile);
     }
     else if(m_poseExtension == ".frames")
     {
-        return getTransformationFromFrames<float>(poseFile);
+        return getTransformationFromFrames<double>(poseFile);
     }
     
-    return Eigen::Matrix<float, 4, 4, Eigen::RowMajor>::Identity();
+    return Transformd::Identity();
 }
 
 PointBufferPtr ScanDirectoryParser::subSample()
@@ -124,7 +124,7 @@ PointBufferPtr ScanDirectoryParser::subSample()
                 // Apply transformation
                 std::cout << timestamp << "Transforming point cloud" << std::endl;
                 out_model->m_pointCloud = reduced;
-                transformPointCloud<float>(out_model, i.m_pose);
+                transformPointCloud<double>(out_model, i.m_pose);
 
                 // Write reduced data
                 std::stringstream name_stream;
@@ -179,7 +179,7 @@ void ScanDirectoryParser::parseDirectory()
         }
 
         // Check for pose information file
-        Eigen::Matrix<float, 4, 4, Eigen::RowMajor> matrix = Eigen::Matrix<float, 4, 4, Eigen::RowMajor>::Identity();
+        Transformd matrix = Transformd::Identity();
 
         if(exists(posePath))
         {

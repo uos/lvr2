@@ -54,8 +54,8 @@ LVRCamDataItem::LVRCamDataItem(
     m_intrinsics = m_data.intrinsics;
 
     // init pose
-    float pose[6];
-    eigenToEuler<float>(m_data.extrinsics, pose);
+    double pose[6];
+    eigenToEuler<double>(m_data.extrinsics, pose);
 
     m_pose.x = pose[0];
     m_pose.y = pose[1];
@@ -94,9 +94,9 @@ void LVRCamDataItem::setVisibility(bool visible)
     }
 }
 
-Eigen::Matrix<float, 4, 4, Eigen::RowMajor> LVRCamDataItem::getGlobalTransform()
+Transformd LVRCamDataItem::getGlobalTransform()
 {
-    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> ret = m_matrix;
+    Transformd ret = m_matrix;
     QTreeWidgetItem* parent_it = parent();
 
     while(parent_it != NULL)
@@ -120,7 +120,7 @@ void LVRCamDataItem::setCameraView()
     double x,y,z;
     cam->GetPosition(x,y,z);
 
-    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> T = getGlobalTransform();
+    Transformd T = getGlobalTransform();
 
     T.transpose();
 
@@ -145,15 +145,15 @@ void LVRCamDataItem::setCameraView()
 
 std::vector<BaseVector<float> > LVRCamDataItem::genFrustrumLVR(float scale)
 {
-    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> T = getGlobalTransform();
-    Eigen::Matrix<float, 4, 4, Eigen::RowMajor> cam_mat_inv = m_intrinsics.inverse();
+    Transformd T = getGlobalTransform();
+    Intrinsicsd cam_mat_inv = m_intrinsics.inverse();
     cam_mat_inv.transpose();
     T.transpose();
 
     std::vector<BaseVector<float> > lvr_pixels;
 
     // TODO change this. get size of image
-    const float* arr = m_intrinsics.data();
+    const double* arr = m_intrinsics.data();
     int v_max = arr[2] * 2;
     int u_max = arr[6] * 2;
 

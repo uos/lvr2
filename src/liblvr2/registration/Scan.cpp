@@ -42,8 +42,8 @@ using namespace std;
 namespace lvr2
 {
 
-Scan::Scan(PointBufferPtr points, const Eigen::Matrix<double, 4, 4, Eigen::RowMajor>& pose)
-    : m_pose(pose), m_deltaPose(Eigen::Matrix<double, 4, 4, Eigen::RowMajor>::Identity()), m_initialPose(pose)
+Scan::Scan(PointBufferPtr points, const Transformd& pose)
+    : m_pose(pose), m_deltaPose(Transformd::Identity()), m_initialPose(pose)
 {
     if (points)
     {
@@ -56,7 +56,7 @@ Scan::Scan(PointBufferPtr points, const Eigen::Matrix<double, 4, 4, Eigen::RowMa
     }
 }
 
-void Scan::transform(const Eigen::Matrix<double, 4, 4, Eigen::RowMajor>& transform, bool writeFrame, ScanUse use)
+void Scan::transform(const Transformd& transform, bool writeFrame, ScanUse use)
 {
     m_pose = transform * m_pose;
     m_deltaPose = transform * m_deltaPose;
@@ -139,17 +139,17 @@ size_t Scan::numPoints() const
     return m_numPoints;
 }
 
-const Eigen::Matrix<double, 4, 4, Eigen::RowMajor>& Scan::getPose() const
+const Transformd& Scan::getPose() const
 {
     return m_pose;
 }
 
-const Eigen::Matrix<double, 4, 4, Eigen::RowMajor>& Scan::getDeltaPose() const
+const Transformd& Scan::getDeltaPose() const
 {
     return m_deltaPose;
 }
 
-const Eigen::Matrix<double, 4, 4, Eigen::RowMajor>& Scan::getInitialPose() const
+const Transformd& Scan::getInitialPose() const
 {
     return m_initialPose;
 }
@@ -167,7 +167,7 @@ void Scan::addFrame(ScanUse use)
 void Scan::writeFrames(std::string path) const
 {
     ofstream out(path);
-    for (const std::pair<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>, ScanUse>& frame : m_frames)
+    for (const std::pair<Transformd, ScanUse>& frame : m_frames)
     {
         for (int i = 0; i < 16; i++)
         {
