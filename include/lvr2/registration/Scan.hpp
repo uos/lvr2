@@ -46,7 +46,7 @@ using std::pair;
 namespace lvr2
 {
 
-using Vector3fArr = boost::shared_array<Eigen::Vector3f>;
+using Vector3fArr = boost::shared_array<Vector3f>;
 
 /**
  * @brief Annotates the use of a Scan when creating an slam6D .frames file

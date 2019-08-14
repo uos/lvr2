@@ -47,7 +47,7 @@ using namespace std;
 using boost::filesystem::path;
 
 string format_name(const string& format, int index);
-Eigen::Matrix4d get_pose(const path& poseFile);
+Transformd get_pose(const path& poseFile);
 
 int main(int argc, char** argv)
 {
@@ -409,7 +409,7 @@ string format_name(const string& format, int index)
     return string(buff);
 }
 
-Eigen::Matrix4d get_pose(const path& poseFile)
+Transformd get_pose(const path& poseFile)
 {
     path extension = poseFile.extension();
     if(extension == ".dat")

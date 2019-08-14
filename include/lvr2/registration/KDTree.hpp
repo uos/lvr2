@@ -52,7 +52,7 @@ class KDTree
 {
 public:
     using PointT = float;
-    using Point = Eigen::Vector3f;
+    using Point = Vector3<PointT>;
     using Neighbor = Point*;
 
     /**
@@ -77,7 +77,7 @@ public:
      */
     template<typename T>
     bool nearestNeighbor(
-        const Eigen::Matrix<T, 3, 1>& point,
+        const Vector3<T>& point,
         Neighbor& neighbor,
         double& distance,
         double maxDistance = std::numeric_limits<double>::infinity()
