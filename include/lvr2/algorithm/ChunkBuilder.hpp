@@ -36,6 +36,7 @@
 #define CHUNK_BUILDER_HPP
 
 #include "lvr2/io/Model.hpp"
+#include "lvr2/geometry/HalfEdgeMesh.hpp"
 
 #include <unordered_map>
 
@@ -55,8 +56,8 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
      * @param originalMesh mesh that is being chunked
      * @param vertexUse list of ChunkBuilders that for each vertex of the original mesh
      */
-    ChunkBuilder(MeshBufferPtr originalMesh,
-                 std::shared_ptr<std::vector<std::vector<std::weak_ptr<ChunkBuilder>>>> vertexUse);
+    ChunkBuilder(std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> originalMesh,
+                 std::shared_ptr<std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>> vertexUse);
 
     ~ChunkBuilder();
 
@@ -68,7 +69,7 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
      *
      * @param index index of face in the original model
      */
-    void addFace(unsigned int index);
+    void addFace(FaceHandle index);
 
     /**
      * @brief addDuplicateVertex marks a vertex as duplicate
@@ -78,34 +79,7 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
      *
      * @param index vertex index of diplicate vertex
      */
-    void addDuplicateVertex(unsigned int index);
-
-    /**
-     * @brief addAdditionalVertex adds a new vertex that is not part of the original mesh buffer
-     *
-     * Adds a new vertex that is not part of the original mesh to allow splitting faces during the
-     * chunking process.
-     *
-     * @param x x-coordinate of the new vertex
-     * @param y y-coordinate of the new vertex
-     * @param z z-coordinate of the new vertex
-     * @return index of the newly created vertex
-     */
-    unsigned int addAdditionalVertex(BaseVector<float> additionalVertex);
-
-    /**
-     * @brief addAdditionalFace adds a new face that is not part of the original mesh buffer
-     *
-     * Adds a new face from three vertices to the resulting mesh.
-     * Use negative vertex indices for now to reference vertices that were added as additional
-     * vertices.
-     * TODO: use a nicer method to reference additional vertices than just using negative indices!
-     *
-     * @param vertex1 first vertex index
-     * @param vertex2 second vertex index
-     * @param vertex3 third vertex index
-     */
-    void addAdditionalFace(int vertex1, int vertex2, int vertex3);
+    void addDuplicateVertex(VertexHandle index);
 
     /**
      * @brief buildMesh builds a chunk by generating a new mesh buffer
@@ -144,27 +118,20 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
 
   private:
     // model that is being chunked
-    MeshBufferPtr m_originalMesh = nullptr;
+    std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> m_originalMesh = nullptr;
 
     // amount of added vertcices
     unsigned int m_numVertices = 0;
 
     // indices of vertices of this chunk that got dupliplicated during the chunking process
-    std::vector<unsigned int> m_duplicateVertices;
+    std::vector<VertexHandle> m_duplicateVertices;
 
     // indices of faces in original model
-    std::vector<unsigned int> m_faces;
-
-    // vertices that are not included in the original mesh buffer but are required to be added to
-    // the resulting mesh
-    std::vector<BaseVector<float>> m_additionalVertices;
-
-    // faces that are not included in the original mesh buffer
-    std::vector<std::vector<int>> m_additionalFaces;
+    std::vector<FaceHandle> m_faces;
 
     // one dynamic sized vector with ChunkBuilder ids for all vertices of the original mesh for
     // duplicate detection
-    std::shared_ptr<std::vector<std::vector<std::weak_ptr<ChunkBuilder>>>> m_vertexUse;
+    std::shared_ptr<std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>> m_vertexUse;
 };
 
 } /* namespace lvr2 */
