@@ -61,8 +61,7 @@ bool findCloseScans(const vector<ScanPtr>& scans, size_t scan, const SlamOptions
 class GraphSlam
 {
 public:
-    using Matrix6d = Eigen::Matrix<double, 6, 6>;
-    using Vector6d = Eigen::Matrix<double, 6, 1>;
+
     using GraphMatrix = Eigen::SparseMatrix<double>;
     using GraphVector = Eigen::VectorXd;
     using Graph = vector<pair<int, int>>;
