@@ -99,7 +99,7 @@ Transform<T> getTransformationFromDat(const boost::filesystem::path& frames);
  * @param file          A file with serialized matrix data
  */
 template<typename T>
-Eigen::Matrix<T, 4, 4> loadFromFile(const boost::filesystem::path& file);
+Transform<T> loadFromFile(const boost::filesystem::path& file);
 
 
 /**

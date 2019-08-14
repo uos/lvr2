@@ -41,7 +41,7 @@ using namespace Eigen;
 namespace lvr2
 {
 
-int splitPoints(Eigen::Vector3f* points, int n, int axis, double splitValue)
+int splitPoints(Vector3f* points, int n, int axis, double splitValue)
 {
     int l = 0, r = n - 1;
 
@@ -68,7 +68,7 @@ int splitPoints(Eigen::Vector3f* points, int n, int axis, double splitValue)
     return l;
 }
 
-void createOctree(Eigen::Vector3f* points,
+void createOctree(Vector3f* points,
                   int n,
                   bool* flagged,
                   const Vector3d& min,
@@ -122,7 +122,7 @@ void createOctree(Eigen::Vector3f* points,
     createOctree(points + l, n - l, flagged + l, rMin, rMax, level + 1, voxelSize, maxLeafSize);
 }
 
-int octreeReduce(Eigen::Vector3f* points, int n, double voxelSize, int maxLeafSize)
+int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize)
 {
     bool* flagged = new bool[n];
     for (int i = 0; i < n; i++)
