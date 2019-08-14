@@ -46,8 +46,13 @@ using namespace lvr2;
 using namespace std;
 using boost::filesystem::path;
 
-string format_name(const string& format, int index);
-Transformd get_pose(const path& poseFile);
+string format_name(const string& format, int index)
+{
+    size_t size = snprintf(nullptr, 0, format.c_str(), index) + 1; // Extra space for '\0'
+    char buff[size];
+    snprintf(buff, size, format.c_str(), index);
+    return string(buff);
+}
 
 int main(int argc, char** argv)
 {
@@ -334,7 +339,7 @@ int main(int argc, char** argv)
         }
 
         file.replace_extension(pose_format);
-        Matrix4d pose = get_pose(file);
+        Transformd pose = getTransformationFromFile<double>(file);
 
         ScanPtr scan = make_shared<Scan>(model->m_pointCloud, pose);
         scans.push_back(scan);
@@ -400,31 +405,3 @@ int main(int argc, char** argv)
 
     return EXIT_SUCCESS;
 }
-
-string format_name(const string& format, int index)
-{
-    size_t size = snprintf(nullptr, 0, format.c_str(), index) + 1; // Extra space for '\0'
-    char buff[size];
-    snprintf(buff, size, format.c_str(), index);
-    return string(buff);
-}
-
-Transformd get_pose(const path& poseFile)
-{
-    path extension = poseFile.extension();
-    if(extension == ".dat")
-    {
-        return getTransformationFromDat<double>(poseFile);
-    }
-    else if(extension == ".pose")
-    {
-        return getTransformationFromPose<double>(poseFile);
-    }
-    else if(extension == ".frames")
-    {
-        return getTransformationFromFrames<double>(poseFile);
-    }
-    
-    throw std::invalid_argument(string("Unknown Pose extension: ") + extension.string());
-}
-
