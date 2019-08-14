@@ -106,152 +106,100 @@ void ChunkManager::initBoundingBox(MeshBufferPtr mesh)
     }
 }
 
-bool ChunkManager::cutFace(BaseVector<BaseVector<float>> triangle,
-                           float overlapRatio,
-                           std::vector<ChunkBuilderPtr>& chunkBuilders)
+void ChunkManager::cutLargeFaces(std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> halfEdgeMesh,
+                                 float overlapRatio)
 {
-    for (unsigned int i = 0; i < 3; i++)
+    // check all edges if they range too far into different chunks
+    MeshHandleIteratorPtr<EdgeHandle> iterator = halfEdgeMesh->edgesBegin();
+    while (iterator != halfEdgeMesh->edgesEnd())
     {
-        for (unsigned int j = 0; j < 3; j++)
+        // check both directions for each face
+        std::array<VertexHandle, 2> vertices = halfEdgeMesh->getVerticesOfEdge(*iterator);
+        for (unsigned int i = 0; i <= 1; i++)
         {
-            if (i != j)
+            VertexHandle referenceVertex = vertices[i];
+            VertexHandle comparedVertex  = vertices[(i + 1) % 2];
+
+            bool isLargeEdge = false;
+
+            // check distance to nearest chunkBorder for all three directions
+            for (unsigned int axis = 0; axis < 3; axis++)
             {
-                BaseVector<float> referenceVertex = triangle[i];
-                BaseVector<float> comparedVertex  = triangle[j];
+                // key for size comparison depending on the current axis
+                float referenceVertexKey = halfEdgeMesh->getVertexPosition(referenceVertex)[axis];
+                float comparedVertexKey  = halfEdgeMesh->getVertexPosition(comparedVertex)[axis];
 
-                for (unsigned int axis = 0; axis < 3; axis++)
+                // if the edge goes over multiple chunks it is to large because of a chunk border
+                // located in the middle of the edge
+                if (fabs(referenceVertexKey - comparedVertexKey) > 2 * m_chunkSize)
                 {
-                    // key for size comparison depending on the current axis
-                    float referenceVertexKey = referenceVertex[axis];
-                    float comparedVertexKey  = comparedVertex[axis];
+                    isLargeEdge = true;
+                    break;
+                }
 
-                    // get coordinate for plane in direction of the current axis
-                    float chunkBorder = m_chunkSize * ((int)(referenceVertexKey / m_chunkSize))
-                                        + fmod(m_boundingBox.getMin()[axis], m_chunkSize);
+                // get coordinate for plane in direction of the current axis
+                float chunkBorder = m_chunkSize * ((int)(referenceVertexKey / m_chunkSize))
+                                    + fmod(m_boundingBox.getMin()[axis], m_chunkSize);
 
-                    // select plane of chunk depending oh the relative position of the copared
-                    // vertex
-                    if (referenceVertexKey < comparedVertexKey)
-                    {
-                        chunkBorder += m_chunkSize;
-                    }
+                // select plane of chunk depending oh the relative position of the copared
+                // vertex
+                if (referenceVertexKey < comparedVertexKey)
+                {
+                    chunkBorder += m_chunkSize;
+                }
 
-                    // chech whether or not to cut the face
-                    bool isLargeFace = false;
-                    if (referenceVertexKey - chunkBorder < 0
-                        && comparedVertexKey - chunkBorder >= 0)
-                    {
-                        if (chunkBorder - referenceVertexKey > overlapRatio * m_chunkSize
-                            && comparedVertexKey - chunkBorder > overlapRatio * m_chunkSize)
-                        {
-                            isLargeFace = true;
-                        }
-                    }
-                    else if (referenceVertexKey - chunkBorder >= 0
-                             && comparedVertexKey - chunkBorder < 0)
-                    {
-                        if (referenceVertexKey - chunkBorder > overlapRatio * m_chunkSize
-                            && chunkBorder - comparedVertexKey > overlapRatio * m_chunkSize)
-                        {
-                            isLargeFace = true;
-                        }
-                    }
-
-                    // if the triangle is (nearly) a straight line, we don't cut the face
-                    if(isLargeFace)
-                    {
-                        float epsilon = 0.00001;
-                        if(std::abs((triangle[1] - triangle[0]).dot(triangle[2] - triangle[0])) - ((triangle[1] - triangle[0]).length() + (triangle[2] - triangle[0]).length()) > -epsilon)
-                        {
-                            isLargeFace = false;
-                        }
-                    }
-
-                    // cut the face if it is too large
-                    if (isLargeFace)
-                    {
-                        // get new triangles depending on the current reference and compared vertex
-                        BaseVector<float> vec11, vec12, vec13;
-                        BaseVector<float> vec21, vec22, vec23;
-
-                        if ((i == 0 && j == 1) || (i == 1 && j == 0))
-                        {
-                            vec11 = triangle[0];
-                            vec12 = (referenceVertex + comparedVertex) / 2;
-                            vec13 = triangle[2];
-
-                            vec21 = (referenceVertex + comparedVertex) / 2;
-                            vec22 = triangle[1];
-                            vec23 = triangle[2];
-                        }
-                        else if ((i == 0 && j == 2) || (i == 2 && j == 0))
-                        {
-                            vec11 = triangle[0];
-                            vec12 = triangle[1];
-                            vec13 = (referenceVertex + comparedVertex) / 2;
-
-                            vec21 = (referenceVertex + comparedVertex) / 2;
-                            vec22 = triangle[1];
-                            vec23 = triangle[2];
-                        }
-                        else if ((i == 1 && j == 2) || (i == 2 && j == 1))
-                        {
-                            vec11 = triangle[0];
-                            vec12 = triangle[1];
-                            vec13 = (referenceVertex + comparedVertex) / 2;
-
-                            vec21 = triangle[0];
-                            vec22 = (referenceVertex + comparedVertex) / 2;
-                            vec23 = triangle[2];
-                        }
-
-                        // check if the new faces need to be cut too
-                        if (!cutFace(BaseVector<BaseVector<float>>(vec11, vec12, vec13),
-                                     overlapRatio,
-                                     chunkBuilders))
-                        {
-                            int a = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]
-                                        ->addAdditionalVertex(vec11);
-                            int b = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]
-                                        ->addAdditionalVertex(vec12);
-                            int c = chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]
-                                        ->addAdditionalVertex(vec13);
-
-                            chunkBuilders[getCellIndex((vec11 + vec12 + vec13) / 3)]
-                                ->addAdditionalFace(-a, -b, -c);
-                        }
-                        if (!cutFace(BaseVector<BaseVector<float>>(vec21, vec22, vec23),
-                                     overlapRatio,
-                                     chunkBuilders))
-                        {
-                            int a = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]
-                                        ->addAdditionalVertex(vec21);
-                            int b = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]
-                                        ->addAdditionalVertex(vec22);
-                            int c = chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]
-                                        ->addAdditionalVertex(vec23);
-
-                            chunkBuilders[getCellIndex((vec21 + vec22 + vec23) / 3)]
-                                ->addAdditionalFace(-a, -b, -c);
-                        }
-
-                        return true;
-                    }
+                // chech whether or not to cut the face
+                if (referenceVertexKey - chunkBorder < 0 && comparedVertexKey - chunkBorder >= 0
+                    && chunkBorder - referenceVertexKey > overlapRatio * m_chunkSize
+                    && comparedVertexKey - chunkBorder > overlapRatio * m_chunkSize)
+                {
+                    isLargeEdge = true;
+                    break;
+                }
+                else if (referenceVertexKey - chunkBorder >= 0
+                         && comparedVertexKey - chunkBorder < 0
+                         && referenceVertexKey - chunkBorder > overlapRatio * m_chunkSize
+                         && chunkBorder - comparedVertexKey > overlapRatio * m_chunkSize)
+                {
+                    isLargeEdge = true;
+                    break;
                 }
             }
+
+            if (isLargeEdge)
+            {
+                // cut edge in half
+                float cutRatio = 0.5;
+                BaseVector<float> cutPoint
+                    = halfEdgeMesh->getVertexPosition(referenceVertex) * cutRatio
+                      + halfEdgeMesh->getVertexPosition(comparedVertex) * (1 - cutRatio);
+
+                halfEdgeMesh->splitVertex(*iterator,
+                                          referenceVertex,
+                                          halfEdgeMesh->getVertexPosition(referenceVertex),
+                                          cutPoint);
+                break;
+            }
         }
+
+        ++iterator;
     }
-    return false;
 }
 
 void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
 {
-    // one vector of variable size for each vertex - this is used for duplicate detection
-    std::shared_ptr<std::vector<std::vector<std::weak_ptr<ChunkBuilder>>>> vertexUse(
-        new std::vector<std::vector<std::weak_ptr<ChunkBuilder>>>(
-            mesh->numVertices(), std::vector<std::weak_ptr<ChunkBuilder>>()));
-
     std::vector<ChunkBuilderPtr> chunkBuilders(m_amount.x * m_amount.y * m_amount.z);
+
+    std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> halfEdgeMesh
+        = std::shared_ptr<HalfEdgeMesh<BaseVector<float>>>(
+            new HalfEdgeMesh<BaseVector<float>>(mesh));
+
+    // prepare mash to prevent faces from overlapping too much on chunk borders
+    cutLargeFaces(halfEdgeMesh, 0.1);
+
+    // one vector of variable size for each vertex - this is used for duplicate detection
+    std::shared_ptr<std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>>
+    vertexUse(new std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>());
 
     for (std::size_t i = 0; i < m_amount.x; i++)
     {
@@ -260,43 +208,22 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
             for (std::size_t k = 0; k < m_amount.z; k++)
             {
                 chunkBuilders[hashValue(i, j, k)]
-                    = ChunkBuilderPtr(new ChunkBuilder(mesh, vertexUse));
+                    = ChunkBuilderPtr(new ChunkBuilder(halfEdgeMesh, vertexUse));
             }
         }
     }
 
     // assign the faces to the chunks
-    FloatChannel verticesChannel = *mesh->getFloatChannel("vertices");
-    IndexChannel facesChannel    = *mesh->getIndexChannel("face_indices");
     BaseVector<float> currentCenterPoint;
-    for (std::size_t i = 0; i < mesh->numFaces(); i++)
+    MeshHandleIteratorPtr<FaceHandle> iterator = halfEdgeMesh->facesBegin();
+    for (int i = 0; i < halfEdgeMesh->numFaces(); i++)
     {
-        currentCenterPoint     = getFaceCenter(verticesChannel, facesChannel, i);
+        currentCenterPoint     = getFaceCenter(halfEdgeMesh, *iterator);
         unsigned int cellIndex = getCellIndex(currentCenterPoint);
 
-        // check it the face is to large and needs to be cut
-        bool alreadyAdded = false;
-        for (int j = 0; j < 3; j++)
-        {
-            BaseVector<float> vertex(verticesChannel[facesChannel[i][j]]);
+        chunkBuilders[cellIndex]->addFace(*iterator);
 
-            if (getCellIndex(vertex) != cellIndex)
-            {
-                BaseVector<BaseVector<float>> triangle(
-                    BaseVector<float>(verticesChannel[facesChannel[i][0]]),
-                    BaseVector<float>(verticesChannel[facesChannel[i][1]]),
-                    BaseVector<float>(verticesChannel[facesChannel[i][2]]));
-
-                alreadyAdded = cutFace(triangle, 0.01, chunkBuilders);
-                break;
-            }
-        }
-
-        // only add the face if the face hasnt been added during the cutting process
-        if (!alreadyAdded)
-        {
-            chunkBuilders[cellIndex]->addFace(i);
-        }
+        ++iterator;
     }
 
     // save the chunks as .ply
@@ -329,15 +256,12 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
     }
 }
 
-BaseVector<float> ChunkManager::getFaceCenter(FloatChannel verticesChannel,
-                                              IndexChannel facesChannel,
-                                              unsigned int faceIndex)
+BaseVector<float> ChunkManager::getFaceCenter(std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> mesh,
+                                              FaceHandle handle)
 {
-    BaseVector<float> vertex1(verticesChannel[facesChannel[faceIndex][0]]);
-    BaseVector<float> vertex2(verticesChannel[facesChannel[faceIndex][1]]);
-    BaseVector<float> vertex3(verticesChannel[facesChannel[faceIndex][2]]);
-
-    return (vertex1 + vertex2 + vertex3) / 3;
+    return (mesh->getVertexPositionsOfFace(handle)[0] + mesh->getVertexPositionsOfFace(handle)[1]
+            + mesh->getVertexPositionsOfFace(handle)[2])
+           / 3;
 }
 
 std::size_t ChunkManager::getCellIndex(const BaseVector<float>& vec)

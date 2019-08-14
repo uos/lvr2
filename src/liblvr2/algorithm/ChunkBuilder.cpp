@@ -38,18 +38,20 @@ namespace lvr2
 {
 
 ChunkBuilder::ChunkBuilder(
-    MeshBufferPtr originalMesh,
-    std::shared_ptr<std::vector<std::vector<std::weak_ptr<ChunkBuilder>>>> vertexUse)
+    std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> originalMesh,
+    std::shared_ptr<std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>> vertexUse)
     : m_originalMesh(originalMesh), m_vertexUse(vertexUse)
 {
 }
 
 ChunkBuilder::~ChunkBuilder() {}
 
-void ChunkBuilder::addFace(unsigned int index)
+void ChunkBuilder::addFace(FaceHandle faceHandle)
 {
     // add the original index of the face to the chunk with its chunkID
-    m_faces.push_back(index);
+    m_faces.push_back(faceHandle);
+
+    std::array<VertexHandle, 3> vertices = m_originalMesh->getVerticesOfFace(faceHandle);
 
     // next add the vertices of the face to the chunk
     for (unsigned int i = 0; i < 3; i++)
@@ -57,38 +59,43 @@ void ChunkBuilder::addFace(unsigned int index)
         std::weak_ptr<ChunkBuilder> thisBuilderPtr(shared_from_this());
         // if the vertex is not in the vector, we add the vertex (we just mark the vertex by adding
         // the chunkID)
-        if (std::find_if(m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).begin(),
-                      m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).end(),
+        if (m_vertexUse->find(vertices[i].idx()) == m_vertexUse->end())
+        {
+            m_vertexUse->insert({vertices[i].idx(), std::vector<std::weak_ptr<ChunkBuilder>>()});
+        }
+        if (std::find_if(m_vertexUse->at(vertices[i].idx()).begin(),
+                      m_vertexUse->at(vertices[i].idx()).end(),
                       [&thisBuilderPtr](const std::weak_ptr<ChunkBuilder>& otherBuilderPtr) {
                           return thisBuilderPtr.lock() == otherBuilderPtr.lock();
                       })
-            == m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).end())
+            == m_vertexUse->at(vertices[i].idx()).end())
         {
-            m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i])
+            m_vertexUse->at(vertices[i].idx())
                 .push_back(shared_from_this());
+
             m_numVertices++;
 
-            if (m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).size() == 2)
+            if (m_vertexUse->at(vertices[i].idx()).size() == 2)
             {
                 for (unsigned int j = 0; j < 2; j++)
                 {
-                    m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i])[j]
+                    m_vertexUse->at(vertices[i].idx())[j]
                         .lock()
-                        ->addDuplicateVertex(m_originalMesh->getFaceIndices()[index * 3 + i]);
+                        ->addDuplicateVertex(vertices[i]);
                 }
             }
-            else if (m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i]).size() > 2)
+            else if (m_vertexUse->at(vertices[i].idx()).size() > 2)
             {
-                m_vertexUse->at(m_originalMesh->getFaceIndices()[index * 3 + i])
+                m_vertexUse->at(vertices[i].idx())
                     .back()
                     .lock()
-                    ->addDuplicateVertex(m_originalMesh->getFaceIndices()[index * 3 + i]);
+                    ->addDuplicateVertex(vertices[i]);
             }
         }
     }
 }
 
-void ChunkBuilder::addDuplicateVertex(unsigned int index)
+void ChunkBuilder::addDuplicateVertex(VertexHandle index)
 {
     if (std::find(m_duplicateVertices.begin(), m_duplicateVertices.end(), index)
         == m_duplicateVertices.end())
@@ -97,33 +104,14 @@ void ChunkBuilder::addDuplicateVertex(unsigned int index)
     }
 }
 
-unsigned int ChunkBuilder::addAdditionalVertex(BaseVector<float> additionalVertex)
-{
-    auto it = std::find(m_additionalVertices.begin(), m_additionalVertices.end(), additionalVertex);
-    if (it == m_additionalVertices.end())
-    {
-        m_additionalVertices.push_back(additionalVertex);
-        return m_additionalVertices.size();
-    }
-    else
-    {
-        return (it - m_additionalVertices.begin()) + 1;
-    }
-}
-
-void ChunkBuilder::addAdditionalFace(int vertex1, int vertex2, int vertex3)
-{
-    m_additionalFaces.push_back(std::vector<int>{vertex1, vertex2, vertex3});
-}
-
 unsigned int ChunkBuilder::numFaces()
 {
-    return m_faces.size() + m_additionalFaces.size();
+    return m_faces.size();
 }
 
 unsigned int ChunkBuilder::numVertices()
 {
-    return m_numVertices + m_additionalVertices.size();
+    return m_numVertices;
 }
 
 MeshBufferPtr ChunkBuilder::buildMesh()
@@ -138,7 +126,7 @@ MeshBufferPtr ChunkBuilder::buildMesh()
     lvr2::floatArr faceNormals;
     lvr2::floatArr vertexNormals;
 
-    if (m_originalMesh->hasFaceColors())
+    /*if (m_originalMesh->hasFaceColors())
     {
         faceColors = lvr2::ucharArr(new unsigned char[numFaces() * 3]);
     }
@@ -153,21 +141,21 @@ MeshBufferPtr ChunkBuilder::buildMesh()
     if (m_originalMesh->hasVertexNormals())
     {
         vertexNormals = lvr2::floatArr(new float[numVertices() * 3]);
-    }
+    }*/
 
     // fill vertex buffer with duplicate vertices
-    for (unsigned int vertex : m_duplicateVertices)
+    for (VertexHandle vertex : m_duplicateVertices)
     {
-        if (vertexIndices.find(vertex) == vertexIndices.end())
+        if (vertexIndices.find(vertex.idx()) == vertexIndices.end())
         {
             unsigned int vertexIndex = vertexIndices.size();
-            vertexIndices[vertex]    = vertexIndex;
+            vertexIndices[(unsigned int) vertex.idx()]    = vertexIndex;
 
             for (uint8_t j = 0; j < 3; j++)
             {
-                vertices[vertexIndex * 3 + j] = m_originalMesh->getVertices()[vertex * 3 + j];
+                vertices[vertexIndex * 3 + j] = m_originalMesh->getVertexPosition(vertex)[j];
 
-                if (m_originalMesh->hasVertexColors())
+                /*if (m_originalMesh->hasVertexColors())
                 {
                     size_t width = 3;
                     vertexColors[vertexIndex * 3 + j]
@@ -178,7 +166,7 @@ MeshBufferPtr ChunkBuilder::buildMesh()
                 {
                     vertexNormals[vertexIndex * 3 + j]
                         = m_originalMesh->getVertexNormals()[vertex * 3 + j];
-                }
+                }*/
             }
         }
     }
@@ -188,21 +176,19 @@ MeshBufferPtr ChunkBuilder::buildMesh()
     {
         for (uint8_t faceVertex = 0; faceVertex < 3; faceVertex++)
         {
-            if (vertexIndices.find(m_originalMesh->getFaceIndices()[m_faces[face] * 3 + faceVertex])
+            if (vertexIndices.find(m_originalMesh->getVerticesOfFace(m_faces[face])[faceVertex].idx())
                 == vertexIndices.end())
             {
                 unsigned int vertexIndex = vertexIndices.size();
-                vertexIndices[m_originalMesh->getFaceIndices()[m_faces[face] * 3 + faceVertex]]
+                vertexIndices[(unsigned int) m_originalMesh->getVerticesOfFace(m_faces[face])[faceVertex].idx()]
                     = vertexIndex;
 
                 for (uint8_t vertexComponent = 0; vertexComponent < 3; vertexComponent++)
                 {
                     vertices[vertexIndex * 3 + vertexComponent]
-                        = m_originalMesh->getVertices()
-                              [m_originalMesh->getFaceIndices()[m_faces[face] * 3 + faceVertex] * 3
-                               + vertexComponent];
+                        = m_originalMesh->getVertexPosition(m_originalMesh->getVerticesOfFace(m_faces[face])[faceVertex])[vertexComponent];
 
-                    if (m_originalMesh->hasVertexColors())
+                    /*if (m_originalMesh->hasVertexColors())
                     {
                         size_t width = 3;
                         vertexColors[vertexIndex * 3 + vertexComponent]
@@ -219,14 +205,14 @@ MeshBufferPtr ChunkBuilder::buildMesh()
                                   [m_originalMesh->getFaceIndices()[m_faces[face] * 3 + faceVertex]
                                        * 3
                                    + vertexComponent];
-                    }
+                    }*/
                 }
             }
 
             faceIndices[face * 3 + faceVertex]
-                = vertexIndices[m_originalMesh->getFaceIndices()[m_faces[face] * 3 + faceVertex]];
+                = vertexIndices[(unsigned int) m_originalMesh->getVerticesOfFace(m_faces[face])[faceVertex].idx()];
 
-            if (m_originalMesh->hasFaceColors())
+            /*if (m_originalMesh->hasFaceColors())
             {
                 size_t width = 3;
                 faceColors[face * 3 + faceVertex]
@@ -236,33 +222,8 @@ MeshBufferPtr ChunkBuilder::buildMesh()
             {
                 faceNormals[face * 3 + faceVertex]
                     = m_originalMesh->getFaceNormals()[m_faces[face] * 3 + faceVertex];
-            }
+            }*/
         }
-    }
-
-    // add additional vertices and faces
-    for (unsigned int i = 0; i < m_additionalVertices.size(); i++)
-    {
-        vertices[(m_numVertices + i) * 3 + 0] = m_additionalVertices[i][0];
-        vertices[(m_numVertices + i) * 3 + 1] = m_additionalVertices[i][1];
-        vertices[(m_numVertices + i) * 3 + 2] = m_additionalVertices[i][2];
-    }
-
-    for (unsigned int i = 0; i < m_additionalFaces.size(); i++)
-    {
-        // TODO: do not use negative indices to indicate additonal vertices
-        faceIndices[(m_faces.size() + i) * 3 + 0]
-            = (unsigned int)(m_additionalFaces[i][0] < 0
-                                 ? m_numVertices - m_additionalFaces[i][0] - 1
-                                 : m_additionalFaces[i][0]);
-        faceIndices[(m_faces.size() + i) * 3 + 1]
-            = (unsigned int)(m_additionalFaces[i][1] < 0
-                                 ? m_numVertices - m_additionalFaces[i][1] - 1
-                                 : m_additionalFaces[i][1]);
-        faceIndices[(m_faces.size() + i) * 3 + 2]
-            = (unsigned int)(m_additionalFaces[i][2] < 0
-                                 ? m_numVertices - m_additionalFaces[i][2] - 1
-                                 : m_additionalFaces[i][2]);
     }
 
     // build new model from newly created buffers
@@ -272,7 +233,7 @@ MeshBufferPtr ChunkBuilder::buildMesh()
     mesh->setFaceIndices(faceIndices, numFaces());
 
     // add additional channels
-    if (m_originalMesh->hasFaceColors())
+    /*if (m_originalMesh->hasFaceColors())
     {
         mesh->setFaceColors(faceColors, 3);
     }
@@ -287,7 +248,7 @@ MeshBufferPtr ChunkBuilder::buildMesh()
     if (m_originalMesh->hasVertexNormals())
     {
         mesh->setVertexNormals(vertexNormals);
-    }
+    }*/
 
     mesh->addAtomic<unsigned int>(m_duplicateVertices.size(), "num_duplicates");
 
