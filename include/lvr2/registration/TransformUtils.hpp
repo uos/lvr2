@@ -60,7 +60,7 @@ void getPoseFromMatrix(BaseVector<T>& position, BaseVector<T>& angles, const Tra
  * 
  * @param transform             A transformation matrix
  * @param registration          A matrix representing a registration (i.e. transformation) that
- * @return Eigen::Matrix4d      The transformed registration matrix
+ * @return Transform<T>         The transformed registration matrix
  */
 template<typename T>
 Transform<T> transformRegistration(const Transform<T>& transform, const Transform<T>& registration);
@@ -115,7 +115,7 @@ void transformAndReducePointCloud(ModelPtr& model, int modulo, const CoordinateT
  * @param   A transformation.
  */
 template<typename T>
-void transformPointCloud(ModelPtr model, const Eigen::Matrix<T, 4, 4, Eigen::RowMajor>& transformation);
+void transformPointCloud(ModelPtr model, const Transform<T>& transformation);
 
 /**
  * @brief   Transforms the given source frame according to the given coordinate
@@ -135,7 +135,7 @@ Transform<T> transformFrame(const Transform<T>& frame, const CoordinateTransform
  *          B to A.
  * 
  * @param transform             A transformation matrix
- * @return Eigen::Matrix4d      The inverse transformation
+ * @return Transform<T>         The inverse transformation
  */
 template<typename T>
 Transform<T> inverseTransform(const Transform<T>& transform);
@@ -148,7 +148,7 @@ Transform<T> inverseTransform(const Transform<T>& transform);
  * @return          The Matrix representation of the Pose
  */
 template<typename T>
-Transform<T> poseToMatrix(const Eigen::Matrix<T, 3, 1>& position, const Eigen::Matrix<T, 3, 1>& rotation);
+Transform<T> poseToMatrix(const Vector3<T>& position, const Vector3<T>& rotation);
 
 /**
  * @brief   Extracts the Pose from a Matrix
@@ -158,7 +158,7 @@ Transform<T> poseToMatrix(const Eigen::Matrix<T, 3, 1>& position, const Eigen::M
  * @param rotation  Output for the rotation in radians
  */
 template<typename T>
-void matrixToPose(const Transform<T>& mat, Eigen::Matrix<T, 3, 1>& position, Eigen::Matrix<T, 3, 1>& rotation);
+void matrixToPose(const Transform<T>& mat, Vector3<T>& position, Vector3<T>& rotation);
 
 /**
  * @brief Converts a transformation matrix that is used in riegl coordinate system into
@@ -227,7 +227,7 @@ static Transform<T> slam6dToRieglTransform(const Transform<T> &in)
 }
 
 template <typename T>
-static Eigen::Matrix<T, 3, 1> slam6DToRieglPoint(const Eigen::Matrix<T, 3, 1> &in)
+static Vector3<T> slam6DToRieglPoint(const Vector3<T> &in)
 {
         return {
                 in.z   / (T) 100.0,

@@ -69,7 +69,7 @@ void Scan::transform(const Transformd& transform, bool writeFrame, ScanUse use)
 
 void Scan::reduce(double voxelSize, int maxLeafSize)
 {
-    m_numPoints = octreeReduce((Eigen::Vector3f*)m_points.get(), m_numPoints, voxelSize, maxLeafSize);
+    m_numPoints = octreeReduce((Vector3f*)m_points.get(), m_numPoints, voxelSize, maxLeafSize);
 }
 
 void Scan::setMinDistance(double minDistance)
@@ -130,7 +130,7 @@ void Scan::trim()
 Vector3d Scan::getPoint(size_t index) const
 {
     float* p = m_points.get() + index * 3;
-    Eigen::Vector4d extended(*p, *(p + 1), *(p + 2), 1.0);
+    Vector4d extended(*p, *(p + 1), *(p + 2), 1.0);
     return (m_pose * extended).block<3, 1>(0, 0);
 }
 
@@ -187,7 +187,7 @@ PointBufferPtr Scan::toPointBuffer() const
 
 Vector3fArr Scan::toVector3fArr() const
 {
-    auto ret = Vector3fArr(new Eigen::Vector3f[m_numPoints]);
+    auto ret = Vector3fArr(new Vector3f[m_numPoints]);
 
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < m_numPoints; i++)
