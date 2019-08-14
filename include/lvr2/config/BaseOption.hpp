@@ -90,6 +90,8 @@ public:
 	/// in the option
 	CoordinateTransform<float> coordinateTransform() const;
 
+    void printLogo() const;
+
 protected:
 
 	/// Setup internal data structures
