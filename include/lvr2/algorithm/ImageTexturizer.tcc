@@ -203,7 +203,7 @@ void ImageTexturizer<BaseVecT>::init_image_data()
             image_data.dir = cam_dir;
 
             // transform from project space to image space incl orthogonal projection
-            image_data.project_to_image_transform = transform * projection;
+            image_data.project_to_image_transform = transform * pro;
             image_data.project_to_image_transform.transpose();
 
             images.push_back(image_data);
