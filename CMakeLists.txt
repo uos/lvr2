@@ -71,6 +71,7 @@ if(NOT APPLE)
 find_package( CUDA 8)
 if(CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_CUDA)
 endif(CUDA_FOUND)
 endif(NOT APPLE)
 
@@ -126,9 +127,10 @@ endif(MPI_FOUND)
 ###
 ## Searching for OpenCl
 ##############################
-find_package(OpenCL)
+find_package(OPENCL)
 if(OPENCL_FOUND)
     include_directories(OPENCL_INCLUDE_DIR)
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPENCL)
 endif()
 
 ####
@@ -445,15 +447,15 @@ endif()
 ##############################################################
 
 find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
-if(Qt5_FOUND)
-  find_package(QVTK)
-  if(QVTK_FOUND)
-    include_directories(${QVTK_INCLUDE_DIR})
-    add_subdirectory(src/tools/lvr2_viewer)
-  elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
-    add_subdirectory(src/tools/lvr2_viewer)
-  endif(QVTK_FOUND)
-endif(Qt5_FOUND)
+# if(Qt5_FOUND)
+#   find_package(QVTK)
+#   if(QVTK_FOUND)
+#     include_directories(${QVTK_INCLUDE_DIR})
+#     add_subdirectory(src/tools/lvr2_viewer)
+#   elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
+#     add_subdirectory(src/tools/lvr2_viewer)
+#   endif(QVTK_FOUND)
+# endif(Qt5_FOUND)
 
 ##############################################################
 # LIBRARIES
@@ -465,22 +467,22 @@ add_subdirectory(src/liblvr2)
 # BINARIES
 ##############################################################
 
-add_subdirectory(src/tools/lvr2_reconstruct)
-add_subdirectory(src/tools/lvr2_asciiconverter)
-add_subdirectory(src/tools/lvr2_transform)
-# doesnt compile
-# add_subdirectory(src/tools/lvr2_kaboom)
-add_subdirectory(src/tools/lvr2_octree_test)
-add_subdirectory(src/tools/lvr2_image_normals)
-add_subdirectory(src/tools/lvr2_plymerger)
-add_subdirectory(src/tools/lvr2_hdf5_builder)
-add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
-add_subdirectory(src/tools/lvr2_slam2hdf5)
-add_subdirectory(src/tools/lvr2_hdf5togeotiff)
-add_subdirectory(src/tools/lvr2_slam6d_merger)
-add_subdirectory(src/tools/lvr2_scanproject2hdf5)
-add_subdirectory(src/tools/lvr2_registration)
-add_subdirectory(src/tools/lvr2_mesh_reducer)
+# add_subdirectory(src/tools/lvr2_reconstruct)
+# add_subdirectory(src/tools/lvr2_asciiconverter)
+# add_subdirectory(src/tools/lvr2_transform)
+# # doesnt compile
+# # add_subdirectory(src/tools/lvr2_kaboom)
+# add_subdirectory(src/tools/lvr2_octree_test)
+# add_subdirectory(src/tools/lvr2_image_normals)
+# add_subdirectory(src/tools/lvr2_plymerger)
+# add_subdirectory(src/tools/lvr2_hdf5_builder)
+# add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
+# add_subdirectory(src/tools/lvr2_slam2hdf5)
+# add_subdirectory(src/tools/lvr2_hdf5togeotiff)
+# add_subdirectory(src/tools/lvr2_slam6d_merger)
+# add_subdirectory(src/tools/lvr2_scanproject2hdf5)
+# add_subdirectory(src/tools/lvr2_registration)
+# add_subdirectory(src/tools/lvr2_mesh_reducer)
 
 if (RiVLib_FOUND)
     add_subdirectory(src/tools/lvr2_riegl_project_converter)
