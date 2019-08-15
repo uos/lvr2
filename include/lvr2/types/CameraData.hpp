@@ -46,13 +46,13 @@ namespace lvr2
 struct CameraData
 {
     /// Instrinsic camera paramter matrix
-    Intrinsicsd     intrinsics;
+    Intrinsicsd intrinsics;
 
     /// Extrinsic parameter matrix
-    Extrinsicsd     extrinsics;
+    Extrinsicsd extrinsics;
 
     /// RGB image
-    cv::Mat             image;
+    cv::Mat image;
 };
 
 /**
@@ -62,13 +62,13 @@ struct CameraData
 struct Panorama
 {
     /// Minimum horizontal angle
-    float   hmin;
+    float hmin;
 
     /// Maximum horizontal angle
-    float   hmax;
+    float hmax;
 
     /// Vertical field of view
-    float   fov;
+    float fov;
 
     /// Vector of camera 
     std::vector<CameraData> images;

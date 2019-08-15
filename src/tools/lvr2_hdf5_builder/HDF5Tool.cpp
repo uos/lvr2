@@ -115,10 +115,10 @@ HyperspectralPanorama getSpectralCalibration(path& dataDir, std::string number)
     std::ifstream in(calibrationFile.string());
     if(in.good())
     {
-        in >> pano.distortion1 >> pano.distortion2 >> pano.distortion3;
-        in >> pano.rx >> pano.ry >> pano.rz;
-        in >> pano.ox >> pano.oy >> pano.oz;
-        in >> pano.p1;
+        in >> pano.distortion(0, 0) >> pano.distortion(1, 0) >> pano.distortion(2, 0);
+        in >> pano.rotation(0, 0)   >> pano.rotation(1, 0)   >> pano.rotation(2, 0);
+        in >> pano.origin(0, 0)     >> pano.origin(1, 0)     >> pano.origin(2, 0);
+        in >> pano.principal(0, 0);
     }
     else
     {
