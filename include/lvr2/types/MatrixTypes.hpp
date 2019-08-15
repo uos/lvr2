@@ -117,6 +117,16 @@ using Vector4f = Eigen::Vector4f;
 /// Eigen 4D vector, double precision
 using Vector4d = Eigen::Vector4d;
 
+/// Eigen 2D vector
+template<typename T>
+using Vector2 = Eigen::Matrix<T, 2, 1>;
+
+/// Eigen 2D vector, single precision
+using Vector2f = Eigen::Vector4f;
+
+/// Eigen 2D vector, double precision
+using Vector2d = Eigen::Vector4d;
+
 /// Eigen 4x4 matrix, single precision
 using Matrix4f = Eigen::Matrix4f;
 

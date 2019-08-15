@@ -32,6 +32,8 @@
 
 #include <opencv2/core.hpp>
 
+#include "lvr2/types/MatrixTypes.hpp"
+
 namespace lvr2
 {
 
@@ -43,26 +45,16 @@ namespace lvr2
 struct HyperspectralPanorama
 {
     /// Distortion
-    float   distortion1;
+    Vector3d distortion;
 
-    float   distortion2;
+    /// Origin
+    Vector3d origin;
 
-    float   distortion3;
+    /// Principal point
+    Vector2d principal;
 
-    /// Origin x
-    float   ox;
-
-    /// Origin y
-    float   oy;
-    
-    /// Origin z
-    float   oz;
-
-    /// Principal 1
-    float   p1;
-
-    /// Principal 2
-    float   p2;
+    /// Rotation
+    Vector3d rotation;
 
     /// Horizontal field of view
     float   fovh;
@@ -78,24 +70,11 @@ struct HyperspectralPanorama
     /// the last channel
     float   wmax;
 
-    /// Rotation x
-    float   rx;
-
-    /// Rotation y
-    float   ry;
-
-    /// Rotation z
-    float   rz;
-
     /// Vector of intensity (greyscale) images, one for each
     /// channel
     std::vector<cv::Mat> channels;
 
-    HyperspectralPanorama() :
-        distortion1(0.0f), distortion2(0.0f), distortion3(0.0f), 
-        ox(0.0f), oy(0.0f), oz(0.0f),
-        p1(0.0f), p2(0.0f), fovh((0.0f)), fovv(0.0f),
-        wmin(0.0f), wmax(0.0f) {}
+    HyperspectralPanorama() : fovv(0.0f), wmin(0.0f), wmax(0.0f) {}
 };
 
 } // namespace lvr2

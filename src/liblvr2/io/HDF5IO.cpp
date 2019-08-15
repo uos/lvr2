@@ -743,23 +743,23 @@ void HDF5IO::addHyperspectralCalibration(int position, const HyperspectralPanora
         std::string groupName = "/raw/spectral/" + nr_str;
 
         floatArr a(new float[3]);
-        a[0] = calibration.distortion1;
-        a[1] = calibration.distortion2;
-        a[2] = calibration.distortion3;
+        a[0] = calibration.distortion(1, 0);
+        a[1] = calibration.distortion(2, 0);
+        a[2] = calibration.distortion(3, 0);
 
         floatArr rotation(new float[3]);
-        a[0] = calibration.rx;
-        a[1] = calibration.ry;
-        a[2] = calibration.rz;
+        a[0] = calibration.rotation(1, 0);
+        a[1] = calibration.rotation(2, 0);
+        a[2] = calibration.rotation(3, 0);
 
         floatArr origin(new float[3]);
-        origin[0] = calibration.ox;
-        origin[1] = calibration.oy;
-        origin[2] = calibration.oz;
+        origin[0] = calibration.origin(1, 0);
+        origin[1] = calibration.origin(2, 0);
+        origin[2] = calibration.origin(3, 0);
 
         floatArr principal(new float[2]);
-        principal[0] = calibration.p1;
-        principal[1] = calibration.p2;
+        principal[0] = calibration.principal(1, 0);
+        principal[1] = calibration.principal(2, 0);
 
         addArray(groupName, "distortion", 3, a);
         addArray(groupName, "rotation", 3, rotation);
