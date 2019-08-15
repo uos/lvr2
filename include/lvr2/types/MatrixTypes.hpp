@@ -148,16 +148,25 @@ using Matrix6d = Eigen::Matrix<double, 6, 6>;
 /// 6D vector double precision
 using Vector6d = Eigen::Matrix<double, 6, 1>;
 
+template<typename T> 
+Vector3<T> multiply(const Transform<T>& transform, const Vector3<T>& p)
+{
+    Vector4<T> ret(p.coeff(0), p.coeff(1), p.coeff(2), 1.0);
+    ret = transform * ret;
+    return Vector3<T>(ret.coeff(0), ret.coeff(1), ret.coeff(2));
+}
+
 } // namespace lvr2
 
 // additional operators
 
+
+
+
 template<typename T>
 lvr2::Vector3<T> operator*(const lvr2::Transform<T>& transform, const lvr2::Vector3<T>& p)
 {
-    lvr2::Vector4<T> ret(p.coeff(0), p.coeff(1), p.coeff(2), 1.0);
-    ret = transform * ret;
-    return lvr2::Vector3<T>(ret.coeff(0), ret.coeff(1), ret.coeff(2));
+    return lvr2::multiply(transform, p);
 }
 
 #endif // LVR2_TYPES_MATRIXTYPES_HPP

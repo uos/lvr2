@@ -370,9 +370,6 @@ static Vector3<T> openCvToLvr(const Vector3<T>& in)
     );
 }
 
-
-
-
 template <typename T>
 static Rotation<T> openCvToLvr(const Rotation<T> &in)
 {
