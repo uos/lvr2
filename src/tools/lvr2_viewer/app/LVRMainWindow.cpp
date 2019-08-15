@@ -1671,29 +1671,30 @@ QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm
     std::vector<ScanData> scanData = sdm->getScanData();
     std::vector<std::vector<CameraData> > camData = sdm->getCameraData();
 
+    bool cam_data_available = camData.size() > 0;
+
     for (size_t i = 0; i < scanData.size(); i++)
     {
         char buf[128];
         std::sprintf(buf, "%05d", scanData[i].m_positionNumber);
         LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
 
-        // if(camData[i].size() > 0)
-        // {
-        //     QTreeWidgetItem* cameras_item = new QTreeWidgetItem(item, LVRCamerasItemType);
-        //     cameras_item->setText(0, QString("Photos"));
-        //     // insert cam poses
-        //     // QTreeWidgetItem *images = new QTreeWidgetItem(item, QString("cams"));
-        //     for(int j=0; j < camData[i].size(); j++)
-        //     {
-        //         char buf2[128];
-        //         std::sprintf(buf2, "%05d", j);
-        //         // implement this
-        //         LVRCamDataItem *cam_item = new LVRCamDataItem(camData[i][j], sdm, j, m_renderer, QString("photo_") + buf2, cameras_item);
+        if(cam_data_available && camData[i].size() > 0)
+        {
+            QTreeWidgetItem* cameras_item = new QTreeWidgetItem(item, LVRCamerasItemType);
+            cameras_item->setText(0, QString("Photos"));
+            // insert cam poses
+            // QTreeWidgetItem *images = new QTreeWidgetItem(item, QString("cams"));
+            for(int j=0; j < camData[i].size(); j++)
+            {
+                char buf2[128];
+                std::sprintf(buf2, "%05d", j);
+                // implement this
+                LVRCamDataItem *cam_item = new LVRCamDataItem(camData[i][j], sdm, j, m_renderer, QString("photo_") + buf2, cameras_item);
 
-        //         lastItem = cam_item;
-        //     }
-        // }
-
+                lastItem = cam_item;
+            }
+        }
 
         lastItem = item;
     }

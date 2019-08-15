@@ -15,6 +15,8 @@
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Normal.hpp"
 #include "lvr2/types/CameraData.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/registration/TransformUtils.hpp"
 
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../vtkBridge/LVRBoundingBoxBridge.hpp"
@@ -68,7 +70,7 @@ class LVRCamDataItem : public QTreeWidgetItem, public Transformable
          */
         Transformd getGlobalTransform();
 
-        std::vector<BaseVector<float> > genFrustrumLVR(float scale=1.0);
+        std::vector<Vector3d > genFrustrumLVR(float scale=1.0);
 
         vtkSmartPointer<vtkActor> genFrustrum(float scale=1.0);
 
