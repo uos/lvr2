@@ -112,7 +112,6 @@ Transform<T> transformRegistration(const Transform<T>& transform, const Transfor
     result.template block<3, 1>(0, 3) = transform.template block<3, 1>(0, 3) + tmp;
 
     return result;
-
 }
 
 template<typename T>
