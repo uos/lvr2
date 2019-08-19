@@ -15,6 +15,8 @@
 #include "lvr2/io/Hdf5IO.hpp"
 #include "lvr2/io/hdf5/ArrayIO.hpp"
 #include "lvr2/io/hdf5/ChannelIO.hpp"
+#include "lvr2/io/hdf5/PointCloudIO.hpp"
+#include "lvr2/io/PointBuffer.hpp"
 
 // #include "hdf5_features/ChannelIO.hpp"
 // #include "hdf5_features/HyperIO.hpp"
@@ -96,7 +98,8 @@ int main(int argc, char** argv)
     
     using MyHDF5IO = lvr2::Hdf5IO<
         lvr2::hdf5features::ArrayIO,
-        lvr2::hdf5features::ChannelIO
+        lvr2::hdf5features::ChannelIO,
+        lvr2::hdf5features::PointCloudIO
     >;
 
 
@@ -137,5 +140,10 @@ int main(int argc, char** argv)
     }
 
 
+    lvr2::PointBufferPtr pointcloud(new lvr2::PointBuffer);
+
+    pointcloud->add("points", channel);
+
+    my_io.save("apointcloud", pointcloud);
 
 }
