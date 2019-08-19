@@ -156,16 +156,9 @@ int main(int argc, char **argv) {
     gcs.setInterior(options.isInterior());
     gcs.setNumBalances(options.getNumBalances());
 
-    //try {
-        gcs.getMesh(mesh);
-    //}
-    /*catch (exception e){
-        std::cout << "Error while running the Algrotihm, source currently unknown, probably due to an error in the mesh."<<endl;
-        std::cout << e.what() << endl;
-        cout << "Please try again." << endl;
-    }*/
 
-    //naiveFillSmallHoles(mesh, 10, true);
+    gcs.getMesh(mesh);
+
     saveMesh();
 
     return 0;

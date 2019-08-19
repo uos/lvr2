@@ -715,6 +715,13 @@ void HalfEdgeMesh<BaseVecT>::getNeighboursOfVertex(
     });
 }
 
+/**
+ * finds the common neighbors of two vertices
+ * @tparam BaseVecT
+ * @param vH1
+ * @param vH2
+ * @return a vector with the common neighbors
+ */
 template <typename BaseVecT>
 vector<VertexHandle> HalfEdgeMesh<BaseVecT>::findCommonNeigbours(VertexHandle vH1, VertexHandle vH2){
     vector<VertexHandle> vH1nb = this->getNeighboursOfVertex(vH1);
@@ -734,14 +741,18 @@ vector<VertexHandle> HalfEdgeMesh<BaseVecT>::findCommonNeigbours(VertexHandle vH
 }
 
 
-  /**
-   *    Triangle in R^3:
-   *
-   *             |c-a|^2 [(b-a)x(c-a)]x(b-a) + |b-a|^2 (c-a)x[(b-a)x(c-a)]
-   *     m = a + ---------------------------------------------------------.
-   *                                 2 | (b-a)x(c-a) |^2
-   */
 
+/**
+ * Calculates the triangle circumcircle and circumcenter.
+ * Triangle circumcenter in R^3:
+ *
+ *             |c-a|^2 [(b-a)x(c-a)]x(b-a) + |b-a|^2 (c-a)x[(b-a)x(c-a)]
+ *     m = a + ---------------------------------------------------------.
+ *                                 2 | (b-a)x(c-a) |^2
+ * @tparam BaseVecT
+ * @param faceH
+ * @return
+ */
 template <typename BaseVecT>
 std::pair<BaseVecT, float> HalfEdgeMesh<BaseVecT>::triCircumCenter(FaceHandle faceH) {
     //get vertices of the face
@@ -768,6 +779,12 @@ std::pair<BaseVecT, float> HalfEdgeMesh<BaseVecT>::triCircumCenter(FaceHandle fa
 
 }
 
+/**
+ * performs an edge split operation on the given edge
+ * @tparam BaseVecT
+ * @param edgeH
+ * @return a result containg the newly added vertex and the new faces
+ */
 template <typename BaseVecT>
 EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdge(EdgeHandle edgeH) {
 
@@ -939,7 +956,12 @@ EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdge(EdgeHandle edgeH) {
     return result;
 }
 
-
+/**
+ * performs a vertex split operation on the selected vertex
+ * @tparam BaseVecT
+ * @param vertexToBeSplitH
+ * @return a struct containing the new vertex and the added faces
+ */
 template <typename BaseVecT>
 VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
 {
@@ -978,14 +1000,6 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
             longestEdgeHalf = half;
         }
     }
-
-    /*if(isBorderEdge(longestEdge) || longestDistance == 0)
-    {
-        cout << "Border edge or no edge, will not be split" << endl;
-        VertexHandle dummy(std::numeric_limits<int>::max());
-        VertexSplitResult ret(dummy);
-        return ret;
-    }*/
 
     VertexHandle targetOfLongestEdgeH = longestEdgeHalf.target;
     BaseVecT targetOfLongestEdge = getV(targetOfLongestEdgeH).pos;
@@ -1047,29 +1061,6 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
     result.addedFaces.assign(splitResult.addedFaces.begin(), splitResult.addedFaces.end());
 
     return result;
-}
-
-//TODO: idea: find vertices, which got two edges which are a border edge and are nect to each other. connect them with a face and
-//TODO:       recursively call the function for the next vertices
-template <typename BaseVecT>
-void HalfEdgeMesh<BaseVecT>::coalescing() {
-
-    for(auto vertex : this->vertices())
-    {
-        auto edges = getEdgesOfVertex(vertex);
-        int counter = 0;
-        vector<VertexHandle> verticesForFaceInsertion;
-        for(auto edge : edges)
-        {
-            if(isBorderEdge(edge))
-            {
-                counter++;
-                auto hE = HalfEdgeHandle::oneHalfOf(edge);
-                
-            }
-        }
-    }
-
 }
 
 
@@ -1349,7 +1340,12 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     return result;
 }
 
-
+/**
+ * Checks whether the given edge is flippable or not. includes check for huetchen structures
+ * @tparam BaseVecT
+ * @param handle
+ * @return if the edge is flippable
+ */
 template<typename BaseVecT>
 bool HalfEdgeMesh<BaseVecT>::isFlippable(EdgeHandle handle) const
 {
@@ -1359,6 +1355,7 @@ bool HalfEdgeMesh<BaseVecT>::isFlippable(EdgeHandle handle) const
         return false;
     }
 
+    //check huetchen
     HalfEdgeHandle hEH = HalfEdgeHandle::oneHalfOf(handle);
     auto target1 = getE(hEH).target;
     auto target2 = getE(getE(hEH).twin).target;
@@ -1375,12 +1372,12 @@ bool HalfEdgeMesh<BaseVecT>::isFlippable(EdgeHandle handle) const
     {
         if(getE(getE(getE(getE(hEH).next).twin).next).next.idx() == getE(getE(getE(getE(getE(hEH).next).next).twin).next).twin.idx())
         {
-            cout << "Hütchen :o :o :O" << endl;
+            cout << "Hütchen detected" << endl;
             return false;
         }
     }
 
-    //check huetchen
+
 
     // Make sure we have 4 different vertices around the faces of that edge.
     auto faces = getFacesOfEdge(handle);

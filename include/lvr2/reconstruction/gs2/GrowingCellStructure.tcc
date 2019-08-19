@@ -28,7 +28,6 @@ namespace lvr2 {
         m_mesh = 0;
         tumble_tree = new TumbleTree(); //create tumble tree
         kd_tree = new DynamicKDTree<BaseVecT>(3); // create 3-dimensional kd-tree for distance evaluation
-        //bst_tree = new BST();
     }
 
     /**
@@ -107,14 +106,7 @@ namespace lvr2 {
         }
 
 
-        //tumble_tree->balance();
-        //tumble_tree->display();
-
-        //cout << "Size of BST: " << bst_tree->size() << endl;
         cout << "Max depth of tt: " << (m_balances != 0 ? max_depth : tumble_tree->maxDepth()) << endl;
-        //cout << "Min depth of tt: " << tumble_tree->minDepth() << endl;
-        //cout << "Average depth of tt: " << tumble_tree->avgDepth() << endl;
-        //cout << "Diff between ca and tt (waaaaaag): " << counter << endl;
         cout << "Not Deleted in TT: " << tumble_tree->notDeleted << endl;
         cout << "Tumble Tree size: " << tumble_tree->size() << endl;
         cout << "KD-Tree size: " << kd_tree->size() << endl;
@@ -201,7 +193,7 @@ namespace lvr2 {
             cellArr[winnerH.idx()] = tumble_tree->insert(winnerSC + 1, winnerH);
 
         }
-        else //GSS
+        else //GSS TODO: INCLUDE GSS ADDITIONS
         {
             std::cout << "Using GSS" << endl;
             //find closest structure
@@ -252,7 +244,7 @@ namespace lvr2 {
             kd_tree->insert(kdInsert, newVH);*/
 
         }
-        else //GSS
+        else //GSS TODO: INCLUDE GSS ADDITIONS
         {
             //select triangle with highst err
             FaceHandle errorFaceH(0);
@@ -296,10 +288,10 @@ namespace lvr2 {
 
 
     /**
-     * Performs an edge collapse on the vertex with the smallest signal counter(GCS)
+     * GCS: Performs an edge collapse on the vertex with the smallest signal counter(GCS)
      *
-     * Performs an edge collapse on geometrically redundant edge from the face with the lowest approx error,
-     * removes faces which exceed a certain age (GSS)
+     * GSS: Performs an edge collapse on geometrically redundant edge from the face with the lowest approx error,
+     * removes faces which exceed a certain age
      *
      * @tparam BaseVecT
      * @tparam NormalT
@@ -317,7 +309,7 @@ namespace lvr2 {
 
             if(m_mesh->getNeighboursOfVertex(lowestSC).size() > 50)
             {
-                aggressiveCutOut(lowestSC); //cut out the lowest sc if its valence is too high
+                aggressiveCutOut(lowestSC); //cut out the lowest sc if its valence is too high (GSS).
             }
             else
             {
@@ -399,13 +391,13 @@ namespace lvr2 {
 
     /**
      * Gets the closest point to the given point using the euclidean distance
-     * runtime: O(n) //TODO: make it better. kd-tree?
+     * runtime: O(n) //TODO: make it better. kd-tree? KD-TREE IMPLEMENTATION IN GS2 NOT GOOD.
      *
      * @tparam BaseVecT
      * @tparam NormalT
      * @param point - point of the pointcloud
      * @param progress_bar - needed to print the progress of the algorithm
-     * @return a handle pointing to the closest point of the mesh to the point in the paramters
+     * @return a handle pointing to the closest point of the mesh to the point in the parameters
      */
     template <typename BaseVecT, typename NormalT>
     VertexHandle GrowingCellStructure<BaseVecT, NormalT>::getClosestPointInMesh(BaseVecT point, PacmanProgressBar& progress_bar)
@@ -419,7 +411,7 @@ namespace lvr2 {
 
         for(auto vertexH : vertices)
         {
-            /*if(m_mesh->numVertices() != 4)
+            /*if(m_mesh->numVertices() != 4) TODO: PRINT NUMBER OF VERTICES WHILE ALSO PRINTING THE PROGRESS BAR...
             {
                 cout << "\33[2K\r" << endl;
             }*/
@@ -427,7 +419,6 @@ namespace lvr2 {
             //cout << "Vertices in Mesh: " << m_mesh->numVertices() << endl;
 
             BaseVecT vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
-            //avg_counter += vertex.signal_counter; //calc the avg signal counter
             BaseVecT distanceVector = point - vertex;
             float length = distanceVector.length2();
 
@@ -440,13 +431,12 @@ namespace lvr2 {
             }
         }
 
-        //m_avgSignalCounter = avg_counter / m_mesh->numVertices();
-
         return closestVertexToRandomPoint;
     }
 
     /**
-     * Test Method creating a mesh with 9 vertices. Used for testing vertex and edge split operations
+     * Test Method creating a mesh with 9 vertices. Used for testing vertex and edge split operations,
+     * also tests the tumble tree
      *
      * @tparam BaseVecT
      * @tparam NormalT
@@ -593,7 +583,7 @@ namespace lvr2 {
         }
 
         //add faces to the hashmap with no error and zero age
-        if(m_useGSS)
+        if(m_useGSS) //GSS
         {
             faceAgeErrorMap.insert(fH1, std::make_pair(0.0f, 0.0f));
             faceAgeErrorMap.insert(fH2, std::make_pair(0.0f, 0.0f));
@@ -619,6 +609,7 @@ namespace lvr2 {
 
     /**
      * Performs a laplacian smoothing operation on the vertex given as paramter
+     * TODO: outsource it into the halfedge mesh or basemesh
      *
      * @tparam BaseVecT - the vector type used
      * @tparam NormalT - the normal type used
@@ -703,8 +694,6 @@ namespace lvr2 {
             tree.get()->kSearch(m_mesh->getVertexPosition(vertex), 1, indexes, distances);
             if(distances[0] > 3 * avg_distance)
             {
-                /*EdgeHandle longestH(0);
-                float length = 0.0f;*/
                 for(auto eH : m_mesh->getEdgesOfVertex(vertex))
                 {
                     auto vertices = m_mesh->getVerticesOfEdge(eH);
@@ -745,105 +734,6 @@ namespace lvr2 {
 
         }
 
-        //remove faces with  E(X) <= E(X) + 1.64 * o(x) < Xo (confidence interval)
-        /*double avg_area = 0;
-
-        for(FaceHandle face: m_mesh->faces())
-        {
-            avg_area += m_mesh->calcFaceArea(face);
-        }
-
-        avg_area /= m_mesh->numFaces();
-        float standart_deviation = 0;
-
-        for(FaceHandle face: m_mesh->faces())
-        {
-            standart_deviation += pow(m_mesh->calcFaceArea(face) - avg_area, 2);
-        }
-
-        standart_deviation /= m_mesh->numFaces();
-        standart_deviation = sqrt(standart_deviation);
-
-
-        for(FaceHandle face : m_mesh->faces())
-        {
-            double area = m_mesh->calcFaceArea(face);
-            if(area > 5 * avg_area// + 1.64 *standart_deviation)
-            {
-                m_mesh->removeFace(face);
-            }
-        }
-
-        //remove faces, which have a edge, which is much longer, than the average
-        double avg_length = 0;
-        for(EdgeHandle edgeH: m_mesh->edges())
-        {
-            auto vertices = m_mesh->getVerticesOfEdge(edgeH);
-            BaseVecT v1 = m_mesh->getVertexPosition(vertices[0]);
-            BaseVecT v2 = m_mesh->getVertexPosition(vertices[1]);
-            avg_length += (v2-v1).length();
-        }
-
-        avg_length /= m_mesh->numEdges();
-        float standart_deviation_edge = 0;
-
-        for(EdgeHandle edgeH: m_mesh->edges())
-        {
-            auto vertices = m_mesh->getVerticesOfEdge(edgeH);
-            BaseVecT v1 = m_mesh->getVertexPosition(vertices[0]);
-            BaseVecT v2 = m_mesh->getVertexPosition(vertices[1]);
-            standart_deviation_edge += pow((v2 - v1).length() - avg_length, 2);
-        }
-
-        standart_deviation_edge /= m_mesh->numFaces();
-        standart_deviation_edge = sqrt(standart_deviation_edge);
-
-
-        for(EdgeHandle edgeH : m_mesh->edges())
-        {
-            auto vertices = m_mesh->getVerticesOfEdge(edgeH);
-            BaseVecT v1 = m_mesh->getVertexPosition(vertices[0]);
-            BaseVecT v2 = m_mesh->getVertexPosition(vertices[1]);
-            double length = (v2-v1).length();
-            if(//length < avg_length - 5 *standart_deviation_edge || length > 5 * avg_length //+ 5 *standart_deviation_edge)
-            {
-                auto faces = m_mesh->getFacesOfEdge(edgeH);
-                if(faces[0]) m_mesh->removeFace(faces[0].unwrap()); //remove faces of the edge
-                if(faces[1]) m_mesh->removeFace(faces[1].unwrap());
-
-            }
-        }
-
-        //now remove faces with one ore less neighbour faces, as those become redundant as well.
-        //or those, who have two, but also a neighbor face which also has only two neighbors
-        bool oneOrNoEdges = true;
-        while(oneOrNoEdges)
-        {
-            oneOrNoEdges = false;
-            for(FaceHandle face: m_mesh->faces())
-            {
-                vector<FaceHandle> n_faces;
-                m_mesh->getNeighboursOfFace(face, n_faces);
-                if(n_faces.size() <= 1)
-                {
-                    m_mesh->removeFace(face);
-                    oneOrNoEdges = true;
-                }
-                else if(n_faces.size() == 2)
-                {
-                    for(FaceHandle f : n_faces){
-                        vector<FaceHandle> n_faces2;
-                        m_mesh->getNeighboursOfFace(f, n_faces2);
-                        if(n_faces2.size() <= 2)
-                        {
-                            m_mesh->removeFace(face);
-                        }
-                    }
-                }
-            }
-        }*/
-
-
     }
 
     /**
@@ -863,6 +753,12 @@ namespace lvr2 {
         }
     }
 
+    /**
+     * Calculates the average distance between the points in the poitncloud
+     * @tparam BaseVecT
+     * @tparam NormalT
+     * @return the average distance TODO: AUSLAGERN IN SURFACE?
+     */
     template<typename BaseVecT, typename NormalT>
     double GrowingCellStructure<BaseVecT,NormalT>::avgDistanceBetweenPointsInPointcloud()
     {
@@ -886,6 +782,13 @@ namespace lvr2 {
     }
 
 
+    /**
+     * Number of vertices which exceed a given valance (including the valence itself)
+     * @tparam BaseVecT
+     * @tparam NormalT
+     * @param minValence minimum valance which will be counted
+     * @return
+     */
     template <typename BaseVecT, typename NormalT>
     int GrowingCellStructure<BaseVecT, NormalT>::numVertexValences(int minValence)
     {
@@ -900,6 +803,12 @@ namespace lvr2 {
         return counter;
     }
 
+    /**
+     * Calculates the average valance of the vertices in the mesh, doesnt really make sense. instead use a normal destribution
+     * @tparam BaseVecT
+     * @tparam NormalT
+     * @return average valance in the current mesh
+     */
     template <typename BaseVecT, typename NormalT>
     double GrowingCellStructure<BaseVecT, NormalT>::avgValence()
     {
@@ -916,6 +825,13 @@ namespace lvr2 {
         return val_counter / m_mesh->numVertices();
     }
 
+
+    /**
+     * Calculates average skewness and equilaterality of the triangles in the mesh
+     * @tparam BaseVecT
+     * @tparam NormalT
+     * @return a pair containing the average skewness and equilaterality value. Values in [0, ..., 1]
+     */
     template <typename BaseVecT, typename NormalT>
     std::pair<double, double> GrowingCellStructure<BaseVecT, NormalT>::equilaterality()
     {
@@ -930,26 +846,6 @@ namespace lvr2 {
             auto edges = m_mesh->getEdgesOfFace(face);
             double actual_area = m_mesh->calcFaceArea(face);
 
-            /*double longestEdge = 0.0;
-
-            for(auto e : edges)
-            {
-                auto vertices = m_mesh->getVerticesOfEdge(e);
-
-                BaseVecT p1 = m_mesh->getVertexPosition(vertices[0]);
-                BaseVecT p2 = m_mesh->getVertexPosition(vertices[1]);
-
-                double length = (p2 - p1).length();
-                if(length > longestEdge)
-                {
-                    longestEdge = length;
-                }
-            }
-
-            //found longest edge
-
-            auto equilateralFaceArea = (sqrt(3) / 4) * (longestEdge * longestEdge);*/
-
             float circumRadius = m_mesh->triCircumCenter(face).second;
 
             double sideLength = (3*circumRadius)/sqrt(3);
@@ -963,6 +859,12 @@ namespace lvr2 {
         return std::make_pair(skewnessPercentage / numFaces, equilateralPercentage / numFaces) ;
     }
 
+    /**
+     * calculates the size of the cell array
+     * @tparam BaseVecT
+     * @tparam NormalT
+     * @return
+     */
     template <typename BaseVecT, typename NormalT>
     int GrowingCellStructure<BaseVecT, NormalT>::cellVecSize()
     {
