@@ -384,14 +384,14 @@ option(WITH_KINFU "Compile LVR Kinfu" OFF)
 # compatible to gcc4.8. Older CUDA versions require GCC lower
 # than 4.8
 
-if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VERSION_GREATER 8)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7 )
+if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VERSION_GREATER 8 AND CUDA_VERSION VERSION_LESS 10)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5 )
         message(STATUS "******************************************************************")
         message(STATUS "* Your gcc version needs to be lower than 6 to compile the LVR   *")
         message(STATUS "* CUDA library and apps with CUDA. Setting CUDA_HOST_COMPILER to *")
         message(STATUS "* g++-6*. Please ensure that g++ 6 is installed on your system.  *")
         message(STATUS "******************************************************************")
-        set(CUDA_HOST_COMPILER "g++-6" CACHE STRING "" FORCE)
+        set(CUDA_HOST_COMPILER "g++-5" CACHE STRING "" FORCE)
         endif()
 endif()
 
@@ -447,15 +447,15 @@ endif()
 ##############################################################
 
 find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
-# if(Qt5_FOUND)
-#   find_package(QVTK)
-#   if(QVTK_FOUND)
-#     include_directories(${QVTK_INCLUDE_DIR})
-#     add_subdirectory(src/tools/lvr2_viewer)
-#   elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
-#     add_subdirectory(src/tools/lvr2_viewer)
-#   endif(QVTK_FOUND)
-# endif(Qt5_FOUND)
+if(Qt5_FOUND)
+  find_package(QVTK)
+  if(QVTK_FOUND)
+    include_directories(${QVTK_INCLUDE_DIR})
+    add_subdirectory(src/tools/lvr2_viewer)
+  elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
+    add_subdirectory(src/tools/lvr2_viewer)
+  endif(QVTK_FOUND)
+endif(Qt5_FOUND)
 
 ##############################################################
 # LIBRARIES

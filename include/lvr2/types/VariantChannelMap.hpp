@@ -34,6 +34,7 @@
 #include <iostream>
 #include <utility>
 #include <memory>
+#include <vector>
 #include "VariantChannel.hpp"
 
 namespace lvr2 {
