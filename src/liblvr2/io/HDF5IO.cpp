@@ -435,6 +435,29 @@ std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
 
 }
 
+
+
+// template<template<typename Base> typename ...ComponentTs>
+// class Hdf5IO;
+
+
+// template<template<typename Base> typename ComponentT>
+// class Hdf5IO<ComponentT<Hdf5IO<ComponentT> > > : public ComponentT<Hdf5IO<ComponentT> >, public BaseHdf5IO
+// {
+// public:
+//     using ComponentT<Hdf5IO<ComponentT> >::save;
+// };
+
+// // template<template<typename Base> typename ...ComponentT >
+// template<template<typename Base1> typename ComponentT, template<typename Base2> typename ...ComponentTs >
+// class Hdf5IO<ComponentT<Hdf5IO<ComponentT> >, ComponentTs<Hdf5IO<ComponentTs...> >...> 
+// : public ComponentT<Hdf5IO<ComponentT> >, public Hdf5IO<ComponentTs<Hdf5IO<ComponentTs...> >...>
+// {
+// public:
+//     using ComponentT<Hdf5IO<ComponentT> >::save;
+//     using Hdf5IO<ComponentTs<Hdf5IO<ComponentTs...> >...>::save;
+// };
+
 std::vector<std::vector<CameraData> > HDF5IO::getRawCamData(bool load_image_data)
 {
     std::vector<std::vector<CameraData> > ret;
