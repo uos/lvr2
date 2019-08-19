@@ -54,38 +54,12 @@ namespace  lvr2{
         ~TumbleTree();
 
         //Cell* insertIterative(double sc, VertexHandle vH);
-        Cell* insert(double sc, VertexHandle vH)
-        {
-            if(root == NULL)
-            {
-                cout << "new root.." << endl;
-                root = new Cell();
-                root->left = NULL;
-                root->right = NULL;
-                root->parent = NULL;
-                root->alpha = 1;
-                root->signal_counter = sc;
-                root->duplicateMap.insert(vH, sc);
-
-                return root;
-            }
-
-            return insert(root, sc, vH);
-
-
-        }
+        Cell* insert(double sc, VertexHandle vH);
         double remove(Cell* c, VertexHandle vH); //returns the real sc
-        double removeMin();
-
-        double removeMax();
-
 
         int maxDepth();
         int minDepth();
-        int avgDepth()
-        {
-            return sumDepth(root) / numLeafes(root);
-        }
+        int avgDepth();
         Cell* find(double sc, VertexHandle vH);
 
         void display();
@@ -100,115 +74,6 @@ namespace  lvr2{
 
         void updateSC(double alpha);
         int notDeleted = 0;
-    };
-
-    typedef struct node
-    {
-        double key;
-        std::vector<VertexHandle> vertexHandles;
-        node* left; //left subtree
-        node* right; //right subtree
-
-    } node;
-
-
-    class BST
-    {
-    private:
-        node* root = NULL;
-        node* lastInserted = NULL;
-
-        node* insert(node* current, double key, VertexHandle vH)
-        {
-            if(current == NULL)
-            {
-                auto newNode = new node();
-                newNode->right = NULL;
-                newNode->left = NULL;
-                newNode->key = key;
-                newNode->vertexHandles.push_back(vH);
-#
-                return newNode;
-            }
-            else if(key < current->key)
-            {
-                current->left = insert(current->left, key, vH);
-            }
-            else if(key > current->key)
-            {
-               current->right = insert(current->right, key, vH);
-            }
-            else
-            {
-                current->vertexHandles.push_back(vH);
-                return current;
-            }
-        }
-
-        node* remove(node* current, double key, VertexHandle vH, bool removeWhole = false)
-        {
-            if(current == NULL) return current;
-            else if(key < current->key)
-            {
-                current->left = remove(current->left, key, vH, removeWhole);
-            }
-            else if(key > current->key)
-            {
-                current->right = remove(current->right, key, vH, removeWhole);
-            }
-            else
-            {
-                if(current->vertexHandles.size() > 1 && !removeWhole) current->vertexHandles.erase(std::find(current->vertexHandles.begin(), current->vertexHandles.end(), vH));
-                else if(!current->left)
-                {
-                    node* tmp = current->right;
-                    free(current);
-                    return tmp;
-                }
-                else if(!current->right)
-                {
-                    node* tmp = current->left;
-                    free(current);
-                    return tmp;
-                }
-                else
-                {
-                    node* tmp = findMin(current->right);
-                    current->key = tmp->key;
-                    current->vertexHandles.swap(tmp->vertexHandles);
-                    current->right = remove(current->right, tmp->key, tmp->vertexHandles[0], true);
-                }
-            }
-
-            return current;
-        }
-
-        node* findMin(node* current)
-        {
-            if(current == NULL) return NULL;
-            else if(current->left == NULL) return current;
-            else return findMin(current->left);
-        }
-
-        node* findMax(node* current)
-        {
-            if(current == NULL) return NULL;
-            else if(current->right == NULL) return current;
-            else return findMin(current->right);
-        }
-
-        long size(node* current)
-        {
-            if(current == NULL) return 0;
-            return current->vertexHandles.size() + size(current->left) + size(current->right);
-        }
-
-    public:
-
-        void insert(double key, VertexHandle vH){root = insert(root, key, vH);}
-        void remove(double key, VertexHandle vH){root = remove(root, key, vH);}
-        long size(){return size(root);}
-
     };
 
 }

@@ -32,15 +32,6 @@ namespace lvr2{
          */
         void getMesh(HalfEdgeMesh<BaseVecT> &mesh);
 
-
-        //TODO: add functions to make gcs possible, such as laplacian smoothing
-
-        /**
-         *
-         * GETTER AND SETTER
-         *
-         */
-
         int getRuntime() const {
             return m_runtime;
         }
@@ -168,9 +159,9 @@ namespace lvr2{
 
         // "GCS" related members
         TumbleTree* tumble_tree;
-        BST* bst_tree;
         DynamicKDTree<BaseVecT>* kd_tree;
-        std::vector<Cell*> cellArr;
+        std::vector<Cell*> cellArr; //TODO: OUTSOURCE IT INTO THE TUMBLETREE CLASS, NEW PARAMETER FOR THE TUMBLE TREE CONSTRUCTOR
+                                    // CONTAINING THE MAXMIMUM SIZE OF THE MESH
         float m_decreaseFactor; //for sc calc
         int m_allowMiss;
         float m_collapseThreshold; //threshold for the collapse - when does it make sense
@@ -220,8 +211,7 @@ namespace lvr2{
 
         double avgValence();
 
-        void coalescing();
-
+        //void coalescing();
 
         // ADDITIONAL FUNCTIONS
 

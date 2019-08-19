@@ -25,6 +25,16 @@ namespace lvr2{
         return NULL;
     }
 
+    /**
+     * Creates a new tree cell with the given parameters
+     * @param sc - the signal counter
+     * @param vH - the VertexHandle
+     * @param left - the left subtree
+     * @param right - the right subtree
+     * @param parent - the parent cell
+     * @param alpha - the alpha value used for updating
+     * @return the newly created cell
+     */
     Cell* TumbleTree::makeCell(double sc, VertexHandle vH, Cell* left, Cell* right, Cell* parent, double alpha)
     {
         Cell* cell = new Cell();
@@ -38,68 +48,24 @@ namespace lvr2{
         return cell;
     }
 
-    /*Cell* TumbleTree::insertIterative(double sc, VertexHandle vH)
+    /**
+     * inserts a new cell into the tree
+     * @param c - cell pointer used for recursion
+     * @param sc - signal counter
+     * @param vH - vertexhandle
+     * @return the cell, the new values were inserted
+     */
+    Cell* TumbleTree::insert(Cell* c, double sc, VertexHandle vH)
     {
-
-        Cell* newCell = new Cell();
-        newCell->signal_counter = sc;
-        newCell->duplicateMap.insert(vH,sc);
-        newCell->left = NULL;
-        newCell->right = NULL;
-        newCell->parent = NULL;
-        newCell->alpha = 1;
 
         if(root == NULL)
         {
-            root = newCell;
+            cout << "new root.." << endl;
+            auto cell = makeCell(sc, vH, NULL, NULL, NULL, 1);
+            root = cell;
             return root;
         }
 
-        Cell* tmp = root;
-
-        Cell* maintain = NULL;
-
-
-        while(sc != tmp->signal_counter)
-        {
-            tmp->signal_counter *= tmp->alpha;
-            if(tmp->left != NULL) tmp->left->alpha *= tmp->alpha;
-            if(tmp->right != NULL) tmp->right->alpha *= tmp->alpha;
-            tmp->alpha = 1;
-
-            if(sc < tmp->signal_counter)
-            {
-                if(tmp->left == NULL)
-                {
-                    tmp->left = newCell;
-                    newCell->parent = tmp;
-                    return tmp->left;
-                }
-
-                tmp = tmp->left;
-            }
-            else if(sc > tmp->signal_counter)
-            {
-                if(tmp->right == NULL)
-                {
-                    tmp->right = newCell;
-                    newCell->parent = tmp;
-                    return tmp->right;
-                }
-
-                tmp = tmp->right;
-            }
-        }
-
-        //found
-        tmp->duplicateMap.insert(vH,sc);
-        //cout << "Inserting a duplicate" << endl;
-        return tmp;
-
-    }*/
-
-    Cell* TumbleTree::insert(Cell* c, double sc, VertexHandle vH)
-    {
         //update the current cell's sc and propagate
         c->signal_counter *= c->alpha;
         if(c->left) c->left->alpha *= c->alpha;
@@ -137,82 +103,15 @@ namespace lvr2{
         }
     }
 
-    //TODO: make it work. expected number of cells after the algorithm: runtime*numsplits iterative??
-    /*Cell* TumbleTree::removeTwo(double sc, VertexHandle vH, Cell* c, bool removeWhole, double alpha)
-    {
-        Cell* tmp;
-        if(c == NULL)
-        {
-            c != root ? notDeleted++ : notDeleted = notDeleted-1+1;
-            //std::cout << "  signal counter not found in TT" << endl;
-            return NULL;
-        }
-        else{
-            c->signal_counter *= c->alpha;
-            if(c->left)c->left->alpha *= c->alpha;
-            if(c->right)c->right->alpha *= c->alpha;
-            c->alpha = 1;
 
-            //cout << "Search sc: " << sc << " | Current sc: " << c->signal_counter << endl;
-        }
-
-        if(sc < c->signal_counter)
-        {
-            c->left = removeTwo(sc, vH, c->left, removeWhole, alpha);
-            if(c->left) c->left->parent = c;
-        }
-        else if(sc > c->signal_counter) {
-            c->right = removeTwo(sc, vH, c->right, removeWhole, alpha);
-            if(c->right) c->right->parent = c;
-        }
-        else{
-            //if there are two are more, just remove from the duplicate map
-            if(c->duplicateMap.numValues() > 1 && !removeWhole){
-                size_t numV = c->duplicateMap.numValues();
-                c->duplicateMap.erase(vH); //erase index from duplicate map
-                if(c->duplicateMap.numValues() == numV){
-                    notDeleted++;
-                    //std::cout << "  Not found in duplicate map..." << endl;
-                }
-                return c;
-            }
-
-            //if there is one or no child
-            if(c->left == NULL)
-            {
-                tmp = c->right;
-                delete c;
-                return tmp;
-            }
-            else if(c->right == NULL)
-            {
-                tmp = c->left;
-                delete c;
-                return tmp;
-            }
-            //node with two children: get min of the right subtree (inorder successor of right subtree)
-            tmp = findMin(c->right);
-
-            //copy data from inorder successor
-            c->signal_counter = tmp->signal_counter;
-            c->duplicateMap.clear();
-            //copy values from one dupilcate map to the other
-            for(auto iter = tmp->duplicateMap.begin(); iter != tmp->duplicateMap.end();++iter)
-            {
-                c->duplicateMap.insert(*iter,tmp->signal_counter);
-            }
-            //remove inorder successor
-            VertexHandle ret(0);
-            c->right = removeTwo(tmp->signal_counter, ret, c->right, true, alpha); // no good...
-            if(c->right) c->right->parent = c;
-
-        }
-
-        return c;
-    }*/
-
-
-    //TODO: make it work. expected number of cells after the algorithm: runtime*numsplits + 4  -  iterative??
+    /**
+     * remove sepcific data from the subtree
+     * @param sc - the signal counter of the cell, where a value is supposed to be deleted
+     * @param vH - the vertexhandle which needs to be deleted
+     * @param c - cell used for recursion
+     * @param removeWhole - flag used if a cell with two subtrees needs to be deleted
+     * @return the currently visited node. also used for recursion
+     */
     Cell* TumbleTree::remove(double sc, VertexHandle vH, Cell* c, bool removeWhole)
     {
         if(c == NULL){
@@ -298,47 +197,6 @@ namespace lvr2{
     }
 
 
-    double TumbleTree::removeMin()
-    {
-        Cell* tmp = findMin(root);
-
-        if(tmp->duplicateMap.numValues() > 1){
-            tmp->duplicateMap.erase(*tmp->duplicateMap.begin());
-            return tmp->signal_counter;
-        }
-        Cell* tmp2 = tmp->parent;
-        double sc = tmp->signal_counter;
-        delete tmp;
-        tmp2->left = NULL;
-        return sc;
-
-    }
-
-    double TumbleTree::removeMax()
-    {
-        Cell* tmp = findMax(root);
-
-        if(tmp->duplicateMap.numValues() > 1){
-            tmp->duplicateMap.erase(*tmp->duplicateMap.begin());
-            return tmp->signal_counter;
-        }
-
-        double sc = tmp->signal_counter;
-        if(tmp->parent){
-            Cell* tmp2 = tmp->parent;
-            delete tmp;
-            tmp2->left = NULL;
-        }
-        else
-        {
-            delete tmp;
-        }
-
-
-        return sc;
-
-    }
-
     /**
      * finds the cell with the minimum sc
      * @param c starting cell
@@ -393,6 +251,7 @@ namespace lvr2{
         }
     }
 
+    //NOT WORKING.
     Cell* TumbleTree::find(double sc, VertexHandle vH, Cell* c, double alpha)
     {
         if(c == NULL)
@@ -426,6 +285,10 @@ namespace lvr2{
 
     }
 
+    /**
+     * inorder traverse the tumble tree and print information on the nodes
+     * @param c currently visited cell
+     */
     void TumbleTree::inorder(Cell* c)
     {
         if(c == NULL)
@@ -450,20 +313,132 @@ namespace lvr2{
         inorder(c->right);
     }
 
-    //update the SCs (righ now linear -> O(n), later O(log(n))
+    /**
+     * Update the root TODO: USE ALPHA VALUE INSTEAD OF 1
+     * @param alpha - update value
+     */
     void TumbleTree::update(double alpha)
     {
         if(root) root->alpha *= 1;//alpha;
         else cout << "shut up mf " << endl;
     }
 
+    /**
+     * calculates the size of the tumbletree
+     * @param c currently visited cell
+     * @return size of the tree
+     */
     int TumbleTree::size(Cell* c)
     {
         if(c == NULL) return 0;
         return (int)c->duplicateMap.numValues() + size(c->left) + size(c->right);
     }
 
+    /**
+    * Calculates the maximum depth of the tree
+    * @param cell
+    * @return maximum depth
+    */
+    int TumbleTree::maxDepth(Cell* cell)
+    {
+        if(cell == NULL)
+        {
+            return 0;
+        }
+        else
+        {
+            return std::max(maxDepth(cell->left), maxDepth(cell->right)) +1;
+        }
+    }
 
+    /**
+    * Calculates the minimum depth of the tree
+    * @param cell
+    * @return minimum depth
+    */
+    int TumbleTree::minDepth(Cell* cell)
+    {
+        if(cell == NULL)
+        {
+            return 0;
+        }
+        else
+        {
+            return std::min(maxDepth(cell->left), maxDepth(cell->right)) +1;
+        }
+    }
+
+    /**
+     * calculates the sum of the depths of the leafs
+     * @param c
+     * @param currentDepth
+     * @return
+     */
+    int TumbleTree::sumDepth(Cell *c, int currentDepth)
+    {
+        if(c == NULL) return 0;
+        if(c->right == NULL && c->left == NULL) return currentDepth;
+        return sumDepth(c->right, currentDepth + 1) + sumDepth(c->left, currentDepth + 1);
+    }
+
+    /**
+     * calculates the number of leafes
+     * @param c
+     * @return
+     */
+    int TumbleTree::numLeafes(Cell *c)
+    {
+        if(c == NULL) return 0;
+        if(c->right == NULL && c->left == NULL) return 1;
+        return numLeafes(c->right) + numLeafes(c->left);
+    }
+
+    /**
+    * gets an inorder cell vector of the tree
+    * @param c currently visited cell.
+    * @param cells the cell vector
+    */
+    void TumbleTree::getCellsAsVector(Cell* c, vector<Cell*>& cells)
+    {
+        if(c == NULL)
+            return;
+        c->signal_counter *= c->alpha; //update sc and propagate alphas
+        if(c->left) c->left->alpha *= c->alpha;
+        if(c->right) c->right->alpha *= c->alpha;
+        c->alpha = 1;
+
+        getCellsAsVector(c->left, cells);
+        cells.push_back(c);
+        getCellsAsVector(c->right, cells);
+    }
+
+    /**
+     * builds a tree from a cell array. used for balancing the tree
+     * @param cells - the cell array
+     * @param start - the lower bound
+     * @param end - the upper bound
+     * @return the current cell, used for recursion
+     */
+    Cell* TumbleTree::buildTree(std::vector<Cell*>& cells, int start, int end)
+    {
+        // base case
+        if (start > end)
+            return NULL;
+
+        /* Get the middle element and make it root */
+        int mid = (start + end) / 2;
+        Cell* cell = cells[mid];
+
+        /* Using index in Inorder traversal, construct
+           left and right subtress */
+        cell->left = buildTree(cells, start, mid - 1);
+        cell->right = buildTree(cells, mid + 1, end);
+
+        if(cell->left)cell->left->parent = cell;
+        if(cell->right)cell->right->parent = cell;
+
+        return cell;
+    }
 
     TumbleTree::TumbleTree()
     {
@@ -479,7 +454,12 @@ namespace lvr2{
     // calls        \/
 
 
-    // we only need functionality to remove a specific cell.
+    /**
+     * Public method to remove a cell from the tree. TODO: INCLUDE UPDATES, TRAVERSE UP THE TREE TO OBTAIN THE CORRECT SC
+     * @param c cell of the vertex vH
+     * @param vH - vertexHandle to be removed
+     * @return the actual signal counter of cell c, needed for reinsertion
+     */
     double TumbleTree::remove(Cell* c, VertexHandle vH)
     {
         //TODO: FIX PROBLEM FOR SC UPDATES.
@@ -522,6 +502,11 @@ namespace lvr2{
         return sc; //return the correct sc
     }
 
+    Cell* TumbleTree::insert(double sc, VertexHandle vH)
+    {
+        return insert(root, sc, vH);
+    }
+
     void TumbleTree::display()
     {
         inorder(root);
@@ -553,54 +538,31 @@ namespace lvr2{
         return size(root);
     }
 
-    int TumbleTree::maxDepth(Cell* cell)
-    {
-        if(cell == NULL)
-        {
-            return 0;
-        }
-        else
-        {
-            return std::max(maxDepth(cell->left), maxDepth(cell->right)) +1;
-        }
-    }
+
 
     int TumbleTree::maxDepth()
     {
         return maxDepth(root);
     }
 
-    int TumbleTree::minDepth(Cell* cell)
-    {
-        if(cell == NULL)
-        {
-            return 0;
-        }
-        else
-        {
-            return std::min(maxDepth(cell->left), maxDepth(cell->right)) +1;
-        }
-    }
+
 
     int TumbleTree::minDepth()
     {
         return minDepth(root);
     }
 
-    int TumbleTree::sumDepth(Cell *c, int currentDepth)
+
+
+    int TumbleTree::avgDepth()
     {
-        if(c == NULL) return 0;
-        if(c->right == NULL && c->left == NULL) return currentDepth;
-        return sumDepth(c->right, currentDepth + 1) + sumDepth(c->left, currentDepth + 1);
+        return sumDepth(root) / numLeafes(root);
     }
 
-    int TumbleTree::numLeafes(Cell *c)
-    {
-        if(c == NULL) return 0;
-        if(c->right == NULL && c->left == NULL) return 1;
-        return numLeafes(c->right) + numLeafes(c->left);
-    }
 
+    /**
+     * balances the tumble tree
+     */
     void TumbleTree::balance()
     {
         vector<Cell*> cells;
@@ -608,40 +570,7 @@ namespace lvr2{
         root = buildTree(cells, 0, (int)cells.size() - 1);
     }
 
-    void TumbleTree::getCellsAsVector(Cell* c, vector<Cell*>& cells)
-    {
-        if(c == NULL)
-            return;
-        c->signal_counter *= c->alpha; //update sc and propagate alphas
-        if(c->left) c->left->alpha *= c->alpha;
-        if(c->right) c->right->alpha *= c->alpha;
-        c->alpha = 1;
 
-        getCellsAsVector(c->left, cells);
-        cells.push_back(c);
-        getCellsAsVector(c->right, cells);
-    }
-
-    Cell* TumbleTree::buildTree(std::vector<Cell*>& cells, int start, int end)
-    {
-        // base case
-        if (start > end)
-            return NULL;
-
-        /* Get the middle element and make it root */
-        int mid = (start + end) / 2;
-        Cell* cell = cells[mid];
-
-        /* Using index in Inorder traversal, construct
-           left and right subtress */
-        cell->left = buildTree(cells, start, mid - 1);
-        cell->right = buildTree(cells, mid + 1, end);
-
-        if(cell->left)cell->left->parent = cell;
-        if(cell->right)cell->right->parent = cell;
-
-        return cell;
-    }
 
 
 
