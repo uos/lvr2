@@ -234,11 +234,14 @@ std::unique_ptr<HighFive::DataSet> createDataset(
         if(dims_old[0] != dims_new[0] || dims_old[1] != dims_new[1] )
         {
             std::cout << "[Hdf5Util - createDataset] WARNING: size has changed. resizing dataset '" << std::endl;
-            int result = H5Ldelete(g.getId(), datasetName.data(), H5P_DEFAULT);
+            
+            // int result = H5Ldelete(g.getId(), datasetName.data(), H5P_DEFAULT);
 
-            dataset = std::make_unique<HighFive::DataSet>(
-                g.createDataSet<T>(datasetName, dataSpace, properties)
-            );
+            // dataset = std::make_unique<HighFive::DataSet>(
+            //     g.createDataSet<T>(datasetName, dataSpace, properties)
+            // );
+
+            dataset->resize(dims_new);
         }
     } else {
         dataset = std::make_unique<HighFive::DataSet>(

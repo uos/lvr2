@@ -22,6 +22,14 @@ public:
     PointBufferPtr load(HighFive::Group& group);
 
 protected:
+
+    PointBuffer::val_type loadDynamic(
+        HighFive::DataType dtype,
+        HighFive::Group& group,
+        std::string name
+    );
+    
+
     Derived* m_file_access = static_cast<Derived*>(this);
     ChannelIO<Derived>* m_channel_io = static_cast<ChannelIO<Derived>*>(m_file_access);
 };
