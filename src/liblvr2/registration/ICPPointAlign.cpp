@@ -43,7 +43,7 @@ using namespace std;
 namespace lvr2
 {
 
-ICPPointAlign::ICPPointAlign(ScanPtr model, ScanPtr data) :
+ICPPointAlign::ICPPointAlign(SLAMScanPtr model, SLAMScanPtr data) :
     m_modelCloud(model), m_dataCloud(data)
 {
     // Init default values

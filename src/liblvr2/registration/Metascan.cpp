@@ -37,7 +37,7 @@ namespace lvr2
 {
 
 Metascan::Metascan()
-    : Scan(PointBufferPtr(), Matrix4d::Identity())
+    : SLAMScanWrapper(ScanPtr(nullptr))
 {
 
 }
@@ -54,7 +54,7 @@ Vector3d Metascan::getPoint(size_t index) const
     }
 }
 
-void Metascan::addScan(ScanPtr scan)
+void Metascan::addScan(SLAMScanPtr scan)
 {
     m_scans.push_back(scan);
     m_numPoints += scan->numPoints();

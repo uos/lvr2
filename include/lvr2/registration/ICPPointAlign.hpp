@@ -35,7 +35,7 @@
 #define ICPPOINTALIGN_HPP_
 
 #include "KDTree.hpp"
-#include "Scan.hpp"
+#include "SLAMScanWrapper.hpp"
 
 #include "lvr2/types/MatrixTypes.hpp"
 
@@ -45,7 +45,7 @@ namespace lvr2
 class ICPPointAlign
 {
 public:
-    ICPPointAlign(ScanPtr model, ScanPtr data);
+    ICPPointAlign(SLAMScanPtr model, SLAMScanPtr data);
 
     Transformd match();
 
@@ -72,8 +72,8 @@ protected:
 
     bool        m_verbose;
 
-    ScanPtr     m_modelCloud;
-    ScanPtr     m_dataCloud;
+    SLAMScanPtr m_modelCloud;
+    SLAMScanPtr m_dataCloud;
 
     KDTreePtr   m_searchTree;
 };

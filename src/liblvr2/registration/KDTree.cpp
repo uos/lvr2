@@ -138,12 +138,18 @@ KDTreePtr create_recursive(KDTree::Point* points, int n, int maxLeafSize)
     return KDTreePtr(new KDNode(splitAxis, splitValue, lesser, greater));
 }
 
-KDTreePtr KDTree::create(ScanPtr scan, int maxLeafSize)
+KDTreePtr KDTree::create(SLAMScanPtr scan, int maxLeafSize)
 {
     KDTreePtr ret;
 
     size_t n = scan->numPoints();
-    auto points = scan->toVector3fArr();
+    auto points = boost::shared_array<Point>(new Point[n]);
+
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < n; i++)
+    {
+        points[i] = scan->getPoint(i).cast<PointT>();
+    }
 
     #pragma omp parallel // allows "pragma omp task"
     #pragma omp single // only execute every task once
@@ -155,7 +161,7 @@ KDTreePtr KDTree::create(ScanPtr scan, int maxLeafSize)
 }
 
 
-size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance, Vector3d& centroid_m, Vector3d& centroid_d)
+size_t getNearestNeighbors(KDTreePtr tree, SLAMScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance, Vector3d& centroid_m, Vector3d& centroid_d)
 {
     size_t found = getNearestNeighbors(tree, scan, neighbors, maxDistance);
 
@@ -177,7 +183,7 @@ size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, KDTree::Neighbor* neigh
     return found;
 }
 
-size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance)
+size_t getNearestNeighbors(KDTreePtr tree, SLAMScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance)
 {
     size_t found = 0;
     double distance = 0.0;

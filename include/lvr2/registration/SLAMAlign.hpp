@@ -26,7 +26,7 @@
  */
 
 /**
- * SlamAlign.hpp
+ * SLAMAlign.hpp
  *
  *  @date May 6, 2019
  *  @author Malte Hillmann
@@ -34,62 +34,62 @@
 #ifndef SLAMALIGN_HPP_
 #define SLAMALIGN_HPP_
 
-#include "Scan.hpp"
-#include "SlamOptions.hpp"
-#include "GraphSlam.hpp"
+#include "SLAMScanWrapper.hpp"
+#include "SLAMOptions.hpp"
+#include "GraphSLAM.hpp"
 
 namespace lvr2
 {
 
 /**
- * @brief A class to run Slam on Scans
+ * @brief A class to run SLAM on Scans
  */
-class SlamAlign
+class SLAMAlign
 {
 
 public:
     /**
-     * @brief Creates a new SlamAlign instance with the given Options and Scans
+     * @brief Creates a new SLAMAlign instance with the given Options and Scans
      *
      * This does not yet register the Scans, it only applies reduction options if specified
      *
      * @param options The Options to use
      * @param scans The Scans to start with
      */
-    SlamAlign(const SlamOptions& options, vector<ScanPtr>& scans);
+    SLAMAlign(const SLAMOptions& options, vector<SLAMScanPtr>& scans);
 
     /**
-     * @brief Creates a new SlamAlign instance with the given Options
+     * @brief Creates a new SLAMAlign instance with the given Options
      *
      * @param options The Options to use
      */
-    SlamAlign(const SlamOptions& options = SlamOptions());
+    SLAMAlign(const SLAMOptions& options = SLAMOptions());
 
-    virtual ~SlamAlign() = default;
+    virtual ~SLAMAlign() = default;
 
     /**
-     * @brief Adds a new Scan to the Slam instance
+     * @brief Adds a new Scan to the SLAM instance
      *
      * This method will apply any reduction options that are specified
      *
      * @param scan The new Scan
      * @param match true: Immediately call match() with the new Scan added
      */
-    void addScan(const ScanPtr& scan, bool match = false);
+    void addScan(const SLAMScanPtr& scan, bool match = false);
 
     /**
      * @brief Returns a shared_ptr to a Scan
      *
      * @param index The index of the Scan
      */
-    ScanPtr getScan(size_t index) const;
+    SLAMScanPtr getScan(size_t index) const;
 
     /**
      * @brief Executes SLAM on all current Scans
      *
      * This methods registers any new Scans added since the last call to match()
      * (or the creation of this instance) using Scanmatching and Loopclosing, as specified by
-     * the SlamOptions.
+     * the SLAMOptions.
      *
      * Calling this method several times without adding any new Scans has no additional effect
      * after the first call.
@@ -104,51 +104,51 @@ public:
     void finish();
 
     /**
-     * @brief Sets the SlamOptions struct to the parameter
+     * @brief Sets the SLAMOptions struct to the parameter
      *
-     * Note that changing options on an active SlamAlign instance with previously added / matched
+     * Note that changing options on an active SLAMAlign instance with previously added / matched
      * Scans can cause Undefined Behaviour.
      *
      * @param options The new options
      */
-    void setOptions(const SlamOptions& options);
+    void setOptions(const SLAMOptions& options);
 
     /**
-     * @brief Returns a reference to the internal SlamOptions struct
+     * @brief Returns a reference to the internal SLAMOptions struct
      *
-     * This can be used to make changes to specific values within the SlamOptions without replacing
+     * This can be used to make changes to specific values within the SLAMOptions without replacing
      * the entire struct.
      *
-     * Note that changing options on an active SlamAlign instance with previously added / matched
+     * Note that changing options on an active SLAMAlign instance with previously added / matched
      * Scans can cause Undefined Behaviour.
      */
-    SlamOptions& options();
+    SLAMOptions& options();
 
     /**
-     * @brief Returns a reference to the internal SlamOptions struct
+     * @brief Returns a reference to the internal SLAMOptions struct
      */
-    const SlamOptions& options() const;
+    const SLAMOptions& options() const;
 
 protected:
 
-    void reduceScan(const ScanPtr& scan);
+    void reduceScan(const SLAMScanPtr& scan);
 
-    void applyTransform(ScanPtr scan, const Matrix4d& transform);
+    void applyTransform(SLAMScanPtr scan, const Matrix4d& transform);
 
     void checkLoopClose(size_t last);
     void loopClose(size_t first, size_t last);
-    void graphSlam(size_t last);
+    void graphSLAM(size_t last);
 
-    SlamOptions             m_options;
+    SLAMOptions              m_options;
 
-    std::vector<ScanPtr>    m_scans;
+    std::vector<SLAMScanPtr> m_scans;
 
-    ScanPtr                 m_metascan;
+    SLAMScanPtr              m_metascan;
 
-    GraphSlam               m_graph;
-    bool                    m_foundLoop;
+    GraphSLAM                m_graph;
+    bool                     m_foundLoop;
 
-    size_t                  m_alreadyMatched;
+    size_t                   m_alreadyMatched;
 };
 
 } /* namespace lvr2 */

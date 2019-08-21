@@ -989,7 +989,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 
                 std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(info.absoluteFilePath().toStdString()));
 
-                lastItem = addScanData(sdm, root);
+                lastItem = addScans(sdm, root);
 
                 root->setExpanded(true);
 
@@ -1665,17 +1665,17 @@ void LVRMainWindow::toggleWireframe(bool checkboxState)
     }
 }
 
-QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent)
+QTreeWidgetItem* LVRMainWindow::addScans(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent)
 {
     QTreeWidgetItem *lastItem = nullptr;
-    std::vector<ScanData> scanData = sdm->getScanData();
+    std::vector<ScanPtr> scans = sdm->getScans();
     std::vector<std::vector<CameraData> > camData = sdm->getCameraData();
 
-    for (size_t i = 0; i < scanData.size(); i++)
+    for (size_t i = 0; i < scans.size(); i++)
     {
         char buf[128];
-        std::sprintf(buf, "%05d", scanData[i].m_positionNumber);
-        LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
+        std::sprintf(buf, "%05d", scans[i]->m_positionNumber);
+        LVRScanDataItem *item = new LVRScanDataItem(scans[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
 
         // if(camData[i].size() > 0)
         // {
