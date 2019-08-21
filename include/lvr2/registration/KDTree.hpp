@@ -36,7 +36,7 @@
 #define KDTREE_HPP_
 
 #include "TreeUtils.hpp"
-#include "Scan.hpp"
+#include "SLAMScanWrapper.hpp"
 
 #include <memory>
 #include <limits>
@@ -62,7 +62,7 @@ public:
      * @param n             The number of points in 'points'
      * @param maxLeafSize   The maximum number of points to use for a Leaf in the Tree
      */
-    static std::shared_ptr<KDTree> create(ScanPtr scan, int maxLeafSize = 20);
+    static std::shared_ptr<KDTree> create(SLAMScanPtr scan, int maxLeafSize = 20);
 
     /**
      * @brief Finds the nearest neighbor of 'point' that is within 'maxDistance' (defaults to infinity).
@@ -97,7 +97,7 @@ protected:
 
     friend class KDNode;
 
-    Vector3fArr points;
+    boost::shared_array<Point> points;
 };
 
 using KDTreePtr = std::shared_ptr<KDTree>;
@@ -115,7 +115,7 @@ using KDTreePtr = std::shared_ptr<KDTree>;
  *
  * @returns             The number of neighbors that were found
  */
-size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance, Vector3d& centroid_m, Vector3d& centroid_d);
+size_t getNearestNeighbors(KDTreePtr tree, SLAMScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance, Vector3d& centroid_m, Vector3d& centroid_d);
 
 /**
  * @brief Finds the nearest neighbors of all points in a Scan using a pre-generated KDTree
@@ -128,7 +128,7 @@ size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, KDTree::Neighbor* neigh
  *
  * @returns             The number of neighbors that were found
  */
-size_t getNearestNeighbors(KDTreePtr tree, ScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance);
+size_t getNearestNeighbors(KDTreePtr tree, SLAMScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance);
 
 } /* namespace lvr2 */
 

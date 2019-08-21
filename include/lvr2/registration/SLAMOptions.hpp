@@ -26,7 +26,7 @@
  */
 
 /**
- * SlamOptions.hpp
+ * SLAMOptions.hpp
  *
  *  @date May 28, 2019
  *  @author Malte Hillmann
@@ -38,9 +38,9 @@ namespace lvr2
 {
 
 /**
- * @brief A struct to configure SlamAlign
+ * @brief A struct to configure SLAMAlign
  */
-struct SlamOptions
+struct SLAMOptions
 {
     // ==================== General Options ======================================================
 
@@ -85,7 +85,7 @@ struct SlamOptions
     bool    doLoopClosing = false;
 
     /// Use complex Loop Closing with GraphSLAM
-    bool    doGraphSlam = false;
+    bool    doGraphSLAM = false;
 
     /// The maximum distance between two poses to consider a closed loop or Edge.
     /// Mutually exclusive to closeLoopPairs

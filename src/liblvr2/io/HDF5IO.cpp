@@ -139,16 +139,16 @@ ModelPtr HDF5IO::read(std::string filename)
 
 bool HDF5IO::readPointCloud(ModelPtr model_ptr)
 {
-    std::vector<ScanData> scans = getRawScanData(true);
+    std::vector<ScanPtr> scans = getRawScans(true);
     if(scans.size() == 0)
     {
         return false;
     }
 
     size_t n_points_total = 0;
-    for(const ScanData& scan : scans)
+    for(const ScanPtr& scan : scans)
     {
-        n_points_total += scan.m_points->numPoints();
+        n_points_total += scan->m_points->numPoints();
     }
 
     floatArr points(new float[n_points_total * 3]);
@@ -158,10 +158,10 @@ bool HDF5IO::readPointCloud(ModelPtr model_ptr)
 
     for(int i=0; i<scans.size(); i++)
     {
-        size_t num_points = scans[i].m_points->numPoints();
-        floatArr pts = scans[i].m_points->getPointArray();
+        size_t num_points = scans[i]->m_points->numPoints();
+        floatArr pts = scans[i]->m_points->getPointArray();
 
-        Transformd T = scans[i].m_poseEstimation;
+        Transformd T = scans[i]->m_poseEstimation;
         T.transpose();
 
         BaseVector<float>* begin = reinterpret_cast<BaseVector<float>* >(pts.get());
@@ -406,10 +406,10 @@ Texture HDF5IO::getImage(HighFive::Group& g, std::string datasetName)
     return ret;
 }
 
-std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
+std::vector<ScanPtr> HDF5IO::getRawScans(bool load_points)
 {
     std::string groupName = "/raw/scans/";
-    std::vector<ScanData> ret;
+    std::vector<ScanPtr> ret;
 
     if (!exist(groupName))
     {
@@ -426,7 +426,7 @@ std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
 
         if (std::sscanf(cur_scan_pos.c_str(), "position_%5d", &pos_num))
         {
-            ScanData cur_pos = getSingleRawScanData(pos_num, load_points);
+            ScanPtr cur_pos = getSingleRawScan(pos_num, load_points);
             ret.push_back(cur_pos);
         }
     }
@@ -476,9 +476,9 @@ std::vector<std::vector<CameraData> > HDF5IO::getRawCamData(bool load_image_data
     return ret;
 }
 
-ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
+ScanPtr HDF5IO::getSingleRawScan(int nr, bool load_points)
 {
-    ScanData ret;
+    ScanPtr ret(new Scan());
 
     if (m_hdf5_file)
     {
@@ -508,52 +508,52 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
 
             if (points)
             {
-                ret.m_points = PointBufferPtr(new PointBuffer(points, dummy/3));
+                ret->m_points = PointBufferPtr(new PointBuffer(points, dummy/3));
 
                 std::vector<size_t> dim;
                 ucharArr spectral = getArray<unsigned char>(spectralGroupName, "spectral", dim);
 
                 if (spectral)
                 {
-                    ret.m_points->addUCharChannel(spectral, "spectral_channels", dim[0], dim[1]);
-                    ret.m_points->addIntAtomic(400, "spectral_wavelength_min");
-                    ret.m_points->addIntAtomic(400 + 4 * dim[1], "spectral_wavelength_max");
+                    ret->m_points->addUCharChannel(spectral, "spectral_channels", dim[0], dim[1]);
+                    ret->m_points->addIntAtomic(400, "spectral_wavelength_min");
+                    ret->m_points->addIntAtomic(400 + 4 * dim[1], "spectral_wavelength_max");
                 }
             }
         }
 
         if (fov)
         {
-            ret.m_hFieldOfView = fov[0];
-            ret.m_vFieldOfView = fov[1];
+            ret->m_hFieldOfView = fov[0];
+            ret->m_vFieldOfView = fov[1];
         }
 
         if (res)
         {
-            ret.m_hResolution = res[0];
-            ret.m_vResolution = res[1];
+            ret->m_hResolution = res[0];
+            ret->m_vResolution = res[1];
         }
 
         if (registration)
         {
-            ret.m_registration = Transformd(registration.get());
+            ret->m_registration = Transformd(registration.get());
         }
 
         if (pose_estimate)
         {
-            ret.m_poseEstimation = Transformd(pose_estimate.get());
+            ret->m_poseEstimation = Transformd(pose_estimate.get());
         }
 
         if (bb)
         {
-            ret.m_boundingBox = BoundingBox<BaseVector<float> >(
+            ret->m_boundingBox = BoundingBox<BaseVector<float> >(
                     BaseVector<float>(bb[0], bb[1], bb[2]), BaseVector<float>(bb[3], bb[4], bb[5]));
         }
 
-        ret.m_pointsLoaded = load_points;
-        ret.m_positionNumber = nr;
+        ret->m_pointsLoaded = load_points;
+        ret->m_positionNumber = nr;
 
-        ret.m_scanDataRoot = groupName;
+        ret->m_scanRoot = groupName;
     }
 
     return ret;
@@ -613,7 +613,7 @@ CameraData HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_
     return ret;
 }
 
-floatArr HDF5IO::getFloatChannelFromRawScanData(std::string name, int nr, unsigned int& n, unsigned& w)
+floatArr HDF5IO::getFloatChannelFromRawScan(std::string name, int nr, unsigned int& n, unsigned& w)
 {
     floatArr ret;
 
@@ -633,7 +633,7 @@ floatArr HDF5IO::getFloatChannelFromRawScanData(std::string name, int nr, unsign
         if (dim.size() != 2)
         {
             throw std::runtime_error(
-                "HDF5IO - getFloatchannelFromRawScanData() Error: dim.size() != 2");
+                "HDF5IO - getFloatchannelFromRawScan() Error: dim.size() != 2");
         }
 
         n = dim[0];
@@ -689,7 +689,7 @@ void HDF5IO::getImage(HighFive::Group& g, std::string datasetName, cv::Mat& img)
     H5IMread_image(g.getId(), datasetName.c_str(), img.data);
 }
 
-void HDF5IO::addFloatChannelToRawScanData(
+void HDF5IO::addFloatChannelToRawScan(
         std::string name, int nr, size_t n, unsigned w, floatArr data)
 {
     try
@@ -768,7 +768,7 @@ void HDF5IO::addHyperspectralCalibration(int position, const HyperspectralPanora
     }
 }
 
-void HDF5IO::addRawScanData(int nr, ScanData &scan)
+void HDF5IO::addRawScan(int nr, ScanPtr scan)
 {
     try
     {
@@ -784,7 +784,7 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
     if(m_hdf5_file)
     {
         // Check scan data
-        if(scan.m_points->numPoints())
+        if(scan->m_points->numPoints())
         {
             // Setup group for scan data
             char buffer[128];
@@ -796,19 +796,19 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
 
             // Generate tuples for field of view and resolution parameters
             floatArr fov(new float[2]);
-            fov[0] = scan.m_hFieldOfView;
-            fov[1] = scan.m_vFieldOfView;
+            fov[0] = scan->m_hFieldOfView;
+            fov[1] = scan->m_vFieldOfView;
 
             floatArr res(new float[2]);
-            res[0] = scan.m_hResolution;
-            res[1] = scan.m_vResolution;
+            res[0] = scan->m_hResolution;
+            res[1] = scan->m_vResolution;
 
             // Generate pose estimation matrix array
             float* pose_data = new float[16];
             float* reg_data = new float[16];
 
-            std::copy(scan.m_poseEstimation.data(), scan.m_poseEstimation.data() + 16, pose_data);
-            std::copy(scan.m_registration.data(), scan.m_registration.data() + 16, reg_data);
+            std::copy(scan->m_poseEstimation.data(), scan->m_poseEstimation.data() + 16, pose_data);
+            std::copy(scan->m_registration.data(), scan->m_registration.data() + 16, reg_data);
 
             floatArr pose_estimate(pose_data);
             floatArr registration(reg_data);
@@ -816,8 +816,8 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             // Generate bounding box representation
             floatArr bb(new float[6]);
 
-            auto bb_min = scan.m_boundingBox.getMin();
-            auto bb_max = scan.m_boundingBox.getMax();
+            auto bb_min = scan->m_boundingBox.getMin();
+            auto bb_max = scan->m_boundingBox.getMax();
             bb[0] = bb_min.x;
             bb[1] = bb_min.y;
             bb[2] = bb_min.z;
@@ -828,9 +828,9 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
 
             // Testing code to store point data as integers
 //            cout << "Copy float to int..." << endl;
-//            intArray ints(new int[scan.m_points->numPoints() * 3]);
-//            floatArr tmp_pts = scan.m_points->getPointArray();
-//            for(size_t i = 0; i < scan.m_points->numPoints() * 3; i++)
+//            intArray ints(new int[scan->m_points->numPoints() * 3]);
+//            floatArr tmp_pts = scan->m_points->getPointArray();
+//            for(size_t i = 0; i < scan->m_points->numPoints() * 3; i++)
 //            {
 //                ints[i] = (int)tmp_pts[i] * 10000;
 //            }
@@ -839,13 +839,13 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
 
             // Add data to group
             std::vector<size_t> dim = {4,4};
-            std::vector<size_t> scan_dim = {scan.m_points->numPoints(), 3};
+            std::vector<size_t> scan_dim = {scan->m_points->numPoints(), 3};
             addArray(groupName, "fov", 2, fov);
             addArray(groupName, "resolution", 2, res);
             addArray(groupName, "initialPose", dim, pose_estimate);
             addArray(groupName, "finalPose", dim, registration);
             addArray(groupName, "boundingBox", 6, bb);
-            addArray(groupName, "points", scan_dim, scan.m_points->getPointArray());
+            addArray(groupName, "points", scan_dim, scan->m_points->getPointArray());
 
             // Uncomment this to store interger points
             // addArray(groupName, "points", scan_dim, ints);
@@ -854,7 +854,7 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             // Add spectral annotation channel
             size_t an;
             size_t aw;
-            ucharArr spectral = scan.m_points->getUCharArray("spectral_channels", an, aw);
+            ucharArr spectral = scan->m_points->getUCharArray("spectral_channels", an, aw);
 
             if (spectral)
             {
@@ -871,11 +871,11 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
 
 
                 // Add point preview
-                floatArr points = scan.m_points->getPointArray();
+                floatArr points = scan->m_points->getPointArray();
                 if (points)
                 {
                     size_t numPreview;
-                    floatArr previewData = reduceData(points, scan.m_points->numPoints(), 3, m_previewReductionFactor, &numPreview);
+                    floatArr previewData = reduceData(points, scan->m_points->numPoints(), 3, m_previewReductionFactor, &numPreview);
 
                     std::vector<size_t> previewDim = {numPreview, 3};
                     addArray(previewGroupName, "points", previewDim, previewData);

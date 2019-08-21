@@ -34,7 +34,7 @@
 #ifndef EIGENSVDPOINTALIGN_HPP_
 #define EIGENSVDPOINTALIGN_HPP_
 
-#include "Scan.hpp"
+#include "SLAMScanWrapper.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 
 #include <Eigen/Dense>
@@ -70,7 +70,7 @@ public:
      * @return The average Point-to-Point error of the Scans
      */
     T alignPoints(
-        ScanPtr scan,
+        SLAMScanPtr scan,
         Point3** neighbors,
         const Vec3& centroid_m,
         const Vec3& centroid_d,

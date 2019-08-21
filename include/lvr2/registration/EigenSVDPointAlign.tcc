@@ -41,7 +41,7 @@ namespace lvr2
 
 template<typename T, typename PointT>
 T EigenSVDPointAlign<T, PointT>::alignPoints(
-    ScanPtr scan,
+    SLAMScanPtr scan,
     Point3** neighbors,
     const Vec3& centroid_m,
     const Vec3& centroid_d,

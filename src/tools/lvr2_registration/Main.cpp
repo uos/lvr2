@@ -34,7 +34,7 @@
 
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/io/IOUtils.hpp>
-#include <lvr2/registration/SlamAlign.hpp>
+#include <lvr2/registration/SLAMAlign.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -57,7 +57,7 @@ string format_name(const string& format, int index)
 int main(int argc, char** argv)
 {
     // =============== parse options ===============
-    SlamOptions options;
+    SLAMOptions options;
 
     path dir;
     int start = -1;
@@ -157,7 +157,7 @@ int main(int argc, char** argv)
          "Use simple Loop Closing.\n"
          "At least one of -L and -G must be specified for Loopclosing to take place.")
 
-        ("graphSlam,G", bool_switch(&options.doGraphSlam),
+        ("graphSlam,G", bool_switch(&options.doGraphSLAM),
          "Use complex Loop Closing with GraphSLAM.\n"
          "At least one of -L and -G must be specified for Loopclosing to take place.")
 
@@ -319,8 +319,8 @@ int main(int argc, char** argv)
 
     int count = end - start + 1;
 
-    SlamAlign align(options);
-    vector<ScanPtr> scans;
+    SLAMAlign align(options);
+    vector<SLAMScanPtr> scans;
 
     for (int i = 0; i < count; i++)
     {
@@ -341,9 +341,14 @@ int main(int argc, char** argv)
         file.replace_extension(pose_format);
         Transformd pose = getTransformationFromFile<double>(file);
 
-        ScanPtr scan = make_shared<Scan>(model->m_pointCloud, pose);
-        scans.push_back(scan);
-        align.addScan(scan);
+        // TODO: parse directory properly
+        ScanPtr scan = ScanPtr(new Scan());
+        scan->m_points = model->m_pointCloud;
+        scan->m_poseEstimation = pose;
+
+        SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(scan));
+        scans.push_back(slamScan);
+        align.addScan(slamScan);
     }
 
     auto start_time = chrono::steady_clock::now();
@@ -398,7 +403,7 @@ int main(int argc, char** argv)
             file = output_dir / format_name(output_format, start + i);
 
             auto model = make_shared<Model>();
-            model->m_pointCloud = scan->toPointBuffer();
+            model->m_pointCloud = scan->getScan()->m_points;
             ModelFactory::saveModel(model, file.string());
         }
     }

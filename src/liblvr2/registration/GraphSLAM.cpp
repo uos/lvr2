@@ -26,12 +26,12 @@
  */
 
 /**
- * GraphSlam.cpp
+ * GraphSLAM.cpp
  *
  *  @date July 22, 2019
  *  @author Malte Hillmann
  */
-#include <lvr2/registration/GraphSlam.hpp>
+#include <lvr2/registration/GraphSLAM.hpp>
 
 #include <Eigen/SparseCholesky>
 
@@ -41,14 +41,14 @@ using namespace Eigen;
 namespace lvr2
 {
 
-bool findCloseScans(const vector<ScanPtr>& scans, size_t scan, const SlamOptions& options, vector<size_t>& output)
+bool findCloseScans(const vector<SLAMScanPtr>& scans, size_t scan, const SLAMOptions& options, vector<size_t>& output)
 {
     if (scan < options.loopSize)
     {
         return false;
     }
 
-    const ScanPtr& cur = scans[scan];
+    const SLAMScanPtr& cur = scans[scan];
 
     // closeLoopPairs not specified => use closeLoopDistance
     if (options.closeLoopPairs < 0)
@@ -90,16 +90,16 @@ bool findCloseScans(const vector<ScanPtr>& scans, size_t scan, const SlamOptions
     return !output.empty();
 }
 
-// Conversions between Pose and Matrix representations in GraphSlams internally consistent Coordinate System
+// Conversions between Pose and Matrix representations in GraphSLAMs internally consistent Coordinate System
 void EulerToMatrix4(const Vector3d& pos, const Vector3d& theta, Matrix4d& mat);
 void Matrix4ToEuler(const Matrix4d mat, Vector3d& rPosTheta, Vector3d& rPos);
 
-GraphSlam::GraphSlam(const SlamOptions* options)
+GraphSLAM::GraphSLAM(const SLAMOptions* options)
     : m_options(options)
 {
 }
 
-void GraphSlam::doGraphSlam(const vector<ScanPtr>& scans, size_t last) const
+void GraphSLAM::doGraphSLAM(const vector<SLAMScanPtr>& scans, size_t last) const
 {
     // ignore first scan, keep last scan => n = last - 1 + 1
     size_t n = last;
@@ -132,7 +132,7 @@ void GraphSlam::doGraphSlam(const vector<ScanPtr>& scans, size_t last) const
         #pragma omp parallel for reduction(+:sum_position_diff) schedule(static)
         for (size_t i = 1; i <= last; i++)
         {
-            const ScanPtr& scan = scans[i];
+            const SLAMScanPtr& scan = scans[i];
 
             // Now update the Poses
             Matrix6d Ha = Matrix6d::Identity();
@@ -186,16 +186,16 @@ void GraphSlam::doGraphSlam(const vector<ScanPtr>& scans, size_t last) const
 
             transform = transform * initialPose.inverse();
 
-            scan->transform(transform, true, ScanUse::GRAPHSLAM);
+            scan->transform(transform, true, FrameUse::GRAPHSLAM);
 
             sum_position_diff += result.block<3, 1>(0, 0).norm();
         }
 
         // add Frames to unused Scans
-        scans[0]->addFrame(ScanUse::GRAPHSLAM);
+        scans[0]->addFrame(FrameUse::GRAPHSLAM);
         for (size_t i = last + 1; i < scans.size(); i++)
         {
-            scans[i]->addFrame(ScanUse::INVALID);
+            scans[i]->addFrame(FrameUse::INVALID);
         }
 
         cout << "Sum of Position differences = " << sum_position_diff << endl;
@@ -208,7 +208,7 @@ void GraphSlam::doGraphSlam(const vector<ScanPtr>& scans, size_t last) const
     }
 }
 
-void GraphSlam::createGraph(const vector<ScanPtr>& scans, size_t last, Graph& graph) const
+void GraphSLAM::createGraph(const vector<SLAMScanPtr>& scans, size_t last, Graph& graph) const
 {
     graph.clear();
 
@@ -234,7 +234,7 @@ void GraphSlam::createGraph(const vector<ScanPtr>& scans, size_t last, Graph& gr
 /**
  * A function to fill the linear system mat * x = vec.
  */
-void GraphSlam::fillEquation(const vector<ScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec) const
+void GraphSLAM::fillEquation(const vector<SLAMScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec) const
 {
     // Cache all KDTrees
     map<size_t, KDTreePtr> trees;
@@ -257,7 +257,7 @@ void GraphSlam::fillEquation(const vector<ScanPtr>& scans, const Graph& graph, G
         std::tie(a, b) = graph[i];
 
         KDTreePtr tree  = trees[a];
-        ScanPtr scan = scans[b];
+        SLAMScanPtr scan = scans[b];
 
         Matrix6d coeffMat;
         Vector6d coeffVec;
@@ -360,7 +360,7 @@ void GraphSlam::fillEquation(const vector<ScanPtr>& scans, const Graph& graph, G
     mat.setFromTriplets(triplets.begin(), triplets.end());
 }
 
-void GraphSlam::eulerCovariance(KDTreePtr tree, ScanPtr scan, Matrix6d& outMat, Vector6d& outVec) const
+void GraphSLAM::eulerCovariance(KDTreePtr tree, SLAMScanPtr scan, Matrix6d& outMat, Vector6d& outVec) const
 {
     size_t n = scan->numPoints();
 

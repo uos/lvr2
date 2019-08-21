@@ -26,16 +26,15 @@
  */
 
 /**
- * Scan.hpp
+ * SLAMScanWrapper.hpp
  *
  *  @date May 6, 2019
  *  @author Malte Hillmann
  */
-#ifndef SCAN_HPP_
-#define SCAN_HPP_
+#ifndef SLAMSCANWRAPPER_HPP_
+#define SLAMSCANWRAPPER_HPP_
 
-#include "lvr2/types/MatrixTypes.hpp"
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/Scan.hpp"
 
 #include <Eigen/Dense>
 #include <vector>
@@ -46,12 +45,10 @@ using std::pair;
 namespace lvr2
 {
 
-using Vector3fArr = boost::shared_array<Vector3f>;
-
 /**
  * @brief Annotates the use of a Scan when creating an slam6D .frames file
  */
-enum class ScanUse
+enum class FrameUse
 {
     /// The Scan has not been registered yet
     INVALID = 0,
@@ -66,19 +63,19 @@ enum class ScanUse
 };
 
 /**
- * @brief Represents a Scan as a Pointcloud and a Pose
- * 
- * TODO: This will be replaced with ScanData from ../io/ScanData.hpp eventually
+ * @brief A Wrapper around Scan to allow for SLAM usage
  */
-class Scan
+class SLAMScanWrapper
 {
 public:
-    Scan(PointBufferPtr points, const Transformd& pose);
+    SLAMScanWrapper(ScanPtr scan);
 
-    virtual ~Scan() = default;
+    virtual ~SLAMScanWrapper() = default;
 
-    void transform(const Transformd& transform, bool writeFrame = true, ScanUse use = ScanUse::UPDATED);
-    void addFrame(ScanUse use = ScanUse::UNUSED);
+    ScanPtr getScan();
+
+    void transform(const Transformd& transform, bool writeFrame = true, FrameUse use = FrameUse::UPDATED);
+    void addFrame(FrameUse use = FrameUse::UNUSED);
 
     void reduce(double voxelSize, int maxLeafSize);
     void setMinDistance(double minDistance);
@@ -96,22 +93,19 @@ public:
 
     void writeFrames(std::string path) const;
 
-    PointBufferPtr toPointBuffer() const;
-    Vector3fArr toVector3fArr() const;
-
 protected:
-    floatArr m_points;
-    size_t   m_numPoints;
+    ScanPtr               m_scan;
 
-    Transformd m_pose;
-    Transformd m_deltaPose;
-    Transformd m_initialPose;
+    std::vector<Vector3f> m_points;
+    size_t                m_numPoints;
 
-    vector<pair<Transformd, ScanUse>> m_frames;
+    Transformd            m_deltaPose;
+
+    vector<pair<Transformd, FrameUse>> m_frames;
 };
 
-using ScanPtr = std::shared_ptr<Scan>;
+using SLAMScanPtr = std::shared_ptr<SLAMScanWrapper>;
 
 } /* namespace lvr2 */
 
-#endif /* SCAN_HPP_ */
+#endif /* SLAMSCANWRAPPER_HPP_ */

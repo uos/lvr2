@@ -18,7 +18,7 @@
 
 
 #include "Options.hpp"
-#include "lvr2/io/ScanData.hpp"
+#include "lvr2/types/Scan.hpp"
 #include "lvr2/io/HDF5IO.hpp"
 
 using namespace lvr2;
@@ -28,14 +28,14 @@ int main(int argc, char** argv)
     // Parse command line arguments
     slam2hdf5::Options options(argc, argv);
 
-    std::vector<ScanData> scans;
+    std::vector<ScanPtr> scans;
     parseSLAMDirectory(options.inputDir(), scans);
 
     HDF5IO hdf5("test.h5", true);
 
     for(size_t i = 0; i < scans.size(); i++)
     {
-        hdf5.addRawScanData((int)i, scans[i]);
+        hdf5.addRawScan((int)i, scans[i]);
     }
 
 	return 0;

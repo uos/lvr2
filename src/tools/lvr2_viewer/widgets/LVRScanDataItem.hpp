@@ -26,7 +26,7 @@ class LVRScanDataItem : public QTreeWidgetItem, public Transformable
 {
     public:
 
-        LVRScanDataItem(ScanData data,
+        LVRScanDataItem(ScanPtr data,
                         std::shared_ptr<ScanDataManager> sdm,
                         size_t idx,
                         vtkSmartPointer<vtkRenderer> renderer,
@@ -62,7 +62,7 @@ class LVRScanDataItem : public QTreeWidgetItem, public Transformable
         QString                                 m_name;
         std::shared_ptr<ScanDataManager>        m_sdm;
         size_t                                  m_idx;
-        ScanData                                m_data;
+        ScanPtr                                 m_data;
         ModelBridgePtr                          m_model;
         BoundingBoxBridgePtr                    m_bb;
         Pose                                    m_pose;

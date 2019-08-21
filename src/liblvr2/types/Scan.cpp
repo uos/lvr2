@@ -1,4 +1,4 @@
-#include "lvr2/io/ScanData.hpp"
+#include "lvr2/types/Scan.hpp"
 #include "lvr2/io/Timestamp.hpp"
 #include "lvr2/io/AsciiIO.hpp"
 #include "lvr2/io/IOUtils.hpp"
@@ -10,14 +10,14 @@
 namespace lvr2
 {
 
-void parseSLAMDirectory(std::string dir, vector<ScanData>& scans)
+void parseSLAMDirectory(std::string dir, vector<ScanPtr>& scans)
 {
     boost::filesystem::path directory(dir);
     if(is_directory(directory))
     {
 
         boost::filesystem::directory_iterator lastFile;
-        std::vector<boost::filesystem::path> scan_data_files;
+        std::vector<boost::filesystem::path> scan_files;
 
         // First, look for .3d files
         for(boost::filesystem::directory_iterator it(directory); it != lastFile; it++ )
@@ -29,18 +29,18 @@ void parseSLAMDirectory(std::string dir, vector<ScanData>& scans)
                 int num = 0;
                 if(sscanf(p.filename().string().c_str(), "scan%3d", &num))
                 {
-                    scan_data_files.push_back(p);
+                    scan_files.push_back(p);
                 }
             }
         }
 
-        if(scan_data_files.size() > 0)
+        if(scan_files.size() > 0)
         {
-            for(size_t i = 0; i < scan_data_files.size(); i++)
+            for(size_t i = 0; i < scan_files.size(); i++)
             {
-                ScanData scan_data;
+                ScanPtr scan = ScanPtr(new Scan());
 
-                std::string filename = (scan_data_files[i]).stem().string();
+                std::string filename = (scan_files[i]).stem().string();
                 boost::filesystem::path frame_file(filename + ".frames");
                 boost::filesystem::path pose_file(filename + ".pose");
 
@@ -49,16 +49,16 @@ void parseSLAMDirectory(std::string dir, vector<ScanData>& scans)
 
                 std::cout << "Loading '" << filename << "'" << std::endl;
                 AsciiIO io;
-                ModelPtr model = io.read(scan_data_files[i].string());
-                scan_data.m_points = model->m_pointCloud;
+                ModelPtr model = io.read(scan_files[i].string());
+                scan->m_points = model->m_pointCloud;
 
-                size_t numPoints = scan_data.m_points->numPoints();
-                floatArr pts = scan_data.m_points->getPointArray();
+                size_t numPoints = scan->m_points->numPoints();
+                floatArr pts = scan->m_points->getPointArray();
 
                 for (size_t i = 0; i < numPoints; i++)
                 {
                     BaseVector<float> pt(pts[i*3 + 0], pts[i*3 + 1], pts[i*3 + 2]);
-                    scan_data.m_boundingBox.expand(pt);
+                    scan->m_boundingBox.expand(pt);
                 }
 
                 Transformd pose_estimate = Transformd::Identity();
@@ -85,10 +85,10 @@ void parseSLAMDirectory(std::string dir, vector<ScanData>& scans)
                 }
 
                 // transform points?
-                scan_data.m_registration = registration;
-                scan_data.m_poseEstimation = pose_estimate;
+                scan->m_registration = registration;
+                scan->m_poseEstimation = pose_estimate;
 
-                scans.push_back(scan_data);
+                scans.push_back(scan);
             }
         }
         else
