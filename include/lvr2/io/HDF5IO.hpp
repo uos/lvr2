@@ -110,16 +110,6 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
 
     bool open(std::string filename, int open_flag);
 
-    template<typename T>
-    boost::shared_array<T> getArray(
-            std::string groupName, std::string datasetName,
-            unsigned int& size);
-
-    template<typename T>
-    boost::shared_array<T> getArray(
-            std::string groupName, std::string datasetName,
-            std::vector<size_t>& dim);
-
     Texture getImage(std::string groupName, std::string datasetName);
 
     ScanData    getSingleRawScanData(int nr, bool load_points = true);
@@ -133,27 +123,7 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
     floatArr getFloatChannelFromRawScanData(std::string name,
             int nr, unsigned int& n, unsigned& w);
 
-    template<typename T>
-    void addArray(
-            std::string groupName,
-            std::string datasetName,
-            unsigned int size,
-            boost::shared_array<T> data);
-
-    template<typename T>
-    void addArray(
-            std::string groupName,
-            std::string datasetName,
-            std::vector<size_t>& dimensions,
-            boost::shared_array<T> data);
-
-    template<typename T>
-    void addArray(
-            std::string groupName,
-            std::string datasetName,
-            std::vector<size_t>& dimensions,
-            std::vector<hsize_t>& chunkSize,
-            boost::shared_array<T> data);
+   
 
     void addImage(
             std::string groupName, std::string name, cv::Mat& img);
@@ -179,6 +149,38 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
     bool compress();
 
     size_t chunkSize();
+
+    template<typename T>
+    boost::shared_array<T> getArray(
+            std::string groupName, std::string datasetName,
+            unsigned int& size);
+
+    template<typename T>
+    boost::shared_array<T> getArray(
+            std::string groupName, std::string datasetName,
+            std::vector<size_t>& dim);
+
+    template<typename T>
+    void addArray(
+            std::string groupName,
+            std::string datasetName,
+            unsigned int size,
+            boost::shared_array<T> data);
+
+    template<typename T>
+    void addArray(
+            std::string groupName,
+            std::string datasetName,
+            std::vector<size_t>& dimensions,
+            boost::shared_array<T> data);
+
+    template<typename T>
+    void addArray(
+            std::string groupName,
+            std::string datasetName,
+            std::vector<size_t>& dimensions,
+            std::vector<hsize_t>& chunkSize,
+            boost::shared_array<T> data);
 
   private:
 
@@ -284,9 +286,7 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
 
     void getImage(HighFive::Group& g, std::string datasetName, cv::Mat& img);
 
-    HighFive::Group getGroup(const std::string& groupName, bool create = true);
-
-    HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool create = true);
+   
 
     std::vector<std::string> splitGroupNames(const std::string &groupName);
 
@@ -295,6 +295,11 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
     void write_base_structure();
 
     bool isGroup(HighFive::Group grp, std::string objName);
+
+
+    HighFive::Group getGroup(const std::string& groupName, bool create = true);
+
+    HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool create = true);
 
     template <typename T>
     boost::shared_array<T> reduceData(boost::shared_array<T> data,
