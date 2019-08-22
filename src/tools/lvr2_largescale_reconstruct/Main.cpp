@@ -224,6 +224,10 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     BaseVecT cbb_max = bb.getMax();
     BoundingBox<BaseVecT> cbb(cbb_min, cbb_max);
 
+    // vector contains the amount of vertices per grid
+    vector<size_t> offsets;
+    offsets.push_back(0);
+
     vector<string> grid_files;
     vector<string> normal_files;
     for (size_t i = 0; i < partitionBoxes.size(); i++)
@@ -530,8 +534,14 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         std::stringstream ss_mesh;
         ss_mesh << name_id << "-mesh.ply";
         // Create output model and save to file
-        auto m = ModelPtr(new Model(meshBuffer));
-        ModelFactory::saveModel(m, ss_mesh.str());
+        if (meshBuffer->numFaces() > 0)
+        {
+            auto m = ModelPtr(new Model(meshBuffer));
+            ModelFactory::saveModel(m, ss_mesh.str());
+
+            // add offset
+            offsets.push_back(meshBuffer->numVertices() + offsets[offsets.size() - 1]);
+        }
 
         std::stringstream ss_grid;
         ss_grid << name_id << "-grid.ser";
@@ -550,18 +560,20 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
              << endl;
     }
 
-    vector<size_t> offsets;
-    offsets.push_back(0);
     vector<unsigned int> all_duplicates;
     //    vector<float> duplicateVertices;
     vector<duplicateVertex> duplicateVertices;
-    for (int i = 0; i < grid_files.size(); i++)
+    /*for (int i = 0; i < grid_files.size(); i++)
     {
         string duplicate_path = grid_files[i];
         string ply_path = grid_files[i];
         double start_s = lvr2::timestamp.getElapsedTimeInS();
         boost::algorithm::replace_last(duplicate_path, "-grid.ser", "-duplicates.ser");
         boost::algorithm::replace_last(ply_path, "-grid.ser", "-mesh.ply");
+
+        if (!(boost::filesystem::exists(ply_path)))
+            continue;
+
         std::ifstream ifs(duplicate_path);
         boost::archive::text_iarchive ia(ifs);
         std::vector<unsigned int> duplicates;
@@ -572,6 +584,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         ModelPtr modelPtr = io.read(ply_path);
 
         size_t numPoints = modelPtr->m_mesh->numVertices();
+
         offsets.push_back(numPoints + offsets[i]);
         if (numPoints == 0)
             continue;
@@ -590,19 +603,17 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
             v.id = duplicates[j] + offsets[i];
             duplicateVertices.push_back(v);
         }
+    }*/
 
-        cout << "DEBUG #3" << endl;
-    }
-
-    std::sort(duplicateVertices.begin(),
+    /*std::sort(duplicateVertices.begin(),
               duplicateVertices.end(),
               [](const duplicateVertex& left, const duplicateVertex& right) {
                   return left.id < right.id;
-              });
+              });*/
     //    std::sort(all_duplicates.begin(), all_duplicates.end());
     std::unordered_map<unsigned int, unsigned int> oldToNew;
 
-    ofstream ofsd;
+    /*ofstream ofsd;
     ofsd.open("duplicate_colors.pts", ios_base::app);
 
     float comp_dist = std::max(voxelsize / 1000, 0.0001f);
@@ -655,11 +666,13 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     }
     cout << "FOUND: " << oldToNew.size() << " duplicates" << endl;
     double dup_end = lvr2::timestamp.getElapsedTimeInS();
-    dup_time += dup_end - dup_start;
+    dup_time += dup_end - dup_start;*/
+
     //    for(auto testit = oldToNew.begin(); testit != oldToNew.end(); testit++)
     //    {
     //        if(oldToNew.find(testit->second) != oldToNew.end()) cout << "SHIT FUCK SHIT" << endl;
     //    }
+
     ofstream ofs_vertices("largeVertices.bin", std::ofstream::out | std::ofstream::trunc);
     ofstream ofs_faces("largeFaces.bin", std::ofstream::out | std::ofstream::trunc);
 
@@ -670,25 +683,46 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     size_t newNumVertices = 0;
     size_t newNumFaces = 0;
     cout << lvr2::timestamp << "merging mesh..." << endl;
+
+    size_t tmp_offset = 0;
+
     for (size_t i = 0; i < grid_files.size(); i++)
     {
         double start_s = lvr2::timestamp.getElapsedTimeInS();
 
         string ply_path = grid_files[i];
         boost::algorithm::replace_last(ply_path, "-grid.ser", "-mesh.ply");
-        LineReader lr(ply_path);
-        size_t numPoints = lr.getNumPoints();
-        if (numPoints == 0)
+
+        if (!(boost::filesystem::exists(ply_path)))
             continue;
+
+        LineReader lr(ply_path);
+
+        // size_t numPoints = lr.getNumPoints();
+        // if (numPoints == 0)
+        //    continue;
+
         lvr2::PLYIO io;
         ModelPtr modelPtr = io.read(ply_path);
+
+        if (modelPtr->m_mesh->numVertices() == 0)
+        {
+            continue;
+        }
+
+        assert(modelPtr->m_mesh->numVertices() == lr.getNumPoints());
+
         size_t numVertices = modelPtr->m_mesh->numVertices();
         size_t numFaces = modelPtr->m_mesh->numFaces();
-        size_t offset = offsets[i];
+
+        // size_t offset = offsets[i];
+        size_t offset = tmp_offset;
         floatArr modelVertices = modelPtr->m_mesh->getVertices();
         uintArr modelFaces = modelPtr->m_mesh->getFaceIndices(); // getFaceArray(numFaces);
+
         double end_s = lvr2::timestamp.getElapsedTimeInS();
         seconds += (end_s - start_s);
+        newNumVertices += numVertices;
         newNumFaces += numFaces;
         for (size_t j = 0; j < numVertices; j++)
         {
@@ -696,20 +730,11 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
             p[0] = modelVertices[j * 3];
             p[1] = modelVertices[j * 3 + 1];
             p[2] = modelVertices[j * 3 + 2];
-            if (oldToNew.find(j + offset) == oldToNew.end())
-            {
-                //                ofs_vertices.write((char*)p,sizeof(float)*3);
-                start_s = lvr2::timestamp.getElapsedTimeInS();
-                ofs_vertices << std::setprecision(16) << p[0] << " " << p[1] << " " << p[2] << endl;
-                end_s = lvr2::timestamp.getElapsedTimeInS();
-                seconds += (end_s - start_s);
-                newNumVertices++;
-            }
-            else
-            {
-                increment++;
-                decrements[j + offset] = increment;
-            }
+
+            start_s = lvr2::timestamp.getElapsedTimeInS();
+            ofs_vertices << std::setprecision(16) << p[0] << " " << p[1] << " " << p[2] << endl;
+            end_s = lvr2::timestamp.getElapsedTimeInS();
+            seconds += (end_s - start_s);
         }
         size_t new_face_num = 0;
         for (int j = 0; j < numFaces; j++)
@@ -719,8 +744,8 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
             f[1] = modelFaces[j * 3 + 1] + offset;
             f[2] = modelFaces[j * 3 + 2] + offset;
 
-            ofs_faces << "3 ";
-            unsigned int newface[3];
+            ofs_faces << "3 " << f[0] << " " << f[1] << " " << f[2];
+            /*unsigned int newface[3];
             unsigned char a = 3;
             //            ofs_faces.write((char*)&a, sizeof(unsigned char));
             for (int k = 0; k < 3; k++)
@@ -745,7 +770,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
                 seconds += (end_s - start_s);
                 if (k != 2)
                     ofs_faces << " ";
-            }
+            }*/
             start_s = lvr2::timestamp.getElapsedTimeInS();
             ofs_faces << endl;
             end_s = lvr2::timestamp.getElapsedTimeInS();
@@ -753,6 +778,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
             //            ofs_faces.write( (char*) newface,sizeof(unsigned int)*3);
             // todo: sort
         }
+        tmp_offset += modelPtr->m_mesh->numVertices();
     }
     ofs_faces.close();
     ofs_vertices.close();
