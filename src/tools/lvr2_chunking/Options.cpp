@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /**
+/**
  * Options.cpp
  *
  * @date 22.07.2019
@@ -36,27 +36,24 @@
 
 #include <iostream>
 
-namespace chunking {
+namespace chunking
+{
 
+using boost::program_options::command_line_parser;
+using boost::program_options::value;
 using std::cout;
 using std::endl;
-using boost::program_options::value;
-using boost::program_options::command_line_parser;
 
-Options::Options(int argc, char** argv)
-    : m_descr("Supported options")
+Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
     // Create option descriptions
-    m_descr.add_options()
-        ("help", "Produce help message")
-        ("inputFile", value<string>(), "Input file name.")
-        ("outputDir", value<string>(), "Output directory name.")
-        ("chunkSize", value<float>()->default_value(10.0f), "Side length of chunks.")
-    ;
+    m_descr.add_options()("help",
+                          "Produce help message")("inputFile", value<string>(), "Input file name.")(
+        "outputDir", value<string>(), "Output directory name.")(
+        "chunkSize", value<float>()->default_value(10.0f), "Side length of chunks.");
 
     // Parse command line and generate variables map
-    store(
-          command_line_parser(argc, argv).options(m_descr).positional(m_posDescr).run(),
+    store(command_line_parser(argc, argv).options(m_descr).positional(m_posDescr).run(),
           m_variables);
     notify(m_variables);
 }
@@ -95,7 +92,8 @@ float Options::getChunkSize() const
     return m_variables["chunkSize"].as<float>();
 }
 
-Options::~Options() {
+Options::~Options()
+{
     // TODO Auto-generated destructor stub
 }
 

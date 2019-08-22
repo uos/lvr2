@@ -32,14 +32,13 @@
  * @author Marcel Wiegand
  */
 
+#include "Options.hpp"
+#include "lvr2/algorithm/ChunkManager.hpp"
+#include "lvr2/io/ModelFactory.hpp"
+
+#include <boost/filesystem.hpp>
 #include <iostream>
 #include <string>
-#include <boost/filesystem.hpp>
-
-#include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/algorithm/ChunkManager.hpp"
-
-#include "Options.hpp"
 
 int main(int argc, char** argv)
 {
@@ -74,10 +73,12 @@ int main(int argc, char** argv)
     {
         boost::filesystem::create_directories("area");
     }
-    lvr2::BoundingBox<lvr2::BaseVector<float> > area(lvr2::BaseVector<float>(-50, 130, 105), lvr2::BaseVector<float>(155, 194, 211));
+    lvr2::BoundingBox<lvr2::BaseVector<float>> area(lvr2::BaseVector<float>(-50, 130, 105),
+                                                    lvr2::BaseVector<float>(155, 194, 211));
     // end: tmp test of extractArea method
 
-    lvr2::ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(chunker.extractArea(area))), "area.ply");
+    lvr2::ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(chunker.extractArea(area))),
+                                  "area.ply");
 
     return EXIT_SUCCESS;
 }
