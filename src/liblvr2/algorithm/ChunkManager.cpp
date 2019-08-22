@@ -57,86 +57,151 @@ ChunkManager::ChunkManager(MeshBufferPtr mesh, float chunksize, std::string save
 
 MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area)
 {
-    std::vector<MeshBufferPtr> chunks;
+    std::unordered_map<std::size_t, MeshBufferPtr> chunks;
 
     // find all required chunks
     // TODO: check if we need + 1
-    BaseVector<float> maxSteps = (area.getMax() - area.getMin()) / m_chunkSize;
+    std::size_t numChunks = 0;
+    const BaseVector<float> maxSteps = (area.getMax() - area.getMin()) / m_chunkSize;
     for (std::size_t i = 0; i < maxSteps.x; ++i)
     {
         for (std::size_t j = 0; j < maxSteps.y; ++j)
         {
             for (std::size_t k = 0; k < maxSteps.z; ++k)
             {
-                std::size_t cellIndex = getCellIndex(
-                        area.getMin() + BaseVector<float>(i * m_chunkSize, j * m_chunkSize, k * m_chunkSize));
+                std::size_t cellIndex = getCellIndex(area.getMin() + BaseVector<float>(i, j, k) * m_chunkSize);
+                std::cout << "Point:" << area.getMin() + BaseVector<float>(i, j, k) * m_chunkSize << std::endl;
+                std::cout << "Cell Index: " << cellIndex << std::endl;
 
                 auto it = m_hashGrid.find(cellIndex);
-                if(it == m_hashGrid.end())
+                if (it == m_hashGrid.end())
                 {
-                  continue;
+                    std::cout << "continue" << std::endl;
+                    continue;
                 }
                 // TODO: remove saving tmp chunks later
                 ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(it->second)), "area/" + std::to_string(cellIndex) + ".ply");
-                chunks.push_back(it->second);
+                chunks.insert(*it);
+                std::cout << "numChunks " << numChunks++ << std::endl;
             }
         }
     }
+    std::cout << "Extracted " << chunks.size() << " Chunks" << std::endl;
 
     // TODO: concat chunks
-    std::vector<float> areaDuplicates;
+    std::vector<float> areaDuplicateVertices;
+    std::vector<std::unordered_map<std::size_t, std::size_t> > areaVertexIndices;
     std::vector<float> areaUniqueVertices;
-    std::vector<float> faceIndices;
+    std::size_t globalNumVertices = 0;
     for (auto chunkIt = chunks.begin(); chunkIt != chunks.end(); ++chunkIt)
     {
-        MeshBufferPtr chunk = *chunkIt;
+        MeshBufferPtr chunk = chunkIt->second;
+        FloatChannel chunkVertices = *(chunk->getChannel<float>("vertices"));
         std::size_t numDuplicates = *chunk->getAtomic<unsigned int>("num_duplicates");
-        FloatChannel vertices = *(chunk->getChannel<float>("vertices"));
         std::size_t numVertices = chunk->numVertices();
+        std::cout << "vertices per chunk: " << numVertices << std::endl;
+        globalNumVertices += numVertices;
+        std::cout << "global num of vertices: " << globalNumVertices << std::endl;
+        std::unordered_map<std::size_t, std::size_t> chunkVertexIndices;
 
-        areaUniqueVertices.insert(areaUniqueVertices.end(),
-                vertices.dataPtr().get() + (numDuplicates * 3),
-                (vertices.dataPtr().get() + (numVertices * 3 )));
-
-        if (chunkIt == chunks.begin() || areaDuplicates.empty())
+        if (numVertices == 0)
         {
-            areaDuplicates.insert(areaDuplicates.end(),
-                    vertices.dataPtr().get(),
-                    vertices.dataPtr().get() + (numDuplicates * 3));
             continue;
         }
 
-        for (std::size_t i = 0; i < numDuplicates; ++i)
+        if (chunkIt == chunks.begin() || areaDuplicateVertices.empty())
         {
-            size_t areaDuplicatesSize = areaDuplicates.size();
-
-            // TODO: get and compare duplicate vertices
-            bool found = false;
-            for (std::size_t j = 0; j < areaDuplicatesSize; j += 3)
+            std::cout << "add Duplicates" << std::endl;
+            areaDuplicateVertices.insert(areaDuplicateVertices.end(),
+                                  chunkVertices.dataPtr().get(),
+                                  chunkVertices.dataPtr().get() + (numDuplicates * 3));
+        }
+        else
+        {
+            for (std::size_t i = 0; i < numDuplicates; ++i)
             {
-                if ((areaDuplicates[j] == vertices[i][0]) && (areaDuplicates[j + 1] == vertices[i][1]) && (areaDuplicates[j + 2] == vertices[i][2]))
+                const size_t areaDuplicateVerticesSize = areaDuplicateVertices.size();
+
+                // TODO: get and compare duplicate vertices
+                bool found = false;
+                for (std::size_t j = 0; j < areaDuplicateVerticesSize / 3; ++j)
                 {
-                    found = true;
-                    break;
+                    if ((areaDuplicateVertices[j * 3] == chunkVertices[i][0]) &&
+                        (areaDuplicateVertices[j * 3 + 1] == chunkVertices[i][1]) &&
+                        (areaDuplicateVertices[j * 3 + 2] == chunkVertices[i][2]))
+                    {
+                        found = true;
+                        chunkVertexIndices.insert({i, j});
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    areaDuplicateVertices.push_back(chunkVertices[i][0]);
+                    areaDuplicateVertices.push_back(chunkVertices[i][1]);
+                    areaDuplicateVertices.push_back(chunkVertices[i][2]);
+
+                    chunkVertexIndices.insert({i, areaDuplicateVertices.size() / 3 - 1});
                 }
             }
-
-            if (!found) {
-                areaDuplicates.push_back(vertices[i][0]);
-                areaDuplicates.push_back(vertices[i][1]);
-                areaDuplicates.push_back(vertices[i][2]);
-            }
-
-            // TODO: update indices
         }
+
+        areaUniqueVertices.insert(areaUniqueVertices.end(),
+                                  chunkVertices.dataPtr().get() + (numDuplicates * 3),
+                                  (chunkVertices.dataPtr().get() + (numVertices * 3 )));
+
+        areaVertexIndices.push_back(chunkVertexIndices);
     }
 
-    areaDuplicates.insert(areaDuplicates.end(), areaUniqueVertices.begin(), areaUniqueVertices.end());
+    std::vector<unsigned int> areaFaceIndices;
+    const std::size_t staticFaceIndexOffset = areaDuplicateVertices.size() / 3;
+    std::size_t dynFaceIndexOffset = 0;
+    auto areaVertexIndicesIt = areaVertexIndices.begin();
+    for (auto chunkIt = chunks.begin(); chunkIt != chunks.end(); ++chunkIt)
+    {
+        MeshBufferPtr chunk = chunkIt->second;
+        indexArray chunkFaceIndices = chunk->getFaceIndices();
+        std::size_t numDuplicates = *chunk->getAtomic<unsigned int>("num_duplicates");
+        std::size_t numVertices = chunk->numVertices();
+        std::size_t numFaces = chunk->numFaces();
+        std::size_t faceIndexOffset = staticFaceIndexOffset - numDuplicates + dynFaceIndexOffset;
 
-    PointBufferPtr areaPointPtr(new PointBuffer(floatArr(areaDuplicates.data()), areaDuplicates.size() / 3));
-    ModelFactory::saveModel(ModelPtr(new Model(areaPointPtr)), "area/merged.xyz");
+        for (std::size_t i = 0; i < numFaces * 3; ++i)
+        {
+            std::size_t oldIndex = chunkFaceIndices[i];
+            auto it = (*areaVertexIndicesIt).find(oldIndex);
+            if(it != (*areaVertexIndicesIt).end())
+            {
+//                std::cout << "map" << std::endl;
+                // TODO: use map entry
+                areaFaceIndices.push_back(it->second);
+            }
+            else
+            {
+//                std::cout << "offset" << std::endl;
+                // TODO: add offset
+                areaFaceIndices.push_back(oldIndex + faceIndexOffset);
+            }
+        }
+        dynFaceIndexOffset += (numVertices - numDuplicates);
+        ++areaVertexIndicesIt;
+    }
 
+    std::cout << "combine vertices" << std::endl;
+    std::cout << "Duplicates: " << areaDuplicateVertices.size() / 3 << std::endl;
+    std::cout << "Unique: " << areaUniqueVertices.size() / 3 << std::endl;
+    areaDuplicateVertices.insert(areaDuplicateVertices.end(), areaUniqueVertices.begin(), areaUniqueVertices.end());
+
+//    PointBufferPtr areaPointPtr(new PointBuffer(floatArr(areaDuplicateVertices.data()), areaDuplicateVertices.size() / 3));
+//    ModelFactory::saveModel(ModelPtr(new Model(areaPointPtr)), "area/merged.xyz");
+
+    std::cout << "Vertices: " << areaDuplicateVertices.size() / 3 << ", Faces: " << areaFaceIndices.size() / 3 << std::endl;
     MeshBufferPtr areaMeshPtr(new MeshBuffer);
+    areaMeshPtr->setVertices(floatArr(areaDuplicateVertices.data()), areaDuplicateVertices.size() / 3);
+    areaMeshPtr->setFaceIndices(indexArray(areaFaceIndices.data()), areaFaceIndices.size() / 3);
+
+    std::cout << "Vertices: " << areaMeshPtr->numVertices() << ", Faces: " << areaMeshPtr->numFaces() << std::endl;
+    lvr2::ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(areaMeshPtr)), "area.ply");
 
     return areaMeshPtr;
 }
