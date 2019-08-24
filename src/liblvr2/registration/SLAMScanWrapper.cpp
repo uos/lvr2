@@ -52,7 +52,7 @@ SLAMScanWrapper::SLAMScanWrapper(ScanPtr scan)
         m_numPoints = m_scan->m_points->numPoints();
         auto arr = m_scan->m_points->getPointArray();
 
-        m_points.reserve(m_numPoints);
+        m_points.resize(m_numPoints);
         #pragma omp parallel for schedule(static)
         for (size_t i = 0; i < m_numPoints; i++)
         {
@@ -84,6 +84,7 @@ void SLAMScanWrapper::transform(const Transformd& transform, bool writeFrame, Fr
 void SLAMScanWrapper::reduce(double voxelSize, int maxLeafSize)
 {
     m_numPoints = octreeReduce(m_points.data(), m_numPoints, voxelSize, maxLeafSize);
+    m_points.resize(m_numPoints);
 }
 
 void SLAMScanWrapper::setMinDistance(double minDistance)
@@ -103,6 +104,7 @@ void SLAMScanWrapper::setMinDistance(double minDistance)
             cur++;
         }
     }
+    m_points.resize(m_numPoints);
 }
 
 void SLAMScanWrapper::setMaxDistance(double maxDistance)
@@ -122,10 +124,12 @@ void SLAMScanWrapper::setMaxDistance(double maxDistance)
             cur++;
         }
     }
+    m_points.resize(m_numPoints);
 }
 
 void SLAMScanWrapper::trim()
 {
+    m_points.resize(m_numPoints);
     m_points.shrink_to_fit();
 }
 
