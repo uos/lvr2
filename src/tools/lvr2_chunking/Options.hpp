@@ -80,6 +80,11 @@ class Options
      */
     float getChunkSize() const;
 
+    /**
+     * @brief   Returns the maximum allowed chunk overlap
+     */
+    float getMaxChunkOverlap() const;
+
   private:
     /// The internally used variable map
     variables_map m_variables;

@@ -50,7 +50,10 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
     m_descr.add_options()("help",
                           "Produce help message")("inputFile", value<string>(), "Input file name.")(
         "outputDir", value<string>(), "Output directory name.")(
-        "chunkSize", value<float>()->default_value(10.0f), "Side length of chunks.");
+        "chunkSize", value<float>()->default_value(10.0f), "Side length of chunks.")(
+        "maxChunkOverlap",
+        value<float>()->default_value(0.1f),
+        "maximum allowed overlap between chunks relative to the chunk size.");
 
     // Parse command line and generate variables map
     store(command_line_parser(argc, argv).options(m_descr).positional(m_posDescr).run(),
@@ -90,6 +93,11 @@ string Options::getOutputDir() const
 float Options::getChunkSize() const
 {
     return m_variables["chunkSize"].as<float>();
+}
+
+float Options::getMaxChunkOverlap() const
+{
+    return m_variables["maxChunkOverlap"].as<float>();
 }
 
 Options::~Options()

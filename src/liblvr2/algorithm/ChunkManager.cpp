@@ -43,17 +43,17 @@
 namespace lvr2
 {
 
-ChunkManager::ChunkManager(MeshBufferPtr mesh, float chunksize, std::string savePath)
+ChunkManager::ChunkManager(MeshBufferPtr mesh, float chunksize, float maxChunkOverlap, std::string savePath)
     : m_chunkSize(chunksize)
 {
     initBoundingBox(mesh);
 
     // compute number of chunks for each dimension
-    m_amount.x = (std::size_t)std::ceil(m_boundingBox.getXSize() / m_chunkSize);
-    m_amount.y = (std::size_t)std::ceil(m_boundingBox.getYSize() / m_chunkSize);
-    m_amount.z = (std::size_t)std::ceil(m_boundingBox.getZSize() / m_chunkSize);
+    m_amount.x = static_cast<std::size_t>(std::ceil(m_boundingBox.getXSize() / m_chunkSize));
+    m_amount.y = static_cast<std::size_t>(std::ceil(m_boundingBox.getYSize() / m_chunkSize));
+    m_amount.z = static_cast<std::size_t>(std::ceil(m_boundingBox.getZSize() / m_chunkSize));
 
-    buildChunks(mesh, savePath);
+    buildChunks(mesh, maxChunkOverlap, savePath);
 }
 
 MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area)
@@ -94,15 +94,10 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
 
 void ChunkManager::initBoundingBox(MeshBufferPtr mesh)
 {
-    BaseVector<float> currVertex;
-
-    for (std::size_t i = 0; i < mesh->numVertices(); i++)
+    FloatChannel vertices = mesh->getFloatChannel("vertices").get();
+    for (unsigned int i = 0; i < vertices.numElements(); i++)
     {
-        currVertex.x = mesh->getVertices()[3 * i];
-        currVertex.y = mesh->getVertices()[3 * i + 1];
-        currVertex.z = mesh->getVertices()[3 * i + 2];
-
-        m_boundingBox.expand(currVertex);
+        m_boundingBox.expand(static_cast<BaseVector<float>>(vertices[i]));
     }
 }
 
@@ -138,8 +133,9 @@ void ChunkManager::cutLargeFaces(std::shared_ptr<HalfEdgeMesh<BaseVector<float>>
                 }
 
                 // get coordinate for plane in direction of the current axis
-                float chunkBorder = m_chunkSize * ((int)(referenceVertexKey / m_chunkSize))
-                                    + fmod(m_boundingBox.getMin()[axis], m_chunkSize);
+                float chunkBorder
+                    = m_chunkSize * (static_cast<int>(referenceVertexKey / m_chunkSize))
+                      + fmod(m_boundingBox.getMin()[axis], m_chunkSize);
 
                 // select plane of chunk depending oh the relative position of the copared
                 // vertex
@@ -186,7 +182,7 @@ void ChunkManager::cutLargeFaces(std::shared_ptr<HalfEdgeMesh<BaseVector<float>>
     }
 }
 
-void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
+void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::string savePath)
 {
     std::vector<ChunkBuilderPtr> chunkBuilders(m_amount.x * m_amount.y * m_amount.z);
 
@@ -195,7 +191,7 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
             new HalfEdgeMesh<BaseVector<float>>(mesh));
 
     // prepare mash to prevent faces from overlapping too much on chunk borders
-    cutLargeFaces(halfEdgeMesh, 0.1);
+    cutLargeFaces(halfEdgeMesh, maxChunkOverlap);
 
     // one vector of variable size for each vertex - this is used for duplicate detection
     std::shared_ptr<std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>>
@@ -216,10 +212,10 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
     // assign the faces to the chunks
     BaseVector<float> currentCenterPoint;
     MeshHandleIteratorPtr<FaceHandle> iterator = halfEdgeMesh->facesBegin();
-    for (int i = 0; i < halfEdgeMesh->numFaces(); i++)
+    for (size_t i = 0; i < halfEdgeMesh->numFaces(); i++)
     {
-        currentCenterPoint     = getFaceCenter(halfEdgeMesh, *iterator);
-        unsigned int cellIndex = getCellIndex(currentCenterPoint);
+        currentCenterPoint = getFaceCenter(halfEdgeMesh, *iterator);
+        size_t cellIndex   = getCellIndex(currentCenterPoint);
 
         chunkBuilders[cellIndex]->addFace(*iterator);
 
@@ -257,18 +253,18 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, std::string savePath)
 }
 
 BaseVector<float> ChunkManager::getFaceCenter(std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> mesh,
-                                              FaceHandle handle)
+                                              const FaceHandle& handle) const
 {
     return (mesh->getVertexPositionsOfFace(handle)[0] + mesh->getVertexPositionsOfFace(handle)[1]
             + mesh->getVertexPositionsOfFace(handle)[2])
            / 3;
 }
 
-std::size_t ChunkManager::getCellIndex(const BaseVector<float>& vec)
+std::size_t ChunkManager::getCellIndex(const BaseVector<float>& vec) const
 {
     BaseVector<float> tmpVec = (vec - m_boundingBox.getMin()) / m_chunkSize;
-    return (std::size_t)tmpVec.x * m_amount.y * m_amount.z + (std::size_t)tmpVec.y * m_amount.z
-           + (std::size_t)tmpVec.z;
+    return static_cast<size_t>(tmpVec.x) * m_amount.y * m_amount.z
+           + static_cast<size_t>(tmpVec.y) * m_amount.z + static_cast<size_t>(tmpVec.z);
 }
 
 } /* namespace lvr2 */
