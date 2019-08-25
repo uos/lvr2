@@ -56,9 +56,11 @@ class ChunkManager
      *
      * @param mesh mesh to be chunked
      * @param chunksize size of a chunk - unit depends on the given mesh
+     * @param maxChunkOverlap maximum allowed overlap between chunks relative to the chunk size.
+     * Larger triangles will be cut
      * @param savePath JUST FOR TESTING - REMOVE LATER ON
      */
-    ChunkManager(MeshBufferPtr mesh, float chunksize, std::string savePath);
+    ChunkManager(MeshBufferPtr mesh, float chunksize, float maxChunkOverlap, std::string savePath);
 
     /**
      * @brief extractArea creates and returns MeshBufferPtr of merged chunks for given area.
@@ -113,10 +115,11 @@ class ChunkManager
      * Creates chunks from an original mesh and initializes the initial chunk structure
      *
      * @param mesh mesh which is being chunked
-     * @param chunksize size of a chunk
+     * @param maxChunkOverlap maximum allowed overlap between chunks relative to the chunk size.
+     * Larger triangles will be cut
      * @param savePath UST FOR TESTING - REMOVE LATER ON
      */
-    void buildChunks(MeshBufferPtr mesh, std::string savePath);
+    void buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::string savePath);
 
     /**
      * @brief getFaceCenter gets the center point for a given face
@@ -127,7 +130,7 @@ class ChunkManager
      * @return center point of the given face
      */
     BaseVector<float> getFaceCenter(std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> mesh,
-                                    FaceHandle handle);
+                                    const FaceHandle& handle) const;
 
     /**
      * @brief find corresponding grid cell of given point
@@ -135,7 +138,7 @@ class ChunkManager
      * @param vec point of mesh to find cell id for
      * @return cell id
      */
-    std::size_t getCellIndex(const BaseVector<float>& vec);
+    std::size_t getCellIndex(const BaseVector<float>& vec) const;
 
     // bounding box of the entire chunked model
     BoundingBox<BaseVector<float>> m_boundingBox;

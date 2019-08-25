@@ -46,7 +46,7 @@ ChunkBuilder::ChunkBuilder(
 
 ChunkBuilder::~ChunkBuilder() {}
 
-void ChunkBuilder::addFace(FaceHandle faceHandle)
+void ChunkBuilder::addFace(const FaceHandle& faceHandle)
 {
     // add the original index of the face to the chunk with its chunkID
     m_faces.push_back(faceHandle);
@@ -95,7 +95,7 @@ void ChunkBuilder::addFace(FaceHandle faceHandle)
     }
 }
 
-void ChunkBuilder::addDuplicateVertex(VertexHandle index)
+void ChunkBuilder::addDuplicateVertex(const VertexHandle& index)
 {
     if (std::find(m_duplicateVertices.begin(), m_duplicateVertices.end(), index)
         == m_duplicateVertices.end())
@@ -104,17 +104,17 @@ void ChunkBuilder::addDuplicateVertex(VertexHandle index)
     }
 }
 
-unsigned int ChunkBuilder::numFaces()
+unsigned int ChunkBuilder::numFaces() const
 {
     return m_faces.size();
 }
 
-unsigned int ChunkBuilder::numVertices()
+unsigned int ChunkBuilder::numVertices() const
 {
     return m_numVertices;
 }
 
-MeshBufferPtr ChunkBuilder::buildMesh()
+MeshBufferPtr ChunkBuilder::buildMesh() const
 {
     std::unordered_map<unsigned int, unsigned int> vertexIndices;
 
@@ -180,7 +180,7 @@ MeshBufferPtr ChunkBuilder::buildMesh()
                 == vertexIndices.end())
             {
                 unsigned int vertexIndex = vertexIndices.size();
-                vertexIndices[(unsigned int) m_originalMesh->getVerticesOfFace(m_faces[face])[faceVertex].idx()]
+                vertexIndices[static_cast<unsigned int>(m_originalMesh->getVerticesOfFace(m_faces[face])[faceVertex].idx())]
                     = vertexIndex;
 
                 for (uint8_t vertexComponent = 0; vertexComponent < 3; vertexComponent++)

@@ -69,7 +69,7 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
      *
      * @param index index of face in the original model
      */
-    void addFace(FaceHandle index);
+    void addFace(const FaceHandle& index);
 
     /**
      * @brief addDuplicateVertex marks a vertex as duplicate
@@ -79,7 +79,7 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
      *
      * @param index vertex index of diplicate vertex
      */
-    void addDuplicateVertex(VertexHandle index);
+    void addDuplicateVertex(const VertexHandle& index);
 
     /**
      * @brief buildMesh builds a chunk by generating a new mesh buffer
@@ -93,7 +93,7 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
      *
      * @return mesh of the newly created chunk
      */
-    MeshBufferPtr buildMesh();
+    MeshBufferPtr buildMesh() const;
 
     /**
      * @brief numFaces delivers the number of faces for the chunk
@@ -104,7 +104,7 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
      *
      * @return number of faces added to this builder
      */
-    unsigned int numFaces();
+    unsigned int numFaces() const;
 
     /**
      * @brief numVertices amount of vertices ot the resulting mesh
@@ -114,7 +114,7 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
      *
      * @return number of vertices added to this builder
      */
-    unsigned int numVertices();
+    unsigned int numVertices() const;
 
   private:
     // model that is being chunked

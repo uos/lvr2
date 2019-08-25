@@ -64,8 +64,9 @@ int main(int argc, char** argv)
     }
 
     float size = options.getChunkSize();
+    float maxChunkOverlap = options.getMaxChunkOverlap();
 
-    lvr2::ChunkManager chunker(model->m_mesh, size, outputPath.string());
+    lvr2::ChunkManager chunker(model->m_mesh, size, maxChunkOverlap, outputPath.string());
 
     // TODO: remove tmp test later
     // beginn: tmp test of extractArea method for dat/scan.pts with chunkSize 200
