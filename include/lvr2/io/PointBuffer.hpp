@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, University Osnabrück
+ * Copyright (c) 2019, University Osnabrück
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
 #define POINTBUFFER2_HPP
 
 #include "lvr2/io/DataStruct.hpp"
-#include "lvr2/types/ChannelManager.hpp"
+#include "lvr2/types/BaseBuffer.hpp"
 
 #include <map>
 #include <string>
@@ -42,17 +42,15 @@ namespace lvr2
 
 ///
 /// \brief A class to handle point information with an arbitrarily
-///        large number of attribute channels. Point definitions,
-///        as well as normal and color buffers, are cached outside
-///        the attribute maps to allow faster access.
-///        The added channels should always have the some length
+///        large number of attribute channels. 
+///        The added channels should always have the same length
 ///        as the point array to keep the mapping
 ///        between geometry (channel 'points') and the associated layers like RGB
 ///        colors or point normals consistent.
 ///
-class PointBuffer : public ChannelManager
+class PointBuffer : public BaseBuffer
 {
-    using base = ChannelManager;
+    using base = BaseBuffer;
 public:    
     PointBuffer();
 
@@ -125,22 +123,7 @@ public:
     size_t numPoints() const;
 
     /// Makes a clone
-    PointBuffer clone();
-private:
-
-    /// Point channel, 'cached' to allow faster access
-    FloatChannelPtr                     m_points;
-
-    /// Normal channel, 'cached' to allow faster access
-    FloatChannelPtr                     m_normals;
-
-    /// Color channel, 'chached' to allow faster access
-    UCharChannelPtr                     m_colors;
-
-    // Number of points in buffer
-    size_t              m_numPoints;
-
-
+    PointBuffer clone() const;
 
 };
 

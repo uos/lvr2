@@ -35,6 +35,7 @@
 #define LVRMODEL_HPP_
 
 #include "lvr2/io/Model.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 
 #include "LVRPointBufferBridge.hpp"
 #include "LVRMeshBufferBridge.hpp"
@@ -88,7 +89,7 @@ public:
     void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
 
     void        setPose(const Pose& pose);
-    void        setTransform(const Matrix4<BaseVector<float> >& transform);
+    void        setTransform(const Transformd& transform);
 
     Pose        getPose();
 

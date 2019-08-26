@@ -80,7 +80,6 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 
     init();
 
-
     this->m_searchTree = getSearchTree<BaseVecT>(m_searchTreeName, buffer);
 
     if(!this->m_searchTree)
@@ -166,7 +165,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 {
     int k_0 = this->m_kn;
     size_t numPoints = this->m_pointBuffer->numPoints();
-    FloatChannel pts = *(this->m_pointBuffer->getFloatChannel("points"));
+    const FloatChannel pts = *(this->m_pointBuffer->getFloatChannel("points"));
 
     cout << timestamp.getElapsedTime() << "Initializing normal array..." << endl;
 

@@ -30,6 +30,7 @@
 
 #include "lvr2/texture/Material.hpp"
 #include "lvr2/texture/Texture.hpp"
+#include "lvr2/types/BaseBuffer.hpp"
 
 namespace lvr2
 {
@@ -37,9 +38,9 @@ namespace lvr2
 ////
 /// \brief The MeshBuffer Mesh representation for I/O modules.
 ///
-class MeshBuffer : public ChannelManager
+class MeshBuffer : public BaseBuffer
 {
-    using base = ChannelManager;
+    using base = BaseBuffer;
 public:
 
     ///
@@ -49,7 +50,6 @@ public:
     MeshBuffer();
 
     bool removeVertices(){
-        m_numVertices = 0;
         return this->removeFloatChannel("vertices");
     }
 
@@ -123,12 +123,12 @@ public:
     ///
     /// \brief numVertices      Number of vertices in the mesh
     ///
-    size_t numVertices();
+    size_t numVertices() const;
 
     ///
     /// \brief numFaces         Number of faces in the mesh
     ///
-    size_t numFaces();
+    size_t numFaces() const;
 
 
     ///
@@ -184,38 +184,34 @@ public:
     ///
     /// \brief getTextures      Returns a vector with textures
     ///
-    vector<Texture>& getTextures();
+    std::vector<Texture>& getTextures();
 
     ///
     /// \brief getTextures      Returns a vector with materials
     ///
-    vector<Material>& getMaterials();
+    std::vector<Material>& getMaterials();
 
-    bool hasFaceColors();
+    bool hasVertices() const;
 
-    bool hasVertexColors();
+    bool hasFaces() const;
 
-    bool hasFaceNormals();
+    bool hasFaceColors() const;
 
-    bool hasVertexNormals();
+    bool hasVertexColors() const;
+
+    bool hasFaceNormals() const;
+
+    bool hasVertexNormals() const;
 
     /// TODO: CHANNEL BASED SETTER / GETTER!
 
 private:
 
     /// Vector containing all material definitions
-    vector<Material>    m_materials;
+    std::vector<Material>    m_materials;
 
     /// Vector containing all textures
-    vector<Texture>     m_textures;
-
-    /// Number of faces in the mesh
-    size_t              m_numFaces;
-
-    /// Number of vertices in the mesh
-    size_t              m_numVertices;
-
-
+    std::vector<Texture>     m_textures;
 };
 
 using MeshBufferPtr = std::shared_ptr<MeshBuffer>;

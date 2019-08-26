@@ -218,6 +218,7 @@ Q_SIGNALS:
 private:
     void setupQVTK();
     void connectSignalsAndSlots();
+    LVRModelItem* loadModelItem(QString name);
     bool childNameExists(QTreeWidgetItem* item, const QString& name);
     QString increaseFilename(QString filename);
 
