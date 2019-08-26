@@ -36,8 +36,8 @@
 #include <type_traits>
 #include <utility>
 
-#include <lvr2/attrmaps/AttrMaps.hpp>
-#include <lvr2/geometry/Handles.hpp>
+#include "lvr2/attrmaps/AttrMaps.hpp"
+#include "lvr2/geometry/Handles.hpp"
 
 
 namespace lvr2 {
@@ -99,6 +99,6 @@ pair<ValueT, ValueT> minMaxOfMap(const AttributeMap<HandleT, ValueT>& map);
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/UtilAlgorithms.tcc>
+#include "lvr2/algorithm/UtilAlgorithms.tcc"
 
 #endif //LAS_VEGAS_UTILALGORITHMS_HPP

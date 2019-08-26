@@ -40,22 +40,22 @@
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/optional.hpp>
 
-#include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Handles.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/texture/ClusterTexCoordMapping.hpp>
-#include <lvr2/texture/Texture.hpp>
-#include <lvr2/util/ClusterBiMap.hpp>
-#include <lvr2/texture/Material.hpp>
-#include <lvr2/geometry/BoundingRectangle.hpp>
-#include <lvr2/algorithm/Texturizer.hpp>
-#include <lvr2/algorithm/ColorAlgorithms.hpp>
+#include "lvr2/geometry/BaseMesh.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/Handles.hpp"
+#include "lvr2/geometry/Normal.hpp"
+#include "lvr2/reconstruction/PointsetSurface.hpp"
+#include "lvr2/texture/ClusterTexCoordMapping.hpp"
+#include "lvr2/texture/Texture.hpp"
+#include "lvr2/util/ClusterBiMap.hpp"
+#include "lvr2/texture/Material.hpp"
+#include "lvr2/geometry/BoundingRectangle.hpp"
+#include "lvr2/algorithm/Texturizer.hpp"
+#include "lvr2/algorithm/ColorAlgorithms.hpp"
 
 
-#include <lvr2/io/Progress.hpp>
-#include <lvr2/io/Timestamp.hpp>
+#include "lvr2/io/Progress.hpp"
+#include "lvr2/io/Timestamp.hpp"
 #include <unordered_map>
 #include <unordered_set>
 
@@ -196,6 +196,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/Materializer.tcc>
+#include "lvr2/algorithm/Materializer.tcc"
 
 #endif /* LVR2_ALGORITHM_MATERIALIZER_H_ */

@@ -71,6 +71,6 @@ Iter select_randomly(Iter start, Iter end);
 
 } // namespace lvr2
 
-#include <lvr2/util/Random.tcc>
+#include "lvr2/util/Random.tcc"
 
 #endif // LVR2_UTIL_RANDOM_H_

@@ -38,10 +38,11 @@
 #include <vector>
 #include <boost/shared_array.hpp>
 
-#include <lvr2/io/PointBuffer.hpp>
+#include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/Matrix4.hpp"
 
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Matrix4.hpp>
 
 namespace lvr2
 {
@@ -153,11 +154,11 @@ public:
      *
      * @return The transformation matrix in riegl coordinate system
      */
-    template <typename BaseVecT>
-    static Matrix4<BaseVecT> slam6d_to_riegl_transform(const Matrix4<BaseVecT> &in)
+    template <typename T>
+    Transform<T> slam6d_to_riegl_transform(const Transform<T> &mat)
     {
-        Matrix4<BaseVecT> ret;
-
+        T* in = mat.data();
+        T* ret[16];
         ret[0] = in[10];
         ret[1] = -in[2];
         ret[2] = in[6];
@@ -175,8 +176,20 @@ public:
         ret[14] = in[7];
         ret[15] = in[15];
 
-        return ret;
+        return Eigen::Map<Eigen::Matrix<T, 4, 4, Eigen::RowMajor> >(ret);
     }
+
+    template <typename ValueType>
+    static BaseVector<ValueType> slam6d_to_riegl_point(const BaseVector<ValueType> &in)
+    {
+        return {
+            in.z   / (ValueType) 100.0,
+            - in.x / (ValueType) 100.0,
+            in.y   / (ValueType) 100.0
+        };
+    }
+
+
 
     /**
      * @brief Converts an angle from degree to radian.

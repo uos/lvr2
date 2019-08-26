@@ -1,18 +1,46 @@
-namespace lvr2 {
+/**
+ * Copyright (c) 2018, University Osnabrück
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the University Osnabrück nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
-template <typename BaseVecT>
-BVHRaycaster<BaseVecT>::BVHRaycaster(const MeshBufferPtr mesh)
-:RaycasterBase<BaseVecT>(mesh)
+namespace lvr2 
+{
+
+template <typename PointT, typename NormalT>
+BVHRaycaster<PointT, NormalT>::BVHRaycaster(const MeshBufferPtr mesh)
+:RaycasterBase<PointT, NormalT>(mesh)
 ,m_bvh(mesh)
 {
     
 }
 
-template <typename BaseVecT>
-bool BVHRaycaster<BaseVecT>::castRay(
-    const Point<BaseVecT>& origin,
-    const Vector<BaseVecT>& direction,
-    Point<BaseVecT>& intersection
+template <typename PointT, typename NormalT>
+bool BVHRaycaster<PointT, NormalT>::castRay(
+    const PointT& origin,
+    const NormalT& direction,
+    PointT& intersection
 )
 {
     // Cast one ray from one origin
@@ -41,11 +69,11 @@ bool BVHRaycaster<BaseVecT>::castRay(
     return success;
 }
 
-template <typename BaseVecT>
-void BVHRaycaster<BaseVecT>::castRays(
-    const Point<BaseVecT>& origin,
-    const std::vector<Vector<BaseVecT> >& directions,
-    std::vector<Point<BaseVecT> >& intersections,
+template <typename PointT, typename NormalT>
+void BVHRaycaster<PointT, NormalT>::castRays(
+    const PointT& origin,
+    const std::vector<NormalT >& directions,
+    std::vector<PointT >& intersections,
     std::vector<uint8_t>& hits
 )
 {
@@ -62,7 +90,6 @@ void BVHRaycaster<BaseVecT>::castRays(
     float* result = reinterpret_cast<float*>(intersections.data());
     uint8_t* result_hits = hits.data();
 
-
     size_t num_rays = directions.size();
 
     cast_rays_one_multi(origin_f, 
@@ -76,20 +103,18 @@ void BVHRaycaster<BaseVecT>::castRays(
         result_hits);
 
     // Cast multiple rays from one origin
-    // TODO
 }
 
-template <typename BaseVecT>
-void BVHRaycaster<BaseVecT>::castRays(
-    const std::vector<Point<BaseVecT> >& origins,
-    const std::vector<Vector<BaseVecT> >& directions,
-    std::vector<Point<BaseVecT> >& intersections,
+template <typename PointT, typename NormalT>
+void BVHRaycaster<PointT, NormalT>::castRays(
+    const std::vector<PointT >& origins,
+    const std::vector<NormalT >& directions,
+    std::vector<PointT >& intersections,
     std::vector<uint8_t>& hits
 )
 {
     intersections.resize(directions.size());
     hits.resize(directions.size());
-
 
     const float *origin_f = reinterpret_cast<const float*>(origins.data());
     const float *direction_f = reinterpret_cast<const float*>(directions.data());
@@ -116,8 +141,11 @@ void BVHRaycaster<BaseVecT>::castRays(
 
 
 // PRIVATE FUNCTIONS
-template <typename BaseVecT>
-bool BVHRaycaster<BaseVecT>::rayIntersectsBox(Vector<BaseVecT> origin, Ray ray, const float* boxPtr)
+template <typename PointT, typename NormalT>
+bool BVHRaycaster<PointT, NormalT>::rayIntersectsBox(
+    PointT origin,
+    Ray ray,
+    const float* boxPtr)
 {
     const float* limitsX2 = boxPtr;
     const float* limitsY2 = boxPtr+2;
@@ -169,10 +197,10 @@ bool BVHRaycaster<BaseVecT>::rayIntersectsBox(Vector<BaseVecT> origin, Ray ray, 
     return true;
 }
 
-template <typename BaseVecT>
-typename BVHRaycaster<BaseVecT>::TriangleIntersectionResult BVHRaycaster<BaseVecT>::intersectTrianglesBVH(
+template <typename PointT, typename NormalT>
+typename BVHRaycaster<PointT, NormalT>::TriangleIntersectionResult BVHRaycaster<PointT, NormalT>::intersectTrianglesBVH(
     const unsigned int* clBVHindicesOrTriLists,
-    Vector<BaseVecT> origin,
+    PointT origin,
     Ray ray,
     const float* clBVHlimits,
     const float* clTriangleIntersectionData,
@@ -192,7 +220,7 @@ typename BVHRaycaster<BaseVecT>::TriangleIntersectionResult BVHRaycaster<BaseVec
 
     int stackId = 0;
     stack[stackId++] = 0;
-    Vector<BaseVecT> hitpoint;
+    PointT hitpoint;
 
     // while stack is not empty
     while (stackId)
@@ -249,7 +277,7 @@ typename BVHRaycaster<BaseVecT>::TriangleIntersectionResult BVHRaycaster<BaseVec
                 {
                     continue; // epsilon
                 }
-                Vector<BaseVecT> hit = ray.dir * s;
+                PointT hit = ray.dir * s;
                 hit += origin;
 
                 // ray triangle intersection
@@ -298,8 +326,8 @@ typename BVHRaycaster<BaseVecT>::TriangleIntersectionResult BVHRaycaster<BaseVec
     return result;
 }
 
-template <typename BaseVecT>
-void BVHRaycaster<BaseVecT>::cast_rays_one_one(
+template <typename PointT, typename NormalT>
+void BVHRaycaster<PointT, NormalT>::cast_rays_one_one(
         const float* ray_origin,
         const float* rays,
         const unsigned int* clBVHindicesOrTriLists,
@@ -311,8 +339,8 @@ void BVHRaycaster<BaseVecT>::cast_rays_one_one(
     )
 {
      // get direction and origin of the ray for the current pose
-    Vector<BaseVecT> ray_d = {rays[0], rays[1], rays[2]};
-    Vector<BaseVecT> ray_o = {ray_origin[0], ray_origin[1], ray_origin[2]};
+    NormalT ray_d = {rays[0], rays[1], rays[2]};
+    PointT ray_o = {ray_origin[0], ray_origin[1], ray_origin[2]};
 
     // initialize result memory with zeros
     result[0] = 0;
@@ -323,7 +351,7 @@ void BVHRaycaster<BaseVecT>::cast_rays_one_one(
     // precompute ray values to speed up intersection calculation
     Ray ray;
     ray.dir = ray_d;
-    ray.invDir = Vector<BaseVecT>(1.0 / ray_d.x, 1.0 / ray_d.y, 1.0 / ray_d.z);
+    ray.invDir = NormalT(1.0 / ray_d.x, 1.0 / ray_d.y, 1.0 / ray_d.z);
     ray.rayDirSign.x = ray.invDir.x < 0;
     ray.rayDirSign.y = ray.invDir.y < 0;
     ray.rayDirSign.z = ray.invDir.z < 0;
@@ -349,8 +377,8 @@ void BVHRaycaster<BaseVecT>::cast_rays_one_one(
 
 }
 
-template <typename BaseVecT>
-void BVHRaycaster<BaseVecT>::cast_rays_one_multi(
+template <typename PointT, typename NormalT>
+void BVHRaycaster<PointT, NormalT>::cast_rays_one_multi(
         const float* ray_origin,
         const float* rays,
         size_t num_rays,
@@ -363,12 +391,12 @@ void BVHRaycaster<BaseVecT>::cast_rays_one_multi(
     )
 {
      // get direction and origin of the ray for the current pose
-    Vector<BaseVecT> ray_o = {ray_origin[0], ray_origin[1], ray_origin[2]};
+    PointT ray_o(ray_origin[0], ray_origin[1], ray_origin[2]);
 
     #pragma omp for
     for(size_t i=0; i< num_rays; i++)
     {
-        Vector<BaseVecT> ray_d = {rays[i*3], rays[i*3+1], rays[i*3+2]};
+        NormalT ray_d(rays[i*3], rays[i*3+1], rays[i*3+2]);
         // initialize result memory with zeros
         result[i*3] = 0;
         result[i*3+1] = 0;
@@ -378,7 +406,7 @@ void BVHRaycaster<BaseVecT>::cast_rays_one_multi(
         // precompute ray values to speed up intersection calculation
         Ray ray;
         ray.dir = ray_d;
-        ray.invDir = Vector<BaseVecT>(1.0 / ray_d.x, 1.0 / ray_d.y, 1.0 / ray_d.z);
+        ray.invDir = NormalT(1.0 / ray_d.x, 1.0 / ray_d.y, 1.0 / ray_d.z);
         ray.rayDirSign.x = ray.invDir.x < 0;
         ray.rayDirSign.y = ray.invDir.y < 0;
         ray.rayDirSign.z = ray.invDir.z < 0;
@@ -402,12 +430,11 @@ void BVHRaycaster<BaseVecT>::cast_rays_one_multi(
             result_hits[i] = 1;
         }
     }
-
 }
 
 
-template <typename BaseVecT>
-void BVHRaycaster<BaseVecT>::cast_rays_multi_multi(
+template <typename PointT, typename NormalT>
+void BVHRaycaster<PointT, NormalT>::cast_rays_multi_multi(
         const float* ray_origin,
         const float* rays,
         size_t num_rays,
@@ -423,8 +450,8 @@ void BVHRaycaster<BaseVecT>::cast_rays_multi_multi(
     #pragma omp for
     for(size_t i=0; i< num_rays; i++)
     {
-        Vector<BaseVecT> ray_d = {rays[i*3], rays[i*3+1], rays[i*3+2]};
-        Vector<BaseVecT> ray_o = {ray_origin[i*3], ray_origin[i*3+1], ray_origin[i*3+2]};
+        NormalT ray_d(rays[i*3], rays[i*3+1], rays[i*3+2]);
+        PointT ray_o(ray_origin[i*3], ray_origin[i*3+1], ray_origin[i*3+2]);
 
         // initialize result memory with zeros
         result[i*3] = 0;
@@ -435,7 +462,7 @@ void BVHRaycaster<BaseVecT>::cast_rays_multi_multi(
         // precompute ray values to speed up intersection calculation
         Ray ray;
         ray.dir = ray_d;
-        ray.invDir = Vector<BaseVecT>(1.0 / ray_d.x, 1.0 / ray_d.y, 1.0 / ray_d.z);
+        ray.invDir = NormalT(1.0 / ray_d.x, 1.0 / ray_d.y, 1.0 / ray_d.z);
         ray.rayDirSign.x = ray.invDir.x < 0;
         ray.rayDirSign.y = ray.invDir.y < 0;
         ray.rayDirSign.z = ray.invDir.z < 0;

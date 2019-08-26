@@ -35,9 +35,9 @@
 #ifndef ARROW_H_
 #define ARROW_H_
 
-#include <lvr2/display/Renderable.hpp>
+#include "lvr2/display/Renderable.hpp"
 
-#include <lvr2/geometry/BaseVector.hpp>
+#include "lvr2/geometry/BaseVector.hpp"
 
 #include <vector>
 #include <string>

@@ -45,8 +45,8 @@
 #include <random>
 #include <algorithm>
 
-#include <lvr2/util/Factories.hpp>
-#include <lvr2/io/Progress.hpp>
+#include "lvr2/util/Factories.hpp"
+#include "lvr2/io/Progress.hpp"
 
 namespace lvr2
 {
@@ -79,7 +79,6 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
     this->setKd(kd);
 
     init();
-
 
     this->m_searchTree = getSearchTree<BaseVecT>(m_searchTreeName, buffer);
 
@@ -166,7 +165,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 {
     int k_0 = this->m_kn;
     size_t numPoints = this->m_pointBuffer->numPoints();
-    FloatChannel pts = *(this->m_pointBuffer->getFloatChannel("points"));
+    const FloatChannel pts = *(this->m_pointBuffer->getFloatChannel("points"));
 
     cout << timestamp.getElapsedTime() << "Initializing normal array..." << endl;
 

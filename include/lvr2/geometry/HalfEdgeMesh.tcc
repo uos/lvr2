@@ -37,9 +37,9 @@
 #include <utility>
 #include <iostream>
 
-#include <lvr2/attrmaps/AttrMaps.hpp>
-#include <lvr2/util/Panic.hpp>
-#include <lvr2/util/Debug.hpp>
+#include "lvr2/attrmaps/AttrMaps.hpp"
+#include "lvr2/util/Panic.hpp"
+#include "lvr2/util/Debug.hpp"
 
 
 namespace lvr2

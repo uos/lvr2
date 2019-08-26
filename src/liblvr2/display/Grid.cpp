@@ -32,7 +32,7 @@
  *  @author Thomas Wiemann
  */
 
-#include <lvr2/display/Grid.hpp>
+#include "lvr2/display/Grid.hpp"
 
 namespace lvr2
 {

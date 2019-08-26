@@ -29,11 +29,11 @@
 
 #include <rply.h>
 
-#include <lvr2/io/Timestamp.hpp>
-#include <lvr2/io/PointBuffer.hpp>
-#include <lvr2/io/DataStruct.hpp>
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/io/Progress.hpp>
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/io/DataStruct.hpp"
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/Progress.hpp"
 
 #include <boost/filesystem.hpp>
 
@@ -214,7 +214,7 @@ void addToFile(ofstream& out, string filename)
     PointBufferPtr pointBuffer = model->m_pointCloud;
 
     size_t np, nn, nc;
-    unsigned w_color;
+    size_t w_color;
     np = pointBuffer->numPoints();
     nc = nn = np;
 

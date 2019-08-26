@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, University Osnabrück
+ * Copyright (c) 2019, University Osnabrück
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,13 +25,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /*
- * Options.cpp
- *
- *  Created on: Nov 21, 2010
- *      Author: Thomas Wiemann
- */
-
 #include "Options.hpp"
 
 namespace hdf5meshtool
@@ -47,6 +40,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
             ("inputFile,i", value<string>()->default_value("triangle_mesh.ply"), "Input mesh file.")
             ("outputFile,o", value<string>()->default_value("mesh.h5"), "Output file.")
             ("meshName,m", value<string>()->default_value("mesh"), "The name of the mesh to write")
+            ("edgeCollapse,e", value<size_t>()->default_value(0), "Edge collapse reduction algorithm, the number of edges to collapse.")
             ("3dtk2ros,c", value<bool>()->default_value(false), "Whether the input file should be converted from 3DTK format to the ROS format")
             ;
 

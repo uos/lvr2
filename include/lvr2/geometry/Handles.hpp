@@ -38,7 +38,7 @@
 #include <cstdint>
 #include <functional>
 
-#include <lvr2/util/BaseHandle.hpp>
+#include "lvr2/util/BaseHandle.hpp"
 
 namespace lvr2
 {

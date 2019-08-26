@@ -32,15 +32,15 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr2/io/DatIO.hpp>
-#include <lvr2/io/Timestamp.hpp>
-#include <lvr2/io/Progress.hpp>
+#include "lvr2/io/DatIO.hpp"
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/io/Progress.hpp"
 
 #include <boost/filesystem.hpp>
-
 #include <iostream>
 #include <fstream>
 #include <vector>
+
 using std::vector;
 using std::ifstream;
 using std::ofstream;
@@ -186,7 +186,7 @@ void  DatIO::save(string filename)
 		{
 			size_t numPoints = pointBuffer->numPoints();
 			size_t numIntensities;
-            unsigned w_intensities;
+            size_t w_intensities;
 			floatArr pointArray = pointBuffer->getPointArray();
 			floatArr intensityArray = pointBuffer->getFloatArray("intensities", numIntensities, w_intensities);
 			float buffer[4];

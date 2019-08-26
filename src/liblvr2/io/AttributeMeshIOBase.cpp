@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/io/AttributeMeshIOBase.hpp>
+#include "lvr2/io/AttributeMeshIOBase.hpp"
 namespace lvr2{
 
 const std::string attribute_type<EdgeHandle>::attr_group            = "edge_attributes";

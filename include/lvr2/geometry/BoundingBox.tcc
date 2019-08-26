@@ -44,7 +44,7 @@ template<typename BaseVecT>
 BoundingBox<BaseVecT>::BoundingBox()
 {
     auto max_val = numeric_limits<typename BaseVecT::CoordType>::max();
-    auto min_val = numeric_limits<typename BaseVecT::CoordType>::min();
+    auto min_val = numeric_limits<typename BaseVecT::CoordType>::lowest();
 
     m_min = BaseVecT(max_val, max_val, max_val);
     m_max = BaseVecT(min_val, min_val, min_val);

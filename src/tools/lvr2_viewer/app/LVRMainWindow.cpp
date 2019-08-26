@@ -38,12 +38,13 @@
 
 #include "LVRMainWindow.hpp"
 
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/io/DataStruct.hpp>
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/DataStruct.hpp"
 
-#include <lvr2/registration/ICPPointAlign.hpp>
+#include "lvr2/registration/TransformUtils.hpp"
+#include "lvr2/registration/ICPPointAlign.hpp"
 
-#include <lvr2/util/Util.hpp>
+#include "lvr2/util/Util.hpp"
 
 #include <vtkActor.h>
 #include <vtkProperty.h>
@@ -86,6 +87,23 @@ LVRMainWindow::LVRMainWindow()
 
     m_treeWidgetHelper = new LVRTreeWidgetHelper(treeWidget);
 
+    
+    m_actionCopyModelItem = new QAction("Copy item", this);
+    m_actionCopyModelItem->setShortcut(QKeySequence::Copy);
+    m_actionCopyModelItem->setShortcutContext(Qt::ApplicationShortcut);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
+    m_actionCopyModelItem->setShortcutVisibleInContextMenu(true);
+#endif
+
+
+    m_actionPasteModelItem = new QAction("Paste item", this);
+    m_actionPasteModelItem->setShortcut(QKeySequence::Paste);
+    m_actionPasteModelItem->setShortcutContext(Qt::ApplicationShortcut);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
+    m_actionPasteModelItem->setShortcutVisibleInContextMenu(true);
+#endif
+
+
     m_actionRenameModelItem = new QAction("Rename item", this);
     m_actionDeleteModelItem = new QAction("Delete item", this);
     m_actionExportModelTransformed = new QAction("Export item with transformation", this);
@@ -93,20 +111,28 @@ LVRMainWindow::LVRMainWindow()
     m_actionLoadPointCloudData = new QAction("load PointCloud", this);
     m_actionUnloadPointCloudData = new QAction("unload PointCloud", this);
 
+    m_actionShowImage = new QAction("Show Image", this);
+    m_actionSetViewToCamera = new QAction("Set view to camera", this);
+
+    this->addAction(m_actionCopyModelItem);
+    this->addAction(m_actionPasteModelItem);
+
     m_treeParentItemContextMenu = new QMenu;
     m_treeParentItemContextMenu->addAction(m_actionRenameModelItem);
     m_treeParentItemContextMenu->addAction(m_actionDeleteModelItem);
+    m_treeParentItemContextMenu->addAction(m_actionCopyModelItem);
 
     m_treeChildItemContextMenu = new QMenu;
     m_treeChildItemContextMenu->addAction(m_actionExportModelTransformed);
     m_treeChildItemContextMenu->addAction(m_actionShowColorDialog);
     m_treeChildItemContextMenu->addAction(m_actionDeleteModelItem);
+    m_treeChildItemContextMenu->addAction(m_actionCopyModelItem);
 
     m_PointPreviewPlotter = this->plotter;
     this->dockWidgetSpectralSliderSettings->close();
     this->dockWidgetSpectralColorGradientSettings->close();
     this->dockWidgetPointPreview->close();
-
+ 
     // Toolbar item "File"
     m_actionOpen = this->actionOpen;
     m_actionExport = this->actionExport;
@@ -196,6 +222,11 @@ LVRMainWindow::LVRMainWindow()
      m_axesWidget->SetEnabled( 1 );
      m_axesWidget->InteractiveOff();
 
+     // Disable action if EDL is not available
+#ifndef LVR_USE_VTK_GE_7_1
+     actionRenderEDM->setEnabled(false);
+#endif
+
     connectSignalsAndSlots();
 }
 
@@ -240,10 +271,15 @@ LVRMainWindow::~LVRMainWindow()
 
     delete m_actionRenameModelItem;
     delete m_actionDeleteModelItem;
+    delete m_actionCopyModelItem;
+    delete m_actionPasteModelItem;
     delete m_actionExportModelTransformed;
     delete m_actionShowColorDialog;
     delete m_actionLoadPointCloudData;
     delete m_actionUnloadPointCloudData;
+    delete m_actionShowImage;
+    delete m_actionSetViewToCamera;
+    
 }
 
 void LVRMainWindow::connectSignalsAndSlots()
@@ -255,13 +291,21 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(highlightBoundingBoxes()));
     QObject::connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(setModelVisibility(QTreeWidgetItem*, int)));
 
+
     QObject::connect(m_actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
     QObject::connect(m_actionShowColorDialog, SIGNAL(triggered()), this, SLOT(showColorDialog()));
     QObject::connect(m_actionRenameModelItem, SIGNAL(triggered()), this, SLOT(renameModelItem()));
     QObject::connect(m_actionDeleteModelItem, SIGNAL(triggered()), this, SLOT(deleteModelItem()));
+    QObject::connect(m_actionCopyModelItem, SIGNAL(triggered()), this, SLOT(copyModelItem()));
+    QObject::connect(m_actionPasteModelItem, SIGNAL(triggered()), this, SLOT(pasteModelItem()));
     QObject::connect(m_actionLoadPointCloudData, SIGNAL(triggered()), this, SLOT(loadPointCloudData()));
     QObject::connect(m_actionUnloadPointCloudData, SIGNAL(triggered()), this, SLOT(unloadPointCloudData()));
+
+    QObject::connect(m_actionShowImage, SIGNAL(triggered()), this, SLOT(showImage()));
+    QObject::connect(m_actionSetViewToCamera, SIGNAL(triggered()), this, SLOT(setViewToCamera()));
+
+
     QObject::connect(m_actionExportModelTransformed, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
 
     QObject::connect(m_actionReset_Camera, SIGNAL(triggered()), this, SLOT(updateView()));
@@ -284,8 +328,8 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), m_aboutDialog, SLOT(show()));
 
-
     QObject::connect(actionRenderEDM, SIGNAL(toggled(bool)), this, SLOT(toogleEDL(bool)));
+
     QObject::connect(m_actionShow_Points, SIGNAL(toggled(bool)), this, SLOT(togglePoints(bool)));
     QObject::connect(m_actionShow_Normals, SIGNAL(toggled(bool)), this, SLOT(toggleNormals(bool)));
     QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
@@ -387,14 +431,19 @@ void LVRMainWindow::showBackgroundDialog()
 
 void LVRMainWindow::setupQVTK()
 {
+    // z buffer fix
+    QSurfaceFormat surfaceFormat = qvtkWidget->windowHandle()->format();
+    surfaceFormat.setStencilBufferSize(8);
+    qvtkWidget->windowHandle()->setFormat(surfaceFormat);
+
     // Grab relevant entities from the qvtk widget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
 
-    #ifdef LVR2_USE_VTK_GE_7_1
+#ifdef LVR2_USE_VTK_GE_7_1
         m_renderer->TwoSidedLightingOn ();
         m_renderer->UseHiddenLineRemovalOff();
         m_renderer->RemoveAllLights();
-    #endif
+#endif
 
     // Setup decent background colors
     m_renderer->GradientBackgroundOn();
@@ -424,24 +473,29 @@ void LVRMainWindow::setupQVTK()
     m_pathCamera->SetInterpolator(cameraInterpolator);
     m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
 
+
+#ifdef LVR_USE_VTK_GE_7_1 
     // Enable EDL per default
     qvtkWidget->GetRenderWindow()->SetMultiSamples(0);
+
     m_basicPasses = vtkRenderStepsPass::New();
     m_edl = vtkEDLShading::New();
     m_edl->SetDelegatePass(m_basicPasses);
-
     vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
+
     glrenderer->SetPass(m_edl);
+#endif
 
     // Finalize QVTK setup by adding the renderer to the window
     renderWindow->AddRenderer(m_renderer);
-
 
 }
 
 void LVRMainWindow::toogleEDL(bool state)
 {
+#ifdef LVR_USE_VTK_GE_7_1
     vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
+
     if(state == false)
     {
         glrenderer->SetPass(m_basicPasses);
@@ -451,7 +505,9 @@ void LVRMainWindow::toogleEDL(bool state)
         glrenderer->SetPass(m_edl);
     }
     this->qvtkWidget->GetRenderWindow()->Render();
+#endif
 }
+
 
 void LVRMainWindow::updateView()
 {
@@ -714,58 +770,64 @@ void LVRMainWindow::exportSelectedModel()
 
 void LVRMainWindow::alignPointClouds()
 {
-    Matrix4<Vec> mat = m_correspondanceDialog->getTransformation();
-    QString name = m_correspondanceDialog->getDataName();
+    QString dataName = m_correspondanceDialog->getDataName();
     QString modelName = m_correspondanceDialog->getModelName();
 
     PointBufferPtr modelBuffer = m_treeWidgetHelper->getPointBuffer(modelName);
-    PointBufferPtr dataBuffer  = m_treeWidgetHelper->getPointBuffer(name);
+    PointBufferPtr dataBuffer  = m_treeWidgetHelper->getPointBuffer(dataName);
 
-    float pose[6];
-    LVRModelItem* item = m_treeWidgetHelper->getModelItem(name);
-
-    if(item)
-    {
-        mat.toPostionAngle(pose);
-
-        // Pose ist in radians, so we need to convert p to degrees
-        // to achieve consistency
-        Pose p;
-        p.x = pose[0];
-        p.y = pose[1];
-        p.z = pose[2];
-        p.r = pose[3]  * 57.295779513;
-        p.t = pose[4]  * 57.295779513;
-        p.p = pose[5]  * 57.295779513;
-        item->setPose(p);
+    LVRModelItem* dataItem = m_treeWidgetHelper->getModelItem(dataName);
+    LVRModelItem* modelItem = m_treeWidgetHelper->getModelItem(modelName);
+    if (!dataItem || !modelItem) {
+        return;
     }
 
-    updateView();
+    Pose dataPose = dataItem->getPose();
+    Eigen::Vector3f pos(dataPose.x, dataPose.y, dataPose.z);
+    Eigen::Vector3f angles(dataPose.r, dataPose.t, dataPose.p);
+    angles *= M_PI / 180.0; // degrees -> radians
+    Transformf mat = poseToMatrix<float>(pos, angles);
+
+    boost::optional<Transformf> correspondence = m_correspondanceDialog->getTransformation();
+    if (correspondence.is_initialized())
+    {
+        mat *= correspondence.get();
+        matrixToPose(mat, pos, angles);
+        angles *= 180.0 / M_PI; // radians -> degrees
+
+        dataItem->setPose(Pose {
+            pos.x(), pos.y(), pos.z(),
+            angles.x(), angles.y(), angles.z()
+        });
+
+        updateView();
+    }
+
     // Refine pose via ICP
     if(m_correspondanceDialog->doICP() && modelBuffer && dataBuffer)
     {
-        ICPPointAlign<BaseVector<float>> icp(modelBuffer, dataBuffer, mat);
+        Pose modelPose = modelItem->getPose();
+        pos = Eigen::Vector3f(modelPose.x, modelPose.y, modelPose.z);
+        angles = Eigen::Vector3f(modelPose.r, modelPose.t, modelPose.p);
+        angles /= 180.0 / M_PI;
+        Transformf modelTransform = poseToMatrix<float>(pos, angles);
+
+        /* TODO: convert to new ICPPointAlign
+
+        ICPPointAlign icp(modelBuffer, dataBuffer, modelTransform, mat);
         icp.setEpsilon(m_correspondanceDialog->getEpsilon());
         icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
         icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
-        Matrix4<Vec> refinedTransform = icp.match();
+        Matrix4d refinedTransform = icp.match();
 
-        cout << "Initial: " << mat << endl;
+        matrixToPose(refinedTransform, pos, angles);
+        angles *= M_PI / 180.0; // radians -> degrees
 
-        // Apply correction to initial estimation
-        //refinedTransform = mat * refinedTransform;
-        refinedTransform.toPostionAngle(pose);
-
-        cout << "Refined: " << refinedTransform << endl;
-
-        Pose p;
-        p.x = pose[0];
-        p.y = pose[1];
-        p.z = pose[2];
-        p.r = pose[3]  * 57.295779513;
-        p.t = pose[4]  * 57.295779513;
-        p.p = pose[5]  * 57.295779513;
-        item->setPose(p);
+        dataItem->setPose(Pose {
+            pos.x(), pos.y(), pos.z(),
+            angles.x(), angles.y(), angles.z()
+        });
+        */
     }
     m_correspondanceDialog->clearAllItems();
     updateView();
@@ -803,7 +865,37 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
             {
                 con_menu->addAction(m_actionLoadPointCloudData);
             }
+
             con_menu->addAction(m_actionDeleteModelItem);
+            con_menu->addAction(m_actionCopyModelItem);
+            if(m_items_copied.size() > 0)
+            {
+                con_menu->addAction(m_actionPasteModelItem);
+            } 
+            con_menu->exec(globalPos);
+
+            delete con_menu;
+        }
+        if(item->type() == LVRCvImageItemType)
+        {
+            QPoint globalPos = treeWidget->mapToGlobal(p);
+            QMenu *con_menu = new QMenu;
+
+            LVRCvImageItem *cvi = static_cast<LVRCvImageItem *>(item);
+
+            con_menu->addAction(m_actionShowImage);
+            con_menu->exec(globalPos);
+
+            delete con_menu;
+        }
+        if(item->type() == LVRCamDataItemType)
+        {
+            QPoint globalPos = treeWidget->mapToGlobal(p);
+            QMenu *con_menu = new QMenu;
+
+            LVRCamDataItem* cam = static_cast<LVRCamDataItem *>(item);
+
+            con_menu->addAction(m_actionSetViewToCamera);
             con_menu->exec(globalPos);
 
             delete con_menu;
@@ -822,29 +914,104 @@ void LVRMainWindow::renameModelItem()
     }
 }
 
-void LVRMainWindow::loadModel()
+LVRModelItem* LVRMainWindow::loadModelItem(QString name)
 {
-    QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open Model"), "", tr("Model Files (*.ply *.obj *.pts *.3d *.txt *.h5)"));
+    // Load model and generate vtk representation
+    ModelPtr model = ModelFactory::readModel(name.toStdString());
+    ModelBridgePtr bridge(new LVRModelBridge(model));
+    bridge->addActors(m_renderer);
 
+    // Add item for this model to tree widget
+    QFileInfo info(name);
+    QString base = info.fileName();
+    LVRModelItem* item = new LVRModelItem(bridge, base);
+    this->treeWidget->addTopLevelItem(item);
+    item->setExpanded(true);
+
+    // Read Pose file
+    boost::filesystem::path poseFile = name.toStdString();
+    poseFile.replace_extension("pose");
+    if (boost::filesystem::exists(poseFile))
+    {
+        cout << "Found Pose file: " << poseFile << endl;
+        ifstream in;
+        in.open(poseFile.string());
+        lvr2::Pose pose;
+        in >> pose.x >> pose.y >> pose.z;
+        in >> pose.r >> pose.t >> pose.p;
+        item->setPose(pose);
+    }
+    else
+    {
+        poseFile.replace_extension("dat");
+        if (boost::filesystem::exists(poseFile))
+        {
+            cout << "Found Pose file: " << poseFile << endl;
+            Transformf mat = getTransformationFromPose<float>(poseFile).transpose();
+            BaseVector<float> pos, angles;
+            getPoseFromMatrix<float>(pos, angles, mat);
+
+            angles *= 180.0 / M_PI; // radians -> degrees
+
+            item->setPose(Pose {
+                pos.x, pos.y, pos.z,
+                angles.x, angles.y, angles.z
+            });
+        }
+    }
+    return item;
+}
+
+void LVRMainWindow::loadModels(const QStringList& filenames)
+{
     if(filenames.size() > 0)
     {
         QTreeWidgetItem* lastItem = nullptr;
 
-        QStringList::Iterator it = filenames.begin();
+        QStringList::const_iterator it = filenames.begin();
         while(it != filenames.end())
         {
-            // Load model and generate vtk representation
-            ModelPtr model = ModelFactory::readModel((*it).toStdString());
-            ModelBridgePtr bridge(new LVRModelBridge(model));
-            bridge->addActors(m_renderer);
-
-            // Add item for this model to tree widget
+            // check for h5
             QFileInfo info((*it));
             QString base = info.fileName();
-            LVRModelItem* item = new LVRModelItem(bridge, base);
-            this->treeWidget->addTopLevelItem(item);
-            item->setExpanded(true);
-            lastItem = item;
+
+            if (info.suffix() == "h5")
+            {
+                // h5 special loading case
+                // special case h5:
+                // scan data is stored as 
+                QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
+                root->setText(0, base);
+
+                QIcon icon;
+                icon.addFile(QString::fromUtf8(":/qv_scandata_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
+                root->setIcon(0, icon);
+
+                std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(info.absoluteFilePath().toStdString()));
+
+                lastItem = addScanData(sdm, root);
+
+                root->setExpanded(true);
+
+                // load mesh only
+                ModelPtr model_ptr(new Model());
+                std::shared_ptr<HDF5IO> h5_io_ptr(new HDF5IO(info.absoluteFilePath().toStdString()));
+                if(h5_io_ptr->readMesh(model_ptr))
+                {
+                    ModelBridgePtr bridge(new LVRModelBridge(model_ptr));
+                    bridge->addActors(m_renderer);
+
+                    // Add item for this model to tree widget
+                    LVRModelItem* item = new LVRModelItem(bridge, "mesh");
+                    root->addChild(item);
+                    item->setExpanded(false);
+                    lastItem = item;
+                }
+
+            } else {
+                lastItem = loadModelItem(*it);
+            }
+
             ++it;
         }
 
@@ -862,6 +1029,13 @@ void LVRMainWindow::loadModel()
         assertToggles();
         updateView();
     }
+}
+
+void LVRMainWindow::loadModel()
+{
+    QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open Model"), "", tr("Model Files (*.ply *.obj *.pts *.3d *.txt *.h5)"));
+    loadModels(filenames);
+    
 }
 
 void LVRMainWindow::loadPointCloudData()
@@ -914,6 +1088,42 @@ void LVRMainWindow::unloadPointCloudData()
         }
     }
 
+}
+
+void LVRMainWindow::showImage()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+
+        if(item->type() == LVRCvImageItemType)
+        {
+            LVRCvImageItem *cvi = static_cast<LVRCvImageItem *>(item);
+
+            cvi->openWindow();
+        }
+    }
+}
+
+void LVRMainWindow::setViewToCamera()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+
+        if(item->type() == LVRCamDataItemType)
+        {
+            LVRCamDataItem *cam = static_cast<LVRCamDataItem *>(item);
+
+            cam->setCameraView();
+
+            refreshView();
+        }
+    }
 }
 
 void LVRMainWindow::deleteModelItem()
@@ -980,6 +1190,104 @@ void LVRMainWindow::deleteModelItem()
     }
 }
 
+
+void LVRMainWindow::copyModelItem()
+{
+    // std::cout << "COPY!" << std::endl;
+
+    if(m_items_copied.size() == 0)
+    {
+        m_treeParentItemContextMenu->addAction(m_actionPasteModelItem);
+        m_treeChildItemContextMenu->addAction(m_actionPasteModelItem);
+    }
+
+    m_items_copied = treeWidget->selectedItems();
+}
+
+void LVRMainWindow::pasteModelItem()
+{
+
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* to_item = items.first();
+
+        for(QTreeWidgetItem* from_item : m_items_copied)
+        {
+            std::cout << "copy " << from_item->text(0).toStdString() << std::endl;
+            QString name = from_item->text(0);
+
+            // check if name already exist
+            bool child_name_exists = false;
+            bool recheck = true;
+
+            while(childNameExists(to_item, name))
+            {
+                
+                // TODO better
+                name = increaseFilename(name);
+                std::cout << "Change name to " << name.toStdString() << std::endl; 
+
+            }
+
+            QTreeWidgetItem* insert_item = from_item->clone();
+            insert_item->setText(0, name);
+            insert_item->setToolTip(0, name);
+
+            // addChild removes all other childs?
+
+            to_item->addChild(insert_item);
+
+        }
+
+        m_items_copied.clear();
+
+        m_treeParentItemContextMenu->removeAction(m_actionPasteModelItem);
+        m_treeChildItemContextMenu->removeAction(m_actionPasteModelItem);
+
+    }
+
+}
+
+bool LVRMainWindow::childNameExists(QTreeWidgetItem* item, const QString& name)
+{
+    bool child_name_exists = false;
+
+    const int num_children = item->childCount();
+
+    for(int i=0; i<num_children; i++)
+    {
+        const QTreeWidgetItem* child = item->child(i);
+        const QString child_name = child->text(0);
+        if(name == child_name)
+        {
+            child_name_exists = true;
+            break;
+        }
+    }
+
+    return child_name_exists;
+}
+
+QString LVRMainWindow::increaseFilename(QString filename)
+{
+    QRegExp rx("(\\d+)$");
+    
+    if(rx.indexIn(filename, 0) != -1)
+    {
+        int number = 0;
+        number = rx.cap(1).toInt();
+        number += 1;
+        filename.replace(rx, QString::number(number));
+    } else {
+        filename += "_1";
+    }
+
+    return filename;
+}
+
+
 LVRModelItem* LVRMainWindow::getModelItem(QTreeWidgetItem* item)
 {
     if(item->type() == LVRModelItemType)
@@ -989,6 +1297,52 @@ LVRModelItem* LVRMainWindow::getModelItem(QTreeWidgetItem* item)
         return static_cast<LVRModelItem*>(item->parent());
 
     return NULL;
+}
+
+QList<LVRPointCloudItem*> LVRMainWindow::getPointCloudItems(QList<QTreeWidgetItem*> items)
+{
+    QList<LVRPointCloudItem*> pcs;
+
+    for(QTreeWidgetItem* item : items)
+    {
+        if(item->type() == LVRPointCloudItemType)
+        {
+            pcs.append(static_cast<LVRPointCloudItem*>(item));
+        } else if(item->type() == LVRModelItemType) {
+            // get pc of model
+            QTreeWidgetItemIterator it(item);
+            while(*it)
+            {
+                QTreeWidgetItem* child_item = *it;
+                if(child_item->type() == LVRPointCloudItemType
+                    && child_item->parent() == item)
+                {
+                    pcs.append(static_cast<LVRPointCloudItem*>(child_item));
+                }
+                ++it;
+            }
+
+        } else if(item->type() == LVRScanDataItemType) {
+            // Scan data selected: fetch pointcloud (transformed?)
+            QTreeWidgetItemIterator it(item);
+            while(*it)
+            {
+                QTreeWidgetItem* child_item = *it;
+                if(child_item->type() == LVRPointCloudItemType
+                    && child_item->parent() == item)
+                {
+                    // pointcloud found!
+                    pcs.append(static_cast<LVRPointCloudItem*>(child_item));
+                }
+
+                ++it;
+            }
+
+        }
+
+    }
+
+    return pcs;
 }
 
 LVRPointCloudItem* LVRMainWindow::getPointCloudItem(QTreeWidgetItem* item)
@@ -1110,6 +1464,13 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
 
         refreshView();
     }
+    else if (treeWidgetItem->type() == LVRCamDataItemType)
+    {
+        LVRCamDataItem *item = static_cast<LVRCamDataItem *>(treeWidgetItem);
+        item->setVisibility(true);
+
+        refreshView();
+    }
     else if (treeWidgetItem->type() == LVRBoundingBoxItemType)
     {
         LVRBoundingBoxItem *item = static_cast<LVRBoundingBoxItem *>(treeWidgetItem);
@@ -1122,6 +1483,8 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
         setModelVisibility(treeWidgetItem->parent(), column);
     }
 }
+
+
 
 void LVRMainWindow::changePointSize(int pointSize)
 {
@@ -1306,12 +1669,31 @@ QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm
 {
     QTreeWidgetItem *lastItem = nullptr;
     std::vector<ScanData> scanData = sdm->getScanData();
+    std::vector<std::vector<CameraData> > camData = sdm->getCameraData();
 
     for (size_t i = 0; i < scanData.size(); i++)
     {
         char buf[128];
         std::sprintf(buf, "%05d", scanData[i].m_positionNumber);
         LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
+
+        // if(camData[i].size() > 0)
+        // {
+        //     QTreeWidgetItem* cameras_item = new QTreeWidgetItem(item, LVRCamerasItemType);
+        //     cameras_item->setText(0, QString("Photos"));
+        //     // insert cam poses
+        //     // QTreeWidgetItem *images = new QTreeWidgetItem(item, QString("cams"));
+        //     for(int j=0; j < camData[i].size(); j++)
+        //     {
+        //         char buf2[128];
+        //         std::sprintf(buf2, "%05d", j);
+        //         // implement this
+        //         LVRCamDataItem *cam_item = new LVRCamDataItem(camData[i][j], sdm, j, m_renderer, QString("photo_") + buf2, cameras_item);
+
+        //         lastItem = cam_item;
+        //     }
+        // }
+
 
         lastItem = item;
     }
@@ -1321,59 +1703,14 @@ QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm
 
 void LVRMainWindow::parseCommandLine(int argc, char** argv)
 {
-    QTreeWidgetItem* lastItem = nullptr;
 
+    QStringList filenames;
     for(int i = 1; i < argc; i++)
     {
-        QString s(argv[i]);
-        QFileInfo info(s);
-        QString base = info.fileName();
-
-        if (info.suffix() == "h5")
-        {
-
-            QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
-            root->setText(0, base);
-
-            QIcon icon;
-            icon.addFile(QString::fromUtf8(":/qv_scandata_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
-            root->setIcon(0, icon);
-
-            std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(argv[i]));
-
-            lastItem = addScanData(sdm, root);
-
-            root->setExpanded(true);
-
-        }
-        else
-        {
-            // Load model and generate vtk representation
-            ModelPtr model = ModelFactory::readModel(string(argv[i]));
-            ModelBridgePtr bridge(new LVRModelBridge(model));
-            bridge->addActors(m_renderer);
-
-            // Add item for this model to tree widget
-            LVRModelItem* item = new LVRModelItem(bridge, base);
-            this->treeWidget->addTopLevelItem(item);
-            item->setExpanded(true);
-            lastItem = item;
-        }
+        filenames << argv[i];
     }
-
-    if (lastItem != nullptr)
-    {
-        for(QTreeWidgetItem* selected : treeWidget->selectedItems())
-        {
-            selected->setSelected(false);
-        }
-        lastItem->setSelected(true);
-    }
-
-    restoreSliders();
-    updateView();
-    assertToggles();
-
+    
+    loadModels(filenames);
 }
 
 void LVRMainWindow::manualICP()
@@ -1449,17 +1786,25 @@ void LVRMainWindow::estimateNormals()
     buildIncompatibilityBox(string("normal estimation"), POINTCLOUDS_AND_PARENT_ONLY);
     // Get selected item from tree and check type
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+
     if(items.size() > 0)
     {
-        LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
-        QTreeWidgetItem* parent_item = items.first()->parent();
-        if(pc_item != NULL)
+
+        QList<LVRPointCloudItem*> pc_items = getPointCloudItems(items);
+        QList<QTreeWidgetItem*> parent_items;
+        for(LVRPointCloudItem* pc_item : pc_items)
         {
-            LVREstimateNormalsDialog* dialog = new LVREstimateNormalsDialog(pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+            parent_items.append(pc_item->parent());
+        }
+
+        if(pc_items.size() > 0)
+        {
+            LVREstimateNormalsDialog* dialog = new LVREstimateNormalsDialog(pc_items, parent_items, treeWidget, qvtkWidget->GetRenderWindow());
             return;
         }
     }
     m_incompatibilityBox->exec();
+    qvtkWidget->GetRenderWindow()->Render();
 }
 
 void LVRMainWindow::reconstructUsingMarchingCubes()
@@ -1470,7 +1815,7 @@ void LVRMainWindow::reconstructUsingMarchingCubes()
     if(items.size() > 0)
     {
         LVRPointCloudItem* pc_item = getPointCloudItem(items.first());
-        LVRModelItem* parent_item = getModelItem(items.first());
+        QTreeWidgetItem* parent_item = pc_item->parent();
         if(pc_item != NULL)
         {
             LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("MC", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
@@ -1737,7 +2082,7 @@ void LVRMainWindow::onGradientLineEditChanged()
         int min = *points->getIntAtomic("spectral_wavelength_min");
         int max = *points->getIntAtomic("spectral_wavelength_max");
 
-       
+
         QString test = m_gradientLineEdit-> text();
         bool ok;
         int wavelength = test.toUInt(&ok);
@@ -1746,14 +2091,14 @@ void LVRMainWindow::onGradientLineEditChanged()
         {
             return;
         }
-        
+
         if (wavelength < min)
             m_gradientSlider->setValue(min);
         else if (wavelength >= max)
             m_gradientSlider->setValue(max-1);
         else
             m_gradientSlider->setValue(wavelength);
-        
+
     }
 }
 
@@ -1842,9 +2187,9 @@ void LVRMainWindow::onGradientSliderChanged(int action)
             if (!m_gradientLineEdit->hasFocus())
             {
                 m_gradientLineEdit->setText(QString("%1").arg(wavelength));
-            }            
+            }
         }
-    }  
+    }
 }
 
 void LVRMainWindow::changeGradientColor()

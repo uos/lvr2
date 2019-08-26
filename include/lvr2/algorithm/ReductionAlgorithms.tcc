@@ -32,10 +32,10 @@
 #include <unordered_set>
 #include <vector>
 
-#include <lvr2/io/Progress.hpp>
-#include <lvr2/algorithm/NormalAlgorithms.hpp>
-#include <lvr2/geometry/Handles.hpp>
-#include <lvr2/util/Meap.hpp>
+#include "lvr2/io/Progress.hpp"
+#include "lvr2/algorithm/NormalAlgorithms.hpp"
+#include "lvr2/geometry/Handles.hpp"
+#include "lvr2/util/Meap.hpp"
 
 using std::unordered_set;
 using std::vector;
@@ -89,14 +89,8 @@ size_t iterativeEdgeCollapse(
     CostF collapseCost
 )
 {
-    // Output
-    string msg = timestamp.getElapsedTime()
-        + "Reducing mesh by collapsing up to "
-        + std::to_string(count)
-        + " edges ";
-    ProgressBar progress(count + 1, msg);
-    ++progress;
 
+    std::cout << timestamp << "Reduce mesh by collapsing " << count << " edges" << std::endl;
 
     Meap<VertexHandle, float> queue(mesh.nextVertexIndex());
     DenseVertexMap<VertexHandle> bestEdge;
@@ -148,100 +142,95 @@ size_t iterativeEdgeCollapse(
         }
     };
 
+    // Output
+    string msg_init = timestamp.getElapsedTime()
+        + "Computing all costs for all edges ";
+    ProgressBar progress_init(mesh.numVertices() + 1, msg_init);
+    ++progress_init;
 
     // Calculate initial costs of all edges
     for (const auto fromH: mesh.vertices())
     {
         updateVertex(fromH);
+        ++progress_init;
     }
 
+    // Output
+    string msg = timestamp.getElapsedTime()
+        + "Collapsing up to "
+        + std::to_string(count)
+        + "of the edges ";
+    ProgressBar progress(count + 1, msg);
+    ++progress;
 
     size_t collapsedEdgeCount = 0;
 
     // Repeat `count` times
     while (collapsedEdgeCount < count && !queue.isEmpty())
     {
+        // Collapse the edge with minimal cost if it is collapsable.
+        const auto fromH = queue.popMin().key();
+        const auto toH = bestEdge[fromH];
+        const auto edgeMin = mesh.getEdgeBetween(fromH, toH).unwrap();
 
-        cout << queue.numValues() << endl;
-
-        // Collapse the edge with minimal cost if it is collapsable and pop it
-        // from priority queue
-        const auto fromH = queue.popMin().key;
-
-        try
+        if (!mesh.isCollapsable(edgeMin))
         {
-            const auto toH = bestEdge[fromH];
-            const auto edgeMin = mesh.getEdgeBetween(fromH, toH).unwrap();
-            if(edgeMin.idx() >= mesh.numEdges())
-            {
-                std::cout << "OH OH" << std::endl;
-                std::cout << edgeMin.idx() << " / " << mesh.numEdges() << std::endl;
-            }
-
-            if (!mesh.isCollapsable(edgeMin))
-            {
-                // If we can't collapse this edge, we will just ignore it.
-                continue;
-            }
-
-            ++progress;
-
-            auto toPos = mesh.getVertexPosition(toH);
-            auto result = mesh.collapseEdge(edgeMin);
-            collapsedEdgeCount += 1;
-
-            // Set correct position of the new vertex
-            mesh.getVertexPosition(result.midPoint) = toPos;
-
-            // If the `to` vertex was really removed, we have to remove it from
-            // the queue.
-            if (result.midPoint != toH)
-            {
-                queue.erase(toH);
-            }
-
-            facesAroundMidpoint.clear();
-            midpointNeighbors.clear();
-
-            // Now we just need to update the best edge for the midpoint and all
-            // its neighbors.
-            updateVertex(result.midPoint);
-
-            mesh.getNeighboursOfVertex(result.midPoint, midpointNeighbors);
-            for (const auto vH : midpointNeighbors)
-            {
-                updateVertex(vH);
-            }
-
-            // We update the normal of all faces touching the midpoint.
-            mesh.getFacesOfVertex(result.midPoint, facesAroundMidpoint);
-            for (auto fH : facesAroundMidpoint)
-            {
-                auto maybeNormal = getFaceNormal(mesh.getVertexPositionsOfFace(fH));
-                auto normal = maybeNormal
-                                  ? *maybeNormal
-                                  : Normal<typename BaseVecT::CoordType>(0, 0, 1);
-
-                faceNormals[fH] = normal;
-            }
-
-            // Remove all entries from that map that belong to now invalid handles
-            // and add values for the handles that were created.
-            for (auto neighbor : result.neighbors)
-            {
-                if (neighbor)
-                {
-                    faceNormals.erase(neighbor->removedFace);
-                }
-            }
-        }
-        catch (const VertexLoopException &e)
-        {
-            std::cout << "Iterative edge collapse: detected topological error: "
-                      << e.what() << std::endl;
+            // If we can't collapse this edge, we will just ignore it.
             continue;
         }
+
+        ++progress;
+
+
+        auto toPos = mesh.getVertexPosition(toH);
+        auto result = mesh.collapseEdge(edgeMin);
+        collapsedEdgeCount += 1;
+
+        // Set correct position of the new vertex
+        mesh.getVertexPosition(result.midPoint) = toPos;
+
+        // If the `to` vertex was really removed, we have to remove it from
+        // the queue.
+        if (result.midPoint != toH)
+        {
+            queue.erase(toH);
+        }
+
+        facesAroundMidpoint.clear();
+        midpointNeighbors.clear();
+
+        // Now we just need to update the best edge for the midpoint and all
+        // its neighbors.
+        updateVertex(result.midPoint);
+        mesh.getNeighboursOfVertex(result.midPoint, midpointNeighbors);
+        for (const auto vH: midpointNeighbors)
+        {
+            updateVertex(vH);
+        }
+
+        // We update the normal of all faces touching the midpoint.
+        mesh.getFacesOfVertex(result.midPoint, facesAroundMidpoint);
+        for (auto fH: facesAroundMidpoint)
+        {
+            auto maybeNormal = getFaceNormal(mesh.getVertexPositionsOfFace(fH));
+            auto normal = maybeNormal
+                ? *maybeNormal
+                : Normal<typename BaseVecT::CoordType>(0, 0, 1);
+
+            faceNormals[fH] = normal;
+        }
+
+        // Remove all entries from that map that belong to now invalid handles
+        // and add values for the handles that were created.
+        for (auto neighbor: result.neighbors)
+        {
+            if (neighbor)
+            {
+                faceNormals.erase(neighbor->removedFace);
+            }
+        }
     }
+
 
     cout << endl << timestamp << "Collapsed " << collapsedEdgeCount << " edges..." << endl;
 
@@ -269,111 +258,101 @@ size_t simpleMeshReduction(
 
 
         // Get the edge handle and the 0--2 adjacent faces
-        try
+        auto eH = mesh.getEdgeBetween(fromH, toH).unwrap();
+        auto adjacentFaces = mesh.getFacesOfEdge(eH);
+
+        // If the edge is lonely, we won't collapse it
+        if (!adjacentFaces[0] || !adjacentFaces[1])
         {
-            auto eH = mesh.getEdgeBetween(fromH, toH).unwrap();
-            auto adjacentFaces = mesh.getFacesOfEdge(eH);
-
-            // If the edge is lonely, we won't collapse it
-            if (!adjacentFaces[0] || !adjacentFaces[1])
-            {
-                return boost::none;
-            }
-                    // Calculate the curvature term
-            float curvature = 0.0;
-
-            facesAroundFrom.clear();
-            edgesAroundFrom.clear();
-            mesh.getFacesOfVertex(fromH, facesAroundFrom);
-            mesh.getEdgesOfVertex(fromH, edgesAroundFrom);
-            if (facesAroundFrom.size() != edgesAroundFrom.size())
-            {
-                return boost::none;
-            }
-
-            for (auto fH: facesAroundFrom)
-            {
-                // Get the two other vertices of this face.
-                auto verts = mesh.getVerticesOfFace(fH);
-                auto fromPos = verts[0] == fromH
-                    ? 0
-                    : (verts[1] == fromH ? 1 : 2);
-
-                auto v1H = verts[(fromPos + 1) % 3];
-                auto v2H = verts[(fromPos + 2) % 3];
-
-                // Check if we are looking at one face connected to both `to` and
-                // `from`. We can and need to ignore those faces.
-                if (v1H == toH || v2H == toH)
-                {
-                    continue;
-                }
-
-                std::array<BaseVecT, 3> f_verts = {
-                    mesh.getVertexPosition(toH),
-                    mesh.getVertexPosition(v1H),
-                    mesh.getVertexPosition(v2H)
-                };
-
-                // We calculate the normal that the face would have if the edge in
-                // question would be collapsed.
-                boost::optional<Normal<typename BaseVecT::CoordType>> newNormal = getFaceNormal(f_verts);
-
-                // If the face will have 0 area, we don't want to collapse this edge
-                if (!newNormal)
-                {
-                    return boost::none;
-                }
-
-                // If the new normal is too different from the old one, we don't want
-                // to collapse this edge.
-                auto oldNormal = normals[fH];
-                if (newNormal->dot(oldNormal) < MIN_NORMAL_DIFF)
-                {
-                    return boost::none;
-                }
-
-
-                // The diff is between 0 and 1, so 2 is a valid start value to find
-                // the minimum.
-                double minDiff = 2.0;
-                if (adjacentFaces[0])
-                {
-                    auto dot = normals[adjacentFaces[0].unwrap()].dot(normals[fH]);
-                    // We are the first, so we know our value is smaller than the
-                    // initial one
-                    minDiff = (1.0 - dot) / 2.0;
-                }
-                if (adjacentFaces[1])
-                {
-                    auto dot = normals[adjacentFaces[1].unwrap()].dot(normals[fH]);
-                    auto diff = (1.0 - dot) / 2.0;
-                    if (diff < minDiff)
-                    {
-                        minDiff = diff;
-                    }
-                }
-
-                // Find the maximum
-                if (minDiff > curvature)
-                {
-                    curvature = minDiff;
-                }
-            }
-            
-            // Calculate length
-            auto length = mesh.getVertexPosition(fromH).distanceFrom(mesh.getVertexPosition(toH));
-
-            return length * curvature;
-        }
-        catch(const VertexLoopException& e)
-        {
-            std::cout << "Warning: Simple mesh reduction detected a topological error: " 
-                      << e.what() << std::endl;
             return boost::none;
         }
 
+        // Calculate the curvature term
+        float curvature = 0.0;
 
+        facesAroundFrom.clear();
+        edgesAroundFrom.clear();
+        mesh.getFacesOfVertex(fromH, facesAroundFrom);
+        mesh.getEdgesOfVertex(fromH, edgesAroundFrom);
+        if (facesAroundFrom.size() != edgesAroundFrom.size())
+        {
+            return boost::none;
+        }
+
+        for (auto fH: facesAroundFrom)
+        {
+            // Get the two other vertices of this face.
+            auto verts = mesh.getVerticesOfFace(fH);
+            auto fromPos = verts[0] == fromH
+                ? 0
+                : (verts[1] == fromH ? 1 : 2);
+
+            auto v1H = verts[(fromPos + 1) % 3];
+            auto v2H = verts[(fromPos + 2) % 3];
+
+            // Check if we are looking at one face connected to both `to` and
+            // `from`. We can and need to ignore those faces.
+            if (v1H == toH || v2H == toH)
+            {
+                continue;
+            }
+
+            std::array<BaseVecT, 3> f_verts = {
+                mesh.getVertexPosition(toH),
+                mesh.getVertexPosition(v1H),
+                mesh.getVertexPosition(v2H)
+            };
+
+            // We calculate the normal that the face would have if the edge in
+            // question would be collapsed.
+            boost::optional<Normal<typename BaseVecT::CoordType>> newNormal = getFaceNormal(f_verts);
+
+            // If the face will have 0 area, we don't want to collapse this edge
+            if (!newNormal)
+            {
+                return boost::none;
+            }
+
+            // If the new normal is too different from the old one, we don't want
+            // to collapse this edge.
+            auto oldNormal = normals[fH];
+            if (newNormal->dot(oldNormal) < MIN_NORMAL_DIFF)
+            {
+                return boost::none;
+            }
+
+
+            // The diff is between 0 and 1, so 2 is a valid start value to find
+            // the minimum.
+            double minDiff = 2.0;
+            if (adjacentFaces[0])
+            {
+                auto dot = normals[adjacentFaces[0].unwrap()].dot(normals[fH]);
+                // We are the first, so we know our value is smaller than the
+                // initial one
+                minDiff = (1.0 - dot) / 2.0;
+            }
+            if (adjacentFaces[1])
+            {
+                auto dot = normals[adjacentFaces[1].unwrap()].dot(normals[fH]);
+                auto diff = (1.0 - dot) / 2.0;
+                if (diff < minDiff)
+                {
+                    minDiff = diff;
+                }
+            }
+
+            // Find the maximum
+            if (minDiff > curvature)
+            {
+                curvature = minDiff;
+            }
+        }
+
+        // Calculate length
+        auto length = mesh.getVertexPosition(fromH).distanceFrom(mesh.getVertexPosition(toH));
+
+        return length * curvature;
     });
 }
 

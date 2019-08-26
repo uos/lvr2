@@ -39,6 +39,7 @@
 #include <array>
 #include <vector>
 #include <type_traits>
+#include <memory>
 #include <boost/optional.hpp>
 
 using boost::optional;
@@ -583,8 +584,8 @@ public:
     MeshHandleIteratorPtr<FaceHandle> begin() const;
     MeshHandleIteratorPtr<FaceHandle> end() const;
 
-private:
     FaceIteratorProxy(const BaseMesh<BaseVecT>& mesh) : m_mesh(mesh) {}
+ private:
     const BaseMesh<BaseVecT>& m_mesh;
     friend BaseMesh<BaseVecT>;
 };
@@ -596,8 +597,8 @@ public:
     MeshHandleIteratorPtr<EdgeHandle> begin() const;
     MeshHandleIteratorPtr<EdgeHandle> end() const;
 
-private:
     EdgeIteratorProxy(const BaseMesh<BaseVecT>& mesh) : m_mesh(mesh) {}
+ private:
     const BaseMesh<BaseVecT>& m_mesh;
     friend BaseMesh<BaseVecT>;
 };
@@ -609,8 +610,8 @@ public:
     MeshHandleIteratorPtr<VertexHandle> begin() const;
     MeshHandleIteratorPtr<VertexHandle> end() const;
 
-private:
     VertexIteratorProxy(const BaseMesh<BaseVecT>& mesh) : m_mesh(mesh) {}
+ private:
     const BaseMesh<BaseVecT>& m_mesh;
     friend BaseMesh<BaseVecT>;
 };
@@ -669,6 +670,6 @@ struct EdgeSplitResult
 
 } // namespace lvr2
 
-#include <lvr2/geometry/BaseMesh.tcc>
+#include "lvr2/geometry/BaseMesh.tcc"
 
 #endif /* LVR2_GEOMETRY_BASEMESH_H_ */

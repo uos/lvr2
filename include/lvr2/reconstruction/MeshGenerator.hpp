@@ -35,7 +35,7 @@
 #ifndef _LVR2_RECONSTRUCTION_MESHGENERATOR_H_
 #define _LVR2_RECONSTRUCTION_MESHGENERATOR_H_
 
-#include <lvr2/geometry/BaseMesh.hpp>
+#include "lvr2/geometry/BaseMesh.hpp"
 
 namespace lvr2
 {

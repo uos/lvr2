@@ -25,107 +25,107 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/io/IOUtils.hpp>
+#include "lvr2/io/IOUtils.hpp"
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/registration/TransformUtils.hpp"
+
+#include <random>
+#include <unordered_set>
 
 namespace lvr2
 {
 
-Eigen::Matrix4d buildTransformation(double* alignxf)
+void transformPointCloudAndAppend(PointBufferPtr& buffer,
+        boost::filesystem::path& transfromFile,
+        std::vector<float>& pts,
+        std::vector<float>& nrm)
 {
-    Eigen::Matrix3d rotation;
-    Eigen::Vector4d translation;
+     std::cout << timestamp << "Transforming normals " << std::endl;
 
-    rotation  << alignxf[0],  alignxf[4],  alignxf[8],
-    alignxf[1],  alignxf[5],  alignxf[9],
-    alignxf[2],  alignxf[6],  alignxf[10];
+     char frames[2048];
+     char pose[2014];
 
-    translation << alignxf[12], alignxf[13], alignxf[14], 1.0;
+     sprintf(frames, "%s/%s.frames", transfromFile.parent_path().c_str(),
+             transfromFile.stem().c_str());
+     sprintf(pose, "%s/%s.pose", transfromFile.parent_path().c_str(), transfromFile.stem().c_str());
 
-    Eigen::Matrix4d transformation;
-    transformation.setIdentity();
-    transformation.block<3,3>(0,0) = rotation;
-    transformation.rightCols<1>() = translation;
+     boost::filesystem::path framesPath(frames);
+     boost::filesystem::path posePath(pose);
 
-    return transformation;
+
+     Transformd transform = Transformd::Identity();
+
+     if(boost::filesystem::exists(framesPath))
+     {
+        std::cout << timestamp << "Transforming according to " << framesPath.filename() << std::endl;
+        transform = getTransformationFromFrames<double>(framesPath);
+     }
+     else if(boost::filesystem::exists(posePath))
+     {
+        std::cout << timestamp << "Transforming according to " << posePath.filename() << std::endl;
+        transform = getTransformationFromFrames<double>(posePath);
+     }
+     else
+     {
+        std::cout << timestamp << "Warning: found no transformation for "
+            << transfromFile.filename() << std::endl;
+     }
+
+     size_t n_normals;
+     size_t w_normals;
+     size_t n_points = buffer->numPoints();
+
+     floatArr normals = buffer->getFloatArray("normals", n_normals, w_normals); 
+     floatArr points = buffer->getPointArray();
+
+     if (w_normals != 3)
+     {
+        std::cout << timestamp << "Warning: width of normals is not 3" << std::endl;
+        return;
+     }
+     if(n_normals != n_points)
+     {
+         std::cout << timestamp << "Warning: point and normal count mismatch" << std::endl;
+         return;
+     }
+
+     for(size_t i = 0; i < n_points; i++)
+     {
+
+        float x = points[3 * i];
+        float y = points[3 * i + 1];
+        float z = points[3 * i + 2];
+
+        Vector4d v(x,y,z,1);
+        Vector4d tv = transform * v;
+
+//        points[3 * i]     = tv[0];
+//        points[3 * i + 1] = tv[1];
+//        points[3 * i + 2] = tv[2];
+
+        pts.push_back(tv[0]);
+        pts.push_back(tv[1]);
+        pts.push_back(tv[2]);
+
+        Rotationd rotation = transform.block(0, 0, 3, 3);
+
+        float nx = normals[3 * i];
+        float ny = normals[3 * i + 1];
+        float nz = normals[3 * i + 2];
+
+        Vector3d normal(nx, ny, nz);
+        Vector3d tn = rotation * normal;
+
+//        normals[3 * i]     = tn[0];
+//        normals[3 * i + 1] = tn[1];
+//        normals[3 * i + 2] = tn[2];
+
+        nrm.push_back(tn[0]);
+        nrm.push_back(tn[1]);
+        nrm.push_back(tn[2]);
+     }
+
 }
-
-Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
-{
-    std::ifstream poseIn(pose.c_str());
-    if(poseIn.good())
-    {
-        double rPosTheta[3];
-        double rPos[3];
-        double alignxf[16];
-
-        poseIn >> rPos[0] >> rPos[1] >> rPos[2];
-        poseIn >> rPosTheta[0] >> rPosTheta[1] >> rPosTheta[2];
-
-        rPosTheta[0] *= 0.0174533;
-        rPosTheta[1] *= 0.0174533;
-        rPosTheta[2] *= 0.0174533;
-
-        double sx = sin(rPosTheta[0]);
-        double cx = cos(rPosTheta[0]);
-        double sy = sin(rPosTheta[1]);
-        double cy = cos(rPosTheta[1]);
-        double sz = sin(rPosTheta[2]);
-        double cz = cos(rPosTheta[2]);
-
-        alignxf[0]  = cy*cz;
-        alignxf[1]  = sx*sy*cz + cx*sz;
-        alignxf[2]  = -cx*sy*cz + sx*sz;
-        alignxf[3]  = 0.0;
-        alignxf[4]  = -cy*sz;
-        alignxf[5]  = -sx*sy*sz + cx*cz;
-        alignxf[6]  = cx*sy*sz + sx*cz;
-        alignxf[7]  = 0.0;
-        alignxf[8]  = sy;
-        alignxf[9]  = -sx*cy;
-        alignxf[10] = cx*cy;
-
-        alignxf[11] = 0.0;
-
-        alignxf[12] = rPos[0];
-        alignxf[13] = rPos[1];
-        alignxf[14] = rPos[2];
-        alignxf[15] = 1;
-
-        return buildTransformation(alignxf);
-    }
-    else
-    {
-        return Eigen::Matrix4d::Identity();
-    }
-}
-
-Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
-{
-    double alignxf[16];
-    int color;
-
-    std::ifstream in(frames.c_str());
-    int c = 0;
-    while(in.good())
-    {
-        c++;
-        for(int i = 0; i < 16; i++)
-        {
-            in >> alignxf[i];
-        }
-
-        in >> color;
-
-        if(!in.good())
-        {
-            c = 0;
-            break;
-        }
-    }
-
-    return buildTransformation(alignxf);
-}
-
 
 size_t countPointsInFile(boost::filesystem::path& inFile)
 {
@@ -149,25 +149,14 @@ size_t countPointsInFile(boost::filesystem::path& inFile)
     return n_points;
 }
 
-void writeFrames(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut)
+void writePose(const BaseVector<float>& position, const BaseVector<float>& angles, const boost::filesystem::path& out)
 {
-    std::ofstream out(framesOut.c_str());
-
-    // write the rotation matrix
-    out << transform.col(0)(0) << " " << transform.col(0)(1) << " " << transform.col(0)(2)
-        << " " << 0 << " "
-        << transform.col(1)(0) << " " << transform.col(1)(1) << " " << transform.col(1)(2)
-        << " " << 0 << " "
-        << transform.col(2)(0) << " " << transform.col(2)(1) << " " << transform.col(2)(2)
-        << " " << 0 << " ";
-
-    // write the translation vector
-    out << transform.col(3)(0) << " "
-        << transform.col(3)(1) << " "
-        << transform.col(3)(2) << " "
-        << transform.col(3)(3);
-
-    out.close();
+    std::ofstream o(out.c_str());
+    if(o.good())
+    {
+        o << position[0] << " " << position[1] << " " << position[2] << std::endl;
+        o << angles[0] << " " << angles[1] << " " << angles[2];
+    }
 }
 
 size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
@@ -180,10 +169,10 @@ size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
     return n_ip;
 }
 
-size_t writePointsToASCII(ModelPtr model, std::ofstream& out, bool nocolor)
+size_t writePointsToStream(ModelPtr model, std::ofstream& out, bool nocolor)
 {
     size_t n_ip, n_colors;
-    unsigned w_colors;
+    size_t w_colors;
 
     n_ip = model->m_pointCloud->numPoints();
     floatArr arr = model->m_pointCloud->getPointArray();
@@ -234,7 +223,7 @@ size_t getReductionFactor(ModelPtr model, size_t reduction)
     return 1;
 }
 
-size_t getReductionFactorASCII(boost::filesystem::path& inFile, size_t targetSize)
+size_t getReductionFactor(boost::filesystem::path& inFile, size_t targetSize)
 {
     /*
      * If reduction is less than the number of points it will segfault
@@ -255,200 +244,6 @@ size_t getReductionFactorASCII(boost::filesystem::path& inFile, size_t targetSiz
 
     /* No reduction write all points */
     return 1;
-
-}
-
-void transformAndReducePointCloud(ModelPtr model, int modulo, int sx, int sy, int sz,
-        int xPos, int yPos, int zPos)
-{
-    size_t n_ip, n_colors;
-    size_t cntr = 0;
-    unsigned w_colors;
-
-    n_ip = model->m_pointCloud->numPoints();
-    floatArr arr = model->m_pointCloud->getPointArray();
-    ucharArr colors = model->m_pointCloud->getUCharArray("colors", n_colors, w_colors);
-
-    // Plus one because it might differ because of the 0-index
-    // better waste memory for one float than having not enough space.
-    // TO-DO think about exact calculation.
-    size_t targetSize = (3 * ((n_ip)/modulo)) + modulo;
-    size_t targetSizeColors = (w_colors * ((n_ip)/modulo)) + modulo;
-    floatArr points(new float[targetSize ]);
-    ucharArr newColorsArr;
-
-    if(n_colors)
-    {
-        newColorsArr = ucharArr(new unsigned char[targetSizeColors]);
-    }
-
-    for(int i = 0; i < n_ip; i++)
-    {
-        if(i % modulo == 0)
-        {
-            if(sx != 1)
-            {
-                arr[i * 3]         *= sx;
-            }
-
-            if(sy != 1)
-            {
-                arr[i * 3 + 1]     *= sy;
-            }
-
-            if(sz != 1)
-            {
-                arr[i * 3 + 2]     *= sz;
-            }
-
-            if((cntr * 3) < targetSize)
-            {
-                points[cntr * 3]     = arr[i * 3 + xPos];
-                points[cntr * 3 + 1] = arr[i * 3 + yPos];
-                points[cntr * 3 + 2] = arr[i * 3 + zPos];
-            }
-            else
-            {
-                std::cout << "The following is for debugging purpose" << std::endl;
-                std::cout << "Cntr: " << (cntr * 3) << " targetSize: " << targetSize << std::endl;
-                std::cout << "nip : " << n_ip << " modulo " << modulo << std::endl;
-                break;
-            }
-
-            if(n_colors)
-            {
-                for (unsigned j = 0; j < w_colors; j++)
-                {
-                    newColorsArr[cntr * w_colors + j] = colors[i * w_colors + j];
-                }
-            }
-
-            cntr++;
-        }
-    }
-
-    // Pass counter because it is the actual number of points used after reduction
-    // it might be 1 less than the size
-    model->m_pointCloud->setPointArray(points, cntr);
-
-    if(n_colors)
-    {
-        model->m_pointCloud->setColorArray(newColorsArr, cntr, w_colors);
-    }
-}
-
-
-void transformPointCloud(ModelPtr model, Eigen::Matrix4d transformation)
-{
-    std::cout << timestamp << "Transforming model." << std::endl;
-
-    size_t numPoints = model->m_pointCloud->numPoints();
-    floatArr arr = model->m_pointCloud->getPointArray();
-
-    for(int i = 0; i < numPoints; i++)
-    {
-        float x = arr[3 * i];
-        float y = arr[3 * i + 1];
-        float z = arr[3 * i + 2];
-
-        Eigen::Vector4d v(x,y,z,1);
-        Eigen::Vector4d tv = transformation * v;
-
-        arr[3 * i]     = tv[0];
-        arr[3 * i + 1] = tv[1];
-        arr[3 * i + 2] = tv[2];
-    }
-}
-
-void transformPointCloudAndAppend(PointBufferPtr& buffer,
-        boost::filesystem::path& transfromFile,
-        std::vector<float>& pts,
-        std::vector<float>& nrm)
-{
-     std::cout << timestamp << "Transforming normals " << std::endl;
-
-     char frames[2048];
-     char pose[2014];
-
-     sprintf(frames, "%s/%s.frames", transfromFile.parent_path().c_str(),
-             transfromFile.stem().c_str());
-     sprintf(pose, "%s/%s.pose", transfromFile.parent_path().c_str(), transfromFile.stem().c_str());
-
-     boost::filesystem::path framesPath(frames);
-     boost::filesystem::path posePath(pose);
-
-
-     Eigen::Matrix4d transform = Eigen::Matrix4d::Identity();
-
-     if(boost::filesystem::exists(framesPath))
-     {
-        std::cout << timestamp << "Transforming according to " << framesPath.filename() << std::endl;
-        transform = getTransformationFromFrames(framesPath);
-     }
-     else if(boost::filesystem::exists(posePath))
-     {
-        std::cout << timestamp << "Transforming according to " << posePath.filename() << std::endl;
-        transform = getTransformationFromFrames(posePath);
-     }
-     else
-     {
-        std::cout << timestamp << "Warning: found no transformation for "
-            << transfromFile.filename() << std::endl;
-     }
-
-     size_t n_normals;
-     unsigned w_normals;
-     size_t n_points = buffer->numPoints();
-
-     floatArr normals = buffer->getFloatArray("normals", n_normals, w_normals); 
-     floatArr points = buffer->getPointArray();
-
-     if (w_normals != 3)
-     {
-        std::cout << timestamp << "Warning: width of normals is not 3" << std::endl;
-        return;
-     }
-     if(n_normals != n_points)
-     {
-         std::cout << timestamp << "Warning: point and normal count mismatch" << std::endl;
-         return;
-     }
-
-     for(size_t i = 0; i < n_points; i++)
-     {
-
-        float x = points[3 * i];
-        float y = points[3 * i + 1];
-        float z = points[3 * i + 2];
-
-        Eigen::Vector4d v(x,y,z,1);
-        Eigen::Vector4d tv = transform * v;
-
-//        points[3 * i]     = tv[0];
-//        points[3 * i + 1] = tv[1];
-//        points[3 * i + 2] = tv[2];
-
-        pts.push_back(tv[0]);
-        pts.push_back(tv[1]);
-        pts.push_back(tv[2]);
-
-        Eigen::Matrix3d rotation = transform.block(0, 0, 3, 3);
-
-        float nx = normals[3 * i];
-        float ny = normals[3 * i + 1];
-        float nz = normals[3 * i + 2];
-
-        Eigen::Vector3d normal(nx, ny, nz);
-        Eigen::Vector3d tn = rotation * normal;
-
-//        normals[3 * i]     = tn[0];
-//        normals[3 * i + 1] = tn[1];
-//        normals[3 * i + 2] = tn[2];
-
-        nrm.push_back(tn[0]);
-        nrm.push_back(tn[1]);
-        nrm.push_back(tn[2]);
-     }
 
 }
 
@@ -485,5 +280,155 @@ void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::st
     std::cout << timestamp << "Done." << std::endl;
 }
 
+void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, const boost::filesystem::path file)
+{
+    ifstream in(file.c_str());
+    if(in.good())
+    {
+        in >> position.x >> position.y >> position.z;
+        in >> angles.y >> angles.y >> angles.z;
+    }
+}
+
+size_t getNumberOfPointsInPLY(const std::string& filename)
+{
+    size_t n_points = 0;
+    size_t n_vertices = 0;
+
+    // Try to open file
+    std::ifstream in(filename.c_str());
+    if(in.good())
+    {
+        // Check for ply tag
+        std::string tag;
+        in >> tag;
+        if(tag == "PLY" || tag == "ply")
+        {
+            // Parse header
+            std::string token;
+            while (in.good() && token != "end_header" && token != "END_HEADER")
+            {
+                in >> token;
+              
+
+                // Check for vertex field
+                if(token == "vertex" || token == "VERTEX")
+                {
+                    in >> n_vertices;
+                }
+
+                // Check for point field
+                if(token == "point" || token == "POINT")
+                {
+                    in >> n_points;
+                }
+            }
+            if(n_points == 0 && n_vertices == 0)
+            {
+                std::cout << timestamp << "PLY contains neither vertices nor points." << std::endl;
+                return 0;
+            }
+            
+            // Prefer points over vertices
+            if(n_points)
+            {
+                return n_points;
+            }
+            else
+            {
+                return n_vertices;
+            }
+        }
+        else
+        {
+            std::cout << timestamp << filename << " is not a valid .ply file." << std::endl;
+        }
+        
+    }
+    return 0;
+}
+
+template<typename T>
+typename Channel<T>::Ptr subSampleChannel(Channel<T>& src, std::vector<size_t> ids)
+{
+    // Create smaller channel of same type
+    size_t width = src.width();
+    typename Channel<T>::Ptr red(new Channel<T>(ids.size(), width));
+
+    // Sample from original and insert into reduced 
+    // channel
+    boost::shared_array<T> a(red->dataPtr());
+    boost::shared_array<T> b(src.dataPtr());
+    for(size_t i = 0; i < ids.size(); i++)
+    {
+        for(size_t j = 0; j < red->width(); j++)
+        {
+            a[i * width + j] = b[ids[i] * width + j];
+        }
+    }
+    return red;
+}
+
+template<typename T>
+void subsample(PointBufferPtr src, PointBufferPtr dst, vector<size_t>& indices)
+{
+    // Go over all supported channel types and sub-sample
+    vector<std::pair<std::string, Channel<T>>> channels;
+    src->getAllChannelsOfType(channels);      
+    for(auto i : channels)
+    {
+        std::cout << timestamp << "Subsampling channel " << i.first << std::endl;
+        typename Channel<T>::Ptr c = subSampleChannel(i.second, indices);
+        dst->addChannel<T>(c, i.first);
+    }
+
+}
+
+PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const size_t& n)
+{
+    // Buffer for reduced points
+    PointBufferPtr buffer(new PointBuffer);
+    size_t numSrcPts = src->numPoints();
+    
+    // Setup random device and distribution
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist(0, numSrcPts);
+
+    // Check buffer size
+    if(n <= numSrcPts)
+    {
+        // Create index buffer for sub-sampling, using set to avoid duplicates
+        std::unordered_set<size_t> index_set;
+        while(index_set.size() < n)
+        {   
+            index_set.insert(dist(rng));
+        }
+
+        // Copy indices into vector for faster access and []-operator support
+        //.In c++14 this is the fastest way. In C++17 a better alternative 
+        // would be to use extract().
+        vector<size_t> indices;
+        indices.insert(indices.end(), index_set.begin(), index_set.end());
+        index_set.clear();
+
+        // Go over all supported channel types and sub-sample
+        subsample<char>(src, buffer, indices);
+        subsample<unsigned char>(src, buffer, indices);
+        subsample<short>(src, buffer, indices);
+        subsample<int>(src, buffer, indices);
+        subsample<unsigned int>(src, buffer, indices);
+        subsample<float>(src, buffer, indices);
+        subsample<double>(src, buffer, indices);
+    }
+    else
+    {
+        std::cout << timestamp << "Sub-sampling not possible. Number of sampling points is " << std::endl;
+        std::cout << timestamp << "larger than number in src buffer. (" << n << " / " << numSrcPts << ")" << std::endl;
+    }
+    
+
+    return buffer;
+}
 
 } // namespace lvr2

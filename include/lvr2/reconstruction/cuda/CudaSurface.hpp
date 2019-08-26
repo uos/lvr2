@@ -34,11 +34,11 @@
 #ifndef __CudaSurface_H
 #define __CudaSurface_H
 
-#include <lvr2/reconstruction/QueryPoint.hpp>
-#include <lvr2/reconstruction/LBKdTree.hpp>
-#include <lvr2/geometry/LBPointArray.hpp>
-#include <lvr2/geometry/ColorVertex.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
+#include "lvr2/reconstruction/QueryPoint.hpp"
+#include "lvr2/reconstruction/LBKdTree.hpp"
+#include "lvr2/geometry/LBPointArray.hpp"
+#include "lvr2/geometry/ColorVertex.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>

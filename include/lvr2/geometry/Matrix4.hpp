@@ -40,8 +40,8 @@
 #include <iomanip>
 #include <vector>
 
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/io/DataStruct.hpp>
+#include "lvr2/geometry/Normal.hpp"
+#include "lvr2/io/DataStruct.hpp"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -145,7 +145,7 @@ public:
 			float tmp1, tmp2;
 
 			// Normalize axis
-			Normal<T> a(axis);
+			Normal<ValueType> a(axis);
 
 			m[ 0] = c + a.x * a.x * t;
 			m[ 5] = c + a.y * a.y * t;
@@ -204,7 +204,7 @@ public:
 
 	Matrix4(string filename);
 
-	virtual ~Matrix4()
+	~Matrix4()
 	{
 
 	}
@@ -234,10 +234,37 @@ public:
         return *this;
     }
 
+    Eigen::Matrix4d toEigenMatrix()
+    {
+		Eigen::Matrix4d mat;
+
+        mat(0, 0) = m[0];
+        mat(0, 1) = m[1];
+        mat(0, 2) = m[2];
+        mat(0, 3) = m[3];
+
+        mat(1, 0) = m[4];
+        mat(1, 1) = m[5];
+        mat(1, 2) = m[6];
+        mat(1, 3) = m[7];
+
+        mat(2, 0) = m[8];
+        mat(2, 1) = m[9];
+        mat(2, 2) = m[10];
+        mat(2, 3) = m[11];
+
+        mat(3, 0) = m[12];
+        mat(3, 1) = m[13];
+        mat(3, 2) = m[14];
+        mat(3, 3) = m[15];
+
+        return mat;
+    }
+
 	/**
 	 * @brief	Scales the matrix elemnts by the given factor
 	 */
-	Matrix4<BaseVecT> operator*(const typename BaseVecT::CoordType &scale) const
+	Matrix4<BaseVecT> operator*(const ValueType &scale) const
 	{
 		ValueType new_matrix[16];
 		for(int i = 0; i < 16; i++){
@@ -357,10 +384,9 @@ public:
     template<typename T>
     Normal<T> operator*(const Normal<T> &v) const
     {
-        using ValType = typename T::CoordType;
-        ValType x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
-        ValType y = m[ 1] * v.x + m[ 5] * v.y + m[9 ] * v.z;
-        ValType z = m[ 2] * v.x + m[ 6] * v.y + m[10] * v.z;
+        T x = m[ 0] * v.x + m[ 4] * v.y + m[8 ] * v.z;
+        T y = m[ 1] * v.x + m[ 5] * v.y + m[9 ] * v.z;
+        T z = m[ 2] * v.x + m[ 6] * v.y + m[10] * v.z;
 
         return Normal<T>(x, y, z);
     }
@@ -430,7 +456,7 @@ public:
 				pose[5]  = atan2( _trY, _trX );
 			}
 
-			//cout << pose[3] << " " << pose[4] << " " << pose[5] << endl;
+			// cout << pose[3] << " " << pose[4] << " " << pose[5] << endl;
 
 			pose[0] = m[12];
 			pose[1] = m[13];
@@ -484,7 +510,7 @@ public:
 	 * @brief	Returns the internal data array. Unsafe. Will probably
 	 * 			removed in one of the next versions.
 	 */
-	ValueType* getData(){ return m;};
+	ValueType* getData(){ return m;}
 
     floatArr toFloatArray()
     {
@@ -565,6 +591,8 @@ public:
 	    return Mout;
 	}
 
+	ValueType m[16];
+
 private:
 
     /**
@@ -600,7 +628,7 @@ private:
 	  return ( det );
 	}
 
-	ValueType m[16];
+	
 };
 
 /**

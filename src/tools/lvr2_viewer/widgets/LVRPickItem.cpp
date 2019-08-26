@@ -33,7 +33,7 @@
  */
 #include "LVRPickItem.hpp"
 
-#include <lvr2/geometry/BaseVector.hpp>
+#include "lvr2/geometry/BaseVector.hpp"
 
 namespace lvr2
 {

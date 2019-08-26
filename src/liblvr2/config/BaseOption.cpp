@@ -32,8 +32,8 @@
  *      Author: twiemann
  */
 
-#include <lvr2/config/BaseOption.hpp>
-#include <lvr2/io/ModelFactory.hpp>
+#include "lvr2/config/BaseOption.hpp"
+#include "lvr2/io/ModelFactory.hpp"
 
 namespace lvr2
 {
@@ -45,17 +45,22 @@ BaseOption::BaseOption(int argc, char** argv)
     		("xPos,x", value<int>()->default_value(0), "Position of the x-coordinates in the input point data (according to screen coordinates).")
 			("yPos,y", value<int>()->default_value(1), "Position of the y-coordinates in the input data lines (according to screen coordinates).")
 			("zPos,z", value<int>()->default_value(2), "Position of the z-coordinates in the input data lines (according to screen coordinates).")
-			("sx", value<float>()->default_value(1.0), "Scaling factor for the x coordinates.")
-			("sy", value<float>()->default_value(1.0), "Scaling factor for the y coordinates.")
-			("sz", value<float>()->default_value(1.0), "Scaling factor for the z coordinates.")
+            ("sx", value<float>()->default_value(1.0f), "Scaling factor for the x coordinates.")
+            ("sy", value<float>()->default_value(1.0f), "Scaling factor for the y coordinates.")
+            ("sz", value<float>()->default_value(1.0f), "Scaling factor for the z coordinates.")
 	;
-    m_coordinateTransform = new CoordinateTransform;
+    m_coordinateTransform = new CoordinateTransform<float>;
+}
+
+CoordinateTransform<float> BaseOption::coordinateTransform() const
+{
+	return CoordinateTransform<float>(x(), y(), z(), sx(), sy(), sz());
 }
 
 void BaseOption::printTransformation(std::ostream& out) const
 {
 	out << "##### Program options: " << std::endl;
-    if(m_coordinateTransform->convert)
+    if(m_coordinateTransform->transforms())
 	{
 		out << "##### Transform input data\t: YES" << std::endl;
 		out << "##### Position of x coordinates\t: " << x() << std::endl;
@@ -90,7 +95,6 @@ void BaseOption::setup()
 
 	if(sx() != 1.0 || sy() != 1.0 || sz() != 0 || x() != 1 || y() != 1 || z() != 1)
 	{
-        m_coordinateTransform->convert = true;
         m_coordinateTransform->x = x();
         m_coordinateTransform->y = y();
         m_coordinateTransform->z = z();
@@ -105,6 +109,24 @@ void BaseOption::setup()
 BaseOption::~BaseOption()
 {
 
+}
+
+void BaseOption::printLogo() const
+{
+    std::string logo = R"(
+         /\
+        /  \               ##          ##      ##    #######         ######
+       /    \              ##          ##      ##    ##     ##     ##      ##
+      /      \             ##           ##    ##     ##      ##            ##
+     /________\            ##           ##    ##     ##     ##            ##
+    /\        /\           ##            ##  ##      #######             ##
+   /  \      /  \          ##            ##  ##      ##    ##          ##
+  /    \    /    \         ##             ####       ##     ##       ##
+ /      \  /      \        ##########      ##        ##      ##    ##########
+/________\/________\
+    )";
+
+    std::cout << logo << std::endl;
 }
 
 } /* namespace lvr2 */

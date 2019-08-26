@@ -29,8 +29,8 @@
 #define LVR2_TEXTURE_MATERIAL_H_
 
 #include <boost/optional.hpp>
-#include <lvr2/algorithm/ColorAlgorithms.hpp>
-#include <lvr2/geometry/Handles.hpp>
+#include "lvr2/algorithm/ColorAlgorithms.hpp"
+#include "lvr2/geometry/Handles.hpp"
 
 using boost::optional;
 

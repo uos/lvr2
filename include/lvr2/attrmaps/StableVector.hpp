@@ -44,8 +44,8 @@ using std::move;
 using std::vector;
 using boost::optional;
 
-#include <lvr2/util/BaseHandle.hpp>
-#include <lvr2/geometry/Handles.hpp>
+#include "lvr2/util/BaseHandle.hpp"
+#include "lvr2/geometry/Handles.hpp"
 
 
 namespace lvr2
@@ -289,6 +289,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/attrmaps/StableVector.tcc>
+#include "lvr2/attrmaps/StableVector.tcc"
 
 #endif /* LVR2_ATTRMAPS_STABLEVECTOR_H_ */

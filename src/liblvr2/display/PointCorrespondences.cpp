@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/display/PointCorrespondences.hpp>
+#include "lvr2/display/PointCorrespondences.hpp"
 
 namespace lvr2
 {

@@ -35,7 +35,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include <lvr2/algorithm/ContourAlgorithms.hpp>
+#include "lvr2/algorithm/ContourAlgorithms.hpp"
 
 namespace lvr2
 {

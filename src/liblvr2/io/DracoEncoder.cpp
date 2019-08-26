@@ -28,7 +28,7 @@
  **/
 
 #include "lvr2/io/DracoEncoder.hpp"
-#include "draco/metadata/geometry_metadata.h"
+#include <draco/metadata/geometry_metadata.h>
 
 namespace lvr2
 {
@@ -200,7 +200,7 @@ std::unique_ptr<draco::EncoderBuffer> encodePointCloud(ModelPtr modelPtr, draco:
     // save point colors
     try
     {
-        unsigned w;
+        size_t w;
         ucharArr colors = modelPtr->m_pointCloud->getColorArray(w);
         if (colors && (w == 3))
         {
@@ -283,7 +283,7 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
     draco::GeometryMetadata* metadata = new draco::GeometryMetadata();
 
     // load sizes and arrays from modelPtr
-    unsigned w;
+    size_t w;
     size_t   numVertices = modelPtr->m_mesh->numVertices();
     floatArr vertices = modelPtr->m_mesh->getVertices();
     floatArr vertexNormals = modelPtr->m_mesh->getVertexNormals();    

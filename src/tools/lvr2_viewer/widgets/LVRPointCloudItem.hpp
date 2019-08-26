@@ -59,12 +59,18 @@ public:
     bool	getVisibility();
     void    setVisibility(bool &visiblity);
     size_t  getNumPoints();
+    void    update();
     PointBufferPtr getPointBuffer();
     PointBufferBridgePtr getPointBufferBridge();
     vtkSmartPointer<vtkActor> getActor();
 
 protected:
     QTreeWidgetItem*        m_parent;
+    QTreeWidgetItem*        m_numItem;
+    QTreeWidgetItem*        m_normalItem;
+    QTreeWidgetItem*        m_colorItem;
+    QTreeWidgetItem*        m_specItem;
+
     PointBufferBridgePtr    m_pointBridge;
     QColor                  m_color;
     int						m_pointSize;

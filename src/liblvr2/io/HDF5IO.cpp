@@ -114,32 +114,113 @@ size_t HDF5IO::chunkSize()
 
 ModelPtr HDF5IO::read(std::string filename)
 {
+    open(filename, HighFive::File::ReadOnly);
+    ModelPtr model_ptr(new Model);
+
+    std::cout << timestamp << "HDF5IO: loading..." << std::endl;
+    // read mesh information
+    if(readMesh(model_ptr))
+    {
+        std::cout << timestamp << " Mesh successfully loaded." << std::endl;
+    } else {
+        std::cout << timestamp << " Mesh could not be loaded." << std::endl;
+    }
+
+    // read pointcloud information out of scans
+    if(readPointCloud(model_ptr))
+    {
+        std::cout << timestamp << " PointCloud successfully loaded." << std::endl;
+    } else {
+        std::cout << timestamp << " PointCloud could not be loaded." << std::endl;
+    }
+    
+    return model_ptr;
+}
+
+bool HDF5IO::readPointCloud(ModelPtr model_ptr)
+{
+    std::vector<ScanData> scans = getRawScanData(true);
+    if(scans.size() == 0)
+    {
+        return false;
+    }
+
+    size_t n_points_total = 0;
+    for(const ScanData& scan : scans)
+    {
+        n_points_total += scan.m_points->numPoints();
+    }
+
+    floatArr points(new float[n_points_total * 3]);
+    BaseVector<float>* points_raw_it = reinterpret_cast<BaseVector<float>* >(
+        points.get()
+    );
+
+    for(int i=0; i<scans.size(); i++)
+    {
+        size_t num_points = scans[i].m_points->numPoints();
+        floatArr pts = scans[i].m_points->getPointArray();
+
+        Transformd T = scans[i].m_poseEstimation;
+        T.transpose();
+
+        BaseVector<float>* begin = reinterpret_cast<BaseVector<float>* >(pts.get());
+        BaseVector<float>* end = begin + num_points;
+
+        while(begin != end)
+        {
+            const BaseVector<float>& cp = *begin;
+            *points_raw_it = T * cp;
+
+            begin++;
+            points_raw_it++;
+        }
+    }
+
+    model_ptr->m_pointCloud.reset(new PointBuffer(points, n_points_total));
+
+    return true;
+}
+
+bool HDF5IO::readMesh(ModelPtr model_ptr)
+{
     const std::string mesh_resource_path = "meshes/" + m_part_name;
     const std::string vertices("vertices");
     const std::string indices("indices");
 
-    open(filename, HighFive::File::ReadOnly);
-    ModelPtr model_ptr(new Model);
     if(!exist(mesh_resource_path)){
-        std::cout << timestamp << " No mesh with the part name \"" << m_part_name << "\" given in the file \""
-        << filename << "\"!" << std::endl;
-    }
-    else
-    {
+        return false;
+    } else {
         auto mesh = getGroup(mesh_resource_path);
+        
         if(!mesh.exist(vertices) || !mesh.exist(indices)){
             std::cout << timestamp << " The mesh has to contain \"" << vertices
                 << "\" and \"" << indices << "\"" << std::endl;
             std::cout << timestamp << " Return empty model pointer!" << std::endl;
-            return model_ptr;
+            return false;
         }
+
+        std::vector<size_t> vertexDims;
+        std::vector<size_t> faceDims;
+
         // read mesh buffer
-        unsigned int numVertices;
-        model_ptr->m_mesh->setVertices(getArray<float>(mesh_resource_path, vertices, numVertices), numVertices);
-        unsigned int numFaces;
-        model_ptr->m_mesh->setFaceIndices(getArray<unsigned int>(mesh_resource_path, indices, numFaces), numFaces/3);
+        floatArr vbuffer = getArray<float>(mesh_resource_path, vertices, vertexDims);
+        indexArray ibuffer = getArray<unsigned int>(mesh_resource_path, indices, faceDims);
+
+        if(vertexDims[0] == 0)
+        {
+            return false;
+        }
+        if(!model_ptr->m_mesh)
+        {
+            model_ptr->m_mesh.reset(new MeshBuffer());
+        }
+
+        model_ptr->m_mesh->setVertices(vbuffer, vertexDims[0]);
+
+        model_ptr->m_mesh->setFaceIndices(ibuffer, faceDims[0]);
     }
-    return model_ptr;
+    return true;
 }
 
 bool HDF5IO::open(std::string filename, int open_flag)
@@ -195,6 +276,79 @@ void HDF5IO::write_base_structure()
 
 void HDF5IO::save(std::string filename)
 {
+
+}
+
+void HDF5IO::save(ModelPtr model, std::string filename)
+{
+    open(filename, HighFive::File::ReadWrite);
+
+    if(saveMesh(model))
+    {
+        std::cout << timestamp << " Mesh succesfully saved to " << filename << std::endl;
+    } else {
+        std::cout << timestamp << " Mesh could not saved to " << filename << std::endl;
+    }
+}
+
+bool HDF5IO::saveMesh(ModelPtr model_ptr)
+{
+    if(!model_ptr->m_mesh)
+    {
+        std::cout << timestamp << " Model does not contain a mesh" << std::endl;
+        return false;
+    }
+    
+    const std::string mesh_resource_path = "meshes/" + m_part_name;
+    const std::string vertices("vertices");
+    const std::string indices("indices");
+
+    
+    if(exist(mesh_resource_path)){
+        std::cout << timestamp << " Mesh already exists in file!" << std::endl;
+        return false;
+    } else {
+
+        auto mesh = getGroup(mesh_resource_path);
+
+        if(mesh.exist(vertices) || mesh.exist(indices)){
+            std::cout << timestamp << " The mesh has to contain \"" << vertices
+                << "\" and \"" << indices << "\"" << std::endl;
+            std::cout << timestamp << " Return empty model pointer!" << std::endl;
+            return false;
+        }
+
+        std::vector<size_t> vertexDims = {model_ptr->m_mesh->numVertices(), 3};
+        std::vector<size_t> faceDims = {model_ptr->m_mesh->numFaces(), 3};
+
+        if(vertexDims[0] == 0)
+        {
+            std::cout << timestamp << " The mesh has 0 vertices" << std::endl;
+            return false;
+        }
+        if(faceDims[0] == 0)
+        {
+            std::cout << timestamp << " The mesh has 0 faces" << std::endl;
+            return false;
+        }
+
+        addArray<float>(
+            mesh_resource_path,
+            vertices,
+            vertexDims,
+            model_ptr->m_mesh->getVertices()
+        );
+
+        addArray<unsigned int>(
+            mesh_resource_path,
+            indices,
+            faceDims,
+            model_ptr->m_mesh->getFaceIndices()
+        );
+        
+    }
+
+    return true;
 
 }
 
@@ -281,6 +435,47 @@ std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
 
 }
 
+std::vector<std::vector<CameraData> > HDF5IO::getRawCamData(bool load_image_data)
+{
+    std::vector<std::vector<CameraData> > ret;
+    
+    if(m_hdf5_file) 
+    {
+        std::string groupNamePhotos = "/raw/photos/";
+
+        if(!exist(groupNamePhotos))
+        {
+            return ret;
+        }
+
+        HighFive::Group photos_group = getGroup(groupNamePhotos);
+
+        size_t num_scans = photos_group.getNumberObjects();
+
+
+        for (size_t i = 0; i < num_scans; i++)
+        {
+
+            std::string cur_scan_pos = photos_group.getObjectName(i);
+            HighFive::Group photo_group = getGroup(photos_group, cur_scan_pos);
+
+            std::vector<CameraData> cam_data;
+
+            size_t num_photos = photo_group.getNumberObjects();
+            for(size_t j=0; j< num_photos; j++)
+            {
+                CameraData cam = getSingleRawCamData(i, j, load_image_data);
+                cam_data.push_back(cam);
+            }
+
+            ret.push_back(cam_data);
+        }
+
+    }
+
+    return ret;
+}
+
 ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
 {
     ScanData ret;
@@ -295,11 +490,11 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
         std::string spectralGroupName = "/annotation/" + nr_str;
 
         unsigned int dummy;
-        floatArr fov           = getArray<float>(groupName, "fov", dummy);
-        floatArr res           = getArray<float>(groupName, "resolution", dummy);
-        floatArr pose_estimate = getArray<float>(groupName, "initialPose", dummy);
-        floatArr registration  = getArray<float>(groupName, "finalPose", dummy);
-        floatArr bb            = getArray<float>(groupName, "boundingBox", dummy);
+        floatArr fov            = getArray<float>(groupName, "fov", dummy);
+        floatArr res            = getArray<float>(groupName, "resolution", dummy);
+        doubleArr pose_estimate = getArray<double>(groupName, "initialPose", dummy);
+        doubleArr registration  = getArray<double>(groupName, "finalPose", dummy);
+        floatArr bb             = getArray<float>(groupName, "boundingBox", dummy);
 
         if (load_points || m_usePreviews)
         {
@@ -341,12 +536,12 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
 
         if (registration)
         {
-            ret.m_registration   = Matrix4<BaseVector<float> >(registration.get());
+            ret.m_registration = Transformd(registration.get());
         }
 
         if (pose_estimate)
         {
-            ret.m_poseEstimation = Matrix4<BaseVector<float> >(pose_estimate.get());
+            ret.m_poseEstimation = Transformd(pose_estimate.get());
         }
 
         if (bb)
@@ -359,6 +554,60 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
         ret.m_positionNumber = nr;
 
         ret.m_scanDataRoot = groupName;
+    }
+
+    return ret;
+}
+
+
+CameraData HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_data)
+{
+    CameraData ret;
+     
+    if (m_hdf5_file)
+    {
+        char buffer1[128];
+        sprintf(buffer1, "position_%05d", scan_id);
+        string scan_id_str(buffer1);
+        char buffer2[128];
+        sprintf(buffer2, "photo_%05d", img_id);
+        string img_id_str(buffer2);
+
+
+        std::string groupName  = "/raw/photos/"  + scan_id_str + "/" + img_id_str;
+        
+        HighFive::Group g;
+        
+        try
+        {
+            g = getGroup(groupName);
+        }
+        catch(HighFive::Exception& e)
+        {
+            std::cout << timestamp << "Error getting cam data: "
+                    << e.what() << std::endl;
+            throw e;
+        }
+
+        unsigned int dummy;
+        doubleArr intrinsics_arr = getArray<double>(groupName, "intrinsics", dummy);
+        doubleArr extrinsics_arr = getArray<double>(groupName, "extrinsics", dummy);
+        
+        if(intrinsics_arr)
+        {
+            ret.intrinsics = Transformd(intrinsics_arr.get());
+        }
+
+        if(extrinsics_arr)
+        {
+            ret.extrinsics = Transformd(extrinsics_arr.get());
+        }
+
+        if(load_image_data)
+        {
+            getImage(g, "image", ret.image);
+        }
+
     }
 
     return ret;
@@ -398,7 +647,6 @@ void HDF5IO::addImage(std::string group, std::string name, cv::Mat& img)
 {
     if(m_hdf5_file)
     {
-
         HighFive::Group g = getGroup(group);
         addImage(g, name, img);
     }
@@ -408,7 +656,37 @@ void HDF5IO::addImage(HighFive::Group& g, std::string datasetName, cv::Mat& img)
 {
     int w = img.cols;
     int h = img.rows;
-    H5IMmake_image_8bit(g.getId(), datasetName.c_str(), w, h, img.data);
+    const char* interlace = "INTERLACE_PIXEL";
+
+    if(img.type() == CV_8U)
+    {
+        // 1 channel image
+        H5IMmake_image_8bit(g.getId(), datasetName.c_str(), w, h, img.data);
+    } else if(img.type() == CV_8UC3) {
+        // 3 channel image
+        H5IMmake_image_24bit(g.getId(), datasetName.c_str(), w, h, interlace, img.data);
+    }
+
+}
+
+void HDF5IO::getImage(HighFive::Group& g, std::string datasetName, cv::Mat& img)
+{
+    long long unsigned int w,h,planes;
+    long long int npals;
+    char interlace[256];
+
+    H5IMget_image_info(g.getId(), datasetName.c_str(), &w, &h, &planes, interlace, &npals);
+
+    if(planes == 1)
+    {
+        // 1 channel image
+        img = cv::Mat(h, w, CV_8U);
+    } else if(planes == 3) {
+        // 3 channel image
+        img = cv::Mat(h, w, CV_8UC3);
+    }
+
+    H5IMread_image(g.getId(), datasetName.c_str(), img.data);
 }
 
 void HDF5IO::addFloatChannelToRawScanData(
@@ -442,7 +720,7 @@ void HDF5IO::addFloatChannelToRawScanData(
     }
 }
 
-void HDF5IO::addHyperspectralCalibration(int position, const HyperspectralCalibration& calibration)
+void HDF5IO::addHyperspectralCalibration(int position, const HyperspectralPanorama& calibration)
 {
     try
     {
@@ -465,23 +743,23 @@ void HDF5IO::addHyperspectralCalibration(int position, const HyperspectralCalibr
         std::string groupName = "/raw/spectral/" + nr_str;
 
         floatArr a(new float[3]);
-        a[0] = calibration.a0;
-        a[1] = calibration.a1;
-        a[2] = calibration.a2;
+        a[0] = calibration.distortion(1, 0);
+        a[1] = calibration.distortion(2, 0);
+        a[2] = calibration.distortion(3, 0);
 
         floatArr rotation(new float[3]);
-        a[0] = calibration.angle_x;
-        a[1] = calibration.angle_y;
-        a[2] = calibration.angle_z;
+        a[0] = calibration.rotation(1, 0);
+        a[1] = calibration.rotation(2, 0);
+        a[2] = calibration.rotation(3, 0);
 
         floatArr origin(new float[3]);
-        origin[0] = calibration.origin_x;
-        origin[1] = calibration.origin_y;
-        origin[2] = calibration.origin_z;
+        origin[0] = calibration.origin(1, 0);
+        origin[1] = calibration.origin(2, 0);
+        origin[2] = calibration.origin(3, 0);
 
         floatArr principal(new float[2]);
-        principal[0] = calibration.principal_x;
-        principal[1] = calibration.principal_y;
+        principal[0] = calibration.principal(1, 0);
+        principal[1] = calibration.principal(2, 0);
 
         addArray(groupName, "distortion", 3, a);
         addArray(groupName, "rotation", 3, rotation);
@@ -526,8 +804,14 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             res[1] = scan.m_vResolution;
 
             // Generate pose estimation matrix array
-            floatArr pose_estimate(scan.m_poseEstimation.toFloatArray());
-            floatArr registration(scan.m_registration.toFloatArray());
+            float* pose_data = new float[16];
+            float* reg_data = new float[16];
+
+            std::copy(scan.m_poseEstimation.data(), scan.m_poseEstimation.data() + 16, pose_data);
+            std::copy(scan.m_registration.data(), scan.m_registration.data() + 16, reg_data);
+
+            floatArr pose_estimate(pose_data);
+            floatArr registration(reg_data);
 
             // Generate bounding box representation
             floatArr bb(new float[6]);
@@ -569,7 +853,7 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
 
             // Add spectral annotation channel
             size_t an;
-            unsigned aw;
+            size_t aw;
             ucharArr spectral = scan.m_points->getUCharArray("spectral_channels", an, aw);
 
             if (spectral)
@@ -609,6 +893,57 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
                 }
             }
         }
+    }
+}
+
+void HDF5IO::addRawCamData( int scan_id, int img_id, CameraData& cam_data )
+{
+    if(m_hdf5_file)
+    {
+
+        char buffer1[128];
+        sprintf(buffer1, "position_%05d", scan_id);
+        string scan_id_str(buffer1);
+
+        char buffer2[128];
+        sprintf(buffer2, "photo_%05d", img_id);
+        string photo_id_str(buffer2);
+
+        std::string groupName = "/raw/photos/" + scan_id_str + "/" + photo_id_str;
+
+        HighFive::Group photo_group;
+
+        try
+        {
+            photo_group = getGroup(groupName);
+        }
+        catch(HighFive::Exception& e)
+        {
+            std::cout << timestamp << "Error adding raw image data: "
+                    << e.what() << std::endl;
+            throw e;
+        }
+        
+        // add image to scan_image_group
+        floatArr intrinsics_arr(new float[16]);
+        Eigen::Map<Eigen::Matrix<float, 4, 4, Eigen::RowMajor>>(intrinsics_arr.get()) = cam_data.intrinsics.cast<float>();
+
+
+        floatArr extrinsics_arr(new float[16]);
+        Eigen::Map<Eigen::Matrix<float, 4, 4, Eigen::RowMajor>>(extrinsics_arr.get()) = cam_data.extrinsics.cast<float>();
+
+        std::vector<size_t> dim = {4,4};
+
+        std::vector<hsize_t> chunks;
+        for(auto i: dim)
+        {
+                chunks.push_back(i);
+        }
+
+        addArray(photo_group, "intrinsics", dim, chunks, intrinsics_arr);
+        addArray(photo_group, "extrinsics", dim, chunks, extrinsics_arr);
+        addImage(photo_group, "image", cam_data.image);
+
     }
 }
 
@@ -663,6 +998,46 @@ HighFive::Group HDF5IO::getGroup(const std::string &groupName, bool create)
             else if (create)
             {
                 cur_grp = cur_grp.createGroup(groupNames[i]);
+            }
+            else
+            {
+                // Throw exception because a group we searched
+                // for doesn't exist and create flag was false
+                throw std::runtime_error("HDF5IO - getGroup(): Groupname '"
+                    + groupNames[i] + "' doesn't exist and create flag is false");
+            }
+        }
+    }
+    catch(HighFive::Exception& e)
+    {
+        std::cout << timestamp
+                  << "Error in getGroup (with group name '"
+                  << groupName << "': " << std::endl;
+        std::cout << e.what() << std::endl;
+        throw e;
+    }
+
+    return cur_grp;
+}
+
+HighFive::Group HDF5IO::getGroup(HighFive::Group& g, const std::string &groupName, bool create)
+{
+    std::vector<std::string> groupNames = splitGroupNames(groupName);
+    HighFive::Group cur_grp;
+
+    try
+    {
+
+        for (size_t i = 0; i < groupNames.size(); i++)
+        {
+
+            if (g.exist(groupNames[i]))
+            {
+                cur_grp = g.getGroup(groupNames[i]);
+            }
+            else if (create)
+            {
+                cur_grp = g.createGroup(groupNames[i]);
             }
             else
             {

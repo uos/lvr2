@@ -35,8 +35,8 @@
  *  @author Jan Philipp Vogtherr (jvogtherr@uos.de)
  */
 
-#include <lvr2/texture/Texture.hpp>
-#include <lvr2/display/GlTexture.hpp>
+#include "lvr2/texture/Texture.hpp"
+#include "lvr2/display/GlTexture.hpp"
 
 namespace lvr2 {
 

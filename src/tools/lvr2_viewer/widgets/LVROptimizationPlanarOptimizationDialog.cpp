@@ -28,18 +28,18 @@
 #include <QFileDialog>
 #include "LVROptimizationPlanarOptimizationDialog.hpp"
 
-#include <lvr2/algorithm/CleanupAlgorithms.hpp>
-#include <lvr2/algorithm/ClusterAlgorithms.hpp>
-#include <lvr2/algorithm/FinalizeAlgorithms.hpp>
-#include <lvr2/algorithm/NormalAlgorithms.hpp>
-#include <lvr2/algorithm/Tesselator.hpp>
+#include "lvr2/algorithm/CleanupAlgorithms.hpp"
+#include "lvr2/algorithm/ClusterAlgorithms.hpp"
+#include "lvr2/algorithm/FinalizeAlgorithms.hpp"
+#include "lvr2/algorithm/NormalAlgorithms.hpp"
+#include "lvr2/algorithm/Tesselator.hpp"
 
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/HalfEdgeMesh.hpp>
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/HalfEdgeMesh.hpp"
 
-#include <lvr2/io/Model.hpp>
+#include "lvr2/io/Model.hpp"
 
-#include <lvr2/util/ClusterBiMap.hpp>
+#include "lvr2/util/ClusterBiMap.hpp"
 
 namespace lvr2
 {

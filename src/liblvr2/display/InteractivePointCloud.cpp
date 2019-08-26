@@ -32,7 +32,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr2/display/InteractivePointCloud.hpp>
+#include "lvr2/display/InteractivePointCloud.hpp"
 
 namespace lvr2
 {

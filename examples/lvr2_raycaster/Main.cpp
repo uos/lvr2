@@ -6,13 +6,13 @@
 #include <boost/optional.hpp>
 
 // lvr2 includes
-#include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
+#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
 
-#include <lvr2/algorithm/raycasting/RaycasterBase.hpp>
-#include <lvr2/algorithm/raycasting/CLRaycaster.hpp>
-#include <lvr2/algorithm/raycasting/BVHRaycaster.hpp>
+#include "lvr2/algorithm/raycasting/RaycasterBase.hpp"
+#include "lvr2/algorithm/raycasting/CLRaycaster.hpp"
+#include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
 
 using boost::optional;
 using std::unique_ptr;
@@ -20,8 +20,8 @@ using std::make_unique;
 
 using namespace lvr2;
 
-using Vec = BaseVector<float>;
-using PsSurface = lvr2::PointsetSurface<Vec>;
+using PointType = BaseVector<float>;
+using NormalType = Normal<float>;
 
 
 MeshBufferPtr genMesh(){
@@ -60,8 +60,8 @@ MeshBufferPtr genMesh(){
     return dst_mesh;
 }
 
-void genRays(std::vector<Point<Vec> >& origins,
-std::vector<Vector<Vec> >& directions,
+void genRays(std::vector<PointType >& origins,
+std::vector<NormalType >& directions,
 float scale = 1.0,
 bool flip_axis = false)
 {
@@ -186,16 +186,16 @@ bool flip_axis = false)
 
 }
 
-void test1(RaycasterBase<Vec>& rc)
+void test1(RaycasterBase<PointType, NormalType>& rc)
 {
     std::cout << "Raycast Test 1 started" << std::endl;
 
-    Point<Vec> origin = {20.0,40.0,50.0};
-    Vector<Vec> ray = {1.0,0.0,0.0};
+    PointType origin = {20.0,40.0,50.0};
+    NormalType ray = {1.0,0.0,0.0};
 
 
-    std::vector<Point<Vec> > origins;
-    std::vector<Vector<Vec> > rays;
+    std::vector<PointType > origins;
+    std::vector<NormalType > rays;
 
     for(int i=0; i<100; i++)
     {
@@ -206,7 +206,7 @@ void test1(RaycasterBase<Vec>& rc)
     
     std::cout << "TEST 1: one origin, one ray." << std::endl;
 
-    Point<Vec> intersection;
+    PointType intersection;
     bool success = rc.castRay(origin, ray, intersection);
     
 
@@ -220,7 +220,7 @@ void test1(RaycasterBase<Vec>& rc)
 
     std::cout << "TEST 2: one origin, mulitple rays." << std::endl;
 
-    std::vector<Point<Vec> > intersections1, intersections2;
+    std::vector<PointType > intersections1, intersections2;
     std::vector<uint8_t> hits1, hits2;
 
     rc.castRays(origin, rays, intersections1, hits1);
@@ -267,19 +267,19 @@ void test1(RaycasterBase<Vec>& rc)
     }
 }
 
-void test2(RaycasterBase<Vec>& rc)
+void test2(RaycasterBase<PointType, NormalType>& rc)
 {
-    std::vector<Point<Vec> > origins;
-    std::vector<Vector<Vec> > rays;
+    std::vector<PointType > origins;
+    std::vector<NormalType > rays;
 
     genRays(origins, rays, 10.0, true);
 
-    std::vector<Point<Vec> > intersections;
+    std::vector<PointType > intersections;
     std::vector<uint8_t> hits;
 
     rc.castRays(origins, rays, intersections, hits);
 
-    std::vector<Point<Vec> > results;
+    std::vector<PointType > results;
 
     for(int i=0; i<hits.size(); i++)
     {
@@ -324,23 +324,23 @@ void test2(RaycasterBase<Vec>& rc)
     
 }
 
-void test3(RaycasterBase<Vec>& rc, size_t num_rays=984543)
+void test3(RaycasterBase<PointType, NormalType>& rc, size_t num_rays=984543)
 {
     int u_max = int(3027.8730 * 2);
     int v_max = int(2031.0270 * 2);
 
-    Vector<Vec> origin = {0.0,0.0,0.0};
-    std::vector<Vector<Vec> > rays(num_rays);
+    PointType origin = {0.0,0.0,0.0};
+    std::vector<NormalType > rays(num_rays);
 
     for(int i=0; i<num_rays; i++)
     {
-        Vector<Vec> ray_world = {1.0,0.0,0.0};
+        NormalType ray_world = {1.0,0.0,0.0};
         rays[i].x = 1.0;
         rays[i].y = 0.0;
         rays[i].z = 0.0;
     }
 
-    std::vector<Point<Vec> > intersections;
+    std::vector<PointType > intersections;
     std::vector<uint8_t> hits;
 
     rc.castRays(origin, rays, intersections, hits);
@@ -350,8 +350,8 @@ void test3(RaycasterBase<Vec>& rc, size_t num_rays=984543)
 int main(int argc, char** argv){
 
     MeshBufferPtr buffer = genMesh();
-    CLRaycaster<Vec> rcGPU(buffer);
-    BVHRaycaster<Vec> rcCPU(buffer);
+    CLRaycaster<PointType, NormalType> rcGPU(buffer);
+    BVHRaycaster<PointType, NormalType> rcCPU(buffer);
     
 
     test1(rcCPU);

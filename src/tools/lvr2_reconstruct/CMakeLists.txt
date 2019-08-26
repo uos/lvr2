@@ -16,10 +16,12 @@ set(LVR2_RECONSTRUCT_DEPENDENCIES
     lvr2las_static
     lvr2rply_static
     lvr2slam6d_static
+    ${TIFF_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARIES}
     ${OpenCV_LIBS}
     ${PCL_LIBRARIES}
+    ${GDAL_LIBRARY}
 )
 
 if( ${NABO_FOUND} )
@@ -40,7 +42,6 @@ endif(PCL_FOUND)
 #####################################################################################
 
 add_executable(lvr2_reconstruct ${RECONSTRUCT_SOURCES})
-#set_target_properties(lvr2_reconstruct PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 target_link_libraries(lvr2_reconstruct ${LVR2_RECONSTRUCT_DEPENDENCIES})
 
 find_package(HDF5 QUIET REQUIRED)
