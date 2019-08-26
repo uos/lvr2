@@ -161,7 +161,7 @@ bool HDF5IO::readPointCloud(ModelPtr model_ptr)
         size_t num_points = scans[i].m_points->numPoints();
         floatArr pts = scans[i].m_points->getPointArray();
 
-        Matrix4<BaseVector<float> > T = scans[i].m_poseEstimation;
+        Transformd T = scans[i].m_poseEstimation;
         T.transpose();
 
         BaseVector<float>* begin = reinterpret_cast<BaseVector<float>* >(pts.get());
@@ -435,9 +435,9 @@ std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
 
 }
 
-std::vector<std::vector<CamData> > HDF5IO::getRawCamData(bool load_image_data)
+std::vector<std::vector<CameraData> > HDF5IO::getRawCamData(bool load_image_data)
 {
-    std::vector<std::vector<CamData> > ret;
+    std::vector<std::vector<CameraData> > ret;
     
     if(m_hdf5_file) 
     {
@@ -459,12 +459,12 @@ std::vector<std::vector<CamData> > HDF5IO::getRawCamData(bool load_image_data)
             std::string cur_scan_pos = photos_group.getObjectName(i);
             HighFive::Group photo_group = getGroup(photos_group, cur_scan_pos);
 
-            std::vector<CamData> cam_data;
+            std::vector<CameraData> cam_data;
 
             size_t num_photos = photo_group.getNumberObjects();
             for(size_t j=0; j< num_photos; j++)
             {
-                CamData cam = getSingleRawCamData(i, j, load_image_data);
+                CameraData cam = getSingleRawCamData(i, j, load_image_data);
                 cam_data.push_back(cam);
             }
 
@@ -490,11 +490,11 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
         std::string spectralGroupName = "/annotation/" + nr_str;
 
         unsigned int dummy;
-        floatArr fov           = getArray<float>(groupName, "fov", dummy);
-        floatArr res           = getArray<float>(groupName, "resolution", dummy);
-        floatArr pose_estimate = getArray<float>(groupName, "initialPose", dummy);
-        floatArr registration  = getArray<float>(groupName, "finalPose", dummy);
-        floatArr bb            = getArray<float>(groupName, "boundingBox", dummy);
+        floatArr fov            = getArray<float>(groupName, "fov", dummy);
+        floatArr res            = getArray<float>(groupName, "resolution", dummy);
+        doubleArr pose_estimate = getArray<double>(groupName, "initialPose", dummy);
+        doubleArr registration  = getArray<double>(groupName, "finalPose", dummy);
+        floatArr bb             = getArray<float>(groupName, "boundingBox", dummy);
 
         if (load_points || m_usePreviews)
         {
@@ -536,12 +536,12 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
 
         if (registration)
         {
-            ret.m_registration   = Matrix4<BaseVector<float> >(registration.get());
+            ret.m_registration = Transformd(registration.get());
         }
 
         if (pose_estimate)
         {
-            ret.m_poseEstimation = Matrix4<BaseVector<float> >(pose_estimate.get());
+            ret.m_poseEstimation = Transformd(pose_estimate.get());
         }
 
         if (bb)
@@ -560,10 +560,10 @@ ScanData HDF5IO::getSingleRawScanData(int nr, bool load_points)
 }
 
 
-CamData HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_data)
+CameraData HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_data)
 {
-    CamData ret;
-
+    CameraData ret;
+     
     if (m_hdf5_file)
     {
         char buffer1[128];
@@ -590,22 +590,22 @@ CamData HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_dat
         }
 
         unsigned int dummy;
-        floatArr intrinsics_arr = getArray<float>(groupName, "intrinsics", dummy);
-        floatArr extrinsics_arr = getArray<float>(groupName, "extrinsics", dummy);
+        doubleArr intrinsics_arr = getArray<double>(groupName, "intrinsics", dummy);
+        doubleArr extrinsics_arr = getArray<double>(groupName, "extrinsics", dummy);
         
         if(intrinsics_arr)
         {
-            ret.m_intrinsics = Matrix4<BaseVector<float> >(intrinsics_arr.get());
+            ret.intrinsics = Transformd(intrinsics_arr.get());
         }
 
         if(extrinsics_arr)
         {
-            ret.m_extrinsics = Matrix4<BaseVector<float> >(extrinsics_arr.get());
+            ret.extrinsics = Transformd(extrinsics_arr.get());
         }
 
         if(load_image_data)
         {
-            getImage(g, "image", ret.m_image_data);
+            getImage(g, "image", ret.image);
         }
 
     }
@@ -720,7 +720,7 @@ void HDF5IO::addFloatChannelToRawScanData(
     }
 }
 
-void HDF5IO::addHyperspectralCalibration(int position, const HyperspectralCalibration& calibration)
+void HDF5IO::addHyperspectralCalibration(int position, const HyperspectralPanorama& calibration)
 {
     try
     {
@@ -743,23 +743,23 @@ void HDF5IO::addHyperspectralCalibration(int position, const HyperspectralCalibr
         std::string groupName = "/raw/spectral/" + nr_str;
 
         floatArr a(new float[3]);
-        a[0] = calibration.a0;
-        a[1] = calibration.a1;
-        a[2] = calibration.a2;
+        a[0] = calibration.distortion(1, 0);
+        a[1] = calibration.distortion(2, 0);
+        a[2] = calibration.distortion(3, 0);
 
         floatArr rotation(new float[3]);
-        a[0] = calibration.angle_x;
-        a[1] = calibration.angle_y;
-        a[2] = calibration.angle_z;
+        a[0] = calibration.rotation(1, 0);
+        a[1] = calibration.rotation(2, 0);
+        a[2] = calibration.rotation(3, 0);
 
         floatArr origin(new float[3]);
-        origin[0] = calibration.origin_x;
-        origin[1] = calibration.origin_y;
-        origin[2] = calibration.origin_z;
+        origin[0] = calibration.origin(1, 0);
+        origin[1] = calibration.origin(2, 0);
+        origin[2] = calibration.origin(3, 0);
 
         floatArr principal(new float[2]);
-        principal[0] = calibration.principal_x;
-        principal[1] = calibration.principal_y;
+        principal[0] = calibration.principal(1, 0);
+        principal[1] = calibration.principal(2, 0);
 
         addArray(groupName, "distortion", 3, a);
         addArray(groupName, "rotation", 3, rotation);
@@ -804,8 +804,14 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
             res[1] = scan.m_vResolution;
 
             // Generate pose estimation matrix array
-            floatArr pose_estimate(scan.m_poseEstimation.toFloatArray());
-            floatArr registration(scan.m_registration.toFloatArray());
+            float* pose_data = new float[16];
+            float* reg_data = new float[16];
+
+            std::copy(scan.m_poseEstimation.data(), scan.m_poseEstimation.data() + 16, pose_data);
+            std::copy(scan.m_registration.data(), scan.m_registration.data() + 16, reg_data);
+
+            floatArr pose_estimate(pose_data);
+            floatArr registration(reg_data);
 
             // Generate bounding box representation
             floatArr bb(new float[6]);
@@ -890,7 +896,7 @@ void HDF5IO::addRawScanData(int nr, ScanData &scan)
     }
 }
 
-void HDF5IO::addRawCamData( int scan_id, int img_id, CamData& cam_data )
+void HDF5IO::addRawCamData( int scan_id, int img_id, CameraData& cam_data )
 {
     if(m_hdf5_file)
     {
@@ -919,8 +925,13 @@ void HDF5IO::addRawCamData( int scan_id, int img_id, CamData& cam_data )
         }
         
         // add image to scan_image_group
-        floatArr intrinsics_arr(cam_data.m_intrinsics.toFloatArray());
-        floatArr extrinsics_arr(cam_data.m_extrinsics.toFloatArray());
+        floatArr intrinsics_arr(new float[16]);
+        Eigen::Map<Eigen::Matrix<float, 4, 4, Eigen::RowMajor>>(intrinsics_arr.get()) = cam_data.intrinsics.cast<float>();
+
+
+        floatArr extrinsics_arr(new float[16]);
+        Eigen::Map<Eigen::Matrix<float, 4, 4, Eigen::RowMajor>>(extrinsics_arr.get()) = cam_data.extrinsics.cast<float>();
+
         std::vector<size_t> dim = {4,4};
 
         std::vector<hsize_t> chunks;
@@ -931,7 +942,7 @@ void HDF5IO::addRawCamData( int scan_id, int img_id, CamData& cam_data )
 
         addArray(photo_group, "intrinsics", dim, chunks, intrinsics_arr);
         addArray(photo_group, "extrinsics", dim, chunks, extrinsics_arr);
-        addImage(photo_group, "image", cam_data.m_image_data);
+        addImage(photo_group, "image", cam_data.image);
 
     }
 }
