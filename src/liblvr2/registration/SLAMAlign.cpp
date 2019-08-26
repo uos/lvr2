@@ -260,8 +260,6 @@ void SLAMAlign::loopClose(size_t first, size_t last)
 
     Matrix4d transform = icp.match();
 
-    cout << "Loopclose delta: " << endl << transform << endl << endl;
-
     for (size_t i = first; i <= last; i++)
     {
         double factor = (i - first) / (double)(last - first);

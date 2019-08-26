@@ -49,6 +49,8 @@ SLAMScanWrapper::SLAMScanWrapper(ScanPtr scan)
     {
         m_scan->m_registration = m_scan->m_poseEstimation;
 
+        // TODO: m_scan->m_points->load();
+
         m_numPoints = m_scan->m_points->numPoints();
         auto arr = m_scan->m_points->getPointArray();
 
@@ -58,6 +60,9 @@ SLAMScanWrapper::SLAMScanWrapper(ScanPtr scan)
         {
             m_points[i] = Vector3f(arr[i * 3], arr[i * 3 + 1], arr[i * 3 + 2]);
         }
+
+        // TODO: m_scan->m_points->unload();
+        m_scan->m_points.reset();
     }
     else
     {
@@ -72,7 +77,10 @@ ScanPtr SLAMScanWrapper::getScan()
 
 void SLAMScanWrapper::transform(const Transformd& transform, bool writeFrame, FrameUse use)
 {
-    m_scan->m_registration = transform * m_scan->m_registration;
+    if (m_scan)
+    {
+        m_scan->m_registration = transform * m_scan->m_registration;
+    }
     m_deltaPose = transform * m_deltaPose;
 
     if (writeFrame)
