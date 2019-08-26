@@ -39,6 +39,18 @@
 #include "lvr2/io/ModelFactory.hpp"
 
 #include <cmath>
+namespace
+{
+    template<typename T>
+    struct VectorCapsule {
+    private:
+        std::shared_ptr<std::vector<T>> arr_;
+    public:
+        explicit VectorCapsule(std::vector<T>&& arr): arr_(std::make_shared<std::vector<T>>(std::move(arr))) {}
+        ~VectorCapsule() = default;
+        void operator()(void*) {}
+    };
+}
 
 namespace lvr2
 {
@@ -194,16 +206,19 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
     std::cout << "Unique: " << areaUniqueVertices.size() / 3 << std::endl;
     areaDuplicateVertices.insert(areaDuplicateVertices.end(), areaUniqueVertices.begin(), areaUniqueVertices.end());
 
-//    PointBufferPtr areaPointPtr(new PointBuffer(floatArr(areaDuplicateVertices.data()), areaDuplicateVertices.size() / 3));
-//    ModelFactory::saveModel(ModelPtr(new Model(areaPointPtr)), "area/merged.xyz");
+    std::size_t areaVertexNum = areaDuplicateVertices.size() / 3;
+    float* tmpVertices = areaDuplicateVertices.data();
+    floatArr vertexArr = floatArr(tmpVertices, VectorCapsule<float>(std::move(areaDuplicateVertices)));
 
-    std::cout << "Vertices: " << areaDuplicateVertices.size() / 3 << ", Faces: " << areaFaceIndices.size() / 3 << std::endl;
+    std::size_t faceIndexNum = areaFaceIndices.size() / 3;
+    auto* tmpFaceIndices = areaFaceIndices.data();
+    indexArray faceIndexArr = indexArray(tmpFaceIndices, VectorCapsule<unsigned int>(std::move(areaFaceIndices)));
+
     MeshBufferPtr areaMeshPtr(new MeshBuffer);
-    areaMeshPtr->setVertices(floatArr(areaDuplicateVertices.data()), areaDuplicateVertices.size() / 3);
-    areaMeshPtr->setFaceIndices(indexArray(areaFaceIndices.data()), areaFaceIndices.size() / 3);
+    areaMeshPtr->setVertices(vertexArr, areaVertexNum);
+    areaMeshPtr->setFaceIndices(faceIndexArr, faceIndexNum);
 
     std::cout << "Vertices: " << areaMeshPtr->numVertices() << ", Faces: " << areaMeshPtr->numFaces() << std::endl;
-    lvr2::ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(areaMeshPtr)), "area.ply");
 
     return areaMeshPtr;
 }
