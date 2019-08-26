@@ -29,7 +29,7 @@
  * Meap.tcc
  */
 
-#include <lvr2/util/Panic.hpp>
+#include "lvr2/util/Panic.hpp"
 
 using std::move;
 using std::swap;
@@ -57,7 +57,7 @@ optional<ValueT> Meap<KeyT, ValueT>::insert(KeyT key, const ValueT& value)
     auto previous = m_indices.find(key);
     if (previous != m_indices.end())
     {
-        auto prevValue = m_heap[previous->second].value;
+        auto prevValue = m_heap[previous->second].value();
         updateValue(key, value);
         return prevValue;
     }
@@ -93,7 +93,7 @@ optional<const ValueT&> Meap<KeyT, ValueT>::get(KeyT key) const
     auto maybeIndex = m_indices.get(key);
     if (maybeIndex)
     {
-        return m_heap[*maybeIndex].value;
+        return m_heap[*maybeIndex].value();
     }
     else
     {
@@ -122,12 +122,12 @@ MeapPair<KeyT, ValueT> Meap<KeyT, ValueT>::popMin()
 
     // Swap the minimal element with the last element in the vector
     swap(m_heap[0], m_heap.back());
-    swap(m_indices[m_heap[0].key], m_indices[m_heap.back().key]);
+    swap(m_indices[m_heap[0].key()], m_indices[m_heap.back().key()]);
 
     // Move (minimum) element out of the vector
     const auto out = move(m_heap.back());
     m_heap.pop_back();
-    m_indices.erase(out.key);
+    m_indices.erase(out.key());
 
     // We only need to repair if there is more than one element left, because
     // after removing the one element, this heap doesn't contain any elements.
@@ -146,14 +146,14 @@ template<typename KeyT, typename ValueT>
 void Meap<KeyT, ValueT>::updateValue(const KeyT& key, const ValueT& newValue)
 {
     auto idx = m_indices[key];
-    if (newValue > m_heap[idx].value)
+    if (newValue > m_heap[idx].value())
     {
-        m_heap[idx].value = newValue;
+        m_heap[idx].value() = newValue;
         bubbleDown(idx);
     }
-    else if (newValue < m_heap[idx].value)
+    else if (newValue < m_heap[idx].value())
     {
-        m_heap[idx].value = newValue;
+        m_heap[idx].value() = newValue;
         bubbleUp(idx);
     }
 }
@@ -170,15 +170,14 @@ optional<ValueT> Meap<KeyT, ValueT>::erase(KeyT key)
     auto index = maybeIndex->second;
 
     // Swap the element to remove with the last element in the vector
-    auto swapKey = m_heap.back().key;
+    auto swapKey = m_heap.back().key();
     swap(m_heap[index], m_heap.back());
     swap(m_indices[key], m_indices[swapKey]);
 
     // Move element out of the vector
-    const auto out = move(m_heap.back()).value;
+    const auto out = move(m_heap.back()).value();
     m_heap.pop_back();
     m_indices.erase(key);
-
 
     // If the removed element was the last one in the meap, we don't have to
     // do any cleanup. Otherwise we have to put the previous last element into
@@ -189,14 +188,8 @@ optional<ValueT> Meap<KeyT, ValueT>::erase(KeyT key)
         // if the father is already smaller than the current value, we attempt
         // to bubble the value down (which will do nothing if the position
         // is already correct). Otherwise it has to bubble up.
-
-        MeapPair<KeyT, ValueT> p1 = m_heap[father(index)];
-        MeapPair<KeyT, ValueT> p2 = m_heap[index];
-
-        ValueT v1 = p1.value;
-        ValueT v2 = p2.value;
-
-        if (index == 0 || v1 < v2)
+        
+        if (index == 0 || m_heap[father(index)].value() < m_heap[index].value())
         {
             bubbleDown(index);
         }
@@ -238,16 +231,11 @@ size_t Meap<KeyT, ValueT>::rightChild(size_t father) const
 template<typename KeyT, typename ValueT>
 void Meap<KeyT, ValueT>::bubbleUp(size_t idx)
 {
-    MeapPair<KeyT, ValueT> p1 = m_heap[idx];
-    MeapPair<KeyT, ValueT> p2 = m_heap[father(idx)];
-    ValueT v1 = p1.value;
-    ValueT v2 = p2.value;
-
     // Bubble new element up until the order is correct
-    while (idx != 0 && v1 < v2)
+    while (idx != 0 && m_heap[idx].value() < m_heap[father(idx)].value())
     {
         swap(m_heap[idx], m_heap[father(idx)]);
-        swap(m_indices[m_heap[idx].key], m_indices[m_heap[father(idx)].key]);
+        swap(m_indices[m_heap[idx].key()], m_indices[m_heap[father(idx)].key()]);
         idx = father(idx);
     }
 }
@@ -262,12 +250,9 @@ void Meap<KeyT, ValueT>::bubbleDown(size_t idx)
         const auto len = m_heap.size();
         const auto left = leftChild(father);
         const auto right = rightChild(father);
-        const auto& disc = m_heap[father].value;
-        const auto vl = m_heap[left].value;
-        const auto vr = m_heap[right].value;
-
-        return (left < len && vl < disc)
-            || (right < len && vr < disc);
+        const auto& disc = m_heap[father].value();
+        return (left < len && m_heap[left].value() < disc)
+            || (right < len && m_heap[right].value() < disc);
     };
 
     // Returns the index of the child of `father` with the smaller value. This
@@ -282,7 +267,7 @@ void Meap<KeyT, ValueT>::bubbleDown(size_t idx)
         {
             return left;
         }
-        return m_heap[left].value > m_heap[right].value ? right : left;
+        return m_heap[left].value() > m_heap[right].value() ? right : left;
     };
 
     // Repair the heap by sifting down the element
@@ -290,7 +275,7 @@ void Meap<KeyT, ValueT>::bubbleDown(size_t idx)
     {
         const auto smallerChild = smallerChildOf(idx);
         swap(m_heap[smallerChild], m_heap[idx]);
-        swap(m_indices[m_heap[smallerChild].key], m_indices[m_heap[idx].key]);
+        swap(m_indices[m_heap[smallerChild].key()], m_indices[m_heap[idx].key()]);
         idx = smallerChild;
     }
 }
@@ -306,8 +291,8 @@ void Meap<KeyT, ValueT>::debugOutput() const
     cout << "HEAP:" << endl;
     for (auto& e: m_heap)
     {
-        cout << "(" << e.key << " -> " << e.value << ")[" << totalCount << "], ";
-        keys.insert(e.key);
+        cout << "(" << e.key() << " -> " << e.value() << ")[" << totalCount << "], ";
+        keys.insert(e.key());
 
         levelCount += 1;
         totalCount += 1;

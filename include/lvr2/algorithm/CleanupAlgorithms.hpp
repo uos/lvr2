@@ -32,7 +32,7 @@
 #ifndef LVR2_ALGORITHM_CLEANUPALGORITHMS_H_
 #define LVR2_ALGORITHM_CLEANUPALGORITHMS_H_
 
-#include <lvr2/geometry/BaseMesh.hpp>
+#include "lvr2/geometry/BaseMesh.hpp"
 
 namespace lvr2
 {
@@ -68,6 +68,6 @@ size_t naiveFillSmallHoles(BaseMesh<BaseVecT>& mesh, size_t maxSize, bool collap
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/CleanupAlgorithms.tcc>
+#include "lvr2/algorithm/CleanupAlgorithms.tcc"
 
 #endif /* LVR2_ALGORITHM_CLEANUPALGORITHMS_H_ */

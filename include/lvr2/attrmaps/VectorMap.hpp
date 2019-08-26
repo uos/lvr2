@@ -38,10 +38,10 @@
 #include <vector>
 #include <boost/optional.hpp>
 
-#include <lvr2/attrmaps/StableVector.hpp>
-#include <lvr2/attrmaps/AttributeMap.hpp>
-#include <lvr2/geometry/Handles.hpp>
-#include <lvr2/util/Cluster.hpp>
+#include "lvr2/attrmaps/StableVector.hpp"
+#include "lvr2/attrmaps/AttributeMap.hpp"
+#include "lvr2/geometry/Handles.hpp"
+#include "lvr2/util/Cluster.hpp"
 
 using std::vector;
 using boost::optional;
@@ -140,6 +140,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/attrmaps/VectorMap.tcc>
+#include "lvr2/attrmaps/VectorMap.tcc"
 
 #endif /* LVR2_ATTRMAPS_VECTORMAP_H_ */

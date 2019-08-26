@@ -34,10 +34,9 @@
 
 #pragma once
 
-#include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Vector.hpp>
-#include <lvr2/geometry/Point.hpp>
+#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/Normal.hpp"
 
 namespace lvr2
 {
@@ -45,7 +44,7 @@ namespace lvr2
 /**
  * @brief RaycasterBase interface
  */
-template <typename BaseVecT>
+template <typename PointT, typename NormalT>
 class RaycasterBase {
 public:
 
@@ -55,22 +54,22 @@ public:
     RaycasterBase(const MeshBufferPtr mesh);
 
     virtual bool castRay(
-        const Point<BaseVecT>& origin,
-        const Vector<BaseVecT>& direction,
-        Point<BaseVecT>& intersection
+        const PointT& origin,
+        const NormalT& direction,
+        PointT& intersection
     ) = 0;
 
     virtual void castRays(
-        const Point<BaseVecT>& origin,
-        const std::vector<Vector<BaseVecT> >& directions,
-        std::vector<Point<BaseVecT> >& intersections,
+        const PointT& origin,
+        const std::vector<NormalT >& directions,
+        std::vector<PointT >& intersections,
         std::vector<uint8_t>& hits
     ) = 0;
 
     virtual void castRays(
-        const std::vector<Point<BaseVecT> >& origins,
-        const std::vector<Vector<BaseVecT> >& directions,
-        std::vector<Point<BaseVecT> >& intersections,
+        const std::vector<PointT >& origins,
+        const std::vector<NormalT >& directions,
+        std::vector<PointT >& intersections,
         std::vector<uint8_t>& hits
     ) = 0;
 
@@ -80,4 +79,4 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/raycasting/RaycasterBase.tcc>
+#include "lvr2/algorithm/raycasting/RaycasterBase.tcc"

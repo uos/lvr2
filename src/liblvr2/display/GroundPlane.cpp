@@ -32,7 +32,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr2/display/GroundPlane.hpp>
+#include "lvr2/display/GroundPlane.hpp"
 
 namespace lvr2
 {

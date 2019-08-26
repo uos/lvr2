@@ -36,18 +36,21 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-
 #include <string.h>
+#include <string>
+#include <sstream>
+#include <algorithm>
+#include <cstring>
 
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/io/Timestamp.hpp>
-#include <lvr2/display/ColorMap.hpp>
-
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/io/HDF5IO.hpp"
+#include "lvr2/types/Hyperspectral.hpp"
+#include "lvr2/display/ColorMap.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/geometry/Matrix4.hpp"
-
-#include "lvr2/io/CalibrationParameters.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 
 #include "Options.hpp"
 
@@ -55,13 +58,6 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-
-#include <lvr2/io/HDF5IO.hpp>
-
-#include <string>
-#include <sstream>
-#include <algorithm>
-#include <cstring>
 
 using namespace lvr2;
 using boost::filesystem::path;
@@ -112,24 +108,24 @@ bool checkPNGDir(path& dataDir, std::string number, int numExspected)
     return consistency;
 }
 
-HyperspectralCalibration getSpectralCalibration(path& dataDir, std::string number)
+HyperspectralPanorama getSpectralCalibration(path& dataDir, std::string number)
 {
-    HyperspectralCalibration cal;
+    HyperspectralPanorama pano;
     path calibrationFile = dataDir/("calibration_"+number+".txt");
     std::ifstream in(calibrationFile.string());
     if(in.good())
     {
-        in >> cal.a0 >> cal.a1 >> cal.a2;
-        in >> cal.angle_x >> cal.angle_y >> cal.angle_z;
-        in >> cal.origin_x >> cal.origin_y >> cal.origin_z;
-        in >> cal.principal_y;
+        in >> pano.distortion(0, 0) >> pano.distortion(1, 0) >> pano.distortion(2, 0);
+        in >> pano.rotation(0, 0)   >> pano.rotation(1, 0)   >> pano.rotation(2, 0);
+        in >> pano.origin(0, 0)     >> pano.origin(1, 0)     >> pano.origin(2, 0);
+        in >> pano.principal(0, 0);
     }
     else
     {
         std::cout << timestamp << "Could not open calibration file "
                   << calibrationFile.string() << std::endl;
     }
-    return cal;
+    return pano;
 }
 
 int main( int argc, char ** argv )
@@ -169,8 +165,7 @@ int main( int argc, char ** argv )
             // Read transformation
             path matrix_file = dataDir/path("scan_" + number + "_transformation.txt");
             std::cout << timestamp << "Reading transformation: " << matrix_file.string() << std::endl;
-            Matrix4<BaseVector<float> > transformation;
-            transformation.loadFromFile(matrix_file.string());
+            Transformd transformation = loadFromFile<double>(matrix_file.string());
 
             // Read scan data
             std::cout << timestamp << "Reading scan data: " << it << std::endl;
@@ -202,7 +197,7 @@ int main( int argc, char ** argv )
 
 
             // Get hyperspectral calibration parameters
-            HyperspectralCalibration cal = getSpectralCalibration(dataDir, number);
+            HyperspectralPanorama cal = getSpectralCalibration(dataDir, number);
             hdf5.addHyperspectralCalibration(scanNr, cal);
 
             // Create "hyperspectral cube"

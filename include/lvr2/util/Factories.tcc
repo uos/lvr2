@@ -31,9 +31,9 @@
 
 #include <algorithm>
 
-#include <lvr2/reconstruction/SearchTree.hpp>
-#include <lvr2/io/PointBuffer.hpp>
-#include <lvr2/util/Panic.hpp>
+#include "lvr2/reconstruction/SearchTree.hpp"
+#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/util/Panic.hpp"
 
 namespace lvr2
 {

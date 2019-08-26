@@ -29,7 +29,7 @@
 #define GROUPEDCHANNELIO_HPP
 
 #include <string>
-#include <lvr2/io/ChannelManager.hpp>
+#include "lvr2/types/BaseBuffer.hpp"
 
 namespace lvr2
 {

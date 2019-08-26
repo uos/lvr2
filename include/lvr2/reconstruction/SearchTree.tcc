@@ -33,7 +33,7 @@
  *
  */
 
-#include <lvr2/io/Timestamp.hpp>
+#include "lvr2/io/Timestamp.hpp"
 
 #include <iostream>
 using std::cout;
@@ -43,14 +43,14 @@ namespace lvr2 {
 
 
 template<typename BaseVecT>
-void SearchTree<BaseVecT>::kSearch(
+int SearchTree<BaseVecT>::kSearch(
     const BaseVecT &qp,
     int neighbours,
-    vector<size_t>& indices
+    std::vector<size_t>& indices
 ) const
 {
-    vector<float> distances;
-    this->kSearch(qp, neighbours, indices, distances);
+    std::vector<CoordT> distances;
+    return this->kSearch(qp, neighbours, indices, distances);
 }
 
 // template<typename BaseVecT>

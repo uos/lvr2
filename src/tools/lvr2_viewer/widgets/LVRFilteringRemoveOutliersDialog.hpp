@@ -33,10 +33,10 @@
 #include <vtkRendererCollection.h>
 #include <vtkSmartPointer.h>
 
-#include <lvr2/io/ModelFactory.hpp>
+#include "lvr2/io/ModelFactory.hpp"
 
 // @TODO should this be ported, in .cpp this is commented out...
-//#include <lvr2/reconstruction/PCLFiltering.hpp>
+//#include "lvr2/reconstruction/PCLFiltering.hpp"
 
 #include "ui_LVRFilteringRemoveOutliersDialogUI.h"
 #include "LVRPointCloudItem.hpp"

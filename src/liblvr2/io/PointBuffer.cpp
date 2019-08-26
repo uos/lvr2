@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/io/PointBuffer.hpp>
-#include <lvr2/io/Timestamp.hpp>
+#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/io/Timestamp.hpp"
 
 #include <iostream>
 
@@ -34,8 +34,9 @@ namespace lvr2
 {
 
 PointBuffer::PointBuffer()
+:base()
 {
-    m_numPoints = 0;
+   
 }
 
 PointBuffer::PointBuffer(floatArr points, size_t n)
@@ -43,43 +44,40 @@ PointBuffer::PointBuffer(floatArr points, size_t n)
     // Generate channel object pointer and add it
     // to channel map
     FloatChannelPtr point_data(new FloatChannel(n, 3, points));
-    m_channels.addFloatChannel(point_data, "points");
+    this->addFloatChannel(point_data, "points");
 
-    // Save pointers
-    m_points = point_data;
-    m_numPoints = n;
 }
 
 PointBuffer::PointBuffer(floatArr points, floatArr normals, size_t n) : PointBuffer(points, n)
 {
     // Add normal data
-    m_normals = FloatChannelPtr(new FloatChannel(n, 3, points));
-    m_channels.addFloatChannel(m_normals, "normals");
+    FloatChannelPtr normal_data(new FloatChannel(n, 3, points));
+    this->addFloatChannel(normal_data, "normals");
 }
 
 void PointBuffer::setPointArray(floatArr points, size_t n)
 {
-    m_points = FloatChannelPtr(new FloatChannel(n, 3, points));
-    m_numPoints = n;
-    m_channels.addFloatChannel(m_points, "points");
+    FloatChannelPtr pts(new FloatChannel(n, 3, points));
+    this->addFloatChannel(pts, "points");
 }
 
 void PointBuffer::setNormalArray(floatArr normals, size_t n)
 {
-    m_normals = FloatChannelPtr(new FloatChannel(n, 3, normals));
-    m_channels.addFloatChannel(m_normals, "normals");
+    FloatChannelPtr nmls(new FloatChannel(n, 3, normals));
+    this->addFloatChannel(nmls, "normals");
 }
-void PointBuffer::setColorArray(ucharArr colors, size_t n, unsigned width)
+void PointBuffer::setColorArray(ucharArr colors, size_t n, size_t width)
 {
-    m_colors = UCharChannelPtr(new UCharChannel(n, width, colors));
-    m_channels.addUCharChannel(m_colors, "colors");
+    UCharChannelPtr cls(new UCharChannel(n, width, colors));
+    this->addUCharChannel(cls, "colors");
 }
 
 floatArr PointBuffer::getPointArray()
 {
-    if (m_points)
+    typename Channel<float>::Optional opt = getChannel<float>("points");
+    if(opt)
     {
-        return m_points->dataPtr();
+        return opt->dataPtr();
     }
 
     return floatArr();
@@ -87,20 +85,23 @@ floatArr PointBuffer::getPointArray()
 
 floatArr PointBuffer::getNormalArray()
 {
-    if (m_normals)
+    typename Channel<float>::Optional opt = getChannel<float>("normals");
+    if(opt)
     {
-        return m_normals->dataPtr();
+        return opt->dataPtr();
     }
 
     return floatArr();
 }
 
-ucharArr PointBuffer::getColorArray(unsigned& w)
+ucharArr PointBuffer::getColorArray(size_t& w)
 {
-    if (m_colors)
+    w = 0;
+    typename Channel<unsigned char>::Optional opt = getChannel<unsigned char>("colors");
+    if(opt)
     {
-        w = m_colors->width();
-        return m_colors->dataPtr();
+        w = opt->width();
+        return opt->dataPtr();
     }
 
     return ucharArr();
@@ -109,27 +110,40 @@ ucharArr PointBuffer::getColorArray(unsigned& w)
 
 bool PointBuffer::hasColors() const
 {
-    if (m_colors)
-    {
-        return (m_colors->numElements() > 0);
-    }
-
-    return false;
+   return hasChannel<unsigned char>("colors");
 }
 
 bool PointBuffer::hasNormals() const
 {
-    if (m_normals)
-    {
-        return (m_normals->numElements() > 0);
-    }
-
-    return false;
+   return hasChannel<float>("normals");
 }
 
 size_t PointBuffer::numPoints() const
 {
-    return m_numPoints;
+    const typename Channel<float>::Optional opt = getChannel<float>("points");
+    if(opt)
+    {
+        return opt->numElements();
+    }
+    else
+    {
+        return 0;
+    }
+    
+}
+
+
+PointBuffer PointBuffer::clone() const
+{
+    PointBuffer pb;
+
+    for(const auto& elem : *this)
+    {
+        pb.insert({elem.first, elem.second.clone()});
+    }
+
+    return pb;
+
 }
 
 

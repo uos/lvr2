@@ -36,8 +36,8 @@
 using std::cout;
 using std::endl;
 
-#include <lvr2/io/KinectGrabber.hpp>
-#include <lvr2/io/Timestamp.hpp>
+#include "lvr2/io/KinectGrabber.hpp"
+#include "lvr2/io/Timestamp.hpp"
 
 namespace lvr2
 {

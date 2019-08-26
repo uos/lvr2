@@ -29,9 +29,9 @@
 // Created by Christian Swan on 09.10.17.
 //
 
-#include <lvr2/geometry/Handles.hpp>
-#include <lvr2/util/ClusterBiMap.hpp>
-#include <lvr2/algorithm/ClusterAlgorithms.hpp>
+#include "lvr2/geometry/Handles.hpp"
+#include "lvr2/util/ClusterBiMap.hpp"
+#include "lvr2/algorithm/ClusterAlgorithms.hpp"
 
 // disable deprecation warnings for the Tesselator since GLUT is horrifying outdated.
 #pragma GCC diagnostic push

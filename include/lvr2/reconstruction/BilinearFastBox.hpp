@@ -35,8 +35,8 @@
 #ifndef _LVR2_RECONSTRUCTION_BILINEARFASTBOX_H_
 #define _LVR2_RECONSTRUCTION_BILINEARFASTBOX_H_
 
-#include <lvr2/reconstruction/FastBox.hpp>
-#include <lvr2/reconstruction/PointsetSurface.hpp>
+#include "lvr2/reconstruction/FastBox.hpp"
+#include "lvr2/reconstruction/PointsetSurface.hpp"
 
 namespace lvr2
 {
@@ -95,6 +95,6 @@ struct BoxTraits<BilinearFastBox<BaseVecT>>
 
 } // namespace lvr2
 
-#include <lvr2/reconstruction/BilinearFastBox.tcc>
+#include "lvr2/reconstruction/BilinearFastBox.tcc"
 
 #endif /* _LVR2_RECONSTRUCTION_BILINEARFASTBOX_H_ */

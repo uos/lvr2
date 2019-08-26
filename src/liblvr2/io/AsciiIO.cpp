@@ -40,9 +40,9 @@ using std::ifstream;
 
 #include <boost/filesystem.hpp>
 
-#include <lvr2/io/AsciiIO.hpp>
-#include <lvr2/io/Progress.hpp>
-#include <lvr2/io/Timestamp.hpp>
+#include "lvr2/io/AsciiIO.hpp"
+#include "lvr2/io/Progress.hpp"
+#include "lvr2/io/Timestamp.hpp"
 
 namespace lvr2
 {
@@ -106,9 +106,9 @@ ModelPtr AsciiIO::read(
     // (Some) sanity checks for given paramters
     if(rPos > num_columns || gPos > num_columns || bPos > num_columns || iPos > num_columns)
     {
-        cout << timestamp << "Error: At least one attribute index is largen than the number of columns" << endl;
+        cout << timestamp << "Error: At least one attribute index is larger than the number of columns" << endl;
         // Retrun empty model
-        return model;
+        return ModelPtr();
     }
 
     // Check for color and intensity
@@ -319,23 +319,36 @@ void AsciiIO::save( std::string filename )
 
 
 //    pointColors = this->m_model->m_pointCloud->getIndexedPointColorArray( buf );
-    /* We need the same amount of color information and points. */
-    if ( pointcount != buf )
+//    pointColors = this->m_model->m_pointCloud->getColorArray(buf);
+    auto colors = this->m_model->m_pointCloud->getChannel<unsigned char>("colors");
+    if(colors)
     {
+      pointColors = (*colors).dataPtr();
+      buf = (*colors).numElements();
+      /* We need the same amount of color information and points. */
+      if ( pointcount != buf )
+      {
         pointColors.reset();
         std::cerr << "Amount of points and color information is"
-	  " not equal. Color information won't be written" << std::endl;
+          " not equal. Color information won't be written" << std::endl;
+      }
     }
-
- //   pointIntensities = this->m_model->m_pointCloud->getPointIntensityArray( buf );
-    /* We need the same amount of intensity values and points. */
-    if ( pointcount != buf )
+    //   pointIntensities = this->m_model->m_pointCloud->getPointIntensityArray( buf );
+    auto intensity = this->m_model->m_pointCloud->getChannel<float>("intensities");
+    if(intensity)
     {
+      pointIntensities = (*intensity).dataPtr();
+      buf = (*intensity).numElements();
+    
+
+      /* We need the same amount of intensity values and points. */
+      if ( pointcount != buf )
+      {
         pointIntensities.reset();
         std::cerr << "Amount of points and intensity values are"
-            " not equal. Intensity information will not be written." << std::endl;
+          " not equal. Intensity information will not be written." << std::endl;
+      }
     }
-
 
     /* Prepare file for writing. */
     std::ofstream out( filename.c_str() );

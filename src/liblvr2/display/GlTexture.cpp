@@ -32,7 +32,7 @@
  *  @author Thomas Wiemann
  */
 
-#include <lvr2/display/GlTexture.hpp>
+#include "lvr2/display/GlTexture.hpp"
 #include <iostream>
 
 using namespace std;

@@ -45,11 +45,11 @@
 #include <chrono>
 #include <cmath>
 
-#include <lvr2/io/PointBuffer.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/geometry/Plane.hpp>
-#include <lvr2/io/Progress.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
+#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/geometry/Normal.hpp"
+#include "lvr2/geometry/Plane.hpp"
+#include "lvr2/io/Progress.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
 
 
 
@@ -329,6 +329,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/reconstruction/AdaptiveKSearchSurface.tcc>
+#include "lvr2/reconstruction/AdaptiveKSearchSurface.tcc"
 
 #endif // LVR2_RECONSTRUCTION_ADAPTIVEKSEARCHSURFACE_H_

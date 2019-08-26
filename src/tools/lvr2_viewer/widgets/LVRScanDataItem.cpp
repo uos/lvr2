@@ -1,12 +1,17 @@
 #include "LVRScanDataItem.hpp"
 #include "LVRModelItem.hpp"
-
 #include "LVRItemTypes.hpp"
+
+#include "lvr2/registration/TransformUtils.hpp"
 
 namespace lvr2
 {
 
-LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx, vtkSmartPointer<vtkRenderer> renderer, QString name, QTreeWidgetItem *parent) : QTreeWidgetItem(parent, LVRScanDataItemType)
+LVRScanDataItem::LVRScanDataItem(
+    ScanData data, std::shared_ptr<ScanDataManager> sdm, size_t idx,
+    vtkSmartPointer<vtkRenderer> renderer, 
+    QString name, QTreeWidgetItem *parent) 
+    : QTreeWidgetItem(parent, LVRScanDataItemType) ,m_renderer(renderer)
 {
     m_showSpectralsItem = nullptr;
     m_pcItem = nullptr;
@@ -19,20 +24,21 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
 
 
     // init pose
-    float pose[6];
-    m_data.m_registration.transpose();
-    m_data.m_registration.toPostionAngle(pose);
-    m_data.m_registration.transpose();
+    double pose[6];
+    eigenToEuler<double>(m_data.m_registration, pose);
+
     m_matrix = m_data.m_registration;
 
     m_pose.x = pose[0];
     m_pose.y = pose[1];
     m_pose.z = pose[2];
-    m_pose.r = pose[3]  * 57.295779513;
-    m_pose.t = pose[4]  * 57.295779513;
-    m_pose.p = pose[5]  * 57.295779513;
+    m_pose.r = pose[3] * 57.295779513;
+    m_pose.t = pose[4] * 57.295779513;
+    m_pose.p = pose[5] * 57.295779513;
 
     m_pItem = new LVRPoseItem(ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model))), this);
+
+    m_pItem->setPose(m_pose);
 
     // init bb
     m_bb = BoundingBoxBridgePtr(new LVRBoundingBoxBridge(m_data.m_boundingBox));
@@ -40,11 +46,18 @@ LVRScanDataItem::LVRScanDataItem(ScanData data, std::shared_ptr<ScanDataManager>
     renderer->AddActor(m_bb->getActor());
     m_bb->setPose(m_pose);
 
+    setTransform(m_matrix);
+
     // load data
-    reload(renderer);
+    reload();
 
     setText(0, m_name);
     setCheckState(0, Qt::Checked);
+}
+
+void LVRScanDataItem::reload()
+{
+    reload(m_renderer);
 }
 
 void LVRScanDataItem::reload(vtkSmartPointer<vtkRenderer> renderer)
@@ -125,7 +138,24 @@ void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
 
     for (int i = 0; i < childCount(); i++)
     {
-            child(i)->setHidden(!visible);
+        QTreeWidgetItem* item = child(i);
+        
+        if(item->type() == LVRCamerasItemType)
+        {
+            for(int j=0; j < item->childCount(); j++)
+            {
+                QTreeWidgetItem* cam_item = item->child(j);
+
+                if(cam_item->type() == LVRCamDataItemType)
+                {
+                    LVRCamDataItem* cam_item_c = static_cast<LVRCamDataItem*>(cam_item);
+                    cam_item_c->setVisibility(visible);
+                }
+                
+            }
+        }
+
+        item->setHidden(!visible);
     }
 
     if (m_model)
@@ -142,6 +172,7 @@ void LVRScanDataItem::setVisibility(bool visible, bool pc_visible)
     {
         m_bbItem->setVisibility(visible);
     }
+
 }
 
 LVRScanDataItem::~LVRScanDataItem()

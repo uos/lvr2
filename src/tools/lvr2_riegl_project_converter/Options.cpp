@@ -33,11 +33,14 @@ Options::Options() : desc("Allowed Options") {
     desc.add_options()
         ("help", "Prints this help message.")
         ("input,i", po::value<std::string>()->required(), "A Riegl Scan Project directory as input for the converter.")
+        ("inputformat", po::value<std::string>()->default_value("rxp"), "The input pointcloud type in the riegl project folder to parse. Implemented: rxp, ascii")
         ("out,o", po::value<std::string>()->default_value("./scan_project"), "The directory where the converted scan project will be saved.")
+        ("outformat", po::value<std::string>()->default_value("slam6d"), "The output coordinate space the converted scan project will be saved. Impemented: slam6d, lvr")
         ("reduction,r", po::value<unsigned int>()->default_value(1), "Reduces pointcloud size by importing only every Nth point (1 means no reduction).")
         ("start,s", po::value<unsigned int>()->default_value(1), "skipp the first start-1 scanpositions.")
         ("end,e", po::value<unsigned int>()->default_value(0), "skipp all scanpositions after end")
         ("force,f", "If this is set an already existing file will be overwritten in the output directory.")
+        
     ;
 
     pod.add("input", 1); 

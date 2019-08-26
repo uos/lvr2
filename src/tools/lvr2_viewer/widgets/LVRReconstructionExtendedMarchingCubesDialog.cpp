@@ -28,17 +28,17 @@
 #include <QFileDialog>
 #include "LVRReconstructionExtendedMarchingCubesDialog.hpp"
 
-#include <lvr2/algorithm/NormalAlgorithms.hpp>
+#include "lvr2/algorithm/NormalAlgorithms.hpp"
 
-#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
-#include <lvr2/reconstruction/FastReconstruction.hpp>
-#include <lvr2/reconstruction/PointsetGrid.hpp>
-#include <lvr2/reconstruction/SharpBox.hpp>
+#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
+#include "lvr2/reconstruction/FastReconstruction.hpp"
+#include "lvr2/reconstruction/PointsetGrid.hpp"
+#include "lvr2/reconstruction/SharpBox.hpp"
 
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/HalfEdgeMesh.hpp>
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/HalfEdgeMesh.hpp"
 
-#include <lvr2/io/PointBuffer.hpp>
+#include "lvr2/io/PointBuffer.hpp"
 
 namespace lvr2
 {

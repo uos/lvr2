@@ -28,6 +28,8 @@
 #ifndef LAS_VEGAS_MESHIOINTERFACE_TCC
 #define LAS_VEGAS_MESHIOINTERFACE_TCC
 
+#include "lvr2/util/ClusterBiMap.hpp"
+
 namespace lvr2
 {
 
@@ -74,42 +76,75 @@ template <>
 struct attribute_type<EdgeHandle>
 {
   static const std::string attr_group;
+  template <typename BaseVecT>
+  using IteratorProxy = EdgeIteratorProxy<BaseVecT>;
 };
 template <>
 struct attribute_type<OptionalEdgeHandle>
 {
   static const std::string attr_group;
+  template <typename BaseVecT>
+  using IteratorProxy = EdgeIteratorProxy<BaseVecT>;
 };
 template <>
 struct attribute_type<VertexHandle>
 {
   static const std::string attr_group;
+  template <typename BaseVecT>
+  using IteratorProxy = VertexIteratorProxy<BaseVecT>;
 };
 template <>
 struct attribute_type<OptionalVertexHandle>
 {
   static const std::string attr_group;
+  template <typename BaseVecT>
+  using IteratorProxy = VertexIteratorProxy<BaseVecT>;
 };
 template <>
 struct attribute_type<FaceHandle>
 {
   static const std::string attr_group;
+  template <typename BaseVecT>
+  using IteratorProxy = FaceIteratorProxy<BaseVecT>;
 };
 template <>
 struct attribute_type<OptionalFaceHandle>
 {
   static const std::string attr_group;
+  template <typename BaseVecT>
+  using IteratorProxy = FaceIteratorProxy<BaseVecT>;
 };
 template <>
 struct attribute_type<ClusterHandle>
 {
   static const std::string attr_group;
+  // TODO Proxy for handle type;
+  template <typename HandleType>
+  using IteratorProxy = ClusterBiMap<HandleType>;
 };
 template <>
 struct attribute_type<OptionalClusterHandle>
 {
   static const std::string attr_group;
+  // TODO Proxy for handle type;
+  template <typename HandleType>
+  using IteratorProxy = ClusterBiMap<HandleType>;
 };
+
+template<typename MapT, typename BaseVecT>
+bool AttributeMeshIOBase::addDenseAttributeMap(
+    const BaseMesh<BaseVecT>& mesh, const MapT& map, const std::string& name)
+{
+  AttributeChannel<typename channel_type<typename MapT::ValueType>::type> values(
+      map.numValues(), channel_type<typename MapT::ValueType>::w);
+
+  Index i = 0;
+  for (auto handle : typename attribute_type<typename MapT::HandleType>::template IteratorProxy<BaseVecT>(mesh))
+  {
+    values[i++] = map[handle]; //TODO handle deleted map values.
+  }
+  return addChannel(attribute_type<typename MapT::HandleType>::attr_group, name, values);
+}
 
 template <typename MapT>
 bool AttributeMeshIOBase::addDenseAttributeMap(const MapT &map, const std::string &name)

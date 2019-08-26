@@ -32,8 +32,8 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr2/display/PointCloud.hpp>
-#include <lvr2/display/ColorMap.hpp>
+#include "lvr2/display/PointCloud.hpp"
+#include "lvr2/display/ColorMap.hpp"
 
 #include <string.h>
 
@@ -84,7 +84,7 @@ void PointCloud::init(PointBufferPtr buffer)
         if (m_normals)
             m_numNormals = n_points;
 
-        unsigned w_color, dummy;
+        size_t w_color, dummy;
 		ucharArr colors      = buffer->getColorArray(w_color);
 		floatArr intensities = buffer->getFloatArray("intensities", n_points, dummy);
 

@@ -61,6 +61,7 @@ public:
 
     bool operator==(const BaseHandle& other) const;
     bool operator!=(const BaseHandle& other) const;
+    bool operator<(const BaseHandle& other) const;
 
 protected:
     IdxT m_idx;
@@ -103,6 +104,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/util/BaseHandle.tcc>
+#include "lvr2/util/BaseHandle.tcc"
 
 #endif /* LVR2_UTIL_BASEHANDLE_H_ */

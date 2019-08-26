@@ -35,7 +35,7 @@
 #ifndef GROUNDPLANE_H_
 #define GROUNDPLANE_H_
 
-#include <lvr2/display/Renderable.hpp>
+#include "lvr2/display/Renderable.hpp"
 
 namespace lvr2
 {
