@@ -119,6 +119,9 @@ KDTreePtr create_recursive(KDTree::Point* points, int n, int maxLeafSize)
 
     if (boundingBox.difference(splitAxis) == 0.0) // all points are exactly the same
     {
+        // this case is rare, but would lead to an infinite recursion loop if not handled,
+        // since all Points would end up in the "lesser" branch every time
+
         // there is no need to check all of them later on, so just pretend like there is only one
         return KDTreePtr(new KDLeaf(points, 1));
     }
@@ -127,13 +130,21 @@ KDTreePtr create_recursive(KDTree::Point* points, int n, int maxLeafSize)
 
     KDTreePtr lesser, greater;
 
-    #pragma omp task shared(lesser)
-    lesser  = create_recursive(points    , l    , maxLeafSize);
+    if (n > 8 * maxLeafSize) // stop the omp task subdivision early to avoid spamming tasks
+    {
+        #pragma omp task shared(lesser)
+        lesser  = create_recursive(points    , l    , maxLeafSize);
 
-    #pragma omp task shared(greater)
-    greater = create_recursive(points + l, n - l, maxLeafSize);
+        #pragma omp task shared(greater)
+        greater = create_recursive(points + l, n - l, maxLeafSize);
 
-    #pragma omp taskwait
+        #pragma omp taskwait
+    }
+    else
+    {
+        lesser  = create_recursive(points    , l    , maxLeafSize);
+        greater = create_recursive(points + l, n - l, maxLeafSize);
+    }
 
     return KDTreePtr(new KDNode(splitAxis, splitValue, lesser, greater));
 }
