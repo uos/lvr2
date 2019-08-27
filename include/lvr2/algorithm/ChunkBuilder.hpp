@@ -35,8 +35,8 @@
 #ifndef CHUNK_BUILDER_HPP
 #define CHUNK_BUILDER_HPP
 
-#include "lvr2/io/Model.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
+#include "lvr2/io/Model.hpp"
 
 #include <unordered_map>
 
@@ -56,8 +56,10 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
      * @param originalMesh mesh that is being chunked
      * @param vertexUse list of ChunkBuilders that for each vertex of the original mesh
      */
-    ChunkBuilder(std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> originalMesh,
-                 std::shared_ptr<std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>> vertexUse);
+    ChunkBuilder(
+        std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> originalMesh,
+        std::shared_ptr<std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>>
+            vertexUse);
 
     ~ChunkBuilder();
 
@@ -91,9 +93,18 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
      * vertices. If the number of added faces is 0 this function will return an mesh buffer holding
      * no vertices or faces.
      *
+     * @param attributedMesh original mesh that contains attributes. represents same mesh as
+     * m_originalMesh
+     * @param splitVertices map from new vertex indices to old vertex indices for all faces that
+     * have been cut
+     * @param splitFaces map from new face indices to old face indices for all faces that have been
+     * cut
      * @return mesh of the newly created chunk
      */
-    MeshBufferPtr buildMesh() const;
+    MeshBufferPtr
+    buildMesh(MeshBufferPtr attributedMesh,
+              std::shared_ptr<std::unordered_map<unsigned int, unsigned int>> splitVertices,
+              std::shared_ptr<std::unordered_map<unsigned int, unsigned int>> splitFaces) const;
 
     /**
      * @brief numFaces delivers the number of faces for the chunk
@@ -131,7 +142,8 @@ class ChunkBuilder : public std::enable_shared_from_this<ChunkBuilder>
 
     // one dynamic sized vector with ChunkBuilder ids for all vertices of the original mesh for
     // duplicate detection
-    std::shared_ptr<std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>> m_vertexUse;
+    std::shared_ptr<std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>>
+        m_vertexUse;
 };
 
 } /* namespace lvr2 */

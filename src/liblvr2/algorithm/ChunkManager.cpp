@@ -43,7 +43,10 @@
 namespace lvr2
 {
 
-ChunkManager::ChunkManager(MeshBufferPtr mesh, float chunksize, float maxChunkOverlap, std::string savePath)
+ChunkManager::ChunkManager(MeshBufferPtr mesh,
+                           float chunksize,
+                           float maxChunkOverlap,
+                           std::string savePath)
     : m_chunkSize(chunksize)
 {
     initBoundingBox(mesh);
@@ -101,8 +104,11 @@ void ChunkManager::initBoundingBox(MeshBufferPtr mesh)
     }
 }
 
-void ChunkManager::cutLargeFaces(std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> halfEdgeMesh,
-                                 float overlapRatio)
+void ChunkManager::cutLargeFaces(
+    std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> halfEdgeMesh,
+    float overlapRatio,
+    std::shared_ptr<std::unordered_map<unsigned int, unsigned int>> splitVertices,
+    std::shared_ptr<std::unordered_map<unsigned int, unsigned int>> splitFaces)
 {
     // check all edges if they range too far into different chunks
     MeshHandleIteratorPtr<EdgeHandle> iterator = halfEdgeMesh->edgesBegin();
@@ -164,6 +170,37 @@ void ChunkManager::cutLargeFaces(std::shared_ptr<HalfEdgeMesh<BaseVector<float>>
 
             if (isLargeEdge)
             {
+                std::array<OptionalFaceHandle, 2> faces = halfEdgeMesh->getFacesOfEdge(*iterator);
+
+                // build newIndex -> oldIndex map to use
+                unsigned int faceIndex = halfEdgeMesh->nextFaceIndex();
+                if (faces[0])
+                {
+                    unsigned int face = faces[0].unwrap().idx();
+                    while (splitFaces->find(face) != splitFaces->end())
+                    {
+                        face = splitFaces->at(face);
+                    }
+                    splitFaces->insert({faceIndex, face});
+                    faceIndex++;
+                }
+                if (faces[1])
+                {
+                    unsigned int face = faces[1].unwrap().idx();
+                    while (splitFaces->find(face) != splitFaces->end())
+                    {
+                        face = splitFaces->at(face);
+                    }
+                    splitFaces->insert({faceIndex, face});
+                }
+
+                unsigned int vertex = referenceVertex.idx();
+                while (splitVertices->find(vertex) != splitVertices->end())
+                {
+                    vertex = splitVertices->at(vertex);
+                }
+                splitVertices->insert({halfEdgeMesh->nextVertexIndex(), vertex});
+
                 // cut edge in half
                 float cutRatio = 0.5;
                 BaseVector<float> cutPoint
@@ -190,8 +227,14 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
         = std::shared_ptr<HalfEdgeMesh<BaseVector<float>>>(
             new HalfEdgeMesh<BaseVector<float>>(mesh));
 
+    // map from new indices to old indices to allow attributes for cut faces
+    std::shared_ptr<std::unordered_map<unsigned int, unsigned int>> splitVertices(
+        new std::unordered_map<unsigned int, unsigned int>);
+    std::shared_ptr<std::unordered_map<unsigned int, unsigned int>> splitFaces(
+        new std::unordered_map<unsigned int, unsigned int>);
+
     // prepare mash to prevent faces from overlapping too much on chunk borders
-    cutLargeFaces(halfEdgeMesh, maxChunkOverlap);
+    cutLargeFaces(halfEdgeMesh, maxChunkOverlap, splitVertices, splitFaces);
 
     // one vector of variable size for each vertex - this is used for duplicate detection
     std::shared_ptr<std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>>
@@ -236,7 +279,8 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
                     std::cout << "writing " << i << " " << j << " " << k << std::endl;
 
                     // get mesh of chunk from chunk builder
-                    MeshBufferPtr chunkMeshPtr = chunkBuilders[hash]->buildMesh();
+                    MeshBufferPtr chunkMeshPtr
+                        = chunkBuilders[hash]->buildMesh(mesh, splitVertices, splitFaces);
 
                     // insert chunked mesh into hash grid
                     m_hashGrid.insert({hash, chunkMeshPtr});

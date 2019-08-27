@@ -105,9 +105,16 @@ class ChunkManager
      *
      * @param halfEdgeMesh mesh  that is being cut
      * @param overlapRatio ration of maximum allowed overlap and the chunks side length
+     * @param splitVertices map from new vertex indices to old vertex indices for all faces that
+     * will be cut
+     * @param splitFaces map from new face indices to old face indices for all faces that will be
+     * cut
      */
-    void cutLargeFaces(std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> halfEdgeMesh,
-                       float overlapRatio);
+    void
+    cutLargeFaces(std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> halfEdgeMesh,
+                  float overlapRatio,
+                  std::shared_ptr<std::unordered_map<unsigned int, unsigned int>> splitVertices,
+                  std::shared_ptr<std::unordered_map<unsigned int, unsigned int>> splitFaces);
 
     /**
      * @brief buildChunks builds chunks from an original mesh
