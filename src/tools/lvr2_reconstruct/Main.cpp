@@ -276,6 +276,8 @@ int main(int argc, char** argv)
     // Parse command line arguments
     reconstruct::Options options(argc, argv);
 
+    options.printLogo();
+
     // Exit if options had to generate a usage message
     // (this means required parameters are missing)
     if (options.printUsage())

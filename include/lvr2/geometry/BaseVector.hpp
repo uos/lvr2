@@ -35,6 +35,12 @@
 #ifndef LVR2_GEOMETRY_BASEVECTOR_H_
 #define LVR2_GEOMETRY_BASEVECTOR_H_
 
+// Eigen sometimes produces errors when compiled with CUDA. Disables
+// all Eigen related function for CUDA code (which is currently fine).
+#ifndef __NVCC__
+#include <Eigen/Dense>
+#endif
+
 #include <iostream>
 
 namespace lvr2
@@ -46,15 +52,7 @@ template <typename> struct Normal;
  * @brief A generic, weakly-typed vector.
  *
  * This vector is weakly-typed as it allows all common operations that can be
- * executed numerically, including operations that won't make sense
- * semantically. You're advised to use `Point` and `Vector` instead of
- * this type directly.
- *
- * This type is used as "backing type", meaning that it is the actual
- * implementation of the vector type. `Vector` and `Point` are just wrappers
- * which delete and/or modify a few methods to make use of strong typing.
- *
- * Instead of this, `BaseVector` implementations from other libraries could be
+ * executed numerically. Instead of this, `BaseVector` implementations from other libraries could be
  * used. However, they have to provide all the methods and fields that
  * `BaseVector` defines.
  */
@@ -213,6 +211,16 @@ public:
      * @brief   Indexed coordinate access (writing)
      */
     CoordT& operator[](const unsigned& index);
+
+// Eigen sometimes produces errors when compiled with CUDA. Disables
+// all Eigen related function for CUDA code (which is currently fine).
+#ifndef __NVCC__
+    // Friend declaration for Eigen multiplication
+    template<typename T, typename S>
+    friend BaseVector<T> operator*(const Eigen::Matrix<S, 4, 4>& mat, const BaseVector<T>& normal);
+
+#endif // ifndef __NVCC__
+
 };
 
 template<typename T>
@@ -221,6 +229,38 @@ std::ostream& operator<<( std::ostream& os, const BaseVector<T>& v)
     os << "Vec: [" << v.x << " " << v.y << " " << v.z << "]" << std::endl;
     return os;
 }
+
+// Eigen sometimes produces errors when compiled with CUDA. Disables
+// all Eigen related function for CUDA code (which is currently fine).
+#ifndef __NVCC__
+
+/**
+ * @brief   Multiplication operator to support transformation with Eigen
+ *          matrices. Rotates the normal, ignores translation. Implementation
+ *          for RowMajor matrices.
+ * 
+ * @tparam CoordType            Coordinate type of the normals
+ * @tparam Scalar               Scalar type of the Eigen matrix
+ * @param mat                   Eigen matrix 
+ * @param normal                Input normal
+ * @return Normal<CoordType>    Transformed normal
+ */
+template<typename CoordType, typename Scalar = CoordType>
+inline BaseVector<CoordType> operator*(const Eigen::Matrix<Scalar, 4, 4>& mat, const BaseVector<CoordType>& normal)
+{
+    // TODO: CHECK IF THIS IS CORRECT
+    CoordType x = mat(0, 0) * normal.x + mat(1, 0) * normal.y + mat(2, 0) * normal.z;
+    CoordType y = mat(0, 1) * normal.x + mat(1, 1) * normal.y + mat(2, 1) * normal.z;
+    CoordType z = mat(0, 2) * normal.x + mat(1, 2) * normal.y + mat(2, 2) * normal.z;
+
+    x += mat(0, 3);
+    y += mat(1, 3);
+    z += mat(2, 3);
+
+    return BaseVector<CoordType>(x,y,z);
+}
+
+#endif // ifndef __NVCC__
 
 } // namespace lvr
 
