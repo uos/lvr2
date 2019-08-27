@@ -99,13 +99,14 @@ void LVRModelBridge::setPose(const Pose& pose)
 
 }
 
-void LVRModelBridge::setTransform(const Matrix4<BaseVector<float> > &transform)
+void LVRModelBridge::setTransform(const Transformd &transform)
 {
     vtkSmartPointer<vtkTransform> t = vtkSmartPointer<vtkTransform>::New();
     vtkSmartPointer<vtkMatrix4x4> m = vtkSmartPointer<vtkMatrix4x4>::New();
 
     // For some reason we have to copy the matrix
     // values manually...
+    const double* arr = transform.data();
     int j = 0;
     for(int i = 0; i < 16; i++)
     {
@@ -113,7 +114,7 @@ void LVRModelBridge::setTransform(const Matrix4<BaseVector<float> > &transform)
         {
             j = 0;
         }
-        double v = transform[i];
+        double v = arr[i];
         m->SetElement(i / 4, j, v);
         j++;
     }

@@ -8,10 +8,13 @@
 
 #include <vtkMatrix4x4.h>
 
+#include <Eigen/Dense>
+
 #include "lvr2/io/ScanDataManager.hpp"
 #include "lvr2/geometry/Transformable.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Normal.hpp"
+#include "lvr2/types/CameraData.hpp"
 
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../vtkBridge/LVRBoundingBoxBridge.hpp"
@@ -33,7 +36,7 @@ class LVRCamDataItem : public QTreeWidgetItem, public Transformable
 
     public:
 
-        LVRCamDataItem(CamData data,
+        LVRCamDataItem(CameraData data,
                         std::shared_ptr<ScanDataManager> sdm,
                         size_t cam_id,
                         vtkSmartPointer<vtkRenderer> renderer,
@@ -63,7 +66,7 @@ class LVRCamDataItem : public QTreeWidgetItem, public Transformable
          *          
          * @return  Returns the Transformation as type lvr2::Matrix4
          */
-        Matrix4<BaseVector<float> > getGlobalTransform();
+        Transformd getGlobalTransform();
 
         std::vector<BaseVector<float> > genFrustrumLVR(float scale=1.0);
 
@@ -74,12 +77,12 @@ class LVRCamDataItem : public QTreeWidgetItem, public Transformable
         QString                                 m_name;
         std::shared_ptr<ScanDataManager>        m_sdm;
         size_t                                  m_cam_id;
-        CamData                                 m_data;
+        CameraData                              m_data;
         Pose                                    m_pose;
         LVRPoseItem*                            m_pItem;
         LVRCvImageItem*                         m_cvItem;
-        Matrix4<BaseVector<float> >             m_matrix;
-        Matrix4<BaseVector<float> >             m_intrinsics;
+        Transformd                              m_matrix;
+        Intrinsicsd                             m_intrinsics;
 
         vtkSmartPointer<vtkActor>               m_frustrum_actor;
         vtkSmartPointer<vtkRenderer>            m_renderer;
