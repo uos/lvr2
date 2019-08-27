@@ -42,13 +42,13 @@ Metascan::Metascan()
 
 }
 
-Vector3d Metascan::getPoint(size_t index) const
+Vector3d Metascan::point(size_t index) const
 {
     for (auto& scan : m_scans)
     {
         if (index < scan->numPoints())
         {
-            return scan->getPoint(index);
+            return scan->point(index);
         }
         index -= scan->numPoints();
     }
@@ -58,7 +58,7 @@ void Metascan::addScan(SLAMScanPtr scan)
 {
     m_scans.push_back(scan);
     m_numPoints += scan->numPoints();
-    m_deltaPose = scan->getDeltaPose();
+    m_deltaPose = scan->deltaPose();
 }
 
 } /* namespace lvr2 */

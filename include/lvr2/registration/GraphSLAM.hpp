@@ -53,7 +53,7 @@ namespace lvr2
  *
  * @return true if any Scans were found, false otherwise
  */
-bool findCloseScans(const vector<SLAMScanPtr>& scans, size_t scan, const SLAMOptions& options, vector<size_t>& output);
+bool findCloseScans(const std::vector<SLAMScanPtr>& scans, size_t scan, const SLAMOptions& options, std::vector<size_t>& output);
 
 /**
  * @brief Wrapper class for running GraphSLAM on Scans
@@ -64,7 +64,7 @@ public:
 
     using GraphMatrix = Eigen::SparseMatrix<double>;
     using GraphVector = Eigen::VectorXd;
-    using Graph = vector<pair<int, int>>;
+    using Graph = std::vector<std::pair<int, int>>;
 
     GraphSLAM(const SLAMOptions* options);
 
@@ -77,12 +77,12 @@ public:
      * @param last  The index of the last Scan to consider. `scans` may be longer, but anything
      *              after `last` will be ignored
      */
-    void doGraphSLAM(const vector<SLAMScanPtr>& scans, size_t last) const;
+    void doGraphSLAM(const std::vector<SLAMScanPtr>& scans, size_t last) const;
 
 protected:
 
-    void createGraph(const vector<SLAMScanPtr>& scans, size_t last, Graph& graph) const;
-    void fillEquation(const vector<SLAMScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec) const;
+    void createGraph(const std::vector<SLAMScanPtr>& scans, size_t last, Graph& graph) const;
+    void fillEquation(const std::vector<SLAMScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec) const;
     void eulerCovariance(KDTreePtr tree, SLAMScanPtr scan, Matrix6d& outMat, Vector6d& outVec) const;
 
     const SLAMOptions*     m_options;

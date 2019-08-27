@@ -77,7 +77,7 @@ bool findCloseScans(const vector<SLAMScanPtr>& scans, size_t scan, const SLAMOpt
 
         for (size_t other = 0; other < scan - options.loopSize; other++)
         {
-            size_t count = getNearestNeighbors(tree, scans[other], neighbors, options.slamMaxDistance);
+            size_t count = KDTree::nearestNeighbors(tree, scans[other], neighbors, options.slamMaxDistance);
             if (count >= options.closeLoopPairs)
             {
                 output.push_back(other);
@@ -137,7 +137,7 @@ void GraphSLAM::doGraphSLAM(const vector<SLAMScanPtr>& scans, size_t last) const
             // Now update the Poses
             Matrix6d Ha = Matrix6d::Identity();
 
-            Matrix4d initialPose = scan->getPose();
+            Matrix4d initialPose = scan->pose();
             Vector3d pos, theta;
             Matrix4ToEuler(initialPose, theta, pos);
             if (m_options->verbose)
@@ -366,7 +366,7 @@ void GraphSLAM::eulerCovariance(KDTreePtr tree, SLAMScanPtr scan, Matrix6d& outM
 
     KDTree::Neighbor* results = new KDTree::Neighbor[n];
 
-    size_t pairs = getNearestNeighbors(tree, scan, results, m_options->slamMaxDistance);
+    size_t pairs = KDTree::nearestNeighbors(tree, scan, results, m_options->slamMaxDistance);
 
     Vector6d mz = Vector6d::Zero();
     Vector3d sum = Vector3d::Zero();
@@ -380,7 +380,7 @@ void GraphSLAM::eulerCovariance(KDTreePtr tree, SLAMScanPtr scan, Matrix6d& outM
             continue;
         }
 
-        Vector3d p = scan->getPoint(i).cast<double>();
+        Vector3d p = scan->point(i).cast<double>();
         Vector3d r = results[i]->cast<double>();
 
         Vector3d mid = (p + r) / 2.0;
@@ -433,7 +433,7 @@ void GraphSLAM::eulerCovariance(KDTreePtr tree, SLAMScanPtr scan, Matrix6d& outM
             continue;
         }
 
-        Vector3d p = scan->getPoint(i).cast<double>();
+        Vector3d p = scan->point(i).cast<double>();
         Vector3d r = results[i]->cast<double>();
 
         Vector3d mid = (p + r) / 2.0;

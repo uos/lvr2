@@ -70,7 +70,7 @@ SLAMScanWrapper::SLAMScanWrapper(ScanPtr scan)
     }
 }
 
-ScanPtr SLAMScanWrapper::getScan()
+ScanPtr SLAMScanWrapper::innerScan()
 {
     return m_scan;
 }
@@ -141,11 +141,11 @@ void SLAMScanWrapper::trim()
     m_points.shrink_to_fit();
 }
 
-Vector3d SLAMScanWrapper::getPoint(size_t index) const
+Vector3d SLAMScanWrapper::point(size_t index) const
 {
     const Vector3f& p = m_points[index];
     Vector4d extended(p.x(), p.y(), p.z(), 1.0);
-    return (getPose() * extended).block<3, 1>(0, 0);
+    return (pose() * extended).block<3, 1>(0, 0);
 }
 
 size_t SLAMScanWrapper::numPoints() const
@@ -153,29 +153,29 @@ size_t SLAMScanWrapper::numPoints() const
     return m_numPoints;
 }
 
-const Transformd& SLAMScanWrapper::getPose() const
+const Transformd& SLAMScanWrapper::pose() const
 {
     return m_scan->m_registration;
 }
 
-const Transformd& SLAMScanWrapper::getDeltaPose() const
+const Transformd& SLAMScanWrapper::deltaPose() const
 {
     return m_deltaPose;
 }
 
-const Transformd& SLAMScanWrapper::getInitialPose() const
+const Transformd& SLAMScanWrapper::initialPose() const
 {
     return m_scan->m_poseEstimation;
 }
 
 Vector3d SLAMScanWrapper::getPosition() const
 {
-    return getPose().block<3, 1>(0, 3);
+    return pose().block<3, 1>(0, 3);
 }
 
 void SLAMScanWrapper::addFrame(FrameUse use)
 {
-    m_frames.push_back(make_pair(getPose(), use));
+    m_frames.push_back(make_pair(pose(), use));
 }
 
 void SLAMScanWrapper::writeFrames(std::string path) const

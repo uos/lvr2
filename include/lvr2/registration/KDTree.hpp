@@ -54,6 +54,7 @@ public:
     using PointT = float;
     using Point = Vector3<PointT>;
     using Neighbor = Point*;
+    using KDTreePtr = std::shared_ptr<KDTree>;
 
     /**
      * @brief Creates a new KDTree from the given Scan.
@@ -73,7 +74,7 @@ public:
      * @param distance      The final distance between point and neighbor
      * @param maxDistance   The maximum distance allowed between neighbors. Setting this value
      *                      significantly speeds up the search.
-     * @returns             true if a neighbors was found, false otherwise
+     * @return bool true if a neighbors was found, false otherwise
      */
     template<typename T>
     bool nearestNeighbor(
@@ -92,7 +93,38 @@ public:
 
     virtual ~KDTree() = default;
 
+    /**
+     * @brief Finds the nearest neighbors of all points in a Scan using a pre-generated KDTree
+     *
+     * @param tree          The KDTree to search in
+     * @param scan          The Scan to search for
+     * @param neighbors     An array to store the results in. neighbors[i] is set to a Pointer to the
+     *                      neighbor of points[i] or nullptr if none was found
+     * @param maxDistance   The maximum Distance for a Neighbor
+     * @param centroid_m    Will be set to the average of all Points in 'neighbors'
+     * @param centroid_d    Will be set to the average of all Points in 'points' that have neighbors
+     *
+     * @return size_t The number of neighbors that were found
+     */
+    static size_t nearestNeighbors(KDTreePtr tree, SLAMScanPtr scan, Neighbor* neighbors, double maxDistance, Vector3d& centroid_m, Vector3d& centroid_d);
+
+    /**
+     * @brief Finds the nearest neighbors of all points in a Scan using a pre-generated KDTree
+     *
+     * @param tree          The KDTree to search in
+     * @param scan          The Scan to search for
+     * @param neighbors     An array to store the results in. neighbors[i] is set to a Pointer to the
+     *                      neighbor of points[i] or nullptr if none was found
+     * @param maxDistance   The maximum Distance for a Neighbor
+     *
+     * @return size_t The number of neighbors that were found
+     */
+    static size_t nearestNeighbors(KDTreePtr tree, SLAMScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance);
+
 protected:
+    KDTree() = default;
+    KDTree(const KDTree&&) = delete;
+
     virtual void nnInternal(const Point& point, Neighbor& neighbor, double& maxDist) const = 0;
 
     friend class KDNode;
@@ -101,34 +133,6 @@ protected:
 };
 
 using KDTreePtr = std::shared_ptr<KDTree>;
-
-/**
- * @brief Finds the nearest neighbors of all points in a Scan using a pre-generated KDTree
- *
- * @param tree          The KDTree to search in
- * @param scan          The Scan to search for
- * @param neighbors     An array to store the results in. neighbors[i] is set to a Pointer to the
- *                      neighbor of points[i] or nullptr if none was found
- * @param maxDistance   The maximum Distance for a Neighbor
- * @param centroid_m    Will be set to the average of all Points in 'neighbors'
- * @param centroid_d    Will be set to the average of all Points in 'points' that have neighbors
- *
- * @returns             The number of neighbors that were found
- */
-size_t getNearestNeighbors(KDTreePtr tree, SLAMScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance, Vector3d& centroid_m, Vector3d& centroid_d);
-
-/**
- * @brief Finds the nearest neighbors of all points in a Scan using a pre-generated KDTree
- *
- * @param tree          The KDTree to search in
- * @param scan          The Scan to search for
- * @param neighbors     An array to store the results in. neighbors[i] is set to a Pointer to the
- *                      neighbor of points[i] or nullptr if none was found
- * @param maxDistance   The maximum Distance for a Neighbor
- *
- * @returns             The number of neighbors that were found
- */
-size_t getNearestNeighbors(KDTreePtr tree, SLAMScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance);
 
 } /* namespace lvr2 */
 

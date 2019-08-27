@@ -43,7 +43,7 @@ using namespace std;
 namespace lvr2
 {
 
-SLAMAlign::SLAMAlign(const SLAMOptions& options, vector<SLAMScanPtr>& scans)
+SLAMAlign::SLAMAlign(const SLAMOptions& options, const vector<SLAMScanPtr>& scans)
     : m_options(options), m_scans(scans), m_graph(&m_options), m_foundLoop(false)
 {
     // The first Scan is never changed
@@ -88,7 +88,12 @@ void SLAMAlign::addScan(const SLAMScanPtr& scan, bool match)
     }
 }
 
-SLAMScanPtr SLAMAlign::getScan(size_t index) const
+void SLAMAlign::addScan(const ScanPtr& scan, bool match)
+{
+    addScan(make_shared<SLAMScanWrapper>(scan));
+}
+
+SLAMScanPtr SLAMAlign::scan(size_t index) const
 {
     return m_scans[index];
 }
@@ -160,7 +165,7 @@ void SLAMAlign::match()
 
         if (!m_options.trustPose && i != 1) // no deltaPose on first run
         {
-            applyTransform(cur, prev->getDeltaPose());
+            applyTransform(cur, prev->deltaPose());
         }
         else
         {
