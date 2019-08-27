@@ -51,7 +51,7 @@ public:
 
     virtual ~Metascan() = default;
 
-    virtual Vector3d getPoint(size_t index) const override;
+    virtual Vector3d point(size_t index) const override;
 
     void addScan(SLAMScanPtr scan);
 

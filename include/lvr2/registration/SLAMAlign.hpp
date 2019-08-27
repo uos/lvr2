@@ -56,7 +56,7 @@ public:
      * @param options The Options to use
      * @param scans The Scans to start with
      */
-    SLAMAlign(const SLAMOptions& options, vector<SLAMScanPtr>& scans);
+    SLAMAlign(const SLAMOptions& options, const std::vector<SLAMScanPtr>& scans);
 
     /**
      * @brief Creates a new SLAMAlign instance with the given Options
@@ -78,11 +78,21 @@ public:
     void addScan(const SLAMScanPtr& scan, bool match = false);
 
     /**
+     * @brief Adds a new Scan to the SLAM instance
+     *
+     * This method will apply any reduction options that are specified
+     *
+     * @param scan The new Scan
+     * @param match true: Immediately call match() with the new Scan added
+     */
+    void addScan(const ScanPtr& scan, bool match = false);
+
+    /**
      * @brief Returns a shared_ptr to a Scan
      *
      * @param index The index of the Scan
      */
-    SLAMScanPtr getScan(size_t index) const;
+    SLAMScanPtr scan(size_t index) const;
 
     /**
      * @brief Executes SLAM on all current Scans
@@ -131,12 +141,19 @@ public:
 
 protected:
 
+    /// Applies all reductions to the Scan
     void reduceScan(const SLAMScanPtr& scan);
 
+    /// Applies the Transformation to the specified Scan and adds a frame to all other Scans
     void applyTransform(SLAMScanPtr scan, const Matrix4d& transform);
 
+    /// Checks for and executes any loopcloses that occur
     void checkLoopClose(size_t last);
+
+    /// Closes a simple Loop between first and last
     void loopClose(size_t first, size_t last);
+
+    /// Executes GraphSLAM up to and including the specified last Scan
     void graphSLAM(size_t last);
 
     SLAMOptions              m_options;

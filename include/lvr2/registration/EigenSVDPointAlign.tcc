@@ -61,7 +61,7 @@ T EigenSVDPointAlign<T, PointT>::alignPoints(
         }
 
         Vec3 m = neighbors[i]->template cast<T>() - centroid_m;
-        Vec3 d = scan->getPoint(i).template cast<T>() - centroid_d;
+        Vec3 d = scan->point(i).template cast<T>() - centroid_d;
 
         error += (m - d).squaredNorm();
         pairs++;

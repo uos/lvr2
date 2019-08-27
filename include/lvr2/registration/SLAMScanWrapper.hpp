@@ -39,9 +39,6 @@
 #include <Eigen/Dense>
 #include <vector>
 
-using std::vector;
-using std::pair;
-
 namespace lvr2
 {
 
@@ -68,29 +65,123 @@ enum class FrameUse
 class SLAMScanWrapper
 {
 public:
+    /**
+     * @brief Construct a new SLAMScanWrapper object as a Wrapper around the Scan
+     * 
+     * @param scan The Scan to wrap around
+     */
     SLAMScanWrapper(ScanPtr scan);
 
     virtual ~SLAMScanWrapper() = default;
 
-    ScanPtr getScan();
+    /**
+     * @brief Access to the Scan that this instance is wrapped around
+     * 
+     * @return ScanPtr The Scan
+     */
+    ScanPtr innerScan();
 
+
+    /**
+     * @brief Applies a relative Transformation to the Scan
+     * 
+     * @param transform The Transformation
+     * @param writeFrame weather or not to add a new animation Frame
+     * @param use The FrameUse if writeFrame is set to true
+     */
     void transform(const Transformd& transform, bool writeFrame = true, FrameUse use = FrameUse::UPDATED);
+
+    /**
+     * @brief Adds a new animation Frame with the current Pose
+     * 
+     * @param use The use of the Frame for coloring purposes
+     */
     void addFrame(FrameUse use = FrameUse::UNUSED);
 
+
+    /**
+     * @brief Reduces the Scan using Octree Reduction
+     * 
+     * Does not change the amount of allocated Memory unless trim() is called
+     * 
+     * @param voxelSize 
+     * @param maxLeafSize 
+     */
     void reduce(double voxelSize, int maxLeafSize);
+
+    /**
+     * @brief Reduces the Scan by removing all Points closer than minDistance to the origin
+     * 
+     * Does not change the amount of allocated Memory unless trim() is called
+     * 
+     * @param minDistance The minimum Distance for a Point to have
+     */
     void setMinDistance(double minDistance);
+
+    /**
+     * @brief Reduces the Scan by removing all Points farther away than maxDistance to the origin
+     * 
+     * Does not change the amount of allocated Memory unless trim() is called
+     * 
+     * @param maxDistance The maximum Distance for a Point to have
+     */
     void setMaxDistance(double maxDistance);
+
+    /**
+     * @brief Reduces Memory usage by getting rid of Points removed with reduction Methods
+     */
     void trim();
 
-    virtual Vector3d getPoint(size_t index) const;
+
+    /**
+     * @brief Returns the Point at the specified index in global Coordinates
+     * 
+     * @param index the Index
+     * @return Vector3d the Point in global Coordinates
+     */
+    virtual Vector3d point(size_t index) const;
+
+    /**
+     * @brief Returns the number of Points in the Scan
+     * 
+     * @return size_t the number of Points
+     */
     size_t numPoints() const;
 
-    const Transformd& getPose() const;
-    const Transformd& getDeltaPose() const;
-    const Transformd& getInitialPose() const;
 
+    /**
+     * @brief Returns the current Pose of the Scan
+     * 
+     * @return const Transformd& the Pose
+     */
+    const Transformd& pose() const;
+
+    /**
+     * @brief Returns the difference between pose() and initialPose()
+     * 
+     * @return const Transformd& the delta Pose
+     */
+    const Transformd& deltaPose() const;
+
+    /**
+     * @brief Returns the initial Pose of the Scan
+     * 
+     * @return const Transformd& the initial Pose
+     */
+    const Transformd& initialPose() const;
+
+    /**
+     * @brief Get the Position of the Scan. Can also be obtained from pose()
+     * 
+     * @return Vector3d the Position
+     */
     Vector3d getPosition() const;
 
+    /**
+     * @brief Writes the Frames to the specified location
+     * 
+     * @param path The path of the file to write to
+     */
     void writeFrames(std::string path) const;
 
 protected:
@@ -101,7 +192,7 @@ protected:
 
     Transformd            m_deltaPose;
 
-    vector<pair<Transformd, FrameUse>> m_frames;
+    std::vector<std::pair<Transformd, FrameUse>> m_frames;
 };
 
 using SLAMScanPtr = std::shared_ptr<SLAMScanWrapper>;

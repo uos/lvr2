@@ -159,7 +159,7 @@ KDTreePtr KDTree::create(SLAMScanPtr scan, int maxLeafSize)
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < n; i++)
     {
-        points[i] = scan->getPoint(i).cast<PointT>();
+        points[i] = scan->point(i).cast<PointT>();
     }
 
     #pragma omp parallel // allows "pragma omp task"
@@ -172,9 +172,9 @@ KDTreePtr KDTree::create(SLAMScanPtr scan, int maxLeafSize)
 }
 
 
-size_t getNearestNeighbors(KDTreePtr tree, SLAMScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance, Vector3d& centroid_m, Vector3d& centroid_d)
+size_t KDTree::nearestNeighbors(KDTreePtr tree, SLAMScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance, Vector3d& centroid_m, Vector3d& centroid_d)
 {
-    size_t found = getNearestNeighbors(tree, scan, neighbors, maxDistance);
+    size_t found = KDTree::nearestNeighbors(tree, scan, neighbors, maxDistance);
 
     centroid_m = Vector3d::Zero();
     centroid_d = Vector3d::Zero();
@@ -184,7 +184,7 @@ size_t getNearestNeighbors(KDTreePtr tree, SLAMScanPtr scan, KDTree::Neighbor* n
         if (neighbors[i] != nullptr)
         {
             centroid_m += neighbors[i]->cast<double>();
-            centroid_d += scan->getPoint(i);
+            centroid_d += scan->point(i);
         }
     }
 
@@ -194,7 +194,7 @@ size_t getNearestNeighbors(KDTreePtr tree, SLAMScanPtr scan, KDTree::Neighbor* n
     return found;
 }
 
-size_t getNearestNeighbors(KDTreePtr tree, SLAMScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance)
+size_t KDTree::nearestNeighbors(KDTreePtr tree, SLAMScanPtr scan, KDTree::Neighbor* neighbors, double maxDistance)
 {
     size_t found = 0;
     double distance = 0.0;
@@ -202,7 +202,7 @@ size_t getNearestNeighbors(KDTreePtr tree, SLAMScanPtr scan, KDTree::Neighbor* n
     #pragma omp parallel for firstprivate(distance) reduction(+:found) schedule(dynamic,8)
     for (size_t i = 0; i < scan->numPoints(); i++)
     {
-        if (tree->nearestNeighbor(scan->getPoint(i), neighbors[i], distance, maxDistance))
+        if (tree->nearestNeighbor(scan->point(i), neighbors[i], distance, maxDistance))
         {
             found++;
         }

@@ -383,7 +383,7 @@ int main(int argc, char** argv)
             file.replace_extension(output_pose_format);
             ofstream out(file.string());
 
-            auto pose = scan->getPose();
+            auto pose = scan->pose();
             for (int y = 0; y < 4; y++)
             {
                 for (int x = 0; x < 4; x++)
@@ -403,7 +403,7 @@ int main(int argc, char** argv)
             file = output_dir / format_name(output_format, start + i);
 
             auto model = make_shared<Model>();
-            model->m_pointCloud = scan->getScan()->m_points;
+            model->m_pointCloud = scan->innerScan()->m_points;
             ModelFactory::saveModel(model, file.string());
         }
     }
