@@ -74,16 +74,7 @@ HalfEdgeMesh<BaseVecT>::HalfEdgeMesh(MeshBufferPtr ptr)
         VertexHandle v1(indices[pos]);
         VertexHandle v2(indices[pos + 1]);
         VertexHandle v3(indices[pos + 2]);
-        try
-        {
-            this->addFace(v1, v2, v3);
-        }
-        catch(const std::exception& e)
-        {
-            std::cout << e.what() << std::endl;
-        }
-        
-        
+        this->addFace(v1, v2, v3);
     }
 }
 
@@ -103,10 +94,10 @@ VertexHandle HalfEdgeMesh<BaseVecT>::addVertex(BaseVecT pos)
 template <typename BaseVecT>
 FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H)
 {
-    /*if (!BaseMesh<BaseVecT>::isFaceInsertionValid(v1H, v2H, v3H))
+    if (!BaseMesh<BaseVecT>::isFaceInsertionValid(v1H, v2H, v3H))
     {
         panic("Attempting to add a face which cannot be added!");
-    }*/
+    }
 
     using std::make_tuple;
 
@@ -1004,13 +995,14 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
     VertexHandle targetOfLongestEdgeH = longestEdgeHalf.target;
     BaseVecT targetOfLongestEdge = getV(targetOfLongestEdgeH).pos;
 
-    //first idea: just do an edge split on the longest edge and do an edge flip for each of the 2 found vertices
+    //do an edge split on the longest edge and do an edge flip for each of the 2 found vertices
+    //if the local delaunay criteria is not met
     vector<VertexHandle> commonVertexHandles = findCommonNeigbours(vertexToBeSplitH, targetOfLongestEdgeH);
 
     EdgeSplitResult splitResult = this->splitEdge(longestEdge);
 
 
-    //only flip if a criteria is given (delauney triangulation, delaunay edge) ...else just do the common edge split
+    //only flip if a criteria is given (local delaunay criteria)
     for(VertexHandle vertex : commonVertexHandles)
     {
         OptionalEdgeHandle handle = this->getEdgeBetween(vertex,vertexToBeSplitH);
@@ -1022,8 +1014,8 @@ VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSpl
 
             auto f1Vertices = getVerticesOfFace(fH1);
             auto f2Vertices = getVerticesOfFace(fH2);
-            //calculate the circumcenter of each triangle, look whether the local delaunay criteria is fulfilled
 
+            //calculate the circumcenter of each triangle, look whether the local delaunay criteria is fulfilled
             auto circumCenterPair1 = triCircumCenter(fH1);
             auto circumCenterPair2 = triCircumCenter(fH2);
 

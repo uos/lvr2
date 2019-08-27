@@ -654,18 +654,18 @@ struct VertexSplitResult
 {
 
     VertexHandle edgeCenter;
-    vector<FaceHandle> addedFaces;
+    std::vector<FaceHandle> addedFaces;
 
-    explicit VertexSplitResult(VertexHandle longestEdgeCenter) : edgeCenter(longestEdgeCenter) {};
+    VertexSplitResult(VertexHandle longestEdgeCenter) : edgeCenter(longestEdgeCenter) {};
 };
 
 struct EdgeSplitResult
 {
 
     VertexHandle edgeCenter;
-    vector<FaceHandle> addedFaces;
+    std::vector<FaceHandle> addedFaces;
 
-    explicit EdgeSplitResult(VertexHandle longestEdgeCenter) : edgeCenter(longestEdgeCenter) {};
+    EdgeSplitResult(VertexHandle longestEdgeCenter) : edgeCenter(longestEdgeCenter) {};
 };
 
 } // namespace lvr2
