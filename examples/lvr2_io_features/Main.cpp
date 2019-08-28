@@ -20,43 +20,8 @@
 
 #include "lvr2/io/PointBuffer.hpp"
 
+#include "lvr2/types/VariantChannel.hpp"
 
-// #include "hdf5_features/ChannelIO.hpp"
-// #include "hdf5_features/HyperIO.hpp"
-// #include "hdf5_features/ImageIO.hpp"
-
-// #include "types/Channel.hpp"
-// #include "types/Image.hpp"
-// #include "types/Hyper.hpp"
-
-// template<template<typename> typename ...Features>
-// class HDF5IO : public Features<HDF5IO<Features...> >...
-// {
-// public:
-//     static constexpr std::size_t N = sizeof...(Features);
-//     using feature_tuple = std::tuple<Features<HDF5IO<Features...> >...>;
-//     using index_sequence = std::make_index_sequence<N>;
-
-//     #if __cplusplus <= 201500L
-//         // feature of c++17
-//         #pragma message("using Tp::save... needs c++17 at least or a newer compiler")
-//     #endif
-
-//     using Features<HDF5IO<Features...> >::save...;
-
-//     void open(std::string filename)
-//     {
-//         std::cout << index_sequence::size() << std::endl;
-//         m_filename = filename;
-//     }
-
-//     std::string filename() {
-//         return m_filename;
-//     }
-
-// protected:
-//     std::string m_filename;
-// };
 
 
 /////////////////////
@@ -68,56 +33,123 @@
 // struct ExtraFeatures : Features<Derived>...
 // { };
 
-// template<typename Derived>
-// using ExtraFeaturesA = ExtraFeatures<Derived,ExtraFeature1,ExtraFeature2>;
- 
-// template<typename Derived>
-// using ExtraFeaturesB = ExtraFeatures<Derived,ExtraFeature2,ExtraFeature3>;
- 
-// template<typename Derived>
-// using ExtraFeaturesC = ExtraFeatures<Derived,ExtraFeature1,ExtraFeature3>;
+
+namespace lvr2 {
 
 
-int main(int argc, char** argv)
+template<typename Derived,
+         template<typename> typename ToCheck,
+         template<typename> typename Current,
+         template<typename> typename ... Features>
+constexpr bool HasFeature()
 {
-    // Channel ch;
-    // Image im;
-    // Hyper hy;
+  if constexpr( std::is_same<ToCheck<Derived>,Current<Derived>>::value )
+    return true;
+  else if constexpr( sizeof...(Features) == 0 )
+    return false;
+  else
+    return HasFeature<Derived,ToCheck,Features...>();
+}
 
-    // using MyHDF5IO = HDF5IO<hdf5_features::ChannelIO, hdf5_features::ImageIO, hdf5_features::HyperIO>;
-    // MyHDF5IO io;
 
-    // io.open("hello.h5");
+template<typename ...>
+struct JoinTwoHdf5IO;
 
-    // io.save(ch);
-    // io.save(im);
-    // io.save(hy);
+template<template<typename> typename Feature,
+         template<typename> typename ... Features1,
+         template<typename> typename ... Features2>
+struct JoinTwoHdf5IO<
+    Hdf5IO<Features1...>,
+    Hdf5IO<Feature,Features2...>
+  >
+{
+  using type= typename
+    std::conditional<
+      HasFeature<Hdf5IO,Feature,Features1...>(),
+      typename JoinTwoHdf5IO<
+        Hdf5IO<Features1...>,
+        Hdf5IO<Features2...>
+      >::type,
+      typename JoinTwoHdf5IO<
+        Hdf5IO<Features1...,Feature>,
+        Hdf5IO<Features2...>
+      >::type
+    >::type;
+};
 
-    // ch = io.ChannelIO::load();
-    // im = io.ImageIO::load();
-    // hy = io.HyperIO::load();
+template<template<typename> typename ... Features1>
+struct JoinTwoHdf5IO<
+    Hdf5IO<Features1...>
+  >
+{
+  using type= Hdf5IO<Features1...>;
+};
 
-    
-    
+
+} // namespace lvr2
+
+void hdf5io_gen_example()
+{
+    // Build IO Type with IO features
+    using BaseHDF5IO = lvr2::Hdf5IO<
+        lvr2::hdf5features::ArrayIO,
+        lvr2::hdf5features::ChannelIO
+        >;
+
+    // Extend IO with other features
+    using MyHDF5IO = BaseHDF5IO::add_features<
+            lvr2::hdf5features::VariantChannelIO,
+            lvr2::hdf5features::PointCloudIO,
+            lvr2::hdf5features::PointCloudIO // duplicate test
+        >::type;
+
+
+
+    // Check if a feature exists in IO Type
+    if(MyHDF5IO::has_feature<lvr2::hdf5features::PointCloudIO>::value)
+    {
+        std::cout << "MyHDF5IO has the feature lvr2::hdf5features::PointCloudIO" << std::endl;
+    } else {
+        std::cout << "MyHDF5IO doenst have feature lvr2::hdf5features::PointCloudIO" << std::endl;
+    }  
+
+    // test duplicate feature
+    using Duplicate = MyHDF5IO::add_feature<lvr2::hdf5features::PointCloudIO>::type;
+    lvr2::Channel<double> channel(1000, 3);
+    lvr2::PointBufferPtr pointcloud(new lvr2::PointBuffer);
+    pointcloud->add("points", channel);
+    Duplicate io;
+    io.open("gen_test.h5");
+    io.save("apointcloud",pointcloud);
+
+}
+
+void hdf5io_usage_example()
+{
+    ///////////////////////
+    // Create Some Data  //
+    ///////////////////////
+    size_t num_data = 10000;
+    boost::shared_array<float> data(new float[num_data]);
+    lvr2::Channel<double> channel(1000, 3);
+
+    ///////////////////////
+    //   Create an IO    //
+    ///////////////////////
+
     using MyHDF5IO = lvr2::Hdf5IO<
         lvr2::hdf5features::ArrayIO,
         lvr2::hdf5features::ChannelIO,
-        lvr2::hdf5features::PointCloudIO,
-        lvr2::hdf5features::VariantChannelIO
+        lvr2::hdf5features::VariantChannelIO,
+        lvr2::hdf5features::PointCloudIO
     >;
-
-
-    size_t num_data = 10000;
-    boost::shared_array<float> data(new float[num_data]);
-
-
-    lvr2::Channel<double> channel(1000, 3);
-
 
     MyHDF5IO my_io;
     my_io.open("test.h5");
-
-    // ARRAYIO
+    
+    /////////////////////////
+    // 1) ArrayIO Example  //
+    /////////////////////////
     my_io.save("agroup", "anarray", num_data, data);
     size_t N;
     boost::shared_array<float> data_loaded = my_io.ArrayIO::load<float>("agroup", "anarray", N);
@@ -127,32 +159,50 @@ int main(int argc, char** argv)
         std::cout << "ArrayIO successful" << std::endl;
     }
 
-    // CHANNELIO
+    //////////////////////////
+    // 2) ChannelIO Example //
+    //////////////////////////
     my_io.save("agroup", "achannel", channel);
-
     lvr2::ChannelOptional<float> channel_loaded = my_io.ChannelIO::load<float>("agroup", "achannel");
-
     if(channel_loaded)
     {
         if(channel_loaded->numElements() == channel.numElements() && channel_loaded->width() == channel.width())
         {
             std::cout << "ChannelIO successful" << std::endl;
         }
-        
     } else {
         std::cout << "channel not found" << std::endl;
     }
 
-
+    /////////////////////////////
+    // 3) PointCloudIO Example //
+    /////////////////////////////
     lvr2::PointBufferPtr pointcloud(new lvr2::PointBuffer);
-
     pointcloud->add("points", channel);
-
     my_io.save("apointcloud", pointcloud);
-
-
     lvr2::PointBufferPtr pointcloud_loaded = my_io.PointCloudIO::load("apointcloud");
-
     std::cout << *pointcloud_loaded << std::endl;
 
+    /////////////////////////////////
+    // 4) VariantChannelIO Example //
+    /////////////////////////////////
+
+    lvr2::VariantChannelOptional<double, float, char> ovchannel 
+        = my_io.VariantChannelIO::template load<double, float, char>("apointcloud","points");
+    
+    if(ovchannel) {
+        std::cout << *ovchannel << std::endl;
+    } else {
+        std::cout << "could not load point from group apointcloud" << std::endl;
+    }
+
+    my_io.save("apointcloud", "points2", *ovchannel);
+}
+
+int main(int argc, char** argv)
+{
+    hdf5io_gen_example();
+    hdf5io_usage_example();
+
+    return 0;
 }
