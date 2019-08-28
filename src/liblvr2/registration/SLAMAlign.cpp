@@ -44,7 +44,7 @@ namespace lvr2
 {
 
 SLAMAlign::SLAMAlign(const SLAMOptions& options, const vector<SLAMScanPtr>& scans)
-    : m_options(options), m_scans(scans), m_graph(&m_options), m_foundLoop(false)
+    : m_options(options), m_scans(scans), m_graph(&m_options), m_foundLoop(false), m_loopIndexCount(0)
 {
     // The first Scan is never changed
     m_alreadyMatched = 1;
@@ -56,7 +56,7 @@ SLAMAlign::SLAMAlign(const SLAMOptions& options, const vector<SLAMScanPtr>& scan
 }
 
 SLAMAlign::SLAMAlign(const SLAMOptions& options)
-    : m_options(options), m_graph(&m_options), m_foundLoop(false)
+    : m_options(options), m_graph(&m_options), m_foundLoop(false), m_loopIndexCount(0)
 {
     // The first Scan is never changed
     m_alreadyMatched = 1;
@@ -227,17 +227,29 @@ void SLAMAlign::checkLoopClose(size_t last)
         first = others[0];
     }
 
-    if (hasLoop && m_options.doLoopClosing)
+    if (hasLoop && (m_loopIndexCount % 10 == 3) && m_options.doLoopClosing)
+    {
+        loopClose(first, last);
+    }
+    if (!hasLoop && m_loopIndexCount > 0 && m_options.doLoopClosing && !m_options.doGraphSLAM)
     {
         loopClose(first, last);
     }
 
-    // wait for falling edge
+    // falling edge
     if (m_foundLoop && !hasLoop && m_options.doGraphSLAM)
     {
         graphSLAM(last);
     }
 
+    if (hasLoop)
+    {
+        m_loopIndexCount++;
+    }
+    else
+    {
+        m_loopIndexCount = 0;
+    }
     m_foundLoop = hasLoop;
 }
 
@@ -260,12 +272,12 @@ void SLAMAlign::loopClose(size_t first, size_t last)
     icp.setMaxMatchDistance(m_options.slamMaxDistance);
     icp.setMaxIterations(m_options.slamIterations);
     icp.setMaxLeafSize(m_options.maxLeafSize);
-    icp.setEpsilon(m_options.epsilon);
+    icp.setEpsilon(m_options.slamEpsilon);
     icp.setVerbose(m_options.verbose);
 
     Matrix4d transform = icp.match();
 
-    for (size_t i = first; i <= last; i++)
+    for (size_t i = first + 3; i <= last - 3; i++)
     {
         double factor = (i - first) / (double)(last - first);
 
@@ -275,11 +287,16 @@ void SLAMAlign::loopClose(size_t first, size_t last)
     }
 
     // Add frame to unaffected scans
+    for (size_t i = 0; i < 3; i++)
+    {
+        m_scans[first + i]->addFrame(FrameUse::LOOPCLOSE);
+        m_scans[last - i]->addFrame(FrameUse::LOOPCLOSE);
+    }
     for (size_t i = 0; i < first; i++)
     {
         m_scans[i]->addFrame();
     }
-    for (size_t i = last + 1; i < m_scans.size(); i++)
+    for (size_t i = last - 2; i < m_scans.size(); i++)
     {
         m_scans[i]->addFrame(FrameUse::INVALID);
     }

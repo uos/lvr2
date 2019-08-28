@@ -89,7 +89,7 @@ public:
      * @param writeFrame weather or not to add a new animation Frame
      * @param use The FrameUse if writeFrame is set to true
      */
-    void transform(const Transformd& transform, bool writeFrame = true, FrameUse use = FrameUse::UPDATED);
+    virtual void transform(const Transformd& transform, bool writeFrame = true, FrameUse use = FrameUse::UPDATED);
 
     /**
      * @brief Adds a new animation Frame with the current Pose

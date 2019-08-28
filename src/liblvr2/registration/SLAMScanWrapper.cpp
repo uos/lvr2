@@ -77,10 +77,7 @@ ScanPtr SLAMScanWrapper::innerScan()
 
 void SLAMScanWrapper::transform(const Transformd& transform, bool writeFrame, FrameUse use)
 {
-    if (m_scan)
-    {
-        m_scan->m_registration = transform * m_scan->m_registration;
-    }
+    m_scan->m_registration = transform * m_scan->m_registration;
     m_deltaPose = transform * m_deltaPose;
 
     if (writeFrame)

@@ -164,6 +164,7 @@ protected:
 
     GraphSLAM                m_graph;
     bool                     m_foundLoop;
+    int                      m_loopIndexCount;
 
     size_t                   m_alreadyMatched;
 };
