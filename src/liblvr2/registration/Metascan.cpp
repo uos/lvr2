@@ -42,6 +42,20 @@ Metascan::Metascan()
 
 }
 
+void Metascan::transform(const Transformd& transform, bool writeFrame, FrameUse use)
+{
+    for (auto& scan : m_scans)
+    {
+        scan->transform(transform, writeFrame, use);
+    }
+    m_deltaPose = transform * m_deltaPose;
+
+    if (writeFrame)
+    {
+        addFrame(use);
+    }
+}
+
 Vector3d Metascan::point(size_t index) const
 {
     for (auto& scan : m_scans)

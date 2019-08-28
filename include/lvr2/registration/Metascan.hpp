@@ -51,6 +51,7 @@ public:
 
     virtual ~Metascan() = default;
 
+    virtual void transform(const Transformd& transform, bool writeFrame = true, FrameUse use = FrameUse::UPDATED) override;
     virtual Vector3d point(size_t index) const override;
 
     void addScan(SLAMScanPtr scan);
