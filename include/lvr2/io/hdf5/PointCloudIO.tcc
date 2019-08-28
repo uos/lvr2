@@ -27,16 +27,13 @@ void PointCloudIO<Derived>::save(HighFive::Group& group, const PointBufferPtr& b
         m_channel_io->save(group, it->first, it->second);
     }
 
-
     for(auto it = buffer->typedBegin< short >(); it != buffer->end(); ++it){
         m_channel_io->save(group, it->first, it->second);
     }
 
-
     for(auto it = buffer->typedBegin< unsigned short >(); it != buffer->end(); ++it){
         m_channel_io->save(group, it->first, it->second);
     }
-
 
     for(auto it = buffer->typedBegin< int >(); it != buffer->end(); ++it){
         m_channel_io->save(group, it->first, it->second);
@@ -152,7 +149,6 @@ PointBufferPtr PointCloudIO<Derived>::load(HighFive::Group& group)
 
     }
 
-    // TODO
     return ret;
 }
 

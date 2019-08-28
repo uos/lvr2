@@ -7,6 +7,7 @@
 
 // Dependencies
 #include "ChannelIO.hpp"
+#include "VariantChannelIO.hpp"
 
 namespace lvr2 {
 

@@ -26,6 +26,17 @@ public:
     
 protected:
 
+    template<typename ...Tp>
+    VariantChannelOptional<Tp...> loadDynamic(HighFive::DataType dtype,
+        HighFive::Group& group,
+        std::string name);
+
+    template<typename ...Tp>
+    void saveDynamic(HighFive::Group& group,
+        std::string datasetName,
+        const VariantChannel<Tp...>& vchannel
+    );
+
     Derived* m_file_access = static_cast<Derived*>(this);
     ChannelIO<Derived>* m_channel_io = static_cast<ChannelIO<Derived>*>(m_file_access);
 };
