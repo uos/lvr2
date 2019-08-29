@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_HDF5_EIGENIO_HPP
-#define LVR2_IO_HDF5_EIGENIO_HPP
+#ifndef LVR2_IO_HDF5_MATRIXIO_HPP
+#define LVR2_IO_HDF5_MATRIXIO_HPP
 
 #include <Eigen/Dense>
 
@@ -48,4 +48,4 @@ protected:
 
 #include "MatrixIO.tcc"
 
-#endif // LVR2_IO_HDF5_EIGENIO_HPP
+#endif // LVR2_IO_HDF5_MATRIXIO_HPP
