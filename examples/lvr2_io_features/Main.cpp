@@ -20,6 +20,7 @@
 #include "lvr2/io/hdf5/ArrayIO.hpp"
 #include "lvr2/io/hdf5/ChannelIO.hpp"
 #include "lvr2/io/hdf5/PointCloudIO.hpp"
+#include "lvr2/io/hdf5/MeshIO.hpp"
 #include "lvr2/io/hdf5/VariantChannelIO.hpp"
 #include "lvr2/io/hdf5/MatrixIO.hpp"
 #include "lvr2/io/hdf5/ImageIO.hpp"
@@ -123,6 +124,7 @@ void hdf5io_usage_example()
         lvr2::hdf5features::ChannelIO,
         lvr2::hdf5features::VariantChannelIO,
         lvr2::hdf5features::PointCloudIO,
+        lvr2::hdf5features::MeshIO,
         lvr2::hdf5features::MatrixIO,
         lvr2::hdf5features::ImageIO
     >;
@@ -267,6 +269,26 @@ void hdf5io_usage_example()
     my_io.save("images", "image_gray", image_gray);
     boost::optional<cv::Mat> image_gray_loaded = my_io.ImageIO::load("images","image_gray");
 
+
+    ///////////////////////
+    // 6) MeshIO Example //
+    ///////////////////////
+    lvr2::MeshBufferPtr mesh(new lvr2::MeshBuffer);
+    mesh->setVertices(lvr2::floatArr(
+                          new float[18] {2, 0, 0, 1, 2, 0, 3, 2, 0, 0, 4, 0, 2, 4, 0, 4, 4, 0}
+                      ), 6);
+    mesh->setFaceIndices(lvr2::indexArray(
+                             new unsigned int[12] {0, 1, 2, 1, 3, 4, 2, 4, 5, 1, 4, 2}
+                         ), 4);
+    my_io.save("amesh", mesh);
+    lvr2::MeshBufferPtr mesh_loaded = my_io.loadMesh("amesh");
+    if(mesh_loaded)
+    {
+        std::cout << "MeshIO read success" << std::endl;
+        std::cout << *mesh_loaded << std::endl;
+    } else {
+        std::cout << "MeshIO read failed" << std::endl;
+    }
 }
 
 int main(int argc, char** argv)
