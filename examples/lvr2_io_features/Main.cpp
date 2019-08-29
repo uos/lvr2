@@ -67,7 +67,7 @@ void hdf5io_gen_example()
         std::cout << "MyHDF5IO has the feature lvr2::hdf5features::PointCloudIO" << std::endl;
     } else {
         std::cout << "MyHDF5IO doenst have feature lvr2::hdf5features::PointCloudIO" << std::endl;
-    }  
+    }
 
     // test duplicate feature
     using Duplicate = MyHDF5IO::add_feature<lvr2::hdf5features::PointCloudIO>::type;
@@ -78,6 +78,31 @@ void hdf5io_gen_example()
     io.open("gen_test.h5");
     io.save("apointcloud",pointcloud);
 
+    if(!io.has<lvr2::hdf5features::ImageIO>())
+    {
+        std::cout << "has feature check on object success" << std::endl;
+    }
+
+    // cast
+    auto pcl_io = io.scast<lvr2::hdf5features::PointCloudIO>();
+
+    pcl_io->save("bpointcloud", pointcloud);
+
+    lvr2::PointBufferPtr bla = pcl_io->load("bpointcloud");
+
+    auto image_io = io.dcast<lvr2::hdf5features::ImageIO>();
+
+    if(!image_io)
+    {
+        std::cout << "wrong dynamic cast success" << std::endl;
+    }
+
+    auto dyn_pcl_io = io.dcast<lvr2::hdf5features::PointCloudIO>();
+    if(dyn_pcl_io)
+    {
+        std::cout << "correct dynamic cast success" << std::endl;
+        dyn_pcl_io->save("cpointcloud", pointcloud);
+    }
 }
 
 void hdf5io_usage_example()
@@ -215,7 +240,7 @@ void hdf5io_usage_example()
     cv::Mat b = cv::Mat::zeros(50, 50, CV_16SC4);
     my_io.save("images", "fallback2", b);
 
-    cv::Mat c = *my_io.ImageIO::load("images","fallback2");
+    cv::Mat c = *my_io.loadImage("images","fallback2");
 
     if(b.type() == c.type())
     {
@@ -224,8 +249,6 @@ void hdf5io_usage_example()
 
     // RGB
     cv::Mat image = generate_image();
-    // cv::imshow("example image",image);
-    // cv::waitKey(0);
 
     my_io.save("images", "image", image);
     boost::optional<cv::Mat> image_loaded = my_io.ImageIO::load("images","image");

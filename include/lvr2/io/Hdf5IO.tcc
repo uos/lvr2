@@ -13,4 +13,22 @@ void Hdf5IO<Features...>::open(std::string filename) {
     }
 }
 
+template<template<typename> typename ...Features>
+template<template<typename> typename F>
+bool Hdf5IO<Features...>::has() {
+    return Hdf5IO<Features...>::template has_feature<F>::value;
+}
+
+template<template<typename> typename ...Features>
+template<template<typename> typename F>
+F<Hdf5IO<Features...> >* Hdf5IO<Features...>::scast() {
+    return static_cast< F<Hdf5IO<Features...> >* >(this);
+}
+
+template<template<typename> typename ...Features>
+template<template<typename> typename F>
+F<Hdf5IO<Features...> >* Hdf5IO<Features...>::dcast() {
+    return dynamic_cast< F<Hdf5IO<Features...> >* >(this);
+}
+
 } // namespace lvr2
