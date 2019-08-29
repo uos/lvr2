@@ -31,9 +31,8 @@ public:
     boost::optional<cv::Mat> load(std::string groupName,
         std::string datasetName);
 
-    // template<typename MatrixT>
-    // boost::optional<MatrixT> loadMatrix(std::string groupName,
-    //     std::string datasetName);
+    boost::optional<cv::Mat> loadImage(std::string groupName,
+        std::string datasetName);
 
 protected:
 

@@ -42,8 +42,6 @@ public:
         static constexpr bool value = has_type<F<Hdf5IO>, features>::type::value;
     };
 
-    
-
     template<
         template<typename> typename F,
         template<typename> typename ...Fs
@@ -80,8 +78,6 @@ public:
     #endif
 
     using Features<Hdf5IO<Features...> >::save...;
-    // using Features<Hdf5IO<Features...> >::read...;
-
 
     Hdf5IO()
     :m_compress(true),
@@ -91,7 +87,18 @@ public:
 
     }
 
+    virtual ~Hdf5IO() {}
+
     void open(std::string filename);
+
+    template<template<typename> typename F>
+    bool has();
+
+    template<template<typename> typename F>
+    F<Hdf5IO>* scast();
+
+    template<template<typename> typename F>
+    F<Hdf5IO>* dcast();
 
     bool                    m_compress;
     size_t                  m_chunkSize;

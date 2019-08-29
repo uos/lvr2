@@ -212,6 +212,13 @@ boost::optional<cv::Mat> ImageIO<Derived>::load(std::string groupName,
     return ret;
 }
 
+template<typename Derived>
+boost::optional<cv::Mat> ImageIO<Derived>::loadImage(std::string groupName,
+    std::string datasetName)
+{
+    return load(groupName, datasetName);
+}
+
 /// PROTECTED
 template<typename Derived>
 template<typename T>
