@@ -104,7 +104,6 @@ void hdf5io_gen_example()
         >::type;
 
 
-
     // Check if a feature exists in IO Type
     if(MyHDF5IO::has_feature<lvr2::hdf5features::PointCloudIO>::value)
     {
@@ -164,6 +163,10 @@ void hdf5io_usage_example()
     //////////////////////////
     my_io.save("agroup", "achannel", channel);
     lvr2::ChannelOptional<float> channel_loaded = my_io.ChannelIO::load<float>("agroup", "achannel");
+    
+    // alternative:
+    // channel_loaded = my_io.loadChannel<float>("agroup","achannel");
+
     if(channel_loaded)
     {
         if(channel_loaded->numElements() == channel.numElements() && channel_loaded->width() == channel.width())
@@ -180,15 +183,24 @@ void hdf5io_usage_example()
     lvr2::PointBufferPtr pointcloud(new lvr2::PointBuffer);
     pointcloud->add("points", channel);
     my_io.save("apointcloud", pointcloud);
-    lvr2::PointBufferPtr pointcloud_loaded = my_io.PointCloudIO::load("apointcloud");
-    std::cout << *pointcloud_loaded << std::endl;
+    lvr2::PointBufferPtr pointcloud_loaded = my_io.loadPointCloud("apointcloud");
+    if(pointcloud_loaded)
+    {
+        std::cout << "PointCloudIO read success" << std::endl;
+        std::cout << *pointcloud_loaded << std::endl;
+    } else {
+        std::cout << "PointCloudIO read failed" << std::endl;
+    }
+    
 
     /////////////////////////////////
     // 4) VariantChannelIO Example //
     /////////////////////////////////
 
-    lvr2::VariantChannelOptional<double, float, char> ovchannel 
-        = my_io.VariantChannelIO::template load<double, float, char>("apointcloud","points");
+    using VChannel = lvr2::PointBuffer::val_type;
+
+    auto ovchannel 
+        = my_io.loadVariantChannel<VChannel>("apointcloud","points");
     
     if(ovchannel) {
         std::cout << *ovchannel << std::endl;

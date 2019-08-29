@@ -3,6 +3,8 @@
 #ifndef LVR2_IO_HDF5_POINTBUFFERIO_HPP
 #define LVR2_IO_HDF5_POINTBUFFERIO_HPP
 
+#include <boost/optional.hpp>
+
 #include "lvr2/io/PointBuffer.hpp"
 
 // Dependencies
@@ -21,18 +23,13 @@ public:
 
     PointBufferPtr load(std::string name);
     PointBufferPtr load(HighFive::Group& group);
+    PointBufferPtr loadPointCloud(std::string name);
 
 protected:
 
-    PointBuffer::val_type loadDynamic(
-        HighFive::DataType dtype,
-        HighFive::Group& group,
-        std::string name
-    );
-    
-
     Derived* m_file_access = static_cast<Derived*>(this);
-    ChannelIO<Derived>* m_channel_io = static_cast<ChannelIO<Derived>*>(m_file_access);
+    // dependencies
+    VariantChannelIO<Derived>* m_vchannel_io = static_cast<VariantChannelIO<Derived>*>(m_file_access);
 };
 
 

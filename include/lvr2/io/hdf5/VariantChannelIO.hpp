@@ -18,16 +18,19 @@ public:
     template<typename ...Tp>
     void save(HighFive::Group& group, std::string datasetName, const VariantChannel<Tp...>& vchannel);
     
-    template<typename ...Tp>
-    VariantChannelOptional<Tp...> load(std::string groupName, std::string datasetName);
+    template<typename VariantChannelT>
+    boost::optional<VariantChannelT> load(std::string groupName, std::string datasetName);
     
-    template<typename ...Tp>
-    VariantChannelOptional<Tp...> load(HighFive::Group& group, std::string datasetName);
+    template<typename VariantChannelT>
+    boost::optional<VariantChannelT> load(HighFive::Group& group, std::string datasetName);
     
+    template<typename VariantChannelT>
+    boost::optional<VariantChannelT> loadVariantChannel(std::string groupName, std::string datasetName);
+
 protected:
 
-    template<typename ...Tp>
-    VariantChannelOptional<Tp...> loadDynamic(HighFive::DataType dtype,
+    template<typename VariantChannelT>
+    boost::optional<VariantChannelT> loadDynamic(HighFive::DataType dtype,
         HighFive::Group& group,
         std::string name);
 

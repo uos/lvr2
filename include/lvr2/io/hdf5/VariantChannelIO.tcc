@@ -64,17 +64,17 @@ void VariantChannelIO<Derived>::save(
 }
 
 // R == 0
-template<typename Derived, typename VariantT, int R, typename std::enable_if<R == 0, void>::type* = nullptr>
-boost::optional<VariantT> loadVChannel(
+template<typename Derived, typename VariantChannelT, int R, typename std::enable_if<R == 0, void>::type* = nullptr>
+boost::optional<VariantChannelT> loadVChannel(
     HighFive::DataType dtype,
     ChannelIO<Derived>* channel_io,
     HighFive::Group& group,
     std::string name)
 {
-    boost::optional<VariantT> ret;
-    if(dtype == HighFive::AtomicType<typename VariantT::template type_of_index<R> >())
+    boost::optional<VariantChannelT> ret;
+    if(dtype == HighFive::AtomicType<typename VariantChannelT::template type_of_index<R> >())
     {
-        auto channel = channel_io->template load<typename VariantT::template type_of_index<R> >(group, name);
+        auto channel = channel_io->template load<typename VariantChannelT::template type_of_index<R> >(group, name);
         if(channel) {
             ret = *channel;
         }
@@ -85,50 +85,50 @@ boost::optional<VariantT> loadVChannel(
 }
 
 // R != 0
-template<typename Derived, typename VariantT, int R, typename std::enable_if<R != 0, void>::type* = nullptr>
-boost::optional<VariantT> loadVChannel(
+template<typename Derived, typename VariantChannelT, int R, typename std::enable_if<R != 0, void>::type* = nullptr>
+boost::optional<VariantChannelT> loadVChannel(
     HighFive::DataType dtype,
     ChannelIO<Derived>* channel_io,
     HighFive::Group& group,
     std::string name)
 {
-    if(dtype == HighFive::AtomicType<typename VariantT::template type_of_index<R> >())
+    if(dtype == HighFive::AtomicType<typename VariantChannelT::template type_of_index<R> >())
     {
-        boost::optional<VariantT> ret;
-        auto loaded_channel = channel_io->template load<typename VariantT::template type_of_index<R> >(group, name);
+        boost::optional<VariantChannelT> ret;
+        auto loaded_channel = channel_io->template load<typename VariantChannelT::template type_of_index<R> >(group, name);
         if(loaded_channel)
         {
             ret = *loaded_channel;
         }
         return ret;
     } else {
-        return loadVChannel<Derived, VariantT, R-1>(dtype, channel_io, group, name);
+        return loadVChannel<Derived, VariantChannelT, R-1>(dtype, channel_io, group, name);
     }
 }
 
 template<typename Derived>
-template<typename ...Tp>
-VariantChannelOptional<Tp...> VariantChannelIO<Derived>::loadDynamic(
+template<typename VariantChannelT>
+boost::optional<VariantChannelT> VariantChannelIO<Derived>::loadDynamic(
     HighFive::DataType dtype,
     HighFive::Group& group,
     std::string name)
 {
-    return loadVChannel<Derived, VariantChannel<Tp...>, VariantChannel<Tp...>::num_types-1>(
+    return loadVChannel<Derived, VariantChannelT, VariantChannelT::num_types-1>(
         dtype, m_channel_io, group, name);
 }
 
 template<typename Derived>
-template<typename ...Tp>
-VariantChannelOptional<Tp...> VariantChannelIO<Derived>::load(
+template<typename VariantChannelT>
+boost::optional<VariantChannelT> VariantChannelIO<Derived>::load(
     std::string groupName,
     std::string datasetName)
 {
-    VariantChannelOptional<Tp...> ret;
+    boost::optional<VariantChannelT> ret;
 
     if(hdf5util::exist(m_file_access->m_hdf5_file, groupName))
     {
         HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, groupName, false);
-        ret = this->load<Tp...>(g, datasetName);
+        ret = this->load<VariantChannelT>(g, datasetName);
     } else {
         std::cout << "[VariantChannelIO] WARNING: Group " << groupName << " not found." << std::endl;
     }
@@ -137,12 +137,12 @@ VariantChannelOptional<Tp...> VariantChannelIO<Derived>::load(
 }
 
 template<typename Derived>
-template<typename ...Tp>
-VariantChannelOptional<Tp...> VariantChannelIO<Derived>::load(
+template<typename VariantChannelT>
+boost::optional<VariantChannelT> VariantChannelIO<Derived>::load(
     HighFive::Group& group,
     std::string datasetName)
 {
-    VariantChannelOptional<Tp...> ret;
+    boost::optional<VariantChannelT> ret;
 
     std::unique_ptr<HighFive::DataSet> dataset;
 
@@ -157,10 +157,19 @@ VariantChannelOptional<Tp...> VariantChannelIO<Derived>::load(
     if(dataset)
     {
         // name is dataset
-        ret = loadDynamic<Tp...>(dataset->getDataType(), group, datasetName);
+        ret = loadDynamic<VariantChannelT>(dataset->getDataType(), group, datasetName);
     }
 
     return ret;
+}
+
+template<typename Derived>
+template<typename VariantChannelT>
+boost::optional<VariantChannelT> VariantChannelIO<Derived>::loadVariantChannel(
+    std::string groupName,
+    std::string datasetName)
+{
+    return load<VariantChannelT>(groupName, datasetName);
 }
 
 

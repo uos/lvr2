@@ -53,6 +53,14 @@ ChannelOptional<T> ChannelIO<Derived>::load(
 
 template<typename Derived>
 template<typename T>
+ChannelOptional<T> ChannelIO<Derived>::loadChannel(std::string groupName,
+    std::string datasetName)
+{
+    return load<T>(groupName, datasetName);
+}
+
+template<typename Derived>
+template<typename T>
 void ChannelIO<Derived>::save(std::string groupName,
         std::string datasetName,
         const Channel<T>& channel)
