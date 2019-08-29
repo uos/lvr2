@@ -28,11 +28,10 @@ ChannelOptional<T> ChannelIO<Derived>::load(
 
     if(m_file_access->m_hdf5_file && m_file_access->m_hdf5_file->isValid())
     {
-        if (g.exist(datasetName))
+        if(g.exist(datasetName))
         {
             HighFive::DataSet dataset = g.getDataSet(datasetName);
             std::vector<size_t> dim = dataset.getSpace().getDimensions();
-
             
             size_t elementCount = 1;
             for (auto e : dim)
