@@ -74,7 +74,6 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
 
     // find all required chunks
     // TODO: check if we need + 1
-    std::size_t numChunks = 0;
     const BaseVector<float> maxSteps = (area.getMax() - area.getMin()) / m_chunkSize;
     for (std::size_t i = 0; i < maxSteps.x; ++i)
     {
@@ -83,39 +82,30 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
             for (std::size_t k = 0; k < maxSteps.z; ++k)
             {
                 std::size_t cellIndex = getCellIndex(area.getMin() + BaseVector<float>(i, j, k) * m_chunkSize);
-                std::cout << "Point:" << area.getMin() + BaseVector<float>(i, j, k) * m_chunkSize << std::endl;
-                std::cout << "Cell Index: " << cellIndex << std::endl;
 
                 auto it = m_hashGrid.find(cellIndex);
                 if (it == m_hashGrid.end())
                 {
-                    std::cout << "continue" << std::endl;
                     continue;
                 }
                 // TODO: remove saving tmp chunks later
                 ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(it->second)),
                                         "area/" + std::to_string(cellIndex) + ".ply");
                 chunks.insert(*it);
-                std::cout << "numChunks " << numChunks++ << std::endl;
             }
         }
     }
     std::cout << "Extracted " << chunks.size() << " Chunks" << std::endl;
 
-    // TODO: concat chunks
     std::vector<float> areaDuplicateVertices;
     std::vector<std::unordered_map<std::size_t, std::size_t> > areaVertexIndices;
     std::vector<float> areaUniqueVertices;
-    std::size_t globalNumVertices = 0;
     for (auto chunkIt = chunks.begin(); chunkIt != chunks.end(); ++chunkIt)
     {
         MeshBufferPtr chunk = chunkIt->second;
         FloatChannel chunkVertices = *(chunk->getChannel<float>("vertices"));
         std::size_t numDuplicates = *chunk->getAtomic<unsigned int>("num_duplicates");
         std::size_t numVertices = chunk->numVertices();
-        std::cout << "vertices per chunk: " << numVertices << std::endl;
-        globalNumVertices += numVertices;
-        std::cout << "global num of vertices: " << globalNumVertices << std::endl;
         std::unordered_map<std::size_t, std::size_t> chunkVertexIndices;
 
         if (numVertices == 0)
@@ -125,7 +115,6 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
 
         if ((chunkIt == chunks.begin() || areaDuplicateVertices.empty()) && numDuplicates > 0)
         {
-            std::cout << "add Duplicates" << std::endl;
             areaDuplicateVertices.insert(areaDuplicateVertices.end(),
                                   chunkVertices.dataPtr().get(),
                                   chunkVertices.dataPtr().get() + (numDuplicates * 3));
@@ -135,7 +124,6 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
         {
             const size_t areaDuplicateVerticesSize = areaDuplicateVertices.size();
 
-            // TODO: get and compare duplicate vertices
             bool found = false;
             for (std::size_t j = 0; j < areaDuplicateVerticesSize / 3; ++j)
             {
@@ -184,14 +172,10 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
             auto it = (*areaVertexIndicesIt).find(oldIndex);
             if(it != (*areaVertexIndicesIt).end())
             {
-//                std::cout << "map" << std::endl;
-                // TODO: use map entry
                 areaFaceIndices.push_back(it->second);
             }
             else
             {
-//                std::cout << "offset" << std::endl;
-                // TODO: add offset
                 areaFaceIndices.push_back(oldIndex + faceIndexOffset);
             }
         }
