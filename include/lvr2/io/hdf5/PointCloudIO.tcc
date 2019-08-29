@@ -66,6 +66,7 @@ PointBufferPtr PointCloudIO<Derived>::load(HighFive::Group& group)
             // name is dataset
             boost::optional<PointBuffer::val_type> opt_vchannel
                  = m_vchannel_io->template load<PointBuffer::val_type>(group, name);
+            
             if(opt_vchannel)
             {
                 if(!ret)
