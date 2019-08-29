@@ -17,11 +17,11 @@
 #include "lvr2/io/hdf5/ChannelIO.hpp"
 #include "lvr2/io/hdf5/PointCloudIO.hpp"
 #include "lvr2/io/hdf5/VariantChannelIO.hpp"
+#include "lvr2/io/hdf5/MatrixIO.hpp"
 
-#include "lvr2/io/PointBuffer.hpp"
 
 #include "lvr2/types/VariantChannel.hpp"
-
+#include "lvr2/types/MatrixTypes.hpp"
 
 
 /////////////////////
@@ -140,7 +140,8 @@ void hdf5io_usage_example()
         lvr2::hdf5features::ArrayIO,
         lvr2::hdf5features::ChannelIO,
         lvr2::hdf5features::VariantChannelIO,
-        lvr2::hdf5features::PointCloudIO
+        lvr2::hdf5features::PointCloudIO,
+        lvr2::hdf5features::MatrixIO
     >;
 
     MyHDF5IO my_io;
@@ -209,6 +210,26 @@ void hdf5io_usage_example()
     }
 
     my_io.save("apointcloud", "points2", *ovchannel);
+
+    /////////////////////////////////
+    // 5) Eigen IO
+    /////////////////////////////////
+
+    lvr2::Transformd T = lvr2::Transformd::Identity();
+
+    std::cout << "saving matrix:" << std::endl;
+    std::cout << T << std::endl;
+
+    my_io.save("matrices", "amatrix", T);
+
+    auto T2 = my_io.MatrixIO::template load<lvr2::Transformd>("matrices", "amatrix");
+    if(T2)
+    {
+        std::cout << "succesfully loaded Matrix:" << std::endl;
+        std::cout << *T2 << std::endl;
+    } else {
+        std::cout << "could not load matrix!" << std::endl;
+    }
 }
 
 int main(int argc, char** argv)
