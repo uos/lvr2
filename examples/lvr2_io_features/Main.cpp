@@ -192,7 +192,6 @@ void hdf5io_usage_example()
         std::cout << "PointCloudIO read failed" << std::endl;
     }
     
-
     /////////////////////////////////
     // 4) VariantChannelIO Example //
     /////////////////////////////////
@@ -203,7 +202,8 @@ void hdf5io_usage_example()
         = my_io.loadVariantChannel<VChannel>("apointcloud","points");
     
     if(ovchannel) {
-        std::cout << *ovchannel << std::endl;
+        VChannel vchannel = *ovchannel;
+        std::cout << "succesfully read VariantChannel: " << vchannel << std::endl;
     } else {
         std::cout << "could not load point from group apointcloud" << std::endl;
     }
