@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <memory>
 #include <tuple>
@@ -7,6 +8,9 @@
 
 #include <boost/optional.hpp>
 #include <boost/preprocessor/stringize.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 // lvr2 includes
 #include "lvr2/registration/TransformUtils.hpp"
@@ -18,75 +22,28 @@
 #include "lvr2/io/hdf5/PointCloudIO.hpp"
 #include "lvr2/io/hdf5/VariantChannelIO.hpp"
 #include "lvr2/io/hdf5/MatrixIO.hpp"
+#include "lvr2/io/hdf5/ImageIO.hpp"
 
 
 #include "lvr2/types/VariantChannel.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 
-
-/////////////////////
-/// USEFUL EXTRA METHODS
-//////////////////////
-
-// https://www.fluentcpp.com/2018/08/28/removing-duplicates-crtp-base-classes/
-// template<typename Derived, template<typename> typename ... Features>
-// struct ExtraFeatures : Features<Derived>...
-// { };
-
-
-namespace lvr2 {
-
-
-template<typename Derived,
-         template<typename> typename ToCheck,
-         template<typename> typename Current,
-         template<typename> typename ... Features>
-constexpr bool HasFeature()
+cv::Mat generate_image()
 {
-  if constexpr( std::is_same<ToCheck<Derived>,Current<Derived>>::value )
-    return true;
-  else if constexpr( sizeof...(Features) == 0 )
-    return false;
-  else
-    return HasFeature<Derived,ToCheck,Features...>();
+    cv::Mat img(500, 500, CV_8UC3, cv::Scalar(239,234,224));
+
+    // outter lines
+    cv::line(img, cv::Point(250, 50), cv::Point(450, 450), cv::Scalar(0, 0, 0), 3, CV_AA );
+    cv::line(img, cv::Point(250, 50), cv::Point(50, 450), cv::Scalar(0, 0, 0), 3, CV_AA );
+    cv::line(img, cv::Point(50, 450), cv::Point(450, 450), cv::Scalar(0, 0, 0), 3, CV_AA );
+
+    // inner lines
+    cv::line(img, cv::Point(150, 250), cv::Point(350, 250), cv::Scalar(0, 0, 0), 3, CV_AA );
+    cv::line(img, cv::Point(150, 250), cv::Point(250, 450), cv::Scalar(0, 0, 0), 3, CV_AA );
+    cv::line(img, cv::Point(350, 250), cv::Point(250, 450), cv::Scalar(0, 0, 0), 3, CV_AA );
+
+    return img;
 }
-
-
-template<typename ...>
-struct JoinTwoHdf5IO;
-
-template<template<typename> typename Feature,
-         template<typename> typename ... Features1,
-         template<typename> typename ... Features2>
-struct JoinTwoHdf5IO<
-    Hdf5IO<Features1...>,
-    Hdf5IO<Feature,Features2...>
-  >
-{
-  using type= typename
-    std::conditional<
-      HasFeature<Hdf5IO,Feature,Features1...>(),
-      typename JoinTwoHdf5IO<
-        Hdf5IO<Features1...>,
-        Hdf5IO<Features2...>
-      >::type,
-      typename JoinTwoHdf5IO<
-        Hdf5IO<Features1...,Feature>,
-        Hdf5IO<Features2...>
-      >::type
-    >::type;
-};
-
-template<template<typename> typename ... Features1>
-struct JoinTwoHdf5IO<
-    Hdf5IO<Features1...>
-  >
-{
-  using type= Hdf5IO<Features1...>;
-};
-
-
-} // namespace lvr2
 
 void hdf5io_gen_example()
 {
@@ -141,7 +98,8 @@ void hdf5io_usage_example()
         lvr2::hdf5features::ChannelIO,
         lvr2::hdf5features::VariantChannelIO,
         lvr2::hdf5features::PointCloudIO,
-        lvr2::hdf5features::MatrixIO
+        lvr2::hdf5features::MatrixIO,
+        lvr2::hdf5features::ImageIO
     >;
 
     MyHDF5IO my_io;
@@ -211,9 +169,9 @@ void hdf5io_usage_example()
 
     my_io.save("apointcloud", "points2", *ovchannel);
 
-    /////////////////////////////////
-    // 5) Eigen IO
-    /////////////////////////////////
+    //////////////////
+    // 5) Matrix IO //
+    //////////////////
 
     lvr2::Transformd T = lvr2::Transformd::Identity();
 
@@ -230,12 +188,67 @@ void hdf5io_usage_example()
     } else {
         std::cout << "could not load matrix!" << std::endl;
     }
+
+    /////////////////
+    // 5) Image IO //
+    /////////////////
+
+    
+
+    
+
+    
+    // FALLBACK
+    cv::Mat a = (cv::Mat_<float>(3,3) << 0, -1, 0, -1, 5, -1, 0, -1, 0);
+    my_io.save("images", "fallback", a);
+    boost::optional<cv::Mat> mat_loaded = my_io.ImageIO::load("images","fallback");
+
+    if(mat_loaded)
+    {
+        cv::Mat fb_mat = *mat_loaded;
+        std::cout << a << std::endl;
+        std::cout << fb_mat << std::endl;
+    } else {
+        std::cout << "fallback doesnt work" << std::endl;
+    }
+
+    cv::Mat b = cv::Mat::zeros(50, 50, CV_16SC4);
+    my_io.save("images", "fallback2", b);
+
+    cv::Mat c = *my_io.ImageIO::load("images","fallback2");
+
+    if(b.type() == c.type())
+    {
+        std::cout << "fallback success" << std::endl;
+    }
+
+    // RGB
+    cv::Mat image = generate_image();
+    // cv::imshow("example image",image);
+    // cv::waitKey(0);
+
+    my_io.save("images", "image", image);
+    boost::optional<cv::Mat> image_loaded = my_io.ImageIO::load("images","image");
+
+    if(image_loaded)
+    {
+        cv::imshow("loaded image", *image_loaded);
+        cv::waitKey(0);
+    } else {
+        std::cout << "could not load image from hdf5 file." << std::endl;
+    }
+
+    // GRAYSCALE
+    cv::Mat image_gray;
+    cv::cvtColor(image, image_gray, cv::COLOR_BGR2GRAY);
+    my_io.save("images", "image_gray", image_gray);
+    boost::optional<cv::Mat> image_gray_loaded = my_io.ImageIO::load("images","image_gray");
+
 }
 
 int main(int argc, char** argv)
 {
     hdf5io_gen_example();
     hdf5io_usage_example();
-
     return 0;
 }
