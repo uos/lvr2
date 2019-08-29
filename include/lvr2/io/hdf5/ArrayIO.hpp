@@ -9,6 +9,13 @@ namespace hdf5features {
 template<typename Derived>
 class ArrayIO {
 public:
+
+    template<typename T>
+    boost::shared_array<T> loadArray(
+        std::string groupName,
+        std::string datasetName,
+        size_t& size);
+
     template<typename T>
     boost::shared_array<T> load(
         std::string groupName,
@@ -27,7 +34,6 @@ public:
         std::string datasetName,
         std::vector<size_t>& dim
     );
-
 
     template<typename T>
     void save(

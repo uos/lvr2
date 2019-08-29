@@ -17,40 +17,10 @@ void PointCloudIO<Derived>::save(std::string name, const PointBufferPtr& buffer)
 template<typename Derived>
 void PointCloudIO<Derived>::save(HighFive::Group& group, const PointBufferPtr& buffer)
 {
-    std::cout << "[Hdf5IO - PointCloudIO] save" << std::endl;
-
-    for(auto it = buffer->typedBegin< char >(); it != buffer->end(); ++it) {
-        m_channel_io->save(group, it->first, it->second);
+    for(auto elem : *buffer)
+    {
+        m_vchannel_io->save(group, elem.first, elem.second);
     }
-
-    for(auto it = buffer->typedBegin< unsigned char >(); it != buffer->end(); ++it){
-        m_channel_io->save(group, it->first, it->second);
-    }
-
-    for(auto it = buffer->typedBegin< short >(); it != buffer->end(); ++it){
-        m_channel_io->save(group, it->first, it->second);
-    }
-
-    for(auto it = buffer->typedBegin< unsigned short >(); it != buffer->end(); ++it){
-        m_channel_io->save(group, it->first, it->second);
-    }
-
-    for(auto it = buffer->typedBegin< int >(); it != buffer->end(); ++it){
-        m_channel_io->save(group, it->first, it->second);
-    }
-
-    for(auto it = buffer->typedBegin< unsigned int >(); it != buffer->end(); ++it){
-        m_channel_io->save(group, it->first, it->second);
-    }
-
-    for(auto it = buffer->typedBegin< float >(); it != buffer->end(); ++it){
-        m_channel_io->save(group, it->first, it->second);
-    }
-
-    for(auto it = buffer->typedBegin< double >(); it != buffer->end(); ++it){
-        m_channel_io->save(group, it->first, it->second);
-    }
-
 }
 
 
@@ -63,64 +33,21 @@ PointBufferPtr PointCloudIO<Derived>::load(std::string name)
     {
         HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name, false);
         ret = load(g);
-
     } 
 
     return ret;
 }
 
-// R == 0
-template<typename Derived, int R, typename std::enable_if<R == 0, void>::type* = nullptr>
-PointBuffer::val_type loadChannel(
-    HighFive::DataType dtype,
-    ChannelIO<Derived>* channel_io,
-    HighFive::Group& group,
-    std::string name)
-{
-    if(dtype == HighFive::AtomicType<PointBuffer::type_of_index<R> >())
-    {
-        PointBuffer::val_type ret;
-        ret = *channel_io->template load<PointBuffer::type_of_index<R> >(group, name);
-        return ret;
-    } else {
-        return PointBuffer::val_type();
-    }
-}
-
-// R != 0
-template<typename Derived, int R, typename std::enable_if<R != 0, void>::type* = nullptr>
-PointBuffer::val_type loadChannel(
-    HighFive::DataType dtype,
-    ChannelIO<Derived>* channel_io,
-    HighFive::Group& group,
-    std::string name)
-{
-    if(dtype == HighFive::AtomicType<PointBuffer::type_of_index<R> >())
-    {
-        PointBuffer::val_type ret;
-        ret = *channel_io->template load<PointBuffer::type_of_index<R> >(group, name);
-        return ret;
-    } else {
-        return loadChannel<Derived, R-1>(dtype, channel_io, group, name);
-    }
-}
-
-
 template<typename Derived>
-PointBuffer::val_type PointCloudIO<Derived>::loadDynamic(
-    HighFive::DataType dtype,
-    HighFive::Group& group,
-    std::string name)
+PointBufferPtr PointCloudIO<Derived>::loadPointCloud(std::string name)
 {
-    return loadChannel<Derived, PointBuffer::num_types-1>(dtype, m_channel_io, group, name);
+    return load(name);
 }
 
 template<typename Derived>
 PointBufferPtr PointCloudIO<Derived>::load(HighFive::Group& group)
 {
-    std::cout << "[Hdf5IO - PointCloudIO] load" << std::endl;
     PointBufferPtr ret;
-
 
     for(auto name : group.listObjectNames() )
     {
@@ -136,15 +63,21 @@ PointBufferPtr PointCloudIO<Derived>::load(HighFive::Group& group)
 
         if(dataset)
         {
-            if(!ret)
-            {
-                ret.reset(new PointBuffer);
-            }
             // name is dataset
-            ret->insert({
-                name,
-                loadDynamic(dataset->getDataType(), group, name)
-            });
+            boost::optional<PointBuffer::val_type> opt_vchannel
+                 = m_vchannel_io->template load<PointBuffer::val_type>(group, name);
+            if(opt_vchannel)
+            {
+                if(!ret)
+                {
+                    ret.reset(new PointBuffer);
+                }
+                ret->insert({
+                    name,
+                    *opt_vchannel
+                });
+            }
+            
         }
 
     }

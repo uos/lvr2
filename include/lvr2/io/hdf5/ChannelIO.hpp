@@ -24,6 +24,10 @@ public:
     );
 
     template<typename T>
+    ChannelOptional<T> loadChannel(std::string groupName,
+        std::string datasetName);
+
+    template<typename T>
     void save(std::string groupName,
         std::string datasetName,
         const Channel<T>& channel);

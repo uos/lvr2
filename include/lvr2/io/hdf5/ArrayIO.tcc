@@ -4,12 +4,21 @@ namespace hdf5features {
 
 template<typename Derived>
 template<typename T>
+boost::shared_array<T> ArrayIO<Derived>::loadArray(
+    std::string groupName,
+    std::string datasetName,
+    size_t& size)
+{
+    return load<T>(groupName, datasetName, size);
+}
+
+template<typename Derived>
+template<typename T>
 boost::shared_array<T> ArrayIO<Derived>::load(
     std::string groupName,
     std::string datasetName,
     size_t& size)
 {
-    std::cout << "[ArrayIO] load" << std::endl;
     boost::shared_array<T> ret;
 
     HighFive::Group g = hdf5util::getGroup(
@@ -35,8 +44,6 @@ boost::shared_array<T> ArrayIO<Derived>::load(
     std::string datasetName,
     std::vector<size_t>& dim)
 {
-    std::cout << "[ArrayIO] load" << std::endl;
-    
     HighFive::Group g = hdf5util::getGroup(
         m_file_access->m_hdf5_file,
         groupName,
@@ -53,7 +60,6 @@ boost::shared_array<T> ArrayIO<Derived>::load(
     std::string datasetName,
     std::vector<size_t>& dim)
 {
-    std::cout << "[ArrayIO] load" << std::endl;
     boost::shared_array<T> ret;
     
     if(m_file_access->m_hdf5_file && m_file_access->m_hdf5_file->isValid())
@@ -170,7 +176,6 @@ void ArrayIO<Derived>::save(HighFive::Group& g,
         const T* ptr = data.get();
         dataset->write(ptr);
         m_file_access->m_hdf5_file->flush();
-        std::cout << timestamp << " Wrote " << datasetName << " to HDF5 file." << std::endl;
     } else {
         throw std::runtime_error("[Hdf5 - ArrayIO]: Hdf5 file not open.");
     }
