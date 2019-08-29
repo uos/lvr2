@@ -123,40 +123,38 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
             continue;
         }
 
-        if (chunkIt == chunks.begin() || areaDuplicateVertices.empty())
+        if ((chunkIt == chunks.begin() || areaDuplicateVertices.empty()) && numDuplicates > 0)
         {
             std::cout << "add Duplicates" << std::endl;
             areaDuplicateVertices.insert(areaDuplicateVertices.end(),
                                   chunkVertices.dataPtr().get(),
                                   chunkVertices.dataPtr().get() + (numDuplicates * 3));
         }
-        else
+
+        for (std::size_t i = 0; i < numDuplicates; ++i)
         {
-            for (std::size_t i = 0; i < numDuplicates; ++i)
+            const size_t areaDuplicateVerticesSize = areaDuplicateVertices.size();
+
+            // TODO: get and compare duplicate vertices
+            bool found = false;
+            for (std::size_t j = 0; j < areaDuplicateVerticesSize / 3; ++j)
             {
-                const size_t areaDuplicateVerticesSize = areaDuplicateVertices.size();
-
-                // TODO: get and compare duplicate vertices
-                bool found = false;
-                for (std::size_t j = 0; j < areaDuplicateVerticesSize / 3; ++j)
+                if ((areaDuplicateVertices[j * 3] == chunkVertices[i][0]) &&
+                    (areaDuplicateVertices[j * 3 + 1] == chunkVertices[i][1]) &&
+                    (areaDuplicateVertices[j * 3 + 2] == chunkVertices[i][2]))
                 {
-                    if ((areaDuplicateVertices[j * 3] == chunkVertices[i][0]) &&
-                        (areaDuplicateVertices[j * 3 + 1] == chunkVertices[i][1]) &&
-                        (areaDuplicateVertices[j * 3 + 2] == chunkVertices[i][2]))
-                    {
-                        found = true;
-                        chunkVertexIndices.insert({i, j});
-                        break;
-                    }
+                    found = true;
+                    chunkVertexIndices.insert({i, j});
+                    break;
                 }
+            }
 
-                if (!found) {
-                    areaDuplicateVertices.push_back(chunkVertices[i][0]);
-                    areaDuplicateVertices.push_back(chunkVertices[i][1]);
-                    areaDuplicateVertices.push_back(chunkVertices[i][2]);
+            if (!found) {
+                areaDuplicateVertices.push_back(chunkVertices[i][0]);
+                areaDuplicateVertices.push_back(chunkVertices[i][1]);
+                areaDuplicateVertices.push_back(chunkVertices[i][2]);
 
-                    chunkVertexIndices.insert({i, areaDuplicateVertices.size() / 3 - 1});
-                }
+                chunkVertexIndices.insert({i, areaDuplicateVertices.size() / 3 - 1});
             }
         }
 
