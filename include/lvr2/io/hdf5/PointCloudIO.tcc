@@ -17,6 +17,11 @@ void PointCloudIO<Derived>::save(std::string name, const PointBufferPtr& buffer)
 template<typename Derived>
 void PointCloudIO<Derived>::save(HighFive::Group& group, const PointBufferPtr& buffer)
 {
+    std::string id(PointCloudIO<Derived>::ID);
+    std::string obj(PointCloudIO<Derived>::OBJID);
+    hdf5util::setAttribute(group, "IO", id);
+    hdf5util::setAttribute(group, "CLASS", obj);
+
     for(auto elem : *buffer)
     {
         m_vchannel_io->save(group, elem.first, elem.second);
@@ -48,6 +53,13 @@ template<typename Derived>
 PointBufferPtr PointCloudIO<Derived>::load(HighFive::Group& group)
 {
     PointBufferPtr ret;
+
+    // check if flags are correct
+    if(!isPointCloud(group) )
+    {
+        std::cout << "[Hdf5IO - PointCloudIO] WARNING: flags of " << group.getId() << " are not correct." << std::endl;
+        return ret;
+    }
 
     for(auto name : group.listObjectNames() )
     {
@@ -84,6 +96,16 @@ PointBufferPtr PointCloudIO<Derived>::load(HighFive::Group& group)
     }
 
     return ret;
+}
+
+template<typename Derived>
+bool PointCloudIO<Derived>::isPointCloud(
+    HighFive::Group& group)
+{
+    std::string id(PointCloudIO<Derived>::ID);
+    std::string obj(PointCloudIO<Derived>::OBJID);
+    return hdf5util::checkAttribute(group, "IO", id)
+        && hdf5util::checkAttribute(group, "CLASS", obj);
 }
 
 } // hdf5features

@@ -187,7 +187,6 @@ static bool exist(
                   << groupName << "': " << std::endl;
         std::cout << e.what() << std::endl;
         throw e;
-
     }
 
     return true;
@@ -264,6 +263,67 @@ std::unique_ptr<HighFive::DataSet> createDataset(
     }
 
     return std::move(dataset);
+}
+
+template<typename T>
+void setAttribute(HighFive::Group& g,
+    const std::string& attr_name,
+    T& data)
+{
+    bool use_existing_attribute = false;
+    bool overwrite = false;
+
+    if(g.hasAttribute(attr_name))
+    {
+        // check if attribute is the same
+        HighFive::Attribute attr = g.getAttribute(attr_name);
+        if(attr.getDataType() == HighFive::AtomicType<T>() )
+        {
+            T value;
+            attr.read(value);
+
+            use_existing_attribute = true;
+            if(value != data)
+            {
+                overwrite = true;
+            }
+        }
+    }
+
+    if(!use_existing_attribute) {
+        g.createAttribute<T>(attr_name, data);
+    } else if(overwrite) {
+        g.getAttribute(attr_name).write<T>(data);
+    }
+}
+
+template<typename T>
+bool checkAttribute(HighFive::Group& g,
+    const std::string& attr_name,
+    T& data)
+{
+    // check if attribute exists
+    if(!g.hasAttribute(attr_name))
+    {
+        return false;
+    }
+
+    // check if attribute type is the same
+    HighFive::Attribute attr = g.getAttribute(attr_name);
+    if(attr.getDataType() != HighFive::AtomicType<T>() )
+    {
+        return false;
+    }
+
+    // check if attribute value is the same
+    T value;
+    attr.read(value);
+    if(value != data)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 } // namespace hdf5util
