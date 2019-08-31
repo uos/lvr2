@@ -15,6 +15,34 @@ namespace lvr2 {
 
 namespace hdf5features {
 
+/**
+ * @class MeshIO 
+ * @brief Hdf5IO Feature for handling MeshBuffer related IO
+ * 
+ * This Feature of the Hdf5IO handles the IO of a MeshBuffer object.
+ * 
+ * Example:
+ * @code
+ * MyHdf5IO io;
+ * MeshBufferPtr mesh, mesh_in;
+ * 
+ * // writing
+ * io.open("test.h5");
+ * io.save("amesh", mesh);
+ * 
+ * // reading
+ * mesh_in = io.loadMesh("amesh");
+ * 
+ * @endcode
+ * 
+ * Generates attributes at hdf5 group:
+ * - IO: MeshIO
+ * - CLASS: MeshBuffer
+ * 
+ * Dependencies:
+ * - VariantChannelIO
+ * 
+ */
 template<typename Derived>
 class MeshIO {
 public:
