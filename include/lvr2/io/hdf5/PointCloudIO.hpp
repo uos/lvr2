@@ -27,9 +27,14 @@ public:
 
 protected:
 
+    bool isPointCloud(HighFive::Group& group);
+
     Derived* m_file_access = static_cast<Derived*>(this);
     // dependencies
     VariantChannelIO<Derived>* m_vchannel_io = static_cast<VariantChannelIO<Derived>*>(m_file_access);
+
+    static constexpr char* ID = "PointCloudIO";
+    static constexpr char* OBJID = "PointBuffer";
 };
 
 
