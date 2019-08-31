@@ -15,6 +15,34 @@ namespace lvr2 {
 
 namespace hdf5features {
 
+/**
+ * @class PointCloudIO 
+ * @brief Hdf5IO Feature for handling PointBuffer related IO
+ * 
+ * This Feature of the Hdf5IO handles the IO of a PointBuffer object.
+ * 
+ * Example:
+ * @code
+ * MyHdf5IO io;
+ * PointBufferPtr pointcloud, pointcloud_in;
+ * 
+ * // writing
+ * io.open("test.h5");
+ * io.save("apointcloud", pointcloud);
+ * 
+ * // reading
+ * pointcloud_in = io.loadPointCloud("apointcloud");
+ * 
+ * @endcode
+ * 
+ * Generates attributes at hdf5 group:
+ * - IO: PointCloudIO
+ * - CLASS: PointBuffer
+ * 
+ * Dependencies:
+ * - VariantChannelIO
+ * 
+ */
 template<typename Derived>
 class PointCloudIO {
 public:

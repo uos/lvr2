@@ -8,6 +8,39 @@ namespace lvr2 {
 
 namespace hdf5features {
 
+/**
+ * @class VariantChannelIO 
+ * @brief Hdf5IO Feature for handling VariantChannel related IO
+ * 
+ * This Feature of the Hdf5IO handles the IO of a VariantChannel object.
+ * 
+ * Example:
+ * @code
+ * 
+ * MyHdf5IO io;
+ * 
+ * // example data
+ * using MultiChannel = VariantChannel<float, char, int>;
+ * MultiChannel vchannel, vchannel_in;
+ * Channel<float> samples(100,100);
+ * vchannel = samples;
+ * 
+ * // writing
+ * io.open("test.h5");
+ * io.save("avariantchannel", vchannel);
+ * 
+ * // reading
+ * vchannel_in = *io.loadVariantChannel<MultiChannel>("avariantchannel");
+ * 
+ * // if the type is known you can also load via ChannelIO
+ * vchannel_in = *io.loadChannel<float>("avariantchannel");
+ * 
+ * @endcode
+ * 
+ * Dependencies:
+ * - ChannelIO
+ * 
+ */
 template<typename Derived>
 class VariantChannelIO {
 public:
