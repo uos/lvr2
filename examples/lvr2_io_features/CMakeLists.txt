@@ -2,20 +2,21 @@
 # Package includes
 #####################################################################################
 
-find_package(OPENCL)
-if(OPENCL_FOUND)
 
 #####################################################################################
 # Add executable
 #####################################################################################
-add_executable(lvr2_example_raycaster_test
+include_directories(.)
+
+add_executable(lvr2_example_io_features
     Main.cpp
 )
 
-target_link_libraries(lvr2_example_raycaster_test
+target_link_libraries(lvr2_example_io_features
     lvr2_static
-    ${OpenCL_LIBRARIES}
 )
-else()
-message(WARNING "Could not compile lvr2_example_raycaster_test. OpenCL not found.")
-endif()
+
+set_target_properties(lvr2_example_io_features PROPERTIES
+    CXX_STANDARD 17
+    CXX_EXTENSIONS OFF
+)
