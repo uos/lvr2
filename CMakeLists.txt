@@ -71,6 +71,7 @@ if(NOT APPLE)
 find_package( CUDA 8)
 if(CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_CUDA)
 endif(CUDA_FOUND)
 endif(NOT APPLE)
 
@@ -126,9 +127,10 @@ endif(MPI_FOUND)
 ###
 ## Searching for OpenCl
 ##############################
-find_package(OpenCL)
+find_package(OPENCL)
 if(OPENCL_FOUND)
     include_directories(OPENCL_INCLUDE_DIR)
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPENCL)
 endif()
 
 ####
@@ -382,14 +384,14 @@ option(WITH_KINFU "Compile LVR Kinfu" OFF)
 # compatible to gcc4.8. Older CUDA versions require GCC lower
 # than 4.8
 
-if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VERSION_GREATER 8)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7 )
+if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VERSION_GREATER 8 AND CUDA_VERSION VERSION_LESS 10)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5 )
         message(STATUS "******************************************************************")
         message(STATUS "* Your gcc version needs to be lower than 6 to compile the LVR   *")
         message(STATUS "* CUDA library and apps with CUDA. Setting CUDA_HOST_COMPILER to *")
         message(STATUS "* g++-6*. Please ensure that g++ 6 is installed on your system.  *")
         message(STATUS "******************************************************************")
-        set(CUDA_HOST_COMPILER "g++-6" CACHE STRING "" FORCE)
+        set(CUDA_HOST_COMPILER "g++-5" CACHE STRING "" FORCE)
         endif()
 endif()
 

@@ -435,6 +435,29 @@ std::vector<ScanData> HDF5IO::getRawScanData(bool load_points)
 
 }
 
+
+
+// template<template<typename Base> typename ...ComponentTs>
+// class Hdf5IO;
+
+
+// template<template<typename Base> typename ComponentT>
+// class Hdf5IO<ComponentT<Hdf5IO<ComponentT> > > : public ComponentT<Hdf5IO<ComponentT> >, public BaseHdf5IO
+// {
+// public:
+//     using ComponentT<Hdf5IO<ComponentT> >::save;
+// };
+
+// // template<template<typename Base> typename ...ComponentT >
+// template<template<typename Base1> typename ComponentT, template<typename Base2> typename ...ComponentTs >
+// class Hdf5IO<ComponentT<Hdf5IO<ComponentT> >, ComponentTs<Hdf5IO<ComponentTs...> >...> 
+// : public ComponentT<Hdf5IO<ComponentT> >, public Hdf5IO<ComponentTs<Hdf5IO<ComponentTs...> >...>
+// {
+// public:
+//     using ComponentT<Hdf5IO<ComponentT> >::save;
+//     using Hdf5IO<ComponentTs<Hdf5IO<ComponentTs...> >...>::save;
+// };
+
 std::vector<std::vector<CameraData> > HDF5IO::getRawCamData(bool load_image_data)
 {
     std::vector<std::vector<CameraData> > ret;
@@ -595,12 +618,12 @@ CameraData HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_
         
         if(intrinsics_arr)
         {
-            ret.intrinsics = Transformd(intrinsics_arr.get());
+            ret.intrinsics = Intrinsicsd(intrinsics_arr.get());
         }
 
         if(extrinsics_arr)
         {
-            ret.extrinsics = Transformd(extrinsics_arr.get());
+            ret.extrinsics = Extrinsicsd(extrinsics_arr.get());
         }
 
         if(load_image_data)
@@ -925,12 +948,12 @@ void HDF5IO::addRawCamData( int scan_id, int img_id, CameraData& cam_data )
         }
         
         // add image to scan_image_group
-        floatArr intrinsics_arr(new float[16]);
-        Eigen::Map<Eigen::Matrix<float, 4, 4, Eigen::RowMajor>>(intrinsics_arr.get()) = cam_data.intrinsics.cast<float>();
+        doubleArr intrinsics_arr(new double[16]);
+        Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>>(intrinsics_arr.get()) = cam_data.intrinsics;
 
 
-        floatArr extrinsics_arr(new float[16]);
-        Eigen::Map<Eigen::Matrix<float, 4, 4, Eigen::RowMajor>>(extrinsics_arr.get()) = cam_data.extrinsics.cast<float>();
+        doubleArr extrinsics_arr(new double[16]);
+        Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>>(extrinsics_arr.get()) = cam_data.extrinsics;
 
         std::vector<size_t> dim = {4,4};
 
