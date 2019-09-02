@@ -278,7 +278,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             {
                 BaseVecT nearest = pts[nearestPoseIds[0]];
                 Normal<typename BaseVecT::CoordType> dir(queryPoint - nearest);
-                if(normal.dot(dir) > 0)
+                if(normal.dot(dir) < 0)
                 {
                     normal = -normal;
                 }
@@ -287,7 +287,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             {
                 cout << timestamp.getElapsedTime() << "Could not get nearest scan pose. Defaulting to centroid." << endl;
                 Normal<typename BaseVecT::CoordType> dir(queryPoint - m_centroid);
-                if(normal.dot(dir) > 0)
+                if(normal.dot(dir) < 0)
                 {
                     normal = -normal;
                 }
@@ -296,7 +296,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         else
         {
             Normal<typename BaseVecT::CoordType> dir(queryPoint - m_centroid);
-            if(normal.dot(dir) > 0)
+            if(normal.dot(dir) < 0)
             {
                 normal = -normal;
             }
@@ -336,37 +336,36 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
 
     // Interpolate normals
     #pragma omp parallel for schedule(static)
-    for( int i = 0; i < (int)numPoints; i++){
-
+    for( int i = 0; i < (int)numPoints; i++)
+    {
         vector<size_t> id;
         vector<float> di;
 
         this->m_searchTree->kSearch(pts[i], this->m_ki, id, di);
 
-        BaseVecT mean;
-
+        BaseVecT mean = normals[i];
         for(int j = 0; j < this->m_ki; j++)
         {
             mean += normals[id[j]];
         }
         auto mean_normal = mean.normalized();
-
         tmp[i] = mean_normal;
 
         ///todo Try to remove this code. Should improve the results at all.
-        for(int j = 0; j < this->m_ki; j++)
-        {
-            Normal<typename BaseVecT::CoordType> n = normals[id[j]];
+        // TODO check this
+        // for(int j = 0; j < this->m_ki; j++)
+        // {
+        //     Normal<typename BaseVecT::CoordType> n = normals[id[j]];
 
-            // Only override existing normals if the interpolated
-            // normals is significantly different from the initial
-            // estimation. This helps to avoid a too smooth normal
-            // field
-            if(fabs(n.dot(mean_normal)) > 0.2 )
-            {
-                normals[id[j]] = mean_normal;
-            }
-        }
+        //     // Only override existing normals if the interpolated
+        //     // normals is significantly different from the initial
+        //     // estimation. This helps to avoid a too smooth normal
+        //     // field
+        //     if(fabs(n.dot(mean_normal)) > 0.2 )
+        //     {
+        //         normals[id[j]] = mean_normal;
+        //     }
+        // }
         ++progress;
     }
     cout << endl;
