@@ -59,7 +59,7 @@ Normal<float> PointsetSurface<BaseVecT>::getInterpolatedNormal(const BaseVecT& p
     m_searchTree->kSearch(position, m_ki, indices);
     for (int i = 0; i < m_ki; i++)
     {
-        Normal<float> n = (*normals)[i];
+        Normal<float> n = (*normals)[indices[i]];
         result += n;
     }
     result /= m_ki;
