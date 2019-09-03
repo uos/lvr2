@@ -135,8 +135,6 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
          cout << timestamp << "Creating pose search tree(" << m_searchTreeName << ") with "
               << n << " poses." << endl;
 
-
-
          this->m_poseTree = getSearchTree<BaseVecT>(m_searchTreeName, loader);
 
 
@@ -352,20 +350,19 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
         tmp[i] = mean_normal;
 
         ///todo Try to remove this code. Should improve the results at all.
-        // TODO check this
-        // for(int j = 0; j < this->m_ki; j++)
-        // {
-        //     Normal<typename BaseVecT::CoordType> n = normals[id[j]];
+        for(int j = 0; j < this->m_ki; j++)
+        {
+            Normal<typename BaseVecT::CoordType> n = normals[id[j]];
 
-        //     // Only override existing normals if the interpolated
-        //     // normals is significantly different from the initial
-        //     // estimation. This helps to avoid a too smooth normal
-        //     // field
-        //     if(fabs(n.dot(mean_normal)) > 0.2 )
-        //     {
-        //         normals[id[j]] = mean_normal;
-        //     }
-        // }
+            // Only override existing normals if the interpolated
+            // normals is significantly different from the initial
+            // estimation. This helps to avoid a too smooth normal
+            // field
+            if(fabs(n.dot(mean_normal)) > 0.2 )
+            {
+                normals[id[j]] = mean_normal;
+            }
+        }
         ++progress;
     }
     cout << endl;
