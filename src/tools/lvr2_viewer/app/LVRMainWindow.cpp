@@ -930,26 +930,16 @@ LVRModelItem* LVRMainWindow::loadModelItem(QString name)
 
     // Read Pose file
     boost::filesystem::path poseFile = name.toStdString();
-    poseFile.replace_extension("pose");
-    if (boost::filesystem::exists(poseFile))
+
+    for (auto& extension : { "pose", "dat", "frames" })
     {
-        cout << "Found Pose file: " << poseFile << endl;
-        ifstream in;
-        in.open(poseFile.string());
-        lvr2::Pose pose;
-        in >> pose.x >> pose.y >> pose.z;
-        in >> pose.r >> pose.t >> pose.p;
-        item->setPose(pose);
-    }
-    else
-    {
-        poseFile.replace_extension("dat");
+        poseFile.replace_extension(extension);
         if (boost::filesystem::exists(poseFile))
         {
             cout << "Found Pose file: " << poseFile << endl;
-            Transformf mat = getTransformationFromPose<float>(poseFile).transpose();
+            Transformf mat = getTransformationFromFile<float>(poseFile);
             BaseVector<float> pos, angles;
-            getPoseFromMatrix<float>(pos, angles, mat);
+            getPoseFromMatrix<float>(pos, angles, mat.transpose());
 
             angles *= 180.0 / M_PI; // radians -> degrees
 
@@ -957,6 +947,8 @@ LVRModelItem* LVRMainWindow::loadModelItem(QString name)
                 pos.x, pos.y, pos.z,
                 angles.x, angles.y, angles.z
             });
+
+            break;
         }
     }
     return item;
