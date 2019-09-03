@@ -10,6 +10,7 @@
 // Dependencies
 #include "ChannelIO.hpp"
 #include "VariantChannelIO.hpp"
+#include "ArrayIO.hpp"
 
 namespace lvr2 {
 
@@ -63,6 +64,8 @@ protected:
 
     static constexpr char* ID = "MeshIO";
     static constexpr char* OBJID = "MeshBuffer";
+
+    ArrayIO<Derived>* m_array_io = static_cast<ArrayIO<Derived>*>(m_file_access);
 };
 
 
