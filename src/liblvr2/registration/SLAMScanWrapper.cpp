@@ -145,6 +145,11 @@ Vector3d SLAMScanWrapper::point(size_t index) const
     return (pose() * extended).block<3, 1>(0, 0);
 }
 
+const Vector3f& SLAMScanWrapper::rawPoint(size_t index) const
+{
+    return m_points[index];
+}
+
 size_t SLAMScanWrapper::numPoints() const
 {
     return m_numPoints;

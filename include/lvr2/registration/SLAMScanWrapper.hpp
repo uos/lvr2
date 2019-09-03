@@ -142,6 +142,14 @@ public:
     virtual Vector3d point(size_t index) const;
 
     /**
+     * @brief Returns the Point at the specified index in local Coordinates
+     * 
+     * @param index the Index
+     * @return Vector3d the Point in local Coordinates
+     */
+    const Vector3f& rawPoint(size_t index) const;
+
+    /**
      * @brief Returns the number of Points in the Scan
      * 
      * @return size_t the number of Points

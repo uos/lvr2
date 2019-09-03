@@ -402,8 +402,23 @@ int main(int argc, char** argv)
         {
             file = output_dir / format_name(output_format, start + i);
 
+            size_t n = scan->numPoints();
+
             auto model = make_shared<Model>();
-            model->m_pointCloud = scan->innerScan()->m_points;
+            auto pointCloud = make_shared<PointBuffer>();
+            floatArr points = floatArr(new float[n * 3]);
+
+            #pragma omp parallel for schedule(static)
+            for (size_t i = 0; i < n; i++)
+            {
+                auto point = scan->rawPoint(i);
+                points[i * 3] = point[0];
+                points[i * 3 + 1] = point[1];
+                points[i * 3 + 2] = point[2];
+            }
+
+            pointCloud->setPointArray(points, n);
+            model->m_pointCloud = pointCloud;
             ModelFactory::saveModel(model, file.string());
         }
     }
