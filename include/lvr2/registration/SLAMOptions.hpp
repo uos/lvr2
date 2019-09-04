@@ -44,19 +44,18 @@ struct SLAMOptions
 {
     // ==================== General Options ======================================================
 
-    /// Use the unmodified Pose of new Scans. If false, apply the relative refinement of
-    /// previous Scans
+    /// Use the unmodified Pose of new Scans. If false, apply the relative refinement of previous Scans
     bool    trustPose = false;
 
     /// Match scans to the combined Pointcloud of all previous Scans instead of just the last Scan
     bool    metascan = false;
 
-    /// Show more detailed output
+    /// Show more detailed output. Useful for fine-tuning Parameters or debugging
     bool    verbose = false;
 
     // ==================== Reduction Options ====================================================
 
-    /// The Voxel size for Voxel based reduction
+    /// The Voxel size for Octree based reduction
     double  reduction = -1;
 
     /// Ignore all Points closer than <value> to the origin of a scan
@@ -67,8 +66,9 @@ struct SLAMOptions
 
     // ==================== ICP Options ==========================================================
 
-    /// Number of iterations for ICP
-    int     icpIterations = 50;
+    /// Number of iterations for ICP.
+    /// ICP should ideally converge before this number is met, but this number places an upper Bound on calculation time
+    int     icpIterations = 100;
 
     /// The maximum distance between two points during ICP
     double  icpMaxDistance = 25;
@@ -81,26 +81,26 @@ struct SLAMOptions
 
     // ==================== SLAM Options =========================================================
 
-    /// Use simple Loop Closing
+    /// Use simple Loopclosing
     bool    doLoopClosing = false;
 
-    /// Use complex Loop Closing with GraphSLAM
+    /// Use complex Loopclosing with GraphSLAM
     bool    doGraphSLAM = false;
 
-    /// The maximum distance between two poses to consider a closed loop or Edge.
+    /// The maximum distance between two poses to consider a closed loop or an Edge in the GraphSLAM Graph.
     /// Mutually exclusive to closeLoopPairs
     double  closeLoopDistance = 500;
 
-    /// The minimum pair overlap between two poses to consider a closed loop or Edge.
+    /// The minimum pair overlap between two poses to consider a closed loop or an Edge in the GraphSLAM Graph.
     /// Mutually exclusive to closeLoopDistance
     int     closeLoopPairs = -1;
 
-    /// The minimum number of Scans to be considered a Loop. Also used for GraphSLAM when
-    /// considering Edges
+    /// The minimum number of Scans to be considered a Loop to prevent Loopclosing from triggering on adjacent Scans.
+    /// Also used in GraphSLAM when considering other Scans for Edges.
+    /// For Loopclosing, this value needs to be at least 6, for GraphSLAM at least 1
     int     loopSize = 20;
 
-    /// Number of ICP iterations during Loopclosing and number of
-    /// GraphSLAM iterations
+    /// Number of ICP iterations during Loopclosing and number of GraphSLAM iterations
     int     slamIterations = 50;
 
     /// The maximum distance between two points during SLAM
