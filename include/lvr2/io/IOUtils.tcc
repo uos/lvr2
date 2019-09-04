@@ -133,4 +133,24 @@ Transform<T> loadFromFile(const boost::filesystem::path& file)
     return Eigen::Map<Matrix4RM<T>>(arr);
 }
 
+template<typename T>
+Transform<T> getTransformationFromFile(const boost::filesystem::path& file)
+{
+    boost::filesystem::path extension = file.extension();
+    if(extension == ".dat")
+    {
+        return getTransformationFromDat<T>(file);
+    }
+    else if(extension == ".pose")
+    {
+        return getTransformationFromPose<T>(file);
+    }
+    else if(extension == ".frames")
+    {
+        return getTransformationFromFrames<T>(file);
+    }
+    
+    throw std::invalid_argument(string("Unknown Pose extension: ") + extension.string());
+}
+
 } // namespace lvr2

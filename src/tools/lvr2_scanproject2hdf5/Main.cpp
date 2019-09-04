@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "lvr2/io/ScanData.hpp"
+#include "lvr2/types/Scan.hpp"
 #include "lvr2/io/HDF5IO.hpp"
 #include "lvr2/io/ScanprojectIO.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
@@ -13,31 +13,31 @@
 
 using namespace lvr2;
 
-ScanData toScanData(ScanPosition sp)
+ScanPtr toScanPtr(ScanPosition sp)
 {
-    ScanData scan_data;
+    ScanPtr scan_data = ScanPtr(new Scan());
     ModelPtr model = ModelFactory::readModel(sp.scan_file.string());
-    scan_data.m_points = model->m_pointCloud;
+    scan_data->m_points = model->m_pointCloud;
 
-    size_t numPoints = scan_data.m_points->numPoints();
-    floatArr pts = scan_data.m_points->getPointArray();
+    size_t numPoints = scan_data->m_points->numPoints();
+    floatArr pts = scan_data->m_points->getPointArray();
 
     for (size_t i = 0; i < numPoints; i++)
     {
         BaseVector<float> pt(pts[i*3 + 0], pts[i*3 + 1], pts[i*3 + 2]);
-        scan_data.m_boundingBox.expand(pt);
+        scan_data->m_boundingBox.expand(pt);
     }
 
-    scan_data.m_registration = sp.transform;
-    scan_data.m_poseEstimation = sp.transform;
+    scan_data->m_registration = sp.transform;
+    scan_data->m_poseEstimation = sp.transform;
 
-    scan_data.m_registration.transpose();
-    scan_data.m_poseEstimation.transpose();
+    scan_data->m_registration.transpose();
+    scan_data->m_poseEstimation.transpose();
 
     return scan_data;
 }
 
-void slamToLVR(ScanData& sd)
+void slamToLVR(ScanPtr& sd)
 {
     // // registrations
     // sd.m_registration.transpose();
@@ -118,10 +118,10 @@ int main(int argc, char** argv)
             const ScanPosition &pos = proj.scans[scan_id];
             std::cout << "scan: " << scan_id << std::endl;
 
-            ScanData sd = toScanData(pos);
+            ScanPtr sd = toScanPtr(pos);
             slamToLVR(sd);
 
-            hdf5.addRawScanData(scan_id, sd);
+            hdf5.addRawScan(scan_id, sd);
             
             for(int img_id = 0; img_id < pos.images.size(); img_id++)
             {
