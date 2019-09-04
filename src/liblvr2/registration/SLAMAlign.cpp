@@ -128,7 +128,7 @@ void SLAMAlign::reduceScan(const SLAMScanPtr& scan)
 void SLAMAlign::match()
 {
     // need at least 2 Scans
-    if (m_scans.size() <= 1)
+    if (m_scans.size() <= 1 || m_options.icpIterations <= 0)
     {
         return;
     }

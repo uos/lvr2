@@ -54,6 +54,26 @@ string format_name(const string& format, int index)
     return string(buff);
 }
 
+string map_format(const string& format)
+{
+    if (format == "uos")
+    {
+        return "scan%03i.3d";
+    }
+    else if (format == "riegl_txt")
+    {
+        return "scan%03i.txt";
+    }
+    else if (format == "ply")
+    {
+        return "scan%03i.ply";
+    }
+    else
+    {
+        throw boost::program_options::error(string("Unknown Output format: ") + format);
+    }
+}
+
 int main(int argc, char** argv)
 {
     // =============== parse options ===============
@@ -84,39 +104,40 @@ int main(int argc, char** argv)
 
         general_options.add_options()
         ("start,s", value<int>(&start)->default_value(start),
-         "The first scan to process.\n"
-         "-1 (default): Search for first scan.")
+         "The first Scan to process.\n"
+         "-1 (default): Search for first Scan.")
 
         ("end,e", value<int>(&end)->default_value(end),
-         "The last scan to process.\n"
-         "-1 (default): Continue until no more scan found.")
+         "The last Scan to process.\n"
+         "-1 (default): Continue until no more Scans found.")
 
         ("format,f", value<string>(&format)->default_value(format),
-         "The format to use.\n"
-         "available formats are listed <somewhere>.")
+         "The format of the Scans in <dir>.\n"
+         "This can be a predefined Format (uos, ply, riegl_txt), or a printf Format String like \"scan%03i.3d\",\n"
+         "containing one %i or %d that will be replaced with the Scan Index.")
 
         ("pose-format", value<string>(&pose_format)->default_value(pose_format),
-         "The format for the pose files to use.\n"
-         "available formats are listed <somewhere>.")
+         "The File extension of the Pose files.\n"
+         "Currently supported are: pose, dat, frames.")
 
         ("reduction,r", value<double>(&options.reduction)->default_value(options.reduction),
-         "The Voxel size for Voxel based reduction.\n"
+         "The Voxel size for Octree based reduction.\n"
          "-1 (default): No reduction.")
 
         ("min,m", value<double>(&options.minDistance)->default_value(options.minDistance),
-         "Ignore all Points closer than <value> to the origin of the scan.\n"
+         "Ignore all Points closer than <value> to the origin of the Scan.\n"
          "-1 (default): No filter.")
 
         ("max,M", value<double>(&options.maxDistance)->default_value(options.maxDistance),
-         "Ignore all Points farther away than <value> from the origin of the scan.\n"
+         "Ignore all Points farther away than <value> from the origin of the Scan.\n"
          "-1 (default): No filter.")
 
         ("trustPose,p", bool_switch(&options.trustPose),
-         "Use the unmodified Pose for ICP. Useful for GPS Poses.\n"
+         "Use the unmodified Pose for ICP. Useful for GPS Poses or unordered Scans.\n"
          "false (default): Apply the relative refinement of previous Scans.")
 
         ("metascan", bool_switch(&options.metascan),
-         "Match scans to the combined pointcloud of all previous scans instead of just the last Scan.")
+         "Match Scans to the combined Pointcloud of all previous Scans instead of just the last Scan.")
 
         ("noFrames,F", bool_switch(&no_frames),
          "Don't write \".frames\" files.")
@@ -128,19 +149,20 @@ int main(int argc, char** argv)
          "Write Scans to directory specified by --output.")
 
         ("output,o", value<path>(&output_dir),
-         "Changes output directory of --writePose and --writeScans.\n"
+         "Changes output directory of --writePose and --writeScans. Does not affect \".frames\" files\n"
          "default: <dir>/output.")
 
         ("verbose,v", bool_switch(&options.verbose),
-         "Show more detailed output.")
+         "Show more detailed output. Useful for fine-tuning Parameters or debugging.")
 
         ("help,h", bool_switch(&help),
-         "Print this help.")
+         "Print this help. Seriously how are you reading this if you don't know the --help Option?")
         ;
 
         icp_options.add_options()
         ("icpIterations,i", value<int>(&options.icpIterations)->default_value(options.icpIterations),
-         "Number of iterations for ICP.")
+         "Number of iterations for ICP.\n"
+         "ICP should ideally converge before this number is met, but this number places an upper Bound on calculation time.")
 
         ("icpMaxDistance,d", value<double>(&options.icpMaxDistance)->default_value(options.icpMaxDistance),
          "The maximum distance between two points during ICP.")
@@ -154,7 +176,7 @@ int main(int argc, char** argv)
 
         loopclosing_options.add_options()
         ("loopClosing,L", bool_switch(&options.doLoopClosing),
-         "Use simple Loop Closing.\n"
+         "Use simple Loopclosing.\n"
          "At least one of -L and -G must be specified for Loopclosing to take place.")
 
         ("graphSlam,G", bool_switch(&options.doGraphSLAM),
@@ -162,14 +184,19 @@ int main(int argc, char** argv)
          "At least one of -L and -G must be specified for Loopclosing to take place.")
 
         ("closeLoopDistance,c", value<double>(&options.closeLoopDistance)->default_value(options.closeLoopDistance),
-         "The maximum distance between two poses to consider a closed loop.")
+         "The maximum distance between two poses to consider a closed loop in Loopclosing or an Edge in the GraphSLAM Graph.\n"
+         "Mutually exclusive to --closeLoopPairs.")
 
         ("closeLoopPairs,C", value<int>(&options.closeLoopPairs)->default_value(options.closeLoopPairs),
-         "The minimum pair overlap between two poses to consider a closed loop. Pairs are judged using slamMaxDistance.\n"
-         "-1 (default): use closeLoopDistance instead.")
+         "The minimum pair overlap between two poses to consider a closed loop in Loopclosing or an Edge in the GraphSLAM Graph.\n"
+         "Mutually exclusive to --closeLoopDistance.\n"
+         "Pairs are judged using slamMaxDistance.\n"
+         "-1 (default): use --closeLoopDistance instead.")
 
         ("loopSize,l", value<int>(&options.loopSize)->default_value(options.loopSize),
-         "The minimum number of Scans to be considered a Loop.")
+         "The minimum number of Scans to be considered a Loop to prevent Loopclosing from triggering on adjacent Scans.\n"
+         "Also used in GraphSLAM when considering other Scans for Edges\n"
+         "For Loopclosing, this value needs to be at least 6, for GraphSLAM at least 1.")
 
         ("slamIterations,I", value<int>(&options.slamIterations)->default_value(options.slamIterations),
          "Number of iterations for SLAM.")
@@ -222,31 +249,9 @@ int main(int argc, char** argv)
             output_dir = dir / "output";
         }
 
-        // parse format
         if (format.find('%') == string::npos)
         {
-            // TODO: map formats
-            if (format == "uos")
-            {
-                format = "scan%03i.3d";
-            }
-            else if (format == "riegl_txt")
-            {
-                format = "scan%03i.txt";
-            }
-            else if (format == "riegl")
-            {
-                format = "scan%03i.rxp";
-            }
-            else if (format == "ply")
-            {
-                format = "scan%03i.ply";
-            }
-            else
-            {
-                cout << "Unknown format: " << format << endl;
-                return EXIT_FAILURE;
-            }
+            format = map_format(format);
         }
 
         if (variables.count("writePose") == 1)
@@ -263,6 +268,10 @@ int main(int argc, char** argv)
             if (output_format[0] == '<')
             {
                 output_format = format;
+            }
+            else if (output_format.find('%') == string::npos)
+            {
+                format = map_format(format);
             }
         }
     }
@@ -322,6 +331,8 @@ int main(int argc, char** argv)
     SLAMAlign align(options);
     vector<SLAMScanPtr> scans;
 
+    // TODO: change to ScanDirectoryParser once that is done
+
     for (int i = 0; i < count; i++)
     {
         path file = dir / format_name(format, start + i);
@@ -341,7 +352,6 @@ int main(int argc, char** argv)
         file.replace_extension(pose_format);
         Transformd pose = getTransformationFromFile<double>(file);
 
-        // TODO: parse directory properly
         ScanPtr scan = ScanPtr(new Scan());
         scan->m_points = model->m_pointCloud;
         scan->m_poseEstimation = pose;
