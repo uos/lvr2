@@ -47,17 +47,13 @@ int splitPoints(Vector3f* points, int n, int axis, double splitValue)
 
     while (l < r)
     {
-        while (l <= r && points[l](axis) < splitValue)
+        while (l < r && points[l](axis) < splitValue)
         {
-            l += 1;
+            ++l;
         }
-        while (r >= l && points[r](axis) >= splitValue)
+        while (r > l && points[r](axis) >= splitValue)
         {
-            if (r == l) // prevent r from going below 0
-            {
-                break;
-            }
-            r -= 1;
+            --r;
         }
         if (l < r)
         {
@@ -115,11 +111,17 @@ void createOctree(Vector3f* points,
     lMax[axis] = center[axis];
     rMin[axis] = center[axis];
 
-    #pragma omp task
-    createOctree(points    , l    , flagged    , lMin, lMax, level + 1, voxelSize, maxLeafSize);
+    if (l > maxLeafSize)
+    {
+        #pragma omp task
+        createOctree(points    , l    , flagged    , lMin, lMax, level + 1, voxelSize, maxLeafSize);
+    }
 
-    #pragma omp task
-    createOctree(points + l, n - l, flagged + l, rMin, rMax, level + 1, voxelSize, maxLeafSize);
+    if (n - l > maxLeafSize)
+    {
+        #pragma omp task
+        createOctree(points + l, n - l, flagged + l, rMin, rMax, level + 1, voxelSize, maxLeafSize);
+    }
 }
 
 int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize)

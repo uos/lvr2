@@ -77,24 +77,6 @@ size_t ScanDirectoryParser::examineASCII(const std::string& filename)
     return countPointsInFile(p);
 } 
 
-Transformd ScanDirectoryParser::getPose(const Path& poseFile)
-{
-    if(m_poseExtension == ".dat")
-    {
-        return getTransformationFromDat<double>(poseFile);
-    }
-    else if(m_poseExtension == ".pose")
-    {
-        return getTransformationFromPose<double>(poseFile);
-    }
-    else if(m_poseExtension == ".frames")
-    {
-        return getTransformationFromFrames<double>(poseFile);
-    }
-    
-    return Transformd::Identity();
-}
-
 PointBufferPtr ScanDirectoryParser::subSample()
 {
     ModelPtr out_model(new Model);
@@ -183,7 +165,7 @@ void ScanDirectoryParser::parseDirectory()
 
         if(exists(posePath))
         {
-            matrix = getPose(posePath.string());
+            matrix = getTransformationFromFile<double>(posePath.string());
             std::cout << timestamp << "Found transformation: " << posePath << " @ " << std::endl << matrix << std::endl;
         }
         else

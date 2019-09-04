@@ -35,18 +35,33 @@
 #define ICPPOINTALIGN_HPP_
 
 #include "KDTree.hpp"
-#include "Scan.hpp"
+#include "SLAMScanWrapper.hpp"
 
 #include "lvr2/types/MatrixTypes.hpp"
 
 namespace lvr2
 {
 
+/**
+ * @brief A class to align two Scans with ICP
+ * 
+ */
 class ICPPointAlign
 {
 public:
-    ICPPointAlign(ScanPtr model, ScanPtr data);
+    /**
+     * @brief Construct a new ICPPointAlign object. Data is transformed to match Model
+     * 
+     * @param model The Model Scan (stays unchanged)
+     * @param data The Data Scan (transformed)
+     */
+    ICPPointAlign(SLAMScanPtr model, SLAMScanPtr data);
 
+    /**
+     * @brief Executes the ICPAlign
+     * 
+     * @return Transformd The delta transformation caused by this Method
+     */
     Transformd match();
 
     virtual ~ICPPointAlign() = default;
@@ -72,8 +87,8 @@ protected:
 
     bool        m_verbose;
 
-    ScanPtr     m_modelCloud;
-    ScanPtr     m_dataCloud;
+    SLAMScanPtr m_modelCloud;
+    SLAMScanPtr m_dataCloud;
 
     KDTreePtr   m_searchTree;
 };

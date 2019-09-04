@@ -26,7 +26,7 @@
  */
 
 /**
- * GraphSlam.hpp
+ * GraphSLAM.hpp
  *
  *  @date July 22, 2019
  *  @author Malte Hillmann
@@ -34,8 +34,8 @@
 #ifndef GRAPHSLAM_HPP_
 #define GRAPHSLAM_HPP_
 
-#include "Scan.hpp"
-#include "SlamOptions.hpp"
+#include "SLAMScanWrapper.hpp"
+#include "SLAMOptions.hpp"
 #include "KDTree.hpp"
 
 #include <Eigen/SparseCore>
@@ -53,39 +53,39 @@ namespace lvr2
  *
  * @return true if any Scans were found, false otherwise
  */
-bool findCloseScans(const vector<ScanPtr>& scans, size_t scan, const SlamOptions& options, vector<size_t>& output);
+bool findCloseScans(const std::vector<SLAMScanPtr>& scans, size_t scan, const SLAMOptions& options, std::vector<size_t>& output);
 
 /**
- * @brief Wrapper class for running GraphSlam on Scans
+ * @brief Wrapper class for running GraphSLAM on Scans
  */
-class GraphSlam
+class GraphSLAM
 {
 public:
 
     using GraphMatrix = Eigen::SparseMatrix<double>;
     using GraphVector = Eigen::VectorXd;
-    using Graph = vector<pair<int, int>>;
+    using Graph = std::vector<std::pair<int, int>>;
 
-    GraphSlam(const SlamOptions* options);
+    GraphSLAM(const SLAMOptions* options);
 
-    virtual ~GraphSlam() = default;
+    virtual ~GraphSLAM() = default;
 
     /**
-     * @brief runs the GraphSlam algorithm
+     * @brief runs the GraphSLAM algorithm
      *
      * @param scans The scans to work on
      * @param last  The index of the last Scan to consider. `scans` may be longer, but anything
      *              after `last` will be ignored
      */
-    void doGraphSlam(const vector<ScanPtr>& scans, size_t last) const;
+    void doGraphSLAM(const std::vector<SLAMScanPtr>& scans, size_t last) const;
 
 protected:
 
-    void createGraph(const vector<ScanPtr>& scans, size_t last, Graph& graph) const;
-    void fillEquation(const vector<ScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec) const;
-    void eulerCovariance(KDTreePtr tree, ScanPtr scan, Matrix6d& outMat, Vector6d& outVec) const;
+    void createGraph(const std::vector<SLAMScanPtr>& scans, size_t last, Graph& graph) const;
+    void fillEquation(const std::vector<SLAMScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec) const;
+    void eulerCovariance(KDTreePtr tree, SLAMScanPtr scan, Matrix6d& outMat, Vector6d& outVec) const;
 
-    const SlamOptions*     m_options;
+    const SLAMOptions*     m_options;
 };
 
 } /* namespace lvr2 */
