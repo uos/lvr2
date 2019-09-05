@@ -41,7 +41,7 @@ namespace lvr2
 
 template<typename T, typename PointT>
 T EigenSVDPointAlign<T, PointT>::alignPoints(
-    ScanPtr scan,
+    SLAMScanPtr scan,
     Point3** neighbors,
     const Vec3& centroid_m,
     const Vec3& centroid_d,
@@ -61,7 +61,7 @@ T EigenSVDPointAlign<T, PointT>::alignPoints(
         }
 
         Vec3 m = neighbors[i]->template cast<T>() - centroid_m;
-        Vec3 d = scan->getPoint(i).template cast<T>() - centroid_d;
+        Vec3 d = scan->point(i).template cast<T>() - centroid_d;
 
         error += (m - d).squaredNorm();
         pairs++;

@@ -930,26 +930,16 @@ LVRModelItem* LVRMainWindow::loadModelItem(QString name)
 
     // Read Pose file
     boost::filesystem::path poseFile = name.toStdString();
-    poseFile.replace_extension("pose");
-    if (boost::filesystem::exists(poseFile))
+
+    for (auto& extension : { "pose", "dat", "frames" })
     {
-        cout << "Found Pose file: " << poseFile << endl;
-        ifstream in;
-        in.open(poseFile.string());
-        lvr2::Pose pose;
-        in >> pose.x >> pose.y >> pose.z;
-        in >> pose.r >> pose.t >> pose.p;
-        item->setPose(pose);
-    }
-    else
-    {
-        poseFile.replace_extension("dat");
+        poseFile.replace_extension(extension);
         if (boost::filesystem::exists(poseFile))
         {
             cout << "Found Pose file: " << poseFile << endl;
-            Transformf mat = getTransformationFromPose<float>(poseFile).transpose();
+            Transformf mat = getTransformationFromFile<float>(poseFile);
             BaseVector<float> pos, angles;
-            getPoseFromMatrix<float>(pos, angles, mat);
+            getPoseFromMatrix<float>(pos, angles, mat.transpose());
 
             angles *= 180.0 / M_PI; // radians -> degrees
 
@@ -957,6 +947,8 @@ LVRModelItem* LVRMainWindow::loadModelItem(QString name)
                 pos.x, pos.y, pos.z,
                 angles.x, angles.y, angles.z
             });
+
+            break;
         }
     }
     return item;
@@ -989,7 +981,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 
                 std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(info.absoluteFilePath().toStdString()));
 
-                lastItem = addScanData(sdm, root);
+                lastItem = addScans(sdm, root);
 
                 root->setExpanded(true);
 
@@ -1665,35 +1657,36 @@ void LVRMainWindow::toggleWireframe(bool checkboxState)
     }
 }
 
-QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent)
+QTreeWidgetItem* LVRMainWindow::addScans(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent)
 {
     QTreeWidgetItem *lastItem = nullptr;
-    std::vector<ScanData> scanData = sdm->getScanData();
+    std::vector<ScanPtr> scans = sdm->getScans();
     std::vector<std::vector<CameraData> > camData = sdm->getCameraData();
 
-    for (size_t i = 0; i < scanData.size(); i++)
+    bool cam_data_available = camData.size() > 0;
+
+    for (size_t i = 0; i < scans.size(); i++)
     {
         char buf[128];
-        std::sprintf(buf, "%05d", scanData[i].m_positionNumber);
-        LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
+        std::sprintf(buf, "%05d", scans[i]->m_positionNumber);
+        LVRScanDataItem *item = new LVRScanDataItem(scans[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
 
-        // if(camData[i].size() > 0)
-        // {
-        //     QTreeWidgetItem* cameras_item = new QTreeWidgetItem(item, LVRCamerasItemType);
-        //     cameras_item->setText(0, QString("Photos"));
-        //     // insert cam poses
-        //     // QTreeWidgetItem *images = new QTreeWidgetItem(item, QString("cams"));
-        //     for(int j=0; j < camData[i].size(); j++)
-        //     {
-        //         char buf2[128];
-        //         std::sprintf(buf2, "%05d", j);
-        //         // implement this
-        //         LVRCamDataItem *cam_item = new LVRCamDataItem(camData[i][j], sdm, j, m_renderer, QString("photo_") + buf2, cameras_item);
+        if(cam_data_available && camData[i].size() > 0)
+        {
+            QTreeWidgetItem* cameras_item = new QTreeWidgetItem(item, LVRCamerasItemType);
+            cameras_item->setText(0, QString("Photos"));
+            // insert cam poses
+            // QTreeWidgetItem *images = new QTreeWidgetItem(item, QString("cams"));
+            for(int j=0; j < camData[i].size(); j++)
+            {
+                char buf2[128];
+                std::sprintf(buf2, "%05d", j);
+                // implement this
+                LVRCamDataItem *cam_item = new LVRCamDataItem(camData[i][j], sdm, j, m_renderer, QString("photo_") + buf2, cameras_item);
 
-        //         lastItem = cam_item;
-        //     }
-        // }
-
+                lastItem = cam_item;
+            }
+        }
 
         lastItem = item;
     }

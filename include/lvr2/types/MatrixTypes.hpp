@@ -34,6 +34,9 @@
  * 
  */
 
+#ifndef LVR2_TYPES_MATRIXTYPES_HPP
+#define LVR2_TYPES_MATRIXTYPES_HPP
+
 #include <Eigen/Dense>
 
 namespace lvr2
@@ -64,7 +67,7 @@ using Transform = Eigen::Matrix<T, 4, 4>;
 /// 4x4 single precision transformation matrix
 using Transformf = Transform<float>;
 
-/// 3x3 double precision transformation matrix
+/// 4x4 double precision transformation matrix
 using Transformd = Transform<double>;
 
 /// General 3x3 rotation matrix
@@ -145,4 +148,25 @@ using Matrix6d = Eigen::Matrix<double, 6, 6>;
 /// 6D vector double precision
 using Vector6d = Eigen::Matrix<double, 6, 1>;
 
+template<typename T> 
+Vector3<T> multiply(const Transform<T>& transform, const Vector3<T>& p)
+{
+    Vector4<T> ret(p.coeff(0), p.coeff(1), p.coeff(2), 1.0);
+    ret = transform * ret;
+    return Vector3<T>(ret.coeff(0), ret.coeff(1), ret.coeff(2));
+}
+
 } // namespace lvr2
+
+// additional operators
+
+
+
+
+template<typename T>
+lvr2::Vector3<T> operator*(const lvr2::Transform<T>& transform, const lvr2::Vector3<T>& p)
+{
+    return lvr2::multiply(transform, p);
+}
+
+#endif // LVR2_TYPES_MATRIXTYPES_HPP

@@ -49,7 +49,7 @@ namespace lvr2
  * @param axis       The axis to sort by
  * @param splitValue The value to sort by
  *
- * @returns The number of smaller elements. points + this value gives the start of the greater elements
+ * @return int The number of smaller elements. points + this value gives the start of the greater elements
  */
 int splitPoints(Vector3f* points, int n, int axis, double splitValue);
 
@@ -61,7 +61,7 @@ int splitPoints(Vector3f* points, int n, int axis, double splitValue);
  * @param voxelSize   The minimum size of a Voxel
  * @param maxLeafSize When to stop subdividing Voxels
  *
- * @returns the new number of Points in the Point Cloud
+ * @return int the new number of Points in the Point Cloud
  */
 int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize);
 

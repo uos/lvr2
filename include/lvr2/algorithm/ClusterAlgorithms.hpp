@@ -181,9 +181,30 @@ ClusterBiMap<FaceHandle> planarClusterGrowing(
 template<typename BaseVecT>
 ClusterBiMap<FaceHandle> iterativePlanarClusterGrowing(
     BaseMesh<BaseVecT>& mesh,
+    FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     float minSinAngle,
     int numIterations,
     int minClusterSize
+);
+
+/**
+ * @brief Algorithm which generates planar clusters from the given mesh, drags points in clusters into regression
+ *        planes and improves clusters iteratively.
+ * @param mesh
+ * @param minSinAngle `1 - minSinAngle` is the allowed difference between the sin of the angle of the starting
+ *                    face and all other faces in one cluster.
+ * @param numIterations for cluster improvement
+ * @param minClusterSize minimum size for clusters (number of faces) for which a regression plane should be generated
+ */
+template<typename BaseVecT>
+ClusterBiMap<FaceHandle> iterativePlanarClusterGrowingRANSAC(
+    BaseMesh<BaseVecT>& mesh,
+    FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
+    float minSinAngle,
+    int numIterations,
+    int minClusterSize,
+    int ransacIterations = 100,
+    int ransacSamples = 10
 );
 
 /// Calcs a regression plane for the given cluster
@@ -192,6 +213,26 @@ Plane<BaseVecT> calcRegressionPlane(
     const BaseMesh<BaseVecT>& mesh,
     const Cluster<FaceHandle>& cluster,
     const FaceMap<Normal<typename BaseVecT::CoordType>>& normals
+);
+
+/// Calcs a regression plane for the given cluster
+template<typename BaseVecT>
+Plane<BaseVecT> calcRegressionPlaneRANSAC(
+    const BaseMesh<BaseVecT>& mesh,
+    const Cluster<FaceHandle>& cluster,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
+    const int num_iterations = 100,
+    const int num_samples = 10
+);
+
+/// Calcs a regression plane for the given cluster
+template<typename BaseVecT>
+Plane<BaseVecT> calcRegressionPlanePCA(
+    const BaseMesh<BaseVecT>& mesh,
+    const Cluster<FaceHandle>& cluster,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
+    const int num_iterations = 100,
+    const int num_samples = 10
 );
 
 /**
@@ -205,6 +246,21 @@ DenseClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
     const ClusterBiMap<FaceHandle>& clusters,
     const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     int minClusterSize
+);
+
+/**
+ * @brief Calcs regression planes for all cluster in clusters
+ * @param minClusterSize minimum size for clusters (number of faces) for which a regression plane should be generated
+ * @return map from cluster handle to its regression plane (clusterH -> Plane)
+ */
+template<typename BaseVecT>
+DenseClusterMap<Plane<BaseVecT>> calcRegressionPlanesRANSAC(
+    const BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
+    int minClusterSize,
+    int iterations = 100,
+    int samples = 10
 );
 
 /// Drags all points from the given cluster into the given plane
