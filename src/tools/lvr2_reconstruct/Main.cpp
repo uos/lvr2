@@ -127,13 +127,26 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     }
     else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
     {
+        
+        int plane_fit_method = 0;
+        
+        if(options.useRansac())
+        {
+            plane_fit_method = 1;
+        }
+
+        // plane_fit_method
+        // - 0: PCA
+        // - 1: RANSAC
+        // - 2: Iterative
+
         surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(
             buffer,
             pcm_name,
             options.getKn(),
             options.getKi(),
             options.getKd(),
-            options.useRansac(),
+            plane_fit_method,
             options.getScanPoseFile()
         );
     }
@@ -367,7 +380,7 @@ int main(int argc, char** argv)
     ClusterBiMap<FaceHandle> clusterBiMap;
     if(options.optimizePlanes())
     {
-        clusterBiMap = iterativePlanarClusterGrowing(
+        clusterBiMap = iterativePlanarClusterGrowingRANSAC(
             mesh,
             faceNormals,
             options.getNormalThreshold(),
@@ -375,10 +388,17 @@ int main(int argc, char** argv)
             options.getMinPlaneSize()
         );
 
-        if (options.getSmallRegionThreshold() > 0)
+        if(options.getSmallRegionThreshold() > 0)
         {
             deleteSmallPlanarCluster(mesh, clusterBiMap, static_cast<size_t>(options.getSmallRegionThreshold()));
         }
+
+        if(options.getFillHoles())
+        {
+            naiveFillSmallHoles(mesh, options.getFillHoles(), false);
+        }
+
+        cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
 
         if (options.retesselate())
         {

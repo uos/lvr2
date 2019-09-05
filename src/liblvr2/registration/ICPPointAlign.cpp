@@ -43,7 +43,7 @@ using namespace std;
 namespace lvr2
 {
 
-ICPPointAlign::ICPPointAlign(ScanPtr model, ScanPtr data) :
+ICPPointAlign::ICPPointAlign(SLAMScanPtr model, SLAMScanPtr data) :
     m_modelCloud(model), m_dataCloud(data)
 {
     // Init default values
@@ -84,7 +84,7 @@ Transformd ICPPointAlign::match()
         prev_ret = ret;
 
         // Get point pairs
-        size_t pairs = getNearestNeighbors(m_searchTree, m_dataCloud, neighbors, m_maxDistanceMatch, centroid_m, centroid_d);
+        size_t pairs = KDTree::nearestNeighbors(m_searchTree, m_dataCloud, neighbors, m_maxDistanceMatch, centroid_m, centroid_d);
 
         // Get transformation
         transform = Transformd::Identity();
@@ -118,7 +118,7 @@ Transformd ICPPointAlign::match()
     cout << endl;
     if (m_verbose)
     {
-        cout << "Result: " << endl << m_dataCloud->getDeltaPose() << endl;
+        cout << "Result: " << endl << m_dataCloud->deltaPose() << endl;
     }
 
     return delta;

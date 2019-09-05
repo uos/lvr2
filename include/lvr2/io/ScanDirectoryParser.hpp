@@ -77,8 +77,6 @@ private:
     size_t examinePLY(const std::string& filename);
     size_t examineASCII(const std::string& filename);    
 
-    Transformd getPose(const Path& poseFile);
-
     size_t                  m_numPoints;
     std::string             m_pointPrefix;
     std::string             m_posePrefix;

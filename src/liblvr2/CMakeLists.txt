@@ -47,9 +47,9 @@ set(LVR2_SOURCES
     io/PointBuffer.cpp
     io/ModelFactory.cpp
     io/ScanprojectIO.cpp
-    io/ScanData.cpp
     io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
+    types/Scan.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
@@ -59,10 +59,10 @@ set(LVR2_SOURCES
     algorithm/ChunkManager.cpp
     registration/ICPPointAlign.cpp
     registration/KDTree.cpp
-    registration/Scan.cpp
+    registration/SLAMScanWrapper.cpp
     registration/Metascan.cpp
-    registration/SlamAlign.cpp
-    registration/GraphSlam.cpp
+    registration/SLAMAlign.cpp
+    registration/GraphSLAM.cpp
     registration/TreeUtils.cpp
 )
 

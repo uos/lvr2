@@ -639,12 +639,33 @@ struct EdgeCollapseResult
     /// The vertex which was inserted to replace the collapsed edge
     VertexHandle midPoint;
 
+    VertexHandle removedPoint;
+
     /// The (face) neighbors of the edge which might have been removed. If so,
     /// the entry is not `none` and contains information about the invalidated
     /// handles and the replacement edge.
     std::array<optional<EdgeCollapseRemovedFace>, 2> neighbors;
 
-    EdgeCollapseResult(VertexHandle midPoint) : midPoint(midPoint) {};
+    EdgeCollapseResult(VertexHandle midPoint, VertexHandle removedPoint) : midPoint(midPoint), removedPoint(removedPoint) {};
+};
+
+
+struct VertexSplitResult
+{
+
+    VertexHandle edgeCenter;
+    std::vector<FaceHandle> addedFaces;
+
+    VertexSplitResult(VertexHandle longestEdgeCenter) : edgeCenter(longestEdgeCenter) {};
+};
+
+struct EdgeSplitResult
+{
+
+    VertexHandle edgeCenter;
+    std::vector<FaceHandle> addedFaces;
+
+    EdgeSplitResult(VertexHandle longestEdgeCenter) : edgeCenter(longestEdgeCenter) {};
 };
 
 } // namespace lvr2

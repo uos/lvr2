@@ -87,8 +87,13 @@ public:
     FaceHandle addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H) final;
     void removeFace(FaceHandle handle) final;
     EdgeCollapseResult collapseEdge(EdgeHandle edgeH) final;
+    VertexSplitResult splitVertex(VertexHandle vertexToBeSplitH);
+    EdgeSplitResult splitEdge(EdgeHandle edgeH);
+    vector<VertexHandle> findCommonNeigbours(VertexHandle vH1, VertexHandle vH2);
     void flipEdge(EdgeHandle edgeH) final;
     void splitVertex(EdgeHandle eH, VertexHandle vH, BaseVecT pos1, BaseVecT pos2);
+    std::pair<BaseVecT, float> triCircumCenter(FaceHandle faceH);
+
 
     size_t numVertices() const final;
     size_t numFaces() const final;
@@ -99,6 +104,7 @@ public:
     bool containsEdge(EdgeHandle eH) const;
 
     bool isBorderEdge(EdgeHandle handle) const;
+    bool isFlippable(EdgeHandle handle) const;
 
     Index nextVertexIndex() const;
     Index nextFaceIndex() const;
