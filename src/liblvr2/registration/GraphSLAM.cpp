@@ -186,16 +186,19 @@ void GraphSLAM::doGraphSLAM(const vector<SLAMScanPtr>& scans, size_t last) const
 
             transform = transform * initialPose.inverse();
 
-            scan->transform(transform, true, FrameUse::GRAPHSLAM);
+            scan->transform(transform, m_options->createFrames, FrameUse::GRAPHSLAM);
 
             sum_position_diff += result.block<3, 1>(0, 0).norm();
         }
 
-        // add Frames to unused Scans
-        scans[0]->addFrame(FrameUse::GRAPHSLAM);
-        for (size_t i = last + 1; i < scans.size(); i++)
+        if (m_options->createFrames)
         {
-            scans[i]->addFrame(FrameUse::INVALID);
+            // add Frames to unused Scans
+            scans[0]->addFrame(FrameUse::GRAPHSLAM);
+            for (size_t i = last + 1; i < scans.size(); i++)
+            {
+                scans[i]->addFrame(FrameUse::INVALID);
+            }
         }
 
         cout << "Sum of Position differences = " << sum_position_diff << endl;

@@ -186,6 +186,21 @@ public:
     Vector3d getPosition() const;
 
     /**
+     * @brief Returns the number of Frames generated
+     * 
+     * @return size_t the number of Frames
+     */
+    size_t frameCount() const;
+
+    /**
+     * @brief Returns a Frame consisting of a Pose and a FrameUse
+     * 
+     * @param index the index of the Frame
+     * @return const std::pair<Transformd, FrameUse>& the Pose and FrameUse
+     */
+    const std::pair<Transformd, FrameUse>& frame(size_t index) const;
+
+    /**
      * @brief Writes the Frames to the specified location
      * 
      * @param path The path of the file to write to
