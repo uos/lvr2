@@ -26,12 +26,12 @@
  */
 
 /**
- * SlamAlign.cpp
+ * SLAMAlign.cpp
  *
  *  @date May 6, 2019
  *  @author Malte Hillmann
  */
-#include <lvr2/registration/SlamAlign.hpp>
+#include <lvr2/registration/SLAMAlign.hpp>
 
 #include <lvr2/registration/ICPPointAlign.hpp>
 #include <lvr2/registration/Metascan.hpp>
@@ -43,8 +43,8 @@ using namespace std;
 namespace lvr2
 {
 
-SlamAlign::SlamAlign(const SlamOptions& options, vector<ScanPtr>& scans)
-    : m_options(options), m_scans(scans), m_graph(&m_options), m_foundLoop(false)
+SLAMAlign::SLAMAlign(const SLAMOptions& options, const vector<SLAMScanPtr>& scans)
+    : m_options(options), m_scans(scans), m_graph(&m_options), m_foundLoop(false), m_loopIndexCount(0)
 {
     // The first Scan is never changed
     m_alreadyMatched = 1;
@@ -55,29 +55,29 @@ SlamAlign::SlamAlign(const SlamOptions& options, vector<ScanPtr>& scans)
     }
 }
 
-SlamAlign::SlamAlign(const SlamOptions& options)
-    : m_options(options), m_graph(&m_options), m_foundLoop(false)
+SLAMAlign::SLAMAlign(const SLAMOptions& options)
+    : m_options(options), m_graph(&m_options), m_foundLoop(false), m_loopIndexCount(0)
 {
     // The first Scan is never changed
     m_alreadyMatched = 1;
 }
 
-void SlamAlign::setOptions(const SlamOptions& options)
+void SLAMAlign::setOptions(const SLAMOptions& options)
 {
     m_options = options;
 }
 
-SlamOptions& SlamAlign::options()
+SLAMOptions& SLAMAlign::options()
 {
     return m_options;
 }
 
-const SlamOptions& SlamAlign::options() const
+const SLAMOptions& SLAMAlign::options() const
 {
     return m_options;
 }
 
-void SlamAlign::addScan(const ScanPtr& scan, bool match)
+void SLAMAlign::addScan(const SLAMScanPtr& scan, bool match)
 {
     reduceScan(scan);
     m_scans.push_back(scan);
@@ -88,12 +88,17 @@ void SlamAlign::addScan(const ScanPtr& scan, bool match)
     }
 }
 
-ScanPtr SlamAlign::getScan(size_t index) const
+void SLAMAlign::addScan(const ScanPtr& scan, bool match)
+{
+    addScan(make_shared<SLAMScanWrapper>(scan));
+}
+
+SLAMScanPtr SLAMAlign::scan(size_t index) const
 {
     return m_scans[index];
 }
 
-void SlamAlign::reduceScan(const ScanPtr& scan)
+void SLAMAlign::reduceScan(const SLAMScanPtr& scan)
 {
     size_t prev = scan->numPoints();
     if (m_options.reduction >= 0)
@@ -120,10 +125,10 @@ void SlamAlign::reduceScan(const ScanPtr& scan)
     }
 }
 
-void SlamAlign::match()
+void SLAMAlign::match()
 {
     // need at least 2 Scans
-    if (m_scans.size() <= 1)
+    if (m_scans.size() <= 1 || m_options.icpIterations <= 0)
     {
         return;
     }
@@ -136,7 +141,7 @@ void SlamAlign::match()
             meta->addScan(m_scans[i]);
         }
 
-        m_metascan = ScanPtr(meta);
+        m_metascan = SLAMScanPtr(meta);
     }
 
     string scan_number_string = to_string(m_scans.size() - 1);
@@ -155,12 +160,12 @@ void SlamAlign::match()
             cout << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << flush;
         }
 
-        ScanPtr prev = m_options.metascan ? m_metascan : m_scans[i - 1];
-        const ScanPtr& cur = m_scans[i];
+        SLAMScanPtr prev = m_options.metascan ? m_metascan : m_scans[i - 1];
+        const SLAMScanPtr& cur = m_scans[i];
 
         if (!m_options.trustPose && i != 1) // no deltaPose on first run
         {
-            applyTransform(cur, prev->getDeltaPose());
+            applyTransform(cur, prev->deltaPose());
         }
         else
         {
@@ -187,16 +192,16 @@ void SlamAlign::match()
     }
 }
 
-void SlamAlign::applyTransform(ScanPtr scan, const Matrix4d& transform)
+void SLAMAlign::applyTransform(SLAMScanPtr scan, const Matrix4d& transform)
 {
     scan->transform(transform);
 
     bool found = false;
-    for (const ScanPtr& s : m_scans)
+    for (const SLAMScanPtr& s : m_scans)
     {
         if (s != scan)
         {
-            s->addFrame(found ? ScanUse::INVALID : ScanUse::UNUSED);
+            s->addFrame(found ? FrameUse::INVALID : FrameUse::UNUSED);
         }
         else
         {
@@ -205,9 +210,9 @@ void SlamAlign::applyTransform(ScanPtr scan, const Matrix4d& transform)
     }
 }
 
-void SlamAlign::checkLoopClose(size_t last)
+void SLAMAlign::checkLoopClose(size_t last)
 {
-    if (!m_options.doLoopClosing && !m_options.doGraphSlam)
+    if (!m_options.doLoopClosing && !m_options.doGraphSLAM)
     {
         return;
     }
@@ -222,21 +227,33 @@ void SlamAlign::checkLoopClose(size_t last)
         first = others[0];
     }
 
-    if (hasLoop && m_options.doLoopClosing)
+    if (hasLoop && (m_loopIndexCount % 10 == 3) && m_options.doLoopClosing)
+    {
+        loopClose(first, last);
+    }
+    if (!hasLoop && m_loopIndexCount > 0 && m_options.doLoopClosing && !m_options.doGraphSLAM)
     {
         loopClose(first, last);
     }
 
-    // wait for falling edge
-    if (m_foundLoop && !hasLoop && m_options.doGraphSlam)
+    // falling edge
+    if (m_foundLoop && !hasLoop && m_options.doGraphSLAM)
     {
-        graphSlam(last);
+        graphSLAM(last);
     }
 
+    if (hasLoop)
+    {
+        m_loopIndexCount++;
+    }
+    else
+    {
+        m_loopIndexCount = 0;
+    }
     m_foundLoop = hasLoop;
 }
 
-void SlamAlign::loopClose(size_t first, size_t last)
+void SLAMAlign::loopClose(size_t first, size_t last)
 {
     cout << "Loopclose " << first << " -> " << last << endl;
 
@@ -248,52 +265,55 @@ void SlamAlign::loopClose(size_t first, size_t last)
         metaLast->addScan(m_scans[last - i]);
     }
 
-    ScanPtr scanFirst(metaFirst);
-    ScanPtr scanLast(metaLast);
+    SLAMScanPtr scanFirst(metaFirst);
+    SLAMScanPtr scanLast(metaLast);
 
     ICPPointAlign icp(scanFirst, scanLast);
     icp.setMaxMatchDistance(m_options.slamMaxDistance);
     icp.setMaxIterations(m_options.slamIterations);
     icp.setMaxLeafSize(m_options.maxLeafSize);
-    icp.setEpsilon(m_options.epsilon);
+    icp.setEpsilon(m_options.slamEpsilon);
     icp.setVerbose(m_options.verbose);
 
     Matrix4d transform = icp.match();
 
-    cout << "Loopclose delta: " << endl << transform << endl << endl;
-
-    for (size_t i = first; i <= last; i++)
+    for (size_t i = first + 3; i <= last - 3; i++)
     {
         double factor = (i - first) / (double)(last - first);
 
         Matrix4d delta = (transform - Matrix4d::Identity()) * factor + Matrix4d::Identity();
 
-        m_scans[i]->transform(delta, true, ScanUse::LOOPCLOSE);
+        m_scans[i]->transform(delta, true, FrameUse::LOOPCLOSE);
     }
 
     // Add frame to unaffected scans
+    for (size_t i = 0; i < 3; i++)
+    {
+        m_scans[first + i]->addFrame(FrameUse::LOOPCLOSE);
+        m_scans[last - i]->addFrame(FrameUse::LOOPCLOSE);
+    }
     for (size_t i = 0; i < first; i++)
     {
         m_scans[i]->addFrame();
     }
-    for (size_t i = last + 1; i < m_scans.size(); i++)
+    for (size_t i = last - 2; i < m_scans.size(); i++)
     {
-        m_scans[i]->addFrame(ScanUse::INVALID);
+        m_scans[i]->addFrame(FrameUse::INVALID);
     }
 }
 
-void SlamAlign::graphSlam(size_t last)
+void SLAMAlign::graphSLAM(size_t last)
 {
-    m_graph.doGraphSlam(m_scans, last);
+    m_graph.doGraphSLAM(m_scans, last);
 }
 
-void SlamAlign::finish()
+void SLAMAlign::finish()
 {
     match();
 
-    if (m_options.doGraphSlam)
+    if (m_options.doGraphSLAM)
     {
-        graphSlam(m_scans.size() - 1);
+        graphSLAM(m_scans.size() - 1);
     }
 }
 

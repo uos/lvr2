@@ -169,7 +169,7 @@ size_t iterativeEdgeCollapse(
     while (collapsedEdgeCount < count && !queue.isEmpty())
     {
         // Collapse the edge with minimal cost if it is collapsable.
-        const auto fromH = queue.popMin().key;
+        const auto fromH = queue.popMin().key();
         const auto toH = bestEdge[fromH];
         const auto edgeMin = mesh.getEdgeBetween(fromH, toH).unwrap();
 

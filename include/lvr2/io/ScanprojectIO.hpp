@@ -38,6 +38,7 @@
 #include "lvr2/io/BaseIO.hpp"
 #include "lvr2/geometry/Matrix4.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -53,9 +54,9 @@ using Vec = BaseVector<float>;
 struct ImageFile
 {
     /// transformation matrix
-    Matrix4<Vec> orientation_transform;
+    Transformd orientation_transform;
     /// transformation matrix
-    Matrix4<Vec> extrinsic_transform;
+    Extrinsicsd extrinsic_transform;
 
     /// path to image
     fs::path image_file;
@@ -73,9 +74,9 @@ struct ImageFile
 struct ScanPosition
 {
     /// file path for pointcloud data
-    fs::path               scan_file;
+    fs::path scan_file;
     /// transformation  matrix from scan position space to scan project space
-    Matrix4<Vec>           transform;
+    Transformd transform;
     /// a vector with image informations for this scanposition
     std::vector<ImageFile> images;
 };
