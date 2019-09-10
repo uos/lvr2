@@ -155,7 +155,7 @@ if(VTK_MAJOR_VERSION VERSION_GREATER "7")
 endif()
 
 if(VTK_VERSION VERSION_GREATER "7")
-  
+
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
   set(VTK_COMPONENTS "${VTK_AVAILABLE_COMPONENTS}")
   set(VTK_HAS_QT OFF)
@@ -391,7 +391,7 @@ if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VER
         message(STATUS "* CUDA library and apps with CUDA. Setting CUDA_HOST_COMPILER to *")
         message(STATUS "* g++-6*. Please ensure that g++ 6 is installed on your system.  *")
         message(STATUS "******************************************************************")
-        set(CUDA_HOST_COMPILER "g++-5" CACHE STRING "" FORCE)
+        # set(CUDA_HOST_COMPILER "g++-5" CACHE STRING "" FORCE)
         endif()
 endif()
 
@@ -520,7 +520,7 @@ configure_package_config_file(LVR2Config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
   INSTALL_DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr2
   PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
-  
+
 write_basic_package_version_file(
   ${CMAKE_CURRENT_BINARY_DIR}/LVR2ConfigVersion.cmake
   COMPATIBILITY SameMajorVersion
