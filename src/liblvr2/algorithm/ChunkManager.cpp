@@ -35,6 +35,7 @@
  */
 
 #include "lvr2/algorithm/ChunkManager.hpp"
+#include "lvr2/io/ChunkIO.hpp"
 
 #include "lvr2/io/ModelFactory.hpp"
 
@@ -378,6 +379,9 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
         ++iterator;
     }
 
+    ChunkIO chunkIo(savePath + "/chunked_mesh.h5");
+    chunkIo.writeBasicStructure(m_amount, m_chunkSize, m_boundingBox);
+
     // save the chunks as .ply
     for (std::size_t i = 0; i < m_amount.x; i++)
     {
@@ -403,6 +407,9 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
                                             savePath + "/" + std::to_string(i) + "-"
                                                 + std::to_string(j) + "-" + std::to_string(k)
                                                 + ".ply");
+                    // write chunk in hdf5
+                    chunkIo.writeChunk(chunkMeshPtr, i, j, k);
+
                 }
             }
         }

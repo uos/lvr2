@@ -64,6 +64,7 @@ void MeshIO<Derived>::save(HighFive::Group& group, const MeshBufferPtr& buffer)
         {
             material = buffer->getMaterials().at(i);
 
+            // Both material fields are optional. We save -1, if they are not initialized.
             textureHandles.get()[i] = (material.m_texture) ? (int) material.m_texture->idx() : -1;;
 
             if (material.m_color)
@@ -85,7 +86,6 @@ void MeshIO<Derived>::save(HighFive::Group& group, const MeshBufferPtr& buffer)
         std::vector <size_t> dimensionsRgb{numMaterials, 3};
         std::vector <hsize_t> chunkRgb{numMaterials, 3};
         m_array_io->save(materialsGroup, "texture_handles", numMat, chunkMat, textureHandles);
-
         m_array_io->save(materialsGroup, "rgb_color", dimensionsRgb, chunkRgb, rgb8Color);
     }
 }
