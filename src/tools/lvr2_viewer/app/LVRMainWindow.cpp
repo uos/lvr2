@@ -786,9 +786,9 @@ void LVRMainWindow::alignPointClouds()
     Eigen::Vector3f pos(dataPose.x, dataPose.y, dataPose.z);
     Eigen::Vector3f angles(dataPose.r, dataPose.t, dataPose.p);
     angles *= M_PI / 180.0; // degrees -> radians
-    Eigen::Matrix4f mat = poseToMatrix(pos, angles);
+    Transformf mat = poseToMatrix<float>(pos, angles);
 
-    boost::optional<Eigen::Matrix4f> correspondence = m_correspondanceDialog->getTransformation();
+    boost::optional<Transformf> correspondence = m_correspondanceDialog->getTransformation();
     if (correspondence.is_initialized())
     {
         mat *= correspondence.get();
@@ -810,7 +810,7 @@ void LVRMainWindow::alignPointClouds()
         pos = Eigen::Vector3f(modelPose.x, modelPose.y, modelPose.z);
         angles = Eigen::Vector3f(modelPose.r, modelPose.t, modelPose.p);
         angles /= 180.0 / M_PI;
-        Eigen::Matrix4f modelTransform = poseToMatrix(pos, angles);
+        Transformf modelTransform = poseToMatrix<float>(pos, angles);
 
         /* TODO: convert to new ICPPointAlign
 
@@ -930,26 +930,16 @@ LVRModelItem* LVRMainWindow::loadModelItem(QString name)
 
     // Read Pose file
     boost::filesystem::path poseFile = name.toStdString();
-    poseFile.replace_extension("pose");
-    if (boost::filesystem::exists(poseFile))
+
+    for (auto& extension : { "pose", "dat", "frames" })
     {
-        cout << "Found Pose file: " << poseFile << endl;
-        ifstream in;
-        in.open(poseFile.string());
-        lvr2::Pose pose;
-        in >> pose.x >> pose.y >> pose.z;
-        in >> pose.r >> pose.t >> pose.p;
-        item->setPose(pose);
-    }
-    else
-    {
-        poseFile.replace_extension("dat");
+        poseFile.replace_extension(extension);
         if (boost::filesystem::exists(poseFile))
         {
             cout << "Found Pose file: " << poseFile << endl;
-            Eigen::Matrix4f mat = getTransformationFromPose<float>(poseFile).transpose();
+            Transformf mat = getTransformationFromFile<float>(poseFile);
             BaseVector<float> pos, angles;
-            getPoseFromMatrix<float>(pos, angles, mat);
+            getPoseFromMatrix<float>(pos, angles, mat.transpose());
 
             angles *= 180.0 / M_PI; // radians -> degrees
 
@@ -957,6 +947,8 @@ LVRModelItem* LVRMainWindow::loadModelItem(QString name)
                 pos.x, pos.y, pos.z,
                 angles.x, angles.y, angles.z
             });
+
+            break;
         }
     }
     return item;
@@ -987,15 +979,15 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
                 icon.addFile(QString::fromUtf8(":/qv_scandata_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
                 root->setIcon(0, icon);
 
-                std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(base.toStdString()));
+                std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(info.absoluteFilePath().toStdString()));
 
-                lastItem = addScanData(sdm, root);
+                lastItem = addScans(sdm, root);
 
                 root->setExpanded(true);
 
                 // load mesh only
                 ModelPtr model_ptr(new Model());
-                std::shared_ptr<HDF5IO> h5_io_ptr(new HDF5IO(base.toStdString()));
+                std::shared_ptr<HDF5IO> h5_io_ptr(new HDF5IO(info.absoluteFilePath().toStdString()));
                 if(h5_io_ptr->readMesh(model_ptr))
                 {
                     ModelBridgePtr bridge(new LVRModelBridge(model_ptr));
@@ -1665,19 +1657,21 @@ void LVRMainWindow::toggleWireframe(bool checkboxState)
     }
 }
 
-QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent)
+QTreeWidgetItem* LVRMainWindow::addScans(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent)
 {
     QTreeWidgetItem *lastItem = nullptr;
-    std::vector<ScanData> scanData = sdm->getScanData();
-    std::vector<std::vector<CamData> > camData = sdm->getCamData();
+    std::vector<ScanPtr> scans = sdm->getScans();
+    std::vector<std::vector<CameraData> > camData = sdm->getCameraData();
 
-    for (size_t i = 0; i < scanData.size(); i++)
+    bool cam_data_available = camData.size() > 0;
+
+    for (size_t i = 0; i < scans.size(); i++)
     {
         char buf[128];
-        std::sprintf(buf, "%05d", scanData[i].m_positionNumber);
-        LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
+        std::sprintf(buf, "%05d", scans[i]->m_positionNumber);
+        LVRScanDataItem *item = new LVRScanDataItem(scans[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
 
-        if(camData[i].size() > 0)
+        if(cam_data_available && camData[i].size() > 0)
         {
             QTreeWidgetItem* cameras_item = new QTreeWidgetItem(item, LVRCamerasItemType);
             cameras_item->setText(0, QString("Photos"));
@@ -1693,7 +1687,6 @@ QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm
                 lastItem = cam_item;
             }
         }
-
 
         lastItem = item;
     }

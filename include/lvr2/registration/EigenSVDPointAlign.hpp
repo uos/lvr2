@@ -34,7 +34,8 @@
 #ifndef EIGENSVDPOINTALIGN_HPP_
 #define EIGENSVDPOINTALIGN_HPP_
 
-#include "Scan.hpp"
+#include "SLAMScanWrapper.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 
 #include <Eigen/Dense>
 
@@ -45,10 +46,10 @@ template<typename T, typename PointT = float>
 class EigenSVDPointAlign
 {
 public:
-    using Vec3 = Eigen::Matrix<T, 3, 1>;
-    using Mat4 = Eigen::Matrix<T, 4, 4>;
+    using Vec3 = Vector3<T>;
+    using Mat4 = Transform<T>;
     using Mat3 = Eigen::Matrix<T, 3, 3>;
-    using Point3 = Eigen::Matrix<PointT, 3, 1>;
+    using Point3 = Vector3<PointT>;
     using PointPairVector = std::vector<std::pair<Point3, Point3>>;
 
     EigenSVDPointAlign() {};
@@ -69,7 +70,7 @@ public:
      * @return The average Point-to-Point error of the Scans
      */
     T alignPoints(
-        ScanPtr scan,
+        SLAMScanPtr scan,
         Point3** neighbors,
         const Vec3& centroid_m,
         const Vec3& centroid_d,

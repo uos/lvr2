@@ -3,7 +3,7 @@ namespace lvr2
 {
 
 template<typename T>
-Eigen::Matrix<T,4,4> getTransformationFromPose(const boost::filesystem::path& pose)
+Transform<T> getTransformationFromPose(const boost::filesystem::path& pose)
 {
     std::ifstream poseIn(pose.c_str());
     if(poseIn.good())
@@ -49,12 +49,12 @@ Eigen::Matrix<T,4,4> getTransformationFromPose(const boost::filesystem::path& po
     }
     else
     {
-        return Eigen::Matrix<T,4,4>::Identity();
+        return Transform<T>::Identity();
     }
 }
 
 template<typename T>
-Eigen::Matrix<T,4,4> getTransformationFromFrames(const boost::filesystem::path& frames)
+Transform<T> getTransformationFromFrames(const boost::filesystem::path& frames)
 {
     T alignxf[16];
     int color;
@@ -82,7 +82,7 @@ Eigen::Matrix<T,4,4> getTransformationFromFrames(const boost::filesystem::path& 
 }
 
 template<typename T>
-Eigen::Matrix<T,4,4> getTransformationFromDat(const boost::filesystem::path& frames)
+Transform<T> getTransformationFromDat(const boost::filesystem::path& frames)
 {
     T alignxf[16];
     int color;
@@ -95,11 +95,11 @@ Eigen::Matrix<T,4,4> getTransformationFromDat(const boost::filesystem::path& fra
             in >> alignxf[i];
         }
     }
-    return Eigen::Map<Eigen::Matrix<T,4,4>>(alignxf).transpose();
+    return Eigen::Map<Transform<T>>(alignxf).transpose();
 }
 
 template<typename T>
-void writeFrame(const Eigen::Matrix<T, 4, 4>& transform, const boost::filesystem::path& framesOut)
+void writeFrame(const Transform<T>& transform, const boost::filesystem::path& framesOut)
 {
     std::ofstream out(framesOut.c_str());
 
@@ -118,6 +118,39 @@ void writeFrame(const Eigen::Matrix<T, 4, 4>& transform, const boost::filesystem
         << transform.col(3)(3);
 
     out.close();
+}
+
+template<typename T>
+Transform<T> loadFromFile(const boost::filesystem::path& file)
+{
+    Transform<T> m;
+    T arr[16];
+    std::ifstream in(file.string());
+    for(size_t i = 0; i < 16; i++)
+    {
+        in >> arr[i];
+    }
+    return Eigen::Map<Matrix4RM<T>>(arr);
+}
+
+template<typename T>
+Transform<T> getTransformationFromFile(const boost::filesystem::path& file)
+{
+    boost::filesystem::path extension = file.extension();
+    if(extension == ".dat")
+    {
+        return getTransformationFromDat<T>(file);
+    }
+    else if(extension == ".pose")
+    {
+        return getTransformationFromPose<T>(file);
+    }
+    else if(extension == ".frames")
+    {
+        return getTransformationFromFrames<T>(file);
+    }
+    
+    throw std::invalid_argument(string("Unknown Pose extension: ") + extension.string());
 }
 
 } // namespace lvr2

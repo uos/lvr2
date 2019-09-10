@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, University Osnabrück
+ * Copyright (c) 2019, University Osnabrück
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,10 +42,8 @@ namespace lvr2
 
 ///
 /// \brief A class to handle point information with an arbitrarily
-///        large number of attribute channels. Point definitions,
-///        as well as normal and color buffers, are cached outside
-///        the attribute maps to allow faster access.
-///        The added channels should always have the some length
+///        large number of attribute channels. 
+///        The added channels should always have the same length
 ///        as the point array to keep the mapping
 ///        between geometry (channel 'points') and the associated layers like RGB
 ///        colors or point normals consistent.
