@@ -29,7 +29,7 @@
 #include "lvr2/algorithm/CleanupAlgorithms.hpp"
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
-/* #include "lvr2/algorithm/ReductionAlgorithms.hpp" */
+#include "lvr2/algorithm/ReductionAlgorithms.hpp"
 #include "lvr2/algorithm/Tesselator.hpp"
 #include "lvr2/algorithm/UtilAlgorithms.hpp"
 #include "lvr2/io/DataStruct.hpp"
@@ -493,10 +493,9 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
             // TODO: maybe we should calculate this differently...
             const auto count = static_cast<size_t>((mesh.numFaces() / 2) * reductionRatio);
             auto collapsedCount = simpleMeshReduction(mesh, count, faceNormals);
-        }
-        */
+        }*/
 
-        /*ClusterBiMap<FaceHandle> clusterBiMap;
+        ClusterBiMap<FaceHandle> clusterBiMap;
         if (options.optimizePlanes())
         {
             clusterBiMap = iterativePlanarClusterGrowing(mesh,
@@ -520,7 +519,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         else
         {
             clusterBiMap = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
-        }*/
+        }
 
         // Finalize mesh
         lvr2::SimpleFinalizer<Vec> finalize;
