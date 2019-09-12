@@ -47,28 +47,94 @@ template <typename BaseVecT>
 class BigGridKdTree
 {
   public:
+    /**
+     * constructor reserved for the root of a kd-Tree
+     * @param bb
+     * @param maxNodePoints
+     * @param grid
+     * @param voxelsize
+     * @param numPoints
+     */
     BigGridKdTree(BoundingBox<BaseVecT>& bb,
                   size_t maxNodePoints,
                   BigGrid<BaseVecT>* grid,
                   float voxelsize,
                   size_t numPoints = 0);
     virtual ~BigGridKdTree();
+
+    /**
+     * inserts a nodes in to the kd-Tree
+     * @param numPoints
+     * @param pos
+     */
     void insert(size_t numPoints, BaseVecT pos);
+    /**
+     * returns the leafs of the kd-tree (or final PartitionBB which can be converted to the sub-mesh)
+     * @return leafs
+     */
     static std::vector<BigGridKdTree*> getLeafs();
+    /**
+     *
+     * @return nodes
+     */
     static std::vector<BigGridKdTree*> getNodes() { return s_nodes; }
+    /**
+     *
+     * @return number of points
+     */
     inline size_t getNumPoints() { return m_numPoints; }
+    /**
+     *
+     * @return BoundingBox
+     */
     inline BoundingBox<BaseVecT>& getBB() { return m_bb; }
+    /**
+     * Set new BoundingBox, if points exceeds global GridBB
+     *
+     * @param v1
+     */
+    void setBB(BaseVecT v1); //TODO: actually implement it
 
   private:
+
     BoundingBox<BaseVecT> m_bb;
+
     size_t m_numPoints;
+
+    /**
+     * children nodes of a specific node
+     */
     std::vector<BigGridKdTree*> m_children;
+
+    /**
+     * constructor reserved for intern nodes and leafs
+     * @param bb
+     * @param numPoints
+     */
     BigGridKdTree(BoundingBox<BaseVecT>& bb, size_t numPoints = 0);
 
+    /**
+     * global list of all created nodes
+     */
     static std::vector<BigGridKdTree*> s_nodes;
+
     static float s_voxelsize;
+
+    /**
+     * maximum nodes allowed in a leaf, defined by user
+     */
     static size_t s_maxNodePoints;
+
+    /**
+     * global grid, set once at the start
+     */
     static BigGrid<BaseVecT>* m_grid;
+
+    /**
+     * checks, if position "pos" is within the BoundingBox
+     * @param pos specific position
+     * @return bool true, if pos is in BoundingBox
+     */
     inline bool fitsInBox(BaseVecT& pos)
     {
         return pos.x > m_bb.getMin().x && pos.y > m_bb.getMin().y && pos.z > m_bb.getMin().z &&
