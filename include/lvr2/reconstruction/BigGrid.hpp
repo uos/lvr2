@@ -86,7 +86,7 @@ class BigGrid
     size_t pointSize();
 
     /**
-     * Amount of Ponts in Voxel at position i,j,k
+     * Amount of Points in Voxel at position i,j,k
      * @param i
      * @param j
      * @param k
@@ -123,7 +123,16 @@ class BigGrid
 
     lvr2::ucharArr colors(
         float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints);
-
+    /**
+     * return numbers of points in a specific area (defined by the params) of the grid
+     * @param minx
+     * @param miny
+     * @param minz
+     * @param maxx
+     * @param maxy
+     * @param maxz
+     * @return number of points in area
+     */
     size_t getSizeofBox(float minx, float miny, float minz, float maxx, float maxy, float maxz);
 
     void serialize(std::string path = "serinfo.ls");
