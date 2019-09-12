@@ -41,23 +41,19 @@ using namespace Eigen;
 namespace lvr2
 {
 
-int splitPoints(Eigen::Vector3f* points, int n, int axis, double splitValue)
+int splitPoints(Vector3f* points, int n, int axis, double splitValue)
 {
     int l = 0, r = n - 1;
 
     while (l < r)
     {
-        while (l <= r && points[l](axis) < splitValue)
+        while (l < r && points[l](axis) < splitValue)
         {
-            l += 1;
+            ++l;
         }
-        while (r >= l && points[r](axis) >= splitValue)
+        while (r > l && points[r](axis) >= splitValue)
         {
-            if (r == l) // prevent r from going below 0
-            {
-                break;
-            }
-            r -= 1;
+            --r;
         }
         if (l < r)
         {
@@ -68,7 +64,7 @@ int splitPoints(Eigen::Vector3f* points, int n, int axis, double splitValue)
     return l;
 }
 
-void createOctree(Eigen::Vector3f* points,
+void createOctree(Vector3f* points,
                   int n,
                   bool* flagged,
                   const Vector3d& min,
@@ -115,14 +111,20 @@ void createOctree(Eigen::Vector3f* points,
     lMax[axis] = center[axis];
     rMin[axis] = center[axis];
 
-    #pragma omp task
-    createOctree(points    , l    , flagged    , lMin, lMax, level + 1, voxelSize, maxLeafSize);
+    if (l > maxLeafSize)
+    {
+        #pragma omp task
+        createOctree(points    , l    , flagged    , lMin, lMax, level + 1, voxelSize, maxLeafSize);
+    }
 
-    #pragma omp task
-    createOctree(points + l, n - l, flagged + l, rMin, rMax, level + 1, voxelSize, maxLeafSize);
+    if (n - l > maxLeafSize)
+    {
+        #pragma omp task
+        createOctree(points + l, n - l, flagged + l, rMin, rMax, level + 1, voxelSize, maxLeafSize);
+    }
 }
 
-int octreeReduce(Eigen::Vector3f* points, int n, double voxelSize, int maxLeafSize)
+int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize)
 {
     bool* flagged = new bool[n];
     for (int i = 0; i < n; i++)

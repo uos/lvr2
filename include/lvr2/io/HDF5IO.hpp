@@ -30,11 +30,13 @@
 
 #include "BaseIO.hpp"
 #include "DataStruct.hpp"
-#include "ScanData.hpp"
-#include "CamData.hpp"
-#include "CalibrationParameters.hpp"
 
-#include "lvr2/geometry/Matrix4.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/io/AttributeMeshIOBase.hpp"
+#include "lvr2/types/CameraData.hpp"
+#include "lvr2/types/Hyperspectral.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/types/Scan.hpp"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -45,7 +47,7 @@
 #include <highfive/H5DataSpace.hpp>
 #include <highfive/H5File.hpp>
 
-#include "lvr2/io/AttributeMeshIOBase.hpp"
+
 #include <string>
 
 namespace lvr2
@@ -61,9 +63,6 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
 
     /**
          * \brief Parse the given file and load supported elements.
-         *#include <highfive/H5DataSet.hpp"
-#include <highfive/H5DataSpace.hpp"
-#include <highfive/H5File.hpp"
          * @param filename  The file to read.
          */
     virtual ModelPtr read(std::string filename);
@@ -94,7 +93,7 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
      */
     HDF5IO() {}
 
-    HDF5IO(std::string filename, int open_flags = HighFive::File::ReadOnly);
+    HDF5IO(std::string filename, int open_flags = HighFive::File::ReadWrite);
 
     /**
      * @brief Constructs a HDFIO io object to read a HDF5 file with the given filename.
@@ -111,6 +110,46 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
 
     bool open(std::string filename, int open_flag);
 
+    Texture getImage(std::string groupName, std::string datasetName);
+
+    ScanPtr    getSingleRawScan(int nr, bool load_points = true);
+
+    CameraData  getSingleRawCamData(int scan_id, int img_id, bool load_image_data = true);
+
+    std::vector<ScanPtr> getRawScans(bool load_points = true);
+
+    std::vector<std::vector<CameraData> > getRawCamData(bool load_image_data = true);
+
+    floatArr getFloatChannelFromRawScan(std::string name,
+            int nr, unsigned int& n, unsigned& w);
+
+   
+
+    void addImage(
+            std::string groupName, std::string name, cv::Mat& img);
+    
+    void addRawScan(int nr, ScanPtr scan);
+
+    /**
+     * @brief add recorded image referenced to a scan pose
+     */
+    void addRawCamData( int scan_id, int img_id, CameraData& cam_data );
+
+    void addFloatChannelToRawScan(std::string name, int nr, size_t n, unsigned w, floatArr data);
+
+    void addRawDataHeader(std::string description, Matrix4<BaseVector<float>> &referenceFrame);
+
+    void addHyperspectralCalibration(int position, const HyperspectralPanorama& hyperspectral);
+
+    void setCompress(bool compress);
+    void setChunkSize(const size_t& size);
+    void setPreviewReductionFactor(const unsigned int factor);
+    void setUsePreviews(bool use);
+
+    bool compress();
+
+    size_t chunkSize();
+
     template<typename T>
     boost::shared_array<T> getArray(
             std::string groupName, std::string datasetName,
@@ -120,19 +159,6 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
     boost::shared_array<T> getArray(
             std::string groupName, std::string datasetName,
             std::vector<size_t>& dim);
-
-    Texture getImage(std::string groupName, std::string datasetName);
-
-    ScanData    getSingleRawScanData(int nr, bool load_points = true);
-
-    CamData     getSingleRawCamData(int scan_id, int img_id, bool load_image_data = true);
-
-    std::vector<ScanData> getRawScanData(bool load_points = true);
-
-    std::vector<std::vector<CamData> > getRawCamData(bool load_image_data = true);
-
-    floatArr getFloatChannelFromRawScanData(std::string name,
-            int nr, unsigned int& n, unsigned& w);
 
     template<typename T>
     void addArray(
@@ -155,31 +181,6 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
             std::vector<size_t>& dimensions,
             std::vector<hsize_t>& chunkSize,
             boost::shared_array<T> data);
-
-    void addImage(
-            std::string groupName, std::string name, cv::Mat& img);
-    
-    void addRawScanData(int nr, ScanData &scan);
-
-    /**
-     * @brief add recorded image referenced to a scan pose
-     */
-    void addRawCamData( int scan_id, int img_id, CamData& cam_data );
-
-    void addFloatChannelToRawScanData(std::string name, int nr, size_t n, unsigned w, floatArr data);
-
-    void addRawDataHeader(std::string description, Matrix4<BaseVector<float>> &referenceFrame);
-
-    void addHyperspectralCalibration(int position, const HyperspectralCalibration& calibration);
-
-    void setCompress(bool compress);
-    void setChunkSize(const size_t& size);
-    void setPreviewReductionFactor(const unsigned int factor);
-    void setUsePreviews(bool use);
-
-    bool compress();
-
-    size_t chunkSize();
 
   private:
 
@@ -285,9 +286,7 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
 
     void getImage(HighFive::Group& g, std::string datasetName, cv::Mat& img);
 
-    HighFive::Group getGroup(const std::string& groupName, bool create = true);
-
-    HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool create = true);
+   
 
     std::vector<std::string> splitGroupNames(const std::string &groupName);
 
@@ -296,6 +295,11 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
     void write_base_structure();
 
     bool isGroup(HighFive::Group grp, std::string objName);
+
+
+    HighFive::Group getGroup(const std::string& groupName, bool create = true);
+
+    HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool create = true);
 
     template <typename T>
     boost::shared_array<T> reduceData(boost::shared_array<T> data,
