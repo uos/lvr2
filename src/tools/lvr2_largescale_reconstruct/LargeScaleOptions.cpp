@@ -80,9 +80,8 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
                   "Remove noise artifacts from contours. Same values are between 2 and 4")(
         "planeIterations",
         value<int>(&m_planeIterations)->default_value(3),
-        "Number of iterations for plane optimization")("fillHoles,f",
-                                                       value<int>(&m_fillHoles)->default_value(30),
-                                                       "Maximum size for hole filling")(
+        "Number of iterations for plane optimization")(
+        "fillHoles,f", value<int>(&m_fillHoles)->default_value(0), "Maximum size for hole filling")(
         "rda",
         value<int>(&m_rda)->default_value(0),
         "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")(

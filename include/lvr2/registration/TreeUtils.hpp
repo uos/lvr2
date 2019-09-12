@@ -34,8 +34,7 @@
 #ifndef TREEUTILS_HPP_
 #define TREEUTILS_HPP_
 
-#include <Eigen/Dense>
-using Eigen::Vector3d;
+#include <lvr2/types/MatrixTypes.hpp>
 
 namespace lvr2
 {
@@ -50,9 +49,9 @@ namespace lvr2
  * @param axis       The axis to sort by
  * @param splitValue The value to sort by
  *
- * @returns The number of smaller elements. points + this value gives the start of the greater elements
+ * @return int The number of smaller elements. points + this value gives the start of the greater elements
  */
-int splitPoints(Eigen::Vector3f* points, int n, int axis, double splitValue);
+int splitPoints(Vector3f* points, int n, int axis, double splitValue);
 
 /**
  * @brief Reduces a Point Cloud using an Octree with a minimum Voxel size
@@ -62,9 +61,9 @@ int splitPoints(Eigen::Vector3f* points, int n, int axis, double splitValue);
  * @param voxelSize   The minimum size of a Voxel
  * @param maxLeafSize When to stop subdividing Voxels
  *
- * @returns the new number of Points in the Point Cloud
+ * @return int the new number of Points in the Point Cloud
  */
-int octreeReduce(Eigen::Vector3f* points, int n, double voxelSize, int maxLeafSize);
+int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize);
 
 
 /**
@@ -81,7 +80,7 @@ public:
     AABB();
 
     template<typename T>
-    AABB(const Eigen::Matrix<T, 3, 1>* points, size_t count)
+    AABB(const Vector3<T>* points, size_t count)
         : AABB()
     {
         for (size_t i = 0; i < count; i++)
@@ -104,7 +103,7 @@ public:
 
     /// adds a Point to the Point Cloud
     template<typename T>
-    void addPoint(const Eigen::Matrix<T, 3, 1>& point)
+    void addPoint(const Vector3<T>& point)
     {
         for (int axis = 0; axis < 3; axis++)
         {

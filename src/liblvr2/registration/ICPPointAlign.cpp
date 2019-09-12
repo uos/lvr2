@@ -43,7 +43,7 @@ using namespace std;
 namespace lvr2
 {
 
-ICPPointAlign::ICPPointAlign(ScanPtr model, ScanPtr data) :
+ICPPointAlign::ICPPointAlign(SLAMScanPtr model, SLAMScanPtr data) :
     m_modelCloud(model), m_dataCloud(data)
 {
     // Init default values
@@ -55,7 +55,7 @@ ICPPointAlign::ICPPointAlign(ScanPtr model, ScanPtr data) :
     m_searchTree = KDTree::create(model, m_maxLeafSize);
 }
 
-Matrix4d ICPPointAlign::match()
+Transformd ICPPointAlign::match()
 {
     if (m_maxIterations == 0)
     {
@@ -70,8 +70,8 @@ Matrix4d ICPPointAlign::match()
 
     Vector3d centroid_m = Vector3d::Zero();
     Vector3d centroid_d = Vector3d::Zero();
-    Matrix4d transform = Matrix4d::Identity();
-    Matrix4d delta = Matrix4d::Identity();
+    Transformd transform = Matrix4d::Identity();
+    Transformd delta = Matrix4d::Identity();
 
     size_t numPoints = m_dataCloud->numPoints();
 
@@ -84,10 +84,10 @@ Matrix4d ICPPointAlign::match()
         prev_ret = ret;
 
         // Get point pairs
-        size_t pairs = getNearestNeighbors(m_searchTree, m_dataCloud, neighbors, m_maxDistanceMatch, centroid_m, centroid_d);
+        size_t pairs = KDTree::nearestNeighbors(m_searchTree, m_dataCloud, neighbors, m_maxDistanceMatch, centroid_m, centroid_d);
 
         // Get transformation
-        transform = Matrix4d::Identity();
+        transform = Transformd::Identity();
         ret = align.alignPoints(m_dataCloud, neighbors, centroid_m, centroid_d, transform);
 
         // Apply transformation
@@ -118,7 +118,7 @@ Matrix4d ICPPointAlign::match()
     cout << endl;
     if (m_verbose)
     {
-        cout << "Result: " << endl << m_dataCloud->getDeltaPose() << endl;
+        cout << "Result: " << endl << m_dataCloud->deltaPose() << endl;
     }
 
     return delta;

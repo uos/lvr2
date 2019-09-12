@@ -53,7 +53,7 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
      boost::filesystem::path posePath(pose);
 
 
-     Eigen::Matrix4d transform = Eigen::Matrix4d::Identity();
+     Transformd transform = Transformd::Identity();
 
      if(boost::filesystem::exists(framesPath))
      {
@@ -96,8 +96,8 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
         float y = points[3 * i + 1];
         float z = points[3 * i + 2];
 
-        Eigen::Vector4d v(x,y,z,1);
-        Eigen::Vector4d tv = transform * v;
+        Vector4d v(x,y,z,1);
+        Vector4d tv = transform * v;
 
 //        points[3 * i]     = tv[0];
 //        points[3 * i + 1] = tv[1];
@@ -107,14 +107,14 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
         pts.push_back(tv[1]);
         pts.push_back(tv[2]);
 
-        Eigen::Matrix3d rotation = transform.block(0, 0, 3, 3);
+        Rotationd rotation = transform.block(0, 0, 3, 3);
 
         float nx = normals[3 * i];
         float ny = normals[3 * i + 1];
         float nz = normals[3 * i + 2];
 
-        Eigen::Vector3d normal(nx, ny, nz);
-        Eigen::Vector3d tn = rotation * normal;
+        Vector3d normal(nx, ny, nz);
+        Vector3d tn = rotation * normal;
 
 //        normals[3 * i]     = tn[0];
 //        normals[3 * i + 1] = tn[1];
