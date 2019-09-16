@@ -212,6 +212,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
                            << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
                            << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
             }
+            std::cout << "Check Bounding Box Colission: " << partitionBoxes.front().overlap(partitionBoxes.back()) << std::endl;
         }
     }
 

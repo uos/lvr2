@@ -101,6 +101,14 @@ public:
     BaseVecT getCentroid() const;
 
     /**
+     * @brief check if current volume overlap with a given bounding box
+     *
+     * @param bb Another bounding box
+     * @return true if both boxes overlap
+     */
+    bool overlap(const BoundingBox<BaseVecT>& bb);
+
+    /**
      * @brief Returns the longest side of the bounding box
      */
     typename BaseVecT::CoordType getLongestSide() const;
@@ -131,7 +139,7 @@ public:
     BaseVecT getMin() const;
 
 private:
-    /// The lower right Vector of the bounding box
+    /// The lower left Vector of the bounding box
     BaseVecT m_min;
 
     /// The upper right Vector of the bounding box
