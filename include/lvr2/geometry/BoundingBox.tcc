@@ -74,6 +74,14 @@ bool BoundingBox<BaseVecT>::isValid() const
 }
 
 template<typename BaseVecT>
+bool BoundingBox<BaseVecT>::overlap(const lvr2::BoundingBox<BaseVecT> &bb)
+{
+    return (m_min.x <= bb.m_max.x && m_max.x >= bb.m_min.x)
+        && (m_min.y <= bb.m_max.y && m_max.y >= bb.m_min.y)
+        && (m_min.z <= bb.m_max.z && m_max.z >= bb.m_min.z);
+}
+
+template<typename BaseVecT>
 BaseVecT BoundingBox<BaseVecT>::getCentroid() const
 {
     return m_centroid;
