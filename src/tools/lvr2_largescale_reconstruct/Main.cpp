@@ -39,6 +39,7 @@
 #include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/reconstruction/BigGrid.hpp"
 #include "lvr2/reconstruction/BigGridKdTree.hpp"
+#include "lvr2/reconstruction/VirtualGrid.hpp"
 #include "lvr2/reconstruction/BigVolumen.hpp"
 #include "lvr2/reconstruction/QueryPoint.hpp"
 
@@ -103,7 +104,6 @@ typedef lvr2::AdaptiveKSearchSurface<Vec> akSurface;
 template <typename BaseVecT>
 int mpiReconstruct(const LargeScaleOptions::Options& options)
 {
-
     double datastruct_time = 0;
     double normal_time = 0;
     double dist_time = 0;
@@ -202,6 +202,8 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         else
         {
             BigGridKdTree<BaseVecT> gridKd(bg->getBB(), options.getNodeSize(), bg.get(), voxelsize);
+            VirtualGrid<BaseVecT> a(bg->getBB(), options.getNodeSize(),options.getNodeSize(),voxelsize);
+            std::cout << "Original Bounding Box Volume: " << bg->getBB().getVolume() << std::endl;
             gridKd.insert(bg->pointSize(), bg->getBB().getCentroid());
             ofstream partBoxOfs("KdTree.ser");
             for (size_t i = 0; i < gridKd.getLeafs().size(); i++)

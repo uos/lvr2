@@ -142,6 +142,11 @@ typename BaseVecT::CoordType BoundingBox<BaseVecT>::getYSize() const
     return m_max.y - m_min.y;
 }
 
+template<typename BaseVecT>
+typename BaseVecT::CoordType BoundingBox<BaseVecT>::getVolume() const
+{
+    return getXSize() * getYSize() * getZSize();
+}
 
 template<typename BaseVecT>
 typename BaseVecT::CoordType BoundingBox<BaseVecT>::getZSize() const

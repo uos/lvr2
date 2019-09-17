@@ -108,10 +108,10 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
     else
     {
 
-        std:cout << "THIS SHOULD POP UP!" << std::endl;
         // If the new size is larger then max. size, split tree
         if (m_numPoints + numPoints > s_maxNodePoints)
         {
+            std::cout << "SPLIT IN PROGRESS!" << std::endl;
 
             // Split at X-Axis
             lvr2::BoundingBox<BaseVecT> leftbb;
@@ -209,6 +209,8 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
         }
         else
         {
+            std::cout << "GENERATED LEAF!" << std::endl;
+            std::cout << "Volume: " << m_bb.getVolume() << std::endl;
             m_numPoints += numPoints;
         }
     }
