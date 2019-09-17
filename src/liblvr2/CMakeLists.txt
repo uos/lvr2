@@ -58,6 +58,7 @@ set(LVR2_SOURCES
     reconstruction/PCLFiltering.cpp
     algorithm/ChunkBuilder.cpp
     algorithm/ChunkManager.cpp
+    algorithm/ChunkHashGrid.cpp
     registration/ICPPointAlign.cpp
     registration/KDTree.cpp
     registration/SLAMScanWrapper.cpp

@@ -26,7 +26,7 @@
  */
 
 /**
-* ChunkIO.hpp
+* ChunkIO.cpp
 *
 * @date 05.09.2019
 * @author Raphael Marx
@@ -36,13 +36,16 @@
 #include <string>
 
 #include "lvr2/io/ChunkIO.hpp"
-#include "lvr2/io/hdf5/ArrayIO.hpp"
 
 
 
 namespace lvr2 {
 
-ChunkIO::ChunkIO(std::string filePath) :m_filePath(filePath)
+ChunkIO::ChunkIO()
+= default;
+
+ChunkIO::ChunkIO(std::string filePath)
+:m_filePath(filePath)
 {
     m_hdf5IO.open(m_filePath);
 }
@@ -52,27 +55,89 @@ void ChunkIO::writeBasicStructure(BaseVector<std::size_t> amount, float chunksiz
     // HighFive::Group chunks = hdf5util::getGroup(m_hdf5IO.m_hdf5_file, "chunks", true); // <- maybe use this instead of string
 
     boost::shared_array<size_t> amountArr(new size_t[3] {amount.x, amount.y, amount.z});
-    m_hdf5IO.save("chunks", "amount", 3, amountArr);
+    m_hdf5IO.save(m_chunkName, m_amountName, 3, amountArr);
     boost::shared_array<float> chunkSizeArr(new float[1] {chunksize});
-    m_hdf5IO.save("chunks", "size", 1, chunkSizeArr);
+    m_hdf5IO.save(m_chunkName, m_chunkSizeName, 1, chunkSizeArr);
     boost::shared_array<float> boundingBoxArr(
             new float[6] {boundingBox.getMin()[0], boundingBox.getMin()[1], boundingBox.getMin()[2],
                             boundingBox.getMax()[0], boundingBox.getMax()[1], boundingBox.getMax()[2]});
     std::vector<size_t> boundingBoxDim({2, 3});
-    m_hdf5IO.save("chunks", "bounding_box", boundingBoxDim, boundingBoxArr);
-
+    m_hdf5IO.save(m_chunkName, m_boundingBoxName, boundingBoxDim, boundingBoxArr);
 }
-void ChunkIO::writeChunk(lvr2::MeshBufferPtr mesh, size_t x, size_t y, size_t z)
+
+void ChunkIO::writeChunk(lvr2::MeshBufferPtr mesh, size_t cellIndex)
 {
-    HighFive::Group chunks = hdf5util::getGroup(m_hdf5IO.m_hdf5_file, "chunks", true);
-    std::string gridCoord = std::to_string(x) + "-" + std::to_string(y) + "-" + std::to_string(z);
-    if (!chunks.exist(gridCoord))
+    HighFive::Group chunks = hdf5util::getGroup(m_hdf5IO.m_hdf5_file, m_chunkName, true);
+    std::string cellName = std::to_string(cellIndex);
+    if (!chunks.exist(cellName))
     {
-        chunks.createGroup(gridCoord);
+        chunks.createGroup(cellName);
     }
-    HighFive::Group meshGroup = chunks.getGroup(gridCoord);
+    HighFive::Group meshGroup = chunks.getGroup(cellName);
 
     m_hdf5IO.save(meshGroup, mesh);
+}
+
+BaseVector<size_t> ChunkIO::loadAmount()
+{
+    BaseVector<size_t> amount;
+    size_t dimensionAmount;
+    boost::shared_array<size_t> amountArr
+            = m_hdf5IO.ArrayIO::load<size_t>(m_chunkName, m_amountName, dimensionAmount);
+    if(dimensionAmount != 3)
+    {
+        std::cout   << "Error loading chunk data: amount has not the right dimension. Real: "
+                    << dimensionAmount << "; Expected: 3" << std::endl;
+    }
+    else
+    {
+        amount = BaseVector<size_t>(amountArr[0], amountArr[1], amountArr[2]);
+    }
+    return amount;
+}
+
+float ChunkIO::loadChunkSize()
+{
+    float chunkSize;
+    size_t dimensionChunkSize;
+    boost::shared_array<float> chunkSizeArr
+            = m_hdf5IO.ArrayIO::load<float>(m_chunkName, m_chunkSizeName, dimensionChunkSize);
+    if(dimensionChunkSize != 1)
+    {
+        std::cout   << "Error loading chunk data: chunkSize has not the right dimension. Real: "
+                    << dimensionChunkSize << "; Expected: 1" << std::endl;
+        chunkSize = 0;
+    }
+    else
+    {
+        chunkSize = chunkSizeArr[0];
+    }
+    return chunkSize;
+}
+
+BoundingBox<BaseVector<float>> ChunkIO::loadBoundingBox()
+{
+    BoundingBox<BaseVector<float>> boundingBox;
+    std::vector<size_t> dimensionBox;
+    boost::shared_array<float> boundingBoxArr
+            = m_hdf5IO.ArrayIO::load<float>(m_chunkName, m_boundingBoxName, dimensionBox);
+    if(dimensionBox.at(0) != 2 && dimensionBox.at(1) != 3)
+    {
+        std::cout   << "Error loading chunk data: bounding_box has not the right dimension. Real: {"
+                    << dimensionBox.at(0) << ", " << dimensionBox.at(1) << "}; Expected: {2, 3}" << std::endl;
+    }
+    else
+    {
+        boundingBox = BoundingBox<BaseVector<float>>(
+                BaseVector<float>(boundingBoxArr[0], boundingBoxArr[1], boundingBoxArr[2]),
+                BaseVector<float>(boundingBoxArr[3], boundingBoxArr[4], boundingBoxArr[5]));
+    }
+    return boundingBox;
+}
+
+lvr2::MeshBufferPtr ChunkIO::loadChunk(size_t cellIndex)
+{
+    return m_hdf5IO.loadMesh(m_chunkName + "/" + std::to_string(cellIndex));
 }
 
 

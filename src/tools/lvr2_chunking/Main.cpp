@@ -54,32 +54,43 @@ int main(int argc, char** argv)
     {
         return EXIT_SUCCESS;
     }
-
-    lvr2::ModelPtr model = lvr2::ModelFactory::readModel(options.getInputFile());
-
-    boost::filesystem::path outputPath = boost::filesystem::absolute(options.getOutputDir());
-    if (!boost::filesystem::is_directory(outputPath))
+    if(options.getLoad())
     {
-        boost::filesystem::create_directories(outputPath);
+        if(boost::filesystem::exists(options.getChunkedMesh()))
+        {
+            // loading a hdf5 file and extracting the chunks for a given bounding box
+            lvr2::ChunkManager chunkLoader(options.getChunkedMesh());
+
+            // TODO: remove tmp test later
+            // beginn: tmp test of extractArea method for dat/scan.pts with chunkSize 200
+            if (!boost::filesystem::exists("area"))
+            {
+                boost::filesystem::create_directories("area");
+            }
+            lvr2::BoundingBox<lvr2::BaseVector<float>> area(lvr2::BaseVector<float>(-50, 130, 105),
+                                                            lvr2::BaseVector<float>(155, 194, 211));
+            // end: tmp test of extractArea method
+
+            lvr2::ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(chunkLoader.extractArea(area))),
+                                          "area.ply");
+        }
+
     }
-
-    float size = options.getChunkSize();
-    float maxChunkOverlap = options.getMaxChunkOverlap();
-
-    lvr2::ChunkManager chunker(model->m_mesh, size, maxChunkOverlap, outputPath.string());
-
-    // TODO: remove tmp test later
-    // beginn: tmp test of extractArea method for dat/scan.pts with chunkSize 200
-    if (!boost::filesystem::exists("area"))
+    else
     {
-        boost::filesystem::create_directories("area");
+        // saving a mesh as multiple chunked meshes in an hdf5 file
+        lvr2::ModelPtr model = lvr2::ModelFactory::readModel(options.getInputFile());
+
+        boost::filesystem::path outputPath = boost::filesystem::absolute(options.getOutputDir());
+        if (!boost::filesystem::is_directory(outputPath))
+        {
+            boost::filesystem::create_directories(outputPath);
+        }
+
+        float size = options.getChunkSize();
+        float maxChunkOverlap = options.getMaxChunkOverlap();
+
+        lvr2::ChunkManager chunker(model->m_mesh, size, maxChunkOverlap, outputPath.string());
     }
-    lvr2::BoundingBox<lvr2::BaseVector<float>> area(lvr2::BaseVector<float>(-50, 130, 105),
-                                                    lvr2::BaseVector<float>(155, 194, 211));
-    // end: tmp test of extractArea method
-
-    lvr2::ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(chunker.extractArea(area))),
-                                  "area.ply");
-
     return EXIT_SUCCESS;
 }

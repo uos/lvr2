@@ -38,6 +38,7 @@
 #include "lvr2/io/ChunkIO.hpp"
 
 #include "lvr2/io/ModelFactory.hpp"
+#include <boost/filesystem.hpp>
 
 #include <cmath>
 namespace
@@ -60,8 +61,9 @@ ChunkManager::ChunkManager(MeshBufferPtr mesh,
                            float chunksize,
                            float maxChunkOverlap,
                            std::string savePath)
-    : m_chunkSize(chunksize)
-{
+    : m_chunkSize(chunksize),
+    m_hdf5Path(savePath + "/chunked_mesh.h5")
+    {
     initBoundingBox(mesh);
 
     // compute number of chunks for each dimension
@@ -70,6 +72,20 @@ ChunkManager::ChunkManager(MeshBufferPtr mesh,
     m_amount.z = static_cast<std::size_t>(std::ceil(m_boundingBox.getZSize() / m_chunkSize));
 
     buildChunks(mesh, maxChunkOverlap, savePath);
+    m_chunkHashGrid = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(m_hdf5Path));
+}
+
+ChunkManager::ChunkManager(std::string hdf5Path)
+: m_hdf5Path(hdf5Path)
+{
+    if(boost::filesystem::exists(hdf5Path))
+    {
+        ChunkIO chunkIO(hdf5Path);
+        m_amount = chunkIO.loadAmount();
+        m_chunkSize = chunkIO.loadChunkSize();
+        m_boundingBox = chunkIO.loadBoundingBox();
+        m_chunkHashGrid = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(hdf5Path));
+    }
 }
 
 MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area)
@@ -87,15 +103,14 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
             {
                 std::size_t cellIndex = getCellIndex(area.getMin() + BaseVector<float>(i, j, k) * m_chunkSize);
 
-                auto it = m_hashGrid.find(cellIndex);
-                if (it == m_hashGrid.end())
+                MeshBufferPtr loadedChunk = m_chunkHashGrid->findChunk(cellIndex);
+                if(loadedChunk)
                 {
-                    continue;
+                    // TODO: remove saving tmp chunks later
+                    ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(loadedChunk)),
+                                            "area/" + std::to_string(cellIndex) + ".ply");
+                    chunks.insert({cellIndex, loadedChunk});
                 }
-                // TODO: remove saving tmp chunks later
-                ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(it->second)),
-                                        "area/" + std::to_string(cellIndex) + ".ply");
-                chunks.insert(*it);
             }
         }
     }
@@ -257,14 +272,14 @@ void ChunkManager::cutLargeFaces(
                     = m_chunkSize * (static_cast<int>(referenceVertexKey / m_chunkSize))
                       + fmod(m_boundingBox.getMin()[axis], m_chunkSize);
 
-                // select plane of chunk depending oh the relative position of the copared
+                // select plane of chunk depending on the relative position of the compared
                 // vertex
                 if (referenceVertexKey < comparedVertexKey)
                 {
                     chunkBorder += m_chunkSize;
                 }
 
-                // chech whether or not to cut the face
+                // check whether or not to cut the face
                 if (referenceVertexKey - chunkBorder < 0 && comparedVertexKey - chunkBorder >= 0
                     && chunkBorder - referenceVertexKey > overlapRatio * m_chunkSize
                     && comparedVertexKey - chunkBorder > overlapRatio * m_chunkSize)
@@ -379,7 +394,7 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
         ++iterator;
     }
 
-    ChunkIO chunkIo(savePath + "/chunked_mesh.h5");
+    ChunkIO chunkIo(m_hdf5Path);
     chunkIo.writeBasicStructure(m_amount, m_chunkSize, m_boundingBox);
 
     // save the chunks as .ply
@@ -399,17 +414,15 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
                     MeshBufferPtr chunkMeshPtr
                         = chunkBuilders[hash]->buildMesh(mesh, splitVertices, splitFaces);
 
-                    // insert chunked mesh into hash grid
-                    m_hashGrid.insert({hash, chunkMeshPtr});
-
                     // export chunked meshes for debugging
                     ModelFactory::saveModel(ModelPtr(new Model(chunkMeshPtr)),
                                             savePath + "/" + std::to_string(i) + "-"
                                                 + std::to_string(j) + "-" + std::to_string(k)
                                                 + ".ply");
                     // write chunk in hdf5
-                    chunkIo.writeChunk(chunkMeshPtr, i, j, k);
+                    chunkIo.writeChunk(chunkMeshPtr, hash);
 
+                    chunkBuilders[hash] = nullptr; // deallocate? is this even useful?
                 }
             }
         }
@@ -429,6 +442,26 @@ std::size_t ChunkManager::getCellIndex(const BaseVector<float>& vec) const
     BaseVector<float> tmpVec = (vec - m_boundingBox.getMin()) / m_chunkSize;
     return static_cast<size_t>(tmpVec.x) * m_amount.y * m_amount.z
            + static_cast<size_t>(tmpVec.y) * m_amount.z + static_cast<size_t>(tmpVec.z);
+}
+
+void ChunkManager::loadAllChunks()
+{
+    int numLoaded = 0;
+    for(int i = 0; i < m_amount[0]; i++)
+    {
+        for(int j = 0; j < m_amount[1]; j++)
+        {
+            for(int k = 0; k < m_amount[2]; k++)
+            {
+                if(m_chunkHashGrid->loadChunk(hashValue(i, j, k)))
+                {
+                    numLoaded++;
+                }
+            }
+        }
+    }
+
+    std::cout << "loaded " << numLoaded << " chunks from hdf5-file." << std::endl;
 }
 
 } /* namespace lvr2 */
