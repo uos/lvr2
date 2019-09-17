@@ -88,12 +88,6 @@ class BigGridKdTree
      * @return BoundingBox
      */
     inline BoundingBox<BaseVecT>& getBB() { return m_bb; }
-    /**
-     * Set new BoundingBox, if points exceeds global GridBB
-     *
-     * @param v1
-     */
-    void setBB(BaseVecT v1); //TODO: actually implement it
 
   private:
 

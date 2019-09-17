@@ -129,6 +129,12 @@ public:
     typename BaseVecT::CoordType getZSize() const;
 
     /**
+     * @brief Returns the volume of the bounding box
+     * @return
+     */
+    typename BaseVecT::CoordType getVolume() const;
+
+    /**
      * @brief Returns the upper right coordinates
      */
     BaseVecT getMax() const;
