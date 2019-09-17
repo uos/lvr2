@@ -37,7 +37,9 @@
 #ifndef CHUNK_MANAGER_HPP
 #define CHUNK_MANAGER_HPP
 
+#include "lvr2/io/ChunkIO.hpp"
 #include "lvr2/algorithm/ChunkBuilder.hpp"
+#include "lvr2/algorithm/ChunkHashGrid.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/io/Model.hpp"
@@ -52,7 +54,7 @@ class ChunkManager
      * @brief ChunkManager creates chunks from an original mesh
      *
      * Chunks the original model into chunks of given size.
-     * Every created chunk has ste same length in height, width and depth.
+     * Every created chunk has the same length in height, width and depth.
      *
      * @param mesh mesh to be chunked
      * @param chunksize size of a chunk - unit depends on the given mesh
@@ -61,7 +63,16 @@ class ChunkManager
      * @param savePath JUST FOR TESTING - REMOVE LATER ON
      */
     ChunkManager(MeshBufferPtr mesh, float chunksize, float maxChunkOverlap, std::string savePath);
-
+    /**
+     * @brief ChunkManager loads a ChunkManager from a given HDF5-file
+     *
+     * Creates a ChunkManager from an HDF5 file and allows loading individual chunks
+     * and combining them to partial meshes.
+     * Every loaded chunk has the same length in height, width and depth.
+     *
+     * @param hdf5Path path to the HDF5 file, where chunks and additional information are stored
+     */
+    ChunkManager(std::string hdf5Path);
     /**
      * @brief extractArea creates and returns MeshBufferPtr of merged chunks for given area.
      *
@@ -85,6 +96,12 @@ class ChunkManager
     {
         return i * m_amount.y * m_amount.z + j * m_amount.z + k;
     }
+
+    /**
+     * @brief Loads all chunks into the ChunkHashGrid.
+     * Only used for testing, but might be useful for smaller meshes.
+     */
+    void loadAllChunks();
 
   private:
     /**
@@ -156,10 +173,15 @@ class ChunkManager
     // amount of chunks
     BaseVector<std::size_t> m_amount;
 
-    // hash grid containing chunked meshes
-    std::unordered_map<std::size_t, MeshBufferPtr> m_hashGrid;
+    // used for loading chunks from the HDF5 file and saving them in a HashGrid
+    std::shared_ptr<ChunkHashGrid> m_chunkHashGrid;
+
+    // path to the HDF5 file (either to save or to load the file)
+    std::string m_hdf5Path;
+
+
 };
 
 } /* namespace lvr2 */
 
-#endif // CHUNKER_HPP
+#endif // CHUNK_MANAGER_HPP

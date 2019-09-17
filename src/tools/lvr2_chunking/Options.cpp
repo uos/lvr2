@@ -51,9 +51,10 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
                           "Produce help message")("inputFile", value<string>(), "Input file name.")(
         "outputDir", value<string>(), "Output directory name.")(
         "chunkSize", value<float>()->default_value(10.0f), "Side length of chunks.")(
-        "maxChunkOverlap",
-        value<float>()->default_value(0.1f),
-        "maximum allowed overlap between chunks relative to the chunk size.");
+        "maxChunkOverlap", value<float>()->default_value(0.1f),
+        "maximum allowed overlap between chunks relative to the chunk size.")(
+        "chunkedMesh", value<string>(), "Chunked mesh hdf5-file name.")(
+        "load", value<bool>()->default_value(false), "Set this value to true, if you want to load an hdf5-file");
 
     // Parse command line and generate variables map
     store(command_line_parser(argc, argv).options(m_descr).positional(m_posDescr).run(),
@@ -69,9 +70,17 @@ bool Options::printUsage() const
         return true;
     }
 
-    if (!m_variables.count("inputFile"))
+    if (!m_variables.count("inputFile") && !getLoad())
     {
         cout << "Error: You must specify an input file." << endl;
+        cout << endl;
+        cout << m_descr << endl;
+        return true;
+    }
+
+    if(getLoad() && !m_variables.count("chunkedMesh"))
+    {
+        cout << "Error: You must specify an hdf5-file (\"chunkedMesh\") when loading." << endl;
         cout << endl;
         cout << m_descr << endl;
         return true;
@@ -98,6 +107,14 @@ float Options::getChunkSize() const
 float Options::getMaxChunkOverlap() const
 {
     return m_variables["maxChunkOverlap"].as<float>();
+}
+string Options::getChunkedMesh() const
+{
+    return m_variables["chunkedMesh"].as<string>();
+}
+bool Options::getLoad() const
+{
+    return m_variables["load"].as<bool>();
 }
 
 Options::~Options()

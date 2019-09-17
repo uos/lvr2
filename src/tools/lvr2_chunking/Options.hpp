@@ -84,6 +84,16 @@ class Options
      * @brief   Returns the maximum allowed chunk overlap
      */
     float getMaxChunkOverlap() const;
+    /**
+     * @brief   Returns the chunked mesh file
+     */
+    string getChunkedMesh() const;
+    /**
+     * @brief   Returns the load-flag.
+     * set to true for loading an existing hdf5-file
+     * and to false for chunking and saving a given mesh
+     */
+    bool getLoad() const;
 
   private:
     /// The internally used variable map
