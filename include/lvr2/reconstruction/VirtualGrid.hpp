@@ -61,19 +61,42 @@ class VirtualGrid
     virtual ~VirtualGrid();
 
     /**
+     * Method to calculate the boxes covering the PointCloud-BB
+     *
+     */
+    void calculateBoxes();
+
+    /**
      *
      * @return the smaller BoundingBoxes
      */
-    std::vector<BoundingBox<BaseVecT>*> getBoxes() { return m_boxes; }
+    std::vector<shared_ptr<BoundingBox<BaseVecT>>> getBoxes() { return m_boxes; }
+
+
 
 
   private:
 
+    /**
+     * locates the initial Box surrounding the lower left corner of the PointCloud-BB
+     *
+     */
+    void findInitialBox();
+
+    /**
+     * generates the Boxes surrounding the initial Box to cover the PointCloud-BB
+     *
+     */
+    void generateNeighbours();
+
     // BoundingBox of the input PointCloud
-    BoundingBox<BaseVecT> m_original;
+    BoundingBox<BaseVecT> m_pcbb;
+
+    //initial Bounding Box, around the left corner of the PointCloud-BB
+    BoundingBox<BaseVecT> m_initbox;
 
     // List of (smaller) BoundingBox, which overlap the original PointCloud
-    std::vector<BoundingBox<BaseVecT>*> m_boxes;
+    std::vector<shared_ptr<BoundingBox<BaseVecT>>> m_boxes;
 
     // size of the "virtual" GridCell aka size of the smaller BBoxes
     size_t m_gridCellSize;
