@@ -210,7 +210,7 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
         else
         {
             std::cout << "GENERATED LEAF!" << std::endl;
-            std::cout << "Volume: " << m_bb.getVolume() << std::endl;
+            std::cout << "Longest side: " << m_bb.getLongestSide() << std::endl;
             m_numPoints += numPoints;
         }
     }

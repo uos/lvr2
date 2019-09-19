@@ -201,20 +201,37 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         }
         else
         {
-            BigGridKdTree<BaseVecT> gridKd(bg->getBB(), options.getNodeSize(), bg.get(), voxelsize);
-            VirtualGrid<BaseVecT> a(bg->getBB(), options.getNodeSize(),options.getNodeSize(),voxelsize);
-            std::cout << "Original Bounding Box Volume: " << bg->getBB().getVolume() << std::endl;
-            gridKd.insert(bg->pointSize(), bg->getBB().getCentroid());
-            ofstream partBoxOfs("KdTree.ser");
-            for (size_t i = 0; i < gridKd.getLeafs().size(); i++)
+
+            if(options.getVGrid() == 1)
             {
-                BoundingBox<BaseVecT> partBB = gridKd.getLeafs()[i]->getBB();
-                partitionBoxes.push_back(partBB);
-                partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
-                           << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
-                           << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
+                //
+                VirtualGrid<BaseVecT> a(bg->getBB(), options.getNodeSize(),options.getGridSize(), voxelsize);
+                a.calculateBoxes();
+                //
+                ofstream partBoxOfs("VGrid.ser");
+                for (size_t i = 0; i < a.getBoxes().size(); i++) {
+                    BoundingBox<BaseVecT> partBB = *a.getBoxes().at(i).get();
+                    partitionBoxes.push_back(partBB);
+                    partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
+                               << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
+                               << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
+                }
             }
-            std::cout << "Check Bounding Box Colission: " << partitionBoxes.front().overlap(partitionBoxes.back()) << std::endl;
+            else {
+                BigGridKdTree<BaseVecT> gridKd(bg->getBB(), options.getNodeSize(), bg.get(), voxelsize);
+                gridKd.insert(bg->pointSize(), bg->getBB().getCentroid());
+                ofstream partBoxOfs("KdTree.ser");
+                for (size_t i = 0; i < gridKd.getLeafs().size(); i++) {
+                    BoundingBox<BaseVecT> partBB = gridKd.getLeafs()[i]->getBB();
+                    partitionBoxes.push_back(partBB);
+                    partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
+                               << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
+                               << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
+                }
+            }
+            //for (size_t i = 0; i < a.getBoxes().size(); i++){
+                std::cout << "Check Bounding Box Colission: " << bg->getBB().overlap(partitionBoxes.at(1)) << std::endl;
+            //}
         }
     }
 
@@ -318,8 +335,9 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
              << endl;
         // std::cout << "i: " << std::endl << bb << std::endl << "got : " << numPoints << std::endl;
         if (numPoints <= 50)
+        {
             continue;
-
+        }
         lvr2::BoundingBox<Vec> gridbb(Vec(partitionBoxes[i].getMin().x,
                                           partitionBoxes[i].getMin().y,
                                           partitionBoxes[i].getMin().z),
@@ -376,7 +394,6 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         }
         else
         {
-
 #ifdef GPU_FOUND
             if (options.useGPU())
             {

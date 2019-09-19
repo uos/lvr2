@@ -55,7 +55,9 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
         "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")(
         "voxelsize,v",
         value<float>(&m_voxelsize)->default_value(10),
-        "Voxelsize of grid used for reconstruction.")(
+        "Voxelsize of grid used for reconstruction.")
+            ("useVGrid", value<int>(&m_vgrid)->default_value(0),"Option to change the partition-process to a gridbase partition (default: OFF (=0))")
+            ("gridSize", value<int>(&m_gridsize)->default_value(4000), "Set the gridsize for the virtual grid. (default: 4000 aka. 40m^3)")(
         "noExtrusion",
         "Do not extend grid. Can be used  to avoid artefacts in dense data sets but. Disabling "
         "will possibly create additional holes in sparse data sets.")(
@@ -244,6 +246,10 @@ int Options::getDanglingArtifacts() const { return (m_variables["rda"].as<int>()
 int Options::getFillHoles() const { return (m_variables["fillHoles"].as<int>()); }
 
 int Options::getMinPlaneSize() const { return (m_variables["mp"].as<int>()); }
+
+int Options::getVGrid() const {return (m_variables["useVGrid"].as<int>()); }
+
+int Options::getGridSize() const {return (m_variables["gridSize"].as<int>()); }
 
 bool Options::printUsage() const
 {

@@ -105,7 +105,7 @@ class BigGrid
     lvr2::floatArr points(int i, int j, int k, size_t& numPoints);
 
     /**
-     *  Points that are within bounding box defined by a min and max point
+     *  Points that are within bounding box defined by a min and max point (probably)
      * @param minx
      * @param miny
      * @param minz

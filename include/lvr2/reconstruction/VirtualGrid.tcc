@@ -40,14 +40,72 @@ VirtualGrid<BaseVecT>::VirtualGrid(BoundingBox<BaseVecT>& bb,
                                   size_t gridCellSize,
                                   float voxelsize)
 {
- m_original = bb;
+ m_pcbb = bb;
  m_gridCellSize = gridCellSize;
  m_voxelsize = voxelsize;
 }
 
 template <typename BaseVecT>
-VirtualGrid<BaseVecT>::~VirtualGrid(){
+VirtualGrid<BaseVecT>::~VirtualGrid()
+{
     std::cout << "Bye" << std::endl;
+}
+
+template <typename BaseVecT>
+void VirtualGrid<BaseVecT>::calculateBoxes()
+{
+    findInitialBox();
+    generateNeighbours();
+}
+
+template <typename BaseVecT>
+void VirtualGrid<BaseVecT>::findInitialBox()
+{
+    int min_x = (floor(m_pcbb.getMin().x/m_gridCellSize)) * m_gridCellSize;
+    int min_y = (floor(m_pcbb.getMin().y/m_gridCellSize)) * m_gridCellSize;
+    int min_z = (floor(m_pcbb.getMin().z/m_gridCellSize)) * m_gridCellSize;
+    int max_x = min_x + m_gridCellSize;
+    int max_y = min_x + m_gridCellSize;
+    int max_z = min_x + m_gridCellSize;
+
+    m_initbox = lvr2::BoundingBox<BaseVecT>(BaseVecT(min_x,min_y, min_z), BaseVecT(max_x, max_y, max_z));
+
+    std::cout << "DOES BOX 1 EVEN COLLIDE IF PC? " << m_initbox.overlap(m_pcbb) << std::endl;
+    std::cout << m_initbox << std::endl;
+    std::cout << m_pcbb << std::endl;
+
+}
+
+template <typename BaseVecT>
+void VirtualGrid<BaseVecT>::generateNeighbours()
+{
+    if(false) //TODO: think of something appropriate
+    {
+        findInitialBox();
+    }
+
+    // Calculates the numbers of Boxes that fits per axis (minus initial box)
+    int n_xboxes = ceil(m_pcbb.getXSize()/m_gridCellSize);
+    int n_yboxes = ceil(m_pcbb.getYSize()/m_gridCellSize);
+    int n_zboxes = ceil(m_pcbb.getZSize()/m_gridCellSize);
+
+    lvr2::BoundingBox<BaseVecT> first = m_initbox;
+
+    for(int i = 0; i < n_xboxes ; i++)
+    {
+        for(int j = 0; j < n_yboxes; j++)
+        {
+            for(int h = 0; h < n_zboxes; h++)
+            {
+                std::shared_ptr<lvr2::BoundingBox<BaseVecT>> next = std::shared_ptr<lvr2::BoundingBox<BaseVecT>>(new lvr2::BoundingBox<BaseVecT>(
+                                                                               BaseVecT(first.getMin().x + i * m_gridCellSize, first.getMin().y + j * m_gridCellSize, first.getMin().z + h * m_gridCellSize),
+                                                                               BaseVecT(first.getMax().x + i * m_gridCellSize, first.getMax().y + j * m_gridCellSize, first.getMax().z + h * m_gridCellSize)));
+                std:cout << "generated a Box :3" << std::endl;
+                m_boxes.push_back(next);
+            }
+        }
+    }
+
 }
 
 
