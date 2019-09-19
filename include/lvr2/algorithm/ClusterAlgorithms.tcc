@@ -468,13 +468,45 @@ ClusterBiMap<FaceHandle> iterativePlanarClusterGrowing(
         // Calc regression planes
         planes = calcRegressionPlanes(mesh, clusters, normals, minClusterSize);
 
-        // Debug planes
-        // std::stringstream ss;
-        // ss << "debug" << i << ".ply";
-        // debugPlanes(mesh, clusters, planes, ss.str(), 10000);
-        // ss.str("");
-        // ss << "debug-mesh" << i << ".ply";
-        // writeDebugMesh(mesh, ss.str(), {0, 255, 0});
+        // Drag vertices into planes
+        dragToRegressionPlanes(mesh, clusters, planes, normals);
+    }
+
+    optimizePlaneIntersections(mesh, clusters, planes);
+
+    return clusters;
+}
+
+
+template<typename BaseVecT>
+ClusterBiMap<FaceHandle> iterativePlanarClusterGrowingRANSAC(
+    BaseMesh<BaseVecT>& mesh,
+    FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
+    float minSinAngle,
+    int numIterations,
+    int minClusterSize,
+    int ransacIterations,
+    int ransacSamples
+)
+{
+    ClusterBiMap<FaceHandle> clusters;
+    DenseClusterMap<Plane<BaseVecT>> planes;
+
+    // Iterate numIterations times
+    for (int i = 0; i < numIterations; ++i)
+    {
+        std::cout << timestamp << "Optimizing planes. Iterations "
+                  << i << " / " << numIterations << std::endl;
+        // Generate clusters
+        clusters = planarClusterGrowing(mesh, normals, minSinAngle);
+
+        // Calc regression planes
+        planes = calcRegressionPlanesRANSAC(mesh,
+                    clusters,
+                    normals,
+                    minClusterSize,
+                    ransacIterations,
+                    ransacSamples);
 
         // Drag vertices into planes
         dragToRegressionPlanes(mesh, clusters, planes, normals);
@@ -505,7 +537,36 @@ DenseClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
         if (cluster.handles.size() > minClusterThresholdSize)
         {
             // Calc regression plane for current cluster and add to cluster map: cluster -> plane
-            planes.insert(clusterH, calcRegressionPlane(mesh, cluster, normals));
+            planes.insert(clusterH, calcRegressionPlanePCA(mesh, cluster, normals));
+        }
+    }
+
+    return planes;
+}
+
+template<typename BaseVecT>
+DenseClusterMap<Plane<BaseVecT>> calcRegressionPlanesRANSAC(
+    const BaseMesh<BaseVecT>& mesh,
+    const ClusterBiMap<FaceHandle>& clusters,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
+    int minClusterSize,
+    int iterations,
+    int samples
+)
+{
+    DenseClusterMap<Plane<BaseVecT>> planes;
+    size_t defaultClusterThreshold = 10 * log(mesh.numFaces());
+    size_t minClusterThresholdSize = max(static_cast<size_t>(minClusterSize), defaultClusterThreshold);
+
+    // For all clusters in cluster map
+    for (auto clusterH: clusters)
+    {
+        // Get current cluster
+        auto cluster = clusters[clusterH];
+        if (cluster.handles.size() > minClusterThresholdSize)
+        {
+            // Calc regression plane for current cluster and add to cluster map: cluster -> plane
+            planes.insert(clusterH, calcRegressionPlaneRANSAC(mesh, cluster, normals, iterations, samples));
         }
     }
 
@@ -594,6 +655,166 @@ Plane<BaseVecT> calcRegressionPlane(
 
     // Move pos of plane to best fit
     plane.pos += (plane.normal * avgDistance);
+    return plane;
+}
+
+
+template<typename BaseVecT>
+Plane<BaseVecT> calcRegressionPlaneRANSAC(
+    const BaseMesh<BaseVecT>& mesh,
+    const Cluster<FaceHandle>& cluster,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
+    const int num_iterations,
+    const int num_samples
+)
+{
+    float error_limit = 0.01; // dynamically voxelsize / 100
+    Plane<BaseVecT> best_plane;
+    int best_inlier = 0;
+    
+
+    // RANSAC:
+    // - select vertex + normal randomly -> plane
+    // - count number of vertices within a predefined error range
+
+    // 1) collect all vertices used for error computation
+    //   + determine average edge length for automatic error thresh
+    float avg_dist = 0.0;
+    int num_edges = 0;
+    unordered_set<VertexHandle> vertices;
+    for (auto faceH: cluster.handles)
+    {
+        // Iterate over all vertices of current face
+        boost::optional<VertexHandle> vHlast;
+        for (auto vH: mesh.getVerticesOfFace(faceH))
+        {
+            // If current vertex is not visited, add distance
+            if (!vertices.count(vH))
+            {
+                vertices.insert(vH);
+            }
+
+            if(vHlast)
+            {
+                avg_dist += mesh.getVertexPosition(*vHlast).distance(mesh.getVertexPosition(vH));
+                num_edges++;
+            }
+
+            vHlast = vH;
+        }
+    }
+    avg_dist /= static_cast<float>(num_edges);
+
+    error_limit *= avg_dist;
+    
+    const size_t num_cluster_vertices = vertices.size();
+    const size_t num_cluster_faces = cluster.size();
+
+    for(int i=0; i<num_iterations; i++)
+    {
+        Plane<BaseVecT> plane;
+        plane.pos.x = 0.0;
+        plane.pos.y = 0.0;
+        plane.pos.z = 0.0;
+        plane.normal.x = 0.0;
+        plane.normal.y = 0.0;
+        plane.normal.z = 0.0;
+        
+        // build avg plane of RANSAC samples
+        for(int j=0; j<num_samples; j++)
+        {
+            const FaceHandle& faceHandle = cluster.handles[rand() % num_cluster_faces];
+            plane.pos += mesh.getVertexPositionsOfFace(faceHandle)[rand() % 3];
+            plane.normal += normals[faceHandle];
+        }
+
+        plane.pos /= static_cast<float>(num_samples);
+        plane.normal.normalize();
+        
+
+        // calulate inlier
+        int inlier = 0;
+        for(auto vertexH : vertices)
+        {
+            const float current_dist = plane.distance(mesh.getVertexPosition(vertexH));
+            if(fabs(current_dist) < error_limit)
+            {
+                inlier++;
+            }
+        }
+
+        if(inlier > best_inlier)
+        {
+            best_inlier = inlier;
+            best_plane = plane;
+        }
+    }
+
+    return best_plane;
+}
+
+
+template<typename BaseVecT>
+Plane<BaseVecT> calcRegressionPlanePCA(
+    const BaseMesh<BaseVecT>& mesh,
+    const Cluster<FaceHandle>& cluster,
+    const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
+    const int num_iterations,
+    const int num_samples
+)
+{
+    Plane<BaseVecT> plane;
+
+    Eigen::Vector3d center(0,0,0);
+
+    unordered_set<VertexHandle> vertices;
+    for (auto faceH: cluster.handles)
+    {
+        // Iterate over all vertices of current face
+        for (auto vH: mesh.getVerticesOfFace(faceH))
+        {
+            // If current vertex is not visited, add distance
+            if (!vertices.count(vH))
+            {
+                vertices.insert(vH);
+                const BaseVecT& pos = mesh.getVertexPosition(vH);
+                center(0) += static_cast<double>(pos.x);
+                center(1) += static_cast<double>(pos.y);
+                center(2) += static_cast<double>(pos.z);
+            }
+        }
+    }
+
+    center /= static_cast<double>(vertices.size());
+
+    Eigen::Matrix3Xd data(3, vertices.size());
+    int current_vertex = 0;
+
+    for(auto vH : vertices)
+    {
+        const BaseVecT& pos = mesh.getVertexPosition(vH);
+        data.coeffRef(0, current_vertex) = static_cast<double>(pos.x);
+        data.coeffRef(1, current_vertex) = static_cast<double>(pos.y);
+        data.coeffRef(2, current_vertex) = static_cast<double>(pos.z);
+
+        current_vertex++;
+    }
+    
+    const Eigen::Matrix3Xd centered = data.array().colwise() - center.array();
+    const Eigen::MatrixXd cov = (centered * centered.transpose()) / centered.cols();
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> eig(cov);
+    Eigen::MatrixXd evecs = eig.eigenvectors();
+    const Eigen::Vector3d x = evecs.col(1);
+    const Eigen::Vector3d y = evecs.col(2);
+    Eigen::Vector3d n = x.cross(y).normalized();
+
+    plane.pos.x = center(0);
+    plane.pos.y = center(1);
+    plane.pos.z = center(2);
+    plane.normal.x = n(0);
+    plane.normal.y = n(1);
+    plane.normal.z = n(2);
+
     return plane;
 }
 

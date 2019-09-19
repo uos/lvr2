@@ -73,6 +73,13 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
 
 /**
  * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
+ *          represented in the given file.
+ */
+template<typename T>
+Transform<T> getTransformationFromFile(const boost::filesystem::path& file);
+
+/**
+ * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
  *          represented in the given frame file.
  */
 template<typename T>

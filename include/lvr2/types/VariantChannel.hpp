@@ -141,6 +141,10 @@ protected:
 
 };
 
+template<typename ...Tp>
+using VariantChannelOptional = boost::optional<VariantChannel<Tp...> >;
+
+
 } // namespace lvr2
 
 #include "VariantChannel.tcc"
