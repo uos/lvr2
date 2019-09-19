@@ -11,7 +11,9 @@
 #include "lvr2/geometry/BaseVector.hpp"
 
 #include "lvr2/algorithm/raycasting/RaycasterBase.hpp"
+#if defined LVR2_USE_OPENCL
 #include "lvr2/algorithm/raycasting/CLRaycaster.hpp"
+#endif
 #include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
 
 using boost::optional;
@@ -186,7 +188,7 @@ bool flip_axis = false)
 
 }
 
-void test1(RaycasterBase<PointType, NormalType>& rc)
+void test1(RaycasterBasePtr<PointType, NormalType> rc)
 {
     std::cout << "Raycast Test 1 started" << std::endl;
 
@@ -207,7 +209,7 @@ void test1(RaycasterBase<PointType, NormalType>& rc)
     std::cout << "TEST 1: one origin, one ray." << std::endl;
 
     PointType intersection;
-    bool success = rc.castRay(origin, ray, intersection);
+    bool success = rc->castRay(origin, ray, intersection);
     
 
     if(success)
@@ -223,7 +225,7 @@ void test1(RaycasterBase<PointType, NormalType>& rc)
     std::vector<PointType > intersections1, intersections2;
     std::vector<uint8_t> hits1, hits2;
 
-    rc.castRays(origin, rays, intersections1, hits1);
+    rc->castRays(origin, rays, intersections1, hits1);
 
     success = true;
     for(int i=0;i<hits1.size(); i++)
@@ -248,7 +250,7 @@ void test1(RaycasterBase<PointType, NormalType>& rc)
 
     origins[99].y = -444;
 
-    rc.castRays(origins, rays, intersections2, hits2);
+    rc->castRays(origins, rays, intersections2, hits2);
 
     success = true;
     for(int i=0;i<hits2.size(); i++)
@@ -267,7 +269,7 @@ void test1(RaycasterBase<PointType, NormalType>& rc)
     }
 }
 
-void test2(RaycasterBase<PointType, NormalType>& rc)
+void test2(RaycasterBasePtr<PointType, NormalType> rc)
 {
     std::vector<PointType > origins;
     std::vector<NormalType > rays;
@@ -277,7 +279,7 @@ void test2(RaycasterBase<PointType, NormalType>& rc)
     std::vector<PointType > intersections;
     std::vector<uint8_t> hits;
 
-    rc.castRays(origins, rays, intersections, hits);
+    rc->castRays(origins, rays, intersections, hits);
 
     std::vector<PointType > results;
 
@@ -324,7 +326,7 @@ void test2(RaycasterBase<PointType, NormalType>& rc)
     
 }
 
-void test3(RaycasterBase<PointType, NormalType>& rc, size_t num_rays=984543)
+void test3(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
 {
     int u_max = int(3027.8730 * 2);
     int v_max = int(2031.0270 * 2);
@@ -343,31 +345,41 @@ void test3(RaycasterBase<PointType, NormalType>& rc, size_t num_rays=984543)
     std::vector<PointType > intersections;
     std::vector<uint8_t> hits;
 
-    rc.castRays(origin, rays, intersections, hits);
+    rc->castRays(origin, rays, intersections, hits);
 
 }
 
 int main(int argc, char** argv){
 
     MeshBufferPtr buffer = genMesh();
-    CLRaycaster<PointType, NormalType> rcGPU(buffer);
-    BVHRaycaster<PointType, NormalType> rcCPU(buffer);
+
+    // create a raycaster
+    // RaycasterBase<PointType, NormalType>::Ptr raycaster;
     
+    RaycasterBasePtr<PointType, NormalType> raycaster;
 
-    test1(rcCPU);
-    test2(rcCPU);
+    // CPU test
+    raycaster.reset(new BVHRaycaster<PointType, NormalType>(buffer));
+    test1(raycaster);
+    test2(raycaster);
 
-    test1(rcGPU);
-    test2(rcGPU);
+    #if defined LVR2_USE_OPENCL
+    // GPU test
+    raycaster.reset(new CLRaycaster<PointType, NormalType>(buffer));
+    test1(raycaster);
+    test2(raycaster);
+    #endif
 
-    int num_rays = atoi(argv[1]);
+    if(argc > 1)
+    {
+        int num_rays = atoi(argv[1]);
 
-    test3(rcGPU, num_rays);
+        test3(raycaster, num_rays);
 
-    ModelPtr model(new Model(buffer));
+        ModelPtr model(new Model(buffer));
 
-    ModelFactory::saveModel(model, "projection_mesh.ply");
-
+        ModelFactory::saveModel(model, "projection_mesh.ply");
+    }
 
     return 0;
 }

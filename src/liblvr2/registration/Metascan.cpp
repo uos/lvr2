@@ -37,28 +37,42 @@ namespace lvr2
 {
 
 Metascan::Metascan()
-    : Scan(PointBufferPtr(), Matrix4d::Identity())
+    : SLAMScanWrapper(ScanPtr(nullptr))
 {
 
 }
 
-Vector3d Metascan::getPoint(size_t index) const
+void Metascan::transform(const Transformd& transform, bool writeFrame, FrameUse use)
+{
+    for (auto& scan : m_scans)
+    {
+        scan->transform(transform, writeFrame, use);
+    }
+    m_deltaPose = transform * m_deltaPose;
+
+    if (writeFrame)
+    {
+        addFrame(use);
+    }
+}
+
+Vector3d Metascan::point(size_t index) const
 {
     for (auto& scan : m_scans)
     {
         if (index < scan->numPoints())
         {
-            return scan->getPoint(index);
+            return scan->point(index);
         }
         index -= scan->numPoints();
     }
 }
 
-void Metascan::addScan(ScanPtr scan)
+void Metascan::addScan(SLAMScanPtr scan)
 {
     m_scans.push_back(scan);
     m_numPoints += scan->numPoints();
-    m_deltaPose = scan->getDeltaPose();
+    m_deltaPose = scan->deltaPose();
 }
 
 } /* namespace lvr2 */

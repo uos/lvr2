@@ -186,14 +186,14 @@ int main( int argc, char ** argv )
             }
 
             // Setup scan data object
-            ScanData data;
-            data.m_points = pointCloud;
-            data.m_boundingBox = bBox;
-            data.m_registration = transformation;
+            ScanPtr data = ScanPtr(new Scan());
+            data->m_points = pointCloud;
+            data->m_boundingBox = bBox;
+            data->m_registration = transformation;
 
             std::cout << timestamp << " Adding raw scan data" << endl;
             // Add objects to hdf5 file
-            hdf5.addRawScanData(scanNr, data);
+            hdf5.addRawScan(scanNr, data);
 
 
             // Get hyperspectral calibration parameters

@@ -34,7 +34,7 @@
 #ifndef METASCAN_HPP_
 #define METASCAN_HPP_
 
-#include "Scan.hpp"
+#include "SLAMScanWrapper.hpp"
 
 namespace lvr2
 {
@@ -44,19 +44,20 @@ namespace lvr2
  * 
  * Note that most methods of Scan don't make sense on a Metascan, like reductions or Pose getters.
  */
-class Metascan : public Scan
+class Metascan : public SLAMScanWrapper
 {
 public:
     Metascan();
 
     virtual ~Metascan() = default;
 
-    virtual Vector3d getPoint(size_t index) const override;
+    virtual void transform(const Transformd& transform, bool writeFrame = true, FrameUse use = FrameUse::UPDATED) override;
+    virtual Vector3d point(size_t index) const override;
 
-    void addScan(ScanPtr scan);
+    void addScan(SLAMScanPtr scan);
 
 protected:
-    std::vector<ScanPtr> m_scans;
+    std::vector<SLAMScanPtr> m_scans;
 };
 
 } /* namespace lvr2 */

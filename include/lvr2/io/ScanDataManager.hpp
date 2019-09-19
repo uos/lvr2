@@ -31,7 +31,7 @@
 #include <vector>
 
 #include "lvr2/io/HDF5IO.hpp"
-#include "lvr2/io/ScanData.hpp"
+#include "lvr2/types/Scan.hpp"
 #include "lvr2/types/CameraData.hpp"
 
 namespace lvr2
@@ -42,9 +42,9 @@ class ScanDataManager
     public:
         ScanDataManager(std::string filename);
 
-        void loadPointCloudData(ScanData &sd, bool preview = false);
+        void loadPointCloudData(ScanPtr &sd, bool preview = false);
 
-        std::vector<ScanData> getScanData();
+        std::vector<ScanPtr> getScans();
 
         std::vector<std::vector<CameraData> > getCameraData();
 
