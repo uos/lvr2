@@ -65,8 +65,8 @@ void VirtualGrid<BaseVecT>::findInitialBox()
     int min_y = (floor(m_pcbb.getMin().y/m_gridCellSize)) * m_gridCellSize;
     int min_z = (floor(m_pcbb.getMin().z/m_gridCellSize)) * m_gridCellSize;
     int max_x = min_x + m_gridCellSize;
-    int max_y = min_x + m_gridCellSize;
-    int max_z = min_x + m_gridCellSize;
+    int max_y = min_y + m_gridCellSize;
+    int max_z = min_z + m_gridCellSize;
 
     m_initbox = lvr2::BoundingBox<BaseVecT>(BaseVecT(min_x,min_y, min_z), BaseVecT(max_x, max_y, max_z));
 
@@ -85,9 +85,9 @@ void VirtualGrid<BaseVecT>::generateNeighbours()
     }
 
     // Calculates the numbers of Boxes that fits per axis (minus initial box)
-    int n_xboxes = ceil(m_pcbb.getXSize()/m_gridCellSize);
-    int n_yboxes = ceil(m_pcbb.getYSize()/m_gridCellSize);
-    int n_zboxes = ceil(m_pcbb.getZSize()/m_gridCellSize);
+    int n_xboxes = ceil((m_pcbb.getXSize() + abs(m_pcbb.getMin().x - m_initbox.getMin().x))/m_gridCellSize);
+    int n_yboxes = ceil((m_pcbb.getYSize() + abs(m_pcbb.getMin().y - m_initbox.getMin().y))/m_gridCellSize);
+    int n_zboxes = ceil((m_pcbb.getZSize() + abs(m_pcbb.getMin().z - m_initbox.getMin().z))/m_gridCellSize);
 
     lvr2::BoundingBox<BaseVecT> first = m_initbox;
 
