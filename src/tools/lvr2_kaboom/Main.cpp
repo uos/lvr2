@@ -211,14 +211,14 @@ void processSingleFile(boost::filesystem::path& inFile)
         if(boost::filesystem::exists(datPath))
         {
             std::cout << timestamp << "Getting transformation from dat: " << datPath << std::endl;
-            Eigen::Matrix4d transform = getTransformationFromDat(datPath);
+            Eigen::Matrix4d transform = getTransformationFromDat<double>(datPath);
             transformPointCloud(model, transform);
             addScanPosition(transform);
         }
         else if(boost::filesystem::exists(framesPath))
         {
             std::cout << timestamp << "Getting transformation from frame: " << framesPath << std::endl;
-            Eigen::Matrix4d transform = getTransformationFromFrames(framesPath);
+            Eigen::Matrix4d transform = getTransformationFromFrames<double>(framesPath);
             transformPointCloud(model, transform);
             addScanPosition(transform);
         }
@@ -226,7 +226,7 @@ void processSingleFile(boost::filesystem::path& inFile)
         {
 
             std::cout << timestamp << "Getting transformation from pose: " << posePath << std::endl;
-            Eigen::Matrix4d transform = getTransformationFromPose(posePath);
+            Eigen::Matrix4d transform = getTransformationFromPose<double>(posePath);
             transformPointCloud(model, transform);
             addScanPosition(transform);
         }
@@ -373,12 +373,12 @@ void processSingleFile(boost::filesystem::path& inFile)
             if(boost::filesystem::exists(framesPath))
             {
                 std::cout << timestamp << "Transforming frame: " << framesPath << std::endl;
-                Eigen::Matrix4d transformed = transformFrame(getTransformationFromFrames(framesPath), options->coordinateTransform());
-                writeFrame(transformed, framesOut);
+        //        Eigen::Matrix4d transformed = transformFrame<double>(getTransformationFromFrames<double>(framesPath), options->coordinateTransform());
+        //         writeFrame(transformed, framesOut);
             }
 
             ofstream out(name);
-            transformAndReducePointCloud(model, getReductionFactor(inFile, options->getTargetSize()), options->coordinateTransform());
+            //transformAndReducePointCloud(model, getReductionFactor(inFile, options->getTargetSize()), options->coordinateTransform());
             size_t points_written = writePointsToStream(model, out);
 
             out.close();

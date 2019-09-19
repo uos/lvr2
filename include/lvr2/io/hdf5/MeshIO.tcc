@@ -47,6 +47,47 @@ void MeshIO<Derived>::save(HighFive::Group& group, const MeshBufferPtr& buffer)
         m_array_io->template save<unsigned char>(
             texturesGroup, std::to_string(texture.m_index), dims, chunks, data);
     }
+
+    if (!group.exist("materials"))
+    {
+        group.createGroup("materials");
+    }
+    HighFive::Group materialsGroup = group.getGroup("materials");
+    if(!buffer->getMaterials().empty())
+    {
+        size_t numMaterials = buffer->getMaterials().size();
+        boost::shared_array<int> textureHandles(new int[numMaterials]);
+
+        boost::shared_array<int16_t> rgb8Color(new int16_t[numMaterials * 3]);
+        lvr2::Material material;
+        for (int i = 0; i < numMaterials; i++)
+        {
+            material = buffer->getMaterials().at(i);
+
+            textureHandles.get()[i] = (material.m_texture) ? (int) material.m_texture->idx() : -1;;
+
+            if (material.m_color)
+            {
+                rgb8Color.get()[3 * i    ] = static_cast<int16_t>(material.m_color.get()[0]);
+                rgb8Color.get()[3 * i + 1] = static_cast<int16_t>(material.m_color.get()[1]);
+                rgb8Color.get()[3 * i + 2] = static_cast<int16_t>(material.m_color.get()[2]);
+            }
+            else
+            {
+                rgb8Color.get()[3 * i    ] = -1;
+                rgb8Color.get()[3 * i + 1] = -1;
+                rgb8Color.get()[3 * i + 2] = -1;
+            }
+        }
+
+        std::vector <size_t> numMat{numMaterials};
+        std::vector <hsize_t> chunkMat{numMaterials};
+        std::vector <size_t> dimensionsRgb{numMaterials, 3};
+        std::vector <hsize_t> chunkRgb{numMaterials, 3};
+        m_array_io->save(materialsGroup, "texture_handles", numMat, chunkMat, textureHandles);
+
+        m_array_io->save(materialsGroup, "rgb_color", dimensionsRgb, chunkRgb, rgb8Color);
+    }
 }
 
 template <typename Derived>
@@ -142,6 +183,53 @@ MeshBufferPtr MeshIO<Derived>::load(HighFive::Group& group)
         }
 
         ret->setTextures(textures);
+    }
+
+    if (group.exist("materials"))
+    {
+        HighFive::Group materialsGroup = group.getGroup("materials");
+
+        std::vector<lvr2::Material> materials;
+        std::vector<size_t> dimensionColor;
+        std::vector<size_t> dimensionTextureHandle;
+        boost::shared_array<int16_t> materialColor;
+        boost::shared_array<int> materialTexture;
+        if(materialsGroup.exist("rgb_color"))
+        {
+            materialColor = m_array_io->template load<int16_t>(materialsGroup, "rgb_color", dimensionColor);
+        }
+        if(materialsGroup.exist("texture_handles"))
+        {
+            materialTexture = m_array_io->template load<int>(materialsGroup, "texture_handles", dimensionTextureHandle);
+        }
+        if(materialColor && materialTexture)
+        {
+            if(dimensionColor.at(0) != dimensionTextureHandle.at(0) || dimensionColor.at(1) != 3)
+            {
+                std::cout << "[Hdf5IO - MeshIO] WARNING: Wrong material dimensions. Materials will not be loaded." << std::endl;
+            }
+            else
+            {
+                for(int i = 0; i < dimensionTextureHandle.at(0); i++)
+                {
+                    lvr2::Material nextMat;
+                    if(materialColor.get()[i * 3] != -1)
+                    {
+                        nextMat.m_color = boost::optional<lvr2::Rgb8Color>(
+                                {static_cast<uint8_t>(materialColor.get()[i * 3    ]),
+                                 static_cast<uint8_t>(materialColor.get()[i * 3 + 1]),
+                                 static_cast<uint8_t>(materialColor.get()[i * 3 + 2])});
+                    }
+                    if(materialTexture.get()[i] != -1)
+                    {
+                        nextMat.m_texture = boost::optional<lvr2::TextureHandle>(materialTexture.get()[i]);
+                    }
+                    materials.push_back(nextMat);
+                }
+                ret->setMaterials(materials);
+            }
+        }
+
     }
 
     return ret;
