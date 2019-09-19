@@ -25,8 +25,8 @@ ScanDirectoryParser::ScanDirectoryParser(const std::string& directory) noexcept
     }
 
     // Set default prefixes and extension
-    m_pointExtension = ".txt";
-    m_poseExtension = ".dat";
+    m_pointExtension = ".3d";
+    m_poseExtension = ".frames";
     m_pointPrefix = "scan";
     m_posePrefix = "scan";
     m_targetSize = 0;
@@ -110,16 +110,27 @@ PointBufferPtr ScanDirectoryParser::subSample()
             PointBufferPtr buffer = model->m_pointCloud;
             if(buffer)
             {
-                // Calc number of points to sample
-                float total_ratio = (float)i.m_numPoints / m_numPoints;
-                float target_ratio = total_ratio * m_targetSize;
+                PointBufferPtr reduced = 0;
+                int target_size = 0;
+                if(m_targetSize > 0)
+                {
+                    // Calc number of points to sample
+                    float total_ratio = (float)i.m_numPoints / m_numPoints;
+                    float target_ratio = total_ratio * m_targetSize;
 
 
-                int target_size = (int)(target_ratio + 0.5);
-                std::cout << timestamp << "Sampling " << target_size << " points from " << i.m_filename << std::endl;
+                    target_size = (int)(target_ratio + 0.5);
+                    std::cout << timestamp << "Sampling " << target_size << " points from " << i.m_filename << std::endl;
 
-                // Sub-sample buffer
-                PointBufferPtr reduced = subSamplePointBuffer(buffer, target_size);
+                    // Sub-sample buffer
+                    reduced = subSamplePointBuffer(buffer, target_size);
+                }
+                else
+                {
+                    std::cout << timestamp << "Using orignal points from " << i.m_filename << std::endl;
+                    reduced = buffer;
+                    target_size = buffer->numPoints();
+                }
 
                 // Apply transformation
                 std::cout << timestamp << "Transforming point cloud" << std::endl;
