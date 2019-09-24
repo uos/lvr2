@@ -29,7 +29,6 @@ ScanDirectoryParser::ScanDirectoryParser(const std::string& directory) noexcept
     m_poseExtension = ".frames";
     m_pointPrefix = "scan";
     m_posePrefix = "scan";
-    m_targetSize = 0;
 
     m_start = 0;
     m_end = 0;
@@ -61,10 +60,6 @@ void ScanDirectoryParser::setEnd(int e)
     m_end = e;
 }
 
-void ScanDirectoryParser::setTargetSize(const size_t& size)
-{
-    m_targetSize = size;
-}
 
 size_t ScanDirectoryParser::examinePLY(const std::string& filename)
 {
@@ -77,7 +72,12 @@ size_t ScanDirectoryParser::examineASCII(const std::string& filename)
     return countPointsInFile(p);
 } 
 
-PointBufferPtr ScanDirectoryParser::subSample()
+PointBufferPtr ScanDirectoryParser::octreeSubSample(const double& voxelSize)
+{
+
+}
+
+PointBufferPtr ScanDirectoryParser::randomSubSample(const size_t& tz)
 {
     ModelPtr out_model(new Model);
 
@@ -94,11 +94,11 @@ PointBufferPtr ScanDirectoryParser::subSample()
             {
                 PointBufferPtr reduced = 0;
                 int target_size = 0;
-                if(m_targetSize > 0)
+                if(tz > 0)
                 {
                     // Calc number of points to sample
                     float total_ratio = (float)i.m_numPoints / m_numPoints;
-                    float target_ratio = total_ratio * m_targetSize;
+                    float target_ratio = total_ratio * tz;
 
 
                     target_size = (int)(target_ratio + 0.5);
@@ -127,7 +127,7 @@ PointBufferPtr ScanDirectoryParser::subSample()
                 ModelFactory::saveModel(out_model, name_stream.str());
 
                 actual_points += target_size;
-                std::cout << timestamp << "Points written: " << actual_points << " / " << m_targetSize << std::endl;
+                std::cout << timestamp << "Points written: " << actual_points << " / " << tz << std::endl;
             }
         }
     }

@@ -1,3 +1,6 @@
+#ifndef __OCTREE_REDUCTION__
+#define __OCTREE_REDUCTION__
+
 /**
  * Copyright (c) 2018, University Osnabrück
  * All rights reserved.
@@ -25,71 +28,39 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __DIRECTORY_PARSER_HPP__
-#define __DIRECTORY_PARSER_HPP__
+/**
+ * Metascan.hpp
+ *
+ *  @date Sep 23, 2019
+ *  @author Thomas Wiemann
+ *  @author Malte Hillmann
+ */
 
-#include <string>
-#include <vector>
-
-#include <boost/filesystem.hpp>
-#include <Eigen/Dense>
-
-#include "lvr2/io/Timestamp.hpp"
-#include "lvr2/io/PointBuffer.hpp"
-#include "lvr2/types/MatrixTypes.hpp"
-#include "lvr2/registration/TransformUtils.hpp"
+#include <lvr2/types/MatrixTypes.hpp>
+#include <lvr2/io/PointBuffer.hpp>
 
 namespace lvr2
 {
 
-struct ScanInfo
+class OctreeReduction
 {
-    string              m_filename;
-    size_t              m_numPoints;
-    Transformd m_pose;
-};
-
-class ScanDirectoryParser
-{
-   
 public:
-    ScanDirectoryParser(const std::string& directory) noexcept;
+    OctreeReduction(const PointBufferPtr& pointBuffer, const double& voxelSize, const size_t& minPointsPerVoxel);
+    OctreeReduction(const Vector3f* points, const size_t& n, const double& voxelSize, const size_t& minPointsPerVoxel);
 
-    void setPointCloudPrefix(const std::string& prefix);
-    void setPointCloudExtension(const std::string& extension);
-    void setPosePrefix(const std::string& prefix);
-    void setPoseExtension(const std::string& extension);
-
-    void setStart(int s);
-    void setEnd(int e);
-
-    void parseDirectory();
-
-    PointBufferPtr randomSubSample(const size_t& targetSize);
-    PointBufferPtr octreeSubSample(const double& voxelSize);
-    
-    ~ScanDirectoryParser() = default;
+    PointBufferPtr getReducedPoints();
+    void getReducedPoints(Vector3f& points, size_t& n);
 
 private:
+    template<typename T>
+    void createOctree(T* points, const int& n, bool* flagged, const T& min, const T& max, const int& level);
 
-    using Path = boost::filesystem::path;
+    template<typename T>
+    size_t slitPoints(T* points, const size_t& n, const int axis, const double& splitValue);
 
-    size_t examinePLY(const std::string& filename);
-    size_t examineASCII(const std::string& filename);    
-
-    size_t                  m_numPoints;
-    std::string             m_pointPrefix;
-    std::string             m_posePrefix;
-    std::string             m_poseExtension;
-    std::string             m_pointExtension;
-    std::string             m_directory;
-
-    size_t                  m_start;
-    size_t                  m_end;
-
-    std::vector<ScanInfo>   m_scans;
+    double  m_voxelSize;
+    size_t  m_minPointsPerVoxel; 
 };
 
-} // namespace lvr2
-
+}
 #endif
