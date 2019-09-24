@@ -36,8 +36,8 @@
  *  @author Malte Hillmann
  */
 
-#include <lvr2/types/MatrixTypes.hpp>
-#include <lvr2/io/PointBuffer.hpp>
+#include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/io/PointBuffer.hpp"
 
 namespace lvr2
 {

@@ -55,6 +55,7 @@ set(LVR2_SOURCES
     reconstruction/ModelToImage.cpp
     reconstruction/LBKdTree.cpp
     reconstruction/PCLFiltering.cpp
+    registration/AABB.cpp
     registration/ICPPointAlign.cpp
     registration/KDTree.cpp
     registration/SLAMScanWrapper.cpp
