@@ -31,7 +31,8 @@
  *  @date Apr 28, 2019
  *  @author Malte Hillmann
  */
-#include <lvr2/registration/KDTree.hpp>
+#include "lvr2/registration/KDTree.hpp"
+#include "lvr2/registration/AABB.hpp"
 
 namespace lvr2
 {

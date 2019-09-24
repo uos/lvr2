@@ -26,47 +26,81 @@
  */
 
 /**
- * TreeUtils.hpp
+ * EigenSVDPointAlign.hpp
  *
- *  @date May 16, 2019
+ *  @date Sep 24, 2019
+ * 
  *  @author Malte Hillmann
+ *  @author Thomas Wiemann
  */
-#ifndef TREEUTILS_HPP_
-#define TREEUTILS_HPP_
 
 #include <lvr2/types/MatrixTypes.hpp>
+
+#include <limits>
 
 namespace lvr2
 {
 
 /**
- * @brief Sorts a Point array so that all Points smaller than splitValue are on the left
- *
- * Uses the QuickSort Pivot step
- *
- * @param points     The Point array
- * @param n          The number of Points
- * @param axis       The axis to sort by
- * @param splitValue The value to sort by
- *
- * @return int The number of smaller elements. points + this value gives the start of the greater elements
+ * @brief A struct to calculate the Axis Aligned Bounding Box and Average Point of a Point Cloud
  */
-int splitPoints(Vector3f* points, int n, int axis, double splitValue);
+class AABB
+{
+    Vector3d m_min;
+    Vector3d m_max;
+    Vector3d m_sum;
+    size_t m_count;
 
-/**
- * @brief Reduces a Point Cloud using an Octree with a minimum Voxel size
- *
- * @param points      The Point Cloud
- * @param n           The number of Points in the Point Cloud
- * @param voxelSize   The minimum size of a Voxel
- * @param maxLeafSize When to stop subdividing Voxels
- *
- * @return int the new number of Points in the Point Cloud
- */
-int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize);
+public:
+    AABB();
 
+    template<typename T>
+    AABB(const Vector3<T>* points, size_t count)
+        : AABB()
+    {
+        for (size_t i = 0; i < count; i++)
+        {
+            addPoint(points[i]);
+        }
+    }
 
-} /* namespace lvr2 */
+    /// Returns the "lower left" Corner of the Bounding Box, as in the smallest x, y, z of the Point Cloud.
+    const Vector3d& min() const;
 
-#endif /* TREEUTILS_HPP_ */
+    /// Returns the "upper right" Corner of the Bounding Box, as in the largest x, y, z of the Point Cloud.
+    const Vector3d& max() const;
 
+    /// Returns the average of all the Points in the Point Cloud.
+    Vector3d avg() const;
+
+    /// Returns the number of Points in the Point Cloud
+    size_t count() const;
+
+    /// adds a Point to the Point Cloud
+    template<typename T>
+    void addPoint(const Vector3<T>& point)
+    {
+        for (int axis = 0; axis < 3; axis++)
+        {
+            double val = point(axis);
+            if (val < m_min(axis))
+            {
+                m_min(axis) = val;
+            }
+            if (val > m_max(axis))
+            {
+                m_max(axis) = val;
+            }
+            m_sum(axis) += val;
+        }
+        m_count++;
+    }
+
+    /// Calculates the size of the Bounding Box along a certain axis
+    double difference(int axis) const;
+
+    /// Calculates the axis that has the largest size of the Bounding Box
+    int longestAxis() const;
+};
+
+} // namespace lvr2
