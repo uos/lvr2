@@ -45,8 +45,8 @@ namespace lvr2
 class OctreeReduction
 {
 public:
-    OctreeReduction(const PointBufferPtr& pointBuffer, const double& voxelSize, const size_t& minPointsPerVoxel);
-    OctreeReduction(const Vector3f* points, const size_t& n, const double& voxelSize, const size_t& minPointsPerVoxel);
+    OctreeReduction(PointBufferPtr& pointBuffer, const double& voxelSize, const size_t& minPointsPerVoxel);
+    OctreeReduction(Vector3f* points, const size_t& n, const double& voxelSize, const size_t& minPointsPerVoxel);
 
     PointBufferPtr getReducedPoints();
     void getReducedPoints(Vector3f& points, size_t& n);
@@ -56,11 +56,14 @@ private:
     void createOctree(T* points, const int& n, bool* flagged, const T& min, const T& max, const int& level);
 
     template<typename T>
-    size_t slitPoints(T* points, const size_t& n, const int axis, const double& splitValue);
+    size_t splitPoints(T* points, const size_t& n, const int axis, const double& splitValue);
 
     double  m_voxelSize;
     size_t  m_minPointsPerVoxel; 
 };
 
-}
+} // namespace lvr2
+
+#include "lvr2/registration/OctreeReduction.tcc"
+
 #endif

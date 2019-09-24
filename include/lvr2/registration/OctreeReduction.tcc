@@ -2,7 +2,7 @@ namespace lvr2
 {
 
 template<typename T>
-size_t OctreeReduction::splitPoints(T* points, const size_t& n, const int&  axis, const double& splitValue)
+size_t OctreeReduction::splitPoints(T* points, const size_t& n, const int axis, const double& splitValue)
 {
     size_t l = 0, r = n - 1;
 
@@ -26,24 +26,24 @@ size_t OctreeReduction::splitPoints(T* points, const size_t& n, const int&  axis
 }
 
 template<typename T>
-void OctreeRediction::createOctree(T* points, const int& n, bool* flagged, const T& min, const T& max, const int& level)
+void OctreeReduction::createOctree(T* points, const int& n, bool* flagged, const T& min, const T& max, const int& level)
 {
-     if (n <= maxLeafSize)
+    if (n <= m_minPointsPerVoxel)
     {
         return;
     }
 
     int axis = level % 3;
-    Vector3d center = (max + min) / 2.0;
+    T center = (max + min) / 2.0;
 
-    if (max[axis] - min[axis] <= voxelSize)
+    if (max[axis] - min[axis] <= m_voxelSize)
     {
         // keep the Point closest to the center
         int closest = 0;
-        double minDist = (points[closest].cast<double>() - center).squaredNorm();
+        double minDist = (points[closest] - center).squaredNorm();
         for (int i = 1; i < n; i++)
         {
-            double dist = (points[i].cast<double>() - center).squaredNorm();
+            double dist = (points[i] - center).squaredNorm();
             if (dist < minDist)
             {
                 closest = i;
@@ -60,22 +60,22 @@ void OctreeRediction::createOctree(T* points, const int& n, bool* flagged, const
 
     int l = splitPoints(points, n, axis, center[axis]);
 
-    Vector3d lMin = min, lMax = max;
-    Vector3d rMin = min, rMax = max;
+    T lMin = min, lMax = max;
+    T rMin = min, rMax = max;
 
     lMax[axis] = center[axis];
     rMin[axis] = center[axis];
 
-    if (l > maxLeafSize)
+    if (l > m_minPointsPerVoxel)
     {
         #pragma omp task
-        createOctree(points    , l    , flagged    , lMin, lMax, level + 1, voxelSize, maxLeafSize);
+        createOctree(points    , l    , flagged    , lMin, lMax, level + 1);
     }
 
-    if (n - l > maxLeafSize)
+    if (n - l > m_minPointsPerVoxel)
     {
         #pragma omp task
-        createOctree(points + l, n - l, flagged + l, rMin, rMax, level + 1, voxelSize, maxLeafSize);
+        createOctree(points + l, n - l, flagged + l, rMin, rMax, level + 1);
     }
 }
 

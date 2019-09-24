@@ -1,9 +1,8 @@
-#include "lvr2/registration/AABB.hpp"
-
 namespace lvr2
 {
 
-AABB::AABB()
+template<typename T>
+AABB<T>::AABB()
     : m_count(0)
 {
     m_min.setConstant(std::numeric_limits<double>::infinity());
@@ -11,32 +10,38 @@ AABB::AABB()
     m_sum.setConstant(0.0);
 }
 
-const Vector3d& AABB::min() const
+template<typename T>
+const Vector3<T>& AABB<T>::min() const
 {
     return m_min;
 }
 
-const Vector3d& AABB::max() const
+template<typename T>
+const Vector3<T>& AABB<T>::max() const
 {
     return m_max;
 }
 
-Vector3d AABB::avg() const
+template<typename T>
+Vector3<T> AABB<T>::avg() const
 {
     return m_sum / m_count;
 }
 
-size_t AABB::count() const
+template<typename T>
+size_t AABB<T>::count() const
 {
     return m_count;
 }
 
-double AABB::difference(int axis) const
+template<typename T>
+T AABB<T>::difference(int axis) const
 {
     return m_max(axis) - m_min(axis);
 }
 
-int AABB::longestAxis() const
+template<typename T>
+int AABB<T>::longestAxis() const
 {
     int splitAxis = 0;
     for (int axis = 1; axis < 3; axis++)
