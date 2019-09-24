@@ -34,7 +34,7 @@
  *  @author Thomas Wiemann
  */
 
-#include <lvr2/types/MatrixTypes.hpp>
+#include "lvr2/types/MatrixTypes.hpp"
 
 #include <limits>
 
@@ -44,17 +44,17 @@ namespace lvr2
 /**
  * @brief A struct to calculate the Axis Aligned Bounding Box and Average Point of a Point Cloud
  */
+template<typename T>
 class AABB
 {
-    Vector3d m_min;
-    Vector3d m_max;
-    Vector3d m_sum;
+    Vector3<T> m_min;
+    Vector3<T> m_max;
+    Vector3<T> m_sum;
     size_t m_count;
 
 public:
     AABB();
 
-    template<typename T>
     AABB(const Vector3<T>* points, size_t count)
         : AABB()
     {
@@ -65,19 +65,18 @@ public:
     }
 
     /// Returns the "lower left" Corner of the Bounding Box, as in the smallest x, y, z of the Point Cloud.
-    const Vector3d& min() const;
+    const Vector3<T>& min() const;
 
     /// Returns the "upper right" Corner of the Bounding Box, as in the largest x, y, z of the Point Cloud.
-    const Vector3d& max() const;
+    const Vector3<T>& max() const;
 
     /// Returns the average of all the Points in the Point Cloud.
-    Vector3d avg() const;
+    Vector3<T> avg() const;
 
     /// Returns the number of Points in the Point Cloud
     size_t count() const;
 
     /// adds a Point to the Point Cloud
-    template<typename T>
     void addPoint(const Vector3<T>& point)
     {
         for (int axis = 0; axis < 3; axis++)
@@ -97,10 +96,12 @@ public:
     }
 
     /// Calculates the size of the Bounding Box along a certain axis
-    double difference(int axis) const;
+    T difference(int axis) const;
 
     /// Calculates the axis that has the largest size of the Bounding Box
     int longestAxis() const;
 };
 
 } // namespace lvr2
+
+#include "lvr2/registration/AABB.tcc"

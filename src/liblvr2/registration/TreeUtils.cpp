@@ -70,8 +70,8 @@ int splitPoints(Vector3f* points, int n, int axis, double splitValue)
 void createOctree(Vector3f* points,
                   int n,
                   bool* flagged,
-                  const Vector3d& min,
-                  const Vector3d& max,
+                  const Vector3f& min,
+                  const Vector3f& max,
                   int level,
                   double voxelSize,
                   int maxLeafSize)
@@ -82,16 +82,16 @@ void createOctree(Vector3f* points,
     }
 
     int axis = level % 3;
-    Vector3d center = (max + min) / 2.0;
+    Vector3f center = (max + min) / 2.0;
 
     if (max[axis] - min[axis] <= voxelSize)
     {
         // keep the Point closest to the center
         int closest = 0;
-        double minDist = (points[closest].cast<double>() - center).squaredNorm();
+        double minDist = (points[closest] - center).squaredNorm();
         for (int i = 1; i < n; i++)
         {
-            double dist = (points[i].cast<double>() - center).squaredNorm();
+            double dist = (points[i] - center).squaredNorm();
             if (dist < minDist)
             {
                 closest = i;
@@ -108,8 +108,8 @@ void createOctree(Vector3f* points,
 
     int l = splitPoints(points, n, axis, center[axis]);
 
-    Vector3d lMin = min, lMax = max;
-    Vector3d rMin = min, rMax = max;
+    Vector3f lMin = min, lMax = max;
+    Vector3f rMin = min, rMax = max;
 
     lMax[axis] = center[axis];
     rMin[axis] = center[axis];
@@ -135,7 +135,7 @@ int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize)
         flagged[i] = false;
     }
 
-    AABB boundingBox(points, n);
+    AABB<float> boundingBox(points, (size_t)n);
 
     #pragma omp parallel // allows "pragma omp task"
     #pragma omp single // only execute every task once
