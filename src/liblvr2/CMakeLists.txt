@@ -62,6 +62,7 @@ set(LVR2_SOURCES
     registration/SLAMAlign.cpp
     registration/GraphSLAM.cpp
     registration/TreeUtils.cpp
+    registration/OctreeReduction.cpp
 )
 
 
