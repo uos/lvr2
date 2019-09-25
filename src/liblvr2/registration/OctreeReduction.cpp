@@ -20,6 +20,10 @@ OctreeReduction::OctreeReduction(PointBufferPtr& pointBuffer, const double& voxe
     {
         lvr2::Channel<float> points = *opt;
         AABB<float> boundingBox(points, n);
+
+        // #pragma omp parallel // allows "pragma omp task"
+        // #pragma omp single // only execute every task once
+        createOctree(points, 0, n, m_flags, boundingBox.min(), boundingBox.max(), 0);
     }
 
 }
