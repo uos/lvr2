@@ -59,6 +59,11 @@ void VirtualGrid<BaseVecT>::calculateBoxes()
 }
 
 template <typename BaseVecT>
+void VirtualGrid<BaseVecT>::setBoundingBox(BoundingBox<BaseVecT>& bb){
+    m_pcbb =bb;
+}
+
+template <typename BaseVecT>
 void VirtualGrid<BaseVecT>::findInitialBox()
 {
     int min_x = (floor(m_pcbb.getMin().x/m_gridCellSize)) * m_gridCellSize;
@@ -84,7 +89,7 @@ void VirtualGrid<BaseVecT>::generateNeighbours()
         findInitialBox();
     }
 
-    // Calculates the numbers of Boxes that fits per axis (minus initial box)
+    // Calculates the numbers of Boxes that fits per axis
     int n_xboxes = ceil((m_pcbb.getXSize() + abs(m_pcbb.getMin().x - m_initbox.getMin().x))/m_gridCellSize);
     int n_yboxes = ceil((m_pcbb.getYSize() + abs(m_pcbb.getMin().y - m_initbox.getMin().y))/m_gridCellSize);
     int n_zboxes = ceil((m_pcbb.getZSize() + abs(m_pcbb.getMin().z - m_initbox.getMin().z))/m_gridCellSize);

@@ -123,7 +123,8 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     std::vector<float> flipPoint = options.getFlippoint();
     cout << lvr2::timestamp << "Starting grid" << endl;
     float volumenSize = (float)(options.getVolumenSize()); // 10 x 10 x 10 voxel
-    std::shared_ptr<BigGrid<BaseVecT>> bg;
+    std::shared_ptr<BigGrid<BaseVecT>> global_bg;
+    std::shared_ptr<BigGrid<BaseVecT>> part_bg;
     std::shared_ptr<BigVolumen<BaseVecT>> bv;
     BoundingBox<BaseVecT> bb;
     if (firstPath.find(".ls") != std::string::npos)
@@ -136,24 +137,35 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         double start_ss = lvr2::timestamp.getElapsedTimeInS();
         if (gotSerializedBG)
         {
-            bg = std::make_shared<BigGrid<BaseVecT>>(firstPath);
+            global_bg = std::make_shared<BigGrid<BaseVecT>>(firstPath);
+            std::cout << "here we are 1#" << std::endl;
         }
         else
         {
-            bg = std::make_shared<BigGrid<BaseVecT>>(inputFiles, voxelsize, scale, bufferSize);
-            bg->serialize("serinfo.ls");
+            global_bg = std::make_shared<BigGrid<BaseVecT>>(inputFiles, voxelsize, scale, bufferSize);
+
+
+            if(!(options.getPartialReconstruct() == "NONE"))
+            {
+                std::vector<string> part;
+                part.push_back(options.getPartialReconstruct());
+                part_bg = std::make_shared<BigGrid<BaseVecT>>(part, voxelsize, scale, bufferSize);
+            }
+
+            global_bg->serialize("serinfo.ls");
+            std::cout << "here we are 2#" << std::endl;
         }
         double end_ss = lvr2::timestamp.getElapsedTimeInS();
         seconds += (end_ss - start_ss);
         cout << lvr2::timestamp << "grid finished in" << (end_ss - start_ss) << "sec." << endl;
-        bb = bg->getBB();
+        bb = global_bg->getBB();
         cout << bb << endl;
         double end_ss2 = lvr2::timestamp.getElapsedTimeInS();
         datastruct_time = (end_ss2 - start_ss);
     }
 
     vector<BoundingBox<BaseVecT>> partitionBoxes;
-    // lvr2::floatArr points = bg->getPointCloud(numPoints);
+    // lvr2::floatArr points = global_bg->getPointCloud(numPoints);
     cout << lvr2::timestamp << "Making tree" << endl;
     std::unordered_map<size_t, typename BigVolumen<BaseVecT>::VolumeCellInfo>* cells;
     std::vector<typename BigVolumen<BaseVecT>::VolumeCellInfo*> cell_vec;
@@ -204,11 +216,15 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
             if(options.getVGrid() == 1)
             {
-                //
-                VirtualGrid<BaseVecT> a(bg->getBB(), options.getNodeSize(),options.getGridSize(), voxelsize);
+                VirtualGrid<BaseVecT> a(global_bg->getBB(), options.getNodeSize(), options.getGridSize(),voxelsize);
+
+                if(!(options.getPartialReconstruct() == "NONE")) {
+                    a.setBoundingBox(part_bg->getBB());
+                }
+
                 a.calculateBoxes();
                 //
-                ofstream partBoxOfs("VGrid.ser");
+                ofstream partBoxOfs("BoundingBoxes.ser");
                 for (size_t i = 0; i < a.getBoxes().size(); i++) {
                     BoundingBox<BaseVecT> partBB = *a.getBoxes().at(i).get();
                     partitionBoxes.push_back(partBB);
@@ -218,8 +234,8 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
                 }
             }
             else {
-                BigGridKdTree<BaseVecT> gridKd(bg->getBB(), options.getNodeSize(), bg.get(), voxelsize);
-                gridKd.insert(bg->pointSize(), bg->getBB().getCentroid());
+                BigGridKdTree<BaseVecT> gridKd(global_bg->getBB(), options.getNodeSize(), global_bg.get(), voxelsize);
+                gridKd.insert(global_bg->pointSize(), global_bg->getBB().getCentroid());
                 ofstream partBoxOfs("KdTree.ser");
                 for (size_t i = 0; i < gridKd.getLeafs().size(); i++) {
                     BoundingBox<BaseVecT> partBB = gridKd.getLeafs()[i]->getBB();
@@ -229,9 +245,6 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
                                << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
                 }
             }
-            //for (size_t i = 0; i < a.getBoxes().size(); i++){
-                std::cout << "Check Bounding Box Colission: " << bg->getBB().overlap(partitionBoxes.at(1)) << std::endl;
-            //}
         }
     }
 
@@ -250,9 +263,19 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
     vector<string> grid_files;
     vector<string> normal_files;
+    ofstream vGrid("VGrid.ser");
     for (size_t i = 0; i < partitionBoxes.size(); i++)
     {
-        string name_id = std::to_string(i);
+        string name_id;
+        if(options.getVGrid() == 1)
+        {
+            name_id = std::to_string((int)floor(partitionBoxes.at(i).getMin().x/options.getGridSize()) ) + "_" +
+                      std::to_string((int)floor(partitionBoxes.at(i).getMin().y/options.getGridSize()) ) + "_" +
+                      std::to_string((int)floor(partitionBoxes.at(i).getMin().z/options.getGridSize()) );
+        }
+        else {
+            name_id = std::to_string(i);
+        }
         size_t numPoints;
 
         // todo: okay?
@@ -303,7 +326,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         }
         else
         {
-            points = bg->points(partitionBoxes[i].getMin().x - voxelsize * 3,
+            points = global_bg->points(partitionBoxes[i].getMin().x - voxelsize * 3,
                                 partitionBoxes[i].getMin().y - voxelsize * 3,
                                 partitionBoxes[i].getMin().z - voxelsize * 3,
                                 partitionBoxes[i].getMax().x + voxelsize * 3,
@@ -313,10 +336,10 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
             p_loader->setPointArray(points, numPoints);
             if (options.savePointNormals() || options.onlyNormals())
             {
-                if (bg->hasColors())
+                if (global_bg->hasColors())
                 {
                     size_t numColors;
-                    colors = bg->colors(partitionBoxes[i].getMin().x - voxelsize * 3,
+                    colors = global_bg->colors(partitionBoxes[i].getMin().x - voxelsize * 3,
                                         partitionBoxes[i].getMin().y - voxelsize * 3,
                                         partitionBoxes[i].getMin().z - voxelsize * 3,
                                         partitionBoxes[i].getMax().x + voxelsize * 3,
@@ -336,6 +359,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         // std::cout << "i: " << std::endl << bb << std::endl << "got : " << numPoints << std::endl;
         if (numPoints <= 50)
         {
+            std::cout << "remove virtually empty box..." << std::endl;
             continue;
         }
         lvr2::BoundingBox<Vec> gridbb(Vec(partitionBoxes[i].getMin().x,
@@ -355,11 +379,11 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         bool navail = false;
         if (volumenSize <= 0)
         {
-            if (bg->hasNormals())
+            if (global_bg->hasNormals())
             {
 
                 size_t numNormals;
-                lvr2::floatArr normals = bg->normals(partitionBoxes[i].getMin().x - voxelsize * 3,
+                lvr2::floatArr normals = global_bg->normals(partitionBoxes[i].getMin().x - voxelsize * 3,
                                                      partitionBoxes[i].getMin().y - voxelsize * 3,
                                                      partitionBoxes[i].getMin().z - voxelsize * 3,
                                                      partitionBoxes[i].getMax().x + voxelsize * 3,
@@ -551,11 +575,26 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         start_s = lvr2::timestamp.getElapsedTimeInS();
 
         std::stringstream ss_mesh;
-        ss_mesh << name_id << "-mesh.ply";
+
+
+        if(boost::filesystem::exists(ss_mesh.str()))
+        {
+            ss_mesh << name_id << "" << "_mesh.ply";
+        }
+        else{
+            ss_mesh << name_id << "_mesh.ply";
+        }
+
+
+        if(options.getVGrid() == 1)
+        {
+            vGrid << ss_mesh.str() << std::endl;
+        }
         // Create output model and save to file
         if (meshBuffer->numFaces() > 0)
         {
             auto m = ModelPtr(new Model(meshBuffer));
+
             ModelFactory::saveModel(m, ss_mesh.str());
 
             // add offset
@@ -567,12 +606,13 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         //        ps_grid->saveCells(ss_grid.str());
         grid_files.push_back(ss_grid.str());
 
+        /*
         std::stringstream ss_duplicates;
         ss_duplicates << name_id << "-duplicates.ser";
         std::ofstream ofs(ss_duplicates.str(), std::ofstream::out | std::ofstream::trunc);
         boost::archive::text_oarchive oa(ofs);
         oa& duplicates;
-
+        */
         end_s = lvr2::timestamp.getElapsedTimeInS();
         seconds += (end_s - start_s);
         cout << lvr2::timestamp << "finished saving data " << i << " in " << (end_s - start_s)
@@ -701,16 +741,27 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
     size_t newNumVertices = 0;
     size_t newNumFaces = 0;
+
+/*############################################# Generating BigMesh here ##############################################*/
+
     cout << lvr2::timestamp << "merging mesh..." << endl;
 
+
     size_t tmp_offset = 0;
+    //TODO: add partial reconstruction here
+    //TODO: filter out existing Meshes which overlap with new Meshes
+
+    if(false)
+    {
+
+    }
 
     for (size_t i = 0; i < grid_files.size(); i++)
     {
         double start_s = lvr2::timestamp.getElapsedTimeInS();
 
         string ply_path = grid_files[i];
-        boost::algorithm::replace_last(ply_path, "-grid.ser", "-mesh.ply");
+        boost::algorithm::replace_last(ply_path, "-grid.ser", "_mesh.ply");
 
         if (!(boost::filesystem::exists(ply_path)))
             continue;
