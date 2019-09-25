@@ -55,10 +55,36 @@ class AABB
 public:
     AABB();
 
-    AABB(const Vector3<T>* points, size_t count)
+    /**
+     * @brief Construct a new AABB object
+     * 
+     * @tparam P        Array of point representations that support []-based acces to coordinates
+     * @param points    Array of points
+     * @param count     Number of points in the point array
+     */
+    template<typename P>
+    AABB(P* points, size_t count)
         : AABB()
     {
         for (size_t i = 0; i < count; i++)
+        {
+            addPoint(points[i]);
+        }
+    }
+
+    /**
+     * @brief Construct a new AABB object
+     * 
+     * @tparam P        Set of points. Points are accessed via the [] operator. The returned 
+     *                  point types must support [] operater access to the coordinates. LVR2's
+     *                  channel object suppoort these requirements
+     * @param points    Set of point
+     * @param count     Number of points
+     */
+    template<typename P>
+    AABB(P& points, size_t count)
+    {
+        for(size_t i = 0; i < count; i++)
         {
             addPoint(points[i]);
         }
@@ -77,20 +103,21 @@ public:
     size_t count() const;
 
     /// adds a Point to the Point Cloud
-    void addPoint(const Vector3<T>& point)
+    template<typename P>
+    void addPoint(const P& point)
     {
         for (int axis = 0; axis < 3; axis++)
         {
-            double val = point(axis);
+            double val = point[axis];
             if (val < m_min(axis))
             {
-                m_min(axis) = val;
+                m_min[axis] = val;
             }
             if (val > m_max(axis))
             {
-                m_max(axis) = val;
+                m_max[axis] = val;
             }
-            m_sum(axis) += val;
+            m_sum[axis] += val;
         }
         m_count++;
     }

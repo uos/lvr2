@@ -8,6 +8,19 @@ namespace lvr2
 
 OctreeReduction::OctreeReduction(PointBufferPtr& pointBuffer, const double& voxelSize, const size_t& minPointsPerVoxel)
 {
+    size_t n = pointBuffer->numPoints();
+    bool* m_flags = new bool[n];
+    for (int i = 0; i < n; i++)
+    {
+        m_flags[i] = false;
+    }
+
+    lvr2::Channel<float>::Optional opt = pointBuffer->getChannel<float>("points");
+    if(opt)
+    {
+        lvr2::Channel<float> points = *opt;
+        AABB<float> boundingBox(points, n);
+    }
 
 }
 
@@ -18,42 +31,40 @@ OctreeReduction::OctreeReduction(
     const size_t& minPointsPerVoxel) : m_voxelSize(voxelSize), m_minPointsPerVoxel(minPointsPerVoxel)
 {
 
-    bool* flagged = new bool[n0];
+    m_flags = new bool[n0];
     for (int i = 0; i < n0; i++)
     {
-        flagged[i] = false;
+        m_flags[i] = false;
     }
 
     AABB<float> boundingBox(points, n0);
 
     #pragma omp parallel // allows "pragma omp task"
     #pragma omp single // only execute every task once
-    createOctree<Vector3f>(points, n0, flagged, boundingBox.min(), boundingBox.max(), 0);
+    createOctree<Vector3f>(points, n0, m_flags, boundingBox.min(), boundingBox.max(), 0);
 
     // remove all flagged elements
-    size_t i = 0;
-    size_t n = n0;
+    // size_t i = 0;
+    // size_t n = n0;
 
-    while (i < n)
-    {
-        if (flagged[i])
-        {
-            n--;
-            if (i == n)
-            {
-                break;
-            }
-            points[i] = points[n];
-            flagged[i] = flagged[n];
-        }
-        else
-        {
-            i++;
-        }
-    }
+    // while (i < n)
+    // {
+    //     if (flagged[i])
+    //     {
+    //         n--;
+    //         if (i == n)
+    //         {
+    //             break;
+    //         }
+    //         points[i] = points[n];
+    //         flagged[i] = flagged[n];
+    //     }
+    //     else
+    //     {
+    //         i++;
+    //     }
+    // }
 
-    delete[] flagged;
-  
 }
 
 PointBufferPtr OctreeReduction::getReducedPoints()

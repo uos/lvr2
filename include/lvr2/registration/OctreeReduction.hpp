@@ -51,6 +51,8 @@ public:
     PointBufferPtr getReducedPoints();
     void getReducedPoints(Vector3f& points, size_t& n);
 
+    ~OctreeReduction() { delete[] m_flags;}
+
 private:
     template<typename T>
     void createOctree(T* points, const int& n, bool* flagged, const T& min, const T& max, const int& level);
@@ -60,6 +62,7 @@ private:
 
     double  m_voxelSize;
     size_t  m_minPointsPerVoxel; 
+    bool*   m_flags;
 };
 
 } // namespace lvr2
