@@ -334,6 +334,8 @@ class Options : public lvr2::BaseOption
 
     int getGridSize() const;
 
+    string getPartialReconstruct() const;
+
   private:
     /// The set voxelsize
     float m_voxelsize;
@@ -467,6 +469,8 @@ class Options : public lvr2::BaseOption
     size_t m_lineReaderBuffer;
 
     bool m_onlyNormals;
+
+    string m_partialReconstruct;
 
     //sets partition method to virtual grid
     int m_vgrid;

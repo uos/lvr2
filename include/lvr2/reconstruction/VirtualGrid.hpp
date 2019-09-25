@@ -25,7 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
+/*
+ * VirtualGrid.hpp
+ *
+ *  @date 17.09.19
+ *  @author Pao
+ */
 
 #ifndef VIRTUALGRID_H
 #define VIRTUALGRID_H
@@ -44,6 +49,7 @@ class VirtualGrid
   public:
 
     /**
+     * Constructor
      *
      * @param bb
      * @param maxNodePoints
@@ -55,6 +61,7 @@ class VirtualGrid
                   size_t gridCellSize,
                   float voxelsize);
 
+
     /**
      * Destructor
      */
@@ -65,6 +72,12 @@ class VirtualGrid
      *
      */
     void calculateBoxes();
+
+    /**
+     * Sets a new Bounding Box
+     * @param bb
+     */
+    void setBoundingBox(BoundingBox<BaseVecT>& bb);
 
     /**
      *
