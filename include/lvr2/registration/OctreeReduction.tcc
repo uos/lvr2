@@ -72,7 +72,16 @@ size_t OctreeReduction::splitPoints(lvr2::Channel<T>& points, size_t s, size_t n
         }
         if (l < r)
         {
-            std::swap(points[l], points[r]);
+            // std::swap(points[l], points[r]) is not (yet?) compatible with 
+            // channels. Using manual swap...
+            Vector3f tmp(points[l][0], points[l][1], points[l][2]);
+            points[l][0] = points[r][0];
+            points[l][1] = points[r][1];
+            points[l][2] = points[r][2];
+
+            points[r][0] = tmp[0];
+            points[r][1] = tmp[1];
+            points[r][2] = tmp[2];
         }
     }
 
