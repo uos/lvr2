@@ -6,7 +6,10 @@
 namespace lvr2
 {
 
-OctreeReduction::OctreeReduction(PointBufferPtr& pointBuffer, const double& voxelSize, const size_t& minPointsPerVoxel)
+OctreeReduction::OctreeReduction(
+    PointBufferPtr& pointBuffer, 
+    const double& voxelSize, 
+    const size_t& minPointsPerVoxel) :  m_voxelSize(voxelSize), m_minPointsPerVoxel(minPointsPerVoxel), m_numPoints(pointBuffer->numPoints())
 {
     size_t n = pointBuffer->numPoints();
     bool* m_flags = new bool[n];

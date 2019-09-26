@@ -5,8 +5,8 @@ template<typename T>
 AABB<T>::AABB()
     : m_count(0)
 {
-    m_min.setConstant(std::numeric_limits<double>::infinity());
-    m_max.setConstant(-std::numeric_limits<double>::infinity());
+    m_min.setConstant(std::numeric_limits<T>::max());
+    m_max.setConstant(std::numeric_limits<T>::lowest());
     m_sum.setConstant(0.0);
 }
 

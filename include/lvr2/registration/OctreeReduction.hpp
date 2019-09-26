@@ -69,7 +69,8 @@ private:
     size_t splitPoints(lvr2::Channel<T>& points, size_t s, size_t n, const int axis, const double& splitValue);
 
     double  m_voxelSize;
-    size_t  m_minPointsPerVoxel; 
+    size_t  m_minPointsPerVoxel;
+    size_t  m_numPoints; 
     bool*   m_flags;
 };
 
