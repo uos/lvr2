@@ -32,8 +32,6 @@
  *      Author: Isaak Mitschke
  */
 
-#include "LineReader.hpp"
-
 #include <boost/algorithm/string.hpp>
 #include <cerrno>
 #include <exception>

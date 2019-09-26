@@ -37,6 +37,8 @@
 
 using std::numeric_limits;
 
+#include "lvr2/io/LineReader.hpp"
+
 namespace lvr2
 {
 
