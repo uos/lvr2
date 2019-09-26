@@ -16,13 +16,9 @@ void OctreeReduction::createOctree(
         return;
     }
 
-    std::cout << "start: " << startIndex << " " << "num: " << pointsInVoxel << " level: " << level << endl;
-
     // Determine split axis and compute new center
     int axis = level % 3;
     Vector3<T> center = (max + min) / 2.0;
-
-    std::cout << "size: " << max[axis] - min[axis] << " " << m_voxelSize << std::endl;
 
     // Stop recursion if voxel size is below given limit
     if (max[axis] - min[axis] <= m_voxelSize)
@@ -32,11 +28,6 @@ void OctreeReduction::createOctree(
         double minDist = (Vector3f(points[closest][0],  points[closest][1], points[closest][2]) - center).squaredNorm();
         for (int i = 1; i < pointsInVoxel; i++)
         {
-            
-            
-            if(startIndex + i >= m_numPoints) std::cout << startIndex + i << " " << m_numPoints << std::endl;
-            
-            
             double dist = (Vector3f(points[startIndex + i][0],  points[startIndex + i][1], points[startIndex + i][2]) - center).squaredNorm();
             if (dist < minDist)
             {
@@ -50,7 +41,6 @@ void OctreeReduction::createOctree(
             size_t pos = startIndex + i;
             flagged[pos] = pos != closest;
         }
-        std::cout << "BREAK" << std::endl;
         return;
     }
 
