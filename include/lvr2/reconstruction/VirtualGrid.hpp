@@ -77,7 +77,7 @@ class VirtualGrid
      * Sets a new Bounding Box
      * @param bb
      */
-    void setBoundingBox(BoundingBox<BaseVecT>& bb);
+    void setBoundingBox(BoundingBox<BaseVecT> bb);
 
     /**
      *

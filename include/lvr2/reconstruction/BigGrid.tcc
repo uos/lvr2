@@ -46,6 +46,97 @@ using namespace std;
 
 namespace lvr2
 {
+    template <typename BaseVecT>
+    BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale, size_t bufferSize)
+            : m_maxIndex(0), m_maxIndexSquare(0), m_maxIndexX(0), m_maxIndexY(0), m_maxIndexZ(0),
+              m_numPoints(0), m_extrude(true), m_scale(scale), m_has_normal(false), m_has_color(false),
+              m_pointBufferSize(1024)
+    {
+        omp_init_lock(&m_lock);
+        m_voxelSize = voxelsize;
+        // First, parse whole file to get BoundingBox and amount of points
+        float ix, iy, iz;
+        std::cout << lvr2::timestamp << "Computing Bounding Box..." << std::endl;
+        m_numPoints = 0;
+        size_t rsize = 0;
+        LineReader lineReader(cloudPath);
+        size_t lasti = 0;
+        while (lineReader.ok())
+        {
+            if (lineReader.getFileType() == XYZNRGB)
+            {
+                boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(
+                        lineReader.getNextPoints(rsize, m_pointBufferSize));
+                if (rsize <= 0 && !lineReader.ok())
+                {
+                    break;
+                }
+                for (int i = 0; i < rsize; i++)
+                {
+                    m_bb.expand(BaseVecT(a.get()[i].point.x * m_scale,
+                                         a.get()[i].point.y * m_scale,
+                                         a.get()[i].point.z * m_scale));
+                    m_numPoints++;
+                }
+            }
+            else if (lineReader.getFileType() == XYZN)
+            {
+                boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(
+                        lineReader.getNextPoints(rsize, m_pointBufferSize));
+                if (rsize <= 0 && !lineReader.ok())
+                {
+                    break;
+                }
+                for (int i = 0; i < rsize; i++)
+                {
+                    m_bb.expand(BaseVecT(a.get()[i].point.x * m_scale,
+                                         a.get()[i].point.y * m_scale,
+                                         a.get()[i].point.z * m_scale));
+                    m_numPoints++;
+                }
+            }
+            else if (lineReader.getFileType() == XYZ)
+            {
+                boost::shared_ptr<xyz> a =
+                        boost::static_pointer_cast<xyz>(lineReader.getNextPoints(rsize, m_pointBufferSize));
+                if (rsize <= 0 && !lineReader.ok())
+                {
+                    break;
+                }
+                for (size_t i = 0; i < rsize; i++)
+                {
+                    m_bb.expand(BaseVecT(a.get()[i].point.x * m_scale,
+                                         a.get()[i].point.y * m_scale,
+                                         a.get()[i].point.z * m_scale));
+                    m_numPoints++;
+                    lasti = i;
+                }
+            }
+            else if (lineReader.getFileType() == XYZRGB)
+            {
+                boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(
+                        lineReader.getNextPoints(rsize, m_pointBufferSize));
+                if (rsize <= 0 && !lineReader.ok())
+                {
+                    break;
+                }
+                for (size_t i = 0; i < rsize; i++)
+                {
+                    m_bb.expand(BaseVecT(a.get()[i].point.x * m_scale,
+                                         a.get()[i].point.y * m_scale,
+                                         a.get()[i].point.z * m_scale));
+                    m_numPoints++;
+                    lasti = i;
+                }
+            }
+            else
+            {
+                exit(-1);
+            }
+        }
+
+    }
+
 
 template <typename BaseVecT>
 BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
@@ -704,6 +795,12 @@ lvr2::floatArr BigGrid<BaseVecT>::points(
 
     numPoints = getSizeofBox(minx, miny, minz, maxx, maxy, maxz);
 
+    std::cout << "Current BB: " << m_bb << std::endl;
+
+    std::cout << "Number of Points: " << numPoints << std::endl;
+    std::cout << "min[" << minx << ", " << miny << ", " << minz << "]"<< std::endl;
+    std::cout << "max[" << maxx << ", " << maxy << ", " << maxz << "]"<< std::endl;
+
     lvr2::floatArr points(new float[numPoints * 3]);
     size_t p_index = 0;
 
@@ -725,7 +822,7 @@ lvr2::floatArr BigGrid<BaseVecT>::points(
             }
         }
     }
-
+    std::cout << "Here we are!" << std::endl;
     return points;
 }
 
