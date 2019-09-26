@@ -37,6 +37,7 @@
 #include "lvr2/types/MatrixTypes.hpp"
 
 #include <limits>
+#include <iostream>
 
 namespace lvr2
 {
@@ -63,8 +64,7 @@ public:
      * @param count     Number of points in the point array
      */
     template<typename P>
-    AABB(P* points, size_t count)
-        : AABB()
+    AABB(P* points, size_t count) : AABB()
     {
         for (size_t i = 0; i < count; i++)
         {
@@ -82,7 +82,7 @@ public:
      * @param count     Number of points
      */
     template<typename P>
-    AABB(P& points, size_t count)
+    AABB(P& points, size_t count) : AABB()
     {
         for(size_t i = 0; i < count; i++)
         {
@@ -109,11 +109,11 @@ public:
         for (int axis = 0; axis < 3; axis++)
         {
             double val = point[axis];
-            if (val < m_min(axis))
+            if (val < m_min[axis])
             {
                 m_min[axis] = val;
             }
-            if (val > m_max(axis))
+            if (val > m_max[axis])
             {
                 m_max[axis] = val;
             }

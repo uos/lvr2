@@ -5,6 +5,7 @@
 #include "lvr2/io/ScanDirectoryParser.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/registration/OctreeReduction.hpp"
 
 using namespace boost::filesystem;
 
@@ -25,8 +26,8 @@ ScanDirectoryParser::ScanDirectoryParser(const std::string& directory) noexcept
     }
 
     // Set default prefixes and extension
-    m_pointExtension = ".3d";
-    m_poseExtension = ".frames";
+    m_pointExtension = ".txt";
+    m_poseExtension = ".dat";
     m_pointPrefix = "scan";
     m_posePrefix = "scan";
 
@@ -74,7 +75,19 @@ size_t ScanDirectoryParser::examineASCII(const std::string& filename)
 
 PointBufferPtr ScanDirectoryParser::octreeSubSample(const double& voxelSize)
 {
-
+     for(auto i : m_scans)
+    {
+        ModelPtr model = ModelFactory::readModel(i.m_filename);
+        if(model)
+        {
+            PointBufferPtr buffer = model->m_pointCloud;
+            if(buffer)
+            {
+                OctreeReduction oct(buffer, voxelSize, 5);
+            }
+        }
+    }
+    return PointBufferPtr(new PointBuffer);
 }
 
 PointBufferPtr ScanDirectoryParser::randomSubSample(const size_t& tz)

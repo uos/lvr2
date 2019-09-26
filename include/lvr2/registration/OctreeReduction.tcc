@@ -2,39 +2,60 @@ namespace lvr2
 {
 
 template<typename T>
-void OctreeReduction::createOctree(lvr2::Channel<T>& points, size_t s, size_t n, bool* flagged, const lvr2::Vector3<T>& min, const lvr2::Vector3<T>& max, const int& level)
+void OctreeReduction::createOctree(
+    lvr2::Channel<T>& points, 
+    size_t startIndex, 
+    size_t pointsInVoxel, 
+    bool* flagged, 
+    const lvr2::Vector3<T>& min, 
+    const lvr2::Vector3<T>& max, const int& level)
 {
-    if (n <= m_minPointsPerVoxel)
+    // Stop recursion - not enough points in voxel
+    if (pointsInVoxel <= m_minPointsPerVoxel)
     {
         return;
     }
 
+    std::cout << "start: " << startIndex << " " << "num: " << pointsInVoxel << " level: " << level << endl;
+
+    // Determine split axis and compute new center
     int axis = level % 3;
     Vector3<T> center = (max + min) / 2.0;
 
+    std::cout << "size: " << max[axis] - min[axis] << " " << m_voxelSize << std::endl;
+
+    // Stop recursion if voxel size is below given limit
     if (max[axis] - min[axis] <= m_voxelSize)
     {
-        // keep the Point closest to the center
-        int closest = s;
+        // Keep the Point closest to the center
+        int closest = startIndex;
         double minDist = (Vector3f(points[closest][0],  points[closest][1], points[closest][2]) - center).squaredNorm();
-        for (int i = 1; i < n; i++)
+        for (int i = 1; i < pointsInVoxel; i++)
         {
-            double dist = (Vector3f(points[s + i][0],  points[s + i][1], points[s + i][2]) - center).squaredNorm();
+            
+            
+            if(startIndex + i >= m_numPoints) std::cout << startIndex + i << " " << m_numPoints << std::endl;
+            
+            
+            double dist = (Vector3f(points[startIndex + i][0],  points[startIndex + i][1], points[startIndex + i][2]) - center).squaredNorm();
             if (dist < minDist)
             {
-                closest = i;
+                closest = startIndex + i;
                 minDist = dist;
             }
         }
-        // flag all other Points for deletion
-        for (int i = s; i < n; i++)
+        // Flag all other Points for deletion
+        for (int i = 0; i < pointsInVoxel; i++)
         {
-            flagged[i] = i != closest;
+            size_t pos = startIndex + i;
+            flagged[pos] = pos != closest;
         }
+        std::cout << "BREAK" << std::endl;
         return;
     }
 
-    int l = splitPoints(points, s, n, axis, center[axis]);
+    // Sort and get new split index
+    int newRight = splitPoints(points, startIndex, pointsInVoxel, axis, center[axis]);
 
     Vector3<T> lMin = min, lMax = max;
     Vector3<T> rMin = min, rMax = max;
@@ -42,23 +63,34 @@ void OctreeReduction::createOctree(lvr2::Channel<T>& points, size_t s, size_t n,
     lMax[axis] = center[axis];
     rMin[axis] = center[axis];
 
-    if (l > m_minPointsPerVoxel)
+    size_t numPointsLeft = newRight - startIndex;
+    size_t numPointsRight = (startIndex + pointsInVoxel) - newRight;
+
+    // If number of points in new intervall is higher then 
+    // the number of points in the new interval, start recursion   
+    if (numPointsLeft > m_minPointsPerVoxel)
     {
         #pragma omp task
-        createOctree<T>(points, s,  l, flagged, lMin, lMax, level + 1);
+        createOctree<T>(points, startIndex,  numPointsLeft, flagged, lMin, lMax, level + 1);
     }
 
-    if (n - l > m_minPointsPerVoxel)
+    if (numPointsRight > m_minPointsPerVoxel)
     {
         #pragma omp task
-        createOctree<T>(points, l, n - l, flagged + l, rMin, rMax, level + 1);
+        createOctree<T>(points, newRight, numPointsRight, flagged, rMin, rMax, level + 1);
     }
 }
 
 template<typename T>
-size_t OctreeReduction::splitPoints(lvr2::Channel<T>& points, size_t s, size_t n, const int axis, const double& splitValue)
+size_t OctreeReduction::splitPoints(
+    lvr2::Channel<T>& points, 
+    size_t startIndex, 
+    size_t numPoints, 
+    const int axis, 
+    const double& splitValue)
 {
-    size_t l = s, r = s + n - 1;
+    size_t l = startIndex;
+    size_t r = startIndex + numPoints - 1;
 
     while (l < r)
     {
