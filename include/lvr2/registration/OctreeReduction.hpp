@@ -72,6 +72,9 @@ private:
     size_t  m_minPointsPerVoxel;
     size_t  m_numPoints; 
     bool*   m_flags;
+
+    PointBufferPtr  m_pointBuffer;
+    Vector3f        m_points;
 };
 
 } // namespace lvr2

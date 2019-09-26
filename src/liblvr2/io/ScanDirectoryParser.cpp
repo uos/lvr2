@@ -75,7 +75,9 @@ size_t ScanDirectoryParser::examineASCII(const std::string& filename)
 
 PointBufferPtr ScanDirectoryParser::octreeSubSample(const double& voxelSize)
 {
-     for(auto i : m_scans)
+    ModelPtr out_model(new Model);
+
+    for(auto i : m_scans)
     {
         ModelPtr model = ModelFactory::readModel(i.m_filename);
         if(model)
@@ -83,7 +85,23 @@ PointBufferPtr ScanDirectoryParser::octreeSubSample(const double& voxelSize)
             PointBufferPtr buffer = model->m_pointCloud;
             if(buffer)
             {
+                std::cout << timestamp << "Building octree with voxel size " << voxelSize << " from " << i.m_filename << std::endl;
                 OctreeReduction oct(buffer, voxelSize, 5);
+                PointBufferPtr reduced = oct.getReducedPoints();
+
+                // Apply transformation
+                std::cout << timestamp << "Transforming reduced point cloud" << std::endl;
+                out_model->m_pointCloud = reduced;
+                transformPointCloud<double>(out_model, i.m_pose);
+
+                // Write reduced data
+                std::stringstream name_stream;
+                Path p(i.m_filename);
+                name_stream << p.stem().string() << "_reduced" << ".ply";
+                std::cout << timestamp << "Saving data to " << name_stream.str() << std::endl;
+                ModelFactory::saveModel(out_model, name_stream.str());
+
+                std::cout << timestamp << "Points written: " << reduced->numPoints() << std::endl;
             }
         }
     }
