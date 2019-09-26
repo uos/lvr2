@@ -124,7 +124,9 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     cout << lvr2::timestamp << "Starting grid" << endl;
     float volumenSize = (float)(options.getVolumenSize()); // 10 x 10 x 10 voxel
     std::shared_ptr<BigGrid<BaseVecT>> global_bg;
-    std::shared_ptr<BigGrid<BaseVecT>> part_bg;
+
+    std::shared_ptr<BigGrid<BaseVecT>> part_bg; //partial Grid
+
     std::shared_ptr<BigVolumen<BaseVecT>> bv;
     BoundingBox<BaseVecT> bb;
     if (firstPath.find(".ls") != std::string::npos)
@@ -147,9 +149,12 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
             if(!(options.getPartialReconstruct() == "NONE"))
             {
-                std::vector<string> part;
-                part.push_back(options.getPartialReconstruct());
-                part_bg = std::make_shared<BigGrid<BaseVecT>>(part, voxelsize, scale, bufferSize);
+                part_bg = std::make_shared<BigGrid<BaseVecT>>(options.getPartialReconstruct(), voxelsize, scale, bufferSize);
+
+                std::cout << "Bounding BoX: " << part_bg->getBB() << std::endl;
+                //BigGrid<BaseVecT> *part_bg_dummy = new BigGrid<BaseVecT>(part, voxelsize, scale, bufferSize);
+                //part_bg = part_bg_dummy;
+                //std::shared_ptr<lvr2::BoundingBox<BaseVecT>>(new BoundingBox<BaseVecT>(options.getPartialReconstruct()));
             }
 
             global_bg->serialize("serinfo.ls");
@@ -217,13 +222,14 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
             if(options.getVGrid() == 1)
             {
                 VirtualGrid<BaseVecT> a(global_bg->getBB(), options.getNodeSize(), options.getGridSize(),voxelsize);
-
+                std::vector<shared_ptr<BoundingBox<BaseVecT>>> boxes;
                 if(!(options.getPartialReconstruct() == "NONE")) {
                     a.setBoundingBox(part_bg->getBB());
                 }
 
+
                 a.calculateBoxes();
-                //
+
                 ofstream partBoxOfs("BoundingBoxes.ser");
                 for (size_t i = 0; i < a.getBoxes().size(); i++) {
                     BoundingBox<BaseVecT> partBB = *a.getBoxes().at(i).get();
@@ -261,9 +267,9 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     vector<size_t> offsets;
     offsets.push_back(0);
 
+    vector<string> mesh_files;
     vector<string> grid_files;
     vector<string> normal_files;
-    ofstream vGrid("VGrid.ser");
     for (size_t i = 0; i < partitionBoxes.size(); i++)
     {
         string name_id;
@@ -326,6 +332,8 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         }
         else
         {
+            std::cout << "Here we are 1#" << std::endl;
+            std::cout << partitionBoxes[i] << std::endl;
             points = global_bg->points(partitionBoxes[i].getMin().x - voxelsize * 3,
                                 partitionBoxes[i].getMin().y - voxelsize * 3,
                                 partitionBoxes[i].getMin().z - voxelsize * 3,
@@ -333,6 +341,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
                                 partitionBoxes[i].getMax().y + voxelsize * 3,
                                 partitionBoxes[i].getMax().z + voxelsize * 3,
                                 numPoints);
+            std::cout << "Here we are 2#" << std::endl;
             p_loader->setPointArray(points, numPoints);
             if (options.savePointNormals() || options.onlyNormals())
             {
@@ -576,20 +585,9 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
         std::stringstream ss_mesh;
 
+        ss_mesh << name_id << "_mesh.ply";
+        mesh_files.push_back(ss_mesh.str());
 
-        if(boost::filesystem::exists(ss_mesh.str()))
-        {
-            ss_mesh << name_id << "" << "_mesh.ply";
-        }
-        else{
-            ss_mesh << name_id << "_mesh.ply";
-        }
-
-
-        if(options.getVGrid() == 1)
-        {
-            vGrid << ss_mesh.str() << std::endl;
-        }
         // Create output model and save to file
         if (meshBuffer->numFaces() > 0)
         {
@@ -751,21 +749,31 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     //TODO: add partial reconstruction here
     //TODO: filter out existing Meshes which overlap with new Meshes
 
-    if(false)
-    {
 
+    ifstream old_mesh("VGrid.ser");
+    if(options.getVGrid() == 1 && old_mesh.is_open())
+    {
+        while(old_mesh.good())
+        {
+            string mesh;
+            old_mesh >> mesh;
+            mesh_files.push_back(mesh);
+        }
     }
 
-    for (size_t i = 0; i < grid_files.size(); i++)
+    ofstream vGrid;
+    vGrid.open("VGrid.ser", ofstream::out | ofstream::trunc);
+    for (size_t i = 0; i < mesh_files.size(); i++)
     {
         double start_s = lvr2::timestamp.getElapsedTimeInS();
 
-        string ply_path = grid_files[i];
-        boost::algorithm::replace_last(ply_path, "-grid.ser", "_mesh.ply");
+        string ply_path = mesh_files[i];
+        //boost::algorithm::replace_last(ply_path, "-grid.ser", "_mesh.ply");
 
         if (!(boost::filesystem::exists(ply_path)))
             continue;
 
+        vGrid << ply_path << std::endl;
         LineReader lr(ply_path);
 
         // size_t numPoints = lr.getNumPoints();
@@ -850,6 +858,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         }
         tmp_offset += modelPtr->m_mesh->numVertices();
     }
+    vGrid.close();
     ofs_faces.close();
     ofs_vertices.close();
     cout << lvr2::timestamp << "saving ply" << endl;
