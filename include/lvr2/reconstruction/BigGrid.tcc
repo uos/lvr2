@@ -35,7 +35,6 @@
 #include "lvr2/io/LineReader.hpp"
 #include "lvr2/io/Progress.hpp"
 #include "lvr2/io/Timestamp.hpp"
-#include "lvr2/reconstruction/BigGrid.hpp"
 
 #include <cstring>
 #include <fstream>

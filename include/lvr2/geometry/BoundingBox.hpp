@@ -32,11 +32,12 @@
  *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
-#ifndef LVR2_GEOMETRY_BOUNDINGBOX_H_
-#define LVR2_GEOMETRY_BOUNDINGBOX_H_
+#pragma once 
 
 #include <cmath>
 #include <ostream>
+
+#include "lvr2/io/LineReader.hpp"
 
 namespace lvr2
 {
@@ -168,4 +169,3 @@ inline std::ostream& operator<<(std::ostream& os, const BoundingBox<BaseVecT>& b
 
 #include "lvr2/geometry/BoundingBox.tcc"
 
-#endif /* LVR2_GEOMETRY_BOUNDINGBOX_H_ */

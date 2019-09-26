@@ -32,13 +32,11 @@
  *      Author: Isaak Mitschke
  */
 
-#include "lvr2/reconstruction/BigVolumen.hpp"
 #include "lvr2/io/Timestamp.hpp"
 #include "lvr2/io/Progress.hpp"
 #include <cstring>
 #include "lvr2/io/LineReader.hpp"
 #include <lvr2/reconstruction/FastReconstructionTables.hpp>
-#include <lvr2/io/Progress.hpp>
 
 namespace lvr2
 {
