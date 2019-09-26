@@ -73,12 +73,13 @@ size_t ScanDirectoryParser::examineASCII(const std::string& filename)
     return countPointsInFile(p);
 } 
 
-PointBufferPtr ScanDirectoryParser::octreeSubSample(const double& voxelSize)
+PointBufferPtr ScanDirectoryParser::octreeSubSample(const double& voxelSize, const size_t& minPoints)
 {
     ModelPtr out_model(new Model);
 
     for(auto i : m_scans)
     {
+        std::cout << timestamp << "Reading " << i.m_filename << std::endl;
         ModelPtr model = ModelFactory::readModel(i.m_filename);
         if(model)
         {

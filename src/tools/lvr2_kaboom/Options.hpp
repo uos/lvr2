@@ -81,6 +81,8 @@ public:
 	int		getK() const;
 	float	getSigma() const;
 	int		getTargetSize() const;
+	double  getVoxelSize() const;
+	size_t  getMinPointsPerVoxel() const;
 
 	/**
 	 * @brief   Returns the position of the x coordinate in the data.
