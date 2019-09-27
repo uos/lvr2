@@ -66,6 +66,9 @@ public:
     template<typename T>
     BoundingBox(T v1, T v2);
 
+    template<typename T>
+    explicit BoundingBox(std::string plyPath);
+
     /**
      * @brief Expands the bounding box if the given Vector \ref{v} is
      *        outside the current volume

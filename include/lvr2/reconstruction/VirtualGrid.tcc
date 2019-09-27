@@ -59,8 +59,8 @@ void VirtualGrid<BaseVecT>::calculateBoxes()
 }
 
 template <typename BaseVecT>
-void VirtualGrid<BaseVecT>::setBoundingBox(BoundingBox<BaseVecT>& bb){
-    m_pcbb =bb;
+void VirtualGrid<BaseVecT>::setBoundingBox(BoundingBox<BaseVecT> bb){
+    m_pcbb = bb;
 }
 
 template <typename BaseVecT>

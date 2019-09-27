@@ -68,6 +68,94 @@ BoundingBox<BaseVecT>::BoundingBox(T v1, T v2)
 }
 
 template<typename BaseVecT>
+template<typename T>
+BoundingBox<BaseVecT>::BoundingBox(std::string plyPath)
+{/*
+    auto max_val = numeric_limits<typename BaseVecT::CoordType>::max();
+    auto min_val = numeric_limits<typename BaseVecT::CoordType>::lowest();
+
+    m_min = BaseVecT(max_val, max_val, max_val);
+    m_max = BaseVecT(min_val, min_val, min_val);
+
+    size_t rsize = 0;
+    LineReader lineReader(plyPath);
+    size_t lasti = 0;
+    while (lineReader.ok())
+    {
+        if (lineReader.getFileType() == XYZNRGB)
+        {
+            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(
+                    lineReader.getNextPoints(rsize, 1024));
+            if (rsize <= 0 && !lineReader.ok())
+            {
+                break;
+            }
+            for (int i = 0; i < rsize; i++)
+            {
+                //original: multiplied by scale
+                expand(BaseVecT(a.get()[i].point.x * 1,
+                        a.get()[i].point.y * 1,
+                        a.get()[i].point.z * 1));
+
+            }
+        }
+        else if (lineReader.getFileType() == XYZN)
+        {
+            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(
+                    lineReader.getNextPoints(rsize, 1024));
+            if (rsize <= 0 && !lineReader.ok())
+            {
+                break;
+            }
+            for (int i = 0; i < rsize; i++)
+            {
+                expand(BaseVecT(a.get()[i].point.x *1,
+                        a.get()[i].point.y * 1,
+                        a.get()[i].point.z * 1));
+
+            }
+        }
+        else if (lineReader.getFileType() == XYZ)
+        {
+            boost::shared_ptr<xyz> a =
+                    boost::static_pointer_cast<xyz>(lineReader.getNextPoints(rsize, 1024));
+            if (rsize <= 0 && !lineReader.ok())
+            {
+                break;
+            }
+            for (size_t i = 0; i < rsize; i++)
+            {
+                expand(BaseVecT(a.get()[i].point.x * 1,
+                        a.get()[i].point.y * 1,
+                        a.get()[i].point.z * 1));
+
+                lasti = i;
+            }
+        }
+        else if (lineReader.getFileType() == XYZRGB)
+        {
+            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(
+                    lineReader.getNextPoints(rsize, 1024));
+            if (rsize <= 0 && !lineReader.ok())
+            {
+                break;
+            }
+            for (size_t i = 0; i < rsize; i++)
+            {
+                expand(BaseVecT(a.get()[i].point.x * 1,
+                        a.get()[i].point.y * 1,
+                        a.get()[i].point.z * 1));
+                lasti = i;
+            }
+        }
+        else
+        {
+            exit(-1);
+        }
+    }*/
+}
+
+template<typename BaseVecT>
 bool BoundingBox<BaseVecT>::isValid() const
 {
     return m_min.x < m_max.x

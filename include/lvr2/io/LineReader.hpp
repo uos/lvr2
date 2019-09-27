@@ -83,27 +83,33 @@ struct __attribute__((packed)) xyzc : xyz
     lvr2::color<unsigned char> color;
 };
 
+/// TODO: Fixme!
+/// Including this in BoundingBox leads to a very nasty circular 
+/// include history when using the ModelFactory. Currently,
+/// the only available solution is to inline all LineReader
+/// methods (which is of course no suitable permanent solution).
+
 class LineReader
 {
   public:
-    LineReader();
-    LineReader(std::string filePath);
-    LineReader(std::vector<std::string> filePaths);
-    void open(std::string filePath);
-    void open(std::vector<std::string> filePaths);
-    size_t getNumPoints();
-    bool getNextPoint(xyznc& point);
+    inline LineReader();
+    inline LineReader(std::string filePath);
+    inline LineReader(std::vector<std::string> filePaths);
+    inline void open(std::string filePath);
+    inline void open(std::vector<std::string> filePaths);
+    inline size_t getNumPoints();
+    inline bool getNextPoint(xyznc& point);
     //        boost::shared_array<xyzn> getNextPoints(size_t &return_amount, size_t amount =
     //        1000000); boost::shared_array<xyzc> getNextPoints(size_t &return_amount, size_t amount
     //        = 1000000); boost::shared_array<xyznc> getNextPoints(size_t &return_amount, size_t
     //        amount = 1000000);
-    boost::shared_ptr<void> getNextPoints(size_t& return_amount, size_t amount = 1000000);
-    fileType getFileType(size_t i);
-    fileType getFileType();
-    void rewind(size_t i);
-    void rewind();
-    bool ok();
-    bool isPly() { return m_ply; }
+    inline boost::shared_ptr<void> getNextPoints(size_t& return_amount, size_t amount = 1000000);
+    inline fileType getFileType(size_t i);
+    inline fileType getFileType();
+    inline void rewind(size_t i);
+    inline void rewind();
+    inline bool ok();
+    inline bool isPly() { return m_ply; }
 
     class readException : public std::exception
     {
