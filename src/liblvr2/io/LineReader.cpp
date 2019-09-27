@@ -41,6 +41,8 @@
 #include <sstream>
 #include <stdio.h>
 
+#include "lvr2/io/LineReader.hpp"
+
 namespace lvr2
 {
 
