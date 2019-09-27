@@ -74,6 +74,9 @@ class BigGrid
      */
     BigGrid(std::vector<std::string>, float voxelsize, float scale = 0, size_t bufferSize = 1024);
 
+
+    BigGrid(std::string cloudPath, float voxelsize, float scale = 0, size_t bufferSize = 1024);
+
     BigGrid(std::string path);
     /**
      * @return Number of voxels
