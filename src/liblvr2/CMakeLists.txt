@@ -35,6 +35,7 @@ set(LVR2_SOURCES
     io/DracoEncoder.cpp
     io/DracoDecoder.cpp
     io/DrcIO.cpp
+    io/LineReader.cpp
 #    io/KinectGrabber.cpp
     io/DatIO.cpp
     io/LasIO.cpp
