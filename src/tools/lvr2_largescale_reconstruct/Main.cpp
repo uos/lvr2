@@ -125,10 +125,9 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     float volumenSize = (float)(options.getVolumenSize()); // 10 x 10 x 10 voxel
     std::shared_ptr<BigGrid<BaseVecT>> global_bg;
 
-    std::shared_ptr<BigGrid<BaseVecT>> part_bg; //partial Grid
-
     std::shared_ptr<BigVolumen<BaseVecT>> bv;
-    BoundingBox<BaseVecT> bb;
+
+    std::shared_ptr<BoundingBox<BaseVecT>> bb; //Bounding Box used for partial reconstruction
     if (firstPath.find(".ls") != std::string::npos)
     {
         gotSerializedBG = true;
@@ -140,7 +139,6 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         if (gotSerializedBG)
         {
             global_bg = std::make_shared<BigGrid<BaseVecT>>(firstPath);
-            std::cout << "here we are 1#" << std::endl;
         }
         else
         {
@@ -149,12 +147,10 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
             if(!(options.getPartialReconstruct() == "NONE"))
             {
-                part_bg = std::make_shared<BigGrid<BaseVecT>>(options.getPartialReconstruct(), voxelsize, scale, bufferSize);
+                bb = std::make_shared<BoundingBox<BaseVecT>>(options.getPartialReconstruct());
 
-                std::cout << "Bounding BoX: " << part_bg->getBB() << std::endl;
-                //BigGrid<BaseVecT> *part_bg_dummy = new BigGrid<BaseVecT>(part, voxelsize, scale, bufferSize);
-                //part_bg = part_bg_dummy;
-                //std::shared_ptr<lvr2::BoundingBox<BaseVecT>>(new BoundingBox<BaseVecT>(options.getPartialReconstruct()));
+                std::cout << "Bounding BoX (by BB): " << bb << std::endl;
+
             }
 
             global_bg->serialize("serinfo.ls");
@@ -163,8 +159,8 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         double end_ss = lvr2::timestamp.getElapsedTimeInS();
         seconds += (end_ss - start_ss);
         cout << lvr2::timestamp << "grid finished in" << (end_ss - start_ss) << "sec." << endl;
-        bb = global_bg->getBB();
-        cout << bb << endl;
+        //bb = global_bg->getBB();
+        //cout << bb << endl;
         double end_ss2 = lvr2::timestamp.getElapsedTimeInS();
         datastruct_time = (end_ss2 - start_ss);
     }
@@ -224,7 +220,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
                 VirtualGrid<BaseVecT> a(global_bg->getBB(), options.getNodeSize(), options.getGridSize(),voxelsize);
                 std::vector<shared_ptr<BoundingBox<BaseVecT>>> boxes;
                 if(!(options.getPartialReconstruct() == "NONE")) {
-                    a.setBoundingBox(part_bg->getBB());
+                    a.setBoundingBox(*bb);
                 }
 
 
@@ -259,8 +255,8 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     std::cout << lvr2::timestamp << "got: " << partitionBoxes.size() << " leafs, saving leafs"
               << std::endl;
 
-    BaseVecT cbb_min = bb.getMin();
-    BaseVecT cbb_max = bb.getMax();
+    BaseVecT cbb_min = global_bg->getBB().getMin();
+    BaseVecT cbb_max = global_bg->getBB().getMax();
     BoundingBox<BaseVecT> cbb(cbb_min, cbb_max);
 
     // vector contains the amount of vertices per grid
