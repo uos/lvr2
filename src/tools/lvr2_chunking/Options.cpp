@@ -54,7 +54,13 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
         "maxChunkOverlap", value<float>()->default_value(0.1f),
         "maximum allowed overlap between chunks relative to the chunk size.")(
         "chunkedMesh", value<string>(), "Chunked mesh hdf5-file name.")(
-        "load", value<bool>()->default_value(false), "Set this value to true, if you want to load an hdf5-file");
+        "load", value<bool>()->default_value(false), "Set this value to true, if you want to load an hdf5-file")(
+        "x_min", value<float>()->default_value(0.0f), "bounding box minimum value in x-dimension")(
+        "y_min", value<float>()->default_value(0.0f), "bounding box minimum value in y-dimension")(
+        "z_min", value<float>()->default_value(0.0f), "bounding box minimum value in z-dimension")(
+        "x_max", value<float>()->default_value(10.0f), "bounding box maximum value in x-dimension")(
+        "y_max", value<float>()->default_value(10.0f), "bounding box maximum value in y-dimension")(
+        "z_max", value<float>()->default_value(10.0f), "bounding box maximum value in z-dimension");
 
     // Parse command line and generate variables map
     store(command_line_parser(argc, argv).options(m_descr).positional(m_posDescr).run(),
@@ -115,6 +121,31 @@ string Options::getChunkedMesh() const
 bool Options::getLoad() const
 {
     return m_variables["load"].as<bool>();
+}
+
+float Options::getXMin() const
+{
+    return m_variables["x_min"].as<float>();
+}
+float Options::getYMin() const
+{
+    return m_variables["y_min"].as<float>();
+}
+float Options::getZMin() const
+{
+    return m_variables["z_min"].as<float>();
+}
+float Options::getXMax() const
+{
+    return m_variables["x_max"].as<float>();
+}
+float Options::getYMax() const
+{
+    return m_variables["y_max"].as<float>();
+}
+float Options::getZMax() const
+{
+    return m_variables["z_max"].as<float>();
 }
 
 Options::~Options()

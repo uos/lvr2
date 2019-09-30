@@ -42,33 +42,50 @@ namespace lvr2
     {
     }
 
-bool ChunkHashGrid::loadChunk(size_t cellIndex)
+bool ChunkHashGrid::loadChunk(size_t hashValue, int x, int y, int z)
 {
-    lvr2::MeshBufferPtr chunk = m_chunkIO->loadChunk(cellIndex);
+    std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
+
+    lvr2::MeshBufferPtr chunk = m_chunkIO->loadChunk(chunkName);
     if(chunk.get()){
-        m_hashGrid.insert({cellIndex, chunk});
+        m_hashGrid.insert({hashValue, chunk});
         return true;
     }
     return false;
 }
 
-MeshBufferPtr ChunkHashGrid::findChunk(size_t cellIndex)
+MeshBufferPtr ChunkHashGrid::findChunk(size_t hashValue, int x, int y, int z)
 {
     // try to find mesh in hashGrid
-    auto it = m_hashGrid.find(cellIndex);
+    auto it = m_hashGrid.find(hashValue);
     if (it != m_hashGrid.end())
     {
         return it->second;
     }
 
     // if the chunk isn't loaded yet, we search for it in the hdf5 file
-    if(loadChunk(cellIndex))
+    if(loadChunk(hashValue, x, y, z))
     {
-        return m_hashGrid.find(cellIndex)->second;
+        return m_hashGrid.find(hashValue)->second;
     }
 
-    // if the chunkIndex has no mesh, we return an empty mesh. Is there a better way to do this?
+    // if the chunkIndex has no mesh, we return an empty mesh.
     MeshBufferPtr ret;
     return ret;
+}
+
+MeshBufferPtr ChunkHashGrid::findChunkCondition(size_t hashValue, int x, int y, int z, std::string channelName)
+{
+    MeshBufferPtr found = findChunk(hashValue, x, y, z);
+    if(found)
+    {
+        if(found->hasIndexChannel(channelName) || found->hasFloatChannel(channelName) || found->hasUCharChannel(channelName)) //templating needed?
+        {
+            return found;
+        }
+        MeshBufferPtr empty;
+        return empty;
+    }
+    return found;
 }
 } /* namespace lvr2 */
