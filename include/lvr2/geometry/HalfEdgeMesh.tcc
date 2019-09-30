@@ -588,6 +588,49 @@ array<HalfEdgeHandle, 3> HalfEdgeMesh<BaseVecT>::getInnerEdges(FaceHandle handle
 }
 
 template <typename BaseVecT>
+OptionalFaceHandle HalfEdgeMesh<BaseVecT>::getOppositeFace(FaceHandle faceH, VertexHandle vertexH) const
+{
+  auto e = getE(getF(faceH).edge);
+  for(size_t i=0; i<3; i++)
+  {
+    auto next = getE(e.next);
+    if(next.target == vertexH)
+      return getE(e.twin).face;
+    e = next;
+  }
+  return OptionalFaceHandle();
+}
+
+template <typename BaseVecT>
+OptionalEdgeHandle HalfEdgeMesh<BaseVecT>::getOppositeEdge(FaceHandle faceH, VertexHandle vertexH) const
+{
+  auto eH = getF(faceH).edge;
+  for(size_t i=0; i<3; i++)
+  {
+    auto nH = getE(eH).next;
+    if(getE(nH).target == vertexH)
+      return halfToFullEdgeHandle(eH);
+    eH = nH;
+  }
+  return OptionalEdgeHandle();
+}
+
+template <typename BaseVecT>
+OptionalVertexHandle HalfEdgeMesh<BaseVecT>::getOppositeVertex(FaceHandle faceH, EdgeHandle edgeH) const
+{
+  auto e1 = getE(HalfEdgeHandle::oneHalfOf(edgeH));
+  if(e1.face && e1.face.unwrap() == faceH)
+    return getE(e1.next).target;
+
+  auto e2 = getE(e1.twin);
+  if(e2.face && e2.face.unwrap() == faceH)
+    return getE(e2.next).target;
+
+  else
+    return OptionalVertexHandle();
+}
+
+template <typename BaseVecT>
 void HalfEdgeMesh<BaseVecT>::getNeighboursOfFace(
     FaceHandle handle,
     vector<FaceHandle>& facesOut

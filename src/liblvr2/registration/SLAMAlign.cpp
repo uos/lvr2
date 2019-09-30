@@ -169,7 +169,10 @@ void SLAMAlign::match()
         }
         else
         {
-            applyTransform(cur, Matrix4d::Identity());
+            if (m_options.createFrames)
+            {
+                applyTransform(cur, Matrix4d::Identity());
+            }
         }
 
         ICPPointAlign icp(prev, cur);
@@ -181,7 +184,10 @@ void SLAMAlign::match()
 
         icp.match();
 
-        applyTransform(cur, Matrix4d::Identity());
+        if (m_options.createFrames)
+        {
+            applyTransform(cur, Matrix4d::Identity());
+        }
 
         if (m_options.metascan)
         {
@@ -194,18 +200,21 @@ void SLAMAlign::match()
 
 void SLAMAlign::applyTransform(SLAMScanPtr scan, const Matrix4d& transform)
 {
-    scan->transform(transform);
+    scan->transform(transform, m_options.createFrames);
 
-    bool found = false;
-    for (const SLAMScanPtr& s : m_scans)
+    if (m_options.createFrames)
     {
-        if (s != scan)
+        bool found = false;
+        for (const SLAMScanPtr& s : m_scans)
         {
-            s->addFrame(found ? FrameUse::INVALID : FrameUse::UNUSED);
-        }
-        else
-        {
-            found = true;
+            if (s != scan)
+            {
+                s->addFrame(found ? FrameUse::INVALID : FrameUse::UNUSED);
+            }
+            else
+            {
+                found = true;
+            }
         }
     }
 }
@@ -283,22 +292,25 @@ void SLAMAlign::loopClose(size_t first, size_t last)
 
         Matrix4d delta = (transform - Matrix4d::Identity()) * factor + Matrix4d::Identity();
 
-        m_scans[i]->transform(delta, true, FrameUse::LOOPCLOSE);
+        m_scans[i]->transform(delta, m_options.createFrames, FrameUse::LOOPCLOSE);
     }
 
-    // Add frame to unaffected scans
-    for (size_t i = 0; i < 3; i++)
+    if (m_options.createFrames)
     {
-        m_scans[first + i]->addFrame(FrameUse::LOOPCLOSE);
-        m_scans[last - i]->addFrame(FrameUse::LOOPCLOSE);
-    }
-    for (size_t i = 0; i < first; i++)
-    {
-        m_scans[i]->addFrame();
-    }
-    for (size_t i = last - 2; i < m_scans.size(); i++)
-    {
-        m_scans[i]->addFrame(FrameUse::INVALID);
+        // Add frame to unaffected scans
+        for (size_t i = 0; i < 3; i++)
+        {
+            m_scans[first + i]->addFrame(FrameUse::LOOPCLOSE);
+            m_scans[last - i]->addFrame(FrameUse::LOOPCLOSE);
+        }
+        for (size_t i = 0; i < first; i++)
+        {
+            m_scans[i]->addFrame();
+        }
+        for (size_t i = last - 2; i < m_scans.size(); i++)
+        {
+            m_scans[i]->addFrame(FrameUse::INVALID);
+        }
     }
 }
 
