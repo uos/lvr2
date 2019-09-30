@@ -56,8 +56,10 @@ void ChunkIO::writeBasicStructure(BaseVector<std::size_t> amount, float chunksiz
 
     boost::shared_array<size_t> amountArr(new size_t[3] {amount.x, amount.y, amount.z});
     m_hdf5IO.save(m_chunkName, m_amountName, 3, amountArr);
+
     boost::shared_array<float> chunkSizeArr(new float[1] {chunksize});
     m_hdf5IO.save(m_chunkName, m_chunkSizeName, 1, chunkSizeArr);
+
     boost::shared_array<float> boundingBoxArr(
             new float[6] {boundingBox.getMin()[0], boundingBox.getMin()[1], boundingBox.getMin()[2],
                             boundingBox.getMax()[0], boundingBox.getMax()[1], boundingBox.getMax()[2]});
@@ -65,10 +67,10 @@ void ChunkIO::writeBasicStructure(BaseVector<std::size_t> amount, float chunksiz
     m_hdf5IO.save(m_chunkName, m_boundingBoxName, boundingBoxDim, boundingBoxArr);
 }
 
-void ChunkIO::writeChunk(lvr2::MeshBufferPtr mesh, size_t cellIndex)
+void ChunkIO::writeChunk(lvr2::MeshBufferPtr mesh, size_t x, size_t y, size_t z)
 {
     HighFive::Group chunks = hdf5util::getGroup(m_hdf5IO.m_hdf5_file, m_chunkName, true);
-    std::string cellName = std::to_string(cellIndex);
+    std::string cellName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
     if (!chunks.exist(cellName))
     {
         chunks.createGroup(cellName);
@@ -135,9 +137,9 @@ BoundingBox<BaseVector<float>> ChunkIO::loadBoundingBox()
     return boundingBox;
 }
 
-lvr2::MeshBufferPtr ChunkIO::loadChunk(size_t cellIndex)
+lvr2::MeshBufferPtr ChunkIO::loadChunk(std::string chunkName)
 {
-    return m_hdf5IO.loadMesh(m_chunkName + "/" + std::to_string(cellIndex));
+    return m_hdf5IO.loadMesh(m_chunkName + "/" + chunkName);
 }
 
 

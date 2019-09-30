@@ -95,6 +95,31 @@ class Options
      */
     bool getLoad() const;
 
+    /**
+     * @brief   Returns the x-min of the bounding box
+     */
+    float getXMin() const;
+    /**
+     * @brief   Returns the y-min of the bounding box
+     */
+    float getYMin() const;
+    /**
+     * @brief   Returns the z-min of the bounding box
+     */
+    float getZMin() const;
+    /**
+     * @brief   Returns the x-max of the bounding box
+     */
+    float getXMax() const;
+    /**
+     * @brief   Returns the y-max of the bounding box
+     */
+    float getYMax() const;
+    /**
+     * @brief   Returns the z-max of the bounding box
+     */
+    float getZMax() const;
+
   private:
     /// The internally used variable map
     variables_map m_variables;

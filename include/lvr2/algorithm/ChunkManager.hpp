@@ -66,7 +66,7 @@ class ChunkManager
     /**
      * @brief ChunkManager loads a ChunkManager from a given HDF5-file
      *
-     * Creates a ChunkManager from an HDF5 file and allows loading individual chunks
+     * Creates a ChunkManager from an already chunked HDF5 file and allows loading individual chunks
      * and combining them to partial meshes.
      * Every loaded chunk has the same length in height, width and depth.
      *
@@ -99,7 +99,7 @@ class ChunkManager
 
     /**
      * @brief Loads all chunks into the ChunkHashGrid.
-     * Only used for testing, but might be useful for smaller meshes.
+     * DEBUG -- Only used for testing, but might be useful for smaller meshes.
      */
     void loadAllChunks();
 
@@ -156,11 +156,27 @@ class ChunkManager
     BaseVector<float> getFaceCenter(std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> mesh,
                                     const FaceHandle& handle) const;
 
+//    /**
+//     * @brief find corresponding grid cell of given point
+//     *
+//     * @param vec point of mesh to find cell id for
+//     * @return cell id
+//     */
+//    std::string getCellName(const BaseVector<float>& vec) const;
+
     /**
-     * @brief find corresponding grid cell of given point
+     * @brief returns the grid coordinates of a given point
      *
-     * @param vec point of mesh to find cell id for
-     * @return cell id
+     * @param vec point of which we want the grid coordinates
+     * @return the grid coordinates as a BaseVector
+     */
+    BaseVector<int> getCellCoordinates(const BaseVector<float>& vec) const;
+
+    /**
+     * @brief returns the HashValue of a grid cell which would include the given point
+     *
+     * @param vec point of which we want the hashValue of its grid cell
+     * @return the HashValue of a grid cell which would include the given point
      */
     std::size_t getCellIndex(const BaseVector<float>& vec) const;
 

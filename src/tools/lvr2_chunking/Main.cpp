@@ -67,8 +67,8 @@ int main(int argc, char** argv)
             {
                 boost::filesystem::create_directories("area");
             }
-            lvr2::BoundingBox<lvr2::BaseVector<float>> area(lvr2::BaseVector<float>(-50, 130, 105),
-                                                            lvr2::BaseVector<float>(155, 194, 211));
+            lvr2::BoundingBox<lvr2::BaseVector<float>> area(lvr2::BaseVector<float>(options.getXMin(), options.getYMin(), options.getZMin()),
+                                                            lvr2::BaseVector<float>(options.getXMax(), options.getYMax(), options.getZMax()));
             // end: tmp test of extractArea method
 
             lvr2::ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(chunkLoader.extractArea(area))),

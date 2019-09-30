@@ -68,12 +68,12 @@ class ChunkIO{
         /**
         * @brief write a mesh in a group with the given cellIndex
         */
-        void writeChunk(lvr2::MeshBufferPtr mesh, size_t cellIndex);
+        void writeChunk(lvr2::MeshBufferPtr mesh, size_t x, size_t y, size_t z);
 
         /**
         * @brief load a mesh from a group with the given cellIndex
         */
-        lvr2::MeshBufferPtr loadChunk(size_t cellIndex);
+        lvr2::MeshBufferPtr loadChunk(std::string chunkName);
 
         /**
          * @brief loads and returns a BaseVector with the amount of chunks in each dimension

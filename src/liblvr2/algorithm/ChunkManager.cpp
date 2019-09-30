@@ -101,10 +101,11 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
         {
             for (std::size_t k = 0; k < maxSteps.z; ++k)
             {
-                std::size_t cellIndex = getCellIndex(area.getMin() + BaseVector<float>(i, j, k) * m_chunkSize);
+                size_t cellIndex = getCellIndex(area.getMin() + BaseVector<float>(i, j, k) * m_chunkSize);
+                BaseVector<int> cellCoord = getCellCoordinates(area.getMin() + BaseVector<float>(i, j, k) * m_chunkSize);
 
-                MeshBufferPtr loadedChunk = m_chunkHashGrid->findChunk(cellIndex);
-                if(loadedChunk)
+                MeshBufferPtr loadedChunk = m_chunkHashGrid->findChunk(cellIndex, i, j, k);
+                if(loadedChunk.get())
                 {
                     // TODO: remove saving tmp chunks later
                     ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(loadedChunk)),
@@ -115,7 +116,9 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
         }
     }
     std::cout << "Extracted " << chunks.size() << " Chunks" << std::endl;
-
+//    DEBUG:
+//    loadAllChunks();
+//    chunks = m_chunkHashGrid->m_hashGrid;
     std::vector<float> areaDuplicateVertices;
     std::vector<std::unordered_map<std::size_t, std::size_t> > areaVertexIndices;
     std::vector<float> areaUniqueVertices;
@@ -238,6 +241,7 @@ void ChunkManager::cutLargeFaces(
     float overlapRatio,
     std::shared_ptr<std::unordered_map<unsigned int, unsigned int>> splitVertices,
     std::shared_ptr<std::unordered_map<unsigned int, unsigned int>> splitFaces)
+
 {
     // check all edges if they range too far into different chunks
     MeshHandleIteratorPtr<EdgeHandle> iterator = halfEdgeMesh->edgesBegin();
@@ -420,9 +424,9 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
                                                 + std::to_string(j) + "-" + std::to_string(k)
                                                 + ".ply");
                     // write chunk in hdf5
-                    chunkIo.writeChunk(chunkMeshPtr, hash);
+                    chunkIo.writeChunk(chunkMeshPtr, i, j, k);
 
-                    chunkBuilders[hash] = nullptr; // deallocate? is this even useful?
+                    chunkBuilders[hash] = nullptr; // deallocate
                 }
             }
         }
@@ -443,6 +447,19 @@ std::size_t ChunkManager::getCellIndex(const BaseVector<float>& vec) const
     return static_cast<size_t>(tmpVec.x) * m_amount.y * m_amount.z
            + static_cast<size_t>(tmpVec.y) * m_amount.z + static_cast<size_t>(tmpVec.z);
 }
+BaseVector<int> ChunkManager::getCellCoordinates(const BaseVector<float>& vec) const
+{
+    BaseVector<float> tmpVec = (vec - m_boundingBox.getMin()) / m_chunkSize;
+    BaseVector<int> ret = BaseVector<int>(static_cast<int>(tmpVec.x), static_cast<int>(tmpVec.y), static_cast<int>(tmpVec.z));
+    return ret;
+}
+
+//std::string ChunkManager::getCellName(const BaseVector<float>& vec) const
+//{
+//    BaseVector<float> tmpVec = (vec - m_boundingBox.getMin()) / m_chunkSize;
+//    return std::to_string(static_cast<size_t>(tmpVec.x)) + "_"+ std::to_string(static_cast<size_t>(tmpVec.y)) + "_"
+//    + std::to_string(static_cast<size_t>(tmpVec.z));
+//}
 
 void ChunkManager::loadAllChunks()
 {
@@ -453,7 +470,7 @@ void ChunkManager::loadAllChunks()
         {
             for(int k = 0; k < m_amount[2]; k++)
             {
-                if(m_chunkHashGrid->loadChunk(hashValue(i, j, k)))
+                if(m_chunkHashGrid->loadChunk(hashValue(i, j, k), i, j, k))
                 {
                     numLoaded++;
                 }

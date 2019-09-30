@@ -49,21 +49,31 @@ public:
      * @param hdf5Path path to the HDF5 file
      */
     explicit ChunkHashGrid(std::string hdf5Path);
-    /**
-     * @brief loads a chunk from the HDF5 file into the hash grid
-     *
-     * @param cellIndex hash-value of the chunk
-     * @return true if loading was possible, false if loading was not possible
-     *         (for example if the hash-value does not belong to a mesh with vertices)
-     */
-    bool loadChunk(size_t cellIndex);
-    /**
-     * @brief returns a mesh of a given cellIndex
-     *
-     * @param cellIndex hash-value of the chunk
-     * @return the MeshBufferPtr containing the chunk
-     */
-    MeshBufferPtr findChunk(size_t cellIndex);
+
+     /**
+      * @brief loads a chunk from the HDF5 file into the hash grid
+      *
+      * @param hashValue hash-value of the chunk
+      * @param x grid coordinate in x-dimension
+      * @param y grid coordinate in y-dimension
+      * @param z grid coordinate in z-dimension
+      * @return true if loading was possible, false if loading was not possible
+      *         (for example if the hash-value does not belong to a mesh with vertices)
+      */
+    bool loadChunk(size_t hashValue, int x, int y, int z);
+
+     /**
+      * @brief returns a mesh of a given cellIndex
+      *
+      * @param hashValue hash-value of the chunk
+      * @param x grid coordinate in x-dimension
+      * @param y grid coordinate in y-dimension
+      * @param z grid coordinate in z-dimension
+      * @return the MeshBufferPtr containing the chunk
+      */
+    MeshBufferPtr findChunk(size_t hashValue, int x, int y, int z);
+
+    MeshBufferPtr findChunkCondition(size_t hashValue, int x, int y, int z, std::string channelName);
 private:
     // hash grid containing chunked meshes
     std::unordered_map<std::size_t, MeshBufferPtr> m_hashGrid;
