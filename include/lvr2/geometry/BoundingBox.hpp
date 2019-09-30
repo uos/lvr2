@@ -73,8 +73,7 @@ public:
      *
      * @param plyPath path of the point cloud
      */
-    template<typename T>
-    explicit BoundingBox(std::string plyPath);
+    BoundingBox(std::string plyPath);
 
     /**
      * @brief Expands the bounding box if the given Vector \ref{v} is

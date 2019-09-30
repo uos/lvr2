@@ -74,10 +74,18 @@ class BigGrid
      */
     BigGrid(std::vector<std::string>, float voxelsize, float scale = 0, size_t bufferSize = 1024);
 
-
+    /**
+     *
+     * Constructor (for calculation the Bounding Box only!)
+     * @param cloudPath
+     * @param voxelsize
+     * @param scale
+     * @param bufferSize
+     */
     BigGrid(std::string cloudPath, float voxelsize, float scale = 0, size_t bufferSize = 1024);
 
     BigGrid(std::string path);
+
     /**
      * @return Number of voxels
      */
