@@ -47,13 +47,22 @@
 #include <cstring>
 #include <memory>
 
+#include <lvr2/io/Hdf5IO.hpp>
+#include <lvr2/io/hdf5/MeshIO.hpp>
+
 using namespace lvr2;
 
 int main( int argc, char ** argv )
 {
   hdf5meshtool::Options options(argc, argv);
   std::cout << timestamp << "Load HDF5 file structure..." << std::endl;
-  HDF5IO hdf5(options.getOutputFile(), options.getMeshName(), HighFive::File::Truncate);
+  using HDF5MeshToolIO = lvr2::Hdf5IO<
+          lvr2::hdf5features::ArrayIO,
+          lvr2::hdf5features::ChannelIO,
+          lvr2::hdf5features::VariantChannelIO,
+          lvr2::hdf5features::MeshIO>;
+  HDF5MeshToolIO hdf5;
+  hdf5.open(options.getOutputFile());
 
   ModelPtr model = ModelFactory::readModel(options.getInputFile());
   if(MeshBufferPtr meshBuffer = model->m_mesh){
