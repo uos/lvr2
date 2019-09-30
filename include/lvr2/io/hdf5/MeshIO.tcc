@@ -245,6 +245,111 @@ bool MeshIO<Derived>::isMesh(
         && hdf5util::checkAttribute(group, "CLASS", obj);
 }
 
+template <typename Derived>
+FloatChannelOptional MeshIO<Drived>::getVertices(){
+
+  // TODO
+
+  if (!isMesh(group))
+  {
+    std::cout << "[Hdf5IO - MeshIO] WARNING: flags of " << group.getId() << " are not correct."
+              << std::endl;
+    return boost::none;
+  }
+
+  if (group.exist("channels"))
+  {
+    HighFive::Group channelsGroup = group.getGroup("channels");
+
+    for (auto name : channelsGroup.listObjectNames())
+    {
+      std::unique_ptr<HighFive::DataSet> dataset;
+
+      try
+      {
+        dataset = std::make_unique<HighFive::DataSet>(channelsGroup.getDataSet(name));
+      }
+      catch (HighFive::DataSetException& ex)
+      {
+      }
+
+      if (dataset)
+      {
+        // name is dataset
+        boost::optional<MeshBuffer::val_type> opt_vchannel
+            = m_vchannel_io->template load<MeshBuffer::val_type>(channelsGroup, name);
+
+        if (opt_vchannel)
+        {
+          if (!ret)
+          {
+            ret.reset(new MeshBuffer);
+          }
+          ret->insert({name, *opt_vchannel});
+        }
+      }
+    }
+  }
+
+
+
+
+
+  auto mesh_opt = getMeshGroup();
+  if(!mesh_opt) return boost::none;
+  auto mesh = mesh_opt.get();
+  if(!mesh.exist(vertices_name))
+  {
+    std::cout << timestamp << " Could not find mesh vertices in the given HDF5 file." << std::endl;
+    return boost::none;
+  }
+
+  std::vector<size_t >dims;
+  auto values = getArray<float>(mesh, vertices_name, dims);
+  return FloatChannel(dims[0], dims[1], values);
+}
+
+template <typename Derived>
+IndexChannelOptional MeshIO<Derived>::getIndices(){
+  // TODO
+
+  auto mesh_opt = getMeshGroup();
+  if(!mesh_opt) return boost::none;
+  auto mesh = mesh_opt.get();
+  if(!mesh.exist(indices_name))
+  {
+    std::cout << timestamp << " Could not find mesh face indices in the given HDF5 file." << std::endl;
+    return boost::none;
+  }
+
+  std::vector<size_t >dims;
+  auto values = getArray<unsigned int>(mesh, indices_name, dims);
+  return IndexChannel(dims[0], dims[1], values);
+}
+
+template <typename Derived>
+bool MeshIO<Drived>::addVertices(const FloatChannel& channel){
+  // TODO
+
+  auto mesh = getMeshGroup(true).get();
+  std::vector<size_t > dims = {channel.numElements(), channel.width()};
+  addArray<float>(m_mesh_path, vertices_name, dims, channel.dataPtr());
+  return true;
+}
+
+template <typename Derived>
+bool MeshIO<Derived>::addIndices(const IndexChannel& channel){
+  // TODO
+
+  auto mesh = getMeshGroup(true).get();
+  std::vector<size_t > dims = {channel.numElements(), channel.width()};
+  addArray<unsigned int>(m_mesh_path, indices_name, dims, channel.dataPtr());
+  return true;
+}
+
+
+
+
 } // namespace hdf5features
 
 } // namespace lvr2

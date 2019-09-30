@@ -216,11 +216,11 @@ int main(int argc, char** argv)
         positional_options_description pos;
         pos.add("dir", 1);
 
-        options_description options("options");
-        options.add(general_options).add(icp_options).add(loopclosing_options).add(hidden_options);
+        options_description all_options("options");
+        all_options.add(general_options).add(icp_options).add(loopclosing_options).add(hidden_options);
 
         variables_map variables;
-        store(command_line_parser(argc, argv).options(options).positional(pos).run(), variables);
+        store(command_line_parser(argc, argv).options(all_options).positional(pos).run(), variables);
         notify(variables);
 
         if (help)
@@ -274,6 +274,8 @@ int main(int argc, char** argv)
                 format = map_format(format);
             }
         }
+
+        options.createFrames = !no_frames;
     }
     catch (const boost::program_options::error& ex)
     {
