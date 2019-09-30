@@ -267,7 +267,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     vector<size_t> offsets;
     offsets.push_back(0);
 
-    vector<string> mesh_files;
+    unordered_set <string> mesh_files;
     vector<string> grid_files;
     vector<string> normal_files;
     for (size_t i = 0; i < partitionBoxes.size(); i++)
@@ -586,7 +586,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         std::stringstream ss_mesh;
 
         ss_mesh << name_id << "_mesh.ply";
-        mesh_files.push_back(ss_mesh.str());
+        mesh_files.insert(ss_mesh.str());
 
         // Create output model and save to file
         if (meshBuffer->numFaces() > 0)
@@ -757,17 +757,18 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         {
             string mesh;
             old_mesh >> mesh;
-            mesh_files.push_back(mesh);
+            mesh_files.insert(mesh);
         }
     }
 
     ofstream vGrid;
     vGrid.open("VGrid.ser", ofstream::out | ofstream::trunc);
-    for (size_t i = 0; i < mesh_files.size(); i++)
+    unordered_set<string> :: iterator itr;
+    for (itr = mesh_files.begin(); itr != mesh_files.end(); itr++)
     {
         double start_s = lvr2::timestamp.getElapsedTimeInS();
 
-        string ply_path = mesh_files[i];
+        string ply_path = (*itr);
         //boost::algorithm::replace_last(ply_path, "-grid.ser", "_mesh.ply");
 
         if (!(boost::filesystem::exists(ply_path)))

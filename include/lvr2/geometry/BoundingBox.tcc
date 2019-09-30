@@ -70,7 +70,7 @@ BoundingBox<BaseVecT>::BoundingBox(T v1, T v2)
 template<typename BaseVecT>
 template<typename T>
 BoundingBox<BaseVecT>::BoundingBox(std::string plyPath)
-{/*
+{/* TODO: replace the code in BigGrid.hpp with this one (delete in BigGrid.hpp and use this instead)
     auto max_val = numeric_limits<typename BaseVecT::CoordType>::max();
     auto min_val = numeric_limits<typename BaseVecT::CoordType>::lowest();
 

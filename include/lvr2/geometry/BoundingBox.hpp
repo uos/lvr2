@@ -66,6 +66,13 @@ public:
     template<typename T>
     BoundingBox(T v1, T v2);
 
+
+    /**
+     *
+     * @brief Constructs a bounding box for a given point cloud
+     *
+     * @param plyPath path of the point cloud
+     */
     template<typename T>
     explicit BoundingBox(std::string plyPath);
 
