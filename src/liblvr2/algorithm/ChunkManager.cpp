@@ -72,7 +72,9 @@ ChunkManager::ChunkManager(MeshBufferPtr mesh,
     m_amount.z = static_cast<std::size_t>(std::ceil(m_boundingBox.getZSize() / m_chunkSize));
 
     buildChunks(mesh, maxChunkOverlap, savePath);
-    m_chunkHashGrid = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(m_hdf5Path));
+    // TODO: cacheSize dynamic
+    size_t cacheSize = 200;
+    m_chunkHashGrid = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(m_hdf5Path, cacheSize));
 }
 
 ChunkManager::ChunkManager(std::string hdf5Path)
@@ -84,7 +86,9 @@ ChunkManager::ChunkManager(std::string hdf5Path)
         m_amount = chunkIO.loadAmount();
         m_chunkSize = chunkIO.loadChunkSize();
         m_boundingBox = chunkIO.loadBoundingBox();
-        m_chunkHashGrid = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(hdf5Path));
+        // TODO: cacheSize dynamic
+        size_t cacheSize = 200;
+        m_chunkHashGrid = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(hdf5Path, cacheSize));
     }
 }
 
@@ -104,7 +108,7 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
                 size_t cellIndex = getCellIndex(area.getMin() + BaseVector<float>(i, j, k) * m_chunkSize);
                 BaseVector<int> cellCoord = getCellCoordinates(area.getMin() + BaseVector<float>(i, j, k) * m_chunkSize);
 
-                MeshBufferPtr loadedChunk = m_chunkHashGrid->findChunk(cellIndex, i, j, k);
+                MeshBufferPtr loadedChunk = m_chunkHashGrid->findChunk(cellIndex, cellCoord.x, cellCoord.y, cellCoord.z);
                 if(loadedChunk.get())
                 {
                     // TODO: remove saving tmp chunks later
