@@ -34,7 +34,6 @@
  */
 
 #include "lvr2/algorithm/ChunkBuilder.hpp"
-#include "lvr2/types/VariantChannelMap.hpp"
 
 namespace lvr2
 {
@@ -124,8 +123,7 @@ MeshBufferPtr ChunkBuilder::buildMesh(
     // build new model by adding vertices, faces and attribute channels
     lvr2::MeshBufferPtr mesh(new lvr2::MeshBuffer);
 
-    // TODO: it is more efficient to sort the channel in the channel manager
-    // add more types if needed
+    // TODO: add more types if needed; it is more efficient to sort the channel in the channel manager
     std::vector<std::string> vertexChannelUChar;
     std::vector<std::string> vertexChannelUInt;
     std::vector<std::string> vertexChannelFloat;
@@ -153,7 +151,8 @@ MeshBufferPtr ChunkBuilder::buildMesh(
                 else
                 {
                     // a channel that is not a vertex or a face channel will be added unchanged to each chunk
-                    mesh->addUCharChannel(std::make_shared<lvr2::Channel<unsigned char>>(attributedMesh->getUCharChannel(elem.first).get()), elem.first);
+                    mesh->addUCharChannel(std::make_shared<
+                            lvr2::Channel<unsigned char>>(attributedMesh->getUCharChannel(elem.first).get()), elem.first);
                 }
             }
             else if(elem.second.is_type<unsigned int>())
@@ -171,7 +170,8 @@ MeshBufferPtr ChunkBuilder::buildMesh(
                 else
                 {
                     // a channel that is not a vertex or a face channel will be added unchanged to each chunk
-                    mesh->addIndexChannel(std::make_shared<lvr2::Channel<unsigned int>>(attributedMesh->getIndexChannel(elem.first).get()), elem.first);
+                    mesh->addIndexChannel(std::make_shared<
+                            lvr2::Channel<unsigned int>>(attributedMesh->getIndexChannel(elem.first).get()), elem.first);
                 }
             }
             else if(elem.second.is_type<float>())
@@ -189,7 +189,8 @@ MeshBufferPtr ChunkBuilder::buildMesh(
                 else
                 {
                     // a channel that is not a vertex or a face channel will be added unchanged to each chunk
-                    mesh->addFloatChannel(std::make_shared<lvr2::Channel<float>>(attributedMesh->getFloatChannel(elem.first).get()), elem.first);
+                    mesh->addFloatChannel(std::make_shared<
+                            lvr2::Channel<float>>(attributedMesh->getFloatChannel(elem.first).get()), elem.first);
                 }
             }
             else
