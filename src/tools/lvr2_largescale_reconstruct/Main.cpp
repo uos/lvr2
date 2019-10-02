@@ -772,6 +772,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     unordered_set<string>::iterator itr;
 
     bool vertexNormals = false;
+    bool vertexColors = false;
     bool faceNormals = false;
 
     for (itr = mesh_files.begin(); itr != mesh_files.end(); itr++)
@@ -807,9 +808,16 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         // size_t offset = offsets[i];
         size_t offset = tmp_offset;
         floatArr modelVertices = modelPtr->m_mesh->getVertices();
+
         vertexNormals = modelPtr->m_mesh->hasVertexNormals();
         floatArr modelVertexNormals = modelPtr->m_mesh->getVertexNormals();
+
+        vertexColors = modelPtr->m_mesh->hasVertexColors();
+        size_t rgb = 3;
+        ucharArr modelVertexColors = modelPtr->m_mesh->getVertexColors(rgb);
+
         uintArr modelFaces = modelPtr->m_mesh->getFaceIndices();
+
         faceNormals = modelPtr->m_mesh->hasFaceNormals();
         floatArr modelFaceNormals = modelPtr->m_mesh->getFaceNormals();
 
@@ -824,6 +832,14 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
             p[1] = modelVertices[j * 3 + 1];
             p[2] = modelVertices[j * 3 + 2];
 
+            uchar pC[3];
+            if (vertexColors)
+            {
+                pC[0] = modelVertexColors[j * 3];
+                pC[1] = modelVertexColors[j * 3 + 1];
+                pC[2] = modelVertexColors[j * 3 + 2];
+            }
+
             float pN[3];
             if (vertexNormals)
             {
@@ -834,6 +850,12 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
             start_s = lvr2::timestamp.getElapsedTimeInS();
             ofs_vertices << std::setprecision(16) << p[0] << " " << p[1] << " " << p[2];
+
+            if (vertexColors)
+            {
+                ofs_vertices << std::setprecision(16) << " " << pC[0] << " " << pC[1] << " "
+                             << pC[2];
+            }
 
             if (vertexNormals)
             {
@@ -854,39 +876,27 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
             f[1] = modelFaces[j * 3 + 1] + offset;
             f[2] = modelFaces[j * 3 + 2] + offset;
 
-            ofs_faces << "3 " << f[0] << " " << f[1] << " " << f[2];
-            /*unsigned int newface[3];
-            unsigned char a = 3;
-            //            ofs_faces.write((char*)&a, sizeof(unsigned char));
-            for (int k = 0; k < 3; k++)
+            float fN[3];
+            // termporarily disabled
+            faceNormals = false;
+            if (faceNormals)
             {
-                size_t face_idx = 0;
-                if (oldToNew.find(f[k]) == oldToNew.end())
-                {
-                    auto decr_itr = decrements.upper_bound(f[k]);
-                    decr_itr--;
-                    face_idx = f[k] - decr_itr->second;
-                }
-                else
-                {
-                    auto decr_itr = decrements.upper_bound(oldToNew[f[k]]);
-                    decr_itr--;
-                    face_idx = oldToNew[f[k]] - decr_itr->second;
-                    //
-                }
-                start_s = lvr2::timestamp.getElapsedTimeInS();
-                ofs_faces << face_idx;
-                end_s = lvr2::timestamp.getElapsedTimeInS();
-                seconds += (end_s - start_s);
-                if (k != 2)
-                    ofs_faces << " ";
-            }*/
+                fN[0] = modelFaceNormals[j * 3];
+                fN[1] = modelFaceNormals[j * 3 + 1];
+                fN[2] = modelFaceNormals[j * 3 + 2];
+            }
+
             start_s = lvr2::timestamp.getElapsedTimeInS();
+            ofs_faces << "3 " << f[0] << " " << f[1] << " " << f[2];
+
+            if (faceNormals)
+            {
+                ofs_faces << std::setprecision(16) << " " << fN[0] << " " << fN[1] << " " << fN[2];
+            }
+
             ofs_faces << endl;
             end_s = lvr2::timestamp.getElapsedTimeInS();
             seconds += (end_s - start_s);
-            //            ofs_faces.write( (char*) newface,sizeof(unsigned int)*3);
-            // todo: sort
         }
         tmp_offset += modelPtr->m_mesh->numVertices();
     }
@@ -909,6 +919,13 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
                "property float x\n"
                "property float y\n"
                "property float z\n";
+
+    if (vertexColors)
+    {
+        ofs_ply << "property uchar red\n"
+                   "property uchar green\n"
+                   "property uchar blue\n";
+    }
 
     if (vertexNormals)
     {
