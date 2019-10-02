@@ -30,9 +30,11 @@
  *
  * @date 21.07.2019
  * @author Malte kl. Piening
+ * @author Raphael Marx
  */
 
 #include "lvr2/algorithm/ChunkBuilder.hpp"
+#include "lvr2/types/VariantChannelMap.hpp"
 
 namespace lvr2
 {
@@ -119,27 +121,86 @@ MeshBufferPtr ChunkBuilder::buildMesh(
     lvr2::floatArr vertices(new float[numVertices() * 3]);
     lvr2::indexArray faceIndices(new unsigned int[numFaces() * 3]);
 
-    lvr2::ucharArr faceColors;
-    lvr2::ucharArr vertexColors;
-    lvr2::floatArr faceNormals;
-    lvr2::floatArr vertexNormals;
+    // build new model by adding vertices, faces and attribute channels
+    lvr2::MeshBufferPtr mesh(new lvr2::MeshBuffer);
 
-    if (attributedMesh->hasFaceColors())
+    // TODO: it is more efficient to sort the channel in the channel manager
+    // add more types if needed
+    std::vector<std::string> vertexChannelUChar;
+    std::vector<std::string> vertexChannelUInt;
+    std::vector<std::string> vertexChannelFloat;
+    std::vector<std::string> faceChannelUChar;
+    std::vector<std::string> faceChannelUInt;
+    std::vector<std::string> faceChannelFloat;
+
+
+    for (auto elem : *attributedMesh)
     {
-        faceColors = lvr2::ucharArr(new unsigned char[numFaces() * 3]);
+        if(elem.first != "vertices" && elem.first != "face_indices")
+        {
+            if(elem.second.is_type<unsigned char>())
+            {
+                if(elem.second.numElements() == attributedMesh->numVertices())
+                {
+                    mesh->addEmptyUCharChannel(elem.first, numVertices(), elem.second.width());
+                    vertexChannelUChar.push_back(elem.first);
+                }
+                else if(elem.second.numElements() == attributedMesh->numFaces())
+                {
+                    mesh->addEmptyUCharChannel(elem.first, numFaces(), elem.second.width());
+                    faceChannelUChar.push_back(elem.first);
+                }
+                else
+                {
+                    // a channel that is not a vertex or a face channel will be added unchanged to each chunk
+                    mesh->addUCharChannel(std::make_shared<lvr2::Channel<unsigned char>>(attributedMesh->getUCharChannel(elem.first).get()), elem.first);
+                }
+            }
+            else if(elem.second.is_type<unsigned int>())
+            {
+                if(elem.second.numElements() == attributedMesh->numVertices())
+                {
+                    mesh->addEmptyIndexChannel(elem.first, numVertices(), elem.second.width());
+                    vertexChannelUInt.push_back(elem.first);
+                }
+                else if(elem.second.numElements() == attributedMesh->numFaces())
+                {
+                    mesh->addEmptyIndexChannel(elem.first, numFaces(), elem.second.width());
+                    faceChannelUInt.push_back(elem.first);
+                }
+                else
+                {
+                    // a channel that is not a vertex or a face channel will be added unchanged to each chunk
+                    mesh->addIndexChannel(std::make_shared<lvr2::Channel<unsigned int>>(attributedMesh->getIndexChannel(elem.first).get()), elem.first);
+                }
+            }
+            else if(elem.second.is_type<float>())
+            {
+                if(elem.second.numElements() == attributedMesh->numVertices())
+                {
+                    mesh->addEmptyFloatChannel(elem.first, numVertices(), elem.second.width());
+                    vertexChannelFloat.push_back(elem.first);
+                }
+                else if(elem.second.numElements() == attributedMesh->numFaces())
+                {
+                    mesh->addEmptyFloatChannel(elem.first, numFaces(), elem.second.width());
+                    faceChannelFloat.push_back(elem.first);
+                }
+                else
+                {
+                    // a channel that is not a vertex or a face channel will be added unchanged to each chunk
+                    mesh->addFloatChannel(std::make_shared<lvr2::Channel<float>>(attributedMesh->getFloatChannel(elem.first).get()), elem.first);
+                }
+            }
+            else
+            {
+
+            }
+
+        }
+
     }
-    if (attributedMesh->hasVertexColors())
-    {
-        vertexColors = lvr2::ucharArr(new unsigned char[numVertices() * 3]);
-    }
-    if (attributedMesh->hasFaceNormals())
-    {
-        faceNormals = lvr2::floatArr(new float[numFaces() * 3]);
-    }
-    if (attributedMesh->hasVertexNormals())
-    {
-        vertexNormals = lvr2::floatArr(new float[numVertices() * 3]);
-    }
+
 
     // fill vertex buffer with duplicate vertices
     for (VertexHandle vertex : m_duplicateVertices)
@@ -162,24 +223,39 @@ MeshBufferPtr ChunkBuilder::buildMesh(
                 attributedVertexIndex = splitVertices->at(attributedVertexIndex);
             }
 
-            // vertex colors
-            if (attributedMesh->hasVertexColors())
+
+            // vertex channels
+            for(const std::string& name : vertexChannelUChar)
             {
-                size_t amountChannels = 3;
-                for (size_t component = 0; component < amountChannels; component++)
+                Channel<unsigned char> tmp = mesh->getUCharChannel(name).get();
+                for(size_t component = 0; component < tmp.width(); component++)
                 {
-                    vertexColors[vertexIndex * 3 + component] = attributedMesh->getVertexColors(
-                        amountChannels)[attributedVertexIndex * amountChannels + component];
+
+                    tmp.dataPtr()[vertexIndex * tmp.width() + component]
+                            = attributedMesh->getUCharHandle(attributedVertexIndex, name)[component];
+
+//                    // alternative way using Handles instead of dataPtr():
+//                    mesh->getUCharHandle(vertexIndex, name)[component]
+//                            = attributedMesh->getFloatHandle(attributedVertexIndex, name)[component];
                 }
             }
-
-            // vertex normals
-            if (attributedMesh->hasVertexNormals())
+            for(const std::string& name : vertexChannelUInt)
             {
-                for (size_t component = 0; component < 3; component++)
+                Channel<unsigned int> tmp = mesh->getIndexChannel(name).get();
+                for(size_t component = 0; component < tmp.width(); component++)
                 {
-                    vertexNormals[vertexIndex * 3 + component]
-                        = attributedMesh->getVertexNormals()[attributedVertexIndex * 3 + component];
+                    tmp.dataPtr()[vertexIndex * tmp.width() + component]
+                            = attributedMesh->getIndexHandle(attributedVertexIndex, name)[component];
+                }
+            }
+            for(const std::string& name : vertexChannelFloat)
+            {
+                Channel<float> tmp = mesh->getFloatChannel(name).get();
+
+                for(size_t component = 0; component < tmp.width(); component++)
+                {
+                    tmp.dataPtr()[vertexIndex * tmp.width() + component]
+                            = attributedMesh->getFloatHandle(attributedVertexIndex, name)[component];
                 }
             }
         }
@@ -215,25 +291,37 @@ MeshBufferPtr ChunkBuilder::buildMesh(
                     attributedVertexIndex = splitVertices->at(attributedVertexIndex);
                 }
 
-                // vertex colors
-                if (attributedMesh->hasVertexColors())
+                // vertex channels
+                for(const std::string& name : vertexChannelUChar)
                 {
-                    size_t amountChannels = 3;
-                    for (size_t component = 0; component < amountChannels; component++)
+                    Channel<unsigned char> tmp = mesh->getUCharChannel(name).get();
+                    for(size_t component = 0; component < tmp.width(); component++)
                     {
-                        vertexColors[vertexIndex * 3 + component] = attributedMesh->getVertexColors(
-                            amountChannels)[attributedVertexIndex * amountChannels + component];
+                        tmp.dataPtr()[vertexIndex * tmp.width() + component]
+                                = attributedMesh->getUCharHandle(attributedVertexIndex, name)[component];
+
+//                        // alternative way using Handles instead of dataPtr():
+//                        mesh->getUCharHandle(vertexIndex, name)[component]
+//                              = attributedMesh->getFloatHandle(attributedVertexIndex, name)[component];
                     }
                 }
-
-                // vertex normals
-                if (attributedMesh->hasVertexNormals())
+                for(const std::string& name : vertexChannelUInt)
                 {
-                    for (size_t component = 0; component < 3; component++)
+                    Channel<unsigned int> tmp = mesh->getIndexChannel(name).get();
+                    for(size_t component = 0; component < tmp.width(); component++)
                     {
-                        vertexNormals[vertexIndex * 3 + component]
-                            = attributedMesh
-                                  ->getVertexNormals()[attributedVertexIndex * 3 + component];
+                        tmp.dataPtr()[vertexIndex * tmp.width() + component]
+                                = attributedMesh->getIndexHandle(attributedVertexIndex, name)[component];
+                    }
+                }
+                for(const std::string& name : vertexChannelFloat)
+                {
+                    Channel<float> tmp = mesh->getFloatChannel(name).get();
+
+                    for(size_t component = 0; component < tmp.width(); component++)
+                    {
+                        mesh->getFloatHandle(vertexIndex, name)[component]
+                                = attributedMesh->getFloatHandle(attributedVertexIndex, name)[component];
                     }
                 }
             }
@@ -250,51 +338,44 @@ MeshBufferPtr ChunkBuilder::buildMesh(
             attributedFaceIndex = splitVertices->at(attributedFaceIndex);
         }
 
-        // face colors
-        if (attributedMesh->hasFaceColors())
+        // face channels
+        for(const std::string& name : faceChannelUChar)
         {
-            size_t amountChannels = 3;
-            for (size_t component = 0; component < amountChannels; component++)
+            Channel<unsigned char> tmp = mesh->getUCharChannel(name).get();
+            for(size_t component = 0; component < tmp.width(); component++)
             {
-                faceColors[face * amountChannels + component] = attributedMesh->getFaceColors(
-                    amountChannels)[attributedFaceIndex * amountChannels + component];
+                tmp.dataPtr()[face * tmp.width() + component]
+                        = attributedMesh->getUCharHandle(attributedFaceIndex, name)[component];
+
+//                        // alternative way using Handles instead of dataPtr():
+//                        mesh->getUCharHandle(face, name)[component]
+//                              = attributedMesh->getFloatHandle(attibutedFaceIndex, name)[component];
             }
         }
-
-        // face normals
-        if (attributedMesh->hasFaceNormals())
+        for(const std::string& name : faceChannelUInt)
         {
-            for (size_t component = 0; component < 3; component++)
+            Channel<unsigned int> tmp = mesh->getIndexChannel(name).get();
+            for(size_t component = 0; component < tmp.width(); component++)
             {
-                faceNormals[face * 3 + component]
-                    = attributedMesh->getFaceNormals()[attributedFaceIndex * 3 + component];
+                tmp.dataPtr()[face * tmp.width() + component]
+                        = attributedMesh->getIndexHandle(attributedFaceIndex, name)[component];
+            }
+        }
+        for(const std::string& name : faceChannelFloat)
+        {
+            Channel<float> tmp = mesh->getFloatChannel(name).get();
+
+            for(size_t component = 0; component < tmp.width(); component++)
+            {
+                mesh->getFloatHandle(face, name)[component]
+                        = attributedMesh->getFloatHandle(attributedFaceIndex, name)[component];
             }
         }
     }
 
-    // build new model from newly created buffers
-    lvr2::MeshBufferPtr mesh(new lvr2::MeshBuffer);
-
+    // add vertices and face_indices to the mesh
     mesh->setVertices(vertices, numVertices());
     mesh->setFaceIndices(faceIndices, numFaces());
-
-    // add additional channels
-    if (attributedMesh->hasFaceColors())
-    {
-        mesh->setFaceColors(faceColors, 3);
-    }
-    if (attributedMesh->hasVertexColors())
-    {
-        mesh->setVertexColors(vertexColors, 3);
-    }
-    if (attributedMesh->hasFaceNormals())
-    {
-        mesh->setFaceNormals(faceNormals);
-    }
-    if (attributedMesh->hasVertexNormals())
-    {
-        mesh->setVertexNormals(vertexNormals);
-    }
 
     mesh->addAtomic<unsigned int>(m_duplicateVertices.size(), "num_duplicates");
 
