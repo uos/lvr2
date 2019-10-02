@@ -39,9 +39,9 @@
 #include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/reconstruction/BigGrid.hpp"
 #include "lvr2/reconstruction/BigGridKdTree.hpp"
-#include "lvr2/reconstruction/VirtualGrid.hpp"
 #include "lvr2/reconstruction/BigVolumen.hpp"
 #include "lvr2/reconstruction/QueryPoint.hpp"
+#include "lvr2/reconstruction/VirtualGrid.hpp"
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -127,7 +127,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
     std::shared_ptr<BigVolumen<BaseVecT>> bv;
 
-    std::shared_ptr<BoundingBox<BaseVecT>> bb; //Bounding Box used for partial reconstruction
+    std::shared_ptr<BoundingBox<BaseVecT>> bb; // Bounding Box used for partial reconstruction
     if (firstPath.find(".ls") != std::string::npos)
     {
         gotSerializedBG = true;
@@ -142,15 +142,14 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         }
         else
         {
-            global_bg = std::make_shared<BigGrid<BaseVecT>>(inputFiles, voxelsize, scale, bufferSize);
+            global_bg =
+                std::make_shared<BigGrid<BaseVecT>>(inputFiles, voxelsize, scale, bufferSize);
 
-
-            if(!(options.getPartialReconstruct() == "NONE"))
+            if (!(options.getPartialReconstruct() == "NONE"))
             {
                 bb = std::make_shared<BoundingBox<BaseVecT>>(options.getPartialReconstruct());
 
                 std::cout << "Bounding BoX (by BB): " << bb << std::endl;
-
             }
 
             global_bg->serialize("serinfo.ls");
@@ -159,8 +158,8 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         double end_ss = lvr2::timestamp.getElapsedTimeInS();
         seconds += (end_ss - start_ss);
         cout << lvr2::timestamp << "grid finished in" << (end_ss - start_ss) << "sec." << endl;
-        //bb = global_bg->getBB();
-        //cout << bb << endl;
+        // bb = global_bg->getBB();
+        // cout << bb << endl;
         double end_ss2 = lvr2::timestamp.getElapsedTimeInS();
         datastruct_time = (end_ss2 - start_ss);
     }
@@ -215,19 +214,21 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         else
         {
 
-            if(options.getVGrid() == 1)
+            if (options.getVGrid() == 1)
             {
-                VirtualGrid<BaseVecT> a(global_bg->getBB(), options.getNodeSize(), options.getGridSize(),voxelsize);
+                VirtualGrid<BaseVecT> a(
+                    global_bg->getBB(), options.getNodeSize(), options.getGridSize(), voxelsize);
                 std::vector<shared_ptr<BoundingBox<BaseVecT>>> boxes;
-                if(!(options.getPartialReconstruct() == "NONE")) {
+                if (!(options.getPartialReconstruct() == "NONE"))
+                {
                     a.setBoundingBox(*bb);
                 }
-
 
                 a.calculateBoxes();
 
                 ofstream partBoxOfs("BoundingBoxes.ser");
-                for (size_t i = 0; i < a.getBoxes().size(); i++) {
+                for (size_t i = 0; i < a.getBoxes().size(); i++)
+                {
                     BoundingBox<BaseVecT> partBB = *a.getBoxes().at(i).get();
                     partitionBoxes.push_back(partBB);
                     partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
@@ -235,11 +236,14 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
                                << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
                 }
             }
-            else {
-                BigGridKdTree<BaseVecT> gridKd(global_bg->getBB(), options.getNodeSize(), global_bg.get(), voxelsize);
+            else
+            {
+                BigGridKdTree<BaseVecT> gridKd(
+                    global_bg->getBB(), options.getNodeSize(), global_bg.get(), voxelsize);
                 gridKd.insert(global_bg->pointSize(), global_bg->getBB().getCentroid());
                 ofstream partBoxOfs("KdTree.ser");
-                for (size_t i = 0; i < gridKd.getLeafs().size(); i++) {
+                for (size_t i = 0; i < gridKd.getLeafs().size(); i++)
+                {
                     BoundingBox<BaseVecT> partBB = gridKd.getLeafs()[i]->getBB();
                     partitionBoxes.push_back(partBB);
                     partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
@@ -263,19 +267,25 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     vector<size_t> offsets;
     offsets.push_back(0);
 
-    unordered_set <string> mesh_files;
+    unordered_set<string> mesh_files;
     vector<string> grid_files;
     vector<string> normal_files;
     for (size_t i = 0; i < partitionBoxes.size(); i++)
     {
         string name_id;
-        if(options.getVGrid() == 1)
+        if (options.getVGrid() == 1)
         {
-            name_id = std::to_string((int)floor(partitionBoxes.at(i).getMin().x/options.getGridSize()) ) + "_" +
-                      std::to_string((int)floor(partitionBoxes.at(i).getMin().y/options.getGridSize()) ) + "_" +
-                      std::to_string((int)floor(partitionBoxes.at(i).getMin().z/options.getGridSize()) );
+            name_id =
+                std::to_string(
+                    (int)floor(partitionBoxes.at(i).getMin().x / options.getGridSize())) +
+                "_" +
+                std::to_string(
+                    (int)floor(partitionBoxes.at(i).getMin().y / options.getGridSize())) +
+                "_" +
+                std::to_string((int)floor(partitionBoxes.at(i).getMin().z / options.getGridSize()));
         }
-        else {
+        else
+        {
             name_id = std::to_string(i);
         }
         size_t numPoints;
@@ -331,12 +341,12 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
             std::cout << "Here we are 1#" << std::endl;
             std::cout << partitionBoxes[i] << std::endl;
             points = global_bg->points(partitionBoxes[i].getMin().x - voxelsize * 3,
-                                partitionBoxes[i].getMin().y - voxelsize * 3,
-                                partitionBoxes[i].getMin().z - voxelsize * 3,
-                                partitionBoxes[i].getMax().x + voxelsize * 3,
-                                partitionBoxes[i].getMax().y + voxelsize * 3,
-                                partitionBoxes[i].getMax().z + voxelsize * 3,
-                                numPoints);
+                                       partitionBoxes[i].getMin().y - voxelsize * 3,
+                                       partitionBoxes[i].getMin().z - voxelsize * 3,
+                                       partitionBoxes[i].getMax().x + voxelsize * 3,
+                                       partitionBoxes[i].getMax().y + voxelsize * 3,
+                                       partitionBoxes[i].getMax().z + voxelsize * 3,
+                                       numPoints);
             std::cout << "Here we are 2#" << std::endl;
             p_loader->setPointArray(points, numPoints);
             if (options.savePointNormals() || options.onlyNormals())
@@ -345,12 +355,12 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
                 {
                     size_t numColors;
                     colors = global_bg->colors(partitionBoxes[i].getMin().x - voxelsize * 3,
-                                        partitionBoxes[i].getMin().y - voxelsize * 3,
-                                        partitionBoxes[i].getMin().z - voxelsize * 3,
-                                        partitionBoxes[i].getMax().x + voxelsize * 3,
-                                        partitionBoxes[i].getMax().y + voxelsize * 3,
-                                        partitionBoxes[i].getMax().z + voxelsize * 3,
-                                        numColors);
+                                               partitionBoxes[i].getMin().y - voxelsize * 3,
+                                               partitionBoxes[i].getMin().z - voxelsize * 3,
+                                               partitionBoxes[i].getMax().x + voxelsize * 3,
+                                               partitionBoxes[i].getMax().y + voxelsize * 3,
+                                               partitionBoxes[i].getMax().z + voxelsize * 3,
+                                               numColors);
                     cout << "got ************* " << numColors << " colors" << endl;
                     p_loader->setColorArray(colors, numColors);
                 }
@@ -388,13 +398,14 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
             {
 
                 size_t numNormals;
-                lvr2::floatArr normals = global_bg->normals(partitionBoxes[i].getMin().x - voxelsize * 3,
-                                                     partitionBoxes[i].getMin().y - voxelsize * 3,
-                                                     partitionBoxes[i].getMin().z - voxelsize * 3,
-                                                     partitionBoxes[i].getMax().x + voxelsize * 3,
-                                                     partitionBoxes[i].getMax().y + voxelsize * 3,
-                                                     partitionBoxes[i].getMax().z + voxelsize * 3,
-                                                     numNormals);
+                lvr2::floatArr normals =
+                    global_bg->normals(partitionBoxes[i].getMin().x - voxelsize * 3,
+                                       partitionBoxes[i].getMin().y - voxelsize * 3,
+                                       partitionBoxes[i].getMin().z - voxelsize * 3,
+                                       partitionBoxes[i].getMax().x + voxelsize * 3,
+                                       partitionBoxes[i].getMax().y + voxelsize * 3,
+                                       partitionBoxes[i].getMax().z + voxelsize * 3,
+                                       numNormals);
 
                 p_loader->setNormalArray(normals, numNormals);
                 navail = true;
@@ -736,20 +747,19 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     size_t newNumVertices = 0;
     size_t newNumFaces = 0;
 
-/*############################################# Generating BigMesh here ##############################################*/
+    /*############################################# Generating BigMesh here
+     * ##############################################*/
 
     cout << lvr2::timestamp << "merging mesh..." << endl;
 
-
     size_t tmp_offset = 0;
-    //TODO: add partial reconstruction here
-    //TODO: filter out existing Meshes which overlap with new Meshes
-
+    // TODO: add partial reconstruction here
+    // TODO: filter out existing Meshes which overlap with new Meshes
 
     ifstream old_mesh("VGrid.ser");
-    if(options.getVGrid() == 1 && old_mesh.is_open())
+    if (options.getVGrid() == 1 && old_mesh.is_open())
     {
-        while(old_mesh.good())
+        while (old_mesh.good())
         {
             string mesh;
             old_mesh >> mesh;
@@ -759,13 +769,17 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
     ofstream vGrid;
     vGrid.open("VGrid.ser", ofstream::out | ofstream::trunc);
-    unordered_set<string> :: iterator itr;
+    unordered_set<string>::iterator itr;
+
+    bool vertexNormals = false;
+    bool faceNormals = false;
+
     for (itr = mesh_files.begin(); itr != mesh_files.end(); itr++)
     {
         double start_s = lvr2::timestamp.getElapsedTimeInS();
 
         string ply_path = (*itr);
-        //boost::algorithm::replace_last(ply_path, "-grid.ser", "_mesh.ply");
+        // boost::algorithm::replace_last(ply_path, "-grid.ser", "_mesh.ply");
 
         if (!(boost::filesystem::exists(ply_path)))
             continue;
@@ -793,7 +807,11 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         // size_t offset = offsets[i];
         size_t offset = tmp_offset;
         floatArr modelVertices = modelPtr->m_mesh->getVertices();
-        uintArr modelFaces = modelPtr->m_mesh->getFaceIndices(); // getFaceArray(numFaces);
+        vertexNormals = modelPtr->m_mesh->hasVertexNormals();
+        floatArr modelVertexNormals = modelPtr->m_mesh->getVertexNormals();
+        uintArr modelFaces = modelPtr->m_mesh->getFaceIndices();
+        faceNormals = modelPtr->m_mesh->hasFaceNormals();
+        floatArr modelFaceNormals = modelPtr->m_mesh->getFaceNormals();
 
         double end_s = lvr2::timestamp.getElapsedTimeInS();
         seconds += (end_s - start_s);
@@ -806,8 +824,25 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
             p[1] = modelVertices[j * 3 + 1];
             p[2] = modelVertices[j * 3 + 2];
 
+            float pN[3];
+            if (vertexNormals)
+            {
+                pN[0] = modelVertexNormals[j * 3];
+                pN[1] = modelVertexNormals[j * 3 + 1];
+                pN[2] = modelVertexNormals[j * 3 + 2];
+            }
+
             start_s = lvr2::timestamp.getElapsedTimeInS();
-            ofs_vertices << std::setprecision(16) << p[0] << " " << p[1] << " " << p[2] << endl;
+            ofs_vertices << std::setprecision(16) << p[0] << " " << p[1] << " " << p[2];
+
+            if (vertexNormals)
+            {
+                ofs_vertices << std::setprecision(16) << " " << pN[0] << " " << pN[1] << " "
+                             << pN[2];
+            }
+
+            ofs_vertices << endl;
+
             end_s = lvr2::timestamp.getElapsedTimeInS();
             seconds += (end_s - start_s);
         }
@@ -873,13 +908,21 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
             << "\n"
                "property float x\n"
                "property float y\n"
-               "property float z\n"
-               "element face "
-            << newNumFaces
+               "property float z\n";
+
+    if (vertexNormals)
+    {
+        ofs_ply << "property float nx\n"
+                   "property float ny\n"
+                   "property float nz\n";
+    }
+
+    ofs_ply << "element face " << newNumFaces
             << "\n"
                "property list uchar int vertex_indices\n"
                "end_header"
             << endl;
+
     while (std::getline(ifs_vertices, line))
     {
         ofs_ply << line << endl;
