@@ -35,6 +35,9 @@
 #ifndef CHUNK_HASH_GRID_HPP
 #define CHUNK_HASH_GRID_HPP
 
+#include <list>
+#include <unordered_map>
+
 #include "lvr2/io/ChunkIO.hpp"
 
 namespace lvr2
@@ -44,11 +47,11 @@ class ChunkHashGrid
 public:
     ChunkHashGrid() = default;
     /**
-     * @brief class to load (and in the future cache) chunks from an HDF5 file
+     * @brief class to load chunks from an HDF5 file
      *
      * @param hdf5Path path to the HDF5 file
      */
-    explicit ChunkHashGrid(std::string hdf5Path);
+    explicit ChunkHashGrid(std::string hdf5Path, size_t cacheSize);
 
      /**
       * @brief loads a chunk from the HDF5 file into the hash grid
@@ -75,14 +78,34 @@ public:
 
     MeshBufferPtr findChunkCondition(size_t hashValue, int x, int y, int z, std::string channelName);
 private:
-    // hash grid containing chunked meshes
-    std::unordered_map<std::size_t, MeshBufferPtr> m_hashGrid;
+    // ordered list to save recently used hashValues
+    std::list<size_t> items;
+    // hash map containing chunked meshes and the position in the items list
+    std::unordered_map<size_t, std::pair<MeshBufferPtr, std::list<size_t>::iterator>> m_hashGrid;
 
     // chunkIO for the HDF5 file-IO
     std::shared_ptr<lvr2::ChunkIO> m_chunkIO;
 
     // number of chunks that will be cached before deleting old chunks
-    // size_t m_cacheSize = 100;
+    size_t m_cacheSize = 100;
+
+    /**
+     * @brief Adds a mesh to the hashmap and deletes the least
+     * recently used mesh/chunk, if the size exeeds the m_cacheSize.
+     *
+     * @param hashValue the value, where the chunk will be saved
+     * @param mesh the MeshbufferPtr of the chunk
+     */
+    void set(size_t hashValue, const MeshBufferPtr& mesh);
+    /**
+     * @brief Searches the hashmap for the mesh with the given hashValue.
+     *
+     * @param[in] hashValue hashValue of the mesh
+     * @param[out] mesh the mesh/chunk
+     * @return true, if the hashmap contains the mesh of that hashValue
+     */
+    bool get(size_t hashValue, MeshBufferPtr& mesh);
+
 };
 
 } /* namespace lvr2 */
