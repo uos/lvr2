@@ -62,7 +62,6 @@ public:
     string  getInputFile()        const { return m_variables["inputFile"].as<string>();}
     string  getOutputFile()       const { return m_variables["outputFile"].as<string>();}
     string  getMeshName()         const { return m_variables["meshName"].as<string>();}
-    bool    getConvert3DTK2ROS()  const { return m_variables["3dtk2ros"].as<bool>();}
     size_t  getEdgeCollapseNum()  const { return m_variables["edgeCollapse"].as<size_t >();}
 
 private:
@@ -86,7 +85,6 @@ inline ostream& operator<<(ostream& os, const Options &o)
     cout << "##### Output file \t\t: "  << o.getOutputFile() << endl;
     cout << "##### Mesh name \t\t: "  << o.getMeshName() << endl;
     cout << "##### Edge collapse num \t\t: "  << o.getEdgeCollapseNum() << endl;
-    cout << "##### 3DTK2ROS \t\t: "  << o.getConvert3DTK2ROS() << endl;
 	return os;
 }
 

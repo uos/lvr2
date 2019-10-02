@@ -180,6 +180,16 @@ void SLAMScanWrapper::addFrame(FrameUse use)
     m_frames.push_back(make_pair(pose(), use));
 }
 
+size_t SLAMScanWrapper::frameCount() const
+{
+    return m_frames.size();
+}
+
+const std::pair<Transformd, FrameUse>& SLAMScanWrapper::frame(size_t index) const
+{
+    return m_frames[index];
+}
+
 void SLAMScanWrapper::writeFrames(std::string path) const
 {
     ofstream out(path);
