@@ -293,7 +293,7 @@ IndexChannelOptional MeshIO<Derived>::getIndices()
     {
         HighFive::Group channelsGroup = group.getGroup("channels");
         std::unique_ptr<HighFive::DataSet> dataset = std::make_unique<HighFive::DataSet>(
-                channelsGroup.getDataSet("indices"));
+                channelsGroup.getDataSet("face_indices"));
         std::vector<size_t> dim = dataset->getSpace().getDimensions();
         IndexChannel channel(dim[0], dim[1]);
         dataset->read(channel.dataPtr().get());
@@ -343,7 +343,7 @@ bool MeshIO<Derived>::addIndices(const IndexChannel& channel)
         group.createGroup("channels");
     }
     HighFive::Group channelsGroup = group.getGroup("channels");
-    m_vchannel_io->save(channelsGroup, "indices", VariantChannel<unsigned int>(channel));
+    m_vchannel_io->save(channelsGroup, "face_indices", VariantChannel<unsigned int>(channel));
     return true;
 }
 
