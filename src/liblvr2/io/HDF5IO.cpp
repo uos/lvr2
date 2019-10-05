@@ -107,6 +107,12 @@ bool HDF5IO::compress()
     return m_compress;
 }
 
+bool HDF5IO::deleteDataset(const char* name)
+{
+    // delete returning non-negative means success
+    return H5Ldelete(m_hdf5_file->getId(), name, H5P_DEFAULT) >= 0; // laplid = H5P_DEFAULT
+}
+
 size_t HDF5IO::chunkSize()
 {
     return m_chunkSize;
@@ -233,7 +239,6 @@ bool HDF5IO::open(std::string filename, int open_flag)
     {
         have_to_init = true;
     }
-
     // Try to open the given HDF5 file
     m_hdf5_file = new HighFive::File(filename, open_flag);
 
