@@ -148,6 +148,13 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
 
     bool compress();
 
+    /**
+     * @brief deletes a dataset permanently from the hdf file
+     * @param name name of the dataset that gets deleted
+     * @return true if deletion was successful else false
+     **/
+    bool deleteDataset(const char* name);
+
     size_t chunkSize();
 
     template<typename T>
