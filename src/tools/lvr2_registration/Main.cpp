@@ -55,25 +55,6 @@ string format_name(const string& format, int index)
     return string(buff);
 }
 
-/**
- * FOR Testing only
- *
- */
-bool hdfTest(string fileName, string partName)
-{
-    HDF5IO inHDF = HDF5IO(fileName, partName);
-    cout << "================" << endl << "HDF eingelesen!";
-    cout << endl << "================" << endl;
-    vector<lvr2::ScanPtr> rawScans;
-    ModelPtr cloudPointer = ModelPtr();
-    rawScans = inHDF.getRawScans();
-    cout << "Punkte sind aus HDF eingelesen" << endl;
-    cout << "RawScans AT(0): " << rawScans.at(0) << endl;
-    lvr2::Scan firstRawScan = *rawScans.at(0).get();
-    cout << "Number of points in first raw scan: " << *firstRawScan.m_points.get() << endl;
-    cout << "Pose estimation in first raw scan: " << firstRawScan.m_poseEstimation << endl;
-    cout << "Registration in first raw scan: " << firstRawScan.m_registration << endl;
-}
 
 string map_format(const string& format)
 {
@@ -88,10 +69,6 @@ string map_format(const string& format)
     else if (format == "ply")
     {
         return "scan%03i.ply";
-    }
-    else if (format == "h5")
-    {
-        return "scan%03i.h5"; // TODO HDF5 file is intended to contain multiple scans
     }
     else
     {
@@ -182,7 +159,7 @@ int main(int argc, char** argv)
          "Show more detailed output. Useful for fine-tuning Parameters or debugging.")
 
         ("hdf,H", bool_switch(&options.useHDF),
-         "The folder defined in input gets searched for HDF5 files")
+         "Opens the given hdf5 file. Then registrates all scans in '/raw/scans/'\nthat are named after the scheme: 'position_00001' where '1' is the scans number.\nAfter registration the calculated poses are written to the finalPose dataset in the hdf5 file.\n")
 
         ("help,h", bool_switch(&help),
          "Print this help. Seriously how are you reading this if you don't know the --help Option?")
@@ -317,7 +294,7 @@ int main(int argc, char** argv)
     // shared pointer containing the HDF file
     shared_ptr<HDF5IO> inHDF;
 
-    if(options.useHDF)  // TODO Angabe einer HDF Datei sollte mölglich sein
+    if(options.useHDF)
     {
         cout << "Es wird HDF5 benutzt!" << endl;
         ifstream f(dir.c_str());
@@ -339,7 +316,6 @@ int main(int argc, char** argv)
     // =============== search scans ===============
     if (start == -1)
     {
-        // TODO ---- Muss ab hier nur bei HDF = FALSE gemacht werden ----
         if (!options.useHDF)
         {
             for (int i = 0; i < 100; i++)
@@ -383,7 +359,6 @@ int main(int argc, char** argv)
                 return EXIT_FAILURE;
             }
         }
-        // TODO ---- Muss bis hier nur bei HDF = FALSE gemacht werden ----
     }
 
     SLAMAlign align(options);
@@ -396,12 +371,11 @@ int main(int argc, char** argv)
     if (options.useHDF)
     {
         // for loop handles each scan in HDF FILE from start to end
-        for (int i = 0; i < rawScans.size(); i++) // TODO Unnsinniges kopieren!
+        for (int i = 0; i < rawScans.size(); i++)
         {
             SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(rawScans.at(i)));
             scans.push_back(slamScan);
             align.addScan(slamScan);
-            cout << "Die HDF for Schleife ist einaml ausgeführt worden!" << endl; // TODO Debug Output
         }
     }
     else
@@ -453,28 +427,13 @@ int main(int argc, char** argv)
 
     path file;
 
-    // TODO: write the poses back in the hdf5 file
-    // TODO: the final pose should be written
     if (options.useHDF)
     {
         // write pose
         // debug output pose
         for(int i = 0; i < scans.size(); i++)
         {
-            cout << "pose für scan nr: " << i << endl;
             auto pose = scans[i]->pose();
-            for (int y = 0; y < 4; y++)
-            {
-                for (int x = 0; x < 4; x++)
-                {
-                    cout << pose(y, x);
-                    if (x < 3)
-                    {
-                        cout << " ";
-                    }
-                }
-                cout << endl;
-            }
             string scanGroup = "/raw/scans/position_";
             // scanstring contains the scan number with leading zeroes
             string scanNumber = to_string(i);
@@ -482,34 +441,15 @@ int main(int argc, char** argv)
             // the pose is represented as a 4x4 matrix
             std::vector<size_t> dimPose = {4,4};
             float* pose_data = new float[16];
-            // the poseneeds to be transposed before writing to hdf
+            // the pose needs to be transposed before writing to hdf
             pose.transposeInPlace();
             copy(pose.data(), pose.data() + 16, pose_data);
             // the poseneeds to be transposed before writing to hdf
             boost::shared_array<float> poseArray(pose_data);
-            // TODO: Before adding the finalpose the old finalpose needs to be removed
             string deleteString = scanGroup.append(scanString);
-            cout << "Delete String is: " << deleteString+"/finalPose" << endl;
             inHDF.get()->deleteDataset(string(deleteString + "/finalPose").data());
             //rewrite the newly calculated pose
             inHDF.get()->addArray(string("/raw/scans/position_").append(scanString+"/"), string("finalPose"), dimPose, poseArray);
-
-            // debug output für initial pose
-            cout << "initialpose für scan nr: " << i << endl;
-            auto initialpose = scans[i]->initialPose();
-            for (int y = 0; y < 4; y++)
-            {
-                for (int x = 0; x < 4; x++)
-                {
-                    cout << initialpose(y, x);
-                    if (x < 3)
-                    {
-                        cout << " ";
-                    }
-                }
-                cout << endl;
-            }
-            cout << endl;
         }
     }
 
