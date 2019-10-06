@@ -482,7 +482,10 @@ int main(int argc, char** argv)
             // the pose is represented as a 4x4 matrix
             std::vector<size_t> dimPose = {4,4};
             float* pose_data = new float[16];
+            // the poseneeds to be transposed before writing to hdf
+            pose.transposeInPlace();
             copy(pose.data(), pose.data() + 16, pose_data);
+            // the poseneeds to be transposed before writing to hdf
             boost::shared_array<float> poseArray(pose_data);
             // TODO: Before adding the finalpose the old finalpose needs to be removed
             string deleteString = scanGroup.append(scanString);
