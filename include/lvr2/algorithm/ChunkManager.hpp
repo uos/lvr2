@@ -61,8 +61,9 @@ class ChunkManager
      * @param maxChunkOverlap maximum allowed overlap between chunks relative to the chunk size.
      * Larger triangles will be cut
      * @param savePath JUST FOR TESTING - REMOVE LATER ON
+     * @param cacheSize maximum number of chunks loaded in the ChunkHashGrid
      */
-    ChunkManager(MeshBufferPtr mesh, float chunksize, float maxChunkOverlap, std::string savePath);
+    ChunkManager(MeshBufferPtr mesh, float chunksize, float maxChunkOverlap, std::string savePath, size_t cacheSize = 200);
     /**
      * @brief ChunkManager loads a ChunkManager from a given HDF5-file
      *
@@ -71,8 +72,9 @@ class ChunkManager
      * Every loaded chunk has the same length in height, width and depth.
      *
      * @param hdf5Path path to the HDF5 file, where chunks and additional information are stored
+     * @param cacheSize maximum number of chunks loaded in the ChunkHashGrid
      */
-    ChunkManager(std::string hdf5Path);
+    ChunkManager(std::string hdf5Path, size_t cacheSize = 200);
     /**
      * @brief extractArea creates and returns MeshBufferPtr of merged chunks for given area.
      *
