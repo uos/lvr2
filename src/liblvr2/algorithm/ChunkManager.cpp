@@ -63,7 +63,8 @@ namespace lvr2
 ChunkManager::ChunkManager(MeshBufferPtr mesh,
                            float chunksize,
                            float maxChunkOverlap,
-                           std::string savePath)
+                           std::string savePath,
+                           size_t cacheSize)
     : m_chunkSize(chunksize),
     m_hdf5Path(savePath + "/chunked_mesh.h5")
     {
@@ -75,12 +76,10 @@ ChunkManager::ChunkManager(MeshBufferPtr mesh,
     m_amount.z = static_cast<std::size_t>(std::ceil(m_boundingBox.getZSize() / m_chunkSize));
 
     buildChunks(mesh, maxChunkOverlap, savePath);
-    // TODO: cacheSize dynamic
-    size_t cacheSize = 200;
     m_chunkHashGrid = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(m_hdf5Path, cacheSize));
 }
 
-ChunkManager::ChunkManager(std::string hdf5Path)
+ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize)
 : m_hdf5Path(hdf5Path)
 {
     if(boost::filesystem::exists(hdf5Path))
@@ -89,8 +88,7 @@ ChunkManager::ChunkManager(std::string hdf5Path)
         m_amount = chunkIO.loadAmount();
         m_chunkSize = chunkIO.loadChunkSize();
         m_boundingBox = chunkIO.loadBoundingBox();
-        // TODO: cacheSize dynamic
-        size_t cacheSize = 200;
+
         m_chunkHashGrid = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(hdf5Path, cacheSize));
     }
 }
@@ -133,9 +131,7 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
         }
     }
     std::cout << "Extracted " << chunks.size() << " Chunks" << std::endl;
-//    DEBUG:
-//    loadAllChunks();
-//    chunks = m_chunkHashGrid->m_hashGrid;
+
     std::vector<float> areaDuplicateVertices;
     std::vector<std::unordered_map<std::size_t, std::size_t> > areaVertexIndices;
     std::vector<float> areaUniqueVertices;

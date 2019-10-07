@@ -119,8 +119,16 @@ class Options
      * @brief   Returns the z-max of the bounding box
      */
     float getZMax() const;
+    /**
+     * @brief   Returns the cacheSize (maximum number of chunks in HashMap while loading)
+     */
+    int getCacheSize() const;
+    /**
+     * @brief   Returns the mesh group in the HDF5
+     */
+    std::string getMeshGroup() const;
 
-  private:
+private:
     /// The internally used variable map
     variables_map m_variables;
 
