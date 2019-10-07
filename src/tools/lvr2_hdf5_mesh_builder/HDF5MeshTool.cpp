@@ -61,13 +61,37 @@ int main( int argc, char ** argv )
           lvr2::hdf5features::ChannelIO,
           lvr2::hdf5features::VariantChannelIO,
           lvr2::hdf5features::MeshIO>;
-  HDF5MeshToolIO hdf5;
-  hdf5.open(options.getOutputFile());
 
-  ModelPtr model = ModelFactory::readModel(options.getInputFile());
-  if(MeshBufferPtr meshBuffer = model->m_mesh){
+  // Get extension
+  boost::filesystem::path selectedFile(options.getInputFile());
+  std::string extension = selectedFile.extension().string();
+  MeshBufferPtr meshBuffer;
+  HDF5MeshToolIO hdf5In;
+
+  // check extension
+  if (extension ==".h5") // use new Hdf5IO
+  {
+    hdf5In.open(options.getInputFile());
+    meshBuffer = hdf5In.loadMesh(options.getMeshName());
+  }
+  else // use model reader
+  {
+    ModelPtr model = ModelFactory::readModel(options.getInputFile());
+    meshBuffer = model->m_mesh;
+  }
+  if (meshBuffer != nullptr)
+  {
     std::cout << timestamp << "Building mesh from buffers..." << std::endl;
     HalfEdgeMesh<BaseVector<float>> hem(meshBuffer);
+    HDF5MeshToolIO hdf5;
+    if (options.getInputFile() == options.getOutputFile())
+    {
+      hdf5 = hdf5In;
+    }
+    else
+    {
+      hdf5.open(options.getOutputFile());
+    }
 
     // face normals
     std::cout << timestamp << "Computing face normals..." << std::endl;
