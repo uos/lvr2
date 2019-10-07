@@ -429,8 +429,7 @@ int main(int argc, char** argv)
 
     if (options.useHDF)
     {
-        // write pose
-        // debug output pose
+        // write poses to hdf
         for(int i = 0; i < scans.size(); i++)
         {
             auto pose = scans[i]->pose();
@@ -444,7 +443,7 @@ int main(int argc, char** argv)
             // the pose needs to be transposed before writing to hdf
             pose.transposeInPlace();
             copy(pose.data(), pose.data() + 16, pose_data);
-            // the poseneeds to be transposed before writing to hdf
+            // the pose needs to be transposed before writing to hdf
             boost::shared_array<float> poseArray(pose_data);
             string deleteString = scanGroup.append(scanString);
             inHDF.get()->deleteDataset(string(deleteString + "/finalPose").data());
@@ -510,6 +509,5 @@ int main(int argc, char** argv)
             ModelFactory::saveModel(model, file.string());
         }
     }
-    cout << "Exited with success!" << endl; // DEBUG OUTPUT
     return EXIT_SUCCESS;
 }
