@@ -36,6 +36,8 @@
 #include "lvr2/algorithm/ChunkManager.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 
+#include <lvr2/io/Hdf5IO.hpp>
+
 #include <boost/filesystem.hpp>
 #include <iostream>
 #include <string>
@@ -79,8 +81,6 @@ int main(int argc, char** argv)
     else
     {
         // saving a mesh as multiple chunked meshes in an hdf5 file
-        lvr2::ModelPtr model = lvr2::ModelFactory::readModel(options.getInputFile());
-
         boost::filesystem::path outputPath = boost::filesystem::absolute(options.getOutputDir());
         if (!boost::filesystem::is_directory(outputPath))
         {
@@ -90,7 +90,30 @@ int main(int argc, char** argv)
         float size = options.getChunkSize();
         float maxChunkOverlap = options.getMaxChunkOverlap();
 
-        lvr2::ChunkManager chunker(model->m_mesh, size, maxChunkOverlap, outputPath.string());
+        // Check extension
+        boost::filesystem::path selectedFile(options.getInputFile());
+        std::string extension = selectedFile.extension().string();
+        lvr2::MeshBufferPtr meshBuffer;
+        if (extension == ".h5")
+        {
+            using HDF5MeshToolIO = lvr2::Hdf5IO<
+                    lvr2::hdf5features::ArrayIO,
+                    lvr2::hdf5features::ChannelIO,
+                    lvr2::hdf5features::VariantChannelIO,
+                    lvr2::hdf5features::MeshIO>;
+            HDF5MeshToolIO hdf5;
+            hdf5.open(options.getInputFile());
+            meshBuffer = hdf5.loadMesh("");
+        }
+        else // use model reader
+        {
+            lvr2::ModelPtr model = lvr2::ModelFactory::readModel(options.getInputFile());
+            meshBuffer = model->m_mesh;
+        }
+        if (meshBuffer)
+        {
+            lvr2::ChunkManager chunker(meshBuffer, size, maxChunkOverlap, outputPath.string());
+        }
     }
     return EXIT_SUCCESS;
 }
