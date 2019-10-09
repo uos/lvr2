@@ -153,7 +153,6 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
             }
 
             global_bg->serialize("serinfo.ls");
-            std::cout << "here we are 2#" << std::endl;
         }
         double end_ss = lvr2::timestamp.getElapsedTimeInS();
         seconds += (end_ss - start_ss);
@@ -338,7 +337,6 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         }
         else
         {
-            std::cout << "Here we are 1#" << std::endl;
             std::cout << partitionBoxes[i] << std::endl;
             points = global_bg->points(partitionBoxes[i].getMin().x - voxelsize * 3,
                                        partitionBoxes[i].getMin().y - voxelsize * 3,
@@ -347,7 +345,6 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
                                        partitionBoxes[i].getMax().y + voxelsize * 3,
                                        partitionBoxes[i].getMax().z + voxelsize * 3,
                                        numPoints);
-            std::cout << "Here we are 2#" << std::endl;
             p_loader->setPointArray(points, numPoints);
             if (options.savePointNormals() || options.onlyNormals())
             {
@@ -515,7 +512,8 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
         cout << lvr2::timestamp << " saving data " << i << endl;
         vector<unsigned int> duplicates;
-        reconstruction->getMesh(mesh);
+        // reconstruction->getMesh(mesh);
+        reconstruction->getMesh(mesh, grid->qp_bb, duplicates, voxelsize * 5);
 
         // =======================================================================
         // Optimize mesh
@@ -592,7 +590,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
         std::stringstream ss_mesh;
 
-        ss_mesh << name_id << "_mesh.ply";
+        ss_mesh << name_id << "-mesh.ply";
         mesh_files.insert(ss_mesh.str());
 
         // Create output model and save to file
@@ -780,7 +778,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         double start_s = lvr2::timestamp.getElapsedTimeInS();
 
         string ply_path = (*itr);
-        // boost::algorithm::replace_last(ply_path, "-grid.ser", "_mesh.ply");
+        // boost::algorithm::replace_last(ply_path, "-grid.ser", "-mesh.ply");
 
         if (!(boost::filesystem::exists(ply_path)))
             continue;
