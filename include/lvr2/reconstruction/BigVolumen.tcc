@@ -26,7 +26,7 @@
  */
 
 /*
- * BigGrid.hpp
+ * BigVolumen.tcc
  *
  *  Created on: Jul 17, 2017
  *      Author: Isaak Mitschke
