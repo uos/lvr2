@@ -116,7 +116,7 @@ int main(int argc, char** argv)
 
         ("format,f", value<string>(&format)->default_value(format),
          "The format of the Scans in <dir>.\n"
-         "This can be a predefined Format (uos, ply, riegl_txt, h5), or a printf Format String like \"scan%03i.3d\",\n"
+         "This can be a predefined Format (uos, ply, riegl_txt), or a printf Format String like \"scan%03i.3d\",\n"
          "containing one %i or %d that will be replaced with the Scan Index.")
 
         ("pose-format", value<string>(&pose_format)->default_value(pose_format),
@@ -370,7 +370,7 @@ int main(int argc, char** argv)
     vector<lvr2::ScanPtr> rawScans = inHDF->getRawScans();
     if (options.useHDF)
     {
-        // for loop handles each scan in HDF FILE from start to end
+        // for loop handles each scan in HDF FILE
         for (int i = 0; i < rawScans.size(); i++)
         {
             SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(rawScans.at(i)));
