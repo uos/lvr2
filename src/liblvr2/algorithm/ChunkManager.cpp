@@ -250,170 +250,54 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
     areaMeshPtr->setVertices(vertexArr, areaVertexNum);
     areaMeshPtr->setFaceIndices(faceIndexArr, faceIndexNum);
 
-    unsigned long max   = 0;
-    areaVertexIndicesIt = areaVertexIndices.begin();
-    std::unordered_map<std::string, unsigned int> channelPositions;
     for (auto chunkIt = chunks.begin(); chunkIt != chunks.end(); ++chunkIt)
     {
         MeshBufferPtr chunk = chunkIt->second;
         for (auto elem : *chunk)
         {
-            if (elem.first != "vertices" && elem.first != "face_indices")
+            if (elem.first != "vertices" && elem.first != "face_indices"
+                && elem.first != "num_duplicates")
             {
                 if (areaMeshPtr->find(elem.first) == areaMeshPtr->end())
                 {
-                    size_t numElements = elem.second.numElements();
-                    if (elem.second.numElements() == chunk->numVertices())
-                    {
-                        std::cout << "adding vertex attribute " << elem.first << std::endl;
-                        numElements = areaMeshPtr->numVertices();
-                    }
-                    else if (elem.second.numElements() == chunk->numFaces())
-                    {
-                        std::cout << "adding face attribute " << elem.first << std::endl;
-                        numElements = areaMeshPtr->numFaces();
-                    }
-                    else
-                    {
-                        std::cout << "adding other attribute " << elem.first << std::endl;
-                    }
 
                     if (elem.second.is_type<unsigned char>())
                     {
-                        areaMeshPtr->addUCharChannel(
-                            ucharArr(new unsigned char[numElements * elem.second.width()]),
-                            elem.first,
-                            numElements,
-                            elem.second.width());
+                        areaMeshPtr->template addChannel<unsigned char>(
+                            extractChannelOfArea<unsigned char>(chunks,
+                                                                elem.first,
+                                                                staticFaceIndexOffset,
+                                                                areaMeshPtr->numVertices(),
+                                                                areaMeshPtr->numFaces(),
+                                                                areaVertexIndices),
+                            elem.first);
                     }
                     else if (elem.second.is_type<unsigned int>())
                     {
-                        areaMeshPtr->addIndexChannel(
-                            indexArray(new unsigned int[numElements * elem.second.width()]),
-                            elem.first,
-                            numElements,
-                            elem.second.width());
+                        areaMeshPtr->template addChannel<unsigned int>(
+                            extractChannelOfArea<unsigned int>(chunks,
+                                                               elem.first,
+                                                               staticFaceIndexOffset,
+                                                               areaMeshPtr->numVertices(),
+                                                               areaMeshPtr->numFaces(),
+                                                               areaVertexIndices),
+                            elem.first);
                     }
                     else if (elem.second.is_type<float>())
                     {
-                        areaMeshPtr->addFloatChannel(
-                            floatArr(new float[numElements * elem.second.width()]),
-                            elem.first,
-                            numElements,
-                            elem.second.width());
-                    }
-                    channelPositions.insert({elem.first, 0});
-                }
-
-                auto it = areaMeshPtr->find(elem.first);
-                if (it != areaMeshPtr->end())
-                {
-                    if (elem.second.numElements() == chunk->numVertices())
-                    {
-                        std::size_t numDuplicates = *chunk->getAtomic<unsigned int>("num_duplicates");
-                        std::size_t dynIndexOffset = channelPositions[elem.first];
-                        std::size_t indexOffset = staticFaceIndexOffset - numDuplicates + dynIndexOffset;
-                        channelPositions[elem.first] += elem.second.numElements() - numDuplicates;
-
-                        if (elem.first == "roughness")
-                        {
-                            std::cout << channelPositions[elem.first] << " " << staticFaceIndexOffset << std::endl;
-                        }
-
-                        for (unsigned int i = 0; i < elem.second.numElements(); i++)
-                        {
-                            size_t index = 0;
-
-                            auto s = (*areaVertexIndicesIt).find(i);
-                            if (s != (*areaVertexIndicesIt).end())
-                            {
-                                index = s->second;
-                            }
-                            else
-                            {
-                                index = i + indexOffset;
-                            }
-                            
-                            for (unsigned int j = 0; j < it->second.width(); j++)
-                            {
-                                if (elem.second.is_type<unsigned char>())
-                                {
-                                    it->second.dataPtr<
-                                        unsigned char>()[index * it->second.width() + j]
-                                        = elem.second
-                                              .dataPtr<unsigned char>()[i * it->second.width() + j];
-                                }
-                                else if (elem.second.is_type<unsigned int>())
-                                {
-                                    it->second
-                                        .dataPtr<unsigned int>()[index * it->second.width() + j]
-                                        = elem.second
-                                              .dataPtr<unsigned int>()[i * it->second.width() + j];
-                                }
-                                else if (elem.second.is_type<float>())
-                                {
-                                    it->second.dataPtr<float>()[index * it->second.width() + j]
-                                        = elem.second.dataPtr<float>()[i * it->second.width() + j];
-                                    if (elem.first == "roughness")
-                                    {
-                                        if (index > max)
-                                            max = index;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        unsigned int offset = channelPositions[elem.first];
-                        for (unsigned int i = 0; i < elem.second.numElements(); i++)
-                        {
-                            for (unsigned int j = 0; j < it->second.width(); j++)
-                            {
-                                if (elem.second.is_type<unsigned char>())
-                                {
-                                    it->second.dataPtr<
-                                        unsigned char>()[(offset + i) * it->second.width() + j]
-                                        = elem.second
-                                              .dataPtr<unsigned char>()[i * it->second.width() + j];
-                                }
-                                else if (elem.second.is_type<unsigned int>())
-                                {
-                                    it->second.dataPtr<
-                                        unsigned int>()[(offset + i) * it->second.width() + j]
-                                        = elem.second
-                                              .dataPtr<unsigned int>()[i * it->second.width() + j];
-                                }
-                                else if (elem.second.is_type<float>())
-                                {
-                                    it->second
-                                        .dataPtr<float>()[(offset + i) * it->second.width() + j]
-                                        = elem.second.dataPtr<float>()[i * it->second.width() + j];
-                                }
-                            }
-                        }
-
-                        channelPositions.insert({elem.first, offset + elem.second.numElements()});
+                        areaMeshPtr->template addChannel<float>(
+                            extractChannelOfArea<float>(chunks,
+                                                        elem.first,
+                                                        staticFaceIndexOffset,
+                                                        areaMeshPtr->numVertices(),
+                                                        areaMeshPtr->numFaces(),
+                                                        areaVertexIndices),
+                            elem.first);
                     }
                 }
             }
         }
-
-        ++areaVertexIndicesIt;
     }
-
-    std::cout << "max: " << max << std::endl;
-
-    auto channel = areaMeshPtr->find("roughness");
-    float last   = 0.0f;
-    // for (unsigned long i = 0; i < channel->second.numElements(); i++)
-    // {
-    //     for (unsigned long j = 0; j < channel->second.width(); j++)
-    //     {
-    //         std::cout << channel->second.dataPtr<float>()[i * channel->second.width() + j] << " ";
-    //     }
-    //     std::cout << std::endl;
-    // }
 
     std::cout << "Vertices: " << areaMeshPtr->numVertices()
               << ", Faces: " << areaMeshPtr->numFaces() << std::endl;
