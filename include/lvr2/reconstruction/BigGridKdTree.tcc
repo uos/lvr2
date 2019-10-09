@@ -95,7 +95,6 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
     // if kd-tree already exists do this, maybe? this code will never be executed
     if (m_children.size() > 0)
     {
-        std::cout << "WE SHOULD NEVER SEE THIS CODE!!!!" << std::endl;
         for (int i = 0; i < m_children.size(); i++)
         {
             if (m_children[i]->fitsInBox(pos))
@@ -111,8 +110,6 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
         // If the new size is larger then max. size, split tree
         if (m_numPoints + numPoints > s_maxNodePoints)
         {
-            std::cout << "SPLIT IN PROGRESS!" << std::endl;
-
             // Split at X-Axis
             lvr2::BoundingBox<BaseVecT> leftbb;
             lvr2::BoundingBox<BaseVecT> rightbb;
@@ -121,8 +118,6 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
             {
                 float left_size = m_bb.getXSize() / 2.0;
                 float split_value = m_bb.getMin().x + ceil(left_size / s_voxelsize) * s_voxelsize;
-
-
 
                 leftbb = lvr2::BoundingBox<BaseVecT>(
                     BaseVecT(m_bb.getMin().x, m_bb.getMin().y, m_bb.getMin().z),
@@ -209,8 +204,6 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
         }
         else
         {
-            std::cout << "GENERATED LEAF!" << std::endl;
-            std::cout << "Longest side: " << m_bb.getLongestSide() << std::endl;
             m_numPoints += numPoints;
         }
     }
