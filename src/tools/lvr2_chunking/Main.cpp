@@ -61,7 +61,7 @@ int main(int argc, char** argv)
         if(boost::filesystem::exists(options.getChunkedMesh()))
         {
             // loading a hdf5 file and extracting the chunks for a given bounding box
-            lvr2::ChunkManager chunkLoader(options.getChunkedMesh());
+            lvr2::ChunkManager chunkLoader(options.getChunkedMesh(), options.getCacheSize());
 
             // TODO: remove tmp test later
             // beginn: tmp test of extractArea method for dat/scan.pts with chunkSize 200
@@ -103,7 +103,7 @@ int main(int argc, char** argv)
                     lvr2::hdf5features::MeshIO>;
             HDF5MeshToolIO hdf5;
             hdf5.open(options.getInputFile());
-            meshBuffer = hdf5.loadMesh("");
+            meshBuffer = hdf5.loadMesh(options.getMeshGroup());
         }
         else // use model reader
         {
