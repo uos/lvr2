@@ -240,7 +240,7 @@ StableVectorIterator<HandleT, ElemT> StableVector<HandleT, ElemT>::end() const
 
 template<typename HandleT, typename ElemT>
 StableVectorIterator<HandleT, ElemT>::StableVectorIterator(
-    const vector<optional<ElemT>>* deleted,
+    const vector<boost::optional<ElemT>>* deleted,
     bool startAtEnd
 )
     : m_elements(deleted), m_pos(startAtEnd ? deleted->size() : 0)

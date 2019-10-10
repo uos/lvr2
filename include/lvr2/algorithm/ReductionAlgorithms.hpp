@@ -39,7 +39,7 @@
 
 #include <boost/optional.hpp>
 
-using boost::optional;
+
 
 namespace lvr2
 {
