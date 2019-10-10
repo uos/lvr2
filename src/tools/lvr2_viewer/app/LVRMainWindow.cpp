@@ -38,12 +38,13 @@
 
 #include "LVRMainWindow.hpp"
 
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/io/DataStruct.hpp>
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/DataStruct.hpp"
 
-#include <lvr2/registration/ICPPointAlign.hpp>
+#include "lvr2/registration/TransformUtils.hpp"
+#include "lvr2/registration/ICPPointAlign.hpp"
 
-#include <lvr2/util/Util.hpp>
+#include "lvr2/util/Util.hpp"
 
 #include <vtkActor.h>
 #include <vtkProperty.h>
@@ -221,6 +222,11 @@ LVRMainWindow::LVRMainWindow()
      m_axesWidget->SetEnabled( 1 );
      m_axesWidget->InteractiveOff();
 
+     // Disable action if EDL is not available
+#ifndef LVR_USE_VTK_GE_7_1
+     actionRenderEDM->setEnabled(false);
+#endif
+
     connectSignalsAndSlots();
 }
 
@@ -322,10 +328,8 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(m_menuAbout, SIGNAL(triggered(QAction*)), m_aboutDialog, SLOT(show()));
 
-
-#if VTK_MAJOR_VERSION > 6
     QObject::connect(actionRenderEDM, SIGNAL(toggled(bool)), this, SLOT(toogleEDL(bool)));
-#endif
+
     QObject::connect(m_actionShow_Points, SIGNAL(toggled(bool)), this, SLOT(togglePoints(bool)));
     QObject::connect(m_actionShow_Normals, SIGNAL(toggled(bool)), this, SLOT(toggleNormals(bool)));
     QObject::connect(m_actionShow_Mesh, SIGNAL(toggled(bool)), this, SLOT(toggleMeshes(bool)));
@@ -427,14 +431,19 @@ void LVRMainWindow::showBackgroundDialog()
 
 void LVRMainWindow::setupQVTK()
 {
+    // z buffer fix
+    QSurfaceFormat surfaceFormat = qvtkWidget->windowHandle()->format();
+    surfaceFormat.setStencilBufferSize(8);
+    qvtkWidget->windowHandle()->setFormat(surfaceFormat);
+
     // Grab relevant entities from the qvtk widget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
 
-    #ifdef LVR2_USE_VTK_GE_7_1
+#ifdef LVR2_USE_VTK_GE_7_1
         m_renderer->TwoSidedLightingOn ();
         m_renderer->UseHiddenLineRemovalOff();
         m_renderer->RemoveAllLights();
-    #endif
+#endif
 
     // Setup decent background colors
     m_renderer->GradientBackgroundOn();
@@ -464,9 +473,9 @@ void LVRMainWindow::setupQVTK()
     m_pathCamera->SetInterpolator(cameraInterpolator);
     m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
 
-#if VTK_MAJOR_VERSION > 6
-    // Enable EDL per default
 
+#ifdef LVR_USE_VTK_GE_7_1 
+    // Enable EDL per default
     qvtkWidget->GetRenderWindow()->SetMultiSamples(0);
 
     m_basicPasses = vtkRenderStepsPass::New();
@@ -475,10 +484,6 @@ void LVRMainWindow::setupQVTK()
     vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
 
     glrenderer->SetPass(m_edl);
-#else
-    // disable button if we don't have EDL support
-    actionRenderEDM->setChecked(false);
-    actionRenderEDM->setDisabled(true);
 #endif
 
     // Finalize QVTK setup by adding the renderer to the window
@@ -486,9 +491,9 @@ void LVRMainWindow::setupQVTK()
 
 }
 
-#if VTK_MAJOR_VERSION > 6
 void LVRMainWindow::toogleEDL(bool state)
 {
+#ifdef LVR_USE_VTK_GE_7_1
     vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
 
     if(state == false)
@@ -500,8 +505,9 @@ void LVRMainWindow::toogleEDL(bool state)
         glrenderer->SetPass(m_edl);
     }
     this->qvtkWidget->GetRenderWindow()->Render();
-}
 #endif
+}
+
 
 void LVRMainWindow::updateView()
 {
@@ -764,58 +770,64 @@ void LVRMainWindow::exportSelectedModel()
 
 void LVRMainWindow::alignPointClouds()
 {
-    Matrix4<Vec> mat = m_correspondanceDialog->getTransformation();
-    QString name = m_correspondanceDialog->getDataName();
+    QString dataName = m_correspondanceDialog->getDataName();
     QString modelName = m_correspondanceDialog->getModelName();
 
     PointBufferPtr modelBuffer = m_treeWidgetHelper->getPointBuffer(modelName);
-    PointBufferPtr dataBuffer  = m_treeWidgetHelper->getPointBuffer(name);
+    PointBufferPtr dataBuffer  = m_treeWidgetHelper->getPointBuffer(dataName);
 
-    float pose[6];
-    LVRModelItem* item = m_treeWidgetHelper->getModelItem(name);
-
-    if(item)
-    {
-        mat.toPostionAngle(pose);
-
-        // Pose ist in radians, so we need to convert p to degrees
-        // to achieve consistency
-        Pose p;
-        p.x = pose[0];
-        p.y = pose[1];
-        p.z = pose[2];
-        p.r = pose[3]  * 57.295779513;
-        p.t = pose[4]  * 57.295779513;
-        p.p = pose[5]  * 57.295779513;
-        item->setPose(p);
+    LVRModelItem* dataItem = m_treeWidgetHelper->getModelItem(dataName);
+    LVRModelItem* modelItem = m_treeWidgetHelper->getModelItem(modelName);
+    if (!dataItem || !modelItem) {
+        return;
     }
 
-    updateView();
+    Pose dataPose = dataItem->getPose();
+    Eigen::Vector3f pos(dataPose.x, dataPose.y, dataPose.z);
+    Eigen::Vector3f angles(dataPose.r, dataPose.t, dataPose.p);
+    angles *= M_PI / 180.0; // degrees -> radians
+    Transformf mat = poseToMatrix<float>(pos, angles);
+
+    boost::optional<Transformf> correspondence = m_correspondanceDialog->getTransformation();
+    if (correspondence.is_initialized())
+    {
+        mat *= correspondence.get();
+        matrixToPose(mat, pos, angles);
+        angles *= 180.0 / M_PI; // radians -> degrees
+
+        dataItem->setPose(Pose {
+            pos.x(), pos.y(), pos.z(),
+            angles.x(), angles.y(), angles.z()
+        });
+
+        updateView();
+    }
+
     // Refine pose via ICP
     if(m_correspondanceDialog->doICP() && modelBuffer && dataBuffer)
     {
-        ICPPointAlign<BaseVector<float>> icp(modelBuffer, dataBuffer, mat);
+        Pose modelPose = modelItem->getPose();
+        pos = Eigen::Vector3f(modelPose.x, modelPose.y, modelPose.z);
+        angles = Eigen::Vector3f(modelPose.r, modelPose.t, modelPose.p);
+        angles /= 180.0 / M_PI;
+        Transformf modelTransform = poseToMatrix<float>(pos, angles);
+
+        /* TODO: convert to new ICPPointAlign
+
+        ICPPointAlign icp(modelBuffer, dataBuffer, modelTransform, mat);
         icp.setEpsilon(m_correspondanceDialog->getEpsilon());
         icp.setMaxIterations(m_correspondanceDialog->getMaxIterations());
         icp.setMaxMatchDistance(m_correspondanceDialog->getMaxDistance());
-        Matrix4<Vec> refinedTransform = icp.match();
+        Matrix4d refinedTransform = icp.match();
 
-        cout << "Initial: " << mat << endl;
+        matrixToPose(refinedTransform, pos, angles);
+        angles *= M_PI / 180.0; // radians -> degrees
 
-        // Apply correction to initial estimation
-        //refinedTransform = mat * refinedTransform;
-        refinedTransform.toPostionAngle(pose);
-
-        cout << "Refined: " << refinedTransform << endl;
-
-        Pose p;
-        p.x = pose[0];
-        p.y = pose[1];
-        p.z = pose[2];
-        p.r = pose[3]  * 57.295779513;
-        p.t = pose[4]  * 57.295779513;
-        p.p = pose[5]  * 57.295779513;
-        item->setPose(p);
+        dataItem->setPose(Pose {
+            pos.x(), pos.y(), pos.z(),
+            angles.x(), angles.y(), angles.z()
+        });
+        */
     }
     m_correspondanceDialog->clearAllItems();
     updateView();
@@ -902,6 +914,46 @@ void LVRMainWindow::renameModelItem()
     }
 }
 
+LVRModelItem* LVRMainWindow::loadModelItem(QString name)
+{
+    // Load model and generate vtk representation
+    ModelPtr model = ModelFactory::readModel(name.toStdString());
+    ModelBridgePtr bridge(new LVRModelBridge(model));
+    bridge->addActors(m_renderer);
+
+    // Add item for this model to tree widget
+    QFileInfo info(name);
+    QString base = info.fileName();
+    LVRModelItem* item = new LVRModelItem(bridge, base);
+    this->treeWidget->addTopLevelItem(item);
+    item->setExpanded(true);
+
+    // Read Pose file
+    boost::filesystem::path poseFile = name.toStdString();
+
+    for (auto& extension : { "pose", "dat", "frames" })
+    {
+        poseFile.replace_extension(extension);
+        if (boost::filesystem::exists(poseFile))
+        {
+            cout << "Found Pose file: " << poseFile << endl;
+            Transformf mat = getTransformationFromFile<float>(poseFile);
+            BaseVector<float> pos, angles;
+            getPoseFromMatrix<float>(pos, angles, mat.transpose());
+
+            angles *= 180.0 / M_PI; // radians -> degrees
+
+            item->setPose(Pose {
+                pos.x, pos.y, pos.z,
+                angles.x, angles.y, angles.z
+            });
+
+            break;
+        }
+    }
+    return item;
+}
+
 void LVRMainWindow::loadModels(const QStringList& filenames)
 {
     if(filenames.size() > 0)
@@ -927,15 +979,15 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
                 icon.addFile(QString::fromUtf8(":/qv_scandata_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
                 root->setIcon(0, icon);
 
-                std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(base.toStdString()));
+                std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(info.absoluteFilePath().toStdString()));
 
-                lastItem = addScanData(sdm, root);
+                lastItem = addScans(sdm, root);
 
                 root->setExpanded(true);
 
                 // load mesh only
                 ModelPtr model_ptr(new Model());
-                std::shared_ptr<HDF5IO> h5_io_ptr(new HDF5IO(base.toStdString()));
+                std::shared_ptr<HDF5IO> h5_io_ptr(new HDF5IO(info.absoluteFilePath().toStdString()));
                 if(h5_io_ptr->readMesh(model_ptr))
                 {
                     ModelBridgePtr bridge(new LVRModelBridge(model_ptr));
@@ -949,17 +1001,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
                 }
 
             } else {
-                // Load model and generate vtk representation
-                ModelPtr model = ModelFactory::readModel((*it).toStdString());
-                ModelBridgePtr bridge(new LVRModelBridge(model));
-                bridge->addActors(m_renderer);
-
-                // Add item for this model to tree widget
-                
-                LVRModelItem* item = new LVRModelItem(bridge, base);
-                this->treeWidget->addTopLevelItem(item);
-                item->setExpanded(true);
-                lastItem = item;
+                lastItem = loadModelItem(*it);
             }
 
             ++it;
@@ -1615,19 +1657,21 @@ void LVRMainWindow::toggleWireframe(bool checkboxState)
     }
 }
 
-QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent)
+QTreeWidgetItem* LVRMainWindow::addScans(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent)
 {
     QTreeWidgetItem *lastItem = nullptr;
-    std::vector<ScanData> scanData = sdm->getScanData();
-    std::vector<std::vector<CamData> > camData = sdm->getCamData();
+    std::vector<ScanPtr> scans = sdm->getScans();
+    std::vector<std::vector<CameraData> > camData = sdm->getCameraData();
 
-    for (size_t i = 0; i < scanData.size(); i++)
+    bool cam_data_available = camData.size() > 0;
+
+    for (size_t i = 0; i < scans.size(); i++)
     {
         char buf[128];
-        std::sprintf(buf, "%05d", scanData[i].m_positionNumber);
-        LVRScanDataItem *item = new LVRScanDataItem(scanData[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
+        std::sprintf(buf, "%05d", scans[i]->m_positionNumber);
+        LVRScanDataItem *item = new LVRScanDataItem(scans[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
 
-        if(camData[i].size() > 0)
+        if(cam_data_available && camData[i].size() > 0)
         {
             QTreeWidgetItem* cameras_item = new QTreeWidgetItem(item, LVRCamerasItemType);
             cameras_item->setText(0, QString("Photos"));
@@ -1643,7 +1687,6 @@ QTreeWidgetItem* LVRMainWindow::addScanData(std::shared_ptr<ScanDataManager> sdm
                 lastItem = cam_item;
             }
         }
-
 
         lastItem = item;
     }

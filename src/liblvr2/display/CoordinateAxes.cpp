@@ -32,7 +32,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr2/display/CoordinateAxes.hpp>
+#include "lvr2/display/CoordinateAxes.hpp"
 
 namespace lvr2
 {

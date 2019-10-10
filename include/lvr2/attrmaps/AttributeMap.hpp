@@ -36,10 +36,10 @@
 
 #include <boost/optional.hpp>
 
-using boost::optional;
+
 
 #include <memory>
-#include <lvr2/util/BaseHandle.hpp>
+#include "lvr2/util/BaseHandle.hpp"
 
 namespace lvr2
 {
@@ -101,7 +101,7 @@ public:
      *         inserting the new value, the old value is returned. None
      *         otherwise.
      */
-    virtual optional<ValueT> insert(HandleT key, const ValueT& value) = 0;
+    virtual boost::optional<ValueT> insert(HandleT key, const ValueT& value) = 0;
 
     /**
      * @brief Removes the value associated with the given key.
@@ -109,7 +109,7 @@ public:
      * @return If there was a value associated with the key, it is returned.
      *         None otherwise.
      */
-    virtual optional<ValueT> erase(HandleT key) = 0;
+    virtual boost::optional<ValueT> erase(HandleT key) = 0;
 
     /**
      * @brief Removes all values from the map.
@@ -123,7 +123,7 @@ public:
      * Note: this method can not be used to insert a new value. It only allows
      * reading and modifying an already inserted value.
      */
-    virtual optional<ValueT&> get(HandleT key) = 0;
+    virtual boost::optional<ValueT&> get(HandleT key) = 0;
 
     /**
      * @brief Returns the value associated with the given key or None
@@ -132,7 +132,7 @@ public:
      * Note: this method can not be used to insert a new value. It only allows
      * reading an already inserted value.
      */
-    virtual optional<const ValueT&> get(HandleT key) const = 0;
+    virtual boost::optional<const ValueT&> get(HandleT key) const = 0;
 
     /**
      * @brief Returns the number of values in this map.
@@ -240,6 +240,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/attrmaps/AttributeMap.tcc>
+#include "lvr2/attrmaps/AttributeMap.tcc"
 
 #endif /* LVR2_ATTRMAPS_ATTRIBUTEMAP_H_ */

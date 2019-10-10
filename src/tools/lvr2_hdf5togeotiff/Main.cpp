@@ -3,8 +3,7 @@
  * @author ndettmer <ndettmer@uos.de>
  */
 
-#include <lvr2/io/HDF5IO.hpp>
-#include <lvr2/io/ScanDataManager.hpp>
+#include "lvr2/io/HDF5IO.hpp"
 
 #include <boost/range/iterator_range.hpp>
 #include <boost/foreach.hpp>

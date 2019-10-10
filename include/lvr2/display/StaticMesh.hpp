@@ -54,8 +54,8 @@
 #include <OpenGL/gl.h>
 #endif
 
-#include <lvr2/display/Renderable.hpp>
-#include <lvr2/geometry/BoundingBox.hpp>
+#include "lvr2/display/Renderable.hpp"
+#include "lvr2/geometry/BoundingBox.hpp"
 
 using namespace std;
 

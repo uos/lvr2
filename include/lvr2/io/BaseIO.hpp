@@ -44,7 +44,7 @@
 #include <string>
 #include <map>
 
-#include <lvr2/io/Model.hpp>
+#include "lvr2/io/Model.hpp"
 
 namespace lvr2
 {

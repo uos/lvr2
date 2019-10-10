@@ -35,8 +35,8 @@
 #ifndef MODEL_H_
 #define MODEL_H_
 
-#include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/io/PointBuffer.hpp>
+#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/io/PointBuffer.hpp"
 
 #include <boost/shared_ptr.hpp>
 

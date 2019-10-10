@@ -39,18 +39,18 @@
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/optional.hpp>
 
-using boost::optional;
 
-#include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/attrmaps/AttrMaps.hpp>
-#include <lvr2/algorithm/ColorAlgorithms.hpp>
-#include <lvr2/util/ClusterBiMap.hpp>
-#include <lvr2/texture/Texture.hpp>
-#include <lvr2/texture/Material.hpp>
-#include <lvr2/algorithm/ClusterPainter.hpp>
 
-#include <lvr2/io/ObjIO.hpp>
+#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/geometry/Normal.hpp"
+#include "lvr2/attrmaps/AttrMaps.hpp"
+#include "lvr2/algorithm/ColorAlgorithms.hpp"
+#include "lvr2/util/ClusterBiMap.hpp"
+#include "lvr2/texture/Texture.hpp"
+#include "lvr2/texture/Material.hpp"
+#include "lvr2/algorithm/ClusterPainter.hpp"
+
+#include "lvr2/io/ObjIO.hpp"
 
 namespace lvr2
 {
@@ -68,8 +68,8 @@ template<typename BaseVecT>
 class SimpleFinalizer
 {
 private:
-    optional<const VertexMap<Rgb8Color>&> m_colorData;
-    optional<const VertexMap<Normal<typename BaseVecT::CoordType>>&> m_normalData;
+    boost::optional<const VertexMap<Rgb8Color>&> m_colorData;
+    boost::optional<const VertexMap<Normal<typename BaseVecT::CoordType>>&> m_normalData;
 
 public:
     SimpleFinalizer() {};
@@ -154,23 +154,23 @@ private:
     const ClusterBiMap<FaceHandle>& m_cluster;
 
     // Normals (optional)
-    optional<const VertexMap<Normal<typename BaseVecT::CoordType>>&> m_vertexNormals;
+    boost::optional<const VertexMap<Normal<typename BaseVecT::CoordType>>&> m_vertexNormals;
 
     // Basic colors
     // Cluster colors will color each vertex in the color of its corresponding cluster
     // These have lower priority when cluster colors, as only one mode can be used
-    optional<const ClusterMap<Rgb8Color>&> m_clusterColors;
+    boost::optional<const ClusterMap<Rgb8Color>&> m_clusterColors;
 
     // Vertex colors will color each vertex individually
     // These have a higher priority than cluster colors
-    optional<const VertexMap<Rgb8Color>&> m_vertexColors;
+    boost::optional<const VertexMap<Rgb8Color>&> m_vertexColors;
 
     // Materials and textures
-    optional<const MaterializerResult<BaseVecT>&> m_materializerResult;
+    boost::optional<const MaterializerResult<BaseVecT>&> m_materializerResult;
 };
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/FinalizeAlgorithms.tcc>
+#include "lvr2/algorithm/FinalizeAlgorithms.tcc"
 
 #endif /* LVR2_ALGORITHM_FINALIZEALGORITHM_H_ */

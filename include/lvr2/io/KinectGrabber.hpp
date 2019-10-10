@@ -35,10 +35,10 @@
 #ifndef KINECGRABBER_H_
 #define KINECGRABBER_H_
 
-#include <lvr2/io/PointBuffer.hpp>
+#include "lvr2/io/PointBuffer.hpp"
 #include "libfreenect.hpp"
 
-#include <boost/thread.hpp>
+#include <boost/thread.hpp"
 #include <vector>
 
 namespace lvr2

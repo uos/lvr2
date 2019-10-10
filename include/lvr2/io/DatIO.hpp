@@ -35,8 +35,8 @@
 #ifndef DATIO_HPP_
 #define DATIO_HPP_
 
-#include <lvr2/io/BaseIO.hpp>
-#include <lvr2/io/Model.hpp>
+#include "lvr2/io/BaseIO.hpp"
+#include "lvr2/io/Model.hpp"
 
 #include <string>
 using std::string;

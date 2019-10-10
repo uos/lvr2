@@ -41,9 +41,9 @@
 #define LVR2_DATASTRUCT_HPP_INCLUDED
 
 
-#include "boost/shared_array.hpp"
+#include <boost/shared_array.hpp>
 
-#include <lvr2/display/GlTexture.hpp>
+#include "lvr2/display/GlTexture.hpp"
 
 #include <map>
 #include <vector>
@@ -132,6 +132,7 @@ typedef boost::shared_array<unsigned int> uintArr;
 
 
 typedef boost::shared_array<float> floatArr;
+typedef boost::shared_array<double> doubleArr;
 
 
 typedef boost::shared_array<unsigned char> ucharArr;

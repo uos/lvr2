@@ -35,7 +35,7 @@
 #ifndef KINECTIO_H_
 #define KINECTIO_H_
 
-#include <lvr2/io/KinectGrabber.hpp>
+#include "lvr2/io/KinectGrabber.hpp"
 #include <Eigen/Dense>
 
 namespace lvr2

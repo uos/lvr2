@@ -31,117 +31,115 @@
  *  @date Feb 21, 2014
  *  @author Thomas Wiemann
  */
-#include <lvr2/registration/EigenSVDPointAlign.hpp>
 
-#include <limits>
-#include <cmath>
-#include <Eigen/Dense>
 #include <Eigen/SVD>
 
 using namespace Eigen;
-using std::numeric_limits;
 
 namespace lvr2
 {
 
-template <typename BaseVecT>
-double EigenSVDPointAlign<BaseVecT>::alignPoints(const PointPairVector<BaseVecT>& pairs,
-        const BaseVecT centroid_m, const BaseVecT centroid_d, Matrix4<BaseVecT>& alignfx)
+template<typename T, typename PointT>
+T EigenSVDPointAlign<T, PointT>::alignPoints(
+    SLAMScanPtr scan,
+    Point3** neighbors,
+    const Vec3& centroid_m,
+    const Vec3& centroid_d,
+    Mat4& align) const
 {
-    double error = 0;
-    double sum = 0.0;
-
-    // Get centered PtPairs
-    double** m = new double*[pairs.size()];
-    double** d = new double*[pairs.size()];
-
-    for(unsigned int i = 0; i <  pairs.size(); i++){
-        m[i] = new double[3];
-        d[i] = new double[3];
-        m[i][0] = pairs[i].first.x - centroid_m[0];
-        m[i][1] = pairs[i].first.y - centroid_m[1];
-        m[i][2] = pairs[i].first.z - centroid_m[2];
-        d[i][0] = pairs[i].second.x - centroid_d[0];
-        d[i][1] = pairs[i].second.y - centroid_d[1];
-        d[i][2] = pairs[i].second.z - centroid_d[2];
-
-        sum += pow(pairs[i].first.x - pairs[i].second.x, 2)
-             + pow(pairs[i].first.y - pairs[i].second.y, 2)
-             + pow(pairs[i].first.z - pairs[i].second.z, 2) ;
-
-    }
-
-    error = sqrt(sum / (double)pairs.size());
+    T error = 0.0;
+    size_t pairs = 0;
 
     // Fill H matrix
-    Matrix3d H, R;
-    for(int i = 0; i < 3; i++)
-    {
-        for(int j = 0; j < 3; j++)
-        {
-            H(i,j) = 0.0;
-            R(i,j) = 0.0;
-        }
-    }
+    Mat3 H = Matrix3d::Zero();
 
-    for(size_t i = 0; i < pairs.size(); i++){
-        for(int j = 0; j < 3; j++){
-            for(int k = 0; k < 3; k++){
-                H(j, k) += d[i][j]*m[i][k];
+    for (size_t i = 0; i < scan->numPoints(); i++)
+    {
+        if (neighbors[i] == nullptr)
+        {
+            continue;
+        }
+
+        Vec3 m = neighbors[i]->template cast<T>() - centroid_m;
+        Vec3 d = scan->point(i).template cast<T>() - centroid_d;
+
+        error += (m - d).squaredNorm();
+        pairs++;
+
+        // same as "H += m * d.transpose();" but faster
+        for (int j = 0; j < 3; j++)
+        {
+            for (int k = 0; k < 3; k++)
+            {
+                H(j, k) += d[j] * m[k];
             }
         }
     }
 
-    JacobiSVD<Matrix3d> svd(H, ComputeFullU | ComputeFullV);
+    error = sqrt(error / (T)pairs);
 
-    Matrix3d U = svd.matrixU();
-    Matrix3d V = svd.matrixV();
+    JacobiSVD<Mat3> svd(H, ComputeFullU | ComputeFullV);
 
-    R = V * U.transpose();
+    Mat3 U = svd.matrixU();
+    Mat3 V = svd.matrixV();
 
+    Mat3 R = V * U.transpose();
+
+    align = Mat4::Identity();
+    align.template block<3, 3>(0, 0) = R;
 
     // Calculate translation
-    double translation[3];
+    Vec3 translation = centroid_m - R * centroid_d;
+    align.template block<3, 1>(0, 3) = translation;
 
+    return error;
+}
 
-    MatrixXd col_vec(3,1);
-    for(int j = 0; j < 3; j++)
-        col_vec(j,0) = centroid_d[j];
+template<typename T, typename PointT>
+T EigenSVDPointAlign<T, PointT>::alignPoints(
+    PointPairVector& pairs,
+    const Vec3& centroid_m,
+    const Vec3& centroid_d,
+    Mat4& align) const
+{
+    T error = 0.0;
+    size_t n = pairs.size();
 
-    MatrixXd r_time_colVec(3,1);
+    // Fill H matrix
+    Mat3 H = Mat3::Zero();
 
-    r_time_colVec = R * col_vec;
-    translation[0] = centroid_m[0] - r_time_colVec(0);
-    translation[1] = centroid_m[1] - r_time_colVec(1);
-    translation[2] = centroid_m[2] - r_time_colVec(2);
+    for (size_t i = 0; i < n; i++)
+    {
+        Vec3 m = pairs[i].first.template cast<T>() - centroid_m;
+        Vec3 d = pairs[i].second.template cast<T>() - centroid_d;
 
+        error += (m - d).squaredNorm();
 
-    // Fill result
-    alignfx[0] = R(0,0);
-    alignfx[1] = R(1,0);
-    alignfx[2] = 0;
-    alignfx[2] = R(2,0);
-    alignfx[3] = 0;
-    alignfx[4] = R(0,1);
-    alignfx[5] = R(1,1);
-    alignfx[6] = R(2,1);
-    alignfx[7] = 0;
-    alignfx[8] = R(0,2);
-    alignfx[9] = R(1,2);
-    alignfx[10] = R(2,2);
-    alignfx[11] = 0;
-    alignfx[12] = translation[0];
-    alignfx[13] = translation[1];
-    alignfx[14] = translation[2];
-    alignfx[15] = 1;
-
-
-    for(unsigned int i = 0; i <  pairs.size(); i++){
-        delete m[i];
-        delete d[i];
+        // same as "H += m * d.transpose();" but faster
+        for (int j = 0; j < 3; j++)
+        {
+            for (int k = 0; k < 3; k++)
+            {
+                H(j, k) += d[j] * m[k];
+            }
+        }
     }
-    delete[] m;
-    delete[] d;
+
+    error = sqrt(error / (T)n);
+
+    JacobiSVD<Mat3> svd(H, ComputeFullU | ComputeFullV);
+
+    Mat3 U = svd.matrixU();
+    Mat3 V = svd.matrixV();
+
+    Mat3 R = V * U.transpose();
+
+    align = Mat4::Identity();
+    align.template block<3, 3>(0, 0) = R;
+
+    // Calculate translation
+    Vec3 translation = centroid_m - R * centroid_d;
+    align.template block<3, 1>(0, 3) = translation;
 
     return error;
 }

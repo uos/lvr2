@@ -35,7 +35,7 @@
 #ifndef INCLUDE_LVR2_IO_STLIO_HPP_
 #define INCLUDE_LVR2_IO_STLIO_HPP_
 
-#include <lvr2/io/BaseIO.hpp>
+#include "lvr2/io/BaseIO.hpp"
 
 namespace lvr2
 {

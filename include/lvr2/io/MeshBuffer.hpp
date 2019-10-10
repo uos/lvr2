@@ -28,9 +28,9 @@
 #ifndef MESHBUFFER2_HPP
 #define MESHBUFFER2_HPP
 
-#include <lvr2/io/BaseBuffer.hpp>
-#include <lvr2/texture/Material.hpp>
-#include <lvr2/texture/Texture.hpp>
+#include "lvr2/texture/Material.hpp"
+#include "lvr2/texture/Texture.hpp"
+#include "lvr2/types/BaseBuffer.hpp"
 
 namespace lvr2
 {
@@ -40,6 +40,7 @@ namespace lvr2
 ///
 class MeshBuffer : public BaseBuffer
 {
+    using base = BaseBuffer;
 public:
 
     ///
@@ -49,8 +50,7 @@ public:
     MeshBuffer();
 
     bool removeVertices(){
-        m_numVertices = 0;
-        return m_channels.removeFloatChannel("vertices");
+        return this->removeFloatChannel("vertices");
     }
 
     ///
@@ -71,7 +71,7 @@ public:
     /// \param colors           Vertex color array
     /// \param w                Number of bytes per color. (3 for RGB, 4 for RGBA)
     ///
-    void setVertexColors(ucharArr colors, unsigned w = 3);
+    void setVertexColors(ucharArr colors, size_t w = 3);
 
     ///
     /// \brief addTextureCoordinates    Adds texture coordinates for vertices
@@ -108,7 +108,7 @@ public:
     /// \param colors           An array containing color information
     /// \param w                Bytes per color attribute (3 for RGB, 4 for RGBA)
     ///
-    void setFaceColors(ucharArr colors, unsigned w = 3);
+    void setFaceColors(ucharArr colors, size_t w = 3);
 
     void setTextures(std::vector<Texture>& textures)
     {
@@ -123,12 +123,12 @@ public:
     ///
     /// \brief numVertices      Number of vertices in the mesh
     ///
-    size_t numVertices();
+    size_t numVertices() const;
 
     ///
     /// \brief numFaces         Number of faces in the mesh
     ///
-    size_t numFaces();
+    size_t numFaces() const;
 
 
     ///
@@ -142,7 +142,7 @@ public:
     /// \param width            Number of bytes per color (3 for RGB, 4 for RGBA)
     /// \return
     ///
-    ucharArr getVertexColors(unsigned& width);
+    ucharArr getVertexColors(size_t& width);
 
     ///
     /// \brief getVertexNormals Returns an array with vertex normals or an empty array
@@ -174,7 +174,7 @@ public:
     /// \return                 An array containing point data or an nullptr if
     ///                         no colors are present.
     ///
-    ucharArr getFaceColors(unsigned& width);
+    ucharArr getFaceColors(size_t& width);
 
     ///
     /// \brief getFaceMaterialIndices   Returns an array with face material indices 
@@ -184,38 +184,34 @@ public:
     ///
     /// \brief getTextures      Returns a vector with textures
     ///
-    vector<Texture>& getTextures();
+    std::vector<Texture>& getTextures();
 
     ///
     /// \brief getTextures      Returns a vector with materials
     ///
-    vector<Material>& getMaterials();
+    std::vector<Material>& getMaterials();
 
-    bool hasFaceColors();
+    bool hasVertices() const;
 
-    bool hasVertexColors();
+    bool hasFaces() const;
 
-    bool hasFaceNormals();
+    bool hasFaceColors() const;
 
-    bool hasVertexNormals();
+    bool hasVertexColors() const;
+
+    bool hasFaceNormals() const;
+
+    bool hasVertexNormals() const;
 
     /// TODO: CHANNEL BASED SETTER / GETTER!
 
 private:
 
     /// Vector containing all material definitions
-    vector<Material>    m_materials;
+    std::vector<Material>    m_materials;
 
     /// Vector containing all textures
-    vector<Texture>     m_textures;
-
-    /// Number of faces in the mesh
-    size_t              m_numFaces;
-
-    /// Number of vertices in the mesh
-    size_t              m_numVertices;
-
-
+    std::vector<Texture>     m_textures;
 };
 
 using MeshBufferPtr = std::shared_ptr<MeshBuffer>;

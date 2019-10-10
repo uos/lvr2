@@ -32,10 +32,10 @@
 #include <unordered_set>
 #include <vector>
 
-#include <lvr2/io/Progress.hpp>
-#include <lvr2/algorithm/NormalAlgorithms.hpp>
-#include <lvr2/geometry/Handles.hpp>
-#include <lvr2/util/Meap.hpp>
+#include "lvr2/io/Progress.hpp"
+#include "lvr2/algorithm/NormalAlgorithms.hpp"
+#include "lvr2/geometry/Handles.hpp"
+#include "lvr2/util/Meap.hpp"
 
 using std::unordered_set;
 using std::vector;
@@ -169,7 +169,7 @@ size_t iterativeEdgeCollapse(
     while (collapsedEdgeCount < count && !queue.isEmpty())
     {
         // Collapse the edge with minimal cost if it is collapsable.
-        const auto fromH = queue.popMin().key;
+        const auto fromH = queue.popMin().key();
         const auto toH = bestEdge[fromH];
         const auto edgeMin = mesh.getEdgeBetween(fromH, toH).unwrap();
 

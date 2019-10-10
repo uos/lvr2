@@ -31,7 +31,7 @@
 #include <string>
 #include <vector>
 
-#include <lvr2/io/ScanprojectIO.hpp>
+#include "lvr2/io/ScanprojectIO.hpp"
 
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>

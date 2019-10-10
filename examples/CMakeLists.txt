@@ -1,0 +1,4 @@
+add_subdirectory(lvr2_channel_usage)
+add_subdirectory(lvr2_raycaster)
+add_subdirectory(lvr2_coordinates)
+add_subdirectory(lvr2_io_features)

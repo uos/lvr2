@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <lvr2/io/PCDIO.hpp>
+#include "lvr2/io/PCDIO.hpp"
 #include <fstream>
 #ifdef LVR2_USE_PCL
 #include <pcl/io/pcd_io.h>
@@ -126,7 +126,7 @@ void PCDIO::save( string filename )
 {
 
     size_t pointcount(0), buf(0);
-    unsigned w_color(0);
+    size_t w_color(0);
 
     floatArr points;
     ucharArr pointColors;

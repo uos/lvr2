@@ -151,6 +151,6 @@ inline std::ostream& operator<<(std::ostream& os, const BoundingBox<BaseVecT>& b
 
 } // namespace lvr2
 
-#include <lvr2/geometry/BoundingBox.tcc>
+#include "lvr2/geometry/BoundingBox.tcc"
 
 #endif /* LVR2_GEOMETRY_BOUNDINGBOX_H_ */

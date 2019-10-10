@@ -21,7 +21,6 @@
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/PointBuffer.hpp"
-
 #include "lvr2/io/PlutoMetaDataIO.hpp"
 
 //const hdf5tool2::Options* options;
@@ -268,15 +267,15 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
 bool scanIO(const boost::filesystem::path& p,  int number, const boost::filesystem::path& yaml, HDF5IO& hdf)
 {
         ModelPtr model = ModelFactory::readModel(p.string());
-        ScanData scan;
+        ScanPtr scan_ptr(new Scan());
 
         
         PointBufferPtr pc = model->m_pointCloud;
-        scan.m_points = pc;
+        scan_ptr->m_points = pc;
         floatArr points = pc->getPointArray();
         for(int i = 0; i < pc->numPoints(); i++)
         {
-            scan.m_boundingBox.expand(BaseVector<float>(
+            scan_ptr->m_boundingBox.expand(BaseVector<float>(
                                       points[3 * i],
                                       points[3 * i + 1],
                                       points[3 * i + 2]));
@@ -285,7 +284,7 @@ bool scanIO(const boost::filesystem::path& p,  int number, const boost::filesyst
         // TODO parse yaml
         if(boost::filesystem::exists(yaml))
         {
-          PlutoMetaDataIO::readScanMetaData(yaml, scan);
+          PlutoMetaDataIO::readScanMetaData(yaml, scan_ptr);
         }
         else
         {
@@ -293,7 +292,7 @@ bool scanIO(const boost::filesystem::path& p,  int number, const boost::filesyst
         }
         
 
-        hdf.addRawScanData(number, scan);
+        hdf.addRawScan(number, scan_ptr);
 
         // needed?
         return true;

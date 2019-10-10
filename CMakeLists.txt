@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.4)
 project(LAS_VEGAS VERSION 2)
 
+# OPTIONS
+option(BUILD_EXAMPLES "Build the examples" OFF)
+
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -37,8 +40,8 @@ if(MSVC)
 else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
   # with cmake 3.3
-  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++11>)
-  set(CMAKE_CXX_STANDARD 14)
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++1z>)
+  set(CMAKE_CXX_STANDARD 17)
 endif(MSVC)
 
 ###############################################################
@@ -68,6 +71,7 @@ if(NOT APPLE)
 find_package( CUDA 8)
 if(CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_CUDA)
 endif(CUDA_FOUND)
 endif(NOT APPLE)
 
@@ -123,17 +127,10 @@ endif(MPI_FOUND)
 ###
 ## Searching for OpenCl
 ##############################
-find_package(OpenCL)
+find_package(OPENCL)
 if(OPENCL_FOUND)
     include_directories(OPENCL_INCLUDE_DIR)
-endif()
-
-####
-## Searching for OpenCl
-#############################
-find_package(OpenCL)
-if(OPENCL_FOUND)
-    include_directories(OPENCL_INCLUDE_DIR)
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPENCL)
 endif()
 
 ####
@@ -158,7 +155,7 @@ if(VTK_MAJOR_VERSION VERSION_GREATER "7")
 endif()
 
 if(VTK_VERSION VERSION_GREATER "7")
-  
+
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
   set(VTK_COMPONENTS "${VTK_AVAILABLE_COMPONENTS}")
   set(VTK_HAS_QT OFF)
@@ -393,15 +390,14 @@ option(WITH_KINFU "Compile LVR Kinfu" OFF)
 # compatible to gcc4.8. Older CUDA versions require GCC lower
 # than 4.8
 
-if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VERSION_EQUAL 8)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6 )
+if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VERSION_GREATER 8 AND CUDA_VERSION VERSION_LESS 10)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5 )
         message(STATUS "******************************************************************")
         message(STATUS "* Your gcc version needs to be lower than 6 to compile the LVR   *")
-        message(STATUS "* CUDA library and apps with CUDA 8. Please install gcc 5.       *")
+        message(STATUS "* CUDA library and apps with CUDA. Setting CUDA_HOST_COMPILER to *")
+        message(STATUS "* g++-6*. Please ensure that g++ 6 is installed on your system.  *")
         message(STATUS "******************************************************************")
-        message(WARNING "Incompatible CUDA host compiler detected. Setting host compiler to gcc-5.
-          Please ensure that this version is installed on your system")
-        set(CUDA_HOST_COMPILER "gcc-5")
+        set(CUDA_HOST_COMPILER "g++-6" CACHE STRING "" FORCE)
         endif()
 endif()
 
@@ -456,8 +452,6 @@ endif()
 # VIEWERS
 ##############################################################
 
-# add_subdirectory(src/tools/lvr2_viewer)
-
 find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
 if(Qt5_FOUND)
   find_package(QVTK)
@@ -479,11 +473,11 @@ add_subdirectory(src/liblvr2)
 # BINARIES
 ##############################################################
 
+add_subdirectory(src/tools/lvr2_gs_reconstruction)
 add_subdirectory(src/tools/lvr2_reconstruct)
 add_subdirectory(src/tools/lvr2_asciiconverter)
 add_subdirectory(src/tools/lvr2_transform)
-# doesnt compile
-# add_subdirectory(src/tools/lvr2_kaboom)
+add_subdirectory(src/tools/lvr2_kaboom)
 add_subdirectory(src/tools/lvr2_octree_test)
 add_subdirectory(src/tools/lvr2_yaml_test)
 add_subdirectory(src/tools/lvr2_image_normals)
@@ -495,6 +489,9 @@ add_subdirectory(src/tools/lvr2_slam2hdf5)
 add_subdirectory(src/tools/lvr2_hdf5togeotiff)
 add_subdirectory(src/tools/lvr2_slam6d_merger)
 add_subdirectory(src/tools/lvr2_scanproject2hdf5)
+add_subdirectory(src/tools/lvr2_chunking)
+add_subdirectory(src/tools/lvr2_registration)
+add_subdirectory(src/tools/lvr2_mesh_reducer)
 
 if (RiVLib_FOUND)
     add_subdirectory(src/tools/lvr2_riegl_project_converter)
@@ -507,6 +504,10 @@ endif()
 
 if(OPENCL_FOUND)
     add_subdirectory(src/tools/lvr2_cl_normals)
+endif()
+
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
 endif()
 
 ################################################################
@@ -527,6 +528,7 @@ configure_package_config_file(LVR2Config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
   INSTALL_DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr2
   PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
+
 write_basic_package_version_file(
   ${CMAKE_CURRENT_BINARY_DIR}/LVR2ConfigVersion.cmake
   COMPATIBILITY SameMajorVersion

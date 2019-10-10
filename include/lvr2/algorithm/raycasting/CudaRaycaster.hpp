@@ -75,4 +75,4 @@ public:
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/raycasting/CudaRaycaster.tcc>
+#include "lvr2/algorithm/raycasting/CudaRaycaster.tcc"

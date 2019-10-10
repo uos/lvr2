@@ -32,7 +32,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr2/display/MeshCluster.hpp>
+#include "lvr2/display/MeshCluster.hpp"
 
 namespace lvr2
 {

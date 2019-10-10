@@ -36,10 +36,6 @@
  *  @author Denis Meyer (denmeyer@uos.de)
  */
 
-#include <lvr2/io/ObjIO.hpp>
-
-#include <lvr2/util/Util.hpp>
-
 #include <climits>
 #include <iostream>
 #include <fstream>
@@ -48,13 +44,14 @@
 #include <sstream>
 
 #include <boost/filesystem.hpp>
-#include "boost/tuple/tuple.hpp"
+#include <boost/tuple/tuple.hpp>
 
-#include <lvr2/io/Timestamp.hpp>
-
-#include <lvr2/texture/TextureFactory.hpp>
-#include <lvr2/texture/Texture.hpp>
-#include <lvr2/texture/Material.hpp>
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/io/ObjIO.hpp"
+#include "lvr2/texture/TextureFactory.hpp"
+#include "lvr2/texture/Texture.hpp"
+#include "lvr2/texture/Material.hpp"
+#include "lvr2/util/Util.hpp"
 
 
 namespace lvr2
@@ -345,7 +342,7 @@ void ObjIO::save( string filename )
         return;
     }
 
-    unsigned w_color;
+    size_t w_color;
     size_t lenVertices = m_model->m_mesh->numVertices();
     size_t lenNormals = lenVertices;
     size_t lenFaces = m_model->m_mesh->numFaces();

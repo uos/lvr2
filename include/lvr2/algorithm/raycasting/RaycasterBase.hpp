@@ -34,9 +34,10 @@
 
 #pragma once
 
-#include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Normal.hpp>
+#include <memory>
+#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/Normal.hpp"
 
 namespace lvr2
 {
@@ -77,6 +78,9 @@ private:
     const MeshBufferPtr m_mesh;
 };
 
+template<typename PointT, typename NormalT>
+using RaycasterBasePtr = std::shared_ptr<RaycasterBase<PointT, NormalT> >;
+
 } // namespace lvr2
 
-#include <lvr2/algorithm/raycasting/RaycasterBase.tcc>
+#include "lvr2/algorithm/raycasting/RaycasterBase.tcc"

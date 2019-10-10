@@ -6,8 +6,8 @@
 
 #include <vtkMatrix4x4.h>
 
-#include <lvr2/io/ScanDataManager.hpp>
-#include <lvr2/geometry/Transformable.hpp>
+#include "lvr2/io/ScanDataManager.hpp"
+#include "lvr2/geometry/Transformable.hpp"
 
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../vtkBridge/LVRBoundingBoxBridge.hpp"
@@ -17,7 +17,7 @@
 #include "LVRPoseItem.hpp"
 #include "LVRCamDataItem.hpp"
 
-
+#include <Eigen/Dense>
 
 namespace lvr2
 {
@@ -26,7 +26,7 @@ class LVRScanDataItem : public QTreeWidgetItem, public Transformable
 {
     public:
 
-        LVRScanDataItem(ScanData data,
+        LVRScanDataItem(ScanPtr data,
                         std::shared_ptr<ScanDataManager> sdm,
                         size_t idx,
                         vtkSmartPointer<vtkRenderer> renderer,
@@ -62,7 +62,7 @@ class LVRScanDataItem : public QTreeWidgetItem, public Transformable
         QString                                 m_name;
         std::shared_ptr<ScanDataManager>        m_sdm;
         size_t                                  m_idx;
-        ScanData                                m_data;
+        ScanPtr                                 m_data;
         ModelBridgePtr                          m_model;
         BoundingBoxBridgePtr                    m_bb;
         Pose                                    m_pose;
@@ -70,7 +70,7 @@ class LVRScanDataItem : public QTreeWidgetItem, public Transformable
         LVRPointCloudItem                      *m_pcItem;
         LVRPoseItem                            *m_pItem;
         QTreeWidgetItem                        *m_showSpectralsItem;
-        Matrix4<BaseVector<float> >             m_matrix;
+        Transformd                              m_matrix;
         vtkSmartPointer<vtkRenderer>            m_renderer;
 
 };
