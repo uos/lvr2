@@ -12,20 +12,33 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include <yaml-cpp/yaml.h>
 
-#include "lvr2/io/HDF5IO.hpp"
-#include "lvr2/display/PointOctree.hpp"
-#include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
+
+#include "lvr2/types/Scan.hpp"
+#include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/io/Timestamp.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/IOUtils.hpp"
-#include "lvr2/io/PointBuffer.hpp"
-#include "lvr2/io/PlutoMetaDataIO.hpp"
+
+#include "lvr2/io/Hdf5IO.hpp"
+#include "lvr2/io/hdf5/ArrayIO.hpp"
+#include "lvr2/io/hdf5/ChannelIO.hpp"
+#include "lvr2/io/hdf5/VariantChannelIO.hpp"
+#include "lvr2/io/hdf5/PointCloudIO.hpp"
+#include "lvr2/io/hdf5/MatrixIO.hpp"
 
 //const hdf5tool2::Options* options;
 namespace qi = boost::spirit::qi;
 using namespace lvr2;
+
+using HDF5IO = lvr2::Hdf5IO<
+    lvr2::hdf5features::ArrayIO,
+    lvr2::hdf5features::ChannelIO,
+    lvr2::hdf5features::VariantChannelIO,
+    lvr2::hdf5features::PointCloudIO>;
+
 template <typename Iterator>
 bool parse_scan_filename(Iterator first, Iterator last, int& i)
 {
@@ -131,6 +144,129 @@ bool sortPanoramas(boost::filesystem::path firstScan, boost::filesystem::path se
     }
 }
 
+template <typename T>
+boost::shared_array<T> reduceData(boost::shared_array<T> data, size_t dataCount, size_t dataWidth, unsigned int reductionFactor, size_t *reducedDataCount)
+{
+  *reducedDataCount = dataCount / reductionFactor + 1;
+  boost::shared_array<T> reducedData = boost::shared_array<T>( new T[(*reducedDataCount) * dataWidth] );
+
+  size_t reducedDataIdx = 0;
+  for (size_t i = 0; i < dataCount; i++)
+  {
+    if (i % reductionFactor == 0)
+    {
+      std::copy(data.get() + i*dataWidth,
+                data.get() + (i+1)*dataWidth,
+                reducedData.get() + reducedDataIdx*dataWidth);
+
+      reducedDataIdx++;
+    }
+  }
+
+  return reducedData;
+}
+
+
+bool saveScan(int nr, ScanPtr scan, HDF5IO hdf5)
+{
+
+  // Check scan data
+  if(scan->m_points->numPoints())
+  {
+    // Setup group for scan data
+    char buffer[128];
+    sprintf(buffer, "position_%05d", nr);
+    string nr_str(buffer);
+
+    std::string groupName = "/raw/scans/" + nr_str;
+
+    // Generate tuples for field of view and resolution parameters
+    floatArr fov(new float[2]);
+    fov[0] = scan->m_hFieldOfView;
+    fov[1] = scan->m_vFieldOfView;
+
+    floatArr res(new float[2]);
+    res[0] = scan->m_hResolution;
+    res[1] = scan->m_vResolution;
+
+    // Generate pose estimation matrix array
+    float* pose_data = new float[16];
+    float* reg_data = new float[16];
+
+    std::copy(scan->m_poseEstimation.data(), scan->m_poseEstimation.data() + 16, pose_data);
+    std::copy(scan->m_registration.data(), scan->m_registration.data() + 16, reg_data);
+
+    floatArr pose_estimate(pose_data);
+    floatArr registration(reg_data);
+
+    // Generate bounding box representation
+    floatArr bb(new float[6]);
+
+    auto bb_min = scan->m_boundingBox.getMin();
+    auto bb_max = scan->m_boundingBox.getMax();
+    bb[0] = bb_min.x;
+    bb[1] = bb_min.y;
+    bb[2] = bb_min.z;
+
+    bb[3] = bb_max.x;
+    bb[4] = bb_max.y;
+    bb[5] = bb_max.z;
+
+    // Add data to group
+    std::vector<size_t> dim = {4,4};
+    std::vector<size_t> scan_dim = {scan->m_points->numPoints(), 3};
+    hdf5.save(groupName, "fov", 2, fov);
+    hdf5.save(groupName, "resolution", 2, res);
+    hdf5.save(groupName, "initialPose", dim, pose_estimate);
+    hdf5.save(groupName, "finalPose", dim, registration);
+    hdf5.save(groupName, "boundingBox", 6, bb);
+    hdf5.save(groupName, "points", scan_dim, scan->m_points->getPointArray());
+
+    // Add spectral annotation channel
+    size_t an;
+    size_t aw;
+    ucharArr spectral = scan->m_points->getUCharArray("spectral_channels", an, aw);
+
+    if (spectral)
+    {
+      size_t chunk_w = std::min<size_t>(an, 1000000);    // Limit chunk size
+      std::vector<hsize_t> chunk_annotation = {chunk_w, aw};
+      std::vector<size_t> dim_annotation = {an, aw};
+      hdf5.save("/annotation/" + nr_str, "spectral", dim_annotation, chunk_annotation, spectral);
+    }
+
+    // TODO m_use_preview, m_PreviewReductionFactor
+    bool m_usePreviews = true;  // TODO param
+    int m_previewReductionFactor = 20; // TODO param
+
+    // Add preview data if wanted
+    if (m_usePreviews)
+    {
+      std::string previewGroupName = "/preview/" + nr_str;
+
+      // Add point preview
+      floatArr points = scan->m_points->getPointArray();
+      if (points)
+      {
+        size_t numPreview;
+        floatArr previewData = reduceData(points, scan->m_points->numPoints(), 3, m_previewReductionFactor, &numPreview);
+
+        std::vector<size_t> previewDim = {numPreview, 3};
+        hdf5.save(previewGroupName, "points", previewDim, previewData);
+      }
+
+      // Add spectral preview
+      if (spectral)
+      {
+        size_t numPreview;
+        ucharArr previewData = reduceData(spectral, an, aw, m_previewReductionFactor, &numPreview);
+        std::vector<size_t> previewDim = {numPreview, aw};
+        hdf5.save(previewGroupName, "spectral", previewDim, previewData);
+      }
+    }
+  }
+}
+
 bool channelIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
 {
     std::cout << timestamp << "Start processing channels" << std::endl;
@@ -176,7 +312,7 @@ bool channelIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     }
     
     std::vector<hsize_t> chunks = {50, 50, 50};
-    hdf.addArray(group, "channels", dim, chunks, data);
+    hdf.save(group, "channels", dim, chunks, data);
     //std::cout << "wrote channels" << std::endl;
     
     // TODO write aperture. 47.5 deg oder so
@@ -184,6 +320,89 @@ bool channelIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
 
     std::cout << timestamp << "Finished processing channels" << std::endl;
     return true;
+}
+
+size_t readSpectralMetaData(const boost::filesystem::path &fn, floatArr &angles)
+{
+  std::vector<YAML::Node> root = YAML::LoadAllFromFile(fn.string());
+  size_t size = 0;
+  for (auto &n : root)
+  {
+    angles = floatArr(new float[n.size()]);
+//        std::cout << n.size() << std::endl;
+    size = n.size();
+    for (YAML::const_iterator it = n.begin(); it != n.end(); ++it)
+    {
+      // not sorted. key as index.
+      angles[it->first.as<int>()] = it->second["angle"].as<float>();
+    }
+  }
+
+  return size;
+}
+
+void readScanMetaData(const boost::filesystem::path &fn, ScanPtr &scan_ptr)
+{
+  std::vector<YAML::Node> root = YAML::LoadAllFromFile(fn.string());
+  for (auto &n : root) {
+    for (YAML::const_iterator it = n.begin(); it != n.end(); ++it) {
+      if (it->first.as<string>() == "Start") {
+        // Parse start time
+        float sec = it->second["sec"].as<float>();
+        float nsec = it->second["nsec"].as<float>();
+
+        std::cout << "Start: " << sec << "; " << nsec << std::endl;
+      } else if (it->first.as<string>() == "End") {
+        // Parse end time
+        float sec = it->second["sec"].as<float>();
+        float nsec = it->second["nsec"].as<float>();
+
+        std::cout << "End: " << sec << "; " << nsec << std::endl;
+      } else if (it->first.as<string>() == "Pose") {
+        // Parse Position
+        if (it->second["Position"]) {
+          YAML::Node tmp = it->second["Position"];
+          float x = tmp["x"].as<float>();
+          float y = tmp["y"].as<float>();
+          float z = tmp["z"].as<float>();
+
+          std::cout << "Pos: " << x << ", " << y << ", " << z << std::endl;
+        }
+        if (it->second["Rotation"]) {
+          YAML::Node tmp = it->second["Rotation"];
+          float x = tmp["x"].as<float>();
+          float y = tmp["y"].as<float>();
+          float z = tmp["z"].as<float>();
+
+          std::cout << "Rot: " << x << ", " << y << ", " << z << std::endl;
+        }
+      } else if (it->first.as<string>() == "Config") {
+        // Parse Angles
+        if (it->second["Theta"]) {
+          YAML::Node tmp = it->second["Theta"];
+          float min = tmp["min"].as<float>();
+          float max = tmp["max"].as<float>();
+
+          scan_ptr->m_vFieldOfView = max - min;
+          scan_ptr->m_vResolution = tmp["delta"].as<float>();
+          std::cout << "T: " << scan_ptr->m_vFieldOfView << "; "
+                    << scan_ptr->m_vResolution << std::endl;
+        }
+        if (it->second["Phi"]) {
+          YAML::Node tmp = it->second["Phi"];
+          float min = tmp["min"].as<float>();
+          float max = tmp["max"].as<float>();
+
+          scan_ptr->m_hFieldOfView = max - min;
+          scan_ptr->m_hResolution = tmp["delta"].as<float>();
+          std::cout << "P: " << scan_ptr->m_hFieldOfView << "; "
+                    << scan_ptr->m_hResolution << std::endl;
+        }
+      }
+    }
+    std::cout << std::endl;
+  }
+  return;
 }
 
 bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
@@ -202,7 +421,7 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     {
         if(it->path().extension() == ".yaml")
         {
-            size = PlutoMetaDataIO::readSpectralMetaData(it->path(), angles);
+            size = readSpectralMetaData(it->path(), angles);
             yaml = true;
         }
         
@@ -249,11 +468,11 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     
     std::vector<hsize_t> chunks = {50, 50, 50};
 
-    hdf.addArray(group, "frames", dim, chunks, data);
+    hdf.save(group, "frames", dim, chunks, data);
     
     if(size)
     {
-      hdf.addArray(group, "angles", size, angles);
+      hdf.save(group, "angles", size, angles);
     }
 
     // TODO write aperture. 47.5 deg oder so
@@ -264,7 +483,7 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     return true;
 }
 
-bool scanIO(const boost::filesystem::path& p,  int number, const boost::filesystem::path& yaml, HDF5IO& hdf)
+bool scanIO(const boost::filesystem::path& p,  int number, const boost::filesystem::path& yaml, HDF5IO& hdf5)
 {
         ModelPtr model = ModelFactory::readModel(p.string());
         ScanPtr scan_ptr(new Scan());
@@ -284,15 +503,14 @@ bool scanIO(const boost::filesystem::path& p,  int number, const boost::filesyst
         // TODO parse yaml
         if(boost::filesystem::exists(yaml))
         {
-          PlutoMetaDataIO::readScanMetaData(yaml, scan_ptr);
+          readScanMetaData(yaml, scan_ptr);
         }
         else
         {
           std::cout << timestamp << "No scan config found" << std::endl;
         }
-        
 
-        hdf.addRawScan(number, scan_ptr);
+        saveScan(number, scan_ptr, hdf5);
 
         // needed?
         return true;
@@ -330,7 +548,9 @@ int main(int argc, char** argv)
         exit(-1);
     }
     
-    HDF5IO hdf(outputPath.string(), HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
+
+    HDF5IO hdf;
+    hdf.open(outputPath.string());
 
     std::vector<boost::filesystem::path> scans;
     for(boost::filesystem::directory_iterator it(inputDir); it != boost::filesystem::directory_iterator(); ++it)
@@ -375,8 +595,6 @@ int main(int argc, char** argv)
                 ply_exists = true;
             }
         }
-
-        
 
         if(!spectral_exists)
         {
