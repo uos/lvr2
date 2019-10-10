@@ -42,7 +42,7 @@
 #include <memory>
 #include <boost/optional.hpp>
 
-using boost::optional;
+
 
 #include "Handles.hpp"
 
@@ -676,7 +676,7 @@ struct EdgeCollapseResult
     /// The (face) neighbors of the edge which might have been removed. If so,
     /// the entry is not `none` and contains information about the invalidated
     /// handles and the replacement edge.
-    std::array<optional<EdgeCollapseRemovedFace>, 2> neighbors;
+    std::array<boost::optional<EdgeCollapseRemovedFace>, 2> neighbors;
 
     EdgeCollapseResult(VertexHandle midPoint, VertexHandle removedPoint) : midPoint(midPoint), removedPoint(removedPoint) {};
 };
