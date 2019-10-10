@@ -379,6 +379,38 @@ public:
      */
     virtual void getNeighboursOfVertex(VertexHandle handle, std::vector<VertexHandle>& verticesOut) const = 0;
 
+    /**
+     * @brief Get the optional face handle of the neighboring face lying
+     *        on the vertex's opposite site.
+     *
+     * @param faceH The corresponding face handle
+     * @param vertexH The corresponding vertex handle
+     * @return optional face handle of the `faceH` neighboring face lying on
+     * the opposite side of the `vertexH` vertex.
+     */
+    virtual OptionalFaceHandle getOppositeFace(FaceHandle faceH, VertexHandle vertexH) const = 0;
+
+    /**
+     * @brief Get the optional edge handle of the edge lying on the vertex's
+     * opposite site.
+     *
+     * @param faceH The corresponding face handle
+     * @param vertexH The corresponding vertex handle
+     * @return optional edge handle which lies on the `faceH` face on the
+     * opposite side of the `vertexH` vertex.
+     */
+    virtual OptionalEdgeHandle getOppositeEdge(FaceHandle faceH, VertexHandle vertexH) const = 0;
+
+    /**
+     * @brief Get the optional vertex handle of the vertex lying on the edge's
+     * opposite site.
+     *
+     * @param faceH The corresponding face handle
+     * @param edgeH The corresponding edge handle
+     * @return optional vertex handle which lies on the `faceH` face on the
+     * opposite side of the `edgeH` edge.
+     */
+    virtual OptionalVertexHandle getOppositeVertex(FaceHandle faceH, EdgeHandle edgeH) const = 0;
 
     /**
      * @brief Returns an iterator to the first vertex of this mesh.

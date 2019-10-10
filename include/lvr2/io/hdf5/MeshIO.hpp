@@ -6,6 +6,7 @@
 #include <boost/optional.hpp>
 
 #include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/io/AttributeMeshIOBase.hpp"
 
 // Dependencies
 #include "ChannelIO.hpp"
@@ -45,7 +46,7 @@ namespace hdf5features {
  * 
  */
 template<typename Derived>
-class MeshIO {
+class MeshIO : public AttributeMeshIOBase {
 public:
     void save(std::string name, const MeshBufferPtr& buffer);
     void save(HighFive::Group& group, const MeshBufferPtr& buffer);
@@ -66,6 +67,92 @@ protected:
     static constexpr char* OBJID = "MeshBuffer";
 
     ArrayIO<Derived>* m_array_io = static_cast<ArrayIO<Derived>*>(m_file_access);
+
+    /**
+     * @brief Persistence layer interface, Accesses the vertices of the mesh in the persistence layer.
+     * @return An optional float channel, the channel is valid if the mesh vertices have been read successfully
+     */
+    FloatChannelOptional getVertices();
+
+    /**
+     * @brief Persistence layer interface, Accesses the face indices of the mesh in the persistence layer.
+     * @return An optional index channel, the channel is valid if the mesh indices have been read successfully
+     */
+    IndexChannelOptional getIndices();
+
+    /**
+     * @brief Persistence layer interface, Writes the vertices of the mesh to the persistence layer.
+     * @return true if the channel has been written successfully
+     */
+    bool addVertices(const FloatChannel& channel_ptr);
+
+    /**
+     * @brief Persistence layer interface, Writes the face indices of the mesh to the persistence layer.
+     * @return true if the channel has been written successfully
+     */
+    bool addIndices(const IndexChannel& channel_ptr);
+
+    template <typename T>
+    bool getChannel(const std::string group, const std::string name, boost::optional<AttributeChannel<T>>& channel);
+
+    /**
+     * @brief getChannel  Reads a float attribute channel in the given group with the given name
+     * @param group       The associated attribute group
+     * @param name        The associated attribute name
+     * @param channel     The pointer to the float channel
+     * @return            true if the channel has been loaded successfully, false otherwise
+     */
+    virtual bool getChannel(const std::string group, const std::string name, FloatChannelOptional& channel);
+
+    /**
+     * @brief getChannel  Reads an index attribute channel in the given group with the given name
+     * @param group       The associated attribute group
+     * @param name        The associated attribute name
+     * @param channel     The pointer to the index channel
+     * @return            true if the channel has been loaded successfully, false otherwise
+     */
+    virtual bool getChannel(const std::string group, const std::string name, IndexChannelOptional& channel);
+
+    /**
+     * @brief getChannel  Reads an unsigned char attribute channel in the given group with the given name
+     * @param group       The associated attribute group
+     * @param name        The associated attribute name
+     * @param channel     The pointer to the unsigned char channel
+     * @return            true if the channel has been loaded successfully, false otherwise
+     */
+    virtual bool getChannel(const std::string group, const std::string name, UCharChannelOptional& channel);
+
+    template <typename T>
+    bool addChannel(const std::string group, const std::string name, const AttributeChannel<T>& channel);
+
+    /**
+     * @brief addChannel  Writes a float attribute channel from the given group with the given name
+     * @param group       The associated attribute group
+     * @param name        The associated attribute name
+     * @param channel     The pointer to the float channel which should be written
+     * @return            true if the channel has been written successfully, false otherwise
+     */
+    virtual bool addChannel(const std::string group, const std::string name, const FloatChannel& channel);
+
+    /**
+     * @brief addChannel  Writes an index attribute channel from the given group with the given name
+     * @param group       The associated attribute group
+     * @param name        The associated attribute name
+     * @param channel     The pointer to the index channel which should be written
+     * @return            true if the channel has been written successfully, false otherwise
+     */
+    virtual bool addChannel(const std::string group, const std::string name, const IndexChannel& channel);
+
+    /**
+     * @brief addChannel  Writes an unsigned char attribute channel from the given group with the given name
+     * @param group       The associated attribute group
+     * @param name        The associated attribute name
+     * @param channel     The pointer to the unsigned char channel which should be written
+     * @return            true if the channel has been written successfully, false otherwise
+     */
+    virtual bool addChannel(const std::string group, const std::string name, const UCharChannel& channel);
+
+
 };
 
 

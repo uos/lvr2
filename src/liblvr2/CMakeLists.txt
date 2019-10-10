@@ -49,12 +49,16 @@ set(LVR2_SOURCES
     io/ScanprojectIO.cpp
     io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
+    io/ChunkIO.cpp
     types/Scan.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
     reconstruction/LBKdTree.cpp
     reconstruction/PCLFiltering.cpp
+    algorithm/ChunkBuilder.cpp
+    algorithm/ChunkManager.cpp
+    algorithm/ChunkHashGrid.cpp
     registration/ICPPointAlign.cpp
     registration/KDTree.cpp
     registration/SLAMScanWrapper.cpp
