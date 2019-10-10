@@ -33,7 +33,7 @@
  */
 
 #include "Options.hpp"
-#include <lvr2/config/lvropenmp.hpp>
+#include "lvr2/config/lvropenmp.hpp"
 
 #include <iostream>
 #include <fstream>

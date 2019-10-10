@@ -42,11 +42,11 @@
 
 #include <boost/optional.hpp>
 
-using boost::optional;
 
-#include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/attrmaps/AttrMaps.hpp>
+
+#include "lvr2/geometry/BaseMesh.hpp"
+#include "lvr2/reconstruction/PointsetSurface.hpp"
+#include "lvr2/attrmaps/AttrMaps.hpp"
 
 namespace lvr2
 {
@@ -65,7 +65,7 @@ using Rgb8Color = std::array<uint8_t, 3>;
  * @return  Optional of a DenseVertexMap with a Rgb8Color for each vertex
  */
 template<typename BaseVecT>
-optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
+boost::optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
     const BaseMesh<BaseVecT>& mesh,
     const PointsetSurfacePtr<BaseVecT> surface
 );
@@ -117,6 +117,6 @@ Rgb8Color calcColorForFaceCentroid(
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/ColorAlgorithms.tcc>
+#include "lvr2/algorithm/ColorAlgorithms.tcc"
 
 #endif /* LVR2_ALGORITHM_COLORALGORITHMS_H_ */

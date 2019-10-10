@@ -13,7 +13,7 @@
 
 #include <vtkMatrix4x4.h>
 
-#include <lvr2/io/ScanDataManager.hpp>
+#include "lvr2/io/ScanDataManager.hpp"
 
 
 namespace lvr2

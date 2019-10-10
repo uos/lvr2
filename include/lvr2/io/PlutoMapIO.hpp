@@ -42,7 +42,7 @@
 #include <H5Tpublic.h>
 #include <highfive/H5File.hpp>
 
-#include <lvr2/geometry/BaseVector.hpp>
+#include "lvr2/geometry/BaseVector.hpp"
 
 namespace hf = HighFive;
 

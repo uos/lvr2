@@ -37,7 +37,7 @@
 
 #include <cstdint>
 #include <utility>
-#include <lvr2/attrmaps/StableVector.hpp>
+#include "lvr2/attrmaps/StableVector.hpp"
 #include <array>
 #include <vector>
 
@@ -47,12 +47,12 @@ using std::vector;
 using std::get;
 using std::min;
 
-#include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/geometry/HalfEdge.hpp>
-#include <lvr2/geometry/HalfEdgeFace.hpp>
-#include <lvr2/geometry/HalfEdgeVertex.hpp>
+#include "lvr2/geometry/BaseMesh.hpp"
+#include "lvr2/geometry/HalfEdge.hpp"
+#include "lvr2/geometry/HalfEdgeFace.hpp"
+#include "lvr2/geometry/HalfEdgeVertex.hpp"
 
-#include <lvr2/io/MeshBuffer.hpp>
+#include "lvr2/io/MeshBuffer.hpp"
 
 namespace lvr2
 {
@@ -87,7 +87,13 @@ public:
     FaceHandle addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H) final;
     void removeFace(FaceHandle handle) final;
     EdgeCollapseResult collapseEdge(EdgeHandle edgeH) final;
+    VertexSplitResult splitVertex(VertexHandle vertexToBeSplitH);
+    EdgeSplitResult splitEdge(EdgeHandle edgeH);
+    vector<VertexHandle> findCommonNeigbours(VertexHandle vH1, VertexHandle vH2);
     void flipEdge(EdgeHandle edgeH) final;
+    void splitVertex(EdgeHandle eH, VertexHandle vH, BaseVecT pos1, BaseVecT pos2);
+    std::pair<BaseVecT, float> triCircumCenter(FaceHandle faceH);
+
 
     size_t numVertices() const final;
     size_t numFaces() const final;
@@ -98,6 +104,7 @@ public:
     bool containsEdge(EdgeHandle eH) const;
 
     bool isBorderEdge(EdgeHandle handle) const;
+    bool isFlippable(EdgeHandle handle) const;
 
     Index nextVertexIndex() const;
     Index nextFaceIndex() const;
@@ -114,6 +121,9 @@ public:
     void getFacesOfVertex(VertexHandle handle, vector<FaceHandle>& facesOut) const final;
     void getEdgesOfVertex(VertexHandle handle, vector<EdgeHandle>& edgesOut) const final;
     void getNeighboursOfVertex(VertexHandle handle, vector<VertexHandle>& verticesOut) const final;
+    OptionalFaceHandle getOppositeFace(FaceHandle faceH, VertexHandle vertexH) const;
+    OptionalEdgeHandle getOppositeEdge(FaceHandle faceH, VertexHandle vertexH) const;
+    OptionalVertexHandle getOppositeVertex(FaceHandle faceH, EdgeHandle edgeH) const;
 
     // Make sure all default methods from `BaseMesh` are visible
     using BaseMesh<BaseVecT>::getFacesOfVertex;
@@ -278,6 +288,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/geometry/HalfEdgeMesh.tcc>
+#include "lvr2/geometry/HalfEdgeMesh.tcc"
 
 #endif /* LVR2_GEOMETRY_HALFEDGEMESH_H_ */

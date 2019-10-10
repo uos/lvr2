@@ -33,7 +33,7 @@
  */
 #include "LVRVtkArrow.hpp"
 
-#include <lvr2/geometry/Normal.hpp>
+#include "lvr2/geometry/Normal.hpp"
 
 #include <vtkArrowSource.h>
 #include <vtkPolyData.h>

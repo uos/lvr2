@@ -94,6 +94,6 @@ namespace lvr2
   };
 }
 
-#include <lvr2/display/PointOctree.tcc>
+#include "lvr2/display/PointOctree.tcc"
 
 #endif

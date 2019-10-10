@@ -45,8 +45,8 @@
 #include <random>
 #include <algorithm>
 
-#include <lvr2/util/Factories.hpp>
-#include <lvr2/io/Progress.hpp>
+#include "lvr2/util/Factories.hpp"
+#include "lvr2/io/Progress.hpp"
 
 namespace lvr2
 {
@@ -79,7 +79,6 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
     this->setKd(kd);
 
     init();
-
 
     this->m_searchTree = getSearchTree<BaseVecT>(m_searchTreeName, buffer);
 
@@ -136,8 +135,6 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
          cout << timestamp << "Creating pose search tree(" << m_searchTreeName << ") with "
               << n << " poses." << endl;
 
-
-
          this->m_poseTree = getSearchTree<BaseVecT>(m_searchTreeName, loader);
 
 
@@ -166,7 +163,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 {
     int k_0 = this->m_kn;
     size_t numPoints = this->m_pointBuffer->numPoints();
-    FloatChannel pts = *(this->m_pointBuffer->getFloatChannel("points"));
+    const FloatChannel pts = *(this->m_pointBuffer->getFloatChannel("points"));
 
     cout << timestamp.getElapsedTime() << "Initializing normal array..." << endl;
 
@@ -279,7 +276,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             {
                 BaseVecT nearest = pts[nearestPoseIds[0]];
                 Normal<typename BaseVecT::CoordType> dir(queryPoint - nearest);
-                if(normal.dot(dir) > 0)
+                if(normal.dot(dir) < 0)
                 {
                     normal = -normal;
                 }
@@ -288,7 +285,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             {
                 cout << timestamp.getElapsedTime() << "Could not get nearest scan pose. Defaulting to centroid." << endl;
                 Normal<typename BaseVecT::CoordType> dir(queryPoint - m_centroid);
-                if(normal.dot(dir) > 0)
+                if(normal.dot(dir) < 0)
                 {
                     normal = -normal;
                 }
@@ -297,7 +294,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         else
         {
             Normal<typename BaseVecT::CoordType> dir(queryPoint - m_centroid);
-            if(normal.dot(dir) > 0)
+            if(normal.dot(dir) < 0)
             {
                 normal = -normal;
             }
@@ -337,21 +334,19 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
 
     // Interpolate normals
     #pragma omp parallel for schedule(static)
-    for( int i = 0; i < (int)numPoints; i++){
-
+    for( int i = 0; i < (int)numPoints; i++)
+    {
         vector<size_t> id;
         vector<float> di;
 
         this->m_searchTree->kSearch(pts[i], this->m_ki, id, di);
 
-        BaseVecT mean;
-
+        BaseVecT mean = normals[i];
         for(int j = 0; j < this->m_ki; j++)
         {
             mean += normals[id[j]];
         }
         auto mean_normal = mean.normalized();
-
         tmp[i] = mean_normal;
 
         ///todo Try to remove this code. Should improve the results at all.
@@ -579,7 +574,7 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneIterative(
     size_t numPoints     = pts.numElements();
 
     Plane<BaseVecT> p;
-    BaseVecT normal;
+    Normal<typename BaseVecT::CoordType> normal;
 
 
     //x

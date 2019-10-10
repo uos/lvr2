@@ -21,11 +21,13 @@
 #include <vtkMatrix4x4.h>
 #include <vtkTransform.h>
 
+#include "lvr2/types/MatrixTypes.hpp"
+
 namespace lvr2
 {
 
 LVRCamDataItem::LVRCamDataItem(
-    CamData data,
+    CameraData data,
     std::shared_ptr<ScanDataManager> sdm,
     size_t cam_id,
     vtkSmartPointer<vtkRenderer> renderer,
@@ -46,19 +48,18 @@ LVRCamDataItem::LVRCamDataItem(
 
     // change this to not inverse
     bool dummy;
-    m_matrix = m_data.m_extrinsics; //.inv(dummy);
+    m_matrix = m_data.extrinsics; //.inv(dummy);
 
     // set Transform from 
     setTransform(m_matrix);
 
-    m_intrinsics = m_data.m_intrinsics;
+    std::cout << "INTRINSICS:" << std::endl;
+    std::cout << m_data.intrinsics << std::endl;
+    m_intrinsics = m_data.intrinsics.transpose();
 
     // init pose
-    float pose[6];
-    m_data.m_extrinsics.transpose();
-    m_data.m_extrinsics.toPostionAngle(pose);
-    m_data.m_extrinsics.transpose();
-    
+    double pose[6];
+    eigenToEuler<double>(m_data.extrinsics, pose);
 
     m_pose.x = pose[0];
     m_pose.y = pose[1];
@@ -91,15 +92,16 @@ void LVRCamDataItem::setVisibility(bool visible)
 {
     if(checkState(0) && visible)
     {
+        std::cout << "ADD ACTOR" << std::endl;
         m_renderer->AddActor(m_frustrum_actor);
     } else {
         m_renderer->RemoveActor(m_frustrum_actor);
     }
 }
 
-Matrix4<BaseVector<float> > LVRCamDataItem::getGlobalTransform()
+Transformd LVRCamDataItem::getGlobalTransform()
 {
-    Matrix4<BaseVector<float> > ret = m_matrix;
+    Transformd ret = m_matrix;
     QTreeWidgetItem* parent_it = parent();
 
     while(parent_it != NULL)
@@ -123,81 +125,95 @@ void LVRCamDataItem::setCameraView()
     double x,y,z;
     cam->GetPosition(x,y,z);
 
-    Matrix4<BaseVector<float> > T = getGlobalTransform();
+    Transformd T = getGlobalTransform();
 
-    T.transpose();
-
-
-    BaseVector<float> cam_origin = {0.0f, 0.0f, -1.0f};
-    Normal<float > view_up = {1.0f, 0.0f, 0.0f};
-    BaseVector<float> focal_point = {0.0f, 0.0f, 0.0f};
+    // T.transpose();
 
 
+    Vector3d cam_origin(0.0, 0.0, -1.0);
+    Vector3d view_up(1.0, 0.0, 0.0);
+    Vector3d focal_point(0.0, 0.0, 0.0);
 
-    cam_origin = T * cam_origin;
-    view_up = T * view_up;
-    focal_point = T * focal_point;
 
-    cam->SetPosition(cam_origin.x, cam_origin.y, cam_origin.z);
-    cam->SetFocalPoint(focal_point.x, focal_point.y, focal_point.z);
-    cam->SetViewUp(view_up.x, view_up.y, view_up.z);
+    cam_origin = lvr2::multiply(T, cam_origin);
+    view_up = lvr2::multiply(T, view_up);
+    focal_point = lvr2::multiply(T, focal_point);
+
+    cam->SetPosition(cam_origin.x(), cam_origin.y(), cam_origin.z());
+    cam->SetFocalPoint(focal_point.x(), focal_point.y(), focal_point.z());
+    cam->SetViewUp(view_up.x(), view_up.y(), view_up.z());
 
     //  TODO: set intrinsics
 
 }
 
-std::vector<BaseVector<float> > LVRCamDataItem::genFrustrumLVR(float scale)
+std::vector<Vector3d > LVRCamDataItem::genFrustrumLVR(float scale)
 {
-    bool dummy;
-    Matrix4<BaseVector<float> > T = getGlobalTransform();
-    Matrix4<BaseVector<float> > cam_mat_inv = m_intrinsics.inv(dummy);
-    cam_mat_inv.transpose();
-    T.transpose();
+    Transformd T = getGlobalTransform().transpose();
+    
+    
 
-    std::vector<BaseVector<float> > lvr_pixels;
+    std::vector<Vector3d > cv_pixels;
 
     // TODO change this. get size of image
 
-    int v_max = m_intrinsics[2] * 2;
-    int u_max = m_intrinsics[6] * 2;
+    Intrinsicsd intrisics_corrected = Intrinsicsd::Identity();
 
+    intrisics_corrected(0,0) = m_intrinsics(1,1);
+    intrisics_corrected(1,1) = m_intrinsics(0,0);
+    intrisics_corrected(0,2) = m_intrinsics(1,2);
+    intrisics_corrected(1,2) = m_intrinsics(0,2);
+
+    int u_max = intrisics_corrected(0, 2) * 2;
+    int v_max = intrisics_corrected(1, 2) * 2;
+
+    Intrinsicsd cam_mat_inv = intrisics_corrected.inverse();
+    
+
+    std::cout << "u,v max: "<< u_max << "," << v_max << std::endl;
+    // std::cout << v_max << std::endl;
+
+    // opencv x,y,z
     // top left
-    lvr_pixels.push_back({0.0, 0.0, 1.0});
+    cv_pixels.push_back({0.0, 0.0, 1.0});
     // bottom left
-    lvr_pixels.push_back({float(v_max), 0.0, 1.0});
+    cv_pixels.push_back({0.0, double(v_max), 1.0});
     // bottem right
-    lvr_pixels.push_back({float(v_max), float(u_max), 1.0});
+    cv_pixels.push_back({double(u_max), double(v_max), 1.0});
     // top right
-    lvr_pixels.push_back({0.0, float(u_max), 1.0});
+    cv_pixels.push_back({double(u_max), 0.0, 1.0});
 
 
     // generate frustrum points
-    std::vector<BaseVector<float> > lvr_points;
+    std::vector<Vector3d > lvr_points;
 
 
     // origin
     lvr_points.push_back({0.0, 0.0, 0.0});
 
-    for(int i=0; i<lvr_pixels.size(); i++)
+    std::cout << "cam space: " << std::endl;
+    for(int i=0; i<cv_pixels.size(); i++)
     {
-        BaseVector<float> pixel = lvr_pixels[i];
-        BaseVector<float> p = cam_mat_inv * pixel;
+        Vector3d pixel = cv_pixels[i];
+        Vector3d p = lvr2::multiply(cam_mat_inv, pixel);
+        // Vector3d p = pixel;
 
-        // opencv to lvr
-        BaseVector<float> tmp = {
-            -p.x,
-            p.y,
-            p.z
-        };
+
+        Vector3d tmp = openCvToLvr(p);
+
+        std::cout << tmp.transpose() << std::endl;
 
         tmp *= scale;
         lvr_points.push_back(tmp);
     }
 
+    std::cout << "world space:" << std::endl;
     // transform frustrum
     for(int i=0; i<lvr_points.size(); i++)
     {
-        lvr_points[i] = T * lvr_points[i];
+        // lvr_points[i] = lvr2::multiply(T, lvr_points[i]);
+        std::cout << lvr_points[i].transpose() << std::endl;
+        // lvr_points[i] = lvr_points[i];
     }
 
     return lvr_points;
@@ -206,7 +222,7 @@ std::vector<BaseVector<float> > LVRCamDataItem::genFrustrumLVR(float scale)
 vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum(float scale)
 {
 
-    std::vector<BaseVector<float> > lvr_points = genFrustrumLVR(scale);
+    std::vector<Vector3d > lvr_points = genFrustrumLVR(scale);
 
     // Setup points
     vtkSmartPointer<vtkPoints> points =
@@ -218,15 +234,15 @@ vtkSmartPointer<vtkActor> LVRCamDataItem::genFrustrum(float scale)
     for(int i=0; i<lvr_points.size(); i++)
     {
         auto p = lvr_points[i];
-        points->SetPoint(i, p.x, p.y, p.z);
+        points->SetPoint(i, p.x(), p.y(), p.z());
     }
 
     // // Define some colors
-    unsigned char white[3] = {255, 255, 255};
-    unsigned char red[3] = {255, 0, 0};
-    unsigned char green[3] = {0, 255, 0};
-    unsigned char blue[3] = {0, 0, 255};
-    unsigned char yellow[3] = {255, 255, 0};
+    unsigned char white[3] = {255, 255, 255}; // origin
+    unsigned char red[3] = {255, 0, 0}; // top left
+    unsigned char green[3] = {0, 255, 0}; // bottom left
+    unsigned char blue[3] = {0, 0, 255}; // bottom right
+    unsigned char yellow[3] = {255, 255, 0}; // top right
 
     // // Setup the colors array
     vtkSmartPointer<vtkUnsignedCharArray> colors =

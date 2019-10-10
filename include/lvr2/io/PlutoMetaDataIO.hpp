@@ -9,7 +9,7 @@
 #include <boost/filesystem.hpp>
 
 #include "lvr2/io/DataStruct.hpp"
-#include "lvr2/io/ScanData.hpp"
+#include "lvr2/types/Scan.hpp"
 
 //struct ScanMetaData
 //{
@@ -44,7 +44,7 @@ public:
    * @param data ScanData Object
    * @return size_t
    */
-  static void readScanMetaData(const boost::filesystem::path &fn, ScanData &data);
+  static void readScanMetaData(const boost::filesystem::path &fn, ScanPtr &data);
 
   /**
    * @brief parse Pose in m_poseEstimation 4x4 Matrix.

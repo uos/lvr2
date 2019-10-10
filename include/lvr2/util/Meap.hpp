@@ -38,12 +38,11 @@
 
 #include <boost/optional.hpp>
 
-#include <lvr2/attrmaps/AttributeMap.hpp>
+#include "lvr2/attrmaps/AttributeMap.hpp"
 
-using std::vector;
 using std::unordered_map;
 using std::pair;
-using boost::optional;
+
 
 namespace lvr2
 {
@@ -55,10 +54,32 @@ namespace lvr2
  * `first` and `second`.
  */
 template<typename KeyT, typename ValueT>
-struct MeapPair
+class MeapPair
 {
-    KeyT key;
-    ValueT value;
+public:
+    MeapPair(KeyT key, ValueT value)
+    :m_key(key)
+    ,m_value(value)
+    {}
+
+    inline KeyT& key() {
+        return m_key;
+    }
+
+    inline const KeyT& key() const {
+        return m_key;
+    }
+
+    inline ValueT& value() {
+        return m_value;
+    }
+
+    inline const ValueT& value() const {
+        return m_value;
+    }
+private:
+    KeyT m_key;
+    ValueT m_value;
 };
 
 /**
@@ -94,10 +115,10 @@ public:
     // These methode work exactly like the ones from `AttributeMap`
     // =======================================================================
     bool containsKey(KeyT key) const;
-    optional<ValueT> insert(KeyT key, const ValueT& value);
-    optional<ValueT> erase(KeyT key);
+    boost::optional<ValueT> insert(KeyT key, const ValueT& value);
+    boost::optional<ValueT> erase(KeyT key);
     void clear();
-    optional<const ValueT&> get(KeyT key) const;
+    boost::optional<const ValueT&> get(KeyT key) const;
     size_t numValues() const;
 
 
@@ -129,7 +150,7 @@ public:
 
 private:
     // This is the main heap which stores the costs as well as all keys.
-    vector<MeapPair<KeyT, ValueT>> m_heap;
+    std::vector<MeapPair<KeyT, ValueT>> m_heap;
 
     // This is a map to quickly look up the index within `m_heap` at which a
     // specific key lives.
@@ -171,6 +192,6 @@ private:
 
 } // namespace lvr2
 
-#include <lvr2/util/Meap.tcc>
+#include "lvr2/util/Meap.tcc"
 
 #endif /* LVR2_UTIL_MEAP_H_ */

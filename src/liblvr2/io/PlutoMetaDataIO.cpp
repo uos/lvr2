@@ -1,5 +1,6 @@
 #include <yaml-cpp/yaml.h>
 #include "lvr2/io/PlutoMetaDataIO.hpp"
+#include "lvr2/types/Scan.hpp"
 
 namespace lvr2
 {
@@ -22,7 +23,7 @@ size_t PlutoMetaDataIO::readSpectralMetaData(const boost::filesystem::path &fn, 
     return size;
 }
 
-void PlutoMetaDataIO::readScanMetaData(const boost::filesystem::path &fn, ScanData &scan)
+void PlutoMetaDataIO::readScanMetaData(const boost::filesystem::path &fn, ScanPtr &scan_ptr)
 {
     std::vector<YAML::Node> root = YAML::LoadAllFromFile(fn.string());
     for (auto &n : root)
@@ -76,9 +77,9 @@ void PlutoMetaDataIO::readScanMetaData(const boost::filesystem::path &fn, ScanDa
                     float min = tmp["min"].as<float>();
                     float max = tmp["max"].as<float>();
 
-                    scan.m_vFieldOfView = max - min;
-                    scan.m_vResolution = tmp["delta"].as<float>();
-                    std::cout << "T: " << scan.m_vFieldOfView << "; " << scan.m_vResolution << std::endl;
+                    scan_ptr->m_vFieldOfView = max - min;
+                    scan_ptr->m_vResolution = tmp["delta"].as<float>();
+                    std::cout << "T: " << scan_ptr->m_vFieldOfView << "; " << scan_ptr->m_vResolution << std::endl;
                 }
                 if (it->second["Phi"])
                 {
@@ -86,9 +87,9 @@ void PlutoMetaDataIO::readScanMetaData(const boost::filesystem::path &fn, ScanDa
                     float min = tmp["min"].as<float>();
                     float max = tmp["max"].as<float>();
 
-                    scan.m_hFieldOfView = max - min;
-                    scan.m_hResolution = tmp["delta"].as<float>();
-                    std::cout << "P: " << scan.m_hFieldOfView << "; " << scan.m_hResolution << std::endl;
+                    scan_ptr->m_hFieldOfView = max - min;
+                    scan_ptr->m_hResolution = tmp["delta"].as<float>();
+                    std::cout << "P: " << scan_ptr->m_hFieldOfView << "; " << scan_ptr->m_hResolution << std::endl;
                 }
             }
         }

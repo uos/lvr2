@@ -40,22 +40,22 @@
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/optional.hpp>
 
-#include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Handles.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/texture/ClusterTexCoordMapping.hpp>
-#include <lvr2/texture/Texture.hpp>
-#include <lvr2/util/ClusterBiMap.hpp>
-#include <lvr2/texture/Material.hpp>
-#include <lvr2/geometry/BoundingRectangle.hpp>
-#include <lvr2/algorithm/Texturizer.hpp>
-#include <lvr2/algorithm/ColorAlgorithms.hpp>
+#include "lvr2/geometry/BaseMesh.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/Handles.hpp"
+#include "lvr2/geometry/Normal.hpp"
+#include "lvr2/reconstruction/PointsetSurface.hpp"
+#include "lvr2/texture/ClusterTexCoordMapping.hpp"
+#include "lvr2/texture/Texture.hpp"
+#include "lvr2/util/ClusterBiMap.hpp"
+#include "lvr2/texture/Material.hpp"
+#include "lvr2/geometry/BoundingRectangle.hpp"
+#include "lvr2/algorithm/Texturizer.hpp"
+#include "lvr2/algorithm/ColorAlgorithms.hpp"
 
 
-#include <lvr2/io/Progress.hpp>
-#include <lvr2/io/Timestamp.hpp>
+#include "lvr2/io/Progress.hpp"
+#include "lvr2/io/Timestamp.hpp"
 #include <unordered_map>
 #include <unordered_set>
 
@@ -76,13 +76,13 @@ struct MaterializerResult
     DenseClusterMap<Material> m_clusterMaterials;
 
     /// A stable vector of textures. each texture is identified by a tex.-handle
-    optional<StableVector<TextureHandle, Texture>> m_textures;
+    boost::optional<StableVector<TextureHandle, Texture>> m_textures;
 
     /// Cluster texture coordinates for each vertex
-    optional<SparseVertexMap<ClusterTexCoordMapping>> m_vertexTexCoords;
+    boost::optional<SparseVertexMap<ClusterTexCoordMapping>> m_vertexTexCoords;
 
     /// Keypoints
-    optional<std::unordered_map<BaseVecT, std::vector<float>>> m_keypoints;
+    boost::optional<std::unordered_map<BaseVecT, std::vector<float>>> m_keypoints;
 
     /**
      * @brief Constructor
@@ -190,12 +190,12 @@ private:
     const PointsetSurface<BaseVecT>& m_surface;
 
     /// Texturizer
-    optional<Texturizer<BaseVecT>&> m_texturizer;
+    boost::optional<Texturizer<BaseVecT>&> m_texturizer;
 
 };
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/Materializer.tcc>
+#include "lvr2/algorithm/Materializer.tcc"
 
 #endif /* LVR2_ALGORITHM_MATERIALIZER_H_ */

@@ -34,7 +34,7 @@
 
 #include <cmath>
 #include "Normal.hpp"
-#include <lvr2/util/Panic.hpp>
+#include "lvr2/util/Panic.hpp"
 
 namespace lvr2
 {

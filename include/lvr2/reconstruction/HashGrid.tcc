@@ -32,11 +32,11 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr2/reconstruction/HashGrid.hpp>
-#include <lvr2/geometry/BaseMesh.hpp>
-#include <lvr2/reconstruction/FastReconstructionTables.hpp>
-#include <lvr2/io/Progress.hpp>
-#include <lvr2/io/Timestamp.hpp>
+#include "lvr2/reconstruction/HashGrid.hpp"
+#include "lvr2/geometry/BaseMesh.hpp"
+#include "lvr2/reconstruction/FastReconstructionTables.hpp"
+#include "lvr2/io/Progress.hpp"
+#include "lvr2/io/Timestamp.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -245,20 +245,22 @@ void HashGrid<BaseVecT, BoxT>::addLatticePoint(int index_x, int index_y, int ind
                         (index_y + dy) * this->m_voxelsize + v_min.y,
                         (index_z + dz) * this->m_voxelsize + v_min.z);
 
-                    if((
-                            box_center[0] <= m_boundingBox.getMin().x  ||
-                            box_center[1] <= m_boundingBox.getMin().y  ||
-                            box_center[2] <= m_boundingBox.getMin().z ||
-                            box_center[0] >= m_boundingBox.getMax().x + m_voxelsize  ||
-                            box_center[1] >= m_boundingBox.getMax().y + m_voxelsize  ||
-                            box_center[2] >= m_boundingBox.getMax().z + m_voxelsize
-                    ))
-                    {
-                        continue;
-                    }
+                    // WHY? this makes the results more worse than lvr1
+                    // if((
+                    //         box_center[0] <= m_boundingBox.getMin().x ||
+                    //         box_center[1] <= m_boundingBox.getMin().y ||
+                    //         box_center[2] <= m_boundingBox.getMin().z ||
+                    //         box_center[0] >= m_boundingBox.getMax().x + m_voxelsize ||
+                    //         box_center[1] >= m_boundingBox.getMax().y + m_voxelsize ||
+                    //         box_center[2] >= m_boundingBox.getMax().z + m_voxelsize 
+                    // ))
+                    // {
+                    //     continue;
+                    // }
 
                     //Create new box
                     BoxT* box = new BoxT(box_center);
+
                     if(
                         box_center[0] <= m_boundingBox.getMin().x + m_voxelsize*5  ||
                         box_center[1] <= m_boundingBox.getMin().y + m_voxelsize*5  ||

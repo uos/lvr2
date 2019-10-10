@@ -34,29 +34,70 @@
 #ifndef EIGENSVDPOINTALIGN_HPP_
 #define EIGENSVDPOINTALIGN_HPP_
 
-#include <lvr2/io/PointBuffer.hpp>
-#include <lvr2/geometry/Matrix4.hpp>
+#include "SLAMScanWrapper.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
+
+#include <Eigen/Dense>
 
 namespace lvr2
 {
 
-template <typename BaseVecT>
-using PointPairVector = std::vector<std::pair<BaseVecT, BaseVecT> >;
-
-template <typename BaseVecT>
+template<typename T, typename PointT = float>
 class EigenSVDPointAlign
 {
 public:
+    using Vec3 = Vector3<T>;
+    using Mat4 = Transform<T>;
+    using Mat3 = Eigen::Matrix<T, 3, 3>;
+    using Point3 = Vector3<PointT>;
+    using PointPairVector = std::vector<std::pair<Point3, Point3>>;
+
     EigenSVDPointAlign() {};
-    double alignPoints(
-            const PointPairVector<BaseVecT>& pairs,
-            const BaseVecT centroid1,
-            const BaseVecT centroid2,
-            Matrix4<BaseVecT>& align);
+
+    /**
+     * @brief Calculates the estimated Transformation to match a Data Pointcloud to a Model
+     *        Pointcloud
+     * 
+     * Apply the resulting Transform to the Data Pointcloud.
+     *
+     * @param scan       The Data Pointcloud
+     * @param neighbors  An array containing a Pointer to a neighbor in the Model Pointcloud for
+     *                   each Point in `scan`, or nullptr if there is no neighbor for a Point
+     * @param centroid_m The center of the Model Pointcloud
+     * @param centroid_d The center of the Data Pointcloud
+     * @param align      Will be set to the Transformation
+     *
+     * @return The average Point-to-Point error of the Scans
+     */
+    T alignPoints(
+        SLAMScanPtr scan,
+        Point3** neighbors,
+        const Vec3& centroid_m,
+        const Vec3& centroid_d,
+        Mat4& align) const;
+
+    /**
+     * @brief Calculates the estimated Transformation to match a Data Pointcloud to a Model
+     *        Pointcloud
+     * 
+     * Apply the resulting Transform to the Data Pointcloud.
+     *
+     * @param points     A vector of pairs with (model, data) Points
+     * @param centroid_m The center of the Model Pointcloud
+     * @param centroid_d The center of the Data Pointcloud
+     * @param align      Will be set to the Transformation
+     *
+     * @return The average Point-to-Point error of the Scans
+     */
+    T alignPoints(
+        PointPairVector& points,
+        const Vec3& centroid_m,
+        const Vec3& centroid_d,
+        Mat4& align) const;
 };
 
 } /* namespace lvr2 */
 
-#include <lvr2/registration/EigenSVDPointAlign.tcc>
+#include "EigenSVDPointAlign.tcc"
 
 #endif /* EIGENSVDPOINTALIGN_HPP_ */

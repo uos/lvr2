@@ -34,11 +34,11 @@
 #ifndef LVR2_ATTRMAPS_ATTRMAPS_H_
 #define LVR2_ATTRMAPS_ATTRMAPS_H_
 
-#include <lvr2/attrmaps/AttributeMap.hpp>
-#include <lvr2/attrmaps/HashMap.hpp>
-#include <lvr2/attrmaps/ListMap.hpp>
-#include <lvr2/attrmaps/VectorMap.hpp>
-#include <lvr2/geometry/Handles.hpp>
+#include "lvr2/attrmaps/AttributeMap.hpp"
+#include "lvr2/attrmaps/HashMap.hpp"
+#include "lvr2/attrmaps/ListMap.hpp"
+#include "lvr2/attrmaps/VectorMap.hpp"
+#include "lvr2/geometry/Handles.hpp"
 
 namespace lvr2
 {

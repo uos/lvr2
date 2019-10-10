@@ -72,7 +72,7 @@ DenseFaceMap<Normal<typename BaseVecT::CoordType>> calcFaceNormals(const BaseMes
 }
 
 template <typename BaseVecT>
-optional<Normal<typename BaseVecT::CoordType>> interpolatedVertexNormal(
+boost::optional<Normal<typename BaseVecT::CoordType>> interpolatedVertexNormal(
     const BaseMesh<BaseVecT>& mesh,
     const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     VertexHandle handle

@@ -37,9 +37,9 @@
 #include <utility>
 #include <iostream>
 
-#include <lvr2/attrmaps/AttrMaps.hpp>
-#include <lvr2/util/Panic.hpp>
-#include <lvr2/util/Debug.hpp>
+#include "lvr2/attrmaps/AttrMaps.hpp"
+#include "lvr2/util/Panic.hpp"
+#include "lvr2/util/Debug.hpp"
 
 
 namespace lvr2
@@ -588,6 +588,49 @@ array<HalfEdgeHandle, 3> HalfEdgeMesh<BaseVecT>::getInnerEdges(FaceHandle handle
 }
 
 template <typename BaseVecT>
+OptionalFaceHandle HalfEdgeMesh<BaseVecT>::getOppositeFace(FaceHandle faceH, VertexHandle vertexH) const
+{
+  auto e = getE(getF(faceH).edge);
+  for(size_t i=0; i<3; i++)
+  {
+    auto next = getE(e.next);
+    if(next.target == vertexH)
+      return getE(e.twin).face;
+    e = next;
+  }
+  return OptionalFaceHandle();
+}
+
+template <typename BaseVecT>
+OptionalEdgeHandle HalfEdgeMesh<BaseVecT>::getOppositeEdge(FaceHandle faceH, VertexHandle vertexH) const
+{
+  auto eH = getF(faceH).edge;
+  for(size_t i=0; i<3; i++)
+  {
+    auto nH = getE(eH).next;
+    if(getE(nH).target == vertexH)
+      return halfToFullEdgeHandle(eH);
+    eH = nH;
+  }
+  return OptionalEdgeHandle();
+}
+
+template <typename BaseVecT>
+OptionalVertexHandle HalfEdgeMesh<BaseVecT>::getOppositeVertex(FaceHandle faceH, EdgeHandle edgeH) const
+{
+  auto e1 = getE(HalfEdgeHandle::oneHalfOf(edgeH));
+  if(e1.face && e1.face.unwrap() == faceH)
+    return getE(e1.next).target;
+
+  auto e2 = getE(e1.twin);
+  if(e2.face && e2.face.unwrap() == faceH)
+    return getE(e2.next).target;
+
+  else
+    return OptionalVertexHandle();
+}
+
+template <typename BaseVecT>
 void HalfEdgeMesh<BaseVecT>::getNeighboursOfFace(
     FaceHandle handle,
     vector<FaceHandle>& facesOut
@@ -680,9 +723,18 @@ void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
     circulateAroundVertex(handle, [&edgesOut, this](auto eH)
     {
         edgesOut.push_back(halfToFullEdgeHandle(eH));
+
+        // Throw an exception if number of out edges becomes
+        // too large. This can happen if there is a bug in the
+        // half edge mesh topology
+        if(edgesOut.size() > 40)
+        {
+            throw VertexLoopException("getEdgesOfVertex: Loop detected");
+        }
         return true;
     });
 }
+
 
 template <typename BaseVecT>
 void HalfEdgeMesh<BaseVecT>::getNeighboursOfVertex(
@@ -696,6 +748,356 @@ void HalfEdgeMesh<BaseVecT>::getNeighboursOfVertex(
         return true;
     });
 }
+
+/**
+ * finds the common neighbors of two vertices
+ * @tparam BaseVecT
+ * @param vH1
+ * @param vH2
+ * @return a vector with the common neighbors
+ */
+template <typename BaseVecT>
+vector<VertexHandle> HalfEdgeMesh<BaseVecT>::findCommonNeigbours(VertexHandle vH1, VertexHandle vH2){
+    vector<VertexHandle> vH1nb = this->getNeighboursOfVertex(vH1);
+    vector<VertexHandle> vH2nb = this->getNeighboursOfVertex(vH2);
+
+    vector<VertexHandle> commonVertexHandles;
+
+    for(auto i = vH1nb.begin(); i != vH1nb.end(); ++i)
+    {
+        if(find(vH2nb.begin(), vH2nb.end(), *i) != vH2nb.end())
+        {
+            commonVertexHandles.push_back(*i);
+        }
+    }
+
+    return commonVertexHandles;
+}
+
+
+
+/**
+ * Calculates the triangle circumcircle and circumcenter.
+ * Triangle circumcenter in R^3:
+ *
+ *             |c-a|^2 [(b-a)x(c-a)]x(b-a) + |b-a|^2 (c-a)x[(b-a)x(c-a)]
+ *     m = a + ---------------------------------------------------------.
+ *                                 2 | (b-a)x(c-a) |^2
+ * @tparam BaseVecT
+ * @param faceH
+ * @return
+ */
+template <typename BaseVecT>
+std::pair<BaseVecT, float> HalfEdgeMesh<BaseVecT>::triCircumCenter(FaceHandle faceH) {
+    //get vertices of the face
+    auto vertices = getVerticesOfFace(faceH);
+    BaseVecT a = getV(vertices[0]).pos;
+    BaseVecT b = getV(vertices[1]).pos;
+    BaseVecT c = getV(vertices[2]).pos;
+
+    BaseVecT circumCenter = a;
+
+    float radius;
+
+    BaseVecT cMinusA = c-a;
+    BaseVecT bMinusA = b-a;
+
+    BaseVecT numerator = ( (bMinusA.cross(cMinusA).cross(bMinusA)) * cMinusA.length2()  +  (cMinusA.cross(bMinusA.cross(cMinusA))) * bMinusA.length2() );
+    float denominator = ( 2 * (bMinusA.cross(cMinusA)).length2());
+
+    circumCenter += numerator / denominator;
+    radius = (circumCenter-a).length();
+
+
+    return std::make_pair(circumCenter, radius);
+
+}
+
+/**
+ * performs an edge split operation on the given edge
+ * @tparam BaseVecT
+ * @param edgeH
+ * @return a result containg the newly added vertex and the new faces
+ */
+template <typename BaseVecT>
+EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdge(EdgeHandle edgeH) {
+
+    if(this->isBorderEdge(edgeH))
+    {
+        std::cout << "splitEdge() cannot be called with border edge" << endl;
+        VertexHandle dummy(std::numeric_limits<int>::max());
+        return EdgeSplitResult(dummy); //return a result with a dummy vector
+    }
+    // A fancy drawing of the current and expected situation:
+    //
+    //                                 |                                     |
+    //            Before               |                After                |
+    //            ------               |                -----                |
+    //                                 |                                     |
+    //                                 |                                     |
+    //              [C]                |                 [C]                 |
+    //                                 |                                     |
+    //          ^  /   ^  \            |             ^  /   ^  \             |
+    //         /  / ^ | \  \           |            /  / ^ | \  \            |
+    //        /  /  | |  \  \          |           /  /  | |  \  \           |
+    //       /  /   | |   \  \         |          /  /   | |   \  \          |
+    //      /  /c   | |   d\  \        |         /  /    | |    \  \         |
+    //     /  /     | |     \  \       |        /  /     | |     \  \        |
+    //    /  /      | |      \  \      |       /  /      | |      \  \       |
+    //   /  /       | |       \  \     |      /  /       | |       \  \      |
+    //  /  v        | |        \  v    |     /  v        | v        \  v     |
+    //              | |                |          ----->     ----->          |
+    //  [A]  (X)    a  b   (Y)  [B]    |     [A]         [E]         [B]     |
+    //              | |                |          <-----     <-----          |
+    //  ^  \        | |        ^  /    |     ^  \        ^ |        ^  /     |
+    //   \  \       | |       /  /     |      \  \       | |       /  /      |
+    //    \  \      | |      /  /      |       \  \      | |      /  /       |
+    //     \  \     | |     /  /       |        \  \     | |     /  /        |
+    //      \  \e   | |   f/  /        |         \  \    | |    /  /         |
+    //       \  \   | |   /  /         |          \  \   | |   /  /          |
+    //        \  \  | |  /  /          |           \  \  | |  /  /           |
+    //         \  \ | v /  /           |            \  \ | v /  /            |
+    //          \  v   /  v            |             \  v   /  v             |
+    //                                 |                                     |
+    //              [D]                |                 [D]                 |
+    //
+    //
+    // ### A mapping from graphic names to variable names:
+    //
+    //  Edges                      Vertices               Faces
+    //  -----                      --------               -----
+    //  a: center                  [A]: vLeft             (X): faceLeft
+    //  b: centerTwin              [B]: vRight            (Y): faceRight
+    //  c: aboveLeft               [C]: vAbove
+    //  d: aboveRight              [D]: vBelow
+    //  e: belowLeft               [E]: vAdded
+    //  f: belowRight
+    //
+    //
+    // We just imagine that the random half-edge we get from `oneHalfOf()` is
+    // the edge `a` in the drawing. We call it `center`.
+    //
+    // First, we just obtain all the handles
+
+    HalfEdgeHandle centerH = HalfEdgeHandle::oneHalfOf(edgeH); // 1 (X)
+    HalfEdge& center = getE(centerH);
+    HalfEdgeHandle centerTwinH = getE(centerH).twin; //e2 (target->vM, next->e9)
+    HalfEdge& centerTwin = getE(centerTwinH);
+
+    //get the two faces
+    FaceHandle topLeftH = getE(centerH).face.unwrap(); //f1 (edge->e1)
+    FaceHandle topRightH = getE(centerTwinH).face.unwrap();  //f2 (edge->e9)
+
+    //get missing halfedges
+    HalfEdgeHandle aboveLeftH = getE(centerH).next; //e3 (next->e7)
+    HalfEdge& aboveLeft = getE(aboveLeftH);
+
+    HalfEdgeHandle belowRightH = getE(centerTwinH).next; //e5 (next->e10, face->f4)
+    HalfEdge& belowRight = getE(belowRightH);
+
+    HalfEdgeHandle aboveRightH = getE(belowRightH).next; //e4 (next->e11, face->f3)
+    HalfEdge& aboveRight = getE(aboveRightH);
+
+    HalfEdgeHandle belowLeftH = getE(aboveLeftH).next; //e6 (X)
+    HalfEdge& belowLeft = getE(belowLeftH);
+
+    //get vertices
+    VertexHandle vLeftH = aboveLeft.target; //vL (X)
+    VertexHandle vRightH = belowRight.target; //vR (X)
+    VertexHandle vAboveH = center.target; //vO (X)
+    VertexHandle vBelowH = centerTwin.target; //vU (outgoing -> e11)
+
+    //calculate the new vertex
+    BaseVecT vAddedV = getV(vAboveH).pos + (getV(vBelowH).pos - getV(vAboveH).pos) / 2;
+
+    //add it
+    VertexHandle vAddedH = this->addVertex(vAddedV); //vM (outgoing -> e9)
+    Vertex& vAdded = getV(vAddedH);
+
+
+    //CREATE 6 NEW HALFEDGES
+    HalfEdgeHandle leftAddedH = findOrCreateEdgeBetween(vLeftH, vAddedH); //e7 (face->f1, next->e1)
+    HalfEdgeHandle addedLeftH = getE(leftAddedH).twin; //e8 (face->f3, next->e4)
+
+    HalfEdgeHandle rightAddedH = findOrCreateEdgeBetween(vRightH, vAddedH); //e10 (face->f4, next->e12)
+    HalfEdgeHandle addedRightH = getE(rightAddedH).twin; //e9 (face->f2, next->e6)
+
+    HalfEdgeHandle belowAddedH = findOrCreateEdgeBetween(vBelowH, vAddedH); //e11 (face->f3, next->e8)
+    HalfEdgeHandle addedBelowH = getE(belowAddedH).twin; //e12 (face->f4, next->e5)
+
+    //FIX OUTGOINGS, WHICH MIGHT BE BROKEN
+    getV(vBelowH).outgoing = belowAddedH;
+    getV(vAddedH).outgoing = addedRightH;
+
+    Face bottomLeft(addedBelowH);
+    FaceHandle bottomLeftH = m_faces.push(bottomLeft);
+    getF(bottomLeftH).edge = belowAddedH;
+
+    Face bottomRight(rightAddedH);
+    FaceHandle bottomRightH = m_faces.push(bottomRight);
+    getF(bottomRightH).edge = rightAddedH;
+
+    //SET EDGES OF UPPER FACES
+    getF(topRightH).edge = addedRightH;
+    getF(topLeftH).edge = centerH;
+
+    //fix center handles
+    //getE(centerH).next = aboveLeftH;
+    getE(centerTwinH).next = addedRightH;
+
+    //getE(centerH).target = vAboveH;
+    getE(centerTwinH).target = vAddedH;
+
+    //we need to redirect all the Halfedges
+    getE(leftAddedH).next = centerH;
+    getE(addedLeftH).next = belowLeftH;
+
+    getE(rightAddedH).next = addedBelowH;
+    getE(addedRightH).next = aboveRightH;
+
+    getE(belowAddedH).next = addedLeftH;
+    getE(addedBelowH).next = belowRightH;
+
+    getE(aboveLeftH).next = leftAddedH;
+    //getE(aboveRightH).next = centerTwinH;
+    getE(belowLeftH).next = belowAddedH;
+    getE(belowRightH).next = rightAddedH;
+
+    //now, that all the edges are redirected, we need to insert new faces (4(2?)) and set the faces of each inner edge
+
+    getE(leftAddedH).face = topLeftH;
+    getE(addedLeftH).face = bottomLeftH;
+
+    getE(rightAddedH).face = bottomRightH;
+    getE(addedRightH).face = topRightH;
+
+    getE(belowAddedH).face = bottomLeftH;
+    getE(addedBelowH).face = bottomRightH;
+
+    getE(belowLeftH).face = bottomLeftH;
+    getE(belowRightH).face = bottomRightH;
+
+    getE(centerH).face = topLeftH;
+    getE(centerTwinH).face = topRightH;
+
+    //fill edge split result
+    EdgeSplitResult result(vAddedH);
+    result.addedFaces.push_back(topLeftH);
+    result.addedFaces.push_back(topRightH);
+    result.addedFaces.push_back(bottomLeftH);
+    result.addedFaces.push_back(bottomRightH);
+
+    return result;
+}
+
+/**
+ * performs a vertex split operation on the selected vertex
+ * @tparam BaseVecT
+ * @param vertexToBeSplitH
+ * @return a struct containing the new vertex and the added faces
+ */
+template <typename BaseVecT>
+VertexSplitResult HalfEdgeMesh<BaseVecT>::splitVertex(VertexHandle vertexToBeSplitH)
+{
+
+    HalfEdge longestOutgoingEdge;
+    BaseVecT vertexToBeSplit = getV(vertexToBeSplitH).pos;
+    auto outEdges = getEdgesOfVertex(vertexToBeSplitH);
+
+    float longestDistance = 0; //save length of longest edge
+    EdgeHandle longestEdge(0); //save longest edge
+    HalfEdge longestEdgeHalf; //needed for vertex calc
+
+    /************************************
+     * Get vertex, which will be added. *
+     ************************************/
+
+    // determine longest outgoing edge
+    for(EdgeHandle edge : outEdges)
+    {
+        HalfEdgeHandle halfH = HalfEdgeHandle::oneHalfOf(edge); //get Halfedge
+        HalfEdge half = getE(halfH);
+
+        //make halfedge direct to the target of the longest edge
+        if(half.target == vertexToBeSplitH)
+        {
+            halfH = half.twin;
+            half = getE(halfH);
+        }
+
+        BaseVecT target = getV(half.target).pos;
+        auto distance = target.distanceFrom(getV(vertexToBeSplitH).pos);
+        //changes values to longer edge
+        if(distance > longestDistance){
+            longestDistance = distance;
+            longestEdge = edge;
+            longestEdgeHalf = half;
+        }
+    }
+
+    VertexHandle targetOfLongestEdgeH = longestEdgeHalf.target;
+    BaseVecT targetOfLongestEdge = getV(targetOfLongestEdgeH).pos;
+
+    //do an edge split on the longest edge and do an edge flip for each of the 2 found vertices
+    //if the local delaunay criteria is not met
+    vector<VertexHandle> commonVertexHandles = findCommonNeigbours(vertexToBeSplitH, targetOfLongestEdgeH);
+
+    EdgeSplitResult splitResult = this->splitEdge(longestEdge);
+
+
+    //only flip if a criteria is given (local delaunay criteria)
+    for(VertexHandle vertex : commonVertexHandles)
+    {
+        OptionalEdgeHandle handle = this->getEdgeBetween(vertex,vertexToBeSplitH);
+        if(handle)
+        {
+            auto faces = this->getFacesOfEdge(handle.unwrap());
+            FaceHandle fH1 = faces[0].unwrap();
+            FaceHandle fH2 = faces[1].unwrap();
+
+            auto f1Vertices = getVerticesOfFace(fH1);
+            auto f2Vertices = getVerticesOfFace(fH2);
+
+            //calculate the circumcenter of each triangle, look whether the local delaunay criteria is fulfilled
+            auto circumCenterPair1 = triCircumCenter(fH1);
+            auto circumCenterPair2 = triCircumCenter(fH2);
+
+            BaseVecT circumCenter1 = circumCenterPair1.first;
+            BaseVecT circumCenter2 = circumCenterPair2.first;
+
+            float radius1 = circumCenterPair1.second;
+            float radius2 = circumCenterPair2.second;
+
+            BaseVecT singleFace1;
+            BaseVecT singleFace2;
+
+            //get the vertices not part of the center edge
+            for(int i = 0; i< 3; i++)
+            {
+                VertexHandle current = f1Vertices[i];
+                if(current != vertex && current != vertexToBeSplitH) singleFace1 = getV(current).pos;
+                current = f2Vertices[i];
+                if(current != vertex && current != vertexToBeSplitH) singleFace2 = getV(current).pos;
+            }
+
+            //flip only, if one of the single vertices is inside the circumcircle of the other triangle
+            if((singleFace1-circumCenter2).length() <= radius2 || (singleFace2-circumCenter1).length() <= radius1)
+            {
+                if(this->isFlippable(handle.unwrap()))
+                {
+                    this->flipEdge(handle.unwrap());
+                }
+            }
+        }
+    }
+
+
+    VertexSplitResult result(splitResult.edgeCenter);
+    result.addedFaces.assign(splitResult.addedFaces.begin(), splitResult.addedFaces.end());
+
+    return result;
+}
+
 
 template <typename BaseVecT>
 EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
@@ -743,7 +1145,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 
     // The result that contains information about the removed faces and edges
     // and the new vertex and edges
-    EdgeCollapseResult result(vertexToKeepH);
+    EdgeCollapseResult result(vertexToKeepH, vertexToRemoveH);
 
     // Fix targets for ingoing edges of the vertex that will be deleted. This
     // has to be done before changing the twin edges.
@@ -754,8 +1156,8 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     });
 
     // Save edges to delete for later
-    optional<array<HalfEdgeHandle, 2>> edgesToDeleteAbove;
-    optional<array<HalfEdgeHandle, 2>> edgesToDeleteBelow;
+    boost::optional<array<HalfEdgeHandle, 2>> edgesToDeleteAbove;
+    boost::optional<array<HalfEdgeHandle, 2>> edgesToDeleteBelow;
 
     // If there is a face above, collapse it.
     if (faceAboveH)
@@ -802,11 +1204,11 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
             },
             halfToFullEdgeHandle(edgeToKeepALH)
         );
-        
+
         std::array<lvr2::HalfEdgeHandle, 2> arr = {
             edgeToRemoveARH,
             edgeToRemoveALH
-        }; 
+        };
         // We need to defer the actually removal...
         edgesToDeleteAbove = arr;
     }
@@ -887,7 +1289,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
             },
             halfToFullEdgeHandle(edgeToKeepBLH)
         );
-        
+
         std::array<lvr2::HalfEdgeHandle, 2> arr = {
             edgeToRemoveBRH,
             edgeToRemoveBLH
@@ -973,12 +1375,63 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     return result;
 }
 
+/**
+ * Checks whether the given edge is flippable or not. includes check for huetchen structures
+ * @tparam BaseVecT
+ * @param handle
+ * @return if the edge is flippable
+ */
+template<typename BaseVecT>
+bool HalfEdgeMesh<BaseVecT>::isFlippable(EdgeHandle handle) const
+{
+    auto adjFaces = getFacesOfEdge(handle);
+    if (!adjFaces[0] || !adjFaces[1])
+    {
+        return false;
+    }
+
+    //check huetchen
+    HalfEdgeHandle hEH = HalfEdgeHandle::oneHalfOf(handle);
+    auto target1 = getE(hEH).target;
+    auto target2 = getE(getE(hEH).twin).target;
+
+    int count1 = getEdgesOfVertex(target1).size();
+    int count2 = getEdgesOfVertex(target2).size();
+
+    if(count1 <= 5 || count2 <= 5) return false; //4 or 5?
+
+
+    //works only for huetchens which are not connected to any other structure
+
+    if(getE(hEH).face && getE(getE(getE(hEH).next).twin).face && getE(getE(getE(getE(hEH).next).next).twin).face)
+    {
+        if(getE(getE(getE(getE(hEH).next).twin).next).next.idx() == getE(getE(getE(getE(getE(hEH).next).next).twin).next).twin.idx())
+        {
+            cout << "Hütchen detected" << endl;
+            return false;
+        }
+    }
+
+
+
+    // Make sure we have 4 different vertices around the faces of that edge.
+    auto faces = getFacesOfEdge(handle);
+    auto face0vertices = getVerticesOfFace(faces[0].unwrap());
+    auto face1vertices = getVerticesOfFace(faces[1].unwrap());
+
+    auto diffCount = std::count_if(face0vertices.begin(), face0vertices.end(), [&](auto f0v)
+    {
+        return std::find(face1vertices.begin(), face1vertices.end(), f0v) == face1vertices.end();
+    });
+    return diffCount == 1;
+}
+
 template <typename BaseVecT>
 void HalfEdgeMesh<BaseVecT>::flipEdge(EdgeHandle edgeH)
 {
     if (!BaseMesh<BaseVecT>::isFlippable(edgeH))
     {
-        //panic("flipEdge() called for non-flippable edge!");
+        panic("flipEdge() called for non-flippable edge!");
     }
 
     // A fancy drawing of the current and expected situation:
@@ -1091,8 +1544,142 @@ void HalfEdgeMesh<BaseVecT>::flipEdge(EdgeHandle edgeH)
         //cout << "Edge not flippable!" << endl;
         return;
     }
+}
 
+template <typename BaseVecT>
+void HalfEdgeMesh<BaseVecT>::splitVertex(EdgeHandle eH,
+                                         VertexHandle vH,
+                                         BaseVecT pos1,
+                                         BaseVecT pos2)
+{
+    // A fancy drawing of the current and expected situation:
+    //
+    //                                     |                                     |
+    //               Before                |                After                |
+    //               ------                |                -----                |
+    //                                     |                                     |
+    //                                     |                                     |
+    //                 [ ]                 |                 [ ]                 |
+    //                                     |                                     |
+    //             ^  /   ^  \             |             ^  /   ^  \             |
+    //            /  / ^ | \  \            |            /  / ^ | \  \            |
+    //           /  /  | |  \  \           |           /  /  | |  \  \           |
+    //          /  /   | |   \  \          |          /  /   | |   \  \          |
+    //         /  /    | |    \  \         |         /  /    | |    \  \         |
+    //        /  /     | |     \  \        |        /  /   f | | e   \  \        |
+    //       /  /      | |      \  \       |       /  /      | |      \  \       |
+    //      /  /       | |       \  \      |      /  /       | |       \  \      |
+    //     /  v        | |        \  v     |     /  v   a    | v    d   \  v     |
+    //                 eH                  |         ------>     ------>         |
+    //     [ ]         | |         [ ]     |     [ ]     [newVertex]     [ ]     |
+    //                 | |                 |         <------     <------         |
+    //     ^  \        | |        ^  /     |     ^  \        ^ |        ^  /     |
+    //      \  \v1Edge | |       /  /      |      \  \       | |       /  /      |
+    //       \  \      | |      /  /       |       \  \ (X)  | |  (Y) /  /       |
+    //        \  \     | |     /  /        |        \  \     | |     /  /        |
+    //         \  \    | |    /  /         |       b \  \    | |    /  / c       |
+    //          \  \   | |   /  /          |          \  \   | |   /  /          |
+    //           \  \  | |  /  /v2Edge     |           \  \  | |  /  /           |
+    //            \  \ | v /  /            |            \  \ | v /  /            |
+    //             \  v   /  v             |             \  v   /  v             |
+    //                                     |                                     |
+    //                 [vH]                |                 [vH]                |
+    //
+    // The position of [vH] will be set to pos1 and the position of [newVertex] to pos2.
+    // Additionally the Faces (X) and (Y) will be added in between of v1Edge and v1Edge.twin or
+    // v2Edge and v2Edge.twin. So the halfEdge a was v1Edge before, b was v1Edge.twin, c was v2Edge
+    // and d was v2Edge.twin. Also the halfEdges e and f represent the edge that was given by eH
+    // initially.
 
+    HalfEdgeHandle halfEdge = HalfEdgeHandle::oneHalfOf(eH);
+    if (getE(halfEdge).target == vH)
+    {
+        halfEdge = getE(halfEdge).twin;
+    }
+
+    HalfEdgeHandle v1Edge = getE(getE(halfEdge).next).next;
+    HalfEdgeHandle v2Edge = getE(getE(getE(halfEdge).twin).next).twin;
+
+    // find edges that will point at the new vertex
+    std::vector<HalfEdgeHandle> edges;
+    circulateAroundVertex(vH, [v1Edge, v2Edge, &edges](auto eH) {
+        if (eH == v1Edge)
+        {
+            edges.clear();
+        }
+        if (eH == v2Edge)
+        {
+            return false;
+        }
+
+        edges.push_back(eH);
+
+        return true;
+    });
+
+    // create new vertex and edit vertex positions
+    getV(vH).pos           = pos1;
+    VertexHandle newVertex = addVertex(pos2);
+
+    // make all edges that point to vH from one side of the vertex reference the newly created
+    // vewVertex
+    for (HalfEdgeHandle eH : edges)
+    {
+        getE(eH).target = newVertex;
+    }
+
+    // create new edges
+    pair<HalfEdgeHandle, HalfEdgeHandle> newEdge1
+        = addEdgePair(newVertex, getE(getE(v1Edge).twin).target);
+    pair<HalfEdgeHandle, HalfEdgeHandle> newEdge2 = addEdgePair(getE(getE(v2Edge).twin).target, vH);
+    pair<HalfEdgeHandle, HalfEdgeHandle> newEdgeC = addEdgePair(vH, newVertex);
+
+    // configure new edges for first split edge
+    getE(newEdge1.first).next  = newEdgeC.second;
+    getE(newEdgeC.second).next = newEdge1.second;
+    getE(newEdge1.second).next = newEdge1.first;
+
+    // change twins for split edge
+    getE(newEdge1.first).twin    = getE(v1Edge).twin;
+    getE(getE(v1Edge).twin).twin = newEdge1.first;
+
+    getE(newEdge1.second).twin = v1Edge;
+    getE(v1Edge).twin          = newEdge1.second;
+
+    // configure new edges for second split edge
+    getE(newEdge2.first).next  = newEdge2.second;
+    getE(newEdge2.second).next = newEdgeC.first;
+    getE(newEdgeC.first).next  = newEdge2.first;
+
+    // change twins for split edge
+    getE(newEdge2.second).twin   = getE(v2Edge).twin;
+    getE(getE(v2Edge).twin).twin = newEdge2.second;
+
+    getE(newEdge2.first).twin = v2Edge;
+    getE(v2Edge).twin         = newEdge2.first;
+
+    // configure vertices to be consistent with new edges
+    getV(vH).outgoing        = getE(v1Edge).twin;
+    getV(newVertex).outgoing = newEdge1.second;
+
+    // create a new face for each side of the split vertex
+    Face newFace1(newEdgeC.second);
+
+    FaceHandle newFace1H = m_faces.nextHandle();
+    m_faces.push(newFace1);
+
+    getE(newEdge1.first).face  = newFace1H;
+    getE(newEdge1.second).face = newFace1H;
+    getE(newEdgeC.second).face = newFace1H;
+
+    Face newFace2(newEdgeC.first);
+
+    FaceHandle newFace2H = m_faces.nextHandle();
+    m_faces.push(newFace2);
+
+    getE(newEdge2.first).face  = newFace2H;
+    getE(newEdge2.second).face = newFace2H;
+    getE(newEdgeC.first).face  = newFace2H;
 }
 
 template <typename BaseVecT>
@@ -1127,22 +1714,20 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
     {
         cout << "== Checking Face " << fH << "..." << endl;
         auto startEdgeH = getF(fH).edge;
-        auto eH = startEdgeH;
-        int edgeCount = 0;
+        auto eH         = startEdgeH;
+        int edgeCount   = 0;
         do
         {
-            auto& e = getE(eH);
+            auto& e     = getE(eH);
             auto source = getE(e.twin).target;
             auto target = e.target;
-            cout << "   | " << eH << ": " << source << " ==> " << target
-                 << " [next: " << e.next << ", twin: " << e.twin
-                 << ", twin-face: " << getE(e.twin).face << "]"
-                 << endl;
+            cout << "   | " << eH << ": " << source << " ==> " << target << " [next: " << e.next
+                 << ", twin: " << e.twin << ", twin-face: " << getE(e.twin).face << "]" << endl;
 
             if (getE(eH).face != fH)
             {
-                cout << "!!!!! Face handle of " << eH << " is " << getE(eH).face
-                     << " instead of " << fH << "!!!!!" << endl;
+                cout << "!!!!! Face handle of " << eH << " is " << getE(eH).face << " instead of "
+                     << fH << "!!!!!" << endl;
                 error = true;
             }
 
@@ -1153,7 +1738,7 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
                 cout << "   ... stopping iteration after 20 edges." << endl;
                 break;
             }
-        } while(eH != startEdgeH);
+        } while (eH != startEdgeH);
 
         if (edgeCount != 3)
         {
@@ -1183,13 +1768,12 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
 
         do
         {
-            loopEdgeH = getE(loopEdgeH).next;
-            const auto twinH = getE(loopEdgeH).twin;
+            loopEdgeH          = getE(loopEdgeH).next;
+            const auto twinH   = getE(loopEdgeH).twin;
             visited[loopEdgeH] = true;
-            cout << "   | -> " << loopEdgeH << " [twin: " << twinH << " | "
-                 << getE(twinH).target << " --> " << getE(loopEdgeH).target
-                 << "]" << endl;
-        } while(loopEdgeH != startEdgeH);
+            cout << "   | -> " << loopEdgeH << " [twin: " << twinH << " | " << getE(twinH).target
+                 << " --> " << getE(loopEdgeH).target << "]" << endl;
+        } while (loopEdgeH != startEdgeH);
     }
 
     // Next, we list all vertices that are not connected to anything yet
@@ -1208,7 +1792,6 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
 
     return error;
 }
-
 
 // ========================================================================
 // = Private helper methods

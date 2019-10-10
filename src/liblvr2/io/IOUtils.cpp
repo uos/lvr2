@@ -27,202 +27,104 @@
 
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/registration/TransformUtils.hpp"
+
+#include <random>
+#include <unordered_set>
+
 namespace lvr2
 {
 
-
-Eigen::Matrix4d transformRegistration(const Eigen::Matrix4d& transform, const Eigen::Matrix4d& registration)
+void transformPointCloudAndAppend(PointBufferPtr& buffer,
+        boost::filesystem::path& transfromFile,
+        std::vector<float>& pts,
+        std::vector<float>& nrm)
 {
-    Eigen::Matrix3d rotation_trans;
-    Eigen::Matrix3d rotation_registration;
+     std::cout << timestamp << "Transforming normals " << std::endl;
 
-    rotation_trans = transform.block<3,3>(0, 0);
-    rotation_registration = registration.block<3,3>(0, 0);
+     char frames[2048];
+     char pose[2014];
 
-    Eigen::Matrix3d rotation = rotation_trans * rotation_registration;
+     sprintf(frames, "%s/%s.frames", transfromFile.parent_path().c_str(),
+             transfromFile.stem().c_str());
+     sprintf(pose, "%s/%s.pose", transfromFile.parent_path().c_str(), transfromFile.stem().c_str());
 
-    Eigen::Matrix4d result;
-    result.block<3,3>(0, 0) = rotation;
+     boost::filesystem::path framesPath(frames);
+     boost::filesystem::path posePath(pose);
 
-    Eigen::Vector3d tmp;
-    tmp = registration.block<3,1>(0,3);
-    tmp = rotation_trans * tmp;
 
-    (result.rightCols<1>())(0) = transform.col(3)(0) + tmp(0);
-    (result.rightCols<1>())(1) = transform.col(3)(1) + tmp(1);
-    (result.rightCols<1>())(2) = transform.col(3)(2) + tmp(2);
-    (result.rightCols<1>())(3) = 1.0;
+     Transformd transform = Transformd::Identity();
 
-    return result;
+     if(boost::filesystem::exists(framesPath))
+     {
+        std::cout << timestamp << "Transforming according to " << framesPath.filename() << std::endl;
+        transform = getTransformationFromFrames<double>(framesPath);
+     }
+     else if(boost::filesystem::exists(posePath))
+     {
+        std::cout << timestamp << "Transforming according to " << posePath.filename() << std::endl;
+        transform = getTransformationFromFrames<double>(posePath);
+     }
+     else
+     {
+        std::cout << timestamp << "Warning: found no transformation for "
+            << transfromFile.filename() << std::endl;
+     }
 
-}
+     size_t n_normals;
+     size_t w_normals;
+     size_t n_points = buffer->numPoints();
 
-void getPoseFromMatrix(BaseVector<float>& position, BaseVector<float>& angles, const Eigen::Matrix4d& mat)
-{
-    double m[16];
+     floatArr normals = buffer->getFloatArray("normals", n_normals, w_normals); 
+     floatArr points = buffer->getPointArray();
 
-    m[0]  = mat(0, 0);
-    m[1]  = mat(0, 1);
-    m[2]  = mat(0, 2);
-    m[3]  = mat(0, 3);
+     if (w_normals != 3)
+     {
+        std::cout << timestamp << "Warning: width of normals is not 3" << std::endl;
+        return;
+     }
+     if(n_normals != n_points)
+     {
+         std::cout << timestamp << "Warning: point and normal count mismatch" << std::endl;
+         return;
+     }
 
-    m[4]  = mat(1, 0);
-    m[5]  = mat(1, 1);
-    m[6]  = mat(1, 2);
-    m[7]  = mat(1, 3);
+     for(size_t i = 0; i < n_points; i++)
+     {
 
-    m[8]  = mat(2, 0);
-    m[9]  = mat(2, 1);
-    m[10] = mat(2, 2);
-    m[11] = mat(2, 3);
+        float x = points[3 * i];
+        float y = points[3 * i + 1];
+        float z = points[3 * i + 2];
 
-    m[12] = mat(3, 0);
-    m[13] = mat(3, 1);
-    m[14] = mat(3, 2);
-    m[15] = mat(3, 3);
+        Vector4d v(x,y,z,1);
+        Vector4d tv = transform * v;
 
-    float _trX, _trY;
-    if(m[0] > 0.0) {
-       angles.y = asin(m[8]);
-    } else {
-       angles.y = (float)M_PI - asin(m[8]);
-    }
-    // rPosTheta[1] =  asin( m[8]);      // Calculate Y-axis angle
+//        points[3 * i]     = tv[0];
+//        points[3 * i + 1] = tv[1];
+//        points[3 * i + 2] = tv[2];
 
-    float  C    =  cos(angles.y );
-    if ( fabs( C ) > 0.005 )  {          // Gimball lock?
-        _trX      =  m[10] / C;          // No, so get X-axis angle
-        _trY      =  -m[9] / C;
-        angles.x  = atan2( _trY, _trX );
-        _trX      =  m[0] / C;           // Get Z-axis angle
-        _trY      = -m[4] / C;
-        angles.z  = atan2( _trY, _trX );
-    } else {                             // Gimball lock has occurred
-        angles.x = 0.0;                   // Set X-axis angle to zero
-        _trX      =  m[5];  //1          // And calculate Z-axis angle
-        _trY      =  m[1];  //2
-        angles.z  = atan2( _trY, _trX );
-    }
+        pts.push_back(tv[0]);
+        pts.push_back(tv[1]);
+        pts.push_back(tv[2]);
 
-    //cout << angles.x << " " <<angles.y << " " << angles.z << endl;
+        Rotationd rotation = transform.block(0, 0, 3, 3);
 
-    position.x = m[12];
-    position.y = m[13];
-    position.z = m[14];
+        float nx = normals[3 * i];
+        float ny = normals[3 * i + 1];
+        float nz = normals[3 * i + 2];
 
-}
+        Vector3d normal(nx, ny, nz);
+        Vector3d tn = rotation * normal;
 
-Eigen::Matrix4d buildTransformation(double* alignxf)
-{
-    Eigen::Matrix3d rotation;
-    Eigen::Vector4d translation;
+//        normals[3 * i]     = tn[0];
+//        normals[3 * i + 1] = tn[1];
+//        normals[3 * i + 2] = tn[2];
 
-    rotation  << alignxf[0],  alignxf[4],  alignxf[8],
-    alignxf[1],  alignxf[5],  alignxf[9],
-    alignxf[2],  alignxf[6],  alignxf[10];
+        nrm.push_back(tn[0]);
+        nrm.push_back(tn[1]);
+        nrm.push_back(tn[2]);
+     }
 
-    translation << alignxf[12], alignxf[13], alignxf[14], 1.0;
-
-    Eigen::Matrix4d transformation;
-    transformation.setIdentity();
-    transformation.block<3,3>(0,0) = rotation;
-    transformation.rightCols<1>() = translation;
-
-    return transformation;
-}
-
-Eigen::Matrix4d getTransformationFromPose(boost::filesystem::path& pose)
-{
-    std::ifstream poseIn(pose.c_str());
-    if(poseIn.good())
-    {
-        double rPosTheta[3];
-        double rPos[3];
-        double alignxf[16];
-
-        poseIn >> rPos[0] >> rPos[1] >> rPos[2];
-        poseIn >> rPosTheta[0] >> rPosTheta[1] >> rPosTheta[2];
-
-        rPosTheta[0] *= 0.0174533;
-        rPosTheta[1] *= 0.0174533;
-        rPosTheta[2] *= 0.0174533;
-
-        double sx = sin(rPosTheta[0]);
-        double cx = cos(rPosTheta[0]);
-        double sy = sin(rPosTheta[1]);
-        double cy = cos(rPosTheta[1]);
-        double sz = sin(rPosTheta[2]);
-        double cz = cos(rPosTheta[2]);
-
-        alignxf[0]  = cy*cz;
-        alignxf[1]  = sx*sy*cz + cx*sz;
-        alignxf[2]  = -cx*sy*cz + sx*sz;
-        alignxf[3]  = 0.0;
-        alignxf[4]  = -cy*sz;
-        alignxf[5]  = -sx*sy*sz + cx*cz;
-        alignxf[6]  = cx*sy*sz + sx*cz;
-        alignxf[7]  = 0.0;
-        alignxf[8]  = sy;
-        alignxf[9]  = -sx*cy;
-        alignxf[10] = cx*cy;
-
-        alignxf[11] = 0.0;
-
-        alignxf[12] = rPos[0];
-        alignxf[13] = rPos[1];
-        alignxf[14] = rPos[2];
-        alignxf[15] = 1;
-
-        return buildTransformation(alignxf);
-    }
-    else
-    {
-        return Eigen::Matrix4d::Identity();
-    }
-}
-
-Eigen::Matrix4d getTransformationFromFrames(boost::filesystem::path& frames)
-{
-    double alignxf[16];
-    int color;
-
-    std::ifstream in(frames.c_str());
-    int c = 0;
-    while(in.good())
-    {
-        c++;
-        for(int i = 0; i < 16; i++)
-        {
-            in >> alignxf[i];
-        }
-
-        in >> color;
-
-        if(!in.good())
-        {
-            c = 0;
-            break;
-        }
-    }
-
-    return buildTransformation(alignxf);
-}
-
-Eigen::Matrix4d getTransformationFromDat(boost::filesystem::path& frames)
-{
-    double alignxf[16];
-    int color;
-
-    std::ifstream in(frames.c_str());
-    if(in.good())
-    {
-        for(int i = 0; i < 16; i++)
-        {
-            in >> alignxf[i];
-        }
-    }
-
-    return buildTransformation(alignxf);
 }
 
 size_t countPointsInFile(boost::filesystem::path& inFile)
@@ -257,27 +159,6 @@ void writePose(const BaseVector<float>& position, const BaseVector<float>& angle
     }
 }
 
-void writeFrame(Eigen::Matrix4d transform, const boost::filesystem::path& framesOut)
-{
-    std::ofstream out(framesOut.c_str());
-
-    // write the rotation matrix
-    out << transform.col(0)(0) << " " << transform.col(0)(1) << " " << transform.col(0)(2)
-        << " " << 0 << " "
-        << transform.col(1)(0) << " " << transform.col(1)(1) << " " << transform.col(1)(2)
-        << " " << 0 << " "
-        << transform.col(2)(0) << " " << transform.col(2)(1) << " " << transform.col(2)(2)
-        << " " << 0 << " ";
-
-    // write the translation vector
-    out << transform.col(3)(0) << " "
-        << transform.col(3)(1) << " "
-        << transform.col(3)(2) << " "
-        << transform.col(3)(3);
-
-    out.close();
-}
-
 size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
 {
     size_t n_ip = model->m_pointCloud->numPoints();
@@ -291,7 +172,7 @@ size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
 size_t writePointsToStream(ModelPtr model, std::ofstream& out, bool nocolor)
 {
     size_t n_ip, n_colors;
-    unsigned w_colors;
+    size_t w_colors;
 
     n_ip = model->m_pointCloud->numPoints();
     floatArr arr = model->m_pointCloud->getPointArray();
@@ -366,121 +247,6 @@ size_t getReductionFactor(boost::filesystem::path& inFile, size_t targetSize)
 
 }
 
-
-void transformPointCloud(ModelPtr model, Eigen::Matrix4d transformation)
-{
-    std::cout << timestamp << "Transforming model." << std::endl;
-
-    size_t numPoints = model->m_pointCloud->numPoints();
-    floatArr arr = model->m_pointCloud->getPointArray();
-
-    for(int i = 0; i < numPoints; i++)
-    {
-        float x = arr[3 * i];
-        float y = arr[3 * i + 1];
-        float z = arr[3 * i + 2];
-
-        Eigen::Vector4d v(x,y,z,1);
-        Eigen::Vector4d tv = transformation * v;
-
-        arr[3 * i]     = tv[0];
-        arr[3 * i + 1] = tv[1];
-        arr[3 * i + 2] = tv[2];
-    }
-}
-
-void transformPointCloudAndAppend(PointBufferPtr& buffer,
-        boost::filesystem::path& transfromFile,
-        std::vector<float>& pts,
-        std::vector<float>& nrm)
-{
-     std::cout << timestamp << "Transforming normals " << std::endl;
-
-     char frames[2048];
-     char pose[2014];
-
-     sprintf(frames, "%s/%s.frames", transfromFile.parent_path().c_str(),
-             transfromFile.stem().c_str());
-     sprintf(pose, "%s/%s.pose", transfromFile.parent_path().c_str(), transfromFile.stem().c_str());
-
-     boost::filesystem::path framesPath(frames);
-     boost::filesystem::path posePath(pose);
-
-
-     Eigen::Matrix4d transform = Eigen::Matrix4d::Identity();
-
-     if(boost::filesystem::exists(framesPath))
-     {
-        std::cout << timestamp << "Transforming according to " << framesPath.filename() << std::endl;
-        transform = getTransformationFromFrames(framesPath);
-     }
-     else if(boost::filesystem::exists(posePath))
-     {
-        std::cout << timestamp << "Transforming according to " << posePath.filename() << std::endl;
-        transform = getTransformationFromFrames(posePath);
-     }
-     else
-     {
-        std::cout << timestamp << "Warning: found no transformation for "
-            << transfromFile.filename() << std::endl;
-     }
-
-     size_t n_normals;
-     unsigned w_normals;
-     size_t n_points = buffer->numPoints();
-
-     floatArr normals = buffer->getFloatArray("normals", n_normals, w_normals); 
-     floatArr points = buffer->getPointArray();
-
-     if (w_normals != 3)
-     {
-        std::cout << timestamp << "Warning: width of normals is not 3" << std::endl;
-        return;
-     }
-     if(n_normals != n_points)
-     {
-         std::cout << timestamp << "Warning: point and normal count mismatch" << std::endl;
-         return;
-     }
-
-     for(size_t i = 0; i < n_points; i++)
-     {
-
-        float x = points[3 * i];
-        float y = points[3 * i + 1];
-        float z = points[3 * i + 2];
-
-        Eigen::Vector4d v(x,y,z,1);
-        Eigen::Vector4d tv = transform * v;
-
-//        points[3 * i]     = tv[0];
-//        points[3 * i + 1] = tv[1];
-//        points[3 * i + 2] = tv[2];
-
-        pts.push_back(tv[0]);
-        pts.push_back(tv[1]);
-        pts.push_back(tv[2]);
-
-        Eigen::Matrix3d rotation = transform.block(0, 0, 3, 3);
-
-        float nx = normals[3 * i];
-        float ny = normals[3 * i + 1];
-        float nz = normals[3 * i + 2];
-
-        Eigen::Vector3d normal(nx, ny, nz);
-        Eigen::Vector3d tn = rotation * normal;
-
-//        normals[3 * i]     = tn[0];
-//        normals[3 * i + 1] = tn[1];
-//        normals[3 * i + 2] = tn[2];
-
-        nrm.push_back(tn[0]);
-        nrm.push_back(tn[1]);
-        nrm.push_back(tn[2]);
-     }
-
-}
-
 void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::string outfile)
 {
 
@@ -514,22 +280,6 @@ void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::st
     std::cout << timestamp << "Done." << std::endl;
 }
 
-Eigen::Matrix4d inverseTransform(const Eigen::Matrix4d& transform)
-{
-    Eigen::Matrix3d rotation = transform.block<3,3>(0, 0);
-    rotation.transposeInPlace();
-
-    Eigen::Matrix4d inv;
-    inv.block<3, 3>(0, 0) = rotation;
-
-    (inv.rightCols<1>())(0) = -transform.col(3)(0);
-    (inv.rightCols<1>())(1) = -transform.col(3)(1);
-    (inv.rightCols<1>())(2) = -transform.col(3)(2);
-    (inv.rightCols<1>())(3) = 1.0;
-
-    return inv;
-}
-
 void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, const boost::filesystem::path file)
 {
     ifstream in(file.c_str());
@@ -538,10 +288,147 @@ void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, con
         in >> position.x >> position.y >> position.z;
         in >> angles.y >> angles.y >> angles.z;
     }
+}
+
+size_t getNumberOfPointsInPLY(const std::string& filename)
+{
+    size_t n_points = 0;
+    size_t n_vertices = 0;
+
+    // Try to open file
+    std::ifstream in(filename.c_str());
+    if(in.good())
+    {
+        // Check for ply tag
+        std::string tag;
+        in >> tag;
+        if(tag == "PLY" || tag == "ply")
+        {
+            // Parse header
+            std::string token;
+            while (in.good() && token != "end_header" && token != "END_HEADER")
+            {
+                in >> token;
+              
+
+                // Check for vertex field
+                if(token == "vertex" || token == "VERTEX")
+                {
+                    in >> n_vertices;
+                }
+
+                // Check for point field
+                if(token == "point" || token == "POINT")
+                {
+                    in >> n_points;
+                }
+            }
+            if(n_points == 0 && n_vertices == 0)
+            {
+                std::cout << timestamp << "PLY contains neither vertices nor points." << std::endl;
+                return 0;
+            }
+            
+            // Prefer points over vertices
+            if(n_points)
+            {
+                return n_points;
+            }
+            else
+            {
+                return n_vertices;
+            }
+        }
+        else
+        {
+            std::cout << timestamp << filename << " is not a valid .ply file." << std::endl;
+        }
+        
+    }
+    return 0;
+}
+
+template<typename T>
+typename Channel<T>::Ptr subSampleChannel(Channel<T>& src, std::vector<size_t> ids)
+{
+    // Create smaller channel of same type
+    size_t width = src.width();
+    typename Channel<T>::Ptr red(new Channel<T>(ids.size(), width));
+
+    // Sample from original and insert into reduced 
+    // channel
+    boost::shared_array<T> a(red->dataPtr());
+    boost::shared_array<T> b(src.dataPtr());
+    for(size_t i = 0; i < ids.size(); i++)
+    {
+        for(size_t j = 0; j < red->width(); j++)
+        {
+            a[i * width + j] = b[ids[i] * width + j];
+        }
+    }
+    return red;
+}
+
+template<typename T>
+void subsample(PointBufferPtr src, PointBufferPtr dst, vector<size_t>& indices)
+{
+    // Go over all supported channel types and sub-sample
+    vector<std::pair<std::string, Channel<T>>> channels;
+    src->getAllChannelsOfType(channels);      
+    for(auto i : channels)
+    {
+        std::cout << timestamp << "Subsampling channel " << i.first << std::endl;
+        typename Channel<T>::Ptr c = subSampleChannel(i.second, indices);
+        dst->addChannel<T>(c, i.first);
+    }
+
+}
+
+PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const size_t& n)
+{
+    // Buffer for reduced points
+    PointBufferPtr buffer(new PointBuffer);
+    size_t numSrcPts = src->numPoints();
+    
+    // Setup random device and distribution
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist(0, numSrcPts);
+
+    // Check buffer size
+    if(n <= numSrcPts)
+    {
+        // Create index buffer for sub-sampling, using set to avoid duplicates
+        std::unordered_set<size_t> index_set;
+        while(index_set.size() < n)
+        {   
+            index_set.insert(dist(rng));
+        }
+
+        // Copy indices into vector for faster access and []-operator support
+        //.In c++14 this is the fastest way. In C++17 a better alternative 
+        // would be to use extract().
+        vector<size_t> indices;
+        indices.insert(indices.end(), index_set.begin(), index_set.end());
+        index_set.clear();
+
+        // Go over all supported channel types and sub-sample
+        subsample<char>(src, buffer, indices);
+        subsample<unsigned char>(src, buffer, indices);
+        subsample<short>(src, buffer, indices);
+        subsample<int>(src, buffer, indices);
+        subsample<unsigned int>(src, buffer, indices);
+        subsample<float>(src, buffer, indices);
+        subsample<double>(src, buffer, indices);
+    }
     else
     {
-        cout << timestamp << "Unable to open " << file.string() << endl;
+        std::cout << timestamp << "Sub-sampling not possible. Number of sampling points is " << std::endl;
+        std::cout << timestamp << "larger than number in src buffer. (" << n << " / " << numSrcPts << ")" << std::endl;
     }
+    
+
+    return buffer;
 }
 
 } // namespace lvr2

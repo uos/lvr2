@@ -34,50 +34,65 @@
 #ifndef ICPPOINTALIGN_HPP_
 #define ICPPOINTALIGN_HPP_
 
-#include <lvr2/registration/EigenSVDPointAlign.hpp>
-#include <lvr2/reconstruction/SearchTree.hpp>
-#include <lvr2/geometry/Matrix4.hpp>
+#include "KDTree.hpp"
+#include "SLAMScanWrapper.hpp"
+
+#include "lvr2/types/MatrixTypes.hpp"
 
 namespace lvr2
 {
 
-template <typename BaseVecT>
+/**
+ * @brief A class to align two Scans with ICP
+ * 
+ */
 class ICPPointAlign
 {
 public:
-    ICPPointAlign(PointBufferPtr model, PointBufferPtr data, Matrix4<BaseVecT> transformation);
+    /**
+     * @brief Construct a new ICPPointAlign object. Data is transformed to match Model
+     * 
+     * @param model The Model Scan (stays unchanged)
+     * @param data The Data Scan (transformed)
+     */
+    ICPPointAlign(SLAMScanPtr model, SLAMScanPtr data);
 
-    Matrix4<BaseVecT> match();
+    /**
+     * @brief Executes the ICPAlign
+     * 
+     * @return Transformd The delta transformation caused by this Method
+     */
+    Transformd match();
 
-    virtual ~ICPPointAlign();
+    virtual ~ICPPointAlign() = default;
 
     void    setMaxMatchDistance(double distance);
     void    setMaxIterations(int iterations);
+    void    setMaxLeafSize(int maxLeafSize);
     void    setEpsilon(double epsilon);
+    void    setVerbose(bool verbose);
 
-    double  getEpsilon();
-    double  getMaxMatchDistance();
-    int     getMaxIterations();
-    
-    void getPointPairs(PointPairVector<BaseVecT>& pairs, BaseVecT& centroid_m, BaseVecT& centroid_d, double& sum);
+    double  getMaxMatchDistance() const;
+    int     getMaxIterations() const;
+    int     getMaxLeafSize() const;
+    double  getEpsilon() const;
+    bool    getVerbose() const;
 
 protected:
 
-    void transform();
+    double      m_epsilon;
+    double      m_maxDistanceMatch;
+    int         m_maxIterations;
+    int         m_maxLeafSize;
 
-    double                              m_epsilon;
-    double                              m_maxDistanceMatch;
-    int                                 m_maxIterations;
+    bool        m_verbose;
 
-    PointBufferPtr                     m_modelCloud;
-    PointBufferPtr                     m_dataCloud;
-    Matrix4<BaseVecT>                   m_transformation;
+    SLAMScanPtr m_modelCloud;
+    SLAMScanPtr m_dataCloud;
 
-    SearchTreePtr<BaseVecT> 			m_searchTree;
+    KDTreePtr   m_searchTree;
 };
 
 } /* namespace lvr2 */
-
-#include <lvr2/registration/ICPPointAlign.tcc>
 
 #endif /* ICPPOINTALIGN_HPP_ */

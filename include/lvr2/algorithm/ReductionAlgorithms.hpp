@@ -39,7 +39,7 @@
 
 #include <boost/optional.hpp>
 
-using boost::optional;
+
 
 namespace lvr2
 {
@@ -90,6 +90,6 @@ size_t simpleMeshReduction(
 
 } // namespace lvr2
 
-#include <lvr2/algorithm/ReductionAlgorithms.tcc>
+#include "lvr2/algorithm/ReductionAlgorithms.tcc"
 
 #endif /* LVR2_ALGORITHM_REDUCTIONALGORITHMS_H_ */

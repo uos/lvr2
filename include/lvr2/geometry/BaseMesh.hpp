@@ -39,9 +39,10 @@
 #include <array>
 #include <vector>
 #include <type_traits>
+#include <memory>
 #include <boost/optional.hpp>
 
-using boost::optional;
+
 
 #include "Handles.hpp"
 
@@ -378,6 +379,38 @@ public:
      */
     virtual void getNeighboursOfVertex(VertexHandle handle, std::vector<VertexHandle>& verticesOut) const = 0;
 
+    /**
+     * @brief Get the optional face handle of the neighboring face lying
+     *        on the vertex's opposite site.
+     *
+     * @param faceH The corresponding face handle
+     * @param vertexH The corresponding vertex handle
+     * @return optional face handle of the `faceH` neighboring face lying on
+     * the opposite side of the `vertexH` vertex.
+     */
+    virtual OptionalFaceHandle getOppositeFace(FaceHandle faceH, VertexHandle vertexH) const = 0;
+
+    /**
+     * @brief Get the optional edge handle of the edge lying on the vertex's
+     * opposite site.
+     *
+     * @param faceH The corresponding face handle
+     * @param vertexH The corresponding vertex handle
+     * @return optional edge handle which lies on the `faceH` face on the
+     * opposite side of the `vertexH` vertex.
+     */
+    virtual OptionalEdgeHandle getOppositeEdge(FaceHandle faceH, VertexHandle vertexH) const = 0;
+
+    /**
+     * @brief Get the optional vertex handle of the vertex lying on the edge's
+     * opposite site.
+     *
+     * @param faceH The corresponding face handle
+     * @param edgeH The corresponding edge handle
+     * @return optional vertex handle which lies on the `faceH` face on the
+     * opposite side of the `edgeH` edge.
+     */
+    virtual OptionalVertexHandle getOppositeVertex(FaceHandle faceH, EdgeHandle edgeH) const = 0;
 
     /**
      * @brief Returns an iterator to the first vertex of this mesh.
@@ -638,16 +671,37 @@ struct EdgeCollapseResult
     /// The vertex which was inserted to replace the collapsed edge
     VertexHandle midPoint;
 
+    VertexHandle removedPoint;
+
     /// The (face) neighbors of the edge which might have been removed. If so,
     /// the entry is not `none` and contains information about the invalidated
     /// handles and the replacement edge.
-    std::array<optional<EdgeCollapseRemovedFace>, 2> neighbors;
+    std::array<boost::optional<EdgeCollapseRemovedFace>, 2> neighbors;
 
-    EdgeCollapseResult(VertexHandle midPoint) : midPoint(midPoint) {};
+    EdgeCollapseResult(VertexHandle midPoint, VertexHandle removedPoint) : midPoint(midPoint), removedPoint(removedPoint) {};
+};
+
+
+struct VertexSplitResult
+{
+
+    VertexHandle edgeCenter;
+    std::vector<FaceHandle> addedFaces;
+
+    VertexSplitResult(VertexHandle longestEdgeCenter) : edgeCenter(longestEdgeCenter) {};
+};
+
+struct EdgeSplitResult
+{
+
+    VertexHandle edgeCenter;
+    std::vector<FaceHandle> addedFaces;
+
+    EdgeSplitResult(VertexHandle longestEdgeCenter) : edgeCenter(longestEdgeCenter) {};
 };
 
 } // namespace lvr2
 
-#include <lvr2/geometry/BaseMesh.tcc>
+#include "lvr2/geometry/BaseMesh.tcc"
 
 #endif /* LVR2_GEOMETRY_BASEMESH_H_ */

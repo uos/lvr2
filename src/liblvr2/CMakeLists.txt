@@ -27,7 +27,6 @@ set(LVR2_SOURCES
     io/PPMIO.cpp
     io/PLYIO.cpp
     io/IOUtils.cpp
-    io/ChannelManager.cpp
     io/STLIO.cpp
     io/UosIO.cpp
     io/PCDIO.cpp
@@ -45,20 +44,29 @@ set(LVR2_SOURCES
     io/Timestamp.cpp
     io/BoctreeIO.cpp
     io/GridIO.cpp
-    io/BaseBuffer.cpp
     io/PointBuffer.cpp
     io/ModelFactory.cpp
     io/ScanprojectIO.cpp
-    io/ScanData.cpp
     io/ScanDataManager.cpp
+    io/ScanDirectoryParser.cpp
+    io/ChunkIO.cpp
+    types/Scan.cpp
     #io/PlutoMetaDataIO.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
-    reconstruction/opencl/ClSurface.cpp
     reconstruction/LBKdTree.cpp
-    reconstruction/cuda/CudaSurface.cu
     reconstruction/PCLFiltering.cpp
+    algorithm/ChunkBuilder.cpp
+    algorithm/ChunkManager.cpp
+    algorithm/ChunkHashGrid.cpp
+    registration/ICPPointAlign.cpp
+    registration/KDTree.cpp
+    registration/SLAMScanWrapper.cpp
+    registration/Metascan.cpp
+    registration/SLAMAlign.cpp
+    registration/GraphSLAM.cpp
+    registration/TreeUtils.cpp
 )
 
 
@@ -86,7 +94,7 @@ set(LVR2_INTERNAL_DEPENDENCIES_SHARED
     lvr2slam6d)
 
 set(LVR2_LIB_DEPENDENCIES
-    draco
+    lvr2draco
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
@@ -97,7 +105,8 @@ set(LVR2_LIB_DEPENDENCIES
     ${OpenCV_LIBS}
     ${GSL_LIBRARIES}
     ${LZ4_LIBRARY}
-    ${TIFF_LIBRARY})
+    ${TIFF_LIBRARY}
+    uuid)
 
 
 #####################################################################################
@@ -145,19 +154,19 @@ if(RiVLib_FOUND)
     set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${RiVLib_SCANIFC_LIBRARY})
 endif()
 
-
-
 #####################################################################################
 # OpenCL
 #####################################################################################
 
 if(OPENCL_FOUND)
-    set(LVR2_SOURCES ${LVR2_SOURCES} reconstruction/opencl/ClSurface.cpp)
+    set(LVR2_SOURCES ${LVR2_SOURCES}
+        reconstruction/opencl/ClSurface.cpp
+    )
     set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${OpenCL_LIBRARIES})
 endif()
 
 #####################################################################################
-# yaml-cpp 
+# yaml-cpp
 #####################################################################################
 # no found variable
 if(YAML_CPP_LIBRARIES)
@@ -165,6 +174,38 @@ if(YAML_CPP_LIBRARIES)
     set(LVR2_SOURCES ${LVR2_SOURCES} io/PlutoMetaDataIO.cpp)
     set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${YAML_CPP_LIBRARIES})
 endif()
+
+#####################################################################################
+# Compile object files for static and dynamic library
+#####################################################################################
+
+add_library(lvr2core OBJECT ${LVR2_SOURCES})
+
+#####################################################################################
+# Build static library
+#####################################################################################
+
+message(STATUS "Building static library")
+add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
+target_link_libraries(lvr2_static ${LVR2_INTERNAL_DEPENDENCIES_STATIC} ${LVR2_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+
+
+#####################################################################################
+# Build shared library
+#####################################################################################
+
+if( NOT MSVC )
+  message(STATUS "Building shared library")
+  add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
+  target_link_libraries(lvr2 ${LVR2_INTERNAL_DEPENDENCIES_SHARED} ${LVR2_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+
+install(TARGETS lvr2_static lvr2
+  EXPORT lvr2Targets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+endif( NOT MSVC)
+
 #####################################################################################
 # CUDA
 #####################################################################################
@@ -197,8 +238,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
     # Add dependency to avoid that both targets
     # are build concurrently in parallel builds
     add_dependencies(lvr2cuda_static lvr2_static)
+
     message(STATUS "Building shared LVR CUDA library")
     cuda_add_library(lvr2cuda SHARED ${LVR2_CUDA_CPP_SRC} ${LVR2_CUDA_SRC})
+
     target_link_libraries(lvr2cuda lvr2)
 
     install(
@@ -209,35 +252,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
     )
 
 endif()
-
-#####################################################################################
-# Compile object files for static and dynamic library
-#####################################################################################
-
-add_library(lvr2core OBJECT ${LVR2_SOURCES})
-
-#####################################################################################
-# Build static library
-#####################################################################################
-
-message(STATUS "Building static library")
-add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
-target_link_libraries(lvr2_static ${LVR2_INTERNAL_DEPENDENCIES_STATIC} ${LVR2_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
-
-
-#####################################################################################
-# Build shared library
-#####################################################################################
-
-if( NOT MSVC )
-  message(STATUS "Building shared library")
-  add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
-  target_link_libraries(lvr2 ${LVR2_INTERNAL_DEPENDENCIES_SHARED} ${LVR2_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
-
-install(TARGETS lvr2_static lvr2
-  EXPORT lvr2Targets
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-endif( NOT MSVC)
 

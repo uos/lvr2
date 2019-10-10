@@ -35,7 +35,7 @@
 #ifndef COLORVERTEX_H_
 #define COLORVERTEX_H_
 
-#include <lvr2/geometry/BaseVector.hpp>
+#include "lvr2/geometry/BaseVector.hpp"
 
 #include <ostream>
 

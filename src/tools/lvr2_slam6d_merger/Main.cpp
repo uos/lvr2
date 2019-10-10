@@ -49,14 +49,15 @@ using namespace std;
 
 #include "Options.hpp"
 
-#include <lvr2/io/Timestamp.hpp>
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/io/IOUtils.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/Matrix4.hpp>
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/IOUtils.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/Matrix4.hpp"
+#include "lvr2/registration/TransformUtils.hpp"
 
 #ifdef LVR2_USE_PCL
-#include <lvr2/reconstruction/PCLFiltering.hpp>
+#include "lvr2/reconstruction/PCLFiltering.hpp"
 #endif
 
 #define BUF_SIZE 1024
@@ -65,9 +66,6 @@ namespace slam6dmerger
 {
 
 using namespace lvr2;
-
-using Vector3f = BaseVector<float>;
-
 
 boost::filesystem::path getCorrespondingPath(const boost::filesystem::path& scan, const string& extension)
 {
@@ -100,12 +98,11 @@ int main(int argc, char** argv)
         exit(-1);
     }
 
-    Eigen::Matrix4d transform = getTransformationFromFrames(transformPath);
+    Transformf transform = getTransformationFromFrames<float>(transformPath);
     //transform = inverseTransform(transform);
-    Vector3f transform_position;
-    Vector3f transform_angles;
+    BaseVector<float> transform_position;
+    BaseVector<float> transform_angles;
     getPoseFromMatrix(transform_position, transform_angles, transform);
-
 
     std::cout << timestamp << "Transforming: " << std::endl << std::endl;
     std::cout << transform << std::endl << std::endl;
@@ -276,9 +273,9 @@ int main(int argc, char** argv)
         {
             // Get transformation from file and transform
             std::cout << timestamp << "Transforming " << frames_in.string() << std::endl;
-            Eigen::Matrix4d registration = getTransformationFromFrames(frames_in);
+            Transformf registration = getTransformationFromFrames<float>(frames_in);
             //registration *= transform;
-            Eigen::Matrix4d t_reg = transformRegistration(transform, registration);
+            Transformf t_reg = transformRegistration<float>(transform, registration);
 
             std::cout << timestamp << "Writing transformed registration to " << frames_out.string() << std::endl;
             writeFrame(t_reg, frames_out);
@@ -302,8 +299,8 @@ int main(int argc, char** argv)
         {
             // Get transformation from file and transform
             std::cout << timestamp << "Transforming " << pose_in.string() << std::endl;
-            Vector3f pos;
-            Vector3f ang;
+            BaseVector<float> pos;
+            BaseVector<float> ang;
             getPoseFromFile(pos, ang, pose_in);
 
             pos += transform_position;

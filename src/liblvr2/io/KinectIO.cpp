@@ -32,9 +32,9 @@
  *      Author: Thomas Wiemann
  */
 
-#include <lvr2/io/KinectIO.hpp>
-#include <lvr2/io/PointBuffer.hpp>
-#include <lvr2/io/DataStruct.hpp>
+#include "lvr2/io/KinectIO.hpp"
+#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/io/DataStruct.hpp"
 
 #include <Eigen/Dense>
 

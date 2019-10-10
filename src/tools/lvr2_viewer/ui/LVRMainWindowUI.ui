@@ -31,7 +31,7 @@
    <property name="minimumSize">
     <size>
      <width>200</width>
-     <height>392</height>
+     <height>20</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -48,6 +48,7 @@
    </property>
    <property name="features">
     <set>QDockWidget::DockWidgetVerticalTitleBar</set>
+    <set>QDockWidget::DockWidgetFeatureMask</set>
    </property>
    <property name="allowedAreas">
     <set>Qt::LeftDockWidgetArea</set>
@@ -71,7 +72,7 @@
        <property name="minimumSize">
         <size>
          <width>0</width>
-         <height>100</height>
+         <height>10</height>
         </size>
        </property>
        <property name="maximumSize">
@@ -726,6 +727,7 @@
    </property>
    <property name="features">
     <set>QDockWidget::DockWidgetVerticalTitleBar</set>
+    <set>QDockWidget::DockWidgetFeatureMask</set>
    </property>
    <property name="allowedAreas">
     <set>Qt::LeftDockWidgetArea</set>
@@ -1008,6 +1010,7 @@
    </property>
    <property name="features">
     <set>QDockWidget::DockWidgetVerticalTitleBar</set>
+    <set>QDockWidget::DockWidgetFeatureMask</set>
    </property>
    <property name="windowTitle">
     <string>Actions</string>
