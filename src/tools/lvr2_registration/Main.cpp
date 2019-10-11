@@ -36,6 +36,14 @@
 #include <lvr2/io/IOUtils.hpp>
 #include <lvr2/registration/SLAMAlign.hpp>
 #include <lvr2/io/HDF5IO.hpp>
+#include <lvr2/io/Hdf5IO.hpp>
+#include <lvr2/io/Hdf5IO.hpp>
+#include <lvr2/io/hdf5/ArrayIO.hpp>
+#include <lvr2/io/hdf5/ChannelIO.hpp>
+#include <lvr2/io/hdf5/VariantChannelIO.hpp>
+#include <lvr2/io/hdf5/PointCloudIO.hpp>
+#include <lvr2/io/hdf5/MatrixIO.hpp>
+
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -293,18 +301,32 @@ int main(int argc, char** argv)
 
     // shared pointer containing the HDF file
     shared_ptr<HDF5IO> inHDF;
+    // new hdfio
+    using HDF5PCIO = lvr2::Hdf5IO<
+                lvr2::hdf5features::ArrayIO,
+                lvr2::hdf5features::ChannelIO,
+                lvr2::hdf5features::VariantChannelIO,
+                lvr2::hdf5features::PointCloudIO,
+                lvr2::hdf5features::MatrixIO>;
+    // contains the hdf5
+    std::shared_ptr<HDF5PCIO> h5_ptr(new HDF5PCIO());
 
     if(options.useHDF)
     {
-        cout << "Es wird HDF5 benutzt!" << endl;
+        cout << "HDF5 is used!" << endl;
         ifstream f(dir.c_str());
         if (f.good())
         {
-            // data.h5 exists
-            //  dir now contains the file name
-            inHDF.reset(new HDF5IO(dir.c_str(), "scans", HighFive::File::ReadWrite));
+            // // data.h5 exists
+            // //  dir now contains the file name
+            // inHDF.reset(new HDF5IO(dir.c_str(), "scans", HighFive::File::ReadWrite));
+            // new hdfio
+            // create boost::fileystem::path to hdf file location
+            boost::filesystem::path pathToHDF(dir.c_str());
+            h5_ptr->open(pathToHDF.string());
+
             // set start to 0, so the scan searching is not triggered
-            start = 0;
+            start = 0; // TODO: Unsinn?
         }
         else
         {
@@ -366,14 +388,57 @@ int main(int argc, char** argv)
 
     int count = end - start + 1;
 
-    // contains all the scans from the hdf file
-    vector<lvr2::ScanPtr> rawScans = inHDF->getRawScans();
+    // // contains all the scans from the hdf file
+    // vector<lvr2::ScanPtr> rawScans = inHDF->getRawScans();
+    // new hdfio
+    HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
+    vector<string> scansNeu = hfscans.listObjectNames(); // TODO: Schlechter Name!
     if (options.useHDF)
     {
-        // for loop handles each scan in HDF FILE
-        for (int i = 0; i < rawScans.size(); i++)
+        // // for loop handles each scan in HDF FILE
+        // for (int i = 0; i < rawScans.size(); i++)
+        // { 
+        //     SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(rawScans.at(i)));
+        //     scans.push_back(slamScan);
+        //     align.addScan(slamScan);
+        // }
+        // new hdfio for loop
+        for (int i = 0; i < scans.size(); i++)
         {
-            SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(rawScans.at(i)));
+            // create a scan object for each scan in hdf
+            shared_ptr<Scan> tempScan(new Scan());
+            size_t six;
+            size_t pointsNum;
+            boost::shared_array<float> bb_array = h5_ptr->loadArray<float>("raw/scans/" + scansNeu[i], "boundingBox", six);
+            BoundingBox<BaseVector<float>> bb(BaseVector<float>(bb_array[0], bb_array[1], bb_array[2]),
+                                    BaseVector<float>(bb_array[3], bb_array[4], bb_array[5]));
+            // bounding box transfered to object
+            tempScan->m_boundingBox = bb;
+
+            boost::shared_array<float> fov_array = h5_ptr->loadArray<float>("raw/scans/" + scansNeu[i], "fov", six);
+            // fov transfered to object
+            tempScan->m_hFieldOfView = fov_array[0];
+            tempScan->m_vFieldOfView = fov_array[1];
+
+            boost::shared_array<float> res_array = h5_ptr->loadArray<float>("raw/scans/" + scansNeu[i], "resolution", six);
+            // resolution transfered
+            tempScan->m_hResolution = res_array[0];
+            tempScan->m_vResolution = res_array[1];
+
+            tempScan->m_points = h5_ptr->loadPointCloud("raw/scans/" + scansNeu[i]);
+            tempScan->m_pointsLoaded = true;
+            
+            tempScan->m_poseEstimation = h5_ptr->loadMatrix<Transformd>("raw/scans/" + scansNeu[i], "initialPose").get();
+
+            tempScan->m_positionNumber = i;
+
+            tempScan->m_scanRoot = "raw/scans/" + scansNeu[i];
+
+            tempScan->m_registration = Transformd::Identity();
+    
+
+            SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(tempScan));
+
             scans.push_back(slamScan);
             align.addScan(slamScan);
         }
@@ -433,22 +498,23 @@ int main(int argc, char** argv)
         for(int i = 0; i < scans.size(); i++)
         {
             auto pose = scans[i]->pose();
-            string scanGroup = "/raw/scans/position_";
-            // scanstring contains the scan number with leading zeroes
-            string scanNumber = to_string(i);
-            string scanString = string(5 - scanNumber.length(), '0').append(scanNumber);
-            // the pose is represented as a 4x4 matrix
-            std::vector<size_t> dimPose = {4,4};
-            float* pose_data = new float[16];
             // the pose needs to be transposed before writing to hdf
             pose.transposeInPlace();
-            copy(pose.data(), pose.data() + 16, pose_data);
-            // the pose needs to be transposed before writing to hdf
-            boost::shared_array<float> poseArray(pose_data);
-            string deleteString = scanGroup.append(scanString);
-            inHDF.get()->deleteDataset(string(deleteString + "/finalPose").data());
-            //rewrite the newly calculated pose
-            inHDF.get()->addArray(string("/raw/scans/position_").append(scanString+"/"), string("finalPose"), dimPose, poseArray);
+            h5_ptr->MatrixIO::save("raw/scans/" + scansNeu[i], "finalPose", pose);
+            // string scanGroup = "/raw/scans/position_";
+            // // scanstring contains the scan number with leading zeroes
+            // string scanNumber = to_string(i);
+            // string scanString = string(5 - scanNumber.length(), '0').append(scanNumber);
+            // // the pose is represented as a 4x4 matrix
+            // std::vector<size_t> dimPose = {4,4};
+            // float* pose_data = new float[16];
+            // copy(pose.data(), pose.data() + 16, pose_data);
+            // // the pose needs to be transposed before writing to hdf
+            // boost::shared_array<float> poseArray(pose_data);
+            // string deleteString = scanGroup.append(scanString);
+            // inHDF.get()->deleteDataset(string(deleteString + "/finalPose").data());
+            // //rewrite the newly calculated pose
+            // inHDF.get()->addArray(string("/raw/scans/position_").append(scanString+"/"), string("finalPose"), dimPose, poseArray);
         }
     }
 
