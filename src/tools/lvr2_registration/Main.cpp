@@ -385,11 +385,13 @@ int main(int argc, char** argv)
     // vector<lvr2::ScanPtr> rawScans = inHDF->getRawScans();
     // new hdfio
     HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
-    vector<string> scansNeu = hfscans.listObjectNames(); // TODO: Schlechter Name!
+    vector<string> scansNeu = hfscans.listObjectNames(); // TODO: Schlechter Name!git
     if (options.useHDF)
     {
-        for (int i = 0; i < scans.size(); i++)
+        for (int i = 0; i < scansNeu.size(); i++)
         {
+            cout << "ScansNeu: " << scansNeu.size() << endl;
+            cout << "TempScan Nummer:" << i << endl;
             // create a scan object for each scan in hdf
             shared_ptr<Scan> tempScan(new Scan());
             size_t six;
@@ -409,23 +411,29 @@ int main(int argc, char** argv)
             // resolution transfered
             tempScan->m_hResolution = res_array[0];
             tempScan->m_vResolution = res_array[1];
-
+            cout << "Vor PointCloud" << i << endl;
             // point cloud transfered
-            tempScan->m_points = h5_ptr->loadPointCloud("raw/scans/" + scansNeu[i]);
+            boost::shared_array<float> point_array = h5_ptr->loadArray<float>("raw/scans/"+ scansNeu[i], "points", pointsNum);
+            PointBufferPtr pointPointer = PointBufferPtr(new PointBuffer(point_array, pointsNum));
+            tempScan->m_points = pointPointer;
+            // tempScan->m_points = h5_ptr->loadPointCloud("raw/scans/" + scansNeu[i]);
             tempScan->m_pointsLoaded = true;
-            
+            cout << "Pointcloud transferiert" << i << endl;            
             // pose transfered
             tempScan->m_poseEstimation = h5_ptr->loadMatrix<Transformd>("raw/scans/" + scansNeu[i], "initialPose").get();
-
+            cout << "Pose ist geschrieben!" << endl;
             tempScan->m_positionNumber = i;
 
             tempScan->m_scanRoot = "raw/scans/" + scansNeu[i];
+            cout << "Scan Root ist geschrieben!" << endl;
+            
 
             // sets the finalPose to the identiy matrix
             tempScan->m_registration = Transformd::Identity();
-    
+            cout << "Registration ist auf einheitsmatrix" << endl;
 
             SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(tempScan));
+            cout << "SlamScan ist geschrieben!" << endl;
 
             scans.push_back(slamScan);
             align.addScan(slamScan);
@@ -485,6 +493,7 @@ int main(int argc, char** argv)
         // write poses to hdf
         for(int i = 0; i < scans.size(); i++)
         {
+            cout << "Output Schleifendurchgang: " << i <<endl;
             auto pose = scans[i]->pose();
             // the pose needs to be transposed before writing to hdf
             pose.transposeInPlace();
