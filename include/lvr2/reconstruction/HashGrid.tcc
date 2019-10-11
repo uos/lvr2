@@ -206,6 +206,96 @@ HashGrid<BaseVecT, BoxT>::HashGrid(string file)
 }
 
 template<typename BaseVecT, typename BoxT>
+HashGrid<BaseVecT, BoxT>::HashGrid(std::vector<string>& files,
+                                   BoundingBox<BaseVecT>& boundingBox,
+                                   float voxelsize)
+    : m_boundingBox(boundingBox), m_voxelsize(voxelsize), m_globalIndex(0)
+{
+    unsigned int INVALID = BoxT::INVALID_INDEX;
+    calcIndices();
+    float distances[8];
+    BaseVecT box_center;
+    bool extruded;
+    float vsh = 0.5 * this->m_voxelsize;
+    for (int numFiles = 0; numFiles < files.size(); numFiles++)
+    {
+        unsigned int current_index = 0;
+        cout << "Loading grid: " << numFiles << "/" << files.size() << endl;
+
+        FILE* pFile = fopen(files[numFiles].c_str(), "rb");
+        size_t numCells;
+        size_t r = fread(&numCells, sizeof(size_t), 1, pFile);
+
+        for (size_t cellCount = 0; cellCount < numCells; cellCount++)
+        {
+            r = fread(&(box_center[0]), sizeof(float), 1, pFile);
+            r = fread(&(box_center[1]), sizeof(float), 1, pFile);
+            r = fread(&(box_center[2]), sizeof(float), 1, pFile);
+
+            r = fread(&extruded, sizeof(bool), 1, pFile);
+
+            r = fread(&(distances[0]), sizeof(float), 8, pFile);
+
+            size_t idx = calcIndex((box_center[0] - m_boundingBox.getMin()[0]) / m_voxelsize);
+            size_t idy = calcIndex((box_center[1] - m_boundingBox.getMin()[1]) / m_voxelsize);
+            size_t idz = calcIndex((box_center[2] - m_boundingBox.getMin()[2]) / m_voxelsize);
+            size_t hash = hashValue(idx, idy, idz);
+            auto cell_it = this->m_cells.find(hash);
+            if (cell_it == this->m_cells.end() && !extruded)
+            {
+                BoxT* box = new BoxT(box_center);
+                for (int i = 0; i < 8; i++)
+                {
+                    current_index = this->findQueryPoint(i, idx, idy, idz);
+                    if (current_index != INVALID)
+                        box->setVertex(i, current_index);
+                    else
+                    {
+                        BaseVecT position(box_center[0] + box_creation_table[i][0] * vsh,
+                                         box_center[1] + box_creation_table[i][1] * vsh,
+                                         box_center[2] + box_creation_table[i][2] * vsh);
+                        this->m_queryPoints.push_back(QueryPoint<BaseVecT>(position, distances[i]));
+                        box->setVertex(i, this->m_globalIndex);
+                        this->m_globalIndex++;
+                    }
+                }
+                // Set pointers to the neighbors of the current box
+                int neighbor_index = 0;
+                size_t neighbor_hash = 0;
+
+                for (int a = -1; a < 2; a++)
+                {
+                    for (int b = -1; b < 2; b++)
+                    {
+                        for (int c = -1; c < 2; c++)
+                        {
+
+                            // Calculate hash value for current neighbor cell
+                            neighbor_hash = this->hashValue(idx + a, idy + b, idz + c);
+
+                            // Try to find this cell in the grid
+                            auto neighbor_it = this->m_cells.find(neighbor_hash);
+
+                            // If it exists, save pointer in box
+                            if (neighbor_it != this->m_cells.end())
+                            {
+                                box->setNeighbor(neighbor_index, (*neighbor_it).second);
+                                (*neighbor_it).second->setNeighbor(26 - neighbor_index, box);
+                            }
+
+                            neighbor_index++;
+                        }
+                    }
+                }
+
+                this->m_cells[hash] = box;
+            }
+        }
+        fclose(pFile);
+    }
+}
+
+template<typename BaseVecT, typename BoxT>
 void HashGrid<BaseVecT, BoxT>::addLatticePoint(int index_x, int index_y, int index_z, float distance)
 {
     size_t hash_value;
@@ -252,7 +342,7 @@ void HashGrid<BaseVecT, BoxT>::addLatticePoint(int index_x, int index_y, int ind
                     //         box_center[2] <= m_boundingBox.getMin().z ||
                     //         box_center[0] >= m_boundingBox.getMax().x + m_voxelsize ||
                     //         box_center[1] >= m_boundingBox.getMax().y + m_voxelsize ||
-                    //         box_center[2] >= m_boundingBox.getMax().z + m_voxelsize 
+                    //         box_center[2] >= m_boundingBox.getMax().z + m_voxelsize
                     // ))
                     // {
                     //     continue;
@@ -457,6 +547,32 @@ void HashGrid<BaseVecT, BoxT>::saveGrid(string filename)
             out << std::endl;
         }
     }
+}
+
+template<typename BaseVecT, typename BoxT>
+void HashGrid<BaseVecT, BoxT>::saveCells(string file)
+{
+	FILE * pFile = fopen(file.c_str(),"wb");
+	size_t csize = m_cells.size();
+	fwrite(&csize, sizeof(size_t), 1, pFile);
+	for(auto it = this->firstCell() ; it!= this->lastCell(); it++)
+	{
+		fwrite(&it->second->getCenter()[0], sizeof(float), 1, pFile);
+		fwrite(&it->second->getCenter()[1], sizeof(float), 1, pFile);
+		fwrite(&it->second->getCenter()[2], sizeof(float), 1, pFile);
+
+		fwrite(&it->second->m_extruded, sizeof(bool), 1, pFile);
+
+		fwrite(&m_queryPoints[it->second->getVertex(0)].m_distance, sizeof(float),1,pFile);
+		fwrite(&m_queryPoints[it->second->getVertex(1)].m_distance, sizeof(float),1,pFile);
+		fwrite(&m_queryPoints[it->second->getVertex(2)].m_distance, sizeof(float),1,pFile);
+		fwrite(&m_queryPoints[it->second->getVertex(3)].m_distance, sizeof(float),1,pFile);
+		fwrite(&m_queryPoints[it->second->getVertex(4)].m_distance, sizeof(float),1,pFile);
+		fwrite(&m_queryPoints[it->second->getVertex(5)].m_distance, sizeof(float),1,pFile);
+		fwrite(&m_queryPoints[it->second->getVertex(6)].m_distance, sizeof(float),1,pFile);
+		fwrite(&m_queryPoints[it->second->getVertex(7)].m_distance, sizeof(float),1,pFile);
+	}
+	fclose(pFile);	
 }
 
 
