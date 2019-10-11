@@ -101,7 +101,7 @@ int main( int argc, char ** argv )
 
     // face normals
     DenseFaceMap<Normal<float>> faceNormals;
-    optional<DenseFaceMap<Normal<float>>> faceNormalsOpt;
+    boost::optional<DenseFaceMap<Normal<float>>> faceNormalsOpt;
     if (readFromHdf5)
     {
       faceNormalsOpt = hdf5In.getDenseAttributeMap<DenseFaceMap<Normal<float>>>("face_normals");
@@ -166,7 +166,7 @@ int main( int argc, char ** argv )
 
     // vertex normals
     DenseVertexMap<Normal<float>> vertexNormals;
-    optional<DenseVertexMap<Normal<float>>> vertexNormalsOpt;
+    boost::optional<DenseVertexMap<Normal<float>>> vertexNormalsOpt;
     if (readFromHdf5)
     {
       vertexNormalsOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<Normal<float>>>("vertex_normals");
@@ -202,7 +202,7 @@ int main( int argc, char ** argv )
 
     // vertex average angles
     DenseVertexMap<float> averageAngles;
-    optional<DenseVertexMap<float>> averageAnglesOpt;
+    boost::optional<DenseVertexMap<float>> averageAnglesOpt;
     if (readFromHdf5)
     {
       averageAnglesOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<float>>("average_angles");
@@ -238,7 +238,7 @@ int main( int argc, char ** argv )
 
     // roughness
     DenseVertexMap<float> roughness;
-    optional<DenseVertexMap<float>> roughnessOpt;
+    boost::optional<DenseVertexMap<float>> roughnessOpt;
     if (readFromHdf5)
     {
       roughnessOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<float>>("roughness");
@@ -274,7 +274,7 @@ int main( int argc, char ** argv )
 
     // height differences
     DenseVertexMap<float> heightDifferences;
-    optional<DenseVertexMap<float>> heightDifferencesOpt;
+    boost::optional<DenseVertexMap<float>> heightDifferencesOpt;
     if (readFromHdf5)
     {
       heightDifferencesOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<float>>("height_diff");
