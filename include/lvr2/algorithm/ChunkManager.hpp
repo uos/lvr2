@@ -37,12 +37,13 @@
 #ifndef CHUNK_MANAGER_HPP
 #define CHUNK_MANAGER_HPP
 
-#include "lvr2/io/ChunkIO.hpp"
 #include "lvr2/algorithm/ChunkBuilder.hpp"
 #include "lvr2/algorithm/ChunkHashGrid.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
+#include "lvr2/io/ChunkIO.hpp"
 #include "lvr2/io/Model.hpp"
+#include "lvr2/types/Channel.hpp"
 
 namespace lvr2
 {
@@ -61,8 +62,9 @@ class ChunkManager
      * @param maxChunkOverlap maximum allowed overlap between chunks relative to the chunk size.
      * Larger triangles will be cut
      * @param savePath JUST FOR TESTING - REMOVE LATER ON
+     * @param cacheSize maximum number of chunks loaded in the ChunkHashGrid
      */
-    ChunkManager(MeshBufferPtr mesh, float chunksize, float maxChunkOverlap, std::string savePath);
+    ChunkManager(MeshBufferPtr mesh, float chunksize, float maxChunkOverlap, std::string savePath, size_t cacheSize = 200);
     /**
      * @brief ChunkManager loads a ChunkManager from a given HDF5-file
      *
@@ -71,8 +73,9 @@ class ChunkManager
      * Every loaded chunk has the same length in height, width and depth.
      *
      * @param hdf5Path path to the HDF5 file, where chunks and additional information are stored
+     * @param cacheSize maximum number of chunks loaded in the ChunkHashGrid
      */
-    ChunkManager(std::string hdf5Path);
+    ChunkManager(std::string hdf5Path, size_t cacheSize = 200);
     /**
      * @brief extractArea creates and returns MeshBufferPtr of merged chunks for given area.
      *
@@ -156,13 +159,13 @@ class ChunkManager
     BaseVector<float> getFaceCenter(std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> mesh,
                                     const FaceHandle& handle) const;
 
-//    /**
-//     * @brief find corresponding grid cell of given point
-//     *
-//     * @param vec point of mesh to find cell id for
-//     * @return cell id
-//     */
-//    std::string getCellName(const BaseVector<float>& vec) const;
+    //    /**
+    //     * @brief find corresponding grid cell of given point
+    //     *
+    //     * @param vec point of mesh to find cell id for
+    //     * @return cell id
+    //     */
+    //    std::string getCellName(const BaseVector<float>& vec) const;
 
     /**
      * @brief returns the grid coordinates of a given point
@@ -180,6 +183,24 @@ class ChunkManager
      */
     std::size_t getCellIndex(const BaseVector<float>& vec) const;
 
+    /**
+     * @brief reads and combines a channel of multiple chunks
+     *
+     * @param chunks list of chunks to combine
+     * @param channelName name of channel to extract
+     * @param staticVertexIndexOffset amount of duplicate vertices in the combined mesh
+     * @param numVertices amount of vertices in the combined mesh
+     * @param numFaces amount of faces in the combined mesh
+     * @param areaVertexIndices mapping from old vertex index to new vertex index per chunk
+     */
+    template <typename T>
+    ChannelPtr<T> extractChannelOfArea(std::unordered_map<std::size_t, MeshBufferPtr>& chunks,
+                                       std::string channelName,
+                                       std::size_t staticVertexIndexOffset,
+                                       std::size_t numVertices,
+                                       std::size_t numFaces,
+                                       std::vector<std::unordered_map<std::size_t, std::size_t>>& areaVertexIndices);
+
     // bounding box of the entire chunked model
     BoundingBox<BaseVector<float>> m_boundingBox;
 
@@ -194,10 +215,10 @@ class ChunkManager
 
     // path to the HDF5 file (either to save or to load the file)
     std::string m_hdf5Path;
-
-
 };
 
 } /* namespace lvr2 */
+
+#include "ChunkManager.tcc"
 
 #endif // CHUNK_MANAGER_HPP
