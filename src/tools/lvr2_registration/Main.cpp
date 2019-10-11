@@ -299,9 +299,6 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    // shared pointer containing the HDF file
-    shared_ptr<HDF5IO> inHDF;
-    // new hdfio
     using HDF5PCIO = lvr2::Hdf5IO<
                 lvr2::hdf5features::ArrayIO,
                 lvr2::hdf5features::ChannelIO,
@@ -317,10 +314,6 @@ int main(int argc, char** argv)
         ifstream f(dir.c_str());
         if (f.good())
         {
-            // // data.h5 exists
-            // //  dir now contains the file name
-            // inHDF.reset(new HDF5IO(dir.c_str(), "scans", HighFive::File::ReadWrite));
-            // new hdfio
             // create boost::fileystem::path to hdf file location
             boost::filesystem::path pathToHDF(dir.c_str());
             h5_ptr->open(pathToHDF.string());
@@ -395,14 +388,6 @@ int main(int argc, char** argv)
     vector<string> scansNeu = hfscans.listObjectNames(); // TODO: Schlechter Name!
     if (options.useHDF)
     {
-        // // for loop handles each scan in HDF FILE
-        // for (int i = 0; i < rawScans.size(); i++)
-        // { 
-        //     SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(rawScans.at(i)));
-        //     scans.push_back(slamScan);
-        //     align.addScan(slamScan);
-        // }
-        // new hdfio for loop
         for (int i = 0; i < scans.size(); i++)
         {
             // create a scan object for each scan in hdf
@@ -425,15 +410,18 @@ int main(int argc, char** argv)
             tempScan->m_hResolution = res_array[0];
             tempScan->m_vResolution = res_array[1];
 
+            // point cloud transfered
             tempScan->m_points = h5_ptr->loadPointCloud("raw/scans/" + scansNeu[i]);
             tempScan->m_pointsLoaded = true;
             
+            // pose transfered
             tempScan->m_poseEstimation = h5_ptr->loadMatrix<Transformd>("raw/scans/" + scansNeu[i], "initialPose").get();
 
             tempScan->m_positionNumber = i;
 
             tempScan->m_scanRoot = "raw/scans/" + scansNeu[i];
 
+            // sets the finalPose to the identiy matrix
             tempScan->m_registration = Transformd::Identity();
     
 
