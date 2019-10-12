@@ -42,7 +42,7 @@
 
 #include <boost/optional.hpp>
 
-using boost::optional;
+
 
 #include "lvr2/geometry/BaseMesh.hpp"
 #include "lvr2/reconstruction/PointsetSurface.hpp"
@@ -65,7 +65,7 @@ using Rgb8Color = std::array<uint8_t, 3>;
  * @return  Optional of a DenseVertexMap with a Rgb8Color for each vertex
  */
 template<typename BaseVecT>
-optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
+boost::optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
     const BaseMesh<BaseVecT>& mesh,
     const PointsetSurfacePtr<BaseVecT> surface
 );

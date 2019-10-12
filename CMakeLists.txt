@@ -40,8 +40,8 @@ if(MSVC)
 else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
   # with cmake 3.3
-  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++11>)
-  set(CMAKE_CXX_STANDARD 14)
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++1z>)
+  set(CMAKE_CXX_STANDARD 17)
 endif(MSVC)
 
 ###############################################################
@@ -391,7 +391,7 @@ if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VER
         message(STATUS "* CUDA library and apps with CUDA. Setting CUDA_HOST_COMPILER to *")
         message(STATUS "* g++-6*. Please ensure that g++ 6 is installed on your system.  *")
         message(STATUS "******************************************************************")
-        # set(CUDA_HOST_COMPILER "g++-5" CACHE STRING "" FORCE)
+        set(CUDA_HOST_COMPILER "g++-6" CACHE STRING "" FORCE)
         endif()
 endif()
 
@@ -472,8 +472,7 @@ add_subdirectory(src/tools/lvr2_reconstruct)
 add_subdirectory(src/tools/lvr2_largescale_reconstruct)
 add_subdirectory(src/tools/lvr2_asciiconverter)
 add_subdirectory(src/tools/lvr2_transform)
-# doesnt compile
-# add_subdirectory(src/tools/lvr2_kaboom)
+add_subdirectory(src/tools/lvr2_kaboom)
 add_subdirectory(src/tools/lvr2_octree_test)
 add_subdirectory(src/tools/lvr2_image_normals)
 add_subdirectory(src/tools/lvr2_plymerger)
@@ -483,6 +482,7 @@ add_subdirectory(src/tools/lvr2_slam2hdf5)
 add_subdirectory(src/tools/lvr2_hdf5togeotiff)
 add_subdirectory(src/tools/lvr2_slam6d_merger)
 add_subdirectory(src/tools/lvr2_scanproject2hdf5)
+add_subdirectory(src/tools/lvr2_chunking)
 add_subdirectory(src/tools/lvr2_registration)
 add_subdirectory(src/tools/lvr2_mesh_reducer)
 

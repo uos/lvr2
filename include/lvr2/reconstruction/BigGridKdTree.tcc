@@ -110,6 +110,7 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
         // If the new size is larger then max. size, split tree
         if (m_numPoints + numPoints > s_maxNodePoints)
         {
+
             // Split at X-Axis
             lvr2::BoundingBox<BaseVecT> leftbb;
             lvr2::BoundingBox<BaseVecT> rightbb;
@@ -127,10 +128,14 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
                     BaseVecT(split_value, m_bb.getMin().y, m_bb.getMin().z),
                     BaseVecT(m_bb.getMax().x, m_bb.getMax().y, m_bb.getMax().z));
 
+
                 if (leftbb.getXSize() == 0 || rightbb.getXSize() == 0)
                 {
+                    std::cout << leftbb << std::endl;
+
+                    std::cout << rightbb << std::endl;
                     std::cerr
-                        << "Error: Requested Maximum Leafsize is Smaller than a points in a voxel"
+                        << "Error: Requested Maximum Leafsize is Smaller than a points in a voxel(X)"
                         << std::endl;
                     exit(1);
                 }
@@ -153,7 +158,7 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
                 if (leftbb.getYSize() == 0 || rightbb.getYSize() == 0)
                 {
                     std::cerr
-                        << "Error: Requested Maximum Leafsize is Smaller than a points in a voxel"
+                        << "Error: Requested Maximum Leafsize is Smaller than a points in a voxel(Y)"
                         << std::endl;
                     exit(1);
                 }
@@ -175,7 +180,7 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
                 if (leftbb.getZSize() == 0 || rightbb.getZSize() == 0)
                 {
                     std::cerr
-                        << "Error: Requested Maximum Leafsize is Smaller than a points in a voxel"
+                        << "Error: Requested Maximum Leafsize is Smaller than a points in a voxel(Z)"
                         << std::endl;
                     exit(1);
                 }

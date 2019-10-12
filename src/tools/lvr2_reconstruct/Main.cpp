@@ -90,7 +90,7 @@
 
 
 
-using boost::optional;
+
 using std::unique_ptr;
 using std::make_unique;
 
@@ -416,7 +416,7 @@ int main(int argc, char** argv)
     // =======================================================================
     // Prepare color data for finalizing
     ClusterPainter painter(clusterBiMap);
-    auto clusterColors = optional<DenseClusterMap<Rgb8Color>>(painter.simpsons(mesh));
+    auto clusterColors = boost::optional<DenseClusterMap<Rgb8Color>>(painter.simpsons(mesh));
     auto vertexColors = calcColorFromPointCloud(mesh, surface);
 
     // Calc normals for vertices

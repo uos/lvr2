@@ -91,7 +91,9 @@ public:
     EdgeSplitResult splitEdge(EdgeHandle edgeH);
     vector<VertexHandle> findCommonNeigbours(VertexHandle vH1, VertexHandle vH2);
     void flipEdge(EdgeHandle edgeH) final;
+    void splitVertex(EdgeHandle eH, VertexHandle vH, BaseVecT pos1, BaseVecT pos2);
     std::pair<BaseVecT, float> triCircumCenter(FaceHandle faceH);
+
 
     size_t numVertices() const final;
     size_t numFaces() const final;
@@ -119,6 +121,9 @@ public:
     void getFacesOfVertex(VertexHandle handle, vector<FaceHandle>& facesOut) const final;
     void getEdgesOfVertex(VertexHandle handle, vector<EdgeHandle>& edgesOut) const final;
     void getNeighboursOfVertex(VertexHandle handle, vector<VertexHandle>& verticesOut) const final;
+    OptionalFaceHandle getOppositeFace(FaceHandle faceH, VertexHandle vertexH) const;
+    OptionalEdgeHandle getOppositeEdge(FaceHandle faceH, VertexHandle vertexH) const;
+    OptionalVertexHandle getOppositeVertex(FaceHandle faceH, EdgeHandle edgeH) const;
 
     // Make sure all default methods from `BaseMesh` are visible
     using BaseMesh<BaseVecT>::getFacesOfVertex;

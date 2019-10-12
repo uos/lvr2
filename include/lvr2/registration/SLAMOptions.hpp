@@ -50,6 +50,9 @@ struct SLAMOptions
     /// Match scans to the combined Pointcloud of all previous Scans instead of just the last Scan
     bool    metascan = false;
 
+    /// Keep track of all previous Transformations of Scans for Animation purposes like 'show' from slam6D
+    bool    createFrames = false;
+
     /// Show more detailed output. Useful for fine-tuning Parameters or debugging
     bool    verbose = false;
 
