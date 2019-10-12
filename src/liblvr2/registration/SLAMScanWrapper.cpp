@@ -52,7 +52,7 @@ SLAMScanWrapper::SLAMScanWrapper(ScanPtr scan)
         // TODO: m_scan->m_points->load();
 
         m_numPoints = m_scan->m_points->numPoints();
-        auto arr = m_scan->m_points->getPointArray();
+        lvr2::floatArr arr = m_scan->m_points->getPointArray();
 
         m_points.resize(m_numPoints);
         #pragma omp parallel for schedule(static)

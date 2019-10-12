@@ -319,7 +319,7 @@ int main(int argc, char** argv)
             h5_ptr->open(pathToHDF.string());
 
             // set start to 0, so the scan searching is not triggered
-            start = 0; // TODO: Unsinn?
+            start = 0; // TODO: Needed?
         }
         else
         {
@@ -385,15 +385,14 @@ int main(int argc, char** argv)
     // vector<lvr2::ScanPtr> rawScans = inHDF->getRawScans();
     // new hdfio
     HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
-    vector<string> scansNeu = hfscans.listObjectNames(); // TODO: Schlechter Name!git
+    vector<string> scansNeu = hfscans.listObjectNames(); // TODO: Schlechter Name!
+    vector<lvr2::ScanPtr> rawScans;
     if (options.useHDF)
     {
         for (int i = 0; i < scansNeu.size(); i++)
         {
-            cout << "ScansNeu: " << scansNeu.size() << endl;
-            cout << "TempScan Nummer:" << i << endl;
             // create a scan object for each scan in hdf
-            shared_ptr<Scan> tempScan(new Scan());
+            ScanPtr tempScan(new Scan());
             size_t six;
             size_t pointsNum;
             boost::shared_array<float> bb_array = h5_ptr->loadArray<float>("raw/scans/" + scansNeu[i], "boundingBox", six);
@@ -411,29 +410,25 @@ int main(int argc, char** argv)
             // resolution transfered
             tempScan->m_hResolution = res_array[0];
             tempScan->m_vResolution = res_array[1];
-            cout << "Vor PointCloud" << i << endl;
             // point cloud transfered
             boost::shared_array<float> point_array = h5_ptr->loadArray<float>("raw/scans/"+ scansNeu[i], "points", pointsNum);
+            // important because x, y, z coords
+            pointsNum = pointsNum / 3;
             PointBufferPtr pointPointer = PointBufferPtr(new PointBuffer(point_array, pointsNum));
             tempScan->m_points = pointPointer;
             // tempScan->m_points = h5_ptr->loadPointCloud("raw/scans/" + scansNeu[i]);
-            tempScan->m_pointsLoaded = true;
-            cout << "Pointcloud transferiert" << i << endl;            
+            tempScan->m_pointsLoaded = true;            
             // pose transfered
             tempScan->m_poseEstimation = h5_ptr->loadMatrix<Transformd>("raw/scans/" + scansNeu[i], "initialPose").get();
-            cout << "Pose ist geschrieben!" << endl;
             tempScan->m_positionNumber = i;
 
             tempScan->m_scanRoot = "raw/scans/" + scansNeu[i];
-            cout << "Scan Root ist geschrieben!" << endl;
             
 
             // sets the finalPose to the identiy matrix
             tempScan->m_registration = Transformd::Identity();
-            cout << "Registration ist auf einheitsmatrix" << endl;
 
             SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(tempScan));
-            cout << "SlamScan ist geschrieben!" << endl;
 
             scans.push_back(slamScan);
             align.addScan(slamScan);
@@ -493,25 +488,10 @@ int main(int argc, char** argv)
         // write poses to hdf
         for(int i = 0; i < scans.size(); i++)
         {
-            cout << "Output Schleifendurchgang: " << i <<endl;
-            auto pose = scans[i]->pose();
+            Transformd pose = scans[i]->pose();
             // the pose needs to be transposed before writing to hdf
             pose.transposeInPlace();
             h5_ptr->MatrixIO::save("raw/scans/" + scansNeu[i], "finalPose", pose);
-            // string scanGroup = "/raw/scans/position_";
-            // // scanstring contains the scan number with leading zeroes
-            // string scanNumber = to_string(i);
-            // string scanString = string(5 - scanNumber.length(), '0').append(scanNumber);
-            // // the pose is represented as a 4x4 matrix
-            // std::vector<size_t> dimPose = {4,4};
-            // float* pose_data = new float[16];
-            // copy(pose.data(), pose.data() + 16, pose_data);
-            // // the pose needs to be transposed before writing to hdf
-            // boost::shared_array<float> poseArray(pose_data);
-            // string deleteString = scanGroup.append(scanString);
-            // inHDF.get()->deleteDataset(string(deleteString + "/finalPose").data());
-            // //rewrite the newly calculated pose
-            // inHDF.get()->addArray(string("/raw/scans/position_").append(scanString+"/"), string("finalPose"), dimPose, poseArray);
         }
     }
 
