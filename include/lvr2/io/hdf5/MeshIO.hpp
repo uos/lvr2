@@ -55,11 +55,16 @@ public:
     MeshBufferPtr load(HighFive::Group& group);
     MeshBufferPtr loadMesh(std::string name);
 
+    void setMeshName(std::string meshName);
+
 protected:
 
     bool isMesh(HighFive::Group& group);
 
     Derived* m_file_access = static_cast<Derived*>(this);
+
+    std::string m_mesh_name = "";
+
     // dependencies
     VariantChannelIO<Derived>* m_vchannel_io = static_cast<VariantChannelIO<Derived>*>(m_file_access);
 
