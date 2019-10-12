@@ -98,6 +98,7 @@ int main( int argc, char ** argv )
     {
       hdf5.open(options.getOutputFile());
     }
+    hdf5.setMeshName(options.getMeshName());
 
     // face normals
     DenseFaceMap<Normal<float>> faceNormals;
