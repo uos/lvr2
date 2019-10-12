@@ -35,7 +35,7 @@
 #include "Options.hpp"
 
 
-using boost::optional;
+
 using std::unique_ptr;
 using std::make_unique;
 

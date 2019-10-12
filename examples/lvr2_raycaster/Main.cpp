@@ -16,7 +16,7 @@
 #endif
 #include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
 
-using boost::optional;
+
 using std::unique_ptr;
 using std::make_unique;
 
