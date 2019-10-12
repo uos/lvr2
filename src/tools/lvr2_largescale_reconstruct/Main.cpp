@@ -43,6 +43,7 @@
 #include "lvr2/reconstruction/QueryPoint.hpp"
 #include "lvr2/reconstruction/VirtualGrid.hpp"
 
+#include <algorithm>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -57,9 +58,11 @@
 #include <lvr2/geometry/ColorVertex.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/Normal.hpp>
+#include <lvr2/io/Hdf5IO.hpp>
 #include <lvr2/io/Model.hpp>
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/io/Timestamp.hpp>
+#include <lvr2/io/hdf5/MeshIO.hpp>
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
 #include <lvr2/reconstruction/FastBox.hpp>
 #include <lvr2/reconstruction/FastReconstruction.hpp>
@@ -85,6 +88,7 @@ typedef CudaSurface GpuSurface;
 #define GPU_FOUND
 
 #include <lvr2/reconstruction/opencl/ClSurface.hpp>
+
 typedef ClSurface GpuSurface;
 #endif
 
@@ -95,6 +99,11 @@ struct duplicateVertex
     float z;
     unsigned int id;
 };
+
+using LSRWriter = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
+                               lvr2::hdf5features::ChannelIO,
+                               lvr2::hdf5features::VariantChannelIO,
+                               lvr2::hdf5features::MeshIO>;
 
 using Vec = lvr2::BaseVector<float>;
 
@@ -244,42 +253,6 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     // Calculate normals for vertices
     auto faceNormals = calcFaceNormals(mesh);
 
-    /*mesh.setClassifier(options.getClassifier());
-    mesh.getClassifier().setMinRegionSize(options.getSmallRegionThreshold());
-    if (options.optimizePlanes())
-    {
-        mesh.optimizePlanes(options.getPlaneIterations(),
-                            options.getNormalThreshold(),
-                            options.getMinPlaneSize(),
-                            options.getSmallRegionThreshold(),
-                            true);
-
-        mesh.fillHoles(options.getFillHoles());
-        mesh.optimizePlaneIntersections();
-        mesh.restorePlanes(options.getMinPlaneSize());
-
-        if (options.getNumEdgeCollapses())
-        {
-            QuadricVertexCosts<ColorVertex<float, unsigned char>, Normal<float>> c =
-                QuadricVertexCosts<ColorVertex<float, unsigned char>, Normal<float>>(true);
-            mesh.reduceMeshByCollapse(options.getNumEdgeCollapses(), c);
-        }
-    }
-    else if (options.clusterPlanes())
-    {
-        mesh.clusterRegions(options.getNormalThreshold(), options.getMinPlaneSize());
-        mesh.fillHoles(options.getFillHoles());
-    }
-
-    if (options.retesselate())
-    {
-        mesh.finalizeAndRetesselate(options.generateTextures(), options.getLineFusionThreshold());
-    }
-    else
-    {
-        mesh.finalize();
-    }*/
-
     ClusterBiMap<FaceHandle> clusterBiMap;
     if (options.optimizePlanes())
     {
@@ -294,6 +267,8 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
             deleteSmallPlanarCluster(
                 mesh, clusterBiMap, static_cast<size_t>(options.getSmallRegionThreshold()));
         }
+
+        double end_s = lvr2::timestamp.getElapsedTimeInS();
 
         if (options.retesselate())
         {
@@ -310,9 +285,20 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     lvr2::SimpleFinalizer<Vec> finalize;
     auto meshBuffer = finalize.apply(mesh);
 
-    // save mesh
-    auto m = ModelPtr(new Model(meshBuffer));
-    ModelFactory::saveModel(m, "largeScale.ply");
+    // save mesh depending on input file type
+    boost::filesystem::path selectedFile(filePath);
+    if (selectedFile.extension().string() == ".h5")
+    {
+        MeshBufferPtr newMesh = MeshBufferPtr(meshBuffer);
+        LSRWriter hdfWrite;
+        hdfWrite.open(filePath);
+        hdfWrite.save("/", newMesh);
+    }
+    else
+    {
+        auto m = ModelPtr(new Model(meshBuffer));
+        ModelFactory::saveModel(m, "largeScale.ply");
+    }
 
     return 0;
 }
