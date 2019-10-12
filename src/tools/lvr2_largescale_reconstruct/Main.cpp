@@ -120,16 +120,54 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     BigGrid<BaseVecT> bg(filePath, voxelsize, scale);
     cout << lvr2::timestamp << "grid finished " << endl;
     BoundingBox<BaseVecT> bb = bg.getBB();
+    shared_ptr<BoundingBox<BaseVecT>> part_bb; // Bounding Box for partial reconstruction
     cout << bb << endl;
 
+    if(!(options.getPartialReconstruct() == "NONE"))
+    {
+        part_bb = std::make_shared<BoundingBox<BaseVecT>>(options.getPartialReconstruct());
+    }
+
     // lvr2::floatArr points = bg.getPointCloud(numPoints);
+    vector<BoundingBox<BaseVecT>> partitionBoxes;
 
     cout << lvr2::timestamp << "making tree" << endl;
-    BigGridKdTree<BaseVecT> gridKd(bg.getBB(), options.getNodeSize(), &bg, voxelsize);
-    gridKd.insert(bg.pointSize(), bg.getBB().getCentroid());
+    if(options.getVGrid() == 1)
+    {
+        VirtualGrid<BaseVecT> vGrid(bg.getBB(), options.getNodeSize(), options.getGridSize(), voxelsize);
+        std::vector<shared_ptr<BoundingBox<BaseVecT>>> boxes;
+        if (!(options.getPartialReconstruct() == "NONE"))
+        {
+            vGrid.setBoundingBox(*part_bb);
+        }
+        vGrid.calculateBoxes();
+        ofstream partBoxOfs("BoundingBoxes.ser");
+        for (size_t i = 0; i < vGrid.getBoxes().size(); i++) {
+            BoundingBox<BaseVecT> partBB = *vGrid.getBoxes().at(i).get();
+            partitionBoxes.push_back(partBB);
+            partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
+                       << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
+                       << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
+        }
+    }
+    else
+        {
+        BigGridKdTree<BaseVecT> gridKd(bg.getBB(), options.getNodeSize(), &bg, voxelsize);
+        gridKd.insert(bg.pointSize(), bg.getBB().getCentroid());
+            ofstream partBoxOfs("KdTree.ser");
+        for (size_t i = 0; i < gridKd.getLeafs().size(); i++) {
+                BoundingBox<BaseVecT> partBB = gridKd.getLeafs()[i]->getBB();
+                partitionBoxes.push_back(partBB);
+                partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
+                           << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
+                           << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
+            }
+
+        }
+
     cout << lvr2::timestamp << "finished tree" << endl;
 
-    std::cout << lvr2::timestamp << "got: " << gridKd.getLeafs().size() << " leafs, saving leafs"
+    std::cout << lvr2::timestamp << "got: " << partitionBoxes.size() << " leafs, saving leafs"
               << std::endl;
 
     BaseVecT bb_min(bb.getMin().x, bb.getMin().y, bb.getMin().z);
@@ -137,32 +175,44 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     BoundingBox<BaseVecT> cbb(bb_min, bb_max);
 
     vector<string> grid_files;
+    unordered_set<string> meshes;
 
-    for (int i = 0; i < gridKd.getLeafs().size(); i++)
+    for (int i = 0; i < partitionBoxes.size(); i++)
     {
+        string name_id;
+        if(options.getVGrid() == 1)
+        {
+            name_id = std::to_string((int)floor(partitionBoxes.at(i).getMin().x/options.getGridSize()) ) + "_" +
+                      std::to_string((int)floor(partitionBoxes.at(i).getMin().y/options.getGridSize()) ) + "_" +
+                      std::to_string((int)floor(partitionBoxes.at(i).getMin().z/options.getGridSize()) );
+        }
+        else {
+            name_id = std::to_string(i);
+        }
+
         size_t numPoints;
 
         // todo: okay?
-        floatArr points = bg.points(gridKd.getLeafs()[i]->getBB().getMin().x,
-                                    gridKd.getLeafs()[i]->getBB().getMin().y,
-                                    gridKd.getLeafs()[i]->getBB().getMin().z,
-                                    gridKd.getLeafs()[i]->getBB().getMax().x,
-                                    gridKd.getLeafs()[i]->getBB().getMax().y,
-                                    gridKd.getLeafs()[i]->getBB().getMax().z,
+        floatArr points = bg.points(partitionBoxes[i].getMin().x,
+                                    partitionBoxes[i].getMin().y,
+                                    partitionBoxes[i].getMin().z,
+                                    partitionBoxes[i].getMax().x,
+                                    partitionBoxes[i].getMax().y,
+                                    partitionBoxes[i].getMax().z,
                                     numPoints);
 
         if (numPoints <= 50)
             continue;
 
-        BaseVecT gridbb_min(gridKd.getLeafs()[i]->getBB().getMin().x,
-                            gridKd.getLeafs()[i]->getBB().getMin().y,
-                            gridKd.getLeafs()[i]->getBB().getMin().z);
-        BaseVecT gridbb_max(gridKd.getLeafs()[i]->getBB().getMax().x,
-                            gridKd.getLeafs()[i]->getBB().getMax().y,
-                            gridKd.getLeafs()[i]->getBB().getMax().z);
+        BaseVecT gridbb_min(partitionBoxes[i].getMin().x,
+                            partitionBoxes[i].getMin().y,
+                            partitionBoxes[i].getMin().z);
+        BaseVecT gridbb_max(partitionBoxes[i].getMax().x,
+                            partitionBoxes[i].getMax().y,
+                            partitionBoxes[i].getMax().z);
         BoundingBox<BaseVecT> gridbb(gridbb_min, gridbb_max);
 
-        cout << "grid: " << i << "/" << gridKd.getLeafs().size() - 1 << endl;
+        cout << "grid: " << i << "/" << partitionBoxes.size() - 1 << endl;
         cout << "grid has " << numPoints << " points" << endl;
         cout << "kn=" << options.getKn() << endl;
         cout << "ki=" << options.getKi() << endl;
@@ -175,12 +225,12 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         if (bg.hasNormals())
         {
             size_t numNormals;
-            lvr2::floatArr normals = bg.normals(gridKd.getLeafs()[i]->getBB().getMin().x,
-                                                gridKd.getLeafs()[i]->getBB().getMin().y,
-                                                gridKd.getLeafs()[i]->getBB().getMin().z,
-                                                gridKd.getLeafs()[i]->getBB().getMax().x,
-                                                gridKd.getLeafs()[i]->getBB().getMax().y,
-                                                gridKd.getLeafs()[i]->getBB().getMax().z,
+            lvr2::floatArr normals = bg.normals(partitionBoxes[i].getMin().x,
+                                                partitionBoxes[i].getMin().y,
+                                                partitionBoxes[i].getMin().z,
+                                                partitionBoxes[i].getMax().x,
+                                                partitionBoxes[i].getMax().y,
+                                                partitionBoxes[i].getMax().z,
                                                 numNormals);
 
             p_loader->setNormalArray(normals, numNormals);
@@ -209,10 +259,39 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
             make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
 
         std::stringstream ss2;
-        ss2 << "testgrid-" << i << ".ser";
+        ss2 << name_id << ".ser";
         ps_grid->saveCells(ss2.str());
-        grid_files.push_back(ss2.str());
+        meshes.insert(ss2.str());
     }
+
+    ifstream old_mesh("VGrid.ser");
+    if(options.getVGrid() == 1 && old_mesh.is_open())
+    {
+        while(old_mesh.good())
+        {
+            string mesh;
+            getline (old_mesh,mesh);
+            cout << "Old Mesh: " << mesh << endl;
+            if(!mesh.empty()) {
+                meshes.insert(mesh);
+            }
+        }
+    }
+    std::cout << "Size of Meshes: " << meshes.size() << endl;
+    ofstream vGrid_ser;
+    vGrid_ser.open("VGrid.ser", ofstream::out | ofstream::trunc);
+    unordered_set<string> :: iterator itr;
+    for (itr = meshes.begin(); itr != meshes.end(); itr++)
+    {
+        vGrid_ser << *itr << std::endl;
+        grid_files.push_back(*itr);
+    }
+
+    vGrid_ser.close();
+
+
+
+
 
     cout << lvr2::timestamp << "finished" << endl;
 
