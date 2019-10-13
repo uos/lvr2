@@ -77,7 +77,7 @@ private:
 };
 
 
-/// Overlaoeded outpur operator
+/// Overlaoeded output operator
 inline ostream& operator<<(ostream& os, const Options &o)
 {
 	cout << "##### Program options: " 	<< endl;
