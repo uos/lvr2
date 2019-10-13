@@ -56,6 +56,9 @@ struct SLAMOptions
     /// Show more detailed output. Useful for fine-tuning Parameters or debugging
     bool    verbose = false;
 
+    /// Indicates if a HDF file containing the scans should be used
+    bool    useHDF = false;
+
     // ==================== Reduction Options ====================================================
 
     /// The Voxel size for Octree based reduction

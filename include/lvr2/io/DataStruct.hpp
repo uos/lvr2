@@ -37,8 +37,7 @@
 *
 **/
 
-#ifndef LVR2_DATASTRUCT_HPP_INCLUDED
-#define LVR2_DATASTRUCT_HPP_INCLUDED
+#pragma once
 
 
 #include <boost/shared_array.hpp>
@@ -165,6 +164,4 @@ typedef std::pair<size_t, size_t> indexPair;
 
 typedef std::map<std::string, std::vector<unsigned int> > labeledFacesMap;
 }
-
-#endif
 

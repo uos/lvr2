@@ -35,6 +35,15 @@
 #include <lvr2/io/ModelFactory.hpp>
 #include <lvr2/io/IOUtils.hpp>
 #include <lvr2/registration/SLAMAlign.hpp>
+#include <lvr2/io/HDF5IO.hpp>
+#include <lvr2/io/Hdf5IO.hpp>
+#include <lvr2/io/Hdf5IO.hpp>
+#include <lvr2/io/hdf5/ArrayIO.hpp>
+#include <lvr2/io/hdf5/ChannelIO.hpp>
+#include <lvr2/io/hdf5/VariantChannelIO.hpp>
+#include <lvr2/io/hdf5/PointCloudIO.hpp>
+#include <lvr2/io/hdf5/MatrixIO.hpp>
+
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -53,6 +62,7 @@ string format_name(const string& format, int index)
     snprintf(buff, size, format.c_str(), index);
     return string(buff);
 }
+
 
 string map_format(const string& format)
 {
@@ -84,6 +94,7 @@ int main(int argc, char** argv)
     int end = -1;
     string format = "uos";
     string pose_format = "pose";
+    bool isHDF = false;
 
     bool write_scans = false;
     string output_format;
@@ -154,6 +165,9 @@ int main(int argc, char** argv)
 
         ("verbose,v", bool_switch(&options.verbose),
          "Show more detailed output. Useful for fine-tuning Parameters or debugging.")
+
+        ("hdf,H", bool_switch(&options.useHDF),
+         "Opens the given hdf5 file. Then registrates all scans in '/raw/scans/'\nthat are named after the scheme: 'position_00001' where '1' is the scans number.\nAfter registration the calculated poses are written to the finalPose dataset in the hdf5 file.\n")
 
         ("help,h", bool_switch(&help),
          "Print this help. Seriously how are you reading this if you don't know the --help Option?")
@@ -285,83 +299,175 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
+    using HDF5PCIO = lvr2::Hdf5IO<
+                lvr2::hdf5features::ArrayIO,
+                lvr2::hdf5features::ChannelIO,
+                lvr2::hdf5features::VariantChannelIO,
+                lvr2::hdf5features::PointCloudIO,
+                lvr2::hdf5features::MatrixIO>;
+    // contains the hdf5
+    std::shared_ptr<HDF5PCIO> h5_ptr(new HDF5PCIO());
+
+    if(options.useHDF)
+    {
+        cout << "HDF5 is used!" << endl;
+        ifstream f(dir.c_str());
+        if (f.good())
+        {
+            // create boost::fileystem::path to hdf file location
+            boost::filesystem::path pathToHDF(dir.c_str());
+            h5_ptr->open(pathToHDF.string());
+
+            // set start to 0, so the scan searching is not triggered
+            start = 0; // TODO: Needed?
+        }
+        else
+        {
+            cerr << "The given HDF5 file could not be opened! Oben" << endl;
+            return EXIT_FAILURE;
+        }
+    }
+
     // =============== search scans ===============
     if (start == -1)
     {
-        for (int i = 0; i < 100; i++)
+        if (!options.useHDF)
         {
-            path file = dir / format_name(format, i);
-            if (exists(file))
+            for (int i = 0; i < 100; i++)
             {
-                start = i;
-                cout << "First scan: " << file.filename() << endl;
-                break;
+                path file = dir / format_name(format, i);
+                if (exists(file))
+                {
+                    start = i;
+                    cout << "First scan: " << file.filename() << endl;
+                    break;
+                }
             }
-        }
-        if (start == -1)
-        {
-            cerr << "Could not find a starting scan. are you using the right format?" << endl;
-            return EXIT_FAILURE;
-        }
-    }
-
-    // make sure all scan and pose files are in the directory
-    for (int i = start; end == -1 || i <= end; i++)
-    {
-        path file = dir / format_name(format, i);
-        if (!exists(file))
-        {
-            if (end != -1 || i == start)
+            if (start == -1)
             {
-                cerr << "Missing scan " << file.filename() << endl;
+                cerr << "Could not find a starting scan. are you using the right format?" << endl;
                 return EXIT_FAILURE;
             }
-            end = i - 1;
-            cout << "Last scan: \"" << format_name(format, end) << '"' << endl;
-            break;
-        }
-        file.replace_extension(pose_format);
-        if (!exists(file))
-        {
-            cerr << "Missing pose file " << file.filename() << endl;
-            return EXIT_FAILURE;
         }
     }
-
-    int count = end - start + 1;
+    if (!options.useHDF)
+    {
+        // make sure all scan and pose files are in the directory
+        for (int i = start; end == -1 || i <= end; i++)
+        {
+            path file = dir / format_name(format, i);
+            if (!exists(file))
+            {
+                if (end != -1 || i == start)
+                {
+                    cerr << "Missing scan " << file.filename() << endl;
+                    return EXIT_FAILURE;
+                }
+                end = i - 1;
+                cout << "Last scan: \"" << format_name(format, end) << '"' << endl;
+                break;
+            }
+            file.replace_extension(pose_format);
+            if (!exists(file))
+            {
+                cerr << "Missing pose file " << file.filename() << endl;
+                return EXIT_FAILURE;
+            }
+        }
+    }
 
     SLAMAlign align(options);
     vector<SLAMScanPtr> scans;
 
-    // TODO: change to ScanDirectoryParser once that is done
+    int count = end - start + 1;
 
-    for (int i = 0; i < count; i++)
+    // // contains all the scans from the hdf file
+    // vector<lvr2::ScanPtr> rawScans = inHDF->getRawScans();
+    // new hdfio
+    HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
+    vector<string> scansNeu = hfscans.listObjectNames(); // TODO: Schlechter Name!
+    vector<lvr2::ScanPtr> rawScans;
+    if (options.useHDF)
     {
-        path file = dir / format_name(format, start + i);
-        auto model = ModelFactory::readModel(file.string());
-
-        if (!model)
+        for (int i = 0; i < scansNeu.size(); i++)
         {
-            cerr << "Unable to read Model from: " << file.string() << endl;
-            return EXIT_FAILURE;
+            // create a scan object for each scan in hdf
+            ScanPtr tempScan(new Scan());
+            size_t six;
+            size_t pointsNum;
+            boost::shared_array<float> bb_array = h5_ptr->loadArray<float>("raw/scans/" + scansNeu[i], "boundingBox", six);
+            BoundingBox<BaseVector<float>> bb(BaseVector<float>(bb_array[0], bb_array[1], bb_array[2]),
+                                    BaseVector<float>(bb_array[3], bb_array[4], bb_array[5]));
+            // bounding box transfered to object
+            tempScan->m_boundingBox = bb;
+
+            boost::shared_array<float> fov_array = h5_ptr->loadArray<float>("raw/scans/" + scansNeu[i], "fov", six);
+            // fov transfered to object
+            tempScan->m_hFieldOfView = fov_array[0];
+            tempScan->m_vFieldOfView = fov_array[1];
+
+            boost::shared_array<float> res_array = h5_ptr->loadArray<float>("raw/scans/" + scansNeu[i], "resolution", six);
+            // resolution transfered
+            tempScan->m_hResolution = res_array[0];
+            tempScan->m_vResolution = res_array[1];
+            // point cloud transfered
+            boost::shared_array<float> point_array = h5_ptr->loadArray<float>("raw/scans/"+ scansNeu[i], "points", pointsNum);
+            // important because x, y, z coords
+            pointsNum = pointsNum / 3;
+            PointBufferPtr pointPointer = PointBufferPtr(new PointBuffer(point_array, pointsNum));
+            tempScan->m_points = pointPointer;
+            // tempScan->m_points = h5_ptr->loadPointCloud("raw/scans/" + scansNeu[i]);
+            tempScan->m_pointsLoaded = true;            
+            // pose transfered
+            tempScan->m_poseEstimation = h5_ptr->loadMatrix<Transformd>("raw/scans/" + scansNeu[i], "initialPose").get();
+            tempScan->m_positionNumber = i;
+
+            tempScan->m_scanRoot = "raw/scans/" + scansNeu[i];
+            
+
+            // sets the finalPose to the identiy matrix
+            tempScan->m_registration = Transformd::Identity();
+
+            SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(tempScan));
+
+            scans.push_back(slamScan);
+            align.addScan(slamScan);
         }
-        if (!model->m_pointCloud)
-        {
-            cerr << "file does not contain Points: " << file.string() << endl;
-            return EXIT_FAILURE;
-        }
-
-        file.replace_extension(pose_format);
-        Transformd pose = getTransformationFromFile<double>(file);
-
-        ScanPtr scan = ScanPtr(new Scan());
-        scan->m_points = model->m_pointCloud;
-        scan->m_poseEstimation = pose;
-
-        SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(scan));
-        scans.push_back(slamScan);
-        align.addScan(slamScan);
     }
+    else
+    {
+        // case for not using HDF5
+        // TODO: change to ScanDirectoryParser once that is done
+
+        for (int i = 0; i < count; i++)
+        {
+            path file = dir / format_name(format, start + i);
+            auto model = ModelFactory::readModel(file.string());
+
+            if (!model)
+            {
+                cerr << "Unable to read Model from: " << file.string() << endl;
+                return EXIT_FAILURE;
+            }
+            if (!model->m_pointCloud)
+            {
+                cerr << "file does not contain Points: " << file.string() << endl;
+                return EXIT_FAILURE;
+            }
+
+            file.replace_extension(pose_format);
+            Transformd pose = getTransformationFromFile<double>(file);
+
+            ScanPtr scan = ScanPtr(new Scan());
+            scan->m_points = model->m_pointCloud;
+            scan->m_poseEstimation = pose;
+
+            SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(scan));
+            scans.push_back(slamScan);
+            align.addScan(slamScan);
+        }
+    }
+    
 
     auto start_time = chrono::steady_clock::now();
 
@@ -376,6 +482,19 @@ int main(int argc, char** argv)
     }
 
     path file;
+
+    if (options.useHDF)
+    {
+        // write poses to hdf
+        for(int i = 0; i < scans.size(); i++) //TODO: vielleicht ersten nicht schreiben?
+        {
+            Transformd pose = scans[i]->deltaPose();
+            cout << "Pose Scan Nummer " << i << pose << endl;
+            // the pose needs to be transposed before writing to hdf
+            pose.transposeInPlace();
+            h5_ptr->MatrixIO::save("raw/scans/" + scansNeu[i], "finalPose", pose);
+        }
+    }
 
     for (int i = 0; i < count; i++)
     {
@@ -434,6 +553,5 @@ int main(int argc, char** argv)
             ModelFactory::saveModel(model, file.string());
         }
     }
-
     return EXIT_SUCCESS;
 }

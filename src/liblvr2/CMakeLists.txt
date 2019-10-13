@@ -35,6 +35,7 @@ set(LVR2_SOURCES
     io/DracoEncoder.cpp
     io/DracoDecoder.cpp
     io/DrcIO.cpp
+    io/LineReader.cpp
 #    io/KinectGrabber.cpp
     io/DatIO.cpp
     io/LasIO.cpp
@@ -60,6 +61,7 @@ set(LVR2_SOURCES
     algorithm/ChunkBuilder.cpp
     algorithm/ChunkManager.cpp
     algorithm/ChunkHashGrid.cpp
+    reconstruction/NodeData.cpp
     registration/ICPPointAlign.cpp
     registration/KDTree.cpp
     registration/SLAMScanWrapper.cpp
