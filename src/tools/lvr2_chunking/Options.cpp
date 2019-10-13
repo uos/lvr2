@@ -60,7 +60,9 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
         "z_min", value<float>()->default_value(0.0f), "bounding box minimum value in z-dimension")(
         "x_max", value<float>()->default_value(10.0f), "bounding box maximum value in x-dimension")(
         "y_max", value<float>()->default_value(10.0f), "bounding box maximum value in y-dimension")(
-        "z_max", value<float>()->default_value(10.0f), "bounding box maximum value in z-dimension");
+        "z_max", value<float>()->default_value(10.0f), "bounding box maximum value in z-dimension")(
+        "cacheSize", value<int>()->default_value(200), "while loading the maximum number of chunks in RAM")(
+        "meshName", value<std::string>()->default_value(""), "group name of the mesh if the HDF5 contains multiple meshes");
 
     // Parse command line and generate variables map
     store(command_line_parser(argc, argv).options(m_descr).positional(m_posDescr).run(),
@@ -146,6 +148,19 @@ float Options::getYMax() const
 float Options::getZMax() const
 {
     return m_variables["z_max"].as<float>();
+}
+int Options::getCacheSize() const
+{
+    int size = m_variables["cacheSize"].as<int>();
+    if(size > 0)
+    {
+        return size;
+    }
+    return 200;
+}
+std::string Options::getMeshGroup() const
+{
+    return m_variables["meshName"].as<std::string>();
 }
 
 Options::~Options()

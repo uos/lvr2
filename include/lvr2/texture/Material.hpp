@@ -32,8 +32,6 @@
 #include "lvr2/algorithm/ColorAlgorithms.hpp"
 #include "lvr2/geometry/Handles.hpp"
 
-using boost::optional;
-
 namespace lvr2
 {
 
@@ -44,9 +42,9 @@ namespace lvr2
 struct Material
 {
     /// Optional texture handle
-    optional<TextureHandle> m_texture;
+    boost::optional<TextureHandle> m_texture;
     /// Optional color
-    optional<Rgb8Color> m_color;
+    boost::optional<Rgb8Color> m_color;
 };
 
 } // namespace lvr2

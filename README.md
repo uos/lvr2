@@ -28,6 +28,9 @@ sudo apt-get install build-essential \
      libopencv-dev libyaml-cpp-dev
 ```
 
+A C++17 compiler is required, e.g., g++7, gcc7 need bo installed.
+If CUDA is installed you also need g++6, see "Optional for NVIDIA
+graphics cards users" 
 
 
 ### Step 2: Configure and build from sources:
@@ -43,7 +46,7 @@ cmake .. && make
 If you want to compile with CUDA support install the latest version of the CUDA toolkit, which you can find on NVIDIAs CUDA download site:
 
 To enable CUDA support, you need to compile the software with a compatible GCC version. We have testet compilation with CUDA 9.1 and GCC 6. To use this compiler for compilation of CUDA generated code, set the `CUDA_HOST_COMPILER` option to `g++-6` is forced to g++-6. Please ensure that this version is installed on your system.
-
+/
 ### Step 3: Installation
 
 After successful compilation, you will find the generated example tools in the ./bin/ directory. Optionally, you can install the library and header files to your system:

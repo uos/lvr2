@@ -77,7 +77,7 @@ class ClusterTexCoordMapping
 {
 private:
     /// The mapping of cluster handles to texture coordinates
-    array<optional<pair<ClusterHandle, TexCoords>>, 100> m_mapping;
+    array<boost::optional<pair<ClusterHandle, TexCoords>>, 100> m_mapping;
     /// The number of stored pairs
     size_t m_len;
 

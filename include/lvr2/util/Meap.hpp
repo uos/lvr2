@@ -42,7 +42,7 @@
 
 using std::unordered_map;
 using std::pair;
-using boost::optional;
+
 
 namespace lvr2
 {
@@ -115,10 +115,10 @@ public:
     // These methode work exactly like the ones from `AttributeMap`
     // =======================================================================
     bool containsKey(KeyT key) const;
-    optional<ValueT> insert(KeyT key, const ValueT& value);
-    optional<ValueT> erase(KeyT key);
+    boost::optional<ValueT> insert(KeyT key, const ValueT& value);
+    boost::optional<ValueT> erase(KeyT key);
     void clear();
-    optional<const ValueT&> get(KeyT key) const;
+    boost::optional<const ValueT&> get(KeyT key) const;
     size_t numValues() const;
 
 
