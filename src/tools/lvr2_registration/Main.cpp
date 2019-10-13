@@ -486,9 +486,10 @@ int main(int argc, char** argv)
     if (options.useHDF)
     {
         // write poses to hdf
-        for(int i = 0; i < scans.size(); i++)
+        for(int i = 0; i < scans.size(); i++) //TODO: vielleicht ersten nicht schreiben?
         {
-            Transformd pose = scans[i]->pose();
+            Transformd pose = scans[i]->deltaPose();
+            cout << "Pose Scan Nummer " << i << pose << endl;
             // the pose needs to be transposed before writing to hdf
             pose.transposeInPlace();
             h5_ptr->MatrixIO::save("raw/scans/" + scansNeu[i], "finalPose", pose);
