@@ -23,6 +23,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <yaml-cpp/yaml.h>
 
+
 // const hdf5tool2::Options* options;
 namespace qi = boost::spirit::qi;
 using namespace lvr2;
@@ -276,7 +277,7 @@ bool channelIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     std::vector<boost::filesystem::path> spectral;
     char group[256];
     sprintf(group, "/raw/spectral/position_%05d", number);
-    floatArr angles;
+    // floatArr angles;
     // std::cout << p << std::endl;
 
     // count files and get all png pathes.
@@ -325,23 +326,33 @@ bool channelIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     return true;
 }
 
-size_t readSpectralMetaData(const boost::filesystem::path& fn, floatArr& angles)
+size_t readSpectralMetaData(const boost::filesystem::path& fn,
+                            Channel<long>& timestamps,
+                            Channel<double>& angleOffset)
 {
     // TODO use double or long
     std::vector<YAML::Node> root = YAML::LoadAllFromFile(fn.string());
     size_t size = 0;
     for (auto& n : root)
     {
-        // TODO offset_angle
-        angles = floatArr(new float[n.size()]);
+        timestamps = Channel<long>(n.size() - 1, 1);
         //        std::cout << n.size() << std::endl;
         size = n.size();
         for (YAML::const_iterator it = n.begin(); it != n.end(); ++it)
         {
             // not sorted. key as index.
-            angles[it->first.as<int>()] = it->second["timestamp"].as<float>();
-            std::cout << it->first << std::endl;
-            std::cout << " " << it->second << std::endl;
+            if (it->first.as<std::string>() == std::string("offset_angle"))
+            {
+                std::cout << "yooooopooo " << it->second.as<double>() << std::endl;
+                angleOffset = Channel<double>(1, 1);
+                angleOffset[0] = it->second.as<double>();
+            }
+            else
+            {
+                timestamps[it->first.as<int>()] = it->second["timestamp"].as<long>();
+                std::cout << it->first << std::endl;
+                std::cout << " " << it->second << std::endl;
+            }
         }
     }
 
@@ -450,7 +461,8 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     std::vector<boost::filesystem::path> spectral;
     char group[256];
     sprintf(group, "/raw/spectral/position_%05d", number);
-    floatArr angles;
+    Channel<long> timestamps;
+    Channel<double> angleOffsets;
     // std::cout << p << std::endl;
 
     size_t size = 0;
@@ -462,7 +474,7 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
         if (it->path().extension() == ".yaml")
         {
             std::cout << it->path() << std::endl;
-            size = readSpectralMetaData(it->path(), angles);
+            size = readSpectralMetaData(it->path(), timestamps, angleOffsets);
             yaml = true;
         }
 
@@ -513,7 +525,8 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
 
     if (size)
     {
-        hdf.save(group, "angles", size, angles);
+        hdf.save(group, "timestamps", timestamps);
+        hdf.save(group, "offset_angle", angleOffsets);
     }
 
     // TODO write aperture. 47.5 deg oder so
