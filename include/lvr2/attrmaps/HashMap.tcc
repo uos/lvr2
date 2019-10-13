@@ -58,7 +58,7 @@ bool HashMap<HandleT, ValueT>::containsKey(HandleT key) const
 }
 
 template<typename HandleT, typename ValueT>
-optional<ValueT> HashMap<HandleT, ValueT>::insert(HandleT key, const ValueT& value)
+boost::optional<ValueT> HashMap<HandleT, ValueT>::insert(HandleT key, const ValueT& value)
 {
     auto res = m_map.insert(make_pair(key, value));
     if (!res.second)
@@ -77,7 +77,7 @@ optional<ValueT> HashMap<HandleT, ValueT>::insert(HandleT key, const ValueT& val
 }
 
 template<typename HandleT, typename ValueT>
-optional<ValueT> HashMap<HandleT, ValueT>::erase(HandleT key)
+boost::optional<ValueT> HashMap<HandleT, ValueT>::erase(HandleT key)
 {
     auto it = m_map.find(key);
     if (it != m_map.end())
@@ -99,7 +99,7 @@ void HashMap<HandleT, ValueT>::clear()
 }
 
 template<typename HandleT, typename ValueT>
-optional<ValueT&> HashMap<HandleT, ValueT>::get(HandleT key)
+boost::optional<ValueT&> HashMap<HandleT, ValueT>::get(HandleT key)
 {
     // Try to lookup value. If none was found and a default value is set,
     // insert it and return that instead.
@@ -121,7 +121,7 @@ optional<ValueT&> HashMap<HandleT, ValueT>::get(HandleT key)
 }
 
 template<typename HandleT, typename ValueT>
-optional<const ValueT&> HashMap<HandleT, ValueT>::get(HandleT key) const
+boost::optional<const ValueT&> HashMap<HandleT, ValueT>::get(HandleT key) const
 {
     // Try to lookup value. If none was found and a default value is set,
     // return that instead.

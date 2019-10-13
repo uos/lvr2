@@ -63,7 +63,7 @@ bool VectorMap<HandleT, ValueT>::containsKey(HandleT key) const
 }
 
 template<typename HandleT, typename ValueT>
-optional<ValueT> VectorMap<HandleT, ValueT>::insert(HandleT key, const ValueT& value)
+boost::optional<ValueT> VectorMap<HandleT, ValueT>::insert(HandleT key, const ValueT& value)
 {
     // If the vector isn't large enough yet, we allocate additional space.
     if (key.idx() >= m_vec.size())
@@ -81,7 +81,7 @@ optional<ValueT> VectorMap<HandleT, ValueT>::insert(HandleT key, const ValueT& v
 }
 
 template<typename HandleT, typename ValueT>
-optional<ValueT> VectorMap<HandleT, ValueT>::erase(HandleT key)
+boost::optional<ValueT> VectorMap<HandleT, ValueT>::erase(HandleT key)
 {
     auto val = m_vec.get(key);
     if (val)
@@ -103,7 +103,7 @@ void VectorMap<HandleT, ValueT>::clear()
 }
 
 template<typename HandleT, typename ValueT>
-optional<ValueT&> VectorMap<HandleT, ValueT>::get(HandleT key)
+boost::optional<ValueT&> VectorMap<HandleT, ValueT>::get(HandleT key)
 {
     // Try to lookup value. If none was found and a default value is set,
     // insert it and return that instead.
@@ -117,7 +117,7 @@ optional<ValueT&> VectorMap<HandleT, ValueT>::get(HandleT key)
 }
 
 template<typename HandleT, typename ValueT>
-optional<const ValueT&> VectorMap<HandleT, ValueT>::get(HandleT key) const
+boost::optional<const ValueT&> VectorMap<HandleT, ValueT>::get(HandleT key) const
 {
     // Try to lookup value. If none was found and a default value is set,
     // return that instead.

@@ -76,13 +76,13 @@ struct MaterializerResult
     DenseClusterMap<Material> m_clusterMaterials;
 
     /// A stable vector of textures. each texture is identified by a tex.-handle
-    optional<StableVector<TextureHandle, Texture>> m_textures;
+    boost::optional<StableVector<TextureHandle, Texture>> m_textures;
 
     /// Cluster texture coordinates for each vertex
-    optional<SparseVertexMap<ClusterTexCoordMapping>> m_vertexTexCoords;
+    boost::optional<SparseVertexMap<ClusterTexCoordMapping>> m_vertexTexCoords;
 
     /// Keypoints
-    optional<std::unordered_map<BaseVecT, std::vector<float>>> m_keypoints;
+    boost::optional<std::unordered_map<BaseVecT, std::vector<float>>> m_keypoints;
 
     /**
      * @brief Constructor
@@ -190,7 +190,7 @@ private:
     const PointsetSurface<BaseVecT>& m_surface;
 
     /// Texturizer
-    optional<Texturizer<BaseVecT>&> m_texturizer;
+    boost::optional<Texturizer<BaseVecT>&> m_texturizer;
 
 };
 

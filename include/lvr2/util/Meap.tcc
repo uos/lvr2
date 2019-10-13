@@ -52,7 +52,7 @@ bool Meap<KeyT, ValueT>::containsKey(KeyT key) const
 }
 
 template<typename KeyT, typename ValueT>
-optional<ValueT> Meap<KeyT, ValueT>::insert(KeyT key, const ValueT& value)
+boost::optional<ValueT> Meap<KeyT, ValueT>::insert(KeyT key, const ValueT& value)
 {
     auto previous = m_indices.find(key);
     if (previous != m_indices.end())
@@ -88,7 +88,7 @@ size_t Meap<KeyT, ValueT>::numValues() const
 }
 
 template<typename KeyT, typename ValueT>
-optional<const ValueT&> Meap<KeyT, ValueT>::get(KeyT key) const
+boost::optional<const ValueT&> Meap<KeyT, ValueT>::get(KeyT key) const
 {
     auto maybeIndex = m_indices.get(key);
     if (maybeIndex)
@@ -159,7 +159,7 @@ void Meap<KeyT, ValueT>::updateValue(const KeyT& key, const ValueT& newValue)
 }
 
 template<typename KeyT, typename ValueT>
-optional<ValueT> Meap<KeyT, ValueT>::erase(KeyT key)
+boost::optional<ValueT> Meap<KeyT, ValueT>::erase(KeyT key)
 {
     const auto maybeIndex = m_indices.find(key);
     if (maybeIndex == m_indices.end())

@@ -431,8 +431,8 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
 
         for (int i = 0; i < materials.size(); i++)
         {
-            optional<TextureHandle> opt_texture_index = materials[i].m_texture;
-            optional<Rgb8Color> opt_mat_color = materials[i].m_color;
+            boost::optional<TextureHandle> opt_texture_index = materials[i].m_texture;
+            boost::optional<Rgb8Color> opt_mat_color = materials[i].m_color;
             if(opt_mat_color)
             {
                 Rgb8Color mat_color = *opt_mat_color;

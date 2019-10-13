@@ -42,7 +42,7 @@
 
 using std::move;
 using std::vector;
-using boost::optional;
+
 
 #include "lvr2/util/BaseHandle.hpp"
 #include "lvr2/geometry/Handles.hpp"
@@ -62,12 +62,12 @@ class StableVectorIterator
 {
 private:
     /// Reference to the deleted marker array this iterator belongs to
-    const vector<optional<ElemT>>* m_elements;
+    const vector<boost::optional<ElemT>>* m_elements;
 
     /// Current position in the vector
     size_t m_pos;
 public:
-    StableVectorIterator(const vector<optional<ElemT>>* deleted, bool startAtEnd = false);
+    StableVectorIterator(const vector<boost::optional<ElemT>>* deleted, bool startAtEnd = false);
 
     StableVectorIterator& operator=(const StableVectorIterator& other);
     bool operator==(const StableVectorIterator& other) const;
@@ -278,7 +278,7 @@ private:
     size_t m_usedCount;
 
     /// Vector for stored elements
-    vector<optional<ElementType>> m_elements;
+    vector<boost::optional<ElementType>> m_elements;
 
     /**
      * @brief Assert that the requested handle is not deleted or throw an
