@@ -52,6 +52,7 @@ set(LVR2_SOURCES
     io/ScanDirectoryParser.cpp
     io/ChunkIO.cpp
     types/Scan.cpp
+    #io/PlutoMetaDataIO.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
@@ -106,7 +107,7 @@ set(LVR2_LIB_DEPENDENCIES
     ${OpenCV_LIBS}
     ${GSL_LIBRARIES}
     ${LZ4_LIBRARY}
-    ${TIFF_LIBRARY} 
+    ${TIFF_LIBRARY}
     uuid)
 
 
@@ -166,6 +167,15 @@ if(OPENCL_FOUND)
     set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${OpenCL_LIBRARIES})
 endif()
 
+#####################################################################################
+# yaml-cpp
+#####################################################################################
+# no found variable
+if(YAML_CPP_LIBRARIES)
+    message("with yaml-cpp")
+    set(LVR2_SOURCES ${LVR2_SOURCES} io/PlutoMetaDataIO.cpp)
+    set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${YAML_CPP_LIBRARIES})
+endif()
 
 #####################################################################################
 # Compile object files for static and dynamic library
@@ -191,7 +201,7 @@ if( NOT MSVC )
   add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
   target_link_libraries(lvr2 ${LVR2_INTERNAL_DEPENDENCIES_SHARED} ${LVR2_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 
-install(TARGETS lvr2_static lvr2 
+install(TARGETS lvr2_static lvr2
   EXPORT lvr2Targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -237,8 +247,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
     target_link_libraries(lvr2cuda lvr2)
 
     install(
-        TARGETS lvr2cuda_static lvr2cuda 
-        EXPORT lvr2Targets 
+        TARGETS lvr2cuda_static lvr2cuda
+        EXPORT lvr2Targets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
