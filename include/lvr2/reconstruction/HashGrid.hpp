@@ -132,6 +132,15 @@ public:
      */
     HashGrid(string file);
 
+    /***
+     * @brief Construct a new Hash Grid object
+     *
+     * @param files
+     * @param boundingBox
+     * @param voxelsize
+     */
+    HashGrid(std::vector<string>& files, BoundingBox<BaseVecT>& boundingBox, float voxelsize);
+
     /**
      *
      * @param i         Discrete x position within the grid.
@@ -148,6 +157,13 @@ public:
      * @param file      Output file name.
      */
     virtual void saveGrid(string file);
+
+    /**
+     * @brief Saves a representation of the cells to the given file
+     *
+     * @param file Output file name.
+     */
+    void saveCells(string file);
 
     virtual void serialize(string file);
 
@@ -226,16 +242,13 @@ public:
         int y,
         int z
     );
-protected:
-
-
 
     /**
      * @brief   Calculates needed lattice parameters.
      */
     void calcIndices();
 
-
+protected:
 
     inline int calcIndex(float f)
     {

@@ -475,6 +475,7 @@ add_subdirectory(src/liblvr2)
 
 add_subdirectory(src/tools/lvr2_gs_reconstruction)
 add_subdirectory(src/tools/lvr2_reconstruct)
+add_subdirectory(src/tools/lvr2_largescale_reconstruct)
 add_subdirectory(src/tools/lvr2_asciiconverter)
 add_subdirectory(src/tools/lvr2_transform)
 add_subdirectory(src/tools/lvr2_kaboom)
