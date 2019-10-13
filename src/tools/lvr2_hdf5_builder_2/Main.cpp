@@ -343,15 +343,12 @@ size_t readSpectralMetaData(const boost::filesystem::path& fn,
             // not sorted. key as index.
             if (it->first.as<std::string>() == std::string("offset_angle"))
             {
-                std::cout << "yooooopooo " << it->second.as<double>() << std::endl;
                 angleOffset = Channel<double>(1, 1);
                 angleOffset[0] = it->second.as<double>();
             }
             else
             {
                 timestamps[it->first.as<int>()] = it->second["timestamp"].as<long>();
-                std::cout << it->first << std::endl;
-                std::cout << " " << it->second << std::endl;
             }
         }
     }
@@ -389,8 +386,6 @@ void readScanMetaData(const boost::filesystem::path& fn, ScanPtr& scan_ptr)
                 size_t col;
                 for (auto& i : it->second)
                 {
-                    std::cout << "yolo" << i.as<double>() << " ";
-
                     pose(row, col) = i.as<double>();
                     if (col >= 3)
                     {
