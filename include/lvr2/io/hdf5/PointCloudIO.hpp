@@ -61,8 +61,8 @@ protected:
     // dependencies
     VariantChannelIO<Derived>* m_vchannel_io = static_cast<VariantChannelIO<Derived>*>(m_file_access);
 
-    static constexpr char* ID = "PointCloudIO";
-    static constexpr char* OBJID = "PointBuffer";
+    static constexpr const char* ID = "PointCloudIO";
+    static constexpr const char* OBJID = "PointBuffer";
 };
 
 

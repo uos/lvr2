@@ -68,8 +68,8 @@ protected:
     // dependencies
     VariantChannelIO<Derived>* m_vchannel_io = static_cast<VariantChannelIO<Derived>*>(m_file_access);
 
-    static constexpr char* ID = "MeshIO";
-    static constexpr char* OBJID = "MeshBuffer";
+    static constexpr const char* ID = "MeshIO";
+    static constexpr const char* OBJID = "MeshBuffer";
 
     ArrayIO<Derived>* m_array_io = static_cast<ArrayIO<Derived>*>(m_file_access);
 
