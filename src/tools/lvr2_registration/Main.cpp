@@ -381,9 +381,6 @@ int main(int argc, char** argv)
 
     int count = end - start + 1;
 
-    // // contains all the scans from the hdf file
-    // vector<lvr2::ScanPtr> rawScans = inHDF->getRawScans();
-    // new hdfio
     HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
     vector<string> scansNeu = hfscans.listObjectNames(); // TODO: Schlechter Name!
     vector<lvr2::ScanPtr> rawScans;
@@ -488,7 +485,7 @@ int main(int argc, char** argv)
         // write poses to hdf
         for(int i = 0; i < scans.size(); i++) //TODO: vielleicht ersten nicht schreiben?
         {
-            Transformd pose = scans[i]->deltaPose();
+            Transformd pose = scans[i]->pose();
             cout << "Pose Scan Nummer " << i << pose << endl;
             // the pose needs to be transposed before writing to hdf
             pose.transposeInPlace();
