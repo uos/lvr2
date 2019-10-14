@@ -335,11 +335,11 @@ public:
      * @return The type index in the MultiChannelMap.
      */
     template <typename T>
-    int getAllChannelsOfType(std::vector<std::pair<std::string, Channel<T> > >& channels)
+    int getAllChannelsOfType(std::map<std::string, Channel<T> >& channels)
     {
       for(auto it = this->typedBegin<T>(); it != this->end(); ++it)
       {
-        channels.push_back({it->first, it->second});
+        channels.insert(*it);
       }
       return index_of_type<T>::value;
     }
