@@ -382,8 +382,8 @@ void readScanMetaData(const boost::filesystem::path& fn, ScanPtr& scan_ptr)
             else if (it->first.as<string>() == "Pose")
             {
                 Transformd pose = Transformd::Identity();
-                size_t row;
-                size_t col;
+                size_t row = 0;
+                size_t col = 0;
                 for (auto& i : it->second)
                 {
                     pose(row, col) = i.as<double>();
