@@ -58,6 +58,10 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
         "voxelsize,v",
         value<float>(&m_voxelsize)->default_value(10),
         "Voxelsize of grid used for reconstruction.")
+        (
+        "bgVoxelsize,bgv",
+        value<float>(&m_voxelsizeBG)->default_value(10),
+        "Voxelsize of the bigGrid.")
             ("useVGrid", value<int>(&m_vgrid)->default_value(0),"Option to change the partition-process to a gridbase partition (default: OFF (=0))")
             ("gridSize", value<int>(&m_gridsize)->default_value(2000), "Set the gridsize for the virtual grid. (default: 4000 aka. 40m^3)")(
         "noExtrusion",
@@ -209,6 +213,8 @@ unsigned int Options::getNodeSize() const { return m_variables["nodeSize"].as<un
 unsigned int Options::getBufferSize() const { return m_variables["buff"].as<unsigned int>(); }
 
 float Options::getVoxelsize() const { return m_variables["voxelsize"].as<float>(); }
+
+float Options::getBGVoxelsize() const { return m_variables["bgVoxelsize"].as<float>(); }
 
 float Options::getSharpFeatureThreshold() const { return m_variables["sft"].as<float>(); }
 

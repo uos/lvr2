@@ -115,9 +115,10 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 {
     string filePath = options.getInputFileName()[0];
     float voxelsize = options.getVoxelsize();
+    float bgVoxelsize = options.getBGVoxelsize();
     float scale = options.getScaling();
     cout << lvr2::timestamp << "Starting grid" << endl;
-    BigGrid<BaseVecT> bg(filePath, voxelsize, scale);
+    BigGrid<BaseVecT> bg(filePath, bgVoxelsize, scale);
     cout << lvr2::timestamp << "grid finished " << endl;
     BoundingBox<BaseVecT> bb = bg.getBB();
     shared_ptr<BoundingBox<BaseVecT>> part_bb; // Bounding Box for partial reconstruction
@@ -134,7 +135,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     cout << lvr2::timestamp << "making tree" << endl;
     if(options.getVGrid() == 1)
     {
-        VirtualGrid<BaseVecT> vGrid(bg.getBB(), options.getNodeSize(), options.getGridSize(), voxelsize);
+        VirtualGrid<BaseVecT> vGrid(bg.getBB(), options.getNodeSize(), options.getGridSize(), bgVoxelsize);
         std::vector<shared_ptr<BoundingBox<BaseVecT>>> boxes;
         if (!(options.getPartialReconstruct() == "NONE"))
         {
@@ -152,7 +153,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     }
     else
         {
-        BigGridKdTree<BaseVecT> gridKd(bg.getBB(), options.getNodeSize(), &bg, voxelsize);
+        BigGridKdTree<BaseVecT> gridKd(bg.getBB(), options.getNodeSize(), &bg, bgVoxelsize);
         gridKd.insert(bg.pointSize(), bg.getBB().getCentroid());
             ofstream partBoxOfs("KdTree.ser");
         for (size_t i = 0; i < gridKd.getLeafs().size(); i++) {
@@ -297,12 +298,12 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
     auto vmax = cbb.getMax();
     auto vmin = cbb.getMin();
-    vmin.x -= voxelsize * 2;
-    vmin.y -= voxelsize * 2;
-    vmin.z -= voxelsize * 2;
-    vmax.x += voxelsize * 2;
-    vmax.y += voxelsize * 2;
-    vmax.z += voxelsize * 2;
+    vmin.x -= bgVoxelsize * 2;
+    vmin.y -= bgVoxelsize * 2;
+    vmin.z -= bgVoxelsize * 2;
+    vmax.x += bgVoxelsize * 2;
+    vmax.y += bgVoxelsize * 2;
+    vmax.z += bgVoxelsize * 2;
     cbb.expand(vmin);
     cbb.expand(vmax);
 

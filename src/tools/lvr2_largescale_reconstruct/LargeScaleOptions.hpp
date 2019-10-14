@@ -65,6 +65,11 @@ class Options : public lvr2::BaseOption
     virtual ~Options();
 
     /**
+     * @brief    Returns the given voxelsize for bigGrid
+     */
+    float getBGVoxelsize() const;
+
+    /**
      * @brief    Returns the given voxelsize
      */
     float getVoxelsize() const;
@@ -337,6 +342,9 @@ class Options : public lvr2::BaseOption
     string getPartialReconstruct() const;
 
   private:
+    /// The set voxelsize
+    float m_voxelsizeBG;
+
     /// The set voxelsize
     float m_voxelsize;
 
