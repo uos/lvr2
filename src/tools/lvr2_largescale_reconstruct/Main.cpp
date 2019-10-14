@@ -373,6 +373,9 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         LSRWriter hdfWrite;
         hdfWrite.open(filePath);
         hdfWrite.save("/", newMesh);
+
+        auto m = ModelPtr(new Model(meshBuffer));
+        ModelFactory::saveModel(m, "largeScale.ply");
     }
     else
     {
