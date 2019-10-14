@@ -114,6 +114,7 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
             // Split at X-Axis
             lvr2::BoundingBox<BaseVecT> leftbb;
             lvr2::BoundingBox<BaseVecT> rightbb;
+            bool ignoreSplit = false;
 
             if (m_bb.getXSize() >= m_bb.getYSize() && m_bb.getXSize() >= m_bb.getZSize())
             {
@@ -128,16 +129,20 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
                     BaseVecT(split_value, m_bb.getMin().y, m_bb.getMin().z),
                     BaseVecT(m_bb.getMax().x, m_bb.getMax().y, m_bb.getMax().z));
 
-
                 if (leftbb.getXSize() == 0 || rightbb.getXSize() == 0)
                 {
+                    /*
                     std::cout << leftbb << std::endl;
-
                     std::cout << rightbb << std::endl;
                     std::cerr
-                        << "Error: Requested Maximum Leafsize is Smaller than a points in a voxel(X)"
+                        << "Error: Requested Maximum Leafsize is Smaller than a points in a
+                    voxel(X)"
                         << std::endl;
                     exit(1);
+                    */
+                    ignoreSplit = true;
+                    std::cout << "WARNING: m_numPoints + numPoints > " << s_maxNodePoints
+                              << ". Ignoring x-split" << std::endl;
                 }
             }
             // Split at Y-Axis
@@ -157,10 +162,16 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
 
                 if (leftbb.getYSize() == 0 || rightbb.getYSize() == 0)
                 {
+                    /*
                     std::cerr
-                        << "Error: Requested Maximum Leafsize is Smaller than a points in a voxel(Y)"
+                        << "Error: Requested Maximum Leafsize is Smaller than a points in a
+                    voxel(Y)"
                         << std::endl;
                     exit(1);
+                    */
+                    ignoreSplit = true;
+                    std::cout << "WARNING: m_numPoints + numPoints > " << s_maxNodePoints
+                              << ". Ignoring y-split" << std::endl;
                 }
             }
             // Split at Z-Axis
@@ -179,33 +190,42 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
 
                 if (leftbb.getZSize() == 0 || rightbb.getZSize() == 0)
                 {
+                    /*
                     std::cerr
-                        << "Error: Requested Maximum Leafsize is Smaller than a points in a voxel(Z)"
+                        << "Error: Requested Maximum Leafsize is Smaller than a points in a
+                    voxel(Z)"
                         << std::endl;
                     exit(1);
+                    */
+                    ignoreSplit = true;
+                    std::cout << "WARNING: m_numPoints + numPoints > " << s_maxNodePoints
+                              << ". Ignoring z-split" << std::endl;
                 }
             }
 
-            //            std::cout << lvr2::timestamp << " rsize start "  << std::endl;
-            size_t rightSize = m_grid->getSizeofBox(rightbb.getMin().x,
-                                                    rightbb.getMin().y,
-                                                    rightbb.getMin().z,
-                                                    rightbb.getMax().x,
-                                                    rightbb.getMax().y,
-                                                    rightbb.getMax().z);
-            //            std::cout << lvr2::timestamp << " lsize start "  << std::endl;
-            size_t leftSize = m_grid->getSizeofBox(leftbb.getMin().x,
-                                                   leftbb.getMin().y,
-                                                   leftbb.getMin().z,
-                                                   leftbb.getMax().x,
-                                                   leftbb.getMax().y,
-                                                   leftbb.getMax().z);
+            if (!ignoreSplit)
+            {
+                // std::cout << lvr2::timestamp << " rsize start "  << std::endl;
+                size_t rightSize = m_grid->getSizeofBox(rightbb.getMin().x,
+                                                        rightbb.getMin().y,
+                                                        rightbb.getMin().z,
+                                                        rightbb.getMax().x,
+                                                        rightbb.getMax().y,
+                                                        rightbb.getMax().z);
+                // std::cout << lvr2::timestamp << " lsize start "  << std::endl;
+                size_t leftSize = m_grid->getSizeofBox(leftbb.getMin().x,
+                                                       leftbb.getMin().y,
+                                                       leftbb.getMin().z,
+                                                       leftbb.getMax().x,
+                                                       leftbb.getMax().y,
+                                                       leftbb.getMax().z);
 
-            //            std::cout << lvr2::timestamp << " size_end "  << std::endl;
-            BigGridKdTree* leftChild = new BigGridKdTree(leftbb, leftSize);
-            BigGridKdTree* rightChild = new BigGridKdTree(rightbb, rightSize);
-            m_children.push_back(leftChild);
-            m_children.push_back(rightChild);
+                // std::cout << lvr2::timestamp << " size_end "  << std::endl;
+                BigGridKdTree* leftChild = new BigGridKdTree(leftbb, leftSize);
+                BigGridKdTree* rightChild = new BigGridKdTree(rightbb, rightSize);
+                m_children.push_back(leftChild);
+                m_children.push_back(rightChild);
+            }
         }
         else
         {
