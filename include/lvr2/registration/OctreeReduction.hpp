@@ -1,3 +1,6 @@
+#ifndef __OCTREE_REDUCTION__
+#define __OCTREE_REDUCTION__
+
 /**
  * Copyright (c) 2018, University Osnabrück
  * All rights reserved.
@@ -25,76 +28,57 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <cstring>
+/**
+ * Metascan.hpp
+ *
+ *  @date Sep 23, 2019
+ *  @author Thomas Wiemann
+ *  @author Malte Hillmann
+ */
 
-namespace lvr2 {
+#include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/io/PointBuffer.hpp"
 
-template<typename T>
-Channel<T>::Channel()
-: m_elementWidth(0)
-, m_numElements(0)
-{}
+#include <vector>
 
-template<typename T>
-Channel<T>::Channel(size_t n, size_t width)
-: m_elementWidth(width), m_numElements(n)
-, m_data(new T[n * width])
-{}
-
-template<typename T>
-Channel<T>::Channel(size_t n, size_t width, DataPtr ptr)
-: m_numElements(n)
-, m_elementWidth(width)
-, m_data(ptr)
-{}
-
-template<typename T>
-Channel<T> Channel<T>::clone() const
+namespace lvr2
 {
-    Channel<T> ret(m_numElements, m_elementWidth);
-    std::memcpy(
-            ret.dataPtr().get(),
-            m_data.get(),
-            sizeof(T) * m_numElements * m_elementWidth
-        );
-    return ret;
-}
 
-template<typename T>
-ElementProxy<T> Channel<T>::operator[](const unsigned& idx)
+class OctreeReduction
 {
-    T* ptr = m_data.get();
-    return ElementProxy<T>(&(ptr[idx * m_elementWidth]), m_elementWidth);
-}
+public:
+    OctreeReduction(PointBufferPtr& pointBuffer, const double& voxelSize, const size_t& minPointsPerVoxel);
+    OctreeReduction(Vector3f* points, const size_t& n, const double& voxelSize, const size_t& minPointsPerVoxel);
 
-template<typename T>
-const ElementProxy<T> Channel<T>::operator[](const unsigned& idx) const
-{
-    T* ptr = m_data.get();
-    return ElementProxy<T>(&(ptr[idx * m_elementWidth]), m_elementWidth);
-}
+    PointBufferPtr getReducedPoints();
+    void getReducedPoints(Vector3f& points, size_t& n);
 
-template<typename T>
-size_t Channel<T>::width() const 
-{
-    return m_elementWidth;
-}
+    ~OctreeReduction() { delete[] m_flags;}
 
-template<typename T>
-size_t Channel<T>::numElements() const 
-{
-    return m_numElements;
-}
+private:
+    template<typename T>
+    void createOctree(T* points, const int& n, bool* flagged, const T& min, const T& max, const int& level);
 
-template<typename T>
-const typename Channel<T>::DataPtr Channel<T>::dataPtr() const {
-    return m_data;
-}
+    template<typename T>
+    size_t splitPoints(T* points, const size_t& n, const int axis, const double& splitValue);
 
-template<typename T>
-typename Channel<T>::DataPtr Channel<T>::dataPtr() {
-    return m_data;
-}
+    template<typename T>
+    void createOctree(lvr2::Channel<T>& points, size_t s, size_t n, bool* flagged, const lvr2::Vector3<T>& min, const lvr2::Vector3<T>& max, const int& level);
 
+    template<typename T>
+    size_t splitPoints(lvr2::Channel<T>& points, size_t s, size_t n, const int axis, const double& splitValue);
+
+    double  m_voxelSize;
+    size_t  m_minPointsPerVoxel;
+    size_t  m_numPoints; 
+    bool*   m_flags;
+
+    PointBufferPtr  m_pointBuffer;
+    Vector3f        m_points;
+};
 
 } // namespace lvr2
+
+#include "lvr2/registration/OctreeReduction.tcc"
+
+#endif

@@ -31,7 +31,7 @@
  *  @date Aug 1, 2019
  *  @author Malte Hillmann
  */
-#include <lvr2/registration/Metascan.hpp>
+#include "lvr2/registration/Metascan.hpp"
 
 namespace lvr2
 {
