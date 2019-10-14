@@ -25,50 +25,49 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /**
- * IOFactory.h
+ /*
+ * Options.cpp
  *
- *  @date 24.08.2011
- *  @author Thomas Wiemann
+ *  Created on: Nov 21, 2010
+ *      Author: Thomas Wiemann
  */
 
-#ifndef IOFACTORY_H_
-#define IOFACTORY_H_
+#include "Options.hpp"
 
-#include "lvr2/io/Model.hpp"
-#include "lvr2/io/CoordinateTransform.hpp"
-
-#include <string>
-#include <vector>
-#include <map>
-
-#include <boost/shared_ptr.hpp>
-
-
-namespace lvr2
+namespace hdf5tool2
 {
 
-/**
- * @brief Factory class extract point cloud and mesh information
- *        from supported file formats. The instantiated MeshLoader
- *        and PointLoader instances are persistent, i.e. they will
- *        not be freed in the destructor of this class to prevent
- *        side effects.
- */
-class ModelFactory
+Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
-    public:
 
-        static ModelPtr readModel( std::string filename );
+	// Create option descriptions
 
-        static void saveModel( ModelPtr m, std::string file);
+	m_descr.add_options()
+            ("help", "Produce help message")
+            ("inputDir", value<string>()->default_value("./"), "Root of the raw data.")
+            ("outputDir", value<string>()->default_value("./"), "HDF5 file is written here.")
+            ("outputFile", value<string>()->default_value("data.h5"), "HDF5 file name.");
+//            ("nch, n", value<int>()->default_value(150), "Number of spectral PNGs in image folder.")
+//            ("hsp_chunk_0", value<size_t>()->default_value(50), "Dim 0 of HSP image chunks.")
+//            ("hsp_chunk_1", value<size_t>()->default_value(50), "Dim 1 of HSP image chunks.")
+//            ("hsp_chunk_2", value<size_t>()->default_value(50), "Dim 2 of HSP image chunks.")
+//            ("addAnnotations", value<int>()->default_value(1), "Add spectral annotation channels");
 
-        static CoordinateTransform<float> m_transform;
 
-};
+	// Parse command line and generate variables map
+	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
+	notify(m_variables);
 
-typedef boost::shared_ptr<ModelFactory> ModelFactoryPtr;
+  if(m_variables.count("help")) {
+    ::std::cout<< m_descr << ::std::endl;
+    exit(-1);
+  }
 
-} // namespace lvr2
 
-#endif /* IOFACTORY_H_ */
+}
+
+Options::~Options() {
+	// TODO Auto-generated destructor stub
+}
+
+} // namespace reconstruct
