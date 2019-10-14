@@ -108,6 +108,11 @@ public:
 
     int getEnd() const { return m_variables["end"].as<int>(); }
 
+	std::string getScanPrefix() const { return m_variables["scanPrefix"].as<std::string>(); }
+	std::string getPosePrefix() const { return m_variables["posePrefix"].as<std::string>(); }
+	std::string getScanExtension() const { return m_variables["scanExtension"].as<std::string>(); }
+	std::string getPoseExtension() const { return m_variables["poseExtension"].as<std::string>(); }
+
 private:
 
 	/// Output file name

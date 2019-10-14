@@ -62,6 +62,10 @@ Options::Options(int argc, char** argv) : lvr2::BaseOption(argc, argv), m_descr(
         ("end,e", value<int>()->default_value(0), "end at scan NR")
 		("voxelSize,v", value<double>()->default_value(0.1), "Voxel size for octree reduction")
 		("minPointsPerVoxel", value<size_t>()->default_value(5), "Minimum number of points per voxel in octree reduction")
+		("scanPrefix", value<std::string>()->default_value("scan"), "Prexfix for scan files. E.g., scan for using scan001, scan002 etc.")
+		("posePrefix", value<std::string>()->default_value("scan"), "Prexfix for files with 4x4 pose estimation in row-majow format. E.g., pose for using pose001, pose002 etc.")
+		("scanExtension", value<std::string>()->default_value(".3d"), "File extension for parsed files containing point cloud data")
+		("poseExtension", value<std::string>()->default_value(".dat"), "File extension for parsed files containing pose estimates")
 	;
 
 	m_pdescr.add("inputFile", -1);
