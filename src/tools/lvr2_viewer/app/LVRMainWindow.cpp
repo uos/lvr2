@@ -40,10 +40,10 @@
 
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/DataStruct.hpp"
+#include "lvr2/io/IOUtils.hpp"
 
 #include "lvr2/registration/TransformUtils.hpp"
 #include "lvr2/registration/ICPPointAlign.hpp"
-
 #include "lvr2/util/Util.hpp"
 
 #include <vtkActor.h>
@@ -54,6 +54,8 @@
 
 
 #include <QString>
+
+#include <boost/filesystem.hpp>
 
 namespace lvr2
 {
