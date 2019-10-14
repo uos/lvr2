@@ -31,7 +31,7 @@
  *  @date July 22, 2019
  *  @author Malte Hillmann
  */
-#include <lvr2/registration/GraphSLAM.hpp>
+#include "lvr2/registration/GraphSLAM.hpp"
 
 #include <Eigen/SparseCholesky>
 

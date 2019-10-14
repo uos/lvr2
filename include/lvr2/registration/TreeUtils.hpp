@@ -66,68 +66,6 @@ int splitPoints(Vector3f* points, int n, int axis, double splitValue);
 int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize);
 
 
-/**
- * @brief A struct to calculate the Axis Aligned Bounding Box and Average Point of a Point Cloud
- */
-class AABB
-{
-    Vector3d m_min;
-    Vector3d m_max;
-    Vector3d m_sum;
-    size_t m_count;
-
-public:
-    AABB();
-
-    template<typename T>
-    AABB(const Vector3<T>* points, size_t count)
-        : AABB()
-    {
-        for (size_t i = 0; i < count; i++)
-        {
-            addPoint(points[i]);
-        }
-    }
-
-    /// Returns the "lower left" Corner of the Bounding Box, as in the smallest x, y, z of the Point Cloud.
-    const Vector3d& min() const;
-
-    /// Returns the "upper right" Corner of the Bounding Box, as in the largest x, y, z of the Point Cloud.
-    const Vector3d& max() const;
-
-    /// Returns the average of all the Points in the Point Cloud.
-    Vector3d avg() const;
-
-    /// Returns the number of Points in the Point Cloud
-    size_t count() const;
-
-    /// adds a Point to the Point Cloud
-    template<typename T>
-    void addPoint(const Vector3<T>& point)
-    {
-        for (int axis = 0; axis < 3; axis++)
-        {
-            double val = point(axis);
-            if (val < m_min(axis))
-            {
-                m_min(axis) = val;
-            }
-            if (val > m_max(axis))
-            {
-                m_max(axis) = val;
-            }
-            m_sum(axis) += val;
-        }
-        m_count++;
-    }
-
-    /// Calculates the size of the Bounding Box along a certain axis
-    double difference(int axis) const;
-
-    /// Calculates the axis that has the largest size of the Bounding Box
-    int longestAxis() const;
-};
-
 } /* namespace lvr2 */
 
 #endif /* TREEUTILS_HPP_ */
