@@ -581,6 +581,10 @@ int main(int argc, char** argv) {
     ScanDirectoryParser parser(options->getInputDir());
     parser.setStart(options->getStart());
     parser.setEnd(options->getEnd());
+    parser.setPointCloudPrefix(options->getScanPrefix());
+    parser.setPosePrefix(options->getPosePrefix());
+    parser.setPointCloudExtension(options->getScanExtension());
+    parser.setPoseExtension(options->getPoseExtension());
     parser.parseDirectory();
 
     //PointBufferPtr result = parser.randomSubSample(options->getTargetSize());
