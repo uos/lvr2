@@ -75,7 +75,7 @@ ModelPtr AsciiIO::read(
     ifstream in;
     in.open(filename.c_str());
 
-    // Read first to lines, ignore the first one
+    // Read first two lines, ignore the first one
     char buffer[2048];
     in.getline(buffer, 2048);
     in.getline(buffer, 2048);
@@ -130,7 +130,6 @@ ModelPtr AsciiIO::read(
     size_t c = 0;
     while (in.good() && c < numPoints)
     {
-
         float x, y, z, intensity, dummy;
         unsigned int r, g, b;
 
@@ -274,7 +273,7 @@ ModelPtr AsciiIO::read(string filename)
 
         if(has_color && has_intensity)
         {
-            return read(filename, 0, 1, 2, 3, 4, 5, 6);
+            return read(filename, 0, 1, 2, 4, 5, 6, 3);
         }
         else if(has_color)
         {

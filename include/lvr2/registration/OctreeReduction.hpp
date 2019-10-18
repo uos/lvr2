@@ -38,6 +38,7 @@
 
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/io/Timestamp.hpp"
 
 #include <vector>
 
@@ -63,10 +64,16 @@ private:
     size_t splitPoints(T* points, const size_t& n, const int axis, const double& splitValue);
 
     template<typename T>
-    void createOctree(lvr2::Channel<T>& points, size_t s, size_t n, bool* flagged, const lvr2::Vector3<T>& min, const lvr2::Vector3<T>& max, const int& level);
+    void createOctree(lvr2::PointBufferPtr& points, size_t s, size_t n, bool* flagged, const lvr2::Vector3<T>& min, const lvr2::Vector3<T>& max, const int& level);
 
     template<typename T>
-    size_t splitPoints(lvr2::Channel<T>& points, size_t s, size_t n, const int axis, const double& splitValue);
+    size_t splitPoints(lvr2::PointBufferPtr& points, size_t s, size_t n, const int axis, const double& splitValue);
+
+    template<typename T>
+    void swapAllChannelsOfType(lvr2::PointBufferPtr& points, const size_t& l, const size_t& r);
+
+    template<typename T>
+    void swapInChannel(lvr2::Channel<T>& ch, const size_t& l, const size_t& r);
 
     double  m_voxelSize;
     size_t  m_minPointsPerVoxel;

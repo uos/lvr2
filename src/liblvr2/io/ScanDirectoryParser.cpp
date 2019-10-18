@@ -41,6 +41,7 @@ void ScanDirectoryParser::setPointCloudPrefix(const std::string& prefix)
 }
 void ScanDirectoryParser::setPointCloudExtension(const std::string& extension)
 {
+    cout << extension << endl;
     m_pointExtension = extension;
 }
 void ScanDirectoryParser::setPosePrefix(const std::string& prefix)
@@ -168,6 +169,9 @@ PointBufferPtr ScanDirectoryParser::randomSubSample(const size_t& tz)
 void ScanDirectoryParser::parseDirectory()
 {
     std::cout << timestamp << "Parsing directory" << m_directory << std::endl;
+    std::cout << timestamp << "Point prefix and extension: " << m_pointPrefix << " " << m_pointExtension << std::endl;
+    std::cout << timestamp << "Pose prefix and extension: " << m_posePrefix << " " << m_poseExtension << std::endl;
+
     m_numPoints = 0;
     for(size_t i = m_start; i <= m_end; i++)
     {
