@@ -317,9 +317,6 @@ int main(int argc, char** argv)
             // create boost::fileystem::path to hdf file location
             boost::filesystem::path pathToHDF(dir.c_str());
             h5_ptr->open(pathToHDF.string());
-
-            // set start to 0, so the scan searching is not triggered
-            start = 0; // TODO: Needed?
         }
         else
         {
