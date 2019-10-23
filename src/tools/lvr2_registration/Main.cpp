@@ -378,7 +378,6 @@ int main(int argc, char** argv)
 
     int count = end - start + 1;
 
-    // new hdfio
     HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
     vector<string> numOfScansInHDF = hfscans.listObjectNames();
     vector<lvr2::ScanPtr> rawScans;
@@ -483,7 +482,7 @@ int main(int argc, char** argv)
         // write poses to hdf
         for(int i = 0; i < scans.size(); i++)
         {
-            Transformd pose = scans[i]->deltaPose();
+            Transformd pose = scans[i]->pose();
             cout << "Pose Scan Nummer " << i << pose << endl;
             // The pose needs to be transposed before writing to hdf,
             // because the lvr2_viewer expects finalPose in hdf transposed this way.

@@ -30,8 +30,11 @@
  *
  *  @date May 16, 2019
  *  @author Malte Hillmann
+ *  @author Thomas Wiemann
  */
-#include <lvr2/registration/TreeUtils.hpp>
+
+#include "lvr2/registration/TreeUtils.hpp"
+#include "lvr2/registration/AABB.hpp"
 
 #include <limits>
 #include <vector>
@@ -67,8 +70,8 @@ int splitPoints(Vector3f* points, int n, int axis, double splitValue)
 void createOctree(Vector3f* points,
                   int n,
                   bool* flagged,
-                  const Vector3d& min,
-                  const Vector3d& max,
+                  const Vector3f& min,
+                  const Vector3f& max,
                   int level,
                   double voxelSize,
                   int maxLeafSize)
@@ -79,16 +82,16 @@ void createOctree(Vector3f* points,
     }
 
     int axis = level % 3;
-    Vector3d center = (max + min) / 2.0;
+    Vector3f center = (max + min) / 2.0;
 
     if (max[axis] - min[axis] <= voxelSize)
     {
         // keep the Point closest to the center
         int closest = 0;
-        double minDist = (points[closest].cast<double>() - center).squaredNorm();
+        double minDist = (points[closest] - center).squaredNorm();
         for (int i = 1; i < n; i++)
         {
-            double dist = (points[i].cast<double>() - center).squaredNorm();
+            double dist = (points[i] - center).squaredNorm();
             if (dist < minDist)
             {
                 closest = i;
@@ -105,8 +108,8 @@ void createOctree(Vector3f* points,
 
     int l = splitPoints(points, n, axis, center[axis]);
 
-    Vector3d lMin = min, lMax = max;
-    Vector3d rMin = min, rMax = max;
+    Vector3f lMin = min, lMax = max;
+    Vector3f rMin = min, rMax = max;
 
     lMax[axis] = center[axis];
     rMin[axis] = center[axis];
@@ -132,7 +135,7 @@ int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize)
         flagged[i] = false;
     }
 
-    AABB boundingBox(points, n);
+    AABB<float> boundingBox(points, (size_t)n);
 
     #pragma omp parallel // allows "pragma omp task"
     #pragma omp single // only execute every task once
@@ -162,53 +165,5 @@ int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize)
 
     return n;
 }
-
-
-AABB::AABB()
-    : m_count(0)
-{
-    m_min.setConstant(numeric_limits<double>::infinity());
-    m_max.setConstant(-numeric_limits<double>::infinity());
-    m_sum.setConstant(0.0);
-}
-
-const Vector3d& AABB::min() const
-{
-    return m_min;
-}
-
-const Vector3d& AABB::max() const
-{
-    return m_max;
-}
-
-Vector3d AABB::avg() const
-{
-    return m_sum / m_count;
-}
-
-size_t AABB::count() const
-{
-    return m_count;
-}
-
-double AABB::difference(int axis) const
-{
-    return m_max(axis) - m_min(axis);
-}
-
-int AABB::longestAxis() const
-{
-    int splitAxis = 0;
-    for (int axis = 1; axis < 3; axis++)
-    {
-        if (difference(axis) > difference(splitAxis))
-        {
-            splitAxis = axis;
-        }
-    }
-    return splitAxis;
-}
-
 
 } /* namespace lvr2 */

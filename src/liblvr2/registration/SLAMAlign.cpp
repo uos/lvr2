@@ -31,10 +31,10 @@
  *  @date May 6, 2019
  *  @author Malte Hillmann
  */
-#include <lvr2/registration/SLAMAlign.hpp>
 
-#include <lvr2/registration/ICPPointAlign.hpp>
-#include <lvr2/registration/Metascan.hpp>
+#include "lvr2/registration/SLAMAlign.hpp"
+#include "lvr2/registration/ICPPointAlign.hpp"
+#include "lvr2/registration/Metascan.hpp"
 
 #include <iomanip>
 

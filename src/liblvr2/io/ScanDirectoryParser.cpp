@@ -5,6 +5,7 @@
 #include "lvr2/io/ScanDirectoryParser.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/registration/OctreeReduction.hpp"
 
 using namespace boost::filesystem;
 
@@ -25,11 +26,10 @@ ScanDirectoryParser::ScanDirectoryParser(const std::string& directory) noexcept
     }
 
     // Set default prefixes and extension
-    m_pointExtension = ".3d";
-    m_poseExtension = ".frames";
+    m_pointExtension = ".txt";
+    m_poseExtension = ".dat";
     m_pointPrefix = "scan";
     m_posePrefix = "scan";
-    m_targetSize = 0;
 
     m_start = 0;
     m_end = 0;
@@ -61,10 +61,6 @@ void ScanDirectoryParser::setEnd(int e)
     m_end = e;
 }
 
-void ScanDirectoryParser::setTargetSize(const size_t& size)
-{
-    m_targetSize = size;
-}
 
 size_t ScanDirectoryParser::examinePLY(const std::string& filename)
 {
@@ -77,7 +73,43 @@ size_t ScanDirectoryParser::examineASCII(const std::string& filename)
     return countPointsInFile(p);
 } 
 
-PointBufferPtr ScanDirectoryParser::subSample()
+PointBufferPtr ScanDirectoryParser::octreeSubSample(const double& voxelSize, const size_t& minPoints)
+{
+    ModelPtr out_model(new Model);
+
+    for(auto i : m_scans)
+    {
+        std::cout << timestamp << "Reading " << i.m_filename << std::endl;
+        ModelPtr model = ModelFactory::readModel(i.m_filename);
+        if(model)
+        {
+            PointBufferPtr buffer = model->m_pointCloud;
+            if(buffer)
+            {
+                std::cout << timestamp << "Building octree with voxel size " << voxelSize << " from " << i.m_filename << std::endl;
+                OctreeReduction oct(buffer, voxelSize, 5);
+                PointBufferPtr reduced = oct.getReducedPoints();
+
+                // Apply transformation
+                std::cout << timestamp << "Transforming reduced point cloud" << std::endl;
+                out_model->m_pointCloud = reduced;
+                transformPointCloud<double>(out_model, i.m_pose);
+
+                // Write reduced data
+                std::stringstream name_stream;
+                Path p(i.m_filename);
+                name_stream << p.stem().string() << "_reduced" << ".ply";
+                std::cout << timestamp << "Saving data to " << name_stream.str() << std::endl;
+                ModelFactory::saveModel(out_model, name_stream.str());
+
+                std::cout << timestamp << "Points written: " << reduced->numPoints() << std::endl;
+            }
+        }
+    }
+    return PointBufferPtr(new PointBuffer);
+}
+
+PointBufferPtr ScanDirectoryParser::randomSubSample(const size_t& tz)
 {
     ModelPtr out_model(new Model);
 
@@ -94,11 +126,11 @@ PointBufferPtr ScanDirectoryParser::subSample()
             {
                 PointBufferPtr reduced = 0;
                 int target_size = 0;
-                if(m_targetSize > 0)
+                if(tz > 0)
                 {
                     // Calc number of points to sample
                     float total_ratio = (float)i.m_numPoints / m_numPoints;
-                    float target_ratio = total_ratio * m_targetSize;
+                    float target_ratio = total_ratio * tz;
 
 
                     target_size = (int)(target_ratio + 0.5);
@@ -127,7 +159,7 @@ PointBufferPtr ScanDirectoryParser::subSample()
                 ModelFactory::saveModel(out_model, name_stream.str());
 
                 actual_points += target_size;
-                std::cout << timestamp << "Points written: " << actual_points << " / " << m_targetSize << std::endl;
+                std::cout << timestamp << "Points written: " << actual_points << " / " << tz << std::endl;
             }
         }
     }

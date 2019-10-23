@@ -30,6 +30,7 @@
  */
 
 #include "lvr2/algorithm/ContourAlgorithms.hpp"
+#include "lvr2/attrmaps/AttrMaps.hpp"
 #include "lvr2/io/Timestamp.hpp"
 
 namespace lvr2

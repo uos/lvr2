@@ -58,9 +58,10 @@ public:
     ElementProxy<T> operator[](const unsigned& idx);
     const ElementProxy<T> operator[](const unsigned& idx) const;
 
-    size_t     width() const;
-    size_t     numElements() const;
-    DataPtr    dataPtr() const;
+    size_t           width() const;
+    size_t           numElements() const;
+    const DataPtr    dataPtr() const;
+    DataPtr          dataPtr();
 
     friend std::ostream& operator<<(std::ostream& os, const Channel<T>& ch)
     {
