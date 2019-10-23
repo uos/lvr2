@@ -32,10 +32,12 @@
  *  @author Thomas Wiemann (twiemann@uos.de)
  */
 
-#ifndef LVR2_GEOMETRY_BOUNDINGBOX_H_
-#define LVR2_GEOMETRY_BOUNDINGBOX_H_
+#pragma once 
 
 #include <cmath>
+#include <ostream>
+
+#include "lvr2/io/LineReader.hpp"
 
 namespace lvr2
 {
@@ -63,6 +65,15 @@ public:
      */
     template<typename T>
     BoundingBox(T v1, T v2);
+
+
+    /**
+     *
+     * @brief Constructs a bounding box for a given point cloud
+     *
+     * @param plyPath path of the point cloud
+     */
+    BoundingBox(std::string plyPath);
 
     /**
      * @brief Expands the bounding box if the given Vector \ref{v} is
@@ -100,6 +111,14 @@ public:
     BaseVecT getCentroid() const;
 
     /**
+     * @brief check if current volume overlap with a given bounding box
+     *
+     * @param bb Another bounding box
+     * @return true if both boxes overlap
+     */
+    bool overlap(const BoundingBox<BaseVecT>& bb);
+
+    /**
      * @brief Returns the longest side of the bounding box
      */
     typename BaseVecT::CoordType getLongestSide() const;
@@ -120,6 +139,12 @@ public:
     typename BaseVecT::CoordType getZSize() const;
 
     /**
+     * @brief Returns the volume of the bounding box
+     * @return
+     */
+    typename BaseVecT::CoordType getVolume() const;
+
+    /**
      * @brief Returns the upper right coordinates
      */
     BaseVecT getMax() const;
@@ -130,7 +155,7 @@ public:
     BaseVecT getMin() const;
 
 private:
-    /// The lower right Vector of the bounding box
+    /// The lower left Vector of the bounding box
     BaseVecT m_min;
 
     /// The upper right Vector of the bounding box
@@ -145,7 +170,7 @@ inline std::ostream& operator<<(std::ostream& os, const BoundingBox<BaseVecT>& b
 {
     os << "Bounding Box[min: " << bb.getMin() << ", max: " <<  bb.getMax();
     os << ", dimension: " << bb.getXSize() << ", " << bb.getYSize() << ", "
-       << bb.getZSize() << "]" << endl;
+       << bb.getZSize() << "]" << std::endl;
     return os;
 }
 
@@ -153,4 +178,3 @@ inline std::ostream& operator<<(std::ostream& os, const BoundingBox<BaseVecT>& b
 
 #include "lvr2/geometry/BoundingBox.tcc"
 
-#endif /* LVR2_GEOMETRY_BOUNDINGBOX_H_ */

@@ -185,8 +185,6 @@ size_t getReductionFactor(boost::filesystem::path& inFile, size_t targetSize);
  */
 void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::string outfile);
 
-
-
 /**
  * @brief   Writes the points stored in the given model to the fiven output
  *          stream. This function is used to apend point cloud data to an
@@ -200,7 +198,6 @@ void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::st
  */
 size_t writePointsToStream(ModelPtr model, std::ofstream& out, bool nocolor = false);
 
-
 /**
  * @brief  Get the Number Of Points (element points if present, vertex count otherwise) 
  *         in a PLY file.
@@ -210,7 +207,29 @@ size_t writePointsToStream(ModelPtr model, std::ofstream& out, bool nocolor = fa
  */
 size_t getNumberOfPointsInPLY(const std::string& filename);
 
+/**
+ * @brief  Computes a random sub-sampling of a point buffer by creating 
+ *         a uniform distribution over all point indices with given 
+ *         target size. The sub-sampling is applied to all channels in
+ *         the source buffer
+ * 
+ * @param src                   Source buffer
+ * @param n                     Number of target points
+ * @return PointBufferPtr       Reduced point buffer
+ */
 PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const size_t& n);
+
+
+/**
+ * @brief  Computes a reduced version of the source buffer by sampling
+ *         all channels using the given set of point indices.
+ * 
+ * @param src                   Source buffer
+ * @param indices               Vector of the point indices that will
+ *                              be copied into the returned buffer
+ * @return PointBufferPtr       Reduced point buffer
+ */
+PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const std::vector<size_t>& indices);
 
 
 } // namespace lvr2

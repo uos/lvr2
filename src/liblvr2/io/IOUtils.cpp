@@ -370,10 +370,10 @@ typename Channel<T>::Ptr subSampleChannel(Channel<T>& src, std::vector<size_t> i
 }
 
 template<typename T>
-void subsample(PointBufferPtr src, PointBufferPtr dst, vector<size_t>& indices)
+void subsample(PointBufferPtr src, PointBufferPtr dst, const vector<size_t>& indices)
 {
     // Go over all supported channel types and sub-sample
-    vector<std::pair<std::string, Channel<T>>> channels;
+    std::map<std::string, Channel<T>> channels;
     src->getAllChannelsOfType(channels);      
     for(auto i : channels)
     {
@@ -382,6 +382,22 @@ void subsample(PointBufferPtr src, PointBufferPtr dst, vector<size_t>& indices)
         dst->addChannel<T>(c, i.first);
     }
 
+}
+
+PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const std::vector<size_t>& indices)
+{
+    PointBufferPtr buffer(new PointBuffer);
+
+    // Go over all supported channel types and sub-sample
+    subsample<char>(src, buffer, indices);
+    subsample<unsigned char>(src, buffer, indices);
+    subsample<short>(src, buffer, indices);
+    subsample<int>(src, buffer, indices);
+    subsample<unsigned int>(src, buffer, indices);
+    subsample<float>(src, buffer, indices);
+    subsample<double>(src, buffer, indices);
+
+    return buffer;
 }
 
 PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const size_t& n)

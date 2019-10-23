@@ -63,11 +63,11 @@ public:
     void setStart(int s);
     void setEnd(int e);
 
-    void setTargetSize(const size_t& size);
-
     void parseDirectory();
-    PointBufferPtr subSample();
 
+    PointBufferPtr randomSubSample(const size_t& targetSize);
+    PointBufferPtr octreeSubSample(const double& voxelSize, const size_t& minPoints = 5);
+    
     ~ScanDirectoryParser() = default;
 
 private:
@@ -86,7 +86,6 @@ private:
 
     size_t                  m_start;
     size_t                  m_end;
-    size_t                  m_targetSize;
 
     std::vector<ScanInfo>   m_scans;
 };

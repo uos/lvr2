@@ -31,7 +31,8 @@
  *  @date Apr 28, 2019
  *  @author Malte Hillmann
  */
-#include <lvr2/registration/KDTree.hpp>
+#include "lvr2/registration/KDTree.hpp"
+#include "lvr2/registration/AABB.hpp"
 
 namespace lvr2
 {
@@ -112,7 +113,7 @@ KDTreePtr create_recursive(KDTree::Point* points, int n, int maxLeafSize)
         return KDTreePtr(new KDLeaf(points, n));
     }
 
-    AABB boundingBox(points, n);
+    AABB<float> boundingBox(points, n);
 
     int splitAxis = boundingBox.longestAxis();
     double splitValue = boundingBox.avg()(splitAxis);

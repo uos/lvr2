@@ -260,6 +260,7 @@ FloatChannelOptional MeshIO<Derived>::getVertices()
         return boost::none;
     }
     HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, m_mesh_name, false);
+
     if (!isMesh(group))
     {
         std::cout << "[Hdf5IO - MeshIO] WARNING: flags of " << group.getId() << " are not correct."
@@ -287,6 +288,7 @@ IndexChannelOptional MeshIO<Derived>::getIndices()
         return boost::none;
     }
     HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, m_mesh_name, false);
+
     if (!isMesh(group))
     {
         std::cout << "[Hdf5IO - MeshIO] WARNING: flags of " << group.getId() << " are not correct."
@@ -360,6 +362,7 @@ bool MeshIO<Derived>::getChannel(const std::string group, const std::string name
 
         // TODO check group for vertex / face attribute and set flag in hdf5 channel
         HighFive::Group g = meshGroup.getGroup("channels");
+
         if(g.exist(name))
         {
             HighFive::DataSet dataset = g.getDataSet(name);

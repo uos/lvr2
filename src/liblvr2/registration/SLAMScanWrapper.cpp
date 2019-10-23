@@ -31,9 +31,9 @@
  *  @date May 6, 2019
  *  @author Malte Hillmann
  */
-#include <lvr2/registration/SLAMScanWrapper.hpp>
 
-#include <lvr2/registration/TreeUtils.hpp>
+#include "lvr2/registration/SLAMScanWrapper.hpp"
+#include "lvr2/registration/TreeUtils.hpp"
 
 #include <fstream>
 

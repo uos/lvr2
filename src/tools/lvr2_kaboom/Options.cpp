@@ -60,6 +60,8 @@ Options::Options(int argc, char** argv) : lvr2::BaseOption(argc, argv), m_descr(
 	    ("bPos,b", value<int>()->default_value(-1), "Position of the blue color component in the input data lines. (-1) means no color information")
         ("start,s", value<int>()->default_value(0), "start at scan NR")
         ("end,e", value<int>()->default_value(0), "end at scan NR")
+		("voxelSize,v", value<double>()->default_value(0.1), "Voxel size for octree reduction")
+		("minPointsPerVoxel", value<size_t>()->default_value(5), "Minimum number of points per voxel in octree reduction")
 	;
 
 	m_pdescr.add("inputFile", -1);
@@ -129,6 +131,16 @@ float	Options::getSigma() const
 int		Options::getTargetSize() const
 {
 	return m_variables["targetSize"].as<int>();
+}
+
+double  Options::getVoxelSize() const
+{
+	return m_variables["voxelSize"].as<double>();
+}
+
+size_t  Options::getMinPointsPerVoxel() const
+{
+	return m_variables["minPointsPerVoxel"].as<size_t>();
 }
 
 

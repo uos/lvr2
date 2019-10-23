@@ -87,7 +87,12 @@ size_t Channel<T>::numElements() const
 }
 
 template<typename T>
-typename Channel<T>::DataPtr Channel<T>::dataPtr() const {
+const typename Channel<T>::DataPtr Channel<T>::dataPtr() const {
+    return m_data;
+}
+
+template<typename T>
+typename Channel<T>::DataPtr Channel<T>::dataPtr() {
     return m_data;
 }
 
