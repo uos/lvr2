@@ -293,7 +293,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         }
     }
     std::cout << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
-    std::cout << "Size of Meshes: " << meshes.size() << std::endl;
+    std::cout << "Generated Meshes: " << meshes.size() << std::endl;
     ofstream vGrid_ser;
     vGrid_ser.open("VGrid.ser", ofstream::out | ofstream::trunc);
     unordered_set<string>::iterator itr;
@@ -399,9 +399,26 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
 int main(int argc, char** argv)
 {
+    // =======================================================================
+    // Parse and print command line parameters
+    // =======================================================================
+    // Parse command line arguments
     LargeScaleOptions::Options options(argc, argv);
 
+    options.printLogo();
+
+    // Exit if options had to generate a usage message
+    // (this means required parameters are missing)
+    if (options.printUsage())
+    {
+        return EXIT_SUCCESS;
+    }
+
+    std::cout << options << std::endl;
+
     int i = mpiReconstruct<Vec>(options);
+
+    cout << "Program end." << endl;
 
     return 0;
 }

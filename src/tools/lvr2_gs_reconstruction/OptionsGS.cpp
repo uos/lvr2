@@ -105,16 +105,15 @@ namespace gs_reconstruction{
 
 
     bool Options::printUsage() const {
-        if(!m_variables.count("inputFile"))
+        if (m_variables.count("help"))
         {
-            cout << "Error: You must specify an input file." << endl;
             cout << endl;
             cout << m_descr << endl;
             return true;
         }
-
-        if(m_variables.count("help"))
+        else if (!m_variables.count("inputFile"))
         {
+            cout << "Error: You must specify an input file." << endl;
             cout << endl;
             cout << m_descr << endl;
             return true;
