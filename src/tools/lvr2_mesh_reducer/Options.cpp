@@ -67,19 +67,18 @@ float Options::getEdgeCollapseReductionRatio() const
 
 bool Options::printUsage() const
 {
-  if(!m_variables.count("inputFile"))
+  if (m_variables.count("help"))
     {
-      cout << "Error: You must specify an input file." << endl;
-      cout << endl;
-      cout << m_descr << endl;
-      return false;
+        cout << endl;
+        cout << m_descr << endl;
+        return true;
     }
-
-  if(m_variables.count("help"))
+  else if (!m_variables.count("inputFile"))
     {
-      cout << endl;
-      cout << m_descr << endl;
-      return true;
+        cout << "Error: You must specify an input file." << endl;
+        cout << endl;
+        cout << m_descr << endl;
+        return true;
     }
   return false;
 }

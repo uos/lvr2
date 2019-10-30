@@ -89,10 +89,6 @@ void BaseOption::setup()
 	store(command_line_parser(m_argc, m_argv).options(m_descr).positional(m_pdescr).run(), m_variables);
 	notify(m_variables);
 
-	if(m_variables.count("help")) {
-		::std::cout<< m_descr << ::std::endl;
-	}
-
 	if(sx() != 1.0 || sy() != 1.0 || sz() != 0 || x() != 1 || y() != 1 || z() != 1)
 	{
         m_coordinateTransform->x = x();
