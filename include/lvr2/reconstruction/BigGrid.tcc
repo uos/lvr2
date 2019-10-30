@@ -1070,7 +1070,6 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
         float longestSide = m_bb.getLongestSide();
 
         BaseVecT center = m_bb.getCentroid();
-        size_t xsize2 = calcIndex(m_bb.getXSize() / m_voxelSize);
         float xsize = ceil(m_bb.getXSize() / voxelsize) * voxelsize;
         float ysize = ceil(m_bb.getYSize() / voxelsize) * voxelsize;
         float zsize = ceil(m_bb.getZSize() / voxelsize) * voxelsize;
