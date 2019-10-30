@@ -317,9 +317,6 @@ int main(int argc, char** argv)
             // create boost::fileystem::path to hdf file location
             boost::filesystem::path pathToHDF(dir.c_str());
             h5_ptr->open(pathToHDF.string());
-
-            // set start to 0, so the scan searching is not triggered
-            start = 0; // TODO: Needed?
         }
         else
         {
@@ -382,44 +379,44 @@ int main(int argc, char** argv)
     int count = end - start + 1;
 
     HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
-    vector<string> scansNeu = hfscans.listObjectNames(); // TODO: Schlechter Name!
+    vector<string> numOfScansInHDF = hfscans.listObjectNames();
     vector<lvr2::ScanPtr> rawScans;
     if (options.useHDF)
     {
-        for (int i = 0; i < scansNeu.size(); i++)
+        for (int i = 0; i < numOfScansInHDF.size(); i++)
         {
             // create a scan object for each scan in hdf
             ScanPtr tempScan(new Scan());
             size_t six;
             size_t pointsNum;
-            boost::shared_array<float> bb_array = h5_ptr->loadArray<float>("raw/scans/" + scansNeu[i], "boundingBox", six);
+            boost::shared_array<float> bb_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "boundingBox", six);
             BoundingBox<BaseVector<float>> bb(BaseVector<float>(bb_array[0], bb_array[1], bb_array[2]),
                                     BaseVector<float>(bb_array[3], bb_array[4], bb_array[5]));
             // bounding box transfered to object
             tempScan->m_boundingBox = bb;
 
-            boost::shared_array<float> fov_array = h5_ptr->loadArray<float>("raw/scans/" + scansNeu[i], "fov", six);
+            boost::shared_array<float> fov_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "fov", six);
             // fov transfered to object
             tempScan->m_hFieldOfView = fov_array[0];
             tempScan->m_vFieldOfView = fov_array[1];
 
-            boost::shared_array<float> res_array = h5_ptr->loadArray<float>("raw/scans/" + scansNeu[i], "resolution", six);
+            boost::shared_array<float> res_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "resolution", six);
             // resolution transfered
             tempScan->m_hResolution = res_array[0];
             tempScan->m_vResolution = res_array[1];
             // point cloud transfered
-            boost::shared_array<float> point_array = h5_ptr->loadArray<float>("raw/scans/"+ scansNeu[i], "points", pointsNum);
+            boost::shared_array<float> point_array = h5_ptr->loadArray<float>("raw/scans/"+ numOfScansInHDF[i], "points", pointsNum);
             // important because x, y, z coords
             pointsNum = pointsNum / 3;
             PointBufferPtr pointPointer = PointBufferPtr(new PointBuffer(point_array, pointsNum));
             tempScan->m_points = pointPointer;
-            // tempScan->m_points = h5_ptr->loadPointCloud("raw/scans/" + scansNeu[i]);
+            // tempScan->m_points = h5_ptr->loadPointCloud("raw/scans/" + numOfScansInHDF[i]);
             tempScan->m_pointsLoaded = true;            
             // pose transfered
-            tempScan->m_poseEstimation = h5_ptr->loadMatrix<Transformd>("raw/scans/" + scansNeu[i], "initialPose").get();
+            tempScan->m_poseEstimation = h5_ptr->loadMatrix<Transformd>("raw/scans/" + numOfScansInHDF[i], "initialPose").get();
             tempScan->m_positionNumber = i;
 
-            tempScan->m_scanRoot = "raw/scans/" + scansNeu[i];
+            tempScan->m_scanRoot = "raw/scans/" + numOfScansInHDF[i];
             
 
             // sets the finalPose to the identiy matrix
@@ -483,13 +480,15 @@ int main(int argc, char** argv)
     if (options.useHDF)
     {
         // write poses to hdf
-        for(int i = 0; i < scans.size(); i++) //TODO: vielleicht ersten nicht schreiben?
+        for(int i = 0; i < scans.size(); i++)
         {
             Transformd pose = scans[i]->pose();
             cout << "Pose Scan Nummer " << i << pose << endl;
-            // the pose needs to be transposed before writing to hdf
+            // The pose needs to be transposed before writing to hdf,
+            // because the lvr2_viewer expects finalPose in hdf transposed this way.
+            // The initial pose is saved NOT transposed in HDF
             pose.transposeInPlace();
-            h5_ptr->MatrixIO::save("raw/scans/" + scansNeu[i], "finalPose", pose);
+            h5_ptr->MatrixIO::save("raw/scans/" + numOfScansInHDF[i], "finalPose", pose);
         }
     }
 
