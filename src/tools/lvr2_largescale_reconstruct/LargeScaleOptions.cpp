@@ -53,13 +53,21 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
         "inputFile",
         value<vector<string>>(),
         "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")(
-                "partialReconstruct", value<string>(&m_partialReconstruct)->default_value("NONE"), "Option to add partial-Mesh to a global-Mesh (make sure that the inputFile is the global PointCloud)"
-    )(
-        "voxelsize,v",
-        value<float>(&m_voxelsize)->default_value(10),
-        "Voxelsize of grid used for reconstruction.")
-            ("useVGrid", value<int>(&m_vgrid)->default_value(0),"Option to change the partition-process to a gridbase partition (default: OFF (=0))")
-            ("gridSize", value<int>(&m_gridsize)->default_value(2000), "Set the gridsize for the virtual grid. (default: 4000 aka. 40m^3)")(
+        "partialReconstruct",
+        value<string>(&m_partialReconstruct)->default_value("NONE"),
+        "Option to add partial-Mesh to a global-Mesh (make sure that the inputFile is the global "
+        "PointCloud)")("voxelsize,v",
+                       value<float>(&m_voxelsize)->default_value(10),
+                       "Voxelsize of grid used for reconstruction.")(
+        "bgVoxelsize,bgv",
+        value<float>(&m_voxelsizeBG)->default_value(10),
+        "Voxelsize of the bigGrid.")(
+        "useVGrid",
+        value<int>(&m_vgrid)->default_value(0),
+        "Option to change the partition-process to a gridbase partition (default: OFF (=0))")(
+        "gridSize",
+        value<int>(&m_gridsize)->default_value(2000),
+        "Set the gridsize for the virtual grid. (default: 4000 aka. 40m^3)")(
         "noExtrusion",
         "Do not extend grid. Can be used  to avoid artefacts in dense data sets but. Disabling "
         "will possibly create additional holes in sparse data sets.")(
@@ -210,6 +218,8 @@ unsigned int Options::getBufferSize() const { return m_variables["buff"].as<unsi
 
 float Options::getVoxelsize() const { return m_variables["voxelsize"].as<float>(); }
 
+float Options::getBGVoxelsize() const { return m_variables["bgVoxelsize"].as<float>(); }
+
 float Options::getSharpFeatureThreshold() const { return m_variables["sft"].as<float>(); }
 
 float Options::getSharpCornerThreshold() const { return m_variables["sct"].as<float>(); }
@@ -249,24 +259,26 @@ int Options::getFillHoles() const { return (m_variables["fillHoles"].as<int>());
 
 int Options::getMinPlaneSize() const { return (m_variables["mp"].as<int>()); }
 
-int Options::getVGrid() const {return (m_variables["useVGrid"].as<int>()); }
+int Options::getVGrid() const { return (m_variables["useVGrid"].as<int>()); }
 
-int Options::getGridSize() const {return (m_variables["gridSize"].as<int>()); }
+int Options::getGridSize() const { return (m_variables["gridSize"].as<int>()); }
 
-string Options::getPartialReconstruct() const {return (m_variables["partialReconstruct"].as<string>()); }
+string Options::getPartialReconstruct() const
+{
+    return (m_variables["partialReconstruct"].as<string>());
+}
 
 bool Options::printUsage() const
 {
-    if (!m_variables.count("inputFile"))
+    if (m_variables.count("help"))
     {
-        cout << "Error: You must specify an input file." << endl;
         cout << endl;
         cout << m_descr << endl;
         return true;
     }
-
-    if (m_variables.count("help"))
+    else if (!m_variables.count("inputFile"))
     {
+        cout << "Error: You must specify an input file." << endl;
         cout << endl;
         cout << m_descr << endl;
         return true;
