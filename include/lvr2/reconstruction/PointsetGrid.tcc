@@ -93,7 +93,7 @@ void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
         ++progress;
     }
     cout << endl;
-    cout << timestamp << "Elapsed time: " << ts << endl;
+    cout << timestamp << "Elapsed time: " << ts.getElapsedTimeInS() << endl;
 }
 
 } // namespace lvr2

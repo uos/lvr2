@@ -373,7 +373,7 @@ template<typename T>
 void subsample(PointBufferPtr src, PointBufferPtr dst, const vector<size_t>& indices)
 {
     // Go over all supported channel types and sub-sample
-    vector<std::pair<std::string, Channel<T>>> channels;
+    std::map<std::string, Channel<T>> channels;
     src->getAllChannelsOfType(channels);      
     for(auto i : channels)
     {

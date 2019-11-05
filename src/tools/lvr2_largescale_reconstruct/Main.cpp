@@ -115,15 +115,16 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 {
     string filePath = options.getInputFileName()[0];
     float voxelsize = options.getVoxelsize();
+    float bgVoxelsize = options.getBGVoxelsize();
     float scale = options.getScaling();
     cout << lvr2::timestamp << "Starting grid" << endl;
-    BigGrid<BaseVecT> bg(filePath, voxelsize, scale);
+    BigGrid<BaseVecT> bg(filePath, bgVoxelsize, scale);
     cout << lvr2::timestamp << "grid finished " << endl;
     BoundingBox<BaseVecT> bb = bg.getBB();
     shared_ptr<BoundingBox<BaseVecT>> part_bb; // Bounding Box for partial reconstruction
     cout << bb << endl;
 
-    if(!(options.getPartialReconstruct() == "NONE"))
+    if (!(options.getPartialReconstruct() == "NONE"))
     {
         part_bb = std::make_shared<BoundingBox<BaseVecT>>(options.getPartialReconstruct());
     }
@@ -132,9 +133,10 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     vector<BoundingBox<BaseVecT>> partitionBoxes;
 
     cout << lvr2::timestamp << "making tree" << endl;
-    if(options.getVGrid() == 1)
+    if (options.getVGrid() == 1)
     {
-        VirtualGrid<BaseVecT> vGrid(bg.getBB(), options.getNodeSize(), options.getGridSize(), voxelsize);
+        VirtualGrid<BaseVecT> vGrid(
+            bg.getBB(), options.getNodeSize(), options.getGridSize(), bgVoxelsize);
         std::vector<shared_ptr<BoundingBox<BaseVecT>>> boxes;
         if (!(options.getPartialReconstruct() == "NONE"))
         {
@@ -142,7 +144,8 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         }
         vGrid.calculateBoxes();
         ofstream partBoxOfs("BoundingBoxes.ser");
-        for (size_t i = 0; i < vGrid.getBoxes().size(); i++) {
+        for (size_t i = 0; i < vGrid.getBoxes().size(); i++)
+        {
             BoundingBox<BaseVecT> partBB = *vGrid.getBoxes().at(i).get();
             partitionBoxes.push_back(partBB);
             partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
@@ -151,19 +154,19 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         }
     }
     else
-        {
-        BigGridKdTree<BaseVecT> gridKd(bg.getBB(), options.getNodeSize(), &bg, voxelsize);
+    {
+        BigGridKdTree<BaseVecT> gridKd(bg.getBB(), options.getNodeSize(), &bg, bgVoxelsize);
         gridKd.insert(bg.pointSize(), bg.getBB().getCentroid());
-            ofstream partBoxOfs("KdTree.ser");
-        for (size_t i = 0; i < gridKd.getLeafs().size(); i++) {
-                BoundingBox<BaseVecT> partBB = gridKd.getLeafs()[i]->getBB();
-                partitionBoxes.push_back(partBB);
-                partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
-                           << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
-                           << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
-            }
-
+        ofstream partBoxOfs("KdTree.ser");
+        for (size_t i = 0; i < gridKd.getLeafs().size(); i++)
+        {
+            BoundingBox<BaseVecT> partBB = gridKd.getLeafs()[i]->getBB();
+            partitionBoxes.push_back(partBB);
+            partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
+                       << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
+                       << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
         }
+    }
 
     cout << lvr2::timestamp << "finished tree" << endl;
 
@@ -177,16 +180,24 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     vector<string> grid_files;
     unordered_set<string> meshes;
 
+    uint partitionBoxesSkipped = 0;
+
     for (int i = 0; i < partitionBoxes.size(); i++)
     {
         string name_id;
-        if(options.getVGrid() == 1)
+        if (options.getVGrid() == 1)
         {
-            name_id = std::to_string((int)floor(partitionBoxes.at(i).getMin().x/options.getGridSize()) ) + "_" +
-                      std::to_string((int)floor(partitionBoxes.at(i).getMin().y/options.getGridSize()) ) + "_" +
-                      std::to_string((int)floor(partitionBoxes.at(i).getMin().z/options.getGridSize()) );
+            name_id =
+                std::to_string(
+                    (int)floor(partitionBoxes.at(i).getMin().x / options.getGridSize())) +
+                "_" +
+                std::to_string(
+                    (int)floor(partitionBoxes.at(i).getMin().y / options.getGridSize())) +
+                "_" +
+                std::to_string((int)floor(partitionBoxes.at(i).getMin().z / options.getGridSize()));
         }
-        else {
+        else
+        {
             name_id = std::to_string(i);
         }
 
@@ -202,7 +213,10 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
                                     numPoints);
 
         if (numPoints <= 50)
+        {
+            partitionBoxesSkipped++;
             continue;
+        }
 
         BaseVecT gridbb_min(partitionBoxes[i].getMin().x,
                             partitionBoxes[i].getMin().y,
@@ -265,22 +279,24 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     }
 
     ifstream old_mesh("VGrid.ser");
-    if(options.getVGrid() == 1 && old_mesh.is_open())
+    if (options.getVGrid() == 1 && old_mesh.is_open())
     {
-        while(old_mesh.good())
+        while (old_mesh.good())
         {
             string mesh;
-            getline (old_mesh,mesh);
+            getline(old_mesh, mesh);
             cout << "Old Mesh: " << mesh << endl;
-            if(!mesh.empty()) {
+            if (!mesh.empty())
+            {
                 meshes.insert(mesh);
             }
         }
     }
-    std::cout << "Size of Meshes: " << meshes.size() << endl;
+    std::cout << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
+    std::cout << "Generated Meshes: " << meshes.size() << std::endl;
     ofstream vGrid_ser;
     vGrid_ser.open("VGrid.ser", ofstream::out | ofstream::trunc);
-    unordered_set<string> :: iterator itr;
+    unordered_set<string>::iterator itr;
     for (itr = meshes.begin(); itr != meshes.end(); itr++)
     {
         vGrid_ser << *itr << std::endl;
@@ -289,20 +305,16 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
     vGrid_ser.close();
 
-
-
-
-
     cout << lvr2::timestamp << "finished" << endl;
 
     auto vmax = cbb.getMax();
     auto vmin = cbb.getMin();
-    vmin.x -= voxelsize * 2;
-    vmin.y -= voxelsize * 2;
-    vmin.z -= voxelsize * 2;
-    vmax.x += voxelsize * 2;
-    vmax.y += voxelsize * 2;
-    vmax.z += voxelsize * 2;
+    vmin.x -= bgVoxelsize * 2;
+    vmin.y -= bgVoxelsize * 2;
+    vmin.z -= bgVoxelsize * 2;
+    vmax.x += bgVoxelsize * 2;
+    vmax.y += bgVoxelsize * 2;
+    vmax.z += bgVoxelsize * 2;
     cbb.expand(vmin);
     cbb.expand(vmax);
 
@@ -372,6 +384,9 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         LSRWriter hdfWrite;
         hdfWrite.open(filePath);
         hdfWrite.save("/", newMesh);
+
+        auto m = ModelPtr(new Model(meshBuffer));
+        ModelFactory::saveModel(m, "largeScale.ply");
     }
     else
     {
@@ -384,9 +399,26 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
 int main(int argc, char** argv)
 {
+    // =======================================================================
+    // Parse and print command line parameters
+    // =======================================================================
+    // Parse command line arguments
     LargeScaleOptions::Options options(argc, argv);
 
+    options.printLogo();
+
+    // Exit if options had to generate a usage message
+    // (this means required parameters are missing)
+    if (options.printUsage())
+    {
+        return EXIT_SUCCESS;
+    }
+
+    std::cout << options << std::endl;
+
     int i = mpiReconstruct<Vec>(options);
+
+    cout << "Program end." << endl;
 
     return 0;
 }

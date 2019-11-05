@@ -34,3 +34,6 @@ if(CUDA_FOUND)
 elseif(OPENCL_FOUND)
         target_compile_definitions(lvr2_largescale_reconstruct PRIVATE OPENCL_FOUND=1)
 endif()
+
+install(TARGETS lvr2_largescale_reconstruct
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
