@@ -337,12 +337,31 @@ public:
     template <typename T>
     int getAllChannelsOfType(std::map<std::string, Channel<T> >& channels)
     {
-      for(auto it = this->typedBegin<T>(); it != this->end(); ++it)
-      {
-        channels.insert(*it);
-      }
-      return index_of_type<T>::value;
+        for(auto it = this->typedBegin<T>(); it != this->end(); ++it)
+        {
+            channels.insert(*it);
+        }
+        return index_of_type<T>::value;
     }
+
+    /**
+     * @brief Returns all channels of type T.
+     *
+     * @tparam T The type of the channels.
+     * @param channels The vector of channel pairs(name, Channel).
+     *
+     * @return The type index in the MultiChannelMap.
+     */
+    template <typename T>
+    int getAllChannelsOfType(std::vector<std::pair<std::string, Channel<T> >>& channels)
+    {
+        for(auto it = this->typedBegin<T>(); it != this->end(); ++it)
+        {
+            channels.push_back({it->first, it->second});
+        }
+        return index_of_type<T>::value;
+    }
+
 
     /**
      * @brief Gets a channel and returns it as optional. 
