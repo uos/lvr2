@@ -388,7 +388,7 @@ void realTest(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543
 int main(int argc, char** argv)
 {
 
-    MeshBufferPtr sphere = synthetic::genSphere(1000, 2000);
+    MeshBufferPtr sphere = synthetic::genSphere(10, 10);
 
     ModelPtr orig_model(new Model(sphere));
 
