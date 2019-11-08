@@ -29,15 +29,10 @@ bool EmbreeRaycaster<PointT, NormalT>::castRay(
     RTCRayHit rayhit = lvr2embree(origin, direction);
     rtcIntersect1(m_scene, &m_context, &rayhit);
 
-    if(rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID)
-    {
-        intersection.x = rayhit.ray.org_x + rayhit.ray.tfar * rayhit.ray.dir_x;
-        intersection.y = rayhit.ray.org_y + rayhit.ray.tfar * rayhit.ray.dir_y;
-        intersection.z = rayhit.ray.org_z + rayhit.ray.tfar * rayhit.ray.dir_z;
-        return true;
-    } else {
-        return false;
-    }
+    intersection.x = rayhit.ray.org_x + rayhit.ray.tfar * rayhit.ray.dir_x;
+    intersection.y = rayhit.ray.org_y + rayhit.ray.tfar * rayhit.ray.dir_y;
+    intersection.z = rayhit.ray.org_z + rayhit.ray.tfar * rayhit.ray.dir_z;
+    return (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID);
 }
 
 template <typename PointT, typename NormalT>
@@ -64,6 +59,7 @@ void EmbreeRaycaster<PointT, NormalT>::castRays(
     std::vector<PointT >& intersections,
     std::vector<uint8_t>& hits)
 {
+    
     intersections.resize(directions.size());
     hits.resize(directions.size(), false);
 
@@ -72,7 +68,6 @@ void EmbreeRaycaster<PointT, NormalT>::castRays(
     {
         hits[i] = castRay(origins[i], directions[i], intersections[i]);
     }
-
 }
 
 // PROTECTED
