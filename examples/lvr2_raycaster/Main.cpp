@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include <boost/optional.hpp>
+#include <chrono>
 
 // lvr2 includes
 #include "lvr2/io/MeshBuffer.hpp"
@@ -11,10 +12,16 @@
 #include "lvr2/geometry/BaseVector.hpp"
 
 #include "lvr2/algorithm/raycasting/RaycasterBase.hpp"
+
+// LVR2 internal raycaster that is always available
+#include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
+
 #if defined LVR2_USE_OPENCL
 #include "lvr2/algorithm/raycasting/CLRaycaster.hpp"
 #endif
-#include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
+#if defined LVR2_USE_EMBREE
+#include "lvr2/algorithm/raycasting/EmbreeRaycaster.hpp"
+#endif
 
 
 using std::unique_ptr;
@@ -237,6 +244,11 @@ void test1(RaycasterBasePtr<PointType, NormalType> rc)
         }
     }
 
+    if(intersections1.size() == 0)
+    {
+        success = false;
+    }
+
     if(success)
     {
         std::cout << "success!" << std::endl;
@@ -252,6 +264,8 @@ void test1(RaycasterBasePtr<PointType, NormalType> rc)
 
     rc->castRays(origins, rays, intersections2, hits2);
 
+
+
     success = true;
     for(int i=0;i<hits2.size(); i++)
     {
@@ -260,6 +274,12 @@ void test1(RaycasterBasePtr<PointType, NormalType> rc)
             success = false;
         }
     }
+
+    if(intersections2.size() == 0)
+    {
+        success = false;
+    }
+
     if(success)
     {
         std::cout << "success!" << std::endl;
@@ -281,7 +301,14 @@ void test2(RaycasterBasePtr<PointType, NormalType> rc)
 
     rc->castRays(origins, rays, intersections, hits);
 
+    if(hits.size() == 0)
+    {
+        return;
+    }
+
     std::vector<PointType > results;
+
+    
 
     for(int i=0; i<hits.size(); i++)
     {
@@ -349,7 +376,11 @@ void test3(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
 
 }
 
-int main(int argc, char** argv){
+int main(int argc, char** argv)
+{
+
+    auto start = std::chrono::steady_clock::now();
+    auto end = std::chrono::steady_clock::now();
 
     MeshBufferPtr buffer = genMesh();
 
@@ -359,13 +390,23 @@ int main(int argc, char** argv){
     RaycasterBasePtr<PointType, NormalType> raycaster;
 
     // CPU test
+    std::cout << "Testing BVHRaycaster" << std::endl;
     raycaster.reset(new BVHRaycaster<PointType, NormalType>(buffer));
+    start = std::chrono::steady_clock::now();
     test1(raycaster);
     test2(raycaster);
 
-    #if defined LVR2_USE_OPENCL
     // GPU test
+    #if defined LVR2_USE_OPENCL
+    std::cout << "Testing CLRaycaster" << std::endl;
     raycaster.reset(new CLRaycaster<PointType, NormalType>(buffer));
+    test1(raycaster);
+    test2(raycaster);
+    #endif
+
+    #if defined LVR2_USE_EMBREE
+    std::cout << "Testing EmbreeRaycaster" << std::endl;
+    raycaster.reset(new EmbreeRaycaster<PointType, NormalType>(buffer));
     test1(raycaster);
     test2(raycaster);
     #endif

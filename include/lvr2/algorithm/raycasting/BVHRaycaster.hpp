@@ -34,11 +34,12 @@
  */
 
 #pragma once
+#ifndef LVR2_ALGORITHM_RAYCASTING_BVHRAYCASTER
+#define LVR2_ALGORITHM_RAYCASTING_BVHRAYCASTER
+
 
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/geometry/Vector.hpp"
-#include "lvr2/geometry/Point.hpp"
 #include "lvr2/geometry/BVH.hpp"
 #include "lvr2/algorithm/raycasting/RaycasterBase.hpp"
 
@@ -240,3 +241,5 @@ private:
 } // namespace lvr2
 
 #include "lvr2/algorithm/raycasting/BVHRaycaster.tcc"
+
+#endif // LVR2_ALGORITHM_RAYCASTING_BVHRAYCASTER

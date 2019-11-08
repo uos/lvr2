@@ -1,21 +1,23 @@
 #####################################################################################
-# Package includes
+# RAYCASTER EXAMPLE
 #####################################################################################
 
-find_package(OPENCL)
+set(RAYCASTER_DEPS lvr2_static)
+
 if(OPENCL_FOUND)
+    list(APPEND RAYCASTER_DEPS ${OpenCL_LIBRARIES})
+endif(OPENCL_FOUND)
 
-#####################################################################################
+if(embree_FOUND)
+    list(APPEND RAYCASTER_DEPS ${EMBREE_LIBRARY})
+endif(embree_FOUND)
+
 # Add executable
-#####################################################################################
 add_executable(lvr2_example_raycaster_test
     Main.cpp
 )
 
+# link
 target_link_libraries(lvr2_example_raycaster_test
-    lvr2_static
-    ${OpenCL_LIBRARIES}
+    ${RAYCASTER_DEPS}
 )
-else()
-message(WARNING "Could not compile lvr2_example_raycaster_test. OpenCL not found.")
-endif()
