@@ -3,7 +3,12 @@
 #define CL_HPP_ENABLE_EXCEPTIONS
 #define CL_HPP_MINIMUM_OPENCL_VERSION 120 // Need to set to 120 on CUDA 8
 #define CL_HPP_TARGET_OPENCL_VERSION 120 // Need to set to 120 on CUDA 8
-#include <CL/cl2.hpp>
+
+#if defined LVR2_USE_OPENCL_NEW_API
+    #include <CL/cl2.hpp>
+#else
+    #include <CL/cl.hpp>
+#endif
 
 namespace lvr2
 {

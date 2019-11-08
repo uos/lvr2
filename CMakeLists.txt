@@ -5,6 +5,7 @@ project(LAS_VEGAS VERSION 2)
 option(BUILD_EXAMPLES "Build the examples" OFF)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
+set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -131,7 +132,21 @@ find_package(OPENCL)
 if(OPENCL_FOUND)
     include_directories(OPENCL_INCLUDE_DIR)
     list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPENCL)
+    if(OpenCL_NEW_API)
+      list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPENCL_NEW_API)
+    endif(OpenCL_NEW_API)
 endif()
+
+###
+## Searching for Embree
+##############################
+find_package(embree 3.0)
+if(embree_FOUND)
+  message(STATUS "EMBREE FOUND")
+  include_directories(${EMBREE_INCLUDE_DIRS})
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_EMBREE)
+endif(embree_FOUND)
+
 
 ####
 ## Searching for VTK
