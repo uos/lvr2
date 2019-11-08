@@ -7,6 +7,7 @@
 #include <chrono>
 
 // lvr2 includes
+#include "lvr2/util/Synthetic.hpp"
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
@@ -353,8 +354,9 @@ void test2(RaycasterBasePtr<PointType, NormalType> rc)
     
 }
 
-void test3(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
+double test3(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
 {
+    auto start = std::chrono::steady_clock::now();
     int u_max = int(3027.8730 * 2);
     int v_max = int(2031.0270 * 2);
 
@@ -374,53 +376,57 @@ void test3(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
 
     rc->castRays(origin, rays, intersections, hits);
 
+    auto end = std::chrono::steady_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+}
+
+void realTest(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
+{
+
 }
 
 int main(int argc, char** argv)
 {
 
-    auto start = std::chrono::steady_clock::now();
-    auto end = std::chrono::steady_clock::now();
+    MeshBufferPtr sphere = synthetic::genSphere(1000, 2000);
 
-    MeshBufferPtr buffer = genMesh();
+    ModelPtr orig_model(new Model(sphere));
 
-    // create a raycaster
-    // RaycasterBase<PointType, NormalType>::Ptr raycaster;
-    
-    RaycasterBasePtr<PointType, NormalType> raycaster;
+    ModelFactory::saveModel(orig_model, "sphere.ply");
 
-    // CPU test
-    std::cout << "Testing BVHRaycaster" << std::endl;
-    raycaster.reset(new BVHRaycaster<PointType, NormalType>(buffer));
-    start = std::chrono::steady_clock::now();
-    test1(raycaster);
-    test2(raycaster);
+    int num_rays = 20000000;
 
-    // GPU test
-    #if defined LVR2_USE_OPENCL
-    std::cout << "Testing CLRaycaster" << std::endl;
-    raycaster.reset(new CLRaycaster<PointType, NormalType>(buffer));
-    test1(raycaster);
-    test2(raycaster);
-    #endif
-
-    #if defined LVR2_USE_EMBREE
-    std::cout << "Testing EmbreeRaycaster" << std::endl;
-    raycaster.reset(new EmbreeRaycaster<PointType, NormalType>(buffer));
-    test1(raycaster);
-    test2(raycaster);
-    #endif
-
-    if(argc > 1)
+    if(argc < 2)
     {
-        int num_rays = atoi(argv[1]);
+        MeshBufferPtr buffer = genMesh();
 
-        test3(raycaster, num_rays);
+        // create a raycaster
+        RaycasterBasePtr<PointType, NormalType> raycaster;
 
-        ModelPtr model(new Model(buffer));
+        // CPU test
+        std::cout << "Testing BVHRaycaster" << std::endl;
+        raycaster.reset(new BVHRaycaster<PointType, NormalType>(buffer));
+        std::cout << test3(raycaster, num_rays) << " ms" << std::endl;
 
-        ModelFactory::saveModel(model, "projection_mesh.ply");
+        // GPU test
+        #if defined LVR2_USE_OPENCL
+        std::cout << "Testing CLRaycaster" << std::endl;
+        raycaster.reset(new CLRaycaster<PointType, NormalType>(buffer));
+        std::cout << test3(raycaster, num_rays) << " ms" << std::endl;
+        #endif
+
+        #if defined LVR2_USE_EMBREE
+        std::cout << "Testing EmbreeRaycaster" << std::endl;
+        raycaster.reset(new EmbreeRaycaster<PointType, NormalType>(buffer));
+        std::cout << test3(raycaster, num_rays) << " ms" << std::endl;
+        #endif
+    } else {
+        std::string filename(argv[1]);
+
     }
+
+    
+
 
     return 0;
 }

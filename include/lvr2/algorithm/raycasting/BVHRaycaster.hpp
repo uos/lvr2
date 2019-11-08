@@ -120,10 +120,9 @@ private:
      * @param b Second vector
      * @return The square distance
      */
-    inline float distanceSquare(const PointT& a, const PointT& b)
+    inline float distanceSquare(const PointT& a, const PointT& b) const
     {
-        float result = (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
-        return fabs(result);
+        return fabs((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
     }
 
     /**
