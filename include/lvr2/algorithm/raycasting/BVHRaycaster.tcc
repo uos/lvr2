@@ -244,7 +244,7 @@ typename BVHRaycaster<PointT, NormalT>::TriangleIntersectionResult BVHRaycaster<
                 // return if stack size is exceeded
                 if ( stackId > BVH_STACK_SIZE)
                 {
-                    printf("BVH stack size exceeded!");
+                    printf("BVH stack size exceeded!\n");
                     result.hit = 0;
                     return result;
                 }
