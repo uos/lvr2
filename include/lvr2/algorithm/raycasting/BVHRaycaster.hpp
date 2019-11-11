@@ -45,7 +45,7 @@
 
 #define EPSILON 0.0000001
 #define PI 3.14159265
-#define BVH_STACK_SIZE 64
+#define BVH_STACK_SIZE 128
 
 namespace lvr2
 {

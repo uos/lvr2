@@ -356,7 +356,7 @@ void test2(RaycasterBasePtr<PointType, NormalType> rc)
 
 double test3(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
 {
-    auto start = std::chrono::steady_clock::now();
+    
     int u_max = int(3027.8730 * 2);
     int v_max = int(2031.0270 * 2);
 
@@ -371,6 +371,7 @@ double test3(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
         rays[i].z = 0.0;
     }
 
+    auto start = std::chrono::steady_clock::now();
     std::vector<PointType > intersections;
     std::vector<uint8_t> hits;
 
@@ -380,25 +381,64 @@ double test3(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
     return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 }
 
-void realTest(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
+float floatInRange(float LO, float HI)
 {
+    return LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+}
 
+double realTest(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
+{
+    
+    // MeshBufferPtr sphere = synthetic::genSphere(10, 10);
+
+    PointType origin = {0.0,0.0,0.0};
+    std::vector<NormalType > rays(num_rays);
+
+    for(int i=0; i<num_rays; i++)
+    {
+        float x = floatInRange(-1.0, 1.0);
+        float y = floatInRange(-1.0, 1.0);
+        float z = floatInRange(-1.0, 1.0);
+
+        float norm = sqrt(x*x + y*y + z*z);
+        x /= norm;
+        y /= norm;
+        z /= norm;
+
+        rays[i].x = x;
+        rays[i].y = y;
+        rays[i].z = z;
+    }
+
+    auto start = std::chrono::steady_clock::now();
+    std::vector<PointType > intersections;
+    std::vector<uint8_t> hits;
+
+    rc->castRays(origin, rays, intersections, hits);
+    auto end = std::chrono::steady_clock::now();
+    
+    int num_hits = 0;
+    for(int i=0; i<hits.size(); i++)
+    {
+        bool success = hits[i];
+        if(success)
+        {
+            num_hits++;
+        }
+    }
+
+    std::cout << "hits: " << num_hits << std::endl;
+
+    return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 }
 
 int main(int argc, char** argv)
 {
-
-    MeshBufferPtr sphere = synthetic::genSphere(10, 10);
-
-    ModelPtr orig_model(new Model(sphere));
-
-    ModelFactory::saveModel(orig_model, "sphere.ply");
-
-    int num_rays = 20000000;
+    int num_rays = 1000000;
 
     if(argc < 2)
     {
-        MeshBufferPtr buffer = genMesh();
+        MeshBufferPtr buffer = synthetic::genSphere(50, 50);
 
         // create a raycaster
         RaycasterBasePtr<PointType, NormalType> raycaster;
@@ -406,19 +446,19 @@ int main(int argc, char** argv)
         // CPU test
         std::cout << "Testing BVHRaycaster" << std::endl;
         raycaster.reset(new BVHRaycaster<PointType, NormalType>(buffer));
-        std::cout << test3(raycaster, num_rays) << " ms" << std::endl;
+        std::cout << realTest(raycaster, num_rays) << " ms" << std::endl;
 
         // GPU test
         #if defined LVR2_USE_OPENCL
         std::cout << "Testing CLRaycaster" << std::endl;
         raycaster.reset(new CLRaycaster<PointType, NormalType>(buffer));
-        std::cout << test3(raycaster, num_rays) << " ms" << std::endl;
+        std::cout << realTest(raycaster, num_rays) << " ms" << std::endl;
         #endif
 
         #if defined LVR2_USE_EMBREE
         std::cout << "Testing EmbreeRaycaster" << std::endl;
         raycaster.reset(new EmbreeRaycaster<PointType, NormalType>(buffer));
-        std::cout << test3(raycaster, num_rays) << " ms" << std::endl;
+        std::cout << realTest(raycaster, num_rays) << " ms" << std::endl;
         #endif
     } else {
         std::string filename(argv[1]);
