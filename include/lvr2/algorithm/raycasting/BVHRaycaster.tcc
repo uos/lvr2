@@ -244,7 +244,7 @@ typename BVHRaycaster<PointT, NormalT>::TriangleIntersectionResult BVHRaycaster<
                 // return if stack size is exceeded
                 if ( stackId > BVH_STACK_SIZE)
                 {
-                    printf("BVH stack size exceeded!");
+                    printf("BVH stack size exceeded!\n");
                     result.hit = 0;
                     return result;
                 }
@@ -393,7 +393,7 @@ void BVHRaycaster<PointT, NormalT>::cast_rays_one_multi(
      // get direction and origin of the ray for the current pose
     PointT ray_o(ray_origin[0], ray_origin[1], ray_origin[2]);
 
-    #pragma omp for
+    #pragma omp parallel for
     for(size_t i=0; i< num_rays; i++)
     {
         NormalT ray_d(rays[i*3], rays[i*3+1], rays[i*3+2]);
@@ -447,7 +447,7 @@ void BVHRaycaster<PointT, NormalT>::cast_rays_multi_multi(
     )
 {
      // get direction and origin of the ray for the current pose
-    #pragma omp for
+    #pragma omp parallel for
     for(size_t i=0; i< num_rays; i++)
     {
         NormalT ray_d(rays[i*3], rays[i*3+1], rays[i*3+2]);
