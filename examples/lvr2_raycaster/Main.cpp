@@ -4,17 +4,25 @@
 #include <stdlib.h>
 
 #include <boost/optional.hpp>
+#include <chrono>
 
 // lvr2 includes
+#include "lvr2/util/Synthetic.hpp"
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 
 #include "lvr2/algorithm/raycasting/RaycasterBase.hpp"
+
+// LVR2 internal raycaster that is always available
+#include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
+
 #if defined LVR2_USE_OPENCL
 #include "lvr2/algorithm/raycasting/CLRaycaster.hpp"
 #endif
-#include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
+#if defined LVR2_USE_EMBREE
+#include "lvr2/algorithm/raycasting/EmbreeRaycaster.hpp"
+#endif
 
 
 using std::unique_ptr;
@@ -237,6 +245,11 @@ void test1(RaycasterBasePtr<PointType, NormalType> rc)
         }
     }
 
+    if(intersections1.size() == 0)
+    {
+        success = false;
+    }
+
     if(success)
     {
         std::cout << "success!" << std::endl;
@@ -252,6 +265,8 @@ void test1(RaycasterBasePtr<PointType, NormalType> rc)
 
     rc->castRays(origins, rays, intersections2, hits2);
 
+
+
     success = true;
     for(int i=0;i<hits2.size(); i++)
     {
@@ -260,6 +275,12 @@ void test1(RaycasterBasePtr<PointType, NormalType> rc)
             success = false;
         }
     }
+
+    if(intersections2.size() == 0)
+    {
+        success = false;
+    }
+
     if(success)
     {
         std::cout << "success!" << std::endl;
@@ -281,7 +302,14 @@ void test2(RaycasterBasePtr<PointType, NormalType> rc)
 
     rc->castRays(origins, rays, intersections, hits);
 
+    if(hits.size() == 0)
+    {
+        return;
+    }
+
     std::vector<PointType > results;
+
+    
 
     for(int i=0; i<hits.size(); i++)
     {
@@ -326,8 +354,9 @@ void test2(RaycasterBasePtr<PointType, NormalType> rc)
     
 }
 
-void test3(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
+double test3(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
 {
+    
     int u_max = int(3027.8730 * 2);
     int v_max = int(2031.0270 * 2);
 
@@ -342,44 +371,102 @@ void test3(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
         rays[i].z = 0.0;
     }
 
+    auto start = std::chrono::steady_clock::now();
     std::vector<PointType > intersections;
     std::vector<uint8_t> hits;
 
     rc->castRays(origin, rays, intersections, hits);
 
+    auto end = std::chrono::steady_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 }
 
-int main(int argc, char** argv){
+float floatInRange(float LO, float HI)
+{
+    return LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+}
 
-    MeshBufferPtr buffer = genMesh();
-
-    // create a raycaster
-    // RaycasterBase<PointType, NormalType>::Ptr raycaster;
+double realTest(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
+{
     
-    RaycasterBasePtr<PointType, NormalType> raycaster;
+    // MeshBufferPtr sphere = synthetic::genSphere(10, 10);
 
-    // CPU test
-    raycaster.reset(new BVHRaycaster<PointType, NormalType>(buffer));
-    test1(raycaster);
-    test2(raycaster);
+    PointType origin = {0.0,0.0,0.0};
+    std::vector<NormalType > rays(num_rays);
 
-    #if defined LVR2_USE_OPENCL
-    // GPU test
-    raycaster.reset(new CLRaycaster<PointType, NormalType>(buffer));
-    test1(raycaster);
-    test2(raycaster);
-    #endif
-
-    if(argc > 1)
+    for(int i=0; i<num_rays; i++)
     {
-        int num_rays = atoi(argv[1]);
+        float x = floatInRange(-1.0, 1.0);
+        float y = floatInRange(-1.0, 1.0);
+        float z = floatInRange(-1.0, 1.0);
 
-        test3(raycaster, num_rays);
+        float norm = sqrt(x*x + y*y + z*z);
+        x /= norm;
+        y /= norm;
+        z /= norm;
 
-        ModelPtr model(new Model(buffer));
-
-        ModelFactory::saveModel(model, "projection_mesh.ply");
+        rays[i].x = x;
+        rays[i].y = y;
+        rays[i].z = z;
     }
+
+    auto start = std::chrono::steady_clock::now();
+    std::vector<PointType > intersections;
+    std::vector<uint8_t> hits;
+
+    rc->castRays(origin, rays, intersections, hits);
+    auto end = std::chrono::steady_clock::now();
+    
+    int num_hits = 0;
+    for(int i=0; i<hits.size(); i++)
+    {
+        bool success = hits[i];
+        if(success)
+        {
+            num_hits++;
+        }
+    }
+
+    std::cout << "hits: " << num_hits << std::endl;
+
+    return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+}
+
+int main(int argc, char** argv)
+{
+    int num_rays = 1000000;
+
+    if(argc < 2)
+    {
+        MeshBufferPtr buffer = synthetic::genSphere(50, 50);
+
+        // create a raycaster
+        RaycasterBasePtr<PointType, NormalType> raycaster;
+
+        // CPU test
+        std::cout << "Testing BVHRaycaster" << std::endl;
+        raycaster.reset(new BVHRaycaster<PointType, NormalType>(buffer));
+        std::cout << realTest(raycaster, num_rays) << " ms" << std::endl;
+
+        // GPU test
+        #if defined LVR2_USE_OPENCL
+        std::cout << "Testing CLRaycaster" << std::endl;
+        raycaster.reset(new CLRaycaster<PointType, NormalType>(buffer));
+        std::cout << realTest(raycaster, num_rays) << " ms" << std::endl;
+        #endif
+
+        #if defined LVR2_USE_EMBREE
+        std::cout << "Testing EmbreeRaycaster" << std::endl;
+        raycaster.reset(new EmbreeRaycaster<PointType, NormalType>(buffer));
+        std::cout << realTest(raycaster, num_rays) << " ms" << std::endl;
+        #endif
+    } else {
+        std::string filename(argv[1]);
+
+    }
+
+    
+
 
     return 0;
 }

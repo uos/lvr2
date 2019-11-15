@@ -34,17 +34,18 @@
  */
 
 #pragma once
+#ifndef LVR2_ALGORITHM_RAYCASTING_BVHRAYCASTER
+#define LVR2_ALGORITHM_RAYCASTING_BVHRAYCASTER
+
 
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/geometry/Vector.hpp"
-#include "lvr2/geometry/Point.hpp"
 #include "lvr2/geometry/BVH.hpp"
 #include "lvr2/algorithm/raycasting/RaycasterBase.hpp"
 
 #define EPSILON 0.0000001
 #define PI 3.14159265
-#define BVH_STACK_SIZE 64
+#define BVH_STACK_SIZE 128
 
 namespace lvr2
 {
@@ -119,10 +120,9 @@ private:
      * @param b Second vector
      * @return The square distance
      */
-    inline float distanceSquare(const PointT& a, const PointT& b)
+    inline float distanceSquare(const PointT& a, const PointT& b) const
     {
-        float result = (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
-        return fabs(result);
+        return fabs((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
     }
 
     /**
@@ -240,3 +240,5 @@ private:
 } // namespace lvr2
 
 #include "lvr2/algorithm/raycasting/BVHRaycaster.tcc"
+
+#endif // LVR2_ALGORITHM_RAYCASTING_BVHRAYCASTER

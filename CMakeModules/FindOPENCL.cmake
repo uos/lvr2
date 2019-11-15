@@ -24,6 +24,13 @@ if(NOT OpenCL_FOUND)
         set(OpenCL_FOUND 1)
         set(OPENCL_FOUND 1)
     endif()
-    
+    endif()
+endif()
+
+# check API Version
+if(OpenCL_FOUND)
+    set(OpenCL_NEW_API False)
+    if(EXISTS "${OpenCL_INCLUDE_DIRS}/CL/cl2.hpp")
+        set(OpenCL_NEW_API True)
     endif()
 endif()
