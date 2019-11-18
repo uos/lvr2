@@ -182,6 +182,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
     uint partitionBoxesSkipped = 0;
 
+    //create chunks
     for (int i = 0; i < partitionBoxes.size(); i++)
     {
         string name_id;
@@ -297,6 +298,8 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     ofstream vGrid_ser;
     vGrid_ser.open("VGrid.ser", ofstream::out | ofstream::trunc);
     unordered_set<string>::iterator itr;
+
+    //combine chunks
     for (itr = meshes.begin(); itr != meshes.end(); itr++)
     {
         vGrid_ser << *itr << std::endl;
