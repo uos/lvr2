@@ -115,7 +115,6 @@ class VirtualGrid
     size_t m_gridCellSize;
 
     float m_voxelsize; // check if this is even used
-    size_t maxNodePoints; // same
 
 
 

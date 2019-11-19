@@ -123,14 +123,9 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     BigGrid<BaseVecT> bg(filePath, bgVoxelsize, scale);
     cout << lvr2::timestamp << "grid finished " << endl;
     BoundingBox<BaseVecT> bb = bg.getBB();
-    shared_ptr<BoundingBox<BaseVecT>> part_bb; // Bounding Box for partial reconstruction
     cout << bb << endl;
 
-    if (!(options.getPartialReconstruct() == "NONE"))
-    {
-        //TODO: define partial BB according PointClouds in HDF5
-        part_bb = std::make_shared<BoundingBox<BaseVecT>>(options.getPartialReconstruct());
-    }
+
 
     // lvr2::floatArr points = bg.getPointCloud(numPoints);
     vector<BoundingBox<BaseVecT>> partitionBoxes;
@@ -139,12 +134,8 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     if (options.getVGrid() == 1)
     {
         VirtualGrid<BaseVecT> vGrid(
-            bg.getBB(), options.getNodeSize(), options.getGridSize(), bgVoxelsize);
+            bg.getpartialBB(), options.getNodeSize(), options.getGridSize(), bgVoxelsize);
         std::vector<shared_ptr<BoundingBox<BaseVecT>>> boxes;
-        if (!(options.getPartialReconstruct() == "NONE"))
-        {
-            vGrid.setBoundingBox(*part_bb);
-        }
         vGrid.calculateBoxes();
         ofstream partBoxOfs("BoundingBoxes.ser");
         for (size_t i = 0; i < vGrid.getBoxes().size(); i++)

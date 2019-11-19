@@ -148,6 +148,7 @@ class BigGrid
     lvr2::floatArr getPointCloud(size_t& numPoints);
 
     BoundingBox<BaseVecT>& getBB() { return m_bb; }
+    BoundingBox<BaseVecT>& getpartialBB() { return m_partialbb; }
 
     virtual ~BigGrid();
 
@@ -203,6 +204,7 @@ class BigGrid
 
     //BoundingBox, of unreconstructed scans
     BoundingBox<BaseVecT> m_partialbb;
+
     std::unordered_map<size_t, CellInfo> m_gridNumPoints;
     float m_scale;
 };

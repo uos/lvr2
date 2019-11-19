@@ -963,6 +963,8 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
             }
         }
 
+        hfscans.getAttribute("reconstructed").write(num_reconstr + scans.size());
+
         m_PointFile.close();
         m_NomralFile.close();
         mmfparam.path = "distances.mmf";
