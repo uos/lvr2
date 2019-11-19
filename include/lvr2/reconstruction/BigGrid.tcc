@@ -819,7 +819,7 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
                 m_bb.expand(temp);
                 if(i >= num_reconstr)
                 {
-                    m_partialbb(temp);
+                    m_partialbb.expand(temp);
                 }
             }
         }
