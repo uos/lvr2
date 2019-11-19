@@ -118,6 +118,8 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     float bgVoxelsize = options.getBGVoxelsize();
     float scale = options.getScaling();
     cout << lvr2::timestamp << "Starting grid" << endl;
+
+    //TODO: change BigGrid initialization to consider incr. reconstruction
     BigGrid<BaseVecT> bg(filePath, bgVoxelsize, scale);
     cout << lvr2::timestamp << "grid finished " << endl;
     BoundingBox<BaseVecT> bb = bg.getBB();
@@ -126,6 +128,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
     if (!(options.getPartialReconstruct() == "NONE"))
     {
+        //TODO: define partial BB according PointClouds in HDF5
         part_bb = std::make_shared<BoundingBox<BaseVecT>>(options.getPartialReconstruct());
     }
 
@@ -259,7 +262,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
                                                                  options.getKi(),
                                                                  options.getKd(),
                                                                  options.useRansac());
-
+        //calculate important stuff for reconstruction
         if (!bg.hasNormals())
             surface->calculateSurfaceNormals();
 
@@ -270,6 +273,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         ps_grid->calcIndices();
         ps_grid->calcDistanceValues();
 
+        //TODO: is this even used? if not:remove it
         auto reconstruction =
             make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
 
@@ -279,6 +283,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         meshes.insert(ss2.str());
     }
 
+    //TODO: replace reading from .ser file to reading from .h5
     ifstream old_mesh("VGrid.ser");
     if (options.getVGrid() == 1 && old_mesh.is_open())
     {
@@ -299,7 +304,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     vGrid_ser.open("VGrid.ser", ofstream::out | ofstream::trunc);
     unordered_set<string>::iterator itr;
 
-    //combine chunks
+
     for (itr = meshes.begin(); itr != meshes.end(); itr++)
     {
         vGrid_ser << *itr << std::endl;
@@ -310,6 +315,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
     cout << lvr2::timestamp << "finished" << endl;
 
+    //combine chunks
     auto vmax = cbb.getMax();
     auto vmin = cbb.getMin();
     vmin.x -= bgVoxelsize * 2;

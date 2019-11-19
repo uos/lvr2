@@ -765,10 +765,8 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
     m_voxelSize = voxelsize;
 
     // First, parse whole file to get BoundingBox and amount of points
-
     if (extension == ".h5")
     {
-
         float ix, iy, iz;
         using HDF5PCIO = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
                                       lvr2::hdf5features::ChannelIO,
@@ -781,42 +779,29 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
 
         HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
 
+        if(!hfscans.hasAttribute("reconstructed"))
+        {
+            //attribute, to identify reconstructed scans
+            unsigned int count = 0;
+            hfscans.createAttribute("reconstructed", count);
+        }
+
+        unsigned int num_reconstr;
+        hfscans.getAttribute("reconstructed").read(num_reconstr);
+
+        cout << "Already Reconstructed: " << num_reconstr << endl;
+
+
         vector<string> scans = hfscans.listObjectNames();
 
-        // TODO: this is an alternative to calc the Bounding Box, remove one variation later
-        /*BoundingBox<BaseVecT> temp(BaseVecT(0,0,0),
-                                      BaseVecT(0,0,0));
-
-        for(int i = 0; i < scans.size(); i++)
-        {
-            Transformd finalPose_n = h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i],
-        "finalPose").get(); Transformd finalPose = finalPose_n.transpose(); size_t six;
-            boost::shared_array<double> bb_array = h5_ptr->loadArray<double>("raw/scans/" +
-        scans[i],"boundingBox", six);
-
-            Eigen::Vector4d bb_min(bb_array[0], bb_array[1],
-                                   bb_array[2] , 1.0);
-
-            Eigen::Vector4d bb_max(bb_array[3], bb_array[4],
-                                   bb_array[5] , 1.0);
-
-            Eigen::Vector4d bb_tmin = finalPose * bb_min;
-            Eigen::Vector4d bb_tmax = finalPose * bb_max;
-
-            BoundingBox<BaseVecT> scan_bb(BaseVecT(bb_tmin[0], bb_tmin[1], bb_tmin[2]),
-                                          BaseVecT(bb_tmax[0], bb_tmax[1], bb_tmax[2]));
-            temp.expand(scan_bb);
-        }
-        */
-        // std::cout << temp << std::endl;
         int b = 0;
-
+        //TODO: switch to only consider scans, which are relevant for the partial reconstruction
         // calculate global Bounding Box of all scans
         for (int i = 0; i < scans.size(); i++)
         {
             size_t numPoints;
             boost::shared_array<float> points =
-                h5_ptr->loadArray<float>("raw/scans/" + scans[i], "points", numPoints);
+                h5_ptr->loadArray<float>("preview/" + scans[i], "points", numPoints);
             // m_numPoints += numPoints / 3;
             Transformd finalPose_n =
                 h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
@@ -832,6 +817,10 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
 
                 BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
                 m_bb.expand(temp);
+                if(i >= num_reconstr)
+                {
+                    m_partialbb(temp);
+                }
             }
         }
         std::cout << "Global BB: " << std::endl << m_bb << std::endl;
@@ -870,7 +859,7 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
         {
             size_t numPoints;
             boost::shared_array<float> points =
-                h5_ptr->loadArray<float>("raw/scans/" + scans[i], "points", numPoints);
+                h5_ptr->loadArray<float>("preview/" + scans[i], "points", numPoints);
             m_numPoints += numPoints / 3;
             Transformd finalPose_n =
                 h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
@@ -945,7 +934,7 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
         {
             size_t numPoints;
             boost::shared_array<float> points =
-                h5_ptr->loadArray<float>("raw/scans/" + scans[i], "points", numPoints);
+                h5_ptr->loadArray<float>("preview/" + scans[i], "points", numPoints);
             Transformd finalPose_n =
                 h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
             Transformd finalPose = finalPose_n.transpose();
