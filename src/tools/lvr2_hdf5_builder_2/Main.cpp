@@ -1,6 +1,6 @@
 #include "Options.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/io/Hdf5IO.hpp"
+#include "lvr2/io/GHDF5IO.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/PointBuffer.hpp"

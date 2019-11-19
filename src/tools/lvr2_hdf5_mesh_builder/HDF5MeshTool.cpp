@@ -46,7 +46,7 @@
 #include <cstring>
 #include <memory>
 
-#include "lvr2/io/Hdf5IO.hpp"
+#include "lvr2/io/GHDF5IO.hpp"
 #include "lvr2/io/hdf5/MeshIO.hpp"
 
 using namespace lvr2;

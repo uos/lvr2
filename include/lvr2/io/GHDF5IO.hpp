@@ -111,4 +111,4 @@ public:
 
 } // namespace lvr2
 
-#include "Hdf5IO.tcc"
+#include "GHDF5IO.tcc"
