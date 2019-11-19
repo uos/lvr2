@@ -38,11 +38,19 @@ template <typename BaseVecT>
 VirtualGrid<BaseVecT>::VirtualGrid(BoundingBox<BaseVecT>& bb,
                                   size_t maxNodePoints,
                                   size_t gridCellSize,
-                                  float voxelsize)
+                                  float voxelSize)
 {
  m_pcbb = bb;
- m_gridCellSize = gridCellSize;
- m_voxelsize = voxelsize;
+ if(fmod((float) gridCellSize , voxelSize) != 0)
+ {
+     int var = ((int)gridCellSize/(int)voxelSize) + fmod((float) gridCellSize , voxelSize);
+     m_gridCellSize = var * voxelSize;
+ }
+ else{
+     m_gridCellSize = gridCellSize;
+ }
+
+ m_voxelsize = voxelSize;
 }
 
 template <typename BaseVecT>
