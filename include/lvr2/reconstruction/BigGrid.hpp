@@ -200,6 +200,9 @@ class BigGrid
     boost::iostreams::mapped_file m_NomralFile;
     boost::iostreams::mapped_file m_ColorFile;
     BoundingBox<BaseVecT> m_bb;
+
+    //BoundingBox, of unreconstructed scans
+    BoundingBox<BaseVecT> m_partialbb;
     std::unordered_map<size_t, CellInfo> m_gridNumPoints;
     float m_scale;
 };
