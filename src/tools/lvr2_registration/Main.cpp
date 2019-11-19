@@ -36,8 +36,7 @@
 #include <lvr2/io/IOUtils.hpp>
 #include <lvr2/registration/SLAMAlign.hpp>
 #include <lvr2/io/HDF5IO.hpp>
-#include <lvr2/io/Hdf5IO.hpp>
-#include <lvr2/io/Hdf5IO.hpp>
+#include <lvr2/io/GHDF5IO.hpp>
 #include <lvr2/io/hdf5/ArrayIO.hpp>
 #include <lvr2/io/hdf5/ChannelIO.hpp>
 #include <lvr2/io/hdf5/VariantChannelIO.hpp>

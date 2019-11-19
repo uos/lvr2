@@ -58,7 +58,7 @@
 #include <lvr2/geometry/ColorVertex.hpp>
 #include <lvr2/geometry/HalfEdgeMesh.hpp>
 #include <lvr2/geometry/Normal.hpp>
-#include <lvr2/io/Hdf5IO.hpp>
+#include <lvr2/io/GHDF5IO.hpp>
 #include <lvr2/io/Model.hpp>
 #include <lvr2/io/PointBuffer.hpp>
 #include <lvr2/io/Timestamp.hpp>
