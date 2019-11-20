@@ -125,8 +125,6 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     BoundingBox<BaseVecT> bb = bg.getBB();
     cout << bb << endl;
 
-
-
     // lvr2::floatArr points = bg.getPointCloud(numPoints);
     vector<BoundingBox<BaseVecT>> partitionBoxes;
 
