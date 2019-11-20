@@ -46,7 +46,9 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
             ("help", "Produce help message")
             ("inputDir", value<string>(), "Root of the raw data.")
             ("outputDir", value<string>()->default_value("./"), "HDF5 file is written here.")
-            ("outputFile", value<string>()->default_value("data.h5"), "HDF5 file name.");
+            ("outputFile", value<string>()->default_value("data.h5"), "HDF5 file name.")
+            ("createPreview,p", value<bool>()->default_value(true), "Creates preview of the pointcloud.")
+            ("previewReduction,r", value<int>()->default_value(20), "Reduction ratio for the preview");
 //            ("nch, n", value<int>()->default_value(150), "Number of spectral PNGs in image folder.")
 //            ("hsp_chunk_0", value<size_t>()->default_value(50), "Dim 0 of HSP image chunks.")
 //            ("hsp_chunk_1", value<size_t>()->default_value(50), "Dim 1 of HSP image chunks.")
