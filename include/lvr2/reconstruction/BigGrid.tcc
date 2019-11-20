@@ -794,10 +794,50 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
 
         vector<string> scans = hfscans.listObjectNames();
 
-
-        int b = 0;
         //TODO: switch to only consider scans, which are relevant for the partial reconstruction
         // calculate global Bounding Box of all scans
+
+        BoundingBox<BaseVecT> temp;
+
+       for(int i = 0; i < scans.size(); i++)
+       {
+           Transformd finalPose_n = h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
+           Transformd finalPose = finalPose_n.transpose();
+           size_t six;
+           boost::shared_array<double> bb_array = h5_ptr->loadArray<double>("raw/scans/" + scans[i],"boundingBox", six);
+
+           Eigen::Vector4d corners[8];
+
+           calculateCorners(corners, bb_array);
+
+
+
+
+           Eigen::Vector4d bb_tmin = Eigen::Vector4d(1 * numeric_limits<double>::max(), 1 * numeric_limits<double>::max(), 1 * numeric_limits<double>::max(), 1);
+           Eigen::Vector4d bb_tmax = Eigen::Vector4d(1 * numeric_limits<double>::min(), 1 * numeric_limits<double>::min(), 1 * numeric_limits<double>::min(), 1);
+
+           // Transform all of the corners, and keep track of the biggest and smallest values
+           for(int i = 0; i < 8; i++) {
+
+               Eigen::Vector4d transformed = finalPose * corners[i];
+               cout << transformed << endl;
+               bb_tmin[0] = min(bb_tmin[0], transformed[0]);
+               bb_tmin[1] = min(bb_tmin[1], transformed[1]);
+               bb_tmin[2] = min(bb_tmin[2], transformed[2]);
+
+               bb_tmax[0] = max(bb_tmax[0], transformed[0]);
+               bb_tmax[1] = max(bb_tmax[1], transformed[1]);
+               bb_tmax[2] = max(bb_tmax[2], transformed[2]);
+           }
+           BoundingBox<BaseVecT> scan_bb(BaseVecT(bb_tmin[0], bb_tmin[1], bb_tmin[2]),
+                                         BaseVecT(bb_tmax[0], bb_tmax[1], bb_tmax[2]));
+           cout << scan_bb << endl;
+           temp.expand(scan_bb);
+       }
+
+       cout << "Global Bounding Box new: " << endl<< temp << endl;
+
+
         for (int i = 0; i < scans.size(); i++)
         {
             size_t numPoints;
@@ -1780,7 +1820,20 @@ lvr2::floatArr BigGrid<BaseVecT>::getPointCloud(size_t& numPoints)
     return points;
 }
 
-template <typename BaseVecT>
+    template <typename BaseVecT>
+    void BigGrid<BaseVecT>::calculateCorners(Eigen::Vector4d corners[], boost::shared_array<double> bb_array)
+    {
+        corners[0] = Eigen::Vector4d(bb_array[0], bb_array[1], bb_array[2] , 1.0);
+        corners[1] = Eigen::Vector4d(bb_array[0], bb_array[1], bb_array[5] , 1.0);
+        corners[2] = Eigen::Vector4d(bb_array[0], bb_array[4], bb_array[2] , 1.0);
+        corners[3] = Eigen::Vector4d(bb_array[3], bb_array[1], bb_array[2] , 1.0);
+        corners[4] = Eigen::Vector4d(bb_array[0], bb_array[4], bb_array[5] , 1.0);
+        corners[5] = Eigen::Vector4d(bb_array[3], bb_array[1], bb_array[5] , 1.0);
+        corners[6] = Eigen::Vector4d(bb_array[3], bb_array[4], bb_array[2] , 1.0);
+        corners[7] = Eigen::Vector4d(bb_array[3], bb_array[4], bb_array[5] , 1.0);
+    }
+
+    template <typename BaseVecT>
 size_t BigGrid<BaseVecT>::getSizeofBox(
     float minx, float miny, float minz, float maxx, float maxy, float maxz)
 {

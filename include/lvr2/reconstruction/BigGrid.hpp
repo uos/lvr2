@@ -150,6 +150,14 @@ class BigGrid
     BoundingBox<BaseVecT>& getBB() { return m_bb; }
     BoundingBox<BaseVecT>& getpartialBB() { return m_partialbb; }
 
+    /**
+     * Calculates 8 corners of a Bounding Box
+     *
+     * @param corners
+     * @param bb_array
+     */
+    void calculateCorners(Eigen::Vector4d corners[], boost::shared_array<double> bb_array);
+
     virtual ~BigGrid();
 
     inline size_t hashValue(size_t i, size_t j, size_t k)
