@@ -33,6 +33,9 @@ using HDF5IO = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
                             lvr2::hdf5features::PointCloudIO,
                             lvr2::hdf5features::MatrixIO>;
 
+bool m_usePreviews;
+int m_previewReductionFactor;
+
 template <typename Iterator>
 bool parse_scan_filename(Iterator first, Iterator last, int& i)
 {
@@ -165,12 +168,10 @@ boost::shared_array<T> reduceData(boost::shared_array<T> data,
 
 bool saveScan(int nr, ScanPtr scan, HDF5IO hdf5)
 {
-
-    std::cout << "NUMPOINTS " << scan->m_points->numPoints() << std::endl;
     // Check scan data
     if (scan->m_points->numPoints())
     {
-        std::cout << timestamp << "trying to save" << std::endl;
+        std::cout << timestamp << "Saving data" << std::endl;
         // Setup group for scan data
         char buffer[128];
         sprintf(buffer, "position_%05d", nr);
@@ -235,10 +236,6 @@ bool saveScan(int nr, ScanPtr scan, HDF5IO hdf5)
             hdf5.save(
                 "/annotation/" + nr_str, "spectral", dim_annotation, chunk_annotation, spectral);
         }
-
-        // TODO m_use_preview, m_PreviewReductionFactor
-        bool m_usePreviews = true;         // TODO param
-        int m_previewReductionFactor = 20; // TODO param
 
         // Add preview data if wanted
         if (m_usePreviews)
@@ -390,7 +387,7 @@ void readScanMetaData(const boost::filesystem::path& fn, ScanPtr& scan_ptr)
                     {
                         row++;
                         col = 0;
-                        std::cout << std::endl;
+                        // std::cout << std::endl;
                     }
                     else
                     {
@@ -428,8 +425,8 @@ void readScanMetaData(const boost::filesystem::path& fn, ScanPtr& scan_ptr)
 
                     scan_ptr->m_vFieldOfView = max - min;
                     scan_ptr->m_vResolution = tmp["delta"].as<float>();
-                    std::cout << "T: " << scan_ptr->m_vFieldOfView << "; "
-                              << scan_ptr->m_vResolution << std::endl;
+                    // std::cout << "T: " << scan_ptr->m_vFieldOfView << "; "
+                    //          << scan_ptr->m_vResolution << std::endl;
                 }
                 if (it->second["Phi"])
                 {
@@ -439,12 +436,12 @@ void readScanMetaData(const boost::filesystem::path& fn, ScanPtr& scan_ptr)
 
                     scan_ptr->m_hFieldOfView = max - min;
                     scan_ptr->m_hResolution = tmp["delta"].as<float>();
-                    std::cout << "P: " << scan_ptr->m_hFieldOfView << "; "
-                              << scan_ptr->m_hResolution << std::endl;
+                    // std::cout << "P: " << scan_ptr->m_hFieldOfView << "; "
+                    //          << scan_ptr->m_hResolution << std::endl;
                 }
             }
         }
-        std::cout << std::endl;
+        // std::cout << std::endl;
     }
     return;
 }
@@ -467,7 +464,7 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     {
         if (it->path().extension() == ".yaml")
         {
-            std::cout << it->path() << std::endl;
+            std::cout << timestamp << "Load yaml " << it->path() << std::endl;
             size = readSpectralMetaData(it->path(), timestamps, angleOffsets);
             yaml = true;
         }
@@ -486,10 +483,10 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
         std::cout << timestamp << "No yaml config found" << std::endl;
     }
 
-    if (size != spectral.size())
+    if (size - 1 != spectral.size())
     {
-        std::cout << timestamp << "Incosistent"
-                  << " " << size << " " << spectral.size() << std::endl;
+        std::cout << timestamp << "Inconsistent"
+                  << " " << size - 1 << " " << spectral.size() << std::endl;
     }
 
     std::sort(spectral.begin(), spectral.end(), sortPanoramas);
@@ -536,9 +533,10 @@ bool scanIO(const boost::filesystem::path& p,
             const boost::filesystem::path& yaml,
             HDF5IO& hdf5)
 {
-    std::cout << timestamp << "load scan " << p.string() << std::endl;
+    std::cout << timestamp << "Load scan " << p.string() << std::endl;
     ModelPtr model = ModelFactory::readModel(p.string());
-    std::cout << timestamp << "loaded " << model->m_pointCloud->numPoints() << std::endl;
+    std::cout << timestamp << "Loaded " << model->m_pointCloud->numPoints() << " points"
+              << std::endl;
     ScanPtr scan_ptr(new Scan());
 
     PointBufferPtr pc = model->m_pointCloud;
@@ -571,6 +569,9 @@ int main(int argc, char** argv)
     hdf5tool2::Options options(argc, argv);
     boost::filesystem::path inputDir(options.getInputDir());
 
+    m_usePreviews = options.getPreview();
+    m_previewReductionFactor = options.getPreviewReductionRatio();
+
     int fileCounterIncr = 0;
     HDF5IO hdf;
 
@@ -598,13 +599,13 @@ int main(int argc, char** argv)
     outputPath /= options.getOutputFile();
     if (boost::filesystem::exists(outputPath))
     {
-        std::cout << timestamp << "File already exists. Expanding HDF5..." << std::endl;
+        std::cout << timestamp << "File already exists. Expanding File..." << std::endl;
 
         // get existing scans
         hdf.open(outputPath.string());
         HighFive::Group hfscans = hdf5util::getGroup(hdf.m_hdf5_file, "raw/scans");
         fileCounterIncr = hfscans.listObjectNames().size();
-        std::cout << timestamp << "using counter increment " << fileCounterIncr << std::endl;
+        std::cout << timestamp << "Using counter-increment " << fileCounterIncr << std::endl;
     }
     else
     {
@@ -623,12 +624,11 @@ int main(int argc, char** argv)
     int count = 0;
     for (auto p : scans)
     {
-        std::cout << p << std::endl;
+        std::cout << timestamp << "Reading path " << p << std::endl;
         char buffer[64];
         boost::filesystem::path ply;
         std::string fn = p.stem().string();
 
-        std::cout << fn << std::endl;
         // ?!
         if (!parse_scan_filename(fn.begin(), fn.end(), count))
         {
@@ -636,7 +636,7 @@ int main(int argc, char** argv)
             continue;
         }
 
-        std::cout << timestamp << "Processing position " << count << std::endl;
+        std::cout << timestamp << "Processing scan " << count << std::endl;
 
         bool ply_exists = false;
         bool spectral_exists = false;
@@ -672,6 +672,9 @@ int main(int argc, char** argv)
         else
         {
             scanIO(ply, count + fileCounterIncr, p / std::string("scan.yaml"), hdf);
+            std::cout << timestamp << "Finished" << std::endl;
+            std::cout << std::endl;
         }
     }
+    std::cout << timestamp << "Program finished" << std::endl;
 }
