@@ -23,7 +23,6 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <yaml-cpp/yaml.h>
 
-
 // const hdf5tool2::Options* options;
 namespace qi = boost::spirit::qi;
 using namespace lvr2;
@@ -171,7 +170,7 @@ bool saveScan(int nr, ScanPtr scan, HDF5IO hdf5)
     // Check scan data
     if (scan->m_points->numPoints())
     {
-        std::cout << "trying to save" << std::endl;
+        std::cout << timestamp << "trying to save" << std::endl;
         // Setup group for scan data
         char buffer[128];
         sprintf(buffer, "position_%05d", nr);
@@ -537,9 +536,9 @@ bool scanIO(const boost::filesystem::path& p,
             const boost::filesystem::path& yaml,
             HDF5IO& hdf5)
 {
-    std::cout << "load scan " << p.string() << std::endl;
+    std::cout << timestamp << "load scan " << p.string() << std::endl;
     ModelPtr model = ModelFactory::readModel(p.string());
-    std::cout << "loaded " << model->m_pointCloud->numPoints() << std::endl;
+    std::cout << timestamp << "loaded " << model->m_pointCloud->numPoints() << std::endl;
     ScanPtr scan_ptr(new Scan());
 
     PointBufferPtr pc = model->m_pointCloud;
@@ -572,6 +571,9 @@ int main(int argc, char** argv)
     hdf5tool2::Options options(argc, argv);
     boost::filesystem::path inputDir(options.getInputDir());
 
+    int fileCounterIncr = 0;
+    HDF5IO hdf;
+
     if (!boost::filesystem::exists(inputDir))
     {
         std::cout << timestamp << "Error: Directory " << options.getInputDir() << " does not exist"
@@ -596,12 +598,18 @@ int main(int argc, char** argv)
     outputPath /= options.getOutputFile();
     if (boost::filesystem::exists(outputPath))
     {
-        std::cout << timestamp << "Error: File exists " << outputPath << std::endl;
-        exit(-1);
-    }
+        std::cout << timestamp << "File already exists. Expanding HDF5..." << std::endl;
 
-    HDF5IO hdf;
-    hdf.open(outputPath.string());
+        // get existing scans
+        hdf.open(outputPath.string());
+        HighFive::Group hfscans = hdf5util::getGroup(hdf.m_hdf5_file, "raw/scans");
+        fileCounterIncr = hfscans.listObjectNames().size();
+        std::cout << timestamp << "using counter increment " << fileCounterIncr << std::endl;
+    }
+    else
+    {
+        hdf.open(outputPath.string());
+    }
 
     std::vector<boost::filesystem::path> scans;
     for (boost::filesystem::directory_iterator it(inputDir);
@@ -628,7 +636,7 @@ int main(int argc, char** argv)
             continue;
         }
 
-        std::cout << lvr2::timestamp << "Processing position " << count << std::endl;
+        std::cout << timestamp << "Processing position " << count << std::endl;
 
         bool ply_exists = false;
         bool spectral_exists = false;
@@ -638,12 +646,12 @@ int main(int argc, char** argv)
         {
             if (boost::filesystem::is_directory((*it).path()) && (*it).path().stem() == "spectral")
             {
-                spectral_exists = spectralIO(it->path(), count, hdf);
+                spectral_exists = spectralIO(it->path(), count + fileCounterIncr, hdf);
             }
 
             if (boost::filesystem::is_directory((*it).path()) && (*it).path().stem() == "channels")
             {
-                channelIO(it->path(), count, hdf);
+                channelIO(it->path(), count + fileCounterIncr, hdf);
             }
 
             if ((*it).path().extension() == ".ply")
@@ -655,7 +663,7 @@ int main(int argc, char** argv)
 
         if (!spectral_exists)
         {
-            std::cout << "No spectral information in: " << p << std::endl;
+            std::cout << timestamp << "No spectral information in: " << p << std::endl;
         }
         if (!ply_exists)
         {
@@ -663,7 +671,7 @@ int main(int argc, char** argv)
         }
         else
         {
-            scanIO(ply, count, p / std::string("scan.yaml"), hdf);
+            scanIO(ply, count + fileCounterIncr, p / std::string("scan.yaml"), hdf);
         }
     }
 }
