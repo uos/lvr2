@@ -794,6 +794,7 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
 
         vector<string> scans = hfscans.listObjectNames();
 
+
         int b = 0;
         //TODO: switch to only consider scans, which are relevant for the partial reconstruction
         // calculate global Bounding Box of all scans
@@ -963,7 +964,7 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
             }
         }
 
-        hfscans.getAttribute("reconstructed").write(num_reconstr + scans.size());
+        hfscans.getAttribute("reconstructed").write(scans.size());
 
         m_PointFile.close();
         m_NomralFile.close();

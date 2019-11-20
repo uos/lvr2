@@ -83,10 +83,6 @@ void VirtualGrid<BaseVecT>::findInitialBox()
 
     m_initbox = lvr2::BoundingBox<BaseVecT>(BaseVecT(min_x,min_y, min_z), BaseVecT(max_x, max_y, max_z));
 
-    std::cout << "DOES BOX 1 EVEN COLLIDE IF PC? " << m_initbox.overlap(m_pcbb) << std::endl;
-    std::cout << m_initbox << std::endl;
-    std::cout << m_pcbb << std::endl;
-
 }
 
 template <typename BaseVecT>
