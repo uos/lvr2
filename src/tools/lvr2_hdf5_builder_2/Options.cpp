@@ -44,7 +44,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 	m_descr.add_options()
             ("help", "Produce help message")
-            ("inputDir", value<string>()->default_value("./"), "Root of the raw data.")
+            ("inputDir", value<string>(), "Root of the raw data.")
             ("outputDir", value<string>()->default_value("./"), "HDF5 file is written here.")
             ("outputFile", value<string>()->default_value("data.h5"), "HDF5 file name.");
 //            ("nch, n", value<int>()->default_value(150), "Number of spectral PNGs in image folder.")
@@ -55,14 +55,22 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 
 
 	// Parse command line and generate variables map
-	store(command_line_parser(argc, argv).options(m_descr).positional(m_pdescr).run(), m_variables);
+  positional_options_description p;
+  p.add("inputDir", 1);
+	store(command_line_parser(argc, argv).options(m_descr).positional(p).run(), m_variables);
 	notify(m_variables);
 
   if(m_variables.count("help")) {
     ::std::cout<< m_descr << ::std::endl;
     exit(-1);
   }
-
+  else if (!m_variables.count("inputDir"))
+  {
+    std::cout << "Error: You must specify an input directory." << std::endl;
+    std::cout << std::endl;
+    std::cout << m_descr << std::endl;
+    exit(-1);
+  }
 
 }
 
