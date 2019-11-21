@@ -119,7 +119,6 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     float scale = options.getScaling();
     cout << lvr2::timestamp << "Starting grid" << endl;
 
-    //TODO: change BigGrid initialization to consider incr. reconstruction
     BigGrid<BaseVecT> bg(filePath, bgVoxelsize, scale);
     cout << lvr2::timestamp << "grid finished " << endl;
     BoundingBox<BaseVecT> bb = bg.getBB();
@@ -266,6 +265,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         auto reconstruction =
             make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
 
+        //TODO: replace creating .ser files to creating chung in HDF5
         std::stringstream ss2;
         ss2 << name_id << ".ser";
         ps_grid->saveCells(ss2.str());
@@ -293,7 +293,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     vGrid_ser.open("VGrid.ser", ofstream::out | ofstream::trunc);
     unordered_set<string>::iterator itr;
 
-
+    //TODO: potentially remove mesh-combine or leave it as a debug output
     for (itr = meshes.begin(); itr != meshes.end(); itr++)
     {
         vGrid_ser << *itr << std::endl;
