@@ -51,6 +51,17 @@ namespace lvr2
 class ChunkManager
 {
   public:
+    using FilterFunction = std::function<bool(std::string,
+                                              VariantChannel<char,
+                                                             unsigned char,
+                                                             short,
+                                                             unsigned short,
+                                                             int,
+                                                             unsigned int,
+                                                             float,
+                                                             double>,
+                                              size_t)>;
+
     /**
      * @brief ChunkManager creates chunks from an original mesh
      *
@@ -64,7 +75,11 @@ class ChunkManager
      * @param savePath JUST FOR TESTING - REMOVE LATER ON
      * @param cacheSize maximum number of chunks loaded in the ChunkHashGrid
      */
-    ChunkManager(MeshBufferPtr mesh, float chunksize, float maxChunkOverlap, std::string savePath, size_t cacheSize = 200);
+    ChunkManager(MeshBufferPtr mesh,
+                 float chunksize,
+                 float maxChunkOverlap,
+                 std::string savePath,
+                 size_t cacheSize = 200);
     /**
      * @brief ChunkManager loads a ChunkManager from a given HDF5-file
      *
@@ -86,6 +101,8 @@ class ChunkManager
      * @return mesh of the given area
      */
     MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area);
+
+    MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area, FilterFunction filter);
 
     /**
      * @brief Calculates the hash value for the given index triple
@@ -194,12 +211,13 @@ class ChunkManager
      * @param areaVertexIndices mapping from old vertex index to new vertex index per chunk
      */
     template <typename T>
-    ChannelPtr<T> extractChannelOfArea(std::unordered_map<std::size_t, MeshBufferPtr>& chunks,
-                                       std::string channelName,
-                                       std::size_t staticVertexIndexOffset,
-                                       std::size_t numVertices,
-                                       std::size_t numFaces,
-                                       std::vector<std::unordered_map<std::size_t, std::size_t>>& areaVertexIndices);
+    ChannelPtr<T> extractChannelOfArea(
+        std::unordered_map<std::size_t, MeshBufferPtr>& chunks,
+        std::string channelName,
+        std::size_t staticVertexIndexOffset,
+        std::size_t numVertices,
+        std::size_t numFaces,
+        std::vector<std::unordered_map<std::size_t, std::size_t>>& areaVertexIndices);
 
     // bounding box of the entire chunked model
     BoundingBox<BaseVector<float>> m_boundingBox;

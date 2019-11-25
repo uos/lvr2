@@ -69,9 +69,8 @@ ChunkManager::ChunkManager(MeshBufferPtr mesh,
                            float maxChunkOverlap,
                            std::string savePath,
                            size_t cacheSize)
-    : m_chunkSize(chunksize),
-    m_hdf5Path(savePath + "/chunked_mesh.h5")
-    {
+    : m_chunkSize(chunksize), m_hdf5Path(savePath + "/chunked_mesh.h5")
+{
     initBoundingBox(mesh);
 
     // compute number of chunks for each dimension
@@ -83,8 +82,7 @@ ChunkManager::ChunkManager(MeshBufferPtr mesh,
     m_chunkHashGrid = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(m_hdf5Path, cacheSize));
 }
 
-ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize)
-: m_hdf5Path(hdf5Path)
+ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize) : m_hdf5Path(hdf5Path)
 {
     if (boost::filesystem::exists(hdf5Path))
     {
@@ -305,6 +303,146 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
     return areaMeshPtr;
 }
 
+MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
+                                        FilterFunction filter)
+{
+    MeshBufferPtr areaMesh = extractArea(area);
+
+    // filter elements
+    std::vector<bool> vertexFilter(areaMesh->numVertices(), true);
+    std::vector<bool> faceFilter(areaMesh->numFaces(), true);
+    std::size_t numVertices = areaMesh->numVertices();
+    std::size_t numFaces    = areaMesh->numFaces();
+
+    for (auto channel : *areaMesh)
+    {
+        for (size_t i = 0; i < channel.second.numElements(); i++)
+        {
+            if (channel.second.numElements() == areaMesh->numVertices())
+            {
+                if (vertexFilter[i] == true)
+                {
+                    vertexFilter[i] = filter(channel.first, channel.second, i);
+                    if (vertexFilter[i] == false)
+                    {
+                        numVertices--;
+                    }
+                }
+            }
+            else if (channel.second.numElements() == areaMesh->numFaces())
+            {
+                if (faceFilter[i] == true)
+                {
+                    faceFilter[i] = filter(channel.first, channel.second, i);
+                    if (faceFilter[i] == false)
+                    {
+                        numFaces--;
+                    }
+                }
+            }
+        }
+    }
+
+    // remove filtered elements
+    for (auto channel : *areaMesh)
+    {
+        MultiChannelMap::val_type filteredChannel;
+
+        std::size_t numElements = channel.second.numElements();
+        if (channel.second.numElements() == areaMesh->numVertices())
+        {
+            numElements = numVertices;
+        }
+        else if (channel.second.numElements() == areaMesh->numFaces())
+        {
+            numElements = numFaces;
+        }
+
+        if (channel.second.is_type<unsigned char>())
+        {
+            filteredChannel = Channel<unsigned char>(numElements, channel.second.width());
+        }
+        else if (channel.second.is_type<unsigned int>())
+        {
+            filteredChannel = Channel<unsigned char>(numElements, channel.second.width());
+        }
+        else if (channel.second.is_type<float>())
+        {
+            filteredChannel = Channel<unsigned char>(numElements, channel.second.width());
+        }
+
+        std::size_t tmpIndex = 0;
+        for (std::size_t i = 0; i < channel.second.numElements(); i++)
+        {
+            if (channel.second.numElements() == areaMesh->numVertices())
+            {
+                if (vertexFilter[i] == true)
+                {
+                    if (channel.second.is_type<unsigned char>())
+                    {
+                        filteredChannel.dataPtr<unsigned char>()[tmpIndex]
+                            = channel.second.dataPtr<unsigned char>()[i];
+                    }
+                    else if (channel.second.is_type<unsigned int>())
+                    {
+                        filteredChannel.dataPtr<unsigned int>()[tmpIndex]
+                            = channel.second.dataPtr<unsigned int>()[i];
+                    }
+                    else if (channel.second.is_type<float>())
+                    {
+                        filteredChannel.dataPtr<float>()[tmpIndex]
+                            = channel.second.dataPtr<float>()[i];
+                    }
+                }
+            }
+            else if (channel.second.numElements() == areaMesh->numFaces())
+            {
+                if (faceFilter[i] == true)
+                {
+                    if (channel.second.is_type<unsigned char>())
+                    {
+                        filteredChannel.dataPtr<unsigned char>()[tmpIndex]
+                            = channel.second.dataPtr<unsigned char>()[i];
+                    }
+                    else if (channel.second.is_type<unsigned int>())
+                    {
+                        filteredChannel.dataPtr<unsigned int>()[tmpIndex]
+                            = channel.second.dataPtr<unsigned int>()[i];
+                    }
+                    else if (channel.second.is_type<float>())
+                    {
+                        filteredChannel.dataPtr<float>()[tmpIndex]
+                            = channel.second.dataPtr<float>()[i];
+                    }
+                }
+            }
+            else
+            {
+                if (channel.second.is_type<unsigned char>())
+                {
+                    filteredChannel.dataPtr<unsigned char>()[tmpIndex]
+                        = channel.second.dataPtr<unsigned char>()[i];
+                }
+                else if (channel.second.is_type<unsigned int>())
+                {
+                    filteredChannel.dataPtr<unsigned int>()[tmpIndex]
+                        = channel.second.dataPtr<unsigned int>()[i];
+                }
+                else if (channel.second.is_type<float>())
+                {
+                    filteredChannel.dataPtr<float>()[tmpIndex] = channel.second.dataPtr<float>()[i];
+                }
+            }
+
+            tmpIndex++;
+        }
+
+        areaMesh->at(channel.first) = filteredChannel;
+    }
+
+    return areaMesh;
+}
+
 void ChunkManager::initBoundingBox(MeshBufferPtr mesh)
 {
     FloatChannel vertices = mesh->getFloatChannel("vertices").get();
@@ -451,7 +589,7 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
 
     // one vector of variable size for each vertex - this is used for duplicate detection
     std::shared_ptr<std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>>
-    vertexUse(new std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>());
+        vertexUse(new std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>());
 
     for (std::size_t i = 0; i < m_amount.x; i++)
     {
