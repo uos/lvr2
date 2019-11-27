@@ -25,9 +25,9 @@ message(STATUS ${CMAKE_MODULE_PATH})
 
 include_directories(include)
 
-##################################################################################
-# Some compiler specific settings
-##################################################################################
+###############################################################################
+# Compiler specific settings
+###############################################################################
 
 # Add -O0 to remove optimizations when using gcc
 if(CMAKE_COMPILER_IS_GNUCC)
@@ -45,31 +45,31 @@ else(MSVC)
   set(CMAKE_CXX_STANDARD 17)
 endif(MSVC)
 
-###############################################################
+###############################################################################
 # EXTERNAL LIBRARIES
-###############################################################
+###############################################################################
 
-###
-## Searching for TIFF
-##############################
+#------------------------------------------------------------------------------
+# Searching for TIFF
+#------------------------------------------------------------------------------
 find_package(TIFF REQUIRED)
 if(TIFF_FOUND)
     message(STATUS "Found TIFF library")
     include_directories(${TIFF_INCLUDE_DIRS})
 endif(TIFF_FOUND)
 
-###
-## Searching for GDAL
-##############################
+#------------------------------------------------------------------------------
+# Searching for GDAL
+#------------------------------------------------------------------------------
 find_package(GDAL REQUIRED)
 if(GDAL_FOUND)
 message(STATUS "Found GDAL")
     include_directories(${GDAL_INCLUDE_DIR})
 endif(GDAL_FOUND)
 
-####
-## Searching for CUDA
-##############################
+#------------------------------------------------------------------------------
+# Searching for CUDA
+#------------------------------------------------------------------------------
 if(NOT APPLE)
 find_package( CUDA 8)
 if(CUDA_FOUND)
@@ -79,9 +79,9 @@ if(CUDA_FOUND)
 endif(CUDA_FOUND)
 endif(NOT APPLE)
 
-####
-## Searching for OpenCV
-##############################
+#------------------------------------------------------------------------------
+# Searching for OpenCV
+#------------------------------------------------------------------------------
 find_package( OpenCV 3 )
 if (!OpenCV_FOUND)
   find_package( OpenCV )
@@ -95,12 +95,12 @@ if(WITH_CV_NONFREE)
 endif(WITH_CV_NONFREE)
 
 
-####
-## Searching for FLANN
-##############################
+#------------------------------------------------------------------------------
+# Searching for FLANN
+#------------------------------------------------------------------------------
 find_package(FLANN REQUIRED)
 if(FLANN_FOUND)
-  message(STATUS "Found GDAL")
+  message(STATUS "Found FLANN")
   include_directories(${FLANN_DIR})
 endif(FLANN_FOUND)
 
@@ -109,32 +109,32 @@ include_directories(  ${LZ4_INCLUDE_DIR} )
 message(STATUS "Found LZ4 library: ${LZ4_LIBRARY}")
 
 
-####
-## Searching for GSL
-##############################
+#------------------------------------------------------------------------------
+# Searching for GSL
+#------------------------------------------------------------------------------
 find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIRS})
 message(STATUS "Found GSL")
 
-####
-## Searching for Eigen3
-##############################
+#------------------------------------------------------------------------------
+# Searching for Eigen3
+#------------------------------------------------------------------------------
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 message(STATUS "Found Eigen3")
 
-####
-## Searching for MPI
-##############################
+#------------------------------------------------------------------------------
+# Searching for MPI
+#------------------------------------------------------------------------------
 find_package( MPI )
 if(MPI_FOUND)
   include_directories(SYSTEM ${MPI_INCLUDE_PATH})
   message(STATUS "Found MPI")
 endif(MPI_FOUND)
 
-###
-## Searching for OpenCl
-##############################
+#------------------------------------------------------------------------------
+# Searching for OpenCl
+#------------------------------------------------------------------------------
 find_package(OPENCL)
 if(OPENCL_FOUND)
   message(STATUS "Found OpenCL")
@@ -144,10 +144,9 @@ if(OPENCL_FOUND)
       list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPENCL_NEW_API)
     endif(OpenCL_NEW_API)
 endif()
-
-###
-## Searching for Embree
-##############################
+#------------------------------------------------------------------------------
+# Searching for Embree
+#------------------------------------------------------------------------------
 find_package(embree 3.0)
 if(embree_FOUND)
   message(STATUS "Found Embree")
@@ -155,9 +154,9 @@ if(embree_FOUND)
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_EMBREE)
 endif(embree_FOUND)
 
-###
-## Searching for Draco
-##############################
+#------------------------------------------------------------------------------
+# Searching for Draco
+#------------------------------------------------------------------------------
 find_package(Draco)
 if(draco_FOUND)
   message(STATUS "Found Draco")
@@ -165,12 +164,11 @@ if(draco_FOUND)
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_DRACO)
 endif(draco_FOUND)
 
-####
-## Searching for VTK
-##############################
+#------------------------------------------------------------------------------
+# Searching for VTK
+#------------------------------------------------------------------------------
 set(VTK_QT_VERSION 5)
 find_package(VTK REQUIRED)
-
 
 if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK5)
@@ -199,23 +197,22 @@ if(VTK_VERSION VERSION_GREATER "7")
 
   message(STATUS "VTK > 7 found")
   if(VTK_HAS_QT)
-    message(STATUS "--VTK Component QVTK found")
+    message(STATUS "Found VTK compoment QVTK")
   endif()
 endif()
 
-####
-## Searching for NABO
-##############################
-
+#------------------------------------------------------------------------------
+# Searching for NABO
+#------------------------------------------------------------------------------
 find_package(Nabo)
 if(NABO_FOUND)
   include_directories(${NABO_INCLUDE_DIRS})
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_NABO)
 endif(NABO_FOUND)
 
-####
+#------------------------------------------------------------------------------
 ## Searching for PCL
-##############################
+#------------------------------------------------------------------------------
 
 #find_package(PCL 1.7)
 #if(PCL_FOUND)
@@ -228,9 +225,9 @@ endif(NABO_FOUND)
 #  message( "-- PCL related stuff will be disabled." )
 #endif(PCL_FOUND)
 
-####
-## Searching CGAL
-##############################
+#------------------------------------------------------------------------------
+# Searching CGAL
+#------------------------------------------------------------------------------
 
 find_package(CGAL)
 if(CGAL_FOUND)
@@ -240,64 +237,55 @@ if(CGAL_FOUND)
   include(${CGAL_USE_FILE})
   set(CMAKE_CXX_FLAGS "${_CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
-  message(STATUS "--FOUND CGAL")
+  message(STATUS "Found CGAL")
 endif(CGAL_FOUND)
 
-####
-## Searching for Boost
-##############################
+#------------------------------------------------------------------------------
+# Searching for Boost
+#------------------------------------------------------------------------------
 
 #set(Boost_USE_STATIC_LIBS       ON)
 set(Boost_USE_MULTITHREADED     ON)
+set(Boost_COMPONENTS 
+  program_options
+  filesystem
+  system
+  thread
+  serialization
+  timer
+  iostreams)
 
 if(MPI_FOUND)
-find_package( Boost 1.54
-    COMPONENTS
-    program_options
-    filesystem
-    system
-    thread
-    mpi
-    serialization
-    timer
-    iostreams
-    REQUIRED )
-else()
-find_package( Boost 1.54
-    COMPONENTS
-    program_options
-    filesystem
-    system
-    thread
-    mpi
-    serialization
-    timer
-    iostreams
-    REQUIRED )
+  set($Boost_COMPONENTS ${Boost_COMPONENTS} mpi)
 endif()
+
+find_package(Boost 1.54 COMPONENTS ${Boost_COMPONENTS} REQUIRED)
+
 
 link_directories(${Boost_LIBRARY_DIR})
 include_directories(${Boost_INCLUDE_DIRS})
 add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
 
-####
-## Searching for OpenMP
-##############################
+#------------------------------------------------------------------------------
+# Searching for OpenMP
+#------------------------------------------------------------------------------
 
 find_package(OpenMP)
 if(OPENMP_FOUND)
+  message(STATUS "Found OpenMP")
   link_directories(${OpenMP_LIBRARY_DIRS})
   include_directories(${OpenMP_INCLUDE_DIRS})
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPEN_MP)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif(OPENMP_FOUND)
 
-####
-## Searching for OpenGL
-##############################
+#------------------------------------------------------------------------------
+# Searching for OpenGL
+#------------------------------------------------------------------------------
 
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIR})
+message(STATUS "Found OpenGL")
 
 if(APPLE)
   include_directories(/System/Library/Frameworks/GLUT.framework/Headers)
@@ -307,29 +295,29 @@ if(APPLE)
   endif()
 endif(APPLE)
 
-####
+#------------------------------------------------------------------------------
 ## Searching for glut
-##############################
+#------------------------------------------------------------------------------
 
 find_package(GLUT REQUIRED)
-message(STATUS "-- Found OpenGL Utility Toolkit" )
+message(STATUS "Found OpenGL Utility Toolkit" )
 include_directories(${GLUT_INCLUDE_DIR})
 
-####
+#------------------------------------------------------------------------------
 ## Searching for libfreenect
-##############################
+#------------------------------------------------------------------------------
 option(WITH_FREENECT "Compile with libfreenect grabber" OFF)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBFREENECT libfreenect)
 if(WITH_FREENECT AND LIBFREENECT_FOUND)
+  message(STATUS "Found Freenect")
   include_directories(${LIBFREENECT_INCLUDE_DIRS})
 endif()
 
-####
+#------------------------------------------------------------------------------
 ## Searching for STANN
-##############################
-
+#------------------------------------------------------------------------------
 set(STANN_DIR "" CACHE PATH "directory that contains the STANN library headers")
 find_package(STANN)
 if(STANN_FOUND)
@@ -338,9 +326,10 @@ if(STANN_FOUND)
 endif(STANN_FOUND)
 
 
-##############################################################
+
+###############################################################################
 # USED THIRD PARTY STUFF
-##############################################################
+###############################################################################
 
 # NanoFLANN
 add_subdirectory(ext/nanoflann)
@@ -361,9 +350,6 @@ list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${RPLY_INSTALL_INCLUDE_DIR})
 add_subdirectory(ext/laslib)
 include_directories( ${LASLIB_INCLUDE_DIR} )
 list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
-
-# GSL
-include_directories("ext/gsl/include")
 
 # HighFive
 set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
@@ -403,22 +389,28 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/${RiVLib_DIR})
     endif()
 endif()
 
-##############################################################
+
+###############################################################################
 # ADD LVR DEFINITIONS
-##############################################################
+###############################################################################
 
 add_definitions(${LVR2_DEFINITIONS})
 
-##############################################################
+
+###############################################################################
 # LVR-Kinfu Checks
-##############################################################
+###############################################################################
 option(WITH_KINFU "Compile LVR Kinfu" OFF)
 
+
+###############################################################################
 # Check and set CUDA host compiler flags. CUDA 6.5 is only
 # compatible to gcc4.8. Older CUDA versions require GCC lower
 # than 4.8
-
-if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CUDA_VERSION VERSION_GREATER 8 AND CUDA_VERSION VERSION_LESS 10)
+###############################################################################
+if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" 
+              AND CUDA_VERSION VERSION_GREATER 8 
+              AND CUDA_VERSION VERSION_LESS 10)
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5 )
         message(STATUS "******************************************************************")
         message(STATUS "* Your gcc version needs to be lower than 6 to compile the LVR   *")
@@ -435,10 +427,10 @@ if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8" AND WITH_KINFU)
     include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 endif()
 
-##############################################################
-# APPLE OMP OPTION FOR CLANG-OMP
-##############################################################
 
+###############################################################################
+# APPLE OMP OPTION FOR CLANG-OMP
+###############################################################################
 if(APPLE AND (NOT OPENMP_FOUND))
         message(STATUS "******************************************************************")
         message(STATUS "* It seems you are trying to comile on OSX with an compiler that *")
@@ -458,27 +450,30 @@ if(APPLE AND (NOT OPENMP_FOUND))
 
 endif()
 
-##############################################################
+
+###############################################################################
 # HEADERS
-##############################################################
+###############################################################################
 
 install(DIRECTORY include/lvr2 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
 
 
-##############################################################
+
+###############################################################################
 # VTK use file include. Has to be called after all CUDA code
 # was generated and compiled. The VTK definitions corrupt the
 # nvcc call
-##############################################################
+###############################################################################
 
 if(DEFINED VTK_USE_FILE)
   include(${VTK_USE_FILE})
 endif()
 
-##############################################################
-# VIEWERS
-##############################################################
+
+###############################################################################
+# LVR2 VIEWER CHECKS
+###############################################################################
 
 find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
 if(Qt5_FOUND)
@@ -491,15 +486,17 @@ if(Qt5_FOUND)
   endif(QVTK_FOUND)
 endif(Qt5_FOUND)
 
-##############################################################
+
+###############################################################################
 # LIBRARIES
-##############################################################
+###############################################################################
 
 add_subdirectory(src/liblvr2)
 
-##############################################################
+
+###############################################################################
 # BINARIES
-##############################################################
+###############################################################################
 
 add_subdirectory(src/tools/lvr2_gs_reconstruction)
 add_subdirectory(src/tools/lvr2_reconstruct)
@@ -539,9 +536,10 @@ if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
-################################################################
+
+###############################################################################
 # CMAKE FILES
-################################################################
+###############################################################################
 
 install(EXPORT lvr2Targets
     FILE lvr2Targets.cmake
@@ -578,9 +576,10 @@ install(FILES
     CMakeModules/FindSTANN.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2/Modules)
 
-################################################################
+
+###############################################################################
 # DOCUMENTATION
-################################################################
+###############################################################################
 
 find_package( Doxygen )
 if( NOT DOXYGEN_FOUND )
