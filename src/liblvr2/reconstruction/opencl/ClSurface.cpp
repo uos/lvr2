@@ -63,7 +63,7 @@ void ClSurface::calculateNormals()
     // Allocate Result Memory
     generatePointArray(this->Result_Normals, this->V.width, this->V.dim);
 
-    std::cout << "Allocate GPU Memory" << std::endl;
+    // std::cout << "Allocate GPU Memory" << std::endl;
     // tree and points and result normals to GPU
     D_V = clCreateBuffer(m_context, CL_MEM_READ_WRITE,
             this->V.width * this->V.dim * sizeof(float), NULL, &m_ret);
@@ -75,7 +75,7 @@ void ClSurface::calculateNormals()
     D_Normals = clCreateBuffer(m_context, CL_MEM_READ_WRITE,
             this->V.width * this->V.dim * sizeof(float), NULL, &m_ret);
 
-    std::cout << "Copy Points and Kd Tree to Gpu Memory" << std::endl;
+    // std::cout << "Copy Points and Kd Tree to Gpu Memory" << std::endl;
     /* Copy input data to memory buffer */
     m_ret = clEnqueueWriteBuffer(m_command_queue, D_V, CL_TRUE, 0,
             this->V.width * this->V.dim * sizeof(float), V.elements, 0, NULL, NULL);
@@ -102,7 +102,7 @@ void ClSurface::calculateNormals()
     size_t global_item_size = static_cast<size_t>(threadsPerBlock);
     //size_t global_group_size = static_cast<size_t>(blocksPerGrid);
 
-    std::cout << "Set Kernel Arguments: Normal Estimation" << std::endl;
+    // std::cout << "Set Kernel Arguments: Normal Estimation" << std::endl;
 
     m_ret = clSetKernelArg(m_kernel_normal_estimation, 0, sizeof(cl_mem), (void *)&D_V);
     m_ret |= clSetKernelArg(m_kernel_normal_estimation, 1, sizeof(unsigned int), &V.width );
@@ -125,7 +125,7 @@ void ClSurface::calculateNormals()
     if(m_ret != CL_SUCCESS)
         std::cerr << getErrorString(m_ret) << std::endl;
 
-    std::cout << "Start Normal Estimation Kernel" << std::endl;
+    // std::cout << "Start Normal Estimation Kernel" << std::endl;
     // std::cout << "local_item_size: "<< local_item_size << std::endl;
     //std::cout << "global_item_size: " << global_item_size << std::endl;
 
@@ -137,11 +137,11 @@ void ClSurface::calculateNormals()
         std::cerr << getErrorString(m_ret) << std::endl;
 
 
-    std::cout << "Kernel Successful" << std::endl;
+    // std::cout << "Kernel Successful" << std::endl;
 
     // TODO
     // InterpolationKernel
-    std::cout << "Start Normal Interpolation Kernel" << std::endl;
+    // std::cout << "Start Normal Interpolation Kernel" << std::endl;
 
     m_ret = clSetKernelArg(m_kernel_normal_interpolation, 0, sizeof(cl_mem),
             (void *)&D_kd_tree_values);
@@ -162,7 +162,7 @@ void ClSurface::calculateNormals()
     m_ret = clEnqueueNDRangeKernel(m_command_queue, m_kernel_normal_interpolation, 1, NULL,
          &global_item_size, &local_item_size, 0, NULL, NULL);
 
-    std::cout << "Kernel Successful" << std::endl;
+    // std::cout << "Kernel Successful" << std::endl;
 
     // Normals back to host
     m_ret = clEnqueueReadBuffer(m_command_queue, D_Normals, CL_TRUE, 0,
@@ -294,7 +294,7 @@ void ClSurface::finalizeCl()
 
 void ClSurface::loadEstimationKernel()
 {
-    std::cout << "Loading estimation Kernel ..." << std::endl;
+    // std::cout << "Loading estimation Kernel ..." << std::endl;
 
     // create program
     m_program_es = clCreateProgramWithSource(m_context, 1,
@@ -333,17 +333,12 @@ void ClSurface::loadEstimationKernel()
         exit(1);
     }
 
-    // if(kernel_source_str)
-    // {
-    //     free(kernel_source_str);
-    // }
-
 }
 
 
 void ClSurface::loadInterpolationKernel()
 {
-    std::cout << "Loading interpolation Kernel ..." << std::endl;
+    // std::cout << "Loading interpolation Kernel ..." << std::endl;
     // create program
     m_program_in = clCreateProgramWithSource(m_context, 1,
             (const char **) &NORMAL_INTERPOLATION_KERNEL_STRING , NULL, &m_ret);
