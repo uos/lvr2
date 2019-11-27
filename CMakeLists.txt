@@ -147,6 +147,17 @@ if(embree_FOUND)
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_EMBREE)
 endif(embree_FOUND)
 
+###
+## Searching for Draco
+##############################
+find_package(Draco)
+if(draco_FOUND)
+  message(STATUS "DRACO FOUND")
+  include_directories(${draco_INCLUDE_DIRS})
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_DRACO)
+endif(draco_FOUND)
+
+
 
 ####
 ## Searching for VTK
@@ -347,11 +358,6 @@ list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 
 # GSL
 include_directories("ext/gsl/include")
-
-# draco
-add_subdirectory(ext/draco)
-include_directories(ext/draco/src/)
-include_directories(${CMAKE_BINARY_DIR})
 
 # HighFive
 set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
