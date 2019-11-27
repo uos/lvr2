@@ -165,8 +165,6 @@ if(draco_FOUND)
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_DRACO)
 endif(draco_FOUND)
 
-
-
 ####
 ## Searching for VTK
 ##############################
@@ -375,6 +373,7 @@ include_directories("ext/HighFive/include")
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 include_directories(${HDF5_INCLUDE_DIRS})
 link_directories(${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+message(STATUS "Found HDF5")
 
 # yaml-cpp
 find_package(yaml-cpp) 
