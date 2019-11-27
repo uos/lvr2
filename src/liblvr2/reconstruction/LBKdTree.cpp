@@ -261,18 +261,6 @@ void LBKdTree::generateKdTreeRecursive(int id, LBPointArray<float>& V,
                 current_dim, split_value, left_size-1, critical_indices_left,
                 critical_indices_right);
 
-        // for(auto it = critical_indices_left.begin(); it != critical_indices_left.end(); it++)
-        // {
-        //     std::cout << *it << std::endl;
-        // }
-
-        // for(auto it = critical_indices_right.begin(); it != critical_indices_right.end(); it++)
-        // {
-        //     std::cout << *it << std::endl;
-        // }
-
-        // exit(1);
-
         //std::cout << "Split in dimension: " << current_dim << std::endl;
         values->elements[ position ] = split_value;
         splits->elements[ position ] = static_cast<unsigned char>(current_dim);
@@ -315,18 +303,11 @@ void LBKdTree::generateKdTreeRecursive(int id, LBPointArray<float>& V,
                                     - V.elements[sorted_indices_right[i].elements[0]  * V.dim + i] );
 
             } else {
-                // splitPointArrayWithValue<float,unsigned int>(V, sorted_indices[i],
-                // sorted_indices_left[i], sorted_indices_right[i],
-                //         current_dim, split_value,
-                //         deviation_left, deviation_right, i,
-                //         critical_indices_left, critical_indices_right);
-
-                splitPointArrayWithValueSet<float,unsigned int>(V, sorted_indices[i],
+                splitPointArrayWithValueSet<float, unsigned int>(V, sorted_indices[i],
                         sorted_indices_left[i], sorted_indices_right[i],
                         current_dim, split_value,
                         deviation_left, deviation_right, i,
                         critical_indices_left, critical_indices_right);
-
             }
 
             if(deviation_left > biggest_deviation_left )
