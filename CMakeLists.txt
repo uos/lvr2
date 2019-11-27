@@ -54,6 +54,7 @@ endif(MSVC)
 ##############################
 find_package(TIFF REQUIRED)
 if(TIFF_FOUND)
+    message(STATUS "Found TIFF library")
     include_directories(${TIFF_INCLUDE_DIRS})
 endif(TIFF_FOUND)
 
@@ -62,6 +63,7 @@ endif(TIFF_FOUND)
 ##############################
 find_package(GDAL REQUIRED)
 if(GDAL_FOUND)
+message(STATUS "Found GDAL")
     include_directories(${GDAL_INCLUDE_DIR})
 endif(GDAL_FOUND)
 
@@ -71,6 +73,7 @@ endif(GDAL_FOUND)
 if(NOT APPLE)
 find_package( CUDA 8)
 if(CUDA_FOUND)
+  message(STATUS "Found CUDA")
     include_directories(${CUDA_INCLUDE_DIRS})
     list(APPEND LVR2_DEFINITIONS -DLVR2_USE_CUDA)
 endif(CUDA_FOUND)
@@ -95,14 +98,15 @@ endif(WITH_CV_NONFREE)
 ####
 ## Searching for FLANN
 ##############################
-find_package(  FLANN REQUIRED )
+find_package(FLANN REQUIRED)
 if(FLANN_FOUND)
+  message(STATUS "Found GDAL")
   include_directories(${FLANN_DIR})
 endif(FLANN_FOUND)
 
-find_package(  Lz4 REQUIRED )
+find_package(Lz4 REQUIRED)
 include_directories(  ${LZ4_INCLUDE_DIR} )
-message("LZ4 library found: ${LZ4_LIBRARY}")
+message(STATUS "Found LZ4 library: ${LZ4_LIBRARY}")
 
 
 ####
@@ -110,12 +114,14 @@ message("LZ4 library found: ${LZ4_LIBRARY}")
 ##############################
 find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIRS})
+message(STATUS "Found GSL")
 
 ####
 ## Searching for Eigen3
 ##############################
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
+message(STATUS "Found Eigen3")
 
 ####
 ## Searching for MPI
@@ -123,6 +129,7 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 find_package( MPI )
 if(MPI_FOUND)
   include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+  message(STATUS "Found MPI")
 endif(MPI_FOUND)
 
 ###
@@ -130,6 +137,7 @@ endif(MPI_FOUND)
 ##############################
 find_package(OPENCL)
 if(OPENCL_FOUND)
+  message(STATUS "Found OpenCL")
     include_directories(OPENCL_INCLUDE_DIR)
     list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPENCL)
     if(OpenCL_NEW_API)
@@ -142,7 +150,7 @@ endif()
 ##############################
 find_package(embree 3.0)
 if(embree_FOUND)
-  message(STATUS "EMBREE FOUND")
+  message(STATUS "Found Embree")
   include_directories(${EMBREE_INCLUDE_DIRS})
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_EMBREE)
 endif(embree_FOUND)
@@ -152,7 +160,7 @@ endif(embree_FOUND)
 ##############################
 find_package(Draco)
 if(draco_FOUND)
-  message(STATUS "DRACO FOUND")
+  message(STATUS "Found Draco")
   include_directories(${draco_INCLUDE_DIRS})
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_DRACO)
 endif(draco_FOUND)
@@ -193,7 +201,7 @@ if(VTK_VERSION VERSION_GREATER "7")
 
   message(STATUS "VTK > 7 found")
   if(VTK_HAS_QT)
-    message(STATUS "VTK Component QVTK found")
+    message(STATUS "--VTK Component QVTK found")
   endif()
 endif()
 
@@ -234,7 +242,7 @@ if(CGAL_FOUND)
   include(${CGAL_USE_FILE})
   set(CMAKE_CXX_FLAGS "${_CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
-  message(STATUS "FOUND CGAL")
+  message(STATUS "--FOUND CGAL")
 endif(CGAL_FOUND)
 
 ####
