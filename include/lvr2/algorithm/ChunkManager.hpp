@@ -76,6 +76,17 @@ class ChunkManager
      * @param cacheSize maximum number of chunks loaded in the ChunkHashGrid
      */
     ChunkManager(std::string hdf5Path, size_t cacheSize = 200);
+
+    /**
+     * @brief getGlobalBoundingBox is a getter for the bounding box of the entire chunked model
+     * 
+     * @return global bounding box of chunked model
+     */
+    inline BoundingBox<BaseVector<float>> getGlobalBoundingBox()
+    {
+        return m_boundingBox;
+    }
+
     /**
      * @brief extractArea creates and returns MeshBufferPtr of merged chunks for given area.
      *
