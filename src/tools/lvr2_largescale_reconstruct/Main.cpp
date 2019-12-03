@@ -26,6 +26,7 @@
  */
 
 #include "LargeScaleOptions.hpp"
+#include "LargeScaleReconstruction.hpp"
 #include "lvr2/algorithm/CleanupAlgorithms.hpp"
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
@@ -89,6 +90,7 @@ typedef CudaSurface GpuSurface;
 
 #include <lvr2/reconstruction/opencl/ClSurface.hpp>
 
+
 typedef ClSurface GpuSurface;
 #endif
 
@@ -113,6 +115,7 @@ typedef lvr2::AdaptiveKSearchSurface<Vec> akSurface;
 template <typename BaseVecT>
 int mpiReconstruct(const LargeScaleOptions::Options& options)
 {
+    LargeScaleReconstruction lsr(options.getInputFileName()[0]);
     string filePath = options.getInputFileName()[0];
     float voxelsize = options.getVoxelsize();
     float bgVoxelsize = options.getBGVoxelsize();

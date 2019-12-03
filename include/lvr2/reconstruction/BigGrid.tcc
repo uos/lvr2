@@ -778,7 +778,8 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
         h5_ptr->open(cloudPath);
 
         HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
-
+        //TODO: change to be compatible with new definition: (new scans are in list, old scans are read from .h5 file
+        // maybe generate a new constructor? think about it
         if(!hfscans.hasAttribute("reconstructed"))
         {
             //attribute, to identify reconstructed scans
@@ -837,6 +838,7 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
            }
        }
 
+       //TODO: use this variation to calculate a new transformed boundingbox
         /*
         //iterate through ALL points to calculate transformed boundingboxes of scans
         for (int i = 0; i < scans.size(); i++)
