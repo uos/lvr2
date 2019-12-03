@@ -185,7 +185,7 @@ endif()
 #####################################################################################
 # no found variable
 if(YAML_CPP_LIBRARIES)
-    set(LVR2_SOURCES ${LVR2_SOURCES} io/PlutoMetaDataIO.cpp)
+    set(LVR2_SOURCES ${LVR2_SOURCES})
     set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${YAML_CPP_LIBRARIES})
 endif()
 

@@ -246,7 +246,7 @@ endif(CGAL_FOUND)
 
 #set(Boost_USE_STATIC_LIBS       ON)
 set(Boost_USE_MULTITHREADED     ON)
-set(Boost_COMPONENTS 
+set(Boost_COMPONENTS
   program_options
   filesystem
   system
@@ -362,8 +362,8 @@ link_directories(${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 message(STATUS "Found HDF5")
 
 # yaml-cpp
-find_package(yaml-cpp) 
-# no found variable 
+find_package(yaml-cpp)
+# no found variable
 include_directories(${YAML_CPP_INCLUDE_DIR})
 #link_directories(${YAML_CPP_LIBRARIES})
 
@@ -408,8 +408,8 @@ option(WITH_KINFU "Compile LVR Kinfu" OFF)
 # compatible to gcc4.8. Older CUDA versions require GCC lower
 # than 4.8
 ###############################################################################
-if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" 
-              AND CUDA_VERSION VERSION_GREATER 8 
+if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
+              AND CUDA_VERSION VERSION_GREATER 8
               AND CUDA_VERSION VERSION_LESS 10)
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5 )
         message(STATUS "******************************************************************")
@@ -505,7 +505,6 @@ add_subdirectory(src/tools/lvr2_asciiconverter)
 add_subdirectory(src/tools/lvr2_transform)
 add_subdirectory(src/tools/lvr2_kaboom)
 add_subdirectory(src/tools/lvr2_octree_test)
-add_subdirectory(src/tools/lvr2_yaml_test)
 add_subdirectory(src/tools/lvr2_image_normals)
 add_subdirectory(src/tools/lvr2_plymerger)
 add_subdirectory(src/tools/lvr2_hdf5_builder)
