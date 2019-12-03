@@ -108,7 +108,7 @@ class VirtualGrid
     //initial Bounding Box, around the left corner of the PointCloud-BB
     BoundingBox<BaseVecT> m_initbox;
 
-    // List of (smaller) BoundingBox, which overlap the original PointCloud
+    // List of (smaller) BoundingBox (aka Chunks), which overlap the original PointCloud
     std::vector<shared_ptr<BoundingBox<BaseVecT>>> m_boxes;
 
     // size of the "virtual" GridCell aka size of the smaller BBoxes

@@ -6,7 +6,7 @@ set(LS_RECONSTRUCT_SOURCES
     LargeScaleOptions.cpp
     Options.cpp
     Main.cpp
-)
+        LargeScaleReconstruction.cpp LargeScaleReconstruction.hpp)
 
 #####################################################################################
 # Setup dependencies to external libraries
