@@ -41,10 +41,14 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
-#include <omp.h>
 #include <string>
 #include <unordered_map>
 #include <utility>
+
+#ifndef __APPLE__
+#include <omp.h>
+#endif
+
 
 namespace lvr2
 {
@@ -191,8 +195,9 @@ class BigGrid
 
     float m_voxelSize;
     bool m_extrude;
+#ifndef __APPLE__
     omp_lock_t m_lock;
-
+#endif
     bool m_has_normal;
     bool m_has_color;
 
