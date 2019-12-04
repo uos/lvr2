@@ -344,100 +344,23 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
     }
 
     // remove filtered elements
-    for (auto channel : *areaMesh)
+    for (auto& channel : *areaMesh)
     {
-        MultiChannelMap::val_type filteredChannel;
-
-        std::size_t numElements = channel.second.numElements();
-        if (channel.second.numElements() == areaMesh->numVertices())
-        {
-            numElements = numVertices;
-        }
-        else if (channel.second.numElements() == areaMesh->numFaces())
-        {
-            numElements = numFaces;
-        }
-
         if (channel.second.is_type<unsigned char>())
         {
-            filteredChannel = Channel<unsigned char>(numElements, channel.second.width());
+            channel.second = applyChannelFilter<unsigned char>(
+                vertexFilter, faceFilter, numVertices, numFaces, areaMesh, channel.second);
         }
         else if (channel.second.is_type<unsigned int>())
         {
-            filteredChannel = Channel<unsigned char>(numElements, channel.second.width());
+            channel.second = applyChannelFilter<unsigned int>(
+                vertexFilter, faceFilter, numVertices, numFaces, areaMesh, channel.second);
         }
         else if (channel.second.is_type<float>())
         {
-            filteredChannel = Channel<unsigned char>(numElements, channel.second.width());
+            channel.second = applyChannelFilter<float>(
+                vertexFilter, faceFilter, numVertices, numFaces, areaMesh, channel.second);
         }
-
-        std::size_t tmpIndex = 0;
-        for (std::size_t i = 0; i < channel.second.numElements(); i++)
-        {
-            if (channel.second.numElements() == areaMesh->numVertices())
-            {
-                if (vertexFilter[i] == true)
-                {
-                    if (channel.second.is_type<unsigned char>())
-                    {
-                        filteredChannel.dataPtr<unsigned char>()[tmpIndex]
-                            = channel.second.dataPtr<unsigned char>()[i];
-                    }
-                    else if (channel.second.is_type<unsigned int>())
-                    {
-                        filteredChannel.dataPtr<unsigned int>()[tmpIndex]
-                            = channel.second.dataPtr<unsigned int>()[i];
-                    }
-                    else if (channel.second.is_type<float>())
-                    {
-                        filteredChannel.dataPtr<float>()[tmpIndex]
-                            = channel.second.dataPtr<float>()[i];
-                    }
-                }
-            }
-            else if (channel.second.numElements() == areaMesh->numFaces())
-            {
-                if (faceFilter[i] == true)
-                {
-                    if (channel.second.is_type<unsigned char>())
-                    {
-                        filteredChannel.dataPtr<unsigned char>()[tmpIndex]
-                            = channel.second.dataPtr<unsigned char>()[i];
-                    }
-                    else if (channel.second.is_type<unsigned int>())
-                    {
-                        filteredChannel.dataPtr<unsigned int>()[tmpIndex]
-                            = channel.second.dataPtr<unsigned int>()[i];
-                    }
-                    else if (channel.second.is_type<float>())
-                    {
-                        filteredChannel.dataPtr<float>()[tmpIndex]
-                            = channel.second.dataPtr<float>()[i];
-                    }
-                }
-            }
-            else
-            {
-                if (channel.second.is_type<unsigned char>())
-                {
-                    filteredChannel.dataPtr<unsigned char>()[tmpIndex]
-                        = channel.second.dataPtr<unsigned char>()[i];
-                }
-                else if (channel.second.is_type<unsigned int>())
-                {
-                    filteredChannel.dataPtr<unsigned int>()[tmpIndex]
-                        = channel.second.dataPtr<unsigned int>()[i];
-                }
-                else if (channel.second.is_type<float>())
-                {
-                    filteredChannel.dataPtr<float>()[tmpIndex] = channel.second.dataPtr<float>()[i];
-                }
-            }
-
-            tmpIndex++;
-        }
-
-        areaMesh->at(channel.first) = filteredChannel;
     }
 
     return areaMesh;

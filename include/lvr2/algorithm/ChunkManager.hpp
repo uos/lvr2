@@ -219,6 +219,14 @@ class ChunkManager
         std::size_t numFaces,
         std::vector<std::unordered_map<std::size_t, std::size_t>>& areaVertexIndices);
 
+    template <typename T>
+    MultiChannelMap::val_type applyChannelFilter(std::vector<bool> vertexFilter,
+                                     std::vector<bool> faceFilter,
+                                     size_t numVertices,
+                                     size_t numFaces,
+                                     MeshBufferPtr meshBuffer,
+                                     MultiChannelMap::val_type& originalChannel);
+
     // bounding box of the entire chunked model
     BoundingBox<BaseVector<float>> m_boundingBox;
 
