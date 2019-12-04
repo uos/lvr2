@@ -66,6 +66,8 @@ TextureHandle ImageTexturizer<BaseVecT>::generateTexture(
     // Create texture
     Texture texture(index, sizeX, sizeY, 3, 1, this->m_texelSize);
 
+    cout << "images: " << images.size() << endl;
+
     // load images if not already done
     if (!image_data_initialized)
     {
@@ -155,6 +157,8 @@ void ImageTexturizer<BaseVecT>::init_image_data()
         for (const ImageFile &img : pos.images)
         {
             ImageData<BaseVecT> image_data;
+
+            cout << "INIT ADD: " << img.image_file.string() << endl;
 
             //load image
             image_data.data = cv::imread(img.image_file.string(), CV_LOAD_IMAGE_COLOR);

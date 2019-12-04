@@ -333,7 +333,7 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
     lvr2::ProgressBar progress(numPoints, comment);
 
     // Interpolate normals
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(dynamic, 12)
     for( int i = 0; i < (int)numPoints; i++)
     {
         vector<size_t> id;

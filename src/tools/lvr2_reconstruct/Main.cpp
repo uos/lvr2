@@ -474,14 +474,17 @@ int main(int argc, char** argv)
         }
         else
         {
+            cout << "ScanProject" << endl;
             ScanprojectIO project;
 
             if (options.getProjectDir().empty())
             {
+                cout << "Empty" << endl;
                 project.parse_project(options.getInputFileName());
             }
             else
             {
+                cout << "Not empty" << endl;
                 project.parse_project(options.getProjectDir());
             }
 
