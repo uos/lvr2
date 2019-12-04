@@ -168,16 +168,16 @@ bool ScanprojectIO::parse_project(const std::string &dir, bool silent)
             fs::path img_file = project.img_dir / (std::string(buffer) + ".jpg");
             if (!exists(img_file))
             {
+                std::cout << "Warning: Unable to open image file " << img_file << std::endl;
                 break;
             }
-
+            std::cout << "Adding imgage file " << img_file << std::endl;
             img.image_file = img_file;
 
             fs::path extrinsic_file(project.img_dir / (std::string(buffer) + "_extrinsic.dat"));
             if (!fs::exists(extrinsic_file))
             {
-                // TODO inform over that skipping image...
-                std::cout << extrinsic_file << std::endl;
+                std::cout << "Warning: Unable to open extrinsics " << extrinsic_file << std::endl;
                 continue;
             }
             img.extrinsic_transform = loadFromFile<double>(extrinsic_file);
@@ -185,8 +185,7 @@ bool ScanprojectIO::parse_project(const std::string &dir, bool silent)
             fs::path orientation_file(project.img_dir / (std::string(buffer) + "_orientation.dat"));
             if (!fs::exists(orientation_file))
             {
-                // TODO inform over that skipping image...
-                std::cout << orientation_file << std::endl;
+                std::cout << "Warning: Unable to open orientation " << orientation_file << std::endl;
                 continue;
             }
             img.orientation_transform = loadFromFile<double>(orientation_file);
@@ -194,8 +193,7 @@ bool ScanprojectIO::parse_project(const std::string &dir, bool silent)
             fs::path intrinsic_file(project.img_dir / (std::string(buffer) + "_intrinsic.txt"));
             if (!fs::exists(intrinsic_file))
             {
-                // TODO inform over that skipping image...
-                std::cout << intrinsic_file << std::endl;
+                std::cout << "Warning: Unable to open intrinsics " << intrinsic_file << std::endl;
                 continue;
             }
             load_params_from_file(img.intrinsic_params, intrinsic_file, 4);
@@ -203,8 +201,7 @@ bool ScanprojectIO::parse_project(const std::string &dir, bool silent)
             fs::path distortion_file(project.img_dir / (std::string(buffer) + "_distortion.txt"));
             if (!fs::exists(distortion_file))
             {
-                // TODO inform over that skipping image...
-                std::cout << distortion_file << std::endl;
+                std::cout << "Warning: Unable to open distortion " << distortion_file << std::endl;
                 continue;
             }
 
