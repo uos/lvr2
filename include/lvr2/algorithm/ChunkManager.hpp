@@ -51,16 +51,7 @@ namespace lvr2
 class ChunkManager
 {
   public:
-    using FilterFunction = std::function<bool(std::string,
-                                              VariantChannel<char,
-                                                             unsigned char,
-                                                             short,
-                                                             unsigned short,
-                                                             int,
-                                                             unsigned int,
-                                                             float,
-                                                             double>,
-                                              size_t)>;
+    using FilterFunction = std::function<bool(MultiChannelMap::val_type, size_t)>;
 
     /**
      * @brief ChunkManager creates chunks from an original mesh
@@ -102,7 +93,8 @@ class ChunkManager
      */
     MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area);
 
-    MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area, FilterFunction filter);
+    MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area,
+                              std::map<std::string, FilterFunction> filter);
 
     /**
      * @brief Calculates the hash value for the given index triple
@@ -221,11 +213,11 @@ class ChunkManager
 
     template <typename T>
     MultiChannelMap::val_type applyChannelFilter(std::vector<bool> vertexFilter,
-                                     std::vector<bool> faceFilter,
-                                     size_t numVertices,
-                                     size_t numFaces,
-                                     MeshBufferPtr meshBuffer,
-                                     MultiChannelMap::val_type& originalChannel);
+                                                 std::vector<bool> faceFilter,
+                                                 size_t numVertices,
+                                                 size_t numFaces,
+                                                 MeshBufferPtr meshBuffer,
+                                                 MultiChannelMap::val_type& originalChannel);
 
     // bounding box of the entire chunked model
     BoundingBox<BaseVector<float>> m_boundingBox;
