@@ -135,7 +135,7 @@ endif(MPI_FOUND)
 #------------------------------------------------------------------------------
 # Searching for OpenCl
 #------------------------------------------------------------------------------
-find_package(OPENCL)
+find_package(OpenCL2)
 if(OPENCL_FOUND)
   message(STATUS "Found OpenCL")
     include_directories(OPENCL_INCLUDE_DIR)

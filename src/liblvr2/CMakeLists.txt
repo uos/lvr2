@@ -105,7 +105,8 @@ set(LVR2_LIB_DEPENDENCIES
     ${GSL_LIBRARIES}
     ${LZ4_LIBRARY}
     ${TIFF_LIBRARY}
-    uuid)
+    ${YAML_CPP_LIBRARIES}
+    )
 
 
 #####################################################################################
