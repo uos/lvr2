@@ -304,7 +304,7 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
 }
 
 MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
-                                        FilterFunction filter)
+                                        std::map<std::string, FilterFunction> filter)
 {
     MeshBufferPtr areaMesh = extractArea(area);
 
@@ -314,29 +314,33 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
     std::size_t numVertices = areaMesh->numVertices();
     std::size_t numFaces    = areaMesh->numFaces();
 
-    for (auto channel : *areaMesh)
+    for (auto channelFilter : filter)
     {
-        for (size_t i = 0; i < channel.second.numElements(); i++)
+        if (areaMesh->find(channelFilter.first) != areaMesh->end())
         {
-            if (channel.second.numElements() == areaMesh->numVertices())
+            MultiChannelMap::val_type channel = areaMesh->at(channelFilter.first);
+            for (size_t i = 0; i < channel.numElements(); i++)
             {
-                if (vertexFilter[i] == true)
+                if (channel.numElements() == areaMesh->numVertices())
                 {
-                    vertexFilter[i] = filter(channel.first, channel.second, i);
-                    if (vertexFilter[i] == false)
+                    if (vertexFilter[i] == true)
                     {
-                        numVertices--;
+                        vertexFilter[i] = channelFilter.second(channel, i);
+                        if (vertexFilter[i] == false)
+                        {
+                            numVertices--;
+                        }
                     }
                 }
-            }
-            else if (channel.second.numElements() == areaMesh->numFaces())
-            {
-                if (faceFilter[i] == true)
+                else if (channel.numElements() == areaMesh->numFaces())
                 {
-                    faceFilter[i] = filter(channel.first, channel.second, i);
-                    if (faceFilter[i] == false)
+                    if (faceFilter[i] == true)
                     {
-                        numFaces--;
+                        faceFilter[i] = channelFilter.second(channel, i);
+                        if (faceFilter[i] == false)
+                        {
+                            numFaces--;
+                        }
                     }
                 }
             }
