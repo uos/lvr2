@@ -116,12 +116,13 @@ ChannelPtr<T> ChunkManager::extractChannelOfArea(
 }
 
 template <typename T>
-MultiChannelMap::val_type ChunkManager::applyChannelFilter(std::vector<bool> vertexFilter,
-                                               std::vector<bool> faceFilter,
-                                               size_t numVertices,
-                                               size_t numFaces,
-                                               MeshBufferPtr meshBuffer,
-                                               MultiChannelMap::val_type& originalChannel)
+MultiChannelMap::val_type
+ChunkManager::applyChannelFilter(const std::vector<bool>& vertexFilter,
+                                 const std::vector<bool>& faceFilter,
+                                 const size_t numVertices,
+                                 const size_t numFaces,
+                                 const MeshBufferPtr meshBuffer,
+                                 const MultiChannelMap::val_type& originalChannel) const
 {
     std::size_t numElements = originalChannel.numElements();
     if (originalChannel.numElements() == meshBuffer->numVertices())
@@ -157,7 +158,7 @@ MultiChannelMap::val_type ChunkManager::applyChannelFilter(std::vector<bool> ver
         }
         else if (originalChannel.numElements() == meshBuffer->numFaces())
         {
-            if (vertexFilter[i] == true)
+            if (faceFilter[i] == true)
             {
                 for (std::size_t j = 0; j < originalChannel.width(); j++)
                 {
