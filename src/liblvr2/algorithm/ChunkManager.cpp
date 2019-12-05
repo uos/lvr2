@@ -304,11 +304,12 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
 }
 
 MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
-                                        std::map<std::string, FilterFunction> filter)
+                                        const std::map<std::string, FilterFunction> filter)
 {
     MeshBufferPtr areaMesh = extractArea(area);
 
     // filter elements
+    // filter lists: false is used to indicate that an element will not be used
     std::vector<bool> vertexFilter(areaMesh->numVertices(), true);
     std::vector<bool> faceFilter(areaMesh->numFaces(), true);
     std::size_t numVertices = areaMesh->numVertices();
@@ -319,7 +320,7 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
         if (areaMesh->find(channelFilter.first) != areaMesh->end())
         {
             MultiChannelMap::val_type channel = areaMesh->at(channelFilter.first);
-            for (size_t i = 0; i < channel.numElements(); i++)
+            for (std::size_t i = 0; i < channel.numElements(); i++)
             {
                 if (channel.numElements() == areaMesh->numVertices())
                 {
@@ -347,6 +348,36 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
         }
     }
 
+    // filter all faces that reference filtered vertices
+    IndexChannel facesChannel = *areaMesh->getIndexChannel("face_indices");
+    for (std::size_t i = 0; i < areaMesh->numFaces(); i++)
+    {
+        if (faceFilter[i] == true)
+        {
+            for (std::size_t j = 0; j < 3; j++)
+            {
+                if (vertexFilter[facesChannel[i][j]] == false)
+                {
+                    faceFilter[i] = false;
+                    numFaces--;
+                    break;
+                }
+            }
+        }
+    }
+
+    // create a mapping from old vertices to new vertices
+    std::vector<std::size_t> vertexIndexMapping(areaMesh->numVertices(), 0);
+    std::size_t tmpIndex = 0;
+    for (std::size_t i = 0; i < areaMesh->numVertices(); i++)
+    {
+        if (vertexFilter[i] == true)
+        {
+            vertexIndexMapping[i] = tmpIndex;
+            tmpIndex++;
+        }
+    }
+
     // remove filtered elements
     for (auto& channel : *areaMesh)
     {
@@ -364,6 +395,16 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
         {
             channel.second = applyChannelFilter<float>(
                 vertexFilter, faceFilter, numVertices, numFaces, areaMesh, channel.second);
+        }
+    }
+
+    // use mapping from old vertex indices to new vertex indices to update face indices
+    facesChannel = *areaMesh->getIndexChannel("face_indices");
+    for (std::size_t i = 0; i < areaMesh->numFaces(); i++)
+    {
+        for (std::size_t j = 0; j < 3; j++)
+        {
+            facesChannel[i][j] = vertexIndexMapping[facesChannel[i][j]];
         }
     }
 
