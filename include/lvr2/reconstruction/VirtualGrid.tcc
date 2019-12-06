@@ -36,7 +36,6 @@ namespace lvr2
 
 template <typename BaseVecT>
 VirtualGrid<BaseVecT>::VirtualGrid(BoundingBox<BaseVecT>& bb,
-                                  size_t maxNodePoints,
                                   size_t gridCellSize,
                                   float voxelSize)
 {

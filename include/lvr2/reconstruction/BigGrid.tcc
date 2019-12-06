@@ -778,19 +778,8 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
         h5_ptr->open(cloudPath);
 
         HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
-        //TODO: change to be compatible with new definition: (new scans are in list, old scans are read from .h5 file
-        // maybe generate a new constructor? think about it
-        if(!hfscans.hasAttribute("reconstructed"))
-        {
-            //attribute, to identify reconstructed scans
-            unsigned int count = 0;
-            hfscans.createAttribute("reconstructed", count);
-        }
 
-        unsigned int num_reconstr;
-        hfscans.getAttribute("reconstructed").read(num_reconstr);
 
-        cout << "Already Reconstructed: " << num_reconstr << endl;
 
         vector<string> scans = hfscans.listObjectNames();
 
@@ -831,12 +820,8 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
            m_bb.expand(scan_bb);
 
            scan_boxes.push_back(scan_bb);
-
-           if(i >= num_reconstr)
-           {
-               m_partialbb.expand(scan_bb);
-           }
        }
+       m_partialbb.expand(m_bb);
 
        //TODO: use this variation to calculate a new transformed boundingbox
         /*
@@ -1009,8 +994,6 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
                 }
             }
         }
-
-        hfscans.getAttribute("reconstructed").write(scans.size());
 
         m_PointFile.close();
         m_NomralFile.close();
@@ -1978,11 +1961,6 @@ lvr2::floatArr BigGrid<BaseVecT>::points(
 
     numPoints = getSizeofBox(minx, miny, minz, maxx, maxy, maxz);
 
-    std::cout << "Current BB: " << m_bb << std::endl;
-
-    std::cout << "Number of Points: " << numPoints << std::endl;
-    std::cout << "min[" << minx << ", " << miny << ", " << minz << "]" << std::endl;
-    std::cout << "max[" << maxx << ", " << maxy << ", " << maxz << "]" << std::endl;
 
     lvr2::floatArr points(new float[numPoints * 3]);
     size_t p_index = 0;

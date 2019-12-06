@@ -57,7 +57,6 @@ class VirtualGrid
      * @param voxelsize
      */
     VirtualGrid(BoundingBox<BaseVecT>& bb,
-                  size_t maxNodePoints,
                   size_t gridCellSize,
                   float voxelsize);
 
