@@ -35,6 +35,7 @@ struct Scan
     Transformd                      m_registration;
     Transformd                      m_poseEstimation;
     BoundingBox<BaseVector<float> > m_boundingBox;
+    BoundingBox<BaseVector<float> > m_globalBoundingBox;
 
     float                           m_hFieldOfView;
     float                           m_vFieldOfView;
