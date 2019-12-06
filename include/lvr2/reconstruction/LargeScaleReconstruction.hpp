@@ -32,6 +32,7 @@
 
 namespace lvr2
 {
+    template <typename BaseVecT>
     class LargeScaleReconstruction
     {
 
@@ -43,7 +44,14 @@ namespace lvr2
          */
         LargeScaleReconstruction(std::string h5File);
 
-        int mpiChunkAndReconstruct(std::vector<std::shared_ptr<Scan>> scans);
+        /**
+         * this method splits the given PointClouds in to Chunks and calculates all required values for a later reconstruction
+         *
+         * @tparam BaseVecT
+         * @param scans vector of new scan to be added
+         * @return
+         */
+        int mpiChunkAndReconstruct();
 
     private:
 
@@ -63,6 +71,9 @@ namespace lvr2
 
         //ChunkSize, should be constant through all processes . Default: 20
         size_t m_chunkSize;
+
+        // Max. Number of Points in a leaf (used to devide pointcloud). Default: 1000000
+        uint m_nodeSize;
 
         // int flag to trigger partition-method (0 = kd-Tree; 1 = VGrid)
         int m_partMethod;
@@ -128,5 +139,7 @@ namespace lvr2
 
     };
 } // namespace lvr2
+
+#include "lvr2/reconstruction/LargeScaleReconstruction.tcc"
 
 #endif //LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
