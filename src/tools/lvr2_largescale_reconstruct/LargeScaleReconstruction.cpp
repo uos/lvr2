@@ -27,12 +27,15 @@
 
 #include <iostream>
 #include <lvr2/types/Scan.hpp>
-#include <lvr2/io/hdf5/ArrayIO.hpp>
+#include <lvr2/io/Hdf5IO.hpp>
 #include <lvr2/io/hdf5/ChannelIO.hpp>
+#include <lvr2/io/hdf5/ArrayIO.hpp>
 #include <lvr2/io/hdf5/VariantChannelIO.hpp>
 #include <lvr2/io/hdf5/MeshIO.hpp>
-#include <lvr2/io/Hdf5IO.hpp>
+
+
 #include "LargeScaleReconstruction.hpp"
+
 namespace lvr2
 {
     using LSRWriter = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
@@ -52,7 +55,7 @@ namespace lvr2
         std::cout << "Reconstruction Instance generated..." << std::endl;
     }
 
-    int LargeScaleReconstruction::mpiChunkAndReconstruct(std::vector<Scan> scans)
+    int LargeScaleReconstruction::mpiChunkAndReconstruct(std::vector<ScanPtr> scans)
     {
         //do more or less the same stuff as the executable
         return 1;

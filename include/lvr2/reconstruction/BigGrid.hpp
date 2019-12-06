@@ -81,6 +81,15 @@ class BigGrid
      */
     BigGrid(std::string cloudPath, float voxelsize, float scale = 0);
 
+    /**
+     * Constructor: specific case for incremental reconstruction/chunking
+     * @param h5File path to PointClouds in .h5 file
+     * @param voxelsize
+     * @param scale
+     * @param scans new scans to be added
+     */
+    BigGrid(std::string h5File, float voxelsize, std::vector<std::shared_ptr<Scan>> scans, float scale = 0);
+
     BigGrid(std::string path);
 
     /**
@@ -212,6 +221,8 @@ class BigGrid
 
     //BoundingBox, of unreconstructed scans
     BoundingBox<BaseVecT> m_partialbb;
+
+    std::vector<shared_ptr<Scan>> m_scans;
 
     std::unordered_map<size_t, CellInfo> m_gridNumPoints;
     float m_scale;

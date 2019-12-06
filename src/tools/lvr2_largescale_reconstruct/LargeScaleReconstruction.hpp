@@ -43,7 +43,7 @@ namespace lvr2
          */
         LargeScaleReconstruction(std::string h5File);
 
-        int mpiChunkAndReconstruct(std::vector<Scan> scans);
+        int mpiChunkAndReconstruct(std::vector<std::shared_ptr<Scan>> scans);
 
     private:
 
