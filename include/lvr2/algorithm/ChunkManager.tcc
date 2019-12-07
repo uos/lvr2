@@ -177,10 +177,6 @@ ChunkManager::applyChannelFilter(const std::vector<bool>& vertexFilter,
             }
             tmpIndex++;
         }
-        if (tmpIndex >= numElements)
-        {
-            break;
-        }
     }
 
     MultiChannelMap::val_type channel(Channel<T>(numElements, originalChannel.width(), data));

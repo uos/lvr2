@@ -320,6 +320,7 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
         if (areaMesh->find(channelFilter.first) != areaMesh->end())
         {
             MultiChannelMap::val_type channel = areaMesh->at(channelFilter.first);
+#pragma omp parallel for
             for (std::size_t i = 0; i < channel.numElements(); i++)
             {
                 if (channel.numElements() == areaMesh->numVertices())
@@ -354,7 +355,7 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
     {
         if (faceFilter[i] == true)
         {
-            for (std::size_t j = 0; j < 3; j++)
+            for (std::size_t j = 0; j < facesChannel.width(); j++)
             {
                 if (vertexFilter[facesChannel[i][j]] == false)
                 {
@@ -379,30 +380,36 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
     }
 
     // remove filtered elements
-    for (auto& channel : *areaMesh)
+#pragma omp parallel
     {
-        if (channel.second.is_type<unsigned char>())
+        for (auto& channel : *areaMesh)
         {
-            channel.second = applyChannelFilter<unsigned char>(
-                vertexFilter, faceFilter, numVertices, numFaces, areaMesh, channel.second);
-        }
-        else if (channel.second.is_type<unsigned int>())
-        {
-            channel.second = applyChannelFilter<unsigned int>(
-                vertexFilter, faceFilter, numVertices, numFaces, areaMesh, channel.second);
-        }
-        else if (channel.second.is_type<float>())
-        {
-            channel.second = applyChannelFilter<float>(
-                vertexFilter, faceFilter, numVertices, numFaces, areaMesh, channel.second);
+#pragma omp single nowait
+            {
+                if (channel.second.is_type<unsigned char>())
+                {
+                    channel.second = applyChannelFilter<unsigned char>(
+                        vertexFilter, faceFilter, numVertices, numFaces, areaMesh, channel.second);
+                }
+                else if (channel.second.is_type<unsigned int>())
+                {
+                    channel.second = applyChannelFilter<unsigned int>(
+                        vertexFilter, faceFilter, numVertices, numFaces, areaMesh, channel.second);
+                }
+                else if (channel.second.is_type<float>())
+                {
+                    channel.second = applyChannelFilter<float>(
+                        vertexFilter, faceFilter, numVertices, numFaces, areaMesh, channel.second);
+                }
+            }
         }
     }
-
+    
     // use mapping from old vertex indices to new vertex indices to update face indices
     facesChannel = *areaMesh->getIndexChannel("face_indices");
     for (std::size_t i = 0; i < areaMesh->numFaces(); i++)
     {
-        for (std::size_t j = 0; j < 3; j++)
+        for (std::size_t j = 0; j < facesChannel.width(); j++)
         {
             facesChannel[i][j] = vertexIndexMapping[facesChannel[i][j]];
         }
