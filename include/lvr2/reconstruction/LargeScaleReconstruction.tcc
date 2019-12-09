@@ -127,6 +127,8 @@ namespace lvr2
 
         vector<string> grid_files;
         unordered_set<string> meshes;
+        // vector to save the new chunk names - which chunks have to be reconstructed
+        vector<string> newChunks = vector<string>();
 
         uint partitionBoxesSkipped = 0;
 
@@ -222,45 +224,52 @@ namespace lvr2
             //auto reconstruction =
             //       make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
 
-            //TODO: replace creating .ser files to creating chunk in HDF5
-            std::stringstream ss2;
-            ss2 << name_id << ".ser";
-            ps_grid->saveCells(ss2.str());
-            meshes.insert(ss2.str());
+            // save in HDF5
+            ps_grid->saveCellsHDF5(m_filePath, name_id);
+            // also save the name that is added to the hdf5
+            newChunks.push_back(name_id);
+
+            // TODO: can be removed
+//            // replaced creating .ser files to creating chunk in HDF5
+//            std::stringstream ss2;
+//            ss2 << name_id << ".ser";
+//            ps_grid->saveCells(ss2.str());
+//            meshes.insert(ss2.str());
         }
 
-        //TODO: replace reading from .ser file to reading from .h5
-        ifstream old_mesh("VGrid.ser");
-        if (m_partMethod == 1 && old_mesh.is_open())
-        {
-            while (old_mesh.good())
-            {
-                string mesh;
-                getline(old_mesh, mesh);
-                cout << "Old Mesh: " << mesh << endl;
-                if (!mesh.empty())
-                {
-                    meshes.insert(mesh);
-                }
-            }
-        }
+        // TODO: can be removed
+//        //TODO: replace reading from .ser file to reading from .h5
+//        ifstream old_mesh("VGrid.ser");
+//        if (m_partMethod == 1 && old_mesh.is_open())
+//        {
+//            while (old_mesh.good())
+//            {
+//                string mesh;
+//                getline(old_mesh, mesh);
+//                cout << "Old Mesh: " << mesh << endl;
+//                if (!mesh.empty())
+//                {
+//                    meshes.insert(mesh);
+//                }
+//            }
+//        }
 
         std::cout << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
         std::cout << "Generated Meshes: " << meshes.size() << std::endl;
 
         //TODO: remove this too
-        ofstream vGrid_ser;
-        vGrid_ser.open("VGrid.ser", ofstream::out | ofstream::trunc);
-        unordered_set<string>::iterator itr;
-
-        //TODO: potentially remove mesh-combine or leave it as a debug output
-        for (itr = meshes.begin(); itr != meshes.end(); itr++)
-        {
-            vGrid_ser << *itr << std::endl;
-            grid_files.push_back(*itr);
-        }
-
-        vGrid_ser.close();
+//        ofstream vGrid_ser;
+//        vGrid_ser.open("VGrid.ser", ofstream::out | ofstream::trunc);
+//        unordered_set<string>::iterator itr;
+//
+//        //TODO: potentially remove mesh-combine or leave it as a debug output
+//        for (itr = meshes.begin(); itr != meshes.end(); itr++)
+//        {
+//            vGrid_ser << *itr << std::endl;
+//            grid_files.push_back(*itr);
+//        }
+//
+//        vGrid_ser.close();
 
         cout << lvr2::timestamp << "finished" << endl;
 
@@ -276,7 +285,8 @@ namespace lvr2
         cbb.expand(vmin);
         cbb.expand(vmax);
 
-        auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(grid_files, cbb, m_voxelSize);
+        // auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(grid_files, cbb, m_voxelSize);
+        auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(m_filePath, newChunks, cbb);
 
         auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(hg);
 
@@ -341,7 +351,7 @@ namespace lvr2
             MeshBufferPtr newMesh = MeshBufferPtr(meshBuffer);
             LSRWriter hdfWrite;
             hdfWrite.open(m_filePath);
-            hdfWrite.save("/", newMesh);
+            hdfWrite.save("mesh", newMesh);
 
             auto m = ModelPtr(new Model(meshBuffer));
             ModelFactory::saveModel(m, "largeScale.ply");
