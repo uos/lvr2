@@ -73,12 +73,6 @@ public:
     template<typename VariantChannelT>
     boost::optional<VariantChannelT> loadVariantChannel(std::string groupName, std::string datasetName);
 
-    // generate?
-    using Constructed = lvr2::Hdf5IO<
-            lvr2::hdf5features::ChannelIO,
-            lvr2::hdf5features::VariantChannelIO
-        >;
-
 protected:
 
     template<typename VariantChannelT>
@@ -96,21 +90,11 @@ protected:
     ChannelIO<Derived>* m_channel_io = static_cast<ChannelIO<Derived>*>(m_file_access);
 };
 
-
-
-template<>
-class VariantChannelIO<ConstructType> {
-public:
-    using type = lvr2::Hdf5IO<>::add_features<
-        lvr2::hdf5features::ChannelIO, // DEPS
-        lvr2::hdf5features::VariantChannelIO // TYPE
-    >::type;
-};
-
-
 } // hdf5features
 
-
+/**
+ * Define you dependencies here:
+ */
 template<typename BaseIO>
 struct Hdf5Construct<hdf5features::VariantChannelIO, BaseIO> {
     
@@ -119,7 +103,6 @@ struct Hdf5Construct<hdf5features::VariantChannelIO, BaseIO> {
 
     // add actual feature
     using type = typename deps::template add_features<hdf5features::VariantChannelIO>::type;
-     
 };
 
 
