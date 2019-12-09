@@ -39,10 +39,20 @@ namespace lvr2
 
     public:
         /**
-         * Constructor
+         * Constructor - uses default parameter for reconstruction)
          * @param h5File HDF5 file, which may or may not contain chunked and reconstructed scans
          */
         LargeScaleReconstruction(std::string h5File);
+
+
+        /**
+         * Constructor with parameters
+         */
+        LargeScaleReconstruction(std::string h5File, float voxelSize, float bgVoxelSize, float scale, size_t chunkSize,
+                uint nodeSize, int partMethod,int ki, int kd, int kn, bool useRansac, bool extrude,
+                int removeDanglingArtifacts, int cleanContours, int fillHoles, bool optimizePlanes,
+                float getNormalThreshold, int planeIterations, int minPlaneSize, int smallRegionThreshold,
+                bool retesselate, float lineFusionThreshold);
 
         /**
          * this method splits the given PointClouds in to Chunks and calculates all required values for a later reconstruction

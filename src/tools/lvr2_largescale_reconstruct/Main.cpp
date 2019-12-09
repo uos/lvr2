@@ -427,7 +427,11 @@ int main(int argc, char** argv)
 
     string in = options.getInputFileName()[0];
 
-    LargeScaleReconstruction<Vec> lsr(in);
+    LargeScaleReconstruction<Vec> lsr(in, options.getVoxelsize(), options.getBGVoxelsize(), options.getScaling(), options.getGridSize(),
+            options.getNodeSize(), options.getVGrid(), options.getKi(), options.getKd(), options.getKn(), options.useRansac(), options.extrude(),
+            options.getDanglingArtifacts(), options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
+            options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
+            options.retesselate(), options.getLineFusionThreshold());
     //VirtualGrid<Vec> vGrid();
     std::vector<ScanPtr> scans;
 
