@@ -397,12 +397,6 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     return 0;
 }
 
-template <typename BaseVecT>
-int recon(string in)
-{
-
-    return 1;
-}
 
 int main(int argc, char** argv)
 {
@@ -425,13 +419,11 @@ int main(int argc, char** argv)
 
     string in = options.getInputFileName()[0];
 
-    int i = recon<Vec>(in);
-
     LargeScaleReconstruction<Vec> lsr(in);
     //VirtualGrid<Vec> vGrid();
     std::vector<ScanPtr> scans;
 
-    int x = lsr.mpiChunkAndReconstruct();
+    int x = lsr.mpiChunkAndReconstruct(scans);
 
 
 
