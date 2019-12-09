@@ -68,7 +68,7 @@ namespace lvr2
     }
 
     template <typename BaseVecT>
-    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct()
+    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(std::vector<ScanPtr> &scans)
     {
         //do more or less the same stuff as the executable
         cout << lvr2::timestamp << "Starting grid" << endl;
