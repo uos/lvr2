@@ -46,11 +46,6 @@ namespace hdf5features {
 template<typename Derived>
 class PointCloudIO {
 public:
-
-    
-    using DEPS = std::tuple<VariantChannelIO<Derived>, ChannelIO<Derived> >;
-
-
     void save(std::string name, const PointBufferPtr& buffer);
     void save(HighFive::Group& group, const PointBufferPtr& buffer);
 
