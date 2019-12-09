@@ -242,13 +242,25 @@ namespace lvr2
             ps_grid->calcDistanceValues();
 
             //TODO: is this even used? if not:remove it
-            //auto reconstruction =
-            //       make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
+            auto reconstruction =
+                   make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
 
             // save in HDF5
             ps_grid->saveCellsHDF5(m_filePath, name_id);
             // also save the name that is added to the hdf5
             newChunks.push_back(name_id);
+
+            // save the mesh of the chunk
+            // additionally for debug: Save the mesh as a ply todo delete later
+            lvr2::HalfEdgeMesh<Vec> mesh;
+            reconstruction->getMesh(mesh);
+            lvr2::SimpleFinalizer<Vec> finalize;
+            auto meshBuffer = MeshBufferPtr(finalize.apply(mesh));
+            LSRWriter hdfWrite;
+            hdfWrite.open(m_filePath);
+            hdfWrite.save("chunks/" + name_id, meshBuffer);
+            auto m = ModelPtr(new Model(meshBuffer));
+            ModelFactory::saveModel(m, name_id + ".ply");
 
             // TODO: can be removed
 //            // replaced creating .ser files to creating chunk in HDF5
