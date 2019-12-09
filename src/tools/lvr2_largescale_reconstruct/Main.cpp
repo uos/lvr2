@@ -173,6 +173,9 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
 
     uint partitionBoxesSkipped = 0;
 
+    // vector to save the new chunk names - which chunks have to be reconstructed
+    vector<string> newChunks = vector<string>();
+
     //create chunks
     for (int i = 0; i < partitionBoxes.size(); i++)
     {
@@ -265,6 +268,12 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         auto reconstruction =
             make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
 
+        // HDF5 saving
+        // TODO: delete chunk values if they existed from earlier scan session. TSDF would change in these chunks
+        ps_grid->saveCellsHDF5(options.getInputFileName()[0], name_id);
+        // also save the name that is added to the hdf5
+        newChunks.push_back(name_id);
+
         //TODO: replace creating .ser files to creating chung in HDF5
         std::stringstream ss2;
         ss2 << name_id << ".ser";
@@ -316,12 +325,11 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     cbb.expand(vmin);
     cbb.expand(vmax);
 
-    auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(grid_files, cbb, voxelsize);
-
+    //auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(grid_files, cbb, voxelsize);
+    auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(options.getInputFileName()[0], newChunks, cbb);
     auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(hg);
 
     lvr2::HalfEdgeMesh<Vec> mesh;
-
     reconstruction->getMesh(mesh);
 
     if (options.getDanglingArtifacts())
@@ -381,7 +389,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
         MeshBufferPtr newMesh = MeshBufferPtr(meshBuffer);
         LSRWriter hdfWrite;
         hdfWrite.open(filePath);
-        hdfWrite.save("/", newMesh);
+        hdfWrite.save("mesh", newMesh);
 
         auto m = ModelPtr(new Model(meshBuffer));
         ModelFactory::saveModel(m, "largeScale.ply");
