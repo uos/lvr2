@@ -94,7 +94,7 @@ namespace lvr2
         //do more or less the same stuff as the executable
         cout << lvr2::timestamp << "Starting grid" << endl;
 
-        //TODO: replace with new Constructor later
+        //TODO: replace with new incremental Constructor later
         BigGrid<BaseVecT> bg(m_filePath, m_bgVoxelSize, m_scale);
 
         cout << lvr2::timestamp << "grid finished " << endl;
@@ -184,6 +184,7 @@ namespace lvr2
                                         partitionBoxes[i].getMax().z,
                                         numPoints);
 
+            // remove chunks with less than 50 points
             if (numPoints <= 50)
             {
                 partitionBoxesSkipped++;
