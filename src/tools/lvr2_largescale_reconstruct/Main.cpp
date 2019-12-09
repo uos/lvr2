@@ -26,6 +26,7 @@
  */
 
 #include "LargeScaleOptions.hpp"
+#include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
 #include "lvr2/algorithm/CleanupAlgorithms.hpp"
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
@@ -89,6 +90,7 @@ typedef CudaSurface GpuSurface;
 
 #include <lvr2/reconstruction/opencl/ClSurface.hpp>
 
+
 typedef ClSurface GpuSurface;
 #endif
 
@@ -131,7 +133,7 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     if (options.getVGrid() == 1)
     {
         VirtualGrid<BaseVecT> vGrid(
-            bg.getpartialBB(), options.getNodeSize(), options.getGridSize(), bgVoxelsize);
+            bg.getpartialBB(), options.getGridSize(), bgVoxelsize);
         std::vector<shared_ptr<BoundingBox<BaseVecT>>> boxes;
         vGrid.calculateBoxes();
         ofstream partBoxOfs("BoundingBoxes.ser");
@@ -403,6 +405,13 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
     return 0;
 }
 
+template <typename BaseVecT>
+int recon(string in)
+{
+
+    return 1;
+}
+
 int main(int argc, char** argv)
 {
     // =======================================================================
@@ -422,7 +431,19 @@ int main(int argc, char** argv)
 
     std::cout << options << std::endl;
 
-    int i = mpiReconstruct<Vec>(options);
+    string in = options.getInputFileName()[0];
+
+    int i = recon<Vec>(in);
+
+    LargeScaleReconstruction<Vec> lsr(in);
+    //VirtualGrid<Vec> vGrid();
+    std::vector<ScanPtr> scans;
+
+    int x = lsr.mpiChunkAndReconstruct();
+
+
+
+    //int i = mpiReconstruct<Vec>(options);
 
     cout << "Program end." << endl;
 
