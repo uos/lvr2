@@ -779,17 +779,7 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
 
         HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
 
-        if(!hfscans.hasAttribute("reconstructed"))
-        {
-            //attribute, to identify reconstructed scans
-            unsigned int count = 0;
-            hfscans.createAttribute("reconstructed", count);
-        }
 
-        unsigned int num_reconstr;
-        hfscans.getAttribute("reconstructed").read(num_reconstr);
-
-        cout << "Already Reconstructed: " << num_reconstr << endl;
 
         vector<string> scans = hfscans.listObjectNames();
 
@@ -830,13 +820,10 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
            m_bb.expand(scan_bb);
 
            scan_boxes.push_back(scan_bb);
-
-           if(i >= num_reconstr)
-           {
-               m_partialbb.expand(scan_bb);
-           }
        }
+       m_partialbb.expand(m_bb);
 
+       //TODO: use this variation to calculate a new transformed boundingbox
         /*
         //iterate through ALL points to calculate transformed boundingboxes of scans
         for (int i = 0; i < scans.size(); i++)
@@ -1007,8 +994,6 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
                 }
             }
         }
-
-        hfscans.getAttribute("reconstructed").write(scans.size());
 
         m_PointFile.close();
         m_NomralFile.close();
@@ -1475,6 +1460,322 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
 }
 
 template <typename BaseVecT>
+BigGrid<BaseVecT>::BigGrid(std::string h5File, float voxelsize,std::vector<std::shared_ptr<Scan>> newScans, float scale)
+        : m_maxIndex(0), m_maxIndexSquare(0), m_maxIndexX(0), m_maxIndexY(0), m_maxIndexZ(0),
+          m_numPoints(0), m_extrude(true), m_scale(scale), m_has_normal(false), m_has_color(false)
+{
+    boost::filesystem::path selectedFile(h5File);
+    string extension = selectedFile.extension().string();
+
+    omp_init_lock(&m_lock);
+    m_voxelSize = voxelsize;
+
+    if (!(extension == ".h5"))
+    {
+        std::cerr << "Input file is not from file type .h5. please input the correct file type!" << std::endl;
+        return;
+    }
+    else
+    {
+        float ix, iy, iz;
+        using HDF5PCIO = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
+                lvr2::hdf5features::ChannelIO,
+                lvr2::hdf5features::VariantChannelIO,
+                lvr2::hdf5features::PointCloudIO,
+                lvr2::hdf5features::MatrixIO>;
+
+        std::shared_ptr<HDF5PCIO> h5_ptr(new HDF5PCIO());
+        h5_ptr->open(h5File);
+
+        HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
+        //TODO: change to be compatible with new definition: (new scans are in list, old scans are read from .h5 file
+
+        vector<string> scans = hfscans.listObjectNames();
+
+        // bounding box of all scans in .h5
+        std::vector<BoundingBox<BaseVecT>> scan_boxes;
+
+        //iterate through ALL points to calculate transformed boundingboxes of scans
+        for (int i = 0; i < scans.size(); i++)
+        {
+            size_t numPoints;
+            BoundingBox<BaseVecT> box;
+            boost::shared_array<float> points =
+                h5_ptr->loadArray<float>("preview/" + scans[i], "points", numPoints);
+            Transformd finalPose_n =
+                h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
+
+            Transformd finalPose = finalPose_n.transpose();
+
+            std::cout << finalPose << std::endl;
+            for (int k = 0; k < numPoints / 3; k++)
+            {
+                Eigen::Vector4d point(
+                    points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
+                Eigen::Vector4d transPoint = finalPose * point;
+
+                BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
+                m_bb.expand(temp);
+                box.expand(temp);
+            }
+            scan_boxes.push_back(box);
+        }
+
+        //calc m_partialbb from scan-buffers
+        for(int i = 0; i < newScans.size(); i++)
+        {
+            if(newScans[i]->m_globalBoundingBox.isValid())
+            {
+                m_partialbb.expand(newScans[i]->m_globalBoundingBox);
+            }
+            else
+            {
+                boost::shared_array<float> points = newScans[i]->m_points->getPointArray();
+                Transformd finalPose_n = newScans[i]->m_registration;
+                Transformd finalPose = finalPose_n.transpose();
+                BoundingBox<BaseVecT> box;
+
+                for(int k = 0; k < newScans[i]->m_points->numPoints() / 3; k++)
+                {
+                    Eigen::Vector4d point(
+                            points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
+                    Eigen::Vector4d transPoint = finalPose * point;
+
+                    BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
+                    box.expand(temp);
+                    m_partialbb(temp);
+                }
+                newScans[i]->m_globalBoundingBox = box;
+            }
+        }
+
+        // added new scan BoundingBoxes to the old ones
+        m_bb.expand(m_partialbb);
+        std::cout << "Global BB: " << std::endl << m_bb << std::endl;
+
+        // Make box side lenghts divisible by voxel size
+        float longestSide = m_bb.getLongestSide();
+
+        BaseVecT center = m_bb.getCentroid();
+        size_t xsize2 = calcIndex(m_bb.getXSize() / m_voxelSize);
+        float xsize = ceil(m_bb.getXSize() / voxelsize) * voxelsize;
+        float ysize = ceil(m_bb.getYSize() / voxelsize) * voxelsize;
+        float zsize = ceil(m_bb.getZSize() / voxelsize) * voxelsize;
+        m_bb.expand(BaseVecT(center.x + xsize / 2, center.y + ysize / 2, center.z + zsize / 2));
+        m_bb.expand(BaseVecT(center.x - xsize / 2, center.y - ysize / 2, center.z - zsize / 2));
+        longestSide = ceil(longestSide / voxelsize) * voxelsize;
+
+        // calculate max indices
+
+        // m_maxIndex = (size_t)(longestSide/voxelsize);
+        m_maxIndexX = (size_t)(xsize / voxelsize);
+        m_maxIndexY = (size_t)(ysize / voxelsize);
+        m_maxIndexZ = (size_t)(zsize / voxelsize);
+        m_maxIndex = std::max(m_maxIndexX, std::max(m_maxIndexY, m_maxIndexZ)) + 5 * voxelsize;
+        m_maxIndexX += 1;
+        m_maxIndexY += 2;
+        m_maxIndexZ += 3;
+        m_maxIndexSquare = m_maxIndex * m_maxIndex;
+        std::cout << "BG: " << m_maxIndexSquare << "|" << m_maxIndexX << "|" << m_maxIndexY << "|"
+                  << m_maxIndexZ << std::endl;
+
+        string comment = lvr2::timestamp.getElapsedTime() + "Building grid... ";
+        lvr2::ProgressBar progress(this->m_numPoints, comment);
+
+        size_t idx, idy, idz;
+
+        for (int i = 0; i < scans.size(); i++)
+        {
+            cout << "Overlap " << i << ":" << m_partialbb.overlap(scan_boxes.at(i)) << endl;
+            if (m_partialbb.isValid() && m_partialbb.overlap(scan_boxes.at(i))){
+                size_t numPoints;
+                boost::shared_array<float> points =
+                        h5_ptr->loadArray<float>("preview/" + scans[i], "points", numPoints);
+                m_numPoints += numPoints / 3;
+                Transformd finalPose_n =
+                        h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
+                Transformd finalPose = finalPose_n.transpose();
+                int dx, dy, dz;
+                for (int k = 0; k < numPoints / 3; k++) {
+                    Eigen::Vector4d point(
+                            points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
+                    Eigen::Vector4d transPoint = finalPose * point;
+                    BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
+                    // m_bb.expand(temp);
+                    ix = transPoint[0] * m_scale;
+                    iy = transPoint[1] * m_scale;
+                    iz = transPoint[2] * m_scale;
+                    idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
+                    idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
+                    idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                    int e;
+                    this->m_extrude ? e = 8 : e = 1;
+                    for (int j = 0; j < e; j++) {
+                        dx = HGCreateTable[j][0];
+                        dy = HGCreateTable[j][1];
+                        dz = HGCreateTable[j][2];
+                        size_t h = hashValue(idx + dx, idy + dy, idz + dz);
+                        if (j == 0)
+                            m_gridNumPoints[h].size++;
+                        else {
+                            auto it = m_gridNumPoints.find(h);
+                            if (it == m_gridNumPoints.end()) {
+                                m_gridNumPoints[h].size = 0;
+                            }
+                        }
+                    }
+                }
+                progress += 3;
+            }
+        }
+
+        //new ScanPoints should always be added to the grid
+        for(auto scan : newScans)
+        {
+            boost::shared_array<float> points = scan->m_points->getPointArray();
+            Transformd finalPose_n = scan->m_registration;
+            Transformd finalPose = finalPose_n.transpose();
+            size_t numPoints = scan->m_points->numPoints();
+
+            int dx, dy, dz;
+            for (int k = 0; k < numPoints / 3; k++) {
+                Eigen::Vector4d point(
+                        points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
+                Eigen::Vector4d transPoint = finalPose * point;
+                BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
+                // m_bb.expand(temp);
+                ix = transPoint[0] * m_scale;
+                iy = transPoint[1] * m_scale;
+                iz = transPoint[2] * m_scale;
+                idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
+                idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
+                idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                int e;
+                this->m_extrude ? e = 8 : e = 1;
+                for (int j = 0; j < e; j++) {
+                    dx = HGCreateTable[j][0];
+                    dy = HGCreateTable[j][1];
+                    dz = HGCreateTable[j][2];
+                    size_t h = hashValue(idx + dx, idy + dy, idz + dz);
+                    if (j == 0)
+                        m_gridNumPoints[h].size++;
+                    else {
+                        auto it = m_gridNumPoints.find(h);
+                        if (it == m_gridNumPoints.end()) {
+                            m_gridNumPoints[h].size = 0;
+                        }
+                    }
+                }
+            }
+            progress += 3;
+        }
+
+        size_t num_cells = 0;
+        size_t offset = 0;
+        for (auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end(); ++it)
+        {
+            it->second.offset = offset;
+            offset += it->second.size;
+            it->second.dist_offset = num_cells++;
+        }
+
+        boost::iostreams::mapped_file_params mmfparam;
+
+        mmfparam.path = "points.mmf";
+        mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
+        mmfparam.new_file_size = sizeof(float) * m_numPoints * 3;
+
+        boost::iostreams::mapped_file_params mmfparam_normal;
+        mmfparam_normal.path = "normals.mmf";
+        mmfparam_normal.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
+        mmfparam_normal.new_file_size = sizeof(float) * m_numPoints * 3;
+
+        boost::iostreams::mapped_file_params mmfparam_color;
+        mmfparam_color.path = "colors.mmf";
+        mmfparam_color.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
+        mmfparam_color.new_file_size = sizeof(unsigned char) * m_numPoints * 3;
+
+        m_PointFile.open(mmfparam);
+
+        float* mmfdata = (float*)m_PointFile.data();
+
+        for (int i = 0; i < scans.size(); i++)
+        {
+            if (m_partialbb.isValid() && m_partialbb.overlap(scan_boxes.at(i))) {
+                size_t numPoints;
+                boost::shared_array<float> points =
+                        h5_ptr->loadArray<float>("preview/" + scans[i], "points", numPoints);
+                Transformd finalPose_n =
+                        h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
+                Transformd finalPose = finalPose_n.transpose();
+                for (int k = 0; k < numPoints / 3; k++) {
+                    Eigen::Vector4d point(
+                            points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
+                    Eigen::Vector4d transPoint = finalPose * point;
+
+                    ix = transPoint[0] * m_scale;
+                    iy = transPoint[1] * m_scale;
+                    iz = transPoint[2] * m_scale;
+                    size_t idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
+                    size_t idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
+                    size_t idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                    size_t h = hashValue(idx, idy, idz);
+                    size_t ins = (m_gridNumPoints[h].inserted);
+                    m_gridNumPoints[h].ix = idx;
+                    m_gridNumPoints[h].iy = idy;
+                    m_gridNumPoints[h].iz = idz;
+                    m_gridNumPoints[h].inserted++;
+                    size_t index = m_gridNumPoints[h].offset + ins;
+                    mmfdata[index * 3] = ix;
+                    mmfdata[index * 3 + 1] = iy;
+                    mmfdata[index * 3 + 2] = iz;
+                }
+            }
+        }
+
+        for(auto scan : newScans)
+        {
+            boost::shared_array<float> points = scan->m_points->getPointArray();
+            Transformd finalPose_n = scan->m_registration;
+            Transformd finalPose = finalPose_n.transpose();
+            size_t numPoints = scan->m_points->numPoints();
+
+            for (int k = 0; k < numPoints / 3; k++) {
+                Eigen::Vector4d point(
+                        points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
+                Eigen::Vector4d transPoint = finalPose * point;
+
+                ix = transPoint[0] * m_scale;
+                iy = transPoint[1] * m_scale;
+                iz = transPoint[2] * m_scale;
+                size_t idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
+                size_t idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
+                size_t idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                size_t h = hashValue(idx, idy, idz);
+                size_t ins = (m_gridNumPoints[h].inserted);
+                m_gridNumPoints[h].ix = idx;
+                m_gridNumPoints[h].iy = idy;
+                m_gridNumPoints[h].iz = idz;
+                m_gridNumPoints[h].inserted++;
+                size_t index = m_gridNumPoints[h].offset + ins;
+                mmfdata[index * 3] = ix;
+                mmfdata[index * 3 + 1] = iy;
+                mmfdata[index * 3 + 2] = iz;
+            }
+        }
+
+        m_PointFile.close();
+        m_NomralFile.close();
+        mmfparam.path = "distances.mmf";
+        mmfparam.new_file_size = sizeof(float) * size() * 8;
+
+        m_PointFile.open(mmfparam);
+        m_PointFile.close();
+
+    }
+}
+
+template <typename BaseVecT>
 BigGrid<BaseVecT>::~BigGrid()
 {
     omp_destroy_lock(&m_lock);
@@ -1660,11 +1961,6 @@ lvr2::floatArr BigGrid<BaseVecT>::points(
 
     numPoints = getSizeofBox(minx, miny, minz, maxx, maxy, maxz);
 
-    std::cout << "Current BB: " << m_bb << std::endl;
-
-    std::cout << "Number of Points: " << numPoints << std::endl;
-    std::cout << "min[" << minx << ", " << miny << ", " << minz << "]" << std::endl;
-    std::cout << "max[" << maxx << ", " << maxy << ", " << maxz << "]" << std::endl;
 
     lvr2::floatArr points(new float[numPoints * 3]);
     size_t p_index = 0;

@@ -4,6 +4,7 @@
 
 #include "lvr2/types/Channel.hpp"
 #include "lvr2/io/GroupedChannelIO.hpp"
+#include "lvr2/io/Timestamp.hpp"
 
 // Depending Features
 
