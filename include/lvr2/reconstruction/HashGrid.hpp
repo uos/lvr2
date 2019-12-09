@@ -141,6 +141,13 @@ public:
      */
     HashGrid(std::vector<string>& files, BoundingBox<BaseVecT>& boundingBox, float voxelsize);
 
+    /***
+     * Constructs a new Hash Grid object from a HDF5 file
+     *
+     * @param HDFfile path the the HDF5 file
+     * @param chunkNames vector of groups for the chunks
+     * @param boundingBox bounding box of the complete grid
+     */
     HashGrid(string HDFfile,
            vector<string>& chunkNames,
            BoundingBox<BaseVecT>& boundingBox);
