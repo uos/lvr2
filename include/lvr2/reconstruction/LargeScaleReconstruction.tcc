@@ -67,6 +67,27 @@ namespace lvr2
         std::cout << "Reconstruction Instance generated..." << std::endl;
     }
 
+    template<typename BaseVecT>
+    LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(std::string h5File, float voxelSize, float bgVoxelSize,
+                                                                 float scale, size_t chunkSize, uint nodeSize,
+                                                                 int partMethod, int ki, int kd, int kn, bool useRansac,
+                                                                 bool extrude, int removeDanglingArtifacts,
+                                                                 int cleanContours, int fillHoles, bool optimizePlanes,
+                                                                 float getNormalThreshold, int planeIterations,
+                                                                 int minPlaneSize, int smallRegionThreshold,
+                                                                 bool retesselate, float lineFusionThreshold)
+            : m_filePath(h5File), m_voxelSize(voxelSize), m_bgVoxelSize(bgVoxelSize),
+              m_scale(scale), m_chunkSize(chunkSize),m_nodeSize(nodeSize),
+              m_partMethod(partMethod), m_Ki(ki), m_Kd(kd), m_Kn(kn), m_useRansac(useRansac),
+              m_extrude(extrude), m_removeDanglingArtifacts(removeDanglingArtifacts),
+              m_cleanContours(cleanContours), m_fillHoles(fillHoles), m_optimizePlanes(optimizePlanes),
+              m_getNormalThreshold(getNormalThreshold), m_planeIterations(planeIterations),
+              m_MinPlaneSize(minPlaneSize), m_SmallRegionThreshold(smallRegionThreshold),
+              m_retesselate(retesselate), m_LineFusionThreshold(lineFusionThreshold)
+    {
+        std::cout << "Reconstruction Instance generated..." << std::endl;
+    }
+
     template <typename BaseVecT>
     int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(std::vector<ScanPtr> &scans)
     {
