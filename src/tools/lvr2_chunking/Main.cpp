@@ -36,7 +36,7 @@
 #include "lvr2/algorithm/ChunkManager.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 
-#include <lvr2/io/Hdf5IO.hpp>
+#include <lvr2/io/GHDF5IO.hpp>
 
 #include <boost/filesystem.hpp>
 #include <iostream>

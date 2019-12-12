@@ -65,11 +65,22 @@ protected:
     static constexpr const char* OBJID = "PointBuffer";
 };
 
-
 } // hdf5features
+
+template<typename Derived>
+struct Hdf5Construct<hdf5features::PointCloudIO, Derived> {
+    
+    // DEPS
+    using deps = typename Hdf5Construct<hdf5features::VariantChannelIO, Derived>::type;
+
+    // add actual feature
+    using type = typename deps::template add_features<hdf5features::PointCloudIO>::type;
+     
+};
 
 } // namespace lvr2 
 
 #include "PointCloudIO.tcc"
+
 
 #endif // LVR2_IO_HDF5_POINTBUFFERIO_HPP

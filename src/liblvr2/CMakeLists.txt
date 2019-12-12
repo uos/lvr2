@@ -32,9 +32,6 @@ set(LVR2_SOURCES
     io/PCDIO.cpp
     io/Progress.cpp
     io/MeshBuffer.cpp
-    io/DracoEncoder.cpp
-    io/DracoDecoder.cpp
-    io/DrcIO.cpp
     io/LineReader.cpp
 #    io/KinectGrabber.cpp
     io/DatIO.cpp
@@ -97,7 +94,6 @@ set(LVR2_INTERNAL_DEPENDENCIES_SHARED
     lvr2slam6d)
 
 set(LVR2_LIB_DEPENDENCIES
-    lvr2draco
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
@@ -144,16 +140,32 @@ find_package(HDF5 REQUIRED C CXX HL)
 include_directories(${HDF5_INCLUDE_DIR})
 
 if(WITH_FREENECT AND LIBFREENECT_FOUND)
-  set(LVR2_SOURCES ${LVR2_SOURCES} io/KinectGrabber.cpp io/KinectIO.cpp ../../include/lvr2/algorithm/UtilAlgorithms.hpp)
+  set(LVR2_SOURCES ${LVR2_SOURCES} 
+    io/KinectGrabber.cpp 
+    io/KinectIO.cpp)
   set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${LIBFREENECT_LIBRARIES})
 endif()
+
+#####################################################################################
+# Draco Geometry Compression
+#####################################################################################
+
+if(draco_FOUND)
+  set(LVR2_SOURCES ${LVR2_SOURCES}
+    io/DracoEncoder.cpp
+    io/DracoDecoder.cpp 
+    io/DrcIO.cpp)
+
+  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${draco_LIBRARIES})
+endif(draco_FOUND)
 
 #####################################################################################
 # RiVLib
 #####################################################################################
 
 if(RiVLib_FOUND)
-    set(LVR2_SOURCES ${LVR2_SOURCES} io/RxpIO.cpp)
+    set(LVR2_SOURCES ${LVR2_SOURCES} 
+      io/RxpIO.cpp)
     set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${RiVLib_SCANIFC_LIBRARY})
 endif()
 
@@ -173,8 +185,7 @@ endif()
 #####################################################################################
 # no found variable
 if(YAML_CPP_LIBRARIES)
-    message("with yaml-cpp")
-    set(LVR2_SOURCES ${LVR2_SOURCES} io/PlutoMetaDataIO.cpp)
+    set(LVR2_SOURCES ${LVR2_SOURCES})
     set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${YAML_CPP_LIBRARIES})
 endif()
 

@@ -27,7 +27,7 @@
 
 #include <iostream>
 #include <lvr2/types/Scan.hpp>
-#include <lvr2/io/Hdf5IO.hpp>
+#include <lvr2/io/GHDF5IO.hpp>
 #include <lvr2/io/hdf5/ChannelIO.hpp>
 #include <lvr2/io/hdf5/ArrayIO.hpp>
 #include <lvr2/io/hdf5/VariantChannelIO.hpp>
