@@ -39,30 +39,17 @@ int m_previewReductionFactor;
 
 bool parse_scan_filename(std::string path, int& i)
 {
+    // check whether the foldername ends with at least one number
     const std::regex reg("\\d+$");
     std::smatch match;
 
-    using boost::phoenix::ref;
-    using boost::spirit::qi::_1;
-    using qi::lit;
-    using qi::parse;
-    using qi::uint_parser;
-
-    uint_parser<unsigned, 10, 1, -1> uint_3_d;
-
-    //    bool r = parse(first,                  /*< start iterator >*/
-    //                   last,                   /*< end iterator >*/
-    //                   (uint_3_d[ref(i) = _1]) /*< the parser >*/
-    //    );
-
     bool r = std::regex_search(path, match, reg);
-    if (match.size() == 0)
-        return false;
+    if (r)
+    {
+        // set i depending on match
+        i = std::stoi(match[0]);
+    }
 
-    i = std::stoi(match[0]);
-
-    // if (first != last) // fail if we did not get a full match
-    //    return false;
     return r;
 }
 
@@ -638,7 +625,7 @@ int main(int argc, char** argv)
         boost::filesystem::path ply;
         std::string fn = p.stem().string();
 
-        // ?!
+        // check if foldername matches [a-zA-z]*\d+
         if (!parse_scan_filename(fn, count))
         {
             std::cout << timestamp << "Invalid path " << p << std::endl;
