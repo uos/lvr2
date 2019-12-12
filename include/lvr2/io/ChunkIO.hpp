@@ -37,7 +37,7 @@
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/io/Model.hpp"
-#include "lvr2/io/Hdf5IO.hpp"
+#include "lvr2/io/GHDF5IO.hpp"
 #include "lvr2/io/hdf5/ArrayIO.hpp"
 #include "lvr2/io/hdf5/ChannelIO.hpp"
 #include "lvr2/io/hdf5/MeshIO.hpp"

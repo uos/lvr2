@@ -71,6 +71,33 @@ void LVRAnimationDialog::connectSignalsAndSlots()
     QObject::connect(m_dialog->loadPath_button, SIGNAL(pressed()), this, SLOT(loadPath()));
     QObject::connect(m_dialog->saveVideo_button, SIGNAL(pressed()), this, SLOT(saveVideo()));
     QObject::connect(m_dialog->play_button, SIGNAL(pressed()), this, SLOT(play()));
+
+    QObject::connect(m_dialog->timeline_list, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(goToCamPosition(QListWidgetItem*)));
+}
+
+void LVRAnimationDialog::goToCamPosition(QListWidgetItem *item)
+{
+    LVRRecordedFrameItem* cam_item = static_cast<LVRRecordedFrameItem*>(item);
+    if(cam_item)
+    {
+        vtkRenderWindow* window = m_renderWindowInteractor->GetRenderWindow();
+        vtkRendererCollection* renderers = window->GetRenderers();
+        renderers->InitTraversal();
+        vtkRenderer* r = renderers->GetNextItem();
+        while(r != 0)
+        {
+            vtkCamera* ac = r->GetActiveCamera();
+            vtkCamera* frame = cam_item->getFrame();
+
+            ac->SetPosition(frame->GetPosition());
+            ac->SetFocalPoint(frame->GetFocalPoint());
+            ac->SetViewUp(frame->GetViewUp());
+
+            m_renderWindowInteractor->Render();
+            r = renderers->GetNextItem();
+        }
+
+    }
 }
 
 void LVRAnimationDialog::addFrame()
@@ -123,10 +150,7 @@ void LVRAnimationDialog::play()
 
     // reset camera to main camera to play animation
     m_pathCamera->SetCamera(m_mainCamera);
-
     m_pathCamera->AnimatePath(m_renderWindowInteractor);
-
-
 }
 
 void LVRAnimationDialog::savePath()

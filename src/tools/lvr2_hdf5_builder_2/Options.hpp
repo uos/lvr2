@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /*
+/*
  * Options.h
  *
  *  Created on: Aug 23 2012
@@ -35,17 +35,16 @@
 #ifndef OPTIONS_H_
 #define OPTIONS_H_
 
+#include <boost/program_options.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <boost/program_options.hpp>
 
-using std::ostream;
 using std::cout;
 using std::endl;
+using std::ostream;
 using std::string;
 using std::vector;
-
 
 namespace hdf5tool2
 {
@@ -56,50 +55,49 @@ using namespace boost::program_options;
  * @brief A class to parse the program options for the reconstruction
  * 		  executable.
  */
-class Options {
-public:
+class Options
+{
+  public:
+    /**
+     * @brief 	Ctor. Parses the command parameters given to the main
+     * 		  	function of the program
+     */
+    Options(int argc, char** argv);
+    virtual ~Options();
 
-	/**
-	 * @brief 	Ctor. Parses the command parameters given to the main
-	 * 		  	function of the program
-	 */
-	Options(int argc, char** argv);
-	virtual ~Options();
+    string getInputDir() const { return m_variables["inputDir"].as<string>(); }
+    string getOutputDir() const { return m_variables["outputDir"].as<string>(); }
+    string getOutputFile() const { return m_variables["outputFile"].as<string>(); }
+    bool getPreview() const { return m_variables["createPreview"].as<bool>(); }
+    int getPreviewReductionRatio() const { return m_variables["previewReduction"].as<int>(); }
+    //    int     numPanoramaImages() const { return m_variables["nch"].as<int>();}
+    //
+    //    size_t  getHSPChunk0() const { return m_variables["hsp_chunk_0"].as<size_t>(); }
+    //    size_t  getHSPChunk1() const { return m_variables["hsp_chunk_1"].as<size_t>(); }
+    //    size_t  getHSPChunk2() const { return m_variables["hsp_chunk_2"].as<size_t>(); }
+    //
+    //    bool    addAnnotations() const { return (m_variables["addAnnotations"].as<int>() != 0);}
 
-    string  getInputDir()        const { return m_variables["inputDir"].as<string>();}
-    string  getOutputDir()        const { return m_variables["outputDir"].as<string>();}
-    string  getOutputFile()        const { return m_variables["outputFile"].as<string>();}
-//    int     numPanoramaImages() const { return m_variables["nch"].as<int>();}
-//
-//    size_t  getHSPChunk0() const { return m_variables["hsp_chunk_0"].as<size_t>(); }
-//    size_t  getHSPChunk1() const { return m_variables["hsp_chunk_1"].as<size_t>(); }
-//    size_t  getHSPChunk2() const { return m_variables["hsp_chunk_2"].as<size_t>(); }
-//
-//    bool    addAnnotations() const { return (m_variables["addAnnotations"].as<int>() != 0);}
-
-private:
+  private:
     /// The internally used variable map
-    variables_map                   m_variables;
+    variables_map m_variables;
 
     /// The internally used option description
-    options_description             m_descr;
+    options_description m_descr;
 
     /// The internally used positional option desription
-    positional_options_description  m_pdescr;
-
+    positional_options_description m_pdescr;
 };
 
-
 /// Overlaoeded outpur operator
-inline ostream& operator<<(ostream& os, const Options &o)
+inline ostream& operator<<(ostream& os, const Options& o)
 {
-	cout << "##### Program options: " 	<< endl;
-//    cout << "##### Data directory \t\t: "  << o.getDataDir() << endl;
+    cout << "##### Program options: " << endl;
+    //    cout << "##### Data directory \t\t: "  << o.getDataDir() << endl;
 
-	return os;
+    return os;
 }
 
-} // namespace reconstruct
-
+} // namespace hdf5tool2
 
 #endif /* OPTIONS_H_ */

@@ -65,7 +65,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>add current frame</string>
+    <string>Add current frame</string>
    </property>
   </widget>
   <widget class="QPushButton" name="clearFrames_button">
@@ -78,7 +78,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>clear all frames</string>
+    <string>Clear all frames</string>
    </property>
   </widget>
   <widget class="QPushButton" name="play_button">
@@ -91,7 +91,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>play animation</string>
+    <string>Play animation</string>
    </property>
   </widget>
   <widget class="QPushButton" name="removeFrame_button">
@@ -104,7 +104,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>remove selected frame</string>
+    <string>Remove selected frame</string>
    </property>
   </widget>
   <widget class="QListWidget" name="timeline_list">
@@ -118,6 +118,12 @@
    </property>
    <property name="horizontalScrollBarPolicy">
     <enum>Qt::ScrollBarAlwaysOff</enum>
+   </property>
+   <property name="dragEnabled">
+    <bool>true</bool>
+   </property>
+   <property name="dragDropMode">
+    <enum>QAbstractItemView::InternalMove</enum>
    </property>
   </widget>
   <widget class="QLabel" name="interpolation_label">
@@ -175,7 +181,7 @@
     <enum>Qt::LeftToRight</enum>
    </property>
    <property name="text">
-    <string>Amount of transition frames per captured frame</string>
+    <string>Number of transition frames per captured frame</string>
    </property>
    <property name="wordWrap">
     <bool>true</bool>
@@ -207,7 +213,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>save animation as video</string>
+    <string>Save animation as video</string>
    </property>
   </widget>
  </widget>

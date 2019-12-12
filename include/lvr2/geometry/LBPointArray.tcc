@@ -25,6 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
+
 namespace lvr2
 {
 
@@ -120,7 +122,7 @@ static bool checkSortedIndices(const LBPointArray<T>& V, const LBPointArray<U>& 
     volatile U last_index = sorted_indices.elements[0];
     if(last_index > V.width)
     {
-        std::cout << n <<" BLAAA falsch " << std::endl;
+        std::cout << n << " wrong " << std::endl;
     }
     for(U i=1; i<sorted_indices.width; i++)
     {
@@ -180,7 +182,6 @@ static void splitPointArrayWithValue(const LBPointArray<T>& V,
 
         T current_value = V.elements[ I.elements[i] * V.dim + current_dim ];
         T dim_value = V.elements[ I.elements[i] * V.dim + orig_dim ];
-        //~ printf("curr val: %f\n", current_value);
         if(current_value < value && I_L.width > i_l ){
             if(dim_value < smallest_left )
             {
@@ -190,11 +191,9 @@ static void splitPointArrayWithValue(const LBPointArray<T>& V,
             {
                 biggest_left = dim_value;
             }
-            //~ printf("add to left: %f with value %f\n", I.elements[i], current_value);
             I_L.elements[i_l] = I.elements[i];
             i_l++;
         } else if(current_value > value && I_R.width > i_r){
-            //~ printf("add to right: %f with value %f\n", I.elements[i], current_value);
             if(dim_value > biggest_right)
             {
                 biggest_right = dim_value;
@@ -244,9 +243,6 @@ static void splitPointArrayWithValue(const LBPointArray<T>& V,
 
             if(!found)
             {
-                std::cout << "KAPUTT" << std::endl;
-                std::cout << "cant find " << I.elements[i] << std::endl;
-
                 exit (EXIT_FAILURE);
             }
 
@@ -266,7 +262,7 @@ static void splitPointArrayWithValueSet(const LBPointArray<T>& V,
         int current_dim, T value,
         T& deviation_left, T& deviation_right, const unsigned int& orig_dim,
         std::unordered_set<U>& critical_indices_left,
-        std::unordered_set<U> critical_indices_right)
+        std::unordered_set<U>& critical_indices_right)
 {
 
     U i_l = 0;
@@ -280,23 +276,13 @@ static void splitPointArrayWithValueSet(const LBPointArray<T>& V,
 
     U counter_loop = 0;
 
-    // U old_index = 1;
 
     for(int i=0; i<I.width; i++)
     {
-        // std::cout << I.elements[i] << std::endl;
-
-
-        // if(old_index == 0 && I.elements[i] == 0 )
-        // {
-        //     exit(1);
-        // }
-
-        // old_index = I.elements[i];
 
         T current_value = V.elements[ I.elements[i] * V.dim + current_dim ];
         T dim_value = V.elements[ I.elements[i] * V.dim + orig_dim ];
-        //~ printf("curr val: %f\n", current_value);
+        
         if(current_value < value && I_L.width > i_l ){
             if(dim_value < smallest_left )
             {
@@ -306,11 +292,9 @@ static void splitPointArrayWithValueSet(const LBPointArray<T>& V,
             {
                 biggest_left = dim_value;
             }
-            //~ printf("add to left: %f with value %f\n", I.elements[i], current_value);
             I_L.elements[i_l] = I.elements[i];
             i_l++;
         } else if(current_value > value && I_R.width > i_r){
-            //~ printf("add to right: %f with value %f\n", I.elements[i], current_value);
             if(dim_value > biggest_right)
             {
                 biggest_right = dim_value;
@@ -349,8 +333,6 @@ static void splitPointArrayWithValueSet(const LBPointArray<T>& V,
 
             if(!found)
             {
-                // std::cout << "KAPUTT" << std::endl;
-                // std::cout << "cant find " << i << " " << I.elements[i] << std::endl;
                 if(I_L.width > i_l)
                 {
                     I_L.elements[i_l] = I.elements[i];

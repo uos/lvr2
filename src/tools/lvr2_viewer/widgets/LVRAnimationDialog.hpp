@@ -65,9 +65,11 @@ public Q_SLOTS:
     void loadPath();
     void saveVideo();
     void play();
+    void goToCamPosition(QListWidgetItem *item);
 
 private:
     void connectSignalsAndSlots();
+
 
     AnimationDialog*                            m_dialog;
     QListWidget*                                m_timeline;
