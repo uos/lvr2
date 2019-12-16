@@ -144,6 +144,11 @@ class ChunkManager : public ChunkHashGrid
                               const std::map<std::string, FilterFunction> filter);
 
     /**
+     * 
+     */
+    std::vector<std::string> getChannels();
+
+    /**
      * @brief Loads all chunks into the ChunkHashGrid.
      * DEBUG -- Only used for testing, but might be useful for smaller meshes.
      */
