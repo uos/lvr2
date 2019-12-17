@@ -39,7 +39,8 @@
 #include "lvr2/geometry/Normal.hpp"
 
 #include "lvr2/io/ScanprojectIO.hpp"
-#include "lvr2/geometry/Matrix4.hpp"
+#include "lvr2/registration/TransformUtils.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -53,8 +54,8 @@ struct ImageData
 {
     cv::Mat data;
     BaseVecT  pos;
-    BaseVecT  dir;
-    Matrix4<BaseVecT> project_to_image_transform;
+    Normal<double>  dir;
+    Transformd project_to_image_transform;
     float distortion_params[6];
     float intrinsic_params[4];
 };
@@ -103,11 +104,11 @@ public:
      *
      * @return Returns a handle for the newly created texture.
      */
-    TextureHandle generateTexture(
+    virtual TextureHandle generateTexture(
         int index,
         const PointsetSurface<BaseVecT>& surface,
-        const BoundingRectangle<BaseVecT>& boundingRect
-    );
+        const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect
+    ) override;
 
 private:
     /// @cond internal

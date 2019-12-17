@@ -25,6 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "lvr2/io/DataStruct.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/registration/TransformUtils.hpp"
@@ -445,6 +446,30 @@ PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const size_t& n)
     
 
     return buffer;
+}
+
+void slamToLVRInPlace(PointBufferPtr src)
+{
+    // Get point channel
+    typename Channel<float>::Optional opt = src->getChannel<float>("points");
+    if(opt)
+    {
+        size_t n = opt->numElements();
+        floatArr points = opt->dataPtr();
+
+        #pragma omp parallel for
+        for(size_t i = 0; i < n; i++)
+        {
+            float x = points[3 * i];
+            float y = points[3 * i + 1];
+            float z = points[3 * i + 2];
+
+            points[3 * i]       = z / 100.0f;
+            points[3 * i + 1]   = -x / 100.0f;
+            points[3 * i + 2]   = y / 100.0f;
+
+        }
+    }
 }
 
 } // namespace lvr2
