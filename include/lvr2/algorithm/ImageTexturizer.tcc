@@ -43,7 +43,9 @@ bool ImageTexturizer<BaseVecT>::exclude_image(BaseVecT pos, const ImageData<Base
 template<typename BaseVecT>
 bool ImageTexturizer<BaseVecT>::point_behind_camera(BaseVecT pos, const ImageData<BaseVecT> &image_data)
 {
-    BaseVecT norm = image_data.pos - pos;
+    BaseVecT diff = image_data.pos - pos;
+    
+    Normal<double> norm(diff.x, diff.y, diff.z);
     norm.normalize();
     if (norm.dot(image_data.dir) >= 0.0f) {
         return true;
@@ -56,7 +58,7 @@ template<typename BaseVecT>
 TextureHandle ImageTexturizer<BaseVecT>::generateTexture(
     int index,
     const PointsetSurface<BaseVecT>& surface,
-    const BoundingRectangle<BaseVecT>& boundingRect
+    const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect
 )
 {
     // Calculate the texture size
@@ -191,15 +193,15 @@ void ImageTexturizer<BaseVecT>::init_image_data()
             Transformd orientation = img.orientation_transform;
 
             // because matrix multipl. is CM and our matrices are RM we have to do it this way
-            transform = Util::slam6d_to_riegl_transform<double>(pos.transform).inverse();
+            transform = lvr2::slam6dToLvr(pos.transform).inverse();
             transform = transform * orientation.inverse();
             transform = transform * img.extrinsic_transform;
             Transformd transform_inverse = transform.inverse();
-            transform_inverse.transpose();
+            transform_inverse.transposeInPlace();
 
             //caluclate cam direction and cam pos for image in project space
-            BaseVecT cam_pos = {0.0f, 0.0f, 0.0f};
-            Normal<BaseVecT> cam_dir = {0.0f, 0.0f, 1.0f};
+            BaseVecT cam_pos(0.0f, 0.0f, 0.0f);
+            Normal<double> cam_dir(0.0f, 0.0f, 1.0f);
             cam_pos = transform_inverse * cam_pos;
             cam_dir = transform_inverse * cam_dir;
 
@@ -208,7 +210,7 @@ void ImageTexturizer<BaseVecT>::init_image_data()
 
             // transform from project space to image space incl orthogonal projection
             image_data.project_to_image_transform = transform * pro;
-            image_data.project_to_image_transform.transpose();
+            image_data.project_to_image_transform.transposeInPlace();
 
             images.push_back(image_data);
         }

@@ -34,7 +34,11 @@
 
 
 #include "Options.hpp"
+
+#include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/ScanDirectoryParser.hpp"
+#include "lvr2/io/IOUtils.hpp"
+#include "lvr2/registration/OctreeReduction.hpp"
 
 using namespace lvr2;
 
@@ -45,16 +49,7 @@ int main(int argc, char** argv) {
     // Parse command line arguments
     kaboom::Options options(argc, argv);
 
-    ScanDirectoryParser parser(options.getInputDir());
-    parser.setStart(options.getStart());
-    parser.setEnd(options.getEnd());
-    parser.setPointCloudPrefix(options.getScanPrefix());
-    parser.setPosePrefix(options.getPosePrefix());
-    parser.setPointCloudExtension(options.getScanExtension());
-    parser.setPoseExtension(options.getPoseExtension());
-    parser.parseDirectory();
-
-    if(options.getTargetSize() && options.getVoxelSize())
+    if (options.getTargetSize() && options.getVoxelSize())
     {
         std::cout << timestamp << "Warning: Octree reduction and random reduction requested." << std::endl;
         std::cout << timestamp << "Please chose set either octree voxel size with -v or target " << std::endl;
@@ -62,14 +57,77 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    if(options.getTargetSize())
+    if(options.getInputFile() != "")
     {
-        PointBufferPtr result = parser.randomSubSample(options.getTargetSize());
+        std::cout << timestamp << "Reading '" << options.getInputFile() << "." << std::endl;
+        ModelPtr model = ModelFactory::readModel(options.getInputFile());
+        if(model)
+        {
+            PointBufferPtr result = model->m_pointCloud;
+            PointBufferPtr buffer = model->m_pointCloud;
+            
+            // Reduce if requested using the specified technique
+            if(options.getTargetSize())
+            {
+                std::cout << timestamp << "Random sampling " << options.getTargetSize() << " points." << std::endl;
+                result = subSamplePointBuffer(buffer, options.getTargetSize());
+            }
+            else if(options.getVoxelSize())
+            {
+                std::cout << timestamp << "Octree reduction with voxel size " << options.getVoxelSize() << std::endl;
+                OctreeReduction oct(buffer, options.getVoxelSize(), 5);
+                result = oct.getReducedPoints();
+            }
+
+            // Convert coordinates of result buffer is nessessary
+            if(options.convertToLVR())
+            {
+                std::cout << timestamp << "Converting from SLAM6D to LVR coordinates" << std::endl;
+                slamToLVRInPlace(result);
+            }
+
+            string targetFileName;
+            if(options.getOutputFile() == "")
+            {
+                targetFileName = "result.ply";
+            }
+            else
+            {
+                targetFileName = options.getOutputFile();
+            }
+
+            std::cout << timestamp << "Saving '" << targetFileName << "'" << std::endl;
+            ModelFactory::saveModel(ModelPtr(new Model(result)), targetFileName);
+        }
+        else
+        {
+            std::cout << timestamp << "Error: Could not load '"  
+                      << options.getInputFile() << "'." << std::endl;
+        }
+        
     }
     else
     {
-        PointBufferPtr result = parser.octreeSubSample(options.getVoxelSize(), options.getMinPointsPerVoxel());
-    }
+        ScanDirectoryParser parser(options.getInputDir());
+        parser.setStart(options.getStart());
+        parser.setEnd(options.getEnd());
+        parser.setPointCloudPrefix(options.getScanPrefix());
+        parser.setPosePrefix(options.getPosePrefix());
+        parser.setPointCloudExtension(options.getScanExtension());
+        parser.setPoseExtension(options.getPoseExtension());
+        parser.parseDirectory(); 
 
+        if(options.getTargetSize())
+        {
+            PointBufferPtr result = parser.randomSubSample(options.getTargetSize());
+        }
+        else
+        {
+            PointBufferPtr result = parser.octreeSubSample(options.getVoxelSize(), options.getMinPointsPerVoxel());
+        }
+
+    }
+    
+  
     return 0;
 }
