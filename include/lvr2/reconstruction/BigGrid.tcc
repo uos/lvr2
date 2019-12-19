@@ -1527,7 +1527,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, std::vector<std::shared_ptr<Scan>> h
 
                     BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
                     box.expand(temp);
-                    m_partialbb(temp);
+                    m_partialbb.expand(temp);
                 }
                 newScans[i]->m_globalBoundingBox = box;
             }
@@ -1618,6 +1618,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, std::vector<std::shared_ptr<Scan>> h
             Transformd finalPose_n = scan->m_registration;
             Transformd finalPose = finalPose_n.transpose();
             size_t numPoints = scan->m_points->numPoints();
+            m_numPoints += numPoints / 3;
 
             int dx, dy, dz;
             for (int k = 0; k < numPoints / 3; k++) {
