@@ -1,5 +1,6 @@
 
 #include "ScanIO.hpp"
+#include "lvr2/io/hdf5/Hdf5Util.hpp"
 
 namespace lvr2
 {
@@ -212,7 +213,7 @@ std::vector<ScanPtr> ScanIO<Derived>::loadAllScans(std::string groupName) {
         for(auto scanName : g.listObjectNames())
         {
             HighFive::Group scan = g.getGroup(scanName);
-            tmp = load(scan);
+            tmp = load(scan); //             tmp = loadPreview(groupName + "/" + scanName); //for preview
             if(tmp)
             {
                 scans.push_back(tmp);
@@ -220,6 +221,134 @@ std::vector<ScanPtr> ScanIO<Derived>::loadAllScans(std::string groupName) {
         }
     }
     return scans;
+}
+
+template<typename Derived>
+ScanPtr ScanIO<Derived>::loadPreview(std::string name) {
+    ScanPtr ret;
+
+    if (hdf5util::exist(m_file_access->m_hdf5_file, name))
+    {
+        HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, name, false);
+        std::vector<std::string> splitGroup = hdf5util::splitGroupNames(name);
+        std::string previewString = "/preview/" + splitGroup.back();
+
+        ret = ScanPtr(new Scan());
+        if(hdf5util::exist(m_file_access->m_hdf5_file, name))
+        {
+            HighFive::Group previewGroup = hdf5util::getGroup(m_file_access->m_hdf5_file, previewString, false);
+            std::vector<size_t> dimensionPoints;
+            floatArr pointArr;
+            if(group.exist("points"))
+            {
+                pointArr = m_arrayIO->template load<float>(previewGroup, "points", dimensionPoints);
+                if(dimensionPoints.at(1) != 3)
+                {
+                    std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong point dimensions. Points will not be loaded." << std::endl;
+                }
+                else
+                {
+                    ret->m_points = PointBufferPtr(new PointBuffer(pointArr, dimensionPoints.at(0)));
+                }
+            }
+        }
+        else // use normal points
+        {
+            std::vector<size_t> dimensionPoints;
+            floatArr pointArr;
+            if(group.exist("points"))
+            {
+                pointArr = m_arrayIO->template load<float>(group, "points", dimensionPoints);
+                if(dimensionPoints.at(1) != 3)
+                {
+                    std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong point dimensions. Points will not be loaded." << std::endl;
+                }
+                else
+                {
+                    ret->m_points = PointBufferPtr(new PointBuffer(pointArr, dimensionPoints.at(0)));
+                }
+            }
+        }
+
+
+
+
+
+        boost::optional<lvr2::Transformd> finalPose = m_matrixIO->template load<lvr2::Transformd>(group, "finalPose");
+        if(finalPose)
+        {
+            ret->m_registration = finalPose.get();
+        }
+        boost::optional<lvr2::Transformd> initialPose = m_matrixIO->template load<lvr2::Transformd>(group, "initialPose");
+        if(initialPose)
+        {
+            ret->m_poseEstimation = initialPose.get();
+        }
+
+
+        if(group.exist("boundingBox"))
+        {
+            std::vector<size_t> dimBB;
+            floatArr bbox = m_arrayIO->template load<float>(group, "boundingBox", dimBB);
+            if((dimBB.at(0) != 2 || dimBB.at(1) != 3) && dimBB.at(0) != 6)
+            {
+                std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong boundingBox dimensions. BoundingBox will not be loaded." << std::endl;
+            }
+            else
+            {
+                BaseVector<float> min(bbox.get()[0], bbox.get()[1], bbox.get()[2]);
+                BaseVector<float> max(bbox.get()[3], bbox.get()[4], bbox.get()[5]);
+                BoundingBox<BaseVector<float>> boundingBox(min, max);
+                ret->m_boundingBox = boundingBox;
+            }
+        }
+
+        if(group.exist("globalBoundingBox"))
+        {
+            std::vector<size_t> dimBB;
+            floatArr bbox = m_arrayIO->template load<float>(group, "globalBoundingBox", dimBB);
+            if((dimBB.at(0) != 2 || dimBB.at(1) != 3) && dimBB.at(0) != 6)
+            {
+                std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong globalBoundingBox dimensions. GlobalBoundingBox will not be loaded." << std::endl;
+            }
+            else
+            {
+                BaseVector<float> min(bbox.get()[0], bbox.get()[1], bbox.get()[2]);
+                BaseVector<float> max(bbox.get()[3], bbox.get()[4], bbox.get()[5]);
+                BoundingBox<BaseVector<float>> boundingBox(min, max);
+                ret->m_globalBoundingBox = boundingBox;
+            }
+        }
+        if(group.exist("fov"))
+        {
+            std::vector<size_t> dimTwo;
+            floatArr fovArr = m_arrayIO->template load<float>(group, "fov", dimTwo);
+            if(dimTwo.at(0) != 2)
+            {
+                std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong fov dimensions. FOV will not be loaded." << std::endl;
+            }
+            else
+            {
+                ret->m_hFieldOfView = fovArr.get()[0];
+                ret->m_vFieldOfView = fovArr.get()[1];
+            }
+        }
+        if(group.exist("resolution"))
+        {
+            std::vector<size_t> dimTwo;
+            floatArr resArr = m_arrayIO->template load<float>(group, "resolution", dimTwo);
+            if(dimTwo.at(0) != 2)
+            {
+                std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong resolution dimensions. Resolution will not be loaded." << std::endl;
+            }
+            else
+            {
+                ret->m_hResolution = resArr.get()[0];
+                ret->m_vResolution = resArr.get()[1];
+            }
+        }
+        return ret;
+    }
 }
 
 

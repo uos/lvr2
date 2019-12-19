@@ -23,6 +23,7 @@ namespace hdf5features {
         ScanPtr load(HighFive::Group& group);
         ScanPtr loadScan(std::string name);
         std::vector<ScanPtr> loadAllScans(std::string groupName);
+        ScanPtr loadPreview(std::string name);
 
     protected:
 
