@@ -95,6 +95,7 @@ namespace lvr2
         cout << lvr2::timestamp << "Starting grid" << endl;
 
         //TODO: replace with new incremental Constructor later
+        //BigGrid<BaseVecT> bg(m_filePath, m_bgVoxelSize, m_scale);
         BigGrid<BaseVecT> bg( m_bgVoxelSize ,oldScans, newScans, m_scale);
 
         cout << lvr2::timestamp << "grid finished " << endl;
@@ -382,10 +383,10 @@ namespace lvr2
         boost::filesystem::path selectedFile(m_filePath);
         if (selectedFile.extension().string() == ".h5")
         {
-            MeshBufferPtr newMesh = MeshBufferPtr(meshBuffer);
-            LSRWriter hdfWrite;
-            hdfWrite.open(m_filePath);
-            hdfWrite.save("mesh", newMesh);
+            //MeshBufferPtr newMesh = MeshBufferPtr(meshBuffer);
+            //LSRWriter hdfWrite;
+            //hdfWrite.open(m_filePath);
+            //hdfWrite.save("mesh", newMesh);
 
             auto m = ModelPtr(new Model(meshBuffer));
             ModelFactory::saveModel(m, "largeScale.ply");
