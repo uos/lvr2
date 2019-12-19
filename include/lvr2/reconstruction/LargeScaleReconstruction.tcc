@@ -89,13 +89,13 @@ namespace lvr2
     }
 
     template <typename BaseVecT>
-    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(std::vector<ScanPtr> &scans)
+    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(std::vector<ScanPtr> &oldScans, std::vector<ScanPtr> &newScans)
     {
         //do more or less the same stuff as the executable
         cout << lvr2::timestamp << "Starting grid" << endl;
 
         //TODO: replace with new incremental Constructor later
-        BigGrid<BaseVecT> bg(m_filePath, m_bgVoxelSize, m_scale);
+        BigGrid<BaseVecT> bg( m_bgVoxelSize ,oldScans, newScans, m_scale);
 
         cout << lvr2::timestamp << "grid finished " << endl;
         BoundingBox<BaseVecT> bb = bg.getBB();
