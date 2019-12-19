@@ -786,6 +786,8 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
         //TODO: check, which method is more efficient in the long run
         std::vector<BoundingBox<BaseVecT>> scan_boxes;
 
+        /*
+         *
         //iterate through boundingbox datasets of scans to calculate a transformed boundingbox, which is in most cases bigger when needed
        for(int i = 0; i < scans.size(); i++)
        {
@@ -820,11 +822,11 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
            m_bb.expand(scan_bb);
 
            scan_boxes.push_back(scan_bb);
-       }
-       m_partialbb.expand(m_bb);
+       }*/
+
 
        //TODO: use this variation to calculate a new transformed boundingbox
-        /*
+
         //iterate through ALL points to calculate transformed boundingboxes of scans
         for (int i = 0; i < scans.size(); i++)
         {
@@ -848,13 +850,11 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
                 BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
                 m_bb.expand(temp);
                 box.expand(temp);
-                if(i >= num_reconstr)
-                {
-                    m_partialbb.expand(temp);
-                }
             }
             scan_boxes.push_back(box);
-        } */
+        }
+
+        m_partialbb.expand(m_bb);
         std::cout << "Global BB: " << std::endl << m_bb << std::endl;
 
         // Make box side lenghts divisible by voxel size
@@ -1510,6 +1510,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, std::vector<std::shared_ptr<Scan>> h
         {
             if(newScans[i]->m_globalBoundingBox.isValid())
             {
+                cout << "shouldnt be here" << endl;
                 m_partialbb.expand(newScans[i]->m_globalBoundingBox);
             }
             else
@@ -1518,8 +1519,8 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, std::vector<std::shared_ptr<Scan>> h
                 Transformd finalPose_n = newScans[i]->m_registration;
                 Transformd finalPose = finalPose_n.transpose();
                 BoundingBox<BaseVecT> box;
-
-                for(int k = 0; k < newScans[i]->m_points->numPoints() / 3; k++)
+                std::cout << finalPose << std::endl;
+                for(int k = 0; k < newScans[i]->m_points->numPoints(); k++)
                 {
                     Eigen::Vector4d point(
                             points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
@@ -1527,7 +1528,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, std::vector<std::shared_ptr<Scan>> h
 
                     BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
                     box.expand(temp);
-                    m_partialbb(temp);
+                    m_partialbb.expand(temp);
                 }
                 newScans[i]->m_globalBoundingBox = box;
             }
@@ -1574,11 +1575,11 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, std::vector<std::shared_ptr<Scan>> h
             if (m_partialbb.isValid() && m_partialbb.overlap(scan_boxes.at(i))){
                 size_t numPoints = h5Scans[i]->m_points->numPoints();
                 boost::shared_array<float> points = h5Scans[i]->m_points->getPointArray();
-                m_numPoints += numPoints / 3;
+                m_numPoints += numPoints;
                 Transformd finalPose_n = h5Scans[i]->m_registration;
                 Transformd finalPose = finalPose_n.transpose();
                 int dx, dy, dz;
-                for (int k = 0; k < numPoints / 3; k++) {
+                for (int k = 0; k < numPoints; k++) {
                     Eigen::Vector4d point(
                             points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
                     Eigen::Vector4d transPoint = finalPose * point;
@@ -1618,9 +1619,10 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, std::vector<std::shared_ptr<Scan>> h
             Transformd finalPose_n = scan->m_registration;
             Transformd finalPose = finalPose_n.transpose();
             size_t numPoints = scan->m_points->numPoints();
+            m_numPoints += numPoints;
 
             int dx, dy, dz;
-            for (int k = 0; k < numPoints / 3; k++) {
+            for (int k = 0; k < numPoints; k++) {
                 Eigen::Vector4d point(
                         points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
                 Eigen::Vector4d transPoint = finalPose * point;
@@ -1687,10 +1689,10 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, std::vector<std::shared_ptr<Scan>> h
                 size_t numPoints = h5Scans[i]->m_points->numPoints();
 
                 boost::shared_array<float> points = h5Scans[i]->m_points->getPointArray();
-                m_numPoints += numPoints / 3;
+                m_numPoints += numPoints;
                 Transformd finalPose_n = h5Scans[i]->m_registration;
                 Transformd finalPose = finalPose_n.transpose();
-                for (int k = 0; k < numPoints / 3; k++) {
+                for (int k = 0; k < numPoints; k++) {
                     Eigen::Vector4d point(
                             points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
                     Eigen::Vector4d transPoint = finalPose * point;
@@ -1722,7 +1724,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, std::vector<std::shared_ptr<Scan>> h
             Transformd finalPose = finalPose_n.transpose();
             size_t numPoints = scan->m_points->numPoints();
 
-            for (int k = 0; k < numPoints / 3; k++) {
+            for (int k = 0; k < numPoints; k++) {
                 Eigen::Vector4d point(
                         points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
                 Eigen::Vector4d transPoint = finalPose * point;
