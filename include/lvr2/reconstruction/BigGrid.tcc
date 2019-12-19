@@ -1460,50 +1460,34 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
 }
 
 template <typename BaseVecT>
-BigGrid<BaseVecT>::BigGrid(std::string h5File, float voxelsize,std::vector<std::shared_ptr<Scan>> newScans, float scale)
+BigGrid<BaseVecT>::BigGrid(float voxelsize, std::vector<std::shared_ptr<Scan>> h5Scans, std::vector<std::shared_ptr<Scan>> newScans, float scale)
         : m_maxIndex(0), m_maxIndexSquare(0), m_maxIndexX(0), m_maxIndexY(0), m_maxIndexZ(0),
           m_numPoints(0), m_extrude(true), m_scale(scale), m_has_normal(false), m_has_color(false)
 {
-    boost::filesystem::path selectedFile(h5File);
-    string extension = selectedFile.extension().string();
 
     omp_init_lock(&m_lock);
     m_voxelSize = voxelsize;
 
-    if (!(extension == ".h5"))
+    if (newScans.size() <= 0)
     {
-        std::cerr << "Input file is not from file type .h5. please input the correct file type!" << std::endl;
+        std::cerr << "no new scans to be added!" << std::endl;
         return;
     }
     else
     {
         float ix, iy, iz;
-        using HDF5PCIO = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
-                lvr2::hdf5features::ChannelIO,
-                lvr2::hdf5features::VariantChannelIO,
-                lvr2::hdf5features::PointCloudIO,
-                lvr2::hdf5features::MatrixIO>;
-
-        std::shared_ptr<HDF5PCIO> h5_ptr(new HDF5PCIO());
-        h5_ptr->open(h5File);
-
-        HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
-        //TODO: change to be compatible with new definition: (new scans are in list, old scans are read from .h5 file
-
-        vector<string> scans = hfscans.listObjectNames();
+        //TODO: change to be compatible with new definition: (new scans are in list, old scans are read from list too)
 
         // bounding box of all scans in .h5
         std::vector<BoundingBox<BaseVecT>> scan_boxes;
 
-        //iterate through ALL points to calculate transformed boundingboxes of scans
-        for (int i = 0; i < scans.size(); i++)
+        //iterate through ALL points to calculate transformed boundingboxes of scans in h5
+        for (int i = 0; i < h5Scans.size(); i++)
         {
-            size_t numPoints;
+            size_t numPoints = h5Scans[i]->m_points->numPoints();
             BoundingBox<BaseVecT> box;
-            boost::shared_array<float> points =
-                h5_ptr->loadArray<float>("preview/" + scans[i], "points", numPoints);
-            Transformd finalPose_n =
-                h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
+            boost::shared_array<float> points = h5Scans[i]->m_points->getPointArray();
+            Transformd finalPose_n = h5Scans[i]->m_registration;;
 
             Transformd finalPose = finalPose_n.transpose();
 
@@ -1584,16 +1568,14 @@ BigGrid<BaseVecT>::BigGrid(std::string h5File, float voxelsize,std::vector<std::
 
         size_t idx, idy, idz;
 
-        for (int i = 0; i < scans.size(); i++)
+        for (int i = 0; i < h5Scans.size(); i++)
         {
             cout << "Overlap " << i << ":" << m_partialbb.overlap(scan_boxes.at(i)) << endl;
             if (m_partialbb.isValid() && m_partialbb.overlap(scan_boxes.at(i))){
-                size_t numPoints;
-                boost::shared_array<float> points =
-                        h5_ptr->loadArray<float>("preview/" + scans[i], "points", numPoints);
+                size_t numPoints = h5Scans[i]->m_points->numPoints();
+                boost::shared_array<float> points = h5Scans[i]->m_points->getPointArray();
                 m_numPoints += numPoints / 3;
-                Transformd finalPose_n =
-                        h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
+                Transformd finalPose_n = h5Scans[i]->m_registration;
                 Transformd finalPose = finalPose_n.transpose();
                 int dx, dy, dz;
                 for (int k = 0; k < numPoints / 3; k++) {
@@ -1699,14 +1681,14 @@ BigGrid<BaseVecT>::BigGrid(std::string h5File, float voxelsize,std::vector<std::
 
         float* mmfdata = (float*)m_PointFile.data();
 
-        for (int i = 0; i < scans.size(); i++)
+        for (int i = 0; i < h5Scans.size(); i++)
         {
             if (m_partialbb.isValid() && m_partialbb.overlap(scan_boxes.at(i))) {
-                size_t numPoints;
-                boost::shared_array<float> points =
-                        h5_ptr->loadArray<float>("preview/" + scans[i], "points", numPoints);
-                Transformd finalPose_n =
-                        h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
+                size_t numPoints = h5Scans[i]->m_points->numPoints();
+
+                boost::shared_array<float> points = h5Scans[i]->m_points->getPointArray();
+                m_numPoints += numPoints / 3;
+                Transformd finalPose_n = h5Scans[i]->m_registration;
                 Transformd finalPose = finalPose_n.transpose();
                 for (int k = 0; k < numPoints / 3; k++) {
                     Eigen::Vector4d point(
