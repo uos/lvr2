@@ -88,8 +88,9 @@ int main(int argc, char** argv)
     MyScanIO scanIO;
     scanIO.open(in);
     scans = scanIO.loadAllScans("/raw/scans");
+    std::vector<ScanPtr> h5scans;
 
-    int x = lsr.mpiChunkAndReconstruct(scans);
+    int x = lsr.mpiChunkAndReconstruct(h5scans, scans);
 
     cout << "Program end." << endl;
 

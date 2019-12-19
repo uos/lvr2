@@ -61,7 +61,7 @@ namespace lvr2
          * @param scans vector of new scan to be added
          * @return
          */
-        int mpiChunkAndReconstruct(std::vector<ScanPtr> &scans);
+        int mpiChunkAndReconstruct(std::vector<ScanPtr> &oldScans, std::vector<ScanPtr> &newScans);
 
     private:
 
