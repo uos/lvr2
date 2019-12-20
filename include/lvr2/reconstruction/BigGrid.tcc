@@ -41,13 +41,13 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
-#include <lvr2/io/GHDF5IO.hpp>
-#include <lvr2/io/hdf5/ArrayIO.hpp>
-#include <lvr2/io/hdf5/ChannelIO.hpp>
-#include <lvr2/io/hdf5/MatrixIO.hpp>
-#include <lvr2/io/hdf5/PointCloudIO.hpp>
-#include <lvr2/io/hdf5/VariantChannelIO.hpp>
-#include <lvr2/reconstruction/FastReconstructionTables.hpp>
+#include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/ArrayIO.hpp"
+#include "lvr2/io/hdf5/ChannelIO.hpp"
+#include "lvr2/io/hdf5/MatrixIO.hpp"
+#include "lvr2/io/hdf5/PointCloudIO.hpp"
+#include "lvr2/io/hdf5/VariantChannelIO.hpp"
+#include "lvr2/reconstruction/FastReconstructionTables.hpp"
 
 using namespace std;
 

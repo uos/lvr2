@@ -35,7 +35,7 @@
 #include "LargeScaleOptions.hpp"
 
 #include <fstream>
-#include <lvr2/config/lvropenmp.hpp>
+#include "lvr2/config/lvropenmp.hpp"
 
 namespace LargeScaleOptions
 {

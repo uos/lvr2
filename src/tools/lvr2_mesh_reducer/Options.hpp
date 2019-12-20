@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /*
+/*
  * Options.h
  *
  *  Created on: Nov 21, 2010
@@ -35,17 +35,17 @@
 #ifndef OPTIONS_H_
 #define OPTIONS_H_
 
+#include "lvr2/config/BaseOption.hpp"
+
+#include <boost/program_options.hpp>
+#include <float.h>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <boost/program_options.hpp>
-#include <float.h>
 
-#include <lvr2/config/BaseOption.hpp>
-
-using std::ostream;
 using std::cout;
 using std::endl;
+using std::ostream;
 using std::string;
 using std::vector;
 
@@ -56,9 +56,9 @@ namespace meshreduce
  * @brief A class to parse the program options for the reconstruction
  *        executable.
  */
-class Options : public lvr2::BaseOption{
-public:
-
+class Options : public lvr2::BaseOption
+{
+  public:
     /**
      * @brief   Ctor. Parses the command parameters given to the main
      *          function of the program
@@ -69,7 +69,7 @@ public:
     /**
      * @brief   Returns the output file name
      */
-    string  getInputFileName() const;
+    string getInputFileName() const;
 
     /**
      * @brief Reduction ratio for mesh reduction via edge collapse
@@ -78,22 +78,21 @@ public:
 
     bool printUsage() const;
 
-private:
+  private:
     float m_edgeCollapseReductionRatio;
 };
 
-
-inline ostream& operator<<(ostream& os, const Options &o)
+inline ostream& operator<<(ostream& os, const Options& o)
 {
-    if(o.getEdgeCollapseReductionRatio() > 0.0)
+    if (o.getEdgeCollapseReductionRatio() > 0.0)
     {
-        cout << "##### Edge collapse reduction ratio\t: " << o.getEdgeCollapseReductionRatio() << endl;
+        cout << "##### Edge collapse reduction ratio\t: " << o.getEdgeCollapseReductionRatio()
+             << endl;
     }
 
     return os;
 }
 
 } // namespace meshreduce
-
 
 #endif /* OPTIONS_H_ */
