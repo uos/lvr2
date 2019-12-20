@@ -21,6 +21,7 @@
 #include <iterator>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <regex>
 #include <yaml-cpp/yaml.h>
 
 // const hdf5tool2::Options* options;
@@ -36,24 +37,19 @@ using HDF5IO = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
 bool m_usePreviews;
 int m_previewReductionFactor;
 
-template <typename Iterator>
-bool parse_scan_filename(Iterator first, Iterator last, int& i)
+bool parse_scan_filename(std::string path, int& i)
 {
-    using boost::phoenix::ref;
-    using boost::spirit::qi::_1;
-    using qi::lit;
-    using qi::parse;
-    using qi::uint_parser;
+    // check whether the foldername ends with at least one number
+    const std::regex reg("\\d+$");
+    std::smatch match;
 
-    uint_parser<unsigned, 10, 1, -1> uint_3_d;
+    bool r = std::regex_search(path, match, reg);
+    if (r)
+    {
+        // set i depending on match
+        i = std::stoi(match[0]);
+    }
 
-    bool r = parse(first,                  /*< start iterator >*/
-                   last,                   /*< end iterator >*/
-                   (uint_3_d[ref(i) = _1]) /*< the parser >*/
-    );
-
-    if (first != last) // fail if we did not get a full match
-        return false;
     return r;
 }
 
@@ -89,8 +85,8 @@ bool sortScans(boost::filesystem::path firstScan, boost::filesystem::path secSca
     int i = 0;
     int j = 0;
 
-    bool first = parse_scan_filename(firstStem.begin(), firstStem.end(), i);
-    bool sec = parse_scan_filename(secStem.begin(), secStem.end(), j);
+    bool first = parse_scan_filename(firstStem, i);
+    bool sec = parse_scan_filename(secStem, j);
 
     if (first && sec)
     {
@@ -629,8 +625,8 @@ int main(int argc, char** argv)
         boost::filesystem::path ply;
         std::string fn = p.stem().string();
 
-        // ?!
-        if (!parse_scan_filename(fn.begin(), fn.end(), count))
+        // check if foldername matches [a-zA-z]*\d+
+        if (!parse_scan_filename(fn, count))
         {
             std::cout << timestamp << "Invalid path " << p << std::endl;
             continue;

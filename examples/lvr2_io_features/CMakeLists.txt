@@ -18,5 +18,4 @@ target_link_libraries(lvr2_example_io_features
 
 set_target_properties(lvr2_example_io_features PROPERTIES
     CXX_STANDARD 17
-    CXX_EXTENSIONS OFF
 )
