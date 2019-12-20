@@ -56,6 +56,9 @@ struct ImageData
     BaseVecT  pos;
     Normal<double>  dir;
     Transformd project_to_image_transform;
+    Transformd orientation;
+    Transformd extrinsics;
+
     float distortion_params[6];
     float intrinsic_params[4];
 };
