@@ -5,225 +5,189 @@
 #ifndef LAS_VEGAS_GROWINGCELLSTRUCTURE_HPP
 #define LAS_VEGAS_GROWINGCELLSTRUCTURE_HPP
 
-#include <lvr2/geometry/HalfEdgeMesh.hpp>
-#include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/config/BaseOption.hpp>
-#include <lvr2/attrmaps/HashMap.hpp>
-#include <lvr2/reconstruction/gs2/TumbleTree.hpp>
-#include <lvr2/reconstruction/gs2/DynamicKDTree.hpp>
+#include "lvr2/attrmaps/HashMap.hpp"
+#include "lvr2/config/BaseOption.hpp"
+#include "lvr2/geometry/HalfEdgeMesh.hpp"
+#include "lvr2/reconstruction/PointsetSurface.hpp"
+#include "lvr2/reconstruction/gs2/DynamicKDTree.hpp"
+#include "lvr2/reconstruction/gs2/TumbleTree.hpp"
 
+namespace lvr2
+{
 
-namespace lvr2{
+template <typename BaseVecT, typename NormalT>
+class GrowingCellStructure
+{
+  public:
+    /**
+     * Construct a GCS instance
+     * @param surface pointsetsurface to get pointcloud information from
+     */
+    GrowingCellStructure(PointsetSurfacePtr<BaseVecT>& surface);
 
-    template <typename BaseVecT, typename NormalT>
-    class GrowingCellStructure {
-    public:
+    /**
+     * Public method of the Reconstruction Class, calling all the other methods, generating the mesh
+     * approximating the pointcloud's surface
+     * @param mesh pointer to the mesh
+     */
+    void getMesh(HalfEdgeMesh<BaseVecT>& mesh);
 
-        /**
-         * Construct a GCS instance
-         * @param surface pointsetsurface to get pointcloud information from
-         */
-        GrowingCellStructure(PointsetSurfacePtr<BaseVecT>& surface);
+    int getRuntime() const { return m_runtime; }
 
-        /**
-         * Public method of the Reconstruction Class, calling all the other methods, generating the mesh
-         * approximating the pointcloud's surface
-         * @param mesh pointer to the mesh
-         */
-        void getMesh(HalfEdgeMesh<BaseVecT> &mesh);
+    int getBasicSteps() const { return m_basicSteps; }
 
-        int getRuntime() const {
-            return m_runtime;
-        }
+    int getNumSplits() const { return m_numSplits; }
 
-        int getBasicSteps() const {
-            return m_basicSteps;
-        }
+    float getBoxFactor() const { return m_boxFactor; }
 
-        int getNumSplits() const {
-            return m_numSplits;
-        }
+    bool isWithCollapse() const { return m_withCollapse; }
 
-        float getBoxFactor() const {
-            return m_boxFactor;
-        }
+    float getLearningRate() const { return m_learningRate; }
 
-        bool isWithCollapse() const {
-            return m_withCollapse;
-        }
+    float getNeighborLearningRate() const { return m_neighborLearningRate; }
 
-        float getLearningRate() const {
-            return m_learningRate;
-        }
+    float getDecreaseFactor() const { return m_decreaseFactor; }
 
-        float getNeighborLearningRate() const {
-            return m_neighborLearningRate;
-        }
+    int getAllowMiss() const { return m_allowMiss; }
 
-        float getDecreaseFactor() const {
-            return m_decreaseFactor;
-        }
+    float getCollapseThreshold() const { return m_collapseThreshold; }
 
-        int getAllowMiss() const {
-            return m_allowMiss;
-        }
+    bool isFilterChain() const { return m_filterChain; }
 
-        float getCollapseThreshold() const {
-            return m_collapseThreshold;
-        }
+    int getDeleteLongEdgesFactor() const { return m_deleteLongEdgesFactor; }
 
-        bool isFilterChain() const {
-            return m_filterChain;
-        }
+    bool isInterior() const { return m_interior; }
 
-        int getDeleteLongEdgesFactor() const {
-            return m_deleteLongEdgesFactor;
-        }
+    void setRuntime(int m_runtime) { GrowingCellStructure::m_runtime = m_runtime; }
 
-        bool isInterior() const {
-            return m_interior;
-        }
+    void setBasicSteps(int m_basicSteps) { GrowingCellStructure::m_basicSteps = m_basicSteps; }
 
-        void setRuntime(int m_runtime) {
-            GrowingCellStructure::m_runtime = m_runtime;
-        }
+    void setNumSplits(int m_numSplits) { GrowingCellStructure::m_numSplits = m_numSplits; }
 
-        void setBasicSteps(int m_basicSteps) {
-            GrowingCellStructure::m_basicSteps = m_basicSteps;
-        }
+    void setBoxFactor(float m_boxFactor) { GrowingCellStructure::m_boxFactor = m_boxFactor; }
 
-        void setNumSplits(int m_numSplits) {
-            GrowingCellStructure::m_numSplits = m_numSplits;
-        }
+    void setWithCollapse(bool m_withCollapse)
+    {
+        GrowingCellStructure::m_withCollapse = m_withCollapse;
+    }
 
-        void setBoxFactor(float m_boxFactor) {
-            GrowingCellStructure::m_boxFactor = m_boxFactor;
-        }
+    void setLearningRate(float m_learningRate)
+    {
+        GrowingCellStructure::m_learningRate = m_learningRate;
+    }
 
-        void setWithCollapse(bool m_withCollapse) {
-            GrowingCellStructure::m_withCollapse = m_withCollapse;
-        }
+    void setNeighborLearningRate(float m_neighborLearningRate)
+    {
+        GrowingCellStructure::m_neighborLearningRate = m_neighborLearningRate;
+    }
 
-        void setLearningRate(float m_learningRate) {
-            GrowingCellStructure::m_learningRate = m_learningRate;
-        }
+    void setDecreaseFactor(float m_decreaseFactor)
+    {
+        GrowingCellStructure::m_decreaseFactor = m_decreaseFactor;
+    }
 
-        void setNeighborLearningRate(float m_neighborLearningRate) {
-            GrowingCellStructure::m_neighborLearningRate = m_neighborLearningRate;
-        }
+    void setAllowMiss(int m_allowMiss) { GrowingCellStructure::m_allowMiss = m_allowMiss; }
 
-        void setDecreaseFactor(float m_decreaseFactor) {
-            GrowingCellStructure::m_decreaseFactor = m_decreaseFactor;
-        }
+    void setCollapseThreshold(float m_collapseThreshold)
+    {
+        GrowingCellStructure::m_collapseThreshold = m_collapseThreshold;
+    }
 
-        void setAllowMiss(int m_allowMiss) {
-            GrowingCellStructure::m_allowMiss = m_allowMiss;
-        }
+    void setFilterChain(bool m_filterChain) { GrowingCellStructure::m_filterChain = m_filterChain; }
 
-        void setCollapseThreshold(float m_collapseThreshold) {
-            GrowingCellStructure::m_collapseThreshold = m_collapseThreshold;
-        }
+    void setDeleteLongEdgesFactor(int m_deleteLongEdgesFactor)
+    {
+        GrowingCellStructure::m_deleteLongEdgesFactor = m_deleteLongEdgesFactor;
+    }
 
-        void setFilterChain(bool m_filterChain) {
-            GrowingCellStructure::m_filterChain = m_filterChain;
-        }
+    void setInterior(bool m_interior) { GrowingCellStructure::m_interior = m_interior; }
 
-        void setDeleteLongEdgesFactor(int m_deleteLongEdgesFactor) {
-            GrowingCellStructure::m_deleteLongEdgesFactor = m_deleteLongEdgesFactor;
-        }
+    void setNumBalances(int m_balances) { GrowingCellStructure::m_balances = m_balances; }
 
-        void setInterior(bool m_interior) {
-            GrowingCellStructure::m_interior = m_interior;
-        }
+  private:
+    PointsetSurfacePtr<BaseVecT>* m_surface; // helper-surface
+    HalfEdgeMesh<BaseVecT>* m_mesh;
 
-        void setNumBalances(int m_balances) {
-            GrowingCellStructure::m_balances = m_balances;
-        }
+    // SHARED members
+    int m_runtime;        // how many steps?
+    int m_basicSteps;     // how many steps until collapse?
+    int m_numSplits;      // how many splits
+    float m_boxFactor;    // for initial mesh
+    bool m_withCollapse;  // should we collapse?
+    float m_learningRate; // learning rate of the algorithm
+    float m_neighborLearningRate;
+    bool m_filterChain; // should a filter chain be applied?
+    bool m_interior;    // should the interior be reconstructed or the exterior?
+    int m_balances;
+    float m_avgSignalCounter = 0;
 
-    private:
-        PointsetSurfacePtr<BaseVecT> *m_surface; //helper-surface
-        HalfEdgeMesh<BaseVecT> *m_mesh;
+    // "GCS" related members
+    TumbleTree* tumble_tree;
+    DynamicKDTree<BaseVecT>* kd_tree;
+    std::vector<Cell*> cellArr; // TODO: OUTSOURCE IT INTO THE TUMBLETREE CLASS, NEW PARAMETER FOR
+                                // THE TUMBLE TREE CONSTRUCTOR
+                                // CONTAINING THE MAXMIMUM SIZE OF THE MESH
+    float m_decreaseFactor; // for sc calc
+    int m_allowMiss;
+    float m_collapseThreshold; // threshold for the collapse - when does it make sense
+    int m_deleteLongEdgesFactor;
+    int notFoundCounter = 0;
+    int flipCounter = 0;
 
-        //SHARED members
-        int m_runtime; //how many steps?
-        int m_basicSteps; //how many steps until collapse?
-        int m_numSplits; //how many splits
-        float m_boxFactor; //for initial mesh
-        bool m_withCollapse; //should we collapse?
-        float m_learningRate; //learning rate of the algorithm
-        float m_neighborLearningRate;
-        bool m_filterChain; //should a filter chain be applied?
-        bool m_interior; //should the interior be reconstructed or the exterior?
-        int m_balances;
-        float m_avgSignalCounter = 0;
+    // "GSS" related members
+    bool m_useGSS = false;
+    HashMap<FaceHandle, std::pair<float, float>>
+        faceAgeErrorMap; // hashmap for mapping a FaceHandle to <age, error>
+    float m_avgFaceSize = 0;
+    float m_avgEdgeLength = 0;
 
-        // "GCS" related members
-        TumbleTree* tumble_tree;
-        DynamicKDTree<BaseVecT>* kd_tree;
-        std::vector<Cell*> cellArr; //TODO: OUTSOURCE IT INTO THE TUMBLETREE CLASS, NEW PARAMETER FOR THE TUMBLE TREE CONSTRUCTOR
-                                    // CONTAINING THE MAXMIMUM SIZE OF THE MESH
-        float m_decreaseFactor; //for sc calc
-        int m_allowMiss;
-        float m_collapseThreshold; //threshold for the collapse - when does it make sense
-        int m_deleteLongEdgesFactor;
-        int notFoundCounter=0;
-        int flipCounter=0;
+    float m_limSkip;
+    float m_limSingle;
+    float m_maxAge;
+    bool m_withRemove;
 
-        // "GSS" related members
-        bool m_useGSS = false;
-        HashMap<FaceHandle, std::pair<float, float>> faceAgeErrorMap; //hashmap for mapping a FaceHandle to <age, error>
-        float m_avgFaceSize = 0;
-        float m_avgEdgeLength = 0;
+    // SHARED MEMBER FUNCTIONS
 
-        float m_limSkip;
-        float m_limSingle;
-        float m_maxAge;
-        bool m_withRemove;
+    void executeBasicStep(PacmanProgressBar& progress_bar);
 
+    void executeVertexSplit();
 
-        // SHARED MEMBER FUNCTIONS
+    void executeEdgeCollapse();
 
-        void executeBasicStep(PacmanProgressBar& progress_bar);
+    void getInitialMesh();
 
-        void executeVertexSplit();
+    BaseVecT getRandomPointFromPointcloud();
 
-        void executeEdgeCollapse();
+    VertexHandle getClosestPointInMesh(BaseVecT point, PacmanProgressBar& progress_bar);
 
-        void getInitialMesh();
+    void initTestMesh(); // test
 
-        BaseVecT getRandomPointFromPointcloud();
+    // GCS MEMBER FUNCTIONS
 
-        VertexHandle getClosestPointInMesh(BaseVecT point, PacmanProgressBar& progress_bar);
+    void performLaplacianSmoothing(VertexHandle vertexH, BaseVecT random, float factor = 0.01);
 
-        void initTestMesh(); //test
+    void aggressiveCutOut(VertexHandle vH);
 
-        // GCS MEMBER FUNCTIONS
+    double avgDistanceBetweenPointsInPointcloud();
 
-        void performLaplacianSmoothing(VertexHandle vertexH, BaseVecT random, float factor = 0.01);
+    int numVertexValences(int minValence);
 
-        void aggressiveCutOut(VertexHandle vH);
+    std::pair<double, double> equilaterality();
 
-        double avgDistanceBetweenPointsInPointcloud();
+    double avgValence();
 
-        int numVertexValences(int minValence);
+    // void coalescing();
 
-        std::pair<double, double> equilaterality();
+    // ADDITIONAL FUNCTIONS
 
-        double avgValence();
+    void removeWrongFaces();
 
-        //void coalescing();
+    int cellVecSize();
 
-        // ADDITIONAL FUNCTIONS
+    // TODO: add gss related functions
+};
+} // namespace lvr2
 
-        void removeWrongFaces();
+#include "lvr2/reconstruction/gs2/GrowingCellStructure.tcc"
 
-        int cellVecSize();
-
-        //TODO: add gss related functions
-    };
-}
-
-
-#include <lvr2/reconstruction/gs2/GrowingCellStructure.tcc>
-
-#endif //LAS_VEGAS_GROWINGCELLSTRUCTURE_HPP
+#endif // LAS_VEGAS_GROWINGCELLSTRUCTURE_HPP

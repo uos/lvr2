@@ -32,16 +32,16 @@
  *  @author Malte Hillmann
  */
 
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/io/IOUtils.hpp>
-#include <lvr2/registration/SLAMAlign.hpp>
-#include <lvr2/io/HDF5IO.hpp>
-#include <lvr2/io/GHDF5IO.hpp>
-#include <lvr2/io/hdf5/ArrayIO.hpp>
-#include <lvr2/io/hdf5/ChannelIO.hpp>
-#include <lvr2/io/hdf5/VariantChannelIO.hpp>
-#include <lvr2/io/hdf5/PointCloudIO.hpp>
-#include <lvr2/io/hdf5/MatrixIO.hpp>
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/IOUtils.hpp"
+#include "lvr2/registration/SLAMAlign.hpp"
+#include "lvr2/io/HDF5IO.hpp"
+#include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/ArrayIO.hpp"
+#include "lvr2/io/hdf5/ChannelIO.hpp"
+#include "lvr2/io/hdf5/VariantChannelIO.hpp"
+#include "lvr2/io/hdf5/PointCloudIO.hpp"
+#include "lvr2/io/hdf5/MatrixIO.hpp"
 
 
 #include <boost/program_options.hpp>
@@ -410,13 +410,13 @@ int main(int argc, char** argv)
             PointBufferPtr pointPointer = PointBufferPtr(new PointBuffer(point_array, pointsNum));
             tempScan->m_points = pointPointer;
             // tempScan->m_points = h5_ptr->loadPointCloud("raw/scans/" + numOfScansInHDF[i]);
-            tempScan->m_pointsLoaded = true;            
+            tempScan->m_pointsLoaded = true;
             // pose transfered
             tempScan->m_poseEstimation = h5_ptr->loadMatrix<Transformd>("raw/scans/" + numOfScansInHDF[i], "initialPose").get();
             tempScan->m_positionNumber = i;
 
             tempScan->m_scanRoot = "raw/scans/" + numOfScansInHDF[i];
-            
+
 
             // sets the finalPose to the identiy matrix
             tempScan->m_registration = Transformd::Identity();
@@ -460,7 +460,7 @@ int main(int argc, char** argv)
             align.addScan(slamScan);
         }
     }
-    
+
 
     auto start_time = chrono::steady_clock::now();
 
