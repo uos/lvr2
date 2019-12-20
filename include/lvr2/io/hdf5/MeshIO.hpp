@@ -14,7 +14,6 @@
 #include "ArrayIO.hpp"
 
 namespace lvr2 {
-
 namespace hdf5features {
 
 /**
@@ -43,6 +42,7 @@ namespace hdf5features {
  * 
  * Dependencies:
  * - VariantChannelIO
+ * - ArrayIO
  * 
  */
 template<typename Derived>
@@ -162,6 +162,27 @@ protected:
 
 
 } // hdf5features
+
+
+/** 
+ * 
+ * @brief Hdf5Construct Specialization for hdf5features::MeshIO
+ * - Constructs dependencies (VariantChannelIO, ArrayIO)
+ * - Sets type variable
+ * 
+ */
+template<typename Derived>
+struct Hdf5Construct<hdf5features::MeshIO, Derived> {
+    
+    // DEPS
+    using dep1 = typename Hdf5Construct<hdf5features::VariantChannelIO, Derived>::type;
+    using dep2 = typename Hdf5Construct<hdf5features::ArrayIO, Derived>::type;
+    using deps = typename dep1::template Merge<dep2>;
+
+    // ADD THE FEATURE ITSELF
+    using type = typename deps::template add_features<hdf5features::MeshIO>::type;
+     
+};
 
 } // namespace lvr2
 
