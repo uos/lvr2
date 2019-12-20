@@ -195,7 +195,10 @@ std::vector<Vector3d > LVRCamDataItem::genFrustrumLVR(float scale)
     for(int i=0; i<cv_pixels.size(); i++)
     {
         Vector3d pixel = cv_pixels[i];
-        Vector3d p = lvr2::multiply(cam_mat_inv, pixel);
+        //Vector3d p = lvr2::multiply(cam_mat_inv, pixel);
+
+        Vector3d p = cam_mat_inv * pixel;
+
         // Vector3d p = pixel;
 
 

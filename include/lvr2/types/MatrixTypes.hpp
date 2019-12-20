@@ -92,7 +92,7 @@ using Extrinsicsd = Extrinsics<double>;
 
 /// 4x4 extrinsic calibration
 template<typename T>
-using Intrinsics = Eigen::Matrix<T, 4, 4>;
+using Intrinsics = Eigen::Matrix<T, 3, 3>;
 
 /// 4x4 intrinsic calibration (single precision)
 using Intrinsicsf = Intrinsics<float>;

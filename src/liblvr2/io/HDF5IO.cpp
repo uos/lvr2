@@ -953,23 +953,24 @@ void HDF5IO::addRawCamData( int scan_id, int img_id, CameraData& cam_data )
         }
         
         // add image to scan_image_group
-        doubleArr intrinsics_arr(new double[16]);
-        Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>>(intrinsics_arr.get()) = cam_data.intrinsics;
+        doubleArr intrinsics_arr(new double[9]);
+        Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(intrinsics_arr.get()) = cam_data.intrinsics;
 
 
         doubleArr extrinsics_arr(new double[16]);
         Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>>(extrinsics_arr.get()) = cam_data.extrinsics;
 
-        std::vector<size_t> dim = {4,4};
+        std::vector<size_t> dim_4 = {4,4};
+        std::vector<size_t> dim_3 = {3,3};
 
         std::vector<hsize_t> chunks;
-        for(auto i: dim)
+        for(auto i: dim_4)
         {
                 chunks.push_back(i);
         }
 
-        addArray(photo_group, "intrinsics", dim, chunks, intrinsics_arr);
-        addArray(photo_group, "extrinsics", dim, chunks, extrinsics_arr);
+        addArray(photo_group, "intrinsics", dim_4, chunks, intrinsics_arr);
+        addArray(photo_group, "extrinsics", dim_3, chunks, extrinsics_arr);
         addImage(photo_group, "image", cam_data.image);
 
     }

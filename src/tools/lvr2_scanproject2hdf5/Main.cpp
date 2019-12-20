@@ -71,7 +71,7 @@ void slamToLVR(ScanPtr& sd)
 CameraData toCamData(ImageFile img_file)
 {
     CameraData ret;
-    ret.intrinsics = Transformd();
+    ret.intrinsics = Intrinsicsd();
     ret.intrinsics(0) = img_file.intrinsic_params[0];
     ret.intrinsics(5) = img_file.intrinsic_params[1];
     ret.intrinsics(2) = img_file.intrinsic_params[2];
