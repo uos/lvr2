@@ -15,7 +15,7 @@ matrix:
     env: ROS_DISTRO=melodic
 
 install:
-  - travis_wait git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
+  - travis_wait 60 git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 
 script:
   - .ci_config/travis.sh
