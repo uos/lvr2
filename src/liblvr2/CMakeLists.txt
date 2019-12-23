@@ -44,11 +44,9 @@ set(LVR2_SOURCES
     io/GridIO.cpp
     io/PointBuffer.cpp
     io/ModelFactory.cpp
-    io/ScanprojectIO.cpp
     io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
     io/ChunkIO.cpp
-    types/Scan.cpp
     #io/PlutoMetaDataIO.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp

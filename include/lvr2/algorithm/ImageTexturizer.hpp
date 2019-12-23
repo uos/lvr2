@@ -38,31 +38,15 @@
 #include "lvr2/algorithm/Texturizer.hpp"
 #include "lvr2/geometry/Normal.hpp"
 
-#include "lvr2/io/ScanprojectIO.hpp"
 #include "lvr2/registration/TransformUtils.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 
 namespace lvr2
 {
-
-/// @cond internal
-template<typename BaseVecT>
-struct ImageData 
-{
-    cv::Mat data;
-    BaseVecT  pos;
-    Normal<double>  dir;
-    Transformd project_to_image_transform;
-    Transformd orientation;
-    Transformd extrinsics;
-
-    float distortion_params[6];
-    float intrinsic_params[4];
-};
-/// @endcond
 
 /**
  * @brief A texturizer that uses images instead of pointcloud colors for creating the textures
@@ -91,7 +75,7 @@ public:
      *
      * @param project The UOS Scanproject the intern project will be set to.
      */
-    void set_project(Scanproject& project)
+    void set_project(ScanProject& project)
     {
         this->project = project;
     }
@@ -115,19 +99,19 @@ public:
 
 private:
     /// @cond internal
-    Scanproject project;
+    ScanProject project;
 
     bool image_data_initialized;
-    std::vector<ImageData<BaseVecT> > images;
+    std::vector<ScanImage> images;
 
     void init_image_data();
 
     template<typename ValueType>
-    void undistorted_to_distorted_uv(ValueType &u, ValueType &v, const ImageData<BaseVecT> &img);
+    void undistorted_to_distorted_uv(ValueType &u, ValueType &v, const ScanImage &img);
 
-    bool exclude_image(BaseVecT pos, const ImageData<BaseVecT> &image_data);
+    bool exclude_image(BaseVecT pos, const ScanImage &image_data);
 
-    bool point_behind_camera(BaseVecT pos, const ImageData<BaseVecT> &image_data);
+    bool point_behind_camera(BaseVecT pos, const ScanImage &image_data);
     /// @endcond
 };
 

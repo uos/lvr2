@@ -10,7 +10,7 @@
 #include "lvr2/io/hdf5/MatrixIO.hpp"
 #include "lvr2/io/hdf5/PointCloudIO.hpp"
 #include "lvr2/io/hdf5/VariantChannelIO.hpp"
-#include "lvr2/types/Scan.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/lambda/bind.hpp>

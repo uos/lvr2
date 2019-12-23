@@ -33,6 +33,7 @@
 #include "lvr2/io/CoordinateTransform.hpp"
 #include "lvr2/registration/TransformUtils.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
 #include <boost/filesystem.hpp>
 
@@ -241,8 +242,13 @@ PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const std::vector<size_t
  */
 void slamToLVRInPlace(PointBufferPtr src);
 
-
-
+/**
+ * @brief Reads a directory containing data from slam6d. Represents
+ * 
+ * @param dir                   A directory containing scans
+ * @param scans                 The vector of all scans in this directory
+ */
+void parseSLAMDirectory(std::string dir, vector<ScanPtr>& scans);
 
 } // namespace lvr2
 

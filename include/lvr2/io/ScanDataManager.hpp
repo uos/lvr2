@@ -31,8 +31,7 @@
 #include <vector>
 
 #include "lvr2/io/HDF5IO.hpp"
-#include "lvr2/types/Scan.hpp"
-#include "lvr2/types/ScanImage.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2
 {

@@ -33,10 +33,9 @@
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/io/AttributeMeshIOBase.hpp"
-#include "lvr2/types/ScanImage.hpp"
 #include "lvr2/types/Hyperspectral.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
-#include "lvr2/types/Scan.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
