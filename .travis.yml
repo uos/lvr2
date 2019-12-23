@@ -1,6 +1,9 @@
 sudo: required
+
 language: generic
-dist: trusty
+
+services:
+  - docker
 
 notifications:
   email:
@@ -9,13 +12,6 @@ notifications:
     on_success: change
     on_failure: change
 
-matrix:
-  include:
-  - name: "Melodic"
-    env: ROS_DISTRO=melodic
-
 install:
-  - travis_wait 60 git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
+  - docker build -t ros-lvr2 .
 
-script:
-  - .ci_config/travis.sh
