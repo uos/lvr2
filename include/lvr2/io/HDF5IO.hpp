@@ -33,7 +33,7 @@
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/io/AttributeMeshIOBase.hpp"
-#include "lvr2/types/CameraData.hpp"
+#include "lvr2/types/ScanImage.hpp"
 #include "lvr2/types/Hyperspectral.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/types/Scan.hpp"
@@ -112,13 +112,13 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
 
     Texture getImage(std::string groupName, std::string datasetName);
 
-    ScanPtr    getSingleRawScan(int nr, bool load_points = true);
+    ScanPtr getSingleRawScan(int nr, bool load_points = true);
 
-    CameraData  getSingleRawCamData(int scan_id, int img_id, bool load_image_data = true);
+    ScanImage getSingleRawCamData(int scan_id, int img_id, bool load_image_data = true);
 
     std::vector<ScanPtr> getRawScans(bool load_points = true);
 
-    std::vector<std::vector<CameraData> > getRawCamData(bool load_image_data = true);
+    std::vector<std::vector<ScanImage> > getRawCamData(bool load_image_data = true);
 
     floatArr getFloatChannelFromRawScan(std::string name,
             int nr, unsigned int& n, unsigned& w);
@@ -133,7 +133,7 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
     /**
      * @brief add recorded image referenced to a scan pose
      */
-    void addRawCamData( int scan_id, int img_id, CameraData& cam_data );
+    void addRawCamData( int scan_id, int img_id, ScanImage& cam_data );
 
     void addFloatChannelToRawScan(std::string name, int nr, size_t n, unsigned w, floatArr data);
 

@@ -463,9 +463,9 @@ std::vector<ScanPtr> HDF5IO::getRawScans(bool load_points)
 //     using Hdf5IO<ComponentTs<Hdf5IO<ComponentTs...> >...>::save;
 // };
 
-std::vector<std::vector<CameraData> > HDF5IO::getRawCamData(bool load_image_data)
+std::vector<std::vector<ScanImage> > HDF5IO::getRawCamData(bool load_image_data)
 {
-    std::vector<std::vector<CameraData> > ret;
+    std::vector<std::vector<ScanImage> > ret;
     
     if(m_hdf5_file) 
     {
@@ -487,12 +487,12 @@ std::vector<std::vector<CameraData> > HDF5IO::getRawCamData(bool load_image_data
             std::string cur_scan_pos = photos_group.getObjectName(i);
             HighFive::Group photo_group = getGroup(photos_group, cur_scan_pos);
 
-            std::vector<CameraData> cam_data;
+            std::vector<ScanImage> cam_data;
 
             size_t num_photos = photo_group.getNumberObjects();
             for(size_t j=0; j< num_photos; j++)
             {
-                CameraData cam = getSingleRawCamData(i, j, load_image_data);
+                ScanImage cam = getSingleRawCamData(i, j, load_image_data);
                 cam_data.push_back(cam);
             }
 
@@ -588,9 +588,9 @@ ScanPtr HDF5IO::getSingleRawScan(int nr, bool load_points)
 }
 
 
-CameraData HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_data)
+ScanImage HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_data)
 {
-    CameraData ret;
+    ScanImage ret;
      
     if (m_hdf5_file)
     {
@@ -924,7 +924,7 @@ void HDF5IO::addRawScan(int nr, ScanPtr scan)
     }
 }
 
-void HDF5IO::addRawCamData( int scan_id, int img_id, CameraData& cam_data )
+void HDF5IO::addRawCamData( int scan_id, int img_id, ScanImage& cam_data )
 {
     if(m_hdf5_file)
     {

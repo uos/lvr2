@@ -27,7 +27,7 @@ namespace lvr2
 {
 
 LVRCamDataItem::LVRCamDataItem(
-    CameraData data,
+    ScanImage& data,
     std::shared_ptr<ScanDataManager> sdm,
     size_t cam_id,
     vtkSmartPointer<vtkRenderer> renderer,
