@@ -68,32 +68,32 @@ void slamToLVR(ScanPtr& sd)
 
 }
 
-CameraData toCamData(ImageFile img_file)
-{
-    CameraData ret;
-    ret.intrinsics = Intrinsicsd();
-    ret.intrinsics(0) = img_file.intrinsic_params[0];
-    ret.intrinsics(5) = img_file.intrinsic_params[1];
-    ret.intrinsics(2) = img_file.intrinsic_params[2];
-    ret.intrinsics(6) = img_file.intrinsic_params[3];
+// ImageData fromFile( img_file)
+// {
+//     ImageData ret;
+//     ret.intrinsics = Intrinsicsd();
+//     ret.intrinsics(0) = img_file.intrinsic_params[0];
+//     ret.intrinsics(5) = img_file.intrinsic_params[1];
+//     ret.intrinsics(2) = img_file.intrinsic_params[2];
+//     ret.intrinsics(6) = img_file.intrinsic_params[3];
 
-    ret.extrinsics = img_file.extrinsic_transform.inverse() * img_file.orientation_transform;
+//     ret.extrinsics = img_file.extrinsic_transform.inverse() * img_file.orientation_transform;
 
-    ret.image = cv::imread(img_file.image_file.string(), CV_LOAD_IMAGE_COLOR);
+//     ret.image = cv::imread(img_file.image_file.string(), CV_LOAD_IMAGE_COLOR);
 
-    return ret;
-}
+//     return ret;
+// }
 
 void testRead(HDF5IO& hdf5)
 {
-    std::vector<std::vector<CameraData> > cam_data;
+    std::vector<std::vector<ScanImage> > cam_data;
     cam_data = hdf5.getRawCamData();
 
     for(int scan_id=0; scan_id < cam_data.size(); scan_id++)
     {
         for(int cam_id=0; cam_id < cam_data[scan_id].size(); cam_id++)
         {
-            CameraData cam = cam_data[scan_id][cam_id];
+            ScanImage cam = cam_data[scan_id][cam_id];
             std::cout << "scan " << scan_id << ", cam " << cam_id << std::endl;
             cv::imshow("test", cam.image);
             cv::waitKey(0);
@@ -103,41 +103,41 @@ void testRead(HDF5IO& hdf5)
 
 int main(int argc, char** argv)
 {
-    std::cout << "Scanproject to HDF5 converter started." << std::endl;
-    if(argc > 1) {
-        ScanprojectIO project;
-        project.parse_project(argv[1]);
-        auto proj = project.get_project();
+//     std::cout << "Scanproject to HDF5 converter started." << std::endl;
+//     if(argc > 1) {
+//         ScanprojectIO project;
+//         project.parse_project(argv[1]);
+//         auto proj = project.get_project();
 
-        HDF5IO hdf5("test.h5", true);
+//         HDF5IO hdf5("test.h5", true);
 
-        std::cout << "Found " << proj.scans.size() << " scans." << std::endl;
+//         std::cout << "Found " << proj.scans.size() << " scans." << std::endl;
 
-        for(int scan_id = 0; scan_id < proj.scans.size(); scan_id++)
-        {
-            const ScanPosition &pos = proj.scans[scan_id];
-            std::cout << "scan: " << scan_id << std::endl;
+//         for(int scan_id = 0; scan_id < proj.scans.size(); scan_id++)
+//         {
+//             const ScanPosition &pos = proj.scans[scan_id];
+//             std::cout << "scan: " << scan_id << std::endl;
 
-            ScanPtr sd = toScanPtr(pos);
-            slamToLVR(sd);
+//             ScanPtr sd = toScanPtr(pos);
+//             slamToLVR(sd);
 
-            hdf5.addRawScan(scan_id, sd);
+//             hdf5.addRawScan(scan_id, sd);
             
-            for(int img_id = 0; img_id < pos.images.size(); img_id++)
-            {
-                const ImageFile& img = pos.images[img_id];
-                std::cout << "\timage: " << img_id << std::endl;
+//             for(int img_id = 0; img_id < pos.images.size(); img_id++)
+//             {
+//                 const ImageFile& img = pos.images[img_id];
+//                 std::cout << "\timage: " << img_id << std::endl;
 
-                CameraData cd = toCamData(img);
+//                 ScanImage cd = toCamData(img);
 
-                hdf5.addRawCamData(scan_id, img_id, cd);
-            }
-        }
+//                 hdf5.addRawCamData(scan_id, img_id, cd);
+//             }
+//         }
 
-        std::cout << "finished successfully" << std::endl;
-    } else {
-        std::cout << "Usage: " << argv[0] << " [ScanprojectDirectory]" << std::endl;
-    }
+//         std::cout << "finished successfully" << std::endl;
+//     } else {
+//         std::cout << "Usage: " << argv[0] << " [ScanprojectDirectory]" << std::endl;
+//     }
 
     return 0;
 }

@@ -31,6 +31,8 @@
 #include <Eigen/Dense>
 #include <opencv2/core.hpp>
 
+#include <boost/filesystem.hpp>
+
 #include <vector>
 
 #include "lvr2/types/MatrixTypes.hpp"
@@ -43,23 +45,38 @@ namespace lvr2
  *          and extrinsic camera parameters
  * 
  */
-struct CameraData
+struct ScanImage
 {
-    /// Instrinsic camera paramter matrix
-    Intrinsicsd intrinsics;
+    /// Intrincsic matrix
+    Intrinsicsd                 intrinsics;
 
-    /// Extrinsic parameter matrix
-    Extrinsicsd extrinsics;
+    /// Camera orientation
+    Transformd                  orientation;
 
-    /// RGB image
-    cv::Mat image;
+    /// Mount calibration / extrinsic calibration
+    Extrinsicsd                 extrinsics;
+
+    /// Mount calibration estimate / extrinsic estimate
+    Extrinsicsd                 extrinsicsEstmate;
+
+    /// Path to stored image
+    boost::filesystem::path     image_file;
+
+    /// Intrinsic parameters in this order: fx, fy, Cx, Cy
+    float                       intrinsic_params[4];
+
+    /// Distortion params in this order: k1, k2, k3, k4, p1, p2
+    float                       distortion_params[6];
+
+    /// OpenCV representation
+    cv::Mat                     image;
 };
 
 /**
  * @brief   Struct to store a panorama image taken at a scan position
  * 
  */
-struct Panorama
+struct ScanPanorama
 {
     /// Minimum horizontal angle
     float hmin;
@@ -71,7 +88,7 @@ struct Panorama
     float fov;
 
     /// Vector of camera 
-    std::vector<CameraData> images;
+    std::vector<ScanImage> images;
 };
 
 
