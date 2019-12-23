@@ -1,6 +1,6 @@
 #include <yaml-cpp/yaml.h>
 #include "lvr2/io/PlutoMetaDataIO.hpp"
-#include "lvr2/types/Scan.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2
 {

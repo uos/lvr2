@@ -9,7 +9,7 @@
 #include <boost/filesystem.hpp>
 
 #include "lvr2/io/DataStruct.hpp"
-#include "lvr2/types/Scan.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
 //struct ScanMetaData
 //{

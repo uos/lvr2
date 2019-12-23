@@ -29,7 +29,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-bool ImageTexturizer<BaseVecT>::exclude_image(BaseVecT pos, const ImageData<BaseVecT> &image_data)
+bool ImageTexturizer<BaseVecT>::exclude_image(BaseVecT pos, const ScanImage &image_data)
 {
     if (point_behind_camera(pos, image_data)) {
         return true;
@@ -41,7 +41,7 @@ bool ImageTexturizer<BaseVecT>::exclude_image(BaseVecT pos, const ImageData<Base
 }
 
 template<typename BaseVecT>
-bool ImageTexturizer<BaseVecT>::point_behind_camera(BaseVecT pos, const ImageData<BaseVecT> &image_data)
+bool ImageTexturizer<BaseVecT>::point_behind_camera(BaseVecT pos, const ScanImage &image_data)
 {
     BaseVecT diff = image_data.pos - pos;
     

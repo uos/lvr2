@@ -39,7 +39,6 @@
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/RxpIO.hpp"
-#include "lvr2/io/ScanprojectIO.hpp"
 #include "lvr2/util/Util.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/registration/TransformUtils.hpp"
