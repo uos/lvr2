@@ -87,6 +87,10 @@ class ChunkManager
      */
     MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area);
 
+    void extractArea(const BoundingBox<BaseVector<float> >& area,
+                    std::unordered_map<std::size_t, MeshBufferPtr>& chunks);
+                    
+
     /**
      * @brief Calculates the hash value for the given index triple
      *
