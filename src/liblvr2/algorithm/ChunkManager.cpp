@@ -97,6 +97,58 @@ ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize)
     }
 }
 
+void ChunkManager::extractArea(const BoundingBox<BaseVector<float> >& area, 
+                               std::unordered_map<std::size_t, MeshBufferPtr>& chunks
+                             )
+{
+    // adjust area to our maximum boundingBox
+    BaseVector<float> adjustedAreaMin, adjustedAreaMax;
+    adjustedAreaMax[0] = std::min(area.getMax()[0], m_boundingBox.getMax()[0]);
+    adjustedAreaMax[1] = std::min(area.getMax()[1], m_boundingBox.getMax()[1]);
+    adjustedAreaMax[2] = std::min(area.getMax()[2], m_boundingBox.getMax()[2]);
+    adjustedAreaMin[0] = std::max(area.getMin()[0], m_boundingBox.getMin()[0]);
+    adjustedAreaMin[1] = std::max(area.getMin()[1], m_boundingBox.getMin()[1]);
+    adjustedAreaMin[2] = std::max(area.getMin()[2], m_boundingBox.getMin()[2]);
+    BoundingBox<BaseVector<float>> adjustedArea
+        = BoundingBox<BaseVector<float>>(adjustedAreaMin, adjustedAreaMax);
+
+    // find all required chunks
+    // TODO: check if we need + 1
+    const BaseVector<float> maxSteps
+        = (adjustedArea.getMax() - adjustedArea.getMin()) / m_chunkSize;
+    for (std::size_t i = 0; i < maxSteps.x; ++i)
+    {
+        for (std::size_t j = 0; j < maxSteps.y; ++j)
+        {
+            for (std::size_t k = 0; k < maxSteps.z; ++k)
+            {
+                size_t cellIndex          = getCellIndex(adjustedArea.getMin()
+                                                + BaseVector<float>(i, j, k) * m_chunkSize);
+
+                // if element is already loaded.
+                if(chunks.find(cellIndex) != chunks.end())
+                {
+                    continue;
+                }
+
+                BaseVector<int> cellCoord = getCellCoordinates(
+                    adjustedArea.getMin() + BaseVector<float>(i, j, k) * m_chunkSize);
+
+                MeshBufferPtr loadedChunk
+                    = m_chunkHashGrid->findChunk(cellIndex, cellCoord.x, cellCoord.y, cellCoord.z);
+                if (loadedChunk.get())
+                {
+                    // TODO: remove saving tmp chunks later
+                    //ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(loadedChunk)),
+                    //                        "area/" + std::to_string(cellIndex) + ".ply");
+                    chunks.insert({cellIndex, loadedChunk});
+                }
+            }
+        }
+    }
+}
+
+
 MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area)
 {
     std::unordered_map<std::size_t, MeshBufferPtr> chunks;
