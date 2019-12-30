@@ -80,5 +80,9 @@ double ChunkedMeshCuller::Cull(vtkRenderer *ren, vtkProp **propList, int &listLe
     lvr2::BoundingBox<BaseVector<float> > aabb = frustumToBB(planes);
     m_chunkManager.extractArea(aabb, m_chunks);
 
+    vtkActorCollection* actors = ren->GetActors();
+    
+
+
     // if not
 }
