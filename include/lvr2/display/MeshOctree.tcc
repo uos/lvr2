@@ -7,67 +7,13 @@
 
 namespace lvr2{ 
   template <typename BaseVecT>
-    MeshOctree<BaseVecT>::MeshOctree(PointBufferPtr& points, int depth) : m_points(*(points->getFloatChannel("points")))
+    MeshOctree<BaseVecT>::MeshOctree(std::unordered_map<size_t, MeshBufferPtr>& chunkedMesh, float chunkSize, BoundingBox<BaseVecT> bb) : m_bbox(bb)
     {
-
-//      FloatChannelOptional pts_channel = points->getFloatChannel("points");
-//      m_points = *pts_channel;
-
-      // initializ min max for bounding box
-      BaseVecT p = m_points[0];
-      float minX = p.x;
-      float minY = p.y;
-      float minZ = p.z;
-      float maxX = p.x;
-      float maxY = p.y;
-      float maxZ = p.z;
-
-
-
-      for(int i = 0; i < points->numPoints() - 1; ++i)
-      {
-        p = m_points[i];
-        minX = std::min(minX, p.x);
-        minY = std::min(minY, p.y);
-        minZ = std::min(minZ, p.z);
-
-        maxX = std::max(maxX, p.x);
-        maxY = std::max(maxY, p.y);
-        maxZ = std::max(maxZ, p.z);
-      }
-
-      // make sure all points are inliers
-      minX -= 1.0; 
-      minY -= 1.0; 
-      minZ -= 1.0; 
-      maxX += 1.0; 
-      maxY += 1.0; 
-      maxZ += 1.0; 
-
-      // make it square, there has to be a more elegant solution.
-      float min = std::min(minX, std::min(minY, minZ));
-      float max = std::max(maxX, std::max(maxY, maxZ));
-
-      BaseVecT v1(min, min, min);
-      BaseVecT v2(max, max, max);
-
-      m_bbox = BoundingBox<BaseVecT>(v1, v2);
-
-//      int depth = std::ceil(std::log2(m_bbox.getLongestSide()/m_voxelSize));
-      m_voxelSize = m_bbox.getXSize() / std::pow(2, depth);
 
       long offset = 0;
       m_root = reinterpret_cast<BOct*>(m_mem.alloc<BOct>(1, offset));
 
-      //std::cout << msg << std::endl;
-      //if(offset)
-      //{
-      //  std::cout << "offset" << std::endl;
-      //}
-
-//      std::vector<BaseVecT > pts = points->getPointBufferReference();
-      std::cout << m_bbox << std::endl;
-
+        
       std::cout << lvr2::timestamp << "Start building octree with voxelsize " << m_voxelSize << std::endl;
       m_root = (BOct*)((unsigned char*) m_root + buildTree(m_root, 0, points->numPoints(), m_bbox));
 
@@ -76,6 +22,13 @@ namespace lvr2{
 
       std::cout << lvr2::timestamp << "generating genDisplayLists done" << std::endl;
       std::cout << lvr2::timestamp << "Octree rdy " << std::endl;
+      
+      for(const auto chunk& : chunkedMesh )
+      {
+        m_hashes.push_back(chunk.first);
+        FloatChannel vertices = (*chun)
+
+      }
 
 //        m_points.clear();
 //        std::vector<BaseVecT >().swap(m_points);

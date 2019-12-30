@@ -109,6 +109,22 @@ class ChunkManager
      * DEBUG -- Only used for testing, but might be useful for smaller meshes.
      */
     void loadAllChunks();
+    
+
+    /**
+     * @brief get the chunksize
+     *
+     * @return the chunksize
+     */
+    float getChunkSize() { return m_chunkSize; }
+
+
+    /**
+     * @brief get the whole bounding box
+     *
+     * @return  the bounding box
+     */
+    BoundingBox<BaseVector<float> > getBoundingBox() { return m_boundingBox; }
 
   private:
     /**
