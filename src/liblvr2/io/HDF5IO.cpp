@@ -552,8 +552,8 @@ ScanPtr HDF5IO::getSingleRawScan(int nr, bool load_points)
 
         if (fov)
         {
-            ret->m_hFieldOfView = fov[0];
-            ret->m_vFieldOfView = fov[1];
+            // ret->m_hFieldOfView = fov[0];
+            // ret->m_vFieldOfView = fov[1];
         }
 
         if (res)
@@ -824,8 +824,8 @@ void HDF5IO::addRawScan(int nr, ScanPtr scan)
 
             // Generate tuples for field of view and resolution parameters
             floatArr fov(new float[2]);
-            fov[0] = scan->m_hFieldOfView;
-            fov[1] = scan->m_vFieldOfView;
+            // fov[0] = scan->m_hFieldOfView;
+            // fov[1] = scan->m_vFieldOfView;
 
             floatArr res(new float[2]);
             res[0] = scan->m_hResolution;

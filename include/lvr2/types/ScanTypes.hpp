@@ -26,12 +26,13 @@ struct Scan
         m_points(nullptr),
         m_registration(Transformd::Identity()),
         m_poseEstimation(Transformd::Identity()),
-        m_hFieldOfView(0),
-        m_vFieldOfView(0),
+        m_thetaMin(0), m_thetaMax(0),
+        m_phiMin(0), m_phiMax(0),
         m_hResolution(0),
         m_vResolution(0),
         m_pointsLoaded(false),
         m_positionNumber(0),
+        m_numPoints(0),
         m_scanRoot(boost::filesystem::path("./"))
     {}
 
@@ -49,17 +50,29 @@ struct Scan
     /// Axis aligned bounding box of this scan
     BoundingBox<BaseVector<float> > m_boundingBox;
 
-    /// Horizontal field of view of used laser scanner
-    float                           m_hFieldOfView;
+    /// Min horizontal scan angle
+    float                           m_thetaMin;
 
-    /// Vertical field of view of used laser scanner
-    float                           m_vFieldOfView;
+    /// Max horizontal scan angle
+    float                           m_thetaMax;
+
+    /// Min vertical scan angle
+    float                           m_phiMin;
+
+    /// Max vertical scan angle
+    float                           m_phiMax;
 
     /// Horizontal resolution of used laser scanner
     float                           m_hResolution;
 
     /// Vertical resolution of used laser scanner
     float                           m_vResolution;
+
+    /// Start timestamp 
+    float                           m_startTime;
+
+    /// End timestamp     
+    float                           m_endTime;
 
     /// Indicates if all points ware loaded from the initial
     /// input file
@@ -70,6 +83,12 @@ struct Scan
 
     /// Path to root dir of this scan
     boost::filesystem::path         m_scanRoot;
+
+    /// Name of the file containing the scan data
+    boost::filesystem::path         m_scanFile;
+
+    /// Number of points in scan
+    size_t                          m_numPoints;
 };
 
 /// Shared pointer to scans
