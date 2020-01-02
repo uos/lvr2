@@ -7,7 +7,7 @@
 
 namespace lvr2{ 
   template <typename BaseVecT>
-    MeshOctree<BaseVecT>::MeshOctree(PointBufferPtr& points, int depth) : m_points(*(points->getFloatChannel("points")))
+    PointOctree<BaseVecT>::PointOctree(PointBufferPtr& points, int depth) : m_points(*(points->getFloatChannel("points")))
     {
 
 //      FloatChannelOptional pts_channel = points->getFloatChannel("points");
@@ -85,7 +85,7 @@ namespace lvr2{
     }
 
   template  <typename BaseVecT>
-    void MeshOctree<BaseVecT>::getBBoxes(const BoundingBox<BaseVecT>& bbox, BoundingBox<BaseVecT>* boxes)
+    void PointOctree<BaseVecT>::getBBoxes(const BoundingBox<BaseVecT>& bbox, BoundingBox<BaseVecT>* boxes)
     {
 
       BaseVecT centroid = bbox.getCentroid();
@@ -131,7 +131,7 @@ namespace lvr2{
     }
 
   template <typename BaseVecT> 
-    unsigned char MeshOctree<BaseVecT>::getIndex(const BaseVecT& point, const BoundingBox<BaseVecT>& bbox)
+    unsigned char PointOctree<BaseVecT>::getIndex(const BaseVecT& point, const BoundingBox<BaseVecT>& bbox)
     {
       BaseVecT centroid = bbox.getCentroid();
       unsigned char index = 0;
@@ -164,21 +164,21 @@ namespace lvr2{
 
   template <typename BaseVecT>
     template <typename T>
-    inline void MeshOctree<BaseVecT>::link(BOct* parent, T* child)
+    inline void PointOctree<BaseVecT>::link(BOct* parent, T* child)
     {
       parent->m_child =(long)((unsigned char*)child - (unsigned char*)parent);
     }
 
   template <typename BaseVecT>
     template <typename T>
-    inline T* MeshOctree<BaseVecT>::getChildPtr(BOct* parent)
+    inline T* PointOctree<BaseVecT>::getChildPtr(BOct* parent)
     {
       return reinterpret_cast<T*>((unsigned char*)parent + parent->m_child);
     }
 
   template <typename BaseVecT>
     template <typename PtrT>
-    void MeshOctree<BaseVecT>::sortPC(size_t start, size_t size, const BoundingBox<BaseVecT>& bbox, size_t bucket_sizes[8])
+    void PointOctree<BaseVecT>::sortPC(size_t start, size_t size, const BoundingBox<BaseVecT>& bbox, size_t bucket_sizes[8])
     {
       // TODO template this properly
       PtrT ptr[8];
@@ -245,7 +245,7 @@ namespace lvr2{
     }
 
   template <typename BaseVecT>
-    long MeshOctree<BaseVecT>::buildTree(BOct* oct, size_t start, size_t size, const BoundingBox<BaseVecT>& bbox)
+    long PointOctree<BaseVecT>::buildTree(BOct* oct, size_t start, size_t size, const BoundingBox<BaseVecT>& bbox)
     {
       // TODO did i need this.
      // if(pts.empty())
@@ -388,7 +388,7 @@ namespace lvr2{
     }
 
 //  template <typename BaseVecT>
-//    void MeshOctree<BaseVecT>::writeLeaf(Leaf* leaf, unsigned char index)
+//    void PointOctree<BaseVecT>::writeLeaf(Leaf* leaf, unsigned char index)
 //    {
 //      //std::cout << leaf->m_start << " " << leaf->m_size << std::endl;
 //      for(unsigned int i = leaf->m_start; i < (leaf->m_start + leaf->m_size); ++i)
@@ -406,7 +406,7 @@ namespace lvr2{
 //    }
 //
 //  template <typename BaseVecT>
-//    void MeshOctree<BaseVecT>::colorAndWrite(BOct* oct, unsigned char index)
+//    void PointOctree<BaseVecT>::colorAndWrite(BOct* oct, unsigned char index)
 //    {
 //
 //      unsigned char cnt = 0;
@@ -438,7 +438,7 @@ namespace lvr2{
 //    }
 //
 //  template <typename BaseVecT>
-//    void MeshOctree<BaseVecT>::colorAndWrite(BOct* oct)
+//    void PointOctree<BaseVecT>::colorAndWrite(BOct* oct)
 //    {
 //      static int depth = 0;
 //      unsigned char cnt = 0;
@@ -478,7 +478,7 @@ namespace lvr2{
 //    }
 
   template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::getPoints(BOct* oct, std::vector<unsigned int>& indices)
+    void PointOctree<BaseVecT>::getPoints(BOct* oct, std::vector<unsigned int>& indices)
     {
       unsigned char cnt = 0;
       if(oct->m_leaf)
@@ -523,7 +523,7 @@ namespace lvr2{
     }
 
   template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::genDisplayLists(Leaf* leaf)
+    void PointOctree<BaseVecT>::genDisplayLists(Leaf* leaf)
     {
       leaf->m_listIndex = glGenLists(5);
       for(int i = 0; i < 5; ++i)
@@ -600,7 +600,7 @@ namespace lvr2{
 
 
   template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::genDisplayLists(BOct* oct)
+    void PointOctree<BaseVecT>::genDisplayLists(BOct* oct)
     {
       unsigned char cnt = 0;
       if(oct->m_leaf)
@@ -629,7 +629,7 @@ namespace lvr2{
 
 
   template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::normalizePlanes(double planes[6][4])
+    void PointOctree<BaseVecT>::normalizePlanes(double planes[6][4])
     {
       for(unsigned char i = 0; i < 6; ++i)
       {
@@ -648,14 +648,14 @@ namespace lvr2{
     }
 
   template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::intersect(double planes[6][4], std::vector<unsigned int>& indices)
+    void PointOctree<BaseVecT>::intersect(double planes[6][4], std::vector<unsigned int>& indices)
     {
       normalizePlanes(planes);
       intersect(m_root, m_bbox, planes, indices);
     }
 
   template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::intersect(Leaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[6][4], std::vector<unsigned int >& indices)
+    void PointOctree<BaseVecT>::intersect(Leaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[6][4], std::vector<unsigned int >& indices)
     {
 
       for(unsigned char i = 0; i < 6; ++i)
@@ -691,7 +691,7 @@ namespace lvr2{
     }
 
   template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::intersect(BOct* oct, const BoundingBox<BaseVecT>& bbox, double planes[6][4], std::vector<unsigned int >& indices)
+    void PointOctree<BaseVecT>::intersect(BOct* oct, const BoundingBox<BaseVecT>& bbox, double planes[6][4], std::vector<unsigned int >& indices)
     {
 
       bool inlier = true;
@@ -768,12 +768,12 @@ namespace lvr2{
 
 
   //  template <typename BaseVecT>
-  //    void MeshOctree<BaseVecT>::intersect(const BoundingBox<BaseVecT>& cullBBox, std::vector<BaseVecT>& pts)
+  //    void PointOctree<BaseVecT>::intersect(const BoundingBox<BaseVecT>& cullBBox, std::vector<BaseVecT>& pts)
   //    {
   //      intersect(m_root, m_bbox, cullBBox, pts);
   //    }
   //  template <typename BaseVecT>
-  //    void MeshOctree<BaseVecT>::intersect(BOct* oct, const BoundingBox<BaseVecT>& octBBox, const BoundingBox<BaseVecT>& cullBBox, std::vector<BaseVecT>& pts)
+  //    void PointOctree<BaseVecT>::intersect(BOct* oct, const BoundingBox<BaseVecT>& octBBox, const BoundingBox<BaseVecT>& cullBBox, std::vector<BaseVecT>& pts)
   //    {
   //      if(oct == nullptr)
   //      {
