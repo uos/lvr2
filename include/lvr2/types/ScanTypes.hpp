@@ -81,13 +81,11 @@ using ScanOptional = boost::optional<Scan>;
  *          and extrinsic camera parameters
  * 
  *****************************************************************************/
+
 struct ScanImage
 {
     /// Camera model 
-    PinholeCameraModel              camera;
-
-    /// Mount calibration estimate / extrinsic estimate
-    Extrinsicsd                     extrinsicsEstmate;
+    PinholeCameraModeld             camera;
 
     /// Path to stored image
     boost::filesystem::path         image_file;

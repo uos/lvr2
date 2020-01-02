@@ -623,12 +623,12 @@ ScanImage HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_d
         
         if(intrinsics_arr)
         {
-            ret.intrinsics = Intrinsicsd(intrinsics_arr.get());
+            ret.camera.setIntrinsics(Intrinsicsd(intrinsics_arr.get()));
         }
 
         if(extrinsics_arr)
         {
-            ret.extrinsics = Extrinsicsd(extrinsics_arr.get());
+            ret.camera.setExtrinsics(Extrinsicsd(extrinsics_arr.get()));
         }
 
         if(load_image_data)
@@ -954,11 +954,11 @@ void HDF5IO::addRawCamData( int scan_id, int img_id, ScanImage& cam_data )
         
         // add image to scan_image_group
         doubleArr intrinsics_arr(new double[9]);
-        Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(intrinsics_arr.get()) = cam_data.intrinsics;
+        Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(intrinsics_arr.get()) = cam_data.camera.intrinsics();
 
 
         doubleArr extrinsics_arr(new double[16]);
-        Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>>(extrinsics_arr.get()) = cam_data.extrinsics;
+        Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>>(extrinsics_arr.get()) = cam_data.camera.extrinsics();
 
         std::vector<size_t> dim_4 = {4,4};
         std::vector<size_t> dim_3 = {3,3};

@@ -48,18 +48,16 @@ LVRCamDataItem::LVRCamDataItem(
 
     // change this to not inverse
     bool dummy;
-    m_matrix = m_data.extrinsics; //.inv(dummy);
+    m_matrix = m_data.camera.extrinsics(); //.inv(dummy);
 
     // set Transform from 
     setTransform(m_matrix);
 
-    std::cout << "INTRINSICS:" << std::endl;
-    std::cout << m_data.intrinsics << std::endl;
-    m_intrinsics = m_data.intrinsics.transpose();
+    m_intrinsics = m_data.camera.intrinsics().transpose();
 
     // init pose
     double pose[6];
-    eigenToEuler<double>(m_data.extrinsics, pose);
+    extrinsicsToEuler<double>(m_data.camera.extrinsics(), pose);
 
     m_pose.x = pose[0];
     m_pose.y = pose[1];
