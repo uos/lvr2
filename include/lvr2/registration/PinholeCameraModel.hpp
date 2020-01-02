@@ -28,42 +28,54 @@ public:
         }
     }
 
-    /// Get the position of the camera with respect to the internally
-    /// stored extrinsic matrix. This identical with returning the 
-    /// camera's position in sensor coordinates.
-    template<typename VecT>
-    VecT position()
+    Eigen::Matrix<T, 3, 3> rotation() const
     {
-        Eigen::Vector<3, T> p = m_extrinsics.template block<3, 1>(0, 3);
-        return VecT(p[0], p[1], p[2]);
+        return m_extrinsics.template block<3, 3>(0, 0);
     }
 
-    Eigen::Matrix<3, T> rotation()
+    Vector3<T> position() const
     {
-        return m_extrinsics.template block<3, 3>(0, 0)
+        return Vector3<T>(0, 0, 0); 
     }
 
-    Eigen::Vector<3, T> position()
-    {
-        return 
-    }
-
-    /// Get the position of the camera in world coordinates for a 
-    /// given reference frame which is given by \ref transform. The 
-    /// internally stored extrinsic information is added to \ref transform. 
-    VecT position(const Transform<T>& transform)
-    {
-        /// TODO ...
-    }
 
     /// Get the global rotation of the camera with respect to the 
     /// given reference frame defined by \ref transform. 
-    Eigen::Matrix<3, T> rotation(const Transform<T>& transform)
+    Eigen::Matrix<T, 3, 3> rotation(const Transform<T>& transform) const
     {
-
+        return Eigen::Matrix<T, 3, 3>();
     }
 
-    
+    void setIntrinsics(const Intrinsics<T>& i)
+    {
+        m_intrinsics = i;
+    }
+
+    void setExtrinsics(const Extrinsics<T>& e)
+    {
+        m_extrinsics = e;
+    }
+
+    void setExtrinsicsEstimate(const Extrinsics<T>& e)
+    {
+        m_extrinsicsEstimate = e;
+    }
+
+    Intrinsics<T> intrinsics() const
+    {
+        return m_intrinsics;
+    }
+
+    Extrinsics<T> extrinsics() const
+    {
+        return m_extrinsics;
+    }
+
+    Extrinsics<T> extrinsicsEstimate() const
+    {
+        return m_extrinsicsEstimate;
+    }
+
 private:
 
     /// Intrinsic parameters in this order: fx, fy, Cx, Cy
@@ -77,9 +89,17 @@ private:
 
     /// Mount calibration / extrinsic calibration
     Extrinsics<T>                   m_extrinsics;
+
+    /// Mount calibration / extrinsic calibration
+    Extrinsics<T>                   m_extrinsicsEstimate;
 };
 
-using CameraModelPtr = std::shared_ptr<CameraModel>;
+template<typename T>
+using PinholeCameraModelPtr = std::shared_ptr<PinholeCameraModel<T>>;
+
+using PinholeCameraModeld = PinholeCameraModel<double>;
+using PinholeCameraModelf = PinholeCameraModel<float>;
+
 
 } // namespace lvr2
 
