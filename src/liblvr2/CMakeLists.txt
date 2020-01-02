@@ -47,7 +47,7 @@ set(LVR2_SOURCES
     io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
     io/ChunkIO.cpp
-    #io/PlutoMetaDataIO.cpp
+    io/ScanIOUtils.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
@@ -183,7 +183,6 @@ endif()
 #####################################################################################
 # no found variable
 if(YAML_CPP_LIBRARIES)
-    set(LVR2_SOURCES ${LVR2_SOURCES} io/PlutoMetaDataIO.cpp)
     set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${YAML_CPP_LIBRARIES})
 endif()
 

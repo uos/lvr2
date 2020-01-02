@@ -181,8 +181,9 @@ bool saveScan(int nr, ScanPtr scan, HDF5IO hdf5)
 
         // Generate tuples for field of view and resolution parameters
         floatArr fov(new float[2]);
-        fov[0] = scan->m_hFieldOfView;
-        fov[1] = scan->m_vFieldOfView;
+        fov[0] = scan->m_thetaMax - scan->m_thetaMin;
+        fov[1] = scan->m_phiMax - scan->m_phiMin;
+
 
         floatArr res(new float[2]);
         res[0] = scan->m_hResolution;
@@ -420,11 +421,11 @@ void readScanMetaData(const boost::filesystem::path& fn, ScanPtr& scan_ptr)
                 if (it->second["Theta"])
                 {
                     YAML::Node tmp = it->second["Theta"];
-                    float min = tmp["min"].as<float>();
-                    float max = tmp["max"].as<float>();
+                    scan_ptr->m_thetaMin = tmp["min"].as<float>();
+                    scan_ptr->m_thetaMax = tmp["max"].as<float>();
 
-                    scan_ptr->m_vFieldOfView = max - min;
-                    scan_ptr->m_vResolution = tmp["delta"].as<float>();
+                    // scan_ptr->m_vFieldOfView = max - min;
+                    // scan_ptr->m_vResolution = tmp["delta"].as<float>();
                     // std::cout << "T: " << scan_ptr->m_vFieldOfView << "; "
                     //          << scan_ptr->m_vResolution << std::endl;
                 }
@@ -433,8 +434,7 @@ void readScanMetaData(const boost::filesystem::path& fn, ScanPtr& scan_ptr)
                     YAML::Node tmp = it->second["Phi"];
                     float min = tmp["min"].as<float>();
                     float max = tmp["max"].as<float>();
-
-                    scan_ptr->m_hFieldOfView = max - min;
+                    
                     scan_ptr->m_hResolution = tmp["delta"].as<float>();
                     // std::cout << "P: " << scan_ptr->m_hFieldOfView << "; "
                     //          << scan_ptr->m_hResolution << std::endl;
