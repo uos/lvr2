@@ -126,7 +126,7 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
                     adjustedArea.getMin() + BaseVector<float>(i, j, k) * m_chunkSize);
 
                 MeshBufferPtr loadedChunk
-                    = m_chunkHashGrid->findChunk(cellIndex, cellCoord.x, cellCoord.y, cellCoord.z);
+                    = m_chunkHashGrid->findMeshChunk(cellIndex, cellCoord.x, cellCoord.y, cellCoord.z);
                 if (loadedChunk.get())
                 {
                     // TODO: remove saving tmp chunks later
@@ -667,7 +667,7 @@ void ChunkManager::loadAllChunks()
         {
             for (int k = 0; k < m_amount[2]; k++)
             {
-                if (m_chunkHashGrid->loadChunk(hashValue(i, j, k), i, j, k))
+                if (m_chunkHashGrid->loadMeshChunk(hashValue(i, j, k), i, j, k))
                 {
                     numLoaded++;
                 }

@@ -41,38 +41,56 @@ ChunkHashGrid::ChunkHashGrid(std::string hdf5Path, size_t cacheSize)
 {
 }
 
-bool ChunkHashGrid::loadChunk(size_t hashValue, int x, int y, int z, std ::string layer)
+bool ChunkHashGrid::loadChunk(std::string layer, size_t hashValue, int x, int y, int z)
 {
     std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
     lvr2::MeshBufferPtr chunk = m_chunkIO->loadChunk(chunkName);
     if (chunk.get())
     {
-        set(hashValue, chunk, layer);
+        set(layer, hashValue, chunk);
         return true;
     }
     return false;
 }
 
-MeshBufferPtr ChunkHashGrid::findChunk(size_t hashValue, int x, int y, int z, std::string layer)
+bool ChunkHashGrid::loadMeshChunk(size_t hashValue, int x, int y, int z)
 {
-    MeshBufferPtr found;
+    std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
+    lvr2::MeshBufferPtr chunk = m_chunkIO->loadChunk(chunkName);
+    if (chunk.get())
+    {
+        set("mesh", hashValue, chunk);
+        return true;
+    }
+    return false;
+}
+
+ChunkHashGrid::val_type
+ChunkHashGrid::findVariantChunk(std::string layer, size_t hashValue, int x, int y, int z)
+{
+    val_type found;
     // try to load mesh from hash map
-    if (get(hashValue, found, layer))
+    if (get(layer, hashValue, found))
     {
         return found;
     }
     // otherwise try to load the chunk from the hdf5
-    if (loadChunk(hashValue, x, y, z, layer))
+    if (loadChunk(layer, hashValue, x, y, z))
     {
-        get(hashValue, found, layer);
+        get(layer, hashValue, found);
     }
     return found;
 }
 
-MeshBufferPtr ChunkHashGrid::findChunkCondition(
-    size_t hashValue, int x, int y, int z, std::string channelName, std::string layer)
+
+MeshBufferPtr ChunkHashGrid::findMeshChunk(size_t hashValue, int x, int y, int z)
 {
-    MeshBufferPtr found = findChunk(hashValue, x, y, z, layer);
+    return findChunk<MeshBufferPtr>("mesh", hashValue, x, y, z);
+}
+
+MeshBufferPtr ChunkHashGrid::findMeshChunkCondition(size_t hashValue, int x, int y, int z, std::string channelName)
+{
+    MeshBufferPtr found = findMeshChunk(hashValue, x, y, z);
     if (found)
     {
         if (found->hasIndexChannel(channelName) || found->hasFloatChannel(channelName)
@@ -80,13 +98,12 @@ MeshBufferPtr ChunkHashGrid::findChunkCondition(
         {
             return found;
         }
-        MeshBufferPtr empty;
-        return empty;
+        return nullptr;
     }
     return found;
 }
 
-void ChunkHashGrid::set(size_t hashValue, const MeshBufferPtr& mesh, std::string layer)
+void ChunkHashGrid::set(std::string layer, size_t hashValue, const val_type& mesh)
 {
     auto layerIt = m_hashGrid.find(layer);
     if (layerIt != m_hashGrid.end())
@@ -116,7 +133,7 @@ void ChunkHashGrid::set(size_t hashValue, const MeshBufferPtr& mesh, std::string
     m_hashGrid[layer][hashValue] = mesh;
 }
 
-bool ChunkHashGrid::get(size_t hashValue, MeshBufferPtr& mesh, std::string layer)
+bool ChunkHashGrid::get(std::string layer, size_t hashValue, val_type& mesh)
 {
     auto layerIt = m_hashGrid.find(layer);
     if (layerIt != m_hashGrid.end())
