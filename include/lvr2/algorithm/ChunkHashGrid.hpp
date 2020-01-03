@@ -70,25 +70,70 @@ class ChunkHashGrid
      */
     bool loadChunk(std::string layer, size_t hashValue, int x, int y, int z);
 
+    /**
+     * @brief loads a chunk of the mesh layer from the HDF5 file into the hash grid
+     *
+     * @param hashValue hash-value of the chunk
+     * @param x grid coordinate in x-dimension
+     * @param y grid coordinate in y-dimension
+     * @param z grid coordinate in z-dimension
+     * @return true if loading was possible, false if loading was not possible
+     *         (for example if the hash-value does not belong to a mesh with vertices)
+     */
     bool loadMeshChunk(size_t hashValue, int x, int y, int z);
 
     /**
-     * @brief returns a mesh of a given cellIndex
+     * @brief returns the value for one layer of a given chunk
      *
      * @param layer layer of requested chunk
      * @param hashValue hash-value of the chunk
      * @param x grid coordinate in x-dimension
      * @param y grid coordinate in y-dimension
      * @param z grid coordinate in z-dimension
-     * @return the MeshBufferPtr containing the chunk
+     *
+     * @return information of the chunk
      */
     val_type findVariantChunk(std::string layer, size_t hashValue, int x, int y, int z);
 
+    /**
+     * @brief returns the value for one layer of a given chunk
+     *
+     * @tparam T type of chunk values
+     * @param layer layer of the requested chunk
+     * @param hashValue hash-value of the chunk
+     * @param x grid coordinate in x-dimension
+     * @param y grid coordinate in y-dimension
+     * @param z grid coordinate in z-dimension
+     *
+     * @return information of the chunk
+     */
     template <typename T>
     T findChunk(std::string layer, size_t hashValue, int x, int y, int z);
 
+    /**
+     * @brief returns the mesh for the mesh layer of a given chunk
+     *
+     * @param layer layer of requested chunk
+     * @param hashValue hash-value of the chunk
+     * @param x grid coordinate in x-dimension
+     * @param y grid coordinate in y-dimension
+     * @param z grid coordinate in z-dimension
+     *
+     * @return information of the chunk
+     */
     MeshBufferPtr findMeshChunk(size_t hashValue, int x, int y, int z);
 
+    /**
+     * @brief returns the mesh for the mesh layer of a given chunk if a given channel exists
+     *
+     * @param hashValue hash-value of the chunk
+     * @param x grid coordinate in x-dimension
+     * @param y grid coordinate in y-dimension
+     * @param z grid coordinate in z-dimension
+     * @param channelName channel that needs to exist to return the chunk
+     *
+     * @return mesh of chunk if channel with given channelName exists
+     */
     MeshBufferPtr
     findMeshChunkCondition(size_t hashValue, int x, int y, int z, std::string channelName);
 
@@ -110,7 +155,7 @@ class ChunkHashGrid
      *
      * @param layer layer of chunk to set
      * @param hashValue the value, where the chunk will be saved
-     * @param mesh the MeshbufferPtr of the chunk
+     * @param mesh the content of the chunk
      */
     void set(std::string layer, size_t hashValue, const val_type& mesh);
 
