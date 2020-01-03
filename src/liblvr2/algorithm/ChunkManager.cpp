@@ -36,7 +36,6 @@
 
 #include "lvr2/algorithm/ChunkManager.hpp"
 
-#include "lvr2/io/ChunkIO.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 
 #include <algorithm>
@@ -86,7 +85,8 @@ ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize) : m_hdf5Path(
 {
     if (boost::filesystem::exists(hdf5Path))
     {
-        ChunkIO chunkIO(hdf5Path);
+        ChunkHashGrid::io chunkIO;
+        chunkIO.open(hdf5Path);
         m_amount      = chunkIO.loadAmount();
         m_chunkSize   = chunkIO.loadChunkSize();
         m_boundingBox = chunkIO.loadBoundingBox();
@@ -125,8 +125,8 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
                 BaseVector<int> cellCoord = getCellCoordinates(
                     adjustedArea.getMin() + BaseVector<float>(i, j, k) * m_chunkSize);
 
-                MeshBufferPtr loadedChunk
-                    = m_chunkHashGrid->findMeshChunk(cellIndex, cellCoord.x, cellCoord.y, cellCoord.z);
+                MeshBufferPtr loadedChunk = m_chunkHashGrid->findMeshChunk(
+                    cellIndex, cellCoord.x, cellCoord.y, cellCoord.z);
                 if (loadedChunk.get())
                 {
                     // TODO: remove saving tmp chunks later
@@ -404,7 +404,7 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
             }
         }
     }
-    
+
     // use mapping from old vertex indices to new vertex indices to update face indices
     facesChannel = *areaMesh->getIndexChannel("face_indices");
     for (std::size_t i = 0; i < areaMesh->numFaces(); i++)
@@ -591,8 +591,9 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
         ++iterator;
     }
 
-    ChunkIO chunkIo(m_hdf5Path);
-    chunkIo.writeBasicStructure(m_amount, m_chunkSize, m_boundingBox);
+    ChunkHashGrid::io chunkIo;
+    chunkIo.open(m_hdf5Path);
+    chunkIo.save(m_amount, m_chunkSize, m_boundingBox);
 
     // save the chunks as .ply
     for (std::size_t i = 0; i < m_amount.x; i++)
@@ -619,7 +620,7 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
                                                 + std::to_string(j) + "-" + std::to_string(k)
                                                 + ".ply");
                     // write chunk in hdf5
-                    chunkIo.writeChunk(chunkMeshPtr, i, j, k);
+                    chunkIo.saveChunk(chunkMeshPtr, i, j, k);
 
                     chunkBuilders[hash] = nullptr; // deallocate
                 }

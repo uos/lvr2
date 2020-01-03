@@ -36,15 +36,15 @@
 
 namespace lvr2
 {
-ChunkHashGrid::ChunkHashGrid(std::string hdf5Path, size_t cacheSize)
-    : m_chunkIO(std::shared_ptr<ChunkIO>(new ChunkIO(hdf5Path))), m_cacheSize(cacheSize)
+ChunkHashGrid::ChunkHashGrid(std::string hdf5Path, size_t cacheSize) : m_cacheSize(cacheSize)
 {
+    m_io.open(hdf5Path);
 }
 
 bool ChunkHashGrid::loadChunk(std::string layer, size_t hashValue, int x, int y, int z)
 {
     std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
-    lvr2::MeshBufferPtr chunk = m_chunkIO->loadChunk(chunkName);
+    lvr2::MeshBufferPtr chunk = m_io.loadChunk(chunkName);
     if (chunk.get())
     {
         set(layer, hashValue, chunk);
@@ -55,14 +55,7 @@ bool ChunkHashGrid::loadChunk(std::string layer, size_t hashValue, int x, int y,
 
 bool ChunkHashGrid::loadMeshChunk(size_t hashValue, int x, int y, int z)
 {
-    std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
-    lvr2::MeshBufferPtr chunk = m_chunkIO->loadChunk(chunkName);
-    if (chunk.get())
-    {
-        set("mesh", hashValue, chunk);
-        return true;
-    }
-    return false;
+    return loadChunk("mesh", hashValue, x, y, z);
 }
 
 ChunkHashGrid::val_type
@@ -82,13 +75,13 @@ ChunkHashGrid::findVariantChunk(std::string layer, size_t hashValue, int x, int 
     return found;
 }
 
-
 MeshBufferPtr ChunkHashGrid::findMeshChunk(size_t hashValue, int x, int y, int z)
 {
     return findChunk<MeshBufferPtr>("mesh", hashValue, x, y, z);
 }
 
-MeshBufferPtr ChunkHashGrid::findMeshChunkCondition(size_t hashValue, int x, int y, int z, std::string channelName)
+MeshBufferPtr ChunkHashGrid::findMeshChunkCondition(
+    size_t hashValue, int x, int y, int z, std::string channelName)
 {
     MeshBufferPtr found = findMeshChunk(hashValue, x, y, z);
     if (found)

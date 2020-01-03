@@ -47,7 +47,6 @@ set(LVR2_SOURCES
     io/ScanprojectIO.cpp
     io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
-    io/ChunkIO.cpp
     types/Scan.cpp
     #io/PlutoMetaDataIO.cpp
     reconstruction/Projection.cpp

@@ -35,9 +35,10 @@
 #ifndef CHUNK_HASH_GRID_HPP
 #define CHUNK_HASH_GRID_HPP
 
-#include "lvr2/io/ChunkIO.hpp"
+#include "lvr2/io/GHDF5IO.hpp"
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/io/hdf5/ChunkIO.hpp"
 
 #include <list>
 #include <unordered_map>
@@ -49,7 +50,12 @@ class ChunkHashGrid
   public:
     using val_type = boost::variant<MeshBufferPtr, PointBufferPtr>;
 
-    ChunkHashGrid() = default;
+    using io = Hdf5IO<hdf5features::ChunkIO,
+                      hdf5features::ArrayIO,
+                      hdf5features::ChannelIO,
+                      hdf5features::VariantChannelIO,
+                      hdf5features::MeshIO>;
+
     /**
      * @brief class to load chunks from an HDF5 file
      *
@@ -144,7 +150,7 @@ class ChunkHashGrid
     std::unordered_map<std::string, std::unordered_map<size_t, val_type>> m_hashGrid;
 
     // chunkIO for the HDF5 file-IO
-    std::shared_ptr<lvr2::ChunkIO> m_chunkIO;
+    io m_io;
 
     // number of chunks that will be cached before deleting old chunks
     size_t m_cacheSize = 100;
