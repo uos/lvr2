@@ -7,34 +7,20 @@
 
 namespace lvr2{ 
   template <typename BaseVecT>
-    MeshOctree<BaseVecT>::MeshOctree(std::unordered_map<size_t, MeshBufferPtr>& chunkedMesh, float chunkSize, BoundingBox<BaseVecT> bb) : m_bbox(bb)
+    MeshOctree<BaseVecT>::MeshOctree(float voxelSize, std::vector<size_t>& hashes, std::vector<BaseVecT>& centroids, BoundingBox<BaseVecT>& bb) :
+        m_voxelSize(voxelSize),
+        m_bbox(bb),
+        numLeafs(0)
     {
-
       long offset = 0;
       m_root = reinterpret_cast<BOct*>(m_mem.alloc<BOct>(1, offset));
 
+
         
       std::cout << lvr2::timestamp << "Start building octree with voxelsize " << m_voxelSize << std::endl;
-      m_root = (BOct*)((unsigned char*) m_root + buildTree(m_root, 0, points->numPoints(), m_bbox));
-
-      std::cout << lvr2::timestamp << "generating genDisplayLists " << std::endl;
-      genDisplayLists();
-
-      std::cout << lvr2::timestamp << "generating genDisplayLists done" << std::endl;
-      std::cout << lvr2::timestamp << "Octree rdy " << std::endl;
-      
-      for(const auto chunk& : chunkedMesh )
-      {
-        m_hashes.push_back(chunk.first);
-        FloatChannel vertices = (*chun)
-
-      }
-
-//        m_points.clear();
-//        std::vector<BaseVecT >().swap(m_points);
-
-      //  colorAndWrite(m_root);
-
+      std::cout << lvr2::timestamp << hashes.size() << std::endl;
+      m_root = (BOct*)((unsigned char*) m_root + buildTree(m_root, hashes, centroids, m_bbox));
+      std::cout << lvr2::timestamp << numLeafs << std::endl;
     }
 
   template  <typename BaseVecT>
@@ -129,119 +115,111 @@ namespace lvr2{
       return reinterpret_cast<T*>((unsigned char*)parent + parent->m_child);
     }
 
+//  template <typename BaseVecT>
+//    template <typename PtrT>
+//    void MeshOctree<BaseVecT>::sortPC(size_t start, size_t size, const BoundingBox<BaseVecT>& bbox, size_t bucket_sizes[8])
+//    {
+//      // TODO template this properly
+//      PtrT ptr[8];
+//      PtrT beg[8];
+//
+//      beg[0] = ptr[0] = &m_points[start];
+////      beg[0] = ptr[0] = p;
+//
+//      //creating pointers for bucket starts.
+//      for(int j = 1; j < 8; ++j)
+//      {
+//        // pointing to first position of bucket.
+//        beg[j] = ptr[j] = ptr[j - 1] + bucket_sizes[j - 1];
+//      }
+//
+//      size_t end = start + size;
+//            //size_t full = ptr[1] - &pts[0];
+//      for(size_t i = start; i < end; )
+//      {
+//        int index = getIndex(m_points[i], bbox);
+//        if(ptr[index] == &(m_points[end]))
+//        {
+//          std::cout << "This should have never happened." << std::endl;
+//          std::cout << (int) index << std::endl;
+//        }
+//
+//        if((beg[index] <= &m_points[i]) && (&m_points[i] < ptr[index]))
+//        {
+//          i = ptr[index] - &m_points[0];
+//          continue;
+//        }
+//
+//        
+//        if(ptr[index] == &m_points[i])
+//        {
+//          // is already in correct bucket 
+//          if(ptr[index] < &m_points[end - 1])
+//            ptr[index]++; 
+//
+//          i++;
+//        }
+//        else
+//        {
+//          // TODO 
+//          // We somehow need 2 temporary variables. Otherwise it won't work with the proxy(Ptr)
+//
+//          // advance bucket pointer if current element is correct.
+//          BaseVecT tmp = *ptr[index];
+//          while(getIndex(tmp, bbox) == index)
+//          {
+//            if(ptr[index] < &(m_points[end - 1]))
+//              ptr[index]++;
+//
+//            tmp = *ptr[index];
+//          }
+//          BaseVecT aux = m_points[i];
+//          *(ptr[index]) = aux;
+//          m_points[i] = tmp;
+//          if(ptr[index] < &(m_points[end - 1]))
+//            ptr[index]++;
+//        }
+//
+//      }
+//    }
+
   template <typename BaseVecT>
-    template <typename PtrT>
-    void MeshOctree<BaseVecT>::sortPC(size_t start, size_t size, const BoundingBox<BaseVecT>& bbox, size_t bucket_sizes[8])
+    long MeshOctree<BaseVecT>::buildTree(BOct* oct, std::vector<size_t>& hashes, std::vector<BaseVecT>& centroids, const BoundingBox<BaseVecT>& bbox)
     {
-      // TODO template this properly
-      PtrT ptr[8];
-      PtrT beg[8];
-
-      beg[0] = ptr[0] = &m_points[start];
-//      beg[0] = ptr[0] = p;
-
-      //creating pointers for bucket starts.
-      for(int j = 1; j < 8; ++j)
-      {
-        // pointing to first position of bucket.
-        beg[j] = ptr[j] = ptr[j - 1] + bucket_sizes[j - 1];
-      }
-
-      size_t end = start + size;
-            //size_t full = ptr[1] - &pts[0];
-      for(size_t i = start; i < end; )
-      {
-        int index = getIndex(m_points[i], bbox);
-        if(ptr[index] == &(m_points[end]))
+        if(centroids.empty())
         {
-          std::cout << "This should have never happened." << std::endl;
-          std::cout << (int) index << std::endl;
+            return 0;
         }
+        BoundingBox<BaseVecT> boxes[8];
+        getBBoxes(bbox, boxes);
+        std::vector<size_t>   c_hashes[8];
+        std::vector<BaseVecT> c_centroids[8];
+        size_t numChildren = 0;
 
-        if((beg[index] <= &m_points[i]) && (&m_points[i] < ptr[index]))
+        // LEAF
+        if(bbox.getXSize()/2.0 <= m_voxelSize)
         {
-          i = ptr[index] - &m_points[0];
-          continue;
-        }
+            for(size_t i = 0; i < centroids.size(); ++i)
+            {
+                unsigned char index = getIndex(centroids[i], bbox);
+                c_centroids[index].push_back(centroids[i]);
+                c_hashes[index].push_back(hashes[i]);
 
-        
-        if(ptr[index] == &m_points[i])
-        {
-          // is already in correct bucket 
-          if(ptr[index] < &m_points[end - 1])
-            ptr[index]++; 
+                if(!(oct->m_leaf & (1 << index)))
+                {
+                    oct->m_leaf |= (1 << index);
+                    numChildren++;
+                }
+            }
+            hashes.clear();
+            std::vector<size_t>().swap(hashes);
+            centroids.clear();
+            std::vector<BaseVecT >().swap(centroids);
 
-          i++;
-        }
-        else
-        {
-          // TODO 
-          // We somehow need 2 temporary variables. Otherwise it won't work with the proxy(Ptr)
-
-          // advance bucket pointer if current element is correct.
-          BaseVecT tmp = *ptr[index];
-          while(getIndex(tmp, bbox) == index)
-          {
-            if(ptr[index] < &(m_points[end - 1]))
-              ptr[index]++;
-
-            tmp = *ptr[index];
-          }
-          BaseVecT aux = m_points[i];
-          *(ptr[index]) = aux;
-          m_points[i] = tmp;
-          if(ptr[index] < &(m_points[end - 1]))
-            ptr[index]++;
-        }
-
-      }
-    }
-
-  template <typename BaseVecT>
-    long MeshOctree<BaseVecT>::buildTree(BOct* oct, size_t start, size_t size, const BoundingBox<BaseVecT>& bbox)
-    {
-      // TODO did i need this.
-     // if(pts.empty())
-     // {
-     //   return 0;
-     // }
-      BoundingBox<BaseVecT> boxes[8];
-      getBBoxes(bbox, boxes);
-
-//      std::vector<BaseVecT > octPoints[8];
-
-      size_t octSizes[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-
-      //std::cout << "bbox size " << bbox.getXSize() << std::endl;
-      if(bbox.getXSize()/2.0 <= m_voxelSize)
-      {
-        //std::cout << "leaf" << std::endl;
-        int numChildren = 0;
-        for(size_t i = start; i < (start + size); ++i)
-        {
-          unsigned char index = getIndex(m_points[i], bbox);
-//          octPoints[index].push_back(point);
-          octSizes[index]++;
-          //printf("Address %p\n", oct);
-          if(!(oct->m_leaf & (1 << index)))
-          {
-            oct->m_leaf |= (1 << index);
-            numChildren++;
-          }
-        }
-        
-//        sortPC(&m_points[start], start, size, bbox, octSizes);
-        sortPC<decltype(&(m_points[start]))>(start, size, bbox, octSizes);
-     //   sortPC(start, size, bbox, octSizes);
-
-        // force reallocation to clear vec
-//        pts.clear();
-//        std::vector<BaseVecT >().swap(pts);
-
-        long offset = 0;
-
-        //        std::cout << "no leafs. " << numChildren << std::endl;
+            long offset = 0;
+        numLeafs += numChildren;
         Leaf* leaves = reinterpret_cast<Leaf*>(m_mem.alloc<Leaf>(numChildren, offset));
+
 
         if(offset)
         {
@@ -250,41 +228,25 @@ namespace lvr2{
 
         link(oct, leaves);
 
-        int cnt = 0;
         for(unsigned i = 0; i < 8; ++i)
         {
           if(oct->m_leaf & (1 << i))
           {
-            leaves[cnt].m_start = start;
-            leaves[cnt].m_size = octSizes[i];
-            cnt++;
-            start += octSizes[i];
-//            leaves[cnt].m_size = octPoints[i].size();
-//            if(m_points.empty())
-//            {
-//              leaves[cnt].m_start = 0;
-//            }
-//            else
-//            {
-//              leaves[cnt].m_start = m_points.end() - m_points.begin();
-//            }
-//            m_points.insert(m_points.end(), octPoints[i].begin(), octPoints[i].end());
-//            cnt++;
-//            // clear and force reallocation
-//            octPoints[i].clear();
-//            std::vector<BaseVecT >().swap(octPoints[i]);
+             for(size_t j = 0 ; j < c_hashes[i].size(); ++j)
+             {
+             // SHOULD ONLY BE ONE!!
+                leaves->m_mesh.push_back(c_hashes[i][0]);
+             }
           }
         }
-        //std::cout << "return offset " << offset << std::endl;
         return offset;
       }
 
-      int numChildren = 0;
-      for(size_t i = start; i < (start + size); ++i)
+      for(size_t i = 0; i < centroids.size(); ++i)
       {
-        unsigned char index = getIndex(m_points[i], bbox);
-//        octPoints[index].push_back(point);
-        octSizes[index]++;
+        unsigned char index = getIndex(centroids[i], bbox);
+        c_centroids[index].push_back(centroids[i]);
+        c_hashes[index].push_back(hashes[i]);
         if(!(oct->m_valid & (1 << index)))
         {
           //std::cout << "setting new valid " << index << std::endl;
@@ -294,13 +256,17 @@ namespace lvr2{
       }
 
       //sortPC(&m_points[start], start, size, bbox, octSizes);
-      sortPC<decltype(&(m_points[start]))>(start, size, bbox, octSizes);
+//      sortPC<decltype(&(m_points[start]))>(start, size, bbox, octSizes);
       // force reallocation to clear vec
 //      pts.clear();
 //      std::vector<BaseVecT >().swap(pts);
 
-      long offset = 0;
+      hashes.clear();
+      std::vector<size_t>().swap(hashes);
+      centroids.clear();
+      std::vector<BaseVecT >().swap(centroids);
 
+            long offset = 0;
       BOct* newOct = reinterpret_cast<BOct*>(m_mem.alloc<BOct>(numChildren, offset));
 
       //      printf("Address %p\n", newOct);
@@ -321,8 +287,7 @@ namespace lvr2{
         long sub_offset = 0;
         if(oct->m_valid & (1 << i))
         {
-          sub_offset += buildTree(&newOct[cnt++], start, octSizes[i], boxes[i]);
-          start += octSizes[i];
+          sub_offset += buildTree(&newOct[cnt++], c_hashes[i], c_centroids[i], boxes[i]);
           if(sub_offset)
           {
             newOct = (BOct*) ((unsigned char*)newOct + sub_offset);
@@ -431,7 +396,7 @@ namespace lvr2{
 //    }
 
   template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::getPoints(BOct* oct, std::vector<unsigned int>& indices)
+    void MeshOctree<BaseVecT>::getHashes(BOct* oct, std::vector<size_t>& indices)
     {
       unsigned char cnt = 0;
       if(oct->m_leaf)
@@ -441,23 +406,11 @@ namespace lvr2{
         {
           if(oct->m_leaf & (1 << i))
           {
-            indices.push_back(leaf[cnt].m_listIndex + m_lod);
+            for(size_t j = 0; j < leaf->m_mesh.size(); ++j)
+            {
+                indices.push_back(leaf->m_mesh[j]);
+            }
             
-            //if(!m_lod)
-            //{
-            //  auto start = m_points.begin() + leaf[cnt].m_start;
-            //  pts.insert(pts.end(), start, start + leaf[cnt].m_size);
-            //}
-            //else
-            //{
-            //  for(int i = 0; i < leaf[cnt].m_size; ++i)
-            //  {
-            //    if((i % m_lod) == 0)
-            //    {
-            //      pts.push_back(m_points[leaf[cnt].m_start + i]);
-            //    }
-            //  }
-            //}
             cnt++;
           }
         }
@@ -469,146 +422,40 @@ namespace lvr2{
         {
           if(oct->m_valid & (1 << i))
           {
-            getPoints(child + cnt++, indices);
+            getHashes(child + cnt++, indices);
           }
         }
       }
     }
 
   template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::genDisplayLists(Leaf* leaf)
-    {
-      leaf->m_listIndex = glGenLists(5);
-      for(int i = 0; i < 5; ++i)
-      {
-        glNewList(leaf->m_listIndex + i, GL_COMPILE);
-        glBegin(GL_POINTS);
-
-        size_t mod = 1;
-        if(i == 9)
-        {
-          if(8 < leaf->m_size)
-            mod = leaf->m_size / 8;
-        }
-        else if(i == 8)
-        {
-          if(16 < leaf->m_size)
-            mod = leaf->m_size / 16;
-        }
-        else if(i == 7)
-        {
-          if(32 < leaf->m_size)
-            mod = leaf->m_size / 32;
-        }
-        else if(i == 6)
-        {
-          if(64 < leaf->m_size)
-            mod = leaf->m_size / 64;
-        }
-        else if(i == 5)
-        {
-          if(128 < leaf->m_size)
-            mod = leaf->m_size / 128;
-        }
-        else if(i == 4)
-        {
-          if(256 < leaf->m_size)
-            mod = leaf->m_size / 256;
-        }
-         else if(i == 3)
-        {
-          if(512 < leaf->m_size)
-            mod = leaf->m_size / 512;
-        }
-        else if(i == 2)
-        {
-          if(1024 < leaf->m_size)
-            mod = leaf->m_size / 1024;
-        }
-        else if(i == 1)
-        {
-          if(2048 < leaf->m_size)
-            mod = leaf->m_size / 2048;
-        }
- 
- 
-        
-        for(size_t j = leaf->m_start;
-            j < (leaf->m_start + leaf->m_size);
-            ++j)
-        {
-          if(j % mod)
-            continue;
-
-          glColor3f(255.0f, 255.0f, 255.0f);
-          BaseVecT p = m_points[j];
-          glVertex3f(p.x,
-                     p.y,
-                     p.z);
-          }
-        glEnd();
-        glEndList();
-      }
-    }
-
-
-  template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::genDisplayLists(BOct* oct)
-    {
-      unsigned char cnt = 0;
-      if(oct->m_leaf)
-      {
-        Leaf* leaf = getChildPtr<Leaf>(oct);
-        for(unsigned char i = 0; i < 8; ++i)
-        {
-          if(oct->m_leaf & (1 << i))
-          {
-            genDisplayLists(leaf + cnt++);
-          }
-        }
-      }
-      else
-      {
-        BOct* child = getChildPtr<BOct>(oct);
-        for(unsigned char i = 0; i < 8; ++i)
-        {
-          if(oct->m_valid & (1 << i))
-          {
-            genDisplayLists(child + cnt++);
-          }
-        }
-      }
-    }
-
-
-  template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::normalizePlanes(double planes[6][4])
+    void MeshOctree<BaseVecT>::normalizePlanes(double planes[24])
     {
       for(unsigned char i = 0; i < 6; ++i)
       {
-        double pX = planes[i][0];
-        double pY = planes[i][1];
-        double pZ = planes[i][2];
+        double pX = planes[i * 4 + 0];
+        double pY = planes[i * 4 + 1];
+        double pZ = planes[i * 4 + 2];
 
         double norm = std::sqrt(std::pow(pX, 2) + std::pow(pY, 2) + std::pow(pZ, 2));
 
         // seems like we have to flip the normals.
-        planes[i][0] =(-1) * pX / norm;
-        planes[i][1] =(-1) * pY / norm;
-        planes[i][2] =(-1) * pZ / norm;
+//        planes[i * 4 + 0] =(-1) * pX / norm;
+//        planes[i * 4 + 1] =(-1) * pY / norm;
+//        planes[i * 4 + 2] =(-1) * pZ / norm;
 
       }
     }
 
   template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::intersect(double planes[6][4], std::vector<unsigned int>& indices)
+    void MeshOctree<BaseVecT>::intersect(double planes[24], std::vector<size_t>& indices)
     {
       normalizePlanes(planes);
       intersect(m_root, m_bbox, planes, indices);
     }
 
   template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::intersect(Leaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[6][4], std::vector<unsigned int >& indices)
+    void MeshOctree<BaseVecT>::intersect(Leaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<size_t >& indices)
     {
 
       for(unsigned char i = 0; i < 6; ++i)
@@ -617,34 +464,40 @@ namespace lvr2{
         BaseVecT octMax = bbox.getMax();
         BaseVecT pVertex = octMin;
 
-        if(planes[i][0] >= 0)
+        if(planes[i * 4 + 0] >= 0)
         {
           pVertex.x = octMax.x;
         }
-        if(planes[i][1] >= 0)
+        if(planes[i * 4 + 1] >= 0)
         {
           pVertex.y = octMax.y;
         }
 
-        if(planes[i][2] >= 0)
+        if(planes[i * 4 + 2] >= 0)
         {
           pVertex.z = octMax.z;
         }
 
         double distance;
         // get distance pVertex. hessian 
-        distance = planes[i][0] * pVertex.x + planes[i][1] * pVertex.y + planes[i][2] * pVertex.z + planes[i][3];
+        distance = planes[i * 4 + 0] * pVertex.x +
+                   planes[i * 4 + 1] * pVertex.y +
+                   planes[i * 4 + 2] * pVertex.z +
+                   planes[i * 4 + 3];
         // outlier.
         if(distance < 0)
           return;
       }
 
       // if leaf is intersected it is not culled.
-      indices.push_back(leaf->m_listIndex + m_lod);
+      for(size_t j = 0; j < leaf->m_mesh.size(); ++j)
+      {
+        indices.push_back(leaf->m_mesh[j]);
+      }
     }
 
   template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::intersect(BOct* oct, const BoundingBox<BaseVecT>& bbox, double planes[6][4], std::vector<unsigned int >& indices)
+    void MeshOctree<BaseVecT>::intersect(BOct* oct, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<size_t >& indices)
     {
 
       bool inlier = true;
@@ -656,18 +509,18 @@ namespace lvr2{
         BaseVecT pVertex = octMin;
         BaseVecT nVertex = octMax;
 
-        if(planes[i][0] >= 0)
+        if(planes[i * 4 + 0] >= 0)
         {
           pVertex.x = octMax.x;
           nVertex.x = octMin.x;
         }
-        if(planes[i][1] >= 0)
+        if(planes[i * 4 + 1] >= 0)
         {
           pVertex.y = octMax.y;
           nVertex.y = octMin.y;
         }
 
-        if(planes[i][2] >= 0)
+        if(planes[i* 4 + 2] >= 0)
         {
           pVertex.z = octMax.z;
           nVertex.z = octMin.z;
@@ -676,13 +529,19 @@ namespace lvr2{
         double distance;
 
         // get distance pVertex. hessian 
-        distance = planes[i][0] * pVertex.x + planes[i][1] * pVertex.y + planes[i][2] * pVertex.z + planes[i][3];
+        distance = planes[i * 4 + 0] * pVertex.x +
+                   planes[i * 4 + 1] * pVertex.y +
+                   planes[i * 4 + 2] * pVertex.z +
+                   planes[i * 4 + 3];
         // outlier.
         if(distance < 0)
           return;
 
         // distance to nVertex
-        distance = planes[i][0] * nVertex.x + planes[i][1] * nVertex.y + planes[i][2] * nVertex.z + planes[i][3];
+        distance = planes[i * 4 + 0] * nVertex.x +
+                   planes[i * 4 + 1] * nVertex.y +
+                   planes[i * 4 + 2] * nVertex.z +
+                   planes[i * 4 + 3];
 
         if(distance < 0)
           inlier = false;
@@ -690,7 +549,7 @@ namespace lvr2{
 
       if(inlier)
       {
-        return getPoints(oct, indices);
+        return getHashes(oct, indices);
       }
 
       BoundingBox<BaseVecT> bboxes[8];

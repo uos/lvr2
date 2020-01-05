@@ -95,19 +95,10 @@ double ChunkedMeshCuller::Cull(vtkRenderer *ren, vtkProp **propList, int &listLe
     double planes[24];
     ren->GetActiveCamera()->GetFrustumPlanes(ren->GetTiledAspectRatio(), planes);
 
-    //double x, y, z;
-    //ren->GetActiveCamera()->GetPosition(x, y, z);
-    //ren->GetActiveCamera()->GetViewUp(up_x, 
-    //BaseVector<float> min(x - 20, y - 20 , z - 20);
-    //BaseVector<float> max(x + 20, y + 20 , z + 20);
-    lvr2::BoundingBox<BaseVector<float> > aabb = frustumToBB(planes); 
-    LVRBoundingBoxBridge bbridge(aabb);
-    ren->AddActor(bbridge.getActor());
-//    std::cout << aabb << std::endl;
 //    ren->RemoveAllViewProps();
 //    std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > chunks;
     std::vector<size_t> indices;
-    m_bridge->getActors(aabb, indices);
+    m_bridge->getActors(planes, indices);
 
     std::cout << "got " << indices.size() << " indices" << std::endl;
     
@@ -136,13 +127,13 @@ double ChunkedMeshCuller::Cull(vtkRenderer *ren, vtkProp **propList, int &listLe
         {
             if(std::find(indices.begin(), indices.end(), static_cast<MeshChunkActor*>(nextActor)->getID()) == indices.end())
             {
-                std::cout << "Set visibility off" << std::endl;
+//                std::cout << "Set visibility off" << std::endl;
                 nextActor->VisibilityOff();
 //                chunks.erase(static_cast<MeshChunkActor*>(nextActor)->getID());
             }
             else
             {
-                if(j > 40)
+                if(j > 3000)
                 {
                     continue;
                 }
