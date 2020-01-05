@@ -6,9 +6,10 @@
 #include <vtkRenderer.h>
 #include <vtkCamera.h>
 
-#include "lvr2/algorithm/ChunkManager.hpp"
+#include "LVRChunkedMeshBridge.hpp"
 
 #include <string>
+
 
 
 
@@ -16,14 +17,12 @@ namespace lvr2 {
     class ChunkedMeshCuller: public vtkCuller
     {
         public:
-            ChunkedMeshCuller(std::string file);
+            ChunkedMeshCuller(LVRChunkedMeshBridge* bridge) : m_bridge(bridge) {}
+
             virtual double Cull(vtkRenderer *ren, vtkProp **propList, int &listLength, int &initialized) override;
 
         private:
-            lvr2::ChunkManager m_chunkManager;
-            std::unordered_map<size_t, MeshBufferPtr> m_chunks;
-            std::unordered_map<size_t, vtkSmartPointer<vtkActor> > m_chunkActors;
-
+            LVRChunkedMeshBridge* m_bridge;
             lvr2::BoundingBox<BaseVector<float> > frustumToBB(double planes[24]);
 
             double sarrus(const double U[4],
