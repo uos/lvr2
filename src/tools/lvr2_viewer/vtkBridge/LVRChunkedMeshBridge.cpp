@@ -25,9 +25,11 @@ void LVRChunkedMeshBridge::addInitialActors(vtkSmartPointer<vtkRenderer> rendere
     std::cout << "Generating actors " << std::endl;
     auto bb = m_chunkManager.getBoundingBox();
     BaseVector<float> centroid = bb.getCentroid();
+    
     Vector3d cam_origin(centroid[0], centroid[1], centroid[2]);
     Vector3d view_up(1.0, 0.0, 0.0);
     Vector3d focal_point(0.0, 0.0, 0.0);
+
     renderer->GetActiveCamera()->SetPosition(cam_origin.x(), cam_origin.y(), cam_origin.z());
     renderer->GetActiveCamera()->SetFocalPoint(focal_point.x(), focal_point.y(), focal_point.z());
     renderer->GetActiveCamera()->SetViewUp(view_up.x(), view_up.y(), view_up.z());
@@ -36,6 +38,41 @@ void LVRChunkedMeshBridge::addInitialActors(vtkSmartPointer<vtkRenderer> rendere
 //    std::vector<vtkSmartPointer<MeshChunkActor> > actors;
 //    bb = BoundingBox<BaseVector<float> >(centroid, max);
     m_chunkManager.extractArea(bb, m_chunks);
+    std::vector<size_t> hashes;
+    std::vector<BaseVector<float> > centroids;
+    for(auto& chunk:m_chunks)
+    {
+        hashes.push_back(chunk.first);
+        FloatChannel vertices = *(chunk.second->getFloatChannel("vertices"));
+        BoundingBox<BaseVector<float>> bb;
+        BaseVector<float> p = vertices[0];
+        float minX = p.x;
+        float minY = p.y;
+        float minZ = p.z;
+        float maxX = p.x;
+        float maxY = p.y;
+        float maxZ = p.z;
+
+        for(size_t i = 0; i < vertices.numElements(); ++i)
+        {
+            p = vertices[i];
+            minX = std::min(minX, p.x);
+            minY = std::min(minY, p.y);
+            minZ = std::min(minZ, p.z);
+
+            maxX = std::max(maxX, p.x);
+            maxY = std::max(maxY, p.y);
+            maxZ = std::max(maxZ, p.z);
+        }
+        BaseVector<float> v1(minX, minY, minZ);
+        BaseVector<float> v2(maxX, maxY, maxZ);
+
+        BoundingBox<BaseVector<float> > chunk_bb(v1, v2);
+        centroids.push_back(chunk_bb.getCentroid());
+    }
+    m_oct = new MeshOctree<BaseVector<float> > (m_chunkManager.getChunkSize(),
+                                                hashes, centroids, bb);
+
     std::cout << "Computing actors " << std::endl;
     computeMeshActors();
     std::cout << "Adding actors." << std::endl;
@@ -47,19 +84,19 @@ void LVRChunkedMeshBridge::addInitialActors(vtkSmartPointer<vtkRenderer> rendere
     std::cout << "Added " << m_chunkActors.size() << " actors" << std::endl;
 }
 
-void LVRChunkedMeshBridge::getActors(lvr2::BoundingBox<BaseVector<float> >& bb,
+void LVRChunkedMeshBridge::getActors(double planes[24],
         std::vector<size_t>& indices)
         
        // std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> >& actors)
 {
-    std::cout << "Bounding box" << bb << std::endl;
-    m_chunkManager.extractArea(bb, m_chunks);
-//    std::vector<size_t> indices;
 
-    for(auto& chunk:m_chunks)
-    {
-        indices.push_back(chunk.first);
-    }
+     m_oct->intersect(planes, indices);
+//    m_chunkManager.extractArea(bb, m_chunks);
+
+//    for(auto& chunk:m_chunks)
+//    {
+//        indices.push_back(chunk.first);
+//    }
     
     //computeMeshActors();
 //    actors = m_chunkActors;

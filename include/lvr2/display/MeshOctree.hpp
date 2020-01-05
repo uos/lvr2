@@ -14,7 +14,7 @@ namespace lvr2
 
   struct BOct
   {
-      long m_child : 48;
+      unsigned long long m_child : 48;
       unsigned char m_valid : 8;
       unsigned char m_leaf : 8;
       BOct(): m_child(0), m_valid(0), m_leaf(0){}
@@ -22,18 +22,20 @@ namespace lvr2
   
   struct Leaf
   {
-      long m_mesh : 56;
-      unsigned char m_loaded : 8;
-      Leaf(): m_mesh(0), m_loaded(0){}
+      std::vector<size_t> m_mesh;
+//      unsigned long long m_mesh : 56;
+//      unsigned char m_loaded : 8;
+//      Leaf(): m_mesh(0), m_loaded(0){}
   };
 
   template <typename BaseVecT>
   class MeshOctree
   {
     public:
-      MeshOctree(std::unordered_map<size_t, MeshBufferPtr>& chunkedMesh, BoundingBox<BaseVecT> bb);
+      MeshOctree(float voxelSize, std::vector<size_t>& hashes, std::vector<BaseVecT>& centroids, BoundingBox<BaseVecT>& bb);
 
-      void intersect(double planes[6][4], std::vector<unsigned int>& indices);
+      //void intersect(double planes[6][4], std::vector<unsigned int>& indices);
+      void intersect(double planes[24], std::vector<size_t>& indices);
       void setLOD(unsigned char lod) { m_lod = lod; }
 
       void genDisplayLists() { genDisplayLists(m_root); }
@@ -47,13 +49,14 @@ namespace lvr2
       // needs [] operator and has to be strict linear in memory
 //      FloatChannel m_points;  
     
-      std::vector<size_t> m_hashes;
-      std::vector<BaseVecT> centroid;
+//      std::vector<size_t> m_hashes;
+//      std::vector<BaseVecT> m_centroid;
       
 
       ChunkMemoryHandler m_mem;
       
       unsigned char m_lod;
+      size_t numLeafs;
 
       template <typename T>
       void link(BOct* parent, T* child);
@@ -65,23 +68,20 @@ namespace lvr2
 
       void getBBoxes(const BoundingBox<BaseVecT>& bbox, BoundingBox<BaseVecT>* boxes);
       
-      template <typename PtrT>
-      void sortPC(size_t start, size_t size, const BoundingBox<BaseVecT>& bbox, size_t bucket_sizes[8]);
+//      template <typename PtrT>
+//      void sortPC(size_t start, size_t size, const BoundingBox<BaseVecT>& bbox, size_t bucket_sizes[8]);
 
-      long buildTree(BOct* oct, size_t start, size_t size, const BoundingBox<BaseVecT>& bbox);
+      long buildTree(BOct* oct, std::vector<size_t>& hashes, std::vector<BaseVecT>& centroids, const BoundingBox<BaseVecT>& bbox);
 
-      void getPoints(BOct* oct, std::vector<unsigned int >& indices);
+      void getHashes(BOct* oct, std::vector<size_t >& indices);
       
-      void normalizePlanes(double planes[6][4]);
+      //void normalizePlanes(double planes[6][4]);
+      void normalizePlanes(double planes[24]);
 
-      void intersect(Leaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[6][4], std::vector<unsigned int>& indices);
+      void intersect(Leaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<size_t >& indices);
 
-      void intersect(BOct* oct, const BoundingBox<BaseVecT>& bbox, double planes[6][4], std::vector<unsigned int>& indices);
+      void intersect(BOct* oct, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<size_t >& indices);
   
-      void genDisplayLists(Leaf* leaf);
-
-      void genDisplayLists(BOct* oct);
- 
 
 
 //      void colorAndWrite(BOct* oct);

@@ -9,6 +9,7 @@
 
 #include "lvr2/algorithm/ChunkManager.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
+#include "lvr2/display/MeshOctree.hpp"
 
 #include <string>
 
@@ -21,7 +22,7 @@ namespace lvr2 {
     {
         public:
             LVRChunkedMeshBridge(std::string file);
-            void getActors(BoundingBox<BaseVector<float> >& bb,
+            void getActors(double planes[24],
                     std::vector<size_t>& indices);
                     
                     //std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> >& actors);
@@ -33,6 +34,7 @@ namespace lvr2 {
             lvr2::ChunkManager m_chunkManager;
             std::unordered_map<size_t, MeshBufferPtr> m_chunks;
             std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > m_chunkActors;
+            MeshOctree<BaseVector<float> >* m_oct;
 //            std::unordered_map<size_t, std::vector<vtkPolyData> > > m_chunkActors;
     };
 } // namespace lvr2
