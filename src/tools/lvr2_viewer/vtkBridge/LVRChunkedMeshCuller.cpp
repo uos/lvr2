@@ -1,12 +1,13 @@
+
 #include "LVRChunkedMeshCuller.hpp"
+
+#include "MeshChunkActor.hpp"
+
+#include "LVRBoundingBoxBridge.hpp"
+
 #include <omp.h>
 
 using namespace lvr2;
-
-ChunkedMeshCuller::ChunkedMeshCuller(std::string file):
-    m_chunkManager(file)
-{
-}
 
 double ChunkedMeshCuller::sarrus(const double U[4],
                                  const double V[4],
@@ -42,25 +43,29 @@ BoundingBox<BaseVector<float> > ChunkedMeshCuller::frustumToBB(double planes[24]
     const size_t C = 2;
     const size_t D = 3;
 
-    double x_min, y_min, z_min = 10e6;
-    double x_max, y_max, z_max = -10e6;
-
-    #omp pragma parallel for collapse(3) reduction(max:x_max, y_max, z_max) reduction(max:x_max, y_max, z_max)
-    for(size_t i = 0; i < 1; ++i)
+    double x_min, y_min, z_min;
+    x_min = y_min = z_min = 20e6;
+    double x_max, y_max, z_max;
+    x_max = y_max = z_max = (-1) * 20e6;
+//#pragma omp parallel for collapse(3) reduction(min:x_min, y_min, z_min) reduction(max:x_max, y_max, z_max)
+    for(size_t i = 0; i < 2; ++i)
     {
         // left/right
-        double *U = planes + (i * 4);
-        for(size_t j = 2; j < 3; ++j)
+        for(size_t j = 2; j < 4; ++j)
         {
             // bottom/top
-            double *V = planes + (j * 4);
-            for(size_t k = 4; k < 5; ++k)
+                for(size_t k = 4; k < 6; ++k)
             {
+                double *U = planes + (i * 4);
                 double *W = planes + (k * 4);
+                double *V = planes + (j * 4);
                 double det = sarrus(U, V, W, A, B, C);
+
+                // COORDINATE SYSTEM DAFUQ?!
                 double x   = sarrus(U, V, W, D, B, C) / ((-1) * det);
                 double y   = sarrus(U, V, W, A, D, C) / ((-1) * det);
                 double z   = sarrus(U, V, W, A, B, D) / ((-1) * det);
+                //std::cout << x << y << z << std::endl;
                 x_min = std::min(x_min, x);
                 y_min = std::min(y_min, y);
                 z_min = std::min(z_min, z);
@@ -70,19 +75,89 @@ BoundingBox<BaseVector<float> > ChunkedMeshCuller::frustumToBB(double planes[24]
             }
         }
     }
+    BaseVector<float> minbb(x_min/20.0, y_min/20.0, z_min/20.0);
+    BaseVector<float> maxbb(x_max/20.0, y_max/20.0, z_max/20.0);
+    return BoundingBox<BaseVector<float> >(minbb, maxbb);
+//     for(size_t i = 0; i < 6; ++i)
+//     {
+//        x_min = std::min(x_min, planes[i * 4 + 0]);
+//        y_min = std::min(y_min, planes[i * 4 + 1]);
+//        z_min = std::min(z_min, planes[i * 4 + 2]);
+//        x_max = std::max(x_max, planes[i * 4 + 0]);
+//        y_max = std::max(y_max, planes[i * 4 + 1]);
+//        z_max = std::max(z_max, planes[i * 4 + 2]);
+//     }
 }
 
 double ChunkedMeshCuller::Cull(vtkRenderer *ren, vtkProp **propList, int &listLength, int &initialized)
 {
+//    std::cout << "Culling" << std::endl;
     double planes[24];
     ren->GetActiveCamera()->GetFrustumPlanes(ren->GetTiledAspectRatio(), planes);
 
-    lvr2::BoundingBox<BaseVector<float> > aabb = frustumToBB(planes);
-    m_chunkManager.extractArea(aabb, m_chunks);
+    //double x, y, z;
+    //ren->GetActiveCamera()->GetPosition(x, y, z);
+    //ren->GetActiveCamera()->GetViewUp(up_x, 
+    //BaseVector<float> min(x - 20, y - 20 , z - 20);
+    //BaseVector<float> max(x + 20, y + 20 , z + 20);
+    lvr2::BoundingBox<BaseVector<float> > aabb = frustumToBB(planes); 
+    LVRBoundingBoxBridge bbridge(aabb);
+    ren->AddActor(bbridge.getActor());
+//    std::cout << aabb << std::endl;
+//    ren->RemoveAllViewProps();
+//    std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > chunks;
+    std::vector<size_t> indices;
+    m_bridge->getActors(aabb, indices);
+
+    std::cout << "got " << indices.size() << " indices" << std::endl;
+    
+//    for(auto& actor: chunks)
+//    {
+//        ren->AddActor(actor.second);
+//    }
+//    for(auto& actor: chunks)
+//    {
+//        actor->VisibilityOn();
+////        ren->AddActor(actor);
+//    }
+
 
     vtkActorCollection* actors = ren->GetActors();
-    
+    actors->InitTraversal();
 
+//    std::cout << "start iterating " << std::endl;
+//   ren->SetAllocatedRenderTime(3.0);
+    int j = 0;
+//    #pragma omp parallel for shared(j) reduction(+:j) reduction(>:j)
+    for(vtkIdType i = 0; i < actors->GetNumberOfItems(); i++)
+    {
+        vtkActor* nextActor = actors->GetNextActor();
+        if(nextActor->IsA("MeshChunkActor"))
+        {
+            if(std::find(indices.begin(), indices.end(), static_cast<MeshChunkActor*>(nextActor)->getID()) == indices.end())
+            {
+                std::cout << "Set visibility off" << std::endl;
+                nextActor->VisibilityOff();
+//                chunks.erase(static_cast<MeshChunkActor*>(nextActor)->getID());
+            }
+            else
+            {
+                if(j > 40)
+                {
+                    continue;
+                }
+
+                //std::cout << "set Visibilityoff" << std::endl;
+                nextActor->VisibilityOn();
+                j++;
+            }
+        }
+        else
+        {
+            //std::cout << "No MeshChunkActor" << std::endl;
+            // what to do with bounding boxes... 
+        }
+    }
 
     // if not
 }

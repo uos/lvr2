@@ -86,14 +86,20 @@ ChunkManager::ChunkManager(MeshBufferPtr mesh,
 ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize)
 : m_hdf5Path(hdf5Path)
 {
+    std::cout << "Trying to load " << hdf5Path << std::endl;
     if (boost::filesystem::exists(hdf5Path))
     {
         ChunkIO chunkIO(hdf5Path);
         m_amount      = chunkIO.loadAmount();
         m_chunkSize   = chunkIO.loadChunkSize();
         m_boundingBox = chunkIO.loadBoundingBox();
-
         m_chunkHashGrid = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(hdf5Path, cacheSize));
+        std::cout << "Loaded " << m_amount << " Chunks, with a size of"
+                  << m_chunkSize << ". BoundingBox: " << m_boundingBox << std::endl;
+    }
+    else{
+    
+        std::cout << hdf5Path << " does not exist" << std::endl;
     }
 }
 
@@ -126,16 +132,17 @@ void ChunkManager::extractArea(const BoundingBox<BaseVector<float> >& area,
                                                 + BaseVector<float>(i, j, k) * m_chunkSize);
 
                 // if element is already loaded.
-                if(chunks.find(cellIndex) != chunks.end())
-                {
-                    continue;
-                }
+                //if(chunks.find(cellIndex) != chunks.end())
+                //{
+                //    continue;
+                //}
 
                 BaseVector<int> cellCoord = getCellCoordinates(
                     adjustedArea.getMin() + BaseVector<float>(i, j, k) * m_chunkSize);
 
                 MeshBufferPtr loadedChunk
                     = m_chunkHashGrid->findChunk(cellIndex, cellCoord.x, cellCoord.y, cellCoord.z);
+
                 if (loadedChunk.get())
                 {
                     // TODO: remove saving tmp chunks later
@@ -146,6 +153,7 @@ void ChunkManager::extractArea(const BoundingBox<BaseVector<float> >& area,
             }
         }
     }
+//    std::cout << "Num chunks " << chunks.size() << std::endl;
 }
 
 
