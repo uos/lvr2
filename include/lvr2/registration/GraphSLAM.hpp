@@ -80,9 +80,23 @@ public:
     void doGraphSLAM(const std::vector<SLAMScanPtr>& scans, size_t last) const;
 
 protected:
-
+    /**
+     * @brief Creates a graph. An edge between nodes(scans) means posible overlap.
+     * @param scans reference to a vector containing the SlamScanPtr
+     * @param last number of the last considered scan
+     * @param graph Outputs the created graph
+     * */
     void createGraph(const std::vector<SLAMScanPtr>& scans, size_t last, Graph& graph) const;
+
+    /**
+     * @brief A function to fill the linear system mat * x = vec.
+     * @param scans reference to a vector containing the SlamScanPtr
+     * @param graph the graph created in the createGraph function
+     * @param mat Outputs the GraphMatrix
+     * @param vec Outputs the GraphVector
+     * */
     void fillEquation(const std::vector<SLAMScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec) const;
+    
     void eulerCovariance(KDTreePtr tree, SLAMScanPtr scan, Matrix6d& outMat, Vector6d& outVec) const;
 
     const SLAMOptions*     m_options;
