@@ -44,7 +44,7 @@ ChunkHashGrid::ChunkHashGrid(std::string hdf5Path, size_t cacheSize) : m_cacheSi
 bool ChunkHashGrid::loadChunk(std::string layer, size_t hashValue, int x, int y, int z)
 {
     std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
-    lvr2::MeshBufferPtr chunk = m_io.loadChunk(chunkName);
+    lvr2::MeshBufferPtr chunk = m_io.loadChunk<MeshBufferPtr>(layer, x, y, z);
     if (chunk.get())
     {
         set(layer, hashValue, chunk);

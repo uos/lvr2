@@ -4,6 +4,7 @@
 
 #include "ArrayIO.hpp"
 #include "MeshIO.hpp"
+#include "PointCloudIO.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/io/GHDF5IO.hpp"
 #include "lvr2/io/Model.hpp"
@@ -13,6 +14,19 @@ namespace lvr2
 
 namespace hdf5features
 {
+
+template <typename Derived, typename T>
+struct IOType;
+
+template <typename Derived>
+struct IOType<Derived, MeshBufferPtr> {
+    using io_type = MeshIO<Derived>;
+};
+
+template <typename Derived>
+struct IOType<Derived, PointBufferPtr> {
+    using io_type = PointCloudIO<Derived>;
+};
 
 template <typename Derived>
 class ChunkIO
@@ -28,7 +42,8 @@ class ChunkIO
               float chunkSize,
               BoundingBox<BaseVector<float>> boundingBox);
 
-    void saveChunk(MeshBufferPtr mesh, size_t x, size_t y, size_t z);
+    template <typename T>
+    void saveChunk(T data, std::string layer, size_t x, size_t y, size_t z);
 
     BaseVector<size_t> loadAmount();
 
@@ -36,12 +51,12 @@ class ChunkIO
 
     BoundingBox<BaseVector<float>> loadBoundingBox();
 
-    MeshBufferPtr loadChunk(std::string chunkName);
+    template <typename T>
+    T loadChunk(std::string layer, int x, int y, int z);
 
   protected:
-    Derived* m_file_access       = static_cast<Derived*>(this);
-    ArrayIO<Derived>* m_array_io = static_cast<ArrayIO<Derived>*>(m_file_access);
-    MeshIO<Derived>* m_mesh_io   = static_cast<MeshIO<Derived>*>(m_file_access);
+    Derived* m_file_access                 = static_cast<Derived*>(this);
+    ArrayIO<Derived>* m_array_io           = static_cast<ArrayIO<Derived>*>(m_file_access);
 
   private:
     const std::string m_chunkName       = "chunks";

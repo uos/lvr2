@@ -42,7 +42,8 @@ void ChunkIO<Derived>::save(BaseVector<std::size_t> amount,
 }
 
 template <typename Derived>
-void ChunkIO<Derived>::saveChunk(MeshBufferPtr mesh, size_t x, size_t y, size_t z)
+template <typename T>
+void ChunkIO<Derived>::saveChunk(T data, std::string layer, size_t x, size_t y, size_t z)
 {
     HighFive::Group chunks = hdf5util::getGroup(m_file_access->m_hdf5_file, m_chunkName, true);
     std::string cellName   = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
@@ -52,7 +53,7 @@ void ChunkIO<Derived>::saveChunk(MeshBufferPtr mesh, size_t x, size_t y, size_t 
     }
     HighFive::Group meshGroup = chunks.getGroup(cellName);
 
-    m_mesh_io->save(meshGroup, mesh);
+    static_cast<typename IOType<Derived, T>::io_type*>(m_file_access)->save(meshGroup, data);
 }
 
 template <typename Derived>
@@ -64,7 +65,8 @@ BaseVector<size_t> ChunkIO<Derived>::loadAmount()
         = m_array_io->template load<size_t>(m_chunkName, m_amountName, dimensionAmount);
     if (dimensionAmount != 3)
     {
-        std::cout << "Error loading chunk data: amount has not the right dimension. Real: "
+        std::cout << "Error loading chunk data: amount has not the right "
+                     "dimension. Real: "
                   << dimensionAmount << "; Expected: 3" << std::endl;
     }
     else
@@ -83,7 +85,8 @@ float ChunkIO<Derived>::loadChunkSize()
         = m_array_io->template load<float>(m_chunkName, m_chunkSizeName, dimensionChunkSize);
     if (dimensionChunkSize != 1)
     {
-        std::cout << "Error loading chunk data: chunkSize has not the right dimension. Real: "
+        std::cout << "Error loading chunk data: chunkSize has not the right "
+                     "dimension. Real: "
                   << dimensionChunkSize << "; Expected: 1" << std::endl;
         chunkSize = 0;
     }
@@ -103,7 +106,8 @@ BoundingBox<BaseVector<float>> ChunkIO<Derived>::loadBoundingBox()
         = m_array_io->template load<float>(m_chunkName, m_boundingBoxName, dimensionBox);
     if (dimensionBox.at(0) != 2 && dimensionBox.at(1) != 3)
     {
-        std::cout << "Error loading chunk data: bounding_box has not the right dimension. Real: {"
+        std::cout << "Error loading chunk data: bounding_box has not the right "
+                     "dimension. Real: {"
                   << dimensionBox.at(0) << ", " << dimensionBox.at(1) << "}; Expected: {2, 3}"
                   << std::endl;
     }
@@ -117,9 +121,13 @@ BoundingBox<BaseVector<float>> ChunkIO<Derived>::loadBoundingBox()
 }
 
 template <typename Derived>
-MeshBufferPtr ChunkIO<Derived>::loadChunk(std::string chunkName)
+template <typename T>
+T ChunkIO<Derived>::loadChunk(std::string layer, int x, int y, int z)
 {
-    return m_mesh_io->loadMesh(m_chunkName + "/" + chunkName);
+    std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
+
+    return static_cast<typename IOType<Derived, T>::io_type*>(m_file_access)
+        ->load(m_chunkName + "/" + chunkName);
 }
 
 } // namespace hdf5features

@@ -620,7 +620,7 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
                                                 + std::to_string(j) + "-" + std::to_string(k)
                                                 + ".ply");
                     // write chunk in hdf5
-                    chunkIo.saveChunk(chunkMeshPtr, i, j, k);
+                    chunkIo.saveChunk(chunkMeshPtr, "mesh", i, j, k);
 
                     chunkBuilders[hash] = nullptr; // deallocate
                 }
