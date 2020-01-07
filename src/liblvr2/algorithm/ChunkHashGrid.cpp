@@ -40,9 +40,15 @@ ChunkHashGrid::ChunkHashGrid(std::string hdf5Path, size_t cacheSize) : m_cacheSi
 {
     m_io.open(hdf5Path);
 
-    m_boundingBox = m_io.loadBoundingBox();
-    m_chunkSize   = m_io.loadChunkSize();
-    m_chunkAmount = m_io.loadAmount();
+    try
+    {
+        m_boundingBox = m_io.loadBoundingBox();
+        m_chunkSize   = m_io.loadChunkSize();
+        m_chunkAmount = m_io.loadAmount();
+    }
+    catch (std::runtime_error& e)
+    {
+    }
 }
 
 bool ChunkHashGrid::isChunkLoaded(std::string layer, std::size_t hashValue)

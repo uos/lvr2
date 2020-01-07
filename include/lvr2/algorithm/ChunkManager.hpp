@@ -47,7 +47,7 @@
 namespace lvr2
 {
 
-class ChunkManager
+class ChunkManager : public ChunkHashGrid
 {
   public:
     using FilterFunction = std::function<bool(MultiChannelMap::val_type, size_t)>;
@@ -115,19 +115,6 @@ class ChunkManager
      */
     MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area,
                               const std::map<std::string, FilterFunction> filter);
-
-    /**
-     * @brief Calculates the hash value for the given index triple
-     *
-     * @param i index of x-axis
-     * @param j index of y-axis
-     * @param k index of z-axis
-     * @return hash value
-     */
-    inline std::size_t hashValue(int i, int j, int k) const
-    {
-        return i * m_amount.y * m_amount.z + j * m_amount.z + k;
-    }
 
     /**
      * @brief Loads all chunks into the ChunkHashGrid.
@@ -252,21 +239,6 @@ class ChunkManager
                        const size_t numFaces,
                        const MeshBufferPtr meshBuffer,
                        const MultiChannelMap::val_type& originalChannel) const;
-
-    // bounding box of the entire chunked model
-    BoundingBox<BaseVector<float>> m_boundingBox;
-
-    // size of chunks
-    float m_chunkSize;
-
-    // amount of chunks
-    BaseVector<std::size_t> m_amount;
-
-    // used for loading chunks from the HDF5 file and saving them in a HashGrid
-    std::shared_ptr<ChunkHashGrid> m_chunkHashGrid;
-
-    // path to the HDF5 file (either to save or to load the file)
-    std::string m_hdf5Path;
 };
 
 } /* namespace lvr2 */
