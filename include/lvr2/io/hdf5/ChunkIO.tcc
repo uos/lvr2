@@ -45,15 +45,14 @@ template <typename Derived>
 template <typename T>
 void ChunkIO<Derived>::saveChunk(T data, std::string layer, size_t x, size_t y, size_t z)
 {
-    HighFive::Group chunks = hdf5util::getGroup(m_file_access->m_hdf5_file, m_chunkName, true);
-    std::string cellName   = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
-    if (!chunks.exist(cellName))
-    {
-        chunks.createGroup(cellName);
-    }
-    HighFive::Group meshGroup = chunks.getGroup(cellName);
+    std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
+    std::cout << "save" << std::endl;
+    
+    HighFive::Group chunksGroup = hdf5util::getGroup(m_file_access->m_hdf5_file, m_chunkName, true);
+    HighFive::Group layerGroup  = hdf5util::getGroup(chunksGroup, layer, true);
+    HighFive::Group dataGroup  = hdf5util::getGroup(layerGroup, chunkName, true);
 
-    static_cast<typename IOType<Derived, T>::io_type*>(m_file_access)->save(meshGroup, data);
+    static_cast<typename IOType<Derived, T>::io_type*>(m_file_access)->save(dataGroup, data);
 }
 
 template <typename Derived>
@@ -126,8 +125,9 @@ T ChunkIO<Derived>::loadChunk(std::string layer, int x, int y, int z)
 {
     std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
 
+    std::cout << "test" << std::endl;
     return static_cast<typename IOType<Derived, T>::io_type*>(m_file_access)
-        ->load(m_chunkName + "/" + chunkName);
+        ->load(m_chunkName + "/" + layer + "/" + chunkName);
 }
 
 } // namespace hdf5features

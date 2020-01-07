@@ -83,7 +83,7 @@ class ChunkHashGrid
      */
     inline std::size_t hashValue(int i, int j, int k) const
     {
-        return i * m_chunkAmount.y * m_chunkAmount.z + j * m_chunkAmount.z + k;
+        return i * m_chunkAmount.x * m_chunkAmount.y + j * m_chunkAmount.z + k;
     }
 
     const BoundingBox<BaseVector<float>>& getBoundingBox() const

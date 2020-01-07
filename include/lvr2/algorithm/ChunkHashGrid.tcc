@@ -22,12 +22,12 @@ boost::optional<T> ChunkHashGrid::getChunk(std::string layer, int x, int y, int 
         m_items.remove({layer, chunkHash});
         m_items.push_front({layer, chunkHash});
 
-        return m_hashGrid[layer][chunkHash];
+        return boost::get<T>(m_hashGrid[layer][chunkHash]);
     }
 
     if (loadChunk<T>(layer, x, y, z))
     {
-        return m_hashGrid[layer][chunkHash];
+        return boost::get<T>(m_hashGrid[layer][chunkHash]);
     }
 
     return boost::optional<T>{};
