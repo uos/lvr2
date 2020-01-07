@@ -70,6 +70,8 @@ ChunkManager::ChunkManager(MeshBufferPtr mesh,
                            size_t cacheSize)
     : ChunkHashGrid(savePath + "/chunk_mesh.h5", cacheSize)
 {
+    setChunkSize(chunksize);
+
     initBoundingBox(mesh);
 
     // compute number of chunks for each dimension
@@ -571,6 +573,7 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
             }
         }
     }
+
 
     // assign the faces to the chunks
     BaseVector<float> currentCenterPoint;

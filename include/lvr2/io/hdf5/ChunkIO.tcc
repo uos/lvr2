@@ -46,7 +46,6 @@ template <typename T>
 void ChunkIO<Derived>::saveChunk(T data, std::string layer, size_t x, size_t y, size_t z)
 {
     std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
-    std::cout << "save" << std::endl;
     
     HighFive::Group chunksGroup = hdf5util::getGroup(m_file_access->m_hdf5_file, m_chunkName, true);
     HighFive::Group layerGroup  = hdf5util::getGroup(chunksGroup, layer, true);
@@ -125,7 +124,6 @@ T ChunkIO<Derived>::loadChunk(std::string layer, int x, int y, int z)
 {
     std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
 
-    std::cout << "test" << std::endl;
     return static_cast<typename IOType<Derived, T>::io_type*>(m_file_access)
         ->load(m_chunkName + "/" + layer + "/" + chunkName);
 }
