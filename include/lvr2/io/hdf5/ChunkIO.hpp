@@ -36,7 +36,7 @@ class ChunkIO
 
     void saveChunkSize(float chunkSize);
 
-    void saveBountingBox(BoundingBox<BaseVector<float>> boundingBox);
+    void saveBoundingBox(BoundingBox<BaseVector<float>> boundingBox);
 
     void save(BaseVector<std::size_t> amount,
               float chunkSize,

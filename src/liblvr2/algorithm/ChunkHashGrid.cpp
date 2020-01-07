@@ -39,64 +39,13 @@ namespace lvr2
 ChunkHashGrid::ChunkHashGrid(std::string hdf5Path, size_t cacheSize) : m_cacheSize(cacheSize)
 {
     m_io.open(hdf5Path);
+
+    m_boundingBox = m_io.loadBoundingBox();
+    m_chunkSize   = m_io.loadChunkSize();
+    m_chunkAmount = m_io.loadAmount();
 }
 
-bool ChunkHashGrid::loadChunk(std::string layer, size_t hashValue, int x, int y, int z)
-{
-    std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
-    lvr2::MeshBufferPtr chunk = m_io.loadChunk<MeshBufferPtr>(layer, x, y, z);
-    if (chunk.get())
-    {
-        set(layer, hashValue, chunk);
-        return true;
-    }
-    return false;
-}
-
-bool ChunkHashGrid::loadMeshChunk(size_t hashValue, int x, int y, int z)
-{
-    return loadChunk("mesh", hashValue, x, y, z);
-}
-
-ChunkHashGrid::val_type
-ChunkHashGrid::findVariantChunk(std::string layer, size_t hashValue, int x, int y, int z)
-{
-    val_type found;
-    // try to load mesh from hash map
-    if (get(layer, hashValue, found))
-    {
-        return found;
-    }
-    // otherwise try to load the chunk from the hdf5
-    if (loadChunk(layer, hashValue, x, y, z))
-    {
-        get(layer, hashValue, found);
-    }
-    return found;
-}
-
-MeshBufferPtr ChunkHashGrid::findMeshChunk(size_t hashValue, int x, int y, int z)
-{
-    return findChunk<MeshBufferPtr>("mesh", hashValue, x, y, z);
-}
-
-MeshBufferPtr ChunkHashGrid::findMeshChunkCondition(
-    size_t hashValue, int x, int y, int z, std::string channelName)
-{
-    MeshBufferPtr found = findMeshChunk(hashValue, x, y, z);
-    if (found)
-    {
-        if (found->hasIndexChannel(channelName) || found->hasFloatChannel(channelName)
-            || found->hasUCharChannel(channelName)) // templating needed?
-        {
-            return found;
-        }
-        return nullptr;
-    }
-    return found;
-}
-
-void ChunkHashGrid::set(std::string layer, size_t hashValue, const val_type& mesh)
+bool ChunkHashGrid::isChunkLoaded(std::string layer, std::size_t hashValue)
 {
     auto layerIt = m_hashGrid.find(layer);
     if (layerIt != m_hashGrid.end())
@@ -104,46 +53,42 @@ void ChunkHashGrid::set(std::string layer, size_t hashValue, const val_type& mes
         auto chunkIt = layerIt->second.find(hashValue);
         if (chunkIt != layerIt->second.end())
         {
-            // chunk exists for layer in grid
-            // remove chunk from cache to put the chunk to front of lru cache later
-            items.remove({layer, hashValue});
-        }
-    }
-
-    // add new chunk to cache
-    items.push_front({layer, hashValue});
-
-    // check if cache is full
-    if (items.size() > m_cacheSize)
-    {
-        // remove chunk from grid keep the grid for the current layer even if it holds no elements
-        m_hashGrid[items.back().first].erase(items.back().second);
-
-        // remove erased element from cache
-        items.pop_back();
-    }
-
-    m_hashGrid[layer][hashValue] = mesh;
-}
-
-bool ChunkHashGrid::get(std::string layer, size_t hashValue, val_type& mesh)
-{
-    auto layerIt = m_hashGrid.find(layer);
-    if (layerIt != m_hashGrid.end())
-    {
-        auto chunkIt = layerIt->second.find(hashValue);
-        if (chunkIt != layerIt->second.end())
-        {
-            // move chunk to the front of the cache queue
-            items.remove({layer, hashValue});
-            items.push_front({layer, hashValue});
-
-            mesh = chunkIt->second;
             return true;
         }
     }
-    // return false, because the chunk doesn't exist in hashMap
     return false;
+}
+
+bool ChunkHashGrid::isChunkLoaded(std::string layer, int x, int y, int z)
+{
+    return isChunkLoaded(layer, hashValue(x, y, z));
+}
+
+bool ChunkHashGrid::loadChunk(std::string layer, int x, int y, int z, const val_type& data)
+{
+    std::size_t chunkHash = hashValue(x, y, z);
+
+    if (isChunkLoaded(layer, chunkHash))
+    {
+        // chunk exists for layer in grid
+        // remove chunk from cache to put the chunk to front of lru cache later
+        m_items.remove({layer, chunkHash});
+    }
+
+    // add new chunk to cache
+    m_items.push_front({layer, chunkHash});
+
+    // check if cache is full
+    if (m_items.size() > m_cacheSize)
+    {
+        // remove chunk from grid keep the grid for the current layer even if it holds no elements
+        m_hashGrid[m_items.back().first].erase(m_items.back().second);
+
+        // remove erased element from cache
+        m_items.pop_back();
+    }
+
+    m_hashGrid[layer][chunkHash] = data;
 }
 
 } /* namespace lvr2 */
