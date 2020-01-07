@@ -63,117 +63,89 @@ class ChunkHashGrid
      */
     explicit ChunkHashGrid(std::string hdf5Path, size_t cacheSize);
 
-    /**
-     * @brief loads a chunk from the HDF5 file into the hash grid
-     *
-     * @param layer layer of chunk to load
-     * @param hashValue hash-value of the chunk
-     * @param x grid coordinate in x-dimension
-     * @param y grid coordinate in y-dimension
-     * @param z grid coordinate in z-dimension
-     * @return true if loading was possible, false if loading was not possible
-     *         (for example if the hash-value does not belong to a mesh with vertices)
-     */
-    bool loadChunk(std::string layer, size_t hashValue, int x, int y, int z);
-
-    /**
-     * @brief loads a chunk of the mesh layer from the HDF5 file into the hash grid
-     *
-     * @param hashValue hash-value of the chunk
-     * @param x grid coordinate in x-dimension
-     * @param y grid coordinate in y-dimension
-     * @param z grid coordinate in z-dimension
-     * @return true if loading was possible, false if loading was not possible
-     *         (for example if the hash-value does not belong to a mesh with vertices)
-     */
-    bool loadMeshChunk(size_t hashValue, int x, int y, int z);
-
-    /**
-     * @brief returns the value for one layer of a given chunk
-     *
-     * @param layer layer of requested chunk
-     * @param hashValue hash-value of the chunk
-     * @param x grid coordinate in x-dimension
-     * @param y grid coordinate in y-dimension
-     * @param z grid coordinate in z-dimension
-     *
-     * @return information of the chunk
-     */
-    val_type findVariantChunk(std::string layer, size_t hashValue, int x, int y, int z);
-
-    /**
-     * @brief returns the value for one layer of a given chunk
-     *
-     * @tparam T type of chunk values
-     * @param layer layer of the requested chunk
-     * @param hashValue hash-value of the chunk
-     * @param x grid coordinate in x-dimension
-     * @param y grid coordinate in y-dimension
-     * @param z grid coordinate in z-dimension
-     *
-     * @return information of the chunk
-     */
     template <typename T>
-    T findChunk(std::string layer, size_t hashValue, int x, int y, int z);
+    void setChunk(std::string layer, int x, int y, int z, T data);
+
+    template <typename T>
+    boost::optional<T> getChunk(std::string layer, int x, int y, int z);
+
+    bool isChunkLoaded(std::string layer, size_t hashValue);
+    bool isChunkLoaded(std::string layer, int x, int y, int z);
 
     /**
-     * @brief returns the mesh for the mesh layer of a given chunk
+     * @brief Calculates the hash value for the given index triple
      *
-     * @param layer layer of requested chunk
-     * @param hashValue hash-value of the chunk
-     * @param x grid coordinate in x-dimension
-     * @param y grid coordinate in y-dimension
-     * @param z grid coordinate in z-dimension
+     * @param i index of x-axis
+     * @param j index of y-axis
+     * @param k index of z-axis
      *
-     * @return information of the chunk
+     * @return hash value
      */
-    MeshBufferPtr findMeshChunk(size_t hashValue, int x, int y, int z);
+    inline std::size_t hashValue(int i, int j, int k) const
+    {
+        return i * m_chunkAmount.y * m_chunkAmount.z + j * m_chunkAmount.z + k;
+    }
 
-    /**
-     * @brief returns the mesh for the mesh layer of a given chunk if a given channel exists
-     *
-     * @param hashValue hash-value of the chunk
-     * @param x grid coordinate in x-dimension
-     * @param y grid coordinate in y-dimension
-     * @param z grid coordinate in z-dimension
-     * @param channelName channel that needs to exist to return the chunk
-     *
-     * @return mesh of chunk if channel with given channelName exists
-     */
-    MeshBufferPtr
-    findMeshChunkCondition(size_t hashValue, int x, int y, int z, std::string channelName);
+    const BoundingBox<BaseVector<float>>& getBoundingBox() const
+    {
+        return m_boundingBox;
+    }
+
+    float getChunkSize() const
+    {
+        return m_chunkSize;
+    }
+
+    const BaseVector<std::size_t>& getChunkAmount() const
+    {
+        return m_chunkAmount;
+    }
+
+  protected:
+    template <typename T>
+    bool loadChunk(std::string layer, int x, int y, int z);
+
+    bool loadChunk(std::string layer, int x, int y, int z, const val_type& data);
+
+    void setBoundingBox(const BoundingBox<BaseVector<float>> boundingBox)
+    {
+        m_boundingBox = boundingBox;
+        m_io.saveBoundingBox(m_boundingBox);
+    }
+
+    void setChunkSize(float chunkSize)
+    {
+        m_chunkSize = chunkSize;
+        m_io.saveChunkSize(m_chunkSize);
+    }
+
+    void setChunkAmount(const BaseVector<std::size_t>& chunkAmount)
+    {
+        m_chunkAmount = chunkAmount;
+        m_io.saveAmount(m_chunkAmount);
+    }
 
   private:
-    // ordered list to save recently used hashValues
-    std::list<std::pair<std::string, size_t>> items;
-    // hash map containing chunked meshes
-    std::unordered_map<std::string, std::unordered_map<size_t, val_type>> m_hashGrid;
-
     // chunkIO for the HDF5 file-IO
     io m_io;
 
     // number of chunks that will be cached before deleting old chunks
-    size_t m_cacheSize = 100;
+    size_t m_cacheSize;
 
-    /**
-     * @brief Adds a mesh to the hashmap and deletes the least
-     * recently used mesh/chunk, if the size exeeds the m_cacheSize.
-     *
-     * @param layer layer of chunk to set
-     * @param hashValue the value, where the chunk will be saved
-     * @param mesh the content of the chunk
-     */
-    void set(std::string layer, size_t hashValue, const val_type& mesh);
+    // ordered list to save recently used hashValues for the lru cache
+    std::list<std::pair<std::string, size_t>> m_items;
 
-    /**
-     * @brief Searches the hashmap for the mesh with the given hashValue.
-     *
-     * @param[in] layer layer of chunk to get
-     * @param[in] hashValue hashValue of the mesh
-     * @param[out] mesh the mesh/chunk
-     * @return true, if the hashmap contains the mesh of that hashValue
-     */
-    bool get(std::string layer, size_t hashValue, val_type& mesh);
+    // hash map containing chunked meshes
+    std::unordered_map<std::string, std::unordered_map<size_t, val_type>> m_hashGrid;
+
+    // bounding box of the entire chunked model
+    BoundingBox<BaseVector<float>> m_boundingBox;
+
+    // size of chunks
+    float m_chunkSize;
+
+    // amount of chunks
+    BaseVector<std::size_t> m_chunkAmount;
 };
 
 } /* namespace lvr2 */

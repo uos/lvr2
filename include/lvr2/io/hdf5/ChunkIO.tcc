@@ -19,7 +19,7 @@ void ChunkIO<Derived>::saveChunkSize(float chunkSize)
 }
 
 template <typename Derived>
-void ChunkIO<Derived>::saveBountingBox(BoundingBox<BaseVector<float>> boundingBox)
+void ChunkIO<Derived>::saveBoundingBox(BoundingBox<BaseVector<float>> boundingBox)
 {
     boost::shared_array<float> boundingBoxArr(new float[6]{boundingBox.getMin()[0],
                                                            boundingBox.getMin()[1],
@@ -38,7 +38,7 @@ void ChunkIO<Derived>::save(BaseVector<std::size_t> amount,
 {
     saveAmount(amount);
     saveChunkSize(chunkSize);
-    saveBountingBox(boundingBox);
+    saveBoundingBox(boundingBox);
 }
 
 template <typename Derived>
