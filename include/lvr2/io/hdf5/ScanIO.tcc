@@ -213,7 +213,8 @@ std::vector<ScanPtr> ScanIO<Derived>::loadAllScans(std::string groupName) {
         for(auto scanName : g.listObjectNames())
         {
             HighFive::Group scan = g.getGroup(scanName);
-            tmp = load(scan); //             tmp = loadPreview(groupName + "/" + scanName); //for preview
+            //tmp = load(scan);
+              tmp = loadPreview(groupName + "/" + scanName); //for preview
             if(tmp)
             {
                 scans.push_back(tmp);

@@ -88,6 +88,16 @@ namespace lvr2
         std::cout << "Reconstruction Instance generated..." << std::endl;
     }
 
+    template<typename BaseVecT>
+    LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(LargeScaleOptions::Options options) : LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(options.getInputFileName()[0], options.getVoxelsize(), options.getBGVoxelsize(), options.getScaling(), options.getGridSize(),
+                                                                                                                                                                    options.getNodeSize(), options.getVGrid(), options.getKi(), options.getKd(), options.getKn(), options.useRansac(), options.extrude(),
+                                                                                                                                                                    options.getDanglingArtifacts(), options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
+                                                                                                                                                                    options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
+                                                                                                                                                                    options.retesselate(), options.getLineFusionThreshold())
+    {
+        std::cout << "Reconstruction Instance generated..." << std::endl;
+    }
+
     template <typename BaseVecT>
     int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(std::vector<ScanPtr> &oldScans, std::vector<ScanPtr> &newScans)
     {
@@ -273,7 +283,7 @@ namespace lvr2
         }
 
         // TODO: can be removed
-//        //TODO: replace reading from .ser file to reading from .h5
+//        //TODO: replace reading from .ser file to reading from ChunkManager
 //        ifstream old_mesh("VGrid.ser");
 //        if (m_partMethod == 1 && old_mesh.is_open())
 //        {
@@ -375,12 +385,18 @@ namespace lvr2
             clusterBiMap = planarClusterGrowing(mesh, faceNormals, m_getNormalThreshold);
         }
 
+
+
         // Finalize mesh
         lvr2::SimpleFinalizer<Vec> finalize;
         auto meshBuffer = finalize.apply(mesh);
 
         // save mesh depending on input file type
         boost::filesystem::path selectedFile(m_filePath);
+
+        std::time_t result = std::time(nullptr);
+        std::string largeScale = (string) std::asctime(std::localtime(&result)) + ".ply";
+
         if (selectedFile.extension().string() == ".h5")
         {
             //MeshBufferPtr newMesh = MeshBufferPtr(meshBuffer);
@@ -389,12 +405,12 @@ namespace lvr2
             //hdfWrite.save("mesh", newMesh);
 
             auto m = ModelPtr(new Model(meshBuffer));
-            ModelFactory::saveModel(m, "largeScale.ply");
+            ModelFactory::saveModel(m, largeScale);
         }
         else
         {
             auto m = ModelPtr(new Model(meshBuffer));
-            ModelFactory::saveModel(m, "largeScale.ply");
+            ModelFactory::saveModel(m, largeScale);
         }
 
         return 1;
