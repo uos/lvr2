@@ -53,7 +53,7 @@ using namespace std;
 
 namespace lvr2
 {
-
+//TODO: BigGrid needs clean up, summarize the grid creation into 1 method instead of multiple constructor
 template <typename BaseVecT>
 BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
                            float voxelsize,
@@ -1506,6 +1506,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, std::vector<std::shared_ptr<Scan>> h
         }
 
         //calc m_partialbb from scan-buffers
+        //TODO: remove all references to globalBB
         for(int i = 0; i < newScans.size(); i++)
         {
             if(newScans[i]->m_globalBoundingBox.isValid())
@@ -1715,6 +1716,8 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, std::vector<std::shared_ptr<Scan>> h
                     mmfdata[index * 3 + 2] = iz;
                 }
             }
+
+            cout << "WOW!" << endl;
         }
 
         for(auto scan : newScans)

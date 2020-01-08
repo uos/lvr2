@@ -78,19 +78,39 @@ int main(int argc, char** argv)
 
     string in = options.getInputFileName()[0];
 
-    LargeScaleReconstruction<Vec> lsr(in, options.getVoxelsize(), options.getBGVoxelsize(), options.getScaling(), options.getGridSize(),
-            options.getNodeSize(), options.getVGrid(), options.getKi(), options.getKd(), options.getKn(), options.useRansac(), options.extrude(),
-            options.getDanglingArtifacts(), options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
-            options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
-            options.retesselate(), options.getLineFusionThreshold());
+    LargeScaleReconstruction<Vec> lsr(options);
 
     std::vector<ScanPtr> scans;
     MyScanIO scanIO;
     scanIO.open(in);
     scans = scanIO.loadAllScans("/raw/scans");
+
     std::vector<ScanPtr> h5scans;
+    //std::vector<ScanPtr> scans_new;
+
+
+    //scans_new.push_back(scans.front());
+
+    //scans.erase(scans.begin());
+
+    //BoundingBox<Vec> bb1(Vec(-200, -200, -100),Vec(0, 200, 180));
+    //BoundingBox<Vec> bb2(Vec(60, -200, -100),Vec(200, 200, 180));
+    //scans.front()->m_globalBoundingBox = bb1;
+
+
+
+   // if(bb1.overlap(bb2)) {
+   //     cout << "didnt work!" << endl;
+  //      return 0;
+   //}
+
+
 
     int x = lsr.mpiChunkAndReconstruct(h5scans, scans);
+
+    //scans_new.front()->m_globalBoundingBox = bb2;
+
+    //int y = lsr.mpiChunkAndReconstruct(scans, scans_new);
 
     cout << "Program end." << endl;
 
