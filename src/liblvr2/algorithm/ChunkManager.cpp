@@ -75,10 +75,13 @@ ChunkManager::ChunkManager(MeshBufferPtr mesh,
     initBoundingBox(mesh);
 
     // compute number of chunks for each dimension
-    BaseVector<std::size_t> chunkAmount; 
-    chunkAmount.x = static_cast<std::size_t>(std::ceil(getBoundingBox().getXSize() / getChunkSize()));
-    chunkAmount.y = static_cast<std::size_t>(std::ceil(getBoundingBox().getYSize() / getChunkSize()));
-    chunkAmount.z = static_cast<std::size_t>(std::ceil(getBoundingBox().getZSize() / getChunkSize()));
+    BaseVector<std::size_t> chunkAmount;
+    chunkAmount.x
+        = static_cast<std::size_t>(std::ceil(getBoundingBox().getXSize() / getChunkSize()));
+    chunkAmount.y
+        = static_cast<std::size_t>(std::ceil(getBoundingBox().getYSize() / getChunkSize()));
+    chunkAmount.z
+        = static_cast<std::size_t>(std::ceil(getBoundingBox().getZSize() / getChunkSize()));
     setChunkAmount(chunkAmount);
 
     buildChunks(mesh, maxChunkOverlap, savePath);
@@ -87,6 +90,58 @@ ChunkManager::ChunkManager(MeshBufferPtr mesh,
 ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize)
     : ChunkHashGrid(hdf5Path, cacheSize)
 {
+}
+
+void ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
+                               std::unordered_map<std::size_t, MeshBufferPtr>& chunks)
+{
+    // adjust area to our maximum boundingBox
+    BaseVector<float> adjustedAreaMin, adjustedAreaMax;
+    adjustedAreaMax[0] = std::min(area.getMax()[0], getBoundingBox().getMax()[0]);
+    adjustedAreaMax[1] = std::min(area.getMax()[1], getBoundingBox().getMax()[1]);
+    adjustedAreaMax[2] = std::min(area.getMax()[2], getBoundingBox().getMax()[2]);
+    adjustedAreaMin[0] = std::max(area.getMin()[0], getBoundingBox().getMin()[0]);
+    adjustedAreaMin[1] = std::max(area.getMin()[1], getBoundingBox().getMin()[1]);
+    adjustedAreaMin[2] = std::max(area.getMin()[2], getBoundingBox().getMin()[2]);
+    BoundingBox<BaseVector<float>> adjustedArea
+        = BoundingBox<BaseVector<float>>(adjustedAreaMin, adjustedAreaMax);
+
+    // find all required chunks
+    // TODO: check if we need + 1
+    const BaseVector<float> maxSteps
+        = (adjustedArea.getMax() - adjustedArea.getMin()) / getChunkSize();
+    for (std::size_t i = 0; i < maxSteps.x; ++i)
+    {
+        for (std::size_t j = 0; j < maxSteps.y; ++j)
+        {
+            for (std::size_t k = 0; k < maxSteps.z; ++k)
+            {
+                size_t cellIndex = getCellIndex(adjustedArea.getMin()
+                                                + BaseVector<float>(i, j, k) * getChunkSize());
+
+                // if element is already loaded.
+                // if(chunks.find(cellIndex) != chunks.end())
+                //{
+                //    continue;
+                //}
+
+                BaseVector<int> cellCoord = getCellCoordinates(
+                    adjustedArea.getMin() + BaseVector<float>(i, j, k) * getChunkSize());
+
+                boost::optional<MeshBufferPtr> loadedChunk
+                    = getChunk<MeshBufferPtr>("mesh", cellCoord.x, cellCoord.y, cellCoord.z);
+
+                if (loadedChunk)
+                {
+                    // TODO: remove saving tmp chunks later
+                    // ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(loadedChunk)),
+                    //                        "area/" + std::to_string(cellIndex) + ".ply");
+                    chunks.insert({cellIndex, *loadedChunk});
+                }
+            }
+        }
+    }
+    //    std::cout << "Num chunks " << chunks.size() << std::endl;
 }
 
 MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area)
@@ -541,7 +596,8 @@ void ChunkManager::cutLargeFaces(
 
 void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::string savePath)
 {
-    std::vector<ChunkBuilderPtr> chunkBuilders(getChunkAmount().x * getChunkAmount().y * getChunkAmount().z);
+    std::vector<ChunkBuilderPtr> chunkBuilders(getChunkAmount().x * getChunkAmount().y
+                                               * getChunkAmount().z);
 
     std::shared_ptr<HalfEdgeMesh<BaseVector<float>>> halfEdgeMesh
         = std::shared_ptr<HalfEdgeMesh<BaseVector<float>>>(
@@ -556,7 +612,8 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
     // prepare mash to prevent faces from overlapping too much on chunk borders
     cutLargeFaces(halfEdgeMesh, maxChunkOverlap, splitVertices, splitFaces);
 
-    std::cout << getChunkAmount().x << " " << getChunkAmount().y << " " << getChunkAmount().z << std::endl;
+    std::cout << getChunkAmount().x << " " << getChunkAmount().y << " " << getChunkAmount().z
+              << std::endl;
 
     // one vector of variable size for each vertex - this is used for duplicate detection
     std::shared_ptr<std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>>
@@ -573,7 +630,6 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
             }
         }
     }
-
 
     // assign the faces to the chunks
     BaseVector<float> currentCenterPoint;
