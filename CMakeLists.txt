@@ -500,7 +500,7 @@ add_subdirectory(src/liblvr2)
 ###############################################################################
 
 add_subdirectory(src/tools/lvr2_gs_reconstruction)
-add_subdirectory(src/tools/lvr2_reconstruct)
+#add_subdirectory(src/tools/lvr2_reconstruct)
 add_subdirectory(src/tools/lvr2_largescale_reconstruct)
 add_subdirectory(src/tools/lvr2_asciiconverter)
 add_subdirectory(src/tools/lvr2_transform)
@@ -514,13 +514,12 @@ add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
 add_subdirectory(src/tools/lvr2_slam2hdf5)
 add_subdirectory(src/tools/lvr2_hdf5togeotiff)
 add_subdirectory(src/tools/lvr2_slam6d_merger)
-add_subdirectory(src/tools/lvr2_scanproject2hdf5)
 add_subdirectory(src/tools/lvr2_chunking)
 add_subdirectory(src/tools/lvr2_registration)
 add_subdirectory(src/tools/lvr2_mesh_reducer)
 
 if (RiVLib_FOUND)
-    add_subdirectory(src/tools/lvr2_riegl_project_converter)
+    #add_subdirectory(src/tools/lvr2_riegl_project_converter)
 endif()
 
 if(CUDA_FOUND)

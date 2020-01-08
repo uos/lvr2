@@ -463,9 +463,9 @@ std::vector<ScanPtr> HDF5IO::getRawScans(bool load_points)
 //     using Hdf5IO<ComponentTs<Hdf5IO<ComponentTs...> >...>::save;
 // };
 
-std::vector<std::vector<CameraData> > HDF5IO::getRawCamData(bool load_image_data)
+std::vector<std::vector<ScanImage> > HDF5IO::getRawCamData(bool load_image_data)
 {
-    std::vector<std::vector<CameraData> > ret;
+    std::vector<std::vector<ScanImage> > ret;
     
     if(m_hdf5_file) 
     {
@@ -487,12 +487,12 @@ std::vector<std::vector<CameraData> > HDF5IO::getRawCamData(bool load_image_data
             std::string cur_scan_pos = photos_group.getObjectName(i);
             HighFive::Group photo_group = getGroup(photos_group, cur_scan_pos);
 
-            std::vector<CameraData> cam_data;
+            std::vector<ScanImage> cam_data;
 
             size_t num_photos = photo_group.getNumberObjects();
             for(size_t j=0; j< num_photos; j++)
             {
-                CameraData cam = getSingleRawCamData(i, j, load_image_data);
+                ScanImage cam = getSingleRawCamData(i, j, load_image_data);
                 cam_data.push_back(cam);
             }
 
@@ -552,8 +552,8 @@ ScanPtr HDF5IO::getSingleRawScan(int nr, bool load_points)
 
         if (fov)
         {
-            ret->m_hFieldOfView = fov[0];
-            ret->m_vFieldOfView = fov[1];
+            // ret->m_hFieldOfView = fov[0];
+            // ret->m_vFieldOfView = fov[1];
         }
 
         if (res)
@@ -588,9 +588,9 @@ ScanPtr HDF5IO::getSingleRawScan(int nr, bool load_points)
 }
 
 
-CameraData HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_data)
+ScanImage HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_data)
 {
-    CameraData ret;
+    ScanImage ret;
      
     if (m_hdf5_file)
     {
@@ -623,12 +623,12 @@ CameraData HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_
         
         if(intrinsics_arr)
         {
-            ret.intrinsics = Intrinsicsd(intrinsics_arr.get());
+            ret.camera.setIntrinsics(Intrinsicsd(intrinsics_arr.get()));
         }
 
         if(extrinsics_arr)
         {
-            ret.extrinsics = Extrinsicsd(extrinsics_arr.get());
+            ret.camera.setExtrinsics(Extrinsicsd(extrinsics_arr.get()));
         }
 
         if(load_image_data)
@@ -824,8 +824,8 @@ void HDF5IO::addRawScan(int nr, ScanPtr scan)
 
             // Generate tuples for field of view and resolution parameters
             floatArr fov(new float[2]);
-            fov[0] = scan->m_hFieldOfView;
-            fov[1] = scan->m_vFieldOfView;
+            // fov[0] = scan->m_hFieldOfView;
+            // fov[1] = scan->m_vFieldOfView;
 
             floatArr res(new float[2]);
             res[0] = scan->m_hResolution;
@@ -924,7 +924,7 @@ void HDF5IO::addRawScan(int nr, ScanPtr scan)
     }
 }
 
-void HDF5IO::addRawCamData( int scan_id, int img_id, CameraData& cam_data )
+void HDF5IO::addRawCamData( int scan_id, int img_id, ScanImage& cam_data )
 {
     if(m_hdf5_file)
     {
@@ -953,23 +953,24 @@ void HDF5IO::addRawCamData( int scan_id, int img_id, CameraData& cam_data )
         }
         
         // add image to scan_image_group
-        doubleArr intrinsics_arr(new double[16]);
-        Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>>(intrinsics_arr.get()) = cam_data.intrinsics;
+        doubleArr intrinsics_arr(new double[9]);
+        Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(intrinsics_arr.get()) = cam_data.camera.intrinsics();
 
 
         doubleArr extrinsics_arr(new double[16]);
-        Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>>(extrinsics_arr.get()) = cam_data.extrinsics;
+        Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>>(extrinsics_arr.get()) = cam_data.camera.extrinsics();
 
-        std::vector<size_t> dim = {4,4};
+        std::vector<size_t> dim_4 = {4,4};
+        std::vector<size_t> dim_3 = {3,3};
 
         std::vector<hsize_t> chunks;
-        for(auto i: dim)
+        for(auto i: dim_4)
         {
                 chunks.push_back(i);
         }
 
-        addArray(photo_group, "intrinsics", dim, chunks, intrinsics_arr);
-        addArray(photo_group, "extrinsics", dim, chunks, extrinsics_arr);
+        addArray(photo_group, "intrinsics", dim_4, chunks, intrinsics_arr);
+        addArray(photo_group, "extrinsics", dim_3, chunks, extrinsics_arr);
         addImage(photo_group, "image", cam_data.image);
 
     }

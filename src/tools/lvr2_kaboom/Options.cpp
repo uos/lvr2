@@ -66,6 +66,7 @@ Options::Options(int argc, char** argv) : lvr2::BaseOption(argc, argv), m_descr(
 		("posePrefix", value<std::string>()->default_value("scan"), "Prexfix for files with 4x4 pose estimation in row-majow format. E.g., pose for using pose001, pose002 etc.")
 		("scanExtension", value<std::string>()->default_value(".3d"), "File extension for parsed files containing point cloud data")
 		("poseExtension", value<std::string>()->default_value(".dat"), "File extension for parsed files containing pose estimates")
+		("convertToLVR", value<bool>()->default_value(false), "Convert a file in SLAM coordinates to LVR coordinates")
 	;
 
 	m_pdescr.add("inputFile", -1);
@@ -81,6 +82,8 @@ Options::Options(int argc, char** argv) : lvr2::BaseOption(argc, argv), m_descr(
 
 
 }
+
+
 
 string Options::getOutputFile() const
 {
@@ -106,6 +109,12 @@ string 	Options::getOutputFormat() const
 {
 	return m_variables["outputFormat"].as<string>();
 }
+
+bool Options::convertToLVR() const
+{
+	return m_variables["convertToLVR"].as<bool>();
+}
+
 
 bool   Options:: exportScanPositions() const
 {
