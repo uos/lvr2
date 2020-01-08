@@ -51,6 +51,8 @@ namespace lvr2
 class ChunkManager
 {
   public:
+    using FilterFunction = std::function<bool(MultiChannelMap::val_type, size_t)>;
+
     /**
      * @brief ChunkManager creates chunks from an original mesh
      *
@@ -64,7 +66,11 @@ class ChunkManager
      * @param savePath JUST FOR TESTING - REMOVE LATER ON
      * @param cacheSize maximum number of chunks loaded in the ChunkHashGrid
      */
-    ChunkManager(MeshBufferPtr mesh, float chunksize, float maxChunkOverlap, std::string savePath, size_t cacheSize = 200);
+    ChunkManager(MeshBufferPtr mesh,
+                 float chunksize,
+                 float maxChunkOverlap,
+                 std::string savePath,
+                 size_t cacheSize = 200);
     /**
      * @brief ChunkManager loads a ChunkManager from a given HDF5-file
      *
@@ -97,6 +103,30 @@ class ChunkManager
      * @return mesh of the given area
      */
     MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area);
+
+    /**
+     * @brief extractArea creates and returns MeshBufferPtr of merged chunks for given area after
+     * filtering the resulting mesh.
+     *
+     * Finds corresponding chunks for given area inside the grid and merges those chunks to a new
+     * mesh without duplicated vertices. The new mesh is returned as MeshBufferPtr.
+     * After extracting the area, given filters are being applied to allow more precise quaries for
+     * use cases like robot navigation while minimizing network traffic.
+     *
+     * example for a filter:
+     * std::map<std::string, lvr2::ChunkManager::FilterFunction> filter
+     *    = {{"roughness", [](lvr2::MultiChannelMap::val_type channel, size_t index) {
+     *           return channel.dataPtr<float>()[index] < 0.1;
+     *       }}};
+     * This filter will only use vertices that have a maximum roughness of 0,1. All Faces
+     * referencing the filtered vertices will be filtered too.
+     *
+     * @param area bounding box of the area to request
+     * @param filter map of filters with channel names as keys and functions as values
+     * @return mesh of the given area
+     */
+    MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area,
+                              const std::map<std::string, FilterFunction> filter);
 
     /**
      * @brief Calculates the hash value for the given index triple
@@ -205,12 +235,35 @@ class ChunkManager
      * @param areaVertexIndices mapping from old vertex index to new vertex index per chunk
      */
     template <typename T>
-    ChannelPtr<T> extractChannelOfArea(std::unordered_map<std::size_t, MeshBufferPtr>& chunks,
-                                       std::string channelName,
-                                       std::size_t staticVertexIndexOffset,
-                                       std::size_t numVertices,
-                                       std::size_t numFaces,
-                                       std::vector<std::unordered_map<std::size_t, std::size_t>>& areaVertexIndices);
+    ChannelPtr<T> extractChannelOfArea(
+        std::unordered_map<std::size_t, MeshBufferPtr>& chunks,
+        std::string channelName,
+        std::size_t staticVertexIndexOffset,
+        std::size_t numVertices,
+        std::size_t numFaces,
+        std::vector<std::unordered_map<std::size_t, std::size_t>>& areaVertexIndices);
+
+    /**
+     * @brief applies given filter arrays to one channel
+     *
+     * @tparam T Type of channels contents
+     * @param vertexFilter filter array for vertices
+     * @param faceFilter filter array for faces
+     * @param numVertices amount of vertices after filtering
+     * @param numFaces amount of faces after filtering
+     * @param meshBuffer original mesh
+     * @param originalChannel channel to filter
+     *
+     * @return a new filtered channel
+     */
+    template <typename T>
+    MultiChannelMap::val_type
+    applyChannelFilter(const std::vector<bool>& vertexFilter,
+                       const std::vector<bool>& faceFilter,
+                       const size_t numVertices,
+                       const size_t numFaces,
+                       const MeshBufferPtr meshBuffer,
+                       const MultiChannelMap::val_type& originalChannel) const;
 
     // bounding box of the entire chunked model
     BoundingBox<BaseVector<float>> m_boundingBox;

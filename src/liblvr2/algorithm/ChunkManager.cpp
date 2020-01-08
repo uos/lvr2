@@ -69,9 +69,8 @@ ChunkManager::ChunkManager(MeshBufferPtr mesh,
                            float maxChunkOverlap,
                            std::string savePath,
                            size_t cacheSize)
-    : m_chunkSize(chunksize),
-    m_hdf5Path(savePath + "/chunked_mesh.h5")
-    {
+    : m_chunkSize(chunksize), m_hdf5Path(savePath + "/chunked_mesh.h5")
+{
     initBoundingBox(mesh);
 
     // compute number of chunks for each dimension
@@ -83,8 +82,7 @@ ChunkManager::ChunkManager(MeshBufferPtr mesh,
     m_chunkHashGrid = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(m_hdf5Path, cacheSize));
 }
 
-ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize)
-: m_hdf5Path(hdf5Path)
+ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize) : m_hdf5Path(hdf5Path)
 {
     if (boost::filesystem::exists(hdf5Path))
     {
@@ -305,6 +303,121 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
     return areaMeshPtr;
 }
 
+MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
+                                        const std::map<std::string, FilterFunction> filter)
+{
+    MeshBufferPtr areaMesh = extractArea(area);
+
+    // filter elements
+    // filter lists: false is used to indicate that an element will not be used
+    std::vector<bool> vertexFilter(areaMesh->numVertices(), true);
+    std::vector<bool> faceFilter(areaMesh->numFaces(), true);
+    std::size_t numVertices = areaMesh->numVertices();
+    std::size_t numFaces    = areaMesh->numFaces();
+
+    for (auto channelFilter : filter)
+    {
+        if (areaMesh->find(channelFilter.first) != areaMesh->end())
+        {
+            MultiChannelMap::val_type channel = areaMesh->at(channelFilter.first);
+#pragma omp parallel for
+            for (std::size_t i = 0; i < channel.numElements(); i++)
+            {
+                if (channel.numElements() == areaMesh->numVertices())
+                {
+                    if (vertexFilter[i] == true)
+                    {
+                        vertexFilter[i] = channelFilter.second(channel, i);
+                        if (vertexFilter[i] == false)
+                        {
+                            numVertices--;
+                        }
+                    }
+                }
+                else if (channel.numElements() == areaMesh->numFaces())
+                {
+                    if (faceFilter[i] == true)
+                    {
+                        faceFilter[i] = channelFilter.second(channel, i);
+                        if (faceFilter[i] == false)
+                        {
+                            numFaces--;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // filter all faces that reference filtered vertices
+    IndexChannel facesChannel = *areaMesh->getIndexChannel("face_indices");
+    for (std::size_t i = 0; i < areaMesh->numFaces(); i++)
+    {
+        if (faceFilter[i] == true)
+        {
+            for (std::size_t j = 0; j < facesChannel.width(); j++)
+            {
+                if (vertexFilter[facesChannel[i][j]] == false)
+                {
+                    faceFilter[i] = false;
+                    numFaces--;
+                    break;
+                }
+            }
+        }
+    }
+
+    // create a mapping from old vertices to new vertices
+    std::vector<std::size_t> vertexIndexMapping(areaMesh->numVertices(), 0);
+    std::size_t tmpIndex = 0;
+    for (std::size_t i = 0; i < areaMesh->numVertices(); i++)
+    {
+        if (vertexFilter[i] == true)
+        {
+            vertexIndexMapping[i] = tmpIndex;
+            tmpIndex++;
+        }
+    }
+
+    // remove filtered elements
+#pragma omp parallel
+    {
+        for (auto& channel : *areaMesh)
+        {
+#pragma omp single nowait
+            {
+                if (channel.second.is_type<unsigned char>())
+                {
+                    channel.second = applyChannelFilter<unsigned char>(
+                        vertexFilter, faceFilter, numVertices, numFaces, areaMesh, channel.second);
+                }
+                else if (channel.second.is_type<unsigned int>())
+                {
+                    channel.second = applyChannelFilter<unsigned int>(
+                        vertexFilter, faceFilter, numVertices, numFaces, areaMesh, channel.second);
+                }
+                else if (channel.second.is_type<float>())
+                {
+                    channel.second = applyChannelFilter<float>(
+                        vertexFilter, faceFilter, numVertices, numFaces, areaMesh, channel.second);
+                }
+            }
+        }
+    }
+    
+    // use mapping from old vertex indices to new vertex indices to update face indices
+    facesChannel = *areaMesh->getIndexChannel("face_indices");
+    for (std::size_t i = 0; i < areaMesh->numFaces(); i++)
+    {
+        for (std::size_t j = 0; j < facesChannel.width(); j++)
+        {
+            facesChannel[i][j] = vertexIndexMapping[facesChannel[i][j]];
+        }
+    }
+
+    return areaMesh;
+}
+
 void ChunkManager::initBoundingBox(MeshBufferPtr mesh)
 {
     FloatChannel vertices = mesh->getFloatChannel("vertices").get();
@@ -451,7 +564,7 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
 
     // one vector of variable size for each vertex - this is used for duplicate detection
     std::shared_ptr<std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>>
-    vertexUse(new std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>());
+        vertexUse(new std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>());
 
     for (std::size_t i = 0; i < m_amount.x; i++)
     {

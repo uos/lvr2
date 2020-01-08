@@ -30,11 +30,11 @@
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include <algorithm>
 #include <iostream>
-#include <lvr2/geometry/BaseVector.hpp>
+#include "lvr2/geometry/BaseVector.hpp"
 #include <random>
 #include <string>
-#include <lvr2/io/GHDF5IO.hpp>
-#include <lvr2/io/hdf5/ScanIO.hpp>
+#include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/ScanIO.hpp"
 
 using std::cout;
 using std::endl;
@@ -43,13 +43,13 @@ using namespace lvr2;
 #if defined CUDA_FOUND
 #define GPU_FOUND
 
-#include <lvr2/reconstruction/cuda/CudaSurface.hpp>
+#include "lvr2/reconstruction/cuda/CudaSurface.hpp"
 
 typedef CudaSurface GpuSurface;
 #elif defined OPENCL_FOUND
 #define GPU_FOUND
 
-#include <lvr2/reconstruction/opencl/ClSurface.hpp>
+#include "lvr2/reconstruction/opencl/ClSurface.hpp"
 
 
 typedef ClSurface GpuSurface;

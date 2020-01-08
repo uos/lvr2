@@ -76,7 +76,7 @@ void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
     Timestamp ts;
 
     // Calculate a distance value for each query point
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(dynamic, 4)
     for( int i = 0; i < (int)this->m_queryPoints.size(); i++){
         float projectedDistance;
         float euklideanDistance;

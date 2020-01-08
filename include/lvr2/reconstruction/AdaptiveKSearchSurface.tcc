@@ -174,7 +174,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     string comment = timestamp.getElapsedTime() + "Estimating normals ";
     lvr2::ProgressBar progress(numPoints, comment);
 
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(dynamic, 12)
     for(size_t i = 0; i < numPoints; i++) {
         // We have to fit these vector to have the
         // correct return values when performing the
@@ -333,7 +333,7 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
     lvr2::ProgressBar progress(numPoints, comment);
 
     // Interpolate normals
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(dynamic, 12)
     for( int i = 0; i < (int)numPoints; i++)
     {
         vector<size_t> id;
