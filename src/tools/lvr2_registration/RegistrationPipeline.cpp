@@ -26,6 +26,8 @@
  */
 
 #include <tools/lvr2_registration/RegistrationPipeline.hpp>
+#include <lvr2/registration/SLAMAlign.hpp>
+#include <lvr2/registration/SLAMScanWrapper.hpp>
 
 using namespace lvr2;
 
@@ -38,6 +40,21 @@ RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProje
 
 bool RegistrationPipeline::doRegistration()
 {
-    
+    SLAMAlign align(options);
+    vector<SLAMScanPtr> slamscans;
+
+    for (size_t i = 0; i < m_scans->positions.size(); i++)
+    {
+        slamscans.push_back(m_scans->positions.at(i));
+        align.addScan(m_scans->positions.at(i));
+    }
+
+    align.finish();
+
+    for (int i = 0; i < scans.size(); i++)
+    {
+        Transformd pose = scans[i]->pose();
+        cout << "Pose Scan Nummer " << i << pose.transposeInPlace() << endl;
+    }
     return true;
 }
