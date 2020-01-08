@@ -65,9 +65,14 @@ class Options
     bool printUsage() const;
 
     /**
-     * @brief	Returns the file
+     * @brief	Returns the HDF5 file path
      */
-    string getFile() const;
+    string getHdf5FilePath() const;
+
+    /**
+     * @brief	Returns the config file path
+     */
+    string getConfigFilePath() const;
 
 private:
     /// The internally used variable map

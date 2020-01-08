@@ -48,7 +48,8 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
     // Create option descriptions
     m_descr.add_options()("help", "Produce help message")
-                          ("file", value<string>(), "HDF5 file name.");
+                          ("hdf5File", value<string>(), "Path to HDF5 file.")
+                          ("configFile", value<string>(), "Path to YAML config file.");
 
     // Parse command line and generate variables map
     store(command_line_parser(argc, argv).options(m_descr).positional(m_posDescr).run(),
@@ -64,9 +65,17 @@ bool Options::printUsage() const
         return true;
     }
 
-    if (!m_variables.count("file"))
+    if (!m_variables.count("hdf5File"))
     {
-        cout << "Error: You must specify an HDF5 file." << endl;
+        cout << "Error: You must specify an HDF5 file path." << endl;
+        cout << endl;
+        cout << m_descr << endl;
+        return true;
+    }
+
+    if (!m_variables.count("configFile"))
+    {
+        cout << "Error: You must specify an YAML config file path." << endl;
         cout << endl;
         cout << m_descr << endl;
         return true;
@@ -75,9 +84,14 @@ bool Options::printUsage() const
     return false;
 }
 
-string Options::getFile() const
+string Options::getHdf5FilePath() const
 {
-    return m_variables["file"].as<string>();
+    return m_variables["hdf5File"].as<string>();
+}
+
+string Options::getConfigFilePath() const
+{
+    return m_variables["configFile"].as<string>();
 }
 
 Options::~Options()

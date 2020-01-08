@@ -26,38 +26,44 @@
  */
 
 /**
- * Main.cpp
+ * ChunkingPipeline.cpp
  *
  * @date 27.11.2019
  * @author Marcel Wiegand
  */
 
-#include "Options.hpp"
-
 #include "lvr2/algorithm/ChunkingPipeline.hpp"
 
-#include <boost/filesystem.hpp>
-#include <iostream>
-#include <string>
-
-int main(int argc, char** argv)
+namespace lvr2
 {
-    // =======================================================================
-    // Parse and print command line parameters
-    // =======================================================================
-    // Parse command line arguments
-    chunking_server::Options options(argc, argv);
-
-    // Exit if options had to generate a usage message
-    // (this means required parameters are missing)
-    if (options.printUsage())
+ChunkingPipeline::ChunkingPipeline(
+        std::string hdf5Path,
+        std::string configPath,
+        std::shared_ptr<ChunkManager> chunkManager
+        ) :  m_hdf5Path(hdf5Path), m_configPath(configPath)
+{
+    if (chunkManager != nullptr)
     {
-        return EXIT_SUCCESS;
+        m_chunkManager = chunkManager;
     }
-
-    lvr2::ChunkingPipeline pipeline = lvr2::ChunkingPipeline(options.getHdf5FilePath(), options.getConfigFilePath());
-
-    pipeline.start();
-
-    return EXIT_SUCCESS;
+    else
+    {
+        m_chunkManager = std::make_shared<ChunkManager>(m_hdf5Path);
+    }
 }
+
+bool ChunkingPipeline::start()
+{
+    std::cout << "Chunking Pipeline started!" << std::endl;
+
+
+
+    return false;
+}
+
+bool ChunkingPipeline::stop()
+{
+    return false;
+}
+
+} /* namespace lvr2 */
