@@ -31,9 +31,9 @@
 #include <iostream>
 #include <regex>
 
-#include "lvr2/geometry/Matrix4.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
-
+#include "lvr2/registration/TransformUtils.hpp"
 namespace lvr2
 {
 
@@ -41,19 +41,21 @@ using Vec = BaseVector<float>;
 
 // @TODO more errorprone against invalid input?
 //       And this doesn't belong in here, it should be in Matrix4.
-Matrix4<Vec> string2mat4f(const std::string data) {
-    Matrix4<Vec> ret;
+Transformd string2mat4f(const std::string data) 
+{
+    double mat[16];
+    Transformd ret;
 
     int count = 0;
     std::string::size_type n = 0;
     std::string::size_type sz = 0;
     while (count < 16) {
-        ret[count++] = std::stof(data.substr(n), &sz);
+        mat[count++] = std::stof(data.substr(n), &sz);
         n += sz;
         n = data.find_first_not_of(' ', n);
     }
 
-    return ret;
+    return buildTransformation(mat);
 }
 
 std::string get_first_group_regex(std::regex regex_string, std::string data) {

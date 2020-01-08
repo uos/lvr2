@@ -39,8 +39,9 @@
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/RxpIO.hpp"
-#include "lvr2/io/ScanprojectIO.hpp"
 #include "lvr2/util/Util.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/registration/TransformUtils.hpp"
 
 #include "Options.hpp"
 #include "RieglProject.hpp"
@@ -56,7 +57,7 @@
 
 using Vec = lvr2::BaseVector<float>;
 
-void transformModel(lvr2::ModelPtr model, const lvr2::Matrix4<Vec> transform)
+void transformModel(lvr2::ModelPtr model, const lvr2::Transformd& transform)
 {
     size_t num_points = model->m_pointCloud->numPoints();
 
@@ -101,8 +102,8 @@ int char_to_int(char in) {
     return ((int) in) - 48;
 }
 
-template <typename BaseVecT>
-bool write_mat4_to_file(lvr2::Matrix4<BaseVecT> mat, fs::path dest, bool force_overwrite) {
+template <typename T>
+bool write_mat4_to_file(lvr2::Transformd mat, fs::path dest, bool force_overwrite) {
 
     if (!force_overwrite && fs::exists(dest)) {
         std::cout << "[write_matrix4_to_file] Info: Skipping writing to file " << dest << " because the file already exists. (If already existing files should be overwritten, use --force.)" << std::endl;
@@ -117,7 +118,7 @@ bool write_mat4_to_file(lvr2::Matrix4<BaseVecT> mat, fs::path dest, bool force_o
     }
 
     for (int i = 0; i < 16; i++) {
-        out << std::setprecision(std::numeric_limits<typename BaseVecT::CoordType>::digits10 + 1 ) << mat[i];
+        out << std::setprecision(std::numeric_limits<T>::digits10 + 1 ) << mat(i);
         out << (i%4 != 3 || i == 0 ? ' ' : '\n');
     }
 
@@ -145,16 +146,20 @@ bool copy_file(const fs::path from, const fs::path to, bool force_overwrite) {
         return true;
 }
 
-bool write_mat4_to_pose_file(const fs::path file, const lvr2::Matrix4<Vec> transform, bool force_overwrite) {
+bool write_mat4_to_pose_file(const fs::path file, const lvr2::Transformd& transform, bool force_overwrite) {
 
         if (!force_overwrite && fs::exists(file)) {
             std::cout << "[write_mat4_to_pose_file] Info: Skipping writing " << file << " because it already exists. (If already existing files should be overwritten, use --force.)" << std::endl;
             return true;
         }
 
-        float pose_data[6];
+        double pose_data[6];
 
-        lvr2::Util::riegl_to_slam6d_transform(transform).toPostionAngle(pose_data);
+        //lvr2::Util::riegl_to_slam6d_transform(transform).toPostionAngle(pose_data);
+
+        lvr2::Transformd trans_slam6d = lvr2::lvrToSlam6d(transform);
+
+        lvr2::eigenToEuler(trans_slam6d, pose_data);
 
         // .pose expects angles in degree and not radian
         pose_data[3] = lvr2::Util::rad_to_deg(pose_data[3]);
@@ -217,14 +222,14 @@ void convert_rxp_to_3d_per_thread(
             continue;
         }
 
-        lvr2::Matrix4<Vec> identity;
-        lvr2::Matrix4<Vec> riegl_to_slam_transform;
+        lvr2::Transformd identity;
+        lvr2::Transformd riegl_to_slam_transform;
 
-        riegl_to_slam_transform[4]  = -100.0;
-        riegl_to_slam_transform[9]  =  100.0;
-        riegl_to_slam_transform[5]  =  0.0;
-        riegl_to_slam_transform[2]  =  100.0;
-        riegl_to_slam_transform[10] =  0.0;
+        riegl_to_slam_transform(4)  = -100.0;
+        riegl_to_slam_transform(9)  =  100.0;
+        riegl_to_slam_transform(5)  =  0.0;
+        riegl_to_slam_transform(2)  =  100.0;
+        riegl_to_slam_transform(10) =  0.0;
 
         lvr2::ModelPtr tmp;
         
@@ -248,8 +253,8 @@ void convert_rxp_to_3d_per_thread(
         } else {
             // ascii etc
             
-            bool dummy;
-            lvr2::Matrix4<Vec > inv_transform = pos.transform.inv(dummy);
+
+            lvr2::Transformd inv_transform = pos.transform.inverse();
             inv_transform.transpose();
             
             tmp = lvr2::ModelFactory::readModel(pos.scan_file.string());
@@ -372,7 +377,7 @@ bool convert_riegl_project(
 
             //write out extrinsic transform
             std::snprintf(out_file_buf, 2048, "scan%.3d_%.2d_extrinsic.dat", scan_nr, image_nr);
-            if (!write_mat4_to_file(image.extrinsic_transform,
+            if (!write_mat4_to_file<double>(image.extrinsic_transform,
                                     images_dir / out_file_buf,
                                     force_overwrite)) {
                 std::cout << "[convert_riegl_project] Error: Error while writing image extrinsic \
@@ -381,7 +386,7 @@ bool convert_riegl_project(
 
             //write out orientation transform
             std::snprintf(out_file_buf, 2048, "scan%.3d_%.2d_orientation.dat", scan_nr, image_nr);
-            if (!write_mat4_to_file(image.orientation_transform,
+            if (!write_mat4_to_file<double>(image.orientation_transform,
                                     images_dir / out_file_buf,
                                     force_overwrite)) {
                 std::cout << "[convert_riegl_project] Error: Error while writing image orientation \

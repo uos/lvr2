@@ -14,7 +14,7 @@
 #include "lvr2/geometry/Transformable.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Normal.hpp"
-#include "lvr2/types/CameraData.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/registration/TransformUtils.hpp"
 
@@ -38,7 +38,7 @@ class LVRCamDataItem : public QTreeWidgetItem, public Transformable
 
     public:
 
-        LVRCamDataItem(CameraData data,
+        LVRCamDataItem(ScanImage& data,
                         std::shared_ptr<ScanDataManager> sdm,
                         size_t cam_id,
                         vtkSmartPointer<vtkRenderer> renderer,
@@ -79,7 +79,7 @@ class LVRCamDataItem : public QTreeWidgetItem, public Transformable
         QString                                 m_name;
         std::shared_ptr<ScanDataManager>        m_sdm;
         size_t                                  m_cam_id;
-        CameraData                              m_data;
+        ScanImage                               m_data;
         Pose                                    m_pose;
         LVRPoseItem*                            m_pItem;
         LVRCvImageItem*                         m_cvItem;
