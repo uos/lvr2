@@ -70,7 +70,7 @@ bool ChunkHashGrid::isChunkLoaded(std::string layer, int x, int y, int z)
     return isChunkLoaded(layer, hashValue(x, y, z));
 }
 
-bool ChunkHashGrid::loadChunk(std::string layer, int x, int y, int z, const val_type& data)
+void ChunkHashGrid::loadChunk(std::string layer, int x, int y, int z, const val_type& data)
 {
     std::size_t chunkHash = hashValue(x, y, z);
 

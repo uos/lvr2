@@ -76,7 +76,8 @@ struct Hdf5Construct<hdf5features::ChunkIO, Derived>
     // DEPS
     using dep1 = typename Hdf5Construct<hdf5features::ArrayIO, Derived>::type;
     using dep2 = typename Hdf5Construct<hdf5features::MeshIO, Derived>::type;
-    using deps = typename dep1::template Merge<dep2>;
+    using dep3 = typename Hdf5Construct<hdf5features::PointCloudIO, Derived>::type;
+    using deps = typename dep1::template Merge<dep2>::template Merge<dep3>;
 
     // add actual feature
     using type = typename deps::template add_features<hdf5features::ChunkIO>::type;
