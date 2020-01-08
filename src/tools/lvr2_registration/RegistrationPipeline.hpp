@@ -46,8 +46,8 @@ public:
      * */
     bool doRegistration();
 private:
-    SLAMOptions* options;
-    ScanProjectPtr scans;
+    SLAMOptions* m_options;
+    ScanProjectPtr m_scans;
 }
 
 #endif // REGISTRATION_PIPELINE_OBJECT_H_

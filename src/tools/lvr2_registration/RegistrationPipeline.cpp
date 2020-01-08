@@ -25,16 +25,19 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <tools/lvr2_registration/pipeline_object.hpp>
-#include <lvr2/registration/SLAMAlign.hpp>
-#include <lvr2/registration/SLAMScanWrapper.hpp>
+#include <tools/lvr2_registration/RegistrationPipeline.hpp>
 
 using namespace lvr2;
 
-RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProjectPtr scans)
+RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProjectPtr scans) :
+    m_options(options),
+    m_scans(scans)
 {
-    this.options = options;
-    this.scans = scans;
 }
 
 
+bool RegistrationPipeline::doRegistration()
+{
+    
+    return true;
+}
