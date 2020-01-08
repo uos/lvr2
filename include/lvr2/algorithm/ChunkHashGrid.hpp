@@ -50,11 +50,7 @@ class ChunkHashGrid
   public:
     using val_type = boost::variant<MeshBufferPtr, PointBufferPtr>;
 
-    using io = Hdf5IO<hdf5features::ChunkIO,
-                      hdf5features::ArrayIO,
-                      hdf5features::ChannelIO,
-                      hdf5features::VariantChannelIO,
-                      hdf5features::MeshIO>;
+    using io = Hdf5Build<hdf5features::ChunkIO>;
 
     /**
      * @brief class to load chunks from an HDF5 file
@@ -63,13 +59,60 @@ class ChunkHashGrid
      */
     explicit ChunkHashGrid(std::string hdf5Path, size_t cacheSize);
 
+    /**
+     * @brief sets a chunk of a given layer in hashgrid
+     *
+     * Adds a chunk for a given layer and coordinate in chunk coordinates to local cache and stores
+     * it permanently using io module.
+     *
+     * @tparam T type of chunk
+     * @param layer layer of chunk
+     * @param x x coordinate of chunk in chunk coordinates
+     * @param y y coordinate of chunk in chunk coordinates
+     * @param z z coordinate of chunk in chunk coordinates
+     * @param data content of chunk to be added
+     */
     template <typename T>
     void setChunk(std::string layer, int x, int y, int z, T data);
 
+    /**
+     * @brief delivers the content of a chunk
+     *
+     * Returns a the content of a chunk from the local cache.
+     * If the requested chunk is not cached, the chunk will be loaded from the persistent storage
+     * and returned after being added to the cache.
+     *
+     * @tparam T type of requested chunk
+     * @param layer layer of requested chunk
+     * @param x x coordinate of chunk in chunk coordinates
+     * @param y y coordinate of chunk in chunk coordinates
+     * @param z z coordinate of chunk in chunk coordinates
+     *
+     * @return content of the chunk
+     */
     template <typename T>
     boost::optional<T> getChunk(std::string layer, int x, int y, int z);
 
+    /**
+     * @brief indicates if wether or not a chunk is currently loaded in the local cache
+     *
+     * @param layer layer of chunk
+     * @param hashValue hashValue hash of the chunk coordinate
+     *
+     * @return true if chunk is loaded; else false
+     */
     bool isChunkLoaded(std::string layer, size_t hashValue);
+
+    /**
+     * @brief indicates if wether or not a chunk is currently loaded in the local cache
+     *
+     * @param layer layer of chunk
+     * @param x x coordinate of chunk in chunk coordinates
+     * @param y y coordinate of chunk in chunk coordinates
+     * @param z z coordinate of chunk in chunk coordinates
+     *
+     * @return true if chunk is loaded; else false
+     */
     bool isChunkLoaded(std::string layer, int x, int y, int z);
 
     /**
@@ -102,23 +145,63 @@ class ChunkHashGrid
     }
 
   protected:
+    /**
+     * @brief loads a chunk from persistent storage into cache
+     *
+     * @tparam T Type of chunk data
+     * @param layer layer of chunk
+     * @param x x coordinate of chunk in chunk coordinates
+     * @param y y coordinate of chunk in chunk coordinates
+     * @param z z coordinate of chunk in chunk coordinates
+     *
+     * @return true if chunk has been loaded; false if chunk does not exist in persistend storage
+     */
     template <typename T>
     bool loadChunk(std::string layer, int x, int y, int z);
 
-    bool loadChunk(std::string layer, int x, int y, int z, const val_type& data);
+    /**
+     * @brief loads given chunk data into cache
+     *
+     * Loads given chunk data into cache and handles cache overflows.
+     * If the cache is full after adding the chunk, the least recent used chunk will be removed from
+     * cache.
+     *
+     * @param layer layer of chunk
+     * @param x x coordinate of chunk in chunk coordinates
+     * @param y y coordinate of chunk in chunk coordinates
+     * @param z z coordinate of chunk in chunk coordinates
+     * @param data content of chunk to load
+     */
+    void loadChunk(std::string layer, int x, int y, int z, const val_type& data);
 
+    /**
+     * @brief sets the bounding box in this container and in persistend storage
+     *
+     * @param boundingBox new bounding box
+     */
     void setBoundingBox(const BoundingBox<BaseVector<float>> boundingBox)
     {
         m_boundingBox = boundingBox;
         m_io.saveBoundingBox(m_boundingBox);
     }
 
+    /**
+     * @brief sets chunk size in this container and in persistent storage
+     *
+     * @param chunkSize new size of chunks
+     */
     void setChunkSize(float chunkSize)
     {
         m_chunkSize = chunkSize;
         m_io.saveChunkSize(m_chunkSize);
     }
 
+    /**
+     * @brief sets the amount of chunks in x y and z direction in this container and in persistent
+     * storage
+     *
+     * @param chunkAmount new amounts of chunks
+     */
     void setChunkAmount(const BaseVector<std::size_t>& chunkAmount)
     {
         m_chunkAmount = chunkAmount;
