@@ -42,10 +42,12 @@
 #include <lvr2/io/hdf5/VariantChannelIO.hpp>
 #include <lvr2/io/hdf5/PointCloudIO.hpp>
 #include <lvr2/io/hdf5/MatrixIO.hpp>
+#include "RegistrationPipeline.hpp"
 
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
 #include <iostream>
 #include <chrono>
 #include <fstream>
@@ -375,6 +377,9 @@ int main(int argc, char** argv)
     SLAMAlign align(options);
     vector<SLAMScanPtr> scans;
 
+    // DEBUG
+    ScanProject proj;
+
     int count = end - start + 1;
 
     HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
@@ -421,11 +426,25 @@ int main(int argc, char** argv)
             // sets the finalPose to the identiy matrix
             tempScan->m_registration = Transformd::Identity();
 
-            SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(tempScan));
+            
+            // DEBUG
+            ScanPosition pos;
+            pos.scan = boost::optional<Scan>(*tempScan);
+            proj.positions.push_back(std::make_shared<ScanPosition>(pos));
 
-            scans.push_back(slamScan);
-            align.addScan(slamScan);
+            
+
+            // SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(tempScan));
+
+            // scans.push_back(slamScan);
+            // align.addScan(slamScan);
         }
+        // DEBUG
+        cout << "vor Pipe Konstruktor" << endl;
+        RegistrationPipeline pipe(&options, std::make_shared<ScanProject>(proj));
+        pipe.doRegistration();
+        cout << "Nach doRegistration" << endl;
+
     }
     else
     {

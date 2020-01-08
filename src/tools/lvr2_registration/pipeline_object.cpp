@@ -25,44 +25,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "RegistrationPipeline.hpp"
+#include "tools/lvr2_registration/pipeline_object.hpp"
 #include "lvr2/registration/SLAMAlign.hpp"
 #include "lvr2/registration/SLAMScanWrapper.hpp"
-
-#include "vector"
 
 using namespace lvr2;
 
 RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProjectPtr scans)
 {
-    m_options = options;
-    m_scans = scans;
+    this.options = options;
+    this.scans = scans;
 }
 
 
-bool RegistrationPipeline::doRegistration()
-{
-    SLAMAlign align(*m_options);
-    std::vector<SLAMScanPtr> slamscans;
-
-    for (size_t i = 0; i < m_scans->positions.size(); i++)
-    {
-        ScanOptional opt = m_scans->positions.at(i)->scan;
-        if (opt)
-        {
-            ScanPtr scptr = std::make_shared<Scan>(*opt);
-            SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(scptr));
-            slamscans.push_back(slamScan);
-            align.addScan(slamScan);
-        }
-    }
-
-    align.finish();
-
-    for (int i = 0; i < slamscans.size(); i++)
-    {
-        Transformd pose = slamscans[i]->pose();
-        cout << "Pose Scan Nummer " << i << pose << endl;
-    }
-    return true;
-}

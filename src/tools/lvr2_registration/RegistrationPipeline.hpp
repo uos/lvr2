@@ -28,9 +28,10 @@
 #ifndef REGISTRATION_PIPELINE_OBJECT_H_
 #define REGISTRATION_PIPELINE_OBJECT_H_
 
-#include <lvr2/registration/SLAMOptions.hpp>
-#include <lvr2/registration/GraphSLAM.hpp>
-#include <lvr2/types/ScanTypes.hpp>
+#include "lvr2/registration/SLAMOptions.hpp"
+#include "lvr2/registration/GraphSLAM.hpp"
+#include "lvr2/types/ScanTypes.hpp"
+
 
 
 using namespace lvr2;
@@ -46,8 +47,8 @@ public:
      * */
     bool doRegistration();
 private:
-    SLAMOptions* m_options;
+    const SLAMOptions* m_options;
     ScanProjectPtr m_scans;
-}
+};
 
 #endif // REGISTRATION_PIPELINE_OBJECT_H_
