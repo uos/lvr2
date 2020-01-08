@@ -47,7 +47,7 @@ BoundingBox<BaseVector<float> > ChunkedMeshCuller::frustumToBB(double planes[24]
     x_min = y_min = z_min = 20e6;
     double x_max, y_max, z_max;
     x_max = y_max = z_max = (-1) * 20e6;
-//#pragma omp parallel for collapse(3) reduction(min:x_min, y_min, z_min) reduction(max:x_max, y_max, z_max)
+    #pragma omp parallel for collapse(3) reduction(min:x_min, y_min, z_min) reduction(max:x_max, y_max, z_max)
     for(size_t i = 0; i < 2; ++i)
     {
         // left/right
