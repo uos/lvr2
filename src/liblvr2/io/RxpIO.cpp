@@ -43,10 +43,10 @@ namespace lvr2
 
 ModelPtr RxpIO::read(std::string filename)
 {
-    return read(filename, 1, Matrix4<BaseVector<float>>());
+    return read(filename, 1, Transformd::Identity());
 }
 
-ModelPtr RxpIO::read(std::string filename, int reduction_factor, Matrix4<BaseVector<float>> tf)
+ModelPtr RxpIO::read(std::string filename, int reduction_factor, const Transformd& tf)
 {
     if (reduction_factor < 1)
     {
