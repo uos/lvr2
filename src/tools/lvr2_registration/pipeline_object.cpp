@@ -26,10 +26,13 @@
  */
 
 #include <tools/lvr2_registration/pipeline_object.hpp>
+#include <lvr2/registration/SLAMAlign.hpp>
+#include <lvr2/registration/SLAMScanWrapper.hpp>
 
 using namespace lvr2;
 
-RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProjectPtr scans) {
+RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProjectPtr scans)
+{
     this.options = options;
     this.scans = scans;
 }
