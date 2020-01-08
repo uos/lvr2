@@ -92,6 +92,10 @@ class ChunkManager : public ChunkHashGrid
      */
     MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area);
 
+    void extractArea(const BoundingBox<BaseVector<float> >& area,
+                    std::unordered_map<std::size_t, MeshBufferPtr>& chunks);
+                    
+
     /**
      * @brief extractArea creates and returns MeshBufferPtr of merged chunks for given area after
      * filtering the resulting mesh.
