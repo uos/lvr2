@@ -26,38 +26,61 @@
  */
 
 /**
- * Main.cpp
+ * ChunkingPipeline.hpp
  *
  * @date 27.11.2019
  * @author Marcel Wiegand
  */
 
-#include "Options.hpp"
+#ifndef CHUNKING_PIPELINE_HPP
+#define CHUNKING_PIPELINE_HPP
 
-#include "lvr2/algorithm/ChunkingPipeline.hpp"
+#include "lvr2/algorithm/ChunkManager.hpp"
 
-#include <boost/filesystem.hpp>
-#include <iostream>
-#include <string>
-
-int main(int argc, char** argv)
+namespace lvr2
 {
-    // =======================================================================
-    // Parse and print command line parameters
-    // =======================================================================
-    // Parse command line arguments
-    chunking_server::Options options(argc, argv);
 
-    // Exit if options had to generate a usage message
-    // (this means required parameters are missing)
-    if (options.printUsage())
-    {
-        return EXIT_SUCCESS;
-    }
+class ChunkingPipeline
+{
+public:
+    /**
+     * @brief Creates a basic ChunkingPipeline instance
+     *
+     * @param hdf5Path path to the HDF5 file
+     * @param configPath path to the YAML config file
+     * @param chunkManager shared pointer to ChunkManager instance if null a new instance is created
+     */
+    ChunkingPipeline(std::string hdf5Path, std::string configPath, std::shared_ptr<ChunkManager> chunkManager = nullptr);
 
-    lvr2::ChunkingPipeline pipeline = lvr2::ChunkingPipeline(options.getHdf5FilePath(), options.getConfigFilePath());
+private:
+    // path to the HDF5 file
+    std::string m_hdf5Path;
 
-    pipeline.start();
+    // path to config file
+    std::string m_configPath;
 
-    return EXIT_SUCCESS;
-}
+    // chunk manger instance
+    std::shared_ptr<ChunkManager> m_chunkManager;
+
+    // TODO: add old scans, e.g. std::vector<Scan> m_oldScans
+
+    // TODO: add new scans, e.g. std::vector<Scan> m_newScans
+
+public:
+    /**
+     * @brief Start the chunking pipeline
+     *
+     * @return true on success and false on failure
+     */
+    bool start();
+
+    /**
+     * TODO
+     * @return
+     */
+    bool stop();
+};
+
+} /* namespace lvr2 */
+
+#endif // CHUNKING_PIPELINE_HPP
