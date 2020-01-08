@@ -4,6 +4,7 @@
 
 set(LVR2_REGISTRATION_SOURCES
     Main.cpp
+    RegistrationPipeline.cpp
 )
 
 #####################################################################################
