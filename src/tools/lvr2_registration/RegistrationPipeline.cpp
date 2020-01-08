@@ -25,29 +25,19 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef REGISTRATION_PIPELINE_OBJECT_H_
-#define REGISTRATION_PIPELINE_OBJECT_H_
-
-#include <lvr2/registration/SLAMOptions.hpp>
-#include <lvr2/registration/GraphSLAM.hpp>
-#include <lvr2/types/ScanTypes.hpp>
-
+#include <tools/lvr2_registration/RegistrationPipeline.hpp>
 
 using namespace lvr2;
 
-class RegistrationPipeline
+RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProjectPtr scans) :
+    m_options(options),
+    m_scans(scans)
 {
-public:
-    RegistrationPipeline(const SLAMOptions* options, ScanProjectPtr scans);
-
-    /**
-     * @brief starts the registration process
-     * @returns true if the calculated error is significant to the old registration, else false
-     * */
-    bool doRegistration();
-private:
-    SLAMOptions* options;
-    ScanProjectPtr scans;
 }
 
-#endif // REGISTRATION_PIPELINE_OBJECT_H_
+
+bool RegistrationPipeline::doRegistration()
+{
+    
+    return true;
+}
