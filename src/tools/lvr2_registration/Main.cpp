@@ -442,8 +442,23 @@ int main(int argc, char** argv)
         // DEBUG
         cout << "vor Pipe Konstruktor" << endl;
         RegistrationPipeline pipe(&options, std::make_shared<ScanProject>(proj));
-        pipe.doRegistration();
+        std::vector<bool> reconstructionIndicator = pipe.doRegistration();
         cout << "Nach doRegistration" << endl;
+        for (size_t i = 0; i < reconstructionIndicator.size(); i++)
+        {
+            cout << "Reconstruct indivcator ans Stelle: " << i << "ist: " << reconstructionIndicator.at(i)<< endl;
+        }
+        
+        cout << "Eine Pose aus dem Project:" << endl << proj.positions.at(1)->scan->m_registration << endl;
+
+        // zweiter Durchlauf
+        std::vector<bool> reconstructionIndicator2 = pipe.doRegistration();
+        cout << "Nach doRegistration" << endl;
+        for (size_t i = 0; i < reconstructionIndicator2.size(); i++)
+        {
+            cout << "Reconstruct indivcator ans Stelle: " << i << "ist: " << reconstructionIndicator2.at(i)<< endl;
+        }
+        
         cout << "Eine Pose aus dem Project:" << endl << proj.positions.at(1)->scan->m_registration << endl;
 
     }
