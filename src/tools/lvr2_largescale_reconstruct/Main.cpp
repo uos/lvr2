@@ -34,7 +34,6 @@
 #include <random>
 #include <string>
 #include "lvr2/io/GHDF5IO.hpp"
-#include "lvr2/io/hdf5/ScanIO.hpp"
 
 using std::cout;
 using std::endl;
@@ -56,7 +55,6 @@ typedef ClSurface GpuSurface;
 #endif
 
 using Vec = lvr2::BaseVector<float>;
-using MyScanIO = lvr2::Hdf5Build<lvr2::hdf5features::ScanIO>;
 int main(int argc, char** argv)
 {
     // =======================================================================
@@ -81,9 +79,7 @@ int main(int argc, char** argv)
     LargeScaleReconstruction<Vec> lsr(options);
 
     std::vector<ScanPtr> scans;
-    MyScanIO scanIO;
-    scanIO.open(in);
-    scans = scanIO.loadAllScans("/raw/scans");
+
 
     std::vector<ScanPtr> h5scans;
     //std::vector<ScanPtr> scans_new;
@@ -104,9 +100,10 @@ int main(int argc, char** argv)
   //      return 0;
    //}
 
+   ScanProjectPtr project;
+   vector<bool> diff;
 
-
-    int x = lsr.mpiChunkAndReconstruct(h5scans, scans);
+    int x = lsr.mpiChunkAndReconstruct(project, diff);
 
     //scans_new.front()->m_globalBoundingBox = bb2;
 

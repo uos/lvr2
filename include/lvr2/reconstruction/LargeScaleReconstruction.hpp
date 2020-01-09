@@ -28,7 +28,7 @@
 #ifndef LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
 #define LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
 
-#include <lvr2/types/Scan.hpp>
+#include <lvr2/types/ScanTypes.hpp>
 #include <lvr2/reconstruction/PointsetGrid.hpp>
 #include <lvr2/reconstruction/FastBox.hpp>
 #include <lvr2/algorithm/ChunkManager.hpp>
@@ -71,7 +71,8 @@ namespace lvr2
          * @param scans vector of new scan to be added
          * @return
          */
-        int mpiChunkAndReconstruct(std::vector<ScanPtr> &oldScans, std::vector<ScanPtr> &newScans);
+        int mpiChunkAndReconstruct(ScanProjectPtr project, std::vector<bool> diff);
+
 
     private:
 
