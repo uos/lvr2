@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "RegistrationPipeline.hpp"
+#include "lvr2/registration/RegistrationPipeline.hpp"
 #include "lvr2/registration/SLAMAlign.hpp"
 #include "lvr2/registration/SLAMScanWrapper.hpp"
 

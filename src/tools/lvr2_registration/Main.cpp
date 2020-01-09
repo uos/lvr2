@@ -42,7 +42,7 @@
 #include <lvr2/io/hdf5/VariantChannelIO.hpp>
 #include <lvr2/io/hdf5/PointCloudIO.hpp>
 #include <lvr2/io/hdf5/MatrixIO.hpp>
-#include "RegistrationPipeline.hpp"
+#include "lvr2/registration/RegistrationPipeline.hpp"
 
 
 #include <boost/program_options.hpp>
