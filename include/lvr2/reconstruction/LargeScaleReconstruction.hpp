@@ -28,7 +28,7 @@
 #ifndef LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
 #define LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
 
-#include <lvr2/types/Scan.hpp>
+#include <lvr2/types/ScanTypes.hpp>
 
 namespace lvr2
 {
@@ -60,6 +60,7 @@ namespace lvr2
          */
         LargeScaleReconstruction(LargeScaleOptions::Options options);
 
+
         /**
          * this method splits the given PointClouds in to Chunks and calculates all required values for a later reconstruction
          *
@@ -67,7 +68,8 @@ namespace lvr2
          * @param scans vector of new scan to be added
          * @return
          */
-        int mpiChunkAndReconstruct(std::vector<ScanPtr> &oldScans, std::vector<ScanPtr> &newScans);
+        int mpiChunkAndReconstruct(ScanProjectPtr project, std::vector<bool> diff);
+
 
     private:
 
