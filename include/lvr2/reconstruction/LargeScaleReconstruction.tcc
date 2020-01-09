@@ -26,7 +26,7 @@
  */
 
 #include <iostream>
-#include <lvr2/types/Scan.hpp>
+#include <lvr2/types/ScanTypes.hpp>
 #include <lvr2/io/GHDF5IO.hpp>
 #include <lvr2/io/hdf5/ChannelIO.hpp>
 #include <lvr2/io/hdf5/ArrayIO.hpp>
@@ -98,15 +98,24 @@ namespace lvr2
         std::cout << "Reconstruction Instance generated..." << std::endl;
     }
 
+
+
     template <typename BaseVecT>
-    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(std::vector<ScanPtr> &oldScans, std::vector<ScanPtr> &newScans)
+    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectPtr project, std::vector<bool> diff)
     {
+
+        if(project->positions.size() != diff.size())
+        {
+            cout << "Inconsistency between number of given scans and diff-vector (scans to consider)! exit..." << endl;
+            return 0;
+        }
+
         //do more or less the same stuff as the executable
         cout << lvr2::timestamp << "Starting grid" << endl;
 
         //TODO: replace with new incremental Constructor later
         //BigGrid<BaseVecT> bg(m_filePath, m_bgVoxelSize, m_scale);
-        BigGrid<BaseVecT> bg( m_bgVoxelSize ,oldScans, newScans, m_scale);
+        BigGrid<BaseVecT> bg( m_bgVoxelSize ,project, diff, m_scale);
 
         cout << lvr2::timestamp << "grid finished " << endl;
         BoundingBox<BaseVecT> bb = bg.getBB();
