@@ -257,7 +257,36 @@ int mpiReconstruct(const LargeScaleOptions::Options& options)
                                                                  options.useRansac());
 
         if (!bg.hasNormals())
-            surface->calculateSurfaceNormals();
+        {
+            if (options.useGPU())
+            {
+                #ifdef GPU_FOUND
+                std::vector<float> flipPoint = options.getFlippoint();
+                size_t num_points = p_loader->numPoints();
+                floatArr points = p_loader->getPointArray();
+                floatArr normals = floatArr(new float[num_points * 3]);
+                std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
+                GpuSurface gpu_surface(points, num_points);
+
+                gpu_surface.setKn(options.getKn());
+                gpu_surface.setKi(options.getKi());
+                gpu_surface.setFlippoint(flipPoint[0], flipPoint[1], flipPoint[2]);
+
+                gpu_surface.calculateNormals();
+                gpu_surface.getNormals(normals);
+
+                p_loader->setNormalArray(normals, num_points);
+                gpu_surface.freeGPU();
+                #else
+                std::cout << timestamp << "ERROR: GPU Driver not installed" << std::endl;
+                surface->calculateSurfaceNormals();
+                #endif
+            }
+            else
+            {
+                surface->calculateSurfaceNormals();
+            }
+        }
 
         auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(
             voxelsize, surface, gridbb, true, options.extrude());
