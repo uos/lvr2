@@ -93,7 +93,8 @@ ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize)
 }
 
 void ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
-                               std::unordered_map<std::size_t, MeshBufferPtr>& chunks)
+                               std::unordered_map<std::size_t, MeshBufferPtr>& chunks,
+                               std::string layer)
 {
     // adjust area to our maximum boundingBox
     BaseVector<float> adjustedAreaMin, adjustedAreaMax;
@@ -129,7 +130,7 @@ void ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
                     adjustedArea.getMin() + BaseVector<float>(i, j, k) * getChunkSize());
 
                 boost::optional<MeshBufferPtr> loadedChunk
-                    = getChunk<MeshBufferPtr>("mesh", cellCoord.x, cellCoord.y, cellCoord.z);
+                    = getChunk<MeshBufferPtr>(layer, cellCoord.x, cellCoord.y, cellCoord.z);
 
                 if (loadedChunk)
                 {
@@ -144,7 +145,7 @@ void ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
     //    std::cout << "Num chunks " << chunks.size() << std::endl;
 }
 
-MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area)
+MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area, std::string layer)
 {
     std::unordered_map<std::size_t, MeshBufferPtr> chunks;
 
@@ -175,7 +176,7 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
                     adjustedArea.getMin() + BaseVector<float>(i, j, k) * getChunkSize());
 
                 boost::optional<MeshBufferPtr> loadedChunk
-                    = getChunk<MeshBufferPtr>("mesh", cellCoord.x, cellCoord.y, cellCoord.z);
+                    = getChunk<MeshBufferPtr>(layer , cellCoord.x, cellCoord.y, cellCoord.z);
                 if (loadedChunk)
                 {
                     // TODO: remove saving tmp chunks later
@@ -594,7 +595,7 @@ void ChunkManager::cutLargeFaces(
     }
 }
 
-void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::string savePath)
+void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::string savePath, std::string layer)
 {
     std::vector<ChunkBuilderPtr> chunkBuilders(getChunkAmount().x * getChunkAmount().y
                                                * getChunkAmount().z);
@@ -669,7 +670,7 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
                                                 + std::to_string(j) + "-" + std::to_string(k)
                                                 + ".ply");
                     // write chunk in hdf5
-                    setChunk<MeshBufferPtr>("mesh", i, j, k, chunkMeshPtr);
+                    setChunk<MeshBufferPtr>(layer, i, j, k, chunkMeshPtr);
 
                     chunkBuilders[hash] = nullptr; // deallocate
                 }
@@ -708,7 +709,7 @@ BaseVector<int> ChunkManager::getCellCoordinates(const BaseVector<float>& vec) c
 //    + std::to_string(static_cast<size_t>(tmpVec.z));
 //}
 
-void ChunkManager::loadAllChunks()
+void ChunkManager::loadAllChunks(std::string layer)
 {
     int numLoaded = 0;
     for (int i = 0; i < getChunkAmount()[0]; i++)
@@ -717,7 +718,7 @@ void ChunkManager::loadAllChunks()
         {
             for (int k = 0; k < getChunkAmount()[2]; k++)
             {
-                if (loadChunk<MeshBufferPtr>("mesh", i, j, k))
+                if (loadChunk<MeshBufferPtr>(layer, i, j, k))
                 {
                     numLoaded++;
                 }

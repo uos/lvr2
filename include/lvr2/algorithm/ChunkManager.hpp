@@ -90,10 +90,11 @@ class ChunkManager : public ChunkHashGrid
      * @param area
      * @return mesh of the given area
      */
-    MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area);
+    MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area, std::string layer= std::string("mesh"));
 
     void extractArea(const BoundingBox<BaseVector<float> >& area,
-                    std::unordered_map<std::size_t, MeshBufferPtr>& chunks);
+                    std::unordered_map<std::size_t, MeshBufferPtr>& chunks,
+                    std::string layer = std::string("mesh"));
                     
 
     /**
@@ -124,7 +125,7 @@ class ChunkManager : public ChunkHashGrid
      * @brief Loads all chunks into the ChunkHashGrid.
      * DEBUG -- Only used for testing, but might be useful for smaller meshes.
      */
-    void loadAllChunks();
+    void loadAllChunks(std::string layer = std::string("mesh"));
 
   private:
     /**
@@ -166,7 +167,7 @@ class ChunkManager : public ChunkHashGrid
      * Larger triangles will be cut
      * @param savePath UST FOR TESTING - REMOVE LATER ON
      */
-    void buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::string savePath);
+    void buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::string savePath, std::string layer = std::string("mesh"));
 
     /**
      * @brief getFaceCenter gets the center point for a given face
