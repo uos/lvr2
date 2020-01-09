@@ -8,7 +8,7 @@
 #include <sstream>
 #include <iomanip>
 
-#include <yaml-cpp/yaml.h>
+
 
 namespace lvr2
 {
@@ -100,9 +100,102 @@ void saveScanToDirectory(const boost::filesystem::path& path, const Scan& scan, 
     
 }
 
-bool loadScanFromDirectory(const boost::filesystem::path&, Scan& scan, const size_t& positionNr)
+bool loadScanFromDirectory(const boost::filesystem::path& path, Scan& scan, const size_t& positionNr)
 {
-    return true;
+    if(boost::filesystem::exists(path) && boost::filesystem::is_directory(path))
+    {
+
+    }
+    else
+    {
+        std::cout << timestamp 
+                  << "Warning: '" << path.string() 
+                  << "' does not exist or is not a directory." << std::endl; 
+        return false;
+    }
+}
+
+void loadScanMetaInfoFromYAML(const boost::filesystem::path& path, Scan& scan)
+{
+    std::vector<YAML::Node> root = YAML::LoadAllFromFile(path.string());
+
+    for (auto &n : root)
+    {
+        for (YAML::const_iterator it = n.begin(); it != n.end(); ++it)
+        {
+             if (it->first.as<string>() == "start_time")
+             {
+                scan.m_startTime = it->second.as<float>();
+             }
+             else if (it->first.as<string>() == "end_time")
+             {
+                scan.m_endTime = it->second.as<float>();
+             }
+             else if (it->first.as<string>() == "pose_estimate")
+             {
+                scan.m_poseEstimation = loadMatrixFromYAML<double, 4, 4>(it);
+             }
+             else if (it->first.as<string>() == "registration")
+             {
+                scan.m_registration = loadMatrixFromYAML<double, 4, 4>(it);
+             }
+             else if (it->first.as<string>() == "config")
+             {
+                YAML::Node config = it->second;
+                if(config["theta"])
+                {
+                    YAML::Node tmp = config["theta"];
+                    scan.m_thetaMin = tmp[0].as<float>();
+                    scan.m_thetaMax = tmp[1].as<float>();
+                }
+                
+                if(config["phi"])
+                {
+                    YAML::Node tmp = config["phi"];
+                    scan.m_phiMin = tmp[0].as<float>();
+                    scan.m_phiMin = tmp[1].as<float>();
+                }
+                
+                if(config["v_res"])
+                {
+                    scan.m_vResolution = config["v_res"].as<float>();
+                }
+                
+                if(config["h_res"])
+                {
+                    scan.m_hResolution = config["h_res"].as<float>();
+                }
+                
+                if(config["num_points"])
+                {
+                    scan.m_numPoints = config["num_points"].as<size_t>();
+                } 
+             }
+        }
+    }
+}
+
+template<typename T, int Rows, int Cols>
+Eigen::Matrix<T, Rows, Cols> loadMatrixFromYAML(const YAML::const_iterator& it)
+{
+    // Alloc memory for matrix entries
+    T data[Rows * Cols] = {0};
+
+    // Read entries
+    int c = 0;
+    for (auto& i : it->second)
+    {
+        if(c < Rows * Cols)
+        {
+            data[c++] = i.as<T>();
+        }
+        else
+        {
+            std::cout << timestamp << "Warning: Load Matrix from YAML: Buffer overflow." << std::endl;
+            break;
+        }
+    }
+    return Eigen::Map<Eigen::Matrix<T, Rows, Cols>>(data);
 }
 
 void saveScanToHDF5(const std::string filename, const size_t& positionNr)
