@@ -6,6 +6,8 @@
 #include "lvr2/types/ScanTypes.hpp"
 
 #include <boost/filesystem.hpp>
+#include <yaml-cpp/yaml.h>
+#include <Eigen/Dense>
 
 namespace lvr2
 {
@@ -30,6 +32,12 @@ void saveScanProjectToDirectory(const boost::filesystem::path& path, const ScanP
 
 bool loadScanProjectFromDirectory(const boost::filesystem::path& path, ScanProject& position, const size_t& positionNr);
 
+void writeScanMetaYAML(const boost::filesystem::path& path, const Scan& scan);
+
+void loadScanMetaInfoFromYAML(const boost::filesystem::path& path, Scan& scan);
+
+template<typename T, int Rows, int Cols>
+Eigen::Matrix<T, Rows, Cols> loadMatrixFromYAML(const YAML::const_iterator& it);
 
 } // namespace lvr2 
 
