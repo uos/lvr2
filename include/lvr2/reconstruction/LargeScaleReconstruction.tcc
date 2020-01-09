@@ -27,6 +27,7 @@
 
 #include <iostream>
 #include <lvr2/types/Scan.hpp>
+#include <lvr2/types/ScanTypes.hpp>
 #include <lvr2/io/GHDF5IO.hpp>
 #include <lvr2/io/hdf5/ChannelIO.hpp>
 #include <lvr2/io/hdf5/ArrayIO.hpp>
@@ -36,8 +37,6 @@
 #include <lvr2/reconstruction/VirtualGrid.hpp>
 #include <lvr2/reconstruction/BigGridKdTree.hpp>
 #include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
-#include <lvr2/reconstruction/PointsetGrid.hpp>
-#include <lvr2/reconstruction/FastBox.hpp>
 #include <lvr2/reconstruction/FastReconstruction.hpp>
 #include "lvr2/algorithm/CleanupAlgorithms.hpp"
 #include <lvr2/algorithm/NormalAlgorithms.hpp>
@@ -262,6 +261,14 @@ namespace lvr2
             // also save the name that is added to the hdf5
             newChunks.push_back(name_id);
 
+            // <PointBufferPtr>setChunk: string layer, int x, int y, int z, T data
+            int x = (int)floor(partitionBoxes.at(i).getMin().x / m_chunkSize);
+            int y = (int)floor(partitionBoxes.at(i).getMin().y / m_chunkSize);
+            int z = (int)floor(partitionBoxes.at(i).getMin().z / m_chunkSize);
+            //TODO delete when we have the ChunkManager!!
+            std::shared_ptr<ChunkManager> cm;
+            addTSDFChunkManager(x, y, z, ps_grid, cm);
+
             // save the mesh of the chunk
             // additionally for debug: Save the mesh as a ply todo delete later
             lvr2::HalfEdgeMesh<Vec> mesh;
@@ -416,4 +423,39 @@ namespace lvr2
         return 1;
     }
 
+    template <typename BaseVecT>
+    void LargeScaleReconstruction<BaseVecT>::addTSDFChunkManager(int x, int y, int z, std::shared_ptr<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>> ps_grid, std::shared_ptr<ChunkManager> cm)
+    {
+        std::string layerName = "tsdf_values";
+        size_t counter = 0;
+        size_t csize = ps_grid->getNumberOfCells();
+        vector<QueryPoint<BaseVecT>>& qp = ps_grid->getQueryPoints();
+        boost::shared_array<float> centers(new float[3 * csize]);
+        boost::shared_array<bool> extruded(new bool[csize]);
+        boost::shared_array<float> queryPoints(new float[8 * csize]);
+
+        for(auto it = ps_grid->firstCell() ; it!= ps_grid->lastCell(); it++)
+        {
+            for (int j = 0; j < 3; ++j)
+            {
+                centers[3 * counter + j] = it->second->getCenter()[j];
+            }
+
+            extruded[counter] = it->second->m_extruded;
+
+            for (int k = 0; k < 8; ++k)
+            {
+                queryPoints[8 * counter + k] = qp[it->second->getVertex(k)].m_distance;
+            }
+            ++counter;
+        }
+
+        PointBufferPtr chunk = PointBufferPtr(new PointBuffer(centers, csize));
+        chunk->addFloatChannel(queryPoints, "tsdf_values", csize, 8);
+        chunk->addChannel(extruded, "extruded", csize, 1);
+        chunk->addAtomic<size_t>(csize, "num_voxel");
+
+        // TODO uncomment
+        // cm->setChunk<PointBufferPtr>(layerName, x, y, z, chunk);
+    }
 }
