@@ -65,11 +65,22 @@ class ChunkManager : public ChunkHashGrid
      * @param savePath JUST FOR TESTING - REMOVE LATER ON
      * @param cacheSize maximum number of chunks loaded in the ChunkHashGrid
      */
-    ChunkManager(MeshBufferPtr mesh,
+    ChunkManager(MeshBufferPtr meshes,
                  float chunksize,
                  float maxChunkOverlap,
                  std::string savePath,
+                 std::string layer = std::string("mesh"),
+                 size_t cacheSize = 200
+                 );
+
+
+    ChunkManager(std::vector<MeshBufferPtr> meshes,
+                 float chunksize,
+                 float maxChunkOverlap,
+                 std::string savePath,
+                 std::vector<std::string> layers,
                  size_t cacheSize = 200);
+
     /**
      * @brief ChunkManager loads a ChunkManager from a given HDF5-file
      *

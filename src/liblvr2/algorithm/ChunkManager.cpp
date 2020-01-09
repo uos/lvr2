@@ -62,29 +62,59 @@ struct VectorCapsule
 
 namespace lvr2
 {
-
 ChunkManager::ChunkManager(MeshBufferPtr mesh,
                            float chunksize,
                            float maxChunkOverlap,
                            std::string savePath,
+                           std::string layer,
+                           size_t cacheSize
+                           )
+    : ChunkManager(std::vector<MeshBufferPtr>{mesh},
+                   chunksize,
+                   maxChunkOverlap,
+                   savePath,
+                   std::vector<std::string>{layer},
+                   cacheSize)
+{
+}
+ChunkManager::ChunkManager(std::vector<MeshBufferPtr> meshes,
+                           float chunksize,
+                           float maxChunkOverlap,
+                           std::string savePath,
+                           std::vector<std::string> layers,
                            size_t cacheSize)
     : ChunkHashGrid(savePath + "/chunk_mesh.h5", cacheSize)
 {
     setChunkSize(chunksize);
+    if(meshes.size() != layers.size())
+    {
+        std::cerr << lvr2::timestamp << "Number of meshes and layers do not match: \n"
+                  << "Num meshes: " << meshes.size() << "\n"
+                  << "Num layers: " << layers.size() << std::endl;
 
-    initBoundingBox(mesh);
+         return;
+    }
 
-    // compute number of chunks for each dimension
-    BaseVector<std::size_t> chunkAmount;
-    chunkAmount.x
-        = static_cast<std::size_t>(std::ceil(getBoundingBox().getXSize() / getChunkSize()));
-    chunkAmount.y
-        = static_cast<std::size_t>(std::ceil(getBoundingBox().getYSize() / getChunkSize()));
-    chunkAmount.z
-        = static_cast<std::size_t>(std::ceil(getBoundingBox().getZSize() / getChunkSize()));
+    // TODO use biggest
+    BaseVector<std::size_t> chunkAmount(0, 0, 0);
+    for(size_t i = 0; i < meshes.size(); ++i)
+    {
+        initBoundingBox(meshes[i]);
+        // compute number of chunks for each dimension
+        chunkAmount.x
+            = std::max(chunkAmount.x,static_cast<std::size_t>(std::ceil(getBoundingBox().getXSize() / getChunkSize())));
+        chunkAmount.y
+            = std::max(chunkAmount.y, static_cast<std::size_t>(std::ceil(getBoundingBox().getYSize() / getChunkSize())));
+        chunkAmount.z
+            = std::max(chunkAmount.z, static_cast<std::size_t>(std::ceil(getBoundingBox().getZSize() / getChunkSize())));
+    }
+
     setChunkAmount(chunkAmount);
 
-    buildChunks(mesh, maxChunkOverlap, savePath);
+    for(size_t i = 0; i < meshes.size(); ++i)
+    {
+        buildChunks(meshes[i], maxChunkOverlap, savePath, layers[i]);
+    }
 }
 
 ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize)
@@ -654,21 +684,21 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
             {
                 std::size_t hash = hashValue(i, j, k);
 
-                std::cout << chunkBuilders[hash]->numFaces() << std::endl;
+                //std::cout << chunkBuilders[hash]->numFaces() << std::endl;
 
                 if (chunkBuilders[hash]->numFaces() > 0)
                 {
-                    std::cout << "writing " << i << " " << j << " " << k << std::endl;
+                    //std::cout << "writing " << i << " " << j << " " << k << std::endl;
 
                     // get mesh of chunk from chunk builder
                     MeshBufferPtr chunkMeshPtr
                         = chunkBuilders[hash]->buildMesh(mesh, splitVertices, splitFaces);
 
                     // export chunked meshes for debugging
-                    ModelFactory::saveModel(ModelPtr(new Model(chunkMeshPtr)),
-                                            savePath + "/" + std::to_string(i) + "-"
-                                                + std::to_string(j) + "-" + std::to_string(k)
-                                                + ".ply");
+                    //ModelFactory::saveModel(ModelPtr(new Model(chunkMeshPtr)),
+                    //                        savePath + "/" + std::to_string(i) + "-"
+                    //                            + std::to_string(j) + "-" + std::to_string(k)
+                    //                            + ".ply");
                     // write chunk in hdf5
                     setChunk<MeshBufferPtr>(layer, i, j, k, chunkMeshPtr);
 
