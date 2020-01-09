@@ -39,16 +39,17 @@ using namespace lvr2;
 class RegistrationPipeline
 {
 public:
-    RegistrationPipeline(const SLAMOptions* options, ScanProjectPtr scans);
+    RegistrationPipeline(const SLAMOptions* options, ScanProjectPtr scans, std::vector<bool> reconstIndicator);
 
     /**
      * @brief starts the registration process
      * @returns vector of boolean values for each scan position; true if pos needs reconstruction
      * */
-    std::vector<bool> doRegistration();
+    void doRegistration();
 private:
     const SLAMOptions* m_options;
     ScanProjectPtr m_scans;
+    std::vector<bool> m_reconstIndicator;
 };
 
 #endif // REGISTRATION_PIPELINE_OBJECT_H_

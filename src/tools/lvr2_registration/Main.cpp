@@ -440,9 +440,21 @@ int main(int argc, char** argv)
             // align.addScan(slamScan);
         }
         // DEBUG
+        
+        std::vector<bool> reconstructionIndicator(proj.positions.size());
+        // check if new; skip the first scan
+        for (size_t it = 0; it < proj.positions.size(); it++)
+        {
+            if ((proj.positions.at(it)->scan->m_registration == Transformd::Identity()) && (it != 0))
+            {
+                reconstructionIndicator.at(it) = true;
+            }
+        }
+        
+
         cout << "vor Pipe Konstruktor" << endl;
-        RegistrationPipeline pipe(&options, std::make_shared<ScanProject>(proj));
-        std::vector<bool> reconstructionIndicator = pipe.doRegistration();
+        RegistrationPipeline pipe(&options, std::make_shared<ScanProject>(proj), reconstructionIndicator);
+        pipe.doRegistration();
         cout << "Nach doRegistration" << endl;
         for (size_t i = 0; i < reconstructionIndicator.size(); i++)
         {
@@ -452,7 +464,20 @@ int main(int argc, char** argv)
         cout << "Eine Pose aus dem Project:" << endl << proj.positions.at(1)->scan->m_registration << endl;
 
         // zweiter Durchlauf
-        std::vector<bool> reconstructionIndicator2 = pipe.doRegistration();
+
+        std::vector<bool> reconstructionIndicator2(proj.positions.size());
+        // check if new; skip the first scan
+        for (size_t it = 0; it < proj.positions.size(); it++)
+        {
+            if ((proj.positions.at(it)->scan->m_registration == Transformd::Identity()) && (it != 0))
+            {
+                reconstructionIndicator2.at(it) = true;
+            }
+        }
+        cout << "vor Pipe Konstruktor" << endl;
+        RegistrationPipeline pipe2(&options, std::make_shared<ScanProject>(proj), reconstructionIndicator2);
+
+        pipe2.doRegistration();
         cout << "Nach doRegistration" << endl;
         for (size_t i = 0; i < reconstructionIndicator2.size(); i++)
         {
