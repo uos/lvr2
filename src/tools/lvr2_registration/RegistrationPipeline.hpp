@@ -43,9 +43,9 @@ public:
 
     /**
      * @brief starts the registration process
-     * @returns true if the calculated error is significant to the old registration, else false
+     * @returns vector of boolean values for each scan position; true if pos needs reconstruction
      * */
-    bool doRegistration();
+    std::vector<bool> doRegistration();
 private:
     const SLAMOptions* m_options;
     ScanProjectPtr m_scans;

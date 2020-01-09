@@ -40,13 +40,21 @@ RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProje
 }
 
 
-bool RegistrationPipeline::doRegistration()
+std::vector<bool> RegistrationPipeline::doRegistration()
 {
     SLAMAlign align(*m_options);
     std::vector<SLAMScanPtr> slamscans;
+    std::vector<bool> reconstIndicator(m_scans->positions.size());
 
     for (size_t i = 0; i < m_scans->positions.size(); i++)
     {
+        // check if new; skip the first scan
+        if ((m_scans->positions.at(i)->scan->m_registration == Transformd::Identity()) && (i != 0))
+        {
+            reconstIndicator.at(i) = true;
+        }
+        
+
         ScanOptional opt = m_scans->positions.at(i)->scan;
         if (opt)
         {
@@ -63,5 +71,5 @@ bool RegistrationPipeline::doRegistration()
         posPtr->scan->m_registration = align.scan(i)->pose();
         cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
     }
-    return true;
+    return reconstIndicator;
 }
