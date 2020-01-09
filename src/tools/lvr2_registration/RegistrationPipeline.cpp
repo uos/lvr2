@@ -33,26 +33,35 @@
 
 using namespace lvr2;
 
-RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProjectPtr scans)
+float getDifference(Transformd a, Transformd b)
+{
+    float sum = 0;
+    for (size_t i = 0; i < 4; i++)
+    {
+        for (size_t j = 0; j < 4; j++)
+        {
+            sum += std::abs(a(i,j) - b(i,j));
+        }
+    }
+    return sum;
+}  
+
+RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProjectPtr scans, std::vector<bool> reconstIndicator)
 {
     m_options = options;
     m_scans = scans;
+    m_reconstIndicator = reconstIndicator;
 }
 
 
-std::vector<bool> RegistrationPipeline::doRegistration()
+void RegistrationPipeline::doRegistration()
 {
     SLAMAlign align(*m_options);
-    std::vector<SLAMScanPtr> slamscans;
-    std::vector<bool> reconstIndicator(m_scans->positions.size());
-
+    
+    std::vector<Transformd> oldTreansformd(m_scans->positions.size());
     for (size_t i = 0; i < m_scans->positions.size(); i++)
     {
-        // check if new; skip the first scan
-        if ((m_scans->positions.at(i)->scan->m_registration == Transformd::Identity()) && (i != 0))
-        {
-            reconstIndicator.at(i) = true;
-        }
+        oldTreansformd.at(i) = m_scans->positions.at(i)->scan->m_registration;
         
 
         ScanOptional opt = m_scans->positions.at(i)->scan;
@@ -67,9 +76,16 @@ std::vector<bool> RegistrationPipeline::doRegistration()
 
     for (int i = 0; i < m_scans->positions.size(); i++)
     {
+        // check if the new pos different to old pos
+        // ToDo: make num to option
+        cout << "Diff: " << getDifference(m_scans->positions.at(i)->scan->m_registration, oldTreansformd.at(i)) << endl;
+        if ((!m_reconstIndicator.at(i)) && (getDifference(m_scans->positions.at(i)->scan->m_registration, oldTreansformd.at(i)) > 5.0))
+        {
+            m_reconstIndicator.at(i) = true;
+        }
         ScanPositionPtr posPtr = m_scans->positions.at(i);
         posPtr->scan->m_registration = align.scan(i)->pose();
         cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
     }
-    return reconstIndicator;
+
 }
