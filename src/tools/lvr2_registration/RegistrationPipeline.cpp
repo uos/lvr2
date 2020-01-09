@@ -51,18 +51,17 @@ bool RegistrationPipeline::doRegistration()
         if (opt)
         {
             ScanPtr scptr = std::make_shared<Scan>(*opt);
-            SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(scptr));
-            slamscans.push_back(slamScan);
-            align.addScan(slamScan);
+            align.addScan(scptr);
         }
     }
 
     align.finish();
 
-    for (int i = 0; i < slamscans.size(); i++)
+    for (int i = 0; i < m_scans->positions.size(); i++)
     {
-        Transformd pose = slamscans[i]->pose();
-        cout << "Pose Scan Nummer " << i << pose << endl;
+        ScanPositionPtr posPtr = m_scans->positions.at(i);
+        posPtr->scan->m_registration = align.scan(i)->pose();
+        cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
     }
     return true;
 }

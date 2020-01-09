@@ -444,6 +444,7 @@ int main(int argc, char** argv)
         RegistrationPipeline pipe(&options, std::make_shared<ScanProject>(proj));
         pipe.doRegistration();
         cout << "Nach doRegistration" << endl;
+        cout << "Eine Pose aus dem Project:" << endl << proj.positions.at(1)->scan->m_registration << endl;
 
     }
     else
