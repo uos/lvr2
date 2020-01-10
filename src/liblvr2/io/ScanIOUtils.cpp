@@ -53,27 +53,33 @@ void writeScanMetaYAML(const boost::filesystem::path& path, const Scan& scan)
     }
     else
     {
-        std::cout << timestamp << "Warning: Unable to open " << path.string() << "for reading." << std::endl;
+        std::cout << timestamp << "Warning: Unable to open " 
+                  << path.string() << "for reading." << std::endl;
     }
     
 }
 
-void saveScanToDirectory(const boost::filesystem::path& path, const Scan& scan, const size_t& positionNr)
+void saveScanToDirectory(
+    const boost::filesystem::path& path, 
+    const Scan& scan, 
+    const size_t& positionNr)
 {
     // Create full path from root and scan number
     std::stringstream ss;
     ss << std::setfill('0') << std::setw(5) << positionNr << endl;
-    boost::filesystem::path directory = path / ss.str();
+    boost::filesystem::path directory = path / "scans" / ss.str();
     
     // Check if directory exists, if not create it and write meta data
     // and into the new directory
     if(!boost::filesystem::exists(path))
     {
+        std::cout << timestamp << "Creating scan directory: " 
+                  << directory << std::endl;
         boost::filesystem::create_directory(directory);        
 
         // Create yaml file with meta information
-        std::cout << "Creating meta.yaml..." << std::endl;
-        
+        std::cout << timestamp << "Creating meta.yaml..." << std::endl;
+        writeScanMetaYAML(directory, scan);
 
         // Save points
         std::string scanFileName(directory.string() + "scan.ply");
@@ -100,11 +106,55 @@ void saveScanToDirectory(const boost::filesystem::path& path, const Scan& scan, 
     
 }
 
-bool loadScanFromDirectory(const boost::filesystem::path& path, Scan& scan, const size_t& positionNr)
+bool loadScanFromDirectory(
+    const boost::filesystem::path& path, 
+    Scan& scan, const size_t& positionNr, bool load)
 {
     if(boost::filesystem::exists(path) && boost::filesystem::is_directory(path))
     {
+        std::stringstram ss;
+        ss << std::setfill('0') << std::setw(5) << positionNr << endl;
+        boost::filesystem::path position_directory = path / "scans" / ss.str();
+        
+        if(boost::filesystem::exists(position_directory))
+        {
+            // Load meta data
+            boost::filesystem::path meta_yaml_path = position_directory / "meta.yaml";
+            loadScanMetaInfoFromYAML(meta_yaml_path, meta_yaml_path);
 
+            // Load scan data
+            boost::filesystem::path scan_path = position_directory / "scan.ply";
+            if (boost::filesystem::exists(scan_path))
+            {
+                scan.m_scanFile = scan_path;
+                scan.m_scanRoot = path; // TODO: Check root dir or scan dir??
+                if (load)
+                {
+                    PLYIO io;
+                    ModelPtr model = io.read(scan_path.string());
+                    scan.m_points = model->m_pointCloud;
+                    scan.m_pointsLoaded = true;
+                }
+                else
+                {
+                    scan.m_pointsLoaded = false;
+                }
+                return true;
+            }
+            else
+            {
+                std::cout << "Warning: scan.ply not found in directory "
+                          << scan_path << std::endl;
+                return false;
+            }
+        }
+        else
+        {
+            std::cout << timestamp
+                      << "Warning: Scan directory " << position_directory << " "
+                      << "does not exist." << std::endl;
+            return false;
+        }
     }
     else
     {
