@@ -64,6 +64,9 @@ void RegistrationPipeline::doRegistration()
         Transformd g = m_scans->positions.at(i)->scan->m_registration;
 
         oldTreansformd.at(i) = g;
+
+        //debug
+        g(0,1) = 100;
         
 
         ScanOptional opt = m_scans->positions.at(i)->scan;
