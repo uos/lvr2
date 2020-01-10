@@ -14,7 +14,7 @@ namespace lvr2
 
 void saveScanToDirectory(const boost::filesystem::path& path, const Scan& scan, const size_t& positionNr);
 
-bool loadScanFromDirectory(const boost::filesystem::path&, Scan& scan, const size_t& positionNr);
+bool loadScanFromDirectory(const boost::filesystem::path&, Scan& scan, const size_t& positionNr, bool loadData);
 
 void saveScanToHDF5(const std::string filename, const size_t& positionNr);
 
