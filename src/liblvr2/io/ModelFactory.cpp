@@ -42,8 +42,6 @@
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/DatIO.hpp"
 #include "lvr2/io/STLIO.hpp"
-#include "lvr2/io/ScanprojectIO.hpp"
-
 #include "lvr2/io/Timestamp.hpp"
 #include "lvr2/io/Progress.hpp"
 
@@ -111,10 +109,6 @@ ModelPtr ModelFactory::readModel( std::string filename )
         io = new PCDIO;
     }
 #endif /* LVR2_USE_PCL */
-    else if (extension == "" && ScanprojectIO().parse_project(selectedFile.string(), true))
-    {
-        io = new ScanprojectIO;
-    }
     else if (extension == "")
     {
         bool found_3d = false;

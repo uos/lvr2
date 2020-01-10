@@ -584,39 +584,89 @@ static Transform<T> lvrToOpenCv(const Transform<T> &in)
 }
 
 template<typename T>
+void extrinsicsToEuler(Extrinsics<T> mat, T* pose)
+{
+    T *m = mat.data();
+    if (pose != 0)
+    {
+        float _trX, _trY;
+        if (m[0] > 0.0)
+        {
+            pose[4] = asin(m[8]);
+        }
+        else
+        {
+            pose[4] = (float)M_PI - asin(m[8]);
+        }
+        // rPosTheta[1] =  asin( m[8]);      // Calculate Y-axis angle
+
+        float C = cos(pose[4]);
+        if (fabs(C) > 0.005)
+        {                     // Gimball lock?
+            _trX = m[10] / C; // No, so get X-axis angle
+            _trY = -m[9] / C;
+            pose[3] = atan2(_trY, _trX);
+            _trX = m[0] / C; // Get Z-axis angle
+            _trY = -m[4] / C;
+            pose[5] = atan2(_trY, _trX);
+        }
+        else
+        {                  // Gimball lock has occurred
+            pose[3] = 0.0; // Set X-axis angle to zero
+            _trX = m[5];   //1          // And calculate Z-axis angle
+            _trY = m[1];   //2
+            pose[5] = atan2(_trY, _trX);
+        }
+
+        // cout << pose[3] << " " << pose[4] << " " << pose[5] << endl;
+
+        pose[0] = m[12];
+        pose[1] = m[13];
+        pose[2] = m[14];
+    }
+}
+
+template<typename T>
 void eigenToEuler(Transform<T>& mat, T* pose)
 {
-        T* m = mat.data();
-        if(pose != 0){
-                float _trX, _trY;
-                if(m[0] > 0.0) {
-                        pose[4] = asin(m[8]);
-                } else {
-                        pose[4] = (float)M_PI - asin(m[8]);
-                }
-                // rPosTheta[1] =  asin( m[8]);      // Calculate Y-axis angle
-
-                float  C    =  cos( pose[4] );
-                if ( fabs( C ) > 0.005 )  {          // Gimball lock?
-                        _trX      =  m[10] / C;          // No, so get X-axis angle
-                        _trY      =  -m[9] / C;
-                        pose[3]  = atan2( _trY, _trX );
-                        _trX      =  m[0] / C;           // Get Z-axis angle
-                        _trY      = -m[4] / C;
-                        pose[5]  = atan2( _trY, _trX );
-                } else {                             // Gimball lock has occurred
-                        pose[3] = 0.0;                   // Set X-axis angle to zero
-                        _trX      =  m[5];  //1          // And calculate Z-axis angle
-                        _trY      =  m[1];  //2
-                        pose[5]  = atan2( _trY, _trX );
-                }
-
-                // cout << pose[3] << " " << pose[4] << " " << pose[5] << endl;
-
-                pose[0] = m[12];
-                pose[1] = m[13];
-                pose[2] = m[14];
+    T *m = mat.data();
+    if (pose != 0)
+    {
+        float _trX, _trY;
+        if (m[0] > 0.0)
+        {
+            pose[4] = asin(m[8]);
         }
+        else
+        {
+            pose[4] = (float)M_PI - asin(m[8]);
+        }
+        // rPosTheta[1] =  asin( m[8]);      // Calculate Y-axis angle
+
+        float C = cos(pose[4]);
+        if (fabs(C) > 0.005)
+        {                     // Gimball lock?
+            _trX = m[10] / C; // No, so get X-axis angle
+            _trY = -m[9] / C;
+            pose[3] = atan2(_trY, _trX);
+            _trX = m[0] / C; // Get Z-axis angle
+            _trY = -m[4] / C;
+            pose[5] = atan2(_trY, _trX);
+        }
+        else
+        {                  // Gimball lock has occurred
+            pose[3] = 0.0; // Set X-axis angle to zero
+            _trX = m[5];   //1          // And calculate Z-axis angle
+            _trY = m[1];   //2
+            pose[5] = atan2(_trY, _trX);
+        }
+
+        // cout << pose[3] << " " << pose[4] << " " << pose[5] << endl;
+
+        pose[0] = m[12];
+        pose[1] = m[13];
+        pose[2] = m[14];
+    }
 }
 
 
