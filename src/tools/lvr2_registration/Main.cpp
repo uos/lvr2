@@ -446,9 +446,10 @@ int main(int argc, char** argv)
         RegistrationPipeline pipe(&options, std::make_shared<ScanProjectEditMark>(proj));
         pipe.doRegistration();
         cout << "Nach doRegistration" << endl;
+        proj.changed.at(5) = true; //debug
         for (size_t i = 0; i < proj.changed.size(); i++)
         {
-            cout << "Reconstruct indivcator ans Stelle: " << i << "ist: " << proj.changed.at(i)<< endl;
+            cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << proj.changed.at(i)<< endl;
         }
         
         cout << "Eine Pose aus dem Project:" << endl << proj.positions.at(1)->scan->m_registration << endl;
