@@ -62,8 +62,8 @@ void RegistrationPipeline::doRegistration()
     for (size_t i = 0; i < m_scans->positions.size(); i++)
     {
         Transformd g = m_scans->positions.at(i)->scan->m_registration;
-
-        oldTreansformd.at(i) = g;
+        Transformd h(g);
+        oldTreansformd.at(i) = h;
 
         //debug
         g(0,1) = 100;
