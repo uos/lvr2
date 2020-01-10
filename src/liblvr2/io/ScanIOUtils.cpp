@@ -381,21 +381,103 @@ bool loadScanImageFromDirectory(
 }
 
 void saveScanPositionToDirectory(const boost::filesystem::path& path, const ScanPosition& position, const size_t& positionNr)
-{
+{  
+    // Save scan data
+    std::cout << timestamp << "Saving scan postion " << positionNr << std::endl;
+    if(position.scan)
+    {
+        saveScanToDirectory(path, *position.scan, positionNr);
+    }
+    else
+    {
+        std::cout << timestamp << "Warning: Scan position " << positionNr
+                  << " contains no scan data." << std::endl;
+    }
     
+    // Save scan images
+    for(size_t i = 0; i < position.images.size(); i++)
+    {
+        saveScanImageToDirectory(path, *position.images[i], positionNr, i);
+    }
+}
+
+void get_all(
+    const boost::filesystem::path& root, 
+    const string& ext, vector<boost::filesystem::path>& ret)
+{
+    if(!boost::filesystem::exists(root) || !boost::filesystem::is_directory(root))
+    {
+        return;
+    } 
+
+    boost::filesystem::directory_iterator it(root);
+    boost::filesystem::directory_iterator endit;
+
+    while(it != endit)
+    {
+        if(boost::filesystem::is_regular_file(*it) && it->path().extension() == ext)
+        {
+            ret.push_back(it->path().filename());
+        } 
+        ++it;
+    }
 }
 
 bool loadScanPositionFromDirectory(const boost::filesystem::path& path, ScanPosition& position, const size_t& positionNr)
 {
+    bool scan_read = false;
+    bool images_read = false;
+
+    std::cout << timestamp << "Loading scan position " << positionNr << std::endl;
+    if(!loadScanFromDirectory(path, *position.scan, positionNr, true))
+    {
+        std::cout << timestamp << "Warning: Scan position " << positionNr 
+                  << " does not contain scan data." << std::endl;
+    }
+
+    boost::filesystem::path img_directory = path / "scan_images";
+    if(boost::filesystem::exists(img_directory))
+    {
+        // Find all .png and .yaml files
+        vector<boost::filesystem::path> image_files;
+        vector<boost::filesystem::path> meta_files;
+
+        get_all(img_directory, ".png", image_files);
+        get_all(img_directory, ".yaml", meta_files);
+
+        if(meta_files.size() == image_files.size())
+        {
+            std::sort(meta_files.begin(), meta_files.end());
+            std::sort(image_files.begin(), image_files.end());
+
+            for(size_t i = 0; i < meta_files.size(); i++)
+            {
+                ScanImagePtr img(new ScanImage);
+                loadScanImageFromDirectory(path, *img, positionNr, i);
+                position.images.push_back(img);
+            }
+        }
+        else
+        {
+            std::cout << timestamp << "Warning: YAML / Image count mismatch." << std::endl;
+            return false;
+        }
+
+    }
+    else
+    {
+        std::cout << timestamp << "Scan position " << positionNr 
+                  << " has no images." << std::endl;
+    }
     return true;
 }
 
-void saveScanProjectToDirectory(const boost::filesystem::path& path, const ScanProject& position, const size_t& positionNr)
+void saveScanProjectToDirectory(const boost::filesystem::path& path, const ScanProject& project)
 {
 
 }
 
-bool loadScanProjectFromDirectory(const boost::filesystem::path& path, ScanProject& position, const size_t& positionNr)
+bool loadScanProjectFromDirectory(const boost::filesystem::path& path, ScanProject& project)
 {
     return true;
 }
