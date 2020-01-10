@@ -50,6 +50,7 @@ ChunkingPipeline::ChunkingPipeline(
     {
         m_chunkManager = std::make_shared<ChunkManager>(m_hdf5Path);
     }
+
 }
 
 bool ChunkingPipeline::start()
@@ -58,11 +59,6 @@ bool ChunkingPipeline::start()
 
 
 
-    return false;
-}
-
-bool ChunkingPipeline::stop()
-{
     return false;
 }
 
