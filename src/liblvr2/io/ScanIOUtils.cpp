@@ -474,11 +474,30 @@ bool loadScanPositionFromDirectory(const boost::filesystem::path& path, ScanPosi
 
 void saveScanProjectToDirectory(const boost::filesystem::path& path, const ScanProject& project)
 {
+    YAML::Node yaml;
+    saveMatrixToYAML<double, 4, 4>(yaml, "position", project.pose);
 
+    std::ofstream out(path.c_str());
+    if (out.good())
+    {
+        out << yaml;
+    }
+    else
+    {
+        std::cout << timestamp << "Warning: Unable to open " 
+                  << path.string() << "for writing." << std::endl;
+    }
+
+    for(size_t i = 0; i < project.positions.size(); i++)
+    {
+        saveScanPositionToDirectory(path, *project.positions[i], i);
+    }
 }
 
 bool loadScanProjectFromDirectory(const boost::filesystem::path& path, ScanProject& project)
 {
+    // Iterate over all subdirectories
+
     return true;
 }
 
