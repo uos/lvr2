@@ -58,23 +58,11 @@ void RegistrationPipeline::doRegistration()
 {
     SLAMAlign align(*m_options);
     
-    std::vector<Transformd> oldTreansformd(m_scans->positions.size());
     for (size_t i = 0; i < m_scans->positions.size(); i++)
     {
         ScanOptional opt = m_scans->positions.at(i)->scan;
         if (opt)
         {
-            Transformd g;
-            for (size_t i_1 = 0; i < 4; i++)
-            {
-                for (size_t i_2 = 0; i_2 < 4; i_2++)
-                {
-                    g(i_1,i_2) = opt->m_registration(i_1, i_2);
-                }
-            }
-            oldTreansformd.at(i) = g;
-
-
             ScanPtr scptr = std::make_shared<Scan>(*opt);
             align.addScan(scptr);
         }
