@@ -52,6 +52,13 @@ public:
      */
     ChunkingPipeline(std::string hdf5Path, std::string configPath, std::shared_ptr<ChunkManager> chunkManager = nullptr);
 
+    /**
+     * @brief Start the chunking pipeline
+     *
+     * @return true on success and false on failure
+     */
+    bool start();
+
 private:
     // path to the HDF5 file
     std::string m_hdf5Path;
@@ -65,20 +72,6 @@ private:
     // TODO: add old scans, e.g. std::vector<Scan> m_oldScans
 
     // TODO: add new scans, e.g. std::vector<Scan> m_newScans
-
-public:
-    /**
-     * @brief Start the chunking pipeline
-     *
-     * @return true on success and false on failure
-     */
-    bool start();
-
-    /**
-     * TODO
-     * @return
-     */
-    bool stop();
 };
 
 } /* namespace lvr2 */
