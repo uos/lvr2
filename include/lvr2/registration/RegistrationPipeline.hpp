@@ -39,7 +39,7 @@ using namespace lvr2;
 class RegistrationPipeline
 {
 public:
-    RegistrationPipeline(const SLAMOptions* options, ScanProjectPtr scans, std::vector<bool> reconstIndicator);
+    RegistrationPipeline(const SLAMOptions* options, ScanProjectEditMarkPtr scans);
 
     /**
      * @brief starts the registration process
@@ -48,8 +48,7 @@ public:
     void doRegistration();
 private:
     const SLAMOptions* m_options;
-    ScanProjectPtr m_scans;
-    std::vector<bool> m_reconstIndicator;
+    ScanProjectEditMarkPtr m_scans;
 };
 
 #endif // REGISTRATION_PIPELINE_OBJECT_H_

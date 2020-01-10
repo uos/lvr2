@@ -156,6 +156,18 @@ struct ScanProject
 
 using ScanProjectPtr = std::shared_ptr<ScanProject>;
 
+/*****************************************************************************
+ * @brief   Struct to represent a scan project with marker showing if a scan
+ *          pose has been changed
+ *****************************************************************************/
+struct ScanProjectEditMark : ScanProject
+{
+    /// True if scan pose has been changed
+    std::vector<bool>    changed;
+};
+
+using ScanProjectEditMarkPtr = std::shared_ptr<ScanProjectEditMark>;
+
 } // namespace lvr2
 
 #endif

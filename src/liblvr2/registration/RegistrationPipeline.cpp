@@ -35,6 +35,7 @@ using namespace lvr2;
 
 float getDifference(Transformd a, Transformd b)
 {
+
     float sum = 0;
     for (size_t i = 0; i < 4; i++)
     {
@@ -46,11 +47,10 @@ float getDifference(Transformd a, Transformd b)
     return sum;
 }  
 
-RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProjectPtr scans, std::vector<bool> reconstIndicator)
+RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProjectEditMarkPtr scans)
 {
     m_options = options;
     m_scans = scans;
-    m_reconstIndicator = reconstIndicator;
 }
 
 
@@ -79,9 +79,9 @@ void RegistrationPipeline::doRegistration()
         // check if the new pos different to old pos
         // ToDo: make num to option
         cout << "Diff: " << getDifference(m_scans->positions.at(i)->scan->m_registration, oldTreansformd.at(i)) << endl;
-        if ((!m_reconstIndicator.at(i)) && (getDifference(m_scans->positions.at(i)->scan->m_registration, oldTreansformd.at(i)) > 5.0))
+        if ((!m_scans->changed.at(i)) && (getDifference(m_scans->positions.at(i)->scan->m_registration, oldTreansformd.at(i)) > 5.0))
         {
-            m_reconstIndicator.at(i) = true;
+            m_scans->changed.at(i) = true;
         }
         ScanPositionPtr posPtr = m_scans->positions.at(i);
         posPtr->scan->m_registration = align.scan(i)->pose();
