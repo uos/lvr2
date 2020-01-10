@@ -443,16 +443,16 @@ int main(int argc, char** argv)
         // DEBUG
         
         cout << "vor Pipe Konstruktor" << endl;
-        RegistrationPipeline pipe(&options, std::make_shared<ScanProjectEditMark>(proj));
+        ScanProjectEditMarkPtr projPtr(proj);
+        RegistrationPipeline pipe(&options, projPtr);
         pipe.doRegistration();
         cout << "Nach doRegistration" << endl;
-        proj.changed.at(5) = true; //debug
-        for (size_t i = 0; i < proj.changed.size(); i++)
+        for (size_t i = 0; i < projPtr->changed.size(); i++)
         {
-            cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << proj.changed.at(i)<< endl;
+            cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << projPtr->changed.at(i)<< endl;
         }
         
-        cout << "Eine Pose aus dem Project:" << endl << proj.positions.at(1)->scan->m_registration << endl;
+        cout << "Eine Pose aus dem Project:" << endl << projPtr->positions.at(1)->scan->m_registration << endl;
 
     }
     else
