@@ -378,7 +378,7 @@ int main(int argc, char** argv)
     vector<SLAMScanPtr> scans;
 
     // DEBUG
-    ScanProject proj;
+    ScanProjectEditMark proj;
 
     int count = end - start + 1;
 
@@ -431,6 +431,7 @@ int main(int argc, char** argv)
             ScanPosition pos;
             pos.scan = boost::optional<Scan>(*tempScan);
             proj.positions.push_back(std::make_shared<ScanPosition>(pos));
+            proj.changed.push_back(false);
 
             
 
@@ -441,47 +442,13 @@ int main(int argc, char** argv)
         }
         // DEBUG
         
-        std::vector<bool> reconstructionIndicator(proj.positions.size());
-        // check if new; skip the first scan
-        for (size_t it = 0; it < proj.positions.size(); it++)
-        {
-            if ((proj.positions.at(it)->scan->m_registration == Transformd::Identity()) && (it != 0))
-            {
-                reconstructionIndicator.at(it) = true;
-            }
-        }
-        
-
         cout << "vor Pipe Konstruktor" << endl;
-        RegistrationPipeline pipe(&options, std::make_shared<ScanProject>(proj), reconstructionIndicator);
+        RegistrationPipeline pipe(&options, std::make_shared<ScanProjectEditMark>(proj));
         pipe.doRegistration();
         cout << "Nach doRegistration" << endl;
-        for (size_t i = 0; i < reconstructionIndicator.size(); i++)
+        for (size_t i = 0; i < proj.changed.size(); i++)
         {
-            cout << "Reconstruct indivcator ans Stelle: " << i << "ist: " << reconstructionIndicator.at(i)<< endl;
-        }
-        
-        cout << "Eine Pose aus dem Project:" << endl << proj.positions.at(1)->scan->m_registration << endl;
-
-        // zweiter Durchlauf
-
-        std::vector<bool> reconstructionIndicator2(proj.positions.size());
-        // check if new; skip the first scan
-        for (size_t it = 0; it < proj.positions.size(); it++)
-        {
-            if ((proj.positions.at(it)->scan->m_registration == Transformd::Identity()) && (it != 0))
-            {
-                reconstructionIndicator2.at(it) = true;
-            }
-        }
-        cout << "vor Pipe Konstruktor" << endl;
-        RegistrationPipeline pipe2(&options, std::make_shared<ScanProject>(proj), reconstructionIndicator2);
-
-        pipe2.doRegistration();
-        cout << "Nach doRegistration" << endl;
-        for (size_t i = 0; i < reconstructionIndicator2.size(); i++)
-        {
-            cout << "Reconstruct indivcator ans Stelle: " << i << "ist: " << reconstructionIndicator2.at(i)<< endl;
+            cout << "Reconstruct indivcator ans Stelle: " << i << "ist: " << proj.changed.at(i)<< endl;
         }
         
         cout << "Eine Pose aus dem Project:" << endl << proj.positions.at(1)->scan->m_registration << endl;
