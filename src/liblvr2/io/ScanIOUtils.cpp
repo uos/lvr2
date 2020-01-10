@@ -1,15 +1,6 @@
 #include "lvr2/io/ScanIOUtils.hpp"
-#include "lvr2/io/Timestamp.hpp"
-#include "lvr2/io/PLYIO.hpp"
 
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <iomanip>
-
-
-
+#include <opencv2/opencv.hpp>
 namespace lvr2
 {
 
@@ -22,13 +13,17 @@ void writeScanMetaYAML(const boost::filesystem::path& path, const Scan& scan)
     meta["end_time"]    = scan.m_endTime;
 
     // Write pose estimation and registration
-    const double* poseData = scan.m_poseEstimation.data();
-    const double* registrationData = scan.m_registration.data();
-    for(size_t i = 0; i < 16; i++)
-    {
-        meta["pose_estimate"].push_back(poseData[i]);
-        meta["registration"].push_back(registrationData[i]);
-    }
+
+    // const double* poseData = scan.m_poseEstimation.data();
+    // const double* registrationData = scan.m_registration.data();
+    // for(size_t i = 0; i < 16; i++)
+    // {
+    //     meta["pose_estimate"].push_back(poseData[i]);
+    //     meta["registration"].push_back(registrationData[i]);
+    // }
+
+    saveMatrixToYAML<double, 4, 4>(meta, std::string("pose_estimate"), scan.m_poseEstimation);
+    saveMatrixToYAML<double, 4, 4>(meta, std::string("registration"), scan.m_registration);
 
     // Write scan configutaration parameters
     YAML::Node config;
@@ -54,7 +49,7 @@ void writeScanMetaYAML(const boost::filesystem::path& path, const Scan& scan)
     else
     {
         std::cout << timestamp << "Warning: Unable to open " 
-                  << path.string() << "for reading." << std::endl;
+                  << path.string() << "for writing." << std::endl;
     }
     
 }
@@ -66,19 +61,18 @@ void saveScanToDirectory(
 {
     // Create full path from root and scan number
     std::stringstream ss;
-    ss << std::setfill('0') << std::setw(5) << positionNr << endl;
+    ss << std::setfill('0') << std::setw(5) << positionNr;
     boost::filesystem::path directory = path / "scans" / ss.str();
     
     // Check if directory exists, if not create it and write meta data
     // and into the new directory
     if(!boost::filesystem::exists(path))
     {
-        std::cout << timestamp << "Creating scan directory: " 
-                  << directory << std::endl;
+        std::cout << timestamp << "Creating " << directory << std::endl;
         boost::filesystem::create_directory(directory);        
 
         // Create yaml file with meta information
-        std::cout << timestamp << "Creating meta.yaml..." << std::endl;
+        std::cout << timestamp << "Creating scan meta.yaml..." << std::endl;
         writeScanMetaYAML(directory, scan);
 
         // Save points
@@ -94,7 +88,7 @@ void saveScanToDirectory(
         }
         else
         {
-            std::cout << "Warning: Point cloud pointer is empty!" << std::endl;
+            std::cout << timestamp << "Warning: Point cloud pointer is empty!" << std::endl;
         }
     }
     else
@@ -112,18 +106,21 @@ bool loadScanFromDirectory(
 {
     if(boost::filesystem::exists(path) && boost::filesystem::is_directory(path))
     {
-        std::stringstram ss;
-        ss << std::setfill('0') << std::setw(5) << positionNr << endl;
+        std::stringstream ss;
+        ss << std::setfill('0') << std::setw(5) << positionNr;
         boost::filesystem::path position_directory = path / "scans" / ss.str();
         
         if(boost::filesystem::exists(position_directory))
         {
             // Load meta data
             boost::filesystem::path meta_yaml_path = position_directory / "meta.yaml";
-            loadScanMetaInfoFromYAML(meta_yaml_path, meta_yaml_path);
+            std::cout << timestamp << "Reading " << meta_yaml_path << std::endl;
+            loadScanMetaInfoFromYAML(meta_yaml_path, scan);
 
             // Load scan data
             boost::filesystem::path scan_path = position_directory / "scan.ply";
+            std::cout << timestamp << "Reading " << scan_path << std::endl;
+
             if (boost::filesystem::exists(scan_path))
             {
                 scan.m_scanFile = scan_path;
@@ -225,28 +222,6 @@ void loadScanMetaInfoFromYAML(const boost::filesystem::path& path, Scan& scan)
     }
 }
 
-template<typename T, int Rows, int Cols>
-Eigen::Matrix<T, Rows, Cols> loadMatrixFromYAML(const YAML::const_iterator& it)
-{
-    // Alloc memory for matrix entries
-    T data[Rows * Cols] = {0};
-
-    // Read entries
-    int c = 0;
-    for (auto& i : it->second)
-    {
-        if(c < Rows * Cols)
-        {
-            data[c++] = i.as<T>();
-        }
-        else
-        {
-            std::cout << timestamp << "Warning: Load Matrix from YAML: Buffer overflow." << std::endl;
-            break;
-        }
-    }
-    return Eigen::Map<Eigen::Matrix<T, Rows, Cols>>(data);
-}
 
 void saveScanToHDF5(const std::string filename, const size_t& positionNr)
 {
@@ -258,19 +233,156 @@ bool loadScanFromHDF5(const std::string filename, const size_t& positionNr)
     return true;
 }
 
-void saveScanImageToDirectory(const boost::filesystem::path& path, const ScanImage& image, const size_t& positionNr)
+void saveScanImageToDirectory(
+    const boost::filesystem::path& path, 
+    const ScanImage& image, const size_t& positionNr, const size_t& imageNr)
 {
+    std::stringstream ss;
+    ss << std::setfill('0') << std::setw(5) << positionNr;
+    boost::filesystem::path scanimage_directory = path / "scan_images" / ss.str();
+
+    if(boost::filesystem::exists(path))
+    {
+        // Create scan image directory if necessary
+        if(!boost::filesystem::exists(scanimage_directory))
+        {
+            std::cout << timestamp << "Creating " << scanimage_directory << std::endl;
+            boost::filesystem::create_directory(scanimage_directory);        
+        }
+        
+
+        // Create in image folder for current position if necessary
+        std::stringstream position_str;
+        position_str << std::setfill('0') << std::setw(5) << positionNr;
+        boost::filesystem::path position_directory = scanimage_directory / position_str.str();
+
+        if(!boost::filesystem::exists(position_directory))
+        {
+            std::cout << timestamp << "Creating " << position_directory << std::endl;
+            boost::filesystem::create_directory(position_directory);
+        }
+        
+        // Save image in .png format
+        std::stringstream image_str;
+        image_str << "img_" << std::setfill('0') << std::setw(3) << imageNr << ".png";
+        boost::filesystem::path image_path = position_directory / image_str.str();
+        
+        std::cout << timestamp << "Saving " << image_path << std::endl;
+        cv::imwrite(image_path.string(), image.image);
+
+        // Save calibration yaml
+        std::stringstream meta_str;
+        meta_str << "img:" << std::setfill('0') << std::setw(3) << imageNr << ".yaml";
+        boost::filesystem::path meta_path = position_directory / meta_str.str();
+        std::cout << timestamp << "Saving " << meta_path << std::endl;
+        writePinholeModelToYAML(meta_path, image.camera);
+    }
+    else
+    {
+        std::cout << timestamp
+                  << "Warning: Scan directory for scan image does not exist: "
+                  << path << std::endl;
+    }
+    
+}
+
+void writePinholeModelToYAML(
+    const boost::filesystem::path& path, const PinholeCameraModeld& model)
+{
+    YAML::Node meta;
+     
+    
+    Intrinsicsd intrinsics = model.intrinsics();
+    Distortiond distortion = model.distortion();
+
+    saveMatrixToYAML<double, 4, 4>(meta, std::string("extrinsic"), model.extrinsics());
+    saveMatrixToYAML<double, 4, 4>(meta, std::string("extrinsic"), model.extrinsicsEstimate());
+    saveMatrixToYAML<double, 3, 3>(meta, std::string("intrinsic"), model.intrinsics());
+    saveMatrixToYAML<double, 6, 1>(meta, std::string("distortion"), model.distortion());
+
+    std::ofstream out(path.c_str());
+    if (out.good())
+    {
+        out << meta;
+    }
+    else
+    {
+        std::cout << timestamp << "Warning: Unable to open " 
+                  << path.string() << "for writing." << std::endl;
+    }
 
 }
 
-bool loadScanImageFromDirectory(const boost::filesystem::path& path, ScanImage& image, const size_t& positionNr)
+void loadPinholeModelFromYAML(const boost::filesystem::path& path, PinholeCameraModeld& model)
 {
+    std::vector<YAML::Node> root = YAML::LoadAllFromFile(path.string());
+
+    for(auto& node : root)
+    {
+        for (YAML::const_iterator it = node.begin(); it != node.end(); ++it)
+        {
+            if(it->first.as<string>() == "extrinsic")
+            {
+                Extrinsicsd extrinsics = loadMatrixFromYAML<double, 4, 4>(it);
+                model.setExtrinsics(extrinsics);
+            }
+            else if(it->first.as<string>() == "intrinsic")
+            {
+                Intrinsicsd intrinsics = loadMatrixFromYAML<double, 3, 3>(it);
+                model.setIntrinsics(intrinsics);
+            }
+            else if(it->first.as<string>() == "distortion")
+            {
+                Distortiond distortion = loadMatrixFromYAML<double, 6, 1>(it);
+                model.setDistortion(distortion);
+            }
+            else if(it->first.as<string>() == "extrinsic_estimate")
+            {
+                Extrinsicsd extrinsics = loadMatrixFromYAML<double, 4, 4>(it);
+                model.setExtrinsicsEstimate(extrinsics);
+            }
+        }
+    }   
+}
+
+bool loadScanImageFromDirectory(
+    const boost::filesystem::path& path, 
+    ScanImage& image, 
+    const size_t& positionNr, const size_t& imageNr)
+{
+    // Convert position and image number to strings
+    stringstream pos_str;
+    pos_str << std::setfill('0') << std::setw(5) << positionNr;
+
+    stringstream image_str;
+    pos_str << std::setfill('0') << std::setw(5) << imageNr;
+
+    // Construct a path to image directory and check
+    boost::filesystem::path scan_image_dir = path / "scan_images" / pos_str.str();
+    if(boost::filesystem::exists(scan_image_dir))
+    {
+        boost::filesystem::path meta_path = scan_image_dir / image_str.str() / ".yaml";
+        boost::filesystem::path image_path = scan_image_dir / image_str.str() / ".png";
+
+        std::cout << timestamp << "Loading " << image_path << std::endl;
+        image.image = cv::imread(image_path.string(), 1);
+
+        std::cout << timestamp << "Loading " << meta_path << std::endl;
+        loadPinholeModelFromYAML(meta_path, image.camera);
+    }
+    else
+    {
+        std::cout << timestamp << "Warning: Image directory does not exist: "
+                  << scan_image_dir << std::endl;
+        return false;
+    }
+
     return true;
 }
 
 void saveScanPositionToDirectory(const boost::filesystem::path& path, const ScanPosition& position, const size_t& positionNr)
 {
-
+    
 }
 
 bool loadScanPositionFromDirectory(const boost::filesystem::path& path, ScanPosition& position, const size_t& positionNr)
@@ -287,7 +399,5 @@ bool loadScanProjectFromDirectory(const boost::filesystem::path& path, ScanProje
 {
     return true;
 }
-
-
 
 } // namespace lvr2
