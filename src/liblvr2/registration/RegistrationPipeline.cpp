@@ -81,6 +81,7 @@ void RegistrationPipeline::doRegistration()
         if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) > 5.0))
         {
             m_scans->changed.at(i) = true;
+            cout << "New Values"<< endl 
         }
         posPtr->scan->m_registration = align.scan(i)->pose();
         cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
