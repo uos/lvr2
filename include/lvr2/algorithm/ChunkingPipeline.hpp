@@ -69,6 +69,9 @@ private:
     // chunk manger instance
     std::shared_ptr<ChunkManager> m_chunkManager;
 
+    // status flag
+    bool m_running = false;
+
     // TODO: add old scans, e.g. std::vector<Scan> m_oldScans
 
     // TODO: add new scans, e.g. std::vector<Scan> m_newScans

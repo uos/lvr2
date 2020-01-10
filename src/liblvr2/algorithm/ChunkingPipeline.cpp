@@ -55,11 +55,37 @@ ChunkingPipeline::ChunkingPipeline(
 
 bool ChunkingPipeline::start()
 {
-    std::cout << "Chunking Pipeline started!" << std::endl;
+    if (m_running)
+    {
+        std::cout << "Chunking Pipeline is already running!" << std::endl;
+        return false;
+    }
 
+    m_running = true;
 
+    std::cout << "Starting chunking pipeline..." << std::endl;
 
-    return false;
+    std::cout << "Starting import tool..." << std::endl;
+    // TODO: call input tool
+    std::cout << "Finished import!" << std::endl;
+
+    std::cout << "Starting registration..." << std::endl;
+    // TODO: call registration
+    std::cout << "Finished registration!" << std::endl;
+
+    std::cout << "Starting large scale reconstruction..." << std::endl;
+    // TODO: call reconstruction
+    std::cout << "Finished large scale reconstruction!" << std::endl;
+
+    std::cout << "Starting practicability analysis..." << std::endl;
+    // TODO: call practicability analysis
+    std::cout << "Finished practicability analysis!" << std::endl;
+
+    std::cout << "Finished chunking pipeline!" << std::endl;
+
+    m_running = false;
+
+    return true;
 }
 
 } /* namespace lvr2 */
