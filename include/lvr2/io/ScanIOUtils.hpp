@@ -35,9 +35,9 @@ void saveScanPositionToDirectory(const boost::filesystem::path& path, const Scan
 
 bool loadScanPositionFromDirectory(const boost::filesystem::path& path, ScanPosition& position, const size_t& positionNr);
 
-void saveScanProjectToDirectory(const boost::filesystem::path& path, const ScanProject& position, const size_t& positionNr);
+void saveScanProjectToDirectory(const boost::filesystem::path& path, const ScanProject& position);
 
-bool loadScanProjectFromDirectory(const boost::filesystem::path& path, ScanProject& position, const size_t& positionNr);
+bool loadScanProjectFromDirectory(const boost::filesystem::path& path, ScanProject& position);
 
 void writeScanMetaYAML(const boost::filesystem::path& path, const Scan& scan);
 
