@@ -61,7 +61,9 @@ void RegistrationPipeline::doRegistration()
     std::vector<Transformd> oldTreansformd(m_scans->positions.size());
     for (size_t i = 0; i < m_scans->positions.size(); i++)
     {
-        oldTreansformd.at(i) = m_scans->positions.at(i)->scan->m_registration;
+        Transformd g = m_scans->positions.at(i)->scan->m_registration;
+
+        oldTreansformd.at(i) = g;
         
 
         ScanOptional opt = m_scans->positions.at(i)->scan;
