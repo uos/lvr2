@@ -443,7 +443,7 @@ int main(int argc, char** argv)
         // DEBUG
         
         cout << "vor Pipe Konstruktor" << endl;
-        ScanProjectEditMarkPtr projPtr(proj);
+        ScanProjectEditMarkPtr projPtr = make_shared<ScanProjectEditMark>(proj);
         RegistrationPipeline pipe(&options, projPtr);
         pipe.doRegistration();
         cout << "Nach doRegistration" << endl;
