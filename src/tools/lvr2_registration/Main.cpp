@@ -396,8 +396,8 @@ int main(int argc, char** argv)
 
             boost::shared_array<float> fov_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "fov", six);
             // fov transfered to object
-            tempScan->m_hFieldOfView = fov_array[0];
-            tempScan->m_vFieldOfView = fov_array[1];
+          
+            // TODO: min and max angles from new structure
 
             boost::shared_array<float> res_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "resolution", six);
             // resolution transfered

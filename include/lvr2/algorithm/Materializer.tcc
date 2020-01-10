@@ -181,7 +181,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 clusterH
             );
 
-
+            cout << "Generate Texture..." << endl;
             // Create texture
             TextureHandle texH = m_texturizer.get().generateTexture(
                 textureCount,

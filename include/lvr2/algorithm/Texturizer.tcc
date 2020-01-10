@@ -131,7 +131,7 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
     const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect
 )
 {
-
+    cout << "Wrong" << endl;
     // Calculate the texture size
     unsigned short int sizeX = ceil((boundingRect.m_maxDistA - boundingRect.m_minDistA) / m_texelSize);
     unsigned short int sizeY = ceil((boundingRect.m_maxDistB - boundingRect.m_minDistB) / m_texelSize);

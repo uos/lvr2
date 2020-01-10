@@ -84,6 +84,8 @@ public:
 	double  getVoxelSize() const;
 	size_t  getMinPointsPerVoxel() const;
 
+	bool    convertToLVR() const;
+
 	/**
 	 * @brief   Returns the position of the x coordinate in the data.
 	 */
