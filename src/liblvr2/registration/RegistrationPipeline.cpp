@@ -86,12 +86,14 @@ void RegistrationPipeline::doRegistration()
     {
         // check if the new pos different to old pos
         // ToDo: make num to option
-        cout << "Diff: " << getDifference(m_scans->positions.at(i)->scan->m_registration, oldTreansformd.at(i)) << endl;
-        if ((!m_scans->changed.at(i)) && (getDifference(m_scans->positions.at(i)->scan->m_registration, oldTreansformd.at(i)) > 5.0))
+
+        ScanPositionPtr posPtr = m_scans->positions.at(i);
+
+        cout << "Diff: " << getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) << endl;
+        if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) > 5.0))
         {
             m_scans->changed.at(i) = true;
         }
-        ScanPositionPtr posPtr = m_scans->positions.at(i);
         posPtr->scan->m_registration = align.scan(i)->pose();
         cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
     }
