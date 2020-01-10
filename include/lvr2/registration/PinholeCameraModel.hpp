@@ -15,18 +15,7 @@ class PinholeCameraModel
 {
 public:
 
-    PinholeCameraModel() 
-    {
-        for(int i = 0; i < 4; i++)
-        {
-            m_intrinsic_params[i] = 0.0;
-        }
-
-        for(int i = 0; i < 6; i++)
-        {
-            m_distortion_params[i] = 0.0;
-        }
-    }
+    PinholeCameraModel() = default;
 
     Eigen::Matrix<T, 3, 3> rotation() const
     {
@@ -49,6 +38,11 @@ public:
     void setIntrinsics(const Intrinsics<T>& i)
     {
         m_intrinsics = i;
+    }
+
+    void setDistortion(const Distortion<T>& d)
+    {
+        m_distortion = d;
     }
 
     void setExtrinsics(const Extrinsics<T>& e)
@@ -76,13 +70,16 @@ public:
         return m_extrinsicsEstimate;
     }
 
+    Distortion<T> distortion() const
+    {
+       return m_distortion;
+    }
+
+
 private:
 
-    /// Intrinsic parameters in this order: fx, fy, Cx, Cy
-    T                               m_intrinsic_params[4];
-
-    /// Distortion params in this order: k1, k2, k3, k4, p1, p2
-    T                               m_distortion_params[6];
+    /// Distortion parameters
+    Distortion<T>                   m_distortion;
 
     /// Intrincsic matrix
     Intrinsics<T>                   m_intrinsics;
