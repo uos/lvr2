@@ -33,10 +33,10 @@
 
 using namespace lvr2;
 
-float getDifference(Transformd a, Transformd b)
+double getDifference(Transformd a, Transformd b)
 {
 
-    float sum = 0;
+    double sum = 0;
     for (size_t i = 0; i < 4; i++)
     {
         for (size_t j = 0; j < 4; j++)
@@ -82,7 +82,6 @@ void RegistrationPipeline::doRegistration()
 
     align.finish();
 
-    oldTreansformd.at(3)(1,2) = 1000;
     for (int i = 0; i < m_scans->positions.size(); i++)
     {
         // check if the new pos different to old pos
