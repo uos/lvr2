@@ -79,6 +79,7 @@ void RegistrationPipeline::doRegistration()
 
     align.finish();
 
+    oldTreansformd.at(3)(1,2) = 1000;
     for (int i = 0; i < m_scans->positions.size(); i++)
     {
         // check if the new pos different to old pos
