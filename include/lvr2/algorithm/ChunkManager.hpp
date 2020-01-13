@@ -142,6 +142,11 @@ class ChunkManager
     }
 
     /**
+     * 
+     */
+    std::vector<std::string> getChannels();
+
+    /**
      * @brief Loads all chunks into the ChunkHashGrid.
      * DEBUG -- Only used for testing, but might be useful for smaller meshes.
      */
