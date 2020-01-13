@@ -23,9 +23,9 @@ void saveScanToDirectory(const boost::filesystem::path& path, const Scan& scan, 
 
 bool loadScanFromDirectory(const boost::filesystem::path&, Scan& scan, const size_t& positionNr, bool loadData);
 
-void saveScanToHDF5(const std::string filename, const size_t& positionNr);
+void saveScanToHDF5(const std::string filename, Scan& scan, const size_t& positionNr);
 
-bool loadScanFromHDF5(const std::string filename, const size_t& positionNr);
+ScanPtr loadScanFromHDF5(const std::string filename, const size_t& positionNr);
 
 void saveScanImageToDirectory(const boost::filesystem::path& path, const ScanImage& image, const size_t& positionNr, const size_t& imageNr);
 
