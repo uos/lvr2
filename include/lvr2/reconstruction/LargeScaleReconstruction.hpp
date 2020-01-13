@@ -71,7 +71,7 @@ namespace lvr2
          * @param scans vector of new scan to be added
          * @return
          */
-        int mpiChunkAndReconstruct(ScanProjectPtr project, std::vector<bool> diff);
+        int mpiChunkAndReconstruct(ScanProjectPtr project, std::vector<bool> diff, std::shared_ptr<ChunkManager> chunkManager);
 
 
     private:

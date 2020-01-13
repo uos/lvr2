@@ -32,22 +32,22 @@
  *      Author: Isaak Mitschke
  */
 
+#include "lvr2/io/GHDF5IO.hpp"
 #include "lvr2/io/LineReader.hpp"
 #include "lvr2/io/Progress.hpp"
 #include "lvr2/io/Timestamp.hpp"
-
-#include <boost/filesystem/path.hpp>
-#include <boost/optional/optional_io.hpp>
-#include <cstring>
-#include <fstream>
-#include <iostream>
-#include "lvr2/io/GHDF5IO.hpp"
 #include "lvr2/io/hdf5/ArrayIO.hpp"
 #include "lvr2/io/hdf5/ChannelIO.hpp"
 #include "lvr2/io/hdf5/MatrixIO.hpp"
 #include "lvr2/io/hdf5/PointCloudIO.hpp"
 #include "lvr2/io/hdf5/VariantChannelIO.hpp"
 #include "lvr2/reconstruction/FastReconstructionTables.hpp"
+
+#include <boost/filesystem/path.hpp>
+#include <boost/optional/optional_io.hpp>
+#include <cstring>
+#include <fstream>
+#include <iostream>
 
 using namespace std;
 
@@ -1880,7 +1880,6 @@ lvr2::floatArr BigGrid<BaseVecT>::points(
             }
         }
     }
-    std::cout << "Here we are!" << std::endl;
     return points;
 }
 
