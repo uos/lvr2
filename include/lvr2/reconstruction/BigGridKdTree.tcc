@@ -32,9 +32,8 @@
  *      Author: Isaak Mitschke
  */
 
+#include "lvr2/io/Timestamp.hpp"
 #include "lvr2/reconstruction/BigGridKdTree.hpp"
-
-#include <lvr2/io/Timestamp.hpp>
 
 namespace lvr2
 {

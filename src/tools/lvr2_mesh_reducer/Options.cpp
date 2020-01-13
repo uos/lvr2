@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /*
+/*
  * Options.cpp
  *
  *  Created on: Nov 21, 2010
@@ -33,7 +33,8 @@
  */
 
 #include "Options.hpp"
-#include <lvr2/config/lvropenmp.hpp>
+
+#include "lvr2/config/lvropenmp.hpp"
 
 #include <fstream>
 
@@ -42,23 +43,24 @@ namespace meshreduce
 
 using namespace boost::program_options;
 
-Options::Options(int argc, char** argv)
-    : BaseOption(argc, argv)
+Options::Options(int argc, char** argv) : BaseOption(argc, argv)
 {
     // Create option descriptions
-    m_descr.add_options()
-        ("help", "Produce help message")
-        ("inputFile", value< vector<string> >(), "Input file name. Supported formats are .obj and .ply")    
-        ("reductionRatio,r", value<float>(&m_edgeCollapseReductionRatio)->default_value(0.0), "Percentage of faces to remove via edge-collapse (0.0 means no reduction, 1.0 means to remove all faces which can be removed)")
-    ;
+    m_descr.add_options()("help", "Produce help message")(
+        "inputFile",
+        value<vector<string>>(),
+        "Input file name. Supported formats are .obj and .ply")(
+        "reductionRatio,r",
+        value<float>(&m_edgeCollapseReductionRatio)->default_value(0.0),
+        "Percentage of faces to remove via edge-collapse (0.0 means no reduction, 1.0 means to "
+        "remove all faces which can be removed)");
     setup();
 }
 
 string Options::getInputFileName() const
 {
-    return (m_variables["inputFile"].as< vector<string> >())[0];
+    return (m_variables["inputFile"].as<vector<string>>())[0];
 }
-
 
 float Options::getEdgeCollapseReductionRatio() const
 {
@@ -67,24 +69,25 @@ float Options::getEdgeCollapseReductionRatio() const
 
 bool Options::printUsage() const
 {
-  if (m_variables.count("help"))
+    if (m_variables.count("help"))
     {
         cout << endl;
         cout << m_descr << endl;
         return true;
     }
-  else if (!m_variables.count("inputFile"))
+    else if (!m_variables.count("inputFile"))
     {
         cout << "Error: You must specify an input file." << endl;
         cout << endl;
         cout << m_descr << endl;
         return true;
     }
-  return false;
+    return false;
 }
 
-Options::~Options() {
+Options::~Options()
+{
     // TODO Auto-generated destructor stub
 }
 
-} // namespace reconstruct
+} // namespace meshreduce

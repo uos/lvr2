@@ -100,6 +100,16 @@ using Intrinsicsf = Intrinsics<float>;
 /// 4x4 extrinsic calibration (double precision)
 using Intrinsicsd = Intrinsics<double>;
 
+/// Distortion Parameters
+template<typename T>
+using Distortion = Eigen::Matrix<T, 6, 1>;
+
+/// Distortion Parameters (double precision)
+using Distortiond = Distortion<double>;
+
+/// Distortion Parameters (single precision)
+using Distortionf = Distortion<float>;
+
 /// Eigen 3D vector
 template<typename T>
 using Vector3 = Eigen::Matrix<T, 3, 1>;
