@@ -1,4 +1,6 @@
 #pragma once
+#ifndef LVR2_IO_GHDF5IO_HPP
+#define LVR2_IO_GHDF5IO_HPP
 
 #include <memory>
 #include <tuple>
@@ -14,8 +16,23 @@
 
 
 
-
 namespace lvr2 {
+
+/**
+ * @class Hdf5Construct
+ * @brief Helper class how to construct a IO feature with its dependencies
+ * 
+ */
+template<template<typename> typename Feature, typename Derived>
+struct Hdf5Construct;
+
+
+/**
+ * @class Hdf5IO
+ * @brief Manager Class for all Hdf5IO components located in hdf5 directory
+ * 
+ * 
+ */
 
 template<template<typename> typename ...Features>
 class Hdf5IO : public Features<Hdf5IO<Features...> >...
@@ -72,6 +89,40 @@ public:
         using type = typename add_features<F>::type;
     };
 
+    template<
+        template<typename> typename F,
+        template<typename> typename ...Fs
+    >
+    struct add_features_with_deps;
+
+    template<
+        template<typename> typename F,
+        template<typename> typename ...Fs
+    >
+    struct add_features_with_deps {
+        using type = typename add_features_with_deps<F>::type::template add_features_with_deps<Fs...>::type;
+    };
+
+    template<template<typename> typename F>
+    struct add_features_with_deps<F> {
+        using type = typename Hdf5Construct<F, Hdf5IO<Features...> >::type;
+    };
+
+    /////////////////////////////////////////////
+    /// USE ONLY THESE METHODS IN APPLICATION ///
+    /////////////////////////////////////////////
+
+
+    template<template<typename> typename F>
+    static constexpr bool HasFeature = has_feature<F>::value;
+    
+    template<template<typename> typename ...F>
+    using AddFeatures = typename add_features_with_deps<F...>::type;
+
+    template<typename OTHER>
+    using Merge = typename OTHER::template add_features<Features...>::type;
+
+
     #if __cplusplus <= 201500L
         // feature of c++17
         #pragma message("using Tp::save... needs c++17 at least or a newer compiler")
@@ -109,6 +160,17 @@ public:
 
 };
 
+template<template<typename> typename Feature, typename Derived = Hdf5IO<> >
+struct Hdf5Construct {
+    using type = typename Derived::template add_features<Feature>::type;
+};
+
+template<template<typename> typename Feature>
+using Hdf5Build = typename Hdf5Construct<Feature>::type;
+
+
 } // namespace lvr2
 
 #include "GHDF5IO.tcc"
+
+#endif // LVR2_IO_GHDF5IO_HPP

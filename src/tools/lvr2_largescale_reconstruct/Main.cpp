@@ -29,18 +29,34 @@
 #include "lvr2/algorithm/CleanupAlgorithms.hpp"
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
+#include "lvr2/algorithm/NormalAlgorithms.hpp"
 #include "lvr2/algorithm/ReductionAlgorithms.hpp"
 #include "lvr2/algorithm/Tesselator.hpp"
 #include "lvr2/algorithm/UtilAlgorithms.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/BoundingBox.hpp"
+#include "lvr2/geometry/ColorVertex.hpp"
+#include "lvr2/geometry/HalfEdgeMesh.hpp"
+#include "lvr2/geometry/Normal.hpp"
 #include "lvr2/io/DataStruct.hpp"
+#include "lvr2/io/GHDF5IO.hpp"
 #include "lvr2/io/LineReader.hpp"
 #include "lvr2/io/Model.hpp"
 #include "lvr2/io/PLYIO.hpp"
 #include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/io/hdf5/MeshIO.hpp"
+#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/reconstruction/BigGrid.hpp"
 #include "lvr2/reconstruction/BigGridKdTree.hpp"
 #include "lvr2/reconstruction/BigVolumen.hpp"
+#include "lvr2/reconstruction/FastBox.hpp"
+#include "lvr2/reconstruction/FastReconstruction.hpp"
+#include "lvr2/reconstruction/HashGrid.hpp"
+#include "lvr2/reconstruction/PointsetGrid.hpp"
+#include "lvr2/reconstruction/PointsetSurface.hpp"
 #include "lvr2/reconstruction/QueryPoint.hpp"
+#include "lvr2/reconstruction/SearchTreeFlann.hpp"
 #include "lvr2/reconstruction/VirtualGrid.hpp"
 
 #include <algorithm>
@@ -51,25 +67,6 @@
 #include <flann/flann.hpp>
 #include <fstream>
 #include <iostream>
-#include <lvr2/algorithm/FinalizeAlgorithms.hpp>
-#include <lvr2/algorithm/NormalAlgorithms.hpp>
-#include <lvr2/geometry/BaseVector.hpp>
-#include <lvr2/geometry/BoundingBox.hpp>
-#include <lvr2/geometry/ColorVertex.hpp>
-#include <lvr2/geometry/HalfEdgeMesh.hpp>
-#include <lvr2/geometry/Normal.hpp>
-#include <lvr2/io/GHDF5IO.hpp>
-#include <lvr2/io/Model.hpp>
-#include <lvr2/io/PointBuffer.hpp>
-#include <lvr2/io/Timestamp.hpp>
-#include <lvr2/io/hdf5/MeshIO.hpp>
-#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
-#include <lvr2/reconstruction/FastBox.hpp>
-#include <lvr2/reconstruction/FastReconstruction.hpp>
-#include <lvr2/reconstruction/HashGrid.hpp>
-#include <lvr2/reconstruction/PointsetGrid.hpp>
-#include <lvr2/reconstruction/PointsetSurface.hpp>
-#include <lvr2/reconstruction/SearchTreeFlann.hpp>
 #include <random>
 #include <sstream>
 #include <string>
@@ -81,13 +78,13 @@ using namespace lvr2;
 #if defined CUDA_FOUND
 #define GPU_FOUND
 
-#include <lvr2/reconstruction/cuda/CudaSurface.hpp>
+#include "lvr2/reconstruction/cuda/CudaSurface.hpp"
 
 typedef CudaSurface GpuSurface;
 #elif defined OPENCL_FOUND
 #define GPU_FOUND
 
-#include <lvr2/reconstruction/opencl/ClSurface.hpp>
+#include "lvr2/reconstruction/opencl/ClSurface.hpp"
 
 typedef ClSurface GpuSurface;
 #endif

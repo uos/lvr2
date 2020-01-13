@@ -2,7 +2,15 @@
 #ifndef LVR2_IO_HDF5_VARIANTCHANNELIO_HPP
 #define LVR2_IO_HDF5_VARIANTCHANNELIO_HPP
 
+// Object to store
 #include "lvr2/types/VariantChannel.hpp"
+
+// Dependencies
+#include "ChannelIO.hpp"
+
+// Test
+#include "lvr2/io/GHDF5IO.hpp"
+
 
 namespace lvr2 {
 
@@ -41,7 +49,12 @@ namespace hdf5features {
  * - ChannelIO
  * 
  */
-template<typename Derived>
+
+struct ConstructType {
+
+};
+
+template<typename Derived = ConstructType>
 class VariantChannelIO {
 public:
 
@@ -77,8 +90,25 @@ protected:
     ChannelIO<Derived>* m_channel_io = static_cast<ChannelIO<Derived>*>(m_file_access);
 };
 
-
 } // hdf5features
+
+/**
+ * Define you dependencies here:
+ */
+template<typename BaseIO>
+struct Hdf5Construct<hdf5features::VariantChannelIO, BaseIO> {
+    
+    // DEPS
+    using deps = typename Hdf5Construct<hdf5features::ChannelIO, BaseIO>::type;
+
+    // add actual feature
+    using type = typename deps::template add_features<hdf5features::VariantChannelIO>::type;
+};
+
+
+
+
+// generator
 
 } // namespace lvr2 
 

@@ -115,4 +115,73 @@ ChannelPtr<T> ChunkManager::extractChannelOfArea(
     return channel;
 }
 
+template <typename T>
+MultiChannelMap::val_type
+ChunkManager::applyChannelFilter(const std::vector<bool>& vertexFilter,
+                                 const std::vector<bool>& faceFilter,
+                                 const size_t numVertices,
+                                 const size_t numFaces,
+                                 const MeshBufferPtr meshBuffer,
+                                 const MultiChannelMap::val_type& originalChannel) const
+{
+    std::size_t numElements = originalChannel.numElements();
+    if (originalChannel.numElements() == meshBuffer->numVertices())
+    {
+        numElements = numVertices;
+    }
+    else if (originalChannel.numElements() == meshBuffer->numFaces())
+    {
+        numElements = numFaces;
+    }
+
+    if (numElements == originalChannel.numElements())
+    {
+        return originalChannel;
+    }
+
+    boost::shared_array<T> data(new T[numElements * originalChannel.width()]);
+
+    std::size_t tmpIndex = 0;
+    for (std::size_t i = 0; i < originalChannel.numElements(); i++)
+    {
+        if (originalChannel.numElements() == meshBuffer->numVertices())
+        {
+            if (vertexFilter[i] == true)
+            {
+                for (std::size_t j = 0; j < originalChannel.width(); j++)
+                {
+                    data[tmpIndex * originalChannel.width() + j]
+                        = originalChannel.dataPtr<T>()[i * originalChannel.width() + j];
+                }
+                tmpIndex++;
+            }
+        }
+        else if (originalChannel.numElements() == meshBuffer->numFaces())
+        {
+            if (faceFilter[i] == true)
+            {
+                for (std::size_t j = 0; j < originalChannel.width(); j++)
+                {
+                    data[tmpIndex * originalChannel.width() + j]
+                        = originalChannel.dataPtr<T>()[i * originalChannel.width() + j];
+                }
+                tmpIndex++;
+            }
+        }
+        else
+        {
+            for (std::size_t j = 0; j < originalChannel.width(); j++)
+            {
+                data[tmpIndex * originalChannel.width() + j]
+                    = originalChannel.dataPtr<T>()[i * originalChannel.width() + j];
+            }
+            tmpIndex++;
+        }
+    }
+
+    MultiChannelMap::val_type channel(Channel<T>(numElements, originalChannel.width(), data));
+
+    return channel;
+}
+
 } // namespace lvr2
