@@ -100,10 +100,10 @@ int main(int argc, char** argv)
   //      return 0;
    //}
 
-   ScanProjectPtr project;
+   ScanProjectEditMarkPtr project;
    vector<bool> diff;
 
-    int x = lsr.mpiChunkAndReconstruct(project, diff);
+    int x = lsr.mpiChunkAndReconstruct(project);
 
     //scans_new.front()->m_globalBoundingBox = bb2;
 

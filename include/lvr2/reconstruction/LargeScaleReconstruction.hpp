@@ -68,7 +68,7 @@ namespace lvr2
          * @param scans vector of new scan to be added
          * @return
          */
-        int mpiChunkAndReconstruct(ScanProjectPtr project, std::vector<bool> diff);
+        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project);
 
 
     private:
