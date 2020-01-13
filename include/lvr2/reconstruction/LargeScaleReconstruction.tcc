@@ -82,7 +82,6 @@ namespace lvr2
               m_MinPlaneSize(minPlaneSize), m_SmallRegionThreshold(smallRegionThreshold),
               m_retesselate(retesselate), m_LineFusionThreshold(lineFusionThreshold)
     {
-        std::cout << "Reconstruction Instance generated..." << std::endl;
     }
 
     template<typename BaseVecT>
@@ -96,10 +95,10 @@ namespace lvr2
     }
 
     template <typename BaseVecT>
-    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectPtr project, std::vector<bool> diff, std::shared_ptr<ChunkManager> chunkManager)
+    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkManager> chunkManager)
     {
 
-        if(project->positions.size() != diff.size())
+        if(project->positions.size() != project->changed.size())
         {
             cout << "Inconsistency between number of given scans and diff-vector (scans to consider)! exit..." << endl;
             return 0;
@@ -110,7 +109,7 @@ namespace lvr2
 
         //TODO: replace with new incremental Constructor later
         //BigGrid<BaseVecT> bg(m_filePath, m_bgVoxelSize, m_scale);
-        BigGrid<BaseVecT> bg( m_bgVoxelSize ,project, diff, m_scale);
+        BigGrid<BaseVecT> bg( m_bgVoxelSize ,project, m_scale);
 
         cout << lvr2::timestamp << "grid finished " << endl;
         BoundingBox<BaseVecT> bb = bg.getBB();
@@ -434,6 +433,16 @@ namespace lvr2
         {
             auto m = ModelPtr(new Model(meshBuffer));
             ModelFactory::saveModel(m, largeScale);
+        }
+
+        return 1;
+    }
+    template <typename BaseVecT>
+    int LargeScaleReconstruction<BaseVecT>::resetEditMark(ScanProjectEditMarkPtr project)
+    {
+        for(auto mark : project->changed)
+        {
+            mark = false;
         }
 
         return 1;

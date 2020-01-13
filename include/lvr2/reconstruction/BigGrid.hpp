@@ -88,7 +88,7 @@ class BigGrid
      * @param scale
      * @param scans new scans to be added
      */
-    BigGrid(float voxelsize,ScanProjectPtr project, vector<bool> diff, float scale = 0);
+    BigGrid(float voxelsize,ScanProjectEditMarkPtr project, float scale = 0);
 
     BigGrid(std::string path);
 
