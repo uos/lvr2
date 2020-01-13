@@ -102,8 +102,8 @@ int main(int argc, char** argv)
 
    ScanProjectPtr project;
    vector<bool> diff;
-
-    int x = lsr.mpiChunkAndReconstruct(project, diff);
+    std::shared_ptr<ChunkManager> cm;
+    int x = lsr.mpiChunkAndReconstruct(project, diff, cm);
 
     //scans_new.front()->m_globalBoundingBox = bb2;
 

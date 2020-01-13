@@ -96,7 +96,7 @@ namespace lvr2
     }
 
     template <typename BaseVecT>
-    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectPtr project, std::vector<bool> diff)
+    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectPtr project, std::vector<bool> diff, std::shared_ptr<ChunkManager> chunkManager)
     {
 
         if(project->positions.size() != diff.size())
@@ -164,7 +164,7 @@ namespace lvr2
         vector<string> grid_files;
         unordered_set<string> meshes;
         // vector to save the new chunk names - which chunks have to be reconstructed
-        vector<string> newChunks = vector<string>();
+        vector<BaseVector<int>> newChunks = vector<BaseVector<int>>();
 
         uint partitionBoxesSkipped = 0;
 
@@ -261,18 +261,19 @@ namespace lvr2
             auto reconstruction =
                    make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
 
-            // save in HDF5
-            ps_grid->saveCellsHDF5(m_filePath, name_id);
-            // also save the name that is added to the hdf5
-            newChunks.push_back(name_id);
+
+
 
             // <PointBufferPtr>setChunk: string layer, int x, int y, int z, T data
             int x = (int)floor(partitionBoxes.at(i).getMin().x / m_chunkSize);
             int y = (int)floor(partitionBoxes.at(i).getMin().y / m_chunkSize);
             int z = (int)floor(partitionBoxes.at(i).getMin().z / m_chunkSize);
             //TODO delete when we have the ChunkManager!!
-            std::shared_ptr<ChunkManager> cm;
-            addTSDFChunkManager(x, y, z, ps_grid, cm);
+
+            addTSDFChunkManager(x, y, z, ps_grid, chunkManager);
+            BaseVector<int> chunkCoordinates(x, y, z);
+            // also save the grid coordinates of the chunk added to the ChunkManager
+            newChunks.push_back(chunkCoordinates);
 
             // save the mesh of the chunk
             // additionally for debug: Save the mesh as a ply todo delete later
@@ -280,18 +281,13 @@ namespace lvr2
             reconstruction->getMesh(mesh);
             lvr2::SimpleFinalizer<Vec> finalize;
             auto meshBuffer = MeshBufferPtr(finalize.apply(mesh));
-            LSRWriter hdfWrite;
-            hdfWrite.open(m_filePath);
-            hdfWrite.save("chunks/" + name_id, meshBuffer);
+            // removed HDF5 writing. This will be done by the ChunkManager.
+            //LSRWriter hdfWrite;
+            //hdfWrite.open(m_filePath);
+            //hdfWrite.save("chunks/" + name_id, meshBuffer);
             auto m = ModelPtr(new Model(meshBuffer));
             ModelFactory::saveModel(m, name_id + ".ply");
 
-            // TODO: can be removed
-//            // replaced creating .ser files to creating chunk in HDF5
-//            std::stringstream ss2;
-//            ss2 << name_id << ".ser";
-//            ps_grid->saveCells(ss2.str());
-//            meshes.insert(ss2.str());
         }
 
         // TODO: can be removed
@@ -343,7 +339,22 @@ namespace lvr2
         cbb.expand(vmax);
 
         // auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(grid_files, cbb, m_voxelSize);
-        auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(m_filePath, newChunks, cbb);
+        // don't read from HDF5 - get the chunks from the ChunkManager
+        // auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(m_filePath, newChunks, cbb);
+        std::vector<PointBufferPtr> tsdfChunks;
+        for(BaseVector<int> coord : newChunks)
+        {
+            boost::optional<shared_ptr<PointBuffer>> chunk = chunkManager->getChunk<PointBufferPtr>("tsdf_values", coord.x, coord.y, coord.z);
+            if(chunk)
+            {
+                tsdfChunks.push_back(chunk.get());
+            }
+            else
+            {
+                std::cout << "WARNING - Could not find chunk (" << coord.x << ", " << coord.y << ", " << coord.z << ") in layer: tsdf_values. " << std::endl;
+            }
+        }
+        auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(tsdfChunks, cbb, m_voxelSize);
 
         auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(hg);
 
@@ -437,7 +448,7 @@ namespace lvr2
         vector<QueryPoint<BaseVecT>>& qp = ps_grid->getQueryPoints();
         boost::shared_array<float> centers(new float[3 * csize]);
         //cant save bool?
-        boost::shared_array<short int> extruded(new short int[csize]);
+        boost::shared_array<int> extruded(new int[csize]);
         boost::shared_array<float> queryPoints(new float[8 * csize]);
 
         for(auto it = ps_grid->firstCell() ; it!= ps_grid->lastCell(); it++)

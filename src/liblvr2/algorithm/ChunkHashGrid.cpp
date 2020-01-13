@@ -26,98 +26,75 @@
  */
 
 /**
-* ChunkHashGrid.cpp
-*
-* @date 17.09.2019
-* @author Raphael Marx
-*/
-
+ * ChunkHashGrid.cpp
+ *
+ * @date 17.09.2019
+ * @author Raphael Marx
+ */
 
 #include "lvr2/algorithm/ChunkHashGrid.hpp"
 
 namespace lvr2
 {
-ChunkHashGrid::ChunkHashGrid(std::string hdf5Path, size_t cacheSize)
-:m_chunkIO(std::shared_ptr<ChunkIO>(new ChunkIO(hdf5Path))),
-m_cacheSize(cacheSize)
+ChunkHashGrid::ChunkHashGrid(std::string hdf5Path, size_t cacheSize) : m_cacheSize(cacheSize)
 {
+    m_io.open(hdf5Path);
+
+    try
+    {
+        m_boundingBox = m_io.loadBoundingBox();
+        m_chunkSize   = m_io.loadChunkSize();
+        m_chunkAmount = m_io.loadAmount();
+    }
+    catch (std::runtime_error& e)
+    {
+    }
 }
 
-bool ChunkHashGrid::loadChunk(size_t hashValue, int x, int y, int z)
+bool ChunkHashGrid::isChunkLoaded(std::string layer, std::size_t hashValue)
 {
-    std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
-    lvr2::MeshBufferPtr chunk = m_chunkIO->loadChunk(chunkName);
-    if(chunk.get()){
-        set(hashValue, chunk);
-        return true;
+    auto layerIt = m_hashGrid.find(layer);
+    if (layerIt != m_hashGrid.end())
+    {
+        auto chunkIt = layerIt->second.find(hashValue);
+        if (chunkIt != layerIt->second.end())
+        {
+            return true;
+        }
     }
     return false;
 }
 
-MeshBufferPtr ChunkHashGrid::findChunk(size_t hashValue, int x, int y, int z)
+bool ChunkHashGrid::isChunkLoaded(std::string layer, int x, int y, int z)
 {
-    MeshBufferPtr found;
-    // try to load mesh from hash map
-    if(get(hashValue, found))
-    {
-        return found;
-    }
-    // otherwise try to load the chunk from the hdf5
-    if(loadChunk(hashValue, x, y, z))
-    {
-        get(hashValue, found);
-    }
-    return found;
+    return isChunkLoaded(layer, hashValue(x, y, z));
 }
 
-MeshBufferPtr ChunkHashGrid::findChunkCondition(size_t hashValue, int x, int y, int z, std::string channelName)
+void ChunkHashGrid::loadChunk(std::string layer, int x, int y, int z, const val_type& data)
 {
-    MeshBufferPtr found = findChunk(hashValue, x, y, z);
-    if(found)
-    {
-        if(found->hasIndexChannel(channelName) || found->hasFloatChannel(channelName) || found->hasUCharChannel(channelName)) //templating needed?
-        {
-            return found;
-        }
-        MeshBufferPtr empty;
-        return empty;
-    }
-    return found;
-}
+    std::size_t chunkHash = hashValue(x, y, z);
 
-void ChunkHashGrid::set(size_t hashValue, const MeshBufferPtr& mesh)
-{
-    auto it = m_hashGrid.find(hashValue);
-    if(it == m_hashGrid.end())
+    if (isChunkLoaded(layer, chunkHash))
     {
-        items.push_front(hashValue);
-        m_hashGrid[hashValue] = {mesh, items.begin()};
-        if (m_hashGrid.size() > m_cacheSize)
-        {
-            m_hashGrid.erase(items.back());
-            items.pop_back();
-        }
+        // chunk exists for layer in grid
+        // remove chunk from cache to put the chunk to front of lru cache later
+        m_items.remove({layer, chunkHash});
     }
-    else
+
+    // add new chunk to cache
+    m_items.push_front({layer, chunkHash});
+
+    // check if cache is full
+    if (m_items.size() > m_cacheSize)
     {
-        items.erase((it->second.second));
-        items.push_front(hashValue);
-        m_hashGrid[hashValue] = {mesh, items.begin()};
+        // remove chunk from grid keep the grid for the current layer even if it holds no elements
+        m_hashGrid[m_items.back().first].erase(m_items.back().second);
+
+        // remove erased element from cache
+        m_items.pop_back();
     }
-}
-bool ChunkHashGrid::get(size_t hashValue, MeshBufferPtr& mesh)
-{
-    auto it = m_hashGrid.find(hashValue);
-    if(it != m_hashGrid.end())
-    {
-        items.erase(it->second.second);
-        items.push_front(hashValue);
-        m_hashGrid[hashValue] = {it->second.first, items.begin()};
-        mesh = it->second.first;
-        return true;
-    }
-    // return false, because the chunk doesn't exist in hashMap
-    return false;
+
+    m_hashGrid[layer][chunkHash] = data;
 }
 
 } /* namespace lvr2 */
