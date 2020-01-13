@@ -85,7 +85,6 @@ namespace lvr2
               m_MinPlaneSize(minPlaneSize), m_SmallRegionThreshold(smallRegionThreshold),
               m_retesselate(retesselate), m_LineFusionThreshold(lineFusionThreshold)
     {
-        std::cout << "Reconstruction Instance generated..." << std::endl;
     }
 
     template<typename BaseVecT>
@@ -420,6 +419,16 @@ namespace lvr2
         {
             auto m = ModelPtr(new Model(meshBuffer));
             ModelFactory::saveModel(m, largeScale);
+        }
+
+        return 1;
+    }
+    template <typename BaseVecT>
+    int LargeScaleReconstruction<BaseVecT>::resetEditMark(ScanProjectEditMarkPtr project)
+    {
+        for(auto mark : project->changed)
+        {
+            mark = false;
         }
 
         return 1;

@@ -100,10 +100,38 @@ int main(int argc, char** argv)
   //      return 0;
    //}
 
-   ScanProjectEditMarkPtr project;
+
+   ScanProjectEditMarkPtr project(new ScanProjectEditMark);
+
+    cout << "didnt work!" << endl;
    vector<bool> diff;
 
-    int x = lsr.mpiChunkAndReconstruct(project);
+   diff.push_back(true);
+    diff.push_back(true);
+    diff.push_back(true);
+    cout << "didnt work!" << endl;
+    project->changed.push_back(true);
+    project->changed.push_back(true);
+    project->changed.push_back(true);
+    cout << "didnt work!" << endl;
+    
+   for(auto mark : project->changed)
+   {
+       std::cout << mark;
+   }
+
+   lsr.resetEditMark(project);
+
+    for(auto mark : project->changed)
+    {
+        std::cout << mark;
+    }
+
+
+
+
+
+    //int x = lsr.mpiChunkAndReconstruct(project);
 
     //scans_new.front()->m_globalBoundingBox = bb2;
 

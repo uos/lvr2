@@ -71,6 +71,9 @@ namespace lvr2
         int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project);
 
 
+        int resetEditMark(ScanProjectEditMarkPtr project);
+
+
     private:
 
         //TODO: add chunks vector somewhere
