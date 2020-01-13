@@ -64,6 +64,7 @@ set(LVR2_SOURCES
     registration/GraphSLAM.cpp
     registration/TreeUtils.cpp
     registration/OctreeReduction.cpp
+    registration/RegistrationPipeline.cpp
 )
 
 

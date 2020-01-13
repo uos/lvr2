@@ -1460,7 +1460,7 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
 }
 
 template <typename BaseVecT>
-BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectPtr project, std::vector<bool> diff, float scale)
+BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, float scale)
         : m_maxIndex(0), m_maxIndexSquare(0), m_maxIndexX(0), m_maxIndexY(0), m_maxIndexZ(0),
           m_numPoints(0), m_extrude(true), m_scale(scale), m_has_normal(false), m_has_color(false)
 {
@@ -1468,7 +1468,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectPtr project, std::vector<
     omp_init_lock(&m_lock);
     m_voxelSize = voxelsize;
 
-    if (diff.size() <= 0)
+    if (project->changed.size() <= 0)
     {
         std::cerr << "no new scans to be added!" << std::endl;
         return;
@@ -1482,7 +1482,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectPtr project, std::vector<
         std::vector<BoundingBox<BaseVecT>> scan_boxes;
 
         //iterate through ALL points to calculate transformed boundingboxes of scans
-        for (int i = 0; i < diff.size(); i++)
+        for (int i = 0; i < project->changed.size(); i++)
         {
             ScanPositionPtr pos = project->positions.at(i);
             size_t numPoints = pos->scan->m_points->numPoints();
@@ -1504,7 +1504,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectPtr project, std::vector<
                 box.expand(temp);
             }
             // filter the new scans to calculate new reconstruction area
-            if(diff.at(i) == true)
+            if(project->changed.at(i) == true)
             {
                 m_partialbb.expand(box);
             }
@@ -1549,10 +1549,10 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectPtr project, std::vector<
 
         size_t idx, idy, idz;
 
-        for (int i = 0; i < diff.size(); i++)
+        for (int i = 0; i < project->changed.size(); i++)
         {
             cout << "Overlap " << i << ":" << m_partialbb.overlap(scan_boxes.at(i)) << endl;
-            if ((diff.at(i) != true) && m_partialbb.isValid() && m_partialbb.overlap(scan_boxes.at(i))){
+            if ((project->changed.at(i) != true) && m_partialbb.isValid() && m_partialbb.overlap(scan_boxes.at(i))){
                 ScanPositionPtr pos = project->positions.at(i);
                 size_t numPoints = pos->scan->m_points->numPoints();
                 boost::shared_array<float> points = pos->scan->m_points->getPointArray();
@@ -1623,9 +1623,9 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectPtr project, std::vector<
 
         float* mmfdata = (float*)m_PointFile.data();
 
-        for (int i = 0; i < diff.size(); i++)
+        for (int i = 0; i < project->changed.size(); i++)
         {
-            if ((diff.at(i) != true) && m_partialbb.isValid() && m_partialbb.overlap(scan_boxes.at(i))) {
+            if ((project->changed.at(i) != true) && m_partialbb.isValid() && m_partialbb.overlap(scan_boxes.at(i))) {
                 ScanPositionPtr pos = project->positions.at(i);
                 size_t numPoints = pos->scan->m_points->numPoints();
 
