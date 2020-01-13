@@ -34,6 +34,7 @@
 #include <random>
 #include <string>
 #include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/ScanIOUtils.hpp"
 
 using std::cout;
 using std::endl;
@@ -79,28 +80,14 @@ int main(int argc, char** argv)
     LargeScaleReconstruction<Vec> lsr(options);
 
     std::vector<ScanPtr> scans;
-
-
     std::vector<ScanPtr> h5scans;
-    //std::vector<ScanPtr> scans_new;
-
-
-    //scans_new.push_back(scans.front());
-
-    //scans.erase(scans.begin());
-
-    //BoundingBox<Vec> bb1(Vec(-200, -200, -100),Vec(0, 200, 180));
-    //BoundingBox<Vec> bb2(Vec(60, -200, -100),Vec(200, 200, 180));
-    //scans.front()->m_globalBoundingBox = bb1;
-
-
-
-   // if(bb1.overlap(bb2)) {
-   //     cout << "didnt work!" << endl;
-  //      return 0;
-   //}
 
     ScanProjectEditMarkPtr project(new ScanProjectEditMark);
+    ScanPositionPtr sptr(new ScanPosition());
+    sptr->scan = (*loadScanFromHDF5(in, 0).get());
+    project->positions.push_back(sptr);
+    project->changed.push_back(true);
+
     std::shared_ptr<ChunkManager> cm;
     int x = lsr.mpiChunkAndReconstruct(project, cm);
 

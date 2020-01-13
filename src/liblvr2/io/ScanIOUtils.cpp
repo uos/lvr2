@@ -1,8 +1,11 @@
 #include "lvr2/io/ScanIOUtils.hpp"
+#include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/ScanIO.hpp"
 
 #include <opencv2/opencv.hpp>
 namespace lvr2
 {
+using ScanHDF5IO = lvr2::Hdf5Build<lvr2::hdf5features::ScanIO>;
 
 void writeScanMetaYAML(const boost::filesystem::path& path, const Scan& scan)
 {
@@ -223,14 +226,31 @@ void loadScanMetaInfoFromYAML(const boost::filesystem::path& path, Scan& scan)
 }
 
 
-void saveScanToHDF5(const std::string filename, const size_t& positionNr)
+void saveScanToHDF5(const std::string filename, Scan& scan, const size_t& positionNr)
 {
-
+    ScanHDF5IO scanIO;
+    scanIO.open(filename);
+    std::string groupName = "/raw/scans/position_";
+    std::string number = std::to_string(positionNr);
+    groupName = groupName + std::string(5-number.length(), '0') + number;
+    std::cout << groupName << std::endl;
+    scanIO.save(groupName, scan);
 }
 
-bool loadScanFromHDF5(const std::string filename, const size_t& positionNr)
+ScanPtr loadScanFromHDF5(const std::string filename, const size_t& positionNr)
 {
-    return true;
+    ScanHDF5IO scanIO;
+    scanIO.open(filename);
+    std::string groupName = "/raw/scans/position_";
+    std::string number = std::to_string(positionNr);
+    groupName = groupName + std::string(5-number.length(), '0') + number;
+    std::cout << groupName << std::endl;
+    ScanPtr loadedScan = scanIO.loadScan(groupName);
+    if(loadedScan)
+    {
+        loadedScan->m_positionNumber = positionNr;
+    }
+    return loadedScan;
 }
 
 void saveScanImageToDirectory(
