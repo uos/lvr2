@@ -109,8 +109,6 @@ ChunkManager::ChunkManager(std::vector<MeshBufferPtr> meshes,
             = std::max(chunkAmount.z, static_cast<std::size_t>(std::ceil(getBoundingBox().getZSize() / getChunkSize())));
     }
 
-    setChunkAmount(chunkAmount);
-
     for(size_t i = 0; i < meshes.size(); ++i)
     {
         buildChunks(meshes[i], maxChunkOverlap, savePath, layers[i]);
@@ -643,9 +641,6 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
     // prepare mash to prevent faces from overlapping too much on chunk borders
     cutLargeFaces(halfEdgeMesh, maxChunkOverlap, splitVertices, splitFaces);
 
-    std::cout << getChunkAmount().x << " " << getChunkAmount().y << " " << getChunkAmount().z
-              << std::endl;
-
     // one vector of variable size for each vertex - this is used for duplicate detection
     std::shared_ptr<std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>>
         vertexUse(new std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>());
@@ -656,7 +651,9 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
         {
             for (std::size_t k = 0; k < getChunkAmount().z; k++)
             {
-                chunkBuilders[hashValue(i, j, k)]
+                chunkBuilders[hashValue(i + getChunkMinChunkIndex().x,
+                                        j + getChunkMinChunkIndex().y,
+                                        k + getChunkMinChunkIndex().z)]
                     = ChunkBuilderPtr(new ChunkBuilder(halfEdgeMesh, vertexUse));
             }
         }
@@ -682,9 +679,9 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
         {
             for (std::size_t k = 0; k < getChunkAmount().z; k++)
             {
-                std::size_t hash = hashValue(i, j, k);
-
-                //std::cout << chunkBuilders[hash]->numFaces() << std::endl;
+                std::size_t hash = hashValue(i + getChunkMinChunkIndex().x,
+                                             j + getChunkMinChunkIndex().y,
+                                             k + getChunkMinChunkIndex().z);
 
                 if (chunkBuilders[hash]->numFaces() > 0)
                 {

@@ -45,6 +45,25 @@
 
 namespace lvr2
 {
+
+/**
+ * @brief visitor that returns the channel that holds geometic information (like vertices-channel
+ * for meshes)
+ */
+class ChunkGeomtryChannelVisitor : public boost::static_visitor<FloatChannelOptional>
+{
+  public:
+    FloatChannelOptional operator()(const MeshBufferPtr mesh) const
+    {
+        return mesh->getFloatChannel("vertices");
+    }
+
+    FloatChannelOptional operator()(const PointBufferPtr points) const
+    {
+        return points->getFloatChannel("points");
+    }
+};
+
 class ChunkHashGrid
 {
   public:
@@ -58,6 +77,16 @@ class ChunkHashGrid
      * @param hdf5Path path to the HDF5 file
      */
     explicit ChunkHashGrid(std::string hdf5Path, size_t cacheSize);
+
+    /**
+     * @brief class to load chunks from an HDF5 file
+     *
+     * @param hdf5Path path to the HDF5 file
+     */
+    ChunkHashGrid(std::string hdf5Path,
+                  size_t cacheSize,
+                  BoundingBox<BaseVector<float>> boundingBox,
+                  float chunkSize);
 
     /**
      * @brief sets a chunk of a given layer in hashgrid
@@ -126,7 +155,8 @@ class ChunkHashGrid
      */
     inline std::size_t hashValue(int i, int j, int k) const
     {
-        return i * m_chunkAmount.y * m_chunkAmount.z + j * m_chunkAmount.z + k;
+        return (i + m_chunkIndexOffset.x) * m_chunkAmount.y * m_chunkAmount.z
+               + (j + m_chunkIndexOffset.y) * m_chunkAmount.z + k + m_chunkIndexOffset.z;
     }
 
     const BoundingBox<BaseVector<float>>& getBoundingBox() const
@@ -144,7 +174,34 @@ class ChunkHashGrid
         return m_chunkAmount;
     }
 
+    /**
+     * @brief returns the minimum chunk ids
+     */
+    BaseVector<std::size_t> getChunkMinChunkIndex() const
+    {
+        return m_chunkIndexOffset * -1;
+    }
+
+    /**
+     * @brief returns the maximum chunk ids
+     */
+    BaseVector<std::size_t> getChunkMaxChunkIndex() const
+    {
+        return m_chunkAmount - m_chunkIndexOffset;
+    }
+
   protected:
+    /**
+     * @brief regenerates cache hash grid
+     *
+     * @param oldChunkAmount previous amount of chunks
+     * @param oldChunkIndexOffset previous offset for chunk indices
+     */
+    void rehashCache(const BaseVector<std::size_t>& oldChunkAmount,
+                     const BaseVector<std::size_t>& oldChunkIndexOffset);
+
+    void expandBoundingBox(const val_type& data);
+
     /**
      * @brief loads a chunk from persistent storage into cache
      *
@@ -179,11 +236,7 @@ class ChunkHashGrid
      *
      * @param boundingBox new bounding box
      */
-    void setBoundingBox(const BoundingBox<BaseVector<float>> boundingBox)
-    {
-        m_boundingBox = boundingBox;
-        m_io.saveBoundingBox(m_boundingBox);
-    }
+    void setBoundingBox(const BoundingBox<BaseVector<float>> boundingBox);
 
     /**
      * @brief sets chunk size in this container and in persistent storage
@@ -196,19 +249,16 @@ class ChunkHashGrid
         m_io.saveChunkSize(m_chunkSize);
     }
 
+  private:
     /**
      * @brief sets the amount of chunks in x y and z direction in this container and in persistent
      * storage
      *
      * @param chunkAmount new amounts of chunks
      */
-    void setChunkAmount(const BaseVector<std::size_t>& chunkAmount)
-    {
-        m_chunkAmount = chunkAmount;
-        m_io.saveAmount(m_chunkAmount);
-    }
+    void setChunkAmountAndOffset(const BaseVector<std::size_t>& chunkAmount,
+                                 const BaseVector<std::size_t>& chunkIndexOffset);
 
-  private:
     // chunkIO for the HDF5 file-IO
     io m_io;
 
@@ -229,6 +279,9 @@ class ChunkHashGrid
 
     // amount of chunks
     BaseVector<std::size_t> m_chunkAmount;
+
+    // offset of chunks to make chunk index start at 0
+    BaseVector<std::size_t> m_chunkIndexOffset;
 };
 
 } /* namespace lvr2 */
