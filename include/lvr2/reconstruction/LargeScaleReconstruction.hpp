@@ -88,7 +88,7 @@ namespace lvr2
          */
         void addTSDFChunkManager(int x, int y, int z,
                 shared_ptr<lvr2::PointsetGrid<BaseVector<float>, lvr2::FastBox<BaseVector<float>>>> ps_grid,
-                shared_ptr<ChunkManager> cm);
+                shared_ptr<ChunkHashGrid> cm);
 
         //TODO: add chunks vector somewhere
 

@@ -42,21 +42,24 @@ ChunkHashGrid::ChunkHashGrid(std::string hdf5Path, size_t cacheSize) : m_cacheSi
 
     try
     {
-        m_boundingBox = m_io.loadBoundingBox();
-        m_chunkSize   = m_io.loadChunkSize();
-        m_chunkAmount = m_io.loadAmount();
+        m_chunkSize = m_io.loadChunkSize();
+        setBoundingBox(m_io.loadBoundingBox());
     }
     catch (std::runtime_error& e)
     {
     }
 }
 
-ChunkHashGrid::ChunkHashGrid(std::string hdf5Path, size_t cacheSize, BoundingBox<BaseVector<float>> bb, float chunkSize, BaseVector<size_t> chunkAmount)
-: m_cacheSize(cacheSize), m_boundingBox(bb), m_chunkSize(chunkSize), m_chunkAmount(chunkAmount)
+ChunkHashGrid::ChunkHashGrid(std::string hdf5Path,
+              size_t cacheSize,
+              BoundingBox<BaseVector<float>> boundingBox,
+              float chunkSize)
+    : m_cacheSize(cacheSize), m_chunkSize(chunkSize)
 {
     m_io.open(hdf5Path);
-
+    setBoundingBox(boundingBox);
 }
+
 bool ChunkHashGrid::isChunkLoaded(std::string layer, std::size_t hashValue)
 {
     auto layerIt = m_hashGrid.find(layer);
@@ -76,8 +79,78 @@ bool ChunkHashGrid::isChunkLoaded(std::string layer, int x, int y, int z)
     return isChunkLoaded(layer, hashValue(x, y, z));
 }
 
+void ChunkHashGrid::rehashCache(const BaseVector<std::size_t>& oldChunkAmount, const BaseVector<std::size_t>& oldChunkIndexOffset)
+{
+    std::unordered_map<std::string, std::unordered_map<std::size_t, val_type>> tmpCache;
+    for (std::pair<std::string, std::size_t>& elem : m_items)
+    {
+        // undo old hash function
+        int k = elem.second % oldChunkAmount.z - oldChunkIndexOffset.z;
+        int j = (elem.second / oldChunkAmount.z) % oldChunkAmount.y - oldChunkIndexOffset.y;
+        int i = elem.second / (oldChunkAmount.y * oldChunkAmount.z) - oldChunkIndexOffset.x;
+
+        val_type chunk;
+
+        std::cout << std::endl;
+        auto layerIt = tmpCache.find(elem.first);
+        if (layerIt != tmpCache.end())
+        {
+            auto chunkIt = tmpCache[elem.first].find(elem.second);
+            if (chunkIt != tmpCache[elem.first].end())
+            {
+                chunk = tmpCache[elem.first][elem.second];
+                std::cout << "loading " << elem.first << " " << elem.second << " from tmp cache"
+                          << std::endl;
+            }
+            else
+            {
+                chunk = m_hashGrid[elem.first][elem.second];
+                std::cout << "loading " << elem.first << " " << elem.second << " from grid"
+                          << std::endl;
+            }
+        }
+        else
+        {
+            chunk = m_hashGrid[elem.first][elem.second];
+            std::cout << "loading " << elem.first << " " << elem.second << " from grid"
+                      << std::endl;
+        }
+
+        std::size_t newHash = hashValue(i, j, k);
+        std::cout << "old hash: " << elem.second << " new hash: " << newHash << std::endl;
+
+        auto chunkIt = m_hashGrid[elem.first].find(newHash);
+        if (chunkIt != m_hashGrid[elem.first].end())
+        {
+            tmpCache[elem.first][newHash] = m_hashGrid[elem.first][newHash];
+            std::cout << "collision at " << elem.first << " " << newHash << std::endl;
+        }
+        m_hashGrid[elem.first][newHash] = chunk;
+        m_hashGrid[elem.first].erase(elem.second);
+
+        elem.second = newHash;
+    }
+}
+
+void ChunkHashGrid::expandBoundingBox(const val_type& data)
+{
+    FloatChannelOptional geometryChannel = boost::apply_visitor(ChunkGeomtryChannelVisitor(), data);
+    if (geometryChannel)
+    {
+        BoundingBox<BaseVector<float>> boundingBox = m_boundingBox;
+        for (unsigned int i = 0; i < geometryChannel.get().numElements(); i++)
+        {
+            boundingBox.expand(static_cast<BaseVector<float>>(geometryChannel.get()[i]));
+        }
+
+        setBoundingBox(boundingBox);
+    }
+}
+
 void ChunkHashGrid::loadChunk(std::string layer, int x, int y, int z, const val_type& data)
 {
+    expandBoundingBox(data);
+
     std::size_t chunkHash = hashValue(x, y, z);
 
     if (isChunkLoaded(layer, chunkHash))
@@ -101,6 +174,45 @@ void ChunkHashGrid::loadChunk(std::string layer, int x, int y, int z, const val_
     }
 
     m_hashGrid[layer][chunkHash] = data;
+}
+
+void ChunkHashGrid::setBoundingBox(const BoundingBox<BaseVector<float>> boundingBox)
+{
+    m_boundingBox = boundingBox;
+    m_io.saveBoundingBox(m_boundingBox);
+
+    BaseVector<std::size_t> chunkIndexOffset;
+    chunkIndexOffset.x
+        = static_cast<std::size_t>(std::ceil(-getBoundingBox().getMin().x / getChunkSize()));
+    chunkIndexOffset.y
+        = static_cast<std::size_t>(std::ceil(-getBoundingBox().getMin().y / getChunkSize()));
+    chunkIndexOffset.z
+        = static_cast<std::size_t>(std::ceil(-getBoundingBox().getMin().z / getChunkSize()));
+
+    BaseVector<std::size_t> chunkAmount;
+    chunkAmount.x
+        = static_cast<std::size_t>(std::ceil(getBoundingBox().getXSize() / getChunkSize()));
+    chunkAmount.y
+        = static_cast<std::size_t>(std::ceil(getBoundingBox().getYSize() / getChunkSize()));
+    chunkAmount.z
+        = static_cast<std::size_t>(std::ceil(getBoundingBox().getZSize() / getChunkSize()));
+
+    setChunkAmountAndOffset(chunkAmount, chunkIndexOffset);
+}
+
+void ChunkHashGrid::setChunkAmountAndOffset(const BaseVector<std::size_t>& chunkAmount,
+                                            const BaseVector<std::size_t>& chunkIndexOffset)
+{
+    if (m_chunkAmount != chunkAmount || m_chunkIndexOffset != chunkIndexOffset)
+    {
+        BaseVector<std::size_t> oldChunkAmount      = m_chunkAmount;
+        BaseVector<std::size_t> oldChunkIndexOffset = m_chunkIndexOffset;
+
+        m_chunkAmount      = chunkAmount;
+        m_chunkIndexOffset = chunkIndexOffset;
+
+        rehashCache(oldChunkAmount, oldChunkIndexOffset);
+    }
 }
 
 } /* namespace lvr2 */

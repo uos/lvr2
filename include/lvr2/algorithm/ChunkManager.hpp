@@ -52,7 +52,6 @@ class ChunkManager : public ChunkHashGrid
   public:
     using FilterFunction = std::function<bool(MultiChannelMap::val_type, size_t)>;
 
-    ChunkManager(std::string hdf5Path, size_t cacheSize, BoundingBox<BaseVector<float>> bb, float chunkSize, BaseVector<size_t> chunkAmount);
 
     /**
      * @brief ChunkManager creates chunks from an original mesh
