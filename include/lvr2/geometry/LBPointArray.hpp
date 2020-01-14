@@ -91,8 +91,8 @@ static void splitPointArrayWithValueSet(const LBPointArray<T>& V,
         const LBPointArray<U>& I, LBPointArray<U>& I_L, LBPointArray<U>& I_R,
         int current_dim, T value,
         T& deviation_left, T& deviation_right, const unsigned int& orig_dim,
-        std::unordered_set<U>& critical_indices_left,
-        std::unordered_set<U>& critical_indices_right);
+        const std::unordered_set<U>& critical_indices_left,
+        const std::unordered_set<U>& critical_indices_right);
 
 
 template<typename T>
