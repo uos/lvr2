@@ -120,16 +120,8 @@ namespace lvr2
         cmBB.expand(bb.getMin() - chunkSizeVec);
         cmBB.expand(bb.getMax() + chunkSizeVec);
 
-        BaseVector<size_t> chunkAmount;
-        chunkAmount.x
-                = static_cast<std::size_t>(std::ceil(bb.getXSize() / m_chunkSize));
-        chunkAmount.y
-                = static_cast<std::size_t>(std::ceil(bb.getYSize() / m_chunkSize));
-        chunkAmount.z
-                = static_cast<std::size_t>(std::ceil(bb.getZSize() / m_chunkSize));
-
         //chunkManager->setVariables(bb, m_chunkSize, chunkAmount);
-        chunkManager = std::shared_ptr<ChunkManager>(new ChunkManager(m_filePath, 50, bb, m_chunkSize, chunkAmount));
+        std::shared_ptr<ChunkHashGrid> chg = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(m_filePath, 50, bb, m_chunkSize));
 
         // ###########################
         cout << bb << endl;
@@ -286,7 +278,7 @@ namespace lvr2
             int x = (int)floor(partitionBoxes.at(i).getMin().x / m_chunkSize);
             int y = (int)floor(partitionBoxes.at(i).getMin().y / m_chunkSize);
             int z = (int)floor(partitionBoxes.at(i).getMin().z / m_chunkSize);
-            addTSDFChunkManager(x, y, z, ps_grid, chunkManager);
+            addTSDFChunkManager(x, y, z, ps_grid, chg);
             BaseVector<int> chunkCoordinates(x, y, z);
             // also save the grid coordinates of the chunk added to the ChunkManager
             newChunks.push_back(chunkCoordinates);
@@ -360,7 +352,7 @@ namespace lvr2
         std::vector<PointBufferPtr> tsdfChunks;
         for(BaseVector<int> coord : newChunks)
         {
-            boost::optional<shared_ptr<PointBuffer>> chunk = chunkManager->getChunk<PointBufferPtr>("tsdf_values", coord.x, coord.y, coord.z);
+            boost::optional<shared_ptr<PointBuffer>> chunk = chg->getChunk<PointBufferPtr>("tsdf_values", coord.x, coord.y, coord.z);
             if(chunk)
             {
                 tsdfChunks.push_back(chunk.get());
@@ -466,7 +458,7 @@ namespace lvr2
     }
 
     template <typename BaseVecT>
-    void LargeScaleReconstruction<BaseVecT>::addTSDFChunkManager(int x, int y, int z, std::shared_ptr<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>> ps_grid, std::shared_ptr<ChunkManager> cm)
+    void LargeScaleReconstruction<BaseVecT>::addTSDFChunkManager(int x, int y, int z, std::shared_ptr<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>> ps_grid, std::shared_ptr<ChunkHashGrid> cm)
     {
         std::string layerName = "tsdf_values";
         size_t counter = 0;
@@ -499,6 +491,6 @@ namespace lvr2
         chunk->addAtomic<unsigned int>(csize, "num_voxel");
 
         // TODO uncomment
-        // cm->setChunk<PointBufferPtr>(layerName, x, y, z, chunk);
+        cm->setChunk<PointBufferPtr>(layerName, x, y, z, chunk);
     }
 }
