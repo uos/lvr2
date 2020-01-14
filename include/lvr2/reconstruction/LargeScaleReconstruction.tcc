@@ -113,6 +113,19 @@ namespace lvr2
 
         cout << lvr2::timestamp << "grid finished " << endl;
         BoundingBox<BaseVecT> bb = bg.getBB();
+        // ######################
+        BaseVector<size_t> chunkAmount;
+        chunkAmount.x
+                = static_cast<std::size_t>(std::ceil(bb.getXSize() / m_chunkSize));
+        chunkAmount.y
+                = static_cast<std::size_t>(std::ceil(bb.getYSize() / m_chunkSize));
+        chunkAmount.z
+                = static_cast<std::size_t>(std::ceil(bb.getZSize() / m_chunkSize));
+
+        //chunkManager->setVariables(bb, m_chunkSize, chunkAmount);
+        chunkManager = std::shared_ptr<ChunkManager>(new ChunkManager(m_filePath, 50, bb, m_chunkSize, chunkAmount));
+
+        // ###########################
         cout << bb << endl;
 
         vector<BoundingBox<BaseVecT>> partitionBoxes;
@@ -267,8 +280,6 @@ namespace lvr2
             int x = (int)floor(partitionBoxes.at(i).getMin().x / m_chunkSize);
             int y = (int)floor(partitionBoxes.at(i).getMin().y / m_chunkSize);
             int z = (int)floor(partitionBoxes.at(i).getMin().z / m_chunkSize);
-            //TODO delete when we have the ChunkManager!!
-
             addTSDFChunkManager(x, y, z, ps_grid, chunkManager);
             BaseVector<int> chunkCoordinates(x, y, z);
             // also save the grid coordinates of the chunk added to the ChunkManager

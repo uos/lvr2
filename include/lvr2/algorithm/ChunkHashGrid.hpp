@@ -52,6 +52,9 @@ class ChunkHashGrid
 
     using io = Hdf5Build<hdf5features::ChunkIO>;
 
+    ChunkHashGrid(std::string hdf5Path, size_t cacheSize, BoundingBox<BaseVector<float>> bb, float chunkSize, BaseVector<size_t> chunkAmount);
+
+
     /**
      * @brief class to load chunks from an HDF5 file
      *
