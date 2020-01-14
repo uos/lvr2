@@ -114,6 +114,12 @@ namespace lvr2
         cout << lvr2::timestamp << "grid finished " << endl;
         BoundingBox<BaseVecT> bb = bg.getBB();
         // ######################
+        BoundingBox<BaseVecT> cmBB = BoundingBox<BaseVecT>();
+        BaseVector<float> chunkSizeVec = BaseVector<float>(m_chunkSize, m_chunkSize, m_chunkSize);
+        // to be safe we expand the boundingBox by one chunksize in every dimension, not needed once CM with rehashing is committed
+        cmBB.expand(bb.getMin() - chunkSizeVec);
+        cmBB.expand(bb.getMax() + chunkSizeVec);
+
         BaseVector<size_t> chunkAmount;
         chunkAmount.x
                 = static_cast<std::size_t>(std::ceil(bb.getXSize() / m_chunkSize));
