@@ -35,7 +35,7 @@ namespace lvr2
 
 // Static variables
 
-ctpl::thread_pool* LBKdTree::pool;// = new ctpl::thread_pool(8);
+ctpl::thread_pool* LBKdTree::pool;
 int LBKdTree::st_num_threads = 8;
 int LBKdTree::st_depth_threads = 3;
 
@@ -64,8 +64,6 @@ void LBKdTree::generateKdTree(LBPointArray<float> &vertices) {
     LBPointArray<float>* values_sorted =
         (LBPointArray<float>*)malloc(vertices.dim * sizeof(LBPointArray<float>) );
 
-
-
     for(unsigned int i=0; i< vertices.dim; i++)
     {
         pool->push(generateAndSort<float, unsigned int>, vertices, indices_sorted, values_sorted, i);
@@ -76,15 +74,13 @@ void LBKdTree::generateKdTree(LBPointArray<float> &vertices) {
     delete pool;
     pool = new ctpl::thread_pool(st_num_threads);
 
+
     this->generateKdTreeArray(vertices, indices_sorted, vertices.dim);
 
     for(unsigned int i=0; i<vertices.dim;i++)
     {
-        //free(indices_sorted[i].elements);
         free(values_sorted[i].elements);
     }
-    //free(indices_sorted);
-    //free(values_sorted);
 }
 
 boost::shared_ptr<LBPointArray<float> > LBKdTree::getKdTreeValues() {
@@ -104,14 +100,14 @@ void LBKdTree::generateKdTreeArray(LBPointArray<float>& V,
 
     int first_split_dim = -1;
     float best_deviation = -1.0;
-    // std::cout << "BOX:" << std::endl;
+    
     for(int i=0; i<V.dim; i++)
     {
         float deviation = V.elements[static_cast<unsigned int>(
                             sorted_indices[i].elements[sorted_indices[i].width-1]+0.5)* V.dim + i]
                         -  V.elements[static_cast<unsigned int>(
                             sorted_indices[i].elements[i]+0.5)* V.dim + i] ;
-        // std::cout << "Dim: " << i << " size: "<< deviation << std::endl;
+        
         if(deviation > best_deviation)
         {
             best_deviation = deviation;
@@ -189,10 +185,11 @@ void LBKdTree::fillCriticalIndicesSet(const LBPointArray<float>& V,
         std::unordered_set<unsigned int>& critical_indices_left,
         std::unordered_set<unsigned int>& critical_indices_right)
 {
-    //critical_indices_left.push_back( sorted_indices.elements[split_index] );
+    // push split index to the left
     critical_indices_left.insert(sorted_indices.elements[split_index]);
+
     unsigned int iterator;
-    // nach links
+    // to the left
     for(iterator = split_index-1;
         iterator < sorted_indices.width
         && V.elements[ sorted_indices.elements[iterator] * V.dim + current_dim] == split_value;
@@ -201,7 +198,7 @@ void LBKdTree::fillCriticalIndicesSet(const LBPointArray<float>& V,
         critical_indices_left.insert( sorted_indices.elements[iterator] );
     }
 
-    // nach rechts
+    // to the right
     for(iterator = split_index+1;
         iterator < sorted_indices.width
         && V.elements[ sorted_indices.elements[iterator] * V.dim + current_dim] == split_value;
@@ -247,19 +244,12 @@ void LBKdTree::generateKdTreeRecursive(int id, LBPointArray<float>& V,
         float split_value = V.elements[split_index * V.dim + current_dim ];
 
         // critical indices
-        // std::list<unsigned int> critical_indices_left;
-        // std::list<unsigned int> critical_indices_right;
-
-        // fillCriticalIndices(V, sorted_indices[current_dim], current_dim, split_value, left_size-1
-        //      critical_indices_left, critical_indices_right);
-
-
         std::unordered_set<unsigned int> critical_indices_left;
         std::unordered_set<unsigned int> critical_indices_right;
 
         fillCriticalIndicesSet(V, sorted_indices[current_dim],
-                current_dim, split_value, left_size-1, critical_indices_left,
-                critical_indices_right);
+                current_dim, split_value, left_size-1, 
+                critical_indices_left, critical_indices_right);
 
         //std::cout << "Split in dimension: " << current_dim << std::endl;
         values->elements[ position ] = split_value;
@@ -303,11 +293,16 @@ void LBKdTree::generateKdTreeRecursive(int id, LBPointArray<float>& V,
                                     - V.elements[sorted_indices_right[i].elements[0]  * V.dim + i] );
 
             } else {
+                
+
+                // check for wrong value in sorted indices
+                
                 splitPointArrayWithValueSet<float, unsigned int>(V, sorted_indices[i],
                         sorted_indices_left[i], sorted_indices_right[i],
                         current_dim, split_value,
                         deviation_left, deviation_right, i,
                         critical_indices_left, critical_indices_right);
+
             }
 
             if(deviation_left > biggest_deviation_left )
