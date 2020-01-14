@@ -235,7 +235,8 @@ namespace lvr2{
              for(size_t j = 0 ; j < c_hashes[i].size(); ++j)
              {
              // SHOULD ONLY BE ONE!!
-                leaves->m_mesh.push_back(c_hashes[i][0]);
+//                leaves->m_mesh.push_back(c_hashes[i][0]);
+                  leaves->m_mesh.push_back(c_centroids[i][j]);
              }
           }
         }
@@ -396,7 +397,7 @@ namespace lvr2{
 //    }
 
   template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::getHashes(BOct* oct, std::vector<size_t>& indices)
+    void MeshOctree<BaseVecT>::getHashes(BOct* oct, std::vector<BaseVecT>& indices)
     {
       unsigned char cnt = 0;
       if(oct->m_leaf)
@@ -448,14 +449,14 @@ namespace lvr2{
     }
 
   template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::intersect(double planes[24], std::vector<size_t>& indices)
+    void MeshOctree<BaseVecT>::intersect(double planes[24], std::vector<BaseVecT>& indices)
     {
       normalizePlanes(planes);
       intersect(m_root, m_bbox, planes, indices);
     }
 
   template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::intersect(Leaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<size_t >& indices)
+    void MeshOctree<BaseVecT>::intersect(Leaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<BaseVecT >& indices)
     {
 
       for(unsigned char i = 0; i < 6; ++i)
@@ -497,7 +498,7 @@ namespace lvr2{
     }
 
   template <typename BaseVecT>
-    void MeshOctree<BaseVecT>::intersect(BOct* oct, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<size_t >& indices)
+    void MeshOctree<BaseVecT>::intersect(BOct* oct, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<BaseVecT >& indices)
     {
 
       bool inlier = true;
