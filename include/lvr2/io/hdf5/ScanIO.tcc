@@ -92,6 +92,7 @@ namespace lvr2
         ScanPtr ScanIO<Derived>::load(HighFive::Group& group)
         {
             ScanPtr ret;
+            HighFive::Group preview = hdf5util::getGroup(m_file_access->m_hdf5_file, "preview/position_00000", false);;
 
             ret = ScanPtr(new Scan());
 
@@ -99,7 +100,7 @@ namespace lvr2
             floatArr pointArr;
             if(group.exist("points"))
             {
-                pointArr = m_arrayIO->template load<float>(group, "points", dimensionPoints);
+                pointArr = m_arrayIO->template load<float>(preview, "points", dimensionPoints);
                 if(dimensionPoints.at(1) != 3)
                 {
                     std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong point dimensions. Points will not be loaded." << std::endl;

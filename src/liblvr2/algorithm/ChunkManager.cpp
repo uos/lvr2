@@ -62,7 +62,12 @@ struct VectorCapsule
 
 namespace lvr2
 {
-ChunkManager::ChunkManager(MeshBufferPtr mesh,
+// TEST
+ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize, BoundingBox<BaseVector<float>> bb, float chunkSize, BaseVector<size_t> chunkAmount)
+:ChunkHashGrid(hdf5Path, cacheSize, bb, chunkSize, chunkAmount)
+{}
+
+    ChunkManager::ChunkManager(MeshBufferPtr mesh,
                            float chunksize,
                            float maxChunkOverlap,
                            std::string savePath,
@@ -121,6 +126,8 @@ ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize)
     : ChunkHashGrid(hdf5Path, cacheSize)
 {
 }
+
+
 
 void ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
                                std::unordered_map<std::size_t, MeshBufferPtr>& chunks,

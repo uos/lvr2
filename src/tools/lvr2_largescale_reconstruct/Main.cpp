@@ -89,6 +89,8 @@ int main(int argc, char** argv)
     project->changed.push_back(true);
 
     std::shared_ptr<ChunkManager> cm;
+    //ChunkManager cm  = ChunkManager(in, 100);
+    //std::shared_ptr<ChunkManager> cmPtr = std::make_shared<ChunkManager>(cm);
     int x = lsr.mpiChunkAndReconstruct(project, cm);
 
     //scans_new.front()->m_globalBoundingBox = bb2;
