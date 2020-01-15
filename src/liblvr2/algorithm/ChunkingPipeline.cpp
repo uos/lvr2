@@ -35,6 +35,7 @@
 #include "lvr2/algorithm/ChunkingPipeline.hpp"
 
 #include <yaml-cpp/yaml.h>
+#include "lvr2/registration/RegistrationPipeline.hpp"
 
 namespace lvr2
 {
@@ -68,10 +69,14 @@ bool ChunkingPipeline::start()
 
     std::cout << "Starting import tool..." << std::endl;
     // TODO: call input tool
+    // TODO: Fill m_scanProjectPtr with scans
     std::cout << "Finished import!" << std::endl;
 
     std::cout << "Starting registration..." << std::endl;
+    SLAMOptions slamOptions; // TODO: set options
+    RegistrationPipeline registration(&slamOptions, m_scanProject);
     // TODO: call registration
+    // registration.doRegistration();
     std::cout << "Finished registration!" << std::endl;
 
     std::cout << "Starting large scale reconstruction..." << std::endl;
