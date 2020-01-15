@@ -89,6 +89,43 @@ class ChunkIO{
          * @brief loads and returns the chunksize
          */
         float loadChunkSize();
+        /**
+         * @brief save reconstruction voxelsize in HDF5
+         */
+        void writeVoxelSize(float voxelSize);
+        /**
+         * @brief returns the voxelsize
+         */
+        float readVoxelSize();
+        /**
+         * @brief load the extruded value for the cells/voxel of one chunk
+         */
+        boost::shared_array<bool> lsrLoadExtruded(string chunkName);
+        /**
+         * @brief loads and returns the Querypoint-distances for the cells/voxel of one chunk
+         */
+        boost::shared_array<float> lsrLoadQueryPoints(string chunkName);
+        /**
+         * @brief loads and returns the number of cells/voxel in the chunk
+         */
+        size_t lsrLoadNumCells(string chunkName);
+        /**
+         * @brief loads and returns the centers for the cells/voxel in one chunk
+         */
+        boost::shared_array<float> lsrLoadCenters(string chunkName);
+        /**
+         * @brief Writes the parameters in the HDF5 file.
+         * @param chunkName name of the chunk (typically the grid coordinates)
+         * @param csize number of cells/voxel in the chunk
+         * @param centers center values for the voxel
+         * @param extruded extruded values for the voxel
+         * @param queryPoints Querypoint distances for the voxel
+         */
+        void writeTSDF(string cellName,
+                        size_t csize,
+                        boost::shared_array<float> centers,
+                        boost::shared_array<bool> extruded,
+                        boost::shared_array<float> queryPoints);
 
     private:
         // path to the hdf5 file
@@ -104,8 +141,7 @@ class ChunkIO{
         const std::string m_boundingBoxName = "bounding_box";
 
 
-
-    };
+};
 } // namespace lvr2
 
 #endif //CHUNKIO_HPP
