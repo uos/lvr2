@@ -38,6 +38,7 @@
 #include "lvr2/algorithm/ChunkManager.hpp"
 
 #include <boost/filesystem.hpp>
+#include <lvr2/types/ScanTypes.hpp>
 
 namespace lvr2
 {
@@ -71,12 +72,11 @@ private:
     // chunk manger instance
     std::shared_ptr<ChunkManager> m_chunkManager;
 
+    // scan project containing all scans
+    ScanProjectEditMarkPtr m_scanProject;
+
     // status flag
     bool m_running = false;
-
-    // TODO: add old scans, e.g. std::vector<Scan> m_oldScans
-
-    // TODO: add new scans, e.g. std::vector<Scan> m_newScans
 };
 
 } /* namespace lvr2 */
