@@ -1,6 +1,7 @@
 set(LVR2_SOURCES
     config/lvropenmp.cpp
     config/BaseOption.cpp
+    config/LargeScaleOptions.cpp
     texture/Texture.cpp
     texture/TextureFactory.cpp
     util/Util.cpp
