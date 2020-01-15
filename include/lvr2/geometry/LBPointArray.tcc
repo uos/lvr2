@@ -24,7 +24,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
+#include <cassert>
 
 
 namespace lvr2
@@ -261,8 +261,8 @@ static void splitPointArrayWithValueSet(const LBPointArray<T>& V,
         const LBPointArray<U>& I, LBPointArray<U>& I_L, LBPointArray<U>& I_R,
         int current_dim, T value,
         T& deviation_left, T& deviation_right, const unsigned int& orig_dim,
-        std::unordered_set<U>& critical_indices_left,
-        std::unordered_set<U>& critical_indices_right)
+        const std::unordered_set<U>& critical_indices_left,
+        const std::unordered_set<U>& critical_indices_right)
 {
 
     U i_l = 0;
@@ -279,11 +279,14 @@ static void splitPointArrayWithValueSet(const LBPointArray<T>& V,
 
     for(int i=0; i<I.width; i++)
     {
+        const U idx = I.elements[i] * V.dim;
+        assert(I.elements[i] < V.width);
 
-        T current_value = V.elements[ I.elements[i] * V.dim + current_dim ];
-        T dim_value = V.elements[ I.elements[i] * V.dim + orig_dim ];
+        const T current_value = V.elements[ idx + current_dim ];
+        const T dim_value = V.elements[ idx + orig_dim ];
         
-        if(current_value < value && I_L.width > i_l ){
+        if(current_value < value && I_L.width > i_l )
+        {
             if(dim_value < smallest_left )
             {
                 smallest_left = dim_value;
@@ -306,7 +309,7 @@ static void splitPointArrayWithValueSet(const LBPointArray<T>& V,
             I_R.elements[i_r] = I.elements[i];
             i_r++;
         } else {
-
+            // CRITICAL
             bool found = false;
 
             auto critical_it = critical_indices_left.find( I.elements[i] );
@@ -316,7 +319,7 @@ static void splitPointArrayWithValueSet(const LBPointArray<T>& V,
                 I_L.elements[i_l] = I.elements[i];
                 i_l++;
                 found = true;
-                critical_indices_left.erase(critical_it);
+                // critical_indices_left.erase(critical_it);
             }
 
             if(!found)
@@ -327,26 +330,13 @@ static void splitPointArrayWithValueSet(const LBPointArray<T>& V,
                     I_R.elements[i_r] = I.elements[i];
                     i_r++;
                     found = true;
-                    critical_indices_right.erase(critical_it);
+                    // critical_indices_right.erase(critical_it);
                 }
             }
 
-            if(!found)
-            {
-                if(I_L.width > i_l)
-                {
-                    I_L.elements[i_l] = I.elements[i];
-                    i_l++;
-                }else{
-                    I_R.elements[i_r] = I.elements[i];
-                    i_r++;
-                }
-            }
-
+            assert(found == true);
         }
-
     }
-
 
     deviation_left = biggest_left - smallest_left;
     deviation_right = biggest_right - smallest_right;
