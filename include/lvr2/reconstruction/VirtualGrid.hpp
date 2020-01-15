@@ -56,9 +56,9 @@ class VirtualGrid
      * @param voxelsize
      */
     VirtualGrid(BoundingBox<BaseVecT>& bb,
-                size_t maxNodePoints,
-                size_t gridCellSize,
-                float voxelsize);
+                  size_t gridCellSize,
+                  float voxelsize);
+
 
     /**
      * Destructor
@@ -102,14 +102,14 @@ class VirtualGrid
     // initial Bounding Box, around the left corner of the PointCloud-BB
     BoundingBox<BaseVecT> m_initbox;
 
-    // List of (smaller) BoundingBox, which overlap the original PointCloud
+    // List of (smaller) BoundingBox (aka Chunks), which overlap the original PointCloud
     std::vector<shared_ptr<BoundingBox<BaseVecT>>> m_boxes;
 
     // size of the "virtual" GridCell aka size of the smaller BBoxes
     size_t m_gridCellSize;
 
-    float m_voxelsize;    // check if this is even used
-    size_t maxNodePoints; // same
+    float m_voxelsize; // check if this is even used
+
 };
 
 } // namespace lvr2

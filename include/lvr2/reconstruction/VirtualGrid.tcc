@@ -33,13 +33,20 @@ namespace lvr2
 
 template <typename BaseVecT>
 VirtualGrid<BaseVecT>::VirtualGrid(BoundingBox<BaseVecT>& bb,
-                                   size_t maxNodePoints,
-                                   size_t gridCellSize,
-                                   float voxelsize)
+                                  size_t gridCellSize,
+                                  float voxelSize)
 {
-    m_pcbb = bb;
-    m_gridCellSize = gridCellSize;
-    m_voxelsize = voxelsize;
+ m_pcbb = bb;
+ if(fmod((float) gridCellSize , voxelSize) != 0)
+ {
+     int var = ((int)gridCellSize/(int)voxelSize) + fmod((float) gridCellSize , voxelSize);
+     m_gridCellSize = var * voxelSize;
+ }
+ else{
+     m_gridCellSize = gridCellSize;
+ }
+
+ m_voxelsize = voxelSize;
 }
 
 template <typename BaseVecT>
@@ -74,9 +81,6 @@ void VirtualGrid<BaseVecT>::findInitialBox()
     m_initbox =
         lvr2::BoundingBox<BaseVecT>(BaseVecT(min_x, min_y, min_z), BaseVecT(max_x, max_y, max_z));
 
-    std::cout << "DOES BOX 1 EVEN COLLIDE IF PC? " << m_initbox.overlap(m_pcbb) << std::endl;
-    std::cout << m_initbox << std::endl;
-    std::cout << m_pcbb << std::endl;
 }
 
 template <typename BaseVecT>

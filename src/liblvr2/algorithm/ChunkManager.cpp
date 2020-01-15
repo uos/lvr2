@@ -95,6 +95,19 @@ ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize) : m_hdf5Path(
     }
 }
 
+std::vector<std::string> ChunkManager::getChannels()
+{
+    std::vector<std::string> attributeList;
+    const BoundingBox<BaseVec> boundingBox(BaseVec(0,0,0), BaseVec(1,1,1));
+
+    MeshBufferPtr globalMesh = extractArea(boundingBox);
+    for (auto channelIterator = globalMesh->begin(); channelIterator != globalMesh->end(); ++channelIterator)
+    {
+        attributeList.push_back(channelIterator->first);
+    }
+    return attributeList;
+}
+
 MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area)
 {
     std::unordered_map<std::size_t, MeshBufferPtr> chunks;
