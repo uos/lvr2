@@ -34,6 +34,8 @@
 
 #include "lvr2/algorithm/ChunkingPipeline.hpp"
 
+#include <yaml-cpp/yaml.h>
+
 namespace lvr2
 {
 ChunkingPipeline::ChunkingPipeline(
@@ -48,9 +50,8 @@ ChunkingPipeline::ChunkingPipeline(
     }
     else
     {
-        m_chunkManager = std::make_shared<ChunkManager>(m_hdf5Path);
+        m_chunkManager = std::make_shared<ChunkManager>(m_hdf5Path.string());
     }
-
 }
 
 bool ChunkingPipeline::start()

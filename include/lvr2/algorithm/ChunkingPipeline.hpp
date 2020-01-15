@@ -37,6 +37,8 @@
 
 #include "lvr2/algorithm/ChunkManager.hpp"
 
+#include <boost/filesystem.hpp>
+
 namespace lvr2
 {
 
@@ -61,10 +63,10 @@ public:
 
 private:
     // path to the HDF5 file
-    std::string m_hdf5Path;
+    boost::filesystem::path m_hdf5Path;
 
     // path to config file
-    std::string m_configPath;
+    boost::filesystem::path m_configPath;
 
     // chunk manger instance
     std::shared_ptr<ChunkManager> m_chunkManager;
