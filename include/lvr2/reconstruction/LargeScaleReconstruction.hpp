@@ -29,6 +29,10 @@
 #define LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
 
 #include <lvr2/types/ScanTypes.hpp>
+#include <lvr2/reconstruction/PointsetGrid.hpp>
+#include <lvr2/reconstruction/FastBox.hpp>
+#include <lvr2/algorithm/ChunkManager.hpp>
+
 
 namespace lvr2
 {
@@ -60,7 +64,6 @@ namespace lvr2
          */
         LargeScaleReconstruction(LargeScaleOptions::Options options);
 
-
         /**
          * this method splits the given PointClouds in to Chunks and calculates all required values for a later reconstruction
          *
@@ -68,13 +71,24 @@ namespace lvr2
          * @param scans vector of new scan to be added
          * @return
          */
-        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project);
-
+        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkManager> chunkManager);
 
         int resetEditMark(ScanProjectEditMarkPtr project);
 
 
+
     private:
+
+        /**
+         * This method adds the tsdf-values of one chunk to the ChunkManager-Layer
+         *
+         * @params x, y, z grid-coordinates for the chunk
+         * @param ps_grid HashGrid which contains the tsdf-values for the voxel
+         * @param cm ChunkManager instance which manages the chunks
+         */
+        void addTSDFChunkManager(int x, int y, int z,
+                shared_ptr<lvr2::PointsetGrid<BaseVector<float>, lvr2::FastBox<BaseVector<float>>>> ps_grid,
+                shared_ptr<ChunkHashGrid> cm);
 
         //TODO: add chunks vector somewhere
 
@@ -148,14 +162,6 @@ namespace lvr2
 
         // Threshold for fusing line segments while tesselating. Default: 0.01
         float m_LineFusionThreshold;
-
-
-
-
-
-
-
-
 
 
     };
