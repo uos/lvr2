@@ -48,7 +48,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
     // Create option descriptions
     m_descr.add_options()("help",
-                          "Produce help message")("inputFile", value<string>(), "Input file name.")(
+                          "Produce help message")("inputFile", value<std::vector<string>>()->multitoken(), "Input file names.")(
         "outputDir", value<string>(), "Output directory name.")(
         "chunkSize", value<float>()->default_value(10.0f), "Side length of chunks.")(
         "maxChunkOverlap", value<float>()->default_value(0.1f),
@@ -97,9 +97,10 @@ bool Options::printUsage() const
     return false;
 }
 
-string Options::getInputFile() const
+std::vector<string> Options::getInputFile() const
 {
-    return m_variables["inputFile"].as<string>();
+
+    return m_variables["inputFile"].as<std::vector<string>>();
 }
 
 string Options::getOutputDir() const

@@ -47,7 +47,6 @@ set(LVR2_SOURCES
     io/ModelFactory.cpp
     io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
-    io/ChunkIO.cpp
     io/ScanIOUtils.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
