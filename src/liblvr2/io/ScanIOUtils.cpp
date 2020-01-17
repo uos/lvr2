@@ -244,8 +244,9 @@ ScanPtr loadScanFromHDF5(const std::string filename, const size_t& positionNr)
     std::string groupName = "/raw/scans/position_";
     std::string number = std::to_string(positionNr);
     groupName = groupName + std::string(5-number.length(), '0') + number;
-    std::cout << groupName << std::endl;
-    ScanPtr loadedScan = scanIO.loadScan(groupName);
+
+    // ScanPtr loadedScan = scanIO.loadScan(groupName);
+    ScanPtr loadedScan = scanIO.loadPreview(groupName);
     if(loadedScan)
     {
         loadedScan->m_positionNumber = positionNr;
