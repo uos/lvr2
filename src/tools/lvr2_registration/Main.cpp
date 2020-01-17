@@ -435,25 +435,24 @@ int main(int argc, char** argv)
 
             
 
-            SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(tempScan));
+            // SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(tempScan));
 
-            scans.push_back(slamScan);
-            align.addScan(slamScan);
+            // scans.push_back(slamScan);
+            // align.addScan(slamScan);
         }
         // DEBUG
-        
-        // cout << "vor Pipe Konstruktor" << endl;
-        // ScanProjectEditMarkPtr projPtr = make_shared<ScanProjectEditMark>(proj);
-        // RegistrationPipeline pipe(&options, projPtr);
-        // pipe.doRegistration();
-        // cout << "Nach doRegistration" << endl;
-        // for (size_t i = 0; i < projPtr->changed.size(); i++)
-        // {
-        //     cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << projPtr->changed.at(i)<< endl;
-        // }
-        
-        // cout << "Eine Pose aus dem Project:" << endl << projPtr->positions.at(1)->scan->m_registration << endl;
 
+        cout << "vor Pipe Konstruktor" << endl;
+        ScanProjectEditMarkPtr projPtr = make_shared<ScanProjectEditMark>(proj);
+        RegistrationPipeline pipe(&options, projPtr);
+        pipe.doRegistration();
+        cout << "Nach doRegistration" << endl;
+        for (size_t i = 0; i < projPtr->changed.size(); i++)
+        {
+            cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << projPtr->changed.at(i)<< endl;
+        }
+
+        cout << "Eine Pose aus dem Project:" << endl << projPtr->positions.at(1)->scan->m_registration << endl;
     }
     else
     {
@@ -510,7 +509,7 @@ int main(int argc, char** argv)
         for(int i = 0; i < scans.size(); i++)
         {
             Transformd pose = scans[i]->pose();
-            cout << "Pose Scan Nummer " << i << pose << endl;
+            cout << "Main:Pose Scan Nummer " << i << endl << pose << endl;
             // The pose needs to be transposed before writing to hdf,
             // because the lvr2_viewer expects finalPose in hdf transposed this way.
             // The initial pose is saved NOT transposed in HDF

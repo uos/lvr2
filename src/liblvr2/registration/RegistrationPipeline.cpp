@@ -67,8 +67,9 @@ void RegistrationPipeline::doRegistration()
             align.addScan(scptr);
         }
     }
-
+    cout << "Aus doRegistaration: vor finish" << endl;
     align.finish();
+    cout << "Aus doRegistaration: nach finish" << endl;
 
 
 
@@ -88,7 +89,7 @@ void RegistrationPipeline::doRegistration()
         posPtr->scan->m_registration = align.scan(i)->pose();
         cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
     }
-
+    cout << "NAch der ersten For-Schleoife" << endl;
     // new align with fix old values 
     SLAMAlign align2(*m_options, m_scans->changed);
     
