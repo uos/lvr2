@@ -15,6 +15,16 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+#------------------------------------------------------------------------------
+# Searching for Embree: needs to be placed above "set(CMAKE_MODULE_PATH)".
+#------------------------------------------------------------------------------
+find_package(embree 3.0)
+if(embree_FOUND)
+  message(STATUS "Found Embree")
+  include_directories(${EMBREE_INCLUDE_DIRS})
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_EMBREE)
+endif(embree_FOUND)
+
 set(CMAKE_MODULE_PATH
   ${LAS_VEGAS_SOURCE_DIR}/CMakeModules
   ${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/cmake/Modules
@@ -145,15 +155,7 @@ if(OPENCL_FOUND)
       list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPENCL_NEW_API)
     endif(OpenCL_NEW_API)
 endif()
-#------------------------------------------------------------------------------
-# Searching for Embree
-#------------------------------------------------------------------------------
-find_package(embree 3.0)
-if(embree_FOUND)
-  message(STATUS "Found Embree")
-  include_directories(${EMBREE_INCLUDE_DIRS})
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_EMBREE)
-endif(embree_FOUND)
+
 
 #------------------------------------------------------------------------------
 # Searching for Draco
