@@ -43,7 +43,7 @@ class ChunkIO
               BoundingBox<BaseVector<float>> boundingBox);
 
     template <typename T>
-    void saveChunk(T data, std::string layer, size_t x, size_t y, size_t z);
+    void saveChunk(T data, std::string layer, int x, int y, int z);
 
     BaseVector<size_t> loadAmount();
 
