@@ -43,7 +43,7 @@ void ChunkIO<Derived>::save(BaseVector<std::size_t> amount,
 
 template <typename Derived>
 template <typename T>
-void ChunkIO<Derived>::saveChunk(T data, std::string layer, size_t x, size_t y, size_t z)
+void ChunkIO<Derived>::saveChunk(T data, std::string layer, int x, int y, int z)
 {
     std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
     
