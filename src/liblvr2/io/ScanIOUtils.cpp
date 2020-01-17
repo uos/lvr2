@@ -296,7 +296,7 @@ void writePinholeModelToYAML(
     Distortiond distortion = model.distortion();
 
     saveMatrixToYAML<double, 4, 4>(meta, std::string("extrinsic"), model.extrinsics());
-    saveMatrixToYAML<double, 4, 4>(meta, std::string("extrinsic"), model.extrinsicsEstimate());
+    saveMatrixToYAML<double, 4, 4>(meta, std::string("extrinsicEstimate"), model.extrinsicsEstimate());
     saveMatrixToYAML<double, 3, 3>(meta, std::string("intrinsic"), model.intrinsics());
     saveMatrixToYAML<double, 6, 1>(meta, std::string("distortion"), model.distortion());
 
