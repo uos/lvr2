@@ -1493,7 +1493,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             Transformd finalPose = finalPose_n.transpose();
 
             std::cout << finalPose << std::endl;
-            for (int k = 0; k < numPoints / 3; k++)
+            for (int k = 0; k < numPoints; k++)
             {
                 Eigen::Vector4d point(
                     points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
