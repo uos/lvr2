@@ -43,8 +43,8 @@ using namespace std;
 namespace lvr2
 {
 
-SLAMAlign::SLAMAlign(const SLAMOptions& options, const vector<SLAMScanPtr>& scans)
-    : m_options(options), m_scans(scans), m_graph(&m_options), m_foundLoop(false), m_loopIndexCount(0)
+SLAMAlign::SLAMAlign(const SLAMOptions& options, const vector<SLAMScanPtr>& scans, std::vector<bool> new_scans)
+    : m_options(options), m_scans(scans), m_graph(&m_options), m_foundLoop(false), m_loopIndexCount(0), m_new_scans(new_scans)
 {
     // The first Scan is never changed
     m_alreadyMatched = 1;
@@ -55,8 +55,8 @@ SLAMAlign::SLAMAlign(const SLAMOptions& options, const vector<SLAMScanPtr>& scan
     }
 }
 
-SLAMAlign::SLAMAlign(const SLAMOptions& options)
-    : m_options(options), m_graph(&m_options), m_foundLoop(false), m_loopIndexCount(0)
+SLAMAlign::SLAMAlign(const SLAMOptions& options, std::vector<bool> new_scans)
+    : m_options(options), m_graph(&m_options), m_foundLoop(false), m_loopIndexCount(0), m_new_scans(new_scans)
 {
     // The first Scan is never changed
     m_alreadyMatched = 1;
@@ -317,7 +317,7 @@ void SLAMAlign::loopClose(size_t first, size_t last)
 
 void SLAMAlign::graphSLAM(size_t last)
 {
-    m_graph.doGraphSLAM(m_scans, last);
+    m_graph.doGraphSLAM(m_scans, last, m_new_scans);
 }
 
 void SLAMAlign::finish()
