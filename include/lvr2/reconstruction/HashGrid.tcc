@@ -297,86 +297,96 @@ HashGrid<BaseVecT, BoxT>::HashGrid(std::vector<string>& files,
     }
 }
 
+// TODO change this constructor to use vector of PointBufferPtr instead of reading the file
 template<typename BaseVecT, typename BoxT>
-HashGrid<BaseVecT, BoxT>::HashGrid(string HDFfile,
-                                   vector<string>& chunkNames,
-                                   BoundingBox<BaseVecT>& boundingBox)
+HashGrid<BaseVecT, BoxT>::HashGrid(std::vector<PointBufferPtr> chunks,
+                                   BoundingBox<BaseVecT>& boundingBox,
+                                   float voxelSize)
         : m_boundingBox(boundingBox), m_globalIndex(0)
 {
     unsigned int INVALID = BoxT::INVALID_INDEX;
-    lvr2::ChunkIO chunkIo = ChunkIO(HDFfile);
-    m_voxelsize = chunkIo.readVoxelSize();
+    m_voxelsize = voxelSize;
     calcIndices();
     size_t numCells;
     boost::shared_array<float> centers;
     boost::shared_array<float> queryPoints;
-    boost::shared_array<bool> extruded;
+    boost::shared_array<int> extruded;
     float vsh = 0.5 * this->m_voxelsize;
-    for (int numChunks = 0; numChunks < chunkNames.size(); numChunks++)
+    size_t counter = 1;
+    for (PointBufferPtr chunk : chunks)
     {
         unsigned int current_index = 0;
-        cout << "Loading grid: " << numChunks << "/" << chunkNames.size() << endl;
-        numCells = chunkIo.lsrLoadNumCells(chunkNames[numChunks]);
-        centers = chunkIo.lsrLoadCenters(chunkNames[numChunks]);
-        queryPoints = chunkIo.lsrLoadQueryPoints(chunkNames[numChunks]);
-        extruded = chunkIo.lsrLoadExtruded(chunkNames[numChunks]);
+        cout << "Loading grid: " << counter << "/" << chunks.size() << endl;
+        boost::optional<unsigned int> optNumCells =  chunk->getAtomic<unsigned int>("num_voxel");
+        boost::optional<Channel<int>> optExtruded = chunk->getChannel<int>("extruded");
+        boost::optional<Channel<float>> optTSDF = chunk->getFloatChannel("tsdf_values");
+        centers = chunk->getPointArray();
 
-        for(size_t cellCount = 0; cellCount < numCells; cellCount++)
+        if(optNumCells && optExtruded && optTSDF)
         {
-            size_t idx = calcIndex((centers[cellCount * 3 + 0] - m_boundingBox.getMin()[0]) / m_voxelsize);
-            size_t idy = calcIndex((centers[cellCount * 3 + 1] - m_boundingBox.getMin()[1]) / m_voxelsize);
-            size_t idz = calcIndex((centers[cellCount * 3 + 2] - m_boundingBox.getMin()[2]) / m_voxelsize);
-            size_t hash = hashValue(idx, idy, idz);
-            auto cell_it = this->m_cells.find(hash);
-            if (cell_it == this->m_cells.end() && !extruded.get()[cellCount])
+            queryPoints = optTSDF.get().dataPtr();
+            extruded = optExtruded.get().dataPtr();
+            numCells = optNumCells.get();
+
+
+            for(size_t cellCount = 0; cellCount < numCells; cellCount++)
             {
-                BoxT* box = new BoxT(BaseVecT(centers[cellCount * 3 + 0], centers[cellCount * 3 + 1], centers[cellCount * 3 + 2]));
-                for (int i = 0; i < 8; i++)
+                size_t idx = calcIndex((centers[cellCount * 3 + 0] - m_boundingBox.getMin()[0]) / m_voxelsize);
+                size_t idy = calcIndex((centers[cellCount * 3 + 1] - m_boundingBox.getMin()[1]) / m_voxelsize);
+                size_t idz = calcIndex((centers[cellCount * 3 + 2] - m_boundingBox.getMin()[2]) / m_voxelsize);
+                size_t hash = hashValue(idx, idy, idz);
+                auto cell_it = this->m_cells.find(hash);
+                if (cell_it == this->m_cells.end() && !extruded.get()[cellCount])
                 {
-                    current_index = this->findQueryPoint(i, idx, idy, idz);
-                    if (current_index != INVALID)
-                        box->setVertex(i, current_index);
-                    else
+                    BoxT* box = new BoxT(BaseVecT(centers[cellCount * 3 + 0], centers[cellCount * 3 + 1], centers[cellCount * 3 + 2]));
+                    for (int i = 0; i < 8; i++)
                     {
-                        BaseVecT position(centers[cellCount * 3 + 0] + box_creation_table[i][0] * vsh,
-                                          centers[cellCount * 3 + 1] + box_creation_table[i][1] * vsh,
-                                          centers[cellCount * 3 + 2] + box_creation_table[i][2] * vsh);
-                        this->m_queryPoints.push_back(QueryPoint<BaseVecT>(position, queryPoints[cellCount * 8 + i]));
-                        box->setVertex(i, this->m_globalIndex);
-                        this->m_globalIndex++;
-                    }
-                }
-                // Set pointers to the neighbors of the current box
-                int neighbor_index = 0;
-                size_t neighbor_hash = 0;
-
-                for (int a = -1; a < 2; a++)
-                {
-                    for (int b = -1; b < 2; b++)
-                    {
-                        for (int c = -1; c < 2; c++)
+                        current_index = this->findQueryPoint(i, idx, idy, idz);
+                        if (current_index != INVALID)
+                            box->setVertex(i, current_index);
+                        else
                         {
-
-                            // Calculate hash value for current neighbor cell
-                            neighbor_hash = this->hashValue(idx + a, idy + b, idz + c);
-
-                            // Try to find this cell in the grid
-                            auto neighbor_it = this->m_cells.find(neighbor_hash);
-
-                            // If it exists, save pointer in box
-                            if (neighbor_it != this->m_cells.end())
-                            {
-                                box->setNeighbor(neighbor_index, (*neighbor_it).second);
-                                (*neighbor_it).second->setNeighbor(26 - neighbor_index, box);
-                            }
-
-                            neighbor_index++;
+                            BaseVecT position(centers[cellCount * 3 + 0] + box_creation_table[i][0] * vsh,
+                                              centers[cellCount * 3 + 1] + box_creation_table[i][1] * vsh,
+                                              centers[cellCount * 3 + 2] + box_creation_table[i][2] * vsh);
+                            this->m_queryPoints.push_back(QueryPoint<BaseVecT>(position, queryPoints[cellCount * 8 + i]));
+                            box->setVertex(i, this->m_globalIndex);
+                            this->m_globalIndex++;
                         }
                     }
-                }
+                    // Set pointers to the neighbors of the current box
+                    int neighbor_index = 0;
+                    size_t neighbor_hash = 0;
 
-                this->m_cells[hash] = box;
+                    for (int a = -1; a < 2; a++)
+                    {
+                        for (int b = -1; b < 2; b++)
+                        {
+                            for (int c = -1; c < 2; c++)
+                            {
+
+                                // Calculate hash value for current neighbor cell
+                                neighbor_hash = this->hashValue(idx + a, idy + b, idz + c);
+
+                                // Try to find this cell in the grid
+                                auto neighbor_it = this->m_cells.find(neighbor_hash);
+
+                                // If it exists, save pointer in box
+                                if (neighbor_it != this->m_cells.end())
+                                {
+                                    box->setNeighbor(neighbor_index, (*neighbor_it).second);
+                                    (*neighbor_it).second->setNeighbor(26 - neighbor_index, box);
+                                }
+
+                                neighbor_index++;
+                            }
+                        }
+                    }
+
+                    this->m_cells[hash] = box;
+                }
             }
+            ++counter;
         }
     }
 }
@@ -660,36 +670,6 @@ void HashGrid<BaseVecT, BoxT>::saveCells(string file)
 		fwrite(&m_queryPoints[it->second->getVertex(7)].m_distance, sizeof(float),1,pFile);
 	}
 	fclose(pFile);	
-}
-template<typename BaseVecT, typename BoxT>
-void HashGrid<BaseVecT, BoxT>::saveCellsHDF5(string file, string groupName)
-{
-    lvr2::ChunkIO chunkIo = ChunkIO(file);
-
-    chunkIo.writeVoxelSize(m_voxelsize);
-    size_t csize = getNumberOfCells();
-
-    boost::shared_array<float> centers(new float[3 * csize]);
-    boost::shared_array<bool> extruded(new bool[csize]);
-    boost::shared_array<float> queryPoints(new float[8 * csize]);
-
-    int counter = 0;
-    for(auto it = firstCell() ; it!= lastCell(); it++)
-    {
-        for (int j = 0; j < 3; ++j)
-        {
-            centers[3 * counter + j] = it->second->getCenter()[j];
-        }
-
-        extruded[counter] = it->second->m_extruded;
-
-        for (int k = 0; k < 8; ++k)
-        {
-            queryPoints[8 * counter + k] = m_queryPoints[it->second->getVertex(k)].m_distance;
-        }
-        ++counter;
-    }
-    chunkIo.writeTSDF(groupName, csize, centers, extruded, queryPoints);
 }
 
 

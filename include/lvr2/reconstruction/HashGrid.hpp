@@ -148,9 +148,9 @@ public:
      * @param chunkNames vector of groups for the chunks
      * @param boundingBox bounding box of the complete grid
      */
-    HashGrid(string HDFfile,
-           vector<string>& chunkNames,
-           BoundingBox<BaseVecT>& boundingBox);
+    HashGrid(std::vector<PointBufferPtr> chunks,
+           BoundingBox<BaseVecT>& boundingBox,
+           float voxelSize);
 
     /**
      *
@@ -259,13 +259,6 @@ public:
      */
     void calcIndices();
 
-    /**
-     * @brief Saves a representation of the cells to the given HDF5-file
-     *
-     * @param file Output file name.
-     * @param groupName the group, where the cell representation will be saved
-     */
-    void saveCellsHDF5(string file, string groupName);
 
 protected:
 
