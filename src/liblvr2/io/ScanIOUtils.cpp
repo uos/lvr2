@@ -36,37 +36,44 @@ void saveScanToDirectory(
     
     // Check if directory exists, if not create it and write meta data
     // and into the new directory
+
     if(!boost::filesystem::exists(path))
     {
+        std::cout << timestamp << "Creating " << path << std::endl;
+        boost::filesystem::create_directory(path);
+    }
+
+    if(!boost::filesystem::exists(path / "scans")) {
+        std::cout << timestamp << "Creating " << path / "scans" << std::endl;
+        boost::filesystem::create_directory(path / "scans");
+    }
+
+    if(!boost::filesystem::exists(directory)) 
+    {
         std::cout << timestamp << "Creating " << directory << std::endl;
-        boost::filesystem::create_directory(directory);        
+        boost::filesystem::create_directory(directory);
+    } 
 
-        // Create yaml file with meta information
-        std::cout << timestamp << "Creating scan meta.yaml..." << std::endl;
-        writeScanMetaYAML(directory, scan);
+    // Create yaml file with meta information
+    std::cout << timestamp << "Creating scan meta.yaml..." << std::endl;
+    writeScanMetaYAML(directory / "meta.yaml", scan);
 
-        // Save points
-        std::string scanFileName(directory.string() + "scan.ply");
-        std::cout << timestamp << "Writing " << scanFileName << std::endl;
-        
-        ModelPtr model(new Model());
-        if(scan.m_points)
-        {
-            model->m_pointCloud = scan.m_points;
-            PLYIO io;
-            io.save(model, scanFileName);
-        }
-        else
-        {
-            std::cout << timestamp << "Warning: Point cloud pointer is empty!" << std::endl;
-        }
+    // Save points
+    std::string scanFileName( (directory / "scan.ply").string() );
+    std::cout << timestamp << "Writing " << scanFileName << std::endl;
+    
+    ModelPtr model(new Model());
+    if(scan.m_points)
+    {
+        model->m_pointCloud = scan.m_points;
+        PLYIO io;
+        io.save(model, scanFileName);
     }
     else
     {
-        std::cout << timestamp 
-                  << "Warning: Directory " << path 
-                  << " already exists. Will not override..." << std::endl;
+        std::cout << timestamp << "Warning: Point cloud pointer is empty!" << std::endl;
     }
+   
     
 }
 
@@ -356,11 +363,10 @@ bool loadScanPositionFromDirectory(
 
 void saveScanProjectToDirectory(const boost::filesystem::path& path, const ScanProject& project)
 {
-    YAML::Node yaml;
-    yaml["position"] = project.pose;
-
     boost::filesystem::create_directory(path);
 
+    YAML::Node yaml;
+    yaml["position"] = project.pose;
     std::ofstream out( (path / "meta.yaml").string() );
     if (out.good())
     {
@@ -374,6 +380,7 @@ void saveScanProjectToDirectory(const boost::filesystem::path& path, const ScanP
 
     for(size_t i = 0; i < project.positions.size(); i++)
     {
+        std::cout << "save scan " << i << std::endl;
         saveScanPositionToDirectory(path, *project.positions[i], i);
     }
 }

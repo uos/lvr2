@@ -37,7 +37,6 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
         for (IndexType i = 0; i < rows; ++i) {
             for (IndexType j = 0; j < cols; ++j) {
                 node["data"].push_back(M.coeff(i, j));
-                // node["data"][i * cols + j] = M.coeff(i, j);
             }
         }
         return node;
