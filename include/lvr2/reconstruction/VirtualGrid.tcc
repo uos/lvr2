@@ -116,7 +116,6 @@ void VirtualGrid<BaseVecT>::generateNeighbours()
                                  first.getMax().y + j * m_gridCellSize,
                                  first.getMax().z + h * m_gridCellSize)));
             std:
-                cout << "generated a Box :3" << std::endl;
                 m_boxes.push_back(next);
             }
         }

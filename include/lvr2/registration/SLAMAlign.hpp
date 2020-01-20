@@ -56,14 +56,14 @@ public:
      * @param options The Options to use
      * @param scans The Scans to start with
      */
-    SLAMAlign(const SLAMOptions& options, const std::vector<SLAMScanPtr>& scans);
+    SLAMAlign(const SLAMOptions& options, const std::vector<SLAMScanPtr>& scans, std::vector<bool> new_scans = std::vector<bool>());
 
     /**
      * @brief Creates a new SLAMAlign instance with the given Options
      *
      * @param options The Options to use
      */
-    SLAMAlign(const SLAMOptions& options = SLAMOptions());
+    SLAMAlign(const SLAMOptions& options = SLAMOptions(), std::vector<bool> new_scans = std::vector<bool>());
 
     virtual ~SLAMAlign() = default;
 
@@ -167,6 +167,8 @@ protected:
     int                      m_loopIndexCount;
 
     size_t                   m_alreadyMatched;
+
+    std::vector<bool>        m_new_scans;
 };
 
 } /* namespace lvr2 */

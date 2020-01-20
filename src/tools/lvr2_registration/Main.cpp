@@ -430,7 +430,8 @@ int main(int argc, char** argv)
             // DEBUG
             ScanPosition pos;
             pos.scan = boost::optional<Scan>(*tempScan);
-            proj.positions.push_back(std::make_shared<ScanPosition>(pos));
+            proj.project = ScanProjectPtr(new ScanProject);
+            proj.project->positions.push_back(std::make_shared<ScanPosition>(pos));
             proj.changed.push_back(false);
 
             
@@ -441,7 +442,7 @@ int main(int argc, char** argv)
             align.addScan(slamScan);
         }
         // DEBUG
-        
+
         // cout << "vor Pipe Konstruktor" << endl;
         // ScanProjectEditMarkPtr projPtr = make_shared<ScanProjectEditMark>(proj);
         // RegistrationPipeline pipe(&options, projPtr);
@@ -451,9 +452,8 @@ int main(int argc, char** argv)
         // {
         //     cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << projPtr->changed.at(i)<< endl;
         // }
-        
-        // cout << "Eine Pose aus dem Project:" << endl << projPtr->positions.at(1)->scan->m_registration << endl;
 
+        // cout << "Eine Pose aus dem Project:" << endl << projPtr->project->positions.at(1)->scan->m_registration << endl;
     }
     else
     {
@@ -510,7 +510,7 @@ int main(int argc, char** argv)
         for(int i = 0; i < scans.size(); i++)
         {
             Transformd pose = scans[i]->pose();
-            cout << "Pose Scan Nummer " << i << pose << endl;
+            cout << "Main:Pose Scan Nummer " << i << endl << pose << endl;
             // The pose needs to be transposed before writing to hdf,
             // because the lvr2_viewer expects finalPose in hdf transposed this way.
             // The initial pose is saved NOT transposed in HDF

@@ -84,21 +84,12 @@ namespace lvr2
     {
     }
 
-    template<typename BaseVecT>
-    LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(LargeScaleOptions::Options options) : LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(options.getInputFileName()[0], options.getVoxelsize(), options.getBGVoxelsize(), options.getScaling(), options.getGridSize(),
-                                                                                                                                                                    options.getNodeSize(), options.getVGrid(), options.getKi(), options.getKd(), options.getKn(), options.useRansac(), options.extrude(),
-                                                                                                                                                                    options.getDanglingArtifacts(), options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
-                                                                                                                                                                    options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
-                                                                                                                                                                    options.retesselate(), options.getLineFusionThreshold())
-    {
-        std::cout << "Reconstruction Instance generated..." << std::endl;
-    }
 
     template <typename BaseVecT>
     int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkManager> chunkManager)
     {
 
-        if(project->positions.size() != project->changed.size())
+        if(project->project->positions.size() != project->changed.size())
         {
             cout << "Inconsistency between number of given scans and diff-vector (scans to consider)! exit..." << endl;
             return 0;
@@ -237,12 +228,12 @@ namespace lvr2
             if (bg.hasNormals())
             {
                 size_t numNormals;
-                lvr2::floatArr normals = bg.normals(partitionBoxes[i].getMin().x,
-                                                    partitionBoxes[i].getMin().y,
-                                                    partitionBoxes[i].getMin().z,
-                                                    partitionBoxes[i].getMax().x,
-                                                    partitionBoxes[i].getMax().y,
-                                                    partitionBoxes[i].getMax().z,
+                lvr2::floatArr normals = bg.normals(partitionBoxes[i].getMin().x ,
+                                                    partitionBoxes[i].getMin().y ,
+                                                    partitionBoxes[i].getMin().z ,
+                                                    partitionBoxes[i].getMax().x ,
+                                                    partitionBoxes[i].getMax().y ,
+                                                    partitionBoxes[i].getMax().z ,
                                                     numNormals);
 
                 p_loader->setNormalArray(normals, numNormals);
@@ -268,6 +259,12 @@ namespace lvr2
             ps_grid->calcDistanceValues();
 
             //TODO: is this even used? if not:remove it
+
+            if(true)
+            {
+                cout << "No. of Cells " << i << ": " <<ps_grid->getNumberOfCells()<<endl;
+            }
+
             auto reconstruction =
                    make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
 

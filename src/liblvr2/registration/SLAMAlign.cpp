@@ -43,8 +43,8 @@ using namespace std;
 namespace lvr2
 {
 
-SLAMAlign::SLAMAlign(const SLAMOptions& options, const vector<SLAMScanPtr>& scans)
-    : m_options(options), m_scans(scans), m_graph(&m_options), m_foundLoop(false), m_loopIndexCount(0)
+SLAMAlign::SLAMAlign(const SLAMOptions& options, const vector<SLAMScanPtr>& scans, std::vector<bool> new_scans)
+    : m_options(options), m_scans(scans), m_graph(&m_options), m_foundLoop(false), m_loopIndexCount(0), m_new_scans(new_scans)
 {
     // The first Scan is never changed
     m_alreadyMatched = 1;
@@ -55,8 +55,8 @@ SLAMAlign::SLAMAlign(const SLAMOptions& options, const vector<SLAMScanPtr>& scan
     }
 }
 
-SLAMAlign::SLAMAlign(const SLAMOptions& options)
-    : m_options(options), m_graph(&m_options), m_foundLoop(false), m_loopIndexCount(0)
+SLAMAlign::SLAMAlign(const SLAMOptions& options, std::vector<bool> new_scans)
+    : m_options(options), m_graph(&m_options), m_foundLoop(false), m_loopIndexCount(0), m_new_scans(new_scans)
 {
     // The first Scan is never changed
     m_alreadyMatched = 1;
@@ -149,53 +149,56 @@ void SLAMAlign::match()
     // only match everything after m_alreadyMatched
     for (; m_alreadyMatched < m_scans.size(); m_alreadyMatched++)
     {
-        cout << m_scans.size() << endl;
-        size_t i = m_alreadyMatched;
+        if (m_new_scans.empty() || m_new_scans.at(m_alreadyMatched))
+        {
+            cout << m_scans.size() << endl;
+            size_t i = m_alreadyMatched;
 
-        if (m_options.verbose)
-        {
-            cout << "Iteration " << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << endl;
-        }
-        else
-        {
-            cout << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << flush;
-        }
+            if (m_options.verbose)
+            {
+                cout << "Iteration " << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << endl;
+            }
+            else
+            {
+                cout << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << flush;
+            }
 
-        SLAMScanPtr prev = m_options.metascan ? m_metascan : m_scans[i - 1];
-        const SLAMScanPtr& cur = m_scans[i];
+            SLAMScanPtr prev = m_options.metascan ? m_metascan : m_scans[i - 1];
+            const SLAMScanPtr& cur = m_scans[i];
 
-        if (!m_options.trustPose && i != 1) // no deltaPose on first run
-        {
-            applyTransform(cur, prev->deltaPose());
-        }
-        else
-        {
+            if (!m_options.trustPose && i != 1) // no deltaPose on first run
+            {
+                applyTransform(cur, prev->deltaPose());
+            }
+            else
+            {
+                if (m_options.createFrames)
+                {
+                    applyTransform(cur, Matrix4d::Identity());
+                }
+            }
+
+            ICPPointAlign icp(prev, cur);
+            icp.setMaxMatchDistance(m_options.icpMaxDistance);
+            icp.setMaxIterations(m_options.icpIterations);
+            icp.setMaxLeafSize(m_options.maxLeafSize);
+            icp.setEpsilon(m_options.epsilon);
+            icp.setVerbose(m_options.verbose);
+
+            icp.match();
+
             if (m_options.createFrames)
             {
                 applyTransform(cur, Matrix4d::Identity());
             }
+
+            if (m_options.metascan)
+            {
+                ((Metascan*)m_metascan.get())->addScan(cur);
+            }
+
+            checkLoopClose(i);
         }
-
-        ICPPointAlign icp(prev, cur);
-        icp.setMaxMatchDistance(m_options.icpMaxDistance);
-        icp.setMaxIterations(m_options.icpIterations);
-        icp.setMaxLeafSize(m_options.maxLeafSize);
-        icp.setEpsilon(m_options.epsilon);
-        icp.setVerbose(m_options.verbose);
-
-        icp.match();
-
-        if (m_options.createFrames)
-        {
-            applyTransform(cur, Matrix4d::Identity());
-        }
-
-        if (m_options.metascan)
-        {
-            ((Metascan*)m_metascan.get())->addScan(cur);
-        }
-
-        checkLoopClose(i);
     }
 }
 
@@ -317,7 +320,7 @@ void SLAMAlign::loopClose(size_t first, size_t last)
 
 void SLAMAlign::graphSLAM(size_t last)
 {
-    m_graph.doGraphSLAM(m_scans, last);
+    m_graph.doGraphSLAM(m_scans, last, m_new_scans);
 }
 
 void SLAMAlign::finish()
