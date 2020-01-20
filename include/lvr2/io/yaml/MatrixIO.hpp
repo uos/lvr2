@@ -22,15 +22,22 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
      */
     template <class Scalar, int A, int B, int C, int D, int E>
     static Node encode(const Eigen::Matrix<Scalar, A, B, C, D, E>& M) {
-        Node node;
+        
+
         typedef typename Eigen::Matrix<Scalar, A, B, C, D, E>::Index IndexType;
         IndexType rows = M.rows();
         IndexType cols = M.cols();
+
+        Node node;
+
         node["rows"] = rows;
         node["cols"] = cols;
+        node["data"] = Load("[]");
+
         for (IndexType i = 0; i < rows; ++i) {
             for (IndexType j = 0; j < cols; ++j) {
                 node["data"].push_back(M.coeff(i, j));
+                // node["data"][i * cols + j] = M.coeff(i, j);
             }
         }
         return node;
