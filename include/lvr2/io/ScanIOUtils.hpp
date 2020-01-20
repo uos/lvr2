@@ -30,7 +30,12 @@ void saveScanToHDF5(const std::string filename, const size_t& positionNr);
 
 bool loadScanFromHDF5(const std::string filename, const size_t& positionNr);
 
-void saveScanImageToDirectory(const boost::filesystem::path& path, const ScanImage& image, const size_t& positionNr, const size_t& imageNr);
+void saveScanImageToDirectory(
+    const boost::filesystem::path& path,
+    const ScanImage& image,
+    const size_t& positionNr,
+    const size_t& camNr,
+    const size_t& imageNr);
 
 bool loadScanImageFromDirectory(const boost::filesystem::path& path, ScanImage& image, const size_t& positionNr, const size_t& imageNr);
 
