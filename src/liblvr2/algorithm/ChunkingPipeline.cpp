@@ -40,8 +40,8 @@
 namespace lvr2
 {
 ChunkingPipeline::ChunkingPipeline(
-        std::string hdf5Path,
-        std::string configPath,
+        const boost::filesystem::path& hdf5Path,
+        const boost::filesystem::path& configPath,
         std::shared_ptr<ChunkManager> chunkManager
         ) :  m_hdf5Path(hdf5Path), m_configPath(configPath)
 {
@@ -55,7 +55,7 @@ ChunkingPipeline::ChunkingPipeline(
     }
 }
 
-bool ChunkingPipeline::start()
+bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
 {
     if (m_running)
     {

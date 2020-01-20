@@ -48,6 +48,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
     // Create option descriptions
     m_descr.add_options()("help", "Produce help message")
+                          ("scanProject", value<string>(), "Path to scan project.")
                           ("hdf5File", value<string>(), "Path to HDF5 file.")
                           ("configFile", value<string>(), "Path to YAML config file.");
 
@@ -65,9 +66,17 @@ bool Options::printUsage() const
         return true;
     }
 
+    if (!m_variables.count("scanProject"))
+    {
+        cout << "Error: You must specify a scan project path." << endl;
+        cout << endl;
+        cout << m_descr << endl;
+        return true;
+    }
+
     if (!m_variables.count("hdf5File"))
     {
-        cout << "Error: You must specify an HDF5 file path." << endl;
+        cout << "Error: You must specify a HDF5 file path." << endl;
         cout << endl;
         cout << m_descr << endl;
         return true;
@@ -75,13 +84,18 @@ bool Options::printUsage() const
 
     if (!m_variables.count("configFile"))
     {
-        cout << "Error: You must specify an YAML config file path." << endl;
+        cout << "Error: You must specify a YAML config file path." << endl;
         cout << endl;
         cout << m_descr << endl;
         return true;
     }
 
     return false;
+}
+
+string Options::getScanProjectPath() const
+{
+    return m_variables["scanProject"].as<string>();
 }
 
 string Options::getHdf5FilePath() const
