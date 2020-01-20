@@ -453,7 +453,7 @@ int main(int argc, char** argv)
             cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << projPtr->changed.at(i)<< endl;
         }
 
-        cout << "Eine Pose aus dem Project:" << endl << projPtr->positions.at(1)->scan->m_registration << endl;
+        cout << "Eine Pose aus dem Project:" << endl << projPtr->project->positions.at(1)->scan->m_registration << endl;
     }
     else
     {
