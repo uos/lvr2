@@ -430,6 +430,7 @@ int main(int argc, char** argv)
             // DEBUG
             ScanPosition pos;
             pos.scan = boost::optional<Scan>(*tempScan);
+            proj.project = ScanProjectPtr(new ScanProject);
             proj.project->positions.push_back(std::make_shared<ScanPosition>(pos));
             proj.changed.push_back(false);
 
