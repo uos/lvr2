@@ -58,24 +58,27 @@ void RegistrationPipeline::doRegistration()
 {
     SLAMAlign align(*m_options);
     
-    for (size_t i = 0; i < m_scans->positions.size(); i++)
+    for (size_t i = 0; i < m_scans->project->positions.size(); i++)
     {
-        ScanOptional opt = m_scans->positions.at(i)->scan;
+        ScanOptional opt = m_scans->project->positions.at(i)->scan;
         if (opt)
         {
             ScanPtr scptr = std::make_shared<Scan>(*opt);
             align.addScan(scptr);
         }
     }
-
+    cout << "Aus doRegistaration: vor finish" << endl;
     align.finish();
+    cout << "Aus doRegistaration: nach finish" << endl;
 
-    for (int i = 0; i < m_scans->positions.size(); i++)
+
+
+    for (int i = 0; i < m_scans->project->positions.size(); i++)
     {
         // check if the new pos different to old pos
         // ToDo: make num to option
 
-        ScanPositionPtr posPtr = m_scans->positions.at(i);
+        ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
         cout << "Diff: " << getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) << endl;
         if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) > m_options->diffPoseSum))
@@ -83,8 +86,42 @@ void RegistrationPipeline::doRegistration()
             m_scans->changed.at(i) = true;
             cout << "New Values"<< endl;
         }
-        posPtr->scan->m_registration = align.scan(i)->pose();
+        else
+        {
+            posPtr->scan->m_registration = align.scan(i)->pose();
+        }
+        
         cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
+    }
+    cout << "NAch der ersten For-Schleoife" << endl;
+    // new align with fix old values 
+    SLAMAlign align2(*m_options, m_scans->changed);
+    
+    for (size_t i = 0; i < m_scans->project->positions.size(); i++)
+    {
+        ScanOptional opt = m_scans->project->positions.at(i)->scan;
+        if (opt)
+        {
+            ScanPtr scptr = std::make_shared<Scan>(*opt);
+            align2.addScan(scptr);
+        }
+    }
+
+    align2.finish();
+
+    for (int i = 0; i < m_scans->project->positions.size(); i++)
+    {
+        // check if the new pos different to old pos
+        // ToDo: make num to option
+
+        ScanPositionPtr posPtr = m_scans->project->positions.at(i);
+
+        cout << "Diff: " << getDifference(posPtr->scan->m_registration, align2.scan(i)->pose()) << endl;
+        if ((!m_scans->changed.at(i)) && m_scans->changed.at(i) == true)
+        {
+            posPtr->scan->m_registration = align2.scan(i)->pose();
+            cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
+        }
     }
 
 }
