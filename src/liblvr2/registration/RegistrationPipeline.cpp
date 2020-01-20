@@ -58,9 +58,9 @@ void RegistrationPipeline::doRegistration()
 {
     SLAMAlign align(*m_options);
     
-    for (size_t i = 0; i < m_scans->positions.size(); i++)
+    for (size_t i = 0; i < m_scans->project->positions.size(); i++)
     {
-        ScanOptional opt = m_scans->positions.at(i)->scan;
+        ScanOptional opt = m_scans->project->positions.at(i)->scan;
         if (opt)
         {
             ScanPtr scptr = std::make_shared<Scan>(*opt);
@@ -73,12 +73,12 @@ void RegistrationPipeline::doRegistration()
 
 
 
-    for (int i = 0; i < m_scans->positions.size(); i++)
+    for (int i = 0; i < m_scans->project->positions.size(); i++)
     {
         // check if the new pos different to old pos
         // ToDo: make num to option
 
-        ScanPositionPtr posPtr = m_scans->positions.at(i);
+        ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
         cout << "Diff: " << getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) << endl;
         if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) > m_options->diffPoseSum))

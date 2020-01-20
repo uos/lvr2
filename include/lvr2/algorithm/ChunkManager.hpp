@@ -41,14 +41,13 @@
 #include "lvr2/algorithm/ChunkHashGrid.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
-#include "lvr2/io/ChunkIO.hpp"
 #include "lvr2/io/Model.hpp"
 #include "lvr2/types/Channel.hpp"
 
 namespace lvr2
 {
 
-class ChunkManager
+class ChunkManager : public ChunkHashGrid
 {
   public:
     using FilterFunction = std::function<bool(MultiChannelMap::val_type, size_t)>;
@@ -66,11 +65,22 @@ class ChunkManager
      * @param savePath JUST FOR TESTING - REMOVE LATER ON
      * @param cacheSize maximum number of chunks loaded in the ChunkHashGrid
      */
-    ChunkManager(MeshBufferPtr mesh,
+    ChunkManager(MeshBufferPtr meshes,
                  float chunksize,
                  float maxChunkOverlap,
                  std::string savePath,
+                 std::string layer = std::string("mesh"),
+                 size_t cacheSize = 200
+                 );
+
+
+    ChunkManager(std::vector<MeshBufferPtr> meshes,
+                 float chunksize,
+                 float maxChunkOverlap,
+                 std::string savePath,
+                 std::vector<std::string> layers,
                  size_t cacheSize = 200);
+
     /**
      * @brief ChunkManager loads a ChunkManager from a given HDF5-file
      *
@@ -82,6 +92,17 @@ class ChunkManager
      * @param cacheSize maximum number of chunks loaded in the ChunkHashGrid
      */
     ChunkManager(std::string hdf5Path, size_t cacheSize = 200);
+
+    /**
+     * @brief getGlobalBoundingBox is a getter for the bounding box of the entire chunked model
+     * 
+     * @return global bounding box of chunked model
+     */
+    inline BoundingBox<BaseVector<float>> getGlobalBoundingBox()
+    {
+        return m_boundingBox;
+    }
+
     /**
      * @brief extractArea creates and returns MeshBufferPtr of merged chunks for given area.
      *
@@ -91,7 +112,12 @@ class ChunkManager
      * @param area
      * @return mesh of the given area
      */
-    MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area);
+    MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area, std::string layer= std::string("mesh"));
+
+    void extractArea(const BoundingBox<BaseVector<float> >& area,
+                    std::unordered_map<std::size_t, MeshBufferPtr>& chunks,
+                    std::string layer = std::string("mesh"));
+                    
 
     /**
      * @brief extractArea creates and returns MeshBufferPtr of merged chunks for given area after
@@ -118,23 +144,10 @@ class ChunkManager
                               const std::map<std::string, FilterFunction> filter);
 
     /**
-     * @brief Calculates the hash value for the given index triple
-     *
-     * @param i index of x-axis
-     * @param j index of y-axis
-     * @param k index of z-axis
-     * @return hash value
-     */
-    inline std::size_t hashValue(int i, int j, int k) const
-    {
-        return i * m_amount.y * m_amount.z + j * m_amount.z + k;
-    }
-
-    /**
      * @brief Loads all chunks into the ChunkHashGrid.
      * DEBUG -- Only used for testing, but might be useful for smaller meshes.
      */
-    void loadAllChunks();
+    void loadAllChunks(std::string layer = std::string("mesh"));
 
   private:
     /**
@@ -176,7 +189,7 @@ class ChunkManager
      * Larger triangles will be cut
      * @param savePath UST FOR TESTING - REMOVE LATER ON
      */
-    void buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::string savePath);
+    void buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::string savePath, std::string layer = std::string("mesh"));
 
     /**
      * @brief getFaceCenter gets the center point for a given face
@@ -253,21 +266,6 @@ class ChunkManager
                        const size_t numFaces,
                        const MeshBufferPtr meshBuffer,
                        const MultiChannelMap::val_type& originalChannel) const;
-
-    // bounding box of the entire chunked model
-    BoundingBox<BaseVector<float>> m_boundingBox;
-
-    // size of chunks
-    float m_chunkSize;
-
-    // amount of chunks
-    BaseVector<std::size_t> m_amount;
-
-    // used for loading chunks from the HDF5 file and saving them in a HashGrid
-    std::shared_ptr<ChunkHashGrid> m_chunkHashGrid;
-
-    // path to the HDF5 file (either to save or to load the file)
-    std::string m_hdf5Path;
 };
 
 } /* namespace lvr2 */

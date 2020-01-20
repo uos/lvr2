@@ -141,6 +141,17 @@ public:
      */
     HashGrid(std::vector<string>& files, BoundingBox<BaseVecT>& boundingBox, float voxelsize);
 
+    /***
+     * Constructs a new Hash Grid object from a HDF5 file
+     *
+     * @param HDFfile path the the HDF5 file
+     * @param chunkNames vector of groups for the chunks
+     * @param boundingBox bounding box of the complete grid
+     */
+    HashGrid(std::vector<PointBufferPtr> chunks,
+           BoundingBox<BaseVecT>& boundingBox,
+           float voxelSize);
+
     /**
      *
      * @param i         Discrete x position within the grid.
@@ -247,6 +258,7 @@ public:
      * @brief   Calculates needed lattice parameters.
      */
     void calcIndices();
+
 
 protected:
 
