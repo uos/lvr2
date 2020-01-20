@@ -1484,7 +1484,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         //iterate through ALL points to calculate transformed boundingboxes of scans
         for (int i = 0; i < project->changed.size(); i++)
         {
-            ScanPositionPtr pos = project->positions.at(i);
+            ScanPositionPtr pos = project->project->positions.at(i);
             size_t numPoints = pos->scan->m_points->numPoints();
             BoundingBox<BaseVecT> box;
             boost::shared_array<float> points = pos->scan->m_points->getPointArray();
@@ -1503,6 +1503,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 m_bb.expand(temp);
                 box.expand(temp);
             }
+            cout << box << endl;
             // filter the new scans to calculate new reconstruction area
             if(project->changed.at(i) == true)
             {
@@ -1560,7 +1561,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 {
 
 
-                ScanPositionPtr pos = project->positions.at(i);
+                ScanPositionPtr pos = project->project->positions.at(i);
             size_t numPoints = pos->scan->m_points->numPoints();
             boost::shared_array<float> points = pos->scan->m_points->getPointArray();
             m_numPoints += numPoints;
@@ -1641,7 +1642,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 cout << "Scan No. " << i << " ignored!" << endl;
             }
             else{
-                ScanPositionPtr pos = project->positions.at(i);
+                ScanPositionPtr pos = project->project->positions.at(i);
                 size_t numPoints = pos->scan->m_points->numPoints();
 
                 boost::shared_array<float> points = pos->scan->m_points->getPointArray();
@@ -1671,8 +1672,6 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                     mmfdata[index * 3 + 2] = iz;
                 }
             }
-
-            cout << "WOW!" << endl;
         }
 
 
