@@ -34,6 +34,7 @@
 #include <random>
 #include <string>
 #include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/ScanIOUtils.hpp"
 
 using std::cout;
 using std::endl;
@@ -79,59 +80,23 @@ int main(int argc, char** argv)
     LargeScaleReconstruction<Vec> lsr(options);
 
     std::vector<ScanPtr> scans;
-
-
     std::vector<ScanPtr> h5scans;
-    //std::vector<ScanPtr> scans_new;
 
-
-    //scans_new.push_back(scans.front());
-
-    //scans.erase(scans.begin());
-
-    //BoundingBox<Vec> bb1(Vec(-200, -200, -100),Vec(0, 200, 180));
-    //BoundingBox<Vec> bb2(Vec(60, -200, -100),Vec(200, 200, 180));
-    //scans.front()->m_globalBoundingBox = bb1;
-
-
-
-   // if(bb1.overlap(bb2)) {
-   //     cout << "didnt work!" << endl;
-  //      return 0;
-   //}
-
-
-   ScanProjectEditMarkPtr project(new ScanProjectEditMark);
-
-    cout << "didnt work!" << endl;
-   vector<bool> diff;
-
-   diff.push_back(true);
-    diff.push_back(true);
-    diff.push_back(true);
-    cout << "didnt work!" << endl;
+    ScanProjectEditMarkPtr project(new ScanProjectEditMark);
+    project->project = ScanProjectPtr(new ScanProject);
+    ScanPositionPtr sptr(new ScanPosition());
+    ScanPositionPtr sptr2(new ScanPosition());
+    sptr->scan = (*loadScanFromHDF5(in, 1).get());
+    sptr2->scan = (*loadScanFromHDF5(in, 2).get());
+    project->project->positions.push_back(sptr);
+    project->project->positions.push_back(sptr2);
     project->changed.push_back(true);
     project->changed.push_back(true);
-    project->changed.push_back(true);
-    cout << "didnt work!" << endl;
-    
-   for(auto mark : project->changed)
-   {
-       std::cout << mark;
-   }
 
-   lsr.resetEditMark(project);
-
-    for(auto mark : project->changed)
-    {
-        std::cout << mark;
-    }
-
-
-
-
-
-    //int x = lsr.mpiChunkAndReconstruct(project);
+    std::shared_ptr<ChunkManager> cm;
+    //ChunkManager cm  = ChunkManager(in, 100);
+    //std::shared_ptr<ChunkManager> cmPtr = std::make_shared<ChunkManager>(cm);
+    int x = lsr.mpiChunkAndReconstruct(project, cm);
 
     //scans_new.front()->m_globalBoundingBox = bb2;
 

@@ -430,7 +430,7 @@ int main(int argc, char** argv)
             // DEBUG
             ScanPosition pos;
             pos.scan = boost::optional<Scan>(*tempScan);
-            proj.positions.push_back(std::make_shared<ScanPosition>(pos));
+            proj.project->positions.push_back(std::make_shared<ScanPosition>(pos));
             proj.changed.push_back(false);
 
             
@@ -452,7 +452,9 @@ int main(int argc, char** argv)
         //     cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << projPtr->changed.at(i)<< endl;
         // }
         
-        // cout << "Eine Pose aus dem Project:" << endl << projPtr->positions.at(1)->scan->m_registration << endl;
+
+        //cout << "Eine Pose aus dem Project:" << endl << projPtr->project->positions.at(1)->scan->m_registration << endl;
+
 
     }
     else
