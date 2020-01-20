@@ -35,6 +35,7 @@
 #include "lvr2/algorithm/ChunkingPipeline.hpp"
 
 #include <yaml-cpp/yaml.h>
+#include "lvr2/io/ScanIOUtils.hpp"
 #include "lvr2/registration/RegistrationPipeline.hpp"
 #include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
 
@@ -69,8 +70,23 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     std::cout << "Starting chunking pipeline..." << std::endl;
 
     std::cout << "Starting import tool..." << std::endl;
-    // TODO: call input tool
-    // TODO: Fill m_scanProjectPtr with scans
+    ScanProject scanProject;
+    bool importStatus = loadScanProjectFromDirectory(scanDir, scanProject);
+    if (!importStatus)
+    {
+        std::cout << "Import failed..." << std::endl;
+        std::cout << "Aborting chunking pipeline!" << std::endl;
+
+        m_running = false;
+
+        return false;
+    }
+    else
+    {
+        ScanProjectEditMark tmpScanProject;
+        tmpScanProject.project = std::make_shared<ScanProject>(scanProject);
+        m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
+    }
     std::cout << "Finished import!" << std::endl;
 
     std::cout << "Starting registration..." << std::endl;
