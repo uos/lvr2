@@ -14,6 +14,7 @@ set(LVR2_CHUNKING_SERVER_SOURCES
 set(LVR2_CHUNKING_SERVER_DEPENDENCIES
     lvr2_static
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    ${Boost_IOSTREAMS_LIBRARY} # TODO: check if really needed here
 )
 
 #####################################################################################
