@@ -237,12 +237,12 @@ namespace lvr2
             if (bg.hasNormals())
             {
                 size_t numNormals;
-                lvr2::floatArr normals = bg.normals(partitionBoxes[i].getMin().x,
-                                                    partitionBoxes[i].getMin().y,
-                                                    partitionBoxes[i].getMin().z,
-                                                    partitionBoxes[i].getMax().x,
-                                                    partitionBoxes[i].getMax().y,
-                                                    partitionBoxes[i].getMax().z,
+                lvr2::floatArr normals = bg.normals(partitionBoxes[i].getMin().x ,
+                                                    partitionBoxes[i].getMin().y ,
+                                                    partitionBoxes[i].getMin().z ,
+                                                    partitionBoxes[i].getMax().x ,
+                                                    partitionBoxes[i].getMax().y ,
+                                                    partitionBoxes[i].getMax().z ,
                                                     numNormals);
 
                 p_loader->setNormalArray(normals, numNormals);
