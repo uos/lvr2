@@ -15,6 +15,9 @@
 #include <boost/filesystem.hpp>
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
+#include "YamlIO.hpp"
+
+
 
 namespace lvr2
 {
