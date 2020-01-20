@@ -84,15 +84,6 @@ namespace lvr2
     {
     }
 
-    template<typename BaseVecT>
-    LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(LargeScaleOptions::Options options) : LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(options.getInputFileName()[0], options.getVoxelsize(), options.getBGVoxelsize(), options.getScaling(), options.getGridSize(),
-                                                                                                                                                                    options.getNodeSize(), options.getVGrid(), options.getKi(), options.getKd(), options.getKn(), options.useRansac(), options.extrude(),
-                                                                                                                                                                    options.getDanglingArtifacts(), options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
-                                                                                                                                                                    options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
-                                                                                                                                                                    options.retesselate(), options.getLineFusionThreshold())
-    {
-        std::cout << "Reconstruction Instance generated..." << std::endl;
-    }
 
     template <typename BaseVecT>
     int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkManager> chunkManager)
