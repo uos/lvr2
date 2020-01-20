@@ -38,7 +38,7 @@
 #include "lvr2/algorithm/ChunkManager.hpp"
 
 #include <boost/filesystem.hpp>
-#include <lvr2/types/ScanTypes.hpp>
+#include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2
 {
