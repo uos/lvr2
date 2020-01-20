@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "lvr2/config/LargeScaleOptions.hpp"
+#include "LargeScaleOptions.hpp"
 #include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include <algorithm>
