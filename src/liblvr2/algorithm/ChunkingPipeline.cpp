@@ -99,14 +99,12 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     slamOptions.loopSize = 10;
     slamOptions.closeLoopDistance = 30;
     RegistrationPipeline registration(&slamOptions, m_scanProject);
-    // TODO: call registration
     registration.doRegistration();
     std::cout << "Finished registration!" << std::endl;
 
     std::cout << "Starting large scale reconstruction..." << std::endl;
     // TODO: use constructor with struct parameter
     LargeScaleReconstruction<lvr2::BaseVector<float>> lsr(m_hdf5Path.string());
-    // TODO: call reconstruction
     lsr.mpiChunkAndReconstruct(m_scanProject, m_chunkManager);
     std::cout << "Finished large scale reconstruction!" << std::endl;
 
