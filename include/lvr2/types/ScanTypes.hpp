@@ -111,11 +111,18 @@ struct ScanImage
 
     /// OpenCV representation
     cv::Mat                         image;
-
 };
+
+
 
 using ScanImagePtr = std::shared_ptr<ScanImage>;
 using ScanImageOptional = boost::optional<ScanImage>;
+
+struct Camera {
+    std::vector<ScanImagePtr> images;
+};
+
+using CameraPtr = std::shared_ptr<Camera>;
 
 
 /*****************************************************************************
@@ -129,7 +136,7 @@ struct ScanPosition
     ScanOptional                    scan;
 
     /// Image data (optional, empty vector of no images were taken) 
-    std::vector<ScanImagePtr>       images;
+    std::vector<CameraPtr>          cams;
 };
 
 using ScanPositionPtr = std::shared_ptr<ScanPosition>;

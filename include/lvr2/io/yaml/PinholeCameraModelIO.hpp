@@ -27,7 +27,7 @@ struct convert<lvr2::PinholeCameraModel<T> >
         Node node;
 
         node["extrinsics"] = model.extrinsics();
-        node["extrinsic_estimate"] = model.extrinsicsEstimate();
+        node["extrinsics_estimate"] = model.extrinsicsEstimate();
         node["intrinsics"] = model.intrinsics();
         node["distortion"] = model.distortion();
 
@@ -36,26 +36,30 @@ struct convert<lvr2::PinholeCameraModel<T> >
 
     static bool decode(const Node& node, lvr2::PinholeCameraModel<T>& model) {
 
-        if(lvr2::Extrinsics<T> tmp = node["extrinsics"].as<lvr2::Extrinsics<T> >() ){
-            model.setExtrinsics(tmp);
+        if(auto tmp = node["extrinsics"]) 
+        {
+            model.setExtrinsics(tmp.as<lvr2::Extrinsics<T> >() );
         } else {
             return false;
         }
 
-        if(lvr2::Extrinsics<T> tmp = node["extrinsic_estimate"].as<lvr2::Extrinsics<T> >() ){
-            model.setExtrinsicsEstimate(tmp);
-        } else {
-            return false;
-        }
-        
-        if(lvr2::Intrinsics<T> tmp = node["intrinsics"].as<lvr2::Intrinsics<T> >() ) {
-            model.setIntrinsics(tmp);
+        if(auto tmp = node["extrinsics_estimate"]) 
+        {
+            model.setExtrinsicsEstimate(tmp.as<lvr2::Extrinsics<T> >() );
         } else {
             return false;
         }
 
-        if(lvr2::Distortion<T> tmp = node["distortion"].as<lvr2::Distortion<T> >() ) {
-            model.setDistortion(tmp);
+        if(auto tmp = node["intrinsics"]) 
+        {
+            model.setIntrinsics(tmp.as<lvr2::Intrinsics<T> >() );
+        } else {
+            return false;
+        }
+
+        if(auto tmp = node["distortion"]) 
+        {
+            model.setDistortion(tmp.as<lvr2::Distortion<T> >() );
         } else {
             return false;
         }
