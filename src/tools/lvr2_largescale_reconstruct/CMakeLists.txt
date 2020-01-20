@@ -3,6 +3,7 @@
 #####################################################################################
 
 set(LS_RECONSTRUCT_SOURCES
+    LargeScaleOptions.cpp
     Options.cpp
     Main.cpp
         ../../../include/lvr2/reconstruction/LargeScaleReconstruction.tcc ../../../include/lvr2/reconstruction/LargeScaleReconstruction.hpp)

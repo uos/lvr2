@@ -32,7 +32,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include "lvr2/config/LargeScaleOptions.hpp"
+#include "LargeScaleOptions.hpp"
 
 #include <fstream>
 #include "lvr2/config/lvropenmp.hpp"
