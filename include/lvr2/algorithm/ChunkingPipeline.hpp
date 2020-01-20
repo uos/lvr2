@@ -53,14 +53,16 @@ public:
      * @param configPath path to the YAML config file
      * @param chunkManager shared pointer to ChunkManager instance if null a new instance is created
      */
-    ChunkingPipeline(std::string hdf5Path, std::string configPath, std::shared_ptr<ChunkManager> chunkManager = nullptr);
+    ChunkingPipeline(const boost::filesystem::path& hdf5Path, const boost::filesystem::path& configPath, std::shared_ptr<ChunkManager> chunkManager = nullptr);
 
     /**
      * @brief Start the chunking pipeline
      *
+     * @param scanDir path to scan directory
+     *
      * @return true on success and false on failure
      */
-    bool start();
+    bool start(const boost::filesystem::path& scanDir);
 
 private:
     // path to the HDF5 file

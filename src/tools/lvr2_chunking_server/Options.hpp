@@ -65,6 +65,11 @@ class Options
     bool printUsage() const;
 
     /**
+     * @brief	Returns the scan project file path
+     */
+    string getScanProjectPath() const;
+
+    /**
      * @brief	Returns the HDF5 file path
      */
     string getHdf5FilePath() const;
