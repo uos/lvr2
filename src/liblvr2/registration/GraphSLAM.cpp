@@ -150,7 +150,7 @@ void GraphSLAM::doGraphSLAM(const vector<SLAMScanPtr>& scans, size_t last, const
         #pragma omp parallel for reduction(+:sum_position_diff) schedule(static)
         for (size_t i = 1; i <= last; i++)
         {
-            if (!new_scans.empty() && new_scans.at(i))
+            if (new_scans.empty() || new_scans.at(i))
             {
                 const SLAMScanPtr& scan = scans[i];
 
