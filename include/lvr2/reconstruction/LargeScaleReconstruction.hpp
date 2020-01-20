@@ -59,12 +59,6 @@ namespace lvr2
                 bool retesselate, float lineFusionThreshold);
 
         /**
-         * Cnstructor with LargeScaleOption as parameters
-         * @param options
-         */
-        LargeScaleReconstruction(LargeScaleOptions::Options options);
-
-        /**
          * this method splits the given PointClouds in to Chunks and calculates all required values for a later reconstruction
          *
          * @tparam BaseVecT

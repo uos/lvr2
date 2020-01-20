@@ -231,6 +231,27 @@ namespace lvr2
             return scans;
         }
 
+        template<typename Derived>
+        std::vector<ScanPtr> ScanIO<Derived>::loadAllPreviews(std::string groupName) {
+            std::vector<ScanPtr> scans = std::vector<ScanPtr>();
+            if (hdf5util::exist(m_file_access->m_hdf5_file, groupName))
+            {
+                HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, groupName, false);
+                ScanPtr tmp;
+                for(auto scanName : g.listObjectNames())
+                {
+                    //HighFive::Group scan = g.getGroup(scanName);
+                    cout << scanName << endl;
+                    tmp = loadPreview(groupName + scanName);
+                    if(tmp)
+                    {
+                        scans.push_back(tmp);
+                    }
+                }
+            }
+            return scans;
+        }
+
         template <typename Derived>
         ScanPtr ScanIO<Derived>::loadPreview(std::string name) {
             ScanPtr ret;
