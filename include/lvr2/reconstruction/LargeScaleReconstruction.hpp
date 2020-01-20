@@ -28,139 +28,141 @@
 #ifndef LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
 #define LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
 
-#include <lvr2/types/ScanTypes.hpp>
+#include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2
 {
-    template <typename BaseVecT>
-    class LargeScaleReconstruction
-    {
+template <typename BaseVecT>
+class LargeScaleReconstruction
+{
 
+  public:
+    /**
+     * Constructor - uses default parameter for reconstruction)
+     * @param h5File HDF5 file, which may or may not contain chunked and reconstructed scans
+     */
+    LargeScaleReconstruction(std::string h5File);
 
-    public:
-        /**
-         * Constructor - uses default parameter for reconstruction)
-         * @param h5File HDF5 file, which may or may not contain chunked and reconstructed scans
-         */
-        LargeScaleReconstruction(std::string h5File);
+    /**
+     * Constructor with parameters
+     */
+    LargeScaleReconstruction(std::string h5File,
+                             float voxelSize,
+                             float bgVoxelSize,
+                             float scale,
+                             size_t chunkSize,
+                             uint nodeSize,
+                             int partMethod,
+                             int ki,
+                             int kd,
+                             int kn,
+                             bool useRansac,
+                             bool extrude,
+                             int removeDanglingArtifacts,
+                             int cleanContours,
+                             int fillHoles,
+                             bool optimizePlanes,
+                             float getNormalThreshold,
+                             int planeIterations,
+                             int minPlaneSize,
+                             int smallRegionThreshold,
+                             bool retesselate,
+                             float lineFusionThreshold);
 
+    /**
+     * Cnstructor with LargeScaleOption as parameters
+     * @param options
+     */
+    LargeScaleReconstruction(LargeScaleOptions::Options options);
 
-        /**
-         * Constructor with parameters
-         */
-        LargeScaleReconstruction(std::string h5File, float voxelSize, float bgVoxelSize, float scale, size_t chunkSize,
-                uint nodeSize, int partMethod,int ki, int kd, int kn, bool useRansac, bool extrude,
-                int removeDanglingArtifacts, int cleanContours, int fillHoles, bool optimizePlanes,
-                float getNormalThreshold, int planeIterations, int minPlaneSize, int smallRegionThreshold,
-                bool retesselate, float lineFusionThreshold);
+    /**
+     * this method splits the given PointClouds in to Chunks and calculates all required values for
+     * a later reconstruction
+     *
+     * @tparam BaseVecT
+     * @param scans vector of new scan to be added
+     * @return
+     */
+    int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project);
 
-        /**
-         * Cnstructor with LargeScaleOption as parameters
-         * @param options
-         */
-        LargeScaleReconstruction(LargeScaleOptions::Options options);
+    int resetEditMark(ScanProjectEditMarkPtr project);
 
+  private:
+    // TODO: add chunks vector somewhere
 
-        /**
-         * this method splits the given PointClouds in to Chunks and calculates all required values for a later reconstruction
-         *
-         * @tparam BaseVecT
-         * @param scans vector of new scan to be added
-         * @return
-         */
-        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project);
+    // path to hdf5 path containing previously reconstructed scans (or no scans) only
+    string m_filePath;
 
+    // voxelsize for reconstruction. Default: 10
+    float m_voxelSize;
 
-        int resetEditMark(ScanProjectEditMarkPtr project);
+    // voxelsize for the BigGrid. Default: 10
+    float m_bgVoxelSize;
 
+    // scale factor. Default: 1
+    float m_scale;
 
-    private:
+    // ChunkSize, should be constant through all processes . Default: 20
+    size_t m_chunkSize;
 
-        //TODO: add chunks vector somewhere
+    // Max. Number of Points in a leaf (used to devide pointcloud). Default: 1000000
+    uint m_nodeSize;
 
-        // path to hdf5 path containing previously reconstructed scans (or no scans) only
-        string m_filePath;
+    // int flag to trigger partition-method (0 = kd-Tree; 1 = VGrid)
+    int m_partMethod;
 
-        // voxelsize for reconstruction. Default: 10
-        float m_voxelSize;
+    // Number of normals used in the normal interpolation process. Default: 10
+    int m_Ki;
 
-        // voxelsize for the BigGrid. Default: 10
-        float m_bgVoxelSize;
+    // Number of normals used for distance function evaluation. Default: 5
+    int m_Kd;
 
-        // scale factor. Default: 1
-        float m_scale;
+    // Size of k-neighborhood used for normal estimation. Default: 10
+    int m_Kn;
 
-        //ChunkSize, should be constant through all processes . Default: 20
-        size_t m_chunkSize;
+    // Set this flag for RANSAC based normal estimation. Default: false
+    bool m_useRansac;
 
-        // Max. Number of Points in a leaf (used to devide pointcloud). Default: 1000000
-        uint m_nodeSize;
+    // Do not extend grid. Can be used  to avoid artifacts in dense data sets but. Disabling
+    // will possibly create additional holes in sparse data sets. Default: false
+    bool m_extrude;
 
-        // int flag to trigger partition-method (0 = kd-Tree; 1 = VGrid)
-        int m_partMethod;
+    /*
+     * Definition from here on are for the combine-process of partial meshes
+     */
 
-        //Number of normals used in the normal interpolation process. Default: 10
-        int m_Ki;
+    // flag to trigger the removal of dangling artifacts. Default: 0
+    int m_removeDanglingArtifacts;
 
-        //Number of normals used for distance function evaluation. Default: 5
-        int m_Kd;
+    // Remove noise artifacts from contours. Same values are between 2 and 4. Default: 0
+    int m_cleanContours;
 
-        // Size of k-neighborhood used for normal estimation. Default: 10
-        int m_Kn;
+    // Maximum size for hole filling. Default: 0
+    int m_fillHoles;
 
-        //Set this flag for RANSAC based normal estimation. Default: false
-        bool m_useRansac;
+    // Shift all triangle vertices of a cluster onto their shared plane. Default: false
+    bool m_optimizePlanes;
 
-        // Do not extend grid. Can be used  to avoid artifacts in dense data sets but. Disabling
-        // will possibly create additional holes in sparse data sets. Default: false
-        bool m_extrude;
+    // (Plane Normal Threshold) Normal threshold for plane optimization. Default: 0.85
+    float m_getNormalThreshold;
 
-        /*
-         * Definition from here on are for the combine-process of partial meshes
-         */
+    // Number of iterations for plane optimization. Default: 3
+    int m_planeIterations;
 
-        // flag to trigger the removal of dangling artifacts. Default: 0
-        int m_removeDanglingArtifacts;
+    // Minimum value for plane optimization. Default: 7
+    int m_MinPlaneSize;
 
-        //Remove noise artifacts from contours. Same values are between 2 and 4. Default: 0
-        int m_cleanContours;
+    // Threshold for small region removal. If 0 nothing will be deleted. Default: 0
+    int m_SmallRegionThreshold;
 
-        //Maximum size for hole filling. Default: 0
-        int m_fillHoles;
+    // Retesselate regions that are in a regression plane. Implies --optimizePlanes. Default: false
+    bool m_retesselate;
 
-        // Shift all triangle vertices of a cluster onto their shared plane. Default: false
-        bool m_optimizePlanes;
-
-        // (Plane Normal Threshold) Normal threshold for plane optimization. Default: 0.85
-        float m_getNormalThreshold;
-
-        // Number of iterations for plane optimization. Default: 3
-        int m_planeIterations;
-
-        // Minimum value for plane optimization. Default: 7
-        int m_MinPlaneSize;
-
-        // Threshold for small region removal. If 0 nothing will be deleted. Default: 0
-        int m_SmallRegionThreshold;
-
-        // Retesselate regions that are in a regression plane. Implies --optimizePlanes. Default: false
-        bool m_retesselate;
-
-        // Threshold for fusing line segments while tesselating. Default: 0.01
-        float m_LineFusionThreshold;
-
-
-
-
-
-
-
-
-
-
-    };
+    // Threshold for fusing line segments while tesselating. Default: 0.01
+    float m_LineFusionThreshold;
+};
 } // namespace lvr2
 
 #include "lvr2/reconstruction/LargeScaleReconstruction.tcc"
 
-#endif //LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
+#endif // LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
