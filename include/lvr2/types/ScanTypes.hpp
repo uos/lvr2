@@ -160,10 +160,11 @@ using ScanProjectPtr = std::shared_ptr<ScanProject>;
  * @brief   Struct to represent a scan project with marker showing if a scan
  *          pose has been changed
  *****************************************************************************/
-struct ScanProjectEditMark : ScanProject
+struct ScanProjectEditMark
 {
+    ScanProjectPtr project;
     /// True if scan pose has been changed, one bool for each scan position
-    std::vector<bool>    changed;
+    std::vector<bool> changed;
 };
 
 using ScanProjectEditMarkPtr = std::shared_ptr<ScanProjectEditMark>;
