@@ -149,7 +149,7 @@ void SLAMAlign::match()
     // only match everything after m_alreadyMatched
     for (; m_alreadyMatched < m_scans.size(); m_alreadyMatched++)
     {
-        if (!m_new_scans.empty() && m_new_scans.at(m_alreadyMatched))
+        if (m_new_scans.empty() || m_new_scans.at(m_alreadyMatched))
         {
             cout << m_scans.size() << endl;
             size_t i = m_alreadyMatched;
