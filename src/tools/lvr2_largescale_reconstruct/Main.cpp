@@ -83,9 +83,14 @@ int main(int argc, char** argv)
     std::vector<ScanPtr> h5scans;
 
     ScanProjectEditMarkPtr project(new ScanProjectEditMark);
+    project->project = ScanProjectPtr(new ScanProject);
     ScanPositionPtr sptr(new ScanPosition());
-    sptr->scan = (*loadScanFromHDF5(in, 0).get());
-    project->positions.push_back(sptr);
+    ScanPositionPtr sptr2(new ScanPosition());
+    sptr->scan = (*loadScanFromHDF5(in, 1).get());
+    sptr2->scan = (*loadScanFromHDF5(in, 2).get());
+    project->project->positions.push_back(sptr);
+    project->project->positions.push_back(sptr2);
+    project->changed.push_back(true);
     project->changed.push_back(true);
 
     std::shared_ptr<ChunkManager> cm;

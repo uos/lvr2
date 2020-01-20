@@ -98,7 +98,7 @@ namespace lvr2
     int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkManager> chunkManager)
     {
 
-        if(project->positions.size() != project->changed.size())
+        if(project->project->positions.size() != project->changed.size())
         {
             cout << "Inconsistency between number of given scans and diff-vector (scans to consider)! exit..." << endl;
             return 0;
@@ -268,6 +268,12 @@ namespace lvr2
             ps_grid->calcDistanceValues();
 
             //TODO: is this even used? if not:remove it
+
+            if(true)
+            {
+                cout << "No. of Cells " << i << ": " <<ps_grid->getNumberOfCells()<<endl;
+            }
+
             auto reconstruction =
                    make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
 
