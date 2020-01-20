@@ -359,7 +359,9 @@ void saveScanProjectToDirectory(const boost::filesystem::path& path, const ScanP
     YAML::Node yaml;
     yaml["position"] = project.pose;
 
-    std::ofstream out(path.c_str());
+    boost::filesystem::create_directory(path);
+
+    std::ofstream out( (path / "meta.yaml").string() );
     if (out.good())
     {
         out << yaml;
