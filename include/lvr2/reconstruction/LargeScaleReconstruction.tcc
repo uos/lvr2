@@ -56,8 +56,8 @@ namespace lvr2
 
     template <typename BaseVecT>
     LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(string h5File)
-    : m_filePath(h5File), m_voxelSize(0.1), m_bgVoxelSize(10), m_scale(1), m_chunkSize(100),m_nodeSize(1000000), m_partMethod(1),
-    m_Ki(10), m_Kd(5), m_Kn(10), m_useRansac(false), m_extrude(false), m_removeDanglingArtifacts(0), m_cleanContours(0),
+    : m_filePath(h5File), m_voxelSize(0.1), m_bgVoxelSize(1), m_scale(1), m_chunkSize(20),m_nodeSize(1000000), m_partMethod(1),
+    m_Ki(20), m_Kd(25), m_Kn(20), m_useRansac(false), m_extrude(false), m_removeDanglingArtifacts(0), m_cleanContours(0),
     m_fillHoles(0), m_optimizePlanes(false), m_getNormalThreshold(0.85), m_planeIterations(3), m_MinPlaneSize(7), m_SmallRegionThreshold(0),
     m_retesselate(false), m_LineFusionThreshold(0.01)
     {
@@ -81,6 +81,20 @@ namespace lvr2
               m_getNormalThreshold(getNormalThreshold), m_planeIterations(planeIterations),
               m_MinPlaneSize(minPlaneSize), m_SmallRegionThreshold(smallRegionThreshold),
               m_retesselate(retesselate), m_LineFusionThreshold(lineFusionThreshold)
+    {
+        std::cout << "Reconstruction Instance generated..." << std::endl;
+    }
+
+    template<typename BaseVecT>
+    LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(LSROptions options)
+            : LargeScaleReconstruction(m_filePath(options.filePath), m_voxelSize(options.voxelSize), m_bgVoxelSize(options.bgVoxelSize),
+              m_scale(options.scale), m_chunkSize(options.chunkSize),m_nodeSize(options.nodeSize),
+              m_partMethod(options.partMethod), m_Ki(options.Ki), m_Kd(options.Kd), m_Kn(options.Kn), m_useRansac(options.useRansac),
+              m_extrude(options.extrude), m_removeDanglingArtifacts(options.removeDanglingArtifacts),
+              m_cleanContours(options.cleanContours), m_fillHoles(options.fillHoles), m_optimizePlanes(options.optimizePlanes),
+              m_getNormalThreshold(options.getNormalThreshold), m_planeIterations(options.planeIterations),
+              m_MinPlaneSize(options.MinPlaneSize), m_SmallRegionThreshold(options.SmallRegionThreshold),
+              m_retesselate(options.retesselate), m_LineFusionThreshold(options.LineFusionThreshold))
     {
     }
 
