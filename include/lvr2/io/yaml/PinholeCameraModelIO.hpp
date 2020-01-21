@@ -26,6 +26,8 @@ struct convert<lvr2::PinholeCameraModel<T> >
     static Node encode(const lvr2::PinholeCameraModel<T>& model) {
         Node node;
 
+        node["type"] = "camera";
+        node["camera_model"] = "pinhole";
         node["extrinsics"] = model.extrinsics();
         node["extrinsics_estimate"] = model.extrinsicsEstimate();
         node["intrinsics"] = model.intrinsics();
@@ -34,7 +36,14 @@ struct convert<lvr2::PinholeCameraModel<T> >
         return node;
     }
 
-    static bool decode(const Node& node, lvr2::PinholeCameraModel<T>& model) {
+    static bool decode(const Node& node, lvr2::PinholeCameraModel<T>& model) 
+    {
+
+        std::string camera_model = node["camera_model"].as<std::string>();
+        if(camera_model != "pinhole")
+        {
+            return false;
+        }
 
         if(auto tmp = node["extrinsics"]) 
         {
