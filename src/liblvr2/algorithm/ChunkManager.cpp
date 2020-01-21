@@ -176,6 +176,7 @@ void ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
     //    std::cout << "Num chunks " << chunks.size() << std::endl;
 }
 
+
 MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area, std::string layer)
 {
     std::unordered_map<std::size_t, MeshBufferPtr> chunks;

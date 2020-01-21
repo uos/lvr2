@@ -56,8 +56,8 @@ namespace lvr2
 
     template <typename BaseVecT>
     LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(string h5File)
-    : m_filePath(h5File), m_voxelSize(0.1), m_bgVoxelSize(10), m_scale(1), m_chunkSize(100),m_nodeSize(1000000), m_partMethod(1),
-    m_Ki(10), m_Kd(5), m_Kn(10), m_useRansac(false), m_extrude(false), m_removeDanglingArtifacts(0), m_cleanContours(0),
+    : m_filePath(h5File), m_voxelSize(0.1), m_bgVoxelSize(1), m_scale(1), m_chunkSize(20),m_nodeSize(1000000), m_partMethod(1),
+    m_Ki(20), m_Kd(25), m_Kn(20), m_useRansac(false), m_extrude(false), m_removeDanglingArtifacts(0), m_cleanContours(0),
     m_fillHoles(0), m_optimizePlanes(false), m_getNormalThreshold(0.85), m_planeIterations(3), m_MinPlaneSize(7), m_SmallRegionThreshold(0),
     m_retesselate(false), m_LineFusionThreshold(0.01)
     {
@@ -82,17 +82,22 @@ namespace lvr2
               m_MinPlaneSize(minPlaneSize), m_SmallRegionThreshold(smallRegionThreshold),
               m_retesselate(retesselate), m_LineFusionThreshold(lineFusionThreshold)
     {
+        std::cout << "Reconstruction Instance generated..." << std::endl;
     }
 
     template<typename BaseVecT>
-    LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(LargeScaleOptions::Options options) : LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(options.getInputFileName()[0], options.getVoxelsize(), options.getBGVoxelsize(), options.getScaling(), options.getGridSize(),
-                                                                                                                                                                    options.getNodeSize(), options.getVGrid(), options.getKi(), options.getKd(), options.getKn(), options.useRansac(), options.extrude(),
-                                                                                                                                                                    options.getDanglingArtifacts(), options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
-                                                                                                                                                                    options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
-                                                                                                                                                                    options.retesselate(), options.getLineFusionThreshold())
+    LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(LSROptions options)
+            : LargeScaleReconstruction(options.filePath, options.voxelSize, options.bgVoxelSize,
+              options.scale, options.chunkSize,options.nodeSize,
+              options.partMethod, options.Ki, options.Kd, options.Kn, options.useRansac,
+              options.extrude, options.removeDanglingArtifacts,
+              options.cleanContours, options.fillHoles, options.optimizePlanes,
+              options.getNormalThreshold, options.planeIterations,
+              options.MinPlaneSize, options.SmallRegionThreshold,
+              options.retesselate, options.LineFusionThreshold)
     {
-        std::cout << "Reconstruction Instance generated..." << std::endl;
     }
+
 
     template <typename BaseVecT>
     int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkManager> chunkManager)
@@ -115,13 +120,12 @@ namespace lvr2
         BoundingBox<BaseVecT> bb = bg.getBB();
         // ######################
         BoundingBox<BaseVecT> cmBB = BoundingBox<BaseVecT>();
-        BaseVector<float> chunkSizeVec = BaseVector<float>(m_chunkSize, m_chunkSize, m_chunkSize);
+        // BaseVector<float> chunkSizeVec = BaseVector<float>(m_chunkSize, m_chunkSize, m_chunkSize);
         // to be safe we expand the boundingBox by one chunksize in every dimension, not needed once CM with rehashing is committed
-        cmBB.expand(bb.getMin() - chunkSizeVec);
-        cmBB.expand(bb.getMax() + chunkSizeVec);
+        //cmBB.expand(bb.getMin() - chunkSizeVec);
+        //cmBB.expand(bb.getMax() + chunkSizeVec);
 
-        //chunkManager->setVariables(bb, m_chunkSize, chunkAmount);
-        std::shared_ptr<ChunkHashGrid> chg = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(m_filePath, 50, bb, m_chunkSize));
+
 
         // ###########################
         cout << bb << endl;
@@ -140,9 +144,7 @@ namespace lvr2
             for (size_t i = 0; i < vGrid.getBoxes().size(); i++)
             {
                 BoundingBox<BaseVecT> partBB = *vGrid.getBoxes().at(i).get();
-                // TEST expand the box by two voxelsizes
-                // partBB.expand(BaseVecT(partBB.getMin().x - m_voxelSize * 2, partBB.getMin().y - m_voxelSize * 2, partBB.getMin().z - m_voxelSize * 2));
-                // partBB.expand(BaseVecT(partBB.getMax().x + m_voxelSize * 2, partBB.getMax().y + m_voxelSize * 2, partBB.getMax().z + m_voxelSize * 2));
+                cmBB.expand(partBB);
                 partitionBoxes.push_back(partBB);
                 partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
                            << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
@@ -170,6 +172,8 @@ namespace lvr2
             std::cout << lvr2::timestamp << "got: " << partitionBoxes.size() << " leafs, saving leafs"
                       << std::endl;
         }
+
+        std::shared_ptr<ChunkHashGrid> chg = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(m_filePath, 50, cmBB, m_chunkSize));
 
         BaseVecT bb_min(bb.getMin().x, bb.getMin().y, bb.getMin().z);
         BaseVecT bb_max(bb.getMax().x, bb.getMax().y, bb.getMax().z);
@@ -242,12 +246,12 @@ namespace lvr2
             if (bg.hasNormals())
             {
                 size_t numNormals;
-                lvr2::floatArr normals = bg.normals(partitionBoxes[i].getMin().x,
-                                                    partitionBoxes[i].getMin().y,
-                                                    partitionBoxes[i].getMin().z,
-                                                    partitionBoxes[i].getMax().x,
-                                                    partitionBoxes[i].getMax().y,
-                                                    partitionBoxes[i].getMax().z,
+                lvr2::floatArr normals = bg.normals(partitionBoxes[i].getMin().x ,
+                                                    partitionBoxes[i].getMin().y ,
+                                                    partitionBoxes[i].getMin().z ,
+                                                    partitionBoxes[i].getMax().x ,
+                                                    partitionBoxes[i].getMax().y ,
+                                                    partitionBoxes[i].getMax().z ,
                                                     numNormals);
 
                 p_loader->setNormalArray(normals, numNormals);
@@ -325,6 +329,7 @@ namespace lvr2
         // auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(grid_files, cbb, m_voxelSize);
         // don't read from HDF5 - get the chunks from the ChunkManager
         // auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(m_filePath, newChunks, cbb);
+        // TODO: check if we have to change this to reduce the memory footprint. In theory we could reduce it by our overlap
         std::vector<PointBufferPtr> tsdfChunks;
         for(BaseVector<int> coord : newChunks)
         {
@@ -332,7 +337,6 @@ namespace lvr2
             if(chunk)
             {
                 tsdfChunks.push_back(chunk.get());
-                std::cout << chunk.get()->numPoints() << " voxel " << std::endl;
             }
             else
             {
