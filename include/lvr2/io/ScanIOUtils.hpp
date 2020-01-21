@@ -22,6 +22,21 @@
 namespace lvr2
 {
 
+std::set<size_t> loadPositionIdsFromDirectory(
+    const boost::filesystem::path& path
+);
+
+std::set<size_t> loadCamIdsFromDirectory(
+    const boost::filesystem::path& path,
+    const size_t& positionNr
+);
+
+std::set<size_t> loadImageIdsFromDirectory(
+    const boost::filesystem::path& path,
+    const size_t& positionNr,
+    const size_t& camNr
+);
+
 void saveScanToDirectory(const boost::filesystem::path& path, const Scan& scan, const size_t& positionNr);
 
 bool loadScanFromDirectory(const boost::filesystem::path&, Scan& scan, const size_t& positionNr, bool loadData);
@@ -37,7 +52,12 @@ void saveScanImageToDirectory(
     const size_t& camNr,
     const size_t& imageNr);
 
-bool loadScanImageFromDirectory(const boost::filesystem::path& path, ScanImage& image, const size_t& positionNr, const size_t& imageNr);
+bool loadScanImageFromDirectory(
+    const boost::filesystem::path& path,
+    ScanImage& image,
+    const size_t& positionNr,
+    const size_t& camNr,
+    const size_t& imageNr);
 
 void saveScanPositionToDirectory(const boost::filesystem::path& path, const ScanPosition& position, const size_t& positionNr);
 
