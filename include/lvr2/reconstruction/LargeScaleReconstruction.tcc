@@ -127,6 +127,7 @@ namespace lvr2
         cout << bb << endl;
 
         vector<BoundingBox<BaseVecT>> partitionBoxes;
+        vector<BoundingBox<BaseVecT>> partitionBoxesNew;
 
         cout << lvr2::timestamp << "making tree" << endl;
         if (m_partMethod == 1)
@@ -139,6 +140,9 @@ namespace lvr2
             for (size_t i = 0; i < vGrid.getBoxes().size(); i++)
             {
                 BoundingBox<BaseVecT> partBB = *vGrid.getBoxes().at(i).get();
+                // TEST expand the box by two voxelsizes
+                // partBB.expand(BaseVecT(partBB.getMin().x - m_voxelSize * 2, partBB.getMin().y - m_voxelSize * 2, partBB.getMin().z - m_voxelSize * 2));
+                // partBB.expand(BaseVecT(partBB.getMax().x + m_voxelSize * 2, partBB.getMax().y + m_voxelSize * 2, partBB.getMax().z + m_voxelSize * 2));
                 partitionBoxes.push_back(partBB);
                 partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
                            << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
@@ -184,14 +188,15 @@ namespace lvr2
             string name_id;
             if (m_partMethod == 1)
             {
+                // TODO rename the name / use centroid
                 name_id =
                         std::to_string(
-                                (int)floor(partitionBoxes.at(i).getMin().x / m_chunkSize)) +
+                                (int)floor(partitionBoxes.at(i).getCentroid().x / m_chunkSize)) +
                         "_" +
                         std::to_string(
-                                (int)floor(partitionBoxes.at(i).getMin().y / m_chunkSize)) +
+                                (int)floor(partitionBoxes.at(i).getCentroid().y / m_chunkSize)) +
                         "_" +
-                        std::to_string((int)floor(partitionBoxes.at(i).getMin().z / m_chunkSize));
+                        std::to_string((int)floor(partitionBoxes.at(i).getCentroid().z / m_chunkSize));
             }
             else
             {
@@ -268,26 +273,21 @@ namespace lvr2
             ps_grid->calcDistanceValues();
 
             //TODO: is this even used? if not:remove it
-
-            if(true)
-            {
-                cout << "No. of Cells " << i << ": " <<ps_grid->getNumberOfCells()<<endl;
-            }
-
             auto reconstruction =
                    make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
 
 
 
 
-            // <PointBufferPtr>setChunk: string layer, int x, int y, int z, T data
-            int x = (int)floor(partitionBoxes.at(i).getMin().x / m_chunkSize);
-            int y = (int)floor(partitionBoxes.at(i).getMin().y / m_chunkSize);
-            int z = (int)floor(partitionBoxes.at(i).getMin().z / m_chunkSize);
+            int x = (int)floor(partitionBoxes.at(i).getCentroid().x / m_chunkSize);
+            int y = (int)floor(partitionBoxes.at(i).getCentroid().y / m_chunkSize);
+            int z = (int)floor(partitionBoxes.at(i).getCentroid().z / m_chunkSize);
             addTSDFChunkManager(x, y, z, ps_grid, chg);
             BaseVector<int> chunkCoordinates(x, y, z);
             // also save the grid coordinates of the chunk added to the ChunkManager
             newChunks.push_back(chunkCoordinates);
+            // also save the "real" bounding box without overlap
+            partitionBoxesNew.push_back(partitionBoxes.at(i));
 
             // save the mesh of the chunk
             // additionally for debug: Save the mesh as a ply todo delete later
@@ -304,39 +304,9 @@ namespace lvr2
 
         }
 
-        // TODO: can be removed
-//        //TODO: replace reading from .ser file to reading from ChunkManager
-//        ifstream old_mesh("VGrid.ser");
-//        if (m_partMethod == 1 && old_mesh.is_open())
-//        {
-//            while (old_mesh.good())
-//            {
-//                string mesh;
-//                getline(old_mesh, mesh);
-//                cout << "Old Mesh: " << mesh << endl;
-//                if (!mesh.empty())
-//                {
-//                    meshes.insert(mesh);
-//                }
-//            }
-//        }
 
         std::cout << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
         std::cout << "Generated Meshes: " << meshes.size() << std::endl;
-
-        //TODO: remove this too
-//        ofstream vGrid_ser;
-//        vGrid_ser.open("VGrid.ser", ofstream::out | ofstream::trunc);
-//        unordered_set<string>::iterator itr;
-//
-//        //TODO: potentially remove mesh-combine or leave it as a debug output
-//        for (itr = meshes.begin(); itr != meshes.end(); itr++)
-//        {
-//            vGrid_ser << *itr << std::endl;
-//            grid_files.push_back(*itr);
-//        }
-//
-//        vGrid_ser.close();
 
         cout << lvr2::timestamp << "finished" << endl;
 
@@ -362,13 +332,14 @@ namespace lvr2
             if(chunk)
             {
                 tsdfChunks.push_back(chunk.get());
+                std::cout << chunk.get()->numPoints() << " voxel " << std::endl;
             }
             else
             {
                 std::cout << "WARNING - Could not find chunk (" << coord.x << ", " << coord.y << ", " << coord.z << ") in layer: tsdf_values. " << std::endl;
             }
         }
-        auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(tsdfChunks, cbb, m_voxelSize);
+        auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(tsdfChunks, partitionBoxesNew, cbb, m_voxelSize);
 
         auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(hg);
 
@@ -496,7 +467,6 @@ namespace lvr2
         chunk->addChannel(extruded, "extruded", csize, 1);
         chunk->addAtomic<unsigned int>(csize, "num_voxel");
 
-        // TODO uncomment
         cm->setChunk<PointBufferPtr>(layerName, x, y, z, chunk);
     }
 }
