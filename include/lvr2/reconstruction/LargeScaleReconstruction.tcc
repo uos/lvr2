@@ -87,14 +87,14 @@ namespace lvr2
 
     template<typename BaseVecT>
     LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(LSROptions options)
-            : LargeScaleReconstruction(m_filePath(options.filePath), m_voxelSize(options.voxelSize), m_bgVoxelSize(options.bgVoxelSize),
-              m_scale(options.scale), m_chunkSize(options.chunkSize),m_nodeSize(options.nodeSize),
-              m_partMethod(options.partMethod), m_Ki(options.Ki), m_Kd(options.Kd), m_Kn(options.Kn), m_useRansac(options.useRansac),
-              m_extrude(options.extrude), m_removeDanglingArtifacts(options.removeDanglingArtifacts),
-              m_cleanContours(options.cleanContours), m_fillHoles(options.fillHoles), m_optimizePlanes(options.optimizePlanes),
-              m_getNormalThreshold(options.getNormalThreshold), m_planeIterations(options.planeIterations),
-              m_MinPlaneSize(options.MinPlaneSize), m_SmallRegionThreshold(options.SmallRegionThreshold),
-              m_retesselate(options.retesselate), m_LineFusionThreshold(options.LineFusionThreshold))
+            : LargeScaleReconstruction(options.filePath, options.voxelSize, options.bgVoxelSize,
+              options.scale, options.chunkSize,options.nodeSize,
+              options.partMethod, options.Ki, options.Kd, options.Kn, options.useRansac,
+              options.extrude, options.removeDanglingArtifacts,
+              options.cleanContours, options.fillHoles, options.optimizePlanes,
+              options.getNormalThreshold, options.planeIterations,
+              options.MinPlaneSize, options.SmallRegionThreshold,
+              options.retesselate, options.LineFusionThreshold)
     {
     }
 
@@ -122,11 +122,11 @@ namespace lvr2
         BoundingBox<BaseVecT> cmBB = BoundingBox<BaseVecT>();
         BaseVector<float> chunkSizeVec = BaseVector<float>(m_chunkSize, m_chunkSize, m_chunkSize);
         // to be safe we expand the boundingBox by one chunksize in every dimension, not needed once CM with rehashing is committed
-        cmBB.expand(bb.getMin() - chunkSizeVec);
-        cmBB.expand(bb.getMax() + chunkSizeVec);
 
-        //chunkManager->setVariables(bb, m_chunkSize, chunkAmount);
-        std::shared_ptr<ChunkHashGrid> chg = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(m_filePath, 50, bb, m_chunkSize));
+        //cmBB.expand(bb.getMin() - chunkSizeVec);
+        //cmBB.expand(bb.getMax() + chunkSizeVec);
+
+
 
         // ###########################
         cout << bb << endl;
@@ -144,6 +144,7 @@ namespace lvr2
             for (size_t i = 0; i < vGrid.getBoxes().size(); i++)
             {
                 BoundingBox<BaseVecT> partBB = *vGrid.getBoxes().at(i).get();
+                cmBB.expand(partBB);
                 partitionBoxes.push_back(partBB);
                 partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
                            << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
@@ -171,6 +172,9 @@ namespace lvr2
             std::cout << lvr2::timestamp << "got: " << partitionBoxes.size() << " leafs, saving leafs"
                       << std::endl;
         }
+
+        //chunkManager->setVariables(bb, m_chunkSize, chunkAmount);
+        std::shared_ptr<ChunkHashGrid> chg = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(m_filePath, 50, cmBB, m_chunkSize));
 
         BaseVecT bb_min(bb.getMin().x, bb.getMin().y, bb.getMin().z);
         BaseVecT bb_max(bb.getMax().x, bb.getMax().y, bb.getMax().z);

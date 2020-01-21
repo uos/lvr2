@@ -156,6 +156,7 @@ class ChunkHashGrid
      */
     inline std::size_t hashValue(int i, int j, int k) const
     {
+        std::cout << m_chunkAmount.x << ", " << m_chunkAmount.y << ", " << m_chunkAmount.z << std::endl;
         return (i + m_chunkIndexOffset.x) * m_chunkAmount.y * m_chunkAmount.z
                + (j + m_chunkIndexOffset.y) * m_chunkAmount.z + k + m_chunkIndexOffset.z;
     }
