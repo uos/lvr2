@@ -25,6 +25,8 @@ struct convert<lvr2::Scan>
     static Node encode(const lvr2::Scan& scan) {
         Node node;
         
+        node["type"] = "scan";
+
         node["start_time"]  = scan.m_startTime;
         node["end_time"] = scan.m_endTime;
 
@@ -51,6 +53,11 @@ struct convert<lvr2::Scan>
 
     static bool decode(const Node& node, lvr2::Scan& scan) {
         
+        if(node["type"].as<std::string>() != "scan")
+        {
+            return false;
+        }
+
         scan.m_startTime = node["start_time"].as<float>();
         scan.m_endTime = node["end_time"].as<float>();
         scan.m_poseEstimation = node["pose_estimate"].as<lvr2::Transformd>();

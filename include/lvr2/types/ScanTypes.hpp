@@ -118,11 +118,11 @@ struct ScanImage
 using ScanImagePtr = std::shared_ptr<ScanImage>;
 using ScanImageOptional = boost::optional<ScanImage>;
 
-struct Camera {
+struct ScanCamera {
     std::vector<ScanImagePtr>       images;
 };
 
-using CameraPtr = std::shared_ptr<Camera>;
+using ScanCameraPtr = std::shared_ptr<ScanCamera>;
 
 
 /*****************************************************************************
@@ -136,7 +136,7 @@ struct ScanPosition
     ScanOptional                    scan;
 
     /// Image data (optional, empty vector of no images were taken) 
-    std::vector<CameraPtr>          cams;
+    std::vector<ScanCameraPtr>          cams;
 };
 
 using ScanPositionPtr = std::shared_ptr<ScanPosition>;

@@ -258,6 +258,12 @@ void saveScanImageToDirectory(
 
     if(boost::filesystem::exists(path))
     {
+        if(!boost::filesystem::exists(path / "scan_images"))
+        {
+            std::cout << timestamp << "Creating " << path / "scan_images" << std::endl;
+            boost::filesystem::create_directory(path / "scan_images"); 
+        }
+
         // Create scan image directory if necessary
         if(!boost::filesystem::exists(scanimage_directory))
         {
@@ -327,7 +333,6 @@ bool loadScanImageFromDirectory(
     stringstream pos_str;
     pos_str << std::setfill('0') << std::setw(5) << positionNr;
 
-
     // Construct a path to image directory and check
     boost::filesystem::path scan_image_dir = path / "scan_images" / pos_str.str();
     if(boost::filesystem::exists(scan_image_dir))
@@ -347,6 +352,7 @@ bool loadScanImageFromDirectory(
 
         std::cout << timestamp << "Loading " << image_path << std::endl;
         image.image = cv::imread(image_path.string(), 1);
+        image.image_file = image_path;
 
         std::cout << timestamp << "Loading " << meta_path << std::endl;
         loadPinholeModelFromYAML(meta_path, image.camera);
@@ -439,7 +445,7 @@ bool loadScanPositionFromDirectory(
 
             for(const size_t& cam_id : cam_ids)
             {
-                CameraPtr cam(new Camera);
+                ScanCameraPtr cam(new ScanCamera);
                 std::set<size_t> img_ids = loadImageIdsFromDirectory(path, positionNr, cam_id);
                 for(const size_t& img_id : img_ids)
                 {
