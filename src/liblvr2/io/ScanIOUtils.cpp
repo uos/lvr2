@@ -230,12 +230,7 @@ bool loadScanFromDirectory(
 
 void loadScanMetaInfoFromYAML(const boost::filesystem::path& path, Scan& scan)
 {
-    std::cout << "loading META from " << path << std::endl;
     YAML::Node meta = YAML::LoadFile(path.string());
-
-    Scan tmp = meta.as<Scan>();
-    std::cout << tmp.m_phiMin << " " << tmp.m_phiMax << std::endl;
-
     scan = meta.as<Scan>();
 }
 
