@@ -94,6 +94,7 @@ bool loadScanFromDirectory(
             std::cout << timestamp << "Reading " << meta_yaml_path << std::endl;
             loadScanMetaInfoFromYAML(meta_yaml_path, scan);
 
+
             // Load scan data
             boost::filesystem::path scan_path = position_directory / "scan.ply";
             std::cout << timestamp << "Reading " << scan_path << std::endl;
@@ -318,11 +319,15 @@ bool loadScanPositionFromDirectory(
     bool images_read = false;
 
     std::cout << timestamp << "Loading scan position " << positionNr << std::endl;
-    if(!loadScanFromDirectory(path, *position.scan, positionNr, true))
+    Scan scan;
+    if(!loadScanFromDirectory(path, scan, positionNr, true))
     {
         std::cout << timestamp << "Warning: Scan position " << positionNr 
                   << " does not contain scan data." << std::endl;
+    } else {
+        position.scan = scan;
     }
+
 
     boost::filesystem::path img_directory = path / "scan_images";
     if(boost::filesystem::exists(img_directory))
@@ -366,7 +371,7 @@ void saveScanProjectToDirectory(const boost::filesystem::path& path, const ScanP
     boost::filesystem::create_directory(path);
 
     YAML::Node yaml;
-    yaml["position"] = project.pose;
+    yaml["pose"] = project.pose;
     std::ofstream out( (path / "meta.yaml").string() );
     if (out.good())
     {
@@ -380,14 +385,33 @@ void saveScanProjectToDirectory(const boost::filesystem::path& path, const ScanP
 
     for(size_t i = 0; i < project.positions.size(); i++)
     {
-        std::cout << "save scan " << i << std::endl;
         saveScanPositionToDirectory(path, *project.positions[i], i);
     }
 }
 
 bool loadScanProjectFromDirectory(const boost::filesystem::path& path, ScanProject& project)
 {
+    YAML::Node meta = YAML::LoadFile((path / "meta.yaml").string() );    
+    project.pose = meta["pose"].as<Transformd>();
+
+
+    boost::filesystem::directory_iterator it(path / "scans");
+    boost::filesystem::directory_iterator endit;
+
     // Iterate over all subdirectories
+    int i=0;
+    while(it != endit)
+    {
+        if(boost::filesystem::is_directory(it->path()))
+        {
+            ScanPositionPtr scan_pos(new ScanPosition);
+            loadScanPositionFromDirectory(path, *scan_pos, i);
+            project.positions.push_back(scan_pos);
+            i++;
+        }
+        ++it;
+    }
+
 
     return true;
 }

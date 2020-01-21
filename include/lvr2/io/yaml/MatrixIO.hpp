@@ -6,7 +6,7 @@
 #include <Eigen/Dense>
 
 
-namespace YAML {  
+namespace YAML {
 
 /**
  * YAML-CPPs convert specialization
@@ -21,9 +21,8 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
      * Encode Eigen matrix to yaml. 
      */
     template <class Scalar, int A, int B, int C, int D, int E>
-    static Node encode(const Eigen::Matrix<Scalar, A, B, C, D, E>& M) {
-        
-
+    static Node encode(const Eigen::Matrix<Scalar, A, B, C, D, E>& M) 
+    {
         typedef typename Eigen::Matrix<Scalar, A, B, C, D, E>::Index IndexType;
         IndexType rows = M.rows();
         IndexType cols = M.cols();
@@ -43,7 +42,8 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
     }
 
     template <class Scalar, int A, int B, int C, int D, int E>
-    static bool decode(const Node& node, Eigen::Matrix<Scalar, A, B, C, D, E>& M) {
+    static bool decode(const Node& node, Eigen::Matrix<Scalar, A, B, C, D, E>& M) 
+    {
         typedef typename Eigen::Matrix<Scalar, A, B, C, D, E>::Index IndexType;
         
         IndexType rows = node["rows"].as<IndexType>();
@@ -70,6 +70,7 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
     template <class Scalar, int B, int C, int D, int E>
     static bool decode(const Node& node, Eigen::Matrix<Scalar, Eigen::Dynamic, B, C, D, E>& M) 
     {
+
         typedef typename Eigen::Matrix<Scalar, Eigen::Dynamic, B, C, D, E>::Index IndexType;
         IndexType rows = node["rows"].as<IndexType>();
         IndexType cols = node["cols"].as<IndexType>();
