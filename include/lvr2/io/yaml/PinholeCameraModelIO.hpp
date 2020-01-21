@@ -39,8 +39,12 @@ struct convert<lvr2::PinholeCameraModel<T> >
     static bool decode(const Node& node, lvr2::PinholeCameraModel<T>& model) 
     {
 
-        std::string camera_model = node["camera_model"].as<std::string>();
-        if(camera_model != "pinhole")
+        if(node["type"].as<std::string>() != "camera")
+        {
+            return false;
+        }
+
+        if(node["camera_model"].as<std::string>() != "pinhole")
         {
             return false;
         }
