@@ -33,6 +33,8 @@ int main(int argc, char** argv)
 
         // add scans to scanProjectPtr
         scan_proj->positions.push_back(scan_pos);
+
+        scan_pos->scan->m_positionNumber = i;
     }
 
     scan_proj->pose = Transformd::Identity();
