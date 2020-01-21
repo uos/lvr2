@@ -1,9 +1,97 @@
 #include "lvr2/io/ScanIOUtils.hpp"
-
+#include <boost/regex.hpp>
 #include <opencv2/opencv.hpp>
+#include <set>
+
 namespace lvr2
 {
 
+std::set<size_t> loadPositionIdsFromDirectory(
+    const boost::filesystem::path& path
+)
+{
+    std::set<size_t> positions;
+    boost::filesystem::path scan_path = path / "scans";
+    const boost::regex scan_dir_filter("^([0-9]{5}).*$");
+
+    boost::filesystem::directory_iterator end_itr;
+    for(boost::filesystem::directory_iterator it(scan_path); it != end_itr; ++it )
+    {
+        if( !boost::filesystem::is_directory( it->path() ) ) continue;
+        boost::smatch what;
+        if( !boost::regex_match( it->path().filename().string(), what, scan_dir_filter ) ) continue;
+        positions.insert(static_cast<size_t>(std::stoul(what[1])));
+    }
+
+    return positions;
+}
+
+std::set<size_t> loadCamIdsFromDirectory(
+    const boost::filesystem::path& path,
+    const size_t& positionNr
+)
+{
+    std::set<size_t> cam_ids;
+
+    std::stringstream ss;
+    ss << std::setfill('0') << std::setw(5) << positionNr;
+    boost::filesystem::path scan_images_dir = path / "scan_images" / ss.str();
+
+    if(boost::filesystem::exists(scan_images_dir))
+    {
+        const boost::regex image_filter("^(\\d+)_(\\d+)\\.(bmp|dib|jpeg|jpg|jpe|jp2|png|pbm|pgm|ppm|sr|ras|tiff|tif)$");
+
+        boost::filesystem::directory_iterator end_itr;
+        for(boost::filesystem::directory_iterator it(scan_images_dir); it != end_itr; ++it )
+        {
+            if( !boost::filesystem::is_regular_file( it->path() ) ) continue;
+
+            boost::smatch what;
+            if( !boost::regex_match( it->path().filename().string(), what, image_filter ) ) continue;
+
+            cam_ids.insert(static_cast<size_t>(std::stoul(what[1])));
+
+        }
+    }
+
+    return cam_ids;
+}
+
+std::set<size_t> loadImageIdsFromDirectory(
+    const boost::filesystem::path& path,
+    const size_t& positionNr,
+    const size_t& camNr
+)
+{
+    std::set<size_t> img_ids;
+
+    std::stringstream ss;
+    ss << std::setfill('0') << std::setw(5) << positionNr;
+    boost::filesystem::path scan_images_dir = path / "scan_images" / ss.str();
+
+    
+    if(boost::filesystem::exists(scan_images_dir))
+    {
+        const boost::regex image_filter("^(\\d+)_(\\d+)\\.(bmp|dib|jpeg|jpg|jpe|jp2|png|pbm|pgm|ppm|sr|ras|tiff|tif)$");
+
+        boost::filesystem::directory_iterator end_itr;
+        for(boost::filesystem::directory_iterator it(scan_images_dir); it != end_itr; ++it )
+        {
+            if( !boost::filesystem::is_regular_file( it->path() ) ) continue;
+
+            boost::smatch what;
+            if( !boost::regex_match( it->path().filename().string(), what, image_filter ) ) continue;
+
+            if(static_cast<size_t>(std::stoul(what[1])) == camNr)
+            {
+                img_ids.insert(static_cast<size_t>(std::stoul(what[2])));
+            }
+        }
+    }
+
+
+    return img_ids;
+}
 
 void writeScanMetaYAML(const boost::filesystem::path& path, const Scan& scan)
 {
@@ -231,7 +319,9 @@ void loadPinholeModelFromYAML(const boost::filesystem::path& path, PinholeCamera
 bool loadScanImageFromDirectory(
     const boost::filesystem::path& path, 
     ScanImage& image, 
-    const size_t& positionNr, const size_t& imageNr)
+    const size_t& positionNr, 
+    const size_t& camNr,
+    const size_t& imageNr)
 {
     // Convert position and image number to strings
     stringstream pos_str;
