@@ -329,7 +329,6 @@ namespace lvr2
         // auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(grid_files, cbb, m_voxelSize);
         // don't read from HDF5 - get the chunks from the ChunkManager
         // auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(m_filePath, newChunks, cbb);
-        // TODO: check if we have to change this to reduce the memory footprint. In theory we could reduce it by our overlap
         std::vector<PointBufferPtr> tsdfChunks;
         for(BaseVector<int> coord : newChunks)
         {
@@ -344,7 +343,7 @@ namespace lvr2
             }
         }
         auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(tsdfChunks, partitionBoxesNew, cbb, m_voxelSize);
-
+        tsdfChunks.clear();
         auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(hg);
 
         lvr2::HalfEdgeMesh<Vec> mesh;
