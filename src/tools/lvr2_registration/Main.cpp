@@ -430,29 +430,32 @@ int main(int argc, char** argv)
             // DEBUG
             ScanPosition pos;
             pos.scan = boost::optional<Scan>(*tempScan);
+            proj.project = ScanProjectPtr(new ScanProject);
             proj.project->positions.push_back(std::make_shared<ScanPosition>(pos));
             proj.changed.push_back(false);
 
             
 
-            // SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(tempScan));
+            SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(tempScan));
 
-            // scans.push_back(slamScan);
-            // align.addScan(slamScan);
+            scans.push_back(slamScan);
+            align.addScan(slamScan);
         }
         // DEBUG
         
-        cout << "vor Pipe Konstruktor" << endl;
-        ScanProjectEditMarkPtr projPtr = make_shared<ScanProjectEditMark>(proj);
-        RegistrationPipeline pipe(&options, projPtr);
-        pipe.doRegistration();
-        cout << "Nach doRegistration" << endl;
-        for (size_t i = 0; i < projPtr->changed.size(); i++)
-        {
-            cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << projPtr->changed.at(i)<< endl;
-        }
+        // cout << "vor Pipe Konstruktor" << endl;
+        // ScanProjectEditMarkPtr projPtr = make_shared<ScanProjectEditMark>(proj);
+        // RegistrationPipeline pipe(&options, projPtr);
+        // pipe.doRegistration();
+        // cout << "Nach doRegistration" << endl;
+        // for (size_t i = 0; i < projPtr->changed.size(); i++)
+        // {
+        //     cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << projPtr->changed.at(i)<< endl;
+        // }
         
-        cout << "Eine Pose aus dem Project:" << endl << projPtr->project->positions.at(1)->scan->m_registration << endl;
+
+        //cout << "Eine Pose aus dem Project:" << endl << projPtr->project->positions.at(1)->scan->m_registration << endl;
+
 
     }
     else

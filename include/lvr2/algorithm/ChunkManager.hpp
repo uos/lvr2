@@ -52,7 +52,6 @@ class ChunkManager : public ChunkHashGrid
   public:
     using FilterFunction = std::function<bool(MultiChannelMap::val_type, size_t)>;
 
-
     /**
      * @brief ChunkManager creates chunks from an original mesh
      *
