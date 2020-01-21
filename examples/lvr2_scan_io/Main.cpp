@@ -36,7 +36,14 @@ int main(int argc, char** argv)
     }
 
     scan_proj->pose = Transformd::Identity();
+
+    std::cout << "--- WRITE TEST ---" << std::endl;
     saveScanProjectToDirectory("example_sav", *scan_proj);
+
+
+    ScanProject in_scan_proj;
+    std::cout << "--- READ TEST ---" << std::endl;
+    loadScanProjectFromDirectory("example_sav", in_scan_proj);
 
     return 0;
 }
