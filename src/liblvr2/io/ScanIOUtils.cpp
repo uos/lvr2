@@ -230,7 +230,12 @@ bool loadScanFromDirectory(
 
 void loadScanMetaInfoFromYAML(const boost::filesystem::path& path, Scan& scan)
 {
+    std::cout << "loading META from " << path << std::endl;
     YAML::Node meta = YAML::LoadFile(path.string());
+
+    Scan tmp = meta.as<Scan>();
+    std::cout << tmp.m_phiMin << " " << tmp.m_phiMax << std::endl;
+
     scan = meta.as<Scan>();
 }
 
@@ -327,15 +332,23 @@ bool loadScanImageFromDirectory(
     stringstream pos_str;
     pos_str << std::setfill('0') << std::setw(5) << positionNr;
 
-    stringstream image_str;
-    pos_str << std::setfill('0') << std::setw(5) << imageNr;
 
     // Construct a path to image directory and check
     boost::filesystem::path scan_image_dir = path / "scan_images" / pos_str.str();
     if(boost::filesystem::exists(scan_image_dir))
     {
-        boost::filesystem::path meta_path = scan_image_dir / image_str.str() / ".yaml";
-        boost::filesystem::path image_path = scan_image_dir / image_str.str() / ".png";
+        std::stringstream yaml_file, image_file;
+        yaml_file << camNr << "_" << imageNr << ".yaml";
+        image_file << camNr << "_" << imageNr << ".png";
+
+        boost::filesystem::path meta_path = scan_image_dir / yaml_file.str();
+        boost::filesystem::path image_path = scan_image_dir / image_file.str();
+
+        if(!boost::filesystem::exists(meta_path))
+        {
+            std::cout << timestamp << "Could not load meta file of scan/cam/img: " << positionNr << "/" << camNr << "/" << imageNr << std::endl;
+            return false;
+        }
 
         std::cout << timestamp << "Loading " << image_path << std::endl;
         image.image = cv::imread(image_path.string(), 1);
@@ -422,29 +435,27 @@ bool loadScanPositionFromDirectory(
     boost::filesystem::path img_directory = path / "scan_images";
     if(boost::filesystem::exists(img_directory))
     {
-        // Find all .png and .yaml files
-        vector<boost::filesystem::path> image_files;
-        vector<boost::filesystem::path> meta_files;
-
-        get_all(img_directory, ".png", image_files);
-        get_all(img_directory, ".yaml", meta_files);
-
-        if(meta_files.size() == image_files.size())
+        std::stringstream ss;
+        ss << std::setfill('0') << std::setw(5) << positionNr;
+        boost::filesystem::path scanimage_directory = img_directory / ss.str();
+        if(boost::filesystem::exists(scanimage_directory))
         {
-            std::sort(meta_files.begin(), meta_files.end());
-            std::sort(image_files.begin(), image_files.end());
+            std::set<size_t> cam_ids = loadCamIdsFromDirectory(path, positionNr);
 
-            for(size_t i = 0; i < meta_files.size(); i++)
+            for(const size_t& cam_id : cam_ids)
             {
-                // ScanImagePtr img(new ScanImage);
-                // loadScanImageFromDirectory(path, *img, positionNr, i);
-                // position.images.push_back(img);
+                CameraPtr cam(new Camera);
+                std::set<size_t> img_ids = loadImageIdsFromDirectory(path, positionNr, cam_id);
+                for(const size_t& img_id : img_ids)
+                {
+                    ScanImagePtr img(new ScanImage);
+                    loadScanImageFromDirectory(path, *img, positionNr, cam_id, img_id);
+                    cam->images.push_back(img);
+                }
+                position.cams.push_back(cam);
             }
-        }
-        else
-        {
-            std::cout << timestamp << "Warning: YAML / Image count mismatch." << std::endl;
-            return false;
+        } else {
+            std::cout << timestamp << "Warning: Specified scan has no images." << std::endl;
         }
 
     }
@@ -488,20 +499,15 @@ bool loadScanProjectFromDirectory(const boost::filesystem::path& path, ScanProje
     boost::filesystem::directory_iterator it(path / "scans");
     boost::filesystem::directory_iterator endit;
 
-    // Iterate over all subdirectories
-    int i=0;
-    while(it != endit)
-    {
-        if(boost::filesystem::is_directory(it->path()))
-        {
-            ScanPositionPtr scan_pos(new ScanPosition);
-            loadScanPositionFromDirectory(path, *scan_pos, i);
-            project.positions.push_back(scan_pos);
-            i++;
-        }
-        ++it;
-    }
+    std::set<size_t> scan_pos_ids = loadPositionIdsFromDirectory(path);
 
+    for(size_t scan_pos_id : scan_pos_ids)
+    {
+        ScanPositionPtr scan_pos(new ScanPosition);
+        loadScanPositionFromDirectory(path, *scan_pos, scan_pos_id);
+        project.positions.push_back(scan_pos);
+    }
+    
 
     return true;
 }

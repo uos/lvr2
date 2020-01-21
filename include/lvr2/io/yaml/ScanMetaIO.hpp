@@ -56,14 +56,16 @@ struct convert<lvr2::Scan>
         scan.m_poseEstimation = node["pose_estimate"].as<lvr2::Transformd>();
         scan.m_registration = node["registration"].as<lvr2::Transformd>();
         
-        Node config = node["config"];
+        const Node& config = node["config"];
 
-        scan.m_thetaMin = config["theta"][0].as<float>();;
+        
+        scan.m_thetaMin = config["theta"][0].as<float>();
         scan.m_thetaMax = config["theta"][1].as<float>();
 
         scan.m_phiMin = config["phi"][0].as<float>();
-        scan.m_phiMin = config["phi"][1].as<float>();
-        
+        scan.m_phiMax = config["phi"][1].as<float>();
+
+
         scan.m_vResolution = config["v_res"].as<float>();
         scan.m_hResolution = config["h_res"].as<float>();
 
