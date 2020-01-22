@@ -31,6 +31,11 @@
 
 #include "vector"
 
+/* begin test with lsr */
+#include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
+#include <lvr2/algorithm/ChunkManager.hpp>
+/* end test with lsr */
+
 using namespace lvr2;
 
 double getDifference(Transformd a, Transformd b)
@@ -123,5 +128,11 @@ void RegistrationPipeline::doRegistration()
             cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
         }
     }
+
+    /* begin test with lsr */
+    LargeScaleReconstruction<lvr2::BaseVector<float>> lsr("super_test.h5");
+    std::shared_ptr<ChunkManager> chunkMananger;
+    lsr.mpiChunkAndReconstruct(m_scans, chunkMananger);
+    /* end test with lsr */
 
 }
