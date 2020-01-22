@@ -111,7 +111,9 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
 
     std::cout << "Starting large scale reconstruction..." << std::endl;
     // TODO: use constructor with struct parameter
-    LargeScaleReconstruction<lvr2::BaseVector<float>> lsr(m_hdf5Path.string());
+    LSROptions lsrOptions;
+    lsrOptions.filePath = m_hdf5Path.string();
+    LargeScaleReconstruction<lvr2::BaseVector<float>> lsr(lsrOptions);
     lsr.mpiChunkAndReconstruct(m_scanProject, m_chunkManager);
     std::cout << "Finished large scale reconstruction!" << std::endl;
 
