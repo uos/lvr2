@@ -78,6 +78,7 @@ struct convert<lvr2::Scan>
 
         scan.m_numPoints = config["num_points"].as<float>();
 
+
         return true;
     }
 

@@ -4,7 +4,7 @@
 #include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
-#include "lvr2/registration/PinholeCameraModel.hpp"
+#include "lvr2/registration/CameraModels.hpp"
 
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>
@@ -103,11 +103,14 @@ using ScanOptional = boost::optional<Scan>;
 
 struct ScanImage
 {
-    /// Camera model 
-    PinholeCameraModeld             camera;
+    /// Extrinsics 
+    Extrinsicsd                     extrinsics;
+
+    /// Extrinsics estimate
+    Extrinsicsd                     extrinsicsEstimate;
 
     /// Path to stored image
-    boost::filesystem::path         image_file;
+    boost::filesystem::path         imageFile;
 
     /// OpenCV representation
     cv::Mat                         image;
@@ -118,7 +121,11 @@ struct ScanImage
 using ScanImagePtr = std::shared_ptr<ScanImage>;
 using ScanImageOptional = boost::optional<ScanImage>;
 
-struct ScanCamera {
+struct ScanCamera 
+{
+    std::string                     sensorType = "Camera";
+    std::string                     sensorName = "Camera";
+    PinholeModeld                   camera;
     std::vector<ScanImagePtr>       images;
 };
 
@@ -132,11 +139,13 @@ using ScanCameraPtr = std::shared_ptr<ScanCamera>;
 *****************************************************************************/
 struct ScanPosition
 {
-    /// Scan data (optional)
-    ScanOptional                    scan;
+    /// Vector of scan data. The scan position can contain several 
+    /// scans. The scan with the best resolition should be stored in
+    /// scans[0]. Scans can be empty
+    std::vector<ScanPtr>            scans;
 
     /// Image data (optional, empty vector of no images were taken) 
-    std::vector<ScanCameraPtr>          cams;
+    std::vector<ScanCameraPtr>      cams;
 };
 
 using ScanPositionPtr = std::shared_ptr<ScanPosition>;
@@ -152,6 +161,12 @@ using ScanPositionPtr = std::shared_ptr<ScanPosition>;
  *****************************************************************************/
 struct ScanProject
 {
+    /// Type of used laser scanner
+    std::string                     sensorType;
+
+    /// Individual name of used laser scanner
+    std::string                     sensorName;
+
     /// Position of this scan project in world coordinates.
     /// It is assumed that all stored scan position are in 
     /// project coordinates

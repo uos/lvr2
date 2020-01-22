@@ -1,7 +1,11 @@
-#include "lvr2/io/ScanIOUtils.hpp"
 #include <boost/regex.hpp>
 #include <opencv2/opencv.hpp>
 #include <set>
+
+#include "lvr2/io/ScanIOUtils.hpp"
+#include "lvr2/io/yaml/Scan.hpp"
+#include "lvr2/io/yaml/ScanCamera.hpp"
+
 
 namespace lvr2
 {
@@ -247,79 +251,56 @@ bool loadScanFromHDF5(const std::string filename, const size_t& positionNr)
 
 void saveScanImageToDirectory(
     const boost::filesystem::path& path, 
+    const std::string& camDir,
     const ScanImage& image,
     const size_t& positionNr,
-    const size_t& camNr,
     const size_t& imageNr)
 {
-    std::stringstream ss;
-    ss << std::setfill('0') << std::setw(5) << positionNr;
-    boost::filesystem::path scanimage_directory = path / "scan_images" / ss.str();
+    std::stringstream pos_ss;
+    pos_ss << std::setfill('0') << std::setw(5) << positionNr;
+    boost::filesystem::path scanimage_directory = path / pos_ss.str() / camDir;
 
-    if(boost::filesystem::exists(path))
+    // Create directory for scan image if necessary
+    if(!boost::filesystem::exists(scanimage_directory))
     {
-        if(!boost::filesystem::exists(path / "scan_images"))
-        {
-            std::cout << timestamp << "Creating " << path / "scan_images" << std::endl;
-            boost::filesystem::create_directory(path / "scan_images"); 
-        }
-
-        // Create scan image directory if necessary
-        if(!boost::filesystem::exists(scanimage_directory))
-        {
-            std::cout << timestamp << "Creating " << scanimage_directory << std::endl;
-            boost::filesystem::create_directory(scanimage_directory);        
-        }
-
-        // Create in image folder for current position if necessary
-        
-        // Save image in .png format
-        std::stringstream image_str;
-        image_str << camNr << "_" << imageNr << ".png";
-        boost::filesystem::path image_path = scanimage_directory / image_str.str();
-        
-        std::cout << timestamp << "Saving " << image_path << std::endl;
-        cv::imwrite(image_path.string(), image.image);
-
-        // Save calibration yaml
-        std::stringstream meta_str;
-        meta_str << camNr << "_" << imageNr << ".yaml";
-        boost::filesystem::path meta_path = scanimage_directory / meta_str.str();
-        std::cout << timestamp << "Saving " << meta_path << std::endl;
-        writePinholeModelToYAML(meta_path, image.camera);
+        boost::filesystem::create_directory(scanimage_directory);
     }
-    else
+
+    // Create directory for scan image data frame data if necessary
+    boost::filesystem::path scanimage_data_directory = scanimage_directory / "data";
+    if(!boost::filesystem::exists(scanimage_data_directory))
     {
-        std::cout << timestamp
-                  << "Warning: Scan directory for scan image does not exist: "
-                  << path << std::endl;
+        boost::filesystem::create_directory(scanimage_data_directory);
     }
+
+    
     
 }
 
 void writePinholeModelToYAML(
-    const boost::filesystem::path& path, const PinholeCameraModeld& model)
+    const boost::filesystem::path& path, const PinholeModeld& model)
 {
-    YAML::Node meta;
-    meta = model;
+    // YAML::Node meta;
+    // meta = model;
     
-    std::ofstream out(path.c_str());
-    if (out.good())
-    {
-        out << meta;
-    }
-    else
-    {
-        std::cout << timestamp << "Warning: Unable to open " 
-                  << path.string() << "for writing." << std::endl;
-    }
+    // std::ofstream out(path.c_str());
+    // if (out.good())
+    // {
+    //     out << meta;
+    // }
+    // else
+    // {
+    //     std::cout << timestamp << "Warning: Unable to open " 
+    //               << path.string() << "for writing." << std::endl;
+    // }
 
 }
 
-void loadPinholeModelFromYAML(const boost::filesystem::path& path, PinholeCameraModeld& model)
+void loadPinholeModelFromYAML(const boost::filesystem::path& path, PinholeModeld& model)
 {
-    YAML::Node model_file = YAML::LoadFile(path.string());
-    model = model_file.as<PinholeCameraModeld>();
+//     YAML::Node model_file = YAML::LoadFile(path.string());
+//     model = model_file.as<PinholeModeld>();
+// 
 }
 
 bool loadScanImageFromDirectory(
@@ -329,67 +310,67 @@ bool loadScanImageFromDirectory(
     const size_t& camNr,
     const size_t& imageNr)
 {
-    // Convert position and image number to strings
-    stringstream pos_str;
-    pos_str << std::setfill('0') << std::setw(5) << positionNr;
+    // // Convert position and image number to strings
+    // stringstream pos_str;
+    // pos_str << std::setfill('0') << std::setw(5) << positionNr;
 
-    // Construct a path to image directory and check
-    boost::filesystem::path scan_image_dir = path / "scan_images" / pos_str.str();
-    if(boost::filesystem::exists(scan_image_dir))
-    {
-        std::stringstream yaml_file, image_file;
-        yaml_file << camNr << "_" << imageNr << ".yaml";
-        image_file << camNr << "_" << imageNr << ".png";
+    // // Construct a path to image directory and check
+    // boost::filesystem::path scan_image_dir = path / "scan_images" / pos_str.str();
+    // if(boost::filesystem::exists(scan_image_dir))
+    // {
+    //     std::stringstream yaml_file, image_file;
+    //     yaml_file << camNr << "_" << imageNr << ".yaml";
+    //     image_file << camNr << "_" << imageNr << ".png";
 
-        boost::filesystem::path meta_path = scan_image_dir / yaml_file.str();
-        boost::filesystem::path image_path = scan_image_dir / image_file.str();
+    //     boost::filesystem::path meta_path = scan_image_dir / yaml_file.str();
+    //     boost::filesystem::path image_path = scan_image_dir / image_file.str();
 
-        if(!boost::filesystem::exists(meta_path))
-        {
-            std::cout << timestamp << "Could not load meta file of scan/cam/img: " << positionNr << "/" << camNr << "/" << imageNr << std::endl;
-            return false;
-        }
+    //     if(!boost::filesystem::exists(meta_path))
+    //     {
+    //         std::cout << timestamp << "Could not load meta file of scan/cam/img: " << positionNr << "/" << camNr << "/" << imageNr << std::endl;
+    //         return false;
+    //     }
 
-        std::cout << timestamp << "Loading " << image_path << std::endl;
-        image.image = cv::imread(image_path.string(), 1);
-        image.image_file = image_path;
+    //     std::cout << timestamp << "Loading " << image_path << std::endl;
+    //     image.image = cv::imread(image_path.string(), 1);
+    //     image.imageFile = image_path;
 
-        std::cout << timestamp << "Loading " << meta_path << std::endl;
-        loadPinholeModelFromYAML(meta_path, image.camera);
-    }
-    else
-    {
-        std::cout << timestamp << "Warning: Image directory does not exist: "
-                  << scan_image_dir << std::endl;
-        return false;
-    }
+    //     std::cout << timestamp << "Loading " << meta_path << std::endl;
+    //     loadPinholeModelFromYAML(meta_path, image.camera);
+    // }
+    // else
+    // {
+    //     std::cout << timestamp << "Warning: Image directory does not exist: "
+    //               << scan_image_dir << std::endl;
+    //     return false;
+    // }
 
     return true;
 }
 
 void saveScanPositionToDirectory(const boost::filesystem::path& path, const ScanPosition& position, const size_t& positionNr)
 {  
-    // Save scan data
-    std::cout << timestamp << "Saving scan postion " << positionNr << std::endl;
-    if(position.scan)
-    {
-        saveScanToDirectory(path, *position.scan, positionNr);
-    }
-    else
-    {
-        std::cout << timestamp << "Warning: Scan position " << positionNr
-                  << " contains no scan data." << std::endl;
-    }
+    // // Save scan data
+    // std::cout << timestamp << "Saving scan postion " << positionNr << std::endl;
+    // if(position.scan)
+    // {
+    //     saveScanToDirectory(path, *position.scan, positionNr);
+    // }
+    // else
+    // {
+    //     std::cout << timestamp << "Warning: Scan position " << positionNr
+    //               << " contains no scan data." << std::endl;
+    // }
     
-    // Save rgb camera recordings
-    for(size_t cam_id = 0; cam_id < position.cams.size(); cam_id++)
-    {
-        // store each image of camera
-        for(size_t img_id = 0; img_id < position.cams[cam_id]->images.size(); img_id++ )
-        {
-            saveScanImageToDirectory(path, *position.cams[cam_id]->images[img_id], positionNr, cam_id, img_id);
-        }
-    }
+    // // Save rgb camera recordings
+    // for(size_t cam_id = 0; cam_id < position.cams.size(); cam_id++)
+    // {
+    //     // store each image of camera
+    //     for(size_t img_id = 0; img_id < position.cams[cam_id]->images.size(); img_id++ )
+    //     {
+    //         saveScanImageToDirectory(path, *position.cams[cam_id]->images[img_id], positionNr, cam_id, img_id);
+    //     }
+    // }
 }
 
 void get_all(
@@ -419,53 +400,53 @@ bool loadScanPositionFromDirectory(
     ScanPosition& position, 
     const size_t& positionNr)
 {
-    bool scan_read = false;
-    bool images_read = false;
+    // bool scan_read = false;
+    // bool images_read = false;
 
-    std::cout << timestamp << "Loading scan position " << positionNr << std::endl;
-    Scan scan;
-    if(!loadScanFromDirectory(path, scan, positionNr, true))
-    {
-        std::cout << timestamp << "Warning: Scan position " << positionNr 
-                  << " does not contain scan data." << std::endl;
-    } else {
-        position.scan = scan;
-    }
+    // std::cout << timestamp << "Loading scan position " << positionNr << std::endl;
+    // Scan scan;
+    // if(!loadScanFromDirectory(path, scan, positionNr, true))
+    // {
+    //     std::cout << timestamp << "Warning: Scan position " << positionNr 
+    //               << " does not contain scan data." << std::endl;
+    // } else {
+    //     position.scan = scan;
+    // }
 
 
-    boost::filesystem::path img_directory = path / "scan_images";
-    if(boost::filesystem::exists(img_directory))
-    {
-        std::stringstream ss;
-        ss << std::setfill('0') << std::setw(5) << positionNr;
-        boost::filesystem::path scanimage_directory = img_directory / ss.str();
-        if(boost::filesystem::exists(scanimage_directory))
-        {
-            std::set<size_t> cam_ids = loadCamIdsFromDirectory(path, positionNr);
+    // boost::filesystem::path img_directory = path / "scan_images";
+    // if(boost::filesystem::exists(img_directory))
+    // {
+    //     std::stringstream ss;
+    //     ss << std::setfill('0') << std::setw(5) << positionNr;
+    //     boost::filesystem::path scanimage_directory = img_directory / ss.str();
+    //     if(boost::filesystem::exists(scanimage_directory))
+    //     {
+    //         std::set<size_t> cam_ids = loadCamIdsFromDirectory(path, positionNr);
 
-            for(const size_t& cam_id : cam_ids)
-            {
-                ScanCameraPtr cam(new ScanCamera);
-                std::set<size_t> img_ids = loadImageIdsFromDirectory(path, positionNr, cam_id);
-                for(const size_t& img_id : img_ids)
-                {
-                    ScanImagePtr img(new ScanImage);
-                    loadScanImageFromDirectory(path, *img, positionNr, cam_id, img_id);
-                    cam->images.push_back(img);
-                }
-                position.cams.push_back(cam);
-            }
-        } else {
-            std::cout << timestamp << "Warning: Specified scan has no images." << std::endl;
-        }
+    //         for(const size_t& cam_id : cam_ids)
+    //         {
+    //             ScanCameraPtr cam(new ScanCamera);
+    //             std::set<size_t> img_ids = loadImageIdsFromDirectory(path, positionNr, cam_id);
+    //             for(const size_t& img_id : img_ids)
+    //             {
+    //                 ScanImagePtr img(new ScanImage);
+    //                 loadScanImageFromDirectory(path, *img, positionNr, cam_id, img_id);
+    //                 cam->images.push_back(img);
+    //             }
+    //             position.cams.push_back(cam);
+    //         }
+    //     } else {
+    //         std::cout << timestamp << "Warning: Specified scan has no images." << std::endl;
+    //     }
 
-    }
-    else
-    {
-        std::cout << timestamp << "Scan position " << positionNr 
-                  << " has no images." << std::endl;
-    }
-    return true;
+    // }
+    // else
+    // {
+    //     std::cout << timestamp << "Scan position " << positionNr 
+    //               << " has no images." << std::endl;
+    // }
+    // return true;
 }
 
 void saveScanProjectToDirectory(const boost::filesystem::path& path, const ScanProject& project)

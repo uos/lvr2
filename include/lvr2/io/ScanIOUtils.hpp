@@ -7,17 +7,13 @@
 #include <sstream>
 #include <iomanip>
 
-#include "lvr2/types/ScanTypes.hpp"
+#include <boost/filesystem.hpp>
+#include <Eigen/Dense>
+
 #include "lvr2/io/Timestamp.hpp"
 #include "lvr2/io/PLYIO.hpp"
-#include "lvr2/registration/PinholeCameraModel.hpp"
-
-#include <boost/filesystem.hpp>
-#include <yaml-cpp/yaml.h>
-#include <Eigen/Dense>
-#include "YamlIO.hpp"
-
-
+#include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/registration/CameraModels.hpp"
 
 namespace lvr2
 {
@@ -47,17 +43,19 @@ bool loadScanFromHDF5(const std::string filename, const size_t& positionNr);
 
 void saveScanImageToDirectory(
     const boost::filesystem::path& path,
+    const std::string& camDir,
     const ScanImage& image,
     const size_t& positionNr,
-    const size_t& camNr,
     const size_t& imageNr);
 
 bool loadScanImageFromDirectory(
     const boost::filesystem::path& path,
+    const std::string& camDir,
     ScanImage& image,
     const size_t& positionNr,
-    const size_t& camNr,
     const size_t& imageNr);
+
+
 
 void saveScanPositionToDirectory(const boost::filesystem::path& path, const ScanPosition& position, const size_t& positionNr);
 
@@ -75,23 +73,11 @@ void loadScanMetaInfoFromYAML(const boost::filesystem::path& path, Scan& scan);
 
 void loadImageMetaInfoFromYAML(const boost::filesystem::path&, ScanImage& image);
 
-void loadPinholeModelFromYAML(const boost::filesystem::path& path, PinholeCameraModeld& model);
+void loadPinholeModelFromYAML(const boost::filesystem::path& path, PinholeModeld& model);
 
-void writePinholeModelToYAML(const boost::filesystem::path& path, const PinholeCameraModeld& model);
-
-template<typename T, int Rows, int Cols>
-Eigen::Matrix<T, Rows, Cols> loadMatrixFromYAML(const YAML::const_iterator& it);
-
-template<typename T, int Rows, int Cols>
-void saveMatrixToYAML(YAML::Node& node, const std::string& name, const Eigen::Matrix<T, Rows, Cols>& matrix);
-
-template<typename T>
-void loadArrayFromYAML(const YAML::const_iterator& it, T* array, size_t n);
-
+void writePinholeModelToYAML(const boost::filesystem::path& path, const PinholeModeld& model);
 
 
 } // namespace lvr2 
-
-#include "ScanIOUtils.tcc"
 
 #endif

@@ -60,10 +60,9 @@ void RegistrationPipeline::doRegistration()
     
     for (size_t i = 0; i < m_scans->positions.size(); i++)
     {
-        ScanOptional opt = m_scans->positions.at(i)->scan;
-        if (opt)
+        if(m_scans->positions.at(i)->scans.size())
         {
-            ScanPtr scptr = std::make_shared<Scan>(*opt);
+            ScanPtr scptr = m_scans->positions.at(i)->scans[0];
             align.addScan(scptr);
         }
     }
@@ -77,14 +76,14 @@ void RegistrationPipeline::doRegistration()
 
         ScanPositionPtr posPtr = m_scans->positions.at(i);
 
-        cout << "Diff: " << getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) << endl;
-        if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) > m_options->diffPoseSum))
+        cout << "Diff: " << getDifference(posPtr->scans[0]->m_registration, align.scan(i)->pose()) << endl;
+        if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scans[0]->m_registration, align.scan(i)->pose()) > m_options->diffPoseSum))
         {
             m_scans->changed.at(i) = true;
             cout << "New Values"<< endl;
         }
-        posPtr->scan->m_registration = align.scan(i)->pose();
-        cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
+        posPtr->scans[0]->m_registration = align.scan(i)->pose();
+        cout << "Pose Scan Nummer " << i << endl << posPtr->scans[0]->m_registration << endl;
     }
 
 }
