@@ -58,7 +58,7 @@ RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProje
 void RegistrationPipeline::doRegistration()
 {
     SLAMAlign align(*m_options);
-    m_scans->changed = vector<bool>(m_scans->project->positions.size());
+    m_scans->changed = std::vector<bool>(m_scans->project->positions.size());
     for (size_t i = 0; i < m_scans->project->positions.size(); i++)
     {
         m_scans->changed.at(i) = false;
