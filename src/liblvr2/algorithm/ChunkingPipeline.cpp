@@ -71,22 +71,29 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
 
     std::cout << "Starting import tool..." << std::endl;
     ScanProject scanProject;
-    bool importStatus = loadScanProjectFromDirectory(scanDir, scanProject);
-    if (!importStatus)
-    {
-        std::cout << "Import failed..." << std::endl;
-        std::cout << "Aborting chunking pipeline!" << std::endl;
-
-        m_running = false;
-
-        return false;
-    }
-    else
-    {
-        ScanProjectEditMark tmpScanProject;
-        tmpScanProject.project = std::make_shared<ScanProject>(scanProject);
-        m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
-    }
+    // tmp disabled until new scanIOUtils is ready!
+//    bool importStatus = loadScanProjectFromDirectory(scanDir, scanProject);
+//    if (!importStatus)
+//    {
+//        std::cout << "Import failed..." << std::endl;
+//        std::cout << "Aborting chunking pipeline!" << std::endl;
+//
+//        m_running = false;
+//
+//        return false;
+//    }
+//    else
+//    {
+//        ScanProjectEditMark tmpScanProject;
+//        tmpScanProject.project = std::make_shared<ScanProject>(scanProject);
+//        m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
+//    }
+    // rm after new scanIOUtils is ready!
+    loadScanProjectFromHDF5(m_hdf5Path.string(), scanProject);
+    ScanProjectEditMark tmpScanProject;
+    tmpScanProject.project = std::make_shared<ScanProject>(scanProject);
+    m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
+    // rm after new scanIOUtils is ready!
     std::cout << "Finished import!" << std::endl;
 
     std::cout << "Starting registration..." << std::endl;
