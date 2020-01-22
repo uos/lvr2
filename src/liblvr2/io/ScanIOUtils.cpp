@@ -268,6 +268,20 @@ void loadAllPreviewsFromHDF5(const std::string filename, ScanProject& project)
     }
 }
 
+void loadScanProjectFromHDF5(const std::string filename, ScanProject& project)
+{
+    ScanHDF5IO scanIO;
+    scanIO.open(filename);
+    std::vector<ScanPtr> scans = scanIO.loadAllScans("/raw/scans/");
+
+    for (auto & scan : scans)
+    {
+        ScanPositionPtr scanPosPtr(new ScanPosition());
+        scanPosPtr->scan = *scan;
+        project.positions.push_back(scanPosPtr);
+    }
+}
+
 void saveScanImageToDirectory(
     const boost::filesystem::path& path, 
     const ScanImage& image, const size_t& positionNr, const size_t& imageNr)
