@@ -26,18 +26,18 @@
  */
 
 #include <iostream>
-#include <lvr2/io/GHDF5IO.hpp>
-#include <lvr2/io/hdf5/ChannelIO.hpp>
-#include <lvr2/io/hdf5/ArrayIO.hpp>
-#include <lvr2/io/hdf5/VariantChannelIO.hpp>
-#include <lvr2/io/hdf5/MeshIO.hpp>
-#include <lvr2/reconstruction/BigGrid.hpp>
-#include <lvr2/reconstruction/VirtualGrid.hpp>
-#include <lvr2/reconstruction/BigGridKdTree.hpp>
-#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
-#include <lvr2/reconstruction/FastReconstruction.hpp>
+#include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/ChannelIO.hpp"
+#include "lvr2/io/hdf5/ArrayIO.hpp"
+#include "lvr2/io/hdf5/VariantChannelIO.hpp"
+#include "lvr2/io/hdf5/MeshIO.hpp"
+#include "lvr2/reconstruction/BigGrid.hpp"
+#include "lvr2/reconstruction/VirtualGrid.hpp"
+#include "lvr2/reconstruction/BigGridKdTree.hpp"
+#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
+#include "lvr2/reconstruction/FastReconstruction.hpp"
 #include "lvr2/algorithm/CleanupAlgorithms.hpp"
-#include <lvr2/algorithm/NormalAlgorithms.hpp>
+#include "lvr2/algorithm/NormalAlgorithms.hpp"
 #include "lvr2/algorithm/Tesselator.hpp"
 
 
@@ -100,7 +100,9 @@ namespace lvr2
 
 
     template <typename BaseVecT>
-    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkManager> chunkManager)
+    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project,
+            std::shared_ptr<ChunkManager> chunkManager,
+            std::string layerName)
     {
 
         if(project->project->positions.size() != project->changed.size())
@@ -118,20 +120,11 @@ namespace lvr2
 
         cout << lvr2::timestamp << "grid finished " << endl;
         BoundingBox<BaseVecT> bb = bg.getBB();
-        // ######################
-        BoundingBox<BaseVecT> cmBB = BoundingBox<BaseVecT>();
-        // BaseVector<float> chunkSizeVec = BaseVector<float>(m_chunkSize, m_chunkSize, m_chunkSize);
-        // to be safe we expand the boundingBox by one chunksize in every dimension, not needed once CM with rehashing is committed
-        //cmBB.expand(bb.getMin() - chunkSizeVec);
-        //cmBB.expand(bb.getMax() + chunkSizeVec);
-
-
-
-        // ###########################
         cout << bb << endl;
 
         vector<BoundingBox<BaseVecT>> partitionBoxes;
         vector<BoundingBox<BaseVecT>> partitionBoxesNew;
+        BoundingBox<BaseVecT> cmBB = BoundingBox<BaseVecT>();
 
         cout << lvr2::timestamp << "making tree" << endl;
         if (m_partMethod == 1)
@@ -286,7 +279,7 @@ namespace lvr2
             int x = (int)floor(partitionBoxes.at(i).getCentroid().x / m_chunkSize);
             int y = (int)floor(partitionBoxes.at(i).getCentroid().y / m_chunkSize);
             int z = (int)floor(partitionBoxes.at(i).getCentroid().z / m_chunkSize);
-            addTSDFChunkManager(x, y, z, ps_grid, chg);
+            addTSDFChunkManager(x, y, z, ps_grid, chg, layerName);
             BaseVector<int> chunkCoordinates(x, y, z);
             // also save the grid coordinates of the chunk added to the ChunkManager
             newChunks.push_back(chunkCoordinates);
@@ -332,14 +325,14 @@ namespace lvr2
         std::vector<PointBufferPtr> tsdfChunks;
         for(BaseVector<int> coord : newChunks)
         {
-            boost::optional<shared_ptr<PointBuffer>> chunk = chg->getChunk<PointBufferPtr>("tsdf_values", coord.x, coord.y, coord.z);
+            boost::optional<shared_ptr<PointBuffer>> chunk = chg->getChunk<PointBufferPtr>(layerName, coord.x, coord.y, coord.z);
             if(chunk)
             {
                 tsdfChunks.push_back(chunk.get());
             }
             else
             {
-                std::cout << "WARNING - Could not find chunk (" << coord.x << ", " << coord.y << ", " << coord.z << ") in layer: tsdf_values. " << std::endl;
+                std::cout << "WARNING - Could not find chunk (" << coord.x << ", " << coord.y << ", " << coord.z << ") in layer: " << layerName << std::endl;
             }
         }
         auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(tsdfChunks, partitionBoxesNew, cbb, m_voxelSize);
@@ -438,9 +431,10 @@ namespace lvr2
     }
 
     template <typename BaseVecT>
-    void LargeScaleReconstruction<BaseVecT>::addTSDFChunkManager(int x, int y, int z, std::shared_ptr<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>> ps_grid, std::shared_ptr<ChunkHashGrid> cm)
+    void LargeScaleReconstruction<BaseVecT>::addTSDFChunkManager(int x, int y, int z,
+            std::shared_ptr<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>> ps_grid, std::shared_ptr<ChunkHashGrid> cm,
+            std::string layerName)
     {
-        std::string layerName = "tsdf_values";
         size_t counter = 0;
         size_t csize = ps_grid->getNumberOfCells();
         vector<QueryPoint<BaseVecT>>& qp = ps_grid->getQueryPoints();
