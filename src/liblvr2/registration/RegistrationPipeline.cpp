@@ -119,7 +119,7 @@ void RegistrationPipeline::doRegistration()
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
         cout << "Diff: " << getDifference(posPtr->scan->m_registration, align2.scan(i)->pose()) << endl;
-        if ((!m_scans->changed.at(i)) && m_scans->changed.at(i) == true)
+        if (m_scans->changed.at(i) == true)
         {
             posPtr->scan->m_registration = align2.scan(i)->pose();
             cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
