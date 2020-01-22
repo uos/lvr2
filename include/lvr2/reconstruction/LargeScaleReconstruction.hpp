@@ -28,14 +28,88 @@
 #ifndef LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
 #define LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
 
-#include <lvr2/types/ScanTypes.hpp>
-#include <lvr2/reconstruction/PointsetGrid.hpp>
-#include <lvr2/reconstruction/FastBox.hpp>
-#include <lvr2/algorithm/ChunkManager.hpp>
+#include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/reconstruction/PointsetGrid.hpp"
+#include "lvr2/reconstruction/FastBox.hpp"
+#include "lvr2/algorithm/ChunkManager.hpp"
 
 
 namespace lvr2
 {
+    struct LSROptions
+    {
+        //filePath to HDF5 file
+        string filePath = "";
+
+        // voxelsize for reconstruction.
+        float voxelSize = 0.1;
+
+        // voxelsize for the BigGrid.
+        float bgVoxelSize = 1;
+
+        // scale factor.
+        float scale = 1;
+
+        //ChunkSize, should be constant through all processes .
+        size_t chunkSize = 20;
+
+        // Max. Number of Points in a leaf (used to devide pointcloud).
+        uint nodeSize = 1000000;
+
+        // int flag to trigger partition-method (0 = kd-Tree; 1 = VGrid)
+        int partMethod = 1;
+
+        //Number of normals used in the normal interpolation process.
+        int Ki = 20;
+
+        //Number of normals used for distance function evaluation.
+        int Kd = 20;
+
+        // Size of k-neighborhood used for normal estimation.
+        int Kn = 20;
+
+        //Set this flag for RANSAC based normal estimation.
+        bool useRansac = false;
+
+        // Do not extend grid. Can be used  to avoid artifacts in dense data sets but. Disabling
+        // will possibly create additional holes in sparse data sets.
+        bool extrude = false;
+
+        /*
+         * Definition from here on are for the combine-process of partial meshes
+         */
+
+        // flag to trigger the removal of dangling artifacts.
+        int removeDanglingArtifacts = 0;
+
+        //Remove noise artifacts from contours. Same values are between 2 and 4.
+        int cleanContours = 0;
+
+        //Maximum size for hole filling.
+        int fillHoles = 0;
+
+        // Shift all triangle vertices of a cluster onto their shared plane.
+        bool optimizePlanes = false;
+
+        // (Plane Normal Threshold) Normal threshold for plane optimization.
+        float getNormalThreshold = 0.85;
+
+        // Number of iterations for plane optimization.
+        int planeIterations = 3;
+
+        // Minimum value for plane optimization.
+        int MinPlaneSize = 7;
+
+        // Threshold for small region removal. If 0 nothing will be deleted.
+        int SmallRegionThreshold = 0;
+
+        // Retesselate regions that are in a regression plane. Implies --optimizePlanes.
+        bool retesselate = false;
+
+        // Threshold for fusing line segments while tesselating.
+        float LineFusionThreshold =0.01;
+    };
+
     template <typename BaseVecT>
     class LargeScaleReconstruction
     {
@@ -59,13 +133,20 @@ namespace lvr2
                 bool retesselate, float lineFusionThreshold);
 
         /**
+         * Constructor with parameters in a struct
+         *
+         */
+         LargeScaleReconstruction(LSROptions options);
+
+        /**
          * this method splits the given PointClouds in to Chunks and calculates all required values for a later reconstruction
          *
          * @tparam BaseVecT
          * @param scans vector of new scan to be added
+         * @param layerName the name of the ChunkManager-Layer of the tsdf-values
          * @return
          */
-        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkManager> chunkManager);
+        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkManager> chunkManager, std::string layerName="tsdf_values");
 
         int resetEditMark(ScanProjectEditMarkPtr project);
 
@@ -79,12 +160,13 @@ namespace lvr2
          * @params x, y, z grid-coordinates for the chunk
          * @param ps_grid HashGrid which contains the tsdf-values for the voxel
          * @param cm ChunkManager instance which manages the chunks
+         * @param layerName the name of the chunkManager-layer
          */
         void addTSDFChunkManager(int x, int y, int z,
                 shared_ptr<lvr2::PointsetGrid<BaseVector<float>, lvr2::FastBox<BaseVector<float>>>> ps_grid,
-                shared_ptr<ChunkHashGrid> cm);
+                shared_ptr<ChunkHashGrid> cm,
+                std::string layerName);
 
-        //TODO: add chunks vector somewhere
 
         // path to hdf5 path containing previously reconstructed scans (or no scans) only
         string m_filePath;

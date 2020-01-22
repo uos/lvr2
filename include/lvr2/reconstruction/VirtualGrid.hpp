@@ -90,6 +90,8 @@ class VirtualGrid
      */
     void findInitialBox();
 
+
+
     /**
      * generates the Boxes surrounding the initial Box to cover the PointCloud-BB
      *
