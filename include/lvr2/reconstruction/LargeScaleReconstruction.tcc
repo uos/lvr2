@@ -26,18 +26,18 @@
  */
 
 #include <iostream>
-#include <lvr2/io/GHDF5IO.hpp>
-#include <lvr2/io/hdf5/ChannelIO.hpp>
-#include <lvr2/io/hdf5/ArrayIO.hpp>
-#include <lvr2/io/hdf5/VariantChannelIO.hpp>
-#include <lvr2/io/hdf5/MeshIO.hpp>
-#include <lvr2/reconstruction/BigGrid.hpp>
-#include <lvr2/reconstruction/VirtualGrid.hpp>
-#include <lvr2/reconstruction/BigGridKdTree.hpp>
-#include <lvr2/reconstruction/AdaptiveKSearchSurface.hpp>
-#include <lvr2/reconstruction/FastReconstruction.hpp>
+#include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/ChannelIO.hpp"
+#include "lvr2/io/hdf5/ArrayIO.hpp"
+#include "lvr2/io/hdf5/VariantChannelIO.hpp"
+#include "lvr2/io/hdf5/MeshIO.hpp"
+#include "lvr2/reconstruction/BigGrid.hpp"
+#include "lvr2/reconstruction/VirtualGrid.hpp"
+#include "lvr2/reconstruction/BigGridKdTree.hpp"
+#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
+#include "lvr2/reconstruction/FastReconstruction.hpp"
 #include "lvr2/algorithm/CleanupAlgorithms.hpp"
-#include <lvr2/algorithm/NormalAlgorithms.hpp>
+#include "lvr2/algorithm/NormalAlgorithms.hpp"
 #include "lvr2/algorithm/Tesselator.hpp"
 
 
@@ -56,8 +56,8 @@ namespace lvr2
 
     template <typename BaseVecT>
     LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(string h5File)
-    : m_filePath(h5File), m_voxelSize(0.1), m_bgVoxelSize(10), m_scale(1), m_chunkSize(100),m_nodeSize(1000000), m_partMethod(1),
-    m_Ki(10), m_Kd(5), m_Kn(10), m_useRansac(false), m_extrude(false), m_removeDanglingArtifacts(0), m_cleanContours(0),
+    : m_filePath(h5File), m_voxelSize(0.1), m_bgVoxelSize(1), m_scale(1), m_chunkSize(20),m_nodeSize(1000000), m_partMethod(1),
+    m_Ki(20), m_Kd(25), m_Kn(20), m_useRansac(false), m_extrude(false), m_removeDanglingArtifacts(0), m_cleanContours(0),
     m_fillHoles(0), m_optimizePlanes(false), m_getNormalThreshold(0.85), m_planeIterations(3), m_MinPlaneSize(7), m_SmallRegionThreshold(0),
     m_retesselate(false), m_LineFusionThreshold(0.01)
     {
@@ -82,11 +82,27 @@ namespace lvr2
               m_MinPlaneSize(minPlaneSize), m_SmallRegionThreshold(smallRegionThreshold),
               m_retesselate(retesselate), m_LineFusionThreshold(lineFusionThreshold)
     {
+        std::cout << "Reconstruction Instance generated..." << std::endl;
+    }
+
+    template<typename BaseVecT>
+    LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(LSROptions options)
+            : LargeScaleReconstruction(options.filePath, options.voxelSize, options.bgVoxelSize,
+              options.scale, options.chunkSize,options.nodeSize,
+              options.partMethod, options.Ki, options.Kd, options.Kn, options.useRansac,
+              options.extrude, options.removeDanglingArtifacts,
+              options.cleanContours, options.fillHoles, options.optimizePlanes,
+              options.getNormalThreshold, options.planeIterations,
+              options.MinPlaneSize, options.SmallRegionThreshold,
+              options.retesselate, options.LineFusionThreshold)
+    {
     }
 
 
     template <typename BaseVecT>
-    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkManager> chunkManager)
+    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project,
+            std::shared_ptr<ChunkManager> chunkManager,
+            std::string layerName)
     {
 
         if(project->project->positions.size() != project->changed.size())
@@ -104,20 +120,11 @@ namespace lvr2
 
         cout << lvr2::timestamp << "grid finished " << endl;
         BoundingBox<BaseVecT> bb = bg.getBB();
-        // ######################
-        BoundingBox<BaseVecT> cmBB = BoundingBox<BaseVecT>();
-        BaseVector<float> chunkSizeVec = BaseVector<float>(m_chunkSize, m_chunkSize, m_chunkSize);
-        // to be safe we expand the boundingBox by one chunksize in every dimension, not needed once CM with rehashing is committed
-        cmBB.expand(bb.getMin() - chunkSizeVec);
-        cmBB.expand(bb.getMax() + chunkSizeVec);
-
-        //chunkManager->setVariables(bb, m_chunkSize, chunkAmount);
-        std::shared_ptr<ChunkHashGrid> chg = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(m_filePath, 50, bb, m_chunkSize));
-
-        // ###########################
         cout << bb << endl;
 
         vector<BoundingBox<BaseVecT>> partitionBoxes;
+        vector<BoundingBox<BaseVecT>> partitionBoxesNew;
+        BoundingBox<BaseVecT> cmBB = BoundingBox<BaseVecT>();
 
         cout << lvr2::timestamp << "making tree" << endl;
         if (m_partMethod == 1)
@@ -130,6 +137,7 @@ namespace lvr2
             for (size_t i = 0; i < vGrid.getBoxes().size(); i++)
             {
                 BoundingBox<BaseVecT> partBB = *vGrid.getBoxes().at(i).get();
+                cmBB.expand(partBB);
                 partitionBoxes.push_back(partBB);
                 partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
                            << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
@@ -158,6 +166,8 @@ namespace lvr2
                       << std::endl;
         }
 
+        std::shared_ptr<ChunkHashGrid> chg = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(m_filePath, 50, cmBB, m_chunkSize));
+
         BaseVecT bb_min(bb.getMin().x, bb.getMin().y, bb.getMin().z);
         BaseVecT bb_max(bb.getMax().x, bb.getMax().y, bb.getMax().z);
         BoundingBox<BaseVecT> cbb(bb_min, bb_max);
@@ -175,14 +185,15 @@ namespace lvr2
             string name_id;
             if (m_partMethod == 1)
             {
+                // TODO rename the name / use centroid
                 name_id =
                         std::to_string(
-                                (int)floor(partitionBoxes.at(i).getMin().x / m_chunkSize)) +
+                                (int)floor(partitionBoxes.at(i).getCentroid().x / m_chunkSize)) +
                         "_" +
                         std::to_string(
-                                (int)floor(partitionBoxes.at(i).getMin().y / m_chunkSize)) +
+                                (int)floor(partitionBoxes.at(i).getCentroid().y / m_chunkSize)) +
                         "_" +
-                        std::to_string((int)floor(partitionBoxes.at(i).getMin().z / m_chunkSize));
+                        std::to_string((int)floor(partitionBoxes.at(i).getCentroid().z / m_chunkSize));
             }
             else
             {
@@ -259,26 +270,21 @@ namespace lvr2
             ps_grid->calcDistanceValues();
 
             //TODO: is this even used? if not:remove it
-
-            if(true)
-            {
-                cout << "No. of Cells " << i << ": " <<ps_grid->getNumberOfCells()<<endl;
-            }
-
             auto reconstruction =
                    make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
 
 
 
 
-            // <PointBufferPtr>setChunk: string layer, int x, int y, int z, T data
-            int x = (int)floor(partitionBoxes.at(i).getMin().x / m_chunkSize);
-            int y = (int)floor(partitionBoxes.at(i).getMin().y / m_chunkSize);
-            int z = (int)floor(partitionBoxes.at(i).getMin().z / m_chunkSize);
-            addTSDFChunkManager(x, y, z, ps_grid, chg);
+            int x = (int)floor(partitionBoxes.at(i).getCentroid().x / m_chunkSize);
+            int y = (int)floor(partitionBoxes.at(i).getCentroid().y / m_chunkSize);
+            int z = (int)floor(partitionBoxes.at(i).getCentroid().z / m_chunkSize);
+            addTSDFChunkManager(x, y, z, ps_grid, chg, layerName);
             BaseVector<int> chunkCoordinates(x, y, z);
             // also save the grid coordinates of the chunk added to the ChunkManager
             newChunks.push_back(chunkCoordinates);
+            // also save the "real" bounding box without overlap
+            partitionBoxesNew.push_back(partitionBoxes.at(i));
 
             // save the mesh of the chunk
             // additionally for debug: Save the mesh as a ply todo delete later
@@ -295,39 +301,9 @@ namespace lvr2
 
         }
 
-        // TODO: can be removed
-//        //TODO: replace reading from .ser file to reading from ChunkManager
-//        ifstream old_mesh("VGrid.ser");
-//        if (m_partMethod == 1 && old_mesh.is_open())
-//        {
-//            while (old_mesh.good())
-//            {
-//                string mesh;
-//                getline(old_mesh, mesh);
-//                cout << "Old Mesh: " << mesh << endl;
-//                if (!mesh.empty())
-//                {
-//                    meshes.insert(mesh);
-//                }
-//            }
-//        }
 
         std::cout << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
         std::cout << "Generated Meshes: " << meshes.size() << std::endl;
-
-        //TODO: remove this too
-//        ofstream vGrid_ser;
-//        vGrid_ser.open("VGrid.ser", ofstream::out | ofstream::trunc);
-//        unordered_set<string>::iterator itr;
-//
-//        //TODO: potentially remove mesh-combine or leave it as a debug output
-//        for (itr = meshes.begin(); itr != meshes.end(); itr++)
-//        {
-//            vGrid_ser << *itr << std::endl;
-//            grid_files.push_back(*itr);
-//        }
-//
-//        vGrid_ser.close();
 
         cout << lvr2::timestamp << "finished" << endl;
 
@@ -349,18 +325,18 @@ namespace lvr2
         std::vector<PointBufferPtr> tsdfChunks;
         for(BaseVector<int> coord : newChunks)
         {
-            boost::optional<shared_ptr<PointBuffer>> chunk = chg->getChunk<PointBufferPtr>("tsdf_values", coord.x, coord.y, coord.z);
+            boost::optional<shared_ptr<PointBuffer>> chunk = chg->getChunk<PointBufferPtr>(layerName, coord.x, coord.y, coord.z);
             if(chunk)
             {
                 tsdfChunks.push_back(chunk.get());
             }
             else
             {
-                std::cout << "WARNING - Could not find chunk (" << coord.x << ", " << coord.y << ", " << coord.z << ") in layer: tsdf_values. " << std::endl;
+                std::cout << "WARNING - Could not find chunk (" << coord.x << ", " << coord.y << ", " << coord.z << ") in layer: " << layerName << std::endl;
             }
         }
-        auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(tsdfChunks, cbb, m_voxelSize);
-
+        auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(tsdfChunks, partitionBoxesNew, cbb, m_voxelSize);
+        tsdfChunks.clear();
         auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(hg);
 
         lvr2::HalfEdgeMesh<Vec> mesh;
@@ -455,9 +431,10 @@ namespace lvr2
     }
 
     template <typename BaseVecT>
-    void LargeScaleReconstruction<BaseVecT>::addTSDFChunkManager(int x, int y, int z, std::shared_ptr<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>> ps_grid, std::shared_ptr<ChunkHashGrid> cm)
+    void LargeScaleReconstruction<BaseVecT>::addTSDFChunkManager(int x, int y, int z,
+            std::shared_ptr<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>> ps_grid, std::shared_ptr<ChunkHashGrid> cm,
+            std::string layerName)
     {
-        std::string layerName = "tsdf_values";
         size_t counter = 0;
         size_t csize = ps_grid->getNumberOfCells();
         vector<QueryPoint<BaseVecT>>& qp = ps_grid->getQueryPoints();
@@ -487,7 +464,6 @@ namespace lvr2
         chunk->addChannel(extruded, "extruded", csize, 1);
         chunk->addAtomic<unsigned int>(csize, "num_voxel");
 
-        // TODO uncomment
         cm->setChunk<PointBufferPtr>(layerName, x, y, z, chunk);
     }
 }
