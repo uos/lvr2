@@ -28,10 +28,10 @@
 #ifndef LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
 #define LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
 
-#include <lvr2/types/ScanTypes.hpp>
-#include <lvr2/reconstruction/PointsetGrid.hpp>
-#include <lvr2/reconstruction/FastBox.hpp>
-#include <lvr2/algorithm/ChunkManager.hpp>
+#include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/reconstruction/PointsetGrid.hpp"
+#include "lvr2/reconstruction/FastBox.hpp"
+#include "lvr2/algorithm/ChunkManager.hpp"
 
 
 namespace lvr2
@@ -143,9 +143,10 @@ namespace lvr2
          *
          * @tparam BaseVecT
          * @param scans vector of new scan to be added
+         * @param layerName the name of the ChunkManager-Layer of the tsdf-values
          * @return
          */
-        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkManager> chunkManager);
+        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkManager> chunkManager, std::string layerName="tsdf_values");
 
         int resetEditMark(ScanProjectEditMarkPtr project);
 
@@ -159,10 +160,12 @@ namespace lvr2
          * @params x, y, z grid-coordinates for the chunk
          * @param ps_grid HashGrid which contains the tsdf-values for the voxel
          * @param cm ChunkManager instance which manages the chunks
+         * @param layerName the name of the chunkManager-layer
          */
         void addTSDFChunkManager(int x, int y, int z,
                 shared_ptr<lvr2::PointsetGrid<BaseVector<float>, lvr2::FastBox<BaseVector<float>>>> ps_grid,
-                shared_ptr<ChunkHashGrid> cm);
+                shared_ptr<ChunkHashGrid> cm,
+                std::string layerName);
 
 
         // path to hdf5 path containing previously reconstructed scans (or no scans) only
