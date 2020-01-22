@@ -29,6 +29,8 @@ ScanPtr loadScanFromHDF5(const std::string filename, const size_t& positionNr);
 
 void loadAllPreviewsFromHDF5(const std::string filename, ScanProject& project);
 
+void loadScanProjectFromHDF5(const std::string filename, ScanProject& project);
+
 void saveScanImageToDirectory(const boost::filesystem::path& path, const ScanImage& image, const size_t& positionNr, const size_t& imageNr);
 
 bool loadScanImageFromDirectory(const boost::filesystem::path& path, ScanImage& image, const size_t& positionNr, const size_t& imageNr);
