@@ -81,6 +81,7 @@ void RegistrationPipeline::doRegistration()
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
         cout << "Diff: " << getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) << endl;
+        m_scans->changed.resize(m_scans->project->positions.size());
         if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) > m_options->diffPoseSum))
         {
             m_scans->changed.at(i) = true;
