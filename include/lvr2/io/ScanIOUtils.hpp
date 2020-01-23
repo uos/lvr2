@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <set>
 
 #include <boost/filesystem.hpp>
 #include <Eigen/Dense>
