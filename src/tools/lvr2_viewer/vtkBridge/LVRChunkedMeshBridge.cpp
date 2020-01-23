@@ -14,6 +14,8 @@
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 
+#include <omp.h>
+
 using namespace lvr2;
 
 LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file) : m_chunkManager(file)
@@ -37,7 +39,7 @@ void LVRChunkedMeshBridge::addInitialActors(vtkSmartPointer<vtkRenderer> rendere
 //    lvr2::BoundingBox<BaseVector<float> > bb(max * (-1), max);
 //    std::vector<vtkSmartPointer<MeshChunkActor> > actors;
 //    bb = BoundingBox<BaseVector<float> >(centroid, max);
-    m_chunkManager.extractArea(bb, m_chunks);
+    m_chunkManager.extractArea(bb, m_chunks, "mesh0");
     std::vector<size_t> hashes;
     std::vector<BaseVector<float> > centroids;
     for(auto& chunk:m_chunks)
@@ -85,12 +87,27 @@ void LVRChunkedMeshBridge::addInitialActors(vtkSmartPointer<vtkRenderer> rendere
 }
 
 void LVRChunkedMeshBridge::getActors(double planes[24],
-        std::vector<size_t>& indices)
+        std::vector<BaseVector<float> >& centroids,
+        std::vector<size_t> & indices)
         
        // std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> >& actors)
 {
 
-     m_oct->intersect(planes, indices);
+     m_oct->intersect(planes, centroids, indices);
+
+//    indices.resize(centroids.size());
+//
+//    #pragma omp parallel for
+    for(int i = 0; i < indices.size(); ++i)
+    {
+
+        if(m_chunkActors.find(indices[i]) == m_chunkActors.end())
+        {
+            std::cout << "KEY NOT FOUND: " << i << std::endl;
+        }
+    }
+
+
 //    m_chunkManager.extractArea(bb, m_chunks);
 
 //    for(auto& chunk:m_chunks)
@@ -107,10 +124,14 @@ void LVRChunkedMeshBridge::getActors(double planes[24],
 
 }
 
+//void LVRChunkedMeshBridge::getHighDetailActor(std::vector<size_t>& indices)
+//{
+//}
+
+
 
 void LVRChunkedMeshBridge::computeMeshActors()
 {
-
     for(const auto& chunk: m_chunks)
     {
         size_t id = chunk.first;
@@ -223,4 +244,5 @@ void LVRChunkedMeshBridge::computeMeshActors()
     // clear the chunks array
     m_chunks.clear();
     std::unordered_map<size_t, MeshBufferPtr>().swap(m_chunks);
+
 }

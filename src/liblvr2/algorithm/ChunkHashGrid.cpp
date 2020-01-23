@@ -42,7 +42,7 @@ ChunkHashGrid::ChunkHashGrid(std::string hdf5Path, size_t cacheSize) : m_cacheSi
 
     try
     {
-        m_chunkSize = m_io.loadChunkSize();
+        setChunkSize(m_io.loadChunkSize());
         setBoundingBox(m_io.loadBoundingBox());
     }
     catch (std::runtime_error& e)
