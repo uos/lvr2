@@ -103,6 +103,9 @@ using ScanOptional = boost::optional<Scan>;
 
 struct ScanImage
 {
+    /// Sensor type flag
+    std::string                     sensorType = "ScanImage";
+
     /// Extrinsics 
     Extrinsicsd                     extrinsics;
 
@@ -132,7 +135,7 @@ using ScanImageOptional = boost::optional<ScanImage>;
 struct ScanCamera 
 {
     /// Description of the sensor model
-    std::string                     sensorType = "Camera";
+    std::string                     sensorType = "ScanCamera";
 
     /// Individual name of the camera
     std::string                     sensorName = "Camera";
@@ -147,13 +150,15 @@ struct ScanCamera
 using ScanCameraPtr = std::shared_ptr<ScanCamera>;
 
 
-/*****************************************************************************
+/**********************************string*******************************************
  * @brief   Represents a scan position consisting of a scan and
  *          images taken at this position
  * 
  ****************************************************************************/
 struct ScanPosition
 {
+    std::string                     sensorType = "ScanPosition";
+
     /// Vector of scan data. The scan position can contain several 
     /// scans. The scan with the best resolition should be stored in
     /// scans[0]. Scans can be empty
