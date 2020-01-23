@@ -14,7 +14,7 @@ namespace lvr2
 
   struct BOct
   {
-      unsigned long long m_child : 48;
+      long long m_child : 48;
       unsigned char m_valid : 8;
       unsigned char m_leaf : 8;
       BOct(): m_child(0), m_valid(0), m_leaf(0){}
@@ -22,7 +22,8 @@ namespace lvr2
   
   struct Leaf
   {
-      std::vector<BaseVector<float> > m_mesh;
+      std::vector<BaseVector<float> > m_centroids;
+      std::vector<size_t> m_hashes;
 //      unsigned long long m_mesh : 56;
 //      unsigned char m_loaded : 8;
 //      Leaf(): m_mesh(0), m_loaded(0){}
@@ -35,7 +36,7 @@ namespace lvr2
       MeshOctree(float voxelSize, std::vector<size_t>& hashes, std::vector<BaseVecT>& centroids, BoundingBox<BaseVecT>& bb);
 
       //void intersect(double planes[6][4], std::vector<unsigned int>& indices);
-      void intersect(double planes[24], std::vector<BaseVecT>& indices);
+      void intersect(double planes[24], std::vector<BaseVecT>& indices, std::vector<size_t>& hashes);
       void setLOD(unsigned char lod) { m_lod = lod; }
 
       void genDisplayLists() { genDisplayLists(m_root); }
@@ -77,12 +78,12 @@ namespace lvr2
       //void normalizePlanes(double planes[6][4]);
       void normalizePlanes(double planes[24]);
 
-      void intersect(Leaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<BaseVecT >& indices);
+      void intersect(Leaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<BaseVecT >& indices, std::vector<size_t>& hashes);
 
-      void intersect(BOct* oct, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<BaseVecT >& indices);
+      void intersect(BOct* oct, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<BaseVecT >& indices, std::vector<size_t>& hashes);
   
 
-    void getHashes(BOct* oct, std::vector<BaseVecT>& indices);
+    void getHashes(BOct* oct, std::vector<BaseVecT>& indices, std::vector<size_t>& hashes);
 
 //      void colorAndWrite(BOct* oct);
 //

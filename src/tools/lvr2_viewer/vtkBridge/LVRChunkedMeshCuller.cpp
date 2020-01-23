@@ -26,6 +26,7 @@ double ChunkedMeshCuller::Cull(vtkRenderer *ren,
     std::vector<lvr2::BaseVector<float> > centroids;
     std::vector<size_t> indices;
     m_bridge->getActors(planes, centroids, indices);
+
     
 
     double distance_threshold;
@@ -34,30 +35,30 @@ double ChunkedMeshCuller::Cull(vtkRenderer *ren,
     vtkActorCollection* actors = ren->GetActors();
     actors->InitTraversal();
 
+//    std::cout << indices.size() << " " << actors->GetNumberOfItems() << std::endl;
     int j = 0;
+    int k = 0;
     for(vtkIdType i = 0; i < actors->GetNumberOfItems(); i++)
     {
         vtkActor* nextActor = actors->GetNextActor();
         if(nextActor->IsA("MeshChunkActor"))
-        {
-//            if(std::find(indices.begin(),
-//                        indices.end(),
-//                        static_cast<MeshChunkActor*>(nextActor)->getID()) == indices.end())                                                                           
-//            {
-//                nextActor->VisibilityOff();
-//            }
-//            else
-//            {
-//                if(j > 3000)
-//                {
-//                    continue;
-//                }
-//
-//                nextActor->VisibilityOn();
-//                j++;
-//            }
+        { 
+            k++;
+            if(std::find(indices.begin(),
+                        indices.end(),
+                        static_cast<MeshChunkActor*>(nextActor)->getID()) == indices.end())                                                                           
+            {
+                nextActor->VisibilityOff();
+            }
+            else
+            {
+                nextActor->VisibilityOn();
+                j++;
+            }
         }
     }
+
+//    std::cout << "j: " << j << " k: " << k << std::endl;
 }
 
 }
