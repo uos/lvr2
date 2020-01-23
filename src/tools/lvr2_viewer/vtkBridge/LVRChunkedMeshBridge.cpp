@@ -93,15 +93,18 @@ void LVRChunkedMeshBridge::getActors(double planes[24],
        // std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> >& actors)
 {
 
-     m_oct->intersect(planes, centroids);
+     m_oct->intersect(planes, centroids, indices);
 
-    indices.resize(centroids.size());
-
-    #pragma omp parallel for
-    for(int i = 0; i < centroids.size(); ++i)
+//    indices.resize(centroids.size());
+//
+//    #pragma omp parallel for
+    for(int i = 0; i < indices.size(); ++i)
     {
-        auto centroid = centroids[i];
-        indices[i] = m_chunkManager.hashValue(centroid.x, centroid.y, centroid.z);
+
+        if(m_chunkActors.find(indices[i]) == m_chunkActors.end())
+        {
+            std::cout << "KEY NOT FOUND: " << i << std::endl;
+        }
     }
 
 
@@ -129,7 +132,6 @@ void LVRChunkedMeshBridge::getActors(double planes[24],
 
 void LVRChunkedMeshBridge::computeMeshActors()
 {
-
     for(const auto& chunk: m_chunks)
     {
         size_t id = chunk.first;
@@ -151,43 +153,33 @@ void LVRChunkedMeshBridge::computeMeshActors()
             ucharArr colors = meshbuffer->getVertexColors(w_color);
 
             vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-
-
-            vtkSmartPointer<vtkFloatArray> pts_data = vtkSmartPointer<vtkFloatArray>::New();
-            pts_data->SetNumberOfComponents(3);
-            pts_data->SetNumberOfTuples(n_v);
-            pts_data->SetVoidArray(meshbuffer->getVertices().get(), n_v, 1);
-            points->SetData(pts_data);
-
-
-
             vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();
 
             vtkSmartPointer<vtkUnsignedCharArray> scalars = vtkSmartPointer<vtkUnsignedCharArray>::New();
             scalars->SetNumberOfComponents(3);
             scalars->SetName("Colors");
-//
-//            for(size_t i = 0; i < n_v; i++){
-//                size_t index = 3 * i;
-//                points->InsertNextPoint(
-//                        vertices[index    ],
-//                        vertices[index + 1],
-//                        vertices[index + 2]);
-//
-//                if(colors)
-//                {
-//                    size_t color_index = w_color * i;
-//                    unsigned char color[3];
-//                    color[0] = colors[color_index    ];
-//                    color[1] = colors[color_index + 1];
-//                    color[2] = colors[color_index + 2];
-//#if VTK_MAJOR_VERSION < 7
-//                    scalars->InsertNextTupleValue(color);
-//#else
-//                    scalars->InsertNextTypedTuple(color);
-//#endif
-//                }
-//            }
+
+            for(size_t i = 0; i < n_v; i++){
+                size_t index = 3 * i;
+                points->InsertNextPoint(
+                        vertices[index    ],
+                        vertices[index + 1],
+                        vertices[index + 2]);
+
+                if(colors)
+                {
+                    size_t color_index = w_color * i;
+                    unsigned char color[3];
+                    color[0] = colors[color_index    ];
+                    color[1] = colors[color_index + 1];
+                    color[2] = colors[color_index + 2];
+#if VTK_MAJOR_VERSION < 7
+                    scalars->InsertNextTupleValue(color);
+#else
+                    scalars->InsertNextTypedTuple(color);
+#endif
+                }
+            }
 
             for(size_t i = 0; i < n_i; i++)
             {
@@ -250,6 +242,7 @@ void LVRChunkedMeshBridge::computeMeshActors()
         }
     }
     // clear the chunks array
-    //m_chunks.clear();
-    //std::unordered_map<size_t, MeshBufferPtr>().swap(m_chunks);
+    m_chunks.clear();
+    std::unordered_map<size_t, MeshBufferPtr>().swap(m_chunks);
+
 }
