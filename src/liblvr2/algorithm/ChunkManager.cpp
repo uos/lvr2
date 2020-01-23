@@ -176,6 +176,18 @@ void ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
     //    std::cout << "Num chunks " << chunks.size() << std::endl;
 }
 
+std::vector<std::string> ChunkManager::getChannels()
+{
+    std::vector<std::string> attributeList;
+    const BoundingBox<BaseVec> boundingBox(BaseVec(0,0,0), BaseVec(1,1,1));
+
+    MeshBufferPtr globalMesh = extractArea(boundingBox);
+    for (auto channelIterator = globalMesh->begin(); channelIterator != globalMesh->end(); ++channelIterator)
+    {
+        attributeList.push_back(channelIterator->first);
+    }
+    return attributeList;
+}
 
 MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area, std::string layer)
 {
