@@ -654,11 +654,11 @@ bool loadScanPosition(
                 if(itScans->path().extension() == ".yaml")
                 {
                     std::string scanName = itScans->path().stem().string();
-                    ScanPtr scanPtr(new Scan);
+                    ScanPtr scan(new Scan);
 
-                    if(loadScan(root, *scanPtr, positionDirectory, it->path().stem().string(), scanName))
+                    if(loadScan(root, *scan, positionDirectory, it->path().stem().string(), scanName))
                     {
-                        scanPos.scans.push_back(scanPtr);
+                        scanPos.scans.push_back(scan);
                         std::cout << "Scan loaded" << std::endl;
                     }
                 }
@@ -667,7 +667,15 @@ bool loadScanPosition(
         } 
         else if(sensorType == ScanCamera::sensorType)
         {
-
+            ScanCameraPtr cam(new ScanCamera);
+            
+            
+            if(loadScanCamera(root, *cam, positionDirectory, it->path().stem().string()))
+            {
+                scanPos.cams.push_back(cam);
+            } else {
+                std::cout << timestamp << "[ WARNING ] Could not load camera from " << it->path() << std::endl;  
+            }
         }
 
         ++it;
