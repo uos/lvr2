@@ -409,7 +409,7 @@ void saveScan(
 
     // Write point cloud data
     ModelPtr model(new Model);
-    model->m_pointCloud = scan.m_points;
+    model->m_pointCloud = scan.points;
     ModelFactory::saveModel(model, scanOut.string());
 }
 
@@ -470,7 +470,7 @@ bool loadScan(
 
         if(model->m_pointCloud)
         {
-            scan.m_points = model->m_pointCloud;
+            scan.points = model->m_pointCloud;
         }
         else
         {
@@ -513,8 +513,40 @@ bool loadScan(
     return loadScan(root, scan, posStr.str(), "scans", scanStr.str());
 }
 
+///////////////////////////////////////////////////////////////////////////////////////
+/// SCAN_POSITION
+///////////////////////////////////////////////////////////////////////////////////////
+void saveScanPosition(
+    const boost::filesystem::path& root,
+    const ScanPosition& scanPos,
+    const std::string positionDirectory)
+{
 
+}
 
+void saveScanPosition(
+    const boost::filesystem::path& root,
+    const ScanPosition& scanPos,
+    const size_t& positionNumber)
+{
+
+}
+
+bool loadScanPosition(
+    const boost::filesystem::path& root,
+    ScanPosition& scanPos,
+    const std::string& positionDirectory)
+{
+
+}
+
+bool loadScanPosition(
+    const boost::filesystem::path& root,
+    ScanPosition& scanPos,
+    const size_t& positionNumber)
+{
+    
+}
 
 
 

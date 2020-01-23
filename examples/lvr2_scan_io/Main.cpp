@@ -18,14 +18,14 @@ int main(int argc, char** argv)
 
         // create scan object
         ScanPtr scan_ptr(new Scan);
-
-        // extract points to a pointBufferPtr
-        PointBufferPtr points(new PointBuffer(sphere->getVertices(), sphere->numVertices()));
+        scan_ptr->positionNumber = i;
 
         // add points to scan object
-        scan_ptr->m_points = points;
-        scan_ptr->m_phiMin = i + 0.5;
-        scan_ptr->m_phiMax = i + 1.0;
+        scan_ptr->points.reset(new PointBuffer(sphere->getVertices(), sphere->numVertices()));
+        scan_ptr->phiMin = i + 0.5;
+        scan_ptr->phiMax = i + 1.0;
+
+        scan_ptr->numPoints = scan_ptr->points->numPoints();
 
         // create ScanPositionPtr
         ScanPositionPtr scan_pos(new ScanPosition);
@@ -34,8 +34,7 @@ int main(int argc, char** argv)
         // add scans to scanProjectPtr
         scan_proj->positions.push_back(scan_pos);
 
-        scan_pos->scans[0]->m_positionNumber = i;
-
+        
         for(int cam_id=0; cam_id<5; cam_id++)
         {
             ScanCameraPtr cam(new ScanCamera);
@@ -59,13 +58,13 @@ int main(int argc, char** argv)
 
     scan_proj->pose = Transformd::Identity();
 
-    std::cout << "--- WRITE TEST ---" << std::endl;
-    saveScanProjectToDirectory("example_sav", *scan_proj);
+    // std::cout << "--- WRITE TEST ---" << std::endl;
+    // saveScanProjectToDirectory("scan_directory", *scan_proj);
 
     
-    ScanProject in_scan_proj;
-    std::cout << "--- READ TEST ---" << std::endl;
-    loadScanProjectFromDirectory("example_sav", in_scan_proj);
+    // ScanProject in_scan_proj;
+    // std::cout << "--- READ TEST ---" << std::endl;
+    // loadScanProjectFromDirectory("scan_directory", in_scan_proj);
 
 
 
