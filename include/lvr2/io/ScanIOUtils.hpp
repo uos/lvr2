@@ -19,6 +19,17 @@
 namespace lvr2
 {
 
+/**
+ * @brief       Gets the sensor type for a given directory. Return an 
+ *              empty string if the directory does not contain a meta.yaml
+ *              file with 'sensor_type' element.
+ * 
+ * @param dir   Directory to check for sensor data
+ * @return      A string tag that identifies the directory content
+ */
+std::string getSensorType(const boost::filesystem::path& dir);
+
+
 //////////////////////////////////////////////////////////////////////////////////
 /// SCANIMAGE 
 //////////////////////////////////////////////////////////////////////////////////
@@ -65,6 +76,10 @@ bool loadScanImage(
     const std::string& cameraDirectory,
     const size_t& imageNumber);
 
+void loadScanImages(
+    vector<ScanImagePtr>& images, 
+    boost::filesystem::path dataPath);
+
 //////////////////////////////////////////////////////////////////////////////////
 /// SCANCAMERA
 //////////////////////////////////////////////////////////////////////////////////
@@ -104,6 +119,59 @@ bool loadScanCamera(
     ScanCamera& image,
     const size_t& positionNumber,
     const size_t& cameraNumber);
+
+//////////////////////////////////////////////////////////////////////////////////
+/// SCAN
+//////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief Save a scan struct. 
+ * 
+ * @param root                  Project root directory
+ * @param scan                  The scan object to save
+ * @param positionName          The name of the scan position
+ * @param scanDirectoryName     The name of the scan directory 
+ * @param scanName              The name of the generated scan file
+ */
+void saveScan(
+    const boost::filesystem::path& root,
+    const Scan& scan,
+    const std::string positionName,
+    const std::string scanDirectoryName,
+    const std::string scanName);
+
+void saveScan(
+    const boost::filesystem::path& root,
+    const Scan& scan,
+    const std::string positionDirectory,
+    const std::string scanDirectory,
+    const size_t& scanNumber);
+
+void saveScan(
+    const boost::filesystem::path& root,
+    const Scan& scan,
+    const size_t& positionNumber,
+    const size_t& scanNumber);
+
+bool loadScan(
+    const boost::filesystem::path& root,
+    Scan& image,
+    const std::string& positionDirectory,
+    const std::string& scanDirectory,
+    const std::string& scanNumber);
+
+bool loadScan(
+    const boost::filesystem::path& root,
+    Scan& scan,
+    const std::string& positionDirectory,
+    const std::string& scanDirectory,
+    const size_t& scanNumber);
+
+bool loadScan(
+    const boost::filesystem::path& root,
+    Scan& scan,
+    const size_t& positionNumber,
+    const size_t& scanNumber);
 
 
 // std::set<size_t> loadPositionIdsFromDirectory(

@@ -25,7 +25,7 @@ struct convert<lvr2::Scan>
     static Node encode(const lvr2::Scan& scan) {
         Node node;
         
-        node["type"] = "scan";
+        node["sensor_type"] = "Scan";
 
         node["start_time"]  = scan.m_startTime;
         node["end_time"] = scan.m_endTime;
@@ -53,7 +53,7 @@ struct convert<lvr2::Scan>
 
     static bool decode(const Node& node, lvr2::Scan& scan) {
         
-        if(node["type"].as<std::string>() != "scan")
+        if(node["type"].as<std::string>() != "Scan")
         {
             return false;
         }
