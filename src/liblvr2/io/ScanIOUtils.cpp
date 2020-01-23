@@ -183,39 +183,46 @@ bool loadScanImage(
 }
 
 void loadScanImages(
-    vector<ScanImagePtr>& images, 
+    std::vector<ScanImagePtr>& images, 
     boost::filesystem::path dataPath)
 {
     bool stop = false;
     size_t c = 0;
     while(!stop)
     {
-        stringstream metaStr;
+        std::stringstream metaStr;
         metaStr << std::setfill('0') << std::setw(8) << c << ".yaml";
 
-        stringstream pngStr;
-        metaStr << std::setfill('0') << std::setw(8) << c << ".png";
+        std::stringstream pngStr;
+        pngStr << std::setfill('0') << std::setw(8) << c << ".png";
 
         boost::filesystem::path metaPath = dataPath / metaStr.str();
         boost::filesystem::path pngPath = dataPath / pngStr.str();
 
         // Check if both .png and corresponding .yaml file exist
-        if(boost::filesystem::exists(metaPath) && boost::filesystem::exists(pngPath) && getSensorType(dataPath) == "ScanImage")
+        if(boost::filesystem::exists(metaPath) 
+            && boost::filesystem::exists(pngPath) )
         {
             // Load meta info
             ScanImage* image = new ScanImage;
             
             std::cout << timestamp << "Loading " << metaPath << std::endl;
             YAML::Node meta = YAML::LoadFile(metaPath.string());
-            *image = meta.as<ScanImage>();
 
-            // Load image data
-             std::cout << timestamp << "Loading " << pngPath << std::endl;
-            image->imageFile = pngPath;
-            image->image = cv::imread(pngPath.string());
+            // *image = meta.as<ScanImage>();
+            if(YAML::convert<ScanImage>::decode(meta, *image))
+            {
+                // Load image data
+                std::cout << timestamp << "Loading " << pngPath << std::endl;
+                image->imageFile = pngPath;
+                image->image = cv::imread(pngPath.string());
 
-            // Store new image
-            images.push_back(ScanImagePtr(image));
+                // Store new image
+                images.push_back(ScanImagePtr(image));
+            } else {
+                std::cout << timestamp << "Could not convert " << metaPath << std::endl;
+            }
+            
             c++;
         }
         else
@@ -659,7 +666,6 @@ bool loadScanPosition(
                     if(loadScan(root, *scan, positionDirectory, it->path().stem().string(), scanName))
                     {
                         scanPos.scans.push_back(scan);
-                        std::cout << "Scan loaded" << std::endl;
                     }
                 }
                 ++itScans;
