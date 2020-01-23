@@ -47,7 +47,8 @@ boost::filesystem::path getScanImageDirectory(
 {
     boost::filesystem::path pos(positionDirectory);
     boost::filesystem::path cam(cameraDirectory);
-    return root / pos /cam;
+    boost::filesystem::path data("data/");
+    return root / pos /cam / data;
 }
 
 void saveScanImage(
@@ -153,6 +154,118 @@ bool loadScanImage(
     return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////
+/// SCANCAMERA
+///////////////////////////////////////////////////////////////////////////////////////
+
+boost::filesystem::path getScanCameraDirectory(
+    boost::filesystem::path root,
+    const std::string positionDirectory,
+    const std::string cameraDirectory)
+{
+    boost::filesystem::path pos(positionDirectory);
+    boost::filesystem::path cam(cameraDirectory);
+    return root / pos /cam;
+}
+
+
+void saveScanCamera(
+    const boost::filesystem::path& root,
+    const ScanCamera& camera,
+    const std::string positionDirectory,
+    const std::string cameraDirectory)
+{
+    boost::filesystem::path cameraPath = 
+        getScanCameraDirectory(root, positionDirectory, cameraDirectory);
+
+
+    boost::filesystem::path metaPath(cameraPath / "meta.yaml");
+
+     // Write meta information of scan camera
+    YAML::Node meta;
+    meta = camera;
+
+    std::ofstream out(metaPath.c_str());
+    if (out.good())
+    {
+        std::cout << timestamp << "Writing " << metaPath << std::endl;
+        out << meta;
+    }
+    else
+    {
+        std::cout << timestamp 
+            << "Warning: to write " << metaPath << std::endl;     
+    }
+
+    // Save all images
+    for(size_t i = 0; i < camera.images.size(); i++)
+    {
+        saveScanImage(root, *camera.images[i], positionDirectory, cameraDirectory, i);
+    }
+}
+
+void saveScanCamera(
+    const boost::filesystem::path& root,
+    const ScanCamera& camera,
+    const size_t& positionNumber,
+    const size_t& cameraNumber)
+{
+    std::stringstream posStr;
+    posStr << std::setfill('0') << std::setw(8) << positionNumber;
+
+    std::stringstream camStr;
+    camStr << std::setfill('0') << std::setw(8) << cameraNumber;
+
+    return saveScanCamera(root, camera, posStr.str(), camStr.str());
+}
+
+void saveScanCamera(
+    const boost::filesystem::path& root,
+    const ScanCamera& camera,
+    const std::string& positionDirectory,
+    const size_t& cameraNumber)
+{
+    std::stringstream camStr;
+    camStr << std::setfill('0') << std::setw(8) << cameraNumber;
+
+    return saveScanCamera(root, camera, positionDirectory, camStr.str());
+}
+
+bool loadScanCamera(
+    const boost::filesystem::path& root,
+    ScanCamera& camera,
+    const std::string& positionDirectory,
+    const size_t& cameraNumber)
+{
+    std::stringstream camStr;
+    camStr << std::setfill('0') << std::setw(8) << cameraNumber;
+
+    return loadScanCamera(root, camera, positionDirectory, camStr.str());
+}
+
+bool loadScanCamera(
+    const boost::filesystem::path& root,
+    ScanCamera& camera,
+    const size_t& positionNumber,
+    const size_t& cameraNumber)
+{
+    std::stringstream posStr;
+    posStr << std::setfill('0') << std::setw(8) << positionNumber;
+
+    std::stringstream camStr;
+    camStr << std::setfill('0') << std::setw(8) << cameraNumber;
+
+    return loadScanCamera(root, camera, posStr.str(), camStr.str());
+}
+
+bool loadScanCamera(
+    const boost::filesystem::path& root,
+    ScanCamera& camera,
+    const std::string& positionDirectory,
+    const std::string& cameraDirectory)
+{
+ 
+}
 
 
 
