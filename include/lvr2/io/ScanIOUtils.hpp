@@ -19,6 +19,10 @@
 namespace lvr2
 {
 
+//////////////////////////////////////////////////////////////////////////////////
+/// SCANIMAGE 
+//////////////////////////////////////////////////////////////////////////////////
+
 void saveScanImage(
     const boost::filesystem::path& root,
     const ScanImage& image,
@@ -61,6 +65,45 @@ bool loadScanImage(
     const std::string& cameraDirectory,
     const size_t& imageNumber);
 
+//////////////////////////////////////////////////////////////////////////////////
+/// SCANCAMERA
+//////////////////////////////////////////////////////////////////////////////////
+
+void saveScanCamera(
+    const boost::filesystem::path& root,
+    const ScanCamera& image,
+    const std::string positionDirectory,
+    const std::string cameraDirectory);
+
+void saveScanCamera(
+    const boost::filesystem::path& root,
+    const ScanCamera& image,
+    const size_t& positionNumber,
+    const size_t& cameraNumber);
+
+void saveScanCamera(
+    const boost::filesystem::path& root,
+    const ScanCamera& image,
+    const std::string& positionDirectory,
+    const size_t& cameraNumber);
+
+bool loadScanCamera(
+    const boost::filesystem::path& root,
+    ScanCamera& image,
+    const std::string& positionDirectory,
+    const std::string& cameraDirectory);
+
+bool loadScanCamera(
+    const boost::filesystem::path& root,
+    ScanCamera& image,
+    const std::string& positionDirectory,
+    const size_t& cameraNumber);
+
+bool loadScanCamera(
+    const boost::filesystem::path& root,
+    ScanCamera& image,
+    const size_t& positionNumber,
+    const size_t& cameraNumber);
 
 
 // std::set<size_t> loadPositionIdsFromDirectory(
