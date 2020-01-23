@@ -175,8 +175,6 @@ namespace lvr2
 
             for(size_t i = 0; i < n_i; i++)
             {
-
-
                 size_t index = 3 * i;
                 vtkSmartPointer<vtkTriangle> t = vtkSmartPointer<vtkTriangle>::New();
                 t->GetPointIds()->SetId(0, indices[index]);
