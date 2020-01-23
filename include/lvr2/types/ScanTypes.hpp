@@ -8,6 +8,7 @@
 
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>
+#include <string_view>
 
 #include <opencv2/core.hpp>
 
@@ -38,7 +39,7 @@ struct Scan
 
     ~Scan() {};
 
-    std::string                     sensorType = "Scan";
+    static constexpr char           sensorType[] = "Scan";
 
     /// Point buffer containing the scan points
     PointBufferPtr                  points;
@@ -106,7 +107,7 @@ using ScanOptional = boost::optional<Scan>;
 struct ScanImage
 {
     /// Sensor type flag
-    std::string                     sensorType = "ScanImage";
+    static constexpr char           sensorType[] = "ScanImage";
 
     /// Extrinsics 
     Extrinsicsd                     extrinsics;
@@ -137,7 +138,7 @@ using ScanImageOptional = boost::optional<ScanImage>;
 struct ScanCamera 
 {
     /// Description of the sensor model
-    std::string                     sensorType = "ScanCamera";
+    static constexpr char           sensorType[] = "ScanCamera";
 
     /// Individual name of the camera
     std::string                     sensorName = "Camera";
@@ -159,7 +160,7 @@ using ScanCameraPtr = std::shared_ptr<ScanCamera>;
  ****************************************************************************/
 struct ScanPosition
 {
-    std::string                     sensorType = "ScanPosition";
+    static constexpr char           sensorType[] = "ScanPosition";
 
     /// Vector of scan data. The scan position can contain several 
     /// scans. The scan with the best resolition should be stored in

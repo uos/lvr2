@@ -7,6 +7,7 @@
 #include "lvr2/io/yaml/ScanCamera.hpp"
 #include "lvr2/io/yaml/ScanImage.hpp"
 #include "lvr2/io/yaml/ScanPosition.hpp"
+#include "lvr2/io/yaml/ScanProject.hpp"
 
 #include <sstream>
 
@@ -186,7 +187,7 @@ void loadScanImages(
     boost::filesystem::path dataPath)
 {
     bool stop = false;
-    size_t c = 1;
+    size_t c = 0;
     while(!stop)
     {
         stringstream metaStr;
@@ -622,8 +623,85 @@ bool loadScanPosition(
 
 }
 
+///////////////////////////////////////////////////////////////////////////////////////
+/// SCAN_PROJECT
+///////////////////////////////////////////////////////////////////////////////////////
+
+void saveScanProject(
+    const boost::filesystem::path& root,
+    const ScanProject& scanProj)
+{
+
+    if(!boost::filesystem::exists(root))
+    {
+        boost::filesystem::create_directory(root);
+    }
+
+    boost::filesystem::path scanProjMetaPath = root / "meta.yaml";
+    
+    YAML::Node meta;
+    meta = scanProj;
+
+    std::ofstream out(scanProjMetaPath.string());
+    if (out.good())
+    {
+        std::cout << timestamp << "Writing " << scanProjMetaPath << std::endl;
+        out << meta;
+    }
+    else
+    {
+        std::cout << timestamp
+                  << "Warning: Unable to write " << scanProjMetaPath << std::endl;
+    }
 
 
+    // Writing scan positions
+    for(size_t i=0; i<scanProj.positions.size(); i++)
+    {
+        saveScanPosition(root, *scanProj.positions[0], i);
+    }
+
+
+}
+
+bool loadScanProject(
+    const boost::filesystem::path& root,
+    ScanProject& scanProj)
+{
+    if(!boost::filesystem::exists(root))
+    {
+        std::cerr << timestamp << "Could not open " << root << std::endl;
+        return false;
+    }
+
+    boost::filesystem::path scanProjMetaPath = root / "meta.yaml";
+
+    if(!boost::filesystem::exists(scanProjMetaPath))
+    {
+        std::cerr << timestamp << "Could not load " << scanProjMetaPath << std::endl;
+        return false;
+    }
+
+    YAML::Node meta = YAML::LoadFile(scanProjMetaPath.string());
+    scanProj = meta.as<ScanProject>();
+
+    boost::filesystem::directory_iterator it{root};
+    while (it != boost::filesystem::directory_iterator{})
+    {
+        if(getSensorType(*it) == ScanPosition::sensorType)
+        {
+            std::cout << *it << '\n';
+            ScanPositionPtr scanPos(new ScanPosition);
+
+            loadScanPosition(root, *scanPos, it->path().filename().string());
+            scanProj.positions.push_back(scanPos);
+        }
+        
+        ++it;
+    }
+        
+    return true;
+}
 
 
 
