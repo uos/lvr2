@@ -27,25 +27,25 @@ struct convert<lvr2::Scan>
         
         node["sensor_type"] = "Scan";
 
-        node["start_time"]  = scan.m_startTime;
-        node["end_time"] = scan.m_endTime;
+        node["start_time"]  = scan.startTime;
+        node["end_time"] = scan.endTime;
 
-        node["pose_estimate"] = scan.m_poseEstimation;
-        node["registration"] = scan.m_registration;
+        node["pose_estimate"] = scan.poseEstimation;
+        node["registration"] = scan.registration;
 
         Node config;
         config["theta"] = Load("[]");
-        config["theta"].push_back(scan.m_thetaMin);
-        config["theta"].push_back(scan.m_thetaMax);
+        config["theta"].push_back(scan.thetaMin);
+        config["theta"].push_back(scan.thetaMax);
 
         config["phi"] = Load("[]");
-        config["phi"].push_back(scan.m_phiMin);
-        config["phi"].push_back(scan.m_phiMax);
+        config["phi"].push_back(scan.phiMin);
+        config["phi"].push_back(scan.phiMax);
 
-        config["v_res"] = scan.m_vResolution;
-        config["h_res"] = scan.m_hResolution;
+        config["v_res"] = scan.vResolution;
+        config["h_res"] = scan.hResolution;
 
-        config["num_points"] = scan.m_numPoints;
+        config["num_points"] = scan.numPoints;
         node["config"] = config;
 
         return node;
@@ -58,25 +58,25 @@ struct convert<lvr2::Scan>
             return false;
         }
 
-        scan.m_startTime = node["start_time"].as<float>();
-        scan.m_endTime = node["end_time"].as<float>();
-        scan.m_poseEstimation = node["pose_estimate"].as<lvr2::Transformd>();
-        scan.m_registration = node["registration"].as<lvr2::Transformd>();
+        scan.startTime = node["start_time"].as<double>();
+        scan.endTime = node["end_time"].as<double>();
+        scan.poseEstimation = node["pose_estimate"].as<lvr2::Transformd>();
+        scan.registration = node["registration"].as<lvr2::Transformd>();
         
         const Node& config = node["config"];
 
         
-        scan.m_thetaMin = config["theta"][0].as<float>();
-        scan.m_thetaMax = config["theta"][1].as<float>();
+        scan.thetaMin = config["theta"][0].as<double>();
+        scan.thetaMax = config["theta"][1].as<double>();
 
-        scan.m_phiMin = config["phi"][0].as<float>();
-        scan.m_phiMax = config["phi"][1].as<float>();
+        scan.phiMin = config["phi"][0].as<double>();
+        scan.phiMax = config["phi"][1].as<double>();
 
 
-        scan.m_vResolution = config["v_res"].as<float>();
-        scan.m_hResolution = config["h_res"].as<float>();
+        scan.vResolution = config["v_res"].as<double>();
+        scan.hResolution = config["h_res"].as<double>();
 
-        scan.m_numPoints = config["num_points"].as<float>();
+        scan.numPoints = config["num_points"].as<size_t>();
 
 
         return true;

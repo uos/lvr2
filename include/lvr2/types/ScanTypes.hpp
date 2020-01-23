@@ -23,72 +23,72 @@ namespace lvr2
 struct Scan
 {
     Scan() :
-        m_points(nullptr),
-        m_registration(Transformd::Identity()),
-        m_poseEstimation(Transformd::Identity()),
-        m_thetaMin(0), m_thetaMax(0),
-        m_phiMin(0), m_phiMax(0),
-        m_hResolution(0),
-        m_vResolution(0),
-        m_pointsLoaded(false),
-        m_positionNumber(0),
-        m_numPoints(0),
-        m_scanRoot(boost::filesystem::path("./"))
+        points(nullptr),
+        registration(Transformd::Identity()),
+        poseEstimation(Transformd::Identity()),
+        thetaMin(0), thetaMax(0),
+        phiMin(0), phiMax(0),
+        hResolution(0),
+        vResolution(0),
+        pointsLoaded(false),
+        positionNumber(0),
+        numPoints(0),
+        scanRoot(boost::filesystem::path("./"))
     {}
 
     ~Scan() {};
 
     /// Point buffer containing the scan points
-    PointBufferPtr                  m_points;
+    PointBufferPtr                  points;
 
     /// Registration of this scan in project coordinates
-    Transformd                      m_registration;
+    Transformd                      registration;
 
     /// Pose estimation of this scan in project coordinates
-    Transformd                      m_poseEstimation;
+    Transformd                      poseEstimation;
 
     /// Axis aligned bounding box of this scan
-    BoundingBox<BaseVector<float> > m_boundingBox;
+    BoundingBox<BaseVector<float> > boundingBox;
 
     /// Min horizontal scan angle
-    float                           m_thetaMin;
+    double                           thetaMin;
 
     /// Max horizontal scan angle
-    float                           m_thetaMax;
+    double                           thetaMax;
 
     /// Min vertical scan angle
-    float                           m_phiMin;
+    double                           phiMin;
 
     /// Max vertical scan angle
-    float                           m_phiMax;
+    double                           phiMax;
 
     /// Horizontal resolution of used laser scanner
-    float                           m_hResolution;
+    double                           hResolution;
 
     /// Vertical resolution of used laser scanner
-    float                           m_vResolution;
+    double                           vResolution;
 
     /// Start timestamp 
-    float                           m_startTime;
+    double                           startTime;
 
     /// End timestamp     
-    float                           m_endTime;
+    double                           endTime;
 
     /// Indicates if all points ware loaded from the initial
     /// input file
-    bool                            m_pointsLoaded;
+    bool                            pointsLoaded;
 
     /// Scan position number of this scan in the current scan project
-    int                             m_positionNumber;
+    int                             positionNumber;
 
     /// Path to root dir of this scan
-    boost::filesystem::path         m_scanRoot;
+    boost::filesystem::path         scanRoot;
 
     /// Name of the file containing the scan data
-    boost::filesystem::path         m_scanFile;
+    boost::filesystem::path         scanFile;
 
     /// Number of points in scan
-    size_t                          m_numPoints;
+    size_t                          numPoints;
 };
 
 /// Shared pointer to scans

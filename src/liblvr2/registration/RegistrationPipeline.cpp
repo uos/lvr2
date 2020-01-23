@@ -76,14 +76,14 @@ void RegistrationPipeline::doRegistration()
 
         ScanPositionPtr posPtr = m_scans->positions.at(i);
 
-        cout << "Diff: " << getDifference(posPtr->scans[0]->m_registration, align.scan(i)->pose()) << endl;
-        if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scans[0]->m_registration, align.scan(i)->pose()) > m_options->diffPoseSum))
+        cout << "Diff: " << getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) << endl;
+        if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) > m_options->diffPoseSum))
         {
             m_scans->changed.at(i) = true;
             cout << "New Values"<< endl;
         }
-        posPtr->scans[0]->m_registration = align.scan(i)->pose();
-        cout << "Pose Scan Nummer " << i << endl << posPtr->scans[0]->m_registration << endl;
+        posPtr->scans[0]->registration = align.scan(i)->pose();
+        cout << "Pose Scan Nummer " << i << endl << posPtr->scans[0]->registration << endl;
     }
 
 }

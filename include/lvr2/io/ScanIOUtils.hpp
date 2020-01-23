@@ -125,7 +125,7 @@ bool loadScanCamera(
 //////////////////////////////////////////////////////////////////////////////////
 
 /**
- * @brief Save a scan struct. 
+ * @brief Save a Scan struct. 
  * 
  * @param root                  Project root directory
  * @param scan                  The scan object to save
@@ -155,7 +155,7 @@ void saveScan(
 
 bool loadScan(
     const boost::filesystem::path& root,
-    Scan& image,
+    Scan& scan,
     const std::string& positionDirectory,
     const std::string& scanDirectory,
     const std::string& scanName);
@@ -172,6 +172,40 @@ bool loadScan(
     Scan& scan,
     const size_t& positionNumber,
     const size_t& scanNumber);
+
+
+//////////////////////////////////////////////////////////////////////////////////
+/// SCAN_POSITION
+//////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief Save a ScanPosition struct. 
+ * 
+ * @param root                  Project root directory
+ * @param scanPos                  The scan object to save
+ * @param positionName          The name of the scan position
+ * @param scanDirectoryName     The name of the scan directory 
+ * @param scanName              The name of the generated scan file
+ */
+void saveScanPosition(
+    const boost::filesystem::path& root,
+    const ScanPosition& scanPos,
+    const std::string positionDirectory);
+
+void saveScanPosition(
+    const boost::filesystem::path& root,
+    const ScanPosition& scanPos,
+    const size_t& positionNumber);
+
+bool loadScanPosition(
+    const boost::filesystem::path& root,
+    ScanPosition& scanPos,
+    const std::string& positionDirectory);
+
+bool loadScanPosition(
+    const boost::filesystem::path& root,
+    ScanPosition& scanPos,
+    const size_t& positionNumber);
 
 
 // std::set<size_t> loadPositionIdsFromDirectory(

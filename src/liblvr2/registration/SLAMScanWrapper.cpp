@@ -47,12 +47,12 @@ SLAMScanWrapper::SLAMScanWrapper(ScanPtr scan)
 {
     if (m_scan)
     {
-        m_scan->m_registration = m_scan->m_poseEstimation;
+        m_scan->registration = m_scan->poseEstimation;
 
         // TODO: m_scan->m_points->load();
 
-        m_numPoints = m_scan->m_points->numPoints();
-        lvr2::floatArr arr = m_scan->m_points->getPointArray();
+        m_numPoints = m_scan->points->numPoints();
+        lvr2::floatArr arr = m_scan->points->getPointArray();
 
         m_points.resize(m_numPoints);
         #pragma omp parallel for schedule(static)
@@ -62,7 +62,7 @@ SLAMScanWrapper::SLAMScanWrapper(ScanPtr scan)
         }
 
         // TODO: m_scan->m_points->unload();
-        m_scan->m_points.reset();
+        m_scan->points.reset();
     }
     else
     {
@@ -77,7 +77,7 @@ ScanPtr SLAMScanWrapper::innerScan()
 
 void SLAMScanWrapper::transform(const Transformd& transform, bool writeFrame, FrameUse use)
 {
-    m_scan->m_registration = transform * m_scan->m_registration;
+    m_scan->registration = transform * m_scan->registration;
     m_deltaPose = transform * m_deltaPose;
 
     if (writeFrame)
@@ -157,7 +157,7 @@ size_t SLAMScanWrapper::numPoints() const
 
 const Transformd& SLAMScanWrapper::pose() const
 {
-    return m_scan->m_registration;
+    return m_scan->registration;
 }
 
 const Transformd& SLAMScanWrapper::deltaPose() const
@@ -167,7 +167,7 @@ const Transformd& SLAMScanWrapper::deltaPose() const
 
 const Transformd& SLAMScanWrapper::initialPose() const
 {
-    return m_scan->m_poseEstimation;
+    return m_scan->poseEstimation;
 }
 
 Vector3d SLAMScanWrapper::getPosition() const
