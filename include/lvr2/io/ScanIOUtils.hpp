@@ -158,7 +158,7 @@ bool loadScan(
     Scan& image,
     const std::string& positionDirectory,
     const std::string& scanDirectory,
-    const std::string& scanNumber);
+    const std::string& scanName);
 
 bool loadScan(
     const boost::filesystem::path& root,
