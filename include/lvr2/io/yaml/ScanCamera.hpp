@@ -43,14 +43,22 @@ struct convert<lvr2::ScanCamera>
         pinholeNode["fy"] = scanCam.camera.fy;
         node["pinhole"] = pinholeNode;
 
-        Node distortion;
-        for(size_t i = 0; i < scanCam.camera.k.size(); i++)
+        if(scanCam.camera.distortionModel == "opencv")
         {
-            std::stringstream s;
-            s << "k" << i;
-            distortion[s.str()] = scanCam.camera.k[i];
+            Node distortion;
+            for(size_t i = 0; i < scanCam.camera.k.size(); i++)
+            {
+                std::stringstream s;
+                s << "k" << i;
+                distortion[s.str()] = scanCam.camera.k[i];
+            }
+            node["distortion"] = distortion;
+        } else {
+            // unkown distortion model
         }
-        node["distortion"] = distortion;
+
+
+        
 
         return node;
     }
@@ -63,17 +71,6 @@ struct convert<lvr2::ScanCamera>
             return false;
         }
 
-        // Get fields
-        // dont need this after check above
-        // if(node["sensor_type"])
-        // {
-        //     scanCam.sensorType = node["sensor_type"].as<std::string>();
-        // }
-        // else
-        // {
-        //     scanCam.sensorType = "unknown";
-        // }
-
         if(node["sensor_name"])
         {
             scanCam.sensorName = node["sensor_name"].as<std::string>();
@@ -83,51 +80,48 @@ struct convert<lvr2::ScanCamera>
             scanCam.sensorName = "noname";
         }
 
-        // Check if we have distortion data in OpenCV format
-        if(node["distortion_model"].as<std::string>() != "opencv")
-        {
-            return false;
-        }
-
         if(node["resolution"] && node["resolution"].size() == 2)
         {
-            scanCam.camera.width = node["resolution"][0].as<int>();
-            scanCam.camera.height = node["resolution"][1].as<int>();
+            scanCam.camera.width = node["resolution"][0].as<unsigned>();
+            scanCam.camera.height = node["resolution"][1].as<unsigned>();
         }
+
+        std::string camera_model = node["camera_model"].as<std::string>();
+
+        if(camera_model == "pinhole")
+        {
+            // load pinhole parameters
+            Node pinholeNode = node["pinhole"];
+            scanCam.camera.cx = pinholeNode["cx"].as<double>();
+            scanCam.camera.cy = pinholeNode["cy"].as<double>();
+            scanCam.camera.fx = pinholeNode["fx"].as<double>();
+            scanCam.camera.fy = pinholeNode["fy"].as<double>();
+        } else {
+            std::cout << "Camera model unknown" << std::endl;
+        }
+
+        // Check if we have distortion data in OpenCV format
+
+        scanCam.camera.distortionModel = node["distortion_model"].as<std::string>();
+
+        if(scanCam.camera.distortionModel == "opencv")
+        {
+            Node distortionNode = node["distortion"];
+            scanCam.camera.k.clear();
+            if(distortionNode)
+            {
+                for(size_t i = 0; i < distortionNode.size(); i++)
+                {
+                    std::cout << i << std::endl;
+                    scanCam.camera.k.push_back(distortionNode[i].as<double>());
+                }
+            }
+        } else {
+            std::cout << "Distortion model unknown" << std::endl;
+        }
+
+        
        
-        Node pinholeNode = node["pinhole"];
-        if(pinholeNode)
-        {
-            if(pinholeNode["fx"])
-            {
-                scanCam.camera.fx = pinholeNode["fx"].as<double>();
-            }
-
-            if(pinholeNode["fy"])
-            {
-                scanCam.camera.fx = pinholeNode["fy"].as<double>();
-            }
-
-            if(pinholeNode["cx"])
-            {
-                scanCam.camera.cx = pinholeNode["cx"].as<double>();
-            }
-
-            if(pinholeNode["cy"])
-            {
-                scanCam.camera.cx = pinholeNode["cy"].as<double>();
-            }
-        }
-
-        Node distortionNode = node["distortion"];
-        scanCam.camera.k.clear();
-        if(distortionNode)
-        {
-            for(size_t i = 0; i < distortionNode.size(); i++)
-            {
-                scanCam.camera.k.push_back(distortionNode[i].as<double>());
-            }
-        }
 
         return true;
     }
