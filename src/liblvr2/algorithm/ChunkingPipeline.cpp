@@ -89,7 +89,7 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
 //        m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
 //    }
     // rm after new scanIOUtils is ready!
-    loadScanProjectFromHDF5(m_hdf5Path.string(), scanProject);
+    loadAllPreviewsFromHDF5(m_hdf5Path.string(), scanProject);
     ScanProjectEditMark tmpScanProject;
     tmpScanProject.project = std::make_shared<ScanProject>(scanProject);
     m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
@@ -101,13 +101,27 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     // TODO: set options via config file parser
     slamOptions.icpIterations = 500;
     slamOptions.icpMaxDistance = 10;
-    // slamOptions.doGraphSLAM = true; // TODO: check why graph slam param leads to bad alloc
+    slamOptions.doGraphSLAM = true; // TODO: check why graph slam param leads to bad alloc
     slamOptions.slamMaxDistance = 9;
     slamOptions.loopSize = 10;
     slamOptions.closeLoopDistance = 30;
     RegistrationPipeline registration(&slamOptions, m_scanProject);
+    
+    std::cout << "Final poses before registration:" << std::endl;
+    for (int i = 0; i < m_scanProject->project->positions.size(); i++)
+    {
+        std::cout << "Pose Nummer " << i << std::endl << m_scanProject->project->positions.at(i)->scan->m_registration << std::endl;
+    }
+    
     registration.doRegistration();
     std::cout << "Finished registration!" << std::endl;
+
+
+    std::cout << "Final poses after registration:" << std::endl;
+    for (int i = 0; i < m_scanProject->project->positions.size(); i++)
+    {
+        std::cout << "Pose Nummer " << i << std::endl << m_scanProject->project->positions.at(i)->scan->m_registration << std::endl;
+    }
 
     std::cout << "Starting large scale reconstruction..." << std::endl;
     // TODO: use constructor with struct parameter
