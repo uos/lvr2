@@ -181,7 +181,7 @@ std::vector<std::string> ChunkManager::getChannels()
     std::vector<std::string> attributeList;
     const BoundingBox<BaseVec> boundingBox(BaseVec(0,0,0), BaseVec(1,1,1));
 
-    MeshBufferPtr globalMesh = extractArea(boundingBox);
+    MeshBufferPtr globalMesh = extractArea(boundingBox, "mesh1");
     for (auto channelIterator = globalMesh->begin(); channelIterator != globalMesh->end(); ++channelIterator)
     {
         attributeList.push_back(channelIterator->first);
