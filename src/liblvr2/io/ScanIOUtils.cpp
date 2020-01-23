@@ -6,6 +6,7 @@
 #include "lvr2/io/yaml/Scan.hpp"
 #include "lvr2/io/yaml/ScanCamera.hpp"
 #include "lvr2/io/yaml/ScanImage.hpp"
+#include "lvr2/io/yaml/ScanPosition.hpp"
 
 #include <sstream>
 
@@ -88,8 +89,14 @@ void saveScanImage(
     boost::filesystem::path imageDirectory = 
         getScanImageDirectory(root, positionDirectory, cameraDirectory);
 
-    boost::filesystem::path imagePath(imageDirectory / boost::filesystem::path(metaFileName.str()));
-    boost::filesystem::path metaPath(imageDirectory / boost::filesystem::path(metaFileName.str()));
+    if(!boost::filesystem::exists(imageDirectory))
+    {
+        std::cout << timestamp << "Creating: " << imageDirectory << std::endl;
+        boost::filesystem::create_directory(imageDirectory);
+    }
+
+    boost::filesystem::path imagePath = imageDirectory / imageFileName.str();
+    boost::filesystem::path metaPath = imageDirectory / metaFileName.str();
 
     // Write meta information for scan image
     YAML::Node meta;
@@ -243,6 +250,11 @@ void saveScanCamera(
     boost::filesystem::path cameraPath = 
         getScanCameraDirectory(root, positionDirectory, cameraDirectory);
 
+    if(!boost::filesystem::exists(cameraPath))
+    {
+        std::cout << timestamp << "Creating: " << cameraPath << std::endl;
+        boost::filesystem::create_directory(cameraPath);
+    }
 
     boost::filesystem::path metaPath(cameraPath / "meta.yaml");
 
@@ -272,29 +284,27 @@ void saveScanCamera(
 void saveScanCamera(
     const boost::filesystem::path& root,
     const ScanCamera& camera,
+    const std::string& positionDirectory,
+    const size_t& cameraNumber)
+{
+    std::stringstream camStr;
+    camStr << "cam_" << cameraNumber;
+
+    return saveScanCamera(root, camera, positionDirectory, camStr.str());
+}
+
+void saveScanCamera(
+    const boost::filesystem::path& root,
+    const ScanCamera& camera,
     const size_t& positionNumber,
     const size_t& cameraNumber)
 {
     std::stringstream posStr;
     posStr << std::setfill('0') << std::setw(8) << positionNumber;
 
-    std::stringstream camStr;
-    camStr << std::setfill('0') << std::setw(8) << cameraNumber;
-
-    return saveScanCamera(root, camera, posStr.str(), camStr.str());
+    return saveScanCamera(root, camera, posStr.str(), cameraNumber);
 }
 
-void saveScanCamera(
-    const boost::filesystem::path& root,
-    const ScanCamera& camera,
-    const std::string& positionDirectory,
-    const size_t& cameraNumber)
-{
-    std::stringstream camStr;
-    camStr << std::setfill('0') << std::setw(8) << cameraNumber;
-
-    return saveScanCamera(root, camera, positionDirectory, camStr.str());
-}
 
 bool loadScanCamera(
     const boost::filesystem::path& root,
@@ -332,7 +342,7 @@ bool loadScanCamera(
     boost::filesystem::path cameraPath = 
         getScanCameraDirectory(root, positionDirectory, cameraDirectory);
 
-    if(getSensorType(cameraPath) == "ScanCamera")
+    if(getSensorType(cameraPath) == camera.sensorType)
     {
 
         boost::filesystem::path metaPath = cameraPath / "meta.yaml";
@@ -362,18 +372,29 @@ void saveScan(
     const std::string scanDirectory,
     const std::string scanName)
 {
-    boost::filesystem::path positionDirectoryPath(positionDirectory);
-    boost::filesystem::path scanDirectoryPath(scanDirectory);
-    boost::filesystem::path scanNamePath(scanName);
+
+    boost::filesystem::path scanPosPath = root / positionDirectory;
+    
+    if(!boost::filesystem::exists(scanPosPath))
+    {
+        std::cout << timestamp << "Creating: " << scanPosPath << std::endl;
+        boost::filesystem::create_directory(scanPosPath);
+    }
+
+    boost::filesystem::path scanPath = scanPosPath / scanDirectory;
+    if(!boost::filesystem::exists(scanPath))
+    {
+        std::cout << timestamp << "Creating: " << scanPath << std::endl;
+        boost::filesystem::create_directory(scanPath);
+    }
 
     // Check if meta.yaml exists for given directory
-    boost::filesystem::path metaPath = root / positionDirectoryPath / scanDirectoryPath / "meta.yaml";
+    boost::filesystem::path metaPath = scanPath / "meta.yaml";
     if(!boost::filesystem::exists(metaPath))
     {
         YAML::Node node;
-        node["sensor_type"] = "Scan";
-        node["sensor_name"] = "Scanner";
-
+        node = scan;
+        
         std::ofstream out(metaPath.c_str());
         if (out.good())
         {
@@ -387,9 +408,18 @@ void saveScan(
         }
     }
 
-    boost::filesystem::path outputDir = root / positionDirectoryPath / scanDirectoryPath / "data";
-    boost::filesystem::path scanOut = outputDir / scanNamePath / ".ply";
-    boost::filesystem::path scanMetaOut = outputDir / scanNamePath / ".yaml";
+    // write data
+    boost::filesystem::path scanDataPath = scanPath / "data";
+    if(!boost::filesystem::exists(scanDataPath))
+    {
+        std::cout << timestamp << "Creating: " << scanDataPath << std::endl;
+        boost::filesystem::create_directory(scanDataPath);
+    }
+
+    boost::filesystem::path scanOut = scanDataPath / (scanName + ".ply");
+    boost::filesystem::path scanMetaOut = scanDataPath / (scanName + ".yaml");
+
+    // if(!boost::ex)
 
     // Write meta.yaml
     YAML::Node node;
@@ -408,6 +438,8 @@ void saveScan(
     }
 
     // Write point cloud data
+    std::cout << timestamp << "Writing " << scanOut << std::endl;
+   
     ModelPtr model(new Model);
     model->m_pointCloud = scan.points;
     ModelFactory::saveModel(model, scanOut.string());
@@ -455,7 +487,7 @@ bool loadScan(
     
     boost::filesystem::path scanDirectoryPath = root / scanSubDirectoryPath;
     boost::filesystem::path scanDataPath = scanSubDirectoryPath / "data";
-    if(getSensorType(scanDirectoryPath) == "Scan")
+    if(getSensorType(scanDirectoryPath) == scan.sensorType)
     {
         // Load meta data
         boost::filesystem::path metaPath = scanDataPath / (scanName + ".yaml");
@@ -521,7 +553,46 @@ void saveScanPosition(
     const ScanPosition& scanPos,
     const std::string positionDirectory)
 {
+    boost::filesystem::path scan_pos_path = root / positionDirectory;
 
+    if(!boost::filesystem::exists(root))
+    {
+        std::cout << timestamp << "Creating: " << root << std::endl;
+        boost::filesystem::create_directory(root);
+    }
+
+    if(!boost::filesystem::exists(scan_pos_path))
+    {
+        std::cout << timestamp << "Creating: " << scan_pos_path << std::endl;
+        boost::filesystem::create_directory(scan_pos_path);
+    }
+
+
+    boost::filesystem::path scanPosMetaOut = scan_pos_path / "meta.yaml";
+    YAML::Node meta;
+    meta = scanPos;
+
+    std::ofstream out(scanPosMetaOut.string());
+    if (out.good())
+    {
+        std::cout << timestamp << "Writing " << scanPosMetaOut << std::endl;
+        out << meta;
+    }
+    else
+    {
+        std::cout << timestamp
+                  << "Warning: Unable to write " << scanPosMetaOut << std::endl;
+    }
+
+    for(size_t scan_id = 0; scan_id < scanPos.scans.size(); scan_id++)
+    {
+        saveScan(root, *scanPos.scans[scan_id], positionDirectory, "scans", scan_id);
+    }
+
+    for(size_t cam_id = 0; cam_id < scanPos.cams.size(); cam_id++)
+    {
+        saveScanCamera(root, *scanPos.cams[cam_id], positionDirectory, cam_id);
+    }
 }
 
 void saveScanPosition(
@@ -529,7 +600,10 @@ void saveScanPosition(
     const ScanPosition& scanPos,
     const size_t& positionNumber)
 {
+    std::stringstream posStr;
+    posStr << std::setfill('0') << std::setw(8) << positionNumber;
 
+    saveScanPosition(root, scanPos, posStr.str());
 }
 
 bool loadScanPosition(
@@ -537,7 +611,7 @@ bool loadScanPosition(
     ScanPosition& scanPos,
     const std::string& positionDirectory)
 {
-
+    
 }
 
 bool loadScanPosition(
@@ -545,8 +619,10 @@ bool loadScanPosition(
     ScanPosition& scanPos,
     const size_t& positionNumber)
 {
-    
+
 }
+
+
 
 
 

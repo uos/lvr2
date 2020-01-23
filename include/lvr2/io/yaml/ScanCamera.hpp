@@ -57,27 +57,21 @@ struct convert<lvr2::ScanCamera>
     static bool decode(const Node& node, lvr2::ScanCamera& scanCam) 
     {
         // Check if we are reading camera information
-        if(node["sensor_type"].as<std::string>() != "camera")
-        {
-            return false;
-        }
-        
-
-        // Check if we have distortion data in OpenCV format
-        if(node["distortion_model"].as<std::string>() != "opencv")
+        if(node["sensor_type"].as<std::string>() != scanCam.sensorType)
         {
             return false;
         }
 
         // Get fields
-        if(node["sensor_type"])
-        {
-            scanCam.sensorType = node["sensor_type"].as<std::string>();
-        }
-        else
-        {
-            scanCam.sensorType = "unknown";
-        }
+        // dont need this after check above
+        // if(node["sensor_type"])
+        // {
+        //     scanCam.sensorType = node["sensor_type"].as<std::string>();
+        // }
+        // else
+        // {
+        //     scanCam.sensorType = "unknown";
+        // }
 
         if(node["sensor_name"])
         {
@@ -86,6 +80,12 @@ struct convert<lvr2::ScanCamera>
         else
         {
             scanCam.sensorType = "noname";
+        }
+
+        // Check if we have distortion data in OpenCV format
+        if(node["distortion_model"].as<std::string>() != "opencv")
+        {
+            return false;
         }
 
         if(node["resolution"] && node["resolution"].size() == 2)
