@@ -54,9 +54,10 @@ ChunkHashGrid::ChunkHashGrid(std::string hdf5Path,
               size_t cacheSize,
               BoundingBox<BaseVector<float>> boundingBox,
               float chunkSize)
-    : m_cacheSize(cacheSize), m_chunkSize(chunkSize)
+    : m_cacheSize(cacheSize)
 {
     m_io.open(hdf5Path);
+    setChunkSize(chunkSize);
     setBoundingBox(boundingBox);
 }
 
@@ -183,19 +184,19 @@ void ChunkHashGrid::setBoundingBox(const BoundingBox<BaseVector<float>> bounding
 
     BaseVector<std::size_t> chunkIndexOffset;
     chunkIndexOffset.x
-        = static_cast<std::size_t>(std::ceil(-getBoundingBox().getMin().x / getChunkSize()));
+        = static_cast<std::size_t>(std::ceil(-getBoundingBox().getMin().x / getChunkSize()) + 1);
     chunkIndexOffset.y
-        = static_cast<std::size_t>(std::ceil(-getBoundingBox().getMin().y / getChunkSize()));
+        = static_cast<std::size_t>(std::ceil(-getBoundingBox().getMin().y / getChunkSize()) + 1);
     chunkIndexOffset.z
-        = static_cast<std::size_t>(std::ceil(-getBoundingBox().getMin().z / getChunkSize()));
+        = static_cast<std::size_t>(std::ceil(-getBoundingBox().getMin().z / getChunkSize()) + 1);
 
     BaseVector<std::size_t> chunkAmount;
     chunkAmount.x
-        = static_cast<std::size_t>(std::ceil(getBoundingBox().getXSize() / getChunkSize()));
+        = static_cast<std::size_t>(std::ceil(getBoundingBox().getXSize() / getChunkSize()) + 1);
     chunkAmount.y
-        = static_cast<std::size_t>(std::ceil(getBoundingBox().getYSize() / getChunkSize()));
+        = static_cast<std::size_t>(std::ceil(getBoundingBox().getYSize() / getChunkSize()) + 1);
     chunkAmount.z
-        = static_cast<std::size_t>(std::ceil(getBoundingBox().getZSize() / getChunkSize()));
+        = static_cast<std::size_t>(std::ceil(getBoundingBox().getZSize() / getChunkSize()) + 1);
 
     setChunkAmountAndOffset(chunkAmount, chunkIndexOffset);
 }

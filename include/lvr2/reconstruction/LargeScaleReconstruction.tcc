@@ -101,7 +101,7 @@ namespace lvr2
 
     template <typename BaseVecT>
     int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project,
-            std::shared_ptr<ChunkManager> chunkManager,
+            std::shared_ptr<ChunkHashGrid> chunkManager,
             std::string layerName)
     {
 
@@ -166,7 +166,7 @@ namespace lvr2
                       << std::endl;
         }
 
-        std::shared_ptr<ChunkHashGrid> chg = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(m_filePath, 50, cmBB, m_chunkSize));
+        chunkManager->setBoundingBox(cmBB);
 
         BaseVecT bb_min(bb.getMin().x, bb.getMin().y, bb.getMin().z);
         BaseVecT bb_max(bb.getMax().x, bb.getMax().y, bb.getMax().z);
@@ -279,7 +279,7 @@ namespace lvr2
             int x = (int)floor(partitionBoxes.at(i).getCentroid().x / m_chunkSize);
             int y = (int)floor(partitionBoxes.at(i).getCentroid().y / m_chunkSize);
             int z = (int)floor(partitionBoxes.at(i).getCentroid().z / m_chunkSize);
-            addTSDFChunkManager(x, y, z, ps_grid, chg, layerName);
+            addTSDFChunkManager(x, y, z, ps_grid, chunkManager, layerName);
             BaseVector<int> chunkCoordinates(x, y, z);
             // also save the grid coordinates of the chunk added to the ChunkManager
             newChunks.push_back(chunkCoordinates);
@@ -326,7 +326,7 @@ namespace lvr2
         std::vector<PointBufferPtr> tsdfChunks;
         for(BaseVector<int> coord : newChunks)
         {
-            boost::optional<shared_ptr<PointBuffer>> chunk = chg->getChunk<PointBufferPtr>(layerName, coord.x, coord.y, coord.z);
+            boost::optional<shared_ptr<PointBuffer>> chunk = chunkManager->getChunk<PointBufferPtr>(layerName, coord.x, coord.y, coord.z);
             if(chunk)
             {
                 tsdfChunks.push_back(chunk.get());
@@ -402,6 +402,9 @@ namespace lvr2
         std::time_t result = std::time(nullptr);
         std::string largeScale = (string) std::asctime(std::localtime(&result)) + ".ply";
 
+        largeScale.erase(std::remove(largeScale.begin(), largeScale.end(), '\n'), largeScale.end());
+
+
         if (selectedFile.extension().string() == ".h5")
         {
             //MeshBufferPtr newMesh = MeshBufferPtr(meshBuffer);
@@ -469,7 +472,7 @@ namespace lvr2
     }
 
     template <typename BaseVecT>
-    MeshBufferPtr LargeScaleReconstruction<BaseVecT>::partialReconstruct(BaseVector<int> coord,std::shared_ptr<ChunkManager> chunkManager, std::string layerName, BoundingBox<BaseVecT> bb)
+    MeshBufferPtr LargeScaleReconstruction<BaseVecT>::partialReconstruct(BaseVector<int> coord,std::shared_ptr<ChunkHashGrid> chunkManager, std::string layerName, BoundingBox<BaseVecT> bb)
     {
         std::vector<PointBufferPtr> tsdfChunks;
         vector<BoundingBox<BaseVecT>> partitionBoxesNew;
