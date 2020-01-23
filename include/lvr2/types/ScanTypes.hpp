@@ -121,11 +121,26 @@ struct ScanImage
 using ScanImagePtr = std::shared_ptr<ScanImage>;
 using ScanImageOptional = boost::optional<ScanImage>;
 
+
+/*****************************************************************************
+ * @brief   Represents a camera that was used at a specific scan
+ *          position. The intrinsic calibration is stored in the
+ *          camera's camera field. Each image has its owen orientation
+ *          (extrinsic matrix) with respect to the laser scanner
+ * 
+ ****************************************************************************/
 struct ScanCamera 
 {
+    /// Description of the sensor model
     std::string                     sensorType = "Camera";
+
+    /// Individual name of the camera
     std::string                     sensorName = "Camera";
+
+    /// Pinhole camera model
     PinholeModeld                   camera;
+
+    /// Pointer to a set of images taken at a scan position
     std::vector<ScanImagePtr>       images;
 };
 
@@ -136,7 +151,7 @@ using ScanCameraPtr = std::shared_ptr<ScanCamera>;
  * @brief   Represents a scan position consisting of a scan and
  *          images taken at this position
  * 
-*****************************************************************************/
+ ****************************************************************************/
 struct ScanPosition
 {
     /// Vector of scan data. The scan position can contain several 
@@ -146,6 +161,22 @@ struct ScanPosition
 
     /// Image data (optional, empty vector of no images were taken) 
     std::vector<ScanCameraPtr>      cams;
+
+    /// Latitude (optional)
+    double                          latitude;
+
+    /// Longitude (optional)        
+    double                          longitude;
+
+    /// Estimated pose
+    Transformd                      poseEstimate;
+
+    /// Final registered position in project coordinates
+    Transformd                      registration;
+
+    /// Timestamp when this position was created
+    double                          timestamp;
+
 };
 
 using ScanPositionPtr = std::shared_ptr<ScanPosition>;
@@ -168,12 +199,17 @@ struct ScanProject
     std::string                     sensorName;
 
     /// Position of this scan project in world coordinates.
-    /// It is assumed that all stored scan position are in 
+    /// It is assumed that all stored scan positions are in 
     /// project coordinates
     Transformd                      pose;
 
     /// Vector of scan positions for this project
     std::vector<ScanPositionPtr>    positions;
+
+    /// Description (tag) of the internally used coordinate
+    /// system. It is assumed that all coordinate systems 
+    /// loaded with this software are right-handed
+    std::string                     coordinateSystem;
 };
 
 using ScanProjectPtr = std::shared_ptr<ScanProject>;
