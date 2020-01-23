@@ -1485,10 +1485,11 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         for (int i = 0; i < project->changed.size(); i++)
         {
             ScanPositionPtr pos = project->positions.at(i);
-            size_t numPoints = pos->scan->m_points->numPoints();
+            assert(pos.scans[0].size() > 0);
+            size_t numPoints = pos->scans[0]->m_points->numPoints();
             BoundingBox<BaseVecT> box;
-            boost::shared_array<float> points = pos->scan->m_points->getPointArray();
-            Transformd finalPose_n = pos->scan->m_registration;;
+            boost::shared_array<float> points = pos->scans[0]->m_points->getPointArray();
+            Transformd finalPose_n = pos->scans[0]->m_registration;;
 
             Transformd finalPose = finalPose_n.transpose();
 
@@ -1554,10 +1555,10 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             cout << "Overlap " << i << ":" << m_partialbb.overlap(scan_boxes.at(i)) << endl;
             if ((project->changed.at(i) != true) && m_partialbb.isValid() && m_partialbb.overlap(scan_boxes.at(i))){
                 ScanPositionPtr pos = project->positions.at(i);
-                size_t numPoints = pos->scan->m_points->numPoints();
-                boost::shared_array<float> points = pos->scan->m_points->getPointArray();
+                size_t numPoints = pos->scans[0]->m_points->numPoints();
+                boost::shared_array<float> points = pos->scans[0]->m_points->getPointArray();
                 m_numPoints += numPoints;
-                Transformd finalPose_n = pos->scan->m_registration;
+                Transformd finalPose_n = pos->scans[0]->m_registration;
                 Transformd finalPose = finalPose_n.transpose();
                 int dx, dy, dz;
                 for (int k = 0; k < numPoints; k++) {
@@ -1627,11 +1628,11 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         {
             if ((project->changed.at(i) != true) && m_partialbb.isValid() && m_partialbb.overlap(scan_boxes.at(i))) {
                 ScanPositionPtr pos = project->positions.at(i);
-                size_t numPoints = pos->scan->m_points->numPoints();
+                size_t numPoints = pos->scans[0]->m_points->numPoints();
 
-                boost::shared_array<float> points = pos->scan->m_points->getPointArray();
+                boost::shared_array<float> points = pos->scans[0]->m_points->getPointArray();
                 m_numPoints += numPoints;
-                Transformd finalPose_n = pos->scan->m_registration;
+                Transformd finalPose_n = pos->scans[0]->m_registration;
                 Transformd finalPose = finalPose_n.transpose();
                 for (int k = 0; k < numPoints; k++) {
                     Eigen::Vector4d point(

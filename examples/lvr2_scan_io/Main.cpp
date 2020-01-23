@@ -17,24 +17,24 @@ int main(int argc, char** argv)
         MeshBufferPtr sphere = synthetic::genSphere(10, 10);
 
         // create scan object
-        ScanOptional scan_opt = Scan();
+        ScanPtr scan_ptr(new Scan);
 
         // extract points to a pointBufferPtr
         PointBufferPtr points(new PointBuffer(sphere->getVertices(), sphere->numVertices()));
 
         // add points to scan object
-        scan_opt->m_points = points;
-        scan_opt->m_phiMin = i + 0.5;
-        scan_opt->m_phiMax = i + 1.0;
+        scan_ptr->m_points = points;
+        scan_ptr->m_phiMin = i + 0.5;
+        scan_ptr->m_phiMax = i + 1.0;
 
         // create ScanPositionPtr
-        ScanPositionPtr scan_pos(new ScanPosition());
-        scan_pos->scan = scan_opt;
+        ScanPositionPtr scan_pos(new ScanPosition);
+        scan_pos->scans.push_back(scan_ptr);
 
         // add scans to scanProjectPtr
         scan_proj->positions.push_back(scan_pos);
 
-        scan_pos->scan->m_positionNumber = i;
+        scan_pos->scans[0]->m_positionNumber = i;
 
         for(int cam_id=0; cam_id<5; cam_id++)
         {
@@ -43,9 +43,10 @@ int main(int argc, char** argv)
             for(int img_id = 0; img_id < 5; img_id++)
             {
                 ScanImagePtr img(new ScanImage);
-                img->camera.setExtrinsics(Extrinsicsd::Identity());
-                img->camera.setExtrinsicsEstimate(Extrinsicsd::Identity());
-                img->camera.setIntrinsics(Intrinsicsd::Identity());
+
+                
+                img->extrinsics = Extrinsicsd::Identity();
+                img->extrinsicsEstimate = Extrinsicsd::Identity();
                 img->image = cv::Mat(500, 1000, CV_8UC3, cv::Scalar(0, 0, 100));
                 cam->images.push_back(img);
             }
