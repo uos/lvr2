@@ -96,8 +96,10 @@ int main(int argc, char** argv)
         project->changed.push_back(true);
     }
 
+    BoundingBox<Vec> boundingBox;
 
-    std::shared_ptr<ChunkManager> cm = std::shared_ptr<ChunkManager>(new ChunkManager(in));
+
+    std::shared_ptr<ChunkHashGrid> cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(in, 50, boundingBox, options.getGridSize()));
 
     int x = lsr.mpiChunkAndReconstruct(project, cm);
 

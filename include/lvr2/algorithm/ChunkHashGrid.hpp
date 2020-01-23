@@ -191,6 +191,13 @@ class ChunkHashGrid
         return m_chunkAmount - m_chunkIndexOffset;
     }
 
+    /**
+     * @brief sets the bounding box in this container and in persistend storage
+     *
+     * @param boundingBox new bounding box
+     */
+    void setBoundingBox(const BoundingBox<BaseVector<float>> boundingBox);
+
   protected:
     /**
      * @brief regenerates cache hash grid
@@ -231,13 +238,6 @@ class ChunkHashGrid
      * @param data content of chunk to load
      */
     void loadChunk(std::string layer, int x, int y, int z, const val_type& data);
-
-    /**
-     * @brief sets the bounding box in this container and in persistend storage
-     *
-     * @param boundingBox new bounding box
-     */
-    void setBoundingBox(const BoundingBox<BaseVector<float>> boundingBox);
 
     /**
      * @brief sets chunk size in this container and in persistent storage
