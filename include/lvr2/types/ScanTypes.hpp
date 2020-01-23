@@ -38,6 +38,8 @@ struct Scan
 
     ~Scan() {};
 
+    std::string                     sensorType = "Scan";
+
     /// Point buffer containing the scan points
     PointBufferPtr                  points;
 
@@ -198,7 +200,7 @@ using ScanPositionPtr = std::shared_ptr<ScanPosition>;
 struct ScanProject
 {
     /// Type of used laser scanner
-    std::string                     sensorType;
+    std::string                     sensorType = "ScanProject";
 
     /// Individual name of used laser scanner
     std::string                     sensorName;
