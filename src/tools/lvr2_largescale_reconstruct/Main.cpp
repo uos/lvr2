@@ -97,9 +97,13 @@ int main(int argc, char** argv)
     }
 
 
-    std::shared_ptr<ChunkManager> cm;
+    std::shared_ptr<ChunkManager> cm = std::shared_ptr<ChunkManager>(new ChunkManager(in));
 
     int x = lsr.mpiChunkAndReconstruct(project, cm);
+
+    BaseVector<int> coord(0,0,0);
+    BoundingBox<Vec> bb;
+    lsr.partialReconstruct(coord, cm, "tsdf_values", bb);
 
     cout << "Program end." << endl;
 

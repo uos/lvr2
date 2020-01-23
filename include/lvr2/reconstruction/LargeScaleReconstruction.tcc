@@ -322,6 +322,7 @@ namespace lvr2
         // auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(grid_files, cbb, m_voxelSize);
         // don't read from HDF5 - get the chunks from the ChunkManager
         // auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(m_filePath, newChunks, cbb);
+
         std::vector<PointBufferPtr> tsdfChunks;
         for(BaseVector<int> coord : newChunks)
         {
@@ -465,5 +466,72 @@ namespace lvr2
         chunk->addAtomic<unsigned int>(csize, "num_voxel");
 
         cm->setChunk<PointBufferPtr>(layerName, x, y, z, chunk);
+    }
+
+    template <typename BaseVecT>
+    MeshBufferPtr LargeScaleReconstruction<BaseVecT>::partialReconstruct(BaseVector<int> coord,std::shared_ptr<ChunkManager> chunkManager, std::string layerName, BoundingBox<BaseVecT> bb)
+    {
+        std::vector<PointBufferPtr> tsdfChunks;
+        vector<BoundingBox<BaseVecT>> partitionBoxesNew;
+        BoundingBox<BaseVecT> cbb;
+        int chunksize = m_chunkSize;
+
+        for(int i = coord.x -1; i <= coord.x +1; i++) {
+            for(int j = coord.y -1; j <=coord.y +1; j++) {
+                for(int k = coord.z-1; k <=coord.z +1; k++) {
+                    boost::optional<shared_ptr<PointBuffer>> chunk = chunkManager->getChunk<PointBufferPtr>(layerName, i, j, k);
+
+
+
+                    if(chunk)
+                    {
+                        BaseVecT min(i * chunksize, j *  chunksize,k * chunksize);
+                        BaseVecT max(i * chunksize + chunksize, j * chunksize + chunksize, k * chunksize + chunksize);
+
+                        BoundingBox<BaseVecT> temp(min, max);
+                        partitionBoxesNew.push_back(temp);
+                        cbb.expand(temp);
+                        if(coord.x == i && coord.y == j && coord.z == k)
+                        {
+                            bb = temp;
+                        }
+                        tsdfChunks.push_back(chunk.get());
+                    }
+                    else
+                    {
+                        std::cout << "WARNING - Could not find chunk (" << i << ", " << j << ", " << k << ") in layer: " << layerName << std::endl;
+                    }
+                }
+            }
+        }
+
+        auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(tsdfChunks, partitionBoxesNew, cbb, m_voxelSize);
+        tsdfChunks.clear();
+        auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(hg);
+
+        lvr2::HalfEdgeMesh<Vec> mesh;
+        reconstruction->getMesh(mesh);
+
+        if (m_removeDanglingArtifacts)
+        {
+            cout << timestamp << "Removing dangling artifacts" << endl;
+            removeDanglingCluster(mesh, static_cast<size_t>(m_removeDanglingArtifacts));
+        }
+
+        if (m_fillHoles)
+        {
+            naiveFillSmallHoles(mesh, m_fillHoles, false);
+        }
+
+        auto faceNormals = calcFaceNormals(mesh);
+        // Finalize mesh
+        lvr2::SimpleFinalizer<Vec> finalize;
+        auto meshBuffer = finalize.apply(mesh);
+
+        auto m = ModelPtr(new Model(meshBuffer));
+        ModelFactory::saveModel(m, "largeScale_test.ply");
+
+        return meshBuffer;
+
     }
 }
