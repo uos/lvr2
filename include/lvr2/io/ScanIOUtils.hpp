@@ -19,64 +19,108 @@
 namespace lvr2
 {
 
-std::set<size_t> loadPositionIdsFromDirectory(
-    const boost::filesystem::path& path
-);
-
-std::set<size_t> loadCamIdsFromDirectory(
-    const boost::filesystem::path& path,
-    const size_t& positionNr
-);
-
-std::set<size_t> loadImageIdsFromDirectory(
-    const boost::filesystem::path& path,
-    const size_t& positionNr,
-    const size_t& camNr
-);
-
-void saveScanToDirectory(const boost::filesystem::path& path, const Scan& scan, const size_t& positionNr);
-
-bool loadScanFromDirectory(const boost::filesystem::path&, Scan& scan, const size_t& positionNr, bool loadData);
-
-void saveScanToHDF5(const std::string filename, const size_t& positionNr);
-
-bool loadScanFromHDF5(const std::string filename, const size_t& positionNr);
-
-void saveScanImageToDirectory(
-    const boost::filesystem::path& path,
-    const std::string& camDir,
+void saveScanImage(
+    const boost::filesystem::path& root,
     const ScanImage& image,
-    const size_t& positionNr,
+    const size_t& positionNumber,
+    const size_t& cameraNumber,
+    const size_t& imageNumber);
+
+void saveScanImage(
+    const boost::filesystem::path& root,
+    const ScanImage& image,
+    const std::string positionDirectory,
+    const size_t& cameraNumber,
+    const size_t& imageNumber);
+
+void saveScanImage(
+    const boost::filesystem::path& root,
+    const ScanImage& image,
+    const std::string positionDirectory,
+    const std::string cameraDirectory,
     const size_t& imageNr);
 
-bool loadScanImageFromDirectory(
-    const boost::filesystem::path& path,
-    const std::string& camDir,
+bool loadScanImage(
+    const boost::filesystem::path& root,
     ScanImage& image,
-    const size_t& positionNr,
-    const size_t& imageNr);
+    const std::string& positionDirectory,
+    const size_t& cameraNumber,
+    const size_t& imageNumber);
+
+bool loadScanImage(
+    const boost::filesystem::path& root,
+    ScanImage& image,
+    const size_t& positionNumber,
+    const size_t& cameraNumber,
+    const size_t& imageNumber);
+
+bool loadScanImage(
+    const boost::filesystem::path& root,
+    ScanImage& image,
+    const std::string& positionDirectory,
+    const std::string& cameraDirectory,
+    const size_t& imageNumber);
 
 
 
-void saveScanPositionToDirectory(const boost::filesystem::path& path, const ScanPosition& position, const size_t& positionNr);
+// std::set<size_t> loadPositionIdsFromDirectory(
+//     const boost::filesystem::path& path
+// );
 
-bool loadScanPositionFromDirectory(const boost::filesystem::path& path, ScanPosition& position, const size_t& positionNr);
+// std::set<size_t> loadCamIdsFromDirectory(
+//     const boost::filesystem::path& path,
+//     const size_t& positionNr
+// );
 
-void saveScanProjectToDirectory(const boost::filesystem::path& path, const ScanProject& position);
+// std::set<size_t> loadImageIdsFromDirectory(
+//     const boost::filesystem::path& path,
+//     const size_t& positionNr,
+//     const size_t& camNr
+// );
 
-bool loadScanProjectFromDirectory(const boost::filesystem::path& path, ScanProject& position);
+// void saveScanToDirectory(const boost::filesystem::path& path, const Scan& scan, const size_t& positionNr);
 
-void writeScanMetaYAML(const boost::filesystem::path& path, const Scan& scan);
+// bool loadScanFromDirectory(const boost::filesystem::path&, Scan& scan, const size_t& positionNr, bool loadData);
 
-void writeScanImageMetaYAML(const boost::filesystem::path& path, const ScanImage& image);
+// void saveScanToHDF5(const std::string filename, const size_t& positionNr);
 
-void loadScanMetaInfoFromYAML(const boost::filesystem::path& path, Scan& scan);
+// bool loadScanFromHDF5(const std::string filename, const size_t& positionNr);
 
-void loadImageMetaInfoFromYAML(const boost::filesystem::path&, ScanImage& image);
+// void saveScanImageToDirectory(
+//     const boost::filesystem::path& path,
+//     const std::string& camDir,
+//     const ScanImage& image,
+//     const size_t& positionNr,
+//     const size_t& imageNr);
 
-void loadPinholeModelFromYAML(const boost::filesystem::path& path, PinholeModeld& model);
+// bool loadScanImageFromDirectory(
+//     const boost::filesystem::path& path,
+//     const std::string& camDir,
+//     ScanImage& image,
+//     const size_t& positionNr,
+//     const size_t& imageNr);
 
-void writePinholeModelToYAML(const boost::filesystem::path& path, const PinholeModeld& model);
+
+
+// void saveScanPositionToDirectory(const boost::filesystem::path& path, const ScanPosition& position, const size_t& positionNr);
+
+// bool loadScanPositionFromDirectory(const boost::filesystem::path& path, ScanPosition& position, const size_t& positionNr);
+
+// void saveScanProjectToDirectory(const boost::filesystem::path& path, const ScanProject& position);
+
+// bool loadScanProjectFromDirectory(const boost::filesystem::path& path, ScanProject& position);
+
+// void writeScanMetaYAML(const boost::filesystem::path& path, const Scan& scan);
+
+// void writeScanImageMetaYAML(const boost::filesystem::path& path, const ScanImage& image);
+
+// void loadScanMetaInfoFromYAML(const boost::filesystem::path& path, Scan& scan);
+
+// void loadImageMetaInfoFromYAML(const boost::filesystem::path&, ScanImage& image);
+
+// void loadPinholeModelFromYAML(const boost::filesystem::path& path, PinholeModeld& model);
+
+// void writePinholeModelToYAML(const boost::filesystem::path& path, const PinholeModeld& model);
 
 
 } // namespace lvr2 
