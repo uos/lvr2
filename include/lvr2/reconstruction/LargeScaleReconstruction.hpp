@@ -148,6 +148,8 @@ namespace lvr2
          */
         int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkManager> chunkManager, std::string layerName="tsdf_values");
 
+        MeshBufferPtr partialReconstruct(BaseVector<int> coord, std::shared_ptr<ChunkManager> chunkManager, std::string layerName, BoundingBox<BaseVecT> bb);
+
         int resetEditMark(ScanProjectEditMarkPtr project);
 
 
