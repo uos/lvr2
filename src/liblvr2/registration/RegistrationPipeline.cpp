@@ -84,17 +84,12 @@ void RegistrationPipeline::doRegistration()
 
         cout << "Diff: " << getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) << endl;
         
-        if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) > m_options->diffPoseSum))
+        if (getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) > m_options->diffPoseSum)
         {
             m_scans->changed.at(i) = true;
             cout << "New Values"<< endl;
         }
-        else
-        {
-            posPtr->scan->m_registration = align.scan(i)->pose();
-        }
-        
-        cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
+    
     }
     cout << "NAch der ersten For-Schleoife" << endl;
     // new align with fix old values 
@@ -114,13 +109,9 @@ void RegistrationPipeline::doRegistration()
 
     for (int i = 0; i < m_scans->project->positions.size(); i++)
     {
-        // check if the new pos different to old pos
-        // ToDo: make num to option
-
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
-        cout << "Diff: " << getDifference(posPtr->scan->m_registration, align2.scan(i)->pose()) << endl;
-        if (m_scans->changed.at(i) == true)
+        if (m_scans->changed.at(i))
         {
             posPtr->scan->m_registration = align2.scan(i)->pose();
             cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
