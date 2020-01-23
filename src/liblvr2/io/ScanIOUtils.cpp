@@ -445,8 +445,44 @@ bool loadScan(
     const boost::filesystem::path& root,
     Scan& scan,
     const std::string& positionDirectory,
-    const std::string& scanDirectory)
+    const std::string& scanSubDirectory,
+    const std::string& scanName)
 {
+    // Convert strings to paths
+    boost::filesystem::path positionPath;
+    boost::filesystem::path scanSubDirectoryPath;
+    boost::filesystem::path scanNamePath;
+    
+    boost::filesystem::path scanDirectoryPath = root / scanSubDirectoryPath;
+    boost::filesystem::path scanDataPath = scanSubDirectoryPath / "data";
+    if(getSensorType(scanDirectoryPath) == "Scan")
+    {
+        // Load meta data
+        boost::filesystem::path metaPath = scanDataPath / (scanName + ".yaml");
+        std::cout << timestamp << "Loading " << metaPath << std::endl;
+        YAML::Node meta = YAML::LoadFile(metaPath.string());
+        scan = meta.as<Scan>();
+
+        // Load scan
+        boost::filesystem::path scanFile = scanDataPath / (scanName + ".ply");
+        std::cout << timestamp << "Loading " << scanFile << std::endl;
+        ModelPtr model = ModelFactory::readModel(scanFile.string());
+
+        if(model->m_pointCloud)
+        {
+            scan.m_points = model->m_pointCloud;
+        }
+        else
+        {
+            std::cout << timestamp 
+                      << "Warning: Loading " << scanFile << " failed." << std::endl;
+            return false;
+        }
+        
+
+        return true;
+    }
+    
     return false;
 }
 
@@ -459,7 +495,7 @@ bool loadScan(
     std::stringstream scanStr;
     scanStr << std::setfill('0') << std::setw(8) << scanNumber;
 
-    return loadScan(root, scan, positionDirectory, scanStr.str());
+    return loadScan(root, scan, positionDirectory, "scans", scanStr.str());
 }
 
 bool loadScan(
@@ -474,7 +510,7 @@ bool loadScan(
     std::stringstream scanStr;
     scanStr << std::setfill('0') << std::setw(8) << scanNumber;
 
-    return loadScan(root, scan, posStr.str(), scanStr.str());
+    return loadScan(root, scan, posStr.str(), "scans", scanStr.str());
 }
 
 
