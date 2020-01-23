@@ -481,16 +481,22 @@ bool loadScan(
     const std::string& scanSubDirectory,
     const std::string& scanName)
 {
-    // Convert strings to paths
-    boost::filesystem::path positionPath;
-    boost::filesystem::path scanSubDirectoryPath;
-    boost::filesystem::path scanNamePath;
     
-    boost::filesystem::path scanDirectoryPath = root / scanSubDirectoryPath;
-    boost::filesystem::path scanDataPath = scanSubDirectoryPath / "data";
+    boost::filesystem::path scanDirectoryPath = root / positionDirectory / scanSubDirectory;
+
+    if(!boost::filesystem::exists(scanDirectoryPath))
+    {
+        std::cerr << timestamp << "Could not open " << scanDirectoryPath << std::endl;
+        return false;
+    }
+
+    
+
     if(getSensorType(scanDirectoryPath) == scan.sensorType)
     {
+        boost::filesystem::path scanDataPath = scanDirectoryPath / "data";
         // Load meta data
+
         boost::filesystem::path metaPath = scanDataPath / (scanName + ".yaml");
         std::cout << timestamp << "Loading " << metaPath << std::endl;
         YAML::Node meta = YAML::LoadFile(metaPath.string());
@@ -613,6 +619,62 @@ bool loadScanPosition(
     const std::string& positionDirectory)
 {
     
+    boost::filesystem::path scanPosDir = root / positionDirectory;
+
+    if(!boost::filesystem::exists(scanPosDir))
+    {
+        std::cerr << timestamp << "Could not open " << scanPosDir << std::endl;
+        return false;
+    }
+
+    boost::filesystem::path scanPosMetaPath = scanPosDir / "meta.yaml";
+    if(!boost::filesystem::is_regular_file(scanPosMetaPath))
+    {
+        std::cerr << timestamp << "Could not open " << scanPosMetaPath << std::endl;
+        return false;
+    }
+
+    YAML::Node meta = YAML::LoadFile(scanPosMetaPath.string());
+
+    scanPos = meta.as<ScanPosition>();
+
+
+    boost::filesystem::directory_iterator it{scanPosDir};
+    while (it != boost::filesystem::directory_iterator{})
+    {
+        const std::string sensorType = getSensorType(*it);
+        
+        if(sensorType == Scan::sensorType)
+        {
+            boost::filesystem::path scanDataDir = it->path() / "data";
+            
+            boost::filesystem::directory_iterator itScans{scanDataDir};
+            while (itScans != boost::filesystem::directory_iterator{})
+            {
+                if(itScans->path().extension() == ".yaml")
+                {
+                    std::string scanName = itScans->path().stem().string();
+                    ScanPtr scanPtr(new Scan);
+
+                    if(loadScan(root, *scanPtr, positionDirectory, it->path().stem().string(), scanName))
+                    {
+                        scanPos.scans.push_back(scanPtr);
+                        std::cout << "Scan loaded" << std::endl;
+                    }
+                }
+                ++itScans;
+            }
+        } 
+        else if(sensorType == ScanCamera::sensorType)
+        {
+
+        }
+
+        ++it;
+    }
+    
+
+    return true;
 }
 
 bool loadScanPosition(
@@ -620,7 +682,9 @@ bool loadScanPosition(
     ScanPosition& scanPos,
     const size_t& positionNumber)
 {
-
+    std::stringstream posStr;
+    posStr << std::setfill('0') << std::setw(8) << positionNumber;
+    return loadScanPosition(root, scanPos, posStr.str());
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -676,7 +740,7 @@ bool loadScanProject(
 
     boost::filesystem::path scanProjMetaPath = root / "meta.yaml";
 
-    if(!boost::filesystem::exists(scanProjMetaPath))
+    if(!boost::filesystem::is_regular_file(scanProjMetaPath))
     {
         std::cerr << timestamp << "Could not load " << scanProjMetaPath << std::endl;
         return false;
