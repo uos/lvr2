@@ -115,7 +115,7 @@ static HighFive::Group
 getGroup(HighFive::Group& g, const std::string& groupName, bool create = true)
 {
     std::vector<std::string> groupNames = hdf5util::splitGroupNames(groupName);
-    HighFive::Group cur_grp;
+    HighFive::Group cur_grp = g;
 
     try
     {
@@ -123,13 +123,13 @@ getGroup(HighFive::Group& g, const std::string& groupName, bool create = true)
         for (size_t i = 0; i < groupNames.size(); i++)
         {
 
-            if (g.exist(groupNames[i]))
+            if (cur_grp.exist(groupNames[i]))
             {
-                cur_grp = g.getGroup(groupNames[i]);
+                cur_grp = cur_grp.getGroup(groupNames[i]);
             }
             else if (create)
             {
-                cur_grp = g.createGroup(groupNames[i]);
+                cur_grp = cur_grp.createGroup(groupNames[i]);
             }
             else
             {
