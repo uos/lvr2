@@ -25,7 +25,7 @@ struct convert<lvr2::ScanPosition>
     static Node encode(const lvr2::ScanPosition& scanPos) {
         Node node;
         
-        node["sensor_type"] = scanPos.sensorType;
+        node["sensor_type"] = lvr2::ScanPosition::sensorType;
         node["latitude"] = scanPos.latitude;
         node["longitude"] = scanPos.longitude;
         node["poseEstimate"] = scanPos.poseEstimate;
@@ -37,7 +37,7 @@ struct convert<lvr2::ScanPosition>
 
     static bool decode(const Node& node, lvr2::ScanPosition& scanPos) {
         
-        if(node["sensor_type"].as<std::string>() != scanPos.sensorType)
+        if(node["sensor_type"].as<std::string>() != lvr2::ScanPosition::sensorType)
         {
             return false;
         }

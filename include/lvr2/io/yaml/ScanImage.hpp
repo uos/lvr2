@@ -20,7 +20,7 @@ struct convert<lvr2::ScanImage>
     static Node encode(const lvr2::ScanImage& scanImage) {
         
         Node node;
-        node["sensor_type"] = scanImage.sensorType;
+        node["sensor_type"] = lvr2::ScanImage::sensorType;
         node["extrinsics"] = scanImage.extrinsics;
         node["extrinsics_estimate"] = scanImage.extrinsicsEstimate;
         node["width"] = scanImage.image.cols;
@@ -32,7 +32,7 @@ struct convert<lvr2::ScanImage>
 
     static bool decode(const Node& node, lvr2::ScanImage& scanImage) 
     {
-        if(node["sensor_type"].as<std::string>() !=  scanImage.sensorType)
+        if(node["sensor_type"].as<std::string>() != lvr2::ScanImage::sensorType)
         {
             return false;
         }

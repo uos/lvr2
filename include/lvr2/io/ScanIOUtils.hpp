@@ -208,6 +208,25 @@ bool loadScanPosition(
     const size_t& positionNumber);
 
 
+//////////////////////////////////////////////////////////////////////////////////
+/// SCAN_PROJECT
+//////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief Save a ScanProject struct. 
+ * 
+ * @param root                  Project root directory
+ * @param scanProj              The scanproject object to save
+ */
+void saveScanProject(
+    const boost::filesystem::path& root,
+    const ScanProject& scanProj);
+
+bool loadScanProject(
+    const boost::filesystem::path& root,
+    ScanProject& scanProj);
+
+
 // std::set<size_t> loadPositionIdsFromDirectory(
 //     const boost::filesystem::path& path
 // );

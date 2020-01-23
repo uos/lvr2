@@ -51,23 +51,18 @@ int main(int argc, char** argv)
             }
 
             scan_pos->cams.push_back(cam);
-
         }
-
     }
 
     scan_proj->pose = Transformd::Identity();
 
-
-    saveScanPosition("scan_directory", *scan_proj->positions[0], 0);
-
-    // std::cout << "--- WRITE TEST ---" << std::endl;
-    // saveScanProjectToDirectory("scan_directory", *scan_proj);
+    std::cout << "--- WRITE TEST ---" << std::endl;
+    saveScanProject("scan_directory", *scan_proj);
 
     
-    // ScanProject in_scan_proj;
-    // std::cout << "--- READ TEST ---" << std::endl;
-    // loadScanProjectFromDirectory("scan_directory", in_scan_proj);
+    std::cout << "--- READ TEST ---" << std::endl;
+    ScanProject in_scan_proj;
+    loadScanProject("scan_directory", in_scan_proj);
 
 
 
