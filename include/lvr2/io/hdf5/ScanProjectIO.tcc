@@ -39,11 +39,9 @@ ScanProjectPtr ScanProjectIO<Derived>::load()
     // iterate over all possible scanPositions
     for (std::string groupname : hfscans.listObjectNames())
     {
-        std::cout << groupname << std::endl;
         if (std::regex_match(groupname, std::regex("\\d{8}")))
         {
             HighFive::Group scanPosGroup = hdf5util::getGroup(hfscans, groupname, false);
-            std::cout << "dump" << std::endl;
             ScanPositionPtr scanPosition = m_scanPositionIO->template load(scanPosGroup);
             ret->positions.push_back(scanPosition);
         }
