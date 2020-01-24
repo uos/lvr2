@@ -297,9 +297,9 @@ HashGrid<BaseVecT, BoxT>::HashGrid(std::vector<string>& files,
     }
 }
 
-// TODO change this constructor to use vector of PointBufferPtr instead of reading the file
 template<typename BaseVecT, typename BoxT>
 HashGrid<BaseVecT, BoxT>::HashGrid(std::vector<PointBufferPtr> chunks,
+                                   std::vector<BoundingBox<BaseVecT>> innerBoxes,
                                    BoundingBox<BaseVecT>& boundingBox,
                                    float voxelSize)
         : m_boundingBox(boundingBox), m_globalIndex(0)
@@ -328,9 +328,21 @@ HashGrid<BaseVecT, BoxT>::HashGrid(std::vector<PointBufferPtr> chunks,
             extruded = optExtruded.get().dataPtr();
             numCells = optNumCells.get();
 
+            // get the min and max vector of the inner chunk bounding box
+            BaseVecT innerChunkMin = innerBoxes.at(counter - 1).getMin();
+            BaseVecT innerChunkMax = innerBoxes.at(counter - 1).getMax();
 
             for(size_t cellCount = 0; cellCount < numCells; cellCount++)
             {
+                // Check if the voxel is inside of our bounding box.
+                // If not, we skip it, because some other chunk is responsible for the voxel.
+                BaseVecT voxCenter = BaseVecT(centers[cellCount * 3 + 0], centers[cellCount * 3 + 1], centers[cellCount * 3 + 2]);
+                if(voxCenter.x < innerChunkMin.x || voxCenter.y < innerChunkMin.y || voxCenter.z < innerChunkMin.z ||
+                    voxCenter.x > innerChunkMax.x || voxCenter.y > innerChunkMax.y || voxCenter.z > innerChunkMax.z )
+                {
+                    continue;
+                }
+
                 size_t idx = calcIndex((centers[cellCount * 3 + 0] - m_boundingBox.getMin()[0]) / m_voxelsize);
                 size_t idy = calcIndex((centers[cellCount * 3 + 1] - m_boundingBox.getMin()[1]) / m_voxelsize);
                 size_t idz = calcIndex((centers[cellCount * 3 + 2] - m_boundingBox.getMin()[2]) / m_voxelsize);
@@ -386,8 +398,12 @@ HashGrid<BaseVecT, BoxT>::HashGrid(std::vector<PointBufferPtr> chunks,
                     this->m_cells[hash] = box;
                 }
             }
-            ++counter;
         }
+        else
+        {
+            std::cout << "WARNING: something went wrong while reconstructing multiple chunks. Please check if all channels are available." << std::endl;
+        }
+        ++counter;
     }
 }
 

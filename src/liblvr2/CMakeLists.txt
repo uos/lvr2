@@ -55,6 +55,7 @@ set(LVR2_SOURCES
     algorithm/ChunkBuilder.cpp
     algorithm/ChunkManager.cpp
     algorithm/ChunkHashGrid.cpp
+    algorithm/ChunkingPipeline.cpp
     reconstruction/NodeData.cpp
     registration/ICPPointAlign.cpp
     registration/KDTree.cpp
@@ -96,6 +97,7 @@ set(LVR2_LIB_DEPENDENCIES
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_IOSTREAMS_LIBRARY}
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARIES}
     ${GDAL_LIBRARY}

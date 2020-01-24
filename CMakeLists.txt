@@ -519,6 +519,7 @@ add_subdirectory(src/tools/lvr2_slam6d_merger)
 add_subdirectory(src/tools/lvr2_chunking)
 add_subdirectory(src/tools/lvr2_registration)
 add_subdirectory(src/tools/lvr2_mesh_reducer)
+add_subdirectory(src/tools/lvr2_chunking_server)
 
 if (RiVLib_FOUND)
     #add_subdirectory(src/tools/lvr2_riegl_project_converter)

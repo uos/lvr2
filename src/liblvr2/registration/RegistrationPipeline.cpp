@@ -31,6 +31,7 @@
 
 #include "vector"
 
+
 using namespace lvr2;
 
 double getDifference(Transformd a, Transformd b)
@@ -57,9 +58,10 @@ RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProje
 void RegistrationPipeline::doRegistration()
 {
     SLAMAlign align(*m_options);
-    
+    m_scans->changed = std::vector<bool>(m_scans->project->positions.size());
     for (size_t i = 0; i < m_scans->project->positions.size(); i++)
     {
+        m_scans->changed.at(i) = false;
         ScanOptional opt = m_scans->project->positions.at(i)->scan;
         if (opt)
         {
@@ -78,8 +80,8 @@ void RegistrationPipeline::doRegistration()
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
         cout << "Diff: " << getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) << endl;
-        m_scans->changed.resize(m_scans->project->positions.size());
-        if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) > m_options->diffPoseSum))
+        
+        if (getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) > m_options->diffPoseSum)
         {
             m_scans->changed.at(i) = true;
             cout << "New Values"<< endl;
@@ -118,17 +120,15 @@ void RegistrationPipeline::doRegistration()
     
     for (int i = 0; i < m_scans->project->positions.size(); i++)
     {
-        // check if the new pos different to old pos
-        // ToDo: make num to option
-
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
         cout << "Diff: " << getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) << endl;
-        if ((!m_scans->changed.at(i)) && m_scans->changed.at(i) == true)
+        if (m_scans->changed.at(i))
         {
             posPtr->scan->m_registration = align.scan(i)->pose();
             cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
         }
+        m_scans->changed.at(i) = true; // ToDo: lsr test 
     }
 
 }
