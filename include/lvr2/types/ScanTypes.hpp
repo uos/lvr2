@@ -201,7 +201,7 @@ using ScanPositionPtr = std::shared_ptr<ScanPosition>;
 struct ScanProject
 {
     /// Type of used laser scanner
-    std::string                     sensorType = "ScanProject";
+    static constexpr char           sensorType[] = "ScanProject";
 
     /// Individual name of used laser scanner
     std::string                     sensorName;

@@ -25,14 +25,14 @@ struct convert<lvr2::ScanProject>
     static Node encode(const lvr2::ScanProject& scanProj) {
         Node node;
         
-        node["sensor_type"] = scanProj.sensorType;
+        node["sensor_type"] = lvr2::ScanProject::sensorType;
 
         return node;
     }
 
     static bool decode(const Node& node, lvr2::ScanProject& scanProj) {
         
-        if(node["sensor_type"].as<std::string>() != scanProj.sensorType)
+        if(node["sensor_type"].as<std::string>() != lvr2::ScanProject::sensorType)
         {
             return false;
         }
