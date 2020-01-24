@@ -254,6 +254,34 @@ ScanPtr loadScanFromHDF5(const std::string filename, const size_t& positionNr)
     return loadedScan;
 }
 
+void loadAllPreviewsFromHDF5(const std::string filename, ScanProject& project)
+{
+    ScanHDF5IO scanIO;
+    scanIO.open(filename);
+    std::vector<ScanPtr> scans = scanIO.loadAllPreviews("/raw/scans/");
+
+    for(int i =0; i < scans.size(); i++)
+    {
+        ScanPositionPtr sptr(new ScanPosition());
+        sptr->scan = *scans.at(i).get();
+        project.positions.push_back(sptr);
+    }
+}
+
+void loadScanProjectFromHDF5(const std::string filename, ScanProject& project)
+{
+    ScanHDF5IO scanIO;
+    scanIO.open(filename);
+    std::vector<ScanPtr> scans = scanIO.loadAllScans("/raw/scans/");
+
+    for (auto & scan : scans)
+    {
+        ScanPositionPtr scanPosPtr(new ScanPosition());
+        scanPosPtr->scan = *scan;
+        project.positions.push_back(scanPosPtr);
+    }
+}
+
 void saveScanImageToDirectory(
     const boost::filesystem::path& path, 
     const ScanImage& image, const size_t& positionNr, const size_t& imageNr)

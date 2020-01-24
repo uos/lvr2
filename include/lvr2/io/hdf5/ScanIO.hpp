@@ -22,6 +22,7 @@ namespace lvr2 {
             ScanPtr load(HighFive::Group& group);
             ScanPtr loadScan(std::string name);
             std::vector<ScanPtr> loadAllScans(std::string groupName);
+            std::vector<ScanPtr> loadAllPreviews(string groupName);
             ScanPtr loadPreview(std::string name);
 
         protected:
@@ -35,6 +36,8 @@ namespace lvr2 {
 
             static constexpr const char* ID = "ScanIO";
             static constexpr const char* OBJID = "Scan";
+
+
         };
 
 

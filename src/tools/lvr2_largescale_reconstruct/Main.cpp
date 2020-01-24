@@ -33,6 +33,7 @@
 #include "lvr2/geometry/BaseVector.hpp"
 #include <random>
 #include <string>
+#include <lvr2/io/hdf5/ScanIO.hpp>
 #include "lvr2/io/GHDF5IO.hpp"
 #include "lvr2/io/ScanIOUtils.hpp"
 
@@ -56,6 +57,7 @@ typedef ClSurface GpuSurface;
 #endif
 
 using Vec = lvr2::BaseVector<float>;
+using ScanHDF5IO = lvr2::Hdf5Build<lvr2::hdf5features::ScanIO>;
 int main(int argc, char** argv)
 {
     // =======================================================================
@@ -77,30 +79,33 @@ int main(int argc, char** argv)
 
     string in = options.getInputFileName()[0];
 
-    LargeScaleReconstruction<Vec> lsr(options);
-
-    std::vector<ScanPtr> scans;
-    std::vector<ScanPtr> h5scans;
+    LargeScaleReconstruction<Vec> lsr(options.getInputFileName()[0], options.getVoxelsize(), options.getBGVoxelsize(), options.getScaling(), options.getGridSize(),
+                                      options.getNodeSize(), options.getVGrid(), options.getKi(), options.getKd(), options.getKn(), options.useRansac(), options.extrude(),
+                                      options.getDanglingArtifacts(), options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
+                                      options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
+                                      options.retesselate(), options.getLineFusionThreshold());
 
     ScanProjectEditMarkPtr project(new ScanProjectEditMark);
     project->project = ScanProjectPtr(new ScanProject);
-    ScanPositionPtr sptr(new ScanPosition());
-    ScanPositionPtr sptr2(new ScanPosition());
-    sptr->scan = (*loadScanFromHDF5(in, 1).get());
-    sptr2->scan = (*loadScanFromHDF5(in, 2).get());
-    project->project->positions.push_back(sptr);
-    project->project->positions.push_back(sptr2);
-    project->changed.push_back(true);
-    project->changed.push_back(true);
+    
 
-    std::shared_ptr<ChunkManager> cm;
-    //ChunkManager cm  = ChunkManager(in, 100);
-    //std::shared_ptr<ChunkManager> cmPtr = std::make_shared<ChunkManager>(cm);
+    loadAllPreviewsFromHDF5(in, *project->project.get());
+
+    for(int i =0; i < project->project->positions.size(); i++)
+    {
+        project->changed.push_back(true);
+    }
+
+    BoundingBox<Vec> boundingBox;
+
+
+    std::shared_ptr<ChunkHashGrid> cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(in, 50, boundingBox, options.getGridSize()));
+
     int x = lsr.mpiChunkAndReconstruct(project, cm);
 
-    //scans_new.front()->m_globalBoundingBox = bb2;
-
-    //int y = lsr.mpiChunkAndReconstruct(scans, scans_new);
+    BaseVector<int> coord(0,0,0);
+    BoundingBox<Vec> bb;
+    lsr.partialReconstruct(coord, cm, "tsdf_values", bb);
 
     cout << "Program end." << endl;
 

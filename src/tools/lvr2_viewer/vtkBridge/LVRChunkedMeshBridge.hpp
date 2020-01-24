@@ -23,7 +23,8 @@ namespace lvr2 {
         public:
             LVRChunkedMeshBridge(std::string file);
             void getActors(double planes[24],
-                    std::vector<size_t>& indices);
+                    std::vector<BaseVector<float> >& centroids, 
+                    std::vector<size_t >& indices);
                     
                     //std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> >& actors);
             void addInitialActors(vtkSmartPointer<vtkRenderer> renderer);
@@ -34,6 +35,7 @@ namespace lvr2 {
             lvr2::ChunkManager m_chunkManager;
             std::unordered_map<size_t, MeshBufferPtr> m_chunks;
             std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > m_chunkActors;
+
             MeshOctree<BaseVector<float> >* m_oct;
 //            std::unordered_map<size_t, std::vector<vtkPolyData> > > m_chunkActors;
     };
