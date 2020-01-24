@@ -154,6 +154,13 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     // Calc vertex height differences
     DenseVertexMap<float> heightDifferences = calcVertexHeightDifferences(hem, 0.3);
 
+    std::cout << "Finished practicability analysis!" << std::endl;
+
+    std::cout << "Starting mesh buffer creation..." << std::endl;
+    // create mesh buffer
+    lvr2::SimpleFinalizer<lvr2::BaseVector<float>> finalize;
+    MeshBufferPtr meshBuffer = MeshBufferPtr(finalize.apply(hem));
+
     // create channels
     FloatChannel faceNormalChannel(faceNormals.numValues(), channel_type < Normal < float >> ::w);
     Index i = 0;
@@ -176,18 +183,19 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
         j++;
     }
 
-    // create mesh buffer and add channels
-    lvr2::SimpleFinalizer<lvr2::BaseVector<float>> finalize;
-    MeshBufferPtr meshBuffer = MeshBufferPtr(finalize.apply(hem));
+    // add channels to mesh buffer
     meshBuffer->add("face_normals", faceNormalChannel);
     meshBuffer->add("vertex_normals", vertexNormalsChannel);
     meshBuffer->add("average_angles", averageAnglesChannel);
     meshBuffer->add("roughness", roughnessChannel);
     meshBuffer->add("height_diff", heightDifferencesChannel);
+    std::cout << "Finished mesh buffer creation!" << std::endl;
 
-    // TODO: chunk meshBuffer
-
-    std::cout << "Finished practicability analysis!" << std::endl;
+    std::cout << "Starting chunking and saving of mesh buffer..." << std::endl;
+    // TODO: get maxChunkOverlap size
+    // TODO: savePath is not used in buildChunks (remove it?)
+    m_chunkManager->buildChunks(meshBuffer, 0.1f, "", "mesh0");
+    std::cout << "Finished chunking and saving of mesh buffer!" << std::endl;
 
     std::cout << "Finished chunking pipeline!" << std::endl;
 
