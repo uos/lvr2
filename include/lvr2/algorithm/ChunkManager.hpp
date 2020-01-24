@@ -104,6 +104,18 @@ class ChunkManager : public ChunkHashGrid
     }
 
     /**
+     * @brief buildChunks builds chunks from an original mesh
+     *
+     * Creates chunks from an original mesh and initializes the initial chunk structure
+     *
+     * @param mesh mesh which is being chunked
+     * @param maxChunkOverlap maximum allowed overlap between chunks relative to the chunk size.
+     * Larger triangles will be cut
+     * @param savePath UST FOR TESTING - REMOVE LATER ON
+     */
+    void buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::string savePath, std::string layer = std::string("mesh"));
+
+    /**
      * @brief extractArea creates and returns MeshBufferPtr of merged chunks for given area.
      *
      * Finds corresponding chunks for given area inside the grid and merges those chunks to a new
@@ -183,18 +195,6 @@ class ChunkManager : public ChunkHashGrid
                   float overlapRatio,
                   std::shared_ptr<std::unordered_map<unsigned int, unsigned int>> splitVertices,
                   std::shared_ptr<std::unordered_map<unsigned int, unsigned int>> splitFaces);
-
-    /**
-     * @brief buildChunks builds chunks from an original mesh
-     *
-     * Creates chunks from an original mesh and initializes the initial chunk structure
-     *
-     * @param mesh mesh which is being chunked
-     * @param maxChunkOverlap maximum allowed overlap between chunks relative to the chunk size.
-     * Larger triangles will be cut
-     * @param savePath UST FOR TESTING - REMOVE LATER ON
-     */
-    void buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::string savePath, std::string layer = std::string("mesh"));
 
     /**
      * @brief getFaceCenter gets the center point for a given face
