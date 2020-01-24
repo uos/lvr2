@@ -6,6 +6,7 @@
 #include "lvr2/types/ScanTypes.hpp"
 
 #include <boost/optional.hpp>
+#include <regex>
 
 // Dependencies
 #include "ArrayIO.hpp"
