@@ -25,6 +25,7 @@ void ScanIO<Derived>::save(HighFive::Group& group, const ScanPtr& scanPtr)
     boost::shared_array<float> points = scanPtr->points->getPointArray();
     m_arrayIO->template save<float>(group, "points", scanDim, scanChunk, points);
 
+    // saving estimated and registrated pose
     m_matrixIO->save(group, "poseEstimation", scanPtr->poseEstimation);
     m_matrixIO->save(group, "registration", scanPtr->registration);
 
@@ -46,26 +47,26 @@ void ScanIO<Derived>::save(HighFive::Group& group, const ScanPtr& scanPtr)
     dim = {2, 1};
     chunks = {2, 1};
 
-    // saving phi
-    floatArr phi(new float[2]);
-    phi[0] = scanPtr->phiMin;
-    phi[1] = scanPtr->phiMax;
-    m_arrayIO->save(group, "phi", dim, chunks, phi);
-
     // saving theta
-    floatArr theta(new float[2]);
+    doubleArr theta(new double[2]);
     theta[0] = scanPtr->thetaMin;
     theta[1] = scanPtr->thetaMax;
     m_arrayIO->save(group, "theta", dim, chunks, theta);
 
+    // saving phi
+    doubleArr phi(new double[2]);
+    phi[0] = scanPtr->phiMin;
+    phi[1] = scanPtr->phiMax;
+    m_arrayIO->save(group, "phi", dim, chunks, phi);
+
     // saving resolution
-    floatArr resolution(new float[2]);
+    doubleArr resolution(new double[2]);
     resolution[0] = scanPtr->hResolution;
     resolution[1] = scanPtr->vResolution;
     m_arrayIO->save(group, "resolution", dim, chunks, resolution);
 
     // saving timestamps
-    floatArr timestamp(new float[2]);
+    doubleArr timestamp(new double[2]);
     timestamp[0] = scanPtr->startTime;
     timestamp[1] = scanPtr->endTime;
     m_arrayIO->save(group, "timestamps", dim, chunks, timestamp);
@@ -86,15 +87,20 @@ ScanPtr ScanIO<Derived>::load(std::string name)
 }
 
 template <typename Derived>
-ScanPtr ScanIO<Derived>::loadScan(std::string name)
+ScanPtr ScanIO<Derived>::loadScan(HighFive::Group& group, std::string name)
 {
-    return load(name);
+    ScanPtr ret;
+    HighFive::Group g = hdf5util::getGroup(group, name, false);
+    ret = load(g);
+    return ret;
 }
 
 template <typename Derived>
 ScanPtr ScanIO<Derived>::load(HighFive::Group& group)
 {
     ScanPtr ret(new Scan());
+
+    std::cout << "    loading points" << std::endl;
 
     // read points
     if (group.exist("points"))
@@ -115,6 +121,7 @@ ScanPtr ScanIO<Derived>::load(HighFive::Group& group)
         }
     }
 
+    std::cout << "    loading poseEstimations" << std::endl;
     // read poseEstimation
     boost::optional<lvr2::Transformd> poseEstimation =
         m_matrixIO->template load<lvr2::Transformd>(group, "poseEstimation");
@@ -123,6 +130,7 @@ ScanPtr ScanIO<Derived>::load(HighFive::Group& group)
         ret->poseEstimation = poseEstimation.get();
     }
 
+    std::cout << "    loading registration" << std::endl;
     // read registration
     boost::optional<lvr2::Transformd> registration =
         m_matrixIO->template load<lvr2::Transformd>(group, "registration");
@@ -131,6 +139,7 @@ ScanPtr ScanIO<Derived>::load(HighFive::Group& group)
         ret->registration = registration.get();
     }
 
+    std::cout << "    loading boundingBox" << std::endl;
     // read boundingBox
     if (group.exist("boundingBox"))
     {
@@ -152,29 +161,12 @@ ScanPtr ScanIO<Derived>::load(HighFive::Group& group)
         }
     }
 
-    // read phi
-    if (group.exist("phi"))
-    {
-        std::vector<size_t> dimension;
-        floatArr phi = m_arrayIO->template load<float>(group, "phi", dimension);
-
-        if (dimension[0] != 2)
-        {
-            std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong phi dimension. Phi will not be loaded."
-                      << std::endl;
-        }
-        else
-        {
-            ret->phiMin = phi[0];
-            ret->phiMax = phi[1];
-        }
-    }
-
+    std::cout << "    loading theta" << std::endl;
     // read theta
     if (group.exist("theta"))
     {
         std::vector<size_t> dimension;
-        floatArr theta = m_arrayIO->template load<float>(group, "theta", dimension);
+        doubleArr theta = m_arrayIO->template load<double>(group, "theta", dimension);
 
         if (dimension.at(0) != 2)
         {
@@ -189,11 +181,31 @@ ScanPtr ScanIO<Derived>::load(HighFive::Group& group)
         }
     }
 
+    std::cout << "    loading phi" << std::endl;
+    // read phi
+    if (group.exist("phi"))
+    {
+        std::vector<size_t> dimension;
+        doubleArr phi = m_arrayIO->template load<double>(group, "phi", dimension);
+
+        if (dimension[0] != 2)
+        {
+            std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong phi dimension. Phi will not be loaded."
+                      << std::endl;
+        }
+        else
+        {
+            ret->phiMin = phi[0];
+            ret->phiMax = phi[1];
+        }
+    }
+
+    std::cout << "    loading resolution" << std::endl;
     // read resolution
     if (group.exist("resolution"))
     {
         std::vector<size_t> dimension;
-        floatArr resolution = m_arrayIO->template load<float>(group, "resolution", dimension);
+        doubleArr resolution = m_arrayIO->template load<double>(group, "resolution", dimension);
 
         if (dimension[0] != 2)
         {
@@ -208,11 +220,12 @@ ScanPtr ScanIO<Derived>::load(HighFive::Group& group)
         }
     }
 
+    std::cout << "    loading timestamps" << std::endl;
     // read timestamps
     if (group.exist("timestamps"))
     {
         std::vector<size_t> dimension;
-        floatArr timestamps = m_arrayIO->template load<float>(group, "timestamps", dimension);
+        doubleArr timestamps = m_arrayIO->template load<double>(group, "timestamps", dimension);
 
         if (dimension[0] != 2)
         {

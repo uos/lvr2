@@ -10,10 +10,10 @@ void ScanProjectIO<Derived>::save(const ScanProjectPtr& scanProjectPtr)
     int pos = 0;
 
     // iterate over all positions
-    for (ScanPositionPtr scanPosPtr : (*scanProjectPtr).positions)
+    for (ScanPositionPtr scanPosPtr : scanProjectPtr->positions)
     {
         char buffer[sizeof(int) * 5];
-        sprintf(buffer, "%05d", pos++);
+        sprintf(buffer, "%08d", pos++);
         string nr_str(buffer);
 
         std::string basePath = "raw/" + nr_str + "/";
@@ -23,15 +23,6 @@ void ScanProjectIO<Derived>::save(const ScanProjectPtr& scanProjectPtr)
         HighFive::Group scanPosGroup = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
 
         m_scanPositionIO->template save(scanPosGroup, scanPosPtr);
-
-        // for (ScanPtr(*scanPosPtr).scans)
-        // {
-        //     std::cout << "scan detected" << std::endl;
-        //     // save scan to HDF5
-        //     HighFive::Group scanGroup =
-        //         hdf5util::getGroup(m_file_access->m_hdf5_file, basePath + "/scans/data");
-        //     m_scanIO->template save(scanGroup, (*scanPosPtr).scan.get());
-        // }
     }
 }
 
@@ -49,8 +40,13 @@ ScanProjectPtr ScanProjectIO<Derived>::load()
     for (std::string groupname : hfscans.listObjectNames())
     {
         std::cout << groupname << std::endl;
-        // TODO: Build group from groupname and check if it is a scanPosition
-        // If it is a scanPosition, add it to the scanProject
+        if (std::regex_match(groupname, std::regex("\\d{8}")))
+        {
+            HighFive::Group scanPosGroup = hdf5util::getGroup(hfscans, groupname, false);
+            std::cout << "dump" << std::endl;
+            ScanPositionPtr scanPosition = m_scanPositionIO->template load(scanPosGroup);
+            ret->positions.push_back(scanPosition);
+        }
     }
 
     return ret;

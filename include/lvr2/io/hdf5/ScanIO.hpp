@@ -22,7 +22,7 @@ class ScanIO
 
     ScanPtr load(std::string name);
     ScanPtr load(HighFive::Group& group);
-    ScanPtr loadScan(std::string name);
+    ScanPtr loadScan(HighFive::Group& group, std::string name);
 
   protected:
     bool isScan(HighFive::Group& group);
