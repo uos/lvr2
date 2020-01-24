@@ -32,6 +32,7 @@
 #include "lvr2/reconstruction/PointsetGrid.hpp"
 #include "lvr2/reconstruction/FastBox.hpp"
 #include "lvr2/algorithm/ChunkManager.hpp"
+#include "lvr2/geometry/HalfEdgeMesh.hpp"
 
 
 namespace lvr2
@@ -152,7 +153,7 @@ namespace lvr2
 
         MeshBufferPtr partialReconstruct(BaseVector<int> coord, std::shared_ptr<ChunkHashGrid> chunkManager, std::string layerName, BoundingBox<BaseVecT> bb);
 
-        MeshBufferPtr getPartialReconstruct(BoundingBox<BaseVecT> newChunksBB, std::shared_ptr<ChunkHashGrid> chunkHashGrid, std::string layerName);
+        HalfEdgeMesh<BaseVecT> getPartialReconstruct(BoundingBox<BaseVecT> newChunksBB, std::shared_ptr<ChunkHashGrid> chunkHashGrid, std::string layerName);
 
         int resetEditMark(ScanProjectEditMarkPtr project);
 

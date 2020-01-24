@@ -133,7 +133,7 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     lsr.mpiChunkAndReconstruct(m_scanProject, newChunksBB, m_chunkManager, layerName);
     std::cout << "Finished large scale reconstruction!" << std::endl;
 
-    MeshBufferPtr newMeshWithOverlap = lsr.getPartialReconstruct(newChunksBB, m_chunkManager, layerName);
+    HalfEdgeMesh<BaseVector<float>> newMeshWithOverlap = lsr.getPartialReconstruct(newChunksBB, m_chunkManager, layerName);
 
     std::cout << "Starting practicability analysis..." << std::endl;
     // TODO: call practicability analysis
