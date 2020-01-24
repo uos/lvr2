@@ -17,10 +17,12 @@ template <typename Derived>
 class ScanIO
 {
   public:
-    void save(std::string name, const ScanPtr& buffer);
+    void save(uint scanPos, uint scanNr, const ScanPtr& buffer);
+    void save(HighFive::Group& group, uint scanNr, const ScanPtr& buffer);
     void save(HighFive::Group& group, const ScanPtr& buffer);
 
-    ScanPtr load(std::string name);
+    ScanPtr load(uint scanPos, uint scanNr);
+    ScanPtr load(HighFive::Group& group, uint scanNr);
     ScanPtr load(HighFive::Group& group);
     ScanPtr loadScan(HighFive::Group& group, std::string name);
 

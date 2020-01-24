@@ -5,7 +5,7 @@ namespace hdf5features
 {
 
 template <typename Derived>
-void ScanPositionIO<Derived>::save(std::string name, const ScanPositionPtr& scanPositionPtr)
+void ScanPositionIO<Derived>::save(uint scanPos, const ScanPositionPtr& scanPositionPtr)
 {
     // TODO call save with group
 }
@@ -77,6 +77,22 @@ void ScanPositionIO<Derived>::save(HighFive::Group& group, const ScanPositionPtr
 }
 
 template <typename Derived>
+ScanPositionPtr ScanPositionIO<Derived>::load(uint scanPos)
+{
+    ScanPositionPtr ret;
+
+    // TODO: create prefix from scanPos
+
+    if (hdf5util::exist(m_file_access->m_hdf5_file, scanPos))
+    {
+        HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, scanPos, false);
+        ret = load(g);
+    }
+
+    return ret;
+}
+
+template <typename Derived>
 ScanPositionPtr ScanPositionIO<Derived>::load(HighFive::Group& group)
 {
     ScanPositionPtr ret(new ScanPosition);
@@ -112,7 +128,7 @@ ScanPositionPtr ScanPositionIO<Derived>::load(HighFive::Group& group)
     std::cout << "  loading gps position" << std::endl;
 
     // read gpsPosition
-    if (group.exist("  gpsPosition"))
+    if (group.exist("gpsPosition"))
     {
         std::vector<size_t> dimension;
         doubleArr gpsPosition = m_arrayIO->template load<double>(group, "gpsPosition", dimension);
@@ -164,20 +180,6 @@ ScanPositionPtr ScanPositionIO<Derived>::load(HighFive::Group& group)
         {
             ret->timestamp = timestamp[0];
         }
-    }
-
-    return ret;
-}
-
-template <typename Derived>
-ScanPositionPtr ScanPositionIO<Derived>::load(std::string name)
-{
-    ScanPositionPtr ret;
-
-    if (hdf5util::exist(m_file_access->m_hdf5_file, name))
-    {
-        HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name, false);
-        ret = load(g);
     }
 
     return ret;
