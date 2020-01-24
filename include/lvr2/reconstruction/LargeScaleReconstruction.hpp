@@ -146,9 +146,13 @@ namespace lvr2
          * @param layerName the name of the ChunkManager-Layer of the tsdf-values
          * @return
          */
+        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB, std::shared_ptr<ChunkHashGrid> chunkManager, std::string layerName="tsdf_values");
+
         int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkHashGrid> chunkManager, std::string layerName="tsdf_values");
 
         MeshBufferPtr partialReconstruct(BaseVector<int> coord, std::shared_ptr<ChunkHashGrid> chunkManager, std::string layerName, BoundingBox<BaseVecT> bb);
+
+        MeshBufferPtr getPartialReconstruct(BoundingBox<BaseVecT> newChunksBB, std::shared_ptr<ChunkHashGrid> chunkHashGrid, std::string layerName);
 
         int resetEditMark(ScanProjectEditMarkPtr project);
 

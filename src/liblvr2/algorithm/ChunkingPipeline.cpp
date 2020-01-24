@@ -128,8 +128,12 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     LSROptions lsrOptions;
     lsrOptions.filePath = m_hdf5Path.string();
     LargeScaleReconstruction<lvr2::BaseVector<float>> lsr(lsrOptions);
-    lsr.mpiChunkAndReconstruct(m_scanProject, m_chunkManager);
+    BoundingBox<BaseVector<float>> newChunksBB;
+    std::string layerName = "tsdf_values";
+    lsr.mpiChunkAndReconstruct(m_scanProject, newChunksBB, m_chunkManager, layerName);
     std::cout << "Finished large scale reconstruction!" << std::endl;
+
+    MeshBufferPtr newMeshWithOverlap = lsr.getPartialReconstruct(newChunksBB, m_chunkManager, layerName);
 
     std::cout << "Starting practicability analysis..." << std::endl;
     // TODO: call practicability analysis
