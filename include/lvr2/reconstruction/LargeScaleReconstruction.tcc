@@ -98,6 +98,14 @@ namespace lvr2
     {
     }
 
+    template<typename BaseVecT>
+    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project,
+                                                                   std::shared_ptr<ChunkHashGrid> chunkManager,
+                                                                   std::string layerName) {
+        BoundingBox<BaseVecT> bb;
+        return mpiChunkAndReconstruct(project, bb, chunkManager, layerName);
+    }
+
 
     template <typename BaseVecT>
     int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project,
@@ -327,6 +335,7 @@ namespace lvr2
         // don't read from HDF5 - get the chunks from the ChunkManager
         // auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(m_filePath, newChunks, cbb);
 
+        // TODO: don't do the following reconstruction in ChunkingPipline-Workflow (put it in extra function for lsr_tool)
         std::vector<PointBufferPtr> tsdfChunks;
         for(BaseVector<int> coord : newChunks)
         {
@@ -543,7 +552,7 @@ namespace lvr2
     }
 
     template<typename BaseVecT>
-    MeshBufferPtr LargeScaleReconstruction<BaseVecT>::getPartialReconstruct(BoundingBox<BaseVecT> newChunksBB,
+    HalfEdgeMesh<BaseVecT> LargeScaleReconstruction<BaseVecT>::getPartialReconstruct(BoundingBox<BaseVecT> newChunksBB,
                                                                             std::shared_ptr<ChunkHashGrid> chunkHashGrid,
                                                                             std::string layerName)
     {
@@ -609,22 +618,15 @@ namespace lvr2
             naiveFillSmallHoles(mesh, m_fillHoles, false);
         }
 
+        /*
         auto faceNormals = calcFaceNormals(mesh);
         // Finalize mesh
         lvr2::SimpleFinalizer<Vec> finalize;
         auto meshBuffer = finalize.apply(mesh);
 
         auto m = ModelPtr(new Model(meshBuffer));
-        ModelFactory::saveModel(m, "largeScale_test.ply");
+        ModelFactory::saveModel(m, "largeScale_test.ply"); */
 
-        return meshBuffer;
-    }
-
-    template<typename BaseVecT>
-    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project,
-                                                                   std::shared_ptr<ChunkHashGrid> chunkManager,
-                                                                   std::string layerName) {
-        BoundingBox<BaseVecT> bb;
-        return mpiChunkAndReconstruct(project, bb, chunkManager, layerName);
+        return mesh;
     }
 }
