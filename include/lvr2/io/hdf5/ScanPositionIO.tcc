@@ -116,8 +116,9 @@ ScanPositionPtr ScanPositionIO<Derived>::load(HighFive::Group& group)
 
         if (hdf5util::exist(hfscans, groupname))
         {
+            HighFive::Group g = hdf5util::getGroup(hfscans, "/" + groupname);
             std::cout << "  try to load scan" << std::endl;
-            ScanPtr scan = m_scanIO->template loadScan(hfscans, "/" + groupname);
+            ScanPtr scan = m_scanIO->template load(g);
             std::cout << "  loadded scan" << std::endl;
 
             ret->scans.push_back(scan);

@@ -24,7 +24,7 @@ class ScanIO
     ScanPtr load(uint scanPos, uint scanNr);
     ScanPtr load(HighFive::Group& group, uint scanNr);
     ScanPtr load(HighFive::Group& group);
-    ScanPtr loadScan(HighFive::Group& group, std::string name);
+    // ScanPtr loadScan(HighFive::Group& group, std::string name);
 
   protected:
     bool isScan(HighFive::Group& group);

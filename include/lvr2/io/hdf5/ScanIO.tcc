@@ -109,14 +109,14 @@ ScanPtr ScanIO<Derived>::load(HighFive::Group& group, uint scanNr)
     return ret;
 }
 
-template <typename Derived>
-ScanPtr ScanIO<Derived>::loadScan(HighFive::Group& group, std::string name)
-{
-    ScanPtr ret;
-    HighFive::Group g = hdf5util::getGroup(group, name, false);
-    ret = load(g);
-    return ret;
-}
+// template <typename Derived>
+// ScanPtr ScanIO<Derived>::loadScan(HighFive::Group& group, std::string name)
+// {
+//     ScanPtr ret;
+//     HighFive::Group g = hdf5util::getGroup(group, name, false);
+//     ret = load(g);
+//     return ret;
+// }
 
 template <typename Derived>
 ScanPtr ScanIO<Derived>::load(HighFive::Group& group)
