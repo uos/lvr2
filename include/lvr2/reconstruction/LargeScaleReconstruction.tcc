@@ -564,9 +564,9 @@ namespace lvr2
         std::cout << "DEBUG: New Chunks from (" << xMin << ", " << yMin << ", " << zMin
                     << ") - to (" << xMax << ", " << yMax << ", " << zMax << ")." << std::endl;
 
-        for(int i = xMin -2; i <= xMax +2; i++) {
-            for(int j = yMin -2; j <= yMax +2; j++) {
-                for(int k = zMin -2; k <= zMax +2; k++) {
+        for(int i = xMin -1; i <= xMax +1; i++) {
+            for(int j = yMin -1; j <= yMax +1; j++) {
+                for(int k = zMin -1; k <= zMax +1; k++) {
                     boost::optional<shared_ptr<PointBuffer>> chunk = chunkHashGrid->getChunk<PointBufferPtr>(layerName, i, j, k);
 
 
