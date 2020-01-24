@@ -101,6 +101,7 @@ namespace lvr2
 
     template <typename BaseVecT>
     int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project,
+            BoundingBox<BaseVecT>& newChunksBB,
             std::shared_ptr<ChunkHashGrid> chunkManager,
             std::string layerName)
     {
@@ -138,6 +139,7 @@ namespace lvr2
             {
                 BoundingBox<BaseVecT> partBB = *vGrid.getBoxes().at(i).get();
                 cmBB.expand(partBB);
+                newChunksBB.expand(partBB);
                 partitionBoxes.push_back(partBB);
                 partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
                            << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
@@ -166,7 +168,9 @@ namespace lvr2
                       << std::endl;
         }
 
-        chunkManager->setBoundingBox(cmBB);
+        // we use the BB of all scans (including old ones) they are already hashed in the cm
+        // and we can't make the BB smaller
+        chunkManager->setBoundingBox(bb);
 
         BaseVecT bb_min(bb.getMin().x, bb.getMin().y, bb.getMin().z);
         BaseVecT bb_max(bb.getMax().x, bb.getMax().y, bb.getMax().z);
@@ -536,5 +540,91 @@ namespace lvr2
 
         return meshBuffer;
 
+    }
+
+    template<typename BaseVecT>
+    MeshBufferPtr LargeScaleReconstruction<BaseVecT>::getPartialReconstruct(BoundingBox<BaseVecT> newChunksBB,
+                                                                            std::shared_ptr<ChunkHashGrid> chunkHashGrid,
+                                                                            std::string layerName)
+    {
+        int chunksize = m_chunkSize;
+
+        std::vector<PointBufferPtr> tsdfChunks;
+        std::vector<BoundingBox<BaseVecT>> partitionBoxesNew = std::vector<BoundingBox<BaseVecT>>();
+        BoundingBox<BaseVecT> completeBB = BoundingBox<BaseVecT>();
+
+        int xMin = (int)(newChunksBB.getMin().x / m_chunkSize);
+        int yMin = (int)(newChunksBB.getMin().y / m_chunkSize);
+        int zMin = (int)(newChunksBB.getMin().z / m_chunkSize);
+
+        int xMax = (int)(newChunksBB.getMax().x / m_chunkSize);
+        int yMax = (int)(newChunksBB.getMax().y / m_chunkSize);
+        int zMax = (int)(newChunksBB.getMax().z / m_chunkSize);
+
+        std::cout << "DEBUG: New Chunks from (" << xMin << ", " << yMin << ", " << zMin
+                    << ") - to (" << xMax << ", " << yMax << ", " << zMax << ")." << std::endl;
+
+        for(int i = xMin -2; i <= xMax +2; i++) {
+            for(int j = yMin -2; j <= yMax +2; j++) {
+                for(int k = zMin -2; k <= zMax +2; k++) {
+                    boost::optional<shared_ptr<PointBuffer>> chunk = chunkHashGrid->getChunk<PointBufferPtr>(layerName, i, j, k);
+
+
+                    if(chunk)
+                    {
+                        BaseVecT min(i * chunksize, j *  chunksize,k * chunksize);
+                        BaseVecT max(i * chunksize + chunksize, j * chunksize + chunksize, k * chunksize + chunksize);
+
+                        BoundingBox<BaseVecT> temp(min, max);
+                        partitionBoxesNew.push_back(temp);
+                        completeBB.expand(temp);
+
+                        tsdfChunks.push_back(chunk.get());
+                    }
+                    else
+                    {
+                        std::cout << "DEBUG - Could not find chunk (" << i << ", " << j << ", " << k << ") in layer: " << layerName << std::endl;
+                    }
+                }
+            }
+        }
+
+
+
+        auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(tsdfChunks, partitionBoxesNew, completeBB, m_voxelSize);
+        tsdfChunks.clear();
+        auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(hg);
+
+        lvr2::HalfEdgeMesh<Vec> mesh;
+        reconstruction->getMesh(mesh);
+
+        if (m_removeDanglingArtifacts)
+        {
+            cout << timestamp << "Removing dangling artifacts" << endl;
+            removeDanglingCluster(mesh, static_cast<size_t>(m_removeDanglingArtifacts));
+        }
+
+        if (m_fillHoles)
+        {
+            naiveFillSmallHoles(mesh, m_fillHoles, false);
+        }
+
+        auto faceNormals = calcFaceNormals(mesh);
+        // Finalize mesh
+        lvr2::SimpleFinalizer<Vec> finalize;
+        auto meshBuffer = finalize.apply(mesh);
+
+        auto m = ModelPtr(new Model(meshBuffer));
+        ModelFactory::saveModel(m, "largeScale_test.ply");
+
+        return meshBuffer;
+    }
+
+    template<typename BaseVecT>
+    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project,
+                                                                   std::shared_ptr<ChunkHashGrid> chunkManager,
+                                                                   std::string layerName) {
+        BoundingBox<BaseVecT> bb;
+        return mpiChunkAndReconstruct(project, bb, chunkManager, layerName);
     }
 }
