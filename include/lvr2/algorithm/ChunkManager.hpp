@@ -91,7 +91,7 @@ class ChunkManager : public ChunkHashGrid
      * @param hdf5Path path to the HDF5 file, where chunks and additional information are stored
      * @param cacheSize maximum number of chunks loaded in the ChunkHashGrid
      */
-    ChunkManager(std::string hdf5Path, size_t cacheSize = 200);
+    ChunkManager(std::string hdf5Path, size_t cacheSize = 200, float chunkSize = 10.0f);
 
     /**
      * @brief getGlobalBoundingBox is a getter for the bounding box of the entire chunked model

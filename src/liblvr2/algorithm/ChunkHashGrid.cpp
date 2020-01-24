@@ -36,7 +36,7 @@
 
 namespace lvr2
 {
-ChunkHashGrid::ChunkHashGrid(std::string hdf5Path, size_t cacheSize) : m_cacheSize(cacheSize)
+ChunkHashGrid::ChunkHashGrid(std::string hdf5Path, size_t cacheSize, float chunkSize) : m_cacheSize(cacheSize)
 {
     m_io.open(hdf5Path);
 
@@ -47,6 +47,7 @@ ChunkHashGrid::ChunkHashGrid(std::string hdf5Path, size_t cacheSize) : m_cacheSi
     }
     catch (std::runtime_error& e)
     {
+        setChunkSize(chunkSize);
     }
 }
 
