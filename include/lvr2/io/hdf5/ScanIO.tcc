@@ -5,10 +5,17 @@ namespace hdf5features
 {
 
 template <typename Derived>
-void ScanIO<Derived>::save(std::string name, const ScanPtr& scanPtr)
+void ScanIO<Derived>::save(uint scanPos, uint scanNr, const ScanPtr& scanPtr)
 {
-    HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name);
-    save(g, scanPtr);
+    // HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name);
+    // save(g, scanPtr);
+}
+
+template <typename Derived>
+void ScanIO<Derived>::save(HighFive::Group& group, uint scanNr, const ScanPtr& scanPtr)
+{
+    // HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name);
+    // save(g, scanPtr);
 }
 
 template <typename Derived>
@@ -73,15 +80,31 @@ void ScanIO<Derived>::save(HighFive::Group& group, const ScanPtr& scanPtr)
 }
 
 template <typename Derived>
-ScanPtr ScanIO<Derived>::load(std::string name)
+ScanPtr ScanIO<Derived>::load(uint scanPos, uint scanNr)
 {
     ScanPtr ret;
 
-    if (hdf5util::exist(m_file_access->m_hdf5_file, name))
-    {
-        HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name, false);
-        ret = load(g);
-    }
+    // if (hdf5util::exist(m_file_access->m_hdf5_file, name))
+    // {
+    //     HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name, false);
+    //     ret = load(g);
+    // }
+
+    return ret;
+}
+
+template <typename Derived>
+ScanPtr ScanIO<Derived>::load(HighFive::Group& group, uint scanNr)
+{
+    ScanPtr ret;
+
+    // check wether the given group is type ScanPositionIO
+
+    // if (hdf5util::exist(m_file_access->m_hdf5_file, name))
+    // {
+    //     HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name, false);
+    //     ret = load(g);
+    // }
 
     return ret;
 }
@@ -118,6 +141,7 @@ ScanPtr ScanIO<Derived>::load(HighFive::Group& group)
         {
             ret->points = PointBufferPtr(new PointBuffer(pointArr, dimension[0]));
             ret->numPoints = dimension[0];
+            ret->pointsLoaded = true;
         }
     }
 
