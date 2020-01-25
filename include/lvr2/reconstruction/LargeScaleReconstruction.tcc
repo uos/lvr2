@@ -193,7 +193,11 @@ namespace lvr2
 
         // we use the BB of all scans (including old ones) they are already hashed in the cm
         // and we can't make the BB smaller
-        chunkManager->setBoundingBox(bb);
+        BaseVecT addCMBBMin = BaseVecT(std::floor(bb.getMin().x / m_chunkSize), std::floor(bb.getMin().y / m_chunkSize), std::floor(bb.getMin().z / m_chunkSize));
+        BaseVecT addCMBBMax = BaseVecT(std::ceil(bb.getMax().x / m_chunkSize), std::ceil(bb.getMax().y / m_chunkSize), std::ceil(bb.getMax().z / m_chunkSize));
+        cmBB.expand(addCMBBMin);
+        cmBB.expand(addCMBBMax);
+        chunkManager->setBoundingBox(cmBB);
 
         BaseVecT bb_min(bb.getMin().x, bb.getMin().y, bb.getMin().z);
         BaseVecT bb_max(bb.getMax().x, bb.getMax().y, bb.getMax().z);
