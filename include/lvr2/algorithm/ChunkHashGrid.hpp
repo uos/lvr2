@@ -77,7 +77,7 @@ class ChunkHashGrid
      *
      * @param hdf5Path path to the HDF5 file
      */
-    explicit ChunkHashGrid(std::string hdf5Path, size_t cacheSize);
+    explicit ChunkHashGrid(std::string hdf5Path, size_t cacheSize, float chunkSize = 10.0f);
 
     /**
      * @brief class to load chunks from an HDF5 file
