@@ -98,14 +98,14 @@ void LVRChunkedMeshBridge::getActors(double planes[24],
 //    indices.resize(centroids.size());
 //
 //    #pragma omp parallel for
-    for(int i = 0; i < indices.size(); ++i)
-    {
-
-        if(m_chunkActors.find(indices[i]) == m_chunkActors.end())
-        {
-            std::cout << "KEY NOT FOUND: " << i << std::endl;
-        }
-    }
+//    for(int i = 0; i < indices.size(); ++i)
+//    {
+//
+//        if(m_chunkActors.find(indices[i]) == m_chunkActors.end())
+//        {
+//            std::cout << "KEY NOT FOUND: " << i << std::endl;
+//        }
+//    }
 
 
 //    m_chunkManager.extractArea(bb, m_chunks);
@@ -137,6 +137,7 @@ void LVRChunkedMeshBridge::computeMeshActors()
 
     omp_init_lock(&writelock);
 
+    std::cout << lvr2::timestamp << "Start actor computation" << std::endl;
 //    for(const auto& chunk: m_chunks)
     #pragma omp parallel
     {
@@ -165,13 +166,12 @@ void LVRChunkedMeshBridge::computeMeshActors()
             ucharArr colors = meshbuffer->getVertexColors(w_color);
 
             //vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-            vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();
 
             vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
             vtkSmartPointer<vtkFloatArray> pts_data = vtkSmartPointer<vtkFloatArray>::New();
             pts_data->SetNumberOfComponents(3);
-            pts_data->SetNumberOfTuples(n_v);
-            pts_data->SetVoidArray(meshbuffer->getVertices().get(), n_v, 1);
+//            pts_data->SetNumberOfTuples(n_v);
+            pts_data->SetVoidArray(meshbuffer->getVertices().get(), n_v * 3, 1);
             points->SetData(pts_data);
 
 
@@ -179,6 +179,8 @@ void LVRChunkedMeshBridge::computeMeshActors()
             scalars->SetNumberOfComponents(3);
             scalars->SetName("Colors");
 
+
+            // TODO COLORS
 //            for(size_t i = 0; i < n_v; i++){
 //                size_t index = 3 * i;
 //                points->InsertNextPoint(
@@ -201,17 +203,37 @@ void LVRChunkedMeshBridge::computeMeshActors()
 //                }
 //            }
 
+            vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();
+            vtkSmartPointer<vtkIdTypeArray> tri_data = vtkSmartPointer<vtkIdTypeArray>::New();
+//            tri_data->SetNumberOfComponents(3);
+//            tri_data->SetNumberOfTuples(n_i);
+
+            vtkIdType* tri_buf = new vtkIdType[n_i * 4];
+            //vtkSmartPointer<vtkIdTypeArray> offsets;
+            //offsets->SetNumberOfComponents(1);
+            //offsets->SetNumberOfTuples(n_i);
+            //vtkIdType* off_buf = new vtkIdType[n_i];
+            //tri_buf[0] = static_cast<vtkIdType>(n_i);
             for(size_t i = 0; i < n_i; i++)
             {
                 size_t index = 3 * i;
-                vtkSmartPointer<vtkTriangle> t = vtkSmartPointer<vtkTriangle>::New();
-                t->GetPointIds()->SetId(0, indices[index]);
-                t->GetPointIds()->SetId(1, indices[index + 1]);
-                t->GetPointIds()->SetId(2, indices[index + 2]);
-                triangles->InsertNextCell(t);
-
+                size_t i2    = 4 * i;
+                tri_buf[i2 + 0 ] = static_cast<vtkIdType>(3);
+                //off_buf[i] = 3;
+                tri_buf[i2 + 1 ] = static_cast<vtkIdType>(indices[index + 0]);
+                tri_buf[i2 + 2 ] = static_cast<vtkIdType>(indices[index + 1]);
+                tri_buf[i2 + 3 ] = static_cast<vtkIdType>(indices[index + 2]);
+                //vtkSmartPointer<vtkTriangle> t = vtkSmartPointer<vtkTriangle>::New();
+                //t->GetPointIds()->SetId(0, indices[index]);
+                //t->GetPointIds()->SetId(1, indices[index + 1]);
+                //t->GetPointIds()->SetId(2, indices[index + 2]);
+                //triangles->InsertNextCell(t);
             }
 
+            tri_data->SetVoidArray(tri_buf, n_i * 4, 0);
+            //offsets->SetVoidArray(off_buf, n_i, 1);
+            //triangles->SetData(offsets, tri_buf);
+            triangles->SetCells(n_i, tri_data);
             mesh->SetPoints(points);
             mesh->SetPolys(triangles);
 
@@ -265,6 +287,8 @@ void LVRChunkedMeshBridge::computeMeshActors()
     }
     }
     }
+
+    std::cout << lvr2::timestamp << "Done actor computation" << std::endl;
     // clear the chunks array
     //m_chunks.clear();
     //std::unordered_map<size_t, MeshBufferPtr>().swap(m_chunks);
