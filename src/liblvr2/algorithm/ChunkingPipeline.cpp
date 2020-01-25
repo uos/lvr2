@@ -81,6 +81,20 @@ void ChunkingPipeline::parseYAMLConfig()
             std::cout << "Found config entry for lvr2_largescale_reconstruct." << std::endl;
             m_lsrOptions = config["lvr2_largescale_reconstruct"].as<LSROptions>();
         }
+
+        if (config["lvr2_practicability_analysis"] && config["lvr2_practicability_analysis"].IsMap())
+        {
+            std::cout << "Found config entry for lvr2_practicability_analysis." << std::endl;
+            YAML::Node practicabilityConfig = config["lvr2_practicability_analysis"];
+            if (practicabilityConfig["roughnessRadius"])
+            {
+                m_roughnessRadius = practicabilityConfig["roughnessRadius"].as<double>();
+            }
+            if (practicabilityConfig["heightDifferencesRadius"])
+            {
+                m_heightDifferencesRadius = practicabilityConfig["heightDifferencesRadius"].as<double>();
+            }
+        }
     }
     else
     {
@@ -153,9 +167,9 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     // Calc average vertex angles
     DenseVertexMap<float> averageAngles = calcAverageVertexAngles(hem, vertexNormals);
     // Calc roughness
-    DenseVertexMap<float> roughness = calcVertexRoughness(hem, 0.3, vertexNormals);
+    DenseVertexMap<float> roughness = calcVertexRoughness(hem, m_roughnessRadius, vertexNormals);
     // Calc vertex height differences
-    DenseVertexMap<float> heightDifferences = calcVertexHeightDifferences(hem, 0.3);
+    DenseVertexMap<float> heightDifferences = calcVertexHeightDifferences(hem, m_heightDifferencesRadius);
 
     std::cout << "Finished practicability analysis!" << std::endl;
 
