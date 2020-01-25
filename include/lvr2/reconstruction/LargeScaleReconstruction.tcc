@@ -180,6 +180,8 @@ namespace lvr2
         // and we can't make the BB smaller
         chunkManager->setBoundingBox(bb);
 
+        chunkManager->
+
         BaseVecT bb_min(bb.getMin().x, bb.getMin().y, bb.getMin().z);
         BaseVecT bb_max(bb.getMax().x, bb.getMax().y, bb.getMax().z);
         BoundingBox<BaseVecT> cbb(bb_min, bb_max);
