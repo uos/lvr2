@@ -91,7 +91,7 @@ class ChunkManager : public ChunkHashGrid
      * @param hdf5Path path to the HDF5 file, where chunks and additional information are stored
      * @param cacheSize maximum number of chunks loaded in the ChunkHashGrid
      */
-    ChunkManager(std::string hdf5Path, size_t cacheSize = 200);
+    ChunkManager(std::string hdf5Path, size_t cacheSize = 200, float chunkSize = 10.0f);
 
     /**
      * @brief getGlobalBoundingBox is a getter for the bounding box of the entire chunked model
@@ -102,6 +102,18 @@ class ChunkManager : public ChunkHashGrid
     {
         return m_boundingBox;
     }
+
+    /**
+     * @brief buildChunks builds chunks from an original mesh
+     *
+     * Creates chunks from an original mesh and initializes the initial chunk structure
+     *
+     * @param mesh mesh which is being chunked
+     * @param maxChunkOverlap maximum allowed overlap between chunks relative to the chunk size.
+     * Larger triangles will be cut
+     * @param savePath UST FOR TESTING - REMOVE LATER ON
+     */
+    void buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::string savePath, std::string layer = std::string("mesh"));
 
     /**
      * @brief extractArea creates and returns MeshBufferPtr of merged chunks for given area.
@@ -183,18 +195,6 @@ class ChunkManager : public ChunkHashGrid
                   float overlapRatio,
                   std::shared_ptr<std::unordered_map<unsigned int, unsigned int>> splitVertices,
                   std::shared_ptr<std::unordered_map<unsigned int, unsigned int>> splitFaces);
-
-    /**
-     * @brief buildChunks builds chunks from an original mesh
-     *
-     * Creates chunks from an original mesh and initializes the initial chunk structure
-     *
-     * @param mesh mesh which is being chunked
-     * @param maxChunkOverlap maximum allowed overlap between chunks relative to the chunk size.
-     * Larger triangles will be cut
-     * @param savePath UST FOR TESTING - REMOVE LATER ON
-     */
-    void buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::string savePath, std::string layer = std::string("mesh"));
 
     /**
      * @brief getFaceCenter gets the center point for a given face

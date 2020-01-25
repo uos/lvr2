@@ -35,12 +35,14 @@
 #include "lvr2/algorithm/ChunkingPipeline.hpp"
 
 #include <yaml-cpp/yaml.h>
-#include "lvr2/io/ScanIOUtils.hpp"
-#include "lvr2/registration/RegistrationPipeline.hpp"
-#include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
+
 #include "lvr2/algorithm/NormalAlgorithms.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
+#include "lvr2/config/LSROptionsYamlExtensions.hpp"
+#include "lvr2/config/SLAMOptionsYamlExtensions.hpp"
+#include "lvr2/io/ScanIOUtils.hpp"
+#include "lvr2/registration/RegistrationPipeline.hpp"
 
 namespace lvr2
 {
@@ -57,6 +59,32 @@ ChunkingPipeline::ChunkingPipeline(
     else
     {
         m_chunkManager = std::make_shared<ChunkManager>(m_hdf5Path.string());
+    }
+
+    parseYAMLConfig();
+}
+
+void ChunkingPipeline::parseYAMLConfig()
+{
+    if (boost::filesystem::exists(m_configPath) && boost::filesystem::is_regular_file(m_configPath))
+    {
+        YAML::Node config = YAML::LoadFile(m_configPath.string());
+
+        if (config["lvr2_registration"])
+        {
+            std::cout << "Found config entry for lvr2_registration." << std::endl;
+            m_regOptions = config["lvr2_registration"].as<SLAMOptions>();
+        }
+
+        if (config["lvr2_largescale_reconstruct"])
+        {
+            std::cout << "Found config entry for lvr2_largescale_reconstruct." << std::endl;
+            m_lsrOptions = config["lvr2_largescale_reconstruct"].as<LSROptions>();
+        }
+    }
+    else
+    {
+        std::cout << "Config file does not exist or is not a regular file!" << std::endl;
     }
 }
 
@@ -100,15 +128,9 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     std::cout << "Finished import!" << std::endl;
 
     std::cout << "Starting registration..." << std::endl;
-    SLAMOptions slamOptions;
-    // TODO: set options via config file parser
-    slamOptions.icpIterations = 50;
-    slamOptions.icpMaxDistance = 10;
-    slamOptions.doGraphSLAM = true; // TODO: check why graph slam param leads to bad alloc
-    slamOptions.slamMaxDistance = 9;
-    slamOptions.loopSize = 10;
-    slamOptions.closeLoopDistance = 30;
-    RegistrationPipeline registration(&slamOptions, m_scanProject);
+
+    RegistrationPipeline registration(&m_regOptions, m_scanProject);
+
     
     std::cout << "Final poses before registration:" << std::endl;
     for (int i = 0; i < m_scanProject->project->positions.size(); i++)
@@ -127,10 +149,7 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     }
 
     std::cout << "Starting large scale reconstruction..." << std::endl;
-    // TODO: use constructor with struct parameter
-    LSROptions lsrOptions;
-    lsrOptions.filePath = m_hdf5Path.string();
-    LargeScaleReconstruction<lvr2::BaseVector<float>> lsr(lsrOptions);
+    LargeScaleReconstruction<lvr2::BaseVector<float>> lsr(m_lsrOptions);
     BoundingBox<BaseVector<float>> newChunksBB;
     std::string layerName = "tsdf_values";
     lsr.mpiChunkAndReconstruct(m_scanProject, newChunksBB, m_chunkManager, layerName);
@@ -154,6 +173,13 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     // Calc vertex height differences
     DenseVertexMap<float> heightDifferences = calcVertexHeightDifferences(hem, 0.3);
 
+    std::cout << "Finished practicability analysis!" << std::endl;
+
+    std::cout << "Starting mesh buffer creation..." << std::endl;
+    // create mesh buffer
+    lvr2::SimpleFinalizer<lvr2::BaseVector<float>> finalize;
+    MeshBufferPtr meshBuffer = MeshBufferPtr(finalize.apply(hem));
+
     // create channels
     FloatChannel faceNormalChannel(faceNormals.numValues(), channel_type < Normal < float >> ::w);
     Index i = 0;
@@ -176,18 +202,19 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
         j++;
     }
 
-    // create mesh buffer and add channels
-    lvr2::SimpleFinalizer<lvr2::BaseVector<float>> finalize;
-    MeshBufferPtr meshBuffer = MeshBufferPtr(finalize.apply(hem));
+    // add channels to mesh buffer
     meshBuffer->add("face_normals", faceNormalChannel);
     meshBuffer->add("vertex_normals", vertexNormalsChannel);
     meshBuffer->add("average_angles", averageAnglesChannel);
     meshBuffer->add("roughness", roughnessChannel);
     meshBuffer->add("height_diff", heightDifferencesChannel);
+    std::cout << "Finished mesh buffer creation!" << std::endl;
 
-    // TODO: chunk meshBuffer
-
-    std::cout << "Finished practicability analysis!" << std::endl;
+    std::cout << "Starting chunking and saving of mesh buffer..." << std::endl;
+    // TODO: get maxChunkOverlap size
+    // TODO: savePath is not used in buildChunks (remove it?)
+    m_chunkManager->buildChunks(meshBuffer, 0.1f, "", "mesh0");
+    std::cout << "Finished chunking and saving of mesh buffer!" << std::endl;
 
     std::cout << "Finished chunking pipeline!" << std::endl;
 
