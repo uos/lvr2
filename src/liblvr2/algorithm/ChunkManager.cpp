@@ -116,8 +116,8 @@ ChunkManager::ChunkManager(std::vector<MeshBufferPtr> meshes,
     }
 }
 
-ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize)
-    : ChunkHashGrid(hdf5Path, cacheSize)
+ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize, float chunkSize)
+    : ChunkHashGrid(hdf5Path, cacheSize, chunkSize)
 {
 }
 

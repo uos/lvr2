@@ -38,6 +38,9 @@
 #include "lvr2/algorithm/ChunkManager.hpp"
 
 #include <boost/filesystem.hpp>
+
+#include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
+#include "lvr2/registration/SLAMOptions.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2
@@ -77,8 +80,19 @@ private:
     // scan project containing all scans
     ScanProjectEditMarkPtr m_scanProject;
 
+    // registration options
+    SLAMOptions m_regOptions;
+
+    // large scale reconstruct options
+    LSROptions m_lsrOptions;
+
     // status flag
     bool m_running = false;
+
+    /**
+     * @brief Parse YAML config (m_configPath) to boost options
+     */
+    void parseYAMLConfig();
 };
 
 } /* namespace lvr2 */

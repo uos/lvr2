@@ -39,6 +39,15 @@ namespace lvr2
 {
     struct LSROptions
     {
+        //flag to trigger .ply output of big Mesh
+        bool bigMesh = true;
+
+        // flag to trigger .ply output of chunks
+        bool debug_chunks = false;
+
+        // flag to trigger GPU usage
+        bool useGPU = true;
+
         //filePath to HDF5 file
         string filePath = "";
 
@@ -131,7 +140,7 @@ namespace lvr2
                 uint nodeSize, int partMethod,int ki, int kd, int kn, bool useRansac, bool extrude,
                 int removeDanglingArtifacts, int cleanContours, int fillHoles, bool optimizePlanes,
                 float getNormalThreshold, int planeIterations, int minPlaneSize, int smallRegionThreshold,
-                bool retesselate, float lineFusionThreshold);
+                bool retesselate, float lineFusionThreshold, bool bigMesh, bool debug_chunks, bool useGPU);
 
         /**
          * Constructor with parameters in a struct
@@ -174,6 +183,14 @@ namespace lvr2
                 shared_ptr<ChunkHashGrid> cm,
                 std::string layerName);
 
+        //flag to trigger .ply output of big Mesh
+        bool m_bigMesh = true;
+
+        // flag to trigger .ply output of chunks
+        bool m_debug_chunks = false;
+
+        // flag to trigger GPU usage
+        bool m_useGPU = false;
 
         // path to hdf5 path containing previously reconstructed scans (or no scans) only
         string m_filePath;

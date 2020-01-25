@@ -113,7 +113,7 @@ void RegistrationPipeline::doRegistration()
 
         if (m_scans->changed.at(i))
         {
-            posPtr->scan->m_registration = align2.scan(i)->pose();
+            posPtr->scan->m_registration = align2.scan(i)->pose().transpose();
             cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
         }
         m_scans->changed.at(i) = true; // ToDo: lsr test 
