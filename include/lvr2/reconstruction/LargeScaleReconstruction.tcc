@@ -43,6 +43,20 @@
 
 #include "LargeScaleReconstruction.hpp"
 
+
+#if defined CUDA_FOUND
+    #define GPU_FOUND
+
+    #include "lvr2/reconstruction/cuda/CudaSurface.hpp"
+
+    typedef lvr2::CudaSurface GpuSurface;
+#elif defined OPENCL_FOUND
+    #define GPU_FOUND
+
+    #include "lvr2/reconstruction/opencl/ClSurface.hpp"
+    typedef lvr2::ClSurface GpuSurface;
+#endif
+
 namespace lvr2
 {
     using LSRWriter = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
@@ -81,7 +95,7 @@ namespace lvr2
               m_cleanContours(cleanContours), m_fillHoles(fillHoles), m_optimizePlanes(optimizePlanes),
               m_getNormalThreshold(getNormalThreshold), m_planeIterations(planeIterations),
               m_MinPlaneSize(minPlaneSize), m_SmallRegionThreshold(smallRegionThreshold),
-              m_retesselate(retesselate), m_LineFusionThreshold(lineFusionThreshold),m_bigMesh(true), m_debug_chunks(false), m_useGPU(false)
+              m_retesselate(retesselate), m_LineFusionThreshold(lineFusionThreshold),m_bigMesh(bigMesh), m_debug_chunks(debug_chunks), m_useGPU(useGPU)
     {
         std::cout << "Reconstruction Instance generated..." << std::endl;
     }
@@ -277,15 +291,15 @@ namespace lvr2
                 if (m_useGPU)
                 {
 #ifdef GPU_FOUND
-                std::vector<float> flipPoint = options.getFlippoint();
+                std::vector<float> flipPoint = std::vector<float>{100, 100, 100};
                 size_t num_points = p_loader->numPoints();
                 floatArr points = p_loader->getPointArray();
                 floatArr normals = floatArr(new float[num_points * 3]);
                 std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
                 GpuSurface gpu_surface(points, num_points);
 
-                gpu_surface.setKn(options.getKn());
-                gpu_surface.setKi(options.getKi());
+                gpu_surface.setKn(m_Kn);
+                gpu_surface.setKi(m_Ki);
                 gpu_surface.setFlippoint(flipPoint[0], flipPoint[1], flipPoint[2]);
 
                 gpu_surface.calculateNormals();
