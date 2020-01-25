@@ -98,14 +98,14 @@ void LVRChunkedMeshBridge::getActors(double planes[24],
 //    indices.resize(centroids.size());
 //
 //    #pragma omp parallel for
-    for(int i = 0; i < indices.size(); ++i)
-    {
-
-        if(m_chunkActors.find(indices[i]) == m_chunkActors.end())
-        {
-            std::cout << "KEY NOT FOUND: " << i << std::endl;
-        }
-    }
+//    for(int i = 0; i < indices.size(); ++i)
+//    {
+//
+//        if(m_chunkActors.find(indices[i]) == m_chunkActors.end())
+//        {
+//            std::cout << "KEY NOT FOUND: " << i << std::endl;
+//        }
+//    }
 
 
 //    m_chunkManager.extractArea(bb, m_chunks);
@@ -132,8 +132,21 @@ void LVRChunkedMeshBridge::getActors(double planes[24],
 
 void LVRChunkedMeshBridge::computeMeshActors()
 {
-    for(const auto& chunk: m_chunks)
+
+    omp_lock_t writelock;
+
+    omp_init_lock(&writelock);
+
+    std::cout << lvr2::timestamp << "Start actor computation" << std::endl;
+//    for(const auto& chunk: m_chunks)
+    #pragma omp parallel
     {
+    #pragma omp single
+    { 
+    for(auto it = m_chunks.begin(); it != m_chunks.end(); ++it)
+    #pragma omp task
+    {
+        auto chunk = *it;
         size_t id = chunk.first;
         lvr2::MeshBufferPtr meshbuffer = chunk.second;
         vtkSmartPointer<MeshChunkActor> meshActor;
@@ -152,46 +165,75 @@ void LVRChunkedMeshBridge::computeMeshActors()
             n_c = n_v;
             ucharArr colors = meshbuffer->getVertexColors(w_color);
 
+            //vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+
             vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-            vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();
+            vtkSmartPointer<vtkFloatArray> pts_data = vtkSmartPointer<vtkFloatArray>::New();
+            pts_data->SetNumberOfComponents(3);
+//            pts_data->SetNumberOfTuples(n_v);
+            pts_data->SetVoidArray(meshbuffer->getVertices().get(), n_v * 3, 1);
+            points->SetData(pts_data);
+
 
             vtkSmartPointer<vtkUnsignedCharArray> scalars = vtkSmartPointer<vtkUnsignedCharArray>::New();
             scalars->SetNumberOfComponents(3);
             scalars->SetName("Colors");
 
-            for(size_t i = 0; i < n_v; i++){
-                size_t index = 3 * i;
-                points->InsertNextPoint(
-                        vertices[index    ],
-                        vertices[index + 1],
-                        vertices[index + 2]);
 
-                if(colors)
-                {
-                    size_t color_index = w_color * i;
-                    unsigned char color[3];
-                    color[0] = colors[color_index    ];
-                    color[1] = colors[color_index + 1];
-                    color[2] = colors[color_index + 2];
-#if VTK_MAJOR_VERSION < 7
-                    scalars->InsertNextTupleValue(color);
-#else
-                    scalars->InsertNextTypedTuple(color);
-#endif
-                }
-            }
+            // TODO COLORS
+//            for(size_t i = 0; i < n_v; i++){
+//                size_t index = 3 * i;
+//                points->InsertNextPoint(
+//                        vertices[index    ],
+//                        vertices[index + 1],
+//                        vertices[index + 2]);
+//
+//                if(colors)
+//                {
+//                    size_t color_index = w_color * i;
+//                    unsigned char color[3];
+//                    color[0] = colors[color_index    ];
+//                    color[1] = colors[color_index + 1];
+//                    color[2] = colors[color_index + 2];
+//#if VTK_MAJOR_VERSION < 7
+//                    scalars->InsertNextTupleValue(color);
+//#else
+//                    scalars->InsertNextTypedTuple(color);
+//#endif
+//                }
+//            }
 
+            vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();
+            vtkSmartPointer<vtkIdTypeArray> tri_data = vtkSmartPointer<vtkIdTypeArray>::New();
+//            tri_data->SetNumberOfComponents(3);
+//            tri_data->SetNumberOfTuples(n_i);
+
+            vtkIdType* tri_buf = new vtkIdType[n_i * 4];
+            //vtkSmartPointer<vtkIdTypeArray> offsets;
+            //offsets->SetNumberOfComponents(1);
+            //offsets->SetNumberOfTuples(n_i);
+            //vtkIdType* off_buf = new vtkIdType[n_i];
+            //tri_buf[0] = static_cast<vtkIdType>(n_i);
             for(size_t i = 0; i < n_i; i++)
             {
                 size_t index = 3 * i;
-                vtkSmartPointer<vtkTriangle> t = vtkSmartPointer<vtkTriangle>::New();
-                t->GetPointIds()->SetId(0, indices[index]);
-                t->GetPointIds()->SetId(1, indices[index + 1]);
-                t->GetPointIds()->SetId(2, indices[index + 2]);
-                triangles->InsertNextCell(t);
-
+                size_t i2    = 4 * i;
+                tri_buf[i2 + 0 ] = static_cast<vtkIdType>(3);
+                //off_buf[i] = 3;
+                tri_buf[i2 + 1 ] = static_cast<vtkIdType>(indices[index + 0]);
+                tri_buf[i2 + 2 ] = static_cast<vtkIdType>(indices[index + 1]);
+                tri_buf[i2 + 3 ] = static_cast<vtkIdType>(indices[index + 2]);
+                //vtkSmartPointer<vtkTriangle> t = vtkSmartPointer<vtkTriangle>::New();
+                //t->GetPointIds()->SetId(0, indices[index]);
+                //t->GetPointIds()->SetId(1, indices[index + 1]);
+                //t->GetPointIds()->SetId(2, indices[index + 2]);
+                //triangles->InsertNextCell(t);
             }
 
+            tri_data->SetVoidArray(tri_buf, n_i * 4, 0);
+            //offsets->SetVoidArray(off_buf, n_i, 1);
+            //triangles->SetData(offsets, tri_buf);
+            triangles->SetCells(n_i, tri_data);
             mesh->SetPoints(points);
             mesh->SetPolys(triangles);
 
@@ -238,11 +280,17 @@ void LVRChunkedMeshBridge::computeMeshActors()
 
             //setBaseColor(0.9, 0.9, 0.9);
             meshActor->setID(id);
+            omp_set_lock(&writelock);
             m_chunkActors.insert({id, meshActor});
+            omp_unset_lock(&writelock);
         }
     }
+    }
+    }
+
+    std::cout << lvr2::timestamp << "Done actor computation" << std::endl;
     // clear the chunks array
-    m_chunks.clear();
-    std::unordered_map<size_t, MeshBufferPtr>().swap(m_chunks);
+    //m_chunks.clear();
+    //std::unordered_map<size_t, MeshBufferPtr>().swap(m_chunks);
 
 }
