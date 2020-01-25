@@ -97,6 +97,14 @@ private:
      * @brief Parse YAML config (m_configPath) to boost options
      */
     void parseYAMLConfig();
+
+    /**
+     * @brief Calculates practicability analysis of given mesh and adds it as channels to mesh buffer
+     *
+     * @param hem HalfEdgeMesh on which practicability analysis is performed
+     * @param meshBuffer buffer where practicability analysis channels should be added
+     */
+    void practicabilityAnalysis(HalfEdgeMesh<lvr2::BaseVector<float>>& hem, MeshBufferPtr meshBuffer);
 };
 
 } /* namespace lvr2 */
