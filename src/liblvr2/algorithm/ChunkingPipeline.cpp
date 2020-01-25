@@ -102,7 +102,7 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     std::cout << "Starting registration..." << std::endl;
     SLAMOptions slamOptions;
     // TODO: set options via config file parser
-    slamOptions.icpIterations = 500;
+    slamOptions.icpIterations = 50;
     slamOptions.icpMaxDistance = 10;
     slamOptions.doGraphSLAM = true; // TODO: check why graph slam param leads to bad alloc
     slamOptions.slamMaxDistance = 9;
