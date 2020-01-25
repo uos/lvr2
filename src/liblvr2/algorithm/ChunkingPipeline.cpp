@@ -102,6 +102,49 @@ void ChunkingPipeline::parseYAMLConfig()
     }
 }
 
+void ChunkingPipeline::practicabilityAnalysis(HalfEdgeMesh<lvr2::BaseVector<float>>& hem, MeshBufferPtr meshBuffer)
+{
+    // Calc face normals
+    DenseFaceMap <Normal<float>> faceNormals = calcFaceNormals(hem);
+    // Calc vertex normals
+    DenseVertexMap <Normal<float>> vertexNormals = calcVertexNormals(hem, faceNormals);
+    // Calc average vertex angles
+    DenseVertexMap<float> averageAngles = calcAverageVertexAngles(hem, vertexNormals);
+    // Calc roughness
+    DenseVertexMap<float> roughness = calcVertexRoughness(hem, m_roughnessRadius, vertexNormals);
+    // Calc vertex height differences
+    DenseVertexMap<float> heightDifferences = calcVertexHeightDifferences(hem, m_heightDifferencesRadius);
+
+    // create and fill channels
+    FloatChannel faceNormalChannel(faceNormals.numValues(), channel_type < Normal < float >> ::w);
+    Index i = 0;
+    for (auto handle : FaceIteratorProxy<lvr2::BaseVector<float>>(hem)) {
+        faceNormalChannel[i++] = faceNormals[handle]; //TODO handle deleted map values.
+    }
+
+    FloatChannel vertexNormalsChannel(vertexNormals.numValues(), channel_type<Normal<float>>::w);
+    FloatChannel averageAnglesChannel(averageAngles.numValues(), channel_type<float>::w);
+    FloatChannel roughnessChannel(roughness.numValues(), channel_type<float>::w);
+    FloatChannel heightDifferencesChannel(heightDifferences.numValues(), channel_type<float>::w);
+
+    Index j = 0;
+    for (auto handle : VertexIteratorProxy<lvr2::BaseVector<float>>(hem))
+    {
+        vertexNormalsChannel[j] = vertexNormals[handle]; //TODO handle deleted map values.
+        averageAnglesChannel[j] = averageAngles[handle]; //TODO handle deleted map values.
+        roughnessChannel[j] = roughness[handle]; //TODO handle deleted map values.
+        heightDifferencesChannel[j] = heightDifferences[handle]; //TODO handle deleted map values.
+        j++;
+    }
+
+    // add channels to mesh buffer
+    meshBuffer->add("face_normals", faceNormalChannel);
+    meshBuffer->add("vertex_normals", vertexNormalsChannel);
+    meshBuffer->add("average_angles", averageAnglesChannel);
+    meshBuffer->add("roughness", roughnessChannel);
+    meshBuffer->add("height_diff", heightDifferencesChannel);
+}
+
 bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
 {
     if (m_running)
@@ -154,59 +197,18 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     std::cout << "Finished large scale reconstruction!" << std::endl;
 
     std::cout << "Starting mesh generation..." << std::endl;
-    HalfEdgeMesh <lvr2::BaseVector<float>> hem = lsr.getPartialReconstruct(newChunksBB, m_chunkManager, layerName);
+    HalfEdgeMesh<lvr2::BaseVector<float>> hem = lsr.getPartialReconstruct(newChunksBB, m_chunkManager, layerName);
     // TODO: mesh reduction???
     std::cout << "Finished mesh generation!" << std::endl;
 
-    std::cout << "Starting practicability analysis..." << std::endl;
-    // TODO: call practicability analysis
-    // Calc face normals
-    DenseFaceMap <Normal<float>> faceNormals = calcFaceNormals(hem);
-    // Calc vertex normals
-    DenseVertexMap <Normal<float>> vertexNormals = calcVertexNormals(hem, faceNormals);
-    // Calc average vertex angles
-    DenseVertexMap<float> averageAngles = calcAverageVertexAngles(hem, vertexNormals);
-    // Calc roughness
-    DenseVertexMap<float> roughness = calcVertexRoughness(hem, m_roughnessRadius, vertexNormals);
-    // Calc vertex height differences
-    DenseVertexMap<float> heightDifferences = calcVertexHeightDifferences(hem, m_heightDifferencesRadius);
-
-    std::cout << "Finished practicability analysis!" << std::endl;
-
     std::cout << "Starting mesh buffer creation..." << std::endl;
-    // create mesh buffer
     lvr2::SimpleFinalizer<lvr2::BaseVector<float>> finalize;
     MeshBufferPtr meshBuffer = MeshBufferPtr(finalize.apply(hem));
-
-    // create channels
-    FloatChannel faceNormalChannel(faceNormals.numValues(), channel_type < Normal < float >> ::w);
-    Index i = 0;
-    for (auto handle : FaceIteratorProxy<lvr2::BaseVector<float>>(hem)) {
-        faceNormalChannel[i++] = faceNormals[handle]; //TODO handle deleted map values.
-    }
-
-    FloatChannel vertexNormalsChannel(vertexNormals.numValues(), channel_type<Normal<float>>::w);
-    FloatChannel averageAnglesChannel(averageAngles.numValues(), channel_type<float>::w);
-    FloatChannel roughnessChannel(roughness.numValues(), channel_type<float>::w);
-    FloatChannel heightDifferencesChannel(heightDifferences.numValues(), channel_type<float>::w);
-
-    Index j = 0;
-    for (auto handle : VertexIteratorProxy<lvr2::BaseVector<float>>(hem))
-    {
-        vertexNormalsChannel[j] = vertexNormals[handle]; //TODO handle deleted map values.
-        averageAnglesChannel[j] = averageAngles[handle]; //TODO handle deleted map values.
-        roughnessChannel[j] = roughness[handle]; //TODO handle deleted map values.
-        heightDifferencesChannel[j] = heightDifferences[handle]; //TODO handle deleted map values.
-        j++;
-    }
-
-    // add channels to mesh buffer
-    meshBuffer->add("face_normals", faceNormalChannel);
-    meshBuffer->add("vertex_normals", vertexNormalsChannel);
-    meshBuffer->add("average_angles", averageAnglesChannel);
-    meshBuffer->add("roughness", roughnessChannel);
-    meshBuffer->add("height_diff", heightDifferencesChannel);
     std::cout << "Finished mesh buffer creation!" << std::endl;
+
+    std::cout << "Starting practicability analysis..." << std::endl;
+    practicabilityAnalysis(hem, meshBuffer);
+    std::cout << "Finished practicability analysis!" << std::endl;
 
     std::cout << "Starting chunking and saving of mesh buffer..." << std::endl;
     // TODO: get maxChunkOverlap size
