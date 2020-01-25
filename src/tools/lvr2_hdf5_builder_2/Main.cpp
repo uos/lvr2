@@ -80,6 +80,9 @@ int main(int argc, char** argv)
         }
     }
 
+    bool exitsts = false;
+    ScanProjectPtr existingScanProject;
+
     // check if HDF5 already exists
     if (boost::filesystem::exists(outputPath))
     {
@@ -87,9 +90,8 @@ int main(int argc, char** argv)
 
         // get existing scans
         hdf.open(outputPath.string());
-        HighFive::Group hfscans = hdf5util::getGroup(hdf.m_hdf5_file, "raw/scans");
-        pos = hfscans.listObjectNames().size();
-        std::cout << timestamp << "Using counter-increment " << pos << std::endl;
+        existingScanProject = hdf.loadScanProject();
+        exitsts = true;
     }
     else
     {
@@ -104,7 +106,18 @@ int main(int argc, char** argv)
 
     // saving ScanProject into HDF5 file
     std::cout << timestamp << "Writing ScanProject to HDF5" << std::endl;
-    hdf.save(scanProject);
+    if (exitsts)
+    {
+        for (ScanPositionPtr scanPosPtr : scanProject->positions)
+        {
+            existingScanProject->positions.push_back(scanPosPtr);
+        }
+        hdf.save(existingScanProject);
+    }
+    else
+    {
+        hdf.save(scanProject);
+    }
 
     std::cout << timestamp << "Program finished" << std::endl;
 }
