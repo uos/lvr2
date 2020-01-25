@@ -8,6 +8,17 @@ template <typename Derived>
 void ScanPositionIO<Derived>::save(uint scanPos, const ScanPositionPtr& scanPositionPtr)
 {
     // TODO call save with group
+
+    // char buffer[sizeof(int) * 5];
+    // sprintf(buffer, "%08d", scanPos);
+    // string nr_str(buffer);
+    // std::string basePath = "raw/" + nr_str + "/";
+
+    // if (hdf5util::exist(m_file_access->m_hdf5_file, basePath))
+    // {
+    //     HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
+    //     save(group, scanPositionPtr);
+    // }
 }
 
 template <typename Derived>
@@ -30,26 +41,24 @@ void ScanPositionIO<Derived>::save(HighFive::Group& group, const ScanPositionPtr
         std::cout << path << std::endl;
 
         HighFive::Group scanGroup = hdf5util::getGroup(group, path);
-        std::cout << "path" << std::endl;
 
         m_scanIO->template save(scanGroup, scanPtr);
     }
 
-    // saving contained scans
+    // saving contained cameras
     pos = 0;
     for (ScanCameraPtr scanCameraPtr : scanPositionPtr->cams)
     {
-        // char buffer[sizeof(int) * 5];
-        // sprintf(buffer, "%05d", pos++);
-        // string nr_str(buffer);
+        char buffer[sizeof(int) * 5];
+        sprintf(buffer, "%02d", pos++);
+        string nr_str(buffer);
 
-        // std::string path = "/scans/data/" + nr_str;
-        // std::cout << path << std::endl;
+        std::string path = "/cam_" + nr_str;
+        std::cout << "saving camera " << (pos - 1) << " at " << path << std::endl;
 
-        // HighFive::Group scanGroup = hdf5util::getGroup(group, path);
-        // std::cout << "path" << std::endl;
+        HighFive::Group camGroup = hdf5util::getGroup(group, path);
 
-        // m_scanIO->template save(scanGroup, scanPtr);
+        m_scanCameraIO->template save(camGroup, scanCameraPtr);
     }
 
     // set dim and chunks for gps position
@@ -81,12 +90,15 @@ ScanPositionPtr ScanPositionIO<Derived>::load(uint scanPos)
 {
     ScanPositionPtr ret;
 
-    // TODO: create prefix from scanPos
+    char buffer[sizeof(int) * 5];
+    sprintf(buffer, "%08d", scanPos);
+    string nr_str(buffer);
+    std::string basePath = "raw/" + nr_str + "/";
 
-    if (hdf5util::exist(m_file_access->m_hdf5_file, scanPos))
+    if (hdf5util::exist(m_file_access->m_hdf5_file, basePath))
     {
-        HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, scanPos, false);
-        ret = load(g);
+        HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
+        ret = load(group);
     }
 
     return ret;
@@ -124,6 +136,23 @@ ScanPositionPtr ScanPositionIO<Derived>::load(HighFive::Group& group)
             ret->scans.push_back(scan);
             std::cout << "  added scan" << std::endl;
         }
+    }
+
+    // load all scanCameras
+    for (std::string groupname : group.listObjectNames())
+    {
+        // std::cout << "  " << groupname << std::endl;
+
+        // if (hdf5util::exist(hfscans, groupname))
+        // {
+        //     HighFive::Group g = hdf5util::getGroup(hfscans, "/" + groupname);
+        //     std::cout << "  try to load scan" << std::endl;
+        //     ScanPtr scan = m_scanIO->template load(g);
+        //     std::cout << "  loadded scan" << std::endl;
+
+        //     ret->scans.push_back(scan);
+        //     std::cout << "  added scan" << std::endl;
+        // }
     }
 
     std::cout << "  loading gps position" << std::endl;
