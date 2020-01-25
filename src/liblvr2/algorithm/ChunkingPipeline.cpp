@@ -128,7 +128,9 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     std::cout << "Finished import!" << std::endl;
 
     std::cout << "Starting registration..." << std::endl;
+
     RegistrationPipeline registration(&m_regOptions, m_scanProject);
+
     
     std::cout << "Final poses before registration:" << std::endl;
     for (int i = 0; i < m_scanProject->project->positions.size(); i++)
