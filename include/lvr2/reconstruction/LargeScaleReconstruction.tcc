@@ -72,7 +72,8 @@ namespace lvr2
                                                                  int cleanContours, int fillHoles, bool optimizePlanes,
                                                                  float getNormalThreshold, int planeIterations,
                                                                  int minPlaneSize, int smallRegionThreshold,
-                                                                 bool retesselate, float lineFusionThreshold)
+                                                                 bool retesselate, float lineFusionThreshold,
+                                                                 bool bigMesh, bool debug_chunks, bool useGPU)
             : m_filePath(h5File), m_voxelSize(voxelSize), m_bgVoxelSize(bgVoxelSize),
               m_scale(scale), m_chunkSize(chunkSize),m_nodeSize(nodeSize),
               m_partMethod(partMethod), m_Ki(ki), m_Kd(kd), m_Kn(kn), m_useRansac(useRansac),
@@ -80,7 +81,7 @@ namespace lvr2
               m_cleanContours(cleanContours), m_fillHoles(fillHoles), m_optimizePlanes(optimizePlanes),
               m_getNormalThreshold(getNormalThreshold), m_planeIterations(planeIterations),
               m_MinPlaneSize(minPlaneSize), m_SmallRegionThreshold(smallRegionThreshold),
-              m_retesselate(retesselate), m_LineFusionThreshold(lineFusionThreshold)
+              m_retesselate(retesselate), m_LineFusionThreshold(lineFusionThreshold),m_bigMesh(true), m_debug_chunks(false), m_useGPU(false)
     {
         std::cout << "Reconstruction Instance generated..." << std::endl;
     }
@@ -94,7 +95,7 @@ namespace lvr2
               options.cleanContours, options.fillHoles, options.optimizePlanes,
               options.getNormalThreshold, options.planeIterations,
               options.MinPlaneSize, options.SmallRegionThreshold,
-              options.retesselate, options.LineFusionThreshold)
+              options.retesselate, options.LineFusionThreshold, options.bigMesh, options.debug_chunks, options.useGPU)
     {
     }
 
@@ -272,7 +273,39 @@ namespace lvr2
                                                                      m_useRansac);
             //calculate important stuff for reconstruction
             if (!bg.hasNormals())
-                surface->calculateSurfaceNormals();
+            {
+                if (m_useGPU)
+                {
+#ifdef GPU_FOUND
+                std::vector<float> flipPoint = options.getFlippoint();
+                size_t num_points = p_loader->numPoints();
+                floatArr points = p_loader->getPointArray();
+                floatArr normals = floatArr(new float[num_points * 3]);
+                std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
+                GpuSurface gpu_surface(points, num_points);
+
+                gpu_surface.setKn(options.getKn());
+                gpu_surface.setKi(options.getKi());
+                gpu_surface.setFlippoint(flipPoint[0], flipPoint[1], flipPoint[2]);
+
+                gpu_surface.calculateNormals();
+                gpu_surface.getNormals(normals);
+
+                p_loader->setNormalArray(normals, num_points);
+                gpu_surface.freeGPU();
+#else
+
+                    std::cout << timestamp << "ERROR: GPU Driver not installed" << std::endl;
+                    surface->calculateSurfaceNormals();
+#endif
+                }
+                else
+                {
+                    surface->calculateSurfaceNormals();
+                }
+            }
+
+
 
             auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(
                     m_voxelSize, surface, gridbb, true, m_extrude);
@@ -281,16 +314,12 @@ namespace lvr2
             ps_grid->calcIndices();
             ps_grid->calcDistanceValues();
 
-            //TODO: is this even used? if not:remove it
-            auto reconstruction =
-                   make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
-
-
 
 
             int x = (int)floor(partitionBoxes.at(i).getCentroid().x / m_chunkSize);
             int y = (int)floor(partitionBoxes.at(i).getCentroid().y / m_chunkSize);
             int z = (int)floor(partitionBoxes.at(i).getCentroid().z / m_chunkSize);
+
             addTSDFChunkManager(x, y, z, ps_grid, chunkManager, layerName);
             BaseVector<int> chunkCoordinates(x, y, z);
             // also save the grid coordinates of the chunk added to the ChunkManager
@@ -299,18 +328,25 @@ namespace lvr2
             partitionBoxesNew.push_back(partitionBoxes.at(i));
 
             // save the mesh of the chunk
-            // additionally for debug: Save the mesh as a ply todo delete later
-            lvr2::HalfEdgeMesh<Vec> mesh;
-            reconstruction->getMesh(mesh);
-            lvr2::SimpleFinalizer<Vec> finalize;
-            auto meshBuffer = MeshBufferPtr(finalize.apply(mesh));
-            // removed HDF5 writing. This will be done by the ChunkManager.
-            //LSRWriter hdfWrite;
-            //hdfWrite.open(m_filePath);
-            //hdfWrite.save("chunks/" + name_id, meshBuffer);
-            auto m = ModelPtr(new Model(meshBuffer));
-            ModelFactory::saveModel(m, name_id + ".ply");
 
+            if(m_debug_chunks)
+            {
+                auto reconstruction =
+                        make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
+                lvr2::HalfEdgeMesh<Vec> mesh;
+                reconstruction->getMesh(mesh);
+                if(mesh.numVertices() > 0)
+                {
+                    lvr2::SimpleFinalizer<Vec> finalize;
+                    auto meshBuffer = MeshBufferPtr(finalize.apply(mesh));
+                    // removed HDF5 writing. This will be done by the ChunkManager.
+                    //LSRWriter hdfWrite;
+                    //hdfWrite.open(m_filePath);
+                    //hdfWrite.save("chunks/" + name_id, meshBuffer);
+                    auto m = ModelPtr(new Model(meshBuffer));
+                    ModelFactory::saveModel(m, name_id + ".ply");
+                }
+            }
         }
 
 
@@ -319,121 +355,115 @@ namespace lvr2
 
         cout << lvr2::timestamp << "finished" << endl;
 
-        //combine chunks
-        auto vmax = cbb.getMax();
-        auto vmin = cbb.getMin();
-        vmin.x -= m_bgVoxelSize * 2;
-        vmin.y -= m_bgVoxelSize * 2;
-        vmin.z -= m_bgVoxelSize * 2;
-        vmax.x += m_bgVoxelSize * 2;
-        vmax.y += m_bgVoxelSize * 2;
-        vmax.z += m_bgVoxelSize * 2;
-        cbb.expand(vmin);
-        cbb.expand(vmax);
 
-        // auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(grid_files, cbb, m_voxelSize);
-        // don't read from HDF5 - get the chunks from the ChunkManager
-        // auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(m_filePath, newChunks, cbb);
-
-        // TODO: don't do the following reconstruction in ChunkingPipline-Workflow (put it in extra function for lsr_tool)
-        std::vector<PointBufferPtr> tsdfChunks;
-        for(BaseVector<int> coord : newChunks)
+        if(m_bigMesh)
         {
-            boost::optional<shared_ptr<PointBuffer>> chunk = chunkManager->getChunk<PointBufferPtr>(layerName, coord.x, coord.y, coord.z);
-            if(chunk)
-            {
-                tsdfChunks.push_back(chunk.get());
+            //combine chunks
+            auto vmax = cbb.getMax();
+            auto vmin = cbb.getMin();
+            vmin.x -= m_bgVoxelSize * 2;
+            vmin.y -= m_bgVoxelSize * 2;
+            vmin.z -= m_bgVoxelSize * 2;
+            vmax.x += m_bgVoxelSize * 2;
+            vmax.y += m_bgVoxelSize * 2;
+            vmax.z += m_bgVoxelSize * 2;
+            cbb.expand(vmin);
+            cbb.expand(vmax);
+
+            // auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(grid_files, cbb, m_voxelSize);
+            // don't read from HDF5 - get the chunks from the ChunkManager
+            // auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(m_filePath, newChunks, cbb);
+
+            // TODO: don't do the following reconstruction in ChunkingPipline-Workflow (put it in extra function for lsr_tool)
+            std::vector<PointBufferPtr> tsdfChunks;
+            for (BaseVector<int> coord : newChunks) {
+                boost::optional<shared_ptr<PointBuffer>> chunk = chunkManager->getChunk<PointBufferPtr>(layerName,
+                                                                                                        coord.x,
+                                                                                                        coord.y,
+                                                                                                        coord.z);
+                if (chunk) {
+                    tsdfChunks.push_back(chunk.get());
+                } else {
+                    std::cout << "WARNING - Could not find chunk (" << coord.x << ", " << coord.y << ", " << coord.z
+                              << ") in layer: " << layerName << std::endl;
+                }
             }
-            else
-            {
-                std::cout << "WARNING - Could not find chunk (" << coord.x << ", " << coord.y << ", " << coord.z << ") in layer: " << layerName << std::endl;
-            }
-        }
-        auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(tsdfChunks, partitionBoxesNew, cbb, m_voxelSize);
-        tsdfChunks.clear();
-        auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(hg);
+            auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(tsdfChunks, partitionBoxesNew, cbb,
+                                                                               m_voxelSize);
+            tsdfChunks.clear();
+            auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(hg);
 
-        lvr2::HalfEdgeMesh<Vec> mesh;
+            lvr2::HalfEdgeMesh<Vec> mesh;
 
-        reconstruction->getMesh(mesh);
+            reconstruction->getMesh(mesh);
 
-        if (m_removeDanglingArtifacts)
-        {
-            cout << timestamp << "Removing dangling artifacts" << endl;
-            removeDanglingCluster(mesh, static_cast<size_t>(m_removeDanglingArtifacts));
-        }
-
-        // Magic number from lvr1 `cleanContours`...
-        cleanContours(mesh, m_cleanContours, 0.0001);
-
-        // Fill small holes if requested
-        if (m_fillHoles)
-        {
-            naiveFillSmallHoles(mesh, m_fillHoles, false);
-        }
-
-        // Calculate normals for vertices
-        auto faceNormals = calcFaceNormals(mesh);
-
-        ClusterBiMap<FaceHandle> clusterBiMap;
-        if (m_optimizePlanes)
-        {
-            clusterBiMap = iterativePlanarClusterGrowing(mesh,
-                                                         faceNormals,
-                                                         m_getNormalThreshold,
-                                                         m_planeIterations,
-                                                         m_MinPlaneSize);
-
-            if (m_SmallRegionThreshold > 0)
-            {
-                deleteSmallPlanarCluster(
-                        mesh, clusterBiMap, static_cast<size_t>(m_SmallRegionThreshold));
+            if (m_removeDanglingArtifacts) {
+                cout << timestamp << "Removing dangling artifacts" << endl;
+                removeDanglingCluster(mesh, static_cast<size_t>(m_removeDanglingArtifacts));
             }
 
-            double end_s = lvr2::timestamp.getElapsedTimeInS();
+            // Magic number from lvr1 `cleanContours`...
+            cleanContours(mesh, m_cleanContours, 0.0001);
 
-            if (m_retesselate)
-            {
-                Tesselator<Vec>::apply(
-                        mesh, clusterBiMap, faceNormals, m_LineFusionThreshold);
+            // Fill small holes if requested
+            if (m_fillHoles) {
+                naiveFillSmallHoles(mesh, m_fillHoles, false);
+            }
+
+            // Calculate normals for vertices
+            auto faceNormals = calcFaceNormals(mesh);
+
+            ClusterBiMap<FaceHandle> clusterBiMap;
+            if (m_optimizePlanes) {
+                clusterBiMap = iterativePlanarClusterGrowing(mesh,
+                                                             faceNormals,
+                                                             m_getNormalThreshold,
+                                                             m_planeIterations,
+                                                             m_MinPlaneSize);
+
+                if (m_SmallRegionThreshold > 0) {
+                    deleteSmallPlanarCluster(
+                            mesh, clusterBiMap, static_cast<size_t>(m_SmallRegionThreshold));
+                }
+
+                double end_s = lvr2::timestamp.getElapsedTimeInS();
+
+                if (m_retesselate) {
+                    Tesselator<Vec>::apply(
+                            mesh, clusterBiMap, faceNormals, m_LineFusionThreshold);
+                }
+            } else {
+                clusterBiMap = planarClusterGrowing(mesh, faceNormals, m_getNormalThreshold);
+            }
+
+
+
+            // Finalize mesh
+            lvr2::SimpleFinalizer<Vec> finalize;
+            auto meshBuffer = finalize.apply(mesh);
+
+            // save mesh depending on input file type
+            boost::filesystem::path selectedFile(m_filePath);
+
+            std::time_t result = std::time(nullptr);
+            std::string largeScale = (string) std::asctime(std::localtime(&result)) + ".ply";
+
+            largeScale.erase(std::remove(largeScale.begin(), largeScale.end(), '\n'), largeScale.end());
+
+
+            if (selectedFile.extension().string() == ".h5") {
+                //MeshBufferPtr newMesh = MeshBufferPtr(meshBuffer);
+                //LSRWriter hdfWrite;
+                //hdfWrite.open(m_filePath);
+                //hdfWrite.save("mesh", newMesh);
+
+                auto m = ModelPtr(new Model(meshBuffer));
+                ModelFactory::saveModel(m, largeScale);
+            } else {
+                auto m = ModelPtr(new Model(meshBuffer));
+                ModelFactory::saveModel(m, largeScale);
             }
         }
-        else
-        {
-            clusterBiMap = planarClusterGrowing(mesh, faceNormals, m_getNormalThreshold);
-        }
-
-
-
-        // Finalize mesh
-        lvr2::SimpleFinalizer<Vec> finalize;
-        auto meshBuffer = finalize.apply(mesh);
-
-        // save mesh depending on input file type
-        boost::filesystem::path selectedFile(m_filePath);
-
-        std::time_t result = std::time(nullptr);
-        std::string largeScale = (string) std::asctime(std::localtime(&result)) + ".ply";
-
-        largeScale.erase(std::remove(largeScale.begin(), largeScale.end(), '\n'), largeScale.end());
-
-
-        if (selectedFile.extension().string() == ".h5")
-        {
-            //MeshBufferPtr newMesh = MeshBufferPtr(meshBuffer);
-            //LSRWriter hdfWrite;
-            //hdfWrite.open(m_filePath);
-            //hdfWrite.save("mesh", newMesh);
-
-            auto m = ModelPtr(new Model(meshBuffer));
-            ModelFactory::saveModel(m, largeScale);
-        }
-        else
-        {
-            auto m = ModelPtr(new Model(meshBuffer));
-            ModelFactory::saveModel(m, largeScale);
-        }
-
         return 1;
     }
     template <typename BaseVecT>
