@@ -178,17 +178,19 @@ class ChunkHashGrid
     /**
      * @brief returns the minimum chunk ids
      */
-    BaseVector<std::size_t> getChunkMinChunkIndex() const
+    BaseVector<int> getChunkMinChunkIndex() const
     {
-        return m_chunkIndexOffset * -1;
+        BaseVector<int> offset(m_chunkIndexOffset.x, m_chunkIndexOffset.y, m_chunkIndexOffset.z);
+        return offset * -1;
     }
 
     /**
      * @brief returns the maximum chunk ids
      */
-    BaseVector<std::size_t> getChunkMaxChunkIndex() const
+    BaseVector<int> getChunkMaxChunkIndex() const
     {
-        return m_chunkAmount - m_chunkIndexOffset;
+        BaseVector<int> maxChunkIndex(m_chunkAmount.x - m_chunkIndexOffset.x, m_chunkAmount.y - m_chunkIndexOffset.y, m_chunkAmount.z - m_chunkIndexOffset.z);
+        return maxChunkIndex;
     }
 
     /**
