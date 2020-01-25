@@ -128,25 +128,9 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     std::cout << "Finished import!" << std::endl;
 
     std::cout << "Starting registration..." << std::endl;
-
     RegistrationPipeline registration(&m_regOptions, m_scanProject);
-
-    
-    std::cout << "Final poses before registration:" << std::endl;
-    for (int i = 0; i < m_scanProject->project->positions.size(); i++)
-    {
-        std::cout << "Pose Nummer " << i << std::endl << m_scanProject->project->positions.at(i)->scan->m_registration << std::endl;
-    }
-    
     registration.doRegistration();
     std::cout << "Finished registration!" << std::endl;
-
-
-    std::cout << "Final poses after registration:" << std::endl;
-    for (int i = 0; i < m_scanProject->project->positions.size(); i++)
-    {
-        std::cout << "Pose Nummer " << i << std::endl << m_scanProject->project->positions.at(i)->scan->m_registration << std::endl;
-    }
 
     std::cout << "Starting large scale reconstruction..." << std::endl;
     LargeScaleReconstruction<lvr2::BaseVector<float>> lsr(m_lsrOptions);
