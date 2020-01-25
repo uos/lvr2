@@ -86,6 +86,10 @@ private:
     // large scale reconstruct options
     LSROptions m_lsrOptions;
 
+    // practicability analysis config values
+    double m_roughnessRadius = 0.3;
+    double m_heightDifferencesRadius = 0.3;
+
     // status flag
     bool m_running = false;
 

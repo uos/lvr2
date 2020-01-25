@@ -100,12 +100,12 @@ int main(int argc, char** argv)
 
 
     std::shared_ptr<ChunkHashGrid> cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(in, 50, boundingBox, options.getGridSize()));
-
-    int x = lsr.mpiChunkAndReconstruct(project, cm);
+    BoundingBox<Vec> bb;
+    int x = lsr.mpiChunkAndReconstruct(project, bb, cm, "tsdf_values");
 
     BaseVector<int> coord(0,0,0);
-    BoundingBox<Vec> bb;
-    lsr.partialReconstruct(coord, cm, "tsdf_values", bb);
+
+    lsr.getPartialReconstruct(bb, cm, "tsdf_values");
 
     cout << "Program end." << endl;
 
