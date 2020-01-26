@@ -18,8 +18,6 @@ void ScanProjectIO<Derived>::save(const ScanProjectPtr& scanProjectPtr)
 
         std::string basePath = "raw/" + nr_str + "/";
 
-        std::cout << "writing scanPosition " << (pos - 1) << " to path " << basePath << std::endl;
-
         HighFive::Group scanPosGroup = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
 
         m_scanPositionIO->template save(scanPosGroup, scanPosPtr);
@@ -33,8 +31,6 @@ ScanProjectPtr ScanProjectIO<Derived>::load()
 
     HighFive::Group hfscans = hdf5util::getGroup(m_file_access->m_hdf5_file, "/raw");
     size_t scanPoitions = hfscans.getNumberObjects();
-
-    std::cout << "found " << scanPoitions << " possible scanPositions" << std::endl;
 
     // iterate over all possible scanPositions
     for (std::string groupname : hfscans.listObjectNames())
