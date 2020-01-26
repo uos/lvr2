@@ -4,6 +4,7 @@
 #define LVR2_IO_HDF5_SCANIMAGEIO_HPP
 
 #include "ImageIO.hpp"
+#include "MatrixIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2
@@ -33,6 +34,7 @@ class ScanImageIO
 
     // dependencies
     ImageIO<Derived>* m_imageIO = static_cast<ImageIO<Derived>*>(m_file_access);
+    MatrixIO<Derived>* m_matrixIO = static_cast<MatrixIO<Derived>*>(m_file_access);
 
     static constexpr const char* ID = "ScanImageIO";
     static constexpr const char* OBJID = "ScanImage";
@@ -51,7 +53,9 @@ template <typename Derived>
 struct Hdf5Construct<hdf5features::ScanImageIO, Derived>
 {
     // DEPS
-    using deps = typename Hdf5Construct<hdf5features::ImageIO, Derived>::type;
+    using dep1 = typename Hdf5Construct<hdf5features::ImageIO, Derived>::type;
+    using dep2 = typename Hdf5Construct<hdf5features::MatrixIO, Derived>::type;
+    using deps = typename dep1::template Merge<dep2>;
 
     // ADD THE FEATURE ITSELF
     using type = typename deps::template add_features<hdf5features::ScanImageIO>::type;
