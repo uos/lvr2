@@ -25,9 +25,9 @@ LVRScanDataItem::LVRScanDataItem(
 
     // init pose
     double pose[6];
-    eigenToEuler<double>(m_data->m_registration, pose);
+    eigenToEuler<double>(m_data->registration, pose);
 
-    m_matrix = m_data->m_registration;
+    m_matrix = m_data->registration;
 
     m_pose.x = pose[0];
     m_pose.y = pose[1];
@@ -41,7 +41,7 @@ LVRScanDataItem::LVRScanDataItem(
     m_pItem->setPose(m_pose);
 
     // init bb
-    m_bb = BoundingBoxBridgePtr(new LVRBoundingBoxBridge(m_data->m_boundingBox));
+    m_bb = BoundingBoxBridgePtr(new LVRBoundingBoxBridge(m_data->boundingBox));
     m_bbItem = new LVRBoundingBoxItem(m_bb, "Bounding Box", this);
     renderer->AddActor(m_bb->getActor());
     m_bb->setPose(m_pose);
@@ -78,9 +78,9 @@ void LVRScanDataItem::reload(vtkSmartPointer<vtkRenderer> renderer)
             m_showSpectralsItem = nullptr;
         }
 
-        if (m_data->m_points)
+        if (m_data->points)
         {
-            m_model = ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model(m_data->m_points))));
+            m_model = ModelBridgePtr(new LVRModelBridge( ModelPtr( new Model(m_data->points))));
             m_pcItem = new LVRPointCloudItem(m_model->getPointBridge(), this);
 
             m_model->addActors(renderer);
@@ -91,7 +91,7 @@ void LVRScanDataItem::reload(vtkSmartPointer<vtkRenderer> renderer)
                 setText(1, "(Preview)");
             }
 
-            if (m_data->m_points->getUCharChannel("spectral_channels"))
+            if (m_data->points->getUCharChannel("spectral_channels"))
             {
                 m_showSpectralsItem = new QTreeWidgetItem(this);
                 m_showSpectralsItem->setText(0, "Spectrals");
@@ -102,7 +102,7 @@ void LVRScanDataItem::reload(vtkSmartPointer<vtkRenderer> renderer)
 
 bool LVRScanDataItem::isPointCloudLoaded()
 {
-    return m_data->m_pointsLoaded;
+    return m_data->pointsLoaded;
 }
 
 void LVRScanDataItem::loadPointCloudData(vtkSmartPointer<vtkRenderer> renderer)
