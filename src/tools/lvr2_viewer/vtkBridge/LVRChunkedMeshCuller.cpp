@@ -22,6 +22,8 @@ double ChunkedMeshCuller::Cull(vtkRenderer *ren,
     cam->GetFrustumPlanes(ren->GetTiledAspectRatio(), planes);
     double x, y, z;
     cam->GetPosition(x, y, z);
+    m_bridge->getHighRes(x, y, z);
+    
 
     std::vector<lvr2::BaseVector<float> > centroids;
     std::vector<size_t> indices;
