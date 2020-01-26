@@ -63,9 +63,19 @@ ScanCameraPtr ScanCameraIO<Derived>::load(HighFive::Group& group, uint camNr)
 template <typename Derived>
 ScanCameraPtr ScanCameraIO<Derived>::load(HighFive::Group& group)
 {
-    ScanCameraPtr ret(new Scan());
+    ScanCameraPtr ret(new ScanCamera());
 
     // TODO
+
+    for (std::string groupname : group.listObjectNames())
+    {
+        if (std::regex_match(groupname, std::regex("\\d{8}")))
+        {
+            HighFive::Group g = hdf5util::getGroup(group, "/" + groupname);
+            ScanImagePtr scanImagePtr = m_scanImageIO->load(g);
+            ret->images.push_back(scanImagePtr);
+        }
+    }
 
     return ret;
 }
