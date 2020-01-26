@@ -141,18 +141,13 @@ ScanPositionPtr ScanPositionIO<Derived>::load(HighFive::Group& group)
     // load all scanCameras
     for (std::string groupname : group.listObjectNames())
     {
-        // std::cout << "  " << groupname << std::endl;
 
-        // if (hdf5util::exist(hfscans, groupname))
-        // {
-        //     HighFive::Group g = hdf5util::getGroup(hfscans, "/" + groupname);
-        //     std::cout << "  try to load scan" << std::endl;
-        //     ScanPtr scan = m_scanIO->template load(g);
-        //     std::cout << "  loadded scan" << std::endl;
-
-        //     ret->scans.push_back(scan);
-        //     std::cout << "  added scan" << std::endl;
-        // }
+        if (std::regex_match(groupname, std::regex("cam_\\d{2}")))
+        {
+            HighFive::Group g = hdf5util::getGroup(group, "/" + groupname);
+            ScanCameraPtr scanCameraPtr = m_scanCameraIO->load(g);
+            ret->cams.push_back(scanCameraPtr);
+        }
     }
 
     std::cout << "  loading gps position" << std::endl;

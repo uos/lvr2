@@ -97,9 +97,20 @@ ScanImagePtr ScanImageIO<Derived>::load(HighFive::Group& group, uint imgNr)
 template <typename Derived>
 ScanImagePtr ScanImageIO<Derived>::load(HighFive::Group& group)
 {
-    ScanImagePtr ret(new Scan());
+    ScanImagePtr ret(new ScanImage());
 
-    // TODO
+    // load image with imageIO
+    boost::optional<cv::Mat> image = m_imageIO->load(group, "image");
+    ret->image = image.get();
+
+    // save extrinsics
+    boost::optional<lvr2::Extrinsicsd> extrinsics =
+        m_matrixIO->template load<lvr2::Extrinsicsd>(group, "extrinsics");
+    ret->extrinsics = extrinsics.get();
+
+    boost::optional<lvr2::Extrinsicsd> extrinsicsEstimate =
+        m_matrixIO->template load<lvr2::Extrinsicsd>(group, "extrinsicsEstimate");
+    ret->extrinsicsEstimate = extrinsicsEstimate.get();
 
     return ret;
 }
