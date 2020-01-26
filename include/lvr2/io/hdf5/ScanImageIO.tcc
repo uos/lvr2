@@ -19,7 +19,7 @@ void ScanImageIO<Derived>::save(HighFive::Group& group,
                                 uint imgNr,
                                 const ScanImagePtr& scanImagePtr)
 {
-    // check wether the given group is type ScanPositionIO
+    // TODO: check wether the given group is type ScanPositionIO
 
     // TODO
 }
@@ -29,7 +29,7 @@ void ScanImageIO<Derived>::save(HighFive::Group& group,
                                 uint imgNr,
                                 const ScanImagePtr& scanImagePtr)
 {
-    // check wether the given group is type ScanCameraIO
+    // TODO: check wether the given group is type ScanCameraIO
 
     std::string id(ScanImageIO<Derived>::ID);
     std::string obj(ScanImageIO<Derived>::OBJID);
@@ -101,16 +101,25 @@ ScanImagePtr ScanImageIO<Derived>::load(HighFive::Group& group)
 
     // load image with imageIO
     boost::optional<cv::Mat> image = m_imageIO->load(group, "image");
-    ret->image = image.get();
+    if (image)
+    {
+        ret->image = image.get();
+    }
 
-    // save extrinsics
+    // load extrinsics
     boost::optional<lvr2::Extrinsicsd> extrinsics =
         m_matrixIO->template load<lvr2::Extrinsicsd>(group, "extrinsics");
-    ret->extrinsics = extrinsics.get();
+    if (extrinsics)
+    {
+        ret->extrinsics = extrinsics.get();
+    }
 
     boost::optional<lvr2::Extrinsicsd> extrinsicsEstimate =
         m_matrixIO->template load<lvr2::Extrinsicsd>(group, "extrinsicsEstimate");
-    ret->extrinsicsEstimate = extrinsicsEstimate.get();
+    if (extrinsicsEstimate)
+    {
+        ret->extrinsicsEstimate = extrinsicsEstimate.get();
+    }
 
     return ret;
 }
