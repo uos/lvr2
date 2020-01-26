@@ -181,6 +181,8 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     ScanProjectEditMark tmpScanProject;
     tmpScanProject.project = std::make_shared<ScanProject>(scanProject);
     m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
+    // set all scans to true, so they are getting reconstructed
+    m_scanProject->changed.resize(scanProject.positions.size());
     // rm after new scanIOUtils is ready!
     std::cout << "Finished import!" << std::endl;
 
