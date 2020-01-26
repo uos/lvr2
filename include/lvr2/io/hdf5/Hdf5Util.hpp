@@ -184,6 +184,38 @@ static bool exist(std::shared_ptr<HighFive::File> hdf5_file, const std::string& 
     return true;
 }
 
+static bool exist(HighFive::Group& group, const std::string& groupName)
+{
+    std::vector<std::string> groupNames = hdf5util::splitGroupNames(groupName);
+    HighFive::Group cur_grp = group;
+
+    try
+    {
+        for (size_t i = 0; i < groupNames.size(); i++)
+        {
+            if (cur_grp.exist(groupNames[i]))
+            {
+                if (i < groupNames.size() - 1)
+                {
+                    cur_grp = cur_grp.getGroup(groupNames[i]);
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+    catch (HighFive::Exception& e)
+    {
+        std::cout << "Error in exist (with group name '" << groupName << "': " << std::endl;
+        std::cout << e.what() << std::endl;
+        throw e;
+    }
+
+    return true;
+}
+
 static std::shared_ptr<HighFive::File> open(std::string filename)
 {
     std::shared_ptr<HighFive::File> hdf5_file;
