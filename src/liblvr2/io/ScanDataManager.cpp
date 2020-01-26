@@ -10,9 +10,9 @@ ScanDataManager::ScanDataManager(std::string filename) : m_io(filename)
 
 void ScanDataManager::loadPointCloudData(ScanPtr& sd, bool preview)
 {
-    if ((!sd->m_pointsLoaded && !preview) || ( sd->m_pointsLoaded && preview))
+    if ((!sd->pointsLoaded && !preview) || ( sd->pointsLoaded && preview))
     {
-        sd = m_io.getSingleRawScan(sd->m_positionNumber, !preview);
+        sd = m_io.getSingleRawScan(sd->positionNumber, !preview);
     }
 }
 

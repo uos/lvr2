@@ -26,6 +26,7 @@
  */
 
 #include <iostream>
+#include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/GHDF5IO.hpp"
 #include "lvr2/io/hdf5/ChannelIO.hpp"
 #include "lvr2/io/hdf5/ArrayIO.hpp"
@@ -35,6 +36,8 @@
 #include "lvr2/reconstruction/VirtualGrid.hpp"
 #include "lvr2/reconstruction/BigGridKdTree.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
+#include "lvr2/reconstruction/PointsetGrid.hpp"
+#include "lvr2/reconstruction/FastBox.hpp"
 #include "lvr2/reconstruction/FastReconstruction.hpp"
 #include "lvr2/algorithm/CleanupAlgorithms.hpp"
 #include "lvr2/algorithm/NormalAlgorithms.hpp"

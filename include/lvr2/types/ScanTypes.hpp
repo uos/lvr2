@@ -4,10 +4,11 @@
 #include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
-#include "lvr2/registration/PinholeCameraModel.hpp"
+#include "lvr2/registration/CameraModels.hpp"
 
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>
+#include <string_view>
 
 #include <opencv2/core.hpp>
 
@@ -23,72 +24,74 @@ namespace lvr2
 struct Scan
 {
     Scan() :
-        m_points(nullptr),
-        m_registration(Transformd::Identity()),
-        m_poseEstimation(Transformd::Identity()),
-        m_thetaMin(0), m_thetaMax(0),
-        m_phiMin(0), m_phiMax(0),
-        m_hResolution(0),
-        m_vResolution(0),
-        m_pointsLoaded(false),
-        m_positionNumber(0),
-        m_numPoints(0),
-        m_scanRoot(boost::filesystem::path("./"))
+        points(nullptr),
+        registration(Transformd::Identity()),
+        poseEstimation(Transformd::Identity()),
+        thetaMin(0), thetaMax(0),
+        phiMin(0), phiMax(0),
+        hResolution(0),
+        vResolution(0),
+        pointsLoaded(false),
+        positionNumber(0),
+        numPoints(0),
+        scanRoot(boost::filesystem::path("./"))
     {}
 
     ~Scan() {};
 
+    static constexpr char           sensorType[] = "Scan";
+
     /// Point buffer containing the scan points
-    PointBufferPtr                  m_points;
+    PointBufferPtr                  points;
 
     /// Registration of this scan in project coordinates
-    Transformd                      m_registration;
+    Transformd                      registration;
 
     /// Pose estimation of this scan in project coordinates
-    Transformd                      m_poseEstimation;
+    Transformd                      poseEstimation;
 
     /// Axis aligned bounding box of this scan
-    BoundingBox<BaseVector<float> > m_boundingBox;
+    BoundingBox<BaseVector<float> > boundingBox;
 
     /// Min horizontal scan angle
-    float                           m_thetaMin;
+    double                           thetaMin;
 
     /// Max horizontal scan angle
-    float                           m_thetaMax;
+    double                           thetaMax;
 
     /// Min vertical scan angle
-    float                           m_phiMin;
+    double                           phiMin;
 
     /// Max vertical scan angle
-    float                           m_phiMax;
+    double                           phiMax;
 
     /// Horizontal resolution of used laser scanner
-    float                           m_hResolution;
+    double                           hResolution;
 
     /// Vertical resolution of used laser scanner
-    float                           m_vResolution;
+    double                           vResolution;
 
     /// Start timestamp 
-    float                           m_startTime;
+    double                           startTime;
 
     /// End timestamp     
-    float                           m_endTime;
+    double                           endTime;
 
     /// Indicates if all points ware loaded from the initial
     /// input file
-    bool                            m_pointsLoaded;
+    bool                            pointsLoaded;
 
     /// Scan position number of this scan in the current scan project
-    int                             m_positionNumber;
+    int                             positionNumber;
 
     /// Path to root dir of this scan
-    boost::filesystem::path         m_scanRoot;
+    boost::filesystem::path         scanRoot;
 
     /// Name of the file containing the scan data
-    boost::filesystem::path         m_scanFile;
+    boost::filesystem::path         scanFile;
 
     /// Number of points in scan
-    size_t                          m_numPoints;
+    size_t                          numPoints;
 };
 
 /// Shared pointer to scans
@@ -103,33 +106,85 @@ using ScanOptional = boost::optional<Scan>;
 
 struct ScanImage
 {
-    /// Camera model 
-    PinholeCameraModeld             camera;
+    /// Sensor type flag
+    static constexpr char           sensorType[] = "ScanImage";
+
+    /// Extrinsics 
+    Extrinsicsd                     extrinsics;
+
+    /// Extrinsics estimate
+    Extrinsicsd                     extrinsicsEstimate;
 
     /// Path to stored image
-    boost::filesystem::path         image_file;
+    boost::filesystem::path         imageFile;
 
     /// OpenCV representation
     cv::Mat                         image;
-
 };
+
+
 
 using ScanImagePtr = std::shared_ptr<ScanImage>;
 using ScanImageOptional = boost::optional<ScanImage>;
 
 
 /*****************************************************************************
+ * @brief   Represents a camera that was used at a specific scan
+ *          position. The intrinsic calibration is stored in the
+ *          camera's camera field. Each image has its owen orientation
+ *          (extrinsic matrix) with respect to the laser scanner
+ * 
+ ****************************************************************************/
+struct ScanCamera 
+{
+    /// Description of the sensor model
+    static constexpr char           sensorType[] = "ScanCamera";
+
+    /// Individual name of the camera
+    std::string                     sensorName = "Camera";
+
+    /// Pinhole camera model
+    PinholeModeld                   camera;
+
+    /// Pointer to a set of images taken at a scan position
+    std::vector<ScanImagePtr>       images;
+};
+
+using ScanCameraPtr = std::shared_ptr<ScanCamera>;
+
+
+/**********************************string*******************************************
  * @brief   Represents a scan position consisting of a scan and
  *          images taken at this position
  * 
-*****************************************************************************/
+ ****************************************************************************/
 struct ScanPosition
 {
-    /// Scan data (optional)
-    ScanOptional                    scan;
+    static constexpr char           sensorType[] = "ScanPosition";
+
+    /// Vector of scan data. The scan position can contain several 
+    /// scans. The scan with the best resolition should be stored in
+    /// scans[0]. Scans can be empty
+    std::vector<ScanPtr>            scans;
 
     /// Image data (optional, empty vector of no images were taken) 
-    std::vector<ScanImagePtr>       images;
+    std::vector<ScanCameraPtr>      cams;
+
+    /// Latitude (optional)
+    double                          latitude;
+
+    /// Longitude (optional)        
+    double                          longitude;
+
+    /// Estimated pose
+    Transformd                      poseEstimate;
+
+    /// Final registered position in project coordinates
+    Transformd                      registration;
+
+    /// Timestamp when this position was created
+    double                          timestamp;
+
 };
 
 using ScanPositionPtr = std::shared_ptr<ScanPosition>;
@@ -145,13 +200,24 @@ using ScanPositionPtr = std::shared_ptr<ScanPosition>;
  *****************************************************************************/
 struct ScanProject
 {
+    /// Type of used laser scanner
+    static constexpr char           sensorType[] = "ScanProject";
+
+    /// Individual name of used laser scanner
+    std::string                     sensorName;
+
     /// Position of this scan project in world coordinates.
-    /// It is assumed that all stored scan position are in 
+    /// It is assumed that all stored scan positions are in 
     /// project coordinates
     Transformd                      pose;
 
     /// Vector of scan positions for this project
     std::vector<ScanPositionPtr>    positions;
+
+    /// Description (tag) of the internally used coordinate
+    /// system. It is assumed that all coordinate systems 
+    /// loaded with this software are right-handed
+    std::string                     coordinateSystem;
 };
 
 using ScanProjectPtr = std::shared_ptr<ScanProject>;

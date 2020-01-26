@@ -35,6 +35,7 @@
 #include <string>
 #include <lvr2/io/hdf5/ScanIO.hpp>
 #include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/ScanProjectIO.hpp"
 #include "lvr2/io/ScanIOUtils.hpp"
 
 using std::cout;
@@ -57,7 +58,13 @@ typedef ClSurface GpuSurface;
 #endif
 
 using Vec = lvr2::BaseVector<float>;
-using ScanHDF5IO = lvr2::Hdf5Build<lvr2::hdf5features::ScanIO>;
+// using ScanHDF5IO = lvr2::Hdf5Build<lvr2::hdf5features::ScanIO>;
+
+using BaseHDF5IO = lvr2::Hdf5IO<>;
+
+// Extend IO with features (dependencies are automatically fetched)
+using HDF5IO = BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO>;
+
 int main(int argc, char** argv)
 {
     // =======================================================================
@@ -85,11 +92,16 @@ int main(int argc, char** argv)
                                       options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
                                       options.retesselate(), options.getLineFusionThreshold(), true, false, options.useGPU());
 
+    HDF5IO hdf;
+    hdf.open(in);
+
+    ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
+
     ScanProjectEditMarkPtr project(new ScanProjectEditMark);
-    project->project = ScanProjectPtr(new ScanProject);
+    project->project = scanProjectPtr;
     
 
-    loadAllPreviewsFromHDF5(in, *project->project.get());
+    // loadAllPreviewsFromHDF5(in, *project->project.get());
 
     for(int i =0; i < project->project->positions.size(); i++)
     {
