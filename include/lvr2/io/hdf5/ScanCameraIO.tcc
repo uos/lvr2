@@ -5,7 +5,7 @@ namespace hdf5features
 {
 
 template <typename Derived>
-void ScanCameraIO<Derived>::save(uint scanPos, uint camNr, const ScanCameraPtr& ScanCameraPtr)
+void ScanCameraIO<Derived>::save(uint scanPos, uint camNr, const ScanCameraPtr& scanCameraPtr)
 {
     // TODO
 }
@@ -13,7 +13,7 @@ void ScanCameraIO<Derived>::save(uint scanPos, uint camNr, const ScanCameraPtr& 
 template <typename Derived>
 void ScanCameraIO<Derived>::save(HighFive::Group& group,
                                  uint camNr,
-                                 const ScanCameraPtr& ScanCameraPtr)
+                                 const ScanCameraPtr& scanCameraPtr)
 {
     // check wether the given group is type ScanPositionIO
 
@@ -21,12 +21,19 @@ void ScanCameraIO<Derived>::save(HighFive::Group& group,
 }
 
 template <typename Derived>
-void ScanCameraIO<Derived>::save(HighFive::Group& group, const ScanCameraPtr& ScanCameraPtr)
+void ScanCameraIO<Derived>::save(HighFive::Group& group, const ScanCameraPtr& scanCameraPtr)
 {
     std::string id(ScanCameraIO<Derived>::ID);
     std::string obj(ScanCameraIO<Derived>::OBJID);
     hdf5util::setAttribute(group, "IO", id);
     hdf5util::setAttribute(group, "CLASS", obj);
+
+    uint pos = 0;
+    for (ScanImagePtr scanImagePtr : scanCameraPtr->images)
+    {
+        m_scanImageIO->save(group, pos++, scanImagePtr);
+        // TODO
+    }
 
     // TODO
 }

@@ -42,7 +42,7 @@ void ScanPositionIO<Derived>::save(HighFive::Group& group, const ScanPositionPtr
 
         HighFive::Group scanGroup = hdf5util::getGroup(group, path);
 
-        m_scanIO->template save(scanGroup, scanPtr);
+        m_scanIO->save(scanGroup, scanPtr);
     }
 
     // saving contained cameras
@@ -58,7 +58,7 @@ void ScanPositionIO<Derived>::save(HighFive::Group& group, const ScanPositionPtr
 
         HighFive::Group camGroup = hdf5util::getGroup(group, path);
 
-        m_scanCameraIO->template save(camGroup, scanCameraPtr);
+        m_scanCameraIO->save(camGroup, scanCameraPtr);
     }
 
     // set dim and chunks for gps position
@@ -130,7 +130,7 @@ ScanPositionPtr ScanPositionIO<Derived>::load(HighFive::Group& group)
         {
             HighFive::Group g = hdf5util::getGroup(hfscans, "/" + groupname);
             std::cout << "  try to load scan" << std::endl;
-            ScanPtr scan = m_scanIO->template load(g);
+            ScanPtr scan = m_scanIO->load(g);
             std::cout << "  loadded scan" << std::endl;
 
             ret->scans.push_back(scan);

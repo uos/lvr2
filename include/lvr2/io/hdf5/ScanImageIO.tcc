@@ -8,7 +8,7 @@ template <typename Derived>
 void ScanImageIO<Derived>::save(uint scanPos,
                                 uint camNr,
                                 uint imgNr,
-                                const ScanImagePtr& ScanImagePtr)
+                                const ScanImagePtr& scanImagePtr)
 {
     // TODO
 }
@@ -17,7 +17,7 @@ template <typename Derived>
 void ScanImageIO<Derived>::save(HighFive::Group& group,
                                 uint camNr,
                                 uint imgNr,
-                                const ScanImagePtr& ScanImagePtr)
+                                const ScanImagePtr& scanImagePtr)
 {
     // check wether the given group is type ScanPositionIO
 
@@ -27,20 +27,37 @@ void ScanImageIO<Derived>::save(HighFive::Group& group,
 template <typename Derived>
 void ScanImageIO<Derived>::save(HighFive::Group& group,
                                 uint imgNr,
-                                const ScanImagePtr& ScanImagePtr)
+                                const ScanImagePtr& scanImagePtr)
 {
-    // TODO
+    // check wether the given group is type ScanCameraIO
+
+    std::string id(ScanImageIO<Derived>::ID);
+    std::string obj(ScanImageIO<Derived>::OBJID);
+    hdf5util::setAttribute(group, "IO", id);
+    hdf5util::setAttribute(group, "CLASS", obj);
+
+    char buffer[sizeof(int) * 5];
+    sprintf(buffer, "%08d", imgNr);
+    string nr_str(buffer);
+
+    HighFive::Group imgPosGroup = hdf5util::getGroup(group, nr_str);
+    save(imgPosGroup, scanImagePtr);
 }
 
 template <typename Derived>
-void ScanImageIO<Derived>::save(HighFive::Group& group, const ScanImagePtr& ScanImagePtr)
+void ScanImageIO<Derived>::save(HighFive::Group& group, const ScanImagePtr& scanImagePtr)
 {
     std::string id(ScanImageIO<Derived>::ID);
     std::string obj(ScanImageIO<Derived>::OBJID);
     hdf5util::setAttribute(group, "IO", id);
     hdf5util::setAttribute(group, "CLASS", obj);
 
-    // TODO
+    // save image with imageIO
+    m_imageIO->save(group, "image", scanImagePtr->image);
+
+    // save extrinsics
+    m_matrixIO->save(group, "extrinsics", scanImagePtr->extrinsics);
+    m_matrixIO->save(group, "extrinsicsEstimate", scanImagePtr->extrinsicsEstimate);
 }
 
 template <typename Derived>
