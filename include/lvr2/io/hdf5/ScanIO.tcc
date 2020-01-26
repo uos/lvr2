@@ -123,6 +123,13 @@ ScanPtr ScanIO<Derived>::load(HighFive::Group& group)
 {
     ScanPtr ret(new Scan());
 
+    if (!isScan(group))
+    {
+        std::cout << "[Hdf5IO - ScanIO] WARNING: flags of " << group.getId() << " are not correct."
+                  << std::endl;
+        return ret;
+    }
+
     std::cout << "    loading points" << std::endl;
 
     // read points
