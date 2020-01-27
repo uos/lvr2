@@ -763,21 +763,25 @@ bool loadScanProject(
     YAML::Node meta = YAML::LoadFile(scanProjMetaPath.string());
     scanProj = meta.as<ScanProject>();
 
-    boost::filesystem::directory_iterator it{root};
-    while (it != boost::filesystem::directory_iterator{})
+    std::vector<boost::filesystem::path> paths;
+
+    std::copy(boost::filesystem::directory_iterator(root), boost::filesystem::directory_iterator(), back_inserter(paths));
+    std::sort(paths.begin(), paths.end());
+    // boost::filesystem::directory_iterator it{root};
+    for (std::vector<boost::filesystem::path>::const_iterator it(paths.begin()), it_end(paths.end()); it != it_end; ++it)
     {
         if(getSensorType(*it) == ScanPosition::sensorType)
         {
             std::cout << *it << '\n';
             ScanPositionPtr scanPos(new ScanPosition);
 
-            loadScanPosition(root, *scanPos, it->path().filename().string());
+            loadScanPosition(root, *scanPos, it->filename().string());
             scanProj.positions.push_back(scanPos);
         }
-        
-        ++it;
+
+        // ++it;
     }
-        
+
     return true;
 }
 

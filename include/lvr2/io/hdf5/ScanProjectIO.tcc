@@ -16,7 +16,7 @@ void ScanProjectIO<Derived>::save(const ScanProjectPtr& scanProjectPtr)
         sprintf(buffer, "%08d", pos++);
         string nr_str(buffer);
 
-        std::string basePath = "raw/" + nr_str + "/";
+        std::string basePath = "raw/" + nr_str;
 
         HighFive::Group scanPosGroup = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
 
