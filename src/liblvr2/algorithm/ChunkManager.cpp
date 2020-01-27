@@ -474,11 +474,11 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
     }
 
     // remove filtered elements
-#pragma omp parallel
+// #pragma omp parallel
     {
         for (auto& channel : *areaMesh)
         {
-#pragma omp single nowait
+// #pragma omp single nowait
             {
                 if (channel.second.is_type<unsigned char>())
                 {
