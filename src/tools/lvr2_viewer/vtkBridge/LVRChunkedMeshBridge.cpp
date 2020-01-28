@@ -21,7 +21,7 @@ using namespace lvr2;
 LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file) : m_chunkManager(file)
 {
     getNew_ = false;
-    dist_ = 10.0;
+    dist_ = 50.0;
     running_ = true;
     worker = std::thread(&LVRChunkedMeshBridge::highResWorker, this);
 
@@ -45,10 +45,25 @@ void LVRChunkedMeshBridge::highResWorker()
        omp_init_lock(&writelock);
 
        std::cout << lvr2::timestamp << "Chunkmanager bb " << m_chunkManager.getBoundingBox() << std::endl;
-       std::cout << lvr2::timestamp << "Request from cm " << region_ << std::endl;
-       m_chunkManager.extractArea(region_, m_highRes, "mesh1");
+       std::cout << lvr2::timestamp << "Request from cm " << m_region << std::endl;
+       BaseVector<float>  diff = m_region.getCentroid() - m_lastRegion.getCentroid();
+       if(!(std::abs(diff[0]) > 3.0 || std::abs(diff[1]) > 3.0 || std::abs(diff[2]) > 3.0))
+       {
+           getNew_ = false;
+           l.unlock();
+           continue;
+       }
+    
+       m_lastRegion = m_region;
+       m_highRes.clear();
+       m_chunkManager.extractArea(m_region, m_highRes, "mesh0");
        std::cout << lvr2::timestamp << "got from cm " << m_highRes.size() << std::endl;
+    
+ //      m_highResActors.clear();
 
+        std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor>> tmp_highResActors;
+
+//       m_highResActors = std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor>>();
 //       #pragma omp parallel
 //       {
 //       #pragma omp single
@@ -61,28 +76,39 @@ void LVRChunkedMeshBridge::highResWorker()
                lvr2::MeshBufferPtr meshbuffer = chunk.second;
 
                omp_set_lock(&writelock);
-               m_highResActors.insert({id, computeMeshActor(id, meshbuffer)});
+               tmp_highResActors.insert({id, computeMeshActor(id, meshbuffer)});
                omp_unset_lock(&writelock);
 
  //          }
  //      }
        }
+       m_highResActors = tmp_highResActors; 
        std::cout << lvr2::timestamp << "Got " << m_highResActors.size() << " highres" << std::endl;
        getNew_ = false;
       //     l.unlock();
-       
+    
+       Q_EMIT updateHighRes(m_chunkActors, m_highResActors);
     
     }
 
 }
 
-void LVRChunkedMeshBridge::getHighRes(double x, double y, double z)
+void LVRChunkedMeshBridge::fetchHighRes(double x, double y, double z,
+                                        double dir_x, double dir_y, double dir_z)
 {
     std::cout << "get Highres" << std::endl;
-    BaseVector<float> offset(dist_, dist_, dist_);
-    BaseVector<float> centroid(x, y, z);
+    BaseVector<float> offset(dir_x, dir_y, dir_z);
+    offset.normalize();
+    offset *= dist_;
+    
+    BaseVector<float> min(x < offset[0] ? x : offset[0],
+                          y < offset[1] ? y : offset[1],
+                          z < offset[2] ? z : offset[2]);
+    BaseVector<float> max(x > offset[0] ? x : offset[0],
+                          y > offset[1] ? y : offset[1],
+                          z > offset[2] ? z : offset[2]);
 
-    region_ =  BoundingBox<BaseVector<float> >((centroid - offset), (centroid + offset));
+    m_region =  BoundingBox<BaseVector<float> >(min, max);
 
     std::unique_lock<std::mutex> l(mutex);
     getNew_ = true;
@@ -108,7 +134,7 @@ void LVRChunkedMeshBridge::addInitialActors(vtkSmartPointer<vtkRenderer> rendere
     //    lvr2::BoundingBox<BaseVector<float> > bb(max * (-1), max);
     //    std::vector<vtkSmartPointer<MeshChunkActor> > actors;
     //    bb = BoundingBox<BaseVector<float> >(centroid, max);
-    m_chunkManager.extractArea(bb, m_chunks, "mesh1");
+    m_chunkManager.extractArea(bb, m_chunks, "mesh3");
     std::vector<size_t> hashes;
     std::vector<BaseVector<float> > centroids;
     for(auto& chunk:m_chunks)

@@ -18,22 +18,36 @@
 #include <mutex>
 #include <thread>
 #include <condition_variable>
+#include <QObject>
 
+typedef std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > actorMap;
+Q_DECLARE_METATYPE(actorMap)
 
 
 namespace lvr2 {
-    class LVRChunkedMeshBridge  
+    class LVRChunkedMeshBridge : public QObject
     {
+        Q_OBJECT
         public:
             LVRChunkedMeshBridge(std::string file);
             void getActors(double planes[24],
                     std::vector<BaseVector<float> >& centroids, 
                     std::vector<size_t >& indices);
-                    
+        
+            actorMap getHighResActors() { return m_highResActors; }
+            actorMap getLowResActors() { return m_chunkActors; }
                     //std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> >& actors);
             void addInitialActors(vtkSmartPointer<vtkRenderer> renderer);
 
-            void getHighRes(double x, double y, double z);
+            void fetchHighRes(double x, double y, double z,
+                             double dir_x, double dir_y, double dir_z);
+
+        Q_SIGNALS:
+            void updateHighRes(actorMap lowRes, actorMap highRes);
+                    
+                   // std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > lowResActors,
+                   //            std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > highResActors);
+
         protected:
             void computeMeshActors();
             inline vtkSmartPointer<MeshChunkActor> computeMeshActor(size_t& id, MeshBufferPtr& chunk);
@@ -46,7 +60,8 @@ namespace lvr2 {
             double dist_;
             bool getNew_;
             bool running_;
-            BoundingBox<BaseVector<float> > region_;
+            BoundingBox<BaseVector<float> > m_region;
+            BoundingBox<BaseVector<float> > m_lastRegion;
 
             void highResWorker();
             lvr2::ChunkManager m_chunkManager;

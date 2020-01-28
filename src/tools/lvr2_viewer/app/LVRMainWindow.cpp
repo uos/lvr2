@@ -60,6 +60,8 @@
 
 #include <boost/filesystem.hpp>
 
+#include <QMetaType>
+
 namespace lvr2
 {
 
@@ -985,7 +987,16 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
                 m_renderer->GetActiveCamera()->SetPosition(cam_origin.x(), cam_origin.y(), cam_origin.z());
                 m_renderer->GetActiveCamera()->SetFocalPoint(focal_point.x(), focal_point.y(), focal_point.z());
                 m_renderer->GetActiveCamera()->SetViewUp(view_up.x(), view_up.y(), view_up.z());
-
+                qRegisterMetaType<actorMap > ("actorMap");
+                QObject::connect(chunkBridge, 
+                    SIGNAL(updateHighRes(actorMap, actorMap)),
+                           // std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> >,
+                           //std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> >)),
+                    this,
+                    SLOT(updateDisplayLists(actorMap, actorMap)),
+                            //updateDisplayLists(std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> >,
+                         //std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> >)),
+                    Qt::QueuedConnection);
 
                 return;
                 // h5 special loading case
@@ -2308,5 +2319,41 @@ void LVRMainWindow::updateSpectralGradientEnabled(bool checked)
     this->frameSpectralSlidersArea->setEnabled(!checked);
     this->radioButtonUseSpectralSlider->setChecked(!checked);
 }
+
+void LVRMainWindow::updateDisplayLists(actorMap lowRes, actorMap highRes)
+        
+       // std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > lowResActors,
+       //                        std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > highResActors)
+{
+
+    std::cout << "Updating in MainWindow " << lowRes.size() << " " << highRes.size() << std::endl;
+//    vtkCullerCollection* cullers = m_renderer->GetCullers();   
+//    cullers->InitTraversal();
+//
+//    for(vtkIdType i = 0; i < cullers->GetNumberOfItems(); ++i)
+//    {
+//        vtkCuller* nextCuller = cullers->GetNextItem();
+//        if(nextCuller->IsA("ChunkedMeshCuller"))
+//        {
+//            static_cast<ChunkedMeshCuller*>(nextCuller)->NoCulling();
+//        }
+//    }
+//
+//    for(auto& it: highRes)
+//    {
+////        std::cout << "Mw " <<  it.first << std::endl;
+//        lowRes.at(it.first)->VisibilityOff();
+//    }
+    
+    // TODO remove removed highres actors
+    for(auto& it: highRes)
+    {
+//        m_renderer->AddActor(it.second);
+    }
+
+
+    m_renderer->GetRenderWindow()->Render();
+}
+
 
 } /* namespace lvr2 */

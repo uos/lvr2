@@ -51,6 +51,8 @@
 #include <vtkOpenGLRenderer.h>
 #include <vtkNew.h>
 
+#include <vtkCullerCollection.h>
+
 // EDL shading is only available in new vtk versions
 #ifdef LVR_USE_VTK_GE_7_1
 #include <vtkEDLShading.h>
@@ -97,6 +99,9 @@
 #include <set>
 #include <boost/format.hpp>
 
+#include "../vtkBridge/LVRChunkedMeshBridge.hpp"
+#include "../vtkBridge/MeshChunkActor.hpp"
+
 using std::vector;
 using std::cout;
 using std::endl;
@@ -116,6 +121,12 @@ public:
     virtual ~LVRMainWindow();
 
 public Q_SLOTS:
+    void updateDisplayLists(actorMap lowRes, actorMap highRes);
+            
+            //std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > lowResActors,
+            //                std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > highResActors);
+
+
     void loadModel();
     void loadModels(const QStringList& filenames);
     void manualICP();
