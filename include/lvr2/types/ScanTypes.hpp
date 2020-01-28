@@ -176,6 +176,9 @@ struct ScanPosition
     /// Longitude (optional)        
     double                          longitude;
 
+    /// Longitude (optional)        
+    double                          altitude;
+
     /// Estimated pose
     Transformd                      poseEstimate;
 

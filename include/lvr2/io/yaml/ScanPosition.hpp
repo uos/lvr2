@@ -28,6 +28,7 @@ struct convert<lvr2::ScanPosition>
         node["sensor_type"] = lvr2::ScanPosition::sensorType;
         node["latitude"] = scanPos.latitude;
         node["longitude"] = scanPos.longitude;
+        node["altitude"] = scanPos.altitude;
         node["poseEstimate"] = scanPos.poseEstimate;
         node["registration"] = scanPos.registration;
         node["timestamp"] = scanPos.timestamp;
@@ -44,6 +45,7 @@ struct convert<lvr2::ScanPosition>
 
         scanPos.latitude = node["latitude"].as<double>();
         scanPos.longitude = node["longitude"].as<double>();
+        scanPos.altitude = node["altitude"].as<double>();
         
         scanPos.poseEstimate = node["poseEstimate"].as<lvr2::Transformd>();
         scanPos.registration = node["registration"].as<lvr2::Transformd>();
