@@ -83,7 +83,7 @@ int main(int argc, char** argv)
                                       options.getNodeSize(), options.getVGrid(), options.getKi(), options.getKd(), options.getKn(), options.useRansac(), options.extrude(),
                                       options.getDanglingArtifacts(), options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
                                       options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
-                                      options.retesselate(), options.getLineFusionThreshold());
+                                      options.retesselate(), options.getLineFusionThreshold(), true, false, options.useGPU());
 
     ScanProjectEditMarkPtr project(new ScanProjectEditMark);
     project->project = ScanProjectPtr(new ScanProject);
@@ -100,12 +100,12 @@ int main(int argc, char** argv)
 
 
     std::shared_ptr<ChunkHashGrid> cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(in, 50, boundingBox, options.getGridSize()));
-
-    int x = lsr.mpiChunkAndReconstruct(project, cm);
+    BoundingBox<Vec> bb;
+    int x = lsr.mpiChunkAndReconstruct(project, bb, cm, "tsdf_values");
 
     BaseVector<int> coord(0,0,0);
-    BoundingBox<Vec> bb;
-    lsr.partialReconstruct(coord, cm, "tsdf_values", bb);
+
+    lsr.getPartialReconstruct(bb, cm, "tsdf_values");
 
     cout << "Program end." << endl;
 
