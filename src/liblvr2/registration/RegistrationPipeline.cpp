@@ -62,6 +62,7 @@ void RegistrationPipeline::doRegistration()
     for (size_t i = 0; i < m_scans->project->positions.size(); i++)
     {
         m_scans->changed.at(i) = false;
+        m_scans->project->positions.at(i)->scan->m_poseEstimation = m_scans->project->positions.at(i)->scan->m_poseEstimation.inverse();
         ScanOptional opt = m_scans->project->positions.at(i)->scan;
         if (opt)
         {
