@@ -62,14 +62,18 @@ void ScanPositionIO<Derived>::save(HighFive::Group& group, const ScanPositionPtr
     }
 
     // set dim and chunks for gps position
-    std::vector<size_t> dim{2, 1};
-    std::vector<hsize_t> chunks{2, 1};
+    std::vector<size_t> dim{3, 1};
+    std::vector<hsize_t> chunks{3, 1};
 
     // saving gps position
-    doubleArr gpsPosition(new double[2]);
+    doubleArr gpsPosition(new double[3]);
     gpsPosition[0] = scanPositionPtr->latitude;
     gpsPosition[1] = scanPositionPtr->longitude;
+    gpsPosition[2] = scanPositionPtr->altitude;
     m_arrayIO->save(group, "gpsPosition", dim, chunks, gpsPosition);
+
+    dim = {2, 1};
+    chunks = {2, 1};
 
     // saving estimated and registrated pose
     m_matrixIO->save(group, "poseEstimate", scanPositionPtr->poseEstimate);
@@ -158,7 +162,7 @@ ScanPositionPtr ScanPositionIO<Derived>::load(HighFive::Group& group)
         std::vector<size_t> dimension;
         doubleArr gpsPosition = m_arrayIO->template load<double>(group, "gpsPosition", dimension);
 
-        if (dimension.at(0) != 2)
+        if (dimension.at(0) != 3)
         {
             std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong gps position dimension. The gps "
                          "position will not be loaded."
@@ -168,6 +172,7 @@ ScanPositionPtr ScanPositionIO<Derived>::load(HighFive::Group& group)
         {
             ret->latitude = gpsPosition[0];
             ret->longitude = gpsPosition[1];
+            ret->altitude = gpsPosition[2];
         }
     }
 
