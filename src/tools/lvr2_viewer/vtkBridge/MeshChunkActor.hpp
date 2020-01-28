@@ -19,8 +19,11 @@ class VTKRENDERINGCORE_EXPORT MeshChunkActor : public vtkActor
 
         size_t getID() { return id_; }
         void setID(size_t id) { id_ = id; }
+        bool getRender() { return render_; }
+        void setRender(bool render) { render_ = render; }
     protected:
         size_t id_;
+        bool render_;
 
     public:
         virtual void ReleaseGraphicsResources(vtkWindow *window);
