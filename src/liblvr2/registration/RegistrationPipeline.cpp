@@ -125,7 +125,7 @@ void RegistrationPipeline::doRegistration()
         cout << "Diff: " << getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) << endl;
         if (m_scans->changed.at(i))
         {
-            posPtr->scan->m_registration = align.scan(i)->pose();
+            posPtr->scan->m_registration = align.scan(i)->pose().transpose();
             cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
         }
         m_scans->changed.at(i) = true; // ToDo: lsr test 

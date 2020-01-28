@@ -38,6 +38,9 @@
 #include "lvr2/algorithm/ChunkManager.hpp"
 
 #include <boost/filesystem.hpp>
+
+#include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
+#include "lvr2/registration/SLAMOptions.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2
@@ -77,8 +80,31 @@ private:
     // scan project containing all scans
     ScanProjectEditMarkPtr m_scanProject;
 
+    // registration options
+    SLAMOptions m_regOptions;
+
+    // large scale reconstruct options
+    LSROptions m_lsrOptions;
+
+    // practicability analysis config values
+    double m_roughnessRadius = 0.3;
+    double m_heightDifferencesRadius = 0.3;
+
     // status flag
     bool m_running = false;
+
+    /**
+     * @brief Parse YAML config (m_configPath) to boost options
+     */
+    void parseYAMLConfig();
+
+    /**
+     * @brief Calculates practicability analysis of given mesh and adds it as channels to mesh buffer
+     *
+     * @param hem HalfEdgeMesh on which practicability analysis is performed
+     * @param meshBuffer buffer where practicability analysis channels should be added
+     */
+    void practicabilityAnalysis(HalfEdgeMesh<lvr2::BaseVector<float>>& hem, MeshBufferPtr meshBuffer);
 };
 
 } /* namespace lvr2 */

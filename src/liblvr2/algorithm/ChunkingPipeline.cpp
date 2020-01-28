@@ -35,9 +35,14 @@
 #include "lvr2/algorithm/ChunkingPipeline.hpp"
 
 #include <yaml-cpp/yaml.h>
+
+#include "lvr2/algorithm/NormalAlgorithms.hpp"
+#include "lvr2/algorithm/GeometryAlgorithms.hpp"
+#include "lvr2/algorithm/FinalizeAlgorithms.hpp"
+#include "lvr2/config/LSROptionsYamlExtensions.hpp"
+#include "lvr2/config/SLAMOptionsYamlExtensions.hpp"
 #include "lvr2/io/ScanIOUtils.hpp"
 #include "lvr2/registration/RegistrationPipeline.hpp"
-#include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
 
 namespace lvr2
 {
@@ -55,6 +60,89 @@ ChunkingPipeline::ChunkingPipeline(
     {
         m_chunkManager = std::make_shared<ChunkManager>(m_hdf5Path.string());
     }
+
+    parseYAMLConfig();
+}
+
+void ChunkingPipeline::parseYAMLConfig()
+{
+    if (boost::filesystem::exists(m_configPath) && boost::filesystem::is_regular_file(m_configPath))
+    {
+        YAML::Node config = YAML::LoadFile(m_configPath.string());
+
+        if (config["lvr2_registration"])
+        {
+            std::cout << "Found config entry for lvr2_registration." << std::endl;
+            m_regOptions = config["lvr2_registration"].as<SLAMOptions>();
+        }
+
+        if (config["lvr2_largescale_reconstruct"])
+        {
+            std::cout << "Found config entry for lvr2_largescale_reconstruct." << std::endl;
+            m_lsrOptions = config["lvr2_largescale_reconstruct"].as<LSROptions>();
+        }
+
+        if (config["lvr2_practicability_analysis"] && config["lvr2_practicability_analysis"].IsMap())
+        {
+            std::cout << "Found config entry for lvr2_practicability_analysis." << std::endl;
+            YAML::Node practicabilityConfig = config["lvr2_practicability_analysis"];
+            if (practicabilityConfig["roughnessRadius"])
+            {
+                m_roughnessRadius = practicabilityConfig["roughnessRadius"].as<double>();
+            }
+            if (practicabilityConfig["heightDifferencesRadius"])
+            {
+                m_heightDifferencesRadius = practicabilityConfig["heightDifferencesRadius"].as<double>();
+            }
+        }
+    }
+    else
+    {
+        std::cout << "Config file does not exist or is not a regular file!" << std::endl;
+    }
+}
+
+void ChunkingPipeline::practicabilityAnalysis(HalfEdgeMesh<lvr2::BaseVector<float>>& hem, MeshBufferPtr meshBuffer)
+{
+    // Calc face normals
+    DenseFaceMap <Normal<float>> faceNormals = calcFaceNormals(hem);
+    // Calc vertex normals
+    DenseVertexMap <Normal<float>> vertexNormals = calcVertexNormals(hem, faceNormals);
+    // Calc average vertex angles
+    DenseVertexMap<float> averageAngles = calcAverageVertexAngles(hem, vertexNormals);
+    // Calc roughness
+    DenseVertexMap<float> roughness = calcVertexRoughness(hem, m_roughnessRadius, vertexNormals);
+    // Calc vertex height differences
+    DenseVertexMap<float> heightDifferences = calcVertexHeightDifferences(hem, m_heightDifferencesRadius);
+
+    // create and fill channels
+    FloatChannel faceNormalChannel(faceNormals.numValues(), channel_type < Normal < float >> ::w);
+    Index i = 0;
+    for (auto handle : FaceIteratorProxy<lvr2::BaseVector<float>>(hem)) {
+        faceNormalChannel[i++] = faceNormals[handle]; //TODO handle deleted map values.
+    }
+
+    FloatChannel vertexNormalsChannel(vertexNormals.numValues(), channel_type<Normal<float>>::w);
+    FloatChannel averageAnglesChannel(averageAngles.numValues(), channel_type<float>::w);
+    FloatChannel roughnessChannel(roughness.numValues(), channel_type<float>::w);
+    FloatChannel heightDifferencesChannel(heightDifferences.numValues(), channel_type<float>::w);
+
+    Index j = 0;
+    for (auto handle : VertexIteratorProxy<lvr2::BaseVector<float>>(hem))
+    {
+        vertexNormalsChannel[j] = vertexNormals[handle]; //TODO handle deleted map values.
+        averageAnglesChannel[j] = averageAngles[handle]; //TODO handle deleted map values.
+        roughnessChannel[j] = roughness[handle]; //TODO handle deleted map values.
+        heightDifferencesChannel[j] = heightDifferences[handle]; //TODO handle deleted map values.
+        j++;
+    }
+
+    // add channels to mesh buffer
+    meshBuffer->add("face_normals", faceNormalChannel);
+    meshBuffer->add("vertex_normals", vertexNormalsChannel);
+    meshBuffer->add("average_angles", averageAnglesChannel);
+    meshBuffer->add("roughness", roughnessChannel);
+    meshBuffer->add("height_diff", heightDifferencesChannel);
 }
 
 bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
@@ -93,51 +181,42 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     ScanProjectEditMark tmpScanProject;
     tmpScanProject.project = std::make_shared<ScanProject>(scanProject);
     m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
+    // set all scans to true, so they are getting reconstructed
+    m_scanProject->changed.resize(scanProject.positions.size());
     // rm after new scanIOUtils is ready!
     std::cout << "Finished import!" << std::endl;
 
     std::cout << "Starting registration..." << std::endl;
-    SLAMOptions slamOptions;
-    // TODO: set options via config file parser
-    slamOptions.icpIterations = 500;
-    slamOptions.icpMaxDistance = 10;
-    slamOptions.doGraphSLAM = true; // TODO: check why graph slam param leads to bad alloc
-    slamOptions.slamMaxDistance = 9;
-    slamOptions.loopSize = 10;
-    slamOptions.closeLoopDistance = 30;
-    RegistrationPipeline registration(&slamOptions, m_scanProject);
-    
-    std::cout << "Final poses before registration:" << std::endl;
-    for (int i = 0; i < m_scanProject->project->positions.size(); i++)
-    {
-        std::cout << "Pose Nummer " << i << std::endl << m_scanProject->project->positions.at(i)->scan->m_registration << std::endl;
-    }
-    
+    RegistrationPipeline registration(&m_regOptions, m_scanProject);
     registration.doRegistration();
     std::cout << "Finished registration!" << std::endl;
 
-
-    std::cout << "Final poses after registration:" << std::endl;
-    for (int i = 0; i < m_scanProject->project->positions.size(); i++)
-    {
-        std::cout << "Pose Nummer " << i << std::endl << m_scanProject->project->positions.at(i)->scan->m_registration << std::endl;
-    }
-
     std::cout << "Starting large scale reconstruction..." << std::endl;
-    // TODO: use constructor with struct parameter
-    LSROptions lsrOptions;
-    lsrOptions.filePath = m_hdf5Path.string();
-    LargeScaleReconstruction<lvr2::BaseVector<float>> lsr(lsrOptions);
+    LargeScaleReconstruction<lvr2::BaseVector<float>> lsr(m_lsrOptions);
     BoundingBox<BaseVector<float>> newChunksBB;
     std::string layerName = "tsdf_values";
     lsr.mpiChunkAndReconstruct(m_scanProject, newChunksBB, m_chunkManager, layerName);
     std::cout << "Finished large scale reconstruction!" << std::endl;
 
-    HalfEdgeMesh<BaseVector<float>> newMeshWithOverlap = lsr.getPartialReconstruct(newChunksBB, m_chunkManager, layerName);
+    std::cout << "Starting mesh generation..." << std::endl;
+    HalfEdgeMesh<lvr2::BaseVector<float>> hem = lsr.getPartialReconstruct(newChunksBB, m_chunkManager, layerName);
+    // TODO: mesh reduction???
+    std::cout << "Finished mesh generation!" << std::endl;
+
+    std::cout << "Starting mesh buffer creation..." << std::endl;
+    lvr2::SimpleFinalizer<lvr2::BaseVector<float>> finalize;
+    MeshBufferPtr meshBuffer = MeshBufferPtr(finalize.apply(hem));
+    std::cout << "Finished mesh buffer creation!" << std::endl;
 
     std::cout << "Starting practicability analysis..." << std::endl;
-    // TODO: call practicability analysis
+    practicabilityAnalysis(hem, meshBuffer);
     std::cout << "Finished practicability analysis!" << std::endl;
+
+    std::cout << "Starting chunking and saving of mesh buffer..." << std::endl;
+    // TODO: get maxChunkOverlap size
+    // TODO: savePath is not used in buildChunks (remove it?)
+    m_chunkManager->buildChunks(meshBuffer, 0.1f, "", "mesh0");
+    std::cout << "Finished chunking and saving of mesh buffer!" << std::endl;
 
     std::cout << "Finished chunking pipeline!" << std::endl;
 

@@ -14,6 +14,12 @@ void ChunkHashGrid::setChunk(std::string layer, int x, int y, int z, T data)
 template <typename T>
 boost::optional<T> ChunkHashGrid::getChunk(std::string layer, int x, int y, int z)
 {
+    // skip if the Coordinates are too large or too negative
+    if(x > getChunkMaxChunkIndex().x || y > getChunkMaxChunkIndex().y || z > getChunkMaxChunkIndex().z ||
+        x < getChunkMinChunkIndex().x || y < getChunkMinChunkIndex().y || z < getChunkMinChunkIndex().z)
+    {
+        return boost::optional<T>{};
+    }
     std::size_t chunkHash = hashValue(x, y, z);
 
     if (isChunkLoaded(layer, chunkHash))
