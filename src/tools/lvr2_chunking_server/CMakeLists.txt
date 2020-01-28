@@ -5,7 +5,11 @@
 set(LVR2_CHUNKING_SERVER_SOURCES
     Main.cpp
     Options.cpp
-)
+        ../../../include/lvr2/reconstruction/LargeScaleReconstruction.tcc
+        ../../../include/lvr2/reconstruction/LargeScaleReconstruction.hpp
+        ../../../src/liblvr2/algorithm/ChunkingPipeline.cpp
+
+        )
 
 #####################################################################################
 # Setup dependencies to external libraries
