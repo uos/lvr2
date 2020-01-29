@@ -48,6 +48,9 @@ struct convert<lvr2::LSROptions>
     {
         Node node;
 
+        node["bigMesh"] = options.bigMesh;
+        node["debugChunks"] = options.debugChunks;
+        node["useGPU"] = options.useGPU;
         node["filePath"] = options.filePath;
         node["voxelSize"] = options.voxelSize;
         node["bgVoxelSize"] = options.bgVoxelSize;
@@ -79,6 +82,21 @@ struct convert<lvr2::LSROptions>
         if (!node.IsMap())
         {
             return false;
+        }
+
+        if (node["bigMesh"])
+        {
+            options.bigMesh = node["bigMesh"].as<bool>();
+        }
+
+        if (node["debugChunks"])
+        {
+            options.debugChunks = node["debugChunks"].as<bool>();
+        }
+
+        if (node["useGPU"])
+        {
+            options.useGPU = node["useGPU"].as<bool>();
         }
 
         if (node["filePath"])
