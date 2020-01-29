@@ -156,9 +156,11 @@ class ChunkManager : public ChunkHashGrid
                               const std::map<std::string, FilterFunction> filter);
 
     /**
+     * @brief Get all existing channels from mesh
      * 
+     * @return List of all channel names as vector
      */
-    std::vector<std::string> getChannels();
+    std::vector<std::string> getChannelsFromMesh(std::string layer = std::string("mesh"));
 
     /**
      * @brief Loads all chunks into the ChunkHashGrid.
