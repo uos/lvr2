@@ -87,7 +87,7 @@ namespace lvr2
                                                                  float getNormalThreshold, int planeIterations,
                                                                  int minPlaneSize, int smallRegionThreshold,
                                                                  bool retesselate, float lineFusionThreshold,
-                                                                 bool bigMesh, bool debug_chunks, bool useGPU)
+                                                                 bool bigMesh, bool debugChunks, bool useGPU)
             : m_filePath(h5File), m_voxelSize(voxelSize), m_bgVoxelSize(bgVoxelSize),
               m_scale(scale), m_chunkSize(chunkSize),m_nodeSize(nodeSize),
               m_partMethod(partMethod), m_Ki(ki), m_Kd(kd), m_Kn(kn), m_useRansac(useRansac),
@@ -95,7 +95,7 @@ namespace lvr2
               m_cleanContours(cleanContours), m_fillHoles(fillHoles), m_optimizePlanes(optimizePlanes),
               m_getNormalThreshold(getNormalThreshold), m_planeIterations(planeIterations),
               m_MinPlaneSize(minPlaneSize), m_SmallRegionThreshold(smallRegionThreshold),
-              m_retesselate(retesselate), m_LineFusionThreshold(lineFusionThreshold),m_bigMesh(bigMesh), m_debug_chunks(debug_chunks), m_useGPU(useGPU)
+              m_retesselate(retesselate), m_LineFusionThreshold(lineFusionThreshold),m_bigMesh(bigMesh), m_debugChunks(debugChunks), m_useGPU(useGPU)
     {
         std::cout << "Reconstruction Instance generated..." << std::endl;
     }
@@ -109,7 +109,7 @@ namespace lvr2
               options.cleanContours, options.fillHoles, options.optimizePlanes,
               options.getNormalThreshold, options.planeIterations,
               options.MinPlaneSize, options.SmallRegionThreshold,
-              options.retesselate, options.LineFusionThreshold, options.bigMesh, options.debug_chunks, options.useGPU)
+              options.retesselate, options.LineFusionThreshold, options.bigMesh, options.debugChunks, options.useGPU)
     {
     }
 
@@ -347,7 +347,7 @@ namespace lvr2
 
             // save the mesh of the chunk
 
-            if(m_debug_chunks)
+            if(m_debugChunks)
             {
                 auto reconstruction =
                         make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
