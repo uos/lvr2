@@ -43,10 +43,10 @@ namespace lvr2
         bool bigMesh = true;
 
         // flag to trigger .ply output of chunks
-        bool debug_chunks = false;
+        bool debugChunks = false;
 
         // flag to trigger GPU usage
-        bool useGPU = true;
+        bool useGPU = false;
 
         //filePath to HDF5 file
         string filePath = "";
@@ -140,7 +140,7 @@ namespace lvr2
                 uint nodeSize, int partMethod,int ki, int kd, int kn, bool useRansac, bool extrude,
                 int removeDanglingArtifacts, int cleanContours, int fillHoles, bool optimizePlanes,
                 float getNormalThreshold, int planeIterations, int minPlaneSize, int smallRegionThreshold,
-                bool retesselate, float lineFusionThreshold, bool bigMesh, bool debug_chunks, bool useGPU);
+                bool retesselate, float lineFusionThreshold, bool bigMesh, bool debugChunks, bool useGPU);
 
         /**
          * Constructor with parameters in a struct
@@ -187,7 +187,7 @@ namespace lvr2
         bool m_bigMesh = true;
 
         // flag to trigger .ply output of chunks
-        bool m_debug_chunks = false;
+        bool m_debugChunks = false;
 
         // flag to trigger GPU usage
         bool m_useGPU = false;

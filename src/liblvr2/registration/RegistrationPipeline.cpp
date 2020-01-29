@@ -63,8 +63,14 @@ void RegistrationPipeline::doRegistration()
     {
         m_scans->changed.at(i) = false;
 
+
+
+        // not inverting anymore, because initial pose is now in same format as final pose
+        //m_scans->project->positions.at(i)->scan->m_poseEstimation = m_scans->project->positions.at(i)->scan->m_poseEstimation.inverse();
+
         if(m_scans->project->positions.at(i)->scans.size())
         {
+            m_scans->project->positions.at(i)->scans[0]->m_poseEstimation.transposeInPlace();
             ScanPtr scptr = m_scans->project->positions.at(i)->scans[0];
             align.addScan(scptr);
         }

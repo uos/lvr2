@@ -190,6 +190,7 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
     
     // loadAllPreviewsFromHDF5(m_hdf5Path.string(), scanProject);
+
     ScanProjectEditMark tmpScanProject;
     // tmpScanProject.project = std::make_shared<ScanProject>(scanProject);
     tmpScanProject.project = scanProjectPtr;
