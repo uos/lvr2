@@ -46,7 +46,7 @@ double getDifference(Transformd a, Transformd b)
         }
     }
     return sum;
-}  
+}
 
 RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProjectEditMarkPtr scans)
 {
@@ -70,16 +70,17 @@ void RegistrationPipeline::doRegistration()
 
         if(m_scans->project->positions.at(i)->scans.size())
         {
-            m_scans->project->positions.at(i)->scans[0]->m_poseEstimation.transposeInPlace();
-            ScanPtr scptr = m_scans->project->positions.at(i)->scans[0];
+            m_scans->project->positions.at(i)->scans[0]->poseEstimation.transposeInPlace();
+
+            ScanPtr scptr = std::make_shared<Scan>(*(m_scans->project->positions[i]->scans[0]));
+
             align.addScan(scptr);
         }
     }
     cout << "Aus doRegistaration: vor finish" << endl;
+
     align.finish();
     cout << "Aus doRegistaration: nach finish" << endl;
-
-
 
     for (int i = 0; i < m_scans->project->positions.size(); i++)
     {
@@ -94,22 +95,22 @@ void RegistrationPipeline::doRegistration()
             m_scans->changed.at(i) = true;
             cout << "New Values"<< endl;
         }
-    
+
     }
     cout << "NAch der ersten For-Schleoife" << endl;
-    // new align with fix old values 
-    SLAMAlign align2(*m_options, m_scans->changed);
-    
-    for (size_t i = 0; i < m_scans->project->positions.size(); i++)
-    {
-        if (m_scans->project->positions.at(i)->scans.size())
-        {
-            ScanPtr scptr = m_scans->project->positions.at(i)->scans[0];
-            align2.addScan(scptr);
-        }
-    }
+    // new align with fix old values
+    // SLAMAlign align2(*m_options, m_scans->changed);
 
-    align2.finish();
+    // for (size_t i = 0; i < m_scans->project->positions.size(); i++)
+    // {
+    //     if (m_scans->project->positions.at(i)->scans.size())
+    //     {
+    //         ScanPtr scptr = m_scans->project->positions.at(i)->scans[0];
+    //         align2.addScan(scptr);
+    //     }
+    // }
+
+    // align2.finish();
 
     for (int i = 0; i < m_scans->project->positions.size(); i++)
     {
@@ -117,10 +118,10 @@ void RegistrationPipeline::doRegistration()
 
         if (m_scans->changed.at(i))
         {
-            posPtr->scans[0]->registration = align2.scan(i)->pose().transpose();
+            // posPtr->scans[0]->registration = align2.scan(i)->pose().transpose();
             cout << "Pose Scan Nummer " << i << endl << posPtr->scans[0]->registration << endl;
         }
-        m_scans->changed.at(i) = true; // ToDo: lsr test 
+        m_scans->changed.at(i) = true; // ToDo: lsr test
 
     }
 
