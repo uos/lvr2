@@ -9,6 +9,7 @@
 
 // Dependencies
 #include "ArrayIO.hpp"
+#include "HyperspectralCameraIO.hpp"
 #include "MatrixIO.hpp"
 #include "ScanCameraIO.hpp"
 #include "ScanIO.hpp"
@@ -66,6 +67,8 @@ class ScanPositionIO
     MatrixIO<Derived>* m_matrixIO = static_cast<MatrixIO<Derived>*>(m_file_access);
     ScanIO<Derived>* m_scanIO = static_cast<ScanIO<Derived>*>(m_file_access);
     ScanCameraIO<Derived>* m_scanCameraIO = static_cast<ScanCameraIO<Derived>*>(m_file_access);
+    HyperspectralCameraIO<Derived>* m_hyperspectralCameraIO =
+        static_cast<HyperspectralCameraIO<Derived>*>(m_file_access);
 
     static constexpr const char* ID = "ScanPositionIO";
     static constexpr const char* OBJID = "ScanPosition";
@@ -82,7 +85,9 @@ struct Hdf5Construct<hdf5features::ScanPositionIO, Derived>
     using dep2 = typename Hdf5Construct<hdf5features::MatrixIO, Derived>::type;
     using dep3 = typename Hdf5Construct<hdf5features::ScanIO, Derived>::type;
     using dep4 = typename Hdf5Construct<hdf5features::ScanCameraIO, Derived>::type;
-    using deps = typename dep1::template Merge<dep2>::template Merge<dep3>::template Merge<dep4>;
+    using dep5 = typename Hdf5Construct<hdf5features::HyperspectralCameraIO, Derived>::type;
+    using deps = typename dep1::template Merge<dep2>::template Merge<dep3>::template Merge<
+        dep4>::template Merge<dep5>;
 
     // add the feature itself
     using type = typename deps::template add_features<hdf5features::ScanPositionIO>::type;

@@ -153,7 +153,83 @@ struct ScanCamera
 using ScanCameraPtr = std::shared_ptr<ScanCamera>;
 
 
-/**********************************string*******************************************
+/*****************************************************************************
+ * @brief   Struct to hold a camera hyperspectral panorama
+ *          together with a timestamp
+ * 
+ *****************************************************************************/
+
+struct HyperspectralPanorama
+{
+    /// Sensor type flag
+    static constexpr char           sensorType[] = "HyperspectralImage";
+
+    /// Timestamp 
+    doubleArr                       timestamps;
+
+    /// OpenCV representation
+    std::vector<cv::Mat>            channels;
+};
+
+using HyperspectralPanoramaPtr = std::shared_ptr<HyperspectralPanorama>;
+using HyperspectralPanoramaOptional = boost::optional<HyperspectralPanorama>;
+
+
+/*****************************************************************************
+ * @brief   Struct to hold a hyperspectral camera model
+ *          together with intrinsic, extrinsic and further parameters
+ * 
+ *****************************************************************************/
+
+struct HyperspectralCameraModel
+{
+    /// Sensor type flag
+    static constexpr char           sensorType[] = "HyperspectralRecord";
+
+    /// Extrinsics 
+    Extrinsicsd                     extrinsics;
+
+    /// Extrinsics estimate
+    Extrinsicsd                     extrinsicsEstimate;
+
+    /// Focal length
+    double                          focalLength;
+
+    /// Offset angle
+    double                          offsetAngle;
+
+    /// Principal x, y, z
+    Vector3d                        principal;
+
+    /// Distortion
+    Vector3d                        distortion;
+};
+
+using HyperspectralCameraModelPtr = std::shared_ptr<HyperspectralCameraModel>;
+
+
+/*****************************************************************************
+ * @brief   Struct to hold a hyperspectral camera
+ *          together camera model and panoramas
+ * 
+ *****************************************************************************/
+
+struct HyperspectralCamera
+{
+    /// Sensor type flag
+    static constexpr char                    sensorType[] = "HyperspectralCamera";
+
+    /// Camera model
+    HyperspectralCameraModelPtr              cameraModel;
+
+    /// OpenCV representation
+    std::vector<HyperspectralPanoramaPtr>    panoramas;
+};
+
+using HyperspectralCameraPtr = std::shared_ptr<HyperspectralCamera>;
+
+
+/*****************************************************************************
  * @brief   Represents a scan position consisting of a scan and
  *          images taken at this position
  * 
@@ -169,6 +245,9 @@ struct ScanPosition
 
     /// Image data (optional, empty vector of no images were taken) 
     std::vector<ScanCameraPtr>      cams;
+
+    /// Image data (optional, empty vector of no hyperspactral panoramas were taken) 
+    HyperspectralCameraPtr          hyperspectralCamera;
 
     /// Latitude (optional)
     double                          latitude;

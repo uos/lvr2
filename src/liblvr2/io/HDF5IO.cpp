@@ -748,53 +748,53 @@ void HDF5IO::addFloatChannelToRawScan(
     }
 }
 
-void HDF5IO::addHyperspectralCalibration(int position, const HyperspectralPanorama& calibration)
-{
-    try
-    {
-        HighFive::Group g = getGroup("raw/spectral");
-    }
-    catch(HighFive::Exception& e)
-    {
-        std::cout << timestamp << "Error adding hyperspectral calibration data: "
-                  << e.what() << std::endl;
-        throw e;
-    }
+// void HDF5IO::addHyperspectralCalibration(int position, const HyperspectralPanorama& calibration)
+// {
+//     try
+//     {
+//         HighFive::Group g = getGroup("raw/spectral");
+//     }
+//     catch(HighFive::Exception& e)
+//     {
+//         std::cout << timestamp << "Error adding hyperspectral calibration data: "
+//                   << e.what() << std::endl;
+//         throw e;
+//     }
 
-    // Add calibration values
-    if(m_hdf5_file)
-    {
-        // Setup group for scan data
-        char buffer[128];
-        sprintf(buffer, "position_%05d", position);
-        string nr_str(buffer);
-        std::string groupName = "/raw/spectral/" + nr_str;
+//     // Add calibration values
+//     if(m_hdf5_file)
+//     {
+//         // Setup group for scan data
+//         char buffer[128];
+//         sprintf(buffer, "position_%05d", position);
+//         string nr_str(buffer);
+//         std::string groupName = "/raw/spectral/" + nr_str;
 
-        floatArr a(new float[3]);
-        a[0] = calibration.distortion(1, 0);
-        a[1] = calibration.distortion(2, 0);
-        a[2] = calibration.distortion(3, 0);
+//         floatArr a(new float[3]);
+//         a[0] = calibration.distortion(1, 0);
+//         a[1] = calibration.distortion(2, 0);
+//         a[2] = calibration.distortion(3, 0);
 
-        floatArr rotation(new float[3]);
-        a[0] = calibration.rotation(1, 0);
-        a[1] = calibration.rotation(2, 0);
-        a[2] = calibration.rotation(3, 0);
+//         floatArr rotation(new float[3]);
+//         a[0] = calibration.rotation(1, 0);
+//         a[1] = calibration.rotation(2, 0);
+//         a[2] = calibration.rotation(3, 0);
 
-        floatArr origin(new float[3]);
-        origin[0] = calibration.origin(1, 0);
-        origin[1] = calibration.origin(2, 0);
-        origin[2] = calibration.origin(3, 0);
+//         floatArr origin(new float[3]);
+//         origin[0] = calibration.origin(1, 0);
+//         origin[1] = calibration.origin(2, 0);
+//         origin[2] = calibration.origin(3, 0);
 
-        floatArr principal(new float[2]);
-        principal[0] = calibration.principal(1, 0);
-        principal[1] = calibration.principal(2, 0);
+//         floatArr principal(new float[2]);
+//         principal[0] = calibration.principal(1, 0);
+//         principal[1] = calibration.principal(2, 0);
 
-        addArray(groupName, "distortion", 3, a);
-        addArray(groupName, "rotation", 3, rotation);
-        addArray(groupName, "origin", 3, origin);
-        addArray(groupName, "prinzipal", 2, principal);
-    }
-}
+//         addArray(groupName, "distortion", 3, a);
+//         addArray(groupName, "rotation", 3, rotation);
+//         addArray(groupName, "origin", 3, origin);
+//         addArray(groupName, "prinzipal", 2, principal);
+//     }
+// }
 
 void HDF5IO::addRawScan(int nr, ScanPtr scan)
 {
