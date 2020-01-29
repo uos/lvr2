@@ -559,6 +559,92 @@ bool loadScan(
     return loadScan(root, scan, posStr.str(), "scans", scanStr.str());
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////
+/// HYPERSPECTRAL_CAMERA
+///////////////////////////////////////////////////////////////////////////////////////
+
+void saveHyperspectralCamera(const boost::filesystem::path& root,
+    const HyperspectralCamera& camera,
+    const std::string positionDirectory)
+{
+    boost::filesystem::path pos(positionDirectory);
+    pos = root / pos;
+
+    boost::filesystem::path spectral_pos_path = pos / "spectral";
+    if(!boost::filesystem::exists(spectral_pos_path))
+    {
+        std::cout << timestamp << "Creating: " << spectral_pos_path << std::endl;
+        boost::filesystem::create_directory(spectral_pos_path);
+    }
+
+    boost::filesystem::path spectral_data_path = spectral_pos_path / "data";
+    if(!boost::filesystem::exists(spectral_data_path))
+    {
+        std::cout << timestamp << "Creating: " << spectral_data_path << std::endl;
+        boost::filesystem::create_directory(spectral_data_path);
+    }
+
+    // TODO: saving meta info
+
+    // saving panoramas
+    for(int panorama_id = 0; panorama_id < camera.panoramas.size(); panorama_id++)
+    {
+        char buffer[sizeof(int) * 5];
+        sprintf(buffer, "%08d", panorama_id);
+        string nr_str(buffer);
+
+        boost::filesystem::path panorama_pos_path = spectral_data_path / nr_str;
+        if(!boost::filesystem::exists(panorama_pos_path))
+        {
+            std::cout << timestamp << "Creating: " << panorama_pos_path << std::endl;
+            boost::filesystem::create_directory(panorama_pos_path);
+        }
+
+        // saving channels
+        for(int channel_id = 0; channel_id < camera.panoramas[panorama_id]->channels.size(); channel_id++)
+        {
+            char buffer[sizeof(int) * 5];
+            sprintf(buffer, "%08d", channel_id);
+            string file_str(buffer);
+
+            boost::filesystem::path channel_path = panorama_pos_path / (file_str + ".png");
+            std::cout << channel_path << std::endl;
+
+            cv::Mat img = camera.panoramas[panorama_id]->channels[channel_id];
+            cv::imwrite(channel_path.string(), img);
+        }
+    }
+}
+
+bool loadHyperspectralCamera(
+    const boost::filesystem::path& root,
+    HyperspectralCamera& camera,
+    const std::string& positionDirectory,
+    const std::string& cameraDirectory)
+{
+    // boost::filesystem::path cameraPath = 
+    //     getScanCameraDirectory(root, positionDirectory, cameraDirectory);
+
+    // if(getSensorType(cameraPath) == camera.sensorType)
+    // {
+
+    //     boost::filesystem::path metaPath = cameraPath / "meta.yaml";
+
+    //     // Load camera data
+    //     std::cout << timestamp << "Loading " << metaPath << std::endl;
+    //     YAML::Node meta = YAML::LoadFile(metaPath.string());
+    //     camera = meta.as<ScanCamera>();
+
+    //     // Load all scan images
+    //     loadScanImages(camera.images, cameraPath / "data");
+    // }
+    // else
+    // {
+    //     return false;
+    // }
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////
 /// SCAN_POSITION
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -606,6 +692,11 @@ void saveScanPosition(
     for(size_t cam_id = 0; cam_id < scanPos.cams.size(); cam_id++)
     {
         saveScanCamera(root, *scanPos.cams[cam_id], positionDirectory, cam_id);
+    }
+
+    if(scanPos.hyperspectralCamera)
+    {
+        saveHyperspectralCamera(root, *scanPos.hyperspectralCamera, positionDirectory);
     }
 }
 
