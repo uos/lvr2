@@ -191,6 +191,13 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     registration.doRegistration();
     std::cout << "Finished registration!" << std::endl;
 
+    std::cout << "Save registration..." << std::endl;
+    for (size_t i = 0; i < m_scanProject->project->positions.size(); i++)
+    {
+        saveScanToHDF5(m_hdf5Path.string(), *(m_scanProject->project->positions.at(i)->scan), m_scanProject->project->positions.at(i)->scan->m_positionNumber);
+    }
+    std::cout << "Saved registration!" << std::endl;
+
     std::cout << "Starting large scale reconstruction..." << std::endl;
     LargeScaleReconstruction<lvr2::BaseVector<float>> lsr(m_lsrOptions);
     BoundingBox<BaseVector<float>> newChunksBB;
