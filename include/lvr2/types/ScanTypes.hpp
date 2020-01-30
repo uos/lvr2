@@ -159,16 +159,37 @@ using ScanCameraPtr = std::shared_ptr<ScanCamera>;
  * 
  *****************************************************************************/
 
+struct HyperspectralPanoramaChannel
+{
+    /// Sensor type flag
+    static constexpr char           sensorType[] = "HyperspectralPanoramaChannel";
+
+    /// Timestamp 
+    double                          timestamp;
+
+    /// Path to stored image
+    boost::filesystem::path         channelFile;
+
+    /// OpenCV representation
+    cv::Mat                         channel;
+};
+
+using HyperspectralPanoramaChannelPtr = std::shared_ptr<HyperspectralPanoramaChannel>;
+using HyperspectralPanoramaChannelOptional = boost::optional<HyperspectralPanoramaChannel>;
+
+/*****************************************************************************
+ * @brief   Struct to hold a camera hyperspectral panorama
+ *          together with a timestamp
+ * 
+ *****************************************************************************/
+
 struct HyperspectralPanorama
 {
     /// Sensor type flag
-    static constexpr char           sensorType[] = "HyperspectralImage";
-
-    /// Timestamp 
-    std::vector<double>             timestamps;
+    static constexpr char                          sensorType[] = "HyperspectralPanorama";
 
     /// OpenCV representation
-    std::vector<cv::Mat>            channels;
+    std::vector<HyperspectralPanoramaChannelPtr>   channels;
 };
 
 using HyperspectralPanoramaPtr = std::shared_ptr<HyperspectralPanorama>;
@@ -184,7 +205,7 @@ using HyperspectralPanoramaOptional = boost::optional<HyperspectralPanorama>;
 struct HyperspectralCameraModel
 {
     /// Sensor type flag
-    static constexpr char           sensorType[] = "HyperspectralRecord";
+    static constexpr char           sensorType[] = "HyperspectralCameraModel";
 
     /// Extrinsics 
     Extrinsicsd                     extrinsics;
@@ -210,7 +231,7 @@ using HyperspectralCameraModelPtr = std::shared_ptr<HyperspectralCameraModel>;
 
 /*****************************************************************************
  * @brief   Struct to hold a hyperspectral camera
- *          together camera model and panoramas
+ *          together with it's camera model and panoramas
  * 
  *****************************************************************************/
 
@@ -220,7 +241,25 @@ struct HyperspectralCamera
     static constexpr char                    sensorType[] = "HyperspectralCamera";
 
     /// Camera model
-    HyperspectralCameraModelPtr              cameraModel;
+    // HyperspectralCameraModelPtr              cameraModel;
+
+    /// Extrinsics 
+    Extrinsicsd                     extrinsics;
+
+    /// Extrinsics estimate
+    Extrinsicsd                     extrinsicsEstimate;
+
+    /// Focal length
+    double                          focalLength;
+
+    /// Offset angle
+    double                          offsetAngle;
+
+    /// Principal x, y, z
+    Vector3d                        principal;
+
+    /// Distortion
+    Vector3d                        distortion;
 
     /// OpenCV representation
     std::vector<HyperspectralPanoramaPtr>    panoramas;
