@@ -71,7 +71,6 @@ class ChunkHashGrid
 
     using io = Hdf5Build<hdf5features::ChunkIO>;
 
-
     /**
      * @brief class to load chunks from an HDF5 file
      *
@@ -93,7 +92,25 @@ class ChunkHashGrid
      * @brief sets a chunk of a given layer in hashgrid
      *
      * Adds a chunk for a given layer and coordinate in chunk coordinates to local cache and stores
-     * it permanently using io module.
+     * it permanently using io module. Uses the geometrical data of the chunk data (if exists) to
+     * expand boundingbox
+     *
+     * @tparam T type of chunk
+     * @param layer layer of chunk
+     * @param x x coordinate of chunk in chunk coordinates
+     * @param y y coordinate of chunk in chunk coordinates
+     * @param z z coordinate of chunk in chunk coordinates
+     * @param data content of chunk to be added
+     */
+    template <typename T>
+    void setGeometryChunk(std::string layer, int x, int y, int z, T data);
+
+    /**
+     * @brief sets a chunk of a given layer in hashgrid
+     *
+     * Adds a chunk for a given layer and coordinate in chunk coordinates to local cache and stores
+     * it permanently using io module. if the given chunk coordinate does not exist, the boudnig box
+     * will be expanded to fit the new chunk
      *
      * @tparam T type of chunk
      * @param layer layer of chunk
@@ -189,7 +206,9 @@ class ChunkHashGrid
      */
     BaseVector<int> getChunkMaxChunkIndex() const
     {
-        BaseVector<int> maxChunkIndex(m_chunkAmount.x - m_chunkIndexOffset.x, m_chunkAmount.y - m_chunkIndexOffset.y, m_chunkAmount.z - m_chunkIndexOffset.z);
+        BaseVector<int> maxChunkIndex(m_chunkAmount.x - m_chunkIndexOffset.x,
+                                      m_chunkAmount.y - m_chunkIndexOffset.y,
+                                      m_chunkAmount.z - m_chunkIndexOffset.z);
         return maxChunkIndex;
     }
 
@@ -255,7 +274,8 @@ class ChunkHashGrid
     // bounding box of the entire chunked model
     // i had to make this protected because of the getGlobalBoundingBox() function in ChunkManager
     BoundingBox<BaseVector<float>> m_boundingBox;
-private:
+
+  private:
     /**
      * @brief sets the amount of chunks in x y and z direction in this container and in persistent
      * storage
@@ -265,7 +285,7 @@ private:
     void setChunkAmountAndOffset(const BaseVector<std::size_t>& chunkAmount,
                                  const BaseVector<std::size_t>& chunkIndexOffset);
 
-private:
+  private:
     // chunkIO for the HDF5 file-IO
     io m_io;
 
