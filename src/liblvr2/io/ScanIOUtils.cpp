@@ -5,6 +5,8 @@
 #include "lvr2/io/ScanIOUtils.hpp"
 #include "lvr2/io/yaml/Scan.hpp"
 #include "lvr2/io/yaml/ScanCamera.hpp"
+#include "lvr2/io/yaml/HyperspectralCamera.hpp"
+#include "lvr2/io/yaml/HyperspectralPanoramaChannel.hpp"
 #include "lvr2/io/yaml/ScanImage.hpp"
 #include "lvr2/io/yaml/ScanPosition.hpp"
 #include "lvr2/io/yaml/ScanProject.hpp"
@@ -24,11 +26,11 @@ std::string getSensorType(const boost::filesystem::path& dir)
     {
         YAML::Node meta = YAML::LoadFile(metaPath.string());
 
-        // Get sensor type 
+        // Get sensor type
         if(meta["sensor_type"])
         {
             sensorType = meta["sensor_type"].as<std::string>();
-        }   
+        }
     }
     return sensorType;
 }
@@ -43,7 +45,7 @@ void saveScanImage(
     std::stringstream posStr;
     posStr << std::setfill('0') << std::setw(8) << positionNumber;
 
-    std::stringstream camStr; 
+    std::stringstream camStr;
     camStr << std::setfill('0') << std::setw(8) << camNumber;
 
     saveScanImage(root, image, posStr.str(), camStr.str(), imageNumber);
@@ -87,7 +89,7 @@ void saveScanImage(
     std::stringstream imageFileName;
     imageFileName << std::setfill('0') << std::setw(8) << imageNumber << ".png";
 
-    boost::filesystem::path imageDirectory = 
+    boost::filesystem::path imageDirectory =
         getScanImageDirectory(root, positionDirectory, cameraDirectory);
 
     if(!boost::filesystem::exists(imageDirectory))
@@ -111,8 +113,8 @@ void saveScanImage(
     }
     else
     {
-        std::cout << timestamp 
-            << "Warning: to write " << metaPath << std::endl;     
+        std::cout << timestamp
+            << "Warning: to write " << metaPath << std::endl;
     }
 
     // Write image data
@@ -143,9 +145,9 @@ bool loadScanImage(
     const size_t& cameraNumber,
     const size_t& imageNumber)
 {
-    std::stringstream camStr; 
+    std::stringstream camStr;
     camStr << std::setfill('0') << std::setw(8) << cameraNumber;
-    
+
     return loadScanImage(root, image, positionDirectory, camStr.str(), imageNumber);
 }
 
@@ -163,7 +165,7 @@ bool loadScanImage(
     std::stringstream imageFileName;
     imageFileName << std::setfill('0') << std::setw(8) << imageNumber << ".png";
 
-    boost::filesystem::path imageDirectory = 
+    boost::filesystem::path imageDirectory =
         getScanImageDirectory(root, positionDirectory, cameraDirectory);
 
     boost::filesystem::path imagePath(imageDirectory / boost::filesystem::path(imageFileName.str()));
@@ -183,7 +185,7 @@ bool loadScanImage(
 }
 
 void loadScanImages(
-    std::vector<ScanImagePtr>& images, 
+    std::vector<ScanImagePtr>& images,
     boost::filesystem::path dataPath)
 {
     bool stop = false;
@@ -200,12 +202,12 @@ void loadScanImages(
         boost::filesystem::path pngPath = dataPath / pngStr.str();
 
         // Check if both .png and corresponding .yaml file exist
-        if(boost::filesystem::exists(metaPath) 
+        if(boost::filesystem::exists(metaPath)
             && boost::filesystem::exists(pngPath) )
         {
             // Load meta info
             ScanImage* image = new ScanImage;
-            
+
             std::cout << timestamp << "Loading " << metaPath << std::endl;
             YAML::Node meta = YAML::LoadFile(metaPath.string());
 
@@ -222,13 +224,13 @@ void loadScanImages(
             } else {
                 std::cout << timestamp << "Could not convert " << metaPath << std::endl;
             }
-            
+
             c++;
         }
         else
         {
-            std::cout 
-                << timestamp << "Read " << c << " images from " << dataPath << std::endl;        
+            std::cout
+                << timestamp << "Read " << c << " images from " << dataPath << std::endl;
             stop = true;
         }
     }
@@ -255,7 +257,7 @@ void saveScanCamera(
     const std::string positionDirectory,
     const std::string cameraDirectory)
 {
-    boost::filesystem::path cameraPath = 
+    boost::filesystem::path cameraPath =
         getScanCameraDirectory(root, positionDirectory, cameraDirectory);
 
     if(!boost::filesystem::exists(cameraPath))
@@ -278,8 +280,8 @@ void saveScanCamera(
     }
     else
     {
-        std::cout << timestamp 
-            << "Warning: Unable to write " << metaPath << std::endl;     
+        std::cout << timestamp
+            << "Warning: Unable to write " << metaPath << std::endl;
     }
 
     // Save all images
@@ -347,7 +349,7 @@ bool loadScanCamera(
     const std::string& positionDirectory,
     const std::string& cameraDirectory)
 {
-    boost::filesystem::path cameraPath = 
+    boost::filesystem::path cameraPath =
         getScanCameraDirectory(root, positionDirectory, cameraDirectory);
 
     if(getSensorType(cameraPath) == camera.sensorType)
@@ -382,7 +384,7 @@ void saveScan(
 {
 
     boost::filesystem::path scanPosPath = root / positionDirectory;
-    
+
     if(!boost::filesystem::exists(scanPosPath))
     {
         std::cout << timestamp << "Creating: " << scanPosPath << std::endl;
@@ -402,7 +404,7 @@ void saveScan(
     {
         YAML::Node node;
         node = scan;
-        
+
         std::ofstream out(metaPath.c_str());
         if (out.good())
         {
@@ -447,7 +449,7 @@ void saveScan(
 
     // Write point cloud data
     std::cout << timestamp << "Writing " << scanOut << std::endl;
-   
+
     ModelPtr model(new Model);
     model->m_pointCloud = scan.points;
     ModelFactory::saveModel(model, scanOut.string());
@@ -488,7 +490,7 @@ bool loadScan(
     const std::string& scanSubDirectory,
     const std::string& scanName)
 {
-    
+
     boost::filesystem::path scanDirectoryPath = root / positionDirectory / scanSubDirectory;
 
     if(!boost::filesystem::exists(scanDirectoryPath))
@@ -497,7 +499,7 @@ bool loadScan(
         return false;
     }
 
-    
+
 
     if(getSensorType(scanDirectoryPath) == scan.sensorType)
     {
@@ -520,15 +522,15 @@ bool loadScan(
         }
         else
         {
-            std::cout << timestamp 
+            std::cout << timestamp
                       << "Warning: Loading " << scanFile << " failed." << std::endl;
             return false;
         }
-        
+
 
         return true;
     }
-    
+
     return false;
 }
 
@@ -561,17 +563,170 @@ bool loadScan(
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
+/// HYPERSPECTRAL_PANORAMA_CHANNEL
+///////////////////////////////////////////////////////////////////////////////////////
+
+
+boost::filesystem::path getPanoramaChannelDirectory(
+    boost::filesystem::path root,
+    const std::string positionDirectory,
+    const std::string panoramaDirectory)
+{
+    boost::filesystem::path pos(positionDirectory);
+    boost::filesystem::path pan(panoramaDirectory);
+    return root / pos / "spectral" / "data" / pan;
+}
+
+// void saveHyperspectralPanoramaChannel(
+//     const boost::filesystem::path& root,
+//     const HyperspectralPanoramaChannel& channel,
+//     const size_t& positionNumber,
+//     const size_t& panoramaNumber,
+//     const size_t& channelNumber)
+// {
+//     std::stringstream posStr;
+//     posStr << std::setfill('0') << std::setw(8) << positionNumber;
+
+//     std::stringstream camStr;
+//     camStr << std::setfill('0') << std::setw(8) << panoramaNumber;
+
+//     saveHyperspectralPanoramaChannel(root, channel, posStr.str(), camStr.str(), channelNumber);
+// }
+
+// void saveHyperspectralPanoramaChannel(
+//     const boost::filesystem::path& root,
+//     const HyperspectralPanoramaChannel& channel,
+//     const std::string positionDirectory,
+//     const size_t& panoramaNumber,
+//     const size_t& channelNumber)
+// {
+//     std::stringstream camStr;
+//     camStr << std::setfill('0') << std::setw(8) << panoramaNumber;
+
+//     saveHyperspectralPanoramaChannel(root, channel, positionDirectory, camStr.str(), channelNumber);
+// }
+
+void saveHyperspectralPanoramaChannel(
+    const boost::filesystem::path& root,
+    const HyperspectralPanoramaChannel& channel,
+    const std::string positionDirectory,
+    const std::string panoramaDirectory,
+    const size_t& channelNumber)
+{
+    // Some directory parsing stuff
+    std::stringstream metaFileName;
+    metaFileName << std::setfill('0') << std::setw(8) << channelNumber << ".yaml";
+
+    std::stringstream channelFileName;
+    channelFileName << std::setfill('0') << std::setw(8) << channelNumber << ".png";
+
+    boost::filesystem::path channelDirectory =
+        getPanoramaChannelDirectory(root, positionDirectory, panoramaDirectory);
+
+    if(!boost::filesystem::exists(channelDirectory))
+    {
+        std::cout << timestamp << "Creating: " << channelDirectory << std::endl;
+        boost::filesystem::create_directory(channelDirectory);
+    }
+
+    boost::filesystem::path imagePath = channelDirectory / channelFileName.str();
+    boost::filesystem::path metaPath = channelDirectory / metaFileName.str();
+
+    // Write meta information for scan image
+    YAML::Node meta;
+    meta = channel;
+
+    std::ofstream out(metaPath.c_str());
+    if (out.good())
+    {
+        std::cout << timestamp << "Writing " << metaPath << std::endl;
+        out << meta;
+    }
+    else
+    {
+        std::cout << timestamp
+            << "Warning: to write " << metaPath << std::endl;
+    }
+
+    // Write image data
+    std::cout << timestamp << "Writing " << imagePath << std::endl;
+    cv::imwrite(imagePath.string(), channel.channel);
+}
+
+void loadHyperspectralPanoramaChannels(
+    std::vector<HyperspectralPanoramaChannelPtr>& channels,
+    boost::filesystem::path dataPath)
+{
+    bool stop = false;
+    size_t c = 0;
+    while(!stop)
+    {
+        std::stringstream metaStr;
+        metaStr << std::setfill('0') << std::setw(8) << c << ".yaml";
+
+        std::stringstream pngStr;
+        pngStr << std::setfill('0') << std::setw(8) << c << ".png";
+
+        boost::filesystem::path metaPath = dataPath / metaStr.str();
+        boost::filesystem::path pngPath = dataPath / pngStr.str();
+
+        // Check if both .png and corresponding .yaml file exist
+        if(boost::filesystem::exists(metaPath)
+            && boost::filesystem::exists(pngPath) )
+        {
+            // Load meta info
+            HyperspectralPanoramaChannel* channel = new HyperspectralPanoramaChannel;
+
+            std::cout << timestamp << "Loading " << metaPath << std::endl;
+            YAML::Node meta = YAML::LoadFile(metaPath.string());
+
+            // *channel = meta.as<ScanImage>();
+            if(YAML::convert<HyperspectralPanoramaChannel>::decode(meta, *channel))
+            {
+                // Load channel data
+                std::cout << timestamp << "Loading " << pngPath << std::endl;
+                channel->channelFile = pngPath;
+                channel->channel = cv::imread(pngPath.string());
+
+                // Store new channel
+                channels.push_back(HyperspectralPanoramaChannelPtr(channel));
+            } else {
+                std::cout << timestamp << "Could not convert " << metaPath << std::endl;
+            }
+
+            c++;
+        }
+        else
+        {
+            std::cout
+                << timestamp << "Read " << c << " channels from " << dataPath << std::endl;
+            stop = true;
+        }
+    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////
 /// HYPERSPECTRAL_CAMERA
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void saveHyperspectralCamera(const boost::filesystem::path& root,
-    const HyperspectralCamera& camera,
-    const std::string positionDirectory)
+boost::filesystem::path getHyperspectralCameraDirectory(
+    boost::filesystem::path root,
+    const std::string positionDirectory,
+    const std::string cameraDirectory)
 {
     boost::filesystem::path pos(positionDirectory);
-    pos = root / pos;
+    boost::filesystem::path cam(cameraDirectory);
+    return root / pos /cam;
+}
 
-    boost::filesystem::path spectral_pos_path = pos / "spectral";
+void saveHyperspectralCamera(const boost::filesystem::path& root,
+    const HyperspectralCamera& camera,
+    const std::string positionDirectory,
+    const std::string& cameraDirectory)
+{
+    boost::filesystem::path spectral_pos_path = getHyperspectralCameraDirectory(root, positionDirectory, cameraDirectory);
+
     if(!boost::filesystem::exists(spectral_pos_path))
     {
         std::cout << timestamp << "Creating: " << spectral_pos_path << std::endl;
@@ -585,7 +740,25 @@ void saveHyperspectralCamera(const boost::filesystem::path& root,
         boost::filesystem::create_directory(spectral_data_path);
     }
 
-    // TODO: saving meta info
+    // Check if meta.yaml exists for given directory
+    boost::filesystem::path metaPath = spectral_pos_path / "meta.yaml";
+    if(!boost::filesystem::exists(metaPath))
+    {
+        YAML::Node node;
+        node = camera;
+
+        std::ofstream out(metaPath.c_str());
+        if (out.good())
+        {
+            std::cout << timestamp << "Writing " << metaPath << std::endl;
+            out << node;
+        }
+        else
+        {
+            std::cout << timestamp
+                      << "Warning: Unable to write " << metaPath << std::endl;
+        }
+    }
 
     // saving panoramas
     for(int panorama_id = 0; panorama_id < camera.panoramas.size(); panorama_id++)
@@ -604,17 +777,28 @@ void saveHyperspectralCamera(const boost::filesystem::path& root,
         // saving channels
         for(int channel_id = 0; channel_id < camera.panoramas[panorama_id]->channels.size(); channel_id++)
         {
-            char buffer[sizeof(int) * 5];
-            sprintf(buffer, "%08d", channel_id);
-            string file_str(buffer);
-
-            boost::filesystem::path channel_path = panorama_pos_path / (file_str + ".png");
-            std::cout << channel_path << std::endl;
-
-            cv::Mat img = camera.panoramas[panorama_id]->channels[channel_id];
-            cv::imwrite(channel_path.string(), img);
+            saveHyperspectralPanoramaChannel(root, *(camera.panoramas[panorama_id]->channels[channel_id]), positionDirectory, nr_str, channel_id);
         }
     }
+}
+
+void saveHyperspectralCamera(
+    const boost::filesystem::path& root,
+    const HyperspectralCamera& camera,
+    const std::string& positionDirectory)
+{
+    return saveHyperspectralCamera(root, camera, positionDirectory, "spectral");
+}
+
+void saveHyperspectralCamera(
+    const boost::filesystem::path& root,
+    const HyperspectralCamera& camera,
+    const size_t& positionNumber)
+{
+    std::stringstream posStr;
+    posStr << std::setfill('0') << std::setw(8) << positionNumber;
+
+    return saveHyperspectralCamera(root, camera, posStr.str(), "spectral");
 }
 
 bool loadHyperspectralCamera(
@@ -623,27 +807,79 @@ bool loadHyperspectralCamera(
     const std::string& positionDirectory,
     const std::string& cameraDirectory)
 {
-    // boost::filesystem::path cameraPath = 
-    //     getScanCameraDirectory(root, positionDirectory, cameraDirectory);
+    boost::filesystem::path cameraPath =
+        getHyperspectralCameraDirectory(root, positionDirectory, cameraDirectory);
 
-    // if(getSensorType(cameraPath) == camera.sensorType)
-    // {
+    if(getSensorType(cameraPath) == camera.sensorType)
+    {
 
-    //     boost::filesystem::path metaPath = cameraPath / "meta.yaml";
+        boost::filesystem::path metaPath = cameraPath / "meta.yaml";
 
-    //     // Load camera data
-    //     std::cout << timestamp << "Loading " << metaPath << std::endl;
-    //     YAML::Node meta = YAML::LoadFile(metaPath.string());
-    //     camera = meta.as<ScanCamera>();
+        // Load camera data
+        std::cout << timestamp << "Loading " << metaPath << std::endl;
+        YAML::Node meta = YAML::LoadFile(metaPath.string());
+        camera = meta.as<HyperspectralCamera>();
 
-    //     // Load all scan images
-    //     loadScanImages(camera.images, cameraPath / "data");
-    // }
-    // else
-    // {
-    //     return false;
-    // }
+        // Load all hyperspectral images
+        // loadScanImages(camera.images, cameraPath / "data");
+
+        boost::filesystem::path dataPath = cameraPath / "data";
+
+        bool stop = false;
+        size_t c = 0;
+        while(!stop)
+        {
+            std::stringstream metaStr;
+            metaStr << std::setfill('0') << std::setw(8) << c;
+            
+            boost::filesystem::path channelPath = dataPath / metaStr.str();
+
+            if(boost::filesystem::exists(channelPath))
+            {
+                std::vector<HyperspectralPanoramaChannelPtr> channels;
+                loadHyperspectralPanoramaChannels(channels, channelPath);
+                
+                HyperspectralPanoramaPtr panorama(new HyperspectralPanorama);
+                panorama->channels = channels;
+                camera.panoramas.push_back(panorama);
+
+                c++;
+            }
+            else
+            {
+                std::cout
+                    << timestamp << "Read " << c << " panoramas from " << cameraPath << std::endl;
+                stop = true;
+            }
+        }
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
+
+bool loadHyperspectralCamera(
+    const boost::filesystem::path& root,
+    HyperspectralCamera& camera,
+    const std::string& positionDirectory)
+{
+    return loadHyperspectralCamera(root, camera, positionDirectory, "spectral");
+}
+
+bool loadHyperspectralCamera(
+    const boost::filesystem::path& root,
+    HyperspectralCamera& camera,
+    const size_t& positionNumber)
+{
+    std::stringstream posStr;
+    posStr << std::setfill('0') << std::setw(8) << positionNumber;
+
+    return loadHyperspectralCamera(root, camera, posStr.str(), "spectral");
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 /// SCAN_POSITION
@@ -716,7 +952,7 @@ bool loadScanPosition(
     ScanPosition& scanPos,
     const std::string& positionDirectory)
 {
-    
+
     boost::filesystem::path scanPosDir = root / positionDirectory;
 
     if(!boost::filesystem::exists(scanPosDir))
@@ -741,11 +977,11 @@ bool loadScanPosition(
     while (it != boost::filesystem::directory_iterator{})
     {
         const std::string sensorType = getSensorType(*it);
-        
+
         if(sensorType == Scan::sensorType)
         {
             boost::filesystem::path scanDataDir = it->path() / "data";
-            
+
             boost::filesystem::directory_iterator itScans{scanDataDir};
             while (itScans != boost::filesystem::directory_iterator{})
             {
@@ -761,23 +997,33 @@ bool loadScanPosition(
                 }
                 ++itScans;
             }
-        } 
+        }
         else if(sensorType == ScanCamera::sensorType)
         {
             ScanCameraPtr cam(new ScanCamera);
-            
-            
+
             if(loadScanCamera(root, *cam, positionDirectory, it->path().stem().string()))
             {
                 scanPos.cams.push_back(cam);
             } else {
-                std::cout << timestamp << "[ WARNING ] Could not load camera from " << it->path() << std::endl;  
+                std::cout << timestamp << "[ WARNING ] Could not load camera from " << it->path() << std::endl;
+            }
+        }
+        else if(sensorType == HyperspectralCamera::sensorType)
+        {
+            HyperspectralCameraPtr cam(new HyperspectralCamera);
+
+            if(loadHyperspectralCamera(root, *cam, positionDirectory))
+            {
+                scanPos.hyperspectralCamera = cam;
+            } else {
+                std::cout << timestamp << "[ WARNING ] Could not load hyperspectral camera from " << it->path() << std::endl;
             }
         }
 
         ++it;
     }
-    
+
 
     return true;
 }
@@ -807,7 +1053,7 @@ void saveScanProject(
     }
 
     boost::filesystem::path scanProjMetaPath = root / "meta.yaml";
-    
+
     YAML::Node meta;
     meta = scanProj;
 
@@ -966,7 +1212,7 @@ bool loadScanProject(
 //     ss << std::setfill('0') << std::setw(5) << positionNr;
 //     boost::filesystem::path scan_images_dir = path / "scan_images" / ss.str();
 
-    
+
 //     if(boost::filesystem::exists(scan_images_dir))
 //     {
 //         const boost::regex image_filter("^(\\d+)_(\\d+)\\.(bmp|dib|jpeg|jpg|jpe|jp2|png|pbm|pgm|ppm|sr|ras|tiff|tif)$");
@@ -992,7 +1238,7 @@ bool loadScanProject(
 
 // void writeScanMetaYAML(const boost::filesystem::path& path, const Scan& scan)
 // {
-    
+
 //     YAML::Node meta;
 //     meta = scan;
 
@@ -1003,22 +1249,22 @@ bool loadScanProject(
 //     }
 //     else
 //     {
-//         std::cout << timestamp << "Warning: Unable to open " 
+//         std::cout << timestamp << "Warning: Unable to open "
 //                   << path.string() << "for writing." << std::endl;
 //     }
-    
+
 // }
 
 // void saveScanToDirectory(
-//     const boost::filesystem::path& path, 
-//     const Scan& scan, 
+//     const boost::filesystem::path& path,
+//     const Scan& scan,
 //     const size_t& positionNr)
 // {
 //     // Create full path from root and scan number
 //     std::stringstream ss;
 //     ss << std::setfill('0') << std::setw(5) << positionNr;
 //     boost::filesystem::path directory = path / "scans" / ss.str();
-    
+
 //     // Check if directory exists, if not create it and write meta data
 //     // and into the new directory
 
@@ -1033,11 +1279,11 @@ bool loadScanProject(
 //         boost::filesystem::create_directory(path / "scans");
 //     }
 
-//     if(!boost::filesystem::exists(directory)) 
+//     if(!boost::filesystem::exists(directory))
 //     {
 //         std::cout << timestamp << "Creating " << directory << std::endl;
 //         boost::filesystem::create_directory(directory);
-//     } 
+//     }
 
 //     // Create yaml file with meta information
 //     std::cout << timestamp << "Creating scan meta.yaml..." << std::endl;
@@ -1046,7 +1292,7 @@ bool loadScanProject(
 //     // Save points
 //     std::string scanFileName( (directory / "scan.ply").string() );
 //     std::cout << timestamp << "Writing " << scanFileName << std::endl;
-    
+
 //     ModelPtr model(new Model());
 //     if(scan.m_points)
 //     {
@@ -1058,12 +1304,12 @@ bool loadScanProject(
 //     {
 //         std::cout << timestamp << "Warning: Point cloud pointer is empty!" << std::endl;
 //     }
-   
-    
+
+
 // }
 
 // bool loadScanFromDirectory(
-//     const boost::filesystem::path& path, 
+//     const boost::filesystem::path& path,
 //     Scan& scan, const size_t& positionNr, bool load)
 // {
 //     if(boost::filesystem::exists(path) && boost::filesystem::is_directory(path))
@@ -1071,7 +1317,7 @@ bool loadScanProject(
 //         std::stringstream ss;
 //         ss << std::setfill('0') << std::setw(5) << positionNr;
 //         boost::filesystem::path position_directory = path / "scans" / ss.str();
-        
+
 //         if(boost::filesystem::exists(position_directory))
 //         {
 //             // Load meta data
@@ -1118,9 +1364,9 @@ bool loadScanProject(
 //     }
 //     else
 //     {
-//         std::cout << timestamp 
-//                   << "Warning: '" << path.string() 
-//                   << "' does not exist or is not a directory." << std::endl; 
+//         std::cout << timestamp
+//                   << "Warning: '" << path.string()
+//                   << "' does not exist or is not a directory." << std::endl;
 //         return false;
 //     }
 // }
@@ -1143,7 +1389,7 @@ bool loadScanProject(
 // }
 
 // void saveScanImageToDirectory(
-//     const boost::filesystem::path& path, 
+//     const boost::filesystem::path& path,
 //     const std::string& camDir,
 //     const ScanImage& image,
 //     const size_t& positionNr,
@@ -1166,8 +1412,8 @@ bool loadScanProject(
 //         boost::filesystem::create_directory(scanimage_data_directory);
 //     }
 
-    
-    
+
+
 // }
 
 // void writePinholeModelToYAML(
@@ -1175,7 +1421,7 @@ bool loadScanProject(
 // {
 //     // YAML::Node meta;
 //     // meta = model;
-    
+
 //     // std::ofstream out(path.c_str());
 //     // if (out.good())
 //     // {
@@ -1183,7 +1429,7 @@ bool loadScanProject(
 //     // }
 //     // else
 //     // {
-//     //     std::cout << timestamp << "Warning: Unable to open " 
+//     //     std::cout << timestamp << "Warning: Unable to open "
 //     //               << path.string() << "for writing." << std::endl;
 //     // }
 
@@ -1193,13 +1439,13 @@ bool loadScanProject(
 // {
 // //     YAML::Node model_file = YAML::LoadFile(path.string());
 // //     model = model_file.as<PinholeModeld>();
-// // 
+// //
 // }
 
 // bool loadScanImageFromDirectory(
-//     const boost::filesystem::path& path, 
-//     ScanImage& image, 
-//     const size_t& positionNr, 
+//     const boost::filesystem::path& path,
+//     ScanImage& image,
+//     const size_t& positionNr,
 //     const size_t& camNr,
 //     const size_t& imageNr)
 // {
@@ -1242,7 +1488,7 @@ bool loadScanProject(
 // }
 
 // void saveScanPositionToDirectory(const boost::filesystem::path& path, const ScanPosition& position, const size_t& positionNr)
-// {  
+// {
 //     // // Save scan data
 //     // std::cout << timestamp << "Saving scan postion " << positionNr << std::endl;
 //     // if(position.scan)
@@ -1254,7 +1500,7 @@ bool loadScanProject(
 //     //     std::cout << timestamp << "Warning: Scan position " << positionNr
 //     //               << " contains no scan data." << std::endl;
 //     // }
-    
+
 //     // // Save rgb camera recordings
 //     // for(size_t cam_id = 0; cam_id < position.cams.size(); cam_id++)
 //     // {
@@ -1267,13 +1513,13 @@ bool loadScanProject(
 // }
 
 // void get_all(
-//     const boost::filesystem::path& root, 
+//     const boost::filesystem::path& root,
 //     const string& ext, vector<boost::filesystem::path>& ret)
 // {
 //     if(!boost::filesystem::exists(root) || !boost::filesystem::is_directory(root))
 //     {
 //         return;
-//     } 
+//     }
 
 //     boost::filesystem::directory_iterator it(root);
 //     boost::filesystem::directory_iterator endit;
@@ -1283,14 +1529,14 @@ bool loadScanProject(
 //         if(boost::filesystem::is_regular_file(*it) && it->path().extension() == ext)
 //         {
 //             ret.push_back(it->path().filename());
-//         } 
+//         }
 //         ++it;
 //     }
 // }
 
 // bool loadScanPositionFromDirectory(
 //     const boost::filesystem::path& path,
-//     ScanPosition& position, 
+//     ScanPosition& position,
 //     const size_t& positionNr)
 // {
 //     // bool scan_read = false;
@@ -1300,7 +1546,7 @@ bool loadScanProject(
 //     // Scan scan;
 //     // if(!loadScanFromDirectory(path, scan, positionNr, true))
 //     // {
-//     //     std::cout << timestamp << "Warning: Scan position " << positionNr 
+//     //     std::cout << timestamp << "Warning: Scan position " << positionNr
 //     //               << " does not contain scan data." << std::endl;
 //     // } else {
 //     //     position.scan = scan;
@@ -1336,7 +1582,7 @@ bool loadScanProject(
 //     // }
 //     // else
 //     // {
-//     //     std::cout << timestamp << "Scan position " << positionNr 
+//     //     std::cout << timestamp << "Scan position " << positionNr
 //     //               << " has no images." << std::endl;
 //     // }
 //     // return true;
@@ -1355,7 +1601,7 @@ bool loadScanProject(
 //     }
 //     else
 //     {
-//         std::cout << timestamp << "Warning: Unable to open " 
+//         std::cout << timestamp << "Warning: Unable to open "
 //                   << path.string() << "for writing." << std::endl;
 //     }
 
@@ -1367,7 +1613,7 @@ bool loadScanProject(
 
 // bool loadScanProjectFromDirectory(const boost::filesystem::path& path, ScanProject& project)
 // {
-//     YAML::Node meta = YAML::LoadFile((path / "meta.yaml").string() );    
+//     YAML::Node meta = YAML::LoadFile((path / "meta.yaml").string() );
 //     project.pose = meta["pose"].as<Transformd>();
 
 
@@ -1382,7 +1628,7 @@ bool loadScanProject(
 //         loadScanPositionFromDirectory(path, *scan_pos, scan_pos_id);
 //         project.positions.push_back(scan_pos);
 //     }
-    
+
 
 //     return true;
 // }
