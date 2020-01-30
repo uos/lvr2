@@ -39,9 +39,8 @@ namespace lvr2 {
                     //std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> >& actors);
             void addInitialActors(vtkSmartPointer<vtkRenderer> renderer);
 
-            void fetchHighRes(double x, double y, double z,
-                             double dir_x, double dir_y, double dir_z);
-
+//            void fetchHighRes(double position[3], double dir[3], double up[3]);
+            void fetchHighRes(BoundingBox<BaseVector<float > > bb);
         Q_SIGNALS:
             void updateHighRes(actorMap lowRes, actorMap highRes);
                     

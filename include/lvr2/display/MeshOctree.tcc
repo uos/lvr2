@@ -427,7 +427,7 @@ namespace lvr2{
                         Leaf* l = leaf + cnt;
                         for(size_t j = 0; j < l->m_hashes.size(); ++j)
                         {
-//                            indices.push_back(leaf->m_centroids[j]);
+                            indices.push_back(leaf->m_centroids[j]);
                             hashes.push_back(l->m_hashes[j]);
                         }
 
@@ -470,7 +470,7 @@ namespace lvr2{
     template <typename BaseVecT>
         void MeshOctree<BaseVecT>::intersect(double planes[24], std::vector<BaseVecT>& indices, std::vector<size_t>& hashes)
         {
-            normalizePlanes(planes);
+//            normalizePlanes(planes);
             intersect(m_root, m_bbox, planes, indices, hashes);
         }
 
@@ -514,7 +514,7 @@ namespace lvr2{
             // if leaf is intersected it is not culled.
             for(size_t j = 0; j < leaf->m_hashes.size(); ++j)
             {
-//                indices.push_back(leaf->m_centroids[j]);
+                indices.push_back(leaf->m_centroids[j]);
                 hashes.push_back(leaf->m_hashes[j]);
             }
         }

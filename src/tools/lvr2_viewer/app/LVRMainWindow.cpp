@@ -2327,30 +2327,24 @@ void LVRMainWindow::updateDisplayLists(actorMap lowRes, actorMap highRes)
 {
 
     std::cout << "Updating in MainWindow " << lowRes.size() << " " << highRes.size() << std::endl;
-//    vtkCullerCollection* cullers = m_renderer->GetCullers();   
-//    cullers->InitTraversal();
-//
-//    for(vtkIdType i = 0; i < cullers->GetNumberOfItems(); ++i)
-//    {
-//        vtkCuller* nextCuller = cullers->GetNextItem();
-//        if(nextCuller->IsA("ChunkedMeshCuller"))
-//        {
-//            static_cast<ChunkedMeshCuller*>(nextCuller)->NoCulling();
-//        }
-//    }
-//
-//    for(auto& it: highRes)
-//    {
-////        std::cout << "Mw " <<  it.first << std::endl;
-//        lowRes.at(it.first)->VisibilityOff();
-//    }
+
+    for(auto& it: lowRes)
+    {
+        if(highRes.find(it.first) == highRes.end())
+        {
+            m_renderer->RemoveActor(it.second);
+        }
+    }
     
     // TODO remove removed highres actors
     for(auto& it: highRes)
-    {
-//        m_renderer->AddActor(it.second);
-    }
+    { 
+        if(lowRes.find(it.first) == lowRes.end())
+        {
+            m_renderer->AddActor(it.second);
+        }
 
+    }
 
     m_renderer->GetRenderWindow()->Render();
 }
