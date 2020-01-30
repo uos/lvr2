@@ -121,7 +121,33 @@ ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize, float chunkSi
 {
 }
 
-
+std::vector<std::string> ChunkManager::getChannelsFromMesh(std::string layer)
+{
+    std::vector<std::string> attributeList;
+    
+    MeshBufferPtr chunkPtr;
+    bool isChunkFound = false;
+    for (int x = getChunkMinChunkIndex().x; x < getChunkMaxChunkIndex().x && !isChunkFound; x++)
+    {
+        for (int y = getChunkMinChunkIndex().y; y < getChunkMaxChunkIndex().y && !isChunkFound; y++)
+        {
+            for (int z = getChunkMinChunkIndex().z; z < getChunkMaxChunkIndex().z && !isChunkFound; z++)
+            {
+                boost::optional<MeshBufferPtr> requestedChunk = getChunk<MeshBufferPtr>(layer, x, y, z);
+                if (requestedChunk) 
+                {
+                    chunkPtr = requestedChunk.get();
+                    isChunkFound = true;
+                }
+            }
+        }
+    }
+    for (auto channelIterator = chunkPtr->begin(); channelIterator != chunkPtr->end(); ++channelIterator)
+    {
+        attributeList.push_back(channelIterator->first);
+    }
+    return attributeList;
+}
 
 void ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
                                std::unordered_map<std::size_t, MeshBufferPtr>& chunks,
@@ -174,19 +200,6 @@ void ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
         }
     }
     //    std::cout << "Num chunks " << chunks.size() << std::endl;
-}
-
-std::vector<std::string> ChunkManager::getChannels()
-{
-    std::vector<std::string> attributeList;
-    const BoundingBox<BaseVec> boundingBox(BaseVec(0,0,0), BaseVec(1,1,1));
-
-    MeshBufferPtr globalMesh = extractArea(boundingBox, "mesh1");
-    for (auto channelIterator = globalMesh->begin(); channelIterator != globalMesh->end(); ++channelIterator)
-    {
-        attributeList.push_back(channelIterator->first);
-    }
-    return attributeList;
 }
 
 MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area, std::string layer)
