@@ -21,7 +21,7 @@ using namespace lvr2;
 LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file) : m_chunkManager(file)
 {
     getNew_ = false;
-    dist_ = 50.0;
+    dist_ = 40.0;
     running_ = true;
     worker = std::thread(&LVRChunkedMeshBridge::highResWorker, this);
 
@@ -40,77 +40,143 @@ void LVRChunkedMeshBridge::highResWorker()
        }
 
        std::cout << "Get new worker" << std::endl;
-       omp_lock_t writelock;
-
-       omp_init_lock(&writelock);
+//       omp_lock_t writelock;
+//
+//       omp_init_lock(&writelock);
 
        std::cout << lvr2::timestamp << "Chunkmanager bb " << m_chunkManager.getBoundingBox() << std::endl;
-       std::cout << lvr2::timestamp << "Request from cm " << m_region << std::endl;
-       BaseVector<float>  diff = m_region.getCentroid() - m_lastRegion.getCentroid();
-       if(!(std::abs(diff[0]) > 3.0 || std::abs(diff[1]) > 3.0 || std::abs(diff[2]) > 3.0))
+       BaseVector<float> diff = m_region.getCentroid() - m_lastRegion.getCentroid();
+       std::cout << "Centroid diff: " << diff << std::endl;
+       if(!(std::abs(diff[0]) > 5.0 || std::abs(diff[1]) > 5.0 || std::abs(diff[2]) > 5.0))
        {
            getNew_ = false;
            l.unlock();
            continue;
        }
     
+       std::cout << "Last region " << m_lastRegion << std::endl;
+       std::cout << "New region " << m_region << std::endl;
        m_lastRegion = m_region;
+       auto old_highRes = m_highRes;
        m_highRes.clear();
-       m_chunkManager.extractArea(m_region, m_highRes, "mesh0");
+
+       std::cout << lvr2::timestamp << "Request from cm " << m_region << std::endl;
+       m_chunkManager.extractArea(m_region, m_highRes, "mesh1");
+
+       for(auto& it : m_highRes)
+       {
+            if(old_highRes.find(it.first) != old_highRes.end())
+            {
+                m_highRes.at(it.first) = old_highRes.at(it.first);
+            }
+       }
+       old_highRes.clear();
        std::cout << lvr2::timestamp << "got from cm " << m_highRes.size() << std::endl;
     
- //      m_highResActors.clear();
+//      m_highResActors.clear();
 
         std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor>> tmp_highResActors;
 
 //       m_highResActors = std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor>>();
-//       #pragma omp parallel
-//       {
-//       #pragma omp single
-//       { 
            for(auto it = m_highRes.begin(); it != m_highRes.end(); ++it)
-//           #pragma omp task
            {
                auto chunk = *it;
                size_t id = chunk.first;
                lvr2::MeshBufferPtr meshbuffer = chunk.second;
 
-               omp_set_lock(&writelock);
-               tmp_highResActors.insert({id, computeMeshActor(id, meshbuffer)});
-               omp_unset_lock(&writelock);
+               if(m_highResActors.find(id) == m_highResActors.end())
+               {
+                tmp_highResActors.insert({id, computeMeshActor(id, meshbuffer)});
+               }
+               else
+               {
+                tmp_highResActors.insert({id, m_highResActors.at(id)});
+               }
 
- //          }
- //      }
        }
+       auto old_actors = m_highResActors;
        m_highResActors = tmp_highResActors; 
        std::cout << lvr2::timestamp << "Got " << m_highResActors.size() << " highres" << std::endl;
        getNew_ = false;
-      //     l.unlock();
     
-       Q_EMIT updateHighRes(m_chunkActors, m_highResActors);
+       Q_EMIT updateHighRes(old_actors, m_highResActors);
     
+       l.unlock();
     }
 
 }
 
-void LVRChunkedMeshBridge::fetchHighRes(double x, double y, double z,
-                                        double dir_x, double dir_y, double dir_z)
-{
-    std::cout << "get Highres" << std::endl;
-    BaseVector<float> offset(dir_x, dir_y, dir_z);
-    offset.normalize();
-    offset *= dist_;
-    
-    BaseVector<float> min(x < offset[0] ? x : offset[0],
-                          y < offset[1] ? y : offset[1],
-                          z < offset[2] ? z : offset[2]);
-    BaseVector<float> max(x > offset[0] ? x : offset[0],
-                          y > offset[1] ? y : offset[1],
-                          z > offset[2] ? z : offset[2]);
+//void LVRChunkedMeshBridge::fetchHighRes(double position[3],
+//                                        double dir[3],
+//                                        double up[3])
+//        
+void LVRChunkedMeshBridge::fetchHighRes(BoundingBox<BaseVector<float> > bb)
+{   // std::cout << "Up vec " << up_vec << "\n" <<
+    //             "projec " << proj_vec << "\n" <<
+    //             "perp   " << perp_vec    << "\n" << 
+    //             "posit  " << eye    << "\n" << std::endl;
 
-    m_region =  BoundingBox<BaseVector<float> >(min, max);
+//    std::cout << "get Highres" << std::endl;
+//    BaseVector<float> eye(position[0], position[1], position[2]);
+//    BaseVector<float> up_vec(up[0], up[1], up[2]);
+//    up_vec.normalize();
+//    BaseVector<float> proj_vec(dir[0], dir[1], dir[2]);
+//    proj_vec.normalize();
+//    BaseVector<float> perp_vec = proj_vec.cross(up_vec);
+//    perp_vec.normalize();
+//    eye += (proj_vec * -128);
+//    BoundingBox<BaseVector<float> > n_bb;
+    
+//    for(int i = 0; i < 2; ++i)
+//    {
+//        BaseVector<float> perp;
+//        if(i)
+//        {
+//            perp = (perp_vec * dist_ * (-1));
+//        }
+//        else{
+//            perp = (perp_vec * dist_);
+//        }
+//
+//        for(int j = 0; j < 2; ++j)
+//        {
+//            BaseVector<float> n_up;
+//            if(i)
+//            {
+//                n_up = (up_vec * dist_ * (-1));
+//            }
+//            else{
+//                n_up = (up_vec * dist_);
+//            }
+//            for(int k = 0; k < 2; ++k)
+//            { 
+//                
+//                BaseVector<float> n_proj;
+//                if(k)
+//                {
+//                    n_proj = (proj_vec * dist_ * (-1));
+//                }
+//                else{
+//                    n_proj = (proj_vec * dist_);
+//                }
+//
+//                BaseVector<float> tmp = eye + perp + n_up + n_proj;
+//                n_bb.expand(tmp);
+//            }
+//        }
+//    }
+//    auto max = n_bb.getMax();
+//    auto min = n_bb.getMin();
+
+    //float min_val = std::min(min[0], std::min(min[1], min[2]));
+    //float max_val = std::max(max[0], std::max(max[1], max[2]));
+    //min = BaseVector<float>(min_val, min_val, min_val);
+    //max = BaseVector<float>(max_val, max_val, max_val);
+    //n_bb.expand(min);
+    //n_bb.expand(max);
 
     std::unique_lock<std::mutex> l(mutex);
+    m_region = bb;
     getNew_ = true;
     cond_.notify_all();
     //l.unlock();
