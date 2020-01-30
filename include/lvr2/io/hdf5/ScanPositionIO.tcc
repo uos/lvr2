@@ -63,7 +63,7 @@ void ScanPositionIO<Derived>::save(HighFive::Group& group, const ScanPositionPtr
 
     // saving hyperspectral camera
     std::string path = "/spectral/data";
-    std::cout << "saving spectral camera" << std::endl;
+    std::cout << "  saving spectral camera" << std::endl;
     HighFive::Group camGroup = hdf5util::getGroup(group, path);
     m_hyperspectralCameraIO->save(camGroup, scanPositionPtr->hyperspectralCamera);
 
@@ -157,11 +157,17 @@ ScanPositionPtr ScanPositionIO<Derived>::load(HighFive::Group& group)
             ScanCameraPtr scanCameraPtr = m_scanCameraIO->load(g);
             ret->cams.push_back(scanCameraPtr);
         }
-        else if (groupname == "spectral")
-        {
-            HighFive::Group g = hdf5util::getGroup(group, "/" + groupname);
-            HyperspectralCameraPtr ptr = m_hyperspectralCameraIO->load(g);
-        }
+    }
+
+    // load hyperspectralCamera
+    std::string path = "/spectral";
+    std::cout << "saving spectral camera" << std::endl;
+    HighFive::Group spectralGroup = hdf5util::getGroup(group, path, false);
+    if (spectralGroup.exist("data"))
+    {
+        spectralGroup = hdf5util::getGroup(spectralGroup, "data", false);
+        HyperspectralCameraPtr ptr = m_hyperspectralCameraIO->load(spectralGroup);
+        ret->hyperspectralCamera = ptr;
     }
 
     std::cout << "  loading gps position" << std::endl;
