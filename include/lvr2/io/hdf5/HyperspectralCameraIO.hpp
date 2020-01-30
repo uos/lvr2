@@ -4,6 +4,7 @@
 #define LVR2_IO_HDF5_HYPERSPECTRALCAMERAIO_HPP
 
 #include "ArrayIO.hpp"
+#include "MatrixIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2
@@ -29,6 +30,7 @@ class HyperspectralCameraIO
 
     // dependencies
     ArrayIO<Derived>* m_arrayIO = static_cast<ArrayIO<Derived>*>(m_file_access);
+    MatrixIO<Derived>* m_matrixIO = static_cast<MatrixIO<Derived>*>(m_file_access);
 
     static constexpr const char* ID = "HyperspectralCameraIO";
     static constexpr const char* OBJID = "HyperspectralCamera";
@@ -48,7 +50,9 @@ struct Hdf5Construct<hdf5features::HyperspectralCameraIO, Derived>
 {
 
     // DEPS
-    using deps = typename Hdf5Construct<hdf5features::ArrayIO, Derived>::type;
+    using dep1 = typename Hdf5Construct<hdf5features::ArrayIO, Derived>::type;
+    using dep2 = typename Hdf5Construct<hdf5features::MatrixIO, Derived>::type;
+    using deps = typename dep1::template Merge<dep2>;
 
     // ADD THE FEATURE ITSELF
     using type = typename deps::template add_features<hdf5features::HyperspectralCameraIO>::type;

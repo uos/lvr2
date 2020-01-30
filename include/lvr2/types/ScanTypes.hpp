@@ -244,22 +244,22 @@ struct HyperspectralCamera
     // HyperspectralCameraModelPtr              cameraModel;
 
     /// Extrinsics 
-    Extrinsicsd                     extrinsics;
+    Extrinsicsd                              extrinsics;
 
     /// Extrinsics estimate
-    Extrinsicsd                     extrinsicsEstimate;
+    Extrinsicsd                              extrinsicsEstimate;
 
     /// Focal length
-    double                          focalLength;
+    double                                   focalLength;
 
     /// Offset angle
-    double                          offsetAngle;
+    double                                   offsetAngle;
 
     /// Principal x, y, z
-    Vector3d                        principal;
+    Vector3d                                 principal;
 
     /// Distortion
-    Vector3d                        distortion;
+    Vector3d                                 distortion;
 
     /// OpenCV representation
     std::vector<HyperspectralPanoramaPtr>    panoramas;
