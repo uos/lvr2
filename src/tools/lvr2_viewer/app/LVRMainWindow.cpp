@@ -2326,7 +2326,7 @@ void LVRMainWindow::updateDisplayLists(actorMap lowRes, actorMap highRes)
        //                        std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > highResActors)
 {
 
-    std::cout << "Updating in MainWindow " << lowRes.size() << " " << highRes.size() << std::endl;
+//    std::cout << "Updating in MainWindow " << lowRes.size() << " " << highRes.size() << std::endl;
 
     for(auto& it: lowRes)
     {

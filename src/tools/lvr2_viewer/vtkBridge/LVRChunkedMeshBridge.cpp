@@ -39,15 +39,15 @@ void LVRChunkedMeshBridge::highResWorker()
            cond_.wait(l);
        }
 
-       std::cout << "Get new worker" << std::endl;
+//       std::cout << "Get new worker" << std::endl;
 //       omp_lock_t writelock;
 //
 //       omp_init_lock(&writelock);
 
        std::cout << lvr2::timestamp << "Chunkmanager bb " << m_chunkManager.getBoundingBox() << std::endl;
        BaseVector<float> diff = m_region.getCentroid() - m_lastRegion.getCentroid();
-       std::cout << "Centroid diff: " << diff << std::endl;
-       if(!(std::abs(diff[0]) > 5.0 || std::abs(diff[1]) > 5.0 || std::abs(diff[2]) > 5.0))
+//       std::cout << "Centroid diff: " << diff << std::endl;
+       if(!(std::abs(diff[0]) > 1.0 || std::abs(diff[1]) > 1.0 || std::abs(diff[2]) > 1.0))
        {
            getNew_ = false;
            l.unlock();
