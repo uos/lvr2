@@ -57,6 +57,10 @@ RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProje
 
 void RegistrationPipeline::doRegistration()
 {
+    Eigen::Matrix<double, 3, 3> rot;
+    rot <<  0.997052752,    0,  -0.076719028,
+            0,              1,   0,
+            0.076719028,    0,   0.997052752;
     SLAMAlign align(*m_options);
     m_scans->changed = std::vector<bool>(m_scans->project->positions.size());
     for (size_t i = 0; i < m_scans->project->positions.size(); i++)
@@ -64,6 +68,34 @@ void RegistrationPipeline::doRegistration()
         m_scans->changed.at(i) = false;
         // not inverting anymore, because initial pose is now in same format as final pose
         m_scans->project->positions.at(i)->scan->m_poseEstimation.transposeInPlace();
+        cout << "alt: " << m_scans->project->positions.at(i)->scan->m_poseEstimation << endl;
+
+
+        Eigen::Matrix<double, 3, 3> new_poseEstimation = m_scans->project->positions.at(i)->scan->m_poseEstimation.block<3,3>(0,0);
+        // new_poseEstimation(0,0) = m_scans->project->positions.at(i)->scan->m_poseEstimation(0,0);
+        // new_poseEstimation(0,1) = m_scans->project->positions.at(i)->scan->m_poseEstimation(0,1);
+        // new_poseEstimation(0,2) = m_scans->project->positions.at(i)->scan->m_poseEstimation(0,2);
+        // new_poseEstimation(1,0) = m_scans->project->positions.at(i)->scan->m_poseEstimation(1,0);
+        // new_poseEstimation(1,1) = m_scans->project->positions.at(i)->scan->m_poseEstimation(1,1);
+        // new_poseEstimation(1,2) = m_scans->project->positions.at(i)->scan->m_poseEstimation(1,2);
+        // new_poseEstimation(2,0) = m_scans->project->positions.at(i)->scan->m_poseEstimation(2,0);
+        // new_poseEstimation(2,1) = m_scans->project->positions.at(i)->scan->m_poseEstimation(2,1);
+        // new_poseEstimation(2,2) = m_scans->project->positions.at(i)->scan->m_poseEstimation(2,2);
+
+cout << "alt 3: " << new_poseEstimation << endl;
+        new_poseEstimation = rot * new_poseEstimation;
+cout << "new 3: " << new_poseEstimation << endl;
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(0,0) = new_poseEstimation(0,0);
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(0,1) = new_poseEstimation(0,1);
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(0,2) = new_poseEstimation(0,2);
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(1,0) = new_poseEstimation(1,0);
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(1,1) = new_poseEstimation(1,1);
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(1,2) = new_poseEstimation(1,2);
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(2,0) = new_poseEstimation(2,0);
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(2,1) = new_poseEstimation(2,1);
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(2,2) = new_poseEstimation(2,2);
+
+        cout << "neu: " << m_scans->project->positions.at(i)->scan->m_poseEstimation << endl;
         //m_scans->project->positions.at(i)->scan->m_poseEstimation = m_scans->project->positions.at(i)->scan->m_poseEstimation.inverse();
         ScanOptional opt = m_scans->project->positions.at(i)->scan;
         if (opt)
