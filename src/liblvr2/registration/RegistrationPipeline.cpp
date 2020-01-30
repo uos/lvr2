@@ -57,10 +57,6 @@ RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProje
 
 void RegistrationPipeline::doRegistration()
 {
-    Eigen::Matrix<double, 3, 3> rot;
-    rot <<  0.997052752,    0,  -0.076719028,
-            0,              1,   0,
-            0.076719028,    0,   0.997052752;
     SLAMAlign align(*m_options);
     m_scans->changed = std::vector<bool>(m_scans->project->positions.size());
     for (size_t i = 0; i < m_scans->project->positions.size(); i++)
