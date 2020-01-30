@@ -165,7 +165,7 @@ struct HyperspectralPanorama
     static constexpr char           sensorType[] = "HyperspectralImage";
 
     /// Timestamp 
-    doubleArr                       timestamps;
+    std::vector<double>             timestamps;
 
     /// OpenCV representation
     std::vector<cv::Mat>            channels;
