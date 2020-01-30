@@ -96,6 +96,9 @@ HyperspectralCameraPtr HyperspectralCameraIO<Derived>::load(HighFive::Group& gro
             std::vector<size_t> dim;
             ucharArr data = m_arrayIO->template load<uchar>(g, "frames", dim);
 
+            std::vector<size_t> timeDim;
+            doubleArr timestamps = m_arrayIO->template load<double>(g, "timestamps", timeDim);
+
             HyperspectralPanoramaPtr panoramaPtr(new HyperspectralPanorama);
             for (int i = 0; i < dim[0]; i++)
             {
@@ -107,6 +110,7 @@ HyperspectralCameraPtr HyperspectralCameraIO<Derived>::load(HighFive::Group& gro
 
                 HyperspectralPanoramaChannelPtr channelPtr(new HyperspectralPanoramaChannel);
                 channelPtr->channel = img;
+                channelPtr->timestamp = timestamps[i];
                 panoramaPtr->channels.push_back(channelPtr);
             }
             ret->panoramas.push_back(panoramaPtr);
