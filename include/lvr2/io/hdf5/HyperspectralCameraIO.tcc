@@ -52,10 +52,16 @@ void HyperspectralCameraIO<Derived>::save(HighFive::Group& group,
         // save panorama
         m_arrayIO->save(panoramaGroup, "frames", dim, chunks, data);
 
-        // TODO: Save timestamps
-        // dim = {hyperspectralCameraPtr->panoramas[i]->channels.size(), 1};
-        // chunks = {hyperspectralCameraPtr->panoramas[i]->channels.size(), 1};
-        // m_arrayIO->save(panoramaGroup, "timestamps", dim, chunks, panoramaPtr->timestamps);
+        // save timestamps
+        doubleArr timestamps(new double[hyperspectralCameraPtr->panoramas[i]->channels.size()]);
+        int pos = 0;
+        for (double t : hyperspectralCameraPtr->panoramas[i]->timestamps)
+        {
+            timestamps[pos++] = t;
+        }
+        dim = {pos, 1, 1};
+        chunks = {pos, 1, 1};
+        m_arrayIO->save(panoramaGroup, "timestamps", dim, chunks, timestamps);
     }
 }
 
@@ -78,6 +84,8 @@ HyperspectralCameraPtr HyperspectralCameraIO<Derived>::load(HighFive::Group& gro
                   << " are not correct." << std::endl;
         return ret;
     }
+
+    std::cout << "Hyperspectral found" << std::endl;
 
     // HyperspectralImagePtr imagePtr = hyperspectralCameraPtr->panoramas[0];
 
@@ -104,20 +112,20 @@ HyperspectralCameraPtr HyperspectralCameraIO<Derived>::load(HighFive::Group& gro
 
     // std::vector<hsize_t> chunks = {50, 50, 50};
 
-    std::vector<size_t> dim;
-    ucharArr data = m_arrayIO->template load<uchar>(group, "frames", dim);
+    // std::vector<size_t> dim;
+    // ucharArr data = m_arrayIO->template load<uchar>(group, "frames", dim);
 
-    for (int i = 0; i < dim[0]; i++)
-    {
-        // img size ist dim[1] * dim[2]
+    // for (int i = 0; i < dim[0]; i++)
+    // {
+    //     // img size ist dim[1] * dim[2]
 
-        cv::Mat img = cv::Mat(dim[1], dim[2], CV_8UC1);
-        std::memcpy(img.data, data.get() + i * dim[1] * dim[2], dim[1] * dim[2] * sizeof(uchar));
+    //     cv::Mat img = cv::Mat(dim[1], dim[2], CV_8UC1);
+    //     std::memcpy(img.data, data.get() + i * dim[1] * dim[2], dim[1] * dim[2] * sizeof(uchar));
 
-        HyperspectralPanoramaPtr panoramaPtr(new HyperspectralPanorama);
-        panoramaPtr->channels.push_back(img);
-        ret->panoramas.push_back(panoramaPtr);
-    }
+    //     HyperspectralPanoramaPtr panoramaPtr(new HyperspectralPanorama);
+    //     panoramaPtr->channels.push_back(img);
+    //     ret->panoramas.push_back(panoramaPtr);
+    // }
 
     return ret;
 }
