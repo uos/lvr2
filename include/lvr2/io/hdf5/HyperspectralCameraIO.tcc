@@ -14,6 +14,37 @@ void HyperspectralCameraIO<Derived>::save(HighFive::Group& group,
     hdf5util::setAttribute(group, "CLASS", obj);
 
     // TODO: save camera model
+    // saving estimated and registrated pose
+    m_matrixIO->save(group, "extrinsics", hyperspectralCameraPtr->extrinsics);
+    m_matrixIO->save(group, "extrinsicsEstimate", hyperspectralCameraPtr->extrinsicsEstimate);
+
+    std::vector<size_t> dim = {1, 1};
+    std::vector<hsize_t> chunks = {1, 1};
+
+    // saving focalLength
+    doubleArr focalLength(new double[1]);
+    focalLength[0] = hyperspectralCameraPtr->focalLength;
+    m_arrayIO->save(group, "focalLength", dim, chunks, focalLength);
+
+    // saving offsetAngle
+    doubleArr offsetAngle(new double[1]);
+    offsetAngle[0] = hyperspectralCameraPtr->offsetAngle;
+    m_arrayIO->save(group, "offsetAngle", dim, chunks, offsetAngle);
+
+    dim = {3, 1};
+    chunks = {3, 1};
+
+    doubleArr principal(new double[3]);
+    principal[0] = hyperspectralCameraPtr->principal[0];
+    principal[1] = hyperspectralCameraPtr->principal[1];
+    principal[2] = hyperspectralCameraPtr->principal[2];
+    m_arrayIO->save(group, "principal", dim, chunks, principal);
+
+    doubleArr distortion(new double[3]);
+    distortion[0] = hyperspectralCameraPtr->distortion[0];
+    distortion[1] = hyperspectralCameraPtr->distortion[1];
+    distortion[2] = hyperspectralCameraPtr->distortion[2];
+    m_arrayIO->save(group, "distortion", dim, chunks, distortion);
 
     for (int i = 0; i < hyperspectralCameraPtr->panoramas.size(); i++)
     {
@@ -83,6 +114,96 @@ HyperspectralCameraPtr HyperspectralCameraIO<Derived>::load(HighFive::Group& gro
         std::cout << "[Hdf5IO - HyperspectralCameraIO] WARNING: flags of " << group.getId()
                   << " are not correct." << std::endl;
         return ret;
+    }
+
+    // read extrinsics
+    boost::optional<lvr2::Extrinsicsd> extrinsics =
+        m_matrixIO->template load<lvr2::Extrinsicsd>(group, "extrinsics");
+    if (extrinsics)
+    {
+        ret->extrinsics = extrinsics.get();
+    }
+
+    // read extrinsicsEstimate
+    boost::optional<lvr2::Extrinsicsd> extrinsicsEstimate =
+        m_matrixIO->template load<lvr2::Extrinsicsd>(group, "extrinsicsEstimate");
+    if (extrinsicsEstimate)
+    {
+        ret->extrinsicsEstimate = extrinsicsEstimate.get();
+    }
+
+    // read focalLength
+    if (group.exist("focalLength"))
+    {
+        std::vector<size_t> dimension;
+        doubleArr focalLength = m_arrayIO->template load<double>(group, "focalLength", dimension);
+
+        if (dimension.at(0) != 1)
+        {
+            std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong focalLength dimension. The focalLength "
+                         "will not be loaded."
+                      << std::endl;
+        }
+        else
+        {
+            ret->focalLength = focalLength[0];
+        }
+    }
+
+    // read offsetAngle
+    if (group.exist("offsetAngle"))
+    {
+        std::vector<size_t> dimension;
+        doubleArr offsetAngle = m_arrayIO->template load<double>(group, "offsetAngle", dimension);
+
+        if (dimension.at(0) != 1)
+        {
+            std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong offsetAngle dimension. The offsetAngle "
+                         "will not be loaded."
+                      << std::endl;
+        }
+        else
+        {
+            ret->offsetAngle = offsetAngle[0];
+        }
+    }
+
+    // read principal
+    if (group.exist("principal"))
+    {
+        std::vector<size_t> dimension;
+        doubleArr principal = m_arrayIO->template load<double>(group, "principal", dimension);
+
+        if (dimension.at(0) != 3)
+        {
+            std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong principal dimension. The principal "
+                         "will not be loaded."
+                      << std::endl;
+        }
+        else
+        {
+            Vector3d p = {principal[0], principal[1], principal[2]};
+            ret->principal = p;
+        }
+    }
+
+    // read distortion
+    if (group.exist("distortion"))
+    {
+        std::vector<size_t> dimension;
+        doubleArr distortion = m_arrayIO->template load<double>(group, "distortion", dimension);
+
+        if (dimension.at(0) != 3)
+        {
+            std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong distortion dimension. The distortion "
+                         "will not be loaded."
+                      << std::endl;
+        }
+        else
+        {
+            Vector3d d = {distortion[0], distortion[1], distortion[2]};
+            ret->distortion = d;
+        }
     }
 
     // iterate over all panoramas
