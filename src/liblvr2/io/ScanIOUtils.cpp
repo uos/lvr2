@@ -166,7 +166,7 @@ bool loadScanImage(
     boost::filesystem::path imageDirectory = 
         getScanImageDirectory(root, positionDirectory, cameraDirectory);
 
-    boost::filesystem::path imagePath(imageDirectory / boost::filesystem::path(metaFileName.str()));
+    boost::filesystem::path imagePath(imageDirectory / boost::filesystem::path(imageFileName.str()));
     boost::filesystem::path metaPath(imageDirectory / boost::filesystem::path(metaFileName.str()));
 
     // Load meta info
