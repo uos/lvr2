@@ -227,16 +227,23 @@ void SLAMAlign::applyTransform(SLAMScanPtr scan, const Matrix4d& transform)
 void SLAMAlign::checkLoopCloseOtherOrder(size_t last)
 {
     bool hasLoop = false;
-
+    int no_loop = INT_MAX;
     vector<SLAMScanPtr> scans;
     std::vector<bool> new_scans;
     scans.push_back(m_scans.at(m_icp_graph.at(0).first));
-    for (int i = 0; i != m_icp_graph.at(i).second; i++)
+    for (int i = 0; i <= last; i++)
     {
         scans.push_back(m_scans.at(m_icp_graph.at(i).second));
-        new_scans.push_back(m_new_scans.at(m_icp_graph.at(i).second));
-    }
 
+        if (!m_new_scans.empty())
+        {
+                new_scans.push_back(m_new_scans.at(m_icp_graph.at(i).second));
+        }
+        if (m_icp_graph.at(last).first == m_icp_graph.at(i).second)
+        {
+                no_loop = i;
+        }
+    }
 
     for (int i = 0; i < scans.size() && !hasLoop; i++)
     {
@@ -244,7 +251,7 @@ void SLAMAlign::checkLoopCloseOtherOrder(size_t last)
             pow(m_scans.at(last)->innerScan()->m_poseEstimation(3,0) - scans.at(i)->innerScan()->m_poseEstimation(3,0), 2.0)+
             pow(m_scans.at(last)->innerScan()->m_poseEstimation(3,1) - scans.at(i)->innerScan()->m_poseEstimation(3,1), 2.0)+
             pow(m_scans.at(last)->innerScan()->m_poseEstimation(3,2) - scans.at(i)->innerScan()->m_poseEstimation(3,2), 2.0));
-        if (distance_to_other < m_options.closeLoopDistance)
+        if (i != no_loop && distance_to_other < m_options.closeLoopDistance)
         {
             cout << "found loop" << endl;
             m_graph.doGraphSLAM(scans, last, new_scans);

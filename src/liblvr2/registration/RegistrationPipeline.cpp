@@ -65,6 +65,29 @@ void RegistrationPipeline::doRegistration()
         // not inverting anymore, because initial pose is now in same format as final pose
         m_scans->project->positions.at(i)->scan->m_poseEstimation.transposeInPlace();
 
+        Eigen::Matrix<double, 3, 3> tmp_mat(m_scans->project->positions.at(i)->scan->m_poseEstimation.block<3,3>(0,0));
+        Eigen::Vector3d v(0, 1, 0);
+        v = tmp_mat * v;
+        double cos = 0.996917334;
+        double sin = -0.078459096;
+
+        Eigen::Matrix<double, 3, 3> mult_mat;
+        mult_mat <<     v(0)*v(0)*(1.0-cos)+cos, v(0)*v(1)*(1.0-cos)-v(2)*sin, v(0)*v(2)*(1.0-cos)+v(1)*sin,
+                        v(1)*v(0)*(1.0-cos)+v(2)*sin, v(1)*v(1)*(1.0-cos)+cos, v(1)*v(2)*(1.0-cos)-v(0)*sin,
+                        v(2)*v(0)*(1.0-cos)-v(1)*sin, v(2)*v(1)*(1.0-cos)+v(0)*sin, v(2)*v(2)*(1.0-cos)+cos;
+        tmp_mat = tmp_mat * mult_mat;
+
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(0,0) = tmp_mat(0,0);
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(0,1) = tmp_mat(0,1);
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(0,2) = tmp_mat(0,2);
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(1,0) = tmp_mat(1,0);
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(1,1) = tmp_mat(1,1);
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(1,2) = tmp_mat(1,2);
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(2,0) = tmp_mat(2,0);
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(2,1) = tmp_mat(2,1);
+        m_scans->project->positions.at(i)->scan->m_poseEstimation(2,2) = tmp_mat(2,2);
+
+
         //m_scans->project->positions.at(i)->scan->m_poseEstimation = m_scans->project->positions.at(i)->scan->m_poseEstimation.inverse();
         ScanOptional opt = m_scans->project->positions.at(i)->scan;
         if (opt)
