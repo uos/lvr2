@@ -52,7 +52,7 @@ namespace lvr2
         string filePath = "";
 
         // voxelsize for reconstruction.
-        float voxelSize = 0.1;
+        vector<float> voxelSizes = std::vector<float>{0.1};
 
         // voxelsize for the BigGrid.
         float bgVoxelSize = 1;
@@ -136,7 +136,7 @@ namespace lvr2
         /**
          * Constructor with parameters
          */
-        LargeScaleReconstruction(std::string h5File, float voxelSize, float bgVoxelSize, float scale, size_t chunkSize,
+        LargeScaleReconstruction(std::string h5File, vector<float> voxelSizes, float bgVoxelSize, float scale, size_t chunkSize,
                 uint nodeSize, int partMethod,int ki, int kd, int kn, bool useRansac, bool extrude,
                 int removeDanglingArtifacts, int cleanContours, int fillHoles, bool optimizePlanes,
                 float getNormalThreshold, int planeIterations, int minPlaneSize, int smallRegionThreshold,
@@ -156,13 +156,11 @@ namespace lvr2
          * @param layerName the name of the ChunkManager-Layer of the tsdf-values
          * @return
          */
-        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB, std::shared_ptr<ChunkHashGrid> chunkManager, std::string layerName="tsdf_values");
+        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB, std::shared_ptr<ChunkHashGrid> chunkManager);
 
-        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkHashGrid> chunkManager, std::string layerName="tsdf_values");
+        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkHashGrid> chunkManager);
 
-        MeshBufferPtr partialReconstruct(BaseVector<int> coord, std::shared_ptr<ChunkHashGrid> chunkManager, std::string layerName, BoundingBox<BaseVecT> bb);
-
-        HalfEdgeMesh<BaseVecT> getPartialReconstruct(BoundingBox<BaseVecT> newChunksBB, std::shared_ptr<ChunkHashGrid> chunkHashGrid, std::string layerName);
+        HalfEdgeMesh<BaseVecT> getPartialReconstruct(BoundingBox<BaseVecT> newChunksBB, std::shared_ptr<ChunkHashGrid> chunkHashGrid,  float voxelSize);
 
         int resetEditMark(ScanProjectEditMarkPtr project);
 
@@ -196,7 +194,7 @@ namespace lvr2
         string m_filePath;
 
         // voxelsize for reconstruction. Default: 10
-        float m_voxelSize;
+        vector <float> m_voxelSizes;
 
         // voxelsize for the BigGrid. Default: 10
         float m_bgVoxelSize;
