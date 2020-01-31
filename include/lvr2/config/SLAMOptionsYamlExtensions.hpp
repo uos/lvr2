@@ -80,6 +80,7 @@ struct convert<lvr2::SLAMOptions>
         node["slamMaxDistance"] = options.slamMaxDistance;
         node["slamEpsilon"] = options.slamEpsilon;
         node["diffPoseSum"] = options.diffPoseSum;
+        node["useScanOrder"] = options.useScanOrder;
 
         return node;
     }
@@ -202,6 +203,11 @@ struct convert<lvr2::SLAMOptions>
         if (node["diffPoseSum"])
         {
             options.diffPoseSum = node["diffPoseSum"].as<double>();
+        }
+
+        if (node["useScanOrder"])
+        {
+            options.useScanOrder = node["useScanOrder"].as<double>();
         }
 
         return true;
