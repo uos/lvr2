@@ -195,11 +195,13 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     LargeScaleReconstruction<lvr2::BaseVector<float>> lsr(m_lsrOptions);
     BoundingBox<BaseVector<float>> newChunksBB;
     std::string layerName = "tsdf_values";
-    lsr.mpiChunkAndReconstruct(m_scanProject, newChunksBB, m_chunkManager, layerName);
+    lsr.mpiChunkAndReconstruct(m_scanProject, newChunksBB, m_chunkManager);
     std::cout << "Finished large scale reconstruction!" << std::endl;
 
+    float voxelSize = m_lsrOptions.voxelSizes[0];
+
     std::cout << "Starting mesh generation..." << std::endl;
-    HalfEdgeMesh<lvr2::BaseVector<float>> hem = lsr.getPartialReconstruct(newChunksBB, m_chunkManager, layerName);
+    HalfEdgeMesh<lvr2::BaseVector<float>> hem = lsr.getPartialReconstruct(newChunksBB, m_chunkManager, voxelSize);
     // TODO: mesh reduction???
     std::cout << "Finished mesh generation!" << std::endl;
 

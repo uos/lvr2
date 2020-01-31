@@ -52,7 +52,7 @@ struct convert<lvr2::LSROptions>
         node["debugChunks"] = options.debugChunks;
         node["useGPU"] = options.useGPU;
         node["filePath"] = options.filePath;
-        node["voxelSize"] = options.voxelSize;
+        node["voxelSizes"] = options.voxelSizes;
         node["bgVoxelSize"] = options.bgVoxelSize;
         node["scale"] = options.scale;
         node["chunkSize"] = options.chunkSize;
@@ -104,9 +104,9 @@ struct convert<lvr2::LSROptions>
             options.filePath = node["filePath"].as<std::string>();
         }
 
-        if (node["voxelSize"])
+        if (node["voxelSizes"])
         {
-            options.voxelSize = node["voxelSize"].as<float>();
+            options.voxelSizes = node["voxelSizes"].as<vector<float>>();
         }
 
         if (node["bgVoxelSize"])
