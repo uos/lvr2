@@ -39,6 +39,8 @@
 #include "lvr2/reconstruction/PointsetGrid.hpp"
 #include "lvr2/reconstruction/FastBox.hpp"
 #include "lvr2/reconstruction/FastReconstruction.hpp"
+#include "lvr2/registration/OctreeReduction.hpp"
+
 #include "lvr2/algorithm/CleanupAlgorithms.hpp"
 #include "lvr2/algorithm/NormalAlgorithms.hpp"
 #include "lvr2/algorithm/Tesselator.hpp"
@@ -219,7 +221,6 @@ namespace lvr2
             string name_id;
             if (m_partMethod == 1)
             {
-                // TODO rename the name / use centroid
                 name_id =
                         std::to_string(
                                 (int)floor(partitionBoxes.at(i).getCentroid().x / m_chunkSize)) +
@@ -285,8 +286,19 @@ namespace lvr2
                 cout << "got " << numNormals << " normals" << endl;
             }
 
+            lvr2::PointBufferPtr p_loader_reduced;
+            if(true) // reduction TODO add options
+            {
+                OctreeReduction oct(p_loader, m_voxelSize, 20);
+                p_loader_reduced = oct.getReducedPoints();
+            }
+            else
+            {
+                p_loader_reduced = p_loader;
+            }
+
             lvr2::PointsetSurfacePtr<Vec> surface;
-            surface = make_shared<lvr2::AdaptiveKSearchSurface<Vec>>(p_loader,
+            surface = make_shared<lvr2::AdaptiveKSearchSurface<Vec>>(p_loader_reduced,
                                                                      "FLANN",
                                                                      m_Kn,
                                                                      m_Ki,
@@ -299,8 +311,8 @@ namespace lvr2
                 {
 #ifdef GPU_FOUND
                 std::vector<float> flipPoint = std::vector<float>{100, 100, 100};
-                size_t num_points = p_loader->numPoints();
-                floatArr points = p_loader->getPointArray();
+                size_t num_points = p_loader_reduced->numPoints();
+                floatArr points = p_loader_reduced->getPointArray();
                 floatArr normals = floatArr(new float[num_points * 3]);
                 std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
                 GpuSurface gpu_surface(points, num_points);
@@ -312,7 +324,7 @@ namespace lvr2
                 gpu_surface.calculateNormals();
                 gpu_surface.getNormals(normals);
 
-                p_loader->setNormalArray(normals, num_points);
+                p_loader_reduced->setNormalArray(normals, num_points);
                 gpu_surface.freeGPU();
 #else
 
@@ -356,7 +368,7 @@ namespace lvr2
                         make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
                 lvr2::HalfEdgeMesh<Vec> mesh;
                 reconstruction->getMesh(mesh);
-                if(mesh.numVertices() > 0)
+                if(mesh.numVertices() > 0 && mesh.numFaces() > 0)
                 {
                     lvr2::SimpleFinalizer<Vec> finalize;
                     auto meshBuffer = MeshBufferPtr(finalize.apply(mesh));
@@ -466,10 +478,11 @@ namespace lvr2
             // save mesh depending on input file type
             boost::filesystem::path selectedFile(m_filePath);
 
-            std::time_t result = std::time(nullptr);
-            std::string largeScale = (string) std::asctime(std::localtime(&result)) + ".ply";
+            time_t now = time(0);
 
-            largeScale.erase(std::remove(largeScale.begin(), largeScale.end(), '\n'), largeScale.end());
+            tm *time = localtime(&now);
+            stringstream largeScale;
+            largeScale << 1900 + time->tm_year << "_" << 1+ time->tm_mon << "_" << time->tm_mday << "_" <<  time->tm_hour << "h_" << 1 + time->tm_min << "m_" << 1 + time->tm_sec << "s.ply";
 
 
             if (selectedFile.extension().string() == ".h5") {
@@ -479,10 +492,10 @@ namespace lvr2
                 //hdfWrite.save("mesh", newMesh);
 
                 auto m = ModelPtr(new Model(meshBuffer));
-                ModelFactory::saveModel(m, largeScale);
+                ModelFactory::saveModel(m, largeScale.str());
             } else {
                 auto m = ModelPtr(new Model(meshBuffer));
-                ModelFactory::saveModel(m, largeScale);
+                ModelFactory::saveModel(m, largeScale.str());
             }
         }
         return 1;
@@ -564,10 +577,6 @@ namespace lvr2
                         }
                         tsdfChunks.push_back(chunk.get());
                     }
-                    else
-                    {
-                        std::cout << "WARNING - Could not find chunk (" << i << ", " << j << ", " << k << ") in layer: " << layerName << std::endl;
-                    }
                 }
             }
         }
@@ -641,10 +650,10 @@ namespace lvr2
 
                         tsdfChunks.push_back(chunk.get());
                     }
-                    else
-                    {
-                        std::cout << "DEBUG - Could not find chunk (" << i << ", " << j << ", " << k << ") in layer: " << layerName << std::endl;
-                    }
+                    //else
+                    //{
+                    //    std::cout << "DEBUG - Could not find chunk (" << i << ", " << j << ", " << k << ") in layer: " << layerName << std::endl;
+                    //}
                 }
             }
         }

@@ -340,6 +340,10 @@ class Options : public lvr2::BaseOption
 
     int getGridSize() const;
 
+    bool getBigMesh() const;
+
+    bool getDebugChunks() const;
+
     string getPartialReconstruct() const;
 
   private:
@@ -486,6 +490,12 @@ class Options : public lvr2::BaseOption
 
     // gridsize for virtual grid
     int m_gridsize;
+
+    //flag to generate a .ply file for the reconstructed mesh
+    bool m_bigMesh;
+
+    //flag to generate debug chunks as .ply
+    bool m_debugChunks;
 };
 
 /// Overlaoeded outpur operator

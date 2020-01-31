@@ -86,38 +86,67 @@ int main(int argc, char** argv)
 
     string in = options.getInputFileName()[0];
 
+    boost::filesystem::path selectedFile(in);
+    string extension = selectedFile.extension().string();
+
+
     LargeScaleReconstruction<Vec> lsr(options.getInputFileName()[0], options.getVoxelsize(), options.getBGVoxelsize(), options.getScaling(), options.getGridSize(),
                                       options.getNodeSize(), options.getVGrid(), options.getKi(), options.getKd(), options.getKn(), options.useRansac(), options.extrude(),
                                       options.getDanglingArtifacts(), options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
                                       options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
-                                      options.retesselate(), options.getLineFusionThreshold(), true, false, options.useGPU());
+                                      options.retesselate(), options.getLineFusionThreshold(), options.getBigMesh(), options.getDebugChunks(), options.useGPU());
 
-    HDF5IO hdf;
-    hdf.open(in);
+    
 
-    ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
 
     ScanProjectEditMarkPtr project(new ScanProjectEditMark);
-    project->project = scanProjectPtr;
+
+    // project->project = scanProjectPtr;
     
 
     // loadAllPreviewsFromHDF5(in, *project->project.get());
 
-    for(int i =0; i < project->project->positions.size(); i++)
-    {
-        project->changed.push_back(true);
-    }
-
+    // project->project = ScanProjectPtr(new ScanProject);
+    std::shared_ptr<ChunkHashGrid> cm;
     BoundingBox<Vec> boundingBox;
 
+    if (extension == ".h5")
+    {
+        // loadAllPreviewsFromHDF5(in, *project->project.get());
+        HDF5IO hdf;
+        hdf.open(in);
+        ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
+        project->project = scanProjectPtr;
 
-    std::shared_ptr<ChunkHashGrid> cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(in, 50, boundingBox, options.getGridSize()));
+        for (int i = 0; i < project->project->positions.size(); i++)
+        {
+            project->changed.push_back(true);
+        }
+        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(in, 50, boundingBox, options.getGridSize()));
+    }
+    else
+    {
+        project->project = ScanProjectPtr(new ScanProject);
+
+        ModelPtr model = ModelFactory::readModel(in);
+        ScanPtr scan(new Scan);
+
+        scan->points = model->m_pointCloud;
+        ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
+        scanPosPtr->scans.push_back(scan);
+        project->project->positions = std::vector<ScanPositionPtr>();
+        project->project->positions.push_back(scanPosPtr);
+        project->changed.push_back(true);
+
+        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid("chunked_mesh.h5", 50, boundingBox, options.getGridSize()));
+    }
+
+
     BoundingBox<Vec> bb;
     int x = lsr.mpiChunkAndReconstruct(project, bb, cm, "tsdf_values");
 
-    BaseVector<int> coord(0,0,0);
 
-    lsr.getPartialReconstruct(bb, cm, "tsdf_values");
+    //lsr.getPartialReconstruct(bb, cm, "tsdf_values");
 
     cout << "Program end." << endl;
 
