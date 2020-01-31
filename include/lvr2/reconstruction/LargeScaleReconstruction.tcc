@@ -551,8 +551,7 @@ namespace lvr2
     template<typename BaseVecT>
     HalfEdgeMesh<BaseVecT> LargeScaleReconstruction<BaseVecT>::getPartialReconstruct(BoundingBox<BaseVecT> newChunksBB,
                                                                             std::shared_ptr<ChunkHashGrid> chunkHashGrid,
-                                                                            float voxelSize)
-    {
+                                                                            float voxelSize) {
         string layerName = "tsdf_values_" + std::to_string(voxelSize);
         int chunksize = m_chunkSize;
 
@@ -560,26 +559,26 @@ namespace lvr2
         std::vector<BoundingBox<BaseVecT>> partitionBoxesNew = std::vector<BoundingBox<BaseVecT>>();
         BoundingBox<BaseVecT> completeBB = BoundingBox<BaseVecT>();
 
-        int xMin = (int)(newChunksBB.getMin().x / m_chunkSize);
-        int yMin = (int)(newChunksBB.getMin().y / m_chunkSize);
-        int zMin = (int)(newChunksBB.getMin().z / m_chunkSize);
+        int xMin = (int) (newChunksBB.getMin().x / m_chunkSize);
+        int yMin = (int) (newChunksBB.getMin().y / m_chunkSize);
+        int zMin = (int) (newChunksBB.getMin().z / m_chunkSize);
 
-        int xMax = (int)(newChunksBB.getMax().x / m_chunkSize);
-        int yMax = (int)(newChunksBB.getMax().y / m_chunkSize);
-        int zMax = (int)(newChunksBB.getMax().z / m_chunkSize);
+        int xMax = (int) (newChunksBB.getMax().x / m_chunkSize);
+        int yMax = (int) (newChunksBB.getMax().y / m_chunkSize);
+        int zMax = (int) (newChunksBB.getMax().z / m_chunkSize);
 
         std::cout << "DEBUG: New Chunks from (" << xMin << ", " << yMin << ", " << zMin
-                    << ") - to (" << xMax << ", " << yMax << ", " << zMax << ")." << std::endl;
+                  << ") - to (" << xMax << ", " << yMax << ", " << zMax << ")." << std::endl;
 
-        for(int i = xMin -1; i <= xMax +1; i++) {
-            for(int j = yMin -1; j <= yMax +1; j++) {
-                for(int k = zMin -1; k <= zMax +1; k++) {
-                    boost::optional<shared_ptr<PointBuffer>> chunk = chunkHashGrid->getChunk<PointBufferPtr>(layerName, i, j, k);
+        for (int i = xMin - 1; i <= xMax + 1; i++) {
+            for (int j = yMin - 1; j <= yMax + 1; j++) {
+                for (int k = zMin - 1; k <= zMax + 1; k++) {
+                    boost::optional<shared_ptr<PointBuffer>> chunk = chunkHashGrid->getChunk<PointBufferPtr>(layerName,
+                                                                                                             i, j, k);
 
 
-                    if(chunk)
-                    {
-                        BaseVecT min(i * chunksize, j *  chunksize,k * chunksize);
+                    if (chunk) {
+                        BaseVecT min(i * chunksize, j * chunksize, k * chunksize);
                         BaseVecT max(i * chunksize + chunksize, j * chunksize + chunksize, k * chunksize + chunksize);
 
                         BoundingBox<BaseVecT> temp(min, max);
@@ -597,34 +596,35 @@ namespace lvr2
         }
 
 
-
-        auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(tsdfChunks, partitionBoxesNew, completeBB, voxelSize);
+        auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(tsdfChunks, partitionBoxesNew, completeBB,
+                                                                           voxelSize);
         tsdfChunks.clear();
         auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(hg);
 
         lvr2::HalfEdgeMesh<Vec> mesh;
         reconstruction->getMesh(mesh);
 
-        if (m_removeDanglingArtifacts)
-        {
+        if (m_removeDanglingArtifacts) {
             cout << timestamp << "Removing dangling artifacts" << endl;
             removeDanglingCluster(mesh, static_cast<size_t>(m_removeDanglingArtifacts));
         }
 
-        if (m_fillHoles)
-        {
+        if (m_fillHoles) {
             naiveFillSmallHoles(mesh, m_fillHoles, false);
         }
 
-        /*
-        auto faceNormals = calcFaceNormals(mesh);
-        // Finalize mesh
-        lvr2::SimpleFinalizer<Vec> finalize;
-        auto meshBuffer = finalize.apply(mesh);
 
-        auto m = ModelPtr(new Model(meshBuffer));
-        ModelFactory::saveModel(m, "largeScale_test.ply"); */
+        if (m_debugChunks)
+        {
+            auto faceNormals = calcFaceNormals(mesh);
+            // Finalize mesh
+            lvr2::SimpleFinalizer<Vec> finalize;
+            auto meshBuffer = finalize.apply(mesh);
 
-        return mesh;
+            auto m = ModelPtr(new Model(meshBuffer));
+            ModelFactory::saveModel(m, "largeScale_test_" + to_string(voxelSize) + ".ply");
+        }
+            return mesh;
+
     }
 }
