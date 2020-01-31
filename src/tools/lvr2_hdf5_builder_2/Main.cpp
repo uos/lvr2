@@ -10,7 +10,7 @@
 #include "lvr2/io/hdf5/MatrixIO.hpp"
 #include "lvr2/io/hdf5/PointCloudIO.hpp"
 #include "lvr2/io/hdf5/VariantChannelIO.hpp"
-#include "lvr2/types/Scan.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/lambda/bind.hpp>
@@ -21,6 +21,7 @@
 #include <iterator>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <regex>
 #include <yaml-cpp/yaml.h>
 
 // const hdf5tool2::Options* options;
@@ -36,24 +37,19 @@ using HDF5IO = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
 bool m_usePreviews;
 int m_previewReductionFactor;
 
-template <typename Iterator>
-bool parse_scan_filename(Iterator first, Iterator last, int& i)
+bool parse_scan_filename(std::string path, int& i)
 {
-    using boost::phoenix::ref;
-    using boost::spirit::qi::_1;
-    using qi::lit;
-    using qi::parse;
-    using qi::uint_parser;
+    // check whether the foldername ends with at least one number
+    const std::regex reg("\\d+$");
+    std::smatch match;
 
-    uint_parser<unsigned, 10, 1, -1> uint_3_d;
+    bool r = std::regex_search(path, match, reg);
+    if (r)
+    {
+        // set i depending on match
+        i = std::stoi(match[0]);
+    }
 
-    bool r = parse(first,                  /*< start iterator >*/
-                   last,                   /*< end iterator >*/
-                   (uint_3_d[ref(i) = _1]) /*< the parser >*/
-    );
-
-    if (first != last) // fail if we did not get a full match
-        return false;
     return r;
 }
 
@@ -89,8 +85,8 @@ bool sortScans(boost::filesystem::path firstScan, boost::filesystem::path secSca
     int i = 0;
     int j = 0;
 
-    bool first = parse_scan_filename(firstStem.begin(), firstStem.end(), i);
-    bool sec = parse_scan_filename(secStem.begin(), secStem.end(), j);
+    bool first = parse_scan_filename(firstStem, i);
+    bool sec = parse_scan_filename(secStem, j);
 
     if (first && sec)
     {
@@ -181,8 +177,9 @@ bool saveScan(int nr, ScanPtr scan, HDF5IO hdf5)
 
         // Generate tuples for field of view and resolution parameters
         floatArr fov(new float[2]);
-        fov[0] = scan->m_hFieldOfView;
-        fov[1] = scan->m_vFieldOfView;
+        fov[0] = scan->m_thetaMax - scan->m_thetaMin;
+        fov[1] = scan->m_phiMax - scan->m_phiMin;
+
 
         floatArr res(new float[2]);
         res[0] = scan->m_hResolution;
@@ -420,11 +417,11 @@ void readScanMetaData(const boost::filesystem::path& fn, ScanPtr& scan_ptr)
                 if (it->second["Theta"])
                 {
                     YAML::Node tmp = it->second["Theta"];
-                    float min = tmp["min"].as<float>();
-                    float max = tmp["max"].as<float>();
+                    scan_ptr->m_thetaMin = tmp["min"].as<float>();
+                    scan_ptr->m_thetaMax = tmp["max"].as<float>();
 
-                    scan_ptr->m_vFieldOfView = max - min;
-                    scan_ptr->m_vResolution = tmp["delta"].as<float>();
+                    // scan_ptr->m_vFieldOfView = max - min;
+                    // scan_ptr->m_vResolution = tmp["delta"].as<float>();
                     // std::cout << "T: " << scan_ptr->m_vFieldOfView << "; "
                     //          << scan_ptr->m_vResolution << std::endl;
                 }
@@ -433,8 +430,7 @@ void readScanMetaData(const boost::filesystem::path& fn, ScanPtr& scan_ptr)
                     YAML::Node tmp = it->second["Phi"];
                     float min = tmp["min"].as<float>();
                     float max = tmp["max"].as<float>();
-
-                    scan_ptr->m_hFieldOfView = max - min;
+                    
                     scan_ptr->m_hResolution = tmp["delta"].as<float>();
                     // std::cout << "P: " << scan_ptr->m_hFieldOfView << "; "
                     //          << scan_ptr->m_hResolution << std::endl;
@@ -629,8 +625,8 @@ int main(int argc, char** argv)
         boost::filesystem::path ply;
         std::string fn = p.stem().string();
 
-        // ?!
-        if (!parse_scan_filename(fn.begin(), fn.end(), count))
+        // check if foldername matches [a-zA-z]*\d+
+        if (!parse_scan_filename(fn, count))
         {
             std::cout << timestamp << "Invalid path " << p << std::endl;
             continue;

@@ -34,9 +34,8 @@
 
 #include "Options.hpp"
 #include "lvr2/algorithm/ChunkManager.hpp"
+#include "lvr2/io/GHDF5IO.hpp"
 #include "lvr2/io/ModelFactory.hpp"
-
-#include <lvr2/io/GHDF5IO.hpp>
 
 #include <boost/filesystem.hpp>
 #include <iostream>
@@ -56,9 +55,9 @@ int main(int argc, char** argv)
     {
         return EXIT_SUCCESS;
     }
-    if(options.getLoad())
+    if (options.getLoad())
     {
-        if(boost::filesystem::exists(options.getChunkedMesh()))
+        if (boost::filesystem::exists(options.getChunkedMesh()))
         {
             // loading a hdf5 file and extracting the chunks for a given bounding box
             lvr2::ChunkManager chunkLoader(options.getChunkedMesh(), options.getCacheSize());
@@ -69,14 +68,14 @@ int main(int argc, char** argv)
             {
                 boost::filesystem::create_directories("area");
             }
-            lvr2::BoundingBox<lvr2::BaseVector<float>> area(lvr2::BaseVector<float>(options.getXMin(), options.getYMin(), options.getZMin()),
-                                                            lvr2::BaseVector<float>(options.getXMax(), options.getYMax(), options.getZMax()));
+            lvr2::BoundingBox<lvr2::BaseVector<float>> area(
+                lvr2::BaseVector<float>(options.getXMin(), options.getYMin(), options.getZMin()),
+                lvr2::BaseVector<float>(options.getXMax(), options.getYMax(), options.getZMax()));
             // end: tmp test of extractArea method
 
-            lvr2::ModelFactory::saveModel(lvr2::ModelPtr(new lvr2::Model(chunkLoader.extractArea(area))),
-                                          "area.ply");
+            lvr2::ModelFactory::saveModel(
+                lvr2::ModelPtr(new lvr2::Model(chunkLoader.extractArea(area))), "area.ply");
         }
-
     }
     else
     {
@@ -96,11 +95,10 @@ int main(int argc, char** argv)
         lvr2::MeshBufferPtr meshBuffer;
         if (extension == ".h5")
         {
-            using HDF5MeshToolIO = lvr2::Hdf5IO<
-                    lvr2::hdf5features::ArrayIO,
-                    lvr2::hdf5features::ChannelIO,
-                    lvr2::hdf5features::VariantChannelIO,
-                    lvr2::hdf5features::MeshIO>;
+            using HDF5MeshToolIO = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
+                                                lvr2::hdf5features::ChannelIO,
+                                                lvr2::hdf5features::VariantChannelIO,
+                                                lvr2::hdf5features::MeshIO>;
             HDF5MeshToolIO hdf5;
             hdf5.open(options.getInputFile());
             meshBuffer = hdf5.loadMesh(options.getMeshGroup());

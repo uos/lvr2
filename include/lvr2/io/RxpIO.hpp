@@ -40,8 +40,7 @@
 #include "lvr2/io/BaseIO.hpp"
 
 #include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/geometry/Matrix4.hpp"
-
+#include "lvr2/types/MatrixTypes.hpp"
 namespace lvr2
 {
 
@@ -80,7 +79,7 @@ class RxpIO : public BaseIO
          * @return returns a ModelPtr with the pointcloud data or if it was unable to read the file
          *         it returns an empty ModelPtr
          */
-        ModelPtr read(std::string filename, int reduction_factor, Matrix4<Vec> transform);
+        ModelPtr read(std::string filename, int reduction_factor, const Transformd& transform);
 
         /**
          * @brief This function is not supported and will do nothing.

@@ -29,7 +29,7 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-bool ImageTexturizer<BaseVecT>::exclude_image(BaseVecT pos, const ImageData<BaseVecT> &image_data)
+bool ImageTexturizer<BaseVecT>::exclude_image(BaseVecT pos, const ScanImage &image_data)
 {
     if (point_behind_camera(pos, image_data)) {
         return true;
@@ -41,9 +41,11 @@ bool ImageTexturizer<BaseVecT>::exclude_image(BaseVecT pos, const ImageData<Base
 }
 
 template<typename BaseVecT>
-bool ImageTexturizer<BaseVecT>::point_behind_camera(BaseVecT pos, const ImageData<BaseVecT> &image_data)
+bool ImageTexturizer<BaseVecT>::point_behind_camera(BaseVecT pos, const ScanImage &image_data)
 {
-    BaseVecT norm = image_data.pos - pos;
+    BaseVecT diff = image_data.pos - pos;
+    
+    Normal<double> norm(diff.x, diff.y, diff.z);
     norm.normalize();
     if (norm.dot(image_data.dir) >= 0.0f) {
         return true;
@@ -56,7 +58,7 @@ template<typename BaseVecT>
 TextureHandle ImageTexturizer<BaseVecT>::generateTexture(
     int index,
     const PointsetSurface<BaseVecT>& surface,
-    const BoundingRectangle<BaseVecT>& boundingRect
+    const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect
 )
 {
     // Calculate the texture size
@@ -66,14 +68,18 @@ TextureHandle ImageTexturizer<BaseVecT>::generateTexture(
     // Create texture
     Texture texture(index, sizeX, sizeY, 3, 1, this->m_texelSize);
 
+    cout << "images: " << images.size() << endl;
+
     // load images if not already done
     if (!image_data_initialized)
     {
         this->init_image_data();
     }
 
+
     if (image_data_initialized)
     {
+        #pragma omp parallel for collapse(2)
         for (int y = 0; y < sizeY; y++)
         {
             for (int x = 0; x < sizeX; x++)
@@ -84,47 +90,85 @@ TextureHandle ImageTexturizer<BaseVecT>::generateTexture(
                     + boundingRect.m_vec1 * (x * this->m_texelSize + boundingRect.m_minDistA - this->m_texelSize / 2.0)
                     + boundingRect.m_vec2 * (y * this->m_texelSize + boundingRect.m_minDistB - this->m_texelSize / 2.0);
 
+                int c = 0;
+
+                // Init pixel with red color
+                texture.m_data[(sizeX * y + x) * 3 + 0] = 255;
+                texture.m_data[(sizeX * y + x) * 3 + 1] = 0;
+                texture.m_data[(sizeX * y + x) * 3 + 2] = 0;
+
                 for (const ImageData<BaseVecT> &img_data : images)
                 {
-                    // transforming from slam6D coords to riegl coords
-                    BaseVecT pos(currentPos.z/100.0, -currentPos.x/100.0, currentPos.y/100.0);
+                    
+                    double ac_angle = (36.0 + 72.0 * c);
+                    ac_angle *= (M_PI/180.0);
 
-                    if (exclude_image(pos, img_data))
-                        continue;
+                    Eigen::Vector3d direction(1.0, 0.0, 0.0);
+                    Eigen::Matrix3d angle_rot;
+                    angle_rot = Eigen::AngleAxisd(ac_angle, Eigen::Vector3d::UnitZ());
 
-                    pos = img_data.project_to_image_transform * pos;
+                    Eigen::Vector3d p(currentPos[0], currentPos[1], currentPos[2]);
 
-                    float u = (float) img_data.data.rows - pos[0]/pos[2];
-                    float v = pos[1]/pos[2];
+                    Intrinsicsd intrinsics;
+                    intrinsics  <<
+                        2395.4336550315002 , 0 , 3027.8728609530291 ,         // UOS
+                        0 , 2393.3126174899603 , 2031.02743729632 ,
+                        0 , 0 , 1;
 
-                    undistorted_to_distorted_uv(u, v, img_data);
+                    Transformd tmp; 
+                    tmp << -0.16570779, -0.00014603, 0.98617489, -0.19101685,
+                        -0.02101020, -0.99977249, -0.00367840, -0.00125086,
+                        0.98595106, -0.02132927,  0.16566702, -0.05212102,
+                        0, 0, 0, 1;
 
-                    // @TODO option to do bilinear filtering aswell for pixel selection...
-                    int ud = (int) (u + 0.5);
-                    int vd = (int) (v + 0.5);
+//                    img_data.extrinsics = tmp;
 
-                    if (ud >= 0 && ud < img_data.data.rows && vd >= 0 && vd < img_data.data.cols)
+                    //cout << "Projection: " << intrinsics << endl;
+
+                    p = angle_rot * p;
+
+                    //cout << "P:" << p << endl;
+
+                    double angle = p.dot(direction);
+
+                    if (angle > 0) // is in view direction
                     {
-                        // using template keyword because elsewise < would be interpreted as less
-                        // than operator
-                        const cv::Vec3b color = img_data.data.template at<cv::Vec3b>(ud, vd);
+                        // TODO I think this should maybe be done in homogeneous coords
+                        p = tmp.block<3, 3>(0, 0) * p; // rotation
+                        p = p + tmp.block<3, 1>(0, 3); // translation
 
-                        // this works as well...
-                        //const cv::Vec3b color = ((cv::Mat) (img_data.data)).at<cv::Vec3b>(ud, vd);
+                        Eigen::Vector3d proj = intrinsics * p; // [s * u, s * v, s * 1] = s * [u, v, 1]
+                        proj /= proj[2];                       //  (s * [u, v, 1] ) / s
 
-                        // and this as well...
-                        //const cv::Mat &bla = img_data.data;
-                        //const cv::Vec3b color = bla.at<cv::Vec3b>(ud, vd);
+                        //cout << "Undist: " << proj[0] << " " << proj[1] << endl;
 
+                        undistorted_to_distorted_uv(proj[0], proj[1], img_data);
 
-                        // OpenCV saves colors in BGR order
-                        uint8_t r = color[2], g = color[1], b = color[0];
+                        //cout << "Dist:   " << proj[0] << " " << proj[1] << endl;
 
-                        texture.m_data[(sizeX * y + x) * 3 + 0] = r;
-                        texture.m_data[(sizeX * y + x) * 3 + 1] = g;
-                        texture.m_data[(sizeX * y + x) * 3 + 2] = b;
-                        break;
+                        // TODO fix negated logic...
+                        // if (proj[0] < 0 || std::floor(proj[0]) >= img_data.data.cols ||
+                        //     proj[1] < 0 || std::floor(proj[1]) >= img_data.data.rows)
+                        
+                        // Check if projected point is within current image
+                        if(std::floor(proj[0]) < img_data.data.cols && std::floor(proj[1]) < img_data.data.rows)
+                        {
+                            // Visibility check
+                            if(proj[0] >= 0  && proj[1] >= 0 )
+                            {
+                                cv::Vec3b p = img_data.data.template at<cv::Vec3b>(std::floor(proj[1]), std::floor(proj[0]));
+                                texture.m_data[(sizeX * y + x) * 3 + 0] = p[2];
+                                texture.m_data[(sizeX * y + x) * 3 + 1] = p[1];
+                                texture.m_data[(sizeX * y + x) * 3 + 2] = p[0];
+
+                                // We found a valid value for this point so we can stop
+                                // for know. For later optimization a best found point
+                                // should be used
+                                break;
+                            }
+                        }
                     }
+                    c++;
                 }
             }
         }
@@ -156,8 +200,12 @@ void ImageTexturizer<BaseVecT>::init_image_data()
         {
             ImageData<BaseVecT> image_data;
 
+            cout << "INIT ADD: " << img.image_file.string() << endl;
+
             //load image
             image_data.data = cv::imread(img.image_file.string(), CV_LOAD_IMAGE_COLOR);
+
+            cv::rotate(image_data.data, image_data.data, cv::ROTATE_90_CLOCKWISE);
 
             // skip image if we weren't able to load it
             if (image_data.data.empty())
@@ -183,28 +231,31 @@ void ImageTexturizer<BaseVecT>::init_image_data()
             projection[2] = img.intrinsic_params[2];
             projection[6] = img.intrinsic_params[3];
 
-            Transformd transform;
-            Transformd orientation = img.orientation_transform;
+            //Transformd transform;
+            image_data.orientation = img.orientation_transform.transpose();
+            image_data.extrinsics = img.extrinsic_transform.transpose();
+ 
+            //Transformd orientation = img.orientation_transform;
 
             // because matrix multipl. is CM and our matrices are RM we have to do it this way
-            transform = Util::slam6d_to_riegl_transform<double>(pos.transform).inverse();
-            transform = transform * orientation.inverse();
-            transform = transform * img.extrinsic_transform;
-            Transformd transform_inverse = transform.inverse();
-            transform_inverse.transpose();
+            // transform = lvr2::slam6dToLvr(pos.transform).inverse();
+            // transform = transform * orientation.inverse();
+            // transform = transform * img.extrinsic_transform;
+            // Transformd transform_inverse = transform.inverse();
+            // transform_inverse.transposeInPlace();
 
             //caluclate cam direction and cam pos for image in project space
-            BaseVecT cam_pos = {0.0f, 0.0f, 0.0f};
-            Normal<BaseVecT> cam_dir = {0.0f, 0.0f, 1.0f};
-            cam_pos = transform_inverse * cam_pos;
-            cam_dir = transform_inverse * cam_dir;
+            BaseVecT cam_pos(0.0f, 0.0f, 0.0f);
+            Normal<double> cam_dir(0.0f, 0.0f, 1.0f);
+            // cam_pos = transform_inverse * cam_pos;
+            // cam_dir = transform_inverse * cam_dir;
 
             image_data.pos = cam_pos;
             image_data.dir = cam_dir;
 
             // transform from project space to image space incl orthogonal projection
-            image_data.project_to_image_transform = transform * pro;
-            image_data.project_to_image_transform.transpose();
+            // image_data.project_to_image_transform = transform * pro;
+            // image_data.project_to_image_transform.transposeInPlace();
 
             images.push_back(image_data);
         }

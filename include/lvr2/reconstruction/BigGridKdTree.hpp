@@ -35,8 +35,8 @@
 #ifndef LAS_VEGAS_BIGGRIDKDTREE_H
 #define LAS_VEGAS_BIGGRIDKDTREE_H
 #include "BigGrid.hpp"
+#include "lvr2/geometry/BoundingBox.hpp"
 
-#include <lvr2/geometry/BoundingBox.hpp>
 #include <memory>
 #include <vector>
 
@@ -69,7 +69,8 @@ class BigGridKdTree
      */
     void insert(size_t numPoints, BaseVecT pos);
     /**
-     * returns the leafs of the kd-tree (or final PartitionBB which can be converted to the sub-mesh)
+     * returns the leafs of the kd-tree (or final PartitionBB which can be converted to the
+     * sub-mesh)
      * @return leafs
      */
     static std::vector<BigGridKdTree*> getLeafs();
@@ -90,7 +91,6 @@ class BigGridKdTree
     inline BoundingBox<BaseVecT>& getBB() { return m_bb; }
 
   private:
-
     BoundingBox<BaseVecT> m_bb;
 
     size_t m_numPoints;
