@@ -248,9 +248,9 @@ void SLAMAlign::checkLoopCloseOtherOrder(size_t last)
     for (int i = 0; i < scans.size() && !hasLoop; i++)
     {
         double distance_to_other = sqrt(
-            pow(m_scans.at(last)->innerScan()->m_poseEstimation(3,0) - scans.at(i)->innerScan()->m_poseEstimation(3,0), 2.0)+
-            pow(m_scans.at(last)->innerScan()->m_poseEstimation(3,1) - scans.at(i)->innerScan()->m_poseEstimation(3,1), 2.0)+
-            pow(m_scans.at(last)->innerScan()->m_poseEstimation(3,2) - scans.at(i)->innerScan()->m_poseEstimation(3,2), 2.0));
+            pow(m_scans.at(last)->innerScan()->poseEstimation(3,0) - scans.at(i)->innerScan()->poseEstimation(3,0), 2.0)+
+            pow(m_scans.at(last)->innerScan()->poseEstimation(3,1) - scans.at(i)->innerScan()->poseEstimation(3,1), 2.0)+
+            pow(m_scans.at(last)->innerScan()->poseEstimation(3,2) - scans.at(i)->innerScan()->poseEstimation(3,2), 2.0));
         if (i != no_loop && distance_to_other < m_options.closeLoopDistance)
         {
             cout << "found loop" << endl;
@@ -396,9 +396,9 @@ void SLAMAlign::createIcpGraph()
         for (int i = 0; i < m_scans.size(); i++)
         {
             v->push_back(sqrt(
-                pow(m_scans.at(0)->innerScan()->m_poseEstimation(3,0) - m_scans.at(i)->innerScan()->m_poseEstimation(3,0), 2.0)+
-                pow(m_scans.at(0)->innerScan()->m_poseEstimation(3,1) - m_scans.at(i)->innerScan()->m_poseEstimation(3,1), 2.0)+
-                pow(m_scans.at(0)->innerScan()->m_poseEstimation(3,2) - m_scans.at(i)->innerScan()->m_poseEstimation(3,2), 2.0)));
+                pow(m_scans.at(0)->innerScan()->poseEstimation(3,0) - m_scans.at(i)->innerScan()->poseEstimation(3,0), 2.0)+
+                pow(m_scans.at(0)->innerScan()->poseEstimation(3,1) - m_scans.at(i)->innerScan()->poseEstimation(3,1), 2.0)+
+                pow(m_scans.at(0)->innerScan()->poseEstimation(3,2) - m_scans.at(i)->innerScan()->poseEstimation(3,2), 2.0)));
         }
         // push back above one-dimensional vector
         //mat.push_back(v);
@@ -443,9 +443,9 @@ void SLAMAlign::createIcpGraph()
             for (int i = 0; i < m_scans.size(); i++)
             {
                 v->push_back(sqrt(
-                    pow(m_scans.at(new_scan)->innerScan()->m_poseEstimation(3,0) - m_scans.at(i)->innerScan()->m_poseEstimation(3,0), 2.0)+
-                    pow(m_scans.at(new_scan)->innerScan()->m_poseEstimation(3,1) - m_scans.at(i)->innerScan()->m_poseEstimation(3,1), 2.0)+
-                    pow(m_scans.at(new_scan)->innerScan()->m_poseEstimation(3,2) - m_scans.at(i)->innerScan()->m_poseEstimation(3,2), 2.0)));
+                    pow(m_scans.at(new_scan)->innerScan()->poseEstimation(3,0) - m_scans.at(i)->innerScan()->poseEstimation(3,0), 2.0)+
+                    pow(m_scans.at(new_scan)->innerScan()->poseEstimation(3,1) - m_scans.at(i)->innerScan()->poseEstimation(3,1), 2.0)+
+                    pow(m_scans.at(new_scan)->innerScan()->poseEstimation(3,2) - m_scans.at(i)->innerScan()->poseEstimation(3,2), 2.0)));
             }
         }
     }
