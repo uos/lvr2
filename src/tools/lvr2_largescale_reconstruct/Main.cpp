@@ -83,7 +83,7 @@ int main(int argc, char** argv)
     string extension = selectedFile.extension().string();
 
 
-    LargeScaleReconstruction<Vec> lsr(options.getInputFileName()[0], std::vector<float>{options.getVoxelsize()}, options.getBGVoxelsize(), options.getScaling(), options.getGridSize(),
+    LargeScaleReconstruction<Vec> lsr(options.getInputFileName()[0], options.getVoxelSizes(), options.getBGVoxelsize(), options.getScaling(), options.getGridSize(),
                                       options.getNodeSize(), options.getVGrid(), options.getKi(), options.getKd(), options.getKn(), options.useRansac(), options.extrude(),
                                       options.getDanglingArtifacts(), options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
                                       options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
@@ -123,7 +123,13 @@ int main(int argc, char** argv)
     BoundingBox<Vec> bb;
     int x = lsr.mpiChunkAndReconstruct(project, bb, cm);
 
-    lsr.getPartialReconstruct(bb, cm, options.getVoxelsize());
+    if(options.getDebugChunks())
+    {
+
+        for (int i; i < options.getVoxelSizes().size(); i++) {
+            lsr.getPartialReconstruct(bb, cm, options.getVoxelSizes()[i]);
+        }
+    }
 
     cout << "Program end." << endl;
 

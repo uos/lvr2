@@ -53,7 +53,7 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     ("help", "Produce help message")
     ("inputFile", value<vector<string>>(),"Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
     ("partialReconstruct",value<string>(&m_partialReconstruct)->default_value("NONE"),"Option to add partial-Mesh to a global-Mesh (make sure that the inputFile is the global ""PointCloud)")
-    ("voxelsize,v",value<float>(&m_voxelsize)->default_value(10),"Voxelsize of grid used for reconstruction.")
+    ("voxelSize,v",value<vector<float>>(&m_voxelSizes)->multitoken(),"Voxelsize of grid used for reconstruction. multitoken option: it is possible to enter more then one voxelsize")
     ("bgVoxelsize,bgv",value<float>(&m_voxelsizeBG)->default_value(10),"Voxelsize of the bigGrid.")
     ("useVGrid",value<int>(&m_vgrid)->default_value(1),"Option to change the partition-process to a gridbase partition (default: OFF (=0))")
     ("gridSize",value<int>(&m_gridsize)->default_value(20),"Set the gridsize for the virtual grid. (default: 20)")
@@ -173,7 +173,7 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
         "outputFolder",
         value<string>(&m_outputFolderPath)->default_value(""),
         "Output Folder Path")("useGPU", "Use GPU for normal estimation")(
-        "flipPoint", value<vector<float>>()->multitoken(), "Flippoint")(
+        "flipPoint", value<vector<float>>()->multitoken(), "Flippoint, used for GPU normal calculation, multitoken option: use it like this: --flipPoint x y z")(
         "lineReaderBuffer",
         value<size_t>(&m_lineReaderBuffer)->default_value(1024),
         "Size of input stream buffer when parsing point cloud files")(
@@ -199,7 +199,7 @@ float Options::getScaling() const { return m_variables["scale"].as<float>(); }
 unsigned int Options::getNodeSize() const { return m_variables["nodeSize"].as<unsigned int>(); }
 unsigned int Options::getBufferSize() const { return m_variables["buff"].as<unsigned int>(); }
 
-float Options::getVoxelsize() const { return m_variables["voxelsize"].as<float>(); }
+
 
 float Options::getBGVoxelsize() const { return m_variables["bgVoxelsize"].as<float>(); }
 
@@ -394,6 +394,22 @@ float* Options::getStatsCoeffs() const
     }
     return result;
 }
+    vector<float> Options::getVoxelSizes() const
+    {
+        vector<float> dest;
+        if (m_variables.count("voxelSize"))
+        {
+            dest = (m_variables["voxelSize"].as<vector<float>>());
+        }
+        else
+        {
+            dest.push_back(0.1);
+        }
+
+        return dest;
+    }
+
+    float Options::getVoxelsize() const { return getVoxelSizes()[0]; }
 
 vector<float> Options::getFlippoint() const
 {
