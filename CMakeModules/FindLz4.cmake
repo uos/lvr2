@@ -31,6 +31,8 @@ set(LZ4_SEARCH_LIB_PATH
   /usr/local/lib
   /usr/lib/
   /usr/lib/x86_64-linux-gnu/
+  /usr/lib/aarch64-linux-gnu/
+  /usr/lib/arm-linux-gnueabihf/
 )
 
 find_path(LZ4_INCLUDE_DIR lz4.h PATHS

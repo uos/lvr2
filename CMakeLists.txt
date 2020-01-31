@@ -566,6 +566,9 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/LVR2ConfigVersion.cmake
               DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr2 )
 
+# install package.xml for ROS
+install(FILES package.xml DESTINATION share/lvr2)
+
 install(FILES
     CMakeModules/FindEigen3.cmake
     CMakeModules/FindFLANN.cmake

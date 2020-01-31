@@ -126,7 +126,7 @@ add_definitions(${QT_DEFINITIONS})
 # Add current binary dir to includes to find the generated header files
 #####################################################################################
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR} widgets)
 
 #####################################################################################
 # Setup dependencies
