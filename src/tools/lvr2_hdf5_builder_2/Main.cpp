@@ -28,6 +28,7 @@ boost::shared_array<T> reduceData(boost::shared_array<T> data,
                                   size_t* reducedDataCount)
 {
     *reducedDataCount = dataCount / reductionFactor + 1;
+
     boost::shared_array<T> reducedData =
         boost::shared_array<T>(new T[(*reducedDataCount) * dataWidth]);
 
@@ -129,6 +130,8 @@ int main(int argc, char** argv)
             string nr_str(buffer);
             std::string previewGroupName = "/preview/" + nr_str;
 
+            std::cout << timestamp << "Generating preview for position " << nr_str << std::endl;
+
             ScanPositionPtr scanPositionPtr = scanProject->positions[i];
 
             ScanPtr scanPtr = scanPositionPtr->scans[0];
@@ -138,13 +141,13 @@ int main(int argc, char** argv)
             {
                 size_t numPreview;
                 floatArr previewData = reduceData(points,
-                                                  scanPositionPtr->scans[0]->numPoints,
+                                                  scanPtr->points->numPoints(),
                                                   3,
                                                   m_previewReductionFactor,
                                                   &numPreview);
 
                 std::vector<size_t> previewDim = {numPreview, 3};
-                hdf.save(previewGroupName, "points", previewDim, previewData);
+                hdf.save<float>(previewGroupName, "points", previewDim, previewData);
             }
         }
     }
