@@ -286,7 +286,7 @@ namespace lvr2
                 }
 
                 lvr2::PointBufferPtr p_loader_reduced;
-                if(true) // reduction TODO add options
+                if(numPoints > (m_chunkSize*500000)) // reduction TODO add options
                 {
                     OctreeReduction oct(p_loader, m_voxelSizes[h], 20);
                     p_loader_reduced = oct.getReducedPoints();
@@ -380,15 +380,13 @@ namespace lvr2
                     }
                 }
             }
-        }
-
-        std::cout << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
+              std::cout << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
         std::cout << "Generated Meshes: " << meshes.size() << std::endl;
 
         cout << lvr2::timestamp << "finished" << endl;
 
 
-        if(m_bigMesh)
+        if(m_bigMesh && h == 0)
         {
             //combine chunks
             auto vmax = cbb.getMax();
@@ -497,6 +495,9 @@ namespace lvr2
                 ModelFactory::saveModel(m, largeScale.str());
             }
         }
+        }
+
+
         return 1;
     }
     template <typename BaseVecT>
