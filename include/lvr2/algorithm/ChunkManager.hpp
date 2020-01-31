@@ -153,7 +153,8 @@ class ChunkManager : public ChunkHashGrid
      * @return mesh of the given area
      */
     MeshBufferPtr extractArea(const BoundingBox<BaseVector<float>>& area,
-                              const std::map<std::string, FilterFunction> filter);
+                              const std::map<std::string, FilterFunction> filter,
+                              std::string layer = std::string("mesh"));
 
     /**
      * @brief Get all existing channels from mesh

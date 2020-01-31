@@ -403,9 +403,10 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
 }
 
 MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
-                                        const std::map<std::string, FilterFunction> filter)
+                                        const std::map<std::string, FilterFunction> filter,
+                                        std::string layer)
 {
-    MeshBufferPtr areaMesh = extractArea(area, "mesh0");
+    MeshBufferPtr areaMesh = extractArea(area, layer);
 
     // filter elements
     // filter lists: false is used to indicate that an element will not be used
