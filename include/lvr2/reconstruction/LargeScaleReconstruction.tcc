@@ -36,6 +36,8 @@
 #include "lvr2/reconstruction/BigGridKdTree.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/reconstruction/FastReconstruction.hpp"
+#include "lvr2/registration/OctreeReduction.hpp"
+
 #include "lvr2/algorithm/CleanupAlgorithms.hpp"
 #include "lvr2/algorithm/NormalAlgorithms.hpp"
 #include "lvr2/algorithm/Tesselator.hpp"
@@ -216,7 +218,6 @@ namespace lvr2
             string name_id;
             if (m_partMethod == 1)
             {
-                // TODO rename the name / use centroid
                 name_id =
                         std::to_string(
                                 (int)floor(partitionBoxes.at(i).getCentroid().x / m_chunkSize)) +
@@ -282,8 +283,19 @@ namespace lvr2
                 cout << "got " << numNormals << " normals" << endl;
             }
 
+            lvr2::PointBufferPtr p_loader_reduced;
+            if(true) // reduction TODO add options
+            {
+                OctreeReduction oct(p_loader, m_voxelSize, 20);
+                p_loader_reduced = oct.getReducedPoints();
+            }
+            else
+            {
+                p_loader_reduced = p_loader;
+            }
+
             lvr2::PointsetSurfacePtr<Vec> surface;
-            surface = make_shared<lvr2::AdaptiveKSearchSurface<Vec>>(p_loader,
+            surface = make_shared<lvr2::AdaptiveKSearchSurface<Vec>>(p_loader_reduced,
                                                                      "FLANN",
                                                                      m_Kn,
                                                                      m_Ki,
@@ -296,8 +308,8 @@ namespace lvr2
                 {
 #ifdef GPU_FOUND
                 std::vector<float> flipPoint = std::vector<float>{100, 100, 100};
-                size_t num_points = p_loader->numPoints();
-                floatArr points = p_loader->getPointArray();
+                size_t num_points = p_loader_reduced->numPoints();
+                floatArr points = p_loader_reduced->getPointArray();
                 floatArr normals = floatArr(new float[num_points * 3]);
                 std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
                 GpuSurface gpu_surface(points, num_points);
@@ -309,7 +321,7 @@ namespace lvr2
                 gpu_surface.calculateNormals();
                 gpu_surface.getNormals(normals);
 
-                p_loader->setNormalArray(normals, num_points);
+                p_loader_reduced->setNormalArray(normals, num_points);
                 gpu_surface.freeGPU();
 #else
 
@@ -560,10 +572,6 @@ namespace lvr2
                             bb = temp;
                         }
                         tsdfChunks.push_back(chunk.get());
-                    }
-                    else
-                    {
-                        std::cout << "WARNING - Could not find chunk (" << i << ", " << j << ", " << k << ") in layer: " << layerName << std::endl;
                     }
                 }
             }
