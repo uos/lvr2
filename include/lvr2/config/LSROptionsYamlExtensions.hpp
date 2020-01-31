@@ -106,7 +106,7 @@ struct convert<lvr2::LSROptions>
 
         if (node["voxelSizes"])
         {
-            options.voxelSizes = node["voxelSizes"].as<vector<float>>();
+            options.voxelSizes = node["voxelSizes"].as<std::vector<float>>();
         }
 
         if (node["bgVoxelSize"])

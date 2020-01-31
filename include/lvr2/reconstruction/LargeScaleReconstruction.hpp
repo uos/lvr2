@@ -51,8 +51,8 @@ namespace lvr2
         //filePath to HDF5 file
         string filePath = "";
 
-        // voxelsize for reconstruction.
-        vector<float> voxelSizes = std::vector<float>{0.1};
+        // voxelsizes for reconstruction.
+        std::vector<float> voxelSizes{0.1};
 
         // voxelsize for the BigGrid.
         float bgVoxelSize = 1;

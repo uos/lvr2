@@ -94,6 +94,10 @@ void ChunkingPipeline::parseYAMLConfig()
             {
                 m_heightDifferencesRadius = practicabilityConfig["heightDifferencesRadius"].as<double>();
             }
+            if (practicabilityConfig["layers"] && practicabilityConfig["layers"].IsSequence())
+            {
+                m_practicabilityLayers = practicabilityConfig["layers"].as<std::vector<float>>();
+            }
         }
     }
     else
@@ -194,31 +198,42 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     std::cout << "Starting large scale reconstruction..." << std::endl;
     LargeScaleReconstruction<lvr2::BaseVector<float>> lsr(m_lsrOptions);
     BoundingBox<BaseVector<float>> newChunksBB;
-    std::string layerName = "tsdf_values";
     lsr.mpiChunkAndReconstruct(m_scanProject, newChunksBB, m_chunkManager);
     std::cout << "Finished large scale reconstruction!" << std::endl;
 
-    float voxelSize = m_lsrOptions.voxelSizes[0];
+    for (auto layer : m_lsrOptions.voxelSizes)
+    {
+        std::string voxelSizeStr = "[Layer " + std::to_string(layer) + "] ";
+        std::cout << voxelSizeStr << "Starting mesh generation..." << std::endl;
+        HalfEdgeMesh<lvr2::BaseVector<float>> hem = lsr.getPartialReconstruct(
+                newChunksBB,
+                m_chunkManager,
+                layer);
+        std::cout << voxelSizeStr  << "Finished mesh generation!" << std::endl;
 
-    std::cout << "Starting mesh generation..." << std::endl;
-    HalfEdgeMesh<lvr2::BaseVector<float>> hem = lsr.getPartialReconstruct(newChunksBB, m_chunkManager, voxelSize);
-    // TODO: mesh reduction???
-    std::cout << "Finished mesh generation!" << std::endl;
+        std::cout << voxelSizeStr  << "Starting mesh buffer creation..." << std::endl;
+        lvr2::SimpleFinalizer<lvr2::BaseVector<float>> finalize;
+        MeshBufferPtr meshBuffer = MeshBufferPtr(finalize.apply(hem));
+        std::cout << voxelSizeStr  << "Finished mesh buffer creation!" << std::endl;
 
-    std::cout << "Starting mesh buffer creation..." << std::endl;
-    lvr2::SimpleFinalizer<lvr2::BaseVector<float>> finalize;
-    MeshBufferPtr meshBuffer = MeshBufferPtr(finalize.apply(hem));
-    std::cout << "Finished mesh buffer creation!" << std::endl;
+        auto foundIt = std::find(m_practicabilityLayers.begin(), m_practicabilityLayers.end(), layer);
+        if (foundIt != m_practicabilityLayers.end())
+        {
+            std::cout << voxelSizeStr  << "Starting practicability analysis..." << std::endl;
+            practicabilityAnalysis(hem, meshBuffer);
+            std::cout << voxelSizeStr  << "Finished practicability analysis!" << std::endl;
+        }
+        else
+        {
+            std::cout << voxelSizeStr  << "Skipping practicability analysis..." << std::endl;
+        }
 
-    std::cout << "Starting practicability analysis..." << std::endl;
-    practicabilityAnalysis(hem, meshBuffer);
-    std::cout << "Finished practicability analysis!" << std::endl;
-
-    std::cout << "Starting chunking and saving of mesh buffer..." << std::endl;
-    // TODO: get maxChunkOverlap size
-    // TODO: savePath is not used in buildChunks (remove it?)
-    m_chunkManager->buildChunks(meshBuffer, 0.1f, "", "mesh0");
-    std::cout << "Finished chunking and saving of mesh buffer!" << std::endl;
+        std::cout << voxelSizeStr  << "Starting chunking and saving of mesh buffer..." << std::endl;
+        // TODO: get maxChunkOverlap size
+        // TODO: savePath is not used in buildChunks (remove it?)
+        m_chunkManager->buildChunks(meshBuffer, 0.1f, "", "mesh_" + std::to_string(layer));
+        std::cout << voxelSizeStr  << "Finished chunking and saving of mesh buffer!" << std::endl;
+    }
 
     std::cout << "Finished chunking pipeline!" << std::endl;
 
