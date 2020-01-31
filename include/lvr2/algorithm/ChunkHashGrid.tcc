@@ -2,10 +2,32 @@ namespace lvr2
 {
 
 template <typename T>
+void ChunkHashGrid::setGeometryChunk(std::string layer, int x, int y, int z, T data)
+{
+    // store chunk persistently
+    m_io.saveChunk<T>(data, layer, x, y, z);
+
+    // update bounding box based on channel geometry 
+    expandBoundingBox(data);
+
+    // add chunk to cache
+    loadChunk(layer, x, y, z, data);
+}
+
+template <typename T>
 void ChunkHashGrid::setChunk(std::string layer, int x, int y, int z, T data)
 {
     // store chunk persistently
     m_io.saveChunk<T>(data, layer, x, y, z);
+
+    // update bounding box based on chunk index 
+    if(x > getChunkMaxChunkIndex().x || y > getChunkMaxChunkIndex().y || z > getChunkMaxChunkIndex().z ||
+        x < getChunkMinChunkIndex().x || y < getChunkMinChunkIndex().y || z < getChunkMinChunkIndex().z)
+    {
+        BoundingBox<BaseVector<float>> boundingBox = getBoundingBox();
+        boundingBox.expand(BaseVector<float>(x * m_chunkSize, y * m_chunkSize, z * m_chunkSize));
+        setBoundingBox(boundingBox);
+    }
 
     // add chunk to cache
     loadChunk(layer, x, y, z, data);
