@@ -25,56 +25,30 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __CAMERADATA_HPP__
-#define __CAMERADATA_HPP__
+#ifndef REGISTRATION_PIPELINE_OBJECT_H_
+#define REGISTRATION_PIPELINE_OBJECT_H_
 
-#include <Eigen/Dense>
-#include <opencv2/core.hpp>
+#include "lvr2/registration/SLAMOptions.hpp"
+#include "lvr2/registration/GraphSLAM.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
-#include <vector>
 
-#include "lvr2/types/MatrixTypes.hpp"
 
-namespace lvr2
+using namespace lvr2;
+
+class RegistrationPipeline
 {
+public:
+    RegistrationPipeline(const SLAMOptions* options, ScanProjectEditMarkPtr scans);
 
-/**
- * @brief   Struct to hold a camera image together with intrinsic 
- *          and extrinsic camera parameters
- * 
- */
-struct CameraData
-{
-    /// Instrinsic camera paramter matrix
-    Intrinsicsd intrinsics;
-
-    /// Extrinsic parameter matrix
-    Extrinsicsd extrinsics;
-
-    /// RGB image
-    cv::Mat image;
+    /**
+     * @brief starts the registration process
+     * @returns vector of boolean values for each scan position; true if pos needs reconstruction
+     * */
+    void doRegistration();
+private:
+    const SLAMOptions* m_options;
+    ScanProjectEditMarkPtr m_scans;
 };
 
-/**
- * @brief   Struct to store a panorama image taken at a scan position
- * 
- */
-struct Panorama
-{
-    /// Minimum horizontal angle
-    float hmin;
-
-    /// Maximum horizontal angle
-    float hmax;
-
-    /// Vertical field of view
-    float fov;
-
-    /// Vector of camera 
-    std::vector<CameraData> images;
-};
-
-
-} // namespace lvr2
-
-#endif /* !CAMDATA_HPP_ */
+#endif // REGISTRATION_PIPELINE_OBJECT_H_

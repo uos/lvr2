@@ -81,6 +81,15 @@ class BigGrid
      */
     BigGrid(std::string cloudPath, float voxelsize, float scale = 0);
 
+    /**
+     * Constructor: specific case for incremental reconstruction/chunking
+     * @param h5File path to PointClouds in .h5 file
+     * @param voxelsize
+     * @param scale
+     * @param scans new scans to be added
+     */
+    BigGrid(float voxelsize,ScanProjectEditMarkPtr project, float scale = 0);
+
     BigGrid(std::string path);
 
     /**
@@ -148,6 +157,15 @@ class BigGrid
     lvr2::floatArr getPointCloud(size_t& numPoints);
 
     BoundingBox<BaseVecT>& getBB() { return m_bb; }
+    BoundingBox<BaseVecT>& getpartialBB() { return m_partialbb; }
+
+    /**
+     * Calculates 8 corners of a Bounding Box
+     *
+     * @param corners
+     * @param bb_array
+     */
+    void calculateCorners(Eigen::Vector4d corners[], boost::shared_array<double> bb_array);
 
     virtual ~BigGrid();
 
@@ -200,6 +218,12 @@ class BigGrid
     boost::iostreams::mapped_file m_NomralFile;
     boost::iostreams::mapped_file m_ColorFile;
     BoundingBox<BaseVecT> m_bb;
+
+    //BoundingBox, of unreconstructed scans
+    BoundingBox<BaseVecT> m_partialbb;
+
+    std::vector<shared_ptr<Scan>> m_scans;
+
     std::unordered_map<size_t, CellInfo> m_gridNumPoints;
     float m_scale;
 };

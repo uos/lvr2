@@ -15,6 +15,16 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+#------------------------------------------------------------------------------
+# Searching for Embree: needs to be placed above "set(CMAKE_MODULE_PATH)".
+#------------------------------------------------------------------------------
+find_package(embree 3.0)
+if(embree_FOUND)
+  message(STATUS "Found Embree")
+  include_directories(${EMBREE_INCLUDE_DIRS})
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_EMBREE)
+endif(embree_FOUND)
+
 set(CMAKE_MODULE_PATH
   ${LAS_VEGAS_SOURCE_DIR}/CMakeModules
   ${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/cmake/Modules
@@ -70,14 +80,15 @@ endif(GDAL_FOUND)
 #------------------------------------------------------------------------------
 # Searching for CUDA
 #------------------------------------------------------------------------------
-if(NOT APPLE)
+option(WITH_CUDA "Compile with CUDA support" ON)
+if(NOT APPLE AND WITH_CUDA)
 find_package( CUDA 8)
 if(CUDA_FOUND)
   message(STATUS "Found CUDA")
     include_directories(${CUDA_INCLUDE_DIRS})
     list(APPEND LVR2_DEFINITIONS -DLVR2_USE_CUDA)
 endif(CUDA_FOUND)
-endif(NOT APPLE)
+endif(NOT APPLE AND WITH_CUDA)
 
 #------------------------------------------------------------------------------
 # Searching for OpenCV
@@ -144,15 +155,7 @@ if(OPENCL_FOUND)
       list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPENCL_NEW_API)
     endif(OpenCL_NEW_API)
 endif()
-#------------------------------------------------------------------------------
-# Searching for Embree
-#------------------------------------------------------------------------------
-find_package(embree 3.0)
-if(embree_FOUND)
-  message(STATUS "Found Embree")
-  include_directories(${EMBREE_INCLUDE_DIRS})
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_EMBREE)
-endif(embree_FOUND)
+
 
 #------------------------------------------------------------------------------
 # Searching for Draco
@@ -246,7 +249,7 @@ endif(CGAL_FOUND)
 
 #set(Boost_USE_STATIC_LIBS       ON)
 set(Boost_USE_MULTITHREADED     ON)
-set(Boost_COMPONENTS 
+set(Boost_COMPONENTS
   program_options
   filesystem
   system
@@ -362,8 +365,8 @@ link_directories(${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 message(STATUS "Found HDF5")
 
 # yaml-cpp
-find_package(yaml-cpp) 
-# no found variable 
+find_package(yaml-cpp)
+# no found variable
 include_directories(${YAML_CPP_INCLUDE_DIR})
 #link_directories(${YAML_CPP_LIBRARIES})
 
@@ -408,8 +411,8 @@ option(WITH_KINFU "Compile LVR Kinfu" OFF)
 # compatible to gcc4.8. Older CUDA versions require GCC lower
 # than 4.8
 ###############################################################################
-if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" 
-              AND CUDA_VERSION VERSION_GREATER 8 
+if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
+              AND CUDA_VERSION VERSION_GREATER 8
               AND CUDA_VERSION VERSION_LESS 10)
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5 )
         message(STATUS "******************************************************************")
@@ -505,7 +508,6 @@ add_subdirectory(src/tools/lvr2_asciiconverter)
 add_subdirectory(src/tools/lvr2_transform)
 add_subdirectory(src/tools/lvr2_kaboom)
 add_subdirectory(src/tools/lvr2_octree_test)
-add_subdirectory(src/tools/lvr2_yaml_test)
 add_subdirectory(src/tools/lvr2_image_normals)
 add_subdirectory(src/tools/lvr2_plymerger)
 add_subdirectory(src/tools/lvr2_hdf5_builder)
@@ -514,13 +516,12 @@ add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
 add_subdirectory(src/tools/lvr2_slam2hdf5)
 add_subdirectory(src/tools/lvr2_hdf5togeotiff)
 add_subdirectory(src/tools/lvr2_slam6d_merger)
-add_subdirectory(src/tools/lvr2_scanproject2hdf5)
 add_subdirectory(src/tools/lvr2_chunking)
 add_subdirectory(src/tools/lvr2_registration)
 add_subdirectory(src/tools/lvr2_mesh_reducer)
 
 if (RiVLib_FOUND)
-    add_subdirectory(src/tools/lvr2_riegl_project_converter)
+    #add_subdirectory(src/tools/lvr2_riegl_project_converter)
 endif()
 
 if(CUDA_FOUND)
@@ -568,7 +569,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
 install(FILES
     CMakeModules/FindEigen3.cmake
     CMakeModules/FindFLANN.cmake
-    CMakeModules/FindLZ4.cmake
+    CMakeModules/FindLz4.cmake
     CMakeModules/FindNabo.cmake
     CMakeModules/FindOpenNI.cmake
     CMakeModules/FindOpenNI2.cmake

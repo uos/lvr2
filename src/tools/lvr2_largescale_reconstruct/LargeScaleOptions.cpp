@@ -35,7 +35,7 @@
 #include "LargeScaleOptions.hpp"
 
 #include <fstream>
-#include <lvr2/config/lvropenmp.hpp>
+#include "lvr2/config/lvropenmp.hpp"
 
 namespace LargeScaleOptions
 {
@@ -63,11 +63,11 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
         value<float>(&m_voxelsizeBG)->default_value(10),
         "Voxelsize of the bigGrid.")(
         "useVGrid",
-        value<int>(&m_vgrid)->default_value(0),
+        value<int>(&m_vgrid)->default_value(1),
         "Option to change the partition-process to a gridbase partition (default: OFF (=0))")(
         "gridSize",
-        value<int>(&m_gridsize)->default_value(2000),
-        "Set the gridsize for the virtual grid. (default: 4000 aka. 40m^3)")(
+        value<int>(&m_gridsize)->default_value(20),
+        "Set the gridsize for the virtual grid. (default: 20)")(
         "noExtrusion",
         "Do not extend grid. Can be used  to avoid artefacts in dense data sets but. Disabling "
         "will possibly create additional holes in sparse data sets.")(

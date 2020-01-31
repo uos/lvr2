@@ -34,7 +34,7 @@
 #ifndef TREEUTILS_HPP_
 #define TREEUTILS_HPP_
 
-#include <lvr2/types/MatrixTypes.hpp>
+#include "lvr2/types/MatrixTypes.hpp"
 
 namespace lvr2
 {
@@ -49,7 +49,8 @@ namespace lvr2
  * @param axis       The axis to sort by
  * @param splitValue The value to sort by
  *
- * @return int The number of smaller elements. points + this value gives the start of the greater elements
+ * @return int The number of smaller elements. points + this value gives the start of the greater
+ * elements
  */
 int splitPoints(Vector3f* points, int n, int axis, double splitValue);
 
@@ -65,8 +66,6 @@ int splitPoints(Vector3f* points, int n, int axis, double splitValue);
  */
 int octreeReduce(Vector3f* points, int n, double voxelSize, int maxLeafSize);
 
-
 } /* namespace lvr2 */
 
 #endif /* TREEUTILS_HPP_ */
-
