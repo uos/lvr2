@@ -526,8 +526,8 @@ inline ostream& operator<<(ostream& os, const Options& o)
         cout << "##### Use RANSAC\t\t: NO" << endl;
     }
 
-    cout << "##### Voxel decomposition: \t: " << o.getDecomposition() << endl;
-    cout << "##### Classifier:\t\t: " << o.getClassifier() << endl;
+    cout << "##### Voxel decomposition \t: " << o.getDecomposition() << endl;
+    cout << "##### Classifier\t\t: " << o.getClassifier() << endl;
     if (o.writeClassificationResult())
     {
         cout << "##### Dump classification\t: YES" << endl;
@@ -615,22 +615,22 @@ inline ostream& operator<<(ostream& os, const Options& o)
     }
     if (o.getNumEdgeCollapses())
     {
-        cout << "##### Edge collapse method: \t\t: " << o.getEdgeCollapseMethod() << endl;
+        cout << "##### Edge collapse method \t\t: " << o.getEdgeCollapseMethod() << endl;
         cout << "##### Number of edge collapses\t: " << o.getNumEdgeCollapses() << endl;
     }
 
     if (o.getNodeSize())
     {
-        cout << "##### Leaf Size: \t\t: " << o.getNodeSize() << endl;
+        cout << "##### Leaf Size \t\t: " << o.getNodeSize() << endl;
     }
 
-    cout << "##### Interpolating Boxes?: \t\t: " << o.interpolateBoxes() << endl;
+    cout << "##### Interpolating Boxes \t: " << o.interpolateBoxes() << endl;
 
     if (o.getBufferSize())
     {
-        cout << "##### Buffer Size: \t\t: " << o.getBufferSize() << endl;
+        cout << "##### Buffer Size \t\t: " << o.getBufferSize() << endl;
     }
-    cout << "##### Volumen Size: \t\t: " << o.getVolumenSize() << endl;
+    cout << "##### Volumen Size \t\t: " << o.getVolumenSize() << endl;
     return os;
 }
 

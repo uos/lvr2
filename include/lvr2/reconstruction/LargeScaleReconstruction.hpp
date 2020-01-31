@@ -267,4 +267,4 @@ namespace lvr2
 
 #include "lvr2/reconstruction/LargeScaleReconstruction.tcc"
 
-#endif //LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
+#endif // LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP

@@ -1,409 +1,302 @@
-#include "ScanIO.hpp"
-#include "lvr2/io/hdf5/Hdf5Util.hpp"
-
 namespace lvr2
 {
 
-    namespace hdf5features
+namespace hdf5features
+{
+
+template <typename Derived>
+void ScanIO<Derived>::save(uint scanPos, uint scanNr, const ScanPtr& scanPtr)
+{
+    // HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name);
+    // save(g, scanPtr);
+}
+
+template <typename Derived>
+void ScanIO<Derived>::save(HighFive::Group& group, uint scanNr, const ScanPtr& scanPtr)
+{
+    // HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name);
+    // save(g, scanPtr);
+}
+
+template <typename Derived>
+void ScanIO<Derived>::save(HighFive::Group& group, const ScanPtr& scanPtr)
+{
+    std::string id(ScanIO<Derived>::ID);
+    std::string obj(ScanIO<Derived>::OBJID);
+    hdf5util::setAttribute(group, "IO", id);
+    hdf5util::setAttribute(group, "CLASS", obj);
+
+    // save points
+    std::vector<size_t> scanDim = {scanPtr->points->numPoints(), 3};
+    std::vector<hsize_t> scanChunk = {scanPtr->points->numPoints(), 3};
+    boost::shared_array<float> points = scanPtr->points->getPointArray();
+    m_arrayIO->template save<float>(group, "points", scanDim, scanChunk, points);
+
+    // saving estimated and registrated pose
+    m_matrixIO->save(group, "poseEstimation", scanPtr->poseEstimation);
+    m_matrixIO->save(group, "registration", scanPtr->registration);
+
+    // set dim and chunks for boundingBox
+    std::vector<size_t> dim{2, 3};
+    std::vector<hsize_t> chunks{2, 3};
+
+    // create and save boundingBox
+    floatArr bbox(new float[6]);
+    bbox[0] = scanPtr->boundingBox.getMin()[0];
+    bbox[1] = scanPtr->boundingBox.getMin()[1];
+    bbox[2] = scanPtr->boundingBox.getMin()[2];
+    bbox[3] = scanPtr->boundingBox.getMax()[0];
+    bbox[4] = scanPtr->boundingBox.getMax()[1];
+    bbox[5] = scanPtr->boundingBox.getMax()[2];
+    m_arrayIO->save(group, "boundingBox", dim, chunks, bbox);
+
+    // set dim and chunks for saving following data
+    dim = {2, 1};
+    chunks = {2, 1};
+
+    // saving theta
+    doubleArr theta(new double[2]);
+    theta[0] = scanPtr->thetaMin;
+    theta[1] = scanPtr->thetaMax;
+    m_arrayIO->save(group, "theta", dim, chunks, theta);
+
+    // saving phi
+    doubleArr phi(new double[2]);
+    phi[0] = scanPtr->phiMin;
+    phi[1] = scanPtr->phiMax;
+    m_arrayIO->save(group, "phi", dim, chunks, phi);
+
+    // saving resolution
+    doubleArr resolution(new double[2]);
+    resolution[0] = scanPtr->hResolution;
+    resolution[1] = scanPtr->vResolution;
+    m_arrayIO->save(group, "resolution", dim, chunks, resolution);
+
+    // saving timestamps
+    doubleArr timestamp(new double[2]);
+    timestamp[0] = scanPtr->startTime;
+    timestamp[1] = scanPtr->endTime;
+    m_arrayIO->save(group, "timestamps", dim, chunks, timestamp);
+}
+
+template <typename Derived>
+ScanPtr ScanIO<Derived>::load(uint scanPos, uint scanNr)
+{
+    ScanPtr ret;
+
+    char scan_buffer[sizeof(int) * 5];
+    sprintf(scan_buffer, "%08d", scanPos);
+    string scanPos_str(scan_buffer);
+    
+    char buffer[sizeof(int) * 5];
+    sprintf(buffer, "%08d", scanNr);
+    string nr_str(buffer);
+
+    std::string basePath = "raw/" + scanPos_str + "/scans/data" + nr_str;
+
+    if (hdf5util::exist(m_file_access->m_hdf5_file, basePath))
     {
+        HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
+        ret = load(group);
+    }
 
-        template <typename Derived>
-        void ScanIO<Derived>::save(std::string name, const Scan& buffer)
+    return ret;
+}
+
+template <typename Derived>
+ScanPtr ScanIO<Derived>::load(HighFive::Group& group, uint scanNr)
+{
+    ScanPtr ret;
+    
+    char buffer[sizeof(int) * 5];
+    sprintf(buffer, "%08d", scanNr);
+    string nr_str(buffer);
+
+    std::string basePath = "/scans/data" + nr_str;
+
+    if (hdf5util::exist(group, basePath))
+    {
+        HighFive::Group g = hdf5util::getGroup(group, basePath);
+        ret = load(g);
+    }
+
+    return ret;
+}
+
+// template <typename Derived>
+// ScanPtr ScanIO<Derived>::loadScan(HighFive::Group& group, std::string name)
+// {
+//     ScanPtr ret;
+//     HighFive::Group g = hdf5util::getGroup(group, name, false);
+//     ret = load(g);
+//     return ret;
+// }
+
+template <typename Derived>
+ScanPtr ScanIO<Derived>::load(HighFive::Group& group)
+{
+    ScanPtr ret(new Scan());
+
+    if (!isScan(group))
+    {
+        std::cout << "[Hdf5IO - ScanIO] WARNING: flags of " << group.getId() << " are not correct."
+                  << std::endl;
+        return ret;
+    }
+
+    std::cout << "    loading points" << std::endl;
+
+    // read points
+    if (group.exist("points"))
+    {
+        std::vector<size_t> dimension;
+        floatArr pointArr = m_arrayIO->template load<float>(group, "points", dimension);
+
+        if (dimension[1] != 3)
         {
-            HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name, true);
-            save(g, buffer);
+            std::cout
+                << "[Hdf5IO - ScanIO] WARNING: Wrong point dimensions. Points will not be loaded."
+                << std::endl;
         }
-
-        template <typename Derived>
-        void ScanIO<Derived>::save(HighFive::Group& group, const Scan& scan)
+        else
         {
-
-            std::string id(ScanIO<Derived>::ID);
-            std::string obj(ScanIO<Derived>::OBJID);
-            hdf5util::setAttribute(group, "IO", id);
-            hdf5util::setAttribute(group, "CLASS", obj);
-
-            // save points
-            std::vector<size_t> scanDim = {scan.m_points->numPoints(), 3};
-            std::vector<hsize_t> scanChunk = {scan.m_points->numPoints(), 3};
-            boost::shared_array<float> points = scan.m_points->getPointArray();
-            m_arrayIO->template save<float>(group, "points", scanDim, scanChunk, points);
-
-            m_matrixIO->save(group, "finalPose", scan.m_registration);
-            m_matrixIO->save(group, "initialPose", scan.m_poseEstimation);
-
-            boost::shared_array<float> bbox(new float[6]);
-            bbox.get()[0] = scan.m_boundingBox.getMin()[0];
-            bbox.get()[1] = scan.m_boundingBox.getMin()[1];
-            bbox.get()[2] = scan.m_boundingBox.getMin()[2];
-            bbox.get()[3] = scan.m_boundingBox.getMax()[0];
-            bbox.get()[4] = scan.m_boundingBox.getMax()[1];
-            bbox.get()[5] = scan.m_boundingBox.getMax()[2];
-            std::vector<hsize_t> chunkBB{2, 3};
-            std::vector<size_t> dimBB{2, 3};
-            m_arrayIO->save(group, "boundingBox", dimBB, chunkBB, bbox);
-
-            std::vector<hsize_t> chunkTwo{2};
-            std::vector<size_t> dimTwo{2};
-
-            boost::shared_array<float> phiArr(new float[2]);
-            phiArr.get()[0] = scan.m_phiMin;
-            phiArr.get()[1] = scan.m_phiMax;
-            m_arrayIO->save(group, "phi", dimTwo, chunkTwo, phiArr);
-
-            boost::shared_array<float> thetaArr(new float[2]);
-            phiArr.get()[0] = scan.m_thetaMin;
-            phiArr.get()[1] = scan.m_thetaMax;
-            m_arrayIO->save(group, "phi", dimTwo, chunkTwo, phiArr);
-
-            boost::shared_array<float> resolution(new float[2]);
-            resolution.get()[0] = scan.m_hResolution;
-            resolution.get()[1] = scan.m_vResolution;
-            m_arrayIO->save(group, "resolution", dimTwo, chunkTwo, resolution);
-
-            boost::shared_array<float> timestamp(new float[2]);
-            timestamp.get()[0] = scan.m_startTime;
-            timestamp.get()[1] = scan.m_endTime;
-            m_arrayIO->save(group, "timestamp", dimTwo, chunkTwo, timestamp);
+            ret->points = PointBufferPtr(new PointBuffer(pointArr, dimension[0]));
+            ret->numPoints = dimension[0];
+            ret->pointsLoaded = true;
         }
+    }
 
+    std::cout << "    loading poseEstimations" << std::endl;
+    // read poseEstimation
+    boost::optional<lvr2::Transformd> poseEstimation =
+        m_matrixIO->template load<lvr2::Transformd>(group, "poseEstimation");
+    if (poseEstimation)
+    {
+        ret->poseEstimation = poseEstimation.get();
+    }
 
-        template <typename Derived>
-        ScanPtr ScanIO<Derived>::load(std::string name)
+    std::cout << "    loading registration" << std::endl;
+    // read registration
+    boost::optional<lvr2::Transformd> registration =
+        m_matrixIO->template load<lvr2::Transformd>(group, "registration");
+    if (registration)
+    {
+        ret->registration = registration.get();
+    }
+
+    std::cout << "    loading boundingBox" << std::endl;
+    // read boundingBox
+    if (group.exist("boundingBox"))
+    {
+        std::vector<size_t> dimension;
+        floatArr bb = m_arrayIO->template load<float>(group, "boundingBox", dimension);
+
+        if ((dimension[0] != 2 || dimension[1] != 3) && dimension[0] != 6)
         {
-            ScanPtr ret;
-
-            if (hdf5util::exist(m_file_access->m_hdf5_file, name))
-            {
-                HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name, false);
-                ret               = load(g);
-            }
-
-            return ret;
+            std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong boundingBox dimensions. BoundingBox "
+                         "will not be loaded."
+                      << std::endl;
         }
-
-        template <typename Derived>
-        ScanPtr ScanIO<Derived>::loadScan(std::string name)
+        else
         {
-            return load(name);
+            BaseVector<float> bb_min(bb[0], bb[1], bb[2]);
+            BaseVector<float> bb_max(bb[3], bb[4], bb[5]);
+            BoundingBox<BaseVector<float>> boundingBox(bb_min, bb_max);
+            ret->boundingBox = boundingBox;
         }
+    }
 
-        template <typename Derived>
-        ScanPtr ScanIO<Derived>::load(HighFive::Group& group)
+    std::cout << "    loading theta" << std::endl;
+    // read theta
+    if (group.exist("theta"))
+    {
+        std::vector<size_t> dimension;
+        doubleArr theta = m_arrayIO->template load<double>(group, "theta", dimension);
+
+        if (dimension.at(0) != 2)
         {
-            ScanPtr ret;
-            //HighFive::Group preview = hdf5util::getGroup(m_file_access->m_hdf5_file, "preview/position_00001", false);;
-
-            ret = ScanPtr(new Scan());
-
-            std::vector<size_t> dimensionPoints;
-            floatArr pointArr;
-            if(group.exist("points"))
-            {
-                //pointArr = m_arrayIO->template load<float>(preview, "points", dimensionPoints);
-                pointArr = m_arrayIO->template load<float>(group, "points", dimensionPoints);
-                if(dimensionPoints.at(1) != 3)
-                {
-                    std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong point dimensions. Points will not be loaded." << std::endl;
-                }
-                else
-                {
-                    ret->m_points = PointBufferPtr(new PointBuffer(pointArr, dimensionPoints.at(0)));
-                    ret->m_numPoints = dimensionPoints.at(0);
-                }
-            }
-            boost::optional<lvr2::Transformd> finalPose = m_matrixIO->template load<lvr2::Transformd>(group, "finalPose");
-            if(finalPose)
-            {
-                ret->m_registration = finalPose.get();
-            }
-            boost::optional<lvr2::Transformd> initialPose = m_matrixIO->template load<lvr2::Transformd>(group, "initialPose");
-            if(initialPose)
-            {
-                ret->m_poseEstimation = initialPose.get();
-            }
-
-
-            if(group.exist("boundingBox"))
-            {
-                std::vector<size_t> dimBB;
-                floatArr bbox = m_arrayIO->template load<float>(group, "boundingBox", dimBB);
-                if((dimBB.at(0) != 2 || dimBB.at(1) != 3) && dimBB.at(0) != 6)
-                {
-                    std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong boundingBox dimensions. BoundingBox will not be loaded." << std::endl;
-                }
-                else
-                {
-                    BaseVector<float> min(bbox.get()[0], bbox.get()[1], bbox.get()[2]);
-                    BaseVector<float> max(bbox.get()[3], bbox.get()[4], bbox.get()[5]);
-                    BoundingBox<BaseVector<float>> boundingBox(min, max);
-                    ret->m_boundingBox = boundingBox;
-                }
-            }
-
-            if(group.exist("phi"))
-            {
-                std::vector<size_t> dimTwo;
-                floatArr phiArr = m_arrayIO->template load<float>(group, "phi", dimTwo);
-                if(dimTwo.at(0) != 2)
-                {
-                    std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong phi dimensions. Phi will not be loaded." << std::endl;
-                }
-                else
-                {
-                    ret->m_phiMin = phiArr.get()[0];
-                    ret->m_phiMax = phiArr.get()[1];
-                }
-            }
-            if(group.exist("theta"))
-            {
-                std::vector<size_t> dimTwo;
-                floatArr thetaArr = m_arrayIO->template load<float>(group, "theta", dimTwo);
-                if(dimTwo.at(0) != 2)
-                {
-                    std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong theta dimensions. Theta will not be loaded." << std::endl;
-                }
-                else
-                {
-                    ret->m_thetaMin = thetaArr.get()[0];
-                    ret->m_thetaMax = thetaArr.get()[1];
-                }
-            }
-            if(group.exist("resolution"))
-            {
-                std::vector<size_t> dimTwo;
-                floatArr resArr = m_arrayIO->template load<float>(group, "resolution", dimTwo);
-                if(dimTwo.at(0) != 2)
-                {
-                    std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong resolution dimensions. Resolution will not be loaded." << std::endl;
-                }
-                else
-                {
-                    ret->m_hResolution = resArr.get()[0];
-                    ret->m_vResolution = resArr.get()[1];
-                }
-            }
-            if(group.exist("timestamp"))
-            {
-                std::vector<size_t> dimTwo;
-                floatArr timestampArr = m_arrayIO->template load<float>(group, "timestamp", dimTwo);
-                if(dimTwo.at(0) != 2)
-                {
-                    std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong timestamp dimensions. Timestamp will not be loaded." << std::endl;
-                }
-                else
-                {
-                    ret->m_startTime = timestampArr.get()[0];
-                    ret->m_endTime = timestampArr.get()[1];
-                }
-            }
-
-            return ret;
+            std::cout
+                << "[Hdf5IO - ScanIO] WARNING: Wrong theta dimension. Theta will not be loaded."
+                << std::endl;
         }
-
-        template <typename Derived>
-        bool ScanIO<Derived>::isScan(
-                HighFive::Group& group)
+        else
         {
-            std::string id(ScanIO<Derived>::ID);
-            std::string obj(ScanIO<Derived>::OBJID);
-            return hdf5util::checkAttribute(group, "IO", id)
-                   && hdf5util::checkAttribute(group, "CLASS", obj);
+            ret->thetaMin = theta[0];
+            ret->thetaMax = theta[1];
         }
+    }
 
-        template<typename Derived>
-        std::vector<ScanPtr> ScanIO<Derived>::loadAllScans(std::string groupName) {
-            std::vector<ScanPtr> scans = std::vector<ScanPtr>();
-            if (hdf5util::exist(m_file_access->m_hdf5_file, groupName))
-            {
-                HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, groupName, false);
-                ScanPtr tmp;
-                for(auto scanName : g.listObjectNames())
-                {
-                    HighFive::Group scan = g.getGroup(scanName);
-                    tmp = load(scan);
-                    if(tmp)
-                    {
-                        scans.push_back(tmp);
-                    }
-                }
-            }
-            return scans;
+    std::cout << "    loading phi" << std::endl;
+    // read phi
+    if (group.exist("phi"))
+    {
+        std::vector<size_t> dimension;
+        doubleArr phi = m_arrayIO->template load<double>(group, "phi", dimension);
+
+        if (dimension[0] != 2)
+        {
+            std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong phi dimension. Phi will not be loaded."
+                      << std::endl;
         }
-
-        template<typename Derived>
-        std::vector<ScanPtr> ScanIO<Derived>::loadAllPreviews(std::string groupName) {
-            std::vector<ScanPtr> scans = std::vector<ScanPtr>();
-            if (hdf5util::exist(m_file_access->m_hdf5_file, groupName))
-            {
-                HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, groupName, false);
-                ScanPtr tmp;
-                for(auto scanName : g.listObjectNames())
-                {
-                    //HighFive::Group scan = g.getGroup(scanName);
-                    cout << scanName << endl;
-                    tmp = loadPreview(groupName + scanName);
-                    if(tmp)
-                    {
-                        scans.push_back(tmp);
-                    }
-                }
-            }
-            return scans;
+        else
+        {
+            ret->phiMin = phi[0];
+            ret->phiMax = phi[1];
         }
+    }
 
-        template <typename Derived>
-        ScanPtr ScanIO<Derived>::loadPreview(std::string name) {
-            ScanPtr ret;
-            if (hdf5util::exist(m_file_access->m_hdf5_file, name))
-            {
+    std::cout << "    loading resolution" << std::endl;
+    // read resolution
+    if (group.exist("resolution"))
+    {
+        std::vector<size_t> dimension;
+        doubleArr resolution = m_arrayIO->template load<double>(group, "resolution", dimension);
 
-                HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, name, false);
-                std::vector <std::string> splitGroup = hdf5util::splitGroupNames(name);
-                std::string previewString = "/preview/" + splitGroup.back();
-
-                ret = ScanPtr(new Scan());
-
-                if (hdf5util::exist(m_file_access->m_hdf5_file, previewString))
-                {
-                    HighFive::Group previewGroup = hdf5util::getGroup(m_file_access->m_hdf5_file, previewString, false);
-                    std::vector <size_t> dimensionPoints;
-                    floatArr pointArr;
-                    if (previewGroup.exist("points"))
-                    {
-                        pointArr = m_arrayIO->template load<float>(previewGroup, "points", dimensionPoints);
-                        if (dimensionPoints.at(1) != 3)
-                        {
-                            std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong point dimensions. Points will not be loaded."
-                                      << std::endl;
-                        }
-                        else
-                        {
-                            ret->m_points = PointBufferPtr(new PointBuffer(pointArr, dimensionPoints.at(0)));
-                            ret->m_numPoints = dimensionPoints.at(0);
-                        }
-                    }
-                }
-                else // use normal points
-                {
-                    std::cout << "Didn't found the Preview-Group. Try to use normal Points." << std::endl;
-                    std::vector <size_t> dimensionPoints;
-                    floatArr pointArr;
-                    if (group.exist("points"))
-                    {
-                        pointArr = m_arrayIO->template load<float>(group, "points", dimensionPoints);
-                        if (dimensionPoints.at(1) != 3)
-                        {
-                            std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong point dimensions. Points will not be loaded."
-                                      << std::endl;
-                        }
-                        else
-                        {
-                            ret->m_points = PointBufferPtr(new PointBuffer(pointArr, dimensionPoints.at(0)));
-                            ret->m_numPoints = dimensionPoints.at(0);
-                        }
-                    }
-                }
-
-                boost::optional <lvr2::Transformd> finalPose = m_matrixIO->template load<lvr2::Transformd>(group,
-                                                                                                           "finalPose");
-                if (finalPose)
-                {
-                    ret->m_registration = finalPose.get();
-                }
-                boost::optional <lvr2::Transformd> initialPose = m_matrixIO->template load<lvr2::Transformd>(group,
-                                                                                                             "initialPose");
-                if (initialPose)
-                {
-                    ret->m_poseEstimation = initialPose.get();
-                }
-
-
-                if (group.exist("boundingBox"))
-                {
-                    std::vector <size_t> dimBB;
-                    floatArr bbox = m_arrayIO->template load<float>(group, "boundingBox", dimBB);
-                    if ((dimBB.at(0) != 2 || dimBB.at(1) != 3) && dimBB.at(0) != 6)
-                    {
-                        std::cout
-                                << "[Hdf5IO - ScanIO] WARNING: Wrong boundingBox dimensions. BoundingBox will not be loaded."
-                                << std::endl;
-                    }
-                    else
-                    {
-                        BaseVector<float> min(bbox.get()[0], bbox.get()[1], bbox.get()[2]);
-                        BaseVector<float> max(bbox.get()[3], bbox.get()[4], bbox.get()[5]);
-                        BoundingBox <BaseVector<float>> boundingBox(min, max);
-                        ret->m_boundingBox = boundingBox;
-                    }
-                }
-
-                if (group.exist("phi"))
-                {
-                    std::vector <size_t> dimTwo;
-                    floatArr phiArr = m_arrayIO->template load<float>(group, "phi", dimTwo);
-                    if (dimTwo.at(0) != 2)
-                    {
-                        std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong phi dimensions. Phi will not be loaded."
-                                  << std::endl;
-                    }
-                    else
-                    {
-                        ret->m_phiMin = phiArr.get()[0];
-                        ret->m_phiMax = phiArr.get()[1];
-                    }
-                }
-                if (group.exist("theta"))
-                {
-                    std::vector <size_t> dimTwo;
-                    floatArr thetaArr = m_arrayIO->template load<float>(group, "theta", dimTwo);
-                    if (dimTwo.at(0) != 2)
-                    {
-                        std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong theta dimensions. Theta will not be loaded."
-                                  << std::endl;
-                    }
-                    else
-                    {
-                        ret->m_thetaMin = thetaArr.get()[0];
-                        ret->m_thetaMax = thetaArr.get()[1];
-                    }
-                }
-                if (group.exist("resolution"))
-                {
-                    std::vector <size_t> dimTwo;
-                    floatArr resArr = m_arrayIO->template load<float>(group, "resolution", dimTwo);
-                    if (dimTwo.at(0) != 2)
-                    {
-                        std::cout
-                                << "[Hdf5IO - ScanIO] WARNING: Wrong resolution dimensions. Resolution will not be loaded."
-                                << std::endl;
-                    }
-                    else
-                    {
-                        ret->m_hResolution = resArr.get()[0];
-                        ret->m_vResolution = resArr.get()[1];
-                    }
-                }
-                if (group.exist("timestamp"))
-                {
-                    std::vector <size_t> dimTwo;
-                    floatArr timestampArr = m_arrayIO->template load<float>(group, "timestamp", dimTwo);
-                    if (dimTwo.at(0) != 2)
-                    {
-                        std::cout
-                                << "[Hdf5IO - ScanIO] WARNING: Wrong timestamp dimensions. Timestamp will not be loaded."
-                                << std::endl;
-                    }
-                    else
-                    {
-                        ret->m_startTime = timestampArr.get()[0];
-                        ret->m_endTime = timestampArr.get()[1];
-                    }
-                }
-            }
-            return ret;
+        if (dimension[0] != 2)
+        {
+            std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong resolution dimensions. Resolution will "
+                         "not be loaded."
+                      << std::endl;
         }
+        else
+        {
+            ret->hResolution = resolution[0];
+            ret->vResolution = resolution[1];
+        }
+    }
 
-    } // namespace hdf5features
+    std::cout << "    loading timestamps" << std::endl;
+    // read timestamps
+    if (group.exist("timestamps"))
+    {
+        std::vector<size_t> dimension;
+        doubleArr timestamps = m_arrayIO->template load<double>(group, "timestamps", dimension);
+
+        if (dimension[0] != 2)
+        {
+            std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong timestamp dimensions. Timestamp will "
+                         "not be loaded."
+                      << std::endl;
+        }
+        else
+        {
+            ret->startTime = timestamps[0];
+            ret->endTime = timestamps[1];
+        }
+    }
+
+    return ret;
+}
+
+template <typename Derived>
+bool ScanIO<Derived>::isScan(HighFive::Group& group)
+{
+    std::string id(ScanIO<Derived>::ID);
+    std::string obj(ScanIO<Derived>::OBJID);
+    return hdf5util::checkAttribute(group, "IO", id) &&
+           hdf5util::checkAttribute(group, "CLASS", obj);
+}
+
+} // namespace hdf5features
 
 } // namespace lvr2
