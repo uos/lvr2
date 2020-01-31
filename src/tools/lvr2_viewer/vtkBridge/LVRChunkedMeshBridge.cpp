@@ -3,7 +3,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
 #include <vtkCellArray.h>
-#include <vtkPolyDataMapper.h>
+//#include <PreloadOpenGLPolyDataMapper.h>
 #include <vtkPoints.h>
 #include <vtkActor.h>
 #include <vtkTriangle.h>
@@ -14,15 +14,57 @@
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 
+
+#include <vtkXOpenGLRenderWindow.h>
+#include "PreloadOpenGLPolyDataMapper.h"
 #include <omp.h>
+
+#include "GL/glx.h"
 
 using namespace lvr2;
 
-LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file) : m_chunkManager(file)
+GLXContext m_workerContext;
+XVisualInfo* vinfo;
+Window x_window;
+Display* display;
+
+LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtkRenderer> renderer) : m_chunkManager(file), m_renderer(renderer)
 {
     getNew_ = false;
     dist_ = 40.0;
     running_ = true;
+
+    // get context opengl
+    // createSharedcontext  from current.
+    //
+    //
+   vtkRenderWindow* window = m_renderer->GetRenderWindow();
+    if(window->IsA("vtkXOpenGLRenderWindow"))
+    {
+        std::cout << "VTKXOPENGL" << std::endl;
+        vtkXOpenGLRenderWindow* ogl_window = static_cast<vtkXOpenGLRenderWindow*>(window);
+        vinfo = ogl_window->GetDesiredVisualInfo();
+        if(vinfo != nullptr)
+        {
+            std::cout << "got visualinfo" << std::endl;
+        }
+
+        display = ogl_window->GetDisplayId();
+        if(display != nullptr)
+        {
+            std::cout << "got display" << std::endl;
+        }   
+        x_window = ogl_window->GetParentId();
+        //    x_window = ogl_window->GetParentId();
+    }
+    GLXContext currentContext = glXGetCurrentContext();
+    if(currentContext!= nullptr)
+    {
+        std::cout << "Got the context" << std::endl;
+    }
+
+    m_workerContext = glXCreateContext(display, vinfo, currentContext, true);
+
     worker = std::thread(&LVRChunkedMeshBridge::highResWorker, this);
 
 }
@@ -30,6 +72,12 @@ LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file) : m_chunkManager(fi
 
 void LVRChunkedMeshBridge::highResWorker()
 {
+    bool success = glXMakeCurrent(display, x_window, m_workerContext);
+    if(success)
+    {
+        std::cout << "MAKE CURRENT SUCCESS" << std::endl;
+    
+    }
 
     while(running_)
     {
@@ -39,14 +87,8 @@ void LVRChunkedMeshBridge::highResWorker()
            cond_.wait(l);
        }
 
-//       std::cout << "Get new worker" << std::endl;
-//       omp_lock_t writelock;
-//
-//       omp_init_lock(&writelock);
 
-       std::cout << lvr2::timestamp << "Chunkmanager bb " << m_chunkManager.getBoundingBox() << std::endl;
        BaseVector<float> diff = m_region.getCentroid() - m_lastRegion.getCentroid();
-//       std::cout << "Centroid diff: " << diff << std::endl;
        if(!(std::abs(diff[0]) > 1.0 || std::abs(diff[1]) > 1.0 || std::abs(diff[2]) > 1.0))
        {
            getNew_ = false;
@@ -54,14 +96,16 @@ void LVRChunkedMeshBridge::highResWorker()
            continue;
        }
     
-       std::cout << "Last region " << m_lastRegion << std::endl;
-       std::cout << "New region " << m_region << std::endl;
+       std::thread::id this_id = std::this_thread::get_id();
+//       std::cout << "THREAD ID WORKER " << this_id << std::endl;
        m_lastRegion = m_region;
        auto old_highRes = m_highRes;
-       m_highRes.clear();
+//       if(m_highRes.size() > 1000)
+//       {
+           m_highRes.clear();
+//       }
 
-       std::cout << lvr2::timestamp << "Request from cm " << m_region << std::endl;
-       m_chunkManager.extractArea(m_region, m_highRes, "mesh1");
+       m_chunkManager.extractArea(m_region, m_highRes, "mesh0");
 
        for(auto& it : m_highRes)
        {
@@ -71,32 +115,33 @@ void LVRChunkedMeshBridge::highResWorker()
             }
        }
        old_highRes.clear();
-       std::cout << lvr2::timestamp << "got from cm " << m_highRes.size() << std::endl;
+       //std::cout << lvr2::timestamp << "got from cm " << m_highRes.size() << std::endl;
     
-//      m_highResActors.clear();
 
         std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor>> tmp_highResActors;
 
-//       m_highResActors = std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor>>();
-           for(auto it = m_highRes.begin(); it != m_highRes.end(); ++it)
-           {
-               auto chunk = *it;
-               size_t id = chunk.first;
-               lvr2::MeshBufferPtr meshbuffer = chunk.second;
+        
+        for(auto it = m_highRes.begin(); it != m_highRes.end(); ++it)
+        {
+            auto chunk = *it;
+            size_t id = chunk.first;
+            lvr2::MeshBufferPtr meshbuffer = chunk.second;
 
-               if(m_highResActors.find(id) == m_highResActors.end())
-               {
+            if(m_highResActors.find(id) == m_highResActors.end())
+            {
                 tmp_highResActors.insert({id, computeMeshActor(id, meshbuffer)});
-               }
-               else
-               {
+            }
+            else
+            {
                 tmp_highResActors.insert({id, m_highResActors.at(id)});
-               }
+            }
 
        }
+
+
+       //std::cout << "THREAD ID WORKER " << this_id << std::endl;
        auto old_actors = m_highResActors;
        m_highResActors = tmp_highResActors; 
-       std::cout << lvr2::timestamp << "Got " << m_highResActors.size() << " highres" << std::endl;
        getNew_ = false;
     
        Q_EMIT updateHighRes(old_actors, m_highResActors);
@@ -111,75 +156,13 @@ void LVRChunkedMeshBridge::highResWorker()
 //                                        double up[3])
 //        
 void LVRChunkedMeshBridge::fetchHighRes(BoundingBox<BaseVector<float> > bb)
-{   // std::cout << "Up vec " << up_vec << "\n" <<
-    //             "projec " << proj_vec << "\n" <<
-    //             "perp   " << perp_vec    << "\n" << 
-    //             "posit  " << eye    << "\n" << std::endl;
-
-//    std::cout << "get Highres" << std::endl;
-//    BaseVector<float> eye(position[0], position[1], position[2]);
-//    BaseVector<float> up_vec(up[0], up[1], up[2]);
-//    up_vec.normalize();
-//    BaseVector<float> proj_vec(dir[0], dir[1], dir[2]);
-//    proj_vec.normalize();
-//    BaseVector<float> perp_vec = proj_vec.cross(up_vec);
-//    perp_vec.normalize();
-//    eye += (proj_vec * -128);
-//    BoundingBox<BaseVector<float> > n_bb;
-    
-//    for(int i = 0; i < 2; ++i)
-//    {
-//        BaseVector<float> perp;
-//        if(i)
-//        {
-//            perp = (perp_vec * dist_ * (-1));
-//        }
-//        else{
-//            perp = (perp_vec * dist_);
-//        }
-//
-//        for(int j = 0; j < 2; ++j)
-//        {
-//            BaseVector<float> n_up;
-//            if(i)
-//            {
-//                n_up = (up_vec * dist_ * (-1));
-//            }
-//            else{
-//                n_up = (up_vec * dist_);
-//            }
-//            for(int k = 0; k < 2; ++k)
-//            { 
-//                
-//                BaseVector<float> n_proj;
-//                if(k)
-//                {
-//                    n_proj = (proj_vec * dist_ * (-1));
-//                }
-//                else{
-//                    n_proj = (proj_vec * dist_);
-//                }
-//
-//                BaseVector<float> tmp = eye + perp + n_up + n_proj;
-//                n_bb.expand(tmp);
-//            }
-//        }
-//    }
-//    auto max = n_bb.getMax();
-//    auto min = n_bb.getMin();
-
-    //float min_val = std::min(min[0], std::min(min[1], min[2]));
-    //float max_val = std::max(max[0], std::max(max[1], max[2]));
-    //min = BaseVector<float>(min_val, min_val, min_val);
-    //max = BaseVector<float>(max_val, max_val, max_val);
-    //n_bb.expand(min);
-    //n_bb.expand(max);
-
-    std::unique_lock<std::mutex> l(mutex);
+{
+    // FUCK SYNCHRONIZATION
+    //std::unique_lock<std::mutex> l(mutex);
     m_region = bb;
     getNew_ = true;
-    cond_.notify_all();
     //l.unlock();
+    cond_.notify_all();
 
 }
 
@@ -298,22 +281,25 @@ void LVRChunkedMeshBridge::computeMeshActors()
 
     omp_init_lock(&writelock);
 
-    std::cout << lvr2::timestamp << "Start actor computation" << std::endl;
+    //std::cout << lvr2::timestamp << "Start actor computation" << std::endl;
     //    for(const auto& chunk: m_chunks)
-#pragma omp parallel
+//#pragma omp parallel
     {
-#pragma omp single
+//#pragma omp single
         { 
+            size_t i = 0;
             for(auto it = m_chunks.begin(); it != m_chunks.end(); ++it)
-#pragma omp task
+//#pragma omp task
             {
                 auto chunk = *it;
                 size_t id = chunk.first;
                 lvr2::MeshBufferPtr meshbuffer = chunk.second;
 
-                omp_set_lock(&writelock);
+//                omp_set_lock(&writelock);
+                //std::cout << "Start adding actor " << i << std::endl;
                 m_chunkActors.insert({id, computeMeshActor(id, meshbuffer)});
-                omp_unset_lock(&writelock);
+                //std::cout << "Added actor " << ++i << std::endl;
+//                omp_unset_lock(&writelock);
 
             }
         }
@@ -330,7 +316,7 @@ void LVRChunkedMeshBridge::computeMeshActors()
 vtkSmartPointer<MeshChunkActor> LVRChunkedMeshBridge::computeMeshActor(size_t& id, MeshBufferPtr& meshbuffer)
 {
     vtkSmartPointer<MeshChunkActor> meshActor;
-
+    std::thread::id this_id = std::this_thread::get_id();
     if(meshbuffer)
     {
         vtkSmartPointer<vtkPolyData> mesh = vtkSmartPointer<vtkPolyData>::New();
@@ -422,7 +408,7 @@ vtkSmartPointer<MeshChunkActor> LVRChunkedMeshBridge::computeMeshActor(size_t& i
             mesh->GetPointData()->SetScalars(scalars);
         }
 
-        vtkSmartPointer<vtkPolyDataMapper> mesh_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+        vtkSmartPointer<PreloadOpenGLPolyDataMapper> mesh_mapper = vtkSmartPointer<PreloadOpenGLPolyDataMapper>::New();
 #ifdef LVR2_USE_VTK5
         mesh_mapper->SetInput(mesh);
 #else
@@ -431,12 +417,15 @@ vtkSmartPointer<MeshChunkActor> LVRChunkedMeshBridge::computeMeshActor(size_t& i
         meshActor = vtkSmartPointer<MeshChunkActor>::New();
         meshActor->SetMapper(mesh_mapper);
         meshActor->GetProperty()->BackfaceCullingOff();
-        vtkSmartPointer<vtkPolyDataMapper> wireframe_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+        vtkSmartPointer<PreloadOpenGLPolyDataMapper> wireframe_mapper = vtkSmartPointer<PreloadOpenGLPolyDataMapper>::New();
 #ifdef LVR2_USE_VTK5
         wireframe_mapper->SetInput(mesh);
 #else
         wireframe_mapper->SetInputData(mesh);
 #endif
+
+//        std::cout << "COPYING THREAD ID " << this_id << std::endl;
+        mesh_mapper->CopyToMem(m_renderer.Get(), meshActor.Get());
         // TODO add wireframe stuff
         //m_wireframeActor = vtkSmartPointer<MeshChunkActor>::New();
         //m_wireframeActor->ShallowCopy(meshActor);

@@ -22,6 +22,7 @@ set(LVR2_VIEWER_SOURCES
     vtkBridge/LVRChunkedMeshCuller.cpp
     vtkBridge/LVRChunkedMeshBridge.cpp
     vtkBridge/MeshChunkActor.cpp
+    vtkBridge/PreloadOpenGLPolyDataMapper.cpp
     widgets/LVRModelItem.cpp
     widgets/LVRPointCloudItem.cpp
     widgets/LVRMeshItem.cpp
