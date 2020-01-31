@@ -181,7 +181,7 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
 //        m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
 //    }
     // rm after new scanIOUtils is ready!
-    loadScanProjectFromHDF5(m_hdf5Path.string(), scanProject);
+    loadAllPreviewsFromHDF5(m_hdf5Path.string(), scanProject);
     ScanProjectEditMark tmpScanProject;
     tmpScanProject.project = std::make_shared<ScanProject>(scanProject);
     m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
