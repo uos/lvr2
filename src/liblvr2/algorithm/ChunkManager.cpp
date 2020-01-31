@@ -63,13 +63,12 @@ struct VectorCapsule
 namespace lvr2
 {
 
-    ChunkManager::ChunkManager(MeshBufferPtr mesh,
+ChunkManager::ChunkManager(MeshBufferPtr mesh,
                            float chunksize,
                            float maxChunkOverlap,
                            std::string savePath,
                            std::string layer,
-                           size_t cacheSize
-                           )
+                           size_t cacheSize)
     : ChunkManager(std::vector<MeshBufferPtr>{mesh},
                    chunksize,
                    maxChunkOverlap,
@@ -87,30 +86,22 @@ ChunkManager::ChunkManager(std::vector<MeshBufferPtr> meshes,
     : ChunkHashGrid(savePath + "/chunk_mesh.h5", cacheSize)
 {
     setChunkSize(chunksize);
-    if(meshes.size() != layers.size())
+    if (meshes.size() != layers.size())
     {
         std::cerr << lvr2::timestamp << "Number of meshes and layers do not match: \n"
                   << "Num meshes: " << meshes.size() << "\n"
                   << "Num layers: " << layers.size() << std::endl;
 
-         return;
+        return;
     }
 
     // TODO use biggest
-    BaseVector<std::size_t> chunkAmount(0, 0, 0);
-    for(size_t i = 0; i < meshes.size(); ++i)
+    for (size_t i = 0; i < meshes.size(); ++i)
     {
         initBoundingBox(meshes[i]);
-        // compute number of chunks for each dimension
-        chunkAmount.x
-            = std::max(chunkAmount.x,static_cast<std::size_t>(std::ceil(getBoundingBox().getXSize() / getChunkSize())));
-        chunkAmount.y
-            = std::max(chunkAmount.y, static_cast<std::size_t>(std::ceil(getBoundingBox().getYSize() / getChunkSize())));
-        chunkAmount.z
-            = std::max(chunkAmount.z, static_cast<std::size_t>(std::ceil(getBoundingBox().getZSize() / getChunkSize())));
     }
 
-    for(size_t i = 0; i < meshes.size(); ++i)
+    for (size_t i = 0; i < meshes.size(); ++i)
     {
         buildChunks(meshes[i], maxChunkOverlap, savePath, layers[i]);
     }
@@ -121,7 +112,36 @@ ChunkManager::ChunkManager(std::string hdf5Path, size_t cacheSize, float chunkSi
 {
 }
 
+std::vector<std::string> ChunkManager::getChannelsFromMesh(std::string layer)
+{
+    std::vector<std::string> attributeList;
 
+    MeshBufferPtr chunkPtr;
+    bool isChunkFound = false;
+    for (int x = getChunkMinChunkIndex().x; x < getChunkMaxChunkIndex().x && !isChunkFound; x++)
+    {
+        for (int y = getChunkMinChunkIndex().y; y < getChunkMaxChunkIndex().y && !isChunkFound; y++)
+        {
+            for (int z = getChunkMinChunkIndex().z; z < getChunkMaxChunkIndex().z && !isChunkFound;
+                 z++)
+            {
+                boost::optional<MeshBufferPtr> requestedChunk
+                    = getChunk<MeshBufferPtr>(layer, x, y, z);
+                if (requestedChunk)
+                {
+                    chunkPtr     = requestedChunk.get();
+                    isChunkFound = true;
+                }
+            }
+        }
+    }
+    for (auto channelIterator = chunkPtr->begin(); channelIterator != chunkPtr->end();
+         ++channelIterator)
+    {
+        attributeList.push_back(channelIterator->first);
+    }
+    return attributeList;
+}
 
 void ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
                                std::unordered_map<std::size_t, MeshBufferPtr>& chunks,
@@ -148,17 +168,15 @@ void ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
         {
             for (std::size_t k = 0; k < maxSteps.z; ++k)
             {
-                size_t cellIndex = getCellIndex(adjustedArea.getMin()
-                                                + BaseVector<float>(i, j, k) * getChunkSize());
+                BaseVector<int> cellCoord = getCellCoordinates(
+                    adjustedArea.getMin() + BaseVector<float>(i, j, k) * getChunkSize());
+                size_t cellIndex = hashValue(cellCoord.x, cellCoord.y, cellCoord.z);
 
                 // if element is already loaded.
                 // if(chunks.find(cellIndex) != chunks.end())
                 //{
                 //    continue;
                 //}
-
-                BaseVector<int> cellCoord = getCellCoordinates(
-                    adjustedArea.getMin() + BaseVector<float>(i, j, k) * getChunkSize());
 
                 boost::optional<MeshBufferPtr> loadedChunk
                     = getChunk<MeshBufferPtr>(layer, cellCoord.x, cellCoord.y, cellCoord.z);
@@ -176,20 +194,8 @@ void ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
     //    std::cout << "Num chunks " << chunks.size() << std::endl;
 }
 
-std::vector<std::string> ChunkManager::getChannels()
-{
-    std::vector<std::string> attributeList;
-    const BoundingBox<BaseVec> boundingBox(BaseVec(0,0,0), BaseVec(1,1,1));
-
-    MeshBufferPtr globalMesh = extractArea(boundingBox, "mesh1");
-    for (auto channelIterator = globalMesh->begin(); channelIterator != globalMesh->end(); ++channelIterator)
-    {
-        attributeList.push_back(channelIterator->first);
-    }
-    return attributeList;
-}
-
-MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area, std::string layer)
+MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
+                                        std::string layer)
 {
     std::unordered_map<std::size_t, MeshBufferPtr> chunks;
 
@@ -214,13 +220,12 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
         {
             for (std::size_t k = 0; k < maxSteps.z; ++k)
             {
-                size_t cellIndex          = getCellIndex(adjustedArea.getMin()
-                                                + BaseVector<float>(i, j, k) * getChunkSize());
                 BaseVector<int> cellCoord = getCellCoordinates(
                     adjustedArea.getMin() + BaseVector<float>(i, j, k) * getChunkSize());
+                size_t cellIndex = hashValue(cellCoord.x, cellCoord.y, cellCoord.z);
 
                 boost::optional<MeshBufferPtr> loadedChunk
-                    = getChunk<MeshBufferPtr>(layer , cellCoord.x, cellCoord.y, cellCoord.z);
+                    = getChunk<MeshBufferPtr>(layer, cellCoord.x, cellCoord.y, cellCoord.z);
                 if (loadedChunk)
                 {
                     // TODO: remove saving tmp chunks later
@@ -474,11 +479,11 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
     }
 
     // remove filtered elements
-// #pragma omp parallel
+    // #pragma omp parallel
     {
         for (auto& channel : *areaMesh)
         {
-// #pragma omp single nowait
+            // #pragma omp single nowait
             {
                 if (channel.second.is_type<unsigned char>())
                 {
@@ -639,7 +644,10 @@ void ChunkManager::cutLargeFaces(
     }
 }
 
-void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::string savePath, std::string layer)
+void ChunkManager::buildChunks(MeshBufferPtr mesh,
+                               float maxChunkOverlap,
+                               std::string savePath,
+                               std::string layer)
 {
     std::vector<ChunkBuilderPtr> chunkBuilders(getChunkAmount().x * getChunkAmount().y
                                                * getChunkAmount().z);
@@ -661,15 +669,13 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
     std::shared_ptr<std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>>
         vertexUse(new std::unordered_map<unsigned int, std::vector<std::weak_ptr<ChunkBuilder>>>());
 
-    for (std::size_t i = 0; i < getChunkAmount().x; i++)
+    for (int i = getChunkMinChunkIndex().x; i < getChunkMaxChunkIndex().x; i++)
     {
-        for (std::size_t j = 0; j < getChunkAmount().y; j++)
+        for (int j = getChunkMinChunkIndex().y; j < getChunkMaxChunkIndex().y; j++)
         {
-            for (std::size_t k = 0; k < getChunkAmount().z; k++)
+            for (int k = getChunkMinChunkIndex().z; k < getChunkMaxChunkIndex().z; k++)
             {
-                chunkBuilders[hashValue(i + getChunkMinChunkIndex().x,
-                                        j + getChunkMinChunkIndex().y,
-                                        k + getChunkMinChunkIndex().z)]
+                chunkBuilders[hashValue(i, j, k)]
                     = ChunkBuilderPtr(new ChunkBuilder(halfEdgeMesh, vertexUse));
             }
         }
@@ -680,35 +686,34 @@ void ChunkManager::buildChunks(MeshBufferPtr mesh, float maxChunkOverlap, std::s
     MeshHandleIteratorPtr<FaceHandle> iterator = halfEdgeMesh->facesBegin();
     for (size_t i = 0; i < halfEdgeMesh->numFaces(); i++)
     {
-        currentCenterPoint = getFaceCenter(halfEdgeMesh, *iterator);
-        size_t cellIndex   = getCellIndex(currentCenterPoint);
+        currentCenterPoint             = getFaceCenter(halfEdgeMesh, *iterator);
+        BaseVector<int> cellCorrdinate = getCellCoordinates(currentCenterPoint);
+        size_t hash = hashValue(cellCorrdinate.x, cellCorrdinate.y, cellCorrdinate.z);
 
-        chunkBuilders[cellIndex]->addFace(*iterator);
+        chunkBuilders[hash]->addFace(*iterator);
 
         ++iterator;
     }
 
     // save the chunks as .ply
-    for (std::size_t i = 0; i < getChunkAmount().x; i++)
+    for (int i = getChunkMinChunkIndex().x; i < getChunkMaxChunkIndex().x; i++)
     {
-        for (std::size_t j = 0; j < getChunkAmount().y; j++)
+        for (int j = getChunkMinChunkIndex().y; j < getChunkMaxChunkIndex().y; j++)
         {
-            for (std::size_t k = 0; k < getChunkAmount().z; k++)
+            for (int k = getChunkMinChunkIndex().z; k < getChunkMaxChunkIndex().z; k++)
             {
-                std::size_t hash = hashValue(i + getChunkMinChunkIndex().x,
-                                             j + getChunkMinChunkIndex().y,
-                                             k + getChunkMinChunkIndex().z);
+                std::size_t hash = hashValue(i, j, k);
 
                 if (chunkBuilders[hash]->numFaces() > 0)
                 {
-                    //std::cout << "writing " << i << " " << j << " " << k << std::endl;
+                    // std::cout << "writing " << i << " " << j << " " << k << std::endl;
 
                     // get mesh of chunk from chunk builder
                     MeshBufferPtr chunkMeshPtr
                         = chunkBuilders[hash]->buildMesh(mesh, splitVertices, splitFaces);
 
                     // export chunked meshes for debugging
-                    //ModelFactory::saveModel(ModelPtr(new Model(chunkMeshPtr)),
+                    // ModelFactory::saveModel(ModelPtr(new Model(chunkMeshPtr)),
                     //                        savePath + "/" + std::to_string(i) + "-"
                     //                            + std::to_string(j) + "-" + std::to_string(k)
                     //                            + ".ply");
@@ -730,15 +735,9 @@ BaseVector<float> ChunkManager::getFaceCenter(std::shared_ptr<HalfEdgeMesh<BaseV
            / 3;
 }
 
-std::size_t ChunkManager::getCellIndex(const BaseVector<float>& vec) const
-{
-    BaseVector<float> tmpVec = (vec - getBoundingBox().getMin()) / getChunkSize();
-    return static_cast<size_t>(tmpVec.x) * getChunkAmount().y * getChunkAmount().z
-           + static_cast<size_t>(tmpVec.y) * getChunkAmount().z + static_cast<size_t>(tmpVec.z);
-}
 BaseVector<int> ChunkManager::getCellCoordinates(const BaseVector<float>& vec) const
 {
-    BaseVector<float> tmpVec = (vec - getBoundingBox().getMin()) / getChunkSize();
+    BaseVector<float> tmpVec = vec / getChunkSize();
     BaseVector<int> ret      = BaseVector<int>(
         static_cast<int>(tmpVec.x), static_cast<int>(tmpVec.y), static_cast<int>(tmpVec.z));
     return ret;
