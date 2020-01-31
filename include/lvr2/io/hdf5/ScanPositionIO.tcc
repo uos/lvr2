@@ -82,7 +82,7 @@ void ScanPositionIO<Derived>::save(HighFive::Group& group, const ScanPositionPtr
     chunks = {2, 1};
 
     // saving estimated and registrated pose
-    m_matrixIO->save(group, "poseEstimate", scanPositionPtr->poseEstimate);
+    m_matrixIO->save(group, "pose_estimate", scanPositionPtr->pose_estimate);
     m_matrixIO->save(group, "registration", scanPositionPtr->registration);
 
     // set dim and chunks for timestamp
@@ -97,6 +97,25 @@ void ScanPositionIO<Derived>::save(HighFive::Group& group, const ScanPositionPtr
 
 template <typename Derived>
 ScanPositionPtr ScanPositionIO<Derived>::load(uint scanPos)
+{
+    ScanPositionPtr ret;
+
+    char buffer[sizeof(int) * 5];
+    sprintf(buffer, "%08d", scanPos);
+    string nr_str(buffer);
+    std::string basePath = "raw/" + nr_str + "/";
+
+    if (hdf5util::exist(m_file_access->m_hdf5_file, basePath))
+    {
+        HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
+        ret = load(group);
+    }
+
+    return ret;
+}
+
+template <typename Derived>
+ScanPositionPtr ScanPositionIO<Derived>::loadScanPosition(uint scanPos)
 {
     ScanPositionPtr ret;
 
@@ -195,11 +214,11 @@ ScanPositionPtr ScanPositionIO<Derived>::load(HighFive::Group& group)
     std::cout << "  loading poseEstimation" << std::endl;
 
     // read poseEstimation
-    boost::optional<lvr2::Transformd> poseEstimate =
-        m_matrixIO->template load<lvr2::Transformd>(group, "poseEstimate");
-    if (poseEstimate)
+    boost::optional<lvr2::Transformd> pose_estimate =
+        m_matrixIO->template load<lvr2::Transformd>(group, "pose_estimate");
+    if (pose_estimate)
     {
-        ret->poseEstimate = poseEstimate.get();
+        ret->pose_estimate = pose_estimate.get();
     }
 
     // read registration
