@@ -20,6 +20,9 @@
 #include <condition_variable>
 #include <QObject>
 
+//#include "GL/glx.h"
+
+
 typedef std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > actorMap;
 Q_DECLARE_METATYPE(actorMap)
 
@@ -29,7 +32,7 @@ namespace lvr2 {
     {
         Q_OBJECT
         public:
-            LVRChunkedMeshBridge(std::string file);
+            LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtkRenderer> renderer);
             void getActors(double planes[24],
                     std::vector<BaseVector<float> >& centroids, 
                     std::vector<size_t >& indices);
@@ -52,6 +55,9 @@ namespace lvr2 {
             inline vtkSmartPointer<MeshChunkActor> computeMeshActor(size_t& id, MeshBufferPtr& chunk);
 
         private:
+            vtkSmartPointer<vtkRenderer> m_renderer;
+        //            Display* display;
+    //        Window x_window;
 
             std::thread worker;
             std::mutex mutex;
