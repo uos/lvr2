@@ -207,7 +207,7 @@ struct convert<lvr2::SLAMOptions>
 
         if (node["useScanOrder"])
         {
-            options.useScanOrder = node["useScanOrder"].as<double>();
+            options.useScanOrder = node["useScanOrder"].as<bool>();
         }
 
         return true;
