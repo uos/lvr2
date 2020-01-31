@@ -152,7 +152,7 @@ void SLAMAlign::match()
         if (m_new_scans.empty() || m_new_scans.at(m_alreadyMatched))
         {
             cout << m_scans.size() << endl;
-            size_t i = m_alreadyMatched;
+            size_t i = m_alreadyMatched-1;
 
             if (m_options.verbose)
             {
@@ -342,8 +342,17 @@ void SLAMAlign::finish()
 void SLAMAlign::createIcpGraph()
 {
     m_icp_graph = std::vector<std::pair<int, int>>();
-
     vector<vector<double>> mat(m_scans.size());
+    if (m_options.useScanOrder)
+    {
+        for (int i = 1; i < m_scans.size(); i++)
+        {
+            m_icp_graph.push_back(std::pair<int, int>(i-1,i));
+        } 
+        return;
+
+    }
+
 	// construct a vector of int
     {
         vector<double> *v = &(mat.at(0));
