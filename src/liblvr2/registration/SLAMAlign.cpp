@@ -190,8 +190,15 @@ void SLAMAlign::match()
             {
                 ((Metascan*)m_metascan.get())->addScan(cur);
             }
-
-            checkLoopClose(m_icp_graph.at(i).second);
+            if (m_options.useScanOrder)
+            {
+                checkLoopClose(m_icp_graph.at(i).second);
+            }
+            else if (m_options.doGraphSLAM)
+            {
+                checkLoopCloseOtherOrder(i);
+            }
+            
         }
     }
 }
@@ -213,6 +220,35 @@ void SLAMAlign::applyTransform(SLAMScanPtr scan, const Matrix4d& transform)
             {
                 found = true;
             }
+        }
+    }
+}
+
+void SLAMAlign::checkLoopCloseOtherOrder(size_t last)
+{
+    bool hasLoop = false;
+
+    vector<SLAMScanPtr> scans;
+    std::vector<bool> new_scans;
+    scans.push_back(m_scans.at(m_icp_graph.at(0).first));
+    for (int i = 0; i != m_icp_graph.at(i).second; i++)
+    {
+        scans.push_back(m_scans.at(m_icp_graph.at(i).second));
+        new_scans.push_back(m_new_scans.at(m_icp_graph.at(i).second));
+    }
+
+
+    for (int i = 0; i < scans.size() && !hasLoop; i++)
+    {
+        double distance_to_other = sqrt(
+            pow(m_scans.at(last)->innerScan()->m_poseEstimation(3,0) - scans.at(i)->innerScan()->m_poseEstimation(3,0), 2.0)+
+            pow(m_scans.at(last)->innerScan()->m_poseEstimation(3,1) - scans.at(i)->innerScan()->m_poseEstimation(3,1), 2.0)+
+            pow(m_scans.at(last)->innerScan()->m_poseEstimation(3,2) - scans.at(i)->innerScan()->m_poseEstimation(3,2), 2.0));
+        if (distance_to_other < m_options.closeLoopDistance)
+        {
+            cout << "found loop" << endl;
+            m_graph.doGraphSLAM(scans, last, new_scans);
+            return;
         }
     }
 }
