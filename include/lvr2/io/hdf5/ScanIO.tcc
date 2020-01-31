@@ -84,11 +84,21 @@ ScanPtr ScanIO<Derived>::load(uint scanPos, uint scanNr)
 {
     ScanPtr ret;
 
-    // if (hdf5util::exist(m_file_access->m_hdf5_file, name))
-    // {
-    //     HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name, false);
-    //     ret = load(g);
-    // }
+    char scan_buffer[sizeof(int) * 5];
+    sprintf(scan_buffer, "%08d", scanPos);
+    string scanPos_str(scan_buffer);
+    
+    char buffer[sizeof(int) * 5];
+    sprintf(buffer, "%08d", scanNr);
+    string nr_str(buffer);
+
+    std::string basePath = "raw/" + scanPos_str + "/scans/data" + nr_str;
+
+    if (hdf5util::exist(m_file_access->m_hdf5_file, basePath))
+    {
+        HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
+        ret = load(group);
+    }
 
     return ret;
 }
@@ -97,14 +107,18 @@ template <typename Derived>
 ScanPtr ScanIO<Derived>::load(HighFive::Group& group, uint scanNr)
 {
     ScanPtr ret;
+    
+    char buffer[sizeof(int) * 5];
+    sprintf(buffer, "%08d", scanNr);
+    string nr_str(buffer);
 
-    // check wether the given group is type ScanPositionIO
+    std::string basePath = "/scans/data" + nr_str;
 
-    // if (hdf5util::exist(m_file_access->m_hdf5_file, name))
-    // {
-    //     HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name, false);
-    //     ret = load(g);
-    // }
+    if (hdf5util::exist(group, basePath))
+    {
+        HighFive::Group g = hdf5util::getGroup(group, basePath);
+        ret = load(g);
+    }
 
     return ret;
 }
