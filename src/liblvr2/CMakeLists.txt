@@ -44,12 +44,10 @@ set(LVR2_SOURCES
     io/GridIO.cpp
     io/PointBuffer.cpp
     io/ModelFactory.cpp
-    io/ScanprojectIO.cpp
     io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
     io/ChunkIO.cpp
-    types/Scan.cpp
-    #io/PlutoMetaDataIO.cpp
+    io/ScanIOUtils.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
@@ -67,6 +65,7 @@ set(LVR2_SOURCES
     registration/GraphSLAM.cpp
     registration/TreeUtils.cpp
     registration/OctreeReduction.cpp
+    registration/RegistrationPipeline.cpp
 )
 
 
@@ -186,7 +185,6 @@ endif()
 #####################################################################################
 # no found variable
 if(YAML_CPP_LIBRARIES)
-    set(LVR2_SOURCES ${LVR2_SOURCES} io/PlutoMetaDataIO.cpp)
     set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${YAML_CPP_LIBRARIES})
 endif()
 

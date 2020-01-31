@@ -18,8 +18,9 @@
 
 
 #include "Options.hpp"
-#include "lvr2/types/Scan.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/HDF5IO.hpp"
+#include "lvr2/io/IOUtils.hpp"
 
 using namespace lvr2;
 

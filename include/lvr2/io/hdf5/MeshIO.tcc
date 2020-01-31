@@ -31,30 +31,35 @@ void MeshIO<Derived>::save(HighFive::Group& group, const MeshBufferPtr& buffer)
         m_vchannel_io->save(channelsGroup, elem.first, elem.second);
     }
 
-    if (!group.exist("textures"))
+    if(!buffer->getTextures().empty())
     {
-        group.createGroup("textures");
-    }
-    HighFive::Group texturesGroup = group.getGroup("textures");
+        if (!group.exist("textures"))
+        {
+            group.createGroup("textures");
+        }
+        HighFive::Group texturesGroup = group.getGroup("textures");
 
-    for (auto texture : buffer->getTextures())
-    {
-        auto dims   = std::vector<size_t>{texture.m_width, texture.m_height, texture.m_numChannels};
-        auto chunks = std::vector<hsize_t>{dims[0], dims[1], dims[2]};
-        auto data
-            = boost::shared_array<unsigned char>(new unsigned char[dims[0] * dims[1] * dims[2]]);
-        memcpy(data.get(), texture.m_data, dims[0] * dims[1] * dims[2]);
-        m_array_io->template save<unsigned char>(
-            texturesGroup, std::to_string(texture.m_index), dims, chunks, data);
+        for (auto texture : buffer->getTextures())
+        {
+            auto dims   = std::vector<size_t>{texture.m_width, texture.m_height, texture.m_numChannels};
+            auto chunks = std::vector<hsize_t>{dims[0], dims[1], dims[2]};
+            auto data
+                = boost::shared_array<unsigned char>(new unsigned char[dims[0] * dims[1] * dims[2]]);
+            memcpy(data.get(), texture.m_data, dims[0] * dims[1] * dims[2]);
+            m_array_io->template save<unsigned char>(
+                texturesGroup, std::to_string(texture.m_index), dims, chunks, data);
+        }
     }
-
-    if (!group.exist("materials"))
-    {
-        group.createGroup("materials");
-    }
-    HighFive::Group materialsGroup = group.getGroup("materials");
+    
     if(!buffer->getMaterials().empty())
     {
+        if (!group.exist("materials"))
+        {
+            group.createGroup("materials");
+        }
+        HighFive::Group materialsGroup = group.getGroup("materials");
+
+
         size_t numMaterials = buffer->getMaterials().size();
         boost::shared_array<int> textureHandles(new int[numMaterials]);
 
