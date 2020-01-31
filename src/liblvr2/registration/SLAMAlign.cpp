@@ -46,8 +46,6 @@ namespace lvr2
 SLAMAlign::SLAMAlign(const SLAMOptions& options, const vector<SLAMScanPtr>& scans, std::vector<bool> new_scans)
     : m_options(options), m_scans(scans), m_graph(&m_options), m_foundLoop(false), m_loopIndexCount(0), m_new_scans(new_scans)
 {
-    // The first Scan is never changed
-    m_alreadyMatched = 1;
 
     for (auto& scan : m_scans)
     {
@@ -58,8 +56,6 @@ SLAMAlign::SLAMAlign(const SLAMOptions& options, const vector<SLAMScanPtr>& scan
 SLAMAlign::SLAMAlign(const SLAMOptions& options, std::vector<bool> new_scans)
     : m_options(options), m_graph(&m_options), m_foundLoop(false), m_loopIndexCount(0), m_new_scans(new_scans)
 {
-    // The first Scan is never changed
-    m_alreadyMatched = 1;
 }
 
 void SLAMAlign::setOptions(const SLAMOptions& options)
@@ -136,10 +132,8 @@ void SLAMAlign::match()
     if (m_options.metascan && !m_metascan)
     {
         Metascan* meta = new Metascan();
-        for (size_t i = 0; i < m_alreadyMatched; i++)
-        {
-            meta->addScan(m_scans[i]);
-        }
+        
+        meta->addScan(m_scans[0]);
 
         m_metascan = SLAMScanPtr(meta);
     }
@@ -147,12 +141,12 @@ void SLAMAlign::match()
     string scan_number_string = to_string(m_scans.size() - 1);
 
     // only match everything after m_alreadyMatched
-    for (; m_alreadyMatched < m_scans.size(); m_alreadyMatched++)
+    for (size_t i = 0; i < m_icp_graph.size(); i++)
     {
-        if (m_new_scans.empty() || m_new_scans.at(m_alreadyMatched))
+        if (m_new_scans.empty() || m_new_scans.at(m_icp_graph.at(i).second))
         {
             cout << m_scans.size() << endl;
-            size_t i = m_alreadyMatched-1;
+            ;
 
             if (m_options.verbose)
             {

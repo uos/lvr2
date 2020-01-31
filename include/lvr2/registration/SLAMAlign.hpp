@@ -168,8 +168,6 @@ protected:
     bool                     m_foundLoop;
     int                      m_loopIndexCount;
 
-    size_t                   m_alreadyMatched;
-
     std::vector<bool>        m_new_scans;
 
     std::vector<std::pair<int, int>> m_icp_graph;
