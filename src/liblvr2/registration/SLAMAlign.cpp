@@ -325,11 +325,72 @@ void SLAMAlign::graphSLAM(size_t last)
 
 void SLAMAlign::finish()
 {
+    createIcpGraph();
+    for (int i = 0; i< m_icp_graph.size(); i++)
+    {
+        cout << "icp graph: " << m_icp_graph.at(i).first << ":" << m_icp_graph.at(i).second << endl;
+    }
+    
     match();
 
     if (m_options.doGraphSLAM)
     {
         graphSLAM(m_scans.size() - 1);
+    }
+}
+
+void SLAMAlign::createIcpGraph()
+{
+    m_icp_graph = std::vector<std::pair<int, int>>();
+
+    vector<vector<double>> mat;
+	// construct a vector of int
+    {
+        vector<double> v;
+        for (int i = 0; i < m_scans.size(); i++)
+            //ToDo: hier überprüfen waru m immer nur 0
+            v.push_back(sqrt(
+                pow(abs(m_scans.at(0)->innerScan()->m_poseEstimation(0,3)) - abs(m_scans.at(i)->innerScan()->m_poseEstimation(0,3)), 2.0)+
+                pow(abs(m_scans.at(0)->innerScan()->m_poseEstimation(1,3)) - abs(m_scans.at(i)->innerScan()->m_poseEstimation(1,3)), 2.0)+
+                pow(abs(m_scans.at(0)->innerScan()->m_poseEstimation(2,3)) - abs(m_scans.at(i)->innerScan()->m_poseEstimation(2,3)), 2.0)));
+        // push back above one-dimensional vector
+        mat.push_back(v);
+    }
+	
+    for(int i = 1; i < m_scans.size(); i++)
+    {
+        //search for minimum in mat
+        double minimum = DBL_MAX;
+        int old_scan;
+        int new_scan;
+        int x;
+        int y;
+        for(x = 0; x < mat.size(); ++x)
+        {
+            for(y = 0 ; y < mat.at(x).size(); ++y)
+            {
+                cout << "x:" << x << ", y:" << y << ", mat:"<< mat[x][y]<< endl;
+                if (mat[x][y] < minimum)
+                {
+                    minimum = mat[x][y];
+                    old_scan = x;
+                    new_scan = y;
+                }
+            }
+        }
+        m_icp_graph.push_back(std::pair<int, int>(old_scan,new_scan));
+        cout << "go:" << endl;
+        {
+            vector<double> v;
+            for (int i = 0; i < m_scans.size(); i++)
+                v.push_back(sqrt(
+                    pow(m_scans.at(new_scan)->innerScan()->m_poseEstimation(0,3) - m_scans.at(i)->innerScan()->m_poseEstimation(0,3), 2.0)+
+                    pow(m_scans.at(new_scan)->innerScan()->m_poseEstimation(1,3) - m_scans.at(i)->innerScan()->m_poseEstimation(1,3), 2.0)+
+                    pow(m_scans.at(new_scan)->innerScan()->m_poseEstimation(2,3) - m_scans.at(i)->innerScan()->m_poseEstimation(2,3), 2.0)));
+            // push back above one-dimensional vector
+            mat.push_back(v);
+        }
+
     }
 }
 
