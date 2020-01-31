@@ -298,7 +298,7 @@ struct ScanPosition
     double                          altitude;
 
     /// Estimated pose
-    Transformd                      poseEstimate;
+    Transformd                      pose_estimate;
 
     /// Final registered position in project coordinates
     Transformd                      registration;
