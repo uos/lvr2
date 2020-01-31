@@ -13,7 +13,6 @@ void HyperspectralCameraIO<Derived>::save(HighFive::Group& group,
     hdf5util::setAttribute(group, "IO", id);
     hdf5util::setAttribute(group, "CLASS", obj);
 
-    // TODO: save camera model
     // saving estimated and registrated pose
     m_matrixIO->save(group, "extrinsics", hyperspectralCameraPtr->extrinsics);
     m_matrixIO->save(group, "extrinsicsEstimate", hyperspectralCameraPtr->extrinsicsEstimate);
@@ -100,6 +99,36 @@ template <typename Derived>
 HyperspectralCameraPtr HyperspectralCameraIO<Derived>::load(uint scanPos)
 {
     HyperspectralCameraPtr ret;
+
+    char buffer[sizeof(int) * 5];
+    sprintf(buffer, "%08d", scanPos);
+    string nr_str(buffer);
+    std::string basePath = "raw/" + nr_str + "/spectral/data";
+
+    if (hdf5util::exist(m_file_access->m_hdf5_file, basePath))
+    {
+        HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
+        ret = load(group);
+    }
+
+    return ret;
+}
+
+template <typename Derived>
+HyperspectralCameraPtr HyperspectralCameraIO<Derived>::loadHyperspectralCamera(uint scanPos)
+{
+    HyperspectralCameraPtr ret;
+
+    char buffer[sizeof(int) * 5];
+    sprintf(buffer, "%08d", scanPos);
+    string nr_str(buffer);
+    std::string basePath = "raw/" + nr_str + "/spectral/data";
+
+    if (hdf5util::exist(m_file_access->m_hdf5_file, basePath))
+    {
+        HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
+        ret = load(group);
+    }
 
     return ret;
 }

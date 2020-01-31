@@ -22,6 +22,7 @@ class HyperspectralCameraIO
     HyperspectralCameraPtr load(uint scanPos);
     // HyperspectralCameraPtr load(HighFive::Group& group, uint camNr);
     HyperspectralCameraPtr load(HighFive::Group& group);
+    HyperspectralCameraPtr loadHyperspectralCamera(uint scanPos);
 
   protected:
     bool isHyperspectralCamera(HighFive::Group& group);
