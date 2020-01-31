@@ -156,17 +156,17 @@ void SLAMAlign::match()
 
             if (m_options.verbose)
             {
-                cout << "Iteration " << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << endl;
+                cout << "Iteration " << setw(scan_number_string.length()) << m_icp_graph.at(i).second << "/" << scan_number_string << ": " << endl;
             }
             else
             {
-                cout << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << flush;
+                cout << setw(scan_number_string.length()) << m_icp_graph.at(i).second << "/" << scan_number_string << ": " << flush;
             }
 
-            SLAMScanPtr prev = m_options.metascan ? m_metascan : m_scans[i - 1];
-            const SLAMScanPtr& cur = m_scans[i];
+            SLAMScanPtr prev = m_options.metascan ? m_metascan : m_scans[m_icp_graph.at(i).first];
+            const SLAMScanPtr& cur = m_scans[m_icp_graph.at(i).second];
 
-            if (!m_options.trustPose && i != 1) // no deltaPose on first run
+            if (!m_options.trustPose && m_icp_graph.at(i).second != 1) // no deltaPose on first run
             {
                 applyTransform(cur, prev->deltaPose());
             }
@@ -197,7 +197,7 @@ void SLAMAlign::match()
                 ((Metascan*)m_metascan.get())->addScan(cur);
             }
 
-            checkLoopClose(i);
+            checkLoopClose(m_icp_graph.at(i).second);
         }
     }
 }
@@ -343,54 +343,65 @@ void SLAMAlign::createIcpGraph()
 {
     m_icp_graph = std::vector<std::pair<int, int>>();
 
-    vector<vector<double>> mat;
+    vector<vector<double>> mat(m_scans.size());
 	// construct a vector of int
     {
-        vector<double> v;
+        vector<double> *v = &(mat.at(0));
         for (int i = 0; i < m_scans.size(); i++)
-            //ToDo: hier überprüfen waru m immer nur 0
-            v.push_back(sqrt(
-                pow(abs(m_scans.at(0)->innerScan()->m_poseEstimation(0,3)) - abs(m_scans.at(i)->innerScan()->m_poseEstimation(0,3)), 2.0)+
-                pow(abs(m_scans.at(0)->innerScan()->m_poseEstimation(1,3)) - abs(m_scans.at(i)->innerScan()->m_poseEstimation(1,3)), 2.0)+
-                pow(abs(m_scans.at(0)->innerScan()->m_poseEstimation(2,3)) - abs(m_scans.at(i)->innerScan()->m_poseEstimation(2,3)), 2.0)));
+        {
+            v->push_back(sqrt(
+                pow(m_scans.at(0)->innerScan()->m_poseEstimation(3,0) - m_scans.at(i)->innerScan()->m_poseEstimation(3,0), 2.0)+
+                pow(m_scans.at(0)->innerScan()->m_poseEstimation(3,1) - m_scans.at(i)->innerScan()->m_poseEstimation(3,1), 2.0)+
+                pow(m_scans.at(0)->innerScan()->m_poseEstimation(3,2) - m_scans.at(i)->innerScan()->m_poseEstimation(3,2), 2.0)));
+        }
         // push back above one-dimensional vector
-        mat.push_back(v);
+        //mat.push_back(v);
     }
-	
+
+	vector<bool> scan_in_graph(m_scans.size());
+    scan_in_graph.at(0) = true;
+    for (int i = 1; i < scan_in_graph.size(); i++)
+    {
+        scan_in_graph.at(i) = false;
+    }
+    
     for(int i = 1; i < m_scans.size(); i++)
     {
-        //search for minimum in mat
         double minimum = DBL_MAX;
         int old_scan;
         int new_scan;
+
+        //search for minimum in mat
         int x;
         int y;
         for(x = 0; x < mat.size(); ++x)
         {
             for(y = 0 ; y < mat.at(x).size(); ++y)
             {
-                cout << "x:" << x << ", y:" << y << ", mat:"<< mat[x][y]<< endl;
-                if (mat[x][y] < minimum)
+                if (!scan_in_graph.at(y) && x!=y && mat[x][y] < minimum)
                 {
+                    //cout << "new min: ";
                     minimum = mat[x][y];
                     old_scan = x;
                     new_scan = y;
                 }
+                //cout << "x:" << x << ", y:" << y << ", mat:"<< mat[x][y]<< endl;
             }
         }
-        m_icp_graph.push_back(std::pair<int, int>(old_scan,new_scan));
-        cout << "go:" << endl;
-        {
-            vector<double> v;
-            for (int i = 0; i < m_scans.size(); i++)
-                v.push_back(sqrt(
-                    pow(m_scans.at(new_scan)->innerScan()->m_poseEstimation(0,3) - m_scans.at(i)->innerScan()->m_poseEstimation(0,3), 2.0)+
-                    pow(m_scans.at(new_scan)->innerScan()->m_poseEstimation(1,3) - m_scans.at(i)->innerScan()->m_poseEstimation(1,3), 2.0)+
-                    pow(m_scans.at(new_scan)->innerScan()->m_poseEstimation(2,3) - m_scans.at(i)->innerScan()->m_poseEstimation(2,3), 2.0)));
-            // push back above one-dimensional vector
-            mat.push_back(v);
-        }
 
+        m_icp_graph.push_back(std::pair<int, int>(old_scan,new_scan));
+        scan_in_graph.at(new_scan) = true;
+        
+        {
+            vector<double> *v = &(mat.at(new_scan));
+            for (int i = 0; i < m_scans.size(); i++)
+            {
+                v->push_back(sqrt(
+                    pow(m_scans.at(new_scan)->innerScan()->m_poseEstimation(3,0) - m_scans.at(i)->innerScan()->m_poseEstimation(3,0), 2.0)+
+                    pow(m_scans.at(new_scan)->innerScan()->m_poseEstimation(3,1) - m_scans.at(i)->innerScan()->m_poseEstimation(3,1), 2.0)+
+                    pow(m_scans.at(new_scan)->innerScan()->m_poseEstimation(3,2) - m_scans.at(i)->innerScan()->m_poseEstimation(3,2), 2.0)));
+            }
+        }
     }
 }
 
