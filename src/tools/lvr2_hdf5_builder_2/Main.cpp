@@ -14,7 +14,8 @@ using namespace lvr2;
 using BaseHDF5IO = lvr2::Hdf5IO<>;
 
 // Extend IO with features (dependencies are automatically fetched)
-using HDF5IO = BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO>;
+using HDF5IO =
+    BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO, lvr2::hdf5features::ArrayIO>;
 
 bool m_usePreviews;
 int m_previewReductionFactor;
@@ -117,6 +118,35 @@ int main(int argc, char** argv)
     else
     {
         hdf.save(scanProject);
+    }
+
+    if (m_usePreviews)
+    {
+        for (int i = 0; i < scanProject->positions.size(); i++)
+        {
+            char buffer[128];
+            sprintf(buffer, "%08d", i);
+            string nr_str(buffer);
+            std::string previewGroupName = "/preview/" + nr_str;
+
+            ScanPositionPtr scanPositionPtr = scanProject->positions[i];
+
+            ScanPtr scanPtr = scanPositionPtr->scans[0];
+            floatArr points = scanPtr->points->getPointArray();
+
+            if (points)
+            {
+                size_t numPreview;
+                floatArr previewData = reduceData(points,
+                                                  scanPositionPtr->scans[0]->numPoints,
+                                                  3,
+                                                  m_previewReductionFactor,
+                                                  &numPreview);
+
+                std::vector<size_t> previewDim = {numPreview, 3};
+                hdf.save(previewGroupName, "points", previewDim, previewData);
+            }
+        }
     }
 
     std::cout << timestamp << "Program finished" << std::endl;
