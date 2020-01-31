@@ -80,15 +80,15 @@ void RegistrationPipeline::doRegistration()
                         v(2)*v(0)*(1.0-cos)-v(1)*sin, v(2)*v(1)*(1.0-cos)+v(0)*sin, v(2)*v(2)*(1.0-cos)+cos;
         tmp_mat = tmp_mat * mult_mat;
 
-        m_scans->project->positions.at(i)->scans[0]->poseEstimation(0,0) = tmp_mat(0,0);
-        m_scans->project->positions.at(i)->scans[0]->poseEstimation(0,1) = tmp_mat(0,1);
-        m_scans->project->positions.at(i)->scans[0]->poseEstimation(0,2) = tmp_mat(0,2);
-        m_scans->project->positions.at(i)->scans[0]->poseEstimation(1,0) = tmp_mat(1,0);
-        m_scans->project->positions.at(i)->scans[0]->poseEstimation(1,1) = tmp_mat(1,1);
-        m_scans->project->positions.at(i)->scans[0]->poseEstimation(1,2) = tmp_mat(1,2);
-        m_scans->project->positions.at(i)->scans[0]->poseEstimation(2,0) = tmp_mat(2,0);
-        m_scans->project->positions.at(i)->scans[0]->poseEstimation(2,1) = tmp_mat(2,1);
-        m_scans->project->positions.at(i)->scans[0]->poseEstimation(2,2) = tmp_mat(2,2);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(0,0) = tmp_mat(0,0);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(0,1) = tmp_mat(0,1);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(0,2) = tmp_mat(0,2);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(1,0) = tmp_mat(1,0);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(1,1) = tmp_mat(1,1);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(1,2) = tmp_mat(1,2);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(2,0) = tmp_mat(2,0);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(2,1) = tmp_mat(2,1);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(2,2) = tmp_mat(2,2);
 
 
         //m_scans->project->positions.at(i)->scan->m_poseEstimation = m_scans->project->positions.at(i)->scan->m_poseEstimation.inverse();
