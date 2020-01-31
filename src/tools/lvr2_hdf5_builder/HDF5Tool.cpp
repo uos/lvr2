@@ -108,25 +108,25 @@ bool checkPNGDir(path& dataDir, std::string number, int numExspected)
     return consistency;
 }
 
-HyperspectralPanorama getSpectralCalibration(path& dataDir, std::string number)
-{
-    HyperspectralPanorama pano;
-    path calibrationFile = dataDir/("calibration_"+number+".txt");
-    std::ifstream in(calibrationFile.string());
-    if(in.good())
-    {
-        in >> pano.distortion(0, 0) >> pano.distortion(1, 0) >> pano.distortion(2, 0);
-        in >> pano.rotation(0, 0)   >> pano.rotation(1, 0)   >> pano.rotation(2, 0);
-        in >> pano.origin(0, 0)     >> pano.origin(1, 0)     >> pano.origin(2, 0);
-        in >> pano.principal(0, 0);
-    }
-    else
-    {
-        std::cout << timestamp << "Could not open calibration file "
-                  << calibrationFile.string() << std::endl;
-    }
-    return pano;
-}
+// HyperspectralPanorama getSpectralCalibration(path& dataDir, std::string number)
+// {
+//     HyperspectralPanorama pano;
+//     path calibrationFile = dataDir/("calibration_"+number+".txt");
+//     std::ifstream in(calibrationFile.string());
+//     if(in.good())
+//     {
+//         in >> pano.distortion(0, 0) >> pano.distortion(1, 0) >> pano.distortion(2, 0);
+//         in >> pano.rotation(0, 0)   >> pano.rotation(1, 0)   >> pano.rotation(2, 0);
+//         in >> pano.origin(0, 0)     >> pano.origin(1, 0)     >> pano.origin(2, 0);
+//         in >> pano.principal(0, 0);
+//     }
+//     else
+//     {
+//         std::cout << timestamp << "Could not open calibration file "
+//                   << calibrationFile.string() << std::endl;
+//     }
+//     return pano;
+// }
 
 int main( int argc, char ** argv )
 {
@@ -197,8 +197,8 @@ int main( int argc, char ** argv )
 
 
             // Get hyperspectral calibration parameters
-            HyperspectralPanorama cal = getSpectralCalibration(dataDir, number);
-            hdf5.addHyperspectralCalibration(scanNr, cal);
+            // HyperspectralPanorama cal = getSpectralCalibration(dataDir, number);
+            // hdf5.addHyperspectralCalibration(scanNr, cal);
 
             // Create "hyperspectral cube"
             path imgFile = dataDir/"panoramas_fixed"/("panorama_channels_"+number)/"channel0.png";

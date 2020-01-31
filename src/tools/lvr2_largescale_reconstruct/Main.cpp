@@ -35,6 +35,7 @@
 #include <string>
 #include <lvr2/io/hdf5/ScanIO.hpp>
 #include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/ScanProjectIO.hpp"
 #include "lvr2/io/ScanIOUtils.hpp"
 
 using std::cout;
@@ -57,7 +58,13 @@ typedef ClSurface GpuSurface;
 #endif
 
 using Vec = lvr2::BaseVector<float>;
-using ScanHDF5IO = lvr2::Hdf5Build<lvr2::hdf5features::ScanIO>;
+// using ScanHDF5IO = lvr2::Hdf5Build<lvr2::hdf5features::ScanIO>;
+
+using BaseHDF5IO = lvr2::Hdf5IO<>;
+
+// Extend IO with features (dependencies are automatically fetched)
+using HDF5IO = BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO>;
+
 int main(int argc, char** argv)
 {
     // =======================================================================
@@ -89,14 +96,27 @@ int main(int argc, char** argv)
                                       options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
                                       options.retesselate(), options.getLineFusionThreshold(), options.getBigMesh(), options.getDebugChunks(), options.useGPU());
 
+    
+
+
     ScanProjectEditMarkPtr project(new ScanProjectEditMark);
-    project->project = ScanProjectPtr(new ScanProject);
+
+    // project->project = scanProjectPtr;
+    
+
+    // loadAllPreviewsFromHDF5(in, *project->project.get());
+
+    // project->project = ScanProjectPtr(new ScanProject);
     std::shared_ptr<ChunkHashGrid> cm;
     BoundingBox<Vec> boundingBox;
 
     if (extension == ".h5")
     {
-        loadAllPreviewsFromHDF5(in, *project->project.get());
+        // loadAllPreviewsFromHDF5(in, *project->project.get());
+        HDF5IO hdf;
+        hdf.open(in);
+        ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
+        project->project = scanProjectPtr;
 
         for (int i = 0; i < project->project->positions.size(); i++)
         {
@@ -106,12 +126,14 @@ int main(int argc, char** argv)
     }
     else
     {
-        ModelPtr model = ModelFactory::readModel(in);
-        Scan scan;
+        project->project = ScanProjectPtr(new ScanProject);
 
-        scan.m_points = model->m_pointCloud;
+        ModelPtr model = ModelFactory::readModel(in);
+        ScanPtr scan(new Scan);
+
+        scan->points = model->m_pointCloud;
         ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
-        scanPosPtr->scan = scan;
+        scanPosPtr->scans.push_back(scan);
         project->project->positions = std::vector<ScanPositionPtr>();
         project->project->positions.push_back(scanPosPtr);
         project->changed.push_back(true);
