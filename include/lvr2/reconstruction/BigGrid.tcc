@@ -1488,7 +1488,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             size_t numPoints = pos->scan->m_points->numPoints();
             BoundingBox<BaseVecT> box;
             boost::shared_array<float> points = pos->scan->m_points->getPointArray();
-            Transformd finalPose_n = pos->scan->m_registration;;
+            Transformd finalPose_n = pos->scan->m_registration;
 
             Transformd finalPose = finalPose_n.transpose();
 
