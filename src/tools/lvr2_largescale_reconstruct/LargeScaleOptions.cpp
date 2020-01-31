@@ -49,39 +49,19 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     flippoint.push_back(1000000);
     flippoint.push_back(1000000);
     flippoint.push_back(1000000);
-    m_descr.add_options()("help", "Produce help message")(
-        "inputFile",
-        value<vector<string>>(),
-        "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")(
-        "partialReconstruct",
-        value<string>(&m_partialReconstruct)->default_value("NONE"),
-        "Option to add partial-Mesh to a global-Mesh (make sure that the inputFile is the global "
-        "PointCloud)")("voxelsize,v",
-                       value<float>(&m_voxelsize)->default_value(10),
-                       "Voxelsize of grid used for reconstruction.")(
-        "bgVoxelsize,bgv",
-        value<float>(&m_voxelsizeBG)->default_value(10),
-        "Voxelsize of the bigGrid.")(
-        "useVGrid",
-        value<int>(&m_vgrid)->default_value(1),
-        "Option to change the partition-process to a gridbase partition (default: OFF (=0))")(
-        "gridSize",
-        value<int>(&m_gridsize)->default_value(20),
-        "Set the gridsize for the virtual grid. (default: 20)")(
-        "noExtrusion",
-        "Do not extend grid. Can be used  to avoid artefacts in dense data sets but. Disabling "
-        "will possibly create additional holes in sparse data sets.")(
-        "intersections,i",
-        value<int>(&m_intersections)->default_value(-1),
-        "Number of intersections used for reconstruction. If other than -1, voxelsize will "
-        "calculated automatically.")("pcm,p",
-                                     value<string>(&m_pcm)->default_value("FLANN"),
-                                     "Point cloud manager used for point handling and normal "
-                                     "estimation. Choose from {STANN, PCL, NABO}.")(
-        "ransac", "Set this flag for RANSAC based normal estimation.")(
-        "decomposition,d",
-        value<string>(&m_pcm)->default_value("PMC"),
-        "Defines the type of decomposition that is used for the voxels (Standard Marching Cubes "
+    m_descr.add_options()
+    ("help", "Produce help message")
+    ("inputFile", value<vector<string>>(),"Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
+    ("partialReconstruct",value<string>(&m_partialReconstruct)->default_value("NONE"),"Option to add partial-Mesh to a global-Mesh (make sure that the inputFile is the global ""PointCloud)")
+    ("voxelsize,v",value<float>(&m_voxelsize)->default_value(10),"Voxelsize of grid used for reconstruction.")
+    ("bgVoxelsize,bgv",value<float>(&m_voxelsizeBG)->default_value(10),"Voxelsize of the bigGrid.")
+    ("useVGrid",value<int>(&m_vgrid)->default_value(1),"Option to change the partition-process to a gridbase partition (default: OFF (=0))")
+    ("gridSize",value<int>(&m_gridsize)->default_value(20),"Set the gridsize for the virtual grid. (default: 20)")
+    ("noExtrusion","Do not extend grid. Can be used  to avoid artefacts in dense data sets but. Disabling will possibly create additional holes in sparse data sets.")
+    ("intersections,i",value<int>(&m_intersections)->default_value(-1),"Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
+    ("pcm,p",value<string>(&m_pcm)->default_value("FLANN"),"Point cloud manager used for point handling and normal estimation. Choose from {STANN, PCL, NABO}.")
+    ("ransac", "Set this flag for RANSAC based normal estimation.")
+    ("decomposition,d",value<string>(&m_pcm)->default_value("PMC"),"Defines the type of decomposition that is used for the voxels (Standard Marching Cubes "
         "(MC), Planar Marching Cubes (PMC), Standard Marching Cubes with sharp feature detection "
         "(SF) or Tetraeder (MT) decomposition. Choose from {MC, PMC, MT, SF}")(
         "optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")(
@@ -199,7 +179,10 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
         "Size of input stream buffer when parsing point cloud files")(
         "interpolateBoxes", "Interpolate Boxes in intersection BoundingBox of two Grids")(
         "useNormals",
-        "the ply file contains normals")("scale",
+        "the ply file contains normals")
+        ("bigMesh", value<bool>(&m_bigMesh)->default_value(true),"generate a .ply file of the reconstructed mesh")
+            ("debugChunks", value<bool>(&m_debugChunks)->default_value(false), "generate .ply file for every chunk")
+            ("scale",
                                          value<float>(&m_scaling)->default_value(1),
                                          "Scaling factor, applied to all input points")(
         "volumenSize",
@@ -263,6 +246,7 @@ int Options::getVGrid() const { return (m_variables["useVGrid"].as<int>()); }
 
 int Options::getGridSize() const { return (m_variables["gridSize"].as<int>()); }
 
+
 string Options::getPartialReconstruct() const
 {
     return (m_variables["partialReconstruct"].as<string>());
@@ -287,6 +271,10 @@ bool Options::printUsage() const
 }
 
 bool Options::saveFaceNormals() const { return m_variables.count("saveFaceNormals"); }
+
+bool Options::getBigMesh() const { return m_variables["bigMesh"].as<bool>();}
+
+bool Options::getDebugChunks() const { return m_variables["debugChunks"].as<bool>();}
 
 bool Options::writeClassificationResult() const
 {

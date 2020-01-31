@@ -365,7 +365,7 @@ namespace lvr2
                         make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
                 lvr2::HalfEdgeMesh<Vec> mesh;
                 reconstruction->getMesh(mesh);
-                if(mesh.numVertices() > 0)
+                if(mesh.numVertices() > 0 && mesh.numFaces() > 0)
                 {
                     lvr2::SimpleFinalizer<Vec> finalize;
                     auto meshBuffer = MeshBufferPtr(finalize.apply(mesh));
@@ -475,10 +475,11 @@ namespace lvr2
             // save mesh depending on input file type
             boost::filesystem::path selectedFile(m_filePath);
 
-            std::time_t result = std::time(nullptr);
-            std::string largeScale = (string) std::asctime(std::localtime(&result)) + ".ply";
+            time_t now = time(0);
 
-            largeScale.erase(std::remove(largeScale.begin(), largeScale.end(), '\n'), largeScale.end());
+            tm *time = localtime(&now);
+            stringstream largeScale;
+            largeScale << 1900 + time->tm_year << "_" << 1+ time->tm_mon << "_" << time->tm_mday << "_" <<  time->tm_hour << "h_" << 1 + time->tm_min << "m_" << 1 + time->tm_sec << "s.ply";
 
 
             if (selectedFile.extension().string() == ".h5") {
@@ -488,10 +489,10 @@ namespace lvr2
                 //hdfWrite.save("mesh", newMesh);
 
                 auto m = ModelPtr(new Model(meshBuffer));
-                ModelFactory::saveModel(m, largeScale);
+                ModelFactory::saveModel(m, largeScale.str());
             } else {
                 auto m = ModelPtr(new Model(meshBuffer));
-                ModelFactory::saveModel(m, largeScale);
+                ModelFactory::saveModel(m, largeScale.str());
             }
         }
         return 1;
@@ -646,10 +647,10 @@ namespace lvr2
 
                         tsdfChunks.push_back(chunk.get());
                     }
-                    else
-                    {
-                        std::cout << "DEBUG - Could not find chunk (" << i << ", " << j << ", " << k << ") in layer: " << layerName << std::endl;
-                    }
+                    //else
+                    //{
+                    //    std::cout << "DEBUG - Could not find chunk (" << i << ", " << j << ", " << k << ") in layer: " << layerName << std::endl;
+                    //}
                 }
             }
         }

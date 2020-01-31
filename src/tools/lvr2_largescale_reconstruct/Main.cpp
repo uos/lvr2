@@ -87,12 +87,13 @@ int main(int argc, char** argv)
                                       options.getNodeSize(), options.getVGrid(), options.getKi(), options.getKd(), options.getKn(), options.useRansac(), options.extrude(),
                                       options.getDanglingArtifacts(), options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
                                       options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
-                                      options.retesselate(), options.getLineFusionThreshold(), true, false, options.useGPU());
+                                      options.retesselate(), options.getLineFusionThreshold(), options.getBigMesh(), options.getDebugChunks(), options.useGPU());
 
     ScanProjectEditMarkPtr project(new ScanProjectEditMark);
     project->project = ScanProjectPtr(new ScanProject);
     std::shared_ptr<ChunkHashGrid> cm;
     BoundingBox<Vec> boundingBox;
+
     if (extension == ".h5")
     {
         loadAllPreviewsFromHDF5(in, *project->project.get());
@@ -123,7 +124,7 @@ int main(int argc, char** argv)
     int x = lsr.mpiChunkAndReconstruct(project, bb, cm, "tsdf_values");
 
 
-    lsr.getPartialReconstruct(bb, cm, "tsdf_values");
+    //lsr.getPartialReconstruct(bb, cm, "tsdf_values");
 
     cout << "Program end." << endl;
 
