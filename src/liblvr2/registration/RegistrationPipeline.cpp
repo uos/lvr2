@@ -162,5 +162,6 @@ void RegistrationPipeline::doRegistration()
             cout << "Pose Scan Nummer " << i << endl << posPtr->scans[0]->registration << endl;
         }
     }
+    m_scans->project->positions.at(0)->scans[0]->registration.transposeInPlace();
 
 }
