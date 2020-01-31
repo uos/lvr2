@@ -156,9 +156,11 @@ class ChunkManager : public ChunkHashGrid
                               const std::map<std::string, FilterFunction> filter);
 
     /**
+     * @brief Get all existing channels from mesh
      * 
+     * @return List of all channel names as vector
      */
-    std::vector<std::string> getChannels();
+    std::vector<std::string> getChannelsFromMesh(std::string layer = std::string("mesh"));
 
     /**
      * @brief Loads all chunks into the ChunkHashGrid.
@@ -222,15 +224,7 @@ class ChunkManager : public ChunkHashGrid
      * @return the grid coordinates as a BaseVector
      */
     BaseVector<int> getCellCoordinates(const BaseVector<float>& vec) const;
-
-    /**
-     * @brief returns the HashValue of a grid cell which would include the given point
-     *
-     * @param vec point of which we want the hashValue of its grid cell
-     * @return the HashValue of a grid cell which would include the given point
-     */
-    std::size_t getCellIndex(const BaseVector<float>& vec) const;
-
+    
     /**
      * @brief reads and combines a channel of multiple chunks
      *
