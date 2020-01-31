@@ -57,6 +57,7 @@ class ScanPositionIO
 
     ScanPositionPtr load(uint scanPos);
     ScanPositionPtr load(HighFive::Group& group);
+    ScanPositionPtr loadScanPosition(uint scanPos);
 
   protected:
     bool isScanPosition(HighFive::Group& group);
