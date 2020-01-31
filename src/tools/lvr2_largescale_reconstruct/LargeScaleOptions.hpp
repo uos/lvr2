@@ -330,6 +330,8 @@ class Options : public lvr2::BaseOption
 
     float getScaling() const;
 
+    vector<float> getVoxelSizes() const;
+
     vector<float> getFlippoint() const;
 
     size_t getVolumenSize() const;
@@ -476,6 +478,8 @@ class Options : public lvr2::BaseOption
     float m_scaling;
 
     vector<float> m_flippoint;
+
+    vector<float> m_voxelSizes;
 
     size_t m_volumenSize;
 
