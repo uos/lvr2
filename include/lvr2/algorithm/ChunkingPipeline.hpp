@@ -89,6 +89,7 @@ private:
     // practicability analysis config values
     double m_roughnessRadius = 0.3;
     double m_heightDifferencesRadius = 0.3;
+    std::vector<float> m_practicabilityLayers;
 
     // status flag
     bool m_running = false;
