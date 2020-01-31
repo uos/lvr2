@@ -62,10 +62,13 @@ void ScanPositionIO<Derived>::save(HighFive::Group& group, const ScanPositionPtr
     }
 
     // saving hyperspectral camera
-    std::string path = "/spectral/data";
-    std::cout << "  saving spectral camera" << std::endl;
-    HighFive::Group camGroup = hdf5util::getGroup(group, path);
-    m_hyperspectralCameraIO->save(camGroup, scanPositionPtr->hyperspectralCamera);
+    if(scanPositionPtr->hyperspectralCamera)
+    {
+        std::string path = "/spectral/data";
+        std::cout << "  saving spectral camera" << std::endl;
+        HighFive::Group camGroup = hdf5util::getGroup(group, path);
+        m_hyperspectralCameraIO->save(camGroup, scanPositionPtr->hyperspectralCamera);
+    }
 
     // set dim and chunks for gps position
     std::vector<size_t> dim{3, 1};
