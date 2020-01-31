@@ -25,69 +25,66 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * Options.cpp
- *
- *  Created on: Nov 21, 2010
- *      Author: Thomas Wiemann
- */
+#include "lvr2/registration/RegistrationPipeline.hpp"
+#include "lvr2/registration/SLAMAlign.hpp"
+#include "lvr2/registration/SLAMScanWrapper.hpp"
 
-#include "Options.hpp"
+#include "vector"
 
-#include "lvr2/config/lvropenmp.hpp"
+using namespace lvr2;
 
-#include <fstream>
-
-namespace meshreduce
+double getDifference(Transformd a, Transformd b)
 {
 
-using namespace boost::program_options;
-
-Options::Options(int argc, char** argv) : BaseOption(argc, argv)
-{
-    // Create option descriptions
-    m_descr.add_options()("help", "Produce help message")(
-        "inputFile",
-        value<vector<string>>(),
-        "Input file name. Supported formats are .obj and .ply")(
-        "reductionRatio,r",
-        value<float>(&m_edgeCollapseReductionRatio)->default_value(0.0),
-        "Percentage of faces to remove via edge-collapse (0.0 means no reduction, 1.0 means to "
-        "remove all faces which can be removed)");
-    setup();
-}
-
-string Options::getInputFileName() const
-{
-    return (m_variables["inputFile"].as<vector<string>>())[0];
-}
-
-float Options::getEdgeCollapseReductionRatio() const
-{
-    return (m_variables["reductionRatio"].as<float>());
-}
-
-bool Options::printUsage() const
-{
-    if (m_variables.count("help"))
+    double sum = 0;
+    for (size_t i = 0; i < 4; i++)
     {
-        cout << endl;
-        cout << m_descr << endl;
-        return true;
+        for (size_t j = 0; j < 4; j++)
+        {
+            sum += std::abs(a(i,j) - b(i,j));
+        }
     }
-    else if (!m_variables.count("inputFile"))
-    {
-        cout << "Error: You must specify an input file." << endl;
-        cout << endl;
-        cout << m_descr << endl;
-        return true;
-    }
-    return false;
-}
+    return sum;
+}  
 
-Options::~Options()
+RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProjectEditMarkPtr scans)
 {
-    // TODO Auto-generated destructor stub
+    m_options = options;
+    m_scans = scans;
 }
 
-} // namespace meshreduce
+
+void RegistrationPipeline::doRegistration()
+{
+    SLAMAlign align(*m_options);
+    
+    for (size_t i = 0; i < m_scans->positions.size(); i++)
+    {
+        ScanOptional opt = m_scans->positions.at(i)->scan;
+        if (opt)
+        {
+            ScanPtr scptr = std::make_shared<Scan>(*opt);
+            align.addScan(scptr);
+        }
+    }
+
+    align.finish();
+
+    for (int i = 0; i < m_scans->positions.size(); i++)
+    {
+        // check if the new pos different to old pos
+        // ToDo: make num to option
+
+        ScanPositionPtr posPtr = m_scans->positions.at(i);
+
+        cout << "Diff: " << getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) << endl;
+        if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) > m_options->diffPoseSum))
+        {
+            m_scans->changed.at(i) = true;
+            cout << "New Values"<< endl;
+        }
+        posPtr->scan->m_registration = align.scan(i)->pose();
+        cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
+    }
+
+}

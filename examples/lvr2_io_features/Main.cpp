@@ -48,22 +48,28 @@ cv::Mat generate_image()
 
 void hdf5io_gen_example()
 {
-    // Build IO Type with IO features
-    using BaseHDF5IO = lvr2::Hdf5IO<
-        lvr2::hdf5features::ArrayIO,
-        lvr2::hdf5features::ChannelIO
-        >;
+    // Empty IO
+    using BaseHDF5IO = lvr2::Hdf5IO<>;
 
-    // Extend IO with other features
-    using MyHDF5IO = BaseHDF5IO::add_features<
+    // Extend IO with features (dependencies are automatically fetched)
+    using MyHDF5IO = BaseHDF5IO::AddFeatures<
             lvr2::hdf5features::VariantChannelIO,
             lvr2::hdf5features::PointCloudIO,
             lvr2::hdf5features::PointCloudIO // duplicate test
-        >::type;
+        >;
+
+    // Fast construction
+    using MyHDF5IOTest = lvr2::Hdf5Build<lvr2::hdf5features::MeshIO>;
+
+    // Merge two ios
+    using MergedIO = MyHDF5IO::Merge<MyHDF5IOTest>;
+
+
+
 
 
     // Check if a feature exists in IO Type
-    if(MyHDF5IO::has_feature<lvr2::hdf5features::PointCloudIO>::value)
+    if(MyHDF5IO::HasFeature<lvr2::hdf5features::PointCloudIO>)
     {
         std::cout << "MyHDF5IO has the feature lvr2::hdf5features::PointCloudIO" << std::endl;
     } else {
@@ -128,6 +134,9 @@ void hdf5io_usage_example()
         lvr2::hdf5features::MatrixIO,
         lvr2::hdf5features::ImageIO
     >;
+
+    // NEW: Short initialization respecting all dependencies
+    using TestIO = lvr2::Hdf5Build<lvr2::hdf5features::MeshIO>;
 
     MyHDF5IO my_io;
     my_io.open("test.h5");
@@ -273,6 +282,15 @@ void hdf5io_usage_example()
     ///////////////////////
     // 6) MeshIO Example //
     ///////////////////////
+
+    // gen io with dependencies
+    using MeshIO = lvr2::Hdf5Build<lvr2::hdf5features::MeshIO>;
+
+    std::cout << "N: " << MeshIO::N << std::endl;
+
+    MeshIO mesh_io;
+    mesh_io.open("test.h5");
+
     lvr2::MeshBufferPtr mesh(new lvr2::MeshBuffer);
     mesh->setVertices(lvr2::floatArr(
                           new float[18] {2, 0, 0, 1, 2, 0, 3, 2, 0, 0, 4, 0, 2, 4, 0, 4, 4, 0}
@@ -280,8 +298,8 @@ void hdf5io_usage_example()
     mesh->setFaceIndices(lvr2::indexArray(
                              new unsigned int[12] {0, 1, 2, 1, 3, 4, 2, 4, 5, 1, 4, 2}
                          ), 4);
-    my_io.save("amesh", mesh);
-    lvr2::MeshBufferPtr mesh_loaded = my_io.loadMesh("amesh");
+    mesh_io.save("multimesh/amesh", mesh);
+    lvr2::MeshBufferPtr mesh_loaded = mesh_io.loadMesh("multimesh/amesh");
     if(mesh_loaded)
     {
         std::cout << "MeshIO read success" << std::endl;
@@ -291,9 +309,28 @@ void hdf5io_usage_example()
     }
 }
 
+void update_example() {
+
+    // printing number of features in the io object
+
+    // number of features: 0
+    using BaseIO = lvr2::Hdf5IO<>;
+    std::cout << BaseIO::N << std::endl;
+    
+    // MeshIO + Dependency tree -> 4
+    using MeshIO = BaseIO::AddFeatures<lvr2::hdf5features::MeshIO>;
+    std::cout << MeshIO::N << std::endl;
+
+    // No duplicates, ImageIO with no dependencies -> 5
+    using MeshIO2 = MeshIO::AddFeatures<lvr2::hdf5features::MeshIO, lvr2::hdf5features::ImageIO>;
+    std::cout << MeshIO2::N << std::endl;
+}
+
+
 int main(int argc, char** argv)
 {
     hdf5io_gen_example();
     hdf5io_usage_example();
+    update_example();
     return 0;
 }

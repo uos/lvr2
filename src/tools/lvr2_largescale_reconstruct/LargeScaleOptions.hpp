@@ -34,10 +34,11 @@
 #ifndef LARGESCALEOPTIONS_H_
 #define LARGESCALEOPTIONS_H_
 
+#include "lvr2/config/BaseOption.hpp"
+
 #include <boost/program_options.hpp>
 #include <float.h>
 #include <iostream>
-#include <lvr2/config/BaseOption.hpp>
 #include <string>
 #include <vector>
 
@@ -480,10 +481,10 @@ class Options : public lvr2::BaseOption
 
     string m_partialReconstruct;
 
-    //sets partition method to virtual grid
+    // sets partition method to virtual grid
     int m_vgrid;
 
-    //gridsize for virtual grid
+    // gridsize for virtual grid
     int m_gridsize;
 };
 

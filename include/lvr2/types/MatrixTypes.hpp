@@ -92,13 +92,23 @@ using Extrinsicsd = Extrinsics<double>;
 
 /// 4x4 extrinsic calibration
 template<typename T>
-using Intrinsics = Eigen::Matrix<T, 4, 4>;
+using Intrinsics = Eigen::Matrix<T, 3, 3>;
 
 /// 4x4 intrinsic calibration (single precision)
 using Intrinsicsf = Intrinsics<float>;
 
 /// 4x4 extrinsic calibration (double precision)
 using Intrinsicsd = Intrinsics<double>;
+
+/// Distortion Parameters
+template<typename T>
+using Distortion = Eigen::Matrix<T, 6, 1>;
+
+/// Distortion Parameters (double precision)
+using Distortiond = Distortion<double>;
+
+/// Distortion Parameters (single precision)
+using Distortionf = Distortion<float>;
 
 /// Eigen 3D vector
 template<typename T>
