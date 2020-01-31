@@ -66,10 +66,9 @@ void RegistrationPipeline::doRegistration()
 
 
         // not inverting anymore, because initial pose is now in same format as final pose
-<<<<<<< HEAD
-        m_scans->project->positions.at(i)->scan->m_poseEstimation.transposeInPlace();
+        m_scans->project->positions.at(i)->scans[0]->poseEstimation.transposeInPlace();
 
-        Eigen::Matrix<double, 3, 3> tmp_mat(m_scans->project->positions.at(i)->scan->m_poseEstimation.block<3,3>(0,0));
+        Eigen::Matrix<double, 3, 3> tmp_mat(m_scans->project->positions.at(i)->scans[0]->poseEstimation.block<3,3>(0,0));
         Eigen::Vector3d v(0, 1, 0);
         v = tmp_mat * v;
         double cos = 0.996917334;
@@ -81,19 +80,17 @@ void RegistrationPipeline::doRegistration()
                         v(2)*v(0)*(1.0-cos)-v(1)*sin, v(2)*v(1)*(1.0-cos)+v(0)*sin, v(2)*v(2)*(1.0-cos)+cos;
         tmp_mat = tmp_mat * mult_mat;
 
-        m_scans->project->positions.at(i)->scan->m_poseEstimation(0,0) = tmp_mat(0,0);
-        m_scans->project->positions.at(i)->scan->m_poseEstimation(0,1) = tmp_mat(0,1);
-        m_scans->project->positions.at(i)->scan->m_poseEstimation(0,2) = tmp_mat(0,2);
-        m_scans->project->positions.at(i)->scan->m_poseEstimation(1,0) = tmp_mat(1,0);
-        m_scans->project->positions.at(i)->scan->m_poseEstimation(1,1) = tmp_mat(1,1);
-        m_scans->project->positions.at(i)->scan->m_poseEstimation(1,2) = tmp_mat(1,2);
-        m_scans->project->positions.at(i)->scan->m_poseEstimation(2,0) = tmp_mat(2,0);
-        m_scans->project->positions.at(i)->scan->m_poseEstimation(2,1) = tmp_mat(2,1);
-        m_scans->project->positions.at(i)->scan->m_poseEstimation(2,2) = tmp_mat(2,2);
+        m_scans->project->positions.at(i)->scans[0]->poseEstimation(0,0) = tmp_mat(0,0);
+        m_scans->project->positions.at(i)->scans[0]->poseEstimation(0,1) = tmp_mat(0,1);
+        m_scans->project->positions.at(i)->scans[0]->poseEstimation(0,2) = tmp_mat(0,2);
+        m_scans->project->positions.at(i)->scans[0]->poseEstimation(1,0) = tmp_mat(1,0);
+        m_scans->project->positions.at(i)->scans[0]->poseEstimation(1,1) = tmp_mat(1,1);
+        m_scans->project->positions.at(i)->scans[0]->poseEstimation(1,2) = tmp_mat(1,2);
+        m_scans->project->positions.at(i)->scans[0]->poseEstimation(2,0) = tmp_mat(2,0);
+        m_scans->project->positions.at(i)->scans[0]->poseEstimation(2,1) = tmp_mat(2,1);
+        m_scans->project->positions.at(i)->scans[0]->poseEstimation(2,2) = tmp_mat(2,2);
 
 
-=======
->>>>>>> pg-integration-new-io
         //m_scans->project->positions.at(i)->scan->m_poseEstimation = m_scans->project->positions.at(i)->scan->m_poseEstimation.inverse();
 
         if(m_scans->project->positions.at(i)->scans.size())
@@ -143,10 +140,10 @@ void RegistrationPipeline::doRegistration()
 
         for (size_t i = 0; i < m_scans->project->positions.size(); i++)
         {
-            ScanOptional opt = m_scans->project->positions.at(i)->scan;
-            if (opt)
+            if(m_scans->project->positions.at(i)->scans.size())
             {
-                ScanPtr scptr = std::make_shared<Scan>(*opt);
+                ScanPtr scptr = std::make_shared<Scan>(*(m_scans->project->positions[i]->scans[0]));
+
                 align.addScan(scptr);
             }
         }
@@ -158,10 +155,10 @@ void RegistrationPipeline::doRegistration()
     {
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
-        cout << "Diff: " << getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) << endl;
+        cout << "Diff: " << getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) << endl;
         if (m_scans->changed.at(i))
         {
-            posPtr->scan[0]->registration = align.scan(i)->pose().transpose();
+            posPtr->scans[0]->registration = align.scan(i)->pose().transpose();
             cout << "Pose Scan Nummer " << i << endl << posPtr->scans[0]->registration << endl;
         }
     }
