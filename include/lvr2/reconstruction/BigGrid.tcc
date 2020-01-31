@@ -1484,11 +1484,13 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         //iterate through ALL points to calculate transformed boundingboxes of scans
         for (int i = 0; i < project->changed.size(); i++)
         {
-            ScanPositionPtr pos = project->project->positions.at(i);
-            size_t numPoints = pos->scan->m_points->numPoints();
+            ScanPositionPtr pos = project->project->positions.at(i); // moegl. Weise project->project ?
+            assert(pos->scans.size() > 0);
+            size_t numPoints = pos->scans[0]->points->numPoints();
             BoundingBox<BaseVecT> box;
-            boost::shared_array<float> points = pos->scan->m_points->getPointArray();
-            Transformd finalPose_n = pos->scan->m_registration;
+
+            boost::shared_array<float> points = pos->scans[0]->points->getPointArray();
+            Transformd finalPose_n = pos->scans[0]->registration;
 
             Transformd finalPose = finalPose_n.transpose();
 
@@ -1558,50 +1560,51 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 cout << "Scan No. " << i << " ignored!" << endl;
             }
             else
-                {
+            {
 
 
                 ScanPositionPtr pos = project->project->positions.at(i);
-            size_t numPoints = pos->scan->m_points->numPoints();
-            boost::shared_array<float> points = pos->scan->m_points->getPointArray();
-            m_numPoints += numPoints;
-            Transformd finalPose_n = pos->scan->m_registration;
-            Transformd finalPose = finalPose_n.transpose();
-            int dx, dy, dz;
-            for (int k = 0; k < numPoints; k++)
-            {
-                Eigen::Vector4d point(
-                        points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
-                Eigen::Vector4d transPoint = finalPose * point;
-                BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
-                // m_bb.expand(temp);
-                ix = transPoint[0] * m_scale;
-                iy = transPoint[1] * m_scale;
-                iz = transPoint[2] * m_scale;
-                idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
-                idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
-                idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
-                int e;
-                this->m_extrude ? e = 8 : e = 1;
-                for (int j = 0; j < e; j++)
+                size_t numPoints = pos->scans[0]->points->numPoints();
+                boost::shared_array<float> points = pos->scans[0]->points->getPointArray();
+                m_numPoints += numPoints;
+                Transformd finalPose_n = pos->scans[0]->registration;
+                Transformd finalPose = finalPose_n.transpose();
+                int dx, dy, dz;
+                for (int k = 0; k < numPoints; k++)
                 {
-                    dx = HGCreateTable[j][0];
-                    dy = HGCreateTable[j][1];
-                    dz = HGCreateTable[j][2];
-                    size_t h = hashValue(idx + dx, idy + dy, idz + dz);
-                    if (j == 0)
-                        m_gridNumPoints[h].size++;
-                    else
+                    Eigen::Vector4d point(
+                            points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
+                    Eigen::Vector4d transPoint = finalPose * point;
+                    BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
+                    // m_bb.expand(temp);
+                    ix = transPoint[0] * m_scale;
+                    iy = transPoint[1] * m_scale;
+                    iz = transPoint[2] * m_scale;
+                    idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
+                    idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
+                    idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                    int e;
+                    this->m_extrude ? e = 8 : e = 1;
+                    for (int j = 0; j < e; j++)
                     {
-                        auto it = m_gridNumPoints.find(h);
-                        if (it == m_gridNumPoints.end())
+                        dx = HGCreateTable[j][0];
+                        dy = HGCreateTable[j][1];
+                        dz = HGCreateTable[j][2];
+                        size_t h = hashValue(idx + dx, idy + dy, idz + dz);
+                        if (j == 0)
+                            m_gridNumPoints[h].size++;
+                        else
                         {
-                            m_gridNumPoints[h].size = 0;
+                            auto it = m_gridNumPoints.find(h);
+                            if (it == m_gridNumPoints.end())
+                            {
+                                m_gridNumPoints[h].size = 0;
+
+                            }
                         }
                     }
                 }
             }
-        }
             progress += 3;
         }
 
@@ -1643,11 +1646,12 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             }
             else{
                 ScanPositionPtr pos = project->project->positions.at(i);
-                size_t numPoints = pos->scan->m_points->numPoints();
+                size_t numPoints = pos->scans[0]->points->numPoints();
 
-                boost::shared_array<float> points = pos->scan->m_points->getPointArray();
+
+                boost::shared_array<float> points = pos->scans[0]->points->getPointArray();
                 m_numPoints += numPoints;
-                Transformd finalPose_n = pos->scan->m_registration;
+                Transformd finalPose_n = pos->scans[0]->registration;
                 Transformd finalPose = finalPose_n.transpose();
                 for (int k = 0; k < numPoints; k++) {
                     Eigen::Vector4d point(

@@ -46,7 +46,7 @@ double getDifference(Transformd a, Transformd b)
         }
     }
     return sum;
-}  
+}
 
 RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProjectEditMarkPtr scans)
 {
@@ -62,7 +62,11 @@ void RegistrationPipeline::doRegistration()
     for (size_t i = 0; i < m_scans->project->positions.size(); i++)
     {
         m_scans->changed.at(i) = false;
+
+
+
         // not inverting anymore, because initial pose is now in same format as final pose
+<<<<<<< HEAD
         m_scans->project->positions.at(i)->scan->m_poseEstimation.transposeInPlace();
 
         Eigen::Matrix<double, 3, 3> tmp_mat(m_scans->project->positions.at(i)->scan->m_poseEstimation.block<3,3>(0,0));
@@ -88,15 +92,21 @@ void RegistrationPipeline::doRegistration()
         m_scans->project->positions.at(i)->scan->m_poseEstimation(2,2) = tmp_mat(2,2);
 
 
+=======
+>>>>>>> pg-integration-new-io
         //m_scans->project->positions.at(i)->scan->m_poseEstimation = m_scans->project->positions.at(i)->scan->m_poseEstimation.inverse();
-        ScanOptional opt = m_scans->project->positions.at(i)->scan;
-        if (opt)
+
+        if(m_scans->project->positions.at(i)->scans.size())
         {
-            ScanPtr scptr = std::make_shared<Scan>(*opt);
+            m_scans->project->positions.at(i)->scans[0]->poseEstimation.transposeInPlace();
+
+            ScanPtr scptr = std::make_shared<Scan>(*(m_scans->project->positions[i]->scans[0]));
+
             align.addScan(scptr);
         }
     }
     cout << "Aus doRegistaration: vor finish" << endl;
+
     align.finish();
     cout << "Aus doRegistaration: nach finish" << endl;
 
@@ -106,9 +116,8 @@ void RegistrationPipeline::doRegistration()
         // check if the new pos different to old pos
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
-        cout << "Diff: " << getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) << endl;
-        
-        if (getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) > m_options->diffPoseSum)
+        cout << "Diff: " << getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) << endl;
+        if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) > m_options->diffPoseSum))
         {
             m_scans->changed.at(i) = true;
             cout << "New Values"<< endl;
@@ -152,8 +161,8 @@ void RegistrationPipeline::doRegistration()
         cout << "Diff: " << getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) << endl;
         if (m_scans->changed.at(i))
         {
-            posPtr->scan->m_registration = align.scan(i)->pose().transpose();
-            cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
+            posPtr->scan[0]->registration = align.scan(i)->pose().transpose();
+            cout << "Pose Scan Nummer " << i << endl << posPtr->scans[0]->registration << endl;
         }
     }
 

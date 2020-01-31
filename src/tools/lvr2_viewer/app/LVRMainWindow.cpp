@@ -1687,7 +1687,7 @@ QTreeWidgetItem* LVRMainWindow::addScans(std::shared_ptr<ScanDataManager> sdm, Q
     for (size_t i = 0; i < scans.size(); i++)
     {
         char buf[128];
-        std::sprintf(buf, "%05d", scans[i]->m_positionNumber);
+        std::sprintf(buf, "%05d", scans[i]->positionNumber);
         LVRScanDataItem *item = new LVRScanDataItem(scans[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
 
         if(cam_data_available && camData[i].size() > 0)
