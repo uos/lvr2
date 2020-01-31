@@ -46,7 +46,7 @@ double getDifference(Transformd a, Transformd b)
         }
     }
     return sum;
-}  
+}
 
 RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProjectEditMarkPtr scans)
 {
@@ -62,64 +62,106 @@ void RegistrationPipeline::doRegistration()
     for (size_t i = 0; i < m_scans->project->positions.size(); i++)
     {
         m_scans->changed.at(i) = false;
+
+
+
         // not inverting anymore, because initial pose is now in same format as final pose
-        m_scans->project->positions.at(i)->scan->m_poseEstimation.transposeInPlace();
+        m_scans->project->positions.at(i)->scans[0]->poseEstimation.transposeInPlace();
+
+        Eigen::Matrix<double, 3, 3> tmp_mat(m_scans->project->positions.at(i)->scans[0]->poseEstimation.block<3,3>(0,0));
+        Eigen::Vector3d v(0, 1, 0);
+        v = tmp_mat * v;
+        double cos = 0.996917334;
+        double sin = -0.078459096;
+
+        Eigen::Matrix<double, 3, 3> mult_mat;
+        mult_mat <<     v(0)*v(0)*(1.0-cos)+cos, v(0)*v(1)*(1.0-cos)-v(2)*sin, v(0)*v(2)*(1.0-cos)+v(1)*sin,
+                        v(1)*v(0)*(1.0-cos)+v(2)*sin, v(1)*v(1)*(1.0-cos)+cos, v(1)*v(2)*(1.0-cos)-v(0)*sin,
+                        v(2)*v(0)*(1.0-cos)-v(1)*sin, v(2)*v(1)*(1.0-cos)+v(0)*sin, v(2)*v(2)*(1.0-cos)+cos;
+        tmp_mat = tmp_mat * mult_mat;
+
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(0,0) = tmp_mat(0,0);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(0,1) = tmp_mat(0,1);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(0,2) = tmp_mat(0,2);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(1,0) = tmp_mat(1,0);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(1,1) = tmp_mat(1,1);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(1,2) = tmp_mat(1,2);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(2,0) = tmp_mat(2,0);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(2,1) = tmp_mat(2,1);
+        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(2,2) = tmp_mat(2,2);
+
+
         //m_scans->project->positions.at(i)->scan->m_poseEstimation = m_scans->project->positions.at(i)->scan->m_poseEstimation.inverse();
-        ScanOptional opt = m_scans->project->positions.at(i)->scan;
-        if (opt)
+
+        if(m_scans->project->positions.at(i)->scans.size())
         {
-            ScanPtr scptr = std::make_shared<Scan>(*opt);
+            m_scans->project->positions.at(i)->scans[0]->poseEstimation.transposeInPlace();
+
+            ScanPtr scptr = std::make_shared<Scan>(*(m_scans->project->positions[i]->scans[0]));
+
             align.addScan(scptr);
         }
     }
     cout << "Aus doRegistaration: vor finish" << endl;
+
     align.finish();
     cout << "Aus doRegistaration: nach finish" << endl;
 
-
-
+    bool all_values_new = true;
     for (int i = 0; i < m_scans->project->positions.size(); i++)
     {
         // check if the new pos different to old pos
-        // ToDo: make num to option
-
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
-        cout << "Diff: " << getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) << endl;
-        
-        if (getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) > m_options->diffPoseSum)
+        cout << "Diff: " << getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) << endl;
+        if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) > m_options->diffPoseSum))
         {
             m_scans->changed.at(i) = true;
             cout << "New Values"<< endl;
         }
-    
-    }
-    cout << "NAch der ersten For-Schleoife" << endl;
-    // new align with fix old values 
-    SLAMAlign align2(*m_options, m_scans->changed);
-    
-    for (size_t i = 0; i < m_scans->project->positions.size(); i++)
-    {
-        ScanOptional opt = m_scans->project->positions.at(i)->scan;
-        if (opt)
+        // new pose of the first scan is same as the old pose
+        else if (i != 0)
         {
-            ScanPtr scptr = std::make_shared<Scan>(*opt);
-            align2.addScan(scptr);
+            all_values_new = false;
         }
     }
+    cout << "First registration done" << endl;
+    
+    // new align with fix old values only when not all poses new
+    if (all_values_new)
+    {
+        cout << "no new registration" << endl;
+    }
+    else
+    {
+        cout << "start new registration with some fix poses" << endl;
+        // deconstruct old align correctly??
+        align = SLAMAlign(*m_options, m_scans->changed);
 
-    align2.finish();
+        for (size_t i = 0; i < m_scans->project->positions.size(); i++)
+        {
+            if(m_scans->project->positions.at(i)->scans.size())
+            {
+                ScanPtr scptr = std::make_shared<Scan>(*(m_scans->project->positions[i]->scans[0]));
 
+                align.addScan(scptr);
+            }
+        }
+
+        align.finish();
+    }
+    
     for (int i = 0; i < m_scans->project->positions.size(); i++)
     {
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
+        cout << "Diff: " << getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) << endl;
         if (m_scans->changed.at(i))
         {
-            posPtr->scan->m_registration = align2.scan(i)->pose().transpose();
-            cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
+            posPtr->scans[0]->registration = align.scan(i)->pose().transpose();
+            cout << "Pose Scan Nummer " << i << endl << posPtr->scans[0]->registration << endl;
         }
-        m_scans->changed.at(i) = true; // ToDo: lsr test 
     }
+    m_scans->project->positions.at(0)->scans[0]->registration.transposeInPlace();
 
 }

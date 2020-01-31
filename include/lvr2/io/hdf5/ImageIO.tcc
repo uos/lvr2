@@ -39,8 +39,8 @@ void ImageIO<Derived>::save(HighFive::Group& group,
 
             // Couldnt write as H5Image, write as blob
 
-            std::vector<size_t> dims = {img.rows, img.cols};
-            std::vector<hsize_t> chunkSizes = {img.rows, img.cols};
+            std::vector<size_t> dims = {static_cast<size_t>(img.rows), static_cast<size_t>(img.cols)};
+            std::vector<hsize_t> chunkSizes = {static_cast<hsize_t>(img.rows), static_cast<hsize_t>(img.cols)};
 
             if(img.channels() > 1)
             {

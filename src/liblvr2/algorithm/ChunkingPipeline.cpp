@@ -43,6 +43,13 @@
 #include "lvr2/config/SLAMOptionsYamlExtensions.hpp"
 #include "lvr2/io/ScanIOUtils.hpp"
 #include "lvr2/registration/RegistrationPipeline.hpp"
+#include "lvr2/io/hdf5/ScanProjectIO.hpp"
+#include "lvr2/io/GHDF5IO.hpp"
+
+using BaseHDF5IO = lvr2::Hdf5IO<>;
+
+// Extend IO with features (dependencies are automatically fetched)
+using HDF5IO = BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO>;
 
 namespace lvr2
 {
@@ -181,9 +188,17 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
 //        m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
 //    }
     // rm after new scanIOUtils is ready!
-    loadAllPreviewsFromHDF5(m_hdf5Path.string(), scanProject);
+
+    HDF5IO hdf;
+    hdf.open(m_hdf5Path.string());
+
+    ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
+    
+    // loadAllPreviewsFromHDF5(m_hdf5Path.string(), scanProject);
+
     ScanProjectEditMark tmpScanProject;
-    tmpScanProject.project = std::make_shared<ScanProject>(scanProject);
+    // tmpScanProject.project = std::make_shared<ScanProject>(scanProject);
+    tmpScanProject.project = scanProjectPtr;
     m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
     // set all scans to true, so they are getting reconstructed
     m_scanProject->changed.resize(scanProject.positions.size());

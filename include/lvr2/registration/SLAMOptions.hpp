@@ -117,6 +117,9 @@ struct SLAMOptions
 
     /// max difference of sum of new pos and sum of old pos if they are the same
     double diffPoseSum = 50;
+
+    /// use scan order as icp order (if false: start with lowest distance)
+    bool useScanOrder = true;
 };
 
 } /* namespace lvr2 */
