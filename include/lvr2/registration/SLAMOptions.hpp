@@ -122,7 +122,7 @@ struct SLAMOptions
     bool useScanOrder = true;
 
     /// rotate this angle around y axis
-    bool rotate_angle = 0;
+    double rotate_angle = 0;
 };
 
 } /* namespace lvr2 */
