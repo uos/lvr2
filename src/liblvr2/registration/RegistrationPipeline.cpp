@@ -149,12 +149,10 @@ void RegistrationPipeline::doRegistration()
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
         cout << "Diff: " << getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) << endl;
-        if (m_scans->changed.at(i))
+        if (m_scans->changed.at(i) || all_values_new)
         {
             posPtr->scans[0]->registration = align.scan(i)->pose().transpose();
             cout << "Pose Scan Nummer " << i << endl << posPtr->scans[0]->registration << endl;
         }
     }
-    m_scans->project->positions.at(0)->scans[0]->registration.transposeInPlace();
-
 }
