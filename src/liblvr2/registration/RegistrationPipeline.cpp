@@ -63,11 +63,6 @@ void RegistrationPipeline::doRegistration()
     {
         m_scans->changed.at(i) = false;
 
-
-
-        // not inverting anymore, because initial pose is now in same format as final pose
-        m_scans->project->positions.at(i)->scans[0]->poseEstimation.transposeInPlace();
-
         Eigen::Matrix<double, 3, 3> tmp_mat(m_scans->project->positions.at(i)->scans[0]->poseEstimation.block<3,3>(0,0));
         Eigen::Vector3d v(0, 1, 0);
         v = tmp_mat * v;
@@ -95,8 +90,6 @@ void RegistrationPipeline::doRegistration()
 
         if(m_scans->project->positions.at(i)->scans.size())
         {
-            m_scans->project->positions.at(i)->scans[0]->poseEstimation.transposeInPlace();
-
             ScanPtr scptr = std::make_shared<Scan>(*(m_scans->project->positions[i]->scans[0]));
 
             align.addScan(scptr);
