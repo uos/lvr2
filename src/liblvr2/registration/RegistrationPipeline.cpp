@@ -19,9 +19,9 @@
  * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * LOSS OF USE, DATA, OR PROFITS; OR BUsinAESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARIsinAG IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
@@ -30,7 +30,7 @@
 #include "lvr2/registration/SLAMScanWrapper.hpp"
 
 #include "vector"
-
+#include <math.h>
 
 using namespace lvr2;
 
@@ -48,6 +48,33 @@ double getDifference(Transformd a, Transformd b)
     return sum;
 }
 
+void rotateAroundYAxis(Transformd *inputMatrix4x4, double angle)
+{
+    Eigen::Matrix<double, 3, 3> tmp_mat(inputMatrix4x4->block<3,3>(0,0));
+    Eigen::Vector3d v(0, 1, 0);
+    v = tmp_mat * v;
+    double cosA = cos(angle);
+    double sinA = sin(angle);
+
+    cout << "sin: " << sinA << " cos: " << cosA << endl;
+
+    Eigen::Matrix<double, 3, 3> mult_mat;
+    mult_mat <<     v(0)*v(0)*(1.0-cosA)+cosA, v(0)*v(1)*(1.0-cosA)-v(2)*sinA, v(0)*v(2)*(1.0-cosA)+v(1)*sinA,
+                    v(1)*v(0)*(1.0-cosA)+v(2)*sinA, v(1)*v(1)*(1.0-cosA)+cosA, v(1)*v(2)*(1.0-cosA)-v(0)*sinA,
+                    v(2)*v(0)*(1.0-cosA)-v(1)*sinA, v(2)*v(1)*(1.0-cosA)+v(0)*sinA, v(2)*v(2)*(1.0-cosA)+cosA;
+    tmp_mat = tmp_mat * mult_mat;
+    
+    inputMatrix4x4[0](0,0) = tmp_mat(0,0);
+    inputMatrix4x4[0](0,1) = tmp_mat(0,1);
+    inputMatrix4x4[0](0,2) = tmp_mat(0,2);
+    inputMatrix4x4[0](1,0) = tmp_mat(1,0);
+    inputMatrix4x4[0](1,1) = tmp_mat(1,1);
+    inputMatrix4x4[0](1,2) = tmp_mat(1,2);
+    inputMatrix4x4[0](2,0) = tmp_mat(2,0);
+    inputMatrix4x4[0](2,1) = tmp_mat(2,1);
+    inputMatrix4x4[0](2,2) = tmp_mat(2,2);
+}
+
 RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProjectEditMarkPtr scans)
 {
     m_options = options;
@@ -62,34 +89,11 @@ void RegistrationPipeline::doRegistration()
     for (size_t i = 0; i < m_scans->project->positions.size(); i++)
     {
         m_scans->changed.at(i) = false;
-
-        Eigen::Matrix<double, 3, 3> tmp_mat(m_scans->project->positions.at(i)->scans[0]->poseEstimation.block<3,3>(0,0));
-        Eigen::Vector3d v(0, 1, 0);
-        v = tmp_mat * v;
-        double cos = 0.996917334;
-        double sin = -0.078459096;
-
-        Eigen::Matrix<double, 3, 3> mult_mat;
-        mult_mat <<     v(0)*v(0)*(1.0-cos)+cos, v(0)*v(1)*(1.0-cos)-v(2)*sin, v(0)*v(2)*(1.0-cos)+v(1)*sin,
-                        v(1)*v(0)*(1.0-cos)+v(2)*sin, v(1)*v(1)*(1.0-cos)+cos, v(1)*v(2)*(1.0-cos)-v(0)*sin,
-                        v(2)*v(0)*(1.0-cos)-v(1)*sin, v(2)*v(1)*(1.0-cos)+v(0)*sin, v(2)*v(2)*(1.0-cos)+cos;
-        tmp_mat = tmp_mat * mult_mat;
-
-        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(0,0) = tmp_mat(0,0);
-        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(0,1) = tmp_mat(0,1);
-        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(0,2) = tmp_mat(0,2);
-        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(1,0) = tmp_mat(1,0);
-        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(1,1) = tmp_mat(1,1);
-        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(1,2) = tmp_mat(1,2);
-        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(2,0) = tmp_mat(2,0);
-        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(2,1) = tmp_mat(2,1);
-        //m_scans->project->positions.at(i)->scans[0]->poseEstimation(2,2) = tmp_mat(2,2);
-
-
-        //m_scans->project->positions.at(i)->scan->m_poseEstimation = m_scans->project->positions.at(i)->scan->m_poseEstimation.inverse();
-
+        
         if(m_scans->project->positions.at(i)->scans.size())
         {
+            rotateAroundYAxis(&(m_scans->project->positions[i]->scans[0]->poseEstimation), m_options->rotate_angle);
+
             ScanPtr scptr = std::make_shared<Scan>(*(m_scans->project->positions[i]->scans[0]));
 
             align.addScan(scptr);
