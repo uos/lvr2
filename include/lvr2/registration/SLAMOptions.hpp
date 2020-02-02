@@ -120,6 +120,9 @@ struct SLAMOptions
 
     /// use scan order as icp order (if false: start with lowest distance)
     bool useScanOrder = true;
+
+    /// rotate this angle around y axis
+    bool rotate_angle = 0;
 };
 
 } /* namespace lvr2 */
