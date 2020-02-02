@@ -92,7 +92,7 @@ void RegistrationPipeline::doRegistration()
         
         if(m_scans->project->positions.at(i)->scans.size())
         {
-            rotateAroundYAxis(&(m_scans->project->positions[i]->scans[0]->poseEstimation), m_options->rotate_angle);
+            rotateAroundYAxis(&(m_scans->project->positions[i]->scans[0]->poseEstimation), m_options->rotate_angle * M_PI / 180);
 
             ScanPtr scptr = std::make_shared<Scan>(*(m_scans->project->positions[i]->scans[0]));
 
