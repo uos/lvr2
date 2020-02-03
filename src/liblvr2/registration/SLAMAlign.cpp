@@ -226,6 +226,10 @@ void SLAMAlign::applyTransform(SLAMScanPtr scan, const Matrix4d& transform)
 
 void SLAMAlign::checkLoopCloseOtherOrder(size_t last)
 {
+    if (m_options.verbose)
+    {
+        cout << "check if a loop exists. current scna: " << m_icp_graph.at(last).second << endl;
+    }
     bool hasLoop = false;
     int no_loop = INT_MAX;
     vector<SLAMScanPtr> scans;
@@ -378,8 +382,14 @@ void SLAMAlign::finish()
 
 void SLAMAlign::createIcpGraph()
 {
+    if (m_options.verbose)
+    {
+        cout << "create ICP Graph" << endl;
+    }
     m_icp_graph = std::vector<std::pair<int, int>>();
     vector<vector<double>> mat(m_scans.size());
+
+    // if useScanOrder: the m_icp_graph must the scnan order
     if (m_options.useScanOrder)
     {
         for (int i = 1; i < m_scans.size(); i++)
@@ -387,10 +397,9 @@ void SLAMAlign::createIcpGraph()
             m_icp_graph.push_back(std::pair<int, int>(i-1,i));
         } 
         return;
-
     }
 
-	// construct a vector of int
+	// calculate the euclidean distance from the first scna to all scans
     {
         vector<double> *v = &(mat.at(0));
         for (int i = 0; i < m_scans.size(); i++)
@@ -399,11 +408,15 @@ void SLAMAlign::createIcpGraph()
                 pow(m_scans.at(0)->innerScan()->poseEstimation(3,0) - m_scans.at(i)->innerScan()->poseEstimation(3,0), 2.0)+
                 pow(m_scans.at(0)->innerScan()->poseEstimation(3,1) - m_scans.at(i)->innerScan()->poseEstimation(3,1), 2.0)+
                 pow(m_scans.at(0)->innerScan()->poseEstimation(3,2) - m_scans.at(i)->innerScan()->poseEstimation(3,2), 2.0)));
+
+                if (m_options.verbose)
+                {
+                    cout << "Calculated euclidean distancex: scan_0, scan_" << i << ", d="<< mat[x][y]<< endl;
+                }
         }
-        // push back above one-dimensional vector
-        //mat.push_back(v);
     }
 
+    // vector of booleans: true if scan included in the graph; first scan is already included
 	vector<bool> scan_in_graph(m_scans.size());
     scan_in_graph.at(0) = true;
     for (int i = 1; i < scan_in_graph.size(); i++)
@@ -418,11 +431,9 @@ void SLAMAlign::createIcpGraph()
         int new_scan;
 
         //search for minimum in mat
-        int x;
-        int y;
-        for(x = 0; x < mat.size(); ++x)
+        for(int x = 0; x < mat.size(); ++x)
         {
-            for(y = 0 ; y < mat.at(x).size(); ++y)
+            for(int y = 0 ; y < mat.at(x).size(); ++y)
             {
                 if (!scan_in_graph.at(y) && x!=y && mat[x][y] < minimum)
                 {
@@ -431,7 +442,6 @@ void SLAMAlign::createIcpGraph()
                     old_scan = x;
                     new_scan = y;
                 }
-                //cout << "x:" << x << ", y:" << y << ", mat:"<< mat[x][y]<< endl;
             }
         }
 
@@ -446,8 +456,18 @@ void SLAMAlign::createIcpGraph()
                     pow(m_scans.at(new_scan)->innerScan()->poseEstimation(3,0) - m_scans.at(i)->innerScan()->poseEstimation(3,0), 2.0)+
                     pow(m_scans.at(new_scan)->innerScan()->poseEstimation(3,1) - m_scans.at(i)->innerScan()->poseEstimation(3,1), 2.0)+
                     pow(m_scans.at(new_scan)->innerScan()->poseEstimation(3,2) - m_scans.at(i)->innerScan()->poseEstimation(3,2), 2.0)));
+
+                if (m_options.verbose)
+                {
+                    cout << "Calculated euclidean distancex: scan_" << new_scan << ", scan_" << i << ", d="<< mat[x][y]<< endl;
+                }
             }
         }
+    }
+
+    if (m_options.verbose)
+    {
+        cout << "create ICP Graph finish" << endl;
     }
 }
 
