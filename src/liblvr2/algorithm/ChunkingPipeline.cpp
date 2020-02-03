@@ -164,8 +164,6 @@ bool ChunkingPipeline::getScanProject(const boost::filesystem::path& dirPath)
     // load scans from hdf5
     ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
     
-    std::cout << "#scanPositions: " << scanProjectPtr->positions.size() << std::endl;
-
     // load scans from directory
     ScanProject dirScanProject;
     bool importStatus = loadScanProject(dirPath, dirScanProject);
@@ -177,7 +175,7 @@ bool ChunkingPipeline::getScanProject(const boost::filesystem::path& dirPath)
     }
     else
     {
-        std::cout << timestamp << "found " << dirScanProject.positions.size() - scanProjectPtr->positions.size() << " new scanPositions" << std::endl;
+        std::cout << timestamp << "Found " << dirScanProject.positions.size() - scanProjectPtr->positions.size() << " new scanPosition(s)" << std::endl;
         for(int i = scanProjectPtr->positions.size(); i < dirScanProject.positions.size(); i++)
         {
             scanProjectPtr->positions.push_back(dirScanProject.positions[i]);
@@ -205,34 +203,6 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     std::cout << timestamp << "Starting chunking pipeline..." << std::endl;
 
     std::cout << timestamp << "Starting import tool..." << std::endl;
-
-    // HDF5IO hdf;
-    // hdf.open(m_hdf5Path.string());
-
-    // // load scans from hdf5
-    // ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
-    
-    // // load scans from directory
-    // ScanProjectPtr dirScanProject;
-    // bool importStatus = loadScanProject(scanDir, *dirScanProject);
-    // if (!importStatus)
-    // {
-    //     std::cout << "Import failed..." << std::endl;
-    //     std::cout << "Aborting chunking pipeline!" << std::endl;
-
-    //     m_running = false;
-
-    //     return false;
-    // }
-    // else
-    // {
-    //     std::cout << timestamp << "found " << dirScanProject->positions.size() - scanProjectPtr->positions.size() << " new scanPositions" << std::endl;
-    //     for(int i = scanProjectPtr->positions.size(); i < dirScanProject->positions.size(); i++)
-    //     {
-    //         scanProjectPtr->positions.push_back(dirScanProject->positions[i]);
-    //     }
-    //     delete dirScanProject;
-    // }
 
     if(!getScanProject(scanDir))
     {
