@@ -100,6 +100,15 @@ private:
     void parseYAMLConfig();
 
     /**
+     * @brief 
+     * 
+     * @param dirPath 
+     * @return true 
+     * @return false 
+     */
+    bool getScanProject(const boost::filesystem::path& dirPath);
+
+    /**
      * @brief Calculates practicability analysis of given mesh and adds it as channels to mesh buffer
      *
      * @param hem HalfEdgeMesh on which practicability analysis is performed

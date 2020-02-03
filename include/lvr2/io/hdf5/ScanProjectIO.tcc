@@ -29,17 +29,18 @@ ScanProjectPtr ScanProjectIO<Derived>::load()
 {
     ScanProjectPtr ret(new ScanProject());
 
-    HighFive::Group hfscans = hdf5util::getGroup(m_file_access->m_hdf5_file, "/raw");
-    size_t scanPoitions = hfscans.getNumberObjects();
-
     // iterate over all possible scanPositions
-    for (std::string groupname : hfscans.listObjectNames())
+    if (hdf5util::exist(m_file_access->m_hdf5_file, "raw"))
     {
-        if (std::regex_match(groupname, std::regex("\\d{8}")))
+        HighFive::Group hfscans = hdf5util::getGroup(m_file_access->m_hdf5_file, "/raw");
+        for (std::string groupname : hfscans.listObjectNames())
         {
-            HighFive::Group scanPosGroup = hdf5util::getGroup(hfscans, groupname, false);
-            ScanPositionPtr scanPosition = m_scanPositionIO->template load(scanPosGroup);
-            ret->positions.push_back(scanPosition);
+            if (std::regex_match(groupname, std::regex("\\d{8}")))
+            {
+                HighFive::Group scanPosGroup = hdf5util::getGroup(hfscans, groupname, false);
+                ScanPositionPtr scanPosition = m_scanPositionIO->template load(scanPosGroup);
+                ret->positions.push_back(scanPosition);
+            }
         }
     }
 
