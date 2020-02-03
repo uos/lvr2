@@ -156,8 +156,10 @@ protected:
     /// Executes GraphSLAM up to and including the specified last Scan
     void graphSLAM(size_t last);
 
+    /// checkLoopClose(size_t last) if the m_icp_graph is in a spezial order
     void checkLoopCloseOtherOrder(size_t last);
 
+    /// create m_icp_graph which defined the order of registrations
     void createIcpGraph();
 
     SLAMOptions              m_options;
