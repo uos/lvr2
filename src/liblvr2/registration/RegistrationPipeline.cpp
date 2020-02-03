@@ -50,20 +50,23 @@ double getDifference(Transformd a, Transformd b)
 
 void rotateAroundYAxis(Transformd *inputMatrix4x4, double angle)
 {
+    // rotate only the upper left part of inputMatrix4x4
     Eigen::Matrix<double, 3, 3> tmp_mat(inputMatrix4x4->block<3,3>(0,0));
+    // create y-vector (in scan coordinates) which can be transformed to world coordinates
     Eigen::Vector3d v(0, 1, 0);
     v = tmp_mat * v;
+
     double cosA = cos(angle);
     double sinA = sin(angle);
 
-    cout << "sin: " << sinA << " cos: " << cosA << endl;
-
+    // create rotation matrix
     Eigen::Matrix<double, 3, 3> mult_mat;
     mult_mat <<     v(0)*v(0)*(1.0-cosA)+cosA, v(0)*v(1)*(1.0-cosA)-v(2)*sinA, v(0)*v(2)*(1.0-cosA)+v(1)*sinA,
                     v(1)*v(0)*(1.0-cosA)+v(2)*sinA, v(1)*v(1)*(1.0-cosA)+cosA, v(1)*v(2)*(1.0-cosA)-v(0)*sinA,
                     v(2)*v(0)*(1.0-cosA)-v(1)*sinA, v(2)*v(1)*(1.0-cosA)+v(0)*sinA, v(2)*v(2)*(1.0-cosA)+cosA;
     tmp_mat = tmp_mat * mult_mat;
     
+    // save result in original Matrix
     inputMatrix4x4[0](0,0) = tmp_mat(0,0);
     inputMatrix4x4[0](0,1) = tmp_mat(0,1);
     inputMatrix4x4[0](0,2) = tmp_mat(0,2);
@@ -99,10 +102,18 @@ void RegistrationPipeline::doRegistration()
             align.addScan(scptr);
         }
     }
-    cout << "Aus doRegistaration: vor finish" << endl;
+
+    if (m_options.verbose)
+    {
+        cout << "Aus doRegistaration: vor finish" << endl;
+    }
 
     align.finish();
-    cout << "Aus doRegistaration: nach finish" << endl;
+    
+    if (m_options.verbose)
+    {
+        cout << "Aus doRegistaration: nach finish" << endl;
+    }
 
     bool all_values_new = true;
     for (int i = 0; i < m_scans->project->positions.size(); i++)
