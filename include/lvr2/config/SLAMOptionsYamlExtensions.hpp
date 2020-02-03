@@ -81,6 +81,7 @@ struct convert<lvr2::SLAMOptions>
         node["slamEpsilon"] = options.slamEpsilon;
         node["diffPoseSum"] = options.diffPoseSum;
         node["useScanOrder"] = options.useScanOrder;
+        node["rotate_angle"] = options.rotate_angle;
 
         return node;
     }
@@ -208,6 +209,11 @@ struct convert<lvr2::SLAMOptions>
         if (node["useScanOrder"])
         {
             options.useScanOrder = node["useScanOrder"].as<bool>();
+        }
+
+        if (node["rotate_angle"])
+        {
+            options.rotate_angle = node["rotate_angle"].as<double>();
         }
 
         return true;
