@@ -103,14 +103,14 @@ void RegistrationPipeline::doRegistration()
         }
     }
 
-    if (m_options.verbose)
+    if (m_options->verbose)
     {
         cout << "Aus doRegistaration: vor finish" << endl;
     }
 
     align.finish();
     
-    if (m_options.verbose)
+    if (m_options->verbose)
     {
         cout << "Aus doRegistaration: nach finish" << endl;
     }
