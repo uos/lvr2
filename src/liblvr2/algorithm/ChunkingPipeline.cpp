@@ -79,19 +79,19 @@ void ChunkingPipeline::parseYAMLConfig()
 
         if (config["lvr2_registration"])
         {
-            std::cout << "Found config entry for lvr2_registration." << std::endl;
+            std::cout << timestamp << "Found config entry for lvr2_registration." << std::endl;
             m_regOptions = config["lvr2_registration"].as<SLAMOptions>();
         }
 
         if (config["lvr2_largescale_reconstruct"])
         {
-            std::cout << "Found config entry for lvr2_largescale_reconstruct." << std::endl;
+            std::cout << timestamp << "Found config entry for lvr2_largescale_reconstruct." << std::endl;
             m_lsrOptions = config["lvr2_largescale_reconstruct"].as<LSROptions>();
         }
 
         if (config["lvr2_practicability_analysis"] && config["lvr2_practicability_analysis"].IsMap())
         {
-            std::cout << "Found config entry for lvr2_practicability_analysis." << std::endl;
+            std::cout << timestamp << "Found config entry for lvr2_practicability_analysis." << std::endl;
             YAML::Node practicabilityConfig = config["lvr2_practicability_analysis"];
             if (practicabilityConfig["roughnessRadius"])
             {
@@ -109,7 +109,7 @@ void ChunkingPipeline::parseYAMLConfig()
     }
     else
     {
-        std::cout << "Config file does not exist or is not a regular file!" << std::endl;
+        std::cout << timestamp << "Config file does not exist or is not a regular file!" << std::endl;
     }
 }
 
@@ -166,9 +166,9 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
 
     m_running = true;
 
-    std::cout << "Starting chunking pipeline..." << std::endl;
+    std::cout << timestamp << "Starting chunking pipeline..." << std::endl;
 
-    std::cout << "Starting import tool..." << std::endl;
+    std::cout << timestamp << "Starting import tool..." << std::endl;
     ScanProject scanProject;
     // tmp disabled until new scanIOUtils is ready!
 //    bool importStatus = loadScanProjectFromDirectory(scanDir, scanProject);
@@ -203,18 +203,18 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     // set all scans to true, so they are getting reconstructed
     m_scanProject->changed.resize(scanProject.positions.size());
     // rm after new scanIOUtils is ready!
-    std::cout << "Finished import!" << std::endl;
+    std::cout << timestamp << "Finished import!" << std::endl;
 
-    std::cout << "Starting registration..." << std::endl;
+    std::cout << timestamp << "Starting registration..." << std::endl;
     RegistrationPipeline registration(&m_regOptions, m_scanProject);
     registration.doRegistration();
-    std::cout << "Finished registration!" << std::endl;
+    std::cout << timestamp << "Finished registration!" << std::endl;
 
-    std::cout << "Starting large scale reconstruction..." << std::endl;
+    std::cout << timestamp << "Starting large scale reconstruction..." << std::endl;
     LargeScaleReconstruction<lvr2::BaseVector<float>> lsr(m_lsrOptions);
     BoundingBox<BaseVector<float>> newChunksBB;
     lsr.mpiChunkAndReconstruct(m_scanProject, newChunksBB, m_chunkManager);
-    std::cout << "Finished large scale reconstruction!" << std::endl;
+    std::cout << timestamp << "Finished large scale reconstruction!" << std::endl;
 
     for (auto layer : m_lsrOptions.voxelSizes)
     {
@@ -224,33 +224,33 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
                 newChunksBB,
                 m_chunkManager,
                 layer);
-        std::cout << voxelSizeStr  << "Finished mesh generation!" << std::endl;
+        std::cout << timestamp << voxelSizeStr  << "Finished mesh generation!" << std::endl;
 
-        std::cout << voxelSizeStr  << "Starting mesh buffer creation..." << std::endl;
+        std::cout << timestamp << voxelSizeStr  << "Starting mesh buffer creation..." << std::endl;
         lvr2::SimpleFinalizer<lvr2::BaseVector<float>> finalize;
         MeshBufferPtr meshBuffer = MeshBufferPtr(finalize.apply(hem));
-        std::cout << voxelSizeStr  << "Finished mesh buffer creation!" << std::endl;
+        std::cout << timestamp << voxelSizeStr  << "Finished mesh buffer creation!" << std::endl;
 
         auto foundIt = std::find(m_practicabilityLayers.begin(), m_practicabilityLayers.end(), layer);
         if (foundIt != m_practicabilityLayers.end())
         {
-            std::cout << voxelSizeStr  << "Starting practicability analysis..." << std::endl;
+            std::cout << timestamp << voxelSizeStr  << "Starting practicability analysis..." << std::endl;
             practicabilityAnalysis(hem, meshBuffer);
-            std::cout << voxelSizeStr  << "Finished practicability analysis!" << std::endl;
+            std::cout << timestamp << voxelSizeStr  << "Finished practicability analysis!" << std::endl;
         }
         else
         {
-            std::cout << voxelSizeStr  << "Skipping practicability analysis..." << std::endl;
+            std::cout << timestamp << voxelSizeStr  << "Skipping practicability analysis..." << std::endl;
         }
 
-        std::cout << voxelSizeStr  << "Starting chunking and saving of mesh buffer..." << std::endl;
+        std::cout << timestamp << voxelSizeStr  << "Starting chunking and saving of mesh buffer..." << std::endl;
         // TODO: get maxChunkOverlap size
         // TODO: savePath is not used in buildChunks (remove it?)
         m_chunkManager->buildChunks(meshBuffer, 0.1f, "", "mesh_" + std::to_string(layer));
-        std::cout << voxelSizeStr  << "Finished chunking and saving of mesh buffer!" << std::endl;
+        std::cout << timestamp << voxelSizeStr  << "Finished chunking and saving of mesh buffer!" << std::endl;
     }
 
-    std::cout << "Finished chunking pipeline!" << std::endl;
+    std::cout << timestamp << "Finished chunking pipeline!" << std::endl;
 
     m_running = false;
 
