@@ -677,14 +677,14 @@ void loadHyperspectralPanoramaChannels(
             // Load meta info
             HyperspectralPanoramaChannel* channel = new HyperspectralPanoramaChannel;
 
-            std::cout << timestamp << "Loading " << metaPath << std::endl;
+            // std::cout << timestamp << "Loading " << metaPath << std::endl;
             YAML::Node meta = YAML::LoadFile(metaPath.string());
 
             // *channel = meta.as<ScanImage>();
             if(YAML::convert<HyperspectralPanoramaChannel>::decode(meta, *channel))
             {
                 // Load channel data
-                std::cout << timestamp << "Loading " << pngPath << std::endl;
+                // std::cout << timestamp << "Loading " << pngPath << std::endl;
                 channel->channelFile = pngPath;
                 channel->channel = cv::imread(pngPath.string());
 
