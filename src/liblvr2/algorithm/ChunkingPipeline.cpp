@@ -156,6 +156,42 @@ void ChunkingPipeline::practicabilityAnalysis(HalfEdgeMesh<lvr2::BaseVector<floa
     meshBuffer->add("height_diff", heightDifferencesChannel);
 }
 
+bool ChunkingPipeline::getScanProject(const boost::filesystem::path& dirPath)
+{
+    HDF5IO hdf;
+    hdf.open(m_hdf5Path.string());
+
+    // load scans from hdf5
+    ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
+    
+    std::cout << "#scanPositions: " << scanProjectPtr->positions.size() << std::endl;
+
+    // load scans from directory
+    ScanProject dirScanProject;
+    bool importStatus = loadScanProject(dirPath, dirScanProject);
+
+
+    if (!importStatus)
+    {
+        return false;
+    }
+    else
+    {
+        std::cout << timestamp << "found " << dirScanProject.positions.size() - scanProjectPtr->positions.size() << " new scanPositions" << std::endl;
+        for(int i = scanProjectPtr->positions.size(); i < dirScanProject.positions.size(); i++)
+        {
+            scanProjectPtr->positions.push_back(dirScanProject.positions[i]);
+        }
+    }
+
+    ScanProjectEditMark tmpScanProject;
+
+    tmpScanProject.project = scanProjectPtr;
+    m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
+
+    return true;
+}
+
 bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
 {
     if (m_running)
@@ -169,46 +205,56 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     std::cout << timestamp << "Starting chunking pipeline..." << std::endl;
 
     std::cout << timestamp << "Starting import tool..." << std::endl;
-    ScanProject scanProject;
-    // tmp disabled until new scanIOUtils is ready!
-//    bool importStatus = loadScanProjectFromDirectory(scanDir, scanProject);
-//    if (!importStatus)
-//    {
-//        std::cout << "Import failed..." << std::endl;
-//        std::cout << "Aborting chunking pipeline!" << std::endl;
-//
-//        m_running = false;
-//
-//        return false;
-//    }
-//    else
-//    {
-//        ScanProjectEditMark tmpScanProject;
-//        tmpScanProject.project = std::make_shared<ScanProject>(scanProject);
-//        m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
-//    }
-    // rm after new scanIOUtils is ready!
 
-    HDF5IO hdf;
-    hdf.open(m_hdf5Path.string());
+    // HDF5IO hdf;
+    // hdf.open(m_hdf5Path.string());
 
-    ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
+    // // load scans from hdf5
+    // ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
     
-    // loadAllPreviewsFromHDF5(m_hdf5Path.string(), scanProject);
+    // // load scans from directory
+    // ScanProjectPtr dirScanProject;
+    // bool importStatus = loadScanProject(scanDir, *dirScanProject);
+    // if (!importStatus)
+    // {
+    //     std::cout << "Import failed..." << std::endl;
+    //     std::cout << "Aborting chunking pipeline!" << std::endl;
 
-    ScanProjectEditMark tmpScanProject;
-    // tmpScanProject.project = std::make_shared<ScanProject>(scanProject);
-    tmpScanProject.project = scanProjectPtr;
-    m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
-    // set all scans to true, so they are getting reconstructed
-    m_scanProject->changed.resize(scanProject.positions.size());
-    // rm after new scanIOUtils is ready!
+    //     m_running = false;
+
+    //     return false;
+    // }
+    // else
+    // {
+    //     std::cout << timestamp << "found " << dirScanProject->positions.size() - scanProjectPtr->positions.size() << " new scanPositions" << std::endl;
+    //     for(int i = scanProjectPtr->positions.size(); i < dirScanProject->positions.size(); i++)
+    //     {
+    //         scanProjectPtr->positions.push_back(dirScanProject->positions[i]);
+    //     }
+    //     delete dirScanProject;
+    // }
+
+    if(!getScanProject(scanDir))
+    {
+        std::cout << "Import failed..." << std::endl;
+        std::cout << "Aborting chunking pipeline!" << std::endl;
+
+        m_running = false;
+        return false;
+    }
+
     std::cout << timestamp << "Finished import!" << std::endl;
 
     std::cout << timestamp << "Starting registration..." << std::endl;
     RegistrationPipeline registration(&m_regOptions, m_scanProject);
     registration.doRegistration();
     std::cout << timestamp << "Finished registration!" << std::endl;
+
+    // save raw data
+    HDF5IO hdf;
+    hdf.open(m_hdf5Path.string());
+
+    hdf.save(m_scanProject->project);
 
     std::cout << timestamp << "Starting large scale reconstruction..." << std::endl;
     LargeScaleReconstruction<lvr2::BaseVector<float>> lsr(m_lsrOptions);
