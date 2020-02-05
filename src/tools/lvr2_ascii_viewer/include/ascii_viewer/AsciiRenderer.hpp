@@ -91,7 +91,7 @@ private:
 
     // controls params
     double m_vrot = 0.005;
-    double m_vtrans = 0.01;
+    double m_vtrans = 0.5;
     double m_sidereduce = 0.8;
     double m_boost = 3.0;
 

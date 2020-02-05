@@ -356,9 +356,9 @@ void AsciiRenderer::processKey(int key)
     } else if(key == KEY_RESIZE) {
         initBuffers();
     } else if(key == 'i') {
-        m_vtrans *= 10.0;
+        m_vtrans *= 5.0;
     } else if(key == 'k') {
-        m_vtrans /= 10.0;
+        m_vtrans /= 5.0;
     } else if(key == 'h') {
         m_show_controls = !m_show_controls;
     } 
@@ -400,7 +400,6 @@ void AsciiRenderer::render()
     mvprintw(0, 0, "%4d fps", int(m_avg_fps) );
     
     printControls();
-    
     
     refresh();
 }
