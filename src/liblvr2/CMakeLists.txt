@@ -55,7 +55,6 @@ set(LVR2_SOURCES
     algorithm/ChunkBuilder.cpp
     algorithm/ChunkManager.cpp
     algorithm/ChunkHashGrid.cpp
-    algorithm/ChunkingPipeline.cpp
     reconstruction/NodeData.cpp
     registration/ICPPointAlign.cpp
     registration/KDTree.cpp
