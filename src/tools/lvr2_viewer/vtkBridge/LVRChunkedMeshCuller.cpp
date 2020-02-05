@@ -21,22 +21,18 @@ double ChunkedMeshCuller::Cull(vtkRenderer *ren,
 {
     actorMap lowRes = m_bridge->getLowResActors();
     actorMap highRes = m_bridge->getHighResActors();
-    if(!cull_)
-    {
-        return 0.0;
-    }
-    else{
+
     double planes[24];
     vtkSmartPointer<vtkCamera> cam = ren->GetActiveCamera();
     cam->GetFrustumPlanes(ren->GetTiledAspectRatio(), planes);
-     double clip[2];
-     cam->GetClippingRange(clip);
+    double clip[2];
+    cam->GetClippingRange(clip);
 
-     //for(int i = 0; i < 6; ++i)
-     //{
-     //    int index = 4 * i;
+    //for(int i = 0; i < 6; ++i)
+    //{
+    //    int index = 4 * i;
 
-     //}
+    //}
 
     double position[3];
     cam->GetPosition(position);
@@ -52,10 +48,8 @@ double ChunkedMeshCuller::Cull(vtkRenderer *ren,
 
     double scale = cam->GetParallelScale();
 
-    //std::cout << "VIEW ANGLE " << cam->GetViewAngle() << std::endl;
-    
     cam->SetParallelScale(1.0);
-    cam->SetClippingRange(0.01, 110.0);
+    cam->SetClippingRange(0.01, 150.0);
     double planes_high[24];
     cam->GetFrustumPlanes(ren->GetTiledAspectRatio(), planes_high);
     BaseVector<float> base(dir[0], dir[1], dir[2]);
@@ -69,75 +63,54 @@ double ChunkedMeshCuller::Cull(vtkRenderer *ren,
 
     for(size_t i = 0; i < centroids2.size(); ++i)
     {
-            highResArea.expand(centroids2[i]);   
+        highResArea.expand(centroids2[i]);   
     }
-
-    m_bridge->fetchHighRes(highResArea);
-
-
-    // Create a sphere actor to represent the current focal point
-    //vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();    
-    //BaseVector<float> pos_vec(position[0], position[1], position[2]);
-    //pos_vec = pos_vec +  (base *110.0f) ;
-    //sphereSource->SetCenter(pos_vec[0] , pos_vec[1],pos_vec[2] );
-    //
-    //sphereSource->SetRadius(1.0);
-
-    //vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    //mapper->SetInputConnection(sphereSource->GetOutputPort());
-
-    //vtkSmartPointer<vtkActor> sphereActor = vtkSmartPointer<vtkActor>::New();
-    //sphereActor->SetMapper(mapper);
-    //ren->AddActor(sphereActor);
-
-    //vtkSmartPointer<vtkSphereSource> sphereSource2 = vtkSmartPointer<vtkSphereSource>::New();    
-    //BaseVector<float> pos_vec2(position[0], position[1], position[2]);
-    //pos_vec2 = pos_vec +  (base *1.0f) ;
-    //sphereSource->SetCenter(pos_vec[0] , pos_vec[1],pos_vec[2] );
-    //
-    //sphereSource->SetRadius(4.0);
-
-    //vtkSmartPointer<vtkPolyDataMapper> mapper2 = vtkSmartPointer<vtkPolyDataMapper>::New();
-    //mapper->SetInputConnection(sphereSource->GetOutputPort());
-
-    //vtkSmartPointer<vtkActor> sphereActor2 = vtkSmartPointer<vtkActor>::New();
-    //sphereActor2->SetMapper(mapper2);
-    //ren->AddActor(sphereActor2);
-
     
-    vtkActorCollection* actors = ren->GetActors();
-    actors->InitTraversal();
+    //BaseVector<float> eye(position[0], position[1], position[2]);
+    //BaseVector<float> direction(dir[0], dir[1], dir[2]);
+    //direction.normalize();
+    //BaseVector<float> upVector(up[0], up[1], up[2]);
+    //upVector.normalize();
+    //BaseVector<float> perp = upVector.cross(direction);
+    //perp.normalize();
 
-    #pragma omp parallel for
-    for(vtkIdType i = 0; i < actors->GetNumberOfItems(); i++)
-    {
-        vtkActor* nextActor = actors->GetNextActor();
-        if(nextActor->IsA("MeshChunkActor"))
-        { 
-            nextActor->VisibilityOff();
-        
-        }
-    }
-    //LVRBoundingBoxBridge bbridge(highResArea);
-    //ren->AddActor(bbridge.getActor());
-    //bbridge.setVisibility(true);
+    //highResArea.expand(eye + (direction * 1.2 * 150.0));
+    //highResArea.expand(eye + (direction * ((-1) * 100.0/2.0)));
+    //highResArea.expand(eye + (upVector * 100.0));
+    //highResArea.expand(eye + (upVector * ((-1) * 100.0)));
+    //highResArea.expand(eye + (perp * 100.0));
+    //highResArea.expand(eye + (perp * ((-1) * 100.0)));
 
-   
-    #pragma omp parallel for
+    m_bridge->fetchHighRes(highResArea, indices2);
+
+    //vtkActorCollection* actors = ren->GetActors();
+    //actors->InitTraversal();
+
+
     for(size_t i = 0; i < indices.size(); ++i)
     {
-        if(highRes.find(indices[i]) == highRes.end())
+          lowRes.at(indices[i])->VisibilityOn();
+    }
+    
+    for(auto& it: highRes)
+    {
+        if(std::find(indices2.begin(), indices2.end(), it.first) != indices2.end())
         {
-            lowRes.at(indices[i])->VisibilityOn();
+            if(it.second)
+            {
+                it.second->VisibilityOn();
+            }
+            lowRes.at(it.first)->VisibilityOff();
         }
         else
         {
-            highRes.at(indices[i])->VisibilityOn();
+            if(it.second)
+            {
+                it.second->VisibilityOff();
+            }
         }
-
     }
 
-    }
 }
 
 }

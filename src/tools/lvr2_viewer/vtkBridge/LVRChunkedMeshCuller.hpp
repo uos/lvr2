@@ -1,3 +1,6 @@
+#ifndef LVRCHUNKEDMESHCULLER_HPP_
+#define LVRCHUNKEDMESHCULLER_HPP_
+
 #include <vtkCuller.h>
 
 #include <vtkSmartPointer.h>
@@ -37,3 +40,5 @@ namespace lvr2 {
                           size_t C);
     };
 }
+
+#endif

@@ -14,6 +14,89 @@ namespace lvr2{
     {
         long offset = 0;
         m_root = reinterpret_cast<BOct*>(m_mem.alloc<BOct>(1, offset));
+        size_t numChunks = std::floor(bb.getXSize()/voxelSize);
+
+        std::cout << "BB unadjusted " << bb << std::endl;
+        // check if it is a power of 2
+        // https://stackoverflow.com/questions/600293/how-to-check-if-a-number-is-a-power-of-2
+        if(!(numChunks & (numChunks - 1) == 0))
+        {
+           // adjust number 2 the next power of 2
+           // https://stackoverflow.com/questions/466204/rounding-up-to-next-power-of-2
+           numChunks--;
+           numChunks |= numChunks >> 1;
+           numChunks |= numChunks >> 2;
+           numChunks |= numChunks >> 4;
+           numChunks |= numChunks >> 8;
+           numChunks |= numChunks >> 16;
+           //numChunks |= numChunks >> 32;
+           numChunks++;
+        }
+
+        std::cout << numChunks << std::endl;
+        BaseVecT min = bb.getMin();
+        min += (BaseVecT(1, 0, 0) * voxelSize) * numChunks;
+        std::cout << "min " << min << std::endl;
+        bb.expand(min);
+
+        numChunks = std::floor(bb.getYSize()/voxelSize);
+        std::cout << std::endl;
+        std::cout << numChunks << std::endl;
+        // check if it is a power of 2
+        // https://stackoverflow.com/questions/600293/how-to-check-if-a-number-is-a-power-of-2
+        if(!(numChunks & (numChunks - 1) == 0))
+        {
+            std::cout << "NO power of 2" << std::endl;
+           // adjust number 2 the next power of 2
+           // https://stackoverflow.com/questions/466204/rounding-up-to-next-power-of-2
+           numChunks--;
+           numChunks |= (numChunks >> 1);
+           numChunks |= (numChunks >> 2);
+           numChunks |= (numChunks >> 4);
+           numChunks |= (numChunks >> 8);
+           numChunks |= (numChunks >> 16);
+        //   numChunks |= numChunks >> 32;
+           numChunks++;
+        }
+
+        std::cout << numChunks << std::endl;
+        min = bb.getMin();
+        min += BaseVecT(0, 1, 0) * voxelSize * numChunks;
+        bb.expand(min);
+        std::cout << "min " << min << std::endl;
+
+        numChunks = std::floor(bb.getZSize()/voxelSize);
+        std::cout << "prev " << numChunks << std::endl;
+        // check if it is a power of 2
+        // https://stackoverflow.com/questions/600293/how-to-check-if-a-number-is-a-power-of-2
+        if(!(numChunks & (numChunks - 1) == 0))
+        {
+            std::cout << "no power of 2" << std::endl;
+           // adjust number 2 the next power of 2
+           // https://stackoverflow.com/questions/466204/rounding-up-to-next-power-of-2
+           numChunks--;
+           numChunks |= numChunks >> 1;
+           numChunks |= numChunks >> 2;
+           numChunks |= numChunks >> 4;
+           numChunks |= numChunks >> 8;
+           numChunks |= numChunks >> 16;
+           numChunks |= numChunks >> 32;
+           numChunks++;
+        }
+        else
+        {
+            std::cout << "multiply " << std::endl;
+        }
+
+            numChunks *= 2;
+        std::cout << numChunks << std::endl;
+        min = bb.getMin();
+        min += BaseVecT(0, 0, 1) * voxelSize * numChunks;
+        bb.expand(min);
+        std::cout << "min " << min << std::endl;
+
+        std::cout << "BB adjusted " << bb << " voxelSize " << voxelSize << std::endl;
+        m_bbox = bb;
 
 
 

@@ -27,9 +27,6 @@ class VTKRENDERINGOPENGL2_EXPORT PreloadOpenGLPolyDataMapper : public vtkOpenGLP
             return false;
         }
 
-        void BuildBufferObjects(vtkRenderer *ren, vtkActor *act) override ;
-
-
     protected:
         PreloadOpenGLPolyDataMapper() ;
         virtual ~PreloadOpenGLPolyDataMapper() ;
