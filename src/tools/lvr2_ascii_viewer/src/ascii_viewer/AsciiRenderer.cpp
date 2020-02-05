@@ -385,15 +385,19 @@ void AsciiRenderer::render()
     }
 
     auto end = std::chrono::steady_clock::now();
-    double ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    double ms = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0;
     
     // max fps 1000
-    int fps = 1000;
-    if(ms > 1.0) {
-        fps = int(1000.0 / ms);
+    double fps = 1000.0 / 0.001;
+    if(ms > 0.001)
+    {
+        fps = 1000.0 / ms;
     }
 
-    mvprintw(0, 0, "%3d fps", fps);
+    // update avg fps
+    m_avg_fps = m_fps_alpha * m_avg_fps + (1.0 - m_fps_alpha) * fps;
+
+    mvprintw(0, 0, "%4d fps", int(m_avg_fps) );
     
     printControls();
     

@@ -95,6 +95,9 @@ private:
     double m_sidereduce = 0.8;
     double m_boost = 3.0;
 
+    double m_avg_fps = 20;
+    double m_fps_alpha = 0.2;
+
 };
 
 using AsciiRendererPtr = std::shared_ptr<AsciiRenderer>;
