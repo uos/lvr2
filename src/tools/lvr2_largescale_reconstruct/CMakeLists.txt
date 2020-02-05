@@ -17,7 +17,7 @@ set(LVR2_LS_RECONSTRUCT_DEPENDENCIES
     lvr2_static
     lvr2las_static
     lvr2rply_static
-    ${Boost_LIBRARIES}
+    ${LVR2_LIB_DEPENDENCIES}
 )
 
 #####################################################################################

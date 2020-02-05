@@ -398,6 +398,10 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/${RiVLib_DIR})
 endif()
 
 
+find_package(HDF5 REQUIRED C CXX HL)
+include_directories(${HDF5_INCLUDE_DIR})
+
+
 ###############################################################################
 # ADD LVR DEFINITIONS
 ###############################################################################
@@ -494,6 +498,59 @@ if(Qt5_FOUND)
   endif(QVTK_FOUND)
 endif(Qt5_FOUND)
 
+
+###############################################################################
+# SET DEPENDENCIES
+###############################################################################
+
+set(LVR2_LIB_DEPENDENCIES
+    ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY}
+    ${Boost_THREAD_LIBRARY}
+    ${Boost_FILESYSTEM_LIBRARY}
+    ${OPENGL_LIBRARIES}
+    ${GLUT_LIBRARIES}
+    ${GDAL_LIBRARY}
+    ${OpenCV_LIBS}
+    ${GSL_LIBRARIES}
+    ${LZ4_LIBRARY}
+    ${TIFF_LIBRARY}
+    ${YAML_CPP_LIBRARIES}
+    ${OpenMP_CXX_LIBRARIES}
+    m
+    )
+
+#####################################################################################
+# ADD ALL EXTERNAL DEPENDENCIES
+#####################################################################################
+
+if(UNIX)
+set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} pthread)
+endif(UNIX)
+
+if(PCL_FOUND)
+set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${PCL_LIBRARIES})
+endif(PCL_FOUND)
+
+if(WITH_FREENECT AND LIBFREENECT_FOUND)
+set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${LIBFREENECT_LIBRARIES})
+endif()
+
+if(draco_FOUND)
+set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${draco_LIBRARIES})
+endif(draco_FOUND)
+
+if(RiVLib_FOUND)
+  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${RiVLib_SCANIFC_LIBRARY})
+endif()
+
+if(OPENCL_FOUND)
+  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${OpenCL_LIBRARIES})
+endif()
+
+if(YAML_CPP_LIBRARIES)
+  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${YAML_CPP_LIBRARIES})
+endif()
 
 ###############################################################################
 # LIBRARIES
