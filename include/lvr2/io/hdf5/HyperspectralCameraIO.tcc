@@ -84,7 +84,7 @@ void HyperspectralCameraIO<Derived>::save(HighFive::Group& group,
 
         // save timestamps
         doubleArr timestamps(new double[hyperspectralCameraPtr->panoramas[i]->channels.size()]);
-        int pos = 0;
+        size_t pos = 0;
         for (auto channel : hyperspectralCameraPtr->panoramas[i]->channels)
         {
             timestamps[pos++] = channel->timestamp;
