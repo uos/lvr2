@@ -1467,8 +1467,10 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         : m_maxIndex(0), m_maxIndexSquare(0), m_maxIndexX(0), m_maxIndexY(0), m_maxIndexZ(0),
           m_numPoints(0), m_extrude(true), m_scale(scale), m_has_normal(false), m_has_color(false)
 {
-
+    /// 
+#ifdef LVR2_USE_OPEN_MP
     omp_init_lock(&m_lock);
+#endif
     m_voxelSize = voxelsize;
 
     if (project->changed.size() <= 0)

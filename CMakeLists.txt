@@ -93,7 +93,7 @@ endif(NOT APPLE AND WITH_CUDA)
 #------------------------------------------------------------------------------
 # Searching for OpenCV
 #------------------------------------------------------------------------------
-find_package( OpenCV 3 )
+find_package( OpenCV 4 )
 if (!OpenCV_FOUND)
   find_package( OpenCV )
 endif()

@@ -213,7 +213,7 @@ class BigGrid
 
     float m_voxelSize;
     bool m_extrude;
-#ifndef __APPLE__
+#ifdef LVR2_USE_OPEN_MP
     omp_lock_t m_lock;
 #endif
     bool m_has_normal;
