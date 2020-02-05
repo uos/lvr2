@@ -18,7 +18,7 @@ set(LVR2_CL_NORMAL_SRC
 
 set(LVR2_CL_NORMAL_DEPS
     lvr2
-    ${OpenCL_LIBRARIES}
+    ${LVR2_LIB_DEPENDENCIES}
 )
 
 

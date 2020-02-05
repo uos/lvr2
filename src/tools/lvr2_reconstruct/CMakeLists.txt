@@ -16,20 +16,7 @@ set(LVR2_RECONSTRUCT_DEPENDENCIES
     lvr2las_static
     lvr2rply_static
     lvr2slam6d_static
-    ${PCL_LIBRARIES}
-    ${Boost_PROGRAM_OPTIONS_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY}
-    ${Boost_THREAD_LIBRARY}
-    ${Boost_FILESYSTEM_LIBRARY}
-    ${OPENGL_LIBRARIES}
-    ${GLUT_LIBRARIES}
-    ${GDAL_LIBRARY}
-    ${OpenCV_LIBS}
-    ${GSL_LIBRARIES}
-    ${LZ4_LIBRARY}
-    ${TIFF_LIBRARY}
-    ${YAML_CPP_LIBRARIES}
-    ${OpenMP_CXX_LIBRARIES}
+    ${LVR2_LIB_DEPENDENCIES}
 )
 
 if( ${NABO_FOUND} )

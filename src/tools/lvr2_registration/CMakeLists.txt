@@ -12,9 +12,7 @@ set(LVR2_REGISTRATION_SOURCES
 
 set(LVR2_REGISTRATION_DEPENDENCIES
     lvr2_static
-    ${Boost_SYSTEM_LIBRARY}
-    ${Boost_PROGRAM_OPTIONS_LIBRARY}
-    ${Boost_FILESYSTEM_LIBRARY}
+    ${LVR2_LIB_DEPENDENCIES}
 )
 
 #####################################################################################

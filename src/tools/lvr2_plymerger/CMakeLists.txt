@@ -16,9 +16,7 @@ set(LVR2_PLY_MERGER_DEPENDENCIES
 	lvr2las_static
 	lvr2rply_static
 	lvr2slam6d_static
-	${OPENGL_LIBRARIES}
-	${GLUT_LIBRARIES}
-	${OpenMP_CXX_LIBRARIES}
+	${LVR2_LIB_DEPENDENCIES}
 )
 
 #####################################################################################

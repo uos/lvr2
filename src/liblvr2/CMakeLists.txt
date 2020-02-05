@@ -68,7 +68,52 @@ set(LVR2_SOURCES
     registration/RegistrationPipeline.cpp
 )
 
+#####################################################################################
+# Add PCD io if PCL is installed
+#####################################################################################
 
+if(PCL_FOUND)
+set(LVR2_SOURCES ${LVR2_SOURCES}
+    io/PCDIO.cpp
+    reconstruction/PCLFiltering.cpp)
+endif(PCL_FOUND)
+
+
+if(WITH_FREENECT AND LIBFREENECT_FOUND)
+set(LVR2_SOURCES ${LVR2_SOURCES} 
+  io/KinectGrabber.cpp 
+  io/KinectIO.cpp)
+endif()
+
+#####################################################################################
+# Draco Geometry Compression
+#####################################################################################
+
+if(draco_FOUND)
+set(LVR2_SOURCES ${LVR2_SOURCES}
+  io/DracoEncoder.cpp
+  io/DracoDecoder.cpp 
+  io/DrcIO.cpp)
+endif(draco_FOUND)
+
+#####################################################################################
+# RiVLib
+#####################################################################################
+
+if(RiVLib_FOUND)
+  set(LVR2_SOURCES ${LVR2_SOURCES} 
+    io/RxpIO.cpp)
+endif()
+
+#####################################################################################
+# OpenCL
+#####################################################################################
+
+if(OPENCL_FOUND)
+  set(LVR2_SOURCES ${LVR2_SOURCES}
+      reconstruction/opencl/ClSurface.cpp
+  )
+endif()
 
 #####################################################################################
 # Create source groups to structure code in Visual Studio
@@ -92,32 +137,6 @@ set(LVR2_INTERNAL_DEPENDENCIES_SHARED
     lvr2las
     lvr2slam6d)
 
-set(LVR2_LIB_DEPENDENCIES
-    ${Boost_PROGRAM_OPTIONS_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY}
-    ${Boost_THREAD_LIBRARY}
-    ${Boost_FILESYSTEM_LIBRARY}
-    ${OPENGL_LIBRARIES}
-    ${GLUT_LIBRARIES}
-    ${GDAL_LIBRARY}
-    ${OpenCV_LIBS}
-    ${GSL_LIBRARIES}
-    ${LZ4_LIBRARY}
-    ${TIFF_LIBRARY}
-    ${YAML_CPP_LIBRARIES}
-    ${OpenMP_CXX_LIBRARIES}
-    m
-    )
-
-
-#####################################################################################
-# On Unix/Linux we need to link against pthreads
-#####################################################################################
-
-if(UNIX)
-  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} pthread)
-endif(UNIX)
-
 #####################################################################################
 # Set c++0x flags for gcc compilers (needed for boctree io)
 #####################################################################################
@@ -126,69 +145,6 @@ if(UNIX)
   SET_SOURCE_FILES_PROPERTIES(io/BoctreeIO.cpp PROPERTIES COMPILE_FLAGS "-std=c++14")
 endif(UNIX)
 
-#####################################################################################
-# Add PCD io if PCL is installed
-#####################################################################################
-
-if(PCL_FOUND)
-  set(LVR2_SOURCES ${LVR2_SOURCES}
-      io/PCDIO.cpp
-      reconstruction/PCLFiltering.cpp)
-
-  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${PCL_LIBRARIES})
-endif(PCL_FOUND)
-
-find_package(HDF5 REQUIRED C CXX HL)
-include_directories(${HDF5_INCLUDE_DIR})
-
-if(WITH_FREENECT AND LIBFREENECT_FOUND)
-  set(LVR2_SOURCES ${LVR2_SOURCES} 
-    io/KinectGrabber.cpp 
-    io/KinectIO.cpp)
-  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${LIBFREENECT_LIBRARIES})
-endif()
-
-#####################################################################################
-# Draco Geometry Compression
-#####################################################################################
-
-if(draco_FOUND)
-  set(LVR2_SOURCES ${LVR2_SOURCES}
-    io/DracoEncoder.cpp
-    io/DracoDecoder.cpp 
-    io/DrcIO.cpp)
-
-  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${draco_LIBRARIES})
-endif(draco_FOUND)
-
-#####################################################################################
-# RiVLib
-#####################################################################################
-
-if(RiVLib_FOUND)
-    set(LVR2_SOURCES ${LVR2_SOURCES} 
-      io/RxpIO.cpp)
-    set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${RiVLib_SCANIFC_LIBRARY})
-endif()
-
-#####################################################################################
-# OpenCL
-#####################################################################################
-
-if(OPENCL_FOUND)
-    set(LVR2_SOURCES ${LVR2_SOURCES}
-        reconstruction/opencl/ClSurface.cpp
-    )
-    set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${OpenCL_LIBRARIES})
-endif()
-
-#####################################################################################
-# yaml-cpp
-#####################################################################################
-# no found variable
-if(YAML_CPP_LIBRARIES)
-    set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${YAML_CPP_LIBRARIES})
-endif()
 
 #####################################################################################
 # Compile object files for static and dynamic library
