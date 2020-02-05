@@ -267,57 +267,54 @@ void AsciiRenderer::raycast()
 
 void AsciiRenderer::processKey(int key)
 {
-    double vrot = 0.005;
-    double vtrans = 0.01;
-    double boost = 3.0;
 
     if(key == 'a') {
         // trans left
-        m_camera.translate(Eigen::Vector3d(0.0, vtrans, 0.0));
+        m_camera.translate(Eigen::Vector3d(0.0, m_vrot * m_sidereduce, 0.0));
     } else if( key == 'A') {
-        m_camera.translate(Eigen::Vector3d(0.0, vtrans * boost, 0.0));
+        m_camera.translate(Eigen::Vector3d(0.0, m_vtrans * m_boost * m_sidereduce, 0.0));
     } else if( key == 'w') {
         // trans front
-        m_camera.translate(Eigen::Vector3d(vtrans, 0.0, 0.0));
+        m_camera.translate(Eigen::Vector3d(m_vtrans, 0.0, 0.0));
     } else if( key == 'W') {
         // trans front
-        m_camera.translate(Eigen::Vector3d(vtrans * boost, 0.0, 0.0));
+        m_camera.translate(Eigen::Vector3d(m_vtrans * m_boost, 0.0, 0.0));
     } else if( key == 's') {
         // trans back
-        m_camera.translate(Eigen::Vector3d(-vtrans, 0.0, 0.0));
+        m_camera.translate(Eigen::Vector3d(-m_vtrans, 0.0, 0.0));
     } else if( key == 'S') {
         // trans back
-        m_camera.translate(Eigen::Vector3d(-vtrans * boost, 0.0, 0.0));
+        m_camera.translate(Eigen::Vector3d(-m_vtrans * m_boost, 0.0, 0.0));
     } else if( key == 'd') {
         // trans right
-        m_camera.translate(Eigen::Vector3d(0.0, -vtrans, 0.0));
+        m_camera.translate(Eigen::Vector3d(0.0, -m_vtrans * m_sidereduce, 0.0));
     } else if( key == 'D') {
-        m_camera.translate(Eigen::Vector3d(0.0, -vtrans * boost, 0.0));
+        m_camera.translate(Eigen::Vector3d(0.0, -m_vtrans * m_boost * m_sidereduce, 0.0));
     } else if( key == 'q' ) {
-        float roll = -vrot;
+        float roll = -m_vrot;
         m_camera.rotate(Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()));
     } else if( key == 'Q' ) {
-        float roll = -vrot;
-        m_camera.rotate(Eigen::AngleAxisd(roll * boost, Eigen::Vector3d::UnitX()));
+        float roll = -m_vrot;
+        m_camera.rotate(Eigen::AngleAxisd(roll * m_boost, Eigen::Vector3d::UnitX()));
     } else if( key == 'e' ) {
-        float roll = vrot;
+        float roll = m_vrot;
         m_camera.rotate(Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()));
     } else if( key == 'E' ) {
-        float roll = vrot;
-        m_camera.rotate(Eigen::AngleAxisd(roll * boost, Eigen::Vector3d::UnitX()));
+        float roll = m_vrot;
+        m_camera.rotate(Eigen::AngleAxisd(roll * m_boost, Eigen::Vector3d::UnitX()));
     } else if( key == KEY_LEFT ) {
         // yaw + 
-        float yaw = vrot;
+        float yaw = m_vrot;
         m_camera.rotate(Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()));
     } else if( key == KEY_RIGHT ) {
         // yaw -
-        float yaw = -vrot;
+        float yaw = -m_vrot;
         m_camera.rotate(Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()));
     } else if( key == KEY_UP ) {
-        float pitch = -vrot;
+        float pitch = -m_vrot;
         m_camera.rotate(Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()));
     } else if( key == KEY_DOWN ) {
-        float pitch = vrot;
+        float pitch = m_vrot;
         m_camera.rotate(Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()));
     } else if( key == ' ') {
         m_track_mouse = !m_track_mouse;
@@ -335,7 +332,7 @@ void AsciiRenderer::processKey(int key)
                 m_track_mouse = true;
             } else if(event.bstate & MOUSE_SCROLL_UP) {
                 // SCROLL
-                m_camera.translate(Eigen::Vector3d(vtrans, 0.0, 0.0));
+                m_camera.translate(Eigen::Vector3d(m_vtrans, 0.0, 0.0));
             } else if( (event.bstate & MOUSE_MOVE) && m_track_mouse) {
                 double mouse_x = static_cast<double>(event.x);
                 double mouse_y = static_cast<double>(event.y);
@@ -345,8 +342,8 @@ void AsciiRenderer::processKey(int key)
 
                 // sometimes SIGINTS here i guess. maybe use quaternions instead?
                 m_camera.rotate(
-                    Eigen::AngleAxisd(-delta_y * vrot, Eigen::Vector3d::UnitY())
-                    * Eigen::AngleAxisd(delta_x * vrot, Eigen::Vector3d::UnitZ())
+                    Eigen::AngleAxisd(-delta_y * m_vrot, Eigen::Vector3d::UnitY())
+                    * Eigen::AngleAxisd(delta_x * m_vrot, Eigen::Vector3d::UnitZ())
                 );
 
             } else {
@@ -358,9 +355,13 @@ void AsciiRenderer::processKey(int key)
         }
     } else if(key == KEY_RESIZE) {
         initBuffers();
+    } else if(key == 'i') {
+        m_vtrans *= 10.0;
+    } else if(key == 'k') {
+        m_vtrans /= 10.0;
     } else if(key == 'h') {
         m_show_controls = !m_show_controls;
-    }
+    } 
 
     move(0, 0);
 }
@@ -425,12 +426,13 @@ void AsciiRenderer::printControls()
 
     if(m_show_controls)
     {
-        mvprintw(H-7, 0, "CONTROLLS (H)");
-        mvprintw(H-6, 0, "Translate: W A S D Scroll");
-        mvprintw(H-5, 0, "Rotate: ← ↑ → ↓ q e");
-        mvprintw(H-4, 0, "Mouse control:");
-        mvprintw(H-3, 0, "  - ON: Space, Left Click");
-        mvprintw(H-2, 0, "  - OFF: Space, Other Click");
+        mvprintw(H-8, 0, "CONTROLLS (H)");
+        mvprintw(H-7, 0, "Translate: W A S D Scroll");
+        mvprintw(H-6, 0, "Rotate: ← ↑ → ↓ q e");
+        mvprintw(H-5, 0, "Mouse control:");
+        mvprintw(H-4, 0, "  - ON: Space, Left Click");
+        mvprintw(H-3, 0, "  - OFF: Space, Other Click");
+        mvprintw(H-2, 0, "Speed inc/dec: i k");
         mvprintw(H-1, 0, "Exit: Esc");
     } else {
         mvprintw(H-1, 0, "CONTROLLS (H)");
