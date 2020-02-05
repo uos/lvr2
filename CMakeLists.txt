@@ -100,7 +100,7 @@ if (NOT OpenCV_FOUND)
 	message(STATUS "Found OpenCV 4")
   endif()
 else()
-  message(STAUS "Found OpenCV 3")
+  message(STATUS "Found OpenCV 3")
 endif()
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 

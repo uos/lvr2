@@ -106,6 +106,7 @@ set(LVR2_LIB_DEPENDENCIES
     ${TIFF_LIBRARY}
     ${YAML_CPP_LIBRARIES}
     ${OpenMP_CXX_LIBRARIES}
+    m
     )
 
 
