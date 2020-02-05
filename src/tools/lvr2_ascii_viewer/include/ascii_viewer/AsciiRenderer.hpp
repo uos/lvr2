@@ -89,6 +89,12 @@ private:
     // show controls
     bool m_show_controls = false;
 
+    // controls params
+    double m_vrot = 0.005;
+    double m_vtrans = 0.01;
+    double m_sidereduce = 0.8;
+    double m_boost = 3.0;
+
 };
 
 using AsciiRendererPtr = std::shared_ptr<AsciiRenderer>;
