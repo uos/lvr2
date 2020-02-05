@@ -291,7 +291,7 @@ bool channelIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
 
     // we assume that every frame has the same resolution
     // TODO change dimensions when writing
-    cv::Mat img = cv::imread(spectral[0].string(), CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat img = cv::imread(spectral[0].string(), cv::IMREAD_GRAYSCALE);
     ucharArr data(new unsigned char[spectral.size() * img.cols * img.rows]);
     std::memcpy(
         data.get() + (img.rows * img.cols), img.data, img.rows * img.cols * sizeof(unsigned char));
@@ -302,7 +302,7 @@ bool channelIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     for (size_t i = 1; i < spectral.size(); ++i)
     {
 
-        cv::Mat img = cv::imread(spectral[i].string(), CV_LOAD_IMAGE_GRAYSCALE);
+        cv::Mat img = cv::imread(spectral[i].string(), cv::IMREAD_GRAYSCALE);
         std::memcpy(data.get() + i * (img.rows * img.cols),
                     img.data,
                     img.rows * img.cols * sizeof(unsigned char));
@@ -489,7 +489,7 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
 
     // we assume that every frame has the same resolution
     // TODO change dimensions when writing
-    cv::Mat img = cv::imread(spectral[0].string(), CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat img = cv::imread(spectral[0].string(), cv::IMREAD_GRAYSCALE);
     ucharArr data(new unsigned char[spectral.size() * img.cols * img.rows]);
     std::memcpy(
         data.get() + (img.rows * img.cols), img.data, img.rows * img.cols * sizeof(unsigned char));
@@ -500,7 +500,7 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     for (size_t i = 1; i < spectral.size(); ++i)
     {
 
-        cv::Mat img = cv::imread(spectral[i].string(), CV_LOAD_IMAGE_GRAYSCALE);
+        cv::Mat img = cv::imread(spectral[i].string(), cv::IMREAD_GRAYSCALE);
         std::memcpy(data.get() + i * (img.rows * img.cols),
                     img.data,
                     img.rows * img.cols * sizeof(unsigned char));

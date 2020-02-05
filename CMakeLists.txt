@@ -93,9 +93,14 @@ endif(NOT APPLE AND WITH_CUDA)
 #------------------------------------------------------------------------------
 # Searching for OpenCV
 #------------------------------------------------------------------------------
-find_package( OpenCV 4 )
-if (!OpenCV_FOUND)
-  find_package( OpenCV )
+find_package( OpenCV 3 QUIET )
+if (NOT OpenCV_FOUND)
+  find_package( OpenCV 4)
+  if(OpenCV_FOUND)
+	message(STATUS "Found OpenCV 4")
+  endif()
+else()
+  message(STAUS "Found OpenCV 3")
 endif()
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
