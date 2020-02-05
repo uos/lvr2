@@ -977,10 +977,10 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
             if (info.suffix() == "h5")
             {
                 std::cout << info.absoluteFilePath().toStdString() << std::endl;
-                LVRChunkedMeshBridge* chunkBridge = new LVRChunkedMeshBridge(info.absoluteFilePath().toStdString(), m_renderer);
-                chunkBridge->addInitialActors(m_renderer);
-                ChunkedMeshCuller* chunkCuller = new ChunkedMeshCuller(chunkBridge);
-                m_renderer->AddCuller(chunkCuller);
+                m_chunkBridge =  std::make_unique<LVRChunkedMeshBridge>(info.absoluteFilePath().toStdString(), m_renderer);
+                m_chunkBridge->addInitialActors(m_renderer);
+                m_chunkCuller = std::make_unique<ChunkedMeshCuller>(m_chunkBridge.get());
+                m_renderer->AddCuller(m_chunkCuller.get());
                 Vector3d cam_origin(0.0, 0.0, -1.0);
                 Vector3d view_up(1.0, 0.0, 0.0);
                 Vector3d focal_point(0.0, 0.0, 0.0);
@@ -988,14 +988,10 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
                 m_renderer->GetActiveCamera()->SetFocalPoint(focal_point.x(), focal_point.y(), focal_point.z());
                 m_renderer->GetActiveCamera()->SetViewUp(view_up.x(), view_up.y(), view_up.z());
                 qRegisterMetaType<actorMap > ("actorMap");
-                QObject::connect(chunkBridge, 
+                QObject::connect(m_chunkBridge.get(), 
                     SIGNAL(updateHighRes(actorMap, actorMap)),
-                           // std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> >,
-                           //std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> >)),
                     this,
                     SLOT(updateDisplayLists(actorMap, actorMap)),
-                            //updateDisplayLists(std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> >,
-                         //std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> >)),
                     Qt::QueuedConnection);
 
                 return;
@@ -2321,29 +2317,18 @@ void LVRMainWindow::updateSpectralGradientEnabled(bool checked)
 }
 
 void LVRMainWindow::updateDisplayLists(actorMap lowRes, actorMap highRes)
-        
-       // std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > lowResActors,
-       //                        std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > highResActors)
 {
-
-//    std::cout << "Updating in MainWindow " << lowRes.size() << " " << highRes.size() << std::endl;
-
     for(auto& it: lowRes)
     {
-        if(highRes.find(it.first) == highRes.end())
-        {
             m_renderer->RemoveActor(it.second);
-        }
     }
     
-    // TODO remove removed highres actors
     for(auto& it: highRes)
     { 
-        if(lowRes.find(it.first) == lowRes.end())
-        {
-            m_renderer->AddActor(it.second);
-        }
-
+          if(it.second)
+          {
+              m_renderer->AddActor(it.second);
+          }
     }
 
     m_renderer->GetRenderWindow()->Render();

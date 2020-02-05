@@ -100,6 +100,7 @@
 #include <boost/format.hpp>
 
 #include "../vtkBridge/LVRChunkedMeshBridge.hpp"
+#include "../vtkBridge/LVRChunkedMeshCuller.hpp"
 #include "../vtkBridge/MeshChunkActor.hpp"
 
 using std::vector;
@@ -248,6 +249,9 @@ private:
     vtkSmartPointer<vtkCameraRepresentation>    m_pathCamera;
     vtkSmartPointer<vtkOrientationMarkerWidget> m_axesWidget;
     vtkSmartPointer<vtkAxesActor>               m_axes;
+
+    std::unique_ptr<LVRChunkedMeshBridge> m_chunkBridge;
+    std::unique_ptr<ChunkedMeshCuller> m_chunkCuller;
 
     QMenu*                                      m_treeParentItemContextMenu;
     QMenu*                                      m_treeChildItemContextMenu;
