@@ -66,8 +66,9 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
 
     boost::filesystem::path selectedFile(cloudPath[0]);
     string extension = selectedFile.extension().string();
-
+#ifndef __APPLE__
     omp_init_lock(&m_lock);
+#endif
     m_voxelSize = voxelsize;
 
     if (extension == ".h5") //################################ HDF5 Version
@@ -761,7 +762,9 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
     boost::filesystem::path selectedFile(cloudPath);
     string extension = selectedFile.extension().string();
 
+#ifndef __APPLE__
     omp_init_lock(&m_lock);
+#endif
     m_voxelSize = voxelsize;
 
     // First, parse whole file to get BoundingBox and amount of points
@@ -1464,8 +1467,10 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         : m_maxIndex(0), m_maxIndexSquare(0), m_maxIndexX(0), m_maxIndexY(0), m_maxIndexZ(0),
           m_numPoints(0), m_extrude(true), m_scale(scale), m_has_normal(false), m_has_color(false)
 {
-
+    /// 
+#ifdef LVR2_USE_OPEN_MP
     omp_init_lock(&m_lock);
+#endif
     m_voxelSize = voxelsize;
 
     if (project->changed.size() <= 0)
@@ -1675,7 +1680,9 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
 template <typename BaseVecT>
 BigGrid<BaseVecT>::~BigGrid()
 {
+#ifndef __APPLE__
     omp_destroy_lock(&m_lock);
+#endif
 }
 
 template <typename BaseVecT>

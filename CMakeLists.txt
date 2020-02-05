@@ -93,7 +93,7 @@ endif(NOT APPLE AND WITH_CUDA)
 #------------------------------------------------------------------------------
 # Searching for OpenCV
 #------------------------------------------------------------------------------
-find_package( OpenCV 3 )
+find_package( OpenCV 4 )
 if (!OpenCV_FOUND)
   find_package( OpenCV )
 endif()
@@ -146,7 +146,7 @@ endif(MPI_FOUND)
 #------------------------------------------------------------------------------
 # Searching for OpenCl
 #------------------------------------------------------------------------------
-find_package(OPENCL)
+find_package(OpenCL2)
 if(OPENCL_FOUND)
   message(STATUS "Found OpenCL")
     include_directories(OPENCL_INCLUDE_DIR)
