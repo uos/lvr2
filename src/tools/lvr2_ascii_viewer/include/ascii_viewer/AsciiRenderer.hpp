@@ -96,7 +96,7 @@ private:
     double m_boost = 3.0;
 
     double m_avg_fps = 20;
-    double m_fps_alpha = 0.2;
+    double m_fps_alpha = 0.8;
 
 };
 
