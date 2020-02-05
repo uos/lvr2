@@ -489,6 +489,13 @@ if(Qt5_FOUND)
   endif(QVTK_FOUND)
 endif(Qt5_FOUND)
 
+###############################################################################
+# LVR2 ASCII VIEWER CHECKS
+###############################################################################
+find_package(Curses)
+if(CURSES_FOUND)
+    include_directories( ${CURSES_INCLUDE_DIRS} )
+endif()
 
 ###############################################################################
 # LIBRARIES
@@ -519,6 +526,10 @@ add_subdirectory(src/tools/lvr2_slam6d_merger)
 add_subdirectory(src/tools/lvr2_chunking)
 add_subdirectory(src/tools/lvr2_registration)
 add_subdirectory(src/tools/lvr2_mesh_reducer)
+
+if(CURSES_FOUND AND embree_FOUND)
+    add_subdirectory(src/tools/lvr2_ascii_viewer)
+endif()
 
 if (RiVLib_FOUND)
     #add_subdirectory(src/tools/lvr2_riegl_project_converter)
