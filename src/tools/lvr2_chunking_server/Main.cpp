@@ -53,7 +53,7 @@ int main(int argc, char** argv)
         return EXIT_SUCCESS;
     }
 
-    lvr2::ChunkingPipeline pipeline = lvr2::ChunkingPipeline(options.getHdf5FilePath(), options.getConfigFilePath());
+    lvr2::ChunkingPipeline<BaseVector<float> > pipeline = lvr2::ChunkingPipeline<BaseVector<float> >(options.getHdf5FilePath(), options.getConfigFilePath());
 
     pipeline.start(options.getScanProjectPath());
 
