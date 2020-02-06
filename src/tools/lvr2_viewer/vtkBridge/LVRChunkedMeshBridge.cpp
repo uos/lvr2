@@ -29,7 +29,7 @@ XVisualInfo* vinfo;
 Window x_window;
 Display* display;
 
-LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtkRenderer> renderer) : m_chunkManager(file, 2000), m_renderer(renderer)
+LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtkRenderer> renderer, size_t cache_size, double highResDistance) : m_chunkManager(file, cache_size), m_renderer(renderer)
 {
     getNew_ = false;
     dist_ = 40.0;
