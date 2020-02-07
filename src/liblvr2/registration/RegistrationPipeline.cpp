@@ -43,8 +43,9 @@ double getDifference(Transformd a, Transformd b)
     double translation_diff = 0.0;
     for(int i = 0; i < 3; ++i)
     {
-        translation_diff+= std::sqrt(std::pow(trans_a[i], 2) - std::pow(trans_b[i],2));
+        translation_diff+= std::pow(trans_a[i] - trans_b[i], 2);
     }
+    translation_diff = std::sqrt(translation_diff);
 
     // get rotations difference
     Eigen::Vector3d a_angles = a.block<3,3>(0,0).eulerAngles(0, 1, 2);
