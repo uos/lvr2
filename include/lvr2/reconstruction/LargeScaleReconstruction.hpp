@@ -48,9 +48,6 @@ namespace lvr2
         // flag to trigger GPU usage
         bool useGPU = false;
 
-        //filePath to HDF5 file
-        string filePath = "";
-
         // voxelsizes for reconstruction.
         std::vector<float> voxelSizes{0.1};
 
@@ -128,15 +125,14 @@ namespace lvr2
     public:
         /**
          * Constructor - uses default parameter for reconstruction)
-         * @param h5File HDF5 file, which may or may not contain chunked and reconstructed scans
          */
-        LargeScaleReconstruction(std::string h5File);
+        LargeScaleReconstruction();
 
 
         /**
          * Constructor with parameters
          */
-        LargeScaleReconstruction(std::string h5File, vector<float> voxelSizes, float bgVoxelSize, float scale, size_t chunkSize,
+        LargeScaleReconstruction(vector<float> voxelSizes, float bgVoxelSize, float scale, size_t chunkSize,
                 uint nodeSize, int partMethod,int ki, int kd, int kn, bool useRansac, bool extrude,
                 int removeDanglingArtifacts, int cleanContours, int fillHoles, bool optimizePlanes,
                 float getNormalThreshold, int planeIterations, int minPlaneSize, int smallRegionThreshold,

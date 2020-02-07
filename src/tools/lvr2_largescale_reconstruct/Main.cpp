@@ -34,6 +34,7 @@
 #include <random>
 #include <string>
 #include <lvr2/io/hdf5/ScanIO.hpp>
+#include <boost/filesystem.hpp>
 #include "lvr2/io/GHDF5IO.hpp"
 #include "lvr2/io/hdf5/ScanProjectIO.hpp"
 #include "lvr2/io/ScanIOUtils.hpp"
@@ -90,7 +91,7 @@ int main(int argc, char** argv)
     string extension = selectedFile.extension().string();
 
 
-    LargeScaleReconstruction<Vec> lsr(options.getInputFileName()[0], options.getVoxelSizes(), options.getBGVoxelsize(), options.getScaling(), options.getGridSize(),
+    LargeScaleReconstruction<Vec> lsr(options.getVoxelSizes(), options.getBGVoxelsize(), options.getScaling(), options.getGridSize(),
                                       options.getNodeSize(), options.getVGrid(), options.getKi(), options.getKd(), options.getKn(), options.useRansac(), options.extrude(),
                                       options.getDanglingArtifacts(), options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
                                       options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
@@ -127,16 +128,36 @@ int main(int argc, char** argv)
     else
     {
         project->project = ScanProjectPtr(new ScanProject);
+        if(!boost::filesystem::is_directory(selectedFile))
+        {
+            ModelPtr model = ModelFactory::readModel(in);
+            ScanPtr scan(new Scan);
 
-        ModelPtr model = ModelFactory::readModel(in);
-        ScanPtr scan(new Scan);
+            scan->points = model->m_pointCloud;
+            ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
+            scanPosPtr->scans.push_back(scan);
+            project->project->positions.push_back(scanPosPtr);
+            project->changed.push_back(true);
+        }
+        else{
+            boost::filesystem::directory_iterator it{in};
+            while (it != boost::filesystem::directory_iterator{})
+            {
+                cout << it->path().string() << endl;
+                ModelPtr model = ModelFactory::readModel(it->path().string());
+                ScanPtr scan(new Scan);
 
-        scan->points = model->m_pointCloud;
-        ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
-        scanPosPtr->scans.push_back(scan);
-        project->project->positions = std::vector<ScanPositionPtr>();
-        project->project->positions.push_back(scanPosPtr);
-        project->changed.push_back(true);
+                scan->points = model->m_pointCloud;
+                ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
+                scanPosPtr->scans.push_back(scan);
+                project->project->positions.push_back(scanPosPtr);
+                project->changed.push_back(true);
+
+                it++;
+            }
+
+
+        }
 
         cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid("chunked_mesh.h5", 50, boundingBox, options.getGridSize()));
     }
@@ -144,6 +165,8 @@ int main(int argc, char** argv)
 
     BoundingBox<Vec> bb;
     int x = lsr.mpiChunkAndReconstruct(project, bb, cm);
+
+    cout << bb << endl;
 
     if(options.getDebugChunks())
     {
