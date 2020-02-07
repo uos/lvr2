@@ -416,8 +416,6 @@ void SLAMAlign::createIcpGraph()
 
             if (m_options.verbose)
             {
-                cout << trans_a << endl;
-                cout << trans_b << endl;
                 cout << "Calculated euclidean distancex: scan_0, scan_" << i << ", d="<< v->at(i) << endl;
             }
         }
@@ -457,16 +455,21 @@ void SLAMAlign::createIcpGraph()
         
         {
             vector<double> *v = &(mat.at(new_scan));
+            auto trans_a = m_scans.at(new_scan)->innerScan()->poseEstimation.block<3, 1>(0, 3);
             for (int i = 0; i < m_scans.size(); i++)
             {
-                v->push_back(sqrt(
-                    pow(m_scans.at(new_scan)->innerScan()->poseEstimation(3,0) - m_scans.at(i)->innerScan()->poseEstimation(3,0), 2.0)+
-                    pow(m_scans.at(new_scan)->innerScan()->poseEstimation(3,1) - m_scans.at(i)->innerScan()->poseEstimation(3,1), 2.0)+
-                    pow(m_scans.at(new_scan)->innerScan()->poseEstimation(3,2) - m_scans.at(i)->innerScan()->poseEstimation(3,2), 2.0)));
+                auto trans_b = m_scans.at(i)->innerScan()->poseEstimation.block<3, 1>(0, 3);
+
+                double translation_diff = 0.0;
+                for(int i = 0; i < 3; ++i)
+                {
+                    translation_diff+= std::pow(trans_a[i] - trans_b[i], 2);
+                }
+                v->push_back(std::sqrt(translation_diff));
 
                 if (m_options.verbose)
                 {
-                    cout << "Calculated euclidean distancex: scan_" << new_scan << ", scan_" << i << ", d="<< mat[new_scan][i]<< endl;
+                    cout << "Calculated euclidean distancex: scan_" << new_scan << ", scan_" << i << ", d="<< v->at(i) << endl;
                 }
             }
         }
