@@ -36,16 +36,71 @@ using namespace lvr2;
 
 double getDifference(Transformd a, Transformd b)
 {
+    Rotationd rotateA = a.block<3, 3>(0, 0);
+    Rotationd rotateB = b.block<3, 3>(0, 0);
+    Vector4d translateA = a.col(3);
+    Vector4d translateB = b.col(3);
+    assert(translateA[3] == 1.0);
+    assert(translateB[3] == 1.0);
 
-    double sum = 0;
-    for (size_t i = 0; i < 4; i++)
+    // calculate translation distance
+    // Vector4d distVec = translateB - translateA;
+    // Vector3d distT(distVec[0] * distVec[0], distVec[1] * distVec[1], distVec[2] * distVec[2]);
+    // double dist = sqrt(distT.sum());
+    double dist = (translateB - translateA).norm();
+
+    // calculate angle difference
+    Rotationd bTransposed = rotateB.transpose();
+    Rotationd r = rotateA * bTransposed;
+
+    double tmp = (r.trace() / 2.0) - 0.5;
+
+    // fix so there will be no rounding errors, otherwise acos can be nan !!!
+    if (tmp < -1.0)
     {
-        for (size_t j = 0; j < 4; j++)
-        {
-            sum += std::abs(a(i,j) - b(i,j));
-        }
+        tmp = -1.0;
     }
-    return sum;
+    else if (tmp > 1.0)
+    {
+        tmp = 1.0;
+    }
+
+    double angle = std::acos(tmp);
+
+    // std::cout << "######################" << std::endl;
+    // std::cout << a << std::endl;
+    // std::cout << b << std::endl;
+    // std::cout << rotateA << std::endl;
+    // std::cout << rotateB << std::endl;
+    // std::cout << translateA << std::endl;
+    // std::cout << distVec << std::endl;
+    // std::cout << distT << std::endl;
+    // std::cout << "dist " << dist << std::endl;
+    // std::cout << "***********************" << std::endl;
+    // std::cout << r << std::endl;
+    // std::cout << r.trace() << std::endl;
+    // std::cout << r.trace() - 1 << std::endl;
+    // std::cout << "tmp " << tmp << std::endl;
+    // std::cout << "alpha " << angle << std::endl;
+    // std::cout << "***********************" << std::endl;
+
+    // std::cout << "acos(1) = " << acos(1) << std::endl;
+    // std::cout << "########################" << std::endl;
+
+    double res = (dist / 2) + (angle / 3.0);
+    
+    // std::cout << "Res " << res << std::endl;
+    return res;
+
+    // double sum = 0;
+    // for (size_t i = 0; i < 4; i++)
+    // {
+    //     for (size_t j = 0; j < 4; j++)
+    //     {
+    //         sum += std::abs(a(i,j) - b(i,j));
+    //     }
+    // }
+    // return sum;
 }
 
 void rotateAroundYAxis(Transformd *inputMatrix4x4, double angle)
@@ -65,7 +120,7 @@ void rotateAroundYAxis(Transformd *inputMatrix4x4, double angle)
                     v(1)*v(0)*(1.0-cosA)+v(2)*sinA, v(1)*v(1)*(1.0-cosA)+cosA, v(1)*v(2)*(1.0-cosA)-v(0)*sinA,
                     v(2)*v(0)*(1.0-cosA)-v(1)*sinA, v(2)*v(1)*(1.0-cosA)+v(0)*sinA, v(2)*v(2)*(1.0-cosA)+cosA;
     tmp_mat = tmp_mat * mult_mat;
-    
+
     // save result in original Matrix
     inputMatrix4x4[0](0,0) = tmp_mat(0,0);
     inputMatrix4x4[0](0,1) = tmp_mat(0,1);
@@ -92,7 +147,7 @@ void RegistrationPipeline::doRegistration()
     for (size_t i = 0; i < m_scans->project->positions.size(); i++)
     {
         m_scans->changed.at(i) = false;
-        
+
         if(m_scans->project->positions.at(i)->scans.size())
         {
             rotateAroundYAxis(&(m_scans->project->positions[i]->scans[0]->poseEstimation), m_options->rotate_angle * M_PI / 180);
@@ -109,7 +164,7 @@ void RegistrationPipeline::doRegistration()
     }
 
     align.finish();
-    
+
     if (m_options->verbose)
     {
         cout << "Aus doRegistaration: nach finish" << endl;
@@ -122,7 +177,7 @@ void RegistrationPipeline::doRegistration()
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
         cout << "Diff: " << getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) << endl;
-        if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) > m_options->diffPoseSum))
+        if (getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) > m_options->diffPoseSum)
         {
             m_scans->changed.at(i) = true;
             cout << "New Values"<< endl;
@@ -134,7 +189,7 @@ void RegistrationPipeline::doRegistration()
         }
     }
     cout << "First registration done" << endl;
-    
+
     // new align with fix old values only when not all poses new
     if (all_values_new)
     {
@@ -158,7 +213,7 @@ void RegistrationPipeline::doRegistration()
 
         align.finish();
     }
-    
+
     for (int i = 0; i < m_scans->project->positions.size(); i++)
     {
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
