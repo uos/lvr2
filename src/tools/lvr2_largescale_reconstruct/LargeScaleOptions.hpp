@@ -340,7 +340,7 @@ class Options : public lvr2::BaseOption
 
     int getVGrid() const;
 
-    int getGridSize() const;
+    int getChunkSize() const;
 
     bool getBigMesh() const;
 
@@ -493,7 +493,7 @@ class Options : public lvr2::BaseOption
     int m_vgrid;
 
     // gridsize for virtual grid
-    int m_gridsize;
+    int m_chunkSize;
 
     //flag to generate a .ply file for the reconstructed mesh
     bool m_bigMesh;

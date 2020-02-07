@@ -48,9 +48,6 @@ namespace lvr2
         // flag to trigger GPU usage
         bool useGPU = false;
 
-        //filePath to HDF5 file
-        string filePath = "";
-
         // voxelsizes for reconstruction.
         std::vector<float> voxelSizes{0.1};
 
@@ -127,16 +124,15 @@ namespace lvr2
 
     public:
         /**
-         * Constructor - uses default parameter for reconstruction)
-         * @param h5File HDF5 file, which may or may not contain chunked and reconstructed scans
+         * Constructor - uses default parameter for reconstruction
          */
-        LargeScaleReconstruction(std::string h5File);
+        LargeScaleReconstruction();
 
 
         /**
          * Constructor with parameters
          */
-        LargeScaleReconstruction(std::string h5File, vector<float> voxelSizes, float bgVoxelSize, float scale, size_t chunkSize,
+        LargeScaleReconstruction(vector<float> voxelSizes, float bgVoxelSize, float scale, size_t chunkSize,
                 uint nodeSize, int partMethod,int ki, int kd, int kn, bool useRansac, bool extrude,
                 int removeDanglingArtifacts, int cleanContours, int fillHoles, bool optimizePlanes,
                 float getNormalThreshold, int planeIterations, int minPlaneSize, int smallRegionThreshold,
@@ -151,17 +147,42 @@ namespace lvr2
         /**
          * this method splits the given PointClouds in to Chunks and calculates all required values for a later reconstruction
          *
+         * @param project ScanProject containing Scans
+         * @param newChunksBB sets the Bounding Box of the reconstructed area
+         * @param chunkManager a chunkManager to handle chunks
          * @tparam BaseVecT
-         * @param scans vector of new scan to be added
-         * @param layerName the name of the ChunkManager-Layer of the tsdf-values
          * @return
          */
         int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB, std::shared_ptr<ChunkHashGrid> chunkManager);
 
+        /**
+         *
+         * this method splits the given PointClouds in to Chunks and calculates all required values for a later reconstruction
+         *
+         * @param project ScanProject containing Scans
+         * @param chunkManager a chunkManager to handle chunks
+         * @return
+         */
         int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkHashGrid> chunkManager);
 
+        /**
+         *
+         * reconstruct a given area (+ neighboring chunks from a chunkmanager) with a given voxelsize
+         *
+         * @param newChunksBB area to be reconstructed
+         * @param chunkHashGrid chunkmanager to manage chunks
+         * @param voxelSize reconstruction parameter
+         * @return reconstructed HalfEdgeMesh<BaseVecT>
+         */
         HalfEdgeMesh<BaseVecT> getPartialReconstruct(BoundingBox<BaseVecT> newChunksBB, std::shared_ptr<ChunkHashGrid> chunkHashGrid,  float voxelSize);
 
+        /**
+         *
+         * method to reset the changed-vector of a ScanProject by setting all values to false
+         *
+         * @param project ScanProjectEditMarkPtr
+         * @return
+         */
         int resetEditMark(ScanProjectEditMarkPtr project);
 
 
