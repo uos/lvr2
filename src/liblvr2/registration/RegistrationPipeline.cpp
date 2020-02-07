@@ -34,34 +34,33 @@
 
 using namespace lvr2;
 
-double getDifference(Transformd a, Transformd b)
+void getDifference(Transformd a, Transformd b, double *angle_diff, double *translation_diff)
 {
     // get translations difference
     auto trans_a = a.block<3, 1>(0, 3);
     auto trans_b = b.block<3, 1>(0, 3);
 
-    double translation_diff = 0.0;
+    *translation_diff = 0.0;
     for(int i = 0; i < 3; ++i)
     {
-        translation_diff+= std::pow(trans_a[i] - trans_b[i], 2);
+        *translation_diff+= std::pow(trans_a[i] - trans_b[i], 2);
     }
-    translation_diff = std::sqrt(translation_diff);
+    *translation_diff = std::sqrt(*translation_diff);
 
     // get rotations difference
     Eigen::Vector3d a_angles = a.block<3,3>(0,0).eulerAngles(0, 1, 2);
     Eigen::Vector3d b_angles = b.block<3,3>(0,0).eulerAngles(0, 1, 2);
 
-    double angle_diff = 0.0;
+    *angle_diff = 0.0;
 
     for(int i = 0; i < 3; ++i)
     {
-        angle_diff += std::abs(a_angles[i] - b_angles[i]);
+        *angle_diff += std::abs(a_angles[i] - b_angles[i]);
     }
 
-    std::cout << "translation_diff: " << translation_diff << std::endl;
-    std::cout << "angle_diff: " << angle_diff << std::endl;
+    std::cout << "translation_diff: " << *translation_diff << std::endl;
+    std::cout << "angle_diff: " << *angle_diff << std::endl;
     
-    return translation_diff + angle_diff;
 }
 
 void rotateAroundYAxis(Transformd *inputMatrix4x4, double angle)
@@ -137,8 +136,11 @@ void RegistrationPipeline::doRegistration()
         // check if the new pos different to old pos
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
-        cout << "Diff: " << getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) << endl;
-        if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) > m_options->diffPoseSum))
+        double angle_diff;
+        double translation_diff;
+        getDifference(posPtr->scans[0]->registration, align.scan(i)->pose(), &angle_diff, &translation_diff);
+
+        if ((!m_scans->changed.at(i)) && (angle_diff > m_options->diffAngle || translation_diff > m_options->diffPosition))
         {
             m_scans->changed.at(i) = true;
             cout << "New Values"<< endl;
@@ -179,7 +181,6 @@ void RegistrationPipeline::doRegistration()
     {
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
-        cout << "Diff: " << getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) << endl;
         if (m_scans->changed.at(i) || all_values_new)
         {
             posPtr->scans[0]->registration = align.scan(i)->pose().transpose();
