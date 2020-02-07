@@ -411,7 +411,7 @@ void SLAMAlign::createIcpGraph()
 
                 if (m_options.verbose)
                 {
-                    cout << "Calculated euclidean distancex: scan_0, scan_" << i << ", d="<< mat[x][y]<< endl;
+                    cout << "Calculated euclidean distancex: scan_0, scan_" << i << ", d="<< mat[0][i]<< endl;
                 }
         }
     }
@@ -459,7 +459,7 @@ void SLAMAlign::createIcpGraph()
 
                 if (m_options.verbose)
                 {
-                    cout << "Calculated euclidean distancex: scan_" << new_scan << ", scan_" << i << ", d="<< mat[x][y]<< endl;
+                    cout << "Calculated euclidean distancex: scan_" << new_scan << ", scan_" << i << ", d="<< mat[new_scan][i]<< endl;
                 }
             }
         }
