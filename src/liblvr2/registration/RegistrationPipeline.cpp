@@ -112,6 +112,8 @@ void RegistrationPipeline::doRegistration()
         {
             rotateAroundYAxis(&(m_scans->project->positions[i]->scans[0]->poseEstimation), m_options->rotate_angle * M_PI / 180);
 
+            m_scans->project->positions[i]->scans[0]->poseEstimation.transposeInPlace();
+
             ScanPtr scptr = std::make_shared<Scan>(*(m_scans->project->positions[i]->scans[0]));
 
             align.addScan(scptr);
