@@ -120,6 +120,7 @@ public:
      */
     LVRMainWindow();
     virtual ~LVRMainWindow();
+    std::mutex display_mutex;
 
 public Q_SLOTS:
     void updateDisplayLists(actorMap lowRes, actorMap highRes);
@@ -251,8 +252,8 @@ private:
     vtkSmartPointer<vtkAxesActor>               m_axes;
 
     std::unique_ptr<LVRChunkedMeshBridge> m_chunkBridge;
-    std::unique_ptr<ChunkedMeshCuller> m_chunkCuller;
-
+//    vtkSmartPointer<ChunkedMeshCuller> m_chunkCuller;
+    ChunkedMeshCuller* m_chunkCuller;
     QMenu*                                      m_treeParentItemContextMenu;
     QMenu*                                      m_treeChildItemContextMenu;
 

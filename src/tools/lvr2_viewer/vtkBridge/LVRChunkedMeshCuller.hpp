@@ -30,15 +30,7 @@ namespace lvr2 {
         private:
             LVRChunkedMeshBridge* m_bridge;
             bool cull_;
-            lvr2::BoundingBox<BaseVector<float> > frustumToBB(double planes[24]);
-
-            double sarrus(const double U[4],
-                          const double V[4],
-                          const double W[4],
-                          size_t A,
-                          size_t B,
-                          size_t C);
-    };
+        };
 }
 
 #endif
