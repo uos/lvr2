@@ -231,6 +231,11 @@ bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
 
     hdf.save(m_scanProject->project);
 
+    for(ScanPositionPtr pos : m_scanProject->project->positions)
+    {
+        pos->hyperspectralCamera.reset(new HyperspectralCamera);
+    }
+
     std::cout << timestamp << "Starting large scale reconstruction..." << std::endl;
     LargeScaleReconstruction<BaseVecT> lsr(m_lsrOptions);
     BoundingBox<BaseVecT> newChunksBB;
