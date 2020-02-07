@@ -56,7 +56,7 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     ("voxelSize,v",value<vector<float>>(&m_voxelSizes)->multitoken(),"Voxelsize of grid used for reconstruction. multitoken option: it is possible to enter more then one voxelsize")
     ("bgVoxelsize,bgv",value<float>(&m_voxelsizeBG)->default_value(10),"Voxelsize of the bigGrid.")
     ("useVGrid",value<int>(&m_vgrid)->default_value(1),"Option to change the partition-process to a gridbase partition (default: OFF (=0))")
-    ("gridSize",value<int>(&m_gridsize)->default_value(20),"Set the gridsize for the virtual grid. (default: 20)")
+    ("chunkSize",value<int>(&m_chunkSize)->default_value(20),"Set the chunksize for the virtual grid. (default: 20)")
     ("noExtrusion","Do not extend grid. Can be used  to avoid artefacts in dense data sets but. Disabling will possibly create additional holes in sparse data sets.")
     ("intersections,i",value<int>(&m_intersections)->default_value(-1),"Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
     ("pcm,p",value<string>(&m_pcm)->default_value("FLANN"),"Point cloud manager used for point handling and normal estimation. Choose from {STANN, PCL, NABO}.")
@@ -244,7 +244,7 @@ int Options::getMinPlaneSize() const { return (m_variables["mp"].as<int>()); }
 
 int Options::getVGrid() const { return (m_variables["useVGrid"].as<int>()); }
 
-int Options::getGridSize() const { return (m_variables["gridSize"].as<int>()); }
+int Options::getChunkSize() const { return (m_variables["chunkSize"].as<int>()); }
 
 
 string Options::getPartialReconstruct() const

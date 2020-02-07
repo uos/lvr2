@@ -91,7 +91,7 @@ int main(int argc, char** argv)
     string extension = selectedFile.extension().string();
 
 
-    LargeScaleReconstruction<Vec> lsr(options.getVoxelSizes(), options.getBGVoxelsize(), options.getScaling(), options.getGridSize(),
+    LargeScaleReconstruction<Vec> lsr(options.getVoxelSizes(), options.getBGVoxelsize(), options.getScaling(), options.getChunkSize(),
                                       options.getNodeSize(), options.getVGrid(), options.getKi(), options.getKd(), options.getKn(), options.useRansac(), options.extrude(),
                                       options.getDanglingArtifacts(), options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
                                       options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
@@ -123,7 +123,7 @@ int main(int argc, char** argv)
         {
             project->changed.push_back(true);
         }
-        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(in, 50, boundingBox, options.getGridSize()));
+        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(in, 50, boundingBox, options.getChunkSize()));
     }
     else
     {
@@ -144,22 +144,25 @@ int main(int argc, char** argv)
             while (it != boost::filesystem::directory_iterator{})
             {
                 cout << it->path().string() << endl;
-                ModelPtr model = ModelFactory::readModel(it->path().string());
-                ScanPtr scan(new Scan);
+                string ext = it->path().extension().string();
+                if(ext == ".ply")
+                {
+                    ModelPtr model = ModelFactory::readModel(it->path().string());
+                    ScanPtr scan(new Scan);
 
-                scan->points = model->m_pointCloud;
-                ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
-                scanPosPtr->scans.push_back(scan);
-                project->project->positions.push_back(scanPosPtr);
-                project->changed.push_back(true);
-
+                    scan->points = model->m_pointCloud;
+                    ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
+                    scanPosPtr->scans.push_back(scan);
+                    project->project->positions.push_back(scanPosPtr);
+                    project->changed.push_back(true);
+                }
                 it++;
             }
 
 
         }
 
-        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid("chunked_mesh.h5", 50, boundingBox, options.getGridSize()));
+        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid("chunked_mesh.h5", 50, boundingBox, options.getChunkSize()));
     }
 
 
