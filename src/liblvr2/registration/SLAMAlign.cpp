@@ -402,22 +402,24 @@ void SLAMAlign::createIcpGraph()
 	// calculate the euclidean distance from the first scna to all scans
     {
         vector<double> *v = &(mat.at(0));
+        auto trans_a = m_scans.at(0)->innerScan()->poseEstimation.block<3, 1>(0, 3);
         for (int i = 0; i < m_scans.size(); i++)
         {
-            v->push_back(sqrt(
-                pow(m_scans.at(0)->innerScan()->poseEstimation(3,0) - m_scans.at(i)->innerScan()->poseEstimation(3,0), 2.0)+
-                pow(m_scans.at(0)->innerScan()->poseEstimation(3,1) - m_scans.at(i)->innerScan()->poseEstimation(3,1), 2.0)+
-                pow(m_scans.at(0)->innerScan()->poseEstimation(3,2) - m_scans.at(i)->innerScan()->poseEstimation(3,2), 2.0)));
+            auto trans_b = m_scans.at(i)->innerScan()->poseEstimation.block<3, 1>(0, 3);
 
-                if (m_options.verbose)
-                {
-                    cout << m_scans.at(0)->innerScan()->poseEstimation << endl;
-                    cout << m_scans.at(i)->innerScan()->poseEstimation << endl;
-                    cout << "Calculated euclidean distancex: scan_0, scan_" << i << ", d="<< sqrt(
-                pow(m_scans.at(0)->innerScan()->poseEstimation(3,0) - m_scans.at(i)->innerScan()->poseEstimation(3,0), 2.0)+
-                pow(m_scans.at(0)->innerScan()->poseEstimation(3,1) - m_scans.at(i)->innerScan()->poseEstimation(3,1), 2.0)+
-                pow(m_scans.at(0)->innerScan()->poseEstimation(3,2) - m_scans.at(i)->innerScan()->poseEstimation(3,2), 2.0))<< endl;
-                }
+            double translation_diff = 0.0;
+            for(int i = 0; i < 3; ++i)
+            {
+                translation_diff+= std::pow(trans_a[i] - trans_b[i], 2);
+            }
+            v->push_back(std::sqrt(translation_diff));
+
+            if (m_options.verbose)
+            {
+                cout << trans_a << endl;
+                cout << trans_b << endl;
+                cout << "Calculated euclidean distancex: scan_0, scan_" << i << ", d="<< v->at(i) << endl;
+            }
         }
     }
 
