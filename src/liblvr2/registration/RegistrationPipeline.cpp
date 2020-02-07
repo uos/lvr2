@@ -166,7 +166,7 @@ void RegistrationPipeline::doRegistration()
         cout << "Diff: " << getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) << endl;
         if (m_scans->changed.at(i) || all_values_new)
         {
-            posPtr->scans[0]->registration = align.scan(i)->pose().transpose();
+            posPtr->scans[0]->registration = align.scan(i)->pose();
             cout << "Pose Scan Nummer " << i << endl << posPtr->scans[0]->registration << endl;
         }
     }

@@ -94,7 +94,7 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
         for(int i = 0; i < scans.size(); i++)
         {
             Transformd finalPose_n = h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i],
-        "finalPose").get(); Transformd finalPose = finalPose_n.transpose(); size_t six;
+        "finalPose").get(); Transformd finalPose = finalPose_n; size_t six;
             boost::shared_array<double> bb_array = h5_ptr->loadArray<double>("raw/scans/" +
         scans[i],"boundingBox", six);
 
@@ -125,7 +125,7 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
             Transformd finalPose_n =
                 h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
 
-            Transformd finalPose = finalPose_n.transpose();
+            Transformd finalPose = finalPose_n;
 
             std::cout << finalPose << std::endl;
             for (int k = 0; k < numPoints / 3; k++)
@@ -178,7 +178,7 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
             m_numPoints += numPoints / 3;
             Transformd finalPose_n =
                 h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
-            Transformd finalPose = finalPose_n.transpose();
+            Transformd finalPose = finalPose_n;
             int dx, dy, dz;
             for (int k = 0; k < numPoints / 3; k++)
             {
@@ -252,7 +252,7 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
                 h5_ptr->loadArray<float>("raw/scans/" + scans[i], "points", numPoints);
             Transformd finalPose_n =
                 h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
-            Transformd finalPose = finalPose_n.transpose();
+            Transformd finalPose = finalPose_n;
             for (int k = 0; k < numPoints / 3; k++)
             {
                 Eigen::Vector4d point(
@@ -792,7 +792,7 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
        for(int i = 0; i < scans.size(); i++)
        {
            Transformd finalPose_n = h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
-           Transformd finalPose = finalPose_n.transpose();
+           Transformd finalPose = finalPose_n;
            size_t six;
            boost::shared_array<double> bb_array = h5_ptr->loadArray<double>("raw/scans/" + scans[i],"boundingBox", six);
 
@@ -838,7 +838,7 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
             Transformd finalPose_n =
                 h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
 
-            Transformd finalPose = finalPose_n.transpose();
+            Transformd finalPose = finalPose_n;
 
             std::cout << finalPose << std::endl;
             for (int k = 0; k < numPoints / 3; k++)
@@ -897,7 +897,7 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
             m_numPoints += numPoints / 3;
             Transformd finalPose_n =
                     h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
-            Transformd finalPose = finalPose_n.transpose();
+            Transformd finalPose = finalPose_n;
             int dx, dy, dz;
             for (int k = 0; k < numPoints / 3; k++) {
                 Eigen::Vector4d point(
@@ -969,7 +969,7 @@ BigGrid<BaseVecT>::BigGrid(std::string cloudPath, float voxelsize, float scale)
                         h5_ptr->loadArray<float>("preview/" + scans[i], "points", numPoints);
                 Transformd finalPose_n =
                         h5_ptr->loadMatrix<Transformd>("raw/scans/" + scans[i], "finalPose").get();
-                Transformd finalPose = finalPose_n.transpose();
+                Transformd finalPose = finalPose_n;
                 for (int k = 0; k < numPoints / 3; k++) {
                     Eigen::Vector4d point(
                             points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
@@ -1492,7 +1492,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             boost::shared_array<float> points = pos->scans[0]->points->getPointArray();
             Transformd finalPose_n = pos->scans[0]->registration;
 
-            Transformd finalPose = finalPose_n.transpose();
+            Transformd finalPose = finalPose_n;
 
             std::cout << finalPose << std::endl;
             for (int k = 0; k < numPoints; k++)
@@ -1568,7 +1568,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 boost::shared_array<float> points = pos->scans[0]->points->getPointArray();
                 m_numPoints += numPoints;
                 Transformd finalPose_n = pos->scans[0]->registration;
-                Transformd finalPose = finalPose_n.transpose();
+                Transformd finalPose = finalPose_n;
                 int dx, dy, dz;
                 for (int k = 0; k < numPoints; k++)
                 {
@@ -1652,7 +1652,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 boost::shared_array<float> points = pos->scans[0]->points->getPointArray();
                 m_numPoints += numPoints;
                 Transformd finalPose_n = pos->scans[0]->registration;
-                Transformd finalPose = finalPose_n.transpose();
+                Transformd finalPose = finalPose_n;
                 for (int k = 0; k < numPoints; k++) {
                     Eigen::Vector4d point(
                             points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
