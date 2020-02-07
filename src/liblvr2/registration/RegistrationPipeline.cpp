@@ -36,16 +36,31 @@ using namespace lvr2;
 
 double getDifference(Transformd a, Transformd b)
 {
+    // get translations difference
+    Eigen::Matrix<double, 3, 1> trans_a = a.block<3, 1>(0, 3);
+    Eigen::Matrix<double, 3, 1> trans_b = b.block<3, 1>(0, 3);
 
-    double sum = 0;
-    for (size_t i = 0; i < 4; i++)
+    double translation_diff = 0.0;
+    for(int i = 0; i < 3; ++i)
     {
-        for (size_t j = 0; j < 4; j++)
-        {
-            sum += std::abs(a(i,j) - b(i,j));
-        }
+        translation_diff+= std::sqrt(std::pow(trans_a[i], 2) - std::pow(trans_b[i],2));
     }
-    return sum;
+
+    // get rotations difference
+    Eigen::Vector3d a_angles = a.block<3,3>(0,0).eulerAngles(0, 1, 2);
+    Eigen::Vector3d b_angles = b.block<3,3>(0,0).eulerAngles(0, 1, 2);
+
+    double angle_diff = 0.0;
+
+    for(int i = 0; i < 3; ++i)
+    {
+        angle_diff += std::abs(a_angles[i] - b_angles[i]);
+    }
+
+    std::cout << "translation_diff: " << translation_diff << std::endl;
+    std::cout << "angle_diff: " << angle_diff << std::endl;
+    
+    return translation_diff + angle_diff;
 }
 
 void rotateAroundYAxis(Transformd *inputMatrix4x4, double angle)
