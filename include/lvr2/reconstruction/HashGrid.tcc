@@ -305,10 +305,12 @@ HashGrid<BaseVecT, BoxT>::HashGrid(std::vector<PointBufferPtr> chunks,
     boost::shared_array<int> extruded;
     float vsh = 0.5 * this->m_voxelsize;
     size_t counter = 1;
+    std::cout << timestamp.getElapsedTime() << "Number of Chunks: "<< chunks.size()<< std::endl;
+    std::string comment = timestamp.getElapsedTime() + "Loading grid ";
+    lvr2::ProgressBar progress(chunks.size(), comment);
     for (PointBufferPtr chunk : chunks)
     {
         unsigned int current_index = 0;
-        cout << "Loading grid: " << counter << "/" << chunks.size() << endl;
         boost::optional<unsigned int> optNumCells =  chunk->getAtomic<unsigned int>("num_voxel");
         boost::optional<Channel<int>> optExtruded = chunk->getChannel<int>("extruded");
         boost::optional<Channel<float>> optTSDF = chunk->getFloatChannel("tsdf_values");
@@ -396,7 +398,11 @@ HashGrid<BaseVecT, BoxT>::HashGrid(std::vector<PointBufferPtr> chunks,
             std::cout << "WARNING: something went wrong while reconstructing multiple chunks. Please check if all channels are available." << std::endl;
         }
         ++counter;
+        if(!timestamp.isQuiet())
+            ++progress;
     }
+    if(!timestamp.isQuiet())
+        cout << endl;
 }
 
 template <typename BaseVecT, typename BoxT>
