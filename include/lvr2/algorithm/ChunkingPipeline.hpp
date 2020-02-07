@@ -46,6 +46,7 @@
 namespace lvr2
 {
 
+template <typename BaseVecT>
 class ChunkingPipeline
 {
 public:
@@ -114,9 +115,10 @@ private:
      * @param hem HalfEdgeMesh on which practicability analysis is performed
      * @param meshBuffer buffer where practicability analysis channels should be added
      */
-    void practicabilityAnalysis(HalfEdgeMesh<lvr2::BaseVector<float>>& hem, MeshBufferPtr meshBuffer);
+    void practicabilityAnalysis(HalfEdgeMesh<BaseVecT>& hem, MeshBufferPtr meshBuffer);
 };
 
 } /* namespace lvr2 */
 
+#include "ChunkingPipeline.tcc"
 #endif // CHUNKING_PIPELINE_HPP

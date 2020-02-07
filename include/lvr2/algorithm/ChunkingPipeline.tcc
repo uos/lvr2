@@ -26,7 +26,7 @@
  */
 
 /**
- * ChunkingPipeline.cpp
+ * ChunkingPipeline<BaseVecT>.cpp
  *
  * @date 27.11.2019
  * @author Marcel Wiegand
@@ -53,7 +53,8 @@ using HDF5IO = BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO>;
 
 namespace lvr2
 {
-ChunkingPipeline::ChunkingPipeline(
+template <typename BaseVecT>
+ChunkingPipeline<BaseVecT>::ChunkingPipeline(
         const boost::filesystem::path& hdf5Path,
         const boost::filesystem::path& configPath,
         std::shared_ptr<ChunkManager> chunkManager
@@ -71,7 +72,8 @@ ChunkingPipeline::ChunkingPipeline(
     parseYAMLConfig();
 }
 
-void ChunkingPipeline::parseYAMLConfig()
+template <typename BaseVecT>
+void ChunkingPipeline<BaseVecT>::parseYAMLConfig()
 {
     if (boost::filesystem::exists(m_configPath) && boost::filesystem::is_regular_file(m_configPath))
     {
@@ -113,7 +115,8 @@ void ChunkingPipeline::parseYAMLConfig()
     }
 }
 
-void ChunkingPipeline::practicabilityAnalysis(HalfEdgeMesh<lvr2::BaseVector<float>>& hem, MeshBufferPtr meshBuffer)
+template <typename BaseVecT>
+void ChunkingPipeline<BaseVecT>::practicabilityAnalysis(HalfEdgeMesh<BaseVecT>& hem, MeshBufferPtr meshBuffer)
 {
     // Calc face normals
     DenseFaceMap <Normal<float>> faceNormals = calcFaceNormals(hem);
@@ -129,7 +132,7 @@ void ChunkingPipeline::practicabilityAnalysis(HalfEdgeMesh<lvr2::BaseVector<floa
     // create and fill channels
     FloatChannel faceNormalChannel(faceNormals.numValues(), channel_type < Normal < float >> ::w);
     Index i = 0;
-    for (auto handle : FaceIteratorProxy<lvr2::BaseVector<float>>(hem)) {
+    for (auto handle : FaceIteratorProxy<BaseVecT>(hem)) {
         faceNormalChannel[i++] = faceNormals[handle]; //TODO handle deleted map values.
     }
 
@@ -139,7 +142,7 @@ void ChunkingPipeline::practicabilityAnalysis(HalfEdgeMesh<lvr2::BaseVector<floa
     FloatChannel heightDifferencesChannel(heightDifferences.numValues(), channel_type<float>::w);
 
     Index j = 0;
-    for (auto handle : VertexIteratorProxy<lvr2::BaseVector<float>>(hem))
+    for (auto handle : VertexIteratorProxy<BaseVecT>(hem))
     {
         vertexNormalsChannel[j] = vertexNormals[handle]; //TODO handle deleted map values.
         averageAnglesChannel[j] = averageAngles[handle]; //TODO handle deleted map values.
@@ -156,7 +159,8 @@ void ChunkingPipeline::practicabilityAnalysis(HalfEdgeMesh<lvr2::BaseVector<floa
     meshBuffer->add("height_diff", heightDifferencesChannel);
 }
 
-bool ChunkingPipeline::getScanProject(const boost::filesystem::path& dirPath)
+template <typename BaseVecT>
+bool ChunkingPipeline<BaseVecT>::getScanProject(const boost::filesystem::path& dirPath)
 {
     HDF5IO hdf;
     hdf.open(m_hdf5Path.string());
@@ -191,7 +195,8 @@ bool ChunkingPipeline::getScanProject(const boost::filesystem::path& dirPath)
     return true;
 }
 
-bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
+template <typename BaseVecT>
+bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
 {
     if (m_running)
     {
@@ -229,8 +234,8 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
 
 
     std::cout << timestamp << "Starting large scale reconstruction..." << std::endl;
-    LargeScaleReconstruction<lvr2::BaseVector<float>> lsr(m_lsrOptions);
-    BoundingBox<BaseVector<float>> newChunksBB;
+    LargeScaleReconstruction<BaseVecT> lsr(m_lsrOptions);
+    BoundingBox<BaseVecT> newChunksBB;
     lsr.mpiChunkAndReconstruct(m_scanProject, newChunksBB, m_chunkManager);
     std::cout << timestamp << "Finished large scale reconstruction!" << std::endl;
 
@@ -238,14 +243,14 @@ bool ChunkingPipeline::start(const boost::filesystem::path& scanDir)
     {
         std::string voxelSizeStr = "[Layer " + std::to_string(layer) + "] ";
         std::cout << voxelSizeStr << "Starting mesh generation..." << std::endl;
-        HalfEdgeMesh<lvr2::BaseVector<float>> hem = lsr.getPartialReconstruct(
+        HalfEdgeMesh<BaseVecT> hem = lsr.getPartialReconstruct(
                 newChunksBB,
                 m_chunkManager,
                 layer);
         std::cout << timestamp << voxelSizeStr  << "Finished mesh generation!" << std::endl;
 
         std::cout << timestamp << voxelSizeStr  << "Starting mesh buffer creation..." << std::endl;
-        lvr2::SimpleFinalizer<lvr2::BaseVector<float>> finalize;
+        lvr2::SimpleFinalizer<BaseVecT> finalize;
         MeshBufferPtr meshBuffer = MeshBufferPtr(finalize.apply(hem));
         std::cout << timestamp << voxelSizeStr  << "Finished mesh buffer creation!" << std::endl;
 
