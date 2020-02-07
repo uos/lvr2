@@ -51,7 +51,6 @@ struct convert<lvr2::LSROptions>
         node["bigMesh"] = options.bigMesh;
         node["debugChunks"] = options.debugChunks;
         node["useGPU"] = options.useGPU;
-        node["filePath"] = options.filePath;
         node["voxelSizes"] = options.voxelSizes;
         node["bgVoxelSize"] = options.bgVoxelSize;
         node["scale"] = options.scale;
@@ -99,10 +98,6 @@ struct convert<lvr2::LSROptions>
             options.useGPU = node["useGPU"].as<bool>();
         }
 
-        if (node["filePath"])
-        {
-            options.filePath = node["filePath"].as<std::string>();
-        }
 
         if (node["voxelSizes"])
         {

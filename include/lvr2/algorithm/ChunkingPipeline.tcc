@@ -190,6 +190,7 @@ bool ChunkingPipeline<BaseVecT>::getScanProject(const boost::filesystem::path& d
 
     tmpScanProject.project = scanProjectPtr;
     m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
+    m_scanProject->changed.resize(scanProjectPtr->positions.size());
 
     return true;
 }
@@ -230,6 +231,7 @@ bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
     hdf.open(m_hdf5Path.string());
 
     hdf.save(m_scanProject->project);
+
 
     std::cout << timestamp << "Starting large scale reconstruction..." << std::endl;
     LargeScaleReconstruction<BaseVecT> lsr(m_lsrOptions);

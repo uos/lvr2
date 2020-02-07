@@ -136,11 +136,17 @@ void RegistrationPipeline::doRegistration()
         // check if the new pos different to old pos
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
+<<<<<<< HEAD
         double angle_diff;
         double translation_diff;
         getDifference(posPtr->scans[0]->registration, align.scan(i)->pose(), &angle_diff, &translation_diff);
 
         if ((!m_scans->changed.at(i)) && (angle_diff > m_options->diffAngle || translation_diff > m_options->diffPosition))
+=======
+        cout << "Diff: " << getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) << endl;
+        cout << "diffPoseSum: " << m_options->diffPoseSum << endl;
+        if (!(m_scans->changed.at(i)) && (getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) > m_options->diffPoseSum))
+>>>>>>> d9b75079316a8babc9d8cc5b9cd647e1143bdb40
         {
             m_scans->changed.at(i) = true;
             cout << "New Values"<< endl;
