@@ -146,7 +146,7 @@ void RegistrationPipeline::doRegistration()
     m_scans->changed = std::vector<bool>(m_scans->project->positions.size());
     for (size_t i = 0; i < m_scans->project->positions.size(); i++)
     {
-        m_scans->changed.at(i) = false;
+        // m_scans->changed.at(i) = false;
 
         if(m_scans->project->positions.at(i)->scans.size())
         {
