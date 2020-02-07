@@ -143,11 +143,8 @@ RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProje
 void RegistrationPipeline::doRegistration()
 {
     SLAMAlign align(*m_options);
-    m_scans->changed = std::vector<bool>(m_scans->project->positions.size());
     for (size_t i = 0; i < m_scans->project->positions.size(); i++)
     {
-        // m_scans->changed.at(i) = false;
-
         if(m_scans->project->positions.at(i)->scans.size())
         {
             rotateAroundYAxis(&(m_scans->project->positions[i]->scans[0]->poseEstimation), m_options->rotate_angle * M_PI / 180);
