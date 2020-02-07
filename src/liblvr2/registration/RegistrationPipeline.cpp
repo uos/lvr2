@@ -37,8 +37,8 @@ using namespace lvr2;
 double getDifference(Transformd a, Transformd b)
 {
     // get translations difference
-    Eigen::Matrix<double, 3, 1> trans_a = a.block<3, 1>(0, 3);
-    Eigen::Matrix<double, 3, 1> trans_b = b.block<3, 1>(0, 3);
+    auto trans_a = a.block<3, 1>(0, 3);
+    auto trans_b = b.block<3, 1>(0, 3);
 
     double translation_diff = 0.0;
     for(int i = 0; i < 3; ++i)
