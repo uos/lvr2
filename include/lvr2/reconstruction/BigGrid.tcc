@@ -1507,14 +1507,11 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             }
             cout << box << endl;
             // filter the new scans to calculate new reconstruction area
-            if(project->changed.at(i) == true)
+            if(project->changed.at(i))
             {
                 m_partialbb.expand(box);
             }
-            else
-            {
-                scan_boxes.push_back(box);
-            }
+            scan_boxes.push_back(box);
 
         }
 
@@ -1554,14 +1551,12 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
 
         for (int i = 0; i < project->changed.size(); i++)
         {
-
-            if ((project->changed.at(i) != true) && m_partialbb.isValid() && !m_partialbb.overlap(scan_boxes.at(i)))
+            if ((!project->changed.at(i)) && m_partialbb.isValid() && !m_partialbb.overlap(scan_boxes.at(i)))
             {
                 cout << "Scan No. " << i << " ignored!" << endl;
             }
             else
             {
-
 
                 ScanPositionPtr pos = project->project->positions.at(i);
                 size_t numPoints = pos->scans[0]->points->numPoints();
