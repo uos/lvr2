@@ -239,7 +239,7 @@ LVRMainWindow::LVRMainWindow()
 
 LVRMainWindow::~LVRMainWindow()
 {
-    this->qvtkWidget->GetRenderWindow()->RemoveRenderer(m_renderer);
+//    this->qvtkWidget->GetRenderWindow()->RemoveRenderer(m_renderer);
 
     if(m_correspondanceDialog)
     {
@@ -979,14 +979,14 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
                 std::cout << info.absoluteFilePath().toStdString() << std::endl;
                 m_chunkBridge =  std::make_unique<LVRChunkedMeshBridge>(info.absoluteFilePath().toStdString(), m_renderer);
                 m_chunkBridge->addInitialActors(m_renderer);
-                m_chunkCuller = std::make_unique<ChunkedMeshCuller>(m_chunkBridge.get());
-                m_renderer->AddCuller(m_chunkCuller.get());
-                Vector3d cam_origin(0.0, 0.0, -1.0);
-                Vector3d view_up(1.0, 0.0, 0.0);
-                Vector3d focal_point(0.0, 0.0, 0.0);
-                m_renderer->GetActiveCamera()->SetPosition(cam_origin.x(), cam_origin.y(), cam_origin.z());
-                m_renderer->GetActiveCamera()->SetFocalPoint(focal_point.x(), focal_point.y(), focal_point.z());
-                m_renderer->GetActiveCamera()->SetViewUp(view_up.x(), view_up.y(), view_up.z());
+                m_chunkCuller = new ChunkedMeshCuller(m_chunkBridge.get());
+                m_renderer->AddCuller(m_chunkCuller);
+//                Vector3d cam_origin(0.0, 0.0, -1.0);
+//                Vector3d view_up(1.0, 0.0, 0.0);
+//                Vector3d focal_point(0.0, 0.0, 0.0);
+//                m_renderer->GetActiveCamera()->SetPosition(cam_origin.x(), cam_origin.y(), cam_origin.z());
+//                m_renderer->GetActiveCamera()->SetFocalPoint(focal_point.x(), focal_point.y(), focal_point.z());
+//                m_renderer->GetActiveCamera()->SetViewUp(view_up.x(), view_up.y(), view_up.z());
                 qRegisterMetaType<actorMap > ("actorMap");
                 QObject::connect(m_chunkBridge.get(), 
                     SIGNAL(updateHighRes(actorMap, actorMap)),
@@ -2318,9 +2318,16 @@ void LVRMainWindow::updateSpectralGradientEnabled(bool checked)
 
 void LVRMainWindow::updateDisplayLists(actorMap lowRes, actorMap highRes)
 {
+//    std::unique_lock<std::mutex> lock(m_chunkBridge->mw_mutex);
+//    std::cout << "Adding to renderer" << std::endl;
+//    m_chunkBridge->release = true;
+//    m_chunkBridge->mw_cond.notify_all();
+//    lock.unlock();
+
     for(auto& it: lowRes)
     {
             m_renderer->RemoveActor(it.second);
+            it.second->ReleaseGraphicsResources(m_renderer->GetRenderWindow());
     }
     
     for(auto& it: highRes)
@@ -2330,8 +2337,9 @@ void LVRMainWindow::updateDisplayLists(actorMap lowRes, actorMap highRes)
               m_renderer->AddActor(it.second);
           }
     }
-
+    
     m_renderer->GetRenderWindow()->Render();
+    
 }
 
 

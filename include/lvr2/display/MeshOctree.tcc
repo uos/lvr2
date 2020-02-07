@@ -13,8 +13,9 @@ namespace lvr2{
             numLeafs(0)
     {
         long offset = 0;
-        m_root = reinterpret_cast<BOct*>(m_mem.alloc<BOct>(1, offset));
         size_t numChunks = std::floor(bb.getXSize()/voxelSize);
+
+        std::cout << sizeof(Leaf) << std::endl;
 
         std::cout << "BB unadjusted " << bb << std::endl;
         // check if it is a power of 2
@@ -102,7 +103,9 @@ namespace lvr2{
 
         std::cout << lvr2::timestamp << "Start building octree with voxelsize " << m_voxelSize << std::endl;
         std::cout << lvr2::timestamp << hashes.size() << std::endl;
+        m_root = reinterpret_cast<BOct*>(m_mem.alloc<BOct>(1, offset));
         m_root = (BOct*)((unsigned char*) m_root + buildTree(m_root, hashes, centroids, m_bbox));
+//        buildTree(m_root, hashes, centroids, m_bbox);
         std::cout << lvr2::timestamp << numLeafs << std::endl;
     }
 
@@ -302,7 +305,7 @@ namespace lvr2{
                 long offset = 0;
                 numLeafs += numChildren;
                 Leaf* leaves = reinterpret_cast<Leaf*>(m_mem.alloc<Leaf>(numChildren, offset));
-                //Leaf* leaves = new Leaf[numChildren];
+//                Leaf* leaves = new Leaf[numChildren];
                 if(offset)
                 {
                     std::cout << "THIS SHOULD NEVER HAPPEN" << std::endl;
@@ -316,8 +319,15 @@ namespace lvr2{
                 {
                     if(oct->m_leaf & (1 << i))
                     {
-                        leaves[cnt].m_centroids.reserve(c_centroids[i].size());
-                        leaves[cnt].m_hashes.reserve(c_hashes[i].size());
+                        // NEED TO INITIALIZE THIS VECTORS...
+                        leaves[cnt].m_centroids = std::vector<BaseVecT>();
+                        leaves[cnt].m_hashes = std::vector<size_t>();
+                        if((void*)(&(leaves[cnt].m_centroids)) == (void*)(&(leaves[cnt].m_hashes)))
+                        {
+                            exit(1);
+                        }
+                        leaves[cnt].m_centroids.resize(c_centroids[i].size());
+                        leaves[cnt].m_hashes.resize(c_hashes[i].size());
                         if(c_hashes[i].size() != c_centroids[i].size())
                         {
                             std::cout << "SIZES DIFFER!!!" << std::endl;
@@ -331,8 +341,8 @@ namespace lvr2{
                             //BaseVecT cent = (c_centroids[i][j]);
                             //leaves[cnt].m_hashes[j]    = hash;
                             //leaves[cnt].m_centroids[j] = cent;
-                            leaves[cnt].m_hashes.push_back(c_hashes[i][j]);
-                            leaves[cnt].m_centroids.push_back(c_centroids[i][j]);
+                            leaves[cnt].m_hashes[j] = c_hashes[i][j];
+                            leaves[cnt].m_centroids[j] = c_centroids[i][j];
 //                            std::cout << j << std::endl;
                         }
                         cnt++;
@@ -367,6 +377,7 @@ namespace lvr2{
 
             long offset = 0;
             BOct* newOct = reinterpret_cast<BOct*>(m_mem.alloc<BOct>(numChildren, offset));
+            //BOct* newOct = new BOct[numChildren];
 
             //      printf("Address %p\n", newOct);
             // realloc in blockalloc may cause an address change.
@@ -510,7 +521,7 @@ namespace lvr2{
                         Leaf* l = leaf + cnt;
                         for(size_t j = 0; j < l->m_hashes.size(); ++j)
                         {
-                            indices.push_back(leaf->m_centroids[j]);
+                            indices.push_back(l->m_centroids[j]);
                             hashes.push_back(l->m_hashes[j]);
                         }
 

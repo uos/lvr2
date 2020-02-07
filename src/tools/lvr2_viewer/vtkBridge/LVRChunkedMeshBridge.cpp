@@ -22,6 +22,7 @@
 
 #include "GL/glx.h"
 
+#include <chrono>
 using namespace lvr2;
 
 GLXContext m_workerContext;
@@ -87,9 +88,8 @@ void LVRChunkedMeshBridge::highResWorker()
            cond_.wait(l);
        }
        getNew_ = false;
-       l.unlock();
        std::vector<size_t> visible_indices = highResIndices;
-
+       l.unlock();
        BaseVector<float> diff = m_region.getCentroid() - m_lastRegion.getCentroid();
        if(!(std::abs(diff[0]) > 1.0 || std::abs(diff[1]) > 1.0 || std::abs(diff[2]) > 1.0))
        {
@@ -101,10 +101,10 @@ void LVRChunkedMeshBridge::highResWorker()
 
 
        auto old_highRes = m_highRes;
-       if(m_highRes.size() > 1000)
-       {
+//       if(m_highRes.size() > 1000)
+ //      {
            m_highRes.clear();
-       }
+  //     }
 
        m_chunkManager.extractArea(m_region, m_highRes, "mesh0");
 
@@ -116,10 +116,9 @@ void LVRChunkedMeshBridge::highResWorker()
                 m_highRes.at(it.first) = old_highRes.at(it.first);
             }
        }
-       old_highRes.clear();
     
 
-        std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor>> tmp_highResActors;
+        std::unordered_map<size_t, vtkSmartPointer<vtkActor>> tmp_highResActors;
 
         for(auto it = m_highRes.begin(); it != m_highRes.end(); ++it)
         { 
@@ -155,23 +154,32 @@ void LVRChunkedMeshBridge::highResWorker()
        {
            if(tmp_highResActors.find(it.first) == tmp_highResActors.end())
            {
-            remove_actors.insert({it.first, it.second});
+               //vtkSmartPointer<vtkActor> copy = vtkSmartPointer<vtkActor>::New();
+               //it.second->ShallowCopy(copy);
+               remove_actors.insert({it.first, it.second});
            }
        }
 
        for(auto& it: tmp_highResActors)
        {
            if(m_highResActors.find(it.first) == m_highResActors.end())
-           {
-                new_actors.insert({it.first, it.second});
+           { 
+               //vtkSmartPointer<vtkActor> copy = vtkSmartPointer<vtkActor>::New();
+               //it.second->ShallowCopy(copy);
+               new_actors.insert({it.first, it.second});
            }
        }
 
 
-       m_highResActors = tmp_highResActors; 
-    
        Q_EMIT updateHighRes(remove_actors, new_actors);
-    
+//       std::unique_lock<std::mutex> main_lock(mw_mutex);
+//       while(!release)
+//       {
+//            mw_cond.wait(main_lock);
+//       }
+       m_highResActors = tmp_highResActors; 
+       old_highRes.clear();
+       release = false;
 //       l.unlock();
     }
 
@@ -212,7 +220,6 @@ void LVRChunkedMeshBridge::addInitialActors(vtkSmartPointer<vtkRenderer> rendere
 
 
     m_chunkManager.extractArea(bb, m_chunks, "mesh1");
-    
 
     std::vector<size_t> hashes;
 
@@ -248,6 +255,7 @@ void LVRChunkedMeshBridge::addInitialActors(vtkSmartPointer<vtkRenderer> rendere
         BoundingBox<BaseVector<float> > chunk_bb(v1, v2);
         centroids.push_back(chunk_bb.getCentroid());
     }
+    
     m_oct = std::make_unique<MeshOctree<BaseVector<float> >> (m_chunkManager.getChunkSize(),
             hashes, centroids, bb);
 
@@ -280,8 +288,8 @@ void LVRChunkedMeshBridge::computeMeshActors()
         auto chunk = *it;
         size_t id = chunk.first;
         lvr2::MeshBufferPtr meshbuffer = chunk.second;
-
-        m_chunkActors.insert({id, computeMeshActor(id, meshbuffer)});
+        vtkSmartPointer<vtkActor> actor = computeMeshActor(id, meshbuffer);
+        m_chunkActors.insert({id, actor});
 
     }
 
@@ -289,14 +297,14 @@ void LVRChunkedMeshBridge::computeMeshActors()
     std::cout << lvr2::timestamp << "Done actor computation" << std::endl;
 }
 
-vtkSmartPointer<MeshChunkActor> LVRChunkedMeshBridge::computeMeshActor(size_t& id, MeshBufferPtr& meshbuffer)
+vtkSmartPointer<vtkActor> LVRChunkedMeshBridge::computeMeshActor(size_t& id, MeshBufferPtr& meshbuffer)
 {
-    vtkSmartPointer<MeshChunkActor> meshActor;
 
+    vtkSmartPointer<vtkActor> meshActor = vtkSmartPointer<vtkActor>::New();
     if(meshbuffer)
     {
+//        meshActor         
         vtkSmartPointer<vtkPolyData> mesh = vtkSmartPointer<vtkPolyData>::New();
-        meshActor = vtkSmartPointer<MeshChunkActor>::New();
         // Parse vertex and index buffer
         size_t n_v, n_i, n_c;
         size_t w_color;
@@ -318,27 +326,33 @@ vtkSmartPointer<MeshChunkActor> LVRChunkedMeshBridge::computeMeshActor(size_t& i
         vtkSmartPointer<vtkUnsignedCharArray> scalars = vtkSmartPointer<vtkUnsignedCharArray>::New();
         scalars->SetNumberOfComponents(3);
         scalars->SetName("Colors");
-        if(colors)
-        {
-            scalars->SetVoidArray(colors.get(), n_v * w_color, 1);
-        }
+//        if(colors)
+//        {
+//            scalars->SetVoidArray(colors.get(), n_v * w_color, 0,);
+//        }
 
 
         // Triangle indices
         vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();
         vtkSmartPointer<vtkIdTypeArray> tri_data = vtkSmartPointer<vtkIdTypeArray>::New();
+//        tri_data->Resize(n_i * 4);
         vtkIdType* tri_buf = new vtkIdType[n_i * 4];
         for(size_t i = 0; i < n_i; i++)
         {
             size_t index = 3 * i;
             size_t i2    = 4 * i;
-            tri_buf[i2 + 0 ] = static_cast<vtkIdType>(3);
-            tri_buf[i2 + 1 ] = static_cast<vtkIdType>(indices[index + 0]);
-            tri_buf[i2 + 2 ] = static_cast<vtkIdType>(indices[index + 1]);
-            tri_buf[i2 + 3 ] = static_cast<vtkIdType>(indices[index + 2]);
+            tri_buf[i2 + 0] = static_cast<vtkIdType>(3);
+            tri_buf[i2 + 1] = static_cast<vtkIdType>(indices[index + 0]);
+            tri_buf[i2 + 2] = static_cast<vtkIdType>(indices[index + 1]);
+            tri_buf[i2 + 3] = static_cast<vtkIdType>(indices[index + 2]);
+//            (*tri_data).InsertValue(i2 + 0 , static_cast<vtkIdType>(3));
+//            (*tri_data).InsertValue(i2 + 1 , static_cast<vtkIdType>(indices[index + 0]));
+//            (*tri_data).InsertValue(i2 + 2 , static_cast<vtkIdType>(indices[index + 1]));
+//            (*tri_data).InsertValue(i2 + 3 , static_cast<vtkIdType>(indices[index + 2]));
         }
 
-        tri_data->SetVoidArray(tri_buf, n_i * 4, 0);
+        tri_data->SetVoidArray(tri_buf, n_i * 4, 0, vtkIdTypeArray::VTK_DATA_ARRAY_DELETE);
+        //tri_data->SetVoidArray(tri_buf, n_i * 4, 1);
         triangles->SetCells(n_i, tri_data);
 
         // add points, triangles and if given colors
@@ -365,7 +379,7 @@ vtkSmartPointer<MeshChunkActor> LVRChunkedMeshBridge::computeMeshActor(size_t& i
         #endif
 
         // TODO add wireframe stuff
-        //m_wireframeActor = vtkSmartPointer<MeshChunkActor>::New();
+        //m_wireframeActor = vtkSmartPointer<vtkActor>::New();
         //m_wireframeActor->ShallowCopy(meshActor);
         //m_wireframeActor->SetMapper(wireframe_mapper);
         //vtkSmartPointer<vtkProperty> p = vtkSmartPointer<vtkProperty>::New();
@@ -386,7 +400,7 @@ vtkSmartPointer<MeshChunkActor> LVRChunkedMeshBridge::computeMeshActor(size_t& i
         //m_wireframeActor->SetProperty(p);
 
         //setBaseColor(0.9, 0.9, 0.9);
-        meshActor->setID(id);
+        //meshActor->setID(id);
         mesh_mapper->CopyToMem(m_renderer.Get(), meshActor.Get());
 
     }

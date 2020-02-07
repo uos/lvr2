@@ -26,6 +26,8 @@
 #include <thread>
 #include <condition_variable>
 
+#include <vtkWeakPointer.h>
+
 
 
 //class XContext;
@@ -43,7 +45,7 @@
 //struct _XDisplay;
 //typedef struct _XDisplay Display;
 
-typedef std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > actorMap;
+typedef std::unordered_map<size_t, vtkSmartPointer<vtkActor> > actorMap;
 Q_DECLARE_METATYPE(actorMap)
 
 
@@ -53,14 +55,18 @@ namespace lvr2 {
     {
         Q_OBJECT
         public:
-            LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtkRenderer> renderer, size_t cache_size = 1000, double highResDistance = 150.0);
+            LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtkRenderer> renderer, size_t cache_size = 300, double highResDistance = 150.0);
             void getActors(double planes[24],
                     std::vector<BaseVector<float> >& centroids, 
                     std::vector<size_t >& indices);
         
-            actorMap getHighResActors() { return m_highResActors; }
-            actorMap getLowResActors() { return m_chunkActors; }
-                    //std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> >& actors);
+            std::mutex mw_mutex;
+            std::condition_variable mw_cond;
+            bool release = false;
+
+            std::unordered_map<size_t, vtkSmartPointer<vtkActor>> getHighResActors() { return m_highResActors; }
+            std::unordered_map<size_t, vtkSmartPointer<vtkActor>> getLowResActors()  { return m_chunkActors;   }
+                    //std::unordered_map<size_t, vtkSmartPointer<vtkActor> >& actors);
             void addInitialActors(vtkSmartPointer<vtkRenderer> renderer);
 
 //            void fetchHighRes(double position[3], double dir[3], double up[3]);
@@ -68,12 +74,12 @@ namespace lvr2 {
         Q_SIGNALS:
             void updateHighRes(actorMap lowRes, actorMap highRes);
                     
-                   // std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > lowResActors,
-                   //            std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > highResActors);
+                   // std::unordered_map<size_t, vtkSmartPointer<vtkActor> > lowResActors,
+                   //            std::unordered_map<size_t, vtkSmartPointer<vtkActor> > highResActors);
 
         protected:
             void computeMeshActors();
-            inline vtkSmartPointer<MeshChunkActor> computeMeshActor(size_t& id, MeshBufferPtr& chunk);
+            inline vtkSmartPointer<vtkActor> computeMeshActor(size_t& id, MeshBufferPtr& chunk);
 
         private:
             vtkSmartPointer<vtkRenderer> m_renderer;
@@ -94,8 +100,9 @@ namespace lvr2 {
             std::vector<size_t> highResIndices;
             std::unordered_map<size_t, MeshBufferPtr> m_chunks;
             std::unordered_map<size_t, MeshBufferPtr> m_highRes;
-            std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > m_chunkActors;
-            std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > m_highResActors;
+            std::unordered_map<size_t, vtkSmartPointer<vtkActor> > m_chunkActors;
+//            std::unordered_map<size_t, vtkSmartPointervtkActor> > m_chunkActors;
+            std::unordered_map<size_t, vtkSmartPointer<vtkActor> > m_highResActors;
 
             std::unique_ptr<MeshOctree<BaseVector<float> > > m_oct;
 //            std::unordered_map<size_t, std::vector<vtkPolyData> > > m_chunkActors;

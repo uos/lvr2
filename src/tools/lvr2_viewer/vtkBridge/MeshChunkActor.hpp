@@ -15,6 +15,14 @@ class VTKRENDERINGCORE_EXPORT MeshChunkActor : public vtkActor
     public:
         vtkTypeMacro(MeshChunkActor, vtkActor);
 
+        MeshChunkActor() {
+            this->Device = vtkActor::New();
+        }
+
+        ~MeshChunkActor() {
+            this->Device -> Delete();
+        }
+
         static MeshChunkActor* New();
 
         size_t getID() { return id_; }
@@ -38,14 +46,6 @@ class VTKRENDERINGCORE_EXPORT MeshChunkActor : public vtkActor
 
     protected:
         vtkActor* Device;
-
-        MeshChunkActor() {
-            this->Device = vtkActor::New();
-        }
-
-        ~MeshChunkActor() {
-            this->Device -> Delete();
-        }
 };
 
 #endif

@@ -19,8 +19,8 @@ double ChunkedMeshCuller::Cull(vtkRenderer *ren,
         int &listLength,
         int &initialized)
 {
-    actorMap lowRes = m_bridge->getLowResActors();
-    actorMap highRes = m_bridge->getHighResActors();
+    std::unordered_map<size_t, vtkSmartPointer<vtkActor>> lowRes = m_bridge->getLowResActors();
+    std::unordered_map<size_t, vtkSmartPointer<vtkActor>> highRes = m_bridge->getHighResActors();
 
     double planes[24];
     vtkSmartPointer<vtkCamera> cam = ren->GetActiveCamera();
@@ -65,6 +65,8 @@ double ChunkedMeshCuller::Cull(vtkRenderer *ren,
     {
         highResArea.expand(centroids2[i]);   
     }
+    //std::cout << highResArea << std::endl;
+    //std::cout << highResArea.getVolume() << std::endl;
     
     //BaseVector<float> eye(position[0], position[1], position[2]);
     //BaseVector<float> direction(dir[0], dir[1], dir[2]);
