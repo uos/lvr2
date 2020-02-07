@@ -172,6 +172,9 @@ bool ChunkingPipeline<BaseVecT>::getScanProject(const boost::filesystem::path& d
     ScanProject dirScanProject;
     bool importStatus = loadScanProject(dirPath, dirScanProject);
 
+    ScanProjectEditMark tmpScanProject;
+    std::vector<bool> init(scanProjectPtr->positions.size());
+    tmpScanProject.changed = init;
 
     if (!importStatus)
     {
@@ -183,10 +186,10 @@ bool ChunkingPipeline<BaseVecT>::getScanProject(const boost::filesystem::path& d
         for(int i = scanProjectPtr->positions.size(); i < dirScanProject.positions.size(); i++)
         {
             scanProjectPtr->positions.push_back(dirScanProject.positions[i]);
+            tmpScanProject.changed.push_back(true);
         }
     }
 
-    ScanProjectEditMark tmpScanProject;
 
     tmpScanProject.project = scanProjectPtr;
     m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
