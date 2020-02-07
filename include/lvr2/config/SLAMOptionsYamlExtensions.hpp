@@ -79,9 +79,10 @@ struct convert<lvr2::SLAMOptions>
         node["slamIterations"] = options.slamIterations;
         node["slamMaxDistance"] = options.slamMaxDistance;
         node["slamEpsilon"] = options.slamEpsilon;
-        node["diffPoseSum"] = options.diffPoseSum;
+        node["diffPosition"] = options.diffPosition;
+        node["diffAngle"] = options.diffAngle;
         node["useScanOrder"] = options.useScanOrder;
-        node["rotate_angle"] = options.rotate_angle;
+        node["rotate_angle"] = options.rotate_angle;  
 
         return node;
     }
@@ -201,9 +202,14 @@ struct convert<lvr2::SLAMOptions>
             options.slamEpsilon = node["slamEpsilon"].as<double>();
         }
 
-        if (node["diffPoseSum"])
+        if (node["diffPosition"])
         {
-            options.diffPoseSum = node["diffPoseSum"].as<double>();
+            options.diffPosition = node["diffPosition"].as<double>();
+        }
+
+        if (node["diffAngle"])
+        {
+            options.diffAngle = node["diffAngle"].as<double>();
         }
 
         if (node["useScanOrder"])
