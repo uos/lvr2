@@ -140,21 +140,22 @@ namespace lvr2
         }
 
         //do more or less the same stuff as the executable
-        cout << lvr2::timestamp << "Starting grid" << endl;
+        cout << lvr2::timestamp << "Starting BigGrid" << endl;
 
         BigGrid<BaseVecT> bg( m_bgVoxelSize ,project, m_scale);
 
-        cout << lvr2::timestamp << "grid finished " << endl;
+        cout << lvr2::timestamp << "BigGrid finished " << endl;
+
         BoundingBox<BaseVecT> bb = bg.getBB();
-        cout << bb << endl;
 
         vector<BoundingBox<BaseVecT>> partitionBoxes;
         vector<BoundingBox<BaseVecT>> partitionBoxesNew;
         BoundingBox<BaseVecT> cmBB = BoundingBox<BaseVecT>();
 
-        cout << lvr2::timestamp << "making tree" << endl;
+
         if (m_partMethod == 1)
         {
+            cout << lvr2::timestamp << "generating VGrid" << endl;
             VirtualGrid<BaseVecT> vGrid(
                     bg.getpartialBB(), m_chunkSize, m_bgVoxelSize);
             std::vector<shared_ptr<BoundingBox<BaseVecT>>> boxes;
@@ -176,6 +177,7 @@ namespace lvr2
         }
         else
         {
+            cout << lvr2::timestamp << "generating tree" << endl;
             BigGridKdTree<BaseVecT> gridKd(bg.getBB(), m_nodeSize, &bg, m_bgVoxelSize);
             gridKd.insert(bg.pointSize(), bg.getBB().getCentroid());
             ofstream partBoxOfs("KdTree.ser");
@@ -206,7 +208,6 @@ namespace lvr2
         BoundingBox<BaseVecT> cbb(bb_min, bb_max);
 
         vector<string> grid_files;
-        unordered_set<string> meshes;
         // vector to save the new chunk names - which chunks have to be reconstructed
         vector<BaseVector<int>> newChunks = vector<BaseVector<int>>();
 
@@ -261,12 +262,7 @@ namespace lvr2
                                     partitionBoxes[i].getMax().z);
                 BoundingBox<BaseVecT> gridbb(gridbb_min, gridbb_max);
 
-                cout << "grid: " << i << "/" << partitionBoxes.size() - 1 << endl;
-                cout << "grid has " << numPoints << " points" << endl;
-                cout << "kn=" << m_kn << endl;
-                cout << "ki=" << m_ki << endl;
-                cout << "kd=" << m_kd << endl;
-                cout << gridbb << endl;
+                cout << "\n" <<  lvr2::timestamp <<"grid: " << i << "/" << partitionBoxes.size() - 1 << endl;
 
                 lvr2::PointBufferPtr p_loader(new lvr2::PointBuffer);
                 p_loader->setPointArray(points, numPoints);
@@ -377,8 +373,7 @@ namespace lvr2
                     }
                 }
             }
-              std::cout << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
-            std::cout << "Generated Meshes: " << meshes.size() << std::endl;
+              std::cout << lvr2::timestamp << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
 
             cout << lvr2::timestamp << "finished" << endl;
 
