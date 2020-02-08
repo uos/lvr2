@@ -34,7 +34,7 @@
 
 using namespace lvr2;
 
-double getDifference(Transformd a, Transformd b)
+bool RegistrationPipeline::isToleratedDifference(Transformd a, Transformd b)
 {
     Rotationd rotateA = a.block<3, 3>(0, 0);
     Rotationd rotateB = b.block<3, 3>(0, 0);
@@ -44,9 +44,6 @@ double getDifference(Transformd a, Transformd b)
     assert(translateB[3] == 1.0);
 
     // calculate translation distance
-    // Vector4d distVec = translateB - translateA;
-    // Vector3d distT(distVec[0] * distVec[0], distVec[1] * distVec[1], distVec[2] * distVec[2]);
-    // double dist = sqrt(distT.sum());
     double dist = (translateB - translateA).norm();
 
     // calculate angle difference
@@ -67,40 +64,12 @@ double getDifference(Transformd a, Transformd b)
 
     double angle = std::acos(tmp);
 
-    // std::cout << "######################" << std::endl;
-    // std::cout << a << std::endl;
-    // std::cout << b << std::endl;
-    // std::cout << rotateA << std::endl;
-    // std::cout << rotateB << std::endl;
-    // std::cout << translateA << std::endl;
-    // std::cout << distVec << std::endl;
-    // std::cout << distT << std::endl;
-    // std::cout << "dist " << dist << std::endl;
-    // std::cout << "***********************" << std::endl;
-    // std::cout << r << std::endl;
-    // std::cout << r.trace() << std::endl;
-    // std::cout << r.trace() - 1 << std::endl;
-    // std::cout << "tmp " << tmp << std::endl;
-    // std::cout << "alpha " << angle << std::endl;
-    // std::cout << "***********************" << std::endl;
+    if(m_options->verbose)
+    {
+        std::cout << "PoseDiff: " << dist << " ; AngleDiff: " << angle << std::endl;
+    }
 
-    // std::cout << "acos(1) = " << acos(1) << std::endl;
-    // std::cout << "########################" << std::endl;
-
-    double res = (dist / 2) + (angle / 3.0);
-    
-    // std::cout << "Res " << res << std::endl;
-    return res;
-
-    // double sum = 0;
-    // for (size_t i = 0; i < 4; i++)
-    // {
-    //     for (size_t j = 0; j < 4; j++)
-    //     {
-    //         sum += std::abs(a(i,j) - b(i,j));
-    //     }
-    // }
-    // return sum;
+    return (angle < m_options->diffAngle && dist < m_options->diffPosition);
 }
 
 void rotateAroundYAxis(Transformd *inputMatrix4x4, double angle)
@@ -173,8 +142,7 @@ void RegistrationPipeline::doRegistration()
         // check if the new pos different to old pos
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
-        cout << "Diff: " << getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) << endl;
-        if (getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) > m_options->diffPoseSum)
+        if ((!m_scans->changed.at(i)) && isToleratedDifference(posPtr->scans[0]->registration, align.scan(i)->pose()))
         {
             m_scans->changed.at(i) = true;
             cout << "New Values"<< endl;
@@ -215,7 +183,6 @@ void RegistrationPipeline::doRegistration()
     {
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
-        cout << "Diff: " << getDifference(posPtr->scans[0]->registration, align.scan(i)->pose()) << endl;
         if (m_scans->changed.at(i) || all_values_new)
         {
             posPtr->scans[0]->registration = align.scan(i)->pose();

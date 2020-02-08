@@ -51,28 +51,27 @@ struct convert<lvr2::LSROptions>
         node["bigMesh"] = options.bigMesh;
         node["debugChunks"] = options.debugChunks;
         node["useGPU"] = options.useGPU;
-        node["filePath"] = options.filePath;
         node["voxelSizes"] = options.voxelSizes;
         node["bgVoxelSize"] = options.bgVoxelSize;
         node["scale"] = options.scale;
         node["chunkSize"] = options.chunkSize;
         node["nodeSize"] = options.nodeSize;
         node["partMethod"] = options.partMethod;
-        node["Ki"] = options.Ki;
-        node["Kd"] = options.Kd;
-        node["Kn"] = options.Kn;
+        node["ki"] = options.ki;
+        node["kd"] = options.kd;
+        node["kn"] = options.kn;
         node["useRansac"] = options.useRansac;
         node["extrude"] = options.extrude;
         node["removeDanglingArtifacts"] = options.removeDanglingArtifacts;
         node["cleanContours"] = options.cleanContours;
         node["fillHoles"] = options.fillHoles;
         node["optimizePlanes"] = options.optimizePlanes;
-        node["getNormalThreshold"] = options.getNormalThreshold;
+        node["planeNormalThreshold"] = options.planeNormalThreshold;
         node["planeIterations"] = options.planeIterations;
-        node["MinPlaneSize"] = options.MinPlaneSize;
-        node["SmallRegionThreshold"] = options.SmallRegionThreshold;
+        node["minPlaneSize"] = options.minPlaneSize;
+        node["smallRegionThreshold"] = options.smallRegionThreshold;
         node["retesselate"] = options.retesselate;
-        node["LineFusionThreshold"] = options.LineFusionThreshold;
+        node["lineFusionThreshold"] = options.lineFusionThreshold;
 
         return node;
     }
@@ -99,10 +98,6 @@ struct convert<lvr2::LSROptions>
             options.useGPU = node["useGPU"].as<bool>();
         }
 
-        if (node["filePath"])
-        {
-            options.filePath = node["filePath"].as<std::string>();
-        }
 
         if (node["voxelSizes"])
         {
@@ -134,19 +129,19 @@ struct convert<lvr2::LSROptions>
             options.partMethod = node["partMethod"].as<int>();
         }
 
-        if (node["Ki"])
+        if (node["ki"])
         {
-            options.Ki = node["Ki"].as<int>();
+            options.ki = node["ki"].as<int>();
         }
 
-        if (node["Kd"])
+        if (node["kd"])
         {
-            options.Kd = node["Kd"].as<int>();
+            options.kd = node["kd"].as<int>();
         }
 
         if (node["Kn"])
         {
-            options.Kn = node["Kn"].as<int>();
+            options.kn = node["kn"].as<int>();
         }
 
         if (node["useRansac"])
@@ -179,9 +174,9 @@ struct convert<lvr2::LSROptions>
             options.optimizePlanes = node["optimizePlanes"].as<bool>();
         }
 
-        if (node["getNormalThreshold"])
+        if (node["planeNormalThreshold"])
         {
-            options.getNormalThreshold = node["getNormalThreshold"].as<float>();
+            options.planeNormalThreshold = node["planeNormalThreshold"].as<float>();
         }
 
         if (node["planeIterations"])
@@ -189,14 +184,14 @@ struct convert<lvr2::LSROptions>
             options.planeIterations = node["planeIterations"].as<int>();
         }
 
-        if (node["MinPlaneSize"])
+        if (node["minPlaneSize"])
         {
-            options.MinPlaneSize = node["MinPlaneSize"].as<int>();
+            options.minPlaneSize = node["minPlaneSize"].as<int>();
         }
 
-        if (node["SmallRegionThreshold"])
+        if (node["smallRegionThreshold"])
         {
-            options.SmallRegionThreshold = node["SmallRegionThreshold"].as<int>();
+            options.smallRegionThreshold = node["smallRegionThreshold"].as<int>();
         }
 
         if (node["retesselate"])
@@ -206,7 +201,7 @@ struct convert<lvr2::LSROptions>
 
         if (node["LineFusionThreshold"])
         {
-            options.LineFusionThreshold = node["LineFusionThreshold"].as<float>();
+            options.lineFusionThreshold = node["lineFusionThreshold"].as<float>();
         }
 
         return true;
