@@ -67,13 +67,13 @@ namespace lvr2
         int partMethod = 1;
 
         //Number of normals used in the normal interpolation process.
-        int Ki = 20;
+        int ki = 20;
 
         //Number of normals used for distance function evaluation.
-        int Kd = 20;
+        int kd = 20;
 
         // Size of k-neighborhood used for normal estimation.
-        int Kn = 20;
+        int kn = 20;
 
         //Set this flag for RANSAC based normal estimation.
         bool useRansac = false;
@@ -99,26 +99,22 @@ namespace lvr2
         bool optimizePlanes = false;
 
         // (Plane Normal Threshold) Normal threshold for plane optimization.
-        //TODO rename: planeNormalThreshold
-        float getNormalThreshold = 0.85;
+        float planeNormalThreshold = 0.85;
 
         // Number of iterations for plane optimization.
         int planeIterations = 3;
 
         // Minimum value for plane optimization.
-        // TODO rename minPlaneSize
-        int MinPlaneSize = 7;
+        int minPlaneSize = 7;
 
         // Threshold for small region removal. If 0 nothing will be deleted.
-        //TODO rename smallRegionThreshold
-        int SmallRegionThreshold = 0;
+        int smallRegionThreshold = 0;
 
         // Retesselate regions that are in a regression plane. Implies --optimizePlanes.
         bool retesselate = false;
 
         // Threshold for fusing line segments while tesselating.
-        //TODO rename
-        float LineFusionThreshold =0.01;
+        float lineFusionThreshold =0.01;
     };
 
     template <typename BaseVecT>
@@ -237,13 +233,13 @@ namespace lvr2
         int m_partMethod;
 
         //Number of normals used in the normal interpolation process. Default: 10
-        int m_Ki;
+        int m_ki;
 
         //Number of normals used for distance function evaluation. Default: 5
-        int m_Kd;
+        int m_kd;
 
         // Size of k-neighborhood used for normal estimation. Default: 10
-        int m_Kn;
+        int m_kn;
 
         //Set this flag for RANSAC based normal estimation. Default: false
         bool m_useRansac;
@@ -269,22 +265,22 @@ namespace lvr2
         bool m_optimizePlanes;
 
         // (Plane Normal Threshold) Normal threshold for plane optimization. Default: 0.85
-        float m_getNormalThreshold;
+        float m_planeNormalThreshold;
 
         // Number of iterations for plane optimization. Default: 3
         int m_planeIterations;
 
         // Minimum value for plane optimization. Default: 7
-        int m_MinPlaneSize;
+        int m_minPlaneSize;
 
         // Threshold for small region removal. If 0 nothing will be deleted. Default: 0
-        int m_SmallRegionThreshold;
+        int m_smallRegionThreshold;
 
         // Retesselate regions that are in a regression plane. Implies --optimizePlanes. Default: false
         bool m_retesselate;
 
         // Threshold for fusing line segments while tesselating. Default: 0.01
-        float m_LineFusionThreshold;
+        float m_lineFusionThreshold;
 
 
     };
