@@ -101,13 +101,6 @@ int main(int argc, char** argv)
 
 
     ScanProjectEditMarkPtr project(new ScanProjectEditMark);
-
-    // project->project = scanProjectPtr;
-    
-
-    // loadAllPreviewsFromHDF5(in, *project->project.get());
-
-    // project->project = ScanProjectPtr(new ScanProject);
     std::shared_ptr<ChunkHashGrid> cm;
     BoundingBox<Vec> boundingBox;
 
@@ -168,8 +161,6 @@ int main(int argc, char** argv)
 
     BoundingBox<Vec> bb;
     int x = lsr.mpiChunkAndReconstruct(project, bb, cm);
-
-    cout << bb << endl;
 
     if(options.getDebugChunks())
     {
