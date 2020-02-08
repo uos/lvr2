@@ -284,7 +284,8 @@ namespace lvr2
                 }
 
                 lvr2::PointBufferPtr p_loader_reduced;
-                if(numPoints > (m_chunkSize*500000)) // reduction TODO add options
+                //if(numPoints > (m_chunkSize*500000)) // reduction TODO add options
+                if(false)
                 {
                     OctreeReduction oct(p_loader, m_voxelSizes[h], 20);
                     p_loader_reduced = oct.getReducedPoints();
