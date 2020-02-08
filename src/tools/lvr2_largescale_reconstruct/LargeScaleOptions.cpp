@@ -52,15 +52,14 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     m_descr.add_options()
     ("help", "Produce help message")
     ("inputFile", value<vector<string>>(),"Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
-    ("partialReconstruct",value<string>(&m_partialReconstruct)->default_value("NONE"),"Option to add partial-Mesh to a global-Mesh (make sure that the inputFile is the global ""PointCloud)")
-    ("voxelSize,v",value<vector<float>>(&m_voxelSizes)->multitoken(),"Voxelsize of grid used for reconstruction. multitoken option: it is possible to enter more then one voxelsize")
-    ("bgVoxelsize,bgv",value<float>(&m_voxelsizeBG)->default_value(10),"Voxelsize of the bigGrid.")
-    ("useVGrid",value<int>(&m_vgrid)->default_value(1),"Option to change the partition-process to a gridbase partition (default: OFF (=0))")
-    ("gridSize",value<int>(&m_gridsize)->default_value(20),"Set the gridsize for the virtual grid. (default: 20)")
-    ("noExtrusion","Do not extend grid. Can be used  to avoid artefacts in dense data sets but. Disabling will possibly create additional holes in sparse data sets.")
+    ("voxelSizes,v",value<vector<float>>(&m_voxelSizes)->multitoken(),"Voxelsize of grid used for reconstruction. multitoken option: it is possible to enter more then one voxelsize")
+    ("bgVoxelSize,bgv",value<float>(&m_voxelsizeBG)->default_value(10),"Voxelsize of the bigGrid.")
+    ("partMethod",value<int>(&m_partMethod)->default_value(1),"Option to change the partition-process to a gridbase partition (0 = kd-Tree; 1 = VGrid)")
+    ("chunkSize",value<int>(&m_chunkSize)->default_value(20),"Set the chunksize for the virtual grid. (default: 20)")
+    ("extrude", value<bool>(&m_extrude)->default_value(false), "Do not extend grid. Can be used to avoid artefacts in dense data sets but. Disabling will possibly create additional holes in sparse data sets.")
     ("intersections,i",value<int>(&m_intersections)->default_value(-1),"Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
     ("pcm,p",value<string>(&m_pcm)->default_value("FLANN"),"Point cloud manager used for point handling and normal estimation. Choose from {STANN, PCL, NABO}.")
-    ("ransac", "Set this flag for RANSAC based normal estimation.")
+    ("useRansac", "Set this flag for RANSAC based normal estimation.")
     ("decomposition,d",value<string>(&m_pcm)->default_value("PMC"),"Defines the type of decomposition that is used for the voxels (Standard Marching Cubes "
         "(MC), Planar Marching Cubes (PMC), Standard Marching Cubes with sharp feature detection "
         "(SF) or Tetraeder (MT) decomposition. Choose from {MC, PMC, MT, SF}")(
@@ -74,10 +73,10 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
         value<int>(&m_planeIterations)->default_value(3),
         "Number of iterations for plane optimization")(
         "fillHoles,f", value<int>(&m_fillHoles)->default_value(0), "Maximum size for hole filling")(
-        "rda",
-        value<int>(&m_rda)->default_value(0),
+        "removeDanglingArtifacts,rda",
+        value<int>(&m_removeDanglingArtifacts)->default_value(0),
         "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")(
-        "pnt",
+        "planeNormalThreshold,pnt",
         value<float>(&m_planeNormalThreshold)->default_value(0.85),
         "(Plane Normal Threshold) Normal threshold for plane optimization. Default 0.85 equals "
         "about 3 degrees.")("smallRegionThreshold",
@@ -104,10 +103,10 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
         "kn",
         value<int>(&m_kn)->default_value(10),
         "Size of k-neighborhood used for normal estimation")(
-        "mp", value<int>(&m_minPlaneSize)->default_value(7), "Minimum value for plane optimzation")(
+        "minPlaneSize,mp", value<int>(&m_minPlaneSize)->default_value(7), "Minimum value for plane optimzation")(
         "retesselate,t",
         "Retesselate regions that are in a regression plane. Implies --optimizePlanes.")(
-        "lft",
+        "lineFusionThreshold,lft",
         value<float>(&m_lineFusionThreshold)->default_value(0.01),
         "(Line Fusion Threshold) Threshold for fusing line segments while tesselating.")(
         "generateTextures", "Generate textures during finalization.")(
@@ -192,66 +191,6 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
 
     setup();
 }
-
-size_t Options::getLineReaderBuffer() const { return m_variables["lineReaderBuffer"].as<size_t>(); }
-
-float Options::getScaling() const { return m_variables["scale"].as<float>(); }
-unsigned int Options::getNodeSize() const { return m_variables["nodeSize"].as<unsigned int>(); }
-unsigned int Options::getBufferSize() const { return m_variables["buff"].as<unsigned int>(); }
-
-
-
-float Options::getBGVoxelsize() const { return m_variables["bgVoxelsize"].as<float>(); }
-
-float Options::getSharpFeatureThreshold() const { return m_variables["sft"].as<float>(); }
-
-float Options::getSharpCornerThreshold() const { return m_variables["sct"].as<float>(); }
-
-int Options::getNumThreads() const { return m_variables["threads"].as<int>(); }
-
-int Options::getKi() const { return m_variables["ki"].as<int>(); }
-
-int Options::getKd() const { return m_variables["kd"].as<int>(); }
-
-int Options::getKn() const { return m_variables["kn"].as<int>(); }
-
-int Options::getIntersections() const { return m_variables["intersections"].as<int>(); }
-
-int Options::getPlaneIterations() const { return m_variables["planeIterations"].as<int>(); }
-
-vector<string> Options::getInputFileName() const
-{
-    return (m_variables["inputFile"].as<vector<string>>());
-}
-
-string Options::getPCM() const { return (m_variables["pcm"].as<string>()); }
-
-string Options::getClassifier() const { return (m_variables["classifier"].as<string>()); }
-
-string Options::getEdgeCollapseMethod() const { return (m_variables["ecm"].as<string>()); }
-
-string Options::getDecomposition() const { return (m_variables["decomposition"].as<string>()); }
-
-string Options::getScanPoseFile() const { return (m_variables["scanPoseFile"].as<string>()); }
-
-int Options::getNumEdgeCollapses() const { return (m_variables["ecc"].as<int>()); }
-
-int Options::getDanglingArtifacts() const { return (m_variables["rda"].as<int>()); }
-
-int Options::getFillHoles() const { return (m_variables["fillHoles"].as<int>()); }
-
-int Options::getMinPlaneSize() const { return (m_variables["mp"].as<int>()); }
-
-int Options::getVGrid() const { return (m_variables["useVGrid"].as<int>()); }
-
-int Options::getGridSize() const { return (m_variables["gridSize"].as<int>()); }
-
-
-string Options::getPartialReconstruct() const
-{
-    return (m_variables["partialReconstruct"].as<string>());
-}
-
 bool Options::printUsage() const
 {
     if (m_variables.count("help"))
@@ -270,11 +209,107 @@ bool Options::printUsage() const
     return false;
 }
 
-bool Options::saveFaceNormals() const { return m_variables.count("saveFaceNormals"); }
-
 bool Options::getBigMesh() const { return m_variables["bigMesh"].as<bool>();}
 
 bool Options::getDebugChunks() const { return m_variables["debugChunks"].as<bool>();}
+
+bool Options::useGPU() const { return m_variables.count("useGPU"); }
+
+vector<float> Options::getVoxelSizes() const
+{
+    vector<float> dest;
+    if (m_variables.count("voxelSizes"))
+    {
+        dest = (m_variables["voxelSizes"].as<vector<float>>());
+    }
+    else
+    {
+        dest.push_back(0.1);
+    }
+
+    return dest;
+}
+
+float Options::getVoxelsize() const { return getVoxelSizes()[0]; }
+
+float Options::getBGVoxelsize() const { return m_variables["bgVoxelSize"].as<float>(); }
+
+float Options::getScaling() const { return m_variables["scale"].as<float>(); }
+
+int Options::getChunkSize() const { return (m_variables["chunkSize"].as<int>()); }
+
+unsigned int Options::getNodeSize() const { return m_variables["nodeSize"].as<unsigned int>(); }
+
+int Options::getPartMethod() const { return (m_variables["partMethod"].as<int>()); }
+
+int Options::getKi() const { return m_variables["ki"].as<int>(); }
+
+int Options::getKd() const { return m_variables["kd"].as<int>(); }
+
+int Options::getKn() const { return m_variables["kn"].as<int>(); }
+
+bool Options::useRansac() const { return (m_variables.count("useRansac")); }
+
+bool Options::extrude() const { return m_extrude; }
+
+int Options::getDanglingArtifacts() const { return (m_variables["removeDanglingArtifacts"].as<int>()); }
+
+int Options::getCleanContourIterations() const { return m_variables["cleanContours"].as<int>(); }
+
+int Options::getFillHoles() const { return (m_variables["fillHoles"].as<int>()); }
+
+bool Options::optimizePlanes() const
+{
+    return m_variables.count("optimizePlanes") || m_variables.count("retesselate");
+}
+
+float Options::getNormalThreshold() const { return m_variables["planeNormalThreshold"].as<float>(); }
+
+int Options::getPlaneIterations() const { return m_variables["planeIterations"].as<int>(); }
+
+int Options::getMinPlaneSize() const { return m_minPlaneSize; }
+
+/*
+ * Definition from here on are not used (anymore?)
+ */
+
+
+size_t Options::getLineReaderBuffer() const { return m_variables["lineReaderBuffer"].as<size_t>(); }
+
+unsigned int Options::getBufferSize() const { return m_variables["buff"].as<unsigned int>(); }
+
+
+
+
+float Options::getSharpFeatureThreshold() const { return m_variables["sft"].as<float>(); }
+
+float Options::getSharpCornerThreshold() const { return m_variables["sct"].as<float>(); }
+
+int Options::getNumThreads() const { return m_variables["threads"].as<int>(); }
+
+
+
+int Options::getIntersections() const { return m_variables["intersections"].as<int>(); }
+
+
+vector<string> Options::getInputFileName() const
+{
+    return (m_variables["inputFile"].as<vector<string>>());
+}
+
+string Options::getPCM() const { return (m_variables["pcm"].as<string>()); }
+
+string Options::getClassifier() const { return (m_variables["classifier"].as<string>()); }
+
+string Options::getEdgeCollapseMethod() const { return (m_variables["ecm"].as<string>()); }
+
+string Options::getDecomposition() const { return (m_variables["decomposition"].as<string>()); }
+
+string Options::getScanPoseFile() const { return (m_variables["scanPoseFile"].as<string>()); }
+
+int Options::getNumEdgeCollapses() const { return (m_variables["ecc"].as<int>()); }
+
+bool Options::saveFaceNormals() const { return m_variables.count("saveFaceNormals"); }
 
 bool Options::writeClassificationResult() const
 {
@@ -301,28 +336,9 @@ bool Options::saveNormals() const { return (m_variables.count("saveNormals")); }
 
 bool Options::saveGrid() const { return (m_variables.count("saveGrid")); }
 
-bool Options::useRansac() const { return (m_variables.count("ransac")); }
-
 bool Options::saveOriginalData() const { return (m_variables.count("saveOriginalData")); }
 
-bool Options::optimizePlanes() const
-{
-    return m_variables.count("optimizePlanes") || m_variables.count("retesselate");
-}
-
 bool Options::clusterPlanes() const { return m_variables.count("clusterPlanes"); }
-
-bool Options::extrude() const
-{
-    if (m_variables.count("noExtrusion"))
-    {
-        return false;
-    }
-    else
-    {
-        return true;
-    }
-}
 
 bool Options::colorRegions() const { return m_variables.count("colorRegions"); }
 
@@ -330,22 +346,16 @@ bool Options::retesselate() const { return m_variables.count("retesselate"); }
 
 bool Options::generateTextures() const { return m_variables.count("generateTextures"); }
 
-bool Options::useGPU() const { return m_variables.count("useGPU"); }
-
-float Options::getNormalThreshold() const { return m_variables["pnt"].as<float>(); }
-
 int Options::getSmallRegionThreshold() const
 {
     return m_variables["smallRegionThreshold"].as<int>();
 }
 
-int Options::getCleanContourIterations() const { return m_variables["cleanContours"].as<int>(); }
-
 int Options::getDepth() const { return m_depth; }
 
 float Options::getTexelSize() const { return m_texelSize; }
 
-float Options::getLineFusionThreshold() const { return m_variables["lft"].as<float>(); }
+float Options::getLineFusionThreshold() const { return m_variables["lineFusionThreshold"].as<float>(); }
 
 string Options::getTexturePack() const { return m_variables["tp"].as<string>(); }
 
@@ -394,22 +404,6 @@ float* Options::getStatsCoeffs() const
     }
     return result;
 }
-    vector<float> Options::getVoxelSizes() const
-    {
-        vector<float> dest;
-        if (m_variables.count("voxelSize"))
-        {
-            dest = (m_variables["voxelSize"].as<vector<float>>());
-        }
-        else
-        {
-            dest.push_back(0.1);
-        }
-
-        return dest;
-    }
-
-    float Options::getVoxelsize() const { return getVoxelSizes()[0]; }
 
 vector<float> Options::getFlippoint() const
 {

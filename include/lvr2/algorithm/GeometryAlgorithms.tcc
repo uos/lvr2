@@ -253,6 +253,7 @@ DenseVertexMap<float> calcVertexRoughness(
             ++progress;
         }
     }
+    std::cout << std::endl;
     return roughness;
 
 }

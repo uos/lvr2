@@ -193,6 +193,7 @@ bool ChunkingPipeline<BaseVecT>::getScanProject(const boost::filesystem::path& d
 
     tmpScanProject.project = scanProjectPtr;
     m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
+    m_scanProject->changed.resize(scanProjectPtr->positions.size());
 
     return true;
 }
@@ -234,6 +235,7 @@ bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
 
     hdf.save(m_scanProject->project);
 
+    // remove hyperspectral data from memory
     for(ScanPositionPtr pos : m_scanProject->project->positions)
     {
         pos->hyperspectralCamera.reset(new HyperspectralCamera);
