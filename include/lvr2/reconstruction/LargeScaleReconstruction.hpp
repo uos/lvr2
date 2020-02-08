@@ -78,6 +78,9 @@ namespace lvr2
         //Set this flag for RANSAC based normal estimation.
         bool useRansac = false;
 
+        // FlipPoint for GPU normal computation
+        std::vector<float> flipPoint{10000000, 10000000, 10000000};
+
         // Do not extend grid. Can be used to avoid artifacts in dense data sets but. Disabling
         // will possibly create additional holes in sparse data sets.
         bool extrude = false;
@@ -114,7 +117,20 @@ namespace lvr2
         bool retesselate = false;
 
         // Threshold for fusing line segments while tesselating.
-        float lineFusionThreshold =0.01;
+        float lineFusionThreshold = 0.01;
+
+        vector<float> getFlipPoint() const
+        {
+            std::vector<float> dest = flipPoint;
+            if(dest.size() != 3)
+            {
+                std::vector<float> dest = std::vector<float>();
+                dest.push_back(10000000);
+                dest.push_back(10000000);
+                dest.push_back(10000000);
+            }
+            return dest;
+        }
     };
 
     template <typename BaseVecT>
@@ -133,8 +149,8 @@ namespace lvr2
          * Constructor with parameters
          */
         LargeScaleReconstruction(vector<float> voxelSizes, float bgVoxelSize, float scale, size_t chunkSize,
-                uint nodeSize, int partMethod,int ki, int kd, int kn, bool useRansac, bool extrude,
-                int removeDanglingArtifacts, int cleanContours, int fillHoles, bool optimizePlanes,
+                uint nodeSize, int partMethod,int ki, int kd, int kn, bool useRansac, std::vector<float> flipPoint,
+                bool extrude, int removeDanglingArtifacts, int cleanContours, int fillHoles, bool optimizePlanes,
                 float getNormalThreshold, int planeIterations, int minPlaneSize, int smallRegionThreshold,
                 bool retesselate, float lineFusionThreshold, bool bigMesh, bool debugChunks, bool useGPU);
 
@@ -240,6 +256,9 @@ namespace lvr2
 
         // Size of k-neighborhood used for normal estimation. Default: 10
         int m_kn;
+
+        // flipPoint for GPU normal computation
+        std::vector<float> m_flipPoint;
 
         //Set this flag for RANSAC based normal estimation. Default: false
         bool m_useRansac;
