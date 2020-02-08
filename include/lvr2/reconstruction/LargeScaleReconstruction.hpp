@@ -78,7 +78,7 @@ namespace lvr2
         //Set this flag for RANSAC based normal estimation.
         bool useRansac = false;
 
-        // Do not extend grid. Can be used  to avoid artifacts in dense data sets but. Disabling
+        // Do not extend grid. Can be used to avoid artifacts in dense data sets but. Disabling
         // will possibly create additional holes in sparse data sets.
         bool extrude = false;
 
@@ -86,7 +86,7 @@ namespace lvr2
          * Definition from here on are for the combine-process of partial meshes
          */
 
-        // flag to trigger the removal of dangling artifacts.
+        // number for the removal of dangling artifacts.
         int removeDanglingArtifacts = 0;
 
         //Remove noise artifacts from contours. Same values are between 2 and 4.
@@ -99,21 +99,25 @@ namespace lvr2
         bool optimizePlanes = false;
 
         // (Plane Normal Threshold) Normal threshold for plane optimization.
+        //TODO rename: planeNormalThreshold
         float getNormalThreshold = 0.85;
 
         // Number of iterations for plane optimization.
         int planeIterations = 3;
 
         // Minimum value for plane optimization.
+        // TODO rename minPlaneSize
         int MinPlaneSize = 7;
 
         // Threshold for small region removal. If 0 nothing will be deleted.
+        //TODO rename smallRegionThreshold
         int SmallRegionThreshold = 0;
 
         // Retesselate regions that are in a regression plane. Implies --optimizePlanes.
         bool retesselate = false;
 
         // Threshold for fusing line segments while tesselating.
+        //TODO rename
         float LineFusionThreshold =0.01;
     };
 
