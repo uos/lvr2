@@ -25,8 +25,13 @@
 #include "GL/glx.h"
 
 #include <chrono>
+#include <queue>
 using namespace lvr2;
 
+// i don't know why but compiling breaks
+// if I include GL/glx.h in the header.
+// forward declaration does not work either
+// because XVisualinfo is an typedefed anonymous struct...
 GLXContext m_workerContext;
 XVisualInfo* vinfo;
 Window x_window;
@@ -39,25 +44,24 @@ LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtk
     running_ = true;
 
 
-  vtkGPUInfoList* l = vtkGPUInfoList::New();
-  l->Probe();
-  if (l->GetNumberOfGPUs() > 0)
-  {
-    vtkGPUInfo* info = l->GetGPUInfo(0);
-    std::cout << "GPU Memory available: " << std::endl;
-    std::cout << info->GetDedicatedVideoMemory() << std::endl;
-    std::cout << info->GetSharedSystemMemory() << std::endl;
-  }
-  else
-  {
-    std::cout << "No gpu" << std::endl;
-  }
+    vtkGPUInfoList* l = vtkGPUInfoList::New();
+    l->Probe();
+    if (l->GetNumberOfGPUs() > 0)
+    {
+        vtkGPUInfo* info = l->GetGPUInfo(0);
+        std::cout << "GPU Memory available: " << std::endl;
+        std::cout << info->GetDedicatedVideoMemory() << std::endl;
+        std::cout << info->GetSharedSystemMemory() << std::endl;
+    }
+    else
+    {
+        std::cout << "No gpu" << std::endl;
+    }
 
     // get context opengl
     // createSharedcontext  from current.
-    //
-    //
-   vtkRenderWindow* window = m_renderer->GetRenderWindow();
+    // this is needed for out of core loading data to vram.
+    vtkRenderWindow* window = m_renderer->GetRenderWindow();
     if(window->IsA("vtkXOpenGLRenderWindow"))
     {
         std::cout << "VTKXOPENGL" << std::endl;
@@ -74,7 +78,6 @@ LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtk
             std::cout << "got display" << std::endl;
         }   
         x_window = ogl_window->GetParentId();
-        //    x_window = ogl_window->GetParentId();
     }
     GLXContext currentContext = glXGetCurrentContext();
     if(currentContext!= nullptr)
@@ -87,6 +90,7 @@ LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtk
     worker = std::thread(&LVRChunkedMeshBridge::highResWorker, this);
 
 }
+
 
 
 void LVRChunkedMeshBridge::highResWorker()
@@ -106,16 +110,17 @@ void LVRChunkedMeshBridge::highResWorker()
        }
        getNew_ = false;
        std::vector<size_t> visible_indices = m_highResIndices;
-       l.unlock();
+       std::vector<BaseVector<float> > visible_centroids = m_highResCentroids;
+       // delta for new fetch
+       // basically prevents an endless loop of reloads.
        BaseVector<float> diff = m_region.getCentroid() - m_lastRegion.getCentroid();
        if(!(std::abs(diff[0]) > 1.0 || std::abs(diff[1]) > 1.0 || std::abs(diff[2]) > 1.0))
        {
-//           l.unlock();
+           l.unlock();
            continue;
        }
-
        m_lastRegion = m_region;
-
+       l.unlock();
 
        auto old_highRes = m_highRes;
        if(m_highRes.size() > 1000)
@@ -123,6 +128,8 @@ void LVRChunkedMeshBridge::highResWorker()
            m_highRes.clear();
        }
 
+       // check if there is only one layer.
+       // if yes use the chunks from the "lowRes" layer.
        if(m_layers.size() > 1)
        {
             m_chunkManager.extractArea(m_region, m_highRes, m_layers[0]);
@@ -133,35 +140,90 @@ void LVRChunkedMeshBridge::highResWorker()
             {
                 m_highRes.insert({index, m_chunks[index]});
             }
-//            std::cout << m_highResActors.size() << std::endl;
        }
 
 
+       // Consistency for underlying buffers of actors.
+       // The chunkmanagers may have loaded new meshbuffers while we use old ones
+       // Use the old ones otherwise we need to rebuild and copy the actors.
+       // New ones are ignored in that case.
        for(auto& it : m_highRes)
        {
-            if(old_highRes.find(it.first) != old_highRes.end())
-            {
-                m_highRes.at(it.first) = old_highRes.at(it.first);
-            }
+           if(old_highRes.find(it.first) != old_highRes.end())
+           {
+               m_highRes.at(it.first) = old_highRes.at(it.first);
+               old_highRes.erase(it.first);
+           }
        }
-    
+        
+       // This should be a cache based on 2 queues 
+       // and the distance of the centroids of the chunk to the current frustum centroid.
+       size_t numCopy = m_highRes.size() - 1000;
+       if(numCopy > 0 && (m_lastCentroids.size() > 0))
+       {
+           // ALL this is far from optimal.
+           typedef std::pair<float, size_t> IndexPair;
+           typedef std::pair<float, BaseVector<float> > CentroidPair;
+           std::priority_queue<IndexPair, std::vector<IndexPair>, CompareDistancePair<size_t> > index_queue;
+           std::priority_queue<CentroidPair, std::vector<CentroidPair>, CompareDistancePair<BaseVector<float> > > centroid_queue;
+           BaseVector<float> center = m_region.getCentroid();
+            
+           float distance = m_lastCentroids[0].distance(center);
+           index_queue.push({distance, m_lastIndices[0]});
+           for(size_t i = 1; i < m_lastCentroids.size(); ++i)
+           {
 
-        std::unordered_map<size_t, vtkSmartPointer<vtkActor>> tmp_highResActors;
+            float distance = m_lastCentroids[i].distance(center);
+             if(index_queue.size() < numCopy)
+             {
+                 centroid_queue.push({distance, m_lastCentroids[i]});
+                 index_queue.push({distance, m_lastIndices[i]});
+             }
+             else if(index_queue.top().first > distance)
+             {
+                 index_queue.pop();
+                 index_queue.push({distance, m_lastIndices[i]});
+                 centroid_queue.pop();
+                 centroid_queue.push({distance, m_lastCentroids[i]});
+             }
+           }
 
-        for(auto it = m_highRes.begin(); it != m_highRes.end(); ++it)
-        { 
-            auto chunk = *it;
-            size_t id = chunk.first;
-            lvr2::MeshBufferPtr meshbuffer = chunk.second;
+           m_lastIndices.clear();
+           m_lastCentroids.clear();
+           for(size_t i = 0; i < m_highResIndices.size(); ++i)
+           {
+                m_lastIndices.push_back(m_highResIndices[i]);
+                m_lastCentroids.push_back(m_highResCentroids[i]);
+            
+           }
 
-            if(m_highResActors.find(id) == m_highResActors.end())
-            {
-                tmp_highResActors.insert({id, computeMeshActor(id, meshbuffer)});
-            }
-            else
-            {
-                tmp_highResActors.insert({id, m_highResActors[id]});
-            }
+           while(!index_queue.empty())
+           {
+                size_t index = index_queue.top().second;
+                m_highRes.insert({index, old_highRes[index]});
+                m_lastIndices.push_back(index);
+                auto centroid = centroid_queue.top().second;
+                m_lastCentroids.push_back(centroid);
+           }
+       }
+
+
+       // compute and copy actors
+       std::unordered_map<size_t, vtkSmartPointer<vtkActor>> tmp_highResActors;
+       for(auto it = m_highRes.begin(); it != m_highRes.end(); ++it)
+       { 
+           auto chunk = *it;
+           size_t id = chunk.first;
+           lvr2::MeshBufferPtr meshbuffer = chunk.second;
+
+           if(m_highResActors.find(id) == m_highResActors.end())
+           {
+               tmp_highResActors.insert({id, computeMeshActor(id, meshbuffer)});
+           }
+           else
+           {
+               tmp_highResActors.insert({id, m_highResActors[id]});
+           }
        }
 
 
@@ -176,6 +238,7 @@ void LVRChunkedMeshBridge::highResWorker()
             }
        }
 
+       // Syncing with main thread.
        actorMap remove_actors;
        actorMap new_actors;
        for(auto& it: m_highResActors)
@@ -198,9 +261,7 @@ void LVRChunkedMeshBridge::highResWorker()
            }
        }
 
-
        Q_EMIT updateHighRes(remove_actors, new_actors);
-//       std::unique_lock<std::mutex> main_lock(mw_mutex);
 //       while(!release)
 //       {
 //            mw_cond.wait(main_lock);

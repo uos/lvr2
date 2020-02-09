@@ -48,9 +48,21 @@
 typedef std::unordered_map<size_t, vtkSmartPointer<vtkActor> > actorMap;
 Q_DECLARE_METATYPE(actorMap)
 
-
 //#include <GL/glx.h>
 namespace lvr2 {
+
+template <typename T>
+class CompareDistancePair
+{
+
+    public:
+        bool operator()(std::pair<float,T> p1, std::pair<float,T> p2)
+        {
+            return p1.first > p2.first;
+        }
+};
+
+
     class LVRChunkedMeshBridge : public QObject
     {
         Q_OBJECT
@@ -97,8 +109,11 @@ namespace lvr2 {
             bool running_;
             BoundingBox<BaseVector<float> > m_region;
             BoundingBox<BaseVector<float> > m_lastRegion;
+            // Maybe use 2 maps.
             std::vector<size_t> m_highResIndices;
             std::vector<BaseVector<float> > m_highResCentroids;
+            std::vector<size_t > m_lastIndices;
+            std::vector<BaseVector<float> > m_lastCentroids;
 
             std::vector<std::string> m_layers;
             void highResWorker();
