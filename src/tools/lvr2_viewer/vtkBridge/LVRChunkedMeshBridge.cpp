@@ -152,14 +152,14 @@ void LVRChunkedMeshBridge::highResWorker()
            if(old_highRes.find(it.first) != old_highRes.end())
            {
                m_highRes.at(it.first) = old_highRes.at(it.first);
-               old_highRes.erase(it.first);
+               //old_highRes.erase(it.first);
            }
        }
         
        // This should be a cache based on 2 queues 
        // and the distance of the centroids of the chunk to the current frustum centroid.
-       size_t numCopy = m_highRes.size() - 1000;
-       if(numCopy > 0 && (m_lastCentroids.size() > 0))
+       size_t numCopy =  1000 - m_highResIndices.size();
+       if(numCopy > 0)
        {
            // ALL this is far from optimal.
            typedef std::pair<float, size_t> IndexPair;
@@ -167,44 +167,55 @@ void LVRChunkedMeshBridge::highResWorker()
            std::priority_queue<IndexPair, std::vector<IndexPair>, CompareDistancePair<size_t> > index_queue;
            std::priority_queue<CentroidPair, std::vector<CentroidPair>, CompareDistancePair<BaseVector<float> > > centroid_queue;
            BaseVector<float> center = m_region.getCentroid();
-            
-           float distance = m_lastCentroids[0].distance(center);
-           index_queue.push({distance, m_lastIndices[0]});
-           for(size_t i = 1; i < m_lastCentroids.size(); ++i)
+           if(m_lastCentroids.size() > 0)
            {
+               float distance = m_lastCentroids[0].distance(center);
+               index_queue.push({distance, m_lastIndices[0]});
+               centroid_queue.push({distance, m_lastCentroids[0]});
+               for(size_t i = 1; i < m_lastCentroids.size(); ++i)
+               {
 
-            float distance = m_lastCentroids[i].distance(center);
-             if(index_queue.size() < numCopy)
-             {
-                 centroid_queue.push({distance, m_lastCentroids[i]});
-                 index_queue.push({distance, m_lastIndices[i]});
-             }
-             else if(index_queue.top().first > distance)
-             {
-                 index_queue.pop();
-                 index_queue.push({distance, m_lastIndices[i]});
-                 centroid_queue.pop();
-                 centroid_queue.push({distance, m_lastCentroids[i]});
-             }
+                   float distance = m_lastCentroids[i].distance(center);
+                   if(index_queue.size() < numCopy)
+                   {
+                       centroid_queue.push({distance, m_lastCentroids[i]});
+                       index_queue.push({distance, m_lastIndices[i]});
+                   }
+                   else if(index_queue.top().first > distance)
+                   {
+                       index_queue.pop();
+                       index_queue.push({distance, m_lastIndices[i]});
+                       centroid_queue.pop();
+                       centroid_queue.push({distance, m_lastCentroids[i]});
+                   }
+               }
            }
 
+           std::cout << "m_last size " << m_lastCentroids.size() << std::endl;
+           std::cout << index_queue.size() << " " << centroid_queue.size() << std::endl;
            m_lastIndices.clear();
            m_lastCentroids.clear();
-           for(size_t i = 0; i < m_highResIndices.size(); ++i)
+           for(size_t i = 0; i < visible_indices.size(); ++i)
            {
-                m_lastIndices.push_back(m_highResIndices[i]);
-                m_lastCentroids.push_back(m_highResCentroids[i]);
+                m_lastIndices.push_back(visible_indices[i]);
+                m_lastCentroids.push_back(visible_centroids[i]);
             
            }
-
+           std::cout << "m_last size new" << m_lastCentroids.size() << std::endl;
+           std::cout << index_queue.size() << " " << centroid_queue.size() << std::endl;
            while(!index_queue.empty())
            {
                 size_t index = index_queue.top().second;
+                // here is the error it maybe already present in highres
+                //  and deleted from old_highres....
+                index_queue.pop();
                 m_highRes.insert({index, old_highRes[index]});
                 m_lastIndices.push_back(index);
                 auto centroid = centroid_queue.top().second;
+                centroid_queue.pop();
                 m_lastCentroids.push_back(centroid);
            }
+           std::cout << "Popped " << std::endl;
        }
 
 

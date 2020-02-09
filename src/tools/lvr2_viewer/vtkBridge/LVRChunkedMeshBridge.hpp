@@ -68,7 +68,7 @@ class CompareDistancePair
         Q_OBJECT
         public:
             LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtkRenderer> renderer,
-                                 std::vector<std::string> layers, size_t cache_size = 300, double highResDistance = 150.0);
+                                 std::vector<std::string> layers, size_t cache_size = 1000, double highResDistance = 150.0);
             void getActors(double planes[24],
                     std::vector<BaseVector<float> >& centroids, 
                     std::vector<size_t >& indices);
