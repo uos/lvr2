@@ -140,6 +140,11 @@ class Options : public lvr2::BaseOption
     bool useRansac() const;
 
     /**
+     * @brief   Returns the flipPoint for GPU normal computation
+     */
+    vector<float> getFlippoint() const;
+
+    /**
      * @brief   Whether to extend the grid. Enabled by default.
      */
     bool extrude() const;
@@ -375,8 +380,6 @@ class Options : public lvr2::BaseOption
 
     bool getUseNormals() const;
 
-    vector<float> getFlippoint() const;
-
     size_t getVolumenSize() const;
 
     size_t getLineReaderBuffer() const;
@@ -413,6 +416,9 @@ class Options : public lvr2::BaseOption
 
     /// The number of neighbors for normal estimation
     int m_kn;
+
+    /// flipPoint for GPU normal computation
+    vector<float> m_flippoint;
 
     /// extruded flag
     bool m_extrude;
@@ -534,17 +540,11 @@ class Options : public lvr2::BaseOption
 
     bool m_use_normals;
 
-
-    vector<float> m_flippoint;
-
-
     size_t m_volumenSize;
 
     size_t m_lineReaderBuffer;
 
     bool m_onlyNormals;
-
-    string m_partialReconstruct;
 
 };
 
