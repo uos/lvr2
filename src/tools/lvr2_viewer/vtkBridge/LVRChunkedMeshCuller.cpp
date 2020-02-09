@@ -49,7 +49,7 @@ double ChunkedMeshCuller::Cull(vtkRenderer *ren,
     double scale = cam->GetParallelScale();
 
     cam->SetParallelScale(1.0);
-    cam->SetClippingRange(0.01, 150.0);
+    cam->SetClippingRange(0.01, 200.0);
     double planes_high[24];
     cam->GetFrustumPlanes(ren->GetTiledAspectRatio(), planes_high);
     BaseVector<float> base(dir[0], dir[1], dir[2]);
@@ -89,9 +89,12 @@ double ChunkedMeshCuller::Cull(vtkRenderer *ren,
     //actors->InitTraversal();
 
 
-    for(size_t i = 0; i < indices.size(); ++i)
+    if(lowRes.size() > 0)
     {
-          lowRes.at(indices[i])->VisibilityOn();
+        for(size_t i = 0; i < indices.size(); ++i)
+        {
+            lowRes.at(indices[i])->VisibilityOn();
+        }
     }
     
     for(auto& it: highRes)
@@ -102,7 +105,10 @@ double ChunkedMeshCuller::Cull(vtkRenderer *ren,
             {
                 it.second->VisibilityOn();
             }
-            lowRes.at(it.first)->VisibilityOff();
+            if(lowRes.size() > 0)
+            {
+                lowRes.at(it.first)->VisibilityOff();
+            }
         }
         else
         {

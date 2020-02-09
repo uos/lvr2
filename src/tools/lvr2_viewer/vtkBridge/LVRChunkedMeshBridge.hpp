@@ -55,7 +55,8 @@ namespace lvr2 {
     {
         Q_OBJECT
         public:
-            LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtkRenderer> renderer, size_t cache_size = 300, double highResDistance = 150.0);
+            LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtkRenderer> renderer,
+                                 std::vector<std::string> layers, size_t cache_size = 300, double highResDistance = 150.0);
             void getActors(double planes[24],
                     std::vector<BaseVector<float> >& centroids, 
                     std::vector<size_t >& indices);
@@ -94,6 +95,7 @@ namespace lvr2 {
             bool running_;
             BoundingBox<BaseVector<float> > m_region;
             BoundingBox<BaseVector<float> > m_lastRegion;
+            std::vector<std::string> m_layers;
 
             void highResWorker();
             lvr2::ChunkManager m_chunkManager;
