@@ -60,6 +60,7 @@ struct convert<lvr2::LSROptions>
         node["ki"] = options.ki;
         node["kd"] = options.kd;
         node["kn"] = options.kn;
+        node["flipPoint"] = options.flipPoint;
         node["useRansac"] = options.useRansac;
         node["extrude"] = options.extrude;
         node["removeDanglingArtifacts"] = options.removeDanglingArtifacts;
@@ -147,6 +148,11 @@ struct convert<lvr2::LSROptions>
         if (node["useRansac"])
         {
             options.useRansac = node["useRansac"].as<bool>();
+        }
+
+        if (node["flipPoint"])
+        {
+            options.flipPoint = node["flipPoint"].as<std::vector<float>>();
         }
 
         if (node["extrude"])
