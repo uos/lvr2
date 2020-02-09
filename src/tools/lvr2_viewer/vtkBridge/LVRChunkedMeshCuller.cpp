@@ -83,7 +83,7 @@ double ChunkedMeshCuller::Cull(vtkRenderer *ren,
     //highResArea.expand(eye + (perp * 100.0));
     //highResArea.expand(eye + (perp * ((-1) * 100.0)));
 
-    m_bridge->fetchHighRes(highResArea, indices2);
+    m_bridge->fetchHighRes(highResArea, indices2, centroids2);
 
     //vtkActorCollection* actors = ren->GetActors();
     //actors->InitTraversal();

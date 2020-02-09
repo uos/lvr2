@@ -105,7 +105,7 @@ void LVRChunkedMeshBridge::highResWorker()
            cond_.wait(l);
        }
        getNew_ = false;
-       std::vector<size_t> visible_indices = highResIndices;
+       std::vector<size_t> visible_indices = m_highResIndices;
        l.unlock();
        BaseVector<float> diff = m_region.getCentroid() - m_lastRegion.getCentroid();
        if(!(std::abs(diff[0]) > 1.0 || std::abs(diff[1]) > 1.0 || std::abs(diff[2]) > 1.0))
@@ -118,7 +118,7 @@ void LVRChunkedMeshBridge::highResWorker()
 
 
        auto old_highRes = m_highRes;
-       if(m_highRes.size() > 300)
+       if(m_highRes.size() > 1000)
        {
            m_highRes.clear();
        }
@@ -129,9 +129,11 @@ void LVRChunkedMeshBridge::highResWorker()
        }
        else
        {
-            //does this really move
-            m_highResActors = std::move(m_chunkActors);
-            std::cout << m_highResActors.size() << std::endl;
+            for(auto& index : visible_indices)
+            {
+                m_highRes.insert({index, m_chunks[index]});
+            }
+//            std::cout << m_highResActors.size() << std::endl;
        }
 
 
@@ -212,14 +214,16 @@ void LVRChunkedMeshBridge::highResWorker()
 }
 
 void LVRChunkedMeshBridge::fetchHighRes(BoundingBox<BaseVector<float> > bb,
-                                        std::vector<size_t> indices)
+                                        std::vector<size_t> indices,
+                                        std::vector<BaseVector<float> > centroids)
 {
-    // FUCK SYNCHRONIZATION
-//    std::unique_lock<std::mutex> l(mutex);
+    // FUCKING SYNCHRONIZATION
+    std::unique_lock<std::mutex> l(mutex);
     m_region = bb;
-    highResIndices = indices;
+    m_highResIndices = indices;
+    m_highResCentroids = centroids;
     getNew_ = true;
-//    l.unlock();
+    l.unlock();
     cond_.notify_all();
 
 }

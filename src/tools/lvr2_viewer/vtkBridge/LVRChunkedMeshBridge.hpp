@@ -71,7 +71,9 @@ namespace lvr2 {
             void addInitialActors(vtkSmartPointer<vtkRenderer> renderer);
 
 //            void fetchHighRes(double position[3], double dir[3], double up[3]);
-            void fetchHighRes(BoundingBox<BaseVector<float > > bb, std::vector<size_t> indices);
+            void fetchHighRes(BoundingBox<BaseVector<float > > bb,
+                              std::vector<size_t> indices,
+                              std::vector<BaseVector<float>> centroids);
         Q_SIGNALS:
             void updateHighRes(actorMap lowRes, actorMap highRes);
                     
@@ -95,11 +97,12 @@ namespace lvr2 {
             bool running_;
             BoundingBox<BaseVector<float> > m_region;
             BoundingBox<BaseVector<float> > m_lastRegion;
-            std::vector<std::string> m_layers;
+            std::vector<size_t> m_highResIndices;
+            std::vector<BaseVector<float> > m_highResCentroids;
 
+            std::vector<std::string> m_layers;
             void highResWorker();
             lvr2::ChunkManager m_chunkManager;
-            std::vector<size_t> highResIndices;
             std::unordered_map<size_t, MeshBufferPtr> m_chunks;
             std::unordered_map<size_t, MeshBufferPtr> m_highRes;
             std::unordered_map<size_t, vtkSmartPointer<vtkActor> > m_chunkActors;
