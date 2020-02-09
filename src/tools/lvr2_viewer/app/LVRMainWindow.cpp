@@ -976,8 +976,9 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 
             if (info.suffix() == "h5")
             {
+                std::vector<std::string> layers = {"mesh0"};
                 std::cout << info.absoluteFilePath().toStdString() << std::endl;
-                m_chunkBridge =  std::make_unique<LVRChunkedMeshBridge>(info.absoluteFilePath().toStdString(), m_renderer);
+                m_chunkBridge =  std::make_unique<LVRChunkedMeshBridge>(info.absoluteFilePath().toStdString(), m_renderer, layers);
                 m_chunkBridge->addInitialActors(m_renderer);
                 m_chunkCuller = new ChunkedMeshCuller(m_chunkBridge.get());
                 m_renderer->AddCuller(m_chunkCuller);

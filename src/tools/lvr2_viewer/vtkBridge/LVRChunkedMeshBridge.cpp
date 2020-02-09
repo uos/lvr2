@@ -18,6 +18,8 @@
 #include "LVRBoundingBoxBridge.hpp"
 #include <vtkXOpenGLRenderWindow.h>
 #include "PreloadOpenGLPolyDataMapper.h"
+#include <vtkGPUInfo.h>
+#include <vtkGPUInfoList.h>
 #include <omp.h>
 
 #include "GL/glx.h"
@@ -30,11 +32,26 @@ XVisualInfo* vinfo;
 Window x_window;
 Display* display;
 
-LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtkRenderer> renderer, size_t cache_size, double highResDistance) : m_chunkManager(file, cache_size), m_renderer(renderer)
+LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtkRenderer> renderer, std::vector<std::string> layers, size_t cache_size, double highResDistance) : m_chunkManager(file, cache_size), m_renderer(renderer), m_layers(layers)
 {
     getNew_ = false;
     dist_ = 40.0;
     running_ = true;
+
+
+  vtkGPUInfoList* l = vtkGPUInfoList::New();
+  l->Probe();
+  if (l->GetNumberOfGPUs() > 0)
+  {
+    vtkGPUInfo* info = l->GetGPUInfo(0);
+    std::cout << "GPU Memory available: " << std::endl;
+    std::cout << info->GetDedicatedVideoMemory() << std::endl;
+    std::cout << info->GetSharedSystemMemory() << std::endl;
+  }
+  else
+  {
+    std::cout << "No gpu" << std::endl;
+  }
 
     // get context opengl
     // createSharedcontext  from current.
@@ -101,12 +118,21 @@ void LVRChunkedMeshBridge::highResWorker()
 
 
        auto old_highRes = m_highRes;
-//       if(m_highRes.size() > 1000)
- //      {
+       if(m_highRes.size() > 300)
+       {
            m_highRes.clear();
-  //     }
+       }
 
-       m_chunkManager.extractArea(m_region, m_highRes, "mesh0");
+       if(m_layers.size() > 1)
+       {
+            m_chunkManager.extractArea(m_region, m_highRes, m_layers[0]);
+       }
+       else
+       {
+            //does this really move
+            m_highResActors = std::move(m_chunkActors);
+            std::cout << m_highResActors.size() << std::endl;
+       }
 
 
        for(auto& it : m_highRes)
@@ -210,8 +236,10 @@ void LVRChunkedMeshBridge::addInitialActors(vtkSmartPointer<vtkRenderer> rendere
     
     auto min = bb.getLongestSide(); 
     auto cam_position = centroid + BaseVector<float>(min, min, min);
-    Vector3d cam_origin(cam_position[0], cam_position[1], cam_position[2]);
+//    Vector3d cam_origin(cam_position[0], cam_position[1], cam_position[2]);
+    Vector3d cam_origin(0, 0, 0);
     Vector3d view_up(1.0, 0.0, 0.0);
+ //   Vector3d focal_point(centroid[0], centroid[1], centroid[2]);
     Vector3d focal_point(centroid[0], centroid[1], centroid[2]);
 
     renderer->GetActiveCamera()->SetPosition(cam_origin.x(), cam_origin.y(), cam_origin.z());
@@ -219,7 +247,17 @@ void LVRChunkedMeshBridge::addInitialActors(vtkSmartPointer<vtkRenderer> rendere
     renderer->GetActiveCamera()->SetViewUp(view_up.x(), view_up.y(), view_up.z());
 
 
-    m_chunkManager.extractArea(bb, m_chunks, "mesh1");
+    // maybe use pop back..
+    // maybe copy it..
+    if(m_layers.size() == 1)
+    {
+    
+        m_chunkManager.extractArea(bb, m_chunks, m_layers[0]);
+    }
+    else{
+    
+        m_chunkManager.extractArea(bb, m_chunks, m_layers[1]);
+    }
 
     std::vector<size_t> hashes;
 
@@ -259,15 +297,19 @@ void LVRChunkedMeshBridge::addInitialActors(vtkSmartPointer<vtkRenderer> rendere
     m_oct = std::make_unique<MeshOctree<BaseVector<float> >> (m_chunkManager.getChunkSize(),
             hashes, centroids, bb);
 
-    std::cout << "Computing actors " << std::endl;
-    computeMeshActors();
-    std::cout << "Adding actors." << std::endl;
-    for(auto& actor: m_chunkActors)
+
+    if(m_layers.size() > 1)
     {
-        renderer->AddActor(actor.second);
-        actor.second->VisibilityOff();
+        std::cout << "Computing actors " << std::endl;
+        computeMeshActors();
+        std::cout << "Adding actors." << std::endl;
+        for(auto& actor: m_chunkActors)
+        {
+            renderer->AddActor(actor.second);
+            actor.second->VisibilityOff();
+        }
+        std::cout << "Added " << m_chunkActors.size() << " actors" << std::endl;
     }
-    std::cout << "Added " << m_chunkActors.size() << " actors" << std::endl;
 }
 
 void LVRChunkedMeshBridge::getActors(double planes[24],
