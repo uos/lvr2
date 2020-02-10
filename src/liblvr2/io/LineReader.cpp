@@ -251,7 +251,7 @@ fileType LineReader::getFileType(size_t i)
                             "LineReader when reading file again?)");
     }
 }
-fileType LineReader::getFileType() { getFileType(m_currentReadFile); }
+fileType LineReader::getFileType() { return getFileType(m_currentReadFile); }
 
 bool LineReader::ok() { return m_currentReadFile < m_fileAttributes.size(); }
 

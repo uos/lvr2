@@ -235,7 +235,7 @@ bool HDF5IO::open(std::string filename, int open_flag)
     bool have_to_init = false;
 
     boost::filesystem::path path(filename);
-    if(!boost::filesystem::exists(path) | open_flag == HighFive::File::Truncate)
+    if( (!boost::filesystem::exists(path)) || (open_flag == HighFive::File::Truncate))
     {
         have_to_init = true;
     }
