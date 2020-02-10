@@ -70,464 +70,464 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
     omp_init_lock(&m_lock);
     m_voxelSize = voxelsize;
 
-        // First, parse whole file to get BoundingBox and amount of points
-        float ix, iy, iz;
-        std::cout << lvr2::timestamp << "Computing Bounding Box..." << std::endl;
-        m_numPoints = 0;
-        size_t rsize = 0;
-        LineReader lineReader(cloudPath);
-        size_t lasti = 0;
-        while (lineReader.ok())
+    // First, parse whole file to get BoundingBox and amount of points
+    float ix, iy, iz;
+    std::cout << lvr2::timestamp << "Computing Bounding Box..." << std::endl;
+    m_numPoints = 0;
+    size_t rsize = 0;
+    LineReader lineReader(cloudPath);
+    size_t lasti = 0;
+    while (lineReader.ok())
+    {
+        if (lineReader.getFileType() == XYZNRGB)
         {
-            if (lineReader.getFileType() == XYZNRGB)
+            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(
+                lineReader.getNextPoints(rsize, m_pointBufferSize));
+            if (rsize <= 0 && !lineReader.ok())
             {
-                boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(
-                    lineReader.getNextPoints(rsize, m_pointBufferSize));
-                if (rsize <= 0 && !lineReader.ok())
-                {
-                    break;
-                }
-                for (int i = 0; i < rsize; i++)
-                {
-                    m_bb.expand(BaseVecT(a.get()[i].point.x * m_scale,
-                                         a.get()[i].point.y * m_scale,
-                                         a.get()[i].point.z * m_scale));
-                    m_numPoints++;
-                }
+                break;
             }
-            else if (lineReader.getFileType() == XYZN)
+            for (int i = 0; i < rsize; i++)
             {
-                boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(
-                    lineReader.getNextPoints(rsize, m_pointBufferSize));
-                if (rsize <= 0 && !lineReader.ok())
-                {
-                    break;
-                }
-                for (int i = 0; i < rsize; i++)
-                {
-                    m_bb.expand(BaseVecT(a.get()[i].point.x * m_scale,
-                                         a.get()[i].point.y * m_scale,
-                                         a.get()[i].point.z * m_scale));
-                    m_numPoints++;
-                }
-            }
-            else if (lineReader.getFileType() == XYZ)
-            {
-                boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(
-                    lineReader.getNextPoints(rsize, m_pointBufferSize));
-                if (rsize <= 0 && !lineReader.ok())
-                {
-                    break;
-                }
-                for (size_t i = 0; i < rsize; i++)
-                {
-                    m_bb.expand(BaseVecT(a.get()[i].point.x * m_scale,
-                                         a.get()[i].point.y * m_scale,
-                                         a.get()[i].point.z * m_scale));
-                    m_numPoints++;
-                    lasti = i;
-                }
-            }
-            else if (lineReader.getFileType() == XYZRGB)
-            {
-                boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(
-                    lineReader.getNextPoints(rsize, m_pointBufferSize));
-                if (rsize <= 0 && !lineReader.ok())
-                {
-                    break;
-                }
-                for (size_t i = 0; i < rsize; i++)
-                {
-                    m_bb.expand(BaseVecT(a.get()[i].point.x * m_scale,
-                                         a.get()[i].point.y * m_scale,
-                                         a.get()[i].point.z * m_scale));
-                    m_numPoints++;
-                    lasti = i;
-                }
-            }
-            else
-            {
-                exit(-1);
+                m_bb.expand(BaseVecT(a.get()[i].point.x * m_scale,
+                                        a.get()[i].point.y * m_scale,
+                                        a.get()[i].point.z * m_scale));
+                m_numPoints++;
             }
         }
-
-        // Make box side lenghts be divisible by voxel size
-        float longestSide = m_bb.getLongestSide();
-
-        BaseVecT center = m_bb.getCentroid();
-        size_t xsize2 = calcIndex(m_bb.getXSize() / m_voxelSize);
-        float xsize = ceil(m_bb.getXSize() / voxelsize) * voxelsize;
-        float ysize = ceil(m_bb.getYSize() / voxelsize) * voxelsize;
-        float zsize = ceil(m_bb.getZSize() / voxelsize) * voxelsize;
-        m_bb.expand(BaseVecT(center.x + xsize / 2, center.y + ysize / 2, center.z + zsize / 2));
-        m_bb.expand(BaseVecT(center.x - xsize / 2, center.y - ysize / 2, center.z - zsize / 2));
-        longestSide = ceil(longestSide / voxelsize) * voxelsize;
-
-        // calc max indices
-
-        // m_maxIndex = (size_t)(longestSide/voxelsize);
-        m_maxIndexX = (size_t)(xsize / voxelsize);
-        m_maxIndexY = (size_t)(ysize / voxelsize);
-        m_maxIndexZ = (size_t)(zsize / voxelsize);
-        m_maxIndex = std::max(m_maxIndexX, std::max(m_maxIndexY, m_maxIndexZ)) + 5 * voxelsize;
-        m_maxIndexX += 1;
-        m_maxIndexY += 2;
-        m_maxIndexZ += 3;
-        m_maxIndexSquare = m_maxIndex * m_maxIndex;
-        std::cout << "BG: " << m_maxIndexSquare << "|" << m_maxIndexX << "|" << m_maxIndexY << "|"
-                  << m_maxIndexZ << std::endl;
-
-        string comment = lvr2::timestamp.getElapsedTime() + "Building grid... ";
-        lvr2::ProgressBar progress(this->m_numPoints, comment);
-
-        lineReader.rewind();
-
-        size_t idx, idy, idz;
-        while (lineReader.ok())
+        else if (lineReader.getFileType() == XYZN)
         {
-            if (lineReader.getFileType() == XYZNRGB)
+            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(
+                lineReader.getNextPoints(rsize, m_pointBufferSize));
+            if (rsize <= 0 && !lineReader.ok())
             {
-                boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(
-                    lineReader.getNextPoints(rsize, m_pointBufferSize));
-                if (rsize <= 0 && !lineReader.ok())
+                break;
+            }
+            for (int i = 0; i < rsize; i++)
+            {
+                m_bb.expand(BaseVecT(a.get()[i].point.x * m_scale,
+                                        a.get()[i].point.y * m_scale,
+                                        a.get()[i].point.z * m_scale));
+                m_numPoints++;
+            }
+        }
+        else if (lineReader.getFileType() == XYZ)
+        {
+            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(
+                lineReader.getNextPoints(rsize, m_pointBufferSize));
+            if (rsize <= 0 && !lineReader.ok())
+            {
+                break;
+            }
+            for (size_t i = 0; i < rsize; i++)
+            {
+                m_bb.expand(BaseVecT(a.get()[i].point.x * m_scale,
+                                        a.get()[i].point.y * m_scale,
+                                        a.get()[i].point.z * m_scale));
+                m_numPoints++;
+                lasti = i;
+            }
+        }
+        else if (lineReader.getFileType() == XYZRGB)
+        {
+            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(
+                lineReader.getNextPoints(rsize, m_pointBufferSize));
+            if (rsize <= 0 && !lineReader.ok())
+            {
+                break;
+            }
+            for (size_t i = 0; i < rsize; i++)
+            {
+                m_bb.expand(BaseVecT(a.get()[i].point.x * m_scale,
+                                        a.get()[i].point.y * m_scale,
+                                        a.get()[i].point.z * m_scale));
+                m_numPoints++;
+                lasti = i;
+            }
+        }
+        else
+        {
+            exit(-1);
+        }
+    }
+
+    // Make box side lenghts be divisible by voxel size
+    float longestSide = m_bb.getLongestSide();
+
+    BaseVecT center = m_bb.getCentroid();
+    size_t xsize2 = calcIndex(m_bb.getXSize() / m_voxelSize);
+    float xsize = ceil(m_bb.getXSize() / voxelsize) * voxelsize;
+    float ysize = ceil(m_bb.getYSize() / voxelsize) * voxelsize;
+    float zsize = ceil(m_bb.getZSize() / voxelsize) * voxelsize;
+    m_bb.expand(BaseVecT(center.x + xsize / 2, center.y + ysize / 2, center.z + zsize / 2));
+    m_bb.expand(BaseVecT(center.x - xsize / 2, center.y - ysize / 2, center.z - zsize / 2));
+    longestSide = ceil(longestSide / voxelsize) * voxelsize;
+
+    // calc max indices
+
+    // m_maxIndex = (size_t)(longestSide/voxelsize);
+    m_maxIndexX = (size_t)(xsize / voxelsize);
+    m_maxIndexY = (size_t)(ysize / voxelsize);
+    m_maxIndexZ = (size_t)(zsize / voxelsize);
+    m_maxIndex = std::max(m_maxIndexX, std::max(m_maxIndexY, m_maxIndexZ)) + 5 * voxelsize;
+    m_maxIndexX += 1;
+    m_maxIndexY += 2;
+    m_maxIndexZ += 3;
+    m_maxIndexSquare = m_maxIndex * m_maxIndex;
+    std::cout << "BG: " << m_maxIndexSquare << "|" << m_maxIndexX << "|" << m_maxIndexY << "|"
+                << m_maxIndexZ << std::endl;
+
+    string comment = lvr2::timestamp.getElapsedTime() + "Building grid... ";
+    lvr2::ProgressBar progress(this->m_numPoints, comment);
+
+    lineReader.rewind();
+
+    size_t idx, idy, idz;
+    while (lineReader.ok())
+    {
+        if (lineReader.getFileType() == XYZNRGB)
+        {
+            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(
+                lineReader.getNextPoints(rsize, m_pointBufferSize));
+            if (rsize <= 0 && !lineReader.ok())
+            {
+                break;
+            }
+            int dx, dy, dz;
+            for (int i = 0; i < rsize; i++)
+            {
+                ix = a.get()[i].point.x * m_scale;
+                iy = a.get()[i].point.y * m_scale;
+                iz = a.get()[i].point.z * m_scale;
+                idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
+                idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
+                idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                int e;
+                this->m_extrude ? e = 8 : e = 1;
+                for (int j = 0; j < e; j++)
                 {
-                    break;
-                }
-                int dx, dy, dz;
-                for (int i = 0; i < rsize; i++)
-                {
-                    ix = a.get()[i].point.x * m_scale;
-                    iy = a.get()[i].point.y * m_scale;
-                    iz = a.get()[i].point.z * m_scale;
-                    idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
-                    idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
-                    idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
-                    int e;
-                    this->m_extrude ? e = 8 : e = 1;
-                    for (int j = 0; j < e; j++)
+                    dx = HGCreateTable[j][0];
+                    dy = HGCreateTable[j][1];
+                    dz = HGCreateTable[j][2];
+                    size_t h = hashValue(idx + dx, idy + dy, idz + dz);
+                    if (j == 0)
+                        m_gridNumPoints[h].size++;
+                    else
                     {
-                        dx = HGCreateTable[j][0];
-                        dy = HGCreateTable[j][1];
-                        dz = HGCreateTable[j][2];
-                        size_t h = hashValue(idx + dx, idy + dy, idz + dz);
-                        if (j == 0)
-                            m_gridNumPoints[h].size++;
-                        else
+                        auto it = m_gridNumPoints.find(h);
+                        if (it == m_gridNumPoints.end())
                         {
-                            auto it = m_gridNumPoints.find(h);
-                            if (it == m_gridNumPoints.end())
-                            {
-                                m_gridNumPoints[h].size = 0;
-                            }
+                            m_gridNumPoints[h].size = 0;
                         }
                     }
                 }
             }
-            else if (lineReader.getFileType() == XYZN)
+        }
+        else if (lineReader.getFileType() == XYZN)
+        {
+            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(
+                lineReader.getNextPoints(rsize, m_pointBufferSize));
+            if (rsize <= 0 && !lineReader.ok())
             {
-                boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(
-                    lineReader.getNextPoints(rsize, m_pointBufferSize));
-                if (rsize <= 0 && !lineReader.ok())
-                {
-                    break;
-                }
-                int dx, dy, dz;
-                for (int i = 0; i < rsize; i++)
-                {
-                    ix = a.get()[i].point.x * m_scale;
-                    iy = a.get()[i].point.y * m_scale;
-                    iz = a.get()[i].point.z * m_scale;
-                    idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
-                    idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
-                    idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                break;
+            }
+            int dx, dy, dz;
+            for (int i = 0; i < rsize; i++)
+            {
+                ix = a.get()[i].point.x * m_scale;
+                iy = a.get()[i].point.y * m_scale;
+                iz = a.get()[i].point.z * m_scale;
+                idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
+                idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
+                idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
 
-                    int e;
-                    this->m_extrude ? e = 8 : e = 1;
-                    for (int j = 0; j < e; j++)
+                int e;
+                this->m_extrude ? e = 8 : e = 1;
+                for (int j = 0; j < e; j++)
+                {
+                    dx = HGCreateTable[j][0];
+                    dy = HGCreateTable[j][1];
+                    dz = HGCreateTable[j][2];
+                    size_t h = hashValue(idx + dx, idy + dy, idz + dz);
+                    if (j == 0)
+                        m_gridNumPoints[h].size++;
+                    else
                     {
-                        dx = HGCreateTable[j][0];
-                        dy = HGCreateTable[j][1];
-                        dz = HGCreateTable[j][2];
-                        size_t h = hashValue(idx + dx, idy + dy, idz + dz);
-                        if (j == 0)
-                            m_gridNumPoints[h].size++;
-                        else
+                        auto it = m_gridNumPoints.find(h);
+                        if (it == m_gridNumPoints.end())
                         {
-                            auto it = m_gridNumPoints.find(h);
-                            if (it == m_gridNumPoints.end())
-                            {
-                                m_gridNumPoints[h].size = 0;
-                            }
+                            m_gridNumPoints[h].size = 0;
                         }
                     }
                 }
             }
-            else if (lineReader.getFileType() == XYZ)
+        }
+        else if (lineReader.getFileType() == XYZ)
+        {
+            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(
+                lineReader.getNextPoints(rsize, m_pointBufferSize));
+            if (rsize <= 0 && !lineReader.ok())
             {
-                boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(
-                    lineReader.getNextPoints(rsize, m_pointBufferSize));
-                if (rsize <= 0 && !lineReader.ok())
+                break;
+            }
+            int dx, dy, dz;
+            for (int i = 0; i < rsize; i++)
+            {
+                ix = a.get()[i].point.x * m_scale;
+                iy = a.get()[i].point.y * m_scale;
+                iz = a.get()[i].point.z * m_scale;
+                idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
+                idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
+                idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                int e;
+                this->m_extrude ? e = 8 : e = 1;
+                for (int j = 0; j < e; j++)
                 {
-                    break;
-                }
-                int dx, dy, dz;
-                for (int i = 0; i < rsize; i++)
-                {
-                    ix = a.get()[i].point.x * m_scale;
-                    iy = a.get()[i].point.y * m_scale;
-                    iz = a.get()[i].point.z * m_scale;
-                    idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
-                    idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
-                    idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
-                    int e;
-                    this->m_extrude ? e = 8 : e = 1;
-                    for (int j = 0; j < e; j++)
+                    dx = HGCreateTable[j][0];
+                    dy = HGCreateTable[j][1];
+                    dz = HGCreateTable[j][2];
+                    size_t h = hashValue(idx + dx, idy + dy, idz + dz);
+                    if (j == 0)
+                        m_gridNumPoints[h].size++;
+                    else
                     {
-                        dx = HGCreateTable[j][0];
-                        dy = HGCreateTable[j][1];
-                        dz = HGCreateTable[j][2];
-                        size_t h = hashValue(idx + dx, idy + dy, idz + dz);
-                        if (j == 0)
-                            m_gridNumPoints[h].size++;
-                        else
+                        auto it = m_gridNumPoints.find(h);
+                        if (it == m_gridNumPoints.end())
                         {
-                            auto it = m_gridNumPoints.find(h);
-                            if (it == m_gridNumPoints.end())
-                            {
-                                m_gridNumPoints[h].size = 0;
-                            }
+                            m_gridNumPoints[h].size = 0;
                         }
                     }
                 }
             }
-            else if (lineReader.getFileType() == XYZRGB)
+        }
+        else if (lineReader.getFileType() == XYZRGB)
+        {
+            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(
+                lineReader.getNextPoints(rsize, m_pointBufferSize));
+            if (rsize <= 0 && !lineReader.ok())
             {
-                boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(
-                    lineReader.getNextPoints(rsize, m_pointBufferSize));
-                if (rsize <= 0 && !lineReader.ok())
+                break;
+            }
+            int dx, dy, dz;
+            for (int i = 0; i < rsize; i++)
+            {
+                ix = a.get()[i].point.x * m_scale;
+                iy = a.get()[i].point.y * m_scale;
+                iz = a.get()[i].point.z * m_scale;
+                idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
+                idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
+                idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                int e;
+                this->m_extrude ? e = 8 : e = 1;
+                for (int j = 0; j < e; j++)
                 {
-                    break;
-                }
-                int dx, dy, dz;
-                for (int i = 0; i < rsize; i++)
-                {
-                    ix = a.get()[i].point.x * m_scale;
-                    iy = a.get()[i].point.y * m_scale;
-                    iz = a.get()[i].point.z * m_scale;
-                    idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
-                    idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
-                    idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
-                    int e;
-                    this->m_extrude ? e = 8 : e = 1;
-                    for (int j = 0; j < e; j++)
+                    dx = HGCreateTable[j][0];
+                    dy = HGCreateTable[j][1];
+                    dz = HGCreateTable[j][2];
+                    size_t h = hashValue(idx + dx, idy + dy, idz + dz);
+                    if (j == 0)
+                        m_gridNumPoints[h].size++;
+                    else
                     {
-                        dx = HGCreateTable[j][0];
-                        dy = HGCreateTable[j][1];
-                        dz = HGCreateTable[j][2];
-                        size_t h = hashValue(idx + dx, idy + dy, idz + dz);
-                        if (j == 0)
-                            m_gridNumPoints[h].size++;
-                        else
+                        auto it = m_gridNumPoints.find(h);
+                        if (it == m_gridNumPoints.end())
                         {
-                            auto it = m_gridNumPoints.find(h);
-                            if (it == m_gridNumPoints.end())
-                            {
-                                m_gridNumPoints[h].size = 0;
-                            }
+                            m_gridNumPoints[h].size = 0;
                         }
                     }
                 }
             }
-            else
-            {
-                exit(-1);
-            }
-            progress += rsize;
         }
-
-        size_t num_cells = 0;
-        size_t offset = 0;
-        for (auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end(); ++it)
+        else
         {
-            it->second.offset = offset;
-            offset += it->second.size;
-            it->second.dist_offset = num_cells++;
+            exit(-1);
         }
+        progress += rsize;
+    }
 
-        lineReader.rewind();
+    size_t num_cells = 0;
+    size_t offset = 0;
+    for (auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end(); ++it)
+    {
+        it->second.offset = offset;
+        offset += it->second.size;
+        it->second.dist_offset = num_cells++;
+    }
 
-        boost::iostreams::mapped_file_params mmfparam;
-        mmfparam.path = "points.mmf";
-        mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
-        mmfparam.new_file_size = sizeof(float) * m_numPoints * 3;
+    lineReader.rewind();
 
-        boost::iostreams::mapped_file_params mmfparam_normal;
-        mmfparam_normal.path = "normals.mmf";
-        mmfparam_normal.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
-        mmfparam_normal.new_file_size = sizeof(float) * m_numPoints * 3;
+    boost::iostreams::mapped_file_params mmfparam;
+    mmfparam.path = "points.mmf";
+    mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
+    mmfparam.new_file_size = sizeof(float) * m_numPoints * 3;
 
-        boost::iostreams::mapped_file_params mmfparam_color;
-        mmfparam_color.path = "colors.mmf";
-        mmfparam_color.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
-        mmfparam_color.new_file_size = sizeof(unsigned char) * m_numPoints * 3;
+    boost::iostreams::mapped_file_params mmfparam_normal;
+    mmfparam_normal.path = "normals.mmf";
+    mmfparam_normal.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
+    mmfparam_normal.new_file_size = sizeof(float) * m_numPoints * 3;
 
-        m_PointFile.open(mmfparam);
-        float* mmfdata_normal;
-        unsigned char* mmfdata_color;
-        if (lineReader.getFileType() == XYZNRGB || lineReader.getFileType() == XYZN)
+    boost::iostreams::mapped_file_params mmfparam_color;
+    mmfparam_color.path = "colors.mmf";
+    mmfparam_color.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
+    mmfparam_color.new_file_size = sizeof(unsigned char) * m_numPoints * 3;
+
+    m_PointFile.open(mmfparam);
+    float* mmfdata_normal;
+    unsigned char* mmfdata_color;
+    if (lineReader.getFileType() == XYZNRGB || lineReader.getFileType() == XYZN)
+    {
+        m_NomralFile.open(mmfparam_normal);
+        mmfdata_normal = (float*)m_NomralFile.data();
+        m_has_normal = true;
+    }
+    if (lineReader.getFileType() == XYZNRGB || lineReader.getFileType() == XYZRGB)
+    {
+        m_ColorFile.open(mmfparam_color);
+        mmfdata_color = (unsigned char*)m_ColorFile.data();
+        m_has_color = true;
+    }
+    float* mmfdata = (float*)m_PointFile.data();
+
+    while (lineReader.ok())
+    {
+        if (lineReader.getFileType() == XYZNRGB)
         {
-            m_NomralFile.open(mmfparam_normal);
-            mmfdata_normal = (float*)m_NomralFile.data();
-            m_has_normal = true;
+            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(
+                lineReader.getNextPoints(rsize, m_pointBufferSize));
+            if (rsize <= 0 && !lineReader.ok())
+            {
+                break;
+            }
+            for (int i = 0; i < rsize; i++)
+            {
+                ix = a.get()[i].point.x * m_scale;
+                iy = a.get()[i].point.y * m_scale;
+                iz = a.get()[i].point.z * m_scale;
+                size_t idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
+                size_t idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
+                size_t idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                size_t h = hashValue(idx, idy, idz);
+                size_t ins = (m_gridNumPoints[h].inserted);
+                m_gridNumPoints[h].ix = idx;
+                m_gridNumPoints[h].iy = idy;
+                m_gridNumPoints[h].iz = idz;
+                m_gridNumPoints[h].inserted++;
+                size_t index = m_gridNumPoints[h].offset + ins;
+                mmfdata[index * 3] = ix;
+                mmfdata[index * 3 + 1] = iy;
+                mmfdata[index * 3 + 2] = iz;
+                mmfdata_normal[index * 3] = a.get()[i].normal.x;
+                mmfdata_normal[index * 3 + 1] = a.get()[i].normal.y;
+                mmfdata_normal[index * 3 + 2] = a.get()[i].normal.z;
+
+                mmfdata_color[index * 3] = a.get()[i].color.r;
+                mmfdata_color[index * 3 + 1] = a.get()[i].color.g;
+                mmfdata_color[index * 3 + 2] = a.get()[i].color.b;
+            }
         }
-        if (lineReader.getFileType() == XYZNRGB || lineReader.getFileType() == XYZRGB)
+        else if (lineReader.getFileType() == XYZN)
         {
-            m_ColorFile.open(mmfparam_color);
-            mmfdata_color = (unsigned char*)m_ColorFile.data();
-            m_has_color = true;
+            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(
+                lineReader.getNextPoints(rsize, m_pointBufferSize));
+            if (rsize <= 0 && !lineReader.ok())
+            {
+                break;
+            }
+            for (int i = 0; i < rsize; i++)
+            {
+                ix = a.get()[i].point.x * m_scale;
+                iy = a.get()[i].point.y * m_scale;
+                iz = a.get()[i].point.z * m_scale;
+                size_t idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
+                size_t idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
+                size_t idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                size_t h = hashValue(idx, idy, idz);
+                size_t ins = (m_gridNumPoints[h].inserted);
+                m_gridNumPoints[h].ix = idx;
+                m_gridNumPoints[h].iy = idy;
+                m_gridNumPoints[h].iz = idz;
+                m_gridNumPoints[h].inserted++;
+                size_t index = m_gridNumPoints[h].offset + ins;
+                mmfdata[index * 3] = ix;
+                mmfdata[index * 3 + 1] = iy;
+                mmfdata[index * 3 + 2] = iz;
+                mmfdata_normal[index * 3] = a.get()[i].normal.x;
+                mmfdata_normal[index * 3 + 1] = a.get()[i].normal.y;
+                mmfdata_normal[index * 3 + 2] = a.get()[i].normal.z;
+            }
         }
-        float* mmfdata = (float*)m_PointFile.data();
-
-        while (lineReader.ok())
+        else if (lineReader.getFileType() == XYZ)
         {
-            if (lineReader.getFileType() == XYZNRGB)
+            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(
+                lineReader.getNextPoints(rsize, m_pointBufferSize));
+            if (rsize <= 0 && !lineReader.ok())
             {
-                boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(
-                    lineReader.getNextPoints(rsize, m_pointBufferSize));
-                if (rsize <= 0 && !lineReader.ok())
-                {
-                    break;
-                }
-                for (int i = 0; i < rsize; i++)
-                {
-                    ix = a.get()[i].point.x * m_scale;
-                    iy = a.get()[i].point.y * m_scale;
-                    iz = a.get()[i].point.z * m_scale;
-                    size_t idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
-                    size_t idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
-                    size_t idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
-                    size_t h = hashValue(idx, idy, idz);
-                    size_t ins = (m_gridNumPoints[h].inserted);
-                    m_gridNumPoints[h].ix = idx;
-                    m_gridNumPoints[h].iy = idy;
-                    m_gridNumPoints[h].iz = idz;
-                    m_gridNumPoints[h].inserted++;
-                    size_t index = m_gridNumPoints[h].offset + ins;
-                    mmfdata[index * 3] = ix;
-                    mmfdata[index * 3 + 1] = iy;
-                    mmfdata[index * 3 + 2] = iz;
-                    mmfdata_normal[index * 3] = a.get()[i].normal.x;
-                    mmfdata_normal[index * 3 + 1] = a.get()[i].normal.y;
-                    mmfdata_normal[index * 3 + 2] = a.get()[i].normal.z;
-
-                    mmfdata_color[index * 3] = a.get()[i].color.r;
-                    mmfdata_color[index * 3 + 1] = a.get()[i].color.g;
-                    mmfdata_color[index * 3 + 2] = a.get()[i].color.b;
-                }
+                break;
             }
-            else if (lineReader.getFileType() == XYZN)
+            for (int i = 0; i < rsize; i++)
             {
-                boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(
-                    lineReader.getNextPoints(rsize, m_pointBufferSize));
-                if (rsize <= 0 && !lineReader.ok())
-                {
-                    break;
-                }
-                for (int i = 0; i < rsize; i++)
-                {
-                    ix = a.get()[i].point.x * m_scale;
-                    iy = a.get()[i].point.y * m_scale;
-                    iz = a.get()[i].point.z * m_scale;
-                    size_t idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
-                    size_t idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
-                    size_t idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
-                    size_t h = hashValue(idx, idy, idz);
-                    size_t ins = (m_gridNumPoints[h].inserted);
-                    m_gridNumPoints[h].ix = idx;
-                    m_gridNumPoints[h].iy = idy;
-                    m_gridNumPoints[h].iz = idz;
-                    m_gridNumPoints[h].inserted++;
-                    size_t index = m_gridNumPoints[h].offset + ins;
-                    mmfdata[index * 3] = ix;
-                    mmfdata[index * 3 + 1] = iy;
-                    mmfdata[index * 3 + 2] = iz;
-                    mmfdata_normal[index * 3] = a.get()[i].normal.x;
-                    mmfdata_normal[index * 3 + 1] = a.get()[i].normal.y;
-                    mmfdata_normal[index * 3 + 2] = a.get()[i].normal.z;
-                }
-            }
-            else if (lineReader.getFileType() == XYZ)
-            {
-                boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(
-                    lineReader.getNextPoints(rsize, m_pointBufferSize));
-                if (rsize <= 0 && !lineReader.ok())
-                {
-                    break;
-                }
-                for (int i = 0; i < rsize; i++)
-                {
-                    ix = a.get()[i].point.x * m_scale;
-                    iy = a.get()[i].point.y * m_scale;
-                    iz = a.get()[i].point.z * m_scale;
-                    size_t idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
-                    size_t idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
-                    size_t idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
-                    size_t h = hashValue(idx, idy, idz);
-                    size_t ins = (m_gridNumPoints[h].inserted);
-                    m_gridNumPoints[h].ix = idx;
-                    m_gridNumPoints[h].iy = idy;
-                    m_gridNumPoints[h].iz = idz;
-                    m_gridNumPoints[h].inserted++;
-                    size_t index = m_gridNumPoints[h].offset + ins;
-                    mmfdata[index * 3] = ix;
-                    mmfdata[index * 3 + 1] = iy;
-                    mmfdata[index * 3 + 2] = iz;
-                }
-            }
-            else if (lineReader.getFileType() == XYZRGB)
-            {
-                boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(
-                    lineReader.getNextPoints(rsize, m_pointBufferSize));
-                if (rsize <= 0 && !lineReader.ok())
-                {
-                    break;
-                }
-                for (int i = 0; i < rsize; i++)
-                {
-                    ix = a.get()[i].point.x * m_scale;
-                    iy = a.get()[i].point.y * m_scale;
-                    iz = a.get()[i].point.z * m_scale;
-                    size_t idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
-                    size_t idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
-                    size_t idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
-                    size_t h = hashValue(idx, idy, idz);
-                    size_t ins = (m_gridNumPoints[h].inserted);
-                    m_gridNumPoints[h].ix = idx;
-                    m_gridNumPoints[h].iy = idy;
-                    m_gridNumPoints[h].iz = idz;
-                    m_gridNumPoints[h].inserted++;
-                    size_t index = m_gridNumPoints[h].offset + ins;
-                    mmfdata[index * 3] = ix;
-                    mmfdata[index * 3 + 1] = iy;
-                    mmfdata[index * 3 + 2] = iz;
-                    mmfdata_color[index * 3] = a.get()[i].color.r;
-                    mmfdata_color[index * 3 + 1] = a.get()[i].color.g;
-                    mmfdata_color[index * 3 + 2] = a.get()[i].color.b;
-                }
+                ix = a.get()[i].point.x * m_scale;
+                iy = a.get()[i].point.y * m_scale;
+                iz = a.get()[i].point.z * m_scale;
+                size_t idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
+                size_t idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
+                size_t idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                size_t h = hashValue(idx, idy, idz);
+                size_t ins = (m_gridNumPoints[h].inserted);
+                m_gridNumPoints[h].ix = idx;
+                m_gridNumPoints[h].iy = idy;
+                m_gridNumPoints[h].iz = idz;
+                m_gridNumPoints[h].inserted++;
+                size_t index = m_gridNumPoints[h].offset + ins;
+                mmfdata[index * 3] = ix;
+                mmfdata[index * 3 + 1] = iy;
+                mmfdata[index * 3 + 2] = iz;
             }
         }
+        else if (lineReader.getFileType() == XYZRGB)
+        {
+            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(
+                lineReader.getNextPoints(rsize, m_pointBufferSize));
+            if (rsize <= 0 && !lineReader.ok())
+            {
+                break;
+            }
+            for (int i = 0; i < rsize; i++)
+            {
+                ix = a.get()[i].point.x * m_scale;
+                iy = a.get()[i].point.y * m_scale;
+                iz = a.get()[i].point.z * m_scale;
+                size_t idx = calcIndex((ix - m_bb.getMin()[0]) / voxelsize);
+                size_t idy = calcIndex((iy - m_bb.getMin()[1]) / voxelsize);
+                size_t idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
+                size_t h = hashValue(idx, idy, idz);
+                size_t ins = (m_gridNumPoints[h].inserted);
+                m_gridNumPoints[h].ix = idx;
+                m_gridNumPoints[h].iy = idy;
+                m_gridNumPoints[h].iz = idz;
+                m_gridNumPoints[h].inserted++;
+                size_t index = m_gridNumPoints[h].offset + ins;
+                mmfdata[index * 3] = ix;
+                mmfdata[index * 3 + 1] = iy;
+                mmfdata[index * 3 + 2] = iz;
+                mmfdata_color[index * 3] = a.get()[i].color.r;
+                mmfdata_color[index * 3 + 1] = a.get()[i].color.g;
+                mmfdata_color[index * 3 + 2] = a.get()[i].color.b;
+            }
+        }
+    }
 
-        //    for(auto it = m_gridNumPoints.begin(); it!= m_gridNumPoints.end() ; it++)
-        //    {
-        //        std::cout << "h : " << it->first << std::endl;
-        //    }
-        m_PointFile.close();
-        m_NomralFile.close();
-        mmfparam.path = "distances.mmf";
-        mmfparam.new_file_size = sizeof(float) * size() * 8;
+    //    for(auto it = m_gridNumPoints.begin(); it!= m_gridNumPoints.end() ; it++)
+    //    {
+    //        std::cout << "h : " << it->first << std::endl;
+    //    }
+    m_PointFile.close();
+    m_NomralFile.close();
+    mmfparam.path = "distances.mmf";
+    mmfparam.new_file_size = sizeof(float) * size() * 8;
 
-        m_PointFile.open(mmfparam);
-        m_PointFile.close();
+    m_PointFile.open(mmfparam);
+    m_PointFile.close();
 }
 
 
@@ -565,7 +565,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             boost::shared_array<float> points = pos->scans[0]->points->getPointArray();
             Transformd finalPose_n = pos->scans[0]->registration;
 
-            Transformd finalPose = finalPose_n.transpose();
+            Transformd finalPose = finalPose_n;
 
             for (int k = 0; k < numPoints; k++)
             {
@@ -582,7 +582,6 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             {
                 m_partialbb.expand(box);
             }
-
             scan_boxes.push_back(box);
 
             if(!timestamp.isQuiet())
@@ -618,21 +617,19 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
 
         for (int i = 0; i < project->changed.size(); i++)
         {
-
-            if ((project->changed.at(i) != true) && m_partialbb.isValid() && !m_partialbb.overlap(scan_boxes.at(i)))
+            if ((!project->changed.at(i)) && m_partialbb.isValid() && !m_partialbb.overlap(scan_boxes.at(i)))
             {
                 cout << "Scan No. " << i << " ignored!" << endl;
             }
             else
             {
 
-
                 ScanPositionPtr pos = project->project->positions.at(i);
                 size_t numPoints = pos->scans[0]->points->numPoints();
                 boost::shared_array<float> points = pos->scans[0]->points->getPointArray();
                 m_numPoints += numPoints;
                 Transformd finalPose_n = pos->scans[0]->registration;
-                Transformd finalPose = finalPose_n.transpose();
+                Transformd finalPose = finalPose_n;
                 int dx, dy, dz;
                 for (int k = 0; k < numPoints; k++)
                 {
@@ -718,7 +715,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
 
                 boost::shared_array<float> points = pos->scans[0]->points->getPointArray();
                 Transformd finalPose_n = pos->scans[0]->registration;
-                Transformd finalPose = finalPose_n.transpose();
+                Transformd finalPose = finalPose_n;
                 for (int k = 0; k < numPoints; k++) {
                     Eigen::Vector4d point(
                             points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);

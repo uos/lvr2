@@ -34,33 +34,42 @@
 
 using namespace lvr2;
 
-void getDifference(Transformd a, Transformd b, double *angle_diff, double *translation_diff)
+bool RegistrationPipeline::isToleratedDifference(Transformd a, Transformd b)
 {
-    // get translations difference
-    auto trans_a = a.block<3, 1>(0, 3);
-    auto trans_b = b.block<3, 1>(0, 3);
+    Rotationd rotateA = a.block<3, 3>(0, 0);
+    Rotationd rotateB = b.block<3, 3>(0, 0);
+    Vector4d translateA = a.col(3);
+    Vector4d translateB = b.col(3);
+    assert(translateA[3] == 1.0);
+    assert(translateB[3] == 1.0);
 
-    *translation_diff = 0.0;
-    for(int i = 0; i < 3; ++i)
+    // calculate translation distance
+    double dist = (translateB - translateA).norm();
+
+    // calculate angle difference
+    Rotationd bTransposed = rotateB.transpose();
+    Rotationd r = rotateA * bTransposed;
+
+    double tmp = (r.trace() / 2.0) - 0.5;
+
+    // fix so there will be no rounding errors, otherwise acos can be nan !!!
+    if (tmp < -1.0)
     {
-        *translation_diff+= std::pow(trans_a[i] - trans_b[i], 2);
+        tmp = -1.0;
     }
-    *translation_diff = std::sqrt(*translation_diff);
-
-    // get rotations difference
-    Eigen::Vector3d a_angles = a.block<3,3>(0,0).eulerAngles(0, 1, 2);
-    Eigen::Vector3d b_angles = b.block<3,3>(0,0).eulerAngles(0, 1, 2);
-
-    *angle_diff = 0.0;
-
-    for(int i = 0; i < 3; ++i)
+    else if (tmp > 1.0)
     {
-        *angle_diff += std::abs(a_angles[i] - b_angles[i]);
+        tmp = 1.0;
     }
 
-    std::cout << "translation_diff: " << *translation_diff << std::endl;
-    std::cout << "angle_diff: " << *angle_diff << std::endl;
-    
+    double angle = std::acos(tmp);
+
+    if(m_options->verbose)
+    {
+        std::cout << "PoseDiff: " << dist << " ; AngleDiff: " << angle << std::endl;
+    }
+
+    return (angle < m_options->diffAngle && dist < m_options->diffPosition);
 }
 
 void rotateAroundYAxis(Transformd *inputMatrix4x4, double angle)
@@ -80,7 +89,7 @@ void rotateAroundYAxis(Transformd *inputMatrix4x4, double angle)
                     v(1)*v(0)*(1.0-cosA)+v(2)*sinA, v(1)*v(1)*(1.0-cosA)+cosA, v(1)*v(2)*(1.0-cosA)-v(0)*sinA,
                     v(2)*v(0)*(1.0-cosA)-v(1)*sinA, v(2)*v(1)*(1.0-cosA)+v(0)*sinA, v(2)*v(2)*(1.0-cosA)+cosA;
     tmp_mat = tmp_mat * mult_mat;
-    
+
     // save result in original Matrix
     inputMatrix4x4[0](0,0) = tmp_mat(0,0);
     inputMatrix4x4[0](0,1) = tmp_mat(0,1);
@@ -103,11 +112,8 @@ RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProje
 void RegistrationPipeline::doRegistration()
 {
     SLAMAlign align(*m_options);
-    m_scans->changed = std::vector<bool>(m_scans->project->positions.size());
     for (size_t i = 0; i < m_scans->project->positions.size(); i++)
     {
-        m_scans->changed.at(i) = false;
-        
         if(m_scans->project->positions.at(i)->scans.size())
         {
             rotateAroundYAxis(&(m_scans->project->positions[i]->scans[0]->poseEstimation), m_options->rotate_angle * M_PI / 180);
@@ -124,7 +130,7 @@ void RegistrationPipeline::doRegistration()
     }
 
     align.finish();
-    
+
     if (m_options->verbose)
     {
         cout << "Aus doRegistaration: nach finish" << endl;
@@ -136,11 +142,7 @@ void RegistrationPipeline::doRegistration()
         // check if the new pos different to old pos
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
-        double angle_diff;
-        double translation_diff;
-        getDifference(posPtr->scans[0]->registration, align.scan(i)->pose(), &angle_diff, &translation_diff);
-
-        if ((!m_scans->changed.at(i)) && (angle_diff > m_options->diffAngle || translation_diff > m_options->diffPosition))
+        if ((!m_scans->changed.at(i)) && !isToleratedDifference(posPtr->scans[0]->registration, align.scan(i)->pose()))
         {
             m_scans->changed.at(i) = true;
             cout << "New Values"<< endl;
@@ -152,7 +154,7 @@ void RegistrationPipeline::doRegistration()
         }
     }
     cout << "First registration done" << endl;
-    
+
     // new align with fix old values only when not all poses new
     if (all_values_new)
     {
@@ -176,14 +178,14 @@ void RegistrationPipeline::doRegistration()
 
         align.finish();
     }
-    
+
     for (int i = 0; i < m_scans->project->positions.size(); i++)
     {
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
         if (m_scans->changed.at(i) || all_values_new)
         {
-            posPtr->scans[0]->registration = align.scan(i)->pose().transpose();
+            posPtr->scans[0]->registration = align.scan(i)->pose();
             cout << "Pose Scan Nummer " << i << endl << posPtr->scans[0]->registration << endl;
         }
     }
