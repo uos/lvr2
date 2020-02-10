@@ -173,7 +173,7 @@ bool ChunkingPipeline<BaseVecT>::getScanProject(const boost::filesystem::path& d
     bool importStatus = loadScanProject(dirPath, dirScanProject);
 
     ScanProjectEditMark tmpScanProject;
-    std::vector<bool> init(scanProjectPtr->positions.size());
+    std::vector<bool> init(scanProjectPtr->positions.size(), false);
     tmpScanProject.changed = init;
 
     if (!importStatus)
