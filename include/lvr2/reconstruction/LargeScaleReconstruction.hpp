@@ -58,7 +58,7 @@ namespace lvr2
         float scale = 1;
 
         //ChunkSize, should be constant through all processes .
-        size_t chunkSize = 20;
+        float chunkSize = 20;
 
         // Max. Number of Points in a leaf (used to devide pointcloud).
         uint nodeSize = 1000000;
@@ -224,7 +224,7 @@ namespace lvr2
         float m_scale;
 
         //ChunkSize, should be constant through all processes . Default: 20
-        size_t m_chunkSize;
+        float m_chunkSize;
 
         // Max. Number of Points in a leaf (used to devide pointcloud). Default: 1000000
         uint m_nodeSize;
