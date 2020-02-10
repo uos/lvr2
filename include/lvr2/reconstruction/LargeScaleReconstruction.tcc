@@ -133,6 +133,8 @@ namespace lvr2
             std::shared_ptr<ChunkHashGrid> chunkManager)
     {
 
+        m_chunkSize = chunkManager->getChunkSize();
+
         if(project->project->positions.size() != project->changed.size())
         {
             cout << "Inconsistency between number of given scans and diff-vector (scans to consider)! exit..." << endl;
