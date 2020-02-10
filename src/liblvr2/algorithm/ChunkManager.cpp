@@ -135,10 +135,14 @@ std::vector<std::string> ChunkManager::getChannelsFromMesh(std::string layer)
             }
         }
     }
-    for (auto channelIterator = chunkPtr->begin(); channelIterator != chunkPtr->end();
-         ++channelIterator)
+
+    if (isChunkFound)
     {
-        attributeList.push_back(channelIterator->first);
+        for (auto channelIterator = chunkPtr->begin(); channelIterator != chunkPtr->end();
+             ++channelIterator)
+        {
+            attributeList.push_back(channelIterator->first);
+        }
     }
     return attributeList;
 }
