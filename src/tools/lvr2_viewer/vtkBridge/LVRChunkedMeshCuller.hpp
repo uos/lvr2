@@ -20,7 +20,9 @@ namespace lvr2 {
     class ChunkedMeshCuller: public vtkCuller
     {
         public:
-            ChunkedMeshCuller(LVRChunkedMeshBridge* bridge) : m_bridge(bridge), cull_(true) {}
+            ChunkedMeshCuller(LVRChunkedMeshBridge* bridge, double highResDistance = 150.0) : m_bridge(bridge), cull_(true), m_highResDistance(highResDistance){
+                std::cout << "Initialized Culler with highResDistance: " << m_highResDistance << std::endl;
+            }
 
             virtual double Cull(vtkRenderer *ren, vtkProp **propList, int &listLength, int &initialized) override;
 
@@ -30,6 +32,7 @@ namespace lvr2 {
         private:
             LVRChunkedMeshBridge* m_bridge;
             bool cull_;
+            double m_highResDistance;
         };
 }
 

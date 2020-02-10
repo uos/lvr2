@@ -131,6 +131,7 @@ public Q_SLOTS:
 
     void loadModel();
     void loadModels(const QStringList& filenames);
+    void loadChunkedMesh(const QStringList& filenames, std::vector<std::string> layers, int cacheSize, float highResDistance);
     void manualICP();
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);

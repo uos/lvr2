@@ -68,7 +68,7 @@ class CompareDistancePair
         Q_OBJECT
         public:
             LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtkRenderer> renderer,
-                                 std::vector<std::string> layers, size_t cache_size = 1000, double highResDistance = 150.0);
+                                 std::vector<std::string> layers, size_t cache_size = 1000);
             void getActors(double planes[24],
                     std::vector<BaseVector<float> >& centroids, 
                     std::vector<size_t >& indices);
@@ -82,15 +82,15 @@ class CompareDistancePair
                     //std::unordered_map<size_t, vtkSmartPointer<vtkActor> >& actors);
             void addInitialActors(vtkSmartPointer<vtkRenderer> renderer);
 
-//            void fetchHighRes(double position[3], double dir[3], double up[3]);
             void fetchHighRes(BoundingBox<BaseVector<float > > bb,
                               std::vector<size_t> indices,
                               std::vector<BaseVector<float>> centroids);
+
+            double getHighResDistance() {return m_highResDistance; }
+
         Q_SIGNALS:
             void updateHighRes(actorMap lowRes, actorMap highRes);
                     
-                   // std::unordered_map<size_t, vtkSmartPointer<vtkActor> > lowResActors,
-                   //            std::unordered_map<size_t, vtkSmartPointer<vtkActor> > highResActors);
 
         protected:
             void computeMeshActors();
@@ -98,13 +98,11 @@ class CompareDistancePair
 
         private:
             vtkSmartPointer<vtkRenderer> m_renderer;
-        //            Display* display;
-    //        Window x_window;
 
             std::thread worker;
             std::mutex mutex;
             std::condition_variable cond_;
-            double dist_;
+            double m_highResDistance;
             bool getNew_;
             bool running_;
             BoundingBox<BaseVector<float> > m_region;
@@ -116,16 +114,15 @@ class CompareDistancePair
             std::vector<BaseVector<float> > m_lastCentroids;
 
             std::vector<std::string> m_layers;
+            size_t m_cacheSize;
             void highResWorker();
             lvr2::ChunkManager m_chunkManager;
             std::unordered_map<size_t, MeshBufferPtr> m_chunks;
             std::unordered_map<size_t, MeshBufferPtr> m_highRes;
             std::unordered_map<size_t, vtkSmartPointer<vtkActor> > m_chunkActors;
-//            std::unordered_map<size_t, vtkSmartPointervtkActor> > m_chunkActors;
             std::unordered_map<size_t, vtkSmartPointer<vtkActor> > m_highResActors;
 
             std::unique_ptr<MeshOctree<BaseVector<float> > > m_oct;
-//            std::unordered_map<size_t, std::vector<vtkPolyData> > > m_chunkActors;
     };
 } // namespace lvr2
 
