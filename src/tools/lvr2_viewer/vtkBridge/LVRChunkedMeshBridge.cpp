@@ -37,12 +37,10 @@ XVisualInfo* vinfo;
 Window x_window;
 Display* display;
 
-LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtkRenderer> renderer, std::vector<std::string> layers, size_t cache_size, double highResDistance) : m_chunkManager(file, cache_size), m_renderer(renderer), m_layers(layers)
+LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtkRenderer> renderer, std::vector<std::string> layers, size_t cache_size) : m_chunkManager(file, cache_size), m_renderer(renderer), m_layers(layers), m_cacheSize(cache_size)
 {
     getNew_ = false;
-    dist_ = 40.0;
     running_ = true;
-
 
     vtkGPUInfoList* l = vtkGPUInfoList::New();
     l->Probe();
@@ -92,7 +90,6 @@ LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtk
 }
 
 
-
 void LVRChunkedMeshBridge::highResWorker()
 {
     bool success = glXMakeCurrent(display, x_window, m_workerContext);
@@ -122,11 +119,10 @@ void LVRChunkedMeshBridge::highResWorker()
        m_lastRegion = m_region;
        l.unlock();
 
+       // Needed for consistency for underlying buffers of actors.
+       // see below.
        auto old_highRes = m_highRes;
-       if(m_highRes.size() > 1000)
-       {
-           m_highRes.clear();
-       }
+       m_highRes.clear();
 
        // check if there is only one layer.
        // if yes use the chunks from the "lowRes" layer.
@@ -142,7 +138,6 @@ void LVRChunkedMeshBridge::highResWorker()
             }
        }
 
-
        // Consistency for underlying buffers of actors.
        // The chunkmanagers may have loaded new meshbuffers while we use old ones
        // Use the old ones otherwise we need to rebuild and copy the actors.
@@ -152,15 +147,18 @@ void LVRChunkedMeshBridge::highResWorker()
            if(old_highRes.find(it.first) != old_highRes.end())
            {
                m_highRes.at(it.first) = old_highRes.at(it.first);
+               // TODO Not clearing may result in duplicates.
                //old_highRes.erase(it.first);
            }
        }
         
        // This should be a cache based on 2 queues 
        // and the distance of the centroids of the chunk to the current frustum centroid.
-       size_t numCopy =  1000 - m_highResIndices.size();
+       size_t numCopy =  m_cacheSize - m_highResIndices.size();
        if(numCopy > 0)
        {
+           // This is the caching based on the distance of the centroids
+           // to the centroids from the current visible region.
            // ALL this is far from optimal.
            typedef std::pair<float, size_t> IndexPair;
            typedef std::pair<float, BaseVector<float> > CentroidPair;
@@ -191,18 +189,18 @@ void LVRChunkedMeshBridge::highResWorker()
                }
            }
 
-           std::cout << "m_last size " << m_lastCentroids.size() << std::endl;
-           std::cout << index_queue.size() << " " << centroid_queue.size() << std::endl;
            m_lastIndices.clear();
            m_lastCentroids.clear();
+
+           // add current visible to cache
            for(size_t i = 0; i < visible_indices.size(); ++i)
            {
                 m_lastIndices.push_back(visible_indices[i]);
                 m_lastCentroids.push_back(visible_centroids[i]);
             
            }
-           std::cout << "m_last size new" << m_lastCentroids.size() << std::endl;
-           std::cout << index_queue.size() << " " << centroid_queue.size() << std::endl;
+            
+           // Build new cache.
            while(!index_queue.empty())
            {
                 size_t index = index_queue.top().second;
@@ -215,9 +213,7 @@ void LVRChunkedMeshBridge::highResWorker()
                 centroid_queue.pop();
                 m_lastCentroids.push_back(centroid);
            }
-           std::cout << "Popped " << std::endl;
        }
-
 
        // compute and copy actors
        std::unordered_map<size_t, vtkSmartPointer<vtkActor>> tmp_highResActors;

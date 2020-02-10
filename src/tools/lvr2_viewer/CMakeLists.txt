@@ -13,6 +13,7 @@ set(LVR2_VIEWER_SOURCES
     app/LVRMain.cpp
     app/LVRMainWindow.cpp
     app/LVRTreeWidgetHelper.cpp
+    app/Options.cpp
     vtkBridge/LVRBoundingBoxBridge.cpp
     vtkBridge/LVRModelBridge.cpp
     vtkBridge/LVRPointBufferBridge.cpp

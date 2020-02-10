@@ -62,6 +62,8 @@
 
 #include <QMetaType>
 
+#include "Options.hpp"
+
 namespace lvr2
 {
 
@@ -961,6 +963,41 @@ LVRModelItem* LVRMainWindow::loadModelItem(QString name)
     return item;
 }
 
+void LVRMainWindow::loadChunkedMesh(const QStringList& filenames, std::vector<std::string> layers, int cacheSize, float highResDistance)
+{
+    if(filenames.size() > 0)
+    {
+        QTreeWidgetItem* lastItem = nullptr;
+
+        QStringList::const_iterator it = filenames.begin();
+        while(it != filenames.end())
+        {
+            QFileInfo info((*it));
+            QString base = info.fileName();
+
+            std::cout << base.toStdString() << std::endl;
+
+            if (info.suffix() == "h5")
+            {
+//                std::vector<std::string> layers = {"mesh0", "mesh1"};
+                std::cout << info.absoluteFilePath().toStdString() << std::endl;
+                m_chunkBridge =  std::make_unique<LVRChunkedMeshBridge>(info.absoluteFilePath().toStdString(), m_renderer, layers, cacheSize);
+                m_chunkBridge->addInitialActors(m_renderer);
+                m_chunkCuller = new ChunkedMeshCuller(m_chunkBridge.get(), highResDistance);
+                m_renderer->AddCuller(m_chunkCuller);
+                qRegisterMetaType<actorMap > ("actorMap");
+                QObject::connect(m_chunkBridge.get(), 
+                        SIGNAL(updateHighRes(actorMap, actorMap)),
+                        this,
+                        SLOT(updateDisplayLists(actorMap, actorMap)),
+                        Qt::QueuedConnection);
+            }
+            ++it;
+        }
+    }
+}
+
+
 void LVRMainWindow::loadModels(const QStringList& filenames)
 {
     if(filenames.size() > 0)
@@ -976,26 +1013,6 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 
             if (info.suffix() == "h5")
             {
-                std::vector<std::string> layers = {"mesh0", "mesh1"};
-                std::cout << info.absoluteFilePath().toStdString() << std::endl;
-                m_chunkBridge =  std::make_unique<LVRChunkedMeshBridge>(info.absoluteFilePath().toStdString(), m_renderer, layers);
-                m_chunkBridge->addInitialActors(m_renderer);
-                m_chunkCuller = new ChunkedMeshCuller(m_chunkBridge.get());
-                m_renderer->AddCuller(m_chunkCuller);
-//                Vector3d cam_origin(0.0, 0.0, -1.0);
-//                Vector3d view_up(1.0, 0.0, 0.0);
-//                Vector3d focal_point(0.0, 0.0, 0.0);
-//                m_renderer->GetActiveCamera()->SetPosition(cam_origin.x(), cam_origin.y(), cam_origin.z());
-//                m_renderer->GetActiveCamera()->SetFocalPoint(focal_point.x(), focal_point.y(), focal_point.z());
-//                m_renderer->GetActiveCamera()->SetViewUp(view_up.x(), view_up.y(), view_up.z());
-                qRegisterMetaType<actorMap > ("actorMap");
-                QObject::connect(m_chunkBridge.get(), 
-                    SIGNAL(updateHighRes(actorMap, actorMap)),
-                    this,
-                    SLOT(updateDisplayLists(actorMap, actorMap)),
-                    Qt::QueuedConnection);
-
-                return;
                 // h5 special loading case
                 // special case h5:
                 // scan data is stored as 
@@ -1725,12 +1742,23 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
 {
 
     QStringList filenames;
-    for(int i = 1; i < argc; i++)
+    viewer::Options options(argc, argv);
+    std::vector<std::string> files;
+    files = options.getInputFiles();
+    for(int i = 0; i < files.size(); i++)
     {
-        filenames << argv[i];
+        std::cout << "filename " << files[i] << std::endl;
+        filenames << files[i].c_str();
     }
     
-    loadModels(filenames);
+    if(options.isChunkedMesh())
+    {
+        loadChunkedMesh(filenames, options.getLayers(), options.getCacheSize(),
+                        options.getHighResDistance());
+    }
+    else{
+        loadModels(filenames);
+    }
 }
 
 void LVRMainWindow::manualICP()
@@ -2338,9 +2366,7 @@ void LVRMainWindow::updateDisplayLists(actorMap lowRes, actorMap highRes)
               m_renderer->AddActor(it.second);
           }
     }
-    
     m_renderer->GetRenderWindow()->Render();
-    
 }
 
 
