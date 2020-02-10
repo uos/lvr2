@@ -54,7 +54,6 @@ struct convert<lvr2::LSROptions>
         node["voxelSizes"] = options.voxelSizes;
         node["bgVoxelSize"] = options.bgVoxelSize;
         node["scale"] = options.scale;
-        node["chunkSize"] = options.chunkSize;
         node["nodeSize"] = options.nodeSize;
         node["partMethod"] = options.partMethod;
         node["ki"] = options.ki;
@@ -99,7 +98,6 @@ struct convert<lvr2::LSROptions>
             options.useGPU = node["useGPU"].as<bool>();
         }
 
-
         if (node["voxelSizes"])
         {
             options.voxelSizes = node["voxelSizes"].as<std::vector<float>>();
@@ -113,11 +111,6 @@ struct convert<lvr2::LSROptions>
         if (node["scale"])
         {
             options.scale = node["scale"].as<float>();
-        }
-
-        if (node["chunkSize"])
-        {
-            options.chunkSize = node["chunkSize"].as<size_t>();
         }
 
         if (node["nodeSize"])

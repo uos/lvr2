@@ -91,7 +91,7 @@ int main(int argc, char** argv)
     string extension = selectedFile.extension().string();
 
 
-    LargeScaleReconstruction<Vec> lsr(options.getVoxelSizes(), options.getBGVoxelsize(), options.getScaling(), options.getChunkSize(),
+    LargeScaleReconstruction<Vec> lsr(options.getVoxelSizes(), options.getBGVoxelsize(), options.getScaling(),
                                       options.getNodeSize(), options.getPartMethod(), options.getKi(), options.getKd(), options.getKn(),
                                       options.useRansac(), options.getFlippoint(), options.extrude(), options.getDanglingArtifacts(),
                                       options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),

@@ -75,7 +75,7 @@ namespace lvr2
 
     template <typename BaseVecT>
     LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction()
-    : m_voxelSizes(std::vector<float>{0.1}), m_bgVoxelSize(1), m_scale(1), m_chunkSize(20),m_nodeSize(1000000), m_partMethod(1),
+    : m_voxelSizes(std::vector<float>{0.1}), m_bgVoxelSize(1), m_scale(1),m_nodeSize(1000000), m_partMethod(1),
     m_ki(20), m_kd(25), m_kn(20), m_useRansac(false), m_flipPoint(std::vector<float>{10000000, 10000000, 10000000}), m_extrude(false), m_removeDanglingArtifacts(0), m_cleanContours(0),
     m_fillHoles(0), m_optimizePlanes(false), m_planeNormalThreshold(0.85), m_planeIterations(3), m_minPlaneSize(7), m_smallRegionThreshold(0),
     m_retesselate(false), m_lineFusionThreshold(0.01)
@@ -85,7 +85,7 @@ namespace lvr2
 
     template<typename BaseVecT>
     LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction( vector<float> voxelSizes, float bgVoxelSize,
-                                                                 float scale, size_t chunkSize, uint nodeSize,
+                                                                 float scale, uint nodeSize,
                                                                  int partMethod, int ki, int kd, int kn, bool useRansac,
                                                                  std::vector<float> flipPoint,
                                                                  bool extrude, int removeDanglingArtifacts,
@@ -95,7 +95,7 @@ namespace lvr2
                                                                  bool retesselate, float lineFusionThreshold,
                                                                  bool bigMesh, bool debugChunks, bool useGPU)
             : m_voxelSizes(voxelSizes), m_bgVoxelSize(bgVoxelSize),
-              m_scale(scale), m_chunkSize(chunkSize),m_nodeSize(nodeSize),
+              m_scale(scale),m_nodeSize(nodeSize),
               m_partMethod(partMethod), m_ki(ki), m_kd(kd), m_kn(kn), m_useRansac(useRansac),
               m_flipPoint(flipPoint), m_extrude(extrude), m_removeDanglingArtifacts(removeDanglingArtifacts),
               m_cleanContours(cleanContours), m_fillHoles(fillHoles), m_optimizePlanes(optimizePlanes),
@@ -109,7 +109,7 @@ namespace lvr2
     template<typename BaseVecT>
     LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(LSROptions options)
             : LargeScaleReconstruction(options.voxelSizes, options.bgVoxelSize,
-              options.scale, options.chunkSize,options.nodeSize,
+              options.scale,options.nodeSize,
               options.partMethod, options.ki, options.kd, options.kn, options.useRansac,
               options.getFlipPoint(), options.extrude, options.removeDanglingArtifacts,
               options.cleanContours, options.fillHoles, options.optimizePlanes,
@@ -133,7 +133,6 @@ namespace lvr2
             BoundingBox<BaseVecT>& newChunksBB,
             std::shared_ptr<ChunkHashGrid> chunkManager)
     {
-
         m_chunkSize = chunkManager->getChunkSize();
 
         if(project->project->positions.size() != project->changed.size())
