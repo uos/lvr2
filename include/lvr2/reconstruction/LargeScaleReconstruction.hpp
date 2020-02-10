@@ -57,9 +57,6 @@ namespace lvr2
         // scale factor.
         float scale = 1;
 
-        //ChunkSize, should be constant through all processes .
-        float chunkSize = 20;
-
         // Max. Number of Points in a leaf (used to devide pointcloud).
         uint nodeSize = 1000000;
 
@@ -148,7 +145,7 @@ namespace lvr2
         /**
          * Constructor with parameters
          */
-        LargeScaleReconstruction(vector<float> voxelSizes, float bgVoxelSize, float scale, size_t chunkSize,
+        LargeScaleReconstruction(vector<float> voxelSizes, float bgVoxelSize, float scale,
                 uint nodeSize, int partMethod,int ki, int kd, int kn, bool useRansac, std::vector<float> flipPoint,
                 bool extrude, int removeDanglingArtifacts, int cleanContours, int fillHoles, bool optimizePlanes,
                 float getNormalThreshold, int planeIterations, int minPlaneSize, int smallRegionThreshold,
