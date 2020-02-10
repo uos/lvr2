@@ -66,14 +66,142 @@ class Options : public lvr2::BaseOption
     virtual ~Options();
 
     /**
+     * @brief   Returns if the new chunks should be written as a .ply-mesh
+     */
+    bool getBigMesh() const;
+
+    /**
+     * @brief   Returns if the mesh of every chunk additionally should be written as a .ply
+     */
+    bool getDebugChunks() const;
+
+    /**
+     * @brief   Returns if the GPU shuold be used for the normal estimation
+     */
+    bool useGPU() const;
+
+    /**
+     * @brief   Returns all voxelsizes as a vector
+     */
+    vector<float> getVoxelSizes() const;
+
+    /**
+     * @brief   Returns the first given voxelsize
+     */
+    float getVoxelsize() const;
+
+    /**
      * @brief    Returns the given voxelsize for bigGrid
      */
     float getBGVoxelsize() const;
 
     /**
-     * @brief    Returns the given voxelsize
+     * @brief   Returns the scaling factor
      */
-    float getVoxelsize() const;
+    float getScaling() const;
+
+    /**
+     * @brief   Returns the chunksize
+     */
+     // TODO data types don't match!!
+    int getChunkSize() const;
+
+    /**
+     * @brief   Only used in kd-tree (partMethod=0). Returns the maximum number of points in a leaf.
+     */
+    unsigned int getNodeSize() const;
+
+    /**
+     * @brief   Retuns flag for partition-method (0 = kd-Tree; 1 = VGrid)
+     */
+    int getPartMethod() const;
+
+    /**
+     * @brief    Returns the number of neighbors
+     *             for normal interpolation
+     */
+    int getKi() const;
+
+    /**
+     * @brief    Returns the number of neighbors used for distance
+     *             function evaluation
+     */
+    int getKd() const;
+
+    /**
+     * @brief    Returns the number of neighbors used for
+     *             initial normal estimation
+     */
+    int getKn() const;
+
+    /**
+     * @brief   If true, RANSAC based normal estimation is used
+     */
+    bool useRansac() const;
+
+    /**
+     * @brief   Returns the flipPoint for GPU normal computation
+     */
+    vector<float> getFlippoint() const;
+
+    /**
+     * @brief   Whether to extend the grid. Enabled by default.
+     */
+    bool extrude() const;
+
+    /*
+     * Definition from here on are for the combine-process of partial meshes
+     */
+
+    /**
+     * @brief   Returns the number of dangling artifacts to remove from
+     *          a created mesh.
+     */
+    int getDanglingArtifacts() const;
+
+    /**
+     * @brief    Number of iterations for contour cleanup
+     */
+    int getCleanContourIterations() const;
+
+    /**
+     * @brief   Returns the region threshold for hole filling
+     */
+    int getFillHoles() const;
+
+    /**
+     * @brief     Returns true if cluster optimization is enabled
+     */
+    bool optimizePlanes() const;
+
+    /**
+     * @brief   Returns the normal threshold for plane optimization.
+     */
+    float getNormalThreshold() const;
+    /**
+     * @brief   Returns to number plane optimization iterations
+     */
+    int getPlaneIterations() const;
+
+    /**
+     * @brief   Returns the threshold for the size of small
+     *          region deletion after plane optimization.
+     */
+    int getSmallRegionThreshold() const;
+
+    /**
+     * @brief Return whether the mesh should be retesselated or not.
+     */
+    bool retesselate() const;
+
+    /**
+     * @brief   Returns the fusion threshold for tesselation
+     */
+    float getLineFusionThreshold() const;
+
+    /*
+     * Definition from here on are not used (anymore?)
+     */
 
     /**
      * @brief    Returns the number of used threads
@@ -119,10 +247,6 @@ class Options : public lvr2::BaseOption
      */
     bool saveOriginalData() const;
 
-    /**
-     * @brief     Returns true if cluster optimization is enabled
-     */
-    bool optimizePlanes() const;
 
     /**
      * @brief     Indicates whether to save the used points
@@ -137,11 +261,6 @@ class Options : public lvr2::BaseOption
     bool recalcNormals() const;
 
     /**
-     * @brief   If true, RANSAC based normal estimation is used
-     */
-    bool useRansac() const;
-
-    /**
      * @brief   True if texture analysis is enabled
      */
     bool doTextureAnalysis() const;
@@ -151,29 +270,6 @@ class Options : public lvr2::BaseOption
      *          finalization of mesh.
      */
     bool generateTextures() const;
-
-    /**
-     * @brief    Returns the number of neighbors
-     *             for normal interpolation
-     */
-    int getKi() const;
-
-    /**
-     * @brief    Returns the number of neighbors used for
-     *             initial normal estimation
-     */
-    int getKn() const;
-
-    /**
-     * @brief    Returns the number of neighbors used for distance
-     *             function evaluation
-     */
-    int getKd() const;
-
-    /**
-     * @brief Return whether the mesh should be retesselated or not.
-     */
-    bool retesselate() const;
 
     /**
      * @brief  True if region clustering without plane optimization is required.
@@ -208,11 +304,6 @@ class Options : public lvr2::BaseOption
     int getIntersections() const;
 
     /**
-     * @brief   Returns to number plane optimization iterations
-     */
-    int getPlaneIterations() const;
-
-    /**
      * @brief   Returns the name of the used point cloud handler.
      */
     string getPCM() const;
@@ -223,36 +314,9 @@ class Options : public lvr2::BaseOption
     string getDecomposition() const;
 
     /**
-     * @brief   Returns the normal threshold for plane optimization.
-     */
-    float getNormalThreshold() const;
-
-    /**
-     * @brief   Returns the threshold for the size of small
-     *          region deletion after plane optimization.
-     */
-    int getSmallRegionThreshold() const;
-
-    /**
      * @brief   Minimum value for plane optimzation
      */
     int getMinPlaneSize() const;
-
-    /**
-     * @brief    Number of iterations for contour cleanup
-     */
-    int getCleanContourIterations() const;
-
-    /**
-     * @brief   Returns the number of dangling artifacts to remove from
-     *          a created mesh.
-     */
-    int getDanglingArtifacts() const;
-
-    /**
-     * @brief   Returns the region threshold for hole filling
-     */
-    int getFillHoles() const;
 
     /**
      * @brief     Returns the maximum recursion depth for region growing
@@ -273,16 +337,6 @@ class Options : public lvr2::BaseOption
      * @brief   Returns the sharp corner threshold when using sharp feature decomposition
      */
     float getSharpCornerThreshold() const;
-
-    /**
-     * @brief   Returns the fusion threshold for tesselation
-     */
-    float getLineFusionThreshold() const;
-
-    /**
-     * @brief   Whether to extend the grid. Enable by default.
-     */
-    bool extrude() const;
 
     /**
      * @brief     Number of edge collapses
@@ -317,45 +371,91 @@ class Options : public lvr2::BaseOption
     string getTexturePack() const;
 
     int getMinimumTransformationVotes() const;
-    unsigned int getNodeSize() const;
     unsigned int getBufferSize() const;
 
     bool interpolateBoxes() const;
 
-    bool useGPU() const;
 
     string getOutputFolderPath() const;
 
     bool getUseNormals() const;
 
-    float getScaling() const;
-
-    vector<float> getVoxelSizes() const;
-
-    vector<float> getFlippoint() const;
-
     size_t getVolumenSize() const;
 
     size_t getLineReaderBuffer() const;
 
-    int getVGrid() const;
-
-    int getChunkSize() const;
-
-    bool getBigMesh() const;
-
-    bool getDebugChunks() const;
-
-    string getPartialReconstruct() const;
-
   private:
-    /// The set voxelsize
-    float m_voxelsizeBG;
+    /// flag to generate a .ply file for the reconstructed mesh
+    bool m_bigMesh;
+
+    /// flag to generate debug meshes for every chunk as a .ply
+    bool m_debugChunks;
+
+    /// The set voxelsizes
+    vector<float> m_voxelSizes;
 
     /// The set voxelsize
     float m_voxelsize;
 
-    /// The number of uesed threads
+    /// The set voxelsize for BigGrid
+    float m_voxelsizeBG;
+
+    float m_scaling;
+
+    /// gridsize for virtual grid
+    int m_chunkSize;
+
+    /// sets partition method to kd-tree or virtual grid
+    int m_partMethod;
+
+    /// The number of neighbors for normal interpolation
+    int m_ki;
+
+    /// The number of neighbors for distance function evaluation
+    int m_kd;
+
+    /// The number of neighbors for normal estimation
+    int m_kn;
+
+    /// flipPoint for GPU normal computation
+    vector<float> m_flippoint;
+
+    /// extruded flag
+    bool m_extrude;
+
+    /// Number of dangling artifacts to remove
+    int m_removeDanglingArtifacts;
+
+    /// number of cleanContour iterations
+    int m_cleanContourIterations;
+
+    /// Threshold for hole filling
+    int m_fillHoles;
+
+    /// Threshold for plane optimization
+    float m_planeNormalThreshold;
+
+    /// Number of iterations for plane optimzation
+    int m_planeIterations;
+
+    /// Threshold for plane optimization
+    int m_minPlaneSize;
+
+    /// Threshold for small regions
+    int m_smallRegionThreshold;
+
+    /// Whether or not the mesh should be retesselated while being finalized
+    bool m_retesselate;
+
+    /// Threshold for line fusing when tesselating
+    float m_lineFusionThreshold;
+
+
+    /*
+     * Definition from here on are not used (anymore?)
+     */
+
+    /// The number of used threads
     int m_numThreads;
 
     /// The putput file name for face normals
@@ -364,20 +464,8 @@ class Options : public lvr2::BaseOption
     /// The number of used default values
     int m_numberOfDefaults;
 
-    /// The number of neighbors for distance function evaluation
-    int m_kd;
-
-    /// The number of neighbors for normal estimation
-    int m_kn;
-
-    /// The number of neighbors for normal interpolation
-    int m_ki;
-
     /// The number of intersections used for reconstruction
     int m_intersections;
-
-    /// Whether or not the mesh should be retesselated while being finalized
-    bool m_retesselate;
 
     /// Whether or not the mesh should be retesselated while being finalized
     bool m_generateTextures;
@@ -388,34 +476,11 @@ class Options : public lvr2::BaseOption
     /// The used point cloud manager
     string m_pcm;
 
-    /// Number of iterations for plane optimzation
-    int m_planeIterations;
-
-    /// Threshold for plane optimization
-    float m_planeNormalThreshold;
-
-    /// Threshold for small ragions
-    int m_smallRegionThreshold;
-
-    /// Number of dangling artifacts to remove
-    int m_rda;
-
-    /// Threshold for hole filling
-    int m_fillHoles;
-
-    /// Threshold for plane optimization
-    int m_minPlaneSize;
-
     /// Maximum recursion depth for region growing
     int m_depth;
 
-    int m_cleanContourIterations;
-
     /// Texel size
     float m_texelSize;
-
-    /// Threshold for line fusing when tesselating
-    float m_lineFusionThreshold;
 
     /// Sharp feature threshold when using sharp feature decomposition
     float m_sft;
@@ -475,31 +540,12 @@ class Options : public lvr2::BaseOption
 
     bool m_use_normals;
 
-    float m_scaling;
-
-    vector<float> m_flippoint;
-
-    vector<float> m_voxelSizes;
-
     size_t m_volumenSize;
 
     size_t m_lineReaderBuffer;
 
     bool m_onlyNormals;
 
-    string m_partialReconstruct;
-
-    // sets partition method to virtual grid
-    int m_vgrid;
-
-    // gridsize for virtual grid
-    int m_chunkSize;
-
-    //flag to generate a .ply file for the reconstructed mesh
-    bool m_bigMesh;
-
-    //flag to generate debug chunks as .ply
-    bool m_debugChunks;
 };
 
 /// Overlaoeded outpur operator
@@ -536,9 +582,9 @@ inline ostream& operator<<(ostream& os, const Options& o)
     {
         cout << "##### Dump classification\t: NO" << endl;
     }
-    cout << "##### k_n \t\t\t: " << o.getKn() << endl;
     cout << "##### k_i \t\t\t: " << o.getKi() << endl;
     cout << "##### k_d \t\t\t: " << o.getKd() << endl;
+    cout << "##### k_n \t\t\t: " << o.getKn() << endl;
     if (o.getDecomposition() == "SF")
     {
         cout << "##### Sharp feature threshold \t: " << o.getSharpFeatureThreshold() << endl;
