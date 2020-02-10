@@ -35,6 +35,8 @@
 
 #include <Eigen/SparseCholesky>
 
+#include <math.h>
+
 using namespace std;
 using namespace Eigen;
 
@@ -164,8 +166,14 @@ void GraphSLAM::doGraphSLAM(const vector<SLAMScanPtr>& scans, size_t last) const
             }
 
             double ctx, stx, cty, sty;
-            sincos(theta.x(), &stx, &ctx);
-            sincos(theta.y(), &sty, &cty);
+            
+            #ifndef __APPLE__
+                sincos(theta.x(), &stx, &ctx);
+                sincos(theta.y(), &sty, &cty);
+            #else
+                __sincos(theta.x(), &stx, &ctx);
+                __sincos(theta.y(), &sty, &cty);
+            #endif
 
             // Fill Ha
             Ha(0, 4) = -pos.z() * ctx + pos.y() * stx;
