@@ -140,7 +140,7 @@ struct convert<lvr2::LSROptions>
             options.kd = node["kd"].as<int>();
         }
 
-        if (node["Kn"])
+        if (node["kn"])
         {
             options.kn = node["kn"].as<int>();
         }
