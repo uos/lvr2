@@ -166,7 +166,7 @@ namespace lvr2
             for (size_t i = 0; i < vGrid.getBoxes().size(); i++)
             {
                 BoundingBox<BaseVecT> partBB = *vGrid.getBoxes().at(i).get();
-                cmBB.expand(partBB);
+                //cmBB.expand(partBB);
                 newChunksBB.expand(partBB);
                 partitionBoxes.push_back(partBB);
                 partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
@@ -199,11 +199,17 @@ namespace lvr2
 
         // we use the BB of all scans (including old ones) they are already hashed in the cm
         // and we can't make the BB smaller
-        BaseVecT addCMBBMin = BaseVecT(std::floor(bb.getMin().x / m_chunkSize), std::floor(bb.getMin().y / m_chunkSize), std::floor(bb.getMin().z / m_chunkSize));
-        BaseVecT addCMBBMax = BaseVecT(std::ceil(bb.getMax().x / m_chunkSize), std::ceil(bb.getMax().y / m_chunkSize), std::ceil(bb.getMax().z / m_chunkSize));
+        BaseVecT addCMBBMin = BaseVecT(std::floor(bb.getMin().x / m_chunkSize) * m_chunkSize, std::floor(bb.getMin().y / m_chunkSize) * m_chunkSize, std::floor(bb.getMin().z / m_chunkSize) * m_chunkSize);
+        BaseVecT addCMBBMax = BaseVecT(std::ceil(bb.getMax().x / m_chunkSize) * m_chunkSize, std::ceil(bb.getMax().y / m_chunkSize) * m_chunkSize, std::ceil(bb.getMax().z / m_chunkSize) * m_chunkSize);
         cmBB.expand(addCMBBMin);
         cmBB.expand(addCMBBMax);
+
         chunkManager->setBoundingBox(cmBB);
+
+        int numChunks_global = (cmBB.getXSize() / m_chunkSize) * (cmBB.getYSize() / m_chunkSize) * (cmBB.getZSize() / m_chunkSize);
+        int numChunks_partial = partitionBoxes.size();
+
+        cout << lvr2::timestamp << "Saving " << numChunks_global - numChunks_partial << " Chunks compared to full reconstruction" << endl;
 
         BaseVecT bb_min(bb.getMin().x, bb.getMin().y, bb.getMin().z);
         BaseVecT bb_max(bb.getMax().x, bb.getMax().y, bb.getMax().z);
