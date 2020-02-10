@@ -201,7 +201,7 @@ void GraphSLAM::doGraphSLAM(const vector<SLAMScanPtr>& scans, size_t last, const
 
                 if (m_options->verbose)
                 {
-                    cout << "End: " << pos.transpose() << ", " << theta.transpose() << endl;
+                    cout << "End: pos: " << pos.transpose() << "," << endl << "theta: " << theta.transpose() << endl;
                 }
 
                 transform = transform * initialPose.inverse();
