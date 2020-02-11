@@ -98,26 +98,30 @@ void VirtualGrid<BaseVecT>::generateNeighbours()
         ceil((m_pcbb.getZSize() + abs(m_pcbb.getMin().z - m_initbox.getMin().z)) / m_gridCellSize);
 
     lvr2::BoundingBox<BaseVecT> first = m_initbox;
-
+    string comment = lvr2::timestamp.getElapsedTime() + "Building grid... ";
+    lvr2::ProgressBar progress(n_xboxes * n_yboxes* n_zboxes, comment);
     for (int i = 0; i < n_xboxes; i++)
     {
         for (int j = 0; j < n_yboxes; j++)
         {
             for (int h = 0; h < n_zboxes; h++)
             {
-                std::shared_ptr<lvr2::BoundingBox<BaseVecT>> next =
-                    std::shared_ptr<lvr2::BoundingBox<BaseVecT>>(new lvr2::BoundingBox<BaseVecT>(
+                lvr2::BoundingBox<BaseVecT> next =
+                    lvr2::BoundingBox<BaseVecT>(
                         BaseVecT(first.getMin().x + i * m_gridCellSize,
                                  first.getMin().y + j * m_gridCellSize,
                                  first.getMin().z + h * m_gridCellSize),
                         BaseVecT(first.getMax().x + i * m_gridCellSize,
                                  first.getMax().y + j * m_gridCellSize,
-                                 first.getMax().z + h * m_gridCellSize)));
-            std:
+                                 first.getMax().z + h * m_gridCellSize));
                 m_boxes.push_back(next);
+                if(!timestamp.isQuiet())
+                    ++progress;
             }
         }
     }
+    if(!timestamp.isQuiet())
+        cout << endl;
 }
 
 } // namespace lvr2

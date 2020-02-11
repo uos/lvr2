@@ -198,7 +198,7 @@ struct convert<lvr2::LSROptions>
             options.retesselate = node["retesselate"].as<bool>();
         }
 
-        if (node["LineFusionThreshold"])
+        if (node["lineFusionThreshold"])
         {
             options.lineFusionThreshold = node["lineFusionThreshold"].as<float>();
         }

@@ -150,31 +150,36 @@ namespace lvr2
 
         BoundingBox<BaseVecT> bb = bg.getBB();
 
-        vector<BoundingBox<BaseVecT>> partitionBoxes;
+        std::shared_ptr<vector<BoundingBox<BaseVecT>>> partitionBoxes;
         vector<BoundingBox<BaseVecT>> partitionBoxesNew;
         BoundingBox<BaseVecT> cmBB = BoundingBox<BaseVecT>();
 
 
         if (m_partMethod == 1)
         {
+            BoundingBox<BaseVecT> partbb = bg.getpartialBB();
             cout << lvr2::timestamp << "generating VGrid" << endl;
             VirtualGrid<BaseVecT> vGrid(
                     bg.getpartialBB(), m_chunkSize, m_bgVoxelSize);
-            std::vector<shared_ptr<BoundingBox<BaseVecT>>> boxes;
             vGrid.calculateBoxes();
             ofstream partBoxOfs("BoundingBoxes.ser");
-            for (size_t i = 0; i < vGrid.getBoxes().size(); i++)
+            partitionBoxes = vGrid.getBoxes();
+            BaseVecT addMin = BaseVecT(std::floor(partbb.getMin().x / m_chunkSize) * m_chunkSize, std::floor(partbb.getMin().y / m_chunkSize) * m_chunkSize, std::floor(partbb.getMin().z / m_chunkSize) * m_chunkSize);
+            BaseVecT addMax = BaseVecT(std::ceil(partbb.getMax().x / m_chunkSize) * m_chunkSize, std::ceil(partbb.getMax().y / m_chunkSize) * m_chunkSize, std::ceil(partbb.getMax().z / m_chunkSize) * m_chunkSize);
+            newChunksBB.expand(addMin);
+            newChunksBB.expand(addMax);
+            /*for (size_t i = 0; i < vGrid.getBoxes().size(); i++)
             {
                 BoundingBox<BaseVecT> partBB = *vGrid.getBoxes().at(i).get();
                 //cmBB.expand(partBB);
                 newChunksBB.expand(partBB);
-                partitionBoxes.push_back(partBB);
+                //partitionBoxes.push_back(partBB);
                 partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
                            << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
                            << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
-            }
+            }*/
             cout << lvr2::timestamp << "finished vGrid" << endl;
-            std::cout << lvr2::timestamp << "got: " << partitionBoxes.size() << " Chunks"
+            std::cout << lvr2::timestamp << "got: " << partitionBoxes->size() << " Chunks"
                       << std::endl;
         }
         else
@@ -186,14 +191,14 @@ namespace lvr2
             for (size_t i = 0; i < gridKd.getLeafs().size(); i++)
             {
                 BoundingBox<BaseVecT> partBB = gridKd.getLeafs()[i]->getBB();
-                partitionBoxes.push_back(partBB);
+                partitionBoxes->push_back(partBB);
                 partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
                            << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
                            << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
             }
 
             cout << lvr2::timestamp << "finished tree" << endl;
-            std::cout << lvr2::timestamp << "got: " << partitionBoxes.size() << " leafs, saving leafs"
+            std::cout << lvr2::timestamp << "got: " << partitionBoxes->size() << " leafs, saving leafs"
                       << std::endl;
         }
 
@@ -207,7 +212,7 @@ namespace lvr2
         chunkManager->setBoundingBox(cmBB);
 
         int numChunks_global = (cmBB.getXSize() / m_chunkSize) * (cmBB.getYSize() / m_chunkSize) * (cmBB.getZSize() / m_chunkSize);
-        int numChunks_partial = partitionBoxes.size();
+        int numChunks_partial = partitionBoxes->size();
 
         cout << lvr2::timestamp << "Saving " << numChunks_global - numChunks_partial << " Chunks compared to full reconstruction" << endl;
 
@@ -225,19 +230,19 @@ namespace lvr2
         {
             string layerName = "tsdf_values_" + std::to_string(m_voxelSizes[h]);
             //create chunks
-            for (int i = 0; i < partitionBoxes.size(); i++)
+            for (int i = 0; i < partitionBoxes->size(); i++)
             {
                 string name_id;
                 if (m_partMethod == 1)
                 {
                     name_id =
                             std::to_string(
-                                    (int)floor(partitionBoxes.at(i).getCentroid().x / m_chunkSize)) +
+                                    (int)floor(partitionBoxes->at(i).getCentroid().x / m_chunkSize)) +
                             "_" +
                             std::to_string(
-                                    (int)floor(partitionBoxes.at(i).getCentroid().y / m_chunkSize)) +
+                                    (int)floor(partitionBoxes->at(i).getCentroid().y / m_chunkSize)) +
                             "_" +
-                            std::to_string((int)floor(partitionBoxes.at(i).getCentroid().z / m_chunkSize));
+                            std::to_string((int)floor(partitionBoxes->at(i).getCentroid().z / m_chunkSize));
                 }
                 else
                 {
@@ -247,12 +252,12 @@ namespace lvr2
                 size_t numPoints;
 
                 // todo: okay?
-                floatArr points = bg.points(partitionBoxes[i].getMin().x,
-                                            partitionBoxes[i].getMin().y,
-                                            partitionBoxes[i].getMin().z,
-                                            partitionBoxes[i].getMax().x,
-                                            partitionBoxes[i].getMax().y,
-                                            partitionBoxes[i].getMax().z,
+                floatArr points = bg.points(partitionBoxes->at(i).getMin().x,
+                                            partitionBoxes->at(i).getMin().y,
+                                            partitionBoxes->at(i).getMin().z,
+                                            partitionBoxes->at(i).getMax().x,
+                                            partitionBoxes->at(i).getMax().y,
+                                            partitionBoxes->at(i).getMax().z,
                                             numPoints);
 
                 // remove chunks with less than 50 points
@@ -262,15 +267,15 @@ namespace lvr2
                     continue;
                 }
 
-                BaseVecT gridbb_min(partitionBoxes[i].getMin().x,
-                                    partitionBoxes[i].getMin().y,
-                                    partitionBoxes[i].getMin().z);
-                BaseVecT gridbb_max(partitionBoxes[i].getMax().x,
-                                    partitionBoxes[i].getMax().y,
-                                    partitionBoxes[i].getMax().z);
+                BaseVecT gridbb_min(partitionBoxes->at(i).getMin().x,
+                                    partitionBoxes->at(i).getMin().y,
+                                    partitionBoxes->at(i).getMin().z);
+                BaseVecT gridbb_max(partitionBoxes->at(i).getMax().x,
+                                    partitionBoxes->at(i).getMax().y,
+                                    partitionBoxes->at(i).getMax().z);
                 BoundingBox<BaseVecT> gridbb(gridbb_min, gridbb_max);
 
-                cout << "\n" <<  lvr2::timestamp <<"grid: " << i << "/" << partitionBoxes.size() - 1 << endl;
+                cout << "\n" <<  lvr2::timestamp <<"grid: " << i << "/" << partitionBoxes->size() - 1 << endl;
 
                 lvr2::PointBufferPtr p_loader(new lvr2::PointBuffer);
                 p_loader->setPointArray(points, numPoints);
@@ -278,12 +283,12 @@ namespace lvr2
                 if (bg.hasNormals())
                 {
                     size_t numNormals;
-                    lvr2::floatArr normals = bg.normals(partitionBoxes[i].getMin().x ,
-                                                        partitionBoxes[i].getMin().y ,
-                                                        partitionBoxes[i].getMin().z ,
-                                                        partitionBoxes[i].getMax().x ,
-                                                        partitionBoxes[i].getMax().y ,
-                                                        partitionBoxes[i].getMax().z ,
+                    lvr2::floatArr normals = bg.normals(partitionBoxes->at(i).getMin().x ,
+                                                        partitionBoxes->at(i).getMin().y ,
+                                                        partitionBoxes->at(i).getMin().z ,
+                                                        partitionBoxes->at(i).getMax().x ,
+                                                        partitionBoxes->at(i).getMax().y ,
+                                                        partitionBoxes->at(i).getMax().z ,
                                                         numNormals);
 
                     p_loader->setNormalArray(normals, numNormals);
@@ -354,16 +359,16 @@ namespace lvr2
 
 
 
-                int x = (int)floor(partitionBoxes.at(i).getCentroid().x / m_chunkSize);
-                int y = (int)floor(partitionBoxes.at(i).getCentroid().y / m_chunkSize);
-                int z = (int)floor(partitionBoxes.at(i).getCentroid().z / m_chunkSize);
+                int x = (int)floor(partitionBoxes->at(i).getCentroid().x / m_chunkSize);
+                int y = (int)floor(partitionBoxes->at(i).getCentroid().y / m_chunkSize);
+                int z = (int)floor(partitionBoxes->at(i).getCentroid().z / m_chunkSize);
 
                 addTSDFChunkManager(x, y, z, ps_grid, chunkManager, layerName);
                 BaseVector<int> chunkCoordinates(x, y, z);
                 // also save the grid coordinates of the chunk added to the ChunkManager
                 newChunks.push_back(chunkCoordinates);
                 // also save the "real" bounding box without overlap
-                partitionBoxesNew.push_back(partitionBoxes.at(i));
+                partitionBoxesNew.push_back(partitionBoxes->at(i));
 
                 // save the mesh of the chunk
 
