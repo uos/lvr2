@@ -15,6 +15,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+if(APPLE)
+  set(CMAKE_MACOSX_RPATH ON)
+endif()
+
 #------------------------------------------------------------------------------
 # Searching for Embree: needs to be placed above "set(CMAKE_MODULE_PATH)".
 #------------------------------------------------------------------------------
@@ -366,7 +370,8 @@ add_subdirectory(ext/HighFive)
 include_directories("ext/HighFive/include")
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 include_directories(${HDF5_INCLUDE_DIRS})
-link_directories(${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+find_package(HDF5 REQUIRED C CXX HL)
+include_directories(${HDF5_INCLUDE_DIR})
 message(STATUS "Found HDF5")
 
 # yaml-cpp
@@ -397,23 +402,16 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/${RiVLib_DIR})
     endif()
 endif()
 
-
-find_package(HDF5 REQUIRED C CXX HL)
-include_directories(${HDF5_INCLUDE_DIR})
-
-
 ###############################################################################
 # ADD LVR DEFINITIONS
 ###############################################################################
 
 add_definitions(${LVR2_DEFINITIONS})
 
-
 ###############################################################################
 # LVR-Kinfu Checks
 ###############################################################################
 option(WITH_KINFU "Compile LVR Kinfu" OFF)
-
 
 ###############################################################################
 # Check and set CUDA host compiler flags. CUDA 6.5 is only
@@ -517,6 +515,7 @@ set(LVR2_LIB_DEPENDENCIES
     ${TIFF_LIBRARY}
     ${YAML_CPP_LIBRARIES}
     ${OpenMP_CXX_LIBRARIES}
+    ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
     m
     )
 
