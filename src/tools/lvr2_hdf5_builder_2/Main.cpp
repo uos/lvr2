@@ -262,6 +262,7 @@ bool saveScan(int nr, ScanPtr scan, HDF5IO hdf5)
             }
         }
     }
+    return true;
 }
 
 bool channelIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)

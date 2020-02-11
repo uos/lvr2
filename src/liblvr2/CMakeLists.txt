@@ -52,11 +52,9 @@ set(LVR2_SOURCES
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
     reconstruction/LBKdTree.cpp
-    reconstruction/PCLFiltering.cpp
     algorithm/ChunkBuilder.cpp
     algorithm/ChunkManager.cpp
     algorithm/ChunkHashGrid.cpp
-    reconstruction/NodeData.cpp
     registration/ICPPointAlign.cpp
     registration/KDTree.cpp
     registration/SLAMScanWrapper.cpp
@@ -158,7 +156,10 @@ add_library(lvr2core OBJECT ${LVR2_SOURCES})
 
 message(STATUS "Building static library")
 add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
-target_link_libraries(lvr2_static ${LVR2_INTERNAL_DEPENDENCIES_STATIC} ${LVR2_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+target_link_libraries(
+  lvr2_static 
+  ${LVR2_INTERNAL_DEPENDENCIES_STATIC} 
+  ${LVR2_LIB_DEPENDENCIES})
 
 
 #####################################################################################
@@ -168,7 +169,10 @@ target_link_libraries(lvr2_static ${LVR2_INTERNAL_DEPENDENCIES_STATIC} ${LVR2_LI
 if( NOT MSVC )
   message(STATUS "Building shared library")
   add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
-  target_link_libraries(lvr2 ${LVR2_INTERNAL_DEPENDENCIES_SHARED} ${LVR2_LIB_DEPENDENCIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+  target_link_libraries(
+    lvr2 
+    ${LVR2_INTERNAL_DEPENDENCIES_SHARED} 
+    ${LVR2_LIB_DEPENDENCIES})
 
 install(TARGETS lvr2_static lvr2
   EXPORT lvr2Targets
