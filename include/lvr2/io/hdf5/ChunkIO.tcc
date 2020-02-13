@@ -46,10 +46,10 @@ template <typename T>
 void ChunkIO<Derived>::saveChunk(T data, std::string layer, int x, int y, int z)
 {
     std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
-    
+
     HighFive::Group chunksGroup = hdf5util::getGroup(m_file_access->m_hdf5_file, m_chunkName, true);
     HighFive::Group layerGroup  = hdf5util::getGroup(chunksGroup, layer, true);
-    HighFive::Group dataGroup  = hdf5util::getGroup(layerGroup, chunkName, true);
+    HighFive::Group dataGroup   = hdf5util::getGroup(layerGroup, chunkName, true);
 
     static_cast<typename IOType<Derived, T>::io_type*>(m_file_access)->save(dataGroup, data);
 }
@@ -102,12 +102,18 @@ BoundingBox<BaseVector<float>> ChunkIO<Derived>::loadBoundingBox()
     std::vector<size_t> dimensionBox;
     boost::shared_array<float> boundingBoxArr
         = m_array_io->template load<float>(m_chunkName, m_boundingBoxName, dimensionBox);
+    if (dimensionBox.size() < 2)
+    {
+        throw out_of_range(
+            "Error loading chunk data: bounding_box has not the right amount of dimensions. Real: "
+            + to_string(dimensionBox.size()) + "; Expected: 2");
+    }
     if (dimensionBox.at(0) != 2 && dimensionBox.at(1) != 3)
     {
-        std::cout << "Error loading chunk data: bounding_box has not the right "
-                     "dimension. Real: {"
-                  << dimensionBox.at(0) << ", " << dimensionBox.at(1) << "}; Expected: {2, 3}"
-                  << std::endl;
+        throw out_of_range(
+            "Error loading chunk data: bounding_box has not the right of dimension. Real: "
+            + to_string(dimensionBox.at(0)) + ", " + to_string(dimensionBox.at(1))
+            + "; Expected: {2, 3}");
     }
     else
     {

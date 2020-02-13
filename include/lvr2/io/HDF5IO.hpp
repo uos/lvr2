@@ -33,7 +33,7 @@
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/io/AttributeMeshIOBase.hpp"
-#include "lvr2/types/Hyperspectral.hpp"
+// #include "lvr2/types/Hyperspectral.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
@@ -138,7 +138,7 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
 
     void addRawDataHeader(std::string description, Matrix4<BaseVector<float>> &referenceFrame);
 
-    void addHyperspectralCalibration(int position, const HyperspectralPanorama& hyperspectral);
+//     void addHyperspectralCalibration(int position, const HyperspectralPanorama& hyperspectral);
 
     void setCompress(bool compress);
     void setChunkSize(const size_t& size);

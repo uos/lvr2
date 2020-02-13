@@ -43,25 +43,19 @@ namespace lvr2
         bool bigMesh = true;
 
         // flag to trigger .ply output of chunks
-        bool debug_chunks = false;
+        bool debugChunks = false;
 
         // flag to trigger GPU usage
-        bool useGPU = true;
+        bool useGPU = false;
 
-        //filePath to HDF5 file
-        string filePath = "";
-
-        // voxelsize for reconstruction.
-        float voxelSize = 0.1;
+        // voxelsizes for reconstruction.
+        std::vector<float> voxelSizes{0.1};
 
         // voxelsize for the BigGrid.
         float bgVoxelSize = 1;
 
         // scale factor.
         float scale = 1;
-
-        //ChunkSize, should be constant through all processes .
-        size_t chunkSize = 20;
 
         // Max. Number of Points in a leaf (used to devide pointcloud).
         uint nodeSize = 1000000;
@@ -70,18 +64,21 @@ namespace lvr2
         int partMethod = 1;
 
         //Number of normals used in the normal interpolation process.
-        int Ki = 20;
+        int ki = 20;
 
         //Number of normals used for distance function evaluation.
-        int Kd = 20;
+        int kd = 20;
 
         // Size of k-neighborhood used for normal estimation.
-        int Kn = 20;
+        int kn = 20;
 
         //Set this flag for RANSAC based normal estimation.
         bool useRansac = false;
 
-        // Do not extend grid. Can be used  to avoid artifacts in dense data sets but. Disabling
+        // FlipPoint for GPU normal computation
+        std::vector<float> flipPoint{10000000, 10000000, 10000000};
+
+        // Do not extend grid. Can be used to avoid artifacts in dense data sets but. Disabling
         // will possibly create additional holes in sparse data sets.
         bool extrude = false;
 
@@ -89,7 +86,7 @@ namespace lvr2
          * Definition from here on are for the combine-process of partial meshes
          */
 
-        // flag to trigger the removal of dangling artifacts.
+        // number for the removal of dangling artifacts.
         int removeDanglingArtifacts = 0;
 
         //Remove noise artifacts from contours. Same values are between 2 and 4.
@@ -102,22 +99,35 @@ namespace lvr2
         bool optimizePlanes = false;
 
         // (Plane Normal Threshold) Normal threshold for plane optimization.
-        float getNormalThreshold = 0.85;
+        float planeNormalThreshold = 0.85;
 
         // Number of iterations for plane optimization.
         int planeIterations = 3;
 
         // Minimum value for plane optimization.
-        int MinPlaneSize = 7;
+        int minPlaneSize = 7;
 
         // Threshold for small region removal. If 0 nothing will be deleted.
-        int SmallRegionThreshold = 0;
+        int smallRegionThreshold = 0;
 
         // Retesselate regions that are in a regression plane. Implies --optimizePlanes.
         bool retesselate = false;
 
         // Threshold for fusing line segments while tesselating.
-        float LineFusionThreshold =0.01;
+        float lineFusionThreshold = 0.01;
+
+        vector<float> getFlipPoint() const
+        {
+            std::vector<float> dest = flipPoint;
+            if(dest.size() != 3)
+            {
+                std::vector<float> dest = std::vector<float>();
+                dest.push_back(10000000);
+                dest.push_back(10000000);
+                dest.push_back(10000000);
+            }
+            return dest;
+        }
     };
 
     template <typename BaseVecT>
@@ -127,20 +137,19 @@ namespace lvr2
 
     public:
         /**
-         * Constructor - uses default parameter for reconstruction)
-         * @param h5File HDF5 file, which may or may not contain chunked and reconstructed scans
+         * Constructor - uses default parameter for reconstruction
          */
-        LargeScaleReconstruction(std::string h5File);
+        LargeScaleReconstruction();
 
 
         /**
          * Constructor with parameters
          */
-        LargeScaleReconstruction(std::string h5File, float voxelSize, float bgVoxelSize, float scale, size_t chunkSize,
-                uint nodeSize, int partMethod,int ki, int kd, int kn, bool useRansac, bool extrude,
-                int removeDanglingArtifacts, int cleanContours, int fillHoles, bool optimizePlanes,
+        LargeScaleReconstruction(vector<float> voxelSizes, float bgVoxelSize, float scale,
+                uint nodeSize, int partMethod,int ki, int kd, int kn, bool useRansac, std::vector<float> flipPoint,
+                bool extrude, int removeDanglingArtifacts, int cleanContours, int fillHoles, bool optimizePlanes,
                 float getNormalThreshold, int planeIterations, int minPlaneSize, int smallRegionThreshold,
-                bool retesselate, float lineFusionThreshold, bool bigMesh, bool debug_chunks, bool useGPU);
+                bool retesselate, float lineFusionThreshold, bool bigMesh, bool debugChunks, bool useGPU);
 
         /**
          * Constructor with parameters in a struct
@@ -151,19 +160,42 @@ namespace lvr2
         /**
          * this method splits the given PointClouds in to Chunks and calculates all required values for a later reconstruction
          *
+         * @param project ScanProject containing Scans
+         * @param newChunksBB sets the Bounding Box of the reconstructed area
+         * @param chunkManager a chunkManager to handle chunks
          * @tparam BaseVecT
-         * @param scans vector of new scan to be added
-         * @param layerName the name of the ChunkManager-Layer of the tsdf-values
          * @return
          */
-        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB, std::shared_ptr<ChunkHashGrid> chunkManager, std::string layerName="tsdf_values");
+        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB, std::shared_ptr<ChunkHashGrid> chunkManager);
 
-        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkHashGrid> chunkManager, std::string layerName="tsdf_values");
+        /**
+         *
+         * this method splits the given PointClouds in to Chunks and calculates all required values for a later reconstruction
+         *
+         * @param project ScanProject containing Scans
+         * @param chunkManager a chunkManager to handle chunks
+         * @return
+         */
+        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkHashGrid> chunkManager);
 
-        MeshBufferPtr partialReconstruct(BaseVector<int> coord, std::shared_ptr<ChunkHashGrid> chunkManager, std::string layerName, BoundingBox<BaseVecT> bb);
+        /**
+         *
+         * reconstruct a given area (+ neighboring chunks from a chunkmanager) with a given voxelsize
+         *
+         * @param newChunksBB area to be reconstructed
+         * @param chunkHashGrid chunkmanager to manage chunks
+         * @param voxelSize reconstruction parameter
+         * @return reconstructed HalfEdgeMesh<BaseVecT>
+         */
+        HalfEdgeMesh<BaseVecT> getPartialReconstruct(BoundingBox<BaseVecT> newChunksBB, std::shared_ptr<ChunkHashGrid> chunkHashGrid,  float voxelSize);
 
-        HalfEdgeMesh<BaseVecT> getPartialReconstruct(BoundingBox<BaseVecT> newChunksBB, std::shared_ptr<ChunkHashGrid> chunkHashGrid, std::string layerName);
-
+        /**
+         *
+         * method to reset the changed-vector of a ScanProject by setting all values to false
+         *
+         * @param project ScanProjectEditMarkPtr
+         * @return
+         */
         int resetEditMark(ScanProjectEditMarkPtr project);
 
 
@@ -187,7 +219,7 @@ namespace lvr2
         bool m_bigMesh = true;
 
         // flag to trigger .ply output of chunks
-        bool m_debug_chunks = false;
+        bool m_debugChunks = false;
 
         // flag to trigger GPU usage
         bool m_useGPU = false;
@@ -196,7 +228,7 @@ namespace lvr2
         string m_filePath;
 
         // voxelsize for reconstruction. Default: 10
-        float m_voxelSize;
+        vector <float> m_voxelSizes;
 
         // voxelsize for the BigGrid. Default: 10
         float m_bgVoxelSize;
@@ -205,7 +237,7 @@ namespace lvr2
         float m_scale;
 
         //ChunkSize, should be constant through all processes . Default: 20
-        size_t m_chunkSize;
+        float m_chunkSize;
 
         // Max. Number of Points in a leaf (used to devide pointcloud). Default: 1000000
         uint m_nodeSize;
@@ -214,13 +246,16 @@ namespace lvr2
         int m_partMethod;
 
         //Number of normals used in the normal interpolation process. Default: 10
-        int m_Ki;
+        int m_ki;
 
         //Number of normals used for distance function evaluation. Default: 5
-        int m_Kd;
+        int m_kd;
 
         // Size of k-neighborhood used for normal estimation. Default: 10
-        int m_Kn;
+        int m_kn;
+
+        // flipPoint for GPU normal computation
+        std::vector<float> m_flipPoint;
 
         //Set this flag for RANSAC based normal estimation. Default: false
         bool m_useRansac;
@@ -246,22 +281,22 @@ namespace lvr2
         bool m_optimizePlanes;
 
         // (Plane Normal Threshold) Normal threshold for plane optimization. Default: 0.85
-        float m_getNormalThreshold;
+        float m_planeNormalThreshold;
 
         // Number of iterations for plane optimization. Default: 3
         int m_planeIterations;
 
         // Minimum value for plane optimization. Default: 7
-        int m_MinPlaneSize;
+        int m_minPlaneSize;
 
         // Threshold for small region removal. If 0 nothing will be deleted. Default: 0
-        int m_SmallRegionThreshold;
+        int m_smallRegionThreshold;
 
         // Retesselate regions that are in a regression plane. Implies --optimizePlanes. Default: false
         bool m_retesselate;
 
         // Threshold for fusing line segments while tesselating. Default: 0.01
-        float m_LineFusionThreshold;
+        float m_lineFusionThreshold;
 
 
     };
@@ -269,4 +304,4 @@ namespace lvr2
 
 #include "lvr2/reconstruction/LargeScaleReconstruction.tcc"
 
-#endif //LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
+#endif // LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
