@@ -75,13 +75,6 @@ class BigGrid
     BigGrid(std::vector<std::string> cloudPath, float voxelsize, float scale = 0, size_t bufferSize = 1024);
 
     /**
-     * Constructor:
-     * @param cloudPath path to PointCloud in ASCII xyz Format // Todo: Add other file formats
-     * @param voxelsize
-     */
-    BigGrid(std::string cloudPath, float voxelsize, float scale = 0);
-
-    /**
      * Constructor: specific case for incremental reconstruction/chunking
      * @param h5File path to PointClouds in .h5 file
      * @param voxelsize
@@ -157,15 +150,15 @@ class BigGrid
     lvr2::floatArr getPointCloud(size_t& numPoints);
 
     BoundingBox<BaseVecT>& getBB() { return m_bb; }
-    BoundingBox<BaseVecT>& getpartialBB() { return m_partialbb; }
 
     /**
-     * Calculates 8 corners of a Bounding Box
      *
-     * @param corners
-     * @param bb_array
+     * get the partial BB of the area, which needs to be reconstructed
+     *
+     * @return partial BB
      */
-    void calculateCorners(Eigen::Vector4d corners[], boost::shared_array<double> bb_array);
+    BoundingBox<BaseVecT>& getpartialBB() { return m_partialbb; }
+
 
     virtual ~BigGrid();
 

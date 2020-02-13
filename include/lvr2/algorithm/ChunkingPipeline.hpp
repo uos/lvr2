@@ -46,6 +46,7 @@
 namespace lvr2
 {
 
+template <typename BaseVecT>
 class ChunkingPipeline
 {
 public:
@@ -86,6 +87,11 @@ private:
     // large scale reconstruct options
     LSROptions m_lsrOptions;
 
+    // practicability analysis config values
+    double m_roughnessRadius = 0.3;
+    double m_heightDifferencesRadius = 0.3;
+    std::vector<float> m_practicabilityLayers;
+
     // status flag
     bool m_running = false;
 
@@ -93,8 +99,26 @@ private:
      * @brief Parse YAML config (m_configPath) to boost options
      */
     void parseYAMLConfig();
+
+    /**
+     * @brief 
+     * 
+     * @param dirPath 
+     * @return true 
+     * @return false 
+     */
+    bool getScanProject(const boost::filesystem::path& dirPath);
+
+    /**
+     * @brief Calculates practicability analysis of given mesh and adds it as channels to mesh buffer
+     *
+     * @param hem HalfEdgeMesh on which practicability analysis is performed
+     * @param meshBuffer buffer where practicability analysis channels should be added
+     */
+    void practicabilityAnalysis(HalfEdgeMesh<BaseVecT>& hem, MeshBufferPtr meshBuffer);
 };
 
 } /* namespace lvr2 */
 
+#include "ChunkingPipeline.tcc"
 #endif // CHUNKING_PIPELINE_HPP

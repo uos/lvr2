@@ -398,7 +398,7 @@ int main(int argc, char** argv)
             BoundingBox<BaseVector<float>> bb(BaseVector<float>(bb_array[0], bb_array[1], bb_array[2]),
                                     BaseVector<float>(bb_array[3], bb_array[4], bb_array[5]));
             // bounding box transfered to object
-            tempScan->m_boundingBox = bb;
+            tempScan->boundingBox = bb;
 
             boost::shared_array<float> fov_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "fov", six);
             // fov transfered to object
@@ -407,30 +407,30 @@ int main(int argc, char** argv)
 
             boost::shared_array<float> res_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "resolution", six);
             // resolution transfered
-            tempScan->m_hResolution = res_array[0];
-            tempScan->m_vResolution = res_array[1];
+            tempScan->hResolution = res_array[0];
+            tempScan->vResolution = res_array[1];
             // point cloud transfered
             boost::shared_array<float> point_array = h5_ptr->loadArray<float>("raw/scans/"+ numOfScansInHDF[i], "points", pointsNum);
             // important because x, y, z coords
             pointsNum = pointsNum / 3;
             PointBufferPtr pointPointer = PointBufferPtr(new PointBuffer(point_array, pointsNum));
-            tempScan->m_points = pointPointer;
+            tempScan->points = pointPointer;
             // tempScan->m_points = h5_ptr->loadPointCloud("raw/scans/" + numOfScansInHDF[i]);
-            tempScan->m_pointsLoaded = true;
+            tempScan->pointsLoaded = true;
             // pose transfered
-            tempScan->m_poseEstimation = h5_ptr->loadMatrix<Transformd>("raw/scans/" + numOfScansInHDF[i], "initialPose").get();
-            tempScan->m_positionNumber = i;
+            tempScan->poseEstimation = h5_ptr->loadMatrix<Transformd>("raw/scans/" + numOfScansInHDF[i], "initialPose").get();
+            tempScan->positionNumber = i;
 
-            tempScan->m_scanRoot = "raw/scans/" + numOfScansInHDF[i];
+            tempScan->scanRoot = "raw/scans/" + numOfScansInHDF[i];
 
 
             // sets the finalPose to the identiy matrix
-            tempScan->m_registration = Transformd::Identity();
+            tempScan->registration = Transformd::Identity();
 
             
             // DEBUG
             ScanPosition pos;
-            pos.scan = boost::optional<Scan>(*tempScan);
+            pos.scans.push_back(tempScan);
             proj.project->positions.push_back(std::make_shared<ScanPosition>(pos));
             proj.changed.push_back(false);
 
@@ -451,7 +451,7 @@ int main(int argc, char** argv)
              cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << projPtr->changed.at(i)<< endl;
          }
 
-         cout << "Eine Pose aus dem Project:" << endl << projPtr->project->positions.at(1)->scan->m_registration << endl;
+         cout << "Eine Pose aus dem Project:" << endl << projPtr->project->positions.at(1)->scans[0]->registration << endl;
     }
     else
     {
@@ -478,8 +478,8 @@ int main(int argc, char** argv)
             Transformd pose = getTransformationFromFile<double>(file);
 
             ScanPtr scan = ScanPtr(new Scan());
-            scan->m_points = model->m_pointCloud;
-            scan->m_poseEstimation = pose;
+            scan->points = model->m_pointCloud;
+            scan->poseEstimation = pose;
 
             SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(scan));
             scans.push_back(slamScan);

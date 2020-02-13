@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /*
+/*
  * Options.cpp
  *
  *  Created on: Nov 21, 2010
@@ -40,44 +40,39 @@ namespace hdf5tool2
 Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
 
-	// Create option descriptions
+    // Create option descriptions
 
-	m_descr.add_options()
-            ("help", "Produce help message")
-            ("inputDir", value<string>(), "Root of the raw data.")
-            ("outputDir", value<string>()->default_value("./"), "HDF5 file is written here.")
-            ("outputFile", value<string>()->default_value("data.h5"), "HDF5 file name.")
-            ("createPreview,p", value<bool>()->default_value(true), "Creates preview of the pointcloud.")
-            ("previewReduction,r", value<int>()->default_value(20), "Reduction ratio for the preview");
-//            ("nch, n", value<int>()->default_value(150), "Number of spectral PNGs in image folder.")
-//            ("hsp_chunk_0", value<size_t>()->default_value(50), "Dim 0 of HSP image chunks.")
-//            ("hsp_chunk_1", value<size_t>()->default_value(50), "Dim 1 of HSP image chunks.")
-//            ("hsp_chunk_2", value<size_t>()->default_value(50), "Dim 2 of HSP image chunks.")
-//            ("addAnnotations", value<int>()->default_value(1), "Add spectral annotation channels");
+    m_descr.add_options()
+        ("help", "Produce help message")
+        ("inputDir", value<string>(), "Root of the raw data.")
+        ("outputDir", value<string>()->default_value("./"), "HDF5 file is written here.")
+        ("outputFile", value<string>()->default_value("data.h5"), "HDF5 file name.")
+        ("createPreview,p", value<bool>()->default_value(true), "Creates preview of the pointcloud.")
+        ("previewReduction,r", value<int>()->default_value(20), "Reduction ratio for the preview");
 
+    // Parse command line and generate variables map
+    positional_options_description p;
+    p.add("inputDir", 1);
+    store(command_line_parser(argc, argv).options(m_descr).positional(p).run(), m_variables);
+    notify(m_variables);
 
-	// Parse command line and generate variables map
-  positional_options_description p;
-  p.add("inputDir", 1);
-	store(command_line_parser(argc, argv).options(m_descr).positional(p).run(), m_variables);
-	notify(m_variables);
-
-  if(m_variables.count("help")) {
-    ::std::cout<< m_descr << ::std::endl;
-    exit(-1);
-  }
-  else if (!m_variables.count("inputDir"))
-  {
-    std::cout << "Error: You must specify an input directory." << std::endl;
-    std::cout << std::endl;
-    std::cout << m_descr << std::endl;
-    exit(-1);
-  }
-
+    if (m_variables.count("help"))
+    {
+        ::std::cout << m_descr << ::std::endl;
+        exit(-1);
+    }
+    else if (!m_variables.count("inputDir"))
+    {
+        std::cout << "Error: You must specify an input directory." << std::endl;
+        std::cout << std::endl;
+        std::cout << m_descr << std::endl;
+        exit(-1);
+    }
 }
 
-Options::~Options() {
-	// TODO Auto-generated destructor stub
+Options::~Options()
+{
+    // TODO Auto-generated destructor stub
 }
 
-} // namespace reconstruct
+} // namespace hdf5tool2

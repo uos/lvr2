@@ -1,3 +1,37 @@
+/**
+ * Copyright (c) 2020, University Osnabrück
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the University Osnabrück nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+ * ChunkingPipeline.hpp
+ *
+ * @date 24.01.2020
+ * @author Marcel Wiegand
+ */
+
 #ifndef LVR2_LSR_OPTIONS_YAML_EXTENSIONS
 #define LVR2_LSR_OPTIONS_YAML_EXTENSIONS
 
@@ -14,28 +48,30 @@ struct convert<lvr2::LSROptions>
     {
         Node node;
 
-        node["filePath"] = options.filePath;
-        node["voxelSize"] = options.voxelSize;
+        node["bigMesh"] = options.bigMesh;
+        node["debugChunks"] = options.debugChunks;
+        node["useGPU"] = options.useGPU;
+        node["voxelSizes"] = options.voxelSizes;
         node["bgVoxelSize"] = options.bgVoxelSize;
         node["scale"] = options.scale;
-        node["chunkSize"] = options.chunkSize;
         node["nodeSize"] = options.nodeSize;
         node["partMethod"] = options.partMethod;
-        node["Ki"] = options.Ki;
-        node["Kd"] = options.Kd;
-        node["Kn"] = options.Kn;
+        node["ki"] = options.ki;
+        node["kd"] = options.kd;
+        node["kn"] = options.kn;
+        node["flipPoint"] = options.flipPoint;
         node["useRansac"] = options.useRansac;
         node["extrude"] = options.extrude;
         node["removeDanglingArtifacts"] = options.removeDanglingArtifacts;
         node["cleanContours"] = options.cleanContours;
         node["fillHoles"] = options.fillHoles;
         node["optimizePlanes"] = options.optimizePlanes;
-        node["getNormalThreshold"] = options.getNormalThreshold;
+        node["planeNormalThreshold"] = options.planeNormalThreshold;
         node["planeIterations"] = options.planeIterations;
-        node["MinPlaneSize"] = options.MinPlaneSize;
-        node["SmallRegionThreshold"] = options.SmallRegionThreshold;
+        node["minPlaneSize"] = options.minPlaneSize;
+        node["smallRegionThreshold"] = options.smallRegionThreshold;
         node["retesselate"] = options.retesselate;
-        node["LineFusionThreshold"] = options.LineFusionThreshold;
+        node["lineFusionThreshold"] = options.lineFusionThreshold;
 
         return node;
     }
@@ -47,14 +83,24 @@ struct convert<lvr2::LSROptions>
             return false;
         }
 
-        if (node["filePath"])
+        if (node["bigMesh"])
         {
-            options.filePath = node["filePath"].as<std::string>();
+            options.bigMesh = node["bigMesh"].as<bool>();
         }
 
-        if (node["voxelSize"])
+        if (node["debugChunks"])
         {
-            options.voxelSize = node["voxelSize"].as<float>();
+            options.debugChunks = node["debugChunks"].as<bool>();
+        }
+
+        if (node["useGPU"])
+        {
+            options.useGPU = node["useGPU"].as<bool>();
+        }
+
+        if (node["voxelSizes"])
+        {
+            options.voxelSizes = node["voxelSizes"].as<std::vector<float>>();
         }
 
         if (node["bgVoxelSize"])
@@ -67,11 +113,6 @@ struct convert<lvr2::LSROptions>
             options.scale = node["scale"].as<float>();
         }
 
-        if (node["chunkSize"])
-        {
-            options.chunkSize = node["chunkSize"].as<size_t>();
-        }
-
         if (node["nodeSize"])
         {
             options.nodeSize = node["nodeSize"].as<uint>();
@@ -82,24 +123,29 @@ struct convert<lvr2::LSROptions>
             options.partMethod = node["partMethod"].as<int>();
         }
 
-        if (node["Ki"])
+        if (node["ki"])
         {
-            options.Ki = node["Ki"].as<int>();
+            options.ki = node["ki"].as<int>();
         }
 
-        if (node["Kd"])
+        if (node["kd"])
         {
-            options.Kd = node["Kd"].as<int>();
+            options.kd = node["kd"].as<int>();
         }
 
-        if (node["Kn"])
+        if (node["kn"])
         {
-            options.Kn = node["Kn"].as<int>();
+            options.kn = node["kn"].as<int>();
         }
 
         if (node["useRansac"])
         {
             options.useRansac = node["useRansac"].as<bool>();
+        }
+
+        if (node["flipPoint"])
+        {
+            options.flipPoint = node["flipPoint"].as<std::vector<float>>();
         }
 
         if (node["extrude"])
@@ -127,9 +173,9 @@ struct convert<lvr2::LSROptions>
             options.optimizePlanes = node["optimizePlanes"].as<bool>();
         }
 
-        if (node["getNormalThreshold"])
+        if (node["planeNormalThreshold"])
         {
-            options.getNormalThreshold = node["getNormalThreshold"].as<float>();
+            options.planeNormalThreshold = node["planeNormalThreshold"].as<float>();
         }
 
         if (node["planeIterations"])
@@ -137,14 +183,14 @@ struct convert<lvr2::LSROptions>
             options.planeIterations = node["planeIterations"].as<int>();
         }
 
-        if (node["MinPlaneSize"])
+        if (node["minPlaneSize"])
         {
-            options.MinPlaneSize = node["MinPlaneSize"].as<int>();
+            options.minPlaneSize = node["minPlaneSize"].as<int>();
         }
 
-        if (node["SmallRegionThreshold"])
+        if (node["smallRegionThreshold"])
         {
-            options.SmallRegionThreshold = node["SmallRegionThreshold"].as<int>();
+            options.smallRegionThreshold = node["smallRegionThreshold"].as<int>();
         }
 
         if (node["retesselate"])
@@ -152,9 +198,9 @@ struct convert<lvr2::LSROptions>
             options.retesselate = node["retesselate"].as<bool>();
         }
 
-        if (node["LineFusionThreshold"])
+        if (node["lineFusionThreshold"])
         {
-            options.LineFusionThreshold = node["LineFusionThreshold"].as<float>();
+            options.lineFusionThreshold = node["lineFusionThreshold"].as<float>();
         }
 
         return true;

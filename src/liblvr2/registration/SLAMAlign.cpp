@@ -46,8 +46,6 @@ namespace lvr2
 SLAMAlign::SLAMAlign(const SLAMOptions& options, const vector<SLAMScanPtr>& scans, std::vector<bool> new_scans)
     : m_options(options), m_scans(scans), m_graph(&m_options), m_foundLoop(false), m_loopIndexCount(0), m_new_scans(new_scans)
 {
-    // The first Scan is never changed
-    m_alreadyMatched = 1;
 
     for (auto& scan : m_scans)
     {
@@ -58,8 +56,6 @@ SLAMAlign::SLAMAlign(const SLAMOptions& options, const vector<SLAMScanPtr>& scan
 SLAMAlign::SLAMAlign(const SLAMOptions& options, std::vector<bool> new_scans)
     : m_options(options), m_graph(&m_options), m_foundLoop(false), m_loopIndexCount(0), m_new_scans(new_scans)
 {
-    // The first Scan is never changed
-    m_alreadyMatched = 1;
 }
 
 void SLAMAlign::setOptions(const SLAMOptions& options)
@@ -136,10 +132,8 @@ void SLAMAlign::match()
     if (m_options.metascan && !m_metascan)
     {
         Metascan* meta = new Metascan();
-        for (size_t i = 0; i < m_alreadyMatched; i++)
-        {
-            meta->addScan(m_scans[i]);
-        }
+        
+        meta->addScan(m_scans[0]);
 
         m_metascan = SLAMScanPtr(meta);
     }
@@ -147,26 +141,26 @@ void SLAMAlign::match()
     string scan_number_string = to_string(m_scans.size() - 1);
 
     // only match everything after m_alreadyMatched
-    for (; m_alreadyMatched < m_scans.size(); m_alreadyMatched++)
+    for (size_t i = 0; i < m_icp_graph.size(); i++)
     {
-        if (m_new_scans.empty() || m_new_scans.at(m_alreadyMatched))
+        if (m_new_scans.empty() || m_new_scans.at(m_icp_graph.at(i).second))
         {
             cout << m_scans.size() << endl;
-            size_t i = m_alreadyMatched;
+            ;
 
             if (m_options.verbose)
             {
-                cout << "Iteration " << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << endl;
+                cout << "Iteration " << setw(scan_number_string.length()) << m_icp_graph.at(i).second << "/" << scan_number_string << ": " << endl;
             }
             else
             {
-                cout << setw(scan_number_string.length()) << i << "/" << scan_number_string << ": " << flush;
+                cout << setw(scan_number_string.length()) << m_icp_graph.at(i).second << "/" << scan_number_string << ": " << flush;
             }
 
-            SLAMScanPtr prev = m_options.metascan ? m_metascan : m_scans[i - 1];
-            const SLAMScanPtr& cur = m_scans[i];
+            SLAMScanPtr prev = m_options.metascan ? m_metascan : m_scans[m_icp_graph.at(i).first];
+            const SLAMScanPtr& cur = m_scans[m_icp_graph.at(i).second];
 
-            if (!m_options.trustPose && i != 1) // no deltaPose on first run
+            if (!m_options.trustPose && m_icp_graph.at(i).second != 1) // no deltaPose on first run
             {
                 applyTransform(cur, prev->deltaPose());
             }
@@ -196,8 +190,15 @@ void SLAMAlign::match()
             {
                 ((Metascan*)m_metascan.get())->addScan(cur);
             }
-
-            checkLoopClose(i);
+            if (m_options.useScanOrder)
+            {
+                checkLoopClose(m_icp_graph.at(i).second);
+            }
+            else if (m_options.doGraphSLAM)
+            {
+                checkLoopCloseOtherOrder(i);
+            }
+            
         }
     }
 }
@@ -219,6 +220,46 @@ void SLAMAlign::applyTransform(SLAMScanPtr scan, const Matrix4d& transform)
             {
                 found = true;
             }
+        }
+    }
+}
+
+void SLAMAlign::checkLoopCloseOtherOrder(size_t last)
+{
+    if (m_options.verbose)
+    {
+        cout << "check if a loop exists. current scna: " << m_icp_graph.at(last).second << endl;
+    }
+    bool hasLoop = false;
+    int no_loop = INT_MAX;
+    vector<SLAMScanPtr> scans;
+    std::vector<bool> new_scans;
+    scans.push_back(m_scans.at(m_icp_graph.at(0).first));
+    for (int i = 0; i <= last; i++)
+    {
+        scans.push_back(m_scans.at(m_icp_graph.at(i).second));
+
+        if (!m_new_scans.empty())
+        {
+                new_scans.push_back(m_new_scans.at(m_icp_graph.at(i).second));
+        }
+        if (m_icp_graph.at(last).first == m_icp_graph.at(i).second)
+        {
+                no_loop = i;
+        }
+    }
+
+    for (int i = 0; i < scans.size() && !hasLoop; i++)
+    {
+        double distance_to_other = sqrt(
+            pow(m_scans.at(last)->innerScan()->poseEstimation(3,0) - scans.at(i)->innerScan()->poseEstimation(3,0), 2.0)+
+            pow(m_scans.at(last)->innerScan()->poseEstimation(3,1) - scans.at(i)->innerScan()->poseEstimation(3,1), 2.0)+
+            pow(m_scans.at(last)->innerScan()->poseEstimation(3,2) - scans.at(i)->innerScan()->poseEstimation(3,2), 2.0));
+        if (i != no_loop && distance_to_other < m_options.closeLoopDistance)
+        {
+            cout << "found loop" << endl;
+            m_graph.doGraphSLAM(scans, last, new_scans);
+            return;
         }
     }
 }
@@ -325,11 +366,118 @@ void SLAMAlign::graphSLAM(size_t last)
 
 void SLAMAlign::finish()
 {
+    createIcpGraph();
+    for (int i = 0; i< m_icp_graph.size(); i++)
+    {
+        cout << "icp graph: " << m_icp_graph.at(i).first << ":" << m_icp_graph.at(i).second << endl;
+    }
+    
     match();
 
     if (m_options.doGraphSLAM)
     {
         graphSLAM(m_scans.size() - 1);
+    }
+}
+
+void SLAMAlign::createIcpGraph()
+{
+    if (m_options.verbose)
+    {
+        cout << "create ICP Graph" << endl;
+    }
+    m_icp_graph = std::vector<std::pair<int, int>>();
+    vector<vector<double>> mat(m_scans.size());
+
+    // if useScanOrder: the m_icp_graph must the scnan order
+    if (m_options.useScanOrder)
+    {
+        for (int i = 1; i < m_scans.size(); i++)
+        {
+            m_icp_graph.push_back(std::pair<int, int>(i-1,i));
+        } 
+        return;
+    }
+
+	// calculate the euclidean distance from the first scna to all scans
+    {
+        vector<double> *v = &(mat.at(0));
+        auto trans_a = m_scans.at(0)->innerScan()->poseEstimation.block<3, 1>(0, 3);
+        for (int i = 0; i < m_scans.size(); i++)
+        {
+            auto trans_b = m_scans.at(i)->innerScan()->poseEstimation.block<3, 1>(0, 3);
+
+            double translation_diff = 0.0;
+            for(int i = 0; i < 3; ++i)
+            {
+                translation_diff+= std::pow(trans_a[i] - trans_b[i], 2);
+            }
+            v->push_back(std::sqrt(translation_diff));
+
+            if (m_options.verbose)
+            {
+                cout << "Calculated euclidean distancex: scan_0, scan_" << i << ", d="<< v->at(i) << endl;
+            }
+        }
+    }
+
+    // vector of booleans: true if scan included in the graph; first scan is already included
+	vector<bool> scan_in_graph(m_scans.size());
+    scan_in_graph.at(0) = true;
+    for (int i = 1; i < scan_in_graph.size(); i++)
+    {
+        scan_in_graph.at(i) = false;
+    }
+    
+    for(int i = 1; i < m_scans.size(); i++)
+    {
+        double minimum = DBL_MAX;
+        int old_scan;
+        int new_scan;
+
+        //search for minimum in mat
+        for(int x = 0; x < mat.size(); ++x)
+        {
+            for(int y = 0 ; y < mat.at(x).size(); ++y)
+            {
+                if (!scan_in_graph.at(y) && x!=y && mat[x][y] < minimum)
+                {
+                    //cout << "new min: ";
+                    minimum = mat[x][y];
+                    old_scan = x;
+                    new_scan = y;
+                }
+            }
+        }
+
+        m_icp_graph.push_back(std::pair<int, int>(old_scan,new_scan));
+        scan_in_graph.at(new_scan) = true;
+        
+        {
+            vector<double> *v = &(mat.at(new_scan));
+            auto trans_a = m_scans.at(new_scan)->innerScan()->poseEstimation.block<3, 1>(0, 3);
+            for (int i = 0; i < m_scans.size(); i++)
+            {
+                auto trans_b = m_scans.at(i)->innerScan()->poseEstimation.block<3, 1>(0, 3);
+
+                double translation_diff = 0.0;
+                for(int i = 0; i < 3; ++i)
+                {
+                    translation_diff+= std::pow(trans_a[i] - trans_b[i], 2);
+                }
+                v->push_back(std::sqrt(translation_diff));
+
+                if (m_options.verbose)
+                {
+                    cout << "Calculated euclidean distancex: scan_" << new_scan << ", scan_" << i << ", d="<< v->at(i) << endl;
+                }
+            }
+        }
+    }
+
+    if (m_options.verbose)
+    {
+        cout << "create ICP Graph finish" << endl;
     }
 }
 
