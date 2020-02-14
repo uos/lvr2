@@ -133,6 +133,7 @@ namespace lvr2
             BoundingBox<BaseVecT>& newChunksBB,
             std::shared_ptr<ChunkHashGrid> chunkManager)
     {
+        unsigned long timeSum = 0;
         m_chunkSize = chunkManager->getChunkSize();
 
         if(project->project->positions.size() != project->changed.size())
@@ -358,10 +359,11 @@ namespace lvr2
                 ps_grid->calcDistanceValues();
 
 
-
+                unsigned long timeStart = lvr2::timestamp.getCurrentTimeInMs();
                 int x = (int)floor(partitionBoxes->at(i).getCentroid().x / m_chunkSize);
                 int y = (int)floor(partitionBoxes->at(i).getCentroid().y / m_chunkSize);
                 int z = (int)floor(partitionBoxes->at(i).getCentroid().z / m_chunkSize);
+
 
                 addTSDFChunkManager(x, y, z, ps_grid, chunkManager, layerName);
                 BaseVector<int> chunkCoordinates(x, y, z);
@@ -369,6 +371,10 @@ namespace lvr2
                 newChunks.push_back(chunkCoordinates);
                 // also save the "real" bounding box without overlap
                 partitionBoxesNew.push_back(partitionBoxes->at(i));
+
+                unsigned long timeEnd = lvr2::timestamp.getCurrentTimeInMs();
+
+                timeSum += timeEnd - timeStart;
 
                 // save the mesh of the chunk
 
@@ -389,6 +395,7 @@ namespace lvr2
             }
               std::cout << lvr2::timestamp << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
 
+            cout << "ChunkManagerIO Time: " <<(double) (timeSum / 1000.0) << " s" << endl;
             cout << lvr2::timestamp << "finished" << endl;
 
 
