@@ -210,7 +210,7 @@ namespace lvr2
         cmBB.expand(addCMBBMin);
         cmBB.expand(addCMBBMax);
 
-        chunkManager->setBoundingBox(cmBB);
+        // chunkManager->setBoundingBox(cmBB);
 
         int numChunks_global = (cmBB.getXSize() / m_chunkSize) * (cmBB.getYSize() / m_chunkSize) * (cmBB.getZSize() / m_chunkSize);
         int numChunks_partial = partitionBoxes->size();
@@ -221,14 +221,14 @@ namespace lvr2
         BaseVecT bb_max(bb.getMax().x, bb.getMax().y, bb.getMax().z);
         BoundingBox<BaseVecT> cbb(bb_min, bb_max);
 
-        vector<string> grid_files;
-        // vector to save the new chunk names - which chunks have to be reconstructed
-        vector<BaseVector<int>> newChunks = vector<BaseVector<int>>();
 
         uint partitionBoxesSkipped = 0;
 
         for(int h = 0; h < m_voxelSizes.size(); h++)
         {
+            // vector to save the new chunk names - which chunks have to be reconstructed
+            vector<BaseVector<int>> newChunks = vector<BaseVector<int>>();
+
             string layerName = "tsdf_values_" + std::to_string(m_voxelSizes[h]);
             //create chunks
             for (int i = 0; i < partitionBoxes->size(); i++)
@@ -378,7 +378,7 @@ namespace lvr2
 
                 // save the mesh of the chunk
 
-                if(m_debugChunks)
+                if(m_debugChunks && h == 0)
                 {
                     auto reconstruction =
                             make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
@@ -393,11 +393,10 @@ namespace lvr2
                     }
                 }
             }
-              std::cout << lvr2::timestamp << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
+            std::cout << lvr2::timestamp << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
 
             cout << "ChunkManagerIO Time: " <<(double) (timeSum / 1000.0) << " s" << endl;
             cout << lvr2::timestamp << "finished" << endl;
-
 
             if(m_bigMesh && h == 0)
             {
@@ -420,7 +419,7 @@ namespace lvr2
                 // TODO: don't do the following reconstruction in ChunkingPipline-Workflow (put it in extra function for lsr_tool)
                 std::vector<PointBufferPtr> tsdfChunks;
                 for (BaseVector<int> coord : newChunks) {
-                    boost::optional<shared_ptr<PointBuffer>> chunk = chunkManager->getChunk<PointBufferPtr>("tsdf_values_" + std::to_string(m_voxelSizes[0]),
+                    boost::optional<shared_ptr<PointBuffer>> chunk = chunkManager->getChunk<PointBufferPtr>(layerName,
                                                                                                             coord.x,
                                                                                                             coord.y,
                                                                                                             coord.z);
@@ -494,6 +493,7 @@ namespace lvr2
                 auto m = ModelPtr(new Model(meshBuffer));
                 ModelFactory::saveModel(m, largeScale.str());
             }
+            std::cout << lvr2::timestamp << "added/changed " << newChunks.size() << " chunks in layer " << layerName << std::endl;
         }
 
 
