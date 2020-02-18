@@ -51,7 +51,7 @@
 #include "lvr2/algorithm/ReductionAlgorithms.hpp"
 #include "lvr2/algorithm/Materializer.hpp"
 #include "lvr2/algorithm/Texturizer.hpp"
-#include "lvr2/algorithm/ImageTexturizer.hpp"
+//#include "lvr2/algorithm/ImageTexturizer.hpp"
 
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/reconstruction/BilinearFastBox.hpp"
@@ -453,11 +453,11 @@ int main(int argc, char** argv)
         *surface
     );
 
-    ImageTexturizer<Vec> img_texter(
-        options.getTexelSize(),
-        options.getTexMinClusterSize(),
-        options.getTexMaxClusterSize()
-    );
+    // ImageTexturizer<Vec> img_texter(
+    //     options.getTexelSize(),
+    //     options.getTexMinClusterSize(),
+    //     options.getTexMaxClusterSize()
+    // );
 
     Texturizer<Vec> texturizer(
         options.getTexelSize(),
@@ -474,20 +474,23 @@ int main(int argc, char** argv)
         }
         else
         {
-            ScanprojectIO project;
+            // cout << "ScanProject" << endl;
+            // ScanprojectIO project;
 
-            if (options.getProjectDir().empty())
-            {
-                project.parse_project(options.getInputFileName());
-            }
-            else
-            {
-                project.parse_project(options.getProjectDir());
-            }
+            // if (options.getProjectDir().empty())
+            // {
+            //     cout << "Empty" << endl;
+            //     project.parse_project(options.getInputFileName());
+            // }
+            // else
+            // {
+            //     cout << "Not empty" << endl;
+            //     project.parse_project(options.getProjectDir());
+            // }
 
-            img_texter.set_project(project.get_project());
+            // img_texter.set_project(project.get_project());
 
-            materializer.setTexturizer(img_texter);
+            // materializer.setTexturizer(img_texter);
         }
     }
 

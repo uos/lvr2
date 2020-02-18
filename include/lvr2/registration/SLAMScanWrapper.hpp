@@ -34,7 +34,7 @@
 #ifndef SLAMSCANWRAPPER_HPP_
 #define SLAMSCANWRAPPER_HPP_
 
-#include "lvr2/types/Scan.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
 #include <Eigen/Dense>
 #include <vector>

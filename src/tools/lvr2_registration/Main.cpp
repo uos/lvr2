@@ -32,20 +32,22 @@
  *  @author Malte Hillmann
  */
 
-#include <lvr2/io/ModelFactory.hpp>
-#include <lvr2/io/IOUtils.hpp>
-#include <lvr2/registration/SLAMAlign.hpp>
-#include <lvr2/io/HDF5IO.hpp>
-#include <lvr2/io/GHDF5IO.hpp>
-#include <lvr2/io/hdf5/ArrayIO.hpp>
-#include <lvr2/io/hdf5/ChannelIO.hpp>
-#include <lvr2/io/hdf5/VariantChannelIO.hpp>
-#include <lvr2/io/hdf5/PointCloudIO.hpp>
-#include <lvr2/io/hdf5/MatrixIO.hpp>
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/IOUtils.hpp"
+#include "lvr2/registration/SLAMAlign.hpp"
+#include "lvr2/io/HDF5IO.hpp"
+#include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/ArrayIO.hpp"
+#include "lvr2/io/hdf5/ChannelIO.hpp"
+#include "lvr2/io/hdf5/VariantChannelIO.hpp"
+#include "lvr2/io/hdf5/PointCloudIO.hpp"
+#include "lvr2/io/hdf5/MatrixIO.hpp"
+#include "lvr2/registration/RegistrationPipeline.hpp"
 
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
 #include <iostream>
 #include <chrono>
 #include <fstream>
@@ -375,6 +377,9 @@ int main(int argc, char** argv)
     SLAMAlign align(options);
     vector<SLAMScanPtr> scans;
 
+    // DEBUG
+    ScanProjectEditMark proj;
+
     int count = end - start + 1;
 
     HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
@@ -396,8 +401,8 @@ int main(int argc, char** argv)
 
             boost::shared_array<float> fov_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "fov", six);
             // fov transfered to object
-            tempScan->m_hFieldOfView = fov_array[0];
-            tempScan->m_vFieldOfView = fov_array[1];
+          
+            // TODO: min and max angles from new structure
 
             boost::shared_array<float> res_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "resolution", six);
             // resolution transfered
@@ -410,22 +415,45 @@ int main(int argc, char** argv)
             PointBufferPtr pointPointer = PointBufferPtr(new PointBuffer(point_array, pointsNum));
             tempScan->m_points = pointPointer;
             // tempScan->m_points = h5_ptr->loadPointCloud("raw/scans/" + numOfScansInHDF[i]);
-            tempScan->m_pointsLoaded = true;            
+            tempScan->m_pointsLoaded = true;
             // pose transfered
             tempScan->m_poseEstimation = h5_ptr->loadMatrix<Transformd>("raw/scans/" + numOfScansInHDF[i], "initialPose").get();
             tempScan->m_positionNumber = i;
 
             tempScan->m_scanRoot = "raw/scans/" + numOfScansInHDF[i];
-            
+
 
             // sets the finalPose to the identiy matrix
             tempScan->m_registration = Transformd::Identity();
+
+            
+            // DEBUG
+            ScanPosition pos;
+            pos.scan = boost::optional<Scan>(*tempScan);
+            proj.positions.push_back(std::make_shared<ScanPosition>(pos));
+            proj.changed.push_back(false);
+
+            
 
             SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(tempScan));
 
             scans.push_back(slamScan);
             align.addScan(slamScan);
         }
+        // DEBUG
+        
+        // cout << "vor Pipe Konstruktor" << endl;
+        // ScanProjectEditMarkPtr projPtr = make_shared<ScanProjectEditMark>(proj);
+        // RegistrationPipeline pipe(&options, projPtr);
+        // pipe.doRegistration();
+        // cout << "Nach doRegistration" << endl;
+        // for (size_t i = 0; i < projPtr->changed.size(); i++)
+        // {
+        //     cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << projPtr->changed.at(i)<< endl;
+        // }
+        
+        // cout << "Eine Pose aus dem Project:" << endl << projPtr->positions.at(1)->scan->m_registration << endl;
+
     }
     else
     {
@@ -460,7 +488,7 @@ int main(int argc, char** argv)
             align.addScan(slamScan);
         }
     }
-    
+
 
     auto start_time = chrono::steady_clock::now();
 

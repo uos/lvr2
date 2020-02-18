@@ -36,8 +36,7 @@
 #define SRC_LIBLVR2_RECONSTRUCTION_MODELTOIMAGE_HPP_
 
 #include "lvr2/io/Model.hpp"
-
-#include <opencv/cv.h>
+#include <opencv2/core.hpp>
 #include <algorithm>
 #include <vector>
 #include <tuple>

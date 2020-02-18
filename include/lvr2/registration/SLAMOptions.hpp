@@ -114,6 +114,9 @@ struct SLAMOptions
 
     /// The epsilon difference of SLAM corrections for the stop criterion of SLAM
     double  slamEpsilon = 0.5;
+
+    /// max difference of sum of new pos and sum of old pos if they are the same
+    double diffPoseSum = 50;
 };
 
 } /* namespace lvr2 */

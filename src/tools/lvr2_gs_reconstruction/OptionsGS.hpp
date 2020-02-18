@@ -26,138 +26,136 @@
  */
 
 /*
-* OptionsGSS.hpp
-*
-*  Created on: Feb 09, 2019
-*      Author: Patrick Hoffmann
-*/
+ * OptionsGSS.hpp
+ *
+ *  Created on: Feb 09, 2019
+ *      Author: Patrick Hoffmann
+ */
 #ifndef OPTIONSGS_H_
-#define OPTIONSHS_H_
+#define OPTIONSGS_H_
 
+#include "lvr2/config/BaseOption.hpp"
+
+#include <boost/program_options.hpp>
+#include <float.h>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <boost/program_options.hpp>
-#include <float.h>
 
-#include <lvr2/config/BaseOption.hpp>
-
-using std::ostream;
 using std::cout;
 using std::endl;
+using std::ostream;
 using std::string;
 using std::vector;
 using namespace lvr2;
 
-namespace gs_reconstruction{
+namespace gs_reconstruction
+{
 
-    class Options : public BaseOption {
-    public:
-        Options(int argc, char** argv);
-        virtual ~Options();
+class Options : public BaseOption
+{
+  public:
+    Options(int argc, char** argv);
+    virtual ~Options();
 
-        int getRuntime() const;
+    int getRuntime() const;
 
-        int getBasicSteps() const;
+    int getBasicSteps() const;
 
-        int getNumSplits() const;
+    int getNumSplits() const;
 
-        float getBoxFactor() const;
+    float getBoxFactor() const;
 
-        bool getWithCollapse() const;
+    bool getWithCollapse() const;
 
-        float getLearningRate() const;
+    float getLearningRate() const;
 
-        float getNeighborLearningRate() const;
+    float getNeighborLearningRate() const;
 
-        float getDecreaseFactor() const;
+    float getDecreaseFactor() const;
 
-        int getAllowMiss() const;
+    int getAllowMiss() const;
 
-        float getCollapseThreshold() const;
+    float getCollapseThreshold() const;
 
-        bool isFilterChain() const;
+    bool isFilterChain() const;
 
-        int getDeleteLongEdgesFactor() const;
+    int getDeleteLongEdgesFactor() const;
 
-        bool isInterior() const;
+    bool isInterior() const;
 
-        int getNumBalances() const;
+    int getNumBalances() const;
 
-        string getInputFileName() const;
+    string getInputFileName() const;
 
-        /*
-         * prints information about needed command-line-inputs e.g: input-file (ply)
-         */
-        bool printUsage() const;
+    /*
+     * prints information about needed command-line-inputs e.g: input-file (ply)
+     */
+    bool printUsage() const;
 
-        int getKd() const;
+    int getKd() const;
 
-        int getKn() const;
+    int getKn() const;
 
-        int getKi() const;
+    int getKi() const;
 
-        string getPcm() const;
+    string getPcm() const;
 
+  private:
+    int m_runtime;
+    int m_basicSteps;
+    int m_numSplits;
+    float m_boxFactor;
+    bool m_withCollapse;
+    float m_learningRate;
+    float m_neighborLearningRate;
+    float m_decreaseFactor;
+    int m_allowMiss;
+    float m_collapseThreshold;
+    bool m_filterChain;
+    int m_deleteLongEdgesFactor;
+    bool m_interior;
+    int m_balances;
+    /// The number of neighbors for distance function evaluation
+    int m_kd;
 
-    private:
-        int m_runtime;
-        int m_basicSteps;
-        int m_numSplits;
-        float m_boxFactor;
-        bool m_withCollapse;
-        float m_learningRate;
-        float m_neighborLearningRate;
-        float m_decreaseFactor;
-        int m_allowMiss;
-        float m_collapseThreshold;
-        bool m_filterChain;
-        int m_deleteLongEdgesFactor;
-        bool m_interior;
-        int m_balances;
-        /// The number of neighbors for distance function evaluation
-        int                             m_kd;
+    /// The number of neighbors for normal estimation
+    int m_kn;
 
-        /// The number of neighbors for normal estimation
-        int                             m_kn;
+    /// The number of neighbors for normal interpolation
+    int m_ki;
 
+    /// The used point cloud manager
+    string m_pcm;
+};
 
-        /// The number of neighbors for normal interpolation
-        int                             m_ki;
+/// Output the Options - overloaded output Operator
+inline ostream& operator<<(ostream& os, const Options& o)
+{
+    // o.printTransformation(os);
 
-        /// The used point cloud manager
-        string                          m_pcm;
+    cout << "##### InputFile-Name: " << o.getInputFileName() << endl;
+    cout << "##### Runtime: " << o.getRuntime() << endl;
+    cout << "##### BasicSteps: " << o.getBasicSteps() << endl;
+    cout << "##### NumSplits: " << o.getNumSplits() << endl;
+    cout << "##### BoxFactor: " << o.getBoxFactor() << endl;
+    cout << "#### WithCollapse: " << o.getWithCollapse() << endl;
+    cout << "##### LearningRate: " << o.getLearningRate() << endl;
+    cout << "##### NeighbourLearningRate: " << o.getNeighborLearningRate() << endl;
+    cout << "##### DecreaseFactor: " << o.getDecreaseFactor() << endl;
+    cout << "##### AllowMiss: " << o.getAllowMiss() << endl;
+    cout << "##### CollapseThreshold: " << o.getCollapseThreshold() << endl;
+    cout << "##### FilterChain: " << o.isFilterChain() << endl;
+    cout << "##### DeleteLongEdgesFactor: " << o.getDeleteLongEdgesFactor() << endl;
+    cout << "##### Interior: " << o.isInterior() << endl;
+    cout << "##### Balances: " << o.getNumBalances() << endl;
+    cout << "##### PCM: " << o.getPcm() << endl;
+    cout << "##### KD: " << o.getKd() << endl;
+    cout << "##### KI: " << o.getKi() << endl;
+    cout << "##### KN: " << o.getKn() << endl;
 
-    };
+    return os;
+}
+} // namespace gs_reconstruction
 
-    /// Output the Options - overloaded output Operator
-    inline ostream& operator<<(ostream& os, const Options &o) {
-        //o.printTransformation(os);
-
-        cout << "##### InputFile-Name: " <<  o.getInputFileName() << endl;
-        cout << "##### Runtime: " <<  o.getRuntime() << endl;
-        cout << "##### BasicSteps: " <<  o.getBasicSteps() << endl;
-        cout << "##### NumSplits: " <<  o.getNumSplits() << endl;
-        cout << "##### BoxFactor: " <<  o.getBoxFactor() << endl;
-        cout << "#### WithCollapse: " <<  o.getWithCollapse() << endl;
-        cout << "##### LearningRate: " <<  o.getLearningRate() << endl;
-        cout << "##### NeighbourLearningRate: " <<  o.getNeighborLearningRate() << endl;
-        cout << "##### DecreaseFactor: " <<  o.getDecreaseFactor() << endl;
-        cout << "##### AllowMiss: " <<  o.getAllowMiss() << endl;
-        cout << "##### CollapseThreshold: " <<  o.getCollapseThreshold() << endl;
-        cout << "##### FilterChain: " <<  o.isFilterChain() << endl;
-        cout << "##### DeleteLongEdgesFactor: " <<  o.getDeleteLongEdgesFactor() << endl;
-        cout << "##### Interior: " <<  o.isInterior() << endl;
-        cout << "##### Balances: " <<  o.getNumBalances() << endl;
-        cout << "##### PCM: " <<  o.getPcm() << endl;
-        cout << "##### KD: " <<  o.getKd() << endl;
-        cout << "##### KI: " <<  o.getKi() << endl;
-        cout << "##### KN: " <<  o.getKn() << endl;
-
-        return os;
-    }
-} //end namesprace gs_reconstruct
-
-
-
-#endif //OPTIONSGS_H_
+#endif // OPTIONSGS_H_

@@ -6,7 +6,7 @@ set(LS_RECONSTRUCT_SOURCES
     LargeScaleOptions.cpp
     Options.cpp
     Main.cpp
-)
+        ../../../include/lvr2/reconstruction/LargeScaleReconstruction.tcc ../../../include/lvr2/reconstruction/LargeScaleReconstruction.hpp)
 
 #####################################################################################
 # Setup dependencies to external libraries
@@ -17,7 +17,7 @@ set(LVR2_LS_RECONSTRUCT_DEPENDENCIES
     lvr2_static
     lvr2las_static
     lvr2rply_static
-    ${Boost_LIBRARIES}
+    ${LVR2_LIB_DEPENDENCIES}
 )
 
 #####################################################################################

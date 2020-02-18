@@ -137,14 +137,8 @@ set(LVR2_VIEWER_DEPENDENCIES
   lvr2rply_static
   lvr2las_static
   lvr2slam6d_static
-  ${OpenCV_LIBS}
+  ${LVR2_LIB_DEPENDENCIES}
   ${Qt5Widgets_LIBRARIES}
-  ${OPENGL_LIBRARIES}
-  ${GLUT_LIBRARIES}
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}
-  ${Boost_THREAD_LIBRARY}
-  ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${VTK_LIBRARIES}
   ${PCL_LIBRARIES}
 )

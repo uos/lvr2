@@ -71,6 +71,8 @@ public:
     /// Returns the current handle.
     virtual HandleT operator*() const = 0;
 
+    virtual ~MeshHandleIterator() = default;
+
     using HandleType = HandleT;
 };
 

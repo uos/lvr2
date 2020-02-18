@@ -260,21 +260,21 @@ Transform<T> transformFrame(const Transform<T>& frame, const CoordinateTransform
 
     if(ct.sx < 0)
     {
-        reflection.block<3,1>(0,0) = (-1) * xyz[0];
+        reflection.template block<3,1>(0,0) = (-1) * xyz[0];
     }
 
     if(ct.sy < 0)
     {
-        reflection.block<3,1>(0,1) = (-1) * xyz[1];
+        reflection.template block<3,1>(0,1) = (-1) * xyz[1];
     }
 
     if(ct.sz < 0)
     {
-        reflection.block<3,1>(0,2) = (-1) * xyz[2];
+        reflection.template block<3,1>(0,2) = (-1) * xyz[2];
     }
 
     // axis reflection
-    frame.block<3,3>(0,0) *= reflection;
+    frame.template block<3,3>(0,0) *= reflection;
 
     // We are always transforming from the canonical base => T = (B')^(-1)
     basisTrans.col(0) = xyz[ct.x];
@@ -282,10 +282,10 @@ Transform<T> transformFrame(const Transform<T>& frame, const CoordinateTransform
     basisTrans.col(2) = xyz[ct.z];
 
     // Transform the rotation matrix
-    frame.block<3,3>(0,0) = basisTrans.inverse() * frame.block<3,3>(0,0) * basisTrans;
+    frame.template block<3,3>(0,0) = basisTrans.inverse() * frame.template block<3,3>(0,0) * basisTrans;
 
     // Setting translation vector
-    tmp = frame.block<3,1>(0,3);
+    tmp = frame.template block<3,1>(0,3);
     tmp = basisTrans.inverse() * tmp;
 
     (frame.template rightCols<1>())(0) = tmp(0);

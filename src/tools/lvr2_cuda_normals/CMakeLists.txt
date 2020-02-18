@@ -12,9 +12,7 @@ set(LVR2_CUDA_NORMAL_SRC
 #####################################################################################
 
 set(LVR2_CUDA_NORMAL_DEPS
-    ${OPENGL_LIBRARIES}
-    ${GLUT_LIBRARIES}
-    ${OpenCV_LIBS}
+    ${LVR2_LIB_DEPENDENCIES}
     lvr2_static
     lvr2las_static
     lvr2rply_static
