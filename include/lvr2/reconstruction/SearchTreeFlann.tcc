@@ -38,7 +38,9 @@
 
 #include "lvr2/util/Panic.hpp"
 
+#ifndef __APPLE__
 #include <omp.h>
+#endif
 
 using std::make_unique;
 
@@ -123,7 +125,11 @@ void SearchTreeFlann<BaseVecT>::kSearchMany(
     }
 
     flann::SearchParams params;
+    #ifndef __APPLE__
     params.cores = omp_get_max_threads();
+    #else
+    params.cores = 4;
+    #endif
     m_tree->knnSearch(queries_mat, indices_mat, distances_mat, 1, params);
 
     delete[] queries;
