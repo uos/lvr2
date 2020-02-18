@@ -13,9 +13,7 @@ set(LVR2_CHUNKING_SOURCES
 
 set(LVR2_CHUNKING_DEPENDENCIES
     lvr2_static
-    ${Boost_PROGRAM_OPTIONS_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY}
-    ${Boost_FILESYSTEM_LIBRARY}
+    ${LVR2_LIB_DEPENDENCIES}
 )
 
 #####################################################################################

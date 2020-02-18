@@ -25,55 +25,66 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Metascan.cpp
- *
- *  @date Aug 1, 2019
- *  @author Malte Hillmann
- */
-#include "lvr2/registration/Metascan.hpp"
+#include "lvr2/registration/RegistrationPipeline.hpp"
+#include "lvr2/registration/SLAMAlign.hpp"
+#include "lvr2/registration/SLAMScanWrapper.hpp"
 
-namespace lvr2
+#include "vector"
+
+using namespace lvr2;
+
+double getDifference(Transformd a, Transformd b)
 {
 
-Metascan::Metascan()
-    : SLAMScanWrapper(ScanPtr(nullptr))
-{
-
-}
-
-void Metascan::transform(const Transformd& transform, bool writeFrame, FrameUse use)
-{
-    for (auto& scan : m_scans)
+    double sum = 0;
+    for (size_t i = 0; i < 4; i++)
     {
-        scan->transform(transform, writeFrame, use);
-    }
-    m_deltaPose = transform * m_deltaPose;
-
-    if (writeFrame)
-    {
-        addFrame(use);
-    }
-}
-
-Vector3d Metascan::point(size_t index) const
-{
-    for (auto& scan : m_scans)
-    {
-        if (index < scan->numPoints())
+        for (size_t j = 0; j < 4; j++)
         {
-            return scan->point(index);
+            sum += std::abs(a(i,j) - b(i,j));
         }
-        index -= scan->numPoints();
     }
-    return Vector3d();
-}
+    return sum;
+}  
 
-void Metascan::addScan(SLAMScanPtr scan)
+RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProjectEditMarkPtr scans)
 {
-    m_scans.push_back(scan);
-    m_numPoints += scan->numPoints();
-    m_deltaPose = scan->deltaPose();
+    m_options = options;
+    m_scans = scans;
 }
 
-} /* namespace lvr2 */
+
+void RegistrationPipeline::doRegistration()
+{
+    SLAMAlign align(*m_options);
+    
+    for (size_t i = 0; i < m_scans->positions.size(); i++)
+    {
+        ScanOptional opt = m_scans->positions.at(i)->scan;
+        if (opt)
+        {
+            ScanPtr scptr = std::make_shared<Scan>(*opt);
+            align.addScan(scptr);
+        }
+    }
+
+    align.finish();
+
+    for (int i = 0; i < m_scans->positions.size(); i++)
+    {
+        // check if the new pos different to old pos
+        // ToDo: make num to option
+
+        ScanPositionPtr posPtr = m_scans->positions.at(i);
+
+        cout << "Diff: " << getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) << endl;
+        if ((!m_scans->changed.at(i)) && (getDifference(posPtr->scan->m_registration, align.scan(i)->pose()) > m_options->diffPoseSum))
+        {
+            m_scans->changed.at(i) = true;
+            cout << "New Values"<< endl;
+        }
+        posPtr->scan->m_registration = align.scan(i)->pose();
+        cout << "Pose Scan Nummer " << i << endl << posPtr->scan->m_registration << endl;
+    }
+
+}

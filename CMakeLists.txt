@@ -15,6 +15,20 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+if(APPLE)
+  set(CMAKE_MACOSX_RPATH ON)
+endif()
+
+#------------------------------------------------------------------------------
+# Searching for Embree: needs to be placed above "set(CMAKE_MODULE_PATH)".
+#------------------------------------------------------------------------------
+find_package(embree 3.0)
+if(embree_FOUND)
+  message(STATUS "Found Embree")
+  include_directories(${EMBREE_INCLUDE_DIRS})
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_EMBREE)
+endif(embree_FOUND)
+
 set(CMAKE_MODULE_PATH
   ${LAS_VEGAS_SOURCE_DIR}/CMakeModules
   ${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/cmake/Modules
@@ -83,9 +97,14 @@ endif(NOT APPLE AND WITH_CUDA)
 #------------------------------------------------------------------------------
 # Searching for OpenCV
 #------------------------------------------------------------------------------
-find_package( OpenCV 3 )
-if (!OpenCV_FOUND)
-  find_package( OpenCV )
+find_package( OpenCV 3 QUIET )
+if (NOT OpenCV_FOUND)
+  find_package( OpenCV 4)
+  if(OpenCV_FOUND)
+	message(STATUS "Found OpenCV 4")
+  endif()
+else()
+  message(STATUS "Found OpenCV 3")
 endif()
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
@@ -145,15 +164,7 @@ if(OPENCL_FOUND)
       list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPENCL_NEW_API)
     endif(OpenCL_NEW_API)
 endif()
-#------------------------------------------------------------------------------
-# Searching for Embree
-#------------------------------------------------------------------------------
-find_package(embree 3.0)
-if(embree_FOUND)
-  message(STATUS "Found Embree")
-  include_directories(${EMBREE_INCLUDE_DIRS})
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_EMBREE)
-endif(embree_FOUND)
+
 
 #------------------------------------------------------------------------------
 # Searching for Draco
@@ -359,7 +370,8 @@ add_subdirectory(ext/HighFive)
 include_directories("ext/HighFive/include")
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 include_directories(${HDF5_INCLUDE_DIRS})
-link_directories(${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+find_package(HDF5 REQUIRED C CXX HL)
+include_directories(${HDF5_INCLUDE_DIR})
 message(STATUS "Found HDF5")
 
 # yaml-cpp
@@ -390,19 +402,16 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/${RiVLib_DIR})
     endif()
 endif()
 
-
 ###############################################################################
 # ADD LVR DEFINITIONS
 ###############################################################################
 
 add_definitions(${LVR2_DEFINITIONS})
 
-
 ###############################################################################
 # LVR-Kinfu Checks
 ###############################################################################
 option(WITH_KINFU "Compile LVR Kinfu" OFF)
-
 
 ###############################################################################
 # Check and set CUDA host compiler flags. CUDA 6.5 is only
@@ -489,6 +498,60 @@ endif(Qt5_FOUND)
 
 
 ###############################################################################
+# SET DEPENDENCIES
+###############################################################################
+
+set(LVR2_LIB_DEPENDENCIES
+    ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY}
+    ${Boost_THREAD_LIBRARY}
+    ${Boost_FILESYSTEM_LIBRARY}
+    ${OPENGL_LIBRARIES}
+    ${GLUT_LIBRARIES}
+    ${GDAL_LIBRARY}
+    ${OpenCV_LIBS}
+    ${GSL_LIBRARIES}
+    ${LZ4_LIBRARY}
+    ${TIFF_LIBRARY}
+    ${YAML_CPP_LIBRARIES}
+    ${OpenMP_CXX_LIBRARIES}
+    ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
+    m
+    )
+
+#####################################################################################
+# ADD ALL EXTERNAL DEPENDENCIES
+#####################################################################################
+
+if(UNIX)
+set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} pthread)
+endif(UNIX)
+
+if(PCL_FOUND)
+set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${PCL_LIBRARIES})
+endif(PCL_FOUND)
+
+if(WITH_FREENECT AND LIBFREENECT_FOUND)
+set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${LIBFREENECT_LIBRARIES})
+endif()
+
+if(draco_FOUND)
+set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${draco_LIBRARIES})
+endif(draco_FOUND)
+
+if(RiVLib_FOUND)
+  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${RiVLib_SCANIFC_LIBRARY})
+endif()
+
+if(OPENCL_FOUND)
+  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${OpenCL_LIBRARIES})
+endif()
+
+if(YAML_CPP_LIBRARIES)
+  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${YAML_CPP_LIBRARIES})
+endif()
+
+###############################################################################
 # LIBRARIES
 ###############################################################################
 
@@ -514,13 +577,12 @@ add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
 add_subdirectory(src/tools/lvr2_slam2hdf5)
 add_subdirectory(src/tools/lvr2_hdf5togeotiff)
 add_subdirectory(src/tools/lvr2_slam6d_merger)
-add_subdirectory(src/tools/lvr2_scanproject2hdf5)
 add_subdirectory(src/tools/lvr2_chunking)
 add_subdirectory(src/tools/lvr2_registration)
 add_subdirectory(src/tools/lvr2_mesh_reducer)
 
 if (RiVLib_FOUND)
-    add_subdirectory(src/tools/lvr2_riegl_project_converter)
+    #add_subdirectory(src/tools/lvr2_riegl_project_converter)
 endif()
 
 if(CUDA_FOUND)

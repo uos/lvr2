@@ -251,4 +251,6 @@ class NodeData<BaseVecT>::Iterator
 
 } // namespace lvr2
 
+#include "NodeData.tcc"
+
 #endif // LAS_VEGAS_NODEDATA_H

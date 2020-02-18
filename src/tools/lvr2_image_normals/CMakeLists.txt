@@ -16,9 +16,7 @@ set(LVR2_IMG_NORMAL_DEPS
 	lvr2las_static
 	lvr2rply_static
 	lvr2slam6d_static
-	${OPENGL_LIBRARIES}
-	${GLUT_LIBRARIES}
-	${OpenCV_LIBS}
+	${LVR2_LIB_DEPENDENCIES}
 	)
 
 if(PCL_FOUND)

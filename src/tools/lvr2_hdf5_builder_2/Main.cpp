@@ -10,7 +10,7 @@
 #include "lvr2/io/hdf5/MatrixIO.hpp"
 #include "lvr2/io/hdf5/PointCloudIO.hpp"
 #include "lvr2/io/hdf5/VariantChannelIO.hpp"
-#include "lvr2/types/Scan.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/lambda/bind.hpp>
@@ -177,8 +177,9 @@ bool saveScan(int nr, ScanPtr scan, HDF5IO hdf5)
 
         // Generate tuples for field of view and resolution parameters
         floatArr fov(new float[2]);
-        fov[0] = scan->m_hFieldOfView;
-        fov[1] = scan->m_vFieldOfView;
+        fov[0] = scan->m_thetaMax - scan->m_thetaMin;
+        fov[1] = scan->m_phiMax - scan->m_phiMin;
+
 
         floatArr res(new float[2]);
         res[0] = scan->m_hResolution;
@@ -261,6 +262,7 @@ bool saveScan(int nr, ScanPtr scan, HDF5IO hdf5)
             }
         }
     }
+    return true;
 }
 
 bool channelIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
@@ -290,7 +292,7 @@ bool channelIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
 
     // we assume that every frame has the same resolution
     // TODO change dimensions when writing
-    cv::Mat img = cv::imread(spectral[0].string(), CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat img = cv::imread(spectral[0].string(), cv::IMREAD_GRAYSCALE);
     ucharArr data(new unsigned char[spectral.size() * img.cols * img.rows]);
     std::memcpy(
         data.get() + (img.rows * img.cols), img.data, img.rows * img.cols * sizeof(unsigned char));
@@ -301,7 +303,7 @@ bool channelIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     for (size_t i = 1; i < spectral.size(); ++i)
     {
 
-        cv::Mat img = cv::imread(spectral[i].string(), CV_LOAD_IMAGE_GRAYSCALE);
+        cv::Mat img = cv::imread(spectral[i].string(), cv::IMREAD_GRAYSCALE);
         std::memcpy(data.get() + i * (img.rows * img.cols),
                     img.data,
                     img.rows * img.cols * sizeof(unsigned char));
@@ -416,11 +418,11 @@ void readScanMetaData(const boost::filesystem::path& fn, ScanPtr& scan_ptr)
                 if (it->second["Theta"])
                 {
                     YAML::Node tmp = it->second["Theta"];
-                    float min = tmp["min"].as<float>();
-                    float max = tmp["max"].as<float>();
+                    scan_ptr->m_thetaMin = tmp["min"].as<float>();
+                    scan_ptr->m_thetaMax = tmp["max"].as<float>();
 
-                    scan_ptr->m_vFieldOfView = max - min;
-                    scan_ptr->m_vResolution = tmp["delta"].as<float>();
+                    // scan_ptr->m_vFieldOfView = max - min;
+                    // scan_ptr->m_vResolution = tmp["delta"].as<float>();
                     // std::cout << "T: " << scan_ptr->m_vFieldOfView << "; "
                     //          << scan_ptr->m_vResolution << std::endl;
                 }
@@ -429,8 +431,7 @@ void readScanMetaData(const boost::filesystem::path& fn, ScanPtr& scan_ptr)
                     YAML::Node tmp = it->second["Phi"];
                     float min = tmp["min"].as<float>();
                     float max = tmp["max"].as<float>();
-
-                    scan_ptr->m_hFieldOfView = max - min;
+                    
                     scan_ptr->m_hResolution = tmp["delta"].as<float>();
                     // std::cout << "P: " << scan_ptr->m_hFieldOfView << "; "
                     //          << scan_ptr->m_hResolution << std::endl;
@@ -489,7 +490,7 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
 
     // we assume that every frame has the same resolution
     // TODO change dimensions when writing
-    cv::Mat img = cv::imread(spectral[0].string(), CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat img = cv::imread(spectral[0].string(), cv::IMREAD_GRAYSCALE);
     ucharArr data(new unsigned char[spectral.size() * img.cols * img.rows]);
     std::memcpy(
         data.get() + (img.rows * img.cols), img.data, img.rows * img.cols * sizeof(unsigned char));
@@ -500,7 +501,7 @@ bool spectralIO(const boost::filesystem::path& p, int number, HDF5IO& hdf)
     for (size_t i = 1; i < spectral.size(); ++i)
     {
 
-        cv::Mat img = cv::imread(spectral[i].string(), CV_LOAD_IMAGE_GRAYSCALE);
+        cv::Mat img = cv::imread(spectral[i].string(), cv::IMREAD_GRAYSCALE);
         std::memcpy(data.get() + i * (img.rows * img.cols),
                     img.data,
                     img.rows * img.cols * sizeof(unsigned char));

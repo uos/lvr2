@@ -35,12 +35,21 @@
 
 #include <Eigen/SparseCholesky>
 
+#include <math.h>
+
 using namespace std;
 using namespace Eigen;
 
 namespace lvr2
 {
 
+/**
+ * @brief Lists all numbers of scans near to the scan 
+ * @param scans reference to a vector containing the SlamScanPtr
+ * @param scan number of the current scan
+ * @param options SlamOptions struct with all params
+ * @param output Returns vector of the scan-numbers which ar defined as "close" 
+ * */
 bool findCloseScans(const vector<SLAMScanPtr>& scans, size_t scan, const SLAMOptions& options, vector<size_t>& output)
 {
     if (scan < options.loopSize)
@@ -90,8 +99,19 @@ bool findCloseScans(const vector<SLAMScanPtr>& scans, size_t scan, const SLAMOpt
     return !output.empty();
 }
 
-// Conversions between Pose and Matrix representations in GraphSLAMs internally consistent Coordinate System
+
+/**
+ * Conversion from Pose to Matrix representation in GraphSLAMs internally consistent Coordinate System
+ * 
+ * @brief Conversion from Pose to Matrix representation
+ * */
 void EulerToMatrix4(const Vector3d& pos, const Vector3d& theta, Matrix4d& mat);
+
+/**
+ * Conversion from Matrix to Pose representation in GraphSLAMs internally consistent Coordinate System
+ * 
+ * @brief Conversion from Matrix to Pose representation
+ * */
 void Matrix4ToEuler(const Matrix4d mat, Vector3d& rPosTheta, Vector3d& rPos);
 
 GraphSLAM::GraphSLAM(const SLAMOptions* options)
@@ -146,8 +166,14 @@ void GraphSLAM::doGraphSLAM(const vector<SLAMScanPtr>& scans, size_t last) const
             }
 
             double ctx, stx, cty, sty;
-            __sincos(theta.x(), &stx, &ctx);
-            __sincos(theta.y(), &sty, &cty);
+            
+            #ifndef __APPLE__
+                sincos(theta.x(), &stx, &ctx);
+                sincos(theta.y(), &sty, &cty);
+            #else
+                __sincos(theta.x(), &stx, &ctx);
+                __sincos(theta.y(), &sty, &cty);
+            #endif
 
             // Fill Ha
             Ha(0, 4) = -pos.z() * ctx + pos.y() * stx;
@@ -234,9 +260,6 @@ void GraphSLAM::createGraph(const vector<SLAMScanPtr>& scans, size_t last, Graph
     }
 }
 
-/**
- * A function to fill the linear system mat * x = vec.
- */
 void GraphSLAM::fillEquation(const vector<SLAMScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec) const
 {
     // Cache all KDTrees

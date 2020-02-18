@@ -15,6 +15,7 @@ set(GS_DEPENDENCIES
 		lvr2_static
 		lvr2las_static
 		lvr2rply_static
+		${LVR2_LIB_DEPENDENCIES}
 	)
 
 #####################################################################################
