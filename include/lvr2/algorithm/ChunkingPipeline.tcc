@@ -49,7 +49,7 @@
 using BaseHDF5IO = lvr2::Hdf5IO<>;
 
 // Extend IO with features (dependencies are automatically fetched)
-using HDF5IO = BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO>;
+using HDF5IO = BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO, lvr2::hdf5features::ScanPositionIO>;
 
 namespace lvr2
 {
@@ -167,7 +167,7 @@ bool ChunkingPipeline<BaseVecT>::getScanProject(const boost::filesystem::path& d
 
     // load scans from hdf5
     ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
-    
+
     // load scans from directory
     ScanProject dirScanProject;
     bool importStatus = loadScanProject(dirPath, dirScanProject);
@@ -233,7 +233,15 @@ bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
     HDF5IO hdf;
     hdf.open(m_hdf5Path.string());
 
-    hdf.save(m_scanProject->project);
+    for (size_t idx = 0; idx < m_scanProject->changed.size(); idx++)
+    {
+        if (m_scanProject->changed[idx])
+        {
+            // only save changed scanPositions
+            hdf.save(idx, m_scanProject->project->positions[idx]);
+        }
+    }
+    // hdf.save(m_scanProject->project);
 
     // remove hyperspectral data from memory
     for(ScanPositionPtr pos : m_scanProject->project->positions)
