@@ -158,21 +158,21 @@ namespace lvr2
         if (m_partMethod == 1)
         {
             cout << lvr2::timestamp << "generating VGrid" << endl;
+
             VirtualGrid<BaseVecT> vGrid(
                     bg.getpartialBB(), m_chunkSize, m_bgVoxelSize);
-            std::vector<shared_ptr<BoundingBox<BaseVecT>>> boxes;
+
             vGrid.calculateBoxes();
-            ofstream partBoxOfs("BoundingBoxes.ser");
-            for (size_t i = 0; i < vGrid.getBoxes().size(); i++)
+            std::vector<shared_ptr<BoundingBox<BaseVecT>>> boxes = vGrid.getBoxes();
+
+            partitionBoxes = vector<BoundingBox<BaseVecT>>(boxes.size());
+
+            for (size_t i = 0; i < boxes.size(); i++)
             {
-                BoundingBox<BaseVecT> partBB = *vGrid.getBoxes().at(i).get();
-                //cmBB.expand(partBB);
-                newChunksBB.expand(partBB);
-                partitionBoxes.push_back(partBB);
-                partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
-                           << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
-                           << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
+                newChunksBB.expand(*(boxes[i]));
+                partitionBoxes[i] = *(boxes[i]);
             }
+
             cout << lvr2::timestamp << "finished vGrid" << endl;
             std::cout << lvr2::timestamp << "got: " << partitionBoxes.size() << " Chunks"
                       << std::endl;
