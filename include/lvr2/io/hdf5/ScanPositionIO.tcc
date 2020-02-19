@@ -7,18 +7,15 @@ namespace hdf5features
 template <typename Derived>
 void ScanPositionIO<Derived>::save(uint scanPos, const ScanPositionPtr& scanPositionPtr)
 {
-    // TODO call save with group
+    char buffer[sizeof(int) * 5];
+    sprintf(buffer, "%08d", scanPos);
+    string nr_str(buffer);
 
-    // char buffer[sizeof(int) * 5];
-    // sprintf(buffer, "%08d", scanPos);
-    // string nr_str(buffer);
-    // std::string basePath = "raw/" + nr_str + "/";
+    std::string basePath = "raw/" + nr_str;
 
-    // if (hdf5util::exist(m_file_access->m_hdf5_file, basePath))
-    // {
-    //     HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
-    //     save(group, scanPositionPtr);
-    // }
+    HighFive::Group scanPosGroup = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
+
+    save(scanPosGroup, scanPositionPtr);
 }
 
 template <typename Derived>
