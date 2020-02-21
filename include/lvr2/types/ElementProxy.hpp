@@ -141,6 +141,18 @@ public:
         return *this;
     }
 
+    template<typename type, size_t size>
+    ElementProxy operator=(const std::array<type, size>& array)
+    {
+      if( m_ptr && (m_w == size))
+      {
+        for(int i=0; i<size; i++){
+          m_ptr[i] = array[i];
+        }
+      }
+      return *this;
+    }
+
     template<typename BaseVecT>
     ElementProxy operator=(const BaseVecT& v)
     {
@@ -231,9 +243,21 @@ public:
         throw std::range_error("Element Proxy: Width != 3 in BaseVecT conversion");
     }
 
+    template <typename type, size_t size>
+    operator std::array<type, size>() const
+    {
+      if (size == m_w){
+        std::array<type, size> arr;
+        for(int i=0; i<size; i++){
+          arr[i] = m_ptr[i];
+        };
+        return arr;
+      }
+      throw std::range_error("Element Proxy: array size differs from channel with in std::array conversion.");
+    }
+
     operator std::array<VertexHandle, 3>() const
     {
-        std::array<VertexHandle, 3> arr0 = {VertexHandle(0), VertexHandle(0), VertexHandle(0)};
         if(m_w == 3)
         {
             std::array<VertexHandle, 3> arr = {VertexHandle(m_ptr[0]), VertexHandle(m_ptr[1]), VertexHandle(m_ptr[2])};
