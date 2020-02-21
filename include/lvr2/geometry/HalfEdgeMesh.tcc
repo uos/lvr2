@@ -74,12 +74,14 @@ HalfEdgeMesh<BaseVecT>::HalfEdgeMesh(MeshBufferPtr ptr)
         VertexHandle v1(indices[pos]);
         VertexHandle v2(indices[pos + 1]);
         VertexHandle v3(indices[pos + 2]);
-        try{
-          this->addFace(v1, v2, v3);
-        }
-        catch (PanicException exception)
+        try
         {
-          cout << "Could not add face (" << v1 << ", " << v2 << ", " << v3 << ")" << exception.what() << std::endl;
+            this->addFace(v1, v2, v3);
+        }
+        catch(PanicException exception)
+        {
+            std::cerr << timestamp << "Warning loop detected. Omitting face "
+                      << v1.idx() << " " << v2.idx() << " " << v3.idx() << std::endl;
         }
     }
 }
@@ -100,16 +102,10 @@ VertexHandle HalfEdgeMesh<BaseVecT>::addVertex(BaseVecT pos)
 template <typename BaseVecT>
 FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H)
 {
-    if (!BaseMesh<BaseVecT>::isFaceInsertionValid(v1H, v2H, v3H))
-    {
-        panic("Attempting to add a face which cannot be added!");
-    }
-
     using std::make_tuple;
 
     DOINDEBUG(dout() << "##################################################" << endl);
     DOINDEBUG(dout() << "##### addFace(): " << v1H << " -> " << v2H << " -> " << v3H << endl);
-
 
     // =======================================================================
     // = Create broken edges
@@ -120,18 +116,17 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
     auto eInner2H = findOrCreateEdgeBetween(v2H, v3H);
     auto eInner3H = findOrCreateEdgeBetween(v3H, v1H);
 
-    auto& eInner1 = getE(eInner1H);
-    auto& eInner2 = getE(eInner2H);
-    auto& eInner3 = getE(eInner3H);
+    auto &eInner1 = getE(eInner1H);
+    auto &eInner2 = getE(eInner2H);
+    auto &eInner3 = getE(eInner3H);
 
     auto eOuter1H = eInner1.twin;
     auto eOuter2H = eInner2.twin;
     auto eOuter3H = eInner3.twin;
 
-    auto& v1 = getV(v1H);
-    auto& v2 = getV(v2H);
-    auto& v3 = getV(v3H);
-
+    auto &v1 = getV(v1H);
+    auto &v2 = getV(v2H);
+    auto &v3 = getV(v3H);
 
     // =======================================================================
     // = Create face
@@ -145,7 +140,6 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
     eInner2.face = newFaceH;
     eInner3.face = newFaceH;
 
-
     // =======================================================================
     // = Fix next handles and set outgoing handles if not set yet
     // =======================================================================
@@ -156,18 +150,17 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
     auto corners = {
         make_tuple(eOuter1H, v1H, eOuter3H),
         make_tuple(eOuter2H, v2H, eOuter1H),
-        make_tuple(eOuter3H, v3H, eOuter2H)
-    };
+        make_tuple(eOuter3H, v3H, eOuter2H)};
 
     for (auto corner : corners)
     {
-        auto eInH  = get<0>(corner);
-        auto vH    = get<1>(corner);
+        auto eInH = get<0>(corner);
+        auto vH = get<1>(corner);
         auto eOutH = get<2>(corner);
 
-        auto& eIn  = getE(eInH);
-        auto& v    = getV(vH);
-        auto& eOut = getE(eOutH);
+        auto &eIn = getE(eInH);
+        auto &v = getV(vH);
+        auto &eOut = getE(eOutH);
 
         // For each corner, we have for different cases, depending on whether
         // or not the in/outgoing edges are already part of a face.
@@ -193,10 +186,10 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
                 // non-manifold meshes. Marching cube won't create non-manifold
                 // meshes, so for now we just panic. Having this restriction to
                 // manifold meshes is probably not too bad.
-                auto eEndH = findEdgeAroundVertex(vH, [this](auto edgeH)
-                {
-                    return !getE(edgeH).face;
-                }).unwrap();
+                auto eEndH = findEdgeAroundVertex(vH, [this](auto edgeH) {
+                                 return !getE(edgeH).face;
+                             })
+                                 .unwrap();
 
                 auto eStartH = getE(eEndH).next;
                 eIn.next = eStartH;
@@ -210,7 +203,6 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
                 // `eIn` and `eOut` are the only edges of the vertex.
                 eIn.next = eOutH;
             }
-
         }
         // --> Case (B): only the ingoing edge is part of a face
         else if (eIn.face && !eOut.face)
@@ -231,12 +223,11 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
             // not an edge which `next` handle points to `oldNext`. But this
             // has to be true in a non-broken HEM. So we will panic if this
             // condition is violated.
-            auto eH = findEdgeAroundVertex(vH, [&, this](auto edgeH)
-            {
-
-                auto oldNext = eIn.twin;
-                return !getE(edgeH).face && getE(edgeH).next == oldNext;
-            }).unwrap();
+            auto eH = findEdgeAroundVertex(vH, [&, this](auto edgeH) {
+                          auto oldNext = eIn.twin;
+                          return !getE(edgeH).face && getE(edgeH).next == oldNext;
+                      })
+                          .unwrap();
 
             DOINDEBUG(dout() << "(B) ... setting " << eH << ".next = " << eOutH << endl);
             getE(eH).next = eOutH;
@@ -247,8 +238,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
             DOINDEBUG(dout() << "Case (C) for " << vH << endl);
             DOINDEBUG(
                 dout() << "(C) ... setting " << eInH << ".next = "
-                    << getE(eOut.twin).next << endl
-            );
+                       << getE(eOut.twin).next << endl);
             eIn.next = getE(eOut.twin).next;
         }
         // --> Case (D): both edges are already part of another face
@@ -256,8 +246,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
         {
             DOINDEBUG(
                 dout() << "Case (D) for " << vH
-                   << "(eIn = " << eInH << ", eOut = " << eOutH << ")" << endl
-            );
+                       << "(eIn = " << eInH << ", eOut = " << eOutH << ")" << endl);
 
             // Here, two fan blades around `v` will be connected. Both blades
             // need to be in the right order for this to work. The order is
@@ -281,22 +270,21 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
                 // `eIn.twin`. We could reach it easily if we would store
                 // `previous` handles; finding it without those handles is
                 // possible by circulating around the vertex.
-                auto inactiveBladeEndH = findEdgeAroundVertex(vH, [&, this](auto edgeH)
-                {
-                    return getE(edgeH).next == eIn.twin;
-                }).unwrap();
+                auto inactiveBladeEndH = findEdgeAroundVertex(vH, [&, this](auto edgeH) {
+                                             return getE(edgeH).next == eIn.twin;
+                                         })
+                                             .unwrap();
 
                 // Instead of pointing to `eIn.twin`, it needs to "skip" the
                 // `eIn` blade and point to the blade afterwards. So we need to
                 // find the end of the `eIn` blade. Its next handle is the one
                 // `inactiveBladeEnd` needs to point to.
                 auto eInBladeEndH = findEdgeAroundVertex(
-                    eInH,
-                    [&, this](auto edgeH)
-                    {
-                        return !getE(edgeH).face;
-                    }
-                ).unwrap();
+                                        eInH,
+                                        [&, this](auto edgeH) {
+                                            return !getE(edgeH).face;
+                                        })
+                                        .unwrap();
 
                 // We can finally set the next pointer to skip the `eIn`
                 // blade. After this line, circulating around `v` will work
@@ -311,12 +299,10 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
 
                 DOINDEBUG(
                     dout() << "(D) ... setting " << inactiveBladeEndH << ".next = "
-                    << getE(eInBladeEndH).next << endl
-                );
+                           << getE(eInBladeEndH).next << endl);
                 DOINDEBUG(
                     dout() << "(D) ... setting " << eInBladeEndH << ".next = "
-                    << getE(eOut.twin).next << endl
-                );
+                           << getE(eOut.twin).next << endl);
             }
         }
     }
@@ -342,7 +328,6 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
         v3.outgoing = eInner3H;
     }
 
-
     // =======================================================================
     // = Debug output
     // =======================================================================
@@ -352,15 +337,14 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
     int i = 0;
     do
     {
-        auto& e = getE(eH);
+        auto &e = getE(eH);
         auto source = getE(e.twin).target;
         auto target = e.target;
         DOINDEBUG(
             dout() << "| " << source.idx() << " ==> " << eH
-               << " ==> " << target.idx() << " [next: " << e.next
-               << ", twin-next: " << getE(e.twin).next << "]"
-               << endl
-        );
+                   << " ==> " << target.idx() << " [next: " << e.next
+                   << ", twin-next: " << getE(e.twin).next << "]"
+                   << endl);
 
         eH = e.next;
         i++;
@@ -368,9 +352,8 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
         {
             panic("bug in HEM: face with invalid internal next handles added");
         }
-    } while(eH != startEdgeH);
+    } while (eH != startEdgeH);
     DOINDEBUG(dout() << "+-----------------------------+" << endl);
-
     return newFaceH;
 }
 
@@ -1912,6 +1895,10 @@ void HalfEdgeMesh<BaseVecT>::circulateAroundVertex(HalfEdgeHandle startEdgeH, Vi
         }
 
         // Advance to next edge and stop if it is the start edge.
+
+
+
+
         loopEdgeH = getE(getE(loopEdgeH).next).twin;
         if (loopEdgeH == startEdgeH)
         {
