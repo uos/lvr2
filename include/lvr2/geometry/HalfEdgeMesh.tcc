@@ -74,7 +74,13 @@ HalfEdgeMesh<BaseVecT>::HalfEdgeMesh(MeshBufferPtr ptr)
         VertexHandle v1(indices[pos]);
         VertexHandle v2(indices[pos + 1]);
         VertexHandle v3(indices[pos + 2]);
-        this->addFace(v1, v2, v3);
+        try{
+          this->addFace(v1, v2, v3);
+        }
+        catch (PanicException exception)
+        {
+          cout << "Could not add face (" << v1 << ", " << v2 << ", " << v3 << ")" << exception.what() << std::endl;
+        }
     }
 }
 
