@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <limits>
 #include <queue>
+#include <set>
 
 #include "lvr2/attrmaps/AttrMaps.hpp"
 #include "lvr2/io/Progress.hpp"
@@ -57,6 +58,7 @@ void calcVertexLocalNeighborhood(
 template <typename BaseVecT, typename VisitorF>
 void visitLocalVertexNeighborhood(
     const BaseMesh<BaseVecT>& mesh,
+    std::set<VertexHandle>& invalid,
     VertexHandle vH,
     double radius,
     VisitorF visitor
@@ -96,7 +98,13 @@ void visitLocalVertexNeighborhood(
 
         // Expand current vertex: add visit its direct neighbors.
         directNeighbors.clear();
-        mesh.getNeighboursOfVertex(curVH, directNeighbors);
+        try {
+          mesh.getNeighboursOfVertex(curVH, directNeighbors);
+        }
+        catch (lvr2::PanicException exception)
+        {
+          invalid.insert(curVH);
+        }
         for (auto newVH: directNeighbors)
         {
             // If this vertex is within the radius of the original vertex, we
@@ -131,6 +139,8 @@ DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT>& mesh
     ProgressBar progress(mesh.numVertices(), msg);
     ++progress;
 
+    std::set<VertexHandle> invalid;
+
     // Calculate height difference for each vertex
     #pragma omp parallel for
     for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
@@ -144,7 +154,7 @@ DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT>& mesh
         float minHeight = std::numeric_limits<float>::max();
         float maxHeight = std::numeric_limits<float>::lowest();
 
-        visitLocalVertexNeighborhood(mesh, vH, radius, [&](auto neighbor) {
+        visitLocalVertexNeighborhood(mesh, invalid, vH, radius, [&](auto neighbor) {
             auto curPos = mesh.getVertexPosition(neighbor);
 
             if (curPos.z < minHeight)
@@ -163,6 +173,12 @@ DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT>& mesh
             heightDiff.insert(vH, maxHeight - minHeight);
             ++progress;
         }
+    }
+
+    if(!invalid.empty()){
+      std::cerr << std::endl << "Found " << invalid.size() << " invalid, non manifold vertices";
+      for(auto vH : invalid){std::cerr << ", " << vH;}
+      std::cerr << std::endl;
     }
 
     return heightDiff;
@@ -189,17 +205,32 @@ DenseVertexMap<float> calcAverageVertexAngles(
 {
     DenseVertexMap<float> vertexAngles(mesh.nextVertexIndex(), 0);
     auto edgeAngles = calcVertexAngleEdges(mesh, normals);
+    std::set<VertexHandle> invalid;
 
     for (auto vH: mesh.vertices())
     {
         float angleSum = 0;
-        auto edgeVec = mesh.getEdgesOfVertex(vH);
-        int degree = edgeVec.size();
-        for(auto eH: edgeVec)
-        {
+        try {
+          auto edgeVec = mesh.getEdgesOfVertex(vH);
+          int degree = edgeVec.size();
+          for(auto eH: edgeVec)
+          {
             angleSum += edgeAngles[eH];
+          }
+          vertexAngles.insert(vH, angleSum / degree);
         }
-        vertexAngles.insert(vH, angleSum / degree);
+        catch (lvr2::PanicException exception)
+        {
+          vertexAngles.insert(vH, M_PI);
+          invalid.insert(vH);
+        }
+    }
+    if(!invalid.empty()){
+      std::cerr << std::endl << "Found " << invalid.size() << " invalid, non manifold vertices." << std::endl;
+      std::cerr << "The average vertex angle of the invalid vertices has been set to Pi" << std::endl;
+      std::cerr << "The following vertices are invalid: ";
+      for(auto vH : invalid){std::cerr << ", " << vH;}
+      std::cerr << std::endl;
     }
     return vertexAngles;
 }
@@ -228,6 +259,8 @@ DenseVertexMap<float> calcVertexRoughness(
     ProgressBar progress(mesh.numVertices(), msg);
     ++progress;
 
+    std::set<VertexHandle> invalid;
+
     // Calculate roughness for each vertex
     #pragma omp parallel for
     for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
@@ -241,7 +274,7 @@ DenseVertexMap<float> calcVertexRoughness(
         float sum = 0.0;
         size_t count = 0;
 
-        visitLocalVertexNeighborhood(mesh, vH, radius, [&](auto neighbor) {
+        visitLocalVertexNeighborhood(mesh, invalid, vH, radius, [&](auto neighbor) {
             sum += averageAngles[neighbor];
             count += 1;
         });
@@ -252,6 +285,11 @@ DenseVertexMap<float> calcVertexRoughness(
             roughness.insert(vH, count ? sum / count : 0);
             ++progress;
         }
+    }
+    if(!invalid.empty()){
+      std::cerr << std::endl << "Found " << invalid.size() << " invalid, non manifold vertices";
+      for(auto vH : invalid){std::cerr << ", " << vH;}
+      std::cerr << std::endl;
     }
     return roughness;
 
@@ -273,6 +311,7 @@ void calcVertexRoughnessAndHeightDifferences(
     heightDiff.clear();
     heightDiff.reserve(mesh.nextVertexIndex());
 
+    std::set<VertexHandle> invalid;
     auto averageAngles = calcAverageVertexAngles(mesh, normals);
 
     // Calculate roughness and height difference for each vertex
@@ -290,7 +329,7 @@ void calcVertexRoughnessAndHeightDifferences(
         float minHeight = std::numeric_limits<float>::max();
         float maxHeight = std::numeric_limits<float>::lowest();
 
-        visitLocalVertexNeighborhood(mesh, vH, radius, [&](auto neighbor) {
+        visitLocalVertexNeighborhood(mesh, invalid, vH, radius, [&](auto neighbor) {
             sum += averageAngles[neighbor];
             count += 1;
 
@@ -305,11 +344,19 @@ void calcVertexRoughnessAndHeightDifferences(
             }
         });
 
-        // Calculate the final roughness
-        roughness.insert(vH, count ? sum / count : 0);
+        #pragma omp critical
+        {
+            // Calculate the final roughness
+            roughness.insert(vH, count ? sum / count : 0);
 
-        // Calculate the final height difference
-        heightDiff.insert(vH, maxHeight - minHeight);
+            // Calculate the final height difference
+            heightDiff.insert(vH, maxHeight - minHeight);
+        }
+    }
+    if(!invalid.empty()){
+        std::cerr << std::endl << "Found " << invalid.size() << " invalid, non manifold vertices";
+        for(auto vH : invalid){std::cerr << ", " << vH;}
+        std::cerr << std::endl;
     }
 }
 
