@@ -192,14 +192,24 @@ DenseVertexMap<float> calcAverageVertexAngles(
 
     for (auto vH: mesh.vertices())
     {
-        float angleSum = 0;
-        auto edgeVec = mesh.getEdgesOfVertex(vH);
-        int degree = edgeVec.size();
-        for(auto eH: edgeVec)
+        try
         {
-            angleSum += edgeAngles[eH];
+            /* code */
+
+            float angleSum = 0;
+            auto edgeVec = mesh.getEdgesOfVertex(vH);
+            int degree = edgeVec.size();
+            for (auto eH : edgeVec)
+            {
+                angleSum += edgeAngles[eH];
+            }
+            vertexAngles.insert(vH, angleSum / degree);
         }
-        vertexAngles.insert(vH, angleSum / degree);
+        catch (...)
+        {
+            std::cout << timestamp << "Warning: Loop detected. Adding default mean angle of 0.0" << std::endl;
+            vertexAngles.insert(vH, 0.0f);
+        }
     }
     return vertexAngles;
 }

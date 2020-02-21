@@ -105,6 +105,7 @@ DenseVertexMap<Normal<typename BaseVecT::CoordType>> calcVertexNormals(
     const PointsetSurface<BaseVecT>& surface
 )
 {
+
     DenseVertexMap<Normal<typename BaseVecT::CoordType>> normalMap;
     normalMap.reserve(mesh.numVertices());
 
@@ -163,13 +164,22 @@ DenseVertexMap<Normal<typename BaseVecT::CoordType>> calcVertexNormals(
 
     for (auto vH: mesh.vertices())
     {
-        // Use averaged normals from adjacent faces
-        if (auto normal = interpolatedVertexNormal(mesh, normals, vH))
+        try
         {
-            normalMap.insert(vH, *normal);
+
+            // Use averaged normals from adjacent faces
+            if (auto normal = interpolatedVertexNormal(mesh, normals, vH))
+            {
+                normalMap.insert(vH, *normal);
+            }
+            else
+            {
+                normalMap.insert(vH, Normal<typename BaseVecT::CoordType>(0, 0, 1));
+            }
         }
-        else
+        catch (...)
         {
+            std::cout << timestamp << "Warning: Loop detected. Using default normal" << std::endl;
             normalMap.insert(vH, Normal<typename BaseVecT::CoordType>(0, 0, 1));
         }
     }
