@@ -67,6 +67,13 @@ struct channel_type<BaseVector<float>>
   static const unsigned int w = 3;
   typedef float type;
 };
+template <typename T, size_t size>
+struct channel_type<std::array<T, size>>
+{
+  static const unsigned int w = size;
+  typedef T type;
+};
+
 
 template <typename HandleType>
 struct attribute_type
