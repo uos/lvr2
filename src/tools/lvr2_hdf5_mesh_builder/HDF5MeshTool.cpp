@@ -177,7 +177,26 @@ int main( int argc, char ** argv )
       std::cout << timestamp << "Using existing vertex normals..." << std::endl;
       vertexNormals = *vertexNormalsOpt;
     }
-    else
+    else if (meshBuffer != nullptr && meshBuffer->hasVertexNormals())
+    {
+      std::cout << timestamp << "Using existing vertex normals from mesh buffer..." << std::endl;
+      const FloatChannelOptional channel_opt = meshBuffer->getChannel<float>("vertex_normals");
+      if (channel_opt && channel_opt.get().width() == 3 and channel_opt.get().numElements() == hem.numVertices())
+      {
+        auto &channel = channel_opt.get();
+        vertexNormals.reserve(channel.numElements());
+        for (size_t i = 0; i < channel.numElements(); i++)
+        {
+          vertexNormals.insert(VertexHandle(i), channel[i]);
+        }
+      }
+      else
+      {
+        std::cerr << timestamp << "Error while reading vertex normals..." << std::endl;
+      }
+    }
+
+    if(vertexNormals.numValues() == 0)
     {
       std::cout << timestamp << "Computing vertex normals..." << std::endl;
       vertexNormals = calcVertexNormals(hem, faceNormals);
@@ -200,6 +219,51 @@ int main( int argc, char ** argv )
     {
       std::cout << timestamp << "Vertex normals already included." << std::endl;
     }
+
+    // vertex colors
+    using color = std::array<uint8_t, 3>;
+    DenseVertexMap<color> colors;
+    boost::optional<DenseVertexMap<color>> colorsOpt;
+    ChannelOptional<uint8_t> channel_opt;
+    if (readFromHdf5)
+    {
+      colorsOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<color>>("vertex_colors");
+    }
+    if (colorsOpt)
+    {
+      std::cout << timestamp << "Using existing vertex colors..." << std::endl;
+      colors = *colorsOpt;
+    }
+    else if (meshBuffer != nullptr && (channel_opt = meshBuffer->getChannel<uint8_t>("vertex_colors"))
+      && channel_opt && channel_opt.get().width() == 3 && channel_opt.get().numElements() == hem.numVertices()) {
+      std::cout << timestamp << "Using existing colors from mesh buffer..." << std::endl;
+
+      auto &channel = channel_opt.get();
+      colors.reserve(channel.numElements());
+      for (size_t i = 0; i < channel.numElements(); i++)
+      {
+        colors.insert(VertexHandle(i), channel[i]);
+      }
+    }
+    if (!colorsOpt || !writeToHdf5Input)
+    {
+      std::cout << timestamp << "Adding vertex colors..." << std::endl;
+      bool addedVertexColors = hdf5.addDenseAttributeMap<DenseVertexMap<color>>(
+          hem, colors, "vertex_colors");
+      if (addedVertexColors)
+      {
+        std::cout << timestamp << "successfully added vertex colors" << std::endl;
+      }
+      else
+      {
+        std::cout << timestamp << "could not add vertex colors!" << std::endl;
+      }
+    }
+    else
+    {
+      std::cout << timestamp << "Vertex colors already included." << std::endl;
+    }
+
 
     // vertex average angles
     DenseVertexMap<float> averageAngles;
