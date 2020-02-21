@@ -15,7 +15,7 @@ namespace lvr2{
         long offset = 0;
         size_t numChunks = std::floor(bb.getXSize()/voxelSize);
 
-        std::cout << sizeof(Leaf) << std::endl;
+        std::cout << sizeof(ChunkLeaf) << std::endl;
 
         std::cout << "BB unadjusted " << bb << std::endl;
         // check if it is a power of 2
@@ -304,8 +304,8 @@ namespace lvr2{
 
                 long offset = 0;
                 numLeafs += numChildren;
-                Leaf* leaves = reinterpret_cast<Leaf*>(m_mem.alloc<Leaf>(numChildren, offset));
-//                Leaf* leaves = new Leaf[numChildren];
+                ChunkLeaf* leaves = reinterpret_cast<ChunkLeaf*>(m_mem.alloc<ChunkLeaf>(numChildren, offset));
+//                ChunkLeaf* leaves = new Leaf[numChildren];
                 if(offset)
                 {
                     std::cout << "THIS SHOULD NEVER HAPPEN" << std::endl;
@@ -416,7 +416,7 @@ namespace lvr2{
         }
 
     //  template <typename BaseVecT>
-    //    void MeshOctree<BaseVecT>::writeLeaf(Leaf* leaf, unsigned char index)
+    //    void MeshOctree<BaseVecT>::writeLeaf(ChunkLeaf* leaf, unsigned char index)
     //    {
     //      //std::cout << leaf->m_start << " " << leaf->m_size << std::endl;
     //      for(unsigned int i = leaf->m_start; i < (leaf->m_start + leaf->m_size); ++i)
@@ -440,7 +440,7 @@ namespace lvr2{
     //      unsigned char cnt = 0;
     //      if(oct->m_leaf)
     //      {
-    //        Leaf* child = getChildPtr<Leaf>(oct);
+    //        ChunkLeaf* child = getChildPtr<Leaf>(oct);
     //        for(unsigned char i = 0; i < 8; ++i)
     //        {
     //          if(oct->m_leaf & (1 << i))
@@ -472,7 +472,7 @@ namespace lvr2{
     //      unsigned char cnt = 0;
     //      if(oct->m_leaf)
     //      {
-    //        Leaf* child = getChildPtr<Leaf>(oct);
+    //        ChunkLeaf* child = getChildPtr<Leaf>(oct);
     //        for(unsigned char i = 0; i < 8; ++i)
     //        {
     //          if(oct->m_leaf & (1 << i))
@@ -513,12 +513,12 @@ namespace lvr2{
                 return;
             if(oct->m_leaf)
             {
-                Leaf* leaf = getChildPtr<Leaf>(oct);
+                ChunkLeaf* leaf = getChildPtr<ChunkLeaf>(oct);
                 for(unsigned char i = 0; i < 8; ++i)
                 {
                     if(oct->m_leaf & (1 << i))
                     {
-                        Leaf* l = leaf + cnt;
+                        ChunkLeaf* l = leaf + cnt;
                         for(size_t j = 0; j < l->m_hashes.size(); ++j)
                         {
                             indices.push_back(l->m_centroids[j]);
@@ -542,24 +542,6 @@ namespace lvr2{
             }
         }
 
-    template <typename BaseVecT>
-        void MeshOctree<BaseVecT>::normalizePlanes(double planes[24])
-        {
-            for(unsigned char i = 0; i < 6; ++i)
-            {
-                double pX = planes[i * 4 + 0];
-                double pY = planes[i * 4 + 1];
-                double pZ = planes[i * 4 + 2];
-
-                double norm = std::sqrt(std::pow(pX, 2) + std::pow(pY, 2) + std::pow(pZ, 2));
-
-                // seems like we have to flip the normals.
-                //        planes[i * 4 + 0] =(-1) * pX / norm;
-                //        planes[i * 4 + 1] =(-1) * pY / norm;
-                //        planes[i * 4 + 2] =(-1) * pZ / norm;
-
-            }
-        }
 
     template <typename BaseVecT>
         void MeshOctree<BaseVecT>::intersect(double planes[24], std::vector<BaseVecT>& indices, std::vector<size_t>& hashes)
@@ -569,7 +551,7 @@ namespace lvr2{
         }
 
     template <typename BaseVecT>
-        void MeshOctree<BaseVecT>::intersect(Leaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<BaseVecT >& indices, std::vector<size_t>& hashes)
+        void MeshOctree<BaseVecT>::intersect(ChunkLeaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<BaseVecT >& indices, std::vector<size_t>& hashes)
         {
             if(!leaf)
                 return;
@@ -683,7 +665,7 @@ namespace lvr2{
                     if(oct->m_leaf & (1 << i))
                     {
 //                        std::cout << cnt << std::endl;
-                        intersect(getChildPtr<Leaf>(oct) + cnt++, bboxes[i], planes, indices, hashes);
+                        intersect(getChildPtr<ChunkLeaf>(oct) + cnt++, bboxes[i], planes, indices, hashes);
                     }
                 }
             }
@@ -698,70 +680,4 @@ namespace lvr2{
                 }
             }
         }
-
-
-    //  template <typename BaseVecT>
-    //    void MeshOctree<BaseVecT>::intersect(const BoundingBox<BaseVecT>& cullBBox, std::vector<BaseVecT>& pts)
-    //    {
-    //      intersect(m_root, m_bbox, cullBBox, pts);
-    //    }
-    //  template <typename BaseVecT>
-    //    void MeshOctree<BaseVecT>::intersect(BOct* oct, const BoundingBox<BaseVecT>& octBBox, const BoundingBox<BaseVecT>& cullBBox, std::vector<BaseVecT>& pts)
-    //    {
-    //      if(oct == nullptr)
-    //      {
-    //        return;
-    //      }
-    //
-    //      if(oct->m_leaf)
-    //      {
-    //        getPoints(oct, pts);
-    //        return;
-    //      }
-    //
-    //      BaseVecT cullMin = cullBBox.getMin();
-    //      BaseVecT cullMax = cullBBox.getMax();
-    //      BaseVecT octMin = octBBox.getMin();
-    //      BaseVecT octMax = octBBox.getMax();
-    //
-    //      // octree is completely visible.
-    //      if((cullMin.x <= octMin.x && cullMax.x >= octMax.x) &&
-    //         (cullMin.y <= octMin.y && cullMax.y >= octMax.y) &&
-    //         (cullMin.z <= octMin.z && cullMax.z >= octMax.z))
-    //      {
-    //        getPoints(oct, pts);
-    //        return;
-    //      }
-    //
-    //      // get children bbboxes.
-    //      BoundingBox<BaseVecT> bboxes[8];
-    //      getBBoxes(octBBox, bboxes);
-    //      
-    //      int cnt = 0;
-    //      for(unsigned char i = 0; i < 8; ++i)
-    //      {
-    //        if(oct->m_valid & (1 << i))
-    //        {
-    //          octMin = bboxes[i].getMin();
-    //          octMax = bboxes[i].getMax();
-    //
-    //          if(cullMin.x < octMin.x && cullMax.x > octMax.x)
-    //          {
-    //            continue;
-    //          }
-    //
-    //          if(cullMin.y < octMin.y && cullMax.y > octMax.y)
-    //          {
-    //            continue;
-    //          }
-    //
-    //          if(cullMin.z < octMin.z && cullMax.z > octMax.x)
-    //          {
-    //            continue;
-    //          }
-    //
-    //          intersect(getChildPtr<BOct> + cnt++, bboxes[i], cullBBox, pts);
-    //        }
-    //      }
-    //    }
 }

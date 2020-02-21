@@ -36,6 +36,7 @@
 
 #include "lvr2/display/ColorMap.hpp"
 #include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/display/PointOctree.hpp"
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
@@ -59,6 +60,8 @@ public:
     size_t                      getNumPoints();
     bool                        hasNormals();
     bool                        hasColors();
+
+    std::unique_ptr<lvr2::PointOctree<BaseVector<float> > > m_oct;
 
     void setBaseColor(float r, float g, float b);
     void setPointSize(int pointSize);

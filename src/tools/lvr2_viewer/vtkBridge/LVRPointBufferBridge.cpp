@@ -71,6 +71,9 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
     {
         // Save pc data
         m_pointBuffer = pointCloud;
+        
+        m_oct = std::make_unique<lvr2::PointOctree<BaseVector<float> > >(m_pointBuffer, 8);
+        
 
         if(pointCloud->hasColors()) m_hasColors = true;
         if(pointCloud->hasNormals()) m_hasNormals = true;

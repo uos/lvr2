@@ -628,34 +628,16 @@ namespace lvr2{
     }
 
 
-  template <typename BaseVecT>
-    void PointOctree<BaseVecT>::normalizePlanes(double planes[6][4])
-    {
-      for(unsigned char i = 0; i < 6; ++i)
-      {
-        double pX = planes[i][0];
-        double pY = planes[i][1];
-        double pZ = planes[i][2];
-
-        double norm = std::sqrt(std::pow(pX, 2) + std::pow(pY, 2) + std::pow(pZ, 2));
-
-        // seems like we have to flip the normals.
-        planes[i][0] =(-1) * pX / norm;
-        planes[i][1] =(-1) * pY / norm;
-        planes[i][2] =(-1) * pZ / norm;
-
-      }
-    }
 
   template <typename BaseVecT>
-    void PointOctree<BaseVecT>::intersect(double planes[6][4], std::vector<unsigned int>& indices)
+    void PointOctree<BaseVecT>::intersect(double planes[24], std::vector<unsigned int>& indices)
     {
-      normalizePlanes(planes);
+//      normalizePlanes(planes);
       intersect(m_root, m_bbox, planes, indices);
     }
 
   template <typename BaseVecT>
-    void PointOctree<BaseVecT>::intersect(Leaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[6][4], std::vector<unsigned int >& indices)
+    void PointOctree<BaseVecT>::intersect(Leaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<unsigned int >& indices)
     {
 
       for(unsigned char i = 0; i < 6; ++i)
@@ -664,23 +646,27 @@ namespace lvr2{
         BaseVecT octMax = bbox.getMax();
         BaseVecT pVertex = octMin;
 
-        if(planes[i][0] >= 0)
+        if(planes[i * 4 + 0] >= 0)
         {
-          pVertex.x = octMax.x;
+            pVertex.x = octMax.x;
         }
-        if(planes[i][1] >= 0)
+        if(planes[i * 4 + 1] >= 0)
         {
-          pVertex.y = octMax.y;
+            pVertex.y = octMax.y;
         }
 
-        if(planes[i][2] >= 0)
+        if(planes[i * 4 + 2] >= 0)
         {
-          pVertex.z = octMax.z;
+            pVertex.z = octMax.z;
         }
 
         double distance;
         // get distance pVertex. hessian 
-        distance = planes[i][0] * pVertex.x + planes[i][1] * pVertex.y + planes[i][2] * pVertex.z + planes[i][3];
+        distance = planes[i * 4 + 0] * pVertex.x +
+                   planes[i * 4 + 1] * pVertex.y +
+                   planes[i * 4 + 2] * pVertex.z +
+                   planes[i * 4 + 3];
+
         // outlier.
         if(distance < 0)
           return;
@@ -691,7 +677,7 @@ namespace lvr2{
     }
 
   template <typename BaseVecT>
-    void PointOctree<BaseVecT>::intersect(BOct* oct, const BoundingBox<BaseVecT>& bbox, double planes[6][4], std::vector<unsigned int >& indices)
+    void PointOctree<BaseVecT>::intersect(BOct* oct, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<unsigned int >& indices)
     {
 
       bool inlier = true;
@@ -703,33 +689,40 @@ namespace lvr2{
         BaseVecT pVertex = octMin;
         BaseVecT nVertex = octMax;
 
-        if(planes[i][0] >= 0)
+        if(planes[i * 4 + 0] >= 0)
         {
-          pVertex.x = octMax.x;
-          nVertex.x = octMin.x;
+            pVertex.x = octMax.x;
+            nVertex.x = octMin.x;
         }
-        if(planes[i][1] >= 0)
+        if(planes[i * 4 + 1] >= 0)
         {
-          pVertex.y = octMax.y;
-          nVertex.y = octMin.y;
+            pVertex.y = octMax.y;
+            nVertex.y = octMin.y;
         }
 
-        if(planes[i][2] >= 0)
+        if(planes[i* 4 + 2] >= 0)
         {
-          pVertex.z = octMax.z;
-          nVertex.z = octMin.z;
+            pVertex.z = octMax.z;
+            nVertex.z = octMin.z;
         }
 
         double distance;
 
         // get distance pVertex. hessian 
-        distance = planes[i][0] * pVertex.x + planes[i][1] * pVertex.y + planes[i][2] * pVertex.z + planes[i][3];
+        distance = planes[i * 4 + 0] * pVertex.x +
+                   planes[i * 4 + 1] * pVertex.y +
+                   planes[i * 4 + 2] * pVertex.z +
+                   planes[i * 4 + 3];
+
         // outlier.
         if(distance < 0)
           return;
 
         // distance to nVertex
-        distance = planes[i][0] * nVertex.x + planes[i][1] * nVertex.y + planes[i][2] * nVertex.z + planes[i][3];
+        distance = planes[i * 4 + 0] * nVertex.x +
+                   planes[i * 4 + 1] * nVertex.y +
+                   planes[i * 4 + 2] * nVertex.z +
+                   planes[i * 4 + 3];
 
         if(distance < 0)
           inlier = false;
@@ -766,69 +759,4 @@ namespace lvr2{
       }
     }
 
-
-  //  template <typename BaseVecT>
-  //    void PointOctree<BaseVecT>::intersect(const BoundingBox<BaseVecT>& cullBBox, std::vector<BaseVecT>& pts)
-  //    {
-  //      intersect(m_root, m_bbox, cullBBox, pts);
-  //    }
-  //  template <typename BaseVecT>
-  //    void PointOctree<BaseVecT>::intersect(BOct* oct, const BoundingBox<BaseVecT>& octBBox, const BoundingBox<BaseVecT>& cullBBox, std::vector<BaseVecT>& pts)
-  //    {
-  //      if(oct == nullptr)
-  //      {
-  //        return;
-  //      }
-  //
-  //      if(oct->m_leaf)
-  //      {
-  //        getPoints(oct, pts);
-  //        return;
-  //      }
-  //
-  //      BaseVecT cullMin = cullBBox.getMin();
-  //      BaseVecT cullMax = cullBBox.getMax();
-  //      BaseVecT octMin = octBBox.getMin();
-  //      BaseVecT octMax = octBBox.getMax();
-  //
-  //      // octree is completely visible.
-  //      if((cullMin.x <= octMin.x && cullMax.x >= octMax.x) &&
-  //         (cullMin.y <= octMin.y && cullMax.y >= octMax.y) &&
-  //         (cullMin.z <= octMin.z && cullMax.z >= octMax.z))
-  //      {
-  //        getPoints(oct, pts);
-  //        return;
-  //      }
-  //
-  //      // get children bbboxes.
-  //      BoundingBox<BaseVecT> bboxes[8];
-  //      getBBoxes(octBBox, bboxes);
-  //      
-  //      int cnt = 0;
-  //      for(unsigned char i = 0; i < 8; ++i)
-  //      {
-  //        if(oct->m_valid & (1 << i))
-  //        {
-  //          octMin = bboxes[i].getMin();
-  //          octMax = bboxes[i].getMax();
-  //
-  //          if(cullMin.x < octMin.x && cullMax.x > octMax.x)
-  //          {
-  //            continue;
-  //          }
-  //
-  //          if(cullMin.y < octMin.y && cullMax.y > octMax.y)
-  //          {
-  //            continue;
-  //          }
-  //
-  //          if(cullMin.z < octMin.z && cullMax.z > octMax.x)
-  //          {
-  //            continue;
-  //          }
-  //
-  //          intersect(getChildPtr<BOct> + cnt++, bboxes[i], cullBBox, pts);
-  //        }
-  //      }
-  //    }
 }
