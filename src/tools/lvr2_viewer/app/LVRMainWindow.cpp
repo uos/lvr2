@@ -228,7 +228,7 @@ LVRMainWindow::LVRMainWindow()
      m_axesWidget->InteractiveOff();
 
      // Disable action if EDL is not available
-#ifndef LVR_USE_VTK_GE_7_1
+#ifndef LVR2_USE_VTK_GE_7_1
      actionRenderEDM->setEnabled(false);
 #endif
 
@@ -479,7 +479,7 @@ void LVRMainWindow::setupQVTK()
     m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
 
 
-#ifdef LVR_USE_VTK_GE_7_1 
+#ifdef LVR2_USE_VTK_GE_7_1
     // Enable EDL per default
     qvtkWidget->GetRenderWindow()->SetMultiSamples(0);
 
@@ -498,7 +498,7 @@ void LVRMainWindow::setupQVTK()
 
 void LVRMainWindow::toogleEDL(bool state)
 {
-#ifdef LVR_USE_VTK_GE_7_1
+#ifdef LVR2_USE_VTK_GE_7_1
     vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
 
     if(state == false)

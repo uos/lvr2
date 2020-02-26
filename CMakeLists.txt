@@ -492,10 +492,8 @@ if(Qt5_FOUND)
   message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
   if(QVTK_FOUND)
     include_directories(${QVTK_INCLUDE_DIR})
-    add_subdirectory(src/tools/lvr2_viewer)
-  elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
-    add_subdirectory(src/tools/lvr2_viewer)
   endif(QVTK_FOUND)
+  add_subdirectory(src/tools/lvr2_viewer)
 endif(Qt5_FOUND)
 
 
