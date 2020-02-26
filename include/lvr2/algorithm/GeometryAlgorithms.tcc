@@ -42,27 +42,23 @@ namespace lvr2
 
 template <typename BaseVecT>
 void calcVertexLocalNeighborhood(
-    const BaseMesh<BaseVecT>& mesh,
+    const BaseMesh<BaseVecT> &mesh,
     VertexHandle vH,
     double radius,
-    vector<VertexHandle>& neighborsOut
-)
+    vector<VertexHandle> &neighborsOut)
 {
     visitLocalNeighborhoodOfVertex(mesh, vH, radius, [&](auto newVH) {
         neighborsOut.push_back(newVH);
     });
 }
 
-
-
 template <typename BaseVecT, typename VisitorF>
 void visitLocalVertexNeighborhood(
-    const BaseMesh<BaseVecT>& mesh,
-    std::set<VertexHandle>& invalid,
+    const BaseMesh<BaseVecT> &mesh,
+    std::set<VertexHandle> &invalid,
     VertexHandle vH,
     double radius,
-    VisitorF visitor
-)
+    VisitorF visitor)
 {
     // Prepare values for the radius test
     auto vPos = mesh.getVertexPosition(vH);
@@ -98,14 +94,15 @@ void visitLocalVertexNeighborhood(
 
         // Expand current vertex: add visit its direct neighbors.
         directNeighbors.clear();
-        try {
-          mesh.getNeighboursOfVertex(curVH, directNeighbors);
+        try
+        {
+            mesh.getNeighboursOfVertex(curVH, directNeighbors);
         }
         catch (lvr2::PanicException exception)
         {
-          invalid.insert(curVH);
+            invalid.insert(curVH);
         }
-        for (auto newVH: directNeighbors)
+        for (auto newVH : directNeighbors)
         {
             // If this vertex is within the radius of the original vertex, we
             // want to visit it later, thus pushing it onto the stack. But we
@@ -123,7 +120,7 @@ void visitLocalVertexNeighborhood(
 }
 
 template <typename BaseVecT>
-DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT>& mesh, double radius)
+DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT> &mesh, double radius)
 {
     // We create a map to store a height-diff for each vertex. We preallocate
     // memory for all vertices. This is not only an optimization, but more
@@ -141,8 +138,8 @@ DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT>& mesh
 
     std::set<VertexHandle> invalid;
 
-    // Calculate height difference for each vertex
-    #pragma omp parallel for
+// Calculate height difference for each vertex
+#pragma omp parallel for
     for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
     {
         auto vH = VertexHandle(i);
@@ -167,81 +164,90 @@ DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT>& mesh
             }
         });
 
-        // Calculate the final height difference
-        #pragma omp critical
+// Calculate the final height difference
+#pragma omp critical
         {
             heightDiff.insert(vH, maxHeight - minHeight);
             ++progress;
         }
     }
 
-    if(!invalid.empty()){
-      std::cerr << std::endl << "Found " << invalid.size() << " invalid, non manifold vertices";
-      for(auto vH : invalid){std::cerr << ", " << vH;}
-      std::cerr << std::endl;
+    if (!invalid.empty())
+    {
+        std::cerr << std::endl
+                  << "Found " << invalid.size() << " invalid, non manifold vertices";
+        for (auto vH : invalid)
+        {
+            std::cerr << ", " << vH;
+        }
+        std::cerr << std::endl;
     }
 
     return heightDiff;
 }
 
-template<typename BaseVecT>
-DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT>& mesh, const VertexMap<Normal<typename BaseVecT::CoordType>>& normals)
+template <typename BaseVecT>
+DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT> &mesh, const VertexMap<Normal<typename BaseVecT::CoordType>> &normals)
 {
     DenseEdgeMap<float> edgeAngle(mesh.nextEdgeIndex(), 0);
-    for (auto eH: mesh.edges())
+    for (auto eH : mesh.edges())
     {
         auto vHVector = mesh.getVerticesOfEdge(eH);
         edgeAngle.insert(eH, acos(normals[vHVector[0]].dot(normals[vHVector[1]])));
-        if(isnan(edgeAngle[eH])) edgeAngle[eH] = 0;
+        if (isnan(edgeAngle[eH]))
+            edgeAngle[eH] = 0;
     }
     return edgeAngle;
 }
 
-template<typename BaseVecT>
+template <typename BaseVecT>
 DenseVertexMap<float> calcAverageVertexAngles(
-    const BaseMesh<BaseVecT>& mesh,
-    const VertexMap<Normal<typename BaseVecT::CoordType>>& normals
-)
+    const BaseMesh<BaseVecT> &mesh,
+    const VertexMap<Normal<typename BaseVecT::CoordType>> &normals)
 {
     DenseVertexMap<float> vertexAngles(mesh.nextVertexIndex(), 0);
     auto edgeAngles = calcVertexAngleEdges(mesh, normals);
     std::set<VertexHandle> invalid;
 
-    for (auto vH: mesh.vertices())
+    for (auto vH : mesh.vertices())
     {
         float angleSum = 0;
-        try {
-          auto edgeVec = mesh.getEdgesOfVertex(vH);
-          int degree = edgeVec.size();
-          for(auto eH: edgeVec)
-          {
-            angleSum += edgeAngles[eH];
-          }
-          vertexAngles.insert(vH, angleSum / degree);
+        try
+        {
+            auto edgeVec = mesh.getEdgesOfVertex(vH);
+            int degree = edgeVec.size();
+            for (auto eH : edgeVec)
+            {
+                angleSum += edgeAngles[eH];
+            }
+            vertexAngles.insert(vH, angleSum / degree);
         }
         catch (lvr2::PanicException exception)
         {
-          vertexAngles.insert(vH, M_PI);
-          invalid.insert(vH);
+            vertexAngles.insert(vH, M_PI);
+            invalid.insert(vH);
         }
     }
-    if(!invalid.empty()){
-      std::cerr << std::endl << "Found " << invalid.size() << " invalid, non manifold vertices." << std::endl;
-      std::cerr << "The average vertex angle of the invalid vertices has been set to Pi" << std::endl;
-      std::cerr << "The following vertices are invalid: ";
-      for(auto vH : invalid){std::cerr << ", " << vH;}
-      std::cerr << std::endl;
+    if (!invalid.empty())
+    {
+        std::cerr << std::endl
+                  << "Found " << invalid.size() << " invalid, non manifold vertices." << std::endl;
+        std::cerr << "The average vertex angle of the invalid vertices has been set to Pi" << std::endl;
+        std::cerr << "The following vertices are invalid: ";
+        for (auto vH : invalid)
+        {
+            std::cerr << ", " << vH;
+        }
+        std::cerr << std::endl;
     }
     return vertexAngles;
 }
 
-
-template<typename BaseVecT>
+template <typename BaseVecT>
 DenseVertexMap<float> calcVertexRoughness(
-    const BaseMesh<BaseVecT>& mesh,
+    const BaseMesh<BaseVecT> &mesh,
     double radius,
-    const VertexMap<Normal<typename BaseVecT::CoordType>>& normals
-)
+    const VertexMap<Normal<typename BaseVecT::CoordType>> &normals)
 {
     // We create a map to store the roughness for each vertex. We preallocate
     // memory for all vertices. This is not only an optimization, but more
@@ -261,8 +267,8 @@ DenseVertexMap<float> calcVertexRoughness(
 
     std::set<VertexHandle> invalid;
 
-    // Calculate roughness for each vertex
-    #pragma omp parallel for
+// Calculate roughness for each vertex
+#pragma omp parallel for
     for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
     {
         auto vH = VertexHandle(i);
@@ -279,30 +285,33 @@ DenseVertexMap<float> calcVertexRoughness(
             count += 1;
         });
 
-        #pragma omp critical
+#pragma omp critical
         {
             // Calculate the final roughness
             roughness.insert(vH, count ? sum / count : 0);
             ++progress;
         }
     }
-    if(!invalid.empty()){
-      std::cerr << std::endl << "Found " << invalid.size() << " invalid, non manifold vertices";
-      for(auto vH : invalid){std::cerr << ", " << vH;}
-      std::cerr << std::endl;
+    if (!invalid.empty())
+    {
+        std::cerr << std::endl
+                  << "Found " << invalid.size() << " invalid, non manifold vertices";
+        for (auto vH : invalid)
+        {
+            std::cerr << ", " << vH;
+        }
+        std::cerr << std::endl;
     }
     return roughness;
-
 }
 
-template<typename BaseVecT>
+template <typename BaseVecT>
 void calcVertexRoughnessAndHeightDifferences(
-    const BaseMesh<BaseVecT>& mesh,
+    const BaseMesh<BaseVecT> &mesh,
     double radius,
-    const VertexMap<Normal<typename BaseVecT::CoordType>>& normals,
-    DenseVertexMap<float>& roughness,
-    DenseVertexMap<float>& heightDiff
-)
+    const VertexMap<Normal<typename BaseVecT::CoordType>> &normals,
+    DenseVertexMap<float> &roughness,
+    DenseVertexMap<float> &heightDiff)
 {
     // Reserving memory in those maps is important to avoid multi threading
     // related crashes.
@@ -314,8 +323,8 @@ void calcVertexRoughnessAndHeightDifferences(
     std::set<VertexHandle> invalid;
     auto averageAngles = calcAverageVertexAngles(mesh, normals);
 
-    // Calculate roughness and height difference for each vertex
-    #pragma omp parallel for
+// Calculate roughness and height difference for each vertex
+#pragma omp parallel for
     for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
     {
         auto vH = VertexHandle(i);
@@ -344,7 +353,7 @@ void calcVertexRoughnessAndHeightDifferences(
             }
         });
 
-        #pragma omp critical
+#pragma omp critical
         {
             // Calculate the final roughness
             roughness.insert(vH, count ? sum / count : 0);
@@ -353,21 +362,26 @@ void calcVertexRoughnessAndHeightDifferences(
             heightDiff.insert(vH, maxHeight - minHeight);
         }
     }
-    if(!invalid.empty()){
-        std::cerr << std::endl << "Found " << invalid.size() << " invalid, non manifold vertices";
-        for(auto vH : invalid){std::cerr << ", " << vH;}
+    if (!invalid.empty())
+    {
+        std::cerr << std::endl
+                  << "Found " << invalid.size() << " invalid, non manifold vertices";
+        for (auto vH : invalid)
+        {
+            std::cerr << ", " << vH;
+        }
         std::cerr << std::endl;
     }
 }
 
-template<typename BaseVecT>
-DenseEdgeMap<float> calcVertexDistances(const BaseMesh<BaseVecT>& mesh)
+template <typename BaseVecT>
+DenseEdgeMap<float> calcVertexDistances(const BaseMesh<BaseVecT> &mesh)
 {
     DenseEdgeMap<float> distances;
 
     distances.clear();
     distances.reserve(mesh.nextEdgeIndex());
-    for(auto eH: mesh.edges())
+    for (auto eH : mesh.edges())
     {
         auto vertices = mesh.getVerticesOfEdge(eH);
         const float dist = mesh.getVertexPosition(vertices[0]).distance(mesh.getVertexPosition(vertices[1]));
@@ -378,24 +392,24 @@ DenseEdgeMap<float> calcVertexDistances(const BaseMesh<BaseVecT>& mesh)
 
 class CompareDist
 {
- public:
-  bool operator()(pair<lvr2::VertexHandle,float> n1,pair<lvr2::VertexHandle,float> n2) {
-      return n1.second>n2.second;
-  }
+public:
+    bool operator()(pair<lvr2::VertexHandle, float> n1, pair<lvr2::VertexHandle, float> n2)
+    {
+        return n1.second > n2.second;
+    }
 };
 
-
-template<typename BaseVecT>
+template <typename BaseVecT>
 bool Dijkstra(
-    const BaseMesh<BaseVecT>& mesh,
-    const VertexHandle& start,
-    const VertexHandle& goal,
-    const DenseEdgeMap<float>& edgeCosts,
-    std::list<VertexHandle>& path,
-    DenseVertexMap<float>& distances,
-    DenseVertexMap<VertexHandle>& predecessors,
-    DenseVertexMap<bool>& seen,
-    DenseVertexMap<float>& vertex_costs)
+    const BaseMesh<BaseVecT> &mesh,
+    const VertexHandle &start,
+    const VertexHandle &goal,
+    const DenseEdgeMap<float> &edgeCosts,
+    std::list<VertexHandle> &path,
+    DenseVertexMap<float> &distances,
+    DenseVertexMap<VertexHandle> &predecessors,
+    DenseVertexMap<bool> &seen,
+    DenseVertexMap<float> &vertex_costs)
 {
     path.clear();
     distances.clear();
@@ -403,7 +417,7 @@ bool Dijkstra(
 
     // initialize distances with infinity
     // initialize predecessor of each vertex with itself
-    for(auto const &vH : mesh.vertices())
+    for (auto const &vH : mesh.vertices())
     {
         distances.insert(vH, std::numeric_limits<float>::infinity());
         predecessors.insert(vH, vH);
@@ -411,18 +425,17 @@ bool Dijkstra(
 
     distances[start] = 0;
 
-    if(goal == start)
+    if (goal == start)
     {
         return true;
     }
 
-    std::priority_queue<pair<VertexHandle,float>, vector< pair<VertexHandle,float> >,CompareDist> pq;
+    std::priority_queue<pair<VertexHandle, float>, vector<pair<VertexHandle, float>>, CompareDist> pq;
 
-    pair<VertexHandle,float> first_pair (start, 0);
+    pair<VertexHandle, float> first_pair(start, 0);
     pq.push(first_pair);
 
-
-    while(!pq.empty())
+    while (!pq.empty())
     {
         pair<VertexHandle, float> pair = pq.top();
         VertexHandle current_vh = pair.first;
@@ -430,7 +443,7 @@ bool Dijkstra(
         pq.pop();
 
         // Check if the current Vertex was seen already
-        if(seen[current_vh])
+        if (seen[current_vh])
         {
             // Skip to while
             continue;
@@ -442,35 +455,37 @@ bool Dijkstra(
         std::vector<VertexHandle> neighbours;
         mesh.getNeighboursOfVertex(current_vh, neighbours);
 
-        for(auto neighbour_vh: neighbours)
+        for (auto neighbour_vh : neighbours)
         {
-            if(seen[neighbour_vh] || vertex_costs[neighbour_vh] >= 1) continue;
+            if (seen[neighbour_vh] || vertex_costs[neighbour_vh] >= 1)
+                continue;
 
             float edge_cost = edgeCosts[mesh.getEdgeBetween(current_vh, neighbour_vh).unwrap()];
 
             float tmp_neighbour_cost = distances[current_vh] + edge_cost;
-            if(distances[neighbour_vh] > tmp_neighbour_cost)
+            if (distances[neighbour_vh] > tmp_neighbour_cost)
             {
                 distances[neighbour_vh] = tmp_neighbour_cost;
                 predecessors[neighbour_vh] = current_vh;
-                pq.push(std::pair<VertexHandle,float>(neighbour_vh, tmp_neighbour_cost));
+                pq.push(std::pair<VertexHandle, float>(neighbour_vh, tmp_neighbour_cost));
             }
         }
     }
 
     VertexHandle prev = goal;
 
-    if(prev == predecessors[goal]) return false;
+    if (prev == predecessors[goal])
+        return false;
 
-    do{
+    do
+    {
         path.push_front(prev);
         prev = predecessors[prev];
-    } while(prev != start);
+    } while (prev != start);
 
     path.push_front(start);
 
     return true;
-
 }
 
 } // namespace lvr2

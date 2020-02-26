@@ -29,6 +29,7 @@
  * CleanupAlgorithms.tcc
  */
 
+#include "lvr2/io/Progress.hpp"
 #include "lvr2/algorithm/ContourAlgorithms.hpp"
 #include "lvr2/attrmaps/AttrMaps.hpp"
 #include "lvr2/io/Timestamp.hpp"
@@ -105,8 +106,13 @@ size_t naiveFillSmallHoles(BaseMesh<BaseVecT>& mesh, size_t maxSize, bool collap
     vector<vector<EdgeHandle>> contours;
 
     // We execute the algorithm for each connected part of the mesh
+    string comment = timestamp.getElapsedTime() + "Trying to remove all holes ";
+
+    ProgressBar progress(subMeshes.numCluster(), comment);
     for (auto clusterH: subMeshes)
     {
+        if(!timestamp.isQuiet())
+            ++progress;
         contours.clear();
 
         // We only use this within the loop, but create it here to avoid
@@ -264,6 +270,9 @@ size_t naiveFillSmallHoles(BaseMesh<BaseVecT>& mesh, size_t maxSize, bool collap
             }
         }
     }
+
+    if(!timestamp.isQuiet())
+        cout << endl;
 
     return failedToFillCount;
 }

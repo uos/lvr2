@@ -56,14 +56,14 @@ public:
      * @param options The Options to use
      * @param scans The Scans to start with
      */
-    SLAMAlign(const SLAMOptions& options, const std::vector<SLAMScanPtr>& scans);
+    SLAMAlign(const SLAMOptions& options, const std::vector<SLAMScanPtr>& scans, std::vector<bool> new_scans = std::vector<bool>());
 
     /**
      * @brief Creates a new SLAMAlign instance with the given Options
      *
      * @param options The Options to use
      */
-    SLAMAlign(const SLAMOptions& options = SLAMOptions());
+    SLAMAlign(const SLAMOptions& options = SLAMOptions(), std::vector<bool> new_scans = std::vector<bool>());
 
     virtual ~SLAMAlign() = default;
 
@@ -156,6 +156,12 @@ protected:
     /// Executes GraphSLAM up to and including the specified last Scan
     void graphSLAM(size_t last);
 
+    /// checkLoopClose(size_t last) if the m_icp_graph is in a spezial order
+    void checkLoopCloseOtherOrder(size_t last);
+
+    /// create m_icp_graph which defined the order of registrations
+    void createIcpGraph();
+
     SLAMOptions              m_options;
 
     std::vector<SLAMScanPtr> m_scans;
@@ -166,7 +172,9 @@ protected:
     bool                     m_foundLoop;
     int                      m_loopIndexCount;
 
-    size_t                   m_alreadyMatched;
+    std::vector<bool>        m_new_scans;
+
+    std::vector<std::pair<int, int>> m_icp_graph;
 };
 
 } /* namespace lvr2 */

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, University Osnabrück
+ * Copyright (c) 2019, University Osnabrück
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,58 +25,37 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __HYPERSPECTRAL_HPP__
-#define __HYPERSPECTRAL_HPP__
-
-#include <vector>
-
-#include <opencv2/core.hpp>
-
-#include "lvr2/types/MatrixTypes.hpp"
-
-namespace lvr2
-{
-
 /**
- * @brief   Struct to hold hyperspectral a hyperspectral panorama
- *          cube and corresponding model parameters to align it 
- *          with a laser scan
+ * Main.cpp
+ *
+ * @date 27.11.2019
+ * @author Marcel Wiegand
  */
-struct HyperspectralPanorama
+
+#include "Options.hpp"
+
+#include "lvr2/algorithm/ChunkingPipeline.hpp"
+
+#include <string>
+
+int main(int argc, char** argv)
 {
-    /// Distortion
-    Vector3d distortion;
+    // =======================================================================
+    // Parse and print command line parameters
+    // =======================================================================
+    // Parse command line arguments
+    chunking_server::Options options(argc, argv);
 
-    /// Origin
-    Vector3d origin;
+    // Exit if options had to generate a usage message
+    // (this means required parameters are missing)
+    if (options.printUsage())
+    {
+        return EXIT_SUCCESS;
+    }
 
-    /// Principal point
-    Vector2d principal;
+    lvr2::ChunkingPipeline<BaseVector<float> > pipeline = lvr2::ChunkingPipeline<BaseVector<float> >(options.getHdf5FilePath(), options.getConfigFilePath());
 
-    /// Rotation
-    Vector3d rotation;
+    pipeline.start(options.getScanProjectPath());
 
-    /// Horizontal field of view
-    float   fovh;
-
-    /// Vertical field of view
-    float   fovv;
-
-    /// Min wavelength in nm, i.e., wavelength of the image 
-    /// in the first channel
-    float   wmin;
-
-    /// Maximum wavelength, i.e., wavelangth of the image in 
-    /// the last channel
-    float   wmax;
-
-    /// Vector of intensity (greyscale) images, one for each
-    /// channel
-    std::vector<cv::Mat> channels;
-
-    HyperspectralPanorama() : fovv(0.0f), wmin(0.0f), wmax(0.0f) {}
-};
-
-} // namespace lvr2
-
-#endif
+    return EXIT_SUCCESS;
+}

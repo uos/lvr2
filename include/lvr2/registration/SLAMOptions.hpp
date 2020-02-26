@@ -115,8 +115,17 @@ struct SLAMOptions
     /// The epsilon difference of SLAM corrections for the stop criterion of SLAM
     double  slamEpsilon = 0.5;
 
-    /// max difference of sum of new pos and sum of old pos if they are the same
-    double diffPoseSum = 50;
+    /// max difference of position (euclidean distance) new and old
+    double diffPosition = 50;
+
+    /// max difference of angle (sum of 3 angles) new and old
+    double diffAngle = 50;
+
+    /// use scan order as icp order (if false: start with lowest distance)
+    bool useScanOrder = true;
+
+    /// rotate this angle around y axis
+    double rotate_angle = 0;
 };
 
 } /* namespace lvr2 */

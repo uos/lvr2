@@ -47,6 +47,17 @@ public:
      * */
     void doRegistration();
 private:
+
+    /**
+     * @brief Metric to determine wether the given matrices are too different from each other
+     * 
+     * @param a Transformation matrix
+     * @param b Transformation matrix
+     * @return true if a and b are in tolerated range
+     * @return false if difference between a and b is too big
+     */
+    bool isToleratedDifference(Transformd a, Transformd b);
+
     const SLAMOptions* m_options;
     ScanProjectEditMarkPtr m_scans;
 };

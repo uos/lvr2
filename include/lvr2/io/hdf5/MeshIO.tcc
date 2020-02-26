@@ -119,7 +119,7 @@ MeshBufferPtr MeshIO<Derived>::loadMesh(std::string name)
 template <typename Derived>
 MeshBufferPtr MeshIO<Derived>::load(HighFive::Group& group)
 {
-    MeshBufferPtr ret;
+    MeshBufferPtr ret = nullptr;
 
     if (!isMesh(group))
     {
@@ -160,6 +160,11 @@ MeshBufferPtr MeshIO<Derived>::load(HighFive::Group& group)
                 }
             }
         }
+    }
+
+    if (ret == nullptr)
+    {
+        return nullptr;
     }
 
     if (group.exist("textures"))

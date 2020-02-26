@@ -77,7 +77,7 @@ public:
      * @param last  The index of the last Scan to consider. `scans` may be longer, but anything
      *              after `last` will be ignored
      */
-    void doGraphSLAM(const std::vector<SLAMScanPtr>& scans, size_t last) const;
+    void doGraphSLAM(const std::vector<SLAMScanPtr>& scans, size_t last, const std::vector<bool>& new_scans = std::vector<bool>()) const;
 
 protected:
     /**
