@@ -63,6 +63,7 @@ public:
     string  getOutputFile()       const { return m_variables["outputFile"].as<string>();}
     string  getMeshName()         const { return m_variables["meshName"].as<string>();}
     size_t  getEdgeCollapseNum()  const { return m_variables["edgeCollapse"].as<size_t >();}
+    bool  removeNonManifoldVertices()  const { return m_variables["removeNonManifoldVertices"].as<bool>();}
 
 private:
     /// The internally used variable map
@@ -85,6 +86,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
     cout << "##### Output file \t\t: "  << o.getOutputFile() << endl;
     cout << "##### Mesh name \t\t: "  << o.getMeshName() << endl;
     cout << "##### Edge collapse num \t\t: "  << o.getEdgeCollapseNum() << endl;
+    cout << "##### remove non manifold vertices \t\t: "  << o.removeNonManifoldVertices() << endl;
 	return os;
 }
 

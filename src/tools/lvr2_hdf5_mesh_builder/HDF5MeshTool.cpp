@@ -83,10 +83,82 @@ int main( int argc, char ** argv )
     ModelPtr model = ModelFactory::readModel(options.getInputFile());
     meshBuffer = model->m_mesh;
   }
+
+  std::set<size_t> invalid_faces;
+
+  if (meshBuffer != nullptr && options.removeNonManifoldVertices())
+  {
+    std::cout << "filter non manifold vertices and faces..." << std::endl;
+    HalfEdgeMesh<BaseVector<float>> hem;
+    size_t numFaces = meshBuffer->numFaces();
+    size_t numVertices = meshBuffer->numVertices();
+
+    floatArr vertices = meshBuffer->getVertices();
+    indexArray indices = meshBuffer->getFaceIndices();
+
+
+    for(size_t i = 0; i < numVertices; i++)
+    {
+      size_t pos = 3 * i;
+      hem.addVertex(BaseVector<float>(
+          vertices[pos],
+          vertices[pos + 1],
+          vertices[pos + 2]));
+    }
+
+    for(size_t i = 0; i < numFaces; i++)
+    {
+      size_t pos = 3 * i;
+      VertexHandle v1(indices[pos]);
+      VertexHandle v2(indices[pos + 1]);
+      VertexHandle v3(indices[pos + 2]);
+      try
+      {
+        hem.addFace(v1, v2, v3);
+      }
+      catch(lvr2::PanicException exception)
+      {
+        invalid_faces.insert(i);
+      }
+    }
+    std::cout << "Found " << invalid_faces.size() << " non manifold faces to remove..." << std::endl;
+  }
+
   if (meshBuffer != nullptr)
   {
-    std::cout << timestamp << "Building mesh from buffers..." << std::endl;
-    HalfEdgeMesh<BaseVector<float>> hem(meshBuffer);
+    HalfEdgeMesh<BaseVector<float>> hem;
+    size_t numFaces = meshBuffer->numFaces();
+    size_t numVertices = meshBuffer->numVertices();
+    std::cout << timestamp << "Building mesh from buffers with " << numFaces
+      << " faces and " << numVertices << " vertices..." << std::endl;
+
+    floatArr vertices = meshBuffer->getVertices();
+    indexArray indices = meshBuffer->getFaceIndices();
+
+    auto inv_f_iter = invalid_faces.begin();
+
+    for(size_t i = 0; i < numVertices; i++)
+    {
+      size_t pos = 3 * i;
+      hem.addVertex(BaseVector<float>(
+          vertices[pos],
+          vertices[pos + 1],
+          vertices[pos + 2]));
+    }
+
+    for(size_t i = 0; i < numFaces; i++) {
+      if (i == *inv_f_iter) {
+        inv_f_iter++;
+        continue;
+      }
+
+      size_t pos = 3 * i;
+      VertexHandle v1(indices[pos]);
+      VertexHandle v2(indices[pos + 1]);
+      VertexHandle v3(indices[pos + 2]);
+      hem.addFace(v1, v2, v3);
+    }
+
     HDF5MeshToolIO hdf5;
     bool writeToHdf5Input = false;
     if (readFromHdf5 && options.getInputFile() == options.getOutputFile())
