@@ -1,0 +1,25 @@
+vtkBridge/LVRPickingInteractor.cpp:    m_renderer->AddActor(m_textActor);
+vtkBridge/LVRPickingInteractor.cpp:    m_renderer->AddActor(m_sphereActor);
+vtkBridge/LVRModelBridge.hpp:    void         addActors(vtkSmartPointer<vtkRenderer> renderer);
+vtkBridge/LVRModelBridge.cpp:void LVRModelBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
+vtkBridge/LVRModelBridge.cpp:    	renderer->AddActor(m_pointBridge->getPointCloudActor());
+vtkBridge/LVRModelBridge.cpp:            renderer->AddActor(actor);
+vtkBridge/LVRModelBridge.cpp:    			renderer->AddActor(collection->GetNextActor());
+widgets/LVRFilteringRemoveOutliersDialog.cpp:    bridge->addActors(renderer);
+widgets/LVRCamDataItem.cpp:        m_renderer->AddActor(m_frustrum_actor);
+widgets/LVRReconstructionExtendedMarchingCubesDialog.cpp:	bridge->addActors(renderer);
+widgets/LVROptimizationPlanarOptimizationDialog.cpp:    bridge->addActors(renderer);
+widgets/LVRReconstructionEstimateNormalsDialog.cpp:            bridge->addActors(renderer);
+widgets/LVRReconstructionEstimateNormalsDialog.cpp:                renderer->AddActor(pc_item->getPointBufferBridge()->getPointCloudActor());
+widgets/LVRReconstructionMarchingCubesDialog.cpp:	bridge->addActors(renderer);
+widgets/LVRCvImageItem.cpp:    //     m_renderer->AddActor(m_frustrum_actor);
+widgets/LVROptimizationRemoveArtifactsDialog.cpp:    bridge->addActors(renderer);
+widgets/LVRFilteringMLSProjectionDialog.cpp:    bridge->addActors(renderer);
+widgets/LVRScanDataItem.cpp:    renderer->AddActor(m_bb->getActor());
+widgets/LVRScanDataItem.cpp:            m_model->addActors(renderer);
+app/LVRMainWindow.cpp:        m_renderer->AddActor(a->getArrowActor());
+app/LVRMainWindow.cpp:        m_renderer->AddActor(a->getStartActor());
+app/LVRMainWindow.cpp:        m_renderer->AddActor(a->getEndActor());
+app/LVRMainWindow.cpp:    bridge->addActors(m_renderer);
+app/LVRMainWindow.cpp:                    bridge->addActors(m_renderer);
+app/LVRMainWindow.cpp:                    m_renderer->AddActor(mesh_item->getWireframeActor());

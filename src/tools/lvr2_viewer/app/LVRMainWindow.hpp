@@ -52,7 +52,7 @@
 #include <vtkNew.h>
 
 // EDL shading is only available in new vtk versions
-#ifdef LVR_USE_VTK_GE_7_1
+#ifdef LVR2_USE_VTK_GE_7_1
 #include <vtkEDLShading.h>
 #include <vtkRenderStepsPass.h>
 #endif
@@ -320,7 +320,7 @@ private:
 
 
     // EDM Rendering
-#ifdef LVR_USE_VTK_GE_7_1
+#ifdef LVR2_USE_VTK_GE_7_1
     vtkSmartPointer<vtkRenderStepsPass> m_basicPasses;
     vtkSmartPointer<vtkEDLShading>      m_edl;
 #endif
