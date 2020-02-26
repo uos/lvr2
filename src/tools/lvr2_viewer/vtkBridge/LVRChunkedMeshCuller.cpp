@@ -57,7 +57,7 @@ double ChunkedMeshCuller::Cull(vtkRenderer *ren,
             }
         }
     }
-
+    return 0.0;
 //    std::cout << "j: " << j << " k: " << k << std::endl;
 }
 

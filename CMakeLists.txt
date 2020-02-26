@@ -271,7 +271,7 @@ if(MPI_FOUND)
   set($Boost_COMPONENTS ${Boost_COMPONENTS} mpi)
 endif()
 
-find_package(Boost 1.54 COMPONENTS ${Boost_COMPONENTS} REQUIRED)
+find_package(Boost 1.54 COMPONENTS ${Boost_COMPONENTS} REQUIRED QUIET)
 
 
 link_directories(${Boost_LIBRARY_DIR})
@@ -487,9 +487,9 @@ endif()
 
 find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
 if(Qt5_FOUND)
-  message("FOUND QT5")
+  message(STATUS "Found QT5")
   find_package(QVTK)
-  message("FOUND QVTK ${QVTK_INCLUDE_DIR}")
+  message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
   if(QVTK_FOUND)
     include_directories(${QVTK_INCLUDE_DIR})
     add_subdirectory(src/tools/lvr2_viewer)

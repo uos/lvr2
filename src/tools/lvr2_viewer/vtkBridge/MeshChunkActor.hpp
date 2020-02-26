@@ -23,15 +23,15 @@ class VTKRENDERINGCORE_EXPORT MeshChunkActor : public vtkActor
         size_t id_;
 
     public:
-        virtual void ReleaseGraphicsResources(vtkWindow *window);
+        virtual void ReleaseGraphicsResources(vtkWindow *window) override;
 
-        virtual int RenderOpaqueGeometry(vtkViewport *viewport);
+        virtual int RenderOpaqueGeometry(vtkViewport *viewport) override;
 
-        virtual int RenderTranslucentPolygonalGeometry(vtkViewport *viewport);
+        virtual int RenderTranslucentPolygonalGeometry(vtkViewport *viewport) override;
 
         virtual void Render(vtkRenderer *ren);
 
-        void ShallowCopy(vtkProp *prop); 
+        void ShallowCopy(vtkProp *prop) override; 
 
     protected:
         vtkActor* Device;

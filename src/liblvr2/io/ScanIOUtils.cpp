@@ -364,6 +364,7 @@ bool loadScanCamera(
 
         // Load all scan images
         loadScanImages(camera.images, cameraPath / "data");
+        return true;
     }
     else
     {

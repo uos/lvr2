@@ -20,7 +20,7 @@ void ScanProjectIO<Derived>::save(const ScanProjectPtr& scanProjectPtr)
 
         HighFive::Group scanPosGroup = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
 
-        m_scanPositionIO->template save(scanPosGroup, scanPosPtr);
+        m_scanPositionIO->save(scanPosGroup, scanPosPtr);
     }
 }
 
@@ -38,7 +38,7 @@ ScanProjectPtr ScanProjectIO<Derived>::load()
             if (std::regex_match(groupname, std::regex("\\d{8}")))
             {
                 HighFive::Group scanPosGroup = hdf5util::getGroup(hfscans, groupname, false);
-                ScanPositionPtr scanPosition = m_scanPositionIO->template load(scanPosGroup);
+                ScanPositionPtr scanPosition = m_scanPositionIO->load(scanPosGroup);
                 ret->positions.push_back(scanPosition);
             }
         }
