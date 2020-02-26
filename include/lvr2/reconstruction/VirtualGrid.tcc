@@ -32,21 +32,20 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-VirtualGrid<BaseVecT>::VirtualGrid(BoundingBox<BaseVecT>& bb,
-                                  size_t gridCellSize,
-                                  float voxelSize)
+VirtualGrid<BaseVecT>::VirtualGrid(BoundingBox<BaseVecT>& bb, size_t gridCellSize, float voxelSize)
 {
- m_pcbb = bb;
- if(fmod((float) gridCellSize , voxelSize) != 0)
- {
-     int var = ((int)gridCellSize/(int)voxelSize) + fmod((float) gridCellSize , voxelSize);
-     m_gridCellSize = var * voxelSize;
- }
- else{
-     m_gridCellSize = gridCellSize;
- }
+    m_pcbb = bb;
+    if (fmod((float)gridCellSize, voxelSize) != 0)
+    {
+        int var = ((int)gridCellSize / (int)voxelSize) + fmod((float)gridCellSize, voxelSize);
+        m_gridCellSize = var * voxelSize;
+    }
+    else
+    {
+        m_gridCellSize = gridCellSize;
+    }
 
- m_voxelsize = voxelSize;
+    m_voxelsize = voxelSize;
 }
 
 template <typename BaseVecT>
@@ -80,7 +79,6 @@ void VirtualGrid<BaseVecT>::findInitialBox()
 
     m_initbox =
         lvr2::BoundingBox<BaseVecT>(BaseVecT(min_x, min_y, min_z), BaseVecT(max_x, max_y, max_z));
-
 }
 
 template <typename BaseVecT>
@@ -115,8 +113,6 @@ void VirtualGrid<BaseVecT>::generateNeighbours()
                         BaseVecT(first.getMax().x + i * m_gridCellSize,
                                  first.getMax().y + j * m_gridCellSize,
                                  first.getMax().z + h * m_gridCellSize)));
-            std:
-                cout << "generated a Box :3" << std::endl;
                 m_boxes.push_back(next);
             }
         }

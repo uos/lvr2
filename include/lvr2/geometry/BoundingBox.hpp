@@ -168,8 +168,8 @@ private:
 template<typename BaseVecT>
 inline std::ostream& operator<<(std::ostream& os, const BoundingBox<BaseVecT>& bb)
 {
-    os << "Bounding Box[min: " << bb.getMin() << ", max: " <<  bb.getMax();
-    os << ", dimension: " << bb.getXSize() << ", " << bb.getYSize() << ", "
+    os << "Bounding Box[min: " << bb.getMin() << "             max: " <<  bb.getMax();
+    os << "             dimension: " << bb.getXSize() << ", " << bb.getYSize() << ", "
        << bb.getZSize() << "]" << std::endl;
     return os;
 }

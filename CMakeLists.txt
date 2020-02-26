@@ -22,7 +22,7 @@ endif()
 #------------------------------------------------------------------------------
 # Searching for Embree: needs to be placed above "set(CMAKE_MODULE_PATH)".
 #------------------------------------------------------------------------------
-find_package(embree 3.0)
+find_package(embree 3.0 QUIET)
 if(embree_FOUND)
   message(STATUS "Found Embree")
   include_directories(${EMBREE_INCLUDE_DIRS})
@@ -487,7 +487,9 @@ endif()
 
 find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
 if(Qt5_FOUND)
+  message("FOUND QT5")
   find_package(QVTK)
+  message("FOUND QVTK ${QVTK_INCLUDE_DIR}")
   if(QVTK_FOUND)
     include_directories(${QVTK_INCLUDE_DIR})
     add_subdirectory(src/tools/lvr2_viewer)
@@ -506,6 +508,7 @@ set(LVR2_LIB_DEPENDENCIES
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_IOSTREAMS_LIBRARY}
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARIES}
     ${GDAL_LIBRARY}
@@ -571,7 +574,7 @@ add_subdirectory(src/tools/lvr2_kaboom)
 add_subdirectory(src/tools/lvr2_octree_test)
 add_subdirectory(src/tools/lvr2_image_normals)
 add_subdirectory(src/tools/lvr2_plymerger)
-add_subdirectory(src/tools/lvr2_hdf5_builder)
+# add_subdirectory(src/tools/lvr2_hdf5_builder)
 add_subdirectory(src/tools/lvr2_hdf5_builder_2)
 add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
 add_subdirectory(src/tools/lvr2_slam2hdf5)
@@ -580,6 +583,7 @@ add_subdirectory(src/tools/lvr2_slam6d_merger)
 add_subdirectory(src/tools/lvr2_chunking)
 add_subdirectory(src/tools/lvr2_registration)
 add_subdirectory(src/tools/lvr2_mesh_reducer)
+add_subdirectory(src/tools/lvr2_chunking_server)
 
 if (RiVLib_FOUND)
     #add_subdirectory(src/tools/lvr2_riegl_project_converter)
