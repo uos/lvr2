@@ -33,7 +33,11 @@
 #include "lvr2/geometry/BaseVector.hpp"
 #include <random>
 #include <string>
+#include <lvr2/io/hdf5/ScanIO.hpp>
+#include <boost/filesystem.hpp>
 #include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/ScanProjectIO.hpp"
+#include "lvr2/io/ScanIOUtils.hpp"
 
 using std::cout;
 using std::endl;
@@ -55,6 +59,13 @@ typedef ClSurface GpuSurface;
 #endif
 
 using Vec = lvr2::BaseVector<float>;
+// using ScanHDF5IO = lvr2::Hdf5Build<lvr2::hdf5features::ScanIO>;
+
+using BaseHDF5IO = lvr2::Hdf5IO<>;
+
+// Extend IO with features (dependencies are automatically fetched)
+using HDF5IO = BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO>;
+
 int main(int argc, char** argv)
 {
     // =======================================================================
@@ -76,66 +87,89 @@ int main(int argc, char** argv)
 
     string in = options.getInputFileName()[0];
 
-    LargeScaleReconstruction<Vec> lsr(options);
-
-    std::vector<ScanPtr> scans;
-
-
-    std::vector<ScanPtr> h5scans;
-    //std::vector<ScanPtr> scans_new;
+    boost::filesystem::path selectedFile(in);
+    string extension = selectedFile.extension().string();
 
 
-    //scans_new.push_back(scans.front());
+    LargeScaleReconstruction<Vec> lsr(options.getVoxelSizes(), options.getBGVoxelsize(), options.getScaling(),
+                                      options.getNodeSize(), options.getPartMethod(), options.getKi(), options.getKd(), options.getKn(),
+                                      options.useRansac(), options.getFlippoint(), options.extrude(), options.getDanglingArtifacts(),
+                                      options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
+                                      options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
+                                      options.retesselate(), options.getLineFusionThreshold(), options.getBigMesh(), options.getDebugChunks(), options.useGPU());
 
-    //scans.erase(scans.begin());
-
-    //BoundingBox<Vec> bb1(Vec(-200, -200, -100),Vec(0, 200, 180));
-    //BoundingBox<Vec> bb2(Vec(60, -200, -100),Vec(200, 200, 180));
-    //scans.front()->m_globalBoundingBox = bb1;
-
-
-
-   // if(bb1.overlap(bb2)) {
-   //     cout << "didnt work!" << endl;
-  //      return 0;
-   //}
-
-
-   ScanProjectEditMarkPtr project(new ScanProjectEditMark);
-
-    cout << "didnt work!" << endl;
-   vector<bool> diff;
-
-   diff.push_back(true);
-    diff.push_back(true);
-    diff.push_back(true);
-    cout << "didnt work!" << endl;
-    project->changed.push_back(true);
-    project->changed.push_back(true);
-    project->changed.push_back(true);
-    cout << "didnt work!" << endl;
     
-   for(auto mark : project->changed)
-   {
-       std::cout << mark;
-   }
 
-   lsr.resetEditMark(project);
 
-    for(auto mark : project->changed)
+    ScanProjectEditMarkPtr project(new ScanProjectEditMark);
+    std::shared_ptr<ChunkHashGrid> cm;
+    BoundingBox<Vec> boundingBox;
+
+    if (extension == ".h5")
     {
-        std::cout << mark;
+        // loadAllPreviewsFromHDF5(in, *project->project.get());
+        HDF5IO hdf;
+        hdf.open(in);
+        ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
+        project->project = scanProjectPtr;
+
+        for (int i = 0; i < project->project->positions.size(); i++)
+        {
+            project->changed.push_back(true);
+        }
+        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(in, 50, boundingBox, options.getChunkSize()));
+    }
+    else
+    {
+        project->project = ScanProjectPtr(new ScanProject);
+        if(!boost::filesystem::is_directory(selectedFile))
+        {
+            ModelPtr model = ModelFactory::readModel(in);
+            ScanPtr scan(new Scan);
+
+            scan->points = model->m_pointCloud;
+            ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
+            scanPosPtr->scans.push_back(scan);
+            project->project->positions.push_back(scanPosPtr);
+            project->changed.push_back(true);
+        }
+        else{
+            boost::filesystem::directory_iterator it{in};
+            while (it != boost::filesystem::directory_iterator{})
+            {
+                cout << it->path().string() << endl;
+                string ext = it->path().extension().string();
+                if(ext == ".ply")
+                {
+                    ModelPtr model = ModelFactory::readModel(it->path().string());
+                    ScanPtr scan(new Scan);
+
+                    scan->points = model->m_pointCloud;
+                    ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
+                    scanPosPtr->scans.push_back(scan);
+                    project->project->positions.push_back(scanPosPtr);
+                    project->changed.push_back(true);
+                }
+                it++;
+            }
+
+
+        }
+
+        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid("chunked_mesh.h5", 50, boundingBox, options.getChunkSize()));
     }
 
 
+    BoundingBox<Vec> bb;
+    int x = lsr.mpiChunkAndReconstruct(project, bb, cm);
 
+    if(options.getDebugChunks())
+    {
 
-
-    //int x = lsr.mpiChunkAndReconstruct(project);
-
-    //scans_new.front()->m_globalBoundingBox = bb2;
-
-    //int y = lsr.mpiChunkAndReconstruct(scans, scans_new);
+        for (int i; i < options.getVoxelSizes().size(); i++) {
+            lsr.getPartialReconstruct(bb, cm, options.getVoxelSizes()[i]);
+        }
+    }
 
     cout << "Program end." << endl;
 

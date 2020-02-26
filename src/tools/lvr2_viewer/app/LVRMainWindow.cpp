@@ -52,6 +52,9 @@
 #include <vtkCamera.h>
 #include <vtkDefaultPass.h>
 
+#include "../vtkBridge/LVRChunkedMeshBridge.hpp"
+#include "../vtkBridge/LVRChunkedMeshCuller.hpp"
+
 
 #include <QString>
 
@@ -971,6 +974,20 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 
             if (info.suffix() == "h5")
             {
+                std::cout << info.absoluteFilePath().toStdString() << std::endl;
+                LVRChunkedMeshBridge* chunkBridge = new LVRChunkedMeshBridge(info.absoluteFilePath().toStdString());
+                chunkBridge->addInitialActors(m_renderer);
+                ChunkedMeshCuller* chunkCuller = new ChunkedMeshCuller(chunkBridge);
+                m_renderer->AddCuller(chunkCuller);
+                Vector3d cam_origin(0.0, 0.0, -1.0);
+                Vector3d view_up(1.0, 0.0, 0.0);
+                Vector3d focal_point(0.0, 0.0, 0.0);
+                m_renderer->GetActiveCamera()->SetPosition(cam_origin.x(), cam_origin.y(), cam_origin.z());
+                m_renderer->GetActiveCamera()->SetFocalPoint(focal_point.x(), focal_point.y(), focal_point.z());
+                m_renderer->GetActiveCamera()->SetViewUp(view_up.x(), view_up.y(), view_up.z());
+
+
+                return;
                 // h5 special loading case
                 // special case h5:
                 // scan data is stored as 
@@ -1670,7 +1687,7 @@ QTreeWidgetItem* LVRMainWindow::addScans(std::shared_ptr<ScanDataManager> sdm, Q
     for (size_t i = 0; i < scans.size(); i++)
     {
         char buf[128];
-        std::sprintf(buf, "%05d", scans[i]->m_positionNumber);
+        std::sprintf(buf, "%05d", scans[i]->positionNumber);
         LVRScanDataItem *item = new LVRScanDataItem(scans[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
 
         if(cam_data_available && camData[i].size() > 0)
