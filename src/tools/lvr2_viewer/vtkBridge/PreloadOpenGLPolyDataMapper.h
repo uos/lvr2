@@ -1,3 +1,5 @@
+#ifndef PRELOAD_OPENGL_POLYDATA_MAPPER_H_
+#define PRELOAD_OPENGL_POLYDATA_MAPPER_H_
 #include <vtkNew.h>
 
 #include <vtkOpenGLPolyDataMapper.h>
@@ -32,4 +34,4 @@ class VTKRENDERINGOPENGL2_EXPORT PreloadOpenGLPolyDataMapper : public vtkOpenGLP
         virtual ~PreloadOpenGLPolyDataMapper() ;
 
 };
-       
+#endif       

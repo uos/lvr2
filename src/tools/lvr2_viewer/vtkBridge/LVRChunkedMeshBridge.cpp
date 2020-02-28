@@ -3,7 +3,6 @@
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
 #include <vtkCellArray.h>
-//#include <PreloadOpenGLPolyDataMapper.h>
 #include <vtkPoints.h>
 #include <vtkActor.h>
 #include <vtkTriangle.h>
@@ -17,12 +16,17 @@
 
 #include "LVRBoundingBoxBridge.hpp"
 #include <vtkXOpenGLRenderWindow.h>
-#include "PreloadOpenGLPolyDataMapper.h"
 #include <vtkGPUInfo.h>
 #include <vtkGPUInfoList.h>
 #include <omp.h>
-
+#ifdef LVR2_USE_VTK8
+#include "PreloadOpenGLPolyDataMapper.h"
+#else
+#include <vtkPolyDataMapper.h>
+#endif
 #include "GL/glx.h"
+
+#include <vtkPolyDataMapper.h>
 
 #include <chrono>
 #include <queue>
@@ -477,7 +481,11 @@ vtkSmartPointer<vtkActor> LVRChunkedMeshBridge::computeMeshActor(size_t& id, Mes
             mesh->GetPointData()->SetScalars(scalars);
         }
 
+        #ifdef LVR2_USE_VTK8
         vtkSmartPointer<PreloadOpenGLPolyDataMapper> mesh_mapper = vtkSmartPointer<PreloadOpenGLPolyDataMapper>::New();
+        #else
+        vtkSmartPointer<vtkPolyDataMapper> mesh_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+        #endif
         #ifdef LVR2_USE_VTK5
         mesh_mapper->SetInput(mesh);
         #else
@@ -485,7 +493,12 @@ vtkSmartPointer<vtkActor> LVRChunkedMeshBridge::computeMeshActor(size_t& id, Mes
         #endif
         meshActor->SetMapper(mesh_mapper);
         meshActor->GetProperty()->BackfaceCullingOff();
+        #ifdef LVR2_USE_VTK8
         vtkSmartPointer<PreloadOpenGLPolyDataMapper> wireframe_mapper = vtkSmartPointer<PreloadOpenGLPolyDataMapper>::New();
+        #else
+        vtkSmartPointer<vtkPolyDataMapper> wireframe_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+        #endif
+
         #ifdef LVR2_USE_VTK5
         wireframe_mapper->SetInput(mesh);
         #else
@@ -515,7 +528,9 @@ vtkSmartPointer<vtkActor> LVRChunkedMeshBridge::computeMeshActor(size_t& id, Mes
 
         //setBaseColor(0.9, 0.9, 0.9);
         //meshActor->setID(id);
-        mesh_mapper->CopyToMem(m_renderer.Get(), meshActor.Get());
+        #ifdef LVR2_USE_VTK8
+            mesh_mapper->CopyToMem(m_renderer.Get(), meshActor.Get());
+        #endif
 
     }
 

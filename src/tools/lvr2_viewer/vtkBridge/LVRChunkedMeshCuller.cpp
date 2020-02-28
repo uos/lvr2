@@ -1,7 +1,7 @@
 
 #include "LVRChunkedMeshCuller.hpp"
 
-#include "MeshChunkActor.hpp"
+//#include "MeshChunkActor.hpp"
 
 #include "LVRBoundingBoxBridge.hpp"
 
