@@ -114,6 +114,7 @@ void VirtualGrid<BaseVecT>::generateNeighbours()
                         BaseVecT(first.getMax().x + i * m_gridCellSize,
                                  first.getMax().y + j * m_gridCellSize,
                                  first.getMax().z + h * m_gridCellSize));
+
                 m_boxes.push_back(next);
                 if(!timestamp.isQuiet())
                     ++progress;

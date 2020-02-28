@@ -160,39 +160,31 @@ namespace lvr2
         {
             BoundingBox<BaseVecT> partbb = bg.getpartialBB();
             cout << lvr2::timestamp << "generating VGrid" << endl;
+
             VirtualGrid<BaseVecT> vGrid(
                     bg.getpartialBB(), m_chunkSize, m_bgVoxelSize);
             vGrid.calculateBoxes();
-            ofstream partBoxOfs("BoundingBoxes.ser");
             partitionBoxes = vGrid.getBoxes();
             BaseVecT addMin = BaseVecT(std::floor(partbb.getMin().x / m_chunkSize) * m_chunkSize, std::floor(partbb.getMin().y / m_chunkSize) * m_chunkSize, std::floor(partbb.getMin().z / m_chunkSize) * m_chunkSize);
             BaseVecT addMax = BaseVecT(std::ceil(partbb.getMax().x / m_chunkSize) * m_chunkSize, std::ceil(partbb.getMax().y / m_chunkSize) * m_chunkSize, std::ceil(partbb.getMax().z / m_chunkSize) * m_chunkSize);
             newChunksBB.expand(addMin);
             newChunksBB.expand(addMax);
-            /*for (size_t i = 0; i < vGrid.getBoxes().size(); i++)
-            {
-                BoundingBox<BaseVecT> partBB = *vGrid.getBoxes().at(i).get();
-                //cmBB.expand(partBB);
-                newChunksBB.expand(partBB);
-                //partitionBoxes.push_back(partBB);
-                partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
-                           << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
-                           << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
-            }*/
             cout << lvr2::timestamp << "finished vGrid" << endl;
             std::cout << lvr2::timestamp << "got: " << partitionBoxes->size() << " Chunks"
                       << std::endl;
         }
         else
         {
+
             cout << lvr2::timestamp << "generating tree" << endl;
             BigGridKdTree<BaseVecT> gridKd(bg.getBB(), m_nodeSize, &bg, m_bgVoxelSize);
             gridKd.insert(bg.pointSize(), bg.getBB().getCentroid());
             ofstream partBoxOfs("KdTree.ser");
+            partitionBoxes = shared_ptr<vector<BoundingBox<BaseVecT>>>(new vector<BoundingBox<BaseVecT>>(gridKd.getLeafs().size()));
             for (size_t i = 0; i < gridKd.getLeafs().size(); i++)
             {
                 BoundingBox<BaseVecT> partBB = gridKd.getLeafs()[i]->getBB();
-                partitionBoxes->push_back(partBB);
+                partitionBoxes->at(i) = partBB;
                 partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
                            << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
                            << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
@@ -224,6 +216,7 @@ namespace lvr2
 
         uint partitionBoxesSkipped = 0;
 
+
         for(int h = 0; h < m_voxelSizes.size(); h++)
         {
             // vector to save the new chunk names - which chunks have to be reconstructed
@@ -231,6 +224,9 @@ namespace lvr2
 
             string layerName = "tsdf_values_" + std::to_string(m_voxelSizes[h]);
             //create chunks
+
+            //vector to store relevant chunks as .ser
+            vector<string> grid_files;
             for (int i = 0; i < partitionBoxes->size(); i++)
             {
                 string name_id;
@@ -358,38 +354,48 @@ namespace lvr2
                 ps_grid->calcIndices();
                 ps_grid->calcDistanceValues();
 
-
-                unsigned long timeStart = lvr2::timestamp.getCurrentTimeInMs();
-                int x = (int)floor(partitionBoxes->at(i).getCentroid().x / m_chunkSize);
-                int y = (int)floor(partitionBoxes->at(i).getCentroid().y / m_chunkSize);
-                int z = (int)floor(partitionBoxes->at(i).getCentroid().z / m_chunkSize);
-
-
-                addTSDFChunkManager(x, y, z, ps_grid, chunkManager, layerName);
-                BaseVector<int> chunkCoordinates(x, y, z);
-                // also save the grid coordinates of the chunk added to the ChunkManager
-                newChunks.push_back(chunkCoordinates);
-                // also save the "real" bounding box without overlap
-                partitionBoxesNew.push_back(partitionBoxes->at(i));
-
-                unsigned long timeEnd = lvr2::timestamp.getCurrentTimeInMs();
-
-                timeSum += timeEnd - timeStart;
-
-                // save the mesh of the chunk
-
-                if(m_debugChunks && h == 0)
+                if(m_partMethod == 0) {
+                    std::stringstream ss2;
+                    ss2 << name_id << ".ser";
+                    ps_grid->saveCells(ss2.str());
+                    grid_files.push_back(ss2.str());
+                }
+                else
                 {
-                    auto reconstruction =
-                            make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
-                    lvr2::HalfEdgeMesh<Vec> mesh;
-                    reconstruction->getMesh(mesh);
-                    if(mesh.numVertices() > 0 && mesh.numFaces() > 0)
+
+
+                    unsigned long timeStart = lvr2::timestamp.getCurrentTimeInMs();
+                    int x = (int)floor(partitionBoxes->at(i).getCentroid().x / m_chunkSize);
+                    int y = (int)floor(partitionBoxes->at(i).getCentroid().y / m_chunkSize);
+                    int z = (int)floor(partitionBoxes->at(i).getCentroid().z / m_chunkSize);
+
+
+                    addTSDFChunkManager(x, y, z, ps_grid, chunkManager, layerName);
+                    BaseVector<int> chunkCoordinates(x, y, z);
+                    // also save the grid coordinates of the chunk added to the ChunkManager
+                    newChunks.push_back(chunkCoordinates);
+                    // also save the "real" bounding box without overlap
+                    partitionBoxesNew.push_back(partitionBoxes->at(i));
+
+                    unsigned long timeEnd = lvr2::timestamp.getCurrentTimeInMs();
+
+                    timeSum += timeEnd - timeStart;
+
+                    // save the mesh of the chunk
+
+                    if(m_debugChunks && h == 0)
                     {
-                        lvr2::SimpleFinalizer<Vec> finalize;
-                        auto meshBuffer = MeshBufferPtr(finalize.apply(mesh));
-                        auto m = ModelPtr(new Model(meshBuffer));
-                        ModelFactory::saveModel(m, name_id + ".ply");
+                        auto reconstruction =
+                                make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
+                        lvr2::HalfEdgeMesh<Vec> mesh;
+                        reconstruction->getMesh(mesh);
+                        if(mesh.numVertices() > 0 && mesh.numFaces() > 0)
+                        {
+                            lvr2::SimpleFinalizer<Vec> finalize;
+                            auto meshBuffer = MeshBufferPtr(finalize.apply(mesh));
+                            auto m = ModelPtr(new Model(meshBuffer));
+                            ModelFactory::saveModel(m, name_id + ".ply");
+                        }
                     }
                 }
             }
@@ -398,7 +404,7 @@ namespace lvr2
             cout << "ChunkManagerIO Time: " <<(double) (timeSum / 1000.0) << " s" << endl;
             cout << lvr2::timestamp << "finished" << endl;
 
-            if(m_bigMesh && h == 0)
+            if(m_bigMesh && h == 0 && m_partMethod == 1)
             {
                 //combine chunks
                 auto vmax = cbb.getMax();
@@ -415,7 +421,6 @@ namespace lvr2
                 // auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(grid_files, cbb, m_voxelSize);
                 // don't read from HDF5 - get the chunks from the ChunkManager
                 // auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(m_filePath, newChunks, cbb);
-
                 // TODO: don't do the following reconstruction in ChunkingPipline-Workflow (put it in extra function for lsr_tool)
                 std::vector<PointBufferPtr> tsdfChunks;
                 for (BaseVector<int> coord : newChunks) {
@@ -492,6 +497,75 @@ namespace lvr2
 
                 auto m = ModelPtr(new Model(meshBuffer));
                 ModelFactory::saveModel(m, largeScale.str());
+            }
+            if(m_partMethod == 0)
+            {
+                auto vmax = cbb.getMax();
+                auto vmin = cbb.getMin();
+                vmin.x -= m_bgVoxelSize * 2;
+                vmin.y -= m_bgVoxelSize * 2;
+                vmin.z -= m_bgVoxelSize * 2;
+                vmax.x += m_bgVoxelSize * 2;
+                vmax.y += m_bgVoxelSize * 2;
+                vmax.z += m_bgVoxelSize * 2;
+                cbb.expand(vmin);
+                cbb.expand(vmax);
+
+                auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(grid_files, cbb, m_voxelSizes[h]);
+
+                auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(hg);
+
+                lvr2::HalfEdgeMesh<Vec> mesh;
+
+                reconstruction->getMesh(mesh);
+
+                if (m_removeDanglingArtifacts)
+                {
+                    cout << timestamp << "Removing dangling artifacts" << endl;
+                    removeDanglingCluster(mesh, static_cast<size_t>(m_removeDanglingArtifacts));
+                }
+
+                // Magic number from lvr1 `cleanContours`...
+                cleanContours(mesh, m_cleanContours, 0.0001);
+
+                // Fill small holes if requested
+                if (m_fillHoles)
+                {
+                    naiveFillSmallHoles(mesh, m_fillHoles, false);
+                }
+
+                // Calculate normals for vertices
+                auto faceNormals = calcFaceNormals(mesh);
+
+                ClusterBiMap<FaceHandle> clusterBiMap;
+                if (m_optimizePlanes) {
+                    clusterBiMap = iterativePlanarClusterGrowing(mesh,
+                                                                 faceNormals,
+                                                                 m_planeNormalThreshold,
+                                                                 m_planeIterations,
+                                                                 m_minPlaneSize);
+
+                    if (m_smallRegionThreshold > 0) {
+                        deleteSmallPlanarCluster(
+                                mesh, clusterBiMap, static_cast<size_t>(m_smallRegionThreshold));
+                    }
+
+                    double end_s = lvr2::timestamp.getElapsedTimeInS();
+
+                    if (m_retesselate) {
+                        Tesselator<Vec>::apply(
+                                mesh, clusterBiMap, faceNormals, m_lineFusionThreshold);
+                    }
+                } else {
+                    clusterBiMap = planarClusterGrowing(mesh, faceNormals, m_planeNormalThreshold);
+                }
+
+                // Finalize mesh
+                lvr2::SimpleFinalizer<Vec> finalize;
+                auto meshBuffer = finalize.apply(mesh);
+
+                auto m = ModelPtr(new Model(meshBuffer));
+                ModelFactory::saveModel(m, "largeScale.ply");
             }
             std::cout << lvr2::timestamp << "added/changed " << newChunks.size() << " chunks in layer " << layerName << std::endl;
         }
