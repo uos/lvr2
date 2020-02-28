@@ -1743,6 +1743,11 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
 
     QStringList filenames;
     viewer::Options options(argc, argv);
+    if(options.printUsage())
+    {
+        exit(0);
+    }
+
     std::vector<std::string> files;
     files = options.getInputFiles();
     for(int i = 0; i < files.size(); i++)

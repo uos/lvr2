@@ -101,7 +101,6 @@
 
 #include "../vtkBridge/LVRChunkedMeshBridge.hpp"
 #include "../vtkBridge/LVRChunkedMeshCuller.hpp"
-#include "../vtkBridge/MeshChunkActor.hpp"
 
 using std::vector;
 using std::cout;

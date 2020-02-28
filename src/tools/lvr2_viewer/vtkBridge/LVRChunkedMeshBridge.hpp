@@ -20,7 +20,7 @@
 
 #include <string>
 
-#include "MeshChunkActor.hpp"
+//#include "MeshChunkActor.hpp"
 
 #include <mutex>
 #include <thread>
