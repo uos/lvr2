@@ -51,6 +51,8 @@
 #include <vtkOpenGLRenderer.h>
 #include <vtkNew.h>
 
+#include <vtkCullerCollection.h>
+
 // EDL shading is only available in new vtk versions
 #ifdef LVR2_USE_VTK_GE_7_1
 #include <vtkEDLShading.h>
@@ -97,6 +99,9 @@
 #include <set>
 #include <boost/format.hpp>
 
+#include "../vtkBridge/LVRChunkedMeshBridge.hpp"
+#include "../vtkBridge/LVRChunkedMeshCuller.hpp"
+
 using std::vector;
 using std::cout;
 using std::endl;
@@ -114,10 +119,18 @@ public:
      */
     LVRMainWindow();
     virtual ~LVRMainWindow();
+    std::mutex display_mutex;
 
 public Q_SLOTS:
+    void updateDisplayLists(actorMap lowRes, actorMap highRes);
+            
+            //std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > lowResActors,
+            //                std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > highResActors);
+
+
     void loadModel();
     void loadModels(const QStringList& filenames);
+    void loadChunkedMesh(const QStringList& filenames, std::vector<std::string> layers, int cacheSize, float highResDistance);
     void manualICP();
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);
@@ -238,6 +251,9 @@ private:
     vtkSmartPointer<vtkOrientationMarkerWidget> m_axesWidget;
     vtkSmartPointer<vtkAxesActor>               m_axes;
 
+    std::unique_ptr<LVRChunkedMeshBridge> m_chunkBridge;
+//    vtkSmartPointer<ChunkedMeshCuller> m_chunkCuller;
+    ChunkedMeshCuller* m_chunkCuller;
     QMenu*                                      m_treeParentItemContextMenu;
     QMenu*                                      m_treeChildItemContextMenu;
 
