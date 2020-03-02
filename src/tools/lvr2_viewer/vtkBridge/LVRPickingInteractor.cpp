@@ -46,13 +46,34 @@
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
 #include <vtkActor.h>
+
+#include <vtkActorCollection.h>
+#include <vtkCubeSource.h>
+#include <vtkPlanes.h>
+#include <vtkAreaPicker.h>
+#include <vtkVertexGlyphFilter.h>
+#include <vtkVersion.h>
+#include <vtkPointData.h>
+#include <vtkIdTypeArray.h>
+#include <vtkDataSetSurfaceFilter.h>
+#include <vtkPolyLine.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointSource.h>
+#include <vtkExtractGeometry.h>
+#include <vtkDataSetMapper.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkIdFilter.h>
 
 namespace lvr2
 {
 
-LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer) :
-    m_renderer(renderer), m_motionFactor(50), m_rotationFactor(20), m_interactorMode(TRACKBALL)
+vtkStandardNewMacro(LVRPickingInteractor);
+
+LVRPickingInteractor::LVRPickingInteractor() :
+//LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer) :
+   m_motionFactor(50), m_rotationFactor(20), m_interactorMode(TRACKBALL)
 {
     m_startCameraMovePosition[0] = 0;
     m_startCameraMovePosition[1] = 0;
@@ -74,8 +95,15 @@ LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer
     m_textActor->SetTextProperty(p);
     m_textActor->SetInput("Pick a point...");
     m_textActor->VisibilityOff();
-    m_renderer->AddActor(m_textActor);
 
+}
+
+
+void LVRPickingInteractor::setRenderer(vtkSmartPointer<vtkRenderer> renderer)
+{
+
+    m_renderer = renderer;
+    m_renderer->AddActor(m_textActor);
     // Create a sphere actor to represent the current focal point
     vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
     sphereSource->SetCenter(0.0, 0.0, 0.0);
@@ -90,6 +118,7 @@ LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(sphereSource->GetOutputPort());
 
+    m_selectionPoints = vtkSmartPointer<vtkPoints>::New();
     m_sphereActor = vtkSmartPointer<vtkActor>::New();
     m_sphereActor->SetMapper(mapper);
     m_renderer->AddActor(m_sphereActor);
@@ -99,8 +128,8 @@ LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer
     m_sphereActor->SetPosition(focalPoint[0], focalPoint[1], focalPoint[2]);
 
     this->UseTimersOn();
-}
 
+}
 void LVRPickingInteractor::setStereoMode(int state)
 {
      vtkRenderWindowInteractor *rwi = this->Interactor;
@@ -1242,7 +1271,16 @@ void LVRPickingInteractor::correspondenceSearchOff()
     rwi->Render();
 }
 
-
+void LVRPickingInteractor::labelingOn()
+{
+	m_labelingMode = true;
+        m_pickMode = PickLabel;
+}
+void LVRPickingInteractor::labelingOff()
+{
+	m_labelingMode = false;
+        m_pickMode = None;
+}
 void LVRPickingInteractor::handlePicking()
 {
     vtkPointPicker* picker = (vtkPointPicker*)this->Interactor->GetPicker();
@@ -1302,6 +1340,88 @@ void LVRPickingInteractor::handlePicking()
         }
         m_pickMode = None;
     }
+    else if(m_pickMode == PickLabel)
+    {
+	    std::cout << "----------Picklabel----------" << std::endl;
+
+	if (m_cubeActor != nullptr)
+		m_renderer->RemoveActor(m_cubeActor);
+	if (m_polyActor != nullptr)
+		m_renderer->RemoveActor(m_polyActor);
+
+        int* pickPos = this->Interactor->GetEventPosition();
+        double* picked = new double[3];
+        picker->Pick(this->Interactor->GetEventPosition()[0],
+                this->Interactor->GetEventPosition()[1],
+                0,  // always zero.
+                this->Interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer());
+        picker->GetPickPosition(picked);
+	
+	std::cout << picked[0] <<" " << picked[0] <<" " <<  picked[0]<< std::endl;
+	m_selectionPoints->InsertNextPoint(picked[0], picked[1], picked[2]);
+	vtkSmartPointer<vtkPolyLine> polygon = vtkSmartPointer<vtkPolyLine>::New();
+	polygon->GetPointIds()->SetNumberOfIds(m_selectionPoints->GetNumberOfPoints());
+	for(unsigned int i = 0; i < m_selectionPoints->GetNumberOfPoints(); i++)
+	{
+		polygon->GetPointIds()->SetId(i,i);
+	}
+	vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
+	cells->InsertNextCell(polygon);
+
+	vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+	polyData->SetPoints(m_selectionPoints);
+	polyData->SetLines(cells);
+
+	m_polyActor = vtkSmartPointer<vtkActor>::New();
+	vtkSmartPointer<vtkPolyDataMapper> polyMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+	polyMapper->SetInputData(polyData);
+	m_polyActor->SetMapper(polyMapper);
+
+    	m_polyActor->GetProperty()->SetColor(0.5, 1.0, 0.5);
+	m_renderer->AddActor(m_polyActor);
+
+
+
+    /*Create Square
+	vtkSmartPointer<vtkCubeSource> cubeStartSource = vtkSmartPointer<vtkCubeSource>::New();
+    	cubeStartSource->SetBounds(picked[0], picked[0] + 0.1, picked[1], picked[1] + 0.1, picked[2], picked[2] + 0.1);
+    	vtkSmartPointer<vtkPolyDataMapper> cubeStartMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    	cubeStartMapper->SetInputConnection(cubeStartSource->GetOutputPort());
+
+	m_cubeActor = vtkSmartPointer<vtkActor>::New();
+    	m_cubeActor->SetMapper(cubeStartMapper);
+    	m_cubeActor->GetProperty()->SetColor(0.5, 1.0, 0.5);
+    	m_cubeActor->GetProperty()->SetOpacity(0.2);
+*/
+
+	if (m_renderer != nullptr)
+	{
+		/*
+    		m_renderer->AddActor(m_cubeActor);
+		vtkSmartPointer<vtkActorCollection> actorCollection = vtkSmartPointer<vtkActorCollection>::New();
+		actorCollection = m_renderer->GetActors();
+
+		
+		double* test = new double[3];
+		actorCollection->InitTraversal();
+		for(vtkIdType i = 0; i < actorCollection->GetNumberOfItems(); i++)
+		{
+			vtkActor* actor = actorCollection->GetNextActor();
+			actor->GetPosition(test);
+			cout << test[0] << test[1] << test[2] << endl;
+		}
+
+		*/
+	/*	while( actor != actorCollection->GetLastActor())
+		{
+			actor = actorCollection->GetNextActor();
+			cout << i++ << endl;
+		}*/
+	}
+
+
+
+    }
     else
     {
         int* pickPos = this->Interactor->GetEventPosition();
@@ -1331,6 +1451,12 @@ void LVRPickingInteractor::onLeftButtonDownTrackball()
     {
         return;
     }
+    if(m_labelingMode)
+    {
+	 //   std::cout << "Rubber Down" << std::endl;
+	  //  vtkInteractorStyleRubberBandPick::OnLeftButtonDown();
+	    //return;
+    }
 
     GrabFocus(this->EventCallbackCommand, nullptr);
     if (this->Interactor->GetShiftKey())
@@ -1359,6 +1485,53 @@ void LVRPickingInteractor::onLeftButtonDownTrackball()
 
 void LVRPickingInteractor::onLeftButtonUpTrackball()
 {
+    if(m_labelingMode)
+    {
+	    //std::cout << "Rubber Up" << std::endl;
+	   /* std::cout << m_points->GetNumberOfVerts() << std::endl;
+	    vtkInteractorStyleRubberBandPick::OnLeftButtonUp();
+ 	vtkPlanes* frustum = static_cast<vtkAreaPicker*>(this->GetInteractor()->GetPicker())->GetFrustum();
+
+      vtkSmartPointer<vtkExtractGeometry> extractGeometry =
+        vtkSmartPointer<vtkExtractGeometry>::New();
+      extractGeometry->SetImplicitFunction(frustum);
+      
+#if VTK_MAJOR_VERSION <= 5
+      extractGeometry->SetInput(m_points);
+#else
+      extractGeometry->SetInputData(m_points);
+#endif
+      extractGeometry->Update();
+
+      vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter =
+        vtkSmartPointer<vtkVertexGlyphFilter>::New();
+      glyphFilter->SetInputConnection(extractGeometry->GetOutputPort());
+      glyphFilter->Update();
+
+      vtkPolyData* selected = glyphFilter->GetOutput();
+      std::cout << "Selected " << selected->GetNumberOfPoints() << " points." << std::endl;
+      std::cout << "Selected " << selected->GetNumberOfCells() << " cells." << std::endl;
+#if VTK_MAJOR_VERSION <= 5
+      m_selectedMapper->SetInput(selected);
+#else
+      m_selectedMapper->SetInputData(selected);
+#endif
+      m_selectedMapper->ScalarVisibilityOff();
+
+      vtkIdTypeArray* ids = vtkIdTypeArray::SafeDownCast(selected->GetPointData()->GetArray("OriginalIds"));
+      for(vtkIdType i = 0; i < ids->GetNumberOfTuples(); i++)
+        {
+        std::cout << "Id " << i << " : " << ids->GetValue(i) << std::endl;
+        }
+        
+      m_selectedActor->GetProperty()->SetColor(1.0, 0.0, 0.0); //(R,G,B)
+      m_selectedActor->GetProperty()->SetPointSize(3);
+
+      m_renderer->AddActor(m_selectedActor);
+      //this->GetInteractor()->GetRenderWindow()->Render();
+      //this->HighlightProp(NULL);
+	    return;*/
+    }
     switch (this->State)
     {
     case VTKIS_DOLLY:
@@ -1532,6 +1705,121 @@ void LVRPickingInteractor::OnKeyDown()
         rwi->Render();
         m_pickMode = PickSecond;
     }
+    if(key == "k" && (m_cubeActor != nullptr))
+    {
+	double* oldBox = new double[6];
+	m_cubeActor->GetBounds(oldBox);
+
+	oldBox[3] += 0.1;
+	if (m_cubeActor != nullptr)
+		m_renderer->RemoveActor(m_cubeActor);
+
+    	//Create Square
+	vtkSmartPointer<vtkCubeSource> cubeStartSource = vtkSmartPointer<vtkCubeSource>::New();
+    	cubeStartSource->SetBounds(oldBox);
+    	vtkSmartPointer<vtkPolyDataMapper> cubeStartMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    	cubeStartMapper->SetInputConnection(cubeStartSource->GetOutputPort());
+
+	m_cubeActor = vtkSmartPointer<vtkActor>::New();
+    	m_cubeActor->SetMapper(cubeStartMapper);
+    	m_cubeActor->GetProperty()->SetColor(0.5, 1.0, 0.5);
+    	m_cubeActor->GetProperty()->SetOpacity(0.2);
+
+	if (m_renderer != nullptr)
+	{
+    		m_renderer->AddActor(m_cubeActor);
+	}
+    }
+    if(key == "j" && (m_cubeActor != nullptr))
+    {
+	double* oldBox = new double[6];
+	m_cubeActor->GetBounds(oldBox);
+
+	oldBox[1] += 0.1;
+	if (m_cubeActor != nullptr)
+		m_renderer->RemoveActor(m_cubeActor);
+
+    	//Create Square
+	vtkSmartPointer<vtkCubeSource> cubeStartSource = vtkSmartPointer<vtkCubeSource>::New();
+    	cubeStartSource->SetBounds(oldBox);
+    	vtkSmartPointer<vtkPolyDataMapper> cubeStartMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    	cubeStartMapper->SetInputConnection(cubeStartSource->GetOutputPort());
+
+	m_cubeActor = vtkSmartPointer<vtkActor>::New();
+    	m_cubeActor->SetMapper(cubeStartMapper);
+    	m_cubeActor->GetProperty()->SetColor(0.5, 1.0, 0.5);
+    	m_cubeActor->GetProperty()->SetOpacity(0.2);
+
+	if (m_renderer != nullptr)
+	{
+    		m_renderer->AddActor(m_cubeActor);
+	}
+    }
+    if(key == "l" && (m_cubeActor != nullptr))
+    {
+	double* oldBox = new double[6];
+	m_cubeActor->GetBounds(oldBox);
+
+	oldBox[5] += 0.1;
+	if (m_cubeActor != nullptr)
+		m_renderer->RemoveActor(m_cubeActor);
+
+    	//Create Square
+	vtkSmartPointer<vtkCubeSource> cubeStartSource = vtkSmartPointer<vtkCubeSource>::New();
+    	cubeStartSource->SetBounds(oldBox);
+    	vtkSmartPointer<vtkPolyDataMapper> cubeStartMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    	cubeStartMapper->SetInputConnection(cubeStartSource->GetOutputPort());
+
+	m_cubeActor = vtkSmartPointer<vtkActor>::New();
+    	m_cubeActor->SetMapper(cubeStartMapper);
+    	m_cubeActor->GetProperty()->SetColor(0.5, 1.0, 0.5);
+    	m_cubeActor->GetProperty()->SetOpacity(0.2);
+
+	if (m_renderer != nullptr)
+	{
+    		m_renderer->AddActor(m_cubeActor);
+	}
+    }
+    if(key == "Down" && (m_cubeActor != nullptr))
+    {
+	m_renderer->RemoveActor(m_cubeActor);
+
+
+    }
+    if(key == "Left" && (m_polyActor != nullptr))
+    {
+	double* oldBox = new double[6];
+	//m_cubeActor->GetBounds(oldBox);
+	m_polyActor->GetBounds(oldBox);
+
+	Q_EMIT(clusterSelected(oldBox));
+
+    }
+    if(key == "Up" && (m_cubeActor != nullptr))
+    {
+	double* oldBox = new double[6];
+	m_cubeActor->GetBounds(oldBox);
+
+	oldBox[4] += 0.1;
+	m_renderer->RemoveActor(m_cubeActor);
+
+
+    	//Create Square
+	vtkSmartPointer<vtkCubeSource> cubeStartSource = vtkSmartPointer<vtkCubeSource>::New();
+    	cubeStartSource->SetBounds(oldBox);
+    	vtkSmartPointer<vtkPolyDataMapper> cubeStartMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    	cubeStartMapper->SetInputConnection(cubeStartSource->GetOutputPort());
+
+	m_cubeActor = vtkSmartPointer<vtkActor>::New();
+    	m_cubeActor->SetMapper(cubeStartMapper);
+    	m_cubeActor->GetProperty()->SetColor(0.5, 1.0, 0.5);
+    	m_cubeActor->GetProperty()->SetOpacity(0.2);
+
+	if (m_renderer != nullptr)
+	{
+    		m_renderer->AddActor(m_cubeActor);
+	}
+    }
     if(key == "f")
     {
         pickFocalPoint();
@@ -1549,6 +1837,12 @@ void LVRPickingInteractor::OnKeyDown()
 
 void LVRPickingInteractor::OnChar()
 {
+    if(m_pickMode == PickLabel)
+    {
+//	std::cout << "RubberChar " << std::endl;
+//	vtkInteractorStyleRubberBandPick::OnChar();
+//	return;
+    }
     if(m_interactorMode == SHOOTER)
     {
         vtkRenderWindowInteractor *rwi = this->Interactor;
@@ -1600,6 +1894,7 @@ void LVRPickingInteractor::OnChar()
             break;
         }  
     }
+
     else
     {
         vtkInteractorStyle::OnChar();

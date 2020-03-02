@@ -35,13 +35,14 @@
 #include "LVRModelBridge.hpp"
 
 #include <vtkSmartPointer.h>
-#include <vtkPolyData.h>
 #include <vtkCellArray.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkPoints.h>
 #include <vtkActor.h>
 #include <vtkProperty.h>
 #include <vtkPointData.h>
+#include <vtkIdFilter.h>
+#include <vtkDataSetSurfaceFilter.h>
 
 #include "lvr2/util/Util.hpp"
 
@@ -50,6 +51,8 @@ namespace lvr2
 
 LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
 {
+
+    m_vtk_polyData = vtkSmartPointer<vtkPolyData>::New();
     // use all silders with channel 0
     m_useSpectralChannel.r = true;
     m_useSpectralChannel.g = true;
@@ -358,8 +361,9 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
     {
         m_pointCloudActor = vtkSmartPointer<vtkActor>::New();
 
+	vtkSmartPointer<vtkIdFilter> pointFilter = 
+		vtkSmartPointer<vtkIdFilter>::New();
         // Setup a poly data object
-        vtkSmartPointer<vtkPolyData>    vtk_polyData = vtkSmartPointer<vtkPolyData>::New();
         vtkSmartPointer<vtkPoints>      vtk_points = vtkSmartPointer<vtkPoints>::New();
         vtkSmartPointer<vtkCellArray>   vtk_cells = vtkSmartPointer<vtkCellArray>::New();
         m_vtk_normals = vtkSmartPointer<vtkDoubleArray>::New();
@@ -450,20 +454,41 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
             vtk_cells->InsertNextCell(1, &i);
         }
 
-        vtk_polyData->SetPoints(vtk_points);
-        vtk_polyData->SetVerts(vtk_cells);
+        m_vtk_polyData->SetPoints(vtk_points);
+        m_vtk_polyData->SetVerts(vtk_cells);
+
+	pointFilter->SetInputData(m_vtk_polyData);
+	
+#if VTK890
+	pointFilter->SetCellIdsArrayName("OriginalIds");
+	pointFilter->SetPointIdsArrayName("OriginalIds");
+#else
+	pointFilter->SetIdsArrayName("OriginalIds");
+#endif
+	pointFilter->Update();
+
+	vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter = 
+		vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
+	surfaceFilter->SetInputConnection(pointFilter->GetOutputPort());
+	surfaceFilter->Update();
+
+	m_vtk_polyData = surfaceFilter->GetOutput();
+
+
+
+	
 
         if(hasColors() || n_s_p)
         {
-            vtk_polyData->GetPointData()->SetScalars(scalars);
+            m_vtk_polyData->GetPointData()->SetScalars(scalars);
         }
 
         // Create poly data mapper and generate actor
         vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 #ifdef LVR2_USE_VTK5
-        mapper->SetInput(vtk_polyData);
+        mapper->SetInput(m_vtk_polyData);
 #else
-        mapper->SetInputData(vtk_polyData);
+        mapper->SetInputData(m_vtk_polyData);
 #endif
         m_pointCloudActor->SetMapper(mapper);
         m_pointCloudActor->GetProperty()->SetColor(1.0, 1.0, 1.0);
@@ -530,6 +555,10 @@ void LVRPointBufferBridge::setNormalsVisibility(bool visible)
     }
 }
 
+vtkSmartPointer<vtkPolyData> LVRPointBufferBridge::getPolyData()
+{
+	return m_vtk_polyData;
+}
 vtkSmartPointer<vtkActor> LVRPointBufferBridge::getPointCloudActor()
 {
     return m_pointCloudActor;
