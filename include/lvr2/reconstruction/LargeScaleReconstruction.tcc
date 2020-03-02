@@ -249,12 +249,12 @@ namespace lvr2
                 size_t numPoints;
 
                 // todo: okay?
-                floatArr points = bg.points(partitionBoxes->at(i).getMin().x,
-                                            partitionBoxes->at(i).getMin().y,
-                                            partitionBoxes->at(i).getMin().z,
-                                            partitionBoxes->at(i).getMax().x,
-                                            partitionBoxes->at(i).getMax().y,
-                                            partitionBoxes->at(i).getMax().z,
+                floatArr points = bg.points(partitionBoxes->at(i).getMin().x - m_bgVoxelSize *2,
+                                            partitionBoxes->at(i).getMin().y - m_bgVoxelSize *2,
+                                            partitionBoxes->at(i).getMin().z - m_bgVoxelSize *2,
+                                            partitionBoxes->at(i).getMax().x + m_bgVoxelSize *2,
+                                            partitionBoxes->at(i).getMax().y + m_bgVoxelSize *2,
+                                            partitionBoxes->at(i).getMax().z + m_bgVoxelSize *2,
                                             numPoints);
 
                 // remove chunks with less than 50 points
@@ -264,12 +264,12 @@ namespace lvr2
                     continue;
                 }
 
-                BaseVecT gridbb_min(partitionBoxes->at(i).getMin().x,
-                                    partitionBoxes->at(i).getMin().y,
-                                    partitionBoxes->at(i).getMin().z);
-                BaseVecT gridbb_max(partitionBoxes->at(i).getMax().x,
-                                    partitionBoxes->at(i).getMax().y,
-                                    partitionBoxes->at(i).getMax().z);
+                BaseVecT gridbb_min(partitionBoxes->at(i).getMin().x - m_bgVoxelSize *2,
+                                    partitionBoxes->at(i).getMin().y - m_bgVoxelSize *2,
+                                    partitionBoxes->at(i).getMin().z - m_bgVoxelSize *2);
+                BaseVecT gridbb_max(partitionBoxes->at(i).getMax().x + m_bgVoxelSize *2,
+                                    partitionBoxes->at(i).getMax().y + m_bgVoxelSize *2,
+                                    partitionBoxes->at(i).getMax().z + m_bgVoxelSize *2);
                 BoundingBox<BaseVecT> gridbb(gridbb_min, gridbb_max);
 
                 cout << "\n" <<  lvr2::timestamp <<"grid: " << i << "/" << partitionBoxes->size() - 1 << endl;
