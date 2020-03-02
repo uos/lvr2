@@ -1,0 +1,11 @@
+--- lvr2-19.12.0.orig/CMakeLists.txt
++++ lvr2-19.12.0/CMakeLists.txt
+@@ -569,7 +569,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR
+ install(FILES
+     CMakeModules/FindEigen3.cmake
+     CMakeModules/FindFLANN.cmake
+-    CMakeModules/FindLZ4.cmake
++    CMakeModules/FindLz4.cmake
+     CMakeModules/FindNabo.cmake
+     CMakeModules/FindOpenNI.cmake
+     CMakeModules/FindOpenNI2.cmake
