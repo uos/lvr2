@@ -18,9 +18,9 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
         ("chunkedMesh", boost::program_options::bool_switch()->default_value(false), "Is a chunked Mesh")
         ("inputFiles", value<std::vector<string>>()->multitoken(), "Input file names.")
         ("layers", value<std::vector<string>>()->multitoken(), "Input file names.")
-        ("chunkSize", value<float>()->default_value(10.0f), "Side length of chunks.")
-        ("cacheSize", value<int>()->default_value(200), "while loading the maximum number of chunks in RAM")
-        ("highResDistance", value<float>()->default_value(150.0f), "The distance of the far plane for the highResolution");
+        ("chunkSize", value<float>()->default_value(10.0f), "For chunked mesh. Side length of chunks.")
+        ("cacheSize", value<int>()->default_value(200), "Multilayer chunked mesh the maximum number of high resolution chunks in RAM")
+        ("highResDistance", value<float>()->default_value(150.0f), "The distance of the far plane for the high resolution");
 
     // Parse command line and generate variables map
     store(command_line_parser(argc, argv).options(m_descr).positional(m_posDescr).run(),

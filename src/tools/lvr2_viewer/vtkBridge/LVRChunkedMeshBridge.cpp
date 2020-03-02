@@ -16,79 +16,18 @@
 
 #include "LVRBoundingBoxBridge.hpp"
 #include <vtkXOpenGLRenderWindow.h>
-#include <vtkGPUInfo.h>
-#include <vtkGPUInfoList.h>
-#include <omp.h>
-#ifdef LVR2_USE_VTK8
-#include "PreloadOpenGLPolyDataMapper.h"
-#else
 #include <vtkPolyDataMapper.h>
-#endif
-#include "GL/glx.h"
 
-#include <vtkPolyDataMapper.h>
 
 #include <chrono>
 #include <queue>
 using namespace lvr2;
 
-// i don't know why but compiling breaks
-// if I include GL/glx.h in the header.
-// forward declaration does not work either
-// because XVisualinfo is an typedefed anonymous struct...
-GLXContext m_workerContext;
-XVisualInfo* vinfo;
-Window x_window;
-Display* display;
 
 LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtkRenderer> renderer, std::vector<std::string> layers, size_t cache_size) : m_chunkManager(file, cache_size), m_renderer(renderer), m_layers(layers), m_cacheSize(cache_size)
 {
     getNew_ = false;
     running_ = true;
-
-    vtkGPUInfoList* l = vtkGPUInfoList::New();
-    l->Probe();
-    if (l->GetNumberOfGPUs() > 0)
-    {
-        vtkGPUInfo* info = l->GetGPUInfo(0);
-        std::cout << "GPU Memory available: " << std::endl;
-        std::cout << info->GetDedicatedVideoMemory() << std::endl;
-        std::cout << info->GetSharedSystemMemory() << std::endl;
-    }
-    else
-    {
-        std::cout << "No gpu" << std::endl;
-    }
-
-    // get context opengl
-    // createSharedcontext  from current.
-    // this is needed for out of core loading data to vram.
-    vtkRenderWindow* window = m_renderer->GetRenderWindow();
-    if(window->IsA("vtkXOpenGLRenderWindow"))
-    {
-        std::cout << "VTKXOPENGL" << std::endl;
-        vtkXOpenGLRenderWindow* ogl_window = static_cast<vtkXOpenGLRenderWindow*>(window);
-        vinfo = ogl_window->GetDesiredVisualInfo();
-        if(vinfo != nullptr)
-        {
-            std::cout << "got visualinfo" << std::endl;
-        }
-
-        display = ogl_window->GetDisplayId();
-        if(display != nullptr)
-        {
-            std::cout << "got display" << std::endl;
-        }   
-        x_window = ogl_window->GetParentId();
-    }
-    GLXContext currentContext = glXGetCurrentContext();
-    if(currentContext!= nullptr)
-    {
-        std::cout << "Got the context" << std::endl;
-    }
-
-    m_workerContext = glXCreateContext(display, vinfo, currentContext, true);
-
     worker = std::thread(&LVRChunkedMeshBridge::highResWorker, this);
 
 }
@@ -96,12 +35,6 @@ LVRChunkedMeshBridge::LVRChunkedMeshBridge(std::string file, vtkSmartPointer<vtk
 
 void LVRChunkedMeshBridge::highResWorker()
 {
-    bool success = glXMakeCurrent(display, x_window, m_workerContext);
-    if(success)
-    {
-        std::cout << "MAKE CURRENT SUCCESS" << std::endl;
-    }
-
     while(running_)
     {
        std::unique_lock<std::mutex> l(mutex);
@@ -481,11 +414,8 @@ vtkSmartPointer<vtkActor> LVRChunkedMeshBridge::computeMeshActor(size_t& id, Mes
             mesh->GetPointData()->SetScalars(scalars);
         }
 
-        #ifdef LVR2_USE_VTK8
-        vtkSmartPointer<PreloadOpenGLPolyDataMapper> mesh_mapper = vtkSmartPointer<PreloadOpenGLPolyDataMapper>::New();
-        #else
         vtkSmartPointer<vtkPolyDataMapper> mesh_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-        #endif
+
         #ifdef LVR2_USE_VTK5
         mesh_mapper->SetInput(mesh);
         #else
@@ -493,11 +423,7 @@ vtkSmartPointer<vtkActor> LVRChunkedMeshBridge::computeMeshActor(size_t& id, Mes
         #endif
         meshActor->SetMapper(mesh_mapper);
         meshActor->GetProperty()->BackfaceCullingOff();
-        #ifdef LVR2_USE_VTK8
-        vtkSmartPointer<PreloadOpenGLPolyDataMapper> wireframe_mapper = vtkSmartPointer<PreloadOpenGLPolyDataMapper>::New();
-        #else
         vtkSmartPointer<vtkPolyDataMapper> wireframe_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-        #endif
 
         #ifdef LVR2_USE_VTK5
         wireframe_mapper->SetInput(mesh);
@@ -525,12 +451,10 @@ vtkSmartPointer<vtkActor> LVRChunkedMeshBridge::computeMeshActor(size_t& id, Mes
         //float inv_b = (float)1 - b;
         //p->SetColor(inv_r, inv_g, inv_b);
         //m_wireframeActor->SetProperty(p);
+        mesh_mapper->Update();
 
         //setBaseColor(0.9, 0.9, 0.9);
         //meshActor->setID(id);
-        #ifdef LVR2_USE_VTK8
-            mesh_mapper->CopyToMem(m_renderer.Get(), meshActor.Get());
-        #endif
 
     }
 

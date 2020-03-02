@@ -52,11 +52,11 @@ set(LVR2_VIEWER_SOURCES
     util/qttf.cpp
 )
 
-if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
-  list(APPEND LVR2_VIEWER_SOURCES
-    vtkBridge/PreloadOpenGLPolyDataMapper.cpp
-)
-endif()
+#if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
+#  list(APPEND LVR2_VIEWER_SOURCES
+#    vtkBridge/PreloadOpenGLPolyDataMapper.cpp
+#)
+#endif()
 
 #####################################################################################
 # Set mocs
