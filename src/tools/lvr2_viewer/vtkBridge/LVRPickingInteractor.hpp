@@ -39,19 +39,25 @@
 
 #include <vtkTextActor.h>
 #include <vtkInteractorStyleTrackballCamera.h>
+#include <vtkInteractorStyleRubberBandPick.h>
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
 #include <vtkMath.h>
+#include <vtkDataSetMapper.h>
 
 namespace lvr2
 {
 
 
-class LVRPickingInteractor : public QObject, public vtkInteractorStyle
+class LVRPickingInteractor : public QObject, public vtkInteractorStyleRubberBandPick
 {
     Q_OBJECT
 public:
-    LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer);
+    static LVRPickingInteractor* New();
+    LVRPickingInteractor();
+    vtkTypeMacro(LVRPickingInteractor, vtkInteractorStyleRubberBandPick);
+    void setRenderer(vtkSmartPointer<vtkRenderer> renderer);
+    //LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer);
     virtual ~LVRPickingInteractor();
 
     /**
@@ -101,6 +107,9 @@ public Q_SLOTS:
     void correspondenceSearchOn();
     void correspondenceSearchOff();
 
+    void labelingOn();
+    void labelingOff();
+
     void setMotionFactor(double factor);
     void setRotationFactor(double factor);
 
@@ -115,9 +124,12 @@ public Q_SLOTS:
 
     void resetCamera();
 
+    inline void setPoints(vtkSmartPointer<vtkPolyData> points){m_points = points;};
+
 
 
 Q_SIGNALS:
+    void clusterSelected(double*);
     void firstPointPicked(double*);
     void secondPointPicked(double*);
     void pointSelected(vtkActor*, int);
@@ -126,7 +138,7 @@ private:
 
     enum InteractorMode {TRACKBALL, SHOOTER, TERRAIN};
     enum ShooterMode {LOOK, HOVER};
-    enum PickMode {None, PickPoint, PickFirst, PickSecond, PickFocal};
+    enum PickMode {None, PickPoint, PickFirst, PickSecond, PickFocal, PickLabel};
 
     void handlePicking();
 
@@ -196,10 +208,17 @@ private:
     /// Text actor to display info if in picking mode
     vtkSmartPointer<vtkTextActor>   m_textActor;
     vtkSmartPointer<vtkActor>       m_sphereActor;
+    vtkSmartPointer<vtkActor>       m_cubeActor;
+    vtkSmartPointer<vtkActor>       m_polyActor;
+    vtkSmartPointer<vtkPoints>	    m_selectionPoints;
+    vtkSmartPointer<vtkPolyData> m_points;
+    vtkSmartPointer<vtkActor> m_selectedActor;
+    vtkSmartPointer<vtkDataSetMapper> m_selectedMapper;
 
     vtkSmartPointer<vtkRenderer>    m_renderer;
 
     bool                            m_correspondenceMode;
+    bool 			    m_labelingMode;
 
     unsigned int                    m_numberOfClicks;
     int                             m_previousPosition[2];

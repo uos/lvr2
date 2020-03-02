@@ -49,8 +49,11 @@
 #include <vtkActor.h>
 #include <vtkProperty.h>
 #include <vtkPointPicker.h>
+#include <vtkPointData.h>
+#include <vtkAreaPicker.h>
 #include <vtkCamera.h>
 #include <vtkDefaultPass.h>
+#include <vtkCubeSource.h>
 
 #include "../vtkBridge/LVRChunkedMeshBridge.hpp"
 #include "../vtkBridge/LVRChunkedMeshCuller.hpp"
@@ -72,6 +75,7 @@ LVRMainWindow::LVRMainWindow()
 
     // Init members
     m_correspondanceDialog = new LVRCorrespondanceDialog(treeWidget);
+    m_labelDialog = new LVRLabelDialog(treeWidget);
     m_incompatibilityBox = new QMessageBox();
     m_aboutDialog = new QDialog(this);
     Ui::AboutDialog aboutDialog;
@@ -168,6 +172,12 @@ LVRMainWindow::LVRMainWindow()
     // Toolbar item "Classification"
     m_actionSimple_Plane_Classification = this->actionSimple_Plane_Classification;
     m_actionFurniture_Recognition = this->actionFurniture_Recognition;
+
+    //Toolbar item "Labeling"
+    m_actionStart_labeling = this->actionStart_Labeling;
+    m_actionStop_labeling = this->actionStop_Labeling;
+    m_actionExtract_labeling = this->actionExport_Labeling;
+
     // Toolbar item "About"
     // TODO: Replace "About"-QMenu with "About"-QAction
     m_menuAbout = this->menuAbout;
@@ -211,8 +221,12 @@ LVRMainWindow::LVRMainWindow()
     m_gradientSlider = this->sliderGradientWavelength;
     m_gradientLineEdit = this->lineEditGradientWavelength;
 
-    vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
-    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
+    //vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
+
+    vtkSmartPointer<vtkAreaPicker> areaPicker = vtkSmartPointer<vtkAreaPicker>::New();
+
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(areaPicker);
+    //qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
 
 
    // Widget to display the coordinate system
@@ -233,6 +247,7 @@ LVRMainWindow::LVRMainWindow()
 #endif
 
     connectSignalsAndSlots();
+
 }
 
 LVRMainWindow::~LVRMainWindow()
@@ -391,6 +406,13 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(this->pushButtonFly , SIGNAL(pressed()), m_pickingInteractor, SLOT(modeShooter()));
 
 
+    QObject::connect(m_actionStart_labeling, SIGNAL(triggered()), this, SLOT(manualLabeling()));
+    QObject::connect(m_actionStop_labeling, SIGNAL(triggered()),this, SLOT(manualLabeling()));
+    QObject::connect(m_pickingInteractor, SIGNAL(clusterSelected(double*)), m_labelDialog, SLOT(insertNewCluster(double*)));
+    QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), this, SLOT(manualLabeling()));
+    QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), m_labelDialog, SLOT(labelPoints()));
+    QObject::connect(m_actionExtract_labeling, SIGNAL(triggered()), m_labelInteractor, SLOT(extractLabel()));
+    QObject::connect(m_labelDialog->m_ui->newClusterButton, SIGNAL(pressed()), m_pickingInteractor, SLOT(labelingOn()));
     QObject::connect(m_correspondanceDialog, SIGNAL(disableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
@@ -465,10 +487,16 @@ void LVRMainWindow::setupQVTK()
     m_camera = vtkSmartPointer<vtkCamera>::New();
 
     // Custom interactor to handle picking actions
-    m_pickingInteractor = new LVRPickingInteractor(m_renderer);
-    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
+    //m_pickingInteractor = new LVRPickingInteractor();
+    m_labelInteractor = LVRLabelInteractorStyle::New();
+    m_pickingInteractor = LVRPickingInteractor::New();
+    m_pickingInteractor->setRenderer(m_renderer);
 
-    vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
+    //qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_labelInteractor );
+
+    //vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
+    vtkSmartPointer<vtkAreaPicker> pointPicker = vtkSmartPointer<vtkAreaPicker>::New();
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
 
     // Camera and camera interpolator to be used for camera paths
@@ -1039,6 +1067,35 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
         restoreSliders();
         assertToggles();
         updateView();
+//-----
+//
+//
+//
+//
+//
+	vtkSmartPointer<vtkPolyData> pointsPolydata = 
+		vtkSmartPointer<vtkPolyData>::New();
+	vtkSmartPointer<vtkPoints> points = 
+		vtkSmartPointer<vtkPoints>::New();
+	QTreeWidgetItemIterator itu(treeWidget);
+	LVRPointCloudItem* citem;
+	
+	while (*itu)
+	{
+        	QTreeWidgetItem* item = *itu;
+
+		if ( item->type() == LVRPointCloudItemType)
+		{
+			citem = static_cast<LVRPointCloudItem*>(*itu);
+			points->SetData(citem->getPointBufferBridge()->getPointCloudActor()->GetMapper()->GetInput()->GetPointData()->GetScalars());
+
+
+			//pointsPolydata->SetPoints(citem->getPointBufferBridge()->getPolyData());
+			m_labelInteractor->SetPoints(citem->getPointBufferBridge()->getPolyData());
+		}
+		itu++;
+	}
+
     }
 }
 
@@ -1725,6 +1782,30 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
     loadModels(filenames);
 }
 
+void LVRMainWindow::manualLabeling()
+{
+	if(labeling)
+	{
+
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
+
+    vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
+
+
+	}else
+	{
+
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_labelInteractor );
+
+    vtkSmartPointer<vtkAreaPicker> AreaPicker = vtkSmartPointer<vtkAreaPicker>::New();
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(AreaPicker);
+
+
+
+	}
+	labeling = !labeling;
+}
 void LVRMainWindow::manualICP()
 {
     m_correspondanceDialog->fillComboBoxes();

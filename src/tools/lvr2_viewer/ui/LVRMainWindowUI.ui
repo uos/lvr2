@@ -675,6 +675,14 @@
     <addaction name="actionSimple_Plane_Classification"/>
     <addaction name="actionFurniture_Recognition"/>
    </widget>
+   <widget class="QMenu" name="menuLabel">
+    <property name="title">
+     <string>Labeling</string>
+    </property>
+    <addaction name="actionStart_Labeling"/>
+    <addaction name="actionStop_Labeling"/>
+    <addaction name="actionExport_Labeling"/>
+   </widget>
    <widget class="QMenu" name="menuRendering">
     <property name="title">
      <string>Rendering</string>
@@ -701,6 +709,7 @@
    <addaction name="menuFiltering"/>
    <addaction name="menuRegistration"/>
    <addaction name="menuClassification"/>
+   <addaction name="menuLabel"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QDockWidget" name="dockWidgetCamera">
@@ -1263,6 +1272,21 @@
   <action name="actionSimple_Plane_Classification">
    <property name="text">
     <string>Simple Plane Classification</string>
+   </property>
+  </action>
+  <action name="actionStart_Labeling">
+   <property name="text">
+    <string>Start Labeling</string>
+   </property>
+  </action>
+  <action name="actionStop_Labeling">
+   <property name="text">
+    <string>Stop Labeling</string>
+   </property>
+  </action>
+  <action name="actionExport_Labeling">
+   <property name="text">
+    <string>Export Labeling</string>
    </property>
   </action>
   <action name="actionFurniture_Recognition">
