@@ -13,6 +13,7 @@ set(LVR2_VIEWER_SOURCES
     app/LVRMain.cpp
     app/LVRMainWindow.cpp
     app/LVRTreeWidgetHelper.cpp
+    app/Options.cpp
     vtkBridge/LVRBoundingBoxBridge.cpp
     vtkBridge/LVRModelBridge.cpp
     vtkBridge/LVRPointBufferBridge.cpp
@@ -21,7 +22,6 @@ set(LVR2_VIEWER_SOURCES
     vtkBridge/LVRVtkArrow.cpp
     vtkBridge/LVRChunkedMeshCuller.cpp
     vtkBridge/LVRChunkedMeshBridge.cpp
-    vtkBridge/MeshChunkActor.cpp
     widgets/LVRModelItem.cpp
     widgets/LVRPointCloudItem.cpp
     widgets/LVRMeshItem.cpp
@@ -51,6 +51,12 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRGraphicsView.cpp
     util/qttf.cpp
 )
+
+#if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
+#  list(APPEND LVR2_VIEWER_SOURCES
+#    vtkBridge/PreloadOpenGLPolyDataMapper.cpp
+#)
+#endif()
 
 #####################################################################################
 # Set mocs
