@@ -1,0 +1,10 @@
+# Compulsory line, this is a version 4 file
+version=4
+
+# PGP signature mangle, so foo.tar.gz has foo.tar.gz.sig
+#opts="pgpsigurlmangle=s%$%.sig%"
+
+# GitHub hosted projects
+opts="filenamemangle=s%(?:.*?)?v?(\d[\d.]*)\.tar\.gz%lvr2-$1.tar.gz%" \
+   https://github.com/mawiegand/lvr2/tags \
+   (?:.*?/)?v?(\d[\d.]*)\.tar\.gz debian uupdate
