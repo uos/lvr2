@@ -66,6 +66,7 @@ Vector3d Metascan::point(size_t index) const
         }
         index -= scan->numPoints();
     }
+    return Vector3d();
 }
 
 void Metascan::addScan(SLAMScanPtr scan)

@@ -13,6 +13,7 @@ set(LVR2_VIEWER_SOURCES
     app/LVRMain.cpp
     app/LVRMainWindow.cpp
     app/LVRTreeWidgetHelper.cpp
+    app/Options.cpp
     vtkBridge/LVRBoundingBoxBridge.cpp
     vtkBridge/LVRModelBridge.cpp
     vtkBridge/LVRPointBufferBridge.cpp
@@ -21,7 +22,6 @@ set(LVR2_VIEWER_SOURCES
     vtkBridge/LVRVtkArrow.cpp
     vtkBridge/LVRChunkedMeshCuller.cpp
     vtkBridge/LVRChunkedMeshBridge.cpp
-    vtkBridge/MeshChunkActor.cpp
     widgets/LVRModelItem.cpp
     widgets/LVRPointCloudItem.cpp
     widgets/LVRMeshItem.cpp
@@ -51,6 +51,12 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRGraphicsView.cpp
     util/qttf.cpp
 )
+
+#if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
+#  list(APPEND LVR2_VIEWER_SOURCES
+#    vtkBridge/PreloadOpenGLPolyDataMapper.cpp
+#)
+#endif()
 
 #####################################################################################
 # Set mocs
@@ -129,7 +135,7 @@ add_definitions(${QT_DEFINITIONS})
 # Add current binary dir to includes to find the generated header files
 #####################################################################################
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR} widgets)
 
 #####################################################################################
 # Setup dependencies
@@ -140,14 +146,8 @@ set(LVR2_VIEWER_DEPENDENCIES
   lvr2rply_static
   lvr2las_static
   lvr2slam6d_static
-  ${OpenCV_LIBS}
+  ${LVR2_LIB_DEPENDENCIES}
   ${Qt5Widgets_LIBRARIES}
-  ${OPENGL_LIBRARIES}
-  ${GLUT_LIBRARIES}
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}
-  ${Boost_THREAD_LIBRARY}
-  ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${VTK_LIBRARIES}
   ${PCL_LIBRARIES}
 )

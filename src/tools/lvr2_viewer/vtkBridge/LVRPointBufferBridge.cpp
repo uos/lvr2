@@ -71,7 +71,7 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
     {
         // Save pc data
         m_pointBuffer = pointCloud;
-
+        
         if(pointCloud->hasColors()) m_hasColors = true;
         if(pointCloud->hasNormals()) m_hasNormals = true;
 
@@ -467,6 +467,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 #endif
         m_pointCloudActor->SetMapper(mapper);
         m_pointCloudActor->GetProperty()->SetColor(1.0, 1.0, 1.0);
+        m_pointCloudActor->GetProperty()->SetPointSize(5);
     }
 }
 

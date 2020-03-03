@@ -164,6 +164,7 @@ PointBufferPtr ScanDirectoryParser::randomSubSample(const size_t& tz)
             }
         }
     }
+    return out_model->m_pointCloud;
 }
 
 void ScanDirectoryParser::parseDirectory()

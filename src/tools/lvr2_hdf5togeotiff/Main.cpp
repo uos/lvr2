@@ -76,7 +76,7 @@ int processConversion(std::string input_filename,
             return ret;
         }
     }
-
+    return 0;
 }
 
 int main(int argc, char**argv)

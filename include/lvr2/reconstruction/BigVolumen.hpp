@@ -42,11 +42,14 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <fstream>
-#include <omp.h>
 #include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
+
+#ifndef __APPLE__
+#include <omp.h>
+#endif
 
 namespace lvr2
 {

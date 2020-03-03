@@ -258,7 +258,7 @@ bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
     for (auto layer : m_lsrOptions.voxelSizes)
     {
         std::string voxelSizeStr = "[Layer " + std::to_string(layer) + "] ";
-        std::cout << voxelSizeStr << "Starting mesh generation..." << std::endl;
+        std::cout << timestamp << voxelSizeStr << "Starting mesh generation..." << std::endl;
         HalfEdgeMesh<BaseVecT> hem = lsr.getPartialReconstruct(
                 newChunksBB,
                 m_chunkManager,

@@ -43,7 +43,6 @@ public:
 
     /**
      * @brief starts the registration process
-     * @returns vector of boolean values for each scan position; true if pos needs reconstruction
      * */
     void doRegistration();
 private:
@@ -57,6 +56,13 @@ private:
      * @return false if difference between a and b is too big
      */
     bool isToleratedDifference(Transformd a, Transformd b);
+
+    /**
+     * @brief rotates the given 4x4 matrix around the y-axis
+     * @param inputMatrix4x4 the matrix getting transformed
+     * @param angle the rotation angle in degree
+     * */
+    void rotateAroundYAxis(Transformd *inputMatrix4x4, double angle);
 
     const SLAMOptions* m_options;
     ScanProjectEditMarkPtr m_scans;
