@@ -1,4 +1,5 @@
 #include "LVRLabelInteractor.hpp"
+#include <vtkCoordinate.h>
 #include <QInputDialog>
 // Define interaction style
 //
@@ -31,8 +32,7 @@ LVRLabelInteractorStyle::LVRLabelInteractorStyle()
 void LVRLabelInteractorStyle::OnRightButtonDown()
 {
 
-      //vtkInteractorStyleDrawPolygon::OnLeftButtonDown();
-	vtkInteractorStyleRubberBandPick::OnLeftButtonDown();
+	LVRInteractorStylePolygonPick::OnLeftButtonDown();
 }
 
 void LVRLabelInteractorStyle::OnRightButtonUp()
@@ -43,6 +43,26 @@ void LVRLabelInteractorStyle::OnLeftButtonUp()
 {
 	calculateSelection(true);
 }
+bool isInside(std::vector<vtkVector2i> polygon, int& pX, int& pY)
+{
+	int n = polygon.size();
+	if (n < 3) return false;
+
+	int i, j, c = 0;
+	for(i = 0, j = n -1; i < n ; j = i++)
+	{
+		auto& vert = polygon[j];
+		auto& vert_next = polygon[i];
+
+		if ( ((vert_next.GetY()>pY) != (vert.GetY()>pY)) &&
+			(pX < (vert.GetX()-vert_next.GetX()) * (pY-vert_next.GetY()) / (vert.GetY()-vert_next.GetY()) + vert_next.GetX())   )
+		{
+			c = !c;
+		}
+	}
+            return c;
+}
+
 
 void LVRLabelInteractorStyle::calculateSelection(bool select)
 {
@@ -52,7 +72,7 @@ void LVRLabelInteractorStyle::calculateSelection(bool select)
       SelectedMapper = vtkSmartPointer<vtkDataSetMapper>::New();
       SelectedActor->SetMapper(SelectedMapper);
   
-/*	    
+	/*	    
 	if(m_SelectedPoints.size() == 0)
 	{
 		m_SelectedPoints = std::vector<bool>(m_points->GetNumberOfPoints(), false);
@@ -60,10 +80,8 @@ void LVRLabelInteractorStyle::calculateSelection(bool select)
 	}*/
 	    
 	    
-	    // Forward events
-      //vtkInteractorStyleDrawPolygon::OnLeftButtonUp();
-      vtkInteractorStyleRubberBandPick::OnLeftButtonUp();
-
+      // Forward events
+      LVRInteractorStylePolygonPick::OnLeftButtonUp();
 
       vtkPlanes* frustum = static_cast<vtkAreaPicker*>(this->GetInteractor()->GetPicker())->GetFrustum();
 
@@ -87,7 +105,25 @@ void LVRLabelInteractorStyle::calculateSelection(bool select)
       vtkIdTypeArray* ids = vtkIdTypeArray::SafeDownCast(selected->GetPointData()->GetArray("OriginalIds"));
       m_selectedIds = vtkIdTypeArray::SafeDownCast(selected->GetPointData()->GetArray("OriginalIds"));
  
+      //TODO Check if smart Pointer realy necassary
+      vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
+      coordinate->SetCoordinateSystemToWorld();
 
+      std::vector<vtkVector2i> polygonPoints = this->GetPolygonPoints();
+      std::vector<int> selectedPolyPoints;
+      selectedPolyPoints.resize(ids->GetNumberOfTuples());
+
+      for (vtkIdType i = 0; i < ids->GetNumberOfTuples(); i++)
+      {
+	auto selectedPoint = m_points->GetPoint(ids->GetValue(i));
+	coordinate->SetValue(selectedPoint[0], selectedPoint[1], selectedPoint[2]); 
+	int* displayCoord;
+	displayCoord = coordinate->GetComputedViewportValue(this->CurrentRenderer);
+	if (isInside(polygonPoints, displayCoord[0], displayCoord[1]))
+	{
+		selectedPolyPoints.push_back(ids->GetValue(i));
+	}
+      }
       /*
       if(m_SelectedPoints->GetNumberOfPoints() != 0)
       {
@@ -113,13 +149,16 @@ void LVRLabelInteractorStyle::calculateSelection(bool select)
       SelectedMapper->SetInputData(selected);
 #endif
       SelectedMapper->ScalarVisibilityOff();
-
+/*
       for(vtkIdType i = 0; i < ids->GetNumberOfTuples(); i++)
-        {
+      */
+
+      for(auto selectedPolyPoint : selectedPolyPoints)
+      {
         	//std::cout << "Id " << i << " : " << ids->GetValue(i) << std::endl;
 
-		m_SelectedPoints[ids->GetValue(i)] = select;
-        }
+		m_SelectedPoints[selectedPolyPoint] = select;
+      }
 
       auto vertexFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
       auto foo = vtkSmartPointer<vtkPoints>::New();
