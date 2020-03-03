@@ -202,7 +202,7 @@ int main( int argc, char ** argv )
 
             // Create "hyperspectral cube"
             path imgFile = dataDir/"panoramas_fixed"/("panorama_channels_"+number)/"channel0.png";
-            cv::Mat img = cv::imread(imgFile.string(), CV_LOAD_IMAGE_GRAYSCALE);
+            cv::Mat img = cv::imread(imgFile.string(), cv::IMREAD_GRAYSCALE);
 
             size_t img_x = img.cols;
             size_t img_y = img.rows;
@@ -212,7 +212,7 @@ int main( int argc, char ** argv )
                 char buffer[256];
                 sprintf(buffer, "channel%d.png", i);
                 path imgFile = dataDir/"panoramas_fixed"/("panorama_channels_"+number)/buffer;
-                cv::Mat img = cv::imread(imgFile.string(),  CV_LOAD_IMAGE_GRAYSCALE);
+                cv::Mat img = cv::imread(imgFile.string(),  cv::IMREAD_GRAYSCALE);
                 memcpy(cube + i * (img_y * img_x), img.data, img_y * img_x * sizeof(unsigned char));
             }
 

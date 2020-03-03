@@ -288,6 +288,9 @@ FloatChannelOptional MeshIO<Derived>::getVertices()
         dataset->read(channel.dataPtr().get());
         return channel;
     }
+
+    // If all fails return none
+    return boost::none;
 }
 
 template <typename Derived>
@@ -316,6 +319,9 @@ IndexChannelOptional MeshIO<Derived>::getIndices()
         dataset->read(channel.dataPtr().get());
         return channel;
     }
+
+    // If all fails return none
+    return boost::none;
 }
 
 template <typename Derived>

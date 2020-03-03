@@ -72,7 +72,7 @@ bool RegistrationPipeline::isToleratedDifference(Transformd a, Transformd b)
     return (angle < m_options->diffAngle && dist < m_options->diffPosition);
 }
 
-void rotateAroundYAxis(Transformd *inputMatrix4x4, double angle)
+void RegistrationPipeline::rotateAroundYAxis(Transformd *inputMatrix4x4, double angle)
 {
     // rotate only the upper left part of inputMatrix4x4
     Eigen::Matrix<double, 3, 3> tmp_mat(inputMatrix4x4->block<3,3>(0,0));
@@ -163,7 +163,10 @@ void RegistrationPipeline::doRegistration()
     else
     {
         cout << "start new registration with some fix poses" << endl;
-        // deconstruct old align correctly??
+        
+        // deconstruct old align
+        align.~SLAMAlign();
+
         align = SLAMAlign(*m_options, m_scans->changed);
 
         for (size_t i = 0; i < m_scans->project->positions.size(); i++)
@@ -186,6 +189,7 @@ void RegistrationPipeline::doRegistration()
         if (m_scans->changed.at(i) || all_values_new)
         {
             posPtr->scans[0]->registration = align.scan(i)->pose();
+            posPtr->registration = align.scan(i)->pose();
             cout << "Pose Scan Nummer " << i << endl << posPtr->scans[0]->registration << endl;
         }
     }

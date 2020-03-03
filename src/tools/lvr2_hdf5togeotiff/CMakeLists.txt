@@ -15,9 +15,7 @@ set(
 set(
         LVR_CONVERTER_DEPENDENCIES
         lvr2_static
-        ${OPENGL_LIBRARIES}
-        ${GLUT_LIBRARIES}
-        ${OpenCV_LIBS}
+        ${LVR2_LIB_DEPENDENCIES}
 )
 
 

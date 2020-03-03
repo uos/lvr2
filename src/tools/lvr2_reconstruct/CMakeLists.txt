@@ -16,12 +16,7 @@ set(LVR2_RECONSTRUCT_DEPENDENCIES
     lvr2las_static
     lvr2rply_static
     lvr2slam6d_static
-    ${TIFF_LIBRARIES}
-    ${OPENGL_LIBRARIES}
-    ${GLUT_LIBRARIES}
-    ${OpenCV_LIBS}
-    ${PCL_LIBRARIES}
-    ${GDAL_LIBRARY}
+    ${LVR2_LIB_DEPENDENCIES}
 )
 
 if( ${NABO_FOUND} )
