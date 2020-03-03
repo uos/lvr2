@@ -16,7 +16,7 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkPolyData.h>
 #include <vtkPointSource.h>
-#include <vtkInteractorStyleRubberBandPick.h>
+#include "LVRInteractorStylePolygonPick.hpp"
 #include <vtkInteractorStyleDrawPolygon.h>
 #include <vtkAreaPicker.h>
 #include <vtkExtractGeometry.h>
@@ -32,12 +32,12 @@
 
 // Define interaction style
 //class LVRLabelInteractorStyle : public QObject, public vtkInteractorStyleDrawPolygon
-class LVRLabelInteractorStyle : public QObject, public vtkInteractorStyleRubberBandPick
+class LVRLabelInteractorStyle : public QObject, public LVRInteractorStylePolygonPick
 {
   Q_OBJECT
   public:
     static LVRLabelInteractorStyle* New();
-    vtkTypeMacro(LVRLabelInteractorStyle,vtkInteractorStyleRubberBandPick);
+    vtkTypeMacro(LVRLabelInteractorStyle,LVRInteractorStylePolygonPick);
 
     LVRLabelInteractorStyle();
 

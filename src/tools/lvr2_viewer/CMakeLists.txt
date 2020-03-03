@@ -18,6 +18,7 @@ set(LVR2_VIEWER_SOURCES
     vtkBridge/LVRPointBufferBridge.cpp
     vtkBridge/LVRMeshBufferBridge.cpp
     vtkBridge/LVRPickingInteractor.cpp
+    vtkBridge/LVRInteractorStylePolygonPick.cpp
     vtkBridge/LVRLabelInteractor.cpp
     vtkBridge/LVRVtkArrow.cpp
     vtkBridge/LVRChunkedMeshCuller.cpp
@@ -61,6 +62,7 @@ set(LVR2_VIEWER_SOURCES
 set(LVR2_VIEWER_MOCS
     app/LVRMainWindow.hpp
     vtkBridge/LVRPickingInteractor.hpp
+    vtkBridge/LVRInteractorStylePolygonPick.hpp
     vtkBridge/LVRLabelInteractor.hpp
     widgets/LVRRenameDialog.hpp
     widgets/LVRAnimationDialog.hpp

@@ -44,18 +44,19 @@
 #include <vtkRenderer.h>
 #include <vtkMath.h>
 #include <vtkDataSetMapper.h>
+#include "LVRInteractorStylePolygonPick.hpp"
 
 namespace lvr2
 {
 
 
-class LVRPickingInteractor : public QObject, public vtkInteractorStyleRubberBandPick
+class LVRPickingInteractor : public QObject, public LVRInteractorStylePolygonPick
 {
     Q_OBJECT
 public:
     static LVRPickingInteractor* New();
     LVRPickingInteractor();
-    vtkTypeMacro(LVRPickingInteractor, vtkInteractorStyleRubberBandPick);
+    vtkTypeMacro(LVRPickingInteractor, LVRInteractorStylePolygonPick);
     void setRenderer(vtkSmartPointer<vtkRenderer> renderer);
     //LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer);
     virtual ~LVRPickingInteractor();

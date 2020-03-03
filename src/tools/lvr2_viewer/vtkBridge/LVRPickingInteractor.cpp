@@ -1453,7 +1453,7 @@ void LVRPickingInteractor::onLeftButtonDownTrackball()
     }
     if(m_labelingMode)
     {
-	 //   std::cout << "Rubber Down" << std::endl;
+	 std::cout << "Poly Down" << std::endl;
 	  //  vtkInteractorStyleRubberBandPick::OnLeftButtonDown();
 	    //return;
     }
@@ -1487,7 +1487,7 @@ void LVRPickingInteractor::onLeftButtonUpTrackball()
 {
     if(m_labelingMode)
     {
-	    //std::cout << "Rubber Up" << std::endl;
+	    std::cout << "Rubber Up" << std::endl;
 	   /* std::cout << m_points->GetNumberOfVerts() << std::endl;
 	    vtkInteractorStyleRubberBandPick::OnLeftButtonUp();
  	vtkPlanes* frustum = static_cast<vtkAreaPicker*>(this->GetInteractor()->GetPicker())->GetFrustum();
