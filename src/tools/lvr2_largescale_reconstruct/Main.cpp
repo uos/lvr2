@@ -161,7 +161,15 @@ int main(int argc, char** argv)
 
 
     BoundingBox<Vec> bb;
-    int x = lsr.mpiChunkAndReconstruct(project, bb, cm);
+    if(options.getPartMethod() == 1)
+    {
+        int x = lsr.mpiChunkAndReconstruct(project, bb, cm);
+    }
+    else
+    {
+        int x = lsr.mpiAndReconstruct(project);
+    }
+
 
     if(options.getDebugChunks())
     {

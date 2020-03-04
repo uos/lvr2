@@ -180,6 +180,14 @@ namespace lvr2
 
         /**
          *
+         * this methods splits the given PointClouds via kd-Tree and calculates all required values for a later reconstruction
+         * @param project
+         * @return
+         */
+        int mpiAndReconstruct(ScanProjectEditMarkPtr project);
+
+        /**
+         *
          * reconstruct a given area (+ neighboring chunks from a chunkmanager) with a given voxelsize
          *
          * @param newChunksBB area to be reconstructed
