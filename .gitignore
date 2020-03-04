@@ -32,6 +32,9 @@ doc/
 cmake-build-debug/
 cmake-build-release/
 
+# Debian packaging
+deb-build*/
+
 # QT Creator files
 /*.config
 /*.creator

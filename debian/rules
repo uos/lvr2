@@ -20,23 +20,23 @@ export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 # dh_make generated override targets
 # This is example for Cmake (See https://bugs.debian.org/641051 )
 override_dh_auto_configure:
-	dh_auto_configure --builddirectory=build -- \
+	dh_auto_configure --builddirectory=deb-build -- \
 		-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH) \
 		-DWITH_CUDA=Off
-	dh_auto_configure --builddirectory=build-cuda -- \
+	dh_auto_configure --builddirectory=deb-build-cuda -- \
 		-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH)
 
 override_dh_auto_build:
-	dh_auto_build --builddirectory=build
-	dh_auto_build --builddirectory=build-cuda
+	dh_auto_build --builddirectory=deb-build
+	dh_auto_build --builddirectory=deb-build-cuda
 
 override_dh_auto_install:
-	dh_auto_install --builddirectory=build --destdir=debian/lvr2
-	dh_auto_install --builddirectory=build-cuda --destdir=debian/lvr2-cuda
+	dh_auto_install --builddirectory=deb-build --destdir=debian/lvr2
+	dh_auto_install --builddirectory=deb-build-cuda --destdir=debian/lvr2-cuda
 
 override_dh_auto_clean:
-	dh_auto_clean --builddirectory=build
-	dh_auto_clean --builddirectory=build-cuda
+	dh_auto_clean --builddirectory=deb-build
+	dh_auto_clean --builddirectory=deb-build-cuda
 
 override_dh_missing:
 	dh_missing --list-missing
