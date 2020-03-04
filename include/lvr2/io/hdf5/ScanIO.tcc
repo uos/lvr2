@@ -7,15 +7,33 @@ namespace hdf5features
 template <typename Derived>
 void ScanIO<Derived>::save(uint scanPos, uint scanNr, const ScanPtr& scanPtr)
 {
-    // HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name);
-    // save(g, scanPtr);
+    char bufferPos[sizeof(int) * 5];
+    sprintf(bufferPos, "%08d", scanPos);
+    string pos_str(bufferPos);
+
+    char bufferScan[sizeof(int) * 5];
+    sprintf(bufferScan, "%08d", scanNr);
+    string nr_str(bufferScan);
+
+    std::string basePath = "raw/" + pos_str + "/scans/data/" + nr_str;
+
+    HighFive::Group scanGroup = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
+
+    save(scanGroup, scanPtr);
 }
 
 template <typename Derived>
 void ScanIO<Derived>::save(HighFive::Group& group, uint scanNr, const ScanPtr& scanPtr)
 {
-    // HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name);
-    // save(g, scanPtr);
+    char bufferScan[sizeof(int) * 5];
+    sprintf(bufferScan, "%08d", scanNr);
+    string nr_str(bufferScan);
+
+    std::string basePath = "/scans/data/" + nr_str;
+
+    HighFive::Group scanGroup = hdf5util::getGroup(group, basePath);
+
+    save(scanGroup, scanPtr);
 }
 
 template <typename Derived>
@@ -87,7 +105,7 @@ ScanPtr ScanIO<Derived>::load(uint scanPos, uint scanNr)
     char scan_buffer[sizeof(int) * 5];
     sprintf(scan_buffer, "%08d", scanPos);
     string scanPos_str(scan_buffer);
-    
+
     char buffer[sizeof(int) * 5];
     sprintf(buffer, "%08d", scanNr);
     string nr_str(buffer);
@@ -107,7 +125,7 @@ template <typename Derived>
 ScanPtr ScanIO<Derived>::load(HighFive::Group& group, uint scanNr)
 {
     ScanPtr ret;
-    
+
     char buffer[sizeof(int) * 5];
     sprintf(buffer, "%08d", scanNr);
     string nr_str(buffer);
