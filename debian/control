@@ -12,8 +12,8 @@ Build-Depends: dh-exec (>= 0.3), debhelper (>= 10), cmake,
 Standards-Version: 4.1.2
 Section: libs
 Homepage: http://www.las-vegas.uni-osnabrueck.de
-Vcs-Git: https://github.com/mawiegand/deb-lvr2.git
-Vcs-Browser: https://github.com/mawiegand/deb-lvr2
+Vcs-Git: https://github.com/uos/lvr2.git
+Vcs-Browser: https://github.com/uos/lvr2
 
 Package: liblvr2-dev
 Section: libdevel
