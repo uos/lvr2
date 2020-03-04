@@ -37,6 +37,8 @@ override_dh_auto_install:
 override_dh_auto_clean:
 	dh_auto_clean --builddirectory=deb-build
 	dh_auto_clean --builddirectory=deb-build-cuda
+	rm -rf debian/lvr2
+	rm -rf debian/lvr2-cuda
 
 override_dh_missing:
 	dh_missing --list-missing
