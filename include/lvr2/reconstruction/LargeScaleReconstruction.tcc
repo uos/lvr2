@@ -412,7 +412,7 @@ namespace lvr2
         cmBB.expand(addCMBBMin);
         cmBB.expand(addCMBBMax);
 
-        // chunkManager->setBoundingBox(cmBB);
+        chunkManager->setBoundingBox(cmBB);
         int numChunks_global = (cmBB.getXSize() / m_chunkSize) * (cmBB.getYSize() / m_chunkSize) * (cmBB.getZSize() / m_chunkSize);
         int numChunks_partial = partitionBoxes->size();
 
@@ -446,12 +446,12 @@ namespace lvr2
 
                 size_t numPoints;
 
-                floatArr points = bg.points(partitionBoxes->at(i).getMin().x - m_bgVoxelSize *2,
-                                            partitionBoxes->at(i).getMin().y - m_bgVoxelSize *2,
-                                            partitionBoxes->at(i).getMin().z - m_bgVoxelSize *2,
-                                            partitionBoxes->at(i).getMax().x + m_bgVoxelSize *2,
-                                            partitionBoxes->at(i).getMax().y + m_bgVoxelSize *2,
-                                            partitionBoxes->at(i).getMax().z + m_bgVoxelSize *2,
+                floatArr points = bg.points(partitionBoxes->at(i).getMin().x - m_voxelSizes[h] *3,
+                                            partitionBoxes->at(i).getMin().y - m_voxelSizes[h] *3,
+                                            partitionBoxes->at(i).getMin().z - m_voxelSizes[h] *3,
+                                            partitionBoxes->at(i).getMax().x + m_voxelSizes[h] *3,
+                                            partitionBoxes->at(i).getMax().y + m_voxelSizes[h] *3,
+                                            partitionBoxes->at(i).getMax().z + m_voxelSizes[h] *3,
                                             numPoints);
 
                 // remove chunks with less than 50 points
@@ -461,12 +461,12 @@ namespace lvr2
                     continue;
                 }
 
-                BaseVecT gridbb_min(partitionBoxes->at(i).getMin().x - m_bgVoxelSize *2,
-                                    partitionBoxes->at(i).getMin().y - m_bgVoxelSize *2,
-                                    partitionBoxes->at(i).getMin().z - m_bgVoxelSize *2);
-                BaseVecT gridbb_max(partitionBoxes->at(i).getMax().x + m_bgVoxelSize *2,
-                                    partitionBoxes->at(i).getMax().y + m_bgVoxelSize *2,
-                                    partitionBoxes->at(i).getMax().z + m_bgVoxelSize *2);
+                BaseVecT gridbb_min(partitionBoxes->at(i).getMin().x - m_voxelSizes[h] *3,
+                                    partitionBoxes->at(i).getMin().y - m_voxelSizes[h] *3,
+                                    partitionBoxes->at(i).getMin().z - m_voxelSizes[h] *3);
+                BaseVecT gridbb_max(partitionBoxes->at(i).getMax().x + m_voxelSizes[h] *3,
+                                    partitionBoxes->at(i).getMax().y + m_voxelSizes[h] *3,
+                                    partitionBoxes->at(i).getMax().z + m_voxelSizes[h] *3);
                 BoundingBox<BaseVecT> gridbb(gridbb_min, gridbb_max);
 
                 cout << "\n" <<  lvr2::timestamp <<"grid: " << i << "/" << partitionBoxes->size() - 1 << endl;
@@ -477,12 +477,12 @@ namespace lvr2
                 if (bg.hasNormals())
                 {
                     size_t numNormals;
-                    lvr2::floatArr normals = bg.normals(partitionBoxes->at(i).getMin().x ,
-                                                        partitionBoxes->at(i).getMin().y ,
-                                                        partitionBoxes->at(i).getMin().z ,
-                                                        partitionBoxes->at(i).getMax().x ,
-                                                        partitionBoxes->at(i).getMax().y ,
-                                                        partitionBoxes->at(i).getMax().z ,
+                    lvr2::floatArr normals = bg.normals(partitionBoxes->at(i).getMin().x -m_voxelSizes[h] *3,
+                                                        partitionBoxes->at(i).getMin().y -m_voxelSizes[h] *3,
+                                                        partitionBoxes->at(i).getMin().z -m_voxelSizes[h] *3,
+                                                        partitionBoxes->at(i).getMax().x +m_voxelSizes[h] *3,
+                                                        partitionBoxes->at(i).getMax().y +m_voxelSizes[h] *3,
+                                                        partitionBoxes->at(i).getMax().z +m_voxelSizes[h] *3,
                                                         numNormals);
 
                     p_loader->setNormalArray(normals, numNormals);
@@ -598,12 +598,12 @@ namespace lvr2
                 //combine chunks
                 auto vmax = cbb.getMax();
                 auto vmin = cbb.getMin();
-                vmin.x -= m_bgVoxelSize * 2;
-                vmin.y -= m_bgVoxelSize * 2;
-                vmin.z -= m_bgVoxelSize * 2;
-                vmax.x += m_bgVoxelSize * 2;
-                vmax.y += m_bgVoxelSize * 2;
-                vmax.z += m_bgVoxelSize * 2;
+                vmin.x -= m_voxelSizes[h] *3;
+                vmin.y -= m_voxelSizes[h] *3;
+                vmin.z -= m_voxelSizes[h] *3;
+                vmax.x += m_voxelSizes[h] *3;
+                vmax.y += m_voxelSizes[h] *3;
+                vmax.z += m_voxelSizes[h] *3;
                 cbb.expand(vmin);
                 cbb.expand(vmax);
 
