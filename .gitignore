@@ -34,6 +34,16 @@ cmake-build-release/
 
 # Debian packaging
 deb-build*/
+debian/files
+debian/*.substvars
+debian/*.log
+debian/.debhelper/
+debian/debhelper-build-stamp
+# package directories
+debian/lvr2/
+debian/lvr2-cuda/
+debian/liblvr2*/
+debian/lvr2-*/
 
 # QT Creator files
 /*.config
