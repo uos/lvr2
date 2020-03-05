@@ -141,6 +141,18 @@ public:
      */
     HashGrid(std::vector<string>& files, BoundingBox<BaseVecT>& boundingBox, float voxelsize);
 
+
+    /***
+     * @brief Construct a new Hash Grid object
+     *
+     * @param files vector of strings to the files which contain the voxel-grid data for the chunks
+     * @param innerBoxes vector of BoundingBoxes. Each chunk is only used for the BoundingBox.
+     *                          This is important because the data in the chunks may overlap.
+     * @param boundingBox bounding box of the complete grid
+     * @param voxelsize the voxelsize of the grid
+     */
+    HashGrid(std::vector<string>& files, std::vector<BoundingBox<BaseVecT>> innerBoxes, BoundingBox<BaseVecT>& boundingBox, float voxelsize);
+
     /***
      * Constructs a new Hash Grid object from multiple PointBufferPtr,
      * where the HashGrid attributes are saved in the PointBuffer-Channels.
