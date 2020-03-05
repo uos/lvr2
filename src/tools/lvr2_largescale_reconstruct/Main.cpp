@@ -105,6 +105,8 @@ int main(int argc, char** argv)
     std::shared_ptr<ChunkHashGrid> cm;
     BoundingBox<Vec> boundingBox;
 
+    HDF5IO hdf;
+
     if (extension == ".h5")
     {
         // loadAllPreviewsFromHDF5(in, *project->project.get());
@@ -121,9 +123,17 @@ int main(int argc, char** argv)
     }
     else
     {
-        project->project = ScanProjectPtr(new ScanProject);
-        if(!boost::filesystem::is_directory(selectedFile))
+
+        ScanProject dirScanProject;
+        bool importStatus = loadScanProject(in, dirScanProject);
+        if(importStatus) {
+            project->project = make_shared<ScanProject>(dirScanProject);
+            std::vector<bool> init(dirScanProject.positions.size(), true);
+            project->changed = init;
+        }
+        else if(!boost::filesystem::is_directory(selectedFile))
         {
+            project->project = ScanProjectPtr(new ScanProject);
             ModelPtr model = ModelFactory::readModel(in);
             ScanPtr scan(new Scan);
 
@@ -134,6 +144,7 @@ int main(int argc, char** argv)
             project->changed.push_back(true);
         }
         else{
+            project->project = ScanProjectPtr(new ScanProject);
             boost::filesystem::directory_iterator it{in};
             while (it != boost::filesystem::directory_iterator{})
             {
@@ -158,7 +169,6 @@ int main(int argc, char** argv)
 
         cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid("chunked_mesh.h5", 50, boundingBox, options.getChunkSize()));
     }
-
 
     BoundingBox<Vec> bb;
     if(options.getPartMethod() == 1)
