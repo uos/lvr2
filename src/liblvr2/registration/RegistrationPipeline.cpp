@@ -163,9 +163,6 @@ void RegistrationPipeline::doRegistration()
     else
     {
         cout << "start new registration with some fix poses" << endl;
-        
-        // deconstruct old align
-        // align.~SLAMAlign();
 
         align = SLAMAlign(*m_options, m_scans->changed);
 
