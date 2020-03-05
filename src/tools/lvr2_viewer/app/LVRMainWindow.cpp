@@ -174,9 +174,9 @@ LVRMainWindow::LVRMainWindow()
     m_actionFurniture_Recognition = this->actionFurniture_Recognition;
 
     //Toolbar item "Labeling"
-    m_actionStart_labeling = this->actionStart_Labeling;
-    m_actionStop_labeling = this->actionStop_Labeling;
-    m_actionExtract_labeling = this->actionExport_Labeling;
+    m_actionStart_labeling = this->actionLabeling_Start;
+    m_actionStop_labeling = this->actionLabeling_Stop;
+    m_actionExtract_labeling = this->actionLabeling_Export;
 
     // Toolbar item "About"
     // TODO: Replace "About"-QMenu with "About"-QAction
