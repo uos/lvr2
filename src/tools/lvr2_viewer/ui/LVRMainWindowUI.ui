@@ -603,6 +603,8 @@
    <addaction name="actionShow_SpectralColorGradient"/>
    <addaction name="actionShow_SpectralPointPreview"/>
    <addaction name="actionShow_SpectralHistogram"/>
+   <addaction name="separator"/>
+   <addaction name="actionLabeling_Start"/>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -679,9 +681,9 @@
     <property name="title">
      <string>Labeling</string>
     </property>
-    <addaction name="actionStart_Labeling"/>
-    <addaction name="actionStop_Labeling"/>
-    <addaction name="actionExport_Labeling"/>
+    <addaction name="actionLabeling_Start"/>
+    <addaction name="actionLabeling_Stop"/>
+    <addaction name="actionLabeling_Export"/>
    </widget>
    <widget class="QMenu" name="menuRendering">
     <property name="title">
@@ -1274,17 +1276,27 @@
     <string>Simple Plane Classification</string>
    </property>
   </action>
-  <action name="actionStart_Labeling">
+  <action name="actionLabeling_Start">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_labeling.png</normaloff>:/qv_labeling.png</iconset>
+   </property>
    <property name="text">
-    <string>Start Labeling</string>
+    <string>Label Points</string>
    </property>
   </action>
-  <action name="actionStop_Labeling">
+  <action name="actionLabeling_Stop">
    <property name="text">
     <string>Stop Labeling</string>
    </property>
   </action>
-  <action name="actionExport_Labeling">
+  <action name="actionLabeling_Export">
    <property name="text">
     <string>Export Labeling</string>
    </property>
@@ -1372,6 +1384,15 @@
    </property>
   </action>
   <action name="actionShow_SpectralHistogram">
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_histogram.png</normaloff>:/qv_histogram.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show SpectralHistogram</string>
+   </property>
+  </action>
+  <action name="actionLabel_SpectralHistogram">
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
      <normaloff>:/qv_histogram.png</normaloff>:/qv_histogram.png</iconset>
