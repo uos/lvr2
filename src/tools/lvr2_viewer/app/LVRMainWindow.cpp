@@ -492,8 +492,8 @@ void LVRMainWindow::setupQVTK()
     m_pickingInteractor = LVRPickingInteractor::New();
     m_pickingInteractor->setRenderer(m_renderer);
 
-    //qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
-    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_labelInteractor );
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
+   // qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_labelInteractor );
 
     //vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
     vtkSmartPointer<vtkAreaPicker> pointPicker = vtkSmartPointer<vtkAreaPicker>::New();
@@ -1067,14 +1067,8 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
         restoreSliders();
         assertToggles();
         updateView();
-//-----
-//
-//
-//
-//
-//
-	vtkSmartPointer<vtkPolyData> pointsPolydata = 
-		vtkSmartPointer<vtkPolyData>::New();
+
+
 	vtkSmartPointer<vtkPoints> points = 
 		vtkSmartPointer<vtkPoints>::New();
 	QTreeWidgetItemIterator itu(treeWidget);
@@ -1089,8 +1083,6 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 			citem = static_cast<LVRPointCloudItem*>(*itu);
 			points->SetData(citem->getPointBufferBridge()->getPointCloudActor()->GetMapper()->GetInput()->GetPointData()->GetScalars());
 
-
-			//pointsPolydata->SetPoints(citem->getPointBufferBridge()->getPolyData());
 			m_labelInteractor->SetPoints(citem->getPointBufferBridge()->getPolyData());
 		}
 		itu++;
