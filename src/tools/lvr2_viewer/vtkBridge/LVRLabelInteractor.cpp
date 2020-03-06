@@ -67,21 +67,19 @@ bool isInside(std::vector<vtkVector2i> polygon, int& pX, int& pY)
 void LVRLabelInteractorStyle::calculateSelection(bool select)
 {
 
+      // Forward events
+      LVRInteractorStylePolygonPick::OnLeftButtonUp();
+
+      if (!m_points)
+      {
+	      return;
+      }
+
       this->CurrentRenderer->RemoveActor(SelectedActor);
       SelectedActor = vtkSmartPointer<vtkActor>::New();
       SelectedMapper = vtkSmartPointer<vtkDataSetMapper>::New();
       SelectedActor->SetMapper(SelectedMapper);
   
-	/*	    
-	if(m_SelectedPoints.size() == 0)
-	{
-		m_SelectedPoints = std::vector<bool>(m_points->GetNumberOfPoints(), false);
-		m_pointLabels = std::vector<uint8_t>(m_points->GetNumberOfPoints(), 0);
-	}*/
-	    
-	    
-      // Forward events
-      LVRInteractorStylePolygonPick::OnLeftButtonUp();
 
       vtkPlanes* frustum = static_cast<vtkAreaPicker*>(this->GetInteractor()->GetPicker())->GetFrustum();
 
@@ -124,25 +122,7 @@ void LVRLabelInteractorStyle::calculateSelection(bool select)
 		selectedPolyPoints.push_back(ids->GetValue(i));
 	}
       }
-      /*
-      if(m_SelectedPoints->GetNumberOfPoints() != 0)
-      {
-      	for(vtkIdType i = 0; i < ids->GetNumberOfTuples(); i++)
-      	{
-		if (ids->GetValue(i) != -1)
-		{
-			m_SelectedPoints->DeletePoint(ids->GetValue(i));
-		}
-	}
-      }
-      else
-      {
-	m_SelectedPoints = selected;
-      }*/
 
-
-      //std::cout << "Selected " << selected->GetNumberOfPoints() << " points." << std::endl;
-      //std::cout << "Selected " << selected->GetNumberOfCells() << " cells." << std::endl;
 #if VTK_MAJOR_VERSION <= 5
       SelectedMapper->SetInput(selected);
 #else
@@ -155,8 +135,6 @@ void LVRLabelInteractorStyle::calculateSelection(bool select)
 
       for(auto selectedPolyPoint : selectedPolyPoints)
       {
-        	//std::cout << "Id " << i << " : " << ids->GetValue(i) << std::endl;
-
 		m_SelectedPoints[selectedPolyPoint] = select;
       }
 
@@ -224,6 +202,10 @@ void LVRLabelInteractorStyle::OnKeyUp()
     std::string key = rwi->GetKeySym();
     if (key == "Left")
     {
+	if (!m_points)
+	{
+		return;
+	}
 
    	bool accepted;
    	QString label = QInputDialog::getItem(0, "Select Label", "Choose Label For SelectedPoints. You can press n to add a new Label:",m_labelList , 0, true, &accepted);
@@ -243,14 +225,12 @@ void LVRLabelInteractorStyle::OnKeyUp()
 
 				updateActors = true;
 			}
-			//m_pointLabels[m_selectedIds->GetValue(i)] = labelIndex;
 			m_pointLabels[id] = labelIndex;
 		}
 		if (updateActors)
 		{
 		}
 		foo2[labelIndex - 1] = m_SelectedPoints;
-		//m_SelectedPoints = std::vector<bool>(m_points->GetNumberOfPoints(), false);
 		
 
 		m_SelectedPoints = std::vector<bool>(m_points->GetNumberOfPoints(), false);
@@ -259,10 +239,8 @@ void LVRLabelInteractorStyle::OnKeyUp()
       		newActor->GetProperty()->SetColor(colors[labelIndex - 1][0] /255.0,colors[labelIndex - 1][1] / 255.0,colors[labelIndex - 1][2] / 255.0); //(R,G,B)
 		this->CurrentRenderer->RemoveActor(m_labelActors[labelIndex - 1]);
 		m_labelActors[labelIndex - 1] = newActor;
-	//	m_labelActors.push_back(newActor);
 		this->CurrentRenderer->RemoveActor(SelectedActor);
       		SelectedActor = vtkSmartPointer<vtkActor>::New();
-      		//this->GetInteractor()->GetRenderWindow()->Render();
 	        this->CurrentRenderer->AddActor(newActor);
       		this->GetInteractor()->GetRenderWindow()->Render();
       		this->HighlightProp(NULL);
@@ -292,7 +270,6 @@ void LVRLabelInteractorStyle::OnKeyUp()
 	{
 		if(m_labelList.indexOf(text) != -1)
 		{
-
 				return;
 		}
 		foo2.push_back(std::vector<bool>(m_points->GetNumberOfPoints(), 0));
