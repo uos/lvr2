@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <iostream>
 #include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/config/lvropenmp.hpp"
 #include <random>
 #include <string>
 #include <lvr2/io/hdf5/ScanIO.hpp>
@@ -90,6 +91,7 @@ int main(int argc, char** argv)
     boost::filesystem::path selectedFile(in);
     string extension = selectedFile.extension().string();
 
+    OpenMPConfig::setNumThreads(options.getNumThreads());
 
     LargeScaleReconstruction<Vec> lsr(options.getVoxelSizes(), options.getBGVoxelsize(), options.getScaling(),
                                       options.getNodeSize(), options.getPartMethod(), options.getKi(), options.getKd(), options.getKn(),
