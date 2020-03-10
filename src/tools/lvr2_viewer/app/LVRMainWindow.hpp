@@ -130,6 +130,7 @@ public Q_SLOTS:
 
     void loadModel();
     void loadModels(const QStringList& filenames);
+    void loadChunkedMesh();
     void loadChunkedMesh(const QStringList& filenames, std::vector<std::string> layers, int cacheSize, float highResDistance);
     void manualICP();
     void showTransformationDialog();
@@ -251,7 +252,7 @@ private:
     vtkSmartPointer<vtkOrientationMarkerWidget> m_axesWidget;
     vtkSmartPointer<vtkAxesActor>               m_axes;
 
-    std::unique_ptr<LVRChunkedMeshBridge> m_chunkBridge;
+    ChunkedMeshBridgePtr m_chunkBridge;
 //    vtkSmartPointer<ChunkedMeshCuller> m_chunkCuller;
     ChunkedMeshCuller* m_chunkCuller;
     QMenu*                                      m_treeParentItemContextMenu;
@@ -259,6 +260,7 @@ private:
 
     // Toolbar item "File"
     QAction*                            m_actionOpen;
+    QAction*                            m_actionOpenChunkedMesh;
     QAction*                            m_actionExport;
     QAction*                            m_actionQuit;
     // Toolbar item "Views"

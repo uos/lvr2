@@ -59,6 +59,7 @@
 #include <QString>
 
 #include <boost/filesystem.hpp>
+#include <boost/tokenizer.hpp>
 
 #include <QMetaType>
 
@@ -144,6 +145,7 @@ LVRMainWindow::LVRMainWindow()
  
     // Toolbar item "File"
     m_actionOpen = this->actionOpen;
+    m_actionOpenChunkedMesh = this->actionOpenChunkedMesh;
     m_actionExport = this->actionExport;
     m_actionQuit = this->actionQuit;
     // Toolbar item "Views"
@@ -294,6 +296,7 @@ LVRMainWindow::~LVRMainWindow()
 void LVRMainWindow::connectSignalsAndSlots()
 {
     QObject::connect(m_actionOpen, SIGNAL(triggered()), this, SLOT(loadModel()));
+    QObject::connect(m_actionOpenChunkedMesh, SIGNAL(triggered()), this, SLOT(loadChunkedMesh()));
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(restoreSliders()));
@@ -981,7 +984,8 @@ void LVRMainWindow::loadChunkedMesh(const QStringList& filenames, std::vector<st
             {
 //                std::vector<std::string> layers = {"mesh0", "mesh1"};
                 std::cout << info.absoluteFilePath().toStdString() << std::endl;
-                m_chunkBridge =  std::make_unique<LVRChunkedMeshBridge>(info.absoluteFilePath().toStdString(), m_renderer, layers, cacheSize);
+                //m_chunkBridge =  std::make_unique<LVRChunkedMeshBridge>(info.absoluteFilePath().toStdString(), m_renderer, layers, cacheSize);
+                m_chunkBridge = ChunkedMeshBridgePtr(new LVRChunkedMeshBridge(info.absoluteFilePath().toStdString(), m_renderer, layers, cacheSize));
                 m_chunkBridge->addInitialActors(m_renderer);
                 m_chunkCuller = new ChunkedMeshCuller(m_chunkBridge.get(), highResDistance);
                 m_renderer->AddCuller(m_chunkCuller);
@@ -1071,6 +1075,52 @@ void LVRMainWindow::loadModel()
 {
     QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open Model"), "", tr("Model Files (*.ply *.obj *.pts *.3d *.txt *.h5)"));
     loadModels(filenames);
+    
+}
+
+void LVRMainWindow::loadChunkedMesh()
+{
+    QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open chunked mesh"), "", tr("Chunked meshes (*.h5)"));
+     bool ok;
+     QString text = QInputDialog::getText(0, "Enter layers",
+                                         "Layers whitspace seperated:", QLineEdit::Normal,
+                                         "", &ok);
+     std::vector<std::string> layers;
+     std::string unseperated = text.toStdString();
+     if(text.isEmpty())
+     {
+        layers = {"mesh0"};
+     }
+     else
+     {
+     
+         boost::tokenizer<boost::char_separator<char>> tokens(unseperated, boost::char_separator<char>());
+         layers = std::vector<std::string>(tokens.begin(), tokens.end());
+     }
+
+
+     std::cout << "LAYERS " ;
+     for(auto &layer : layers)
+     {
+         std::cout << layer << " ";
+     }
+
+     std::cout << std::endl;
+     double highResDistance = QInputDialog::getDouble(0, "highResDistance", "highResDistance");
+    
+     if(highResDistance < 0)
+     {
+        highResDistance = 0.0;
+     }
+
+
+     int cacheSize = QInputDialog::getInt(0, "cacheSize", "cache size");
+    
+     if(cacheSize < 0)
+     {
+        cacheSize = 0;
+     }
+    loadChunkedMesh(filenames, layers, cacheSize, highResDistance);
     
 }
 
@@ -1745,7 +1795,7 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
     viewer::Options options(argc, argv);
     if(options.printUsage())
     {
-        exit(0);
+        return;
     }
 
     std::vector<std::string> files;
