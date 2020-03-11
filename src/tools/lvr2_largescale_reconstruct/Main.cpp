@@ -109,6 +109,7 @@ int main(int argc, char** argv)
 
     HDF5IO hdf;
 
+    //reconstruction from hdf5
     if (extension == ".h5")
     {
         // loadAllPreviewsFromHDF5(in, *project->project.get());
@@ -128,11 +129,13 @@ int main(int argc, char** argv)
 
         ScanProject dirScanProject;
         bool importStatus = loadScanProject(in, dirScanProject);
+        //reconstruction from ScanProject Folder
         if(importStatus) {
             project->project = make_shared<ScanProject>(dirScanProject);
             std::vector<bool> init(dirScanProject.positions.size(), true);
             project->changed = init;
         }
+        //reconstruction from a .ply file
         else if(!boost::filesystem::is_directory(selectedFile))
         {
             project->project = ScanProjectPtr(new ScanProject);
@@ -145,6 +148,7 @@ int main(int argc, char** argv)
             project->project->positions.push_back(scanPosPtr);
             project->changed.push_back(true);
         }
+        //reconstruction from a folder of .ply files
         else{
             project->project = ScanProjectPtr(new ScanProject);
             boost::filesystem::directory_iterator it{in};
@@ -173,6 +177,7 @@ int main(int argc, char** argv)
     }
 
     BoundingBox<Vec> bb;
+    // reconstruction with diffrent methods
     if(options.getPartMethod() == 1)
     {
         int x = lsr.mpiChunkAndReconstruct(project, bb, cm);
@@ -182,7 +187,7 @@ int main(int argc, char** argv)
         int x = lsr.mpiAndReconstruct(project);
     }
 
-
+    // reconstruction of .ply for diffrent voxelSizes
     if(options.getDebugChunks())
     {
 
