@@ -49,7 +49,9 @@ public:
     RegistrationPipeline(const SLAMOptions* options, ScanProjectEditMarkPtr scans);
 
     /**
-     * @brief starts the registration process
+     * @brief Starts the registration
+     * 
+     * Starts the registration. Uses the SLAMOptions given in the constructor.
      * */
     void doRegistration();
 private:
