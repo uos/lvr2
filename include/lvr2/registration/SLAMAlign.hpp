@@ -30,6 +30,7 @@
  *
  *  @date May 6, 2019
  *  @author Malte Hillmann
+ *  @author Timo Osterkamp (tosterkamp@uni-osnabrueck.de)
  */
 #ifndef SLAMALIGN_HPP_
 #define SLAMALIGN_HPP_

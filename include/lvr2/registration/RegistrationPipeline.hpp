@@ -31,7 +31,13 @@
 #include "lvr2/registration/SLAMOptions.hpp"
 #include "lvr2/registration/GraphSLAM.hpp"
 #include "lvr2/types/ScanTypes.hpp"
-
+/**
+ * RegistrationPipeline.hpp
+ *
+ *  @date Jan 7, 2020
+ *  @author Timo Osterkamp (tosterkamp@uni-osnabrueck.de)
+ *  @author Wilko Müller
+ */
 
 
 using namespace lvr2;

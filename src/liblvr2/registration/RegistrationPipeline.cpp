@@ -32,6 +32,14 @@
 #include "vector"
 #include <math.h>
 
+/**
+ * RegistrationPipeline.cpp
+ *
+ *  @date Jan 7, 2020
+ *  @author Timo Osterkamp (tosterkamp@uni-osnabrueck.de)
+ *  @author Wilko Müller
+ */
+
 using namespace lvr2;
 
 bool RegistrationPipeline::isToleratedDifference(Transformd a, Transformd b)
