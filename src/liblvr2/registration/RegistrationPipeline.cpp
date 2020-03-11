@@ -111,7 +111,7 @@ RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProje
 
 void RegistrationPipeline::doRegistration()
 {
-
+    // Create SLAMAlign object and add separate scans. The scans are not transferred via the constructor, because then they will not reduced.
     SLAMAlign align(*m_options);
     for (size_t i = 0; i < m_scans->project->positions.size(); i++)
     {
@@ -128,7 +128,7 @@ void RegistrationPipeline::doRegistration()
 
     if (m_options->verbose)
     {
-        cout << "Aus doRegistaration: vor finish" << endl;
+        cout << "start SLAMAlign registration" << endl;
     }
 
     // start the registration (with params from m_options)
@@ -136,7 +136,7 @@ void RegistrationPipeline::doRegistration()
 
     if (m_options->verbose)
     {
-        cout << "Aus doRegistaration: nach finish" << endl;
+        cout << "end SLAMAlign registration" << endl;
     }
 
     // if all values are new, the second registration is not needed 
