@@ -39,6 +39,13 @@ using namespace lvr2;
 class RegistrationPipeline
 {
 public:
+
+    /**
+     * @brief Construct a new RegistrationPipeline object.
+     * 
+     * @param options The SLAM Options 
+     * @param scans The scan project
+     */
     RegistrationPipeline(const SLAMOptions* options, ScanProjectEditMarkPtr scans);
 
     /**
@@ -58,9 +65,12 @@ private:
     bool isToleratedDifference(Transformd a, Transformd b);
 
     /**
-     * @brief rotates the given 4x4 matrix around the y-axis
-     * @param inputMatrix4x4 the matrix getting transformed
-     * @param angle the rotation angle in degree
+     * @brief Rotates the given 4x4 matrix around the y-axis
+     * @param inputMatrix4x4 The matrix getting transformed
+     * @param angle The rotation angle in degree
+     * 
+     * Rotates the given 4x4 matrix around the y-axis. For the Situation, where the scanner
+     * was mounted at an incorrect angle. Can be used when all scans have the same angle offset.
      * */
     void rotateAroundYAxis(Transformd *inputMatrix4x4, double angle);
 
