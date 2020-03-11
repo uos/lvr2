@@ -119,14 +119,6 @@ namespace lvr2
     {
     }
 
-    template<typename BaseVecT>
-    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project,
-                                                                   std::shared_ptr<ChunkHashGrid> chunkManager)
-    {
-        BoundingBox<BaseVecT> bb;
-        return mpiChunkAndReconstruct(project, bb, chunkManager);
-    }
-
 
     template<typename BaseVecT>
     int LargeScaleReconstruction<BaseVecT>::mpiAndReconstruct(ScanProjectEditMarkPtr project){
@@ -693,16 +685,7 @@ namespace lvr2
         }
         return 1;
     }
-    template <typename BaseVecT>
-    int LargeScaleReconstruction<BaseVecT>::resetEditMark(ScanProjectEditMarkPtr project)
-    {
-        for(auto mark : project->changed)
-        {
-            mark = false;
-        }
 
-        return 1;
-    }
 
     template <typename BaseVecT>
     void LargeScaleReconstruction<BaseVecT>::addTSDFChunkManager(int x, int y, int z,
@@ -781,10 +764,6 @@ namespace lvr2
 
                         tsdfChunks.push_back(chunk.get());
                     }
-                    //else
-                    //{
-                    //    std::cout << "DEBUG - Could not find chunk (" << i << ", " << j << ", " << k << ") in layer: " << layerName << std::endl;
-                    //}
                 }
             }
         }

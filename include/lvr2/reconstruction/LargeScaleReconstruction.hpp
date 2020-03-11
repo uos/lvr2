@@ -170,18 +170,8 @@ namespace lvr2
 
         /**
          *
-         * this method splits the given PointClouds in to Chunks and calculates all required values for a later reconstruction
-         *
-         * @param project ScanProject containing Scans
-         * @param chunkManager a chunkManager to handle chunks
-         * @return
-         */
-        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, std::shared_ptr<ChunkHashGrid> chunkManager);
-
-        /**
-         *
          * this methods splits the given PointClouds via kd-Tree and calculates all required values for a later reconstruction
-         * @param project
+         * @param project ScanProject containing Scans
          * @return
          */
         int mpiAndReconstruct(ScanProjectEditMarkPtr project);
@@ -197,14 +187,6 @@ namespace lvr2
          */
         HalfEdgeMesh<BaseVecT> getPartialReconstruct(BoundingBox<BaseVecT> newChunksBB, std::shared_ptr<ChunkHashGrid> chunkHashGrid,  float voxelSize);
 
-        /**
-         *
-         * method to reset the changed-vector of a ScanProject by setting all values to false
-         *
-         * @param project ScanProjectEditMarkPtr
-         * @return
-         */
-        int resetEditMark(ScanProjectEditMarkPtr project);
 
 
 

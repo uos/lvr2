@@ -84,10 +84,6 @@ void VirtualGrid<BaseVecT>::findInitialBox()
 template <typename BaseVecT>
 void VirtualGrid<BaseVecT>::generateNeighbours()
 {
-    if (false) // TODO: think of something appropriate
-    {
-        findInitialBox();
-    }
 
     // Calculates the numbers of Boxes that fits per axis
     int n_xboxes =
@@ -98,7 +94,7 @@ void VirtualGrid<BaseVecT>::generateNeighbours()
         ceil((m_pcbb.getZSize() + abs(m_pcbb.getMin().z - m_initbox.getMin().z)) / m_gridCellSize);
 
     lvr2::BoundingBox<BaseVecT> first = m_initbox;
-    string comment = lvr2::timestamp.getElapsedTime() + "Building grid... ";
+    string comment = lvr2::timestamp.getElapsedTime() + "Building vGrid... ";
     lvr2::ProgressBar progress(n_xboxes * n_yboxes* n_zboxes, comment);
     for (int i = 0; i < n_xboxes; i++)
     {
