@@ -30,6 +30,7 @@
  *
  *  @date May 6, 2019
  *  @author Malte Hillmann
+ *  @author Timo Osterkamp (tosterkamp@uni-osnabrueck.de)
  */
 
 #include "lvr2/registration/SLAMAlign.hpp"
