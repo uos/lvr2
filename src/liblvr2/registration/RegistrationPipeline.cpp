@@ -154,9 +154,10 @@ void RegistrationPipeline::doRegistration()
         // check if the new pos different to old pos
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
-        if (!isToleratedDifference(
-                m_scans->project->positions.at(i)->scans[0]->registration,
-                align.scan(i)->pose()))
+        if (( !m_scans->changed.at(i)) && 
+              !isToleratedDifference(
+                  m_scans->project->positions.at(i)->scans[0]->registration,
+                  align.scan(i)->pose()))
         {
             m_scans->changed.at(i) = true;
             cout << "New Values"<< endl;
