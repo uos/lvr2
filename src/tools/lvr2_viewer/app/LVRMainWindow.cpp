@@ -1799,7 +1799,7 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
     }
 
     std::vector<std::string> files;
-    files = options.getInputFiles();
+    files.push_back(options.getInputFileName());
     for(int i = 0; i < files.size(); i++)
     {
         std::cout << "filename " << files[i] << std::endl;

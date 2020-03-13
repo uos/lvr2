@@ -1,6 +1,7 @@
 #include "Options.hpp"
 
 #include <iostream>
+#include "lvr2/config/BaseOption.hpp"
 
 namespace viewer 
 {
@@ -10,21 +11,20 @@ using boost::program_options::value;
 using std::cout;
 using std::endl;
 
-Options::Options(int argc, char** argv) : m_descr("Supported options")
+Options::Options(int argc, char** argv) : lvr2::BaseOption(argc, argv)
 {
     // Create option descriptions
     m_descr.add_options()("help",
                           "Produce help message")
         ("chunkedMesh", boost::program_options::bool_switch()->default_value(false), "Is a chunked Mesh")
-        ("inputFiles", value<std::vector<string>>()->multitoken(), "Input file names.")
+        ("inputFile", value< std::vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
         ("layers", value<std::vector<string>>()->multitoken(), "Input file names.")
         ("cacheSize", value<int>()->default_value(200), "Multilayer chunked mesh the maximum number of high resolution chunks in RAM")
         ("highResDistance", value<float>()->default_value(150.0f), "The distance of the far plane for the high resolution");
 
-    // Parse command line and generate variables map
-    store(command_line_parser(argc, argv).options(m_descr).positional(m_posDescr).run(),
-          m_variables);
-    notify(m_variables);
+    // setup in baseoption
+    setup();
+
 }
 
 bool Options::printUsage() const
@@ -35,7 +35,7 @@ bool Options::printUsage() const
         return true;
     }
 
-    if (!m_variables.count("inputFiles"))
+    if (!m_variables.count("inputFile"))
     {
         cout << "Error: You must specify an input file." << endl;
         cout << endl;
@@ -46,11 +46,15 @@ bool Options::printUsage() const
     return false;
 }
 
-std::vector<string> Options::getInputFiles() const
-{
-    return m_variables["inputFiles"].as<std::vector<string>>();
-}
+//std::vector<string> Options::getInputFiles() const
+//{
+//    return m_variables["inputFiles"].as<std::vector<string>>();
+//}
 
+std::string Options::getInputFileName() const
+{
+    return (m_variables["inputFile"].as< std::vector<string> >())[0];
+}
 std::vector<string> Options::getLayers() const
 {
     if(m_variables.count("layers"))
