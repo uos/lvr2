@@ -36,7 +36,7 @@
 #include <string>
 #include <lvr2/io/hdf5/ScanIO.hpp>
 #include <boost/filesystem.hpp>
-#include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 #include "lvr2/io/hdf5/ScanProjectIO.hpp"
 #include "lvr2/io/ScanIOUtils.hpp"
 
