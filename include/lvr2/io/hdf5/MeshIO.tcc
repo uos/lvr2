@@ -119,7 +119,7 @@ MeshBufferPtr MeshIO<Derived>::loadMesh(std::string name)
 template <typename Derived>
 MeshBufferPtr MeshIO<Derived>::load(HighFive::Group& group)
 {
-    MeshBufferPtr ret;
+    MeshBufferPtr ret = nullptr;
 
     if (!isMesh(group))
     {
@@ -160,6 +160,11 @@ MeshBufferPtr MeshIO<Derived>::load(HighFive::Group& group)
                 }
             }
         }
+    }
+
+    if (ret == nullptr)
+    {
+        return nullptr;
     }
 
     if (group.exist("textures"))
@@ -283,6 +288,9 @@ FloatChannelOptional MeshIO<Derived>::getVertices()
         dataset->read(channel.dataPtr().get());
         return channel;
     }
+
+    // If all fails return none
+    return boost::none;
 }
 
 template <typename Derived>
@@ -311,6 +319,9 @@ IndexChannelOptional MeshIO<Derived>::getIndices()
         dataset->read(channel.dataPtr().get());
         return channel;
     }
+
+    // If all fails return none
+    return boost::none;
 }
 
 template <typename Derived>

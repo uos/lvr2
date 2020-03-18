@@ -41,10 +41,14 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
-#include <omp.h>
 #include <string>
 #include <unordered_map>
 #include <utility>
+
+#ifndef __APPLE__
+#include <omp.h>
+#endif
+
 
 namespace lvr2
 {
@@ -75,18 +79,10 @@ class BigGrid
     BigGrid(std::vector<std::string> cloudPath, float voxelsize, float scale = 0, size_t bufferSize = 1024);
 
     /**
-     * Constructor:
-     * @param cloudPath path to PointCloud in ASCII xyz Format // Todo: Add other file formats
-     * @param voxelsize
-     */
-    BigGrid(std::string cloudPath, float voxelsize, float scale = 0);
-
-    /**
-     * Constructor: specific case for incremental reconstruction/chunking
-     * @param h5File path to PointClouds in .h5 file
-     * @param voxelsize
-     * @param scale
-     * @param scans new scans to be added
+     * Constructor: specific case for incremental reconstruction/chunking. also compatible with simple reconstruction
+     * @param voxelsize specified voxelsize
+     * @param project ScanProject, which contain one or more Scans
+     * @param scale scale value of for current scans
      */
     BigGrid(float voxelsize,ScanProjectEditMarkPtr project, float scale = 0);
 
@@ -122,14 +118,14 @@ class BigGrid
     lvr2::floatArr points(int i, int j, int k, size_t& numPoints);
 
     /**
-     *  Points that are within bounding box defined by a min and max point (probably)
+     *  Points that are within bounding box defined by a min and max point
      * @param minx
      * @param miny
      * @param minz
      * @param maxx
      * @param maxy
      * @param maxz
-     * @param numPoints
+     * @param numPoints number of points
      * @return lvr2::floatArr, containing points
      */
     lvr2::floatArr points(
@@ -157,15 +153,15 @@ class BigGrid
     lvr2::floatArr getPointCloud(size_t& numPoints);
 
     BoundingBox<BaseVecT>& getBB() { return m_bb; }
-    BoundingBox<BaseVecT>& getpartialBB() { return m_partialbb; }
 
     /**
-     * Calculates 8 corners of a Bounding Box
      *
-     * @param corners
-     * @param bb_array
+     * get the partial BB of the area, which needs to be reconstructed
+     *
+     * @return partial BB
      */
-    void calculateCorners(Eigen::Vector4d corners[], boost::shared_array<double> bb_array);
+    BoundingBox<BaseVecT>& getpartialBB() { return m_partialbb; }
+
 
     virtual ~BigGrid();
 
@@ -209,8 +205,9 @@ class BigGrid
 
     float m_voxelSize;
     bool m_extrude;
+#ifdef LVR2_USE_OPEN_MP
     omp_lock_t m_lock;
-
+#endif
     bool m_has_normal;
     bool m_has_color;
 

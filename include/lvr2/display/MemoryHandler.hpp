@@ -2,6 +2,8 @@
 #define MEMORY_HANDLER
 
 #include <iostream>
+#include <vector>
+#include <string.h> //memset
 
 class ChunkMemoryHandler
 {  private:

@@ -29,6 +29,7 @@
 
 #include <iostream>
 #include "lvr2/reconstruction/LBKdTree.hpp"
+#include "lvr2/config/lvropenmp.hpp"
 
 namespace lvr2
 {
@@ -46,7 +47,7 @@ LBKdTree::LBKdTree( LBPointArray<float>& vertices, int num_threads) {
     this->m_splits = boost::shared_ptr<LBPointArray<unsigned char> >(new LBPointArray<unsigned char>);
     st_num_threads = num_threads;
     st_depth_threads = static_cast<int>(log2(st_num_threads));
-    pool = new ctpl::thread_pool(st_num_threads);
+    pool = new ctpl::thread_pool(OpenMPConfig::getNumThreads());
     this->generateKdTree(vertices);
 }
 
@@ -72,7 +73,7 @@ void LBKdTree::generateKdTree(LBPointArray<float> &vertices) {
 
     pool->stop(true);
     delete pool;
-    pool = new ctpl::thread_pool(st_num_threads);
+    pool = new ctpl::thread_pool(OpenMPConfig::getNumThreads());
 
 
     this->generateKdTreeArray(vertices, indices_sorted, vertices.dim);
@@ -147,7 +148,7 @@ void LBKdTree::generateKdTreeArray(LBPointArray<float>& V,
 
     pool->stop(true);
     delete pool;
-    pool = new ctpl::thread_pool(st_num_threads);
+    pool = new ctpl::thread_pool(OpenMPConfig::getNumThreads());
 }
 
 void LBKdTree::fillCriticalIndices(const LBPointArray<float>& V,

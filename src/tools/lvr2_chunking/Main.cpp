@@ -34,7 +34,7 @@
 
 #include "Options.hpp"
 #include "lvr2/algorithm/ChunkManager.hpp"
-#include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 
 #include <boost/filesystem.hpp>
@@ -73,8 +73,8 @@ int main(int argc, char** argv)
                 lvr2::BaseVector<float>(options.getXMax(), options.getYMax(), options.getZMax()));
             // end: tmp test of extractArea method
 
-            lvr2::ModelFactory::saveModel(
-                lvr2::ModelPtr(new lvr2::Model(chunkLoader.extractArea(area))), "area.ply");
+//            lvr2::ModelFactory::saveModel(
+//                lvr2::ModelPtr(new lvr2::Model(chunkLoader.extractArea(area))), "area.ply");
         }
     }
     else
@@ -89,8 +89,10 @@ int main(int argc, char** argv)
         float size = options.getChunkSize();
         float maxChunkOverlap = options.getMaxChunkOverlap();
 
+
         // Check extension
-        boost::filesystem::path selectedFile(options.getInputFile());
+        std::vector<std::string> files = options.getInputFile();
+        boost::filesystem::path selectedFile(files[0]);
         std::string extension = selectedFile.extension().string();
         lvr2::MeshBufferPtr meshBuffer;
         if (extension == ".h5")
@@ -100,17 +102,25 @@ int main(int argc, char** argv)
                                                 lvr2::hdf5features::VariantChannelIO,
                                                 lvr2::hdf5features::MeshIO>;
             HDF5MeshToolIO hdf5;
-            hdf5.open(options.getInputFile());
+            hdf5.open(files[0]);
             meshBuffer = hdf5.loadMesh(options.getMeshGroup());
         }
         else // use model reader
         {
-            lvr2::ModelPtr model = lvr2::ModelFactory::readModel(options.getInputFile());
-            meshBuffer = model->m_mesh;
-        }
-        if (meshBuffer)
-        {
-            lvr2::ChunkManager chunker(meshBuffer, size, maxChunkOverlap, outputPath.string());
+            std::vector<lvr2::MeshBufferPtr> meshes;
+            std::vector<std::string> layers;
+            for(size_t i = 0; i < files.size(); ++i)
+            {
+                lvr2::ModelPtr model = lvr2::ModelFactory::readModel(files[i]);
+                layers.push_back(std::string("mesh") + std::to_string(i));
+                meshBuffer = model->m_mesh;
+                if (meshBuffer)
+                {
+                    meshes.push_back(meshBuffer);
+                }
+
+            }
+         lvr2::ChunkManager chunker(meshes, size, maxChunkOverlap, outputPath.string(), layers);
         }
     }
     return EXIT_SUCCESS;

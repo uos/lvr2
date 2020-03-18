@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>lvr2</name>
+  <version>19.12.1</version>
+  <description>
+The Las Vegas Surface Reconstruction Toolkit is an Open Source toolkit to reconstruct triangle meshes from unordered point clouds. It supports the generation of textured models either using colored point clouds or point clouds plus images and according calibration matrices. The LVR toolkit provides an Open Source C++ API for meshing and texture generation as well as an I/O interface to store the generated meshes in different exchange formats including Stanford PLY, Wavefront OBJ and Collada. In contrast to other meshing software, it focuses on reconstruction of large scale environments on city scale from high resolution point clouds.
+  </description>
+
+  <maintainer email="spuetz@uos.de">Sebastian Pütz</maintainer>
+  <maintainer email="twiemann@uos.de">Thomas Wiemann</maintainer>
+
+  <license>BSD-3-Clause</license>
+
+
+  <url type="website">https://www.las-vegas.uni-osnabrueck.de/</url>
+
+
+  <author email="twiemann@uos.de">Thomas Wiemann</author>
+  <author email="spuetz@uos.de">Sebastian Pütz</author>
+  <author email="amock@uos.de">Alexander Mock</author>
+  <author email="lkiesow@uos.de">Lars Kiesow</author>
+  <author email="lukas.kalbertodt@gmail.com">Lukas Kalbertodt</author>
+  <author email="tristan@igelbrink.com">Tristan Igelbrink</author>
+  <author email="jvonbehren@uos.de">Johan M. von Behren</author>
+  <author email="dofeldsc@uos.de">Dominik Feldschnieders</author>
+  <author email="aloehr@uos.de">Alexander Löhr</author>
+
+
+  <depend>libflann-dev</depend>
+  <depend>libgsl</depend>
+  <depend>eigen</depend>
+  <depend>ocl-icd-opencl-dev</depend>
+  <depend>libvtk</depend>
+  <depend>libvtk-qt</depend>
+  <depend>boost</depend>
+  <depend>glut</depend>
+  <depend>libxi-dev</depend>
+  <depend>libxmu-dev</depend>
+  <depend>libhdf5-dev</depend>
+  <depend>qtbase5-dev</depend>
+  <depend>libqt5-opengl-dev</depend>
+  <depend>lz4</depend>
+  <depend>libopencv-dev</depend>
+  <depend>yaml-cpp</depend>
+
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>

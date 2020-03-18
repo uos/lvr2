@@ -15,10 +15,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+if(APPLE)
+  set(CMAKE_MACOSX_RPATH ON)
+endif()
+
 #------------------------------------------------------------------------------
 # Searching for Embree: needs to be placed above "set(CMAKE_MODULE_PATH)".
 #------------------------------------------------------------------------------
-find_package(embree 3.0)
+find_package(embree 3.0 QUIET)
 if(embree_FOUND)
   message(STATUS "Found Embree")
   include_directories(${EMBREE_INCLUDE_DIRS})
@@ -93,9 +97,14 @@ endif(NOT APPLE AND WITH_CUDA)
 #------------------------------------------------------------------------------
 # Searching for OpenCV
 #------------------------------------------------------------------------------
-find_package( OpenCV 3 )
-if (!OpenCV_FOUND)
-  find_package( OpenCV )
+find_package( OpenCV 3 QUIET )
+if (NOT OpenCV_FOUND)
+  find_package( OpenCV 4)
+  if(OpenCV_FOUND)
+	message(STATUS "Found OpenCV 4")
+  endif()
+else()
+  message(STATUS "Found OpenCV 3")
 endif()
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
@@ -146,7 +155,7 @@ endif(MPI_FOUND)
 #------------------------------------------------------------------------------
 # Searching for OpenCl
 #------------------------------------------------------------------------------
-find_package(OPENCL)
+find_package(OpenCL2)
 if(OPENCL_FOUND)
   message(STATUS "Found OpenCL")
     include_directories(OPENCL_INCLUDE_DIR)
@@ -172,6 +181,10 @@ endif(draco_FOUND)
 #------------------------------------------------------------------------------
 set(VTK_QT_VERSION 5)
 find_package(VTK REQUIRED)
+
+if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
+endif()
 
 if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK5)
@@ -262,7 +275,7 @@ if(MPI_FOUND)
   set($Boost_COMPONENTS ${Boost_COMPONENTS} mpi)
 endif()
 
-find_package(Boost 1.54 COMPONENTS ${Boost_COMPONENTS} REQUIRED)
+find_package(Boost 1.54 COMPONENTS ${Boost_COMPONENTS} REQUIRED QUIET)
 
 
 link_directories(${Boost_LIBRARY_DIR})
@@ -361,7 +374,8 @@ add_subdirectory(ext/HighFive)
 include_directories("ext/HighFive/include")
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 include_directories(${HDF5_INCLUDE_DIRS})
-link_directories(${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+find_package(HDF5 REQUIRED C CXX HL)
+include_directories(${HDF5_INCLUDE_DIR})
 message(STATUS "Found HDF5")
 
 # yaml-cpp
@@ -392,19 +406,16 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/${RiVLib_DIR})
     endif()
 endif()
 
-
 ###############################################################################
 # ADD LVR DEFINITIONS
 ###############################################################################
 
 add_definitions(${LVR2_DEFINITIONS})
 
-
 ###############################################################################
 # LVR-Kinfu Checks
 ###############################################################################
 option(WITH_KINFU "Compile LVR Kinfu" OFF)
-
 
 ###############################################################################
 # Check and set CUDA host compiler flags. CUDA 6.5 is only
@@ -480,13 +491,13 @@ endif()
 
 find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
 if(Qt5_FOUND)
+  message(STATUS "Found QT5")
   find_package(QVTK)
+  message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
   if(QVTK_FOUND)
     include_directories(${QVTK_INCLUDE_DIR})
-    add_subdirectory(src/tools/lvr2_viewer)
-  elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
-    add_subdirectory(src/tools/lvr2_viewer)
   endif(QVTK_FOUND)
+  add_subdirectory(src/tools/lvr2_viewer)
 endif(Qt5_FOUND)
 
 ###############################################################################
@@ -495,6 +506,61 @@ endif(Qt5_FOUND)
 find_package(Curses)
 if(CURSES_FOUND)
     include_directories( ${CURSES_INCLUDE_DIRS} )
+endif()
+
+###############################################################################
+# SET DEPENDENCIES
+###############################################################################
+
+set(LVR2_LIB_DEPENDENCIES
+    ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY}
+    ${Boost_THREAD_LIBRARY}
+    ${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_IOSTREAMS_LIBRARY}
+    ${OPENGL_LIBRARIES}
+    ${GLUT_LIBRARIES}
+    ${GDAL_LIBRARY}
+    ${OpenCV_LIBS}
+    ${GSL_LIBRARIES}
+    ${LZ4_LIBRARY}
+    ${TIFF_LIBRARY}
+    ${YAML_CPP_LIBRARIES}
+    ${OpenMP_CXX_LIBRARIES}
+    ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
+    m
+    )
+
+#####################################################################################
+# ADD ALL EXTERNAL DEPENDENCIES
+#####################################################################################
+
+if(UNIX)
+set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} pthread)
+endif(UNIX)
+
+if(PCL_FOUND)
+set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${PCL_LIBRARIES})
+endif(PCL_FOUND)
+
+if(WITH_FREENECT AND LIBFREENECT_FOUND)
+set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${LIBFREENECT_LIBRARIES})
+endif()
+
+if(draco_FOUND)
+set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${draco_LIBRARIES})
+endif(draco_FOUND)
+
+if(RiVLib_FOUND)
+  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${RiVLib_SCANIFC_LIBRARY})
+endif()
+
+if(OPENCL_FOUND)
+  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${OpenCL_LIBRARIES})
+endif()
+
+if(YAML_CPP_LIBRARIES)
+  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${YAML_CPP_LIBRARIES})
 endif()
 
 ###############################################################################
@@ -517,7 +583,7 @@ add_subdirectory(src/tools/lvr2_kaboom)
 add_subdirectory(src/tools/lvr2_octree_test)
 add_subdirectory(src/tools/lvr2_image_normals)
 add_subdirectory(src/tools/lvr2_plymerger)
-add_subdirectory(src/tools/lvr2_hdf5_builder)
+# add_subdirectory(src/tools/lvr2_hdf5_builder)
 add_subdirectory(src/tools/lvr2_hdf5_builder_2)
 add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
 add_subdirectory(src/tools/lvr2_slam2hdf5)
@@ -526,6 +592,7 @@ add_subdirectory(src/tools/lvr2_slam6d_merger)
 add_subdirectory(src/tools/lvr2_chunking)
 add_subdirectory(src/tools/lvr2_registration)
 add_subdirectory(src/tools/lvr2_mesh_reducer)
+add_subdirectory(src/tools/lvr2_chunking_server)
 
 if(CURSES_FOUND AND embree_FOUND)
     add_subdirectory(src/tools/lvr2_ascii_viewer)
@@ -576,6 +643,9 @@ write_basic_package_version_file(
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/LVR2ConfigVersion.cmake
               DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr2 )
+
+# install package.xml for ROS
+install(FILES package.xml DESTINATION share/lvr2)
 
 install(FILES
     CMakeModules/FindEigen3.cmake

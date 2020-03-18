@@ -46,7 +46,7 @@ template<typename HandleT, typename ElemT>
 void StableVector<HandleT, ElemT>::checkAccess(HandleType handle) const
 {
     // Only actually check in debug mode, because checking this is costly...
-    #ifndef NDEBUG
+    //#ifndef NDEBUG
     // Make sure the handle is not OOB
     if (handle.idx() >= size())
     {
@@ -60,7 +60,7 @@ void StableVector<HandleT, ElemT>::checkAccess(HandleType handle) const
     {
         panic("attempt to access a deleted value in StableVector");
     }
-    #endif
+    //#endif
 }
 
 template<typename HandleT, typename ElemT>

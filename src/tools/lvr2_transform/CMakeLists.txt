@@ -16,10 +16,7 @@ set(LVR2_TRANSFORM_DEPENDENCIES
 	lvr2las_static
 	lvr2rply_static
 	lvr2slam6d_static
-	${OPENGL_LIBRARIES}
-	${GLUT_LIBRARIES}
-	${OpenCV_LIBS}
-	${PCL_LIBRARIES}
+	${LVR2_LIB_DEPENDENCIES}
 	)
 
 if( ${NABO_FOUND} )

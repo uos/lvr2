@@ -251,7 +251,7 @@ fileType LineReader::getFileType(size_t i)
                             "LineReader when reading file again?)");
     }
 }
-fileType LineReader::getFileType() { getFileType(m_currentReadFile); }
+fileType LineReader::getFileType() { return getFileType(m_currentReadFile); }
 
 bool LineReader::ok() { return m_currentReadFile < m_fileAttributes.size(); }
 
@@ -410,16 +410,24 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t& return_amount, size_t 
                     new char[amount * m_fileAttributes[m_currentReadFile].m_PointBlockSize],
                     std::default_delete<char[]>());
                 xyzc pc;
+                float tmp_x, tmp_y, tmp_z;
+                unsigned char tmp_r, tmp_g, tmp_b;
                 while ((fscanf(pFile,
-                               "%f %f %f %hhu %hhu %hhu",
-                               &pc.point.x,
-                               &pc.point.y,
-                               &pc.point.z,
-                               &pc.color.r,
-                               &pc.color.g,
-                               &pc.color.b) != EOF) &&
+                               "%f %f %f %hhu %hhu %hhu",  // don't read directly in to struct!
+                               &tmp_x,
+                               &tmp_y,
+                               &tmp_z,
+                               &tmp_r,
+                               &tmp_g,
+                               &tmp_b) != EOF) &&
                        readCount < amount)
                 {
+                    pc.point.x = tmp_x;
+                    pc.point.y = tmp_y;
+                    pc.point.z = tmp_z;
+                    pc.color.r = tmp_r;
+                    pc.color.g = tmp_g;
+                    pc.color.b = tmp_b;
                     readCount++;
                     input.push_back(pc);
                 }
@@ -441,19 +449,30 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t& return_amount, size_t 
                     new char[amount * m_fileAttributes[m_currentReadFile].m_PointBlockSize],
                     std::default_delete<char[]>());
                 xyznc pc;
+                float tmp_x, tmp_y, tmp_z, tmp_nx, tmp_ny, tmp_nz;
+                unsigned char tmp_r, tmp_g, tmp_b;
                 while ((fscanf(pFile,
                                "%f %f %f %hhu %hhu %hhu %f %f %f",
-                               &pc.point.x,
-                               &pc.point.y,
-                               &pc.point.z,
-                               &pc.color.r,
-                               &pc.color.g,
-                               &pc.color.b,
-                               &pc.normal.x,
-                               &pc.normal.y,
-                               &pc.normal.z) != EOF) &&
+                               &tmp_x,
+                               &tmp_y,
+                               &tmp_z,
+                               &tmp_r,
+                               &tmp_g,
+                               &tmp_b,
+                               &tmp_nx,
+                               &tmp_ny,
+                               &tmp_nz) != EOF) &&
                        readCount < amount)
                 {
+                    pc.point.x = tmp_x;
+                    pc.point.y = tmp_y;
+                    pc.point.z = tmp_z;
+                    pc.color.r = tmp_r;
+                    pc.color.g = tmp_g;
+                    pc.color.b = tmp_b;
+                    pc.normal.x = tmp_nx;
+                    pc.normal.y = tmp_ny;
+                    pc.normal.z = tmp_nz;
                     readCount++;
                     input.push_back(pc);
                 }
@@ -476,6 +495,10 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t& return_amount, size_t 
     {
         std::cout << "SHIT could not open file: " << std::strerror(errno) << std::endl;
     }
+
+    // Return empty pointer if all else fails...
+    boost::shared_ptr<void> tmp;
+    return tmp;
 }
 
 void LineReader::rewind()

@@ -36,7 +36,7 @@
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/registration/SLAMAlign.hpp"
 #include "lvr2/io/HDF5IO.hpp"
-#include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 #include "lvr2/io/hdf5/ArrayIO.hpp"
 #include "lvr2/io/hdf5/ChannelIO.hpp"
 #include "lvr2/io/hdf5/VariantChannelIO.hpp"
@@ -379,6 +379,7 @@ int main(int argc, char** argv)
 
     // DEBUG
     ScanProjectEditMark proj;
+    proj.project = ScanProjectPtr(new ScanProject);
 
     int count = end - start + 1;
 
@@ -397,7 +398,7 @@ int main(int argc, char** argv)
             BoundingBox<BaseVector<float>> bb(BaseVector<float>(bb_array[0], bb_array[1], bb_array[2]),
                                     BaseVector<float>(bb_array[3], bb_array[4], bb_array[5]));
             // bounding box transfered to object
-            tempScan->m_boundingBox = bb;
+            tempScan->boundingBox = bb;
 
             boost::shared_array<float> fov_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "fov", six);
             // fov transfered to object
@@ -406,54 +407,51 @@ int main(int argc, char** argv)
 
             boost::shared_array<float> res_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "resolution", six);
             // resolution transfered
-            tempScan->m_hResolution = res_array[0];
-            tempScan->m_vResolution = res_array[1];
+            tempScan->hResolution = res_array[0];
+            tempScan->vResolution = res_array[1];
             // point cloud transfered
             boost::shared_array<float> point_array = h5_ptr->loadArray<float>("raw/scans/"+ numOfScansInHDF[i], "points", pointsNum);
             // important because x, y, z coords
             pointsNum = pointsNum / 3;
             PointBufferPtr pointPointer = PointBufferPtr(new PointBuffer(point_array, pointsNum));
-            tempScan->m_points = pointPointer;
+            tempScan->points = pointPointer;
             // tempScan->m_points = h5_ptr->loadPointCloud("raw/scans/" + numOfScansInHDF[i]);
-            tempScan->m_pointsLoaded = true;
+            tempScan->pointsLoaded = true;
             // pose transfered
-            tempScan->m_poseEstimation = h5_ptr->loadMatrix<Transformd>("raw/scans/" + numOfScansInHDF[i], "initialPose").get();
-            tempScan->m_positionNumber = i;
+            tempScan->poseEstimation = h5_ptr->loadMatrix<Transformd>("raw/scans/" + numOfScansInHDF[i], "initialPose").get();
+            tempScan->positionNumber = i;
 
-            tempScan->m_scanRoot = "raw/scans/" + numOfScansInHDF[i];
+            tempScan->scanRoot = "raw/scans/" + numOfScansInHDF[i];
 
 
             // sets the finalPose to the identiy matrix
-            tempScan->m_registration = Transformd::Identity();
+            tempScan->registration = Transformd::Identity();
 
             
             // DEBUG
             ScanPosition pos;
-            pos.scan = boost::optional<Scan>(*tempScan);
-            proj.positions.push_back(std::make_shared<ScanPosition>(pos));
+            pos.scans.push_back(tempScan);
+            proj.project->positions.push_back(std::make_shared<ScanPosition>(pos));
             proj.changed.push_back(false);
-
-            
 
             SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(tempScan));
 
-            scans.push_back(slamScan);
-            align.addScan(slamScan);
+           // scans.push_back(slamScan);
+           // align.addScan(slamScan);
         }
         // DEBUG
-        
-        // cout << "vor Pipe Konstruktor" << endl;
-        // ScanProjectEditMarkPtr projPtr = make_shared<ScanProjectEditMark>(proj);
-        // RegistrationPipeline pipe(&options, projPtr);
-        // pipe.doRegistration();
-        // cout << "Nach doRegistration" << endl;
-        // for (size_t i = 0; i < projPtr->changed.size(); i++)
-        // {
-        //     cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << projPtr->changed.at(i)<< endl;
-        // }
-        
-        // cout << "Eine Pose aus dem Project:" << endl << projPtr->positions.at(1)->scan->m_registration << endl;
 
+         cout << "vor Pipe Konstruktor" << endl;
+         ScanProjectEditMarkPtr projPtr = make_shared<ScanProjectEditMark>(proj);
+         RegistrationPipeline pipe(&options, projPtr);
+         pipe.doRegistration();
+         cout << "Nach doRegistration" << endl;
+         for (size_t i = 0; i < projPtr->changed.size(); i++)
+         {
+             cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << projPtr->changed.at(i)<< endl;
+         }
+
+         cout << "Eine Pose aus dem Project:" << endl << projPtr->project->positions.at(1)->scans[0]->registration << endl;
     }
     else
     {
@@ -480,8 +478,8 @@ int main(int argc, char** argv)
             Transformd pose = getTransformationFromFile<double>(file);
 
             ScanPtr scan = ScanPtr(new Scan());
-            scan->m_points = model->m_pointCloud;
-            scan->m_poseEstimation = pose;
+            scan->points = model->m_pointCloud;
+            scan->poseEstimation = pose;
 
             SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(scan));
             scans.push_back(slamScan);
@@ -510,7 +508,7 @@ int main(int argc, char** argv)
         for(int i = 0; i < scans.size(); i++)
         {
             Transformd pose = scans[i]->pose();
-            cout << "Pose Scan Nummer " << i << pose << endl;
+            cout << "Main:Pose Scan Nummer " << i << endl << pose << endl;
             // The pose needs to be transposed before writing to hdf,
             // because the lvr2_viewer expects finalPose in hdf transposed this way.
             // The initial pose is saved NOT transposed in HDF

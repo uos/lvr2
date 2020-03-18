@@ -32,7 +32,7 @@
  *      Author: Patrick Hoffmann
  */
 #ifndef OPTIONSGS_H_
-#define OPTIONSHS_H_
+#define OPTIONSGS_H_
 
 #include "lvr2/config/BaseOption.hpp"
 

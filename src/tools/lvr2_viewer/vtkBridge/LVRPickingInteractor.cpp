@@ -1182,7 +1182,7 @@ void LVRPickingInteractor::spinTrackball()
 
 void LVRPickingInteractor::zoomTrackball()
 {
-    //vtkInteractorStyleTrackballCamera::Zoom();
+    this->Zoom();
 }
 
 void LVRPickingInteractor::rotateTrackball()
