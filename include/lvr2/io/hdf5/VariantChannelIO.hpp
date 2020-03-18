@@ -2,15 +2,11 @@
 #ifndef LVR2_IO_HDF5_VARIANTCHANNELIO_HPP
 #define LVR2_IO_HDF5_VARIANTCHANNELIO_HPP
 
-// Object to store
+#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 #include "lvr2/types/VariantChannel.hpp"
 
 // Dependencies
 #include "ChannelIO.hpp"
-
-// Test
-#include "lvr2/io/GHDF5IO.hpp"
-
 
 namespace lvr2 {
 

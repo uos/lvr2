@@ -15,9 +15,7 @@ set(LVR2_OCTREE_TEST_DEPENDENCIES
 	lvr2las_static
 	lvr2rply_static
 	lvr2slam6d_static
-	${OPENGL_LIBRARIES}
-	${GLUT_LIBRARIES}
-	${OpenCV_LIBS}
+	${LVR2_LIB_DEPENDENCIES}
 )
 
 #####################################################################################

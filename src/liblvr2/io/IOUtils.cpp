@@ -513,15 +513,15 @@ void parseSLAMDirectory(std::string dir, vector<ScanPtr>& scans)
                 std::cout << "Loading '" << filename << "'" << std::endl;
                 AsciiIO io;
                 ModelPtr model = io.read(scan_files[i].string());
-                scan->m_points = model->m_pointCloud;
+                scan->points = model->m_pointCloud;
 
-                size_t numPoints = scan->m_points->numPoints();
-                floatArr pts = scan->m_points->getPointArray();
+                size_t numPoints = scan->points->numPoints();
+                floatArr pts = scan->points->getPointArray();
 
                 for (size_t i = 0; i < numPoints; i++)
                 {
                     BaseVector<float> pt(pts[i*3 + 0], pts[i*3 + 1], pts[i*3 + 2]);
-                    scan->m_boundingBox.expand(pt);
+                    scan->boundingBox.expand(pt);
                 }
 
                 Transformd pose_estimate = Transformd::Identity();
@@ -548,8 +548,8 @@ void parseSLAMDirectory(std::string dir, vector<ScanPtr>& scans)
                 }
 
                 // transform points?
-                scan->m_registration = registration;
-                scan->m_poseEstimation = pose_estimate;
+                scan->registration = registration;
+                scan->poseEstimation = pose_estimate;
 
                 scans.push_back(scan);
             }

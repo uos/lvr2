@@ -74,6 +74,8 @@ public:
         vector<unsigned int>& duplicates,
         float comparePrecision
     ) = 0;
+
+    virtual ~FastReconstructionBase() = default;
 };
 
 /**

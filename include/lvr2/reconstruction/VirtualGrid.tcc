@@ -32,21 +32,20 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-VirtualGrid<BaseVecT>::VirtualGrid(BoundingBox<BaseVecT>& bb,
-                                  size_t gridCellSize,
-                                  float voxelSize)
+VirtualGrid<BaseVecT>::VirtualGrid(BoundingBox<BaseVecT>& bb, size_t gridCellSize, float voxelSize)
 {
- m_pcbb = bb;
- if(fmod((float) gridCellSize , voxelSize) != 0)
- {
-     int var = ((int)gridCellSize/(int)voxelSize) + fmod((float) gridCellSize , voxelSize);
-     m_gridCellSize = var * voxelSize;
- }
- else{
-     m_gridCellSize = gridCellSize;
- }
+    m_pcbb = bb;
+    if (fmod((float)gridCellSize, voxelSize) != 0)
+    {
+        int var = ((int)gridCellSize / (int)voxelSize) + fmod((float)gridCellSize, voxelSize);
+        m_gridCellSize = var * voxelSize;
+    }
+    else
+    {
+        m_gridCellSize = gridCellSize;
+    }
 
- m_voxelsize = voxelSize;
+    m_voxelsize = voxelSize;
 }
 
 template <typename BaseVecT>
@@ -80,16 +79,11 @@ void VirtualGrid<BaseVecT>::findInitialBox()
 
     m_initbox =
         lvr2::BoundingBox<BaseVecT>(BaseVecT(min_x, min_y, min_z), BaseVecT(max_x, max_y, max_z));
-
 }
 
 template <typename BaseVecT>
 void VirtualGrid<BaseVecT>::generateNeighbours()
 {
-    if (false) // TODO: think of something appropriate
-    {
-        findInitialBox();
-    }
 
     // Calculates the numbers of Boxes that fits per axis
     int n_xboxes =
@@ -100,27 +94,31 @@ void VirtualGrid<BaseVecT>::generateNeighbours()
         ceil((m_pcbb.getZSize() + abs(m_pcbb.getMin().z - m_initbox.getMin().z)) / m_gridCellSize);
 
     lvr2::BoundingBox<BaseVecT> first = m_initbox;
-
+    string comment = lvr2::timestamp.getElapsedTime() + "Building vGrid... ";
+    lvr2::ProgressBar progress(n_xboxes * n_yboxes* n_zboxes, comment);
     for (int i = 0; i < n_xboxes; i++)
     {
         for (int j = 0; j < n_yboxes; j++)
         {
             for (int h = 0; h < n_zboxes; h++)
             {
-                std::shared_ptr<lvr2::BoundingBox<BaseVecT>> next =
-                    std::shared_ptr<lvr2::BoundingBox<BaseVecT>>(new lvr2::BoundingBox<BaseVecT>(
+                lvr2::BoundingBox<BaseVecT> next =
+                    lvr2::BoundingBox<BaseVecT>(
                         BaseVecT(first.getMin().x + i * m_gridCellSize,
                                  first.getMin().y + j * m_gridCellSize,
                                  first.getMin().z + h * m_gridCellSize),
                         BaseVecT(first.getMax().x + i * m_gridCellSize,
                                  first.getMax().y + j * m_gridCellSize,
-                                 first.getMax().z + h * m_gridCellSize)));
-            std:
-                cout << "generated a Box :3" << std::endl;
+                                 first.getMax().z + h * m_gridCellSize));
+
                 m_boxes.push_back(next);
+                if(!timestamp.isQuiet())
+                    ++progress;
             }
         }
     }
+    if(!timestamp.isQuiet())
+        cout << endl;
 }
 
 } // namespace lvr2

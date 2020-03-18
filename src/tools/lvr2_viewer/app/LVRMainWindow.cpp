@@ -52,10 +52,18 @@
 #include <vtkCamera.h>
 #include <vtkDefaultPass.h>
 
+#include "../vtkBridge/LVRChunkedMeshBridge.hpp"
+#include "../vtkBridge/LVRChunkedMeshCuller.hpp"
+
 
 #include <QString>
 
 #include <boost/filesystem.hpp>
+#include <boost/tokenizer.hpp>
+
+#include <QMetaType>
+
+#include "Options.hpp"
 
 namespace lvr2
 {
@@ -137,6 +145,7 @@ LVRMainWindow::LVRMainWindow()
  
     // Toolbar item "File"
     m_actionOpen = this->actionOpen;
+    m_actionOpenChunkedMesh = this->actionOpenChunkedMesh;
     m_actionExport = this->actionExport;
     m_actionQuit = this->actionQuit;
     // Toolbar item "Views"
@@ -225,7 +234,7 @@ LVRMainWindow::LVRMainWindow()
      m_axesWidget->InteractiveOff();
 
      // Disable action if EDL is not available
-#ifndef LVR_USE_VTK_GE_7_1
+#ifndef LVR2_USE_VTK_GE_7_1
      actionRenderEDM->setEnabled(false);
 #endif
 
@@ -234,7 +243,7 @@ LVRMainWindow::LVRMainWindow()
 
 LVRMainWindow::~LVRMainWindow()
 {
-    this->qvtkWidget->GetRenderWindow()->RemoveRenderer(m_renderer);
+//    this->qvtkWidget->GetRenderWindow()->RemoveRenderer(m_renderer);
 
     if(m_correspondanceDialog)
     {
@@ -287,6 +296,7 @@ LVRMainWindow::~LVRMainWindow()
 void LVRMainWindow::connectSignalsAndSlots()
 {
     QObject::connect(m_actionOpen, SIGNAL(triggered()), this, SLOT(loadModel()));
+    QObject::connect(m_actionOpenChunkedMesh, SIGNAL(triggered()), this, SLOT(loadChunkedMesh()));
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(restoreSliders()));
@@ -476,7 +486,7 @@ void LVRMainWindow::setupQVTK()
     m_pathCamera->SetCamera(m_renderer->GetActiveCamera());
 
 
-#ifdef LVR_USE_VTK_GE_7_1 
+#ifdef LVR2_USE_VTK_GE_7_1
     // Enable EDL per default
     qvtkWidget->GetRenderWindow()->SetMultiSamples(0);
 
@@ -495,7 +505,7 @@ void LVRMainWindow::setupQVTK()
 
 void LVRMainWindow::toogleEDL(bool state)
 {
-#ifdef LVR_USE_VTK_GE_7_1
+#ifdef LVR2_USE_VTK_GE_7_1
     vtkOpenGLRenderer *glrenderer = vtkOpenGLRenderer::SafeDownCast(m_renderer);
 
     if(state == false)
@@ -956,6 +966,42 @@ LVRModelItem* LVRMainWindow::loadModelItem(QString name)
     return item;
 }
 
+void LVRMainWindow::loadChunkedMesh(const QStringList& filenames, std::vector<std::string> layers, int cacheSize, float highResDistance)
+{
+    if(filenames.size() > 0)
+    {
+        QTreeWidgetItem* lastItem = nullptr;
+
+        QStringList::const_iterator it = filenames.begin();
+        while(it != filenames.end())
+        {
+            QFileInfo info((*it));
+            QString base = info.fileName();
+
+            std::cout << base.toStdString() << std::endl;
+
+            if (info.suffix() == "h5")
+            {
+//                std::vector<std::string> layers = {"mesh0", "mesh1"};
+                std::cout << info.absoluteFilePath().toStdString() << std::endl;
+                //m_chunkBridge =  std::make_unique<LVRChunkedMeshBridge>(info.absoluteFilePath().toStdString(), m_renderer, layers, cacheSize);
+                m_chunkBridge = ChunkedMeshBridgePtr(new LVRChunkedMeshBridge(info.absoluteFilePath().toStdString(), m_renderer, layers, cacheSize));
+                m_chunkBridge->addInitialActors(m_renderer);
+                m_chunkCuller = new ChunkedMeshCuller(m_chunkBridge.get(), highResDistance);
+                m_renderer->AddCuller(m_chunkCuller);
+                qRegisterMetaType<actorMap > ("actorMap");
+                QObject::connect(m_chunkBridge.get(), 
+                        SIGNAL(updateHighRes(actorMap, actorMap)),
+                        this,
+                        SLOT(updateDisplayLists(actorMap, actorMap)),
+                        Qt::QueuedConnection);
+            }
+            ++it;
+        }
+    }
+}
+
+
 void LVRMainWindow::loadModels(const QStringList& filenames)
 {
     if(filenames.size() > 0)
@@ -1029,6 +1075,52 @@ void LVRMainWindow::loadModel()
 {
     QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open Model"), "", tr("Model Files (*.ply *.obj *.pts *.3d *.txt *.h5)"));
     loadModels(filenames);
+    
+}
+
+void LVRMainWindow::loadChunkedMesh()
+{
+    QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open chunked mesh"), "", tr("Chunked meshes (*.h5)"));
+     bool ok;
+     QString text = QInputDialog::getText(0, "Enter layers",
+                                         "Layers whitspace seperated:", QLineEdit::Normal,
+                                         "", &ok);
+     std::vector<std::string> layers;
+     std::string unseperated = text.toStdString();
+     if(text.isEmpty())
+     {
+        layers = {"mesh0"};
+     }
+     else
+     {
+     
+         boost::tokenizer<boost::char_separator<char>> tokens(unseperated, boost::char_separator<char>());
+         layers = std::vector<std::string>(tokens.begin(), tokens.end());
+     }
+
+
+     std::cout << "LAYERS " ;
+     for(auto &layer : layers)
+     {
+         std::cout << layer << " ";
+     }
+
+     std::cout << std::endl;
+     double highResDistance = QInputDialog::getDouble(0, "highResDistance", "highResDistance");
+    
+     if(highResDistance < 0)
+     {
+        highResDistance = 0.0;
+     }
+
+
+     int cacheSize = QInputDialog::getInt(0, "cacheSize", "cache size");
+    
+     if(cacheSize < 0)
+     {
+        cacheSize = 0;
+     }
+    loadChunkedMesh(filenames, layers, cacheSize, highResDistance);
     
 }
 
@@ -1670,7 +1762,7 @@ QTreeWidgetItem* LVRMainWindow::addScans(std::shared_ptr<ScanDataManager> sdm, Q
     for (size_t i = 0; i < scans.size(); i++)
     {
         char buf[128];
-        std::sprintf(buf, "%05d", scans[i]->m_positionNumber);
+        std::sprintf(buf, "%05d", scans[i]->positionNumber);
         LVRScanDataItem *item = new LVRScanDataItem(scans[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
 
         if(cam_data_available && camData[i].size() > 0)
@@ -1700,12 +1792,28 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
 {
 
     QStringList filenames;
-    for(int i = 1; i < argc; i++)
+    viewer::Options options(argc, argv);
+    if(options.printUsage())
     {
-        filenames << argv[i];
+        return;
+    }
+
+    std::vector<std::string> files;
+    files.push_back(options.getInputFileName());
+    for(int i = 0; i < files.size(); i++)
+    {
+        std::cout << "filename " << files[i] << std::endl;
+        filenames << files[i].c_str();
     }
     
-    loadModels(filenames);
+    if(options.isChunkedMesh())
+    {
+        loadChunkedMesh(filenames, options.getLayers(), options.getCacheSize(),
+                        options.getHighResDistance());
+    }
+    else{
+        loadModels(filenames);
+    }
 }
 
 void LVRMainWindow::manualICP()
@@ -2291,5 +2399,30 @@ void LVRMainWindow::updateSpectralGradientEnabled(bool checked)
     this->frameSpectralSlidersArea->setEnabled(!checked);
     this->radioButtonUseSpectralSlider->setChecked(!checked);
 }
+
+void LVRMainWindow::updateDisplayLists(actorMap lowRes, actorMap highRes)
+{
+//    std::unique_lock<std::mutex> lock(m_chunkBridge->mw_mutex);
+//    std::cout << "Adding to renderer" << std::endl;
+//    m_chunkBridge->release = true;
+//    m_chunkBridge->mw_cond.notify_all();
+//    lock.unlock();
+
+    for(auto& it: lowRes)
+    {
+            m_renderer->RemoveActor(it.second);
+            it.second->ReleaseGraphicsResources(m_renderer->GetRenderWindow());
+    }
+    
+    for(auto& it: highRes)
+    { 
+          if(it.second)
+          {
+              m_renderer->AddActor(it.second);
+          }
+    }
+    m_renderer->GetRenderWindow()->Render();
+}
+
 
 } /* namespace lvr2 */

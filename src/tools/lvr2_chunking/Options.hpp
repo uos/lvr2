@@ -37,6 +37,7 @@
 
 #include <boost/program_options.hpp>
 #include <string>
+#include <vector>
 
 namespace chunking
 {
@@ -68,7 +69,7 @@ class Options
     /**
      * @brief	Returns the input file
      */
-    string getInputFile() const;
+    std::vector<std::string> getInputFile() const;
 
     /**
      * @brief	Returns the output directory

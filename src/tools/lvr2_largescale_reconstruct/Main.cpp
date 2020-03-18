@@ -31,9 +31,14 @@
 #include <algorithm>
 #include <iostream>
 #include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/config/lvropenmp.hpp"
 #include <random>
 #include <string>
-#include "lvr2/io/GHDF5IO.hpp"
+#include <lvr2/io/hdf5/ScanIO.hpp>
+#include <boost/filesystem.hpp>
+#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
+#include "lvr2/io/hdf5/ScanProjectIO.hpp"
+#include "lvr2/io/ScanIOUtils.hpp"
 
 using std::cout;
 using std::endl;
@@ -55,6 +60,13 @@ typedef ClSurface GpuSurface;
 #endif
 
 using Vec = lvr2::BaseVector<float>;
+// using ScanHDF5IO = lvr2::Hdf5Build<lvr2::hdf5features::ScanIO>;
+
+using BaseHDF5IO = lvr2::Hdf5IO<>;
+
+// Extend IO with features (dependencies are automatically fetched)
+using HDF5IO = BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO>;
+
 int main(int argc, char** argv)
 {
     // =======================================================================
@@ -76,66 +88,113 @@ int main(int argc, char** argv)
 
     string in = options.getInputFileName()[0];
 
-    LargeScaleReconstruction<Vec> lsr(options);
+    boost::filesystem::path selectedFile(in);
+    string extension = selectedFile.extension().string();
 
-    std::vector<ScanPtr> scans;
+    OpenMPConfig::setNumThreads(options.getNumThreads());
 
+    LargeScaleReconstruction<Vec> lsr(options.getVoxelSizes(), options.getBGVoxelsize(), options.getScaling(),
+                                      options.getNodeSize(), options.getPartMethod(), options.getKi(), options.getKd(), options.getKn(),
+                                      options.useRansac(), options.getFlippoint(), options.extrude(), options.getDanglingArtifacts(),
+                                      options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
+                                      options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
+                                      options.retesselate(), options.getLineFusionThreshold(), options.getBigMesh(), options.getDebugChunks(), options.useGPU());
 
-    std::vector<ScanPtr> h5scans;
-    //std::vector<ScanPtr> scans_new;
-
-
-    //scans_new.push_back(scans.front());
-
-    //scans.erase(scans.begin());
-
-    //BoundingBox<Vec> bb1(Vec(-200, -200, -100),Vec(0, 200, 180));
-    //BoundingBox<Vec> bb2(Vec(60, -200, -100),Vec(200, 200, 180));
-    //scans.front()->m_globalBoundingBox = bb1;
-
-
-
-   // if(bb1.overlap(bb2)) {
-   //     cout << "didnt work!" << endl;
-  //      return 0;
-   //}
-
-
-   ScanProjectEditMarkPtr project(new ScanProjectEditMark);
-
-    cout << "didnt work!" << endl;
-   vector<bool> diff;
-
-   diff.push_back(true);
-    diff.push_back(true);
-    diff.push_back(true);
-    cout << "didnt work!" << endl;
-    project->changed.push_back(true);
-    project->changed.push_back(true);
-    project->changed.push_back(true);
-    cout << "didnt work!" << endl;
     
-   for(auto mark : project->changed)
-   {
-       std::cout << mark;
-   }
 
-   lsr.resetEditMark(project);
 
-    for(auto mark : project->changed)
+    ScanProjectEditMarkPtr project(new ScanProjectEditMark);
+    std::shared_ptr<ChunkHashGrid> cm;
+    BoundingBox<Vec> boundingBox;
+
+    HDF5IO hdf;
+
+    //reconstruction from hdf5
+    if (extension == ".h5")
     {
-        std::cout << mark;
+        // loadAllPreviewsFromHDF5(in, *project->project.get());
+        HDF5IO hdf;
+        hdf.open(in);
+        ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
+        project->project = scanProjectPtr;
+
+        for (int i = 0; i < project->project->positions.size(); i++)
+        {
+            project->changed.push_back(true);
+        }
+        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(in, 50, boundingBox, options.getChunkSize()));
+    }
+    else
+    {
+
+        ScanProject dirScanProject;
+        bool importStatus = loadScanProject(in, dirScanProject);
+        //reconstruction from ScanProject Folder
+        if(importStatus) {
+            project->project = make_shared<ScanProject>(dirScanProject);
+            std::vector<bool> init(dirScanProject.positions.size(), true);
+            project->changed = init;
+        }
+        //reconstruction from a .ply file
+        else if(!boost::filesystem::is_directory(selectedFile))
+        {
+            project->project = ScanProjectPtr(new ScanProject);
+            ModelPtr model = ModelFactory::readModel(in);
+            ScanPtr scan(new Scan);
+
+            scan->points = model->m_pointCloud;
+            ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
+            scanPosPtr->scans.push_back(scan);
+            project->project->positions.push_back(scanPosPtr);
+            project->changed.push_back(true);
+        }
+        //reconstruction from a folder of .ply files
+        else{
+            project->project = ScanProjectPtr(new ScanProject);
+            boost::filesystem::directory_iterator it{in};
+            while (it != boost::filesystem::directory_iterator{})
+            {
+                cout << it->path().string() << endl;
+                string ext = it->path().extension().string();
+                if(ext == ".ply")
+                {
+                    ModelPtr model = ModelFactory::readModel(it->path().string());
+                    ScanPtr scan(new Scan);
+
+                    scan->points = model->m_pointCloud;
+                    ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
+                    scanPosPtr->scans.push_back(scan);
+                    project->project->positions.push_back(scanPosPtr);
+                    project->changed.push_back(true);
+                }
+                it++;
+            }
+
+
+        }
+
+        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid("chunked_mesh.h5", 50, boundingBox, options.getChunkSize()));
     }
 
+    BoundingBox<Vec> bb;
+    // reconstruction with diffrent methods
+    if(options.getPartMethod() == 1)
+    {
+        int x = lsr.mpiChunkAndReconstruct(project, bb, cm);
+    }
+    else
+    {
+        int x = lsr.mpiAndReconstruct(project);
+    }
 
+    // reconstruction of .ply for diffrent voxelSizes
+    if(options.getDebugChunks())
+    {
 
-
-
-    //int x = lsr.mpiChunkAndReconstruct(project);
-
-    //scans_new.front()->m_globalBoundingBox = bb2;
-
-    //int y = lsr.mpiChunkAndReconstruct(scans, scans_new);
+        for (int i; i < options.getVoxelSizes().size(); i++) {
+            lsr.getPartialReconstruct(bb, cm, options.getVoxelSizes()[i]);
+        }
+    }
 
     cout << "Program end." << endl;
 
