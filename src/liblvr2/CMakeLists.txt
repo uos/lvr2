@@ -47,6 +47,7 @@ set(LVR2_SOURCES
     io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
     io/ScanIOUtils.cpp
+    io/descriptions/ScanProjectStructureSLAM.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp

@@ -117,7 +117,7 @@ Transform<T> loadFromFile(const boost::filesystem::path& file);
  * @param inFile        An ASCII file containing point cloud data (one point per line)
  * @return size_t       Number of points in file
  */
-size_t countPointsInFile(boost::filesystem::path& inFile);
+size_t countPointsInFile(const boost::filesystem::path& inFile);
 
 /**
  * @brief   Writes a Eigen transformation into a .frames file
