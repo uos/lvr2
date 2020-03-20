@@ -10,75 +10,91 @@
 namespace lvr2
 {
 
-class FileKernel
+template<typename Implementation>
+class FileKernel : public D
 {
 public:
     
     FileKernel() = delete;
-    FileKernel(const std::string& root) : m_root(root) {};
+    FileKernel(const std::string& res) : m_fileResourceName(res) {};
 
-    virtual void saveMeshBuffer(const std::string& path, const MeshBufferPtr& buffer) = 0;
-    virtual void savePointBuffer(const std::string& path, const PointBufferPtr& buffer) = 0;
-    virtual void saveImage(const std::string& path, const cv::Mat& image) = 0;
-    virtual void saveMetaNode(const std::string& path, const Node& node) = 0;
+    virtual void saveMeshBuffer(
+        const std::string& group, 
+        const std::string& container, 
+        const MeshBufferPtr& buffer) = 0;
+
+    virtual void savePointBuffer(
+        const std::string& group, 
+        const std::string& container, 
+        const PointBufferPtr& buffer) = 0;
+
+    virtual void saveImage(
+        const std::string& group, 
+        const std::string& container,
+        const cv::Mat& image) = 0;
+
+    virtual void saveMetaYAML(
+        const std::string& group, 
+        const std::string& YAMLName,
+        const YAML::Node& node) = 0;
    
-    virtual void saveFloatArray(
-        const std::string& path, 
-        const boost::shared_array<float>& arr, 
-        const size_t& length) = 0;
+    template<typename T>
+    void saveArray(
+        const std::string& group, 
+        const std::string& container, 
+        boost::shared_array<T> arr, 
+        const size_t& length)
+    {
+        static_cast<Implementation*>(this)->saveArray(group, container, arr, length);
+    }
 
-    virtual void saveFloatArray(
-        const std::string& path, 
-        const boost::shared_array<float>& arr, 
-        const std::vector<size_t>& dim) = 0;
+    template<typename T>
+    void saveArray(
+        const std::string& group, 
+        const std::string& container, 
+        boost::shared_array<T> arr, 
+        const std::vector<size_t>& dims)
+    {
+        static_cast<Implementation*>(this)->saveArray(group, container, arr, dims);
+    }
 
-    virtual void saveDoubleArray(
-        const std::string& path, 
-        const boost::shared_array<double>& arr, 
-        const size_t& length) = 0;
-        
-    virtual void saveDoubleArray(
-        const std::string& path, 
-        const boost::shared_array<double>& arr, 
-        const std::vector<size_t>& dim) = 0;
-
-    virtual void saveUCharArray(
-        const std::string& path, 
-        const boost::shared_array<float>& arr, 
-        const std::vector<size_t>& dim) = 0;
-
-    virtual void saveUCharArray(
-        const std::string& path, 
-        const boost::shared_array<unsigned char>& arr, 
-        const size_t& length) = 0;
-        
-    virtual void saveUCharArray(
-        const std::string& path, 
-        const boost::shared_array<unsigned char>& arr, 
-        const std::vector<size_t>& dim) = 0;
  
-    virtual MeshBufferPtr loadMeshBuffer(const std::string& path) = 0;
-    virtual PointBufferPtr loadPointBuffer(const std::string& path) = 0;
-    virtual cv::Mat& loadImage(const std::string& path) = 0;
-    virtual Node& loadMetaNode(const std::string& path) = 0;
+    virtual MeshBufferPtr loadMeshBuffer(
+        const std::string& group, 
+        const std::string container) = 0;
 
-    virtual boost::shared_array<float> loadFloatArray(
-        const std::string& path, size_t& length) = 0;
-    virtual boost::shared_array<float> loadFloatArray(
-        const std::string& path, std::vector<size_t>& dim) = 0; 
+    virtual PointBufferPtr loadPointBuffer(
+        const std::string& group,
+        const std::string& container) = 0;
 
-    virtual boost::shared_array<double> loadDoubleArray(
-        const std::string& path, size_t& length) = 0;
-    virtual boost::shared_array<double> loadDoubleArray(
-        const std::string& path, std::vector<size_t>& dim) = 0; 
+    virtual cv::Mat& loadImage(
+        const std::string& group,
+        const std::string& container) = 0;
 
-    virtual boost::shared_array<unsigned char> loadUCharArray(
-        const std::string& path, size_t& length) = 0;
-    virtual boost::shared_array<unsigned char> loadUCharArray(
-        const std::string& path, std::vector<size_t>& dim) = 0; 
-    
+    virtual YAML::Node& loadMetaYAML(
+        const std::string& group,
+        const std::string& container) = 0;
+
+    template<typename T>
+    boost::shared_array<float> loadArray(
+        const std::string& group,
+        const std::string& container,
+        size_t& length)
+    {
+        return static_cast<D*>(this)->loadArray(group, container, length);
+    }
+
+    template<typename T>
+    boost::shared_array<float> loadArray(
+        const std::string& group,
+        const std::string& container,
+        std::vector<size_t>& dims)
+    {
+        return static_cast<D*>(this)->loadArray(group, container, dims);
+    }
+
 protected:
-    std::string m_root;
+    std::string m_fileResourceName;
 };
 
 } // namespace lvr2
