@@ -334,7 +334,7 @@ private:
     vtkSmartPointer<vtkEDLShading>      m_edl;
 #endif
 
-    bool labeling = false;
+    bool m_labeling = false;
 
     enum TYPE {
         MODELITEMS_ONLY,

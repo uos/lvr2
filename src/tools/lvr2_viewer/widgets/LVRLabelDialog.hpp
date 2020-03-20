@@ -35,21 +35,29 @@
 #define LVRLABELDIALOG_HPP_
 
 #include "ui_LVRLabelDialogUI.h"
+#include <QTreeWidget>
 
 #include <lvr2/geometry/Matrix4.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/registration/EigenSVDPointAlign.hpp>
 
 #include <iostream>
+
+#define LABEL_NAME_COLUMN 0
+#define LABEL_COLOR_COLUMN 1
+#define LABELED_POINT_COLUMN 2
+#define LABEL_VISIBLE_COLUMN 3
+#define LABEL_ID_COLUMN 4
+
 using namespace std;
 
 namespace lvr2
 {
 
-using Vec = BaseVector<float>;
 
 class LVRLabelDialog : public QObject
 {
+
     Q_OBJECT
 public:
 
@@ -58,9 +66,16 @@ public:
 
 
 public Q_SLOTS:
-    void insertNewCluster(double*);
+    void addNewLabel();
     void labelPoints();
+    void updatePointCount(int, int);
+    void cellSelected(int, int);
+    void comboBoxIndexChanged(int index);
+
 Q_SIGNALS:
+    void labelRemoved(QPair<int, QColor>);
+    void labelAdded(QTableWidgetItem*);
+    void labelChanged(uint16_t);
 
 public:
     Ui_LabelDialog*    m_ui;
