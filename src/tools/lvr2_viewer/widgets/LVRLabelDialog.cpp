@@ -42,6 +42,7 @@
 #include <QFont>
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QColorDialog>
 #include <vtkSelectEnclosedPoints.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkPointData.h>
@@ -63,90 +64,115 @@ LVRLabelDialog::LVRLabelDialog(QTreeWidget* treeWidget) :
     m_dialog = new QDialog(treeWidget);
     m_ui = new Ui_LabelDialog;
     m_ui->setupUi(m_dialog);
-	m_ui->comboBox->addItem("Test");
+    m_ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    QObject::connect(m_ui->newLabelButton, SIGNAL(pressed()), this, SLOT(addNewLabel()));
+    QObject::connect(m_ui->tableWidget, SIGNAL( cellDoubleClicked (int, int) ), this, SLOT( cellSelected( int, int )));
+    QObject::connect(m_ui->selectedLabelComboBox, SIGNAL( currentIndexChanged(int)), this, SLOT( comboBoxIndexChanged(int)));
 
 }
 
 LVRLabelDialog::~LVRLabelDialog()
 {
+	/*
     delete m_ui;
     delete m_dialog;
+    */
     // TODO Auto-generated destructor stub
 }
+void LVRLabelDialog::cellSelected(int row, int column)
+{
+	if(column == LABEL_NAME_COLUMN)
+	{
+		//Edit Label name
+		bool accepted;
+		QTableWidgetItem* item = m_ui->tableWidget->item(row, column);
+		QString label_name = QInputDialog::getText(m_dialog, tr("Select Label Name"),
+		tr("Label name:"), QLineEdit::Normal,
+				item->text(), &accepted);
+		if (accepted && !label_name.isEmpty())
+		{
+			item->setText(label_name);
+			int comboBoxPos = m_ui->selectedLabelComboBox->findData(m_ui->tableWidget->item(row, LABEL_ID_COLUMN)->text().toInt());
+			if (comboBoxPos >= 0)
+			{
+				m_ui->selectedLabelComboBox->setItemText(comboBoxPos, label_name);
 
+			}
+			return;
+		}
+	}else if(column == 1)
+	{
+		QColor label_color = QColorDialog::getColor(Qt::red, m_dialog, tr("Choose Label Color"));
+		if (label_color.isValid())
+		{
+			m_ui->tableWidget->item(row, 1)->setBackground(label_color);
+			return;
+		}
+	}
+	
+}
+
+void LVRLabelDialog::updatePointCount(int id, int selectedPointCount)
+{
+
+	int rows = m_ui->tableWidget->rowCount();
+	for (int i = 0; i < rows; i++)
+	{
+		if(id == m_ui->tableWidget->item(i, 4)->text())
+		{
+			m_ui->tableWidget->item(i, 4)->setText(QString(selectedPointCount));
+		}
+	}
+
+
+}
 void LVRLabelDialog::labelPoints()
 {
-	bool ok;
-	QString text = QInputDialog::getText(0, "Insert New Label", "New Label:", QLineEdit::Normal, "", &ok);
-	vtkSmartPointer<vtkSelectEnclosedPoints> selectEnclosedPoints = vtkSmartPointer<vtkSelectEnclosedPoints>::New();
 }
-void LVRLabelDialog::insertNewCluster(double* bounds)
+void LVRLabelDialog::addNewLabel()
 {
-	bool ok;
-	QString text = QInputDialog::getText(0, "BLABLA", "New Label:", QLineEdit::Normal, "", &ok);
-	std::cout << bounds[0]<< " "  << bounds [1] << " "<<bounds[2] << " " <<  bounds[3]<<bounds[4] << " " <<  bounds[5]<<std::endl;
-	vtkSmartPointer<vtkSelectEnclosedPoints> selectEnclosedPoints = vtkSmartPointer<vtkSelectEnclosedPoints>::New();
-	
-	vtkSmartPointer<vtkCubeSource> cubeSource = 
-		vtkSmartPointer<vtkCubeSource>::New();
-	cubeSource->SetBounds(bounds);
-	cubeSource->Update();
-	vtkPolyData* cube = cubeSource->GetOutput();
-
-
-	vtkSmartPointer<vtkPolyData> pointsPolydata = 
-		vtkSmartPointer<vtkPolyData>::New();
-	vtkSmartPointer<vtkPoints> points = 
-		vtkSmartPointer<vtkPoints>::New();
-	QTreeWidgetItemIterator it(m_treeWidget);
-	LVRPointCloudItem* citem = static_cast<LVRPointCloudItem*>(*it);
-	
-	while (*it)
+	//Ask For the Label name 
+ 	bool accepted;
+	QString label_name = QInputDialog::getText(m_dialog, tr("Select Label Name"),
+	tr("Label name:"), QLineEdit::Normal,
+			tr("LabelName") , &accepted);
+	if (!accepted || label_name.isEmpty())
 	{
-        	QTreeWidgetItem* item = *it;
-
-		if ( item->type() == LVRPointCloudItemType)
-		{
-			LVRPointCloudItem* citem = static_cast<LVRPointCloudItem*>(*it);
-			points->SetData(citem->getPointBufferBridge()->getPointCloudActor()->GetMapper()->GetInput()->GetPointData()->GetScalars());
-
-			selectEnclosedPoints->SetInputData(citem->getPointBufferBridge()->getPointCloudActor()->GetMapper()->GetInput());
-			pointsPolydata->SetPoints(points);
-			selectEnclosedPoints->SetInputData(pointsPolydata);
-		}
-		it++;
+		//No valid Input
+		return;
 	}
-	//selectEnclosedPoints->SetInputData(pointsPolydata->GetInput());
-	selectEnclosedPoints->SetSurfaceData(cube);
-	selectEnclosedPoints->Update();
- vtkDataArray* insideArray = vtkDataArray::SafeDownCast(selectEnclosedPoints->GetOutput()->GetPointData()->GetArray("SelectedPoints"));
-	std::cout << "hallo " << insideArray->GetNumberOfTuples() <<std::endl;  	
- 
-  	std::vector<int> ids;
 
+	QColor label_color = QColorDialog::getColor(Qt::red, m_dialog, tr("Choose Label Color"));
+	if (!label_color.isValid())
+	{
+		//Non Vlaid Color Return 
+		return;
+	}
+	int rows = m_ui->tableWidget->rowCount();
+	
+	//generate new Table row
+	m_ui->tableWidget->insertRow(rows);
+	m_ui->tableWidget->setItem(rows, LABEL_NAME_COLUMN, new QTableWidgetItem(label_name));
+	m_ui->tableWidget->setItem(rows, LABEL_COLOR_COLUMN, new QTableWidgetItem(" "));
+	m_ui->tableWidget->item(rows, LABEL_COLOR_COLUMN)->setBackground(label_color);
+	m_ui->tableWidget->setItem(rows, LABELED_POINT_COLUMN, new QTableWidgetItem("0"));
+	m_ui->tableWidget->setItem(rows, LABEL_ID_COLUMN, new QTableWidgetItem(QString::number(rows)));
+	m_ui->tableWidget->item(rows, LABEL_ID_COLUMN)->setData(1,label_color);
+	//TODO generate a gloabal id field that isnt bound to table position 
+	//TODO Add visible box and maybe link visibility to point cloud check with Thomas 
+	//TODO Think about a better way than that hacky data color solution
+	
 
-	//citem->getPointBuffer()->getU
-	unsigned char color[3];
-	color[0] = 1;
-	color[1] = 1;
-	color[2] = 0;
+	//Add label to combo box 
+	m_ui->selectedLabelComboBox->addItem(label_name, rows);
 
-  	for(vtkIdType i = 0; i < insideArray->GetNumberOfTuples(); i++)
-    { 
-	    if (insideArray->GetComponent(i,0))
-	    {
-		    ids.push_back(i);
-
-	    }
-	    
-     //std::cout << i << " : " << insideArray->GetComponent(i,0) << std::endl;
-    }
-
-
-	m_dialog->hide();
-
+	Q_EMIT(labelAdded(m_ui->tableWidget->item(rows, LABEL_ID_COLUMN)));
 }
 
+void LVRLabelDialog::comboBoxIndexChanged(int index)
+{
+	Q_EMIT(labelChanged(m_ui->selectedLabelComboBox->itemData(index).toInt()));
+}
 }
  /* namespace lvr2 */
 

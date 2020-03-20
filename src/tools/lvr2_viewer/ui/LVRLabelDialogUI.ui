@@ -6,70 +6,90 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>961</width>
+    <height>618</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Label Dialog</string>
+   <string>Dialog</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>50</x>
-     <y>260</y>
-     <width>341</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
-  <widget class="QGroupBox" name="clusterGroupBox">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>0</y>
-     <width>101</width>
-     <height>151</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>Cluster</string>
-   </property>
-   <widget class="QWidget" name="verticalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>19</y>
-      <width>101</width>
-      <height>171</height>
-     </rect>
-    </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="0" column="2">
+    <widget class="QTableWidget" name="tableWidget">
+     <row>
+      <property name="text">
+       <string>1</string>
+      </property>
+     </row>
+     <column>
+      <property name="text">
+       <string>Label</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Color</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Points</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Visible</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>ID</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item row="0" column="0">
     <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
      <item>
-      <widget class="QPushButton" name="newClusterButton">
+      <widget class="QPushButton" name="newLabelButton">
        <property name="text">
-        <string>New Cluster</string>
+        <string>Add new Label</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="editClusterButton">
+      <widget class="QPushButton" name="removeLabelButton">
        <property name="text">
-        <string>Edit Cluster</string>
+        <string>Remove Label</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="comboBox"/>
+      <widget class="QPushButton" name="labelSelectedPoints">
+       <property name="text">
+        <string>Label selected points</string>
+       </property>
+      </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit"/>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>SelectedLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="selectedLabelComboBox"/>
      </item>
      <item>
       <spacer name="verticalSpacer">
@@ -84,24 +104,26 @@
        </property>
       </spacer>
      </item>
+     <item>
+      <widget class="QPushButton" name="exportLabelButton">
+       <property name="text">
+        <string>Export Labels</string>
+       </property>
+      </widget>
+     </item>
     </layout>
-   </widget>
-  </widget>
-  <widget class="QTreeWidget" name="treeWidget">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>10</y>
-     <width>271</width>
-     <height>251</height>
-    </rect>
-   </property>
-   <column>
-    <property name="text">
-     <string notr="true">1</string>
-    </property>
-   </column>
-  </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>

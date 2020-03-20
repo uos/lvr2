@@ -258,6 +258,10 @@ LVRMainWindow::~LVRMainWindow()
     {
         delete m_correspondanceDialog;
     }
+    if(m_labelDialog)
+    {
+        delete m_labelDialog;
+    }
 
     if (m_pickingInteractor)
     {
@@ -394,6 +398,9 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(pointSelected(vtkActor*, int)), this, SLOT(showPointPreview(vtkActor*, int)));
 
+    QObject::connect(m_labelDialog, SIGNAL(labelAdded(QTableWidgetItem*)), m_pickingInteractor, SLOT(newLabel(QTableWidgetItem*)));
+    QObject::connect(m_labelDialog, SIGNAL(labelChanged(uint16_t)), m_pickingInteractor, SLOT(labelSelected(uint16_t)));
+
     // Interaction with interactor
     QObject::connect(this->doubleSpinBoxDollySpeed, SIGNAL(valueChanged(double)), m_pickingInteractor, SLOT(setMotionFactor(double)));
     QObject::connect(this->doubleSpinBoxRotationSpeed, SIGNAL(valueChanged(double)), m_pickingInteractor, SLOT(setRotationFactor(double)));
@@ -407,12 +414,10 @@ void LVRMainWindow::connectSignalsAndSlots()
 
 
     QObject::connect(m_actionStart_labeling, SIGNAL(triggered()), this, SLOT(manualLabeling()));
-    QObject::connect(m_actionStop_labeling, SIGNAL(triggered()),this, SLOT(manualLabeling()));
-    QObject::connect(m_pickingInteractor, SIGNAL(clusterSelected(double*)), m_labelDialog, SLOT(insertNewCluster(double*)));
-    QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), this, SLOT(manualLabeling()));
-    QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), m_labelDialog, SLOT(labelPoints()));
-    QObject::connect(m_actionExtract_labeling, SIGNAL(triggered()), m_labelInteractor, SLOT(extractLabel()));
-    QObject::connect(m_labelDialog->m_ui->newClusterButton, SIGNAL(pressed()), m_pickingInteractor, SLOT(labelingOn()));
+    QObject::connect(m_actionStop_labeling, SIGNAL(triggered()), this, SLOT(manualLabeling()));
+//    QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), this, SLOT(manualLabeling()));
+ //   QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), m_labelDialog, SLOT(labelPoints()));
+//    QObject::connect(m_actionExtract_labeling, SIGNAL(triggered()), m_labelInteractor, SLOT(extractLabel()));
     QObject::connect(m_correspondanceDialog, SIGNAL(disableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
@@ -488,7 +493,7 @@ void LVRMainWindow::setupQVTK()
 
     // Custom interactor to handle picking actions
     //m_pickingInteractor = new LVRPickingInteractor();
-    m_labelInteractor = LVRLabelInteractorStyle::New();
+    //m_labelInteractor = LVRLabelInteractorStyle::New();
     m_pickingInteractor = LVRPickingInteractor::New();
     m_pickingInteractor->setRenderer(m_renderer);
 
@@ -1083,7 +1088,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 			citem = static_cast<LVRPointCloudItem*>(*itu);
 			points->SetData(citem->getPointBufferBridge()->getPointCloudActor()->GetMapper()->GetInput()->GetPointData()->GetScalars());
 
-			m_labelInteractor->SetPoints(citem->getPointBufferBridge()->getPolyData());
+			m_pickingInteractor->setPoints(citem->getPointBufferBridge()->getPolyData());
 		}
 		itu++;
 	}
@@ -1776,27 +1781,32 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
 
 void LVRMainWindow::manualLabeling()
 {
-	if(labeling)
+	if(!m_labeling)
 	{
+		m_labelDialog->m_dialog->show();
+	    m_labelDialog->m_dialog->raise();
+	    m_labelDialog->m_dialog->activateWindow();
 
-    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
 
-    vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
-    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
+		std::cout << "main on" << std::endl;
+	    m_pickingInteractor->labelingOn();
+	    vtkSmartPointer<vtkAreaPicker> AreaPicker = vtkSmartPointer<vtkAreaPicker>::New();
+	    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(AreaPicker);
 
 
 	}else
 	{
 
-    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_labelInteractor );
+		std::cout << "main off" << std::endl;
 
-    vtkSmartPointer<vtkAreaPicker> AreaPicker = vtkSmartPointer<vtkAreaPicker>::New();
-    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(AreaPicker);
+	    vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
+	    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
+	    m_pickingInteractor->labelingOff();
 
 
 
 	}
-	labeling = !labeling;
+	m_labeling = !m_labeling;
 }
 void LVRMainWindow::manualICP()
 {

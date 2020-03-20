@@ -37,7 +37,9 @@
 #include <QObject>
 #include <QMessageBox>
 
+#include <vtkIdTypeArray.h>
 #include <vtkTextActor.h>
+#include <QTableWidgetItem>
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkInteractorStyleRubberBandPick.h>
 #include <vtkSmartPointer.h>
@@ -45,6 +47,7 @@
 #include <vtkMath.h>
 #include <vtkDataSetMapper.h>
 #include "LVRInteractorStylePolygonPick.hpp"
+#include <map>
 
 namespace lvr2
 {
@@ -103,6 +106,7 @@ public:
     vtkSmartPointer<vtkTextActor>   getTextActor(){ return m_textActor; }
 
     void updateFocalPoint();
+    void setPoints(vtkSmartPointer<vtkPolyData> points);
 
 public Q_SLOTS:
     void correspondenceSearchOn();
@@ -110,6 +114,9 @@ public Q_SLOTS:
 
     void labelingOn();
     void labelingOff();
+
+    void newLabel(QTableWidgetItem*);
+    void labelSelected(uint16_t);
 
     void setMotionFactor(double factor);
     void setRotationFactor(double factor);
@@ -124,10 +131,6 @@ public Q_SLOTS:
     void modeShooter();
 
     void resetCamera();
-
-    inline void setPoints(vtkSmartPointer<vtkPolyData> points){m_points = points;};
-
-
 
 Q_SIGNALS:
     void clusterSelected(double*);
@@ -203,18 +206,25 @@ private:
     void onMouseWheelBackwardShooter();
     void onMouseWheelForwardShooter();
 
+    //Labeling
+    bool isInside(std::vector<vtkVector2i>* polygon, int& pX, int& pY);
+    void calculateSelection(bool select);
+
     /// Indicates picking mode
     PickMode            m_pickMode;
 
     /// Text actor to display info if in picking mode
-    vtkSmartPointer<vtkTextActor>   m_textActor;
-    vtkSmartPointer<vtkActor>       m_sphereActor;
-    vtkSmartPointer<vtkActor>       m_cubeActor;
-    vtkSmartPointer<vtkActor>       m_polyActor;
-    vtkSmartPointer<vtkPoints>	    m_selectionPoints;
-    vtkSmartPointer<vtkPolyData> m_points;
+    vtkSmartPointer<vtkTextActor>     m_textActor;
+    vtkSmartPointer<vtkActor>         m_sphereActor;
+    vtkSmartPointer<vtkActor>         m_cubeActor;
+    vtkSmartPointer<vtkActor>         m_polyActor;
+    std::vector<bool>	              m_selectedPoints;
+    std::map<uint16_t, vtkSmartPointer<vtkActor>> m_labelActors;
     vtkSmartPointer<vtkActor> m_selectedActor;
+    std::vector<uint16_t>              m_pointLabels;
+    vtkSmartPointer<vtkPolyData>      m_points;
     vtkSmartPointer<vtkDataSetMapper> m_selectedMapper;
+    vtkSmartPointer<vtkIdTypeArray> m_selectedIds; 
 
     vtkSmartPointer<vtkRenderer>    m_renderer;
 
@@ -224,6 +234,8 @@ private:
     unsigned int                    m_numberOfClicks;
     int                             m_previousPosition[2];
     int                             m_startCameraMovePosition[2];
+    int 			    m_selectedLabel;
+
 
     double                          m_viewUp[3];
 
@@ -232,6 +244,8 @@ private:
 
     InteractorMode                  m_interactorMode;
     ShooterMode                     m_shooterMode;
+
+    std::map<uint16_t, QColor>	    m_labelColors;
 
 
 };

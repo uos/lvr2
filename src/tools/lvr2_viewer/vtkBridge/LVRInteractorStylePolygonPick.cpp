@@ -115,8 +115,8 @@ void LVRInteractorStylePolygonPick::OnChar()
 {
   switch (this->Interactor->GetKeyCode())
   {
-    case 'r':
-    case 'R':
+    case 'l':
+    case 'L':
       // r toggles the rubber band selection mode for mouse button 1
       if (this->CurrentMode == VTKISRBP_ORIENT)
       {
