@@ -19,7 +19,7 @@ struct Description
     NodeOptional metaData;
 };
 
-class ScanProjectStructure
+class ScanProjectStructure 
 {
 public:
     ScanProjectStructure() = delete;
@@ -50,6 +50,6 @@ protected:
     size_t          m_lastScan;
 };
 
-}
+} // namespace lvr2
 
 #endif
