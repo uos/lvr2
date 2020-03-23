@@ -163,6 +163,6 @@ using FeatureBuild = typename FeatureConstruct<Feature>::type;
 
 } // namespace lvr2
 
-#include "HDF5FeatureBase.tcc"
+#include "FeatureBase.tcc"
 
 #endif // LVR2_IO_GFeatureBase_HPP
