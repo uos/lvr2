@@ -5,6 +5,8 @@
 #include <vector>
 #include <regex> 
 
+#include <boost/optional.hpp>
+
 #include <yaml-cpp/yaml.h>
 
 #include "lvr2/types/MatrixTypes.hpp"
@@ -69,7 +71,7 @@ public:
         const std::string& group,
         const std::string& container) = 0;
 
-    virtual cv::Mat& loadImage(
+    virtual boost::optional<cv::Mat> loadImage(
         const std::string& group,
         const std::string& container) = 0;
 

@@ -3,8 +3,8 @@
 #ifndef LVR2_IO_HDF5_HYPERSPECTRALCAMERAIO_HPP
 #define LVR2_IO_HDF5_HYPERSPECTRALCAMERAIO_HPP
 
-#include "ArrayIO.hpp"
-#include "MatrixIO.hpp"
+#include "lvr2/io/descritpions/ArrayIO.hpp"
+#include "lvr2/io/descritpions/MatrixIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2
