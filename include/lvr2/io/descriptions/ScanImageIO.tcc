@@ -1,8 +1,8 @@
 namespace lvr2
 {
 
-template <typename Derived>
-void ScanImageIO<Derived>::save(
+template <typename FeatureBase>
+void ScanImageIO<FeatureBase>::save(
     const std::string& group, 
     const std::string& container, 
     const ScanImagePtr& buffer)
@@ -12,8 +12,8 @@ void ScanImageIO<Derived>::save(
 
 
 
-template <typename Derived>
-ScanImagePtr ScanImageIO<Derived>::load(
+template <typename FeatureBase>
+ScanImagePtr ScanImageIO<FeatureBase>::load(
     const size_t& scanPos, 
     const size_t& camNr, 
     const size_t& imgNr)
@@ -25,8 +25,8 @@ ScanImagePtr ScanImageIO<Derived>::load(
     return ret;
 }
 
-template <typename Derived>
-ScanImagePtr ScanImageIO<Derived>::load(
+template <typename FeatureBase>
+ScanImagePtr ScanImageIO<FeatureBase>::load(
     const std::string& group, 
     const std::string& container)
 {
@@ -39,8 +39,8 @@ ScanImagePtr ScanImageIO<Derived>::load(
     return ret;
 }
 
-template <typename Derived>
-bool ScanImageIO<Derived>::isScanImage(HighFive::Group& group)
+template <typename FeatureBase>
+bool ScanImageIO<FeatureBase>::isScanImage(HighFive::Group& group)
 {
     return true;
 }

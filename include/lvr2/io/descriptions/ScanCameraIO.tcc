@@ -1,16 +1,16 @@
 namespace lvr2
 {
 
-template <typename Derived>
-void ScanCameraIO<Derived>::save(
+template <typename FeatureBase>
+void ScanCameraIO<FeatureBase>::save(
     const std::string& group, 
     const std::string& container, ScanCameraPtr& buffer)
 {
     // TODO
 }
 
-template <typename Derived>
-ScanCameraPtr ScanCameraIO<Derived>::load(
+template <typename FeatureBase>
+ScanCameraPtr ScanCameraIO<FeatureBase>::load(
     const std::string& group, 
     const std::string& container)
 {
@@ -23,8 +23,8 @@ ScanCameraPtr ScanCameraIO<Derived>::load(
 
 
 
-template <typename Derived>
-bool ScanCameraIO<Derived>::isScanCamera(const std::string& group)
+template <typename FeatureBase>
+bool ScanCameraIO<FeatureBase>::isScanCamera(const std::string& group)
 {
     return true;
 }
