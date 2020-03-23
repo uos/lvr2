@@ -44,11 +44,35 @@ public:
     virtual Description scanImage(
         const std::string& scanImagePath, const size_t& scanImageNo) = 0;
 
+    virtual Description hyperspectralCamera(const size_t& position)
+    {
+        /// TODO: IMPLEMENT ME!!!
+        return Description();
+    }
+
+    virtual Description hyperSpectralTimestamps(const std::string& group)
+    {
+        Description d;
+        // Timestamps should be in the same group as the 
+        d.groupName = group;
+        d.dataSetName = "timestamps";
+        d.metaData = boost::none; 
+    }
+
+    virtual Description hyperSpectralFrames(const std::string& group)
+    {
+        Description d;
+        // Timestamps should be in the same group as the 
+        d.groupName = group;
+        d.dataSetName = "frames";
+        d.metaData = boost::none; 
+    }
 protected:
     std::string     m_root;
     size_t          m_lastScanPosition;
     size_t          m_lastScan;
 };
+
 
 } // namespace lvr2
 

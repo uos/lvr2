@@ -3,6 +3,8 @@
 
 #include <string>
 #include <vector>
+#include <regex> 
+
 #include <yaml-cpp/yaml.h>
 
 #include "lvr2/types/MatrixTypes.hpp"
@@ -92,6 +94,12 @@ public:
     {
         return static_cast<D*>(this)->loadArray(group, container, dims);
     }
+
+    bool exists(const std::string& group) = 0;
+    bool exists(const std::string& group, const std::string& container) = 0;
+
+    void subGroupNames(const std::string& group, std::vector<string>& subGroupNames) = 0;
+    void subGroupNames(const std::string& group, const std::regex& filter, std::vector<string>& subGroupNames) = 0;
 
 protected:
     std::string m_fileResourceName;
