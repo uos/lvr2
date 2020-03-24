@@ -15,7 +15,6 @@
 
 
 #include "LVRBoundingBoxBridge.hpp"
-#include <vtkXOpenGLRenderWindow.h>
 #include <vtkPolyDataMapper.h>
 
 
