@@ -62,158 +62,105 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::load(const size_t& scanPosNo)
 {
     ScanPositionPtr ret;
 
-    char buffer[sizeof(int) * 5];
-    sprintf(buffer, "%08d", scanPos);
-    string nr_str(buffer);
-    std::string basePath = "raw/" + nr_str + "/";
+    // char buffer[sizeof(int) * 5];
+    // sprintf(buffer, "%08d", scanPos);
+    // string nr_str(buffer);
+    // std::string basePath = "raw/" + nr_str + "/";
 
-    if (hdf5util::exist(m_file_access->m_hdf5_file, basePath))
+    // if (hdf5util::exist(m_file_access->m_hdf5_file, basePath))
+    // {
+    //     HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
+    //     ret = load(group);
+    // }
+
+    Description d = m_featureBase->m_description->position(scanPosNo);
+
+    // Setup defaults
+    std::stringstream sstr;
+    sstr << std::setfill('0') << std::setw(8) << scanPosNo;
+
+    std::string metaName = "meta.yaml";
+    std::string groupName = sstr().str();
+
+    if(d.metaName)
     {
-        HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
-        ret = load(group);
+        metaName = d.metaName;
     }
 
-    return ret;
-}
-
-template <typename  FeatureBase>
-ScanPositionPtr ScanPositionIO< FeatureBase>::load(const std::string& group, const std::string& container)
-{
-    ScanPositionPtr ret;
-
-    char buffer[sizeof(int) * 5];
-    sprintf(buffer, "%08d", scanPos);
-    string nr_str(buffer);
-    std::string basePath = "raw/" + nr_str + "/";
-
-    if (hdf5util::exist(m_file_access->m_hdf5_file, basePath))
+    if(d.groupName)
     {
-        HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
-        ret = load(group);
+        groupName = d.groupName;
     }
 
-    return ret;
-}
-
-template <typename  FeatureBase>
-ScanPositionPtr ScanPositionIO< FeatureBase>::load(HighFive::Group& group)
-{
-    ScanPositionPtr ret(new ScanPosition);
-
-    if (!isScanPosition(group))
+    if(!d.metaData)
     {
-        std::cout << "[Hdf5IO - ScanPositionIO] WARNING: flags of " << group.getId()
-                  << " are not correct." << std::endl;
-        return ret;
+        std::cout << timestamp << "ScanPositionIO::load(): Warning: No meta information "
+                  << "for scan position " << scanPosNo << " found." << std::endl;
+        std::cout << timestamp << "Creating new meta data with default values." << std::endl; 
+        d.metaData = *ret;
     }
-
-    std::cout << "  loading scans" << std::endl;
-
-    // ret(new ScanPosition);
-
-    // load all scans
-    HighFive::Group hfscans = hdf5util::getGroup(group, "/scans/data");
-    for (std::string groupname : hfscans.listObjectNames())
+    else
     {
-        std::cout << "  " << groupname << std::endl;
+        ret = *(d.metaData);
+    }
+    
+    // Get all sub scans
+    size_t scanNo = 0;
+    do
+    {
+        // Get description for next scan
+        Description scanDescr = m_featureBase->m_description->scan(scanPosNo, scanNo);
 
-        if (hdf5util::exist(hfscans, groupname))
+        // Check if it exists. If not, exit.
+        if(m_featureBase->m_kernel->exists(scanDescr.groupName, scanDescr.dataSetName))
         {
-            HighFive::Group g = hdf5util::getGroup(hfscans, "/" + groupname);
-            std::cout << "  try to load scan" << std::endl;
-            ScanPtr scan = m_scanIO->load(g);
-            std::cout << "  loadded scan" << std::endl;
-
-            ret->scans.push_back(scan);
-            std::cout << "  added scan" << std::endl;
-        }
-    }
-
-    for (std::string groupname : group.listObjectNames())
-    {
-        // load all scanCameras
-        if (std::regex_match(groupname, std::regex("cam_\\d{2}")))
-        {
-            HighFive::Group g = hdf5util::getGroup(group, "/" + groupname);
-            ScanCameraPtr scanCameraPtr = m_scanCameraIO->load(g);
-            ret->cams.push_back(scanCameraPtr);
-        }
-    }
-
-    // load hyperspectralCamera
-    std::string path = "spectral";
-    std::cout << "  loading spectral camera" << std::endl;
-    if (group.exist(path))
-    {
-        HighFive::Group spectralGroup = hdf5util::getGroup(group, "/" + path);
-        if (spectralGroup.exist("data"))
-        {
-            spectralGroup = hdf5util::getGroup(spectralGroup, "/data");
-            HyperspectralCameraPtr ptr = m_hyperspectralCameraIO->load(spectralGroup);
-            ret->hyperspectralCamera = ptr;
-        }
-    }
-
-    std::cout << "  loading gps position" << std::endl;
-
-    // read gpsPosition
-    if (group.exist("gpsPosition"))
-    {
-        std::vector<size_t> dimension;
-        doubleArr gpsPosition = m_arrayIO->template load<double>(group, "gpsPosition", dimension);
-
-        if (dimension.at(0) != 3)
-        {
-            std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong gps position dimension. The gps "
-                         "position will not be loaded."
-                      << std::endl;
+            std::cout << timestamp << "ScanPositionIO: Loading scan " 
+                      << scanDescr.groupName << "/" << scanDescr.dataSetName << std::endl;
+            ScanPtr scan = m_scanIO->load(scanPosNo, scanNo);
+            ret->scans->push_back(scan);
         }
         else
         {
-            ret->latitude = gpsPosition[0];
-            ret->longitude = gpsPosition[1];
-            ret->altitude = gpsPosition[2];
+            break;
         }
-    }
+        ++scanNo;
+    } 
+    while (true);
 
-    std::cout << "  loading poseEstimation" << std::endl;
-
-    // read poseEstimation
-    boost::optional<lvr2::Transformd> pose_estimate =
-        m_matrixIO->template load<lvr2::Transformd>(group, "pose_estimate");
-    if (pose_estimate)
+    // Get all scan camera
+    size_t camNo = 0;
+    do
     {
-        ret->pose_estimate = pose_estimate.get();
-    }
+        // Get description for next scan
+        Description camDescr = m_featureBase->m_description->scanCamera(scanPosNo, scanNo);
 
-    // read registration
-    boost::optional<lvr2::Transformd> registration =
-        m_matrixIO->template load<lvr2::Transformd>(group, "registration");
-    if (registration)
-    {
-        ret->registration = registration.get();
-    }
-
-    // read timestamp
-    if (group.exist("timestamp"))
-    {
-        std::vector<size_t> dimension;
-        doubleArr timestamp = m_arrayIO->template load<double>(group, "timestamp", dimension);
-
-        if (dimension.at(0) != 1)
+        // Check if it exists. If not, exit.
+        if(m_featureBase->m_kernel->exists(camDescr.groupName, camDescr.dataSetName))
         {
-            std::cout << "[Hdf5IO - ScanIO] WARNING: Wrong timestamp dimension. The timestamp will "
-                         "not be loaded."
-                      << std::endl;
+            std::cout << timestamp << "ScanPositionIO: Loading camera " 
+                      << camDescr.groupName << "/" << camDescr.dataSetName << std::endl;
+            ScanCameraPtr cam = m_scanCameraIO->load(scanPosNo, scanNo);
+            ret->cams->push_back(scan);
         }
         else
         {
-            ret->timestamp = timestamp[0];
+            break;
         }
+        ++camNo;
+    } while (true);
+
+    // Get hyperspectral data
+    Description hyperDescr = m_featureBase->m_decription->hyperSpectralCamera(scanPosNo);
+    if(m_featureBase->m_kernel->exists(camDescr.groupName)
+    {
+        std::cout << timestamp << "ScanPositionIO: Loading hyperspectral data... " << std::endl;
+        HyperspectralCameraPtr hspCam = m_hyperspectralCameraIO->load(scanPosNo);
+        ret->hyperspectralCamera = hspCam;
     }
 
     return ret;
 }
+
 
 template <typename  FeatureBase>
 bool ScanPositionIO< FeatureBase>::isScanPosition(HighFive::Group& group)
