@@ -36,6 +36,7 @@ Description ScanProjectStructureSLAM::position(const size_t &scanPosNo)
 
     d.dataSetName = boost::none;
     d.metaData = boost::none;
+    d.metaName = boost::none;
     return d;
 }
 
@@ -96,6 +97,9 @@ Description ScanProjectStructureSLAM::scan(const size_t &scanPosNo, const size_t
     node["config"] = config;
 
     d.metaData = node;
+
+    // Mark slam6d format
+    d.metaName = "slam6d";
     return d;
 }
 
@@ -113,6 +117,7 @@ Description ScanProjectStructureSLAM::scanCamera(const size_t &scanPositionNo, c
     d.groupName = boost::none;
     d.dataSetName = boost::none;
     d.metaData = boost::none;
+    d.metaName = boost::none;
     return d;
 }
 
@@ -123,6 +128,7 @@ Description ScanProjectStructureSLAM::scanCamera(const std::string &scanPosition
     d.groupName = boost::none;
     d.dataSetName = boost::none;
     d.metaData = boost::none;
+    d.metaName = boost::none;
     return d;
 }
 
@@ -135,6 +141,7 @@ Description ScanProjectStructureSLAM::scanImage(
     d.groupName = boost::none;
     d.dataSetName = boost::none;
     d.metaData = boost::none;
+    d.metaName = boost::none;
     return d;
 }
 
@@ -146,6 +153,7 @@ Description ScanProjectStructureSLAM::scanImage(
     d.groupName = boost::none;
     d.dataSetName = boost::none;
     d.metaData = boost::none;
+    d.metaName = boost::none;
     return d; 
 }
 
