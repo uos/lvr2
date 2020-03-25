@@ -13,8 +13,10 @@ template <typename FeatureBase>
 class ScanCameraIO
 {
   public:
-    void save(const std::string& group, const std::string& container, ScanCameraPtr& buffer);
-    ScanCameraPtr load(const std::string& group, const std::string& constainer);
+    void save(const size_t& scanPosNo, const size_t& scanCamNo, ScanCameraPtr& camera);
+    //void save(const std::string& group, const std::string& container, ScanCameraPtr& buffer);
+    //ScanCameraPtr load(const std::string& group, const std::string& constainer);
+    void ScanCameraPtr load(const size_t& scanPosNo, const size_t& scanCamNo);
 
   protected:
     bool isScanCamera(const std::string& group);

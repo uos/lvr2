@@ -1,18 +1,25 @@
 namespace lvr2
 {
 
+// template <typename FeatureBase>
+// void ScanCameraIO<FeatureBase>::save(
+//     const std::string& group, 
+//     const std::string& container, ScanCameraPtr& buffer)
+// {
+//     // TODO
+// }
+
 template <typename FeatureBase>
 void ScanCameraIO<FeatureBase>::save(
-    const std::string& group, 
-    const std::string& container, ScanCameraPtr& buffer)
+    const size_t& scanPosNo, const size_t& scanCamNo, 
+    ScanCameraPtr& camera)
 {
     // TODO
 }
 
 template <typename FeatureBase>
 ScanCameraPtr ScanCameraIO<FeatureBase>::load(
-    const std::string& group, 
-    const std::string& container)
+    const size_t& scanPosNo, const size_t& scanCamNo)
 {
     ScanCameraPtr ret;
 
