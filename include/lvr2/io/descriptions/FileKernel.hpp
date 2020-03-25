@@ -25,29 +25,29 @@ public:
     virtual void saveMeshBuffer(
         const std::string& group, 
         const std::string& container, 
-        const MeshBufferPtr& buffer) = 0;
+        const MeshBufferPtr& buffer) const = 0;
 
     virtual void savePointBuffer(
         const std::string& group, 
         const std::string& container, 
-        const PointBufferPtr& buffer) = 0;
+        const PointBufferPtr& buffer) const = 0;
 
     virtual void saveImage(
         const std::string& group, 
         const std::string& container,
-        const cv::Mat& image) = 0;
+        const cv::Mat& image) const = 0;
 
     virtual void saveMetaYAML(
         const std::string& group, 
         const std::string& metaName,
-        const YAML::Node& node) = 0;
+        const YAML::Node& node) const = 0;
    
     template<typename T>
     void saveArray(
         const std::string& group, 
         const std::string& container, 
         boost::shared_array<T> arr, 
-        const size_t& length)
+        const size_t& length) const
     {
         static_cast<Implementation*>(this)->saveArray(group, container, arr, length);
     }
@@ -57,7 +57,7 @@ public:
         const std::string& group, 
         const std::string& container, 
         boost::shared_array<T> arr, 
-        const std::vector<size_t>& dims)
+        const std::vector<size_t>& dims) const
     {
         static_cast<Implementation*>(this)->saveArray(group, container, arr, dims);
     }
@@ -65,25 +65,25 @@ public:
  
     virtual MeshBufferPtr loadMeshBuffer(
         const std::string& group, 
-        const std::string container) = 0;
+        const std::string container) const = 0;
 
     virtual PointBufferPtr loadPointBuffer(
         const std::string& group,
-        const std::string& container) = 0;
+        const std::string& container const) = 0;
 
     virtual boost::optional<cv::Mat> loadImage(
         const std::string& group,
-        const std::string& container) = 0;
+        const std::string& container) const = 0;
 
     virtual YAML::Node& loadMetaYAML(
         const std::string& group,
-        const std::string& container) = 0;
+        const std::string& container) const = 0;
 
     template<typename T>
-    boost::shared_array<float> loadArray(
+    boost::shared_array<float>loadArray(
         const std::string& group,
         const std::string& container,
-        size_t& length)
+        size_t& length)  const
     {
         return static_cast<D*>(this)->loadArray(group, container, length);
     }

@@ -99,7 +99,7 @@ Description ScanProjectStructureSLAM::scan(const size_t &scanPosNo, const size_t
     d.metaData = node;
 
     // Mark slam6d format
-    d.metaName = "slam6d";
+    d.metaName = scan_stream.str() + ".slam6d";
     return d;
 }
 
