@@ -26,8 +26,6 @@ ScanProjectPtr loadScanProject(const scanProjectStructure& structure, const File
 }
 
 
-
-
 // class ScanProjectWriter
 // {
 // public:
