@@ -8,11 +8,12 @@
 
 #include <yaml-cpp/yaml.h>
 #include <boost/filesystem.hpp>
+#include <iostream>
 
 namespace lvr2
 {
 
-void saveMetaInformation(const std::string& outfile, const YAML::node& node)
+void saveMetaInformation(const std::string& outfile, const YAML::node& node) const
 {
     boost::filesystem::path p(outfile);
 
@@ -57,6 +58,12 @@ void saveMetaInformation(const std::string& outfile, const YAML::node& node)
             writeFrame(transform, poseOutPath);
         }
     }
+}
+
+YAML::node loadMetaInformation(const std::string& outfile, const YAML::node& node) const
+{
+    YAML::node["node"];
+    return node;
 }
 
 } // namespace lvr2

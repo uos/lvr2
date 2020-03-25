@@ -2,6 +2,8 @@
 #define DIRECTORY_KERNEL_HPP
 
 #include <boost/filesystem.hpp>
+#include <iostream>
+
 #include "lvr2/io/descriptions/FileKernel.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/Timestamp.hpp"
@@ -55,7 +57,9 @@ public:
         const std::string& container,
         const YAML::Node& node) const
     {
-        p.
+        boost::fileystem::path p = getAbsolutePath(group, container);
+        std::cout << timestamp << "Directory Kernel::saveMetaYAML(): " << p.string() << std::endl();
+        saveMetaInformation(p.string(), node);
     }
    
     template<typename T>
@@ -65,7 +69,15 @@ public:
         boost::shared_array<T> arr, 
         const size_t& length) const
     {
-        
+        boost::fileystem::path p = getAbsolutePath(group, container);
+        std::cout << timestamp << "Directory Kernel::saveArray(): " << p.string() << std::endl();
+        std::ofstream out(p.c_str());
+        for(size_t i = 0; i < length; i++)
+        {
+            out << arr[i];
+        }
+        out << std::endl;
+        out.close();
     }
 
     void saveArray(
@@ -74,33 +86,62 @@ public:
         boost::shared_array<T> arr, 
         const std::vector<size_t>& dims) const
     {
-        
+        boost::fileystem::path p = getAbsolutePath(group, container);
+        std::cout << timestamp << "Directory Kernel::saveArray(): " << p.string() << std::endl();
+        std::ofstream out(p.c_str());
+        size_t length = dims[0] * dims[1];
+        for(size_t i = 0; i < length; i++)
+        {
+            
+            out << arr[i];
+        }
+        out << std::endl;
+        out.close();
     }
 
  
     virtual MeshBufferPtr loadMeshBuffer(
         const std::string& group, 
-        const std::string container) = 0;
+        const std::string container) const
+    {
+        boost::fileystem::path p = getAbsolutePath(group, container);
+        std::cout << timestamp << "Directory Kernel::loadMeshBuffer(): " << p.string() << std::endl();
+        ModelPtr model = ModelFactory::readModel(p.string());
+        if(model)
+        {
+            return model->m_mesh;
+        }
+    }
 
     virtual PointBufferPtr loadPointBuffer(
         const std::string& group,
         const std::string& container) const
     {
-
+        boost::fileystem::path p = getAbsolutePath(group, container);
+        std::cout << timestamp << "Directory Kernel::loadPointBuffer(): " << p.string() << std::endl();
+        ModelPtr model = ModelFactory::readModel(p.string());
+        if(model)
+        {
+            return model->m_pointCloud;
+        }
     }
 
     virtual cv::Mat& loadImage(
         const std::string& group,
         const std::string& container) const
     {
-
+        boost::fileystem::path p = getAbsolutePath(group, container);
+        std::cout << timestamp << "Directory Kernel::loadImage: " << p.string() << std::endl();
+        return cv::imread(p.string())
     }
 
     virtual YAML::Node& loadMetaYAML(
         const std::string& group,
         const std::string& container) const
     {
-
+        boost::fileystem::path p = getAbsolutePath(group, container);
+        std::cout << timestamp << "Directory Kernel::loadMetaYAML: " << p.string() << std::endl();
+        ...
     }
 
     template<typename T>
