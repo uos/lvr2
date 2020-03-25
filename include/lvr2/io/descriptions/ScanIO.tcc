@@ -29,7 +29,7 @@ void ScanIO<FeatureBase>::save(const size_t& scanPosNo, const size_t& scanNo, co
 
     // TODO: META INFORMATION!!!!
 
-    // Forwars saving
+    // Forward saving
     save(groupName, scanName, scanPtr);
 }
 
