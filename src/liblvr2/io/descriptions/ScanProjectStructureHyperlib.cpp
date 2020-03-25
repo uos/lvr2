@@ -14,7 +14,9 @@ Description ScanProjectStructureHyperlib::scanProject()
     Description d;
     d.groupName = m_root;           // All scan related data is stored in the "raw" group
     d.dataSetName = boost::none;    // No dataset name for project root
-    d.metaData = YAML::LoadFile((m_rootPath / m_metaPath).string());
+    d.metaName = "meta.yaml";
+    boost::filesystem::path metaPath(*d.metaName);
+    d.metaData = YAML::LoadFile((m_rootPath / metaPath).string());
     return d;
 }
 
@@ -27,10 +29,12 @@ Description ScanProjectStructureHyperlib::position(const size_t &scanPosNo)
     sstr << "scan" << std::setfill('0') << std::setw(8) << scanPosNo;
     d.groupName = sstr.str();
     d.dataSetName = boost::none;
+    d.metaName = "meta.yaml";
 
     // Load meta data
     boost::filesystem::path positionPath(sstr.str());
-    d.metaData = YAML::LoadFile( (m_rootPath / positionPath / m_metaPath).string());
+    boost::filesystem::path metaPath(*d.metaName);
+    d.metaData = YAML::LoadFile( (m_rootPath / positionPath / metaPath).string());
     return d;
 }
 
@@ -57,8 +61,9 @@ Description ScanProjectStructureHyperlib::scan(const std::string &scanPositionPa
     d.dataSetName = sstr.str() + std::string(".ply");
 
     // Load meta data for scan
-    d.metaData = YAML::LoadFile((totalGroupPath / boost::filesystem::path(sstr.str() + ".yaml")).string());
-
+    boost::filesystem::path metaPath(sstr.str() + ".yaml");
+    d.metaData = YAML::LoadFile((totalGroupPath / metaPath).string());
+    d.metaName = metaPath.string();
     d.groupName = totalGroupPath.string();
     return d;
 }
@@ -83,9 +88,12 @@ Description ScanProjectStructureHyperlib::scanCamera(const std::string &scanPosi
 
     // No data set information for camera position
     d.dataSetName = boost::none; 
+    d.metaName = "meta.yaml";
+
+    boost::filesystem::path metaPath(*d.metaName);
 
     // Load camera information from yaml
-    d.metaData = YAML::LoadFile( (groupPath / camPath / m_metaPath).string());
+    d.metaData = YAML::LoadFile( (groupPath / camPath / metaPath).string());
 
     return d;
 }
@@ -113,9 +121,12 @@ Description ScanProjectStructureHyperlib::scanImage(
     std::string imgName(sstr.str() + std::string(".png"));
     std::string yamlName(sstr.str() + std::string(".yaml"));
 
+    boost::filesystem::path metaPath(yamlName);
+
     d.groupName = (siPath / dPath).string();
     d.dataSetName = imgName;
-    d.metaData = YAML::LoadFile((siPath / dPath / boost::filesystem::path(yamlName)).string());
+    d.metaName = yamlName;
+    d.metaData = YAML::LoadFile((siPath / dPath / metaPath).string());
 
     return d; 
 }

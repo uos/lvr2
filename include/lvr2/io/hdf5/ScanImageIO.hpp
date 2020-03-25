@@ -18,6 +18,12 @@ class ScanImageIO
 {
   public:
     void save(const std::string& , const ScanImagePtr& buffer);
+
+    void save(uint scanPos,
+              uint camNr,
+              uint imgNr,
+              const ScanImagePtr& scanImagePtr);
+
     void save(HighFive::Group& group, uint camNr, uint imgNr, const ScanImagePtr& buffer);
     void save(HighFive::Group& group, uint imgNr, const ScanImagePtr& buffer);
     void save(HighFive::Group& group, const ScanImagePtr& buffer);

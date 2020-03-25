@@ -16,6 +16,7 @@ struct Description
 {
     StringOptional groupName;
     StringOptional dataSetName;
+    StringOptional metaName;
     NodeOptional metaData;
 };
 
@@ -25,7 +26,7 @@ public:
     ScanProjectStructure() = delete;
 
     ScanProjectStructure(const std::string& root) 
-        : m_root(root), m_lastScanPosition(0), m_lastScan(0) {};
+        : m_root(root) {};
 
     ~ScanProjectStructure() = default;
 
@@ -69,8 +70,6 @@ public:
     }
 protected:
     std::string     m_root;
-    size_t          m_lastScanPosition;
-    size_t          m_lastScan;
 };
 
 
