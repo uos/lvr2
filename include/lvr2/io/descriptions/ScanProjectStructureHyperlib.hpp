@@ -18,7 +18,7 @@ public:
 
     ScanProjectStructureHyperlib(const std::string& root) 
         : ScanProjectStructure(m_root),
-          m_rootPath(root), m_metaPath("meta.yaml") 
+          m_rootPath(root)
         {
         
         };
@@ -42,7 +42,6 @@ public:
 
 private:
     boost::filesystem::path m_rootPath;
-    boost::filesystem::path m_metaPath;
 };
 
 } // namespace lvr2
