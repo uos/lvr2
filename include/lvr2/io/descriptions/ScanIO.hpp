@@ -8,7 +8,7 @@
 #include "lvr2/types/ScanTypes.hpp"
 
 #include <sstream>
-
+#include <yaml-cpp/yaml.h>
 namespace lvr2
 {
 
@@ -17,11 +17,11 @@ template <typename FeatureBase>
 class ScanIO
 {
   public:
-    void save(const std::string& group, const std::string& container, const ScanPtr& scan);
+   // void save(const std::string& group, const std::string& container, const std::string& metaFile, const ScanPtr& scan);
     void save(const size_t& scanPosNo, const size_t& scanNo, const ScanPtr& buffer);
   
     ScanPtr load(const size_t& scanPosNo, const size_t& scanNo);
-    ScanPtr load(const std::string& group, const std::string& container);
+    //ScanPtr load(const std::string& group, const std::string& container);
     
   protected:
     bool isScan(const std::string& group);

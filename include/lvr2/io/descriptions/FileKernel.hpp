@@ -39,7 +39,7 @@ public:
 
     virtual void saveMetaYAML(
         const std::string& group, 
-        const std::string& YAMLName,
+        const std::string& metaName,
         const YAML::Node& node) = 0;
    
     template<typename T>
