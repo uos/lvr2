@@ -48,7 +48,6 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 #include <vtkActor.h>
-
 #include <vtkActorCollection.h>
 #include <vtkCubeSource.h>
 #include <vtkPlanes.h>
@@ -75,6 +74,7 @@ LVRPickingInteractor::LVRPickingInteractor() :
 //LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer) :
    m_motionFactor(50), m_rotationFactor(20), m_interactorMode(TRACKBALL)
 {
+    m_modified = false;
     m_startCameraMovePosition[0] = 0;
     m_startCameraMovePosition[1] = 0;
 
@@ -1308,15 +1308,22 @@ void LVRPickingInteractor::correspondenceSearchOff()
 
 void LVRPickingInteractor::labelingOn()
 {
-	std::cout << " label on " << std::endl;
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    m_textActor->SetInput("Press \"l\" to select Points");
+    m_textActor->VisibilityOn();
+    rwi->Render();
+
 	m_labelingMode = true;
         m_pickMode = PickLabel;
+
 }
 void LVRPickingInteractor::labelingOff()
 {
-	std::cout << " label off " << std::endl;
+        vtkRenderWindowInteractor *rwi = this->Interactor;
 	m_labelingMode = false;
         m_pickMode = None;
+	m_textActor->VisibilityOff();
+        rwi->Render();
 }
 void LVRPickingInteractor::handlePicking()
 {
@@ -1602,19 +1609,13 @@ void LVRPickingInteractor::OnKeyDown()
     vtkRenderWindowInteractor *rwi = this->Interactor;
     std::string key = rwi->GetKeySym();
 
+    if(key == "Escape" && m_labelingMode)
+    {
+	discardChanges();
+    }
     if(key == "Return" && m_labelingMode)
     {
-	    std::cout << "update things" << std::endl;
-	    for (int i = 0; i < m_selectedPoints.size(); i++)
-	    {
-		//Set Current selection as new selection for the selected label 
-		//TODO check if actors needs to be updated
-		if(m_selectedPoints[i])
-		{
-			m_pointLabels[i] = m_selectedLabel;
-		}
-	    }
-	    m_labelActors[m_selectedLabel] = m_selectedActor;
+	saveCurrentLabelSelection();
     }
     if(key == "x" && m_correspondenceMode)
     {
@@ -1658,7 +1659,6 @@ void LVRPickingInteractor::OnChar()
     {
 	
         LVRInteractorStylePolygonPick::OnChar();
-	std::cout << "RubberChar " << std::endl;
 	return;
     }
     if(m_interactorMode == SHOOTER)
@@ -1765,6 +1765,11 @@ void LVRPickingInteractor::calculateSelection(bool select)
 	      return;
       }
 
+      if (m_labelActors.find(m_selectedLabel) != m_labelActors.end())
+      {
+      	this->CurrentRenderer->RemoveActor(m_labelActors[m_selectedLabel]);
+      }
+
       this->CurrentRenderer->RemoveActor(m_selectedActor);
       m_selectedActor = vtkSmartPointer<vtkActor>::New();
       m_selectedMapper = vtkSmartPointer<vtkDataSetMapper>::New();
@@ -1836,6 +1841,10 @@ void LVRPickingInteractor::calculateSelection(bool select)
       		selectedVtkPoints->InsertNextPoint(point);
 	      }
       }
+      if (selectedPolyPoints.size() > 0)
+      {
+	    m_modified = true;
+      }
 
       auto selectedVtkPoly = vtkSmartPointer<vtkPolyData>::New();
       selectedVtkPoly->SetPoints(selectedVtkPoints);
@@ -1863,25 +1872,100 @@ void LVRPickingInteractor::calculateSelection(bool select)
       this->CurrentRenderer->AddActor(m_selectedActor);
       this->GetInteractor()->GetRenderWindow()->Render();
       this->HighlightProp(NULL);
+
 }
 
 void LVRPickingInteractor::newLabel(QTableWidgetItem* item)
 {
-	m_labelColors.emplace(item->data(0).toInt(), item->data(1).value<QColor>());
+	m_labelColors[item->data(0).toInt()] =  item->data(1).value<QColor>();
 	if(m_labelColors.size() == 1)
 	{
 		//first Label set as the choosen label
 		m_selectedLabel = item->data(0).toInt();
 	}
+	if(m_labelActors.find(item->data(0).toInt()) != m_labelActors.end())
+	{
+	//TODO REDRAW ACTOR if Color changed	
+	}
 }
 
+void LVRPickingInteractor::saveCurrentLabelSelection()
+{
+	    int count = 0;
+	    for (int i = 0; i < m_selectedPoints.size(); i++)
+	    {
+		//Set Current selection as new selection for the selected label 
+		//TODO check if actors needs to be updated
+		if(m_selectedPoints[i])
+		{
+			count++;
+			m_pointLabels[i] = m_selectedLabel;
+		}
+	    }
+	    if(m_labelActors.find(m_selectedLabel) != m_labelActors.end())
+	    {
+	    	this->CurrentRenderer->RemoveActor(m_labelActors[m_selectedLabel]);
+	    }
+	    if (count > 0)
+	    {
+	    	m_modified = false;
+	    }
+      	    Q_EMIT(pointsLabeled(count));
 
+	    m_labelActors[m_selectedLabel] = m_selectedActor;
+
+	    //Save Current Actor
+	    m_selectedActor = vtkSmartPointer<vtkActor>::New();
+}
+
+void LVRPickingInteractor::discardChanges()
+{
+	    //Undo Changes 
+	    this->CurrentRenderer->RemoveActor(m_selectedActor);
+	    if(m_labelActors.find(m_selectedLabel) != m_labelActors.end())
+	    {
+		for (int i = 0; i < m_pointLabels.size(); i++)
+		{
+			m_selectedPoints[i] = (m_pointLabels[i] == m_selectedLabel);
+
+		}
+		this->CurrentRenderer->AddActor(m_labelActors[m_selectedLabel]);
+      		this->GetInteractor()->GetRenderWindow()->Render();
+   		this->HighlightProp(NULL);
+
+	    } else
+	    {
+	       //Label has no selected points just reset selected and delete actor
+		std::fill(m_selectedPoints.begin(), m_selectedPoints.end(), 0);
+	    	m_selectedActor = vtkSmartPointer<vtkActor>::New();
+	    }
+	    m_modified = false;
+}
 void LVRPickingInteractor::labelSelected(uint16_t newLabel)
 {
 	if(m_selectedLabel == newLabel)
 	{
 		return;
 	}
+	if (m_modified)
+	{
+		QMessageBox acceptDialog;
+		acceptDialog.setText("The Label has been modified. Do you want to save your changes?");
+		acceptDialog.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
+		acceptDialog.setDefaultButton(QMessageBox::Save);
+		int returnValue = acceptDialog.exec();
+		switch(returnValue)
+		{
+			case QMessageBox::Save:
+				saveCurrentLabelSelection();
+				break;
+			case QMessageBox::Discard:
+				discardChanges();
+				break;
+		}
+		
+	}
+	m_modified = false;
 	m_selectedLabel = newLabel;
 	//TODO ask if Changes should be safed
 	
