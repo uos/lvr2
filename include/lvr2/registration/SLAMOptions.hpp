@@ -30,6 +30,8 @@
  *
  *  @date May 28, 2019
  *  @author Malte Hillmann
+ *  @author Timo Osterkamp (tosterkamp@uni-osnabrueck.de)
+ * 
  */
 #ifndef SLAMOPTIONS_HPP_
 #define SLAMOPTIONS_HPP_

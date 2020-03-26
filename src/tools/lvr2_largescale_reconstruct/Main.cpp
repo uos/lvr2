@@ -31,11 +31,12 @@
 #include <algorithm>
 #include <iostream>
 #include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/config/lvropenmp.hpp"
 #include <random>
 #include <string>
 #include <lvr2/io/hdf5/ScanIO.hpp>
 #include <boost/filesystem.hpp>
-#include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 #include "lvr2/io/hdf5/ScanProjectIO.hpp"
 #include "lvr2/io/ScanIOUtils.hpp"
 
@@ -90,6 +91,7 @@ int main(int argc, char** argv)
     boost::filesystem::path selectedFile(in);
     string extension = selectedFile.extension().string();
 
+    OpenMPConfig::setNumThreads(options.getNumThreads());
 
     LargeScaleReconstruction<Vec> lsr(options.getVoxelSizes(), options.getBGVoxelsize(), options.getScaling(),
                                       options.getNodeSize(), options.getPartMethod(), options.getKi(), options.getKd(), options.getKn(),
@@ -105,6 +107,9 @@ int main(int argc, char** argv)
     std::shared_ptr<ChunkHashGrid> cm;
     BoundingBox<Vec> boundingBox;
 
+    HDF5IO hdf;
+
+    //reconstruction from hdf5
     if (extension == ".h5")
     {
         // loadAllPreviewsFromHDF5(in, *project->project.get());
@@ -121,9 +126,19 @@ int main(int argc, char** argv)
     }
     else
     {
-        project->project = ScanProjectPtr(new ScanProject);
-        if(!boost::filesystem::is_directory(selectedFile))
+
+        ScanProject dirScanProject;
+        bool importStatus = loadScanProject(in, dirScanProject);
+        //reconstruction from ScanProject Folder
+        if(importStatus) {
+            project->project = make_shared<ScanProject>(dirScanProject);
+            std::vector<bool> init(dirScanProject.positions.size(), true);
+            project->changed = init;
+        }
+        //reconstruction from a .ply file
+        else if(!boost::filesystem::is_directory(selectedFile))
         {
+            project->project = ScanProjectPtr(new ScanProject);
             ModelPtr model = ModelFactory::readModel(in);
             ScanPtr scan(new Scan);
 
@@ -133,7 +148,9 @@ int main(int argc, char** argv)
             project->project->positions.push_back(scanPosPtr);
             project->changed.push_back(true);
         }
+        //reconstruction from a folder of .ply files
         else{
+            project->project = ScanProjectPtr(new ScanProject);
             boost::filesystem::directory_iterator it{in};
             while (it != boost::filesystem::directory_iterator{})
             {
@@ -159,10 +176,18 @@ int main(int argc, char** argv)
         cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid("chunked_mesh.h5", 50, boundingBox, options.getChunkSize()));
     }
 
-
     BoundingBox<Vec> bb;
-    int x = lsr.mpiChunkAndReconstruct(project, bb, cm);
+    // reconstruction with diffrent methods
+    if(options.getPartMethod() == 1)
+    {
+        int x = lsr.mpiChunkAndReconstruct(project, bb, cm);
+    }
+    else
+    {
+        int x = lsr.mpiAndReconstruct(project);
+    }
 
+    // reconstruction of .ply for diffrent voxelSizes
     if(options.getDebugChunks())
     {
 

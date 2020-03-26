@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/display/BOct.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 
@@ -12,13 +13,13 @@
 namespace lvr2
 {
 
-  struct BOct
-  {
-      long m_child : 48;
-      unsigned char m_valid : 8;
-      unsigned char m_leaf : 8;
-      BOct(): m_child(0), m_valid(0), m_leaf(0){}
-  };
+//  struct BOct
+//  {
+//      long m_child : 48;
+//      unsigned char m_valid : 8;
+//      unsigned char m_leaf : 8;
+//      BOct(): m_child(0), m_valid(0), m_leaf(0){}
+//  };
   
   struct Leaf
   {
@@ -33,7 +34,7 @@ namespace lvr2
     public:
       PointOctree(PointBufferPtr& points, int depth);
 
-      void intersect(double planes[6][4], std::vector<unsigned int>& indices);
+      void intersect(double planes[24], std::vector<unsigned int>& indices);
       void setLOD(unsigned char lod) { m_lod = lod; }
 
       void genDisplayLists() { genDisplayLists(m_root); }
@@ -68,11 +69,9 @@ namespace lvr2
 
       void getPoints(BOct* oct, std::vector<unsigned int >& indices);
       
-      void normalizePlanes(double planes[6][4]);
+      void intersect(Leaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<unsigned int>& indices);
 
-      void intersect(Leaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[6][4], std::vector<unsigned int>& indices);
-
-      void intersect(BOct* oct, const BoundingBox<BaseVecT>& bbox, double planes[6][4], std::vector<unsigned int>& indices);
+      void intersect(BOct* oct, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<unsigned int>& indices);
   
       void genDisplayLists(Leaf* leaf);
 

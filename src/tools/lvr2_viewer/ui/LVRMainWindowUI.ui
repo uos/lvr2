@@ -31,7 +31,7 @@
    <property name="minimumSize">
     <size>
      <width>200</width>
-     <height>20</height>
+     <height>79</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -47,7 +47,6 @@
     <bool>false</bool>
    </property>
    <property name="features">
-    <set>QDockWidget::DockWidgetVerticalTitleBar</set>
     <set>QDockWidget::DockWidgetFeatureMask</set>
    </property>
    <property name="allowedAreas">
@@ -514,9 +513,6 @@
               <height>0</height>
              </size>
             </property>
-            <property name="toolTipDuration">
-             <number>-1</number>
-            </property>
             <property name="layoutDirection">
              <enum>Qt::RightToLeft</enum>
             </property>
@@ -525,6 +521,9 @@
             </property>
             <property name="tristate">
              <bool>false</bool>
+            </property>
+            <property name="toolTipDuration" stdset="0">
+             <number>-1</number>
             </property>
            </widget>
           </item>
@@ -612,17 +611,9 @@
      <x>0</x>
      <y>0</y>
      <width>1305</width>
-     <height>20</height>
+     <height>28</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>File</string>
-    </property>
-    <addaction name="actionOpen"/>
-    <addaction name="actionExport"/>
-    <addaction name="actionQuit"/>
-   </widget>
    <widget class="QMenu" name="menuViews">
     <property name="title">
      <string>Views</string>
@@ -703,6 +694,15 @@
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+    <addaction name="actionOpenChunkedMesh"/>
+    <addaction name="actionExport"/>
+    <addaction name="actionQuit"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuViews"/>
    <addaction name="menuRendering"/>
@@ -723,7 +723,7 @@
    </property>
    <property name="minimumSize">
     <size>
-     <width>35</width>
+     <width>41</width>
      <height>250</height>
     </size>
    </property>
@@ -737,7 +737,6 @@
     <bool>false</bool>
    </property>
    <property name="features">
-    <set>QDockWidget::DockWidgetVerticalTitleBar</set>
     <set>QDockWidget::DockWidgetFeatureMask</set>
    </property>
    <property name="allowedAreas">
@@ -1020,7 +1019,6 @@
     <bool>false</bool>
    </property>
    <property name="features">
-    <set>QDockWidget::DockWidgetVerticalTitleBar</set>
     <set>QDockWidget::DockWidgetFeatureMask</set>
    </property>
    <property name="windowTitle">
@@ -1457,6 +1455,11 @@
    </property>
    <property name="toolTip">
     <string>Toggle EDM Rendering</string>
+   </property>
+  </action>
+  <action name="actionOpenChunkedMesh">
+   <property name="text">
+    <string>Open chunked mesh</string>
    </property>
   </action>
  </widget>

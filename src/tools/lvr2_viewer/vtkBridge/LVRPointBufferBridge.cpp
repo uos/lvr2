@@ -74,7 +74,7 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
     {
         // Save pc data
         m_pointBuffer = pointCloud;
-
+        
         if(pointCloud->hasColors()) m_hasColors = true;
         if(pointCloud->hasNormals()) m_hasNormals = true;
 

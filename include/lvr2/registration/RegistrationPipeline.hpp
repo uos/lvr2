@@ -31,7 +31,13 @@
 #include "lvr2/registration/SLAMOptions.hpp"
 #include "lvr2/registration/GraphSLAM.hpp"
 #include "lvr2/types/ScanTypes.hpp"
-
+/**
+ * RegistrationPipeline.hpp
+ *
+ *  @date Jan 7, 2020
+ *  @author Timo Osterkamp (tosterkamp@uni-osnabrueck.de)
+ *  @author Wilko Müller
+ */
 
 
 using namespace lvr2;
@@ -39,10 +45,19 @@ using namespace lvr2;
 class RegistrationPipeline
 {
 public:
+
+    /**
+     * @brief Construct a new RegistrationPipeline object.
+     * 
+     * @param options The SLAM Options 
+     * @param scans The scan project
+     */
     RegistrationPipeline(const SLAMOptions* options, ScanProjectEditMarkPtr scans);
 
     /**
-     * @brief starts the registration process
+     * @brief Starts the registration
+     * 
+     * Starts the registration. Uses the SLAMOptions given in the constructor.
      * */
     void doRegistration();
 private:
@@ -58,9 +73,12 @@ private:
     bool isToleratedDifference(Transformd a, Transformd b);
 
     /**
-     * @brief rotates the given 4x4 matrix around the y-axis
-     * @param inputMatrix4x4 the matrix getting transformed
-     * @param angle the rotation angle in degree
+     * @brief Rotates the given 4x4 matrix around the y-axis
+     * @param inputMatrix4x4 The matrix getting transformed
+     * @param angle The rotation angle in degree
+     * 
+     * Rotates the given 4x4 matrix around the y-axis. For the Situation, where the scanner
+     * was mounted at an incorrect angle. Can be used when all scans have the same angle offset.
      * */
     void rotateAroundYAxis(Transformd *inputMatrix4x4, double angle);
 
