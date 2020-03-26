@@ -19,7 +19,7 @@ void saveMetaInformation(const std::string& outfile, const YAML::node& node) con
 
     if(p.extension() == ".yaml")
     {
-        std::cout << timestamp << "SaveMetaInformation(): " << outfile << std::endl;
+        std::cout << timestamp << "SaveMetaInformation(YAML): " << outfile << std::endl;
         std::ofstream out(outfile.c_str());
         out << node;
         out.close();
@@ -42,7 +42,7 @@ void saveMetaInformation(const std::string& outfile, const YAML::node& node) con
             boost::filesystem::path posePath(outfilePath.stem().string() + ".pose");
             boost::filesystem::path poseOutPath = p.parent_path() / posePath;
 
-            std::cout << "SaveMetaInformation(): " << poseOutPath << std::endl;
+            std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << poseOutPath << std::endl;
             writePose(position, angle, poseOutPath);
         }
 
@@ -54,16 +54,74 @@ void saveMetaInformation(const std::string& outfile, const YAML::node& node) con
             boost::filesystem::path dir = outfilePath.parent_path();
             boost::filesystem::path framesPath(outfilePath.stem().string() + ".frames");
             boost::filesystem::path framesOutPath = p.parent_path() / framesPath;
-            std::cout << "SaveMetaInformation(): " << framesOutPath << std::endl;
+            std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << framesOutPath << std::endl;
             writeFrame(transform, poseOutPath);
         }
     }
 }
 
-YAML::node loadMetaInformation(const std::string& outfile, const YAML::node& node) const
+YAML::node loadMetaInformation(const std::string& in, const YAML::node& node) const
 {
-    YAML::node["node"];
-    return node;
+    boost::filesystem::path inPath(in);
+    if(in.extension() == ".yaml")
+    {
+        YAML::node n;
+        if(boost::filesystem::exists(inPath))
+        {
+            std::cout << timestamp 
+                      << "LoadMetaInformation(YAML): Loading " << inPath << std::endl; 
+            n = YAML::LoadFile(framesInPath.string());   
+        }
+        else
+        {
+            std::cout << timestamp 
+                      << "LoadMetaInformation(YAML): Unable to find yaml file: " << inPath << std::endl; 
+        }
+        return n;
+    }
+    else if(in.extension() == ".slam6d")
+    {
+        YAML::node node;
+
+        boost::filesystem::path dir = inPath.parent_path();
+        boost::filesystem::path posePath(outfilePath.stem().string() + ".pose");
+        boost::filesystem::path poseInPath = inPath.parent_path() / posePath;
+        std::ifstream in_str(poseInPath.c_str());
+        if(in_str.good())
+        {
+            std::cout << timestamp 
+                      << "LoadMetaInformation(SLAM6D): Loading " << poseInPath << std::endl;
+
+            double x, y, z, r, t, p
+            in_str >> x >> y >> z >> r >> t >> p;
+            Vector3d pose(x, y, z);
+            Vector3d angles(r, t, p);
+
+            Transformd poseEstimate = poseToMatrix(pose, angles);
+            node["poseEstimate"] = poseEstimate;
+        }
+        else
+        {
+            std::cout << timestamp 
+                      << "LoadMetaInformation(SLAM6D): Warning: No pose file found." << std::endl;
+        }
+
+        boost::filesystem::path framesPath(outfilePath.stem().string() + ".frames");
+        boost::filesystem::path framesInPath = inPath.parent_path() / framesPath;
+        if(boost:filesystem::exists(framesInPath))
+        {
+            std::cout << timestamp 
+                      << "LoadMetaInformation(SLAM6D): Loading " << framesInPath << std::endl;
+            Transformd registration = getTransformationFromFrames(framesInPath);
+            node["registration"] = registration;
+        }
+        else
+        {
+            std::cout << timestamp 
+                      << "LoadMetaInformation(SLAM6D): Warning: No pose file found."
+        }
+        return node;
+    }
 }
 
 } // namespace lvr2

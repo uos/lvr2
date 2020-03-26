@@ -141,7 +141,9 @@ public:
     {
         boost::fileystem::path p = getAbsolutePath(group, container);
         std::cout << timestamp << "Directory Kernel::loadMetaYAML: " << p.string() << std::endl();
-        ...
+        YAML::node node;
+        loadMetaInformation(p.string(), node);
+        return node;
     }
 
     template<typename T>
