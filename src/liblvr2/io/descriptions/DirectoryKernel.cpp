@@ -1,0 +1,159 @@
+#include "lvr2/io/descriptions/DirectoryKernel.hpp"
+
+namespace lvr2
+{
+
+void DirectoryKernel::saveMeshBuffer(
+    const std::string &group,
+    const std::string &container,
+    const MeshBufferPtr &buffer) const
+{
+    boost::filesystem::path p = getAbsolutePath(group, container);
+    ModelPtr model(new Model);
+    model->m_mesh = buffer;
+    std::cout << timestamp << "Directory Kernel::saveMeshBuffer(): " << p.string() << std::endl;
+    ModelFactory::saveModel(model, p.string());
+}
+
+void DirectoryKernel::savePointBuffer(
+    const std::string &group,
+    const std::string &container,
+    const PointBufferPtr &buffer) const
+{
+    boost::filesystem::path p = getAbsolutePath(group, container);
+    ModelPtr model(new Model);
+    model->m_pointCloud = buffer;
+    std::cout << timestamp << "Directory Kernel::savePointBuffer(): " << p.string() << std::endl;
+    ModelFactory::saveModel(model, p.string());
+}
+
+void DirectoryKernel::saveImage(
+    const std::string &group,
+    const std::string &container,
+    const cv::Mat &image) const
+{
+    boost::filesystem::path p = getAbsolutePath(group, container);
+    std::cout << timestamp << "Directory Kernel::saveImage(): " << p.string() << std::endl;
+
+    cv::imwrite(p.string(), image);
+}
+
+void DirectoryKernel::saveMetaYAML(
+    const std::string &group,
+    const std::string &container,
+    const YAML::Node &node) const
+{
+    boost::filesystem::path p = getAbsolutePath(group, container);
+    std::cout << timestamp << "Directory Kernel::saveMetaYAML(): " << p.string() << std::endl;
+    saveMetaInformation(p.string(), node);
+}
+
+
+
+MeshBufferPtr DirectoryKernel::loadMeshBuffer(
+    const std::string &group,
+    const std::string container) const
+{
+    boost::filesystem::path p = getAbsolutePath(group, container);
+    std::cout << timestamp << "Directory Kernel::loadMeshBuffer(): " << p.string() << std::endl;
+    ModelPtr model = ModelFactory::readModel(p.string());
+    if (model)
+    {
+        return model->m_mesh;
+    }
+}
+
+PointBufferPtr DirectoryKernel::loadPointBuffer(
+    const std::string &group,
+    const std::string &container) const
+{
+    boost::filesystem::path p = getAbsolutePath(group, container);
+    std::cout << timestamp << "Directory Kernel::loadPointBuffer(): " << p.string() << std::endl;
+    ModelPtr model = ModelFactory::readModel(p.string());
+    if (model)
+    {
+        return model->m_pointCloud;
+    }
+}
+
+boost::optional<cv::Mat> DirectoryKernel::loadImage(
+    const std::string &group,
+    const std::string &container) const
+{
+    boost::filesystem::path p = getAbsolutePath(group, container);
+    boost::optional<cv::Mat> opt;
+    std::cout << timestamp << "Directory Kernel::loadImage: " << p.string() << std::endl;
+    if(boost::filesystem::exists(p))
+    {
+        opt = cv::imread(p.string());
+
+    }
+    else
+    {
+        opt = boost::none;
+    }
+    return opt;
+}
+
+YAML::Node DirectoryKernel::loadMetaYAML(
+    const std::string &group,
+    const std::string &container) const
+{
+    boost::filesystem::path p = getAbsolutePath(group, container);
+    std::cout << timestamp << "Directory Kernel::loadMetaYAML: " << p.string() << std::endl;
+    YAML::Node node = loadMetaInformation(p.string());
+    return node;
+}
+
+bool DirectoryKernel::exists(const std::string &group) const
+{
+    boost::filesystem::path groupPath(group);
+    return boost::filesystem::exists(groupPath);
+}
+bool DirectoryKernel::exists(const std::string &group, const std::string &container) const
+{
+    boost::filesystem::path groupPath(group);
+    boost::filesystem::path containerPath(container);
+    return boost::filesystem::exists(groupPath / containerPath);
+}
+
+void DirectoryKernel::subGroupNames(const std::string &group, std::vector<string> &subGroupNames) const
+{
+    boost::filesystem::path groupPath(group);
+    boost::filesystem::directory_iterator it(groupPath);
+    while (it != boost::filesystem::directory_iterator{})
+    {
+        if (boost::filesystem::is_directory(*it))
+        {
+            subGroupNames.push_back(it->path().string());
+        }
+    }
+}
+
+void DirectoryKernel::subGroupNames(const std::string &group, const std::regex &filter, std::vector<string> &subGroupNames) const
+{
+    boost::filesystem::path groupPath(group);
+    boost::filesystem::directory_iterator it(groupPath);
+    while (it != boost::filesystem::directory_iterator{})
+    {
+        if (boost::filesystem::is_directory(*it))
+        {
+            std::string currentName = it->path().string();
+            if (std::regex_match(currentName, filter))
+            {
+                subGroupNames.push_back(currentName);
+            }
+        }
+    }
+}
+
+boost::filesystem::path DirectoryKernel::getAbsolutePath(const std::string &group, const std::string &name) const
+{
+    boost::filesystem::path groupPath(group);
+    boost::filesystem::path namePath(name);
+    boost::filesystem::path rootPath(m_fileResourceName);
+    boost::filesystem::path ret = rootPath / groupPath / namePath;
+    return ret;
+}
+
+} // namespace lvr2
