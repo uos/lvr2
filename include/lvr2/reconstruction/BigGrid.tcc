@@ -32,7 +32,7 @@
  *      Author: Isaak Mitschke
  */
 
-#include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 #include "lvr2/io/LineReader.hpp"
 #include "lvr2/io/Progress.hpp"
 #include "lvr2/io/Timestamp.hpp"
@@ -53,7 +53,7 @@ using namespace std;
 
 namespace lvr2
 {
-//TODO: BigGrid needs clean up, summarize the grid creation into 1 method instead of multiple constructor
+
 template <typename BaseVecT>
 BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
                            float voxelsize,

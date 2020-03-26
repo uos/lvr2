@@ -73,6 +73,8 @@
 
 #include "lvr2/geometry/BVH.hpp"
 
+#include "lvr2/reconstruction/DMCReconstruction.hpp"
+
 #include "Options.hpp"
 
 #if defined CUDA_FOUND
@@ -88,9 +90,7 @@
     typedef lvr2::ClSurface GpuSurface;
 #endif
 
-
-
-
+using boost::optional;
 using std::unique_ptr;
 using std::make_unique;
 
@@ -98,7 +98,6 @@ using namespace lvr2;
 
 using Vec = BaseVector<float>;
 using PsSurface = lvr2::PointsetSurface<Vec>;
-
 
 template <typename BaseVecT>
 PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
@@ -217,7 +216,7 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
     string decompositionType = options.getDecomposition();
 
     // Fail safe check
-    if(decompositionType != "MT" && decompositionType != "MC" && decompositionType != "PMC" && decompositionType != "SF" )
+    if(decompositionType != "MT" && decompositionType != "MC" && decompositionType != "DMC" && decompositionType != "PMC" && decompositionType != "SF" )
     {
         cout << "Unsupported decomposition type " << decompositionType << ". Defaulting to PMC." << endl;
         decompositionType = "PMC";
@@ -249,6 +248,15 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
         grid->calcDistanceValues();
         auto reconstruction = make_unique<FastReconstruction<Vec, BilinearFastBox<Vec>>>(grid);
         return make_pair(grid, std::move(reconstruction));
+    }
+    else if(decompositionType == "DMC")
+    {
+        auto reconstruction = make_unique<DMCReconstruction<Vec, FastBox<Vec>>>(
+            surface,
+            surface->getBoundingBox(),
+            options.extrude()
+        );
+        return make_pair(nullptr, std::move(reconstruction));
     }
     else if(decompositionType == "MT")
     {
@@ -300,7 +308,6 @@ int main(int argc, char** argv)
 
     std::cout << options << std::endl;
 
-
     // =======================================================================
     // Load (and potentially store) point cloud
     // =======================================================================
@@ -320,7 +327,6 @@ int main(int argc, char** argv)
         ModelFactory::saveModel(pn, "pointnormals.ply");
     }
 
-
     // =======================================================================
     // Reconstruct mesh from point cloud data
     // =======================================================================
@@ -335,11 +341,10 @@ int main(int argc, char** argv)
     reconstruction->getMesh(mesh);
 
     // Save grid to file
-    if(options.saveGrid())
+    if(options.saveGrid() && grid)
     {
         grid->saveGrid("fastgrid.grid");
     }
-
 
     // =======================================================================
     // Optimize mesh
@@ -410,7 +415,6 @@ int main(int argc, char** argv)
         clusterBiMap = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
     }
 
-
     // =======================================================================
     // Finalize mesh
     // =======================================================================
@@ -430,7 +434,6 @@ int main(int argc, char** argv)
     // Vielleicht sollten indv. vertex und cluster colors mit in den Materializer aufgenommen werden
     // Dafür spricht: alles mit Farben findet dann an derselben Stelle statt
     // dagegen spricht: Materializer macht aktuell nur face colors und keine vertex colors
-
 
     // Vertex colors:
     // If vertex colors should be generated from pointcloud:
@@ -506,7 +509,7 @@ int main(int argc, char** argv)
     if (options.generateTextures())
     {
         // Set optioins to save them to disk
-        //materializer.saveTextures();
+        materializer.saveTextures();
         buffer->addIntAtomic(1, "mesh_save_textures");
         buffer->addIntAtomic(1, "mesh_texture_image_extension");
     }

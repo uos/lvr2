@@ -6,7 +6,7 @@
 #include <tuple>
 #include <type_traits>
 
-#include "hdf5/Hdf5Util.hpp"
+#include "lvr2/io/hdf5/Hdf5Util.hpp"
 
 #include <H5Tpublic.h>
 #include <hdf5_hl.h>
@@ -171,6 +171,6 @@ using Hdf5Build = typename Hdf5Construct<Feature>::type;
 
 } // namespace lvr2
 
-#include "GHDF5IO.tcc"
+#include "HDF5FeatureBase.tcc"
 
 #endif // LVR2_IO_GHDF5IO_HPP

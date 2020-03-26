@@ -179,14 +179,14 @@ ScanPositionPtr ScanPositionIO<Derived>::load(HighFive::Group& group)
     }
 
     // load hyperspectralCamera
-    std::string path = "/spectral";
+    std::string path = "spectral";
     std::cout << "  loading spectral camera" << std::endl;
     if (group.exist(path))
     {
-        HighFive::Group spectralGroup = hdf5util::getGroup(group, path);
+        HighFive::Group spectralGroup = hdf5util::getGroup(group, "/" + path);
         if (spectralGroup.exist("data"))
         {
-            spectralGroup = hdf5util::getGroup(spectralGroup, "data");
+            spectralGroup = hdf5util::getGroup(spectralGroup, "/data");
             HyperspectralCameraPtr ptr = m_hyperspectralCameraIO->load(spectralGroup);
             ret->hyperspectralCamera = ptr;
         }
