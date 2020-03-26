@@ -14,13 +14,13 @@ void MatrixIO<FeatureBase>::save(std::string groupName,
 }
 
 template<typename FeatureBase>
-template<typename MatrixT>
-boost::optional<MatrixT> MatrixIO<FeatureBase>::load(std::string groupName,
+template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+boost::optional<Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>> MatrixIO<FeatureBase>::load(std::string groupName,
     std::string datasetName)
 {
-    boost::optional<MatrixT> ret;
+    boost::optional<Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>> ret;
     std::vector<size_t> dims;
-    boost::shared_array<T> arr = m_featureBase->m_kernel->loadArray(groupName, datasetName, dims);
+    boost::shared_array<_Scalar> arr = m_featureBase->m_kernel->template loadArray(groupName, datasetName, dims);
 
     if(dims.size() != 2)
     {
@@ -28,52 +28,13 @@ boost::optional<MatrixT> MatrixIO<FeatureBase>::load(std::string groupName,
                   << dims.size();
     }
 
-    MatrixT(dims[0], dims[1]);
-    
-    /// UFFFF.....
-    MatrixT mat;
+    Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> mat(dims[0], dims[1]);
     mat.data = arr.get();
     ret = mat;
 
     return ret;
 }
 
-template<typename FeatureBase>
-template<typename MatrixT>
-boost::optional<MatrixT> MatrixIO<FeatureBase>::load(HighFive::Group& group,
-    std::string datasetName)
-{
-    boost::optional<MatrixT> ret;
-
-    if(m_file_access->m_hdf5_file && m_file_access->m_hdf5_file->isValid())
-    {
-        if(group.exist(datasetName))
-        {
-            HighFive::DataSet dataset = group.getDataSet(datasetName);
-            std::vector<size_t> dim = dataset.getSpace().getDimensions();
-
-            size_t elementCount = 1;
-            for (auto e : dim)
-                elementCount *= e;
-
-            MatrixT mat;
-            dataset.read(mat.data());
-            ret = mat;
-        }
-    } else {
-        throw std::runtime_error("[Hdf5 - MatrixIO]: Hdf5 file not open.");
-    }
-
-    return ret;
-}
-
-template<typename FeatureBase>
-template<typename MatrixT>
-boost::optional<MatrixT> MatrixIO<FeatureBase>::loadMatrix(std::string groupName,
-    std::string datasetName)
-{
-    return load<MatrixT>(groupName, datasetName);
-}
 
 
 } // namespace lvr2

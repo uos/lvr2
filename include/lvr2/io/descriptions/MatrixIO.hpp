@@ -17,8 +17,8 @@ public:
         const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& mat
     );
 
-    template<typename MatrixT>
-    boost::optional<MatrixT> load(std::string groupName,
+    template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+    boost::optional<Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>> load(std::string groupName,
         std::string datasetName);
 
 protected:

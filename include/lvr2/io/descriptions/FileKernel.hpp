@@ -17,7 +17,6 @@
 namespace lvr2
 {
 
-template<typename Implementation>
 class FileKernel
 {
 public:
@@ -45,7 +44,7 @@ public:
         const std::string& metaName,
         const YAML::Node& node) const = 0;
    
-    template<typename T>
+    template<typename T, typename Implementation>
     void saveArray(
         const std::string& group, 
         const std::string& container, 
@@ -55,7 +54,7 @@ public:
         static_cast<Implementation*>(this)->saveArray(group, container, arr, length);
     }
 
-    template<typename T>
+    template<typename T, typename Implementation>
     void saveArray(
         const std::string& group, 
         const std::string& container, 
@@ -82,7 +81,7 @@ public:
         const std::string& group,
         const std::string& container) const = 0;
 
-    template<typename T>
+    template<typename T, typename Implementation>
     boost::shared_array<float>loadArray(
         const std::string& group,
         const std::string& container,
@@ -91,7 +90,7 @@ public:
         return static_cast<Implementation*>(this)->loadArray(group, container, length);
     }
 
-    template<typename T>
+    template<typename T, typename Implementation>
     boost::shared_array<float> loadArray(
         const std::string& group,
         const std::string& container,

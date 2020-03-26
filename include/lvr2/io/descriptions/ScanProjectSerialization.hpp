@@ -6,19 +6,22 @@
 #include "lvr2/io/descriptions/ScanProjectStructure.hpp"
 #include "lvr2/io/descriptions/FileKernel.hpp"
 #include "lvr2/io/descriptions/FeatureBase.hpp"
+#include "lvr2/io/descriptions/ScanProjectIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2
 {
 
-void saveScanProject(const scanProjectStructure& structure, const FileKernel& kernel, const ScanProjectPtr project)
+template<typename KernelImpl>
+void saveScanProject(const ScanProjectStructure& structure, const FileKernel<KernelImpl>& kernel, const ScanProjectPtr project)
 {
-    using ScanProjectIO = FeatureBase::AddFeatures<lvr2::ScanProjectIO>;
-    ScanProjectIO io(kernel, description);
+    using MYScanProjectIO = typename FeatureBase<KernelImpl>::template AddFeatures<lvr2::ScanProjectIO>;
+    MYScanProjectIO io(kernel, description);
     io.save(project);
 }
 
-ScanProjectPtr loadScanProject(const scanProjectStructure& structure, const FileKernel& kernel)
+template<typename KernelImpl>
+ScanProjectPtr loadScanProject(const ScanProjectStructure& structure, const FileKernel<KernelImpl>& kernel)
 {
     using ScanProjectIO = FeatureBase::AddFeatures<lvr2::ScanProjectIO>;
     ScanProjectIO io(kernel, description);
