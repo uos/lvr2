@@ -3,6 +3,7 @@
 
 #include <boost/filesystem.hpp>
 #include <iostream>
+#include <regex>
 
 #include "lvr2/io/descriptions/FileKernel.hpp"
 #include "lvr2/io/ModelFactory.hpp"
@@ -152,6 +153,7 @@ public:
         const std::string& container,
         size_t& length) const
     {
+        std::cout << timestamp << "DirectoryKernel::loadArray(length): Not implemented!" << std::endl;
         return boost::shared_array(nullptr);
     }
 
@@ -161,26 +163,50 @@ public:
         const std::string& container,
         std::vector<size_t>& dims) const
     {
+        std::cout << timestamp << "DirectoryKernel::loadArray(dims): Not implemented!" << std::endl;
         return boost::shared_array(nullptr);
     }
 
     bool exists(const std::string& group) const
     {
-        return true;
+        boost::filesystem::path groupPath(group);
+        return boost::filesystem::exists(groupPath);
     }
     bool exists(const std::string& group, const std::string& container) const
     {
-        return true;
+        boost::filesystem::path groupPath(group);
+        boost::filesystem::path containerPath(container);
+        return boost::filesystem::exists(groupPath / containerPath);
     }
 
     void subGroupNames(const std::string& group, std::vector<string>& subGroupNames) const
     {
-
+        boost::filesystem::groupPath(group);
+        boost::filesystem::directoryIterator it(groupPath);
+        while(it != boost::filesystem::directory_iterator{})
+        {
+            if(boost::filesystem::is_directory(*it))
+            {
+                subGroupNames.push_back( (*it).string());
+            }
+        }
     }
 
     void subGroupNames(const std::string& group, const std::regex& filter, std::vector<string>& subGroupNames) const
     {
-
+          boost::filesystem::groupPath(group);
+        boost::filesystem::directoryIterator it(groupPath);
+        while(it != boost::filesystem::directory_iterator{})
+        {
+            if(boost::filesystem::is_directory(*it))
+            {
+                std::string currentName = (*it).string();
+                if(std::regex_math(currentName, filter))
+                {
+                    subGroupNames.push_back(currentName);
+                } 
+            }
+        }
     }
 
 private:
