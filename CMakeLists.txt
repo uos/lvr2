@@ -593,6 +593,7 @@ add_subdirectory(src/tools/lvr2_chunking)
 add_subdirectory(src/tools/lvr2_registration)
 add_subdirectory(src/tools/lvr2_mesh_reducer)
 add_subdirectory(src/tools/lvr2_chunking_server)
+add_subdirectory(src/tools/lvr2_scanproject_parser)
 
 if(CURSES_FOUND AND embree_FOUND)
     add_subdirectory(src/tools/lvr2_ascii_viewer)
