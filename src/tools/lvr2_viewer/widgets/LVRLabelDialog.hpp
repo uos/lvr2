@@ -68,7 +68,7 @@ public:
 public Q_SLOTS:
     void addNewLabel();
     void labelPoints();
-    void updatePointCount(int, int);
+    void updatePointCount(int);
     void cellSelected(int, int);
     void comboBoxIndexChanged(int index);
 

@@ -100,27 +100,31 @@ void LVRLabelDialog::cellSelected(int row, int column)
 			}
 			return;
 		}
-	}else if(column == 1)
+	}else if(column == LABEL_COLOR_COLUMN || column == LABEL_ID_COLUMN)
 	{
 		QColor label_color = QColorDialog::getColor(Qt::red, m_dialog, tr("Choose Label Color"));
 		if (label_color.isValid())
 		{
-			m_ui->tableWidget->item(row, 1)->setBackground(label_color);
+			m_ui->tableWidget->item(row, LABEL_COLOR_COLUMN)->setBackground(label_color);
+			m_ui->tableWidget->item(row, LABEL_ID_COLUMN)->setData(1,label_color);
+
+			//Update Color In picker
+			Q_EMIT(labelAdded(m_ui->tableWidget->item(row, LABEL_ID_COLUMN)));
 			return;
 		}
 	}
 	
 }
 
-void LVRLabelDialog::updatePointCount(int id, int selectedPointCount)
+void LVRLabelDialog::updatePointCount(int selectedPointCount)
 {
 
 	int rows = m_ui->tableWidget->rowCount();
 	for (int i = 0; i < rows; i++)
 	{
-		if(id == m_ui->tableWidget->item(i, 4)->text())
+		if(m_ui->selectedLabelComboBox->currentData().toInt() == m_ui->tableWidget->item(i, 4)->text().toInt())
 		{
-			m_ui->tableWidget->item(i, 4)->setText(QString(selectedPointCount));
+			m_ui->tableWidget->item(i, 2)->setText(QString::number(selectedPointCount));
 		}
 	}
 

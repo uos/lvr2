@@ -46,6 +46,16 @@
        <string>ID</string>
       </property>
      </column>
+     <item row="0" column="0">
+      <property name="text">
+       <string>Default</string>
+      </property>
+     </item>
+     <item row="0" column="4">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </item>
     </widget>
    </item>
    <item row="0" column="0">

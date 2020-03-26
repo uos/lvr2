@@ -137,6 +137,7 @@ Q_SIGNALS:
     void firstPointPicked(double*);
     void secondPointPicked(double*);
     void pointSelected(vtkActor*, int);
+    void pointsLabeled(int);
 
 private:
 
@@ -209,6 +210,8 @@ private:
     //Labeling
     bool isInside(std::vector<vtkVector2i>* polygon, int& pX, int& pY);
     void calculateSelection(bool select);
+    void saveCurrentLabelSelection();
+    void discardChanges();
 
     /// Indicates picking mode
     PickMode            m_pickMode;
@@ -230,6 +233,7 @@ private:
 
     bool                            m_correspondenceMode;
     bool 			    m_labelingMode;
+    bool 			    m_modified;
 
     unsigned int                    m_numberOfClicks;
     int                             m_previousPosition[2];
