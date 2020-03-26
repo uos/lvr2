@@ -4,18 +4,21 @@
 #include <string>
 #include <vector>
 #include <regex> 
-
 #include <boost/optional.hpp>
-
 #include <yaml-cpp/yaml.h>
 
+#include <opencv2/opencv.hpp>
+#include <opencv2/core.hpp>
+
 #include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/io/MeshBuffer.hpp"
 
 namespace lvr2
 {
 
 template<typename Implementation>
-class FileKernel : public D
+class FileKernel
 {
 public:
     
@@ -69,13 +72,13 @@ public:
 
     virtual PointBufferPtr loadPointBuffer(
         const std::string& group,
-        const std::string& container const) = 0;
+        const std::string& container) const = 0;
 
     virtual boost::optional<cv::Mat> loadImage(
         const std::string& group,
         const std::string& container) const = 0;
 
-    virtual YAML::Node& loadMetaYAML(
+    virtual YAML::Node loadMetaYAML(
         const std::string& group,
         const std::string& container) const = 0;
 
@@ -85,7 +88,7 @@ public:
         const std::string& container,
         size_t& length)  const
     {
-        return static_cast<D*>(this)->loadArray(group, container, length);
+        return static_cast<Implementation*>(this)->loadArray(group, container, length);
     }
 
     template<typename T>
@@ -94,14 +97,14 @@ public:
         const std::string& container,
         std::vector<size_t>& dims)
     {
-        return static_cast<D*>(this)->loadArray(group, container, dims);
+        return static_cast<Implementation*>(this)->loadArray(group, container, dims);
     }
 
-    bool exists(const std::string& group) = 0;
-    bool exists(const std::string& group, const std::string& container) = 0;
+    virtual bool exists(const std::string& group) const = 0;
+    virtual bool exists(const std::string& group, const std::string& container) const = 0;
 
-    void subGroupNames(const std::string& group, std::vector<string>& subGroupNames) = 0;
-    void subGroupNames(const std::string& group, const std::regex& filter, std::vector<string>& subGroupNames) = 0;
+    virtual void subGroupNames(const std::string& group, std::vector<string>& subGroupNames) const = 0;
+    virtual void subGroupNames(const std::string& group, const std::regex& filter, std::vector<string>& subGroupNames) const = 0;
 
 protected:
     std::string m_fileResourceName;
