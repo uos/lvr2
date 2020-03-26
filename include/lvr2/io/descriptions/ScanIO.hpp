@@ -29,8 +29,8 @@ class ScanIO
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
 
     // dependencies
-    ArrayIO<FeatureBase>* m_arrayIO = static_cast<ArrayIO<FeatureBase>*>(m_file_access);
-    MatrixIO<FeatureBase>* m_matrixIO = static_cast<MatrixIO<FeatureBase>*>(m_file_access);
+    ArrayIO<FeatureBase>* m_arrayIO = static_cast<ArrayIO<FeatureBase>*>(m_featureBase);
+    MatrixIO<FeatureBase>* m_matrixIO = static_cast<MatrixIO<FeatureBase>*>(m_featureBase);
 
     static constexpr const char* ID = "ScanIO";
     static constexpr const char* OBJID = "Scan";
@@ -44,12 +44,12 @@ class ScanIO
  *
  */
 template <typename FeatureBase>
-struct FeatureConstruct<ScanIO, FeatureBase>
+struct FeatureConstruct<ScanIO, FeatureBase >
 {
 
     // DEPS
-    using dep1 = typename FeatureConstruct<ArrayIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<MatrixIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<ArrayIO, FeatureBase >::type;
+    using dep2 = typename FeatureConstruct<MatrixIO, FeatureBase >::type;
     using deps = typename dep1::template Merge<dep2>;
 
     // ADD THE FEATURE ITSELF

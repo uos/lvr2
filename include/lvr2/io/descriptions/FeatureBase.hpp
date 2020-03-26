@@ -6,16 +6,8 @@
 #include <tuple>
 #include <type_traits>
 
-#include "lvr2/io/hdf5/Hdf5Util.hpp"
-
-#include <H5Tpublic.h>
-#include <hdf5_hl.h>
-#include <highfive/H5DataSet.hpp>
-#include <highfive/H5DataSpace.hpp>
-#include <highfive/H5File.hpp>
-
-#include "lvr2/descriptions/FileKernel.hpp"
-#include "lvr2/descriptions/ScanProjectStructure.hpp"
+#include "lvr2/io/descriptions/FileKernel.hpp"
+#include "lvr2/io/descriptions/ScanProjectStructure.hpp"
 
 namespace lvr2 {
 
@@ -131,7 +123,7 @@ public:
 
     using Features<FeatureBase<Features...> >::save...;
 
-    FeatureBase(FileKernel& kernel, ScanProjectDecription& desc)
+    FeatureBase(FileKernel& kernel, ScanProjectStructure& desc) : m_kernel(kernel), m_description(desc) {}
     {
 
     }
@@ -148,7 +140,7 @@ public:
     F<FeatureBase>* dcast();
 
     FileKernel&             m_kernel;
-    ScanProjectDescriprion  m_description;
+    ScanProjectStructure    m_description;
 
 };
 

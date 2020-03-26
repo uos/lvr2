@@ -13,10 +13,10 @@
 namespace lvr2
 {
     
-class DirectoryKernel : public FileKernel<DirectoryKernel>
+class DirectoryKernel : public FileKernel
 {
 public:
-    DirectoryKernel(const std::string &root) : FileKernel<DirectoryKernel>(root){};
+    DirectoryKernel(const std::string &root) : FileKernel(root){};
     virtual ~DirectoryKernel() = default;
 
     virtual void saveMeshBuffer(
@@ -61,7 +61,7 @@ public:
     virtual void subGroupNames(const std::string& group, std::vector<string>& subGroupNames) const;
     virtual void subGroupNames(const std::string& group, const std::regex& filter, std::vector<string>& subGroupNames) const;
 
-    template <typename T>
+    template <typename T, DirectoryKernel>
     void saveArray(
         const std::string &group,
         const std::string &container,
@@ -79,7 +79,7 @@ public:
         out.close();
     }
 
-    template <typename T>
+    template <typename T, DirectoryKernel>
     void saveArray(
         const std::string &group,
         const std::string &container,
@@ -98,7 +98,7 @@ public:
         out.close();
     }
 
-    template <typename T>
+    template <typename T, DirectoryKernel>
     boost::shared_array<float> loadArray(
         const std::string &group,
         const std::string &container,
@@ -108,7 +108,7 @@ public:
         return boost::shared_array(nullptr);
     }
 
-    template <typename T>
+    template <typename T, DirectoryKernel>
     boost::shared_array<float> loadArray(
         const std::string &group,
         const std::string &container,
