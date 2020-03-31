@@ -103,7 +103,7 @@ public:
     }
 
     template<typename T>
-    boost::shared_array<float> loadArray(
+    boost::shared_array<T> loadArray(
         const std::string& group,
         const std::string& container,
         std::vector<size_t>& dims)

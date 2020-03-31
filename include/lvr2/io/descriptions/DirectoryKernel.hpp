@@ -55,69 +55,100 @@ public:
         const std::string& group,
         const std::string& container) const;
 
+    virtual ucharArr loadUCharArray(
+        const std::string& group, 
+        const std::string& container, 
+        const std::vector<size_t> &dims) const;
+
+    virtual floatArr loadFloatArray(
+        const std::string& group, 
+        const std::string& container, 
+        const std::vector<size_t> &dims) const;
+
+    virtual doubleArr loadDoubleArray(
+        const std::string& group, 
+        const std::string& container, 
+        const std::vector<size_t> &dims) const;
+
+    virtual void saveFloatArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<float>& data) const;
+
+    virtual void saveDoubleArray(
+        const std::string& groupName, const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<double>& data) const;
+
+    virtual void saveUCharArray(
+        const std::string& groupName, const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<unsigned char>& data) const;
+
     virtual bool exists(const std::string& group) const;
     virtual bool exists(const std::string& group, const std::string& container) const;
 
     virtual void subGroupNames(const std::string& group, std::vector<string>& subGroupNames) const;
     virtual void subGroupNames(const std::string& group, const std::regex& filter, std::vector<string>& subGroupNames) const;
 
-    template <typename T>
-    void saveArray(
-        const std::string &group,
-        const std::string &container,
-        boost::shared_array<T> arr,
-        const size_t &length) const
-    {
-        boost::filesystem::path p = getAbsolutePath(group, container);
-        std::cout << timestamp << "Directory Kernel::saveArray(): " << p.string() << std::endl;
-        std::ofstream out(p.c_str());
-        for (size_t i = 0; i < length; i++)
-        {
-            out << arr[i];
-        }
-        out << std::endl;
-        out.close();
-    }
-
-    template <typename T>
-    void saveArray(
-        const std::string &group,
-        const std::string &container,
-        boost::shared_array<T> arr,
-        const std::vector<size_t> &dims) const
-    {
-        boost::filesystem::path p = getAbsolutePath(group, container);
-        std::cout << timestamp << "Directory Kernel::saveArray(): " << p.string() << std::endl;
-        std::ofstream out(p.c_str());
-        size_t length = dims[0] * dims[1];
-        for (size_t i = 0; i < length; i++)
-        {
-            out << arr[i] << " ";
-        }
-        out << std::flush;
-        out.close();
-    }
-
-    template <typename T>
-    boost::shared_array<float> loadArray(
-        const std::string &group,
-        const std::string &container,
-        size_t &length) const
-    {
-        std::cout << timestamp << "DirectoryKernel::loadArray(length): Not implemented!" << std::endl;
-        return boost::shared_array(nullptr);
-    }
-
-    template <typename T>
-    boost::shared_array<float> loadArray(
-        const std::string &group,
-        const std::string &container,
-        std::vector<size_t> &dims) const
-    {
-        std::cout << timestamp << "DirectoryKernel::loadArray(dims): Not implemented!" << std::endl;
-        return boost::shared_array(nullptr);
-    }
 protected:
+    template <typename T>
+    boost::shared_array<T> loadArray(const std::string &group, const std::string &constainer, const std::vector<size_t> &dims) const
+    {
+        if (dims.size() > 0)
+        {
+            size_t length = dims[0];
+            for (size_t i = 1; i < dims.size(); i++)
+            {
+                if (dims[i] != 0)
+                {
+                    length *= dims[i];
+                }
+                else
+                {
+                    std::cout << timestamp << "Warning: DirectoryKernel::LoadArray(): Found zero dim: " << i << std::endl;
+                }
+            }
+            T *data = new T[length];
+            std::ifstream in;
+            for (size_t i = 0; i < length; i++)
+            {
+                in >> data[i];
+            }
+            return boost::shared_array<T>(data);
+        }
+        return boost::shared_array<T>(nullptr);
+    }
+
+    template <typename T>
+    void saveArray(
+        const std::string &group, const std::string &container, 
+        const std::vector<size_t> &dims, const boost::shared_array<T>& data) const
+    {
+        if (dims.size() > 0)
+        {
+            size_t length = dims[0];
+            for (size_t i = 1; i < dims.size(); i++)
+            {
+                if (dims[i] != 0)
+                {
+                    length *= dims[i];
+                }
+                else
+                {
+                    std::cout << timestamp << "Warning: DirectoryKernel::SaveArray(): Found zero dim: " << i << std::endl;
+                }
+            }
+            
+            std::ofstream out;
+            for (size_t i = 0; i < length; i++)
+            {
+                out << data[i];
+            }
+        }
+    }
+
     boost::filesystem::path getAbsolutePath(const std::string &group, const std::string &name) const;
 };
 

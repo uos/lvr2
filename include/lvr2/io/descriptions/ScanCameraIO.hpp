@@ -13,15 +13,15 @@ template <typename FeatureBase>
 class ScanCameraIO
 {
   public:
-    void save(const size_t& scanPosNo, const size_t& scanCamNo, ScanCameraPtr& camera);
+    void saveScanCamera(const size_t& scanPosNo, const size_t& scanCamNo, ScanCameraPtr& camera);
     //void save(const std::string& group, const std::string& container, ScanCameraPtr& buffer);
     //ScanCameraPtr load(const std::string& group, const std::string& constainer);
-    void ScanCameraPtr load(const size_t& scanPosNo, const size_t& scanCamNo);
+    ScanCameraPtr loadScanCamera(const size_t& scanPosNo, const size_t& scanCamNo);
 
   protected:
     bool isScanCamera(const std::string& group);
 
-    FeatureBase* m_file_access = static_cast<FeatureBase*>(this);
+    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
 
     // dependencies
     ScanImageIO<FeatureBase>* m_scanImageIO = static_cast<ScanImageIO<FeatureBase>*>(m_featureBase);

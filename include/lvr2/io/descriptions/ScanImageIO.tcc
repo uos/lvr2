@@ -1,19 +1,9 @@
 namespace lvr2
 {
 
-template <typename FeatureBase>
-void ScanImageIO<FeatureBase>::save(
-    const std::string& group, 
-    const std::string& container, 
-    const ScanImagePtr& buffer)
-{
-    // TODO
-}
-
-
 
 template <typename FeatureBase>
-ScanImagePtr ScanImageIO<FeatureBase>::load(
+ScanImagePtr ScanImageIO<FeatureBase>::loadScanImage(
     const size_t& scanPos, 
     const size_t& camNr, 
     const size_t& imgNr)
@@ -26,23 +16,29 @@ ScanImagePtr ScanImageIO<FeatureBase>::load(
 }
 
 template <typename FeatureBase>
-ScanImagePtr ScanImageIO<FeatureBase>::load(
-    const std::string& group, 
-    const std::string& container)
+void  ScanImageIO<FeatureBase>::saveScanImage(
+    const size_t& scanPos, 
+    const size_t& camNr, 
+    const size_t& imgNr, 
+    ScanImagePtr& buffer)
 {
-    ScanImagePtr ret;
-
-    // check wether the given group is type ScanProjectIO
-
     // TODO
-
-    return ret;
 }
 
-template <typename FeatureBase>
-bool ScanImageIO<FeatureBase>::isScanImage(HighFive::Group& group)
-{
-    return true;
-}
+// template <typename FeatureBase>
+// ScanImagePtr ScanImageIO<FeatureBase>::loadScanImage(
+//     const std::string& group, 
+//     const std::string& container)
+// {
+//     ScanImagePtr ret;
+
+//     // check wether the given group is type ScanProjectIO
+
+//     // TODO
+
+//     return ret;
+// }
+
+
 
 } // namespace lvr2

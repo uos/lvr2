@@ -2,7 +2,7 @@ namespace lvr2
 {
 
 template<typename FeatureBase>
-void PointCloudIO<FeatureBase>::save(
+void PointCloudIO<FeatureBase>::savePointCloud(
     const std::string& groupName, 
     const std::string& container, 
     const PointBufferPtr& buffer)
@@ -11,7 +11,7 @@ void PointCloudIO<FeatureBase>::save(
 }
 
 template<typename FeatureBase>
-PointBufferPtr PointCloudIO<FeatureBase>::load(const std::string& group, const std::string& name)
+PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(const std::string& group, const std::string& name)
 {
     return m_featureBase->m_kernel->loadPointBuffer(group, name);
 }

@@ -2,7 +2,7 @@ namespace lvr2 {
 
 template<typename FeatureBase>
 template<typename T>
-ChannelOptional<T> ChannelIO<FeatureBase>::load(std::string groupName,
+ChannelOptional<T> ChannelIO<FeatureBase>::loadChannel(std::string groupName,
     std::string datasetName)
 {
     ChannelOptional<T> ret;
@@ -32,15 +32,7 @@ ChannelOptional<T> ChannelIO<FeatureBase>::load(std::string groupName,
 
 template<typename FeatureBase>
 template<typename T>
-ChannelOptional<T> ChannelIO<FeatureBase>::loadChannel(std::string groupName,
-    std::string datasetName)
-{
-    return load<T>(groupName, datasetName);
-}
-
-template<typename FeatureBase>
-template<typename T>
-void ChannelIO<FeatureBase>::save(std::string groupName,
+void ChannelIO<FeatureBase>::saveChannel(std::string groupName,
         std::string datasetName,
         const Channel<T>& channel)
 {

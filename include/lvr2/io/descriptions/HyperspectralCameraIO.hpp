@@ -14,10 +14,10 @@ template <typename FeatureBase>
 class HyperspectralCameraIO
 {
 public:
-  void save(const size_t& scanPosNo, const HyperspectralCameraPtr &buffer);
-  void save(std::string &group, const HyperspectralCameraPtr &buffer);
+  void saveHyperspectralCamera(const size_t& scanPosNo, const HyperspectralCameraPtr &buffer);
+  void saveHyperspectralCamera(std::string &group, const HyperspectralCameraPtr &buffer);
 
-  HyperspectralCameraPtr load(const size_t& scanPosNo);
+  HyperspectralCameraPtr loadHyperspectralCamera(const size_t& scanPosNo);
   
 protected:
   bool isHyperspectralCamera(std::string &path);

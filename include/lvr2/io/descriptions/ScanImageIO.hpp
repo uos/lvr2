@@ -14,13 +14,11 @@ template <typename FeatureBase>
 class ScanImageIO
 {
   public:
-    void save(const std::string& group, const std::string& container, const ScanImagePtr& buffer);
-    void save(const size_t& scanPos, const size_t& camNr, const size_t& imgNr, ScanImagePtr& buffer);
-    ScanImagePtr load(const std::string& group, const std::string& container);
-    ScanImagePtr load(const size_t& scanPos, const size_t& camNr, const size_t& imgNr);
+    void saveScanImage(const size_t& scanPos, const size_t& camNr, const size_t& imgNr, ScanImagePtr& buffer);
+    ScanImagePtr loadScanImage(const size_t& scanPos, const size_t& camNr, const size_t& imgNr);
     
   protected:
-    bool isScanImage(const std::string& group);
+    //bool isScanImage(const std::string& group);
 
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
 

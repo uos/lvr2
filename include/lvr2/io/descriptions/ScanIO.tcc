@@ -1,8 +1,10 @@
+#include "lvr2/io/yaml/Scan.hpp"
+
 namespace lvr2
 {
 
 template <typename FeatureBase>
-void ScanIO<FeatureBase>::save(const size_t& scanPosNo, const size_t& scanNo, const ScanPtr& scanPtr)
+void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo, const ScanPtr& scanPtr)
 {
     // Setup defaults: no group and scan number into .ply file. 
     // Write meta into a yaml file with same file name as the 
@@ -17,29 +19,29 @@ void ScanIO<FeatureBase>::save(const size_t& scanPosNo, const size_t& scanNo, co
     // Get group and dataset names according to 
     // data fomat description and override defaults if 
     // when possible
-    Description d = m_featureBase->m_description->scan(scanPosNo, scanNo);
+    Description d = m_featureBase->m_description.scan(scanPosNo, scanNo);
 
     if(d.groupName)
     {
-        groupName = d.groupName;
+        groupName = *d.groupName;
     }
 
     if(d.dataSetName)
     {
-        scanName = d.dataSetName;
+        scanName = *d.dataSetName;
     }
 
     if(d.metaName)
     {
-        metaName = d.metaName;
+        metaName = *d.metaName;
     }
 
     // Save all scan data and meta data if present
-    m_featureBase->m_kernel->savePointBuffer(groupName, scanName, scanPtr->points);
+    m_featureBase->m_kernel.savePointBuffer(groupName, scanName, scanPtr->points);
     
     if(d.metaData)
     {
-        m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, *d.metaData);
+        m_featureBase->m_kernel.saveMetaYAML(groupName, metaName, *d.metaData);
     }
     else
     {
@@ -50,13 +52,14 @@ void ScanIO<FeatureBase>::save(const size_t& scanPosNo, const size_t& scanNo, co
 }
 
 template <typename FeatureBase>
-ScanPtr ScanIO<FeatureBase>::load(const size_t& scanPos, const size_t& scanNo)
+ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& scanNo)
 {
     ScanPtr ret(new Scan);
 
-    Description d = m_featureBase->m_description->scan(scanPosNo, scanNo);
+    Description d = m_featureBase->m_description.scan(scanPosNo, scanNo);
 
     // Init default values
+    std::stringstream sstr;
     sstr << "scan" << std::setfill('0') << std::setw(8) << scanNo;
     std::string scanName = sstr.str() + ".ply";
     std::string metaName = sstr.str() + ".yaml";
@@ -64,25 +67,25 @@ ScanPtr ScanIO<FeatureBase>::load(const size_t& scanPos, const size_t& scanNo)
 
     if(d.groupName)
     {
-        groupName = d.groupName;
+        groupName = *d.groupName;
     }
 
     if(d.dataSetName)
     {
-        scanName = d.dataSetName;
+        scanName = *d.dataSetName;
     }
 
     if(d.metaName)
     {
-        metaName = d.metaName;
+        metaName = *d.metaName;
     }
 
     // Load data
-    ret->points = m_featureBase->m_kernel->loadPointBuffer(groupName, scanName);
+    ret->points = m_featureBase->m_kernel.loadPointBuffer(groupName, scanName);
 
     if(d.metaData)
     {
-        *ret = *(d.metaData);
+        *ret = (*d.metaData).as<Scan>();
     }
     else
     {
@@ -102,7 +105,7 @@ ScanPtr ScanIO<FeatureBase>::load(const size_t& scanPos, const size_t& scanNo)
 
 
 template <typename FeatureBase>
-bool ScanIO<FeatureBase>::isScan(HighFive::Group& group)
+bool ScanIO<FeatureBase>::isScan(const std::string& name)
 {
     return true;
 }

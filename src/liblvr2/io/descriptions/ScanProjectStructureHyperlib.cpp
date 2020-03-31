@@ -9,7 +9,7 @@
 namespace lvr2
 {
 
-Description ScanProjectStructureHyperlib::scanProject()
+Description ScanProjectStructureHyperlib::scanProject() const
 {
     Description d;
     d.groupName = m_root;           // All scan related data is stored in the "raw" group
@@ -20,7 +20,7 @@ Description ScanProjectStructureHyperlib::scanProject()
     return d;
 }
 
-Description ScanProjectStructureHyperlib::position(const size_t &scanPosNo)
+Description ScanProjectStructureHyperlib::position(const size_t &scanPosNo) const
 {
     Description d; 
    
@@ -38,14 +38,14 @@ Description ScanProjectStructureHyperlib::position(const size_t &scanPosNo)
     return d;
 }
 
-Description ScanProjectStructureHyperlib::scan(const size_t &scanPosNo, const size_t &scanNo)
+Description ScanProjectStructureHyperlib::scan(const size_t &scanPosNo, const size_t &scanNo) const
 {
     // Get information about scan the associated scan position
     Description d = position(scanPosNo);   
     return scan(*d.groupName, scanNo);
 }
 
-Description ScanProjectStructureHyperlib::scan(const std::string &scanPositionPath, const size_t &scanNo)
+Description ScanProjectStructureHyperlib::scan(const std::string &scanPositionPath, const size_t &scanNo) const
 {
 
     Description d;
@@ -68,13 +68,13 @@ Description ScanProjectStructureHyperlib::scan(const std::string &scanPositionPa
     return d;
 }
 
-Description ScanProjectStructureHyperlib::scanCamera(const size_t &scanPositionNo, const size_t &camNo)
+Description ScanProjectStructureHyperlib::scanCamera(const size_t &scanPositionNo, const size_t &camNo) const
 {
     Description g = position(scanPositionNo);
     return scanCamera(*g.groupName, camNo);
 }
 
-Description ScanProjectStructureHyperlib::scanCamera(const std::string &scanPositionPath, const size_t &camNo)
+Description ScanProjectStructureHyperlib::scanCamera(const std::string &scanPositionPath, const size_t &camNo) const
 {
     Description d;
    
@@ -100,7 +100,7 @@ Description ScanProjectStructureHyperlib::scanCamera(const std::string &scanPosi
 
 Description ScanProjectStructureHyperlib::scanImage(
     const size_t &scanPosNo, const size_t &scanNo,
-    const size_t &scanCameraNo, const size_t &scanImageNo)
+    const size_t &scanCameraNo, const size_t &scanImageNo) const
 {
     // Scan images are not supported
     Description d_cam = scanCamera(scanPosNo, scanCameraNo);
@@ -108,7 +108,7 @@ Description ScanProjectStructureHyperlib::scanImage(
 }
 
 Description ScanProjectStructureHyperlib::scanImage(
-    const std::string &scanImagePath, const size_t &scanImageNo)
+    const std::string &scanImagePath, const size_t &scanImageNo) const
 {
     Description d;
 
