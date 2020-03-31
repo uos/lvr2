@@ -20,6 +20,11 @@ struct Description
     NodeOptional metaData;
 };
 
+std::pair<std::string, std::string> getNames(
+    const std::string& defaultGroup, 
+    const std::string& defaultContainer, 
+    const Description& d);
+
 class ScanProjectStructure 
 {
 public:

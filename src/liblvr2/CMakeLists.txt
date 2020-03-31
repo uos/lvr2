@@ -51,6 +51,7 @@ set(LVR2_SOURCES
     io/descriptions/ScanProjectStructureHyperlib.cpp
     io/descriptions/DirectoryKernel.cpp
     io/descriptions/MetaFormatFactory.cpp
+    io/descriptions/ScanProjectStructure.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
