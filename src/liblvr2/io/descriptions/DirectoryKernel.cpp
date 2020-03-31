@@ -9,6 +9,11 @@ void DirectoryKernel::saveMeshBuffer(
     const MeshBufferPtr &buffer) const
 {
     boost::filesystem::path p = getAbsolutePath(group, container);
+    if(!boost::filesystem::exists(p.parent_path()))
+    {
+        boost::filesystem::create_directories(p.parent_path());
+    }
+
     ModelPtr model(new Model);
     model->m_mesh = buffer;
     std::cout << timestamp << "Directory Kernel::saveMeshBuffer(): " << p.string() << std::endl;
@@ -21,6 +26,10 @@ void DirectoryKernel::savePointBuffer(
     const PointBufferPtr &buffer) const
 {
     boost::filesystem::path p = getAbsolutePath(group, container);
+    if(!boost::filesystem::exists(p.parent_path()))
+    {
+        boost::filesystem::create_directories(p.parent_path());
+    }
     ModelPtr model(new Model);
     model->m_pointCloud = buffer;
     std::cout << timestamp << "Directory Kernel::savePointBuffer(): " << p.string() << std::endl;
@@ -33,6 +42,10 @@ void DirectoryKernel::saveImage(
     const cv::Mat &image) const
 {
     boost::filesystem::path p = getAbsolutePath(group, container);
+    if(!boost::filesystem::exists(p.parent_path()))
+    {
+        boost::filesystem::create_directories(p.parent_path());
+    }
     std::cout << timestamp << "Directory Kernel::saveImage(): " << p.string() << std::endl;
 
     cv::imwrite(p.string(), image);
@@ -44,6 +57,10 @@ void DirectoryKernel::saveMetaYAML(
     const YAML::Node &node) const
 {
     boost::filesystem::path p = getAbsolutePath(group, container);
+    if(!boost::filesystem::exists(p.parent_path()))
+    {
+        boost::filesystem::create_directories(p.parent_path());
+    }
     std::cout << timestamp << "Directory Kernel::saveMetaYAML(): " << p.string() << std::endl;
     saveMetaInformation(p.string(), node);
 }
