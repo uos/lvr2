@@ -60,8 +60,12 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject()
         // Get description for next scan
         Description scanDescr = m_featureBase->m_description.position(scanPosNo);
 
+        std::string groupName;
+        std::string dataSetName;
+        std::tie(groupName, dataSetName) = getNames("", "", scanDescr);
+
         // Check if it exists. If not, exit.
-        if(m_featureBase->m_kernel.exists(*scanDescr.groupName))
+        if(m_featureBase->m_kernel.exists(groupName))
         {
             std::cout << timestamp 
                       << "ScanPositionIO: Loading scanposition " 

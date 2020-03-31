@@ -17,7 +17,7 @@ public:
     ScanProjectStructureHyperlib() = delete;
 
     ScanProjectStructureHyperlib(const std::string& root) 
-        : ScanProjectStructure(m_root),
+        : ScanProjectStructure(root),
           m_rootPath(root)
         {
         
@@ -25,20 +25,20 @@ public:
 
     ~ScanProjectStructureHyperlib() = default;
 
-    virtual Description scanProject() const = 0;
-    virtual Description position(const size_t &scanPosNo) const = 0;
-    virtual Description scan(const size_t &scanPosNo, const size_t &scanNo) const = 0;
-    virtual Description scan(const std::string &scanPositionPath, const size_t &scanNo) const = 0;
+    virtual Description scanProject() const;
+    virtual Description position(const size_t &scanPosNo) const;
+    virtual Description scan(const size_t &scanPosNo, const size_t &scanNo) const;
+    virtual Description scan(const std::string &scanPositionPath, const size_t &scanNo) const;
 
-    virtual Description scanCamera(const size_t &scanPositionNo, const size_t &camNo) const = 0;
-    virtual Description scanCamera(const std::string &scanPositionPath, const size_t &camNo) const = 0;
+    virtual Description scanCamera(const size_t &scanPositionNo, const size_t &camNo) const;
+    virtual Description scanCamera(const std::string &scanPositionPath, const size_t &camNo) const;
 
     virtual Description scanImage(
         const size_t &scanPosNo, const size_t &scanNo,
-        const size_t &scanCameraNo, const size_t &scanImageNo) const = 0;
+        const size_t &scanCameraNo, const size_t &scanImageNo) const;
 
     virtual Description scanImage(
-        const std::string &scanImagePath, const size_t &scanImageNo) const = 0;
+        const std::string &scanImagePath, const size_t &scanImageNo) const;
 
 private:
     boost::filesystem::path m_rootPath;

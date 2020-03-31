@@ -57,7 +57,7 @@ Description ScanProjectStructureSLAM::scan(const size_t &scanPosNo, const size_t
 
     // Save scan file name
     std::stringstream scan_stream;
-    scan_stream << "scan" << std::setfill('0') << std::setw(3) << scanPosNo;
+    scan_stream << "scan" << std::setfill('0') << std::setw(3) << scanNo;
     d.dataSetName = scan_stream.str() + ".3d";
 
     // Setup meta info -> Read frames file and pose file to setup valid 
