@@ -49,17 +49,15 @@ template <typename FeatureBase>
 class ScanProjectIO
 {
   public:
-    void save(const ScanProjectPtr& scanProjectPtr);
+    void saveScanProject(const ScanProjectPtr& scanProjectPtr);
 
-    ScanProjectPtr load();
-
-
+    ScanProjectPtr loadScanProject();
 
   protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
     // dependencies
     ScanPositionIO<FeatureBase>* m_scanPositionIO =
-        static_cast<ScanPositionIO<FeatureBase>*>(m_file_access);
+        static_cast<ScanPositionIO<FeatureBase>*>(m_featureBase);
 
     // static constexpr const char* ID = "ScanProjectIO";
     // static constexpr const char* OBJID = "ScanProject";

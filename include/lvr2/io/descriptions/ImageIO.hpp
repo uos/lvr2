@@ -13,12 +13,12 @@ template<typename FeatureBase>
 class ImageIO {
 public:
 
-    void save(std::string groupName,
+    void saveImage(std::string groupName,
         std::string datasetName,
         const cv::Mat& img
     );
 
-    boost::optional<cv::Mat> load(std::string groupName,
+    boost::optional<cv::Mat> loadImage(std::string groupName,
         std::string datasetName);
 
 protected:

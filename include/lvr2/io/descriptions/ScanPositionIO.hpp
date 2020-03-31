@@ -49,16 +49,16 @@ template <typename FeatureBase>
 class ScanPositionIO
 {
   public:
-    void save(const size_t& scanPosNo, const ScanPositionPtr& scanPositionPtr);
+    void saveScanPosition(const size_t& scanPosNo, const ScanPositionPtr& scanPositionPtr);
     // void save(
     //   const std::string group&, 
     //   const ScanPositionPtr& scanPositionPtr);
 
-    ScanPositionPtr load(const size_t& scanPosNo);
+    ScanPositionPtr loadScanPosition(const size_t& scanPosNo);
     //ScanPositionPtr load(const std::string& group, const std::string& container);
 
   protected:
-    bool isScanPosition(HighFive::Group& group);
+    bool isScanPosition(const std::string& group);
 
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
     // dependencies

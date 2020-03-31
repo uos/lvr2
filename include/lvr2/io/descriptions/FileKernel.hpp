@@ -43,28 +43,7 @@ public:
         const std::string& group, 
         const std::string& metaName,
         const YAML::Node& node) const = 0;
-   
-    template<typename T, typename Implementation>
-    void saveArray(
-        const std::string& group, 
-        const std::string& container, 
-        boost::shared_array<T> arr, 
-        const size_t& length) const
-    {
-        static_cast<Implementation*>(this)->saveArray(group, container, arr, length);
-    }
 
-    template<typename T, typename Implementation>
-    void saveArray(
-        const std::string& group, 
-        const std::string& container, 
-        boost::shared_array<T> arr, 
-        const std::vector<size_t>& dims) const
-    {
-        static_cast<Implementation*>(this)->saveArray(group, container, arr, dims);
-    }
-
- 
     virtual MeshBufferPtr loadMeshBuffer(
         const std::string& group, 
         const std::string container) const = 0;
@@ -81,23 +60,38 @@ public:
         const std::string& group,
         const std::string& container) const = 0;
 
-    template<typename T, typename Implementation>
-    boost::shared_array<float>loadArray(
-        const std::string& group,
-        const std::string& container,
-        size_t& length)  const
-    {
-        return static_cast<Implementation*>(this)->loadArray(group, container, length);
-    }
+    virtual ucharArr loadUCharArray(
+        const std::string& group, 
+        const std::string& constainer, 
+        const std::vector<size_t>& dims) const = 0;
 
-    template<typename T, typename Implementation>
-    boost::shared_array<float> loadArray(
-        const std::string& group,
-        const std::string& container,
-        std::vector<size_t>& dims)
-    {
-        return static_cast<Implementation*>(this)->loadArray(group, container, dims);
-    }
+    virtual floatArr loadFloatArray(
+        const std::string& group, 
+        const std::string& constainer, 
+        const std::vector<size_t>& dims) const = 0;
+
+    virtual doubleArr loadDoubleArray(
+        const std::string& group, 
+        const std::string& constainer, 
+        const std::vector<size_t>& dims) const = 0;
+
+    virtual void saveFloatArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<float>& data) const = 0;
+
+    virtual void saveDoubleArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<double>& data) const = 0;
+
+    virtual void saveUCharArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<unsigned char>& data) const = 0;
 
     virtual bool exists(const std::string& group) const = 0;
     virtual bool exists(const std::string& group, const std::string& container) const = 0;

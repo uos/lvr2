@@ -12,13 +12,13 @@ class MatrixIO {
 public:
 
     template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-    void save(std::string groupName,
+    void saveMatrix(std::string groupName,
         std::string datasetName,
         const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& mat
     );
 
-    template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-    boost::optional<Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>> load(std::string groupName,
+    template<typename MatrixT>
+    MatrixT loadMatrix(std::string groupName,
         std::string datasetName);
 
 protected:

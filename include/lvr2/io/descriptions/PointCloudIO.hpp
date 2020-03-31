@@ -45,8 +45,8 @@ template<typename FeatureBase>
 class PointCloudIO 
 {
 public:
-    void save(const std::string& group, const std::string& name, const PointBufferPtr& buffer);
-    PointBufferPtr load(const std::string& group, const std::string& container);
+    void savePointCloud(const std::string& group, const std::string& name, const PointBufferPtr& buffer);
+    PointBufferPtr loadPointCloud(const std::string& group, const std::string& container);
     
 protected:
 

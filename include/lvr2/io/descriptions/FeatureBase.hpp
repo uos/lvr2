@@ -121,9 +121,9 @@ public:
         #pragma message("using Tp::save... needs c++17 at least or a newer compiler")
     #endif
 
-    using Features<FeatureBase<Features...> >::save...;
+    //using Features<FeatureBase<Features...> >::save...;
 
-    FeatureBase(FileKernel& kernel, ScanProjectStructure& desc) : m_kernel(kernel), m_description(desc) {}
+    FeatureBase(const FileKernel& kernel, const ScanProjectStructure& desc) : m_kernel(kernel), m_description(desc)
     {
 
     }
@@ -139,8 +139,8 @@ public:
     template<template<typename> typename F>
     F<FeatureBase>* dcast();
 
-    FileKernel&             m_kernel;
-    ScanProjectStructure    m_description;
+    const FileKernel&             m_kernel;
+    const ScanProjectStructure&   m_description;
 
 };
 

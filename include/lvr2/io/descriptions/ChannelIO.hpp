@@ -14,16 +14,13 @@ template<typename FeatureBase>
 class ChannelIO : public GroupedChannelIO 
 {
 public:
-    template<typename T>
-    ChannelOptional<T> load(std::string groupName,
-        std::string datasetName);
-
+   
     template<typename T>
     ChannelOptional<T> loadChannel(std::string groupName,
         std::string datasetName);
 
     template<typename T>
-    void save(std::string groupName,
+    void saveChannel(std::string groupName,
         std::string datasetName,
         const Channel<T>& channel);
 

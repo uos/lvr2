@@ -10,7 +10,7 @@ namespace lvr2
 // }
 
 template <typename FeatureBase>
-void ScanCameraIO<FeatureBase>::save(
+void ScanCameraIO<FeatureBase>::saveScanCamera(
     const size_t& scanPosNo, const size_t& scanCamNo, 
     ScanCameraPtr& camera)
 {
@@ -18,7 +18,7 @@ void ScanCameraIO<FeatureBase>::save(
 }
 
 template <typename FeatureBase>
-ScanCameraPtr ScanCameraIO<FeatureBase>::load(
+ScanCameraPtr ScanCameraIO<FeatureBase>::loadScanCamera(
     const size_t& scanPosNo, const size_t& scanCamNo)
 {
     ScanCameraPtr ret;

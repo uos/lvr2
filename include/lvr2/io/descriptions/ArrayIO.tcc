@@ -2,47 +2,39 @@ namespace lvr2
 {
 
 template<typename FeatureBase>
-template<typename T>
-boost::shared_array<T> ArrayIO<FeatureBase>::load(
-    std::string groupName,
-    std::string datasetName,
-    size_t& size)
+ucharArr ArrayIO<FeatureBase>::loadUCharArray(const std::string &group, const std::string &container, const std::vector<size_t> &dims) const
 {
-    return m_featureBase->m_kernel->template loadArray<T>(groupName, datasetName, size);
+    return m_featureBase->m_kernel.loadUCharArray(group, container, dims);
 }
 
 template<typename FeatureBase>
-template<typename T>
-boost::shared_array<T> ArrayIO<FeatureBase>::load(
-    std::string groupName,
-    std::string datasetName,
-    std::vector<size_t>& dim)
+floatArr ArrayIO<FeatureBase>::loadFloatArray(const std::string &group, const std::string &container, const std::vector<size_t> &dims) const
 {
-   return m_featureBase->m_kernel->template loadArray(groupName, datasetName, dim);
-}
-
-
-template<typename FeatureBase>
-template<typename T>
-void ArrayIO<FeatureBase>::save(
-    std::string groupName,
-    std::string datasetName,
-    size_t size,
-    boost::shared_array<T> data)
-{
-    m_featureBase->m_kernel->template saveArray(groupName, datasetName, data, size);
+    return m_featureBase->m_kernel.loadFloatArray(group, container, dims);
 }
 
 template<typename FeatureBase>
-template<typename T>
-void ArrayIO<FeatureBase>::save(
-        std::string groupName,
-        std::string datasetName,
-        std::vector<size_t>& dimensions,
-        boost::shared_array<T> data)
+doubleArr ArrayIO<FeatureBase>::loadDoubleArray(const std::string &group, const std::string &container, const std::vector<size_t> &dims) const
 {
-   m_featureBase->m_kernel->template saveArray(groupName, datasetName, data, dimensions);
+    return m_featureBase->m_kernel.loadDoubleArray(group, container, dims);
 }
 
+template<typename FeatureBase>
+void ArrayIO<FeatureBase>::saveFloatArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t> &dimensions, const boost::shared_array<float>& data) const
+{
+    m_featureBase->m_kernel.saveFloatArray(groupName, datasetName, dimensions, data);
+}
+
+template<typename FeatureBase>
+void ArrayIO<FeatureBase>::saveDoubleArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t> &dimensions, const boost::shared_array<double>& data) const
+{
+    m_featureBase->m_kernel.saveDoubleArray(groupName, datasetName, dimensions, data);
+}
+
+template<typename FeatureBase>
+void ArrayIO<FeatureBase>::saveUCharArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t> &dimensions, const boost::shared_array<unsigned char>& data) const
+{
+    m_featureBase->m_kernel.saveUCharArray(groupName, datasetName, dimensions, data);
+}
 
 } // namespace lvr2

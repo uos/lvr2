@@ -11,31 +11,13 @@ template<typename FeatureBase>
 class ArrayIO {
 public:
 
-    template<typename T>
-    boost::shared_array<T> load(
-        std::string groupName,
-        std::string datasetName,
-        size_t& size);
+    virtual ucharArr loadUCharArray(const std::string& group, const std::string& container, const std::vector<size_t> &dims) const;
+    virtual floatArr loadFloatArray(const std::string& group, const std::string& container, const std::vector<size_t> &dims) const;
+    virtual doubleArr loadDoubleArray(const std::string& group, const std::string& container, const std::vector<size_t> &dims) const;
 
-    template<typename T>
-    boost::shared_array<T> load(
-        std::string groupName,
-        std::string datasetName,
-        std::vector<size_t>& dim);
-
-    template<typename T>
-    void save(
-        std::string groupName,
-        std::string datasetName,
-        size_t size,
-        boost::shared_array<T> data);
-
-    template<typename T>
-    void save(
-        std::string groupName,
-        std::string datasetName,
-        std::vector<size_t>& dimensions,
-        boost::shared_array<T> data);
+    virtual void saveFloatArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<float>& data) const;
+    virtual void saveDoubleArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<double>& data) const;
+    virtual void saveUCharArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<unsigned char>& data) const;
 
 protected:
     FeatureBase* m_featureBase= static_cast<FeatureBase*>(this);

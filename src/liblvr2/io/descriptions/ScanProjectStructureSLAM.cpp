@@ -11,7 +11,7 @@
 namespace lvr2
 {
 
-Description ScanProjectStructureSLAM::scanProject()
+Description ScanProjectStructureSLAM::scanProject() const
 {
     Description d;
     d.groupName = m_root;           // All data is saved in the root dir
@@ -19,7 +19,7 @@ Description ScanProjectStructureSLAM::scanProject()
     d.metaData = boost::none;       // No metadata for project 
     return d;
 }
-Description ScanProjectStructureSLAM::position(const size_t &scanPosNo)
+Description ScanProjectStructureSLAM::position(const size_t &scanPosNo) const
 {
     Description d; 
     
@@ -40,7 +40,7 @@ Description ScanProjectStructureSLAM::position(const size_t &scanPosNo)
     return d;
 }
 
-Description ScanProjectStructureSLAM::scan(const size_t &scanPosNo, const size_t &scanNo)
+Description ScanProjectStructureSLAM::scan(const size_t &scanPosNo, const size_t &scanNo) const 
 {
     Description d; 
     
@@ -103,14 +103,12 @@ Description ScanProjectStructureSLAM::scan(const size_t &scanPosNo, const size_t
     return d;
 }
 
-Description ScanProjectStructureSLAM::scan(const std::string &scanPositionPath, const size_t &scanNo)
+Description ScanProjectStructureSLAM::scan(const std::string& scanPositionPath, const size_t &scanNo) const
 {
-    // Update root and return scan
-    m_root = scanPositionPath;
     return scan(0, scanNo);
 }
 
-Description ScanProjectStructureSLAM::scanCamera(const size_t &scanPositionNo, const size_t &camNo)
+Description ScanProjectStructureSLAM::scanCamera(const size_t &scanPositionNo, const size_t &camNo) const
 {
     // Scan camera is not supported
     Description d;
@@ -121,7 +119,7 @@ Description ScanProjectStructureSLAM::scanCamera(const size_t &scanPositionNo, c
     return d;
 }
 
-Description ScanProjectStructureSLAM::scanCamera(const std::string &scanPositionPath, const size_t &camNo)
+Description ScanProjectStructureSLAM::scanCamera(const std::string &scanPositionPath, const size_t &camNo) const
 {
     // Scan camera is not supported
     Description d;
@@ -134,7 +132,7 @@ Description ScanProjectStructureSLAM::scanCamera(const std::string &scanPosition
 
 Description ScanProjectStructureSLAM::scanImage(
     const size_t &scanPosNo, const size_t &scanNo,
-    const size_t &scanCameraNo, const size_t &scanImageNo)
+    const size_t &scanCameraNo, const size_t &scanImageNo) const
 {
     // Scan images are not supported
     Description d;
@@ -146,7 +144,7 @@ Description ScanProjectStructureSLAM::scanImage(
 }
 
 Description ScanProjectStructureSLAM::scanImage(
-    const std::string &scanImagePath, const size_t &scanImageNo)
+    const std::string &scanImagePath, const size_t &scanImageNo) const
 {
     // Scan images are not supported
     Description d;
