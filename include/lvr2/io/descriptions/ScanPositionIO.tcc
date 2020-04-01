@@ -129,6 +129,7 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
                       << groupName << "/" << dataSetName << std::endl;
             ScanPtr scan = m_scanIO->loadScan(scanPosNo, scanNo);
             ret->scans.push_back(scan);
+            std::cout << scan->points->numPoints() << std::endl;
         }
         else
         {

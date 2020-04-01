@@ -39,15 +39,10 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
     // Save all scan data and meta data if present
     m_featureBase->m_kernel.savePointBuffer(groupName, scanName, scanPtr->points);
     
-    if(d.metaData)
-    {
-        m_featureBase->m_kernel.saveMetaYAML(groupName, metaName, *d.metaData);
-    }
-    else
-    {
-        std::cout << timestamp << "ScanIO::save(): Warning: No meta data found for "
-                  << groupName << "/" << scanName << "." << std::endl;
-    }
+    // Get meta data from scan and save
+    YAML::Node node;
+    node = *scanPtr;
+    m_featureBase->m_kernel.saveMetaYAML(groupName, metaName, node);
 
 }
 
@@ -80,9 +75,9 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
         metaName = *d.metaName;
     }
 
-    // Load data
-    ret->points = m_featureBase->m_kernel.loadPointBuffer(groupName, scanName);
-
+    // Important! First load meta data as YAML cpp seems to 
+    // create a new scan object before calling decode() !!!
+    // Cf. https://stackoverflow.com/questions/50807707/yaml-cpp-encoding-decoding-pointers
     if(d.metaData)
     {
         *ret = (*d.metaData).as<Scan>();
@@ -92,7 +87,10 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
         std::cout << timestamp << "ScanIO::load(): Warning: No meta data found for "
                   << groupName << "/" << scanName << "." << std::endl;
     }
-    
+
+    // Load actual data
+    ret->points = m_featureBase->m_kernel.loadPointBuffer(groupName, scanName);
+ 
     return ret;
 }
 
