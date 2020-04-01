@@ -67,11 +67,26 @@ Description ScanProjectStructureSLAM::scan(const size_t &scanPosNo, const size_t
     boost::filesystem::path frames_path(scan_stream.str() + ".frames");
     boost::filesystem::path scan_path(*d.dataSetName);
     
-    Eigen::Matrix<double, 4, 4> poseEstimate = getTransformationFromPose<double>(root_path / pose_path);
-    Eigen::Matrix<double, 4, 4> registration = getTransformationFromFrames<double>(root_path / frames_path);
+    Eigen::Matrix<double, 4, 4> poseEstimate;
+    if(boost::filesystem::exists(root_path / pose_path))
+    {
+        poseEstimate = getTransformationFromPose<double>(root_path / pose_path);
+    } 
 
-    size_t num_pts = countPointsInFile(root_path / scan_path);
+    Eigen::Matrix<double, 4, 4> registration;
+    if(boost::filesystem::exists(root_path / frames_path))
+    {
+        registration = getTransformationFromFrames<double>(root_path / frames_path);
+    }  
 
+    // Try to load scan data
+    size_t num_pts = 0;
+    if(boost::filesystem::exists(root_path / scan_path))
+    {
+        num_pts = countPointsInFile(root_path / scan_path);
+    }
+
+    // Encode meta data
     YAML::Node node;
     node["sensor_type"] = lvr2::Scan::sensorType;   // Laser scanner
 

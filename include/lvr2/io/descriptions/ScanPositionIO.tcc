@@ -39,7 +39,7 @@ void ScanPositionIO< FeatureBase>::saveScanPosition(const size_t& scanPosNo, con
         std::cout << timestamp << "Creating new meta data from given struct." << std::endl; 
                  
         YAML::Node node;
-        node[""] = *scanPositionPtr;
+        node = *scanPositionPtr;
         m_featureBase->m_kernel.saveMetaYAML(groupName, metaName, node);
     }
     
@@ -102,7 +102,7 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
         std::cout << timestamp << "ScanPositionIO::load(): Warning: No meta information "
                   << "for scan position " << scanPosNo << " found." << std::endl;
         std::cout << timestamp << "Creating new meta data with default values." << std::endl; 
-        YAML::Node node("[]");
+        YAML::Node node;
         node = *ret;
         d.metaData = node;
     }

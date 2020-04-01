@@ -19,9 +19,9 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
         // Try to get pose estimation from yaml node
         // and write it to pose file in the directory
         // encoded in the pseudo meta path
-        if (node["poseEstimate"])
+        if (node["pose_estimate"])
         {
-            Transformf transform = node["poseEstimat"].as<Transformf>();
+            Transformf transform = node["pose_estimate"].as<Transformf>();
             BaseVector<float> position;
             BaseVector<float> angles;
             getPoseFromMatrix(position, angles, transform);
@@ -36,9 +36,10 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
             writePose(position, angles, poseOutPath);
         }
 
+        // Same for registration. If present, write frames file
         if (node["registration"])
         {
-            Transformf transform = node["poseEstimate"].as<Transformf>();
+            Transformf transform = node["registration"].as<Transformf>();
             //Construct .pose file path and save
             boost::filesystem::path outfilePath(outfile);
             boost::filesystem::path dir = outfilePath.parent_path();
@@ -88,7 +89,7 @@ YAML::Node loadMetaInformation(const std::string &in)
             Vector3d angles(r, t, p);
 
             Transformd poseEstimate = poseToMatrix(pose, angles);
-            node["poseEstimate"] = poseEstimate;
+            node["pose_estimate"] = poseEstimate;
         }
         else
         {
