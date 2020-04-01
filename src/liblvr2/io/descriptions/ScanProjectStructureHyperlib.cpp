@@ -4,7 +4,12 @@
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/descriptions/ScanProjectStructureHyperlib.hpp"
 #include "lvr2/io/IOUtils.hpp"
+#include "lvr2/io/yaml/Scan.hpp"
+#include "lvr2/io/yaml/ScanImage.hpp"
+#include "lvr2/io/yaml/ScanPosition.hpp"
 #include "lvr2/io/yaml/MatrixIO.hpp"
+#include "lvr2/io/yaml/ScanProject.hpp"
+#include "lvr2/io/yaml/ScanCamera.hpp"
 
 namespace lvr2
 {
@@ -24,7 +29,10 @@ Description ScanProjectStructureHyperlib::scanProject() const
     }
     catch(const YAML::BadFile& e)
     {
-        // Nothing to do, meta node will be empty...
+        // Nothing to do, meta node will contail default values
+        YAML::Node node;
+        node = ScanProject();
+        d.metaData = node;
     }
     
     return d;
@@ -36,8 +44,8 @@ Description ScanProjectStructureHyperlib::position(const size_t &scanPosNo) cons
    
     // Save scan file name
     std::stringstream sstr;
-    sstr << "scan" << std::setfill('0') << std::setw(8) << scanPosNo;
-    d.groupName = sstr.str();
+    sstr << std::setfill('0') << std::setw(8) << scanPosNo;
+    
     d.dataSetName = boost::none;
     d.metaName = "meta.yaml";
     d.metaData = boost::none;
@@ -45,13 +53,19 @@ Description ScanProjectStructureHyperlib::position(const size_t &scanPosNo) cons
     // Load meta data
     boost::filesystem::path positionPath(sstr.str());
     boost::filesystem::path metaPath(*d.metaName);
+
+    d.groupName = (m_rootPath / positionPath).string();
+    
     try
     {
         d.metaData = YAML::LoadFile( (m_rootPath / positionPath / metaPath).string());
     }
     catch(YAML::BadFile& e)
     {
-        // Nothing to do, meta node will be empty...
+         // Nothing to do, meta node will contail default values
+        YAML::Node node;
+        node = ScanPosition();
+        d.metaData = node;
     }
     
     return d;
@@ -88,7 +102,10 @@ Description ScanProjectStructureHyperlib::scan(const std::string &scanPositionPa
     }
     catch(YAML::BadFile& e)
     {
-        /// Nothing to do
+        // Nothing to do, meta node will contail default values
+        YAML::Node node;
+        node = Scan();
+        d.metaData = node;
     }
    
     d.metaName = metaPath.string();
@@ -128,7 +145,10 @@ Description ScanProjectStructureHyperlib::scanCamera(const std::string &scanPosi
     }
     catch(const YAML::BadFile& e)
     {
-        /// Nothing to do, meta data will be empty.
+         // Nothing to do, meta node will contail default values
+        YAML::Node node;
+        node = ScanCamera();
+        d.metaData = node;
     }
     
    
@@ -172,7 +192,10 @@ Description ScanProjectStructureHyperlib::scanImage(
     }
     catch(YAML::BadFile& e)
     {
-        /// Nothing to do, meta data will be empty
+        // Nothing to do, meta node will contail default values
+        YAML::Node node;
+        node = ScanImage();
+        d.metaData = node;
     }
    
 
