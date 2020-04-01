@@ -30,7 +30,7 @@ void ScanProjectIO<FeatureBase>::saveScanProject(const ScanProjectPtr& scanProje
     {
         // Create default meta and save
         YAML::Node node;
-        node[""] = (ScanProject)(*(scanProjectPtr));
+        node = (ScanProject)(*(scanProjectPtr));
         m_featureBase->m_kernel.saveMetaYAML(group, metaName, node);
     }   
     
@@ -45,7 +45,7 @@ template <typename FeatureBase>
 ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject()
 {
     ScanProjectPtr ret(new ScanProject);
-    ScanProject* project = new ScanProject;
+ 
     // Load description and meta data for scan project
     Description d = m_featureBase->m_description.scanProject();
     if(d.metaData)

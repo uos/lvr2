@@ -89,6 +89,8 @@ PointBufferPtr DirectoryKernel::loadPointBuffer(
     ModelPtr model = ModelFactory::readModel(p.string());
     if (model)
     {
+        std::cout << model->m_pointCloud << std::endl;
+        std::cout << model->m_pointCloud->numPoints() << std::endl;
         return model->m_pointCloud;
     }
 }
