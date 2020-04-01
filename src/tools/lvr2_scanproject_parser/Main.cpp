@@ -28,6 +28,11 @@ int main(int argc, char** argv)
     ScanProjectStructureSLAM slam_structure_out("./slam");
     saveScanProject(slam_structure_out, kernel, project);
 
+    // Copy generated scan project directory
+    ScanProjectPtr copy_project = loadScanProject(hyperlibStructure, kernel);
+    ScanProjectStructureHyperlib hyperlibStructure_copy(options.getOutputDir() + "_copy");
+    saveScanProject(hyperlibStructure_copy, kernel, copy_project);
+
     std::cout << timestamp << "Program finished" << std::endl;
 
     return 0;
