@@ -21,7 +21,12 @@ int main(int argc, char** argv)
 
     ScanProjectPtr project = loadScanProject(slam_structure, kernel);
 
+    // Save project in hyperlib structure
     saveScanProject(hyperlibStructure, kernel, project);
+
+    // Save project in slam structure
+    ScanProjectStructureSLAM slam_structure_out("./slam");
+    saveScanProject(slam_structure_out, kernel, project);
 
     std::cout << timestamp << "Program finished" << std::endl;
 
