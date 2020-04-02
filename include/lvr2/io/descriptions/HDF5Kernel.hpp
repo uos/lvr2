@@ -98,18 +98,16 @@ public:
 
 
     template<typename T>
-    boost::optional<T> loadChannelOptional(const std::string& groupName,
-    const std::string& datasetName) const;
+    ChannelOptional<T> loadChannelOptional(HighFive::Group& g, const std::string& datasetName) const;
+
+    template<typename T>
+    ChannelOptional<T> loadChannelOptional(const std::string& groupName, const std::string& datasetName) const;     
 
     // template<typename T>
     // ChannelOptional<T> load(
     //     HighFive::Group& g,
     //     std::string datasetName
     // ) const;
-
-    template<typename T>
-    ChannelOptional<T> loadChannel(std::string groupName,
-        std::string datasetName);
 
     template<typename T>
     void save(std::string groupName,
