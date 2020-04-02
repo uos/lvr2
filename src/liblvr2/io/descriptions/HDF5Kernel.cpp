@@ -239,10 +239,77 @@ PointBufferPtr HDF5Kernel::loadPointBuffer(
 }
 
 boost::optional<cv::Mat> HDF5Kernel::loadImage(
-    const std::string &group,
-    const std::string &container) const
+    const std::string &groupName,
+    const std::string &datasetName) const
 {
-    return boost::none;
+    boost::optional<cv::Mat> ret;
+
+    if(m_hdf5File && m_hdf5File->isValid())
+    {
+        HighFive::Group group = hdf5util::getGroup(m_hdf5File, groupName);
+        if(group.exist(datasetName))
+        {
+            if(H5IMis_image(group.getId(), datasetName.c_str()))
+            {
+                long long unsigned int w, h, planes;
+                long long int npals;
+                char interlace[256];
+
+                int err = H5IMget_image_info(group.getId(), datasetName.c_str(), &w, &h, &planes, interlace, &npals);
+
+                if(planes == 1) {
+                    // 1 channel image
+                    ret = cv::Mat(h, w, CV_8U);
+                    H5IMread_image(group.getId(), datasetName.c_str(), ret->data);
+                } else if(planes == 3) {
+                    // 3 channel image
+                    ret = cv::Mat(h, w, CV_8UC3);
+                    H5IMread_image(group.getId(), datasetName.c_str(), ret->data);
+                } else {
+                    // ERROR
+                }
+            } else {
+                // data blob
+                // std::cout << "[Hdf5 - ImageIO] WARNING: Dataset is not formatted as image. Reading data as blob." << std::endl;
+                // Data is not an image, load as blob
+
+                HighFive::DataSet dataset = group.getDataSet(datasetName);
+                std::vector<size_t> dims = dataset.getSpace().getDimensions();
+                HighFive::DataType dtype = dataset.getDataType();
+
+                if(dtype == HighFive::AtomicType<unsigned char>()){
+                    ret = createMat<unsigned char>(dims);
+                    dataset.read(reinterpret_cast<unsigned char*>(ret->data));
+                } else if(dtype == HighFive::AtomicType<char>()) {
+                    ret = createMat<char>(dims);
+                    dataset.read(reinterpret_cast<char*>(ret->data));
+                } else if(dtype == HighFive::AtomicType<unsigned short>()) {
+                    ret = createMat<unsigned short>(dims);
+                    dataset.read(reinterpret_cast<unsigned short*>(ret->data));
+                } else if(dtype == HighFive::AtomicType<short>()) {
+                    ret = createMat<short>(dims);
+                    dataset.read(reinterpret_cast<short*>(ret->data));
+                } else if(dtype == HighFive::AtomicType<int>()) {
+                    ret = createMat<int>(dims);
+                    dataset.read(reinterpret_cast<int*>(ret->data));
+                } else if(dtype == HighFive::AtomicType<float>()) {
+                    ret = createMat<float>(dims);
+                    dataset.read(reinterpret_cast<float*>(ret->data));
+                } else if(dtype == HighFive::AtomicType<double>()) {
+                    ret = createMat<double>(dims);
+                    dataset.read(reinterpret_cast<double*>(ret->data));
+                } else {
+                    std::cout << timestamp << "HDF5Kernel::loadImage(): Warning: Could'nt load blob. Datatype unkown." << std::endl;
+                }
+            }
+        }
+
+    } else {
+        throw std::runtime_error("[Hdf5 - ImageIO]: Hdf5 file not open.");
+    }
+    
+
+    return ret;
 }
 
 YAML::Node HDF5Kernel::loadMetaYAML(

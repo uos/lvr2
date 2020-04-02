@@ -499,5 +499,29 @@ boost::optional<VariantChannelT> HDF5Kernel::loadVariantChannel(
     return load<VariantChannelT>(groupName, datasetName);
 }
 
+template<typename T>
+cv::Mat HDF5Kernel::createMat(const std::vector<size_t>& dims) const
+{
+    cv::Mat ret;
+
+    // single channel type
+    int cv_type = cv::DataType<T>::type;
+
+    if(dims.size() > 2)
+    {
+        cv_type += (dims[2]-1) * 8;
+    }
+
+    if(dims.size() > 1)
+    {
+        ret = cv::Mat(dims[0], dims[1], cv_type);
+    } 
+    else 
+    {
+        ret = cv::Mat(dims[0], 1, cv_type);
+    }
+
+    return ret;
+}
 
 } // namespace lvr2

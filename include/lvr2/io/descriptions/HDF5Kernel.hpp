@@ -236,6 +236,9 @@ public:
         const VariantChannel<Tp...>& vchannel
     ) const;
 
+    template<typename T>
+    cv::Mat createMat(const std::vector<size_t>& dims) const;
+
 
     std::shared_ptr<HighFive::File>  m_hdf5File;
    
