@@ -1,14 +1,12 @@
 namespace lvr2 {
 
 template<typename FeatureBase>
-template<typename T>
-ChannelOptional<T> ChannelIO<FeatureBase>::loadChannel(std::string groupName,
-    std::string datasetName)
+FloatChannelOptionsal ChannelIO<FeatureBase>::loadFloatChannel(std::string groupName, std::string datasetName)
 {
-    ChannelOptional<T> ret;
+    FloatChannelOptional ret;
     
     std::vector<size_t> dims;
-    boost::shared_array<T> arr = m_featureBase->m_kernel->loadArray<T>(groupName, datasetName, dims);
+    floatArr arr = m_featureBase->m_kernel->loadArray<T>(groupName, datasetName, dims);
 
     // Check if load was successfull. Channels should always
     // have a dimensionality of [width x n]. So dim.size() 
