@@ -2,60 +2,53 @@ namespace lvr2
 {
 
 template<typename T>
-boost::optional<T> HDF5Kernel::loadChannelOptional(const std::string& groupName,
-    const std::string& datasetName) const
+ChannelOptional<T> HDF5Kernel::loadChannelOptional(
+    const std::string& groupName,
+    const std::string& datasetName) const  
 {
-    boost::optional<T> ret;
+    ChannelOptional<T> ret;
 
     if(hdf5util::exist(m_hdf5File, groupName))
     {
         HighFive::Group g = hdf5util::getGroup(m_hdf5File, groupName, false);
-        ret = load<T>(g, datasetName);
+        ret = loadChannelOptional<T>(g, datasetName);
     } 
 
     return ret;
 }
 
-
-// template<typename T>
-// ChannelOptional<T> HDF5Kernel::load(
-//     HighFive::Group& g,
-//     std::string datasetName) const
-// { 
-//     ChannelOptional<T> ret;
-
-//     if(m_hdf5File && m_hdf5File->isValid())
-//     {
-//         if(g.exist(datasetName))
-//         {
-//             HighFive::DataSet dataset = g.getDataSet(datasetName);
-//             std::vector<size_t> dim = dataset.getSpace().getDimensions();
-            
-//             size_t elementCount = 1;
-//             for (auto e : dim)
-//                 elementCount *= e;
-
-//             if(elementCount)
-//             {
-//                 ret = Channel<T>(dim[0], dim[1]);
-//                 dataset.read(ret->dataPtr().get());
-//             }
-//         }
-//     } else {
-//         throw std::runtime_error("[Hdf5 - ChannelIO]: Hdf5 file not open.");
-//     }
-
-//     return ret;
-// }
-
-
 template<typename T>
-ChannelOptional<T> HDF5Kernel::loadChannel(std::string groupName,
-    std::string datasetName)
+ChannelOptional<T> HDF5Kernel::loadChannelOptional(
+    HighFive::Group& g,
+    const std::string& datasetName) const
 {
-    return load<T>(groupName, datasetName);
-}
+    ChannelOptional<T> ret;
 
+    if (m_hdf5File && m_hdf5File->isValid())
+    {
+        if (g.exist(datasetName))
+        {
+            HighFive::DataSet dataset = g.getDataSet(datasetName);
+            std::vector<size_t> dim = dataset.getSpace().getDimensions();
+
+            size_t elementCount = 1;
+            for (auto e : dim)
+                elementCount *= e;
+
+            if (elementCount)
+            {
+                ret = Channel<T>(dim[0], dim[1]);
+                dataset.read(ret->dataPtr().get());
+            }
+        }
+    }
+    else
+    {
+        throw std::runtime_error("[Hdf5 - ChannelIO]: Hdf5 file not open.");
+    }
+
+    return ret;
+}
 
 template<typename T>
 void HDF5Kernel::save(std::string groupName,
@@ -297,7 +290,7 @@ boost::optional<VariantChannelT> loadVChannel(
     boost::optional<VariantChannelT> ret;
     if(dtype == HighFive::AtomicType<typename VariantChannelT::template type_of_index<R> >())
     {
-        auto channel = channel_io->template load<typename VariantChannelT::template type_of_index<R> >(group, name);
+        auto channel = channel_io->template loadChannelOptional<typename VariantChannelT::template type_of_index<R> >(group, name);
         if(channel) {
             ret = *channel;
         }
@@ -319,7 +312,7 @@ boost::optional<VariantChannelT> loadVChannel(
     if(dtype == HighFive::AtomicType<typename VariantChannelT::template type_of_index<R> >())
     {
         boost::optional<VariantChannelT> ret;
-        auto loaded_channel = channel_io->load<typename VariantChannelT::template type_of_index<R> >(group, name);
+        auto loaded_channel = channel_io->loadChannelOptional<typename VariantChannelT::template type_of_index<R> >(group, name);
         if(loaded_channel)
         {
             ret = *loaded_channel;

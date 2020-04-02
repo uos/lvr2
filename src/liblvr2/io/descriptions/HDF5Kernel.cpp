@@ -84,7 +84,7 @@ PointBufferPtr HDF5Kernel::loadPointBuffer(
         {
             // name is dataset
             boost::optional<PointBuffer::val_type> opt_vchannel
-                 = this->template loadChannelOptional<PointBuffer::val_type>(group, name);
+                 = this->template load<PointBuffer::val_type>(group, name);
             
             if(opt_vchannel)
             {
