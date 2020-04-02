@@ -142,8 +142,8 @@ getGroup(HighFive::Group& g, const std::string& groupName, bool create = true)
     }
     catch (HighFive::Exception& e)
     {
-        std::cout << "Error in getGroup (with group name '" << groupName << "': " << std::endl;
-        std::cout << e.what() << std::endl;
+        std::cout << timestamp << "Error in HDF5Util::getGroup '" << groupName << "': " << std::endl;
+        std::cout << timestamp << e.what() << std::endl;
         throw e;
     }
 

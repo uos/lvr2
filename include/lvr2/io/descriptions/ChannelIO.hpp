@@ -11,18 +11,19 @@
 namespace lvr2 {
 
 template<typename FeatureBase>
-class ChannelIO : public GroupedChannelIO 
+class ChannelIO 
 {
 public:
    
-    template<typename T>
-    ChannelOptional<T> loadChannel(std::string groupName,
-        std::string datasetName);
-
-    template<typename T>
-    void saveChannel(std::string groupName,
-        std::string datasetName,
-        const Channel<T>& channel);
+    UCharChannelOptional loadUCharChannel(std::string groupName, std::string datasetName);
+    FloatChannelOptional loadFloatChannel(std::string groupName, std::string datasetName);
+    DoubleChannelOptional loadDoubleChannel(std::string groupName, std::string datasetName);
+    IndexChannelOptional loadIndexChannel(std::string groupName, std::string datasetName);
+    
+    void saveUCharChannel(std::string groupName, std::string datasetName, UCharChannel& channel);
+    void saveFloatChannel(std::string groupName, std::string datasetName, FloatChannel& channel);
+    void saveDoubleChannel(std::string groupName, std::string datasetName, DoubleChannel& channel);
+    void saveIndexChannel(std::string groupName, std::string datasetName, UCharChannel& channel);
 
 protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
