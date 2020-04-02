@@ -177,17 +177,17 @@ boost::filesystem::path DirectoryKernel::getAbsolutePath(const std::string &grou
 
 
 
-ucharArr DirectoryKernel::loadUCharArray(const std::string& group, const std::string& container, const std::vector<size_t>& dims) const
+ucharArr DirectoryKernel::loadUCharArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
     return loadArray<unsigned char>(group, container, dims);   
 }
 
-floatArr DirectoryKernel::loadFloatArray(const std::string& group, const std::string& container, const std::vector<size_t>& dims) const
+floatArr DirectoryKernel::loadFloatArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
     return loadArray<float>(group, container, dims);   
 }
 
-doubleArr DirectoryKernel::loadDoubleArray(const std::string& group, const std::string& container, const std::vector<size_t>& dims) const
+doubleArr DirectoryKernel::loadDoubleArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
     return loadArray<double>(group, container, dims);   
 }

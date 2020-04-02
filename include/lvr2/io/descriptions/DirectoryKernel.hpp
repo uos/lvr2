@@ -58,17 +58,17 @@ public:
     virtual ucharArr loadUCharArray(
         const std::string& group, 
         const std::string& container, 
-        const std::vector<size_t> &dims) const;
+        std::vector<size_t> &dims) const;
 
     virtual floatArr loadFloatArray(
         const std::string& group, 
         const std::string& container, 
-        const std::vector<size_t> &dims) const;
+        std::vector<size_t> &dims) const;
 
     virtual doubleArr loadDoubleArray(
         const std::string& group, 
         const std::string& container, 
-        const std::vector<size_t> &dims) const;
+        std::vector<size_t> &dims) const;
 
     virtual void saveFloatArray(
         const std::string& groupName, 
@@ -94,7 +94,7 @@ public:
 
 protected:
     template <typename T>
-    boost::shared_array<T> loadArray(const std::string &group, const std::string &constainer, const std::vector<size_t> &dims) const
+    boost::shared_array<T> loadArray(const std::string &group, const std::string &constainer, std::vector<size_t> &dims) const
     {
         if (dims.size() > 0)
         {

@@ -50,46 +50,103 @@ ChannelOptional<T> HDF5Kernel::loadChannelOptional(
     return ret;
 }
 
-template<typename T>
-void HDF5Kernel::save(std::string groupName,
-        std::string datasetName,
-        const Channel<T>& channel) const
+template <typename T>
+boost::shared_array<T> HDF5Kernel::loadArray(
+    const std::string &groupName,
+    const std::string &datasetName, 
+    size_t &size) const
 {
+    boost::shared_array<T> ret;
+
+    HighFive::Group g = hdf5util::getGroup(
+        m_hdf5File,
+        groupName,
+        false
+    );
+
+    std::vector<size_t> dim;
+    ret = load<T>(g, datasetName, dim);
+
+    size = 1;
+    for (auto cur : dim)
+    {
+        size *= cur;
+    }
+
+    return ret;
+}
+
+template<typename T>
+boost::shared_array<T> HDF5Kernel::loadArray(
+    const std::string& groupName, 
+    const std::string& datasetName, 
+    std::vector<size_t>& dim) const
+{
+    boost::shared_array<T> ret;
     HighFive::Group g = hdf5util::getGroup(m_hdf5File, groupName);
-    save(g, datasetName, channel);
-}
 
-
-template<typename T>
-void HDF5Kernel::save(HighFive::Group& g,
-    std::string datasetName,
-    const Channel<T>& channel) const
-{
-    std::vector<hsize_t> chunks = {channel.numElements(), channel.width()};
-    save(g, datasetName, channel, chunks);
-}
-
-
-template<typename T>
-void HDF5Kernel::save(HighFive::Group& g,
-    std::string datasetName,
-    const Channel<T>& channel,
-    std::vector<hsize_t>& chunkSizes) const
-{
     if(m_hdf5File && m_hdf5File->isValid())
     {
-        std::vector<size_t > dims = {channel.numElements(), channel.width()};
+        if (g.exist(datasetName))
+        {
+            HighFive::DataSet dataset = g.getDataSet(datasetName);
+            dim = dataset.getSpace().getDimensions();
 
-        HighFive::DataSpace dataSpace(dims);
+            size_t elementCount = 1;
+            for (auto e : dim)
+                elementCount *= e;
+
+            if(elementCount)
+            {
+                ret = boost::shared_array<T>(new T[elementCount]);
+
+                dataset.read(ret.get());
+            }
+        }
+    } 
+    else 
+    {
+        throw std::runtime_error("[Hdf5 - ArrayIO]: Hdf5 file not open.");
+    }
+
+    return ret;
+}
+
+template<typename T>
+void HDF5Kernel::saveArray(
+    const std::string& groupName,
+    const std::string& datasetName,
+    const size_t& size,
+    const boost::shared_array<T> data) const
+{
+    std::vector<size_t> dim = {size, 1};
+    save(groupName, datasetName, dim,  data);
+}
+
+template<typename T> 
+void HDF5Kernel::saveArray(
+    const std::string& groupName, 
+    const std::string& datasetName,
+    const vector<size_t>& dim,
+    const boost::shared_array<T> data) const
+{
+    HighFive::Group g = hdf5util::getGroup(m_hdf5File, groupName, true);
+    if(m_hdf5File && m_hdf5File->isValid())
+    {
+
+        HighFive::DataSpace dataSpace(dim);
         HighFive::DataSetCreateProps properties;
 
         // if(m_file_access->m_chunkSize)
         // {
+        //     // We have to check explicitly if chunk size
+        //     // is < dimensionality to avoid errors from
+        //     // the HDF5 lib
         //     for(size_t i = 0; i < chunkSizes.size(); i++)
         //     {
-        //         if(chunkSizes[i] > dims[i])
+        //         if(chunkSizes[i] > dim[i])
         //         {
-        //             chunkSizes[i] = dims[i];
+        //             chunkSizes[i] = dim[i];
         //         }
         //     }
         //     properties.add(HighFive::Chunking(chunkSizes));
@@ -99,20 +156,21 @@ void HDF5Kernel::save(HighFive::Group& g,
         //     //properties.add(HighFive::Shuffle());
         //     properties.add(HighFive::Deflate(9));
         // }
-   
+        
         std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<T>(
             g, datasetName, dataSpace, properties
         );
 
-        const T* ptr = channel.dataPtr().get();
+        const T* ptr = data.get();
         dataset->write(ptr);
         m_hdf5File->flush();
     } 
     else 
     {
-        throw std::runtime_error("[Hdf5IO - ChannelIO]: Hdf5 file not open.");
+        throw std::runtime_error("[Hdf5 - ArrayIO]: Hdf5 file not open.");
     }
 }
+
 
 template <typename T>
 bool HDF5Kernel::getChannel(const std::string group, const std::string name, boost::optional<AttributeChannel<T>>& channel)  const
@@ -251,7 +309,57 @@ void saveVChannel(
     }
 }
 
+template <typename T>
+void HDF5Kernel::save(std::string groupName,
+          std::string datasetName,
+          const Channel<T> &channel) const
+{
+     HighFive::Group g = hdf5util::getGroup(m_hdf5File, groupName);
+     save(g, datasetName, channel);
+}
 
+template <typename T>
+void HDF5Kernel::save(HighFive::Group &g,
+          std::string datasetName,
+          const Channel<T> &channel) const
+{
+    if(m_hdf5File && m_hdf5File->isValid())
+    {
+        std::vector<size_t > dims = {channel.numElements(), channel.width()};
+
+        HighFive::DataSpace dataSpace(dims);
+        HighFive::DataSetCreateProps properties;
+
+        // if(m_file_access->m_chunkSize)
+        // {
+        //     for(size_t i = 0; i < chunkSizes.size(); i++)
+        //     {
+        //         if(chunkSizes[i] > dims[i])
+        //         {
+        //             chunkSizes[i] = dims[i];
+        //         }
+        //     }
+        //     properties.add(HighFive::Chunking(chunkSizes));
+        // }
+        // if(m_file_access->m_compress)
+        // {
+        //     //properties.add(HighFive::Shuffle());
+        //     properties.add(HighFive::Deflate(9));
+        // }
+   
+        std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<T>(
+            g, datasetName, dataSpace, properties
+        );
+
+        const T* ptr = channel.dataPtr().get();
+        dataset->write(ptr);
+        m_hdf5File->flush();
+    } 
+    else 
+    {
+        throw std::runtime_error("[Hdf5IO - ChannelIO]: Hdf5 file not open.");
+    }
+}
 
 template<typename ...Tp>
 void HDF5Kernel::save(

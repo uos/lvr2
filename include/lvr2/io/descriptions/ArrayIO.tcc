@@ -2,19 +2,19 @@ namespace lvr2
 {
 
 template<typename FeatureBase>
-ucharArr ArrayIO<FeatureBase>::loadUCharArray(const std::string &group, const std::string &container, const std::vector<size_t> &dims) const
+ucharArr ArrayIO<FeatureBase>::loadUCharArray(const std::string &group, const std::string &container, std::vector<size_t> &dims) const
 {
     return m_featureBase->m_kernel.loadUCharArray(group, container, dims);
 }
 
 template<typename FeatureBase>
-floatArr ArrayIO<FeatureBase>::loadFloatArray(const std::string &group, const std::string &container, const std::vector<size_t> &dims) const
+floatArr ArrayIO<FeatureBase>::loadFloatArray(const std::string &group, const std::string &container, std::vector<size_t> &dims) const
 {
     return m_featureBase->m_kernel.loadFloatArray(group, container, dims);
 }
 
 template<typename FeatureBase>
-doubleArr ArrayIO<FeatureBase>::loadDoubleArray(const std::string &group, const std::string &container, const std::vector<size_t> &dims) const
+doubleArr ArrayIO<FeatureBase>::loadDoubleArray(const std::string &group, const std::string &container, std::vector<size_t> &dims) const
 {
     return m_featureBase->m_kernel.loadDoubleArray(group, container, dims);
 }

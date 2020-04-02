@@ -62,17 +62,17 @@ public:
     virtual ucharArr loadUCharArray(
         const std::string& group, 
         const std::string& container, 
-        const std::vector<size_t> &dims) const;
+        std::vector<size_t> &dims) const;
 
     virtual floatArr loadFloatArray(
         const std::string& group, 
         const std::string& container, 
-        const std::vector<size_t> &dims) const;
+        std::vector<size_t> &dims) const;
 
     virtual doubleArr loadDoubleArray(
         const std::string& group, 
         const std::string& container, 
-        const std::vector<size_t> &dims) const;
+        std::vector<size_t> &dims) const;
 
     virtual void saveFloatArray(
         const std::string& groupName, 
@@ -96,6 +96,31 @@ public:
     virtual void subGroupNames(const std::string& group, std::vector<string>& subGroupNames) const;
     virtual void subGroupNames(const std::string& group, const std::regex& filter, std::vector<string>& subGroupNames) const;
 
+    template<typename T>
+    boost::shared_array<T> loadArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        size_t& size) const;
+
+    template<typename T>
+    boost::shared_array<T> loadArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        std::vector<size_t>& dim) const;
+
+    template<typename T> 
+    void saveArray(
+        const std::string& groupName, 
+        const std::string& datasetName,
+        const size_t& size,
+        const boost::shared_array<T> data) const;
+
+    template<typename T> 
+    void saveArray(
+        const std::string& groupName, 
+        const std::string& datasetName,
+        const vector<size_t>& dim,
+        const boost::shared_array<T> data) const;
 
     template<typename T>
     ChannelOptional<T> loadChannelOptional(HighFive::Group& g, const std::string& datasetName) const;
@@ -123,7 +148,7 @@ public:
     void save(HighFive::Group& g,
         std::string datasetName,
         const Channel<T>& channel,
-        std::vector<hsize_t>& chunkSize) const ;
+        std::vector<hsize_t>& chunkSize) const;
 
      /**
      * @brief getChannel  Reads a float attribute channel in the given group with the given name

@@ -123,25 +123,25 @@ YAML::Node HDF5Kernel::loadMetaYAML(
 ucharArr HDF5Kernel::loadUCharArray(
     const std::string &group,
     const std::string &container,
-    const std::vector<size_t> &dims) const
+    std::vector<size_t> &dims) const
 {
-    return ucharArr(nullptr);
+    return this->template loadArray<unsigned char>(group, container, dims);
 }
 
 floatArr HDF5Kernel::loadFloatArray(
     const std::string &group,
     const std::string &container,
-    const std::vector<size_t> &dims) const
+    std::vector<size_t> &dims) const
 {
-    return floatArr(nullptr);
+    return this->template loadArray<float>(group, container, dims);
 }
 
 doubleArr HDF5Kernel::loadDoubleArray(
     const std::string &group,
     const std::string &container,
-    const std::vector<size_t> &dims) const
+    std::vector<size_t> &dims) const
 {
-    return doubleArr(nullptr);
+    return this->template loadArray<double>(group, container, dims);
 }
 
 void HDF5Kernel::saveFloatArray(
@@ -150,6 +150,7 @@ void HDF5Kernel::saveFloatArray(
     const std::vector<size_t> &dimensions,
     const boost::shared_array<float> &data) const
 {
+    this->template saveArray<float>(groupName, datasetName, dimensions, data);
 }
 
 void HDF5Kernel::saveDoubleArray(
@@ -157,6 +158,7 @@ void HDF5Kernel::saveDoubleArray(
     const std::vector<size_t> &dimensions,
     const boost::shared_array<double> &data) const
 {
+    this->template saveArray<double>(groupName, datasetName, dimensions, data);
 }
 
 void HDF5Kernel::saveUCharArray(
@@ -164,24 +166,28 @@ void HDF5Kernel::saveUCharArray(
     const std::vector<size_t> &dimensions,
     const boost::shared_array<unsigned char> &data) const
 {
+    this->template saveArray<unsigned char>(groupName, datasetName, dimensions, data);
 }
 
 bool HDF5Kernel::exists(const std::string &group) const
 {
-    return false;
+    return hdf5util::exist(m_hdf5File, group);
 }
 
 bool HDF5Kernel::exists(const std::string &group, const std::string &container) const
 {
-    return false;
+    HighFive::Group g = hdf5util::getGroup(m_hdf5File, group);
+    return hdf5util::exist(g, container);
 }
 
 void HDF5Kernel::subGroupNames(const std::string &group, std::vector<string> &subGroupNames) const
 {
+    
 }
 
 void HDF5Kernel::subGroupNames(const std::string &group, const std::regex &filter, std::vector<string> &subGroupNames) const
 {
+
 }
 
 } // namespace lvr2
