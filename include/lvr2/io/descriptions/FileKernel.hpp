@@ -63,17 +63,17 @@ public:
     virtual ucharArr loadUCharArray(
         const std::string& group, 
         const std::string& constainer, 
-        const std::vector<size_t>& dims) const = 0;
+        std::vector<size_t>& dims) const = 0;
 
     virtual floatArr loadFloatArray(
         const std::string& group, 
         const std::string& constainer, 
-        const std::vector<size_t>& dims) const = 0;
+        std::vector<size_t>& dims) const = 0;
 
     virtual doubleArr loadDoubleArray(
         const std::string& group, 
         const std::string& constainer, 
-        const std::vector<size_t>& dims) const = 0;
+        std::vector<size_t>& dims) const = 0;
 
     virtual void saveFloatArray(
         const std::string& groupName, 
