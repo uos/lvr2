@@ -186,8 +186,10 @@ bool HDF5Kernel::getChannel(const std::string group, const std::string name, boo
 
             size_t elementCount = 1;
             for (auto e : dim)
+            {
                 elementCount *= e;
-
+            }
+               
             if(elementCount)
             {
                 channel = Channel<T>(dim[0], dim[1]);
@@ -252,7 +254,9 @@ void saveVChannel(
     if(R == vchannel.type())
     {
         channel_io->save(group, name, vchannel.template extract<typename VariantT::template type_of_index<R> >() );
-    } else {
+    } 
+    else 
+    {
         std::cout << "[VariantChannelIO] WARNING: Nothing was saved" << std::endl;
     }
 }
@@ -268,7 +272,9 @@ void saveVChannel(
     if(R == vchannel.type())
     {
         channel_io->save(group, name, vchannel.template extract<typename VariantT::template type_of_index<R> >() );
-    } else {
+    } 
+    else 
+    {
         saveVChannel<VariantT, R-1>(vchannel, channel_io, group, name);
     }
 }

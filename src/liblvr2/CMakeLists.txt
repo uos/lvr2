@@ -53,6 +53,7 @@ set(LVR2_SOURCES
     io/descriptions/MetaFormatFactory.cpp
     io/descriptions/ScanProjectStructure.cpp
     io/descriptions/HDF5Kernel.cpp
+    io/descriptions/HDF5MetaDescriptionV2.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
