@@ -241,42 +241,6 @@ bool HDF5Kernel::addChannel(const std::string group, const std::string name, con
 }
 
 
-bool HDF5Kernel::getChannel(const std::string group, const std::string name, FloatChannelOptional& channel)  const
-{
-    return getChannel<float>(group, name, channel);
-}
-
-
-bool HDF5Kernel::getChannel(const std::string group, const std::string name, IndexChannelOptional& channel)  const
-{
-    return getChannel<unsigned int>(group, name, channel);
-}
-
-
-bool HDF5Kernel::getChannel(const std::string group, const std::string name, UCharChannelOptional& channel)  const
-{
-    return getChannel<unsigned char>(group, name, channel);
-}
-
-
-bool HDF5Kernel::addChannel(const std::string group, const std::string name, const FloatChannel& channel)  const
-{
-    return addChannel<float>(group, name, channel);
-}
-
-
-bool HDF5Kernel::addChannel(const std::string group, const std::string name, const IndexChannel& channel)  const
-{
-    return addChannel<unsigned int>(group, name, channel);
-}
-
-
-bool HDF5Kernel::addChannel(const std::string group, const std::string name, const UCharChannel& channel)  const
-{
-    return addChannel<unsigned char>(group, name, channel);
-}
-
-
 // R == 0
 template<typename VariantT, int R, typename std::enable_if<R == 0, void>::type* = nullptr>
 void saveVChannel(

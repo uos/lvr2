@@ -51,9 +51,10 @@ public:
         const std::string& group,
         const std::string& container) const;
 
-    virtual YAML::Node loadMetaYAML(
+    virtual void loadMetaYAML(
         const std::string& group,
-        const std::string& container) const;
+        const std::string& container,
+        YAML::Node& node) const;
 
     virtual ucharArr loadUCharArray(
         const std::string& group, 

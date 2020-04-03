@@ -304,7 +304,9 @@ boost::optional<cv::Mat> HDF5Kernel::loadImage(
             }
         }
 
-    } else {
+    } 
+    else 
+    {
         throw std::runtime_error("[Hdf5 - ImageIO]: Hdf5 file not open.");
     }
     
@@ -312,12 +314,12 @@ boost::optional<cv::Mat> HDF5Kernel::loadImage(
     return ret;
 }
 
-YAML::Node HDF5Kernel::loadMetaYAML(
+void HDF5Kernel::loadMetaYAML(
     const std::string &group,
-    const std::string &container) const
+    const std::string &container,
+    YAML::Node& node) const
 {
-    YAML::Node node;
-    return node;
+
 }
 
 ucharArr HDF5Kernel::loadUCharArray(
@@ -388,6 +390,41 @@ void HDF5Kernel::subGroupNames(const std::string &group, std::vector<string> &su
 void HDF5Kernel::subGroupNames(const std::string &group, const std::regex &filter, std::vector<string> &subGroupNames) const
 {
 
+}
+
+bool HDF5Kernel::getChannel(const std::string group, const std::string name, FloatChannelOptional& channel)  const
+{
+    return getChannel<float>(group, name, channel);
+}
+
+
+bool HDF5Kernel::getChannel(const std::string group, const std::string name, IndexChannelOptional& channel)  const
+{
+    return getChannel<unsigned int>(group, name, channel);
+}
+
+
+bool HDF5Kernel::getChannel(const std::string group, const std::string name, UCharChannelOptional& channel)  const
+{
+    return getChannel<unsigned char>(group, name, channel);
+}
+
+
+bool HDF5Kernel::addChannel(const std::string group, const std::string name, const FloatChannel& channel)  const
+{
+    return addChannel<float>(group, name, channel);
+}
+
+
+bool HDF5Kernel::addChannel(const std::string group, const std::string name, const IndexChannel& channel)  const
+{
+    return addChannel<unsigned int>(group, name, channel);
+}
+
+
+bool HDF5Kernel::addChannel(const std::string group, const std::string name, const UCharChannel& channel)  const
+{
+    return addChannel<unsigned char>(group, name, channel);
 }
 
 } // namespace lvr2
