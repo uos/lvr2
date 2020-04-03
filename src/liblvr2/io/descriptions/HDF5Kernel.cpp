@@ -1,10 +1,5 @@
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
-#include "lvr2/io/yaml/Scan.hpp"
-#include "lvr2/io/yaml/ScanPosition.hpp"
-#include "lvr2/io/yaml/ScanProject.hpp"
-#include "lvr2/io/yaml/ScanCamera.hpp"
-#include "lvr2/io/yaml/ScanImage.hpp"
-#include "lvr2/io/yaml/MatrixIO.hpp"
+#include "lvr2/io/yaml/MetaNodeDescriptions.hpp"
 #include "lvr2/io/hdf5/Hdf5Util.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
@@ -14,6 +9,7 @@ namespace lvr2
 HDF5Kernel::HDF5Kernel(const std::string& rootFile) : FileKernel(rootFile)
 {
     m_hdf5File = hdf5util::open(rootFile);
+    m_metaDescription = new HDF5MetaDescriptionV2;
 }
 
 void HDF5Kernel::saveMeshBuffer(
@@ -328,16 +324,39 @@ void HDF5Kernel::loadMetaYAML(
 {
     if(node["sensor_type"])
     {
+        YAML::Node n;
         std::string sensor_type = node["sensor_type"].as<std::string>();
         if(sensor_type == "ScanPosition")
         {
-            // Load default values
-            ScanPosition position;
-            YAML::Node n;
-            n = position;
-
-            // Try t0
+            n = m_metaDescription->scanPosition();
         }
+        else if(sensor_type == "Scan")
+        {
+            n = m_metaDescription->scan();
+        }
+        else if(sensor_type == "ScanCamera")
+        {
+            n = m_metaDescription->scanCamera();
+        }
+        else if(sensor_type == "ScanProject")
+        {
+            n = m_metaDescription->scanProject();
+        }
+        else if(sensor_type == "HyperspectralCamera")
+        {
+            n = m_metaDescription->hyperspectralCamera();
+        }
+        else if(sensor_type == "HyperspectralPanoramaChannel")
+        {
+            n = m_metaDescription->hyperspectralPanoramaChannel();
+        }
+        else 
+        {
+            std::cout << timestamp
+                      << "HDF5Kernel::LoadMetaYAML(): Warning: Sensor type '"
+                      << sensor_type << "' is not defined." << std::endl;
+        }
+        node = n;
     }
     else
     {

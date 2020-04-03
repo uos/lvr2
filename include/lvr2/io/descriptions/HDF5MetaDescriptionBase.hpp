@@ -9,7 +9,7 @@ namespace lvr2
 class HDF5MetaDescriptionBase
 {
 public:
-    HDF5MetaDescriptionBase() = delete;
+    HDF5MetaDescriptionBase() = default;
     virtual ~HDF5MetaDescriptionBase() = default;
 
     virtual YAML::Node scanPosition() const = 0;
