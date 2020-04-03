@@ -1,5 +1,12 @@
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
+#include "lvr2/io/yaml/Scan.hpp"
+#include "lvr2/io/yaml/ScanPosition.hpp"
+#include "lvr2/io/yaml/ScanProject.hpp"
+#include "lvr2/io/yaml/ScanCamera.hpp"
+#include "lvr2/io/yaml/ScanImage.hpp"
+#include "lvr2/io/yaml/MatrixIO.hpp"
 #include "lvr2/io/hdf5/Hdf5Util.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2
 {
@@ -319,7 +326,25 @@ void HDF5Kernel::loadMetaYAML(
     const std::string &container,
     YAML::Node& node) const
 {
+    if(node["sensor_type"])
+    {
+        std::string sensor_type = node["sensor_type"].as<std::string>();
+        if(sensor_type == "ScanPosition")
+        {
+            // Load default values
+            ScanPosition position;
+            YAML::Node n;
+            n = position;
 
+            // Try t0
+        }
+    }
+    else
+    {
+        std::cout << timestamp 
+                  << "HDF5Kernel::loadMetaYAML(): Warning: Sensor type field missing." 
+                  << std::endl;
+    }
 }
 
 ucharArr HDF5Kernel::loadUCharArray(
