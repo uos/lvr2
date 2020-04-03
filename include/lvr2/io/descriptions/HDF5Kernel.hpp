@@ -10,18 +10,19 @@
 #include "lvr2/io/descriptions/FileKernel.hpp"
 #include "lvr2/io/hdf5/Hdf5Util.hpp"
 #include "lvr2/types/VariantChannel.hpp"
+#include "lvr2/io/descriptions/HDF5MetaDescriptionV2.hpp"
 
 #include <type_traits>
 #include <tuple>
 namespace lvr2
 {
-
 class HDF5Kernel : public FileKernel
 {
 public:
 
     HDF5Kernel() = delete;
     HDF5Kernel(const std::string& hdf5file);
+    ~HDF5Kernel() { delete m_metaDescription;}
 
     virtual void saveMeshBuffer(
         const std::string& group, 
@@ -242,6 +243,8 @@ public:
 
 
     std::shared_ptr<HighFive::File>  m_hdf5File;
+
+    HDF5MetaDescriptionBase* m_metaDescription;
    
 };
 
