@@ -114,14 +114,15 @@ boost::optional<cv::Mat> DirectoryKernel::loadImage(
     return opt;
 }
 
-YAML::Node DirectoryKernel::loadMetaYAML(
+void DirectoryKernel::loadMetaYAML(
     const std::string &group,
-    const std::string &container) const
+    const std::string &container,
+    YAML::Node& n) const
 {
     boost::filesystem::path p = getAbsolutePath(group, container);
     std::cout << timestamp << "Directory Kernel::loadMetaYAML: " << p.string() << std::endl;
     YAML::Node node = loadMetaInformation(p.string());
-    return node;
+    n = node;
 }
 
 bool DirectoryKernel::exists(const std::string &group) const

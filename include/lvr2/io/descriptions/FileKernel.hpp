@@ -56,9 +56,13 @@ public:
         const std::string& group,
         const std::string& container) const = 0;
 
-    virtual YAML::Node loadMetaYAML(
+    /// That we don't return the YAML node is on purpose
+    /// to use the initial structure to look for the
+    /// fields that should be loaded!
+    virtual void loadMetaYAML(
         const std::string& group,
-        const std::string& container) const = 0;
+        const std::string& container,
+        YAML::Node& node) const = 0;
 
     virtual ucharArr loadUCharArray(
         const std::string& group, 
