@@ -317,38 +317,45 @@ boost::optional<cv::Mat> HDF5Kernel::loadImage(
     return ret;
 }
 
+void HDF5Kernel::loadMetaData(const YAML::Node& node)
+{
+    
+}
+
 void HDF5Kernel::loadMetaYAML(
     const std::string &group,
     const std::string &container,
     YAML::Node& node) const
 {
-    if(node["sensor_type"])
+    HighFive::Group hg = hdf5util::getGroup(m_hdf5File, group);
+
+    if(hg.isValid() && node["sensor_type"] )
     {
         YAML::Node n;
         std::string sensor_type = node["sensor_type"].as<std::string>();
         if(sensor_type == "ScanPosition")
         {
-            n = m_metaDescription->scanPosition();
+            n = m_metaDescription->scanPosition(hg);
         }
         else if(sensor_type == "Scan")
         {
-            n = m_metaDescription->scan();
+            n = m_metaDescription->scan(hg);
         }
         else if(sensor_type == "ScanCamera")
         {
-            n = m_metaDescription->scanCamera();
+            n = m_metaDescription->scanCamera(hg);
         }
         else if(sensor_type == "ScanProject")
         {
-            n = m_metaDescription->scanProject();
+            n = m_metaDescription->scanProject(hg);
         }
         else if(sensor_type == "HyperspectralCamera")
         {
-            n = m_metaDescription->hyperspectralCamera();
+            n = m_metaDescription->hyperspectralCamera(hg);
         }
         else if(sensor_type == "HyperspectralPanoramaChannel")
         {
-            n = m_metaDescription->hyperspectralPanoramaChannel();
+            n = m_metaDescription->hyperspectralPanoramaChannel(hg);
         }
         else 
         {

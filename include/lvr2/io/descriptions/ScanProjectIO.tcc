@@ -8,9 +8,15 @@ void ScanProjectIO<FeatureBase>::saveScanProject(const ScanProjectPtr& scanProje
 {
     Description d = m_featureBase->m_description.scanProject();
 
+    // Default names
     std::string group = "";
     std::string metaName = "meta.yaml";
 
+    // Default scan project yaml
+    YAML::Node node;
+    node = *scanProjectPtr;
+
+    // Try to override defaults
     if(d.groupName)
     {
         group = *d.groupName;
@@ -18,21 +24,9 @@ void ScanProjectIO<FeatureBase>::saveScanProject(const ScanProjectPtr& scanProje
 
     if(d.metaName)
     {
-        metaName = *d.metaName;
+        node = *d.metaName;
     }
-
-    // Check for meta data and save
-    if(d.metaData)
-    {
-        m_featureBase->m_kernel.saveMetaYAML(group, metaName, *d.metaData);
-    }
-    else
-    {
-        // Create default meta and save
-        YAML::Node node;
-        node = (ScanProject)(*(scanProjectPtr));
-        m_featureBase->m_kernel.saveMetaYAML(group, metaName, node);
-    }   
+    m_featureBase->m_kernel.saveMetaYAML(group, metaName, node);
     
     // Iterate over all positions and save
     for (size_t i = 0; i < scanProjectPtr->positions.size(); i++)
@@ -45,7 +39,7 @@ template <typename FeatureBase>
 ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject()
 {
     ScanProjectPtr ret(new ScanProject);
- 
+
     // Load description and meta data for scan project
     Description d = m_featureBase->m_description.scanProject();
     if(d.metaData)

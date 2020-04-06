@@ -9,25 +9,16 @@ namespace lvr2
 class HDF5MetaDescriptionV2 : public HDF5MetaDescriptionBase
 {
 public:
-    virtual YAML::Node scanPosition() const override;
-    virtual YAML::Node scan() const override;
-    virtual YAML::Node scanCamera() const override;
-    virtual YAML::Node scanProject() const override;
-    virtual YAML::Node scanImage() const override;
-    virtual YAML::Node hyperspectralCamera() const override;
-    virtual YAML::Node hyperspectralPanoramaChannel() const override;
-protected:
-    template<typename T> 
-    YAML::Node defaultNode() const
-    {
-        // Setup default object
-        T t;
+    virtual YAML::Node hyperspectralCamera(const HighFive::Group& g) const override;
+    virtual YAML::Node hyperspectralPanoramaChannel(const HighFive::Group& g) const override;
+    virtual YAML::Node scan(const HighFive::Group& g) const override;
+    virtual YAML::Node scanPosition(const HighFive::Group& g) const override;
+    virtual YAML::Node scanProject(const HighFive::Group& g) const override;
+    virtual YAML::Node scanCamera(const HighFive::Group& g) const override;
+    virtual YAML::Node scanImage(const HighFive::Group& g) const override;
 
-        // Build and return corresponding node
-        YAML::Node node;
-        node = t;
-        return node;
-    }
+protected:
+    
 };
 
 } // namespace lvr2

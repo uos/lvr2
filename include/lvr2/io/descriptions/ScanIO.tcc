@@ -16,6 +16,10 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
     std::string scanName = sstr.str() + ".ply";
     std::string metaName = sstr.str() + ".yaml";
 
+    // Default meta yaml
+    YAML::Node node;
+    node = *scanPtr;
+
     // Get group and dataset names according to 
     // data fomat description and override defaults if 
     // when possible
@@ -36,12 +40,15 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
         metaName = *d.metaName;
     }
 
+    if(d.metaData)
+    {
+        node = *d.metaData;
+    }
+
     // Save all scan data and meta data if present
     m_featureBase->m_kernel.savePointBuffer(groupName, scanName, scanPtr->points);
     
     // Get meta data from scan and save
-    YAML::Node node;
-    node = *scanPtr;
     m_featureBase->m_kernel.saveMetaYAML(groupName, metaName, node);
 
 }
