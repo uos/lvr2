@@ -22,6 +22,113 @@ namespace lvr2
 namespace hdf5util
 {
 
+
+template<typename T>
+static void addArray(HighFive::Group& g,
+        const std::string datasetName,
+        std::vector<size_t>& dim,
+        boost::shared_array<T>& data)
+{
+    HighFive::DataSpace dataSpace(dim);
+    HighFive::DataSetCreateProps properties;
+
+    // if(m_chunkSize)
+    // {
+    //     // We have to check explicitly if chunk size
+    //     // is < dimensionality to avoid errors from
+    //     // the HDF5 lib
+    //     for(size_t i = 0; i < chunkSizes.size(); i++)
+    //     {
+    //         if(chunkSizes[i] > dim[i])
+    //         {
+    //             chunkSizes[i] = dim[i];
+    //         }
+    //     }
+    //     properties.add(HighFive::Chunking(chunkSizes));
+    // }
+    // if(m_compress)
+    // {
+    //     //properties.add(HighFive::Shuffle());
+    //     properties.add(HighFive::Deflate(9));
+    // }
+    HighFive::DataSet dataset = g.createDataSet<T>(datasetName, dataSpace, properties);
+    const T* ptr = data.get();
+    dataset.write(ptr);
+
+    //std::cout << timestamp << " Wrote " << datasetName << " to HDF5 file." << std::endl;
+}
+
+template<typename T>
+static boost::shared_array<T> getArray(
+        const HighFive::Group& g, 
+        const std::string& datasetName,
+        std::vector<size_t>& dim)
+{
+    boost::shared_array<T> ret;
+
+    if (g.exist(datasetName))
+    {
+        HighFive::DataSet dataset = g.getDataSet(datasetName);
+        dim = dataset.getSpace().getDimensions();
+
+        size_t elementCount = 1;
+        for (auto e : dim)
+            elementCount *= e;
+
+        if (elementCount)
+        {
+            ret = boost::shared_array<T>(new T[elementCount]);
+
+            dataset.read(ret.get());
+        }
+    }
+
+    return ret;
+}
+
+template<typename T>
+static std::vector<size_t> getDimensions(
+        const HighFive::Group& g, 
+        const std::string& datasetName)
+{
+    if (g.exist(datasetName))
+    {
+        HighFive::DataSet dataset = g.getDataSet(datasetName);
+        return dataset.getSpace().getDimensions();
+    }
+
+    return std::vector<size_t>(0);
+}
+
+template<typename MatrixT>
+static boost::optional<MatrixT> getMatrix(const HighFive::Group& g, const std::string& datasetName)
+{
+    boost::optional<MatrixT> ret;
+
+    if(g.isValid())
+    {
+        if(g.exist(datasetName))
+        {
+            HighFive::DataSet dataset = g.getDataSet(datasetName);
+            std::vector<size_t> dim = dataset.getSpace().getDimensions();
+
+            size_t elementCount = 1;
+            for (auto e : dim)
+                elementCount *= e;
+
+            MatrixT mat;
+            dataset.read(mat.data());
+            ret = mat;
+        }
+    } 
+    else 
+    {
+        throw std::runtime_error("[Hdf5 - MatrixIO]: Hdf5 file not open.");
+    }
+
+    return ret;
+}
+
 static std::vector<std::string> splitGroupNames(const std::string& groupName)
 {
     std::vector<std::string> ret;
