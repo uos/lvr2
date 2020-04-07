@@ -6,14 +6,65 @@
 namespace lvr2
 {
 
+void HDF5MetaDescriptionV2::saveHyperspectralCamera(
+    const HighFive::Group &g,
+    const YAML::Node& n) const
+{
+
+}
+
+void HDF5MetaDescriptionV2::saveHyperspectralPanoramaChannel(
+    const HighFive::Group &g,
+    const YAML::Node &n) const
+{
+
+}
+
+void HDF5MetaDescriptionV2::saveScan(
+    const HighFive::Group &g,
+    const YAML::Node &n) const
+{
+
+}
+
+void HDF5MetaDescriptionV2::saveScanPosition(
+    const HighFive::Group &g,
+    const YAML::Node &n) const
+{
+
+}
+
+void HDF5MetaDescriptionV2::saveScanProject(
+    const HighFive::Group &g,
+    const YAML::Node &n) const 
+{
+
+}
+
+void HDF5MetaDescriptionV2::saveScanCamera(
+    const HighFive::Group &g,
+    const YAML::Node& n) const
+{
+
+}
+
+void HDF5MetaDescriptionV2::saveScanImage(
+    const HighFive::Group &g,
+    const YAML::Node &n) const
+{
+
+}
+
 YAML::Node HDF5MetaDescriptionV2::hyperspectralCamera(const HighFive::Group &g) const 
 {
+    std::cout << timestamp << "HDF5MetaDescriptionV2::hyperspectralCamera() not implemented..." << std::endl;
     YAML::Node node;
     return node;
 }
 
 YAML::Node HDF5MetaDescriptionV2::hyperspectralPanoramaChannel(const HighFive::Group &g) const 
 {
+     std::cout << timestamp << "HDF5MetaDescriptionV2::hyperspectralPanoramaChannel() not implemented..." << std::endl;
     YAML::Node node;
     return node;
 }
@@ -134,18 +185,21 @@ YAML::Node HDF5MetaDescriptionV2::scanPosition(const HighFive::Group &g) const
 
 YAML::Node HDF5MetaDescriptionV2::scanProject(const HighFive::Group &g) const 
 {
+    std::cout << timestamp << "HDF5MetaDescriptionV2::scanProject() not implemented..." << std::endl;
     YAML::Node node;
     return node;
 }
 
 YAML::Node HDF5MetaDescriptionV2::scanCamera(const HighFive::Group &g) const 
 {
+    std::cout << timestamp << "HDF5MetaDescriptionV2::scanCamera() not implemented..." << std::endl;
     YAML::Node node;
     return node;
 }
 
 YAML::Node HDF5MetaDescriptionV2::scanImage(const HighFive::Group &g) const 
 {
+    std::cout << timestamp << "HDF5MetaDescriptionV2::scanImage() not implemented..." << std::endl;
     YAML::Node node;
     return node;
 }

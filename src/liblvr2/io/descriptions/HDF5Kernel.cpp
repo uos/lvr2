@@ -180,7 +180,44 @@ void HDF5Kernel::saveMetaYAML(
     const std::string &metaName,
     const YAML::Node &node) const
 {
+    HighFive::Group hg = hdf5util::getGroup(m_hdf5File, group);
 
+    if(hg.isValid() && node["sensor_type"] )
+    {
+        std::string sensor_type = node["sensor_type"].as<std::string>();
+        if(sensor_type == "ScanPosition")
+        {
+
+            m_metaDescription->saveScanPosition(hg, node);
+        }
+        else if(sensor_type == "Scan")
+        {
+            m_metaDescription->saveScan(hg, node);
+        }
+        else if(sensor_type == "ScanCamera")
+        {
+            m_metaDescription->saveScanCamera(hg, node);
+        }
+        else if(sensor_type == "ScanProject")
+        {
+            m_metaDescription->saveScanProject(hg, node);
+        }
+        else if(sensor_type == "HyperspectralCamera")
+        {
+            m_metaDescription->saveHyperspectralCamera(hg, node);
+        }
+        else if(sensor_type == "HyperspectralPanoramaChannel")
+        {
+            m_metaDescription->saveHyperspectralPanoramaChannel(hg, node);
+        }
+        else 
+        {
+            std::cout << timestamp
+                      << "HDF5Kernel::SaveMetaYAML(): Warning: Sensor type '"
+                      << sensor_type << "' is not defined." << std::endl;
+        }
+        m_hdf5File->flush();
+    }
 }
 
 MeshBufferPtr HDF5Kernel::loadMeshBuffer(
