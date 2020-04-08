@@ -40,6 +40,17 @@ void addArray(HighFive::Group& g,
 }
 
 template<typename T>
+void addArray(
+    HighFive::Group& g, 
+    const std::string datasetName, 
+    const size_t& length, 
+    boost::shared_array<T>& data)
+{
+    std::vector<size_t> dim = {length, 1};
+    addArray(g, datasetName, dim, data);
+}
+
+template<typename T>
 boost::shared_array<T> getArray(
     const HighFive::Group& g, 
     const std::string& datasetName,
