@@ -82,9 +82,9 @@ std::vector<size_t> getDimensions(
 }
 
 template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-void saveMatrix(const HighFive::Group& group,
+void addMatrix(HighFive::Group& group,
     std::string datasetName,
-    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& mat) 
+    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& mat)
 {
     if(group.isValid())
     {
