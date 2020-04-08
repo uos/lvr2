@@ -33,6 +33,13 @@ void addArray(
     boost::shared_array<T>& data);
 
 template<typename T>
+void addArray(
+    HighFive::Group& g, 
+    const std::string datasetName, 
+    const size_t& length, 
+    boost::shared_array<T>& data);
+
+template<typename T>
     boost::shared_array<T> getArray(
     const HighFive::Group& g, 
     const std::string& datasetName,
