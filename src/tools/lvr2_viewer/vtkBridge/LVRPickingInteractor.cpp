@@ -1615,6 +1615,7 @@ void LVRPickingInteractor::OnKeyDown()
     }
     if(key == "Return" && m_labelingMode)
     {
+	LVRInteractorStylePolygonPick::OnKeyDown();
 	saveCurrentLabelSelection();
     }
     if(key == "x" && m_correspondenceMode)
@@ -1875,15 +1876,16 @@ void LVRPickingInteractor::calculateSelection(bool select)
 
 }
 
-void LVRPickingInteractor::newLabel(QTableWidgetItem* item)
+void LVRPickingInteractor::newLabel(QTreeWidgetItem* item)
 {
-	m_labelColors[item->data(0).toInt()] =  item->data(1).value<QColor>();
+        std::cout << item->text(0).toStdString();
+	m_labelColors[item->data(3,0).toInt()] =  item->data(3,1).value<QColor>();
 	if(m_labelColors.size() == 1)
 	{
 		//first Label set as the choosen label
-		m_selectedLabel = item->data(0).toInt();
+		m_selectedLabel = item->data(3,0).toInt();
 	}
-	if(m_labelActors.find(item->data(0).toInt()) != m_labelActors.end())
+	if(m_labelActors.find(item->data(3,0).toInt()) != m_labelActors.end())
 	{
 	//TODO REDRAW ACTOR if Color changed	
 	}
@@ -1975,5 +1977,24 @@ void LVRPickingInteractor::labelSelected(uint16_t newLabel)
 		m_selectedPoints[i] = (m_pointLabels[i] == newLabel);
 
 	}
+}
+
+void LVRPickingInteractor::setLabeledPointVisibility(int id, bool visibility)
+{
+    if(m_labelActors.find(id) == m_labelActors.end())
+    {
+        //TODO Add new empty actor and set visibility so the choice is kept
+        return;
+    }
+
+    std::cout << "visibility Changed" << std::endl;
+    m_labelActors[id]->SetVisibility(visibility);
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    rwi->Render();
+}
+
+void LVRPickingInteractor::SetPolygonTool()
+{
+	LVRInteractorStylePolygonPick::SetPolygonTool();
 }
 } /* namespace lvr2 */

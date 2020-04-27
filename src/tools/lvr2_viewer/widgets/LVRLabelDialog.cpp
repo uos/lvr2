@@ -64,119 +64,233 @@ LVRLabelDialog::LVRLabelDialog(QTreeWidget* treeWidget) :
     m_dialog = new QDialog(treeWidget);
     m_ui = new Ui_LabelDialog;
     m_ui->setupUi(m_dialog);
-    m_ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+   // m_ui->treeWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     QObject::connect(m_ui->newLabelButton, SIGNAL(pressed()), this, SLOT(addNewLabel()));
-    QObject::connect(m_ui->tableWidget, SIGNAL( cellDoubleClicked (int, int) ), this, SLOT( cellSelected( int, int )));
-    QObject::connect(m_ui->selectedLabelComboBox, SIGNAL( currentIndexChanged(int)), this, SLOT( comboBoxIndexChanged(int)));
+    QObject::connect(m_ui->newInstanceButton, SIGNAL(pressed()), this, SLOT(addNewInstance()));
+    QObject::connect(m_ui->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(cellSelected(QTreeWidgetItem*, int)));
+    QObject::connect(m_ui->selectedLabelComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(comboBoxIndexChanged(int)));
+    QObject::connect(m_ui->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(visibilityChanged(QTreeWidgetItem*, int)));
 
 }
 
 LVRLabelDialog::~LVRLabelDialog()
 {
-	/*
     delete m_ui;
     delete m_dialog;
-    */
     // TODO Auto-generated destructor stub
 }
-void LVRLabelDialog::cellSelected(int row, int column)
+
+void LVRLabelDialog::visibilityChanged(QTreeWidgetItem* changedItem, int column)
 {
-	if(column == LABEL_NAME_COLUMN)
-	{
-		//Edit Label name
-		bool accepted;
-		QTableWidgetItem* item = m_ui->tableWidget->item(row, column);
-		QString label_name = QInputDialog::getText(m_dialog, tr("Select Label Name"),
-		tr("Label name:"), QLineEdit::Normal,
-				item->text(), &accepted);
-		if (accepted && !label_name.isEmpty())
-		{
-			item->setText(label_name);
-			int comboBoxPos = m_ui->selectedLabelComboBox->findData(m_ui->tableWidget->item(row, LABEL_ID_COLUMN)->text().toInt());
-			if (comboBoxPos >= 0)
-			{
-				m_ui->selectedLabelComboBox->setItemText(comboBoxPos, label_name);
+    if(column != LABEL_VISIBLE_COLUMN)
+    {
+        return;
+    }
 
-			}
-			return;
-		}
-	}else if(column == LABEL_COLOR_COLUMN || column == LABEL_ID_COLUMN)
-	{
-		QColor label_color = QColorDialog::getColor(Qt::red, m_dialog, tr("Choose Label Color"));
-		if (label_color.isValid())
-		{
-			m_ui->tableWidget->item(row, LABEL_COLOR_COLUMN)->setBackground(label_color);
-			m_ui->tableWidget->item(row, LABEL_ID_COLUMN)->setData(1,label_color);
+    //check if Instance or hole label changed
+    if (changedItem->parent())
+    {
+        //parent exists item is an instance
+        Q_EMIT(hidePoints(changedItem->data(LABEL_ID_COLUMN,0).toInt(), changedItem->checkState(LABEL_VISIBLE_COLUMN)));
+    } else
+    {
+        for (int i = 0; i < changedItem->childCount(); i++)
+        {
+            QTreeWidgetItem* childItem = changedItem->child(i);
 
-			//Update Color In picker
-			Q_EMIT(labelAdded(m_ui->tableWidget->item(row, LABEL_ID_COLUMN)));
-			return;
-		}
-	}
-	
+            //sets child elements checkbox on toplevel box value if valuechanged a singal will be emitted and handeled
+            childItem->setCheckState(LABEL_VISIBLE_COLUMN, changedItem->checkState(LABEL_VISIBLE_COLUMN));
+        }
+    }
+
+
+}
+
+void LVRLabelDialog::cellSelected(QTreeWidgetItem* item, int column)
+{
+    if(column == LABEL_NAME_COLUMN)
+    {
+        //Edit Label name
+        bool accepted;
+        QString label_name = QInputDialog::getText(m_dialog, tr("Select Label Name"),
+            tr("Label name:"), QLineEdit::Normal,
+            item->text(LABEL_NAME_COLUMN), &accepted);
+        if (accepted && !label_name.isEmpty())
+        {
+            item->setText(LABEL_NAME_COLUMN, label_name);
+            if (!item->parent())
+            {
+                //Toplevel item nothing else to do
+                return;
+            }
+            int comboBoxPos = m_ui->selectedLabelComboBox->findData(item->data(LABEL_ID_COLUMN, 0).toInt());
+            if (comboBoxPos >= 0)
+            {
+                m_ui->selectedLabelComboBox->setItemText(comboBoxPos, label_name);
+
+            }
+            return;
+        }
+    }else if(column == LABEL_ID_COLUMN && item->parent())
+    {
+        //Change 
+        QColor label_color = QColorDialog::getColor(Qt::red, m_dialog, tr("Choose Label Color"));
+        if (label_color.isValid())
+        {
+            item->setData(LABEL_ID_COLUMN, 1, label_color);
+
+            //Update Color In picker
+            Q_EMIT(labelAdded(item));
+            return;
+            }
+    }
 }
 
 void LVRLabelDialog::updatePointCount(int selectedPointCount)
 {
 
-	int rows = m_ui->tableWidget->rowCount();
-	for (int i = 0; i < rows; i++)
-	{
-		if(m_ui->selectedLabelComboBox->currentData().toInt() == m_ui->tableWidget->item(i, 4)->text().toInt())
-		{
-			m_ui->tableWidget->item(i, 2)->setText(QString::number(selectedPointCount));
-		}
-	}
-
-
+    int topItemCount = m_ui->treeWidget->topLevelItemCount();
+    for (int i = 0; i < topItemCount; i++)
+    {
+        QTreeWidgetItem* topLevelItem = m_ui->treeWidget->topLevelItem(i);
+        int childCount = topLevelItem->childCount();
+        for (int j = 0; j < childCount; j++)
+        if(m_ui->selectedLabelComboBox->currentData().toInt() == topLevelItem->child(j)->data(LABEL_ID_COLUMN, 0).toInt())
+        {
+                int pointCountDifference = selectedPointCount - topLevelItem->child(j)->text(LABELED_POINT_COLUMN).toInt();
+                topLevelItem->child(j)->setText(LABELED_POINT_COLUMN, QString::number(selectedPointCount));
+                //Add points to toplevel points
+                topLevelItem->setText(LABELED_POINT_COLUMN, QString::number(pointCountDifference + topLevelItem->text(LABELED_POINT_COLUMN).toInt()));
+                return;
+        }
+    }
 }
+
 void LVRLabelDialog::labelPoints()
 {
 }
+
 void LVRLabelDialog::addNewLabel()
 {
-	//Ask For the Label name 
- 	bool accepted;
-	QString label_name = QInputDialog::getText(m_dialog, tr("Select Label Name"),
-	tr("Label name:"), QLineEdit::Normal,
-			tr("LabelName") , &accepted);
-	if (!accepted || label_name.isEmpty())
-	{
-		//No valid Input
-		return;
-	}
+    //Ask For the Label name 
+    bool accepted;
+    QString label_name = QInputDialog::getText(m_dialog, tr("Select Label Name"),
+    tr("Label name:"), QLineEdit::Normal,
+                    tr("LabelName") , &accepted);
+    if (!accepted || label_name.isEmpty())
+    {
+            //No valid Input
+            return;
+    }
 
-	QColor label_color = QColorDialog::getColor(Qt::red, m_dialog, tr("Choose Label Color"));
-	if (!label_color.isValid())
-	{
-		//Non Vlaid Color Return 
-		return;
-	}
-	int rows = m_ui->tableWidget->rowCount();
-	
-	//generate new Table row
-	m_ui->tableWidget->insertRow(rows);
-	m_ui->tableWidget->setItem(rows, LABEL_NAME_COLUMN, new QTableWidgetItem(label_name));
-	m_ui->tableWidget->setItem(rows, LABEL_COLOR_COLUMN, new QTableWidgetItem(" "));
-	m_ui->tableWidget->item(rows, LABEL_COLOR_COLUMN)->setBackground(label_color);
-	m_ui->tableWidget->setItem(rows, LABELED_POINT_COLUMN, new QTableWidgetItem("0"));
-	m_ui->tableWidget->setItem(rows, LABEL_ID_COLUMN, new QTableWidgetItem(QString::number(rows)));
-	m_ui->tableWidget->item(rows, LABEL_ID_COLUMN)->setData(1,label_color);
-	//TODO generate a gloabal id field that isnt bound to table position 
-	//TODO Add visible box and maybe link visibility to point cloud check with Thomas 
-	//TODO Think about a better way than that hacky data color solution
-	
+    QColor label_color = QColorDialog::getColor(Qt::red, m_dialog, tr("Choose Label Color for first instance"));
+    if (!label_color.isValid())
+    {
+            //Non Valid Color Return 
+            return;
+    }
 
-	//Add label to combo box 
-	m_ui->selectedLabelComboBox->addItem(label_name, rows);
+    if (m_ui->treeWidget->topLevelItemCount() == 0)
+    {
+        //Added first Top Level item enable instance button
+        m_ui->newInstanceButton->setEnabled(true);
+    }
 
-	Q_EMIT(labelAdded(m_ui->tableWidget->item(rows, LABEL_ID_COLUMN)));
+    int id = m_id_hack++;
+    //Setting up new Toplevel item
+    QTreeWidgetItem * item = new QTreeWidgetItem();
+    item->setText(0, label_name);
+    item->setText(LABELED_POINT_COLUMN, QString::number(0));
+    item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+
+    //Setting up new child item
+    QTreeWidgetItem * childItem = new QTreeWidgetItem();
+    childItem->setText(LABEL_NAME_COLUMN, label_name + QString::number(1));
+    childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
+    childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+    childItem->setData(LABEL_ID_COLUMN, 1, label_color);
+    childItem->setData(LABEL_ID_COLUMN, 0, id);
+    item->addChild(childItem);
+    m_ui->treeWidget->addTopLevelItem(item);    
+    
+    //TODO generate a gloabal id field that isnt bound to table position 
+    //TODO Think about a better way than that hacky data color solution
+
+    //Add label to combo box 
+    m_ui->selectedLabelComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
+
+    Q_EMIT(labelAdded(childItem));
+}
+
+void LVRLabelDialog::addNewInstance()
+{
+    QInputDialog topLevelDialog;
+    QStringList topLabels;
+    if (m_ui->treeWidget->topLevelItemCount() == 0)
+    {
+        return;
+    }
+
+    for (int i = 0; i < m_ui->treeWidget->topLevelItemCount(); i++)
+    {
+        topLabels << m_ui->treeWidget->topLevelItem(i)->text(LABEL_NAME_COLUMN);
+    } 
+    topLevelDialog.setComboBoxItems(topLabels);
+    topLevelDialog.setWindowTitle("Create new Instance");
+    if (QDialog::Accepted != topLevelDialog.exec())
+    {
+        return;
+    }
+
+    QString choosenLabel = topLevelDialog.textValue();
+    QList<QTreeWidgetItem*> selectedTopLevelItem = m_ui->treeWidget->findItems(choosenLabel, Qt::MatchExactly);
+    if (selectedTopLevelItem.count() != 1)
+    {
+    std::cout << "hallo was" << std::endl;
+        return;
+    }
+    std::cout << "hallo" << std::endl;
+
+    
+
+    bool accepted;
+    QString instance_name = QInputDialog::getText(m_dialog, tr("Choose Name for new Instance"),
+    tr("Instance name:"), QLineEdit::Normal,
+                    QString(choosenLabel + QString::number(selectedTopLevelItem[0]->childCount() + 1)) , &accepted);
+    if (!accepted || instance_name.isEmpty())
+    {
+            //No valid Input
+            return;
+    }
+
+    QColor label_color = QColorDialog::getColor(Qt::red, m_dialog, tr("Choose Label Color for first instance"));
+    if (!label_color.isValid())
+    {
+            //Non Valid Color Return 
+            return;
+    }
+
+    int id = m_id_hack++;
+    QTreeWidgetItem * childItem = new QTreeWidgetItem();
+    childItem->setText(LABEL_NAME_COLUMN, instance_name);
+    childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
+    childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+    childItem->setData(LABEL_ID_COLUMN, 1, label_color);
+    childItem->setData(LABEL_ID_COLUMN, 0, id);
+    selectedTopLevelItem[0]->addChild(childItem);
+
+
+    //Add label to combo box 
+    m_ui->selectedLabelComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
+    Q_EMIT(labelAdded(childItem));
+
 }
 
 void LVRLabelDialog::comboBoxIndexChanged(int index)
 {
 	Q_EMIT(labelChanged(m_ui->selectedLabelComboBox->itemData(index).toInt()));
 }
+
 }
  /* namespace lvr2 */
 

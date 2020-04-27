@@ -39,7 +39,7 @@
 
 #include <vtkIdTypeArray.h>
 #include <vtkTextActor.h>
-#include <QTableWidgetItem>
+#include <QTreeWidgetItem>
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkInteractorStyleRubberBandPick.h>
 #include <vtkSmartPointer.h>
@@ -114,8 +114,10 @@ public Q_SLOTS:
 
     void labelingOn();
     void labelingOff();
+    void setLabeledPointVisibility(int, bool);
 
-    void newLabel(QTableWidgetItem*);
+    void newLabel(QTreeWidgetItem*);
+    void SetPolygonTool();
     void labelSelected(uint16_t);
 
     void setMotionFactor(double factor);
