@@ -44,10 +44,9 @@
 #include <iostream>
 
 #define LABEL_NAME_COLUMN 0
-#define LABEL_COLOR_COLUMN 1
-#define LABELED_POINT_COLUMN 2
-#define LABEL_VISIBLE_COLUMN 3
-#define LABEL_ID_COLUMN 4
+#define LABELED_POINT_COLUMN 1
+#define LABEL_VISIBLE_COLUMN 2
+#define LABEL_ID_COLUMN 3
 
 using namespace std;
 
@@ -67,15 +66,18 @@ public:
 
 public Q_SLOTS:
     void addNewLabel();
+    void addNewInstance();
     void labelPoints();
     void updatePointCount(int);
-    void cellSelected(int, int);
+    void cellSelected(QTreeWidgetItem*, int);
     void comboBoxIndexChanged(int index);
+    void visibilityChanged(QTreeWidgetItem*, int);
 
 Q_SIGNALS:
     void labelRemoved(QPair<int, QColor>);
-    void labelAdded(QTableWidgetItem*);
+    void labelAdded(QTreeWidgetItem*);
     void labelChanged(uint16_t);
+    void hidePoints(int, bool);
 
 public:
     Ui_LabelDialog*    m_ui;
@@ -85,6 +87,7 @@ private:
     QTreeWidget*                m_treeWidget;
     QColor                      m_dataSelectionColor;
     QColor                      m_modelSelectionColor;
+    int                         m_id_hack = 0;
 };
 
 } /* namespace lvr2 */

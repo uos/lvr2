@@ -48,6 +48,8 @@ public:
   vtkTypeMacro(LVRInteractorStylePolygonPick, vtkInteractorStyleTrackballCamera);
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
+  void SetLassoTool();
+  void SetPolygonTool();
   void StartSelect();
 
   //@{
@@ -58,6 +60,7 @@ public:
   void OnLeftButtonDown() override;
   void OnLeftButtonUp() override;
   void OnChar() override;
+  void OnKeyDown() override;
   //@}
 
   vtkSetMacro(DrawPolygonPixels, bool);
@@ -77,11 +80,13 @@ protected:
   int EndPosition[2];
 
   int Moving;
+  bool firstPoint = true;
 
   vtkUnsignedCharArray* PixelArray;
 
   int CurrentMode;
   bool DrawPolygonPixels;
+  bool lassoToolSelected = true;
 
 private:
   LVRInteractorStylePolygonPick(const LVRInteractorStylePolygonPick&) = delete;
