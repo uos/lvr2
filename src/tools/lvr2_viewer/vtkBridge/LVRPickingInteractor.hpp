@@ -117,7 +117,7 @@ public Q_SLOTS:
     void setLabeledPointVisibility(int, bool);
 
     void newLabel(QTreeWidgetItem*);
-    void SetPolygonTool();
+    void setLassoTool(bool);
     void labelSelected(uint16_t);
 
     void setMotionFactor(double factor);

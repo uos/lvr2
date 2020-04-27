@@ -1993,8 +1993,14 @@ void LVRPickingInteractor::setLabeledPointVisibility(int id, bool visibility)
     rwi->Render();
 }
 
-void LVRPickingInteractor::SetPolygonTool()
+void LVRPickingInteractor::setLassoTool(bool lassoToolSelected)
 {
-	LVRInteractorStylePolygonPick::SetPolygonTool();
+    if (lassoToolSelected)
+    {
+        LVRInteractorStylePolygonPick::SetLassoTool();
+    }else
+    {
+        LVRInteractorStylePolygonPick::SetPolygonTool();
+    }
 }
 } /* namespace lvr2 */

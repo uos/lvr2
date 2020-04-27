@@ -43,6 +43,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QColorDialog>
+#include <QButtonGroup>
 #include <vtkSelectEnclosedPoints.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkPointData.h>
@@ -70,7 +71,6 @@ LVRLabelDialog::LVRLabelDialog(QTreeWidget* treeWidget) :
     QObject::connect(m_ui->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(cellSelected(QTreeWidgetItem*, int)));
     QObject::connect(m_ui->selectedLabelComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(comboBoxIndexChanged(int)));
     QObject::connect(m_ui->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(visibilityChanged(QTreeWidgetItem*, int)));
-
 }
 
 LVRLabelDialog::~LVRLabelDialog()

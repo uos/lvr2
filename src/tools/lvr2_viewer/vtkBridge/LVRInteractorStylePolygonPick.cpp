@@ -392,33 +392,33 @@ void LVRInteractorStylePolygonPick::PrintSelf(ostream& os, vtkIndent indent)
 
 void LVRInteractorStylePolygonPick::SetPolygonTool()
 {
+    std::cout << "lasso" << std::endl;
   lassoToolSelected = false; 
 }
 
 void LVRInteractorStylePolygonPick::SetLassoTool()
 {
+    std::cout << "no lasso" << std::endl;
 
   lassoToolSelected = true; 
 }
 void LVRInteractorStylePolygonPick::OnKeyDown()
 {
-    std::cout << "Hallo " << std::endl; 
     if (!lassoToolSelected)// && "Return" == this->Interactor->GetKeySym())
     {
-    std::cout << "Hallo2 " << std::endl; 
         if (this->CurrentMode != VTKISRBP_SELECT)
           {
             // if not in rubber band mode,  let the parent class handle it
-            this->Superclass::OnKeyDown();
-            return;
+        //    this->Superclass::OnKeyDown();
+       //     return;
           }
-    std::cout << "Hallo3 " << std::endl; 
 
         // otherwise record the rubber band end coordinate and then fire off a pick
         if ((this->StartPosition[0] != this->EndPosition[0]) ||
             (this->StartPosition[1] != this->EndPosition[1]))
         {
             this->Pick();
+            firstPoint = true;
         std::cout << "Hallo4 " << std::endl; 
         }
         this->Moving = 0;
