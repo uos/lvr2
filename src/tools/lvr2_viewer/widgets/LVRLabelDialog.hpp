@@ -87,7 +87,7 @@ private:
     QTreeWidget*                m_treeWidget;
     QColor                      m_dataSelectionColor;
     QColor                      m_modelSelectionColor;
-    int                         m_id_hack = 0;
+    int                         m_id_hack = 1;
 };
 
 } /* namespace lvr2 */
