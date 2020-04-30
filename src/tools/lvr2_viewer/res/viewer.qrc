@@ -25,6 +25,8 @@
         <file>qv_animation.png</file>
         <file>qv_rendering.png</file>
         <file>qv_labeling.png</file>
+        <file>qv_lassoTool.png</file>
+        <file>qv_polygonTool.png</file>
         <file>qv_zoom.png</file>
         <file>qv_model_tree_icon.png</file>
         <file>qv_scandata_tree_icon.png</file>
