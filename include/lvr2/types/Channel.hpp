@@ -88,6 +88,10 @@ using FloatChannel = Channel<float>;
 using FloatChannelOptional = FloatChannel::Optional;
 using FloatChannelPtr = FloatChannel::Ptr;
 
+using DoubleChannel = Channel<double>;
+using DoubleChannelOptional = DoubleChannel::Optional;
+using DoubleChannelPtr = DoubleChannel::Ptr;
+
 using UCharChannel = Channel<unsigned char>;
 using UCharChannelOptional = UCharChannel::Optional;
 using UCharChannelPtr = UCharChannel::Ptr;

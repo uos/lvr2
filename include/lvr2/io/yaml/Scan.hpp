@@ -4,6 +4,7 @@
 
 #include <yaml-cpp/yaml.h>
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/io/Timestamp.hpp"
 #include "MatrixIO.hpp"
 
 namespace YAML {  

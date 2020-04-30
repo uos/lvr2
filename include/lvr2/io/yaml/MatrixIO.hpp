@@ -2,17 +2,13 @@
 #ifndef LVR2_IO_YAML_MATRIX_IO_HPP
 #define LVR2_IO_YAML_MATRIX_IO_HPP
 
-#include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
+#include <yaml-cpp/yaml.h>
+
+namespace YAML
+{
 
 
-namespace YAML {
-
-/**
- * YAML-CPPs convert specialization
- * 
- * example: 
- */
 template <class Scalar_, int A_, int B_, int C_, int D_, int E_>
 struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> > 
 {
