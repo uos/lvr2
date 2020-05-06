@@ -103,7 +103,7 @@ public:
         inline CellHandle edge_neighbor  ( CellHandle _ch, int _idx ) const;
         inline std::vector<CellHandle> all_corner_neighbors( CellHandle _ch, int _idx ) const;
         inline CellHandle corner_neighbor( CellHandle _ch, int _idx ) const;
-        inline std::vector<Location*>* calc_neighbor_locations(Location locinfo, int _idx) const;
+        inline std::vector<Location*> calc_neighbor_locations(Location locinfo, int _idx) const;
 
         //! Moving the picked cell, i.e. picking one of the neighbouring cells (if possible)
         void MovePickedCell(int _key, double* _mvm);
@@ -788,7 +788,7 @@ std::vector<CellHandle> C_Octree< BaseVecT, BoxT, T_CellData >::all_corner_neigh
 }
 
 template <typename BaseVecT, typename BoxT, typename T_CellData>
-std::vector<Location*>* C_Octree< BaseVecT, BoxT, T_CellData >::calc_neighbor_locations(Location locinfo, int _idx) const
+std::vector<Location*> C_Octree< BaseVecT, BoxT, T_CellData >::calc_neighbor_locations(Location locinfo, int _idx) const
 {
     std::vector<Location*> locations;
     // get lower left back corner of given cell
