@@ -180,6 +180,7 @@ void HDF5Kernel::saveMetaYAML(
     const std::string &metaName,
     const YAML::Node &node) const
 {
+    cout << "SaveMetaYAML: " << group << " / " << metaName << std::endl;
     HighFive::Group hg = hdf5util::getGroup(m_hdf5File, group);
 
     if(hg.isValid() && node["sensor_type"] )
