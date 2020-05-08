@@ -46,6 +46,7 @@
 #include <vtkRenderer.h>
 #include <vtkMath.h>
 #include <vtkDataSetMapper.h>
+#include <memory>
 #include "LVRInteractorStylePolygonPick.hpp"
 #include <map>
 
@@ -115,6 +116,7 @@ public Q_SLOTS:
     void labelingOn();
     void labelingOff();
     void setLabeledPointVisibility(int, bool);
+    void requestLabels();
 
     void newLabel(QTreeWidgetItem*);
     void setLassoTool(bool);
@@ -140,6 +142,7 @@ Q_SIGNALS:
     void secondPointPicked(double*);
     void pointSelected(vtkActor*, int);
     void pointsLabeled(int);
+    void responseLabels(std::vector<uint16_t>);
 
 private:
 
