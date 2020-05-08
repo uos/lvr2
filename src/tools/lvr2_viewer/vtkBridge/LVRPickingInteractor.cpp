@@ -1979,6 +1979,10 @@ void LVRPickingInteractor::labelSelected(uint16_t newLabel)
 	}
 }
 
+void LVRPickingInteractor::requestLabels()
+{
+    Q_EMIT(responseLabels(m_pointLabels));
+}
 void LVRPickingInteractor::setLabeledPointVisibility(int id, bool visibility)
 {
     if(m_labelActors.find(id) == m_labelActors.end())

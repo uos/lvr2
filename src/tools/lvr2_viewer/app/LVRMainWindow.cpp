@@ -405,8 +405,10 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(pointSelected(vtkActor*, int)), this, SLOT(showPointPreview(vtkActor*, int)));
     QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(int)), m_labelDialog, SLOT(updatePointCount(int)));
+    QObject::connect(m_pickingInteractor, SIGNAL(responseLabels(std::vector<uint16_t>)), m_labelDialog, SLOT(responseLabels(std::vector<uint16_t>)));
 
     QObject::connect(m_labelDialog, SIGNAL(labelAdded(QTreeWidgetItem*)), m_pickingInteractor, SLOT(newLabel(QTreeWidgetItem*)));
+    QObject::connect(m_labelDialog->m_ui->labelSelectedPoints, SIGNAL(pressed()), m_pickingInteractor, SLOT(requestLabels()));
     QObject::connect(m_labelDialog, SIGNAL(hidePoints(int, bool)), m_pickingInteractor, SLOT(setLabeledPointVisibility(int, bool)));
     QObject::connect(m_labelDialog, SIGNAL(labelChanged(uint16_t)), m_pickingInteractor, SLOT(labelSelected(uint16_t)));
     QObject::connect(m_labelDialog->m_ui->lassotoolButton, SIGNAL(toggled(bool)), m_pickingInteractor, SLOT(setLassoTool(bool)));

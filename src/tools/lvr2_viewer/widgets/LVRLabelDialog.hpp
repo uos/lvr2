@@ -67,7 +67,7 @@ public:
 public Q_SLOTS:
     void addNewLabel();
     void addNewInstance();
-    void labelPoints();
+    void responseLabels(std::vector<uint16_t>);
     void updatePointCount(int);
     void cellSelected(QTreeWidgetItem*, int);
     void comboBoxIndexChanged(int index);

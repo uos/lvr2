@@ -38,6 +38,9 @@
 #include <vtkSmartPointer.h>
 #include <vtkCubeSource.h>
 
+#include <boost/shared_array.hpp>
+#include <boost/make_shared.hpp>
+
 #include <QMessageBox>
 #include <QFont>
 #include <QFileDialog>
@@ -48,9 +51,11 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkPointData.h>
 #include <vector>
+#include <algorithm>
 
 #include <vtkLookupTable.h>
 #include <vtkExtractGeometry.h>
+#include "lvr2/io/descriptions/HDF5Kernel.hpp"
 
 #include <fstream>
 using std::ifstream;
@@ -71,6 +76,7 @@ LVRLabelDialog::LVRLabelDialog(QTreeWidget* treeWidget) :
     QObject::connect(m_ui->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(cellSelected(QTreeWidgetItem*, int)));
     QObject::connect(m_ui->selectedLabelComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(comboBoxIndexChanged(int)));
     QObject::connect(m_ui->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(visibilityChanged(QTreeWidgetItem*, int)));
+//    QObject::connect(m_ui->labelSelectedPoints, SIGNAL(pressed()), this, SLOT(labelPoints()));
 }
 
 LVRLabelDialog::~LVRLabelDialog()
@@ -155,20 +161,81 @@ void LVRLabelDialog::updatePointCount(int selectedPointCount)
         QTreeWidgetItem* topLevelItem = m_ui->treeWidget->topLevelItem(i);
         int childCount = topLevelItem->childCount();
         for (int j = 0; j < childCount; j++)
-        if(m_ui->selectedLabelComboBox->currentData().toInt() == topLevelItem->child(j)->data(LABEL_ID_COLUMN, 0).toInt())
         {
+            if(m_ui->selectedLabelComboBox->currentData().toInt() == topLevelItem->child(j)->data(LABEL_ID_COLUMN, 0).toInt())
+            {       
                 int pointCountDifference = selectedPointCount - topLevelItem->child(j)->text(LABELED_POINT_COLUMN).toInt();
                 topLevelItem->child(j)->setText(LABELED_POINT_COLUMN, QString::number(selectedPointCount));
                 //Add points to toplevel points
                 topLevelItem->setText(LABELED_POINT_COLUMN, QString::number(pointCountDifference + topLevelItem->text(LABELED_POINT_COLUMN).toInt()));
                 return;
+            }
         }
     }
 }
 
-void LVRLabelDialog::labelPoints()
+void LVRLabelDialog::responseLabels(std::vector<uint16_t> labeledPoints)
 {
+    std::map<uint16_t,std::vector<int>> idMap;
+
+    for (int i = 0; i < labeledPoints.size(); i++)
+    {
+        
+        if(idMap.find(labeledPoints[i]) == idMap.end())
+        {
+            //first occurence of id add new entry
+            idMap[labeledPoints[i]] = {};
+        }
+        idMap[labeledPoints[i]].push_back(i);
+    }
+    
+    QFileDialog dialog;
+    dialog.setFileMode(QFileDialog::AnyFile);
+    QString strFile = dialog.getSaveFileName(m_dialog, "Creat New HDF5 File","","");
+    HDF5Kernel label_hdf5kernel((strFile + QString(".h5")).toStdString());
+    std::cout << strFile.toStdString() << std::endl;
+    int topItemCount = m_ui->treeWidget->topLevelItemCount();
+    for (int i = 0; i < topItemCount; i++)
+    {
+        QTreeWidgetItem* topLevelItem = m_ui->treeWidget->topLevelItem(i);
+        std::string topLabel = topLevelItem->text(LABEL_NAME_COLUMN).toStdString();
+        int childCount = topLevelItem->childCount();
+        for (int j = 0; j < childCount; j++)
+        {
+            int childID = topLevelItem->child(j)->data(LABEL_ID_COLUMN, 0).toInt();
+            int* sharedArrayData = new int[idMap[childID].size()];
+            std::memcpy(sharedArrayData, idMap[childID].data(), idMap[childID].size() * sizeof(int));
+            boost::shared_array<int> data(sharedArrayData);
+            std::vector<size_t> dimension = {idMap[childID].size()};
+            if(idMap.find(childID) != idMap.end())
+            { 
+                label_hdf5kernel.saveArray(topLabel, (topLevelItem->child(j)->text(LABEL_NAME_COLUMN)).toStdString(), dimension, data);
+            }
+                
+        }
+    }
+    std::vector<std::string> subGroup= {"Subgroup1", "Subgroup2", "Subgroup3"};
+    boost::shared_array<int> data(new int[5]);
+    std::vector<size_t> dimension = {5};
+    label_hdf5kernel.subGroupNames("TopGroup", subGroup);
+    label_hdf5kernel.saveArray("Subgroup1", "more data", dimension, data);
+    label_hdf5kernel.saveArray("Subgroup1", "other data", dimension, data);
+    label_hdf5kernel.saveArray("other data", "others data", dimension, data);
+
+    //add unlabeled Points
+    if (idMap.find(0) != idMap.end())
+    {
+        int* sharedArrayData = new int[idMap[0].size()];
+        std::memcpy(sharedArrayData, idMap[0].data(), idMap[0].size() * sizeof(int));
+        boost::shared_array<int> data(sharedArrayData);
+        std::vector<size_t> dimension = {idMap[0].size()};
+        if(idMap.find(0) != idMap.end())
+        { 
+            label_hdf5kernel.saveArray("Labels", "Unlabeled", dimension, data);
+        }
+    }
 }
+
 
 void LVRLabelDialog::addNewLabel()
 {
