@@ -44,7 +44,14 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject()
     Description d = m_featureBase->m_description.scanProject();
     if(d.metaData)
     {
-        *ret = (d.metaData.get()).as<ScanProject>();
+        try
+        {
+            *ret = (d.metaData.get()).as<ScanProject>();
+        }
+        catch(YAML::TypedBadConversion<ScanProject>& e)
+        {
+            d.metaData = boost::none;  
+        }
     }
 
     // Get all sub scans
