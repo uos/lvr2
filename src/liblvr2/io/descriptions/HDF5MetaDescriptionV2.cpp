@@ -2,57 +2,167 @@
 #include "lvr2/io/yaml/MetaNodeDescriptions.hpp"
 #include "lvr2/io/hdf5/Hdf5Util.hpp"
 
-
 namespace lvr2
 {
 
 void HDF5MetaDescriptionV2::saveHyperspectralCamera(
-    const HighFive::Group &g,
+    HighFive::Group &g,
     const YAML::Node& n) const
 {
 
 }
 
 void HDF5MetaDescriptionV2::saveHyperspectralPanoramaChannel(
-    const HighFive::Group &g,
+    HighFive::Group &g,
     const YAML::Node &n) const
 {
 
 }
 
 void HDF5MetaDescriptionV2::saveScan(
-    const HighFive::Group &g,
+    HighFive::Group &g,
     const YAML::Node &n) const
 {
+    YAML::Node config;
+    config = n["config"];
+    
+    vector<size_t> dim = {2, 1};
+
+    // Phi min/max
+    doubleArr phi(new double[2]);
+    phi[0] = 0.0;
+    phi[1] = 0.0;
+    if(config["phi"] && config["phi"].size() == 2)
+    {
+        phi[0] = config["phi"][0].as<double>();
+        phi[1] = config["phi"][1].as<double>();
+    }
+    hdf5util::addArray<double>(g, "phi", dim, phi);
+
+    // Theta min/max
+    doubleArr theta(new double[2]);
+    theta[0] = 0.0;
+    theta[1] = 0.0;
+    if(config["theta"] && config["theta"].size() == 2)
+    {
+        theta[0] = config["theta"][0].as<double>();
+        theta[1] = config["theta"][1].as<double>();
+    }
+    hdf5util::addArray<double>(g, "theta", dim, theta);
+
+    // Horizontal and vertical resolution
+    doubleArr resolution(new double[2]);
+    resolution[0] = 0.0;
+    resolution[1] = 0.0;
+    if(config["h_res"])
+    {
+        resolution[0] = config["h_res"].as<double>();
+    }
+    if(config["v_res"])
+    {
+        resolution[1] = config["v_res"].as<double>();
+    }
+    hdf5util::addArray<double>(g, "resolution", dim, resolution);
+
+    // Pose estimation and registration
+    Transformd p_transform;
+    if(n["pose_estimate"])
+    {
+        p_transform = n["pose_estimate"].as<Transformd>();
+    }
+    hdf5util::addMatrix<double>(g, "poseEstimation", p_transform);
+
+    Transformd r_transform;
+    if(n["registration"])
+    {
+        r_transform = n["registration"].as<Transformd>();
+    }
+    hdf5util::addMatrix<double>(g, "registration", r_transform);
+
+    // Timestamps
+    doubleArr timestamps(new double[2]);
+    timestamps[0] = 0.0;
+    timestamps[1] = 0.0;
+    if(n["start_time"])
+    {
+        timestamps[0] = n["start_time"].as<double>();
+    }
+    if(n["end_time"])
+    {
+        timestamps[1] = n["end_time"].as<double>();
+    }
+    hdf5util::addArray<double>(g, "timestamps", dim, timestamps);
 
 }
 
 void HDF5MetaDescriptionV2::saveScanPosition(
-    const HighFive::Group &g,
+    HighFive::Group &g,
     const YAML::Node &n) const
 {
+     // GPS position
+    doubleArr gps(new double[3]);
+    gps[0] = 0.0;
+    gps[1] = 0.0;
+    gps[2] = 0.0;
+    if(n["latitude"])
+    {
+        gps[0] = n["latitude"].as<double>();
+    }
+    if(n["longitude"])
+    {
+        gps[1] = n["longitude"].as<double>();
+    }
+    if(n["altitude"])
+    {
+        gps[1] = n["altitude"].as<double>();
+    }
+    hdf5util::addArray<double>(g, "gpsPosition", 3, gps);
 
+    // Pose estimation and registration
+    Transformd p_transform;
+    if(n["pose_estimate"])
+    {
+        p_transform = n["pose_estimate"].as<Transformd>();
+    }
+    hdf5util::addMatrix<double>(g, "poseEstimation", p_transform);
+
+    Transformd r_transform;
+    if(n["registration"])
+    {
+        r_transform = n["registration"].as<Transformd>();
+    }
+    hdf5util::addMatrix<double>(g, "registration", r_transform);
+
+    // Timestamp
+    doubleArr ts(new double[1]);
+    ts[0] = 0.0;
+    if(n["timestamp"])
+    {
+        ts[0] = n["timestamp"].as<double>();
+    }
+    hdf5util::addArray<double>(g, "timestamp", 1, ts);
 }
 
 void HDF5MetaDescriptionV2::saveScanProject(
-    const HighFive::Group &g,
+    HighFive::Group &g,
     const YAML::Node &n) const 
 {
+    std::cout << timestamp << "HDF5MetaDescriptionV2::saveScanProject() not implemented..." << std::endl;
 
 }
 
 void HDF5MetaDescriptionV2::saveScanCamera(
-    const HighFive::Group &g,
+    HighFive::Group &g,
     const YAML::Node& n) const
 {
-
+    std::cout << timestamp << "HDF5MetaDescriptionV2::saveScanCamera() not implemented..." << std::endl;
 }
 
 void HDF5MetaDescriptionV2::saveScanImage(
-    const HighFive::Group &g,
+    HighFive::Group &g,
     const YAML::Node &n) const
 {
-
+    std::cout << timestamp << "HDF5MetaDescriptionV2::saveScanImage() not implemented..." << std::endl;
 }
 
 YAML::Node HDF5MetaDescriptionV2::hyperspectralCamera(const HighFive::Group &g) const 
