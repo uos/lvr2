@@ -70,7 +70,7 @@ void OpenMPConfig::setMaxNumThreads()
 int OpenMPConfig::getNumThreads()
 {
 #ifdef LVR2_USE_OPEN_MP
-	return omp_get_num_procs();
+	return omp_get_max_threads();
 #else
 	return 1;
 #endif

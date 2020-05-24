@@ -13,13 +13,99 @@ namespace lvr2{
             numLeafs(0)
     {
         long offset = 0;
-        m_root = reinterpret_cast<BOct*>(m_mem.alloc<BOct>(1, offset));
+        size_t numChunks = std::floor(bb.getXSize()/voxelSize);
+
+        std::cout << sizeof(ChunkLeaf) << std::endl;
+
+        std::cout << "BB unadjusted " << bb << std::endl;
+        // check if it is a power of 2
+        // https://stackoverflow.com/questions/600293/how-to-check-if-a-number-is-a-power-of-2
+        if(!(numChunks & (numChunks - 1) == 0))
+        {
+           // adjust number 2 the next power of 2
+           // https://stackoverflow.com/questions/466204/rounding-up-to-next-power-of-2
+           numChunks--;
+           numChunks |= numChunks >> 1;
+           numChunks |= numChunks >> 2;
+           numChunks |= numChunks >> 4;
+           numChunks |= numChunks >> 8;
+           numChunks |= numChunks >> 16;
+           //numChunks |= numChunks >> 32;
+           numChunks++;
+        }
+
+        std::cout << numChunks << std::endl;
+        BaseVecT min = bb.getMin();
+        min += (BaseVecT(1, 0, 0) * voxelSize) * numChunks;
+        std::cout << "min " << min << std::endl;
+        bb.expand(min);
+
+        numChunks = std::floor(bb.getYSize()/voxelSize);
+        std::cout << std::endl;
+        std::cout << numChunks << std::endl;
+        // check if it is a power of 2
+        // https://stackoverflow.com/questions/600293/how-to-check-if-a-number-is-a-power-of-2
+        if(!(numChunks & (numChunks - 1) == 0))
+        {
+            std::cout << "NO power of 2" << std::endl;
+           // adjust number 2 the next power of 2
+           // https://stackoverflow.com/questions/466204/rounding-up-to-next-power-of-2
+           numChunks--;
+           numChunks |= (numChunks >> 1);
+           numChunks |= (numChunks >> 2);
+           numChunks |= (numChunks >> 4);
+           numChunks |= (numChunks >> 8);
+           numChunks |= (numChunks >> 16);
+        //   numChunks |= numChunks >> 32;
+           numChunks++;
+        }
+
+        std::cout << numChunks << std::endl;
+        min = bb.getMin();
+        min += BaseVecT(0, 1, 0) * voxelSize * numChunks;
+        bb.expand(min);
+        std::cout << "min " << min << std::endl;
+
+        numChunks = std::floor(bb.getZSize()/voxelSize);
+        std::cout << "prev " << numChunks << std::endl;
+        // check if it is a power of 2
+        // https://stackoverflow.com/questions/600293/how-to-check-if-a-number-is-a-power-of-2
+        if(!(numChunks & (numChunks - 1) == 0))
+        {
+            std::cout << "no power of 2" << std::endl;
+           // adjust number 2 the next power of 2
+           // https://stackoverflow.com/questions/466204/rounding-up-to-next-power-of-2
+           numChunks--;
+           numChunks |= numChunks >> 1;
+           numChunks |= numChunks >> 2;
+           numChunks |= numChunks >> 4;
+           numChunks |= numChunks >> 8;
+           numChunks |= numChunks >> 16;
+           numChunks |= numChunks >> 32;
+           numChunks++;
+        }
+        else
+        {
+            std::cout << "multiply " << std::endl;
+        }
+
+            numChunks *= 2;
+        std::cout << numChunks << std::endl;
+        min = bb.getMin();
+        min += BaseVecT(0, 0, 1) * voxelSize * numChunks;
+        bb.expand(min);
+        std::cout << "min " << min << std::endl;
+
+        std::cout << "BB adjusted " << bb << " voxelSize " << voxelSize << std::endl;
+        m_bbox = bb;
 
 
 
         std::cout << lvr2::timestamp << "Start building octree with voxelsize " << m_voxelSize << std::endl;
         std::cout << lvr2::timestamp << hashes.size() << std::endl;
+        m_root = reinterpret_cast<BOct*>(m_mem.alloc<BOct>(1, offset));
         m_root = (BOct*)((unsigned char*) m_root + buildTree(m_root, hashes, centroids, m_bbox));
+//        buildTree(m_root, hashes, centroids, m_bbox);
         std::cout << lvr2::timestamp << numLeafs << std::endl;
     }
 
@@ -218,8 +304,8 @@ namespace lvr2{
 
                 long offset = 0;
                 numLeafs += numChildren;
-                Leaf* leaves = reinterpret_cast<Leaf*>(m_mem.alloc<Leaf>(numChildren, offset));
-                //Leaf* leaves = new Leaf[numChildren];
+                ChunkLeaf* leaves = reinterpret_cast<ChunkLeaf*>(m_mem.alloc<ChunkLeaf>(numChildren, offset));
+//                ChunkLeaf* leaves = new Leaf[numChildren];
                 if(offset)
                 {
                     std::cout << "THIS SHOULD NEVER HAPPEN" << std::endl;
@@ -233,8 +319,15 @@ namespace lvr2{
                 {
                     if(oct->m_leaf & (1 << i))
                     {
-                        leaves[cnt].m_centroids.reserve(c_centroids[i].size());
-                        leaves[cnt].m_hashes.reserve(c_hashes[i].size());
+                        // NEED TO INITIALIZE THIS VECTORS...
+                        leaves[cnt].m_centroids = std::vector<BaseVecT>();
+                        leaves[cnt].m_hashes = std::vector<size_t>();
+                        if((void*)(&(leaves[cnt].m_centroids)) == (void*)(&(leaves[cnt].m_hashes)))
+                        {
+                            exit(1);
+                        }
+                        leaves[cnt].m_centroids.resize(c_centroids[i].size());
+                        leaves[cnt].m_hashes.resize(c_hashes[i].size());
                         if(c_hashes[i].size() != c_centroids[i].size())
                         {
                             std::cout << "SIZES DIFFER!!!" << std::endl;
@@ -248,8 +341,8 @@ namespace lvr2{
                             //BaseVecT cent = (c_centroids[i][j]);
                             //leaves[cnt].m_hashes[j]    = hash;
                             //leaves[cnt].m_centroids[j] = cent;
-                            leaves[cnt].m_hashes.push_back(c_hashes[i][j]);
-                            leaves[cnt].m_centroids.push_back(c_centroids[i][j]);
+                            leaves[cnt].m_hashes[j] = c_hashes[i][j];
+                            leaves[cnt].m_centroids[j] = c_centroids[i][j];
 //                            std::cout << j << std::endl;
                         }
                         cnt++;
@@ -284,6 +377,7 @@ namespace lvr2{
 
             long offset = 0;
             BOct* newOct = reinterpret_cast<BOct*>(m_mem.alloc<BOct>(numChildren, offset));
+            //BOct* newOct = new BOct[numChildren];
 
             //      printf("Address %p\n", newOct);
             // realloc in blockalloc may cause an address change.
@@ -322,7 +416,7 @@ namespace lvr2{
         }
 
     //  template <typename BaseVecT>
-    //    void MeshOctree<BaseVecT>::writeLeaf(Leaf* leaf, unsigned char index)
+    //    void MeshOctree<BaseVecT>::writeLeaf(ChunkLeaf* leaf, unsigned char index)
     //    {
     //      //std::cout << leaf->m_start << " " << leaf->m_size << std::endl;
     //      for(unsigned int i = leaf->m_start; i < (leaf->m_start + leaf->m_size); ++i)
@@ -346,7 +440,7 @@ namespace lvr2{
     //      unsigned char cnt = 0;
     //      if(oct->m_leaf)
     //      {
-    //        Leaf* child = getChildPtr<Leaf>(oct);
+    //        ChunkLeaf* child = getChildPtr<Leaf>(oct);
     //        for(unsigned char i = 0; i < 8; ++i)
     //        {
     //          if(oct->m_leaf & (1 << i))
@@ -378,7 +472,7 @@ namespace lvr2{
     //      unsigned char cnt = 0;
     //      if(oct->m_leaf)
     //      {
-    //        Leaf* child = getChildPtr<Leaf>(oct);
+    //        ChunkLeaf* child = getChildPtr<Leaf>(oct);
     //        for(unsigned char i = 0; i < 8; ++i)
     //        {
     //          if(oct->m_leaf & (1 << i))
@@ -419,15 +513,15 @@ namespace lvr2{
                 return;
             if(oct->m_leaf)
             {
-                Leaf* leaf = getChildPtr<Leaf>(oct);
+                ChunkLeaf* leaf = getChildPtr<ChunkLeaf>(oct);
                 for(unsigned char i = 0; i < 8; ++i)
                 {
                     if(oct->m_leaf & (1 << i))
                     {
-                        Leaf* l = leaf + cnt;
+                        ChunkLeaf* l = leaf + cnt;
                         for(size_t j = 0; j < l->m_hashes.size(); ++j)
                         {
-//                            indices.push_back(leaf->m_centroids[j]);
+                            indices.push_back(l->m_centroids[j]);
                             hashes.push_back(l->m_hashes[j]);
                         }
 
@@ -448,34 +542,16 @@ namespace lvr2{
             }
         }
 
-    template <typename BaseVecT>
-        void MeshOctree<BaseVecT>::normalizePlanes(double planes[24])
-        {
-            for(unsigned char i = 0; i < 6; ++i)
-            {
-                double pX = planes[i * 4 + 0];
-                double pY = planes[i * 4 + 1];
-                double pZ = planes[i * 4 + 2];
-
-                double norm = std::sqrt(std::pow(pX, 2) + std::pow(pY, 2) + std::pow(pZ, 2));
-
-                // seems like we have to flip the normals.
-                //        planes[i * 4 + 0] =(-1) * pX / norm;
-                //        planes[i * 4 + 1] =(-1) * pY / norm;
-                //        planes[i * 4 + 2] =(-1) * pZ / norm;
-
-            }
-        }
 
     template <typename BaseVecT>
         void MeshOctree<BaseVecT>::intersect(double planes[24], std::vector<BaseVecT>& indices, std::vector<size_t>& hashes)
         {
-            normalizePlanes(planes);
+//            normalizePlanes(planes);
             intersect(m_root, m_bbox, planes, indices, hashes);
         }
 
     template <typename BaseVecT>
-        void MeshOctree<BaseVecT>::intersect(Leaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<BaseVecT >& indices, std::vector<size_t>& hashes)
+        void MeshOctree<BaseVecT>::intersect(ChunkLeaf* leaf, const BoundingBox<BaseVecT>& bbox, double planes[24], std::vector<BaseVecT >& indices, std::vector<size_t>& hashes)
         {
             if(!leaf)
                 return;
@@ -514,7 +590,7 @@ namespace lvr2{
             // if leaf is intersected it is not culled.
             for(size_t j = 0; j < leaf->m_hashes.size(); ++j)
             {
-//                indices.push_back(leaf->m_centroids[j]);
+                indices.push_back(leaf->m_centroids[j]);
                 hashes.push_back(leaf->m_hashes[j]);
             }
         }
@@ -589,7 +665,7 @@ namespace lvr2{
                     if(oct->m_leaf & (1 << i))
                     {
 //                        std::cout << cnt << std::endl;
-                        intersect(getChildPtr<Leaf>(oct) + cnt++, bboxes[i], planes, indices, hashes);
+                        intersect(getChildPtr<ChunkLeaf>(oct) + cnt++, bboxes[i], planes, indices, hashes);
                     }
                 }
             }
@@ -604,70 +680,4 @@ namespace lvr2{
                 }
             }
         }
-
-
-    //  template <typename BaseVecT>
-    //    void MeshOctree<BaseVecT>::intersect(const BoundingBox<BaseVecT>& cullBBox, std::vector<BaseVecT>& pts)
-    //    {
-    //      intersect(m_root, m_bbox, cullBBox, pts);
-    //    }
-    //  template <typename BaseVecT>
-    //    void MeshOctree<BaseVecT>::intersect(BOct* oct, const BoundingBox<BaseVecT>& octBBox, const BoundingBox<BaseVecT>& cullBBox, std::vector<BaseVecT>& pts)
-    //    {
-    //      if(oct == nullptr)
-    //      {
-    //        return;
-    //      }
-    //
-    //      if(oct->m_leaf)
-    //      {
-    //        getPoints(oct, pts);
-    //        return;
-    //      }
-    //
-    //      BaseVecT cullMin = cullBBox.getMin();
-    //      BaseVecT cullMax = cullBBox.getMax();
-    //      BaseVecT octMin = octBBox.getMin();
-    //      BaseVecT octMax = octBBox.getMax();
-    //
-    //      // octree is completely visible.
-    //      if((cullMin.x <= octMin.x && cullMax.x >= octMax.x) &&
-    //         (cullMin.y <= octMin.y && cullMax.y >= octMax.y) &&
-    //         (cullMin.z <= octMin.z && cullMax.z >= octMax.z))
-    //      {
-    //        getPoints(oct, pts);
-    //        return;
-    //      }
-    //
-    //      // get children bbboxes.
-    //      BoundingBox<BaseVecT> bboxes[8];
-    //      getBBoxes(octBBox, bboxes);
-    //      
-    //      int cnt = 0;
-    //      for(unsigned char i = 0; i < 8; ++i)
-    //      {
-    //        if(oct->m_valid & (1 << i))
-    //        {
-    //          octMin = bboxes[i].getMin();
-    //          octMax = bboxes[i].getMax();
-    //
-    //          if(cullMin.x < octMin.x && cullMax.x > octMax.x)
-    //          {
-    //            continue;
-    //          }
-    //
-    //          if(cullMin.y < octMin.y && cullMax.y > octMax.y)
-    //          {
-    //            continue;
-    //          }
-    //
-    //          if(cullMin.z < octMin.z && cullMax.z > octMax.x)
-    //          {
-    //            continue;
-    //          }
-    //
-    //          intersect(getChildPtr<BOct> + cnt++, bboxes[i], cullBBox, pts);
-    //        }
-    //      }
-    //    }
 }

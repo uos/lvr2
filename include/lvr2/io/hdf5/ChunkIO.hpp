@@ -6,7 +6,7 @@
 #include "MeshIO.hpp"
 #include "PointCloudIO.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 #include "lvr2/io/Model.hpp"
 
 namespace lvr2

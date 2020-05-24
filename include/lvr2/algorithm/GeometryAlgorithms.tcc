@@ -183,6 +183,9 @@ DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT> &mesh
         std::cerr << std::endl;
     }
 
+    if(!timestamp.isQuiet())
+        cout << endl;
+
     return heightDiff;
 }
 
@@ -302,6 +305,10 @@ DenseVertexMap<float> calcVertexRoughness(
         }
         std::cerr << std::endl;
     }
+    
+    if(!timestamp.isQuiet())
+        cout << endl;
+
     return roughness;
 }
 

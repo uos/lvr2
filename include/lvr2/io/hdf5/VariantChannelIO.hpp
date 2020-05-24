@@ -7,14 +7,11 @@
 #include <highfive/H5File.hpp>
 
 // Object to store
+#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 #include "lvr2/types/VariantChannel.hpp"
 
 // Dependencies
 #include "ChannelIO.hpp"
-
-// Test
-#include "lvr2/io/GHDF5IO.hpp"
-
 
 namespace lvr2 {
 
