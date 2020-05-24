@@ -252,7 +252,7 @@ int main( int argc, char ** argv )
     else
     {
       std::cout << timestamp << "Computing roughness..." << std::endl;
-      roughness = calcVertexRoughness(hem, 0.3, vertexNormals);
+      roughness = calcVertexRoughness(hem, options.getLocalRadius(), vertexNormals);
     }
     if (!roughnessOpt || !writeToHdf5Input)
     {
@@ -288,7 +288,7 @@ int main( int argc, char ** argv )
     else
     {
       std::cout << timestamp << "Computing height differences..." << std::endl;
-      heightDifferences = calcVertexHeightDifferences(hem, 0.3);
+      heightDifferences = calcVertexHeightDifferences(hem, options.getLocalRadius());
     }
     if (!heightDifferencesOpt || !writeToHdf5Input)
     {
