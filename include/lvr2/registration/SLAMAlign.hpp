@@ -30,6 +30,7 @@
  *
  *  @date May 6, 2019
  *  @author Malte Hillmann
+ *  @author Timo Osterkamp (tosterkamp@uni-osnabrueck.de)
  */
 #ifndef SLAMALIGN_HPP_
 #define SLAMALIGN_HPP_
@@ -157,9 +158,20 @@ protected:
     void graphSLAM(size_t last);
 
     /// checkLoopClose(size_t last) if the m_icp_graph is in a spezial order
+    /**
+     * @brief same as checkLoopClose(size_t last) but if the m_icp_graph is in a spezial order
+     *
+     * Same as checkLoopClose(size_t last) but if the m_icp_graph is in a spezial order. 
+     */
     void checkLoopCloseOtherOrder(size_t last);
 
-    /// create m_icp_graph which defined the order of registrations
+    /**
+     * @brief Create m_icp_graph which defined the order of registrations
+     *
+     * Create m_icp_graph which defined the order of registrations. The first scan is regarded
+     * as registered. Then the scan that is closest to one of the already matched scans is always
+     * added. Therefore the scan centers were compared using Euclidean distance.
+     */
     void createIcpGraph();
 
     SLAMOptions              m_options;

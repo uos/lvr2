@@ -96,16 +96,15 @@ private:
     bool m_running = false;
 
     /**
-     * @brief Parse YAML config (m_configPath) to boost options
+     * @brief Parse YAML config (m_configPath)
      */
     void parseYAMLConfig();
 
     /**
-     * @brief 
+     * @brief Get new scans from scan project
      * 
-     * @param dirPath 
-     * @return true 
-     * @return false 
+     * @param dirPath path to scan project directory
+     * @return true on success and false on failure
      */
     bool getScanProject(const boost::filesystem::path& dirPath);
 

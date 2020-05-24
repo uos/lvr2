@@ -79,11 +79,10 @@ class BigGrid
     BigGrid(std::vector<std::string> cloudPath, float voxelsize, float scale = 0, size_t bufferSize = 1024);
 
     /**
-     * Constructor: specific case for incremental reconstruction/chunking
-     * @param h5File path to PointClouds in .h5 file
-     * @param voxelsize
-     * @param scale
-     * @param scans new scans to be added
+     * Constructor: specific case for incremental reconstruction/chunking. also compatible with simple reconstruction
+     * @param voxelsize specified voxelsize
+     * @param project ScanProject, which contain one or more Scans
+     * @param scale scale value of for current scans
      */
     BigGrid(float voxelsize,ScanProjectEditMarkPtr project, float scale = 0);
 
@@ -119,14 +118,14 @@ class BigGrid
     lvr2::floatArr points(int i, int j, int k, size_t& numPoints);
 
     /**
-     *  Points that are within bounding box defined by a min and max point (probably)
+     *  Points that are within bounding box defined by a min and max point
      * @param minx
      * @param miny
      * @param minz
      * @param maxx
      * @param maxy
      * @param maxz
-     * @param numPoints
+     * @param numPoints number of points
      * @return lvr2::floatArr, containing points
      */
     lvr2::floatArr points(

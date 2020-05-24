@@ -182,6 +182,10 @@ endif(draco_FOUND)
 set(VTK_QT_VERSION 5)
 find_package(VTK REQUIRED)
 
+if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
+endif()
+
 if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK5)
 endif()
@@ -498,6 +502,13 @@ if(Qt5_FOUND)
   endif(QVTK_FOUND)
 endif(Qt5_FOUND)
 
+###############################################################################
+# LVR2 ASCII VIEWER CHECKS
+###############################################################################
+find_package(Curses)
+if(CURSES_FOUND)
+    include_directories( ${CURSES_INCLUDE_DIRS} )
+endif()
 
 ###############################################################################
 # SET DEPENDENCIES
@@ -584,6 +595,10 @@ add_subdirectory(src/tools/lvr2_chunking)
 add_subdirectory(src/tools/lvr2_registration)
 add_subdirectory(src/tools/lvr2_mesh_reducer)
 add_subdirectory(src/tools/lvr2_chunking_server)
+
+if(CURSES_FOUND AND embree_FOUND)
+    add_subdirectory(src/tools/lvr2_ascii_viewer)
+endif()
 
 if (RiVLib_FOUND)
     #add_subdirectory(src/tools/lvr2_riegl_project_converter)

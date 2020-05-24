@@ -289,6 +289,109 @@ HashGrid<BaseVecT, BoxT>::HashGrid(std::vector<string>& files,
     }
 }
 
+template <typename BaseVecT, typename BoxT>
+HashGrid<BaseVecT, BoxT>::HashGrid(std::vector<string>& files,
+                                   std::vector<BoundingBox<BaseVecT>> innerBoxes,
+                                   BoundingBox<BaseVecT>& boundingBox,
+                                   float voxelsize)
+        : m_boundingBox(boundingBox), m_voxelsize(voxelsize), m_globalIndex(0)
+{
+    unsigned int INVALID = BoxT::INVALID_INDEX;
+    calcIndices();
+    float distances[8];
+    BaseVecT box_center;
+    bool extruded;
+    float vsh = 0.5 * this->m_voxelsize;
+    for (int numFiles = 0; numFiles < files.size(); numFiles++)
+    {
+        // get the min and max vector of the inner chunk bounding box
+        BaseVecT innerChunkMin = innerBoxes.at(numFiles).getMin();
+        BaseVecT innerChunkMax = innerBoxes.at(numFiles).getMax();
+
+        unsigned int current_index = 0;
+        cout << "Loading grid: " << numFiles << "/" << files.size() << endl;
+
+        FILE* pFile = fopen(files[numFiles].c_str(), "rb");
+        size_t numCells;
+        size_t r = fread(&numCells, sizeof(size_t), 1, pFile);
+
+        for (size_t cellCount = 0; cellCount < numCells; cellCount++)
+        {
+            r = fread(&(box_center[0]), sizeof(float), 1, pFile);
+            r = fread(&(box_center[1]), sizeof(float), 1, pFile);
+            r = fread(&(box_center[2]), sizeof(float), 1, pFile);
+
+            r = fread(&extruded, sizeof(bool), 1, pFile);
+
+            r = fread(&(distances[0]), sizeof(float), 8, pFile);
+
+            // Check if the voxel is inside of our bounding box.
+            // If not, we skip it, because some other chunk is responsible for the voxel.
+            if(box_center.x < innerChunkMin.x || box_center.y < innerChunkMin.y || box_center.z < innerChunkMin.z ||
+                    box_center.x > innerChunkMax.x || box_center.y > innerChunkMax.y || box_center.z > innerChunkMax.z )
+            {
+                continue;
+            }
+
+            size_t idx = calcIndex((box_center[0] - m_boundingBox.getMin()[0]) / m_voxelsize);
+            size_t idy = calcIndex((box_center[1] - m_boundingBox.getMin()[1]) / m_voxelsize);
+            size_t idz = calcIndex((box_center[2] - m_boundingBox.getMin()[2]) / m_voxelsize);
+            size_t hash = hashValue(idx, idy, idz);
+            auto cell_it = this->m_cells.find(hash);
+            if (cell_it == this->m_cells.end() && !extruded)
+            {
+                BoxT* box = new BoxT(box_center);
+                for (int i = 0; i < 8; i++)
+                {
+                    current_index = this->findQueryPoint(i, idx, idy, idz);
+                    if (current_index != INVALID)
+                        box->setVertex(i, current_index);
+                    else
+                    {
+                        BaseVecT position(box_center[0] + box_creation_table[i][0] * vsh,
+                                          box_center[1] + box_creation_table[i][1] * vsh,
+                                          box_center[2] + box_creation_table[i][2] * vsh);
+                        this->m_queryPoints.push_back(QueryPoint<BaseVecT>(position, distances[i]));
+                        box->setVertex(i, this->m_globalIndex);
+                        this->m_globalIndex++;
+                    }
+                }
+                // Set pointers to the neighbors of the current box
+                int neighbor_index = 0;
+                size_t neighbor_hash = 0;
+
+                for (int a = -1; a < 2; a++)
+                {
+                    for (int b = -1; b < 2; b++)
+                    {
+                        for (int c = -1; c < 2; c++)
+                        {
+
+                            // Calculate hash value for current neighbor cell
+                            neighbor_hash = this->hashValue(idx + a, idy + b, idz + c);
+
+                            // Try to find this cell in the grid
+                            auto neighbor_it = this->m_cells.find(neighbor_hash);
+
+                            // If it exists, save pointer in box
+                            if (neighbor_it != this->m_cells.end())
+                            {
+                                box->setNeighbor(neighbor_index, (*neighbor_it).second);
+                                (*neighbor_it).second->setNeighbor(26 - neighbor_index, box);
+                            }
+
+                            neighbor_index++;
+                        }
+                    }
+                }
+
+                this->m_cells[hash] = box;
+            }
+        }
+        fclose(pFile);
+    }
+}
+
 template<typename BaseVecT, typename BoxT>
 HashGrid<BaseVecT, BoxT>::HashGrid(std::vector<PointBufferPtr> chunks,
                                    std::vector<BoundingBox<BaseVecT>> innerBoxes,

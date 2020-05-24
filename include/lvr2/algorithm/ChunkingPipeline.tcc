@@ -44,7 +44,7 @@
 #include "lvr2/io/ScanIOUtils.hpp"
 #include "lvr2/registration/RegistrationPipeline.hpp"
 #include "lvr2/io/hdf5/ScanProjectIO.hpp"
-#include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 
 using BaseHDF5IO = lvr2::Hdf5IO<>;
 
@@ -183,13 +183,12 @@ bool ChunkingPipeline<BaseVecT>::getScanProject(const boost::filesystem::path& d
     else
     {
         std::cout << timestamp << "Found " << dirScanProject.positions.size() - scanProjectPtr->positions.size() << " new scanPosition(s)" << std::endl;
-        for(int i = scanProjectPtr->positions.size(); i < dirScanProject.positions.size(); i++)
+        for (int i = scanProjectPtr->positions.size(); i < dirScanProject.positions.size(); i++)
         {
             scanProjectPtr->positions.push_back(dirScanProject.positions[i]);
             tmpScanProject.changed.push_back(true);
         }
     }
-
 
     tmpScanProject.project = scanProjectPtr;
     m_scanProject = std::make_shared<ScanProjectEditMark>(tmpScanProject);
@@ -213,7 +212,7 @@ bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
 
     std::cout << timestamp << "Starting import tool..." << std::endl;
 
-    if(!getScanProject(scanDir))
+    if (!getScanProject(scanDir))
     {
         std::cout << "Import failed..." << std::endl;
         std::cout << "Aborting chunking pipeline!" << std::endl;
@@ -241,10 +240,9 @@ bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
             hdf.save(idx, m_scanProject->project->positions[idx]);
         }
     }
-    // hdf.save(m_scanProject->project);
 
     // remove hyperspectral data from memory
-    for(ScanPositionPtr pos : m_scanProject->project->positions)
+    for (ScanPositionPtr pos : m_scanProject->project->positions)
     {
         pos->hyperspectralCamera.reset(new HyperspectralCamera);
     }
@@ -258,7 +256,7 @@ bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
     for (auto layer : m_lsrOptions.voxelSizes)
     {
         std::string voxelSizeStr = "[Layer " + std::to_string(layer) + "] ";
-        std::cout << voxelSizeStr << "Starting mesh generation..." << std::endl;
+        std::cout << timestamp << voxelSizeStr << "Starting mesh generation..." << std::endl;
         HalfEdgeMesh<BaseVecT> hem = lsr.getPartialReconstruct(
                 newChunksBB,
                 m_chunkManager,

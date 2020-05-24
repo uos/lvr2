@@ -1,3 +1,6 @@
+#ifndef LVRCHUNKEDMESHCULLER_HPP_
+#define LVRCHUNKEDMESHCULLER_HPP_
+
 #include <vtkCuller.h>
 
 #include <vtkSmartPointer.h>
@@ -17,19 +20,20 @@ namespace lvr2 {
     class ChunkedMeshCuller: public vtkCuller
     {
         public:
-            ChunkedMeshCuller(LVRChunkedMeshBridge* bridge) : m_bridge(bridge) {}
+            ChunkedMeshCuller(LVRChunkedMeshBridge* bridge, double highResDistance = 150.0) : m_bridge(bridge), cull_(true), m_highResDistance(highResDistance){
+                std::cout << "Initialized Culler with highResDistance: " << m_highResDistance << std::endl;
+            }
 
             virtual double Cull(vtkRenderer *ren, vtkProp **propList, int &listLength, int &initialized) override;
 
+            void NoCulling() { cull_ = false; }
+            void enableCulling() { cull_ = true; }
+
         private:
             LVRChunkedMeshBridge* m_bridge;
-            lvr2::BoundingBox<BaseVector<float> > frustumToBB(double planes[24]);
-
-            double sarrus(const double U[4],
-                          const double V[4],
-                          const double W[4],
-                          size_t A,
-                          size_t B,
-                          size_t C);
-    };
+            bool cull_;
+            double m_highResDistance;
+        };
 }
+
+#endif
