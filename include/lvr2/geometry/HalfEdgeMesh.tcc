@@ -1940,10 +1940,8 @@ void HalfEdgeMesh<BaseVecT>::circulateAroundVertex(HalfEdgeHandle startEdgeH, Vi
 {
     auto loopEdgeH = startEdgeH;
 
-    DOINDEBUG(
-        int iterCount = 0;
-        vector<HalfEdgeHandle> visited;
-    )
+    int iterCount = 0;
+    vector<HalfEdgeHandle> visited;
 
     while (true)
     {
@@ -1964,22 +1962,20 @@ void HalfEdgeMesh<BaseVecT>::circulateAroundVertex(HalfEdgeHandle startEdgeH, Vi
             break;
         }
 
-        DOINDEBUG(
-            iterCount++;
-            if (iterCount > 30)
+        iterCount++;
+        if (iterCount > 30)
+        {
+            // We don't want to loop forever here. This might only happen if
+            // the HEM contains a bug. We want to break the loop at some point,
+            // but without paying the price of managing the `visited` vector
+            // in the common case (no bug). So we start manage the vector
+            // after 30 iterations
+            if (std::find(visited.begin(), visited.end(), loopEdgeH) != visited.end())
             {
-                // We don't want to loop forever here. This might only happen if
-                // the HEM contains a bug. We want to break the loop at some point,
-                // but without paying the price of managing the `visited` vector
-                // in the common case (no bug). So we start manage the vector
-                // after 30 iterations
-                if (std::find(visited.begin(), visited.end(), loopEdgeH) != visited.end())
-                {
-                    panic("bug in HEM: detected cycle while looping around vertex");
-                }
-                visited.push_back(loopEdgeH);
+                panic("bug in HEM: detected cycle while looping around vertex");
             }
-        )
+            visited.push_back(loopEdgeH);
+        }
     }
 }
 
@@ -2021,6 +2017,7 @@ OptionalHalfEdgeHandle HalfEdgeMesh<BaseVecT>::findEdgeAroundVertex(
                << getE(ingoingEdgeH).face
                << " with next: " << getE(ingoingEdgeH).next << endl
         );
+
         if (pred(ingoingEdgeH))
         {
             out = ingoingEdgeH;
