@@ -112,9 +112,12 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
     // =======================================================================
     // Handles for the inner edges of the face. The edges represented by those
     // handles do not contain a valid `next` pointer yet.
-    auto eInner1H = findOrCreateEdgeBetween(v1H, v2H);
-    auto eInner2H = findOrCreateEdgeBetween(v2H, v3H);
-    auto eInner3H = findOrCreateEdgeBetween(v3H, v1H);
+
+    bool addedE1, addedE2, addedE3;
+
+    auto eInner1H = findOrCreateEdgeBetween(v1H, v2H, addedE1);
+    auto eInner2H = findOrCreateEdgeBetween(v2H, v3H, addedE2);
+    auto eInner3H = findOrCreateEdgeBetween(v3H, v1H, addedE3);
 
     auto &eInner1 = getE(eInner1H);
     auto &eInner2 = getE(eInner2H);
@@ -135,6 +138,8 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
     Face f(eInner1H);
     m_faces.push(f);
 
+    auto old_faces = make_tuple(eInner1.face, eInner2.face, eInner3.face);
+
     // Set face handle of edges
     eInner1.face = newFaceH;
     eInner2.face = newFaceH;
@@ -152,6 +157,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
         make_tuple(eOuter2H, v2H, eOuter1H),
         make_tuple(eOuter3H, v3H, eOuter2H)};
 
+    try{
     for (auto corner : corners)
     {
         auto eInH = get<0>(corner);
@@ -307,7 +313,40 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
         }
     }
 
-    // Set `next` handle of inner edges. This is an easy step, but we can't
+    }
+    catch(PanicException e)
+    {
+      m_faces.erase(newFaceH);
+
+      if(addedE1)
+      {
+        m_edges.erase(eOuter1H);
+        m_edges.erase(eInner1H);
+      }
+      else {
+        eInner1.face = get<0>(old_faces);
+      }
+      if(addedE2)
+      {
+        m_edges.erase(eOuter2H);
+        m_edges.erase(eInner2H);
+      }
+      else {
+        eInner2.face = get<1>(old_faces);
+      }
+      if(addedE3)
+      {
+        m_edges.erase(eOuter3H);
+        m_edges.erase(eInner3H);
+      }
+      else {
+        eInner3.face = get<2>(old_faces);
+      }
+
+      // propagate the error up.
+      throw e;
+    }
+  // Set `next` handle of inner edges. This is an easy step, but we can't
     // do it earlier, since the old `next` handles are required by the
     // previous "fix next handles" step.
     eInner1.next = eInner2H;
@@ -1862,6 +1901,26 @@ HalfEdgeHandle
         DOINDEBUG(dout() << ">> adding pair..." << endl);
         return addEdgePair(fromH, toH).first;
     }
+}
+
+template <typename BaseVecT>
+HalfEdgeHandle
+HalfEdgeMesh<BaseVecT>::findOrCreateEdgeBetween(VertexHandle fromH, VertexHandle toH, bool& added)
+{
+  DOINDEBUG(dout() << "# findOrCreateEdgeBetween: " << fromH << " --> " << toH << endl);
+  auto foundEdge = edgeBetween(fromH, toH);
+  if (foundEdge)
+  {
+    DOINDEBUG(dout() << ">> found: " << foundEdge << endl);
+    added = false;
+    return foundEdge.unwrap();
+  }
+  else
+  {
+    DOINDEBUG(dout() << ">> adding pair..." << endl);
+    added = true;
+    return addEdgePair(fromH, toH).first;
+  }
 }
 
 template <typename BaseVecT>

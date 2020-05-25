@@ -184,6 +184,15 @@ private:
     HalfEdgeHandle findOrCreateEdgeBetween(VertexHandle fromH, VertexHandle toH);
 
     /**
+     * @brief Attempts to find an edge between the given vertices and, if none
+     *        is found, creates a new edge with `addEdgePair()` and sets the
+     *        add boolean to true.
+     *
+     * @return The half edge from `fromH` to `toH`
+     */
+    HalfEdgeHandle findOrCreateEdgeBetween(VertexHandle fromH, VertexHandle toH, bool& added);
+
+    /**
      * @brief Adds a new, incomplete edge-pair.
      *
      * This method is private and unsafe, because it leaves some fields
