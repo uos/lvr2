@@ -183,6 +183,11 @@ set(VTK_QT_VERSION 5)
 find_package(VTK REQUIRED)
 
 if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
+  # patched QVTKOpenGL header because of name clash with signals.
+  add_subdirectory(ext/QVTKOpenGLWidget)
+  include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
+  list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
+
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
 endif()
 
