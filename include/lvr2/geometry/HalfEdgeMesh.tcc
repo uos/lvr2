@@ -157,6 +157,8 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
         make_tuple(eOuter2H, v2H, eOuter1H),
         make_tuple(eOuter3H, v3H, eOuter2H)};
 
+    std::map<Index, Index> previousNexts;
+
     try{
     for (auto corner : corners)
     {
@@ -197,6 +199,15 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
                              })
                                  .unwrap();
 
+                if (previousNexts.find(eInH.idx()) == previousNexts.end())
+                {
+                    previousNexts[eInH.idx()] = eIn.next.idx();
+                }
+                if (previousNexts.find(eEndH.idx()) == previousNexts.end())
+                {
+                    previousNexts[eEndH.idx()] = getE(eEndH).next.idx();
+                }
+
                 auto eStartH = getE(eEndH).next;
                 eIn.next = eStartH;
                 getE(eEndH).next = eOutH;
@@ -229,13 +240,20 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
             // not an edge which `next` handle points to `oldNext`. But this
             // has to be true in a non-broken HEM. So we will panic if this
             // condition is violated.
-            auto eH = findEdgeAroundVertex(vH, [&, this](auto edgeH) {
+            auto eHOpt = findEdgeAroundVertex(vH, [&, this](auto edgeH) {
                           auto oldNext = eIn.twin;
                           return !getE(edgeH).face && getE(edgeH).next == oldNext;
-                      })
-                          .unwrap();
+                      });
 
+            auto eH = eHOpt.unwrap();
+            
             DOINDEBUG(dout() << "(B) ... setting " << eH << ".next = " << eOutH << endl);
+
+            if (previousNexts.find(eH.idx()) == previousNexts.end())
+            {
+                previousNexts[eH.idx()] = getE(eH).next.idx();
+            }
+
             getE(eH).next = eOutH;
         }
         // --> Case (C): only the outgoing edge is part of a face
@@ -245,6 +263,9 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
             DOINDEBUG(
                 dout() << "(C) ... setting " << eInH << ".next = "
                        << getE(eOut.twin).next << endl);
+
+            previousNexts[eInH.idx()] = eIn.next.idx();
+
             eIn.next = getE(eOut.twin).next;
         }
         // --> Case (D): both edges are already part of another face
@@ -292,6 +313,15 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
                                         })
                                         .unwrap();
 
+                if (previousNexts.find(inactiveBladeEndH.idx()) == previousNexts.end())
+                {
+                    previousNexts[inactiveBladeEndH.idx()] = getE(inactiveBladeEndH).next.idx();
+                }
+                if (previousNexts.find(eInBladeEndH.idx()) == previousNexts.end())
+                {
+                    previousNexts[eInBladeEndH.idx()] = getE(eInBladeEndH).next.idx();
+                }
+
                 // We can finally set the next pointer to skip the `eIn`
                 // blade. After this line, circulating around `v` will work
                 // but skip the whole `eIn` blade.
@@ -316,6 +346,11 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
     }
     catch(PanicException e)
     {
+      for (auto it = previousNexts.begin(); it != previousNexts.end(); ++it)
+      {
+        getE(HalfEdgeHandle(it->first)).next = HalfEdgeHandle(it->second);
+      }
+
       m_faces.erase(newFaceH);
 
       if(addedE1)
@@ -1963,7 +1998,7 @@ void HalfEdgeMesh<BaseVecT>::circulateAroundVertex(HalfEdgeHandle startEdgeH, Vi
         }
 
         iterCount++;
-        if (iterCount > 30)
+        if (iterCount > 100)
         {
             // We don't want to loop forever here. This might only happen if
             // the HEM contains a bug. We want to break the loop at some point,
