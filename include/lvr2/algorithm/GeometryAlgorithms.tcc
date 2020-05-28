@@ -172,19 +172,14 @@ DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT> &mesh
         }
     }
 
-    if (!invalid.empty())
-    {
-        std::cerr << std::endl
-                  << "Found " << invalid.size() << " invalid, non manifold vertices";
-        for (auto vH : invalid)
-        {
-            std::cerr << ", " << vH;
-        }
-        std::cerr << std::endl;
-    }
-
     if(!timestamp.isQuiet())
-        cout << endl;
+    cout << endl;
+
+  if (!invalid.empty())
+    {
+        std::cerr << "Found " << invalid.size() << " invalid, non manifold "
+            << "vertices." << std::endl;
+    }
 
     return heightDiff;
 }
@@ -233,15 +228,10 @@ DenseVertexMap<float> calcAverageVertexAngles(
     }
     if (!invalid.empty())
     {
-        std::cerr << std::endl
-                  << "Found " << invalid.size() << " invalid, non manifold vertices." << std::endl;
-        std::cerr << "The average vertex angle of the invalid vertices has been set to Pi" << std::endl;
-        std::cerr << "The following vertices are invalid: ";
-        for (auto vH : invalid)
-        {
-            std::cerr << ", " << vH;
-        }
-        std::cerr << std::endl;
+        std::cerr << std::endl << "Found " << invalid.size()
+            << " invalid, non manifold vertices." << std::endl
+            << "The average vertex angle of the invalid vertices has been set"
+            << " to Pi." << std::endl;
     }
     return vertexAngles;
 }
@@ -295,20 +285,15 @@ DenseVertexMap<float> calcVertexRoughness(
             ++progress;
         }
     }
-    if (!invalid.empty())
-    {
-        std::cerr << std::endl
-                  << "Found " << invalid.size() << " invalid, non manifold vertices";
-        for (auto vH : invalid)
-        {
-            std::cerr << ", " << vH;
-        }
-        std::cerr << std::endl;
-    }
-    
     if(!timestamp.isQuiet())
         cout << endl;
 
+    if (!invalid.empty())
+    {
+        std::cerr << "Found " << invalid.size() << " invalid, non manifold "
+            << "vertices." << std::endl;
+    }
+    
     return roughness;
 }
 
@@ -371,13 +356,8 @@ void calcVertexRoughnessAndHeightDifferences(
     }
     if (!invalid.empty())
     {
-        std::cerr << std::endl
-                  << "Found " << invalid.size() << " invalid, non manifold vertices";
-        for (auto vH : invalid)
-        {
-            std::cerr << ", " << vH;
-        }
-        std::cerr << std::endl;
+        std::cerr << "Found " << invalid.size() << " invalid, non manifold "
+            << "vertices." << std::endl;
     }
 }
 

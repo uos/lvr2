@@ -6,6 +6,9 @@
 #include <boost/optional.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/core/traits.hpp>
+#include <highfive/H5DataSet.hpp>
+#include <highfive/H5DataSpace.hpp>
+#include <highfive/H5File.hpp>
 
 namespace lvr2 {
 

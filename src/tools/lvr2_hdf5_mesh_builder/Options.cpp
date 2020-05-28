@@ -41,6 +41,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
             ("outputFile,o", value<string>()->default_value("mesh.h5"), "Output file.")
             ("meshName,m", value<string>()->default_value("mesh"), "The name of the mesh to write")
             ("edgeCollapse,e", value<size_t>()->default_value(0), "Edge collapse reduction algorithm, the number of edges to collapse.")
+            ("localRadius,r", value<float>()->default_value(0.3), "The local radius used for roughness and height differences computation.")
             ;
 
 

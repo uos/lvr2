@@ -20,7 +20,7 @@ namespace lvr2{
         std::cout << "BB unadjusted " << bb << std::endl;
         // check if it is a power of 2
         // https://stackoverflow.com/questions/600293/how-to-check-if-a-number-is-a-power-of-2
-        if(!(numChunks & (numChunks - 1) == 0))
+        if(!(numChunks & ((numChunks - 1) == 0)))
         {
            // adjust number 2 the next power of 2
            // https://stackoverflow.com/questions/466204/rounding-up-to-next-power-of-2
@@ -45,7 +45,7 @@ namespace lvr2{
         std::cout << numChunks << std::endl;
         // check if it is a power of 2
         // https://stackoverflow.com/questions/600293/how-to-check-if-a-number-is-a-power-of-2
-        if(!(numChunks & (numChunks - 1) == 0))
+        if(!(numChunks & ((numChunks - 1) == 0)))
         {
             std::cout << "NO power of 2" << std::endl;
            // adjust number 2 the next power of 2
@@ -70,7 +70,7 @@ namespace lvr2{
         std::cout << "prev " << numChunks << std::endl;
         // check if it is a power of 2
         // https://stackoverflow.com/questions/600293/how-to-check-if-a-number-is-a-power-of-2
-        if(!(numChunks & (numChunks - 1) == 0))
+        if(!(numChunks & ((numChunks - 1) == 0)))
         {
             std::cout << "no power of 2" << std::endl;
            // adjust number 2 the next power of 2
