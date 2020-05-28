@@ -83,10 +83,35 @@ int main( int argc, char ** argv )
     ModelPtr model = ModelFactory::readModel(options.getInputFile());
     meshBuffer = model->m_mesh;
   }
+
   if (meshBuffer != nullptr)
   {
-    std::cout << timestamp << "Building mesh from buffers..." << std::endl;
-    HalfEdgeMesh<BaseVector<float>> hem(meshBuffer);
+    HalfEdgeMesh<BaseVector<float>> hem;
+    size_t numFaces = meshBuffer->numFaces();
+    size_t numVertices = meshBuffer->numVertices();
+    std::cout << timestamp << "Building mesh from buffers with " << numFaces
+      << " faces and " << numVertices << " vertices..." << std::endl;
+
+    floatArr vertices = meshBuffer->getVertices();
+    indexArray indices = meshBuffer->getFaceIndices();
+
+    for(size_t i = 0; i < numVertices; i++)
+    {
+      size_t pos = 3 * i;
+      hem.addVertex(BaseVector<float>(
+          vertices[pos],
+          vertices[pos + 1],
+          vertices[pos + 2]));
+    }
+
+    for(size_t i = 0; i < numFaces; i++) {
+      size_t pos = 3 * i;
+      VertexHandle v1(indices[pos]);
+      VertexHandle v2(indices[pos + 1]);
+      VertexHandle v3(indices[pos + 2]);
+      hem.addFace(v1, v2, v3);
+    }
+
     HDF5MeshToolIO hdf5;
     bool writeToHdf5Input = false;
     if (readFromHdf5 && options.getInputFile() == options.getOutputFile())
@@ -315,8 +340,9 @@ int main( int argc, char ** argv )
     }
     else
     {
-      std::cout << timestamp << "Computing roughness..." << std::endl;
-      roughness = calcVertexRoughness(hem, 0.3, vertexNormals);
+      std::cout << timestamp << "Computing roughness with a local radius of "
+                << options.getLocalRadius() << "m ..." << std::endl;
+      roughness = calcVertexRoughness(hem, options.getLocalRadius(), vertexNormals);
     }
     if (!roughnessOpt || !writeToHdf5Input)
     {
@@ -351,8 +377,9 @@ int main( int argc, char ** argv )
     }
     else
     {
-      std::cout << timestamp << "Computing height differences..." << std::endl;
-      heightDifferences = calcVertexHeightDifferences(hem, 0.3);
+      std::cout << timestamp << "Computing height diff with a local radius of "
+                << options.getLocalRadius() << "m ..." << std::endl;
+      heightDifferences = calcVertexHeightDifferences(hem, options.getLocalRadius());
     }
     if (!heightDifferencesOpt || !writeToHdf5Input)
     {

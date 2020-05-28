@@ -183,6 +183,11 @@ set(VTK_QT_VERSION 5)
 find_package(VTK REQUIRED)
 
 if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
+  # patched QVTKOpenGL header because of name clash with signals.
+  add_subdirectory(ext/QVTKOpenGLWidget)
+  include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
+  list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
+
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
 endif()
 
@@ -493,11 +498,13 @@ find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
 if(Qt5_FOUND)
   message(STATUS "Found QT5")
   find_package(QVTK)
-  message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
   if(QVTK_FOUND)
+    message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
     include_directories(${QVTK_INCLUDE_DIR})
+    add_subdirectory(src/tools/lvr2_viewer)
+  elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
+    add_subdirectory(src/tools/lvr2_viewer)
   endif(QVTK_FOUND)
-  add_subdirectory(src/tools/lvr2_viewer)
 endif(Qt5_FOUND)
 
 ###############################################################################
