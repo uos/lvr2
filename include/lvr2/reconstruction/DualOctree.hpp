@@ -38,8 +38,6 @@
 #include <boost/thread.hpp>
 #include "OctreeTables.hpp"
 
-using namespace __gnu_cxx;
-
 namespace lvr2
 {
 
