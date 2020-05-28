@@ -48,8 +48,6 @@
 #include "DualOctree.hpp"
 #include "Location.hh"
 
-using namespace __gnu_cxx;
-
 namespace lvr2
 {
 
