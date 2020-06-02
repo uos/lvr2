@@ -46,6 +46,9 @@
 #include <vtkRenderer.h>
 #include <vtkMath.h>
 #include <vtkDataSetMapper.h>
+
+#include <boost/shared_array.hpp>
+
 #include <memory>
 #include "LVRInteractorStylePolygonPick.hpp"
 #include <map>
@@ -116,6 +119,7 @@ public Q_SLOTS:
     void labelingOn();
     void labelingOff();
     void setLabeledPointVisibility(int, bool);
+    void setLabel(int, std::vector<int>);
     void requestLabels();
 
     void newLabel(QTreeWidgetItem*);
@@ -141,7 +145,7 @@ Q_SIGNALS:
     void firstPointPicked(double*);
     void secondPointPicked(double*);
     void pointSelected(vtkActor*, int);
-    void pointsLabeled(int);
+    void pointsLabeled(uint16_t, int);
     void responseLabels(std::vector<uint16_t>);
 
 private:
@@ -217,6 +221,7 @@ private:
     void calculateSelection(bool select);
     void saveCurrentLabelSelection();
     void discardChanges();
+    void updateActor(int);
 
     /// Indicates picking mode
     PickMode            m_pickMode;

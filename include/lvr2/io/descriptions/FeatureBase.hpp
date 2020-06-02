@@ -125,7 +125,7 @@ public:
 
     FeatureBase(
         const FileKernel& inKernel, 
-        const ScanProjectStructure& inDesc) : m_kernel(kernel), m_description(desc)
+        const ScanProjectStructure& inDesc) : m_kernel(inKernel), m_description(inDesc)
     {
 
     }

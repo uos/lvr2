@@ -40,6 +40,10 @@
 #include <lvr2/geometry/Matrix4.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
 #include <lvr2/registration/EigenSVDPointAlign.hpp>
+#include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
+
+#include <boost/shared_array.hpp>
 
 #include <iostream>
 
@@ -62,21 +66,24 @@ public:
 
     LVRLabelDialog(QTreeWidget* parent);
     virtual ~LVRLabelDialog();
-
+    void showEvent();
+    void setPoints(const std::string, const vtkSmartPointer<vtkPolyData> points);
 
 public Q_SLOTS:
     void addNewLabel();
     void addNewInstance();
     void responseLabels(std::vector<uint16_t>);
-    void updatePointCount(int);
+    void updatePointCount(uint16_t, int);
     void cellSelected(QTreeWidgetItem*, int);
     void comboBoxIndexChanged(int index);
     void visibilityChanged(QTreeWidgetItem*, int);
+    void loadLabels();
 
 Q_SIGNALS:
     void labelRemoved(QPair<int, QColor>);
     void labelAdded(QTreeWidgetItem*);
     void labelChanged(uint16_t);
+    void labelLoaded(int, std::vector<int>);
     void hidePoints(int, bool);
 
 public:
@@ -88,6 +95,7 @@ private:
     QColor                      m_dataSelectionColor;
     QColor                      m_modelSelectionColor;
     int                         m_id_hack = 1;
+    std::map<std::string, vtkSmartPointer<vtkPolyData>> m_points;
 };
 
 } /* namespace lvr2 */
