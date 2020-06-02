@@ -25,14 +25,14 @@
      <item>
       <widget class="QPushButton" name="newLabelButton">
        <property name="text">
-        <string>Add new Label</string>
+        <string>Add new Class</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="removeLabelButton">
        <property name="text">
-        <string>Remove Label</string>
+        <string>Remove Class</string>
        </property>
       </widget>
      </item>
@@ -43,13 +43,6 @@
        </property>
        <property name="text">
         <string>Add new Instance</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="labelSelectedPoints">
-       <property name="text">
-        <string>Label selected points</string>
        </property>
       </widget>
      </item>
@@ -144,6 +137,13 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="loadLabeledPoints">
+       <property name="text">
+        <string>Load Labels</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="exportLabelButton">

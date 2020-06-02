@@ -404,11 +404,12 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(pointSelected(vtkActor*, int)), this, SLOT(showPointPreview(vtkActor*, int)));
-    QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(int)), m_labelDialog, SLOT(updatePointCount(int)));
+    QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(uint16_t, int)), m_labelDialog, SLOT(updatePointCount(uint16_t, int)));
     QObject::connect(m_pickingInteractor, SIGNAL(responseLabels(std::vector<uint16_t>)), m_labelDialog, SLOT(responseLabels(std::vector<uint16_t>)));
 
     QObject::connect(m_labelDialog, SIGNAL(labelAdded(QTreeWidgetItem*)), m_pickingInteractor, SLOT(newLabel(QTreeWidgetItem*)));
-    QObject::connect(m_labelDialog->m_ui->labelSelectedPoints, SIGNAL(pressed()), m_pickingInteractor, SLOT(requestLabels()));
+    QObject::connect(m_labelDialog, SIGNAL(labelLoaded(int, std::vector<int>)), m_pickingInteractor, SLOT(setLabel(int, std::vector<int>)));
+    QObject::connect(m_labelDialog->m_ui->exportLabelButton, SIGNAL(pressed()), m_pickingInteractor, SLOT(requestLabels()));
     QObject::connect(m_labelDialog, SIGNAL(hidePoints(int, bool)), m_pickingInteractor, SLOT(setLabeledPointVisibility(int, bool)));
     QObject::connect(m_labelDialog, SIGNAL(labelChanged(uint16_t)), m_pickingInteractor, SLOT(labelSelected(uint16_t)));
     QObject::connect(m_labelDialog->m_ui->lassotoolButton, SIGNAL(toggled(bool)), m_pickingInteractor, SLOT(setLassoTool(bool)));
@@ -966,6 +967,7 @@ void LVRMainWindow::renameModelItem()
 
 LVRModelItem* LVRMainWindow::loadModelItem(QString name)
 {
+    std::cout << "model loaded" << std::endl;
     // Load model and generate vtk representation
     ModelPtr model = ModelFactory::readModel(name.toStdString());
     ModelBridgePtr bridge(new LVRModelBridge(model));
@@ -1123,6 +1125,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 			points->SetData(citem->getPointBufferBridge()->getPointCloudActor()->GetMapper()->GetInput()->GetPointData()->GetScalars());
 
 			m_pickingInteractor->setPoints(citem->getPointBufferBridge()->getPolyData());
+                        m_labelDialog->setPoints(item->parent()->text(0).toStdString(), citem->getPointBufferBridge()->getPolyData());
 		}
 		itu++;
 	}
@@ -1185,6 +1188,7 @@ void LVRMainWindow::loadChunkedMesh()
 
 void LVRMainWindow::loadPointCloudData()
 {
+    std::cout << "loaded points" << std::endl;
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
     {
@@ -1883,6 +1887,8 @@ void LVRMainWindow::manualLabeling()
 	    m_labelDialog->m_dialog->raise();
 	    m_labelDialog->m_dialog->activateWindow();
 
+                //TODO STOP beeing hacky 
+                m_labelDialog->showEvent();
 
 		std::cout << "main on" << std::endl;
 	    m_pickingInteractor->labelingOn();
