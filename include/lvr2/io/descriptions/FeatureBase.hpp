@@ -123,7 +123,9 @@ public:
 
     //using Features<FeatureBase<Features...> >::save...;
 
-    FeatureBase(const FileKernel& kernel, const ScanProjectStructure& desc) : m_kernel(kernel), m_description(desc)
+    FeatureBase(
+        const FileKernel& inKernel, 
+        const ScanProjectStructure& inDesc) : m_kernel(inKernel), m_description(inDesc)
     {
 
     }

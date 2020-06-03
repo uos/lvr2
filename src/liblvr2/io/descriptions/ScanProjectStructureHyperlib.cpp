@@ -29,7 +29,7 @@ Description ScanProjectStructureHyperlib::scanProject() const
     }
     catch(const YAML::BadFile& e)
     {
-        // Nothing to do, meta node will contail default values
+        // Nothing to do, meta node will contain default values
         YAML::Node node;
         node = ScanProject();
         d.metaData = node;

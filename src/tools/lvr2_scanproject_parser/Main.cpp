@@ -34,8 +34,10 @@ int main(int argc, char** argv)
     ScanProjectStructureHyperlib hyperlibStructure_copy(options.getOutputDir() + "_copy");
     saveScanProject(hyperlibStructure_copy, kernel, copy_project);
 
-    HDF5Kernel hdf5Kernel_slam("slam.h5");
-    saveScanProject(slam_structure, hdf5Kernel_slam, project);
+    std::cout << "HDF5" << std::endl;
+
+    // HDF5Kernel hdf5Kernel_slam("slam.h5");
+    // saveScanProject(slam_structure, hdf5Kernel_slam, project);
 
     HDF5Kernel hdf5Kernel_hyper("hyper.h5");
     saveScanProject(hyperlibStructure, hdf5Kernel_hyper, project);

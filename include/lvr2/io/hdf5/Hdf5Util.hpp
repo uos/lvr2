@@ -33,6 +33,13 @@ void addArray(
     boost::shared_array<T>& data);
 
 template<typename T>
+void addArray(
+    HighFive::Group& g, 
+    const std::string datasetName, 
+    const size_t& length, 
+    boost::shared_array<T>& data);
+
+template<typename T>
     boost::shared_array<T> getArray(
     const HighFive::Group& g, 
     const std::string& datasetName,
@@ -44,7 +51,7 @@ std::vector<size_t> getDimensions(
     const std::string& datasetName);
 
 template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-void saveMatrix(const HighFive::Group& group,
+void addMatrix(HighFive::Group& group,
     std::string datasetName,
     const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& mat);
 
