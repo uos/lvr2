@@ -52,14 +52,14 @@ PCLFiltering::PCLFiltering( PointBufferPtr loader )
 
 
     // Get data from loader object
-    size_t numPoints numColors;
-    FloatChannelOptional points = loader->getPointArray();
-    FloatChannelOptional colors = loader->getColorArray();
+    size_t numPoints;
+    FloatChannelOptional points = loader->getFloatChannel("points");
+    UCharChannelOptional colors = loader->getUCharChannel("colors");
 
-    if(m_useColors)
-    {
-        assert(numColors == numPoints);
-    }
+//    if(m_useColors)
+//    {
+//        assert(numColors == numPoints);
+//    }
 
 
     // Parse to PCL point cloud

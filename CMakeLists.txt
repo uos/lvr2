@@ -235,16 +235,16 @@ endif(NABO_FOUND)
 ## Searching for PCL
 #------------------------------------------------------------------------------
 
-#find_package(PCL 1.7)
-#if(PCL_FOUND)
-#  include_directories(${PCL_INCLUDE_DIRS})
-#  link_directories(${PCL_LIBRARY_DIRS})
-#  add_definitions(${PCL_DEFINITIONS})
-#  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_PCL)
-#else(PCL_FOUND)
-#  message( "-- No PCL found." )
-#  message( "-- PCL related stuff will be disabled." )
-#endif(PCL_FOUND)
+find_package(PCL)
+if(PCL_FOUND)
+  include_directories(${PCL_INCLUDE_DIRS})
+  link_directories(${PCL_LIBRARY_DIRS})
+  add_definitions(${PCL_DEFINITIONS})
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_PCL)
+else(PCL_FOUND)
+  message( "-- No PCL found." )
+  message( "-- PCL related stuff will be disabled." )
+endif(PCL_FOUND)
 
 #------------------------------------------------------------------------------
 # Searching CGAL
