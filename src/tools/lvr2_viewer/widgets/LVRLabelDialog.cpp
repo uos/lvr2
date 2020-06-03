@@ -55,7 +55,6 @@
 #include <vtkLookupTable.h>
 #include <vtkExtractGeometry.h>
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
-#include "lvr2/io/descriptions/LabelIO.hpp"
 
 #include <fstream>
 using std::ifstream;
@@ -90,17 +89,6 @@ LVRLabelDialog::~LVRLabelDialog()
 
 void LVRLabelDialog::showEvent()
 {
-
-    //Add Unlabeled item
-    QTreeWidgetItem * item = new QTreeWidgetItem();
-    item->setText(0, "Unlabeled");
-    item->setText(LABELED_POINT_COLUMN, QString::number(0));
-    item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
-    item->setData(LABEL_ID_COLUMN, 1, QColor(255,0,0));
-    item->setData(LABEL_ID_COLUMN, 0, 0);
-    m_ui->treeWidget->addTopLevelItem(item);    
-
-    Q_EMIT(labelAdded(item));
 
 
 }
@@ -219,6 +207,10 @@ void LVRLabelDialog::loadLabels()
     //TODO: What should be done if elements exists?
     QString fileName = QFileDialog::getOpenFileName(m_dialog,
                 tr("Open HDF5 File"), QDir::homePath(), tr("HDF5 files (*.h5)"));
+    if(!QFile::exists(fileName))
+    {
+        return;
+    }
 
     HDF5Kernel kernel(fileName.toStdString());
     std::vector<std::string> pointCloudNames;
@@ -236,6 +228,7 @@ void LVRLabelDialog::loadLabels()
             item->setText(0, QString::fromStdString(labelClass));
             item->setText(LABELED_POINT_COLUMN, QString::number(0));
             item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+            m_ui->treeWidget->addTopLevelItem(item);   
 
 
             //pointclouds/$name/labels/$labelname
@@ -266,12 +259,9 @@ void LVRLabelDialog::loadLabels()
                 item->addChild(childItem);
                 m_ui->selectedLabelComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
                 Q_EMIT(labelAdded(childItem));
-                std::cout << "Dim" << idDim[0] << std::endl;
                 std::vector<int> out(idData.get(), idData.get() + idDim[0]);
                 Q_EMIT(labelLoaded(id, out));
             }
-            //Add Top level to tree
-            m_ui->treeWidget->addTopLevelItem(item);   
         }
     }
 }
@@ -318,11 +308,18 @@ void LVRLabelDialog::responseLabels(std::vector<uint16_t> labeledPoints)
     std::vector<size_t> pointsDimension = {3, points->GetNumberOfPoints()};
     boost::shared_array<double> sharedPoints(pointsData);
 
+    //Unlabeled top item
+    QTreeWidgetItem* unlabeledItem;
+    
     boost::filesystem::path pointGroup = (boost::filesystem::path("pointclouds") / pointcloudName);
     label_hdf5kernel.saveDoubleArray(pointGroup.string(), "Points" , pointsDimension, sharedPoints);
     for (int i = 0; i < topItemCount; i++)
     {
         QTreeWidgetItem* topLevelItem = m_ui->treeWidget->topLevelItem(i);
+        if(topLevelItem->text(LABEL_NAME_COLUMN) == "Unlabeled")
+        {
+            unlabeledItem = topLevelItem;
+        }
         boost::filesystem::path topLabel = topLevelItem->text(LABEL_NAME_COLUMN).toStdString();
         int childCount = topLevelItem->childCount();
         for (int j = 0; j < childCount; j++)
@@ -335,7 +332,7 @@ void LVRLabelDialog::responseLabels(std::vector<uint16_t> labeledPoints)
             if(idMap.find(childID) != idMap.end())
             { 
                 boost::filesystem::path childLabel = (topLevelItem->child(j)->text(LABEL_NAME_COLUMN)).toStdString();
-                boost::filesystem::path completeGroup = (boost::filesystem::path("pointclouds") / pointcloudName / boost::filesystem::path("labels") / topLabel / childLabel);
+                boost::filesystem::path completeGroup = (pointGroup / boost::filesystem::path("labels") / topLabel / childLabel);
 
                 label_hdf5kernel.saveArray(completeGroup.string(), "IDs" , dimension, data);
                 int* rgbSharedData = new int[3];
@@ -357,7 +354,16 @@ void LVRLabelDialog::responseLabels(std::vector<uint16_t> labeledPoints)
         std::vector<size_t> dimension = {idMap[0].size()};
         if(idMap.find(0) != idMap.end())
         { 
-            label_hdf5kernel.saveArray("Label/Unlabeled", "ID", dimension, data);
+            std::string group = boost::filesystem::path(pointGroup / boost::filesystem::path("labels/Unlabeled")).string();
+            label_hdf5kernel.saveArray(group, "ID", dimension, data);
+            int* rgbSharedData = new int[3];
+
+            //TODO look for unlabeled
+            unlabeledItem->data(LABEL_ID_COLUMN, 1).value<QColor>().getRgb(&rgbSharedData[0], &rgbSharedData[1], &rgbSharedData[2]);
+            boost::shared_array<int> rgbData(rgbSharedData);
+            std::vector<size_t> rgbDimension = {3};
+            label_hdf5kernel.saveArray(group, "Color" , rgbDimension, rgbData);
+
         }
     }
     
@@ -384,10 +390,19 @@ void LVRLabelDialog::addNewLabel()
             return;
     }
 
-    if (m_ui->treeWidget->topLevelItemCount() == 1)
+    if (m_ui->treeWidget->topLevelItemCount() == 0)
     {
         //Added first Top Level item enable instance button
         m_ui->newInstanceButton->setEnabled(true);
+        //Add Unlabeled item
+        QTreeWidgetItem * item = new QTreeWidgetItem();
+        item->setText(0, "Unlabeled");
+        item->setText(LABELED_POINT_COLUMN, QString::number(0));
+        item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+        item->setData(LABEL_ID_COLUMN, 1, QColor(255,0,0));
+        item->setData(LABEL_ID_COLUMN, 0, 0);
+        m_ui->treeWidget->addTopLevelItem(item);    
+        Q_EMIT(labelAdded(item));
     }
 
     int id = m_id_hack++;
