@@ -419,7 +419,6 @@ void LVRInteractorStylePolygonPick::OnKeyDown()
         {
             this->Pick();
             firstPoint = true;
-        std::cout << "Hallo4 " << std::endl; 
         }
         this->Moving = 0;
     }
