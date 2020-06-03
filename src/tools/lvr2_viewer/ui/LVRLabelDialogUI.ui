@@ -80,8 +80,8 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset>
-           <normaloff>../res/qv_lassoTool.png</normaloff>../res/qv_lassoTool.png</iconset>
+          <iconset resource="../res/viewer.qrc">
+           <normaloff>:/qv_lassoTool.png</normaloff>:/qv_lassoTool.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -106,8 +106,8 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset>
-           <normaloff>../res/qv_polygonTool.png</normaloff>../res/qv_polygonTool.png</iconset>
+          <iconset resource="../res/viewer.qrc">
+           <normaloff>:/qv_polygonTool.png</normaloff>:/qv_polygonTool.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -190,7 +190,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../res/viewer.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
