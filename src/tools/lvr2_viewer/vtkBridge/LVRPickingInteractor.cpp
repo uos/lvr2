@@ -1639,7 +1639,15 @@ void LVRPickingInteractor::OnKeyDown()
     if(m_labelingMode && key == "l")
     {
     //Check if no Labels were created
-        /*if (m_labelColors.size() == 1)
+        if( m_labelColors.empty())
+        {
+            std::cout << "Empty map" << std::endl;///
+            std::cout << "Empty map" << std::endl;///
+            std::cout << "Empty map" << std::endl;///
+            std::cout << "Empty map" << std::endl;///
+            return;
+        }
+        if (m_labelColors.size() == 1)
         {
             QMessageBox noLabelDialog;
             noLabelDialog.setText("No Label Instance was created! Create an instance beofre labeling Points.");
@@ -1648,7 +1656,8 @@ void LVRPickingInteractor::OnKeyDown()
             int returnValue = noLabelDialog.exec();
             return;
 
-        }*/
+        }
+
 
 
 	    m_pickMode = PickLabel;
