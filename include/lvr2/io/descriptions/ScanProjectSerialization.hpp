@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "lvr2/io/descriptions/ScanProjectStructure.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchema.hpp"
 #include "lvr2/io/descriptions/FileKernel.hpp"
 #include "lvr2/io/descriptions/FeatureBase.hpp"
 #include "lvr2/io/descriptions/ScanProjectIO.hpp"
@@ -12,7 +12,7 @@
 namespace lvr2
 {
 
-void saveScanProject(const ScanProjectStructure& structure, const FileKernel& kernel, const ScanProjectPtr project)
+void saveScanProject(const ScanProjectSchema& structure, const FileKernel& kernel, const ScanProjectPtr project)
 {
     using BaseScanProjectIO = lvr2::FeatureBase<>;
     using MyScanProjectIO = BaseScanProjectIO::AddFeatures<lvr2::ScanProjectIO>;
@@ -22,7 +22,7 @@ void saveScanProject(const ScanProjectStructure& structure, const FileKernel& ke
 }
 
 
-ScanProjectPtr loadScanProject(const ScanProjectStructure& structure, const FileKernel& kernel)
+ScanProjectPtr loadScanProject(const ScanProjectSchema& structure, const FileKernel& kernel)
 {
     using BaseScanProjectIO = lvr2::FeatureBase<>;
     using MyScanProjectIO = BaseScanProjectIO::AddFeatures<lvr2::ScanProjectIO>;
@@ -37,7 +37,7 @@ ScanProjectPtr loadScanProject(const ScanProjectStructure& structure, const File
 // {
 // public:
 //     ScanProjectWriter() = delete;
-//     ScanProjectWriter(const ScanProjectStructure& structure, const FileKernel& kernel);
+//     ScanProjectWriter(const ScanProjectSchema& structure, const FileKernel& kernel);
 
 //     virtual void saveScanProject(const ScanProjectPtr& ptr);
 
@@ -57,7 +57,7 @@ ScanProjectPtr loadScanProject(const ScanProjectStructure& structure, const File
 //         const size_t& camNo, const size_t imageNo, const ScanImagePtr ptr);
 
 // protected:
-//     ScanProjectStructure    m_root;
+//     ScanProjectSchema    m_root;
 //     FileKernel              m_kernel;
 // };
 

@@ -1,16 +1,16 @@
-#ifndef SCANPROJECTSTRUCTURESLAM_HPP
-#define SCANPROJECTSTRUCTURESLAM_HPP
+#ifndef ScanProjectSchemaSLAM_HPP
+#define ScanProjectSchemaSLAM_HPP
 
-#include "lvr2/io/descriptions/ScanProjectStructure.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchema.hpp"
 
 namespace lvr2
 {
 
-class ScanProjectStructureSLAM : public ScanProjectStructure
+class ScanProjectSchemaSLAM : public ScanProjectSchema
 {
 public:
-    ScanProjectStructureSLAM() = delete;
-    ScanProjectStructureSLAM(const std::string& root) : ScanProjectStructure(root) {}
+    ScanProjectSchemaSLAM() = delete;
+    ScanProjectSchemaSLAM(const std::string& root) : ScanProjectSchema(root) {}
 
     virtual Description scanProject() const;
     virtual Description position(const size_t &scanPosNo) const;

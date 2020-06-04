@@ -48,11 +48,11 @@ set(LVR2_SOURCES
     io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
     io/ScanIOUtils.cpp
-    io/descriptions/ScanProjectStructureSLAM.cpp
-    io/descriptions/ScanProjectStructureHyperlib.cpp
+    io/descriptions/ScanProjectSchemaSLAM.cpp
+    io/descriptions/ScanProjectSchemaHyperlib.cpp
     io/descriptions/DirectoryKernel.cpp
     io/descriptions/MetaFormatFactory.cpp
-    io/descriptions/ScanProjectStructure.cpp
+    io/descriptions/ScanProjectSchema.cpp
     io/descriptions/HDF5Kernel.cpp
     io/descriptions/HDF5MetaDescriptionV2.cpp
     reconstruction/Projection.cpp

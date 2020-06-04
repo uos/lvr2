@@ -6,24 +6,24 @@
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>
 
-#include "lvr2/io/descriptions/ScanProjectStructure.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchema.hpp"
 
 namespace lvr2
 {
 
-class ScanProjectStructureHyperlib : public ScanProjectStructure
+class ScanProjectSchemaHyperlib : public ScanProjectSchema
 {
 public:
-    ScanProjectStructureHyperlib() = delete;
+    ScanProjectSchemaHyperlib() = delete;
 
-    ScanProjectStructureHyperlib(const std::string& root) 
-        : ScanProjectStructure(root),
+    ScanProjectSchemaHyperlib(const std::string& root) 
+        : ScanProjectSchema(root),
           m_rootPath(root)
         {
         
         };
 
-    ~ScanProjectStructureHyperlib() = default;
+    ~ScanProjectSchemaHyperlib() = default;
 
     virtual Description scanProject() const;
     virtual Description position(const size_t &scanPosNo) const;

@@ -2,8 +2,8 @@
 
 #include "lvr2/io/Timestamp.hpp"
 #include "lvr2/io/descriptions/ScanProjectSerialization.hpp"
-#include "lvr2/io/descriptions/ScanProjectStructureSLAM.hpp"
-#include "lvr2/io/descriptions/ScanProjectStructureHyperlib.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchemaSLAM.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
 #include "lvr2/io/descriptions/DirectoryKernel.hpp"
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
 #include "lvr2/types/ScanTypes.hpp"
@@ -16,8 +16,8 @@ int main(int argc, char** argv)
 {
     scanproject_parser::Options options(argc, argv);
 
-    ScanProjectStructureSLAM slam_structure(options.getInputDir());
-    ScanProjectStructureHyperlib hyperlibStructure(options.getOutputDir());
+    ScanProjectSchemaSLAM slam_structure(options.getInputDir());
+    ScanProjectSchemaHyperlib hyperlibStructure(options.getOutputDir());
     DirectoryKernel kernel("");
 
     ScanProjectPtr project = loadScanProject(slam_structure, kernel);
@@ -26,12 +26,12 @@ int main(int argc, char** argv)
     saveScanProject(hyperlibStructure, kernel, project);
 
     // Save project in slam structure
-    ScanProjectStructureSLAM slam_structure_out("./slam");
+    ScanProjectSchemaSLAM slam_structure_out("./slam");
     saveScanProject(slam_structure_out, kernel, project);
 
     // Copy generated scan project directory
     ScanProjectPtr copy_project = loadScanProject(hyperlibStructure, kernel);
-    ScanProjectStructureHyperlib hyperlibStructure_copy(options.getOutputDir() + "_copy");
+    ScanProjectSchemaHyperlib hyperlibStructure_copy(options.getOutputDir() + "_copy");
     saveScanProject(hyperlibStructure_copy, kernel, copy_project);
 
     std::cout << "HDF5" << std::endl;
