@@ -23,7 +23,7 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
     // Get group and dataset names according to 
     // data fomat description and override defaults if 
     // when possible
-    Description d = m_featureBase->m_description.scan(scanPosNo, scanNo);
+    Description d = m_featureBase->m_description->scan(scanPosNo, scanNo);
 
     if(d.groupName)
     {
@@ -46,10 +46,10 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
     }
 
     // Save all scan data and meta data if present
-    m_featureBase->m_kernel.savePointBuffer(groupName, scanName, scanPtr->points);
+    m_featureBase->m_kernel->savePointBuffer(groupName, scanName, scanPtr->points);
     
     // Get meta data from scan and save
-    m_featureBase->m_kernel.saveMetaYAML(groupName, metaName, node);
+    m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, node);
 
 }
 
@@ -58,7 +58,7 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
 {
     ScanPtr ret(new Scan);
 
-    Description d = m_featureBase->m_description.scan(scanPosNo, scanNo);
+    Description d = m_featureBase->m_description->scan(scanPosNo, scanNo);
 
     // Init default values
     std::stringstream sstr;
@@ -96,7 +96,7 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
     }
 
     // Load actual data
-    ret->points = m_featureBase->m_kernel.loadPointBuffer(groupName, scanName);
+    ret->points = m_featureBase->m_kernel->loadPointBuffer(groupName, scanName);
  
     return ret;
 }

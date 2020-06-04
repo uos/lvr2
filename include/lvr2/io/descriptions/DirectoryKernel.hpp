@@ -153,6 +153,8 @@ protected:
     boost::filesystem::path getAbsolutePath(const std::string &group, const std::string &name) const;
 };
 
+using DirectoryKernelPtr = std::shared_ptr<DirectoryKernel>;
+
 } // namespace lvr2
 
 #endif

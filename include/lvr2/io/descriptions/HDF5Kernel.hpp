@@ -249,6 +249,8 @@ public:
    
 };
 
+using HDF5KernelPtr = std::shared_ptr<HDF5Kernel>;
+
 } // namespace lvr2
 
 #include "lvr2/io/descriptions/HDF5Kernel.tcc"

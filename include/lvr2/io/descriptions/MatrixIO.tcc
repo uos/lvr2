@@ -17,7 +17,7 @@ void MatrixIO<FeatureBase>::saveMatrix(std::string groupName,
     dmat = map.template cast<double>();
     boost::shared_array<double> d_ptr(dmat.data());
 
-    m_featureBase->m_kernel.saveDoubleArray(groupName, datasetName, dims, d_ptr);
+    m_featureBase->m_kernel->saveDoubleArray(groupName, datasetName, dims, d_ptr);
 }
 
 template<typename FeatureBase>
@@ -31,7 +31,7 @@ MatrixT MatrixIO<FeatureBase>::loadMatrix(std::string groupName,
     // matrix cofficients as double values and cast them back
     // into the desired type
     boost::shared_array<double> 
-        arr = m_featureBase->m_kernel.template loadDoubleArray(groupName, datasetName, dims);
+        arr = m_featureBase->m_kernel->template loadDoubleArray(groupName, datasetName, dims);
 
     Eigen::Map<Eigen::Matrix<double, MatrixT::RowsAtCompileTime, MatrixT::ColsAtCompileTime>> map(arr.get());
 
