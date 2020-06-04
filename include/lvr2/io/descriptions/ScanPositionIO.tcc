@@ -167,15 +167,17 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
 
     // Get hyperspectral data
     Description hyperDescr = m_featureBase->m_description->hyperspectralCamera(scanPosNo);
-
-    std::string dataSetName;
-    std::tie(groupName, dataSetName) = getNames("", "", hyperDescr);
-
-    if(m_featureBase->m_kernel->exists(groupName))
+    if(hyperDescr.dataSetName)
     {
-        std::cout << timestamp << "ScanPositionIO: Loading hyperspectral data... " << std::endl;
-        HyperspectralCameraPtr hspCam = m_hyperspectralCameraIO->loadHyperspectralCamera(scanPosNo);
-        ret->hyperspectralCamera = hspCam;
+        std::string dataSetName;
+        std::tie(groupName, dataSetName) = getNames("", "", hyperDescr);
+
+        if (m_featureBase->m_kernel->exists(groupName))
+        {
+            std::cout << timestamp << "ScanPositionIO: Loading hyperspectral data... " << std::endl;
+            HyperspectralCameraPtr hspCam = m_hyperspectralCameraIO->loadHyperspectralCamera(scanPosNo);
+            ret->hyperspectralCamera = hspCam;
+        }
     }
 
     return ret;

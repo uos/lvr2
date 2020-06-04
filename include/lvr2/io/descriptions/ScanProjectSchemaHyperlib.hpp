@@ -11,17 +11,10 @@
 namespace lvr2
 {
 
-class ScanProjectSchemaHyperlib : public ScanProjectSchema
+class ScanProjectSchemaHyperlib : public DirectorySchema
 {
 public:
-    ScanProjectSchemaHyperlib() = delete;
-
-    ScanProjectSchemaHyperlib(const std::string& root) 
-        : ScanProjectSchema(root),
-          m_rootPath(root)
-        {
-        
-        };
+    ScanProjectSchemaHyperlib() {};
 
     ~ScanProjectSchemaHyperlib() = default;
 

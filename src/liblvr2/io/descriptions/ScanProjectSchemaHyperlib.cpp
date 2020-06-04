@@ -17,7 +17,7 @@ namespace lvr2
 Description ScanProjectSchemaHyperlib::scanProject() const
 {
     Description d;
-    d.groupName = m_root;           // All scan related data is stored in the "raw" group
+    d.groupName = boost::none;           // All scan related data is stored in the "raw" group
     d.dataSetName = boost::none;    // No dataset name for project root
     d.metaName = "meta.yaml";
     d.metaData = boost::none;
@@ -25,7 +25,7 @@ Description ScanProjectSchemaHyperlib::scanProject() const
     boost::filesystem::path metaPath(*d.metaName);
     try
     {
-        d.metaData = YAML::LoadFile((m_rootPath / metaPath).string());
+        d.metaData = YAML::LoadFile(metaPath.string());
     }
     catch(const YAML::BadFile& e)
     {
@@ -54,11 +54,11 @@ Description ScanProjectSchemaHyperlib::position(const size_t &scanPosNo) const
     boost::filesystem::path positionPath(sstr.str());
     boost::filesystem::path metaPath(*d.metaName);
 
-    d.groupName = (m_rootPath / positionPath).string();
+    d.groupName = (positionPath).string();
     
     try
     {
-        d.metaData = YAML::LoadFile( (m_rootPath / positionPath / metaPath).string());
+        d.metaData = YAML::LoadFile( (positionPath / metaPath).string());
     }
     catch(YAML::BadFile& e)
     {
