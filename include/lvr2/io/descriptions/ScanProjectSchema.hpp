@@ -78,6 +78,23 @@ protected:
     std::string     m_root;
 };
 
+/// Marker interface for HDF5 schemas
+class HDF5Schema : public ScanProjectSchema 
+{
+public:
+    HDF5Schema(const std::string& file) : ScanProjectSchema(file) {}
+};
+
+/// Marker interface for directory schemas
+class DirectorySchema : public ScanProjectSchema
+{
+public:
+    DirectorySchema(const std::string file) : ScanProjectSchema(file) {}
+};
+
+using ScanProjectSchemaPtr = std::shared_ptr<ScanProjectSchema>;
+using DirectorySchemaPtr = std::shared_ptr<DirectorySchema>;
+using HDF5SchemaPtr = std::shared_ptr<HDF5Schema>;
 
 } // namespace lvr2
 

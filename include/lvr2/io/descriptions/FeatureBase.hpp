@@ -124,8 +124,8 @@ public:
     //using Features<FeatureBase<Features...> >::save...;
 
     FeatureBase(
-        const FileKernel& inKernel, 
-        const ScanProjectSchema& inDesc) : m_kernel(inKernel), m_description(inDesc)
+        const FileKernelPtr inKernel, 
+        const ScanProjectSchemaPtr inDesc) : m_kernel(inKernel), m_description(inDesc)
     {
 
     }
@@ -141,8 +141,8 @@ public:
     template<template<typename> typename F>
     F<FeatureBase>* dcast();
 
-    const FileKernel&             m_kernel;
-    const ScanProjectSchema&   m_description;
+    const FileKernelPtr             m_kernel;
+    const ScanProjectSchemaPtr      m_description;
 
 };
 
