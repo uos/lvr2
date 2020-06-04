@@ -7,7 +7,7 @@
 #include <type_traits>
 
 #include "lvr2/io/descriptions/FileKernel.hpp"
-#include "lvr2/io/descriptions/ScanProjectStructure.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchema.hpp"
 
 namespace lvr2 {
 
@@ -125,7 +125,7 @@ public:
 
     FeatureBase(
         const FileKernel& inKernel, 
-        const ScanProjectStructure& inDesc) : m_kernel(inKernel), m_description(inDesc)
+        const ScanProjectSchema& inDesc) : m_kernel(inKernel), m_description(inDesc)
     {
 
     }
@@ -142,7 +142,7 @@ public:
     F<FeatureBase>* dcast();
 
     const FileKernel&             m_kernel;
-    const ScanProjectStructure&   m_description;
+    const ScanProjectSchema&   m_description;
 
 };
 

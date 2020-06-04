@@ -12,6 +12,7 @@ namespace lvr2
 
 using StringOptional = boost::optional<std::string>;
 using NodeOptional = boost::optional<YAML::Node>;
+
 struct Description
 {
     StringOptional groupName;
@@ -25,15 +26,15 @@ std::pair<std::string, std::string> getNames(
     const std::string& defaultContainer, 
     const Description& d);
 
-class ScanProjectStructure 
+class ScanProjectSchema
 {
 public:
-    ScanProjectStructure() = delete;
+    ScanProjectSchema() = delete;
 
-    ScanProjectStructure(const std::string& root) 
+    ScanProjectSchema(const std::string& root) 
         : m_root(root) {};
 
-    ~ScanProjectStructure() = default;
+    ~ScanProjectSchema() = default;
 
     virtual Description scanProject() const = 0;
     virtual Description position(const size_t& scanPosNo) const = 0;
