@@ -65,21 +65,29 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject()
         std::string dataSetName;
         std::tie(groupName, dataSetName) = getNames("", "", scanDescr);
 
-        // Check if it exists. If not, exit.
-        if(m_featureBase->m_kernel->exists(groupName))
+        // Check if scan position group is valid, else break
+        if(scanDescr.groupName)
         {
-            std::cout << timestamp 
-                      << "ScanPositionIO: Loading scanposition " 
-                      << scanPosNo << std::endl;
-                  
-            ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
-            ret->positions.push_back(scanPos);
+            // Check if it exists. If not, exit.
+            if (m_featureBase->m_kernel->exists(groupName))
+            {
+                std::cout << timestamp
+                          << "ScanProjectIO: Loading scanposition "
+                          << scanPosNo << std::endl;
+
+                ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
+                ret->positions.push_back(scanPos);
+            }
+            else
+            {
+                break;
+            }
+            ++scanPosNo;
         }
         else
         {
             break;
         }
-        ++scanPosNo;
     } 
     while (true);
 

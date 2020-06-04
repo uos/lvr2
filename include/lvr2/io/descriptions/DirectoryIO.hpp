@@ -12,6 +12,7 @@ namespace lvr2
 
 class DirectoryIO
 {
+public:
     DirectoryIO() = delete;
     DirectoryIO(DirectoryKernelPtr kernel, DirectorySchemaPtr schema) : m_kernel(kernel), m_schema(schema) {}
 

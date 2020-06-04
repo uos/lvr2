@@ -29,10 +29,7 @@ std::pair<std::string, std::string> getNames(
 class ScanProjectSchema
 {
 public:
-    ScanProjectSchema() = delete;
-
-    ScanProjectSchema(const std::string& root) 
-        : m_root(root) {};
+    ScanProjectSchema() {}
 
     ~ScanProjectSchema() = default;
 
@@ -75,21 +72,21 @@ public:
         d.metaData = boost::none; 
     }
 protected:
-    std::string     m_root;
+    
 };
 
 /// Marker interface for HDF5 schemas
 class HDF5Schema : public ScanProjectSchema 
 {
 public:
-    HDF5Schema(const std::string& file) : ScanProjectSchema(file) {}
+    HDF5Schema() {}
 };
 
 /// Marker interface for directory schemas
 class DirectorySchema : public ScanProjectSchema
 {
 public:
-    DirectorySchema(const std::string file) : ScanProjectSchema(file) {}
+    DirectorySchema() {}
 };
 
 using ScanProjectSchemaPtr = std::shared_ptr<ScanProjectSchema>;

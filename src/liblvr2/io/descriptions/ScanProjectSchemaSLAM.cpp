@@ -14,7 +14,7 @@ namespace lvr2
 Description ScanProjectSchemaSLAM::scanProject() const
 {
     Description d;
-    d.groupName = m_root;           // All data is saved in the root dir
+    d.groupName = "";           // All data is saved in the root dir
     d.dataSetName = boost::none;    // No dataset name for project root
     d.metaData = boost::none;       // No metadata for project 
     return d;
@@ -27,7 +27,7 @@ Description ScanProjectSchemaSLAM::position(const size_t &scanPosNo) const
     // scan position 0 valid
     if(scanPosNo == 0)
     {
-        d.groupName = m_root;
+        d.groupName = "";
     }
     else
     {
@@ -48,7 +48,7 @@ Description ScanProjectSchemaSLAM::scan(const size_t &scanPosNo, const size_t &s
     // scan position 0 valid
     if(scanPosNo == 0)
     {
-        d.groupName = m_root;
+        d.groupName = "";
     }
     else
     {
@@ -62,28 +62,27 @@ Description ScanProjectSchemaSLAM::scan(const size_t &scanPosNo, const size_t &s
 
     // Setup meta info -> Read frames file and pose file to setup valid 
     // meta description node
-    boost::filesystem::path root_path(m_root);
     boost::filesystem::path pose_path(scan_stream.str() + ".pose");
     boost::filesystem::path frames_path(scan_stream.str() + ".frames");
     boost::filesystem::path scan_path(*d.dataSetName);
     
     Eigen::Matrix<double, 4, 4> poseEstimate;
-    if(boost::filesystem::exists(root_path / pose_path))
+    if(boost::filesystem::exists(pose_path))
     {
-        poseEstimate = getTransformationFromPose<double>(root_path / pose_path);
+        poseEstimate = getTransformationFromPose<double>(pose_path);
     } 
 
     Eigen::Matrix<double, 4, 4> registration;
-    if(boost::filesystem::exists(root_path / frames_path))
+    if(boost::filesystem::exists(frames_path))
     {
-        registration = getTransformationFromFrames<double>(root_path / frames_path);
+        registration = getTransformationFromFrames<double>(frames_path);
     }  
 
     // Try to load scan data
     size_t num_pts = 0;
-    if(boost::filesystem::exists(root_path / scan_path))
+    if(boost::filesystem::exists(scan_path))
     {
-        num_pts = countPointsInFile(root_path / scan_path);
+        num_pts = countPointsInFile(scan_path);
     }
 
     // Encode meta data

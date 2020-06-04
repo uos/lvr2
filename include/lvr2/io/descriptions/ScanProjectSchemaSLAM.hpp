@@ -9,8 +9,8 @@ namespace lvr2
 class ScanProjectSchemaSLAM : public DirectorySchema
 {
 public:
-    ScanProjectSchemaSLAM() = delete;
-    ScanProjectSchemaSLAM(const std::string& root) : DirectorySchema(root) {}
+
+    ScanProjectSchemaSLAM() {};
 
     virtual Description scanProject() const;
     virtual Description position(const size_t &scanPosNo) const;
