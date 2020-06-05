@@ -20,7 +20,7 @@ set(LVR2_SLAM_MERGE_DEPENDENCIES
 )
 
 if(PCL_FOUND)
-    set(LVR2_SLAM_MERGE_DEPENDENCIES ${PCL_LIBRARIES} )
+    list(APPEND LVR2_SLAM_MERGE_DEPENDENCIES ${PCL_LIBRARIES} )
 endif(PCL_FOUND)
 
 #####################################################################################

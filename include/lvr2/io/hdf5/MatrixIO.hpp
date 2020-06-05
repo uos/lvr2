@@ -4,6 +4,9 @@
 #define LVR2_IO_HDF5_MATRIXIO_HPP
 
 #include <Eigen/Dense>
+#include <highfive/H5DataSet.hpp>
+#include <highfive/H5DataSpace.hpp>
+#include <highfive/H5File.hpp>
 
 namespace lvr2 {
 
