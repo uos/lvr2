@@ -459,6 +459,8 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 
 	pointFilter->SetInputData(m_vtk_polyData);
 	
+        std::cout << "Set Id" << std::endl;
+        std::cout << "Set Id" << std::endl;
 #if VTK890
 	pointFilter->SetCellIdsArrayName("OriginalIds");
 	pointFilter->SetPointIdsArrayName("OriginalIds");
