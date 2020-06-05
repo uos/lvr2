@@ -57,7 +57,7 @@ void OctreeThreadPool<BaseVecT, BoxT>::stopPool()
 {
     while (!(m_queue.empty() && (m_availableThreads == m_poolSize)))
     {
-        sleep(0.05);
+        sleep(1);
     }
     boost::unique_lock<boost::mutex> poolLock(m_poolMutex);
     m_isRunning = false;
@@ -71,7 +71,7 @@ void OctreeThreadPool<BaseVecT, BoxT>::insertTask(boost::function<void()> task)
 {
     while (m_availableThreads == 0)
     {
-        sleep(0.05);
+        sleep(1);
     }
     boost::unique_lock<boost::mutex> poolLock(m_poolMutex);
     --m_availableThreads;

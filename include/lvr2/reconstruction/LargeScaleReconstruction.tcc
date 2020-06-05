@@ -355,6 +355,10 @@ namespace lvr2
             auto m = ModelPtr(new Model(meshBuffer));
             ModelFactory::saveModel(m, largeScale.str());
         }
+
+        // Is the return value actually used somewhere???
+        return 1;
+
     }
 
     template <typename BaseVecT>

@@ -476,10 +476,12 @@ void LVRMainWindow::showBackgroundDialog()
 
 void LVRMainWindow::setupQVTK()
 {
+#ifndef LVR2_USE_VTK8
     // z buffer fix
     QSurfaceFormat surfaceFormat = qvtkWidget->windowHandle()->format();
     surfaceFormat.setStencilBufferSize(8);
     qvtkWidget->windowHandle()->setFormat(surfaceFormat);
+#endif
 
     // Grab relevant entities from the qvtk widget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
