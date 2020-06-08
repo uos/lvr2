@@ -8,7 +8,7 @@ template <typename Derived>
 void HyperspectralCameraIO<Derived>::saveHyperspectralCamera(
     const size_t& scanPosNo, const HyperspectralCameraPtr &buffer)
 {
-    Description d = m_featureBase->m_description.position(scanPosNo);
+    Description d = m_featureBase->m_description->position(scanPosNo);
     
     // Setup default string for scan position
     std::stringstream sstr;
@@ -34,7 +34,7 @@ void HyperspectralCameraIO<Derived>::saveHyperspectralCamera(
     //  hdf5util::setAttribute(group, "IO", id);
     //  hdf5util::setAttribute(group, "CLASS", obj);
 
-    // saving estimated and registrated pose
+    // saving estimated and registered pose
     m_matrixIO->saveMatrix(group, "extrinsics", hyperspectralCameraPtr->extrinsics);
     m_matrixIO->saveMatrix(group, "extrinsicsEstimate", hyperspectralCameraPtr->extrinsicsEstimate);
 
@@ -122,7 +122,7 @@ HyperspectralCameraPtr HyperspectralCameraIO<Derived>::loadHyperspectralCamera(c
 {
     HyperspectralCameraPtr ret(new HyperspectralCamera);
     
-    Description d = m_featureBase->m_description.hyperspectralCamera(scanPosNo);
+    Description d = m_featureBase->m_description->hyperspectralCamera(scanPosNo);
     
     // Default path
     std::stringstream sstr;
@@ -327,12 +327,12 @@ HyperspectralCameraPtr HyperspectralCameraIO<Derived>::loadHyperspectralCamera(c
     
     // Iterate over all panoramas
     std::vector<std::string> positionGroups;
-    m_featureBase->m_kernel.subGroupNames(groupName, std::regex("\\d{8}"), positionGroups);
+    m_featureBase->m_kernel->subGroupNames(groupName, std::regex("\\d{8}"), positionGroups);
 
     for (std::string positionGroup : positionGroups)
     {
-        Description td = m_featureBase->m_description.hyperSpectralTimestamps(positionGroup);
-        Description fd = m_featureBase->m_description.hyperSpectralFrames(positionGroup);
+        Description td = m_featureBase->m_description->hyperSpectralTimestamps(positionGroup);
+        Description fd = m_featureBase->m_description->hyperSpectralFrames(positionGroup);
         
         ucharArr data;
         doubleArr timestamps;

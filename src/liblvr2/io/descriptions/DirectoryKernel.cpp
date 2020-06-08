@@ -127,19 +127,22 @@ void DirectoryKernel::loadMetaYAML(
 
 bool DirectoryKernel::exists(const std::string &group) const
 {
-    boost::filesystem::path groupPath(group);
-    return boost::filesystem::exists(groupPath);
+    return boost::filesystem::exists(getAbsolutePath(group, ""));
 }
 bool DirectoryKernel::exists(const std::string &group, const std::string &container) const
 {
-    boost::filesystem::path groupPath(group);
-    boost::filesystem::path containerPath(container);
-    return boost::filesystem::exists(groupPath / containerPath);
+    // Check if container is not empty to prevent checking
+    // against the root itself
+    if(container != "")
+    {
+        return boost::filesystem::exists(getAbsolutePath(group, container));
+    }
+    return false;
 }
 
 void DirectoryKernel::subGroupNames(const std::string &group, std::vector<string> &subGroupNames) const
 {
-    boost::filesystem::path groupPath(group);
+    boost::filesystem::path groupPath(getAbsolutePath(group, ""));
     boost::filesystem::directory_iterator it(groupPath);
     while (it != boost::filesystem::directory_iterator{})
     {
@@ -152,7 +155,7 @@ void DirectoryKernel::subGroupNames(const std::string &group, std::vector<string
 
 void DirectoryKernel::subGroupNames(const std::string &group, const std::regex &filter, std::vector<string> &subGroupNames) const
 {
-    boost::filesystem::path groupPath(group);
+    boost::filesystem::path groupPath(getAbsolutePath(group, ""));
     boost::filesystem::directory_iterator it(groupPath);
     while (it != boost::filesystem::directory_iterator{})
     {

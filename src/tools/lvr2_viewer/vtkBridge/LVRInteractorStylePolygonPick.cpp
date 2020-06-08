@@ -14,16 +14,17 @@
 =========================================================================*/
 #include "LVRInteractorStylePolygonPick.hpp"
 
-#include "vtkAbstractPropPicker.h"
-#include "vtkNew.h"
-#include "vtkAreaPicker.h"
-#include "vtkAssemblyPath.h"
-#include "vtkObjectFactory.h"
-#include "vtkRenderWindow.h"
-#include "vtkRenderWindowInteractor.h"
-#include "vtkRenderer.h"
-#include "vtkUnsignedCharArray.h"
-#include "vtkVectorOperators.h"
+#include <vtkAbstractPropPicker.h>
+#include <vtkNew.h>
+#include <vtkAreaPicker.h>
+#include <vtkAssemblyPath.h>
+#include <vtkObjectFactory.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkRenderer.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkVectorOperators.h>
+#include <vtkCommand.h>
 #include <algorithm>
 
 vtkStandardNewMacro(LVRInteractorStylePolygonPick);

@@ -6,7 +6,7 @@ namespace lvr2
 template <typename FeatureBase>
 void ScanProjectIO<FeatureBase>::saveScanProject(const ScanProjectPtr& scanProjectPtr)
 {
-    Description d = m_featureBase->m_description.scanProject();
+    Description d = m_featureBase->m_description->scanProject();
 
     // Default names
     std::string group = "";
@@ -26,7 +26,7 @@ void ScanProjectIO<FeatureBase>::saveScanProject(const ScanProjectPtr& scanProje
     {
         node = *d.metaName;
     }
-    m_featureBase->m_kernel.saveMetaYAML(group, metaName, node);
+    m_featureBase->m_kernel->saveMetaYAML(group, metaName, node);
     
     // Iterate over all positions and save
     for (size_t i = 0; i < scanProjectPtr->positions.size(); i++)
@@ -41,7 +41,7 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject()
     ScanProjectPtr ret(new ScanProject);
 
     // Load description and meta data for scan project
-    Description d = m_featureBase->m_description.scanProject();
+    Description d = m_featureBase->m_description->scanProject();
     if(d.metaData)
     {
         try
@@ -59,27 +59,35 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject()
     do
     {
         // Get description for next scan
-        Description scanDescr = m_featureBase->m_description.position(scanPosNo);
+        Description scanDescr = m_featureBase->m_description->position(scanPosNo);
 
         std::string groupName;
         std::string dataSetName;
         std::tie(groupName, dataSetName) = getNames("", "", scanDescr);
 
-        // Check if it exists. If not, exit.
-        if(m_featureBase->m_kernel.exists(groupName))
+        // Check if scan position group is valid, else break
+        if(scanDescr.groupName)
         {
-            std::cout << timestamp 
-                      << "ScanPositionIO: Loading scanposition " 
-                      << scanPosNo << std::endl;
-                  
-            ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
-            ret->positions.push_back(scanPos);
+            // Check if it exists. If not, exit.
+            if (m_featureBase->m_kernel->exists(groupName))
+            {
+                std::cout << timestamp
+                          << "ScanProjectIO: Loading scanposition "
+                          << scanPosNo << std::endl;
+
+                ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
+                ret->positions.push_back(scanPos);
+            }
+            else
+            {
+                break;
+            }
+            ++scanPosNo;
         }
         else
         {
             break;
         }
-        ++scanPosNo;
     } 
     while (true);
 
