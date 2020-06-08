@@ -8,7 +8,7 @@ namespace lvr2
 template <typename  FeatureBase>
 void ScanPositionIO< FeatureBase>::saveScanPosition(const size_t& scanPosNo, const ScanPositionPtr& scanPositionPtr)
 {
-    Description d = m_featureBase->m_description.position(scanPosNo);
+    Description d = m_featureBase->m_description->position(scanPosNo);
   
     // Setup defaults
     std::stringstream sstr;
@@ -30,7 +30,7 @@ void ScanPositionIO< FeatureBase>::saveScanPosition(const size_t& scanPosNo, con
     // Save meta information
     if(d.metaData)
     {
-        m_featureBase->m_kernel.saveMetaYAML(groupName, metaName, *(d.metaData));
+        m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, *(d.metaData));
     }
     else
     {
@@ -40,7 +40,7 @@ void ScanPositionIO< FeatureBase>::saveScanPosition(const size_t& scanPosNo, con
                  
         YAML::Node node;
         node = *scanPositionPtr;
-        m_featureBase->m_kernel.saveMetaYAML(groupName, metaName, node);
+        m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, node);
     }
     
     // Save all scans
@@ -78,7 +78,7 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
     //     ret = load(group);
     // }
 
-    Description d = m_featureBase->m_description.position(scanPosNo);
+    Description d = m_featureBase->m_description->position(scanPosNo);
 
     // Setup defaults
     std::stringstream sstr;
@@ -116,14 +116,14 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
     do
     {
         // Get description for next scan
-        Description scanDescr = m_featureBase->m_description.scan(scanPosNo, scanNo);
+        Description scanDescr = m_featureBase->m_description->scan(scanPosNo, scanNo);
 
         std::string groupName;
         std::string dataSetName;
         std::tie(groupName, dataSetName) = getNames("", "", scanDescr);
 
         // Check if it exists. If not, exit.
-        if(m_featureBase->m_kernel.exists(groupName, dataSetName))
+        if(m_featureBase->m_kernel->exists(groupName, dataSetName))
         {
             std::cout << timestamp << "ScanPositionIO: Loading scan " 
                       << groupName << "/" << dataSetName << std::endl;
@@ -144,14 +144,14 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
     do
     {
         // Get description for next scan
-        Description camDescr = m_featureBase->m_description.scanCamera(scanPosNo, scanNo);
+        Description camDescr = m_featureBase->m_description->scanCamera(scanPosNo, scanNo);
 
         std::string groupName;
         std::string dataSetName;
         std::tie(groupName, dataSetName) = getNames("", "", camDescr);
 
         // Check if file exists. If not, exit.
-        if(m_featureBase->m_kernel.exists(groupName, dataSetName))
+        if(m_featureBase->m_kernel->exists(groupName, dataSetName))
         {
             std::cout << timestamp << "ScanPositionIO: Loading camera " 
                       << groupName << "/" << dataSetName << std::endl;
@@ -166,16 +166,18 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
     } while (true);
 
     // Get hyperspectral data
-    Description hyperDescr = m_featureBase->m_description.hyperspectralCamera(scanPosNo);
-
-    std::string dataSetName;
-    std::tie(groupName, dataSetName) = getNames("", "", hyperDescr);
-
-    if(m_featureBase->m_kernel.exists(groupName))
+    Description hyperDescr = m_featureBase->m_description->hyperspectralCamera(scanPosNo);
+    if(hyperDescr.dataSetName)
     {
-        std::cout << timestamp << "ScanPositionIO: Loading hyperspectral data... " << std::endl;
-        HyperspectralCameraPtr hspCam = m_hyperspectralCameraIO->loadHyperspectralCamera(scanPosNo);
-        ret->hyperspectralCamera = hspCam;
+        std::string dataSetName;
+        std::tie(groupName, dataSetName) = getNames("", "", hyperDescr);
+
+        if (m_featureBase->m_kernel->exists(groupName))
+        {
+            std::cout << timestamp << "ScanPositionIO: Loading hyperspectral data... " << std::endl;
+            HyperspectralCameraPtr hspCam = m_hyperspectralCameraIO->loadHyperspectralCamera(scanPosNo);
+            ret->hyperspectralCamera = hspCam;
+        }
     }
 
     return ret;

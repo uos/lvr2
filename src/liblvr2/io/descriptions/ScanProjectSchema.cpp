@@ -1,4 +1,4 @@
-#include "lvr2/io/descriptions/ScanProjectStructure.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchema.hpp"
 
 namespace lvr2
 {

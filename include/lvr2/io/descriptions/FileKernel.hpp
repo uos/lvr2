@@ -107,6 +107,8 @@ protected:
     std::string m_fileResourceName;
 };
 
+using FileKernelPtr = std::shared_ptr<FileKernel>;
+
 } // namespace lvr2
 
 #endif

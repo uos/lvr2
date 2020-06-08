@@ -12,6 +12,7 @@ namespace lvr2
 
 using StringOptional = boost::optional<std::string>;
 using NodeOptional = boost::optional<YAML::Node>;
+
 struct Description
 {
     StringOptional groupName;
@@ -25,15 +26,12 @@ std::pair<std::string, std::string> getNames(
     const std::string& defaultContainer, 
     const Description& d);
 
-class ScanProjectStructure 
+class ScanProjectSchema
 {
 public:
-    ScanProjectStructure() = delete;
+    ScanProjectSchema() {}
 
-    ScanProjectStructure(const std::string& root) 
-        : m_root(root) {};
-
-    ~ScanProjectStructure() = default;
+    ~ScanProjectSchema() = default;
 
     virtual Description scanProject() const = 0;
     virtual Description position(const size_t& scanPosNo) const = 0;
@@ -74,9 +72,26 @@ public:
         d.metaData = boost::none; 
     }
 protected:
-    std::string     m_root;
+    
 };
 
+/// Marker interface for HDF5 schemas
+class HDF5Schema : public ScanProjectSchema 
+{
+public:
+    HDF5Schema() {}
+};
+
+/// Marker interface for directory schemas
+class DirectorySchema : public ScanProjectSchema
+{
+public:
+    DirectorySchema() {}
+};
+
+using ScanProjectSchemaPtr = std::shared_ptr<ScanProjectSchema>;
+using DirectorySchemaPtr = std::shared_ptr<DirectorySchema>;
+using HDF5SchemaPtr = std::shared_ptr<HDF5Schema>;
 
 } // namespace lvr2
 
