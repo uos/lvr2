@@ -361,8 +361,6 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
     {
         m_pointCloudActor = vtkSmartPointer<vtkActor>::New();
 
-	vtkSmartPointer<vtkIdFilter> pointFilter = 
-		vtkSmartPointer<vtkIdFilter>::New();
         // Setup a poly data object
         vtkSmartPointer<vtkPoints>      vtk_points = vtkSmartPointer<vtkPoints>::New();
         vtkSmartPointer<vtkCellArray>   vtk_cells = vtkSmartPointer<vtkCellArray>::New();
@@ -401,6 +399,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 
         for(vtkIdType i = 0; i < n; i++)
         {
+
             size_t index = 3 * i;
             point[0] = points[index    ];
             point[1] = points[index + 1];
@@ -450,6 +449,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 #endif
             }
 
+
             vtk_points->SetPoint(i, point);
             vtk_cells->InsertNextCell(1, &i);
         }
@@ -457,10 +457,11 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         m_vtk_polyData->SetPoints(vtk_points);
         m_vtk_polyData->SetVerts(vtk_cells);
 
-	pointFilter->SetInputData(m_vtk_polyData);
 	
-        std::cout << "Set Id" << std::endl;
-        std::cout << "Set Id" << std::endl;
+        vtkSmartPointer<vtkIdFilter> pointFilter = 
+		vtkSmartPointer<vtkIdFilter>::New();
+
+	pointFilter->SetInputData(m_vtk_polyData);
 #if VTK890
 	pointFilter->SetCellIdsArrayName("OriginalIds");
 	pointFilter->SetPointIdsArrayName("OriginalIds");
@@ -474,16 +475,20 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 	surfaceFilter->SetInputConnection(pointFilter->GetOutputPort());
 	surfaceFilter->Update();
 
-	m_vtk_polyData = surfaceFilter->GetOutput();
+	m_id_polyData = surfaceFilter->GetOutput();
 
-
-
-	
+//m_vtk_polyData->GetPointData()->AddArray(ids);
 
         if(hasColors() || n_s_p)
         {
             m_vtk_polyData->GetPointData()->SetScalars(scalars);
         }
+
+
+
+	
+
+
 
         // Create poly data mapper and generate actor
         vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -494,7 +499,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 #endif
         m_pointCloudActor->SetMapper(mapper);
         m_pointCloudActor->GetProperty()->SetColor(1.0, 1.0, 1.0);
-        m_pointCloudActor->GetProperty()->SetPointSize(5);
+        m_pointCloudActor->GetProperty()->SetPointSize(1);
     }
 }
 
@@ -560,6 +565,11 @@ void LVRPointBufferBridge::setNormalsVisibility(bool visible)
 vtkSmartPointer<vtkPolyData> LVRPointBufferBridge::getPolyData()
 {
 	return m_vtk_polyData;
+}
+
+vtkSmartPointer<vtkPolyData> LVRPointBufferBridge::getPolyIDData()
+{
+    return m_id_polyData;
 }
 vtkSmartPointer<vtkActor> LVRPointBufferBridge::getPointCloudActor()
 {

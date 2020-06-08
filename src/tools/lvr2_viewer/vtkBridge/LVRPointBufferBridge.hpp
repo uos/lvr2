@@ -81,6 +81,8 @@ public:
     PointBufferPtr getPointBuffer();
     vtkSmartPointer<vtkPolyData> getPolyData();
 
+    vtkSmartPointer<vtkPolyData> getPolyIDData();
+
 private:
     /// update the view with gradient information
     void refreshSpectralGradient();
@@ -92,6 +94,9 @@ protected:
     void computePointCloudActor(PointBufferPtr pc);
     
     vtkSmartPointer<vtkPolyData> m_vtk_polyData;
+
+    //Maybe this is not neaded but 
+    vtkSmartPointer<vtkPolyData> m_id_polyData;
 
     vtkSmartPointer<vtkActor>       m_pointCloudActor;
     size_t                          m_numPoints;

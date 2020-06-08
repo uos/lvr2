@@ -228,9 +228,10 @@ void LVRLabelDialog::loadLabels()
                 boost::filesystem::path finalGroup = instanceGroup;
                 //pointclouds/$name/labels/$labelname/instance
                 finalGroup = (instanceGroup / boost::filesystem::path(instance));
-                if (labelClass != "Unalbeled")
+                if (labelClass != "Unlabeled")
                 {
                     id = m_id_hack++;
+
                 } 
 
                 //Get Color and IDs
@@ -242,13 +243,20 @@ void LVRLabelDialog::loadLabels()
                 rgbData = kernel.loadArray<int>(finalGroup.string(), "Color", rgbDim);
 
                 //Add Child to top Level
-                item->setText(LABELED_POINT_COLUMN, QString::number(0));
+                QTreeWidgetItem * childItem = new QTreeWidgetItem();
+                childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
+                childItem->setText(0, QString::fromStdString(instance));
                 QColor label_color(rgbData[0], rgbData[1], rgbData[2]);
-                item->setData(LABEL_ID_COLUMN, 1, label_color);
-                item->setData(LABEL_ID_COLUMN, 0, id);
-                Q_EMIT(labelAdded(item));
+                childItem->setData(LABEL_ID_COLUMN, 1, label_color);
+                childItem->setData(LABEL_ID_COLUMN, 0, id);
+                item->addChild(childItem);
+                Q_EMIT(labelAdded(childItem));
                 std::vector<int> out(idData.get(), idData.get() + idDim[0]);
                 Q_EMIT(labelLoaded(id, out));
+                if (labelClass != "Unlabeled")
+                {
+                    m_ui->selectedLabelComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
+                }
             }
         }
     }
