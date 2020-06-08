@@ -139,6 +139,7 @@ public Q_SLOTS:
     void loadChunkedMesh(const QStringList& filenames, std::vector<std::string> layers, int cacheSize, float highResDistance);
     void manualICP();
     void manualLabeling();
+    void changePicker(bool labeling);
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();

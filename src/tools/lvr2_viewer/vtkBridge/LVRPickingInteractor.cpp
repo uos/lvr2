@@ -170,7 +170,26 @@ void LVRPickingInteractor::setPoints(vtkSmartPointer<vtkPolyData> points)
 {
     if (points)
     {
+        /*
         std::cout <<"point_set" << std::endl;
+        auto vertexFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+auto a =  points->GetPointData()->GetAbstractArray("OriginalIds");
+      if(a == nullptr) 
+      {
+          std::cout << "array  not found"<< std::endl;
+          std::cout << a->GetNumberOfComponents() << std::endl;
+      }
+      else
+      {
+          std::cout << "array found"<< std::endl;
+          std::cout << a->GetNumberOfComponents() << std::endl;
+      }
+        vertexFilter->SetInputData(points);
+       
+        vertexFilter->Update();
+        m_points = {};
+        std::cout <<"point_set" << std::endl;
+        m_points->DeepCopy(vertexFilter->GetOutput());*/
         m_points = points;
         m_selectedPoints = std::vector<bool>(m_points->GetNumberOfPoints(), false);
         m_pointLabels = std::vector<uint16_t>(m_points->GetNumberOfPoints(), 0);
@@ -1650,6 +1669,7 @@ void LVRPickingInteractor::OnKeyDown()
             return;
 
         }
+        Q_EMIT(labelingStarted(true));
         m_pickMode = PickLabel;
     }
 
@@ -1809,22 +1829,17 @@ void LVRPickingInteractor::calculateSelection(bool select)
 
       vtkPolyData* selected = glyphFilter->GetOutput();
       
-      std::cout << "not until here"<< std::endl;
       vtkIdTypeArray* ids = vtkIdTypeArray::SafeDownCast(selected->GetPointData()->GetArray("OriginalIds"));
       m_selectedIds = vtkIdTypeArray::SafeDownCast(selected->GetPointData()->GetArray("OriginalIds"));
  
       //TODO Check if smart Pointer realy necassary
       vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
       coordinate->SetCoordinateSystemToWorld();
-      std::cout << "not until here1"<< std::endl;
 
       std::vector<vtkVector2i> polygonPoints = this->GetPolygonPoints();
-      std::cout << "not until here2"<< std::endl;
       std::vector<int> selectedPolyPoints;
-      std::cout << ids->GetNumberOfTuples()<< std::endl ;
       selectedPolyPoints.resize(ids->GetNumberOfTuples());
 
-      std::cout << "not until here3"<< std::endl;
       for (vtkIdType i = 0; i < ids->GetNumberOfTuples(); i++)
       {
 	auto selectedPoint = m_points->GetPoint(ids->GetValue(i));
@@ -1844,7 +1859,6 @@ void LVRPickingInteractor::calculateSelection(bool select)
 #endif
       m_selectedMapper->ScalarVisibilityOff();
 
-      std::cout << "not until here2"<< std::endl;
       for(auto selectedPolyPoint : selectedPolyPoints)
       {
 		m_selectedPoints[selectedPolyPoint] = select;
@@ -1873,7 +1887,6 @@ void LVRPickingInteractor::calculateSelection(bool select)
 
       vertexFilter->SetInputData(selectedVtkPoly);
       vertexFilter->Update();
-      std::cout << "not until here3"<< std::endl;
 
       auto polyData = vtkSmartPointer<vtkPolyData>::New();
       polyData->ShallowCopy(vertexFilter->GetOutput());
@@ -1892,7 +1905,6 @@ void LVRPickingInteractor::calculateSelection(bool select)
         m_labelColors[m_selectedLabel].getRgb(&r, &g, &b);
         m_selectedActor->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
       }
-      std::cout << "not until here5"<< std::endl;
       //SelectedActor->GetProperty()->SetPointSize(3);
 
       m_renderer->AddActor(m_selectedActor);

@@ -147,6 +147,7 @@ Q_SIGNALS:
     void pointSelected(vtkActor*, int);
     void pointsLabeled(uint16_t, int);
     void responseLabels(std::vector<uint16_t>);
+    void labelingStarted(bool);
 
 private:
 

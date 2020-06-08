@@ -227,12 +227,11 @@ LVRMainWindow::LVRMainWindow()
     m_gradientSlider = this->sliderGradientWavelength;
     m_gradientLineEdit = this->lineEditGradientWavelength;
 
-    //vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
 
-    vtkSmartPointer<vtkAreaPicker> areaPicker = vtkSmartPointer<vtkAreaPicker>::New();
-
-    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(areaPicker);
-    //qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
+    //vtkSmartPointer<vtkAreaPicker> areaPicker = vtkSmartPointer<vtkAreaPicker>::New();
+    //qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(areaPicker);
+    vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
 
 
    // Widget to display the coordinate system
@@ -432,6 +431,7 @@ void LVRMainWindow::connectSignalsAndSlots()
  //   QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), m_labelDialog, SLOT(labelPoints()));
 //    QObject::connect(m_actionExtract_labeling, SIGNAL(triggered()), m_labelInteractor, SLOT(extractLabel()));
     QObject::connect(m_correspondanceDialog, SIGNAL(disableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
+    QObject::connect(m_pickingInteractor, SIGNAL(labelingStarted(bool)), this, SLOT(changePicker(bool)));
     QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(rejected()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
@@ -1126,7 +1126,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 			citem = static_cast<LVRPointCloudItem*>(*itu);
 			points->SetData(citem->getPointBufferBridge()->getPointCloudActor()->GetMapper()->GetInput()->GetPointData()->GetScalars());
 
-			m_pickingInteractor->setPoints(citem->getPointBufferBridge()->getPolyData());
+			m_pickingInteractor->setPoints(citem->getPointBufferBridge()->getPolyIDData());
                         m_labelDialog->setPoints(item->parent()->text(0).toStdString(), citem->getPointBufferBridge()->getPolyData());
 		}
 		itu++;
@@ -1881,36 +1881,39 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
     }
 }
 
+void LVRMainWindow::changePicker(bool labeling)
+{
+
+    if(labeling)
+    {
+        vtkSmartPointer<vtkAreaPicker> AreaPicker = vtkSmartPointer<vtkAreaPicker>::New();
+        qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(AreaPicker);
+    } else
+    {
+        vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
+        qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
+    }
+}
+
 void LVRMainWindow::manualLabeling()
 {
-	if(!m_labeling)
-	{
-		m_labelDialog->m_dialog->show();
-	    m_labelDialog->m_dialog->raise();
-	    m_labelDialog->m_dialog->activateWindow();
+    if(!m_labeling)
+    {
+        m_labelDialog->m_dialog->show();
+        m_labelDialog->m_dialog->raise();
+        m_labelDialog->m_dialog->activateWindow();
 
-                //TODO STOP beeing hacky 
-                m_labelDialog->showEvent();
+        //TODO STOP beeing hacky 
+        m_labelDialog->showEvent();
 
-		std::cout << "main on" << std::endl;
-	    m_pickingInteractor->labelingOn();
-	    vtkSmartPointer<vtkAreaPicker> AreaPicker = vtkSmartPointer<vtkAreaPicker>::New();
-	    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(AreaPicker);
+        m_pickingInteractor->labelingOn();
 
 
-	}else
-	{
-
-		std::cout << "main off" << std::endl;
-
-	    vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
-	    qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
-	    m_pickingInteractor->labelingOff();
-
-
-
-	}
-	m_labeling = !m_labeling;
+    }else
+    {
+        m_pickingInteractor->labelingOff();
+    }
+    m_labeling = !m_labeling;
 }
 void LVRMainWindow::manualICP()
 {
