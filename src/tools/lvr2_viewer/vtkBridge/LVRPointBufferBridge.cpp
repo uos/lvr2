@@ -467,7 +467,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 #endif
         m_pointCloudActor->SetMapper(mapper);
         m_pointCloudActor->GetProperty()->SetColor(1.0, 1.0, 1.0);
-        m_pointCloudActor->GetProperty()->SetPointSize(5);
+        m_pointCloudActor->GetProperty()->SetPointSize(2);
     }
 }
 
