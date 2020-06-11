@@ -35,6 +35,7 @@
 #include "LVRModelBridge.hpp"
 
 #include <vtkSmartPointer.h>
+#include <vtkPolyData.h>
 #include <vtkCellArray.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkPoints.h>
@@ -362,6 +363,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         m_pointCloudActor = vtkSmartPointer<vtkActor>::New();
 
         // Setup a poly data object
+        vtkSmartPointer<vtkPolyData>    vtk_polyData = vtkSmartPointer<vtkPolyData>::New();
         vtkSmartPointer<vtkPoints>      vtk_points = vtkSmartPointer<vtkPoints>::New();
         vtkSmartPointer<vtkCellArray>   vtk_cells = vtkSmartPointer<vtkCellArray>::New();
         m_vtk_normals = vtkSmartPointer<vtkDoubleArray>::New();
@@ -399,7 +401,6 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 
         for(vtkIdType i = 0; i < n; i++)
         {
-
             size_t index = 3 * i;
             point[0] = points[index    ];
             point[1] = points[index + 1];
@@ -449,7 +450,6 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 #endif
             }
 
-
             vtk_points->SetPoint(i, point);
             vtk_cells->InsertNextCell(1, &i);
         }
@@ -484,22 +484,16 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
             m_vtk_polyData->GetPointData()->SetScalars(scalars);
         }
 
-
-
-	
-
-
-
         // Create poly data mapper and generate actor
         vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 #ifdef LVR2_USE_VTK5
-        mapper->SetInput(m_vtk_polyData);
+        mapper->SetInput(vtk_polyData);
 #else
-        mapper->SetInputData(m_vtk_polyData);
+        mapper->SetInputData(vtk_polyData);
 #endif
         m_pointCloudActor->SetMapper(mapper);
         m_pointCloudActor->GetProperty()->SetColor(1.0, 1.0, 1.0);
-        m_pointCloudActor->GetProperty()->SetPointSize(1);
+        m_pointCloudActor->GetProperty()->SetPointSize(5);
     }
 }
 
