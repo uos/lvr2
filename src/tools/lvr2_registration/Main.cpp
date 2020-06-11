@@ -383,11 +383,16 @@ int main(int argc, char** argv)
 
     int count = end - start + 1;
 
-    HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
-    vector<string> numOfScansInHDF = hfscans.listObjectNames();
+    vector<string> numOfScansInHDF;
+    if(h5_ptr->m_hdf5_file)
+    {
+        HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
+        numOfScansInHDF = hfscans.listObjectNames();
+    }
+
     vector<lvr2::ScanPtr> rawScans;
     if (options.useHDF)
-    {
+    {  
         for (int i = 0; i < numOfScansInHDF.size(); i++)
         {
             // create a scan object for each scan in hdf
