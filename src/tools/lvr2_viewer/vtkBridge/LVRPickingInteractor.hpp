@@ -37,21 +37,35 @@
 #include <QObject>
 #include <QMessageBox>
 
+#include <vtkIdTypeArray.h>
 #include <vtkTextActor.h>
+#include <QTreeWidgetItem>
 #include <vtkInteractorStyleTrackballCamera.h>
+#include <vtkInteractorStyleRubberBandPick.h>
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
 #include <vtkMath.h>
+#include <vtkDataSetMapper.h>
+
+#include <boost/shared_array.hpp>
+
+#include <memory>
+#include "LVRInteractorStylePolygonPick.hpp"
+#include <map>
 
 namespace lvr2
 {
 
 
-class LVRPickingInteractor : public QObject, public vtkInteractorStyle
+class LVRPickingInteractor : public QObject, public LVRInteractorStylePolygonPick
 {
     Q_OBJECT
 public:
-    LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer);
+    static LVRPickingInteractor* New();
+    LVRPickingInteractor();
+    vtkTypeMacro(LVRPickingInteractor, LVRInteractorStylePolygonPick);
+    void setRenderer(vtkSmartPointer<vtkRenderer> renderer);
+    //LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer);
     virtual ~LVRPickingInteractor();
 
     /**
@@ -96,10 +110,21 @@ public:
     vtkSmartPointer<vtkTextActor>   getTextActor(){ return m_textActor; }
 
     void updateFocalPoint();
+    void setPoints(vtkSmartPointer<vtkPolyData> points);
 
 public Q_SLOTS:
     void correspondenceSearchOn();
     void correspondenceSearchOff();
+
+    void labelingOn();
+    void labelingOff();
+    void setLabeledPointVisibility(int, bool);
+    void setLabel(int, std::vector<int>);
+    void requestLabels();
+
+    void newLabel(QTreeWidgetItem*);
+    void setLassoTool(bool);
+    void labelSelected(uint16_t);
 
     void setMotionFactor(double factor);
     void setRotationFactor(double factor);
@@ -115,18 +140,20 @@ public Q_SLOTS:
 
     void resetCamera();
 
-
-
 Q_SIGNALS:
+    void clusterSelected(double*);
     void firstPointPicked(double*);
     void secondPointPicked(double*);
     void pointSelected(vtkActor*, int);
+    void pointsLabeled(uint16_t, int);
+    void responseLabels(std::vector<uint16_t>);
+    void labelingStarted(bool);
 
 private:
 
     enum InteractorMode {TRACKBALL, SHOOTER, TERRAIN};
     enum ShooterMode {LOOK, HOVER};
-    enum PickMode {None, PickPoint, PickFirst, PickSecond, PickFocal};
+    enum PickMode {None, PickPoint, PickFirst, PickSecond, PickFocal, PickLabel};
 
     void handlePicking();
 
@@ -190,20 +217,40 @@ private:
     void onMouseWheelBackwardShooter();
     void onMouseWheelForwardShooter();
 
+    //Labeling
+    bool isInside(std::vector<vtkVector2i>* polygon, int& pX, int& pY);
+    void calculateSelection(bool select);
+    void saveCurrentLabelSelection();
+    void discardChanges();
+    void updateActor(int);
+
     /// Indicates picking mode
     PickMode            m_pickMode;
 
     /// Text actor to display info if in picking mode
-    vtkSmartPointer<vtkTextActor>   m_textActor;
-    vtkSmartPointer<vtkActor>       m_sphereActor;
+    vtkSmartPointer<vtkTextActor>     m_textActor;
+    vtkSmartPointer<vtkActor>         m_sphereActor;
+    vtkSmartPointer<vtkActor>         m_cubeActor;
+    vtkSmartPointer<vtkActor>         m_polyActor;
+    std::vector<bool>	              m_selectedPoints;
+    std::map<uint16_t, vtkSmartPointer<vtkActor>> m_labelActors;
+    vtkSmartPointer<vtkActor> m_selectedActor;
+    std::vector<uint16_t>              m_pointLabels;
+    vtkSmartPointer<vtkPolyData>      m_points;
+    vtkSmartPointer<vtkDataSetMapper> m_selectedMapper;
+    vtkSmartPointer<vtkIdTypeArray> m_selectedIds; 
 
     vtkSmartPointer<vtkRenderer>    m_renderer;
 
     bool                            m_correspondenceMode;
+    bool 			    m_labelingMode;
+    bool 			    m_modified;
 
     unsigned int                    m_numberOfClicks;
     int                             m_previousPosition[2];
     int                             m_startCameraMovePosition[2];
+    int 			    m_selectedLabel;
+
 
     double                          m_viewUp[3];
 
@@ -212,6 +259,8 @@ private:
 
     InteractorMode                  m_interactorMode;
     ShooterMode                     m_shooterMode;
+
+    std::map<uint16_t, QColor>	    m_labelColors;
 
 
 };

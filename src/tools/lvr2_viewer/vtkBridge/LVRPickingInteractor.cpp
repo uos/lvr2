@@ -46,14 +46,36 @@
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
 #include <vtkActor.h>
+#include <vtkActorCollection.h>
+#include <vtkCubeSource.h>
+#include <vtkPlanes.h>
+#include <vtkAreaPicker.h>
+#include <vtkVertexGlyphFilter.h>
+#include <vtkVersion.h>
+#include <vtkPointData.h>
+#include <vtkIdTypeArray.h>
+#include <vtkDataSetSurfaceFilter.h>
+#include <vtkPolyLine.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointSource.h>
+#include <vtkExtractGeometry.h>
+#include <vtkDataSetMapper.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkIdFilter.h>
+#include <set>
 
 namespace lvr2
 {
 
-LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer) :
-    m_renderer(renderer), m_motionFactor(50), m_rotationFactor(20), m_interactorMode(TRACKBALL)
+vtkStandardNewMacro(LVRPickingInteractor);
+
+LVRPickingInteractor::LVRPickingInteractor() :
+//LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer) :
+   m_motionFactor(50), m_rotationFactor(20), m_interactorMode(TRACKBALL)
 {
+    m_modified = false;
     m_startCameraMovePosition[0] = 0;
     m_startCameraMovePosition[1] = 0;
 
@@ -74,8 +96,15 @@ LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer
     m_textActor->SetTextProperty(p);
     m_textActor->SetInput("Pick a point...");
     m_textActor->VisibilityOff();
-    m_renderer->AddActor(m_textActor);
 
+}
+
+
+void LVRPickingInteractor::setRenderer(vtkSmartPointer<vtkRenderer> renderer)
+{
+
+    m_renderer = renderer;
+    m_renderer->AddActor(m_textActor);
     // Create a sphere actor to represent the current focal point
     vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
     sphereSource->SetCenter(0.0, 0.0, 0.0);
@@ -90,6 +119,7 @@ LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(sphereSource->GetOutputPort());
 
+   // m_selectionPoints = vtkSmartPointer<vtkPoints>::New();
     m_sphereActor = vtkSmartPointer<vtkActor>::New();
     m_sphereActor->SetMapper(mapper);
     m_renderer->AddActor(m_sphereActor);
@@ -99,8 +129,8 @@ LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer
     m_sphereActor->SetPosition(focalPoint[0], focalPoint[1], focalPoint[2]);
 
     this->UseTimersOn();
-}
 
+}
 void LVRPickingInteractor::setStereoMode(int state)
 {
      vtkRenderWindowInteractor *rwi = this->Interactor;
@@ -134,6 +164,36 @@ void LVRPickingInteractor::updateFocalPoint()
     double focalPoint[3];
     m_renderer->GetActiveCamera()->GetFocalPoint(focalPoint);
     m_sphereActor->SetPosition(focalPoint[0], focalPoint[1], focalPoint[2]);
+}
+
+void LVRPickingInteractor::setPoints(vtkSmartPointer<vtkPolyData> points) 
+{
+    if (points)
+    {
+        /*
+        std::cout <<"point_set" << std::endl;
+        auto vertexFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+auto a =  points->GetPointData()->GetAbstractArray("OriginalIds");
+      if(a == nullptr) 
+      {
+          std::cout << "array  not found"<< std::endl;
+          std::cout << a->GetNumberOfComponents() << std::endl;
+      }
+      else
+      {
+          std::cout << "array found"<< std::endl;
+          std::cout << a->GetNumberOfComponents() << std::endl;
+      }
+        vertexFilter->SetInputData(points);
+       
+        vertexFilter->Update();
+        m_points = {};
+        std::cout <<"point_set" << std::endl;
+        m_points->DeepCopy(vertexFilter->GetOutput());*/
+        m_points = points;
+        m_selectedPoints = std::vector<bool>(m_points->GetNumberOfPoints(), false);
+        m_pointLabels = std::vector<uint16_t>(m_points->GetNumberOfPoints(), 0);
+    }
 }
 
 void LVRPickingInteractor::setMotionFactor(double factor)
@@ -277,8 +337,14 @@ void LVRPickingInteractor::Zoom()
     }
 }
 
+
 void LVRPickingInteractor::OnLeftButtonDown()
 {
+    if (m_pickMode == PickLabel)
+    {
+	LVRInteractorStylePolygonPick::OnLeftButtonDown();
+	return;
+    } 
     switch(m_interactorMode)
     {
     case TRACKBALL:
@@ -296,8 +362,14 @@ void LVRPickingInteractor::OnLeftButtonDown()
     handlePicking();
 }
 
+
 void LVRPickingInteractor::OnLeftButtonUp()
 {
+    if (m_pickMode == PickLabel)
+    {
+	calculateSelection(true);
+	return;
+    } 
     switch(m_interactorMode)
     {
     case TRACKBALL:
@@ -316,6 +388,11 @@ void LVRPickingInteractor::OnLeftButtonUp()
 
 void LVRPickingInteractor::OnMouseMove()
 {
+    if(m_pickMode == PickLabel)
+    {
+        LVRInteractorStylePolygonPick::OnMouseMove();
+	return;
+    }
     switch(m_interactorMode)
     {
     case TRACKBALL:
@@ -370,6 +447,11 @@ void LVRPickingInteractor::OnMiddleButtonDown()
 
 void LVRPickingInteractor::OnRightButtonUp()
 {
+    if (m_pickMode == PickLabel)
+    {
+	calculateSelection(false);
+	return;
+    } 
     switch(m_interactorMode)
     {
     case TRACKBALL:
@@ -388,6 +470,11 @@ void LVRPickingInteractor::OnRightButtonUp()
 
 void LVRPickingInteractor::OnRightButtonDown()
 {
+    if (m_pickMode == PickLabel)
+    {
+	LVRInteractorStylePolygonPick::OnLeftButtonDown();
+	return;
+    }
     switch(m_interactorMode)
     {
     case TRACKBALL:
@@ -1242,7 +1329,25 @@ void LVRPickingInteractor::correspondenceSearchOff()
     rwi->Render();
 }
 
+void LVRPickingInteractor::labelingOn()
+{
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    m_textActor->SetInput("Press \"l\" to select Points");
+    m_textActor->VisibilityOn();
+    rwi->Render();
 
+    m_labelingMode = true;
+    //m_pickMode = PickLabel;
+
+}
+void LVRPickingInteractor::labelingOff()
+{
+        vtkRenderWindowInteractor *rwi = this->Interactor;
+	m_labelingMode = false;
+        m_pickMode = None;
+	m_textActor->VisibilityOff();
+        rwi->Render();
+}
 void LVRPickingInteractor::handlePicking()
 {
     vtkPointPicker* picker = (vtkPointPicker*)this->Interactor->GetPicker();
@@ -1302,6 +1407,11 @@ void LVRPickingInteractor::handlePicking()
         }
         m_pickMode = None;
     }
+    else if(m_pickMode == PickLabel)
+    {
+
+
+    }
     else
     {
         int* pickPos = this->Interactor->GetEventPosition();
@@ -1330,6 +1440,11 @@ void LVRPickingInteractor::onLeftButtonDownTrackball()
     if (this->CurrentRenderer == nullptr)
     {
         return;
+    }
+    if(m_labelingMode)
+    {
+	  //  vtkInteractorStyleRubberBandPick::OnLeftButtonDown();
+	    //return;
     }
 
     GrabFocus(this->EventCallbackCommand, nullptr);
@@ -1517,6 +1632,15 @@ void LVRPickingInteractor::OnKeyDown()
     vtkRenderWindowInteractor *rwi = this->Interactor;
     std::string key = rwi->GetKeySym();
 
+    if(key == "Escape" && m_labelingMode)
+    {
+	discardChanges();
+    }
+    if(key == "Return" && m_labelingMode)
+    {
+	LVRInteractorStylePolygonPick::OnKeyDown();
+	saveCurrentLabelSelection();
+    }
     if(key == "x" && m_correspondenceMode)
     {
         m_textActor->SetInput("Pick first correspondence point...");
@@ -1532,6 +1656,23 @@ void LVRPickingInteractor::OnKeyDown()
         rwi->Render();
         m_pickMode = PickSecond;
     }
+    if(m_labelingMode && key == "l")
+    {
+    //Check if no Labels were created
+        if( m_labelColors.empty())
+        {
+            QMessageBox noLabelDialog;
+            noLabelDialog.setText("No Label Instance was created! Create an instance beofre labeling Points.");
+            noLabelDialog.setStandardButtons(QMessageBox::Ok);
+            noLabelDialog.setIcon(QMessageBox::Warning);
+            int returnValue = noLabelDialog.exec();
+            return;
+
+        }
+        Q_EMIT(labelingStarted(true));
+        m_pickMode = PickLabel;
+    }
+
     if(key == "f")
     {
         pickFocalPoint();
@@ -1549,6 +1690,12 @@ void LVRPickingInteractor::OnKeyDown()
 
 void LVRPickingInteractor::OnChar()
 {
+    if(m_pickMode == PickLabel)
+    {
+	
+        LVRInteractorStylePolygonPick::OnChar();
+	return;
+    }
     if(m_interactorMode == SHOOTER)
     {
         vtkRenderWindowInteractor *rwi = this->Interactor;
@@ -1600,6 +1747,7 @@ void LVRPickingInteractor::OnChar()
             break;
         }  
     }
+
     else
     {
         vtkInteractorStyle::OnChar();
@@ -1620,4 +1768,412 @@ void LVRPickingInteractor::OnKeyRelease()
 
 }
 
+bool LVRPickingInteractor::isInside(std::vector<vtkVector2i>* polygon, int& pX, int& pY)
+{
+    int n = polygon->size();
+    if (n < 3) return false;
+
+    int i, j, c = 0;
+    for(i = 0, j = n -1; i < n ; j = i++)
+    {
+	auto& vert = polygon->at(j);
+	auto& vert_next = polygon->at(i);
+
+	if (((vert_next.GetY() > pY) != (vert.GetY() > pY)) &&
+		(pX < (vert.GetX() - vert_next.GetX()) * (pY - vert_next.GetY()) / (vert.GetY() - vert_next.GetY()) + vert_next.GetX()))
+	{
+	    c = !c;
+        }
+    }
+    return c;
+}
+
+
+void LVRPickingInteractor::calculateSelection(bool select)
+{
+
+      // Forward events
+      LVRInteractorStylePolygonPick::OnLeftButtonUp();
+
+      if (!m_points)
+      {
+	      return;
+      }
+
+      if (m_labelActors.find(m_selectedLabel) != m_labelActors.end())
+      {
+      	this->CurrentRenderer->RemoveActor(m_labelActors[m_selectedLabel]);
+      }
+
+      this->CurrentRenderer->RemoveActor(m_selectedActor);
+      m_selectedActor = vtkSmartPointer<vtkActor>::New();
+      m_selectedMapper = vtkSmartPointer<vtkDataSetMapper>::New();
+      m_selectedActor->SetMapper(m_selectedMapper);
+  
+      vtkPlanes* frustum = static_cast<vtkAreaPicker*>(this->GetInteractor()->GetPicker())->GetFrustum();
+
+      vtkSmartPointer<vtkExtractGeometry> extractGeometry =
+        vtkSmartPointer<vtkExtractGeometry>::New();
+      extractGeometry->SetImplicitFunction(frustum);
+#if VTK_MAJOR_VERSION <= 5
+      extractGeometry->SetInput(m_points);
+#else
+      extractGeometry->SetInputData(m_points);
+#endif
+      extractGeometry->Update();
+
+      vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter =
+        vtkSmartPointer<vtkVertexGlyphFilter>::New();
+      glyphFilter->SetInputConnection(extractGeometry->GetOutputPort());
+      glyphFilter->Update();
+
+      vtkPolyData* selected = glyphFilter->GetOutput();
+      
+      vtkIdTypeArray* ids = vtkIdTypeArray::SafeDownCast(selected->GetPointData()->GetArray("OriginalIds"));
+      m_selectedIds = vtkIdTypeArray::SafeDownCast(selected->GetPointData()->GetArray("OriginalIds"));
+ 
+      //TODO Check if smart Pointer realy necassary
+      vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
+      coordinate->SetCoordinateSystemToWorld();
+
+      std::vector<vtkVector2i> polygonPoints = this->GetPolygonPoints();
+      std::vector<int> selectedPolyPoints;
+      selectedPolyPoints.resize(ids->GetNumberOfTuples());
+
+      for (vtkIdType i = 0; i < ids->GetNumberOfTuples(); i++)
+      {
+	auto selectedPoint = m_points->GetPoint(ids->GetValue(i));
+	coordinate->SetValue(selectedPoint[0], selectedPoint[1], selectedPoint[2]); 
+	int* displayCoord;
+	displayCoord = coordinate->GetComputedViewportValue(this->CurrentRenderer);
+	if (isInside(&polygonPoints, displayCoord[0], displayCoord[1]))
+	{
+		selectedPolyPoints.push_back(ids->GetValue(i));
+	}
+      }
+
+#if VTK_MAJOR_VERSION <= 5
+      m_selectedMapper->SetInput(selected);
+#else
+      m_selectedMapper->SetInputData(selected);
+#endif
+      m_selectedMapper->ScalarVisibilityOff();
+
+      for(auto selectedPolyPoint : selectedPolyPoints)
+      {
+		m_selectedPoints[selectedPolyPoint] = select;
+      }
+
+      auto vertexFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+      auto selectedVtkPoints = vtkSmartPointer<vtkPoints>::New();
+
+      double point[3];
+      for (int i = 0; i < m_selectedPoints.size(); i++)
+      {
+	      if (m_selectedPoints[i])
+	      {
+      		m_points->vtkDataSet::GetPoint(i, point);
+      		selectedVtkPoints->InsertNextPoint(point);
+	      }
+      }
+      if (selectedPolyPoints.size() > 0)
+      {
+	    m_modified = true;
+      }
+
+      auto selectedVtkPoly = vtkSmartPointer<vtkPolyData>::New();
+      selectedVtkPoly->SetPoints(selectedVtkPoints);
+
+
+      vertexFilter->SetInputData(selectedVtkPoly);
+      vertexFilter->Update();
+
+      auto polyData = vtkSmartPointer<vtkPolyData>::New();
+      polyData->ShallowCopy(vertexFilter->GetOutput());
+
+#if VTK_MAJOR_VERSION <= 5
+      m_selectedMapper->SetInput(polyData);
+#else
+      m_selectedMapper->SetInputData(polyData);
+#endif
+      m_selectedMapper->ScalarVisibilityOff();   
+
+
+      int r, g, b;
+      if(!m_labelColors.empty())
+      {
+        m_labelColors[m_selectedLabel].getRgb(&r, &g, &b);
+        m_selectedActor->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
+      }
+      //SelectedActor->GetProperty()->SetPointSize(3);
+
+      m_renderer->AddActor(m_selectedActor);
+      this->GetInteractor()->GetRenderWindow()->Render();
+      this->HighlightProp(NULL);
+
+}
+
+void LVRPickingInteractor::newLabel(QTreeWidgetItem* item)
+{
+    m_labelColors[item->data(3,0).toInt()] =  item->data(3,1).value<QColor>();
+    if(m_labelColors.size() == 1)
+    {
+            //first Label set as the choosen label
+            m_selectedLabel = item->data(3,0).toInt();
+    }
+    if(m_labelActors.find(item->data(3,0).toInt()) != m_labelActors.end())
+    {
+        int r,g,b;
+        m_labelColors[item->data(3,0).toInt()].getRgb(&r, &g, &b);
+        m_labelActors[item->data(3,0).toInt()]->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
+        this->GetInteractor()->GetRenderWindow()->Render();
+        this->HighlightProp(NULL);
+    }
+    if (item->data(3,0).toInt() == 0)
+    {
+        //Add Actor for all Unlabeled Points
+        
+        auto unlabeledMapper = vtkSmartPointer<vtkDataSetMapper>::New();
+        auto unlabeledActor = vtkSmartPointer<vtkActor>::New();
+        unlabeledActor->SetMapper(unlabeledMapper);
+        //Crete copy of points
+        double point[3];
+        auto selectedVtkPoints = vtkSmartPointer<vtkPoints>::New();
+        for (int i = 0; i < m_selectedPoints.size(); i++)
+        {
+            m_points->vtkDataSet::GetPoint(i, point);
+            selectedVtkPoints->InsertNextPoint(point);
+        }
+ 
+        auto selectedVtkPoly = vtkSmartPointer<vtkPolyData>::New();
+        selectedVtkPoly->SetPoints(selectedVtkPoints);
+        auto vertexFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+        vertexFilter->SetInputData(selectedVtkPoly);
+        vertexFilter->Update();
+
+        auto polyData = vtkSmartPointer<vtkPolyData>::New();
+        polyData->ShallowCopy(vertexFilter->GetOutput());
+
+
+#if VTK_MAJOR_VERSION <= 5
+        unlabeledMapper->SetInput(polyData);
+#else
+        unlabeledMapper->SetInputData(polyData);
+#endif
+        unlabeledMapper->ScalarVisibilityOff();   
+
+        unlabeledActor->GetProperty()->SetColor(1,0.0,0.0); //(R,G,B)
+
+        if(m_labelActors.find(0) != m_labelActors.end())
+        {
+            std::cout << "remove actor bedore" << std::endl;
+        }
+        //    m_labelActors[0] = unlabeledActor;
+
+        //m_renderer->AddActor(unlabeledActor);
+    }
+}
+
+void LVRPickingInteractor::saveCurrentLabelSelection()
+{
+    int count = 0;
+    std::set<uint16_t> modifiedActors;
+    for (int i = 0; i < m_selectedPoints.size(); i++)
+    {
+        //Set Current selection as new selection for the selected label 
+        if(m_selectedPoints[i])
+        {
+            if(m_pointLabels[i] != m_selectedLabel)
+            {
+                //Only update if necessary
+                modifiedActors.insert(m_pointLabels[i]); 
+                m_pointLabels[i] = m_selectedLabel;
+            }
+            count++;
+        }
+        else
+        {
+            //Check if Points were labeled before
+            if (m_pointLabels[i] == m_selectedLabel)
+            {
+                //Set to unlabeled
+                m_pointLabels[i] = 0;
+                modifiedActors.insert(0); 
+            }
+        }
+    }
+
+    if(m_labelActors.find(m_selectedLabel) != m_labelActors.end())
+    {
+        this->CurrentRenderer->RemoveActor(m_labelActors[m_selectedLabel]);
+    }
+    if (modifiedActors.size() > 0)
+    {
+        m_modified = false;
+    }
+    Q_EMIT(pointsLabeled(m_selectedLabel, count));
+
+    for (auto modifiedActorLabel : modifiedActors)
+    {
+        //redraw Actor
+        updateActor(modifiedActorLabel);
+    }
+
+    //Save Current Actor
+    m_labelActors[m_selectedLabel] = m_selectedActor;
+
+    //create new Selection Actor
+    m_selectedActor = vtkSmartPointer<vtkActor>::New();
+}
+
+void LVRPickingInteractor::discardChanges()
+{
+	    //Undo Changes 
+	    this->CurrentRenderer->RemoveActor(m_selectedActor);
+	    if(m_labelActors.find(m_selectedLabel) != m_labelActors.end())
+	    {
+		for (int i = 0; i < m_pointLabels.size(); i++)
+		{
+			m_selectedPoints[i] = (m_pointLabels[i] == m_selectedLabel);
+
+		}
+	        m_renderer->AddActor(m_labelActors[m_selectedLabel]);
+      		this->GetInteractor()->GetRenderWindow()->Render();
+   		this->HighlightProp(NULL);
+
+	    } else
+	    {
+	       //Label has no selected points just reset selected and delete actor
+		std::fill(m_selectedPoints.begin(), m_selectedPoints.end(), 0);
+	    	m_selectedActor = vtkSmartPointer<vtkActor>::New();
+	    }
+	    m_modified = false;
+}
+void LVRPickingInteractor::labelSelected(uint16_t newLabel)
+{
+	if(m_selectedLabel == newLabel)
+	{
+		return;
+	}
+	if (m_modified)
+	{
+		QMessageBox acceptDialog;
+		acceptDialog.setText("The Label has been modified. Do you want to save your changes?");
+		acceptDialog.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
+		acceptDialog.setDefaultButton(QMessageBox::Save);
+		int returnValue = acceptDialog.exec();
+		switch(returnValue)
+		{
+			case QMessageBox::Save:
+				saveCurrentLabelSelection();
+				break;
+			case QMessageBox::Discard:
+				discardChanges();
+				break;
+		}
+		
+	}
+	m_modified = false;
+	m_selectedLabel = newLabel;
+	//TODO ask if Changes should be safed
+	
+	
+	for (int i = 0; i < m_pointLabels.size(); i++)
+	{
+		m_selectedPoints[i] = (m_pointLabels[i] == newLabel);
+
+	}
+}
+
+void LVRPickingInteractor::requestLabels()
+{
+    Q_EMIT(responseLabels(m_pointLabels));
+}
+void LVRPickingInteractor::setLabeledPointVisibility(int id, bool visibility)
+{
+    if(m_labelActors.find(id) == m_labelActors.end())
+    {
+        //TODO Add new empty actor and set visibility so the choice is kept
+        return;
+    }
+
+    m_labelActors[id]->SetVisibility(visibility);
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    rwi->Render();
+}
+
+void LVRPickingInteractor::setLassoTool(bool lassoToolSelected)
+{
+    if (lassoToolSelected)
+    {
+        LVRInteractorStylePolygonPick::SetLassoTool();
+    }else
+    {
+        LVRInteractorStylePolygonPick::SetPolygonTool();
+    }
+}
+
+void LVRPickingInteractor::setLabel(int labelId, std::vector<int> pointIds)
+{
+
+    for (int pointId : pointIds)
+    {
+        m_pointLabels[pointId] = labelId;
+        //TODO Check if other Actor was changed
+    }
+    //UpdateActor
+    updateActor(labelId);
+}
+
+void LVRPickingInteractor::updateActor(int labelId)
+{
+    auto updateMapper = vtkSmartPointer<vtkDataSetMapper>::New();
+    auto updatedActor = vtkSmartPointer<vtkActor>::New();
+    updatedActor->SetMapper(updateMapper);
+
+    //Crete copy of points
+    double point[3];
+    auto selectedVtkPoints = vtkSmartPointer<vtkPoints>::New();
+    int count = 0;
+    for (int i = 0; i < m_pointLabels.size(); i++)
+    {
+        if (labelId == m_pointLabels[i])
+        {
+            count++;
+            m_points->vtkDataSet::GetPoint(i, point);
+            selectedVtkPoints->InsertNextPoint(point);
+        }
+    }
+    Q_EMIT(pointsLabeled(labelId, count));
+
+    auto updatedVtkPoly = vtkSmartPointer<vtkPolyData>::New();
+    updatedVtkPoly->SetPoints(selectedVtkPoints);
+    auto vertexFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+    vertexFilter->SetInputData(updatedVtkPoly);
+    vertexFilter->Update();
+
+    auto polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->ShallowCopy(vertexFilter->GetOutput());
+
+
+#if VTK_MAJOR_VERSION <= 5
+    updatedMapper->SetInput(polyData);
+#else
+    updateMapper->SetInputData(polyData);
+#endif
+    updateMapper->ScalarVisibilityOff();   
+
+    int r, g, b;
+    m_labelColors[labelId].getRgb(&r, &g, &b);
+    updatedActor->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
+    if (m_labelActors.find(m_selectedLabel) != m_labelActors.end())
+    {
+       // m_renderer->RemoveActor(m_labelActors[labelId]);
+    }
+    m_labelActors[labelId] = updatedActor;
+    m_renderer->AddActor(updatedActor);
+
+    this->GetInteractor()->GetRenderWindow()->Render();
+    this->HighlightProp(NULL);
+}
 } /* namespace lvr2 */

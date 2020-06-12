@@ -12,6 +12,15 @@ using namespace boost::filesystem;
 namespace lvr2
 {
 
+ScanDirectoryParser::~ScanDirectoryParser()
+{
+    // Delete scan descriptions
+    for(auto i : m_scans)
+    {
+        delete i;
+    }
+}
+
 ScanDirectoryParser::ScanDirectoryParser(const std::string& directory) noexcept
 {
     // Check if directory exists and save path
@@ -80,25 +89,25 @@ PointBufferPtr ScanDirectoryParser::octreeSubSample(const double& voxelSize, con
 
     for(auto i : m_scans)
     {
-        std::cout << timestamp << "Reading " << i.m_filename << std::endl;
-        ModelPtr model = ModelFactory::readModel(i.m_filename);
+        std::cout << timestamp << "Reading " << i->m_filename << std::endl;
+        ModelPtr model = ModelFactory::readModel(i->m_filename);
         if(model)
         {
             PointBufferPtr buffer = model->m_pointCloud;
             if(buffer)
             {
-                std::cout << timestamp << "Building octree with voxel size " << voxelSize << " from " << i.m_filename << std::endl;
+                std::cout << timestamp << "Building octree with voxel size " << voxelSize << " from " << i->m_filename << std::endl;
                 OctreeReduction oct(buffer, voxelSize, 5);
                 PointBufferPtr reduced = oct.getReducedPoints();
 
                 // Apply transformation
                 std::cout << timestamp << "Transforming reduced point cloud" << std::endl;
                 out_model->m_pointCloud = reduced;
-                transformPointCloud<double>(out_model, i.m_pose);
+                transformPointCloud<double>(out_model, i->m_pose);
 
                 // Write reduced data
                 std::stringstream name_stream;
-                Path p(i.m_filename);
+                Path p(i->m_filename);
                 name_stream << p.stem().string() << "_reduced" << ".ply";
                 std::cout << timestamp << "Saving data to " << name_stream.str() << std::endl;
                 ModelFactory::saveModel(out_model, name_stream.str());
@@ -119,7 +128,7 @@ PointBufferPtr ScanDirectoryParser::randomSubSample(const size_t& tz)
 
     for(auto i : m_scans)
     {
-        ModelPtr model = ModelFactory::readModel(i.m_filename);
+        ModelPtr model = ModelFactory::readModel(i->m_filename);
         if(model)
         {
             PointBufferPtr buffer = model->m_pointCloud;
@@ -130,19 +139,19 @@ PointBufferPtr ScanDirectoryParser::randomSubSample(const size_t& tz)
                 if(tz > 0)
                 {
                     // Calc number of points to sample
-                    float total_ratio = (float)i.m_numPoints / m_numPoints;
+                    float total_ratio = (float)i->m_numPoints / m_numPoints;
                     float target_ratio = total_ratio * tz;
 
 
                     target_size = (int)(target_ratio + 0.5);
-                    std::cout << timestamp << "Sampling " << target_size << " points from " << i.m_filename << std::endl;
+                    std::cout << timestamp << "Sampling " << target_size << " points from " << i->m_filename << std::endl;
 
                     // Sub-sample buffer
                     reduced = subSamplePointBuffer(buffer, target_size);
                 }
                 else
                 {
-                    std::cout << timestamp << "Using orignal points from " << i.m_filename << std::endl;
+                    std::cout << timestamp << "Using orignal points from " << i->m_filename << std::endl;
                     reduced = buffer;
                     target_size = buffer->numPoints();
                 }
@@ -150,11 +159,11 @@ PointBufferPtr ScanDirectoryParser::randomSubSample(const size_t& tz)
                 // Apply transformation
                 std::cout << timestamp << "Transforming point cloud" << std::endl;
                 out_model->m_pointCloud = reduced;
-                transformPointCloud<double>(out_model, i.m_pose);
+                transformPointCloud<double>(out_model, i->m_pose);
 
                 // Write reduced data
                 std::stringstream name_stream;
-                Path p(i.m_filename);
+                Path p(i->m_filename);
                 name_stream << p.stem().string() << "_reduced" << ".ply";
                 std::cout << timestamp << "Saving data to " << name_stream.str() << std::endl;
                 ModelFactory::saveModel(out_model, name_stream.str());
@@ -221,10 +230,12 @@ void ScanDirectoryParser::parseDirectory()
             std::cout << timestamp << "Scan pose file " << posePath << "does not exist. Will not transfrom." << std::endl;
         }
 
-        ScanInfo info;
-        info.m_filename     = pointPath.string();
-        info.m_numPoints    = n;
-        info.m_pose         = matrix;
+
+        
+        ScanInfo* info = new ScanInfo;
+        info->m_filename     = std::string(pointPath.string());
+        info->m_numPoints    = n;
+        info->m_pose         = matrix;
 
         m_scans.push_back(info);
     }

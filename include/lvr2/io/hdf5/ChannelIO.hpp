@@ -2,6 +2,10 @@
 #ifndef LVR2_IO_HDF5_CHANNELIO_HPP
 #define LVR2_IO_HDF5_CHANNELIO_HPP
 
+#include <highfive/H5DataSet.hpp>
+#include <highfive/H5DataSpace.hpp>
+#include <highfive/H5File.hpp>
+
 #include "lvr2/types/Channel.hpp"
 #include "lvr2/io/GroupedChannelIO.hpp"
 #include "lvr2/io/Timestamp.hpp"

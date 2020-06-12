@@ -4,6 +4,8 @@
 
 #include <yaml-cpp/yaml.h>
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/io/Timestamp.hpp"
+
 #include "MatrixIO.hpp"
 
 namespace YAML {  
@@ -30,15 +32,21 @@ struct convert<lvr2::ScanProject>
         return node;
     }
 
-    static bool decode(const Node& node, lvr2::ScanProject& scanProj) {
-        
-        if(node["sensor_type"].as<std::string>() != lvr2::ScanProject::sensorType)
+    static bool decode(const Node& node, lvr2::ScanProject& scanProj) 
+    {
+        try
         {
+            if(node["sensor_type"].as<std::string>() != lvr2::ScanProject::sensorType)
+            {
+                return false;
+            }
+        }
+        catch(YAML::BadSubscript& e)
+        {
+            std::cout << e.what() << std::endl;
             return false;
         }
-
-
-
+    
         return true;
     }
 

@@ -1,3 +1,4 @@
+#include "Hdf5Util.hpp"
 namespace lvr2 {
 
 namespace hdf5features {

@@ -60,8 +60,11 @@
 #endif
 
 #include <QtGui>
-
-#include "ui_LVRMainWindowUI.h"
+#ifdef LVR2_USE_VTK8
+    #include "ui_LVRMainWindowQVTKOGLUI.h"
+#else
+    #include "ui_LVRMainWindowUI.h"
+#endif
 #include "ui_LVRAboutDialogUI.h"
 #include "ui_LVRTooltipDialogUI.h"
 
@@ -77,6 +80,7 @@
 #include "../widgets/LVRAnimationDialog.hpp"
 #include "../widgets/LVRTransformationDialog.hpp"
 #include "../widgets/LVRCorrespondanceDialog.hpp"
+#include "../widgets/LVRLabelDialog.hpp"
 #include "../widgets/LVRReconstructionEstimateNormalsDialog.hpp"
 #include "../widgets/LVRReconstructionMarchingCubesDialog.hpp"
 #include "../widgets/LVRReconstructionExtendedMarchingCubesDialog.hpp"
@@ -91,6 +95,7 @@
 #include "../widgets/LVRBoundingBoxItem.hpp"
 #include "../widgets/LVRPointInfo.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
+#include "../vtkBridge/LVRLabelInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
 #include <iostream>
@@ -130,8 +135,11 @@ public Q_SLOTS:
 
     void loadModel();
     void loadModels(const QStringList& filenames);
+    void loadChunkedMesh();
     void loadChunkedMesh(const QStringList& filenames, std::vector<std::string> layers, int cacheSize, float highResDistance);
     void manualICP();
+    void manualLabeling();
+    void changePicker(bool labeling);
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();
@@ -237,6 +245,7 @@ private:
 
     QList<QTreeWidgetItem*>                     m_items_copied;
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
+    LVRLabelDialog*                   		m_labelDialog;
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;
     LVRPlotter*                                 m_PointPreviewPlotter;
     int                                         m_previewPoint;
@@ -251,7 +260,7 @@ private:
     vtkSmartPointer<vtkOrientationMarkerWidget> m_axesWidget;
     vtkSmartPointer<vtkAxesActor>               m_axes;
 
-    std::unique_ptr<LVRChunkedMeshBridge> m_chunkBridge;
+    ChunkedMeshBridgePtr m_chunkBridge;
 //    vtkSmartPointer<ChunkedMeshCuller> m_chunkCuller;
     ChunkedMeshCuller* m_chunkCuller;
     QMenu*                                      m_treeParentItemContextMenu;
@@ -259,6 +268,7 @@ private:
 
     // Toolbar item "File"
     QAction*                            m_actionOpen;
+    QAction*                            m_actionOpenChunkedMesh;
     QAction*                            m_actionExport;
     QAction*                            m_actionQuit;
     // Toolbar item "Views"
@@ -287,6 +297,10 @@ private:
     // Toolbar item "Classification"
     QAction*                            m_actionSimple_Plane_Classification;
     QAction*                            m_actionFurniture_Recognition;
+    // Toolbar items "Labeling"
+    QAction* 				m_actionStart_labeling;
+    QAction* 				m_actionStop_labeling;
+    QAction* 				m_actionExtract_labeling;
     // Toolbar item "About"
     QMenu*                              m_menuAbout;
     // QToolbar below toolbar
@@ -332,6 +346,7 @@ private:
     QAction*                            m_actionSetViewToCamera;
 
     LVRPickingInteractor*               m_pickingInteractor;
+    LVRLabelInteractorStyle*		m_labelInteractor; 
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
 
 
@@ -341,6 +356,7 @@ private:
     vtkSmartPointer<vtkEDLShading>      m_edl;
 #endif
 
+    bool m_labeling = false;
 
     enum TYPE {
         MODELITEMS_ONLY,

@@ -4,6 +4,7 @@
 #include <boost/program_options.hpp>
 #include <string>
 #include <vector>
+#include "lvr2/config/BaseOption.hpp"
 
 namespace viewer
 {
@@ -13,7 +14,7 @@ using boost::program_options::positional_options_description;
 using boost::program_options::variables_map;
 using std::string;
 
-class Options
+class Options : public lvr2::BaseOption
 {
   public:
     /**
@@ -31,7 +32,12 @@ class Options
     /**
      * @brief	Returns the input file
      */
-    std::vector<std::string> getInputFiles() const;
+    //std::vector<std::string> getInputFiles() const;
+
+    /**
+     * @brief   Returns the input file name
+     */
+    std::string  getInputFileName() const;
 
     /**
      * @brief Returns the layers used for LOD
@@ -51,15 +57,6 @@ class Options
 
     bool isChunkedMesh() const;
 
-private:
-    /// The internally used variable map
-    variables_map m_variables;
-
-    /// The internally used option description
-    options_description m_descr;
-
-    /// The internally used positional option description
-    positional_options_description m_posDescr;
 };
 
 }

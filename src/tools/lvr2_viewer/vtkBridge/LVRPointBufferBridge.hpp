@@ -37,6 +37,7 @@
 #include "lvr2/display/ColorMap.hpp"
 #include "lvr2/io/PointBuffer.hpp"
 
+#include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
 #include <vtkDoubleArray.h>
@@ -78,6 +79,9 @@ public:
     void useGradient(bool useGradient);
     /// get the point buffer
     PointBufferPtr getPointBuffer();
+    vtkSmartPointer<vtkPolyData> getPolyData();
+
+    vtkSmartPointer<vtkPolyData> getPolyIDData();
 
 private:
     /// update the view with gradient information
@@ -88,6 +92,11 @@ private:
 protected:
 
     void computePointCloudActor(PointBufferPtr pc);
+    
+    vtkSmartPointer<vtkPolyData> m_vtk_polyData;
+
+    //Maybe this is not neaded but 
+    vtkSmartPointer<vtkPolyData> m_id_polyData;
 
     vtkSmartPointer<vtkActor>       m_pointCloudActor;
     size_t                          m_numPoints;

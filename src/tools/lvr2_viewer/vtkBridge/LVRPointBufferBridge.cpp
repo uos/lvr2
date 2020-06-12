@@ -42,6 +42,8 @@
 #include <vtkActor.h>
 #include <vtkProperty.h>
 #include <vtkPointData.h>
+#include <vtkIdFilter.h>
+#include <vtkDataSetSurfaceFilter.h>
 
 #include "lvr2/util/Util.hpp"
 
@@ -50,6 +52,8 @@ namespace lvr2
 
 LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
 {
+
+    m_vtk_polyData = vtkSmartPointer<vtkPolyData>::New();
     // use all silders with channel 0
     m_useSpectralChannel.r = true;
     m_useSpectralChannel.g = true;
@@ -450,12 +454,34 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
             vtk_cells->InsertNextCell(1, &i);
         }
 
-        vtk_polyData->SetPoints(vtk_points);
-        vtk_polyData->SetVerts(vtk_cells);
+        m_vtk_polyData->SetPoints(vtk_points);
+        m_vtk_polyData->SetVerts(vtk_cells);
+
+	
+        vtkSmartPointer<vtkIdFilter> pointFilter = 
+		vtkSmartPointer<vtkIdFilter>::New();
+
+	pointFilter->SetInputData(m_vtk_polyData);
+#if VTK890
+	pointFilter->SetCellIdsArrayName("OriginalIds");
+	pointFilter->SetPointIdsArrayName("OriginalIds");
+#else
+	pointFilter->SetIdsArrayName("OriginalIds");
+#endif
+	pointFilter->Update();
+
+	vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter = 
+		vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
+	surfaceFilter->SetInputConnection(pointFilter->GetOutputPort());
+	surfaceFilter->Update();
+
+	m_id_polyData = surfaceFilter->GetOutput();
+
+//m_vtk_polyData->GetPointData()->AddArray(ids);
 
         if(hasColors() || n_s_p)
         {
-            vtk_polyData->GetPointData()->SetScalars(scalars);
+            m_vtk_polyData->GetPointData()->SetScalars(scalars);
         }
 
         // Create poly data mapper and generate actor
@@ -530,6 +556,15 @@ void LVRPointBufferBridge::setNormalsVisibility(bool visible)
     }
 }
 
+vtkSmartPointer<vtkPolyData> LVRPointBufferBridge::getPolyData()
+{
+	return m_vtk_polyData;
+}
+
+vtkSmartPointer<vtkPolyData> LVRPointBufferBridge::getPolyIDData()
+{
+    return m_id_polyData;
+}
 vtkSmartPointer<vtkActor> LVRPointBufferBridge::getPointCloudActor()
 {
     return m_pointCloudActor;

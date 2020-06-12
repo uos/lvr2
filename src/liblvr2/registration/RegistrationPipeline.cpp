@@ -32,6 +32,14 @@
 #include "vector"
 #include <math.h>
 
+/**
+ * RegistrationPipeline.cpp
+ *
+ *  @date Jan 7, 2020
+ *  @author Timo Osterkamp (tosterkamp@uni-osnabrueck.de)
+ *  @author Wilko Müller
+ */
+
 using namespace lvr2;
 
 bool RegistrationPipeline::isToleratedDifference(Transformd a, Transformd b)
@@ -111,38 +119,45 @@ RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProje
 
 void RegistrationPipeline::doRegistration()
 {
+    // Create SLAMAlign object and add separate scans. The scans are not transferred via the constructor, because then they will not reduced.
     SLAMAlign align(*m_options);
     for (size_t i = 0; i < m_scans->project->positions.size(); i++)
     {
         if(m_scans->project->positions.at(i)->scans.size())
         {
+            // if m_options->rotate_angle is not 0 -> all scans will be rotate around y axis
             rotateAroundYAxis(&(m_scans->project->positions[i]->scans[0]->poseEstimation), m_options->rotate_angle * M_PI / 180);
 
+            // the SLAMAlign object needs a scan pointer 
             ScanPtr scptr = std::make_shared<Scan>(*(m_scans->project->positions[i]->scans[0]));
-
             align.addScan(scptr);
         }
     }
 
     if (m_options->verbose)
     {
-        cout << "Aus doRegistaration: vor finish" << endl;
+        cout << "start SLAMAlign registration" << endl;
     }
 
+    // start the registration (with params from m_options)
     align.finish();
 
     if (m_options->verbose)
     {
-        cout << "Aus doRegistaration: nach finish" << endl;
+        cout << "end SLAMAlign registration" << endl;
     }
 
+    // if all values are new, the second registration is not needed 
     bool all_values_new = true;
     for (int i = 0; i < m_scans->project->positions.size(); i++)
     {
         // check if the new pos different to old pos
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);
 
-        if ((!m_scans->changed.at(i)) && !isToleratedDifference(posPtr->scans[0]->registration, align.scan(i)->pose()))
+        if (( !m_scans->changed.at(i)) && 
+              !isToleratedDifference(
+                  m_scans->project->positions.at(i)->scans[0]->registration,
+                  align.scan(i)->pose()))
         {
             m_scans->changed.at(i) = true;
             cout << "New Values"<< endl;
@@ -164,6 +179,7 @@ void RegistrationPipeline::doRegistration()
     {
         cout << "start new registration with some fix poses" << endl;
 
+        // do the same as above only with the m_scans->changed array wich says which scan is fix
         align = SLAMAlign(*m_options, m_scans->changed);
 
         for (size_t i = 0; i < m_scans->project->positions.size(); i++)
@@ -179,6 +195,7 @@ void RegistrationPipeline::doRegistration()
         align.finish();
     }
 
+    // transfer the calculated poses into the original data
     for (int i = 0; i < m_scans->project->positions.size(); i++)
     {
         ScanPositionPtr posPtr = m_scans->project->positions.at(i);

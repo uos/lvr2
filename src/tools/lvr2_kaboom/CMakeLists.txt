@@ -19,10 +19,6 @@ set(LVR2_KABOOM_DEPENDENCIES
 	${LVR2_LIB_DEPENDENCIES}
 )
 
-if(PCL_FOUND)
-    set(LVR2_KABOOM_DEPENDENCIES ${LVR2_LEICA_DEPENDENCIES} ${PCL_LIBRARIES} )
-endif(PCL_FOUND)
-
 #####################################################################################
 # Add executable
 #####################################################################################
