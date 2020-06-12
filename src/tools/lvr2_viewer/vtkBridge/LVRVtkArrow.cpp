@@ -45,6 +45,7 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkMath.h>
 #include <vtkSphereSource.h>
+#include <vtkCubeSource.h>
 #include <vtkProperty.h>
 #include <vtkTransform.h>
 #include <vtkTransformPolyDataFilter.h>
@@ -106,13 +107,25 @@ LVRVtkArrow::LVRVtkArrow(Vec start, Vec end):
     m_arrowActor->GetProperty()->GetColor(m_r, m_g, m_b);
     setTmpColor(1.0, 0.2, 0.2);
 
+    //UNDO THIS
+    vtkSmartPointer<vtkCubeSource> cubeStartSource = vtkSmartPointer<vtkCubeSource>::New();
+    cubeStartSource->SetBounds(start[0], start[0] + 1, start[1], start[1] + 1,start[2], start[2] + 1);
+    vtkSmartPointer<vtkPolyDataMapper> cubeStartMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    cubeStartMapper->SetInputConnection(cubeStartSource->GetOutputPort());
+
+    //UNDO THIS END
+
+
     // Create spheres for start and end point
     vtkSmartPointer<vtkSphereSource> sphereStartSource = vtkSmartPointer<vtkSphereSource>::New();
     sphereStartSource->SetCenter(start[0], start[1], start[2]);
     vtkSmartPointer<vtkPolyDataMapper> sphereStartMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     sphereStartMapper->SetInputConnection(sphereStartSource->GetOutputPort());
     m_startActor = vtkSmartPointer<vtkActor>::New();
-    m_startActor->SetMapper(sphereStartMapper);
+    //UNDO THIS
+    //m_startActor->SetMapper(sphereStartMapper);
+    //UNDO THIS END
+    m_startActor->SetMapper(cubeStartMapper);
     m_startActor->GetProperty()->SetColor(1.0, 1.0, .3);
 
     vtkSmartPointer<vtkSphereSource> sphereEndSource = vtkSmartPointer<vtkSphereSource>::New();

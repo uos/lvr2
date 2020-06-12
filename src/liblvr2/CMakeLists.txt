@@ -4,6 +4,7 @@ set(LVR2_SOURCES
     texture/Texture.cpp
     texture/TextureFactory.cpp
     util/Util.cpp
+    util/Hdf5Util.cpp
     display/Renderable.cpp
     display/GroundPlane.cpp
     display/MultiPointCloud.cpp
@@ -47,6 +48,15 @@ set(LVR2_SOURCES
     io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
     io/ScanIOUtils.cpp
+    io/descriptions/ScanProjectSchemaSLAM.cpp
+    io/descriptions/ScanProjectSchemaHyperlib.cpp
+    io/descriptions/DirectoryKernel.cpp
+    io/descriptions/DirectoryIO.cpp
+    io/descriptions/MetaFormatFactory.cpp
+    io/descriptions/ScanProjectSchema.cpp
+    io/descriptions/HDF5Kernel.cpp
+    io/descriptions/HDF5IO.cpp
+    io/descriptions/HDF5MetaDescriptionV2.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp

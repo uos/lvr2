@@ -289,13 +289,13 @@ struct ScanPosition
     HyperspectralCameraPtr          hyperspectralCamera;
 
     /// Latitude (optional)
-    double                          latitude;
+    double                          latitude = 0.0;
 
     /// Longitude (optional)        
-    double                          longitude;
+    double                          longitude = 0.0;
 
     /// Longitude (optional)        
-    double                          altitude;
+    double                          altitude = 0.0;
 
     /// Estimated pose
     Transformd                      pose_estimate;
@@ -304,7 +304,7 @@ struct ScanPosition
     Transformd                      registration;
 
     /// Timestamp when this position was created
-    double                          timestamp;
+    double                          timestamp = 0.0;
 
 };
 

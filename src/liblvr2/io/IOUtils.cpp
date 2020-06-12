@@ -129,7 +129,7 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
 
 }
 
-size_t countPointsInFile(boost::filesystem::path& inFile)
+size_t countPointsInFile(const boost::filesystem::path& inFile)
 {
     std::ifstream in(inFile.c_str());
     std::cout << timestamp << "Counting points in "
@@ -161,7 +161,7 @@ void writePose(const BaseVector<float>& position, const BaseVector<float>& angle
     }
 }
 
-size_t writeModel( ModelPtr model,const  boost::filesystem::path& outfile)
+size_t writeModel(ModelPtr model, const boost::filesystem::path& outfile)
 {
     size_t n_ip = model->m_pointCloud->numPoints();
     floatArr arr = model->m_pointCloud->getPointArray();

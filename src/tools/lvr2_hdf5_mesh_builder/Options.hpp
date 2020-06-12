@@ -63,7 +63,7 @@ public:
     string  getOutputFile()       const { return m_variables["outputFile"].as<string>();}
     string  getMeshName()         const { return m_variables["meshName"].as<string>();}
     size_t  getEdgeCollapseNum()  const { return m_variables["edgeCollapse"].as<size_t >();}
-
+    float  getLocalRadius() const { return m_variables["localRadius"].as<float>();}
 private:
     /// The internally used variable map
     variables_map                   m_variables;
@@ -85,7 +85,8 @@ inline ostream& operator<<(ostream& os, const Options &o)
     cout << "##### Output file \t\t: "  << o.getOutputFile() << endl;
     cout << "##### Mesh name \t\t: "  << o.getMeshName() << endl;
     cout << "##### Edge collapse num \t\t: "  << o.getEdgeCollapseNum() << endl;
-	return os;
+    cout << "##### Local Radius \t\t: "  << o.getLocalRadius() << endl;
+  return os;
 }
 
 } // namespace reconstruct

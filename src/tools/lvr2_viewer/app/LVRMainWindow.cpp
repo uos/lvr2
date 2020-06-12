@@ -49,8 +49,11 @@
 #include <vtkActor.h>
 #include <vtkProperty.h>
 #include <vtkPointPicker.h>
+#include <vtkPointData.h>
+#include <vtkAreaPicker.h>
 #include <vtkCamera.h>
 #include <vtkDefaultPass.h>
+#include <vtkCubeSource.h>
 
 #include "../vtkBridge/LVRChunkedMeshBridge.hpp"
 #include "../vtkBridge/LVRChunkedMeshCuller.hpp"
@@ -59,6 +62,7 @@
 #include <QString>
 
 #include <boost/filesystem.hpp>
+#include <boost/tokenizer.hpp>
 
 #include <QMetaType>
 
@@ -76,6 +80,7 @@ LVRMainWindow::LVRMainWindow()
 
     // Init members
     m_correspondanceDialog = new LVRCorrespondanceDialog(treeWidget);
+    m_labelDialog = new LVRLabelDialog(treeWidget);
     m_incompatibilityBox = new QMessageBox();
     m_aboutDialog = new QDialog(this);
     Ui::AboutDialog aboutDialog;
@@ -144,6 +149,7 @@ LVRMainWindow::LVRMainWindow()
  
     // Toolbar item "File"
     m_actionOpen = this->actionOpen;
+    m_actionOpenChunkedMesh = this->actionOpenChunkedMesh;
     m_actionExport = this->actionExport;
     m_actionQuit = this->actionQuit;
     // Toolbar item "Views"
@@ -172,6 +178,12 @@ LVRMainWindow::LVRMainWindow()
     // Toolbar item "Classification"
     m_actionSimple_Plane_Classification = this->actionSimple_Plane_Classification;
     m_actionFurniture_Recognition = this->actionFurniture_Recognition;
+
+    //Toolbar item "Labeling"
+    m_actionStart_labeling = this->actionLabeling_Start;
+    m_actionStop_labeling = this->actionLabeling_Stop;
+    m_actionExtract_labeling = this->actionLabeling_Export;
+
     // Toolbar item "About"
     // TODO: Replace "About"-QMenu with "About"-QAction
     m_menuAbout = this->menuAbout;
@@ -215,6 +227,9 @@ LVRMainWindow::LVRMainWindow()
     m_gradientSlider = this->sliderGradientWavelength;
     m_gradientLineEdit = this->lineEditGradientWavelength;
 
+
+    //vtkSmartPointer<vtkAreaPicker> areaPicker = vtkSmartPointer<vtkAreaPicker>::New();
+    //qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(areaPicker);
     vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
 
@@ -237,6 +252,7 @@ LVRMainWindow::LVRMainWindow()
 #endif
 
     connectSignalsAndSlots();
+
 }
 
 LVRMainWindow::~LVRMainWindow()
@@ -246,6 +262,10 @@ LVRMainWindow::~LVRMainWindow()
     if(m_correspondanceDialog)
     {
         delete m_correspondanceDialog;
+    }
+    if(m_labelDialog)
+    {
+        delete m_labelDialog;
     }
 
     if (m_pickingInteractor)
@@ -294,6 +314,7 @@ LVRMainWindow::~LVRMainWindow()
 void LVRMainWindow::connectSignalsAndSlots()
 {
     QObject::connect(m_actionOpen, SIGNAL(triggered()), this, SLOT(loadModel()));
+    QObject::connect(m_actionOpenChunkedMesh, SIGNAL(triggered()), this, SLOT(loadChunkedMesh()));
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(restoreSliders()));
@@ -382,6 +403,15 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(pointSelected(vtkActor*, int)), this, SLOT(showPointPreview(vtkActor*, int)));
+    QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(uint16_t, int)), m_labelDialog, SLOT(updatePointCount(uint16_t, int)));
+    QObject::connect(m_pickingInteractor, SIGNAL(responseLabels(std::vector<uint16_t>)), m_labelDialog, SLOT(responseLabels(std::vector<uint16_t>)));
+
+    QObject::connect(m_labelDialog, SIGNAL(labelAdded(QTreeWidgetItem*)), m_pickingInteractor, SLOT(newLabel(QTreeWidgetItem*)));
+    QObject::connect(m_labelDialog, SIGNAL(labelLoaded(int, std::vector<int>)), m_pickingInteractor, SLOT(setLabel(int, std::vector<int>)));
+    QObject::connect(m_labelDialog->m_ui->exportLabelButton, SIGNAL(pressed()), m_pickingInteractor, SLOT(requestLabels()));
+    QObject::connect(m_labelDialog, SIGNAL(hidePoints(int, bool)), m_pickingInteractor, SLOT(setLabeledPointVisibility(int, bool)));
+    QObject::connect(m_labelDialog, SIGNAL(labelChanged(uint16_t)), m_pickingInteractor, SLOT(labelSelected(uint16_t)));
+    QObject::connect(m_labelDialog->m_ui->lassotoolButton, SIGNAL(toggled(bool)), m_pickingInteractor, SLOT(setLassoTool(bool)));
 
     // Interaction with interactor
     QObject::connect(this->doubleSpinBoxDollySpeed, SIGNAL(valueChanged(double)), m_pickingInteractor, SLOT(setMotionFactor(double)));
@@ -395,7 +425,13 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(this->pushButtonFly , SIGNAL(pressed()), m_pickingInteractor, SLOT(modeShooter()));
 
 
+    QObject::connect(m_actionStart_labeling, SIGNAL(triggered()), this, SLOT(manualLabeling()));
+    QObject::connect(m_actionStop_labeling, SIGNAL(triggered()), this, SLOT(manualLabeling()));
+//    QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), this, SLOT(manualLabeling()));
+ //   QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), m_labelDialog, SLOT(labelPoints()));
+//    QObject::connect(m_actionExtract_labeling, SIGNAL(triggered()), m_labelInteractor, SLOT(extractLabel()));
     QObject::connect(m_correspondanceDialog, SIGNAL(disableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
+    QObject::connect(m_pickingInteractor, SIGNAL(labelingStarted(bool)), this, SLOT(changePicker(bool)));
     QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(accepted()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_correspondanceDialog->m_dialog, SIGNAL(rejected()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
@@ -440,10 +476,12 @@ void LVRMainWindow::showBackgroundDialog()
 
 void LVRMainWindow::setupQVTK()
 {
+#ifndef LVR2_USE_VTK8
     // z buffer fix
     QSurfaceFormat surfaceFormat = qvtkWidget->windowHandle()->format();
     surfaceFormat.setStencilBufferSize(8);
     qvtkWidget->windowHandle()->setFormat(surfaceFormat);
+#endif
 
     // Grab relevant entities from the qvtk widget
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
@@ -469,10 +507,16 @@ void LVRMainWindow::setupQVTK()
     m_camera = vtkSmartPointer<vtkCamera>::New();
 
     // Custom interactor to handle picking actions
-    m_pickingInteractor = new LVRPickingInteractor(m_renderer);
-    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
+    //m_pickingInteractor = new LVRPickingInteractor();
+    //m_labelInteractor = LVRLabelInteractorStyle::New();
+    m_pickingInteractor = LVRPickingInteractor::New();
+    m_pickingInteractor->setRenderer(m_renderer);
 
-    vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
+    qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
+   // qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_labelInteractor );
+
+    //vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
+    vtkSmartPointer<vtkAreaPicker> pointPicker = vtkSmartPointer<vtkAreaPicker>::New();
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
 
     // Camera and camera interpolator to be used for camera paths
@@ -925,6 +969,7 @@ void LVRMainWindow::renameModelItem()
 
 LVRModelItem* LVRMainWindow::loadModelItem(QString name)
 {
+    std::cout << "model loaded" << std::endl;
     // Load model and generate vtk representation
     ModelPtr model = ModelFactory::readModel(name.toStdString());
     ModelBridgePtr bridge(new LVRModelBridge(model));
@@ -981,7 +1026,8 @@ void LVRMainWindow::loadChunkedMesh(const QStringList& filenames, std::vector<st
             {
 //                std::vector<std::string> layers = {"mesh0", "mesh1"};
                 std::cout << info.absoluteFilePath().toStdString() << std::endl;
-                m_chunkBridge =  std::make_unique<LVRChunkedMeshBridge>(info.absoluteFilePath().toStdString(), m_renderer, layers, cacheSize);
+                //m_chunkBridge =  std::make_unique<LVRChunkedMeshBridge>(info.absoluteFilePath().toStdString(), m_renderer, layers, cacheSize);
+                m_chunkBridge = ChunkedMeshBridgePtr(new LVRChunkedMeshBridge(info.absoluteFilePath().toStdString(), m_renderer, layers, cacheSize));
                 m_chunkBridge->addInitialActors(m_renderer);
                 m_chunkCuller = new ChunkedMeshCuller(m_chunkBridge.get(), highResDistance);
                 m_renderer->AddCuller(m_chunkCuller);
@@ -1064,6 +1110,28 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
         restoreSliders();
         assertToggles();
         updateView();
+
+
+	vtkSmartPointer<vtkPoints> points = 
+		vtkSmartPointer<vtkPoints>::New();
+	QTreeWidgetItemIterator itu(treeWidget);
+	LVRPointCloudItem* citem;
+	
+	while (*itu)
+	{
+        	QTreeWidgetItem* item = *itu;
+
+		if ( item->type() == LVRPointCloudItemType)
+		{
+			citem = static_cast<LVRPointCloudItem*>(*itu);
+			points->SetData(citem->getPointBufferBridge()->getPointCloudActor()->GetMapper()->GetInput()->GetPointData()->GetScalars());
+
+			m_pickingInteractor->setPoints(citem->getPointBufferBridge()->getPolyIDData());
+                        m_labelDialog->setPoints(item->parent()->text(0).toStdString(), citem->getPointBufferBridge()->getPolyData());
+		}
+		itu++;
+	}
+
     }
 }
 
@@ -1074,8 +1142,55 @@ void LVRMainWindow::loadModel()
     
 }
 
+void LVRMainWindow::loadChunkedMesh()
+{
+    QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open chunked mesh"), "", tr("Chunked meshes (*.h5)"));
+     bool ok;
+     QString text = QInputDialog::getText(0, "Enter layers",
+                                         "Layers whitspace seperated:", QLineEdit::Normal,
+                                         "", &ok);
+     std::vector<std::string> layers;
+     std::string unseperated = text.toStdString();
+     if(text.isEmpty())
+     {
+        layers = {"mesh0"};
+     }
+     else
+     {
+     
+         boost::tokenizer<boost::char_separator<char>> tokens(unseperated, boost::char_separator<char>());
+         layers = std::vector<std::string>(tokens.begin(), tokens.end());
+     }
+
+
+     std::cout << "LAYERS " ;
+     for(auto &layer : layers)
+     {
+         std::cout << layer << " ";
+     }
+
+     std::cout << std::endl;
+     double highResDistance = QInputDialog::getDouble(0, "highResDistance", "highResDistance");
+    
+     if(highResDistance < 0)
+     {
+        highResDistance = 0.0;
+     }
+
+
+     int cacheSize = QInputDialog::getInt(0, "cacheSize", "cache size");
+    
+     if(cacheSize < 0)
+     {
+        cacheSize = 0;
+     }
+    loadChunkedMesh(filenames, layers, cacheSize, highResDistance);
+    
+}
+
 void LVRMainWindow::loadPointCloudData()
 {
+    std::cout << "loaded points" << std::endl;
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
     {
@@ -1745,11 +1860,11 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
     viewer::Options options(argc, argv);
     if(options.printUsage())
     {
-        exit(0);
+        return;
     }
 
     std::vector<std::string> files;
-    files = options.getInputFiles();
+    files.push_back(options.getInputFileName());
     for(int i = 0; i < files.size(); i++)
     {
         std::cout << "filename " << files[i] << std::endl;
@@ -1766,6 +1881,40 @@ void LVRMainWindow::parseCommandLine(int argc, char** argv)
     }
 }
 
+void LVRMainWindow::changePicker(bool labeling)
+{
+
+    if(labeling)
+    {
+        vtkSmartPointer<vtkAreaPicker> AreaPicker = vtkSmartPointer<vtkAreaPicker>::New();
+        qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(AreaPicker);
+    } else
+    {
+        vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
+        qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
+    }
+}
+
+void LVRMainWindow::manualLabeling()
+{
+    if(!m_labeling)
+    {
+        m_labelDialog->m_dialog->show();
+        m_labelDialog->m_dialog->raise();
+        m_labelDialog->m_dialog->activateWindow();
+
+        //TODO STOP beeing hacky 
+        m_labelDialog->showEvent();
+
+        m_pickingInteractor->labelingOn();
+
+
+    }else
+    {
+        m_pickingInteractor->labelingOff();
+    }
+    m_labeling = !m_labeling;
+}
 void LVRMainWindow::manualICP()
 {
     m_correspondanceDialog->fillComboBoxes();

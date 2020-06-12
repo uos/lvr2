@@ -65,16 +65,13 @@ Transformd ICPPointAlign::match()
     auto start_time = chrono::steady_clock::now();
 
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
-    double ret_min = DBL_MAX;
     EigenSVDPointAlign<double> align;
     int iteration = 0;
 
     Vector3d centroid_m = Vector3d::Zero();
     Vector3d centroid_d = Vector3d::Zero();
     Transformd transform = Matrix4d::Identity();
-    Transformd transform_min = Matrix4d::Identity();
     Transformd delta = Matrix4d::Identity();
-    Transformd delta_min = Matrix4d::Identity();
 
     size_t numPoints = m_dataCloud->numPoints();
 
@@ -107,23 +104,13 @@ Transformd ICPPointAlign::match()
         {
             break;
         }
-
-        // Save min ret
-        if (ret < ret_min)
-        {
-            ret_min = ret;
-            delta_min = delta;
-            transform_min = transform;
-        }
-
     }
 
-    m_dataCloud->transform(transform_min, false);
     delete[] neighbors;
 
     auto duration = chrono::steady_clock::now() - start_time;
     cout << setw(6) << (int)(duration.count() / 1e6) << " ms, ";
-    cout << "Error: " << fixed << setprecision(3) << setw(7) << ret_min;
+    cout << "Error: " << fixed << setprecision(3) << setw(7) << ret;
     if (iteration < m_maxIterations)
     {
         cout << " after " << iteration << " Iterations";
@@ -134,7 +121,7 @@ Transformd ICPPointAlign::match()
         cout << "Result: " << endl << m_dataCloud->deltaPose() << endl;
     }
 
-    return delta_min;
+    return delta;
 }
 
 void ICPPointAlign::setMaxMatchDistance(double d)

@@ -30,6 +30,7 @@
  *
  *  @date May 6, 2019
  *  @author Malte Hillmann
+ *  @author Timo Osterkamp (tosterkamp@uni-osnabrueck.de)
  */
 
 #include "lvr2/registration/SLAMAlign.hpp"
@@ -228,12 +229,12 @@ void SLAMAlign::checkLoopCloseOtherOrder(size_t last)
 {
     if (m_options.verbose)
     {
-        cout << "check if a loop exists. current scna: " << m_icp_graph.at(last).second << endl;
+        cout << "check if a loop exists. current scan: " << m_icp_graph.at(last).second << endl;
     }
-    bool hasLoop = false;
     int no_loop = INT_MAX;
     vector<SLAMScanPtr> scans;
     std::vector<bool> new_scans;
+    // create a new scan vector with all registered scans
     scans.push_back(m_scans.at(m_icp_graph.at(0).first));
     for (int i = 0; i <= last; i++)
     {
@@ -249,7 +250,8 @@ void SLAMAlign::checkLoopCloseOtherOrder(size_t last)
         }
     }
 
-    for (int i = 0; i < scans.size() && !hasLoop; i++)
+    // when loop found than start graphSLAM
+    for (int i = 0; i < scans.size(); i++)
     {
         double distance_to_other = sqrt(
             pow(m_scans.at(last)->innerScan()->poseEstimation(3,0) - scans.at(i)->innerScan()->poseEstimation(3,0), 2.0)+

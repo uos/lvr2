@@ -124,6 +124,8 @@ class CompareDistancePair
 
             std::unique_ptr<MeshOctree<BaseVector<float> > > m_oct;
     };
+    typedef boost::shared_ptr<LVRChunkedMeshBridge> ChunkedMeshBridgePtr;
+
 } // namespace lvr2
 
 #endif

@@ -44,7 +44,7 @@
 #include "lvr2/io/ScanIOUtils.hpp"
 #include "lvr2/registration/RegistrationPipeline.hpp"
 #include "lvr2/io/hdf5/ScanProjectIO.hpp"
-#include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 
 using BaseHDF5IO = lvr2::Hdf5IO<>;
 

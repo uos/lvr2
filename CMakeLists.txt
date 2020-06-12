@@ -183,6 +183,11 @@ set(VTK_QT_VERSION 5)
 find_package(VTK REQUIRED)
 
 if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
+  # patched QVTKOpenGL header because of name clash with signals.
+  add_subdirectory(ext/QVTKOpenGLWidget)
+  include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
+  list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
+
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
 endif()
 
@@ -230,16 +235,16 @@ endif(NABO_FOUND)
 ## Searching for PCL
 #------------------------------------------------------------------------------
 
-#find_package(PCL 1.7)
-#if(PCL_FOUND)
-#  include_directories(${PCL_INCLUDE_DIRS})
-#  link_directories(${PCL_LIBRARY_DIRS})
-#  add_definitions(${PCL_DEFINITIONS})
-#  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_PCL)
-#else(PCL_FOUND)
-#  message( "-- No PCL found." )
-#  message( "-- PCL related stuff will be disabled." )
-#endif(PCL_FOUND)
+find_package(PCL)
+if(PCL_FOUND)
+  include_directories(${PCL_INCLUDE_DIRS})
+  link_directories(${PCL_LIBRARY_DIRS})
+  add_definitions(${PCL_DEFINITIONS})
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_PCL)
+else(PCL_FOUND)
+  message( "-- No PCL found." )
+  message( "-- PCL related stuff will be disabled." )
+endif(PCL_FOUND)
 
 #------------------------------------------------------------------------------
 # Searching CGAL
@@ -493,13 +498,22 @@ find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
 if(Qt5_FOUND)
   message(STATUS "Found QT5")
   find_package(QVTK)
-  message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
   if(QVTK_FOUND)
+    message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
     include_directories(${QVTK_INCLUDE_DIR})
+    add_subdirectory(src/tools/lvr2_viewer)
+  elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
+    add_subdirectory(src/tools/lvr2_viewer)
   endif(QVTK_FOUND)
-  add_subdirectory(src/tools/lvr2_viewer)
 endif(Qt5_FOUND)
 
+###############################################################################
+# LVR2 ASCII VIEWER CHECKS
+###############################################################################
+find_package(Curses)
+if(CURSES_FOUND)
+    include_directories( ${CURSES_INCLUDE_DIRS} )
+endif()
 
 ###############################################################################
 # SET DEPENDENCIES
@@ -586,6 +600,11 @@ add_subdirectory(src/tools/lvr2_chunking)
 add_subdirectory(src/tools/lvr2_registration)
 add_subdirectory(src/tools/lvr2_mesh_reducer)
 add_subdirectory(src/tools/lvr2_chunking_server)
+add_subdirectory(src/tools/lvr2_scanproject_parser)
+
+if(CURSES_FOUND AND embree_FOUND)
+    add_subdirectory(src/tools/lvr2_ascii_viewer)
+endif()
 
 if (RiVLib_FOUND)
     #add_subdirectory(src/tools/lvr2_riegl_project_converter)

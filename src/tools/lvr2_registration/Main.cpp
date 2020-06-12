@@ -36,7 +36,7 @@
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/registration/SLAMAlign.hpp"
 #include "lvr2/io/HDF5IO.hpp"
-#include "lvr2/io/GHDF5IO.hpp"
+#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 #include "lvr2/io/hdf5/ArrayIO.hpp"
 #include "lvr2/io/hdf5/ChannelIO.hpp"
 #include "lvr2/io/hdf5/VariantChannelIO.hpp"
@@ -383,11 +383,16 @@ int main(int argc, char** argv)
 
     int count = end - start + 1;
 
-    HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
-    vector<string> numOfScansInHDF = hfscans.listObjectNames();
+    vector<string> numOfScansInHDF;
+    if(h5_ptr->m_hdf5_file)
+    {
+        HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
+        numOfScansInHDF = hfscans.listObjectNames();
+    }
+
     vector<lvr2::ScanPtr> rawScans;
     if (options.useHDF)
-    {
+    {  
         for (int i = 0; i < numOfScansInHDF.size(); i++)
         {
             // create a scan object for each scan in hdf
