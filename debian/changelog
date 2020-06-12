@@ -1,0 +1,48 @@
+lvr2 (19.12.0-0ubuntu3) bionic; urgency=medium
+
+  * d/control:
+    + Fix dependency for liblvr2-cuda-dev package (liblvr2 -> liblvr2-cuda).
+
+ -- Marcel Wiegand <wiegand@linux.com>  Wed, 18 Dec 2019 21:36:48 +0100
+
+lvr2 (19.12.0-0ubuntu2) bionic; urgency=medium
+
+  * New release 19.12.0-0ubuntu2.
+  * d/control:
+    + Add missing libyaml-cpp-dev dependency.
+
+ -- Marcel Wiegand <wiegand@linux.com>  Sat, 14 Dec 2019 14:01:24 +0100
+
+lvr2 (19.12.0-0ubuntu1) bionic; urgency=medium
+
+  * New upstream release 19.12.0-0ubuntu1.
+  * Add CUDA support.
+  * Remove draco dependency.
+  * d/control:
+    + Adjust VCS links.
+    + Add packages with CUDA support.
+  * d/rules:
+    + Add build steps for CUDA support.
+  * d/patches/:
+    + Add cuda-option.patch to add CUDA disable option in CMAKE.
+    * Add fix-find-lz4.patch.
+
+ -- Marcel Wiegand <wiegand@linux.com>  Sat, 14 Dec 2019 03:10:18 +0100
+
+lvr2 (19.05.0-0ubuntu2) bionic; urgency=medium
+
+  * d/rules:
+    + Increase verbosity.
+  * d/control:
+    + Add suggestions for lvr2-bin to liblvr2(-dev) packages.
+    + Add dh-exec dependency (to enable DEB_HOST_MULTIARCH in install).
+  * d/liblvr2-dev:
+    + Fix missing cmake files.
+
+ -- Marcel Wiegand <wiegand@linux.com>  Sat, 15 Jun 2019 15:42:24 +0200
+
+lvr2 (19.05.0-0ubuntu1) bionic; urgency=medium
+
+  * Initial release.
+
+ -- Marcel Wiegand <wiegand@linux.com>  Mon, 13 May 2019 12:00:09 +0200
