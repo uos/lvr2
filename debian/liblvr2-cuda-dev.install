@@ -1,0 +1,8 @@
+#!/usr/bin/dh-exec
+debian/lvr2-cuda/usr/include/* usr/include/
+debian/lvr2-cuda/usr/lib/*/lib*.a usr/lib/
+debian/lvr2-cuda/usr/share/HighFive/* usr/share/HighFive/
+
+# cmake
+debian/lvr2-cuda/usr/lib/cmake/* usr/lib/${DEB_HOST_MULTIARCH}/cmake
+debian/lvr2-cuda/usr/lib/*/cmake/* usr/lib/
